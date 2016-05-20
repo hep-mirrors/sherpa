@@ -108,7 +108,7 @@ namespace ATOOLS {
     }
 
 
-    Scalar Abs2() const { return m_x[0]*m_x[0]-PSpat2(); }      
+    Scalar Abs2() const { return (m_x[0]+m_x[3])*(m_x[0]-m_x[3])-m_x[1]*m_x[1]-m_x[2]*m_x[2]; }      
     Scalar Abs() const { return sqrt(Abs2()); }
     double Mass() const {
       return sqrt(ATOOLS::Abs<Scalar>(Abs2()));
@@ -117,7 +117,7 @@ namespace ATOOLS {
 
     Scalar PPerp2() const { return m_x[1]*m_x[1]+m_x[2]*m_x[2]; }
     Scalar PPerp() const { return sqrt(PPerp2()); }
-    Scalar MPerp2() const { return m_x[0]*m_x[0]-m_x[3]*m_x[3]; }
+    Scalar MPerp2() const { return (m_x[0]+m_x[3])*(m_x[0]-m_x[3]); }
     Scalar MPerp() const { return sqrt(MPerp2()); }
     Scalar MPerp2(const Vec4<Scalar> &ref) const {
       return Abs2()+PPerp2(ref);
