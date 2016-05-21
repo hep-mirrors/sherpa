@@ -26,13 +26,6 @@ namespace BEAM {
     };
   };
 
-  class Beam_Generator {
-  public:
-    enum code { Internal          = 0,
-		Unknown           = 99
-    };
-  };
-
   class Beam_Base { 
   protected:
 

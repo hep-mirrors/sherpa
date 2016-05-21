@@ -229,13 +229,11 @@ void Spectrum_Reader::ReadFromFile()
 
       double x=0.5*(x1 + x2);
       double y  =(*m_spectrum_funcs[id])(x1);
-      double pol=(*m_spectrum_funcs[id+1])(x1);
       if (x1>0.3 && y>ymax) {
 	ymax=y;
 	m_peak=x1;
       }
       y  =(*m_spectrum_funcs[id])(x);
-      pol=(*m_spectrum_funcs[id+1])(x);
       if (y>0 && x2>m_upper) {
 	m_upper=x2;
       }
@@ -245,7 +243,6 @@ void Spectrum_Reader::ReadFromFile()
 	m_peak=x;
       }
       y  =(*m_spectrum_funcs[id])(x2);
-      pol=(*m_spectrum_funcs[id+1])(x2);
       if (x1>0.3 && y>ymax) {
 	ymax=y;
 	m_peak=x2;

@@ -59,7 +59,6 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
   bool okay(true);
   char help[20];
   Beam_Type::code      beam_spec;
-  Beam_Generator::code spec_gen;
   for (short int num=0;num<2;num++) {
     sprintf(help,"%i",num+1);
     std::string number   = string(help); 
@@ -73,13 +72,6 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
     else if (bs=="Spectrum_Reader")      beam_spec=Beam_Type::Spec_Read;
     else if (bs=="EPA")                  beam_spec=Beam_Type::EPA;
     else                                 beam_spec=Beam_Type::Unknown;
-    if ((beam_spec!=Beam_Type::Monochromatic) &&
-        (beam_spec!=Beam_Type::Gaussian)) {
-      std::string sg(dataread->GetValue<std::string>("SPECTRUM_"+number,
-                                                     "Internal"));
-      if (sg=="Internal") spec_gen=Beam_Generator::Internal;
-      else                spec_gen=Beam_Generator::Unknown;
-    }
     switch (beam_spec) {
     case Beam_Type::Monochromatic :
       okay = okay&&InitializeMonochromatic(dataread,num);
