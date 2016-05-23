@@ -13,9 +13,9 @@ using namespace CSSHOWER;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,const int qed,
+Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
 	       Data_Reader *const dataread,int type) : 
-  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
+  p_actual(NULL), m_sudakov(isr,qcd,qed), p_isr(isr)
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
