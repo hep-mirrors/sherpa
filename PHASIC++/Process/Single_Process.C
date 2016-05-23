@@ -118,7 +118,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
   int mode(imode&1);
   if (mode) msg_Out()<<"Flipped initial states.\n";
   if (!m_use_biweight) return 1.;
-  if (m_nin==1) return 0.5/p_int->Momenta()[0].Mass();
+  if (m_nin==1) return 1.0;
   else if (m_nin>2) THROW(not_implemented,"More than two incoming particles.");
   Cluster_Sequence_Info csi;
   if (p_int->ISR()) {
@@ -266,7 +266,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
-  double flux(p_int->ISR()->Flux(p[0],p[1]));
+  double flux=m_nin==1?p_int->ISR()->Flux(p[0]):p_int->ISR()->Flux(p[0],p[1]);
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
