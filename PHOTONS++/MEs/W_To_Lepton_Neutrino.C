@@ -126,13 +126,15 @@ double W_To_Lepton_Neutrino::Smod(unsigned int kk) {
   double Zj = -1.;
   int    ti = -1;
   int    tj = +1;
-  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(/*pi/(pi*k)*/-pj/(pj*k)).Abs2();
+  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
 }
 
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsW = Polarization_Vector(m_moms[0])[m_spins[0]];
   XYZFunc XYZ(3,m_moms,m_flavs,false);
+  // one diagram:
+  // M_0 = ie/(sqrt(2)sW) * ubar(l)gamma_rho P_L v(nu) eps_rho^W
   return m_i*m_e/(m_sqrt2*m_sW)*XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cR,m_cL);
 }
 
@@ -164,7 +166,7 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   // two diagrams
   // M_1 = -ie^2/(2sqrt(2)sW) * 1/((pl+k)^2-m^2)
   //       * ubar(l)gamma^mu(-pl-k+m)gamma^nu P_L v(nu) eps_nu^W eps_mu^y*
-  // M_2 = ie/(2sqrt(2)sW) * 1/(pW-k)^2-M^2)
+  // M_2 = ie^2/(2sqrt(2)sW) * 1/(pW-k)^2-M^2)
   //       * ubar(l)gamma_rho P_L v(nu)
   //       * [-2g^{rho,nu}pW^mu + g^{rho,mu}pW^nu
   //          + g^{nu,mu}k^rho + 1/M^2(pW-k)^rho pW^nu pW^mu]
@@ -199,6 +201,8 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   r2 *= (1.-m/sqrt(q2))/(q2-m2);
   r3 *= -1./(Q2-M2);
 
+  // erase intermediate entries from m_flavs
+  m_flavs[4] = m_flavs[5] = Flavour(kf_none);
   return (m_i*m_e*m_e)/(2.*m_sqrt2*m_sW)*(r1+r2/*+r3*/);
 }
 
@@ -255,6 +259,8 @@ double W_To_Lepton_Neutrino::GetBeta_1_1(unsigned int a) {
   }
   // spin avarage over initial state
   sum = (1./3.)*sum;
+  msg_Debugging()<<"|M_1(k)|^2="<<1./(16.*M_PI*M_PI*M_PI)*sum
+                 <<", S(k)|M_0|^2="<<Smod(a)*GetBeta_0_0()<<std::endl;
   sum = 1./(16.*M_PI*M_PI*M_PI)*sum - Smod(a)*GetBeta_0_0();
   return sum;
 }

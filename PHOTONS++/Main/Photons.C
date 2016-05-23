@@ -56,6 +56,7 @@ int    PHOTONS::Photons::s_ffrecscheme   = 0;
 int    PHOTONS::Photons::s_firecscheme   = 0;
 
 double PHOTONS::Photons::s_alpha                = 0.;
+double PHOTONS::Photons::s_alpha_input          = 0.;
 bool   PHOTONS::Photons::s_userunningparameters = false;
 
 #ifdef PHOTONS_DEBUG
@@ -99,6 +100,8 @@ Photons::Photons(Data_Reader* reader) :
   s_ircutoff = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
   s_uvcutoff = reader->GetValue<double>("YFS_UV_CUTOFF",
                                         std::numeric_limits<double>::max());
+  s_alpha_input   = reader->GetValue<double>("YFS_1/ALPHAQED",0.);
+  s_alpha_input = (s_alpha_input?1./s_alpha_input:MODEL::aqed->AqedThomson());
   s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
   std::string irframe = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME",
                                                       "Multipole_CMS");
@@ -138,9 +141,10 @@ Photons::Photons(Data_Reader* reader) :
                    <<" ,  dRcut: "<<s_drcut
                    <<" ,  reducemaxenergy: "<<s_reducemaxenergy
                    <<" ,  increasemaxweight: "<<s_increasemaxweight
-                   <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
+                   <<" ,  IR cut-off: "<<((int)s_mode>0?s_ircutoff:0)
                    <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
                    <<" ,  UV cut-off: "<<s_uvcutoff
+                   <<" ,  1/alpha: "<<1./s_alpha_input
                    <<" ,  use running parameters "<<s_userunningparameters
                    <<" ,  FF recoil scheme: "<<s_ffrecscheme
                    <<" ,  FI recoil scheme: "<<s_firecscheme;

@@ -40,10 +40,10 @@ namespace PHOTONS {
     inline bool        AddedAnything()    { return m_photonsadded; }
     inline std::string Name()             { return m_name; }
 
-    static double               s_alpha;
+    static double               s_alpha,s_alpha_input;
     static bool                 s_userunningparameters;
     static inline void ResetAlphaQED()
-    { s_alpha=MODEL::aqed->AqedThomson(); }
+    { s_alpha=s_alpha_input; }
     static inline void SetAlphaQED(const double& scale)
     { if (s_userunningparameters) s_alpha=(*MODEL::aqed)(scale); }
 
