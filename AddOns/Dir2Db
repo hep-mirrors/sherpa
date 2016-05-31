@@ -1,22 +1,25 @@
 #!/bin/bash
 
-dir=${1%/}
+export tmpfile=$(mktemp)
+export dir=${1%/}
 db=${dir}.db
-
 rm -f ${db}
-files=$(find ${dir} | grep -v '.svn')
 
-printf "Building ${db} ("$(echo $files | wc -w)") ";
 
-(
-echo "begin transaction;"
-echo "create table path(file,content);"
-echo "create index idx_path on path(file);"
-for i in $files; do
-  test -d $i && continue; printf "." 1>&2
-  filename=$(echo $i | sed 's|'${dir}'||g;s|^/||g')
-  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i
-done
-echo "commit;"
-) | sqlite3 ${db}
-echo " done"
+function insertsql {
+    if ! test -d "$1"; then
+        filename=$(echo "$1" | sed 's|'${dir}'||g;s|^/||g')
+        echo "$filename"
+        sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" "$1" >> $tmpfile
+    fi
+}
+export -f insertsql
+
+echo "begin transaction;" >> $tmpfile
+echo "create table path(file,content);" >> $tmpfile
+echo "create index idx_path on path(file);" >> $tmpfile
+find ${dir} -exec bash -c 'insertsql "$0"' {} \;
+echo "commit;" >> $tmpfile
+cat $tmpfile | sqlite3 ${db}
+rm $tmpfile
+echo "done"
