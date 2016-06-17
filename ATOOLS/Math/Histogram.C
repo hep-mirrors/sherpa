@@ -2,25 +2,13 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
-
-template <class Type>
-Type Get(const std::string & in) 
-{
-  if (in!="nan") {
-    Type value;
-    MyStrStream str;
-    str<<in;
-    str>>value;
-    return value;
-  }
-  return (Type)0;
-}
 
 void Histogram::MPIInit()
 {
@@ -162,34 +150,13 @@ void Histogram::CopyFrom(const Histogram *histo)
   MPIInit();
 }
 
-
 Histogram::Histogram(const std::string & pID)
   :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
   m_finished=true;
   My_In_File ifile(pID.c_str());
   ifile.Open();
 
-  std::string dummy;
-  getline(*(&*ifile),dummy);
-  
-  Data_Reader dr(" ",";","!");
-  dr.AddWordSeparator("\t");
-  if (dummy!="") { 
-    std::vector<std::string> conf;
-    dr.SetString(dummy);
-    dr.VectorFromString(conf);
-    size_t k=0;
-
-    if (k>=conf.size()) {
-      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
-      m_active = 0;
-      return;
-    }
-
-    MyStrStream str;
-    str<<dummy;
-    str>>m_type>>m_nbin>>m_lower>>m_upper;
-    k=4;
+    *ifile>>m_type>>m_nbin>>m_lower>>m_upper;
 
     m_logarithmic = int(m_type/10);
     m_depth       = m_type-m_logarithmic*10+1;
@@ -213,59 +180,50 @@ Histogram::Histogram(const std::string & pID)
     
     m_active = 1;
     m_yvalues   = new double[m_nbin];
-    m_yvalues[0]  = Get<double>(conf[k++]);
+    *ifile>>m_yvalues[0];
     if (m_depth>1) {
       m_y2values   = new double[m_nbin];
-      m_y2values[0] = Get<double>(conf[k++]);
+      *ifile>>m_y2values[0];
     }    
     if (m_depth>2) {
       m_psvalues   = new double[m_nbin];
-      m_psvalues[0] = Get<double>(conf[k++]);
+      *ifile>>m_psvalues[0];
     }    
-    if (k>=conf.size()) {
-      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
-      m_active = 0;
-      return;
-    }
 
-    m_yvalues[m_nbin-1]  = Get<double>(conf[k++]);
+    *ifile>>m_yvalues[m_nbin-1];
     if (m_depth>1) {
-      m_y2values[m_nbin-1] = Get<double>(conf[k++]);
+      *ifile>>m_y2values[m_nbin-1];
     }    
     if (m_depth>2) {
-      m_psvalues[m_nbin-1] = Get<double>(conf[k++]);
+      *ifile>>m_psvalues[m_nbin-1];
     }    
-    if (k>=conf.size()) {
-      msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
-      m_active = 0;
-      return;
-    }
-    m_fills = Get<double>(conf[k++]);
-  }
-  else {
-    msg_Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
-    m_active = 0;
-    return;    
-  }
-  
+    *ifile>>m_fills;
 
-  std::vector<std::string> data;
-  MyStrStream str;
+  double x;
   for (int i=0;i<m_nbin-1;i++) {
-    getline(*(&*ifile),dummy);
-    data.clear();
-    dr.SetString(dummy);
-    dr.VectorFromString(data);
-
-    //    ifile>>value;
-    m_yvalues[i+1] = Get<double>(data[1]);
+    *ifile>>x;
+    if (!IsEqual(x,m_lower+i*m_binsize,1.0e-6)) {
+      msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
+      m_active=0;
+      break;
+    }
+    *ifile>>m_yvalues[i+1];
     if (m_depth>1) {
-      m_y2values[i+1] = Get<double>(data[2]);
+      *ifile>>m_y2values[i+1];
       m_y2values[i+1] = sqr(m_y2values[i+1]);
     }    
     if (m_depth>2) {
-      m_psvalues[i+1] = Get<double>(data[3]);
+      *ifile>>m_psvalues[i+1];
     }    
+  }
+  if (ifile->eof()) {
+    msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
+    m_active=0;
+  }
+  *ifile>>x;
+  if (!ifile->eof()) {
+    msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
+    m_active=0;
   }
   ifile.Close();
   MPIInit();
@@ -405,14 +363,9 @@ void Histogram::Output(const std::string name)
   if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
   if (!m_active) return;
-  static int prec(-1);
-  if (prec<0) {
-    Data_Reader read(" ",";","!","=");
-    prec=read.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6);
-  }
   My_Out_File ofile(name);
   ofile.Open();
-  ofile->precision(prec);
+  ofile->precision(ToType<int>(rpa->gen.Variable("HISTOGRAM_OUTPUT_PRECISION")));
 
   if (m_fills>=0) {
     *ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
