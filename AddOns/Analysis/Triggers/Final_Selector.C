@@ -358,7 +358,7 @@ bool Final_Selector::EtaSelect(const Vec4D & mom, double etamin,double etamax)
 bool Final_Selector::DeltaRSelect(const Vec4D & p1,const Vec4D & p2,double rmin) 
 {
   double deta12 = p1.Eta()-p2.Eta();
-  double dphi12 = acos( (p1[1]*p2[1]+p1[2]*p2[2])/(p1.PPerp()*p2.PPerp()) );
+  double dphi12 = acos(Min(1.0,Max(-1.0,( (p1[1]*p2[1]+p1[2]*p2[2])/(p1.PPerp()*p2.PPerp()) ))));
   if (sqrt(sqr(deta12)+sqr(dphi12))<rmin) return true;
   return false;
 }
@@ -377,7 +377,7 @@ double Final_Selector::DeltaR(const Vec4D & p1,const Vec4D & p2)
 
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-  double dphi12=acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
+  double dphi12=acos(Min(1.0,Max(-1.0,((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2)))));
   
   return sqrt(sqr(deta12) + sqr(dphi12));
 }

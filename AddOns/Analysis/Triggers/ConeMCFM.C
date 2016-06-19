@@ -23,7 +23,7 @@ double ConeMCFM::deltarq(Vec4D p1, Vec4D p2)
 
 	pt1=sqr(p1[1]*p1[1]+p1[2]*p1[2]);
 	pt2=sqr(p2[1]*p2[1]+p2[2]*p2[2]);
-	dphi=acos((p1[1]*p2[1]+p1[2]*p2[2])/pt1/pt2);
+	dphi=acos(Min(1.0,Max(-1.0,((p1[1]*p2[1]+p1[2]*p2[2])/pt1/pt2))));
 
 	eta1=etarap(p1);
 	eta2=etarap(p2);

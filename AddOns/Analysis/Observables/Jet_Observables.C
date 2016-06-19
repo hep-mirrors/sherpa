@@ -774,7 +774,7 @@ double Jet_DeltaR_Distribution::Calc(const Particle * p1,const Particle * p2,
   double pt2  = mom2.PPerp();
   if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
       pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
-  double dphi = acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+  double dphi = acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2)))));
   double deta = mom1.Eta()-mom2.Eta();
   return sqrt(sqr(deta) + sqr(dphi)); 
 }
@@ -872,7 +872,7 @@ double Jet_DeltaPhi_Distribution::Calc(const Particle * p1,const Particle * p2,
   if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
       pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
   
-  return acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+  return acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2)))));
 }
 //----------------------------------------------------------------------
 
@@ -1121,7 +1121,7 @@ double Phi_3_Prime::Calc(const Particle * p1,const Particle * p2,
   n2=1.0/n2.Abs()*n2;
   n3=1.0/n3.Abs()*n3;
 
-  double phi(acos(n3*cross(n1,n2)));
+  double phi(acos(Min(1.0,Max(-1.0,(n3*cross(n1,n2))))));
  
   if (!(phi>=0.0) && !(phi<0.0)) return 0.0;
   return phi;
@@ -1199,7 +1199,7 @@ double Jet_Alpha_Distribution::Calc(const Particle* p1, const Particle* p2,
   double pt2  = mom2.PPerp();
   if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
       pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
-  double dphi = acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+  double dphi = acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2)))));
 
   return atan(dH/dphi)/M_PI*180.;
 }

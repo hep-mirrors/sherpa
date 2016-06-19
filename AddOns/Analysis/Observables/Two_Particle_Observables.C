@@ -398,7 +398,7 @@ void Two_Particle_Angle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double w
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]+mom1[3]*mom1[3]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]+mom2[3]*mom2[3]);
-    double phi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2]+mom1[3]*mom2[3])/(pt1*pt2));
+    double phi=acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2]+mom1[3]*mom2[3])/(pt1*pt2)))));
     p_histo->Insert(phi,weight,ncount); 
 } 
 
@@ -406,7 +406,7 @@ void Two_Particle_Angle::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]+mom1[3]*mom1[3]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]+mom2[3]*mom2[3]);
-    double phi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2]+mom1[3]*mom2[3])/(pt1*pt2));
+    double phi=acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2]+mom1[3]*mom2[3])/(pt1*pt2)))));
     p_histo->InsertMCB(phi,weight,ncount); 
 } 
 
@@ -458,7 +458,7 @@ void Two_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    double dphi=acos(Min(1.0,Max(-1.0,(mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2))));
     p_histo->Insert(dphi,weight,ncount); 
 } 
 
@@ -466,7 +466,7 @@ void Two_Particle_DPhi::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    double dphi=acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2)))));
     p_histo->InsertMCB(dphi,weight,ncount); 
 } 
 
@@ -491,7 +491,7 @@ void Two_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    double dphi=acos(Min(1.0,Max(-1.0,(mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2))));
     double c1=mom1[3]/Vec3D(mom1).Abs();
     double c2=mom2[3]/Vec3D(mom2).Abs();
     double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
@@ -509,7 +509,7 @@ void Two_Particle_DR::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,d
 { 
     double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    double dphi=acos(Min(1.0,Max(-1.0,((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2)))));
     double c1=mom1[3]/Vec3D(mom1).Abs();
     double c2=mom2[3]/Vec3D(mom2).Abs();
     double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));

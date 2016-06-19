@@ -127,7 +127,7 @@ double Cone_Finder::DPhi12(const Vec4D & p1,const Vec4D & p2)
 {
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-  return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
+  return acos(Min(1.0,Max(-1.0,(p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2))));
 }
 
 DECLARE_ND_GETTER(Cone_Finder,"ConeFinder",Selector_Base,Selector_Key,true);
