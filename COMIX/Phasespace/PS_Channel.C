@@ -1058,6 +1058,9 @@ std::string PS_Channel::ChID()
 
 void PS_Channel::WriteOut(std::string pid)
 { 
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
   {
     Data_Writer writer;
     writer.SetOutputPath(pid);

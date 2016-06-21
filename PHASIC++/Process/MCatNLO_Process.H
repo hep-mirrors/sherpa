@@ -28,6 +28,8 @@ namespace PHASIC {
     double m_lastrs, m_lastb, m_lastvi;
     int    m_fomode, m_hpsmode, m_kfacmode, m_wassevent;
 
+    std::string m_rsscale;
+
     ATOOLS::StringIDipSet_Map m_iinfo;
     ATOOLS::StringDDipSet_Map m_dinfo;
 

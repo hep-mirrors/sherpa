@@ -287,6 +287,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
   gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",1)));
+  gen.SetVariable("HISTOGRAM_OUTPUT_PRECISION",ToString
+		  (dr.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6)));
   gen.SetVariable("SELECTION_WEIGHT_MODE",ToString
 		  (dr.GetValue<int>("SELECTION_WEIGHT_MODE",0)));
   dr.SetAllowUnits(true);
