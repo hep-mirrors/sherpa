@@ -21,12 +21,7 @@ Vertex::Vertex(MODEL::Model_Base * _model)
   msg_Debugging()<<"   Setting vertices..."<<endl;
   for (size_t i(0);i<_model->OriginalVertices().size();++i) {
     MODEL::Single_Vertex *v((MODEL::Single_Vertex*)&_model->OriginalVertices()[i]);
-    if (v->dec==1) continue;
-    if (v->in.size()>4) {
-      if (v->Lorentz.front()!="HVVVVA")
-	msg_Error()<<METHOD<<"(): Amegic supports 3- and 4-point vertices only. Skip this one\n  "<<*v<<std::endl;
-      continue;
-    }
+    if (v->dec>0) continue;
     Single_Vertex *av(NULL);
     if (v->in.size()==3) {
       m_v.push_back(Single_Vertex());
