@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Color.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
@@ -210,9 +211,9 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
   p_channels->Reset();
   int maxopt    = p_channels->Number()*int(pow(2.,2*(int(NOut())-2)));
 
-  long int n=0;
   int      opt=0;
   double   value, sum=0., sum2=0., result=1., disc;
+  double   n=0., mv[3]={0.,0.,0.};
 
   double flux(1./(2.*p_ms->Mass(GetDecaying())));
   std::vector<Vec4D> momenta(1+NOut());
@@ -222,20 +223,31 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
   m_ideltawidth=crit;
 
   while(opt<maxopt && m_ideltawidth>acc*crit) {
-    for (n=1;n<iter+1;n++) {
+    for (int ln=1;ln<iter+1;ln++) {
       value = Differential(momenta, false, NULL);
-      sum  += value;
-      sum2 += ATOOLS::sqr(value);
+      mv[0] += 1.0;
+      mv[1] += value;
+      mv[2] += ATOOLS::sqr(value);
       p_channels->AddPoint(value);
       if (value>m_max) {
         m_max = value;
       }
     }
     opt++;
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_size()) {
+      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mv,3,MPI::DOUBLE,MPI::SUM);
+      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_max,1,MPI::DOUBLE,MPI::MAX);
+    }
+#endif
+    n+=mv[0];
+    sum+=mv[1];
+    sum2+=mv[2];
+    mv[0]=mv[1]=mv[2]=0.0;
+
     p_channels->MPISync();
     p_channels->Optimize(0.01);
 
-    n      = opt*iter;
     result = sum/n;
     disc   = sqr(sum/n)/((sum2/n - sqr(sum/n))/(n-1));
     if (disc!=0.0) m_ideltawidth  = result/sqrt(abs(disc));
