@@ -119,13 +119,10 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   }
 
   if (p_tree_process!=p_tree_process->Partner()) {
-    string partnerID=p_tree_process->Partner()->Name();
-    partnerID.erase(partnerID.find("("),3);
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      string lname=links[j]->Name();
-      lname.erase(lname.find("("),4);
-      if (partnerID==lname) {
-	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "<<partnerID<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
+      if (FlavCompare(links[j])) {
+	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "
+		      <<links[j]->Name()<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
 	p_mapproc = p_partner = (Single_Real_Correction*)links[j];
 	m_sfactor = p_tree_process->GetSFactor();
 	// return 1;
