@@ -15,6 +15,8 @@ The following parameters are used to steer the integration.
 * PSI_NMAX::             Maximum number of points per process
 * PSI_ITMIN::            Minimum number of points per iteration cycle
 * PSI_ITMAX::            Maximum number of points per iteration cycle
+* PSI_ITMIN_BY_NODE::    Minimum number of points per iteration by node
+* PSI_ITMAX_BY_NODE::    Maximum number of points per iteration by node
 @end menu
 
 
@@ -99,3 +101,15 @@ that it might be increased automatically for complicated processes.
 The maximum number of points used for every optimisation cycle. Please note 
 that for complicated processes the number given might be insufficient for 
 a meaningful optimisation.
+
+@node PSI_ITMIN_BY_NODE
+@subsection PSI_ITMIN_BY_NODE
+@cindex PSI_ITMIN_BY_NODE
+Same as @ref{PSI_ITMIN}, but specified per node to allow tuning of 
+integration performance in large-scale MPI runs.
+
+@node PSI_ITMAX_BY_NODE
+@subsection PSI_ITMAX_BY_NODE
+@cindex PSI_ITMAX_BY_NODE
+Same as @ref{PSI_ITMAX}, but specified per node to allow tuning of 
+integration performance in large-scale MPI runs.

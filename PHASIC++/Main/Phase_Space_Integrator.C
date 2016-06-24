@@ -45,8 +45,17 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   lastrss=0;
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
-  itmin*=size;
-  itmax*=size;
+  if (size) {
+    int helpi;
+    if (read.ReadFromFile(helpi,"PSI_ITMIN_BY_NODE")) {
+      itmin=helpi*size;
+      msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
+    }
+    if (read.ReadFromFile(helpi,"PSI_ITMAX_BY_NODE")) {
+      itmax=helpi*size;
+      msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
+    }
+  }
 #endif
 }
 
