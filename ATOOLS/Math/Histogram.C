@@ -202,7 +202,7 @@ Histogram::Histogram(const std::string & pID)
   double x;
   for (int i=0;i<m_nbin-1;i++) {
     *ifile>>x;
-    if (!IsEqual(x,m_lower+i*m_binsize,1.0e-6)) {
+    if (!IsEqual(x,m_lower+i*m_binsize,ifile->precision()-1)) {
       msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
       m_active=0;
       break;

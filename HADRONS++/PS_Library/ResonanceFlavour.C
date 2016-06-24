@@ -99,6 +99,7 @@ double ResonanceFlavour::GetValueOfG( double s )
 
 double ResonanceFlavour::IntegralG( double Q2, ResonanceFlavour res1, ResonanceFlavour res2, double beta, kf_code out )
 {
+  if (Q2==0.0) return 0.0;
   int Ns=500, Nt=500;                   // number of subintervals
   double sum (0.);
   double mpi2 = sqr( Flavour(out).HadMass() );
