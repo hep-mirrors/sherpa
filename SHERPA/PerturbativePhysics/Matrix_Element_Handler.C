@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+#include "SHERPA/Tools/Variations.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/NLOMC_Base.H"
@@ -37,7 +38,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), m_sum(0.0), m_globalnlomode(0),
+  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
+  m_sum(0.0), m_globalnlomode(0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
@@ -186,7 +188,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
+    p_variationweights->Reset();
+    proc->SetVariationWeights(p_variationweights);
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+    proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
     if (p_proc->Generator()==NULL)
       THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -215,6 +220,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       p_proc->GetSubevtList()->MultMEwgt(wf);
     }
     if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+    (*p_variationweights)*=wf;
     m_evtinfo.m_ntrial=n;
     return true;
   }

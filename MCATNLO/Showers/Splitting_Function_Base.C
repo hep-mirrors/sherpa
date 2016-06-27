@@ -61,7 +61,7 @@ double SF_Coupling::s_qfac=1.0;
 
 SF_Coupling::SF_Coupling(const SF_Key &key):
   p_lf(NULL), m_type(key.m_type),
-  m_cplfac(1.0), m_kfmode(key.m_kfmode) 
+  m_cplfac(1.0), m_kfmode(key.m_kfmode)
 {
 }
 
@@ -182,6 +182,7 @@ double Splitting_Function_Base::operator()
    const double scale,const double Q2,const Color_Info &ci,
    Cluster_Amplitude *const sub)
 {
+  m_lastscale = scale;
   double sf((*p_lf)(z,y,eta,scale,Q2,sub));
   if (sf/p_lf->AsymmetryFactor(z,y,Q2)<0.0) return 0.0;
   if (sf<0.0 && sub==NULL) sf=-sf; 
@@ -237,16 +238,16 @@ double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
  const double scale,const double Q2) 
 {
-  double res = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
+  m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
 #ifdef CHECK_rejection_weight
-  if (res>1.0) {
-    msg_Error()<<METHOD<<"(): Weight is "<<res<<" in ("<<m_type<<") "
+  if (m_lastacceptwgt>1.0) {
+    msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
 	       <<p_lf->FlA()<<"->"<<p_lf->FlB()<<p_lf->FlC()
 	       <<" at z = "<<z<<", y = "<<y<<", x = "
 	       <<eta<<", Q = "<<sqrt(Q2)<<std::endl;
   }
 #endif
-  return res;
+  return m_lastacceptwgt;
 }
 
 void Splitting_Function_Base::ColorPoint(Parton *const p) const
@@ -294,39 +295,61 @@ double Splitting_Function_Base::GetXPDF
 
 double SF_Lorentz::JFF(const double &y,const double &mui2,
 		       const double &muj2,const double &muk2,
-		       const double &muij2) const
+		       const double &muij2)
 { 
-  return (1.-y)*sqr(1.0-mui2-muj2-muk2)/sqrt(Lambda(1.0,muij2,muk2));
+  m_lastJ = (1.-y)*sqr(1.0-mui2-muj2-muk2)/sqrt(Lambda(1.0,muij2,muk2));
+  return m_lastJ;
 }
 
 double SF_Lorentz::JFI(const double &y,const double &eta,
-		       const double &scale,const Cluster_Amplitude *const sub) const
+		       const double &scale,const Cluster_Amplitude *const sub)
 { 
-  if (sub) return 1.0;
-  double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return (1.0-y) * fresh/old;
+  if (sub) {
+    m_lastJ = 1.0;
+  } else {
+    const double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
+    const double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
+    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
+      m_lastJ = 0.;
+    } else {
+      m_lastJ = (1.0 - y) * fresh / old;
+    }
+  }
+  return m_lastJ;
 }
 
 double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
-		       const double &scale,const Cluster_Amplitude *const sub) const
+		       const double &scale,const Cluster_Amplitude *const sub)
 { 
-  if (sub) return 1.0/z;
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old;
+  if (sub) {
+    m_lastJ = 1.0 / z;
+  } else {
+    const double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+    const double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
+      m_lastJ = 0.0;
+    } else {
+      m_lastJ = fresh / old;
+    }
+  }
+  return m_lastJ;
 }
 
 double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
-		       const double &scale,const Cluster_Amplitude *const sub) const
+		       const double &scale,const Cluster_Amplitude *const sub)
 { 
-  if (sub) return 1.0/z;
-  double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
-  double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old;
+  if (sub) {
+    m_lastJ = 1.0/z;
+  } else {
+    const double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
+    const double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
+    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
+      m_lastJ = 0.;
+    } else {
+      m_lastJ = fresh/old;
+    }
+  }
+  return m_lastJ;
 }
 
 void Splitting_Function_Base::ResetLastInt()

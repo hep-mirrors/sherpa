@@ -60,6 +60,7 @@ namespace PHASIC {
 
     void SetGenerator(ME_Generator_Base *const gen);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetVariationWeights(SHERPA::Variation_Weights *const);
     void SetSelector(const Selector_Key &key);
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

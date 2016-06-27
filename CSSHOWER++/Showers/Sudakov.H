@@ -7,6 +7,8 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Group.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "SHERPA/Tools/Variations.H"
+
 
 namespace CSSHOWER {
   typedef std::map<ATOOLS::Flavour,Splitting_Function_Base*> SF_E_Map;
@@ -17,7 +19,7 @@ namespace CSSHOWER {
 
   class Sudakov : public Splitting_Function_Group {
     double m_k0sqi, m_k0sqf, m_phi;
-    double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
+    double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_ewmode;
     ATOOLS::Mass_Selector *  p_rms;
@@ -28,6 +30,8 @@ namespace CSSHOWER {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
+    SHERPA::Variation_Weights *p_variationweights;
+    bool m_reweightalphas, m_reweightpdfs;
     static bool s_init;
     void ProduceT();
     bool Veto(double,double);
@@ -38,6 +42,9 @@ namespace CSSHOWER {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
+    double Reweight(SHERPA::Variation_Parameters *,
+                    SHERPA::Variation_Weights *,
+                    const bool &success);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -46,6 +53,8 @@ namespace CSSHOWER {
     void SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
+    void SetReweightAlphaS(bool v) { m_reweightalphas = v; }
+    void SetReweightPDFs(bool v) { m_reweightpdfs = v; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
@@ -80,6 +89,9 @@ namespace CSSHOWER {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
+
+    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    { p_variationweights = varwgts; }
   };
   
   void Sudakov::GetSplittingParameters

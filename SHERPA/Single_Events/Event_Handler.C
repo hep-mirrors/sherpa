@@ -25,7 +25,8 @@ static int s_retrymax(100);
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
-  m_mn(0), m_msum(0.0), m_msumsqr(0.0)
+  m_mn(0), m_msum(0.0), m_msumsqr(0.0),
+  p_variations(NULL)
 {
   p_phases  = new Phase_List;
   Data_Reader reader(" ",";","!","=");

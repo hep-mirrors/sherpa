@@ -5,7 +5,10 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+
+#include <algorithm>
 
 namespace MCATNLO {
   
@@ -17,14 +20,26 @@ namespace MCATNLO {
   class CF_QCD: public SF_Coupling {
   protected:
 
+    //! Main underlying coupling (set by SetCoupling)
     MODEL::Running_AlphaS *p_cpl;
 
-    double m_q;
+    //! (Temporary) alternative coupling (set by SetAlternativeUnderlyingCoupling)
+    MODEL::One_Running_AlphaS *p_altcpl;
+
+    //! Buffer of max alphas values to avoid re-calculations
+    std::map<MODEL::One_Running_AlphaS *, double> m_altcplmax;
+
+    double m_q, m_rsf, m_k0sq;
+
+    double B0(const double &nf) const
+    {
+      return 11.0/6.0*s_CA-2.0/3.0*s_TR*nf;
+    }
 
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key) 
+      SF_Coupling(key), p_altcpl(NULL), m_altcplmax(), m_k0sq(0.0)
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
@@ -46,11 +61,16 @@ namespace MCATNLO {
     bool SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
+    template<class T>
+    double CplMax(T * as) const;
     double Coupling(const double &scale,const int pol,
 		    ATOOLS::Cluster_Amplitude *const sub);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
     double CplFac(const double &scale) const;
+
+    bool AllowsAlternativeCouplingUsage() const { return true; }
+    void SetAlternativeUnderlyingCoupling(void *);
 
     void ColorPoint(Parton *const p) const;
 
@@ -61,6 +81,7 @@ namespace MCATNLO {
 }
 
 using namespace MCATNLO;
+using namespace MODEL;
 using namespace ATOOLS;
 
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
@@ -68,33 +89,72 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
+  p_altcpl=NULL;
+  m_altcplmax.clear(); // buffered values are not valid anymore
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  double scale((m_type/10==1)?k0sqf:k0sqi);
-  double scl(CplFac(scale)*scale);
-  m_cplmax.push_back((*p_cpl)[Max(p_cpl->ShowerCutQ2(),scl)]*m_q);
+  m_k0sq=(m_type/10==1)?k0sqf:k0sqi;
+  m_cplmax.push_back(CplMax(p_cpl));
   m_cplmax.push_back(0.0);
   return true;
+}
+
+void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl)
+{
+  if (cpl == NULL) {
+    p_altcpl = NULL;
+    return;
+  } else {
+    p_altcpl = static_cast<MODEL::One_Running_AlphaS *>(cpl);
+    if (m_altcplmax.find(p_altcpl) == m_altcplmax.end()) {
+      m_altcplmax[p_altcpl] = CplMax(p_altcpl);
+    }
+  }
+}
+
+template<class T>
+double CF_QCD::CplMax(T * as) const
+{
+  const double minscale = CplFac(m_k0sq)*m_k0sq;
+  const double boundedscale(Max(as->ShowerCutQ2(), minscale));
+  return (*as)[boundedscale]*m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol,
 			Cluster_Amplitude *const sub)
 {
-  if (pol!=0) return 0.0;
-  double scl(sub?sub->MuR2():CplFac(scale)*scale);
-  if (scl<(sub?p_cpl->CutQ2():p_cpl->ShowerCutQ2())) return 0.0;
-  double cpl=(sub?(*p_cpl)(scl):(*p_cpl)[scl])*m_q*s_qfac;
-  if (cpl>s_qfac*m_cplmax.front()) {
+  if (pol!=0) return 0.0; // we do not update m_last when polarized
+
+  // use nominal or alternative coupling
+  One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
+  double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*m_rsf);
+  if (t < as->ShowerCutQ2()) return m_last = 0.0;
+  double cpl=(*as)[t];
+  if (sub==NULL && !IsEqual(scl,t)) {
+    std::vector<double> ths(as->Thresholds(t,scl));
+    if (scl>t) std::reverse(ths.begin(),ths.end());
+    if (ths.empty() || !IsEqual(t,ths.back())) ths.push_back(t);
+    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
+    for (size_t i(1);i<ths.size();++i) {
+      double nf=as->Nf((ths[i]+ths[i-1])/2.0);
+      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
+      cpl*=1.0-ct;
+    }
+  }
+  cpl*=m_q*s_qfac;
+  const double cplmax = (p_altcpl) ? s_qfac*m_altcplmax[p_altcpl] : s_qfac*m_cplmax.front();
+  if (cpl>cplmax) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at k_T = "
 	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
-    return s_qfac*m_cplmax.front();
+    return m_last = cplmax;
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
 		 <<" * "<<(sub?sqrt(scl):sqrt(scale))<<", \\alpha_s("
-		 <<sqrt(scl)<<") = "<<(*p_cpl)[scl]
+		 <<sqrt(scl)<<") = "<<(*as)[scl]
 		 <<", m_q = "<<s_qfac<<" * "<<m_q<<"\n";
 #endif
-  return cpl;
+  return m_last = cpl;
 }
 
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -106,7 +166,8 @@ double CF_QCD::CplFac(const double &scale) const
 {
   if (m_kfmode==-1) return 1.0;
   if (m_kfmode==0) return m_cplfac;
-  double nf=p_cpl->Nf(scale);
+  One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
+  double nf=as->Nf(scale);
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
   return m_cplfac*kfac;
 }

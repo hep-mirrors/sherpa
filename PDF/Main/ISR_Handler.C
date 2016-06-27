@@ -298,7 +298,6 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   // mode&1 -> swap beams
   // mode&2 -> override m_mode and only calc left beam
   // mode&4 -> override m_mode and only calc right beam
-  // mode&8 -> do not include flux
   if (m_mode==0) return 1.;
   msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
   if (fl1.Size()>1 || fl2.Size()>1)

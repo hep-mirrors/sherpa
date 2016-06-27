@@ -107,8 +107,15 @@ namespace PDF {
     inline std::string Name() { return m_name; }
     inline std::string Type() { return m_type; }
 
+    // PDF getters/setters, the latter can be used to temporarily swap PDFs
+    // (e.g. for reweighting purposes)
+    inline void             SetPDF(PDF_Base *pdf)
+    { SetPDF(pdf, 0); SetPDF(pdf, 1); }
+    inline void             SetPDF(PDF_Base *pdf, const size_t beam)
+    { p_isrbase[beam]->SetPDF(pdf); }
     inline PDF_Base        *PDF(const size_t beam)  
     { return p_isrbase[beam]->PDF();     }
+
     inline ATOOLS::Flavour  Flav(const size_t beam) 
     { return p_isrbase[beam]->Flavour(); }
 
@@ -130,7 +137,8 @@ namespace PDF {
     inline double X1() const { return m_x[0]; }
     inline double X2() const { return m_x[1]; }
 
-    inline double MuF2(int i) const { return m_mu2[i]; }
+    inline double  MuF2(int i) const { return m_mu2[i]; }
+    inline void SetMuF2(double mu2, int i) { m_mu2[i]=mu2; }
 
     inline double XF1(int i) const { return m_xf1[i]; }
     inline double XF2(int i) const { return m_xf2[i]; }

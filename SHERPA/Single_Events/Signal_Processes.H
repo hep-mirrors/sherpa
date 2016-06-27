@@ -4,16 +4,19 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "PDF/Remnant/Remnant_Base.H"
+#include "SHERPA/Tools/Variations.H"
 
 namespace SHERPA {
 
-  class Scale_Variations;
+  class Variations;
+  class Variation_Weights;
 
   class Signal_Processes: public Event_Phase_Handler {
   private:
 
     Matrix_Element_Handler *p_mehandler;
-    Scale_Variations       *p_scalevars;
+    Variations             *p_variations;
+    Variation_Weights       m_variationweights;
     PDF::Remnant_Base      *p_remnants[2];
 
     double m_overweight;
@@ -23,9 +26,7 @@ namespace SHERPA {
 
   public:
 
-    Signal_Processes(Matrix_Element_Handler *);
-
-    ~Signal_Processes();
+    Signal_Processes(Matrix_Element_Handler *, Variations *);
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
     void CleanUp(const size_t & mode=0);

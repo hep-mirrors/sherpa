@@ -34,7 +34,8 @@ Process_Base::Process_Base():
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_tinfo(1), m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true), p_apmap(NULL)
+  m_lookup(false), m_use_biweight(true), p_apmap(NULL),
+  p_variationweights(NULL), m_variationweightsowned(false)
 {
   m_last=m_lastb=0.0;
   if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
@@ -44,6 +45,7 @@ Process_Base::~Process_Base()
 {
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
+  if (m_variationweightsowned && p_variationweights) delete p_variationweights;
   delete p_selector;
   delete p_int;
 }
@@ -511,6 +513,24 @@ void Process_Base::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps; 
 }
 
+void Process_Base::SetVariationWeights(SHERPA::Variation_Weights *const vw)
+{
+  if (m_variationweightsowned) {
+    delete p_variationweights;
+    m_variationweightsowned = false;
+  }
+  p_variationweights=vw;
+  if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
+}
+
+void Process_Base::SetOwnedVariationWeights(SHERPA::Variation_Weights *vw)
+{
+  SetVariationWeights(vw);
+  if (vw) {
+    m_variationweightsowned = true;
+  }
+}
+
 void Process_Base::FillOnshellConditions()
 {
   if (!Selector()) return;
@@ -569,6 +589,7 @@ void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
   p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
+  p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
 } 

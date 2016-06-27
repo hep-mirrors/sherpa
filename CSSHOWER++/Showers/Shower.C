@@ -15,7 +15,8 @@ using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread,int type) : 
-  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
+  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr),
+  p_variationweights(NULL)
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
@@ -25,6 +26,12 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
+  const bool reweightalphas = dataread->GetValue<int>("CSS_REWEIGHT_ALPHAS",1);
+  const bool reweightpdfs = dataread->GetValue<int>("CSS_REWEIGHT_PDFS",1);
+  m_maxrewem = dataread->GetValue<int>("REWEIGHT_MAXEM",0);
+  if (m_maxrewem < 0) {
+    m_maxrewem = std::numeric_limits<int>::max();
+  }
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
@@ -49,6 +56,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.SetScaleScheme(scs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_sudakov.SetReweightAlphaS(reweightalphas);
+  m_sudakov.SetReweightPDFs(reweightpdfs);
   m_kinFF.SetEvolScheme(evol);
   m_kinFI.SetEvolScheme(evol);
   m_kinIF.SetEvolScheme(evol);
@@ -75,6 +84,11 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weight=1.0;
+  if (nem < m_maxrewem) {
+    m_sudakov.SetVariationWeights(p_variationweights);
+  } else {
+    m_sudakov.SetVariationWeights(NULL);
+  }
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -508,7 +522,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
           }
         }
       }
-      if (++nem>=maxem) return true;
+      ++nem;
+      if (nem >= m_maxrewem) m_sudakov.SetVariationWeights(NULL);
+      if (nem >= maxem) return true;
     }
   }
   return true;

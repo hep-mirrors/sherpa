@@ -6,6 +6,7 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "SHERPA/Tools/Variations.H"
 
 namespace SHERPA {
 
@@ -25,6 +26,8 @@ namespace SHERPA {
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
 
+    const Variations  * p_variations;
+
     bool GenerateStandardPerturbativeEvent(eventtype::code & mode);
     bool GenerateMinimumBiasEvent(eventtype::code & mode);
     bool GenerateHadronDecayEvent(eventtype::code & mode);
@@ -41,6 +44,8 @@ namespace SHERPA {
 
     void AddEventPhase(Event_Phase_Handler *);
     void EmptyEventPhases();
+
+    void SetVariations(const Variations * p) { p_variations = p; };
 
     void PrintGenericEventStructure();
 
@@ -110,6 +115,10 @@ namespace SHERPA {
   /*!
     \fn void Event_Handler::EmptyEventPhases()
     Deletes all individual Event_Phase_Handlers and empties the list of event phases.
+  */ 
+  /*!
+    \fn void Event_Handler::SetVariations()
+    Set the Variations object for the entire event generation.
   */ 
   /*!
     \fn bool Event_Handler::GenerateEvent()

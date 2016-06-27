@@ -39,6 +39,7 @@ namespace ATOOLS { template class SP(Phase_Space_Handler); }
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
+  p_variationweights(NULL),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
@@ -408,6 +409,9 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu22=p_isrhandler->MuF2(1);
   if (wgtinfo) {
     (*wgtinfo)*=m_psweight;
+    if (p_variationweights) {
+      (*p_variationweights)*=m_psweight;
+    }
     wgtinfo->m_x1=x1;
     wgtinfo->m_x2=x2;
   }

@@ -129,6 +129,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
 	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0*qfac);
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
+  p_mcatnlo->SetVariationWeights(p_variationweights);
   p_gamma->SetOn(1);
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {

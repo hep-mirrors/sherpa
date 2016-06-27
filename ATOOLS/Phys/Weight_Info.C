@@ -51,7 +51,6 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
   m_B*=scal;
   m_VI*=scal;
   m_KP*=scal;
-  m_RS*=scal;
   if (m_type&mewgttype::VI)
     for (size_t i(0);i<m_wren.size();++i) m_wren[i]*=scal;
   if (m_type&mewgttype::KP)
@@ -67,8 +66,7 @@ void ME_Weight_Info::Reset()
   // ME generators
   if (m_type&mewgttype::DADS) m_type^=mewgttype::DADS;
   if (m_type&mewgttype::METS) m_type^=mewgttype::METS;
-  if (m_type&mewgttype::H)    m_type^=mewgttype::H;
-  m_B=m_VI=m_KP=m_RS=0.;
+  m_B=m_VI=m_KP=m_K=0.;
   m_dadsinfos.clear();
   m_rdainfos.clear();
   m_clusseqinfo=Cluster_Sequence_Info(1.,0.);
@@ -84,7 +82,7 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
                                   const ATOOLS::ME_Weight_Info & mwi)
 {
   s<<"type="<<mwi.m_type<<", B="<<mwi.m_B<<", VI="<<mwi.m_VI<<", KP="<<mwi.m_KP
-                        <<", RS="<<mwi.m_RS<<std::endl;
+   <<", K="<<mwi.m_K<<std::endl;
   s<<"muR2="<<mwi.m_mur2<<", muF2="<<mwi.m_muf2
    <<", oqcd="<<mwi.m_oqcd<<", oew="<<mwi.m_oew
    <<", fl1="<<mwi.m_fl1<<", fl2="<<mwi.m_fl2

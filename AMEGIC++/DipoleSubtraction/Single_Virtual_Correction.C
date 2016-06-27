@@ -449,30 +449,20 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     m_lastv=p_partner->m_lastv*m_sfactor;
     m_lasti=p_partner->m_lasti*m_sfactor;
   }
-  double eta0(0.0), eta1(0.0);
-  if (mode==0) {
-    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(1).PMinus();
-  }
-  else {
-    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
-  }
-  double kpterm = (p_partner->m_bvimode&2)?p_partner->Get_KPterms
-    (p_int->ISR()->PDF(mode),p_int->ISR()->PDF(1-mode),eta0,eta1,m_flavs):0.0;
-  if (p_partner != this) kpterm*=m_sfactor;
-  m_lastkp=kpterm;
 
   m_mewgtinfo.m_B = m_lastbxs/m_sfactor;
   m_mewgtinfo.m_VI = (m_lastv+m_lasti)/m_sfactor;
-  m_mewgtinfo.m_KP = m_lastkp/m_sfactor;
   p_partner->FillMEwgts(m_mewgtinfo);
   m_mewgtinfo*=m_Norm*m_sfactor;
+
+  const double kpterm(KPTerms(0));
+  m_lastkp = kpterm / m_Norm;
+  m_mewgtinfo.m_KP = kpterm;
 
   p_partner->m_bvimode=bvimode;
 
   m_lastbxs*=m_Norm;
-  return m_lastxs = wgt * m_Norm * (m_lastdxs+kpterm);
+  return m_lastxs = wgt * m_Norm * (m_lastdxs+m_lastkp);
 }
 
 double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom) 
@@ -555,14 +545,44 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, dou
   p_kpterms->Calculate(p_int->Momenta(),x0,x1,eta0,eta1,-weight*p_dipole->SPFac()/(16.0*sqr(M_PI)));
 }
 
+double Single_Virtual_Correction::KPTerms(int mode, double scalefac2)
+{
+  // determine momentum fractions
+  double eta0(0.), eta1(0.);
+  if (mode == 0) {
+    eta0 = p_int->Momenta()[0].PPlus() / rpa->gen.PBeam(0).PPlus();
+    eta1 = p_int->Momenta()[1].PMinus() / rpa->gen.PBeam(1).PMinus();
+  }
+  else {
+    eta0 = p_int->Momenta()[0].PPlus() / rpa->gen.PBeam(1).PMinus();
+    eta1 = p_int->Momenta()[1].PMinus() / rpa->gen.PBeam(0).PPlus();
+  }
+  // determine KP terms
+  double kpterm(0.);
+  if (p_partner->m_bvimode & 2) {
+    kpterm = p_partner->Get_KPterms(p_int->ISR()->PDF(mode),
+                                    p_int->ISR()->PDF(1 - mode),
+                                    eta0, eta1,
+                                    m_flavs,
+                                    scalefac2);
+  }
+  // return normalised result
+  if (p_partner != this) {
+    kpterm *= m_sfactor;
+  }
+  return m_Norm * kpterm;
+}
+
 double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
-					      const double &eta0,const double &eta1,
-					      ATOOLS::Flavour_Vector& flav) 
+                                              const double &eta0,const double &eta1,
+                                              ATOOLS::Flavour_Vector& flav,
+                                              double scalefac2)
 {
   if (!(m_imode&2 || m_imode&4)) return 0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   int mode(pdfa==p_int->ISR()->PDF(0)?0:1);
-  return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * KFactor();
+  return p_partner->m_lastki * p_kpterms->Get(m_x0, m_x1, eta0, eta1,
+                                              flav, mode, scalefac2);
 }
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
@@ -762,7 +782,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg_Out()<<"Virtual: OLE = "<<p_loopme->ME_Finite()<<std::endl;
     msg->SetPrecision(6);
   }
-  double kfactor(KFactor());
+  double kfactor(m_lastki=KFactor());
   m_lastb=p_dsij[0][0] * kfactor;
   m_lasti=I            * kfactor;
   m_lastv=lme          * kfactor;

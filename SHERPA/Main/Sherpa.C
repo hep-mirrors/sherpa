@@ -165,7 +165,8 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
-    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
+                                                       p_inithandler->GetVariations()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
