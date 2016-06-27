@@ -49,6 +49,9 @@ namespace AMEGIC {
     double m_mbsum, m_mvsum, m_misum, m_mn;
     double m_lastb, m_lastv, m_lasti, m_lastkp, m_lastki;
 
+
+    std::vector<int> m_nomapflavs;
+    bool m_loopmapped;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -138,9 +141,13 @@ namespace AMEGIC {
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
 
+    inline const PHASIC::KP_Terms*         KPTerms() { return p_kpterms; }
+    inline const DipoleSplitting_Base*     Dipole()  { return p_dipole; }
+
   protected:
     double         Calc_Imassive(const ATOOLS::Vec4D *mom);
     double         Calc_I(const ATOOLS::Vec4D*);
+    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&);
     void           Calc_KP(const ATOOLS::Vec4D*, double, double, double, double, double);
     double         KPTerms(int mode, double scalefac2=1.0);
     double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,

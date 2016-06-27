@@ -85,14 +85,14 @@ namespace AMEGIC {
     double GetR(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
     std::vector<ATOOLS::Vec4D>* GetDiPolarizations() {return &m_dpollist;}
     std::vector<double>* GetFactors() {return &m_pfactors;}
-    dpt::dipoltype GetType() { return m_type;}
+    dpt::dipoltype GetType() const { return m_type;}
     double Vijf(int type,int mode);
     double Vif(int type,int mode);
     double Vie1(int type);
     double Vie2(int type);
-    double SPFac() { return m_spfdef*p_cpl->Factor(); }
-    double G2() { return m_g2; }
-    int MCSign() { return m_mcsign; }
+    double SPFac() const { return m_spfdef*p_cpl->Factor(); }
+    double G2() const { return m_g2; }
+    int MCSign() const { return m_mcsign; }
     inline bool KinCheck() const { return m_a>m_amin; }
     inline const double& LastAlpha() const { return m_a; }
   };
