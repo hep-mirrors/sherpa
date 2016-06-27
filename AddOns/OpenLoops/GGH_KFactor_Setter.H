@@ -15,6 +15,10 @@ namespace AMEGIC{
 
 namespace PHASIC {
 
+  // Minimum pt threshold for massless partons:
+  // Cluster back to lower multipl process below
+  static const double IR_CO=0.01;
+
   class GGH_KFactor_Setter : public KFactor_Setter_Base {
     
     typedef std::vector<Subprocess_Info> SubprocInfo_Vector;
@@ -38,10 +42,6 @@ namespace PHASIC {
 
     // is p_proc* a real correction?
     bool                m_real_corr;
-
-    // Minimum pt threshold for massless partons:
-    // Cluster back to lower multipl process below
-    static const double IR_CO=0.01;
 
     // default processes for the ratio tree_ME/loop_ME
     AMEGIC::Single_Process*          p_default_tree;
