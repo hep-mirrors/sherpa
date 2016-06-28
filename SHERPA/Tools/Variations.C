@@ -314,7 +314,7 @@ Variation_Parameters::~Variation_Parameters()
   }
 }
 
-void IncrementOrInitialiseWarningCounter(const std::string name)
+void Variation_Parameters::IncrementOrInitialiseWarningCounter(const std::string name)
 {
 #if VARIATION_WARNINGS
   m_warnings[name]++;

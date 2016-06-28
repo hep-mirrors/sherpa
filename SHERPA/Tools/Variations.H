@@ -209,7 +209,7 @@ namespace SHERPA {
     Variations * GetVariations() const { return p_variations; }
     Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
 
-    void IncrementOrInitialiseWarningCounter(const std::string name)
+    inline void IncrementOrInitialiseWarningCounter(const std::string name)
     { p_variations->IncrementOrInitialiseWarningCounter(name); }
 
 private:
