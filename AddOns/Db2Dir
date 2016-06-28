@@ -18,9 +18,9 @@ echo "Building directory ("$(echo $files | wc -w)")";
 mkdir -p ${dir}
 
 for i in $files; do
-  file=${dir}/${i}
-  mkdir -p $(dirname $file)
-  echo $file
-  sqlite3 ${db} "select content from path where file='${i}'" > ${file}
+  file=${dir}/"${i}"
+  mkdir -p $(dirname "$file")
+  echo "$file"
+  sqlite3 ${db} "select content from path where file='${i}'" > "${file}"
 done
 echo "... done."
