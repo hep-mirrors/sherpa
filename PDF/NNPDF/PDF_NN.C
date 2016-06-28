@@ -58,9 +58,13 @@ PDF_NNPDF::PDF_NNPDF
 (const ATOOLS::Flavour &bunch,
  const std::string &bfile,
  const std::string &set,int member, int prefix):
-  m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")),
   m_file(bfile), m_anti(1)
 {
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.AddWordSeparator("\t");
+  m_path=read.GetValue<string>("NNPDF_GRID_PATH",
+                               rpa->gen.Variable("SHERPA_SHARE_PATH"));
   m_set=set;
   m_member=member;
   m_prefix=prefix;

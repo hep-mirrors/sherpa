@@ -41,7 +41,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
     }
   }
 
-  string decaypath=dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
+  string decaypath=dr.GetValue<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH"))+"/"
+    +dr.GetValue<string>("DECAYPATHPIECE",string("Decaydata/"));
   string decayfile=dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
   string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
@@ -57,7 +58,6 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   m_spincorr=rpa->gen.SoftSC();
   m_cluster=false;
 
-  decaypath=rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+decaypath;
   My_In_File::OpenDB(decaypath);
   My_In_File::ExecDB(decaypath,"PRAGMA cache_size = 100000");
   My_In_File::ExecDB(decaypath,"BEGIN");
