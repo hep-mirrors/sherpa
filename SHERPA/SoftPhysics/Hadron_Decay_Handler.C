@@ -41,15 +41,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
     }
   }
 
-  // Default behaviour: read SHERPA_SHARE_PATH/Decaydata
-  // If DECAYPATH is user specified, assume relative to run directory
-  string decaypath=dr.GetValue<string>("DECAYPATH", string("Decaydata/"));
-  string dummy(""); // Only needed to find out whether DECAYPATH was specified
-  if (!dr.ReadFromFile(dummy, "DECAYPATH")) {
-      decaypath=rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+decaypath;
-  }
-  
-  
+  string decaypath=dr.GetValue<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH"))+"/"
+    +dr.GetValue<string>("DECAYPATHPIECE",string("Decaydata/"));
   string decayfile=dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
   string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
