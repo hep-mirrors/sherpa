@@ -127,26 +127,15 @@ double CF_QCD::Coupling(const double &scale,const int pol,
 
   // use nominal or alternative coupling
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
-  double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*m_rsf);
-  if (t < as->ShowerCutQ2()) return m_last = 0.0;
-  double cpl=(*as)[t];
-  if (sub==NULL && !IsEqual(scl,t)) {
-    std::vector<double> ths(as->Thresholds(t,scl));
-    if (scl>t) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(t,ths.back())) ths.push_back(t);
-    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
-    for (size_t i(1);i<ths.size();++i) {
-      double nf=as->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      cpl*=1.0-ct;
-    }
-  }
-  cpl*=m_q*s_qfac;
-  const double cplmax = (p_altcpl) ? s_qfac*m_altcplmax[p_altcpl] : s_qfac*m_cplmax.front();
+  double t(CplFac(scale)*scale);
+  double scl(sub?sub->MuR2():t);
+  if (scl<(sub?as->CutQ2():as->ShowerCutQ2())) return m_last = 0.0;
+  double cpl=(sub?(*as)(scl):(*as)[scl])*m_q*s_qfac;
+  const double cplmax = (p_altcpl) ? m_altcplmax[p_altcpl] : m_cplmax.front();
   if (cpl>cplmax) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at k_T = "
 	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
-    return m_last = cplmax;
+    return m_last = s_qfac * cplmax;
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
