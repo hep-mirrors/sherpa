@@ -167,7 +167,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   cpl*=m_q;
   const double cplmax = (p_altcpl) ? m_altcplmax[p_altcpl] : m_cplmax.front();
   if (cpl>cplmax) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
+    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at t = "
                <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
                <<", qmin = "<<sqrt(as->CutQ2())<<std::endl;
     return m_last = cplmax;
