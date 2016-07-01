@@ -13,7 +13,17 @@ Python support using @option{--enable-pyext}, as described in
 The above command generates source code for the UFO model, compiles it,
 and installs the corresponding library, making it available for event
 generation. Python, SCons, and the UFO model directory are not required
-for event generation once the above command has finished.
+for event generation once the above command has finished. Note that the
+installation directory for the created library and the paths to Sherpa
+libraries and headers are predetermined automatically durin the
+installation of Sherpa. If the Sherpa installation is moved afterwards
+or if the user does not have the necessary permissions to install the
+new library in the predetermined location, these paths can be set
+manually. Pleas run
+@verbatim
+  <prefix>/bin/Sherpa-generate-model --help
+@end verbatim
+for information on the relevan command line arguments.
 
 An example run card will be written to the working directory while the
 model is generated with @code{Sherpa-generate-model}. This run card
