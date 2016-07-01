@@ -1,19 +1,38 @@
-import os, distutils.spawn
-vars = Variables('.SConstruct')
-vars.Add(PathVariable('sherpa','path to sherpa','@SHERPAPREFIX@',PathVariable.PathIsDir))
-vars.Add(PathVariable('libdir','lib path','@LIBDIR@',PathVariable.PathIsDirCreate))
-env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'],LIBPATH=['@LIBDIR@'],RPATH=['@LIBDIR@'])
-vars.Add('CXX','The C++ Compiler','g++ -Wl,--no-as-needed')
-vars.Add('CXXFLAGS','The C++ Flags',['-g','-O2'])
+from os import environ
+
+vars = Variables(None, ARGUMENTS)
+vars.Add('modelflags',
+         'Compiler flags for model source code', 
+         '${modelflags}')
+vars.Add('lorentzflags',
+         'Compiler flags for lorentz source code', 
+         '${lorentzflags}')
+vars.Add('includedir',
+         'Location of SHERPA headers',
+         '${includedir}')
+vars.Add('libpath',
+         'Location of SHERPA libraries',
+         '${libdir}')
+vars.Add('installdir',
+         'Installation directory for the generated library',
+         '${installdir}')
+
+env = Environment(variables=vars,
+                  CPPPATH=['$${includedir}'],
+                  LIBPATH=['$${libdir}'],
+                  RPATH  =['$${libdir}'])
+
 vars.Update(env)
 Help(vars.GenerateHelpText(env))
-vars.Save('.SConstruct',env)
 
-env['ENV']=os.environ
+env['ENV']=environ
 if env['PLATFORM']=='darwin':
    env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
 
-modellib = env.SharedLibrary('${libname}',${sources},LIBS=['ModelUFO'])
-env.Install('$${libdir}',modellib)
-env.Alias('install',['$${libdir}'])
+lorentz_sources = [ s for s in  env.Glob('*.C') if s.name!='Model.C']
 
+modellib = env.SharedLibrary('${libname}',[env.SharedObject('Model.C', CXXFLAGS='$$modelflags'), 
+                                           env.SharedObject(lorentz_sources,CXXFLAGS='$$lorentzflags')])
+
+env.Install('$${installdir}',modellib)
+env.Alias('install',['$${installdir}'])
