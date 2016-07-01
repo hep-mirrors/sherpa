@@ -19,7 +19,7 @@ def parse_args():
                               help = "Path to input UFO model directory")
       arg_parser.add_argument("--ncore",
                               default=1,
-                              help = "Number of cores used forcompilation")
+                              help = "Number of cores used for compilation")
       arg_parser.add_argument("--modelflags",
                               default = "-g -O0 -fno-var-tracking --std=c++11",
                               help = 'Compiler flags for model source code')
