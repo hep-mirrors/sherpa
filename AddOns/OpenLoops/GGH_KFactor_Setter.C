@@ -17,7 +17,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-const double GGH_KFactor_Setter::s_ir_co  = 0.01;
+double GGH_KFactor_Setter::s_ir_co  = 0.01;
 GGH_Process_Manager PHASIC::s_procmanager = GGH_Process_Manager();
 
 GGH_KFactor_Setter::GGH_KFactor_Setter

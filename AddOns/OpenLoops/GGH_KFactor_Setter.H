@@ -41,7 +41,7 @@ namespace PHASIC {
 
     // Minimum pt threshold for massless partons:
     // Cluster back to lower multipl process below
-    static const double s_ir_co;
+    static double s_ir_co;
 
     // default processes for the ratio tree_ME/loop_ME
     AMEGIC::Single_Process*          p_default_tree;
