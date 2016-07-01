@@ -21,10 +21,10 @@ def parse_args():
                               default=1,
                               help = "Number of cores used forcompilation")
       arg_parser.add_argument("--modelflags",
-                              default = "-g -O0 -fno-var-tracking",
+                              default = "-g -O0 -fno-var-tracking --std=c++11",
                               help = 'Compiler flags for model source code')
       arg_parser.add_argument("--lorentzflags",
-                              default = "-g -O2 -ffast-math",
+                              default = "-g -O2 -ffast-math --std=c++11",
                               help = 'Compiler flags for lorentz source code')
       arg_parser.add_argument("--includedir",
                               default = '@INCLUDEDIR@',
