@@ -4,7 +4,7 @@ from imp import find_module,load_module
 from sys import path as sys_path
 from os import path as os_path
 from os import makedirs
-from argparse import ArgumentParser
+from argparse import ArgumentParser,ArgumentDefaultsHelpFormatter
 from subprocess import check_output
 
 sys_path.append('@PYLIBDIR@')
@@ -14,7 +14,7 @@ from ufo_interface.templates import sconstruct_template
 from ufo_interface.message import error, progress
 
 def parse_args():
-      arg_parser = ArgumentParser()
+      arg_parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
       arg_parser.add_argument("ufo_path",
                               help = "Path to input UFO model directory")
       arg_parser.add_argument("--ncore",
