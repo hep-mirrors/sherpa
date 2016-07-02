@@ -18,6 +18,7 @@ vars.Add('installdir',
          '${installdir}')
 
 env = Environment(variables=vars,
+                  LINKFLAGS=['-Wl,-no-as-needed'],
                   CPPPATH=['$${includedir}'],
                   LIBPATH=['$${libdir}'],
                   RPATH  =['$${libdir}'])
