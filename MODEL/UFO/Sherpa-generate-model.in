@@ -4,7 +4,7 @@ from imp import find_module,load_module
 from sys import path as sys_path
 from os import path as os_path
 from os import makedirs
-from argparse import ArgumentParser
+from argparse import ArgumentParser,ArgumentDefaultsHelpFormatter
 from subprocess import check_output
 
 sys_path.append('@PYLIBDIR@')
@@ -13,95 +13,112 @@ from ufo_interface import s_lorentz, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
 from ufo_interface.message import error, progress
 
-class modelobj:
-      def __init__(self,name, flags):
-          self._flags=flags
-      	  self._name=name
-      def __repr__(self):
-	  return "env.SharedObject('{0}',CXXFLAGS='{1}')".format(self._name,self._flags)
+def parse_args():
+      arg_parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+      arg_parser.add_argument("ufo_path",
+                              help = "Path to input UFO model directory")
+      arg_parser.add_argument("--ncore",
+                              default=1,
+                              help = "Number of cores used for compilation")
+      arg_parser.add_argument("--modelflags",
+                              default = "-g -O0 -fno-var-tracking --std=c++11",
+                              help = 'Compiler flags for model source code')
+      arg_parser.add_argument("--lorentzflags",
+                              default = "-g -O2 -ffast-math --std=c++11",
+                              help = 'Compiler flags for lorentz source code')
+      arg_parser.add_argument("--includedir",
+                              default = '@INCLUDEDIR@',
+                              help = 'Path to Sherpa headers')
+      arg_parser.add_argument("--libdir",
+                              default = '@LIBDIR@',
+                              help = 'Path to Sherpa libraries')
+      arg_parser.add_argument("--installdir",
+                              default = '@LIBDIR@',
+                              help = 'Installation path for new shared Model library')
+      arg_parser.add_argument("--noopt",
+                              action="store_true",
+                              help = "Disable optimization of Lorentz calculators")
 
-arg_parser = ArgumentParser()
-arg_parser.add_argument("ufo_path",
-                        help = "Path of the input UFO model directory")
-arg_parser.add_argument("-j", "--ncore",
-                        default=1,
-                        help = "Number of processes in compilation")
-arg_parser.add_argument("-c", "--cxxflags",
-                        help = "CXX flags")
-arg_parser.add_argument("-m", "--modelflags",
-			default = "-g -O0 -fno-var-tracking",
-			help = "CXX flags for the model file")
-arg_parser.add_argument("-l", "--lorentzflags",
-			default = "-g -O2",
-			help = "CXX flags for the lorentz calculators")
-arg_parser.add_argument("-o", "--optimize", 
-                        action="store_true",
-                        help = "Optimize Lorentz calculators for massless spinors")
+      return arg_parser.parse_args()
 
-args = arg_parser.parse_args()
-arg_path = os_path.abspath(args.ufo_path)
-model_path, model_name = os_path.split((arg_path.rstrip('/')))
+def check_model(model_name, model_path):
+      # Check for conflicts with built-in models
+      if model_name in ["SM", "HEFT", "TauPi"]:
+            error("Model name {0} conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
+            exit(1)
+            
+      # Try to import the model to check if UFO path is ok
+      try:
+            f, pathn, desc = find_module(model_name, [model_path])
+            model = load_module(model_name, f, pathn, desc)
+                  
+      except ImportError as err:
+            error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
+            exit(1)
+      return model
 
-if model_name in ["SM", "HEFT", "TauPi"]:
-      error("Model name {0} conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
-      exit(1)
+def make_output_dir(path):
+      if not os_path.exists(path):
+            makedirs(path)
+      elif not os_path.isdir(path):
+            error("Could not write to output path \"{0}\", file with the same name existing".format(path))
+            exit(1)
 
-# try to import the model to check if UFO path is ok
-try:
-    f, pathn, desc = find_module(model_name, [model_path])
-    model = load_module(model_name, f, pathn, desc)
-
-except ImportError as err:
-    error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
-    exit(1)
-
-# make an output directory
-out_dir = '{0}/.sherpa'.format(arg_path)
-if not os_path.exists(out_dir):
-    makedirs(out_dir)
-elif not os_path.isdir(out_dir):
-    error("Could not write to output path \"{0}\", file with the same name existing".format(out_dir))
-    exit(1)
-
-sources = []
-# write model
-progress("Generating model source code")
-model_file_name = 'Model.C'
-model_out_path = os_path.join(out_dir, model_file_name)
-write_model(model, model_name, model_out_path)
-sources.append(modelobj(model_file_name, args.modelflags))
-
-# write lorentz calculators
-optimize = args.optimize
-for lor in [s_lorentz(l) for l in model.all_lorentz]:
-      if not lor.has_ghosts():
-            progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
-            lor.write(out_dir,optimize)
-            sources.append(modelobj(lor.c_name(), args.lorentzflags))
+if __name__ == "__main__":
 
 
-# write SConstruct file
-sconstruct_file_path = os_path.join(out_dir, 'SConstruct')
-lib_name = 'Sherpa{0}'.format(model_name)
-with open(sconstruct_file_path, 'w') as sconstruct_file:
-    sconstruct_file.write(sconstruct_template.substitute(libname = lib_name,
-                                                         sources = sources))
-# compile and install
-progress("Compiling sources using scons")
-sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
-if (isinstance(args.cxxflags, basestring)):
-    sconsargs.append('CXXFLAGS={0}'.format(args.cxxflags))
-if (args.ncore>1):
-    sconsargs.append('-j{0}'.format(args.ncore))
-progress(check_output(sconsargs))
+      # Extract command line args
+      args = parse_args()
 
-# write example run card to working dir
-run_card_path="Run.dat"
-while(os_path.exists(run_card_path)):
-      run_card_path="_"+run_card_path
-progress("Writing example run card '{0}' to working directory".format(run_card_path))
-write_run_card(model, model_name, run_card_path)
+      # Check the path to the UFO models
+      arg_path = os_path.abspath(args.ufo_path)
+      model_path, model_name = os_path.split((arg_path.rstrip('/')))
+      model = check_model(model_name, model_path)
 
-progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use of Sherpa's BSM features".format(model_name))
+      # Output paths 
+      out_dir = '{0}/.sherpa'.format(arg_path)
+      sconstruct_file_path = os_path.join(out_dir, 'SConstruct')
+      model_out_path = os_path.join(out_dir, 'Model.C')
+      make_output_dir(out_dir)
+      
+      # Need this list in order to write model source code
+      lorentzes = [s_lorentz(l) for l in model.all_lorentz]
 
-exit(0)
+      # Write model source code
+      progress("Generating model source code")
+      write_model(model, model_name, model_out_path)
+      
+      # Write lorentz calculator source code
+      optimize = not args.noopt
+      for lor in lorentzes:
+            if not lor.has_ghosts():
+                  progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
+                  lor.write(out_dir,optimize)
+
+      # Generate and write SConstruct file
+      lib_name = 'Sherpa{0}'.format(model_name)
+      with open(sconstruct_file_path, 'w') as sconstruct_file:
+            sconstruct_file.write(sconstruct_template.substitute(libname = lib_name,
+                                                                 includedir = args.includedir,
+                                                                 libdir = args.libdir,
+                                                                 installdir = args.installdir,
+                                                                 modelflags = args.modelflags,
+                                                                 lorentzflags = args.lorentzflags))
+
+      # compile and install
+      progress("Compiling sources using scons")
+      sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
+      if (args.ncore>1):
+            sconsargs.append('-j{0}'.format(args.ncore))
+      progress(check_output(sconsargs))
+
+      # write example run card to working dir
+      run_card_path="{0}_Example_Run.dat".format(model_name)
+      while(os_path.exists(run_card_path)):
+            run_card_path="_"+run_card_path
+      progress("Writing example run card '{0}' to working directory".format(run_card_path))
+      write_run_card(model, model_name, run_card_path)
+
+      progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use of Sherpa's BSM features".format(model_name))
+
+      exit(0)

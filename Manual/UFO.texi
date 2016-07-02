@@ -5,15 +5,25 @@ made available to Sherpa by running
   <prefix>/bin/Sherpa-generate-model <path-to-ufo-model>
 @end verbatim
 where <path-to-ufo-model> specifies the location of the directory where
-the UFO model can be found. This requires Python version 2.6 or later
-and an installation of SCons. Furthermore, Sherpa must be compiled with
-Python suppert using @option{--enable-pyext}, as described in
-@xref{Installation}.
+the UFO model can be found. UFO support must be enabled using the
+@option{--enable-ufo} option of the configure script, as described in
+@ref{Installation}. This requires Python version 2.6 or later and an
+installation of SCons.
 
 The above command generates source code for the UFO model, compiles it,
 and installs the corresponding library, making it available for event
 generation. Python, SCons, and the UFO model directory are not required
-for event generation once the above command has finished.
+for event generation once the above command has finished. Note that the
+installation directory for the created library and the paths to Sherpa
+libraries and headers are predetermined automatically durin the
+installation of Sherpa. If the Sherpa installation is moved afterwards
+or if the user does not have the necessary permissions to install the
+new library in the predetermined location, these paths can be set
+manually. Pleas run
+@verbatim
+  <prefix>/bin/Sherpa-generate-model --help
+@end verbatim
+for information on the relevan command line arguments.
 
 An example run card will be written to the working directory while the
 model is generated with @code{Sherpa-generate-model}. This run card
