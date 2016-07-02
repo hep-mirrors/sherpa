@@ -233,5 +233,7 @@ extern "C" void InitPDFLib()
 
 extern "C" void ExitPDFLib()
 {
+  // prevent LHAPDF citation info from appearing
+  LHAPDF::setVerbosity(0);
   for (size_t i(0);i<p_get_lhapdf.size();++i) delete p_get_lhapdf[i];
 }
