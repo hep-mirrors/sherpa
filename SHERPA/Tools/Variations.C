@@ -37,7 +37,7 @@ Variations::Variations(Data_Reader * const reader)
   InitialiseParametersVector(reader);
 
   if (!m_parameters_vector.empty()) {
-    rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2015woa}.");
+    rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
   }
 
 #if defined USING__LHAPDF && defined USING__LHAPDF6
