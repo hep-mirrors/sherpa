@@ -237,6 +237,6 @@ private:
 
   std::ostream & operator<<(std::ostream &, const Variation_Weights &);
 
-};
+}
 
 #endif // #ifndef SHERPA_Tools_Variations_H

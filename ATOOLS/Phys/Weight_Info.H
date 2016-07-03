@@ -29,8 +29,8 @@ namespace ATOOLS {
   }
 
   struct Weight_Info {
-    PDF_Info m_pdf;
     double m_weight, m_dxs, m_ntrial;
+    PDF_Info m_pdf;
     Weight_Info(const double &weight=0.0,
                 const double &dxs=0.0,const double &ntrial=0.0,
                 const int &fl1=0, const int &fl2=0,

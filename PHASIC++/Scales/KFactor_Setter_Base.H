@@ -36,7 +36,7 @@ namespace PHASIC {
     // compute KFactor according to kinematics and flavours of p_proc
     virtual double KFactor() = 0;
     // compute KFactor according to kinematics and flavours of NLO subevent
-    virtual double KFactor(const ATOOLS::NLO_subevt& evt) {
+    virtual double KFactor(const ATOOLS::NLO_subevt& ) {
       THROW(not_implemented, "No NLO (R-S) version of this method implemented");
     }
 
