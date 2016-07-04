@@ -221,13 +221,19 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
       pdfsandalphasvector.push_back(PDFs_And_AlphaS(reader, pdfname, member));
     } else {
       // all PDF members: "Set[all]"
+      pdfname=pdfname.substr(0, pdfname.find("[all]"));
+      if (pdfname=="NNPDF30NNLO") {
+        for (size_t j(0); j < 101; ++j) {
+          pdfsandalphasvector.push_back(PDFs_And_AlphaS(reader, pdfname, j));
+        }
+      }
+      else {
 #if defined USING__LHAPDF && defined USING__LHAPDF6
       // check whether interface is loaded
       if (!s_loader->LibraryIsLoaded("LHAPDFSherpa"))
         THROW(fatal_error, "LHAPDF interface not initialised."
               + std::string(" Add LHAPDFSherpa to PDF_LIBRARY"));
       // assume members are labeled 0..n
-      pdfname=pdfname.substr(0, pdfname.find("[all]"));
       const std::vector<std::string>& availablepdfsets(LHAPDF::availablePDFSets());
       if (std::find(availablepdfsets.begin(), availablepdfsets.end(), pdfname)
           == availablepdfsets.end()) {
@@ -241,6 +247,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
       THROW(not_implemented,"Full set reweightings only work with LHAPDF6."
           + std::string(" Otherwise specify separately."));
 #endif
+      }
     }
   } else {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
