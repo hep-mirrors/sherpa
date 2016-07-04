@@ -332,24 +332,25 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	    if (i == 1 && (IsZero(wn2) || IsZero(wd2))) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
             const double x(p_int->ISR()->CalcX(p));
-            double z;
+            double z(-1.0);
             if (nominalcsi) {
               const size_t currentsplittingindex = csi.m_txfl.size() - 1;
               z = (i == 0) ?
                 nominalcsi->m_txfl[currentsplittingindex].m_xap :
                 nominalcsi->m_txfl[currentsplittingindex].m_xbp;
-              if (z == -1.0) {
-                // there have been no counterterm in the nominal run, due to
-                // some of the above skippings, that might be different for
-                // different factorisation scales, then we can not help
-                // using additional random numbers for the reweighting
-                z = x + (1.0 - x) * ran->Get();
-              }
             } else {
               z = x + (1.0 - x) * rn[i];
             }
-	    csi.AddCounterTerm(CollinearCounterTerms(i, i ? f2 : f1, p, z, currentQ2, lastQ2, muf2fac, mur2fac, as),
-			       z, i);
+            if (z == -1.0) {
+              // The nominal run had no counterterms we could use the xp values
+              // from for the reweighting.  We could calculate new ones with a
+              // fresh random number, but as statistical equivalence to earlier
+              // revisions is more important for the rel-2-2-1 release, we just
+              // do nothing (happens next-to-never anyhow)
+            } else {
+              csi.AddCounterTerm(CollinearCounterTerms(i, i ? f2 : f1, p, z, currentQ2, lastQ2, muf2fac, mur2fac, as),
+                                z, i);
+            }
 	  }
 	}
 	addedfirstsplitting = true;
