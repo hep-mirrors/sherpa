@@ -73,13 +73,15 @@ namespace PHASIC {
         bool skipsfirstampl, const double &Q2,
         const double &muf2fac=1.0,
         const double &mur2fac=1.0,
-        MODEL::One_Running_AlphaS * as=NULL);
+        MODEL::One_Running_AlphaS * as=NULL,
+        const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddISR(ATOOLS::Cluster_Sequence_Info &,
                 const ATOOLS::ClusterAmplitude_Vector &,
                 bool skipsfirstampl, const double &Q2,
                 const double &muf2fac=1.0,
                 const double &mur2fac=1.0,
-                MODEL::One_Running_AlphaS * as=NULL);
+                MODEL::One_Running_AlphaS * as=NULL,
+                const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddBeam(ATOOLS::Cluster_Sequence_Info &, const double &Q2);
 
     // Reweighting utilities and functions
@@ -112,7 +114,8 @@ namespace PHASIC {
     //! Generate cluster sequence info for variation parameters
     ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
         SHERPA::Variation_Parameters * varparams,
-        BornLikeReweightingInfo & info);
+        BornLikeReweightingInfo & info,
+        const ATOOLS::Cluster_Sequence_Info * const nominalcsi);
     //! Generate KP terms weight for variation parameters
     double KPTerms(SHERPA::Variation_Parameters *);
     //! Evaluate the AlphaS ratio

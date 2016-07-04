@@ -90,7 +90,7 @@ namespace ATOOLS {
     double m_pdfrationumerator, m_pdfratiodenominator;
     Cluster_Step(const double& t, const double& xa, const double& xb,
                  const int& fla, const int& flb) :
-      m_t(t), m_xa(xa), m_xb(xb), m_xap(1.), m_xbp(1.), m_fla(fla), m_flb(flb),
+      m_t(t), m_xa(xa), m_xb(xb), m_xap(-1.0), m_xbp(-1.0), m_fla(fla), m_flb(flb),
       m_pdfrationumerator(1.), m_pdfratiodenominator(1.) {}
   };
 

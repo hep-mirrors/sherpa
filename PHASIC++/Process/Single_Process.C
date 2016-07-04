@@ -137,7 +137,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     bool skipsfirstampl, const double &Q2,
     const double &muf2fac,
     const double &mur2fac,
-    MODEL::One_Running_AlphaS * as)
+    MODEL::One_Running_AlphaS * as,
+    const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   if (!m_use_biweight) {
     return 1.;
@@ -148,7 +149,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     THROW(not_implemented, "More than two incoming particles.");
   }
   Cluster_Sequence_Info csi;
-  AddISR(csi, ampls, skipsfirstampl, Q2, muf2fac, mur2fac, as);
+  AddISR(csi, ampls, skipsfirstampl, Q2, muf2fac, mur2fac, as, nominalcsi);
   AddBeam(csi, Q2);
   return csi;
 }
@@ -157,7 +158,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::ClusterAmplitude_Vector &ampls,
             bool skipsfirstampl, const double &Q2,
             const double &muf2fac, const double &mur2fac,
-            MODEL::One_Running_AlphaS * as)
+            MODEL::One_Running_AlphaS * as,
+            const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   if (p_int->ISR()) {
     // add external PDF weight (before clustering)
@@ -223,17 +225,17 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 			 f1, f2);
 
         // skip equal scales
-	if (IsEqual(currentQ2, ampl->Next() ? ampl->KT2() : ampl->MuF2())) {
-	  msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2
-			 <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():ampl->MuF2())
-			 <<std::endl;
-	  if (ampl->Next() == NULL) {
+        if (IsEqual(currentQ2, ampl->Next() ? ampl->KT2() : Q2)) {
+          msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2
+                         <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q2)
+                         <<std::endl;
+          if (ampl->Next() == NULL) {
             csi.AddPDFRatio(1., pdfden);
           } else {
             csi.AddPDFRatio(pdfnum, pdfden);
           }
-	  continue;
-	}
+          continue;
+        }
 
         // skip unordered configuration
 	if (addedfirstsplitting && currentQ2 > ampl->KT2()) {
@@ -317,12 +319,35 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 
         // add collinear counterterm
 	if (m_pinfo.Has(nlo_type::born)) {
-	  double rn[2] = {ran->Get(), ran->Get()};
+          // we should do that after checking if wn and wd is non-zero in the
+          // loop, but we do not want to break statistical equivalence to
+          // earlier revisions for the rel-2-2-1 release
+          double rn[2] = {0, 0};
+          if (!nominalcsi) {
+            rn[0] = ran->Get();
+            rn[1] = ran->Get();
+          }
 	  for (int i(0); i < 2; ++i) {
 	    if (i == 0 && (IsZero(wn1) || IsZero(wd1))) continue;
 	    if (i == 1 && (IsZero(wn2) || IsZero(wd2))) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
-	    double x(p_int->ISR()->CalcX(p)), z(x + (1.0 - x) * rn[i]);
+            const double x(p_int->ISR()->CalcX(p));
+            double z;
+            if (nominalcsi) {
+              const size_t currentsplittingindex = csi.m_txfl.size() - 1;
+              z = (i == 0) ?
+                nominalcsi->m_txfl[currentsplittingindex].m_xap :
+                nominalcsi->m_txfl[currentsplittingindex].m_xbp;
+              if (z == -1.0) {
+                // there have been no counterterm in the nominal run, due to
+                // some of the above skippings, that might be different for
+                // different factorisation scales, then we can not help
+                // using additional random numbers for the reweighting
+                z = x + (1.0 - x) * ran->Get();
+              }
+            } else {
+              z = x + (1.0 - x) * rn[i];
+            }
 	    csi.AddCounterTerm(CollinearCounterTerms(i, i ? f2 : f1, p, z, currentQ2, lastQ2, muf2fac, mur2fac, as),
 			       z, i);
 	  }
@@ -542,7 +567,7 @@ double Single_Process::ReweightWithoutSubevents(
     info.m_ampls = ampls;
     info.m_skipsfirstampl = false;
 
-    const ATOOLS::Cluster_Sequence_Info csi(ClusterSequenceInfo(varparams, info));
+    const ATOOLS::Cluster_Sequence_Info csi(ClusterSequenceInfo(varparams, info, &m_mewgtinfo.m_clusseqinfo));
     if (csi.m_pdfwgt == 0.0) {
       varweights->IncrementOrInitialiseWarningCounter("Single process different PDF cut-off");
       return info.m_fallbackresult;
@@ -616,7 +641,7 @@ double Single_Process::ReweightBornLike(
   if (info.m_wgt == 0.0) {
     return 0.0;
   }
-  ATOOLS::Cluster_Sequence_Info csi(ClusterSequenceInfo(varparams, info));
+  ATOOLS::Cluster_Sequence_Info csi(ClusterSequenceInfo(varparams, info, &m_mewgtinfo.m_clusseqinfo));
   if (csi.m_pdfwgt == 0.0) {
     p_variationweights->IncrementOrInitialiseWarningCounter("Single process different PDF cut-off");
     return info.m_fallbackresult;
@@ -652,7 +677,8 @@ std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     SHERPA::Variation_Parameters * varparams,
-    Single_Process::BornLikeReweightingInfo & info)
+    Single_Process::BornLikeReweightingInfo & info,
+    const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   // calculate Q2
   if (info.m_muF12 != info.m_muF22) {
@@ -670,7 +696,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   ATOOLS::Cluster_Sequence_Info csi(
       ClusterSequenceInfo(info.m_ampls, info.m_skipsfirstampl,
                           Q2, varparams->m_muF2fac, varparams->m_muR2fac,
-                          varparams->p_alphas));
+                          varparams->p_alphas,
+                          nominalcsi));
 
   // reset
   p_int->ISR()->SetPDF(nominalpdf1, 0);
