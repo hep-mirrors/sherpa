@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "SHERPA/Tools/Scale_Variations.H"
+#include "SHERPA/Tools/Variations.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -36,7 +36,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
-  p_nsvmap(NULL)
+  p_variationweights(NULL)
 {
   if (p_sp) {
     DEBUG_FUNC(*p_sp);
@@ -67,12 +67,15 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     ReadIn(db,"NLO_subeventlist",false);
     if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
     if (p_subevtlist) m_type=p_subevtlist->Type();
-    ReadIn(db,"ScaleVariations",false);
-    if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
-    if (p_nsvmap && p_nsvmap->size()!=0 && !m_usenamedweights)
-      THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
-            +std::string("HepMC without using named weights. ")
-            +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+
+    ReadIn(db,"Variation_Weights",false);
+    if (db) {
+      p_variationweights=&db->Get<Variation_Weights>();
+      if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
+        THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
+              +std::string("HepMC without using named weights. ")
+              +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+    }
   }
 }
 
@@ -86,7 +89,8 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
-  p_subevtlist(evtinfo.p_subevtlist), p_nsvmap(evtinfo.p_nsvmap)
+  p_subevtlist(evtinfo.p_subevtlist),
+  p_variationweights(evtinfo.p_variationweights)
 {
 }
 
@@ -173,8 +177,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             wc["Reweight_RDA_"+ToString(i)+"_Weight"]
                 =p_wgtinfo->m_rdainfos[i].m_wgt;
             if (p_wgtinfo->m_rdainfos[i].m_wgt) {
-              wc["Reweight_RDA_"+ToString(i)+"_MuR2"]
-                  =p_wgtinfo->m_rdainfos[i].m_mur2;
+              const double mur2(p_wgtinfo->m_rdainfos[i].m_mur2);
+              wc["Reweight_RDA_"+ToString(i)+"_MuR2"] = mur2;
               wc["Reweight_RDA_"+ToString(i)+"_MuF12"]
                   =p_wgtinfo->m_rdainfos[i].m_muf12;
               wc["Reweight_RDA_"+ToString(i)+"_MuF22"]
@@ -183,6 +187,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                   =10000*p_wgtinfo->m_rdainfos[i].m_i
                     +100*p_wgtinfo->m_rdainfos[i].m_j
                         +p_wgtinfo->m_rdainfos[i].m_k;
+              wc["Reweight_RDA_"+ToString(i)+"_AlphaS"]
+                  =MODEL::s_model->ScalarFunction("alpha_S", mur2);
             }
           }
         }
@@ -197,13 +203,17 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       // if using minimal weights still dump event type if RS need correls
       if (p_subevtlist) wc["Reweight_Type"]=64;
     }
-    // fill scale variations map into weight container
-    if (p_nsvmap) {
-      msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
-      for (NamedScaleVariationMap::const_iterator it(p_nsvmap->begin());
-           it!=p_nsvmap->end();++it) {
-        if (idx==-1) wc[it->first]=it->second->Value();
-        else         wc[it->first]=it->second->Value(idx);
+    // fill weight variations into weight container
+    if (p_variationweights) {
+      size_t numvars = p_variationweights->GetNumberOfVariations();
+      msg_Debugging()<<"#named wgts: "<<numvars<<std::endl;
+      for (size_t i(0); i < numvars; ++i) {
+        std::string varname(p_variationweights->GetVariationNameAt(i));
+        if (idx==-1) {
+          wc[varname]=p_variationweights->GetVariationWeightAt(i);
+        } else { 
+          wc[varname]=p_variationweights->GetVariationWeightAt(i, idx);
+        }
       }
     }
 #else

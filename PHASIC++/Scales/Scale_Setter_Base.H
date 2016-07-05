@@ -48,6 +48,7 @@ namespace PHASIC {
     std::string m_coupling;
 
     size_t m_nin, m_nout;
+    size_t m_l1, m_l2;
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
@@ -67,6 +68,7 @@ namespace PHASIC {
 
     double HTM() const;
     double HT() const;
+    double HTprime() const;
 
     ATOOLS::Vec4D PSum() const;
 

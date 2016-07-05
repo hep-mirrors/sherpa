@@ -15,7 +15,8 @@ using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
-  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
+  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr),
+  p_variationweights(NULL)
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
@@ -25,6 +26,9 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
+  const bool reweightalphas = dataread->GetValue<int>("CSS_REWEIGHT_ALPHAS",1);
+  const bool reweightpdfs = dataread->GetValue<int>("CSS_REWEIGHT_PDFS",1);
+  m_norewem = !dataread->GetValue<int>("REWEIGHT_MCATNLO_EM",0);
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<size_t> disallowflavs;
   dataread->VectorFromFile(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
@@ -37,6 +41,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_sudakov.SetReweightAlphaS(reweightalphas);
+  m_sudakov.SetReweightPDFs(reweightpdfs);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
@@ -218,8 +224,15 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
   p_actual=act;
   Parton * split;
   Vec4D mom;
-  
+
   if (nem>=maxem) return true;
+
+  if (m_norewem) {
+    m_sudakov.SetVariationWeights(NULL);
+  } else {
+    m_sudakov.SetVariationWeights(p_variationweights);
+  }
+
   while (true) {
     double kt2win = 0.;
     split = SelectSplitting(kt2win);

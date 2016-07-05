@@ -30,8 +30,7 @@ namespace ATOOLS {
 
 namespace SHERPA {
 
-  class Scale_Variation;
-  struct NamedScaleVariationMap;
+  class Variation_Weights;
 
   class EventInfo {
   private:
@@ -45,7 +44,7 @@ namespace SHERPA {
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
-    NamedScaleVariationMap * p_nsvmap;
+    Variation_Weights * p_variationweights;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 

@@ -11,6 +11,7 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
+#include "SHERPA/Tools/Variations.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -56,7 +57,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
-  p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL)
+  p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
+  p_variations(NULL)
 {
   m_path=std::string("");
   m_file=std::string("Run.dat");
@@ -145,6 +147,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
+  if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   while (m_analyses.size()>0) {
     delete m_analyses.back();
     m_analyses.pop_back();
@@ -412,6 +415,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
+    okay = okay && InitializeTheReweighting();
   }
   return okay;
 }
@@ -573,6 +577,9 @@ bool Initialization_Handler::InitializeThePDFs()
       m_pdflibs.insert(mpilib);
     if (dataread.ReadFromFile(beamlib,"PDF_LIBRARY_"+ToString(beam+1)))
       m_pdflibs.insert(beamlib);
+  }
+  if (Variations::NeedsLHAPDF6Interface(m_path)) {
+    m_pdflibs.insert("LHAPDFSherpa");
   }
   for (set<string>::iterator pdflib=m_pdflibs.begin(); pdflib!=m_pdflibs.end();
        ++pdflib) {
@@ -836,6 +843,19 @@ bool Initialization_Handler::InitializeTheAnalyses()
     }
     m_analyses.push_back(ana);
   }
+  return true;
+}
+
+bool Initialization_Handler::InitializeTheReweighting()
+{
+  if (p_variations) {
+    delete p_variations;
+  }
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  dataread.SetInputPath(m_path);
+  p_variations = new Variations(&dataread);
   return true;
 }
 

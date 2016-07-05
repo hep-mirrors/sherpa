@@ -50,9 +50,10 @@ namespace PHASIC {
 		   const double &weight);
 
     double Get(const double &x0,const double &x1,
-	       const double &eta0,const double &eta1,
-	       const ATOOLS::Flavour_Vector &flav,
-	       const int mode);
+               const double &eta0,const double &eta1,
+               const ATOOLS::Flavour_Vector &flav,
+               const int mode,
+               const double &scalefac2=1.0);
 
     void SetNC(const double &nc);
     void SetAlpha(const double &aff,const double &afi=-1.0,

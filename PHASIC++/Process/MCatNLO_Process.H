@@ -1,6 +1,9 @@
 #ifndef PHASIC_Process_MCATNLO_Process_H
 #define PHASIC_Process_MCATNLO_Process_H
 
+#include "ATOOLS/Org/Smart_Pointer.H"
+#include "SHERPA/Tools/Variations.H"
+
 #include "PHASIC++/Process/Process_Base.H"
 
 namespace ATOOLS { class Cluster_Amplitude; }
@@ -103,6 +106,34 @@ namespace PHASIC {
      * This method generates one H-event
      */
     double OneHEvent(const int wmode);
+
+    /*!
+     * @param bvi  double Differential XS for BVI
+     * @param b    double Differential XS for B
+     * @param rs   double Differential XS for RS
+     * @param r    double Differential XS for R 
+     * @param ran  double Random number used to select S/H
+     * @param ampl Cluster_Amplitude Amplitude which should be updated with the
+     *             local K factor when S is selected
+     * @return
+     *
+     * This method calculates the local Kfactor for MENLOPS for given
+     * differential XS values
+     */
+    double LocalKFactor(double bvi, double b, double rs, double r,
+                        double random,
+                        const ATOOLS::Cluster_Amplitude *ampl=NULL);
+
+    struct KFactorReweightingInfo {
+      double m_random;
+      SP(SHERPA::Variation_Weights) m_rsvarweights;
+      SP(SHERPA::Variation_Weights) m_bvivarweights;
+      SP(SHERPA::Variation_Weights) m_bvarweights;
+    };
+
+    double ReweightLocalKFactor(SHERPA::Variation_Parameters *,
+                                SHERPA::Variation_Weights *,
+                                KFactorReweightingInfo &);
 
   public:
 
@@ -220,7 +251,7 @@ namespace PHASIC {
      * Inherited from Process_Base, calls SetShower for all subprocesses
      */
     void SetShower(PDF::Shower_Base *const ps);
-
+    void SetVariationWeights(SHERPA::Variation_Weights *const);
     /*!
      * @param cluster Cluster_Definitions_Base Cluster definitions
      *

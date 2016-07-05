@@ -8,6 +8,8 @@
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 
+namespace SHERPA { class Variation_Weights; }
+
 namespace ATOOLS { class Cluster_Leg; }
 
 namespace CSSHOWER {
@@ -30,6 +32,10 @@ namespace CSSHOWER {
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
     double m_weight;
+
+    SHERPA::Variation_Weights * p_variationweights;
+    //! the maximum number of rew'd emissions
+    int m_maxrewem;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -75,6 +81,9 @@ namespace CSSHOWER {
     inline int KinScheme() const { return m_kscheme; }
 
     inline PDF::ISR_Handler *ISR() { return p_isr; }
+
+    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    { p_variationweights = varwgts; }
 
   };
 }

@@ -66,6 +66,8 @@ namespace MCATNLO {
     double m_zmin, m_zmax;
     int m_beam, m_col;
 
+    double m_lastJ;
+
     static double s_pdfcut, s_kappa;
 
     double Lambda(const double &a,const double &b,const double &c) const;
@@ -99,16 +101,19 @@ namespace MCATNLO {
       */
     virtual double Z() = 0;
 
+    double LastJ() const { return m_lastJ; }
+    void SetLastJ(double J) { m_lastJ = J; }
+
     double JFF(const double &y,const double &mui2,const double &muj2,
-	       const double &muk2,const double &muij2) const;
+	       const double &muk2,const double &muij2);
     double JFI(const double &y,const double &eta,const double &scale,
-	       const ATOOLS::Cluster_Amplitude *const sub) const;
+	       const ATOOLS::Cluster_Amplitude *const sub);
     double JIF(const double &z,const double &y,
 	       const double &eta,const double &scale,
-	       const ATOOLS::Cluster_Amplitude *const sub) const;
+	       const ATOOLS::Cluster_Amplitude *const sub);
     double JII(const double &z,const double &y,
 	       const double &eta,const double &scale,
-	       const ATOOLS::Cluster_Amplitude *const sub) const;
+	       const ATOOLS::Cluster_Amplitude *const sub);
 
     inline const ATOOLS::Flavour &FlA() const { return m_flavs[0]; }
     inline const ATOOLS::Flavour &FlB() const { return m_flavs[1]; }
@@ -118,6 +123,7 @@ namespace MCATNLO {
 
     inline void SetFlSpec(const ATOOLS::Flavour &s) { m_flspec=s; }
 
+    inline int GetBeam() const { return m_beam; }
     inline void SetBeam(const int beam) { m_beam=beam; }
 
     inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
@@ -140,6 +146,10 @@ namespace MCATNLO {
 
     cstp::code m_type;
     double     m_cplfac;
+
+    //! Last unpolarized coupling value
+    double     m_last;
+
     int        m_kfmode;
 
     /**
@@ -158,9 +168,28 @@ namespace MCATNLO {
     virtual bool SetCoupling(MODEL::Model_Base *md,
 			     const double &k0sqi,const double &k0sqf,
 			     const double &isfac,const double &fsfac) = 0;
+
+    //! Subclasses can return true if they support alternative couplings to be used (e.g. for reweighting)
+    virtual bool AllowsAlternativeCouplingUsage() const { return false; }
+    /*! 
+     * Use an alternative coupling
+     * 
+     * @param cpl See subclass implementation(s) for the accepted pointer type.
+     * @param sf An optional scale factor, see subclass implementations for the
+     * concrete meaning of this argument.
+     * Passing NULL ends the use of the alternative coupling.
+     */
+    virtual void SetAlternativeUnderlyingCoupling(void * cpl, double sf=1.0) {}
+
     virtual double Coupling(const double &scale,const int pol,
 			    ATOOLS::Cluster_Amplitude *const sub) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
+
+    //! Last unpolarized coupling value
+    double Last() const { return m_last; }
+
+    //! Set last unpolarized coupling value
+    void SetLast(double last) { m_last = last; } 
 
     virtual double CplFac(const double &scale) const;
 
@@ -201,7 +230,8 @@ namespace MCATNLO {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint, m_symf, m_polfac, m_lpdf, m_mth;
+    double m_lastint, m_lastacceptwgt, m_lastscale;
+    double m_symf, m_polfac, m_lpdf, m_mth;
     int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
@@ -256,8 +286,10 @@ namespace MCATNLO {
 
     double ColorWeight(Parton *const p) const;
 
-    inline double     Last() const    { return m_lastint; } 
-    inline cstp::code GetType() const { return m_type;    } 
+    inline double     Last()                 const { return m_lastint;       } 
+    virtual double    LastAcceptanceWeight() const { return m_lastacceptwgt; }
+    virtual double    LastScale()            const { return m_lastscale;     }
+    inline cstp::code GetType()              const { return m_type;          } 
 
     inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
     inline void AddSpec(Parton *const s) { m_specs.push_back(s); }

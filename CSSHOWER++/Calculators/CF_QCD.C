@@ -20,15 +20,25 @@ namespace CSSHOWER {
   class CF_QCD: public SF_Coupling {
   protected:
 
+    //! Main underlying coupling (set by SetCoupling)
     MODEL::Running_AlphaS *p_cpl;
 
-    double m_q, m_rsf;
+    //! (Temporary) alternative coupling (set by SetAlternativeUnderlyingCoupling)
+    MODEL::One_Running_AlphaS *p_altcpl;
+
+    //! Alternative renormalisation scale factor (set by SetAlternativeUnderlyingCoupling)
+    double m_altrsf;
+
+    //! Buffer of max alphas values to avoid re-calculations
+    std::map<MODEL::One_Running_AlphaS *, double> m_altcplmax;
+
+    double m_q, m_rsf, m_k0sq;
     int m_scvmode;
 
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key), m_q(0.), m_rsf(1.), m_scvmode(0)
+      SF_Coupling(key), p_altcpl(NULL), m_altrsf(1.0), m_altcplmax(), m_q(0.), m_rsf(1.), m_k0sq(0.0), m_scvmode(0)
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
@@ -55,11 +65,14 @@ namespace CSSHOWER {
     bool SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
+    template<class T>
+    double CplMax(T * as, double rsf) const;
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
-
     double CplFac(const double &scale) const;
 
+    bool AllowsAlternativeCouplingUsage() const { return true; }
+    void SetAlternativeUnderlyingCoupling(void *, double sf=1.0);
   };
 
 }
@@ -72,32 +85,59 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
+  SetAlternativeUnderlyingCoupling(NULL);
+  m_altcplmax.clear(); // buffered values are not valid anymore
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"))
         *ToType<double>(rpa->gen.Variable("CSS_SCALE_FACTOR"));
   m_scvmode=ToType<int>(rpa->gen.Variable("CSS_SCALE_VARIATION_SCHEME"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  double scale((m_type/10==1)?k0sqf:k0sqi);
-  double scl(Min(1.0,CplFac(scale))*scale);
-  double ct(0.);
-  if (m_rsf>1.) // only for f>1 cpl gets larger
-    ct=-p_cpl->BoundedAlphaS(scl)/M_PI*p_cpl->Beta0(0.)*log(m_rsf);
-  m_cplmax.push_back(p_cpl->BoundedAlphaS(scl)*(1.-ct)*m_q);
+  m_k0sq=(m_type/10==1)?k0sqf:k0sqi;
+  m_cplmax.push_back(CplMax(p_cpl, m_rsf));
   m_cplmax.push_back(0.0);
   return true;
+}
+
+void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
+{
+  m_altrsf = sf;
+  if (cpl == NULL) {
+    p_altcpl = NULL;
+    return;
+  } else {
+    p_altcpl = static_cast<MODEL::One_Running_AlphaS *>(cpl);
+    if (m_altcplmax.find(p_altcpl) == m_altcplmax.end()) {
+      m_altcplmax[p_altcpl] = CplMax(p_altcpl, m_altrsf);
+    }
+  }
+}
+
+template<class T>
+double CF_QCD::CplMax(T * as, double rsf) const
+{
+  double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
+  double ct(0.);
+  if (rsf > 1.) // only for f>1 cpl gets larger
+    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
   DEBUG_FUNC("pol="<<pol);
   if (pol!=0) return 0.0;
-  if (scale<0.0) return (*p_cpl)(sqr(rpa->gen.Ecms()))*m_q;
-  double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*m_rsf);
-  double cpl=p_cpl->BoundedAlphaS(scl);
+  
+  // use nominal or alternative coupling and scale factor
+  One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
+  const double rsf = (p_altcpl) ? m_altrsf : m_rsf;
+
+  if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
+  double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*rsf);
+  double cpl=as->BoundedAlphaS(scl);
   msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
-  msg_Debugging()<<"as(t)="<<p_cpl->BoundedAlphaS(t)<<std::endl;
+  msg_Debugging()<<"as(t)="<<as->BoundedAlphaS(t)<<std::endl;
   if (!IsEqual(scl,t)) {
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
-    std::vector<double> ths(p_cpl->Thresholds(t,scl));
+    std::vector<double> ths(as->Thresholds(t,scl));
     ths.push_back((scl>t)?scl:t);
     ths.insert(ths.begin(),(scl>t)?t:scl);
     if (t<scl) std::reverse(ths.begin(),ths.end());
@@ -108,14 +148,14 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     case 1:
       // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i) {
-        ct=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+        ct=cpl/M_PI*as->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
         fac*=1.0-ct;
       }
       break;
     case 2:
       // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i)
-        ct+=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+        ct+=cpl/M_PI*as->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
       fac=1.-ct;
       break;
     default:
@@ -132,18 +172,19 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
   }
   cpl*=m_q;
-  if (cpl>m_cplmax.front()) {
+  const double cplmax = (p_altcpl) ? m_altcplmax[p_altcpl] : m_cplmax.front();
+  if (cpl>cplmax) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
                <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
-               <<", qmin = "<<sqrt(p_cpl->CutQ2())<<std::endl;
-    return m_cplmax.front();
+               <<", qmin = "<<sqrt(as->CutQ2())<<std::endl;
+    return m_last = cplmax;
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
 		 <<sqrt(scale)<<", \\alpha_s("<<sqrt(scl)<<") = "
-		 <<(*p_cpl)[scl]<<", m_q = "<<m_q<<"\n";
+		 <<(*as)[scl]<<", m_q = "<<m_q<<"\n";
 #endif
-  return cpl;
+  return m_last = cpl;
 }
 
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -176,7 +217,8 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
 double CF_QCD::CplFac(const double &scale) const
 {
   if (m_kfmode==0) return m_cplfac;
-  double nf=p_cpl->Nf(scale);
+  One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
+  double nf=as->Nf(scale);
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
   return m_cplfac*kfac;
 }

@@ -8,6 +8,8 @@
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Showers/Kinematics_Base.H"
 
+namespace SHERPA { class Variation_Weights; }
+
 namespace ATOOLS { class Cluster_Leg; }
 
 namespace MCATNLO {
@@ -31,6 +33,10 @@ namespace MCATNLO {
 
     CS_Gamma *p_gamma;
     double    m_weight;
+
+    SHERPA::Variation_Weights * p_variationweights;
+    //! whether to disable the reweighting of the emission
+    bool m_norewem;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -77,6 +83,9 @@ namespace MCATNLO {
     inline double Weight() const { return m_weight; }
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
+
+    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    { p_variationweights = varwgts; }
   };
 }
 

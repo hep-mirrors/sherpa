@@ -70,10 +70,14 @@ void KP_Terms::SetNC(const double &nc)
 
 void KP_Terms::SetCoupling(const MODEL::Coupling_Map *cpls)
 {
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
-  else THROW(fatal_error,"Coupling not found");
-  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<std::endl;
-  m_cpldef = p_cpl->Default()/(2.*M_PI);
+  MODEL::Coupling_Map::const_iterator findit(cpls->find("Alpha_QCD"));
+  if (findit != cpls->end()) {
+    p_cpl = findit->second;
+  } else {
+    THROW(fatal_error, "Coupling not found");
+  }
+  msg_Tracking() << "DipoleSplitting_Base:: alpha = " << *p_cpl << std::endl;
+  m_cpldef = p_cpl->Default() / (2. * M_PI);
 }
 
 void KP_Terms::SetAlpha(const double &aff,const double &afi,
@@ -295,9 +299,10 @@ void KP_Terms::Calculate
 }
 
 double KP_Terms::Get(const double &x0,const double &x1,
-		     const double &eta0,const double &eta1,
-		     const ATOOLS::Flavour_Vector &flav,
-		     const int mode)
+                     const double &eta0,const double &eta1,
+                     const ATOOLS::Flavour_Vector &flav,
+                     const int mode,
+                     const double &scalefac2)
 {
   DEBUG_FUNC("");
   bool sa=flav[0].Strong();
@@ -315,7 +320,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
   double fa=0.,faq=0.,fag=0.,faqx=0.,fagx=0.;
   double fb=0.,fbq=0.,fbg=0.,fbqx=0.,fbgx=0.;
   double g2massq(0.);
-  double muf = p_proc->ScaleSetter()->Scale(stp::fac);
+  double muf = p_proc->ScaleSetter()->Scale(stp::fac) * scalefac2;
 
   if (sa) {
     if (m_cemode && eta0*rpa->gen.PBeam(0)[0]<flav[0].Mass(true)) {
@@ -393,12 +398,30 @@ double KP_Terms::Get(const double &x0,const double &x1,
   }
 
   double res=g2massq;
-  if (sa) {
-    if (fa) res+= (m_kpca[0]*faq+m_kpca[1]*faqx+m_kpca[2]*fag+m_kpca[3]*fagx)/fa;
+  // As this is intended to be a contribution to the *partonic* cross section,
+  // multiplying with the two incoming parton PDFs should give the hadronic
+  // cross section. Therefore, the following is used:
+  //   (...)/fa * (fa * fb) = (...)*fb .
+  // Note that this introduces an error, if fa or fb is 0.0. The only fix would
+  // require this to be calculated elsewhere, e.g. from PHASIC's
+  // Single_Process. But it would be semantically confusing to exclude the KP
+  // from the ME generator's Partonic functions.
+  const double logF(log(scalefac2));
+  if (sa && fa) {
+    double a(m_kpca[0]*faq + m_kpca[1]*faqx + m_kpca[2]*fag + m_kpca[3]*fagx);
+    if (logF != 0.0) {
+      a += (m_kpca[4]*faq + m_kpca[5]*faqx + m_kpca[6]*fag + m_kpca[7]*fagx) * logF;
+    }
+    a /= fa;
+    res += a;
   }
-  
-  if (sb) {
-    if (fb) res+= (m_kpcb[0]*fbq+m_kpcb[1]*fbqx+m_kpcb[2]*fbg+m_kpcb[3]*fbgx)/fb;
+  if (sb && fb) {
+    double b(m_kpcb[0]*fbq + m_kpcb[1]*fbqx + m_kpcb[2]*fbg + m_kpcb[3]*fbgx);
+    if (logF != 0.0) {
+      b += (m_kpcb[4]*fbq + m_kpcb[5]*fbqx + m_kpcb[6]*fbg + m_kpcb[7]*fbgx) * logF;
+    }
+    b /= fb;
+    res += b;
   }
   return res;
 }

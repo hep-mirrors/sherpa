@@ -375,8 +375,10 @@ double COMIX::Single_Process::Partonic
 (const Vec4D_Vector &p,const int mode) 
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
-  if (mode==1)
-    return m_lastxs=m_dxs+m_w*GetKPTerms(m_flavs,mode);
+  if (mode==1) {
+    UpdateKPTerms(mode);
+    return m_lastxs=m_dxs+KPTerms(mode);
+  }
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
@@ -424,18 +426,18 @@ double COMIX::Single_Process::Partonic
       }
     }
   }
-  double kpterms(m_w*GetKPTerms(m_flavs,mode));
+  UpdateKPTerms(mode);
+  double kpterms(KPTerms(mode));
   FillMEWeights(m_mewgtinfo);
   m_mewgtinfo*=m_w;
   m_mewgtinfo.m_KP=kpterms;
   return m_lastxs=m_dxs+kpterms;
 }
 
-double COMIX::Single_Process::GetKPTerms
-(const Flavour_Vector &fl,const int mode)
+void COMIX::Single_Process::UpdateKPTerms(const int mode)
 {
   m_x[0]=m_x[1]=1.0;
-  if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
+  if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return;
   if (mode==0) {
     Single_Process *sp(p_map!=NULL?p_map:this);
     double eta0=1.0, eta1=1.0;
@@ -455,6 +457,12 @@ double COMIX::Single_Process::GetKPTerms
     p_kpterms->Calculate
       (p_int->Momenta(),m_x[0],m_x[1],eta0,eta1,w);
   }
+}
+
+double COMIX::Single_Process::KPTerms(const int mode,
+                                      double scalefac2)
+{
+  if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   double eta0(0.0), eta1(0.0);
   if (mode==0) {
     eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
@@ -464,7 +472,8 @@ double COMIX::Single_Process::GetKPTerms
     eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
     eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
   }
-  return p_kpterms->Get(m_x[0],m_x[1],eta0,eta1,fl,mode);
+  return m_w * p_kpterms->Get(m_x[0], m_x[1], eta0, eta1,
+                              m_flavs, mode, scalefac2);
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const

@@ -34,7 +34,8 @@ namespace PDF {
     inline double Exponent() const { return m_exponent; }
     inline double XMax() const     { return m_xmax;     } 
 
-    inline PDF_Base *PDF() { return p_pdf; }
+    inline void      SetPDF(PDF_Base *pdf) { p_pdf = pdf;  }
+    inline PDF_Base    *PDF()              { return p_pdf; }
 
     inline void Extract(const ATOOLS::Flavour flavour,const double x) const 
     { p_pdf->Extract(flavour,x); }

@@ -50,7 +50,12 @@ Sherpa::Sherpa() :
 
 Sherpa::~Sherpa() 
 {
-  if (msg_LevelIsInfo()) Return_Value::PrintStatistics(msg->Out());
+  if (msg_LevelIsInfo()) {
+    Return_Value::PrintStatistics(msg->Out());
+    if (p_inithandler->GetVariations()) {
+      p_inithandler->GetVariations()->PrintStatistics(msg->Out());
+    }
+  }
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
@@ -167,7 +172,8 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
-    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
+                                                       p_inithandler->GetVariations()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
@@ -186,6 +192,7 @@ bool Sherpa::InitializeTheEventHandler()
   }
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   if (!outs->empty()) p_eventhandler->AddEventPhase(new Output_Phase(outs,p_eventhandler));
+  p_eventhandler->SetVariations(p_inithandler->GetVariations());
   p_eventhandler->PrintGenericEventStructure();
 
   msg->SetLevel(p_inithandler->DataReader()->GetValue<int>("EVT_OUTPUT",msg->Level()));
@@ -402,9 +409,9 @@ void Sherpa::DrawLogo(const int mode)
 	    <<std::endl
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Stefan Hoeche, Frank Krauss, Silvan Kuttimalai,         "<<std::endl
-	    <<"                     Marek Schoenherr, Holger Schulz, Steffen Schumann,      "<<std::endl
-	    <<"                     Frank Siegert, Korinna Zapp."<<std::endl
+	    <<"     Authors:        Enrico Bothmann, Stefan Hoeche, Frank Krauss,           "<<std::endl
+	    <<"                     Silvan Kuttimalai, Marek Schoenherr, Holger Schulz,     "<<std::endl
+	    <<"                     Steffen Schumann, Frank Siegert, Korinna Zapp           "<<std::endl
 	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Hendrik Hoeth,           "<<std::endl
 	    <<"                     Ralf Kuhn, Thomas Laubrich, Andreas Schaelicke,         "<<std::endl
 	    <<"                     Jan Winter                                              "<<std::endl

@@ -13,7 +13,6 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "SHERPA/Tools/Scale_Variations.H"
 
 using namespace SHERPA;
 using namespace METOOLS;
@@ -21,9 +20,12 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
-Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
-  p_mehandler(mehandler), p_scalevars(new Scale_Variations()),
-  m_overweight(0.0)
+Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
+                                   Variations * variations) :
+  p_mehandler(mehandler),
+  p_variations(variations),
+  m_overweight(0.0),
+  m_variationweights(p_variations)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -32,14 +34,11 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   m_setcolors=read.GetValue<int>("SP_SET_COLORS",0);
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
 }
 
-Signal_Processes::~Signal_Processes()
-{
-  if (p_scalevars) delete p_scalevars;
-}
 
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
@@ -48,23 +47,26 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
     MODEL::as->SetActiveAs(PDF::isr::hard_process);
     while (true) {
       if (m_overweight>0.0) {
-	if (m_overweight<ran->Get()) {
-	  m_overweight=0.0;
-	  CleanUp();
-	  continue;
-	}
-	double overweight(m_overweight-1.0);
-	if (!FillBlob(bloblist,blob))
-	  THROW(fatal_error,"Internal error");
-	(*blob)["Trials"]->Set(0.0);
-	m_overweight=Max(overweight,0.0);
-	weight = p_mehandler->WeightInfo().m_weight;
-	return Return_Value::Success; 
+        if (m_overweight<ran->Get()) {
+          m_overweight=0.0;
+          CleanUp();
+          continue;
+        }
+        double overweight(m_overweight-1.0);
+        if (!FillBlob(bloblist,blob))
+          THROW(fatal_error,"Internal error");
+        (*blob)["Trials"]->Set(0.0);
+        m_overweight=Max(overweight,0.0);
+        weight = p_mehandler->WeightInfo().m_weight;
+        return Return_Value::Success; 
       }
+      m_variationweights = Variation_Weights(p_variations);
+      p_mehandler->SetVariationWeights(&m_variationweights);
       if (p_mehandler->GenerateOneEvent() &&
-	  FillBlob(bloblist,blob)) {
-	weight = p_mehandler->WeightInfo().m_weight;
-	return Return_Value::Success; 
+          FillBlob(bloblist,blob)) {
+        weight = p_mehandler->WeightInfo().m_weight;
+        p_mehandler->SetVariationWeights(NULL);
+        return Return_Value::Success; 
       }
       else return Return_Value::New_Event;
     }
@@ -158,12 +160,26 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   if (ampl) ampl->Delete();
   ATOOLS::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
-  if (p_mehandler->EventGenerationMode()==1) {
-    m_overweight=p_mehandler->WeightFactor()-1.0;
-    if (m_overweight<0.0) m_overweight=0.0;
-    else weight/=m_overweight+1.0;
+  double weightfactor(1.0);
+  if (p_mehandler->EventGenerationMode() == 1) {
+    m_overweight = p_mehandler->WeightFactor() - 1.0;
+    if (m_overweight < 0.0) {
+      m_overweight = 0.0;
+    } else {
+      weightfactor = 1.0 / (m_overweight + 1.0);
+      weight *= weightfactor;
+      m_variationweights *= weightfactor;
+    }
   }
-  p_scalevars->ComputeVariations(winfo,proc);
+
+  // fill variation weights such that later event phases can update them
+  blob->AddData("Variation_Weights", new Blob_Data<Variation_Weights>(m_variationweights));
+  if (p_mehandler->EventGenerationMode()==1 && weightfactor != 1.0) {
+    // reset variation weights as they might be reused for the next "event"
+    // which might compensate that we have divided out the overweight now
+    m_variationweights *= 1.0 / weightfactor;
+  }
+
   blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
@@ -180,10 +196,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nloqcdtype)));
   blob->AddData("NLOEWType",new Blob_Data<std::string>
                 (ToString(proc->Info().m_fi.m_nloewtype)));
-
-  NamedScaleVariationMap* nsvm=p_scalevars->GetNamedScalesMap();
-  if (nsvm) blob->AddData("ScaleVariations",
-                          new Blob_Data<NamedScaleVariationMap*>(nsvm));
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

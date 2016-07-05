@@ -6,6 +6,8 @@
 
 #include <string>
 
+namespace SHERPA { class Variation_Weights; }
+
 namespace ATOOLS {
 
   class Cluster_Amplitude;
@@ -45,6 +47,8 @@ namespace PDF {
 
     double m_kt2min, m_weight;
 
+    SHERPA::Variation_Weights * p_variationweights;
+
   public:
 
     NLOMC_Base(const std::string &name);
@@ -63,6 +67,9 @@ namespace PDF {
     inline double Weight() const { return m_weight; }
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
+
+    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    { p_variationweights = varwgts; }
 
   };// end of class NLOMC_Base
 

@@ -13,7 +13,8 @@ namespace SHERPA {
       Perturbative        =    1,
       Hadronization       =    2,
       Analysis            =   10,
-      Read_In             =   90
+      Read_In             =   90,
+      Reweighting         =  100
     };
   };// end of struct eph
   std::ostream& operator<<(std::ostream&,const eph::code);

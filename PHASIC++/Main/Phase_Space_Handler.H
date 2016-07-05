@@ -23,6 +23,10 @@ namespace PDF {
   class ISR_Handler;
 }
 
+namespace SHERPA {
+  class Variation_Weights;
+}
+
 namespace PHASIC {
   class Process_Integrator;
   class Multi_Channel;
@@ -86,7 +90,9 @@ namespace PHASIC {
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
     double m_result, m_error, m_abserror, m_enhance, m_osmass; 
-    
+
+    SHERPA::Variation_Weights * p_variationweights;
+
     std::vector<std::vector<double> > m_stats;
 
     psm::code m_cmode;
@@ -184,6 +190,8 @@ namespace PHASIC {
     { m_maxtrials=maxtrials; }
     void SetEnhanceObservable(const std::string &enhanceobs);
     void SetEnhanceFunction(const std::string &enhancefunc);
+    void SetVariationWeights(SHERPA::Variation_Weights *vw)
+    { p_variationweights=vw; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }

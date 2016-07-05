@@ -24,7 +24,7 @@ using namespace ATOOLS;
 Perturbative_Interface::Perturbative_Interface
 (Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0)
+  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -39,17 +39,17 @@ Perturbative_Interface::Perturbative_Interface
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
   p_me(NULL), p_mi(mi), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0) {}
+  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Decay_Handler_Base *const hdh,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(hdh), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0) {}
+  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Soft_Collision_Handler *const sch,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
-  p_ampl(NULL), m_cmode(0)  {}
+  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL)  {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
@@ -57,6 +57,9 @@ Perturbative_Interface::~Perturbative_Interface()
     Cluster_Amplitude *campl(p_ampl);
     while (campl->Prev()) campl=campl->Prev();
     campl->Delete();
+  }
+  if (p_localkfactorvarweights) {
+    delete p_localkfactorvarweights;
   }
 }
 
@@ -127,6 +130,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
       (p_me->Process()->Integrator()->Momenta(),m_cmode|256);
   if (p_ampl==NULL) return Return_Value::New_Event;
   m_weight=1.0;
+  if (p_localkfactorvarweights) {
+    delete p_localkfactorvarweights;
+    p_localkfactorvarweights = NULL;
+  }
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
@@ -194,13 +201,28 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
-      if (m_weight>=ran->Get()) m_weight=Max(1.0,m_weight);
-      else return Return_Value::New_Event;
+      if (m_weight>=ran->Get()) {
+        if (m_weight < 1.0) {
+          *p_localkfactorvarweights *= 1.0 / m_weight;
+          m_weight = 1.0;
+        }
+      } else {
+        return Return_Value::New_Event;
+      }
     }
     Blob_Data_Base *winfo((*blob)["Weight"]);
     if (!winfo) THROW(fatal_error,"No weight information in signal blob");
     double meweight(winfo->Get<double>());
     blob->AddData("Weight",new Blob_Data<double>(meweight*m_weight));
+    // also update reweighting weights
+    Blob_Data_Base *vws((*blob)["Variation_Weights"]);
+    if (vws) {
+      if (p_localkfactorvarweights) {
+        vws->Get<Variation_Weights>() *= *p_localkfactorvarweights;
+      } else {
+        vws->Get<Variation_Weights>() *= m_weight;
+      }
+    }
   }
   if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
     return Return_Value::New_Event;
@@ -209,6 +231,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
 
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
+  if (p_localkfactorvarweights) {
+    delete p_localkfactorvarweights;
+    p_localkfactorvarweights = NULL;
+  }
   if (m_globalkfac) {
     m_weight*=m_globalkfac;
     return true;
@@ -216,14 +242,28 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   DEBUG_FUNC(ampl->Legs().size());
   Process_Vector procs(p_me->AllProcesses());
   Process_Base::SortFlavours(ampl);
+  if (p_hard) {
+    Blob_Data_Base *vws((*p_hard)["Variation_Weights"]);
+    if (vws) {
+      if (p_localkfactorvarweights) {
+        delete p_localkfactorvarweights;
+      }
+      Variations *variations = vws->Get<Variation_Weights>().GetVariations();
+      p_localkfactorvarweights = new SHERPA::Variation_Weights(variations);
+    }
+  }
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
     if (ampl->Next() && (m_bbarmode&2)) continue;
     Process_Base::SortFlavours(ampl);
     for (size_t i=0; i<procs.size(); ++i) {
+      if (p_localkfactorvarweights) p_localkfactorvarweights->Reset();
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
+        if (mcnloproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
+        mcnloproc->SetVariationWeights(p_localkfactorvarweights);
 	double K(mcnloproc->LocalKFactor(*ampl));
+        mcnloproc->SetVariationWeights(NULL);
 	if (K==0.0 || dabs(K)>m_maxkfac) continue;
 	m_weight*=K;
 	return true;
@@ -231,6 +271,10 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     }
   }
   // no process found along ampl
+  if (p_localkfactorvarweights) {
+    delete p_localkfactorvarweights;
+    p_localkfactorvarweights = NULL;
+  }
   return false;
 }
 
@@ -269,11 +313,20 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 
 int Perturbative_Interface::PerformShowers()
 {
+  // see if the event has any weight
   Blob_Data_Base *winfo((*p_hard)["Weight"]);
   if (!winfo) THROW(fatal_error,"No weight information in signal blob");
   double meweight(winfo->Get<double>());
   if (meweight==0.0) return 0;
+
   PDF::Shower_Base *csh(p_shower->GetShower());
+
+  // look for reweightings and set up the shower accordingly
+  Blob_Data_Base *blob_data_base((*p_hard)["Variation_Weights"]);
+  if (blob_data_base) {
+    csh->SetVariationWeights(&blob_data_base->Get<Variation_Weights>());
+  }
+
   int stat=csh->PerformShowers();
   double weight=csh->Weight();
   p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));

@@ -325,7 +325,7 @@ bool Sudakov::Generate(Parton * split)
   m_lastint=m_partint.back();
 
   m_kperp2       = split->KtStart();
-  double x(0.); 
+  m_x = 0.0;
   
   bool success(false);
   while (m_kperp2>=m_k0sqf) {
@@ -354,9 +354,9 @@ bool Sudakov::Generate(Parton * split)
       m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2,
 				    (*m_splitter)->GetFlavourA(),
 				    (*m_splitter)->GetFlavourC());
+      m_x = 0.;
       if (m_y<0.0 || m_y>1.0) continue;
-      x   = 0.;
-    }    
+    }
       break; 
     case (cstp::FI) : {
       double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
@@ -368,8 +368,8 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourA(),
 				    (*m_splitter)->GetFlavourC());
       m_y = 1.0-m_y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
-      x   = split->GetSpect()->Xbj();
-      if (m_y<0.0 || m_y>1.0-x) continue;
+      m_x = split->GetSpect()->Xbj();
+      if (m_y<0.0 || m_y>1.0-m_x) continue;
     }
       break; 
     case (cstp::IF) : {
@@ -380,8 +380,8 @@ bool Sudakov::Generate(Parton * split)
       m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2,
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
-      x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0 || m_z<x) continue;
+      m_x = split->Xbj();
+      if (m_y<0.0 || m_y>1.0 || m_z<m_x) continue;
     }
       break;
     case (cstp::II) : {
@@ -392,31 +392,151 @@ bool Sudakov::Generate(Parton * split)
       m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2,
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
-      x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
+      m_x   = split->Xbj();
+      if (m_y<0.0 || m_y>1.0-m_z || m_z<m_x) continue;
     }
       break;
   default:
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       abort();
     }
-    if (Veto(Q2,x)) { 
-      success=true; 
-      break; 
-    } 
-  }
-  /*
-  if (success) {
-    std::cout<<"----------------------------------"<<std::endl;
-    std::cout<<m_type<<" SUCCEED split "<<split->GetFlavour()
-    <<"("<<(*m_splitter)->GetFlavourA()<<" -> "
-    <<(*m_splitter)->GetFlavourB()<<"+"<<(*m_splitter)->GetFlavourC()<<") "
-    <<" + spect : "<<spect->GetFlavour()
-    <<" with kt2 = "<<m_kperp2<<", y = "<<m_y<<", z = "<<m_z<<endl;
+    const bool veto(Veto(Q2, m_x));
+    if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
+      p_variationweights->UpdateOrInitialiseWeights(&Sudakov::Reweight, *this, veto);
     }
-  */
+    if (veto) {
+      success = true;
+      break;
+    }
+  }
   m_phi = 2.0*M_PI*ran->Get();
   return success;
+}
+
+
+double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
+                         SHERPA::Variation_Weights * varweights,
+                         const bool &success)
+{
+  // retrieve and validate acceptance weight of the last emission
+  const double accwgt(Selected()->LastAcceptanceWeight());
+  std::string error;
+  bool abort(false);
+  if (accwgt > 1.0) {
+    error = "CSS emission acceptance weight exceeds one";
+    abort = true;
+  } else if (accwgt < 0.0) {
+    error = "CSS emission acceptance weight is below zero";
+    abort = true;
+  } else if (accwgt == 0.0) {
+    // This can be due to a Jacobian being 0 (mostly), or by delta in a massive
+    // case dropping below 0. In the latter case, last values for JXX/Coupling
+    // might not be valid. In any case, the (1 - rejwgt) factor for rejections
+    // will lead to weight factor of 1. Because the target parameters of the
+    // reweighting might have a non-zero accwgt, this is a problem. However,
+    // because accwgt is so often zero, we do not emit a warning.
+    abort = true;
+  }
+  if (error != "") {
+    p_variationweights->IncrementOrInitialiseWarningCounter(error);
+  }
+  if (abort) {
+    return 1.0;
+  }
+
+  const double rejwgt(1.0 - accwgt);
+
+  double rewfactor(1.0);
+  double accrewfactor(1.0);
+
+  // depending on the scale scheme, the input scale for the PDFs and the
+  // coupling can be different from m_kperp2
+  const double lastscale(Selected()->LastScale());
+
+  // PDF reweighting
+  if (m_reweightpdfs) {
+    if (m_type == cstp::II || m_type == cstp::FI || m_type == cstp::IF) {
+      // note that also the Jacobians depend on the Running_AlphaS class, but
+      // only through the number of flavours, which should not vary between
+      // AlphaS variations anyway; therefore we do not insert AlphaS for the
+      // PDF reweighting
+
+      // insert new PDF
+      const int beam(Selected()->Lorentz()->GetBeam());
+      PDF::PDF_Base * swappedpdf = p_pdf[beam];
+      p_pdf[beam] = (beam == 0) ? varparams->p_pdf1 : varparams->p_pdf2;
+
+      // calculate new J
+      const double lastJ(Selected()->Lorentz()->LastJ());
+      double newJ;
+      switch (m_type) {
+        case cstp::II:
+          newJ = Selected()->Lorentz()->JII(
+              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
+          break;
+        case cstp::IF:
+          newJ = Selected()->Lorentz()->JIF(
+              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
+          break;
+        case cstp::FI:
+          newJ = Selected()->Lorentz()->JFI(
+              m_y, m_x, varparams->m_showermuF2fac * lastscale);
+          break;
+        case cstp::FF:
+        case cstp::none:
+          THROW(fatal_error, "Unexpected splitting configuration");
+      }
+
+      // clean up
+      p_pdf[beam] = swappedpdf;
+      Selected()->Lorentz()->SetLastJ(lastJ);
+
+      // validate
+      if (newJ == 0.0) {
+        varparams->IncrementOrInitialiseWarningCounter(
+            "CSS target PDF ratio is zero, nominal is not");
+        return 1.0;
+      } else {
+        const double pdfrewfactor(newJ / lastJ);
+        accrewfactor *= pdfrewfactor;
+      }
+    }
+  }
+
+  // AlphaS reweighting
+  if (m_reweightalphas) {
+    if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
+      const double lastcpl(Selected()->Coupling()->Last());
+      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
+          varparams->p_alphas, varparams->m_showermuR2fac);
+      double newcpl(Selected()->Coupling()->Coupling(lastscale, 0));
+      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
+      Selected()->Coupling()->SetLast(lastcpl); // reset last coupling
+      const double alphasrewfactor(newcpl / lastcpl);
+      accrewfactor *= alphasrewfactor;
+    }
+  }
+
+  // calculate and apply overall factor
+  if (success) {
+    // accepted emission
+    rewfactor = accrewfactor;
+#if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
+    varparams->FillReweightingFactorsHisto("accept", rewfactor);
+#endif
+  } else {
+    // rejected emission
+    rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
+#if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
+    varparams->FillReweightingFactorsHisto("reject", rewfactor);
+#endif
+  }
+  if (rewfactor < -9.0 || rewfactor > 11.0) {
+    varparams->IncrementOrInitialiseWarningCounter(
+        "CSS large reweighting factor veto");
+    return 1.0;
+  }
+  return rewfactor;
 }
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)

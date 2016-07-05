@@ -83,6 +83,7 @@ CS_Shower::~CS_Shower()
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
+  p_shower->SetVariationWeights(p_variationweights);
   m_weight=1.0;
   Singlet *ls(NULL);
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
