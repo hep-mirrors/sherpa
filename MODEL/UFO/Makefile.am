@@ -1,7 +1,7 @@
-pkglib_LTLIBRARIES = libModelUFO.la
-
 SVNTAG = MODEL/UFO
 include ../../svn.make
+
+pkglib_LTLIBRARIES = libModelUFO.la
 
 libModelUFO_la_SOURCES = \
 	SVN_Info.C \
@@ -14,7 +14,7 @@ localinc_HEADERS = \
 	UFO_Model.H \
 	UFO_Color_Functions.H
 
-if ENABLE_PYEXT
+if ENABLE_UFO
 
 dist_bin_SCRIPTS = Sherpa-generate-model
 

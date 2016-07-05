@@ -63,6 +63,19 @@ if test x$pyext == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
 
+AC_ARG_ENABLE(ufo,
+  AC_HELP_STRING([--enable-ufo], [Enable UFO support]),
+  [ AC_MSG_CHECKING(for UFO support)
+    case "${enableval}" in
+      no) AC_MSG_RESULT(no); ufo=false ;;
+      yes)  AC_MSG_RESULT(yes); ufo=true ;;
+    esac ],
+  [ AC_MSG_CHECKING(for UFO support); AC_MSG_RESULT(no); ufo=false])
+if test x$ufo == xtrue; then
+  AM_PATH_PYTHON
+fi
+AM_CONDITIONAL(ENABLE_UFO, [test x$ufo == xtrue])
+
 case "$build_os:$build_cpu:$build_vendor" in
   *darwin*:*:*) ;;
   *linux*:*:*) CXX="$CXX -Wl,--no-as-needed" ;;

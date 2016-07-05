@@ -54,8 +54,7 @@ collisions:
 
 
 The list of physics processes that can be simulated with @Sherpa{} covers all reactions 
-in the Standard Model and many theories beyond. Sherpa is shipped with support for the MSSM, 
-Anomalous Gauge Couplings, and Minimal UED. Other models can be implemented either using Sherpa's 
+in the Standard Model. Other models can be implemented either using Sherpa's 
 own model syntax, or by using the generic interface @mycite{Hoeche2014kca} to the UFO output 
 @mycite{Degrande2011ua} of @uref{https://feynrules.irmp.ucl.ac.be/,,FeynRules} 
 @mycite{Christensen2008py},@mycite{Christensen2009jx}.
