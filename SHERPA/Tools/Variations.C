@@ -1,6 +1,7 @@
 #include "SHERPA/Tools/Variations.H"
 
 #include <iterator>
+#include <numeric>
 
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
