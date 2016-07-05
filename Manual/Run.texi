@@ -415,10 +415,10 @@ loaded through @code{PDF_LIBRARY} can be used. If no PDF set is given it
 defaults to the nominal one. Specific PDF members can be 
 specified by appending the PDF set name with @code{/<member-id>}. The 
 short-hand appendix @code{[all]} will provide the variations for all 
-members of the given set (only works with LHAPDF6). Please note: scales 
-are, as always in Sherpa, given in their quadratic form. Thus, a variation 
-of factor 4 of the squared scale [GeV^2] means a variation of factor 2 on the 
-scale itself [GeV].
+members of the given set (only works with LHAPDF6 sets or the internal default
+set).  Please note: scales are, as always in Sherpa, given in their quadratic
+form.  Thus, a variation of factor 4 of the squared scale [GeV^2] means a
+variation of factor 2 on the scale itself [GeV].
 
 PDF variations on their own can also be invoked by giving the list of 
 PDF sets to be reweighted to to @code{PDF_VARIATIONS}.
@@ -443,13 +443,15 @@ They are again named using the @code{MUR<fac>_MUF<fac>_PDF<id>} convention.
 
 The user must also be aware that, of course, the cross section of the 
 event sample, changes when using an alternative event weight as compared 
-to the nominal one. Any histograming therefore haas to account for this 
+to the nominal one. Any histograming therefore has to account for this 
 and recompute the total cross section as the sum of weights devided by the 
 number of trials, cf. @ref{Cross section determination}.
 
-@b{Important:} The on-the-fly reweighting currently works for LO, LOPS, 
-MEPS, NLO, NLOPS type of calculations, but not yet for MENLOPS and MEPS@@NLO 
-type calculations.
+The on-the-fly reweighting works for all event generation modes (weighted or
+(partially) unweighted) and all calculation types (LO, LOPS, NLO, NLOPS,
+MEPS@@LO, MEPS@@NLO and MENLOPS).  However, it does not include the reweighting
+of parton shower emissions per default, which is an experimental feature in
+Sherpa 2.2.0.
 
 @node MPI parallelization
 @subsection MPI parallelization
