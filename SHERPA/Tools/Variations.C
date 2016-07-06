@@ -293,30 +293,29 @@ void Variations::AddParameterExpandingScaleFactors(
   // expand scale factors
   std::vector<std::pair<double, double> > scalefactorpairs;
   std::pair<double, double> defaultscalefactorpair(1.0, 1.0);
-  if (scalevariationrequested) {
-    if (expansions == ScaleFactorExpansions::None) {
-      defaultscalefactorpair = std::make_pair<double, double>(muR2fac, muF2fac);
-      scalefactorpairs.push_back(defaultscalefactorpair);
-    } else if (expansions & ScaleFactorExpansions::SevenPoint) {
-      scalefactorpairs.push_back(std::pair<double, double>(muR2fac, 1.0));
-      scalefactorpairs.push_back(std::pair<double, double>(1.0, muF2fac));
-      scalefactorpairs.push_back(std::pair<double, double>(muR2fac, muF2fac));
-      scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0));
-      scalefactorpairs.push_back(std::pair<double, double>(1.0, 1.0 / muF2fac));
-      scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0 / muF2fac));
-    } else {
-      if (expansions & ScaleFactorExpansions::First) {
-        const double defaultmuF2fac = (expansions & ScaleFactorExpansions::Second) ? 1.0 : muF2fac;
-        defaultscalefactorpair.second = defaultmuF2fac;
-        scalefactorpairs.push_back(std::pair<double, double>(muR2fac, defaultmuF2fac));
-        scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, defaultmuF2fac));
-      }
-      if (expansions & ScaleFactorExpansions::Second) {
-        const double defaultmuR2fac = (expansions & ScaleFactorExpansions::First) ? 1.0 : muR2fac;
-        defaultscalefactorpair.first = defaultmuR2fac;
-        scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, muF2fac));
-        scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, 1.0 / muF2fac));
-      }
+
+  if (!scalevariationrequested || expansions == ScaleFactorExpansions::None) {
+    defaultscalefactorpair = std::make_pair<double, double>(muR2fac, muF2fac);
+    scalefactorpairs.push_back(defaultscalefactorpair);
+  } else if (expansions & ScaleFactorExpansions::SevenPoint) {
+    scalefactorpairs.push_back(std::pair<double, double>(muR2fac, 1.0));
+    scalefactorpairs.push_back(std::pair<double, double>(1.0, muF2fac));
+    scalefactorpairs.push_back(std::pair<double, double>(muR2fac, muF2fac));
+    scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0));
+    scalefactorpairs.push_back(std::pair<double, double>(1.0, 1.0 / muF2fac));
+    scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0 / muF2fac));
+  } else {
+    if (expansions & ScaleFactorExpansions::First) {
+      const double defaultmuF2fac = (expansions & ScaleFactorExpansions::Second) ? 1.0 : muF2fac;
+      defaultscalefactorpair.second = defaultmuF2fac;
+      scalefactorpairs.push_back(std::pair<double, double>(muR2fac, defaultmuF2fac));
+      scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, defaultmuF2fac));
+    }
+    if (expansions & ScaleFactorExpansions::Second) {
+      const double defaultmuR2fac = (expansions & ScaleFactorExpansions::First) ? 1.0 : muR2fac;
+      defaultscalefactorpair.first = defaultmuR2fac;
+      scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, muF2fac));
+      scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, 1.0 / muF2fac));
     }
   }
 
