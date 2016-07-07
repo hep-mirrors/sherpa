@@ -12,3 +12,4 @@ For generic installation instructions see the INSTALL file. There are
 some optional features which can be compiled into Sherpa, please read the
 info page ('info Manual/Sherpa.info') or run './configure --help' to find
 out more about the available options.
+
