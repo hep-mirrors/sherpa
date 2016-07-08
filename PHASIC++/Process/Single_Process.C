@@ -25,11 +25,16 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-Single_Process::Single_Process():
-  m_lastbxs(0.0),
-  m_lastflux(0.0),
-  m_zero(false)
+Single_Process::Single_Process() :
+  m_lastbxs(0.0), m_lastflux(0.0),
+  m_zero(false), m_dads(true), m_pdfcts(true)
 {
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  m_pdfcts = reader.GetValue<size_t>("MEPSNLO_PDFCT",1);
+  m_dads = reader.GetValue<size_t>("MCNLO_DADS",1);
 }
 
 Single_Process::~Single_Process()
@@ -219,6 +224,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	  f1=ReMap(f1, ampl->Leg(0)->Id());
 	  f2=ReMap(f2, ampl->Leg(1)->Id());
 	}
+	// ampl->KT2() has actual splitting scale
+	// ampl->MuF() is fac-scale as given in scale setter
 	csi.AddSplitting(ampl->KT2(),
 			 p_int->ISR()->CalcX(-ampl->Leg(0)->Mom()),
 			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom()),
@@ -242,6 +249,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	  msg_Debugging()<<"Skip. Unordered history "<<
 	    sqrt(currentQ2 / currentscalefactor)<<" > "<<sqrt(ampl->KT2())<<"\n";
 	  currentQ2 = sqrt(std::numeric_limits<double>::max());
+	  csi.AddPDFRatio(1.,1.);
 	  continue;
 	}
 
@@ -326,7 +334,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 		       <<" ] = "<<wn1*wn2/wd1/wd2<<std::endl;
 
         // add collinear counterterm
-        if (m_pinfo.Has(nlo_type::born)) {
+        if (m_pdfcts && m_pinfo.Has(nlo_type::born)) {
           for (int i(0); i < 2; ++i) {
             if (i == 0 && (IsZero(wn1) || IsZero(wd1))) continue;
             if (i == 1 && (IsZero(wn2) || IsZero(wd2))) continue;
@@ -404,7 +412,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
       m_mewgtinfo.m_type|=mewgttype::DADS;
       Dipole_Params dps(p_mc->Active(this));
-      if (dps.p_dip!=NULL) {
+      if (m_dads && dps.p_dip!=NULL) {
         std::vector<double> x(2,-1.0);
         for (size_t j(0);j<2;++j) x[j]=Min(p_int->ISR()->CalcX(dps.m_p[j]),1.);
         for (size_t i(0);i<dps.m_procs.size();++i) {

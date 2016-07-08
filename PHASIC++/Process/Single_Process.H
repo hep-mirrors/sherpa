@@ -11,7 +11,7 @@ namespace PHASIC {
   protected:
 
     double m_lastxs, m_lastbxs, m_lastflux;
-    bool   m_zero;
+    bool   m_zero, m_pdfcts, m_dads;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
