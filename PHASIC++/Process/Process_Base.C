@@ -513,7 +513,7 @@ void Process_Base::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps; 
 }
 
-void Process_Base::SetVariationWeights(SHERPA::Variation_Weights *const vw)
+void Process_Base::SetVariationWeights(ATOOLS::Variation_Weights *const vw)
 {
   if (m_variationweightsowned) {
     delete p_variationweights;
@@ -523,7 +523,7 @@ void Process_Base::SetVariationWeights(SHERPA::Variation_Weights *const vw)
   if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
 }
 
-void Process_Base::SetOwnedVariationWeights(SHERPA::Variation_Weights *vw)
+void Process_Base::SetOwnedVariationWeights(ATOOLS::Variation_Weights *vw)
 {
   SetVariationWeights(vw);
   if (vw) {

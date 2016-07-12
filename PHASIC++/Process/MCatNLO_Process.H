@@ -2,7 +2,7 @@
 #define PHASIC_Process_MCATNLO_Process_H
 
 #include "ATOOLS/Org/Smart_Pointer.H"
-#include "SHERPA/Tools/Variations.H"
+#include "ATOOLS/Phys/Variations.H"
 
 #include "PHASIC++/Process/Process_Base.H"
 
@@ -126,13 +126,13 @@ namespace PHASIC {
 
     struct KFactorReweightingInfo {
       double m_random;
-      SP(SHERPA::Variation_Weights) m_rsvarweights;
-      SP(SHERPA::Variation_Weights) m_bvivarweights;
-      SP(SHERPA::Variation_Weights) m_bvarweights;
+      SP(ATOOLS::Variation_Weights) m_rsvarweights;
+      SP(ATOOLS::Variation_Weights) m_bvivarweights;
+      SP(ATOOLS::Variation_Weights) m_bvarweights;
     };
 
-    double ReweightLocalKFactor(SHERPA::Variation_Parameters *,
-                                SHERPA::Variation_Weights *,
+    double ReweightLocalKFactor(ATOOLS::Variation_Parameters *,
+                                ATOOLS::Variation_Weights *,
                                 KFactorReweightingInfo &);
 
   public:
@@ -251,7 +251,7 @@ namespace PHASIC {
      * Inherited from Process_Base, calls SetShower for all subprocesses
      */
     void SetShower(PDF::Shower_Base *const ps);
-    void SetVariationWeights(SHERPA::Variation_Weights *const);
+    void SetVariationWeights(ATOOLS::Variation_Weights *const);
     /*!
      * @param cluster Cluster_Definitions_Base Cluster definitions
      *

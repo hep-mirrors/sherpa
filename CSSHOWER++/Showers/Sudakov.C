@@ -414,8 +414,8 @@ bool Sudakov::Generate(Parton * split)
 }
 
 
-double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
-                         SHERPA::Variation_Weights * varweights,
+double Sudakov::Reweight(Variation_Parameters * varparams,
+                         Variation_Weights * varweights,
                          const bool &success)
 {
   // retrieve and validate acceptance weight of the last emission

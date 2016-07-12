@@ -1,5 +1,5 @@
-#ifndef SHERPA_Tools_Variations_H
-#define SHERPA_Tools_Variations_H
+#ifndef ATOOLS_Phys_Variations_H
+#define ATOOLS_Phys_Variations_H
 
 #include <ostream>
 #include <map>
@@ -15,12 +15,13 @@
 
 #define ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS 0
 
-namespace ATOOLS { class Data_Reader; }
 namespace PDF { class PDF_Base; }
 namespace MODEL { class One_Running_AlphaS; }
 
 
-namespace SHERPA {
+namespace ATOOLS {
+
+  class Data_Reader;
 
   class Variation_Parameters;
   class Variation_Weights;
@@ -46,7 +47,7 @@ namespace SHERPA {
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
 
     //! Return the event phase type (even if the reweighting is not technically an event phase)
-    const eph::code EventPhaseType() const { return eph::Reweighting; }
+    const SHERPA::eph::code EventPhaseType() const { return SHERPA::eph::Reweighting; }
 
     // register and print warnings
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
@@ -294,4 +295,4 @@ private:
 
 };
 
-#endif // #ifndef SHERPA_Tools_Variations_H
+#endif // #ifndef ATOOLS_Phys_Variations_H

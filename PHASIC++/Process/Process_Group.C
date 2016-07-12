@@ -371,7 +371,7 @@ void Process_Group::SetShower(PDF::Shower_Base *const ps)
     m_procs[i]->SetShower(ps);
 }
 
-void Process_Group::SetVariationWeights(SHERPA::Variation_Weights *const vw)
+void Process_Group::SetVariationWeights(Variation_Weights *const vw)
 {
   Process_Base::SetVariationWeights(vw);
   for (size_t i(0);i<m_procs.size();++i)

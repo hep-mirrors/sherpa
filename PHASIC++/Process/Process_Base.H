@@ -13,6 +13,7 @@ namespace ATOOLS {
   class Cluster_Leg;
   class Cluster_Amplitude; 
   class Histogram;
+  class Variation_Weights;
   struct Decay_Info;
   typedef std::vector<Decay_Info* > DecayInfo_Vector;
 }
@@ -22,10 +23,6 @@ namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { 
   class ISR_Handler;
   class Shower_Base;
-}
-
-namespace SHERPA {
-  class Variation_Weights;
 }
 
 namespace METOOLS { class Spin_Amplitudes; }
@@ -59,7 +56,7 @@ namespace PHASIC {
     ME_Generator_Base  *p_gen;
 
     PDF::Shower_Base   *p_shower;
-    SHERPA::Variation_Weights *p_variationweights;
+    ATOOLS::Variation_Weights *p_variationweights;
     bool m_variationweightsowned;
     BBar_Multi_Channel *p_mc;
 
@@ -158,9 +155,9 @@ namespace PHASIC {
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
-    virtual void SetVariationWeights(SHERPA::Variation_Weights *const);
-    void SetOwnedVariationWeights(SHERPA::Variation_Weights *);
-    SHERPA::Variation_Weights *VariationWeights() const { return p_variationweights; }
+    virtual void SetVariationWeights(ATOOLS::Variation_Weights *const);
+    void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
+    ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
     virtual void SetSelector(const Selector_Key &key);
 
     virtual void InitCuts(Cut_Data *const cuts);

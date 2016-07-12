@@ -26,11 +26,10 @@ namespace ATOOLS {
   class ME_Weight_Info;
   class NLO_subevtlist;
   class PDF_Info;
+  class Variation_Weights;
 }
 
 namespace SHERPA {
-
-  class Variation_Weights;
 
   class EventInfo {
   private:
@@ -44,7 +43,7 @@ namespace SHERPA {
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
-    Variation_Weights * p_variationweights;
+    ATOOLS::Variation_Weights * p_variationweights;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 

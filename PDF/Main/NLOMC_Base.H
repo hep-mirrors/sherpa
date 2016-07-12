@@ -6,12 +6,11 @@
 
 #include <string>
 
-namespace SHERPA { class Variation_Weights; }
-
 namespace ATOOLS {
 
   class Cluster_Amplitude;
   class Data_Reader;
+  class Variation_Weights; 
   struct RB_Data;
 
 }
@@ -47,7 +46,7 @@ namespace PDF {
 
     double m_kt2min, m_weight;
 
-    SHERPA::Variation_Weights * p_variationweights;
+    ATOOLS::Variation_Weights * p_variationweights;
 
   public:
 
@@ -68,7 +67,7 @@ namespace PDF {
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
 
-    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
 
   };// end of class NLOMC_Base

@@ -8,6 +8,7 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Variations.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -249,7 +250,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
         delete p_localkfactorvarweights;
       }
       Variations *variations = vws->Get<Variation_Weights>().GetVariations();
-      p_localkfactorvarweights = new SHERPA::Variation_Weights(variations);
+      p_localkfactorvarweights = new Variation_Weights(variations);
     }
   }
   while (ampl->Next()!=NULL) {

@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "SHERPA/Tools/Variations.H"
+#include "ATOOLS/Phys/Variations.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"

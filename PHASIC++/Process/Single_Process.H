@@ -2,7 +2,7 @@
 #define PHASIC_Process_Single_Process_H
 
 #include "PHASIC++/Process/Process_Base.H"
-#include "SHERPA/Tools/Variations.H"
+#include "ATOOLS/Phys/Variations.H"
 
 namespace PHASIC {
 
@@ -97,31 +97,31 @@ namespace PHASIC {
       double m_fallbackresult;
     };
     //! Reweighting events with subevents (i.e. RS)
-    SHERPA::Subevent_Weights_Vector ReweightSubevents(
-        SHERPA::Variation_Parameters *,
-        SHERPA::Variation_Weights *,
+    ATOOLS::Subevent_Weights_Vector ReweightSubevents(
+        ATOOLS::Variation_Parameters *,
+        ATOOLS::Variation_Weights *,
         const long &additionaldata);
     //! Reweighting events without subevents (i.e. *except* RS)
-    double ReweightWithoutSubevents(SHERPA::Variation_Parameters *,
-                                    SHERPA::Variation_Weights *,
+    double ReweightWithoutSubevents(ATOOLS::Variation_Parameters *,
+                                    ATOOLS::Variation_Weights *,
                                     ATOOLS::ClusterAmplitude_Vector &);
     //! Return (wgt * \alpha_S * csi.pdfwgt)
-    double ReweightBornLike(SHERPA::Variation_Parameters *,
+    double ReweightBornLike(ATOOLS::Variation_Parameters *,
                             BornLikeReweightingInfo &);
     //! Return (pdf1, pdf2)
     std::pair<double, double> GetPairOfPDFValuesOrOne(
-        SHERPA::Variation_Parameters *,
+        ATOOLS::Variation_Parameters *,
         Single_Process::BornLikeReweightingInfo &) const;
     //! Generate cluster sequence info for variation parameters
     ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
-        SHERPA::Variation_Parameters * varparams,
+        ATOOLS::Variation_Parameters * varparams,
         BornLikeReweightingInfo & info,
         const double &mur2fac,
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi);
     //! Generate KP terms weight for variation parameters
-    double KPTerms(SHERPA::Variation_Parameters *);
+    double KPTerms(ATOOLS::Variation_Parameters *);
     //! Calculate MuR for variation parameters
-    double MuR2(SHERPA::Variation_Parameters *,
+    double MuR2(ATOOLS::Variation_Parameters *,
                 Single_Process::BornLikeReweightingInfo &) const;
     //! Calculate AlphaS ratio (*asnew)(mur2new) / MODEL::as(mur2old)
     double AlphaSRatio(double mur2old, double mur2new,

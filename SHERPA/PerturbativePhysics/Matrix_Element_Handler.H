@@ -75,7 +75,7 @@ namespace SHERPA {
     ATOOLS::Weight_Info m_evtinfo;
 
     Shower_Handler    *p_shower;
-    Variation_Weights *p_variationweights;
+    ATOOLS::Variation_Weights *p_variationweights;
     PDF::NLOMC_Base   *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
@@ -156,7 +156,7 @@ namespace SHERPA {
     inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }
 
     inline void SetShowerHandler(Shower_Handler *const sh)       { p_shower=sh;           }
-    inline void SetVariationWeights(Variation_Weights *const vw) { p_variationweights=vw; }
+    inline void SetVariationWeights(ATOOLS::Variation_Weights *const vw) { p_variationweights=vw; }
 
     inline Shower_Handler *Shower() const { return p_shower; }
 

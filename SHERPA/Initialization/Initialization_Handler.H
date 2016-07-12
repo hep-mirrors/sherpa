@@ -18,7 +18,10 @@
 #include <iostream> 
 
 namespace ATOOLS {
+
   class Data_Reader;
+  class Variations;
+
 }
 
 namespace SHERPA {
@@ -34,7 +37,6 @@ namespace SHERPA {
   class Event_Reader_Base;
   class Analysis_Interface;
   class Soft_Collision_Handler;
-  class Variations;
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
@@ -70,7 +72,7 @@ namespace SHERPA {
     Event_Reader_Base          * p_evtreader;
     Analysis_Vector              m_analyses;
     Output_Vector                m_outputs;
-    Variations                 * p_variations;
+    ATOOLS::Variations         * p_variations;
     void ShowParameterSyntax();
     void CheckVersion();
     bool CompareVersions(const size_t& a1,const size_t& b1,const size_t& c1,
@@ -125,7 +127,7 @@ namespace SHERPA {
     PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
-    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;   }
+    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
     Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
@@ -133,7 +135,7 @@ namespace SHERPA {
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
     Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
-    Variations                   * GetVariations()            const { return p_variations;      }
+    ATOOLS::Variations           * GetVariations()            const { return p_variations;      }
 
     eventtype::code Mode() const { return m_mode; };
 

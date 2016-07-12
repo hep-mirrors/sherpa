@@ -424,8 +424,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
           // be retrieved later in the Reweighting function of this (main)
           // process
           if (p_variationweights) {
-            SHERPA::Variations *v = p_variationweights->GetVariations();
-            SHERPA::Variation_Weights * vw = new SHERPA::Variation_Weights(v);
+            ATOOLS::Variations *v = p_variationweights->GetVariations();
+            ATOOLS::Variation_Weights * vw = new ATOOLS::Variation_Weights(v);
             cp->SetOwnedVariationWeights(vw);
           }
           double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
@@ -501,9 +501,9 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   return 0.;
 }
 
-SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
-  SHERPA::Variation_Parameters * varparams,
-  SHERPA::Variation_Weights * varweights,
+ATOOLS::Subevent_Weights_Vector Single_Process::ReweightSubevents(
+  ATOOLS::Variation_Parameters * varparams,
+  ATOOLS::Variation_Weights * varweights,
   const long &additionaldata)
 {
   NLO_subevtlist *sevtlist = GetSubevtList();
@@ -516,7 +516,7 @@ SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
   info.m_fl2 = m_mewgtinfo.m_fl2;
   info.m_x1 = p_int->ISR()->X1();
   info.m_x2 = p_int->ISR()->X2();
-  SHERPA::Subevent_Weights_Vector weights;
+  ATOOLS::Subevent_Weights_Vector weights;
   for (size_t i(0); i < sevtlist->size(); ++i) {
     NLO_subevt *sub((*sevtlist)[i]);
 
@@ -535,8 +535,8 @@ SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
 }
 
 double Single_Process::ReweightWithoutSubevents(
-  SHERPA::Variation_Parameters * varparams,
-  SHERPA::Variation_Weights * varweights,
+  ATOOLS::Variation_Parameters * varparams,
+  ATOOLS::Variation_Weights * varweights,
   ATOOLS::ClusterAmplitude_Vector & ampls)
 {
   // build type minus METS
@@ -621,7 +621,7 @@ double Single_Process::ReweightWithoutSubevents(
             Process_Base *cp(dps.m_procs[i]);
             // when the dipole's Partonic returns 0, the variation weights will be
             // empty, therefore check before retrieval
-            SHERPA::Variation_Weights *dipvarweights(cp->VariationWeights());
+            ATOOLS::Variation_Weights *dipvarweights(cp->VariationWeights());
             if (dipvarweights->GetNumberOfVariations() > 0) {
               size_t paramindex = varweights->CurrentParametersIndex();
               DADSnew -= dipvarweights->GetVariationWeightAt(paramindex);
@@ -636,7 +636,7 @@ double Single_Process::ReweightWithoutSubevents(
 }
 
 double Single_Process::ReweightBornLike(
-  SHERPA::Variation_Parameters * varparams,
+  ATOOLS::Variation_Parameters * varparams,
   Single_Process::BornLikeReweightingInfo & info)
 {
   if (info.m_wgt == 0.0) {
@@ -656,7 +656,7 @@ double Single_Process::ReweightBornLike(
 }
 
 std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(
-    SHERPA::Variation_Parameters * varparams,
+    ATOOLS::Variation_Parameters * varparams,
     Single_Process::BornLikeReweightingInfo & info) const
 {
   const double muF12new(info.m_muF12 * varparams->m_muF2fac);
@@ -675,7 +675,7 @@ std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(
 }
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
-    SHERPA::Variation_Parameters * varparams,
+    ATOOLS::Variation_Parameters * varparams,
     Single_Process::BornLikeReweightingInfo & info,
     const double &mur2fac,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
@@ -709,7 +709,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   return csi;
 }
 
-double Single_Process::KPTerms(SHERPA::Variation_Parameters * varparams)
+double Single_Process::KPTerms(ATOOLS::Variation_Parameters * varparams)
 {
   // insert target PDF into ISR_Handler, such that KP_Terms uses them through
   // the ISR_Handler instead of the nominal PDF
@@ -728,7 +728,7 @@ double Single_Process::KPTerms(SHERPA::Variation_Parameters * varparams)
 }
 
 double Single_Process::MuR2(
-  SHERPA::Variation_Parameters * varparams,
+  ATOOLS::Variation_Parameters * varparams,
   Single_Process::BornLikeReweightingInfo & info) const
 {
   double mu2new(info.m_muR2 * varparams->m_muR2fac);

@@ -1,4 +1,4 @@
-#include "SHERPA/Tools/Variations.H"
+#include "ATOOLS/Phys/Variations.H"
 
 #include <iterator>
 #include <numeric>
@@ -21,7 +21,7 @@ using namespace SHERPA;
 bool Variations::NeedsLHAPDF6Interface(std::string inputpath)
 {
   // set up data reader
-  ATOOLS::Data_Reader reader(" ",";","!","=");
+  Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
   reader.SetInputPath(inputpath);
@@ -431,7 +431,7 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
 
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(std::string pdfname, size_t pdfmember)
 {
-  ATOOLS::Data_Reader reader(" ",";","!","=");
+  Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
   // obtain PDFs
@@ -508,14 +508,14 @@ void ReweightingFactorHistogram::Fill(std::string name, double value)
 void ReweightingFactorHistogram::Write(std::string filenameaffix)
 {
   // open file
-  ATOOLS::Data_Reader reader(" ",";","!","=");
+  Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
   std::string outpath = reader.GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
   if (outpath.length() > 0) {
     size_t slashpos = outpath.rfind("/");
     if (slashpos != std::string::npos) {
-      ATOOLS::MakeDir(outpath.substr(0, slashpos));
+      MakeDir(outpath.substr(0, slashpos));
     }
     if (slashpos != outpath.length() - 1) {
       outpath += ".";
@@ -696,7 +696,7 @@ void Variation_Weights::InitialiseWeights(const Subevent_Weights_Vector & subwei
 }
 
 
-namespace SHERPA {
+namespace ATOOLS {
 
   std::ostream& operator<<(std::ostream &s, const Variations &v)
   {
@@ -727,10 +727,6 @@ namespace SHERPA {
     s << "}" << std::endl;
     return s;
   }
-}
-
-
-namespace ATOOLS {
 
   // Explicit template instantiations
   template <> Blob_Data<Variation_Weights>::~Blob_Data() {}

@@ -238,13 +238,13 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // if this MCatNLO process is provided with variation weights
   // we'll use a set of temporary variation weights,
   // which are combined only in the end
-  SHERPA::Variations *variations(NULL);
-  SP(SHERPA::Variation_Weights) rsvarweights, bvivarweights, bvarweights;
+  ATOOLS::Variations *variations(NULL);
+  SP(ATOOLS::Variation_Weights) rsvarweights, bvivarweights, bvarweights;
   if (p_variationweights) {
     variations = p_variationweights->GetVariations();
-    rsvarweights  = new SHERPA::Variation_Weights(variations);
-    bvivarweights = new SHERPA::Variation_Weights(variations);
-    bvarweights   = new SHERPA::Variation_Weights(variations);
+    rsvarweights  = new ATOOLS::Variation_Weights(variations);
+    bvivarweights = new ATOOLS::Variation_Weights(variations);
+    bvarweights   = new ATOOLS::Variation_Weights(variations);
   }
 
   // evaluate RS process
@@ -330,8 +330,8 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
 }
 
 double MCatNLO_Process::ReweightLocalKFactor(
-    SHERPA::Variation_Parameters * varparams,
-    SHERPA::Variation_Weights * varweights,
+    ATOOLS::Variation_Parameters * varparams,
+    ATOOLS::Variation_Weights * varweights,
     MCatNLO_Process::KFactorReweightingInfo &info)
 {
   size_t i(varweights->CurrentParametersIndex());
@@ -715,7 +715,7 @@ void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)
   p_bproc->SetShower(ps);
 }
 
-void MCatNLO_Process::SetVariationWeights(SHERPA::Variation_Weights *vw)
+void MCatNLO_Process::SetVariationWeights(ATOOLS::Variation_Weights *vw)
 {
   p_variationweights=vw;
   p_bviproc->SetVariationWeights(vw);

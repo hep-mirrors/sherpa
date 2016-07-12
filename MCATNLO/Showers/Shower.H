@@ -8,9 +8,12 @@
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Showers/Kinematics_Base.H"
 
-namespace SHERPA { class Variation_Weights; }
+namespace ATOOLS {
 
-namespace ATOOLS { class Cluster_Leg; }
+  class Cluster_Leg;
+  class Variation_Weights;
+
+}
 
 namespace MCATNLO {
 
@@ -34,7 +37,7 @@ namespace MCATNLO {
     CS_Gamma *p_gamma;
     double    m_weight;
 
-    SHERPA::Variation_Weights * p_variationweights;
+    ATOOLS::Variation_Weights * p_variationweights;
     //! whether to disable the reweighting of the emission
     bool m_norewem;
 
@@ -84,7 +87,7 @@ namespace MCATNLO {
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 
-    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
   };
 }

@@ -3,9 +3,13 @@
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Return_Value.H"
-#include "SHERPA/Tools/Variations.H"
 
-namespace ATOOLS { class Cluster_Amplitude; }
+namespace ATOOLS {
+
+  class Cluster_Amplitude;
+  class Variation_Weights;
+
+}
 
 namespace SHERPA {
 
@@ -35,7 +39,7 @@ namespace SHERPA {
     double m_weight, m_globalkfac, m_maxkfac;
     int    m_cmode, m_bbarmode;
 
-    SHERPA::Variation_Weights *p_localkfactorvarweights;
+    ATOOLS::Variation_Weights *p_localkfactorvarweights;
 
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
