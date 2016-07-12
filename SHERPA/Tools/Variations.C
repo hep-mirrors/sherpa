@@ -295,7 +295,7 @@ void Variations::AddParameterExpandingScaleFactors(
   std::pair<double, double> defaultscalefactorpair(1.0, 1.0);
 
   if (!scalevariationrequested || expansions == ScaleFactorExpansions::None) {
-    defaultscalefactorpair = std::make_pair<double, double>(muR2fac, muF2fac);
+    defaultscalefactorpair = std::make_pair(muR2fac, muF2fac);
     scalefactorpairs.push_back(defaultscalefactorpair);
   } else if (expansions & ScaleFactorExpansions::SevenPoint) {
     scalefactorpairs.push_back(std::pair<double, double>(muR2fac, 1.0));
