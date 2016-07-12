@@ -192,7 +192,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf), m_pdfowned(false), p_sas(NULL)
+  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf), m_pdfowned(false), p_sas(this)
 { 
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -300,7 +300,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
 One_Running_AlphaS::One_Running_AlphaS(const std::string pdfname, const int member):
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), p_thresh(NULL), p_pdf(NULL), m_pdfowned(false), p_sas(NULL)
+  m_cutq2(0.), p_thresh(NULL), p_pdf(NULL), m_pdfowned(false), p_sas(this)
 {
   InitGenericPDF(pdfname, member);
   //------------------------------------------------------------
