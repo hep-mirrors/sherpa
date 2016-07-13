@@ -94,7 +94,7 @@ namespace ATOOLS {
       if(lambda>500.) {
 	double u = Get();
 	double v = Get();
-	return int(lambda*sqrt(-2.*log(u))*cos(2.*M_PI*v)+lambda);
+	return int(sqrt(lambda)*sqrt(-2.*log(u))*cos(2.*M_PI*v)+lambda);
       }
       double disc(std::exp(-lambda)),p(1.);
       int N(0);
