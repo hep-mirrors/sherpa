@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
@@ -32,9 +33,12 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this), p_ampl(NULL)
 {
-  m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core;
-  m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
+  m_nproc=p_proc->Info().Has(nlo_type::real) ||
+    p_proc->Info().Has(nlo_type::rsub) ||
+    p_proc->Info().Has(nlo_type::loop) ||
+    p_proc->Info().Has(nlo_type::vsub);
+  p_isr=p_proc->Integrator()->ISR();
   size_t pos(tag.find('['));
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+1);
@@ -58,9 +62,6 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
-    pos=ctag.find('|');
-    if (pos!=std::string::npos)
-      ctag=m_nproc?ctag.substr(0,pos):ctag.substr(pos+1);
     m_calcs.push_back(new Algebra_Interpreter());
     m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
     m_calcs.back()->SetTagReplacer(&m_tagset);
@@ -72,8 +73,16 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_noutmin,"MINLO_NOUT_MIN")) m_noutmin=2;
   if (!read.ReadFromFile(m_cmode,"MINLO_CLUSTER_MODE")) m_cmode=1;
+  if (!read.ReadFromFile(m_hqmode,"MINLO_HQ_MODE")) m_hqmode=1;
+  if (!read.ReadFromFile(m_order,"MINLO_FORCE_ORDER")) m_order=0;
+  if (!read.ReadFromFile(m_orderrs,"MINLO_ORDER_RS")) m_orderrs=1;
   if (!read.ReadFromFile(m_usecomb,"MINLO_USE_COMBINABLE")) m_usecomb=0;
+  if (!read.ReadFromFile(m_usepdfinfo,"MINLO_USE_PDFINFO")) m_usepdfinfo=1;
+  if (!read.ReadFromFile(m_nlocpl,"MINLO_NLO_COUPLING_MODE")) m_nlocpl=1;
+  if (!read.ReadFromFile(m_mufmode,"MINLO_MUF_VARIATION_MODE")) m_mufmode=1;
   if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=0.4;
+  if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
+    m_muf2min=p_isr->PDF(0)->Q2Min();
   if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
@@ -97,7 +106,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   if (p_ampl) p_ampl->Delete();
   m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_vproc=p_caller->Info().Has(nlo_type::vsub);
+  m_vproc=p_caller->Info().Has(nlo_type::loop) || p_caller->Info().Has(nlo_type::vsub);
   m_f=p_caller->Flavours();
   for (size_t i(0);i<p_caller->NIn();++i) m_f[i]=m_f[i].Bar();
   DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
@@ -110,7 +119,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
     ops(ampl->Legs().size()-(m_nin+m_noutmin-1));
   ops[ampl->Legs().size()-(m_nin+m_noutmin)].push_back
     (std::pair<size_t,double>((1<<ampl->Legs().size())-1,0.0));
-  double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl).m_kt2);
+  if (ampl->Legs().size()==m_nin+m_noutmin) CoreScale(ampl);
   ampl->SetOrderQCD(p_caller->MaxOrder(0));
   while (ampl->Legs().size()>=m_nin+m_noutmin) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
@@ -129,6 +138,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 	}
 	else {
 	  if (!li->Flav().Strong() || !lj->Flav().Strong()) continue;
+	  if (m_hqmode==1 && (li->Flav().Mass() || lj->Flav().Mass())) continue;
 	  if (li->Flav().IsGluon()) cf.push_back(lj->Flav());
 	  else if (lj->Flav().IsGluon()) cf.push_back(li->Flav());
 	  else if (li->Flav()==lj->Flav().Bar()) cf.push_back(kf_gluon);
@@ -139,6 +149,10 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 	    for (size_t f(0);f<cf.size();++f) {
 	      if (!cf[f].Strong() || !lk->Flav().Strong() ||
 		  !li->Flav().Strong() || !lj->Flav().Strong()) continue;
+	      if (i<ampl->NIn() && m_usepdfinfo) {
+		if (p_isr->PDF(i)==NULL) THROW(fatal_error,"No PDF");
+		if (!p_isr->PDF(i)->Contains(cf[f])) continue;
+	      }
 	      MCS_Params cs(i,j,k,cf[f]);
 	      if (trials.find(cs)!=trials.end()) continue;
 	      if (cf[f].IsGluon() &&
@@ -173,11 +187,13 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
     msg_Debugging()<<"}\n";
     trials.insert(ckw);
     if (ckw.m_i==0 && ckw.m_j==0 && ckw.m_k==0) {
-      kt2core=CoreScale(ampl).m_kt2;
+      double kt2core(CoreScale(ampl).m_op2);
       bool ord(true);
       std::vector<std::pair<size_t,double> > 
     	&pops(ops[ampl->Legs().size()-(m_nin+m_noutmin)]);
-      if (kt2core<pops.front().second) {
+      if ((m_order || (m_rproc && ampl->Prev() &&
+		      ampl->Prev()->Prev()==NULL)) &&
+	  kt2core<pops.front().second) {
     	msg_Debugging()<<"unordered configuration (core): "
     		       <<sqrt(kt2core)<<" vs. "
     		       <<sqrt(pops.front().second)<<" "
@@ -215,10 +231,14 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 	li=i;
       }
     }
-    if (!(m_rproc && ampl->Prev()==NULL)) cops[li].second=ckw.m_kt2;
-    msg_Debugging()<<"set last k_T = "<<sqrt(ckw.m_kt2)
+    cops[li].second=ckw.m_kt2;
+    if (!m_orderrs && m_rproc &&
+	ampl->Prev()==NULL) cops[li].second=0.0;
+    msg_Debugging()<<"set last k_T = "<<sqrt(cops[li].second)
 		   <<" "<<ID(cops[li].first)<<"\n";
-    if (cops[li].second<pops[li].second) {
+    if ((m_order || (m_rproc && ampl->Prev() &&
+		     ampl->Prev()->Prev()==NULL)) &&
+	cops[li].second<pops[li].second) {
       msg_Debugging()<<"unordered configuration: "
 		     <<sqrt(cops[li].second)<<" vs. "
 		     <<sqrt(pops[li].second)<<" "
@@ -247,26 +267,26 @@ PDF::CParam MINLO_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
   PDF::CParam kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);
-  ampl->SetMuQ2(kt2.m_op2);
+  for (Cluster_Amplitude *campl(ampl);
+       campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op2);
   return kt2;
 }
 
 double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
 {
-  m_scale[stp::size+stp::res]=ampl->KT2();
-  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=ampl->KT2();
+  m_scale[stp::res]=ampl->MuQ2();
+  m_scale[stp::fac]=m_q02[0]=m_q02[1]=ampl->KT2();
   std::vector<double> scale(p_proc->NOut()+1);
   msg_Debugging()<<"Setting scales {\n";
-  double mur2(1.0), as(1.0), oqcd(0.0), mum2(1.0);
+  double mur2(1.0), as(1.0), ass(0.0), oqcd(0.0);
   for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
-    scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
+    scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
     scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
-    mum2=Min(mum2,scale[idx]);
     if (m_rproc && ampl->Prev()==NULL) {
-      m_scale[stp::size+stp::res]=ampl->Next()->KT2();
-      m_scale[stp::size+stp::fac]=m_scale[stp::fac]=ampl->Next()->KT2();
+      m_scale[stp::fac]=m_q02[0]=m_q02[1]=ampl->Next()->KT2();
       continue;
     }
+    if (ampl->KT2()>m_scale[stp::res]) m_scale[stp::res]=ampl->KT2();
     double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
     if (coqcd!=1.0) THROW(fatal_error,"Non-QCD clustering");
     double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
@@ -275,37 +295,43 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
 		   <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
     mur2*=pow(m_rsf*scale[idx],coqcd);
     as*=pow(cas,coqcd);
+    ass+=cas*coqcd;
     oqcd+=coqcd;
   }
-  m_scale[stp::res]=ampl->MuQ2();
   if (ampl->OrderQCD()-(m_vproc?1:0)) {
-    double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
-    mum2=Min(mum2,mu2);
+    double mu2(Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2()));
     int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
     double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
     msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		   <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
     mur2*=pow(m_rsf*mu2,coqcd);
     as*=pow(cas,coqcd);
+    ass+=cas*coqcd;
     oqcd+=coqcd;
   }
-  if (oqcd==0.0) mur2=m_rsf*m_scale[stp::fac];
+  if (oqcd==0.0) mur2=m_rsf*ampl->Mu2();
   else {
     mur2=pow(mur2,1.0/oqcd);
-    as=pow(as,1.0/oqcd);
-    mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*sqr(rpa->gen.Ecms()));
+    ass/=oqcd;
+    if (m_nproc && m_nlocpl==1) {
+      msg_Debugging()<<"  as_{NLO} = "<<ass<<"\n";
+      as=pow(as*ass,1.0/(oqcd+1.0));
+    }
+    else {
+      as=pow(as,1.0/oqcd);
+    }
+    mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
+			     m_rsf*1.01*sqr(rpa->gen.Ecms()));
     if (!IsEqual((*MODEL::as)(mur2),as))
       msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
   }
   msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
-  m_scale[stp::size+stp::ren]=m_scale[stp::ren]=mur2;
+  m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
-  for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
-  if (ampl==NULL || ampl->Prev()==NULL)
-    m_scale[stp::size+stp::res]=m_scale[stp::res];
+  m_scale[stp::fac]=Max(m_scale[stp::fac],m_muf2min);
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
@@ -322,6 +348,7 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
   }
+  if (m_mufmode==1) m_q02[1]=m_scale[stp::fac];
   return m_scale[stp::fac];
 }
 
@@ -424,9 +451,18 @@ void MINLO_Scale_Setter::KT2
   }
   else if (m_cmode==1) {// KT algorithm, E-scheme
     if ((li->Id()&3)==0) {
-      double kt2=Min(pi.PPerp2(),pj.PPerp2())*
-	(cosh(pi.DY(pj))-cos(pi.DPhi(pj)))/sqr(m_dr);
-      cs.SetParams(kt2,pi+pj,pk);
+      if (li->Flav().Mass() || lj->Flav().Mass()) {
+	// HQ: massive Durham algorithm
+	double kt2=2.0*Min(pi.PSpat2(),pj.PSpat2())*
+	  (1.0-pi.CosTheta(pj));
+	cs.SetParams(kt2,pi+pj,pk);
+      }
+      else {
+	// LQ: kT algorithm
+	double kt2=Min(pi.PPerp2(),pj.PPerp2())*
+	  (cosh(pi.DY(pj))-cos(pi.DPhi(pj)))/sqr(m_dr);
+	cs.SetParams(kt2,pi+pj,pk);
+      }
     }
     else {
       double kt2=pj.PPerp2();

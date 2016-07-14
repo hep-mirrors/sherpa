@@ -6,6 +6,7 @@
 #include "PHASIC++/Scales/Tag_Setter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace PHASIC {
 
@@ -36,6 +37,7 @@ namespace PHASIC {
   private:
 
     Core_Scale_Setter *p_core;
+    PDF::ISR_Handler  *p_isr;
 
     std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
@@ -45,9 +47,10 @@ namespace PHASIC {
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    double m_rsf, m_dr;
+    double m_rsf, m_dr, m_q02[2], m_muf2min;
     int    m_noutmin, m_rproc, m_vproc, m_nproc, m_nfgsplit;
-    int    m_cmode, m_usecomb;
+    int    m_cmode, m_hqmode, m_order, m_orderrs;
+    int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode;
 
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
@@ -71,6 +74,8 @@ namespace PHASIC {
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
     inline ATOOLS::Cluster_Amplitude *Ampl() const { return p_ampl; }
+
+    inline double Q02(const int i) const { return m_q02[i]; }
 
   };// end of class MINLO_Scale_Setter
 

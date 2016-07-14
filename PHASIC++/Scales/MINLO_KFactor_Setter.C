@@ -122,7 +122,7 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
   }
   m_weight=1.0;
   double muR2(p_proc->ScaleSetter()->Scale(stp::ren));
-  double Q02(p_proc->ScaleSetter()->Scale(stp::fac)), sub(0.0);
+  double Q02[2]={p_minlo->Q02(0),p_minlo->Q02(1)}, sub(0.0);
   for (Cluster_Amplitude *ampl=p_proc->Info().Has(nlo_type::real)&&
 	 p_minlo->Ampl()->Next()?p_minlo->Ampl()->Next():p_minlo->Ampl();
        ampl->Next();ampl=ampl->Next()) {
@@ -132,16 +132,18 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
       Cluster_Leg *l(next->Leg(i));
       std::map<ATOOLS::Flavour,Sudakov*>::iterator sit(m_suds.find(l->Flav()));
       if (sit==m_suds.end()) continue;
+      int is((l->Id()&3)?1:0);
       double gamma[2]={0.0,0.0};
       if (mode==1) {
-	gamma[0]=sit->second->Delta1(Q02,next->KT2(),muR2);
-	gamma[1]=sit->second->Delta1(Q02,ampl->KT2(),muR2);
+	gamma[0]=sit->second->Delta1(Q02[is],next->KT2(),muR2);
+	gamma[1]=sit->second->Delta1(Q02[is],ampl->KT2(),muR2);
       }
-      double delta[2]={sit->second->Delta(Q02,next->KT2()),
-		       sit->second->Delta(Q02,ampl->KT2())};
-      msg_Debugging()<<"Sudakov for "<<ID(l->Id())<<" -> \\Delta_{"<<l->Flav()
-		     <<"}("<<sqrt(Q02)<<","<<sqrt(next->KT2())<<") / \\Delta_{"
-		     <<l->Flav()<<"}("<<sqrt(Q02)<<","<<sqrt(ampl->KT2())
+      double delta[2]={sit->second->Delta(Q02[is],next->KT2()),
+		       sit->second->Delta(Q02[is],ampl->KT2())};
+      msg_Debugging()<<"Sudakov for "<<ID(l->Id())<<"["<<is
+		     <<"] -> \\Delta_{"<<l->Flav()<<"}("<<sqrt(Q02[is])
+		     <<","<<sqrt(next->KT2())<<") / \\Delta_{"<<l->Flav()
+		     <<"}("<<sqrt(Q02[is])<<","<<sqrt(ampl->KT2())
 		     <<") = "<<delta[0]<<" / "<<delta[1]<<" = "
 		     <<delta[0]/delta[1]<<" ("<<gamma[0]-gamma[1]<<")\n";
       m_weight*=delta[0]/delta[1];
@@ -195,6 +197,9 @@ double Sudakov::operator()(double q2)
        -3.0/2.0*sqr(1.0-e));
     if (!m_fl.IsMassive()) return gam;
     double k=sqrt(q2)/m_fl.Mass();
+    gam+=as2pi/q2*4.0/3.0*as2pi*K(nf)*
+      (-(1.0-e)*k*k/(e*e+k*k)
+       +k*atan((1-e)*k/(e+k*k))+log((e*e+k*k)/(1.0+k*k)));
     gam+=as2pi/q2*4.0/3.0*
       ((1.0-e*e)/2.0+e*sqr(1.0-e)*(e/(k*k+e*e)-(1.0-e)/(k*k+sqr(1.0-e)))
        -k*(atan(1.0/k)+(1.0-k*k)*atan(e*k/(1.0-e+k*k)))
