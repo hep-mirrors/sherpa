@@ -89,7 +89,7 @@ namespace SHERPA {
     Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as,m_kfac;
     Int_t m_id1,m_id2,m_id1p,m_id2p,m_nuwgt;
     Double_t p_uwgt[18];
-    Char_t m_oqcd;
+    Short_t m_oqcd;
     Char_t m_type[2];
     TChain* p_f;
 #endif
