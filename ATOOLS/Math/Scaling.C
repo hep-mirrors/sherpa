@@ -166,7 +166,7 @@ X_To_P_Scaling<Value_Type>::X_To_P_Scaling(const std::string &parameter)
   this->m_name="X_To_P_"+ToString(m_p);
 }
 
-template class Scaling_Base<double>;
+template class ATOOLS::Scaling_Base<double>;
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Scaling_Base<double>

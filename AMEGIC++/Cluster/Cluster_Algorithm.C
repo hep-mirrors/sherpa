@@ -348,7 +348,7 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   Vec4D_Vector clustered_moms=p_clus->Combine
     (*ampl, winner, emitted_idx, 1-winner, Flavour(kf_gluon),p_ms);
 
-  int color[2] = { Flow::Counter(), Flow::Counter() };
+  unsigned int color[2] = { Flow::Counter(), Flow::Counter() };
   for (int i=0;i<2; ++i) {
     size_t id=(1<<i);
     if (i==winner) id+=(1<<emitted_idx);

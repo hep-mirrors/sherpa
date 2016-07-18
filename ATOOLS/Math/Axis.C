@@ -121,4 +121,4 @@ const Variable_Base<ValueType> *Axis<ValueType>::Variable() const
   return p_variable; 
 }
 
-template class Axis<double>;
+template class ATOOLS::Axis<double>;

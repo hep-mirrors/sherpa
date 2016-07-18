@@ -608,14 +608,14 @@ template void Blob_Data_Base::Set<std::vector<double> >(const std::vector<double
 template void Blob_Data_Base::Set<std::vector<int> >(const std::vector<int> &data);
 template void Blob_Data_Base::Set<Vec4D>(const Vec4D &data);
 
-template class Blob_Data<int>;
-template class Blob_Data<size_t>;
-template class Blob_Data<long>;
-template class Blob_Data<double>;
-template class Blob_Data<std::string>;
-template class Blob_Data<std::vector<double> >;
-template class Blob_Data<std::vector<int> >;
-template class Blob_Data<Vec4D>;
+template class ATOOLS::Blob_Data<int>;
+template class ATOOLS::Blob_Data<size_t>;
+template class ATOOLS::Blob_Data<long>;
+template class ATOOLS::Blob_Data<double>;
+template class ATOOLS::Blob_Data<std::string>;
+template class ATOOLS::Blob_Data<std::vector<double> >;
+template class ATOOLS::Blob_Data<std::vector<int> >;
+template class ATOOLS::Blob_Data<Vec4D>;
 
 void Blob::SwapInParticles(const size_t i, const size_t j) 
 {

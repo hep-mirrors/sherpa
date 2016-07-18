@@ -6,10 +6,10 @@
 #define SORT_CRITERION std::less<std::string>
 #include "ATOOLS/Org/Getter_Function.C"
 
-template class Getter_Function
+template class ATOOLS::Getter_Function
 <MCATNLO::SF_Coupling,MCATNLO::SF_Key,SORT_CRITERION>;
 
-template class Getter_Function
+template class ATOOLS::Getter_Function
 <void,MCATNLO::SFC_Filler_Key,SORT_CRITERION>;
 
 #include "MCATNLO/Tools/Parton.H"
