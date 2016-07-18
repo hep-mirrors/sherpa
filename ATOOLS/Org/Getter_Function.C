@@ -161,6 +161,6 @@ GetGetters(const std::string &name)
   return list;
 }
 
-template class Getter_Function<OBJECT_TYPE,PARAMETER_TYPE,SORT_CRITERION>;
+template class ATOOLS::Getter_Function<OBJECT_TYPE,PARAMETER_TYPE,SORT_CRITERION>;
 
 #endif

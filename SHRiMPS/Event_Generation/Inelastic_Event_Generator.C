@@ -180,7 +180,9 @@ TestNumberOfLadders(const std::string & dirname) {
     Histogram histo(0,0.,100.0,100);
     for (int trials=0;trials<1000000;trials++)
       histo.Insert(double(ran->Poissonian(arg))+0.5);
-    string istr(static_cast<ostringstream*>(&(ostringstream()<<i))->str());
+    ostringstream converter;
+    converter << i;
+    string istr(converter.str());
     string name(string("NLadders_B_")+istr+string("_GeV.dat"));
     histo.Finalize();
     histo.Output(dirname+"/"+name);

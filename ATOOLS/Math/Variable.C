@@ -485,7 +485,7 @@ Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("Theta2")
   this->m_selectorid="Angle"; 
 }
   
-template class Variable_Base<double>;
+template class ATOOLS::Variable_Base<double>;
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Variable_Base<double>

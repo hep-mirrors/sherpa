@@ -411,8 +411,8 @@ Vec4C CMatrix::operator* (const Vec4C& cvec) {
 //=============================
  
  
-template class Matrix<2>; 
-template class Matrix<3>; 
-template class Matrix<4>; 
-template class Matrix<5>;
-template class Matrix<6>; 
+template class ATOOLS::Matrix<2>; 
+template class ATOOLS::Matrix<3>; 
+template class ATOOLS::Matrix<4>; 
+template class ATOOLS::Matrix<5>;
+template class ATOOLS::Matrix<6>; 
