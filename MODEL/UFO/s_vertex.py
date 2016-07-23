@@ -1,6 +1,7 @@
 from s_particle import s_particle
 from s_coupling import s_coupling
 from s_lorentz import s_lorentz
+from s_color import s_color
 from ufo_exception import ufo_exception
 from colour_converter import colour_translate
 
@@ -35,6 +36,7 @@ def split_by_orders(ufo_vertex, hierarchy):
                 cpl_list.append(s_coupling(ufo_vertex.couplings[(col_ind, lor_ind)]))
                 lor_list.append(s_lorentz (ufo_vertex.lorentz  [lor_ind]) )
                 col_list.append(           ufo_vertex.color    [col_ind]  )
+                #col_list.append(s_color   (ufo_vertex.color    [col_ind]) )
 
     ret = []
     assert(len(cpl_list)>0)
@@ -146,6 +148,9 @@ class vertex_collection(object):
                 string += (indent +
                            "m_v.back().Color.push_back({0});"
                            .format(colour_translate(col)))
+                           # "m_v.back().Color.push_back(\"{0}\");"
+                           # .format(col.name()))
+                
             for lor in  vert.lorentz_list():
                 string += (indent +
                            "m_v.back().Lorentz.push_back(\"{0}\");"

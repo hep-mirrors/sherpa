@@ -26,6 +26,7 @@ dist_ufo_PYTHON = \
         color_interface.py \
         colour_converter.py \
         lorentz_calc_template.C \
+        color_calc_template.C \
         lorentz_structures.py \
 	code_snippets.py \
         model_template.C \
@@ -33,6 +34,7 @@ dist_ufo_PYTHON = \
         py_to_cpp.py \
         s_coupling.py \
         s_lorentz.py \
+        s_color.py \
         s_parameter.py \
         s_particle.py \
         s_vertex.py \

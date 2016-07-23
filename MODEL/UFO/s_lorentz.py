@@ -6,7 +6,7 @@ from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Ident
 from ufo_exception import ufo_exception
 from sympy import Eq
 
-class s_lorentz():
+class s_lorentz(object):
 
     # Here we store tensor representations
     # of the coupling structures. Keys are

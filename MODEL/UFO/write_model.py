@@ -1,4 +1,4 @@
-from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, colour_translate, split_by_orders, vertex_collection
+from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
 from ufo_interface.templates import model_template
 from operator import attrgetter
 from copy import deepcopy
