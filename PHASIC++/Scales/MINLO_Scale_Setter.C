@@ -83,7 +83,7 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=0.4;
   if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
     m_muf2min=p_isr->PDF(0)->Q2Min();
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
+  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="VAR{H_TM2/4}";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
