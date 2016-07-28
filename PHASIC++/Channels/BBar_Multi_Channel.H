@@ -43,7 +43,7 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts);
     
     void GenerateEmissionPoint
-    (const ATOOLS::Cluster_Amplitude &ampl,int mode);
+    (const ATOOLS::Cluster_Amplitude &ampl);
 
     void WriteOut(std::string pId);
     bool ReadIn(std::string pId);

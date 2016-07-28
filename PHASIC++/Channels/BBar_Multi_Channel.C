@@ -56,15 +56,11 @@ void BBar_Multi_Channel::GeneratePoint
 }
 
 void BBar_Multi_Channel::GenerateEmissionPoint
-(const ATOOLS::Cluster_Amplitude &ampl,int mode)
+(const ATOOLS::Cluster_Amplitude &ampl)
 {
   Vec4D_Vector p(nin+nout);
   for (size_t i(0);i<nin+nout;++i)
     p[i]=i<nin?-ampl.Leg(i)->Mom():ampl.Leg(i)->Mom();
-  if (mode&1024) {
-    for (size_t i(0);i<p.size();++i)
-      p[i]=Vec4D(p[i][0],-p[i][1],-p[i][2],-p[i][3]);
-  }
   m_eeg.GeneratePoint(p,p_cuts);
   m_eeg.GenerateWeight(p_cuts,true);
 }
