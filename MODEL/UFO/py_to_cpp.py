@@ -85,6 +85,19 @@ class cpp_visitor(ast.NodeVisitor):
             self.visit(node.right)
             self.string += ")"
 
+    def visit_IfExp(self, node):
+        self.string += '('
+        self.string += '('
+        self.visit(node.test)
+        self.string += ') ? '
+        self.string += '('
+        self.visit(node.body)
+        self.string += ') : '
+        self.string += '('
+        self.visit(node.orelse)
+        self.string += ')'
+        self.string += ')'
+
     def handle_power(self, node):
         self.string += "pow("
         self.visit(node.left)
