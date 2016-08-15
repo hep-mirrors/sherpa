@@ -1,5 +1,5 @@
 """
-Conversion of python expressions to C++ compatible strings. 
+Conversion of python expressions to C++ compatible strings.
 This code is based on 'converter.py', part of the HERWIG++ UFO interface.
 Many thanks to David Grellscheid for the permission to use this code.
 
@@ -21,7 +21,8 @@ cmath_dictionary = {
     "atan": "atan",
     "sqrt": "sqrt",
     "pi": "M_PI",
-    "log":"log"
+    "log":"log",
+    "exp":"exp"
 }
 
 def py_to_cpp(expr):
@@ -57,7 +58,7 @@ class cpp_visitor(ast.NodeVisitor):
 
     def pass_super(self,node):
         super(type(self),self).generic_visit(node)
-        
+
     def visit_Module(self, node):
         self.pass_super(node)
 
@@ -68,7 +69,7 @@ class cpp_visitor(ast.NodeVisitor):
         if node.value.id != "cmath":
             raise NotImplementedError("Attribute \"{0}\" is not implemented".format(node.value.id))
         self.string += cmath_dictionary[node.attr]
-                
+
     def visit_UnaryOp(self,node):
         self.string += "("
         self.visit(node.op)
