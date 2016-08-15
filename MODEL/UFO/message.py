@@ -13,7 +13,7 @@ except ImportError as e:
     yellow = "\033[33m"
     blue   = "\033[34m"
     red    = "\033[31m"
-    
+
 from sys import argv
 from os import path
 
@@ -28,6 +28,13 @@ def error(string):
     lines = [l.rstrip() for l in string.split("\n")]
     if len(lines)==0: lines = [""]
     print red_indent+lines[0]
+    for line in lines[1:]:
+        print indent+line+reset
+
+def warning(string):
+    lines = [l.rstrip() for l in string.split("\n")]
+    if len(lines)==0: lines = [""]
+    print yellow_indent+lines[0]
     for line in lines[1:]:
         print indent+line+reset
 
