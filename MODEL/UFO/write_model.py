@@ -66,7 +66,20 @@ def write_model(model, lorentzes, model_name, model_file_name):
         para_init += "\n    ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
 
     # coupling initialization and calculation
-    for coup in model.all_couplings:
+
+    # Check for LO only models ( no .all_CTvertices)
+    if hasattr(model, "all_CTvertices"):
+        nonCTvertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
+        if len(model.all_CTvertices)>0:
+            from message import warning
+            warning("Ignoring %i CT vertices"%len(model.all_CTvertices))
+    else:
+        nonCTvertices  = model.all_vertices
+
+    # Get couplings
+    nonCTcouplings = sum([vtx.couplings.values() for vtx in nonCTvertices], [])
+
+    for coup in nonCTcouplings:
         s_coup = s_coupling(coup)
         para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
         para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
