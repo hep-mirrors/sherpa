@@ -11,7 +11,7 @@ sys_path.append('@PYLIBDIR@')
 
 from ufo_interface import s_lorentz, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
-from ufo_interface.message import error, progress
+from ufo_interface.message import error, warning, progress
 
 def parse_args():
       arg_parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -55,6 +55,14 @@ def check_model(model_name, model_path):
       except ImportError as err:
             error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
             exit(1)
+
+      # For NLO models: need to filter out CT_Couplings
+      model.non_ct_couplings = model.all_couplings
+      if hasattr(model, "all_CTvertices"):
+            warning("Ignoring {0} NLO CT vertices and associated couplings".format(len(model.all_CTvertices)))
+            non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
+            model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
+
       return model
 
 def make_output_dir(path):
