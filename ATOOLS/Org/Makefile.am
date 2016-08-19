@@ -70,6 +70,7 @@ localinc_HEADERS         =	\
 			Integration_Info.H \
 			Integration_Info.inl.H \
 			Library_Loader.H \
+			Enum_Flags.H \
 			Node.H \
 			Node.C \
 			$(GZIPSTREAMHEADERS) \
