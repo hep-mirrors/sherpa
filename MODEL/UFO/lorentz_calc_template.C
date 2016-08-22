@@ -17,7 +17,7 @@ namespace METOOLS {
 
     typedef std::complex<SType> SComplex;
 
-    static SComplex I;
+    const SComplex I = SComplex(0.0,1.0);
     
     ${vertex_name}_Calculator(const Vertex_Key &key):
       Lorentz_Calculator(key) {}
@@ -27,12 +27,13 @@ namespace METOOLS {
     CObject *Evaluate(const CObject_Vector &jj)
     {
 ${implementation}
+      THROW(fatal_error, "Internal error in Lorentz calculator");
+      return NULL;
     }
 
   };// end of class ${vertex_name}_Calculator
 
   template class ${vertex_name}_Calculator<double>;
-  template<> std::complex<double> ${vertex_name}_Calculator<double>::I = std::complex<double>(0.0,1.0);
 
 }// end of namespace METOOLS
 
