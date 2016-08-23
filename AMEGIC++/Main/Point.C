@@ -18,7 +18,7 @@ Point::Point(const Point& copy) {
 Point::Point(int extra) { 
   zwf     = 0;
   propid  = 0;
-  v       = 0;
+  v       = NULL;
   Color   = NULL;
   Lorentz = NULL;
   middle  = 0;
@@ -220,6 +220,10 @@ std::ostream & operator<<(std::ostream & s, const Point & p)
 void Point::FindOrder(std::vector<int> &order)
 {
   if (!this) return;
+
+  // HS added this to prevent run-time segfault when compiled with gcc6
+  if (v == NULL) return;
+
   if (v) {
     if (order.size()<v->order.size())
       order.resize(v->order.size(),0);
