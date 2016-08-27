@@ -54,69 +54,39 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      p_j[0]=j[m_n[0]];
-      p_j[1]=j[m_n[1]];
-      p_j[2]=j[m_n[2]];
+      m_c.clear();
+      const CObject *c[3]={j[m_n[0]],j[m_n[1]],j[m_n[2]]};
       m_maeb=m_meab=m_mbae=m_mbea=false;
-      if ((*p_j[0])(1)==(*p_j[1])(0) &&
-	  (*p_j[1])(1)==(*p_j[2])(0)) m_maeb=true;
-      if ((*p_j[1])(1)==(*p_j[0])(0) &&
-	  (*p_j[0])(1)==(*p_j[2])(0)) m_meab=true;
-      if ((*p_j[2])(1)==(*p_j[1])(0) &&
-	  (*p_j[1])(1)==(*p_j[0])(0)) m_mbea=true;
-      if ((*p_j[2])(1)==(*p_j[0])(0) &&
-	  (*p_j[0])(1)==(*p_j[1])(0)) m_mbae=true;
+      if ((*c[0])(1)==(*c[1])(0) &&
+	  (*c[1])(1)==(*c[2])(0)) m_maeb=true;
+      if ((*c[1])(1)==(*c[0])(0) &&
+	  (*c[0])(1)==(*c[2])(0)) m_meab=true;
+      if ((*c[2])(1)==(*c[1])(0) &&
+	  (*c[1])(1)==(*c[0])(0)) m_mbea=true;
+      if ((*c[2])(1)==(*c[0])(0) &&
+	  (*c[0])(1)==(*c[1])(0)) m_mbae=true;
       if (m_maeb && m_meab &&
-	  (*p_j[1])(0)==(*p_j[1])(1)) m_maeb=m_meab=false;
+	  (*c[1])(0)==(*c[1])(1)) m_maeb=m_meab=false;
       if (m_mbae && m_mbea &&
-	  (*p_j[1])(0)==(*p_j[1])(1)) m_mbae=m_mbea=false;
-      m_stat=m_maeb || m_meab || m_mbae || m_mbea;
-      if (m_mode==0 && m_stat) {
-	const CObject *c=j[m_n[3]];
-	if (m_maeb) m_maeb=(*p_j[2])(1)==(*c)(0) && (*c)(1)==(*p_j[0])(0);
-	if (m_meab) m_meab=(*p_j[2])(1)==(*c)(0) && (*c)(1)==(*p_j[1])(0);
-	if (m_mbea) m_mbea=(*p_j[0])(1)==(*c)(0) && (*c)(1)==(*p_j[2])(0);
-	if (m_mbae) m_mbae=(*p_j[1])(1)==(*c)(0) && (*c)(1)==(*p_j[2])(0);
-	m_stat=m_maeb || m_meab || m_mbae || m_mbea;
-	if (m_meab+m_mbae==m_maeb+m_mbea) m_stat=0;
+	  (*c[1])(0)==(*c[1])(1)) m_mbae=m_mbea=false;
+      int stat=m_maeb || m_meab || m_mbae || m_mbea;
+      if (m_mode==0 && stat) {
+	const CObject *cc=j[m_n[3]];
+	if (m_maeb) m_maeb=(*c[2])(1)==(*cc)(0) && (*cc)(1)==(*c[0])(0);
+	if (m_meab) m_meab=(*c[2])(1)==(*cc)(0) && (*cc)(1)==(*c[1])(0);
+	if (m_mbea) m_mbea=(*c[0])(1)==(*cc)(0) && (*cc)(1)==(*c[2])(0);
+	if (m_mbae) m_mbae=(*c[1])(1)==(*cc)(0) && (*cc)(1)==(*c[2])(0);
+	stat=m_maeb || m_meab || m_mbae || m_mbea;
+	if (m_meab+m_mbae==m_maeb+m_mbea) return false;
+	m_c.push_back(CInfo(0,0,(m_maeb||m_mbea)?-1.0:1.0));
+	return true;
       }
-      return m_stat;
-    }
-
-    void AddJ(CObject *const j)
-    {
-      if (m_mode==0) {
-	if (m_maeb || m_mbea) j->Invert();
-	p_v->AddJ(j);
-	return;
-      }
-      if (m_maeb) {
-	CObject *c(j->Copy());
-	c->Invert();
-	(*c)(0)=(*p_j[0])(0);
-	(*c)(1)=(*p_j[2])(1);
-	p_v->AddJ(c);
-      }
-      if (m_meab) {
-	CObject *c(j->Copy());
-	(*c)(0)=(*p_j[1])(0);
-	(*c)(1)=(*p_j[2])(1);
-	p_v->AddJ(c);
-      }
-      if (m_mbae) {
-	CObject *c(j->Copy());
-	(*c)(0)=(*p_j[2])(0);
-	(*c)(1)=(*p_j[1])(1);
-	p_v->AddJ(c);
-      }
-      if (m_mbea) {
-	CObject *c(j->Copy());
-	c->Invert();
-	(*c)(0)=(*p_j[2])(0);
-	(*c)(1)=(*p_j[0])(1);
-	p_v->AddJ(c);
-      }
-      j->Delete();
+      if (!stat) return false;
+      if (m_maeb) m_c.push_back(CInfo((*c[0])(0),(*c[2])(1),-1.0));
+      if (m_meab) m_c.push_back(CInfo((*c[1])(0),(*c[2])(1),1.0));
+      if (m_mbae) m_c.push_back(CInfo((*c[2])(0),(*c[1])(1),1.0));
+      if (m_mbea) m_c.push_back(CInfo((*c[2])(0),(*c[0])(1),-1.0));
+      return true;
     }
 
   };// end of class FF_Calculator

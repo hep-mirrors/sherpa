@@ -9,7 +9,7 @@ from subprocess import check_output
 
 sys_path.append('@PYLIBDIR@')
 
-from ufo_interface import s_lorentz, write_model, write_run_card
+from ufo_interface import s_lorentz, s_color, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
 from ufo_interface.message import error, warning, progress
 
@@ -41,6 +41,43 @@ def parse_args():
 
       return arg_parser.parse_args()
 
+def check_color_struct(color, particles):
+      """If the color structure contains "Identity", the assignment of
+      fundamental/antifundamental/adjoint representation indices is
+      often wrong. This function fixes this and returns a corrected
+      color structure.
+      """
+      new_color = color
+
+      # Collect all antifundamental indices in UFO numbering
+      # scheme starting at 1
+      af_inds = [i+1 for i,p in enumerate(particles) if p.color==-3]
+      for a_ind in af_inds:
+            search = "Identity({0},".format(a_ind)
+            if search in new_color:
+                  # Now we have an antifundamental index
+                  # as the first argument, i.e.
+                  # 'Identity(a_ind, f_ind)', which is
+                  # wrong. Need to swap a_ind and f_ind
+                  f_ind = new_color[new_color.find(search)+len(search)]
+                  assert("Identity({0},{1})".format(a_ind,f_ind) in new_color)
+                  new_color = new_color.replace("Identity({0},{1})".format(a_ind,f_ind),
+                                                "Identity({0},{1})".format(f_ind,a_ind))
+
+      # Collect all octet indices in UFO numbering scheme starting at
+      # 1. Replace Identities with dedicated Identities for octets
+      oc_inds = [i+1 for i,p in enumerate(particles) if p.color==8]
+      while(len(oc_inds)>0):
+            ind0 = oc_inds.pop()
+            search = "Identity({0},".format(ind0)
+            if search in new_color:
+                  ind1 = new_color[new_color.find(search)+len(search)]
+                  assert("Identity({0},{1})".format(ind0,ind1) in new_color)
+                  new_color = new_color.replace("Identity({0},{1})".format(ind0,ind1),
+                                                "IdentityG({0},{1})".format(ind0,ind1))
+            
+      return new_color
+
 def check_model(model_name, model_path):
       # Check for conflicts with built-in models
       if model_name in ["SM", "HEFT", "TauPi"]:
@@ -56,6 +93,16 @@ def check_model(model_name, model_path):
             error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
             exit(1)
 
+
+      for v in model.all_vertices:
+            for i in range(len(v.color)):
+                  old_color = v.color[i] 
+                  new_color = check_color_struct(old_color, v.particles)
+                  # Safety check: applying check_color_struct twice
+                  # should not alter the result
+                  assert(check_color_struct(new_color, v.particles)==new_color)
+                  v.color[i] = new_color
+            
       # For NLO models: need to filter out CT_Couplings
       model.non_ct_couplings = model.all_couplings
       if hasattr(model, "all_CTvertices"):
@@ -91,11 +138,20 @@ if __name__ == "__main__":
       
       # Need this list in order to write model source code
       lorentzes = [s_lorentz(l) for l in model.all_lorentz]
+      
+      # List of all color structures, no duplicates
+      colors = set(sum([v.color for v in model.all_vertices],[]))
+      colors = [s_color(col) for col in colors if col!='1']
 
       # Write model source code
       progress("Generating model source code")
       write_model(model, lorentzes, model_name, model_out_path)
       
+      # Write color calculator source code
+      for col in colors:
+            progress("Generating source code for color calculator '{0}'".format(col.name()))
+            col.write(out_dir)
+
       # Write lorentz calculator source code
       optimize = not args.noopt
       for lor in lorentzes:

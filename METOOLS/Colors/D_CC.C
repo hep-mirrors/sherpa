@@ -8,8 +8,6 @@ namespace METOOLS {
   class D_Calculator: public Color_Calculator {
   private:
 
-    const CObject *p_a, *p_b;
-
     int m_type, m_n[2];
 
   public:
@@ -34,43 +32,23 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      p_a=j[m_n[0]];
+      m_c.clear();
+      const CObject *a(j[m_n[0]]), *b(j[m_n[1]]);
       if (m_type==0) {
-	p_b=j[m_n[1]];
-	m_stat=(*p_a)(0)==(*p_b)(1) && (*p_a)(1)==(*p_b)(0);
-	if (!m_stat) m_stat=(*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1);
-	return m_stat;
-      }
-      m_stat=true;
-      return m_stat;
-    }
-
-    void AddJ(CObject *const j)
-    {
-      if (m_type) {
-	(*j)(0)=(*p_a)(0);
-	(*j)(1)=(*p_a)(1);
-	if ((*j)(0)==(*j)(1)) {
-	  CObject *c(j->Copy()), *d(NULL);
-	  c->Divide(-3.0);
-	  int cr((*p_a)(0));
-	  for (size_t i(s_cimin);i<=s_cimax;++i) {
-	    if ((int)i==cr) continue;
-	    (*c)(0)=(*c)(1)=i;
-	    if (i<s_cimax-(cr==(int)s_cimax)) d=c->Copy();
-	    p_v->AddJ(c);
-	    c=d;
-	  }
-	  j->Divide(3.0/2.0);
-	}
+	int match((*a)(0)==(*b)(1) && (*a)(1)==(*b)(0));
+	int sing((*a)(0)==(*a)(1) && (*b)(0)==(*b)(1));
+	if (!match && !sing) return false;
+	m_c.push_back(CInfo(0,0,match?(sing?2.0/3.0:1.0):-1.0/3.0));
       }
       else {
-	if ((*p_a)(0)==(*p_a)(1)) {
-	  if ((*p_a)(0)!=(*p_b)(1)) j->Divide(-3.0);
-	  else j->Divide(3.0/2.0);
-	}
+	bool sing((*a)(0)==(*a)(1));
+	m_c.push_back(CInfo((*a)(0),(*a)(1),sing?2.0/3.0:1.0));
+	if (sing)
+	  for (size_t i(s_cimin);i<=s_cimax;++i)
+	    if ((int)i!=(*a)(0))
+	      m_c.push_back(CInfo(i,i,-1.0/3.0));
       }
-      p_v->AddJ(j);
+      return true;
     }
 
   };// end of class D_Calculator

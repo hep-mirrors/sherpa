@@ -13,6 +13,7 @@ namespace MODEL {
       D=2, 
       None=3, 
       G=4,  
+      UFO=5,
       Unknown=99}; 
   };
 
@@ -23,6 +24,7 @@ namespace MODEL {
     cf::code  m_type; // Number of args, multi gluons etc.
     int  m_partarg[3];
     char m_strarg[3];
+    std::string m_string;
     Color_Function* p_next;
   public:
     Color_Function()  {

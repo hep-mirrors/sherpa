@@ -13,7 +13,7 @@ namespace METOOLS {
 
     const CObject *p_g[2], *p_q[2];
 
-    int m_g[2], m_q[2], m_m, m_d, m_n;
+    int m_g[2], m_q[2], m_d, m_n;
 
   public:
 
@@ -50,87 +50,53 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      m_m=0;
+      m_c.clear();
       if (m_g[0]<m_n) p_g[0]=j[m_g[0]];
       if (m_g[1]<m_n) p_g[1]=j[m_g[1]];
       if (m_q[0]<m_n) p_q[0]=j[m_q[0]];
       if (m_q[1]<m_n) p_q[1]=j[m_q[1]];
       if (m_g[0]<m_n && m_g[1]<m_n) {
 	if ((*p_q[m_d])(m_d)==(*p_g[m_d])(1-m_d) &&
-	    (*p_g[m_d])(m_d)==(*p_g[1-m_d])(1-m_d)) m_m|=1;
+	    (*p_g[m_d])(m_d)==(*p_g[1-m_d])(1-m_d))
+	  m_c.push_back(CInfo(m_d?0:(*p_g[1-m_d])(m_d),
+			      m_d?(*p_g[1-m_d])(m_d):0,1.0));
 	if ((*p_q[m_d])(m_d)==(*p_g[1-m_d])(1-m_d) &&
-	    (*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d)) m_m|=2;
+	    (*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d))
+	  m_c.push_back(CInfo(m_d?0:(*p_g[1-m_d])(m_d),
+			      m_d?(*p_g[1-m_d])(m_d):0,-1.0/3.0));
 	if ((*p_q[m_d])(m_d)==(*p_g[m_d])(1-m_d) &&
-	    (*p_g[1-m_d])(m_d)==(*p_g[1-m_d])(1-m_d)) m_m|=4;
+	    (*p_g[1-m_d])(m_d)==(*p_g[1-m_d])(1-m_d))
+	  m_c.push_back(CInfo(m_d?0:(*p_g[m_d])(m_d),
+			      m_d?(*p_g[m_d])(m_d):0,-1.0/3.0));
 	if ((*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d) &&
-	    (*p_g[1-m_d])(m_d)==(*p_g[1-m_d])(1-m_d)) m_m|=8;
-	return m_stat=m_m;
+	    (*p_g[1-m_d])(m_d)==(*p_g[1-m_d])(1-m_d))
+	  m_c.push_back(CInfo(m_d?0:(*p_g[m_d])(m_d),
+			      m_d?(*p_g[m_d])(m_d):0,1.0/9.0));
+	return m_c.size();
       }
-      if ((*p_q[m_d])(m_d)==(*p_g[m_d])(1-m_d)) m_m|=1;
-      if ((*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d)) m_m|=2;
-      return m_stat=m_m;
-    }
-
-    void AddOctet(CObject *const j)
-    {
-      if ((*j)(0)!=(*j)(1)) {
-	p_v->AddJ(j);
-	return;
-      }
-      CObject *c(j->Copy()), *d(NULL);
-      c->Divide(-3.0);
-      int cr((*j)(0));
-      for (size_t i(s_cimin);i<=s_cimax;++i) {
-	if ((int)i==cr) continue;
-	(*c)(0)=(*c)(1)=i;
-	if (i<s_cimax-(cr==(int)s_cimax)) d=c->Copy();
-	p_v->AddJ(c);
-	c=d;
-      }
-      j->Divide(3.0/2.0);
-      p_v->AddJ(j);
-    }
-
-    void AddJ(CObject *const j)
-    {
-      if (m_g[0]<m_n && m_g[1]<m_n) {
-	if (m_m&1) {
-	  CObject *c(j->Copy());
-	  (*c)(m_d)=(*p_g[1-m_d])(m_d);
-	  p_v->AddJ(c);
-	}
-	if (m_m&2) {
-	  CObject *c(j->Copy());
-	  (*c)(m_d)=(*p_g[1-m_d])(m_d);
-	  c->Divide(-3.0);
-	  p_v->AddJ(c);
-	}
-	if (m_m&4) {
-	  CObject *c(j->Copy());
-	  (*c)(m_d)=(*p_g[m_d])(m_d);
-	  c->Divide(-3.0);
-	  p_v->AddJ(c);
-	}
-	if (m_m&8) {
-	  CObject *c(j->Copy());
-	  (*c)(m_d)=(*p_q[m_d])(m_d);
-	  c->Divide(9.0);
-	  p_v->AddJ(c);
+      if ((*p_q[m_d])(m_d)==(*p_g[m_d])(1-m_d)) {
+	CInfo c(0,0);
+	c(1-m_d)=(*p_q[1-m_d])(1-m_d);
+	c(m_d)=(*p_g[m_d])(m_d);
+	if (c(0)!=c(1)) m_c.push_back(c);
+	else {
+	  m_c.push_back(CInfo(c(0),c(1),2.0/3.0));
+	  for (size_t i(s_cimin);i<=s_cimax;++i)
+	    if ((int)i!=c(0)) m_c.push_back(CInfo(i,i,-1.0/3.0));
 	}
       }
-      else {
-	(*j)(1-m_d)=(*p_q[1-m_d])(1-m_d);
-	if (m_m&1) {
-	  (*j)(m_d)=(*p_g[m_d])(m_d);
-	  AddOctet(j->Copy());
-	}
-	if (m_m&2) {
-	  (*j)(m_d)=(*p_q[m_d])(m_d);
-	  j->Divide(-3.0);
-	  AddOctet(j->Copy());
+      if ((*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d)) {
+	CInfo c(0,0,-1.0/3.0);
+	c(1-m_d)=(*p_q[1-m_d])(1-m_d);
+	c(m_d)=(*p_q[m_d])(m_d);
+	if (c(0)!=c(1)) m_c.push_back(c);
+	else {
+	  m_c.push_back(CInfo(c(0),c(1),-2.0/9.0));
+	  for (size_t i(s_cimin);i<=s_cimax;++i)
+	    if ((int)i!=c(0)) m_c.push_back(CInfo(i,i,1.0/9.0));
 	}
       }
-      j->Delete();
+      return m_c.size();
     }
 
   };// end of class TT_Calculator

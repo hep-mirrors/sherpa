@@ -3,7 +3,6 @@ from s_coupling import s_coupling
 from s_lorentz import s_lorentz
 from s_color import s_color
 from ufo_exception import ufo_exception
-from colour_converter import colour_translate
 
 spin_dict = {0 : "S",
              1 : "F",
@@ -146,10 +145,8 @@ class vertex_collection(object):
                 # stupid '1' needs to be replaced by some string placeholder
                 col = 'None()' if col == '1' else col
                 string += (indent +
-                           "m_v.back().Color.push_back({0});"
-                           .format(colour_translate(col)))
-                           # "m_v.back().Color.push_back(\"{0}\");"
-                           # .format(col.name()))
+                           'm_v.back().Color.push_back(UFO::UFO_CF("{0}"));'
+                           .format(col.replace('(','_').replace(')','_').replace('-','m').replace(',','_').replace('*','').rstrip('_')))
                 
             for lor in  vert.lorentz_list():
                 string += (indent +

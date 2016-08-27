@@ -5,7 +5,7 @@ def require(test, message):
         raise RuntimeError("Test \"{0}\" failed".format(message))
     print "Test \"{0}\" passed".format(message)
 
-from tensor import tensor, multiply
+from tensor import tensor, multiply, lorentz_key
 
 metric = tensor(
     [tensor([tensor([-1], None), tensor([0], None), tensor([0], None), tensor([0], None)], 'mu_2'),

@@ -1,5 +1,3 @@
-#include "METOOLS/Explicit/Lorentz_Calculator.H"
-
 #include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
 
@@ -8,23 +6,29 @@ namespace METOOLS {
   class ${color_name}_Calculator: public Color_Calculator {
   private:
 
-    const CObject *p_a, *p_b;
+    static std::complex<double> m_cfacs${array_declaration};
 
-    int m_type, m_n[2];
+    // Outgoing index
+    size_t m_out;
+
+    // Mapping of indices, taking care of the 'rotation', in which the
+    // vertex occurs such that j[m_inds[i]] = ji with i \in
+    // {0,1,2,...,n_external-1}
+    std::vector<size_t> m_inds;
 
   public:
 
     inline ${color_name}_Calculator(const Vertex_Key &key): 
       Color_Calculator(key) 
     {
-      int n[2]={key.p_mv->Color[key.m_n].ParticleArg(0),
-		key.p_mv->Color[key.m_n].ParticleArg(1)};
-      for (size_t i(0);i<key.p_mv->id.size();++i)
-	for (int j(0);j<2;++j)
-	  if (key.p_mv->id[i]==n[j]-1) m_n[j]=i;
-      if (m_n[0]==key.p_mv->id.size()-1)
-	std::swap<int>(m_n[0],m_n[1]);
-      m_type=m_n[1]==key.p_mv->id.size()-1;
+      m_out          = p_v->V()->id.back();
+      size_t n_ext   = p_v->V()->id.size();
+      size_t max_ind = n_ext-1;
+
+      // Set up index mapping
+      m_inds.resize(n_ext);
+      for(size_t i(0); i<n_ext; i++)
+	m_inds[i] = (i + (max_ind - m_out) ) % n_ext;
     }
 
     std::string Label() const
@@ -34,46 +38,22 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      p_a=j[m_n[0]];
-      if (m_type==0) {
-	p_b=j[m_n[1]];
-	m_stat=(*p_a)(0)==(*p_b)(1) && (*p_a)(1)==(*p_b)(0);
-	if (!m_stat) m_stat=(*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1);
-	return m_stat;
+      m_c.clear();
+      switch(m_out){
+${get_cfs}
       }
-      m_stat=true;
-      return m_stat;
+      return !m_c.empty();
     }
 
-    void AddJ(CObject *const j)
+    static void init_cfacs()
     {
-      if (m_type) {
-	(*j)(0)=(*p_a)(0);
-	(*j)(1)=(*p_a)(1);
-	if ((*j)(0)==(*j)(1)) {
-	  CObject *c(j->Copy()), *d(NULL);
-	  c->Divide(-3.0);
-	  int cr((*p_a)(0));
-	  for (size_t i(s_cimin);i<=s_cimax;++i) {
-	    if ((int)i==cr) continue;
-	    (*c)(0)=(*c)(1)=i;
-	    if (i<s_cimax-(cr==(int)s_cimax)) d=c->Copy();
-	    p_v->AddJ(c);
-	    c=d;
-	  }
-	  j->Divide(3.0/2.0);
-	}
-      }
-      else {
-	if ((*p_a)(0)==(*p_a)(1)) {
-	  if ((*p_a)(0)!=(*p_b)(1)) j->Divide(-3.0);
-	  else j->Divide(3.0/2.0);
-	}
-      }
-      p_v->AddJ(j);
+
+${array_vals}
     }
 
   };
+
+  std::complex<double> ${color_name}_Calculator::m_cfacs${array_declaration} = ${array_init};
 
 }
 
@@ -87,6 +67,9 @@ Color_Calculator *ATOOLS::Getter
 <Color_Calculator,Vertex_Key,${color_name}_Calculator>::
 operator()(const Vertex_Key &key) const
 {
+  static int init(0);
+  if (init==0) ${color_name}_Calculator::init_cfacs();
+  init=1;
   return new ${color_name}_Calculator(key);
 }
 

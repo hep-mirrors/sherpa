@@ -35,7 +35,6 @@ namespace METOOLS {
       if (j.size()==2) {
       m_ci.clear();
       m_cjk.clear();
-      m_stat=true;
       if (m_ti==3 || m_tj==3) {
 	switch (m_tk) {
 	case -3:
@@ -123,12 +122,11 @@ namespace METOOLS {
       else {
 	THROW(fatal_error,"Invalid call");
       }
-      return m_stat;
+      return true;
       }
       m_ci.clear();
       m_cjk.clear();
-      m_stat=p_cc->Evaluate(j);
-      if (!m_stat) return false;
+      if (!p_cc->Evaluate(j)) return false;
       switch (m_ti) {
       case -3:
       case 3:
@@ -137,26 +135,24 @@ namespace METOOLS {
 	m_mi=(*j[1])(1)==(*j[2])(0);
 	switch (m_tk) {
 	case -3:
-	  m_stat=m_mj||m_s;
+	  if (!m_mj && !m_s) return false;
 	  if (m_mj) m_cjk.push_back(CInfo(0,(*j[1])(1),1,0));
 	  if (m_s) m_cjk.push_back(CInfo(0,(*j[2])(1),1,0,-3.0));
 	  break;
 	case 3:
-	  m_stat=m_mi||m_s;
+	  if (!m_mi && !m_s) return false;
 	  if (m_mi) m_cjk.push_back(CInfo((*j[1])(0),0,0,0));
 	  if (m_s) m_cjk.push_back(CInfo((*j[2])(0),0,0,0,-3.0));
 	  break;
 	case 8:
-	  m_stat=(m_mi||m_mj)&&!(m_mi&&m_mj&&m_s);
+	  if (!(m_mi||m_mj)||(m_mi&&m_mj&&m_s)) return false;
 	  if (m_mj) m_cjk.push_back(CInfo((*j[2])(0),(*j[1])(1),1,0));
 	  if (m_mi) m_cjk.push_back(CInfo((*j[1])(0),(*j[2])(1),0,0));
 	  break;
 	default: THROW(fatal_error,"Invalid call");
 	}
-	if (m_stat) {
-	  if (m_ti>0) m_ci.push_back(CInfo((*j[0])(0),0,0,0));
-	  if (m_ti<0) m_ci.push_back(CInfo(0,(*j[0])(1),1,0));
-	}
+	if (m_ti>0) m_ci.push_back(CInfo((*j[0])(0),0,0,0));
+	if (m_ti<0) m_ci.push_back(CInfo(0,(*j[0])(1),1,0));
 	break;
       case 8:
 	m_s=(*j[0])(0)==(*j[0])(1);
@@ -164,30 +160,28 @@ namespace METOOLS {
 	  m_mi=(*j[0])(0)==(*j[2])(1);
 	  switch (m_tk) {
 	  case 3:
-	    m_stat=m_mj||m_s;
+	    if (!m_mj && !m_s) return false;
 	    if (m_mj) m_cjk.push_back(CInfo((*j[0])(0),0,0,0));
 	    if (m_s) m_cjk.push_back(CInfo((*j[2])(0),0,0,0,-3.0));
 	    break;
 	  case -3:
-	    m_stat=m_mi||m_s;
+	    if (!m_mi && !m_s) return false;
 	    if (m_mi) m_cjk.push_back(CInfo(0,(*j[0])(1),1,0));
 	    if (m_s) m_cjk.push_back(CInfo(0,(*j[2])(1),1,0,-3.0));
 	    break;
 	  case 8:
-	    m_stat=(m_mi||m_mj)&&!(m_mi&&m_mj&&m_s);
+	    if (!(m_mi||m_mj)||(m_mi&&m_mj&&m_s)) return false;
 	    if (m_mj) m_cjk.push_back(CInfo((*j[0])(0),(*j[2])(1),0,0));
 	    if (m_mi) m_cjk.push_back(CInfo((*j[2])(0),(*j[0])(1),1,0));
 	    break;
 	  default: THROW(fatal_error,"Invalid call");
 	  }
-	  if (m_stat) {
-	    if (m_tj>0) m_ci.push_back(CInfo((*j[1])(0),0,0,0));
-	    if (m_tj<0) m_ci.push_back(CInfo(0,(*j[1])(1),1,0));
-	  }
+	  if (m_tj>0) m_ci.push_back(CInfo((*j[1])(0),0,0,0));
+	  if (m_tj<0) m_ci.push_back(CInfo(0,(*j[1])(1),1,0));
 	break;
       default: THROW(fatal_error,"Invalid call");
       }
-      return m_stat;
+      return true;
     }
 
   };// end of class ST_Calculator

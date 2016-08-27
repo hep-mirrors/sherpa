@@ -8,8 +8,6 @@ namespace METOOLS {
   class F_Calculator: public Color_Calculator {
   private:
 
-    const CObject *p_a, *p_b;
-
     bool m_mab, m_mba;
     int  m_mode, m_n[3];
 
@@ -38,44 +36,28 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      p_a=j[m_n[0]];
-      p_b=j[m_n[1]];
-      m_mab=(*p_a)(0)==(*p_b)(1);
-      m_mba=(*p_a)(1)==(*p_b)(0);
-      m_stat=(m_mab||m_mba)&&
-	!((*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1));
-      if (m_mode==0 && m_stat) {
-	const CObject *c=j[m_n[2]];
-	if (m_mab) m_mab=(*p_b)(0)==(*c)(1) && (*c)(0)==(*p_a)(1);
-	if (m_mba) m_mba=(*p_b)(1)==(*c)(0) && (*c)(1)==(*p_a)(0);
-	m_stat=m_mab||m_mba;
-      }
-      return m_stat;
-    }
-
-    void AddJ(CObject *const j)
-    {
+      m_c.clear();
+      const CObject *a(j[m_n[0]]), *b(j[m_n[1]]);
+      m_mab=(*a)(0)==(*b)(1);
+      m_mba=(*a)(1)==(*b)(0);
+      if (!(m_mab||m_mba) ||
+	  (m_mab&&m_mba&&(*a)(0)==(*a)(1))) return false;
       if (m_mode==0) {
-	if (m_mab) j->Invert();
+	const CObject *c=j[m_n[2]];
+	if (m_mab) m_mab=(*b)(0)==(*c)(1) && (*c)(0)==(*a)(1);
+	if (m_mba) m_mba=(*b)(1)==(*c)(0) && (*c)(1)==(*a)(0);
+	if (!(m_mab||m_mba)) return false;
+	m_c.push_back(CInfo(0,0,m_mab?-1.0:1.0));
+	return true;
+      }
+      if (m_mab) {
+	if (m_mba) m_c.push_back(CInfo((*a)(0),(*b)(1),1.0));
+	m_c.push_back(CInfo((*b)(0),(*a)(1),-1.0));
       }
       else {
-	if (m_mab) {
-	  if (m_mba) {
-	    CObject *c(j->Copy());
-	    (*c)(0)=(*p_a)(0);
-	    (*c)(1)=(*p_b)(1);
-	    p_v->AddJ(c);
-	  }
-	  (*j)(0)=(*p_b)(0);
-	  (*j)(1)=(*p_a)(1);
-	  j->Invert();
-	}
-	else {
-	  (*j)(0)=(*p_a)(0);
-	  (*j)(1)=(*p_b)(1);
-	}
+	m_c.push_back(CInfo((*a)(0),(*b)(1),1.0));
       }
-      p_v->AddJ(j);
+      return true;
     }
 
   };// end of class F_Calculator

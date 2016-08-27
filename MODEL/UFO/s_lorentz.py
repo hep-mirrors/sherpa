@@ -84,8 +84,8 @@ class s_lorentz(object):
     def spins(self):
         return self.ufo_lorentz.spins
 
-    # get a tensor representation of the lorentz
-    # coupling structure
+    # Get a tensor representation of the lorentz coupling structure.
+    # If possible, pull from cache since creating it is expensive
     def get_cpl_tensor(self):
         if not self.ufo_lorentz.structure in s_lorentz.tensor_cache:
             s_lorentz.tensor_cache[self.ufo_lorentz.structure] = eval(self.ufo_lorentz.structure)
@@ -96,7 +96,7 @@ class s_lorentz(object):
         # for each key i, create one calculator
         # corresponding to key i outgoing
         for i in range(self.n_ext()):
-            imp += "\n// if outgoind UFO-index is {0}\n".format(i)
+            imp += "\n// if outgoing index is {0}\n".format(i)
             imp += "if (p_v->V()->id.back()=={0}){{\n".format(i)
             imp += self.get_implementation(i,ferm_optimize)
             imp += "\n}\n"

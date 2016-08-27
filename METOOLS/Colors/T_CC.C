@@ -11,8 +11,6 @@ namespace METOOLS {
   class T_Calculator: public Color_Calculator {
   private:
 
-    const CObject *p_a, *p_b;
-
     int m_type, m_singlet, m_match, m_n[3];
 
   public:
@@ -40,90 +38,55 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
+      m_c.clear();
       switch (m_type) {
       case 0: {
 	const CObject *g(j[m_n[0]]), *q(j[m_n[1]]), *p(j[m_n[2]]);
 	m_singlet=(*g)(0)==(*g)(1) && (*q)(0)==(*p)(1);
 	m_match=(*q)(0)==(*g)(1) && (*g)(0)==(*p)(1);
-	m_stat=m_singlet || m_match;
-	return m_stat;
+	if (!m_singlet && !m_match) return false;
+	double c(m_singlet?(m_match?2.0/3.0:-1.0/3.0):1.0);
+	m_c.push_back(CInfo(0,0,c));
+	return true;
       }
-      case 1:
-	p_a=j[m_n[1]]; 
-	p_b=j[m_n[2]];
-	m_singlet=(*p_a)(0)==(*p_b)(1) && (*p_a)(0)<=s_cimax;
-	m_stat=true;
-	return m_stat;
-      case 2:
-	p_a=j[m_n[1]]; 
-	p_b=j[m_n[0]];
-	m_singlet=(*p_b)(0)==(*p_b)(1) && (*p_b)(0)>0 && (*p_b)(0)<=s_cimax;
-	m_match=(*p_a)(0)==(*p_b)(1);
-	m_stat=m_singlet || m_match;
-	return m_stat;
-      case 4:
-	p_a=j[m_n[2]]; 
-	p_b=j[m_n[0]];
-	m_singlet=(*p_b)(0)==(*p_b)(1) && (*p_b)(0)>0 && (*p_b)(0)<=s_cimax;
-	m_match=(*p_a)(1)==(*p_b)(0);
-	m_stat=m_singlet || m_match;
-	return m_stat;
-      }
-      m_stat=false;
-      return m_stat;
-    }
-
-    void AddJ(CObject *const j)
-    {
-      switch (m_type) {
-      case 0:
-	(*j)(0)=(*j)(1)=0;
-	if (m_singlet) {
-	  if (m_match) j->Divide(3.0/2.0);
-	  else j->Divide(-3.0);
-	}
-	p_v->AddJ(j);
-	return;
-      case 1:
-	(*j)(0)=(*p_a)(0);
-	(*j)(1)=(*p_b)(1);
-	break;
-      case 2:
-	if (m_match) (*j)(0)=(*p_b)(0);
-	else (*j)(0)=(*p_a)(0);
-	break;
-      case 4:
-	if (m_match) (*j)(1)=(*p_b)(1);
-	else (*j)(1)=(*p_a)(1);
-	break;
-      }
-      if (m_singlet) {
-	if (m_type==1) {
+      case 1: {
+	CObject *a(j[m_n[1]]), *b(j[m_n[2]]);
+	m_singlet=(*a)(0)==(*b)(1) && (*a)(0)<=s_cimax;
 #ifndef USING__Explicit_OneOverNC_Sum
-	  if (p_v->JC()->Out().empty())
+	if (p_v->JC()->Out().empty()) 
 #endif
-	  {
-	    CObject *c(j->Copy()), *d(NULL);
-	    c->Divide(-3.0);
-	    int cr((*p_a)(0));
-	    for (size_t i(s_cimin);i<=s_cimax;++i) {
-	      if ((int)i==cr) continue;
-	      (*c)(0)=(*c)(1)=i;
-	      if (i<s_cimax-(cr==(int)s_cimax)) d=c->Copy();
-	      p_v->AddJ(c);
-	      c=d;
-	    }
-	    j->Divide(3.0/2.0);
-	    p_v->AddJ(j);
-	    return;
-	  }
+	if (m_singlet) {
+	  m_c.push_back(CInfo((*a)(0),(*a)(0),2.0/3.0));
+	  for (size_t i(s_cimin);i<=s_cimax;++i)
+	    if ((int)i!=(*a)(0)) 
+	      m_c.push_back(CInfo(i,i,-1.0/3.0));
+	  return true;
 	}
-	else {
-	  if (m_match) j->Divide(3.0/2.0);
-	  else j->Divide(-3.0);
-	}
+	m_c.push_back(CInfo((*a)(0),(*b)(1)));
+	return true;
       }
-      p_v->AddJ(j);
+      case 2: {
+	CObject *a(j[m_n[1]]), *b(j[m_n[0]]);
+	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
+	m_match=(*a)(0)==(*b)(1);
+	if (!m_singlet && !m_match) return false;
+	double c(m_singlet?(m_match?2.0/3.0:-1.0/3.0):1.0);
+	if (m_match) m_c.push_back(CInfo((*b)(0),0,c));
+	else m_c.push_back(CInfo((*a)(0),0,c));
+	return true;
+      }
+      case 4: {
+	CObject *a(j[m_n[2]]), *b(j[m_n[0]]);
+	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
+	m_match=(*a)(1)==(*b)(0);
+	if (!m_singlet && !m_match) return false;
+	double c(m_singlet?(m_match?2.0/3.0:-1.0/3.0):1.0);
+	if (m_match) m_c.push_back(CInfo(0,(*b)(1),c));
+	else m_c.push_back(CInfo(0,(*a)(1),c));
+	return true;
+      }
+      }
+      return false;
     }
 
   };// end of class T_Calculator

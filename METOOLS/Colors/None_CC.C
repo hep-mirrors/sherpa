@@ -17,14 +17,9 @@ namespace METOOLS {
 
     bool Evaluate(const CObject_Vector &j)
     {
-      m_stat=true;
+      m_c.clear();
+      m_c.push_back(CInfo(0,0));
       return true;
-    }
-
-    void AddJ(CObject *const j)
-    {
-      (*j)(0)=(*j)(1)=0;
-      p_v->AddJ(j);
     }
 
   };// end of class None_Calculator
