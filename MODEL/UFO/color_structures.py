@@ -79,7 +79,7 @@ def replacer_T(a,i,j):
 
 def f(a,b,c):
     """Commutator structure constants"""
-    ret = new(color_key(a, 'ad'), 8, {color_key(b, 'ad'):8,color_key(c, 'ad'):8})
+    ret = new({color_key(a, 'ad'):8, color_key(b, 'ad'):8,color_key(c, 'ad'):8})
     for i in range(8):
         for j in range(8):
             for k in range(8):
@@ -108,7 +108,7 @@ def Identity(i,j):
 
 def IdentityG(i,j):
     """Kronecker deltas of adjoint representation"""
-    ret = new(color_key(i, 'ad'), 8, {color_key(j, 'ad'):8})
+    ret = new({color_key(i, 'ad'):8, color_key(j, 'ad'):8})
     for c in range(8):
         ret[{color_key(i, 'ad'):c, 
              color_key(j, 'ad'):c}]._array[0] = 1.0

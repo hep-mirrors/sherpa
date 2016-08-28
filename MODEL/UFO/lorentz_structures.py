@@ -166,7 +166,7 @@ class Epsilon(tensor):
         jl = lorentz_key(j) if (j<0) else j
         kl = lorentz_key(k) if (k<0) else k
         ll = lorentz_key(l) if (l<0) else l
-        tmp = new(il, 4,{jl:4,kl:4,ll:4})
+        tmp = new({il:4,jl:4,kl:4,ll:4})
 
         for perm in perms:
             tmp.__setitem__({il:perm[0], jl:perm[1], kl:perm[2], ll:perm[3]}, 

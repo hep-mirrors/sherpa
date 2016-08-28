@@ -63,35 +63,5 @@ def test_trace():
 
 if __name__ == "__main__":
 
-    
-
-    #
-    
-    #from time import time
-    #t0 = time()
-    #print [el for el in (f(-2,1,2)).elements()]
-
-    #f(-2,1,2)*f(-1,-2,3)*f(4,5,-1)
-    #print time() - t0
-
-    #     #f(1,2,3)*f(2,4,5)                # 14.2726690769
-
-    #     #f(1,2,3)*f(6,4,5)                # 15.1672339439
-
-    #     #f(1,2,3)*f(1,2,3)                # 5.99734210968
-        
-    #     #f(1,2,3) # 6.03008389473
-    #     #f(2,4,5) #
-        
-    #     a=f(-2,1,2)
-    #     b=f(-1,-2,3)
-    #     c=f(4,5,-1)
-    #     print "Constructors ", time() - t0
-    #     d = a*b
-    #     print "a*b=d", time() - t0
-    #     e = d*c
-    #     print "e=d*c ", time() - t0
-
     test_trace()
     test_f()
-

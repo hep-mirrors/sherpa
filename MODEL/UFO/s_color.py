@@ -3,16 +3,12 @@ from color_structures import T, replacer_T, f, Identity, IdentityG
 from tensor import color_key
 
 class s_color(object):
-
-    # Here we store color representations of the coupling structures.
-    # Keys are the strings representing the color structure in UFO. Do
-    # this, because computing the tensor representations is expensive.
-    tensor_cache = dict()
     
     def __init__(self,ufo_color):
 
         self.ufo_color = ufo_color
         self.unique_id = self.ufo_color.replace('(','_').replace(')','_').replace('-','m').replace(',','_').replace('*','').rstrip('_')
+        self._tens = None
 
     def name(self):
         return self.unique_id
@@ -29,25 +25,29 @@ class s_color(object):
         return self._original_keys
 
     def get_cpl_tensor(self):
-        """Get a tensor representation of the color coupling structure.
-        If possible, pull from cache since creating it is expensive"""
+        """Get a tensor representation of the color coupling structure."""
 
-        if not self.ufo_color in s_color.tensor_cache:
-            tens = eval(self.ufo_color)
-            self._original_keys = tens.keys()
+        # Instead of setting up a class-wide cache, just store the
+        # tensor as a member variable. Tensor can become large and
+        # memory intensive, so we want to get rid of it along with its
+        # s_color instance as soon as it gets destroyed.
+
+        if self._tens is None:
+            self._tens = eval(self.ufo_color)
+            self._original_keys = self._tens.keys()
             # In order to translate to color-flow representation: For
             # each gluon-key, multiply with T of matching key. Thereby
             # swap gluon key for two fundamental keys 
-            gluon_keys = [key for key,dim in tens.key_dim_dict().iteritems() if dim==8]
+            gluon_keys = [key for key,dim in
+                          self._tens.key_dim_dict().iteritems() if dim==8]
             
             for gk in gluon_keys:
                 # 'gk' will be replaced by str(gk)+'0' and str(gk)+'1',
                 # i.e. gluon with key 2 replaced by keys "20" and "21"
-                tens = tens*replacer_T(gk,
-                                       color_key(str(gk)+'0', 'fu', mapped=gk),
-                                       color_key(str(gk)+'1', 'af', mapped=gk))
-            s_color.tensor_cache[self.ufo_color] = tens
-        return s_color.tensor_cache[self.ufo_color]
+                self._tens = self._tens*replacer_T(gk,
+                                                   color_key(str(gk)+'0', 'fu', mapped=gk),
+                                                   color_key(str(gk)+'1', 'af', mapped=gk))
+        return self._tens
 
     def entries_string(self):
         return self.print_entries('m_cfacs',self.get_cpl_tensor())

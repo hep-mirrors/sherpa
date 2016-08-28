@@ -106,7 +106,6 @@ def check_model(model_name, model_path):
       # For NLO models: need to filter out CT_Couplings
       model.non_ct_couplings = model.all_couplings
       if hasattr(model, "all_CTvertices"):
-            warning("Ignoring {0} NLO CT vertices and associated couplings".format(len(model.all_CTvertices)))
             non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
             model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
 
@@ -139,9 +138,9 @@ if __name__ == "__main__":
       # Need this list in order to write model source code
       lorentzes = [s_lorentz(l) for l in model.all_lorentz]
       
-      # List of all color structures, no duplicates
+      # Set of all color structures, no duplicates
       colors = set(sum([v.color for v in model.all_vertices],[]))
-      colors = [s_color(col) for col in colors if col!='1']
+      colors = [col for col in colors if col!='1']
 
       # Write model source code
       progress("Generating model source code")
@@ -149,8 +148,13 @@ if __name__ == "__main__":
       
       # Write color calculator source code
       for col in colors:
-            progress("Generating source code for color calculator '{0}'".format(col.name()))
-            col.write(out_dir)
+            scol = s_color(col)
+            progress("Generating source code for color calculator '{0}'".format(scol.name()))
+            # Create an s_color istance temporaryly only in this
+            # scope, so that its memory intensive color tensor
+            # instance gets deleted as soon as it has been written to
+            # file
+            scol.write(out_dir)
 
       # Write lorentz calculator source code
       optimize = not args.noopt

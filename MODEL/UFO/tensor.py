@@ -152,14 +152,13 @@ class tensor(object):
             return ret
 
         # Build a return value
-        key, dim = kdd.popitem()
-        ret = new(key, dim, kdd)
+        ret = new(kdd)
 
         # Avoid recursion and loop over all elements of the return
         # tensor explicitly
         for el, ind in self.elements_indices():
-            assert(ret.__getitem__(ind)._elementary)
-            ret.__getitem__(ind)._array[0] = self.__getitem__(ind)._array[0] + rhs.__getitem__(ind)._array[0]
+            #assert(ret.__getitem__(ind)._elementary)
+            ret.__getitem__(ind)._array[0] = el._array[0] + rhs.__getitem__(ind)._array[0]
         return ret
 
     def __iadd__(self, rhs):
@@ -177,12 +176,12 @@ class tensor(object):
         if not isinstance(rhs, tensor):
             raise ufo_exception("Tensor multiplication for type {0} not supported".format(type(rhs)))
 
-        # if no indices to be summed over:
-        # return simple product
+        # If no indices to be summed over: return simple product
         if len(common_keys(self,rhs)) == 0:
             return multiply(self, rhs)
 
-        return contract(common_key_dict(self, rhs), self, rhs)
+        # Else: perform contraction of repeated indices
+        return contract(self, rhs)
 
     def __rmul__(self, lhs):
         return self.__mul__(lhs)
@@ -228,7 +227,7 @@ class tensor(object):
         with the corresponding index assignment for each element
         """
         if self._elementary:
-            yield self
+            yield self, dict()
             return
         for ind in all_indices(self.key_dim_dict()):
             yield self.__getitem__(ind), ind
@@ -279,29 +278,14 @@ def all_indices(key_dim_dict):
     if len(key_dim_dict)==0:
         yield dict()
         return
+
     key, dim = key_dim_dict.popitem()
     for rec in all_indices(key_dim_dict):
         for i in range(dim):
             ret = rec.copy()
             ret[key] = i
             yield ret
-        
-# def multiply(tens_a,tens_b):
-#     # this method is just a helper function
-#     # for the __mul__ method, no common keys
-#     # should appear, when this is called
-#     assert(len(common_keys(tens_a,tens_b))==0)
-#     if (tens_a._elementary and  tens_b._elementary):
-#         return tensor([tens_a._array[0]*tens_b._array[0]], None)
-#     new_dict = tens_a.key_dim_dict()
-#     new_dict.update(tens_b.key_dim_dict())
-#     dict_a = tens_a.key_dim_dict()
-#     dict_b = tens_b.key_dim_dict()
-#     key, dim = new_dict.popitem()
-#     ret = new(key, dim, new_dict)
-#     for i in range(dim):
-#         ret.__setitem__({key:i}, multiply(tens_a[{key:i}],tens_b) if (key in dict_a) else multiply(tens_a,tens_b[{key:i}]))
-#     return ret
+
 
 def multiply(tens_a,tens_b):
     """This method is just a helper function
@@ -318,54 +302,46 @@ def multiply(tens_a,tens_b):
         mul(tens_a)
     return ret
 
-def new(top_key, top_dim, key_dim_dict):
-    """Create a new tensor with 'tensor([0], None)' as
-    elementary entries. Since this works revursively, 
-    need to provide first toplevel_key and toplevel_dim
-    as well as lower level key:dim pairs in dict"""
-        
-    # termination of recursion: elementary tensor
-    if top_key == None:
-        return tensor([0.0], None)
+def new(key_dim_dict):
+    """Create a new tensor with 'tensor([0], None)' as elementary entries.
+    Implemented non-recursively for performance reasons
 
-    # if lower level tensors are elementary, dict will
-    # be empty
-    if len(key_dim_dict) != 0:
-        new_key, new_dim = key_dim_dict.popitem()
-    else:
-        new_key = None
-        new_dim = None
+    """
 
-    # now fill array of appropriate dimension
-    # recursively
-    array = []
-    for i in range(top_dim):
-        array.append(new(new_key, new_dim, copy(key_dim_dict)))
+    ret = tensor([0.0], None)
+    while key_dim_dict:
+        key, dim = key_dim_dict.popitem()
+        arr = [ret.copy() for i in range(dim)]
+        ret.__init__(arr, key)
+    return ret
 
-    return tensor(array, top_key)
+def contract(tens_a, tens_b):
+    """Perform contraction of repeated keys in the two tensors. Avoid
+    recursion for the sake of performance.
+    """
 
-# this method performs no checks ans assumes
-# all keys in the dict are valid keys of the tensors
-def contract(key_dim_dict, tens_a, tens_b):
+    ckd   = common_key_dict(tens_a, tens_b)
+    kdd   = tens_a.key_dim_dict()
+    kdd.update(tens_b.key_dim_dict())
+    kdd   = {key:dim for key,dim in kdd.iteritems() if key not in ckd}
+    
+    ret = new(kdd)
 
-    if len(key_dim_dict)==0:
-        assert(len(common_keys(tens_a,tens_b))==0)
-        return multiply(tens_a,tens_b)
+    for el,indices in ret.elements_indices():
+        for sum_index in all_indices(ckd.copy()):
+            inds = indices.copy()
+            inds.update(sum_index)
 
-    key, dim = key_dim_dict.popitem()
-
-    if dim==0:
-        raise ufo_exception("Cannot contract empty tensors")
-
-    # need to make a copy here since 'contract' keeps popping items
-    # from dict
-    ret = [contract(copy(key_dim_dict), tens_a[{key:i}],tens_b[{key:i}]) for i in range(dim)]
-
-    # built-in support for implicit metric
-    # multiplication when contracting lorentz indices
-    if isinstance(key, lorentz_key):
-        return -sum(ret[1:], -ret[0])
-    return sum(ret[1:], ret[0])
+            # Fuckin ugly hack to fix implicit Minkowski metric
+            # insertions in UFO
+            pf = 1.0
+            for k,i in sum_index.iteritems():
+                if isinstance(k, lorentz_key) and i!=0:
+                    pf *= -1.0
+                    
+            el._array[0] += pf * tens_b.__getitem__(inds)._array[0] * tens_a.__getitem__(inds)._array[0]
+            
+    return ret
 
 def common_keys(tens_a, tens_b):
     return [key for key in tens_a.keys() if key in tens_b.keys()]
