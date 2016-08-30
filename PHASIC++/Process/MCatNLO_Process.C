@@ -250,6 +250,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // evaluate RS process
   msg_Debugging()<<*rampl<<"\n";
   int rm(rampl->Leg(0)->Mom()[3]>0.0?1024:0);
+  if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
   if (rsproc->VariationWeights() && rsproc->VariationWeights() != p_variationweights) {
@@ -268,6 +269,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // evaluate BVI process
   msg_Debugging()<<ampl<<"\n";
   rm=ampl.Leg(0)->Mom()[3]>0.0?1024:0;
+  if (rampl->ColorMap().empty()) rm|=128;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
