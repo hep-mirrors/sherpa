@@ -256,7 +256,8 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   }
   rsproc->SetVariationWeights(--rsvarweights);
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
-  double rs(rsproc->Differential(*rampl));
+  int rmode = rampl->ColorMap().empty() ? 128 : 0;
+  double rs(rsproc->Differential(*rampl, rmode));
   double r(rsproc->GetSubevtList()->back()->m_result);
   rsproc->SetVariationWeights(NULL);
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
@@ -277,11 +278,12 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   if (bproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
   bproc->SetVariationWeights(--bvarweights);
-  double b(bproc->Differential(ampl));
+  int bmode = ampl.ColorMap().empty() ? 128 : 0;
+  double b(bproc->Differential(ampl, bmode));
   bproc->SetVariationWeights(NULL);
   if (b==0.0) return 0.0;
   bviproc->BBarMC()->GenerateEmissionPoint(ampl);
-  double bvi(bviproc->Differential(ampl));
+  double bvi(bviproc->Differential(ampl, bmode));
   bviproc->SetVariationWeights(NULL);
 
   // eventually calculate local K factor
