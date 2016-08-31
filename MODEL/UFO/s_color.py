@@ -3,7 +3,7 @@ from color_structures import T, replacer_T, f, Identity, IdentityG
 from tensor import color_key
 
 class s_color(object):
-    
+
     def __init__(self,ufo_color):
 
         self.ufo_color = ufo_color
@@ -40,7 +40,7 @@ class s_color(object):
             # swap gluon key for two fundamental keys 
             gluon_keys = [key for key,dim in
                           self._tens.key_dim_dict().iteritems() if dim==8]
-            
+
             for gk in gluon_keys:
                 # 'gk' will be replaced by str(gk)+'0' and str(gk)+'1',
                 # i.e. gluon with key 2 replaced by keys "20" and "21"
