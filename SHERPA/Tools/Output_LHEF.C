@@ -144,6 +144,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
       int IDPRUP = 1;
       double XWGTUP = weight;
       double SCALUP = sqrt((*(*blit))["Factorisation_Scale"]->Get<double>());
+      if (SCALUP==0.0) SCALUP=sqrt((*(*blit))["Renormalization_Scale"]->Get<double>());
       if ((*(*blit))["Resummation_Scale"])
 	SCALUP=sqrt((*(*blit))["Resummation_Scale"]->Get<double>());
       if (SCALUP==0.0) SCALUP=sqrt((*(*blit))["Renormalization_Scale"]->Get<double>());
