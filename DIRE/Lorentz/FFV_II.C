@@ -115,7 +115,6 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      if (s.m_t<sqr(2.0*m_fl[0].Mass(true))) return 0.0;
       double B=1.0-2.0*s.m_z*(1.0-s.m_z);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., x=s.m_z;
@@ -158,6 +157,7 @@ Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,FFV_II>::
 operator()(const Parameter_Type &args) const
 {
   if (args.m_type!=3) return NULL;
+  if (args.m_swap) return NULL;
   if ((args.m_mode==0 &&
        args.p_v->in[0].IntSpin()==1 &&
        args.p_v->in[1].IntSpin()==1 &&

@@ -253,14 +253,15 @@ Kin_Args PHASIC::ClusterIFDipole
 
 int PHASIC::ConstructIFDipole
 (const double &ma2,const double &mj2,const double &maj2,
- const double &mk2,const double &mb2,const Vec4D &paj,
+ const double &mkt2,const double &mb2,const Vec4D &paj,
  const Vec4D &pk,const Vec4D &pb,Kin_Args &ifp)
 {
   if (ifp.m_mode==1) {
     Vec4D Q(paj-pk), Ql(Vec4D(Q[0],0.0,0.0,Q[3]));
     double Q2(Q.Abs2()), kt2(Q.PPerp2()), yt((1.0-ifp.m_z)/ifp.m_z);
+    double mk2(ifp.m_mk2>=0.0?ifp.m_mk2:mkt2);
     double sjk(-yt*(Q2-ma2)+(1.0+yt)*(mj2+mk2));
-    double po(sqr(Q2-mk2-maj2)-4.0*maj2*(mk2+kt2));
+    double po(sqr(Q2-mkt2-maj2)-4.0*maj2*(mkt2+kt2));
     double ecm(Q2-sjk-ma2), pn(sqr(ecm)-4.0*ma2*(sjk+kt2));
     if (pn<0.0 || po<0.0) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
@@ -268,7 +269,7 @@ int PHASIC::ConstructIFDipole
     }
     pn=sqrt(pn);
     po=sqrt(po);
-    Vec4D pa(pn/po*(paj-(Q2+maj2-mk2)/(2.0*(Q2+kt2))*Ql)
+    Vec4D pa(pn/po*(paj-(Q2+maj2-mkt2)/(2.0*(Q2+kt2))*Ql)
 	     +(Q2+ma2-sjk)/(2.0*(Q2+kt2))*Ql);
     ifp.m_pk=ifp.m_pj=(ifp.m_pi=pa)-Q;
     LN_Pair ln(GetLN(ifp.m_pj,-ifp.m_pi,0));
@@ -299,7 +300,7 @@ int PHASIC::ConstructIFDipole
     ifp.m_pj=ktt*sin(ifp.m_phi)*l_perp;
     cms.BoostBack(ifp.m_pj);
     ifp.m_pj+=ktt*cos(ifp.m_phi)*n_perp+zt/pnn*(gam*ifp.m_pk+sjk*ifp.m_pi)-
-      (mj2+ktt*ktt)/zt/pnn*(ifp.m_pi+ma2/gam*ifp.m_pk);
+      (sjk*(1.0-zt)+mj2-mk2)/pnn*(ifp.m_pi+ma2/gam*ifp.m_pk);
     ifp.m_pk=ifp.m_pi-Q-ifp.m_pj;
   }
   else {
@@ -311,7 +312,8 @@ int PHASIC::ConstructIFDipole
     Vec4D l_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(n_perp)));
     l_perp*=1.0/l_perp.PSpat();
     Vec4D Q(paj-pk);
-    double Q2(Q.Abs2()), po(sqr(Q2-maj2-mk2)-4.0*maj2*mk2);
+    double mk2(ifp.m_mk2>=0.0?ifp.m_mk2:mkt2);
+    double Q2(Q.Abs2()), po(sqr(Q2-maj2-mkt2)-4.0*maj2*mkt2);
     double yt(ifp.m_y/ifp.m_z), saj(yt*(Q2-mk2)+(1.0-yt)*(ma2+mj2));
     double ecm(Q2-saj-mk2), pn(sqr(ecm)-4.0*saj*mk2);
     if (pn<0.0 || po<0.0) {
@@ -320,7 +322,7 @@ int PHASIC::ConstructIFDipole
     }
     pn=Sign(ecm)*sqrt(pn);
     po=Sign(ecm)*sqrt(po);
-    ifp.m_pk=pn/po*(pk+(Q2+mk2-maj2)/(2.0*Q2)*Q)-(Q2+mk2-saj)/(2.0*Q2)*Q;
+    ifp.m_pk=pn/po*(pk+(Q2+mkt2-maj2)/(2.0*Q2)*Q)-(Q2+mk2-saj)/(2.0*Q2)*Q;
     ifp.m_pj=ifp.m_pi=Q+ifp.m_pk;
     double gam(0.5*(ecm+pn)), rf(ifp.m_z-ifp.m_y);
     double zt(ecm/pn*((ifp.m_z-1.0)/rf-mk2/gam*(saj+mj2-ma2)/ecm));

@@ -103,7 +103,7 @@ int Dire::PerformShowers()
   }
   if (m_wcheck && dabs(m_weight)>m_maxweight) {
     m_maxweight=dabs(m_weight);
-    std::string rname="dire.random.dat";
+    std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());

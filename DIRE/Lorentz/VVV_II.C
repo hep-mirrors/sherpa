@@ -85,6 +85,7 @@ Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,VVV_II>::
 operator()(const Parameter_Type &args) const
 {
   if (args.m_type!=3) return NULL;
+  if (args.m_swap) return NULL;
   if (args.p_v->in[0].IntSpin()==2 &&
       args.p_v->in[1].IntSpin()==2 &&
       args.p_v->in[2].IntSpin()==2) {

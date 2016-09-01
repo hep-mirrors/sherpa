@@ -17,7 +17,7 @@ namespace DIRE {
     Kernel *p_sk;
     int     m_type;
 
-    ATOOLS::Flavour m_fl[3];
+    ATOOLS::Flavour_Vector m_fl;
 
     ATOOLS::Mass_Selector *p_ms;
 
@@ -28,8 +28,8 @@ namespace DIRE {
 
     void SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const;
 
-    int Update(Splitting &s,const PHASIC::Kin_Args &ff,
-	       const int mode) const;
+    int Update(Splitting &s,const PHASIC::Kin_Args &ff,const int mode,
+	       const ATOOLS::Vec4D &pl=ATOOLS::Vec4D()) const;
 
   public:
 
@@ -46,7 +46,7 @@ namespace DIRE {
     virtual bool GeneratePoint(Splitting &s) const = 0;
     virtual int Construct(Splitting &s,const int mode) const = 0;
 
-    virtual bool Compute(Splitting &s) const = 0;
+    virtual bool Compute(Splitting &s,const int mode=1) const = 0;
     virtual bool Cluster(Splitting &s,const int mode) const = 0;
 
     bool Allowed(const Splitting &s) const;
@@ -54,6 +54,7 @@ namespace DIRE {
     bool SetLimits(Splitting &s) const;
 
     inline const ATOOLS::Flavour &Flav(const int i) const { return m_fl[i]; }
+    inline const ATOOLS::Flavour_Vector &Flavs() const { return m_fl; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
 

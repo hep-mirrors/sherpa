@@ -2,6 +2,7 @@
 
 #include "DIRE/Shower/Shower.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace DIRE;
@@ -62,9 +63,48 @@ bool Lorentz_II::Cluster(Splitting &s,const int mode) const
   return true;
 }
 
-bool Lorentz_II::Compute(Splitting &s) const
+bool Lorentz_II::Compute(Splitting &s,const int mode) const
 {
-  s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
-  s.m_x=s.m_z-s.m_t/s.m_Q2/(1.0-s.m_z);
-  return s.m_x>s.m_eta && s.m_y>0.0 && s.m_x+s.m_y<1.0;
+  if (mode) {
+    s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
+    s.m_x=s.m_z-s.m_t/s.m_Q2/(1.0-s.m_z);
+  }
+  return s.m_x>s.m_eta && s.m_y>=0.0 && s.m_x+s.m_y<1.0;
+}
+
+Lorentz_II_123::Lorentz_II_123(const Kernel_Key &k):
+  Lorentz_II(k)
+{
+}
+
+double Lorentz_II_123::Jacobian(const Splitting &s) const
+{
+  return Lorentz_II::Jacobian(s);
+}
+
+int Lorentz_II_123::Construct(Splitting &s,const int mode) const
+{
+  if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
+  double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
+  double q2(Q2+s.m_mij2-s.m_mj2+s.m_s), xa(s.m_z2), za(s.m_x);
+  Kin_Args ff(s.m_t/Q2*sqr(xa/za),q2/(xa/za*Q2),s.m_phi,s.m_kin);
+  if (ConstructIIDipole
+      (-s.m_s,s.m_mj2,s.m_mij2,s.m_mk2,
+       -s.p_c->Mom(),-s.p_s->Mom(),ff)<0)
+    return -1;
+  double v((s.m_s+s.m_mi2+s.m_ml2)/(Q2/za));
+  Kin_Args ff2(v,xa-v,s.m_phi2,s.m_kin);
+  if (ConstructIIDipole
+      (s.m_mi2,s.m_ml2,-s.m_s,s.m_mk2,
+       ff.m_pi,ff.m_pk,ff2)<0) return -1;
+  ff.m_pj=ff2.m_lam*ff.m_pj;
+  ff.m_lam.insert(ff.m_lam.end(),ff2.m_lam.begin(),ff2.m_lam.end());
+  ff.m_pk=-ff2.m_pk;
+  ff.m_pi=-ff2.m_pi;
+  return Update(s,ff,mode,ff2.m_pj);
+}
+
+bool Lorentz_II_123::Cluster(Splitting &s,const int mode) const
+{
+  return false;
 }

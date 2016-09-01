@@ -60,9 +60,8 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
-  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"))
-        *ToType<double>(rpa->gen.Variable("CSS_SCALE_FACTOR"));
-  m_scv=ToType<double>(rpa->gen.Variable("CSS_SCALE_VARIATION_SCHEME"));
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  m_rcf=read->GetValue<double>("CSS_RECALC_FACTOR",4.0);
   m_kin=read->GetValue<int>("CSS_KIN_SCHEME",1);
   m_kfac=read->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   m_cpl=read->GetValue<int>("CSS_COUPLING_SCHEME",1);
@@ -97,9 +96,21 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	msg_Indent();
 	for (int type(0);type<4;++type)
 	  for (int mode(0);mode<2;++mode)
-	    AddKernel(new Kernel(this,Kernel_Key(v,mode,type,read)));
+	    for (int swap(0);swap<2;++swap)
+	      AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,read)));
       }
       msg_IODebugging()<<"}\n";
+    }
+  }
+  ATOOLS::Flavour_Vector fls(4);
+  for (long int i(-5);i<=5;++i) {
+    if (i==0) continue;
+    fls[0]=(fls[2]=Flavour(i)).Bar();
+    for (long int j(-5);j<=5;++j) {
+      if (j==0 || j==i) continue;
+      fls[3]=(fls[1]=Flavour(j)).Bar();
+      for (int type(0);type<4;++type)
+	AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
     }
   }
   return true;
@@ -168,13 +179,16 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 Splitting Shower::GeneratePoint(const Amplitude &a,const double &t)
 {
   Splitting win;
-  for (Amplitude::const_iterator
-	 it(a.begin());it!=a.end();++it) {
+  double tmin[2]={m_tmin[0],m_tmin[1]};
+  for (Amplitude::const_reverse_iterator
+	 it(a.rbegin());it!=a.rend();++it) {
     Splitting cur(GeneratePoint(**it,t));
     if (cur.p_c==NULL || cur.p_s==NULL) continue;
     if (cur.m_t<m_tmin[cur.m_type&1]) continue;
-    if (cur.m_t>win.m_t) win=cur;
+    m_tmin[0]=m_tmin[1]=(win=cur).m_t;
   }
+  m_tmin[0]=tmin[0];
+  m_tmin[1]=tmin[1];
   if (win.p_sk && win.m_t>m_tmin[win.m_type&1])
     msg_Debugging()<<"Emission at "<<win<<"\n";
   return win;
@@ -182,34 +196,42 @@ Splitting Shower::GeneratePoint(const Amplitude &a,const double &t)
 
 Splitting Shower::GeneratePoint(Parton &p,const double &t)
 {
-  double sum=0.0;
+  Splitting win(&p,NULL,t);
+  double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
   std::vector<Parton_Vector> specs(kit->second.size());
   std::vector<std::vector<double> > psum(kit->second.size());
   std::vector<std::vector<size_t> > splits(psum.size());
-  for (size_t j(0);j<kit->second.size();++j) {
-    double csum=0.0;
-    for (size_t i(0);i<p.Ampl()->size();++i) {
-      if ((*p.Ampl())[i]==&p) continue;
-      Splitting cur(&p,(*p.Ampl())[i]);
-      cur.SetType();
-      cur.m_kfac=m_kfac;
-      cur.m_cpl=m_cpl;
-      cur.m_t1=t;
-      for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
-	if (kit->second[j]->Allowed(cur)) {
-	  specs[j].push_back(cur.p_s);
-	  double I=kit->second[j]->Integral(cur);
-	  psum[j].push_back(csum+=dabs(I));
-	  splits[j].push_back(i);
-	}
-    }
-    if (psum[j].size()) sum+=psum[j].back();
-  }
-  if (sum==0.0) return Splitting();
-  Splitting win(&p,NULL,t);
   while (true) {
+    if (win.m_t*m_rcf<=ct) {
+      sum=0.0;
+      ct=win.m_t;
+      for (size_t j(0);j<kit->second.size();++j) {
+	specs[j].clear();
+	psum[j].clear();
+	splits[j].clear();
+	double csum=0.0;
+	for (int i(p.Ampl()->size()-1);i>=0;--i) {
+	  if ((*p.Ampl())[i]==&p) continue;
+	  Splitting cur(&p,(*p.Ampl())[i]);
+	  cur.SetType();
+	  cur.m_kfac=m_kfac;
+	  cur.m_cpl=m_cpl;
+	  cur.m_t1=ct;
+	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
+	    if (kit->second[j]->Allowed(cur)) {
+	      specs[j].push_back(cur.p_s);
+	      double I=kit->second[j]->Integral(cur);
+	      psum[j].push_back(csum+=dabs(I));
+	      splits[j].push_back(i);
+	    }
+	}
+	if (psum[j].size()) sum+=psum[j].back();
+      }
+      if (sum==0.0) return Splitting();
+      win=Splitting(&p,NULL,ct);
+    }
     win.m_t*=exp(log(ran->Get())*Max(2.0*M_PI/sum,1.0e-3));
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
@@ -224,7 +246,7 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;
 	    win.m_cpl=m_cpl;
-	    win.m_t1=t;
+	    win.m_t1=ct;
 	    if (!kit->second[j]->GeneratePoint(win)) {
 	      msg_Error()<<METHOD<<"(): Error generating point!\n";
 	      msg_Debugging()<<win<<"\nQ2 = "<<win.m_Q2

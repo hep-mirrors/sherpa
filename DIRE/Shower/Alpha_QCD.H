@@ -24,7 +24,6 @@ namespace DIRE {
 
     double B0(const double &nf) const;
     double B1(const double &nf) const;
-    double B2(const double &nf) const;
 
     double G2(const double &nf) const;
     double G3(const double &nf) const;

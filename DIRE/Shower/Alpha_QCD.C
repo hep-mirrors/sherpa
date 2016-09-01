@@ -31,11 +31,8 @@ void Alpha_QCD::SetLimits()
   Shower *ps(p_sk->PS());
   m_fac=(m_type&1)?ps->CplFac(1):ps->CplFac(0);
   double scale=(m_type&1)?ps->TMin(1):ps->TMin(0);
-  double scl(Max(p_cpl->CutQ2(),CplFac(scale)*scale*p_sk->PS()->MuR2Factor()));
-  double ct(0.);
-  if (p_sk->PS()->MuR2Factor()>1.) // only for f>1 cpl gets larger
-    ct=-(*p_cpl)(scl)/(2.*M_PI)*B0(0)*log(p_sk->PS()->MuR2Factor());
-  m_max=(*p_cpl)(scl)*(1.-ct);
+  double scl(Min(1.0,CplFac(scale))*scale);
+  m_max=(*p_cpl)(Max(p_cpl->CutQ2(),scl));
 }
 
 double Alpha_QCD::B0(const double &nf) const
@@ -89,52 +86,26 @@ double Alpha_QCD::CplFac(const double &scale) const
 
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
-  DEBUG_FUNC("");
   if (s.m_clu&1) return 1.0;
-  double scale(Scale(s)), mur2f(p_sk->PS()->MuR2Factor());
-  double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*mur2f);
+  double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
+  double scl(CplFac(scale)*scale*murf);
+  if (scl<p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
-  msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
-  msg_Debugging()<<"as(t)="<<(*p_cpl)(t)<<std::endl;
-  if (!IsEqual(scl,t)) {
-    msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
-    std::vector<double> ths(p_cpl->Thresholds(t,scl));
-    ths.push_back((scl>t)?scl:t);
-    ths.insert(ths.begin(),(scl>t)?t:scl);
-    if (t<scl) std::reverse(ths.begin(),ths.end());
-    msg_Debugging()<<"thresholds: "<<ths<<std::endl;
-    double fac(1.),ct(0.);
-    switch (p_sk->PS()->ScaleVariationScheme()) {
-    case 1:
-      // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
-      for (size_t i(1);i<ths.size();++i) {
-        ct=cpl/(2.*M_PI)*B0(p_cpl->Nf((ths[i]+ths[i-1])/2.0))*log(ths[i]/ths[i-1]);
-        fac*=1.0-ct;
-      }
-      break;
-    case 2:
-      // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
-      for (size_t i(1);i<ths.size();++i)
-        ct+=cpl/(2.*M_PI)*B0(p_cpl->Nf((ths[i]+ths[i-1])/2.0))*log(ths[i]/ths[i-1]);
-      fac=1.-ct;
-      break;
-    default:
-      fac=1.;
-      break;
+  if (!IsEqual(scl,s.m_t)) {
+    std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));
+    if (murf>1.0) std::reverse(ths.begin(),ths.end());
+    if (ths.empty() || !IsEqual(s.m_t,ths.back())) ths.push_back(s.m_t);
+    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
+    for (size_t i(1);i<ths.size();++i) {
+      double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
+      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
+      if ((s.m_kfac&6)==6) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
+      cpl*=1.0-ct;
     }
-    msg_Debugging()<<"ct="<<ct<<std::endl;
-    if (fac<0.) {
-      msg_Tracking()<<METHOD<<"(): Renormalisation term too large. Remove."
-                    <<std::endl;
-      fac=1.;
-    }
-    cpl*=fac;
-    msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
   }
   if (cpl>m_max) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
-               <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
-               <<", qmin = "<<sqrt(p_cpl->CutQ2())<<std::endl;
+    msg_Error()<<METHOD<<"(): Value exceeds maximum at \\mu = "
+	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
   }
   return cpl;
 }

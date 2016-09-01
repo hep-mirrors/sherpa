@@ -2,6 +2,7 @@
 
 #include "DIRE/Shower/Shower.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace DIRE;
@@ -69,7 +70,7 @@ bool Lorentz_IF::Cluster(Splitting &s,const int mode) const
   return true;
 }
 
-bool Lorentz_IF::Compute(Splitting &s) const
+bool Lorentz_IF::Compute(Splitting &s,const int mode) const
 {
   s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
   s.m_x=s.m_z;
@@ -78,4 +79,53 @@ bool Lorentz_IF::Compute(Splitting &s) const
   double muk2(s.m_mk2*s.m_z/s.m_Q2);
   double zp((1.0-s.m_z)/(1.0-s.m_z+muk2));
   return s.m_y>0.0 && s.m_y<zp;
+}
+
+Lorentz_IF_123::Lorentz_IF_123(const Kernel_Key &k):
+  Lorentz_IF(k)
+{
+}
+
+double Lorentz_IF_123::Jacobian(const Splitting &s) const
+{
+  double za(s.m_x), xa(s.m_z2);
+  double u(s.m_s*za/s.m_Q2), x(xa+s.m_s/s.m_Q2*za/xa);
+  double ct(1.0-2.0/(1.0+xa*xa/za/(s.m_s/s.m_Q2-u*(x/za-1.0))));
+  double J((1.0-ct*ct)/xa+(x-za)/(2.0*xa*xa)*sqr(1.0+ct)*((x-u)/xa-2.0));
+  return J/2.0*Lorentz_IF::Jacobian(s);
+}
+
+int Lorentz_IF_123::Construct(Splitting &s,const int mode) const
+{
+  Parton *b(NULL);
+  if (s.m_kin==0)
+    for (size_t i(0);i<s.p_c->Ampl()->size();++i)
+      if ((*s.p_c->Ampl())[i]->Beam()==3-s.p_c->Beam()) {
+	b=(*s.p_c->Ampl())[i];
+	break;
+      }
+  if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
+  double xa(s.m_z2), za(s.m_x);
+  double Q2(s.m_mij2+s.m_mk2-(s.p_c->Mom()+s.p_s->Mom()).Abs2());
+  Kin_Args ff(s.m_s*za/Q2,xa+s.m_s*za/Q2+s.m_t*za/(Q2*xa),s.m_phi,s.m_kin);
+  if (ff.m_z>1.0) return -1.0;
+  ff.m_mk2=Q2*(xa/za-1.0)+s.m_s+s.m_t/xa;
+  if (ConstructIFDipole
+      (s.m_mi2,s.m_ml2,s.m_mij2,s.m_mk2,b?p_ms->Mass2(b->Flav()):0.0,
+       -s.p_c->Mom(),s.p_s->Mom(),b?-b->Mom():Vec4D(),ff)<0)
+    return -1;
+  double y2(2.0*(ff.m_pk*(ff.m_pi-ff.m_pj))/(ff.m_mk2-s.m_mk2-s.m_mj2));
+  Kin_Args ff2(ff.m_mk2?1.0/(1.0+y2):0.0,1.0-2.0/
+	       (1.0+xa*xa/za/(s.m_t/Q2-ff.m_y*(ff.m_z/za-1.0))),s.m_phi2);
+  if (ConstructFFDipole
+      (s.m_mk2,s.m_mj2,ff.m_mk2,-s.m_s,
+       ff.m_pk,ff.m_pi-ff.m_pj,ff2)<0) return -1;
+  ff.m_pk=ff2.m_pi;
+  ff.m_pi=-ff.m_pi;
+  return Update(s,ff,mode,ff2.m_pj);
+}
+
+bool Lorentz_IF_123::Cluster(Splitting &s,const int mode) const
+{
+  return false;
 }

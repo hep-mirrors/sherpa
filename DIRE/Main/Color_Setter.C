@@ -17,9 +17,7 @@ using namespace DIRE;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-namespace DIRE {
-  size_t s_clmaxtrials(900);
-}
+size_t s_clmaxtrials(900);
 
 Color_Setter::Color_Setter(const int mode): m_cmode(mode)
 {

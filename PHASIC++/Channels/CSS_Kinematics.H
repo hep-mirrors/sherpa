@@ -6,7 +6,7 @@
 namespace PHASIC {
 
   struct Kin_Args {
-    double m_y, m_z, m_phi;
+    double m_y, m_z, m_phi, m_mk2;
     ATOOLS::Vec4D m_pi, m_pj, m_pk;
     ATOOLS::Poincare_Sequence m_lam;
     int m_mode, m_stat;
@@ -14,7 +14,8 @@ namespace PHASIC {
     inline Kin_Args(const double &y=0.0,const double &z=0.0,
 		    const double &phi=0.0,const int mode=0,
 		    const int stat=-1):
-      m_y(y), m_z(z), m_phi(phi), m_mode(mode), m_stat(stat) {}
+      m_y(y), m_z(z), m_phi(phi), m_mk2(-1.0),
+      m_mode(mode), m_stat(stat) {}
   };// end of struct Kin_Args
 
   struct LN_Pair {

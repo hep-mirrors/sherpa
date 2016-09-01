@@ -20,9 +20,24 @@ namespace DIRE {
 
     bool Cluster(Splitting &s,const int mode) const;
 
-    bool Compute(Splitting &s) const;
+    bool Compute(Splitting &s,const int mode=1) const;
 
   };// end of class Lorentz_IF
+
+  class Lorentz_IF_123: public Lorentz_IF {
+  protected:
+
+    double Jacobian(const Splitting &s) const;
+
+  public:
+
+    Lorentz_IF_123(const Kernel_Key &k);
+
+    int Construct(Splitting &s,const int mode) const;
+
+    bool Cluster(Splitting &s,const int mode) const;
+
+  };// end of class Lorentz_IF_123
 
 }// end of namepsace DIRE
 
