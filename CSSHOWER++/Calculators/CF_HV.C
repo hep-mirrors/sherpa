@@ -76,7 +76,7 @@ double CF_HV::Coupling(const double &scale,const int pol)
 {
   if (pol!=0) return 0.0;
   double scl(CplFac(scale)*scale);
-  return (*p_cpl)(scl)*m_q;
+  return m_last = (*p_cpl)(scl)*m_q;
 }
 
 bool CF_HV::AllowSpec(const ATOOLS::Flavour &fl) 

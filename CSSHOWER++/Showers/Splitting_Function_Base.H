@@ -34,16 +34,17 @@ namespace CSSHOWER {
   public:
     ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
-    int m_mode, m_kfmode, m_ewmode, m_col;
+    int m_mode, m_kfmode, m_qcdmode, m_ewmode, m_col;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
     inline SF_Key(ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
-		  const int mode,const cstp::code type,
-		  const int kfmode,const int ewmode,const int col):
+		  const int mode,const cstp::code type,const int kfmode,
+		  const int qcdmode,const int ewmode,const int col):
       p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
-      m_ewmode(ewmode), m_col(col), m_type(type), p_cf(NULL) {}
+      m_qcdmode(qcdmode), m_ewmode(ewmode), m_col(col), m_type(type),
+      p_cf(NULL) {}
     std::string ID(const int mode) const;
   };
 
@@ -75,6 +76,9 @@ namespace CSSHOWER {
     SF_Lorentz(const SF_Key &key);
 
     virtual ~SF_Lorentz();
+
+    virtual double Scale(const double z,const double y,
+			 const double scale,const double Q2) const;
 
     virtual double operator()
       (const double z,const double y,const double eta,
@@ -134,7 +138,10 @@ namespace CSSHOWER {
 
     cstp::code m_type;
     double     m_cplfac;
+
+    //! Last unpolarized coupling value
     double     m_last;
+
     int        m_kfmode;
 
     /**
@@ -167,8 +174,12 @@ namespace CSSHOWER {
     virtual double Coupling(const double &scale,const int pol) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
 
+    //! Last unpolarized coupling value
     double Last() const { return m_last; }
+
+    //! Set last unpolarized coupling value
     void SetLast(double last) { m_last = last; } 
+
     virtual double CplFac(const double &scale) const;
 
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }

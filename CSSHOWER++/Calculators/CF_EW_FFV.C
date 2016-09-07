@@ -84,9 +84,9 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
 double CF_EW_FFZ::Coupling(const double &scale,const int pol)
 {
   if (pol>1) return 0.0;
-  if (scale<0.0) return m_cplmax.front()*m_q[pol];
+  if (scale<0.0) return m_last = m_cplmax.front()*m_q[pol];
   double scl(CplFac(scale)*scale);
-  return (*p_cpl)(scl)*m_q[pol];
+  return m_last = (*p_cpl)(scl)*m_q[pol];
 }
 
 bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl) 
@@ -116,7 +116,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
   else if (!f2.IsFermion()) f2=p_lf->FlA();
   if (f1.IsQuark()) {
     if (f1.IsDowntype()) std::swap<Flavour>(f1,f2);
-    int i((int)(f1.Kfcode())), j((int)(f2.Kfcode()));
+    //int i((int)(f1.Kfcode())), j((int)(f2.Kfcode()));
     if (md->Name().find("SM")==std::string::npos) vij=1.0;
     // else vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
   }

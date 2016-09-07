@@ -21,7 +21,7 @@ namespace CSSHOWER {
     double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    int m_ewmode;
+    int m_qcdmode,m_ewmode;
     ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
@@ -46,7 +46,7 @@ namespace CSSHOWER {
                     SHERPA::Variation_Weights *,
                     const bool &success);
   public:
-    Sudakov(PDF::ISR_Handler *isr,const int qed);
+    Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed);
     ~Sudakov();
 
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);

@@ -15,6 +15,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 
 #include <algorithm>
+#include <assert.h>
 
 using namespace CSSHOWER;
 using namespace PHASIC;
@@ -53,11 +54,12 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
+  int _qcd=_dataread->GetValue<int>("CSS_QCD_MODE",1);
   int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qed,_dataread,type);
+  p_shower = new Shower(_isr,_qcd,_qed,_dataread,type);
   
   p_next = new All_Singlets();
 
@@ -278,6 +280,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl,const bool & soft)
 
 bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
+  assert(ampl != NULL);
   CleanUp();
   DEBUG_FUNC("");
   for (Cluster_Amplitude *campl(ampl);
@@ -605,7 +608,8 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
   }
   if (xit!=m_xsmap.end()) {
-    bool test(xit->second->SetColours(moms));
+    xit->second->SetColours(moms);
+    //bool test(xit->second->SetColours(moms));
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
 		xit->second->Colours()[i][1]);
@@ -755,7 +759,8 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   if (mode!=0 && imin!=jmin) {
     Vec4D_Vector p=pmin;
     if (p.empty()) {
-      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration for:\n"
+		 <<(*ampl)<<"\n";
       return JetVeto(ampl,0);
     }
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
