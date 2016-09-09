@@ -17,7 +17,6 @@ namespace HepMC {
   class GenEvent;
   class GenVertex;
   class GenParticle;
-  class WeightContainer;
 }
 
 namespace ATOOLS {
@@ -95,6 +94,9 @@ namespace SHERPA {
                            double weight=1.0);
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, double weight=1.0);
     bool SubEvtList2ShortHepMC(EventInfo &evtinfo);
+
+    bool AddCrossSection(HepMC::GenEvent& event,
+                         const double& xs, const double& err);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }
