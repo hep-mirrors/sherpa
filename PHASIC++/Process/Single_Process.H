@@ -91,7 +91,7 @@ namespace PHASIC {
       size_t m_orderqcd;
       int m_fl1, m_fl2;
       double m_x1, m_x2;
-      double m_muR2, m_muF12, m_muF22;
+      double m_muR2, m_muF2;
       ATOOLS::ClusterAmplitude_Vector m_ampls;
       bool m_skipsfirstampl;
       double m_fallbackresult;
