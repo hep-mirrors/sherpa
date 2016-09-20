@@ -518,8 +518,7 @@ SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
     // fetch subevent-specific info, then reweight
     info.m_wgt = sub->m_mewgt;
     info.m_muR2 = sub->m_mu2[stp::ren];
-    info.m_muF12 = sub->m_mu2[stp::fac];
-    info.m_muF22 = info.m_muF12;
+    info.m_muF2 = sub->m_mu2[stp::fac];
     info.m_ampls = ClusterAmplitude_Vector(sub->p_ampl ? 1 : 0,
                                            sub->p_ampl);
     info.m_skipsfirstampl = true;
@@ -554,8 +553,7 @@ double Single_Process::ReweightWithoutSubevents(
   if (nometstype==mewgttype::none) { // non-NLO Born
     info.m_wgt = m_mewgtinfo.m_B;
     info.m_muR2 = m_mewgtinfo.m_mur2;
-    info.m_muF12 = m_mewgtinfo.m_muf2;
-    info.m_muF22 = info.m_muF12;
+    info.m_muF2 = m_mewgtinfo.m_muf2;
     info.m_ampls = ampls;
     info.m_skipsfirstampl = false;
     return ReweightBornLike(varparams, info);
@@ -563,8 +561,7 @@ double Single_Process::ReweightWithoutSubevents(
   } else { // NLO Born, Virtual Integrated, KP, DADS
     // calculate factors common to all these contributions
     info.m_muR2 = m_mewgtinfo.m_mur2;
-    info.m_muF12 = m_mewgtinfo.m_muf2;
-    info.m_muF22 = info.m_muF12;
+    info.m_muF2 = m_mewgtinfo.m_muf2;
     info.m_ampls = ampls;
     info.m_skipsfirstampl = false;
 
@@ -661,16 +658,15 @@ std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(
     SHERPA::Variation_Parameters * varparams,
     Single_Process::BornLikeReweightingInfo & info) const
 {
-  const double muF12new(info.m_muF12 * varparams->m_muF2fac);
-  const double muF22new(info.m_muF22 * varparams->m_muF2fac);
+  const double muF2new(info.m_muF2 * varparams->m_muF2fac);
   double fa(1.0);
   if (varparams->p_pdf1) {
-    varparams->p_pdf1->Calculate(info.m_x1, muF12new);
+    varparams->p_pdf1->Calculate(info.m_x1, muF2new);
     fa = varparams->p_pdf1->GetXPDF(info.m_fl1) / info.m_x1;
   }
   double fb(1.0);
   if (varparams->p_pdf2) {
-    varparams->p_pdf2->Calculate(info.m_x2, muF22new);
+    varparams->p_pdf2->Calculate(info.m_x2, muF2new);
     fb = varparams->p_pdf2->GetXPDF(info.m_fl2) / info.m_x2;
   }
   return std::make_pair(fa, fb);
@@ -681,11 +677,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     Single_Process::BornLikeReweightingInfo & info,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
-  // calculate Q2
-  if (info.m_muF12 != info.m_muF22) {
-    THROW(not_implemented, "Unequal factorisation scale factors.");
-  }
-  const double Q2(info.m_muF12 * varparams->m_muF2fac);
+  const double Q2(info.m_muF2 * varparams->m_muF2fac);
 
   // insert target PDF into ISR_Handler, such that ClusterSequenceInfo uses
   // them through the ISR_Handler instead of the nominal PDF
@@ -703,8 +695,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   // reset
   p_int->ISR()->SetPDF(nominalpdf1, 0);
   p_int->ISR()->SetPDF(nominalpdf2, 1);
-  p_int->ISR()->SetMuF2(info.m_muF12, 0);
-  p_int->ISR()->SetMuF2(info.m_muF12, 1);
+  p_int->ISR()->SetMuF2(info.m_muF2, 0);
+  p_int->ISR()->SetMuF2(info.m_muF2, 1);
 
   return csi;
 }
