@@ -20,8 +20,8 @@ double Kinematics_FF::GetKT2(const double &Q2,const double &y,const double &z,
   }
   double kt2=pipj*z*(1.0-z);
   if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
-  else if (flc.IsFermion()) kt2=pipj;
-  return kt2+mi2+mj2;
+  else if (flc.IsFermion()) kt2=pipj+mi2+mj2;
+  return kt2;
 }
 
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
@@ -79,7 +79,7 @@ double Kinematics_FI::GetKT2(const double &Q2,const double &y,const double &z,
   }
   double kt2=pipj*z*(1.0-z);
   if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
-  else if (flc.IsFermion()) kt2=pipj;
+  else if (flc.IsFermion()) kt2=pipj+mi2+mj2;
   return kt2;
 }
 
@@ -96,7 +96,7 @@ double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
     if (flc.IsFermion()) return 1.0/(1.0-kt2/z/(Q2-ma2-mi2-mj2));
     return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
   }
-  if (flc.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
+  if (flc.IsFermion()) return 1.0/(1.0-(kt2-mi2-mj2)/(Q2-ma2-mi2-mj2));
   return 1.0/(1.0-kt2/(z*(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
