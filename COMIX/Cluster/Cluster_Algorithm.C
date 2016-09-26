@@ -8,7 +8,6 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "COMIX/Phasespace/PS_Channel.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Math/Random.H"
@@ -452,13 +451,6 @@ bool Cluster_Algorithm::ClusterStep
 		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin,
 		      winfo.m_kt2.m_mode);
     if (p.empty()) {
-      msg_Debugging()<<"kinematics failed\n";
-      return false;
-    }
-    if ((-p[0][0]>rpa->gen.PBeam(0)[0] &&
-	 !IsEqual(-p[0][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
-	(-p[1][0]>rpa->gen.PBeam(1)[0] &&
-	 !IsEqual(-p[1][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }

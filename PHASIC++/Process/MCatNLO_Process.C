@@ -446,8 +446,8 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
-    if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
-      std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
+    // if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
+    //   std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     rproc->Integrator()->SetMomenta(*ampl);
     rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
     Cluster_Leg *lij(NULL);
@@ -501,8 +501,8 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     return p_nlomc->Weight();
   }
   p_selected=p_bproc;
-  if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
-    std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
+  // if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
+  //   std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
   ampl->SetNLO(4);
   bproc->Integrator()->SetMomenta(*p_ampl);

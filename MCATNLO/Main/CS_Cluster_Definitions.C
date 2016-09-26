@@ -70,8 +70,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       else {
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0)));
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
-	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	if (fi.m_y>1.0 || fi.m_stat!=1) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-fi.m_y,fi.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin);
       }
@@ -82,15 +81,13 @@ CS_Parameters CS_Cluster_Definitions::KT2
       Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
-	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
-	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	if (fi.m_z<0.0 || fi.m_stat!=1) return cs;
 	double kt2=p_shower->KinIF()->GetKT2(Q2,fi.m_y,fi.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
       }
       else {
 	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
-	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
-	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
+	if (ii.m_z<0.0 || ii.m_stat!=1) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,ii.m_y,ii.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
       }
@@ -104,13 +101,10 @@ CS_Parameters CS_Cluster_Definitions::KT2
 double CS_Cluster_Definitions::GetX
 (const Cluster_Leg *l,Splitting_Function_Base *const sf) const
 {
-  const Vec4D &p(l->Mom());
-  if (p.PPlus()<p.PMinus()) {
-    if (sf) sf->Lorentz()->SetBeam(0);
-    return -p.PPlus()/rpa->gen.PBeam(0).PPlus();
-  }
-  if (sf) sf->Lorentz()->SetBeam(1);
-  return -p.PMinus()/rpa->gen.PBeam(1).PMinus();
+  int beam((l->Id()&1)?0:1);
+  if (l->Id()&3==0) THROW(fatal_error,"Invalid call");
+  if (sf) sf->Lorentz()->SetBeam(beam);
+  return -p_shower->ISR()->GetX(l->Mom(),beam);
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
@@ -220,18 +214,10 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   if (i>1) {
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
     else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
-    if (k<=1) {
-      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-      if (lt.m_pk.PPlus()>sum.PPlus() ||
-	  lt.m_pk.PMinus()>sum.PMinus()) return Vec4D_Vector();
-    }
   }
   else {
     if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
-    Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-    if (lt.m_pi.PPlus()>sum.PPlus() ||
-	lt.m_pi.PMinus()>sum.PMinus()) return Vec4D_Vector();
   }
   if (lt.m_stat<0) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {

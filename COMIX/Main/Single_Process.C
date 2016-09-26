@@ -465,13 +465,10 @@ double COMIX::Single_Process::KPTerms(const int mode,
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   double eta0(0.0), eta1(0.0);
   if (mode==0) {
-    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(1).PMinus();
+    eta0=p_int->ISR()->GetX(p_int->Momenta()[0],0);
+    eta1=p_int->ISR()->GetX(p_int->Momenta()[1],1);
   }
-  else {
-    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
-  }
+  else THROW(fatal_error,"Internal error");
   return m_w * p_kpterms->Get(m_x[0], m_x[1], eta0, eta1,
                               m_flavs, mode, scalefac2);
 }

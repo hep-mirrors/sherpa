@@ -176,8 +176,8 @@ namespace PHASIC {
     virtual void FillOnshellConditions();
 
     static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl,
-			     const int mode=0);
-    static void SortFlavours(Process_Info &pi,const int mode=0);
+			     const int mode=1);
+    static void SortFlavours(Process_Info &pi,const int mode=1);
 
     static std::string GenerateName(const ATOOLS::Cluster_Amplitude *ampl);
     static std::string GenerateName(const ATOOLS::NLO_subevt *sub,

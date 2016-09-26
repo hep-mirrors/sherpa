@@ -32,7 +32,7 @@ namespace PDF {
 
     std::string m_name, m_type;
 
-    int m_mode, m_rmode; 
+    int m_mode, m_rmode, m_swap; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2];
@@ -71,6 +71,11 @@ namespace PDF {
 
     bool MakeISR(const double &sp,const double &y,
 		 ATOOLS::Vec4D_Vector &p,const ATOOLS::Flavour_Vector &flavs);
+    bool GenerateSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2,
+		      const double &ran);
+    bool AllowSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2) const;
+
+    double GetX(const ATOOLS::Vec4D &p,const int i) const;
 
     double PDFWeight(const int mode,
                      ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,

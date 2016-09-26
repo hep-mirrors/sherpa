@@ -87,6 +87,8 @@ namespace MCATNLO {
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 
+    inline PDF::ISR_Handler *ISR() { return p_isr; }
+
     inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
   };

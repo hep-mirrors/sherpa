@@ -548,13 +548,10 @@ double Single_Virtual_Correction::KPTerms(int mode, double scalefac2)
   // determine momentum fractions
   double eta0(0.), eta1(0.);
   if (mode == 0) {
-    eta0 = p_int->Momenta()[0].PPlus() / rpa->gen.PBeam(0).PPlus();
-    eta1 = p_int->Momenta()[1].PMinus() / rpa->gen.PBeam(1).PMinus();
+    eta0 = p_int->ISR()->GetX(p_int->Momenta()[0],0);
+    eta1 = p_int->ISR()->GetX(p_int->Momenta()[1],1);
   }
-  else {
-    eta0 = p_int->Momenta()[0].PPlus() / rpa->gen.PBeam(1).PMinus();
-    eta1 = p_int->Momenta()[1].PMinus() / rpa->gen.PBeam(0).PPlus();
-  }
+  else THROW(fatal_error,"Invalid call");
   // determine KP terms
   double kpterm(0.);
   if (p_partner->m_bvimode & 2) {
@@ -700,14 +697,14 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   double eta0=1.,eta1=1.;
   double w=1.;
   if (m_flavs[0].Strong()) {
-    eta0 = mom[0].PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
+    eta0 = p_int->ISR()->GetX(mom[0],0);
     m_x0 = eta0+ran->Get()*(1.-eta0);
     w *= (1.-eta0);
 //       m_x0 = eta0*std::exp(-ran->Get()*log(eta0));
 //       w *= -m_x0*log(eta0);
   }
   if (m_flavs[1].Strong()) {
-    eta1 = mom[1].PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
+    eta1 = p_int->ISR()->GetX(mom[1],1);
     m_x1 = eta1+ran->Get()*(1.-eta1);
     w *= (1.-eta1);
 //        m_x1 = eta1*std::exp(-ran->Get()*log(eta1));

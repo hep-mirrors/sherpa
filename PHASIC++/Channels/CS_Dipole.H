@@ -5,6 +5,8 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Org/Info_Key.H"
 
+namespace PDF { class ISR_Handler; }
+
 namespace PHASIC {
 
   class Vegas;
@@ -22,6 +24,7 @@ namespace PHASIC {
 
     Multi_Channel    *p_fsmc, *p_ismc;
     ATOOLS::Info_Key  m_isrspkey, m_isrykey;
+    PDF::ISR_Handler *p_isr;
 
     double m_alpha, m_oldalpha, m_weight, m_rbweight;
     double m_np, m_sum, m_sum2;
@@ -32,7 +35,7 @@ namespace PHASIC {
 
     std::map<size_t,size_t> m_brmap, m_rbmap;
 
-    size_t m_type, m_ijt, m_kt, m_idx, m_isrmode;
+    size_t m_type, m_ijt, m_kt, m_idx;
     bool   m_on, m_bmcw;
 
     ATOOLS::Flavour m_fli, m_flj, m_flk, m_flij;

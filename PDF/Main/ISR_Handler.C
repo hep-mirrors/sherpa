@@ -25,7 +25,7 @@ double Lambda2(double sp,double sp1,double sp2)
 
 ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
-  m_rmode(0),
+  m_rmode(0), m_swap(0),
   m_info_lab(8),
   m_info_cms(8)
 {
@@ -250,6 +250,10 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   if (PDF(1) && (m_x[1]<PDF(1)->XMin() || m_x[1]>PDF(1)->XMax())) return false;
   p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
   p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
+  if (m_swap) {
+    std::swap<Vec4D>(p[0],p[1]);
+    std::swap<Vec4D>(p_cms[0],p_cms[1]);
+  }
   m_cmsboost=Poincare(p_cms[0]+p_cms[1]);
   m_cmsboost.Boost(p[0]);
   m_cmsboost.Boost(p[1]);
@@ -258,6 +262,45 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   if (m_x[0]>=1.0) m_x[0]=1.0-1.0e-12;
   if (m_x[1]>=1.0) m_x[1]=1.0-1.0e-12;
   return true;
+}
+
+bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
+			       const ATOOLS::Flavour &f2,
+			       const double &ran)
+{
+  if (m_swap) {
+    m_swap=0;
+    std::swap<ISR_Base*>(p_isrbase[0],p_isrbase[1]);
+  }
+  int ok[2]={0,0};
+  if (p_isrbase[0]->PDF()->Contains(f2)) ok[0]=1;
+  else for (size_t j(0);j<f2.Size();++j)
+    if (p_isrbase[0]->PDF()->Contains(f2[j])) { ok[0]=1; break; }
+  if (p_isrbase[1]->PDF()->Contains(f1)) ok[1]=1;
+  else for (size_t j(0);j<f1.Size();++j)
+    if (p_isrbase[0]->PDF()->Contains(f1[j])) { ok[1]=1; break; }
+  if (!ok[0] || !ok[1]) return false;
+  if (ran>0.5) return true;
+  std::swap<ISR_Base*>(p_isrbase[0],p_isrbase[1]);
+  m_swap=1;
+  return true;
+}
+
+bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
+			    const ATOOLS::Flavour &f2) const
+{
+  return p_isrbase[0]->PDF()->Contains(f2) &&
+    p_isrbase[0]->PDF()->Contains(f1);
+}
+
+double ISR_Handler::GetX(const ATOOLS::Vec4D &p,const int i) const
+{
+  if (m_swap) {
+    if (i==0) return p.PMinus()/p_beam[1]->OutMomentum().PMinus();
+    return p.PPlus()/p_beam[0]->OutMomentum().PPlus();
+  }
+  if (i==0) return p.PPlus()/p_beam[0]->OutMomentum().PPlus();
+  return p.PMinus()/p_beam[1]->OutMomentum().PMinus();
 }
 
 void ISR_Handler::Reset() 
@@ -310,10 +353,10 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   x1=CalcX(p1);
   x2=CalcX(p2);
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
-		 <<p1.PPlus()<<" / "<<p_beam[0]->
+		   <<GetX(p1,0)<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
   msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
-		 <<p2.PMinus()<<" / "<<p_beam[1]->
+		   <<GetX(p2,1)<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
   if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
     msg_IODebugging()<<"  Q_1^2 out of bounds"<<std::endl;

@@ -285,6 +285,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   p_active=process;
   if (!process->Process()->GeneratePoint()) return 0.0;
   p_info->ResetAll();
+  double iscount=1.0;
   if (m_nin>1) {
     if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
@@ -309,6 +310,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
+    iscount=p_isrhandler->
+      GenerateSwap(p_active->Process()->Flavours()[0],
+		   p_active->Process()->Flavours()[1],ran->Get())?2.0:1.0;
     if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
@@ -356,11 +360,14 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       msg->SetPrecision(precision);
     }
     m_result*=m_psweight;
+    m_result*=iscount;
   }
   NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
   if (nlos) {
     (*nlos)*=m_psweight;
+    (*nlos)*=iscount;
     (*nlos).MultMEwgt(m_psweight);
+    (*nlos).MultMEwgt(iscount);
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
