@@ -157,6 +157,8 @@ namespace PDF {
 
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
 
+    inline int Swaped() const { return m_swap; }
+    
   };// end of class ISR_Handler
   
   /*!

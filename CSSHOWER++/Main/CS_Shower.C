@@ -494,7 +494,7 @@ Singlet *CS_Shower::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
-    if (is) parton->SetBeam(i);
+    if (is) parton->SetBeam(p_isr->Swaped()?1-i:i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
     if (m_respectq2)
