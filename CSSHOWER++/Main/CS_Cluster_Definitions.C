@@ -104,7 +104,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
       else {
 	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0));
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
+	if (lt.m_pk[3]*pk[3]>0.0 ||
+	    lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
 	cs.m_pk=lt.m_pk;
@@ -117,7 +118,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
       if ((k->Id()&3)==0) {
 	lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),3|(kin?4:0));
 	if ((kmode&1) && lt.m_mode) lt.m_stat=-1;
-	if (lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
+	if (lt.m_pi[3]*pi[3]>0.0 ||
+	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinIF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode&1);
 	cs.m_pk=lt.m_pk;
@@ -125,7 +127,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
       else {
 	lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3|(kin?4:0));
-	if (lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
+	if (lt.m_pi[3]*pi[3]>0.0 ||
+	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
 	cs.m_pk=lt.m_pk;
@@ -309,7 +312,8 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   if (i>1) {
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
     else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
-    if (lt.m_pk[0]<0.0) return Vec4D_Vector();
+    if (lt.m_pk[3]*(k>1?pk[3]:-pk[3])<0.0 ||
+	lt.m_pk[0]<0.0) return Vec4D_Vector();
   }
   else {
     if (k>1) {
@@ -317,7 +321,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
       if ((kmode&1) && lt.m_mode) lt.m_stat=-1;
     }
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
-    if (lt.m_pi[0]<0.0) return Vec4D_Vector();
+    if (lt.m_pi[3]*pi[3]>0.0 || lt.m_pi[0]<0.0) return Vec4D_Vector();
   }
   if (lt.m_stat<0) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
