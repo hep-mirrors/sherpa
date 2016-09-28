@@ -4,7 +4,6 @@
 #include "PHASIC++/Channels/Vegas.H"
 #include "PHASIC++/Channels/Channel_Basics.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -99,7 +98,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
     if (p_ismc) {
       m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
       m_isrykey[2]=(pp[0]+pp[1]).Y();
-      p_ismc->GenerateWeight(p_isr->On());
+      p_ismc->GenerateWeight(m_isrmode);
     }
   }
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
@@ -168,7 +167,9 @@ bool FI_Dipole::ValidPoint(const ATOOLS::Vec4D_Vector &p)
 {
   if (p[m_ijt].PPerp2()<m_amin*m_q2min) return m_on=false;
   if (2.0*p[m_ijt]*p[m_kt]<=m_q2min) return m_on=false;
-  double xmin(p_isr->GetX(p[m_kt],m_kt));
+  double xmin(0.0);
+  if (p[m_kt][3]>0.0) xmin=p[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else xmin=p[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   return m_on=xmin<1.0-m_amin;
 }
 
@@ -178,7 +179,8 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
   DEBUG_FUNC("");
   double *rn(p_vegas->GeneratePoint(rns));
   msg_Debugging()<<"vegased :     ";
-  m_xmin=p_isr->GetX(p[m_kt],m_kt);
+  if (p[m_kt][3]>0.0) m_xmin=p[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"x = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
   if (!m_massive) {
@@ -226,7 +228,8 @@ double FI_Dipole::GenerateWeight
   double Q2(2.0*pp[m_ijt]*pp[m_kt]);
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  m_xmin=p_isr->GetX(p[m_kt],m_kt);
+  if (pp[m_kt][3]>0.0) m_xmin=pp[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
@@ -238,7 +241,7 @@ double FI_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(p_isr->On());
+    p_ismc->GenerateWeight(m_isrmode);
   }
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[0],m_xexp)*pow(m_rn[1],m_zexp);
@@ -287,7 +290,9 @@ IF_Dipole::~IF_Dipole() {}
 bool IF_Dipole::ValidPoint(const ATOOLS::Vec4D_Vector &p)
 {
   if (p[m_kt].PPerp2()<m_amin*m_q2min) return m_on=false;
-  double xmin(p_isr->GetX(p[m_ijt],m_ijt));
+  double xmin(0.0);
+  if (p[m_ijt][3]>0.0) xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   if (1.0-xmin<m_amin) return m_on=false;
   return m_on=2.0*p[m_ijt]*p[m_kt]>m_q2min;
 }
@@ -297,7 +302,8 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
 {
   DEBUG_FUNC("");
   double *rn(p_vegas->GeneratePoint(rns));
-  m_xmin=p_isr->GetX(p[m_ijt],m_ijt);
+  if (p[m_ijt][3]>0.0) m_xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", u = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
@@ -354,7 +360,8 @@ double IF_Dipole::GenerateWeight
   }
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  m_xmin=p_isr->GetX(p[m_ijt],m_ijt);
+  if (pp[m_ijt][3]>0.0) m_xmin=pp[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", u = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
@@ -367,7 +374,7 @@ double IF_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(p_isr->On());
+    p_ismc->GenerateWeight(m_isrmode);
   }
   double Q2(2.0*pp[m_ijt]*pp[m_kt]);
   m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
@@ -404,7 +411,9 @@ II_Dipole::~II_Dipole() {}
 bool II_Dipole::ValidPoint(const ATOOLS::Vec4D_Vector &p)
 {
   if (2.0*p[m_ijt]*p[m_kt]<=m_q2min) return m_on=false;
-  double xmin(p_isr->GetX(p[m_ijt],m_ijt));
+  double xmin(0.0);
+  if (p[m_ijt][3]>0.0) xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   return m_on=xmin<1.0-m_amin;
 }
 
@@ -414,7 +423,8 @@ ATOOLS::Vec4D_Vector II_Dipole::GeneratePoint
   DEBUG_FUNC("");
   // massless x- and v-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
-  m_xmin=p_isr->GetX(p[m_ijt],m_ijt);
+  if (p[m_ijt][3]>0.0) m_xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", v = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
@@ -445,7 +455,8 @@ double II_Dipole::GenerateWeight
             m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt],pp);
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  m_xmin=p_isr->GetX(p[m_ijt],m_ijt);
+  if (pp[m_ijt][3]>0.0) m_xmin=pp[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", v = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
@@ -458,7 +469,7 @@ double II_Dipole::GenerateWeight
     p_fsmc->GenerateWeight(&pp.front(),cuts);
     m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
     m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(p_isr->On());
+    p_ismc->GenerateWeight(m_isrmode);
   }
   // 2(pa*pb)/16pi^2
   m_weight=(p[m_sub.m_i]+p[m_sub.m_k]).Abs2()/

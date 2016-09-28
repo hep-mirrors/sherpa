@@ -438,18 +438,21 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
 {
   m_x[0]=m_x[1]=1.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return;
+  const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
+  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
+	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
+  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
+	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
   if (mode==0) {
     Single_Process *sp(p_map!=NULL?p_map:this);
     double eta0=1.0, eta1=1.0;
     double w=sp->p_bg->Coupling(0)/(2.0*M_PI);
     bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
     if (m_flavs[0].Strong()) {
-      eta0=p_int->ISR()->X1();
       m_x[0]=map?p_map->m_x[0]:eta0+ran->Get()*(1.0-eta0);
       w*=(1.0-eta0);
     }
     if (m_flavs[1].Strong()) {
-      eta1=p_int->ISR()->X2();
       m_x[1]=map?p_map->m_x[1]:eta1+ran->Get()*(1.-eta1);
       w*=(1.0-eta1);
     }
@@ -463,12 +466,11 @@ double COMIX::Single_Process::KPTerms(const int mode,
                                       double scalefac2)
 {
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
-  double eta0(0.0), eta1(0.0);
-  if (mode==0) {
-    eta0=p_int->ISR()->GetX(p_int->Momenta()[0],0);
-    eta1=p_int->ISR()->GetX(p_int->Momenta()[1],1);
-  }
-  else THROW(fatal_error,"Internal error");
+  const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
+  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
+	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
+  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
+	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
   return m_w * p_kpterms->Get(m_x[0], m_x[1], eta0, eta1,
                               m_flavs, mode, scalefac2);
 }
