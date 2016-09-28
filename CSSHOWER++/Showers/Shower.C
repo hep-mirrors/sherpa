@@ -94,7 +94,7 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 
 double Shower::GetXBj(Parton *const p) const
 {
-  return p_isr->GetX(p->Momentum(),p->Beam());
+  return p_isr->CalcX(p->Momentum());
 }
 
 int Shower::SetXBj(Parton *const p) const
@@ -110,7 +110,7 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   Vec4D mom(p->Momentum());
   if (lt) mom=(*lt)*mom;
   if (mom[0]<0.0 || mom.Nan()) return -1;
-  double x(p_isr->GetX(mom,p->Beam()));
+  double x(p_isr->CalcX(mom));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBeam(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
   return p_isr->GetRemnant(p->Beam())->

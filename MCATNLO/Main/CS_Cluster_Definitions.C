@@ -107,7 +107,7 @@ double CS_Cluster_Definitions::GetX
   int beam((l->Id()&1)?0:1);
   if (l->Id()&3==0) THROW(fatal_error,"Invalid call");
   if (sf) sf->Lorentz()->SetBeam(beam);
-  return -p_shower->ISR()->GetX(l->Mom(),beam);
+  return -p_shower->ISR()->CalcX(l->Mom());
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const

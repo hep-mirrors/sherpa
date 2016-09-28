@@ -50,8 +50,6 @@ namespace PHASIC {
   class IF_Dipole: public CS_Dipole {
   private:
     double m_xmin,m_xexp, m_uexp, m_mk2;
-    inline ATOOLS::Vec4D Rotate(const ATOOLS::Vec4D &p) const
-    { return ATOOLS::Vec4D(p[0],-p[1],-p[2],-p[3]); }
   public:
 
     IF_Dipole(ATOOLS::NLO_subevt *const sub,
@@ -71,8 +69,6 @@ namespace PHASIC {
   class II_Dipole: public CS_Dipole {
   private:
     double m_xmin, m_xexp, m_vexp;
-    inline ATOOLS::Vec4D Rotate(const ATOOLS::Vec4D &p) const
-    { return m_ijt==m_sub.m_i?p:ATOOLS::Vec4D(p[0],-p[1],-p[2],-p[3]); }
   public:
 
     II_Dipole(ATOOLS::NLO_subevt *const sub,

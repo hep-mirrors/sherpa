@@ -75,8 +75,6 @@ namespace PDF {
 		      const double &ran);
     bool AllowSwap(const ATOOLS::Flavour &f1,const ATOOLS::Flavour &f2) const;
 
-    double GetX(const ATOOLS::Vec4D &p,const int i) const;
-
     double PDFWeight(const int mode,
                      ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
                      ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
@@ -157,8 +155,6 @@ namespace PDF {
 
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
 
-    inline int Swaped() const { return m_swap; }
-    
   };// end of class ISR_Handler
   
   /*!

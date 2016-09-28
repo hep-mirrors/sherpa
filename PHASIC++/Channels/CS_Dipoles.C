@@ -323,9 +323,6 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
   pp[m_sub.m_i]=ifp.m_pi;
   pp[m_sub.m_j]=ifp.m_pj;
   pp[m_sub.m_k]=ifp.m_pk;
-  if (m_ijt!=m_sub.m_i) {
-    for (size_t i(0);i<pp.size();++i) pp[i]=Rotate(pp[i]);
-  }
   return pp;
 }
 
@@ -334,30 +331,15 @@ double IF_Dipole::GenerateWeight
 {
   Vec4D_Vector pp(p.size()-1);
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
-  if (m_ijt==m_sub.m_i) {
-    Kin_Args ifp(ClusterIFDipole
-		(0.0,0.0,0.0,m_mk2,0.0,
-		 p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],Vec4D(),1|4));
-    if (ifp.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
-    m_rn[0]=ifp.m_z;
-    m_rn[1]=ifp.m_y;
-    m_rn[2]=ifp.m_phi;
-    pp[m_ijt]=ifp.m_pi;
-    pp[m_kt]=ifp.m_pk;
-  }
-  else {
-    for (size_t i(0);i<pp.size();++i) pp[i]=Rotate(pp[i]);
-    Kin_Args ifp(ClusterIFDipole
-		(0.0,0.0,0.0,m_mk2,0.0,
-		 Rotate(p[m_sub.m_i]),Rotate(p[m_sub.m_j]),
-		 Rotate(p[m_sub.m_k]),Vec4D(),1|4));
-    if (ifp.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
-    m_rn[0]=ifp.m_z;
-    m_rn[1]=ifp.m_y;
-    m_rn[2]=ifp.m_phi;
-    pp[m_ijt]=ifp.m_pi;
-    pp[m_kt]=ifp.m_pk;
-  }
+  Kin_Args ifp(ClusterIFDipole
+	       (0.0,0.0,0.0,m_mk2,0.0,
+		p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],Vec4D(),1|4));
+  if (ifp.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
+  m_rn[0]=ifp.m_z;
+  m_rn[1]=ifp.m_y;
+  m_rn[2]=ifp.m_phi;
+  pp[m_ijt]=ifp.m_pi;
+  pp[m_kt]=ifp.m_pk;
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
   if (pp[m_ijt][3]>0.0) m_xmin=pp[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
@@ -514,13 +496,9 @@ void II_Dipole::Calculate
   ATOOLS::Lorentz_Ten2D Lambda = MetricTensor()
                                  - 2./(K+Kt).Abs2()*BuildTensor(Kt+K,Kt+K)
                                  + 2./Kt.Abs2()*BuildTensor(Kt,K);
-
-  pijt=Rotate(pijt);
-  pkt=Rotate(pkt);
-
   for (size_t j(2), i(j);j<kjt.size();++i,++j) {
     if (i==m_sub.m_j) ++i;
-    kjt[m_rbmap[i]] = Rotate(Contraction(Lambda,2,kj[i]));
+    kjt[m_rbmap[i]] = Contraction(Lambda,2,kj[i]);
     msg_Debugging()<<"("<<i<<"):"<<kj[i]
 		   <<" -> ("<<m_rbmap[i]<<"):"<<kjt[m_rbmap[i]]<<std::endl;
   }
@@ -534,8 +512,8 @@ void II_Dipole::Construct
  const ATOOLS::Vec4D_Vector& kjt)
 {
   DEBUG_FUNC("");
-  Vec4D pijt=Rotate(ipijt);
-  Vec4D pkt=Rotate(ipkt);
+  Vec4D pijt=ipijt;
+  Vec4D pkt=ipkt;
   pi=1./x*pijt;
   pk=pkt;
 
@@ -556,7 +534,7 @@ void II_Dipole::Construct
 
   for (size_t i(0);i<kjt.size();++i) {
     if (i!=m_ijt && i!=m_kt) {
-      kj[m_brmap[i]] = Contraction(Lambda,2,Rotate(kjt[i]));
+      kj[m_brmap[i]] = Contraction(Lambda,2,kjt[i]);
       msg_Debugging()<<"("<<i<<"):"<<kjt[i]
                      <<" -> ("<<m_brmap[i]<<"):"<<kj[m_brmap[i]]<<std::endl;
     }

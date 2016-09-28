@@ -64,7 +64,7 @@ Shower::~Shower()
 
 int Shower::SetXBj(Parton *const p) const
 {
-  double x(p_isr->GetX(p->Momentum(),p->Beam()));
+  double x(p_isr->CalcX(p->Momentum()));
   if (x>1.0) return -1;
   p->SetXbj(x);
   return 1;
@@ -73,7 +73,7 @@ int Shower::SetXBj(Parton *const p) const
 int Shower::RemnantTest(Parton *const p)
 {
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
-  double x(p_isr->GetX(p->Momentum(),p->Beam()));
+  double x(p_isr->CalcX(p->Momentum()));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),p->Momentum())?1:-1;

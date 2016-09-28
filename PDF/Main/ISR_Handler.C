@@ -268,10 +268,7 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 			       const ATOOLS::Flavour &f2,
 			       const double &ran)
 {
-  if (m_swap) {
-    m_swap=0;
-    std::swap<ISR_Base*>(p_isrbase[0],p_isrbase[1]);
-  }
+  if (m_swap) m_swap=0;
   int ok[2]={0,0};
   if (p_isrbase[0]->PDF()->Contains(f2)) ok[0]=1;
   else for (size_t j(0);j<f2.Size();++j)
@@ -281,7 +278,6 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
     if (p_isrbase[0]->PDF()->Contains(f1[j])) { ok[1]=1; break; }
   if (!ok[0] || !ok[1]) return false;
   if (ran>0.5) return true;
-  std::swap<ISR_Base*>(p_isrbase[0],p_isrbase[1]);
   m_swap=1;
   return true;
 }
@@ -291,16 +287,6 @@ bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
 {
   return p_isrbase[0]->PDF()->Contains(f2) &&
     p_isrbase[0]->PDF()->Contains(f1);
-}
-
-double ISR_Handler::GetX(const ATOOLS::Vec4D &p,const int i) const
-{
-  if (m_swap) {
-    if (i==0) return p.PMinus()/p_beam[1]->OutMomentum().PMinus();
-    return p.PPlus()/p_beam[0]->OutMomentum().PPlus();
-  }
-  if (i==0) return p.PPlus()/p_beam[0]->OutMomentum().PPlus();
-  return p.PMinus()/p_beam[1]->OutMomentum().PMinus();
 }
 
 void ISR_Handler::Reset() 
@@ -334,7 +320,6 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
                               double Q12,double Q22,Flavour fl1,Flavour fl2,
                               int warn)
 {
-  // mode&1 -> swap beams
   // mode&2 -> override m_mode and only calc left beam
   // mode&4 -> override m_mode and only calc right beam
   // mode&8 -> return xf in mode 2 & 4
@@ -343,9 +328,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   if (fl1.Size()>1 || fl2.Size()>1)
     THROW(fatal_error,"Do not try to calculate an ISR weight with containers.");
   double x1(0.),x2(0.);
-  if (mode&1) {
-    p1[3]=-p1[3];
-    p2[3]=-p2[3];
+  if (p1[3]<p2[3]) {
     std::swap<Flavour>(fl1,fl2);
     std::swap<Vec4D>(p1,p2);
     std::swap<double>(Q12,Q22);
@@ -353,10 +336,10 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   x1=CalcX(p1);
   x2=CalcX(p2);
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
-		   <<GetX(p1,0)<<" / "<<p_beam[0]->
+		   <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
   msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
-		   <<GetX(p2,1)<<" / "<<p_beam[1]->
+		   <<p2.PPlus()<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
   if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
     msg_IODebugging()<<"  Q_1^2 out of bounds"<<std::endl;
@@ -397,8 +380,8 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
                     CheckRemnantKinematics(fl2,x2,1,false))) {
     double f1=(cmode&1)?p_isrbase[0]->Weight(fl1):1.0;
     double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
-    m_xf1[mode&1]=x1*f1;
-    m_xf2[mode&1]=x2*f2;
+    m_xf1[0]=x1*f1;
+    m_xf2[0]=x2*f2;
     msg_IODebugging()<<"  PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
     msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
