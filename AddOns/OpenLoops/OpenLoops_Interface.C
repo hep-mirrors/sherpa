@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/UFO/UFO_Model.H"
@@ -8,6 +9,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <algorithm>
 #include <sys/stat.h>
 
@@ -102,6 +104,10 @@ namespace OpenLoops {
     // set OL path
     SetParameter("install_path", s_olprefix.c_str());
 
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_size()>1) SetParameter("splash","0");
+#endif
+    
     // set remaining OL parameters specified by user
     vector<string> parameters;
     reader.VectorFromFile(parameters,"OL_PARAMETERS");
