@@ -44,7 +44,7 @@ namespace AMEGIC {
     //exhibits the points, the topology and the permutation number
     Pre_Ampl_List    prea_table;
     
-    void Set_End(Point*,int* &,int&);
+    void Set_End(Point*,const int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
     inline int MatchVertex(AMEGIC::Single_Vertex* v,
@@ -55,12 +55,12 @@ namespace AMEGIC {
       if (flav[2].Kfcode() && flav[2]!=v->in[2]) return 0;
       flav[1]=v->in[1];
       flav[2]=v->in[2];
-      cpl.clear();
-      for (int j=0;j<v->cpl.size();++j) cpl.push_back(v->Coupling(j));
+      cpl.resize(v->cpl.size());
+      for (int j=0;j<v->cpl.size();++j) cpl[j]=v->Coupling(j);
       return 1;
     }
     int  CheckEnd(Point*,ATOOLS::Flavour);  
-    void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
+    void SetProps(Point*,int,Single_Amplitude* &, int, int);
     int  Kill_Off(Single_Amplitude* &);
     int  SingleCompare(Point*,Point*);
     void CountOrders(Single_Amplitude* &);

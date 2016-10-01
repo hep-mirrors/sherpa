@@ -57,7 +57,7 @@ Amplitude_Generator::~Amplitude_Generator()
   prea_table.clear();
 }
 
-void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
+void Amplitude_Generator::Set_End(Point* p,const int* &perm,int& pnum)
 {
   assert(p != NULL);
   p->b     = 0;
@@ -126,8 +126,6 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
   if (p->left->fl.Kfcode() && p->right->fl.Kfcode()) { 
     Flavour flav[3];
     Flavour s_flav[3];
-    vector <Complex> cpl;
-    cpl.clear();
 
     flav[0] = infl;
     flav[1] = p->left->fl;
@@ -168,9 +166,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
     Vertex_List & vl= v_table[flav[0]];
 
     for (size_t j=0;j<vl.size();j++) {
-      if (MatchVertex(vl[j],flav,cpl)) {
-	p->cpl.clear();
-	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
+      if (MatchVertex(vl[j],flav,p->cpl)) {
 	p->v = vl[j];
 	if (p->Color==NULL) p->Color = new Color_Function();
 	*p->Color = vl[j]->Color.back();
@@ -185,7 +181,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
   return 0;
 }
 
-void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,int* perm,int topcount, int permcount)
+void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,int topcount, int permcount)
 {
   int ap = 0;
   int lanz = 1;
@@ -204,7 +200,6 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
   int sw1;
   Flavour flav[3];
   Flavour s_flav[3];
-  vector<Complex> cpl;
 
   int first_try = 1;
   
@@ -282,7 +277,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	flav[1]=s_flav[1];
 	flav[2]=s_flav[2];
 
-	if (MatchVertex(vl[i],flav,cpl)) {
+	if (MatchVertex(vl[i],flav,p->cpl)) {
 	  if (flav[0].Majorana()) {    
 	    if (flav[1].IsFermion() && p->left->b==0)  p->left->b  = p->b;
 	    if (flav[2].IsFermion() && p->right->b==0) p->right->b = p->b;
@@ -309,8 +304,6 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();
 	  p->t = vl[i]->t;
 	  
-	  p->cpl.clear();
-	  for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	  ll = 0;top->Copy(prea[ap].p,prea[lanz].p,ll);
 	  ll = 0;top->Copy(preah,prea[ap].p,ll);
 	  prea[lanz].on = 1;
@@ -1026,33 +1019,20 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
 
 Single_Amplitude* Amplitude_Generator::Matching()
 {
-  int nloop = N-1;
   short int i,j;
-  int* ii = new int[nloop];
-  for (i=0;i<nloop;i++) ii[i] = 0;
-  int* perm = new int[N];
   int sw1;
   int qsum,lsum; 
   Single_Amplitude* first_amp;
-  int over = 0;
-  perm[0]  = 0;
   first_amp = 0;
 
   int count = 0;
   int start_top = 0;
   int end_top = single_top->number;
 
-  for(;;) {
+  Permutation perms(N);
+  for (int i=0;i<perms.MaxNumber()/N;i++) {
+    const int *perm=perms.Get(i);
     sw1 = 1;
-    for (j=0;j<nloop;j++) perm[j+1] = ii[j];
-    
-    for(i=0;i<N;i++) {
-      for (j=i+1;j<N;j++) 
-	if (perm[i]==perm[j]) {sw1 = 0;break;}
-    }
-
-    if (sw1) count++;
-
     if (sw1) { 
       if (fl[0].IsQuark() && !fl[0].IsAnti()) {
 	if (!((fl[perm[N-1]].IsQuark() && 
@@ -1130,27 +1110,14 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	single_top->p[j][0].fl     = fl[*perm];
 	single_top->p[j][0].b      = b[*perm];
 
-	SetProps(single_top->p[j],2*N-3,first_amp,perm,j,count);
+	SetProps(single_top->p[j],2*N-3,first_amp,j,count);
 	
 	//msg_Out()<<"-----------------------------------"<<std::endl;
 	//msg_Out()<<"  "<<single_top->p[j][0].fl<<"("<<single_top->p[j][0].b<<")"<<endl;
   	//Print_P(&single_top->p[j][0]);
       }
     }     
-    for (j=nloop-1;j>=0;j--) {
-      if ((ii[j]+1)<N) {
-	ii[j]++;            
-	break;
-      }
-      else {
-	ii[j] = 0;
-	if (j==0) over = 1;
-      }
-    }
-    if (over) break;
   }
-  delete[] ii;
-  delete[] perm;
   
   CreateSingleAmplitudes(first_amp);
   
