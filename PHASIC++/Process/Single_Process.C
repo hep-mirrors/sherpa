@@ -29,12 +29,8 @@ Single_Process::Single_Process() :
   m_lastbxs(0.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true)
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_pdfcts = reader.GetValue<size_t>("MEPSNLO_PDFCT",1);
-  m_dads = reader.GetValue<size_t>("MCNLO_DADS",1);
+  m_pdfcts = ToType<size_t>(rpa->gen.Variable("MEPSNLO_PDFCT"));
+  m_dads = ToType<size_t>(rpa->gen.Variable("MCNLO_DADS"));
 }
 
 Single_Process::~Single_Process()

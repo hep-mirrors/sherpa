@@ -284,6 +284,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
+  gen.SetVariable("MEPSNLO_PDFCT",ToString(dr.GetValue<int>("MEPSNLO_PDFCT",1)));
+  gen.SetVariable("MCNLO_DADS",ToString(dr.GetValue<int>("MCNLO_DADS",1)));
   gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",0)));
   gen.SetVariable("HISTOGRAM_OUTPUT_PRECISION",ToString
 		  (dr.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6)));
