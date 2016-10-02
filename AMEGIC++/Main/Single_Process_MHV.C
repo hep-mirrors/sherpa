@@ -96,7 +96,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
-                                   &m_cpls,p_BS,p_shand,m_print_graphs,0,true);
+                                   &m_cpls,p_BS,p_shand,m_print_graphs,0,true,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;

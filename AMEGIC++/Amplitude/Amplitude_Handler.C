@@ -26,7 +26,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     std::string print_graph,bool create_4V,
-				     bool cutvecprop)
+				     bool cutvecprop,const std::string &path)
   : m_cutvecprop(cutvecprop), shand(_shand), CFCol_Matrix(0), Mi(0),
     m_print_graph(print_graph)
 {
@@ -62,7 +62,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
     gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,std::vector<double>(2,99),-99,BS,shand);
-    subgraphlist[i] = gen->Matching();
+    subgraphlist[i] = gen->Matching(m_valid);
+    m_valid.clear();
     if (subgraphlist[i]==NULL) {
       ndecays = 0;
       subgraphlist[0] = NULL;
@@ -82,8 +83,14 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   }
 
   //core process
+  My_In_File topfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Top.dat");
+  if (topfile.Open()) {
+    int itop, iperm;
+    for (*topfile>>itop>>iperm;itop>=0;*topfile>>itop>>iperm)
+      m_valid.insert(std::pair<int,int>(itop,iperm));
+  }
   gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_maxcpl,_ntchan,BS,shand,create_4V);
-  subgraphlist[0] = gen->Matching();
+  subgraphlist[0] = gen->Matching(m_valid);
   _maxcpl=gen->Order();
   delete gen;
 
@@ -301,6 +308,12 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
 void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 {
+  My_Out_File topfile(path+"/Top.dat");
+  topfile.Open();
+  for (std::set<std::pair<int,int> >::const_iterator
+	 it(m_valid.begin());it!=m_valid.end();++it)
+    *topfile<<it->first<<" "<<it->second<<" ";
+  *topfile<<"-1 -1\n";
   std::string name = path+"/Cluster.dat";
   IO_Handler ioh;
   ioh.SetFileName(name);
@@ -356,6 +369,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   m_on.resize(graphs.size());
   m_aon.resize(graphs.size(),0);
   m_cplmatrix.resize(graphs.size());
+  static Data_Reader read(",",";",")","(");
   for (size_t i=0;i<graphs.size();i++) {
     int *nums, ci, cj;
     std::string ords;
@@ -364,7 +378,6 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
     for (size_t j=0;j<graphs.size();j++) {
       *sqrcplfile>>ci>>cj>>ords;
       if (ci!=i || cj!=j) THROW(fatal_error,"Invalid coupling data");
-      Data_Reader read(",",";",")","(");
       read.SetString(ords);
       read.VectorFromString(m_cplmatrix[i][j],"");
       for (size_t k=0;k<Min(m_cplmatrix[i][j].size(),m_maxcpl.size());++k)
@@ -374,7 +387,6 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
       if (m_on[i][j]) m_aon[i]=1;
     }
     *cplfile>>ci>>ords;
-    Data_Reader read(",",";",")","(");
     read.SetString(ords);
     std::vector<int> ord;
     read.VectorFromString(ord,"");

@@ -331,7 +331,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 }
 
 
-void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
+void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first,std::set<std::pair<int,int> > &valid) {
 
   int count=0;
   Single_Amplitude* n;
@@ -414,6 +414,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
       if (CheckOrders(prea_table[i].p) && 
 	  CheckTChannels(prea_table[i].p)) {
 	gra = new Single_Amplitude(prea_table[i].p,prea_table[i].top,prea_table[i].perm,b,dep,N,top,BS,fl,shand);
+	valid.insert(std::pair<int,int>(prea_table[i].top,prea_table[i].perm));
 	count++;
 	if (first) n->Next = gra;
 	else first   = gra; 
@@ -1017,7 +1018,7 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
   return ra;
 }
 
-Single_Amplitude* Amplitude_Generator::Matching()
+Single_Amplitude* Amplitude_Generator::Matching(std::set<std::pair<int,int> > &valid)
 {
   short int i,j;
   int sw1;
@@ -1025,7 +1026,6 @@ Single_Amplitude* Amplitude_Generator::Matching()
   Single_Amplitude* first_amp;
   first_amp = 0;
 
-  int count = 0;
   int start_top = 0;
   int end_top = single_top->number;
 
@@ -1102,6 +1102,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
     }
     if (sw1) {
       for (j=start_top;j<end_top;j++) {
+	if (valid.size() && valid.find(std::pair<int,int>(j,i))==valid.end()) continue;
 	perm++;
 	int pnum = 100;
 	Set_End(&single_top->p[j][0],perm,pnum);
@@ -1110,7 +1111,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	single_top->p[j][0].fl     = fl[*perm];
 	single_top->p[j][0].b      = b[*perm];
 
-	SetProps(single_top->p[j],2*N-3,first_amp,j,count);
+	SetProps(single_top->p[j],2*N-3,first_amp,j,i);
 	
 	//msg_Out()<<"-----------------------------------"<<std::endl;
 	//msg_Out()<<"  "<<single_top->p[j][0].fl<<"("<<single_top->p[j][0].b<<")"<<endl;
@@ -1119,7 +1120,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
     }     
   }
   
-  CreateSingleAmplitudes(first_amp);
+  CreateSingleAmplitudes(first_amp,valid);
   
   CountOrders(first_amp);
   

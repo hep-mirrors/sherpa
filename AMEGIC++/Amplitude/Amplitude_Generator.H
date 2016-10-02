@@ -70,7 +70,7 @@ namespace AMEGIC {
     int  CompareColors(Point*,Point*);
     int  Compare5Vertex(Point*,Point*);
 
-    void CreateSingleAmplitudes(Single_Amplitude* &);
+    void CreateSingleAmplitudes(Single_Amplitude* &,std::set<std::pair<int,int> > &);
     void CheckFor4Vertices(Single_Amplitude* &);
     int  EvalPointlist(Point*&, Point*&,Point*&,std::vector<Point*>&);
     int  ShrinkProps(Point*&,Point*&,Point*&,Point*&,std::vector<Point*>&);
@@ -85,7 +85,7 @@ namespace AMEGIC {
     Amplitude_Generator(int,ATOOLS::Flavour *,int *,Amegic_Model *,Topology *,
 			std::vector<double>,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 
-    Single_Amplitude* Matching();
+    Single_Amplitude* Matching(std::set<std::pair<int,int> > &valid);
 
     inline const std::vector<double> &Order() const { return order; }
   };

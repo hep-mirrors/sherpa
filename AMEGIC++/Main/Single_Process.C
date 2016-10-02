@@ -147,7 +147,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   int ntchanmin(m_ntchanmin);
   bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
-                                   &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
+                                   &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;

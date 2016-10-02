@@ -43,6 +43,7 @@ namespace AMEGIC {
     std::vector<int> m_aon;
     std::vector<std::vector<std::vector<int> > > m_cplmatrix;
     std::vector<std::vector<int> > m_on;
+    std::set<std::pair<int,int> > m_valid;
 
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
@@ -64,7 +65,7 @@ namespace AMEGIC {
 		      std::vector<double> &,std::vector<double> &,
 		      int &,MODEL::Coupling_Map *const cpls,
 		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true,
-		      bool cutvecprop=true);
+		      bool cutvecprop=true,const std::string &path="");
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
 				   Process_Tags* pinfo,Single_Amplitude** sglist,
