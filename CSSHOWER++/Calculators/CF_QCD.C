@@ -33,13 +33,16 @@ namespace CSSHOWER {
     std::map<MODEL::One_Running_AlphaS *, double> m_altcplmax;
 
     double m_q, m_rsf, m_k0sq;
-    int m_scvmode;
+    int m_scvmode, m_kfac;
 
   public:
 
     inline CF_QCD(const SF_Key &key):
       SF_Coupling(key), p_altcpl(NULL), m_altrsf(1.0), m_altcplmax(), m_q(0.), m_rsf(1.), m_k0sq(0.0), m_scvmode(0)
     {
+      m_kfac=1;
+      if (key.p_v->in[0].StrongCharge()==8 &&
+         key.p_v->in[1].StrongCharge()!=8) m_kfac=0;
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
 	  key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
@@ -216,7 +219,7 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
 
 double CF_QCD::CplFac(const double &scale) const
 {
-  if (m_kfmode==0) return m_cplfac;
+  if (m_kfmode==0 || m_kfac==0) return m_cplfac;
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
   double nf=as->Nf(scale);
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
