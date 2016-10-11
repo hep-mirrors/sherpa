@@ -79,7 +79,7 @@ AC_DEFUN([AX_LIB_SQLITE3],
         sqlite3_version_req=ifelse([$1], [], [3.0.0], [$1])
         sqlite3_version_req_shorten=`expr $sqlite3_version_req : '\([[0-9]]*\.[[0-9]]*\)'`
         sqlite3_version_req_major=`expr $sqlite3_version_req : '\([[0-9]]*\)'`
-        sqlite3_version_req_minor=`expr $sqlite3_version_req : '[[0-9]]*\.\([[0-9]*]*\)'`
+        sqlite3_version_req_minor=`expr $sqlite3_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
         sqlite3_version_req_micro=`expr $sqlite3_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
         if test "x$sqlite3_version_req_micro" = "x" ; then
             sqlite3_version_req_micro="0"
