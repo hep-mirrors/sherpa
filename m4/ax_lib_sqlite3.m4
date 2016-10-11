@@ -105,11 +105,29 @@ AC_DEFUN([AX_LIB_SQLITE3],
                     ac_sqlite3_cppflags="-I$ac_sqlite3_path_tmp/include"
                     ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib"
                     if ! test -d "$ac_sqlite3_path_tmp/lib"; then
-                      ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib64";
+                        ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib64";
                     fi;
                     break;
                 fi
             done
+            if test "$ac_sqlite3_path" = ""; then
+                path=`echo $PATH | sed -r 's/:/ /g'`
+                for sqlite_bin_path in $path; do
+                    sqlite_include_path=`echo $sqlite_bin_path | sed -r 's/\/bin//g'`
+                    if test -f "$sqlite_bin_path/sqlite3" \
+                        && test -d "$sqlite_include_path/include" \
+                        && test -f "$sqlite_include_path/include/$ac_sqlite3_header" \
+                        && test -r "$sqlite_include_path/include/$ac_sqlite3_header"; then
+                        ac_sqlite3_path=$sqlite_include_path
+                        ac_sqlite3_cppflags="-I$sqlite_include_path/include"
+                        ac_sqlite3_ldflags="-L$sqlite_include_path/lib"
+                        if ! test -d "$sqlite_include_path/lib"; then
+                            ac_sqlite3_ldflags="-L$sqlite_include_path/lib64";
+                        fi;
+                        break;
+                    fi
+                done
+            fi
         fi
 
         ac_sqlite3_ldflags="$ac_sqlite3_ldflags -lsqlite3"
