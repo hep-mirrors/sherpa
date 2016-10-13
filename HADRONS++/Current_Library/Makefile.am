@@ -48,11 +48,13 @@ EXTRA_DIST    = \
 		VA_B_B_ST.C \
 		VA_P_P_ISGW.C \
 		VA_P_P_ISGW2.C \
+		VA_P_P_ISGW3.C \
 		VA_P_P_HQET.C \
 		VA_P_P_HQET2.C \
 		VA_P_P_PoleFit.C \
 		VA_P_P_Polynomial.C \
 		VA_P_P_BallZwicky.C \
+                VA_P_P_BGL.C \
 		VA_P_T_ISGW.C \
 		VA_P_T_ISGW2.C \
 		VA_P_V_ISGW.C \
@@ -61,4 +63,4 @@ EXTRA_DIST    = \
 		VA_P_V_HQET2.C \
 		VA_P_V_SumRules3.C \
 		VA_P_V_PoleFit.C \
-		VA_P_V_hepph0007169.C
+		VA_P_V_hepph0007169.C 

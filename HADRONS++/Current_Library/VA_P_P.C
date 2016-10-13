@@ -10,6 +10,8 @@ using namespace ATOOLS;
 #include "HADRONS++/Current_Library/VA_P_P_PoleFit.C"
 #include "HADRONS++/Current_Library/VA_P_P_Polynomial.C"
 #include "HADRONS++/Current_Library/VA_P_P_BallZwicky.C"
+#include "HADRONS++/Current_Library/VA_P_P_BGL.C"
+#include "HADRONS++/Current_Library/VA_P_P_ISGW3.C"
 
 namespace HADRONS { namespace VA_P_P_FFs {
   FormFactor_Base::~FormFactor_Base()
@@ -99,6 +101,14 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
   case 8:
     p_ff = new VA_P_P_FFs::BallZwicky(model,p_masses,m_flavs,p_i);
     msg_Tracking()<<"    Using BallZwicky form factor model for "<<m_name<<std::endl;
+    break;
+  case 9:
+    p_ff = new VA_P_P_FFs::BGL(model,p_masses,m_flavs,p_i);
+    msg_Tracking()<<"    Using BGL form factor model for "<<m_name<<std::endl;
+    break;   
+  case 10:
+    p_ff = new VA_P_P_FFs::ISGW3(model,p_masses,m_flavs,p_i);
+    msg_Tracking()<<"    Using ISGW3 form factor model for "<<m_name<<std::endl;
     break;
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "

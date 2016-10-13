@@ -9,19 +9,19 @@ void VA_0_P::SetModelParameters( struct GeneralModel _md )
   double fP(1.0), Vxx(1.0);
   switch(m_flavs[p_i[0]].Kfcode()) {
   case kf_pi_plus:
-    fP=0.1307;
+    fP=0.1304;
     Vxx=Tools::Vud;
     break;
   case kf_K_plus:
-    fP=0.1598;
+    fP=0.1561;
     Vxx=Tools::Vus;
     break;
   case kf_D_plus:
-    fP=0.2226;
+    fP=0.2067;
     Vxx=Tools::Vcd;
     break;
   case kf_D_s_plus:
-    fP=0.294;
+    fP=0.260;
     Vxx=Tools::Vcs;
     break;
   case kf_B_plus:

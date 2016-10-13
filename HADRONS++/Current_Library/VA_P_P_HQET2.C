@@ -17,8 +17,25 @@ HQET2::HQET2(GeneralModel model, double* masses, const Flavour_Vector& flavs,
              std::vector<int>& indices) :
   FormFactor_Base(model, masses, flavs, indices)
 {
-  m_rho2  = model("HQET2_rho2",1.19);
-  m_V1_1  = model("HQET2_V1_1",0.98);
+  kf_code kf0=m_flavs[p_i[0]].Kfcode();
+  kf_code kf1=m_flavs[p_i[1]].Kfcode();
+  // http://arxiv.org/pdf/1510.03657v3.pdf updated parameters for B->D 
+  if (kf0==kf_B || kf0==kf_B_plus) {
+    if (kf1==kf_D_plus || kf1==kf_D) {
+      m_rho2 = 1.09;
+      m_V1_1 = 1.0541;
+    }
+    else {
+      m_rho2 = 1.19;
+      m_V1_1 = 0.98;
+    } 
+  }
+  else {
+    m_rho2 = 1.19;
+    m_V1_1 = 0.98;
+  } 
+  m_rho2  = model("HQET2_rho2",m_rho2);
+  m_V1_1  = model("HQET2_V1_1",m_V1_1);
 }
 
 void HQET2::CalcFFs( Vec4D p0, Vec4D p1 )

@@ -70,14 +70,14 @@ PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
       m_fplus_a0 = -0.48;
       m_fplus_b0 = -0.30;
       m_fplus_c0 = 0.47;
-      m_fplus_a0 = -0.99;
+      m_fplus_d0 = -0.99;
 
       m_fmin_F0 = -1.7*0.24;
       m_fmin_m0 = m_m0;
       m_fmin_a0 = -0.41;
       m_fmin_b0 = -0.42;
       m_fmin_c0 = 0.95;
-      m_fmin_a0 = -1.55;
+      m_fmin_d0 = -1.55;
     }
   }
   else if (kf0==kf_D_plus) {
@@ -88,7 +88,33 @@ PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
       m_fplus_a0 = -0.89;
       m_fplus_b0 = -0.40;
       m_fplus_c0 = -0.18;
-      m_fplus_a0 = -1.00;
+      m_fplus_d0 = -1.00;
+    }
+    else if (kf1==kf_pi) {
+      m_fplus_F0 = 0.6704555546;
+      m_fplus_m0 = 1.99;
+      m_fplus_a0 = -0.09 - 1;
+      m_fplus_b0 = 0.09;      
+    }
+    else if (kf1==kf_K) {
+      m_fplus_F0 = 0.7530074068;
+      m_fplus_m0 = 2.02;
+      m_fplus_a0 = -0.12 - 1;
+      m_fplus_b0 = 0.12;
+    }
+  }
+  else if (kf0==kf_D) {
+    if (kf1==kf_pi_plus) {
+      m_fplus_F0 = 0.6660154516;
+      m_fplus_m0 = 1.94;
+      m_fplus_a0 = -0.18 - 1;
+      m_fplus_b0 = 0.18;
+    }
+    else if (kf1==kf_K_plus) {
+      m_fplus_F0 = 0.738;
+      m_fplus_m0 = 1.9207;
+      m_fplus_a0 = -1;
+      m_fplus_b0 = 0;
     }
   }
   else if (kf0==kf_D_s_plus) {
@@ -99,7 +125,7 @@ PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
       m_fplus_a0 = -0.87;
       m_fplus_b0 = -0.17;
       m_fplus_c0 = -0.37;
-      m_fplus_a0 = 1.46;
+      m_fplus_d0 = 1.46;
     }
   }
   else if (kf0==kf_B_c) {
