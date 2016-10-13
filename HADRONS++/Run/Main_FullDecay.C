@@ -29,36 +29,21 @@ void InitialiseGenerator(int argc, char *argv[])
   mother_flav=Flavour(mother_kf);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
+  m_analysis = read.GetValue<int>("ANALYSIS",1);
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 
 
 Blob_List* GenerateEvent()
 {
-  Blob_List* blobs=p_sherpa->GetEventHandler()->GetBlobs();
-  if (!blobs->empty()) THROW(fatal_error, "Bloblist not empty.");
-
-  Vec4D mom(mother_flav.HadMass(), 0., 0., 0.);
-  Particle* mother_in_part=new Particle(1, mother_flav, mom);
-  Particle* mother_part=new Particle(1, mother_flav, mom);
-  mother_part->SetTime();
-  mother_part->SetFinalMass(mother_flav.HadMass());
-  mother_in_part->SetStatus(part_status::decayed);
-  
-  Blob* blob = blobs->AddBlob(btp::Hadron_Decay);
-  blob->SetStatus(blob_status::needs_hadrondecays);
-  blob->AddToInParticles(mother_in_part);
-  blob->AddToOutParticles(mother_part);
-
-  p_sherpa->GenerateOneEvent(false);
-  return blobs;
+  p_sherpa->GenerateOneEvent();
+  return p_sherpa->GetEventHandler()->GetBlobs();
 }
 
 
 void CleanUpEvent(Blob_List* blobs)
 {
-  p_sherpa->GetEventHandler()->Reset();
-  ATOOLS::ran.SaveStatus();
+  ATOOLS::ran->SaveStatus();
 }
 
 

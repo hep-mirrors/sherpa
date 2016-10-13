@@ -37,13 +37,11 @@ static TH1D* mixed_Bbar_events;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  Hadron_Decay_Map* decaymap = p_sherpa->GetInitHandler()
-                               ->GetHadronDecayHandler("Hadrons")
-                               ->GetHadrons()->DecayMap();
-  Hadron_Decay_Table* decaytable = (*decaymap)[Flavour(kf_B)][1];
-  signal_hdc = (Hadron_Decay_Channel*) decaytable->GetDecayChannel(0);
+  PHASIC::Decay_Map* decaymap = p_sherpa->GetInitHandler()->GetHDHandler()->DecayMap();
+  PHASIC::Decay_Table* decaytable = (*decaymap)[Flavour(kf_B)][1];
+  signal_hdc = (Hadron_Decay_Channel*) decaytable->at(0);
 
-  std::string adir = "";
+  std::string adir = "Analysis";
   ATOOLS::MakeDir(adir,493);
   rootfile = new TFile(string(adir+"/CPasymmetry_"+
                               signal_hdc->FileName()+".root").c_str(), "RECREATE");

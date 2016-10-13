@@ -39,7 +39,9 @@ void InitialiseGenerator(int argc, char *argv[])
   PHASIC::Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
   for(size_t i(0);i<table->size();++i)
     table->UpdateWidth(table->at(i), 1.0);
-
+  //table->UpdateWidth(table->at(0), 1.0);
+  //PRINT_VAR(table->at(0)->Name());
+  
   rpa->gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
@@ -53,9 +55,10 @@ void InitialiseAnalysis()
   map<string, string>::const_iterator it=tags.find("TAG_FILE_PIECE");
   if(it!=tags.end())
     filepiece="."+it->second;
-  Hadron_Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
+  PHASIC::Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
   for(int i(0);i<table->size();++i) {
-    Hadron_Decay_Channel* hdc=table->at(i);
+    PHASIC::Decay_Channel* dc=table->at(i);
+    Hadron_Decay_Channel* hdc = dynamic_cast<Hadron_Decay_Channel*>(dc);
     string fname = hdc->FileName();
     rootfiles[hdc]=
       new TFile(("Analysis/"+fname.erase(fname.length()-4)+filepiece+".root").c_str(),"RECREATE");
@@ -176,7 +179,7 @@ void AnalyseEvent(Blob_List* blobs)
   Blob* blob = blobs->FindFirst(btp::Hadron_Decay);
   if(blob==NULL) return;
 #ifdef USING__ROOT
-  Hadron_Decay_Channel* hdc=(*blob)["hdc"]->Get<Hadron_Decay_Channel*>();
+  Hadron_Decay_Channel* hdc=(*blob)["dc"]->Get<Hadron_Decay_Channel*>();
 
   int currenthist=0;
   for(int i=0; i<blob->NOutP(); i++) {

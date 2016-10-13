@@ -41,7 +41,7 @@ void InitialiseGenerator(int argc, char *argv[])
   reader->AddWordSeparator("\t");
   reader->SetInputPath("./");
   reader->SetInputFile("YFS.dat");
-  photons = new PHOTONS::Photons(reader,true);
+  photons = new PHOTONS::Photons(reader);
 
   mother_flav = Flavour( (kf_code) abs(ToType<int>(argv[1])) );
   mother_flav.SetStable(false);
@@ -95,7 +95,7 @@ Blob_List* GenerateEvent()
 {
   Blob_List* blobs = new Blob_List();
 
-  Blob* blob = new Blob(ref_blob);
+  Blob* blob = new Blob(ref_blob, true);
   blob->SetStatus(blob_status::needs_extraQED);
   blobs->push_back(blob);
 

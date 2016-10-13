@@ -1,12 +1,9 @@
-(me){
+(run){
+  EVENT_TYPE=HadronDecay
   ME_SIGNAL_GENERATOR=None
-}(me)
-(beam){
-  BEAM_1=2212
+  BEAM_1=11
   BEAM_ENERGY_1=7000.
-  BEAM_2=-2212
+  BEAM_2=-11
   BEAM_ENERGY_2=7000.
-}(beam)
-(model){
   STABLE[15]=0
-}(model)
+}(run)

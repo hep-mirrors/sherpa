@@ -2,7 +2,8 @@
 This is an example setup for an analysis of multiplicities and inclusive
 quantities in hadron decays.
 It has to include Main_FullDecay.C, and a FullDecay has to be
-started with the following specialities:
+started with the following commands (in the directory containing the provided
+Run.dat):
 
   - ./FullDecay DECAYER=<kfcode> EVENTS=100000 ANALYSIS=1
 */
@@ -23,10 +24,12 @@ typedef map<Flavour,int>::iterator FIMapIt;
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  std::string adir = "";
+  std::string adir = "Analysis";
   ATOOLS::MakeDir(adir,493);
   rootfile = new TFile(string(adir+"/Multiplicities_"+
                               mother_flav.ShellName()+".root").c_str(), "RECREATE");
+  PRINT_INFO("Writing to: "<<adir+"/Multiplicities_"+
+            mother_flav.ShellName()+".root");
   list<Flavour> flavours;
   flavours.push_back(Flavour(kf_pi_plus));
   flavours.push_back(Flavour(kf_pi_plus).Bar());

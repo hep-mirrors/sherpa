@@ -5,10 +5,16 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Read_Write_Base.H"
 #include "ATOOLS/Phys/Blob_List.H"
-#include "MODEL/Main/Standard_Model.H"
+#include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Math/Random.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/ISR_Base.H"
+#include "PDF/Main/Intact.H"
+#include "BEAM/Main/Monochromatic.H"
 
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
@@ -41,27 +47,22 @@ void CleanUpEvent(Blob_List*);
 void FinishAnalysis();
 void FinishGenerator();
 
+static int m_analysis;
 
 void small_sherpa_init(int argc, char *argv[])
 {
   // use this for small programs, which don't use the full Sherpa framework,
   // but only Hadrons
 
-  PRINT_INFO("using small_sherpa_init");
-  std::vector<std::string> searchpaths;
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
-  My_Out_File::SetSearchPaths(searchpaths);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/");
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
-  searchpaths.push_back(SHERPA_SHARE_PATH+std::string("/"));
-  searchpaths.push_back(SHERPA_SHARE_PATH);
-  My_In_File::SetSearchPaths(searchpaths);
-  rpa.gen.SetVariable("PATH_PIECE","./");
+  ATOOLS::mpi = new My_MPI();
+  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::msg = new Message();
+  ATOOLS::ran = new Random(1234);
+  ATOOLS::rpa = new Run_Parameter();
+  ATOOLS::s_loader = new Library_Loader();
 
-  std::vector<std::string> names(4);
-  names[0]="Decaydata";
-  names[1]="Run.dat";
-  My_In_File::SetNoComplains(names);
+  PRINT_INFO("using small_sherpa_init");
+  rpa->gen.SetVariable("PATH_PIECE","./");
 
   for (int i=1; i<argc;++i) {
     string par = string(argv[i]);
@@ -79,16 +80,29 @@ void small_sherpa_init(int argc, char *argv[])
       }
     }
   }
-  ATOOLS::s_loader = new Library_Loader();
-  rpa.Init("","Run.dat",argc,argv);
-  MODEL::s_model = new MODEL::Standard_Model("","Model.dat",true);
-  MODEL::s_model->InitializeInteractionModel();
+  rpa->Init("","Run.dat",argc,argv);
   
+  s_loader->LoadLibrary("SherpaSM");
+  MODEL::s_model=MODEL::Model_Base::Model_Getter_Function::
+    GetObject("SM",MODEL::Model_Arguments("","Model.dat",true));
+  PDF::ISR_Base ** isrbases = new PDF::ISR_Base*[2];
+  isrbases[0] = new PDF::Intact(Flavour(kf_e));
+  isrbases[1] = new PDF::Intact(Flavour(kf_e).Bar());
+  PDF::ISR_Handler_Map isrhandlers;
+  isrhandlers[PDF::isr::hard_process] = new PDF::ISR_Handler(isrbases);
+  isrhandlers[PDF::isr::hard_process]->SetBeam(new BEAM::Monochromatic(Flavour(kf_e),7000.,0.0,1),0);
+  isrhandlers[PDF::isr::hard_process]->SetBeam(new BEAM::Monochromatic(Flavour(kf_e).Bar(),7000.,0.0,-1),1);
+  double bunch_splimits[2] = {1e-10, 1.};
+  isrhandlers[PDF::isr::hard_process]->Init(bunch_splimits);
+  MODEL::s_model->ModelInit(isrhandlers);
+
   AHADIC::Hadron_Init hi;
   hi.Init();
-  Data_Reader overwrite;
-  hi.OverWriteProperties(overwrite);
+  Data_Reader dr;
+  hi.OverWriteProperties(dr);
   ATOOLS::OutputHadrons(std::cout);
+
+  m_analysis = dr.GetValue<int>("ANALYSIS",1);
 
   msg->SetModifiable(true);
 }
@@ -96,41 +110,31 @@ void small_sherpa_init(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-  PRINT_INFO("starting main");
-  ATOOLS::exh->Init();
-  set_terminate(ATOOLS::Terminate);
-  set_unexpected(ATOOLS::Terminate);
-  signal(SIGSEGV,ATOOLS::SignalHandler);
-  signal(SIGINT,ATOOLS::SignalHandler);
-  signal(SIGBUS,ATOOLS::SignalHandler);
-  signal(SIGFPE,ATOOLS::SignalHandler);
-  signal(SIGABRT,ATOOLS::SignalHandler);
-  signal(SIGTERM,ATOOLS::SignalHandler);
-  signal(SIGXCPU,ATOOLS::SignalHandler);
+#ifdef USING__MPI
+  MPI::Init(argc,argv);
+#endif
   try {
 #ifdef USING__ROOT
     TApplication myapp(string("HadronsApp").c_str(),&argc,&(*argv));
     gROOT->SetStyle("Plain");
 #endif
-    PRINT_INFO("starting generator");
     InitialiseGenerator(argc, argv);
-    PRINT_INFO("starting analysis");
-    if(rpa.gen.Analysis()) InitialiseAnalysis();
+    if(m_analysis) InitialiseAnalysis();
 
-    for(int i=0; i<rpa.gen.NumberOfEvents(); i++) {
+    for(int i=0; i<rpa->gen.NumberOfEvents(); i++) {
       Blob_List* blobs = GenerateEvent();
-      if(rpa.gen.Analysis()) AnalyseEvent(blobs);
+      if(m_analysis) AnalyseEvent(blobs);
       CleanUpEvent(blobs);
 
-      rpa.gen.SetNumberOfGeneratedEvents(i+1);
-      int steps = int(double(rpa.gen.NumberOfEvents()/10.0));
+      rpa->gen.SetNumberOfGeneratedEvents(i+1);
+      int steps = int(double(rpa->gen.NumberOfEvents()/10.0));
       if(steps==0) steps=1;
       if((i+1)%steps==0) msg_Info()<<i+1<<" events passed."<<std::endl;
     }
-    msg_Info()<<"Generated "<<rpa.gen.NumberOfEvents()<<" events"<<endl;
+    msg_Info()<<"Generated "<<rpa->gen.NumberOfEvents()<<" events"<<endl;
 
     FinishGenerator();
-    if(rpa.gen.Analysis()) FinishAnalysis();
+    if(m_analysis) FinishAnalysis();
   }
   catch (Exception Sherpaexception) {
     msg_Error()<<Sherpaexception<<endl;
@@ -141,6 +145,10 @@ int main(int argc, char *argv[])
         <<stdexception.what()<<" ..."<<endl;
     terminate();
   }
+#ifdef USING__MPI
+  MPI::Finalize();
+#endif
+  return 0;
 }
 
 #ifdef USING__ROOT
