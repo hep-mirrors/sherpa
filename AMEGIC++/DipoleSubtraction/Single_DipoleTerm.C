@@ -313,6 +313,9 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &c
 
   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
+  // This fixes the numerical accuracy problem in CalcMomenta IsZero
+  p_LO_mom[1]=Vec4D(p_LO_mom[1][0],-p_LO_mom[0][1],-p_LO_mom[0][2],-p_LO_mom[0][3]);
+
   size_t ndip=(p_dipole->GetDiPolarizations())->size();
   for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
 
@@ -455,7 +458,9 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
   Vec4D_Vector pp(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
     cms=Poincare(pp[0]+pp[1]);
-    for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
+    for (size_t i(0);i<pp.size();++i) {
+        cms.Boost(pp[i]);
+    }
   }
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
