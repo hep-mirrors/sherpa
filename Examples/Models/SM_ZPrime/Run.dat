@@ -3,7 +3,7 @@
   EVENTS 1M;
 
   % load new model library
-  SHERPA_LDADD SMZprime;
+  SHERPA_LDADD SherpaSMZprime;
 
   % model parameters
   MODEL SMZprime;
