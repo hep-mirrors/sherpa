@@ -860,6 +860,7 @@ bool Initialization_Handler::InitializeTheReweighting()
   }
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
+  dataread.AddComment("%");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   p_variations = new Variations(&dataread);
