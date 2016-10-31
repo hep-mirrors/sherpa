@@ -10,6 +10,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
 using namespace PHASIC;
@@ -391,7 +392,7 @@ void VHAAG::ConstructMomenta(double a1,double phi,
 	       <<"ConstructMomenta(double a1,double phi,double s1,double s2,double s,"<<std::endl
 	       <<"                 ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)!"<<std::endl
 	       <<" q1 must be in beam direction!   q1="<<q1<<std::endl;
-    abort();
+    Abort();
   }
   Vec3D e1  = Vec3D(q1)/q1[0];
   double v1 = sqrt(ps+s1)-a1*sqrt(s);

@@ -10,6 +10,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -90,7 +91,7 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
 		 <<"   Read in failure for <Options> section in "
 		 <<m_path<<m_filename<<".\n"
 		 <<"   Will abort."<<endl;
-      abort();
+      Abort();
     }
 
     // process <ME>
@@ -103,7 +104,7 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
       msg_Error()<<METHOD<<": Error.\n"
                  <<"  Read in failure for <ME> section in "<<m_path
                  <<m_filename<<", will abort."<<endl;
-      abort();
+      Abort();
     }
 
     // process <Phasespace>
@@ -115,7 +116,7 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
 	       <<"   Read in failure for <Phasespace> section in "
 	       <<m_path<<m_filename<<".\n"
 	       <<"   Will abort."<<endl;
-      abort();
+      Abort();
     }
     ProcessPhasespace(ps_svv, reader, model_for_ps);
 
@@ -241,7 +242,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
          current2->DecayIndices().size()) {
         msg_Error()<<"Error in "<<METHOD<<": Current selection does not look sane "
                    <<"for "<<Name()<<". Check decaychannelfile."<<std::endl;
-        abort();
+        Abort();
       }
 
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
@@ -497,7 +498,7 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
     msg_Error()<<METHOD<<": Current '"<<resultstrings[0]<<"' specified in "
                <<m_path<<m_filename<<" was not recognized as a valid current. "
                <<"Will abort."<<endl;
-    abort();
+    Abort();
   }
   return current;
 }
@@ -518,7 +519,7 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
     msg_Error()<<METHOD<<" Error: Number of indices in \""<<me_string<<"\" ("
       <<int(resultstrings.size())-1<<") in "<<m_path<<m_filename<<" doesn't "
       <<"equal number of particles ("<<NOut()+1<<"). Will abort."<<endl;
-    abort();
+    Abort();
   }
 
   int n=NOut()+1;
@@ -530,7 +531,7 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
   if(me==NULL) {
     msg_Error()<<METHOD<<": Error. Matrix element \""<<me_string<<"\" specified in "
       <<m_path<<m_filename<<" was not recognized as a valid ME. Will abort."<<endl;
-    abort();
+    Abort();
   }
   return me;
 }

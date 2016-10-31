@@ -1,6 +1,7 @@
 #include "BEAM/Main/Beam_Base.H"
 
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace BEAM;
 
@@ -22,7 +23,7 @@ bool Beam_Base::Init(int mode)
 		       <<"   Mismatch of energy and mass of beam particle : "
 		       <<m_beam<<" / "<<m_energy<<std::endl
 		       <<"   Will lead to termination of program."<<std::endl;
-    abort();
+    ATOOLS::Abort();
   }
   m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));
   m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));

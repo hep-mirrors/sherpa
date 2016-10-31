@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -80,7 +81,7 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
 	       <<"   Masses & momenta:"<<std::endl;
     for (int i=n0;i<n;i++) msg_Error()<<"  "<<masses[i]<<" : "<<momenta[i]<<std::endl;
     return false;
-    abort();
+    Abort();
   }
   return false;
 }
@@ -162,7 +163,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
 	       <<"   Masses & momenta:"<<endl;
     for (int i=n0;i<n;i++) msg_Error()<<masses[i]<<" : "<<momenta[i]<<std::endl;
     return false;
-    abort();
+    Abort();
   }
   return false;
 }

@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Message.H"
 #include <stdio.h>
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 
 using namespace ATOOLS;
@@ -25,7 +26,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Reader * dataread) :
   if (!(SpecifySpectra(dataread) && InitKinematics(dataread))) {
     msg_Error()<<"Error in Beam_Spectra_Handler::Beam_Spectra_Handler :"<<endl
 	       <<"    Could not init spectra or kinematics. Abort program."<<endl;
-    abort();
+    ATOOLS::Abort();
   }
 
   m_mode = 0;

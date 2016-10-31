@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <iomanip>
 #include <stdio.h>
@@ -52,7 +53,7 @@ HepEvt_Interface::HepEvt_Interface() :
   // 	msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
   // 		   <<"   Could not open event file "<<filename<<"."<<std::endl
   // 		   <<"   Will abort the run."<<std::endl;
-  // 	abort();
+  // 	Abort();
   //       }
   //       p_outstream->precision(10);
   //     }
@@ -63,7 +64,7 @@ HepEvt_Interface::HepEvt_Interface() :
   //       msg_Error()<<"ERROR in HepEvt_Interface."<<std::endl
   // 		 <<"   Event file "<<filename<<" not found."<<std::endl
   // 		 <<"   Will abort the run."<<std::endl;
-  //       abort();
+  //       Abort();
   //     }
   //     std::string gentype;
   //     (*p_instream)>>gentype>>m_filesize;
@@ -110,7 +111,7 @@ void HepEvt_Interface::ChangeOutStream(std::string & filename, long int evtsperf
     msg_Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
 	       <<"   Could not change to event file "<<filename<<"."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
-    abort();
+    Abort();
   }
   p_outstream->precision(10);
   (*p_outstream)<<"Pythia "<<evtsperfile<<std::endl;
@@ -125,7 +126,7 @@ void HepEvt_Interface::ChangeOutStream()
     msg_Error()<<"ERROR in HepEvt_Interface::ChangeOutStream"<<std::endl
 	       <<"   Could not change to event file "<<filename<<"."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
-    abort();
+    Abort();
   }
   p_outstream->precision(10);
 }
@@ -291,7 +292,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
  	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Bunch blob with more than one incoming particle !"<<endl
 		     <<(*bit)<<endl;
-	  abort();
+	  Abort();
 	}
 	if ((*bit)->NOutP()>1) {
 	  Particle2HepEvt((*bit)->InParticle(0),_nhep);
@@ -304,7 +305,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
 	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 		     <<"   Beam Remnant blob with more than one incoming particle !"<<endl
 		     <<(*bit)<<endl;
-	  abort();
+	  Abort();
 	}
 	if ((*bit)->NOutP()>1) {
 	  Particle2HepEvt((*bit)->InParticle(0),_nhep);
@@ -317,7 +318,7 @@ void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * const _blobs,int & _nhep) {
 // 	  msg_Error()<<"Error in HepEvt_Interface::ISBlobs2HepEvt."<<endl
 // 		     <<"   IS blob with more than one incoming particle !"<<endl
 // 		     <<(*bit)<<endl;
-// 	  abort();
+// 	  Abort();
 // 	}
 // 	Particle2HepEvt((*bit)->InParticle(0),_nhep);
 // 	for (int j=0;j<(*bit)->NOutP();j++) Particle2HepEvt((*bit)->OutParticle(j),_nhep);
@@ -337,7 +338,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 // 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 // 		   <<"   ME_PS_Interface_IS blob with other than 2->2 particles !"<<endl
 // 		   <<(*bit)<<endl;
-// 	abort();
+// 	Abort();
 //       }
 //       else {
 // 	for (int i=0;i<2;i++) {
@@ -357,7 +358,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 		   <<"   Hard ME blob with other than 2 incoming particles !\n"
 		   <<(*bit)<<endl;
-	abort();
+	Abort();
       }
       if ((*bit)->NOutP()>=2) {
 	Particle2HepEvt((*bit)->InParticle(0),_nhep);
@@ -372,7 +373,7 @@ void HepEvt_Interface::HardBlob2HepEvt(Blob_List * const _blobs,int & _nhep) {
 // 	msg_Error()<<"Error in HepEvt_Interface::HardBlob2HepEvt."<<endl
 // 		   <<"   ME_PS_Interface_IS blob with other than n->n particles !"<<endl
 // 		   <<(*bit)<<endl;
-// 	abort();
+// 	Abort();
 //       }
 //       else {
 // 	for (int i=0;i<(*bit)->NOutP();i++) {
@@ -452,7 +453,7 @@ void HepEvt_Interface::HadronDecayBlobs2HepEvt(Blob_List * const _blobs,int & _n
 	msg_Error()<<"Error in HepEvt_Interface::HadronDecays2HepEvt."<<endl
 		   <<"   Decay blob with other than 1 incoming particles !"<<endl
 		   <<(*bit)<<endl;
-	abort();
+	Abort();
       }
       if ((*bit)->NOutP()>=2) {
 	Particle2HepEvt((*bit)->InParticle(0),_nhep);
@@ -670,7 +671,7 @@ bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
       msg_Error()<<"Error in HepEvt_Interface::ReadHepEvt."<<std::endl
 		 <<"   Generator type unspecified : "<<m_generator<<std::endl
 		 <<"   Will abort the run."<<std::endl;
-      abort();
+      Abort();
       
   }
   m_evtcount++;
@@ -704,7 +705,7 @@ void HepEvt_Interface::OpenNewHepEvtFile()
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Event file "<<filename<<" not found."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
-    abort();
+    Abort();
   }
   std::string gentype;
   (*p_instream)>>gentype>>m_filesize;
@@ -713,7 +714,7 @@ void HepEvt_Interface::OpenNewHepEvtFile()
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Types do not match : "<<gentype<<" vs. "<<int(m_generator)<<std::endl
 	       <<"   Abort the run."<<std::endl;
-    std::abort();
+    Abort();
   }
 
   m_evtcount=0;

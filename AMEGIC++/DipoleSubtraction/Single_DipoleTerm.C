@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include "AMEGIC++/DipoleSubtraction/FF_DipoleSplitting.H"
 #include "AMEGIC++/DipoleSubtraction/FI_DipoleSplitting.H"
@@ -222,7 +223,7 @@ bool Single_DipoleTerm::DetermineType() {
 
   if (massiveini) {
     msg_Error()<<METHOD<<" Cannot handle massive initial state! Abort."<<endl;
-    abort();
+    Abort();
   }
 
   switch (m_dipoletype) {
@@ -367,7 +368,7 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   if (!p_dipole) {
     msg_Error()<<"ERROR in Single_DipoleTerm::InitAmplitude : Dipol type not implemented: "<<m_dipoletype
 	       <<" ("<<m_pi<<","<<m_pj<<","<<m_pk<<")"<<std::endl;   
-    abort();
+    Abort();
   }
   p_dipole->SetMomenta(p_testmoms);
   p_dipole->CalcDiPolarizations();

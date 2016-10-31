@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -19,7 +20,7 @@ Gluon_Splitter::Gluon_Splitter() :
 bool Gluon_Splitter::
 operator()(Dipole * dip,const bool & first,const bool & vetodiquark) {
   Reset();
-  if (!SelectSplitter(dip->Triplet(),dip->AntiTriplet())) abort();
+  if (!SelectSplitter(dip->Triplet(),dip->AntiTriplet())) Abort();
   DefineTags();
   dip->SetSwitched(!m_swap);
   ConstructTrafos();

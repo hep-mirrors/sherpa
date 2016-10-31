@@ -66,32 +66,32 @@ namespace VA_B_B3_FFs {
     case 10:
       // Omega_x (1/2+) -> Omega_y or Xi (1/2+ |200000>)
       //I = IH(w, 1.0/3.0, 3.0/2.0);
-      abort();
+      Abort();
       break;
     case 11:
       // Omega_x (1/2+) -> Omega_y or Xi (1/2+1 |200010>)
       //I = IH(w, 1.0/sqrt(6.0), 2.5);
-      abort();
+      Abort();
       break;
     case 12:
       // Omega_x (1/2+) -> Omega_y or Xi (1/2+2 |320002>)
       //I = IH(w, -sqrt(10.0)/3.0/sqrt(3.0), 3.5);
-      abort();
+      Abort();
       break;
     case 13:
       // Omega_x (1/2+) -> Omega_y or Xi (1/2- |210001>)
       //I = IH(w, -1.0/3.0, 2.5);
-      abort();
+      Abort();
       break;
     case 14:
       // Omega_x (1/2+) -> Omega_y or Xi (1/2-1 |310001>)
       //I = IH(w, -sqrt(2.0)/3.0, 2.5);
-      abort();
+      Abort();
       break;
     case 15:
       // Lambda_x (1/2+) -> Lambda_y or N (1/2+1)
       //I = IH(w, sqrt(3.0/2.0), 1.5);
-      abort();
+      Abort();
       break;
     default:
       THROW(fatal_error,"Mode not implemented in HO::CalcFFs.");

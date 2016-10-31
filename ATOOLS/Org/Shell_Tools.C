@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -196,7 +197,7 @@ std::string ATOOLS::GetCWD()
   long int size = pathconf(".",_PC_PATH_MAX);
   char *buf = new char[size];
   char *ptr = getcwd(buf, (size_t)size);
-  if (ptr==NULL) abort();
+  if (ptr==NULL) Abort();
   std::string pwd(buf);
   delete [] buf;
   return pwd;

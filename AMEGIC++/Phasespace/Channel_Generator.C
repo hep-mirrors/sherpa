@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <algorithm>
 #include <stdio.h>
@@ -194,7 +195,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
     msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
 	       <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
 	       <<" Aborting."<<std::endl;
-    abort();
+    Abort();
   }
 
   string m = Order(LinkedMasses(ph));
@@ -223,7 +224,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 		msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
 			   <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
 			   <<" Aborting."<<std::endl;
-		abort();
+		Abort();
 	      }
 	    }
 	  }
@@ -238,7 +239,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	      msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
 			 <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
 			 <<" Aborting."<<std::endl;
-	      abort();
+	      Abort();
 	    }
 	  }
 	  sf<<"  type  = 1;"<<endl
@@ -1062,7 +1063,7 @@ void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string&
     // already exists
     if (rhs != declarations[name]) {
       msg_Error()<<" ERROR in Channel_Generator::AddToVariables. Abort the run."<<endl;
-      abort();
+      Abort();
     }
   }
 }

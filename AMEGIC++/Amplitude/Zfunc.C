@@ -2,6 +2,7 @@
 #include "AMEGIC++/Amplitude/Pfunc.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -170,7 +171,7 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
   }
   if ( (i1==0&&i2>0) || (i2==0&&i1>0) ) {
     msg_Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index, will abort."<<endl;
-    abort();
+    Abort();
   }
 
   m_type   = "";

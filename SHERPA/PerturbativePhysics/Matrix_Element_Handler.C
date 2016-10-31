@@ -155,14 +155,14 @@ void Matrix_Element_Handler::SetRandomSeed()
     m_ranidx=ran->ReadInStatus(*p_ranin,m_ranidx);
     if (m_ranidx==std::string::npos) {
       msg_Error()<<METHOD<<"(): Status file read error. Abort."<<std::endl;
-      abort();
+      Abort();
     }
   }
   else if (m_seedmode==2) {
     m_ranidx=ran->WriteOutStatus(*p_ranout,m_ranidx);
     if (m_ranidx==std::string::npos) {
       msg_Error()<<METHOD<<"(): Status file write error. Abort."<<std::endl;
-      abort();
+      Abort();
     }
   }
 }

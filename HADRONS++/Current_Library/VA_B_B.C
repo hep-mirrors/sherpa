@@ -1,6 +1,7 @@
 #include "HADRONS++/Current_Library/VA_B_B.H"
 #include "METOOLS/Main/XYZFuncs.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 
 using namespace HADRONS;
@@ -60,7 +61,7 @@ void VA_B_B::SetModelParameters( struct GeneralModel model )
     default:
       msg_Error()<<METHOD<<": You chose a form factor model which does not "
           <<"exist for current "<<m_name<<". Aborting."<<std::endl;
-      abort();
+      Abort();
   }
   /*
   Vec4D p0(Vec4D(p_masses[0],0,0,0));

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "AMEGIC++/Main/Process_Tags.H"
 #include "ATOOLS/Org/IO_Handler.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -362,7 +363,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   if (cg!=graphs.size()) {
     msg_Error()<<"ERROR in Amplitude_Handler::RestoreAmplitudes() :"<<endl
 	       <<"   Stored Cluster and Color information incompatible! Abort the run."<<std::endl;
-    abort();
+    Abort();
   }
   int cnt=0;
   Amplitude_Base* ab;
@@ -505,7 +506,7 @@ int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
   }  
   msg_Error()<<"ERROR in Amplitude_Handler::PropProject() :"<<endl
 	     <<"   Did not find a mom-number for propagator. Abort the run."<<std::endl;
-  abort();
+  Abort();
   return 0;
 }
 
@@ -879,7 +880,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
     if (cit==CFCol_MMatrixMap.end()) {
       msg_Error()<<"ERROR in Amplitude_Handler::Zvalue :"<<std::endl
 		 <<"   Color matrix ("<<ci<<"/"<<cj<<") not found! Abort the run."<<std::endl;
-      abort();
+      Abort();
     }
     col = cit->second;
   }

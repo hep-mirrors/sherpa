@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
@@ -219,7 +220,7 @@ void Vertex::GenerateVertex()
 	  if (m_cplmap[hstr]!=m_v[i].Coupling(j)) {
 	    msg_Error()<<"coupling ID not unique (3): "
 		       <<m_v[i].cpl[j].String()<<endl;
-	    abort();
+	    Abort();
 	  }
 	}
       }
@@ -240,7 +241,7 @@ void Vertex::GenerateVertex()
 		       <<" vs. "<<hstr<<endl
 		       <<"for "<<m_v4[i].in[0]<<" -> "<<m_v4[i].in[1]<<" "
 		       <<m_v4[i].in[2]<<" "<<m_v4[i].in[3]<<".\n";
-	    abort();
+	    Abort();
 	  }
 	}
       }

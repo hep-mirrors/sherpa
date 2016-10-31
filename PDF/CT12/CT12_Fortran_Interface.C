@@ -8,6 +8,7 @@
 
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -16,7 +17,7 @@ using namespace ATOOLS;
 extern "C" {
   void    setct12_(char *);
   double  ct12pdf_(int &,double &, double &);
-  void    shabrt_() { abort(); }
+  void    shabrt_() { Abort(); }
 }
 
 

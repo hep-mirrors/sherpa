@@ -1,6 +1,7 @@
 #include "SHRiMPS/Tools/Kernels.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;
@@ -12,7 +13,7 @@ operator()(const std::vector<double> & input,const double param) {
 	       <<"   Wrong input size, expected 2, received "
 	       <<input.size()<<"."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
-    abort();
+    Abort();
   }
   double absorpterm(1.);
   if (dabs(m_lambda)>1.e-12) {

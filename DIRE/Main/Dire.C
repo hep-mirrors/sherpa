@@ -5,6 +5,7 @@
 #include "DIRE/Main/Color_Setter.H"
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 namespace DIRE {
 
@@ -359,7 +360,7 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     msg_Error()<<"  "<<ampl->Leg(ic)->Mom()
 	       <<" "<<ampl->Leg(jc)->Mom()
 	       <<" "<<ampl->Leg(kc)->Mom()<<"\n";
-    if (m_reco&2) abort();
+    if (m_reco&2) Abort();
   }
 }
 

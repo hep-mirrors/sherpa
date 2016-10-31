@@ -37,6 +37,8 @@ namespace ATOOLS {
 
   extern My_MPI *mpi;
 
+  void Abort(const int mode=0);
+
 }// end of namespace ATOOLS
 
 #endif

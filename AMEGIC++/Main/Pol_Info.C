@@ -1,8 +1,10 @@
 #include "AMEGIC++/Main/Pol_Info.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMEGIC;
+using namespace ATOOLS;
 
 std::ostream & AMEGIC::operator<<(std::ostream & s, Pol_Info & pi) 
 {
@@ -171,7 +173,7 @@ void Tensor_Struc::GetPolCombos(int num, std::vector<std::vector<int> >* pol, st
   default: 
     msg_Error()<<"ERROR in Tensor_Struc::GetPolCombos : "<<std::endl
 		       <<"   Invalid tensor type: "<<num<<", abort the run."<<std::endl;
-    abort();
+    Abort();
   }
 }
 

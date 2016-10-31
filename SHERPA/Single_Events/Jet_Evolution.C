@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -93,7 +94,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 		       <<std::endl
 		       <<(*blob)<<std::endl
 		       <<"   Will abort."<<std::endl;
-	    abort();
+	    Abort();
 	}
 	piIter = m_interfaces.find(tag);
 	if (piIter==m_interfaces.end()) {

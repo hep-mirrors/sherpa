@@ -360,7 +360,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
   msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
-  abort();
+  Abort();
 }
 
 void Multi_Channel::GenerateWeight(int mode=0)

@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace DIRE;
 using namespace ATOOLS;
@@ -49,7 +50,7 @@ void Amplitude::Add(Parton *const p)
 void Amplitude::Remove(Parton *const p)
 {
   if (p->Out(0)) p->Out(0)->Ampl()->Remove(p->Out(0));
-  if (back()!=p) abort(); 
+  if (back()!=p) Abort(); 
   pop_back();
   delete p;
 }

@@ -16,7 +16,7 @@ All_Hadron_Multiplets::All_Hadron_Multiplets() :
   CreateMultiplets();
   AddMultipletWeights();
   //PrintWaveFunctions();
-  //abort();
+  //Abort();
 }
 
 All_Hadron_Multiplets::~All_Hadron_Multiplets() 

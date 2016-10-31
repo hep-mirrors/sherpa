@@ -4,6 +4,7 @@
 #include <iostream>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -418,7 +419,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	}
 	if (hit==0) {
 	  msg_Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
-	  abort();
+	  Abort();
 	}
 	break;
       case 3: 

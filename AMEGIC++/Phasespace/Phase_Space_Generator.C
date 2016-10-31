@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "AMEGIC++/String/String_Library.H"
 
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -39,7 +40,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   int ngraph = proc->NumberOfDiagrams();
   if (ngraph<=0) {
     msg_Error()<<"Error in Phase_Space_Generator::Construct for "<<proc->Name()<<endl;
-    abort();
+    Abort();
   }
 
   string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/fsrchannels");

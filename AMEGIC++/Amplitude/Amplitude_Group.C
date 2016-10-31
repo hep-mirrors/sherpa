@@ -1,6 +1,7 @@
 #include "AMEGIC++/Amplitude/Amplitude_Group.H"
 #include "AMEGIC++/Amplitude/Super_Amplitude.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 
@@ -334,7 +335,7 @@ Amplitude_Base* Amplitude_Group::GetSingleGraph(list<sknot*>& zfunclist)
   }
 
   cerr<<"Error: No Amplitude found in Amplitude_Group::GetSingleGraph()!"<<endl;
-  abort();
+  Abort();
   
   return 0;
 }

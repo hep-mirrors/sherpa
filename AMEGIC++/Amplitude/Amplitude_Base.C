@@ -1,6 +1,9 @@
 #include "AMEGIC++/Amplitude/Amplitude_Base.H"
 
+#include "ATOOLS/Org/My_MPI.H"
+
 using namespace AMEGIC;
+using namespace ATOOLS;
 
 void Amplitude_Base::SetStringOn()  
 { buildstring = 1; }
@@ -41,10 +44,10 @@ void Amplitude_Base::BuildGlobalString(int* i,int j,Basic_Sfuncs* BS ,ATOOLS::Fl
 
 void Amplitude_Base::DefineOrder(const std::vector<int> &o)
 {
-  abort();
+  Abort();
 }
 
 const std::vector<int> &Amplitude_Base::GetOrder()
 {
-  abort();
+  Abort();
 }

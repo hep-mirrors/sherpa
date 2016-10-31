@@ -1,6 +1,7 @@
 #include "HADRONS++/Current_Library/VA_0_PPP.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -30,7 +31,7 @@ VA_0_PPP::VA_0_PPP(const ATOOLS::Flavour_Vector& flavs,
     msg_Error()<<"ERROR in HADRONS::VA_0_PPP constructor\n"
         <<"     number of three outgoing pseudoscalars != 3 ?!.\n"
         <<"     Don't know, what to do. Will abort."<<endl;
-    abort();           
+    Abort();           
   }
   // define mode number
   m_mode = nPion_ch*1000 + nPion_0*100 + nKaon_ch*10 + (nKaon_L+nKaon_S+nKaon_0);
@@ -295,7 +296,7 @@ VA_0_PPP::RChT::RChT(int mode, int kaon_mode, string path, GeneralModel _md, dou
     msg_Error()<<"Error: The mode "<<m_mode<<endl
         <<"     hasn't been implemented yet (RChT). Please use KS model."
         <<"     Don't know what to do. Will abort"<<endl;
-    abort();
+    Abort();
       }
    
       m_MO     = _md("Mass_omega(782)", Flavour(kf_omega_782).HadMass());

@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -168,7 +169,7 @@ void Zfunc_Generator::Convert(Point* p)
 	return;
       }
       msg_Error()<<"Zfunc_Generator::Convert(Point* p) : Cutting Error, abort the run."<<endl;
-      abort();
+      Abort();
     }
   }
   if (Zh) zlist.push_back(Zh);
@@ -290,7 +291,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
     return 0;
     msg_Error()<<METHOD<<"(): Invalid Lorentz function."<<endl;
     LFPrint(lflist);  
-    abort();
+    Abort();
   }
 
   LFFill_Zfunc(Zh,lflist,p,pf,pb);
@@ -450,7 +451,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function*> &lflist,
 	if (max<typemin) i = typemin-1;
 	if (i<0) {
 	  msg_Error()<<"ERROR in Zfunc_Generator::LFFill_Zfunc() : abort the run."<<endl;
-	  abort();
+	  Abort();
 	}
 	//LFPrint(lfpointer);
       }
@@ -601,7 +602,7 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
       Zh->Print();
       msg_Error()<<"ERROR in Zfunc_Generator::SetScalarArgs : "<<std::endl
 		 <<"   scnt : "<<scnt<<" Zh->m_narg : "<<Zh->m_narg<<", will abort."<<endl;
-      abort();
+      Abort();
     }
     scnt++;
     return;

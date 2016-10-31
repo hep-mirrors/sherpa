@@ -13,6 +13,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <unistd.h>
 
@@ -617,7 +618,7 @@ void AMEGIC::Single_Process_Combined::CreateMappingFile(Single_Process_Combined*
     if (MEname != m_libname || PSname != m_pslibname) {
       msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::CreateMappingFile() :"<<std::endl
 		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
-      abort();
+      Abort();
     }
     return;
   }

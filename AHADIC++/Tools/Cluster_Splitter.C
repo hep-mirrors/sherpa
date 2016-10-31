@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Cluster_Splitter.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -26,7 +27,7 @@ bool Cluster_Splitter::operator()(Cluster * cluster) {
        cluster->GetAnti()->m_flav.HadMass()+2.*m_mmin)>cluster->Mass()) {
     return false;
   }
-  if (!SelectSplitter(cluster->GetTrip(),cluster->GetAnti())) abort();
+  if (!SelectSplitter(cluster->GetTrip(),cluster->GetAnti())) Abort();
   DefineTags();
   ConstructTrafos();
   if (ConstructLightC() && ConstructSystem(cluster)) {
@@ -274,7 +275,7 @@ void Cluster_Splitter::MakeOtherClusters(Cluster * cluster) {
       cluster->push_back(newcluster);
       return;
     }
-    else abort();
+    else Abort();
   }
   Proto_Particle * trip(p_trip),* anti(p_anti), * part;
   size_t winmom;
@@ -465,7 +466,7 @@ size_t Cluster_Splitter::SelectNumberOfPairs(const size_t & nmax) {
 }
 
 bool Cluster_Splitter::EnforceMomentum(Cluster * cluster) {
-  if (cluster->GetClusters()->empty()) abort();
+  if (cluster->GetClusters()->empty()) Abort();
   Vec4D summom(0.,0.,0.,0.);
   for (Cluster_Iterator cit(cluster->GetClusters()->begin());
        cit!=cluster->GetClusters()->end();cit++) {
@@ -485,6 +486,6 @@ bool Cluster_Splitter::EnforceMomentum(Cluster * cluster) {
     (*cit)->Boost(rest);
     (*cit)->BoostBack(back);
   }
-  if (!cluster->EnsureMomentum()) abort();
+  if (!cluster->EnsureMomentum()) Abort();
   return true;
 }

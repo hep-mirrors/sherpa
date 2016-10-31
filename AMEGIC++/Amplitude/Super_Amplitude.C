@@ -1,6 +1,7 @@
 #include "AMEGIC++/Amplitude/Super_Amplitude.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <cassert>
 
 using namespace AMEGIC;
@@ -208,7 +209,7 @@ void Super_Amplitude::SetZfuncSign()
   if (ok==0) {
     msg_Error()<<"ERROR in Super_Amplitude::SetZfuncSign : "<<std::endl
 	       <<"   Found no suitable factor in Super_Amplitude::SetZfuncSign(), will abort."<<endl;
-    abort();
+    Abort();
   }
 }
 
@@ -245,7 +246,7 @@ void Super_Amplitude::ReduceZfuncs(string str)
       }
       if (hit==0) {
 	cerr<<"No Zfunc found in Super_Amplitude::ReduceZfuncs()!"<<endl;
-	abort();
+	Abort();
       }
     }
     assert(superfunc!=NULL);

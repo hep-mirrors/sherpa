@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -31,7 +32,7 @@ VHAAG_res::VHAAG_res(int _nin,int _nout,int pn,VHAAG_res* ovl)
   nin=_nin; nout=_nout;n_ap=nin+nout-1;
   if (n_ap<5) {
     msg_Error()<<"Minimum number of final state particles for VHAAG_res integrator is 4!"<<std::endl;
-    abort();
+    Abort();
   }
   if (!ovl) {
     Data_Reader dr(" ",";","!","=");
@@ -328,7 +329,7 @@ void VHAAG_res::ConstructMomenta(double a1,double phi,
 	       <<"ConstructMomenta(double a1,double phi,double s1,double s2,double s,"<<std::endl
 	       <<"                 ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)!"<<std::endl
 	       <<" q1 must be in beam direction and massless!   q1="<<q1<<" ("<<q1.Abs2()<<")"<<std::endl;
-    abort();
+    Abort();
   }
   Vec3D e1  = Vec3D(q1)/q1[0];
   double v1 = sqrt(ps+s1)-a1*sqrt(s);

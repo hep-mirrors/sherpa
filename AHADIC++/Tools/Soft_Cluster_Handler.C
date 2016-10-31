@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <sys/stat.h>
 
 using namespace AHADIC;
@@ -287,7 +288,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
 	msg_Error()<<"ERROR in "<<METHOD<<":\n"
 		   <<"   Found cluster that MUST annihilate, but couldn't.\n"
 		   <<"   Will return -1 and hope for the best.\n";
-	abort();
+	Abort();
 	return -1;
       }
     }

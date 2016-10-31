@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <algorithm>
 #include <stdio.h>
@@ -183,7 +184,7 @@ void Channel_Generator_Decays::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	  if (!StepS(flag,p,rannum,sf,flav,maxnumb)) {
 	    msg_Error()<<"This seems to be a 1->1 process !!!"<<endl
 		       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }. Abort the run."<<endl;
-	    abort();
+	    Abort();
 	  }
 	}
 }
@@ -509,7 +510,7 @@ void  Channel_Generator_Decays::AddToVariables(int flag,const string& lhs,const 
     // already exists
     if (rhs != declarations[name]) {
       msg_Error()<<" ERROR in Channel_Generator_Decays::AddToVariables. Abort the run."<<endl;
-      abort();
+      Abort();
     }
   }
 }

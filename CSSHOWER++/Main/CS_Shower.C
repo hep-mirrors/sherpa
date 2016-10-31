@@ -13,6 +13,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <algorithm>
 #include <assert.h>
@@ -408,7 +409,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	msg_Error()<<"  "<<oldl<<" "<<oldr<<" "<<olds<<"\n";
 	msg_Error()<<"  "<<l->Momentum()<<" "<<r->Momentum()
 		   <<" "<<s->Momentum()<<"\n";
-	if (m_recocheck&2) abort();
+	if (m_recocheck&2) Abort();
       }
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);

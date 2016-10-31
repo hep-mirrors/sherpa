@@ -1,6 +1,7 @@
 #include "AMEGIC++/Main/Process_Tags.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "AMEGIC++/Main/Point.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <algorithm>
 #include <iostream>
 
@@ -61,7 +62,7 @@ void Process_Tags::ResetSubList(int n,ATOOLS::Flavour* fl,Pol_Info* pl)
 {
   if (m_sublist[0].size()!= (size_t) n) {
     std::cout<<" Process_Tags::ResetSubList : wrong particle number: "<<n<<" vs. "<<m_sublist[0].size()<<std::endl;
-    abort();
+    Abort();
   }
   for (int i=0;i<n;i++) {
     *(m_sublist[0][i]->p_fl)=fl[i];;

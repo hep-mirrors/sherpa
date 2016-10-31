@@ -3,6 +3,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AHADIC;
 using namespace MODEL;
@@ -75,7 +76,7 @@ void Splitter_Base::Init() {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   No decay channels found for gluons, will abort the run.\n"
 	       <<"   Please contact the Sherpa group for assistance.\n";
-    abort();
+    Abort();
   }
   m_sumwt = CalculateSumWT();
 }

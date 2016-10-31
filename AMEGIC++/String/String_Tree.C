@@ -2,6 +2,7 @@
 #include "AMEGIC++/Main/ColorSC.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <cstring>
 
 using namespace AMEGIC;
@@ -375,7 +376,7 @@ string String_Tree::Tree2String(sknot* m,sknot* g)
 
   if (m->left!=0 || m->right!=0) {
     msg_Error()<<"Error in Tree2String: "<<m->Str()<<endl;
-    abort();
+    Abort();
   }
 
   if (m->Str()==string("0")) return string("");
@@ -660,7 +661,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	  else spm->right = (*winnerlist1)[winnerlist1->size()-1];	      
 	}
 	else {
-	  abort();
+	  Abort();
 	}
 	
 	delete winnerlist1;

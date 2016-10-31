@@ -7,6 +7,7 @@ using namespace METOOLS;
 
 #include "HADRONS++/Current_Library/VA_P_T_ISGW.C"
 #include "HADRONS++/Current_Library/VA_P_T_ISGW2.C"
+#include "ATOOLS/Org/My_MPI.H"
 
 namespace HADRONS { namespace VA_P_T_FFs {
     FormFactor_Base::~FormFactor_Base()
@@ -61,7 +62,7 @@ void VA_P_T::SetModelParameters(struct GeneralModel model)
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "
       <<"exist for current "<<m_name<<". Aborting."<<std::endl;
-    abort();
+    Abort();
   }
 }
 

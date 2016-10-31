@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -93,7 +94,7 @@ void String_Generator::ReStore()
   }
   msg_Error()<<"Error in String_Generator::ReStore():"<<endl
 	     <<"   No information stored to be restored ! Abort."<<endl;
-  abort();
+  Abort();
 }
 
 
@@ -608,7 +609,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
     }
     else {
       msg_Error()<<"Error in String_Generator::GetKabbala() : "<<str<<endl;
-      abort();
+      Abort();
     }
   }
 

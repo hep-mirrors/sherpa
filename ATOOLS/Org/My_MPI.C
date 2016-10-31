@@ -33,3 +33,13 @@ void My_MPI::SetUpSendRecv(Data_Reader *const read)
   }
 #endif
 }
+
+void ATOOLS::Abort(const int mode)
+{
+#ifdef USING__MPI
+  MPI::COMM_WORLD.Abort(1+mode);
+#else
+  if (mode) kill(getpid(),9);
+  Abort();
+#endif  
+}

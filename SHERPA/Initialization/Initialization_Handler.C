@@ -38,6 +38,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <sys/stat.h>
 #include <time.h>
@@ -665,7 +666,7 @@ bool Initialization_Handler::InitializeThePDFs()
       msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
 		 <<"   Inconsistent ISR & Beam:"<<endl
 		 <<"   Abort program."<<endl;
-      abort();
+      Abort();
     }
   }
   return 1;

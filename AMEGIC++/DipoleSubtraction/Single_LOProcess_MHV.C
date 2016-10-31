@@ -398,7 +398,7 @@ Complex Single_LOProcess_MHV::CalculateHelicityPhase(const ATOOLS::Vec4D * mom)
 {
 #ifndef Basic_Sfuncs_In_MHV
   msg_Error()<<"Must use Basic_Sfuncs to generate dipole subtraction terms!"<<endl;
-  abort();
+  Abort();
 #endif
   ATOOLS::Vec4D p=mom[(int)GetEmit()];
     ATOOLS::Vec4D q(p[0],-1.*Vec3D(p));

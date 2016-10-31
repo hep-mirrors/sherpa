@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -35,7 +36,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
   if(!reader.MatrixFromFile(helpsvv)) {
     msg_Error()<<"ERROR in "<<METHOD<<endl
       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
-    abort();
+    Abort();
   }
 
   int nchannels(0), rewrite(0);

@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
@@ -79,7 +80,7 @@ Lund_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
 void Lund_Decay_Handler::CreateDecayBlob(Particle* inpart)
 {
   DEBUG_FUNC(inpart->RefFlav());
-  if(inpart->DecayBlob()) abort();
+  if(inpart->DecayBlob()) Abort();
   if(!Decays(inpart->Flav())) return;
   if(inpart->Time()==0.0) inpart->SetTime();
   Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);

@@ -269,7 +269,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
           if (fabs(currQ)>1e-12) {
               msg_Error() << "Charge conservation failed, aborting: " << currQ << "\n";
               msg_Error() << (**bit) << "\n";
-              abort();
+              Abort();
           }
       }
 

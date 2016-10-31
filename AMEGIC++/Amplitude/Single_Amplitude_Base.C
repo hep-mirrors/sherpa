@@ -5,6 +5,7 @@
 #include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
 #include "AMEGIC++/String/String_Handler.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <cassert>
 
 using namespace ATOOLS;
@@ -185,7 +186,7 @@ Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vect
     msg_Error()<<"ERROR in Single_Amplitude_Base::SingleZvalueTensor: "<<std::endl
 	       <<"   Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
     z->Print();
-    abort();
+    Abort();
   }
   vector<vector<int> > pol;
   vector<int> sign;
@@ -223,7 +224,7 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
     if(z->GetSize()!=2){
       msg_Error()<<"ERROR in Single_Amplitude_Base::SingleZGroupvalue : "<<std::endl
 		 <<"   Invalid Zfunc_ProdGroup. Abort the run."<<endl;
-      abort();
+      Abort();
     }
     vector<int> iz_s;
     iz_s.push_back(z->GetSumIndex());
@@ -404,7 +405,7 @@ Flavour* Single_Amplitude_Base::GetPflav(int pn)
   }
   msg_Error()<<"ERROR in Single_Amplitude_Base::GetPflav: "<<std::endl
 	     <<"   Propagator "<<pn<<" not found. Abort the run."<<endl;
-  abort();
+  Abort();
 }
 
 Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
@@ -549,7 +550,7 @@ void Single_Amplitude_Base::GroupZfuncs()
 	msg_Error()<<"ERROR Single_Amplitude_Base::GroupZfuncs: "<<std::endl
 		   <<"   Index appeared "<<ia<<" times, will abort the run."<<endl;
 	zh[0]->Print();zh[1]->Print();
-	abort();
+	Abort();
       }
       
       Zfunc_Group *sf=new Zfunc_Group(*zh[0],*zh[1],iabs(iz[imin]),&plist);

@@ -7,6 +7,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -275,12 +276,12 @@ bool Sudakov::Generate(Parton * split)
   case pst::none: 
     msg_Error()<<"Error in Sudakov::Generate : No pst-type for splitter. "<<endl
 	       <<(*split)<<(*spect);
-    abort();
+    Abort();
   }
   if (m_type==cstp::none) {
     msg_Error()<<"Error in Sudakov::Generate : No type for splitter. "<<endl
 	       <<(*split)<<(*spect);
-    abort();
+    Abort();
   }
   }  
   if (m_lastint<=0.0 || IsBad(m_lastint)) return false;
@@ -363,7 +364,7 @@ bool Sudakov::Generate(Parton * split)
       break;
   default:
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
-      abort();
+      Abort();
     }
     const bool veto(Veto(Q2, m_x));
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {

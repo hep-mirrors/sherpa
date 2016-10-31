@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include "ATOOLS/Org/IO_Handler.H"
 
@@ -368,7 +369,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		dpc+=string("T[")+cc+string(",")+ce+string(",")+emit+string("]*");
 		break;
 	      default:
-		abort();
+		Abort();
 	      }
 	      switch (ts) {
 	      case 0:
@@ -382,7 +383,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		dpc+=string("T[")+cc+string(",")+cs+string(",")+spect+string("]");
 		break;
 	      default:
-		abort();
+		Abort();
 	      }
 	      sknot* sp = st.String2Tree(dpc);
 	      sknot* s2p = s2;

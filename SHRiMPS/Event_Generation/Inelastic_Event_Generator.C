@@ -193,7 +193,7 @@ TestNumberOfLadders(const std::string & dirname) {
 // bool Inelastic_Event_Generator::DressShowerBlob(Blob * blob) {
 //   msg_Error()<<METHOD<<" not implemented for blob "
 // 	     <<"["<<blob->Id()<<", "<<blob->Type()<<"].\n";
-//   abort();
+//   Abort();
 // }
 
 // void Inelastic_Event_Generator::FixEikonalAndImpact() {

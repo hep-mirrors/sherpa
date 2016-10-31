@@ -2,6 +2,7 @@
 #include "HADRONS++/PS_Library/ResonanceFlavour.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -164,7 +165,7 @@ double ResonanceFlavour::OffShellMassWidth( double s )
   msg_Error()<<"WARNING in ResonanceFlavour::OffShellMassWidth(double s) : "<<endl
     <<"     OffShellWidth of "<<m_name<<" hasn't been implemented yet."<<endl
     <<"     Will ignore and return on-shell mass width"<<endl;
-  cout<<om::red<<"I changed my mind. Will abort."<<om::reset<<endl; abort();
+  cout<<om::red<<"I changed my mind. Will abort."<<om::reset<<endl; Abort();
   return m_mass*m_width;
 }
 
@@ -177,7 +178,7 @@ double ResonanceFlavour::ThreeBodyResonanceMassWidth( double s )
     msg_Error()<<"ERROR in ResonanceFlavour::ThreeBodyResonanceMassWidth() : "<<endl
       <<"     No histogram for "<<m_name<<" has been constructed. Use Method InitialiseThreeBodyResonance() first."<<endl
       <<"     Don't know what to do. Will abort."<<endl;
-    abort();
+    Abort();
   }
   return 0.;
 }

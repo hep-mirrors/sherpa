@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <algorithm>
 #include <stdio.h>
@@ -42,7 +43,7 @@ void Channel_Generator_KK::GenerateTopos(Point* p)
     msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
 	       <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
 	       <<" Aborting."<<std::endl;
-    abort();
+    Abort();
   }
   switch (tcount) {
   case 0:
@@ -304,7 +305,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
 	       <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
 	       <<" Aborting."<<std::endl;
-    abort();
+    Abort();
   }
 
   string m = Order(LinkedMasses(ph));
@@ -942,7 +943,7 @@ void  Channel_Generator_KK::AddToVariables(int flag,const string& lhs,const stri
     // already exists
     if (rhs != declarations[name]) {
       msg_Error()<<" ERROR in Channel_Generator_KK::AddToVariables ()"<<endl;
-      abort();
+      Abort();
     }
   }
 }

@@ -303,7 +303,7 @@ void Vegas::AddPoint(double value,double *xy)
       if (dabs(p_x[i]-xy[i])>1.e-4) {
 	msg_Tracking()<<"Mapping error in Vegas for "<<m_name<<endl;
 	for (int j=0;j<m_dim;j++) msg_Tracking()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
-//    	abort();
+//    	Abort();
 	i=m_dim;
       }
     }

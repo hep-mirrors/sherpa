@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "MODEL/Main/Model_Base.H"
 
 using namespace PHASIC;
@@ -33,7 +34,7 @@ void Channel_Elements_KK::Init(int nin,int nout,ATOOLS::Flavour* fl)
       if(ATOOLS::IsZero(ATOOLS::sqr(fl[i].Mass()))){
 	msg_Error()<<"Error in Channel_Elements_KK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
-	abort();
+	Abort();
       }
       m_kkp=i;
       

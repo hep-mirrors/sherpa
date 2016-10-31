@@ -1,6 +1,7 @@
 #include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -33,7 +34,7 @@ Strong_Coupling::Strong_Coupling(Running_AlphaS * as,const asform::code & asf,
 		 <<"   Maximal alphaS too small for pt_0^2 = "
 		 <<m_pt02<<": "<<m_asmax<<"."<<std::endl
 		 <<"   Will abort the run."<<std::endl;
-      abort();
+      Abort();
     }
     break;
   }

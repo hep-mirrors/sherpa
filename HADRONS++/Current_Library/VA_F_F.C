@@ -1,5 +1,6 @@
 #include "HADRONS++/Current_Library/VA_F_F.H"
 #include "METOOLS/Main/XYZFuncs.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace std;
 using namespace HADRONS;
@@ -23,7 +24,7 @@ void VA_F_F::SetModelParameters( struct GeneralModel _md )
   default:
       msg_Error()<<METHOD<<": You chose a form factor model which does not "
       <<"exist for current "<<m_name<<". Aborting."<<std::endl;
-    abort();
+    Abort();
   }
 }
 

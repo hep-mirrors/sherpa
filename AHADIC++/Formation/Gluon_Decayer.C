@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -39,7 +40,7 @@ void Gluon_Decayer::Init() {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   No decay channels found for gluons, will abort the run.\n"
 	       <<"   Please contact the Sherpa group for assistance.\n";
-    abort();
+    Abort();
   }
 
   if (m_analyse) {

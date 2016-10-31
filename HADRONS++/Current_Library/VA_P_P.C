@@ -12,6 +12,7 @@ using namespace ATOOLS;
 #include "HADRONS++/Current_Library/VA_P_P_BallZwicky.C"
 #include "HADRONS++/Current_Library/VA_P_P_BGL.C"
 #include "HADRONS++/Current_Library/VA_P_P_ISGW3.C"
+#include "ATOOLS/Org/My_MPI.H"
 
 namespace HADRONS { namespace VA_P_P_FFs {
   FormFactor_Base::~FormFactor_Base()
@@ -113,7 +114,7 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "
       <<"exist for current "<<m_name<<". Aborting."<<std::endl;
-    abort();
+    Abort();
   }
 }
 

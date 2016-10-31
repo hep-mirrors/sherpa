@@ -1,5 +1,6 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Blob.H"
 #include <iomanip>
 
@@ -48,5 +49,5 @@ double Spin_Amplitudes::SumSquare() const {
 
 void Spin_Amplitudes::Calculate(const Vec4D_Vector& momenta, bool anti) {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
-  abort();
+  Abort();
 }

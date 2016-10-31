@@ -62,7 +62,7 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
 
   if (n_p1==2||n_p1==nout) {
     msg_Error()<<"Invalid channel for VHAAG_ND!"<<std::endl;
-    abort();
+    Abort();
   }
 // std::cout<<" n_p1="<<n_p1<<std::endl;
 
@@ -395,7 +395,7 @@ void VHAAG_ND::ConstructMomenta(double a1,double phi,
 	       <<"ConstructMomenta(double a1,double phi,double s1,double s2,double s,"<<std::endl
 	       <<"                 ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2)!"<<std::endl
 	       <<" q1 must be in beam direction!   q1="<<q1<<std::endl;
-    abort();
+    Abort();
   }
   Vec3D e1  = Vec3D(q1)/q1[0];
   double v1 = sqrt(ps+s1)-a1*sqrt(s);

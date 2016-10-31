@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Proto_Particle.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -43,7 +44,7 @@ Proto_Particle(Flavour flav,Vec4D mom,char info) :
 	       <<"   Please make sure that heavy coloured objects decay "
 	       <<"before they enter hadronization.\n"
 	       <<"   Will exit the run.\n";
-      abort();
+      Abort();
     }
   }
   control::s_AHAprotoparticles++; 

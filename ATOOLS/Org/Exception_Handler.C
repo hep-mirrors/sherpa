@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -65,7 +66,7 @@ bool Exception_Handler::ReadInStatus(const std::string &path)
 bool Exception_Handler::ApproveTerminate()
 {
   static size_t inttrials=0;
-  if (++inttrials>2) kill(getpid(),9);
+  if (++inttrials>2) Abort(1);
   if (m_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "
 			     <<"Asking for termination ..."<<std::endl;
   if (m_testerfunctions.size()==0 && m_testerobjects.size()==0) {
@@ -91,7 +92,7 @@ bool Exception_Handler::ApproveTerminate()
 void Exception_Handler::PrepareTerminate()
 {
   static size_t trials=0;
-  if (++trials>3) kill(getpid(),9);
+  if (++trials>3) Abort(1);
   if (m_print) msg_Tracking()<<"Exception_Handler::PrepareTerminate(): "
 			     <<"Preparing termination ..."<<std::endl;
   while (m_terminatorobjects.size()>0) {
@@ -161,7 +162,7 @@ void Exception_Handler::Terminate()
   }
   PrepareTerminate();
   m_prepared=true;
-  if (!m_active) abort();
+  if (!m_active) Abort();
   Exit(m_exitcode);
 }
 
@@ -258,10 +259,10 @@ void Exception_Handler::SignalHandler(int signal)
     GenerateStackTrace(std::cout,false);
     if (m_nsegv>3) {
       msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
-      kill(getpid(),9);
+      Abort(1);
     }
   case SIGABRT:
-    if (!m_active && m_prepared) abort();
+    if (!m_active && m_prepared) Abort();
   case SIGTERM:
   case SIGXCPU:
     msg_Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
@@ -276,7 +277,7 @@ void Exception_Handler::SignalHandler(int signal)
     ++m_nbus;
     if (m_nbus>3) {
       msg_Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
-      kill(getpid(),9);
+      Abort(1);
     }
     GenerateStackTrace(std::cout,false);
     msg_Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;

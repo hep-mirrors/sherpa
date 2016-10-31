@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <unistd.h>
 
@@ -972,7 +973,7 @@ void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
       msg_Error()<<"ERROR in Single_LOProcess::CreateMappingFile() :"<<std::endl
 		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl
 		 <<MEname<<" v "<<m_libname<<" || "<<PSname<<" v "<<m_pslibname<<endl;
-       abort();
+       Abort();
     }
     return;
   }

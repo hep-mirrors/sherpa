@@ -11,6 +11,7 @@
 #include "HADRONS++/Current_Library/Current_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -88,7 +89,7 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
   if(!reader.MatrixFromFile(helpsvv)) {
     msg_Error()<<"ERROR in "<<METHOD<<endl
       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
-    abort();
+    Abort();
   }
   Flavour flav;
   double  width(0.),BR,dBR;

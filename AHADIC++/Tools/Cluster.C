@@ -1,5 +1,6 @@
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <algorithm>
 
 using namespace AHADIC;
@@ -61,7 +62,7 @@ void Cluster::Update()
     <<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<"):\n"
     <<"   Cannot handle this colour structure, will abort the run.\n"
     <<"   Please contact the Sherpa group for further assistance.";
-  abort();
+  Abort();
 }
 
 bool Cluster::CheckConsistency(std::ostream & s,std::string method) {

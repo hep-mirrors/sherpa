@@ -1,6 +1,7 @@
 #include "HADRONS++/Current_Library/VA_0_PiPiPiPi3Charged.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -62,7 +63,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   if( !fG.Open() ) {                            // if file does not exist
     msg_Error()<<"The file "<<path<<"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
-	abort();		   
+	Abort();		   
   }
   else {
     // read table and create histogram
@@ -78,7 +79,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   if( !fGo.Open() ) {                            // if file does not exist
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/Gomega_pi+pi0pi-pi-.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
-	abort();		   
+	Abort();		   
   }
   else {
     // read table and create histogram
@@ -94,7 +95,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   if( !fW.Open() ) {                            // if file does not exist
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
-	abort();		   
+	Abort();		   
   }
   else {
     // read table and create histogram

@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "MODEL/Main/Model_Base.H"
 
 using namespace PHASIC;
@@ -41,7 +42,7 @@ RamboKK::RamboKK(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nou
       if(ATOOLS::IsZero(ms[i])){
 	msg_Error()<<"Error in RamboKK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
-	abort();
+	Abort();
       }
       kkp=i;
       
