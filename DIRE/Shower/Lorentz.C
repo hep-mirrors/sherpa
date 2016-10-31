@@ -111,7 +111,7 @@ bool Lorentz::SetLimits(Splitting &s) const
   if (m_fl.size()>3) s.m_ml2=p_ms->Mass2(m_fl[3]);
   s.m_mk2=p_ms->Mass2(s.p_s->Flav());
   s.m_Q2=dabs((s.p_c->Mom()+s.p_s->Mom()).Abs2()
-	      -s.m_mi2-s.m_mj2-s.m_mk2);
+	      -s.m_mi2-s.m_ml2-s.m_mj2-s.m_mk2);
   s.m_eta=s.p_c->GetXB();
   return true;
 }

@@ -27,7 +27,7 @@ double Lorentz_FI::Jacobian(const Splitting &s) const
 
 double Lorentz_FI::PDFEstimate(const Splitting &s) const
 {
-  return pow(1.0e6,s.p_s->GetXB()*s.m_t0/Min(s.m_t1,s.m_Q2));
+  return 1.0;
 }
 
 int Lorentz_FI::Construct(Splitting &s,const int mode) const

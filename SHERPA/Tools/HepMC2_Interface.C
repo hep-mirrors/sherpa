@@ -441,13 +441,18 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
-  HepMC::GenVertex * vertex;
+  HepMC::GenVertex * vertex, * psvertex(NULL);
   std::vector<HepMC::GenParticle*> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     // Call the Blob to vertex code, changes vertex pointer above
     if (Sherpa2HepMC(*(blit),vertex)) {
       event.add_vertex(vertex);
+      for (size_t i(0);i<(*blit)->NInP();++i)
+	if ((*blit)->InParticle(i)->ProductionBlob()==NULL) {
+	  psvertex=vertex;
+	  break;
+	}
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
           THROW(fatal_error,"Events containing correlated subtraction events"
@@ -470,6 +475,17 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
       }
     }
   } // End Blob_List loop
+  if (beamparticles.empty()) {
+    Vec4D pbeam[2]={rpa->gen.PBeam(0),rpa->gen.PBeam(1)};
+    HepMC::FourVector pa(pbeam[0][1],pbeam[0][2],pbeam[0][3],pbeam[0][0]);
+    HepMC::FourVector pb(pbeam[1][1],pbeam[1][2],pbeam[1][3],pbeam[1][0]);
+    HepMC::GenParticle *inpart[2] = {
+      new HepMC::GenParticle(pa,(long int)rpa->gen.Beam1(),2),
+      new HepMC::GenParticle(pb,(long int)rpa->gen.Beam2(),2)};
+    psvertex->add_particle_in(inpart[0]);
+    psvertex->add_particle_in(inpart[1]);
+    event.set_beam_particles(inpart[0],inpart[1]);
+  }
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }

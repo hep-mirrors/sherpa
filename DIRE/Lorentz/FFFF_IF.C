@@ -38,13 +38,13 @@ namespace DIRE {
     double Integral(const Splitting &s) const
     {
       double I=20.0/9.0*0.5*0.5*log((s.m_Q2+s.m_t0)/(s.m_Q2*sqr(s.m_eta)+s.m_t0));
-      return I*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax;
+      return I*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     double Estimate(const Splitting &s) const
     {
       double E=20.0/9.0*0.5*s.m_z/(sqr(s.m_z)+s.m_t0/s.m_Q2);
-      return E*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax;
+      return E*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     bool GeneratePoint(Splitting &s) const
@@ -52,29 +52,37 @@ namespace DIRE {
       double k2(s.m_t0/s.m_Q2);
       s.m_z=sqrt(pow((1.0+k2)/(sqr(s.m_eta)+k2),-ran->Get())*(1.0+k2)-k2);
       s.m_phi=2.0*M_PI*ran->Get();
-      do s.m_z2=pow(s.m_z,ran->Get());
-      while (1.0+sqr(1.0-s.m_z2)<2.0*ran->Get());
+      do s.m_z2=1.0/(1.0+ran->Get()*(1.0/s.m_z-1.0));
+      while (1.0-s.m_z2+sqr(s.m_z2)/2.0<ran->Get());
       s.m_phi2=2.*M_PI*ran->Get();
       return true;
     }
 
     bool Compute(Splitting &s,const int mode) const
     {
-      s.m_x=s.m_z;
+      double xa(s.m_z2), za(s.m_z), Q2(s.m_Q2);
       s.m_y=s.m_s=0.0;
+      s.m_x=xa+s.m_t*za/(Q2*xa);
+      s.m_mk2=Q2*(xa/za-1.0)+s.m_t/xa-s.m_mi2-s.m_ml2;
       if (!Lorentz_IF::Compute(s,0)) return false;
       Splitting c(s);
       double amax(p_sk->GF()->CplMax(s));
       double I(amax/(2.0*M_PI)*4.0/3.0*
-	       (2.0*log(1.0/s.m_z)-(3.0-s.m_z)*(1.0-s.m_z)/2.0));
+	       (2.0/s.m_z-s.m_z+2.0*log(s.m_z)-1.0));
       for (s.m_s=s.m_Q2*pow(ran->Get(),Max(1.0/I,1.0e-3));
       	   s.m_s>s.m_t0;s.m_s*=pow(ran->Get(),Max(1.0/I,1.0e-3))) {
-	s.m_y=s.m_s*s.m_x/s.m_Q2;
+	s.m_y=(c.m_t=s.m_s)*za/Q2;
+	s.m_x=xa+s.m_t*za/(Q2*xa)+s.m_s*za/Q2;
+	s.m_mk2=Q2*(xa/za-1.0)+s.m_s+s.m_t/xa-s.m_mi2-s.m_ml2;
       	if (p_sk->GF()->Coupling(c)/amax<ran->Get()) continue;
-      	if (Lorentz_IF::Compute(s,0)) return true;
+      	if (Lorentz_IF::Compute(s,0)) {
+	  s.m_mk2=p_ms->Mass2(s.p_s->Flav());
+	  return true;
+	}
       }
+      s.m_mk2=p_ms->Mass2(s.p_s->Flav());
       s.m_y=s.m_s=0.0;
-      return Lorentz_IF::Compute(s,0);
+      return true;
     }
 
   };// end of class FFFF_IF

@@ -27,6 +27,8 @@ namespace DIRE {
   class Lorentz_IF_123: public Lorentz_IF {
   protected:
 
+    double J(const Splitting &s) const;
+
     double Jacobian(const Splitting &s) const;
 
   public:

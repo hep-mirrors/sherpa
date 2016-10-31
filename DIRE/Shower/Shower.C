@@ -232,7 +232,7 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
     }
-    win.m_t*=exp(log(ran->Get())*Max(2.0*M_PI/sum,1.0e-3));
+    win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
     for (size_t j(0);j<splits.size();++j)

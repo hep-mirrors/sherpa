@@ -38,13 +38,13 @@ namespace DIRE {
     double Integral(const Splitting &s) const
     {
       double I=20.0/9.0*0.5*0.5*log((s.m_Q2+s.m_t0)/(s.m_Q2*sqr(s.m_eta)+s.m_t0));
-      return I*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax;
+      return I*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     double Estimate(const Splitting &s) const
     {
       double E=20.0/9.0*0.5*s.m_z/(sqr(s.m_z)+s.m_t0/s.m_Q2);
-      return E*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax;
+      return E*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     bool GeneratePoint(Splitting &s) const
@@ -52,29 +52,37 @@ namespace DIRE {
       double k2(s.m_t0/s.m_Q2);
       s.m_z=sqrt(pow((1.0+k2)/(sqr(s.m_eta)+k2),-ran->Get())*(1.0+k2)-k2);
       s.m_phi=2.0*M_PI*ran->Get();
-      do s.m_z2=pow(s.m_z,ran->Get());
-      while (1.0+sqr(1.0-s.m_z2)<2.0*ran->Get());
+      do s.m_z2=1.0/(1.0+ran->Get()*(1.0/s.m_z-1.0));
+      while (1.0-s.m_z2+sqr(s.m_z2)/2.0<ran->Get());
       s.m_phi2=2.*M_PI*ran->Get();
       return true;
     }
 
     bool Compute(Splitting &s,const int mode) const
     {
-      s.m_x=s.m_z;
-      s.m_y=s.m_t/s.m_Q2*sqr(s.m_z2/s.m_x);
-      s.m_s=s.m_z2*(p_ms->Mass(m_fl[1])-p_ms->Mass(m_fl[3])/(1.0-s.m_z2));
-      if (!Lorentz_II::Compute(s,0)) return false;
+      double xa(s.m_z2), za(s.m_z);
+      double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
+      s.m_s=xa*(p_ms->Mass(m_fl[1])-p_ms->Mass(m_fl[3])/(1.0-xa));
+      s.m_x=(Q2+s.m_mij2-s.m_mj2+s.m_s)/(xa/za*Q2);
+      s.m_y=s.m_t/Q2*sqr(xa/za);
       Splitting c(s);
+      c.m_x=xa-(c.m_y=(s.m_s+s.m_mi2+s.m_ml2)/(Q2/za));
+      if (!(Lorentz_II::Compute(s,0) &&
+	    Lorentz_II::Compute(c,0))) return false;
       double amax(p_sk->GF()->CplMax(s));
       double I(amax/(2.0*M_PI)*4.0/3.0*
-	       (2.0*log(1.0/s.m_z)-(3.0-s.m_z)*(1.0-s.m_z)/2.0));
-      for (s.m_s=s.m_Q2*pow(ran->Get(),Max(1.0/I,1.0e-3));
-      	   s.m_s>s.m_t0;s.m_s*=pow(ran->Get(),Max(1.0/I,1.0e-3))) {
+	       (2.0/s.m_z-s.m_z+2.0*log(s.m_z)-1.0));
+      for (c.m_t=s.m_s=s.m_Q2*pow(ran->Get(),Max(1.0/I,1.0e-3));
+      	   s.m_s>s.m_t0;c.m_t=s.m_s*=pow(ran->Get(),Max(1.0/I,1.0e-3))) {
       	if (p_sk->GF()->Coupling(c)/amax<ran->Get()) continue;
-      	if (Lorentz_II::Compute(s,0)) return true;
+	s.m_x=(Q2+s.m_mij2-s.m_mj2+s.m_s)/(xa/za*Q2);
+	c.m_x=xa-(c.m_y=(s.m_s+s.m_mi2+s.m_ml2)/(Q2/za));
+	if (Lorentz_II::Compute(s,0) &&
+	    Lorentz_II::Compute(c,0)) return true;
       }
-      s.m_s=s.m_z2*(p_ms->Mass(m_fl[1])-p_ms->Mass(m_fl[3])/(1.0-s.m_z2));
-      return Lorentz_II::Compute(s,0);
+      s.m_s=xa*(p_ms->Mass(m_fl[1])-p_ms->Mass(m_fl[3])/(1.0-xa));
+      s.m_x=(Q2+s.m_mij2-s.m_mj2+s.m_s)/(xa/za*Q2);
+      return true;
     }
 
   };// end of class FFFF_II

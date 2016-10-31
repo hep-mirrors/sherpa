@@ -29,14 +29,15 @@ double Lorentz_II::PDFEstimate(const Splitting &s) const
     (s.m_eta,Min(s.m_t1,s.m_Q2),m_fl[0],s.p_c->Beam()-1);
   double fn=p_sk->PS()->GetXPDF
     (s.m_eta,Min(s.m_t1,s.m_Q2),m_fl[1],s.p_c->Beam()-1);
-  if (m_fl[1]==Flavour(kf_u).Bar()||m_fl[1]==Flavour(kf_d).Bar()) {
-    double fo0=p_sk->PS()->GetXPDF(s.m_eta,s.m_t0,m_fl[0],s.p_c->Beam()-1);
-    double fn0=p_sk->PS()->GetXPDF(0.2,s.m_t0,m_fl[1],s.p_c->Beam()-1);
+  if (m_fl[1].Mass(true)<1.0 && m_fl[0].Mass(true)>=1.0) {
+    double tcut(Max(s.m_t0,sqr(2.0*m_fl[0].Mass(true))));
+    double fo0=p_sk->PS()->GetXPDF(s.m_eta,tcut,m_fl[0],s.p_c->Beam()-1);
+    double fn0=p_sk->PS()->GetXPDF(0.2,tcut,m_fl[1],s.p_c->Beam()-1);
     if (fo0 && dabs(fo0)<dabs(fo)) fo=fo0;
     if (dabs(fn0)>dabs(fn)) fn=fn0;
   }
-  if (fo==0.0) return 0.0;
-  return dabs(fn/fo)*pow(1.0e6,s.m_eta*s.m_t0/Min(s.m_t1,s.m_Q2));
+  if (fo<p_sk->PS()->PDFMin()) return 0.0;
+  return dabs(fn/fo);
 }
 
 int Lorentz_II::Construct(Splitting &s,const int mode) const
@@ -79,14 +80,16 @@ Lorentz_II_123::Lorentz_II_123(const Kernel_Key &k):
 
 double Lorentz_II_123::Jacobian(const Splitting &s) const
 {
-  return Lorentz_II::Jacobian(s);
+  Splitting c(s);
+  c.m_x=s.m_z;
+  return Lorentz_II::Jacobian(c);
 }
 
 int Lorentz_II_123::Construct(Splitting &s,const int mode) const
 {
   if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
   double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
-  double q2(Q2+s.m_mij2-s.m_mj2+s.m_s), xa(s.m_z2), za(s.m_x);
+  double q2(Q2+s.m_mij2-s.m_mj2+s.m_s), xa(s.m_z2), za(s.m_z);
   Kin_Args ff(s.m_t/Q2*sqr(xa/za),q2/(xa/za*Q2),s.m_phi,s.m_kin);
   if (ConstructIIDipole
       (-s.m_s,s.m_mj2,s.m_mij2,s.m_mk2,
