@@ -5,7 +5,8 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 
-#include <stddef.h>
+#include <csignal>
+#include <cstddef>
 #include <cstring>
 #include <unistd.h>
 
