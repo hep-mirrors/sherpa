@@ -29,7 +29,6 @@ BGL::BGL(GeneralModel model, double* masses, const Flavour_Vector& flavs,
   if (kf0==kf_B) {
     if (kf1==kf_pi_plus) {
     case_number = 0;
-    const double mplus = m_m0+m_m1;
     const double mminus = m_m0-m_m1;
     mstar = 5.32483;
     a0 = 0.026;
@@ -54,7 +53,6 @@ BGL::BGL(GeneralModel model, double* masses, const Flavour_Vector& flavs,
   // B+-Decay:
    else if (kf0==kf_B_plus) {
      if (kf1==kf_pi) {
-       const double mplus = m_m0+m_m1;
        const double mminus = m_m0-m_m1;
        case_number = 0;
        mstar = 5.32483;
