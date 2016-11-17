@@ -749,7 +749,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
       if (ampl_nout==1) idk=ampl->Leg(0)->Id();
       else {
-        size_t select=ampl->Legs().size();
+        size_t select(0);
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
         } while (ampl->Leg(select)->Id()&idmother ||
@@ -825,7 +825,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
       if (ampl_nout==1) idk=ampl->Leg(0)->Id();
       else {
-        size_t select=ampl->Legs().size();
+        size_t select(0);
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
         } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
@@ -970,8 +970,8 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
     size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
     if (ampl_nout==1) idk=ampl->Leg(0)->Id();
     else {
-      size_t select=ampl->Legs().size();
-      size_t nvalid=0;
+      size_t select(0);
+      size_t nvalid(0);
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
         if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
               ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {

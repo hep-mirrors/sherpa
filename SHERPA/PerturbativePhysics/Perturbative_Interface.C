@@ -18,6 +18,8 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 
+#include <cassert>
+
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -123,6 +125,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     }
     return Return_Value::Success;
   }
+  assert(p_me != NULL);
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
     (p_me->Process()->Integrator()->Momenta(),m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;

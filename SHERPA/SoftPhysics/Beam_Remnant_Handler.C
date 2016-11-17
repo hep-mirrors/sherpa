@@ -67,10 +67,12 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
   if (p_shrimps) {
     fbc =  p_shrimps->FillBeamBlobs(bloblist);
   }
-  else {
+  else if (p_parametrised) {
     fbc = p_parametrised->FillBeamBlobs(bloblist);
     if (fbc==Return_Value::New_Event && m_vmode)
       THROW(fatal_error,"Four Momentum not conserved.");
+  } else {
+    THROW(fatal_error, "No physics model initialised.");
   }
   if (fbc!=Return_Value::Success) return fbc;
   fbc = FillBunchBlobs(bloblist);

@@ -206,19 +206,6 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 		      decayblob->InParticle(0)->Flav());
       for (size_t i=0; i<tmpno.size(); ++i) compflavsno[i+1]=tmpno[i];
     }
-    Blob_Data_Base* data = (*fblob)["dc"];
-    /*
-      std::string decname(data->Get<Decay_Channel*>()->Name());
-      bool outtag(decayblob->InParticle(0)->Flav()==Flavour(kf_B_s));
-      if (outtag) {
-      msg_Out()<<om::red
-      <<METHOD<<" for "<<decayblob->InParticle(0)->Flav()<<" ->";
-      for (size_t i=0; i<compflavs.size(); i++) 
-      msg_Out()<<" "<<compflavs[i];
-      msg_Out()<<"\n --> |"<<decname<<"|\n"
-      <<(*fblob)<<"\n";
-      }
-    */
     if (dt->second[0]->GetDecayChannel(compflavs) ||
        (tmpno.size()!=tmp.size() && 
 	dt->second[0]->GetDecayChannel(compflavsno))) {
@@ -238,17 +225,9 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       Decay_Matrix* D=FillDecayTree(decayblob, sigma);
       delete sigma;
       delete D;
-      /*
-	if (outtag) {
-	msg_Out()<<".\n"<<"Define new blob:"
-	<<om::green<<(*decayblob)<<om::reset<<".\n"
-	<<"=================================================\n";
-	}
-      */
       return true;
     }
     else {
-      //if (outtag) msg_Out()<<om::green<<" --> accepted.\n"<<om::reset;
       DEBUG_INFO("not found as exclusive. accepted.");
       Vec4D vertex_position=decayblob->Position();
       if (showerblob) showerblob->SetPosition(vertex_position);

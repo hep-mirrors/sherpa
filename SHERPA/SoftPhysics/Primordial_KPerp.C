@@ -304,11 +304,8 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
     double spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
     double spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
     if (ATOOLS::dabs(spn1-spo)>ATOOLS::dabs(spn2-spo)) pz1*=-1.0;
-    spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
-    spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
     double ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
     if (ATOOLS::dabs(ytn-yto)>ATOOLS::dabs(1./ytn-yto)) { pz1*=-1.0; pz2*=-1.0; }
-    ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
     if (dabs(pz1)>dabs(pz2)) { if (Sign(pz1)==Sign(old1[3])) break; }
     else { if (Sign(pz2)==Sign(old2[3])) break; }
   }
