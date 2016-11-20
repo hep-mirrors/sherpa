@@ -359,15 +359,20 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
-    m_result*=m_psweight;
-    m_result*=iscount;
+    m_result*=m_psweight*iscount;
+  }
+  const double wgtfac(m_psweight*iscount);
+  ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
+  if (wgtinfo) {
+    (*wgtinfo)*=wgtfac;
   }
   NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
   if (nlos) {
-    (*nlos)*=m_psweight;
-    (*nlos)*=iscount;
-    (*nlos).MultMEwgt(m_psweight);
-    (*nlos).MultMEwgt(iscount);
+    (*nlos)*=wgtfac;
+    (*nlos).MultMEwgt(wgtfac);
+  }
+  if (p_variationweights) {
+    (*p_variationweights)*=wgtfac;
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
@@ -389,9 +394,15 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     sf<<"}(P"<<m_killedpoints<<");\n";
     ++m_killedpoints;
     m_result=0.0;
+    if (wgtinfo) {
+      (*wgtinfo)*=0.0;
+    }
     if (nlos) {
       (*nlos)*=0.0;
       (*nlos).MultMEwgt(0.0);
+    }
+    if (p_variationweights) {
+      (*p_variationweights)*=0.0;
     }
   }
   return m_result;
@@ -442,10 +453,6 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   if (wgtinfo) {
-    (*wgtinfo)*=m_psweight;
-    if (p_variationweights) {
-      (*p_variationweights)*=m_psweight;
-    }
     wgtinfo->m_x1=x1;
     wgtinfo->m_x2=x2;
   }
