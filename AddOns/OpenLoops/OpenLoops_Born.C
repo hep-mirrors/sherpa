@@ -35,6 +35,16 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   return m_symfac*result;
 }
 
+int OpenLoops_Born::OrderQCD(const int &id)
+{
+  return OpenLoops_Interface::GetIntParameter("coupling_qcd_0");
+}
+
+int OpenLoops_Born::OrderEW(const int &id)
+{
+  return OpenLoops_Interface::GetIntParameter("coupling_ew_0");
+}
+
 }
 
 using namespace OpenLoops;
@@ -64,5 +74,3 @@ operator()(const Process_Info &pi) const
 
   return NULL;
 }
-
-
