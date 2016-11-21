@@ -51,8 +51,8 @@ namespace PHASIC {
     (std::set<std::pair<size_t,size_t> > &combs,
      std::map<size_t,ATOOLS::Flavour_Vector> &fls);
 
-    virtual int OrderQCD(const int &id=-1);
-    virtual int OrderEW(const int &id=-1);
+    virtual int OrderQCD(const int &id=-1) = 0;
+    virtual int OrderEW(const int &id=-1) = 0;
 
     virtual double TR() const;
 
