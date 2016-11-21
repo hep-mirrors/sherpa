@@ -46,16 +46,6 @@ void Tree_ME2_Base::FillCombinations
 {
 }
 
-int Tree_ME2_Base::OrderQCD(const int &id)
-{
-  return -1;
-}
-
-int Tree_ME2_Base::OrderEW(const int &id)
-{
-  return -1;
-}
-
 double Tree_ME2_Base::TR() const
 {
   return 0.5;
