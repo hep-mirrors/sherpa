@@ -359,20 +359,20 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
-    m_result*=m_psweight*iscount;
-  }
-  const double wgtfac(m_psweight*iscount);
-  ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  if (wgtinfo) {
-    (*wgtinfo)*=wgtfac;
-  }
-  NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-  if (nlos) {
-    (*nlos)*=wgtfac;
-    (*nlos).MultMEwgt(wgtfac);
-  }
-  if (p_variationweights) {
-    (*p_variationweights)*=wgtfac;
+    const double wgtfac(m_psweight*iscount);
+    m_result*=wgtfac;
+    ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
+    if (wgtinfo) {
+      (*wgtinfo)*=wgtfac;
+    }
+    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
+    if (nlos) {
+      (*nlos)*=wgtfac;
+      (*nlos).MultMEwgt(wgtfac);
+    }
+    if (p_variationweights) {
+      (*p_variationweights)*=wgtfac;
+    }
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
@@ -394,9 +394,11 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     sf<<"}(P"<<m_killedpoints<<");\n";
     ++m_killedpoints;
     m_result=0.0;
+    ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
     if (wgtinfo) {
       (*wgtinfo)*=0.0;
     }
+    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
       (*nlos)*=0.0;
       (*nlos).MultMEwgt(0.0);
