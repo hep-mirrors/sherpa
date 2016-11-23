@@ -22,6 +22,11 @@ OpenLoops_Virtual::OpenLoops_Virtual(const Process_Info& pi,
 {
 }
 
+void OpenLoops_Virtual::SwitchMode(const int mode)
+{
+  OpenLoops_Interface::SwitchMode(mode);
+}
+
 void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
 
   OpenLoops_Interface::SetParameter("alpha", AlphaQED());

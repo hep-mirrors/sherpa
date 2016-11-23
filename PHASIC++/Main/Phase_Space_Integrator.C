@@ -41,6 +41,10 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{maxopt} = "<<maxopt<<".\n";
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
+  if (!read.ReadFromFile(timestep,"PSI_TIMESTEP_OFFSET")) timestep=0.0;
+  else msg_Info()<<METHOD<<"(): Set \\Delta t offset = "<<timestep<<".\n";
+  if (!read.ReadFromFile(timeslope,"PSI_TIMESTEP_SLOPE")) timeslope=0.0;
+  else msg_Info()<<METHOD<<"(): Set \\Delta t slope = "<<timeslope<<".\n";
   addtime=0.0;
   lastrss=0;
 #ifdef USING__MPI
@@ -134,16 +138,12 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
 #endif
 
   addtime = 0.0;
-#if (defined USING__Threading)
-  rlotime = rstarttime = ATOOLS::rpa->gen.Timer().RealTime();
-#endif
-  lotime = starttime = ATOOLS::rpa->gen.Timer().UserTime();
+  stepstart = lotime = starttime = ATOOLS::rpa->gen.Timer().RealTime();
   if (psh->Stats().size()>0)
     addtime=psh->Stats().back()[6];
 
   nstep = ncstep = 0;
 
-  lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   optiter=iter;
 #ifdef USING__MPI
   int size = MPI::COMM_WORLD.Get_size();
@@ -194,7 +194,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 #else
     ncontrib = psh->FSRIntegrator()->ValidN();
 #endif
-    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) {
+    double deltat, targettime=timestep+dabs(timeslope)*(psh->Process()->NOut()-2);
+    if (timeslope<0.0) targettime*=psh->Process()->Process()->Size();
+    if (timestep>0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-stepstart;
+    if ((timestep==0.0 && ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) ||
+	(timestep>0.0 && deltat>=targettime)) {
       MPISync();
       bool optimized=false;
       bool fotime = false;
@@ -204,10 +208,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
 	  if ((psh->Process())->SPoints()==0) {
-#if (defined USING__Threading)
-	    rlotime = ATOOLS::rpa->gen.Timer().RealTime();
-#endif
-	    lotime = ATOOLS::rpa->gen.Timer().UserTime();
+	    lotime = ATOOLS::rpa->gen.Timer().RealTime();
 	  }
 	}
 	fotime = true;
@@ -223,36 +224,20 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
 	(psh->Process())->EndOptimize();
-#if (defined USING__Threading)
-	rlotime = ATOOLS::rpa->gen.Timer().RealTime();
-#endif
-	lotime = ATOOLS::rpa->gen.Timer().UserTime();
+	lotime = ATOOLS::rpa->gen.Timer().RealTime();
       }
 
-#if (defined USING__Threading)
-      double rtime = ATOOLS::rpa->gen.Timer().RealTime();
-      double rtimeest=0.;
-      rtimeest = (5*iter0+(nopt-5)*iter1+2*maxopt*iter1)/double(ncontrib)*(rtime-rstarttime);
-#endif
-      double time = ATOOLS::rpa->gen.Timer().UserTime();
+      double time = ATOOLS::rpa->gen.Timer().RealTime();
       double timeest=0.;
       timeest = (5*iter0+(nopt-5)*iter1+2*maxopt*iter1)/double(ncontrib)*(time-starttime);
       if (!fotime) {
 	if (fin_opt==1) {
 	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
 				(time-lotime)+lotime-starttime);
-#if (defined USING__Threading)
-	  rtimeest = ATOOLS::Max(rtimeest,(psh->Process())->RemainTimeFactor(maxerror)*
-				(rtime-rlotime)+rlotime-rstarttime);
-#endif
 	}
 	else {
 	  timeest = (psh->Process())->RemainTimeFactor(maxerror)*
 	    (time-lotime)+lotime-starttime;
-#if (defined USING__Threading)
-	  rtimeest = (psh->Process())->RemainTimeFactor(maxerror)*
-	    (rtime-rlotime)+rlotime-rstarttime;
-#endif
 	}
       }
       double error=dabs(psh->Process()->TotalVar()/psh->Process()->TotalResult());
@@ -268,19 +253,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	msg_Info()<<"full optimization: ";
       }
       else msg_Info()<<"integration time: ";
-#if (defined USING__Threading)
-      msg_Info()<<" ( "<<FormatTime(size_t(rtime-rstarttime+0.5))<<" ("
-		<<FormatTime(size_t(time-starttime+0.5))<<") elapsed / "
-		<<FormatTime(size_t(rtimeest+0.5)
-			     -size_t((rtime-rstarttime+0.5)))<<" ("
-		<<FormatTime(size_t(timeest+0.5)
-			     -size_t((time-starttime+0.5)))
-		<<") left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl;
-#else
       msg_Info()<<" ( "<<FormatTime(size_t(time-starttime))<<" elapsed / " 
 		<<FormatTime(size_t(timeest)-size_t((time-starttime))) 
 		<<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl; 
-#endif
       size_t currentrss=GetCurrentRSS();
       if (lastrss==0) lastrss=currentrss;
       else if (currentrss>lastrss+ToType<int>
@@ -309,6 +284,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
 #endif
       }
+      stepstart=ATOOLS::rpa->gen.Timer().RealTime();
       bool wannabreak = dabs(error)<maxerror ||
         dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror;
       if (fin_opt==0 && nopt>psh->Stats().size() && wannabreak) nopt=psh->Stats().size();

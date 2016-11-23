@@ -49,6 +49,7 @@ namespace OpenLoops {
   std::string OpenLoops_Interface::s_olprefix     = std::string("");
   bool        OpenLoops_Interface::s_ignore_model = false;
   bool        OpenLoops_Interface::s_exit_on_error= true;
+  std::vector<std::string> OpenLoops_Interface::s_evgen_params;
 
   OpenLoops_Interface::~OpenLoops_Interface()
   {
@@ -109,9 +110,13 @@ namespace OpenLoops {
 #endif
     
     // set remaining OL parameters specified by user
+    reader.VectorFromFile(s_evgen_params,"OL_PARAMETERS");
+    for (size_t i=1; i<s_evgen_params.size(); i=i+2)
+      SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
     vector<string> parameters;
-    reader.VectorFromFile(parameters,"OL_PARAMETERS");
-    for (size_t i=1; i<parameters.size(); i=i+2) SetParameter(parameters[i-1], parameters[i]);
+    if (reader.VectorFromFile(parameters,"OL_INTEGRATION_PARAMETERS"))
+      for (size_t i=1; i<parameters.size(); i=i+2)
+	SetParameter(parameters[i-1], parameters[i]);
 
     char welcomestr[GetIntParameter("welcome_length")];
     ol_welcome(welcomestr);
@@ -189,6 +194,12 @@ namespace OpenLoops {
     for(MODEL::ScalarConstantsMap::const_iterator it=s_model->ScalarConstants().begin(); 
 	it!=s_model->ScalarConstants().end(); ++it)
       SetParameter(it->first, it->second);
+  }
+
+  void OpenLoops_Interface::SwitchMode(const int mode)
+  {
+    for (size_t i=1; i<s_evgen_params.size(); i=i+2)
+      SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
   }
 
   int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,

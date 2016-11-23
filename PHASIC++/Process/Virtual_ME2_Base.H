@@ -22,6 +22,8 @@ namespace PHASIC {
                   const ATOOLS::Flavour_Vector& flavs);
     virtual ~Virtual_ME2_Base();
 
+    virtual void SwitchMode(const int mode=0);
+
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
     inline const METOOLS::DivArrD& Result() { return m_res; }
 

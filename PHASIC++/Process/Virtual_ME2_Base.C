@@ -23,6 +23,10 @@ Virtual_ME2_Base::~Virtual_ME2_Base()
 {
 }
 
+void Virtual_ME2_Base::SwitchMode(const int mode)
+{
+}
+
 double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   //MSbar

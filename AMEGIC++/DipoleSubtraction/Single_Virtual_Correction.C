@@ -380,6 +380,7 @@ void Single_Virtual_Correction::SetLookUp(const bool lookup)
 {
   m_lookup=lookup; 
   if (p_LO_process) p_LO_process->SetLookUp(lookup);
+  if (p_loopme && lookup==0) p_loopme->SwitchMode(lookup);
 }
 
 void Single_Virtual_Correction::Minimize()

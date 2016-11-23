@@ -18,6 +18,8 @@ namespace OpenLoops {
 
     ~OpenLoops_Virtual() {}
   
+    void SwitchMode(const int mode);
+
     inline bool SetColours(const ATOOLS::Vec4D_Vector& momenta) {
       return true;
     }

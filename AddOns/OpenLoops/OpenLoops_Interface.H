@@ -20,6 +20,7 @@ namespace OpenLoops {
     static std::string s_olprefix;
     static bool        s_ignore_model;
     static bool        s_exit_on_error;
+    static std::vector<std::string> s_evgen_params;
 
   public :
     OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}
@@ -29,6 +30,8 @@ namespace OpenLoops {
 		    MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
+
+    static void SwitchMode(const int mode);
 
     static int RegisterProcess(const PHASIC::Subprocess_Info& is,
                                const PHASIC::Subprocess_Info& fs,

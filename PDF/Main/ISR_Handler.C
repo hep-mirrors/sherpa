@@ -339,7 +339,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
 		   <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
   msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
-		   <<p2.PPlus()<<" / "<<p_beam[1]->
+		   <<p2.PMinus()<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
   if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
     msg_IODebugging()<<"  Q_1^2 out of bounds"<<std::endl;

@@ -14,7 +14,7 @@ namespace PHASIC {
     static long unsigned int nmax;
 
     double starttime, lotime, addtime, lrtime;
-    double value, maxerror, maxabserror, rstarttime, rlotime;
+    double value, maxerror, maxabserror, stepstart, timestep, timeslope;
     long unsigned int n, ncontrib, maxopt, nlo, fin_opt, nstep, ncstep;
     long int mn, mnstep, mncstep;
     size_t lastrss;

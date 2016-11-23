@@ -689,4 +689,5 @@ void COMIX::Single_Process::SetLookUp(const bool lookup)
       static_cast<Single_Dipole_Term*>
 	((*subs)[i]->p_proc)->SetLookUp(m_lookup);
   }
+  if (p_loop && lookup==0) p_loop->SwitchMode(lookup);
 }
