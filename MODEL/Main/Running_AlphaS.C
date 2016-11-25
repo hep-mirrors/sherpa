@@ -32,19 +32,44 @@ namespace MODEL {
 }
 
 
-One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
-				       const int order, const int thmode,
-				       PDF::PDF_Base *const aspdf,
-				       One_Running_AlphaS *const mo) : 
-  m_order(order), m_pdf(0),
-  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
-  m_cutq2(0.), m_cutas(1.),
-  p_pdf(aspdf), m_pdfowned(false)
+One_Running_AlphaS::One_Running_AlphaS(const std::string pdfname, const int member,
+                                       const double as_MZ, const double m2_MZ,
+                                       const int order, const int thmode)
 {
-  p_thresh  = NULL;
+  InitGenericPDF(pdfname, member);
+  Init(as_MZ, m2_MZ, order, thmode);
+}
 
-  m_CF    = 4./3.;        
-  m_CA    = 3.;           
+One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
+                                       const double as_MZ, const double m2_MZ,
+                                       const int order, const int thmode):
+p_pdf(pdf),
+m_pdfowned(false)
+{
+  Init(as_MZ, m2_MZ, order, thmode);
+}
+
+void One_Running_AlphaS::Init(const double as_MZ, const double m2_MZ,
+                              const int order, const int thmode)
+{
+  m_pdf = 0;
+  m_cutq2 = 0.0;
+
+  m_as_MZ = as_MZ;
+  m_m2_MZ = (m2_MZ != 0.0) ? m2_MZ : Flavour(kf_Z).Mass();
+  m_order = order;
+
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE", 1.);
+  const int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
+  const int overridepdfinfo(dataread.GetValue<int>("OVERRIDE_PDF_INFO", 0));
+
+  if ((m_as_MZ == 0.0 || m_order == 0.0)
+      && (p_pdf == NULL || overridepdfinfo)) {
+    THROW(fatal_error, "Cannot determine as(MZ) and/or the order of the running of as.");
+  }
 
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -54,28 +79,17 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
     if (Flavour(kfit->first).Strong()) m_nth++;
   }
-
-  p_thresh        = new AsDataSet[m_nth+1]; 
+  p_thresh        = new AsDataSet[m_nth+1];
   double * masses = new double[m_nth];
-  
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  const int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
-  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
-  if (pdfas&4) {
-    std::string set = dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo");
-    int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
-    member = dataread.GetValue<int>("ALPHAS_PDF_SET_MEMBER",member);
-    InitGenericPDF(set, member);
-  }
+
   if (p_pdf && (pdfas&2)) {
     p_pdf->SetAlphaSInfo();
     const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
     if (info.m_order>=0)
       for (int i(0);i<info.m_flavs.size();++i)
-	info.m_flavs[i].SetMass(info.m_flavs[i].m_mass);
+        info.m_flavs[i].SetMass(info.m_flavs[i].m_mass);
   }
+
   int count = 0;
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
@@ -87,166 +101,41 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   }
 
   if (p_pdf) {
-    if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+    if (overridepdfinfo==1) {
       msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
-		 <<"Overriding \\alpha_s information from PDF. "
-		 <<"Make sure you know what you are doing!"
-		 <<om::reset<<std::endl;
-    }
-    else {
+      <<"Overriding \\alpha_s information from PDF. "
+      <<"Make sure you know what you are doing!"
+      <<om::reset<<std::endl;
+    } else {
       const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
       if (info.m_order>=0) {
-        if (mo==NULL) {
-          m_order=info.m_order;
-          m_as_MZ=info.m_asmz;
-          m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
-        }
+        m_order=info.m_order;
+        m_as_MZ=info.m_asmz;
+        m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         if (pdfas&1) m_pdf=1;
-        /*
-        m_nth=info.m_flavs.size()+1;
-        for (int i(0);i<m_nth;++i) {
-          masses[i]=sqr(info.m_flavs[i].m_mass);
-        }
-        masses[m_nth-1]=0.0;
-        */
-        if (mo && m_pdf && !IsEqual(m_as_MZ,mo->m_as_MZ,1.e-4))
-          THROW(fatal_error,"Cannot use PDF alphas to vary \\mu_R");
-        if (mo==NULL || !IsEqual(m_as_MZ,mo->m_as_MZ,1.e-4)) {
-          msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-                    <<"  perturbative order "<<m_order
-                    <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-          // msg_Info<<"\n  quark masses = { ";
-          // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
-          msg_Info()<<"\n}"<<std::endl;
-        }
+        msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
+        <<"  perturbative order "<<m_order
+        <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+        msg_Info()<<"\n}"<<std::endl;
       }
     }
   }
+
   if (!p_pdf || (p_pdf && p_pdf->ASInfo().m_order<0)) {
-    if (mo==NULL || !IsEqual(m_as_MZ,mo->m_as_MZ,1.e-4)) {
-      msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to input\n"
-                <<"  perturbative order "<<m_order
-                <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-      msg_Info()<<"\n}"<<std::endl;
-    }
+    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to input\n"
+    <<"  perturbative order "<<m_order
+    <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+    msg_Info()<<"\n}"<<std::endl;
   }
 
   std::vector<double> sortmass(&masses[0],&masses[m_nth]);
   std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
   for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
 
-  int j   = 0; 
+  int j   = 0;
   m_mzset = 0;
   for (int i=0; i<m_nth; ++j) {
     if ((masses[i]>m_m2_MZ)&&(!m_mzset)) {
-      //insert Z boson (starting point for any evaluation) 
-      m_mzset               = j;
-      p_thresh[j].low_scale = m_m2_MZ;
-      p_thresh[j].as_low    = m_as_MZ;
-      p_thresh[j].nf        = i-1;
-    } 
-    else {
-      p_thresh[j].low_scale = masses[i];
-      p_thresh[j].as_low    = 0.;
-      p_thresh[j].nf        = i;
-      ++i;
-    }
-    if (j>0) {
-      p_thresh[j-1].high_scale = p_thresh[j].low_scale;
-      p_thresh[j-1].as_high    = p_thresh[j].as_low;
-    }
-  }
-  if (!m_mzset) {
-    int j                    = m_nth;
-    m_mzset                  = j;
-    p_thresh[j].low_scale    = m_m2_MZ;
-    p_thresh[j].as_low       = m_as_MZ;
-    p_thresh[j-1].high_scale = m_m2_MZ;
-    p_thresh[j-1].as_high    = m_as_MZ;
-    p_thresh[j].nf           = p_thresh[j-1].nf;      
-  }
-  p_thresh[m_nth].high_scale   = 1.e20;  
-  p_thresh[m_nth].as_high      = 0.;
-
-  delete [] masses;
-
-  for (int i=m_mzset;i<=m_nth;++i) {
-    Lambda2(i);
-    p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
-    if (i<m_nth) {
-      p_thresh[i+1].as_low    = p_thresh[i].as_high *
-        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
-                   p_thresh[i].high_scale,p_thresh[i].nf);
-    }
-  }
-  for (int i=m_mzset-1;i>=0;--i) {
-    double lam2               = Lambda2(i);
-    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
-      ContinueAlphaS(i);
-    else {
-      if (i>0) {
-	p_thresh[i-1].as_high = p_thresh[i].as_low *
-	  ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
-		  p_thresh[i].low_scale,p_thresh[i-1].nf);
-      }
-    }
-  }
-}
-
-One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
-  m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
-  m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), m_cutas(1.), p_thresh(NULL), p_pdf(pdf), m_pdfowned(false)
-{
-  //------------------------------------------------------------
-  // SM thresholds for strong interactions, i.e. QCD
-  //------------------------------------------------------------
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    if (Flavour(kfit->first).Strong()) m_nth++;
-  }
-  p_thresh        = new AsDataSet[m_nth+1];
-  double * masses = new double[m_nth];
-
-  int count = 0;
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    Flavour flav(kfit->first);
-    if (flav.Strong()) {
-      masses[count] = sqr(flav.Mass(1));
-      count++;
-    }
-  }
-
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1)
-    THROW(fatal_error,"Cannot override PDF info.");
-  const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
-  if (info.m_order>=0) {
-    m_order=info.m_order;
-    m_as_MZ=info.m_asmz;
-    m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
-    if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&1) m_pdf=1;
-    msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-                  <<"  perturbative order "<<m_order
-                  <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-    msg_Tracking()<<"\n  quark masses = { ";
-    for (int i(0);i<m_nth-1;++i) msg_Tracking()<<sqrt(masses[i])<<" ";
-    msg_Tracking()<<"}"<<std::endl;
-    msg_Tracking()<<"\n}"<<std::endl;
-  }
-  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
-
-  std::vector<double> sortmass(&masses[0],&masses[m_nth]);
-  std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
-  for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
-
-  int j   = 0;
-  for (int i=0; i<m_nth; ++j) {
-    if ((masses[i]>m_m2_MZ)&&(!m_mzset)) {
       //insert Z boson (starting point for any evaluation)
       m_mzset               = j;
       p_thresh[j].low_scale = m_m2_MZ;
@@ -283,8 +172,8 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
     if (i<m_nth) {
       p_thresh[i+1].as_low    = p_thresh[i].as_high *
-        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
-                   p_thresh[i].high_scale,p_thresh[i].nf);
+      InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
+                 p_thresh[i].high_scale,p_thresh[i].nf);
     }
   }
   for (int i=m_mzset-1;i>=0;--i) {
@@ -295,128 +184,22 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     else {
       if (i>0) {
         p_thresh[i-1].as_high = p_thresh[i].as_low *
-          ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
-                  p_thresh[i].low_scale,p_thresh[i-1].nf);
+        ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
+                p_thresh[i].low_scale,p_thresh[i-1].nf);
       }
     }
   }
 }
-
-
-One_Running_AlphaS::One_Running_AlphaS(const std::string pdfname, const int member):
-  m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
-  m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), m_cutas(1.), p_thresh(NULL), p_pdf(NULL), m_pdfowned(false)
-{
-  InitGenericPDF(pdfname, member);
-
-  //------------------------------------------------------------
-  // SM thresholds for strong interactions, i.e. QCD
-  //------------------------------------------------------------
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    if (Flavour(kfit->first).Strong()) m_nth++;
-  }
-  p_thresh        = new AsDataSet[m_nth+1];
-  double * masses = new double[m_nth];
-
-  int count = 0;
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    Flavour flav(kfit->first);
-    if (flav.Strong()) {
-      masses[count] = sqr(flav.Mass(1));
-      count++;
-    }
-  }
-
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1)
-    THROW(fatal_error,"Cannot override PDF info.");
-  const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
-  if (info.m_order>=0) {
-    m_order=info.m_order;
-    m_as_MZ=info.m_asmz;
-    m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
-    if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&1) m_pdf=1;
-    msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-                  <<"  perturbative order "<<m_order
-                  <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-    msg_Tracking()<<"\n  quark masses = { ";
-    for (int i(0);i<m_nth-1;++i) msg_Tracking()<<sqrt(masses[i])<<" ";
-    msg_Tracking()<<"}"<<std::endl;
-    msg_Tracking()<<"\n}"<<std::endl;
-  }
-  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
-
-  std::vector<double> sortmass(&masses[0],&masses[m_nth]);
-  std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
-  for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
-
-  int j   = 0;
-  for (int i=0; i<m_nth; ++j) {
-    if ((masses[i]>m_m2_MZ)&&(!m_mzset)) {
-      //insert Z boson (starting point for any evaluation)
-      m_mzset               = j;
-      p_thresh[j].low_scale = m_m2_MZ;
-      p_thresh[j].as_low    = m_as_MZ;
-      p_thresh[j].nf        = i-1;
-    }
-    else {
-      p_thresh[j].low_scale = masses[i];
-      p_thresh[j].as_low    = 0.;
-      p_thresh[j].nf        = i;
-      ++i;
-    }
-    if (j>0) {
-      p_thresh[j-1].high_scale = p_thresh[j].low_scale;
-      p_thresh[j-1].as_high    = p_thresh[j].as_low;
-    }
-  }
-  if (!m_mzset) {
-    int j                    = m_nth;
-    m_mzset                  = j;
-    p_thresh[j].low_scale    = m_m2_MZ;
-    p_thresh[j].as_low       = m_as_MZ;
-    p_thresh[j-1].high_scale = m_m2_MZ;
-    p_thresh[j-1].as_high    = m_as_MZ;
-    p_thresh[j].nf           = p_thresh[j-1].nf;
-  }
-  p_thresh[m_nth].high_scale   = 1.e20;
-  p_thresh[m_nth].as_high      = 0.;
-
-  delete [] masses;
-
-  for (int i=m_mzset;i<=m_nth;++i) {
-    Lambda2(i);
-    p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
-    if (i<m_nth) {
-      p_thresh[i+1].as_low    = p_thresh[i].as_high *
-        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
-                   p_thresh[i].high_scale,p_thresh[i].nf);
-    }
-  }
-  for (int i=m_mzset-1;i>=0;--i) {
-    double lam2               = Lambda2(i);
-    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
-      ContinueAlphaS(i);
-    else {
-      if (i>0) {
-        p_thresh[i-1].as_high = p_thresh[i].as_low *
-          ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
-                  p_thresh[i].low_scale,p_thresh[i-1].nf);
-      }
-    }
-  }
-}
-
 
 void One_Running_AlphaS::InitGenericPDF(const std::string pdfname, const int member)
 {
   if (m_pdfowned) delete p_pdf;
+  p_pdf = CreateGenericPDF(pdfname, member);
+  m_pdfowned = true;
+}
+
+PDF::PDF_Base * One_Running_AlphaS::CreateGenericPDF(const std::string name, const int member)
+{
   // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
   if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
     s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
@@ -424,13 +207,11 @@ void One_Running_AlphaS::InitGenericPDF(const std::string pdfname, const int mem
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
-  PDF::PDF_Arguments args(Flavour(kf_p_plus), &dataread, 0, pdfname, member);
-  p_pdf = PDF_Base::PDF_Getter_Function::GetObject(pdfname, args);
-  p_pdf->SetBounds();
-  m_pdfowned = true;
-  msg_Info()<<METHOD<<"(): Using alphas from "<<pdfname<<" ("<<member<<")"<<std::endl;
+  PDF::PDF_Arguments args(Flavour(kf_p_plus), &dataread, 0, name, member);
+  PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
+  pdf->SetBounds();
+  return pdf;
 }
-
 
 One_Running_AlphaS::~One_Running_AlphaS()
 {
@@ -693,49 +474,40 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
   return thrs;
 }
 
-void One_Running_AlphaS::SelfTest() {
-  /*
-  fastfunc ff_as;
-
-  int np=1001;
-
-  double smin=0.025;
-  double smax=500*500;
-
-  double mult=::exp(log(smax/smin)/double(np-2));
-
-  ff_as.reset(np);
-  double as0=operator()(0.);
-  ff_as.insert(0.,as0);
-  double s= smin;
-
-  for (int i=1;i<np;++i) {
-    double as =operator()(s);
-    double rs =sqrt(s);
-    ff_as.insert(rs,as);
-    s*=mult;
-  }
-  ff_as.output(sqrt(smin),sqrt(smax),"alpha_s.test.dat");
-  */
-}
-
-
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const int order, const int thmode,
                                const PDF::ISR_Handler_Map &isr)
 {
-  m_defval=as_MZ;
-  m_type  = std::string("Running Coupling");
-  m_name  = "Alpha_QCD";
+  m_defval = as_MZ;
+  m_type = std::string("Running Coupling");
+  m_name = "Alpha_QCD";
+
+  // Read possible override
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&4) {
+    std::string name(dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo"));
+    int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
+    member = dataread.GetValue<int>("ALPHAS_PDF_SET_MEMBER",member);
+    p_overridingpdf = One_Running_AlphaS::CreateGenericPDF(name, member);
+  } else {
+    p_overridingpdf = NULL;
+  }
+
+  // Initialise One_Running_AlphaS instances
   for (ISR_Handler_Map::const_iterator it=isr.begin(); it!=isr.end(); ++it) {
     if (m_alphas.find(it->first)!=m_alphas.end())
       THROW(fatal_error, "Internal error.");
-    PDF::PDF_Base *pdf(NULL);
-    if (it->second->PDF(0)) pdf=it->second->PDF(0);
-    if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
-      pdf=it->second->PDF(1);
-    m_alphas.insert(make_pair(it->first, new One_Running_AlphaS
-                              (as_MZ,m2_MZ, order, thmode, pdf)));
+    if (p_overridingpdf != NULL) {
+      m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
+    } else {
+      PDF::PDF_Base *pdf(NULL);
+      if (it->second->PDF(0)) pdf=it->second->PDF(0);
+      if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
+        pdf=it->second->PDF(1);
+      m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
+    }
   }
   SetActiveAs(PDF::isr::hard_process);
 }
@@ -746,6 +518,10 @@ Running_AlphaS::~Running_AlphaS()
     delete it->second;
   }
   m_alphas.clear();
+  if (p_overridingpdf != NULL) {
+    delete p_overridingpdf;
+    p_overridingpdf = NULL;
+  }
 }
 
 void Running_AlphaS::SetActiveAs(PDF::isr::id id)

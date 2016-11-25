@@ -264,6 +264,9 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
   // translate PDF string parameter into actual AlphaS and PDF objects
   std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
   if (!pdfstringparams.empty()) {
+    if (reader->GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+      THROW(fatal_error, "OVERRIDE_PDF_INFO=1 is incompatible with doing PDF/AlphaS variations.");
+    }
     pdfsandalphasvector = PDFsAndAlphaSVector(pdfstringparams[0], expandpdf);
   }
 

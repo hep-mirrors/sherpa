@@ -13,8 +13,8 @@ namespace MODEL {
 
   //! Contains data for alpha_S running up to 3rd order
   struct AsDataSet {
-    double low_scale,high_scale;
-    double as_low,as_high;
+    double low_scale, high_scale;
+    double as_low, as_high;
     int nf;
     double lambda2;
     double b[4];
@@ -25,22 +25,46 @@ namespace MODEL {
   // up to factor 4^(i+1)
 
   class One_Running_AlphaS {
-  private:
-    bool m_pdfowned;
 
-    void InitGenericPDF(const std::string pdfname, const int member = 0);
+  public:
+
+    One_Running_AlphaS(const std::string pdfname, const int member = 0,
+                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                       const int order = 0, const int thmode = 1);
+    One_Running_AlphaS(PDF::PDF_Base *const pdf,
+                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                       const int order = 0, const int thmode = 1);
+
+    ~One_Running_AlphaS();
+
+    // construct PDFs that are only used for their AlphaS info and values
+    static PDF::PDF_Base * CreateGenericPDF(const std::string name, const int member);
+
+    int    Order()                { return m_order;       }
+    double Beta0(const double q2) { return Beta0(Nf(q2)); }
+    double Beta1(const double q2) { return Beta1(Nf(q2)); }
+    double Beta2(const double q2) { return Beta2(Nf(q2)); }
+    double Beta3(const double q2) { return Beta3(Nf(q2)); }
+    double AsMZ()                 { return m_as_MZ;       }
+    PDF::PDF_Base * PDF()         { return p_pdf;         }
+    double CutQ2()                { return m_cutq2;       }
+    double BoundedAlphaS(const double &q2)
+                                  { return (*this)(std::max(q2, CutQ2())); }
+
+    double operator()(double q2); 
+    double AlphaS(const double q2);
+    int Nf(const double q2);
+    std::vector<double> Thresholds(double q12,double q22);
 
   protected:
 
-    int         m_order,m_pdf;
-    int         m_nth,m_mzset;
-    double      m_CF,m_CA;
-    double      m_as_MZ,m_m2_MZ;
-    double      m_cutq2,m_cutas;
+    int    m_order, m_pdf;
+    int    m_nth, m_mzset;
+    double m_as_MZ, m_m2_MZ;
+    double m_cutq2, m_cutas;
 
-    AsDataSet * p_thresh;
-
-    PDF::PDF_Base *p_pdf;
+    AsDataSet     * p_thresh;
+    PDF::PDF_Base * p_pdf;
 
     double Beta0(const int);
     double Beta1(const int);
@@ -52,66 +76,37 @@ namespace MODEL {
     double AlphaSLam(const double,const int);
     void   ContinueAlphaS(int &);
 
-  public:
+  private:
 
-    // constructor
-    One_Running_AlphaS(const double as_MZ,const double m2_MZ,
-                       const int order=0, const int thmode=1,
-		       PDF::PDF_Base *const pdf=NULL,
-		       One_Running_AlphaS *const mo=NULL);
-    One_Running_AlphaS(PDF::PDF_Base *const pdf);
-    One_Running_AlphaS(const std::string pdfname, const int member=0);
+    bool      m_pdfowned;
 
-    // destructor
-    ~One_Running_AlphaS();
-
-    // member functions
-    double operator()(double q2); 
-    double AlphaS(const double q2);
-    void   SelfTest();
-
-    // inline functions
-    inline int    Order()                { return m_order;       }
-    inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
-    inline double Beta1(const double q2) { return Beta1(Nf(q2)); }
-    inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
-    inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
-    inline double AsMZ()                 { return m_as_MZ;       }
-    inline PDF::PDF_Base * PDF()         { return p_pdf;         }
-
-    int    Nf(const double q2);
-    std::vector<double> Thresholds(double q12,double q22);
-
-    inline double CutQ2() { return m_cutq2; }
-
-    inline double BoundedAlphaS(const double &q2)
-    { return (*this)(std::max(q2, CutQ2())); }
+    void InitGenericPDF(const std::string pdfname, const int member = 0);
+    void Init(const double as_MZ, const double m2_MZ,
+              const int order, const int thmode);
   };
 
 
   class Running_AlphaS : public ATOOLS::Function_Base {
+
   protected:
 
     typedef std::map<PDF::isr::id, One_Running_AlphaS*> AlphasMap;
     AlphasMap m_alphas;
-    One_Running_AlphaS* p_active;
-    PDF::isr::id m_active;
+    One_Running_AlphaS * p_active;
+    PDF::PDF_Base * p_overridingpdf;
 
   public:
 
-    // constructor
     Running_AlphaS(const double as_MZ,const double m2_MZ,
                    const int order, const int thmode,
                    const PDF::ISR_Handler_Map& isr);
 
-    // destructor
     ~Running_AlphaS();
 
     // member functions
     void SetActiveAs(PDF::isr::id id);
     One_Running_AlphaS * GetAs() { return p_active; }
     One_Running_AlphaS * GetAs(PDF::isr::id id);
-    inline PDF::isr::id ActiveAs() { return m_active; }
 
     // proxy member functions
     inline double operator()(double q2)   { return p_active->operator()(q2); }
@@ -126,9 +121,9 @@ namespace MODEL {
     inline std::vector<double> Thresholds(double q12,double q22)
                                           { return p_active->Thresholds(q12,q22); }
     inline double CutQ2()                 { return p_active->CutQ2(); }
-    inline double BoundedAlphaS(const double &q2) { return p_active->BoundedAlphaS(q2); }
+    inline double BoundedAlphaS(const double &q2)
+                                          { return p_active->BoundedAlphaS(q2); }
   };
-
 
   extern Running_AlphaS * as;
 
@@ -143,10 +138,9 @@ namespace MODEL {
 
     The following points should be noted:
     - At the moment the running at up to three loops is tested, the four loop
-      running remains to be checked. 
+      running remains to be checked.
     - Thresholds are fixed to the onshell masses of the correspondig quark.
-    - In order to avoid the Landau Pole, the running is stopped as soon as 
-      \f$alpha_s\f$ equals one. (Below that scale \f$alpha_s\f$ is set linearly to zero.)
+    - In order to avoid the Landau Pole, the running is bounded by one or another specified value.
   */
   /*!
     \var int Running_AlphaS::m_order
