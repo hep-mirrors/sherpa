@@ -63,7 +63,7 @@ class s_color(object):
             # omitted as all values are assigned to zero initially
             if (abs(value.real)<1.0e-12) and (abs(value.imag)<1.0e-12):
                 return ''
-            value = 'std::complex<double>({0},{1})'.format(value.real, value.imag)
+            value = 'std::complex<double>({0:1.20e},{1:1.20e})'.format(value.real, value.imag)
             return tag + '=' + value + ';\n'
 
         # Dereference toplevel and continue recursively

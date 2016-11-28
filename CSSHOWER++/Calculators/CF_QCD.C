@@ -255,8 +255,7 @@ operator()(const SFC_Filler_Key &key) const
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
-      if (v->Color.front().Type()!=cf::T &&
-	  v->Color.front().Type()!=cf::F) continue;
+      if (!v->PureQCD()) continue;
       msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
       std::string atag("{"+v->in[0].Bar().IDName()+"}");
       std::string btag("{"+v->in[1].IDName()+"}");

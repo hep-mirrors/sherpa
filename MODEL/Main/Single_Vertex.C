@@ -21,6 +21,13 @@ Single_Vertex::~Single_Vertex()
 {
 }
 
+bool Single_Vertex::PureQCD() const
+{
+  for (size_t i(1); i<order.size(); i++)
+    if(order[i]) return false;
+  return true;
+}
+
 int Single_Vertex::Compare(const Single_Vertex *v) const
 {
   if (NLegs()!=v->NLegs()) return 1;

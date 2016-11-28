@@ -28,6 +28,8 @@ namespace MODEL {
 
     int Compare(const Single_Vertex *v) const;
 
+    bool PureQCD() const;
+
     inline size_t NLegs() const { return in.size(); }
     inline void AddParticle(const ATOOLS::Flavour &fl,const int n=-1)
     { in.push_back(fl); id.push_back(n>=0?n:in.size()-1); }
