@@ -41,6 +41,6 @@ void ATOOLS::Abort(const int mode)
   MPI::COMM_WORLD.Abort(1+mode);
 #else
   if (mode) kill(getpid(),9);
-  Abort();
+  abort();
 #endif  
 }
