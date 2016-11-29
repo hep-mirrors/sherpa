@@ -877,8 +877,9 @@ void Single_Virtual_Correction::SetSelectorOn(const bool on)
 
 void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
 {
-  wgtinfo.m_y1=m_x0;
-  wgtinfo.m_y2=m_x1;
+  wgtinfo.m_swap=p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+  wgtinfo.m_y1=wgtinfo.m_swap?m_x1:m_x0;
+  wgtinfo.m_y2=wgtinfo.m_swap?m_x0:m_x1;
   if (wgtinfo.m_type&mewgttype::VI)
     for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);

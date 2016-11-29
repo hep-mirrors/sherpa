@@ -430,10 +430,10 @@ void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
 {
   if (wgtinfo.m_type&mewgttype::KP) {
     for (int i=0;i<4;i++) {
-      wgtinfo.m_wfac[i]=m_kpca[i];
-      wgtinfo.m_wfac[i+4]=m_kpcb[i];
-      wgtinfo.m_wfac[i+8]=m_kpca[i+4];
-      wgtinfo.m_wfac[i+12]=m_kpcb[i+4];
+      wgtinfo.m_wfac[i]=wgtinfo.m_swap?m_kpcb[i]:m_kpca[i];
+      wgtinfo.m_wfac[i+4]=wgtinfo.m_swap?m_kpca[i]:m_kpcb[i];
+      wgtinfo.m_wfac[i+8]=wgtinfo.m_swap?m_kpcb[i+4]:m_kpca[i+4];
+      wgtinfo.m_wfac[i+12]=wgtinfo.m_swap?m_kpca[i+4]:m_kpcb[i+4];
     }
   }
 }

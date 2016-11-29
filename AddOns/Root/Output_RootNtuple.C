@@ -280,12 +280,12 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
           m_evtlist[m_cnt2].uwgt[nren+i]=wgtinfo->m_wfac[i];
       }
     }
-    for (int inp=0, i=0;i<blob->NInP();i++) {
+    for (int i=0;i<blob->NInP();i++) {
     Particle *part=blob->InParticle(i);
     if (part->ProductionBlob() &&
 	part->ProductionBlob()->Type()==btp::Signal_Process) continue;
     int kfc=part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
-    if (++inp==1) m_evtlist[m_cnt2].f1=m_evtlist[m_cnt2].kf1=kfc;
+    if (part->Momentum()[3]>0.0) m_evtlist[m_cnt2].f1=m_evtlist[m_cnt2].kf1=kfc;
     else m_evtlist[m_cnt2].f2=m_evtlist[m_cnt2].kf2=kfc;
     }
     int np=0;
@@ -342,14 +342,16 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       }
       m_evtlist[m_cnt2].nuwgt=0;
 
-      Particle* part=signal->InParticle(0);
+      int swap(signal->InParticle(0)->Momentum()[3]<
+	       signal->InParticle(1)->Momentum()[3]);
+      Particle* part=signal->InParticle(swap);
       int kfc=part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
       m_evtlist[m_cnt2].kf1=kfc;
-      m_evtlist[m_cnt2].f1=(long int)(*nlos)[j]->p_fl[0];
-      part=signal->InParticle(1);
+      m_evtlist[m_cnt2].f1=(long int)(*nlos)[j]->p_fl[swap];
+      part=signal->InParticle(1-swap);
       kfc=part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
       m_evtlist[m_cnt2].kf2=kfc;
-      m_evtlist[m_cnt2].f2=(long int)(*nlos)[j]->p_fl[1];
+      m_evtlist[m_cnt2].f2=(long int)(*nlos)[j]->p_fl[1-swap];
 
       ++m_cnt2;
       for (ATOOLS::Particle_List::const_iterator pit=pl->begin();

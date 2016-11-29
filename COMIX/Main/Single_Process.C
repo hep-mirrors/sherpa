@@ -477,8 +477,9 @@ double COMIX::Single_Process::KPTerms(const int mode,
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
-  wgtinfo.m_y1=m_x[0];
-  wgtinfo.m_y2=m_x[1];
+  wgtinfo.m_swap=m_p[0][3]<m_p[1][3];
+  wgtinfo.m_y1=m_x[wgtinfo.m_swap];
+  wgtinfo.m_y2=m_x[1-wgtinfo.m_swap];
   (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
