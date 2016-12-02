@@ -90,7 +90,7 @@ int Lorentz_II_123::Construct(Splitting &s,const int mode) const
   if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
   double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
   double q2(Q2+s.m_mij2-s.m_mj2+s.m_s), xa(s.m_z2), za(s.m_z);
-  Kin_Args ff(s.m_t/Q2*sqr(xa/za),q2/(xa/za*Q2),s.m_phi,s.m_kin);
+  Kin_Args ff(s.m_t/Q2*za/xa,q2/(xa/za*Q2),s.m_phi,s.m_kin);
   if (ConstructIIDipole
       (-s.m_s,s.m_mj2,s.m_mij2,s.m_mk2,
        -s.p_c->Mom(),-s.p_s->Mom(),ff)<0)

@@ -64,7 +64,7 @@ namespace DIRE {
       double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
       s.m_s=xa*(p_ms->Mass(m_fl[1])-p_ms->Mass(m_fl[3])/(1.0-xa));
       s.m_x=(Q2+s.m_mij2-s.m_mj2+s.m_s)/(xa/za*Q2);
-      s.m_y=s.m_t/Q2*sqr(xa/za);
+      s.m_y=s.m_t/Q2*za/xa;
       Splitting c(s);
       c.m_x=xa-(c.m_y=(s.m_s+s.m_mi2+s.m_ml2)/(Q2/za));
       if (!(Lorentz_II::Compute(s,0) &&

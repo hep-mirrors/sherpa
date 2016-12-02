@@ -449,6 +449,11 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
           else if (nc.m_i) fl=Flavour(kf_d);
           else if (nc.m_j) fl=Flavour(kf_d).Bar();
           p_ampl->CreateLeg(li->Mom()+lj->Mom(),fl,nc,li->Id()+lj->Id());
+	  size_t k(0);
+	  for (k=ampl->NIn();k<ampl->Legs().size();++k)
+	    if (k!=i && k!=j) break;
+          p_ampl->Legs().back()->SetK(ampl->Leg(k)->Id());
+          p_ampl->Prev()->SetIdNew(lj->Id());
           lij=p_ampl->Legs().back();
           break;
         }

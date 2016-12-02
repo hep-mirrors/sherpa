@@ -102,6 +102,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
       msg_IODebugging()<<"}\n";
     }
   }
+  if (!(m_kfac&2)) return true;
   ATOOLS::Flavour_Vector fls(4);
   for (long int i(-5);i<=5;++i) {
     if (i==0) continue;
@@ -285,7 +286,8 @@ double Shower::GetXPDF
     return 1.0;
   }
   if (Q2<sqr(fl.Mass(true))) return 0.0;
-  if (x<p_pdf[b]->XMin() || x>p_pdf[b]->XMax() ||
+  if (x<p_pdf[b]->XMin() ||
+      x>p_pdf[b]->XMax()*p_pdf[b]->RescaleFactor() ||
       Q2<p_pdf[b]->Q2Min() || Q2>p_pdf[b]->Q2Max())
     return 0.0;
   p_pdf[b]->Calculate(x,Q2);
