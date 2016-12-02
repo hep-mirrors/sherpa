@@ -420,7 +420,7 @@ std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
 
 
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
-    p_alphas(MODEL::as->GetAs(PDF::isr::hard_process))
+    p_alphas(MODEL::as)
 {
   // Workaround für C++03 (vector constructor is confused when fed
   // with NULL as the initial value for a pointer)
@@ -456,9 +456,9 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(std::string pdfname, size_t pdfmemb
 
   // obtain AlphaS based on a loaded PDF or a new one (if none is found)
   if (aspdf == NULL) {
-    p_alphas = new MODEL::One_Running_AlphaS(pdfname, pdfmember);
+    p_alphas = new MODEL::Running_AlphaS(pdfname, pdfmember);
   } else {
-    p_alphas = new MODEL::One_Running_AlphaS(aspdf);
+    p_alphas = new MODEL::Running_AlphaS(aspdf);
   }
   if (p_alphas == NULL) {
     THROW(fatal_error, "AlphaS for " + pdfname + " could not be initialised.");
@@ -576,8 +576,8 @@ std::string Variation_Parameters::GenerateName() const
       pdfid = p_pdf1->LHEFNumber();
     } else if (p_pdf2 != NULL) {
       pdfid = p_pdf2->LHEFNumber();
-    } else if (p_alphas->PDF() != NULL) {
-      pdfid = p_alphas->PDF()->LHEFNumber();
+    } else if (p_alphas->GetAs()->PDF() != NULL) {
+      pdfid = p_alphas->GetAs()->PDF()->LHEFNumber();
     } else {
       THROW(fatal_error, "Cannot obtain PDF IDF");
     }

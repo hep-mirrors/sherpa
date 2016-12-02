@@ -16,7 +16,7 @@
 #define ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS 0
 
 namespace PDF { class PDF_Base; }
-namespace MODEL { class One_Running_AlphaS; }
+namespace MODEL { class Running_AlphaS; }
 
 
 namespace ATOOLS {
@@ -70,7 +70,7 @@ namespace ATOOLS {
       PDFs_And_AlphaS();
       PDFs_And_AlphaS(std::string pdfname, size_t pdfmember);
       std::vector<PDF::PDF_Base *> m_pdfs;
-      MODEL::One_Running_AlphaS *p_alphas;
+      MODEL::Running_AlphaS *p_alphas;
     };
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
@@ -121,7 +121,7 @@ namespace ATOOLS {
                          double showermuR2fac, double showermuF2fac,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
-                         MODEL::One_Running_AlphaS *alphas,
+                         MODEL::Running_AlphaS *alphas,
                          bool deletepdfsandalphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
@@ -142,7 +142,7 @@ namespace ATOOLS {
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;
-    MODEL::One_Running_AlphaS * const p_alphas;
+    MODEL::Running_AlphaS * const p_alphas;
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
     const bool m_deletepdfsandalphas;
     const std::string m_name;

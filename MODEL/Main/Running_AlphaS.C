@@ -31,33 +31,12 @@ namespace MODEL {
 
 }
 
-
-One_Running_AlphaS::One_Running_AlphaS(const std::string pdfname, const int member,
-                                       const double as_MZ, const double m2_MZ,
-                                       const int order, const int thmode)
-{
-  InitGenericPDF(pdfname, member);
-  Init(as_MZ, m2_MZ, order, thmode);
-}
-
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
                                        const double as_MZ, const double m2_MZ,
                                        const int order, const int thmode):
-p_pdf(pdf),
-m_pdfowned(false)
+m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
 {
-  Init(as_MZ, m2_MZ, order, thmode);
-}
-
-void One_Running_AlphaS::Init(const double as_MZ, const double m2_MZ,
-                              const int order, const int thmode)
-{
-  m_pdf = 0;
-  m_cutq2 = 0.0;
-
-  m_as_MZ = as_MZ;
   m_m2_MZ = (m2_MZ != 0.0) ? m2_MZ : Flavour(kf_Z).Mass();
-  m_order = order;
 
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
@@ -133,7 +112,6 @@ void One_Running_AlphaS::Init(const double as_MZ, const double m2_MZ,
   for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
 
   int j   = 0;
-  m_mzset = 0;
   for (int i=0; i<m_nth; ++j) {
     if ((masses[i]>m_m2_MZ)&&(!m_mzset)) {
       //insert Z boson (starting point for any evaluation)
@@ -191,34 +169,9 @@ void One_Running_AlphaS::Init(const double as_MZ, const double m2_MZ,
   }
 }
 
-void One_Running_AlphaS::InitGenericPDF(const std::string pdfname, const int member)
-{
-  if (m_pdfowned) delete p_pdf;
-  p_pdf = CreateGenericPDF(pdfname, member);
-  m_pdfowned = true;
-}
-
-PDF::PDF_Base * One_Running_AlphaS::CreateGenericPDF(const std::string name, const int member)
-{
-  // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
-  if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
-    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
-  }
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  PDF::PDF_Arguments args(Flavour(kf_p_plus), &dataread, 0, name, member);
-  PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
-  pdf->SetBounds();
-  return pdf;
-}
-
 One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
-  if (m_pdfowned) {
-    delete p_pdf;
-  }
 }
 
 double One_Running_AlphaS::Beta0(const int nf) {
@@ -479,9 +432,8 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const PDF::ISR_Handler_Map &isr)
 {
   m_defval = as_MZ;
-  m_type = std::string("Running Coupling");
+  m_type = "Running Coupling";
   m_name = "Alpha_QCD";
-
   // Read possible override
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
@@ -490,7 +442,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     std::string name(dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo"));
     int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
     member = dataread.GetValue<int>("ALPHAS_PDF_SET_MEMBER",member);
-    p_overridingpdf = One_Running_AlphaS::CreateGenericPDF(name, member);
+    InitOverridingPDF(name, member);
   } else {
     p_overridingpdf = NULL;
   }
@@ -510,6 +462,49 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     }
   }
   SetActiveAs(PDF::isr::hard_process);
+}
+
+Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
+                               const double as_MZ, const double m2_MZ,
+                               const int order, const int thmode)
+{
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  InitOverridingPDF(pdfname, member);
+  m_alphas.insert(make_pair(PDF::isr::id::none, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::id::none);
+  m_defval = AsMZ();
+}
+
+Running_AlphaS::Running_AlphaS(PDF::PDF_Base *const pdf,
+                               const double as_MZ, const double m2_MZ,
+                               const int order, const int thmode):
+p_overridingpdf(NULL)
+{
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  m_alphas.insert(make_pair(PDF::isr::id::none, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::id::none);
+  m_defval = AsMZ();
+}
+
+void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
+{
+  if (p_overridingpdf != NULL) {
+    delete p_overridingpdf;
+    p_overridingpdf = NULL;
+  }
+  // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
+  if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
+    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
+  }
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  PDF::PDF_Arguments args(Flavour(kf_p_plus), &dataread, 0, name, member);
+  PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
+  pdf->SetBounds();
+  p_overridingpdf = pdf;
 }
 
 Running_AlphaS::~Running_AlphaS()

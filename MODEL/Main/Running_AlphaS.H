@@ -28,17 +28,11 @@ namespace MODEL {
 
   public:
 
-    One_Running_AlphaS(const std::string pdfname, const int member = 0,
-                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
-                       const int order = 0, const int thmode = 1);
     One_Running_AlphaS(PDF::PDF_Base *const pdf,
                        const double as_MZ = 0.0,const double m2_MZ = 0.0,
                        const int order = 0, const int thmode = 1);
 
     ~One_Running_AlphaS();
-
-    // construct PDFs that are only used for their AlphaS info and values
-    static PDF::PDF_Base * CreateGenericPDF(const std::string name, const int member);
 
     int    Order()                { return m_order;       }
     double Beta0(const double q2) { return Beta0(Nf(q2)); }
@@ -76,13 +70,6 @@ namespace MODEL {
     double AlphaSLam(const double,const int);
     void   ContinueAlphaS(int &);
 
-  private:
-
-    bool      m_pdfowned;
-
-    void InitGenericPDF(const std::string pdfname, const int member = 0);
-    void Init(const double as_MZ, const double m2_MZ,
-              const int order, const int thmode);
   };
 
 
@@ -95,11 +82,27 @@ namespace MODEL {
     One_Running_AlphaS * p_active;
     PDF::PDF_Base * p_overridingpdf;
 
+    // construct PDFs that are only used for their AlphaS info and values
+    void InitOverridingPDF(const std::string name, const int member);
+
   public:
 
+    //! construct a wrapper over One_Running_AlphaS instances, one for each ISR handlers
     Running_AlphaS(const double as_MZ,const double m2_MZ,
                    const int order, const int thmode,
                    const PDF::ISR_Handler_Map& isr);
+
+    /*!
+     * Construct a wrapper for a single One_Running_AlphaS instance, corresponding to the PDF.
+     *
+     * This is used for reweighting purposes.
+     */
+    Running_AlphaS(const std::string pdfname, const int member = 0,
+                   const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                   const int order = 0, const int thmode = 1);
+    Running_AlphaS(PDF::PDF_Base *const pdf,
+                   const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                   const int order = 0, const int thmode = 1);
 
     ~Running_AlphaS();
 

@@ -33,7 +33,7 @@ namespace PHASIC {
      const double &z,const double &t1,const double &t2,
      const double &muf2fac=1.0,
      const double &mur2fac=1.0,
-     MODEL::One_Running_AlphaS * as=NULL) const;
+     MODEL::Running_AlphaS * as=NULL) const;
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
 
@@ -73,7 +73,7 @@ namespace PHASIC {
         const double &muf2fac=1.0,
         const double &mur2fac=1.0,
         const double &showermuf2fac=1.0,
-        MODEL::One_Running_AlphaS * as=NULL,
+        MODEL::Running_AlphaS * as=NULL,
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddISR(ATOOLS::Cluster_Sequence_Info &,
                 const ATOOLS::ClusterAmplitude_Vector &,
@@ -81,7 +81,7 @@ namespace PHASIC {
                 const double &muf2fac=1.0,
                 const double &mur2fac=1.0,
                 const double &showermuf2fac=1.0,
-                MODEL::One_Running_AlphaS * as=NULL,
+                MODEL::Running_AlphaS * as=NULL,
                 const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddBeam(ATOOLS::Cluster_Sequence_Info &, const double &Q2);
 
@@ -125,7 +125,7 @@ namespace PHASIC {
                 Single_Process::BornLikeReweightingInfo &) const;
     //! Calculate AlphaS ratio (*asnew)(mur2new) / MODEL::as(mur2old)
     double AlphaSRatio(double mur2old, double mur2new,
-                       MODEL::One_Running_AlphaS * asnew);
+                       MODEL::Running_AlphaS * asnew);
   };// end of class Single_Process
 
 }// end of namespace PHASIC

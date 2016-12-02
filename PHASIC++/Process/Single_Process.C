@@ -67,7 +67,7 @@ double Single_Process::CollinearCounterTerms
 (const int i,const Flavour &fl,const Vec4D &p,
  const double &z,const double &t1,const double &t2,
  const double &muf2fac, const double &mur2fac,
- MODEL::One_Running_AlphaS * as) const
+ MODEL::Running_AlphaS * as) const
 {
   if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) return 0.0;
   static double th(1.0e-12);
@@ -136,7 +136,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     const double &muf2fac,
     const double &mur2fac,
     const double &showermuf2fac,
-    MODEL::One_Running_AlphaS * as,
+    MODEL::Running_AlphaS * as,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   if (!m_use_biweight) {
@@ -158,7 +158,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             bool skipsfirstampl, const double &Q2,
             const double &muf2fac, const double &mur2fac,
             const double &showermuf2fac,
-            MODEL::One_Running_AlphaS * as,
+            MODEL::Running_AlphaS * as,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   if (p_int->ISR()) {
@@ -688,6 +688,12 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
                           varparams->p_alphas,
                           nominalcsi));
 
+  if (csi.m_pdfwgt == 0.0 && m_mewgtinfo.m_clusseqinfo.m_pdfwgt != 0.0) {
+    varparams->IncrementOrInitialiseWarningCounter("Target PDF weight is zero, nominal is non-zero");
+  } else if (csi.m_pdfwgt != 0.0 && m_mewgtinfo.m_clusseqinfo.m_pdfwgt == 0.0) {
+    varparams->IncrementOrInitialiseWarningCounter("Target PDF weight is non-zero, nominal is zero");
+  }
+
   // reset
   p_int->ISR()->SetPDF(nominalpdf1, 0);
   p_int->ISR()->SetPDF(nominalpdf2, 1);
@@ -766,7 +772,7 @@ double Single_Process::MuR2(
 
 double Single_Process::AlphaSRatio(
     double mur2old, double mur2new,
-    MODEL::One_Running_AlphaS * asnew)
+    MODEL::Running_AlphaS * asnew)
 {
   const double alphasnew((*asnew)(mur2new));
   const double alphasold((*MODEL::as)(mur2old));
