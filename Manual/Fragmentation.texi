@@ -370,7 +370,7 @@ adds one decaying particle:
 @multitable @columnfractions .33 .33 .33 
 @item <kf-code>@ @ @ @ @ @ @ ->  
 @tab <subdirectory>/
-@tab @center <filename>.dat
+@tab <filename>.dat
 @item decaying particle @ @ @  
 @tab path to decay table @ @ @  
 @tab decay table file    
