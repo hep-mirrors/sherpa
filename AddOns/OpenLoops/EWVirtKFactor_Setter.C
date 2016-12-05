@@ -86,7 +86,7 @@ void EWVirtKFactor_Setter::CalcEWCorrection()
   p_ewloop->SetRenScale(p_proc->ScaleSetter()->Scale(stp::ren,1));
   p_ewloop->Calc(m_p);
   // OL returns V/(as/2pi*B)
-  double fac(p_ewloop->AlphaQED()/2./M_PI);
+  double fac(p_ewloop->AlphaQCD()/2./M_PI);
   double B(p_ewloop->ME_Born());
   double V(p_ewloop->ME_Finite()*fac*B);
   m_deltaew=V/B;
