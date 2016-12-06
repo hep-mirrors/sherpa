@@ -378,6 +378,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_oew=MaxOrder(1);
   m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
+  m_mewgtinfo.m_x1=p_int->ISR()->X1();
+  m_mewgtinfo.m_x2=p_int->ISR()->X2();
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) : p_int->ISR()->Flux(p[0],p[1]);
@@ -510,8 +512,9 @@ ATOOLS::Subevent_Weights_Vector Single_Process::ReweightSubevents(
   info.m_orderqcd = m_mewgtinfo.m_oqcd;
   info.m_fl1 = m_mewgtinfo.m_fl1;
   info.m_fl2 = m_mewgtinfo.m_fl2;
-  info.m_x1 = p_int->ISR()->X1();
-  info.m_x2 = p_int->ISR()->X2();
+  info.m_x1 = m_mewgtinfo.m_x1;
+  info.m_x2 = m_mewgtinfo.m_x2;
+
   ATOOLS::Subevent_Weights_Vector weights;
   for (size_t i(0); i < sevtlist->size(); ++i) {
     NLO_subevt *sub((*sevtlist)[i]);
@@ -547,9 +550,9 @@ double Single_Process::ReweightWithoutSubevents(
   info.m_orderqcd = m_mewgtinfo.m_oqcd;
   info.m_fl1 = m_mewgtinfo.m_fl1;
   info.m_fl2 = m_mewgtinfo.m_fl2;
-  info.m_x1 = p_int->ISR()->X1();
-  info.m_x2 = p_int->ISR()->X2();
-  info.m_fallbackresult = m_last; 
+  info.m_x1 = m_mewgtinfo.m_x1;
+  info.m_x2 = m_mewgtinfo.m_x2;
+  info.m_fallbackresult = m_last;
 
   if (nometstype==mewgttype::none) { // non-NLO Born
     info.m_wgt = m_mewgtinfo.m_B;
