@@ -471,8 +471,8 @@ Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   InitOverridingPDF(pdfname, member);
-  m_alphas.insert(make_pair(PDF::isr::id::none, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
-  SetActiveAs(PDF::isr::id::none);
+  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::none);
   m_defval = AsMZ();
 }
 
@@ -483,8 +483,8 @@ p_overridingpdf(NULL)
 {
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
-  m_alphas.insert(make_pair(PDF::isr::id::none, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
-  SetActiveAs(PDF::isr::id::none);
+  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::none);
   m_defval = AsMZ();
 }
 
