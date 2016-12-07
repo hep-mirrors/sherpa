@@ -17,6 +17,7 @@
 
 namespace PDF { class PDF_Base; }
 namespace MODEL { class Running_AlphaS; }
+namespace BEAM { class Beam_Spectra_Handler; }
 
 
 namespace ATOOLS {
@@ -40,6 +41,7 @@ namespace ATOOLS {
   class Variations {
   public:
     static bool NeedsLHAPDF6Interface(std::string inputpath);
+    static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
     Variations(ATOOLS::Data_Reader * const);
     ~Variations();

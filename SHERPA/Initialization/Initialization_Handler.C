@@ -856,7 +856,9 @@ bool Initialization_Handler::InitializeTheReweighting()
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
+  Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(&dataread);
+  msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;
 }
 
