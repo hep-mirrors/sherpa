@@ -17,7 +17,6 @@ libPhasicScales_la_SOURCES    =	\
 				Fastjet_Scale_Setter.C \
 				QCD_Scale_Setter.C \
 				QCD_Core_Scale.C \
-				QCD_Core2_Scale.C \
 				TTBar_Core_Scale.C \
 				TZj_Core_Scale.C \
 				SingleTop_Core_Scale.C \

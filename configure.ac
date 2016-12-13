@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 2.2.2, sherpa@projects.hepforge.org, SHERPA-MC)
+AC_INIT(SHERPA MC, 2.2.1, sherpa@projects.hepforge.org, SHERPA-MC)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
 AM_INIT_AUTOMAKE(tar-ustar)

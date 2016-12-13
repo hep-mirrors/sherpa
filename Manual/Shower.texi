@@ -86,9 +86,9 @@ in @mycite{Hoeche2009rj} and a novel recoil strategy for initial state
 splittings was proposed in @mycite{Hoeche2009xc}. 
 While the ordering variable is fixed, the recoil strategy for dipoles 
 with initial-state emitter and final-state spectator can be changed 
-for systematics studies. Setting @option{CSS_KIN_SCHEME=0} (default) 
+for systematics studies. Setting @option{CSS_KIN_SCHEME=0} 
 corresponds to using the recoil scheme proposed in @mycite{Hoeche2009xc}, 
-while @option{CSS_KIN_SCHEME=1} enables the original recoil strategy.
+while @option{CSS_KIN_SCHEME=1} (default) enables the original recoil strategy.
 The lower cutoff of the shower evolution can be set via @option{CSS_FS_PT2MIN}
 and @option{CSS_IS_PT2MIN} for final and initial state shower, respectively. 
 Note that this value is specified in GeV^2. Scale factors for the evaluation

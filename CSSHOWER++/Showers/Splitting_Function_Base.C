@@ -51,12 +51,6 @@ double SF_Lorentz::Lambda
   return a*a+b*b+c*c-2.*(a*b+a*c+b*c);
 }
 
-double SF_Lorentz::Scale(const double z,const double y,
-			 const double scale,const double Q2) const
-{
-  return scale;
-}
-
 SF_Coupling::SF_Coupling(const SF_Key &key):
   p_lf(NULL), m_type(key.m_type),
   m_cplfac(1.0), m_kfmode(key.m_kfmode)
@@ -107,7 +101,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_cf->SetLF(p_lf);
   p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
-  m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
+  m_on=PureQCD();// so far only qcd evolution
   if (!m_on && (ckey.m_ewmode&1) &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
        p_lf->FlC().IsPhoton())) m_on=true;
@@ -153,10 +147,8 @@ double Splitting_Function_Base::MEPSWeight
 
 double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
-   const double _scale,const double Q2)
+   const double scale,const double Q2)
 {
-  double scale(_scale);
-  if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastscale = scale;
   double sf((*p_lf)(z,y,eta,scale,Q2)/m_symf/m_polfac);
   if (IsBad(sf)) {
@@ -210,10 +202,8 @@ double Splitting_Function_Base::Z()
         
 double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
- const double _scale,const double Q2) 
+ const double scale,const double Q2) 
 {
-  double scale(_scale);
-  if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt > 1.0) {

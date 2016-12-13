@@ -42,7 +42,7 @@ bool CF_GGH::SetCoupling(MODEL::Model_Base *md,
 double CF_GGH::Coupling(const double &scale,const int pol)
 {
   if (pol>0) return 0.0;
-  return m_last = m_cplmax.front();
+  return m_cplmax.front();
 }
 
 bool CF_GGH::AllowSpec(const ATOOLS::Flavour &fl) 

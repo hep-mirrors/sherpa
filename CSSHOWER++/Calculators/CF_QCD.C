@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-using namespace ATOOLS;
-
 namespace CSSHOWER {
   
   const double s_Nc = 3.;
@@ -33,16 +31,13 @@ namespace CSSHOWER {
     std::map<MODEL::One_Running_AlphaS *, double> m_altcplmax;
 
     double m_q, m_rsf, m_k0sq;
-    int m_scvmode, m_kfac;
+    int m_scvmode;
 
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key), p_altcpl(NULL), m_altrsf(1.0), m_altcplmax(), m_q(0.), m_rsf(1.), m_k0sq(0.0), m_scvmode(0)
+      SF_Coupling(key), p_altcpl(NULL), m_altcplmax(), m_q(0.), m_rsf(1.), m_k0sq(0.0), m_scvmode(0)
     {
-      m_kfac=1;
-      if (key.p_v->in[0].StrongCharge()==8 &&
-         key.p_v->in[1].StrongCharge()!=8) m_kfac=0;
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
 	  key.p_v->in[2].StrongCharge()==8) m_q=s_CA;
@@ -58,11 +53,6 @@ namespace CSSHOWER {
 	  if (key.p_v->in[2].StrongCharge()==8) m_q/=2.0;
 	}
       }
-    }
-
-    double B0(const double &nf) const
-    {
-      return 11.0/6.0*s_CA-2.0/3.0*s_TR*nf;
     }
 
     bool SetCoupling(MODEL::Model_Base *md,
@@ -82,6 +72,7 @@ namespace CSSHOWER {
 
 using namespace CSSHOWER;
 using namespace MODEL;
+using namespace ATOOLS;
 
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
@@ -117,17 +108,17 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
 template<class T>
 double CF_QCD::CplMax(T * as, double rsf) const
 {
-  double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
+  double minscale = CplFac(m_k0sq)*m_k0sq;
   double ct(0.);
-  if (rsf > 1.) // only for f>1 cpl gets larger
-    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
-  return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
+  const double boundedscale(Max(as->ShowerCutQ2(), minscale));
+  if (m_rsf>1.) // only for f>1 cpl gets larger
+    ct=-(*as)[boundedscale]/M_PI*as->Beta0(0.)*log(m_rsf);
+  return (*as)[boundedscale]*(1.-ct)*m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
-  DEBUG_FUNC("pol="<<pol);
-  if (pol!=0) return 0.0;
+  if (pol!=0) return 0.0; // we do not update m_last when polarized
   
   // use nominal or alternative coupling and scale factor
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
@@ -135,9 +126,8 @@ double CF_QCD::Coupling(const double &scale,const int pol)
 
   if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*rsf);
-  double cpl=as->BoundedAlphaS(scl);
-  msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
-  msg_Debugging()<<"as(t)="<<as->BoundedAlphaS(t)<<std::endl;
+  if (t < as->ShowerCutQ2()) return m_last = 0.0;
+  double cpl=(*as)[t];
   if (!IsEqual(scl,t)) {
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
     std::vector<double> ths(as->Thresholds(t,scl));
@@ -177,7 +167,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   cpl*=m_q;
   const double cplmax = (p_altcpl) ? m_altcplmax[p_altcpl] : m_cplmax.front();
   if (cpl>cplmax) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
+    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at t = "
                <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
                <<", qmin = "<<sqrt(as->CutQ2())<<std::endl;
     return m_last = cplmax;
@@ -211,7 +201,7 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==-fl.StrongCharge();
       break;
-    case cstp::none: THROW(fatal_error,"Unknown dipole.");
+    case cstp::none: abort();
     }
   }
   return fl.Strong();
@@ -219,7 +209,7 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
 
 double CF_QCD::CplFac(const double &scale) const
 {
-  if (m_kfmode==0 || m_kfac==0) return m_cplfac;
+  if (m_kfmode==0) return m_cplfac;
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
   double nf=as->Nf(scale);
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));

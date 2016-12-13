@@ -93,8 +93,6 @@ namespace CSSHOWER {
 
     inline LF_VVV2_IF(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
 
-    double Scale(const double z,const double y,
-		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double);
     double OverIntegrated(const double,const double,
@@ -131,8 +129,6 @@ namespace CSSHOWER {
 
     inline LF_VVV2_II(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
 
-    double Scale(const double z,const double y,
-		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double);
     double OverIntegrated(const double,const double,
@@ -322,15 +318,6 @@ double LF_VVV1_IF::Z()
              pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
 }
 
-double LF_VVV2_IF::Scale
-(const double z,const double y,
- const double _scale,const double Q2) const
-{
-  if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = (Q2+p_ms->Mass2(m_flspec))*y/z;
-  return scale;
-}
-
 double LF_VVV2_IF::operator() 
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
@@ -393,15 +380,6 @@ double LF_VVV1_II::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
              pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
-}
-
-double LF_VVV2_II::Scale
-(const double z,const double y,
- const double _scale,const double Q2) const
-{
-  if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = (Q2-p_ms->Mass2(m_flspec))*y/z;
-  return scale;
 }
 
 double LF_VVV2_II::operator()

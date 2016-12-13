@@ -137,7 +137,7 @@ Their respective syntax is
 JetFinder  <ycut>[<ycut decay 1>[<ycut decay 11>...]...]... <D parameter>
 ConeFinder <min R> 
 NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>] [<mass max>]
-FastjetFinder <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<bmode>]
+FastjetFinder <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<nb>] [<nb2>]
 @end verbatim
 
 For @option{JetFinder}, it is possible to give different values
@@ -167,9 +167,11 @@ It takes the following mandatory arguments:
 @code{<etmin>} are the minimum transverse momentum and/or energy, 
 @code{<dr>} is the radial parameter. Optional arguments are: 
 @code{<f(siscone)>} (default 0.75), @code{<eta-max>} and @code{<y-max>} as 
-maximal absolute (pseudo-)rapidity (default infinity), @code{<b-mode>} sets 
-the B-tagging mode (default 0). For details see
-@ref{Scale setters}.
+maximal absolute (pseudo-)rapidity (default infinity),
+@code{<nb>} and @code{<nb2>} set the number of required b-jets, where for the
+former both b and anti-b quarks are counted equally towards b-jets, while for
+the latter they are added with a relative sign as constituents, i.e. a jet
+containing b and anti-b is not tagged.
 
 @node Universal selector
 @subsection Universal selector
