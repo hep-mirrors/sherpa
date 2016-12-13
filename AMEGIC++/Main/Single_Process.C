@@ -770,6 +770,9 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool loo
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
     Poincare cms=Poincare(mom[0]+mom[1]);
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
+    // Fix numerical iszero problem (not crosschecked but assume same behaviour
+    // as in SingleDipoleTerm.C
+    mom[1]=Vec4D(mom[1][0],-mom[0][1],-mom[0][2],-mom[0][3]);
   }
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
