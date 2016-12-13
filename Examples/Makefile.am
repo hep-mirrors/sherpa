@@ -13,9 +13,6 @@ nobase_dist_examples_DATA         =	\
                 BFactory/BDecay/Run.dat \
                 BFactory/Belle_QCDBackground/Run.dat \
                 BFactory/Belle_Signal/Run.dat \
-		Models/SM_ZPrime/Model.C \
-		Models/SM_ZPrime/Run.dat \
-		Models/SM_ZPrime/Makefile \
 		FixedOrder_NLO/NTuples/Run.B-like.dat \
 		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
 		FixedOrder_NLO/NTuples/Run.R-like.dat \
