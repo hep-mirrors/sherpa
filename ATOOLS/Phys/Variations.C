@@ -655,6 +655,9 @@ void Variation_Weights::Reset()
 
 Variation_Weights & Variation_Weights::operator*=(const double &scalefactor)
 {
+  if (GetNumberOfVariations() == 0) {
+    return *this;
+  }
   if (!m_initialised) {
     THROW(fatal_error, "Can not multiply uninitialised variation weights.");
   }
@@ -668,6 +671,9 @@ Variation_Weights & Variation_Weights::operator*=(const double &scalefactor)
 
 Variation_Weights & Variation_Weights::operator*=(const Variation_Weights &other)
 {
+  if (GetNumberOfVariations() == 0) {
+    return *this;
+  }
   if (!m_initialised) {
     THROW(fatal_error, "Can not multiply uninitialised variation weights.");
   }
