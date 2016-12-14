@@ -331,6 +331,9 @@ int Perturbative_Interface::PerformShowers()
   double weight=csh->Weight();
   p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));
   p_hard->AddData("Weight",new Blob_Data<double>(meweight*weight));
+  if (blob_data_base) {
+    blob_data_base->Get<Variation_Weights>() *= weight;
+  }
   return stat;
 }
 
