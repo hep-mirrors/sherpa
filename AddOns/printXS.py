@@ -19,13 +19,18 @@ if len(args) !=1:
 import sqlite3
 c=sqlite3.connect(sys.argv[1]).cursor()
 c.execute("select file from path")
-files = [i[0] for i in c]
 
+raw_files=[i[0] for i in c if "XS_" in i[0] and not i[0].endswith(".bvi")]
+xs_entries=[]
+# We need to filter out the summary files
+for i in raw_files:
+    temp = i.split("/")
+    if not temp[2] in temp[1]:
+        xs_entries.append(i)
 
-xs_entries = filter(lambda x: "XS_" in x, files)
 processes=[i.split("XS_")[-1] for i in xs_entries]
-
 raw_groups   =list(set([i.split("XS_")[-1].split("/")[0] for i in xs_entries]))
+
 xsgroups={}
 for r in raw_groups:
     xsgroups[r] = [r]
@@ -37,7 +42,6 @@ for r in raw_groups:
         m_rs = a+"_"+str(int(b)+1)
         g_rs = [x for x in raw_groups if m_rs in x and proc_core in x and "(RS)" in x][0]
         xsgroups[r.replace("BVI", "BVI+RS")] = [r, g_rs]
-        xsgroups[r] = [r]
 
 
 def getSingleXS(cursor, name):
@@ -48,7 +52,7 @@ def getSingleXS(cursor, name):
     return  (float(xs_raw[1]) * to_pb, float(xs_raw[3]) * to_pb)
 
 
-xs_sum ={}
+xs_sum = {}
 for k, v in xsgroups.iteritems():
     t_xs, delta_t_xs = 0 ,0
     for g in v:
@@ -58,9 +62,6 @@ for k, v in xsgroups.iteritems():
             delta_t_xs += tp[1]**2
     from math import sqrt
     xs_sum[k] = (t_xs, sqrt(delta_t_xs))
-
-
-
 
 if opts.VERBOSITY==2:
     for k in sorted(xs_sum.keys()):
