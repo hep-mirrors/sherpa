@@ -81,17 +81,15 @@ def vplusbar(k0,k1,k2,k3, key):
 def vminusbar(k0,k1,k2,k3, key):
     return conjugate_tensor1d(vminus(k0,k1,k2,k3,'dummy'))*gamma_0('dummy', key)
 
-def dirac_op(p,
-             M,
-             key_a, key_b):
+def dirac_op(p, M, key_a, key_b):
     [p0,p1,p2,p3] = p
     return tensor1d([+p0,p1,p2,p3], 'mu')*mink_metric('mu','nu')*Gamma('nu', key_a, key_b) - four_identity(key_a, key_b)*M
 
 def epsilonplus(p0,p1,p2,p3, key, k0,k1,k2,k3):
-    return 1/sqrt(2)*(uminusbar(k0,k1,k2,k3, 'a')*Gamma(key,'a','b')*uminus(p0,p1,p2,p2,'b'))/(uminusbar(k0,k1,k2,k3, 'c')*uplus(p0,p1,p2,p2,'c'))
+    return 1/sqrt(2)*(uminusbar(k0,k1,k2,k3, 'a')*Gamma(key,'a','b')*uminus(p0,p1,p2,p3,'b'))/(uminusbar(k0,k1,k2,k3, 'c')*uplus(p0,p1,p2,p3,'c'))
 
 def epsilonminus(p0,p1,p2,p3, key, k0,k1,k2,k3):
-    return -1/sqrt(2)*(uplusbar(k0,k1,k2,k3, 'a')*Gamma(key,'a','b')*uplus(p0,p1,p2,p2,'b'))/(uplusbar(k0,k1,k2,k3, 'c')*uminus(p0,p1,p2,p2,'c'))
+    return -1/sqrt(2)*(uplusbar(k0,k1,k2,k3, 'a')*Gamma(key,'a','b')*uplus(p0,p1,p2,p3,'b'))/(uplusbar(k0,k1,k2,k3, 'c')*uminus(p0,p1,p2,p3,'c'))
 
 def test_spinors():
 
@@ -109,6 +107,7 @@ def test_spinors():
     assert(evaluate((uplus (p0,p1,p2,p3,'a')*uplusbar (p0,p1,p2,p3,'a') )._array[0].subs(dct)) - 2.0*M.subs(dct) < 1.e-11)
     assert(evaluate((vplus (p0,p1,p2,p3,'a')*vplusbar (p0,p1,p2,p3,'a') )._array[0].subs(dct)) + 2.0*M.subs(dct) < 1.e-11)
 
+    # Check if spinors satisfy Dirac's equation
     dop_u = dirac_op([p0,p1,p2,p3], +M, 'a', 'b')
     dop_v = dirac_op([p0,p1,p2,p3], -M, 'a', 'b')
 
@@ -124,25 +123,42 @@ def test_spinors():
         assert(Abs(evaluate(d4._array[i]._array[0].subs(dct))) < 1.e-11)
 
 def test_polvecs():
+    
     # Outgoing gluon mom
     k1 = Symbol('k1', real=True)
     k2 = Symbol('k2', real=True)
     k3 = Symbol('k3', real=True)
     k0 = sqrt(k1**2+k2**2+k3**2)
+    k  = tensor1d([k0,k1,k2,k3], 'nu')
 
     # Outgoing gluon reference mom
     g1 = Symbol('g1', real=True)
     g2 = Symbol('g2', real=True)
     g3 = Symbol('g3', real=True)
-    g0 = sqrt(k1**2+k2**2+k3**2)
+    g0 = sqrt(g1**2+g2**2+g3**2)
 
-    t = epsilonplus(k0,k1,k2,k3, 'mu', g0, g1, g2, g3)*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0, g1, g2, g3)) + epsilonminus(k0,k1,k2,k3, 'mu', g0, g1, g2, g3)*conjugate_tensor1d(epsilonminus(k0,k1,k2,k3, 'nu', g0, g1, g2, g3))
+    dct = {var:uniform(1.,100.) for var in [k1,k2,k3,g1,g2,g3]}
 
-    s = -mink_metric('mu','nu') + (tensor1d([k0,k1,k2,k3],'mu')*tensor1d([g0,g1,g2,g3],'nu')+tensor1d([k0,k1,k2,k3],'nu')*tensor1d([g0,g1,g2,g3],'mu'))/(tensor1d([k0,k1,k2,k3],'nu')*mink_metric('mu','nu')*tensor1d([g0,g1,g2,g3],'mu'))
+    em = epsilonminus(k0,k1,k2,k3, 'mu', g0, g1, g2, g3)
+    ep = epsilonplus (k0,k1,k2,k3, 'mu', g0, g1, g2, g3)
 
-    dct = {k:uniform(1.,100.) for k in [k1,k2,k3,g1,g2,g3]}
-    print evaluate(t._array[0]._array[0]._array[0].subs(dct))
-    print evaluate(s._array[0]._array[0]._array[0].subs(dct))
+    # Test transversality wrt. gluon momentum
+    assert(Abs(evaluate((em*mink_metric('mu','nu')*k)._array[0].subs(dct))) < 1.e-11)
+    assert(Abs(evaluate((ep*mink_metric('mu','nu')*k)._array[0].subs(dct))) < 1.e-11)
+
+    # Test complex conjugation relation between two helicity states
+    for el in (em-conjugate_tensor1d(ep)).elements():
+        assert(Abs(evaluate(el._array[0].subs(dct))) < 1.e-11)
+
+    # Test the completeness relation: t and s should be equal
+    t  = ep*conjugate_tensor1d(epsilonplus (k0,k1,k2,k3, 'nu', g0, g1, g2, g3))
+    t += em*conjugate_tensor1d(epsilonminus(k0,k1,k2,k3, 'nu', g0, g1, g2, g3))
+
+    s  = -mink_metric('mu','nu')
+    s += (tensor1d([k0,k1,k2,k3],'mu')*tensor1d([g0,g1,g2,g3],'nu')+tensor1d([k0,k1,k2,k3],'nu')*tensor1d([g0,g1,g2,g3],'mu'))/(tensor1d([k0,k1,k2,k3],'nu')*mink_metric('mu','nu')*tensor1d([g0,g1,g2,g3],'mu'))
+
+    for el in (t-s).elements():
+        assert(Abs(evaluate(el._array[0].subs(dct))) < 1.e-11)
 
 
 def t0():
@@ -175,8 +191,9 @@ def t0():
     print m2._array[0].simplify()
 
     
-test_spinors()
+#test_spinors()
+
 #t0()
 
-#test_polvecs()
+test_polvecs()
 
