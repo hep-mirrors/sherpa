@@ -186,14 +186,17 @@ def t0():
     g0 = sqrt(k1**2+k2**2+k3**2)
 
 
-    m2 = uplusbar(p0,p1,p2,p3,'a')*Gamma('mu','a','b')*uplus(k0,k1,k2,k3,'b')*mink_metric('mu','nu')*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0,g1,g2,g3))
+    m2 = uplusbar(t0,t1,t2,t3,'a')*Gamma('mu','a','b')*uplus(t0-k0,t1-k1,t2-k2,t3-k3,'b')*mink_metric('mu','nu')*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0,g1,g2,g3))
 
-    print m2._array[0].simplify()
+    print mathematica_code(m2._array[0].simplify())
 
+
+if __name__ == "__main__":
     
-#test_spinors()
+    
+    #test_spinors()
+    #test_polvecs()
 
-#t0()
+    t0()
 
-test_polvecs()
 
