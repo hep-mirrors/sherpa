@@ -163,32 +163,49 @@ def test_polvecs():
 
 def t0():
     # Incoming quark mom
-    t1 = Symbol('t1', real=True)
-    t2 = Symbol('t2', real=True)
-    t3 = Symbol('t3', real=True)
-    t0 = sqrt(t1**2+t2**2+t3**2)
-    # Outgoing quark mom
-    p1 = Symbol('p1', real=True)
-    p2 = Symbol('p2', real=True)
-    p3 = Symbol('p3', real=True)
-    p0 = sqrt(p1**2+p2**2+p3**2)
+    p1 = 0
+    p2 = 0
+    p3 = Symbol('p', real=True)
+    p0 = p3
+    p  = tensor1d([p0,p1,p2,p3],'mu')
+
+    # Transverse (w.r.t p) component k_t of daughter momenta (spacelike)
+    kt1 = 0
+    kt2 = Symbol('kt', real=True)
+    kt3 = 0
+    kt0 = 0
+    kt  = tensor1d([kt0,kt1,kt2,kt3],'mu')
+
+    # Auxiliary light-like vector transverse to k_t
+    n1  = Symbol('n', real=True)
+    n2  = 0
+    n3  = 0
+    n0  = n1
+    n   = tensor1d([n0,n1,n2,n3],'mu')
+
+    # Longitudinal momentum fraction
+    z   = tensor([Symbol('z', real=True)], None)
+    omz = tensor([1.0-Symbol('z', real=True)], None)
     
-    # Outgoing gluon mom
-    k1 = Symbol('k1', real=True)
-    k2 = Symbol('k2', real=True)
-    k3 = Symbol('k3', real=True)
-    k0 = sqrt(k1**2+k2**2+k3**2)
+    # Outgoing quark momentum
+    pa  =   z*p + kt - tensor([(kt2**2)], None)/  z*n#/(2.0*n1*p3)
+
+    # Outgoing gluon momentum
+    pb  = omz*p + kt - tensor([(kt2**2)], None)/omz*n#/(2.0*n1*p3)
 
     # Outgoing gluon reference mom
     g1 = Symbol('g1', real=True)
     g2 = Symbol('g2', real=True)
     g3 = Symbol('g3', real=True)
-    g0 = sqrt(k1**2+k2**2+k3**2)
+    g0 = sqrt(g1**2+g2**2+g3**2)
+
+    print pa
+    print pb
 
 
-    m2 = uplusbar(t0,t1,t2,t3,'a')*Gamma('mu','a','b')*uplus(t0-k0,t1-k1,t2-k2,t3-k3,'b')*mink_metric('mu','nu')*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0,g1,g2,g3))
+    # m2 = uplusbar(t0,t1,t2,t3,'a')*Gamma('mu','a','b')*uplus(t0-k0,t1-k1,t2-k2,t3-k3,'b')*mink_metric('mu','nu')*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0,g1,g2,g3))
 
-    print mathematica_code(m2._array[0].simplify())
+    # print mathematica_code(m2._array[0].simplify())
 
 
 if __name__ == "__main__":
