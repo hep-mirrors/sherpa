@@ -1,10 +1,10 @@
 (run){
   % general settings
-  EVENTS 5M;
+  EVENTS 100k;
   EVENT_TYPE HadronDecay;
 
   % specify hadron to be decayed
-  DECAYER 511;
+  DECAYER 15;
 
   % initialise rest for Sherpa not to complain
   % model parameters
@@ -13,7 +13,7 @@
   % collider setup
   BEAM_1  11; BEAM_ENERGY_1 7.;
   BEAM_2 -11; BEAM_ENERGY_2 4.;
-#  ANALYSIS=Rivet
+  #ANALYSIS=Rivet
 }(run)
 
 (processes){
@@ -21,8 +21,9 @@
   End process;
 }(processes)
 
-#(analysis){
-#  BEGIN_RIVET {
-#  -a BELLE_2015_I1397632
-#  } END_RIVET
-#}(analysis)
+(analysis){
+  BEGIN_RIVET {
+  IGNOREBEAMS=1
+  -a BABAR_2007_S7266081
+  } END_RIVET
+}(analysis)
