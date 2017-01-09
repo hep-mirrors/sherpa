@@ -333,7 +333,7 @@ bool Process_Group::ConstructProcesses()
     *map>>cfl;
     while (!map->eof()) {
       for (cnt=0;cnt<m_nin+m_nout && !map->eof();++cnt) {
-        SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(abs(cfl),cfl<0),cnt);
+        SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(std::abs(cfl),cfl<0),cnt);
         *map>>cfl;
       }
       if (cnt!=m_nin+m_nout || cfl || !ConstructProcess(cpi))

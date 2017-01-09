@@ -21,8 +21,8 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
-  Data_Reader read(" ",";","#","=");
-  m_scalescheme=read.GetValue<int>("MCATNLO_SCALE_SCHEME",2);
+  Default_Reader reader;
+  m_scalescheme = reader.Get<int>("MCATNLO_SCALE_SCHEME", 2);
   if (m_scalescheme!=2) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
 }
 

@@ -1,7 +1,7 @@
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
@@ -21,25 +21,23 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   ,p_lund(NULL)
 #endif
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.AddIgnore("[");
-  dr.AddIgnore("]");
-  dr.SetInputPath(m_dir);
-  dr.SetInputFile(m_file);
-  m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
-  m_shrink=dr.GetValue<int>("COMPRESS_PARTONIC_DECAYS",1);
-  m_flagpartonics=dr.GetValue<int>("FLAG_PARTONIC_DECAYS",1);
+  Default_Reader reader;
+  reader.AddIgnore("[");
+  reader.AddIgnore("]");
+  reader.SetInputPath(m_dir);
+  reader.SetInputFile(m_file);
+  m_fragmentationmodel = reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", string("Ahadic"));
+  m_shrink=reader.Get<int>("COMPRESS_PARTONIC_DECAYS",1);
+  m_flagpartonics=reader.Get<int>("FLAG_PARTONIC_DECAYS",1);
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA
     THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
           string("enabled during compilation (./configure --enable-pythia)."));
 #else
-    m_sfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));
+    m_sfile=reader.GetValue<string>("LUND_FILE",string("Lund.dat"));
     Hadron_Init init;
     init.Init();
-    init.OverWriteProperties(dr);
+    init.OverWriteProperties(reader);
     ATOOLS::OutputHadrons(msg->Tracking());
     p_lund = new Lund_Interface(m_dir,m_sfile);
     m_mode=1;
@@ -50,19 +48,17 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
 #endif
   }
   else if (m_fragmentationmodel==string("Ahadic")) {
-    m_sfile=dr.GetValue<string>("AHADIC_FILE",m_file);
+    m_sfile=reader.Get<string>("AHADIC_FILE",m_file);
     Hadron_Init init;
     init.Init();
-    init.OverWriteProperties(dr);
+    init.OverWriteProperties(reader);
     ATOOLS::OutputHadrons(msg->Tracking());
     p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile);
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;
   }
-  else if (m_fragmentationmodel==string("Off") ||
-           m_fragmentationmodel==string("None") ||
-           m_fragmentationmodel==string("0")) return;
+  else if (m_fragmentationmodel == string("None")) return;
   THROW(critical_error,"Fragmentation model not implemented.");
 }
    

@@ -6,6 +6,7 @@
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 namespace DIRE {
 
@@ -75,13 +76,11 @@ Dire::Dire(const Shower_Key &key):
 {
   p_shower = new Shower();
   p_clus = new Cluster(p_shower);
-  p_shower->Init(key.p_model,key.p_isr,key.p_read);
-  int csmode=key.p_read->GetValue<int>("CSS_CSMODE",0);
+  p_shower->Init(key.p_model,key.p_isr,key.p_reader);
+  int csmode=key.p_reader->Get<int>("CSS_CSMODE", 0);
   if (csmode) p_cs = new Color_Setter(csmode);
-  m_reco=key.p_read->GetValue<int>("CSS_RECO_CHECK",0);
-  if (m_reco) msg_Info()<<METHOD<<"(): Reco check "<<m_reco<<"\n";
-  m_wcheck=key.p_read->GetValue<int>("CSS_WEIGHT_CHECK",0);
-  if (m_wcheck) msg_Info()<<METHOD<<"(): Weight check "<<m_wcheck<<"\n";
+  m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK", 0, "Reco check", METHOD);
+  m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK", 0, "Weight check", METHOD);
 }
 
 Dire::~Dire()

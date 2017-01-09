@@ -13,7 +13,7 @@
 #include <cassert>
 
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/RUsage.H"
 
 
@@ -29,8 +29,8 @@ Event_Handler::Event_Handler():
   p_variations(NULL)
 {
   p_phases  = new Phase_List;
-  Data_Reader reader(" ",";","!","=");
-  m_checkweight = reader.GetValue<int>("CHECK_WEIGHT", 0);
+  Default_Reader reader;
+  m_checkweight = reader.Get<int>("CHECK_WEIGHT", 0);
   m_lastrss=0;
 }
 
@@ -355,9 +355,9 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
 
-  Data_Reader read(" ",";","!","=");
+  Default_Reader reader;
   int mother_kf(0);
-  if (!read.ReadFromFile(mother_kf,"DECAYER")) {
+  if (!reader.Read(mother_kf,"DECAYER", 0)) {
     THROW(fatal_error,"Didn't find DECAYER=<PDG_CODE> in parameters.");
   }
   Flavour mother_flav(mother_kf);

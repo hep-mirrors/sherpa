@@ -22,7 +22,7 @@ namespace AMISIC {
   public:
 
     // constructor
-    Semihard_QCD(ATOOLS::Data_Reader *const read);
+    Semihard_QCD(ATOOLS::Default_Reader *const read);
 
     // destructor 
     ~Semihard_QCD();

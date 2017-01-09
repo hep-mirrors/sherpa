@@ -556,13 +556,17 @@ namespace ATOOLS {
   { 
     return std::numeric_limits<Type>::max(); 
   }
-
   template int Read_Write_Base::Default<int>() const;
   template unsigned int Read_Write_Base::Default<unsigned int>() const;
   template long int Read_Write_Base::Default<long int>() const;
   template unsigned long int Read_Write_Base::Default<unsigned long int>() const;
   template float Read_Write_Base::Default<float>() const;
   template double Read_Write_Base::Default<double>() const;
+
+  template <> bool Read_Write_Base::Default<bool>() const
+  {
+    return false;
+  }
 
   template <> std::string Read_Write_Base::Default<std::string>() const
   {

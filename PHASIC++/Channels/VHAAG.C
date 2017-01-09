@@ -9,7 +9,7 @@
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
@@ -90,11 +90,9 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa->GetPath());
-  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
       p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
@@ -118,9 +116,7 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
     p_vegas = new Vegas(rannum,100,Name());
   } 
 
-  m_s0=-1.;
-  double s0fix(0.0);
-  if (dr.ReadFromFile(s0fix,"VHAAG_FIXED_S0")) m_s0=s0fix;
+  m_s0 = reader.Get("VHAAG_FIXED_S0", -1.0);
 }
 
 VHAAG::~VHAAG()

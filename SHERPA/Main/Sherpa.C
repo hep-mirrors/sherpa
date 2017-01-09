@@ -19,6 +19,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -73,6 +74,9 @@ Sherpa::~Sherpa()
   for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
     delete kfit->second;
   ATOOLS::s_kftable.clear();
+
+  ATOOLS::Default_Reader reader;
+  reader.Finalize();
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
@@ -119,12 +123,12 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   DrawLogo(p_inithandler->DataReader()->GetValue("PRINT_VERSION_INFO",0));
 
   if (p_inithandler->InitializeTheFramework()) {
-    Data_Reader read(" ",";","!","=");
-    int initonly=read.GetValue<int>("INIT_ONLY",0);
+    Default_Reader reader;
+    int initonly=reader.Get<int>("INIT_ONLY",0);
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
     if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
-    m_showtrials=read.GetValue<int>("SHOW_NTRIALS",0);
+    m_showtrials=reader.Get<int>("SHOW_NTRIALS",0);
     bool res(true);
     if (statuspath!="") {
       res=exh->ReadInStatus(statuspath);
@@ -134,18 +138,11 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       }
     }
 
-    long int debuginterval(0);
-    if (read.ReadFromFile(debuginterval,"DEBUG_INTERVAL")) {
-      m_debuginterval=debuginterval;
-      msg_Info()<<"Setting debug interval to "<<m_debuginterval<<std::endl;
-    }
-    long int debugstep(-1);
-    if (read.ReadFromFile(debugstep,"DEBUG_STEP")) {
-      m_debugstep=debugstep;
-    }
+    m_debuginterval = reader.Get("DEBUG_INTERVAL", m_debuginterval, "debug interval");
+    m_debugstep     = reader.Get("DEBUG_STEP", m_debugstep);
 
     if (m_filter) p_filter = new Filter();
-    m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
+    m_displayinterval=reader.Get<int>("EVENT_DISPLAY_INTERVAL",100);
     
     return res;
   }

@@ -14,7 +14,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "PDF/Remnant/Remnant_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Weight_Info.H"
@@ -156,32 +156,28 @@ bool Simple_Chain::GeneratePathName()
 
 bool Simple_Chain::ReadInData()
 {
-  Data_Reader *reader = new Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInterprete(true);
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile());
-  int regulate=0;
-  if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
-    m_regulate=regulate;
-    if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) 
-      m_regulator="QCD_Trivial";
-    if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
-      m_regulation=std::vector<double>(1,2.68);
-    double exponent, scale;
-    if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.244;
-    if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
+  Default_Reader reader;
+  reader.SetInterprete(true);
+  reader.SetInputPath(InputPath());
+  reader.SetInputFile(InputFile());
+  int regulate;
+  if (reader.Read(regulate, "REGULATE_XS", 0)) {
+    m_regulate = regulate;
+    m_regulator = reader.Get<std::string>("XS_REGULATOR", "QCD_Trivial");
+    if (!reader.ReadVector(m_regulation, "XS_REGULATION")) {
+      m_regulation = std::vector<double>(1,2.68);
+    }
+    double exponent = reader.Get("RESCALE_EXPONENT", 0.244);
+    double scale = reader.Get("REFERENCE_SCALE", 1800.0);
     m_regulation[0]*=pow(m_ecms/scale,exponent);
   }
-  m_heavy_flavour = reader->GetValue<int>("MI_HEAVY_FLAVOUR",1);
-  if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
-  if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
-  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR", 0.3142);
-  m_resdir = reader->GetValue<std::string>("MI_RESULT_DIRECTORY","");
-  m_ressuffix = reader->GetValue<std::string>("MI_RESULT_DIRECTORY_SUFFIX","");
+  m_heavy_flavour = reader.Get<int>("MI_HEAVY_FLAVOUR", 1);
+  m_error = reader.Get("PS_ERROR", 1.e-2);
+  m_pathextra = reader.Get<std::string>("PATH_EXTRA", "");
+  m_sigma_nd_fac = reader.Get<double>("SIGMA_ND_FACTOR", 0.3142);
+  m_resdir = reader.Get<std::string>("MI_RESULT_DIRECTORY", "");
+  m_ressuffix = reader.Get<std::string>("MI_RESULT_DIRECTORY_SUFFIX", "");
   GeneratePathName();
-  delete reader;
   return true;
 }
 
@@ -192,14 +188,10 @@ bool Simple_Chain::CreateGrid()
   double min=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile(2));
-  if (!reader->ReadFromFile(m_selectorfile,"MI_SELECTOR_FILE")) 
-    m_selectorfile="MICuts.dat";
-  delete reader;
+  Default_Reader reader;
+  reader.SetInputPath(InputPath());
+  reader.SetInputFile(InputFile(2));
+  m_selectorfile = reader.Get<std::string>("MI_SELECTOR_FILE", "MICuts.dat");
   InitializeProcessList(Flavour(kf_jet), Flavour(kf_jet),
                         Flavour(kf_jet), Flavour(kf_jet));
   if (m_heavy_flavour && !Flavour(kf_jet).Includes(Flavour(kf_b))) {
@@ -244,8 +236,8 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out2,"",""));
   pi.m_maxcpl[1]=pi.m_mincpl[1]=0;
   pi.m_maxcpl[0]=pi.m_mincpl[0]=2;
-  pi.m_scale=p_read->GetValue<std::string>("MPI_SCALE","MPI");
-  pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","MPI");
+  pi.m_scale=p_read->Get<std::string>("MPI_SCALE","MPI");
+  pi.m_kfactor=p_read->Get<std::string>("MPI_KFACTOR","MPI");
   pi.m_coupling="Alpha_QCD 1";
   pi.m_special="MPI_Process";
   pi.m_addname="__MPI";
@@ -401,22 +393,19 @@ bool Simple_Chain::Initialize()
   if (!rpa->gen.Beam1().IsHadron() ||
       !rpa->gen.Beam2().IsHadron()) return false;
   CleanUp();
-  p_read = new Data_Reader(" ",";","!","=");
-  p_read->AddComment("#");
-  p_read->AddWordSeparator("\t");
+  p_read = new Default_Reader;
   p_read->SetInterprete(true);
   p_read->SetInputPath(InputPath());
   p_read->SetInputFile(InputFile());
   if (!ReadInData()) return false;
-  std::string xsfile=std::string("XS.dat");
-  p_read->ReadFromFile(xsfile,"XS_FILE");
-  SetInputFile(xsfile,1);
+  std::string xsfile = p_read->Get("XS_FILE", std::string("XS.dat"));
+  SetInputFile(xsfile, 1);
   double stop, exponent, scale, pt0, pt0exp;
-  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=0.7549;
-  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.895;
-  if (!p_read->ReadFromFile(pt0exp,"TURNOFF_EXPONENT")) pt0exp=0.244;
-  if (!p_read->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.244;
-  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
+  pt0 = p_read->Get("TURNOFF", 0.7549);
+  stop = p_read->Get("SCALE_MIN", 2.895);
+  pt0exp = p_read->Get("TURNOFF_EXPONENT", 0.244);
+  exponent = p_read->Get("RESCALE_EXPONENT", 0.244);
+  scale = p_read->Get("REFERENCE_SCALE", 1800.0);
   MPI_KFactor_Setter::SetPT0(pt0*pow(m_ecms/scale,pt0exp));
   stop*=pow(m_ecms/scale,exponent);
   SetStop(stop,0);
@@ -426,27 +415,23 @@ bool Simple_Chain::Initialize()
     // // Uncomment for cross-check vs. PYHTIA
     // SetStop(0.08*stop,0);
   }
-  if (!p_read->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
-  if (!p_read->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
-  if (!p_read->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
-    m_maxreduction=10.0;
+  m_check = p_read->Get("CHECK_CONSISTENCY", 0);
+  m_vegas = p_read->Get("VEGAS_MI", 0);
+  m_maxreduction = p_read->Get("MI_MAX_REDUCTION", 10.0);
   std::string function;
   std::vector<double> parameters;
-  if (!p_read->ReadFromFile(function,"PROFILE_FUNCTION")) {
-    function="Double_Gaussian";
-    if (!p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
+  if (!p_read->Read<std::string>(function, "PROFILE_FUNCTION", "Double_Gaussian")) {
+    if (!p_read->ReadVector(parameters,"PROFILE_PARAMETERS")) {
       parameters.push_back(0.8243);
       parameters.push_back(0.9515);
     }
   }
   else {
-    p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS");
+    p_read->ReadVector(parameters,"PROFILE_PARAMETERS");
   }
   if (function!="None")
     p_profile = Profile_Function_Base::SelectProfile(function,parameters);
-  int jetveto(1);
-  if (!p_read->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
-  SetJetVeto(jetveto);
+  SetJetVeto(p_read->Get("JET_VETO", 1));
   if (!CreateGrid()) {
     CleanUp();
     THROW(critical_error,"Grid creation failed.");

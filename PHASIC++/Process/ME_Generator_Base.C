@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -21,14 +21,14 @@ ME_Generator_Base::~ME_Generator_Base()
 {
 }
 
-void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
+void ME_Generator_Base::SetPSMasses(Default_Reader *const reader)
 {
   ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
   std::vector<size_t> psmassive,psmassless;
   std::vector<size_t> defpsmassive,defpsmassless;
-  dr->VectorFromFile(psmassive,"MASSIVE_PS");
-  dr->VectorFromFile(psmassless,"MASSLESS_PS");
-  bool respect=(bool)dr->GetValue<int>("RESPECT_MASSIVE_FLAG",0);
+  reader->ReadVector(psmassive,"MASSIVE_PS");
+  reader->ReadVector(psmassless,"MASSLESS_PS");
+  bool respect = reader->Get<bool>("RESPECT_MASSIVE_FLAG", false);
   // check consistency
   for (size_t i(0);i<psmassive.size();++i)
     if (std::find(psmassless.begin(),psmassless.end(),psmassive[i])!=

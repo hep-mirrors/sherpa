@@ -8,7 +8,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -269,15 +269,13 @@ HepMC2_Interface::HepMC2_Interface() :
   m_usenamedweights(false), m_extendedweights(false),
   m_hepmctree(false), p_event(NULL)
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Default_Reader reader;
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-  m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",false);
+  m_usenamedweights=reader.Get<int>("HEPMC_USE_NAMED_WEIGHTS",false);
 #endif
-  m_extendedweights=reader.GetValue<int>("HEPMC_EXTENDED_WEIGHTS",false);
+  m_extendedweights=reader.Get<int>("HEPMC_EXTENDED_WEIGHTS",false);
   // Switch for disconnection of 1,2,3 vertices from PS vertices
-  m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE",false);
+  m_hepmctree=reader.Get<int>("HEPMC_TREE_LIKE",false);
 }
 
 HepMC2_Interface::~HepMC2_Interface()

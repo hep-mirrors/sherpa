@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include <stdio.h>
 #include <string.h>
@@ -54,16 +54,10 @@ bool Process_Integrator::Initialize
   static bool minit(false);
   if (!minit) {
     int smode;
-    Data_Reader read(" ",";","!","=");
-    if (read.ReadFromFile(smode,"IB_SMODE")) {
-      m_smode=smode;
-      msg_Info()<<METHOD<<"(): Set sum mode = "<<m_smode<<".\n";
-    }
-    if (!read.ReadFromFile(s_whbins,"IB_WHBINS")) s_whbins=1000;
-    else msg_Info()<<METHOD<<"(): Set weight histo bin number = "<<s_whbins<<".\n";
-    if (read.ReadFromFile(s_genresdir,"GENERATE_RESULT_DIRECTORY"));
-    else s_genresdir=1;
-    minit=true;
+    Default_Reader reader;
+    m_smode = reader.Get("IB_SMODE", m_smode, "sum mode", METHOD);
+    s_whbins = reader.Get("IB_WHBINS", 1000, "weight histo bin number", METHOD);
+    s_genresdir = reader.Get("GENERATE_RESULT_DIRECTORY", 1);
   }
   return true;
 }

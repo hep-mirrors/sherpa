@@ -3,7 +3,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -69,11 +69,11 @@ void Output_LHEF::Header()
   m_outstream<<"# created by SHERPA "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
              <<endl;
   
-  Data_Reader dr(" ",";","!","=");
-  dr.SetInputPath(path);
-  dr.SetInputFile(file);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
   
-  if (dr.OpenInFile()) {
+  if (reader.OpenInFile()) {
     m_outstream<<"# Run data extracted from : "<<file<<std::endl; 
     m_outstream<<"--> "<<std::endl; 
     m_outstream<<"<SHRunCard> "<<std::endl; 
@@ -93,13 +93,13 @@ void Output_LHEF::Header()
   double EBMUP1 = rpa->gen.PBeam(0)[0];
   double EBMUP2 = rpa->gen.PBeam(1)[0];
   
-  int IDWTUP(dr.GetValue<int>("LHEF_IDWTUP",0));
+  int IDWTUP(reader.Get<int>("LHEF_IDWTUP",0));
   if (IDWTUP==0) IDWTUP=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3; 
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
-  int PDFSUP1 = dr.GetValue<int>("LHEF_PDF_NUMBER_1",rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1);
-  int PDFSUP2 = dr.GetValue<int>("LHEF_PDF_NUMBER_2",rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
+  int PDFSUP1 = reader.Get<int>("LHEF_PDF_NUMBER_1",rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1);
+  int PDFSUP2 = reader.Get<int>("LHEF_PDF_NUMBER_2",rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
 
   m_outstream<<std::setprecision(10);
   m_outstream<<std::setw(6)<<IDBMUP1<<" "

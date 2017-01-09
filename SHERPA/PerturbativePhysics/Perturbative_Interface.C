@@ -29,8 +29,7 @@ Perturbative_Interface::Perturbative_Interface
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
+  Data_Reader read;
   read.SetInputPath(p_me->Path());
   read.SetInputFile(p_me->File());
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));

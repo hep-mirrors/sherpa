@@ -20,6 +20,7 @@
 #include "PDF/Main/PDF_Base.H"
 #include "AMISIC++/Main/MI_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Scaling.H"
@@ -68,12 +69,12 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   SetFileNames();
 
-  if (p_dataread->ReadFromFile(m_evtform,"EVENT_INPUT")) {
+  if (p_dataread->Read<std::string>(m_evtform,"EVENT_INPUT", "")) {
     m_mode=eventtype::EventReader;
     msg_Out()<<" Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",0));
+  ATOOLS::s_loader->SetCheck(p_dataread->Get<int>("CHECK_LIBLOCK",0));
 
   rpa->Init(m_path,m_file,argc,argv);
   CheckVersion();
@@ -81,41 +82,39 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ShowParameterSyntax();
   ran->InitExternal(m_path,m_file);
 
-  rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
-  std::string hdstr(p_dataread->GetValue<string>("HARD_DECAYS","None"));
-  int defhsc = !(hdstr=="Off" || hdstr=="None" || hdstr=="0");
-  rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",defhsc));
+  rpa->gen.SetSoftSC(p_dataread->Get<int>("SOFT_SPIN_CORRELATIONS",0));
+  std::string hdstr(p_dataread->GetStringNormalisingNoneLikeValues("HARD_DECAYS","None"));
+  int defhsc = !(hdstr=="None");
+  rpa->gen.SetHardSC(p_dataread->Get<int>("HARD_SPIN_CORRELATIONS",defhsc));
   exh->AddTerminatorObject(this);
 }
 
 void Initialization_Handler::SetFileNames()
 {
-  p_dataread    = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
+  p_dataread    = new Default_Reader;
   p_dataread->SetInputPath(m_path);
   p_dataread->SetInputFile(m_file);
   std::string fname(m_file);
   if (fname.find("|")!=std::string::npos) 
     fname=fname.substr(0,fname.find("|"));
-  m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",fname+"|(model){|}(model)");
-  m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",fname+"|(beam){|}(beam)");
-  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",fname+"|(isr){|}(isr)");
-  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
-  m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",fname+"|(me){|}(me)");
-  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",fname+"|(mi){|}(mi)");
-  m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",fname+"|(shower){|}(shower)");
-  m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",fname+"|(beam){|}(beam)");
-  m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
-  m_softcollisiondat = p_dataread->GetValue<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
-  m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
-  m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
-  m_processesdat     = p_dataread->GetValue<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
-  m_selectordat      = p_dataread->GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
-  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",FileExists("Analysis.dat")?
+  m_modeldat         = p_dataread->Get<string>("MODEL_DATA_FILE",fname+"|(model){|}(model)");
+  m_beamdat          = p_dataread->Get<string>("BEAM_DATA_FILE",fname+"|(beam){|}(beam)");
+  m_isrdat[0]        = p_dataread->Get<string>("ISR_DATA_FILE",fname+"|(isr){|}(isr)");
+  m_isrdat[1]        = p_dataread->Get<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
+  m_medat            = p_dataread->Get<string>("ME_DATA_FILE",fname+"|(me){|}(me)");
+  m_midat            = p_dataread->Get<string>("MI_DATA_FILE",fname+"|(mi){|}(mi)");
+  m_showerdat        = p_dataread->Get<string>("SHOWER_DATA_FILE",fname+"|(shower){|}(shower)");
+  m_beamremnantdat   = p_dataread->Get<string>("BEAMREMNANT_DATA_FILE",fname+"|(beam){|}(beam)");
+  m_fragmentationdat = p_dataread->Get<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_softcollisiondat = p_dataread->Get<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
+  m_hadrondecaysdat  = p_dataread->Get<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_softphotonsdat   = p_dataread->Get<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_processesdat     = p_dataread->Get<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
+  m_selectordat      = p_dataread->Get<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
+  m_analysisdat      = p_dataread->Get<string>("ANALYSIS_DATA_FILE",FileExists("Analysis.dat")?
 						    "Analysis.dat":fname+"|(analysis){|}(analysis)");
-  std::string integrationdat = p_dataread->GetValue<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
-  std::string momentadat     = p_dataread->GetValue<string>("MOMENTA_DATA_FILE",fname+"|(momenta){|}(momenta)");
+  std::string integrationdat = p_dataread->Get<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
+  std::string momentadat     = p_dataread->Get<string>("MOMENTA_DATA_FILE",fname+"|(momenta){|}(momenta)");
   if (FileExists("Momenta.dat")) momentadat="Momenta.dat";
 
   rpa->gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
@@ -179,7 +178,7 @@ Initialization_Handler::~Initialization_Handler()
 void Initialization_Handler::CheckVersion()
 {
   std::vector<std::string> versioninfo;
-  p_dataread->VectorFromFile(versioninfo,"SHERPA_VERSION");
+  p_dataread->ReadVector(versioninfo,"SHERPA_VERSION");
   if (!versioninfo.size()) return;
   std::string currentversion(ToString(SHERPA_VERSION)+"."
                                       +ToString(SHERPA_SUBVERSION));
@@ -229,11 +228,11 @@ bool Initialization_Handler::CompareVersions
 
 void Initialization_Handler::LoadLibraries() const
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputFile(m_path+m_file);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   std::vector<std::string> ldadd;
-  if (!read.VectorFromFile(ldadd,"SHERPA_LDADD")) return;
+  if (!reader.ReadVector(ldadd,"SHERPA_LDADD")) return;
   for (size_t i(0);i<ldadd.size();++i) {
     if (!s_loader->LoadLibrary(ldadd[i])) {
       THROW(fatal_error,"Cannot load extra library.");
@@ -244,52 +243,51 @@ void Initialization_Handler::LoadLibraries() const
 
 void Initialization_Handler::ShowParameterSyntax()
 {
-  Data_Reader read(" ",";","!","=");
-  int helpi(0);
-  if (!read.ReadFromFile(helpi,"SHOW_ME_GENERATORS")) helpi=0;
+  Default_Reader reader;
+  int helpi(reader.Get("SHOW_ME_GENERATORS", 0));
   if (helpi>0) {
     msg->SetLevel(2);
     PHASIC::ME_Generator_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_PS_GENERATORS")) helpi=0;
+  helpi = reader.Get("SHOW_PS_GENERATORS", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     PHASIC::Channel_Generator::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_NLOMC_GENERATORS")) helpi=0;
+  helpi = reader.Get("SHOW_NLOMC_GENERATORS", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     PDF::NLOMC_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_SHOWER_GENERATORS")) helpi=0;
+  helpi = reader.Get("SHOW_SHOWER_GENERATORS", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     PDF::Shower_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_SCALE_SYNTAX")) helpi=0;
+  helpi = reader.Get("SHOW_SCALE_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     if (helpi&1) PHASIC::Scale_Setter_Base::ShowSyntax(helpi);
     if (helpi&2) PHASIC::Core_Scale_Setter::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_SELECTOR_SYNTAX")) helpi=0;
+  helpi = reader.Get("SHOW_SELECTOR_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     PHASIC::Selector_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_MODEL_SYNTAX")) helpi=0;
+  helpi = reader.Get("SHOW_MODEL_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     MODEL::Model_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_ANALYSIS_SYNTAX")) helpi=0;
+  helpi = reader.Get("SHOW_ANALYSIS_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     InitializeTheAnalyses();
@@ -297,7 +295,7 @@ void Initialization_Handler::ShowParameterSyntax()
       (*it)->ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_VARIABLE_SYNTAX")) helpi=0;
+  helpi = reader.Get("SHOW_VARIABLE_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
     ATOOLS::Variable_Base<double>::ShowVariables(helpi);
@@ -356,8 +354,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   
   if (m_mode==eventtype::StandardPerturbative) {
   std::string eventtype;
-  if (!p_dataread->ReadFromFile(eventtype,"EVENT_TYPE"))
-    eventtype="StandardPerturbative";
+  eventtype = p_dataread->Get<std::string>("EVENT_TYPE", "StandardPerturbative");
   if (eventtype=="StandardPerturbative") 
     m_mode=eventtype::StandardPerturbative;
   else if (eventtype=="MinimumBias") {
@@ -475,15 +472,15 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
 bool Initialization_Handler::InitializeTheIO()
 {
-  std::string outpath=p_dataread->GetValue<std::string>("EVT_FILE_PATH",".");
-  std::string format=p_dataread->GetValue<std::string>("EVENT_OUTPUT","None");
+  std::string outpath=p_dataread->Get<std::string>("EVT_FILE_PATH",".");
+  std::string format=p_dataread->GetStringNormalisingNoneLikeValues("EVENT_OUTPUT","None");
   std::vector<std::string> outputs;
   Data_Reader readline(",",";","#","");
   std::string stag(rpa->gen.Variable("RNG_SEED"));
   while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
   readline.AddTag("RNG_SEED",stag);
   readline.SetString(format);
-  readline.VectorFromString(outputs);
+  readline.StringVectorFromStringNormalisingNoneLikeValues(outputs);
   for (size_t i=0; i<outputs.size(); ++i) {
     if (outputs[i]=="None") continue;
     std::string outfile;
@@ -511,12 +508,10 @@ bool Initialization_Handler::InitializeTheIO()
 bool Initialization_Handler::InitializeTheModel()
 {
   if (p_model) delete p_model;
-  Data_Reader read(" ",";","!","=");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_modeldat);
-  std::string name;
-  if (!read.ReadFromFile(name,"MODEL")) name="SM";
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_modeldat);
+  std::string name(reader.Get<std::string>("MODEL", "SM"));
   p_model=Model_Base::Model_Getter_Function::
     GetObject(name,Model_Arguments(m_path,m_modeldat,true));
   if (p_model==NULL) {
@@ -534,12 +529,10 @@ bool Initialization_Handler::InitializeTheModel()
 bool Initialization_Handler::InitializeTheBeams()
 {
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(m_path);
-  dataread.SetInputFile(m_beamdat);
-  p_beamspectra        = new Beam_Spectra_Handler(&dataread);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_beamdat);
+  p_beamspectra        = new Beam_Spectra_Handler(&reader);
   p_beamspectra->Output();
   
   return 1;
@@ -547,11 +540,9 @@ bool Initialization_Handler::InitializeTheBeams()
 
 bool Initialization_Handler::InitializeThePDFs()
 {
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(m_path);
-  dataread.SetInputFile(m_isrdat[0]);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_isrdat[0]);
 
   // load PDF libraries
   std::string defset[2];
@@ -571,13 +562,15 @@ bool Initialization_Handler::InitializeThePDFs()
     }
     std::vector<std::string> pdflibs;
     std::string mpilib, beamlib;
-    dataread.VectorFromFile(pdflibs,"PDF_LIBRARY");
+    reader.ReadStringVectorNormalisingNoneLikeValues(pdflibs,"PDF_LIBRARY");
     if (pdflibs.size()==0) m_pdflibs.insert(deflib);
     for (size_t i(0);i<pdflibs.size();++i) m_pdflibs.insert(pdflibs[i]);
-    if (dataread.ReadFromFile(mpilib,"PDF_LIBRARY_MPI"))
+    if (reader.Read<std::string>(mpilib,"PDF_LIBRARY_MPI","")) {
       m_pdflibs.insert(mpilib);
-    if (dataread.ReadFromFile(beamlib,"PDF_LIBRARY_"+ToString(beam+1)))
+    }
+    if (reader.Read<std::string>(beamlib,"PDF_LIBRARY_"+ToString(beam+1),"")) {
       m_pdflibs.insert(beamlib);
+    }
   }
   if (Variations::NeedsLHAPDF6Interface(m_path)) {
     m_pdflibs.insert("LHAPDFSherpa");
@@ -599,8 +592,7 @@ bool Initialization_Handler::InitializeThePDFs()
   }
 
   // PDF set listing output
-  int helpi(0);
-  if (!dataread.ReadFromFile(helpi,"SHOW_PDF_SETS")) helpi=0;
+  int helpi(reader.Get("SHOW_PDF_SETS", 0));
   if (helpi>0) {
     msg->SetLevel(2);
     PDF::PDF_Base::ShowSyntax(helpi);
@@ -612,33 +604,33 @@ bool Initialization_Handler::InitializeThePDFs()
     isr::id id=(isr::id)(i+1);
     if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
       delete m_isrhandlers[id]; 
-    dataread.SetInputFile(m_isrdat[i]);
+    reader.SetInputFile(m_isrdat[i]);
     PDF_Base * pdfbase;
     ISR_Base ** isrbases = new ISR_Base*[2];
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
       int defaultflav(p_beamspectra->GetBeam(j)->Bunch());
-      int flav = dataread.GetValue<int>("BUNCH_"+ToString(j+1),defaultflav);
+      int flav = reader.Get<int>("BUNCH_"+ToString(j+1),defaultflav);
       m_bunch_particles[j] = Flavour((kf_code)abs(flav));
       if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
-      std::string set = dataread.GetValue<std::string>("PDF_SET",defset[j]);
+      std::string set = reader.Get<std::string>("PDF_SET",defset[j]);
       std::string specialset;
-      if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
+      if (reader.Read<std::string>(specialset,"PDF_SET_"+ToString(j+1), ""))
 	set=specialset;
-      int member = dataread.GetValue<int>("PDF_SET_VERSION",0);
-      member = dataread.GetValue<int>("PDF_SET_MEMBER",member);
-      member = dataread.GetValue<int>("PDF_SET_VERSION_"+ToString(j+1),member);
-      member = dataread.GetValue<int>("PDF_SET_MEMBER_"+ToString(j+1),member);
+      int member = reader.Get<int>("PDF_SET_VERSION",0);
+      member = reader.Get<int>("PDF_SET_MEMBER",member);
+      member = reader.Get<int>("PDF_SET_VERSION_"+ToString(j+1),member);
+      member = reader.Get<int>("PDF_SET_MEMBER_"+ToString(j+1),member);
       if (id==isr::hard_subprocess) {
         std::string mpiset;
-        if (dataread.ReadFromFile(mpiset,"PDF_SET_MPI")) {
+        if (reader.Read<std::string>(mpiset,"PDF_SET_MPI", "")) {
           set=mpiset;
-          member=dataread.GetValue<int>("PDF_SET_MPI_VERSION",0);
-          member=dataread.GetValue<int>("PDF_SET_MPI_MEMBER",member);
+          member=reader.Get<int>("PDF_SET_MPI_VERSION",0);
+          member=reader.Get<int>("PDF_SET_MPI_MEMBER",member);
         }
       }
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-        (set,PDF_Arguments(m_bunch_particles[j],&dataread, j, set, member));
+        (set,PDF_Arguments(m_bunch_particles[j],&reader, j, set, member));
       if (i==0) rpa->gen.SetPDF(j,pdfbase);
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
@@ -654,8 +646,8 @@ bool Initialization_Handler::InitializeThePDFs()
       }
       ATOOLS::rpa->gen.SetBunch(m_bunch_particles[j],j);
     }
-    m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",1e-10);
-    m_bunch_splimits[1] = dataread.GetValue<double>("ISR_SMAX",1.);
+    m_bunch_splimits[0] = reader.Get<double>("ISR_SMIN",1e-10);
+    m_bunch_splimits[1] = reader.Get<double>("ISR_SMAX",1.);
     m_isrhandlers[id] = new ISR_Handler(isrbases);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
@@ -674,12 +666,11 @@ bool Initialization_Handler::InitializeThePDFs()
 
 bool Initialization_Handler::InitializeTheHardDecays()
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_medat);
-  std::string decays=dr.GetValue<string>("HARD_DECAYS","None");
-  if (decays=="Off" || decays=="None" || decays=="0") return true;
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_medat);
+  std::string decays=reader.GetStringNormalisingNoneLikeValues("HARD_DECAYS","None");
+  if (decays=="None") return true;
 
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_medat);
@@ -761,19 +752,17 @@ bool Initialization_Handler::InitializeTheFragmentation()
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_hadrondecaysdat);
-  std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
-  if (frag=="Off" || frag=="None" || frag=="0") return true;
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_hadrondecaysdat);
+  std::string frag=reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", string("Ahadic"));
+  if (frag=="None") return true;
 
   std::string defdecmodel("Hadrons");
   if (frag=="Lund") defdecmodel="Lund";
-  string decmodel = dr.GetValue<string>("DECAYMODEL",defdecmodel);
+  string decmodel = reader.GetStringNormalisingNoneLikeValues("DECAYMODEL",defdecmodel);
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
-  if (decmodel=="Off" || decmodel=="None" || decmodel=="0") return true;
+  if (decmodel=="None") return true;
   else if (decmodel==std::string("Hadrons")) {
     as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(m_path,m_hadrondecaysdat);
@@ -785,7 +774,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
     if (p_fragmentation->GetLundInterface()==NULL) {
-      string lfile = dr.GetValue<string>("LUND_FILE","Lund.dat");
+      string lfile = reader.Get<string>("LUND_FILE","Lund.dat");
       lund = new Lund_Interface(m_path,lfile);
     }
     else lund = p_fragmentation->GetLundInterface();
@@ -817,11 +806,10 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
+  std::string outpath=p_dataread->Get<std::string>("ANALYSIS_OUTPUT","Analysis/");
   std::vector<std::string> analyses;
-  p_dataread->VectorFromFile(analyses,"ANALYSIS");
+  p_dataread->ReadStringVectorNormalisingNoneLikeValues(analyses, "ANALYSIS");
   for (size_t i=0; i<analyses.size(); ++i) {
-    if (analyses[i]=="0") analyses[i]="None";
     if (analyses[i]=="1") analyses[i]="Internal";
     if (analyses[i]=="None") continue;
     if (analyses[i]=="Internal")
@@ -852,9 +840,7 @@ bool Initialization_Handler::InitializeTheReweighting()
   if (p_variations) {
     delete p_variations;
   }
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
+  Default_Reader dataread;
   dataread.SetInputPath(m_path);
   Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(&dataread);
@@ -868,8 +854,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
-  ATOOLS::Data_Reader read(" ",";","!","=");
-  ATOOLS::msg->SetLevel(read.GetValue<int>("INT_OUTPUT",ATOOLS::msg->Level()));
+  Default_Reader reader;
+  ATOOLS::msg->SetLevel(reader.Get<int>("INT_OUTPUT",ATOOLS::msg->Level()));
   as->SetActiveAs(isr::hard_process);
   int ok = p_mehandler->CalculateTotalXSecs();
   if (ok) {
@@ -885,37 +871,33 @@ bool Initialization_Handler::CalculateTheHardProcesses()
 
 void Initialization_Handler::SetGlobalVariables() 
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_medat);
-  double sf(dr.GetValue<double>("SCALE_FACTOR",1.));
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_medat);
+  double sf(reader.Get<double>("SCALE_FACTOR",1.));
   rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR",
-		      ToString(sf*dr.GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.0)));
+		      ToString(sf*reader.Get<double>("FACTORIZATION_SCALE_FACTOR",1.0)));
   rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR",
-		      ToString(sf*dr.GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.0)));
+		      ToString(sf*reader.Get<double>("RENORMALIZATION_SCALE_FACTOR",1.0)));
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
+  int cmode=reader.Get<int>("METS_CLUSTER_MODE",0);
   rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
   if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
-  Data_Reader sdr(" ",";","!","=");
-  sdr.AddComment("#");
-  sdr.AddWordSeparator("\t");
-  sdr.SetInputPath(m_path);
-  sdr.SetInputFile(m_showerdat);
-  int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",1);
-  int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  int scs = sdr.GetValue<int>("CSS_SCALE_SCHEME",0);
-  int svmode = sdr.GetValue<double>("CSS_SCALE_VARIATION_SCHEME",1);
-  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
-  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",2.00);
-  double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",1.0);
-  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.5);
-  double as_var_fac = sdr.GetValue<double>("CSS_SCALE_FACTOR",1.);
-  double mth = sdr.GetValue<double>("CSS_MASS_THRESHOLD",0.0);
+  Default_Reader css_reader;
+  css_reader.SetInputPath(m_path);
+  css_reader.SetInputFile(m_showerdat);
+  int evol          = css_reader.Get<int>("CSS_EVOLUTION_SCHEME",1);
+  int kfmode        = css_reader.Get<int>("CSS_KFACTOR_SCHEME",1);
+  int scs           = css_reader.Get<int>("CSS_SCALE_SCHEME",0);
+  int svmode        = css_reader.Get<double>("CSS_SCALE_VARIATION_SCHEME",1);
+  double k0sqf      = css_reader.Get<double>("CSS_FS_PT2MIN",1.0);
+  double k0sqi      = css_reader.Get<double>("CSS_IS_PT2MIN",2.00);
+  double fs_as_fac  = css_reader.Get<double>("CSS_FS_AS_FAC",1.0);
+  double is_as_fac  = css_reader.Get<double>("CSS_IS_AS_FAC",0.5);
+  double as_var_fac = css_reader.Get<double>("CSS_SCALE_FACTOR",1.);
+  double mth        = css_reader.Get<double>("CSS_MASS_THRESHOLD",0.0);
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
   rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
   rpa->gen.SetVariable("CSS_SCALE_SCHEME",ToString(scs));
@@ -1061,15 +1043,13 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   m_path="";
 
   std::vector<std::string> helpsv2;
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.AddComment("#");
+  Data_Reader reader;
   // Add parameters from Run.dat to command line
   // (this makes it possible to overwrite particle properties in Run.dat)
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_file);
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   std::vector<std::vector<std::string> > helpsvv;
-  if (dr.MatrixFromFile(helpsvv,"")) {
+  if (reader.MatrixFromFile(helpsvv,"")) {
     size_t oldsize(helpsv2.size());
     helpsv2.resize(oldsize+helpsvv.size());
     for (size_t i(0);i<helpsvv.size();++i) {

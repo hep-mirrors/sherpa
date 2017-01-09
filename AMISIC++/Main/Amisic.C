@@ -2,7 +2,7 @@
 
 #include "AMISIC++/Model/Simple_Chain.H"
 #include "AMISIC++/Model/Simple_String.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -38,30 +38,24 @@ Amisic::~Amisic()
 bool Amisic::Initialize()
 {
   if (InputPath()=="" && InputFile()=="") return false;
-  Data_Reader *reader = new Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile());
+  Default_Reader reader;
+  reader.SetInputPath(InputPath());
+  reader.SetInputFile(InputFile());
   std::vector<std::string> model;
-  if (!reader->VectorFromFile(model,"HARD_MODEL_NAME")) {
+  if (!reader.ReadStringVectorNormalisingNoneLikeValues(model,"HARD_MODEL_NAME")) {
     model.push_back("Simple_Chain");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
   SelectHardModel(model[0]);
-  if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME")) {
+  if (!reader.ReadStringVectorNormalisingNoneLikeValues(model,"SOFT_MODEL_NAME")) {
     model.push_back("None");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
   SelectSoftModel(model[0]);
-  std::string file;
-  if (!reader->ReadFromFile(file,"HARD_MODEL_FILE")) file=InputFile();
   p_hardbase->SetInputPath(InputPath());
-  p_hardbase->SetInputFile(file);
-  if (!reader->ReadFromFile(file,"SOFT_MODEL_FILE")) file=InputFile();
+  p_hardbase->SetInputFile(reader.Get("HARD_MODEL_FILE", InputFile()));
   p_softbase->SetInputPath(InputPath());
-  p_softbase->SetInputFile(file);
-  delete reader;
+  p_softbase->SetInputFile(reader.Get("SOFT_MODEL_FILE", InputFile()));
   bool success=true;
   success=success&&p_hardbase->Initialize();
   success=success&&p_softbase->Initialize();

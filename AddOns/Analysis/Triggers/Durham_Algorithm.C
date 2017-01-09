@@ -1,6 +1,6 @@
 #include "AddOns/Analysis/Triggers/Durham_Algorithm.H"
 #include "ATOOLS/Phys/Particle_List.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 #include <iomanip>
@@ -229,9 +229,10 @@ double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
 {
   static int das(-1);
   if (das<0) {
-    Data_Reader read(" ",";","!","=");
-    if (!read.ReadFromFile(das,"DURHAM_SCHEME")) das=0;
-    else msg_Info()<<METHOD<<"(): Setting durham scheme mode "<<das<<".\n";
+    Default_Reader reader;
+    if (reader.Read(das, "DURHAM_SCHEME", 0)) {
+      msg_Info()<<METHOD<<"(): Setting durham scheme mode "<<das<<".\n";
+    }
   }
   if (das==0) return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
   return 2.*Min(p1.PSpat2(),p2.PSpat2())*(1.-DCos12(p1,p2))/m_sprime;

@@ -2,7 +2,7 @@
 #include "AMEGIC++/String/String_Output.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
@@ -247,8 +247,8 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
   static int s_mode(-1);
   if (s_mode<0) {
-    Data_Reader reader(" ",";","#","=");
-    s_mode=reader.GetValue<int>("AMEGIC_LIBRARY_MODE",1);
+    Default_Reader reader;
+    s_mode = reader.Get<int>("AMEGIC_LIBRARY_MODE", 1);
   }  
   s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
   if (s_mode==1) {

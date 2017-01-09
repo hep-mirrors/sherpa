@@ -6,7 +6,7 @@
 #include "DIRE/Tools/Amplitude.H"
 
 namespace ATOOLS {
-  class Data_Reader;
+  class Default_Reader;
 }
 namespace MODEL {
   class Model_Base;
@@ -58,9 +58,9 @@ namespace DIRE {
 
     ~Shower();
 
-    bool Init(MODEL::Model_Base *const model,
-	      PDF::ISR_Handler *const isr,
-	      ATOOLS::Data_Reader *const read);
+    bool Init(MODEL::Model_Base *const,
+	      PDF::ISR_Handler *const,
+	      ATOOLS::Default_Reader *const);
 
     void SetMS(ATOOLS::Mass_Selector *const ms);
 

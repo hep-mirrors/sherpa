@@ -21,7 +21,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
@@ -96,17 +96,13 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
-  else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
-  if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
-  else msg_Info()<<METHOD<<"(): Set K-factor mode "<<m_kfacmode<<".\n";
-  if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
-  else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
-  if (!read.ReadFromFile(m_rsscale,"PP_RS_SCALE")) m_rsscale="";
-  else msg_Info()<<METHOD<<"(): Set RS scale '"<<m_rsscale<<"'.\n";
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_hpsmode  = reader.Get("PP_HPSMODE", 8, "H event shower mode", METHOD);
+  m_kfacmode = reader.Get("PP_KFACTOR_MODE", 0, "K-factor mode", METHOD);
+  m_fomode   = reader.Get("PP_FOMODE", 0, "fixed order mode", METHOD);
+  m_rsscale  = reader.Get<std::string>("PP_RS_SCALE", "", "RS scale", METHOD);
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);

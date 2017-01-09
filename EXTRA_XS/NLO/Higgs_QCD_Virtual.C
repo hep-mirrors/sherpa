@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -70,8 +70,8 @@ operator()(const Process_Info &pi) const
       for (size_t i=2; i<fl.size(); ++i) {
         if (fl[i].Strong()) return NULL;
       }
-      Data_Reader read(" ",";","#","=");
-      int con=read.GetValue<int>("HNLO_COEFF_MODE",0);
+      Default_Reader reader;
+      int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
       return new Higgs_QCD_Virtual(pi, fl, con);
     }
   }

@@ -4,7 +4,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #ifdef USING__PYTHIA
@@ -22,13 +22,12 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund,
   Decay_Handler_Base(), p_lund(lund)
 {
 #ifdef USING__PYTHIA
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(path);
-  dr.SetInputFile(fragfile);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(fragfile);
 
-  m_qedmode=dr.GetValue<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
-  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
+  m_qedmode=reader.Get<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
+  double max_propertime = reader.Get<double>("MAX_PROPER_LIFETIME",-1.0);
 
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {

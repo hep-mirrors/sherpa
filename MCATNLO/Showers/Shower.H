@@ -2,7 +2,7 @@
 #define MCATNLO_Showers_Shower_H
 
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "MCATNLO/Showers/Sudakov.H"
 #include "MCATNLO/Tools/Singlet.H"
@@ -57,8 +57,8 @@ namespace MCATNLO {
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       const int mode);
  public:
-    Shower(PDF::ISR_Handler * isr,const int qed,
-	   ATOOLS::Data_Reader *const dataread);
+    Shower(PDF::ISR_Handler *,const int qed,
+	   ATOOLS::Default_Reader *const);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     void SetMS(ATOOLS::Mass_Selector *const ms);

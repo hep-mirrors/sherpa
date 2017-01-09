@@ -15,7 +15,7 @@ namespace MODEL {
 }
 
 namespace ATOOLS {
-  class Data_Reader;
+  class Default_Reader;
   class NLO_subevtlist;
 }
 
@@ -44,7 +44,7 @@ namespace SHERPA {
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
 
-    void SetDecayMasses(ATOOLS::Data_Reader *const dr);
+    void SetDecayMasses(ATOOLS::Default_Reader *const);
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void InitializeOffshellDecays(PHASIC::Decay_Table* dt);
     void CustomizeDecayTables();

@@ -9,7 +9,7 @@
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
@@ -81,12 +81,10 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa->GetPath());
-  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int size=dr.GetValue<std::string>("VHAAG_AUTOOPT","On")=="On"?1:2;
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  int size = reader.IsDisabled("VHAAG_AUTOOPT", true) ? 2 : 1;
 #ifdef USING__MPI
   size=MPI::COMM_WORLD.Get_size();
 #endif

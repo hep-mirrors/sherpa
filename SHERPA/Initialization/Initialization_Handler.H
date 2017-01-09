@@ -19,7 +19,7 @@
 
 namespace ATOOLS {
 
-  class Data_Reader;
+  class Default_Reader;
   class Variations;
 
 }
@@ -52,7 +52,7 @@ namespace SHERPA {
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
 
-    ATOOLS::Data_Reader *p_dataread;
+    ATOOLS::Default_Reader *p_dataread;
 
     eventtype::code m_mode;
     bool m_savestatus;

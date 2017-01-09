@@ -1,5 +1,5 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -24,16 +24,15 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
 					       PDF::ISR_Handler *isr):
   m_dir(_dir), m_file(_file), m_mode(0), p_shrimps(NULL), p_cluster(NULL)
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.AddIgnore("[");
-  dr.AddIgnore("]");
-  dr.SetInputPath(m_dir);
-  dr.SetInputFile(m_file);
-  m_softcollisionmodel=dr.GetValue<string>("SOFT_COLLISIONS",string("Off"));
+  Default_Reader reader;
+  reader.AddIgnore("[");
+  reader.AddIgnore("]");
+  reader.SetInputPath(m_dir);
+  reader.SetInputFile(m_file);
+  m_softcollisionmodel=reader.Get<string>("SOFT_COLLISIONS",string("Off"));
   if (m_softcollisionmodel==string("Shrimps")) {
-    m_sfile   = dr.GetValue<string>("SHRIMPS_FILE",string("Shrimps.dat"));
-    p_shrimps = new Shrimps(&dr,beam,isr);
+    m_sfile   = reader.Get<string>("SHRIMPS_FILE",string("Shrimps.dat"));
+    p_shrimps = new Shrimps(&reader,beam,isr);
     p_cluster = p_shrimps->GetClusterAlgorithm();
     p_cluster->SetShowerParams(p_shrimps->ShowerMode(),
 			       p_shrimps->ShowerMinKT2());

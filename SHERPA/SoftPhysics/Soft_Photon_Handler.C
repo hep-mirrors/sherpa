@@ -1,5 +1,5 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -20,17 +20,13 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile,
   m_photonsadded(false), m_name(""),
   p_yfs(NULL), p_clusterer(NULL), p_mehandler(meh)
 {
-  Data_Reader * dataread = new Data_Reader(" ",";","!","=");
-  dataread->AddComment("#");
-  dataread->AddWordSeparator("\t");
-  dataread->SetInputPath(path);
-  dataread->SetInputFile(datfile);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(datfile);
 
-  p_yfs       = new PHOTONS::Photons(dataread);
-  p_clusterer = new Resonance_Finder(dataread,meh);
+  p_yfs       = new PHOTONS::Photons(&reader);
+  p_clusterer = new Resonance_Finder(&reader,meh);
   m_name      = p_yfs->Name();
-
-  delete dataread;
 }
 
 Soft_Photon_Handler::~Soft_Photon_Handler() 

@@ -98,11 +98,11 @@ void small_sherpa_init(int argc, char *argv[])
 
   AHADIC::Hadron_Init hi;
   hi.Init();
-  Data_Reader dr;
-  hi.OverWriteProperties(dr);
+  Default_Reader reader;
+  hi.OverWriteProperties(reader);
   ATOOLS::OutputHadrons(std::cout);
 
-  m_analysis = dr.GetValue<int>("ANALYSIS",1);
+  m_analysis = reader.GetValue<int>("ANALYSIS",1);
 
   msg->SetModifiable(true);
 }

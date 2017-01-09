@@ -1,7 +1,7 @@
 #include "Higgs_Virtual.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 #include "Wrappers.H"
 #include "Ahiggs.h"
@@ -197,12 +197,12 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Higgs") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype==nlo_type::loop) {
-    Data_Reader read(" ",";","#","=");
-    int io=read.GetValue<int>("HIGGS_INTERFERENCE_ONLY",0);
-    int mode=read.GetValue<int>("HIGGS_INTERFERENCE_MODE",7);
-    int spin=read.GetValue<int>("HIGGS_INTERFERENCE_SPIN",0);
-    double kg=read.GetValue<double>("HIGGS_INTERFERENCE_KAPPAG",1.0);
-    double kq=read.GetValue<double>("HIGGS_INTERFERENCE_KAPPAQ",1.0);
+    Default_Reader reader;
+    int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
+    int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);
+    int spin = reader.Get<int>("HIGGS_INTERFERENCE_SPIN", 0);
+    double kg = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAG", 1.0);
+    double kq = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAQ", 1.0);
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl.size()==4) {
       if (((fl[0].IsGluon() && fl[1].IsGluon()) ||

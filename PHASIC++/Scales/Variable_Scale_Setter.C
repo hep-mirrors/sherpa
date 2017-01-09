@@ -5,7 +5,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
@@ -73,8 +73,10 @@ Variable_Scale_Setter::Variable_Scale_Setter
     core=tag.substr(0,pos);
     tag=tag.substr(pos+1);
   }
-  Data_Reader read(" ",";","!","=");
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
+  if (core == "") {
+    Default_Reader reader;
+    core = reader.Get<std::string>("CORE_SCALE", "Default");
+  }
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   while (true) {

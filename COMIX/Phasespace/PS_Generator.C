@@ -15,7 +15,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 
@@ -33,16 +33,20 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
   m_thmass(0.0), m_chmass(0.0)
 {
-  Data_Reader read(" ",";","!","=");
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (!read.ReadFromFile(m_itmin,"CDXS_ITMIN")) m_itmin=5000;
-  else msg_Info()<<METHOD<<"(): Set iteration minimum "<<m_itmin<<".\n";
-  if (!read.ReadFromFile(m_itmax,"CDXS_ITMAX")) m_itmax=50000;
-  else msg_Info()<<METHOD<<"(): Set iteration maximum "<<m_itmax<<".\n";
-  if (!read.ReadFromFile(m_ecmode,"CDXS_ECMODE")) m_ecmode=2;
-  else msg_Info()<<METHOD<<"(): Set extra channel mode "<<m_ecmode<<".\n";
-  if (!read.ReadFromFile(m_chmass,"CDXS_PS_CHTH")) m_chmass=0.01;
-  else msg_Info()<<METHOD<<"(): Set channel mass threshold "<<m_chmass<<".\n";
+  Default_Reader reader;
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  if (reader.Read<size_t>(m_itmin,"CDXS_ITMIN", 5000)) {
+    msg_Info() << METHOD << "(): Set iteration minimum " << m_itmin << "." << std::endl;
+  }
+  if (reader.Read<size_t>(m_itmax,"CDXS_ITMAX", 50000)) {
+    msg_Info() << METHOD << "(): Set iteration maximum " << m_itmax << "." << std::endl;
+  }
+  if (reader.Read(m_ecmode,"CDXS_ECMODE", 2)) {
+    msg_Info() << METHOD << "(): Set extra channel mode " << m_ecmode << "." << std::endl;
+  }
+  if (reader.Read(m_chmass,"CDXS_PS_CHTH", 0.01)) {
+    msg_Info() << METHOD << "(): Set channel mass threshold " << m_chmass << "." << std::endl;
+  }
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSC();

@@ -5,7 +5,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 #include <map>
 
@@ -83,18 +83,18 @@ MINLO_KFactor_Setter::MINLO_KFactor_Setter
 {
   p_minlo=dynamic_cast<MINLO_Scale_Setter*>(p_proc->ScaleSetter());
   if (p_minlo==NULL) THROW(fatal_error,"Must use MINLO scale");
-  Data_Reader read(" ",";","#","=");
-  int mode(read.GetValue<int>("MINLO_SUDAKOV_MODE",3));
+  Default_Reader reader;
+  int mode(reader.Get<int>("MINLO_SUDAKOV_MODE",3));
   if (p_proc->Info().m_fi.m_nloqcdtype==0) mode&=~2;
-  double prec(read.GetValue<double>("MINLO_SUDAKOV_PRECISION",1.0e-4));
+  double prec(reader.Get<double>("MINLO_SUDAKOV_PRECISION",1.0e-4));
   m_suds[Flavour(kf_gluon)] = new Sudakov(Flavour(kf_gluon),mode,prec);
   for (size_t i(0);i<=6;++i) {
     m_suds[Flavour(i,0)] = new Sudakov(Flavour(i,0),mode,prec);
     m_suds[Flavour(i,1)] = new Sudakov(Flavour(i,1),mode,prec);
   }
-  if (read.GetValue<int>("MINLO_SELF_TEST",0)) {
-    int fl(read.GetValue<int>("MINLO_SELF_TEST_FLAV",21));
-    double ecm2(read.GetValue<double>("MINLO_SELF_TEST_ECM",91.2));
+  if (reader.Get<int>("MINLO_SELF_TEST",0)) {
+    int fl(reader.Get<int>("MINLO_SELF_TEST_FLAV",21));
+    double ecm2(reader.Get<double>("MINLO_SELF_TEST_ECM",91.2));
     std::ofstream q(("R2_"+ToString(fl)+"_"
 		     +ToString(ecm2)+".dat").c_str(),std::ios::trunc);
     ecm2=sqr(ecm2);

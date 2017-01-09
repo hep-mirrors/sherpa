@@ -191,7 +191,7 @@ double CS_Cluster_Definitions::GetX
 (const Cluster_Leg *l,Splitting_Function_Base *const sf) const
 {
   int beam((l->Id()&1)?0:1);
-  if (l->Id()&3==0) THROW(fatal_error,"Invalid call");
+  if ((l->Id()&3)==0) THROW(fatal_error,"Invalid call");
   if (sf) sf->Lorentz()->SetBeam(beam);
   return -p_shower->ISR()->CalcX(l->Mom());
 }

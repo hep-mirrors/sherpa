@@ -1,6 +1,6 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
@@ -91,8 +91,8 @@ void C3_12::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 C3_12::C3_12(int nin,int nout,Flavour* fl,Integration_Info * const info)
        : Single_Channel(nin,nout,fl)
 {
-  Data_Reader read(" ",";","#","=");
-  m_onshell=read.GetValue<int>("HIGGS_ON_SHELL",0);
+  Default_Reader reader;
+  m_onshell=reader.Get<int>("HIGGS_ON_SHELL", 0);
   name = std::string("C3_12");
   rannum = 5-m_onshell;
   rans  = new double[rannum];

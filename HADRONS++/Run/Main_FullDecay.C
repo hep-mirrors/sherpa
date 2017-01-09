@@ -20,16 +20,16 @@ void InitialiseGenerator(int argc, char *argv[])
   p_sherpa->InitializeTheRun(argc,argv);
   p_sherpa->InitializeTheEventHandler();
 
-  Data_Reader read(" ",";","!","=");
+  Default_Reader reader;
   int mother_kf(0);
-  if (!read.ReadFromFile(mother_kf,"DECAYER")) {
+  if (!reader.Read(mother_kf, "DECAYER", mother_kf)) {
     cout<<"Usage: ./FullDecay DECAYER=<PDG_CODE> [...]"<<endl;
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
   mother_flav=Flavour(mother_kf);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
-  m_analysis = read.GetValue<int>("ANALYSIS",1);
+  m_analysis = reader.Get<int>("ANALYSIS", 1);
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 

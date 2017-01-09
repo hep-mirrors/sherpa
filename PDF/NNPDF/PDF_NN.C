@@ -47,7 +47,7 @@ namespace PDF {
 
 #include "NNPDFDriver.h"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -60,11 +60,8 @@ PDF_NNPDF::PDF_NNPDF
  const std::string &set,int member, int prefix):
   m_file(bfile), m_anti(1)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  m_path=read.GetValue<string>("NNPDF_GRID_PATH",
-                               rpa->gen.Variable("SHERPA_SHARE_PATH"));
+  Default_Reader reader;
+  m_path = reader.Get<string>("NNPDF_GRID_PATH", rpa->gen.Variable("SHERPA_SHARE_PATH"));
   m_set=set;
   m_member=member;
   m_prefix=prefix;

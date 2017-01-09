@@ -4,7 +4,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <iostream>
@@ -294,12 +294,11 @@ void ATOOLS::Random::PrepareTerminate()
 
 bool Random::InitExternal(const std::string &path,const std::string &file)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(path);
-  read.SetInputFile(file);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
   std::string name;
-  if (!read.ReadFromFile(name,"EXTERNAL_RNG")) return false;
+  if (!reader.Read(name, "EXTERNAL_RNG", name)) return false;
   p_external = RNG_Getter::GetObject(name,RNG_Key());
   if (p_external==NULL) {
     msg_Out()<<METHOD<<"(): {\n\n  // available RNGs\n\n";

@@ -10,10 +10,10 @@
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "MODEL/Main/Running_AlphaQED.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 #include <algorithm>
 
@@ -31,9 +31,7 @@ Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
   p_functions(NULL)
 {
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddComment("#");
-  p_dataread->AddWordSeparator("\t");
+  p_dataread = new Default_Reader;
   p_dataread->SetInputPath(m_dir);
   p_dataread->SetInputFile(m_file);
 
@@ -95,7 +93,7 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
 
 // To be called in ModelInit, default value will be set to aqed_def argument
 void Model_Base::SetAlphaQED(const double& aqed_def){
-  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+  double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault(aqed_def);
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
@@ -104,7 +102,7 @@ void Model_Base::SetAlphaQED(const double& aqed_def){
 
 // To be called in ModelInit, default will be set to AlphaQED at scale2
 void Model_Base::SetAlphaQEDByScale(const double& scale2){
-  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);;
+  double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);;
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault((*aqed)(scale2));
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
@@ -114,18 +112,18 @@ void Model_Base::SetAlphaQEDByScale(const double& scale2){
 // To be called in ModelInit, alphaS argument is alphaS input at MZ
 void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS)
 {
-  int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
-  int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
+  int    order_alphaS	= p_dataread->Get<int>("ORDER_ALPHAS",1);
+  int    th_alphaS	= p_dataread->Get<int>("THRESHOLD_ALPHAS",1);
   double MZ2            = sqr(Flavour(kf_Z).Mass());
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
   p_constants->insert(make_pair(string("alpha_S"),alphaS));
   p_functions->insert(make_pair(string("alpha_S"),as));
-  double Q2aS      = p_dataread->GetValue<double>("Q2_AS",1.);
-  string asf  = p_dataread->GetValue<string>("As_Form",string("smooth"));
+  double Q2aS      = p_dataread->Get<double>("Q2_AS",1.);
+  string asf  = p_dataread->Get<string>("AS_FORM",string("Smooth"));
   asform::code as_form(asform::smooth);
-  if (asf==string("constant"))    as_form = asform::constant;
-  else if (asf==string("frozen")) as_form = asform::frozen;
-  else if (asf==string("smooth")) as_form = asform::smooth;
+  if (asf==string("Constant"))    as_form = asform::constant;
+  else if (asf==string("Frozen")) as_form = asform::frozen;
+  else if (asf==string("Smooth")) as_form = asform::smooth;
   else if (asf==string("IR0"))    as_form = asform::IR0;
   else if (asf==string("GDH"))    as_form = asform::GDH_inspired;
   Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
@@ -180,7 +178,7 @@ void Model_Base::ReadExplicitCKM(CMatrix& CKM)
 
 void Model_Base::OutputCKM()
 {
-  if (!p_dataread->GetValue<int>("CKM_OUTPUT",0)) return;
+  if (!p_dataread->Get<int>("CKM_OUTPUT",0)) return;
   msg_Info()<<" CKM Matrix:\n";
   msg_Info()<<std::setw(8)<<"V_ij";
   size_t rank(ScalarConstant("CKM_DIMENSION"));
@@ -360,7 +358,7 @@ void Model_Base::AddStandardContainers()
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
-  double jet_mass_threshold=p_dataread->GetValue<double>("JET_MASS_THRESHOLD", 10.0);
+  double jet_mass_threshold=p_dataread->Get<double>("JET_MASS_THRESHOLD", 10.0);
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
@@ -407,7 +405,7 @@ void Model_Base::CustomContainerInit()
 {
   DEBUG_FUNC("");
   std::vector<std::vector<std::string> > helpsvv;
-  if (!p_dataread->MatrixFromFile(helpsvv,"PARTICLE_CONTAINER")) return;
+  if (!p_dataread->ReadMatrix(helpsvv,"PARTICLE_CONTAINER")) return;
   for (size_t i(0);i<helpsvv.size();++i) {
     if (helpsvv[i].size()<3) continue;
     std::string props, kfs(helpsvv[i][0]);

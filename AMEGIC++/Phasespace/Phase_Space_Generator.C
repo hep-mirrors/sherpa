@@ -9,11 +9,10 @@
 #include "AMEGIC++/Phasespace/Channel_Generator_KK.H"
 #include "AMEGIC++/Phasespace/Channel_Generator_Decays.H"
 #include "AMEGIC++/Main/Process_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "AMEGIC++/String/String_Library.H"
 
@@ -46,16 +45,13 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/fsrchannels");
   string mapname  = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/fsrchannels.map");
 
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa->GetPath());
-  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int inttype  = dr.GetValue<int>
-    ("AMEGIC_INTEGRATOR",
-     (rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?6:7);
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  int inttype  = reader.Get<int>("AMEGIC_INTEGRATOR",
+      (rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?6:7);
   if (proc->Info().Has(nlo_type::real)) {
-    inttype  = dr.GetValue<int>("AMEGIC_RS_INTEGRATOR",7);
+    inttype  = reader.Get<int>("AMEGIC_RS_INTEGRATOR", 7);
   }
   if (nout==1) return 0;
   if (nin==1&&nout==2) return 0;

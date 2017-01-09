@@ -1,7 +1,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
@@ -38,12 +38,10 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
 {
   m_m2_MZ = (m2_MZ != 0.0) ? m2_MZ : Flavour(kf_Z).Mass();
 
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE", 1.);
-  const int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
-  const int overridepdfinfo(dataread.GetValue<int>("OVERRIDE_PDF_INFO", 0));
+  Default_Reader reader;
+  m_cutas = reader.Get<double>("ALPHAS_FREEZE_VALUE", 1.);
+  const int pdfas(reader.Get<int>("USE_PDF_ALPHAS",0));
+  const int overridepdfinfo(reader.Get<int>("OVERRIDE_PDF_INFO", 0));
 
   if ((m_as_MZ == 0.0 || m_order == 0.0)
       && (p_pdf == NULL || overridepdfinfo)) {
@@ -435,13 +433,11 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   // Read possible override
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&4) {
-    std::string name(dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo"));
-    int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
-    member = dataread.GetValue<int>("ALPHAS_PDF_SET_MEMBER",member);
+  Default_Reader reader;
+  if (reader.Get<int>("USE_PDF_ALPHAS",0)&4) {
+    std::string name(reader.Get<std::string>("ALPHAS_PDF_SET","CT10nlo"));
+    int member = reader.Get<int>("ALPHAS_PDF_SET_VERSION",0);
+    member = reader.Get<int>("ALPHAS_PDF_SET_MEMBER",member);
     InitOverridingPDF(name, member);
   } else {
     p_overridingpdf = NULL;
@@ -498,10 +494,8 @@ void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
   if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
     s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
   }
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  PDF::PDF_Arguments args(Flavour(kf_p_plus), &dataread, 0, name, member);
+  Default_Reader reader;
+  PDF::PDF_Arguments args(Flavour(kf_p_plus), &reader, 0, name, member);
   PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
   pdf->SetBounds();
   p_overridingpdf = pdf;

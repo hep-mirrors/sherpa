@@ -37,6 +37,8 @@ typedef std::ios_base::fmtflags MyFmtFlags;
 #define IOS_BASE std::ios_base
 #endif
 
+#include <vector>
+
 namespace ATOOLS {
   
   template <class Value_Type>
@@ -48,6 +50,38 @@ namespace ATOOLS {
     converter<<value;
     converter>>converted;
     return converted;
+  }
+
+  template <class Value_Type>
+  std::string VectorToString(const std::vector<Value_Type> &values,
+                             const size_t precision=12) {
+    MyStrStream converter;
+    converter.precision(precision);
+    for (typename std::vector<Value_Type>::const_iterator it = values.begin();
+         it != values.end();
+         ++it) {
+      if (it != values.begin()) {
+        converter << " ";
+      }
+      converter << ToString<Value_Type>(*it);
+    }
+    return converter.str();
+  }
+
+  template <class Value_Type>
+  std::string MatrixToString(const std::vector<std::vector<Value_Type> > &values,
+                             const size_t precision=12) {
+    MyStrStream converter;
+    converter.precision(precision);
+    for (typename std::vector<std::vector<Value_Type> >::const_iterator it = values.begin();
+         it != values.end();
+         ++it) {
+      if (it != values.begin()) {
+        converter << "\n";
+      }
+      converter << VectorToString<Value_Type>(*it);
+    }
+    return converter.str();
   }
 
   template <class Value_Type>

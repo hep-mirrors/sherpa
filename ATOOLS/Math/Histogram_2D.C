@@ -2,7 +2,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
@@ -159,12 +159,11 @@ Histogram_2D::Histogram_2D(const std::string & pID) :
   std::string dummy;
   getline(ifile,dummy);
 
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
+  Default_Reader reader;
   if (dummy!="") {
     std::vector<std::string> conf;
-    dr.SetString(dummy);
-    dr.VectorFromString(conf);
+    reader.SetString(dummy);
+    reader.VectorFromString(conf);
     size_t k=0;
 
     if (k>=conf.size()) {
@@ -269,8 +268,8 @@ Histogram_2D::Histogram_2D(const std::string & pID) :
   for (int i=0;i<m_nbin-1;i++) {
     getline(ifile,dummy);
     data.clear();
-    dr.SetString(dummy);
-    dr.VectorFromString(data);
+    reader.SetString(dummy);
+    reader.VectorFromString(data);
 
     m_zvalues[i+1] = Get<double>(data[2]);
     if (m_depth>1) {

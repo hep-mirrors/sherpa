@@ -2,7 +2,7 @@
 
 #include "SHERPA/Tools/Analysis_Interface.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -22,10 +22,10 @@ Analysis_Phase::Analysis_Phase(Analysis_Vector *const analyses):
     m_inits[*it]=false;
   }
   if (m_name.length()>0) m_name.erase(m_name.length()-1);
-  Data_Reader read(" ",";","!","=");
-  read.SetAllowUnits(true);
+  Default_Reader reader;
+  reader.SetAllowUnits(true);
   double wit;
-  if (read.ReadFromFile(wit,"ANALYSIS_WRITEOUT_INTERVAL")) {
+  if (reader.Read(wit,"ANALYSIS_WRITEOUT_INTERVAL", 0.0)) {
     if (wit<1.0) {
       if (wit*rpa->gen.NumberOfEvents()>1.0)
         m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());

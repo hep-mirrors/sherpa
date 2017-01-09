@@ -10,7 +10,7 @@
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
@@ -33,9 +33,8 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
   p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  m_setcolors=read.GetValue<int>("SP_SET_COLORS",0);
+  Default_Reader reader;
+  m_setcolors=reader.Get<int>("SP_SET_COLORS",0);
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
 }
 

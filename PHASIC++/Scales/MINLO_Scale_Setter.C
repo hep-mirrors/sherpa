@@ -6,7 +6,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace PHASIC;
@@ -70,25 +70,26 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
-  Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(m_noutmin,"MINLO_NOUT_MIN")) m_noutmin=2;
-  if (!read.ReadFromFile(m_cmode,"MINLO_CLUSTER_MODE")) m_cmode=1;
-  if (!read.ReadFromFile(m_hqmode,"MINLO_HQ_MODE")) m_hqmode=1;
-  if (!read.ReadFromFile(m_order,"MINLO_FORCE_ORDER")) m_order=0;
-  if (!read.ReadFromFile(m_orderrs,"MINLO_ORDER_RS")) m_orderrs=1;
-  if (!read.ReadFromFile(m_usecomb,"MINLO_USE_COMBINABLE")) m_usecomb=0;
-  if (!read.ReadFromFile(m_usepdfinfo,"MINLO_USE_PDFINFO")) m_usepdfinfo=1;
-  if (!read.ReadFromFile(m_nlocpl,"MINLO_NLO_COUPLING_MODE")) m_nlocpl=1;
-  if (!read.ReadFromFile(m_mufmode,"MINLO_MUF_VARIATION_MODE")) m_mufmode=1;
-  if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=0.4;
-  if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
-    m_muf2min=p_isr->PDF(0)->Q2Min();
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="VAR{H_TM2/4}";
+  Default_Reader reader;
+  m_noutmin    = reader.Get("MINLO_NOUT_MIN", 2);
+  m_cmode      = reader.Get("MINLO_CLUSTER_MODE", 1);
+  m_hqmode     = reader.Get("MINLO_HQ_MODE", 1);
+  m_order      = reader.Get("MINLO_FORCE_ORDER", 0);
+  m_orderrs    = reader.Get("MINLO_ORDER_RS", 1);
+  m_usecomb    = reader.Get("MINLO_USE_COMBINABLE", 0);
+  m_usepdfinfo = reader.Get("MINLO_USE_PDFINFO", 1);
+  m_nlocpl     = reader.Get("MINLO_NLO_COUPLING_MODE", 1);
+  m_mufmode    = reader.Get("MINLO_MUF_VARIATION_MODE", 1);
+  m_dr         = reader.Get("MINLO_DELTA_R", 0.4);
+  m_muf2min    = reader.Get("MINLO_MUF2_MIN", p_isr->PDF(0)->Q2Min());
+  if (core == "") {
+    core       = reader.Get<std::string>("CORE_SCALE", "VAR{H_TM2/4}");
+  }
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
-    m_nfgsplit=Flavour(kf_jet).Size()/2;
-  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
+  if (reader.Read(m_nfgsplit,"DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2)) {
+    msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
+  }
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";

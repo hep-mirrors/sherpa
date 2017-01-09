@@ -19,7 +19,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -236,20 +236,20 @@ METS_Scale_Setter::METS_Scale_Setter
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
-  Data_Reader read(" ",";","!","=");
-  m_cmodebvi=read.GetValue<int>("METS_CLUSTER_MODE_BVI",512);
-  m_cmoders=read.GetValue<int>("METS_CLUSTER_MODE_RS",1);
-  if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
+  Default_Reader reader;
+  m_cmodebvi=reader.Get<int>("METS_CLUSTER_MODE_BVI",512);
+  m_cmoders=reader.Get<int>("METS_CLUSTER_MODE_RS",1);
+  m_wthres = reader.Get("METS_WARNING_THRESHOLD", 0.1);
+  if (core == "") {
+    core = reader.Get<std::string>("CORE_SCALE", "Default");
+  }
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
-    m_nfgsplit=Flavour(kf_jet).Size()/2;
-  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
+  m_nfgsplit = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2, "dipole N_f", METHOD);
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
-  m_csf=read.GetValue<double>("METS_CLUSTER_SCALE_FACTOR",1.);
+  m_csf=reader.Get<double>("METS_CLUSTER_SCALE_FACTOR",1.);
   if (m_csf!=1.0) msg_Debugging()<<METHOD<<
                     "(): METS cluster scale factor "<<sqrt(m_csf)<<"\n";
 }

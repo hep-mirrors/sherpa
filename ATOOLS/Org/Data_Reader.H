@@ -52,6 +52,13 @@ namespace ATOOLS {
     bool MatrixFromString(std::vector<std::vector<Read_Type> >& values,
 			  std::string parameter=nullstring);
 
+    std::string GetStringNormalisingNoneLikeValues(const std::string &parameter,
+                                                   const std::string &def);
+    bool StringVectorFromFileNormalisingNoneLikeValues(std::vector<std::string>& vals,
+                                                       std::string parameter=nullstring);
+    bool StringVectorFromStringNormalisingNoneLikeValues(std::vector<std::string>& vals,
+                                                         std::string parameter=nullstring);
+
     void SetString(const std::string string);
 
     // inline functions
@@ -77,6 +84,12 @@ namespace ATOOLS {
     inline void SetAllowUnits(const bool units) { m_allowunits=units; }
 
     inline bool AllowUnits() const { return m_allowunits; }
+
+    static inline void NormaliseNoneLikeValue(std::string & value) {
+      if (value == "None" || value == "Off" || value == "0") {
+        value = "None";
+      }
+    }
 
   }; // end of class Data_Reader
 

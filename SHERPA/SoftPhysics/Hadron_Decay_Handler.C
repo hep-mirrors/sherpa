@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -22,13 +23,12 @@ using namespace METOOLS;
 Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   Decay_Handler_Base()
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(path);
-  dr.SetInputFile(fragfile);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(fragfile);
 
-  m_qedmode=dr.GetValue<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
-  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
+  m_qedmode=reader.Get<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
+  double max_propertime = reader.Get<double>("MAX_PROPER_LIFETIME",-1.0);
   if( max_propertime > 0.0) {
     for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
 	kfit!=s_kftable.end();++kfit) {
@@ -41,20 +41,20 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
     }
   }
 
-  string decaypath=dr.GetValue<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH"))+"/"
-    +dr.GetValue<string>("DECAYPATHPIECE",string("Decaydata/"));
-  string decayfile=dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
-  string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
+  string decaypath=reader.Get<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH"))+"/"
+    +reader.Get<string>("DECAYPATHPIECE",string("Decaydata/"));
+  string decayfile=reader.Get<string>("DECAYFILE",string("HadronDecays.dat"));
+  string decayconstfile=reader.Get<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
-  string bdecayfile=dr.GetValue<string>("B_DECAYFILE",
+  string bdecayfile=reader.Get<string>("B_DECAYFILE",
 					string("Partonic_b/Decays.dat"));
-  string cdecayfile=dr.GetValue<string>("C_DECAYFILE",
+  string cdecayfile=reader.Get<string>("C_DECAYFILE",
 					string("Partonic_c/Decays.dat"));
-  string aliasfile=dr.GetValue<string>("HADRONALIASESFILE",
+  string aliasfile=reader.Get<string>("HADRONALIASESFILE",
                                        string("HadronAliases.dat"));
-  string aliasdecayfile=dr.GetValue<string>("ALIASDECAYFILE",
+  string aliasdecayfile=reader.Get<string>("ALIASDECAYFILE",
                                             string("AliasDecays.dat"));
-  m_mass_smearing=dr.GetValue<int>("SOFT_MASS_SMEARING",1);
+  m_mass_smearing=reader.Get<int>("SOFT_MASS_SMEARING",1);
   m_spincorr=rpa->gen.SoftSC();
   m_cluster=false;
 

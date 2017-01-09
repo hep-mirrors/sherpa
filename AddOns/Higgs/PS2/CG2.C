@@ -5,7 +5,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
@@ -33,8 +33,8 @@ namespace PHASIC {
     }
     int GenerateChannels()
     {
-      Data_Reader read(" ",";","#","=");
-      int os=read.GetValue<int>("HIGGS_ON_SHELL",0);
+      Default_Reader reader;
+      int os = reader.Get<int>("HIGGS_ON_SHELL", 0);
       int nin=p_proc->NIn(), nout=p_proc->NOut();
       Flavour *fl=(Flavour*)&p_proc->Flavours().front();
       Phase_Space_Handler *psh=&*p_proc->Integrator()->PSHandler();

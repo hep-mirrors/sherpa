@@ -10,7 +10,8 @@ namespace PHASIC {
   class Phase_Space_Integrator {
   private:
 
-    int             iter,iter0,iter1,nopt,ndecopt,optiter,itmin,itmax;
+    size_t itmin, itmax;
+    int             iter,iter0,iter1,nopt,ndecopt,optiter;
     static long unsigned int nmax;
 
     double starttime, lotime, addtime, lrtime;

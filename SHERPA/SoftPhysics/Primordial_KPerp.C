@@ -3,7 +3,7 @@
 #include "PDF/Remnant/Remnant_Base.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
@@ -19,12 +19,10 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   p_remnants[0] = p_remnants[1] = NULL;
   p_kperp[0] = new std::vector<Vec3D>();
   p_kperp[1] = new std::vector<Vec3D>();
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(_m_path);
-  dataread.SetInputFile(_m_file);
-  m_scheme        = dataread.GetValue<int>("K_PERP_SCHEME",0);
+  Default_Reader reader;
+  reader.SetInputPath(_m_path);
+  reader.SetInputFile(_m_file);
+  m_scheme        = reader.Get<int>("K_PERP_SCHEME",0);
   // defaults from Z peak
   double defaultmean1(0.0), defaultmean2(0.0),
     defaultsigma1(0.0), defaultsigma2(0.0);
@@ -42,10 +40,10 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
     defaultsigma2*=pow((rpa->gen.Ecms()/7000.),0.55);
   }
   }
-  m_kperpmean[0]  = dataread.GetValue<double>("K_PERP_MEAN_1",defaultmean1);
-  m_kperpmean[1]  = dataread.GetValue<double>("K_PERP_MEAN_2",defaultmean2);
-  m_kperpsigma[0] = dataread.GetValue<double>("K_PERP_SIGMA_1",defaultsigma1);
-  m_kperpsigma[1] = dataread.GetValue<double>("K_PERP_SIGMA_2",defaultsigma2);
+  m_kperpmean[0]  = reader.Get<double>("K_PERP_MEAN_1",defaultmean1);
+  m_kperpmean[1]  = reader.Get<double>("K_PERP_MEAN_2",defaultmean2);
+  m_kperpsigma[0] = reader.Get<double>("K_PERP_SIGMA_1",defaultsigma1);
+  m_kperpsigma[1] = reader.Get<double>("K_PERP_SIGMA_2",defaultsigma2);
 }
 
 Primordial_KPerp::~Primordial_KPerp()

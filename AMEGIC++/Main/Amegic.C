@@ -61,7 +61,7 @@ namespace AMEGIC {
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/UFO/UFO_Model.H"
 
 using namespace AMEGIC;
@@ -103,12 +103,11 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
-  Data_Reader read(" ",";","#","=");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model) &&
-      !read.GetValue<int>("AMEGIC_ALLOW_UFO", 0))
+      !reader.Get<int>("AMEGIC_ALLOW_UFO", 0))
     THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
@@ -116,60 +115,69 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   m_file=file;
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
-  SetPSMasses(&read);
+  SetPSMasses(&reader);
+
   double helpd;
-  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
-  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
-  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
-  else msg_Info()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
-  rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
-  int helpi;
-  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
-    helpi=Flavour(kf_jet).Size()/2;
-  else msg_Info()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
-  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
-  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
-  else msg_Info()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
-  rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
+  size_t helpi;
+
+  helpd = reader.Get("DIPOLE_AMIN", Max(rpa->gen.Accu(),1.0e-8),
+                     "dipole \\alpha_{cut}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_AMIN", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_ALPHA", 1.0,
+                     "dipole \\alpha_{max}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ALPHA", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_ALPHA_FF", 0.0,
+                     "FF dipole \\alpha_{max}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ALPHA_FF", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_ALPHA_FI", 0.0,
+                     "FI dipole \\alpha_{max}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ALPHA_FI", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_ALPHA_IF", 0.0,
+                     "IF dipole \\alpha_{max}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ALPHA_IF", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_ALPHA_II", 0.0,
+                     "II dipole \\alpha_{max}", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ALPHA_II", ToString(helpd));
+
+  helpd = reader.Get("DIPOLE_KAPPA", 0.0,
+                     "dipole \\kappa", METHOD);
+  rpa->gen.SetVariable("DIPOLE_KAPPA", ToString(helpd));
+
+  helpi = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2,
+                     "dipole N_f", METHOD);
+  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT", ToString(helpi));
+
+  helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()),
+                     "dipole \\k_{T,max}^2", METHOD);
+  rpa->gen.SetVariable("DIPOLE_KT2MAX", ToString(helpd));
+
   rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
-		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
+      ToString(reader.Get("NLO_SMEAR_THRESHOLD", 0.0)));
   rpa->gen.SetVariable("NLO_SMEAR_POWER",
-		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
-  int ossub=read.GetValue<int>("OS_SUB",0);
+      ToString(reader.Get("NLO_SMEAR_POWER", 0.5)));
+  int ossub = reader.Get<int>("OS_SUB", 0);
   if (ossub==1) msg_Info()<<"Set on shell subtraction on. "<<std::endl;
   rpa->gen.SetVariable("OS_SUB",ToString(ossub));
-  int sort=read.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
+  int sort = reader.Get<int>("AMEGIC_SORT_LOPROCESS", 1);
   rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
-  int libcheck=read.GetValue<int>("ME_LIBCHECK",0);
+  int libcheck = reader.Get<int>("ME_LIBCHECK", 0);
   rpa->gen.SetVariable("ME_LIBCHECK",ToString(libcheck));
-  int cvp=read.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1);
+  int cvp = reader.Get<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1);
   rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(cvp));
-  double alpha=read.GetValue<double>("AMEGIC_TCHANNEL_ALPHA",0.9);
+  double alpha = reader.Get<double>("AMEGIC_TCHANNEL_ALPHA", 0.9);
   rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
-  double salpha=read.GetValue<double>("AMEGIC_SCHANNEL_ALPHA",0.75);
+  double salpha = reader.Get<double>("AMEGIC_SCHANNEL_ALPHA", 0.75);
   rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(salpha));
-  double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);
+  double eps = reader.Get<double>("AMEGIC_CHANNEL_EPSILON", 0.0);
   rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
-  int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",1));
+  int gauge(reader.Get<int>("AMEGIC_DEFAULT_GAUGE", 1, "gauge", METHOD));
   AMEGIC::Process_Base::SetGauge(gauge);
-  if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;
-  s_partcommit=read.GetValue<int>("AMEGIC_PARTIAL_COMMIT",0);
+  s_partcommit = reader.Get<int>("AMEGIC_PARTIAL_COMMIT", 0);
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return true;

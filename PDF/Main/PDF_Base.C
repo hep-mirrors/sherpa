@@ -9,7 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -25,8 +25,8 @@ PDF_Base::PDF_Base():
   m_rescale(1.), m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
   m_nf(-1)
 {
-  Data_Reader dr(" ",";","!","=");
-  m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);
+  Default_Reader reader;
+  m_lhef_number = reader.Get<int>("LHEF_PDF_NUMBER", -1);
 }
 
 PDF_Base::~PDF_Base()

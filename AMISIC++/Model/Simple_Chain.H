@@ -13,7 +13,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "MODEL/Main/Model_Base.H"
 
-namespace ATOOLS { class Data_Reader;  }
+namespace ATOOLS { class Default_Reader;  }
 namespace PDF    { class Remnant_Base; }
 
 namespace AMISIC {
@@ -67,7 +67,7 @@ namespace AMISIC {
 
     ATOOLS::Info_Key m_spkey, m_ykey, m_xkey, m_isrspkey, m_isrykey;
 
-    ATOOLS::Data_Reader *p_read;
+    ATOOLS::Default_Reader *p_read;
 
     void Init();
     void CleanUp();

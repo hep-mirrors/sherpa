@@ -6,7 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/Process_Info.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 #define CF 1.33333333333333333
 
@@ -87,8 +87,8 @@ Tree_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  Data_Reader read(" ",";","!","=");
-  if (read.GetValue<int>("EXTRAXS_CSS_APPROX_ME",0)==0) return NULL;
+  Default_Reader reader;
+  if (reader.Get<int>("EXTRAXS_CSS_APPROX_ME", 0) == 0) return NULL;
   if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=5) return NULL;

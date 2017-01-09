@@ -2,10 +2,11 @@
 
 #include <iterator>
 #include <numeric>
+#include <algorithm>
 
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
@@ -22,9 +23,7 @@ using namespace SHERPA;
 bool Variations::NeedsLHAPDF6Interface(std::string inputpath)
 {
   // set up data reader
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Default_Reader reader;
   reader.SetInputPath(inputpath);
   // go through all parameters and return true if any non-double points to a
   // request for a PDF set/member
@@ -76,10 +75,10 @@ void Variations::CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *bea
   }
 }
 
-Variations::Variations(Data_Reader * const reader):
-  m_includecentralvaluevariation(reader->GetValue<int>("VARIATIONS_INCLUDE_CV", 1)),
-  m_reweightsplittingalphasscales(reader->GetValue<int>("REWEIGHT_SPLITTING_ALPHAS_SCALES", 0)),
-  m_reweightsplittingpdfsscales(reader->GetValue<int>("REWEIGHT_SPLITTING_PDF_SCALES", 0))
+Variations::Variations(Default_Reader * const reader):
+  m_includecentralvaluevariation(reader->Get<int>("VARIATIONS_INCLUDE_CV", 1)),
+  m_reweightsplittingalphasscales(reader->Get<int>("REWEIGHT_SPLITTING_ALPHAS_SCALES", 0)),
+  m_reweightsplittingpdfsscales(reader->Get<int>("REWEIGHT_SPLITTING_PDF_SCALES", 0))
 {
 #if defined USING__LHAPDF && defined USING__LHAPDF6
   int lhapdfverbosity(0);
@@ -173,47 +172,37 @@ void Variations::PrintStatistics(std::ostream &str)
 }
 
 
-void Variations::InitialiseParametersVector(Data_Reader * const reader)
+void Variations::InitialiseParametersVector(Default_Reader * const reader)
 {
   std::vector<std::string> args = VariationArguments(reader);
   for (std::vector<std::string>::const_iterator it(args.begin());
       it != args.end(); ++it) {
     std::vector<std::string> params(VariationArgumentParameters(*it));
-    AddParameters(params, reader);
+    AddParameters(params);
   }
 }
 
 
-std::vector<std::string> Variations::VariationArguments(Data_Reader * const reader)
+std::vector<std::string> Variations::VariationArguments(Default_Reader * const reader)
 {
   std::vector<std::string> args;
-  reader->VectorFromFile(args, "VARIATIONS");
-  if (args.size() == 1 && args[0] == "None") {
-    args.clear();
-  }
+  reader->ReadStringVectorNormalisingNoneLikeValues(args, "VARIATIONS");
+  args.erase(std::remove(args.begin(), args.end(), "None"), args.end());
   return args;
 }
 
 
 std::vector<std::string> Variations::VariationArgumentParameters(std::string arg)
 {
-  const std::string delimiter = ",";
+  Data_Reader linereader(",",";","#","");
+  linereader.SetString(arg);
   std::vector<std::string> params;
-  size_t pos = 0;
-  while (true) {
-    pos = arg.find(delimiter);
-    params.push_back(arg.substr(0, pos));
-    if (pos == std::string::npos) {
-      break;
-    }
-    arg.erase(0, pos + delimiter.length());
-  }
+  linereader.StringVectorFromStringNormalisingNoneLikeValues(params);
   return params;
 }
 
 
-void Variations::AddParameters(std::vector<std::string> stringparams,
-    Data_Reader * const reader)
+void Variations::AddParameters(std::vector<std::string> stringparams)
 {
   // up to 2 scale factor arguments and up to 1 PDF argument
   std::vector<std::string> scalestringparams;
@@ -283,7 +272,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
   // translate PDF string parameter into actual AlphaS and PDF objects
   std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
   if (!pdfstringparams.empty()) {
-    if (reader->GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+    if (Default_Reader().Get<int>("OVERRIDE_PDF_INFO",0)==1) {
       THROW(fatal_error, "OVERRIDE_PDF_INFO=1 is incompatible with doing PDF/AlphaS variations.");
     }
     pdfsandalphasvector = PDFsAndAlphaSVector(pdfstringparams[0], expandpdf);
@@ -453,9 +442,7 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
 
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(std::string pdfname, size_t pdfmember)
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Default_Reader reader;
   // obtain PDFs
   PDF::PDF_Base *aspdf(NULL);
   for (int i(0); i < 2; ++i) {
@@ -530,10 +517,8 @@ void ReweightingFactorHistogram::Fill(std::string name, double value)
 void ReweightingFactorHistogram::Write(std::string filenameaffix)
 {
   // open file
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
-  std::string outpath = reader.GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
+  Default_Reader reader;
+  std::string outpath = reader.Get<std::string>("ANALYSIS_OUTPUT","Analysis/");
   if (outpath.length() > 0) {
     size_t slashpos = outpath.rfind("/");
     if (slashpos != std::string::npos) {

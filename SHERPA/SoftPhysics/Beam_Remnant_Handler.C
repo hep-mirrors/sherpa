@@ -1,4 +1,5 @@
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -12,14 +13,11 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(1)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(path);
-  read.SetInputFile(file);
-  if (!read.ReadFromFile(m_fill,"BEAM_REMNANTS")) m_fill=1;
-  else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
-  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
-  else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
+  m_fill  = reader.Get("BEAM_REMNANTS", 1, "remnants", METHOD);
+  m_vmode = reader.Get("BRH_VMODE", 0, "check mode", METHOD);
   if (p_shrimps==NULL) {
     p_parametrised = new Parametrised_Beam_Remnants(path,file,isr,p_beam);
     p_parametrised->SetScale(4.0);

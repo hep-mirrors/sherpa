@@ -1,5 +1,5 @@
 #include "MODEL/UFO/UFO_Param_Reader.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -14,7 +14,7 @@ using std::string;
 using std::vector;
 using std::stringstream;
 using ATOOLS::ToType;
-using ATOOLS::Data_Reader;
+using ATOOLS::Default_Reader;
 using ATOOLS::rpa;
 
 UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
@@ -36,13 +36,12 @@ UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
   if (filename.find("|")!=string::npos) 
       filename=filename.substr(0,filename.find("|"));
   if(m_use_runcard) filename+="|(ufo){|}(ufo)";
-  Data_Reader dataread(" ",";","#","=");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(path);
-  dataread.SetInputFile(filename);
-  dataread.SetIgnoreCase(true);
-  dataread.SetAddCommandLine(false);
-  dataread.MatrixFromFile(m_lines);
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(filename);
+  reader.SetIgnoreCase(true);
+  reader.SetAddCommandLine(false);
+  reader.MatrixFromFile(m_lines);
 }
 
 template<class Read_Type> Read_Type 

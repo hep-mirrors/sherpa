@@ -48,7 +48,8 @@ namespace PHASIC {
     ATOOLS::Cluster_Amplitude *p_ampl;
 
     double m_rsf, m_dr, m_q02[2], m_muf2min;
-    int    m_noutmin, m_rproc, m_vproc, m_nproc, m_nfgsplit;
+    size_t m_nfgsplit;
+    int    m_noutmin, m_rproc, m_vproc, m_nproc;
     int    m_cmode, m_hqmode, m_order, m_orderrs;
     int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode;
 

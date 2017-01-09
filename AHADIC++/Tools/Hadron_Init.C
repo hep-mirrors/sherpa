@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Hadron_Init.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -515,24 +516,24 @@ void Hadron_Init::Init() {
   s_kftable[kf_f_2_2340]->m_majorana=-1;
 }
 
-void Hadron_Init::OverWriteProperties(Data_Reader& dr)
+void Hadron_Init::OverWriteProperties(Default_Reader& reader)
 {
   std::map<int,double> cdm, cdw;
   std::map<int,int> cia, cis, cim;
   std::vector<std::vector<double> > helpdvv;
-  if (dr.MatrixFromFile(helpdvv,"MASS"))
+  if (reader.ReadMatrix(helpdvv,"MASS"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cdm[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"WIDTH"))
+  if (reader.ReadMatrix(helpdvv,"WIDTH"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cdw[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"ACTIVE"))
+  if (reader.ReadMatrix(helpdvv,"ACTIVE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cia[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"STABLE"))
+  if (reader.ReadMatrix(helpdvv,"STABLE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cis[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
+  if (reader.ReadMatrix(helpdvv,"MASSIVE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
 

@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Poincare.H"
 
 using namespace OLE;
@@ -62,30 +62,24 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   msg_Debugging()<<METHOD<<"(): nf = "<<m_nf<<std::endl;
 
   bool contract(0);
-  string orderfn("OLE_order.lh");
-  string contractfn("OLE_contract.lh");
-  string fname("");
-  Data_Reader reader(" ",";","!","=");
-  reader.SetInputPath(rpa->GetPath());
-  if (reader.ReadFromFile(fname,"LHOLE_ORDERFILE")) {
-    orderfn=fname;
-  }
-  if (reader.ReadFromFile(fname,"LHOLE_CONTRACTFILE")) {
-    contractfn=fname;
-  }
-  std::string irr(reader.GetValue<std::string>
-		  ("LHOLE_IR_REGULARISATION","DRED"));
+  Default_Reader reader;
+  string orderfn(reader.Get<string>("LHOLE_ORDERFILE", "OLE_order.lh");
+  string contractfn(reader.Get<string>("LHOLE_CONTRACTFILE", "OLE_contract.lh");
+
+  std::string irr(reader.Get<string>("LHOLE_IR_REGULARISATION", "DRED"));
   if (irr=="DRED") m_drmode=1;
   else if (irr=="CDR") m_drmode=0;
   else THROW(fatal_error,"Unknown regularisation scheme");
-  m_needcmsboost=reader.GetValue<int>("LHOLE_BOOST_TO_CMS",0);
-  std::string lholegen(reader.GetValue<std::string>("LHOLE_OLP",""));
+  m_needcmsboost = reader.Get<int>("LHOLE_BOOST_TO_CMS", 0);
+  string lholegen(reader.Get<string>("LHOLE_OLP", ""));
   if (lholegen=="GoSam") {
     m_gosammode=true;
     m_needcmsboost=true;
   }
   ifstream ifile;
   ifile.open(contractfn.c_str());
+
+  string fname("");
   if (ifile) {
     contract=1;
     fname=contractfn;

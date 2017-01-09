@@ -5,7 +5,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
@@ -21,41 +21,29 @@ long unsigned int Phase_Space_Integrator::nmax=
 Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   psh(_psh)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
-    nmax=std::numeric_limits<long unsigned int>::max();
-  else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
-  read.SetAllowUnits(true);
-  if (!read.ReadFromFile(itmin,"PSI_ITMIN"))
-    itmin=psh->Process()->Process()->Info().m_itmin;
-  else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
-  if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
-  else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
-  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=25;
-  else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
-  if (!read.ReadFromFile(maxopt,"PSI_MAXOPT")) maxopt=5;
-  else msg_Info()<<METHOD<<"(): Set n_{maxopt} = "<<maxopt<<".\n";
-  if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
-  else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
-  if (!read.ReadFromFile(timestep,"PSI_TIMESTEP_OFFSET")) timestep=0.0;
-  else msg_Info()<<METHOD<<"(): Set \\Delta t offset = "<<timestep<<".\n";
-  if (!read.ReadFromFile(timeslope,"PSI_TIMESTEP_SLOPE")) timeslope=0.0;
-  else msg_Info()<<METHOD<<"(): Set \\Delta t slope = "<<timeslope<<".\n";
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  nmax = reader.Get("PSI_NMAX", std::numeric_limits<long unsigned int>::max(), "n_{max}", METHOD);
+  reader.SetAllowUnits(true);
+  itmin = reader.Get("PSI_ITMIN", psh->Process()->Process()->Info().m_itmin, "n_{it,min}", METHOD);
+  itmax = reader.Get("PSI_ITMAX", 100 * itmin, "n_{it,max}", METHOD);
+  nopt = reader.Get("PSI_NOPT", 25, "n_{opt}", METHOD);
+  maxopt = reader.Get<long unsigned int>("PSI_MAXOPT", 5, "n_{maxopt}", METHOD);
+  ndecopt = reader.Get("PSI_NDECOPT", 10, "n_{opt,dec}", METHOD);
+  timestep = reader.Get("PSI_TIMESTEP_OFFSET", 0.0, "\\Delta t offset", METHOD);
+  timeslope = reader.Get("PSI_TIMESTEP_SLOPE", 0.0, "\\Delta t slope", METHOD);
   addtime=0.0;
   lastrss=0;
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size) {
     int helpi;
-    if (read.ReadFromFile(helpi,"PSI_ITMIN_BY_NODE")) {
+    if (reader.Read(helpi,"PSI_ITMIN_BY_NODE", 0)) {
       itmin=helpi*size;
       msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
     }
-    if (read.ReadFromFile(helpi,"PSI_ITMAX_BY_NODE")) {
+    if (reader.Read(helpi,"PSI_ITMAX_BY_NODE", 0)) {
       itmax*=helpi*size;
       msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
     }
@@ -104,7 +92,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
 	    <<rpa->gen.Timer().StrFTime("%H:%M:%S")<<". Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
-  int numberofchannels = 1;
+  long unsigned int numberofchannels = 1;
 
   msg_Tracking()<<"Integrators : "<<psh->BeamIntegrator()<<" / "
 		<<psh->ISRIntegrator()<<" / "<<psh->FSRIntegrator()<<endl;
@@ -123,8 +111,8 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->NChannels()<<" FSR integrators."<<endl;
-  iter = iter0 = Min(itmax,Max(itmin,Max((int)psh->Process()->ItMin(),20*int(numberofchannels))));
-  iter1      = Min(2*itmax,Max(2*itmin,Max(2*(int)psh->Process()->ItMin(),100*int(numberofchannels))));
+  iter = iter0 = Min(itmax,Max(itmin,Max(psh->Process()->ItMin(),20*numberofchannels)));
+  iter1      = Min(2*itmax,Max(2*itmin,Max(2*psh->Process()->ItMin(),100*numberofchannels)));
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
 

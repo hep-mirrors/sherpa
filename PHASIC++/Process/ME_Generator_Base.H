@@ -4,7 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS { class Cluster_Amplitude; }
+namespace ATOOLS { class Cluster_Amplitude; class Default_Reader; }
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF {
   class Cluster_Definitions_Base; 
@@ -29,7 +29,7 @@ namespace PHASIC {
 
   protected:
 
-    void SetPSMasses(ATOOLS::Data_Reader *const dr);
+    void SetPSMasses(ATOOLS::Default_Reader *const);
 
   public :
 

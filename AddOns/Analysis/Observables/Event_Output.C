@@ -2,6 +2,7 @@
 #include "AddOns/Analysis/Main/Analysis_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -36,19 +37,19 @@ namespace ANALYSIS {
 
   public:
 
-    Event_Output(Data_Reader *reader, const std::string& inlist) :
+    Event_Output(Default_Reader *reader, const std::string& inlist) :
       Primitive_Observable_Base(), m_inlist(inlist),
       m_n(0.0), m_sum(0.0), m_sumsqr(0.0),
       m_wit(std::numeric_limits<size_t>::max())
     {
       m_splitt_flag=false;
       if (reader==NULL) return;
-      std::string outpath=reader->GetValue<std::string>("EVT_FILE_PATH",".");
-      std::string format=reader->GetValue<std::string>("EVENT_FORMAT","None");
+      std::string outpath(reader->Get<std::string>("EVT_FILE_PATH", "."));
+      std::string format(reader->Get<std::string>("EVENT_FORMAT", "None"));
       std::vector<std::string> outputs;
       Data_Reader readline(",",";","#","");
       readline.SetString(format);
-      readline.VectorFromString(outputs);
+      readline.StringVectorFromStringNormalisingNoneLikeValues(outputs);
       for (size_t i=0; i<outputs.size(); ++i) {
 	if (outputs[i]=="None") continue;
 	std::string outfile;
@@ -72,7 +73,7 @@ namespace ANALYSIS {
 	out->Header();
       }
       double wit;
-      if (reader->ReadFromFile(wit,"FILE_SIZE")) {
+      if (reader->Read(wit, "FILE_SIZE", 0.0)) {
 	if (wit<1.0) {
 	  if (wit*rpa->gen.NumberOfEvents()>1.0)
 	    m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());
@@ -146,9 +147,7 @@ DECLARE_GETTER(Event_Output,"Event_Output",
 
 Primitive_Observable_Base *ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::operator()(const Argument_Matrix &parameters) const
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Default_Reader reader;
   std::string inlist="";
   for (size_t i=0; i<parameters.size(); ++i) {
     std::string line = "";

@@ -20,6 +20,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
@@ -46,25 +47,23 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
   m_printpspoint(false)
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa->GetPath());
-  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_thkill=dr.GetValue<double>("IB_THRESHOLD_KILL",-1.0e12);
-  m_error    = dr.GetValue<double>("INTEGRATION_ERROR", dr.GetValue<double>("ERROR", 0.01));
-  m_abserror    = dr.GetValue<double>("ABS_ERROR",0.0);
-  m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
-  m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
-  m_enhancexs = dr.GetValue<int>("ENHANCE_XS",0);
-  m_printpspoint = dr.GetValue<int>("PRINT_PS_POINTS",0); 
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_thkill=reader.Get<double>("IB_THRESHOLD_KILL",-1.0e12);
+  m_error    = reader.Get<double>("INTEGRATION_ERROR", reader.Get<double>("ERROR", 0.01));
+  m_abserror    = reader.Get<double>("ABS_ERROR",0.0);
+  m_maxtrials = reader.Get<int>("MAX_TRIALS",1000000);
+  m_fin_opt = !reader.IsDisabled("FINISH_OPTIMIZATION", true);
+  m_enhancexs = reader.Get<int>("ENHANCE_XS",0);
+  m_printpspoint = reader.Get<int>("PRINT_PS_POINTS",0); 
   if (error>0.) {
     m_error   = error;
   }
   m_killedpoints=0;
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
-  double minalpha = dr.GetValue<double>("INT_MINALPHA",0.0);
+  double minalpha = reader.Get<double>("INT_MINALPHA",0.0);
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);

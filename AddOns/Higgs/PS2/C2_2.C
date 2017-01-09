@@ -1,6 +1,6 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -71,8 +71,8 @@ C2_2::C2_2(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);
   m_kZR25_125.Assign(std::string("ZR25_125"),2,0,info);
   p_vegas = new Vegas(rannum,100,name);
-  Data_Reader read(" ",";","#","=");
-  m_onshell=read.GetValue<int>("HIGGS_ON_SHELL",0);
+  Default_Reader reader;
+  m_onshell = reader.Get<int>("HIGGS_ON_SHELL", 0);
 }
 
 C2_2::~C2_2()

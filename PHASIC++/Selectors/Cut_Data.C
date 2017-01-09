@@ -1,7 +1,7 @@
 #include "PHASIC++/Selectors/Cut_Data.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
@@ -82,8 +82,8 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   }
   smin = sqr(smin);
 
-  Data_Reader read(" ",";","!","=");
-  double sijminfac = read.GetValue<double>("INT_MINSIJ_FACTOR", 1.e-12);
+  Default_Reader reader;
+  double sijminfac = reader.Get<double>("INT_MINSIJ_FACTOR", 1.e-12);
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;

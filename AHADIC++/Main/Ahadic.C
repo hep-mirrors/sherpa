@@ -9,7 +9,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Formation/Cluster_Formation_Handler.H"
 #include "AHADIC++/Decays/Cluster_Decay_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace AHADIC;
@@ -21,12 +21,10 @@ Ahadic::Ahadic(string path, string file)  :
   m_fullinfo(false), m_maxtrials(3), m_clulist()
 {
   
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(path);
-  dr.SetInputFile(file);
-  m_anadir = dr.GetValue<string>("FRAGMANADIR", "Fragmentation_Analysis");
+  Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
+  m_anadir = reader.Get<string>("FRAGMANADIR", "Fragmentation_Analysis");
   hadpars =  new Hadronisation_Parameters();
   hadpars->Init(path,file);
 

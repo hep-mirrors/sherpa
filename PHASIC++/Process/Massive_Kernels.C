@@ -3,7 +3,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -25,13 +25,11 @@ Massive_Kernels::Massive_Kernels()
   m_loga = 0.;
   m_aterm = 0.;
 
-  int helpi,nfgs=m_nf;
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
+  Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {
-    nfgs = helpi;
+  size_t nfgs;
+  if (reader.Read(nfgs,"DIPOLE_NF_GSPLIT",m_nf)) {
     msg_Tracking()<<"Set number of flavours from gluon splitting="<<nfgs<<"."<<std::endl;
   }
   for (int i=1;i<=nfgs;i++) {
@@ -40,10 +38,7 @@ Massive_Kernels::Massive_Kernels()
   }
   m_nmf=m_massflav.size();
 
-  double helpd;
-  m_kappa=2./3.;
-  if (reader.ReadFromFile(helpd,"DIPOLE_KAPPA")) {
-    m_kappa = helpd;
+  if (reader.Read(m_kappa,"DIPOLE_KAPPA", 2./3.)) {
     msg_Tracking()<<"Set massive dipole kappa="<<m_kappa<<"."<<std::endl;
   }
 }

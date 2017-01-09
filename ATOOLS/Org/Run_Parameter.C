@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
@@ -182,17 +182,15 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   size_t pos(gen.m_username.find(','));
   if (pos<std::string::npos)
     gen.m_username.erase(pos,gen.m_username.length()-pos);
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(file);
-  std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(file);
+  std::string color=reader.Get<std::string>("PRETTY_PRINT","On");
   if (color=="Off") msg->SetModifiable(false);
-  std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
-  std::string logfile = dr.GetValue<std::string>("LOG_FILE","");
+  std::string outputlevel = reader.Get<std::string>("OUTPUT","2");
+  std::string logfile = reader.Get<std::string>("LOG_FILE","");
   msg->Init(outputlevel,logfile);
-  msg->SetMPIMode(dr.GetValue<int>("MPI_OUTPUT",0));
+  msg->SetMPIMode(reader.Get<int>("MPI_OUTPUT",0));
   if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
@@ -204,7 +202,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     path=path.substr(0,path.length()-1);
 
   // set cpp path
-  std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
+  std::string cpppath=reader.Get<std::string>("SHERPA_CPP_PATH",std::string(""));
   if (cpppath.length()==0 || cpppath[0]!='/') {
     if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
     else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
@@ -212,7 +210,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
   if (cpppath.length()) gen.m_variables["SHERPA_CPP_PATH"]+=(cpppath[0]=='/'?"":"/")+cpppath;
   // set lib path
-  std::string libpath=dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
+  std::string libpath=reader.Get<std::string>("SHERPA_LIB_PATH",std::string(""));
   if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
   else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0) 
     gen.m_variables["SHERPA_LIB_PATH"]=gen.m_variables["SHERPA_CPP_PATH"]
@@ -233,25 +231,26 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
   gen.m_variables["EVENT_GENERATION_MODE"]="-1";
-  dr.SetAllowUnits(true);
-  gen.m_nevents            = dr.GetValue<long int>("EVENTS",100);
-  dr.SetAllowUnits(false);
+  reader.SetAllowUnits(true);
+  gen.m_nevents            = reader.Get<long int>("EVENTS",100);
+  reader.SetAllowUnits(false);
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
-  std::string sqlopenflag=dr.GetValue<std::string>("SQLITE_OPEN_FLAG","");
+  std::string sqlopenflag=reader.Get<std::string>("SQLITE_OPEN_FLAG","");
   My_In_File::SetSQLOpenFlag(sqlopenflag);
   My_Out_File::SetSQLOpenFlag(sqlopenflag);
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds;
   for (int i(0);i<4;++i) gen.m_seeds[i] = -1;
-  if (dr.VectorFromFile(seeds,"RANDOM_SEED")) {
+  if (reader.ReadVector(seeds,"RANDOM_SEED")) {
     for (int i(0);i<Min((int)seeds.size(),4);++i) gen.m_seeds[i] = seeds[i];
   } 
   else {
     for (int i(0);i<4;++i)
-      if (dr.ReadFromFile(seed,"RANDOM_SEED"+ToString(i+1)))
-	gen.m_seeds[i]=seed;
+      if (reader.Read<long int>(seed, "RANDOM_SEED" + ToString(i + 1), -1)) {
+        gen.m_seeds[i] = seed;
+      }
   }
   int nseed=0;
   for (int i(0);i<4;++i) if (gen.m_seeds[i]>0) ++nseed;
@@ -267,7 +266,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  if (dr.GetValue("MPI_SEED_MODE",0)==0) {
+  if (reader.Get("MPI_SEED_MODE",0)==0) {
     msg_Info()<<METHOD<<"(): Seed mode '*'\n";
     for (int i(0);i<4;++i)
       if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
@@ -284,22 +283,22 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
-  gen.SetVariable("MEPSNLO_PDFCT",ToString(dr.GetValue<int>("MEPSNLO_PDFCT",1)));
-  gen.SetVariable("MCNLO_DADS",ToString(dr.GetValue<int>("MCNLO_DADS",1)));
-  gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",0)));
+  gen.SetVariable("MEPSNLO_PDFCT",ToString(reader.Get<int>("MEPSNLO_PDFCT",1)));
+  gen.SetVariable("MCNLO_DADS",ToString(reader.Get<int>("MCNLO_DADS",1)));
+  gen.SetVariable("PB_USE_FMM",ToString(reader.Get<int>("PB_USE_FMM",0)));
   gen.SetVariable("HISTOGRAM_OUTPUT_PRECISION",ToString
-		  (dr.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6)));
+		  (reader.Get<int>("HISTOGRAM_OUTPUT_PRECISION",6)));
   gen.SetVariable("SELECTION_WEIGHT_MODE",ToString
-		  (dr.GetValue<int>("SELECTION_WEIGHT_MODE",0)));
-  dr.SetAllowUnits(true);
+		  (reader.Get<int>("SELECTION_WEIGHT_MODE",0)));
+  reader.SetAllowUnits(true);
   gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
-		  ToString(dr.GetValue<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
-  dr.SetAllowUnits(false);
-  gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
+		  ToString(reader.Get<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
+  reader.SetAllowUnits(false);
+  gen.m_timeout = reader.Get<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa->gen.m_timer.Start();
-  gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",logfile==""?1:3);
-  gen.m_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
+  gen.m_batchmode = reader.Get<int>("BATCH_MODE",logfile==""?1:3);
+  gen.m_clevel= reader.Get<int>("CITATION_DEPTH",1);
   int ncpus(getncpu());
   msg_Tracking()<<METHOD<<"(): Getting number of CPU cores: "
 		<<ncpus<<"."<<std::endl;
@@ -318,7 +317,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg_Tracking()<<METHOD<<"(): Getting memory limit: "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
-  if (!dr.VectorFromFile(aspars,"RLIMIT_AS")) {
+  if (!reader.ReadVector(aspars,"RLIMIT_AS")) {
     lims.rlim_cur=(rlim_t)(slim-double(100*(1<<20)));
   }
   else {
@@ -340,7 +339,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
       THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
     }
   }
-  int limpercpu=dr.GetValue<int>("RLIMIT_BY_CPU",0);
+  int limpercpu=reader.Get<int>("RLIMIT_BY_CPU",0);
   if (limpercpu) lims.rlim_cur/=(double)ncpus;
   if (setrlimit(RLIMIT_AS,&lims)!=0)
     msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
@@ -348,12 +347,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg_Info()<<METHOD<<"(): Setting memory limit to "
 	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
 #endif
-  int stacktrace = dr.GetValue<int>("STACK_TRACE",1);
+  int stacktrace = reader.Get<int>("STACK_TRACE",1);
   exh->SetStackTrace(stacktrace);
-  gen.m_accu = dr.GetValue<double>
-    ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
+  gen.m_accu = reader.Get<double>("NUM_ACCURACY", 1.e-10);
   gen.m_sqrtaccu = sqrt(gen.m_accu);
-  //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
   if (gen.m_seeds[1]>0) {
     ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],gen.m_seeds[3]);
   }
@@ -396,10 +393,8 @@ void Run_Parameter::Gen::WriteCitationInfo()
   if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
   if (Citations().empty()) return;
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  if (!dr.GetValue<int>("WRITE_REFERENCES_FILE",1)) return;
+  Default_Reader reader;
+  if (!reader.Get<int>("WRITE_REFERENCES_FILE",1)) return;
   std::string refname("Sherpa_References.tex");
   std::ofstream f((rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+refname).c_str());
   f<<"%% Citation summary file generated by Sherpa "

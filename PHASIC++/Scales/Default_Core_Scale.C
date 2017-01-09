@@ -142,7 +142,7 @@ Cluster_Amplitude *Default_Core_Scale::Cluster
   return ampl;
 }
 
-DECLARE_ND_GETTER(Default_Core_Scale,"DEFAULT",
+DECLARE_ND_GETTER(Default_Core_Scale,"Default",
 		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
 Core_Scale_Setter *ATOOLS::Getter

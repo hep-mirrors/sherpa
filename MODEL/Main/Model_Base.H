@@ -9,11 +9,8 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include <map>
-
-namespace ATOOLS { 
-  class Data_Reader;
-} 
 
 namespace MODEL {
 
@@ -53,7 +50,7 @@ namespace MODEL {
     std::string               m_name;
     bool                      m_elementary;
 
-    ATOOLS::Data_Reader     * p_dataread;
+    ATOOLS::Default_Reader  * p_dataread;
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
     ComplexConstantsMap     * p_complexconstants;

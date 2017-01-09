@@ -7,7 +7,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -63,18 +63,16 @@ void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
 size_t MEProcess::NumberOfPoints()
 {
   if (m_npsp>0) return m_npsp;
-  ATOOLS::Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
+  ATOOLS::Default_Reader reader;
   reader.SetInputPath(ATOOLS::rpa->GetPath());
   reader.SetInputFile(ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE"));
-  m_npsp=reader.GetValue<size_t>("NUMBER_OF_POINTS",1);
+  m_npsp = reader.Get<size_t>("NUMBER_OF_POINTS", 1);
   return m_npsp;
 }
 
 void MEProcess::SetMomenta(size_t n)
 {
-  ATOOLS::Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
+  ATOOLS::Default_Reader reader;
   reader.SetInputPath(ATOOLS::rpa->GetPath());
   reader.SetInputFile(ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE"));
   std::vector<std::vector<std::string> > momdata;

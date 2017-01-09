@@ -14,7 +14,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qed,
-	       Data_Reader *const dataread) : 
+	       Default_Reader *const reader) :
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr),
   p_variationweights(NULL)
 {
@@ -26,12 +26,12 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  const bool reweightalphas = dataread->GetValue<int>("CSS_REWEIGHT_ALPHAS",1);
-  const bool reweightpdfs = dataread->GetValue<int>("CSS_REWEIGHT_PDFS",1);
-  m_norewem = !dataread->GetValue<int>("REWEIGHT_MCATNLO_EM",0);
-  m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
+  const bool reweightalphas = reader->Get<int>("CSS_REWEIGHT_ALPHAS",1);
+  const bool reweightpdfs = reader->Get<int>("CSS_REWEIGHT_PDFS",1);
+  m_norewem = !reader->Get<int>("REWEIGHT_MCATNLO_EM",0);
+  m_kscheme = reader->Get<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<size_t> disallowflavs;
-  dataread->VectorFromFile(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
+  reader->ReadVector(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
   if (disallowflavs.size())
     msg_Info()<<METHOD<<"(): Disallow splittings involving "<<disallowflavs
               <<" MC@NLO.\n";

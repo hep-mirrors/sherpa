@@ -22,7 +22,6 @@ namespace ANALYSIS {
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>
@@ -33,12 +32,6 @@ using namespace ATOOLS;
 WPolarization_Analysis::WPolarization_Analysis(const Argument_Matrix &params):
   Analysis_Base(params[0][0]), m_params(params)
 {
-  Data_Reader reader(",",";","!","=");
-  Algebra_Interpreter *ip=reader.Interpreter();
-  for (size_t i(1);i<params.size();++i) {
-    if (params.size()<2) continue;
-    if (params[i][0]=="PT_W_Min") ToType<double>(ip->Interprete(params[i][1]));
-  }
   m_name+="_WPolarization";
   m_dists.resize(11,NULL);
   m_dists[0] = new Normalized_Observable(4,0.0,1000.0,100,"A0",1);

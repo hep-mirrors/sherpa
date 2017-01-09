@@ -1,6 +1,6 @@
 #include "AMISIC++/Model/Simple_String.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "PDF/Remnant/Hadron_Remnant.H"
 #include "AMISIC++/Model/Reggeon_Trajectory.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -52,13 +52,11 @@ bool Simple_String::Initialize()
   if (InputPath()=="" && InputFile()=="") return false;
   if (!rpa->gen.Beam1().IsHadron() ||
       !rpa->gen.Beam2().IsHadron()) return false;
-  Data_Reader *reader = new Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile());
+  Default_Reader reader;
+  reader.SetInputPath(InputPath());
+  reader.SetInputFile(InputFile());
   std::vector<std::vector<std::string> > helpsvv;
-  if (!reader->MatrixFromFile(helpsvv,"REGGE_TRAJECTORY")) {
+  if (!reader.ReadMatrix(helpsvv,"REGGE_TRAJECTORY")) {
     helpsvv.push_back(std::vector<std::string>(3));
     helpsvv.back()[0]="Pomeron";
     helpsvv.back()[1]="1.0808";

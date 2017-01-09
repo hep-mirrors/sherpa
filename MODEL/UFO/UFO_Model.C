@@ -1,6 +1,6 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/UFO/UFO_Model.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -17,11 +17,10 @@ namespace UFO{
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
 
-    ATOOLS::Data_Reader* run_read = new ATOOLS::Data_Reader(" ",";","#","=");
-    run_read->SetInputPath(path);
-    run_read->SetInputFile(file);
-    p_dataread = new UFO::UFO_Param_Reader(run_read->GetValue<std::string>("UFO_PARAM_CARD",""));
-    delete run_read;
+    ATOOLS::Default_Reader reader;
+    reader.SetInputPath(path);
+    reader.SetInputFile(file);
+    p_dataread = new UFO::UFO_Param_Reader(reader.Get<std::string>("UFO_PARAM_CARD", ""));
     ATOOLS::rpa->gen.AddCitation(1,"Sherpa's BSM features are published under \\cite{Hoche:2014kca}.");
     ATOOLS::rpa->gen.AddCitation(1,"The UFO model format is published under \\cite{Degrande:2011ua}.");
   }

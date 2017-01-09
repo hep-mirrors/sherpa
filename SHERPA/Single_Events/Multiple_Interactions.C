@@ -9,7 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 #include "AMISIC++/Main/Amisic.H"
@@ -149,9 +149,7 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
     static double ptmax(1.0e12);
     if (!init) {
       init=true;
-      Data_Reader read(" ",";","!","=");
-      read.AddComment("#");
-      read.AddWordSeparator("\t");
+      Data_Reader read;
       read.SetInputPath(rpa->GetPath());
       read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
       ptmax=read.GetValue<double>("MPI_PT_MAX",1.0e12);

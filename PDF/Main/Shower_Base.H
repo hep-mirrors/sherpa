@@ -10,7 +10,7 @@ namespace ATOOLS {
 
   class Cluster_Amplitude;
   class Blob_List;
-  class Data_Reader;
+  class Default_Reader;
   class Variation_Weights; 
 
 }
@@ -72,13 +72,13 @@ namespace PDF {
   struct Shower_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    ATOOLS::Data_Reader *p_read;
+    ATOOLS::Default_Reader *p_reader;
     int m_type;
     inline Shower_Key(MODEL::Model_Base *const model,
 		      ISR_Handler *const isr,
-		      ATOOLS::Data_Reader *const read,
+		      ATOOLS::Default_Reader *const reader,
 		      const int type):
-      p_model(model), p_isr(isr), p_read(read), m_type(type) {}
+      p_model(model), p_isr(isr), p_reader(reader), m_type(type) {}
   };//end of struct Shower_Key
 
   typedef ATOOLS::Getter_Function

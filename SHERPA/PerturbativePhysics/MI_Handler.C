@@ -1,5 +1,5 @@
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -25,14 +25,12 @@ MI_Handler::MI_Handler(std::string path,std::string file,
   m_ycut(1.0e-7)
 {
   std::string mihandler="None";
-  ATOOLS::Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(path);
-  read.SetInputFile(file);
-  mihandler=read.GetValue<std::string>("MI_HANDLER","Amisic");
-  path+=read.GetValue<std::string>("INPUT_PATH","");
-  file=read.GetValue<std::string>("INPUT_FILE",file);
+  ATOOLS::Default_Reader reader;
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
+  mihandler=reader.GetStringNormalisingNoneLikeValues("MI_HANDLER","Amisic");
+  path+=reader.Get<std::string>("INPUT_PATH","");
+  file=reader.Get<std::string>("INPUT_FILE",file);
   if (!ATOOLS::rpa->gen.Beam1().IsHadron() ||
       !ATOOLS::rpa->gen.Beam2().IsHadron()) mihandler="None";
   if (mihandler==std::string("Amisic")) {

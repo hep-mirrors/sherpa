@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -43,9 +44,9 @@ Virtual_ME2_Base *ATOOLS::Getter
 <Virtual_ME2_Base,Process_Info,Dummy_QCD_Virtual>::
 operator()(const Process_Info &pi) const
 {
-  Data_Reader read(" ",";","!","=");
+  Default_Reader reader;
   std::vector<double> helpvd;
-  if (!read.VectorFromFile(helpvd,"USE_DUMMY_VIRTUAL")) return NULL;
+  if (!reader.ReadVector(helpvd,"USE_DUMMY_VIRTUAL")) return NULL;
   if (!(helpvd.size()>0 && helpvd[0]==1)) return NULL;
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;

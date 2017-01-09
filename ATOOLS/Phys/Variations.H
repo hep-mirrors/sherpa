@@ -9,7 +9,6 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Enum_Flags.H"
 
@@ -22,7 +21,7 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace ATOOLS {
 
-  class Data_Reader;
+  class Default_Reader;
 
   class Variation_Parameters;
   class Variation_Weights;
@@ -43,7 +42,7 @@ namespace ATOOLS {
     static bool NeedsLHAPDF6Interface(std::string inputpath);
     static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
-    Variations(ATOOLS::Data_Reader * const);
+    Variations(ATOOLS::Default_Reader * const);
     ~Variations();
     typedef std::vector<Variation_Parameters *> Parameters_Vector;
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
@@ -62,12 +61,12 @@ namespace ATOOLS {
     std::map<std::string, unsigned long> m_warnings;
 
 #if defined USING__LHAPDF && defined USING__LHAPDF6
-    void LoadLHAPDFInterfaceIfNecessary(ATOOLS::Data_Reader * const);
+    void LoadLHAPDFInterfaceIfNecessary(ATOOLS::Default_Reader * const);
 #endif
-    void InitialiseParametersVector(ATOOLS::Data_Reader * const);
-    static std::vector<std::string> VariationArguments(ATOOLS::Data_Reader * const);
+    void InitialiseParametersVector(ATOOLS::Default_Reader * const);
+    static std::vector<std::string> VariationArguments(ATOOLS::Default_Reader * const);
     static std::vector<std::string> VariationArgumentParameters(std::string);
-    void AddParameters(std::vector<std::string>, ATOOLS::Data_Reader * const);
+    void AddParameters(std::vector<std::string>);
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
       PDFs_And_AlphaS(std::string pdfname, size_t pdfmember);

@@ -1,7 +1,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
@@ -104,8 +104,8 @@ void LHAPDF_CPP_Interface::SetAlphaSInfo()
   m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
   m_asinfo.m_nf=p_pdf->info().get_entry_as<int>("NumFlavors");
   if (m_asinfo.m_nf<0) {
-    Data_Reader read(" ",";","#","=");
-    int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
+    Default_Reader reader;
+    int nf(reader.Get<int>("LHAPDF_NUMBER_OF_FLAVOURS", 5));
     msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
     m_asinfo.m_nf=nf;
   }
@@ -219,11 +219,9 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
+  Default_Reader reader;
   std::string path;
-  if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
+  if (reader.Read(path, "LHAPDF_GRID_PATH", path)) LHAPDF::setPaths(path);
   const std::vector<std::string>& sets(LHAPDF::availablePDFSets());
   msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::paths()<<std::endl;
   msg_Debugging()<<METHOD<<"(): LHAPDF sets: "<<sets<<std::endl;

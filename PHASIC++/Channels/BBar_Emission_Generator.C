@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -24,21 +25,23 @@ const size_t s_noptmin(10);
 BBar_Emission_Generator::BBar_Emission_Generator():
   m_opt(5)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (!read.ReadFromFile(m_omode,"EEG_OMODE")) m_omode=2;
-  else msg_Info()<<METHOD<<"(): Set mode "<<m_omode<<".\n";
-  if (!read.ReadFromFile(m_opt,"EEG_OSTEP")) m_opt=5;
-  else msg_Info()<<METHOD<<"(): Set steps "<<m_opt<<".\n";
-  if (!read.ReadFromFile(m_Q2min,"EEG_Q2MIN")) m_Q2min=1.0e-6;
-  else msg_Info()<<METHOD<<"(): Set Q^2_{min} = "<<m_Q2min<<".\n";
-  read.CloseInFile(0);
-  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (!read.ReadFromFile(m_amin,"DIPOLE_AMIN"))
-    m_amin=Max(ATOOLS::Accu(),1.0e-8);
-  else msg_Info()<<METHOD<<"(): Set \\alpha_{min} = "<<m_amin<<".\n";
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  if (reader.Read<size_t>(m_omode,"EEG_OMODE", 2)) {
+    msg_Info()<<METHOD<<"(): Set mode "<<m_omode<<"."<<std::endl;
+  }
+  if (reader.Read<size_t>(m_opt,"EEG_OSTEP", 5)) {
+    msg_Info()<<METHOD<<"(): Set steps "<<m_opt<<"."<<std::endl;
+  }
+  if (reader.Read(m_Q2min,"EEG_Q2MIN", 1.0e-6)) {
+    msg_Info()<<METHOD<<"(): Set Q^2_{min} = "<<m_Q2min<<"."<<std::endl;
+  }
+  reader.CloseInFile(0);
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (reader.Read(m_amin,"DIPOLE_AMIN",Max(ATOOLS::Accu(),1.0e-8))) {
+    msg_Info()<<METHOD<<"(): Set \\alpha_{min} = "<<m_amin<<".\n";
+  }
 }
 
 BBar_Emission_Generator::~BBar_Emission_Generator() 

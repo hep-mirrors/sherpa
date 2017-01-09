@@ -7,7 +7,7 @@
 #include "PDF/Remnant/Electron_Remnant.H"
 #include "PDF/Remnant/Photon_Remnant.H"
 #include "PDF/Remnant/No_Remnant.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
@@ -30,12 +30,10 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_cms(8)
 {
   if (s_nozeropdf<0) {
-    Data_Reader dr(" ",";","!","=");
-    dr.AddComment("#");
-    dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa->GetPath());
-    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_nozeropdf=dr.GetValue<int>("NO_ZERO_PDF",0);
+    Default_Reader reader;
+    reader.SetInputPath(rpa->GetPath());
+    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+    s_nozeropdf = reader.Get<int>("NO_ZERO_PDF", 0);
   }
   m_mu2[0]=m_mu2[1]=0.0;
   m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;

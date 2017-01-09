@@ -14,7 +14,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
@@ -39,62 +39,49 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_bsum(0.0), m_vsum(0.0), m_isum(0.0), m_n(0.0),
   m_mbsum(0.0), m_mvsum(0.0), m_misum(0.0), m_mn(0.0)
 { 
-  m_dalpha = 1.;
-  int helpi;
-  double helpd;
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
+  Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_checkborn = false;
-  if (reader.ReadFromFile(helpi,"CHECK_BORN")) {
-    m_checkborn = helpi;
+  if (reader.Read(m_checkborn, "CHECK_BORN", false)) {
     msg_Tracking()<<"Set Born check mode "<<m_checkborn<<" . "<<std::endl;
   }
-  m_checkpoles = false;
-  if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
-    m_checkpoles = helpi;
+  if (reader.Read(m_checkpoles, "CHECK_POLES", false)) {
     msg_Tracking()<<"Set infrared poles check mode "<<m_checkpoles<<" . "<<std::endl;
   }
-  m_checkpolesthreshold = 0.;
-  if (reader.ReadFromFile(helpd,"CHECK_POLES_THRESHOLD")) {
-    m_checkpolesthreshold = helpd;
+  if (reader.Read(m_checkpolesthreshold, "CHECK_POLES_THRESHOLD", 0.0)) {
     msg_Tracking()<<"Set infrared poles check threshold to "<<m_checkpolesthreshold<<" . "<<std::endl;
   }
-  m_checkfinite = false;
-  if (reader.ReadFromFile(helpi,"CHECK_FINITE")) {
-    m_checkfinite = helpi;
+  if (reader.Read(m_checkfinite, "CHECK_FINITE", false)) {
     msg_Tracking()<<"Set infrared finite check mode "<<m_checkfinite<<" . "<<std::endl;
   }
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
-    m_dalpha = helpd;
+  if (reader.Read(m_dalpha, "DIPOLE_ALPHA", 1.0)) {
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
   }
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) {
-    m_dalpha_ff = helpd;
+  if (reader.Read(m_dalpha_ff, "DIPOLE_ALPHA_FF", 1.0)) {
     msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha_ff<<" . "<<std::endl;
+  } else {
+    m_dalpha_ff = m_dalpha;
   }
-  else m_dalpha_ff=m_dalpha;
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) {
-    m_dalpha_fi = helpd;
+  if (reader.Read(m_dalpha_fi, "DIPOLE_ALPHA_FI", 1.0)) {
     msg_Tracking()<<"Set fi dipole cut alpha="<<m_dalpha_fi<<" . "<<std::endl;
+  } else {
+    m_dalpha_fi = m_dalpha;
   }
-  else m_dalpha_fi=m_dalpha;
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) {
-    m_dalpha_if = helpd;
+  if (reader.Read(m_dalpha_if, "DIPOLE_ALPHA_IF", 1.0)) {
     msg_Tracking()<<"Set if dipole cut alpha="<<m_dalpha_if<<" . "<<std::endl;
+  } else {
+    m_dalpha_if = m_dalpha;
   }
-  else m_dalpha_if=m_dalpha;
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) {
-    m_dalpha_ii = helpd;
-    msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha_ii<<" . "<<std::endl;
+  if (reader.Read(m_dalpha_ff, "DIPOLE_ALPHA_FF", 1.0)) {
+    msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha_ff<<" . "<<std::endl;
+  } else {
+    m_dalpha_ff = m_dalpha;
   }
-  else m_dalpha_ii=m_dalpha;
-  m_force_init=reader.GetValue("LOOP_ME_INIT",0);
-  m_checkloopmap=reader.GetValue("CHECK_LOOP_MAP",0);
-  m_sccmur=reader.GetValue("USR_WGT_MODE",1);
-  m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
-  m_imode=reader.GetValue<int>("NLO_IMODE",7);
+  m_force_init=reader.Get("LOOP_ME_INIT",0);
+  m_checkloopmap=reader.Get("CHECK_LOOP_MAP",0);
+  m_sccmur=reader.Get("USR_WGT_MODE",1);
+  m_user_bvimode=reader.Get("NLO_BVI_MODE",0);
+  m_imode=reader.Get<int>("NLO_IMODE",7);
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 

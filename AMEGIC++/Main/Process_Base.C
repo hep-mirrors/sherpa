@@ -9,7 +9,7 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -28,8 +28,8 @@ AMEGIC::Process_Base::Process_Base():
   p_channellibnames = new std::list<std::string>();
   static int allowmap(-1);
   if (allowmap<0) {
-    Data_Reader read(" ",";","!","=");
-    allowmap=read.GetValue<int>("AMEGIC_ALLOW_MAPPING",1);
+    Default_Reader read;
+    allowmap = read.Get<int>("AMEGIC_ALLOW_MAPPING", 1);
     if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
   }
   m_allowmap=allowmap;

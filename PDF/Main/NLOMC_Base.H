@@ -9,7 +9,7 @@
 namespace ATOOLS {
 
   class Cluster_Amplitude;
-  class Data_Reader;
+  class Default_Reader;
   class Variation_Weights; 
   struct RB_Data;
 
@@ -75,11 +75,11 @@ namespace PDF {
   struct NLOMC_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    ATOOLS::Data_Reader *p_read;
+    ATOOLS::Default_Reader *p_reader;
     inline NLOMC_Key(MODEL::Model_Base *const model,
 		      ISR_Handler *const isr,
-		      ATOOLS::Data_Reader *const read):
-      p_model(model), p_isr(isr), p_read(read) {}
+		      ATOOLS::Default_Reader *const reader):
+      p_model(model), p_isr(isr), p_reader(reader) {}
   };//end of struct NLOMC_Key
 
   typedef ATOOLS::Getter_Function

@@ -6,7 +6,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Info_Key.H"
 
-namespace ATOOLS { class Data_Reader; }
+namespace ATOOLS { class Default_Reader; }
 
 namespace BEAM {
   class Beam_Spectra_Handler {
@@ -24,15 +24,15 @@ namespace BEAM {
     std::string           m_name,m_type;
     ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
   private:
-    bool InitKinematics(ATOOLS::Data_Reader *);
-    bool SpecifySpectra(ATOOLS::Data_Reader *);
-    bool InitializeLaserBackscattering(ATOOLS::Data_Reader *,int);
-    bool InitializeSpectrumReader(ATOOLS::Data_Reader *,int);
-    bool InitializeMonochromatic(ATOOLS::Data_Reader *,int);
-    bool InitializeEPA(ATOOLS::Data_Reader *,int);
+    bool InitKinematics(ATOOLS::Default_Reader *);
+    bool SpecifySpectra(ATOOLS::Default_Reader *);
+    bool InitializeLaserBackscattering(ATOOLS::Default_Reader *,int);
+    bool InitializeSpectrumReader(ATOOLS::Default_Reader *,int);
+    bool InitializeMonochromatic(ATOOLS::Default_Reader *,int);
+    bool InitializeEPA(ATOOLS::Default_Reader *,int);
     void InitializeFlav(kf_code);
   public:
-    Beam_Spectra_Handler(ATOOLS::Data_Reader *);
+    Beam_Spectra_Handler(ATOOLS::Default_Reader *);
     ~Beam_Spectra_Handler();
     
     bool   Init();

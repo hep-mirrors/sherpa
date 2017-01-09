@@ -3,7 +3,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -712,9 +712,10 @@ void Color_Integrator::SetAlpha(const Double_Vector &alpha)
   m_max=sum*Factorial(m_ids.size()-2);
   m_mean=m_max*pow(3.0,m_ids.size());
   double aexp(0.0);
-  Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(aexp,"CI_ALPHA_EXP")) aexp=0.0;
-  else msg_Info()<<METHOD<<"(): Set \\alpha exp "<<aexp<<".\n";
+  Default_Reader reader;
+  if (reader.Read(aexp,"CI_ALPHA_EXP",0.0)) {
+    msg_Info()<<METHOD<<"(): Set \\alpha exp "<<aexp<<"."<<std::endl;
+  }
   m_cmax=pow(max/min,aexp);
   msg_Tracking()<<METHOD<<"(): m_max = "<<sum<<"*"
 		<<Factorial(m_ids.size()-2)<<" = "<<m_max

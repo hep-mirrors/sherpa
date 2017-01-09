@@ -2,7 +2,7 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
@@ -37,21 +37,15 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
+  Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int helpi;
   // read whether we should check PDFs for enough energy to produce parton
-  m_cemode = false;
-  if (reader.ReadFromFile(helpi,"KP_CHECK_ENERGY")) {
-    m_cemode = helpi;
+  if (reader.Read(m_cemode, "KP_CHECK_ENERGY", false)) {
     msg_Tracking()<<"Set KP-term energy check mode "<<m_cemode<<" . "<<std::endl;
   }
   // read whether we should accept PDFs that are not positive definite
-  m_negativepdf = true;
-  if (reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
-    m_negativepdf = helpi;
+  if (reader.Read(m_negativepdf, "KP_ACCEPT_NEGATIVE_PDF", true)) {
     msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" . "<<std::endl;
   }
 }

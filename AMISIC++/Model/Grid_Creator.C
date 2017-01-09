@@ -3,8 +3,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -64,13 +63,13 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (tempipath!="") SetInputPath(tempipath);
   if (tempifile!="") SetInputFile(tempifile);
   if (InputFile()=="") return false;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","//","=");
-  reader->AddWordSeparator("\t");
-  reader->SetInputFile(InputPath()+InputFile());
+  ATOOLS::Default_Reader reader;
+  reader.SetInputPath(InputPath());
+  reader.SetInputFile(InputFile());
   std::vector<std::string> helps;
-  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="PT";
+  if (!reader.ReadVector(helps,"X_VARIABLE")) m_gridxvariable="PT";
   else m_gridxvariable=MakeString(helps);
-  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
+  if (!reader.ReadVector(helps,"Y_VARIABLE")) m_gridyvariable="";
   else m_gridyvariable=MakeString(helps);
   if (m_gridxmin==0.0) {
     m_gridxmin=std::numeric_limits<double>::max();
@@ -80,21 +79,16 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
 		   p_processes[i]->Integrator()->ISR()->PDF(1)->Q2Min())));
     }
   }
+
   m_gridxmin=ATOOLS::Max(m_gridxmin,1.e-3);
-  if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
-    m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/250.;
-  double helpd;
-  if (!reader->ReadFromFile(helpd,"INITIAL_EVENTS")) helpd=0;
-  m_initevents=(long unsigned)helpd;
-  if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=100000;
-  m_maxevents=(long unsigned)helpd;
-  if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
-  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) 
-    m_outputlevel=2;
-  if (!reader->ReadFromFile(m_gridxscaling,"HISTO_X_SCALING")) 
-    m_gridxscaling="Log_B_10";
-  if (!reader->ReadFromFile(m_gridyscaling,"HISTO_Y_SCALING")) 
-    m_gridyscaling="Id";
+  m_griddeltax = reader.Get("GRID_DELTA_X", (log(m_gridxmax)-log(m_gridxmin))/250.);
+  m_initevents = reader.Get("INITIAL_EVENTS", 0);
+  m_maxevents = reader.Get("MAX_EVENTS", 100000);
+  m_binerror = reader.Get("GRID_ERROR", 0.05);
+  m_outputlevel = reader.Get("GRID_CREATOR_OUTPUT", 2);
+  m_gridxscaling = reader.Get<std::string>("HISTO_X_SCALING", "Log_B_10");
+  m_gridyscaling = reader.Get<std::string>("HISTO_Y_SCALING", "Id");
+
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
     hit->second->XAxis()->SetVariable(m_gridxvariable);
@@ -108,7 +102,6 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
 					   m_griddeltax)))) 
       THROW(critical_error,"Cannot initialize histogram.");
   }
-  delete reader;
   p_xaxis=p_histograms->begin()->second->XAxis();
   p_yaxis=p_histograms->begin()->second->YAxis();
   p_variable=p_xaxis->Variable();

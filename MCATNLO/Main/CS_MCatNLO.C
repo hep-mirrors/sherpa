@@ -17,22 +17,22 @@ using namespace ATOOLS;
 using namespace std;
 
 CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
-		     Data_Reader *const _dataread) : 
+		     Default_Reader *const _reader) :
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
-  m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
+  m_psmode=_reader->Get<int>("NLO_CSS_PSMODE",0);
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
-  m_maxweight=_dataread->GetValue<double>("NLO_CSS_MAXWEIGHT",1.0e3);
+  m_maxweight=_reader->Get<double>("NLO_CSS_MAXWEIGHT",1.0e3);
   if (m_maxweight!=1.0e3) msg_Info()<<METHOD<<"(): Set max weight "<<m_maxweight<<".\n";
-  m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
-  SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
+  m_maxem=_reader->Get<int>("NLO_CSS_MAXEM",1);
+  SF_Lorentz::SetKappa(_reader->Get<double>("DIPOLE_KAPPA",2.0/3.0));
 
-  p_mcatnlo = new Shower(_isr,0,_dataread);
+  p_mcatnlo = new Shower(_isr,0,_reader);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_mcatnlo,1);
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
-  p_gamma->SetOEF(_dataread->GetValue<double>("CSS_OEF",3.0));
+  p_gamma->SetOEF(_reader->Get<double>("CSS_OEF",3.0));
   p_mcatnlo->SetGamma(p_gamma);
   m_kt2min=p_mcatnlo->GetSudakov()->ISPT2Min();
 }
@@ -287,7 +287,7 @@ DECLARE_GETTER(CS_MCatNLO,"MC@NLO_CSS",NLOMC_Base,NLOMC_Key);
 NLOMC_Base *ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::
 operator()(const NLOMC_Key &key) const
 {
-  return new CS_MCatNLO(key.p_isr,key.p_model,key.p_read);
+  return new CS_MCatNLO(key.p_isr,key.p_model,key.p_reader);
 }
 
 void ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::

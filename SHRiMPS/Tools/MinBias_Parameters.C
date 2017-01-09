@@ -139,11 +139,11 @@ void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
 
 void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
   /*
-  std::string asf(dr->GetValue<std::string>("As_Form",std::string("smooth")));
+  std::string asf(dr->GetValue<std::string>("AS_FORM",std::string("Smooth")));
   m_as_form = MODEL::asform::smooth;
-  if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
-  else if (asf==std::string("frozen")) m_as_form = MODEL::asform::frozen;
-  else if (asf==std::string("smooth")) m_as_form = MODEL::asform::smooth;
+  if (asf==std::string("Constant"))    m_as_form = MODEL::asform::constant;
+  else if (asf==std::string("Frozen")) m_as_form = MODEL::asform::frozen;
+  else if (asf==std::string("Smooth")) m_as_form = MODEL::asform::smooth;
   else if (asf==std::string("IR0"))    m_as_form = MODEL::asform::IR0;
   else if (asf==std::string("GDH"))    m_as_form = MODEL::asform::GDH_inspired;
  
@@ -157,13 +157,13 @@ void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
   else
     m_ladderweight = ladder_weight::Regge;
 
-  std::string ktform(dr->GetValue<std::string>("KT_Form",
-					       std::string("smooth")));
+  std::string ktform(dr->GetValue<std::string>("KT_FORM",
+					       std::string("Smooth")));
   m_ktform = ktform::smooth;
-  if (ktform==std::string("cut"))         m_ktform = ktform::cut;
+  if (ktform==std::string("Cut"))         m_ktform = ktform::cut;
   else if (ktform==std::string("IR0"))    m_ktform = ktform::IR0;
-  else if (ktform==std::string("frozen")) m_ktform = ktform::frozen;
-  else if (ktform==std::string("smooth")) m_ktform = ktform::smooth;
+  else if (ktform==std::string("Frozen")) m_ktform = ktform::frozen;
+  else if (ktform==std::string("Smooth")) m_ktform = ktform::smooth;
 
   std::string ordering =
     dr->GetValue<std::string>("Ordering",std::string("ao_phys"));

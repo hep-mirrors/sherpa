@@ -2,7 +2,7 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -38,36 +38,30 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   m_name      = string("Lepton_FS_QED_Corrections:");
   m_type      = eph::Perturbative;
   // general switch
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Default_Reader reader;
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  bool impliciteon = (reader.GetValue<std::string>("ME_QED","On")=="On");
-  bool expliciteon = (reader.GetValue<std::string>("ME_QED","")=="On");
+  bool impliciteon = (reader.Get<std::string>("ME_QED","On")=="On");
+  bool expliciteon = (reader.Get<std::string>("ME_QED","")=="On");
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
   msg_Debugging()<<"impl="<<impliciteon<<", expl="<<expliciteon<<std::endl;
   if (!impliciteon) {
     m_qed = false;
-    Data_Reader reader1(" ",";","!","=");
-    reader1.AddComment("#");
-    reader1.AddWordSeparator("\t");
-    reader1.SetInputFile(rpa->gen.Variable("FRAGMENTATION_DATA_FILE"));
-    string fragmentation_model(reader1.GetValue<string>("FRAGMENTATION",""));
-    m_on = (fragmentation_model!="Off"  &&
-            fragmentation_model!="None" &&
-            fragmentation_model!="0");
+    Default_Reader fragmentation_reader;
+    fragmentation_reader.SetInputFile(rpa->gen.Variable("FRAGMENTATION_DATA_FILE"));
+    string fragmentation_model(fragmentation_reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", ""));
+    m_on = (fragmentation_model != "None");
   }
   // switch off if there are hard decays, have their own QED corrections,
   // cannot tell here what has been corrected and what not -- OR --
   // if NLO_Mode Fixed_Order, switch off completely, unless explicitely stated
-  std::string hd(reader.GetValue<std::string>("HARD_DECAYS","None"));
+  std::string hd(reader.GetStringNormalisingNoneLikeValues("HARD_DECAYS","None"));
   if (!expliciteon &&
-      (p_mehandler->HasNLO()==1 || !(hd=="Off" || hd=="None" || hd=="0"))) {
+      (p_mehandler->HasNLO() == 1 || !(hd == "None"))) {
     m_on = false; m_qed = false;
   }
   if (expliciteon && p_mehandler->HasNLO()==1) {
-    m_forceqedonnloqcd = reader.GetValue<size_t>("ME_QED_ON_NLO_QCD",0);
+    m_forceqedonnloqcd = reader.Get<size_t>("ME_QED_ON_NLO_QCD",0);
   }
   msg_Debugging()<<"on="<<m_on<<" ,  qed="<<m_qed<<std::endl;
   msg_Debugging()<<"force on on nlo qcd: "<<m_forceqedonnloqcd<<std::endl;

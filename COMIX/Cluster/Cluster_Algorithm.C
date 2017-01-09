@@ -12,7 +12,7 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include <algorithm>
 
 using namespace COMIX;
@@ -24,10 +24,10 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   p_ms(ms), p_ampl(NULL), p_clus(NULL),
   m_lfrac(0.0)
 {
-  Data_Reader read(" ",";","#","=");
-  m_corecheck=read.GetValue<int>("COMIX_CLUSTER_CORE_CHECK",0);
-  m_ordered=read.GetValue<int>("COMIX_CLUSTER_ORDERED",0);
-  m_nocluster=read.GetValue<int>("COMIX_NO_CLUSTER",0);
+  Default_Reader reader;
+  m_corecheck = reader.Get<int>("COMIX_CLUSTER_CORE_CHECK", 0);
+  m_ordered = reader.Get<int>("COMIX_CLUSTER_ORDERED", 0);
+  m_nocluster = reader.Get<int>("COMIX_NO_CLUSTER", 0);
 }
 
 Cluster_Algorithm::~Cluster_Algorithm()

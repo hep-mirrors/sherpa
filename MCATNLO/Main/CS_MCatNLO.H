@@ -43,8 +43,8 @@ namespace MCATNLO {
   public:
 
     // constructor 
-    CS_MCatNLO(PDF::ISR_Handler *const isr, MODEL::Model_Base *const model,
-	      ATOOLS::Data_Reader *const dataread); 
+    CS_MCatNLO(PDF::ISR_Handler *const, MODEL::Model_Base *const,
+	      ATOOLS::Default_Reader *const);
 
     // destructor
     ~CS_MCatNLO();

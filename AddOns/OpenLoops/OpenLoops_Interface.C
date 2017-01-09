@@ -4,7 +4,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
@@ -63,16 +63,16 @@ namespace OpenLoops {
   {
     // find OL installation prefix with several overwrite options
     struct stat st;
-    Data_Reader reader(" ",";","#","=");
-    s_ignore_model = reader.GetValue<int>("OL_IGNORE_MODEL",0);
-    s_exit_on_error = reader.GetValue<int>("OL_EXIT_ON_ERROR",1);
+    Default_Reader reader;
+    s_ignore_model = reader.Get<int>("OL_IGNORE_MODEL", 0);
+    s_exit_on_error = reader.Get<int>("OL_EXIT_ON_ERROR", 1);
     if (s_ignore_model) msg_Info()<<METHOD<<"(): OpenLoops will use the "
                                   <<"Standard Model even if you set a "
                                   <<"different model without warning."
                                   <<std::endl;
     s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
     if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
-    s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
+    s_olprefix = reader.Get<string>("OL_PREFIX", s_olprefix);
     msg_Info()<<"Initialising OpenLoops generator from "<<s_olprefix<<endl;
 
     // load library dynamically
@@ -83,7 +83,7 @@ namespace OpenLoops {
     ol_set_init_error_fatal(0);
 
     // set OL verbosity
-    std::string ol_verbosity = reader.GetValue<std::string>("OL_VERBOSITY","0");
+    std::string ol_verbosity = reader.Get<std::string>("OL_VERBOSITY", "0");
     SetParameter("verbose",ol_verbosity);
 
     // tell OL about the current model and check whether accepted
@@ -110,11 +110,11 @@ namespace OpenLoops {
 #endif
     
     // set remaining OL parameters specified by user
-    reader.VectorFromFile(s_evgen_params,"OL_PARAMETERS");
+    reader.ReadVector(s_evgen_params,"OL_PARAMETERS");
     for (size_t i=1; i<s_evgen_params.size(); i=i+2)
       SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
     vector<string> parameters;
-    if (reader.VectorFromFile(parameters,"OL_INTEGRATION_PARAMETERS"))
+    if (reader.ReadVector(parameters,"OL_INTEGRATION_PARAMETERS"))
       for (size_t i=1; i<parameters.size(); i=i+2)
 	SetParameter(parameters[i-1], parameters[i]);
 

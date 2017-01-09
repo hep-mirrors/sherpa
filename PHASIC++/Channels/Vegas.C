@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -20,12 +20,10 @@ int Vegas::s_onext=-1, Vegas::s_on=-1;
 Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 {
   if (s_on<0) {
-    Data_Reader dr(" ",";","!","=");
-    dr.AddComment("#");
-    dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa->GetPath());
-    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_on = dr.GetValue<int>("VEGAS_MODE",2);
+    Default_Reader reader;
+    reader.SetInputPath(rpa->GetPath());
+    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+    s_on = reader.GetValue<int>("VEGAS_MODE",2);
   }
   m_on=s_on?1:0;
   if (s_onext>-1) m_on=s_onext;

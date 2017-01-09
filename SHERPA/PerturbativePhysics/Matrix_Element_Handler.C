@@ -6,6 +6,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
@@ -42,30 +43,26 @@ Matrix_Element_Handler::Matrix_Element_Handler
   m_sum(0.0), m_globalnlomode(0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
-  if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="Results";
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
+  m_respath = reader.Get<std::string>("RESULT_DIRECTORY", "Results");
   m_respath=ShortenPathName(m_respath);
   if (m_respath[0]!='/' && rpa->gen.Variable("PATH_PIECE")!="")
     m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
-  if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="PartiallyUnweighted";
+  evtm = reader.Get<std::string>("EVENT_GENERATION_MODE", "PartiallyUnweighted");
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else if (evtm=="PartiallyUnweighted" || evtm=="P") m_eventmode=2;
   else m_eventmode=0;
   //need for LHE-output
   rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
-  if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_WARNING_THRESHOLD")) m_ovwth=10.0;
-  if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
-  else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
-  if (!read.ReadFromFile(m_rsadd,"MEH_RSADD")) m_rsadd=1;
-  else msg_Info()<<METHOD<<"(): Set RS add mode "<<m_rsadd<<"."<<std::endl;
-  std::string seedfile;
-  if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE")) 
-    seedfile="ran.stat."+rpa->gen.Variable("RANDOM_SEED");
-  else msg_Info()<<METHOD<<"(): Set seed file "<<seedfile<<"."<<std::endl;
+  m_ovwth = reader.Get("OVERWEIGHT_WARNING_THRESHOLD", 10.0);
+  m_seedmode = reader.Get("EVENT_SEED_MODE", 0, "seed mode", METHOD);
+  m_rsadd = reader.Get("MEH_RSADD", 1, "RS add mode", METHOD);
+  std::string seedfile(reader.Get("EVENT_SEED_FILE",
+        "ran.stat."+rpa->gen.Variable("RANDOM_SEED"),
+        "seed file", METHOD));
 #ifdef USING__GZIP
   seedfile+=".gz";
 #endif
@@ -88,12 +85,12 @@ Matrix_Element_Handler::Matrix_Element_Handler
       (fatal_error,"Cannot initialize random generator status file");
   }
   else if (m_seedmode==3) {
-    ran->SetSeedStorageIncrement(read.GetValue("EVENT_SEED_INCREMENT",1));
+    ran->SetSeedStorageIncrement(reader.Get("EVENT_SEED_INCREMENT",1));
     msg_Info()<<METHOD<<"(): Set seed increment to "
-              <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
+              <<reader.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
   std::string nlomodestring("");
-  if (!read.ReadFromFile(nlomodestring,"NLO_Mode")) m_globalnlomode=0;
+  if (!reader.Read<std::string>(nlomodestring,"NLO_Mode", "")) m_globalnlomode=0;
   else {
     if (nlomodestring=="MC@NLO" || nlomodestring=="MENLOPS" ||
         nlomodestring=="MEPS@NLO") m_globalnlomode=3;
@@ -122,18 +119,17 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 
 void Matrix_Element_Handler::InitNLOMC()
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   std::string nlomc((m_globalnlomode&2)?"MC@NLO":"");
-  nlomc+="_"+read.GetValue<std::string>("NLOMC_GENERATOR","CSS");
-  p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
+  nlomc+="_"+reader.Get<std::string>("NLOMC_GENERATOR","CSS");
+  p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&reader));
 }
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
-  int storeresults = Data_Reader(" ",";","!","=").GetValue("GENERATE_RESULT_DIRECTORY", 1);
+  int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
@@ -338,12 +334,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	  p_shower->GetShower()->SetOn(false);
 	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
 	Read_Write_Base::AddCommandLine("MI_HANDLER None;");
-	Data_Reader read(" ",";","!","=");
-	read.AddComment("#");
-	read.AddWordSeparator("\t");
-	read.SetInputPath(m_path);
-	read.SetInputFile(m_file);
-	if (read.GetValue<int>("BEAM_REMNANTS",-1)==-1)
+	Default_Reader reader;
+	reader.SetInputPath(m_path);
+	reader.SetInputFile(m_file);
+	if (reader.Get<int>("BEAM_REMNANTS",-1)==-1)
 	  Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
 	else {
 	  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
@@ -351,7 +345,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
 	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
 	}
-	if (read.GetValue<std::string>("ME_QED","")!="On")
+	if (reader.Get<std::string>("ME_QED","")!="On")
 	  Read_Write_Base::AddCommandLine("ME_QED Off;");
       }
     }
@@ -410,26 +404,24 @@ int Matrix_Element_Handler::InitializeProcesses
 
 void Matrix_Element_Handler::BuildProcesses()
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   // set color scheme
-  read.SetTags(cls::ColorSchemeTags());
-  cls::scheme cls((cls::scheme)read.GetValue<int>("COLOUR_SCHEME",1));
-  read.SetTags(std::map<std::string,std::string>());
+  reader.SetTags(cls::ColorSchemeTags());
+  cls::scheme cls((cls::scheme)reader.Get<int>("COLOUR_SCHEME",1));
+  reader.SetTags(std::map<std::string,std::string>());
   // set helicity scheme
-  read.SetTags(hls::HelicitySchemeTags());
-  hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));
-  read.SetTags(std::map<std::string,std::string>());
+  reader.SetTags(hls::HelicitySchemeTags());
+  hls::scheme hls((hls::scheme)reader.Get<int>("HELICITY_SCHEME",1));
+  reader.SetTags(std::map<std::string,std::string>());
   // set kfactor scheme
-  std::string kfactor=read.GetValue<std::string>("KFACTOR","NO");
+  std::string kfactor=reader.Get<std::string>("KFACTOR","NO");
   // set scale scheme
-  std::string scale=read.GetValue<std::string>
+  std::string scale=reader.Get<std::string>
     ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
   std::vector<std::string> helpsv;
-  if (!read.VectorFromFile(helpsv,"COUPLINGS"))
+  if (!reader.ReadVector(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
   std::string coupling(MakeString(helpsv,0));
   // init processes

@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob_List.H"
@@ -53,41 +54,40 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_store_results(0), m_decay_tau(false), m_set_widths(false),
   m_br_weights(true), m_usemass(true)
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_file);
-  m_mass_smearing=dr.GetValue<int>("HARD_MASS_SMEARING",1);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
+  m_mass_smearing=reader.Get<int>("HARD_MASS_SMEARING",1);
   m_spincorr=rpa->gen.HardSC();
   /*
     TODO: Writing out a 1->3 channel which might have a large width in one
     resolved configuration, and a small one in another?
   */
-  m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
-  m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
-  m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
-  m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
+  m_store_results=reader.Get<int>("STORE_DECAY_RESULTS",0);
+  m_br_weights=reader.Get<int>("HDH_BR_WEIGHTS",1);
+  m_decay_tau=reader.Get<int>("DECAY_TAU_HARD",0);
+  m_set_widths=reader.Get<int>("HDH_SET_WIDTHS",0);
 
-  m_int_accuracy=dr.GetValue<double>("HDH_INT_ACCURACY", 0.01);
-  m_int_niter=dr.GetValue<int>("HDH_INT_NITER", 2500);
-  m_int_target_mode=dr.GetValue<int>("HDH_INT_TARGET_MODE", 0);
+  m_int_accuracy=reader.Get<double>("HDH_INT_ACCURACY", 0.01);
+  m_int_niter=reader.Get<int>("HDH_INT_NITER", 2500);
+  m_int_target_mode=reader.Get<int>("HDH_INT_TARGET_MODE", 0);
 
   // also need to tell shower whats massive now
   // TODO: need to use the same mass-selector
   // for now, implement alike
-  SetDecayMasses(&dr);
-  m_qedmode=dr.GetValue<int>("HDH_QED_CORRECTIONS",1);
+  SetDecayMasses(&reader);
+  m_qedmode=reader.Get<int>("HDH_QED_CORRECTIONS",1);
   if (m_qedmode && m_spincorr) m_qedmode=2;
   if (m_qedmode>0 && !m_usemass) {
     THROW(fatal_error,std::string("QED corrections to hard decays only ")
                       +std::string("available in massive mode."));
   }
-  m_resultdir=dr.GetValue<std::string>("DECAY_RESULT_DIRECTORY",
-                                       dr.GetValue<std::string>("RESULT_DIRECTORY","Results")+"/Decays");
+  m_resultdir=reader.Get<std::string>("DECAY_RESULT_DIRECTORY",
+                                       reader.Get<std::string>("RESULT_DIRECTORY","Results")+"/Decays");
   if (m_store_results) {
     MakeDir(m_resultdir, true);
   }
-  m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "Threshold");
+  m_offshell=reader.GetStringNormalisingNoneLikeValues("RESOLVE_DECAYS", "Threshold");
 
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
@@ -141,14 +141,14 @@ Hard_Decay_Handler::~Hard_Decay_Handler()
   }
 }
 
-void Hard_Decay_Handler::SetDecayMasses(Data_Reader *const dr)
+void Hard_Decay_Handler::SetDecayMasses(Default_Reader *const reader)
 {
   ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
   std::vector<size_t> psmassive,psmassless;
   std::vector<size_t> defpsmassive,defpsmassless;
-  dr->VectorFromFile(psmassive,"MASSIVE_PS");
-  dr->VectorFromFile(psmassless,"MASSLESS_PS");
-  bool respect=(bool)dr->GetValue<int>("RESPECT_MASSIVE_FLAG",0);
+  reader->ReadVector(psmassive,"MASSIVE_PS");
+  reader->ReadVector(psmassless,"MASSLESS_PS");
+  bool respect=(bool)reader->Get<int>("RESPECT_MASSIVE_FLAG",0);
   // check consistency
   for (size_t i(0);i<psmassive.size();++i)
     if (std::find(psmassless.begin(),psmassless.end(),psmassive[i])!=
@@ -303,13 +303,13 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
 
 void Hard_Decay_Handler::CustomizeDecayTables()
 {
-  Data_Reader dr(" ", ";", "#", "=");
-  dr.SetInputPath(m_path);
-  dr.SetInputFile(m_file);
-  dr.AddIgnore("[");
-  dr.AddIgnore("]");
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
+  reader.AddIgnore("[");
+  reader.AddIgnore("]");
   vector<vector<string> > helpsvv;
-  dr.MatrixFromFile(helpsvv,"HDH_STATUS");
+  reader.ReadMatrix(helpsvv,"HDH_STATUS");
   for (size_t i=0;i<helpsvv.size();++i) {
     if (helpsvv[i].size()==2) {
       pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(helpsvv[i][0]);
@@ -320,7 +320,7 @@ void Hard_Decay_Handler::CustomizeDecayTables()
     else THROW(fatal_error,"Wrong input format.");
   }
 
-  dr.MatrixFromFile(helpsvv,"HDH_WIDTH");
+  reader.ReadMatrix(helpsvv,"HDH_WIDTH");
   for (size_t i=0;i<helpsvv.size();++i) {
     if (helpsvv[i].size()==2) {
       pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(helpsvv[i][0], true);

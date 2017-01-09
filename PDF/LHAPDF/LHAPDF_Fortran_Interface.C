@@ -5,7 +5,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include <cstring>
 #include <dirent.h>
@@ -49,8 +49,8 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_asinfo.m_order=LHAPDF::getOrderAlphaS();
     m_asinfo.m_nf=LHAPDF::getNf();
     if (m_asinfo.m_nf<0) {
-      Data_Reader read(" ",";","#","=");
-      int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
+      Default_Reader reader;
+      int nf(reader.Get<int>("LHAPDF_NUMBER_OF_FLAVOURS", 5));
       msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
       m_asinfo.m_nf=nf;
     }
@@ -192,11 +192,9 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
+  Default_Reader reader;
   std::string path;
-  if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPDFPath(path); 
+  if (reader.Read(path, "LHAPDF_GRID_PATH", "")) LHAPDF::setPDFPath(path); 
   std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
   p_get_lhapdf.resize(files.size());
   for (size_t i(0);i<files.size();++i) p_get_lhapdf[i] = new LHAPDF_Getter(files[i]);

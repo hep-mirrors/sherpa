@@ -207,8 +207,39 @@ MatrixFromString(std::vector<std::vector<Read_Type> > &result,
   else return false; 
 }
 
+std::string Data_Reader::GetStringNormalisingNoneLikeValues(const std::string &parameter,
+                                                            const std::string &def) {
+  std::string val = GetValue<std::string>(parameter, def);
+  NormaliseNoneLikeValue(val);
+  return val;
+}
+
+bool Data_Reader::StringVectorFromFileNormalisingNoneLikeValues(std::vector<std::string>& vals,
+                                                                std::string parameter) {
+  const bool is_filled = VectorFromFile(vals, parameter);
+  for (std::vector<std::string>::iterator it = vals.begin();
+       it != vals.end();
+       ++it) {
+    NormaliseNoneLikeValue(*it);
+  }
+  return is_filled;
+}
+
+bool Data_Reader::StringVectorFromStringNormalisingNoneLikeValues(std::vector<std::string>& vals,
+                                                                  std::string parameter) {
+  const bool is_filled = VectorFromString(vals, parameter);
+  for (std::vector<std::string>::iterator it = vals.begin();
+       it != vals.end();
+       ++it) {
+    NormaliseNoneLikeValue(*it);
+  }
+  return is_filled;
+}
+
 namespace ATOOLS {
 
+  template bool Data_Reader::ReadFromFile<bool>
+  (bool &,std::string);
   template bool Data_Reader::ReadFromFile<int>
   (int &,std::string);
   template bool Data_Reader::ReadFromFile<unsigned int>
@@ -239,6 +270,8 @@ namespace ATOOLS {
   template bool Data_Reader::ReadFromString<std::string>
   (std::string &,std::string);
 
+  template bool Data_Reader::VectorFromFile<bool>
+  (std::vector<bool> &,std::string);
   template bool Data_Reader::VectorFromFile<int>
   (std::vector<int> &,std::string);
   template bool Data_Reader::VectorFromFile<unsigned int>
@@ -269,6 +302,8 @@ namespace ATOOLS {
   template bool Data_Reader::VectorFromString<std::string>
   (std::vector<std::string> &,std::string);
 
+  template bool Data_Reader::MatrixFromFile<bool>
+  (std::vector<std::vector<bool> > &,std::string);
   template bool Data_Reader::MatrixFromFile<int>
   (std::vector<std::vector<int> > &,std::string); 
   template bool Data_Reader::MatrixFromFile<unsigned int>

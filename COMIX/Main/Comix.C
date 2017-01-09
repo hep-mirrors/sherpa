@@ -72,7 +72,7 @@ namespace COMIX {
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PDF/Remnant/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -182,68 +182,69 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
   // init mapping file
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
-  SetPSMasses(&read);
-  s_partcommit=read.GetValue<int>("COMIX_PARTIAL_COMMIT",0);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
+  SetPSMasses(&reader);
+  s_partcommit=reader.Get<int>("COMIX_PARTIAL_COMMIT",0);
   PrintLogo(msg->Info());
   PrintVertices();
   rpa->gen.SetVariable
-    ("COMIX_PMODE",read.GetValue<std::string>("COMIX_PMODE","D"));
+    ("COMIX_PMODE",reader.Get<std::string>("COMIX_PMODE","D"));
+
   int helpi;
-  if (!read.ReadFromFile(helpi,"COMIX_WF_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set wave function mode "<<helpi<<".\n";
+
+  helpi = reader.Get("COMIX_WF_MODE", 0, "wave function mode", METHOD);
   rpa->gen.SetVariable("COMIX_WF_MODE",ToString(helpi));
-  if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set print graph mode "<<helpi<<".\n";
+
+  helpi = reader.Get("COMIX_PG_MODE", 0, "print graph mode", METHOD);
   rpa->gen.SetVariable("COMIX_PG_MODE",ToString(helpi));
-  if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
+
+  helpi = reader.Get("COMIX_VL_MODE", 0, "vertex label mode", METHOD);
   Vertex::SetVLMode(helpi);
-  if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
-  else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
+
+  helpi = reader.Get("COMIX_N_GPL", 3, "graphs per line", METHOD);
   rpa->gen.SetVariable("COMIX_N_GPL",ToString(helpi));
+
   double helpd;
-  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
-  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_AMIN", 1.0e-8, "dipole \\alpha_{cut}", METHOD);
   rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
-  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_ALPHA", 1.0, "dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_ALPHA_FF", 0.0, "FF dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_ALPHA_FI", 0.0, "FI dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_ALPHA_IF", 0.0, "IF dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=0.0;
-  else msg_Info()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_ALPHA_II", 0.0, "II dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
-  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
-  else msg_Info()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
+
+
+  helpd = reader.Get("DIPOLE_KAPPA", 2.0/3.0, "dipole \\kappa", METHOD);
   rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
-  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
-    helpi=Flavour(kf_jet).Size()/2;
-  else msg_Info()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
+
+  helpd = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2, "dipole N_f", METHOD);
   rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
-  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
-  else msg_Info()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
+
+  helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()), "dipole \\k_{T,max}^2", METHOD);
   rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
+
   rpa->gen.SetVariable("USR_WGT_MODE",
-		       ToString(read.GetValue("USR_WGT_MODE",1)));
+		       ToString(reader.Get("USR_WGT_MODE",1)));
   rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
-		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
+		       ToString(reader.Get("NLO_SMEAR_THRESHOLD",0.0)));
   rpa->gen.SetVariable("NLO_SMEAR_POWER",
-		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
+		       ToString(reader.Get("NLO_SMEAR_POWER",0.5)));
+
 #ifdef USING__Threading
-  if (!read.ReadFromFile(helpi,"COMIX_THREADS")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
+  helpi = reader.Get("COMIX_THREADS", 0, "number of threads", METHOD);
   if (helpi>0) {
     m_cts.resize(helpi);
     for (size_t i(0);i<m_cts.size();++i) {

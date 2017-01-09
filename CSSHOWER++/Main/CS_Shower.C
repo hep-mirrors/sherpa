@@ -25,42 +25,36 @@ using namespace ATOOLS;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
-		     Data_Reader *const _dataread,const int type) : 
+		     Default_Reader *const _reader,const int type) :
   Shower_Base("CSS"), p_isr(_isr), 
   p_shower(NULL), p_cluster(NULL), p_cs(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
-  int maxem=_dataread->GetValue<int>("CSS_MAXEM",-1);
+  int maxem=_reader->Get<int>("CSS_MAXEM",-1);
   if (maxem<0) m_maxem=std::numeric_limits<size_t>::max();
   else {
     m_maxem=maxem;
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
-  SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
-  m_kmode=_dataread->GetValue<int>("CSS_KMODE",2);
-  if (m_kmode!=2) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
-  m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
-  if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
-  m_respectq2=_dataread->GetValue<int>("CSS_RESPECT_Q2",0);
-  if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
-  int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
-  if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
-  int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",1);
-  if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";
-  int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
-  if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
-  int csmode=_dataread->GetValue<int>("CSS_CSMODE",0);
-  if (csmode!=1) msg_Info()<<METHOD<<"(): Set color setter mode "<<csmode<<"\n";
+  SF_Lorentz::SetKappa(_reader->Get<double>("DIPOLE_KAPPA",2.0/3.0));
+
+  m_kmode      = _reader->Get("CSS_KMODE",              2, "kernel mode", METHOD);
+  m_recocheck  = _reader->Get("CSS_RECO_CHECK",         0, "reco check mode", METHOD);
+  m_respectq2  = _reader->Get("CSS_RESPECT_Q2",         0, "respect Q2 mode", METHOD);
+  int amode    = _reader->Get("EXCLUSIVE_CLUSTER_MODE", 0, "cluster KF mode", METHOD);
+  int ckfmode  = _reader->Get("CSS_CKFMODE",            1, "kernel mode", METHOD);
+  int pdfcheck = _reader->Get("CSS_PDFCHECK",           1, "PDF check mode", METHOD);
+  int csmode   = _reader->Get("CSS_CSMODE",             0, "color setter mode", METHOD);
   
-  m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
+  m_weightmode = _reader->Get<int>("WEIGHT_MODE", 1);
   
-  int _qcd=_dataread->GetValue<int>("CSS_QCD_MODE",1);
-  int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
+  int _qcd = _reader->Get<int>("CSS_QCD_MODE", 1);
+  int _qed = _reader->Get<int>("CSS_EW_MODE", 0);
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qcd,_qed,_dataread,type);
+  p_shower = new Shower(_isr,_qcd,_qed,_reader,type);
   
   p_next = new All_Singlets();
 
@@ -792,7 +786,7 @@ DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
 Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
 operator()(const Shower_Key &key) const
 {
-  return new CS_Shower(key.p_isr,key.p_model,key.p_read,key.m_type);
+  return new CS_Shower(key.p_isr,key.p_model,key.p_reader,key.m_type);
 }
 
 void Getter<Shower_Base,Shower_Key,CS_Shower>::

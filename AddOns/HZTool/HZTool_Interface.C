@@ -259,7 +259,7 @@ bool HZTool_Interface::Init()
       msg_Info()<<"Using "<<m_xsnevt
 		<<" events to estimate cross section."<<std::endl;
       std::vector<int> helpiv;
-      if (reader.VectorFromFile(helpiv,"HZ_FLAGS") && 
+      if (reader.ReadVector(helpiv,"HZ_FLAGS") && 
 	  helpiv.size()==3)
 	for (size_t i(1);i<=3;++i) m_flags[i]=helpiv[i-1];
       else for (size_t i(1);i<=3;++i) m_flags[i]=i;

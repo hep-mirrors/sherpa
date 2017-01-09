@@ -8,7 +8,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -51,7 +51,7 @@ public:
 
 bool Shower::Init(MODEL::Model_Base *const model,
 		  PDF::ISR_Handler *const isr,
-		  ATOOLS::Data_Reader *const read)
+		  ATOOLS::Default_Reader *const reader)
 {
   DEBUG_FUNC(this);
   p_model=model;
@@ -61,14 +61,14 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  m_rcf=read->GetValue<double>("CSS_RECALC_FACTOR",4.0);
-  m_kin=read->GetValue<int>("CSS_KIN_SCHEME",1);
-  m_kfac=read->GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  m_cpl=read->GetValue<int>("CSS_COUPLING_SCHEME",1);
-  m_pdfmin=read->GetValue<double>("CSS_PDF_MIN",1.0e-6);
-  m_maxem=read->GetValue<unsigned int>
+  m_rcf=reader->Get<double>("CSS_RECALC_FACTOR",4.0);
+  m_kin=reader->Get<int>("CSS_KIN_SCHEME",1);
+  m_kfac=reader->Get<int>("CSS_KFACTOR_SCHEME",1);
+  m_cpl=reader->Get<int>("CSS_COUPLING_SCHEME",1);
+  m_pdfmin=reader->Get<double>("CSS_PDF_MIN",1.0e-6);
+  m_maxem=reader->Get<unsigned int>
     ("CSS_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_oef=read->GetValue<double>("CSS_OEF",3.0);
+  m_oef=reader->Get<double>("CSS_OEF",3.0);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -97,7 +97,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	for (int type(0);type<4;++type)
 	  for (int mode(0);mode<2;++mode)
 	    for (int swap(0);swap<2;++swap)
-	      AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,read)));
+	      AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,reader)));
       }
       msg_IODebugging()<<"}\n";
     }
@@ -111,7 +111,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
       if (j==0 || j==i) continue;
       fls[3]=(fls[1]=Flavour(j)).Bar();
       for (int type(0);type<4;++type)
-	AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
+	AddKernel(new Kernel(this,Kernel_Key(fls,1,type,reader,"FFFF")));
     }
   }
   return true;

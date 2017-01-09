@@ -14,15 +14,9 @@ My_Root *MYROOT::myroot=NULL;
 My_Root::My_Root():
   p_file(NULL)
 {
-  std::string path, file;
-  std::string inputstring;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
-  reader->SetString(inputstring);
-  if (!reader->ReadFromString(path,"ROOT_PATH")) path="./Analysis/";
-  if (!reader->ReadFromString(file,"ROOT_FILE")) file="output.root";
-  delete reader;
-  SetOutputPath(path);
-  SetOutputFile(file);
+  ATOOLS::Default_Reader reader;
+  SetOutputPath(reader.Get<std::string>("ROOT_PATH", "./Analysis/"));
+  SetOutputFile(reader.Get<std::string>("ROOT_FILE", "output.root"));
   int argcf=1;
   char **argvf = new char*[1];
   argvf[0] = "";

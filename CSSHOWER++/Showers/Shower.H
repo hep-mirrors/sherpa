@@ -58,8 +58,8 @@ namespace CSSHOWER {
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       const int mode,const int fc);
  public:
-    Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
-	   ATOOLS::Data_Reader *const dataread,int type);
+    Shower(PDF::ISR_Handler *,const int qcd,const int qed,
+	   ATOOLS::Default_Reader *const,int type);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,const int mode,

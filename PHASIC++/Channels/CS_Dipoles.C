@@ -8,7 +8,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Tensor.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -23,12 +23,11 @@ FF_Dipole::FF_Dipole(NLO_subevt *const sub,
   m_mk2(m_mk*m_mk), m_massive(m_mi||m_mj||m_mij2||m_mk)
 {
   // read in y,z mode
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  double helpd;
-  if (read.ReadFromFile(helpd,"EEG_FF_Y_EXPONENT")) m_yexp=helpd;
-  if (read.ReadFromFile(helpd,"EEG_FF_Z_EXPONENT")) m_zexp=helpd;
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_yexp = reader.Get("EEG_FF_Y_EXPONENT", m_yexp);
+  m_zexp = reader.Get("EEG_FF_Z_EXPONENT", m_zexp);
 }
 
 FF_Dipole::~FF_Dipole() {}
@@ -153,12 +152,11 @@ FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
   m_massive(m_mi||m_mj||m_mij2)
 {
   // read in x,z mode
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  double helpd;
-  if (read.ReadFromFile(helpd,"EEG_FI_X_EXPONENT")) m_xexp=helpd;
-  if (read.ReadFromFile(helpd,"EEG_FI_Z_EXPONENT")) m_zexp=helpd;
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_xexp = reader.Get("EEG_FI_X_EXPONENT", m_xexp);
+  m_zexp = reader.Get("EEG_FI_Z_EXPONENT", m_zexp);
 }
 
 FI_Dipole::~FI_Dipole() {}
@@ -277,12 +275,11 @@ IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
   m_mk2(sqr(m_flk.Mass()))
 {
   // read in x,u mode
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  double helpd;
-  if (read.ReadFromFile(helpd,"EEG_IF_X_EXPONENT")) m_xexp=helpd;
-  if (read.ReadFromFile(helpd,"EEG_IF_U_EXPONENT")) m_uexp=helpd;
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_xexp = reader.Get("EEG_IF_X_EXPONENT", m_xexp);
+  m_uexp = reader.Get("EEG_IF_U_EXPONENT", m_uexp);
 }
 
 IF_Dipole::~IF_Dipole() {}
@@ -380,12 +377,11 @@ II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
   CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_vexp(0.5)
 {
   // read in x,v mode
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  double helpd;
-  if (read.ReadFromFile(helpd,"EEG_II_X_EXPONENT")) m_xexp=helpd;
-  if (read.ReadFromFile(helpd,"EEG_II_V_EXPONENT")) m_vexp=helpd;
+  Default_Reader reader;
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_xexp = reader.Get("EEG_II_X_EXPONENT", m_xexp);
+  m_vexp = reader.Get("EEG_II_V_EXPONENT", m_vexp);
 }
 
 II_Dipole::~II_Dipole() {}

@@ -5,13 +5,14 @@
 #include "AHADIC++/Tools/Hadron_Multiplet.H"
 #include "AHADIC++/Tools/Transitions.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <map>
 #include <string>
 
 
-
+namespace ATOOLS {
+  class Default_Reader;
+}
 
 namespace AHADIC {
   class Soft_Cluster_Handler;
@@ -30,14 +31,14 @@ namespace AHADIC {
     SDiter                   m_piter;
 
     void ReadParameters(std::string,std::string);
-    void ReadGeneralSwitches(ATOOLS::Data_Reader & dataread);
-    void ReadMassParameters(ATOOLS::Data_Reader & dataread);
-    void ReadPoppingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadMesonWeights(ATOOLS::Data_Reader & dataread);
-    void ReadGluonSplittingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterDecayParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterToMesonParameters(ATOOLS::Data_Reader & dataread);
-    void ReadDeprecatedParameters(ATOOLS::Data_Reader & dataread);
+    void ReadGeneralSwitches(ATOOLS::Default_Reader & reader);
+    void ReadMassParameters(ATOOLS::Default_Reader & reader);
+    void ReadPoppingParameters(ATOOLS::Default_Reader & reader);
+    void ReadMesonWeights(ATOOLS::Default_Reader & reader);
+    void ReadGluonSplittingParameters(ATOOLS::Default_Reader & reader);
+    void ReadClusterDecayParameters(ATOOLS::Default_Reader & reader);
+    void ReadClusterToMesonParameters(ATOOLS::Default_Reader & reader);
+    void ReadDeprecatedParameters(ATOOLS::Default_Reader & reader);
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();

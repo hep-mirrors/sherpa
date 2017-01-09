@@ -13,7 +13,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -162,11 +162,10 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetNorm(1.0/(isf*fsf));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
-      Data_Reader reader(" ",";","!","=");
-      reader.AddComment("#");
+      Default_Reader reader;
       reader.SetInputPath(rpa->GetPath());
       reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-      if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
+      if (reader.Read(m_checkpoles, "CHECK_POLES", m_checkpoles)) {
 	m_checkpoles=helpi;
 	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
       }

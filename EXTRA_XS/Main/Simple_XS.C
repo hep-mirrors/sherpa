@@ -5,7 +5,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
-namespace ATOOLS { class Data_Reader;  }
 namespace MODEL  { class Model_Base;   }
 namespace PDF    { class Remnant_Base; }
 
@@ -55,8 +54,7 @@ namespace EXTRAXS {
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PDF/Remnant/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -92,11 +90,10 @@ bool Simple_XS::Initialize(const string &path,const string &file,
 {
   m_path=path;
   m_file=file;
-  Data_Reader read(" ",";","#","=");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
-  SetPSMasses(&read);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
+  SetPSMasses(&reader);
   p_int->SetBeam(beam); 
   p_int->SetISR(isrhandler);
   return true;

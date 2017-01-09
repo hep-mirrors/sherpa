@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -183,8 +183,8 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
-    Data_Reader read(" ",";","#","=");
-    int con=read.GetValue<int>("HNLO_COEFF_MODE",0);
+    Default_Reader reader;
+    int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() && 
         pi.m_fi.m_ps.size()==2 && 

@@ -1,7 +1,9 @@
 #ifndef AHADIC_Tools_Hadron_Init_H
 #define AHADIC_Tools_Hadron_Init_H
 
-#include "ATOOLS/Org/Data_Reader.H"
+namespace ATOOLS {
+  class Default_Reader;
+}
 
 namespace AHADIC {
 
@@ -9,7 +11,7 @@ namespace AHADIC {
   public:
     Hadron_Init() {}
     void Init();
-    void OverWriteProperties(ATOOLS::Data_Reader& overwrite);
+    void OverWriteProperties(ATOOLS::Default_Reader&);
   };
 
 }

@@ -14,7 +14,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
-	       Data_Reader *const dataread,int type) : 
+	       Default_Reader *const reader,int type) :
   p_actual(NULL), m_sudakov(isr,qcd,qed), p_isr(isr),
   p_variationweights(NULL)
 {
@@ -26,26 +26,26 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  const bool reweightalphas = dataread->GetValue<int>("CSS_REWEIGHT_ALPHAS",1);
-  const bool reweightpdfs = dataread->GetValue<int>("CSS_REWEIGHT_PDFS",1);
-  m_maxrewem = dataread->GetValue<int>("REWEIGHT_MAXEM",0);
+  const bool reweightalphas = reader->Get<int>("CSS_REWEIGHT_ALPHAS",1);
+  const bool reweightpdfs = reader->Get<int>("CSS_REWEIGHT_PDFS",1);
+  m_maxrewem = reader->Get<int>("REWEIGHT_MAXEM",0);
   if (m_maxrewem < 0) {
     m_maxrewem = std::numeric_limits<int>::max();
   }
-  m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
-  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
-  m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
-  m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
+  m_use_bbw   = reader->Get<int>("CSS_USE_BBW",1);
+  m_kscheme   = reader->Get<int>("CSS_KIN_SCHEME",1);
+  m_noem      = reader->Get<int>("CSS_NOEM",0);
+  m_recdec    = reader->Get<int>("CSS_RECO_DECAYS",0);
   if (type) {
-    kfmode=dataread->GetValue<int>("MI_CSS_KFACTOR_SCHEME",0);
-    k0sqf=dataread->GetValue<double>("MI_CSS_FS_PT2MIN",1.0);
-    k0sqi=dataread->GetValue<double>("MI_CSS_IS_PT2MIN",4.0);
-    fs_as_fac=dataread->GetValue<double>("MI_CSS_FS_AS_FAC",0.66);
-    is_as_fac=dataread->GetValue<double>("MI_CSS_IS_AS_FAC",0.66);
-    m_kscheme = dataread->GetValue<int>("MI_CSS_KIN_SCHEME",1);
+    kfmode=reader->Get<int>("MI_CSS_KFACTOR_SCHEME",0);
+    k0sqf=reader->Get<double>("MI_CSS_FS_PT2MIN",1.0);
+    k0sqi=reader->Get<double>("MI_CSS_IS_PT2MIN",4.0);
+    fs_as_fac=reader->Get<double>("MI_CSS_FS_AS_FAC",0.66);
+    is_as_fac=reader->Get<double>("MI_CSS_IS_AS_FAC",0.66);
+    m_kscheme = reader->Get<int>("MI_CSS_KIN_SCHEME",1);
   }
   std::vector<std::vector<std::string> > helpsvv;
-  dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
+  reader->ReadMatrix(helpsvv,"CSS_ENHANCE");
   m_efac.clear();
   for (size_t i(0);i<helpsvv.size();++i)
     if (helpsvv[i].size()==2) {

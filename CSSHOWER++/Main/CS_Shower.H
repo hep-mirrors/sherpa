@@ -74,8 +74,8 @@ namespace CSSHOWER {
   public:
 
     // constructor 
-    CS_Shower(PDF::ISR_Handler *const isr, MODEL::Model_Base *const model,
-	      ATOOLS::Data_Reader *const dataread,const int type); 
+    CS_Shower(PDF::ISR_Handler *const, MODEL::Model_Base *const,
+	      ATOOLS::Default_Reader *const,const int type);
 
     // destructor
     ~CS_Shower();

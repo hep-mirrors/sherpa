@@ -1,6 +1,6 @@
 #include "AMEGIC++/Main/ColorSC.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -21,10 +21,8 @@ void ColorSC::Init()
 {
   if (init) return;
   init = true;
-  double helpd;
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(helpd,"N_COLOR")) {
-    Nc = helpd;
+  Default_Reader reader;
+  if (reader.Read(Nc, "N_COLOR", Nc)) {
     msg_Out()<<"Set N_color="<<Nc<<"."<<std::endl;
     CF = 0.5*(Nc-1./Nc);
     CA = Nc;

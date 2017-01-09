@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/ME_Generators.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -14,12 +14,11 @@ ME_Generators::ME_Generators(const std::string &path,
 			     const std::string &file):
   m_path(path), m_file(file)
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
+  Default_Reader reader;
+  reader.SetInputPath(m_path);
+  reader.SetInputFile(m_file);
   std::vector<std::string> megens;
-  if (!read.VectorFromFile(megens,"ME_SIGNAL_GENERATOR")) {
+  if (!reader.ReadStringVectorNormalisingNoneLikeValues(megens,"ME_SIGNAL_GENERATOR")) {
     megens.push_back("Comix");
     megens.push_back("Amegic");
     megens.push_back("Internal");
