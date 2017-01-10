@@ -1,5 +1,6 @@
 #include "HADRONS++/Current_Library/VA_P_V.H"
 #include "METOOLS/Main/Polarization_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -12,7 +13,8 @@ using namespace METOOLS;
 #include "HADRONS++/Current_Library/VA_P_V_SumRules3.C"
 #include "HADRONS++/Current_Library/VA_P_V_PoleFit.C"
 #include "HADRONS++/Current_Library/VA_P_V_hepph0007169.C"
-#include "ATOOLS/Org/My_MPI.H"
+#include "HADRONS++/Current_Library/VA_P_V_PoleFit2.C"
+#include "HADRONS++/Current_Library/VA_P_V_hepph160208918.C"
 
 namespace HADRONS { namespace VA_P_V_FFs {
     FormFactor_Base::~FormFactor_Base()
@@ -59,17 +61,21 @@ void VA_P_V::SetModelParameters( struct GeneralModel model )
       Vxx=Tools::Vcd;
   }
   else if (kf0==kf_B_c) {
-    if (kf1==kf_J_psi_1S)
+    
+    if (kf1==kf_J_psi_1S || kf1==100443)
       Vxx=Tools::Vcb;
-    else if (kf1==kf_B_s_star)
+    else if (kf1==533)       
       Vxx=Tools::Vcs;
+    else if (kf1==kf_B_star)
+      Vxx=Tools::Vcd;
   }
   else if (kf0==kf_D_s_plus) {
-    if (kf1==kf_phi_1020)
+    if (kf1==kf_phi_1020)   
       Vxx=Tools::Vcs;
     else if (kf1==kf_K_star_892)
       Vxx=Tools::Vcd;
   }
+
   m_Vxx = model("Vxx", Vxx);
   m_cV  = model("cV",1.0);
   switch( int(model("FORM_FACTOR", 1)+0.5) ) {
@@ -104,6 +110,14 @@ void VA_P_V::SetModelParameters( struct GeneralModel model )
   case 8:
     p_ff = new VA_P_V_FFs::SumRules3(model, p_masses, m_flavs, p_i);
     msg_Tracking()<<"    Using SumRules3 form factor model for "<<m_name<<std::endl;
+    break;
+  case 9:
+    p_ff = new VA_P_V_FFs::PoleFit2(model, p_masses, m_flavs, p_i);
+    msg_Tracking()<<"    Using PoleFit 2 hep-ph 1607.00622v1 for "<<m_name<<std::endl;
+    break;
+case 10:
+    p_ff = new VA_P_V_FFs::hepph160208918(model, p_masses, m_flavs, p_i);
+    msg_Tracking()<<"    hepph160208918 "<<m_name<<std::endl;
     break;
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "

@@ -1,4 +1,4 @@
-dist_pkgdata_DATA         = Decaydata.db
+#dist_pkgdata_DATA         = Decaydata.db
 
 SUBDIRS       =	Main ME_Library Current_Library PS_Library
 

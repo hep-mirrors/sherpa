@@ -5,9 +5,10 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace METOOLS;
 
+#include "ATOOLS/Org/My_MPI.H"
 #include "HADRONS++/Current_Library/VA_P_T_ISGW.C"
 #include "HADRONS++/Current_Library/VA_P_T_ISGW2.C"
-#include "ATOOLS/Org/My_MPI.H"
+#include "HADRONS++/Current_Library/VA_P_T_vector.C"
 
 namespace HADRONS { namespace VA_P_T_FFs {
     FormFactor_Base::~FormFactor_Base()
@@ -30,6 +31,7 @@ void VA_P_T::SetModelParameters(struct GeneralModel model)
   double Vxx(1.0);
   kf_code kf0=m_flavs[p_i[0]].Kfcode();
   kf_code kf1=m_flavs[p_i[1]].Kfcode();
+    
   if (kf0==kf_B || kf0==kf_B_plus || kf0==kf_B_s || kf0==kf_B_c) {
     if (kf1==kf_D_2_star_2460 || kf1==kf_D_2_star_2460_plus ||
         kf1==kf_D_s2_star_2573)
@@ -37,6 +39,10 @@ void VA_P_T::SetModelParameters(struct GeneralModel model)
     else if (kf1==kf_f_2_1270 || kf1==kf_f_2_prime_1525 ||
              kf1==kf_a_2_1320 || kf1==kf_a_2_1320_plus)
       Vxx=Tools::Vub;
+    else if(kf1==535)
+      Vxx=Tools::Vcs;
+    else if (kf1==515)        
+      Vxx=Tools::Vcd;
   }
   else if (kf0==kf_D || kf0==kf_D_plus || kf0==kf_D_s_plus) {
     if (kf1==kf_K_2_star_1430 || kf1==kf_K_2_star_1430_plus)
@@ -44,6 +50,7 @@ void VA_P_T::SetModelParameters(struct GeneralModel model)
     else if (kf1==kf_f_2_1270 || kf1==kf_f_2_prime_1525 ||
              kf1==kf_a_2_1320 || kf1==kf_a_2_1320_plus)
       Vxx=Tools::Vcd;
+    
   }
   m_Vxx = model("Vxx", Vxx);
   switch( int(model("FORM_FACTOR", 2)+0.5) ) {
@@ -58,6 +65,11 @@ void VA_P_T::SetModelParameters(struct GeneralModel model)
   case 2:
     p_ff = new VA_P_T_FFs::ISGW2(model, p_masses, m_flavs, p_i);
     msg_Tracking()<<"    Using ISGW2 form factor model for "<<m_name<<std::endl;
+    break;
+  case 3:
+    p_ff = new VA_P_T_FFs::vector(model, p_masses, m_flavs, p_i);
+    msg_Tracking()<<"    Using Analogy to Vector (hep-ph 1607.00622v1)"<<m_name<<std::endl; 
+    
     break;
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "

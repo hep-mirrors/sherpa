@@ -7,8 +7,10 @@ libHadronsCurrents_la_SOURCES = \
         SVN_Info.C \
 	Current_Base.C \
 	VA_P_P.C \
+	VA_P_S.C \
 	VA_P_V.C \
 	VA_P_T.C \
+	VA_P_A.C \
 	VA_0_P.C \
 	VA_0_V.C \
 	VA_0_PP.C \
@@ -26,8 +28,10 @@ libHadronsCurrents_la_SOURCES = \
 localinc_HEADERS   = \
 	Current_Base.H \
 	VA_P_P.H \
+	VA_P_S.H \
 	VA_P_V.H \
 	VA_P_T.H \
+	VA_P_A.H \
 	VA_0_P.H \
 	VA_0_V.H \
 	VA_0_PP.H \
@@ -55,12 +59,19 @@ EXTRA_DIST    = \
 		VA_P_P_Polynomial.C \
 		VA_P_P_BallZwicky.C \
                 VA_P_P_BGL.C \
+		VA_P_P_PoleFit2.C \
+		VA_P_P_hepph160208918.C \
 		VA_P_T_ISGW.C \
 		VA_P_T_ISGW2.C \
+		VA_P_T_vector.C \
 		VA_P_V_ISGW.C \
 		VA_P_V_ISGW2.C \
 		VA_P_V_HQET.C \
 		VA_P_V_HQET2.C \
 		VA_P_V_SumRules3.C \
 		VA_P_V_PoleFit.C \
-		VA_P_V_hepph0007169.C 
+		VA_P_V_hepph0007169.C \
+		VA_P_V_PoleFit2.C \
+		VA_P_V_hepph160208918.C \
+		VA_P_A_PoleFit.C \
+		VA_P_S_PoleFit.C

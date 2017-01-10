@@ -3,6 +3,7 @@
 using namespace HADRONS;
 using namespace ATOOLS;
 
+#include "ATOOLS/Org/My_MPI.H"
 #include "HADRONS++/Current_Library/VA_P_P_ISGW.C"
 #include "HADRONS++/Current_Library/VA_P_P_ISGW2.C"
 #include "HADRONS++/Current_Library/VA_P_P_HQET.C"
@@ -12,7 +13,8 @@ using namespace ATOOLS;
 #include "HADRONS++/Current_Library/VA_P_P_BallZwicky.C"
 #include "HADRONS++/Current_Library/VA_P_P_BGL.C"
 #include "HADRONS++/Current_Library/VA_P_P_ISGW3.C"
-#include "ATOOLS/Org/My_MPI.H"
+#include "HADRONS++/Current_Library/VA_P_P_PoleFit2.C"
+#include "HADRONS++/Current_Library/VA_P_P_hepph160208918.C"
 
 namespace HADRONS { namespace VA_P_P_FFs {
   FormFactor_Base::~FormFactor_Base()
@@ -35,6 +37,7 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
   double Vxx(1.0);
   kf_code kf0=m_flavs[p_i[0]].Kfcode();
   kf_code kf1=m_flavs[p_i[1]].Kfcode();
+  
   if (kf0==kf_B || kf0==kf_B_plus || kf0==kf_B_s) {
     if (kf1==kf_D || kf1==kf_D_plus || kf1==kf_D_s_plus || 
         kf1==kf_D_0_star || kf1==kf_D_0_star_plus)
@@ -58,18 +61,25 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
       Vxx=Tools::Vus;
   }
   else if (kf0==kf_B_c) {
-    if (kf1==kf_eta_c_1S)
+    
+    if (kf1==kf_eta_c_1S||kf1==100441)
       Vxx=Tools::Vcb;
     else if (kf1==kf_B_s)
       Vxx=Tools::Vcs;
+    else if (kf1=kf_B)
+      Vxx=Tools::Vcd;
+    
+    
   }
   else if (kf0==kf_D_s_plus) {
+    
     if (kf1==kf_eta_prime_958 || kf1==kf_eta)
       Vxx=Tools::Vcs;
     else if (kf1==kf_K || kf1==kf_K_S || kf1==kf_K_L)
       Vxx=Tools::Vcd;
   }
   m_Vxx = model("Vxx", Vxx);
+  
   switch( int(model("FORM_FACTOR", 1)+0.5) ) {
   case 0:
     p_ff = new VA_P_P_FFs::NoFF(model,p_masses,m_flavs,p_i);
@@ -110,6 +120,14 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
   case 10:
     p_ff = new VA_P_P_FFs::ISGW3(model,p_masses,m_flavs,p_i);
     msg_Tracking()<<"    Using ISGW3 form factor model for "<<m_name<<std::endl;
+    break;
+  case 11: 
+    p_ff= new VA_P_P_FFs::PoleFit2(model,p_masses,m_flavs,p_i);
+    msg_Tracking()<<" Using PoleFit2"<<m_name<<std::endl;
+    break;
+  case 12:  
+    p_ff= new VA_P_P_FFs::hepph160208918(model,p_masses,m_flavs,p_i);
+    msg_Tracking()<<"hep-ph1602.08918"<<m_name<<std::endl;
     break;
   default:
     msg_Error()<<METHOD<<": You chose a form factor model which does not "
