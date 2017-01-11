@@ -123,6 +123,7 @@ namespace PHASIC {
     inline void SetMCatNLO(PDF::NLOMC_Base *const mc) { p_nlomc=mc; }
 
     bool WasSEvent() const { return m_wassevent; }
+    Process_Base* BProc() { return p_bproc; }
 
   };// end of class MCatNLO_Process
 

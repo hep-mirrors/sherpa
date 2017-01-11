@@ -35,6 +35,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   case part_status::active :  // active (final state) particle
   case part_status::decayed : // decayed particle 
   case part_status::fragmented : // or fragmented particle
+  case part_status::documentation : // documentation line
     io=str.precision(4);
     str<<std::setiosflags(std::ios::left);
     str<<"["<<part.Info()<<"] "<<part.Status()<<" "
@@ -47,17 +48,6 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
     str<<")"<<std::resetiosflags(std::ios::right);
     str<<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
     break;
-  case part_status::documentation : // documentation line
-    io=str.precision(4);
-    str<<std::setiosflags(std::ios::left);
-    str<<"============================================================"<<std::endl
-       <<"  "<<std::setw(3)<<part.Info()<<"  "<<std::setw(3)<<part.Status()<<std::setw(1)<<" "
-       <<std::setw(22)<<part.Flav()<<std::setw(1)<<" "
-       <<std::setw(10)<<part.Number()<<std::endl
-       <<"============================================================"
-       <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
-    str.precision(io);
-    return str;		  
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part.Status()<<" ---"<<std::endl;
   }

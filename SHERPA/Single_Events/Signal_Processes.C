@@ -37,6 +37,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
   read.AddComment("#");
   m_setcolors=read.GetValue<int>("SP_SET_COLORS",0);
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
+  m_docmode=read.GetValue<int>("SP_DOC_MODE",1);
 }
 
 
@@ -85,10 +86,35 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
     if (mcatnloproc) {
-      if (mcatnloproc->WasSEvent())
+      if (mcatnloproc->WasSEvent()) {
         blob->SetTypeSpec(proc->Parent()->Name()+"+S");
-      else
+
+        if (m_docmode) {
+          // If documentation mode is enabled, add disconnected blob of original
+          // configuration, e.g. for parton-level stitching samples a posteriori
+          Process_Base* bproc = mcatnloproc->BProc()->Selected();
+          Blob* docblob = bloblist->AddBlob(btp::Unspecified);
+          for (unsigned int i=0;i<bproc->NIn();i++) {
+            Particle* particle = new Particle(0,bproc->Flavours()[i],
+                                              bproc->Integrator()->Momenta()[i]);
+            particle->SetNumber(0);
+            particle->SetStatus(part_status::documentation);
+            particle->SetInfo('m');
+            docblob->AddToInParticles(particle);
+          }
+          for (unsigned int i=bproc->NIn(); i<bproc->NIn()+bproc->NOut();i++) {
+            Particle* particle = new Particle(0,bproc->Flavours()[i],
+                                              bproc->Integrator()->Momenta()[i]);
+            particle->SetNumber(0);
+            particle->SetStatus(part_status::documentation);
+            particle->SetInfo('M');
+            docblob->AddToOutParticles(particle);
+          }
+        }
+      }
+      else {
         blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+      }
       if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
   }

@@ -77,10 +77,6 @@ namespace ATOOLS {
     bool MergeSubsequentType(btp::code,btp::code,long int &,long int &);
     void MergeSubsequentTypeRecursively(btp::code,btp::code,
 					long int &,long int &);
-    void ShortenRecursively(kf_code,
-			    btp::code=btp::Unspecified,
-			    btp::code=btp::Unspecified);
-    bool Shorten(kf_code,btp::code,btp::code);
     void Clear(Blob *blob=NULL);
 
     Blob_List Copy() const;

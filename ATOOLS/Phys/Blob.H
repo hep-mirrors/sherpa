@@ -79,7 +79,7 @@ namespace ATOOLS {
       Hadron_Decay        =  8192,
       Hadron_Mixing       = 16384,
       Hadron_To_Parton    = 32768,
-      Unspecified         = 65535
+      Unspecified         = 65536
     };
   };// end of struct btp
 
