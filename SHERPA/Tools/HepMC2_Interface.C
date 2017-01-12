@@ -643,6 +643,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
       status=4;
     }
   }
+  if (parton->Status()==part_status::documentation) status=20;
   particle = new HepMC::GenParticle(momentum,(long int)parton->Flav(),status);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));

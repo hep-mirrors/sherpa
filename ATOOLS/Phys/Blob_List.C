@@ -383,43 +383,6 @@ void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
   while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }
 
-bool Blob_List::Shorten(kf_code kfc,btp::code out,btp::code in)
-{
-  bool shorten(false);
-  Blob_List::iterator mother(begin()),daughter;
-  while (mother!=end()) {
-    if (out==btp::Unspecified || (*mother)->Type()==out) {
-      for (int i=0;i<(*mother)->NOutP();i++) {
-	Particle * part((*mother)->OutParticle(i));
-	if (part->Flav().Kfcode()!=kfc) continue;
-	Blob * blob(part->DecayBlob());
-	if (blob && (in==btp::Unspecified || blob->Type()==in)) {
-	  shorten=true;
-	  while (blob->NOutP()>0) {
-	    (*mother)->AddToOutParticles(blob->RemoveOutParticle(blob->NOutP()-1,true));
-	  }
-	  daughter=begin();
-	  while (daughter!=end()) {
-	    if ((*daughter)==blob) {
-	      delete blob; 
-	      daughter = erase(daughter);
-	      break;
-	    }
-	    else daughter++;
-	  }
-	  (*mother)->DeleteOutParticle(part);
-	}
-      }
-    }
-    mother++;
-  }  
-  return shorten;
-}
-
-void Blob_List::ShortenRecursively(kf_code kfc,btp::code out,btp::code in) {
-  while (Shorten(kfc,out,in)) {}
-}
-
 double Blob_List::Weight() const
 {
   double weight(1.0);

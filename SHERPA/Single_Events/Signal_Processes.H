@@ -18,7 +18,7 @@ namespace SHERPA {
     PDF::Remnant_Base         *p_remnants[2];
 
     double m_overweight;
-    int m_setcolors, m_cmode;
+    int m_setcolors, m_cmode, m_docmode;
 
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 

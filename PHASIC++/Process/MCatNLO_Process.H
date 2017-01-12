@@ -300,6 +300,7 @@ namespace PHASIC {
      * This method returns whether last generated event was S-Event or not
      */
     bool WasSEvent() const { return m_wassevent; }
+    Process_Base* BProc() { return p_bproc; }
 
   };// end of class MCatNLO_Process
 
