@@ -48,34 +48,29 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
     THROW(fatal_error, "Cannot determine as(MZ) and/or the order of the running of as.");
   }
 
-  //------------------------------------------------------------
-  // SM thresholds for strong interactions, i.e. QCD
-  //------------------------------------------------------------
-  m_nth = 0;
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    if (Flavour(kfit->first).Strong()) m_nth++;
-  }
-  p_thresh        = new AsDataSet[m_nth+1];
-  double * masses = new double[m_nth];
-
+  // update flavour masses from PDF if requested
   if (p_pdf && (pdfas&2)) {
     p_pdf->SetAlphaSInfo();
     const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
-    if (info.m_order>=0)
-      for (int i(0);i<info.m_flavs.size();++i)
+    if (info.m_order>=0) {
+      for (int i(0);i<info.m_flavs.size();++i) {
         info.m_flavs[i].SetMass(info.m_flavs[i].m_mass);
-  }
-
-  int count = 0;
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
-    Flavour flav(kfit->first);
-    if (flav.Strong()) {
-      masses[count] = sqr(flav.Mass(thmode!=0));
-      count++;
+      }
     }
   }
+  
+  // determine number of thresholds and read quark masses
+  m_nthresholds = 0;
+  vector<double> masses;
+  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+      kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
+    Flavour flavour(kfit->first);
+    if (flavour.Strong()) {
+      m_nthresholds++;
+      masses.push_back(sqr(flavour.Mass(thmode!=0)));
+    }
+  }
+  sort(masses.begin(), masses.end());
 
   if (p_pdf) {
     if (overridepdfinfo==1) {
@@ -105,12 +100,9 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
     msg_Info()<<"\n}"<<std::endl;
   }
 
-  std::vector<double> sortmass(&masses[0],&masses[m_nth]);
-  std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
-  for (int i(0);i<m_nth;++i) masses[i]=sortmass[i];
-
-  int j   = 0;
-  for (int i=0; i<m_nth; ++j) {
+  p_thresh = new AsDataSet[m_nthresholds+1];
+  int j = 0;
+  for (int i=0; i<m_nthresholds; ++j) {
     if ((masses[i]>m_m2_MZ)&&(!m_mzset)) {
       //insert Z boson (starting point for any evaluation)
       m_mzset               = j;
@@ -130,7 +122,7 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
     }
   }
   if (!m_mzset) {
-    int j                    = m_nth;
+    int j                    = m_nthresholds;
     m_mzset                  = j;
     p_thresh[j].low_scale    = m_m2_MZ;
     p_thresh[j].as_low       = m_as_MZ;
@@ -138,15 +130,13 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
     p_thresh[j-1].as_high    = m_as_MZ;
     p_thresh[j].nf           = p_thresh[j-1].nf;
   }
-  p_thresh[m_nth].high_scale   = 1.e20;
-  p_thresh[m_nth].as_high      = 0.;
+  p_thresh[m_nthresholds].high_scale = 1.e20;
+  p_thresh[m_nthresholds].as_high    = 0.;
 
-  delete [] masses;
-
-  for (int i=m_mzset;i<=m_nth;++i) {
+  for (int i=m_mzset;i<=m_nthresholds;++i) {
     Lambda2(i);
     p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
-    if (i<m_nth) {
+    if (i<m_nthresholds) {
       p_thresh[i+1].as_low    = p_thresh[i].as_high *
       InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
                  p_thresh[i].high_scale,p_thresh[i].nf);
@@ -384,13 +374,13 @@ double One_Running_AlphaS::operator()(double q2)
     }
     if (p_thresh[i].nf>=0) 
       as = AlphaSLam(q2,i);
-    else 
+    else
       as = q2/p_thresh[i].high_scale * p_thresh[i].as_high;
   }
   else {
     ++i;
     for (;!((p_thresh[i].low_scale<q2)&&(q2<=p_thresh[i].high_scale));++i) {
-      if (i>=m_nth) break;
+      if (i>=m_nthresholds) break;
     }
     as   = AlphaSLam(q2,i);
   }
@@ -403,11 +393,11 @@ double  One_Running_AlphaS::AlphaS(const double q2){
 
 int One_Running_AlphaS::Nf(const double q2)
 {
-  for (int i=0;i<=m_nth;++i) {
+  for (int i=0;i<=m_nthresholds;++i) {
     if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
       return p_thresh[i].nf;
   }
-  return m_nth;
+  return m_nthresholds;
 }
 
 std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
@@ -415,7 +405,7 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
   if (q12>q22) std::swap(q12,q22);
   std::vector<double> thrs;
   int nf(0);
-  for (int i=0;i<=m_nth;++i) {
+  for (int i=0;i<=m_nthresholds;++i) {
     if (q12<=p_thresh[i].low_scale && p_thresh[i].low_scale<q22 &&
         p_thresh[i].nf>nf) {
       thrs.push_back(p_thresh[i].low_scale);

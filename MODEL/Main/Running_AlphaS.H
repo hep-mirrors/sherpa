@@ -53,7 +53,7 @@ namespace MODEL {
   protected:
 
     int    m_order, m_pdf;
-    int    m_nth, m_mzset;
+    int    m_nthresholds, m_mzset;
     double m_as_MZ, m_m2_MZ;
     double m_cutq2, m_cutas;
 
@@ -151,7 +151,7 @@ namespace MODEL {
     m_order = 3 then signifies four-loop running.
   */
   /*!
-    \var int Running_AlphaS::m_nth
+    \var int Running_AlphaS::m_nthresholds
     The number of thresholds, i.e. of quarks. Later on, other particles should be implmented as well,
     at least at one-loop order. The only exception is the Z boson which is inserted as well -
     this is due to the fact that in SHERPA \f$\alpha_s\f$ at the Z-pole is used as defining
