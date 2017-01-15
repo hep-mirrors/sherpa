@@ -9,16 +9,23 @@ namespace MODEL {
 
 namespace OpenLoops {
 
+  enum AmplitudeType {
+    Tree = 1,
+    Loop2 = 12
+  };
+
   class OpenLoops_Born: public PHASIC::Tree_ME2_Base {
 
-    int m_ol_id, m_amptype;
+    int m_ol_id;
+    AmplitudeType m_amplitudetype;
     double m_symfac;
 
   public:
 
-    OpenLoops_Born(const PHASIC::Process_Info& pi,
-                   const ATOOLS::Flavour_Vector& flavs,
-                   int ol_id, int amptype);
+    OpenLoops_Born(const PHASIC::Process_Info &,
+                   const ATOOLS::Flavour_Vector &,
+                   int ol_id,
+                   AmplitudeType);
 
     ~OpenLoops_Born() {}
 
