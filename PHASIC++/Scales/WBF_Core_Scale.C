@@ -58,7 +58,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   }
   double propscale(sqr(maxvec.Abs2())), t12(propscale), t34(propscale);
   double t12test, t34test, test;
-  bool wbfkin(false), wbftest;
+  bool wbfkin(false), wbftest(false);
   std::vector<size_t> links;
   Single_Process *proc(p_proc->Get<Single_Process>());
   for (std::list<Cluster_Leg *>::iterator leg1=stronglegs.begin();

@@ -25,6 +25,8 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
+#include <cassert>
+
 using namespace ATOOLS;
 using namespace PHASIC;
 using namespace PDF;
@@ -350,12 +352,9 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   m_wassevent=false;
   if (p_ampl) p_ampl->Delete();
   p_selected=p_rproc;
-  Process_Base *rproc(NULL);
-  for (size_t i(0);i<p_rsproc->Size();++i)
-    if ((*p_rsproc)[i]==p_rsproc->Selected()) {
-      p_rproc->SetSelected(rproc=(*p_rproc)[i]);
-      break;
-    }
+  const size_t selectedindex(p_rproc->SynchronizeSelectedIndex(*p_rsproc));
+  assert(selectedindex > -1);
+  Process_Base *rproc((*p_rproc)[selectedindex]);
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
@@ -408,12 +407,9 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   m_wassevent=true;
   if (p_ampl) p_ampl->Delete();
   p_ampl=NULL;
-  Process_Base *bproc(NULL);
-  for (size_t i(0);i<p_bviproc->Size();++i)
-    if ((*p_bviproc)[i]==p_bviproc->Selected()) {
-      p_bproc->SetSelected(bproc=(*p_bproc)[i]);
-      break;
-    }
+  const size_t selectedindex(p_bproc->SynchronizeSelectedIndex(*p_bviproc));
+  assert(selectedindex > -1);
+  Process_Base *bproc((*p_bproc)[selectedindex]);
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>

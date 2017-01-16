@@ -96,8 +96,10 @@ namespace PHASIC {
     // member functions
     Process_Base *Parent();
     Process_Base *Selected();
+    size_t SelectedIndex();
 
     bool SetSelected(Process_Base *const proc);
+    size_t SynchronizeSelectedIndex(Process_Base &);
 
     double LastPlus();
     double LastMinus();

@@ -72,6 +72,26 @@ bool Process_Base::SetSelected(Process_Base *const proc)
   return false;
 }
 
+size_t Process_Base::SynchronizeSelectedIndex(Process_Base & proc)
+{
+  size_t otherindex(proc.SelectedIndex());
+  if (otherindex > -1 && otherindex < Size()) {
+    SetSelected((*this)[otherindex]);
+    return otherindex;
+  }
+  return -1;
+}
+
+size_t Process_Base::SelectedIndex()
+{
+  for (size_t i(0); i < Size(); ++i) {
+    if ((*this)[i] == Selected()) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 Process_Base *Process_Base::Parent()
 { 
   if (p_parent && p_parent!=this) return p_parent->Parent();
