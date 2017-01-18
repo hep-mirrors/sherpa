@@ -448,7 +448,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
         AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
-	"$CONDITIONAL_RIVETDIR/bin/rivet-config" --version | grep -q '^1\.' || rivetyoda=true
+        rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
+        AC_MSG_CHECKING(whether the Rivet version uses YODA as its histogramming backend)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],
+        [ rivetyoda=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
+        AC_MSG_CHECKING(whether the Rivet version requires c++11)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.5.0],
+        [ cxx11required=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
@@ -471,7 +477,15 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
   AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
-  
+
+
+  if test "$cxx11required" = "true" ; then
+    AX_CXX_COMPILE_STDCXX_11(,mandatory)
+  fi
+  else
+    AX_CXX_COMPILE_STDCXX_11(,optional)
+  fi
+
 
   AC_ARG_ENABLE(
     fastjet,
