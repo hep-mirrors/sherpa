@@ -481,9 +481,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   if test "$cxx11required" = "true" ; then
     AX_CXX_COMPILE_STDCXX_11(,mandatory)
-  else
-    AX_CXX_COMPILE_STDCXX_11(,optional)
   fi
+  dnl reinstate this else-clause to greedily enable C++11 when available
+  dnl else
+  dnl   AX_CXX_COMPILE_STDCXX_11(,optional)
+  dnl fi
 
 
   AC_ARG_ENABLE(
