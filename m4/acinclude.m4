@@ -481,7 +481,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   if test "$cxx11required" = "true" ; then
     AX_CXX_COMPILE_STDCXX_11(,mandatory)
-  fi
   else
     AX_CXX_COMPILE_STDCXX_11(,optional)
   fi
