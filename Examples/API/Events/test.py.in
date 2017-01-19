@@ -39,5 +39,5 @@ try:
         if ((n%100)==0): print "  Event ",n
     Generator.SummarizeRun()
         
-except Sherpa.Exception as exc:
+except Sherpa.SherpaException as exc:
     exit(1)

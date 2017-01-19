@@ -40,6 +40,6 @@ try:
     print '\nRandom test point: ', tp[0], tp[1], tp[2], tp[3]
     print 'Squared ME: ', Process.CSMatrixElement(), '\n'
 
-except Sherpa.Exception as exc:
+except Sherpa.SherpaException as exc:
     print exc
     exit(1)

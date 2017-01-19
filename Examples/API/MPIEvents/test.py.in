@@ -53,5 +53,5 @@ try:
             comm.send(parts,dest=0,tag=3*rank)
     Generator.SummarizeRun()
 
-except Sherpa.Exception as exc:
+except Sherpa.SherpaException as exc:
     exit(1)
