@@ -306,12 +306,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
         (blob->Type()==btp::Hadron_Decay &&
          blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
-      if (daughters[i]->Flav().Kfcode()==kf_tau &&
-          !daughters[i]->Flav().IsStable() &&
-          rpa->gen.SoftSC()) {
-        DEBUG_INFO("  ... but keeping tau spin density for hadronic tau decays.");
-      }
-      else if (m_spincorr) {
+      if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
         amps->Contract(D);
         delete D;
