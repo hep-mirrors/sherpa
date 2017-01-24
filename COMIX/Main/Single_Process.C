@@ -412,8 +412,17 @@ double COMIX::Single_Process::Partonic
       }
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
-	for (size_t i(0);i<rsubs.size();++i)
+	for (size_t i(0);i<rsubs.size();++i) {
 	  m_subs[i]->CopyXSData(rsubs[i]);
+	  for (Cluster_Amplitude *campl(m_subs[i]->p_ampl);
+	       campl;campl=campl->Next()) {
+	    for (size_t i(0);i<campl->Legs().size();++i) {
+	      Flavour fl(campl->Leg(i)->Flav());
+	      fl=ReMap(i<m_nin?fl.Bar():fl,campl->Leg(i)->Id());
+	      campl->Leg(i)->SetFlav(i<m_nin?fl.Bar():fl);
+	    }
+	  }
+	}
 	m_subs.MultME(m_w);
       }
     }
