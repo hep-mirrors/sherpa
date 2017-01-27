@@ -267,6 +267,8 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 			       const double &ran)
 {
   if (m_swap) m_swap=0;
+  if (!AllowSwap(f1,f2))
+    return false;
   int ok[2]={0,0};
   if (p_isrbase[0]->PDF()->Contains(f2)) ok[0]=1;
   else for (size_t j(0);j<f2.Size();++j)
@@ -283,6 +285,8 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
 			    const ATOOLS::Flavour &f2) const
 {
+  if(!(p_isrbase[0]->PDF() && p_isrbase[1]->PDF()))
+    return false;
   return p_isrbase[0]->PDF()->Contains(f2) &&
     p_isrbase[0]->PDF()->Contains(f1);
 }
