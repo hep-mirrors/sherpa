@@ -131,7 +131,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=ToType<int>(rpa->gen.Variable("ME_LIBCHECK")); 
+  int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
     if (libchk==1) {
       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
       directload = false;

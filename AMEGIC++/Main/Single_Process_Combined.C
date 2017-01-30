@@ -136,7 +136,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   bool directload = true;
   Default_Reader reader;
   int libchk; 
-  if (reader.Read(libchk, "ME_LIBCHECK", 0)) {
+  if (reader.Read(libchk, "AMEGIC_ME_LIBCHECK", 0)) {
     if (libchk==1) {
       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
       directload = false;

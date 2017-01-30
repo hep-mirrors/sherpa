@@ -128,23 +128,27 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA", ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_ALPHA_FF", 0.0,
+  helpd = reader.Get("DIPOLE_ALPHA_FF",
+                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
                      "FF dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_FF", ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_ALPHA_FI", 0.0,
+  helpd = reader.Get("DIPOLE_ALPHA_FI",
+                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
                      "FI dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_FI", ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_ALPHA_IF", 0.0,
+  helpd = reader.Get("DIPOLE_ALPHA_IF",
+                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
                      "IF dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_IF", ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_ALPHA_II", 0.0,
+  helpd = reader.Get("DIPOLE_ALPHA_II",
+                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
                      "II dipole \\alpha_{max}", METHOD);
   rpa->gen.SetVariable("DIPOLE_ALPHA_II", ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_KAPPA", 0.0,
+  helpd = reader.Get("DIPOLE_KAPPA", 2./3.,
                      "dipole \\kappa", METHOD);
   rpa->gen.SetVariable("DIPOLE_KAPPA", ToString(helpd));
 
@@ -165,8 +169,8 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   rpa->gen.SetVariable("OS_SUB",ToString(ossub));
   int sort = reader.Get<int>("AMEGIC_SORT_LOPROCESS", 1);
   rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
-  int libcheck = reader.Get<int>("ME_LIBCHECK", 0);
-  rpa->gen.SetVariable("ME_LIBCHECK",ToString(libcheck));
+  int libcheck = reader.Get<int>("AMEGIC_ME_LIBCHECK", 0);
+  rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(libcheck));
   int cvp = reader.Get<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1);
   rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(cvp));
   double alpha = reader.Get<double>("AMEGIC_TCHANNEL_ALPHA", 0.9);

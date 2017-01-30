@@ -38,7 +38,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
     bool gc(ioh.SetFileNameRO(name)==0);
     if (gc&&force) {
       msg_Error()<<"Color matrix for process "<<pID<<" not found!"<<endl
-		 <<" Rerun with option 'ME_LIBCHECK=1'."<<endl;
+                 <<" Rerun with option 'AMEGIC_ME_LIBCHECK=1'."<<endl;
       THROW(critical_error,"Failed to load color matrix.");
     }
     if (!gc) { 
