@@ -103,6 +103,8 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
+  m_path=path;
+  m_file=file;
   Default_Reader reader;
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_file);
@@ -111,8 +113,6 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
     THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
-  m_path=path;
-  m_file=file;
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
   SetPSMasses(&reader);
