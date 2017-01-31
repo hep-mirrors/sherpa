@@ -307,7 +307,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
        blit!=blobs->end();++blit) {
     Blob* blob=*blit;
     for (int i=0;i<blob->NInP();i++) {
-      if (blob->InParticle(i)->ProductionBlob()==NULL) {
+      if (blob->InParticle(i)->ProductionBlob()==NULL &&
+          blob->OutParticle(i)->Status()!=part_status::documentation) {
         Particle* parton=blob->InParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
@@ -321,7 +322,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
     }
     for (int i=0;i<blob->NOutP();i++) {
-      if (blob->OutParticle(i)->DecayBlob()==NULL) {
+      if (blob->OutParticle(i)->DecayBlob()==NULL &&
+          blob->OutParticle(i)->Status()!=part_status::documentation) {
         Particle* parton=blob->OutParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
