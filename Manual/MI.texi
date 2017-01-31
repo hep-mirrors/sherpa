@@ -11,6 +11,7 @@ The following parameters are used to steer the MPI setup.
 
 @menu
 * MI_HANDLER::          The MPI handler
+* MI ISR parameters::   The ISR parameters for MPI
 * TURNOFF::             The p_T turnoff
 * SCALE_MIN::           The p_T cutoff
 * PROFILE_FUNCTION::    The hadron profile function
@@ -30,6 +31,19 @@ The following parameters are used to steer the MPI setup.
 Specifies the MPI handler. The two possible values
 at the moment are @option{None} and @option{Amisic}.
 
+@node MI ISR parameters
+@subsection MI ISR parameters
+@cindex MI_PDF_SET
+@cindex MI_PDF_SET_1
+@cindex MI_PDF_SET_2
+@cindex MI_PDF_SET_VERSION
+@cindex MI_PDF_SET_VERSION_1
+@cindex MI_PDF_SET_VERSION_2
+@cindex MI_PDF_LIBRARY
+The following parameters can be used to overwrite the @ref{ISR Parameters} in
+the context of multiple interactions: @code{MI_PDF_SET}, @code{MI_PDF_SET_1},
+@code{MI_PDF_SET_2}, @code{MI_PDF_SET_VERSION}, @code{MI_PDF_SET_VERSION_1},
+@code{MI_PDF_SET_VERSION_2}, @code{MI_PDF_LIBRARY}.
 
 @node TURNOFF
 @subsection TURNOFF

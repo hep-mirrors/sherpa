@@ -565,7 +565,7 @@ bool Initialization_Handler::InitializeThePDFs()
     reader.ReadStringVectorNormalisingNoneLikeValues(pdflibs,"PDF_LIBRARY");
     if (pdflibs.size()==0) m_pdflibs.insert(deflib);
     for (size_t i(0);i<pdflibs.size();++i) m_pdflibs.insert(pdflibs[i]);
-    if (reader.Read<std::string>(mpilib,"PDF_LIBRARY_MPI","")) {
+    if (reader.Read<std::string>(mpilib,"MI_PDF_LIBRARY","")) {
       m_pdflibs.insert(mpilib);
     }
     if (reader.Read<std::string>(beamlib,"PDF_LIBRARY_"+ToString(beam+1),"")) {
@@ -609,28 +609,48 @@ bool Initialization_Handler::InitializeThePDFs()
     ISR_Base ** isrbases = new ISR_Base*[2];
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
+      std::string indextag("_" + ToString(j + 1));
       int defaultflav(p_beamspectra->GetBeam(j)->Bunch());
       int flav = reader.Get<int>("BUNCH_"+ToString(j+1),defaultflav);
       m_bunch_particles[j] = Flavour((kf_code)abs(flav));
       if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
-      std::string set = reader.Get<std::string>("PDF_SET",defset[j]);
-      std::string specialset;
-      if (reader.Read<std::string>(specialset,"PDF_SET_"+ToString(j+1), ""))
-	set=specialset;
-      int member = reader.Get<int>("PDF_SET_VERSION",0);
-      member = reader.Get<int>("PDF_SET_MEMBER",member);
-      member = reader.Get<int>("PDF_SET_VERSION_"+ToString(j+1),member);
-      member = reader.Get<int>("PDF_SET_MEMBER_"+ToString(j+1),member);
+
+      std::string set;
+      int version(0);
+      bool specializedformi(false);
+
+      // Read PDF set and version
+      set = reader.Get<std::string>("PDF_SET", defset[j]);
+      set = reader.Get<std::string>("PDF_SET" + indextag, set);
+      version = reader.Get<int>("PDF_SET_MEMBER", 0);
+      version = reader.Get<int>("PDF_SET_VERSION", version);
+      version = reader.Get<int>("PDF_SET_MEMBER" + indextag, version);
+      version = reader.Get<int>("PDF_SET_VERSION" + indextag, version);
+
+      // Read PDF set and version for hard subprocesses (multiple interactions)
       if (id==isr::hard_subprocess) {
         std::string mpiset;
-        if (reader.Read<std::string>(mpiset,"PDF_SET_MPI", "")) {
-          set=mpiset;
-          member=reader.Get<int>("PDF_SET_MPI_VERSION",0);
-          member=reader.Get<int>("PDF_SET_MPI_MEMBER",member);
+        if (reader.Read<std::string>(mpiset, "MI_PDF_SET" + indextag, set)
+            || reader.Read<std::string>(mpiset, "MI_PDF_SET", set)) {
+          set = mpiset;
+          // If using a special MI PDF set, then do not use normal PDF set
+          // version
+          version = 0;
+          specializedformi = true;
+        }
+        int mpiversion;
+        if (reader.Read<int>(mpiversion, "MI_PDF_SET_VERSION" + indextag, version)
+            || reader.Read<int>(mpiversion, "MI_PDF_SET_MEMBER" + indextag, version)
+            || reader.Read<int>(mpiversion, "MI_PDF_SET_VERSION", version)
+            || reader.Read<int>(mpiversion, "MI_PDF_SET_MEMBER", version)) {
+          version = mpiversion;
+          specializedformi = true;
         }
       }
+
+      // Load PDF
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-        (set,PDF_Arguments(m_bunch_particles[j],&reader, j, set, member));
+        (set,PDF_Arguments(m_bunch_particles[j],&reader, j, set, version));
       if (i==0) rpa->gen.SetPDF(j,pdfbase);
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
@@ -638,6 +658,9 @@ bool Initialization_Handler::InitializeThePDFs()
       if (pdfbase && i==0) {
 	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
 		  <<m_bunch_particles[j]<<")."<<std::endl;
+      } else if (pdfbase && specializedformi) {
+	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
+		  <<m_bunch_particles[j]<<") for multiple interactions."<<std::endl;
       }
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
       else {
@@ -652,8 +675,6 @@ bool Initialization_Handler::InitializeThePDFs()
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
     m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
     m_isrhandlers[id]->Init(m_bunch_splimits);
-    if (i==0)
-      msg_Info()<<"Initialized the ISR: "<<m_isrhandlers[id]->Type()<<endl;
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
       msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
 		 <<"   Inconsistent ISR & Beam:"<<endl
@@ -661,6 +682,7 @@ bool Initialization_Handler::InitializeThePDFs()
       Abort();
     }
   }
+  msg_Info() << "Initialized the ISR." << endl;
   return 1;
 }
 

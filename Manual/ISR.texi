@@ -13,7 +13,8 @@
 @cindex PDF_SET_1
 @cindex PDF_SET_2
 @cindex PDF_SET_VERSION
-@cindex PDF_SET_MEMBER
+@cindex PDF_SET_VERSION_1
+@cindex PDF_SET_VERSION_2
 @cindex SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
@@ -46,10 +47,11 @@ They can be configured with the following parameters.
 
 @table @code
 @item PDF_LIBRARY
-Takes a space separated list of PDF interfaces to load. If the two colliding beams
-are of different type, e.g. protons and electrons or photons and electrons,
-it is possible to specify two different PDF libraries using @anchor{PDF_LIBRARY_1}
-@option{PDF_LIBRARY_1} and @anchor{PDF_LIBRARY_2} @option{PDF_LIBRARY_2}. 
+Takes a space separated list of PDF interfaces to load. If the two colliding
+beams are of different type, e.g. protons and electrons or photons and
+electrons, it is possible to specify two different PDF libraries using
+@anchor{PDF_LIBRARY_1} @option{PDF_LIBRARY_1} and @anchor{PDF_LIBRARY_2}
+@option{PDF_LIBRARY_2}. 
 The following options are distributed with Sherpa:
 @table @code
 @item LHAPDFSherpa
@@ -100,9 +102,11 @@ chosen @code{PDF_LIBRARY} can be figured by running Sherpa with the parameter
 If the two colliding beams are of different type, e.g. protons and electrons
 or photons and electrons, it is possible to specify two different PDF sets using 
 @anchor{PDF_SET_1} @option{PDF_SET_1} and @anchor{PDF_SET_2} @option{PDF_SET_2}.
-@item PDF_SET_VERSION or PDF_SET_MEMBER
-This parameter allows to eventually select a specific version (member)
-within the chosen PDF set.
+@item PDF_SET_VERSION
+This parameter allows to select a specific version (member) within the chosen
+PDF set. It is possible to specify two different PDF sets using
+@anchor{PDF_SET_VERSION_1} @option{PDF_SET_VERSION_1} and
+@anchor{PDF_SET_VERSION_2} @option{PDF_SET_VERSION_2}.
 @comment Specifying a negative value, e.g.
 @comment @verbatim
 @comment   PDF_LIBRARY LHAPDFSherpa;
