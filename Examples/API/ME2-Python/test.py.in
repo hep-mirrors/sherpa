@@ -36,8 +36,8 @@ try:
     
     # Random momenta
     E_cms = 500.0
-    tp = Process.TestPoint(E_cms)
-    print '\nRandom test point: ', tp[0], tp[1], tp[2], tp[3]
+    wgt = Process.TestPoint(E_cms)
+    print '\nRandom test point '
     print 'Squared ME: ', Process.CSMatrixElement(), '\n'
 
 except Sherpa.SherpaException as exc:
