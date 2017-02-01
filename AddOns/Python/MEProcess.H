@@ -71,11 +71,18 @@ public:
   void SetMomentum(const size_t &id, const ATOOLS::Vec4D &p);
   void SetColor   (const size_t &id, const ATOOLS::ColorID &col);
 
-  ATOOLS::Vec4D_Vector TestPoint(const double& sqrts);
+  // Get the momenta that were previously set
+  ATOOLS::Vec4D_Vector GetMomenta();
+
+  // Generate a PS point via Rambo and return the phase space weight
+  double TestPoint(const double& sqrts);
+  
   double MatrixElement();
   double CSMatrixElement();
 
+  // Calculate and retuen 1/F with F=4*sqrt((pa*pb)^2 - ma^2*mb^2)
   double GetFlux();
+  
   std::string GeneratorName();
 
   ATOOLS::Flavour GetFlav(size_t i);

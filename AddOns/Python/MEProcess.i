@@ -35,7 +35,10 @@ public:
   void SetMomentum(int, double, double, double, double);
   void SetMomenta(ATOOLS::Vec4D_Vector&);
 
-  ATOOLS::Vec4D_Vector TestPoint(const double& sqrts);
+  // Get the momenta that were previously set
+  ATOOLS::Vec4D_Vector GetMomenta();
+
+  double TestPoint(const double& sqrts);
   double MatrixElement();
   double CSMatrixElement();
   double MEProcess::GetFlux();

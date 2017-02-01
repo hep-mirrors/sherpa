@@ -30,6 +30,7 @@ MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
 
 MEProcess::~MEProcess()
 {
+  delete p_rambo;
 }
 
 void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
@@ -125,6 +126,16 @@ void MEProcess::SetMomenta(const ATOOLS::Vec4D_Vector &p)
 {
   for (size_t i(0);i<m_nin;i++)        p_amp->Leg(m_mom_inds[i])->SetMom(-p[i]);
   for (size_t i(m_nin);i<p.size();i++) p_amp->Leg(m_mom_inds[i])->SetMom( p[i]);
+}
+
+ATOOLS::Vec4D_Vector MEProcess::GetMomenta()
+{
+  ATOOLS::Vec4D_Vector mom;
+  for (unsigned int i(0); i<m_nin; i++)
+    mom.push_back( -p_amp->Leg(m_mom_inds[i])->Mom());
+  for (unsigned int i(m_nin); i<m_nin+m_nout; i++)
+    mom.push_back(  p_amp->Leg(m_mom_inds[i])->Mom());
+  return mom;
 }
 
 void MEProcess::SetMomentum(const size_t &index, const double &e,
@@ -311,23 +322,20 @@ void MEProcess::Initialize()
 			      p_proc->Generator());
 }
 
-ATOOLS::Vec4D_Vector MEProcess::TestPoint(const double& E){
+double MEProcess::TestPoint(const double& E){
   ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
-  if (m_nin==1) {
-    p[0]=ATOOLS::Vec4D(m_flavs[0].Mass(),0.0,0.0,0.0);
-    if (m_nout==1) { p[1]=p[0];  return p;}
-  }
-  else {
-    double m[2]={m_flavs[0].Mass(),m_flavs[1].Mass()};
-    if (E<m[0]+m[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
-    double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
-    p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-m[0]*m[0]));
-    p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
-  }
+  if(m_nin<2)
+    THROW(not_implemented, "Not implemented for 1->n process");
+  double m[2]={m_flavs[0].Mass(),m_flavs[1].Mass()};
+  if (E<m[0]+m[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
+  double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
+  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-m[0]*m[0]));
+  p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
   p_rambo->GeneratePoint(&p[0],(PHASIC::Cut_Data*)(NULL));
   SetMomenta(p);
-  GenerateColorPoint();
-  return p;
+  if(p_colint!=NULL) GenerateColorPoint();
+  p_rambo->GenerateWeight(&p[0],(PHASIC::Cut_Data*)(NULL));
+  return p_rambo->Weight();
 }
 
 double MEProcess::MatrixElement()
