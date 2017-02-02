@@ -339,10 +339,8 @@ void Process_Base::Init(const Process_Info &pi,
   p_int->SetISRThreshold(Max(massin,massout));
   p_int->Initialize(beamhandler,isrhandler);
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
-  if (m_pinfo.m_ii.m_ps.size()>1 &&
-      isrhandler->AllowSwap(m_pinfo.m_ii.m_ps[0].m_fl,
-			    m_pinfo.m_ii.m_ps[1].m_fl))
-    m_symfac*=m_pinfo.m_ii.FSSymmetryFactor();
+  if (m_nin==2 &&
+      isrhandler->AllowSwap(m_flavs[0],m_flavs[1])) m_symfac*=2.0;
   m_name+=pi.m_addname;
 }
 

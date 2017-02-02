@@ -56,6 +56,7 @@ AMEGIC::Single_Process_MHV::~Single_Process_MHV()
 
 void AMEGIC::Single_Process_MHV::PolarizationNorm() {
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
+  if (m_nin==2 && p_int->ISR()->AllowSwap(m_flavs[0],m_flavs[1])) m_Norm/=2.0;
 }
 
 

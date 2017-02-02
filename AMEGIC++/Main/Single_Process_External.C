@@ -63,6 +63,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
   ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+ptypename);
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
+  if (m_nin==2 && p_int->ISR()->AllowSwap(m_flavs[0],m_flavs[1])) m_Norm/=2.0;
   m_pn=m_flavs.size();
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
