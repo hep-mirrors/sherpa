@@ -500,6 +500,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_MSG_RESULT(no)
     if test "$cxx11required" = "true" ; then
       AX_CXX_COMPILE_STDCXX_11(,mandatory)
+      HAVE_CXX11=1
+      AC_DEFINE(HAVE_CXX11,1,
+          [define if the compiler supports basic C++11 syntax])
     else
       AX_CXX_COMPILE_STDCXX_11(,optional)
     fi
@@ -941,5 +944,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$binreloc" = "true" ; then
     AC_DEFINE([ENABLE_BINRELOC], "1", [binreloc activation])
   fi
+
+  AC_ARG_ENABLE(pyext,
+    AC_HELP_STRING([--enable-pyext], [Enable Python API]),
+    [ AC_MSG_CHECKING(for Python extension)
+      case "${enableval}" in
+        no) AC_MSG_RESULT(no); pyext=false ;;
+        yes)  AC_MSG_RESULT(yes); pyext=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for Python extension); AC_MSG_RESULT(no); pyext=false])
+  if test x$pyext == xtrue; then
+    AM_PATH_PYTHON
+    AX_PYTHON_DEVEL
+    if test "$HAVE_CXX11" = "1" ; then
+      swigversion=2.0.12
+    else
+      swigversion=1.3.17
+    fi
+    AX_PKG_SWIG("${swigversion}",[],[ AC_MSG_ERROR([SWIG is required to build..]) ])
+    AX_SWIG_ENABLE_CXX
+    AX_SWIG_MULTI_MODULE_SUPPORT
+    AX_SWIG_PYTHON
+  fi
+  AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
 
 ])

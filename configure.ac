@@ -45,24 +45,6 @@ else
 fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
-AC_ARG_ENABLE(pyext,
-  AC_HELP_STRING([--enable-pyext], [Enable Python API]),
-  [ AC_MSG_CHECKING(for Python extension)
-    case "${enableval}" in
-      no) AC_MSG_RESULT(no); pyext=false ;;
-      yes)  AC_MSG_RESULT(yes); pyext=true ;;
-    esac ],
-  [ AC_MSG_CHECKING(for Python extension); AC_MSG_RESULT(no); pyext=false])
-if test x$pyext == xtrue; then
-  AM_PATH_PYTHON
-  AX_PYTHON_DEVEL
-  AX_PKG_SWIG(1.3.17,[],[ AC_MSG_ERROR([SWIG is required to build..]) ])
-  AX_SWIG_ENABLE_CXX
-  AX_SWIG_MULTI_MODULE_SUPPORT
-  AX_SWIG_PYTHON
-fi
-AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
-
 AC_ARG_ENABLE(ufo,
   AC_HELP_STRING([--enable-ufo], [Enable UFO support]),
   [ AC_MSG_CHECKING(for UFO support)
