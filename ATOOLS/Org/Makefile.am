@@ -27,6 +27,7 @@ libToolsOrg_la_SOURCES        = \
 				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
+				Yaml_Reader.C \
 				Default_Reader.C \
 				Data_Writer.C \
 				Run_Parameter.C \
@@ -59,6 +60,7 @@ localinc_HEADERS         =	\
 			Read_Write_Base.H \
 			Read_Write_Base.inl.H \
 			Data_Reader.H \
+			Yaml_Reader.H \
 			Data_Writer.H \
 			Default_Reader.H \
 			My_Limits.H \
