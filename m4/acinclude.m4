@@ -479,15 +479,31 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
   AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
 
-
-  if test "$cxx11required" = "true" ; then
-    AX_CXX_COMPILE_STDCXX_11(,mandatory)
+  dnl enable C++11 when possible
+  AC_MSG_CHECKING(whether the user has disabled c++11)
+  AC_ARG_ENABLE(
+    [c++11],
+    [AC_HELP_STRING([--disable-c++11], [Disable C++11])],
+    [ case "${enableval}" in
+        no) cxx11enabled=false;;
+        yes) cxx11enabled=false;;
+      esac
+    ],
+    [cxx11enabled=true]
+  )
+  if test "$cxx11enabled" != "true" ; then
+    AC_MSG_RESULT(yes)
+    if test "$cxx11required" = "true" ; then
+      AC_MSG_ERROR([C++11 can not be disabled, because a feature requires it.]);
+    fi
+  else
+    AC_MSG_RESULT(no)
+    if test "$cxx11required" = "true" ; then
+      AX_CXX_COMPILE_STDCXX_11(,mandatory)
+    else
+      AX_CXX_COMPILE_STDCXX_11(,optional)
+    fi
   fi
-  dnl reinstate this else-clause to greedily enable C++11 when available
-  dnl else
-  dnl   AX_CXX_COMPILE_STDCXX_11(,optional)
-  dnl fi
-
 
   AC_ARG_ENABLE(
     fastjet,
