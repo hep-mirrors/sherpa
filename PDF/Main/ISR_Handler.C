@@ -267,16 +267,7 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 			       const double &ran)
 {
   if (m_swap) m_swap=0;
-  if (!AllowSwap(f1,f2))
-    return false;
-  int ok[2]={0,0};
-  if (p_isrbase[0]->PDF()->Contains(f2)) ok[0]=1;
-  else for (size_t j(0);j<f2.Size();++j)
-    if (p_isrbase[0]->PDF()->Contains(f2[j])) { ok[0]=1; break; }
-  if (p_isrbase[1]->PDF()->Contains(f1)) ok[1]=1;
-  else for (size_t j(0);j<f1.Size();++j)
-    if (p_isrbase[0]->PDF()->Contains(f1[j])) { ok[1]=1; break; }
-  if (!ok[0] || !ok[1]) return false;
+  if (!AllowSwap(f1,f2)) return false;
   if (ran>0.5) return true;
   m_swap=1;
   return true;
@@ -285,10 +276,16 @@ bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
 bool ISR_Handler::AllowSwap(const ATOOLS::Flavour &f1,
 			    const ATOOLS::Flavour &f2) const
 {
-  if(!(p_isrbase[0]->PDF() && p_isrbase[1]->PDF()))
-    return false;
-  return p_isrbase[0]->PDF()->Contains(f2) &&
-    p_isrbase[0]->PDF()->Contains(f1);
+  if(p_isrbase[0]->PDF()==NULL ||
+     p_isrbase[1]->PDF()==NULL) return false;
+  int ok[2]={0,0};
+  if (p_isrbase[0]->PDF()->Contains(f2)) ok[0]=1;
+  else for (size_t j(0);j<f2.Size();++j)
+    if (p_isrbase[0]->PDF()->Contains(f2[j])) { ok[0]=1; break; }
+  if (p_isrbase[1]->PDF()->Contains(f1)) ok[1]=1;
+  else for (size_t j(0);j<f1.Size();++j)
+    if (p_isrbase[0]->PDF()->Contains(f1[j])) { ok[1]=1; break; }
+  return ok[0] && ok[1];
 }
 
 void ISR_Handler::Reset() 
