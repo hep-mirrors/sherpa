@@ -23,7 +23,7 @@ using PHASIC::nlo_type;
 using PHASIC::Process_Info;
 
 Single_Process::Single_Process() :
-  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo), m_issymf(1.0)
+  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo)
 {
 }
 
@@ -39,7 +39,6 @@ bool Single_Process::Initialize()
   DEBUG_VAR(m_pinfo);
   MODEL::s_model->GetCouplings(m_cpls);
   if (m_nin!=2) return false;
-  if (p_int->ISR()->AllowSwap(m_flavs[0],m_flavs[1])) m_issymf=2.0;
   
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
@@ -108,7 +107,7 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
     p_virtual_me2->Calc(momenta);
     m_mewgtinfo.m_VI=m_lastxs=p_virtual_me2->Result().GetFinite()*KFactor();
   }
-  return m_lastxs/=m_issymf;
+  return m_lastxs;
 }
 
 bool EXTRAXS::Single_Process::FillIntegrator

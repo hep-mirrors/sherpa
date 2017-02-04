@@ -115,7 +115,6 @@ Single_Virtual_Correction::~Single_Virtual_Correction()
 
 void Single_Virtual_Correction::PolarizationNorm() {
   m_Norm = SymmetryFactors() * p_LO_process->GetPolarisation()->Spin_Average(m_nin,&m_flavs.front());
-  if (m_nin==2 && p_int->ISR()->AllowSwap(m_flavs[0],m_flavs[1])) m_Norm/=2.0;
 }
 
 double Single_Virtual_Correction::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {

@@ -92,7 +92,6 @@ bool COMIX::Single_Process::Initialize
   p_bg->SetCTS(p_cts);
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
-  if (m_nin==2 && p_int->ISR()->AllowSwap(m_flavs[0],m_flavs[1])) isf*=2.0;
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
   p_bg->SetDecayInfos(m_decins);

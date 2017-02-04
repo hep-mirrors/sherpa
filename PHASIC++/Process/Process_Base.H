@@ -75,7 +75,7 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    double m_last, m_lastb, m_symfac;
+    double m_last, m_lastb, m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
     MODEL::Coupling_Map m_cpls;

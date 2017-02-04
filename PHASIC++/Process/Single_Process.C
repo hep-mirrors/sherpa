@@ -383,6 +383,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) : p_int->ISR()->Flux(p[0],p[1]);
+  m_lastflux/=m_issymfac;
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
