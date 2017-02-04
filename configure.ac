@@ -10,7 +10,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_CANONICAL_BUILD
 SHERPA_SETUP_BUILDSYSTEM
-AC_DEFINE([SHERPA_NAME], ["Cho Oyu"], [Sherpa version name])
+AC_DEFINE_UNQUOTED([SHERPA_NAME], ["Cho Oyu"], [Sherpa version name])
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
