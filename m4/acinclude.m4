@@ -314,7 +314,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
   
-  AM_CPPFLAGS="-I\$(top_srcdir) -I\$(top_srcdir)/ATOOLS/YAML -Wno-deprecated-declarations"
+  AM_CPPFLAGS="-I\$(top_srcdir)"
   AC_SUBST(AM_CPPFLAGS)
 
   AM_CXXFLAGS="-g -O2"
