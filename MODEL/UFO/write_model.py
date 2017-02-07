@@ -3,11 +3,6 @@ from ufo_interface.templates import model_template
 from operator import attrgetter
 from copy import deepcopy
 
-def sort_by_hierarchy(orders):
-    ret = deepcopy(orders)
-    ret.sort(key=attrgetter('hierarchy'))
-    return ret
-
 def write_model(model, lorentzes, model_name, model_file_name):
 
     para_init = ""
@@ -71,8 +66,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
         para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
         para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
 
-    sorted_orders = sort_by_hierarchy(model.all_orders)
-    hierarchy     = [order.name for order in sorted_orders]
+    hierarchy     = [order.name for order in model.all_orders]
     declarations  = ""
     calls         = ""
     vertices      = list(sum([split_by_orders(vert, hierarchy) for vert in model.all_vertices],[]))

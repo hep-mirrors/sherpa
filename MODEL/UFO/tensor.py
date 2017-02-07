@@ -4,7 +4,7 @@ from py_to_cpp import c_string_from_num
 
 class tensor(object):
     
-    def __init__(self, array, toplevel_key):
+    def __init__(self, array, toplevel_key = None):
         self._toplevel_key = toplevel_key
         self._array = array
         self._toplevel_dim = len(self._array)
@@ -28,10 +28,10 @@ class tensor(object):
                 sub_indent = " "*len(title)
                 ret += title+"\n"+tens.__str__(sub_indent)
         else:
-            title = indent+"{0} ".format(self._toplevel_key)
+            title = indent+"{0}: ".format(self._toplevel_key)
             ret += title
             for tens in self._array:
-                ret += tens.__str__()+" "
+                ret += tens.__str__()+" || "
         ret += "\n"
         return ret
 
@@ -170,11 +170,8 @@ class tensor(object):
 
     def __mul__(self, rhs):
         
-        if isinstance(rhs, int) or isinstance(rhs, float) or isinstance(rhs, complex) or isinstance(rhs,str):
-            return self.__mul__(tensor([rhs], None))
-
         if not isinstance(rhs, tensor):
-            raise ufo_exception("Tensor multiplication for type {0} not supported".format(type(rhs)))
+            return self.__mul__(tensor([rhs], None))
 
         # If no indices to be summed over: return simple product
         if len(common_keys(self,rhs)) == 0:
@@ -191,9 +188,11 @@ class tensor(object):
             return self.__mul__(1/rhs)
         if isinstance(rhs, float) or isinstance(rhs, complex):
             return self.__mul__(1.0/rhs)
-        else:
-            raise ufo_exception("Tensor division for this type not supported")
-
+        if isinstance(rhs, tensor):
+            if rhs._elementary:
+                return self.__mul__(tensor([1.0/rhs._array[0]], None))
+        raise ufo_exception("Tensor division for this type not supported")
+    
     def __neg__(self):
         return tensor([-1], None)*self
 
