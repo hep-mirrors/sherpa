@@ -254,12 +254,12 @@ class Order_Flavour {
     if (a.Priority()<b.Priority()) return 0;
     if (!a.Strong()&&b.Strong()) return 1;
     if (a.Strong()&&!b.Strong()) return 0;
+    if (a.Mass()>b.Mass()) return 1;
+    if (a.Mass()<b.Mass()) return 0;
     if (p_fmm) {
       if (Order_Multi(a,b)) return 1;
       if (Order_Multi(b,a)) return 0;
     }
-    if (a.Mass()>b.Mass()) return 1;
-    if (a.Mass()<b.Mass()) return 0;
     if (Order_SVFT(a,b)) return 1;
     if (Order_SVFT(b,a)) return 0;
     if (!a.IsAnti()&&b.IsAnti()) return 1;
