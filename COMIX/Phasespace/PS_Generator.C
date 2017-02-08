@@ -27,8 +27,6 @@ using namespace PHASIC;
 
 const double s_pwmin(1.0e-6);
 
-namespace ATOOLS { template class SP(PS_Generator); }
-
 PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
   m_thmass(0.0), m_chmass(0.0)

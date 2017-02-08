@@ -340,8 +340,6 @@ bool Amplitude2_Tensor::SortCrit(const pair<Particle*, size_t>& p1,
 
 
 namespace ATOOLS {
-  template class SP(METOOLS::Amplitude2_Tensor);
-
   template <> Blob_Data<SP(METOOLS::Amplitude2_Tensor)>::~Blob_Data() {}
   template class Blob_Data<SP(METOOLS::Amplitude2_Tensor)>;
   template SP(METOOLS::Amplitude2_Tensor)&

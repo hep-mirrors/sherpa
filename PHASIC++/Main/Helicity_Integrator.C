@@ -11,8 +11,6 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-namespace ATOOLS { template class SP(Helicity_Integrator); }
-
 std::ostream &PHASIC::operator<<(std::ostream &str,const hls::scheme &s)
 {
   switch (s) {

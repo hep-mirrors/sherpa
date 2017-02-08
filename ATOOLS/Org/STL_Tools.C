@@ -6,12 +6,6 @@
 #include <fstream>
 #include <string>
 
-namespace ATOOLS {
- template class SP(std::ifstream);
- template class SP(std::ofstream);
- template class SP(std::stringstream);
-}
-
 namespace std {
 
   template <typename __Tp>

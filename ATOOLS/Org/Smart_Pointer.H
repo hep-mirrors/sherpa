@@ -39,13 +39,26 @@ namespace ATOOLS {
       having taken a copy of p_this. Is NULL by default.
     */
 
-    void Connect(const Smart_Pointer &ref) const;
+    void Connect(const Smart_Pointer &ref) const
+    {
+      if ((p_this=ref.p_this)==NULL) return; p_owner=&ref; 
+      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this; 
+      ref.p_copy=this;
+    }
     /*!
       \fn inline void Connect(const Smart_Pointer &ref)
       \brief Connects to the chain of Smart_Pointers
       belonging to ref.
     */
-    void Deconnect() const;
+
+    void Deconnect() const
+    {
+      if (p_owner) { 
+        if ((p_owner->p_copy=p_copy)!=NULL) p_copy->p_owner=p_owner; }
+      else { if (p_copy) p_copy->p_owner=NULL;
+        else if (p_this!=NULL) delete p_this; }
+        p_owner=p_copy=NULL; p_this=NULL;
+    }
     /*!
       \fn inline void Deconnect()
       \brief Deconnects from connected Smart_Pointers
@@ -170,10 +183,6 @@ namespace ATOOLS {
          ...
        }
     \endcode
-
-    To avoid inlining problems, each class which is to be
-    used with Smart_Pointers must have the 
-    template class SP(Class_Name) statement in its C-file.
   */
 
   template <class Class_Type> inline std::ostream &

@@ -13,8 +13,6 @@ namespace ATOOLS {
 
 using namespace ATOOLS;
 
-namespace ATOOLS { template class SP(Part_List); }
-
 bool ATOOLS::Particle::operator==(Particle part)
 {
   if ((part.m_status==m_status)&&         

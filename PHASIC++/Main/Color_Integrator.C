@@ -16,8 +16,6 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-namespace ATOOLS { template class SP(Color_Integrator); }
-
 std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
 {
   switch (s) {

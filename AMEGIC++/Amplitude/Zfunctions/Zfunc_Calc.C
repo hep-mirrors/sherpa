@@ -12,8 +12,6 @@ using namespace ATOOLS;
 #define OBJECT_TYPE AMEGIC::Zfunc_Calc
 #include "ATOOLS/Org/Getter_Function.C"
 
-namespace ATOOLS { template class SP(Zfunc_Calc); }
-
 Zfunc_Calc::~Zfunc_Calc() 
 {
   // for (size_t i(0);i<lorentzlist.size();++i) lorentzlist[i]->Delete();

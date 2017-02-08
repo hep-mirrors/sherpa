@@ -20,8 +20,6 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-namespace ATOOLS { template class SP(Process_Integrator); }
-
 static int s_whbins(1000);
 static int s_genresdir(0);
  
