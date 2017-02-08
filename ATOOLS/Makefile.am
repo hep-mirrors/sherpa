@@ -1,1 +1,1 @@
-SUBDIRS = Org Math Phys YAML
+SUBDIRS = Org Math Phys

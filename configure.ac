@@ -84,7 +84,6 @@ SHERPA_SETUP_VARIABLES
 AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
-	  ATOOLS/YAML/Makefile \
 	  ATOOLS/Makefile \
           METOOLS/Explicit/Makefile \
           METOOLS/Currents/Makefile \
