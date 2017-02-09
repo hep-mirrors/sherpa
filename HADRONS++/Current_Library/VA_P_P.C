@@ -61,15 +61,12 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
       Vxx=Tools::Vus;
   }
   else if (kf0==kf_B_c) {
-    
     if (kf1==kf_eta_c_1S||kf1==100441)
       Vxx=Tools::Vcb;
     else if (kf1==kf_B_s)
       Vxx=Tools::Vcs;
-    else if (kf1=kf_B)
+    else if (kf1==kf_B)
       Vxx=Tools::Vcd;
-    
-    
   }
   else if (kf0==kf_D_s_plus) {
     
