@@ -3,6 +3,10 @@
 
 #include "ATOOLS/Org/Option_Parser.H"
 
+// NOTE: to add an option, declare it in the `optionIndex' enum, define it in
+// the `usage' array below, and define its mapping to a Sherpa parameter in the
+// `create_parameter_index_map' function below
+
 /// declaration of command line options
 enum optionIndex {
   // special options
