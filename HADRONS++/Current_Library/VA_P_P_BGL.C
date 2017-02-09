@@ -88,7 +88,7 @@ BGL::BGL(GeneralModel model, double* masses, const Flavour_Vector& flavs,
       case_number = 1;
       fplus_0 = 0.6748956576;
       r1 = -2.0;
-      r2 = -1,6;
+      r2 = -1.6;
     }
     else if (kf1==kf_K_plus) {
       case_number = 1;
