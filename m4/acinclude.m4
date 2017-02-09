@@ -498,12 +498,12 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   else
     AC_MSG_RESULT(no)
     if test "$cxx11required" = "true" ; then
-      AX_CXX_COMPILE_STDCXX_11(,mandatory)
+      AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
       HAVE_CXX11=1
       AC_DEFINE(HAVE_CXX11,1,
           [define if the compiler supports basic C++11 syntax])
     else
-      AX_CXX_COMPILE_STDCXX_11(,optional)
+      AX_CXX_COMPILE_STDCXX_11(noext,optional)
     fi
   fi
 
