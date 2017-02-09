@@ -40,6 +40,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Command_Line_Interface.H"
 
 #include <sys/stat.h>
 #include <time.h>
@@ -932,127 +933,45 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("CSS_MASS_THRESHOLD",ToString(mth));
 }
 
-bool Initialization_Handler::ExtractValArg
-(std::vector<std::string> &args,std::vector<std::string>::iterator &it,
- const std::string &arg,const std::string &tag,const std::string &def) const
-{
-  if (it->find(arg)!=0) return false;
-  std::string val=it->substr(2);
-  if (def!="") {
-    if (val!="") *it="-"+val;
-    else it=args.erase(it);
-    it=args.insert(it,tag+"="+def);
-    return true;
-  }
-  if (val=="") {
-    if (it+1!=args.end()) {
-      it=args.erase(it);
-      val=*it;
-    }
-  }
-  if (val=="") {
-    msg_Error()<<METHOD<<"(): No argument to '"
-	       <<arg<<"'. Abort."<<std::endl;
-    exit(1);
-  }
-  *it=tag+"="+val;
-  return true;
-}
-
 void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
+  // NOTE: The implementation here is essentially glue code between the old
+  // input handling and the new Command_Line_Interface class. The old input
+  // handling will essentially be superseded and this implementation will
+  // simplify greatly.
+  Command_Line_Interface cli(argc, argv);
+
+
+  // handle parameters with an immediate effect on the Initialization_Handler
+  // and delete them after use so they are not re-processed below
   std::string datpath;
-  std::vector<std::string> helpsv(argc-1);
-  for (int i(0);i<argc-1;++i) helpsv[i]=argv[i+1];
-  for (std::vector<std::string>::iterator oit(helpsv.begin());
-       oit!=helpsv.end();) {
-    string par = *oit;
-    string key,value;
-    size_t equal=par.find("=");
-    if (equal!=std::string::npos) {
-      value = par.substr(equal+1);
-      key   = par = par.substr(0,equal);
-      if (key=="PATH") {
-	if (value[value.length()-1]!='/') value+='/';
-	m_path=value;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="RUNDATA") {
-	m_file=value;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="STATUS_PATH") {
-	if (value[value.length()-1]!='/') value+=std::string("/");
-	datpath=value;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="SAVE_STATUS") {
-	if (value[value.length()-1]!='/') value+=std::string("/");
-	rpa->gen.SetVariable
-	  ("SHERPA_STATUS_PATH",rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+value);
-	m_savestatus=true;
-        oit=helpsv.erase(oit);
-      }
-      else {
-	++oit;
-      }
-    }
-    else if (ExtractValArg(helpsv,oit,"-f","RUNDATA"));
-    else if (ExtractValArg(helpsv,oit,"-p","PATH"));
-    else if (ExtractValArg(helpsv,oit,"-e","EVENTS"));
-    else if (ExtractValArg(helpsv,oit,"-t","EVENT_TYPE"));
-    else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
-    else if (ExtractValArg(helpsv,oit,"-L","SHERPA_CPP_PATH"));
-    else if (ExtractValArg(helpsv,oit,"-R","RANDOM_SEED"));
-    else if (ExtractValArg(helpsv,oit,"-m","ME_SIGNAL_GENERATOR"));
-    else if (ExtractValArg(helpsv,oit,"-M","MI_HANDLER"));
-    else if (ExtractValArg(helpsv,oit,"-w","EVENT_GENERATION_MODE"));
-    else if (ExtractValArg(helpsv,oit,"-s","SHOWER_GENERATOR"));
-    else if (ExtractValArg(helpsv,oit,"-F","FRAGMENTATION"));
-    else if (ExtractValArg(helpsv,oit,"-D","DECAYMODEL"));
-    else if (ExtractValArg(helpsv,oit,"-a","ANALYSIS"));
-    else if (ExtractValArg(helpsv,oit,"-A","ANALYSIS_OUTPUT"));
-    else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
-    else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
-    else if (ExtractValArg(helpsv,oit,"-o","EVT_OUTPUT"));
-    else if (ExtractValArg(helpsv,oit,"-l","LOG_FILE"));
-    else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","0"));
-    else if (ExtractValArg(helpsv,oit,"-V","PRINT_VERSION_INFO","1"));
-    else if (par=="--version" || par=="-v"){
-      msg_Out()<<"Sherpa version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
-	       <<" ("<<SHERPA_NAME<<")"<<endl;
-      exit(0);
-    }
-    else {
-      if (par!="-h" && par!="--help")
-	msg_Out()<<"Unrecognized option '"<<par<<"'.\n"<<endl;
-      msg_Out()<<"Usage:\n"<<endl;
-      msg_Out()<<"  Sherpa [options] [<parameter>=<value>] [<tag>:=<value>]\n"<<endl;
-      msg_Out()<<"Options:\t-f <file>         read input from file <file>"<<endl;
-      msg_Out()<<"\t\t-p <path>         read input from path <path>"<<endl;
-      msg_Out()<<"\t\t-e <events>       set number of events <events>"<<endl;
-      msg_Out()<<"\t\t-t <type>         set event type <type>"<<endl;
-      msg_Out()<<"\t\t-r <results>      set result directory <results>"<<endl;
-      msg_Out()<<"\t\t-m <generator>    set me generator <generator>"<<endl;
-      msg_Out()<<"\t\t-M <generator>    set mpi generator <generator>"<<endl;
-      msg_Out()<<"\t\t-w <mode>         set event generation mode <mode>"<<endl;
-      msg_Out()<<"\t\t-s <generator>    set ps generator <generator>"<<endl;
-      msg_Out()<<"\t\t-F <module>       set fragmentation module <module>"<<endl;
-      msg_Out()<<"\t\t-D <module>       set decay module <module>"<<endl;
-      msg_Out()<<"\t\t-a <analysis>     set analysis handler <analysis>"<<endl;
-      msg_Out()<<"\t\t-A <path>         set analysis output path <path>"<<endl;
-      msg_Out()<<"\t\t-O <level>        set general output level <level>"<<endl;
-      msg_Out()<<"\t\t-o <level>        set output level for event generation"<<endl;
-      msg_Out()<<"\t\t-l <logfile>      set log file name <logfile>"<<endl;
-      msg_Out()<<"\t\t-R <seed>         set random seed to <seed>"<<endl;
-      msg_Out()<<"\t\t-g                do not create result directory"<<endl;
-      msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
-      msg_Out()<<"\t\t-V                print version info during runtime"<<endl;
-      msg_Out()<<"\t\t-v,--version      print the version number"<<endl;
-      msg_Out()<<"\t\t-h,--help         print this help message\n"<<endl;
-      exit(0);
-    }
+  if (cli.GetParameterValue("STATUS_PATH") != "") {
+    datpath = cli.GetParameterValue("STATUS_PATH");
+    if (datpath[datpath.size() - 1] != '/') datpath += "/";
+    cli.SetParameterValue("STATUS_PATH", "");
   }
+
+  if (cli.GetParameterValue("PATH") != "") {
+    m_path = cli.GetParameterValue("PATH");
+    if (m_path[m_path.size() - 1] != '/') m_path += "/";
+    cli.SetParameterValue("PATH", "");
+  }
+
+  if (cli.GetParameterValue("RUNDATA") != "") {
+    m_file = cli.GetParameterValue("RUNDATA");
+    cli.SetParameterValue("RUNDATA", "");
+  }
+
+  if (cli.GetParameterValue("SAVE_STATUS") != "") {
+    std::string savestatus(cli.GetParameterValue("SAVE_STATUS"));
+    if (savestatus[savestatus.size() - 1] != '/') savestatus += "/";
+    rpa->gen.SetVariable("SHERPA_STATUS_PATH",
+                         rpa->gen.Variable("SHERPA_RUN_PATH") + "/" + savestatus);
+    m_savestatus=true;
+    cli.SetParameterValue("SAVE_STATUS", "");
+  }
+
+  // set default section, i.e. run section, of Run card
   if (m_file.find("|")==std::string::npos) {
     Read_Write_Base cf(1,0," ",";","!","=");
     cf.SetInputPath(m_path);
@@ -1060,14 +979,32 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     if (cf.OpenInFile()) m_file+="|(run){|}(run)";
   }
 
-  if (datpath!="") m_path=datpath;
-  rpa->gen.SetVariable("PATH_PIECE",m_path);
-  m_path="";
+  // store status path
+  if (datpath!="") m_path = datpath;
+  rpa->gen.SetVariable("PATH_PIECE", m_path);
+  m_path = "";
 
+  // contract unparsed parameters and tags into a vector of strings, such that
+  // they can be fed below into Read_Write_Base
+  std::vector<std::string> helpsv;
+  typedef std::map<std::string, std::string>::const_iterator It;
+  for (It it(cli.GetParameters().begin());
+       it != cli.GetParameters().end();
+       ++it) {
+    helpsv.push_back(it->first + "=" + it->second);
+  }
+  for (It it(cli.GetTags().begin());
+       it != cli.GetTags().end();
+       ++it) {
+    helpsv.push_back(it->first + ":=" + it->second);
+  }
+
+  // add parameters from the default section in Run.dat
+  // (this makes it possible to overwrite particle properties in Run.dat)
+  // helpsv2 will then holds all Run.dat/(run) settings and the unparsed
+  // command line arguments, in that order
   std::vector<std::string> helpsv2;
   Data_Reader reader;
-  // Add parameters from Run.dat to command line
-  // (this makes it possible to overwrite particle properties in Run.dat)
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_file);
   std::vector<std::vector<std::string> > helpsvv;
@@ -1077,10 +1014,13 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     for (size_t i(0);i<helpsvv.size();++i) {
       helpsv2[oldsize+i]=helpsvv[i][0];
       for (size_t j(1);j<helpsvv[i].size();++j)
-	helpsv2[oldsize+i]+=" "+helpsvv[i][j];
+        helpsv2[oldsize+i]+=" "+helpsvv[i][j];
     }
   }
   helpsv2.insert(helpsv2.end(),helpsv.begin(),helpsv.end());
+
+  // add all elements in helpsv2 either to the Read_Write_Base command line
+  // or to its global tags (if the ':=' delimiter is found)
   for (size_t i(0);i<helpsv2.size();++i) {
     string par = helpsv2[i];
     string key,value;

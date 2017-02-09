@@ -95,11 +95,6 @@ namespace SHERPA {
     bool InitializeTheAnalyses();
     bool InitializeTheReweighting();
 
-    bool ExtractValArg
-    (std::vector<std::string> &args,
-     std::vector<std::string>::iterator &it,
-     const std::string &arg,const std::string &tag,
-     const std::string &def=std::string("")) const;
     void ExtractCommandLineParameters(int argc,char * argv[]);
     void SetTuneParameters(const std::string tune);
     bool CheckBeamISRConsistency();
