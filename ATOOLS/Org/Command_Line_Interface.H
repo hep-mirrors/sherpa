@@ -28,15 +28,24 @@ namespace ATOOLS {
       // get parameter/tag values
       std::string& GetParameterValue(const std::string& paramname)
       { return parameter_value_map[paramname]; }
-      void SetParameterValue(const std::string& paramname, const std::string& value)
-      { parameter_value_map[paramname] = value; }
+      void SetParameterValue(const std::string& paramname,
+                             const std::string& value,
+                             const bool& allowoverwrite=true);
       std::string& GetTagValue(const std::string& tagname)
       { return tag_value_map[tagname]; }
+      void SetTagValue(const std::string& tagname,
+                       const std::string& value,
+                       const bool& allowoverwrite=true);
+
+      /// add arguments from a command file (where each row is an argument)
+      void AddArgumentsFromCommandFile(const std::string&);
 
     private:
 
-      bool ParseOptions(SP(Option_Parser::Option)&);
-      bool ParseNoneOptions(Option_Parser::Parser&);
+      void Parse(int argc, char* argv[], bool allowoverwrite=true);
+
+      bool ParseOptions(SP(Option_Parser::Option)&, bool allowoverwrite=true);
+      bool ParseNoneOptions(Option_Parser::Parser&, bool allowoverwrite=true);
 
       void PrintUsageAndExit();
 

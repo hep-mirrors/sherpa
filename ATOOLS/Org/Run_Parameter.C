@@ -171,7 +171,7 @@ void Run_Parameter::AnalyseEnvironment()
 
 }
 
-void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
+void Run_Parameter::Init(std::string path,std::string file)
 {
   m_path = path;
   path=gen.m_variables["PATH_PIECE"];

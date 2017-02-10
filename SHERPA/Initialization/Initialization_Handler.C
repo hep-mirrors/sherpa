@@ -77,7 +77,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ATOOLS::s_loader->SetCheck(p_dataread->Get<int>("CHECK_LIBLOCK",0));
 
-  rpa->Init(m_path,m_file,argc,argv);
+  rpa->Init(m_path,m_file);
   CheckVersion();
   LoadLibraries();
   ShowParameterSyntax();
@@ -943,23 +943,21 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
 
 
   // handle parameters with an immediate effect on the Initialization_Handler
-  // and delete them after use so they are not re-processed below
+
   std::string datpath;
   if (cli.GetParameterValue("STATUS_PATH") != "") {
     datpath = cli.GetParameterValue("STATUS_PATH");
     if (datpath[datpath.size() - 1] != '/') datpath += "/";
-    cli.SetParameterValue("STATUS_PATH", "");
+    cli.AddArgumentsFromCommandFile(datpath + "cmd");
   }
 
   if (cli.GetParameterValue("PATH") != "") {
     m_path = cli.GetParameterValue("PATH");
     if (m_path[m_path.size() - 1] != '/') m_path += "/";
-    cli.SetParameterValue("PATH", "");
   }
 
   if (cli.GetParameterValue("RUNDATA") != "") {
     m_file = cli.GetParameterValue("RUNDATA");
-    cli.SetParameterValue("RUNDATA", "");
   }
 
   if (cli.GetParameterValue("SAVE_STATUS") != "") {
@@ -968,7 +966,6 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     rpa->gen.SetVariable("SHERPA_STATUS_PATH",
                          rpa->gen.Variable("SHERPA_RUN_PATH") + "/" + savestatus);
     m_savestatus=true;
-    cli.SetParameterValue("SAVE_STATUS", "");
   }
 
   // set default section, i.e. run section, of Run card

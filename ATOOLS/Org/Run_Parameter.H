@@ -20,7 +20,7 @@ namespace ATOOLS {
   public:
     Run_Parameter();
     ~Run_Parameter();
-    void Init(std::string,std::string,int argc=0,char* argv[]=0);
+    void Init(std::string path, std::string file);
     void AnalyseEnvironment();
     
     class Gen {  // general parameters

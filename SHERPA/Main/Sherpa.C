@@ -82,41 +82,8 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
   m_path = std::string("");
-  int oldc(argc);
-  char **oldargs(NULL);
-  std::string statuspath;
-  for (int i(1);i<argc;++i) {
-    std::string cur(argv[i]);
-    size_t pos(cur.find("STATUS_PATH"));
-    if (pos==0 && cur.length()>11 && cur[11]=='=') {
-      statuspath=cur.substr(12);
-      if (statuspath=="") continue;
-      if (statuspath[statuspath.length()-1]!='/') statuspath+=std::string("/");
-      Data_Reader reader;
-      reader.SetInputFile(statuspath+"cmd");
-      String_Matrix args;
-      reader.MatrixFromFile(args);
-      oldc=argc;
-      oldargs=argv;
-      argc+=args.size();
-      argv = new char*[argc];
-      argv[0] = new char[strlen(oldargs[0])+1];
-      strcpy(argv[0],oldargs[0]);
-      for (int j(0);j<(int)args.size();++j) {
-	std::string cur(args[j].front());
-	for (size_t k(1);k<args[j].size();++k) cur+=args[j][k];
-	argv[j+1] = new char[cur.length()+1];
-	strcpy(argv[j+1],cur.c_str());
-      }
-      for (int j(1);j<oldc;++j) {
-	argv[args.size()+j] = new char[strlen(oldargs[j])+1];
-	strcpy(argv[args.size()+j],oldargs[j]);
-      }
-      break;
-    }
-  }
 
-  p_inithandler  = new Initialization_Handler(argc, argv);
+  p_inithandler = new Initialization_Handler(argc, argv);
 
   mpi->SetUpSendRecv(p_inithandler->DataReader());
 
@@ -129,13 +96,13 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
     m_showtrials=reader.Get<int>("SHOW_NTRIALS",0);
+
+    // read in from status path
     bool res(true);
-    if (statuspath!="") {
+    std::string statuspath(
+        p_inithandler->DataReader()->GetValue<std::string>("STATUS_PATH", ""));
+    if (statuspath != "") {
       res=exh->ReadInStatus(statuspath);
-      if (oldargs) {
-        for (int i(0);i<argc;++i) delete [] argv[i];
-        delete [] argv;
-      }
     }
 
     m_debuginterval = reader.Get("DEBUG_INTERVAL", m_debuginterval, "debug interval");
