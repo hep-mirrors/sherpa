@@ -69,7 +69,7 @@ bool BlackHat_Interface::Initialize
     BlackHat_Tree::SetModel(p_model);
     BlackHat_Virtual::SetModel(p_model);
     Default_Reader reader;
-    p_interface = new BH::BH_interface(reader.Get<std::string>("BH_SETTINGS_FILE", "");
+    p_interface = new BH::BH_interface(reader.Get<std::string>("BH_SETTINGS_FILE", ""));
     p_interface->set("Z_mass",Flavour(kf_Z).Mass());
     p_interface->set("Z_width",Flavour(kf_Z).Width());
     p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
