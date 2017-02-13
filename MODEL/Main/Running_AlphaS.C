@@ -424,13 +424,12 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
   m_name = "Alpha_QCD";
   // Read possible override
   Default_Reader reader;
+  p_overridingpdf = NULL;
   if (reader.Get<int>("USE_PDF_ALPHAS",0)&4) {
     std::string name(reader.Get<std::string>("ALPHAS_PDF_SET","CT10nlo"));
     int member = reader.Get<int>("ALPHAS_PDF_SET_VERSION",0);
     member = reader.Get<int>("ALPHAS_PDF_SET_MEMBER",member);
     InitOverridingPDF(name, member);
-  } else {
-    p_overridingpdf = NULL;
   }
 
   // Initialise One_Running_AlphaS instances
