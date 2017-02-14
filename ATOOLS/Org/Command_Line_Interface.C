@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Command_Line_Options.H"
 
 #include <numeric>
+#include <cstring>
 
 using namespace ATOOLS;
 
