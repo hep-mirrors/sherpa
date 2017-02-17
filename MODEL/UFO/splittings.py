@@ -160,7 +160,6 @@ def test_polvecs():
     for el in (t-s).elements():
         assert(Abs(evaluate(el._array[0].subs(dct))) < 1.e-11)
 
-
 def t0():
     # Incoming quark mom
     p1 = 0
@@ -185,31 +184,37 @@ def t0():
 
     # Longitudinal momentum fraction
     z   = tensor([Symbol('z', real=True)], None)
-    omz = tensor([1.0-Symbol('z', real=True)], None)
+    omz = tensor([1.0 - Symbol('z', real=True)], None)
     
     # Outgoing quark momentum
-    pa  =   z*p + kt - tensor([(kt2**2)], None)/  z*n#/(2.0*n1*p3)
+    pa  =   z*p + kt - tensor([(kt2**2)], None)/  z* n/(2.0*n1*p3)
 
     # Outgoing gluon momentum
-    pb  = omz*p + kt - tensor([(kt2**2)], None)/omz*n#/(2.0*n1*p3)
-
+    pb  = omz*p - kt - tensor([(kt2**2)], None)/omz* n/(2.0*n1*p3)
+    
     # Outgoing gluon reference mom
     g1 = Symbol('g1', real=True)
     g2 = Symbol('g2', real=True)
     g3 = Symbol('g3', real=True)
     g0 = sqrt(g1**2+g2**2+g3**2)
 
-    print pa
-    print pb
+    m2 = (uplusbar(pb._array[0]._array[0],
+                   pb._array[1]._array[0],
+                   pb._array[2]._array[0],
+                   pb._array[3]._array[0],'a')*
+          Gamma('mu','a','b')*
+          uplus(p0,p1,p2,p3,'b')*mink_metric('mu','nu')*
+          conjugate_tensor1d(epsilonplus(pa._array[0]._array[0],
+                                         pa._array[1]._array[0],
+                                         pa._array[2]._array[0],
+                                         pa._array[3]._array[0], 'nu', g0,g1,g2,g3)))
 
-
-    # m2 = uplusbar(t0,t1,t2,t3,'a')*Gamma('mu','a','b')*uplus(t0-k0,t1-k1,t2-k2,t3-k3,'b')*mink_metric('mu','nu')*conjugate_tensor1d(epsilonplus(k0,k1,k2,k3, 'nu', g0,g1,g2,g3))
-
-    # print mathematica_code(m2._array[0].simplify())
-
+    M2 = m2._array[0]*cgt(m2._array[0])
+    from IPython import embed
+    embed()
+    
 
 if __name__ == "__main__":
-    
     
     #test_spinors()
     #test_polvecs()

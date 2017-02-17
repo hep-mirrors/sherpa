@@ -184,14 +184,10 @@ class tensor(object):
         return self.__mul__(lhs)
 
     def __div__(self, rhs):
-        if isinstance(rhs, int):
-            return self.__mul__(1/rhs)
-        if isinstance(rhs, float) or isinstance(rhs, complex):
-            return self.__mul__(1.0/rhs)
         if isinstance(rhs, tensor):
             if rhs._elementary:
                 return self.__mul__(tensor([1.0/rhs._array[0]], None))
-        raise ufo_exception("Tensor division for this type not supported")
+        return self.__mul__(1.0/rhs)
     
     def __neg__(self):
         return tensor([-1], None)*self
