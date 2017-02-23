@@ -43,7 +43,8 @@ namespace PHASIC {
 
     std::map<ATOOLS::Flavour,Sudakov*> m_suds;
 
-    double m_sudweight;
+    double m_sudweight, m_lastmuR2, m_lastq02[2];
+    int    m_vmode, m_rsfvar;
 
   public:
 
@@ -52,6 +53,8 @@ namespace PHASIC {
     ~MINLO_KFactor_Setter();
 
     double KFactor(const int mode);
+
+    bool UpdateKFactor(const ATOOLS::Variation_Parameters &var);
 
   };// end of class MINLO_KFactor_Setter
 
@@ -79,7 +82,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 MINLO_KFactor_Setter::MINLO_KFactor_Setter
 (const KFactor_Setter_Arguments &args):
-  KFactor_Setter_Base(args)
+  KFactor_Setter_Base(args), m_rsfvar(0)
 {
   p_minlo=dynamic_cast<MINLO_Scale_Setter*>(p_proc->ScaleSetter());
   if (p_minlo==NULL) THROW(fatal_error,"Must use MINLO scale");
@@ -112,17 +115,30 @@ MINLO_KFactor_Setter::~MINLO_KFactor_Setter()
     delete sit->second;
 }
 
+bool MINLO_KFactor_Setter::UpdateKFactor(const Variation_Parameters &var)
+{
+  DEBUG_FUNC("K = "<<m_sudweight<<" * ( 1 + "<<m_weight/m_sudweight-1.0<<" )");
+  if (p_minlo->Q02(0)==m_lastq02[0] &&
+      p_minlo->Q02(1)==m_lastq02[1] &&
+      p_proc->ScaleSetter()->Scale(stp::ren)==m_lastmuR2) return false;
+  if (p_minlo->Q02(0)==m_lastq02[0] &&
+      p_minlo->Q02(1)==m_lastq02[1]) m_rsfvar=1;
+  KFactor(m_vmode);
+  m_rsfvar=0;
+  return true;
+}
+
 double MINLO_KFactor_Setter::KFactor(const int mode) 
 {
+  m_vmode=mode;
   if (!m_on) return 1.0;
   DEBUG_FUNC(p_proc->Name()<<", mode = "<<mode);
-  if (mode!=1 && p_proc->Info().Has(nlo_type::born)) {
-    msg_Debugging()<<"Recycling Sudakov weight "<<m_sudweight<<"\n";
-    return m_weight=m_sudweight;
-  }
   m_weight=1.0;
   double muR2(p_proc->ScaleSetter()->Scale(stp::ren));
   double Q02[2]={p_minlo->Q02(0),p_minlo->Q02(1)}, sub(0.0);
+  m_lastq02[0]=p_minlo->Q02(0);
+  m_lastq02[1]=p_minlo->Q02(1);
+  m_lastmuR2=muR2;
   for (Cluster_Amplitude *ampl=p_proc->Info().Has(nlo_type::real)&&
 	 p_minlo->Ampl()->Next()?p_minlo->Ampl()->Next():p_minlo->Ampl();
        ampl->Next();ampl=ampl->Next()) {
@@ -138,8 +154,8 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
 	gamma[0]=sit->second->Delta1(Q02[is],next->KT2(),muR2);
 	gamma[1]=sit->second->Delta1(Q02[is],ampl->KT2(),muR2);
       }
-      double delta[2]={sit->second->Delta(Q02[is],next->KT2()),
-		       sit->second->Delta(Q02[is],ampl->KT2())};
+      double delta[2]={m_rsfvar?0.0:sit->second->Delta(Q02[is],next->KT2()),
+		       m_rsfvar?0.0:sit->second->Delta(Q02[is],ampl->KT2())};
       msg_Debugging()<<"Sudakov for "<<ID(l->Id())<<"["<<is
 		     <<"] -> \\Delta_{"<<l->Flav()<<"}("<<sqrt(Q02[is])
 		     <<","<<sqrt(next->KT2())<<") / \\Delta_{"<<l->Flav()
@@ -150,6 +166,10 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
       sub+=gamma[0]-gamma[1];
     }
     if (next->Next()==NULL) msg_Debugging()<<*next<<"\n";
+  }
+  if (m_rsfvar) {
+    msg_Debugging()<<"w = "<<m_sudweight<<" * ( 1 + "<<sub<<" )\n";
+    return m_weight=m_sudweight*(1.0+sub);
   }
   msg_Debugging()<<"w = "<<m_weight<<" * ( 1 + "<<sub<<" )\n";
   m_sudweight=m_weight;

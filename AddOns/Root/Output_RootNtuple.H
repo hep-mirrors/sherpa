@@ -68,7 +68,7 @@ namespace SHERPA {
     void MPISync();
     void AddDecayProducts(ATOOLS::Particle *part,int &np);
   public:
-    Output_RootNtuple(const Output_Arguments &args,int exact=0,int ftype=0);
+    Output_RootNtuple(const Output_Arguments &args,int exact=1,int ftype=0);
     ~Output_RootNtuple();
     void Header();
     void Footer();

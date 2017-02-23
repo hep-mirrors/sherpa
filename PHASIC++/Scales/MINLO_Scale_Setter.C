@@ -31,7 +31,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 MINLO_Scale_Setter::MINLO_Scale_Setter
 (const Scale_Setter_Arguments &args):
-  Scale_Setter_Base(args), m_tagset(this), p_ampl(NULL)
+  Scale_Setter_Base(args), m_tagset(this), p_ampl(NULL), p_vampl(NULL)
 {
   std::string tag(args.m_scale), core;
   m_nproc=p_proc->Info().Has(nlo_type::real) ||
@@ -74,7 +74,7 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   m_noutmin    = reader.Get("MINLO_NOUT_MIN", 2);
   m_cmode      = reader.Get("MINLO_CLUSTER_MODE", 1);
   m_hqmode     = reader.Get("MINLO_HQ_MODE", 1);
-  m_order      = reader.Get("MINLO_FORCE_ORDER", 0);
+  m_order      = reader.Get("MINLO_FORCE_ORDER", 1);
   m_orderrs    = reader.Get("MINLO_ORDER_RS", 1);
   m_usecomb    = reader.Get("MINLO_USE_COMBINABLE", 0);
   m_usepdfinfo = reader.Get("MINLO_USE_PDFINFO", 1);
@@ -93,12 +93,24 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
+  m_fsf=1.0;
 }
 
 MINLO_Scale_Setter::~MINLO_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   delete p_core;
+}
+
+bool MINLO_Scale_Setter::UpdateScale(const ATOOLS::Variation_Parameters &var)
+{
+  DEBUG_FUNC("ren scale fac = "<<var.m_muR2fac);
+  m_rsf*=var.m_muR2fac;
+  m_fsf=var.m_muF2fac;
+  SetScales(p_vampl,m_vmode);
+  m_rsf/=var.m_muR2fac;
+  m_fsf=1.0;
+  return true;
 }
 
 double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mode) 
@@ -210,7 +222,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 	  ampl=ampl->Prev();
 	  msg_Debugging()<<*ampl<<"\n";
 	}
-	double muf2(SetScales(ampl,mode));
+	double muf2(SetScales(p_vampl=ampl,m_vmode=mode));
 	return muf2;
       }
     }
@@ -332,7 +344,7 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
-  m_scale[stp::fac]=Max(m_scale[stp::fac],m_muf2min);
+  m_scale[stp::fac]=m_fsf*Max(m_scale[stp::fac],m_muf2min);
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
@@ -460,7 +472,7 @@ void MINLO_Scale_Setter::KT2
       }
       else {
 	// LQ: kT algorithm
-	double kt2=Min(pi.PPerp2(),pj.PPerp2())*
+	double kt2=2.0*Min(pi.PPerp2(),pj.PPerp2())*
 	  (cosh(pi.DY(pj))-cos(pi.DPhi(pj)))/sqr(m_dr);
 	cs.SetParams(kt2,pi+pj,pk);
       }

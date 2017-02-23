@@ -4,7 +4,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS { class Data_Reader; }
+namespace ATOOLS { class Data_Reader; class Variations; }
 
 namespace MODEL { class Model_Base; }
 
@@ -35,14 +35,18 @@ namespace SHERPA {
 
     double             m_weight;
 
+    ATOOLS::Variations * p_variations;
+
   public:
     Event_Reader_Base(const Input_Arguments &args)
-      : m_path(args.m_inpath), m_file(args.m_infile) {}
+      : m_path(args.m_inpath), m_file(args.m_infile), p_variations(NULL) {}
     virtual ~Event_Reader_Base();
     virtual bool FillBlobs(ATOOLS::Blob_List *)=0;
 
     double      Weight()  { return m_weight; }
     std::string GetPath() { return m_path; }
+
+    void        SetVariations(ATOOLS::Variations * v) { p_variations = v; }
   };
 }
 

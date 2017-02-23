@@ -45,12 +45,12 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_f;
 
-    ATOOLS::Cluster_Amplitude *p_ampl;
+    ATOOLS::Cluster_Amplitude *p_ampl, *p_vampl;
 
-    double m_rsf, m_dr, m_q02[2], m_muf2min;
+    double m_rsf, m_fsf, m_dr, m_q02[2], m_muf2min;
     size_t m_nfgsplit;
     int    m_noutmin, m_rproc, m_vproc, m_nproc;
-    int    m_cmode, m_hqmode, m_order, m_orderrs;
+    int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs;
     int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode;
 
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
@@ -70,6 +70,8 @@ namespace PHASIC {
     ~MINLO_Scale_Setter();
 
     double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
+
+    bool UpdateScale(const ATOOLS::Variation_Parameters &var);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);

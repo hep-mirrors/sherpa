@@ -30,3 +30,8 @@ double KFactor_Setter_Base::KFactor(const ATOOLS::NLO_subevt& evt)
 {
   THROW(not_implemented, "No NLO (R-S) version of this method implemented");
 }
+
+bool KFactor_Setter_Base::UpdateKFactor(const Variation_Parameters &var)
+{
+  return false;
+}

@@ -36,7 +36,8 @@ namespace ANALYSIS {
     do_hadron       = 8192,
     splitt_phase    = 16384,
     split_sh        = 32768,
-    do_menlo        = 65536
+    do_menlo        = 65536,
+    split_vars      = 131072
   };
 
   class Analysis_Object;
@@ -50,7 +51,7 @@ namespace ANALYSIS {
   class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
 
-    int                    m_mode;
+    int                    m_mode, m_varid, m_nvar;
     long                   m_nevt;
     std::string            m_name, m_maxjettag;
 
@@ -80,7 +81,7 @@ namespace ANALYSIS {
     void CreateFinalStateParticleList();
 
     Primitive_Analysis * GetSubAnalysis(const ATOOLS::Blob_List *const bl,
-					const std::string & key, int mode);
+					const std::string & key, int mode,int master=true);
     void CallSubAnalysis(const ATOOLS::Blob_List * const bl, double value);
 
     void PrintStatus();
@@ -129,6 +130,10 @@ namespace ANALYSIS {
 
     inline ATOOLS::NLO_subevt *Sub() const { return p_sub; }
     inline ATOOLS::NLO_subevt *Real() const { return p_real; }
+
+    inline void SetVarId(const int &id) { m_varid=id; }
+
+    inline const int &VarId() const { return m_varid; }
 
   };// end of class Primitive_Analysis
 

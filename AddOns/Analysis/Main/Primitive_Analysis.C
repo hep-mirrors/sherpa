@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #ifdef PROFILE__Analysis_Phase
@@ -18,7 +19,7 @@ using namespace ATOOLS;
 
 Primitive_Analysis::Primitive_Analysis
 (Analysis_Handler *const ana,const std::string _name, const int mode) :
-  m_active(true), m_splitjetconts(true)
+  m_active(true), m_splitjetconts(true), m_varid(-1)
 {
   p_ana=ana;
   m_nevt = 0;
@@ -30,7 +31,7 @@ Primitive_Analysis::Primitive_Analysis
 }
 
 Primitive_Analysis::Primitive_Analysis(Analysis_Handler *const ana,const int mode) :
-  m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true)
+  m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true), m_varid(-1)
 {
   p_ana=ana;
   m_mode = mode;
@@ -73,12 +74,11 @@ void Primitive_Analysis::AddObject(Analysis_Object * obs)
 }
 
 Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
-(const Blob_List *const bl,const std::string & key, int mode) 
+(const Blob_List *const bl,const std::string & key, int mode,int master) 
 {
   Analysis_List::const_iterator cit=m_subanalyses.find(key);
   if (cit!=m_subanalyses.end()) return cit->second;
 
-  bool master=true;
   if (key=="ME" || key=="MENLO" || key=="MI" || key=="Shower" || key=="Hadron") {
     master=false;
     if (key!="ME"     && mode&ANALYSIS::do_me) mode=mode^ANALYSIS::do_me;
@@ -91,6 +91,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
   Primitive_Analysis * ana = new Primitive_Analysis(p_ana,m_name.substr(11)+key,mode);
   if (master) ana->SetPartner(p_partner);
   ana->SetMaxJetTag(m_maxjettag);
+  ana->SetVarId(m_varid);
 
   for (size_t i=0;i<m_objects.size();i++) {
     if (m_objects[i]->IsObservable() || !master) 
@@ -209,6 +210,25 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     return;
   }
 
+  if (m_mode&ANALYSIS::split_vars) {
+    Blob *sp(bl->FindFirst(btp::Signal_Process));
+    Blob_Data_Base *info((*sp)["Variation_Weights"]);
+    if (info) {
+      int mode=(m_mode^ANALYSIS::split_vars)|ANALYSIS::output_this;
+      ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
+      m_nvar=vars.GetNumberOfVariations();
+      if (m_nvar) {
+	for (size_t i(0);i<vars.GetNumberOfVariations();++i) {
+	  std::string name(vars.GetVariationNameAt(i));
+	  Primitive_Analysis *ana=GetSubAnalysis(bl,name,mode,false);
+	  ana->SetVarId(i);
+	  ana->DoAnalysis(bl,value);
+	  m_called.insert(ana);
+	}
+	return;
+      }
+    }
+  }
   if (m_mode&ANALYSIS::splitt_phase) {
     m_mode=m_mode|ANALYSIS::output_this;
     int mode=m_mode^ANALYSIS::splitt_phase;
@@ -264,24 +284,19 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     weight=(*sp)["Weight"]->Get<double>();
     ncount=(*sp)["Trials"]->Get<double>();
   }
-  if (!IsEqual(value,weight)) {
-    if (p_partner==this) {
-      msg_Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
-	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
-    }
-    else if (value==0.) {
-      weight=0.;
-    }
-    else {
-      msg_Out()<<"WARNING something is wrong in Primitive_Analysis::DoAnalysis :"<<std::endl
-	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
-    }
+  if (m_varid>-1) {
+    Blob *sp(bl->FindFirst(btp::Signal_Process));
+    Blob_Data_Base *info((*sp)["Variation_Weights"]);
+    if (info==NULL) THROW(fatal_error,"Expected variation weights but didn't find them");
+    ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
+    weight=vars.GetVariationWeightAt(m_varid);
+    msg_Debugging()<<"variation weight "<<m_varid<<" is "<<weight<<"\n";
   }
   // do nonsplittable (helper and legacy objects) first
   if (m_mode&ANALYSIS::fill_helper) {
     for (size_t i=0;i<m_objects.size();i++) {
       if (!m_objects[i]->IsObservable()) {
-	m_objects[i]->Evaluate(*bl,value,ncount);
+	m_objects[i]->Evaluate(*bl,weight,ncount);
       }
     }
   }
@@ -289,7 +304,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if (m_mode&ANALYSIS::fill_histos) {
     for (size_t i=0;i<m_objects.size();i++) {
       if (m_objects[i]->IsObservable()) {
-	m_objects[i]->Evaluate(*bl,value,ncount);
+	m_objects[i]->Evaluate(*bl,weight,ncount);
       }
     }
   }
@@ -303,11 +318,11 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 
     Primitive_Analysis * ana=
       GetSubAnalysis(bl,type,m_mode^ANALYSIS::split_sh);
-    ana->DoAnalysis(bl,value);
+    ana->DoAnalysis(bl,weight);
     m_called.insert(ana);
   }
 
-  if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,value);
+  if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,weight);
   if (p_partner==this && msg_LevelIsTracking()) PrintStatus();
 
   for (Analysis_List::const_iterator ait(m_subanalyses.begin());
@@ -348,13 +363,22 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
   for (size_t j=0;j<nlos->size();j++) {
     p_sub=(*nlos)[j];
     if ((*nlos)[j]->m_result==0.) continue;
+    double weight((*nlos)[j]->m_result);
+    if (m_varid>-1) {
+      Blob *sp(bl->FindFirst(btp::Signal_Process));
+      Blob_Data_Base *info((*sp)["Variation_Weights"]);
+      if (info==NULL) THROW(fatal_error,"Expected variation weights but didn't find them");
+      ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
+      weight=vars.GetVariationWeightAt(m_varid,j);
+      msg_Debugging()<<"variation weight "<<m_varid<<"["<<j<<"] is "<<weight<<"\n";
+    }
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   
     // do nonsplittable (helper and legacy objects) first
     if (m_mode&ANALYSIS::fill_helper) {
       for (size_t i=0;i<m_objects.size();i++) {
 	if (!m_objects[i]->IsObservable()) {
- 	  m_objects[i]->Evaluate(*bl,(*nlos)[j]->m_result,ncount);
+ 	  m_objects[i]->Evaluate(*bl,weight,ncount);
 	}
       }
     }
@@ -362,7 +386,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
     if (m_mode&ANALYSIS::fill_histos) {
       for (size_t i=0;i<m_objects.size();i++) {
 	if (m_objects[i]->IsObservable()) {
-	  m_objects[i]->EvaluateNLOcontrib((*nlos)[j]->m_result,ncount);
+	  m_objects[i]->EvaluateNLOcontrib(weight,ncount);
 	}
       }
     }
@@ -412,6 +436,14 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir)
   ATOOLS::MakeDir(resdir+OutputPath()); 
 
   if (m_mode&ANALYSIS::do_menlo) {
+    if ((m_mode&ANALYSIS::split_vars) && m_nvar) {
+      for (Analysis_List::iterator it=m_subanalyses.begin();
+	   it!=m_subanalyses.end();++it) {
+	std::string dir=resdir+OutputPath()+std::string("/")+it->first;
+	it->second->FinishAnalysis(dir);
+      }
+      return;
+    }
     for (size_t i=0;i<m_objects.size();i++) {
       m_objects[i]->EndEvaluation(1.);
       m_objects[i]->Output(resdir+OutputPath());
@@ -424,7 +456,8 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir)
     it->second->FinishAnalysis(dir);
   }
 
-  if (!(m_mode&ANALYSIS::splitt_phase)) {
+  if (!(m_mode&ANALYSIS::splitt_phase) &&
+      !((m_mode&ANALYSIS::split_vars) && m_nvar)) {
     for (size_t i=0;i<m_objects.size();i++) {
       m_objects[i]->EndEvaluation();
       if (m_mode&ANALYSIS::output_this) 

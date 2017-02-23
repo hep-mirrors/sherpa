@@ -6,11 +6,12 @@ using namespace std;
 
 
 
-EvtReadin_Phase::EvtReadin_Phase(Event_Reader_Base * evtreader) :
+EvtReadin_Phase::EvtReadin_Phase(Event_Reader_Base * evtreader, ATOOLS::Variations * variations) :
   p_evtreader(evtreader), m_path(evtreader->GetPath())
 {
   m_name = std::string("Event read-in");
   m_type = eph::Read_In;
+  p_evtreader->SetVariations(variations);
 }    
 
 Return_Value::code EvtReadin_Phase::Treat(ATOOLS::Blob_List * bloblist, 

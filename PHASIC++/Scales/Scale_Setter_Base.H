@@ -6,6 +6,7 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace MODEL { class Model_Base; }
@@ -75,6 +76,8 @@ namespace PHASIC {
     double BeamThrust() const;
 
     double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
+
+    virtual bool UpdateScale(const ATOOLS::Variation_Parameters &var);
 
     virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 

@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
@@ -10,6 +11,8 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include <vector>
 #include <string.h>
+
+namespace ATOOLS { class Variation_Parameters; class Variation_Weights; }
 
 namespace PDF { class ISR_Handler; }
 
@@ -49,7 +52,27 @@ namespace SHERPA {
     void               CloseFile();
     bool               ReadInEntry();
     bool               ReadInFullEvent(ATOOLS::Blob_List *);
-    double CalculateWeight(const double &mur2,const double &muf2,const int mode);
+
+    struct Weight_Calculation_Args {
+      Weight_Calculation_Args(double mur2, double muf2, int mode,
+			      PHASIC::Scale_Setter_Base *const scale,
+			      PHASIC::KFactor_Setter_Base *const kfac,
+			      const double &K):
+	m_mur2(mur2), m_muf2(muf2), m_K(K), m_mode(mode),
+	p_scale(scale), p_kfac(kfac) {};
+      PHASIC::Scale_Setter_Base *p_scale;
+      PHASIC::KFactor_Setter_Base *p_kfac;
+      double m_mur2, m_muf2, m_K;
+      int m_mode;
+    };
+
+    double CalculateWeight(const Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *);
+    double Reweight(ATOOLS::Variation_Parameters *,
+                    ATOOLS::Variation_Weights *,
+                    const Weight_Calculation_Args &);
+    ATOOLS::Subevent_Weights_Vector Fill(ATOOLS::Variation_Parameters *,
+					 ATOOLS::Variation_Weights *,
+					 std::vector<ATOOLS::Variation_Weights*> &);
   public:
     RootNtuple_Reader(const Input_Arguments &args,int exact=0,int ftype=0);
     ~RootNtuple_Reader();

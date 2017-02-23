@@ -1,7 +1,6 @@
 #include "AddOns/Root/RootNtuple_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -10,6 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Variations.H"
 #include <iostream>
 
 #ifdef USING__ROOT
@@ -114,6 +114,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
   std::string scale=args.p_reader->GetValue<std::string>
     ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
   m_lomode=args.p_reader->GetValue<int>("ROOTNTUPLE_LO_MODE",0);
+  if (m_lomode) msg_Info()<<METHOD<<"(): Ntuple LO mode set to "<<m_lomode<<"."<<std::endl;
   std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","NO");
   std::vector<std::string> helpsv;
   if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
@@ -279,8 +280,11 @@ bool RootNtuple_Reader::ReadInEntry()
 }
 
 double RootNtuple_Reader::CalculateWeight
-(const double &mur2,const double &muf2,const int mode)
+(const RootNtuple_Reader::Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *as)
 {
+  const double mur2(args.m_mur2);
+  const double muf2(args.m_muf2);
+  const int mode(args.m_mode);
 #ifdef USING__ROOT
   Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
   Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
@@ -291,7 +295,7 @@ double RootNtuple_Reader::CalculateWeight
   m_xf2=p_isr->PDF(1)->GetXPDF(fl2);
   double fa=m_xf1/p_vars->m_x1;
   double fb=m_xf2/p_vars->m_x2;
-  double asf=pow((*MODEL::as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
+  double asf=pow((*as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
   if (mode==0) {
     return p_vars->m_mewgt*asf*fa*fb;
   }
@@ -358,7 +362,39 @@ double RootNtuple_Reader::CalculateWeight
 #endif
 }
 
-bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs) 
+double RootNtuple_Reader::Reweight(Variation_Parameters * varparams,
+                                   Variation_Weights * varweights,
+                                   const Weight_Calculation_Args &args)
+{
+  DEBUG_FUNC("R = "<<sqrt(varparams->m_muR2fac)<<", F = "<<sqrt(varparams->m_muF2fac));
+  // temporarily replace PDFs
+  PDF::PDF_Base *nominalpdf1 = p_isr->PDF(0);
+  PDF::PDF_Base *nominalpdf2 = p_isr->PDF(1);
+  p_isr->SetPDF(varparams->p_pdf1, 0);
+  p_isr->SetPDF(varparams->p_pdf2, 1);
+
+  Weight_Calculation_Args varargs(args.m_mur2 * varparams->m_muR2fac,
+				  args.m_muf2 * varparams->m_muF2fac,
+				  args.m_mode, args.p_scale,args.p_kfac,
+				  args.m_K);
+  if (args.p_scale && args.p_scale->UpdateScale(*varparams)) {
+    varargs.m_mur2=args.p_scale->Scale(stp::ren);
+    varargs.m_muf2=args.p_scale->Scale(stp::fac);
+  }
+  double weight(CalculateWeight(varargs, varparams->p_alphas));
+  if (args.p_kfac && args.p_kfac->UpdateKFactor(*varparams))
+    weight*=args.p_kfac->LastKFactor()/args.m_K;
+
+  // reset PDFs
+  p_isr->SetPDF(nominalpdf1, 0);
+  p_isr->SetPDF(nominalpdf2, 1);
+  p_isr->SetMuF2(args.m_muf2, 0);
+  p_isr->SetMuF2(args.m_muf2, 1);
+
+  return weight;
+}
+
+bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 {
   m_mewgtinfo.Reset();
   if (!m_nlos.empty()) {
@@ -369,16 +405,14 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     m_nlos.clear();
   }
-
   if (m_evtid==0) if (!ReadInEntry()) return 0;
-
   Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
   m_weight = 0.;
   signalblob->SetTypeSpec("NLO");
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
   signalblob->SetStatus(blob_status::code(30));
-  
+  std::vector<Variation_Weights*> subvarweights;  
 #ifdef USING__ROOT
   size_t currentid=m_evtid;
   int id1(0), id2(0);
@@ -405,7 +439,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       flav[i+2]=Flavour(abs(p_vars->p_kf[i]),p_vars->p_kf[i]<0);
       sum+=moms[i+2];
     }
-    
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
     m_nlos.back()->m_mu2[stp::fac]=sqr(p_vars->m_muf);
@@ -442,8 +475,16 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       scale->CalculateScale(p);
       muR2=m_nlos.back()->m_mu2[stp::ren]=scale->Scale(stp::ren);
       muF2=m_nlos.back()->m_mu2[stp::fac]=scale->Scale(stp::fac);
-      double weight=CalculateWeight(muR2,muF2,p_vars->m_nuwgt?1:2);
-      weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;
+      const double K(kfac->KFactor(p_vars->m_type[0]=='B'?1:0));
+      const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K);
+      double weight=CalculateWeight(args, MODEL::as->GetAs());
+      weight*=K/p_vars->m_kfac;
+      if (p_variations) {
+        subvarweights.push_back(new Variation_Weights(p_variations));
+        subvarweights.back()->UpdateOrInitialiseWeights
+	  (&RootNtuple_Reader::Reweight,*this,args);
+        (*subvarweights.back())*=K/p_vars->m_kfac;
+      }
       m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
@@ -458,7 +499,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     else if (m_check) {
       double weight=CalculateWeight
-	(sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:2);
+	(Weight_Calculation_Args(sqr(p_vars->m_mur),sqr(p_vars->m_muf),
+				 p_vars->m_nuwgt?1:2,NULL,NULL,1.0),
+         MODEL::as->GetAs());
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
       KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
       weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;
@@ -496,6 +539,14 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-vars.m_oqcd);
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
+  // fill variation weights such that later event phases can update them
+  if (p_variations) {
+    Variation_Weights *varweights(new Variation_Weights(p_variations));
+    varweights->InitialiseWeights(&RootNtuple_Reader::Fill,*this,subvarweights);
+    signalblob->AddData("Variation_Weights", new Blob_Data<Variation_Weights>(*varweights));
+    for (size_t i(0);i<subvarweights.size();++i) delete subvarweights[i];
+    delete varweights;
+  }
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      ((vars.m_nuwgt?vars.m_mewgt:vars.m_mewgt2)/
@@ -514,6 +565,17 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("MEWeightInfo",new Blob_Data<ATOOLS::ME_Weight_Info*>(&m_mewgtinfo));
   m_evtcnt++;
   return 1;
+}
+
+Subevent_Weights_Vector RootNtuple_Reader::Fill
+(Variation_Parameters *vars,Variation_Weights *weights,
+ std::vector<Variation_Weights*> &subvarweights)
+{
+  Subevent_Weights_Vector subweights(subvarweights.size());
+  for (size_t j(0);j<subvarweights.size();++j)
+    subweights[j]=subvarweights[j]->
+      GetVariationWeightAt(weights->CurrentParametersIndex());
+  return subweights;
 }
 
 DECLARE_GETTER(RootNtuple_Reader,"Root",

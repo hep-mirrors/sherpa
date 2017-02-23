@@ -217,3 +217,8 @@ double Scale_Setter_Base::CalculateScale
   if (p_proc && p_proc->Integrator()->Beam()) p_cpls->Calculate();
   return m_scale[stp::fac];
 }
+
+bool Scale_Setter_Base::UpdateScale(const Variation_Parameters &var)
+{
+  return false;
+}

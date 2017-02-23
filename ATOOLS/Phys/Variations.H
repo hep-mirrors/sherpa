@@ -173,6 +173,8 @@ namespace ATOOLS {
     Subevent_Weights_Vector(size_type count, const double& value = 1.0);
     //! Multiply all weights with a common factor
     Subevent_Weights_Vector & operator*=(const double &);
+    //! Add another subevent weight vector of the same size
+    Subevent_Weights_Vector & operator+=(const Subevent_Weights_Vector &);
   };
 
 
@@ -246,6 +248,9 @@ namespace ATOOLS {
 
     //! Multiply weights with weights from another set of variation weights
     Variation_Weights & operator*=(const Variation_Weights &);
+
+    //! Add weights from another set of variation weights
+    Variation_Weights & operator+=(const Variation_Weights &);
 
     //! Get variation name at a given index
     std::string GetVariationNameAt(Variations::Parameters_Vector::size_type) const;

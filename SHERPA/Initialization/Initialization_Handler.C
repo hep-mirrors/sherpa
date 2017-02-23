@@ -397,6 +397,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   		<<"   The full framework is not needed."<<std::endl;
     InitializeTheBeamRemnants();
     InitializeTheIO();
+    InitializeTheReweighting();
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();

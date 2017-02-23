@@ -345,7 +345,8 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
   for (size_t i(0);i<evtinfo.SubEvtList()->size();++i) {
     EventInfo subevtinfo(evtinfo);
     const NLO_subevt * sub((*evtinfo.SubEvtList())[i]);
-    if (sub->m_result==0.) continue;
+    if (sub->m_result==0. &&
+	!(sub->IsReal() && m_subeventlist.empty())) continue;
     HepMC::GenVertex * subvertex(new HepMC::GenVertex());
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
     // set the event number (could be used to identify correlated events)
