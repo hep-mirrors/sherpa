@@ -66,7 +66,7 @@ namespace SHERPA {
       int m_mode;
     };
 
-    double CalculateWeight(const Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *);
+    double CalculateWeight(const Weight_Calculation_Args &args, MODEL::Running_AlphaS *);
     double Reweight(ATOOLS::Variation_Parameters *,
                     ATOOLS::Variation_Weights *,
                     const Weight_Calculation_Args &);
