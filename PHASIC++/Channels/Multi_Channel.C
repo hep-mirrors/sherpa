@@ -12,31 +12,21 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Multi_Channel::Multi_Channel(string _name,int id) : 
-  fl(NULL), m_id(id), s1(NULL), m_readin(false), m_fixalpha(false),
-  m_minalpha(0.0), m_weight(1.0)
-{
-  string help;
-  int    pos;
-  for (;;) {
-    pos  = _name.find(" ");
-    if (pos==-1) break;
-    help   = _name;
-    _name  = help.substr(0,pos) + help.substr(pos+1); 
-  }
-  name     = _name;
-  n_points = n_contrib = 0;
-  mn_points = mn_contrib = 0;
-  m_lastdice = -1;
-  m_optcnt = 0;
-  m_pol = 250.;
-  m_otype = 0;
-}
+Multi_Channel::Multi_Channel(string _name) : 
+  name(StringReplace(_name, " ", "")),
+  s1(NULL), m_readin(false),
+  m_minalpha(0.0), m_weight(1.0),
+  n_points(0), n_contrib(0),
+  mn_points(0), mn_contrib(0),
+  m_lastdice(-1),
+  m_optcnt(0),
+  m_otype(0)
+{ }
 
 Multi_Channel::~Multi_Channel() 
 {
   DropAllChannels();
-  if (s1) { delete[] s1; s1 = 0; }
+  if (s1) { delete[] s1; s1 = NULL; }
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
@@ -104,23 +94,6 @@ void Multi_Channel::Reset()
   m_readin=false;
 }
 
-void Multi_Channel::ResetOpt() 
-{
-  n_points = 0;
-}        
-
-void Multi_Channel::ResetCnt() 
-{
-}        
-
-class Order_Weight {
-public:
-  bool operator()(Single_Channel* c1,Single_Channel* c2)
-  { 
-    return c1->Alpha()>c2->Alpha();
-  }
-};
-
 void Multi_Channel::MPISync()
 {
 #ifdef USING__MPI
@@ -155,43 +128,72 @@ void Multi_Channel::MPISync()
 
 void Multi_Channel::Optimize(double error)
 {
-  if (m_fixalpha) return;
   msg_Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
-  double aptot = 0.;
   size_t i;
+
+  // calculate aptot = sum_i alpha_i
+  double aptot = 0.;
   for (i=0;i<channels.size();i++) {
     s1[i]  = channels[i]->Res1()/n_points;
     aptot += channels[i]->Alpha()*sqrt(s1[i]);
   }
   
-  double s1x = 0.;  
+  // calculate s1x = max_i |aptot - sqrt(s1_i)|
+  // update alpha_i -> alpha_i * sqrt(s1_i) / aptot
+  //                     = alpha_i * sqrt(W_i(alpha_i))
+  // where the last expression is given in the notation of hep-ph/9405257
+  double s1x = 0.;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha()>0.) {
       if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
       if (channels.size()>1) {
-      channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-      if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(m_minalpha);
+        channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
+        if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) {
+          channels[i]->SetAlpha(m_minalpha);
+        }
       }
     }
   }
+
+  // normalise alpha values to a partition of unity
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
-  for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+  for (i=0;i<channels.size();i++) {
+    channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+  }
 
-  if((m_optcnt>4 && m_optcnt<20) || channels.size()==1)    
-      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
-    if (m_optcnt==20 && channels.size()>1){
-      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
-      s1xmin     = 1.e32;
+  // optimise individual channels ...
+  if((m_optcnt>4 && m_optcnt<20) || channels.size()==1) {
+    for (i=0;i<channels.size();i++) {
+      if (channels[i]->Alpha()>0.01) {
+        channels[i]->Optimize();
+      }
     }
+  }
 
+  // ... or end optimising them
+  if (m_optcnt==20 && channels.size()>1){
+    for (i=0;i<channels.size();i++) {
+      if (channels[i]->Alpha()>0.) {
+        channels[i]->EndOptimize();
+      }
+    }
+    // in this case, make sure the current alpha values are saved below
+    s1xmin = 1.e32;
+  }
+
+  // save current alpha values if we have improved
   if (s1x<s1xmin) {
     s1xmin = s1x;
-    for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
+    for (i=0;i<channels.size();i++) {
+      channels[i]->SetAlphaSave(channels[i]->Alpha());
+    }
   }  
 
+  // reset channel weights
   for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
+
   msg_Tracking()<<"New weights for : "<<name<<endl
 		<<"----------------- "<<n_points<<" ----------------"<<endl;
   for (i=0;i<channels.size();i++) {
@@ -203,24 +205,34 @@ void Multi_Channel::Optimize(double error)
   msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
  		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-----------------------------------------------"<<endl;
+
+  // update number of optimisations
   m_optcnt++;
-  m_best=channels;
-  std::sort(m_best.begin(),m_best.end(),Order_Weight());
-  m_best.resize(2);
 }
 
 void Multi_Channel::EndOptimize(double error)
 {
   size_t i;
 
+  // use last best set of alpha values and set small ones to minalpha
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(m_minalpha);
+    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) {
+      channels[i]->SetAlpha(m_minalpha);
+    }
   }
+
+  // normalise alpha values to a partition of unity
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
-  for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
-  for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+  for (i=0;i<channels.size();i++) {
+    channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+  }
+
+  // tell channels to end optimising
+  for (i=0;i<channels.size();i++) {
+    if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+  }
 
   msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
@@ -240,27 +252,26 @@ bool Multi_Channel::OptimizationFinished()
   return true;
 }
 
-
 void Multi_Channel::AddPoint(double value)
 {
-  //if (!ATOOLS::IsZero(value)) n_contrib++;
+  // update number of points
 #ifdef USING__MPI
   if (value!=0.) mn_contrib++;
-#else
-  if (value!=0.) n_contrib++;
-#endif
-  //   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
-#ifdef USING__MPI
   mn_points++;
 #else
+  if (value!=0.) n_contrib++;
   n_points++;
 #endif
+
+  // update weights of all channels
   double var;
   for (size_t i=0;i<channels.size();i++) {
     if (value!=0.) {
-      if (channels[i]->Weight()!=0) 
+      if (channels[i]->Weight()!=0) {
 	var = sqr(value)*m_weight/channels[i]->Weight();
-      else var = 0.;
+      } else {
+        var = 0.;
+      }
 #ifdef USING__MPI
       channels[i]->AddMPIVars(var,sqr(var));
 #else
@@ -269,10 +280,10 @@ void Multi_Channel::AddPoint(double value)
 #endif
     }
   }
+
+  // add point to last selected channel
   if (m_lastdice>=0) Channel(m_lastdice)->AddPoint(value);
 }
-
-
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {

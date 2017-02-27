@@ -11,25 +11,18 @@ Single_Channel::Single_Channel() :
   name("no_name"),
   weight(0.),
   res1(0.),res2(0.),alpha(0.),alpha_save(0.),
-  nin(0),nout(0),ms(NULL),rannum(0),rans(NULL) 
-{
-  mres1=mres2=0.0;
-}
+  nin(0),nout(0),ms(NULL),rannum(0),rans(NULL),
+  mres1(0.),mres2(0.)
+{ }
 
 Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * _fl) :
   name("no_name"),
   weight(0.),
   res1(0.),res2(0.),alpha(0.),alpha_save(0.),
-  nin(_nin),nout(_nout),ms(new double[nin+nout+1]),rannum(0),rans(NULL) 
+  nin(_nin),nout(_nout),ms(new double[nin+nout+1]),rannum(0),rans(NULL),
+  mres1(0.),mres2(0.)
 { 
   for (int i(0);i<nin+nout;i++) ms[i] = ATOOLS::sqr(_fl[i].Mass());
-  rannum = 0;
-  rans   = NULL;
-  alpha=0.0;
-  //   if (nin == 1) rannum = 2 + 3*(nout-2);
-  //   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
-  //   rans  = new double[rannum];
-  mres1=mres2=0.0;
 }
 
 Single_Channel::Single_Channel(Single_Channel * old) :
@@ -37,11 +30,10 @@ Single_Channel::Single_Channel(Single_Channel * old) :
   weight(0.),
   res1(0.),res2(0.),alpha(0.),alpha_save(0.),
   nin(old->nin),nout(old->nout),ms(new double[nin+nout]),
-  rannum(old->rannum),rans(new double[rannum])
+  rannum(old->rannum),rans(new double[rannum]),
+  mres1(0.),mres2(0.)
 {
   for (int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
-  alpha=0.0;
-  mres1=mres2=0.0;
 }
 
 Single_Channel::~Single_Channel()

@@ -1,7 +1,6 @@
 #ifndef PHASIC_Channels_Multi_Channel_H
 #define PHASIC_Channels_Multi_Channel_H
 
-#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Info_Key.H"
 
 namespace PHASIC {
@@ -29,22 +28,19 @@ namespace PHASIC {
   class Multi_Channel {
   protected :
     int                           nin, nout;
-    ATOOLS::Flavour             * fl;
     std::string                   name;
-    int                           m_id;
     long unsigned int             n_points,n_contrib;
     long unsigned int             mn_points,mn_contrib;
     double                        m_weight;
     double                        rans[2];
     double                        s1xmin, * s1;
-    std::vector<Single_Channel *> channels, m_best;
-    bool m_readin, m_fixalpha;
+    std::vector<Single_Channel *> channels;
+    bool m_readin;
     double m_minalpha;
     int m_lastdice,m_optcnt;
-    double m_pol;
     int m_otype;
   public:
-    Multi_Channel(std::string,int=0);
+    Multi_Channel(std::string name);
     virtual ~Multi_Channel();
 
     virtual bool Initialize();
@@ -54,10 +50,8 @@ namespace PHASIC {
     void             DropChannel(int);     
     Single_Channel * Channel(int); 
     virtual void     Reset();
-    virtual void     ResetOpt();
     virtual void     Optimize(double);
     virtual void     MPISync();
-    void             ResetCnt();
 
     inline std::vector<Single_Channel*> &Channels() { return channels; }
 
@@ -91,7 +85,6 @@ namespace PHASIC {
     virtual void    WriteOut(std::string);
     virtual bool    ReadIn(std::string);
 
-    inline void FixAlpha() { m_fixalpha=true; }
     inline void SetMinAlpha(const double& minalpha) { m_minalpha=minalpha; }
 
     size_t NChannels() const;
@@ -102,14 +95,11 @@ namespace PHASIC {
     inline long unsigned int    ValidMN()   { return mn_contrib; }
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
-    inline ATOOLS::Flavour     *Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
     inline std::string          Name()      { return name; }
-    inline int                  ID()        { return m_id; }
     std::string                 ChID(int);
     Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
     void                        NoGenerate()    { m_lastdice=-1; }
-    inline const std::vector<Single_Channel*> &Best() const { return m_best; }
 
     inline void SetNin(int _nin)   { nin=_nin; }
     inline void SetNout(int _nout) { nout=_nout; }
