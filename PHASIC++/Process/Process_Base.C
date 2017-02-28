@@ -660,11 +660,15 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (apmap->find(nlot)==apmap->end())
       (*apmap)[nlot] = new StringProcess_Map();
     StringProcess_Map *cmap((*apmap)[nlot]);
-    if (cmap->find(fname)!=cmap->end())
-      msg_Debugging()<<METHOD<<"(): replacing '"<<m_name<<"' "
-		     <<Demangle(typeid(*(*cmap)[fname]).name())
-		     <<" -> "<<Demangle(typeid(*this).name())<<"\n";
-    (*cmap)[fname]=this;
+    if (cmap->find(fname)!=cmap->end()) {
+      if (msg_LevelIsDebugging()) {
+        Process_Base* old = (*cmap)[fname];
+        msg_Out()<<METHOD<<"(): replacing '"<<m_name<<"' "
+                               <<Demangle(typeid(*old).name())
+                               <<" -> "<<Demangle(typeid(*this).name())<<"\n";
+      }
+      (*cmap)[fname]=this;
+    }
   }
 }
 
