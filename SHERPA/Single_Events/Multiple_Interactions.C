@@ -70,8 +70,9 @@ CheckBlobList(ATOOLS::Blob_List *const bloblist)
       if (!p_remnants[beam]->Extract(cp)) {
 	msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
 		      <<*cp<<std::endl;
-	if (!(*iit)->IsConnectedTo(btp::Signal_Process))
-	  p_bloblist->DeleteConnected(*iit);
+        if (*iit && !(*iit)->IsConnectedTo(btp::Signal_Process)) {
+          p_bloblist->DeleteConnected(*iit);
+        }
 	else return Return_Value::Retry_Event;
 	return Return_Value::Retry_Phase;
       }

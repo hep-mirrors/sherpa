@@ -57,14 +57,17 @@ Parton *Parton::FollowUp()
 
 bool Parton::Splits()
 {
-  if (this==NULL) return false;
   if (this==p_sing->GetSplit()) return true;
-  return p_next->Splits();
+  if (p_next == NULL) {
+    return false;
+  } else {
+    return p_next->Splits();
+  }
 }
 
 void Parton::UpdateDaughters()
 {
-  if (this==NULL || p_next==NULL) return;
+  if (p_next==NULL) return;
   msg_Indent();
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
@@ -77,7 +80,7 @@ void Parton::UpdateDaughters()
 
 void Parton::UpdateNewDaughters(Parton *ref)
 {
-  if (this==NULL || p_next==NULL) return;
+  if (p_next==NULL) return;
   ref=ref->GetSing()->GetLeft();
   if (ref==NULL) THROW(fatal_error,"Internal error");
   msg_Indent();
@@ -100,7 +103,6 @@ void Parton::UpdateNewDaughters(Parton *ref)
 
 void Parton::UpdateColours()
 {
-  if (this==NULL) return;
   msg_IODebugging()<<METHOD<<"("<<this<<"): ("
 		   <<GetMEFlow(1)<<","<<GetMEFlow(2)<<") -> ("
 		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";

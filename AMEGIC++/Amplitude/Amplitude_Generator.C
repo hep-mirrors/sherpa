@@ -636,7 +636,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   std::vector<double> hitmax;
   while (f1) {
     std::vector<int> hit;
-    f1->GetPointlist()->FindOrder(hit);
+    if (f1->GetPointlist()) f1->GetPointlist()->FindOrder(hit);
     bool valid(true);
     for (size_t i(0);i<Min(order.size(),hit.size());++i)
       if (hit[i]>order[i]) valid=false;
@@ -687,7 +687,7 @@ bool Amplitude_Generator::CheckTChannels(Point * p) {
 bool Amplitude_Generator::CheckOrders(Point * p)
 {
   std::vector<int> hit;
-  p->FindOrder(hit);
+  if (p) p->FindOrder(hit);
   bool valid(true);
   for (size_t i(0);i<Min(order.size(),hit.size());++i)
     if (hit[i]>order[i]) valid=false;
