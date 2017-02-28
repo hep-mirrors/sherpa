@@ -168,7 +168,7 @@ double GGH_KFactor_Setter::ClusterMassCorrectionFactor()
 
 double GGH_KFactor_Setter::ClusterMassCorrectionFactor(NLO_subevtlist* subevts)
 {
-  if(!subevts->size()>1)
+  if(!(subevts->size()>1))
     THROW(fatal_error, "Internal error");
   NLO_subevtlist::const_iterator it=subevts->begin();
   NLO_subevt* select_proc= *subevts->begin();
