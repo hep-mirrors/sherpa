@@ -3,13 +3,14 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/My_File.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
+
+namespace ATOOLS { template class SP(Helicity_Integrator); }
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const hls::scheme &s)
 {

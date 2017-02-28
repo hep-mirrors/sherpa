@@ -216,6 +216,8 @@
 #ifndef ATOOLS_Org_Option_Parser_H
 #define ATOOLS_Org_Option_Parser_H
 
+#include <cstdio>
+
 namespace ATOOLS
 {
 

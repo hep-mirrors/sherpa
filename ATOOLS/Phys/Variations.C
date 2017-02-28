@@ -782,5 +782,6 @@ namespace ATOOLS {
   // Explicit template instantiations
   template <> Blob_Data<Variation_Weights>::~Blob_Data() {}
   template class Blob_Data<Variation_Weights>;
+  template class SP(Variation_Weights);
 
 }

@@ -21,6 +21,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 static int s_whbins(100);
+namespace ATOOLS { template class SP(Process_Integrator); }
 static int s_genresdir(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):

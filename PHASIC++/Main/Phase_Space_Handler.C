@@ -35,6 +35,8 @@ using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
+namespace ATOOLS { template class SP(Phase_Space_Handler); }
+
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),

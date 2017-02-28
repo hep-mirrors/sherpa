@@ -1,7 +1,7 @@
 #include "ATOOLS/Org/Command_Line_Interface.H"
 
-#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Option_Parser.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
 // include the actual definition of command line options

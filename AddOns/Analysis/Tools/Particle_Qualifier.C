@@ -5,6 +5,8 @@
 
 using namespace ATOOLS;
 
+namespace ATOOLS { template class SP(Particle_Qualifier_Base); }
+
 Particle_Qualifier_Base::~Particle_Qualifier_Base()
 {
 }
