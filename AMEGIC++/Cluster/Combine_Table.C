@@ -83,7 +83,7 @@ std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
   std::string graphs;
   for (size_t k=0;k<cd.m_graphs.size();++k) graphs+=","+ToString(cd.m_graphs[k]);
   s<<graphs.substr(1);
-  if (cd.p_down) s<<" -> "<<cd.p_down->m_no;
+  if (cd.p_down) s<<" -> "<<cd.p_down->Number();
   return s;
 }
 
@@ -107,61 +107,57 @@ Combine_Data::~Combine_Data()
 
 std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct) 
 {
-  if (&ct) {
-    s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no
-     <<" [OQCD="<<ct.m_nstrong<<"] (up=";
-    if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
-    if (ct.m_decids.size()) {
-      std::string ds;
-      for (DecayInfo_Vector::const_iterator cit(ct.m_decids.begin());
-	   cit!=ct.m_decids.end();++cit) {
-        ds+=ToString(**cit)+" ";
-      }
-      s<<"  decs = { "<<ds<<"}\n";
+  s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no
+   <<" [OQCD="<<ct.m_nstrong<<"] (up=";
+  if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
+  if (ct.m_decids.size()) {
+    std::string ds;
+    for (DecayInfo_Vector::const_iterator cit(ct.m_decids.begin());
+        cit!=ct.m_decids.end();++cit) {
+      ds+=ToString(**cit)+" ";
     }
-    s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
-     <<"flav"<<std::setw(5)<<"cut  qcd qed"<<std::setw(12)
-     <<" mom"<<std::endl;
-    for (int l=0; l<ct.m_nlegs; ++l) {
-      s<<std::setw(3)<<l<<std::setw(12)<<ToString(ID(ct.GetLeg(l).ID()))
-       <<std::setw(8)<<ct.p_legs[0][l].Flav()<<std::setw(4)
-       <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
-       <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
-       <<"/"<<ct.GetLeg(l).NQED()<<" "<<ct.p_moms[l]<<std::endl;
+    s<<"  decs = { "<<ds<<"}\n";
+  }
+  s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
+   <<"flav"<<std::setw(5)<<"cut  qcd qed"<<std::setw(12)
+   <<" mom"<<std::endl;
+  for (int l=0; l<ct.m_nlegs; ++l) {
+    s<<std::setw(3)<<l<<std::setw(12)<<ToString(ID(ct.GetLeg(l).ID()))
+     <<std::setw(8)<<ct.p_legs[0][l].Flav()<<std::setw(4)
+     <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
+     <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
+     <<"/"<<ct.GetLeg(l).NQED()<<" "<<ct.p_moms[l]<<std::endl;
+  }
+  s<<" ---------------"<<std::endl;
+  const CD_List & cl=ct.m_combinations;
+  if (cl.size()>0) {
+    for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
+      s<<cit->first<<std::setw(8)<<cit->second
+       <<(cit==ct.m_cdata_winner?" <-":"")<<std::endl; 
     }
-    s<<" ---------------"<<std::endl;
-    const CD_List & cl=ct.m_combinations;
-    if (cl.size()>0) {
-      for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
- 	s<<cit->first<<std::setw(8)<<cit->second
-	 <<(cit==ct.m_cdata_winner?" <-":"")<<std::endl; 
-      }
-      for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
-	if (cit->second.p_down) {
-	  s<<*cit->second.p_down<<std::endl;
-	}
+    for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
+      if (cit->second.p_down) {
+        s<<*cit->second.p_down<<std::endl;
       }
     }
-    else if (ct.p_hard) {
-      s<<" graph"<<std::setw(8)
-       <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
-       <<"q_{min qcd}"<<std::setw(12)<<"q_{min qed}"<<std::setw(12)<<std::endl;
-      for (int k=0;k<ct.m_nampl;++k) {
-	for (int l=0;l<2;++l) {
-	  s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
-	   <<ct.p_hard[k][l].Flav()<<std::setw(4)
-	   <<ct.p_hard[k][l].Point()->t<<" "<<ct.p_hard[k][l].OrderQCD()
-	   <<"/"<<ct.p_hard[k][l].NQCD()<<" "<<ct.p_hard[k][l].OrderQED()
-	   <<"/"<<ct.p_hard[k][l].NQED()<<std::setw(12)<<std::endl;
-	}
+  }
+  else if (ct.p_hard) {
+    s<<" graph"<<std::setw(8)
+     <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
+     <<"q_{min qcd}"<<std::setw(12)<<"q_{min qed}"<<std::setw(12)<<std::endl;
+    for (int k=0;k<ct.m_nampl;++k) {
+      for (int l=0;l<2;++l) {
+        s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
+         <<ct.p_hard[k][l].Flav()<<std::setw(4)
+         <<ct.p_hard[k][l].Point()->t<<" "<<ct.p_hard[k][l].OrderQCD()
+         <<"/"<<ct.p_hard[k][l].NQCD()<<" "<<ct.p_hard[k][l].OrderQED()
+         <<"/"<<ct.p_hard[k][l].NQED()<<std::setw(12)<<std::endl;
       }
     }
-    s<<" k_{T,min}\n";
-    for (size_t i(0);i<ct.m_kt2ord.size();++i)
-      s<<ID(ct.m_kt2ord[i].first)<<" -> "<<sqrt(ct.m_kt2ord[i].second)<<"\n";
-  } 
-  else
-    s<<"***empty Combine_Table***"<<std::endl;
+  }
+  s<<" k_{T,min}\n";
+  for (size_t i(0);i<ct.m_kt2ord.size();++i)
+    s<<ID(ct.m_kt2ord[i].first)<<" -> "<<sqrt(ct.m_kt2ord[i].second)<<"\n";
   return s;
 }
 

@@ -1,5 +1,7 @@
 #include "AMEGIC++/Amplitude/Amplitude_Base.H"
 
+#include "ATOOLS/Org/Exception.H"
+
 using namespace AMEGIC;
 
 void Amplitude_Base::SetStringOn()  
@@ -46,5 +48,5 @@ void Amplitude_Base::DefineOrder(const std::vector<int> &o)
 
 const std::vector<int> &Amplitude_Base::GetOrder()
 {
-  abort();
+  THROW(fatal_error, "Error: Amplitude_Base::GetOrder() is not implemented.");
 }

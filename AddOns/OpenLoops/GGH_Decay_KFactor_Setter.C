@@ -155,6 +155,7 @@ size_t GGH_Decay_KFactor_Setter::GetHiggsIndex() const {
     if (p_ampl->Leg(i)->Flav().Kfcode() == kf_h0)
       return i;
   }
+  THROW(fatal_error, "Internal error");
 }
 
 std::vector<Size_t_Vec > GGH_Decay_KFactor_Setter::GetIndexVec() const {
