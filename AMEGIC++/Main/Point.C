@@ -225,7 +225,7 @@ void Point::FindOrder(std::vector<int> &order)
     for (size_t i(0);i<v->order.size();++i)
       order[i]+=v->order[i];
   }
-  if (left)   left  ->FindOrder(order);
-  if (left)   right ->FindOrder(order);
+  if (left) left->FindOrder(order);
+  if (right) right->FindOrder(order);
   if (middle) middle->FindOrder(order);
 }

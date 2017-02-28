@@ -83,7 +83,7 @@ void Parton::UpdateDaughters()
 
 void Parton::UpdateNewDaughters(Parton *ref)
 {
-  if (this==NULL || p_next==NULL) return;
+  if (p_next==NULL) return;
   ref=ref->GetSing()->GetLeft();
   if (ref==NULL) THROW(fatal_error,"Internal error");
   msg_Indent();
@@ -107,7 +107,6 @@ void Parton::UpdateNewDaughters(Parton *ref)
 
 void Parton::UpdateColours()
 {
-  if (this==NULL) return;
   msg_IODebugging()<<METHOD<<"("<<this<<"): ("
 		   <<GetMEFlow(1)<<","<<GetMEFlow(2)<<") -> ("
 		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";

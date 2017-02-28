@@ -263,7 +263,7 @@ void Single_Amplitude::Prop_Replace(Flavour falt,int alt,int neu1,int neu2)
 void Single_Amplitude::SetOrder()
 {
   m_order.clear();
-  GetPointlist()->FindOrder(m_order);
+  if (GetPointlist()) GetPointlist()->FindOrder(m_order);
 }
 
 const std::vector<int> &Single_Amplitude::GetOrder()

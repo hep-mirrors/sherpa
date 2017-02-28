@@ -417,8 +417,9 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
 
 void Singlet::UpdateDaughters()
 {
-  for (PLiter plit(begin());plit!=end();++plit)
-    (*plit)->UpdateDaughters();
+  for (PLiter plit(begin());plit!=end();++plit) {
+    if (*plit) (*plit)->UpdateDaughters();
+  }
 }
 
 void Singlet::UpdateAmplitude( ATOOLS::Cluster_Amplitude *ampl){
