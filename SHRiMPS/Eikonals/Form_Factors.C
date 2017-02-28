@@ -134,7 +134,7 @@ double Form_Factor::FourierTransform(const double & b) const
 double Form_Factor::ImpactParameter(const double & val) const 
 {
   if (val>m_values.front()) return 0.;
-  if (val<m_values.back())  m_bmax;
+  if (val<m_values.back())  return m_bmax;
 
   size_t i;
   for (i=0;i<m_bsteps;i++) { if (m_values[i]<val) break; }
