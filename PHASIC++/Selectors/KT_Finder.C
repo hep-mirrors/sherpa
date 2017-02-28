@@ -181,6 +181,7 @@ bool KT_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool 
       moms[i]=momsout[i-m_nin];
     
     Init(moms);
+    delete[] moms;
     BoostInFrame(momsin);
     BoostInFrame(momsout);
     
@@ -219,6 +220,7 @@ bool KT_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool 
 	moms[i]=momsout[i-m_nin];
       
       Init(moms);
+      delete[] moms;
       BoostInFrame(momsin);
       BoostInFrame(momsout);
     }
@@ -283,6 +285,7 @@ bool KT_Finder::ConstructJets(const Particle_List * parts,
       moms[i]=momsout[i-m_nin];
     
     Init(moms);
+    delete[] moms;
     BoostInFrame(momsin);
     BoostInFrame(momsout);
   }
@@ -312,6 +315,7 @@ bool KT_Finder::ConstructJets(const Particle_List * parts,
 	moms[i]=momsout[i-m_nin];
       
       Init(moms);
+      delete[] moms;
       BoostInFrame(momsin);
       BoostInFrame(momsout);
     }

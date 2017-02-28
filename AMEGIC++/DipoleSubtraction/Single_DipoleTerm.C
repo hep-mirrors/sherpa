@@ -366,9 +366,11 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     p_dipole=NULL;
   }
   if (!p_dipole) {
-    msg_Error()<<"ERROR in Single_DipoleTerm::InitAmplitude : Dipol type not implemented: "<<m_dipoletype
-	       <<" ("<<m_pi<<","<<m_pj<<","<<m_pk<<")"<<std::endl;   
-    Abort();
+    MyStrStream stream;
+    stream << "ERROR in Single_DipoleTerm::InitAmplitude :";
+    stream << " Dipole type not implemented: " << m_dipoletype;
+    stream << " (" << m_pi << "," << m_pj << "," << m_pk << ")" << std::endl;   
+    THROW(not_implemented, stream.str());
   }
   p_dipole->SetMomenta(p_testmoms);
   p_dipole->CalcDiPolarizations();

@@ -512,6 +512,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const double Swgt(OneSEvent(wmode));
+      assert(p_ampl);
       const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);

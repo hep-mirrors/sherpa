@@ -33,16 +33,20 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
   OpenLoops_Interface::SetParameter("alphas", AlphaQCD());
   OpenLoops_Interface::SetParameter("mu", sqrt(m_mur2));
   
+  bool shouldprinttime(msg_LevelIsDebugging());
   MyTiming* timing;
-  if (msg_LevelIsDebugging()) {
+  if (shouldprinttime) {
     timing = new MyTiming();
     timing->Start();
   }
+
   OpenLoops_Interface::EvaluateLoop(m_ol_id, momenta, m_born, m_res);
-  if (msg_LevelIsDebugging()) {
+
+  if (shouldprinttime) {
     timing->Stop();
     PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
                <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+    delete timing;
   }
 
   // factor which by Sherpa convention has to be divided out at this stage

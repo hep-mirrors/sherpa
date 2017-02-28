@@ -32,12 +32,14 @@ Scale_Setter_Base::Scale_Setter_Base
     m_nout=p_proc->NOut();
   }
   size_t nl(0);
-  for (size_t i(0);i<p_proc->Flavours().size();++i) {
-    if (p_proc->Flavours()[i].IsLepton()) {
-      nl++;
-      if      (nl==1) m_l1=i;
-      else if (nl==2) m_l2=i;
-      else           {m_l1=m_l2=0; break;}
+  if (p_proc) {
+    for (size_t i(0);i<p_proc->Flavours().size();++i) {
+      if (p_proc->Flavours()[i].IsLepton()) {
+        nl++;
+        if      (nl==1) m_l1=i;
+        else if (nl==2) m_l2=i;
+        else           {m_l1=m_l2=0; break;}
+      }
     }
   }
   m_p.resize(m_nin+m_nout);

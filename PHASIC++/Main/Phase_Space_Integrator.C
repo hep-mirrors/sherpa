@@ -183,9 +183,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 #else
     ncontrib = psh->FSRIntegrator()->ValidN();
 #endif
-    double deltat, targettime=timestep+dabs(timeslope)*(psh->Process()->NOut()-2);
-    if (timeslope<0.0) targettime*=psh->Process()->Process()->Size();
-    if (timestep>0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-stepstart;
+    double deltat(0.0);
+    double targettime(timestep + dabs(timeslope) * (psh->Process()->NOut()-2));
+    if (timeslope < 0.0) targettime *= psh->Process()->Process()->Size();
+    if (timestep > 0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-stepstart;
     if ((timestep==0.0 && ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) ||
 	(timestep>0.0 && deltat>=targettime)) {
       MPISync();
