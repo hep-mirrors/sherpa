@@ -63,8 +63,8 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
 
   bool contract(0);
   Default_Reader reader;
-  string orderfn(reader.Get<string>("LHOLE_ORDERFILE", "OLE_order.lh");
-  string contractfn(reader.Get<string>("LHOLE_CONTRACTFILE", "OLE_contract.lh");
+  string orderfn(reader.Get<string>("LHOLE_ORDERFILE", "OLE_order.lh"));
+  string contractfn(reader.Get<string>("LHOLE_CONTRACTFILE", "OLE_contract.lh"));
 
   std::string irr(reader.Get<string>("LHOLE_IR_REGULARISATION", "DRED"));
   if (irr=="DRED") m_drmode=1;
