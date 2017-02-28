@@ -30,6 +30,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   itmax = reader.Get("PSI_ITMAX", 100 * itmin, "n_{it,max}", METHOD);
   nopt = reader.Get("PSI_NOPT", 25, "n_{opt}", METHOD);
   maxopt = reader.Get<long unsigned int>("PSI_MAXOPT", 5, "n_{maxopt}", METHOD);
+  stopopt = reader.Get<int>("PSI_STOPOPT", 1000,"n_{stopopt}", METHOD);
   ndecopt = reader.Get("PSI_NDECOPT", 10, "n_{opt,dec}", METHOD);
   timestep = reader.Get("PSI_TIMESTEP_OFFSET", 0.0, "\\Delta t offset", METHOD);
   timeslope = reader.Get("PSI_TIMESTEP_SLOPE", 0.0, "\\Delta t slope", METHOD);
@@ -46,6 +47,10 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
     if (reader.Read(helpi,"PSI_ITMAX_BY_NODE", 0)) {
       itmax*=helpi*size;
       msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
+    }
+    if (reader.Read(helpi,"PSI_IT_BY_NODE", 0)) {
+      itmin=itmax=helpi*size;
+      msg_Info()<<METHOD<<"(): Set n_{it} = "<<itmin<<".\n";
     }
   }
 #endif
@@ -111,13 +116,9 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->NChannels()<<" FSR integrators."<<endl;
-  iter = iter0 = Min(itmax,Max(itmin,Max(psh->Process()->ItMin(),20*numberofchannels)));
-  iter1      = Min(2*itmax,Max(2*itmin,Max(2*psh->Process()->ItMin(),100*numberofchannels)));
-  int hlp = (iter1-1)/iter0+1;
-  iter1   = hlp*iter0;
+  iter = Min(itmax,Max(itmin,Max(psh->Process()->ItMin(),20*numberofchannels)));
 
   ncontrib = psh->FSRIntegrator()->ValidN();
-  if (ncontrib/iter0>=6) iter=iter1;
 
 #ifdef USING__MPI
   nlo=0;
@@ -193,22 +194,15 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<endl;
       if (psh->Stats().size()<nopt) {
 	psh->Optimize();
-	if (ncontrib%iter1==0) {
-	  (psh->Process())->OptimizeResult();
-	  if ((psh->Process())->SPoints()==0) {
-	    lotime = ATOOLS::rpa->gen.Timer().RealTime();
-	  }
-	}
+	psh->Process()->OptimizeResult();
+	if (psh->Process()->SPoints()==0)
+	  lotime = ATOOLS::rpa->gen.Timer().RealTime();
 	fotime = true;
 	optimized=true;
       }
       else if (psh->Stats().size()==nopt) {
 	(psh->Process())->ResetMax(0);
 	psh->EndOptimize();
-	int oiter=iter;
-	if (psh->UpdateIntegrators()) iter=iter0;
-	else iter*=2;
-	optiter*=iter/(double)oiter;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
 	(psh->Process())->EndOptimize();
@@ -217,7 +211,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 
       double time = ATOOLS::rpa->gen.Timer().RealTime();
       double timeest=0.;
-      timeest = (5*iter0+(nopt-5)*iter1+2*maxopt*iter1)/double(ncontrib)*(time-starttime);
+      timeest = (nopt*iter+maxopt*iter)/double(ncontrib)*(time-starttime);
       if (!fotime) {
 	if (fin_opt==1) {
 	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
@@ -229,6 +223,16 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	}
       }
       double error=dabs(psh->Process()->TotalVar()/psh->Process()->TotalResult());
+      if (maxabserror>0.0) {
+	msg_Info()<<om::blue
+		  <<(psh->Process())->TotalResult()*rpa->Picobarn()
+		  <<" pb"<<om::reset<<" +- ( "<<om::red
+		  <<(psh->Process())->TotalVar()*rpa->Picobarn()
+		  <<" pb <-> "<<maxabserror<<" pb"<<om::reset<<" ) "
+		  <<ncontrib<<" ( "<<n<<" -> "<<(ncstep*1000/nstep)/10.0
+		  <<" % )"<<endl;
+      }
+      else {
       msg_Info()<<om::blue
 		<<(psh->Process())->TotalResult()*rpa->Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
@@ -236,6 +240,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "
 		<<ncontrib<<" ( "<<n<<" -> "<<(ncstep*1000/nstep)/10.0
 		<<" % )"<<endl;
+      }
       if (optimized) nstep = ncstep = 0;
       if (fotime) {
 	msg_Info()<<"full optimization: ";
@@ -264,19 +269,12 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       stats[5]=time-starttime+addtime;
       psh->AddStats(stats);
       psh->Process()->StoreResults(1);
-      if (ncontrib/iter0==6) {
-	optiter=iter=iter1;
-#ifdef USING__MPI
-	int size = MPI::COMM_WORLD.Get_size();
-	optiter /= size;
-	if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
-#endif
-      }
       stepstart=ATOOLS::rpa->gen.Timer().RealTime();
       bool wannabreak = dabs(error)<maxerror ||
         dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror;
       if (fin_opt==0 && nopt>psh->Stats().size() && wannabreak) nopt=psh->Stats().size();
       if (wannabreak && psh->Stats().size()>=nopt+maxopt) return true;
+      if (psh->Stats().size()>=nopt+stopopt) return true;
     }
     return false;
 }

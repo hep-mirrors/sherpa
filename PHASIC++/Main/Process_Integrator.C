@@ -20,7 +20,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-static int s_whbins(1000);
+static int s_whbins(100);
 static int s_genresdir(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):
@@ -54,8 +54,9 @@ bool Process_Integrator::Initialize
     int smode;
     Default_Reader reader;
     m_smode = reader.Get("IB_SMODE", m_smode, "sum mode", METHOD);
-    s_whbins = reader.Get("IB_WHBINS", 1000, "weight histo bin number", METHOD);
+    s_whbins = reader.Get("IB_WHBINS", 100, "weight histo bin number", METHOD);
     s_genresdir = reader.Get("GENERATE_RESULT_DIRECTORY", 1);
+    minit=true;
   }
   return true;
 }

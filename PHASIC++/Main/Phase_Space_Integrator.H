@@ -11,13 +11,13 @@ namespace PHASIC {
   private:
 
     size_t itmin, itmax;
-    int             iter,iter0,iter1,nopt,ndecopt,optiter;
+    int iter,nopt,ndecopt,optiter;
     static long unsigned int nmax;
 
     double starttime, lotime, addtime, lrtime;
     double value, maxerror, maxabserror, stepstart, timestep, timeslope;
     long unsigned int n, ncontrib, maxopt, nlo, fin_opt, nstep, ncstep;
-    long int mn, mnstep, mncstep;
+    long int mn, mnstep, mncstep, stopopt;
     size_t lastrss;
 
     Phase_Space_Handler *psh;
