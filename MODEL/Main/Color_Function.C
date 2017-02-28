@@ -64,8 +64,9 @@ std::string Color_Function::String() const
   case cf::D: return std::string("D[")+m_strarg[0]+","+m_strarg[1]+"]";
   case cf::G: return std::string("G[")+m_strarg[0]+","+m_strarg[1]+"]";
   case cf::UFO: return m_string;
+  case cf::None:
+  case cf::Unknown: return "1";
   }
-  return "1";
 }
 
 Color_Function::~Color_Function() {
