@@ -6,6 +6,8 @@
 #include "AMEGIC++/String/String_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <cassert>
 
 using namespace ATOOLS;
@@ -403,9 +405,11 @@ Flavour* Single_Amplitude_Base::GetPflav(int pn)
     Pfunc*  p = *pit;
     if(pn==p->arg[0])return &(p->fl);
   }
-  msg_Error()<<"ERROR in Single_Amplitude_Base::GetPflav: "<<std::endl
-	     <<"   Propagator "<<pn<<" not found. Abort the run."<<endl;
-  Abort();
+
+  MyStrStream stream;
+  stream << "ERROR in Single_Amplitude_Base::GetPflav:\n";
+  stream << "  Propagator " << pn << " not found. Abort the run.";
+  THROW(fatal_error, stream.str());
 }
 
 Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)

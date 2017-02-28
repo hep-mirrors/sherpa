@@ -87,6 +87,7 @@ double Sigma_Elastic::FillIntQGridAndNormalize() {
 
 
 double Sigma_Elastic::SelectPT2() const {
+  THROW(not_implemented, "Missing implementation for Sigma_Elastic::SelectPT2().");
   double random(ran->Get());
   // unsigned int i(0);
   // while (random-m_intgrid[i]>=0) i++;

@@ -93,7 +93,6 @@ namespace AMEGIC {
     Combine_Table *p_down;
     ATOOLS::Flavour m_mo;
     std::vector<int>    m_graphs;
-    friend std::ostream &operator<< (std::ostream&,const Combine_Table &);
   public:
     // constructors
     Combine_Data();
@@ -158,8 +157,7 @@ namespace AMEGIC {
     double Sprime() const;
 
     ATOOLS::Flavour MatchFlavour(const Leg &a,const Leg &b,const Leg &c,int mode) const;
-    friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
-    friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
+    friend std::ostream& operator<<(std::ostream&,const Combine_Table &);
   public:
     // constructors
     Combine_Table(AMEGIC::Process_Base *const proc,

@@ -26,7 +26,7 @@ namespace SHRIMPS {
     ~Beam_Remnant_Handler();
 
     void Reset();
-    bool InitialiseCollision();
+    void InitialiseCollision();
     void SetEikonal(Omega_ik * eikonal);
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs);
 

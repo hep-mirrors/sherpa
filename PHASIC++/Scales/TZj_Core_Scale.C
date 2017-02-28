@@ -61,7 +61,7 @@ PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   }
   // top in initial state
   else if ((f[0].Kfcode()==6 && f[1].Strong() && f[1].Kfcode()!=6) ||
-	   f[0].Strong() && f[0].Kfcode()!=6 && f[1].Kfcode()==6) {
+	   (f[0].Strong() && f[0].Kfcode()!=6 && f[1].Kfcode()==6)) {
     unsigned short int nottop=1;
     if (f[1].Kfcode()==6) nottop=0;
     muf2 = muq2 = mur2 = (f[nottop].Kfcode()==5?shat:dabs(that));

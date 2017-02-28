@@ -108,6 +108,7 @@ void Omega_ik::PrepareQT(const double & b1,const double & b2) {
 
 double Omega_ik::
 EffectiveIntercept(double b1,double b2,const double & y) {
+  THROW(not_implemented, "Missing implementation for Omega_ik::EffectiveIntercept().");
   //return m_weights.EffectiveIntercept(b1,b2,y);
 }
 

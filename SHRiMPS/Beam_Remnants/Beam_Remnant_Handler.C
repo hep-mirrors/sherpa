@@ -27,7 +27,7 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {
   m_hadrons.clear();
 }
 
-bool Beam_Remnant_Handler::InitialiseCollision() {
+void Beam_Remnant_Handler::InitialiseCollision() {
   Reset();
 }
 

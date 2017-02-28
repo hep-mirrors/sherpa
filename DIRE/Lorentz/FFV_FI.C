@@ -24,7 +24,7 @@ namespace DIRE {
       double z(s.m_z);
       double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B=-(1.0+z);
-      if (s.m_kfac&2)
+      if (s.m_kfac&2) {
 	if (m_swap) {
 	  B+=A;
 	  A=0.0;
@@ -45,6 +45,7 @@ namespace DIRE {
 	  B2+=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
 	}
+      }
       if (s.m_mij2==0.0 && s.m_mi2==0.0)
 	return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
       double pipj=s.m_Q2*(1.0-s.m_y)/s.m_y/2.0;

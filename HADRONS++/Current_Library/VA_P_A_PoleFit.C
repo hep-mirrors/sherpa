@@ -20,7 +20,7 @@ PoleFit::PoleFit(GeneralModel model, double* masses, const Flavour_Vector& flavs
 {
   kf_code kf0=m_flavs[p_i[0]].Kfcode();
   kf_code kf1=m_flavs[p_i[1]].Kfcode(); 
-  if (kf0==kf_B_c)
+  if (kf0==kf_B_c) {
     if (kf1==10533){
         F_0_A=0.19,m_fit_A=1.71,delta_A=0.45;
         F_0_V_0=0.10,m_fit_V_0=-0.75,delta_V_0=0.95;
@@ -34,9 +34,7 @@ PoleFit::PoleFit(GeneralModel model, double* masses, const Flavour_Vector& flavs
         F_0_V_2=0.09,m_fit_V_2=1.64,delta_V_2=0.38;   
         
     }
-    
-
-
+  }
 }
 
 void PoleFit::CalcFFs( Vec4D p0, Vec4D p1 )

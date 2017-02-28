@@ -1,6 +1,7 @@
 #include "AMEGIC++/Amplitude/Amplitude_Base.H"
 
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -49,5 +50,5 @@ void Amplitude_Base::DefineOrder(const std::vector<int> &o)
 
 const std::vector<int> &Amplitude_Base::GetOrder()
 {
-  Abort();
+  THROW(fatal_error, "Error: Amplitude_Base::GetOrder() is not implemented.");
 }

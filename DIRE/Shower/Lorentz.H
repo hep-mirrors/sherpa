@@ -35,7 +35,7 @@ namespace DIRE {
 
     Lorentz(const Kernel_Key &k,const int type);
 
-    ~Lorentz();
+    virtual ~Lorentz();
 
     virtual double Value(const Splitting &s) const = 0;
     virtual double Jacobian(const Splitting &s) const = 0;

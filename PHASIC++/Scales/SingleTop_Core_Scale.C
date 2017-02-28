@@ -66,7 +66,7 @@ PDF::CParam SingleTop_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   }
   // top in initial state
   else if ((f[0].Kfcode()==6 && f[1].Strong() && f[1].Kfcode()!=6) ||
-	   f[0].Strong() && f[0].Kfcode()!=6 && f[1].Kfcode()==6) {
+	   (f[0].Strong() && f[0].Kfcode()!=6 && f[1].Kfcode()==6)) {
     unsigned short int nottop=1;
     if (f[1].Kfcode()==6){ 
       if (f[0].Kfcode()==6) std::cout<<"tt initial state\n";
