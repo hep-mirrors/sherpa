@@ -34,7 +34,7 @@ namespace PHASIC{
     
     ME_Generators*    Generators();
     ME_Generators*    p_generators;
-    Process_Base*     InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external);
+    void              InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external);
     
   public:
     GGH_Process_Manager();

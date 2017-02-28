@@ -19,7 +19,7 @@ using namespace ATOOLS;
 
 GGH_Process_Manager::GGH_Process_Manager() : p_generators(NULL)  {}
 
-Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external){
+void GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external){
   DEBUG_FUNC(this);
   //ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   //My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
