@@ -632,7 +632,6 @@ void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
 
     p_enhancehisto = new Histogram(1,enhancemin,enhancemax,nbins,"enhancehisto");
     p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
-    p_enhancehisto->MPISync();
     p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
     p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
                                            p_enhancehisto->Xmin(),
@@ -690,6 +689,7 @@ void Phase_Space_Handler::MPISync()
 {
   if (p_beamchannels) p_beamchannels->MPISync();
   if (p_isrchannels) p_isrchannels->MPISync();
+  if (p_enhancehisto_current) p_enhancehisto_current->MPISync();
   p_fsrchannels->MPISync();
   p_process->MPISync();
 }
@@ -701,7 +701,6 @@ void Phase_Space_Handler::Optimize()
   p_fsrchannels->Optimize(m_error);
   p_process->ResetMax(2);
   if (p_enhancehisto) {
-    p_enhancehisto_current->MPISync();
     for (int i(0);i<p_enhancehisto_current->Nbin()+2;++i)
       p_enhancehisto_current->SetBin(i,dabs(p_enhancehisto_current->Bin(i)));
     p_enhancehisto_current->Scale(1.0/p_enhancehisto_current->Integral());

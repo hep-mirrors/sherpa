@@ -15,7 +15,16 @@ extern "C" int FC_DUMMY_MAIN() { return 1; }
 int main(int argc,char* argv[])
 {
 #ifdef USING__MPI
+#ifdef USING__Threading
+  int provided=MPI::Init_thread(argc,argv,MPI_THREAD_SERIALIZED);
+  if (provided<MPI_THREAD_SERIALIZED) {
+    printf("MPI library does not provide required thread support\n");
+    MPI::Finalize();
+    return 1;
+  }
+#else
   MPI::Init(argc,argv);
+#endif
 #endif
   Sherpa *Generator(new Sherpa());
   try {

@@ -8,6 +8,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -33,6 +34,7 @@ namespace PHASIC {
 
   class Process_Integrator;
   class Phase_Space_Handler;
+  class Phase_Space_Integrator;
   class Combined_Selector;
   class ME_Generator_Base;
 
@@ -45,6 +47,25 @@ namespace PHASIC {
 
   typedef std::map<nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
+
+#ifdef USING__Threading
+  class Process_Base;
+
+  struct MEH_TID {
+    pthread_t m_id;
+    Process_Base *p_proc;
+    std::string m_respath;
+    MEH_TID *p_prev, *p_next;
+    size_t m_i, m_r;
+    pthread_mutex_t m_s_mtx, *p_t_mtx, m_r_mtx;
+    pthread_cond_t m_s_cnd, *p_t_cnd;
+    MEH_TID(Process_Base *const proc,const size_t i):
+      p_proc(proc), p_prev(this), p_next(this),
+      m_i(i), m_r(0) {}
+  };// end of struct MEH_TID
+
+  typedef std::vector<MEH_TID*> MEH_TID_Vector; 
+#endif
 
   class Process_Base {
   protected:
@@ -82,6 +103,10 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+#ifdef USING__Threading
+    MEH_TID *p_tid;
+#endif
+
     static int s_usefmm;
 
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
@@ -110,6 +135,13 @@ namespace PHASIC {
     int NaiveMapping(Process_Base *proc) const;
 
     std::string ShellName(std::string name="") const;
+
+    void MPISync(Phase_Space_Integrator *const psi);
+    bool MPISyncRequest();
+
+#ifdef USING__Threading
+    virtual void AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*));
+#endif
 
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
@@ -266,6 +298,10 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
+
+#ifdef USING__Threading
+    inline void SetTID(MEH_TID *const tid) { p_tid=tid; }
+#endif
 
   };// end of class Process_Base
 

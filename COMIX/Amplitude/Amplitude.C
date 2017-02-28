@@ -1022,18 +1022,15 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 void *Amplitude::TCalcJL(void *arg)
 {
   CDBG_ME_TID *tid((CDBG_ME_TID*)arg);
+  pthread_mutex_lock(&tid->m_s_mtx);
   while (true) {
-    // wait for amplitude to signal
-    pthread_mutex_lock(&tid->m_s_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_cond_signal(&tid->m_s_cnd);
+    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     if (tid->m_s==0) return NULL;
-    // worker routine
     for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
       tid->p_ampl->m_cur[tid->m_n][tid->m_i]->Evaluate();
-    // signal amplitude to continue
-    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
+    pthread_cond_signal(&tid->m_t_cnd,&tid->m_t_mtx);
   }
+  pthread_mutex_unlock(&tid->m_s_mtx);
   return NULL;
 }
 #endif
@@ -1053,7 +1050,6 @@ void Amplitude::CalcJL()
       for (size_t i(0);i<m_cur[n].size();++i) 
 	m_cur[n][i]->Evaluate();
     else {
-      // start calculator threads
       size_t d(m_cur[n].size()/p_cts->size());
       if (m_cur[n].size()%p_cts->size()>0) ++d;
       for (size_t j(0), i(0);j<p_cts->size()&&i<m_cur[n].size();++j) {
@@ -1062,15 +1058,12 @@ void Amplitude::CalcJL()
 	tid->m_n=n;
 	tid->m_b=i;
 	tid->m_e=Min(i+=d,m_cur[n].size());
-	pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+	pthread_cond_signal(&tid->m_s_cnd,&tid->m_s_mtx);
       }
-      // suspend calculator threads
       for (size_t j(0), i(0);j<p_cts->size()&&i<m_cur[n].size();++j) {
 	i+=d;
 	CDBG_ME_TID *tid((*p_cts)[j]);
-	pthread_mutex_lock(&tid->m_t_mtx);
-	pthread_mutex_unlock(&tid->m_t_mtx);
-	pthread_cond_signal(&tid->m_t_cnd);
+	pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
       }
     }
 #endif

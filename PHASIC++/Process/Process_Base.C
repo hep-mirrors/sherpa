@@ -4,6 +4,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Main/Phase_Space_Integrator.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
@@ -785,3 +786,60 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
 }
+
+void Process_Base::MPISync(Phase_Space_Integrator *const psi)
+{
+#ifdef USING__Threading
+  static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+  pthread_mutex_lock(&mtx);
+  bool next(p_tid->p_next!=p_tid);
+  if (next) {
+    if (p_tid->m_r) pthread_mutex_lock(&p_tid->p_next->m_r_mtx);
+    pthread_cond_signal(&p_tid->p_next->m_s_cnd,&p_tid->p_next->m_s_mtx);
+  }
+#endif
+  psi->MPISync();
+#ifdef USING__Threading
+  pthread_mutex_unlock(&mtx);
+  if (next) {
+    if (p_tid->m_r) pthread_mutex_unlock(&p_tid->p_next->m_r_mtx);
+    pthread_cond_wait(&p_tid->m_s_cnd,&p_tid->m_s_mtx);
+  }
+#endif
+}
+
+bool Process_Base::MPISyncRequest()
+{
+#if not ( defined USING__MPI && defined USING__Threading )
+  return false;
+#else
+  if (!p_tid->m_r) return false;
+  if (p_tid->p_next==p_tid) {
+    SP(Phase_Space_Handler) psh(p_int->PSHandler());
+    int ncontrib=psh->FSRIntegrator()->ValidMN();
+    return ncontrib>=psh->Stats().back()[4]/psh->Stats().size();
+  }
+  if (pthread_mutex_trylock(&p_tid->m_r_mtx)) return false;
+  pthread_mutex_unlock(&p_tid->m_r_mtx);
+  return true;
+#endif
+}
+
+#ifdef USING__Threading
+void Process_Base::AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*))
+{
+  p_tid = new MEH_TID(this,cts.size());
+  if (cts.size()) {
+    (cts.back()->p_next=p_tid)->p_prev=cts.back();
+    (cts.front()->p_prev=p_tid)->p_next=cts.front();
+  }
+  cts.push_back(p_tid);
+  pthread_cond_init(&p_tid->m_s_cnd,NULL);
+  pthread_mutex_init(&p_tid->m_s_mtx,NULL);
+  pthread_mutex_init(&p_tid->m_r_mtx,NULL);
+  pthread_mutex_lock(&p_tid->m_s_mtx);
+  int tec(0);
+  if ((tec=pthread_create(&p_tid->m_id,NULL,CalcFunc,(void*)p_tid)))
+    THROW(fatal_error,"Cannot create thread "+ToString(cts.size()));
+}
+#endif

@@ -302,6 +302,10 @@ namespace PHASIC {
     bool WasSEvent() const { return m_wassevent; }
     Process_Base* BProc() { return p_bproc; }
 
+#ifdef USING__Threading
+    void AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*));
+#endif
+
   };// end of class MCatNLO_Process
 
 }// end of namespace PHASIC

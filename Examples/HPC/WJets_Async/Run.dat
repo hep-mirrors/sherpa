@@ -1,0 +1,24 @@
+(run){
+  EVENTS 0; MI_HANDLER None;
+  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
+  LOOPGEN:=Dummy; OL_PARAMETERS preset 2;
+  BEAM_1 2212 4000; BEAM_2 2212 4000.;
+  LJET:=2,3,4; NJET:=4; QCUT:=20;
+  SCALES SMETS;
+  PP_RS_SCALE VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4};
+  PSI_ITMIN_BY_NODE 10; PSI_STOPOPT 5; PSI_ASYNC 1;
+}(run);
+(processes){
+  Process 93 93 -> 11 -12 93{NJET};
+  Order (*,2); CKKW sqr(QCUT/E_CMS);
+  NLO_QCD_Mode MC@NLO {LJET};
+  ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
+  Loop_Generator LOOPGEN {LJET};
+  Max_N_Quarks 4 {6,7,8};
+  Max_Epsilon 0.01 {6,7,8};
+  End process;
+}(processes);
+(selector){
+  Mass 90 91 2.0 E_CMS;
+}(selector);

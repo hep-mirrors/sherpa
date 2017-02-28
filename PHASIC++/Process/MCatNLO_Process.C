@@ -612,7 +612,9 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   psh=p_rsproc->Integrator()->PSHandler();
   psh->SetAbsError(psh->Error()*rpa->Picobarn()*
 		   dabs(p_bviproc->Integrator()->TotalResult()));
+#ifndef USING__Threading
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
+#endif
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());
@@ -711,3 +713,11 @@ void MCatNLO_Process::SetVariationWeights(ATOOLS::Variation_Weights *vw)
   p_rsproc->SetVariationWeights(vw);
 }
 
+#ifdef USING__Threading
+void MCatNLO_Process::AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*))
+{
+  Process_Base::AddMEHThread(cts,CalcFunc);
+  p_bviproc->SetTID(p_tid);
+  p_rsproc->AddMEHThread(cts,CalcFunc);
+}
+#endif

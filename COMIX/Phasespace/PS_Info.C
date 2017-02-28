@@ -1,5 +1,7 @@
 #include "COMIX/Phasespace/PS_Info.H"
 
+#include "ATOOLS/Org/CXXFLAGS.H"
+
 using namespace COMIX;
 
 void PS_Info::Add(const CObject *c)

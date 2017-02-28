@@ -1,5 +1,7 @@
 #include "METOOLS/Currents/C_Pseudo.H"
 
+#include "ATOOLS/Org/CXXFLAGS.H"
+
 using namespace METOOLS;
 using namespace ATOOLS;
 

@@ -541,9 +541,9 @@ void Process_Integrator::MPISync(const int mode)
     MPICollect(sv,mv,i);
     if (MPI::COMM_WORLD.Get_size()) {
       mpi->MPIComm()->Allreduce
-	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+      	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
       mpi->MPIComm()->Allreduce
-	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
+      	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
     }
     MPIReturn(sv,mv,j);
   }
@@ -589,15 +589,11 @@ void Process_Integrator::StoreBackupResults()
 
 void Process_Integrator::StoreResults(const int mode)
 {
-  if (m_msn) MPISync();
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) {
-    MPI::COMM_WORLD.Barrier();
-    return;
-  }
+  if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
   My_In_File::ExecDB(m_resultpath+"/","begin");
   std::string fname(p_proc->Name());
@@ -606,9 +602,6 @@ void Process_Integrator::StoreResults(const int mode)
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   My_In_File::ExecDB(m_resultpath+"/","commit");
   StoreBackupResults();
-#ifdef USING__MPI
-  MPI::COMM_WORLD.Barrier();
-#endif
 }
 
 void Process_Integrator::ReadResults()

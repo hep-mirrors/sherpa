@@ -9,6 +9,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #endif
 
 namespace ATOOLS {
@@ -77,9 +78,10 @@ namespace ATOOLS {
 
     static DTerm *New(const double &val=0.0)
     {
-      if (s_terms.empty()) {
+#ifndef USING__Threading
+      if (s_terms.empty())
+#endif
 	return new DTerm(val);
-      }
       DTerm *term(s_terms.back());
       s_terms.pop_back();
       term->m_this=val;
@@ -88,7 +90,11 @@ namespace ATOOLS {
 
     void Delete()
     {
+#ifndef USING__Threading
       s_terms.push_back(this);
+#else
+      delete this;
+#endif
     }
 
   };// end of class DTerm
@@ -108,9 +114,10 @@ namespace ATOOLS {
 
     static CTerm *New(const Complex &val=Complex(0.0,0.0))
     {
-      if (s_terms.empty()) {
+#ifndef USING__Threading
+      if (s_terms.empty())
+#endif
 	return new CTerm(val);
-      }
       CTerm *term(s_terms.back());
       s_terms.pop_back();
       term->m_this=val;
@@ -119,7 +126,11 @@ namespace ATOOLS {
 
     void Delete()
     {
+#ifndef USING__Threading
       s_terms.push_back(this);
+#else
+      delete this;
+#endif
     }
 
   };// end of class CTerm
@@ -139,9 +150,10 @@ namespace ATOOLS {
 
     static DV4Term *New(const Vec4D &val)
     {
-      if (s_terms.empty()) {
+#ifndef USING__Threading
+      if (s_terms.empty())
+#endif
 	return new DV4Term(val);
-      }
       DV4Term *term(s_terms.back());
       s_terms.pop_back();
       term->m_this=val;
@@ -150,7 +162,11 @@ namespace ATOOLS {
 
     void Delete()
     {
+#ifndef USING__Threading
       s_terms.push_back(this);
+#else
+      delete this;
+#endif
     }
 
   };// end of class DV4Term
@@ -170,9 +186,10 @@ namespace ATOOLS {
 
     static STerm *New(const std::string &val)
     {
-      if (s_terms.empty()) {
+#ifndef USING__Threading
+      if (s_terms.empty())
+#endif
 	return new STerm(val);
-      }
       STerm *term(s_terms.back());
       s_terms.pop_back();
       term->m_this=val;
@@ -181,7 +198,11 @@ namespace ATOOLS {
 
     void Delete()
     {
+#ifndef USING__Threading
       s_terms.push_back(this);
+#else
+      delete this;
+#endif
     }
 
   };// end of class STerm

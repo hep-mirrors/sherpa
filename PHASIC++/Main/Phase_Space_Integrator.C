@@ -36,12 +36,14 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   timeslope = reader.Get("PSI_TIMESTEP_SLOPE", 0.0, "\\Delta t slope", METHOD);
   addtime=0.0;
   lastrss=0;
+  itminbynode=2;
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
+  itminbynode=Max(1,Max(1000,(int)itmin)/size);
   if (size) {
     int helpi;
     if (reader.Read(helpi,"PSI_ITMIN_BY_NODE", 0)) {
-      itmin=helpi*size;
+      itmin=(itminbynode=helpi)*size;
       msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
     }
     if (reader.Read(helpi,"PSI_ITMAX_BY_NODE", 0)) {
@@ -49,7 +51,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
       msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
     }
     if (reader.Read(helpi,"PSI_IT_BY_NODE", 0)) {
-      itmin=itmax=helpi*size;
+      itmin=itmax=(itminbynode=helpi)*size;
       msg_Info()<<METHOD<<"(): Set n_{it} = "<<itmin<<".\n";
     }
   }
@@ -188,8 +190,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     if (timeslope < 0.0) targettime *= psh->Process()->Process()->Size();
     if (timestep > 0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-stepstart;
     if ((timestep==0.0 && ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) ||
-	(timestep>0.0 && deltat>=targettime)) {
-      MPISync();
+	(timestep>0.0 && deltat>=targettime) ||
+	(ncontrib>=itminbynode && psh->Process()->Process()->MPISyncRequest())) {
+      psh->Process()->Process()->MPISync(this);
       bool optimized=false;
       bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<endl;

@@ -1,5 +1,7 @@
 #include "METOOLS/Currents/C_Vector.H"
 
+#include "ATOOLS/Org/CXXFLAGS.H"
+
 using namespace METOOLS;
 
 template <class Scalar>

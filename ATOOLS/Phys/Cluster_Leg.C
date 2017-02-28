@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -23,9 +24,10 @@ ClusterLeg_PVector Cluster_Leg::s_legs;
 Cluster_Leg *Cluster_Leg::New
 (Cluster_Amplitude *const ampl,const Cluster_Leg &ref)
 {
-  if (s_legs.empty()) {
+#ifndef USING__Threading
+  if (s_legs.empty())
+#endif
     return new Cluster_Leg(ampl,ref);
-  }
   Cluster_Leg *cl(s_legs.back());
   s_legs.pop_back();
   *cl=ref;
@@ -37,9 +39,10 @@ Cluster_Leg *Cluster_Leg::New
 (Cluster_Amplitude *const ampl,const Vec4D &p,
  const Flavour &fl,const ColorID &c)
 {
-  if (s_legs.empty()) {
+#ifndef USING__Threading
+  if (s_legs.empty())
+#endif
     return new Cluster_Leg(ampl,p,fl,c);
-  }
   Cluster_Leg *cl(s_legs.back());
   s_legs.pop_back();
   cl->p_ampl=ampl;
@@ -57,7 +60,11 @@ Cluster_Leg *Cluster_Leg::New
 
 void Cluster_Leg::Delete()
 {
+#ifndef USING__Threading
   s_legs.push_back(this);
+#else
+  delete this;
+#endif
 }
 
 namespace ATOOLS {

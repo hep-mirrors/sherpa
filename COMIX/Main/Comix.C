@@ -106,7 +106,6 @@ Comix::~Comix()
     if ((tec=pthread_join(tid->m_id,NULL)))
       THROW(fatal_error,"Cannot join thread"+ToString(i));
     pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
     pthread_mutex_destroy(&tid->m_t_mtx);
     pthread_mutex_destroy(&tid->m_s_mtx);
     pthread_cond_destroy(&tid->m_t_cnd);
@@ -254,7 +253,6 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
       pthread_cond_init(&tid->m_t_cnd,NULL);
       pthread_mutex_init(&tid->m_s_mtx,NULL);
       pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_s_mtx);
       pthread_mutex_lock(&tid->m_t_mtx);
       tid->m_s=1;
       int tec(0);

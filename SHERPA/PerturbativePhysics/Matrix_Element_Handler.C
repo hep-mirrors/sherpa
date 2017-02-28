@@ -127,20 +127,71 @@ void Matrix_Element_Handler::InitNLOMC()
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&reader));
 }
 
+#ifdef USING__Threading
+void *Matrix_Element_Handler::TCalculateTotalXSecs(void *arg)
+{
+  MEH_TID *tid((MEH_TID*)arg);
+  pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+  tid->p_proc->SetLookUp(true);
+  tid->p_proc->CalculateTotalXSec(tid->m_respath,false);
+  tid->p_proc->SetLookUp(false);
+  tid->p_proc->Integrator()->SetUpEnhance();
+  tid->p_next->p_prev=tid->p_prev;
+  tid->p_prev->p_next=tid->p_next;
+  if (tid->p_next==tid) pthread_cond_signal(tid->p_t_cnd,tid->p_t_mtx);
+  else pthread_cond_signal(&tid->p_next->m_s_cnd,&tid->p_next->m_s_mtx);
+  return NULL;
+}
+#endif
+
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
+  int async=Default_Reader().GetValue("PSI_ASYNC",0);
   int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
   bool okay(true);
+#ifndef USING__Threading
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetLookUp(true);
     if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
   }
+#else
+  pthread_mutex_t t_mtx;
+  pthread_cond_t t_cnd;
+  pthread_cond_init(&t_cnd,NULL);
+  pthread_mutex_init(&t_mtx,NULL);
+  pthread_mutex_lock(&t_mtx);
+  MEH_TID_Vector cts;
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->AddMEHThread(cts,&Matrix_Element_Handler::TCalculateTotalXSecs);
+  if (async) async=cts.size()>1;
+  for (size_t i(0);i<cts.size();++i) {
+    cts[i]->m_respath=m_respath;
+    cts[i]->p_t_mtx=&t_mtx;
+    cts[i]->p_t_cnd=&t_cnd;
+    if (async) cts[i]->m_r=1;
+  }
+  pthread_cond_signal(&cts.front()->m_s_cnd,&cts.front()->m_s_mtx);
+  pthread_cond_wait(&t_cnd,&t_mtx);
+  for (size_t i(0);i<cts.size();++i) {
+    MEH_TID *tid(cts[i]);
+    if (pthread_join(tid->m_id,NULL))
+      THROW(fatal_error,"Cannot join thread "+ToString(i));
+    pthread_mutex_unlock(&tid->m_s_mtx);
+    pthread_mutex_unlock(&tid->m_r_mtx);
+    pthread_mutex_destroy(&tid->m_s_mtx);
+    pthread_mutex_destroy(&tid->m_r_mtx);
+    pthread_cond_destroy(&tid->m_s_cnd);
+  }
+  pthread_mutex_unlock(&t_mtx);
+  pthread_mutex_destroy(&t_mtx);
+  pthread_cond_destroy(&t_cnd);
+#endif
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   return okay;
 }

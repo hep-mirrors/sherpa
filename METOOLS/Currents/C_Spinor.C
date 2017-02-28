@@ -1,6 +1,7 @@
 #include "METOOLS/Currents/C_Spinor.H"
 
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 #define ZERO SComplex(0.0,0.0)
 #define ONE SComplex(1.0,0.0)

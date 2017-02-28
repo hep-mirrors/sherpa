@@ -11,7 +11,7 @@ namespace PHASIC {
   private:
 
     size_t itmin, itmax;
-    int iter,nopt,ndecopt,optiter;
+    int iter,nopt,ndecopt,optiter,itminbynode;
     static long unsigned int nmax;
 
     double starttime, lotime, addtime, lrtime;
@@ -22,8 +22,6 @@ namespace PHASIC {
 
     Phase_Space_Handler *psh;
 
-    void MPISync();
-
   public:
 
     Phase_Space_Integrator(Phase_Space_Handler*);
@@ -32,6 +30,8 @@ namespace PHASIC {
 
     double Calculate(double,double,int); 
     double CalculateDecay(double); 
+
+    void MPISync();
 
     //! Simple access methods.
     static long int MaxPoints();

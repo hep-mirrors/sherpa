@@ -8,6 +8,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
 #include <map> 
@@ -34,7 +35,7 @@ namespace PHASIC {
 namespace SHERPA {
 
   class Shower_Handler;
-
+ 
   class Matrix_Element_Handler {
   public:
 
@@ -137,6 +138,10 @@ namespace SHERPA {
     int InitializeProcesses(MODEL::Model_Base *model,
 			     BEAM::Beam_Spectra_Handler *beam,
 			     PDF::ISR_Handler *isr);
+
+#ifdef USING__Threading
+    static void *TCalculateTotalXSecs(void *arg);
+#endif
 
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();

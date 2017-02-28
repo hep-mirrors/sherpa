@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flow.H"
 
 using namespace ATOOLS;
@@ -43,9 +44,10 @@ Cluster_Amplitude::~Cluster_Amplitude()
 Cluster_Amplitude *Cluster_Amplitude::New
 (Cluster_Amplitude *const prev)
 {
-  if (s_ampls.empty()) {
+#ifndef USING__Threading
+  if (s_ampls.empty())
+#endif
     return new Cluster_Amplitude(prev);
-  }
   Cluster_Amplitude *ca(s_ampls.back());
   s_ampls.pop_back();
   ca->p_prev=prev;
@@ -69,7 +71,11 @@ void Cluster_Amplitude::Delete()
   m_cmap.clear();
   if (p_prev) p_prev->p_next=NULL;
   p_prev=p_next=NULL;
+#ifndef USING__Threading
   s_ampls.push_back(this);
+#else
+  delete this;
+#endif
 }
 
 void Cluster_Amplitude::CreateLeg
