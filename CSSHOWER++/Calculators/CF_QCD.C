@@ -99,7 +99,7 @@ namespace CSSHOWER {
     double CplFac(const double &scale) const;
 
     bool AllowsAlternativeCouplingUsage() const { return true; }
-    void SetAlternativeUnderlyingCoupling(MODEL::Running_AlphaS *, double sf=1.0);
+    void SetAlternativeUnderlyingCoupling(void *, double sf);
   };
 
 }
@@ -134,7 +134,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
   return true;
 }
 
-void CF_QCD::SetAlternativeUnderlyingCoupling(MODEL::Running_AlphaS *cpl, double sf)
+void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
 {
   assert(cpl != NULL || sf == 1.0);
   if (cpl == NULL) {
@@ -142,14 +142,15 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(MODEL::Running_AlphaS *cpl, double
     m_altcplinfo = QCD_Coupling_Info();
     return;
   } else {
-    m_altcplinfo = QCD_Coupling_Info(cpl, sf);
-    if (m_altcplmax.find(cpl) == m_altcplmax.end()) {
+    Running_AlphaS* as = static_cast<MODEL::Running_AlphaS *>(cpl);
+    m_altcplinfo = QCD_Coupling_Info(as, sf);
+    if (m_altcplmax.find(as) == m_altcplmax.end()) {
       std::vector<double> altcplmax;
-      altcplmax.push_back(CplMax(cpl, sf));
+      altcplmax.push_back(CplMax(as, sf));
       altcplmax.push_back(0.0);
-      m_altcplmax[cpl] = altcplmax;
+      m_altcplmax[as] = altcplmax;
     }
-    m_altcplinfo.SetMaxCoupling(&(m_altcplmax[cpl]));
+    m_altcplinfo.SetMaxCoupling(&(m_altcplmax[as]));
   }
 }
 
