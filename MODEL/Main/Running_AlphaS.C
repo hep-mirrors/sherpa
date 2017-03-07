@@ -417,14 +417,14 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
 
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const int order, const int thmode,
-                               const PDF::ISR_Handler_Map &isr)
+                               const PDF::ISR_Handler_Map &isr):
+  p_overridingpdf(NULL)
 {
   m_defval = as_MZ;
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   // Read possible override
   Default_Reader reader;
-  p_overridingpdf = NULL;
   if (reader.Get<int>("USE_PDF_ALPHAS",0)&4) {
     std::string name(reader.Get<std::string>("ALPHAS_PDF_SET","CT10nlo"));
     int member = reader.Get<int>("ALPHAS_PDF_SET_VERSION",0);
@@ -451,7 +451,8 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
 
 Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
                                const double as_MZ, const double m2_MZ,
-                               const int order, const int thmode)
+                               const int order, const int thmode):
+  p_overridingpdf(NULL)
 {
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
@@ -464,7 +465,7 @@ Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
 Running_AlphaS::Running_AlphaS(PDF::PDF_Base *const pdf,
                                const double as_MZ, const double m2_MZ,
                                const int order, const int thmode):
-p_overridingpdf(NULL)
+  p_overridingpdf(NULL)
 {
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
