@@ -146,7 +146,7 @@ void *Matrix_Element_Handler::TCalculateTotalXSecs(void *arg)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
-  int async=Default_Reader().GetValue("PSI_ASYNC",0);
+  bool async = Default_Reader().GetValue<bool>("PSI_ASYNC", false);
   int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
@@ -169,7 +169,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   MEH_TID_Vector cts;
   for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->AddMEHThread(cts,&Matrix_Element_Handler::TCalculateTotalXSecs);
-  if (async) async=cts.size()>1;
+  async = async && (cts.size() > 1);
   for (size_t i(0);i<cts.size();++i) {
     cts[i]->m_respath=m_respath;
     cts[i]->p_t_mtx=&t_mtx;

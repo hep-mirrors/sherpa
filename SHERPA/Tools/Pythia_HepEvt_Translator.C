@@ -207,12 +207,11 @@ bool Pythia_HepEvt_Translator::ReconstructSignalBlob()
     mother = m_piter->second.first;
     if (mother->ProductionBlob() && 
 	mother->ProductionBlob()->Type()==btp::Signal_Process) {
-      mother = p_signal->RemoveOutParticle(mother,true);
+      p_signal->RemoveOutParticle(mother,true);
       m_piter->second.second = true;
     }
   }
 
-  //cout<<(*p_signal)<<endl;
   return true;
 }
 

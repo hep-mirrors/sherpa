@@ -498,7 +498,7 @@ bool Simple_Chain::CreateMomenta()
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
     p_xs=m_processmap[m_selected];
     double weight=1.;
-    size_t pstrials=0, trials=0;
+    size_t pstrials=0;
     Amisic_Histogram<double> *cur=m_differentials[m_selected];
     double max=cur->BinMax(m_last[0]);
     FSR_Channel* fsr = dynamic_cast<FSR_Channel*>
@@ -510,7 +510,6 @@ bool Simple_Chain::CreateMomenta()
 	OneEvent(0,PHASIC::psm::no_lim_isr);
       if (data!=NULL) {
 	weight=data->m_weight;
-	trials=data->m_ntrial;
 	delete data;
 	if (weight>max) {
 	  msg_Tracking()<<"Simple_Chain::CreateMomenta(): "

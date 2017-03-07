@@ -110,11 +110,11 @@ namespace DIRE {
 	return (m_swap?1.0-z:z)*B;
       }
       double nui2(s.m_mi2/s.m_Q2), nuk2(s.m_mk2/s.m_Q2);
-      double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
+      double vijk=sqr(1.0-y)-4.0*(y+2.0*nui2)*nuk2;
       if (vijk<0.0) return 0.0;
-      vijk=sqrt(vijk)/(1.0-s.m_y);
-      double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
-      V/=1.0+2.0*nui2/s.m_y;
+      vijk=sqrt(vijk)/(1.0-y);
+      double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(y/2.0+nui2));
+      V/=1.0+2.0*nui2/y;
       return (m_swap?1.0-z:z)*V;
     }
 

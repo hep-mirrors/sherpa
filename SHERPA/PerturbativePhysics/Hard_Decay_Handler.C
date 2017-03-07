@@ -960,38 +960,34 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
   size_t idk(0);
   for (size_t i=0; i<copy->Legs().size(); ++i) {
     copy->Leg(i)->SetK(0);
-    if (copy->Leg(i)->Id()!=idmother &&
-        (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
-         copy->Leg(i)->Col().m_j==lij->Col().m_i))
-      idk=copy->Leg(i)->Id();
   }
-  if (lij->Col().m_i==0 && lij->Col().m_j==0) {
-    // Ad hoc QED partner, must not be another soft photon
-    size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
-    if (ampl_nout==1) idk=ampl->Leg(0)->Id();
-    else {
-      size_t select(0);
-      size_t nvalid(0);
-      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-        if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
-              ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {
-          nvalid++;
-        }
+  if (lij->Col().m_i!=0 || lij->Col().m_j!=0) {
+    THROW(fatal_error,"Adding QED to coloured particle.");
+  }
+  // Ad hoc QED partner, must not be another soft photon
+  size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+  if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+  else {
+    size_t select(0);
+    size_t nvalid(0);
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
+            ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {
+        nvalid++;
       }
-      if (nvalid==0) select=0;
-      else {
-        do {
-          select=ampl->NIn()+floor(ran->Get()*ampl_nout);
-        } while (ampl->Leg(select)->Id()&idmother ||
-                 select>ampl->Legs().size()-1 ||
-                 ampl->Leg(select)->Flav().Kfcode()==kf_photon);
-      }
-      msg_Debugging()<<"choose ("<<ID(ampl->Leg(select)->Id())<<") "
-                     <<ampl->Leg(select)->Flav()<<std::endl;
-      idk=ampl->Leg(select)->Id();
     }
+    if (nvalid==0) select=0;
+    else {
+      do {
+        select=ampl->NIn()+floor(ran->Get()*ampl_nout);
+      } while (ampl->Leg(select)->Id()&idmother ||
+          select>ampl->Legs().size()-1 ||
+          ampl->Leg(select)->Flav().Kfcode()==kf_photon);
+    }
+    msg_Debugging()<<"choose ("<<ID(ampl->Leg(select)->Id())<<") "
+      <<ampl->Leg(select)->Flav()<<std::endl;
+    idk=ampl->Leg(select)->Id();
   }
-  else THROW(fatal_error,"Adding QED to coloured particle.");
   if (idk==0) THROW(fatal_error,"Colour partner not found");
   lij->SetK(idk);
   Cluster_Leg *d1(copy->IdLeg(idmother));
