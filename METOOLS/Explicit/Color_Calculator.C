@@ -8,6 +8,8 @@
 #define SORT_CRITERION std::less<std::string>
 #include "ATOOLS/Org/Getter_Function.C"
 
+#include <cassert>
+
 using namespace METOOLS;
 
 size_t Color_Calculator::s_cimin(1);
@@ -23,10 +25,16 @@ bool Color_Calculator::Evaluate(const CObject_Vector &j)
 
 void Color_Calculator::AddJ(CObject *const j)
 {
-  CObject *cc(j), *dd(NULL);
-  for (std::vector<CInfo>::const_iterator
-	 c(m_c.begin());c!=m_c.end();++c) {
-    if (c<--m_c.end()) dd=cc->Copy();
+  CObject *cc(j), *tmpcopy(NULL);
+
+  typedef std::vector<CInfo>::const_iterator It_Type;
+  for (It_Type c(m_c.begin());c!=m_c.end();++c) {
+
+    // make a temporary copy for the following iteration (if any)
+    if (c<--m_c.end()) tmpcopy=cc->Copy();
+    assert(tmpcopy != NULL);
+
+    // add cc adjusted according to c
     (*cc)(0)=c->m_cr;
     (*cc)(1)=c->m_ca;
     if (c->m_s!=Complex(1.0)) {
@@ -35,7 +43,9 @@ void Color_Calculator::AddJ(CObject *const j)
       else cc->Multiply(c->m_s);
     }
     p_v->AddJ(cc);
-    cc=dd;
+
+    // revert cc using our temporary copy
+    cc=tmpcopy;
   }
 }
 

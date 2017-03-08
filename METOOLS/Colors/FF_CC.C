@@ -76,7 +76,6 @@ namespace METOOLS {
 	if (m_meab) m_meab=(*c[2])(1)==(*cc)(0) && (*cc)(1)==(*c[1])(0);
 	if (m_mbea) m_mbea=(*c[0])(1)==(*cc)(0) && (*cc)(1)==(*c[2])(0);
 	if (m_mbae) m_mbae=(*c[1])(1)==(*cc)(0) && (*cc)(1)==(*c[2])(0);
-	stat=m_maeb || m_meab || m_mbae || m_mbea;
 	if (m_meab+m_mbae==m_maeb+m_mbea) return false;
 	m_c.push_back(CInfo(0,0,(m_maeb||m_mbea)?-1.0:1.0));
 	return true;
