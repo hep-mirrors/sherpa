@@ -437,11 +437,6 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
 {
   m_x[0]=m_x[1]=1.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return;
-  const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
-  double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBeam(0).PPlus():
-	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
-  double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
-	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
   if (mode==0) {
     Single_Process *sp(p_map!=NULL?p_map:this);
     double eta0=1.0, eta1=1.0;

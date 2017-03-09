@@ -229,7 +229,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   helpd = reader.Get("DIPOLE_KAPPA", 2.0/3.0, "dipole \\kappa", METHOD);
   rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
 
-  helpd = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2, "dipole N_f", METHOD);
+  helpi = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2, "dipole N_f", METHOD);
   rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
 
   helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()), "dipole \\k_{T,max}^2", METHOD);
