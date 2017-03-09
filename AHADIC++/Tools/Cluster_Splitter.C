@@ -120,14 +120,14 @@ ConstructKinematics(const double & etax,const double & etay) {
   double disc(Max(xmax/2.,4.*sqrt(xarg)));
   if (xmax>disc & xmin<disc) xmax = disc;
   double offsetx(m_pt2min/m_LC.m_smandel),offsety;
-  double ymin,ymax,x,y,z,sqq,weight;
+  double ymin,ymax,x,y,z,sqq;
   if (spectHF && !splitHF) {
     ymin    = xarg;
     ymax    = 1.-m_LC.m_mspect2/m_LC.m_smandel-m_sumx;
     offsety = m_pt2min/m_LC.m_smandel;
   }
   long int calls(0);
-  weight=0;
+  double weight(0);
   do {
     if (spectHF && !splitHF) {
       y       = SelectY(ymin,ymax,etay,offsety);

@@ -156,7 +156,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
   }
   else if (decayweight<0.) {
     // transition - if neccessary enforced.
-    if (transweight<=0.) transweight = TransformWeight(cluster,hadtrans,true);
+    if (transweight<=0.) TransformWeight(cluster,hadtrans,true);
     cluster->push_back(hadtrans);
     cluster->push_back(Flavour(kf_photon));
     // if (m_out)  msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
@@ -306,8 +306,6 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
     return 0.;
   }
   double totweight(0.),m1,m2,wt(1.),wfweight(0.),wfmax(0.);
-  double tm(cluster->GetTrip()->m_flav.HadMass());
-  double am(cluster->GetTrip()->m_flav.HadMass());
   Flavour max1, max2;
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
@@ -369,10 +367,8 @@ Annihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
 					 'l'));
   Cluster cluster1((order?pp3:pp4),pp1), cluster2((order?pp4:pp3),pp2);
   double mass(cluster->Mass());
-  //msg_Out()<<cluster1<<cluster2;
-  double wt1(TransformWeight(&cluster1,had1,true));
-  double wt2(TransformWeight(&cluster2,had2,true));
-  //msg_Out()<<"  --> "<<had1<<" + "<<had2<<".\n";
+  TransformWeight(&cluster1,had1,true);
+  TransformWeight(&cluster2,had2,true);
   if (had1.Mass()+had2.Mass()>mass) return false;
   return true;
 }

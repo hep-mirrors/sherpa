@@ -170,9 +170,12 @@ double Splitter_Base::SelectY(const double & ymin,const double & ymax,
 }
 
 double Splitter_Base::SelectZ(const double & delta,const bool & lead) {
-  double zmin(0.5*(1.-sqrt(1.-delta))), zmax(0.5*(1.+sqrt(1.-delta))), z;
+  const double zmin(0.5*(1.-sqrt(1.-delta)));
+  const double zmax(0.5*(1.+sqrt(1.-delta)));
+  const double zdelta(zmax - zmin);
+  double z;
   do {
-    z = zmin+ran->Get()*sqrt(1.-delta);
+    z = zmin+ran->Get()*zdelta;
   } while (1.-2.*z*(1.-z) < ran->Get()); 
   // no structure: flat
   // splitting function: 1.-2.*z*(1.-z)

@@ -624,14 +624,14 @@ void All_Hadron_Multiplets::AddMultipletWeights()
     spin -= int(spin/100)*100;
     spin -= int(spin/10)*10;
     mplet = miter->second;
-    miter->second->SetSpinWeight(double(spin));
-    miter->second->SetWeight();
+    mplet->SetSpinWeight(double(spin));
+    mplet->SetWeight();
     for (std::set<ATOOLS::Flavour>::iterator 
-	   flit=miter->second->GetElements()->begin();
- 	 flit!=miter->second->GetElements()->end();flit++) {
+	   flit=mplet->GetElements()->begin();
+ 	 flit!=mplet->GetElements()->end();flit++) {
       wave = GetWaveFunction((*flit));
       if (wave!=NULL) {
-	wave->SetMultipletWeight(miter->second->Weight());
+	wave->SetMultipletWeight(mplet->Weight());
       }
       else {
 	if (wave==NULL) {

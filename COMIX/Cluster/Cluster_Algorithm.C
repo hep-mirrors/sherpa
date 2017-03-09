@@ -604,9 +604,6 @@ bool Cluster_Algorithm::Cluster
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   double muq2(pb->ScaleSetter()->Scale(stp::res));
-  NLO_subevt *sub
-    (p_proc==p_xs?NULL:p_proc->
-     Get<COMIX::Single_Dipole_Term>()->Sub());
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[(i==0?fcur:ccurs[i])->CId()]=1<<p_ampl->Legs().size());
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));

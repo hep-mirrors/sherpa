@@ -374,7 +374,6 @@ int AMEGIC::Single_Process::Tests()
       p_hel->ForceNoTransformation();
       M2 = operator()(p_testmoms);
       p_hel->AllowTransformation();
-      string_test = 0;
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");

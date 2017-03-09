@@ -146,7 +146,9 @@ void *Matrix_Element_Handler::TCalculateTotalXSecs(void *arg)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
+#ifdef USING__Threading
   bool async = Default_Reader().GetValue<bool>("PSI_ASYNC", false);
+#endif
   int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
