@@ -101,7 +101,6 @@ bool Simple_XS::Initialize(const string &path,const string &file,
 
 Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
 {
-  size_t n(pi.m_ii.NExternal()+pi.m_fi.NExternal());
   bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   if (oneisgroup) {
     Process_Group* newxs = new Process_Group();

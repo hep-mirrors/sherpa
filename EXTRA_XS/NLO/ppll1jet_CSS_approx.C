@@ -81,26 +81,11 @@ double XS_gqllq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
                                   const Vec4D& k2, int ij)
 {
   DEBUG_FUNC("");
-//  msg_Debugging()<<"pi: "<<pi<<std::endl;
-//  msg_Debugging()<<"pj: "<<pj<<std::endl;
-//  msg_Debugging()<<"pk: "<<pk<<std::endl;
-//  msg_Debugging()<<"k1: "<<k1<<std::endl;
-//  msg_Debugging()<<"k2: "<<k2<<std::endl;
   double pipj(pi*pj), pipk(pi*pk), pjpk(pj*pk);
   double xiab=(pipk-pipj-pjpk)/pipk;
-  double vi=pipj/pipk;
 
   Vec4D pijt=xiab*pi;
   Vec4D pkt=pk;
-
-  double kp(sqrt(2.*pipk*vi*(1.-xiab-vi)));
-  Vec4D kperp(pj-(1.-xiab-vi)/xiab*pijt-vi*pkt);
-  double phi(0.);
-  if      ((kperp[1]>=0. && kperp[2]>=0.) || (kperp[1]>=0. && kperp[2]<0.))
-    phi=acos(kperp[2]/kp);
-  else if ((kperp[1]<0. && kperp[2]<0.) || (kperp[1]<0. && kperp[2]>=0.))
-    phi=-acos(kperp[2]/kp)+2.*M_PI;
-  else THROW(fatal_error,"Could not determine phi.");
 
   Vec4D K(pi-pj+pk), Kt(pijt+pkt);
   ATOOLS::Lorentz_Ten2D Lambda = MetricTensor()
@@ -205,26 +190,11 @@ double XS_qqllg_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
                                   const Vec4D& k2, int ij)
 {
   DEBUG_FUNC("");
-//  msg_Debugging()<<"pi: "<<pi<<std::endl;
-//  msg_Debugging()<<"pj: "<<pj<<std::endl;
-//  msg_Debugging()<<"pk: "<<pk<<std::endl;
-//  msg_Debugging()<<"k1: "<<k1<<std::endl;
-//  msg_Debugging()<<"k2: "<<k2<<std::endl;
   double pipj(pi*pj), pipk(pi*pk), pjpk(pj*pk);
   double xiab=(pipk-pipj-pjpk)/pipk;
-  double vi=pipj/pipk;
 
   Vec4D pijt=xiab*pi;
   Vec4D pkt=pk;
-
-  double kp(sqrt(2.*pipk*vi*(1.-xiab-vi)));
-  Vec4D kperp(pj-(1.-xiab-vi)/xiab*pijt-vi*pkt);
-  double phi(0.);
-  if      ((kperp[1]>=0. && kperp[2]>=0.) || (kperp[1]>=0. && kperp[2]<0.))
-    phi=acos(kperp[2]/kp);
-  else if ((kperp[1]<0. && kperp[2]<0.) || (kperp[1]<0. && kperp[2]>=0.))
-    phi=-acos(kperp[2]/kp)+2.*M_PI;
-  else THROW(fatal_error,"Could not determine phi.");
 
   Vec4D K(pi-pj+pk), Kt(pijt+pkt);
   ATOOLS::Lorentz_Ten2D Lambda = MetricTensor()
