@@ -220,7 +220,6 @@ double Fastjet_Scale_Setter::ASMeanScale
     ++oqcd;
   }
   if (oqcd==0.0) THROW(fatal_error,"No jets!");
-  mur2=pow(mur2,1.0/oqcd);
   as=pow(as,1.0/oqcd);
   mur2=MODEL::as->WDBSolve(as,MODEL::as->CutQ2(),sqr(rpa->gen.Ecms()));
   if (!IsEqual((*MODEL::as)(mur2),as))

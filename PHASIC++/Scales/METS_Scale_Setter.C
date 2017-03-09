@@ -690,7 +690,6 @@ double METS_Scale_Setter::SetScales
     }
     if (oqcd==0.0) mur2=m_rsf*muf2;
     else {
-      mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
       mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*sqr(rpa->gen.Ecms()));
       if (!IsEqual((*MODEL::as)(mur2),as))

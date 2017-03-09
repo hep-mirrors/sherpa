@@ -110,7 +110,6 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
     p2[i]    = sqr(Vec3D(p[i]).Abs());
   }
   double x   = 1./sqrt(1.-sqr(xmt/ET));
-  xmt        = 0.;
 
   // Massive particles : Rescale their momenta by a common factor x
 

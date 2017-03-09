@@ -185,7 +185,6 @@ void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
     THROW(fatal_error,"Invalid number of colours");
   CI_Map cmap(ampl->ColorMap());
   cmap[0]=0;
-  size_t iidx(std::string::npos), jidx(iidx);
   for (size_t i(0);i<m_ids.size();++i) {
     ColorID cc(ampl->Leg(i)->Col());
     CI_Map::iterator iit(cmap.find(cc.m_i)), jit(cmap.find(cc.m_j));

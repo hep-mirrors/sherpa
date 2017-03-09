@@ -263,7 +263,6 @@ void VHAAG_ND::SingleSplit(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D Q,
   qb.Boost(q1);
   qb.Boost(q2);
   double s = Q.Abs2();
-  double v  = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
   double a1min = 0.;//0.5*m_s0/(sqrt(s)*q1[0]);
   double smin = double((n2-1)*(n2-2)/2)*m_s0;
   double smax = s;//Min(s-n2*m_s0,s*(1.-a1min));
@@ -275,6 +274,7 @@ void VHAAG_ND::SingleSplit(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D Q,
   double a1 = CE.MasslessPropMomenta(exp,a1min,a1max,ran[1]);
 
   if (ap) {
+    double v = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
     double hlp0 = 0.5*(1.+s2/s+v*(1.-s2/s-2.*a1));
     double hlp = sqrt((1.-v*v)*(1.-s2/s-a1)*a1);
     double a2max = Min(hlp0+hlp,1.-0.5*m_s0/(sqrt(s)*q2[0]));
@@ -311,13 +311,13 @@ void VHAAG_ND::SingleSplitF(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec4D Q,
   qb.Boost(q1);
   qb.Boost(q2);
   double s = Q.Abs2();
-  double v  = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
 
   double a1min = 0.;//0.5*m_s0/(sqrt(s)*q1[0]); 
   double a1max = 1.-a1min; 
   double a1 = CE.MasslessPropMomenta(s_xx,a1min,a1max,ran[0]);
 
   if (apF) {
+    double v = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
     double hlp0 = 0.5*(1.+v*(1.-2.*a1));
     double hlp = sqrt((1.-v*v)*(1.-a1)*a1);
     double a2max = Min(hlp0+hlp,1.-0.5*m_s0/(sqrt(s)*q2[0]));
@@ -523,14 +523,15 @@ double VHAAG_ND::SingleSplitWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Vec
   double a1max = 1.-s2/s;//Min(1.-a1min*n2,1.-s2/s); 
   exp = a1_i; if (a1min==0.) exp = s_xx;
   double a1 = q1*p1/(q1*Q);
-  double a2 = q2*p2/(q2*Q);
+  double a2 = (ap) ? q2*p2/(q2*Q) : 0.0;
+  (void)a2; // tell analyser we are happy with a2 being a dead store if (!ap)
   wt*= CE.MasslessPropWeight(exp,a1min,a1max,a1,ran[1]);
 
   Poincare qb(Q);
   qb.Boost(q1);
   qb.Boost(q2);
   if (ap) {
-    double v  = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
+    double v = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
     double hlp0 = 0.5*(1.+s2/s+v*(1.-s2/s-2.*a1));
     double hlp = sqrt((1.-v*v)*(1.-s2/s-a1)*a1);
     double a2max = Min(hlp0+hlp,1.-0.5*m_s0/(sqrt(s)*q2[0]));
@@ -566,17 +567,18 @@ double VHAAG_ND::SingleSplitFWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,ATOOLS::Ve
 {
   double wt=1.;
   Q = p1+p2;
-  double s=Q.Abs2();
-  double a1min = 0.;//0.5*m_s0/(sqrt(s)*q1[0]); 
+  double a1min = 0.;
   double a1max = 1.-a1min; 
   double a1 = q1*p1/(q1*Q);
-  double a2 = q2*p2/(q2*Q);
+  double a2 = (apF) ? q2*p2/(q2*Q) : 0.0;
+  (void)a2; // tell analyser we are happy with a2 being a dead store if (!ap)
   wt*= CE.MasslessPropWeight(s_xx,a1min,a1max,a1,ran[0]);
 
   Poincare qb(Q);
   qb.Boost(q1);
   qb.Boost(q2);
   if (apF) {
+    double s=Q.Abs2();
     double v  = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
     double hlp0 = 0.5*(1.+v*(1.-2.*a1));
     double hlp = sqrt((1.-v*v)*(1.-a1)*a1);

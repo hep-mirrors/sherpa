@@ -47,7 +47,6 @@ PDF::CParam QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       weakvec += leg->Mom();
     }
   }
-  double mass2ew  = dabs(weakvec.Abs2());
   double pperpqcd(0);
   // find strong particles and fing pT heavy strong particles
   for (std::list<Cluster_Leg *>::iterator leg=stronglegs.begin();

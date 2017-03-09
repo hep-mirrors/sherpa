@@ -324,7 +324,6 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
   }
   if (oqcd==0.0) mur2=m_rsf*ampl->Mu2();
   else {
-    mur2=pow(mur2,1.0/oqcd);
     ass/=oqcd;
     if (m_nproc && m_nlocpl==1) {
       msg_Debugging()<<"  as_{NLO} = "<<ass<<"\n";

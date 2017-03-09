@@ -26,10 +26,8 @@ bool FSR_Channels::Initialize()
   }
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
-  int m_nin(nin), m_nout(nout);
   int sintegrator=0;
-  for (size_t i(0);i<inttypes.size();++i) {
-    Channel_Generator *cg=
+  for (size_t i(0);i<inttypes.size();++i) { Channel_Generator *cg=
       Channel_Generator::Getter_Function::GetObject
       (inttypes[i],Channel_Generator_Key
        (p_psh->Process()->Process(),this));
