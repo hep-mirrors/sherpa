@@ -81,7 +81,6 @@ namespace AHADIC {
 
     ATOOLS::Particle * GetSelf() const;
 
-    void               RescaleMomentum(ATOOLS::Vec4D);
     void               BoostInCMSAndRotateOnZ();
     void               RotateAndBoostBack();
     void               BoostInCMS();

@@ -1,7 +1,9 @@
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/My_MPI.H"
+
 #include <algorithm>
+#include <cassert>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -24,11 +26,11 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
   p_left(NULL), p_right(NULL), p_prev(NULL), p_nbtrip(NULL), p_nbanti(NULL),
   m_number(++s_cluster_number)
 {
-  ////PRINT_VAR(m_momentum);
+  assert(p_trip);
+  assert(p_anti);
   s_cluster_count++;
   s_actives.push_back(this);
-  if (p_trip && p_anti &&
-      ((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
+  if (((p_trip->m_flav.IsQuark() && !p_trip->m_flav.IsAnti()) || 
        (p_trip->m_flav.IsDiQuark() && p_trip->m_flav.IsAnti())) &&
       ((p_anti->m_flav.IsQuark() && p_anti->m_flav.IsAnti()) || 
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
@@ -126,63 +128,6 @@ Blob * Cluster::ConstructDecayBlob()
   }
 
   return blob;
-}
-
-void Cluster::RescaleMomentum(Vec4D newmom)
-{
-  Poincare rest(m_momentum);
-  Poincare back(newmom);
-
-  Vec4D_Vector save(3+m_clusters.size());
-  save[0] = m_momentum;
-  if (p_trip!=NULL)   save[1] = p_trip->m_mom;
-  if (p_anti!=NULL)   save[2] = p_anti->m_mom;
-  if (p_trip!=NULL)   rest.Boost(p_trip->m_mom);
-  if (p_trip!=NULL)   back.BoostBack(p_trip->m_mom);
-  if (p_anti!=NULL)   rest.Boost(p_anti->m_mom);
-  if (p_anti!=NULL)   back.BoostBack(p_anti->m_mom);
-  size_t i(3);
-  if (!m_clusters.empty()) {
-    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) {
-      save[i++] = (*cit)->Momentum();
-      (*cit)->Boost(rest);
-      (*cit)->BoostBack(back);
-    }
-  }
-  m_momentum = newmom;
-  Vec4D testmom(m_momentum-p_trip->m_mom-p_anti->m_mom);
-  if (dabs(testmom.Abs2()/save[0][0])>1.e-6 || testmom[0]/save[0][0]>1.e-6) {
-    msg_Debugging()<<"Error in "<<METHOD<<":\n"
-	       <<"   From "<<save[0]<<" ("
-		   <<sqrt(Max(0.,save[0].Abs2()))<<") to "
-	       <<m_momentum<<" with \n"
-	       <<"   "<<save[1]<<" ("<<save[1].Abs2()<<") + "
-	       <<save[2]<<" ("<<save[2].Abs2()<<")\n";
-    if (p_trip!=NULL) {
-      msg_Debugging()<<"  Trip: "<<p_trip->m_mom
-		     <<" ("<<p_trip->m_mom.Abs2()<<")";
-    }
-    else { 
-      msg_Debugging()<<"No triplet: "<<p_trip<<" ";
-    }
-    if (p_anti!=NULL) {
-      msg_Debugging()<<" Anti: "<<p_anti->m_mom
-		     <<" ("<<p_anti->m_mom.Abs2()<<")\n";
-    }
-    else { 
-      msg_Debugging()<<"No antitriplet: "<<p_anti<<" ";
-    }
-    msg_Debugging()<<"   diff: "<<testmom;
-    rest.Boost(m_momentum); 
-    back.BoostBack(m_momentum);
-    DEBUG_VAR(m_momentum);
-    msg_Debugging()<<" from "<<newmom<<" --> "<<m_momentum<<".\n";
-  }
-  if (p_left!=NULL) {
-    msg_Error()<<"Maybe error in RescaleMomentum("
-	       <<save[0]<<" -> "<<m_momentum<<")\n"
-	       <<"   How about the left/right offsprings?\n";
-  }
 }
 
 void Cluster::BoostInCMSAndRotateOnZ() {
