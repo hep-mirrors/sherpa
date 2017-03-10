@@ -55,7 +55,7 @@ void Gluon_Decayer::Init() {
 }
 
 Gluon_Decayer::~Gluon_Decayer() {
-  if (p_gsplitter) delete p_gsplitter;
+  delete p_gsplitter;
   if (m_analyse) {
     Histogram * histo;
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
@@ -155,7 +155,7 @@ bool Gluon_Decayer::DecayDipoles() {
       msg_Debugging()<<METHOD<<" : all dipoles done!\n";
       return true;
     }
-    if (p_gsplitter && !(*p_gsplitter)((*dipiter),true,false)) {
+    if (!(*p_gsplitter)((*dipiter),true,false)) {
       switch (Rescue(dipiter)) {
       case -1:
 	return false;
@@ -212,7 +212,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
+      if ((*p_gsplitter)((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -221,7 +221,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
+      if ((*p_gsplitter)((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -242,7 +242,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_gsplitter && (*p_gsplitter)(*partner,true,false)) {
+    if ((*p_gsplitter)(*partner,true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -252,7 +252,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
+    if ((*p_gsplitter)((*partner),true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -368,7 +368,7 @@ void Gluon_Decayer::AfterSplit(DipIter dip) {
 
 void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   Proto_Particle * new1, * new2;
-  if (p_gsplitter) p_gsplitter->GetNewParticles(new1,new2);
+  p_gsplitter->GetNewParticles(new1,new2);
 
   if      (new2->m_flav==Flavour(kf_d)) m_d++;
   else if (new2->m_flav==Flavour(kf_u)) m_u++;

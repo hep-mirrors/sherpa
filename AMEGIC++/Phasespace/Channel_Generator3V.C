@@ -1060,14 +1060,19 @@ std::string Channel_Generator3V::CreateChannelID(int echflag)
 double Channel_Generator3V::PMassSum(Point* p,int *pt)
 {
   int tptl,tptr;
-  *pt=0;
+  if (pt) *pt=0;
   if (!p->left) return 0.;
   double m = 0.;
   if (p->m>0 && p->fl.IsMassive()) {
     m = p->fl.Mass();
   }
   double mc = PMassSum(p->left,&tptl) + PMassSum(p->right,&tptr);
-  if (m>mc) *pt=1; 
-  else if (tptl+tptr>0) *pt=Max(tptl,tptr)+1;
+  if (pt) {
+    if (m>mc) {
+      *pt=1; 
+    } else if (tptl+tptr>0) {
+      *pt=Max(tptl,tptr)+1;
+    }
+  }
   return Max(m,mc);  
 }

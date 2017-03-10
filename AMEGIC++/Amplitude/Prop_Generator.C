@@ -14,6 +14,9 @@ void Prop_Generator::Convert(Point* p)
 {
   if ((p->left==0) && (p->right==0)) return;  
 
+  assert(p->left);
+  assert(p->right);
+
   if (p->number>99) {
     Pfunc* Ph = new Pfunc;
     Ph->on = 1;

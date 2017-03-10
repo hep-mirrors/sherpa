@@ -527,7 +527,7 @@ void Single_Amplitude_Base::GroupZfuncs()
     int ia=0;
     if(over==0){
       Zfunc* zh[2];
-      zh[0]=0;zh[1]=0;
+      zh[0]=NULL;zh[1]=NULL;
       indexlist.push_back(dummy);
       
       vector<vector<int> >::iterator ilt=indexlist.begin();	
@@ -550,6 +550,8 @@ void Single_Amplitude_Base::GroupZfuncs()
 	}
 	if(!hit){++ilt;++zit;}
       }
+      assert(zh[0] != NULL);
+      assert(zh[1] != NULL);
       if(ia!=2){
 	msg_Error()<<"ERROR Single_Amplitude_Base::GroupZfuncs: "<<std::endl
 		   <<"   Index appeared "<<ia<<" times, will abort the run."<<endl;

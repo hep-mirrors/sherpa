@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <stdio.h>
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -997,7 +998,9 @@ void Channel_Generator::BackLinks(Point* p,Point* &endp)
   if ((p->left==0) && (p->right==0)) {
     if (p->b == -1) endp = p;
     return;
-  }  
+  }
+  assert(p->left);
+  assert(p->right);
   p->t = 0;
   p->left->prev = p;
   p->right->prev = p;

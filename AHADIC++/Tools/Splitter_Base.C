@@ -5,6 +5,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_MPI.H"
 
+#include <cassert>
+
 using namespace AHADIC;
 using namespace MODEL;
 using namespace ATOOLS;
@@ -185,7 +187,7 @@ double Splitter_Base::SelectZ(const double & delta,const bool & lead) {
 
 bool Splitter_Base::SelectFlavour(const double & sqq,const bool & vetodi) {
   Flavour flav(kf_none);
-  double mmax(sqrt(sqq/4.)), m2, sumwt;
+  double mmax(sqrt(sqq/4.)), m2(-1.0), sumwt;
   long int calls(0);
   while (calls<100) {
     sumwt = CalculateSumWT(mmax,vetodi);
@@ -203,6 +205,7 @@ bool Splitter_Base::SelectFlavour(const double & sqq,const bool & vetodi) {
 	  break;
 	}
       }
+      assert(m2 >= 0.0);
       if (PoppedMassPossible(m2)) break;
       mmax = sqrt(m2);
     }
