@@ -316,7 +316,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AM_CPPFLAGS="-I\$(top_srcdir)"
   AC_SUBST(AM_CPPFLAGS)
 
-  AM_CXXFLAGS="-g -O2"
+  AM_CXXFLAGS="-g -O2 -fcx-fortran-rules"
   AC_SUBST(AM_CXXFLAGS)
 
   localincdir="\$(pkgincludedir)/\$(subdir)"
