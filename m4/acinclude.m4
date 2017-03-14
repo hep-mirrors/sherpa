@@ -319,7 +319,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AM_CXXFLAGS="-g -O2"
   AC_LANG_PUSH([C++])
   AX_CHECK_COMPILE_FLAG(
-    -Werror,
+    -fcx-fortran-rules,
     [AM_CXXFLAGS="${AM_CXXFLAGS} -fcx-fortran-rules"])
   AC_LANG_POP([C++])
   AC_SUBST(AM_CXXFLAGS)
