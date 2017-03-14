@@ -312,11 +312,16 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR", [Sherpa library directory])
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
-  
+
   AM_CPPFLAGS="-I\$(top_srcdir)"
   AC_SUBST(AM_CPPFLAGS)
 
-  AM_CXXFLAGS="-g -O2 -fcx-fortran-rules"
+  AM_CXXFLAGS="-g -O2"
+  AC_LANG_PUSH([C++])
+  AX_CHECK_COMPILE_FLAG(
+    -Werror,
+    [AM_CXXFLAGS="${AM_CXXFLAGS} -fcx-fortran-rules"])
+  AC_LANG_POP([C++])
   AC_SUBST(AM_CXXFLAGS)
 
   localincdir="\$(pkgincludedir)/\$(subdir)"
