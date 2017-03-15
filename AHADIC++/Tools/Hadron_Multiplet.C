@@ -2,6 +2,8 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <cassert>
+
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
@@ -56,7 +58,13 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
     fl2 = int(kfcode/100)-int(kfcode/1000)*10;
     fl3 = int(kfcode/1000)-int(kfcode/10000)*10;
 
+    // all hadrons are top-less
+    assert(fl1 < 6);
+    assert(fl2 < 6);
+    assert(fl3 < 6);
+
     if (fl3==0) {
+      // order odd (i.e. down-type) quark first
       if (int(fl2/2.)!=fl2/2.) { help = fl1; fl1 = fl2; fl2 = help; }
       wavefunction = ConstructMesonWaveFunction(int(kfcode/9000000),
 						int(kfcode/100000),
@@ -128,6 +136,8 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
     }
     else if (fl1==2) {
       weight         = (sinth/sqrt(6.)+costh/sqrt(3.));
+      double weight2 = (-2.*sinth/sqrt(6.)+costh/sqrt(3.));
+      assert(dabs(weight) > 1.e-3 || dabs(weight2) > 1.e-3);
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         delete pair;
@@ -141,44 +151,44 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
 	pair->second = flavs[0].Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.));
-      if (dabs(weight)>1.e-3) {
+      if (dabs(weight2)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(3));
 	pair         = new Flavour_Pair;
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
 	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
-	wavefunction->AddToWaves(pair,weight);
+	wavefunction->AddToWaves(pair,weight2);
       }
     }
     else if (fl1==3) {
       weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.));
+      double weight2 = (costh/sqrt(6.)-sinth/sqrt(3.));
+      assert(dabs(weight) > 1.e-3 || dabs(weight2) > 1.e-3);
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         pair->first = Flavour((kf_code)(3));
         pair->second = Flavour((kf_code)(3)).Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (costh/sqrt(6.)-sinth/sqrt(3.));
-      if (dabs(weight)>1.e-3) {
+      if (dabs(weight2)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(1));
 	pair         = new Flavour_Pair;
 	pair->first  = Flavour((kf_code)(1));
 	pair->second = Flavour((kf_code)(1)).Bar();
 	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
-	wavefunction->AddToWaves(pair,weight);
+	wavefunction->AddToWaves(pair,weight2);
 	pair         = new Flavour_Pair;
 	pair->first  = Flavour((kf_code)(2));
 	pair->second = Flavour((kf_code)(2)).Bar();
-	wavefunction->AddToWaves(pair,weight);
+	wavefunction->AddToWaves(pair,weight2);
       }
     }
-    else if (fl1==fl2 && (fl1==4 || fl1==5)) {
+    else { // charm or bottom pair
       wavefunction = new Hadron_Wave_Function;
       wavefunction->AddToWaves(pair,1.);
     }
   }
-  else if (flavs[0].Charge()+flavs[1].Charge()==0.) {
+  else { // total charge is zero and flavours are not equal
     wavefunction = new Hadron_Wave_Function;
     wavefunction->AddToWaves(pair,1.);
   }
