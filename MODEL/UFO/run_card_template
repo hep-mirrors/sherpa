@@ -25,6 +25,8 @@
 
 (processes){
   Process 93 93 -> <REPLACE_ME>;
+  ${order_statement}; 
+  ${order_comment}
   End process;
 }(processes)
 

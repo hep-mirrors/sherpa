@@ -1,4 +1,4 @@
-from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, colour_translate, split_by_orders, vertex_collection
+from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
 from ufo_interface.templates import model_template
 from operator import attrgetter
 
@@ -17,7 +17,8 @@ def write_model(model, model_name, model_file_name):
             statement += str(param.lha_indices()[0])
         if len(param.lha_indices()) == 2:
             statement += str(param.lha_indices()[0])+", "+str(param.lha_indices()[1])
-        statement+=");"
+        statement+=");\n"
+        statement+='    p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
         para_init += "\n"+statement
 
     # internal parameter initialization and calculation
@@ -59,12 +60,11 @@ def write_model(model, model_name, model_file_name):
         para_init += "\n    ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
 
     # coupling initialization and calculation
-    for coup in model.all_couplings:
+    for coup in model.non_ct_couplings:
         s_coup = s_coupling(coup)
-        para_init += "\n    p_complexconstants->insert(std::make_pair(std::string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
+        para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
         para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
 
-    model.all_orders.sort(key=attrgetter('hierarchy'))
     hierarchy     = [order.name for order in model.all_orders]
     declarations  = ""
     calls         = ""

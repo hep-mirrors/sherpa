@@ -7,14 +7,16 @@
 #include "MODEL/UFO/UFO_Color_Functions.H"
 #include <iomanip>
 
+using namespace std;
+
 namespace MODEL{
 
   class ${model_name} : public UFO::UFO_Model
   {
   public:
-    ${model_name}(std::string path, std::string file, bool elementary) : UFO_Model(path, file, elementary) 
+    ${model_name}(string path, string file, bool elementary) : UFO_Model(path, file, elementary) 
     {
-      m_name = std::string("${model_name}");
+      m_name = string("${model_name}");
       ParticleInit();
       ParamInit();
       SetMassiveFlags();
@@ -40,9 +42,9 @@ namespace MODEL{
     void ParamInit()
     {
       DEBUG_FUNC(this);
-      msg_Debugging() << std::setprecision(20);
+      msg_Debugging() << setprecision(20);
       ${param_init}
-      msg_Debugging() << std::setprecision(6);
+      msg_Debugging() << setprecision(6);
     }
     ${declarations}
     void InitVertices()
@@ -62,7 +64,7 @@ Model_Base *ATOOLS::Getter<Model_Base,Model_Arguments,${model_name}>::operator()
   return new ${model_name}(args.m_path, args.m_file, args.m_elementary);
 }
 
-void ATOOLS::Getter<Model_Base,Model_Arguments,${model_name}>::PrintInfo(std::ostream &str,const size_t width) const 
+void ATOOLS::Getter<Model_Base,Model_Arguments,${model_name}>::PrintInfo(ostream &str,const size_t width) const 
 {
-  str<<"Automatically generated model \"${model_name}\" based on UFO output"<<std::endl;
+  str<<"Automatically generated model \"${model_name}\" based on UFO output"<<endl;
 }

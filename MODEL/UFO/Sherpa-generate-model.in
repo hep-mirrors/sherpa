@@ -41,6 +41,39 @@ def parse_args():
 
       return arg_parser.parse_args()
 
+def sort_orders(orders):
+      """Sort the coupling orders such that the first item is the QCD order
+      and the second item is the QED order. Raise an exception if
+      either of them is not contained in the model
+
+      """
+      # Find index of QCD coupling in the 'orders' list
+      i_qcd = None
+      for i,ord in enumerate(orders):
+            if ord.name == 'QCD':
+                  i_qcd = i
+                  break
+      if i_qcd == None:
+            raise ufo_exception('No QCD coupling found in model')
+            
+      # Swap first item in list with QCD coupling
+      orders[0], orders[i_qcd] = orders[i_qcd], orders[0]
+            
+      # Find index of QED coupling in the 'orders' list
+      i_qed = None
+      for i,ord in enumerate(orders):
+            if ord.name == 'QED':
+                  i_qed = i
+                  break
+      if i_qed == None:
+            raise ufo_exception('No QED coupling found in model')
+
+      # Swap second item in list with QED coupling
+      orders[1], orders[i_qed] = orders[i_qed], orders[1]
+      
+      assert(orders[0].name=='QCD' and orders[1].name=='QED')
+      return orders
+
 def check_model(model_name, model_path):
       # Check for conflicts with built-in models
       if model_name in ["SM", "HEFT", "TauPi"]:
@@ -55,6 +88,17 @@ def check_model(model_name, model_path):
       except ImportError as err:
             error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
             exit(1)
+
+      # For NLO models: need to filter out CT_Couplings
+      model.non_ct_couplings = model.all_couplings
+      if hasattr(model, "all_CTvertices"):
+            non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
+            model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
+
+      # Sort coupling orders to ensure first order is QCD, second
+      # order is QED
+      model.all_orders = sort_orders(model.all_orders)
+
       return model
 
 def make_output_dir(path):

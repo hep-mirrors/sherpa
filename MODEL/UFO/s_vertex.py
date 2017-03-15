@@ -12,14 +12,11 @@ spin_dict = {0 : "S",
 translate = {"SVV" : "VVS",
              "SFF" : "FFS"}
 
-# UFO vertices may have multiple couplings which
-# can might have incompatible coupling orders.
-# Split the vertex up into subvertices such that
-# each of them has well defined coupling orders.
-# Return a list of s_vertex instances.
-# Hierarchy is a list of strings, identifying
-# the hierarchy of coupling orders, e.g.
-# hierarchy = ['QCD','QED',...]
+# UFO vertices may have multiple couplings which might have different
+# coupling orders. Split the vertex up into subvertices such that each
+# of them has well defined coupling orders. Return a list of s_vertex
+# instances. Hierarchy is a list of strings, identifying the hierarchy
+# of coupling orders, e.g. hierarchy = ['QCD','QED',...]
 def split_by_orders(ufo_vertex, hierarchy):
 
     # we want couplings, lorentz, and colour
@@ -64,9 +61,11 @@ class s_vertex():
         self._lorentz_list = []
         self._colour_list = []
         # Hierarchy is a list of strings, identifying
-        # the hierarchy of coupling orders, e.g.
+        # an ordering of coupling orders, e.g.
         # hierarchy = ['QCD','QED',...]
         self._hierarchy = hierarchy
+        assert(len(self._hierarchy)>=2)
+        assert(self._hierarchy[0]=='QCD' and self._hierarchy[1]=='QED')
 
     def set_coupling_list(self, cpl_list):
         self._coupling_list = cpl_list

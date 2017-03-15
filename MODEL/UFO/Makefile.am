@@ -24,7 +24,6 @@ dist_ufo_PYTHON = \
         __init__.py \
         c_variable.py \
         color_interface.py \
-        colour_converter.py \
         lorentz_calc_template.C \
         lorentz_structures.py \
         model_template.C \

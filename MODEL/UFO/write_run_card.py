@@ -39,6 +39,14 @@ def write_run_card(model, model_name, run_card_path):
     if "decay" in blocks:
         for param in blocks["decay"]:
             ufo_params += "decay "+table_format(nci, param.lha_indices(), ncv, param.raw_value(), param.name())
+
+    # generate a helpful template for a user specification of coupling orders 
+    order_statement = 'Order (' + ','.join(['*' for order in model.all_orders]) + ')'
+    order_comment   = '# Syntax: "Order (' + ','.join([order.name for order in model.all_orders]) + ');"'
         
     with open(run_card_path, "w") as outfile:
-        outfile.write(run_card_template.substitute(model=model, model_name=model_name, ufo_params=ufo_params))
+        outfile.write(run_card_template.substitute(model=model, 
+                                                   model_name=model_name, 
+                                                   ufo_params=ufo_params,
+                                                   order_statement=order_statement,
+                                                   order_comment=order_comment))
