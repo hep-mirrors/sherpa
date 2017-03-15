@@ -177,19 +177,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
     }
 
   }
-  //for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++) {
-    //msg_Out()<<(*pli)->size()<<"\n";
-  //}
-  //if (ana) { 
-    //if (over) {
-      //msg_Out()<<"\n\n"<<Nover<<" interesting particles: "<<id<<"\n"
-                 //<<(*blob)<<"\n"<<"\n";
-      //m_histograms[string("Forward_Number")]->Insert(Nover);
-    //}
-    //if (under) {
-      //m_histograms[string("Central_Number")]->Insert(Nunder);
-    //}
-  //}
+  // delete unused proto particle list
+  delete pli;
   return true;
 }
 
