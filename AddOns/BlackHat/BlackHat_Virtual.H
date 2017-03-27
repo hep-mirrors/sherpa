@@ -17,6 +17,8 @@ namespace BLACKHAT {
     static BH::BH_interface  *s_interface;
     static MODEL::Model_Base *s_model;
 
+    void WarnForMassiveFlavours(const ATOOLS::Flavour_Vector&) const;
+
   public:
 
     BlackHat_Virtual(const PHASIC::Process_Info& pi,

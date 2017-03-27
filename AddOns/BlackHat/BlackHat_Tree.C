@@ -25,11 +25,25 @@ BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
 {
   m_oqcd=ampl->get_order_qcd()+(m_mode?2:0);
   m_oew=ampl->get_order_qed();
+  WarnForMassiveFlavours(flavs);
 }
 
 BlackHat_Tree::~BlackHat_Tree()
 {
   // if (p_ampl) delete p_ampl;
+}
+
+void BlackHat_Tree::WarnForMassiveFlavours(const Flavour_Vector& flavs) const
+{
+  for (Flavour_Vector::const_iterator it(flavs.begin());
+      it != flavs.end();
+      ++it) {
+    if (it->IsQuark() && it->IsMassive()) {
+      msg_Error() << "WARNING: BlackHat does not support massive quarks."
+        << " Will continue and hope for the best." << std::endl;
+      break;
+    }
+  }
 }
 
 double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)

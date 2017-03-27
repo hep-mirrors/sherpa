@@ -19,11 +19,25 @@ BlackHat_Virtual::BlackHat_Virtual(const Process_Info& pi,
 				   BH::BH_Ampl* ampl) :
   Virtual_ME2_Base(pi, flavs), p_ampl(ampl)
 {
+  WarnForMassiveFlavours(flavs);
 }
 
 BlackHat_Virtual::~BlackHat_Virtual()
 {
   // if (p_ampl) delete p_ampl;
+}
+
+void BlackHat_Virtual::WarnForMassiveFlavours(const Flavour_Vector& flavs) const
+{
+  for (Flavour_Vector::const_iterator it(flavs.begin());
+      it != flavs.end();
+      ++it) {
+    if (it->IsQuark() && it->IsMassive()) {
+      msg_Error() << "WARNING: BlackHat does not support massive quarks."
+                  << " Will continue and hope for the best." << std::endl;
+      break;
+    }
+  }
 }
 
 void BlackHat_Virtual::Calc(const Vec4D_Vector& momenta) {

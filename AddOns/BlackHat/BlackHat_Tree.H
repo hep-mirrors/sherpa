@@ -23,6 +23,8 @@ namespace BLACKHAT {
     size_t m_oqcd, m_oew, m_mode;
     double m_asfac, m_afac;
 
+    void WarnForMassiveFlavours(const ATOOLS::Flavour_Vector&) const;
+
   public:
 
     BlackHat_Tree(const PHASIC::Process_Info& pi,
