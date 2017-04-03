@@ -156,8 +156,8 @@ void Command_Line_Interface::SetTagValue(const std::string& tagname,
                                          const std::string& value,
                                          const bool& allowoverwrite)
 {
-  if (parameter_value_map[tagname] == "" || allowoverwrite) {
-    parameter_value_map[tagname] = value;
+  if (tag_value_map[tagname] == "" || allowoverwrite) {
+    tag_value_map[tagname] = value;
   }
 }
 
