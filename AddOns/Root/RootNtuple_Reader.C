@@ -470,6 +470,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	m_sargs.p_proc->SetScale(m_sargs);
 	m_sargs.p_proc->SetKFactor(m_kargs);
       }
+      signalblob->SetTypeSpec(m_procs[info]->Name());
       Scale_Setter_Base *scale(&*m_procs[info]->ScaleSetter());
       KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
       scale->CalculateScale(p);
