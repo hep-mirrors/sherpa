@@ -7,13 +7,13 @@ using namespace ATOOLS;
 
 namespace ATOOLS {
 
-template<> const Vec4D Vec4D::XVEC=Vec4D(1.,1.,0.,0.);
-template<> const Vec4D Vec4D::YVEC=Vec4D(1.,0.,1.,0.);
-template<> const Vec4D Vec4D::ZVEC=Vec4D(1.,0.,0.,1.);
+  template<> const Vec4D Vec4D::XVEC=Vec4D(1.,1.,0.,0.);
+  template<> const Vec4D Vec4D::YVEC=Vec4D(1.,0.,1.,0.);
+  template<> const Vec4D Vec4D::ZVEC=Vec4D(1.,0.,0.,1.);
 
-template<> const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
-template<> const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
-template<> const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
+  template<> const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
+  template<> const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
+  template<> const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
 
 }
 

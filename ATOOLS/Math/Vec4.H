@@ -212,6 +212,7 @@ namespace ATOOLS {
   std::ostream& operator<<(std::ostream& s, const Vec4<Scalar>& vec) {
     return s<<'('<<vec[0]<<','<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';
   }
+
 }
 
 /*!

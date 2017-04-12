@@ -452,9 +452,6 @@ const fom::code &My_File<FileType>::Mode() const
   return m_mode; 
 }
 
-template <class FileType>
-std::string My_File<FileType>::s_sqlopenflag="";
-
 namespace ATOOLS {
 
   template class My_In_File;
