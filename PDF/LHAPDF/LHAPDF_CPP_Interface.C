@@ -29,7 +29,10 @@ namespace PDF {
     double AlphaSPDF(const double &);
     double GetXPDF(const ATOOLS::Flavour&);
     double GetXPDF(const kf_code&, bool);
-
+    double GetDefaultAlpha();
+    double GetDefaultScale();
+    int GetFlavourScheme();
+    
     void SetAlphaSInfo();
     void SetPDFMember();
 
@@ -105,6 +108,28 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   }
 
   rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
+}
+
+double LHAPDF_CPP_Interface::GetDefaultAlpha()
+{
+ return m_asinfo.m_asmz;
+}
+
+int LHAPDF_CPP_Interface::GetFlavourScheme()
+{
+ int nflav=p_pdf->info().get_entry_as<int>("NumFlavors");
+ if (p_pdf->info().get_entry_as<std::string>("FlavorScheme")=="variable") {
+  if (nflav==6){
+   return -1;
+  }
+  nflav+=10;
+ }
+ return nflav;
+}
+
+double LHAPDF_CPP_Interface::GetDefaultScale()
+{
+ return m_asinfo.m_mz2;
 }
 
 void LHAPDF_CPP_Interface::SetAlphaSInfo()

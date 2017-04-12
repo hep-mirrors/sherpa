@@ -17,6 +17,9 @@ namespace PHASIC {
     double m_mur2;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
+    bool m_fixedIRscale;
+    double m_IRscale, m_UVscale;
+    
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -32,7 +35,10 @@ namespace PHASIC {
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
-
+    inline bool fixedIRscale() { return m_fixedIRscale; }
+    inline double IRscale() { return m_IRscale; }
+    inline double UVscale() { return m_UVscale; }
+    
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
     inline void SetNorm(const double& norm) { m_norm=norm; }
     void SetCouplings(const MODEL::Coupling_Map& cpls);

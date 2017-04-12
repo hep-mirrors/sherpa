@@ -7,6 +7,7 @@
 
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -92,7 +93,15 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
   }
 }
 
-// to be called in ModelInit 
+// to be called in ModelInit
+void Model_Base::SetAlphaQED(const double& aqed_def){
+  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+  aqed=new Running_AlphaQED(alphaQED0);
+  aqed->SetDefault(aqed_def);
+  p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(std::string("alpha_QED"),aqed_def));
+}
+ 
 void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr)
 {
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);

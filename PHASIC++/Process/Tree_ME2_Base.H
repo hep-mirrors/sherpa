@@ -2,6 +2,7 @@
 #define PHASIC_Process_Tree_ME2_Base_H
 
 #include "PHASIC++/Process/Process_Info.H"
+#include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Math/Vector.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -25,7 +26,9 @@ namespace PHASIC {
 
     size_t m_namps;
     double m_norm;
-
+    METOOLS::DivArrD m_res;
+    double m_born, m_mur2;
+    
   public:
 
     Tree_ME2_Base(const PHASIC::Process_Info &pi,
@@ -34,7 +37,10 @@ namespace PHASIC {
     virtual ~Tree_ME2_Base();
 
     virtual double Calc(const ATOOLS::Vec4D_Vector &p) = 0;
-
+    inline const METOOLS::DivArrD& Result() { return m_res; }
+    inline double ME_Born() { return m_born; }
+    inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
+    
     virtual void SetCouplings(const MODEL::Coupling_Map& cpls);
     virtual double AlphaQCD() const;
     virtual double AlphaQED() const;
@@ -51,8 +57,8 @@ namespace PHASIC {
     (std::set<std::pair<size_t,size_t> > &combs,
      std::map<size_t,ATOOLS::Flavour_Vector> &fls);
 
-    virtual int OrderQCD(const int &id=-1) = 0;
-    virtual int OrderEW(const int &id=-1) = 0;
+    virtual int OrderQCD(const int &id=-1);
+    virtual int OrderEW(const int &id=-1);
 
     virtual double TR() const;
 

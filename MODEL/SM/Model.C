@@ -168,6 +168,20 @@ void Standard_Model::FixEWParameters()
     }
     break;
   }
+  case 2: {
+    // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
+    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(MZ)",128.802));
+    ccos2thetaW=sqr(MW/MZ);
+    csin2thetaW=1.-ccos2thetaW;
+    cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
+    if (widthscheme=="CMS") {
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      ccos2thetaW=muW2/muZ2;
+      csin2thetaW=1.-ccos2thetaW;
+      cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->Default()));
+    }
+    break;
+  }
   case 3: {
     //gmu scheme
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);

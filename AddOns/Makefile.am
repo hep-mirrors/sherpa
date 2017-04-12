@@ -8,6 +8,7 @@ SUBDIRS       =	\
 		LH_OLE \
 		HZTool \
 		OpenLoops \
+		Recola \
 		PGS \
 		Delphes \
 		Rivet \

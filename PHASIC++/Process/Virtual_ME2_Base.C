@@ -15,7 +15,8 @@ Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
   m_pinfo(pi), m_flavs(flavs),
   m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
   m_mur2(1.0), m_mode(0), m_drmode(0), m_colmode(0),
-  m_born(0.0), m_norm(1.0), p_aqcd(NULL), p_aqed(NULL)
+  m_born(0.0), m_norm(1.0), p_aqcd(NULL), p_aqed(NULL),
+  m_fixedIRscale(false), m_IRscale(0.), m_UVscale(0.)
 {
 }
 

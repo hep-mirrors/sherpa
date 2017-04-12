@@ -26,6 +26,21 @@ PDF_Base::~PDF_Base()
 {
 }
 
+double PDF_Base::GetDefaultAlpha()
+{
+ return -1.0;
+}
+
+double PDF_Base::GetDefaultScale()
+{
+ return -1.0;
+}
+
+int PDF_Base::GetFlavourScheme()
+{
+ return 0;
+}
+
 double PDF_Base::AlphaSPDF(const double &q2)
 {
   return -1.0;

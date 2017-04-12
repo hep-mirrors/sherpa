@@ -81,6 +81,7 @@ namespace MODEL {
     void InitMEInfo();
 
     // to be called in ModelInit 
+    void SetAlphaQED(const double& aqed_def);
     void SetAlphaQCD(const PDF::ISR_Handler_Map& isr);
     void SetRunningFermionMasses();
     

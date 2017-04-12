@@ -584,8 +584,14 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
       splf2 += p_masskern->I_E2();
 
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
-
+      double lsc(0.);
+      if (!(p_loopme->fixedIRscale()))
+       lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
+      else{
+       double irscale=p_loopme->IRscale();
+       lsc=log(4.*M_PI*sqr(irscale)/dabs(sik)/Eps_Scheme_Factor(momv));
+      }
+      
       splf+=splf1*lsc+splf2*0.5*sqr(lsc);
       res+=p_dsij[i][k]*splf;
       m_cmur[0]+=p_dsij[i][k]*(splf1+splf2*lsc);
@@ -611,7 +617,13 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
       int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
       int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
+      double lsc(0.);
+      if (!(p_loopme->fixedIRscale()))
+       lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
+      else{
+       double irscale=p_loopme->IRscale();
+       lsc = log(4.*M_PI*sqr(irscale)/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
+      }
       double splf = p_dipole->Vif(typei,lm)+p_dipole->Vif(typek,lm);
       double splf1 = p_dipole->Vie1(typei)+p_dipole->Vie1(typek);
       double splf2 = p_dipole->Vie2(typei)+p_dipole->Vie2(typek);
