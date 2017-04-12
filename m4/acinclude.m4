@@ -46,7 +46,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
   else MD5COMMAND="echo 'X'"; fi
   AC_SUBST(MD5COMMAND)
   AC_SUBST(SEDCOMMAND)
-  
+
   if test "x$CXXFLAGS" == "x"; then CXXFLAGS=""; fi
 ])
 
@@ -457,9 +457,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         AC_MSG_CHECKING(whether the Rivet version uses YODA as its histogramming backend)
         AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],
         [ rivetyoda=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
-        AC_MSG_CHECKING(whether the Rivet version requires c++11)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.5.0],
-        [ cxx11required=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
@@ -482,35 +479,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
   AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
-
-  dnl enable C++11 when possible
-  AC_MSG_CHECKING(whether the user has disabled c++11)
-  AC_ARG_ENABLE(
-    [c++11],
-    [AC_HELP_STRING([--disable-c++11], [Disable C++11])],
-    [ case "${enableval}" in
-        no) cxx11enabled=false;;
-        yes) cxx11enabled=false;;
-      esac
-    ],
-    [cxx11enabled=true]
-  )
-  if test "$cxx11enabled" != "true" ; then
-    AC_MSG_RESULT(yes)
-    if test "$cxx11required" = "true" ; then
-      AC_MSG_ERROR([C++11 can not be disabled, because a feature requires it.]);
-    fi
-  else
-    AC_MSG_RESULT(no)
-    if test "$cxx11required" = "true" ; then
-      AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
-      HAVE_CXX11=1
-      AC_DEFINE(HAVE_CXX11,1,
-          [define if the compiler supports basic C++11 syntax])
-    else
-      AX_CXX_COMPILE_STDCXX_11(noext,optional)
-    fi
-  fi
 
   AC_ARG_ENABLE(
     fastjet,
@@ -960,12 +928,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test x$pyext == xtrue; then
     AM_PATH_PYTHON
     AX_PYTHON_DEVEL
-    if test "$HAVE_CXX11" = "1" ; then
-      swigversion=2.0.12
-    else
-      swigversion=1.3.17
-    fi
-    AX_PKG_SWIG("${swigversion}",[],[ AC_MSG_ERROR([SWIG is required to build..]) ])
+    dnl Note that we need swig 2.0.12 or later for C++11 compatibility
+    AX_PKG_SWIG([2.0.12],[],[ AC_MSG_ERROR([SWIG is required to build..]) ])
     AX_SWIG_ENABLE_CXX
     AX_SWIG_MULTI_MODULE_SUPPORT
     AX_SWIG_PYTHON

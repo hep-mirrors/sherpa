@@ -45,6 +45,9 @@ else
 fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
+dnl Now that CXX is set we require C++11
+AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+
 AC_ARG_ENABLE(ufo,
   AC_HELP_STRING([--enable-ufo], [Enable UFO support]),
   [ AC_MSG_CHECKING(for UFO support)
