@@ -97,7 +97,7 @@ bool Inelastic_Event_Generator::SelectEikonal() {
 bool Inelastic_Event_Generator::SelectB() {
   if (p_eikonal==0) {
     msg_Error()<<"Error in "<<METHOD<<": no eikonal selected.\n";
-    return -1.;
+    return false;
   }
   std::vector<double> * grid = m_Bgrids[p_eikonal];  
   double deltaB(p_eikonal->DeltaB());
