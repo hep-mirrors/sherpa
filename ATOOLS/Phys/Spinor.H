@@ -110,6 +110,16 @@ namespace ATOOLS {
   template <class Scalar> std::ostream &operator<<
     (std::ostream &ostr,const Spinor<Scalar> &s); 
 
+  template <class Scalar>
+    unsigned int Spinor<Scalar>::s_r1(1);
+  template <class Scalar>
+    unsigned int Spinor<Scalar>::s_r2(2);
+  template <class Scalar>
+    unsigned int Spinor<Scalar>::s_r3(3);
+  template <class Scalar>
+    unsigned int Spinor<Scalar>::s_d(0);
+
+
 }// end of namespace ATOOLS
 
 #define DWSpinor ATOOLS::Spinor<double>

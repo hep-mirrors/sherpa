@@ -61,6 +61,14 @@ namespace ATOOLS {
                  std::conj(v[2]),std::conj(v[3]));
   }
 
+  // static members
+  template<> const Vec4D Vec4D::XVEC;
+  template<> const Vec4D Vec4D::YVEC;
+  template<> const Vec4D Vec4D::ZVEC;
+  template<> const Vec3D Vec3D::XVEC;
+  template<> const Vec3D Vec3D::YVEC;
+  template<> const Vec3D Vec3D::ZVEC;
+
 }
 
 /*!

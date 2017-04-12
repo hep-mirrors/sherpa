@@ -94,4 +94,7 @@ namespace ATOOLS {
 #define My_In_File ATOOLS::My_File<std::ifstream>
 #define My_Out_File ATOOLS::My_File<std::ofstream>
 
+template <class FileType>
+std::string ATOOLS::My_File<FileType>::s_sqlopenflag="";
+
 #endif

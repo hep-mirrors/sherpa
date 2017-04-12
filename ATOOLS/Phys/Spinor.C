@@ -9,15 +9,6 @@ using namespace ATOOLS;
 template <class Scalar>
 double Spinor<Scalar>::s_accu(1.0e-12);
 
-template <class Scalar>
-unsigned int Spinor<Scalar>::s_r1(1);
-template <class Scalar>
-unsigned int Spinor<Scalar>::s_r2(2);
-template <class Scalar>
-unsigned int Spinor<Scalar>::s_r3(3);
-template <class Scalar>
-unsigned int Spinor<Scalar>::s_d(0);
-
 template <class Scalar> std::ostream &
 ATOOLS::operator<<(std::ostream &ostr,const Spinor<Scalar> &s)
 {
