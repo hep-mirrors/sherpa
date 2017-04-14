@@ -55,7 +55,7 @@ PrintInfo(ostream &str,const size_t width) const
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
      <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,3, EW input schemes, see documentation)\n"
+     <<setw(width+7)<<" "<<"- EWSCHEME (values 0,1,3, EW input schemes, see documentation)\n"
      <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
      <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
      <<setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"

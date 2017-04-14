@@ -36,10 +36,12 @@ namespace Recola {
       use_gfermi_scheme_and_set_alpha_rcl(AlphaQED());
      }
      else if (ewscheme == 2){
-      use_alphaz_scheme_and_set_alpha_rcl(AlphaQED());
+       //use_alphaz_scheme_and_set_alpha_rcl(AlphaQED());
+       use_alphaz_scheme_rcl(AlphaQED());
      }
      else if(ewscheme == 1){
-      use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
+       //use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
+       use_alpha0_scheme_rcl(AlphaQED());
      }
      else{
       cout << "The EW scheme "<<ewscheme<<" is not available with the SHERPA+Recola interface. Valid options are:" << endl;
@@ -101,8 +103,8 @@ namespace Recola {
      generate_processes_rcl();
      Recola_Interface::setProcGenerationTrue();
      cout << "process generation in Recola completed..." << endl;
-     get_alpha_rcl(alpha_mat);
-     cout << "alpha is: " << 1./alpha_mat << endl;	
+     //get_alpha_rcl(alpha_mat);
+     //cout << "alpha is: " << 1./alpha_mat << endl;	
      Recola_Interface::SetDefaultFlav(nlight);
     }
     double alpha(0);
@@ -140,6 +142,8 @@ namespace Recola {
      std::cout<<"flavour:  "<<m_flavs<<std::endl;
      std::cout<< std::setprecision(15)<<"    and finite is:  "<<m_res.Finite()<<std::endl;
      std::cout<< std::setprecision(15)<<"    and finite*factor is:  "<<m_res.Finite()*factor<<std::endl;
+     std::cout<< std::setprecision(15)<<"   factor is:  "<<factor<<std::endl;
+     std::cout<< std::setprecision(15)<<"   coupling:  "<<AlphaQCD()<<std::endl;
      std::cout<<"And the Born is:  "<<m_born<<std::endl;
      std::cout<<"mu:  "<<sqrt(m_mur2)<<std::endl;
      std::cout<<"AlphaQED():  "<<AlphaQED()<<std::endl;
