@@ -93,16 +93,16 @@ namespace Recola {
      
      if (default_scale==-1. || default_alphas==-1. || Recola_Interface::GetPDFDefault()==0){
       set_alphas_rcl(AlphaQCD(),sqrt(m_mur2),nlight);
-      cout << "use AlphaQCD" << AlphaQCD() << "   sqrt(m_mur2) " << sqrt(m_mur2) << "\n";
+      msg_Debugging() << "use AlphaQCD" << AlphaQCD() << "   sqrt(m_mur2) " << sqrt(m_mur2) << "\n";
      }
      else{	
       set_alphas_rcl(default_alphas,sqrt(default_scale),nlight);
-      cout << "use default_alphas\n";
+      msg_Debugging() << "use default_alphas\n";
      }
-     cout << "processes in Recola are being generated..." << endl;
+     msg_Out() << "processes in Recola are being generated..." << endl;
      generate_processes_rcl();
      Recola_Interface::setProcGenerationTrue();
-     cout << "process generation in Recola completed..." << endl;
+     msg_Out() << "process generation in Recola completed..." << endl;
      //get_alpha_rcl(alpha_mat);
      //cout << "alpha is: " << 1./alpha_mat << endl;	
      Recola_Interface::SetDefaultFlav(nlight);

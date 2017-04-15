@@ -97,10 +97,10 @@ Recola_Born::Recola_Born(const Process_Info& pi,
 	msg_Debugging() << "use default_alphas\n";
       }
       
-      cout << "processes in Recola are being generated..." << endl;
+      msg_Out() << "processes in Recola are being generated..." << endl;
       Recola_Interface::setProcGenerationTrue();
       generate_processes_rcl();
-      cout << "process generation in Recola completed..." << endl;  
+      msg_Out() << "process generation in Recola completed..." << endl;  
       get_alpha_rcl(alpha_mat);
       Recola_Interface::SetDefaultFlav(nlight);
     }
