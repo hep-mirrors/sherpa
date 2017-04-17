@@ -72,10 +72,10 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   } else {
     m_dalpha_if = m_dalpha;
   }
-  if (reader.Read(m_dalpha_ff, "DIPOLE_ALPHA_FF", 1.0)) {
-    msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha_ff<<" . "<<std::endl;
+  if (reader.Read(m_dalpha_ii, "DIPOLE_ALPHA_II", 1.0)) {
+    msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha_ii<<" . "<<std::endl;
   } else {
-    m_dalpha_ff = m_dalpha;
+    m_dalpha_ii = m_dalpha;
   }
   m_force_init=reader.Get("LOOP_ME_INIT",0);
   m_checkloopmap=reader.Get("CHECK_LOOP_MAP",0);
