@@ -1,457 +1,316 @@
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
-#include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Return_Value.H"
 
 using namespace AHADIC;
-using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
-  p_singletransitions(hadpars->GetSingleTransitions()), 
-  p_doubletransitions(hadpars->GetDoubleTransitions()),
-  p_as((Strong_Coupling*)s_model->GetScalarFunction("strong_cpl")),
-  m_transoffset(hadpars->Get(std::string("Offset_C->H"))), 
-  m_decayoffset(hadpars->Get(std::string("Offset_C->HH"))), 
-  m_minmass(2.1*hadpars->GetConstituents()->MinMass()),
-  m_kappa(hadpars->Get(std::string("MassExponent_C->H"))), 
-  m_lambda(hadpars->Get(std::string("WidthExponent_C->H"))), 
-  m_chi(hadpars->Get(std::string("MassExponent_C->HH"))), 
-  m_pt2max(sqr(hadpars->Get(string("ptmax")))),
-  m_pt2maxfac(sqr(hadpars->Get(std::string("ptmax_factor")))),
-  m_pt02(hadpars->Get(std::string("pt02"))), 
-  m_transitions(0), m_dtransitions(0), m_decays(0), 
-  m_forceddecays(0), m_lists(0), m_update(0),
-  m_ana(ana), m_out(false)
-{
-  if (m_ana) {
-    m_histograms[string("PT_HH")]  = new Histogram(0,0.,10.,100);
-    m_histograms[string("PT2_HH")] = new Histogram(0,0.,100.,2000);
-    m_histograms[string("MassTransition")]       = new Histogram(0,0.,8.,100);
-    m_histograms[string("HadronMassTransition")] = new Histogram(0,0.,8.,100);
-  }
-}
+Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
+  p_hadrons(hadrons)
+{ }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
-{
-  if (m_ana) {
-    Histogram * histo;
-    string name;
-    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) {
-      histo = hit->second;
-      name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
-      histo->Output(name);
-      delete histo;
-    }
-    m_histograms.clear();
-  }
+{ }
+
+void Soft_Cluster_Handler::Init() {
+  p_constituents       = hadpars->GetConstituents();
+  p_singletransitions  = hadpars->GetSingleTransitions(); 
+  p_doubletransitions  = hadpars->GetDoubleTransitions();
+  m_light              = hadpars->Get("decay_threshold");
+  m_piphoton_threshold = hadpars->Get("piphoton_threshold");
+  m_dipion_threshold   = hadpars->Get("dipion_threshold");
+  m_open_threshold     = (2.*p_constituents->MinMass()+
+			  hadpars->Get("open_threshold"));
+  m_ktselector.Init();
 }
 
-bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
+bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
+  FillFlavours(cluster);
+  // will assume clusters have to decay, if they are lighter than heaviest
+  // single (one-hadron) transition or lighter than heaviest decay into
+  // two hadrons
+  return (m_mass < p_doubletransitions->GetHeaviestMass(m_flavs) ||
+	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+}
+
+bool Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
-  // if (m_out) 
-  //   msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-  // 	     <<"++++++ "<<METHOD<<"("<<clin->size()<<" clusters):\n";
-  // checks for transitions to hadrons and attaches them, if neccessary
-  if (!CheckListForTreatment(clin) && m_out) {
-    // msg_Out()<<"++++++ No hadrons produced.  Just continue.\n"
-    // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  FillFlavours(cluster);
+  if (!force && CheckOutsideRange()) return false;
+  return Decay();
+}
+
+bool Soft_Cluster_Handler::CheckOutsideRange() {
+  // we may want to check if we want to take the full range of possible
+  // cluster decays into two hadrons
+  double mass_l   = p_singletransitions->GetLightestMass(m_flavs);
+  if (mass_l<0. && m_mass<p_doubletransitions->GetLightestMass(m_flavs))
     return false;
+  if (m_mass<=mass_l) {
+    Flavour had = p_singletransitions->GetLightestTransition(m_flavs);
+    msg_Error()<<"Problem spotted in "<<METHOD<<":\n"
+	       <<"   test mass = "<<m_mass<<" too light for lightest hadron, "
+	       <<had<<" with mass = "<<mass_l<<"\n"
+	       <<"   made from <"<<m_flavs.first<<", "<<m_flavs.second<<"> "
+	       <<" with masses "<<m_flavs.first.HadMass()<<" + "
+	       <<m_flavs.second.HadMass()<<".\n";
+    exit(1);
+    return true;
   }
-  // if (m_out) 
-  //   msg_Out()<<"++++++ Hadrons produced, will attach to blob.\n";
-  return AttachHadronsToBlob(clin,blob);
+  double mass_dec =
+    p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
+    p_doubletransitions->GetLightestMass(m_flavs) * (1.-m_light); 
+  if (m_mass>mass_dec) return true;
+  return false;
 }
 
-bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
-  // Iterate over all clusters and check number of hadrons from
-  // possible decays, administered by Checkcluster.
-  // Overall result 0 means no hadrons replacing clusters.
-  int count(0);
-  for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-    Cluster * cluster(*cit);
-    if (cluster==NULL || !cluster->Active()) continue;
-    count += CheckCluster(cluster);
+bool Soft_Cluster_Handler::RadiativeDecay(Cluster * cluster) {
+  FillFlavours(cluster);
+  if (m_mass>p_singletransitions->GetLightestMass(m_flavs) &&
+      RadiationWeight()>0.) {
+    m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
+    m_hads[1] = Flavour(kf_photon);
+    return FixKinematics();
   }
-  if (count==0) return false;
-  return true;
+  return false;
 }
 
-int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
-  // if (m_out) 
-  //   msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-  // 	     <<"++++++ "<<METHOD<<" for:\n"<<(*cluster);
-  cluster->clear();
-  Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
-  Flavour hadtrans(Flavour(kf_none));
-  double decayweight(DecayWeight(cluster,haddec1,haddec2));
-  double transweight(TransformWeight(cluster,hadtrans));
-  // if (m_out) 
-  //   msg_Out()<<"++++++ "<<METHOD<<"["<<cluster->Mass()<<" "
-  // 	     <<"("<<cluster->GetTrip()->m_flav<<" + "
-  // 	     <<cluster->GetAnti()->m_flav<<"] --> "
-  // 	     <<"(dec = "<<decayweight<<", "
-  // 	     <<"trans = "<<transweight<<").\n";
-  if (decayweight>0.) {
-    if (transweight>0.) {
-      double totweight(decayweight+transweight);
-      if (totweight*ran->Get()*0.9999999 < decayweight) {    
-	// competition between decay and transition - decay wins
-	cluster->push_back(haddec1);
-	cluster->push_back(haddec2);
-	m_decays      += 1;
-	// if (m_out) 
-	//   msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"\n\n";
-	return 2;
-      }
-      else {
-	// competition between decay and transition - transition wins
-	cluster->push_back(hadtrans);
-	cluster->push_back(Flavour(kf_photon));
-	// if (m_out) 
-	//   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"\n\n";
-	m_transitions += 1;
-	return 2;
-      }
-    }
-    else if (transweight<=0.) {
-      // regular decay, and no simple transition open - so no competition
-      cluster->push_back(haddec1);
-      cluster->push_back(haddec2);
-      // if (m_out) 
-      // 	msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-      // 		 <<"\n\n";
-      m_decays      += 1;
-      return 2;
-    }
+bool Soft_Cluster_Handler::TreatTwoGluons(Cluster * cluster) {
+  FillFlavours(cluster);
+  // below pi0 + gamma threshold
+  if (m_mass < m_piphoton_threshold) {
+    m_hads[0] = m_hads[1] = Flavour(kf_photon);
   }
-  else if (decayweight<0.) {
-    // transition - if neccessary enforced.
-    if (transweight<=0.) transweight = TransformWeight(cluster,hadtrans,true);
-    cluster->push_back(hadtrans);
-    cluster->push_back(Flavour(kf_photon));
-    // if (m_out) 
-    //   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
-    m_transitions += 1;
-    return 2;
+  // below two-pion threshold
+  else if (m_mass <  m_dipion_threshold) {
+    size_t i(2.*ran->Get());
+    m_hads[i]   = Flavour(kf_photon);
+    m_hads[1-i] = Flavour(kf_pi);
   }
-  // no decay and no transition: both weight equal 0.
-  // if (m_out) 
-  //   msg_Out()<<"++++++ no decay.\n"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
-  cluster->clear();
-  return 0;
-}
-
-bool Soft_Cluster_Handler::
-AttachHadronsToBlob(Cluster_List * clin,Blob * blob)
-{
-  Cluster_Iterator cit(clin->begin());
-  Particle * part;
-  Cluster  * cluster;
-  while (cit!=clin->end()) {
-    cluster = (*cit);
-    switch (cluster->size()) {
-    case 1:
-      msg_Error()<<"Error in "<<METHOD<<": -> size = 0!\n"; 
-      break;
-    case 2:
-      FixHHDecay(cluster,blob,(*cluster)[0],(*cluster)[1]);
-      delete cluster->GetTrip();
-      delete cluster->GetAnti();
-      delete cluster;
-      cit = clin->erase(cit);
-      break;      
-    default:
-      cit++;
-      break;
-    }
-  }
-  // if (m_out) 
-  //   msg_Out()<<"++++++ "<<METHOD<<" was successful:"
-  // 	     <<blob->CheckMomentumConservation()<<"\n"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-  return true;
-}
-
-double Soft_Cluster_Handler::
-TransformWeight(Cluster * cluster,Flavour & hadron,const bool & enforce)
-{
-  Flavour_Pair fpair;
-  fpair.first  = cluster->GetTrip()->m_flav;
-  fpair.second = cluster->GetAnti()->m_flav;
-
-  if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
-  if (p_singletransitions->GetTransitions()->find(fpair)==
-      p_singletransitions->GetTransitions()->end()) {
-    msg_Error()<<"Error in "<<METHOD<<" for cluster\n"
-	       <<(*cluster)
-	       <<"   illegal flavour combination.\n"
-	       <<"   Will return 0 and hope for the best.\n";
-    return 0.;
-  }
-
-  double MC(cluster->Mass());
-  double critM(p_singletransitions->GetLightestMass(fpair)*(1.-m_transoffset)+
-	       p_singletransitions->GetHeaviestMass(fpair)*m_transoffset);
-  if (!enforce && MC>critM) {
-    hadron = Flavour(kf_none);
-    return 0.;
-  }
-
-  Single_Transition_Miter stiter = 
-    p_singletransitions->GetTransitions()->find(fpair);
-  if (stiter==p_singletransitions->GetTransitions()->end()) {
-    hadron = Flavour(kf_none);
-    return -1.;
-  }
-  Single_Transition_List * stl(stiter->second);
-
-  double wt(0.),totweight(0.);
-  for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
-    if (siter->first.Mass()>MC) continue;
-    wt  = TransformKin(MC,siter->first,enforce);
-    wt *= siter->second;
-    totweight += wt;
-  }
-
-  double disc(totweight * 0.9999999999*ran->Get());
-  for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
-    if (siter->first.Mass()>MC) continue;
-    wt  = TransformKin(MC,siter->first,enforce);
-    wt *= siter->second;
-    disc -= wt;
-    if (disc<=0.) {
-      hadron = siter->first;
-      break;
-    }
-  }
-  return totweight/(16.*M_PI*MC)/137.;
-}
-
-double Soft_Cluster_Handler::
-TransformKin(const double MC,const Flavour & flav,const bool & enforce) {
-  double mass2(sqr(flav.HadMass()));
-  double width2(sqr(Max(flav.Width(),1.e-8)));
-  return
-    pow(sqr(mass2)/(sqr(MC*MC-mass2) + mass2*width2),m_kappa) * 
-    pow(mass2*width2/(sqr(MC*MC-mass2) + mass2*width2),1.+m_lambda);
-}
-
-
-
-double Soft_Cluster_Handler::
-DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
-{
-  Flavour_Pair flpair;
-  flpair.first  = cluster->GetTrip()->m_flav;
-  flpair.second = cluster->GetAnti()->m_flav;
-  Double_Transition_Miter dtliter = 
-    p_doubletransitions->GetTransitions()->find(flpair);
-  if (dtliter==p_doubletransitions->GetTransitions()->end()) {
-    msg_Error()<<"Error in "<<METHOD<<" for cluster\n"
-	       <<(*cluster)
-	       <<"   illegal flavour combination.\n"
-	       <<"   Will return 0 and hope for the best.\n";
-    return 0.;
-  }
-  double MC(cluster->Mass()),MC2(MC*MC);
-  if (MC<p_doubletransitions->GetLightestMass(flpair)) {
-    if (flpair.first.IsDiQuark() && flpair.second.IsDiQuark()) {
-      // cluster consists of two diquarks, but is too light for regular decay
-      // must therefore annihilate the beast.
-      if (Annihilation(cluster,had1,had2)) {
-	//msg_Out()<<"   --> "<<METHOD<<" cluster too light, annihilate.\n";
-	return 1.;
-      }
-      else {
-	msg_Error()<<"ERROR in "<<METHOD<<":\n"
-		   <<"   Found cluster that MUST annihilate, but couldn't.\n"
-		   <<"   Will return -1 and hope for the best.\n";
-	abort();
-	return -1;
-      }
+  // below two-pion threshold
+  else {
+    if (ran->Get()>0.5) {
+      m_hads[0] = m_hads[1] = Flavour(kf_pi);
     }
     else {
-      //msg_Out()<<"   --> "<<METHOD<<" cluster too light, return -1.\n";
-      had1 = had2 = Flavour(kf_none);
-      return -1.;
+      size_t i(2.*ran->Get());
+      m_hads[i]   = Flavour(kf_pi);
+      m_hads[1-i] = Flavour(kf_pi).Bar();
     }
   }
-  double critM(p_doubletransitions->GetLightestMass(flpair)*(1.-m_decayoffset)+
-	       p_doubletransitions->GetHeaviestMass(flpair)*m_decayoffset);
-  if (MC>critM &&
-      MC>cluster->GetTrip()->m_mass+cluster->GetAnti()->m_mass+m_minmass) {
-    had1 = had2 = Flavour(kf_none);
-    return 0.;
-  }
-  double totweight(0.),m1,m2,wt(1.),wfweight(0.),wfmax(0.);
-  double tm(cluster->GetTrip()->m_flav.HadMass());
-  double am(cluster->GetTrip()->m_flav.HadMass());
-  Flavour max1, max2;
-  for (Double_Transition_Siter decit=dtliter->second->begin();
-       decit!=dtliter->second->end();decit++) {
-    m1  = decit->first.first.HadMass();
-    m2  = decit->first.second.HadMass();
-    if (m1+m2<MC) {
-      wt = (sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * 
-	    pow(sqr(m1+m2)/MC2,m_chi) * decit->second);
-      if (wfweight>wfmax) {
-	max1  = decit->first.first;
-	max2  = decit->first.second;
-	wfmax = wfweight;
-      }
-      totweight += wt;
-    }
-  }
-  if (totweight<=0.) return 0.;
-  had1 = had2 = Flavour(kf_none); 
-  double disc(totweight * 0.9999999999*ran->Get());
-  for (Double_Transition_Siter decit=dtliter->second->begin();
-       decit!=dtliter->second->end();decit++) {
-    m1    = decit->first.first.HadMass();
-    m2    = decit->first.second.HadMass();
-    if (m1+m2<MC) {
-      wt = (sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * 
-	    pow(sqr(m1+m2)/MC2,m_chi) * decit->second);
-      disc -= wt;
-      if (disc<0.) {
-	had1 = decit->first.first;
-	had2 = decit->first.second;
-	break;
-      }
-    }
-  }
-  return totweight/(16.*M_PI*MC*MC*MC);
+  return FixKinematics();
+}
+  
+bool Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
+  p_cluster      = cluster;
+  m_mass2        = cluster->Momentum().Abs2();
+  m_mass         = sqrt(m_mass2);
+  m_flavs.first  = (*cluster)[0]->Flavour();
+  m_flavs.second = (*cluster)[1]->Flavour();
 }
 
+bool Soft_Cluster_Handler::Decay() {
+  m_hads[0] = m_hads[1] = Flavour(kf_none);
+  double decweight(DecayWeight());
+  if (decweight>0.) return FixKinematics();
+  m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
+  double radweight = RadiationWeight();
+  if (radweight>0.) return FixKinematics();
+  return false;
+}
 
-bool Soft_Cluster_Handler::
-Annihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
-  int kfc1(int(cluster->GetTrip()->m_flav.Kfcode())); 
-  int kfc2(int(cluster->GetAnti()->m_flav.Kfcode())); 
-  kf_code kfc11(kfc1/1000),kfc12((kfc1-kfc11*1000)/100);
-  kf_code kfc21(kfc2/1000),kfc22((kfc2-kfc21*1000)/100);
-  Flavour fl1(kfc11), fl2(kfc12), fl3(kfc21), fl4(kfc22);
-  //msg_Out()<<METHOD<<"("<<fl1<<", "<<fl2<<") & ("<<fl3<<", "<<fl4<<").\n";
-  fl1 = fl1.Bar();
-  fl2 = fl2.Bar();
-  bool order(ran->Get()>0.5?true:false);
-  Proto_Particle *pp1(new Proto_Particle(fl1,cluster->GetTrip()->m_mom/2.,'l'));
-  Proto_Particle *pp2(new Proto_Particle(fl2,cluster->GetAnti()->m_mom/2.,'l'));
-  Proto_Particle *pp3(new Proto_Particle(fl3,(order?
-					      cluster->GetTrip()->m_mom/2.:
-					      cluster->GetAnti()->m_mom/2.),
-					 'l'));
-  Proto_Particle *pp4(new Proto_Particle(fl4,(order?
-					      cluster->GetAnti()->m_mom/2.:
-					      cluster->GetTrip()->m_mom/2.),
-					 'l'));
-  Cluster cluster1((order?pp3:pp4),pp1), cluster2((order?pp4:pp3),pp2);
-  double mass(cluster->Mass());
-  //msg_Out()<<cluster1<<cluster2;
-  double wt1(TransformWeight(&cluster1,had1,true));
-  double wt2(TransformWeight(&cluster2,had2,true));
-  //msg_Out()<<"  --> "<<had1<<" + "<<had2<<".\n";
-  if (had1.Mass()+had2.Mass()>mass) return false;
+bool Soft_Cluster_Handler::FixKinematics() {
+  Vec4D mom1((*p_cluster)[0]->Momentum()), mom2((*p_cluster)[1]->Momentum());
+  Poincare boost = Poincare(mom1+mom2);
+  boost.Boost(mom1);
+  Poincare rotat = Poincare(mom1,s_AxisP); 
+
+  double M2(m_mass*m_mass);
+  double m12(sqr(m_hads[0].Mass())),m22(sqr(m_hads[1].Mass()));
+  double E1((M2+m12-m22)/(2.*m_mass)), p12(sqr(E1)-m12);
+  double ktmax = sqrt(p12);
+  double kt    = m_ktselector(ktmax), kt2 = kt*kt;
+  double pl    = sqrt(E1*E1-m12-kt2);
+  double phi   = 2.*M_PI*ran->Get();
+  m_moms[0] = Vec4D(E1,kt*cos(phi),kt*sin(phi),pl);
+  m_moms[1] = Vec4D(m_mass-E1,-kt*cos(phi),-kt*sin(phi),-pl);
+  for (size_t i=0;i<2;i++) {
+    rotat.RotateBack(m_moms[i]);
+    boost.BoostBack(m_moms[i]);
+    Proto_Particle * part = new Proto_Particle(m_hads[i],m_moms[i],false);
+    p_hadrons->push_back(part);
+  }
   return true;
 }
 
-
-void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
-				      const Flavour had1,const Flavour had2,
-				      const bool & constrained)
-{
-  double M       = cluster->Mass(), M2 = M*M;
-  double m12     = sqr(had1.HadMass()), m22 = sqr(had2.HadMass());
-
-  cluster->BoostInCMSAndRotateOnZ();
-
-  double E1((M2+m12-m22)/(2.*M)), pl2(sqr(E1)-m12);
-  bool isbeam(false);
-  double stheta, pt2;
-  double masscor(m_pt02/Max(m_pt02,m12) * m_pt02/Max(m_pt02,m22));
-  do { 
-    stheta = 1.-2.*ran->Get(); 
-    pt2    = pl2*sqr(stheta);
-  } while (pt2>m_pt2max*m_pt2maxfac*masscor || 
-	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
-  double pt     = sqrt(pt2);
-  int sign      = cluster->GetTrip()->m_mom[3]<0?-1:1;
-  double pl1    = sign*sqrt(sqr(E1)-sqr(pt)-m12);
-  double cosphi = cos(2.*M_PI*ran->Get()), sinphi = sqrt(1.-cosphi*cosphi);
-  Vec4D  p1     = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
-  Vec4D  p2     = cluster->Momentum()-p1;
-
-  if (p1[0]<0. || p2[0]<0.) throw Return_Value::Retry_Event;
-
-  // if (cluster->GetTrip()->m_flav==Flavour(kf_b) ||
-  //     cluster->GetAnti()->m_flav==Flavour(kf_b).Bar()) {
-  //   msg_Out()<<"\n\n\n"
-  //            <<"======================================================\n"
-  // 	     <<METHOD<<" for M = "<<M<<", sign = "<<sign<<", pt = "<<pt<<":\n"
-  // 	     <<(*cluster)
-  // 	     <<"   "<<cluster->Momentum()<<" --> \n"
-  // 	     <<"   "<<p1<<" ("<<had1<<") + "<<p2<<" ("<<had2<<")\n."
-  // 	     <<"======================================================\n";
-  // }
-  cluster->RotateAndBoostBack(p1);
-  cluster->RotateAndBoostBack(p2);
-  cluster->RotateAndBoostBack();
-
-  Particle * left(new Particle(-1,had1,p1));
-  left->SetNumber();
-  left->SetInfo('P');
-  left->SetFinalMass(had1.HadMass());
-  Particle * right(new Particle(-1,had2,p2));
-  right->SetNumber();
-  right->SetInfo('P');
-  right->SetFinalMass(had2.HadMass());
-  control::s_AHAparticles+=2;
-
-
-  if (blob!=NULL) {
-    blob->AddToOutParticles(left);
-    blob->AddToOutParticles(right);
+double Soft_Cluster_Handler::RadiationWeight() {
+  // no radiation for diquark-diquark clusters -- must annihilate
+  if (m_flavs.first.IsDiQuark() && m_flavs.second.IsDiQuark())
+    return Annihilation();
+  Single_Transition_List * radiations = (*p_singletransitions)[m_flavs];
+  // this should ** NEVER ** happen ..... unless stable BSM coloured particles
+  if (radiations==NULL) return 0.;
+  m_hads[0] = (--radiations->end())->first;
+  // everything is fine - get on with your life and just decay.
+  map<Flavour,double> weights;
+  double totweight(0.), weight;
+  for (Single_Transition_List::reverse_iterator sit=radiations->rbegin();
+       sit!=radiations->rend();sit++) {
+    double m2(sit->first.Mass());
+    if (m2>m_mass) break;
+    // wave-function overlap * phase-space (units of 1 in total)
+    weight     = sit->second * PhaseSpace(m2,0.);
+    totweight += weights[sit->first] = weight;
   }
-  //if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-  //  msg_Out()<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-  // 	     <<"Cluster decay (pt + "<<pt<<") for cluster \n"<<(*cluster)<<"\n"
-  // 	     <<"++> "<<left->Momentum()<<" + "<<right->Momentum()<<" for "
-  // 	     <<left->Flav()<<" + "<<right->Flav()<<"\n"
-  // 	     <<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-  //}
-  if (m_ana) {
-    Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
-    histo->Insert(pt);
-    Histogram* histo2((m_histograms.find(std::string("PT2_HH")))->second);
-    histo2->Insert(pt*pt);
-  }
+  double disc = totweight * ran->Get();
+  map<Flavour,double>::iterator wit=weights.begin();
+  do {
+    disc -= wit->second;
+    if (disc<=1.e-12) break;
+    wit++;
+  } while (wit!=weights.end());
+  if (wit!=weights.end()) m_hads[0] = wit->first;
+  return totweight;
 }
 
-Vec4D Soft_Cluster_Handler::SumMomentum(Cluster_List * clin) {
-  Cluster_Iterator cit;
-  Vec4D listmom(0.,0.,0.,0.);
-  for (cit=clin->begin();cit!=clin->end();cit++) listmom += (*cit)->Momentum(); 
-  return listmom;
+double Soft_Cluster_Handler::DecayWeight() {
+  Double_Transition_List * decays = (*p_doubletransitions)[m_flavs];
+  // this should ** NEVER ** happen ..... unless stable BSM coloured particles
+  if (decays==NULL) {
+    msg_Error()<<"No decays found for "
+	       <<m_flavs.first<<"/"<<m_flavs.second<<".\n";
+    return 0.;
+  }
+  // lightest possible pair of hadrons.
+  m_hads[0] = (--decays->end())->first.first;
+  m_hads[1] = (--decays->end())->first.second;
+
+  // last resort: if cluster is light, but consists of two diquarks -
+  // may have to "cut open" the diquarks and form two mesons out of
+  // two quarks and two anti-quarks.
+  if (m_hads[0].Mass()+m_hads[1].Mass()>m_mass) return Annihilation();
+
+  // everything is fine - get on with your life and just decay.
+  map<Flavour_Pair,double> weights;
+  double totweight(0.), weight;
+  for (Double_Transition_List::reverse_iterator dit=decays->rbegin();
+       dit!=decays->rend();dit++) {
+    double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
+    if (m2+m3>m_mass) break;
+    // wave-function overlap * phase-space (units of 1 in total)
+    weight     = dit->second * PhaseSpace(m2,m3);
+    totweight += weights[dit->first] = weight;
+  }
+
+  double disc = totweight * ran->Get();
+  map<Flavour_Pair,double>::iterator wit=weights.begin();
+  do {
+    disc -= wit->second;
+    if (disc<=1.e-12) break;
+    wit++;
+  } while (wit!=weights.end());
+  if (wit!=weights.end()) {
+    m_hads[0] = wit->first.first;
+    m_hads[1] = wit->first.second;
+  }
+  return totweight;
 }
 
+double Soft_Cluster_Handler::Annihilation() {
+  Flavour_Pair one, two;
+  Flavour one1, one2, two1, two2;
+  if (!(DiQuarkToQuarks(m_flavs.first,one1,one2) &&
+	DiQuarkToQuarks(m_flavs.second,two1,two2))) return 0.;
+  bool disc(ran->Get()>0.5);
+  one.first  = disc?two1:two2;
+  one.second = one1;
+  two.first  = disc?two2:two1;
+  two.second = one2;
+  if (DefineHadronsInAnnihilation(one,two)) return true;
+  msg_Error()<<METHOD<<" yields error - no annihilation defined.\n"
+	     <<"   Will return false and hope for the best.\n";
+  return false;
+}
+
+bool Soft_Cluster_Handler::
+DiQuarkToQuarks(const Flavour & di,Flavour & q1,Flavour & q2) {
+  if (!di.IsDiQuark()) return false;
+  int kfdi(int(di.Kfcode())), kf1(kfdi/1000), kf2((kfdi-kf1*1000)/100);
+  q1 = Flavour(kf1);
+  q2 = Flavour(kf2);
+  if (di.IsAnti()) { q1 = q1.Bar(); q2 = q2.Bar(); }
+  return true;
+}
+
+double Soft_Cluster_Handler::
+DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
+  Single_Transition_List * ones = (*p_singletransitions)[one];
+  Single_Transition_List * twos = (*p_singletransitions)[two];
+  map<Flavour_Pair,double> weights;
+  double m2, m3, totweight(0.), weight;
+  for (Single_Transition_List::reverse_iterator oit=ones->rbegin();
+       oit!=ones->rend();oit++) {
+    m2 = oit->first.Mass();
+    if (m2>m_mass) break;
+    for (Single_Transition_List::reverse_iterator tit=twos->rbegin();
+       tit!=twos->rend();tit++) {
+      m3 = tit->first.Mass();
+      if (m2+m3>m_mass) break;
+      // wave-function overlap * phase-space (units of 1 in total)
+      weight     = oit->second * tit->second * PhaseSpace(m2,m3);
+      Flavour_Pair flpair;
+      flpair.first = oit->first; flpair.second = tit->first;
+      totweight += weights[flpair] = weight;
+    }
+  }
+  double disc = totweight*ran->Get()*0.9999999;
+  map<Flavour_Pair,double>::iterator wit=weights.begin();
+  while (disc>0. && wit!=weights.end()) {
+    disc-=wit->second;
+    wit++;
+  }
+  // extra safety net
+  if (wit==weights.end()) wit = weights.begin();
+  m_hads[0] = wit->first.first;
+  m_hads[1] = wit->first.second;
+  return totweight;
+}
+  
+double Soft_Cluster_Handler::PhaseSpace(const double & m2,const double & m3) {
+  double m22(m2*m2),m32(m3*m3);
+  return sqrt(sqr(m_mass2-m22-m32)-4.*m22*m32)/(8.*M_PI*m_mass2);
+  // extra weight to possible steer away from phase space only ... may give
+  // preference to higher or lower mass pairs
+  // * pow((m2+m3)/m_mass,m_chi);
+}
+
+double Soft_Cluster_Handler::
+MinSingleMass(const Flavour & fl1,const Flavour & fl2) {
+  m_flavs.first  = fl1;
+  m_flavs.second = fl2;
+  return p_singletransitions->GetLightestMass(m_flavs);
+}
+
+ATOOLS::Flavour Soft_Cluster_Handler::
+LowestTransition(const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2) {
+  m_flavs.first  = fl1;
+  m_flavs.second = fl2;
+  return p_singletransitions->GetLightestTransition(m_flavs);
+}
+
+double Soft_Cluster_Handler::
+MinDoubleMass(const Flavour & fl1,const Flavour & fl2) {
+  m_flavs.first  = fl1;
+  m_flavs.second = fl2;
+  return p_doubletransitions->GetLightestMass(m_flavs);
+}
+
+void Soft_Cluster_Handler::PrintHadrons() {
+  for (list<Proto_Particle *>::iterator hit=p_hadrons->begin();
+       hit!=p_hadrons->end();hit++) {
+    Proto_Particle * hadron = (*hit);
+  }
+}

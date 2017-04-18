@@ -30,9 +30,10 @@ namespace AHADIC {
 
   class Constituents {
     double m_minmass, m_maxmass;
+    ATOOLS::Flavour m_lightest;
   public:
     FlavCCMap CCMap;
-    Constituents(bool=false);
+    Constituents(bool=true);
     ~Constituents();
 
     double Mass(const ATOOLS::Flavour & flav);
@@ -41,6 +42,7 @@ namespace AHADIC {
     double TotWeight(const ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);
 
+    const ATOOLS::Flavour & LightestConstituent() const { return m_lightest; }
     void   PrintConstituents();
   };
 
