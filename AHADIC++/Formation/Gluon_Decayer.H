@@ -1,38 +1,41 @@
-#ifndef AHADIC_Formations_Gluon_Decayer_H
-#define AHADIC_Formations_Gluon_Decayer_H
+#ifndef AHADIC_Formation_Gluon_Decayer_H
+#define AHADIC_Formation_Gluon_Decayer_H
 
-#include "AHADIC++/Formation/Gluon_Splitter.H"
-#include "AHADIC++/Formation/Trivial_Splitter.H"
-#include "AHADIC++/Tools/Singlet_Tools.H"
-#include "AHADIC++/Tools/Soft_Cluster_Handler.H"
-#include "AHADIC++/Tools/Proto_Particle.H"
-#include <list>
+#include "AHADIC++/Tools/Gluon_Splitter.H"
+#include "AHADIC++/Tools/Dipole.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Histogram.H"
+#include <map>
 
 namespace AHADIC {
-  class Gluon_Decayer : public Singlet_Tools {
+  class Gluon_Decayer {
   private:
-    std::list<Cluster *> * p_cluster_list; 
-    Soft_Cluster_Handler * p_softclusters;
-    Gluon_Splitter   m_splitter;
-    Trivial_Splitter m_breaker;
-    
-    Proto_Particle * p_part1, * p_part2;
+    Gluon_Splitter  * p_gsplitter;
+    double          m_pt2max, m_pt2max_factor, m_pt02;
+    FlavDecayMap    m_options;
+    DipoleList      m_dipoles;
 
-    bool             SplitGluonRing();
-    Proto_Particle * FirstGluon();
+    bool                                      m_analyse;
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    bool Trivial(Proto_Particle * part1,Proto_Particle * part2);
-    int  Step(Proto_Particle * part1,Proto_Particle * part2,
-	      Proto_Particle * part3=NULL);
-    bool LastStep();
+    void    Init();
+    bool    FillDipoleList(Proto_Particle_List * plin=NULL);
+    void    UpdatePPList(Proto_Particle_List * plin=NULL);
+    void    PrintDipoleList();
+
+    bool    DecayDipoles();
+    DipIter SelectDipole();
+    int     Rescue(DipIter & dip);
+    void    AfterSplit(DipIter dip);
+    bool    MergeDipoles(DipIter & dip1,DipIter & dip2);
+    void    SplitIt(DipIter dip,ATOOLS::Vec4D=ATOOLS::Vec4D(0.,0.,0.,0.));
+    double  PT2Max(Dipole * dip) const;
+
+    long int m_tot, m_s, m_u, m_d, m_di0, m_di1;
   public:
-    Gluon_Decayer(std::list<Cluster *> * cluster_list,
-		  Soft_Cluster_Handler * softclusters);
+    Gluon_Decayer(bool ana=false);
     ~Gluon_Decayer();
-    void Init();
-    
-    bool operator()(Singlet * singlet);
+    bool DecayList(Proto_Particle_List * plin=NULL);
   };
 }
-
 #endif
