@@ -1,6 +1,7 @@
 #ifndef AHADIC_Formation_Trivial_Splitter_H
 #define AHADIC_Formation_Trivial_Splitter_H
 
+#include "AHADIC++/Tools/Singlet_Tools.H"
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
 #include "AHADIC++/Tools/Z_Selector.H"
@@ -46,8 +47,9 @@ namespace AHADIC {
     ~Trivial_Splitter() {}  
     void Init();
     
-    bool operator()(std::list<Proto_Particle *> * singlet);
+    bool operator()(Singlet * singlet);
     bool operator()(Proto_Particle * part1, Proto_Particle * part2);
+    inline const double & MinMass() const { return m_minmass; }
   };
 }
 

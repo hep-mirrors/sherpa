@@ -25,6 +25,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   p_singlet = singlet;
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
     msg_Error()<<"Couldn't split the gluon ring.\n"<<(*singlet)<<"\n";
+    exit(1);
     return false;
   }
   if (p_singlet->size()==2) {
@@ -85,7 +86,7 @@ bool Gluon_Decayer::SplitGluonRing() {
 }
 
 Proto_Particle * Gluon_Decayer::FirstGluon() {
-  double minm2(1.e12), m2;
+  double minm2(1.e12), m2thres(sqr(2.*m_breaker.MinMass())), m2;
   list<Proto_Particle *>::iterator ppiter1, ppiter2, winner;
   for (list<Proto_Particle *>::iterator ppiter1=p_singlet->begin();
        ppiter1!=p_singlet->end();ppiter1++) {
@@ -94,8 +95,8 @@ Proto_Particle * Gluon_Decayer::FirstGluon() {
     ppiter2++;
     if (ppiter2==p_singlet->end()) ppiter2=p_singlet->begin();
     Proto_Particle * part2(*ppiter2);
-    m2 = (part1->Momentum()+part2->Momentum()).Abs2(); 
-    if (m2<minm2) {
+    m2 = (part1->Momentum()+part2->Momentum()).Abs2();
+    if (m2<minm2 && m2>m2thres) {
       minm2  = m2;
       winner = ppiter1;
     }

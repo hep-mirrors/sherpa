@@ -82,9 +82,16 @@ bool Singlet_Checker::operator()() {
     else lsit++;
   }
   // invoking the rescue system, if neccessary.  
-  if (m_badones.size()>0 && !DealWithProblematicSinglets()) {
-    msg_Error()<<METHOD<<" throw error - no rescue possible.\n";
-    return false;
+  if (m_badones.size()>0) {
+    //msg_Out()<<METHOD<<"  --> "<<m_badones.size()<<" problems.\n";
+    //for (list<list<Singlet *>::iterator>::iterator sit=m_badones.begin();
+    //	 sit!=m_badones.end();sit++)
+    //  msg_Out()<<(***sit)<<"\n";
+    //msg_Out()<<"---------------------------------------------------\n";
+    if (!DealWithProblematicSinglets()) {
+      msg_Error()<<METHOD<<" throw error - no rescue possible.\n";
+      return false;
+    }
   }
   return true;
 }
@@ -155,8 +162,8 @@ void Singlet_Checker::SortProblematicSinglets() {
 	bit = m_badones.erase(bit);
 	continue;
       }
-      bit++;
     }
+    bit++;
   }
 }
 

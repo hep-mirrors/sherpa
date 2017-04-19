@@ -82,12 +82,16 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 }  
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
+  //msg_Out()<<"********************************************************\n"
+  //	   <<"********************************************************\n"
+  //	   <<"********************************************************\n"
+  //	   <<"In "<<METHOD<<" for \n"<<(*blob)<<"\n";
   Reset();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
     Reset();
-    msg_Tracking()<<"ERROR in "<<METHOD<<" (formation):"<<std::endl
-		  <<"   Will retry event."<<std::endl;
+    msg_Out()<<"ERROR in "<<METHOD<<" (formation):"<<std::endl
+	     <<"   Will retry event."<<std::endl;
     return Return_Value::Retry_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
@@ -101,6 +105,10 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 	       <<(*blob)<<".\n";
     return Return_Value::Retry_Event;
   }
+  //msg_Out()<<"Success.\n"
+  //	   <<"********************************************************\n"
+  //	   <<"********************************************************\n"
+  //	   <<"********************************************************\n";
   return Return_Value::Success;
 }
   

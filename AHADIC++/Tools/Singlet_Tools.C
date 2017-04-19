@@ -6,12 +6,9 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet::Singlet() {
-  //msg_Out()<<METHOD<<"("<<this<<")\n";
-}
+Singlet::Singlet() { }
 
 Singlet::~Singlet() {
-  //msg_Out()<<METHOD<<"("<<this<<", size = "<<size()<<").\n";
   while (size()>0) {
     delete front();
     pop_front();
@@ -31,7 +28,6 @@ bool Singlet::ReorderCriterion(Proto_Particle * first) {
 
 void Singlet::Reorder(Proto_Particle * first) {
   // rotating the singlet until a quark or anti-diquark is fronting it
-  //msg_Out()<<METHOD<<"("<<first<<", "<<front()<<").\n";
   while (ReorderCriterion(first)) {
     push_back(front());
     pop_front();

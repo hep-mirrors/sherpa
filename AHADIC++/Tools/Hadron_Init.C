@@ -389,11 +389,11 @@ void Hadron_Init::Init() {
 				      "Lambda(1405)","\\Lambda(1405)");
   s_kftable[103122]=new Particle_Info(103122,1.67,0.06,0,1,1,0,
 				      "Lambda(1670)","\\Lambda(1670)");
-  s_kftable[103112]=new Particle_Info(103112,1.75,0.09,-3,1,1,0,
+  s_kftable[103112]=new Particle_Info(103112,1.62,0.09,-3,1,1,0,
 				      "Sigma(1620)-","\\Sigma-(1620)");
-  s_kftable[103212]=new Particle_Info(103212,1.75,0.09,0,1,1,0,
+  s_kftable[103212]=new Particle_Info(103212,1.62,0.09,0,1,1,0,
 				      "Sigma(1620)","\\Sigma(1620)");
-  s_kftable[103222]=new Particle_Info(103222,1.75,0.09,3,1,1,0,
+  s_kftable[103222]=new Particle_Info(103222,1.62,0.09,3,1,1,0,
 				      "Sigma(1620)+","\\Sigma^{+}(1620)");
   s_kftable[103312]=new Particle_Info(103312,1.75,0.09,-3,1,1,0,
 				      "Xi(1750)","\\Xi^{-}(1750)");
@@ -443,9 +443,9 @@ void Hadron_Init::Init() {
 				      "Lambda(1520)","\\Lambda(1520)");
   s_kftable[102144]=new Particle_Info(104214,2.625,0.002,3,3,1,0,
 				  "Lambda(c)(2625)+","\\Lambda_{c}^{+}(2625)");
-  s_kftable[104312]=new Particle_Info(104312,2.815,0.002,0,3,1,0,
+  s_kftable[104314]=new Particle_Info(104314,2.815,0.002,0,3,1,0,
 				      "Xi(c)(2815)","\\Xi_{c}(2815)");
-  s_kftable[104322]=new Particle_Info(104322,2.815,0.002,3,3,1,0,
+  s_kftable[104324]=new Particle_Info(104324,2.815,0.002,3,3,1,0,
 				      "Xi(c)(2815)+","\\Xi_{c}^{+}(2815)");
   s_kftable[102154]=new Particle_Info(102154,5.91,0.002,0,3,1,0,
 				      "Lambda(b)(5910)","\\Lambda_{b}(5910)");

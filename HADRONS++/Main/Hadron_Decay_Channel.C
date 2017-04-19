@@ -164,11 +164,13 @@ void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)
   double Im = m_cp_asymmetry_S/(m_cp_asymmetry_C+1.0);
   double Re = sqrt(Abs2-sqr(Im));
   m_cp_asymmetry_lambda = Complex(Re, Im);
+  //m_always_integrate=true;
 }
 
-void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
-                                             Data_Reader           & reader,
-                                             GeneralModel const    & model_for_ps)
+void Hadron_Decay_Channel::
+ProcessPhasespace(vector<vector<string> > ps_svv,
+		  Data_Reader           & reader,
+		  GeneralModel const    & model_for_ps)
 {
   int nr_of_channels=0;
   for (size_t i=0;i<ps_svv.size();i++) {

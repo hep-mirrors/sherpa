@@ -34,7 +34,7 @@ bool Trivial_Splitter::operator()(Proto_Particle * part1,
 }
 
 
-bool Trivial_Splitter::operator()(list<Proto_Particle *> * singlet) {
+bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_singlet = singlet;
   list<Proto_Particle *>::iterator ppit1(p_singlet->begin()), ppit2(ppit1);
   ppit2++;
@@ -42,7 +42,6 @@ bool Trivial_Splitter::operator()(list<Proto_Particle *> * singlet) {
   p_part2    = (*ppit2);
   m_spectmom = p_singlet->back()->Momentum();
   if (!InitKinematics(false)) return Rescue();
-  
   do {
     SelectFlavour();
   } while (!FixTrialKinematics() || !CheckKinematics());
@@ -58,7 +57,7 @@ bool Trivial_Splitter::operator()(list<Proto_Particle *> * singlet) {
 bool Trivial_Splitter::InitKinematics(bool rescue) {
   m_Q2       = (p_part1->Momentum()+p_part2->Momentum()).Abs2();
   m_E        = sqrt(m_Q2)/2.;
-  if (m_E<2.*m_minmass) return false;
+  if (m_E<m_minmass) return false;
   Vec4D mom1(p_part1->Momentum()), mom2(p_part2->Momentum());
   m_boost    = Poincare(mom1+mom2);
   m_boost.Boost(mom1);
@@ -93,8 +92,7 @@ bool Trivial_Splitter::ConstructMomenta() {
   m_q1mom  = m_E*(     m_z*s_AxisP + (1.-m_z)*(1.-m_beta)*s_AxisM)-m_ktvec;
   m_q2mom  = m_E*((1.-m_z)*s_AxisP +      m_z*(1.-m_beta)*s_AxisM)+m_ktvec;
   m_glumom = m_E*m_beta*s_AxisM;
-  // check if (first quark--gluon) pairing is heavy enough.
-  return (sqrt((m_q1mom+m_glumom).Abs()) > m_popped_mass + 2.*m_minmass);
+  return true;
 }  
 
 bool Trivial_Splitter::FixTrialKinematics() {
@@ -116,9 +114,9 @@ bool Trivial_Splitter::CheckKinematics() {
 }
 
 bool Trivial_Splitter::Rescue() {
-  // in this case, the invariant mass is of the two gluons is below
+  // in this case, the invariant mass of the two gluons is below
   // the minimal mass of the lightest quark pair
-  if (m_E<m_minmass) return false;
+  if (m_E<2.*m_minmass) return false;
   SelectFlavour();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
