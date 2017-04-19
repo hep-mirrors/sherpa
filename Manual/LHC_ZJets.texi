@@ -42,7 +42,7 @@ to be used in the process setup, defining the multiplicity of the MC@@NLO
 subprocesses, the maximal number of extra jets, and the merging cut.
 @item The @code{LOOPGEN} tag is used to name the provider of the one-loop
 matrix elements for the respective multiplicities. For complicated processes
-this needs external one-loop programs like BlackHat, GoSam or OpenLoops.
+this needs external one-loop programs like BlackHat, GoSam, OpenLoops or Recola.
 @item tau leptons are set massive in order to exclude them from the massless
 lepton container (@code{90}).
 @item As both Comix and Amegic are specified as matrix element generators
