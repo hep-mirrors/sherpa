@@ -136,7 +136,6 @@ bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void HEFT::FixEWParameters()
 {
-  double alphaQED0;
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
   string yukscheme=p_dataread->GetValue<string>("YUKAWA_MASSES","Running");
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
