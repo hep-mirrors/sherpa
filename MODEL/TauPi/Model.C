@@ -116,7 +116,7 @@ bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   FixEWParameters();  
   FixCKM();
-  SetAlphaQCD(isr);
+  SetAlphaQCD(isr,p_dataread->GetValue<double>("ALPHAS(MZ)",0.118));
   SetRunningFermionMasses();
   p_constants->insert(make_pair(string("F_PI"),
                                 p_dataread->GetValue<double>("F_PI",0.0924)));
@@ -143,7 +143,6 @@ bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void Standard_Model_TauPi::FixEWParameters()
 {
-  double alphaQED0;
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
   string yukscheme=p_dataread->GetValue<string>("YUKAWA_MASSES","Running");
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
@@ -156,10 +155,7 @@ void Standard_Model_TauPi::FixEWParameters()
   switch (ewscheme) {
   case 0:
     // all SM parameters given explicitly
-    alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    aqed=new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault(alphaQED0=(*aqed)(p_dataread->GetValue<double>
-				       ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
+    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
     csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23);
     ccos2thetaW=1.-csin2thetaW;
     cvev=p_dataread->GetValue<double>("VEV",246.);
@@ -167,10 +163,21 @@ void Standard_Model_TauPi::FixEWParameters()
     break;
   case 1: {
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
-    alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    aqed=new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault(alphaQED0=(*aqed)(p_dataread->GetValue<double>
-				       ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
+    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
+    ccos2thetaW=sqr(MW/MZ);
+    csin2thetaW=1.-ccos2thetaW;
+    cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
+    if (widthscheme=="CMS") {
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      ccos2thetaW=muW2/muZ2;
+      csin2thetaW=1.-ccos2thetaW;
+      cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->Default()));
+    }
+    break;
+  }
+  case 2: {
+    // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
+    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(MZ)",128.802));
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -183,15 +190,12 @@ void Standard_Model_TauPi::FixEWParameters()
     break;
   }
   case 3: {
-    //gmu scheme
+    //gmu scheme -- inputs GF, M_W, M_Z, M_H
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
     cvev=1./(pow(2.,0.25)*sqrt(GF));
-    alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    aqed=new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
-    alphaQED0=aqed->Default();
+    SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     if (widthscheme=="CMS") {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
       ccos2thetaW=muW2/muZ2;
@@ -203,21 +207,15 @@ void Standard_Model_TauPi::FixEWParameters()
   }
   case 4: {
     // FeynRules scheme, inputs: alphaQED, GF, M_Z, M_H
+    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976));
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
-    alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    aqed=new Running_AlphaQED(alphaQED0);
-    // reset for p_constants below
-    alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(default)",132.50698);
-    aqed->SetDefault(alphaQED0);
-
-    MW = sqrt(sqr(MZ)/2. + sqrt(pow(MZ,4)/4. - (alphaQED0*M_PI*sqr(MZ))/(GF*sqrt(2.))));
+    MW = sqrt(sqr(MZ)/2. + sqrt(pow(MZ,4)/4. - (aqed->Default()*M_PI*sqr(MZ))/(GF*sqrt(2.))));
     Flavour(kf_Wplus).SetMass(MW);
-    
+
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
     cvev=1./(pow(2.,0.25)*sqrt(GF));
 
-    aqed=new Running_AlphaQED(alphaQED0);
     if (widthscheme=="CMS") {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
       ccos2thetaW=muW2/muZ2;
@@ -231,8 +229,6 @@ void Standard_Model_TauPi::FixEWParameters()
     THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
     break;
   }
-  p_functions->insert(make_pair(string("alpha_QED"),aqed));
-  p_constants->insert(make_pair(string("alpha_QED"),alphaQED0));
   p_complexconstants->insert(make_pair(string("ccos2_thetaW"),ccos2thetaW));
   p_complexconstants->insert(make_pair(string("csin2_thetaW"),csin2thetaW));
   p_complexconstants->insert(make_pair(string("cvev"), cvev));

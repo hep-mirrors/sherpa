@@ -93,7 +93,7 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
   }
 }
 
-// to be called in ModelInit
+// To be called in ModelInit, default value will be set to aqed_def argument
 void Model_Base::SetAlphaQED(const double& aqed_def){
   double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
   aqed=new Running_AlphaQED(alphaQED0);
@@ -102,21 +102,30 @@ void Model_Base::SetAlphaQED(const double& aqed_def){
   p_constants->insert(make_pair(std::string("alpha_QED"),aqed_def));
 }
  
-void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr)
+// To be called in ModelInit, default will be set to AlphaQED at scale2
+void Model_Base::SetAlphaQEDByScale(const double& scale2){
+  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);;
+  aqed=new Running_AlphaQED(alphaQED0);
+  aqed->SetDefault((*aqed)(scale2));
+  p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(std::string("alpha_QED"),aqed->Default()));
+}
+
+// To be called in ModelInit, alphaS argument is alphaS input at MZ
+void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS)
 {
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
   int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
-  double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
   double MZ2            = sqr(Flavour(kf_Z).Mass());
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
   p_constants->insert(make_pair(string("alpha_S"),alphaS));
   p_functions->insert(make_pair(string("alpha_S"),as));
   double Q2aS      = p_dataread->GetValue<double>("Q2_AS",1.);
-  string asf  = p_dataread->GetValue<string>("As_Form",string("smooth"));
+  string asf  = p_dataread->GetValue<string>("AS_FORM",string("Smooth"));
   asform::code as_form(asform::smooth);
-  if (asf==string("constant"))    as_form = asform::constant;
-  else if (asf==string("frozen")) as_form = asform::frozen;
-  else if (asf==string("smooth")) as_form = asform::smooth;
+  if (asf==string("Constant"))    as_form = asform::constant;
+  else if (asf==string("Frozen")) as_form = asform::frozen;
+  else if (asf==string("Smooth")) as_form = asform::smooth;
   else if (asf==string("IR0"))    as_form = asform::IR0;
   else if (asf==string("GDH"))    as_form = asform::GDH_inspired;
   Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
