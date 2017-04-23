@@ -25,7 +25,6 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   p_singlet = singlet;
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
     msg_Error()<<"Couldn't split the gluon ring.\n"<<(*singlet)<<"\n";
-    exit(1);
     return false;
   }
   if (p_singlet->size()==2) {

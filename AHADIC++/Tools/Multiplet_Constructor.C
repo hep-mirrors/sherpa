@@ -54,7 +54,12 @@ void Multiplet_Constructor::CreateMultiplets() {
       m_multiplets[m_info.multiname].insert(m_info.flav.Bar());
     }
     if (m_info.flav.IsBaryon()) {
-      if (!ConstructAntiBaryonWaveFunction(m_info.flav)) exit(1);
+      if (!ConstructAntiBaryonWaveFunction(m_info.flav)) {
+	msg_Error()<<METHOD<<" throws error:\n"
+		   <<"   Could not derieve anti-particle wave function for "
+		   <<m_info.flav<<", will exit the run.\n";
+	exit(1);
+      }
       string antiname = string("Anti-")+m_info.multiname;
       m_multiplets[antiname].insert(m_info.flav.Bar());
     }

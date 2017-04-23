@@ -85,11 +85,12 @@ bool Singlet_Checker::operator()() {
   if (m_badones.size()>0) {
     //msg_Out()<<METHOD<<"  --> "<<m_badones.size()<<" problems.\n";
     //for (list<list<Singlet *>::iterator>::iterator sit=m_badones.begin();
-    //	 sit!=m_badones.end();sit++)
+    // 	 sit!=m_badones.end();sit++)
     //  msg_Out()<<(***sit)<<"\n";
     //msg_Out()<<"---------------------------------------------------\n";
     if (!DealWithProblematicSinglets()) {
       msg_Error()<<METHOD<<" throw error - no rescue possible.\n";
+      exit(1);
       return false;
     }
   }
@@ -131,17 +132,28 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
 bool Singlet_Checker::DealWithProblematicSinglets() {
   m_transitions.clear();
   SortProblematicSinglets();
-  if ((m_transitions.size()==1 && FindOtherSingletToTransit()) ||
-      m_transitions.size()>1) {
+  if (m_transitions.size()>1) {
     if (!TransitProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throws error for one transition.\n";
+      msg_Error()<<METHOD<<" throws error for more than transition.\n";
       return false;
     }
   }
-  else if (m_transitions.size()==1 && FindRecoilerForTransit()) {
-    if (!TransitProblematicSingletWithRecoiler()) {
-      msg_Error()<<METHOD<<" throws error for one transition.\n";
-      return false;
+  else if (m_transitions.size()==1) {
+    if (FindOtherSingletToTransit()) {
+      if (!TransitProblematicSinglets()) {
+	msg_Error()<<METHOD<<" throws error for one transition.\n";
+	return false;
+      }
+    }
+    else if (FindRecoilerForTransit()) {
+      if (!TransitProblematicSingletWithRecoiler()) {
+	msg_Error()<<METHOD<<" throws error for one transition.\n";
+	return false;
+      }
+    }
+    else {
+      msg_Error()<<METHOD<<" with a hopeless case.\n";
+      exit(1);
     }
   }
   ForcedDecays();
@@ -207,7 +219,7 @@ bool Singlet_Checker::FindRecoilerForTransit() {
     p_singlet = (*sit);
     if (TestSingletForRecoiler() && p_recoiler->IsBeam()) return true;
   }
-  return (p_recoiler==NULL);
+  return (p_recoiler!=NULL);
 }
 
 bool Singlet_Checker::TestSingletForRecoiler() {
@@ -237,6 +249,9 @@ bool Singlet_Checker::TestForOtherRecoilers() {
     pit2++;
   } while (pit2!=p_singlet->end());
   if (hit1!=p_singlet->end()) {
+    //msg_Out()<<METHOD<<" tests:\n"
+    //	     <<"   "<<(*hit1)->Flavour()<<": "<<(*hit1)->Momentum()<<"\n"
+    //	     <<"   "<<(*hit2)->Flavour()<<": "<<(*hit2)->Momentum()<<"\n";
     if ((*hit1)->Flavour().IsGluon()) {
       if ((*hit2)->Flavour().IsGluon())
 	test = (((*hit1)->Momentum()+m_singletmom).Abs2()>
@@ -371,10 +386,19 @@ bool Singlet_Checker::ExtractAndCheckFlavours() {
 bool Singlet_Checker::TwoGluonSingletToHadrons() {
   // The gluon pair is too light to allow standard treatment.
   // If it is a bit too light, we make two quarks out of it.
-  if (m_mass > 2.*m_minQmass && m_splitter(p_part1,p_part2))
-    return true;
+  if (m_mass > 2.*m_minQmass) {
+    if (m_splitter(p_part1,p_part2)) {
+      Cluster * cluster = new Cluster(p_part1,p_part2);
+      msg_Out()<<METHOD<<" goes cluster:\n"<<(*cluster)<<"\n";
+      if (p_softclusters->Treat(cluster,true)) {
+	msg_Out()<<"Success.\n";
+	return true;
+      }
+    }
+  }
   // If it is way to light, we make two hadrons/photons.
   Cluster * cluster = new Cluster(p_part1,p_part2);
+  msg_Out()<<METHOD<<" goes cluster:\n"<<(*cluster)<<"\n";
   return p_softclusters->TreatTwoGluons(cluster);
 }
 

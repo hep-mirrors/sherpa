@@ -103,6 +103,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     msg_Error()<<METHOD<<" yields "<<blob->CheckMomentumConservation()
 	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n"
 	       <<(*blob)<<".\n";
+    exit(1);
     return Return_Value::Retry_Event;
   }
   //msg_Out()<<"Success.\n"
