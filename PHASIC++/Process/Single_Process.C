@@ -144,7 +144,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     return 1.;
   }
   if (m_nin == 1) {
-    return 0.5 / p_int->Momenta()[0].Mass();
+    return 1.0;
   } else if (m_nin > 2) {
     THROW(not_implemented, "More than two incoming particles.");
   }
@@ -379,7 +379,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
-  m_lastflux = p_int->ISR()->Flux(p[0],p[1]);
+  m_lastflux = m_nin==1?p_int->ISR()->Flux(p[0]):p_int->ISR()->Flux(p[0],p[1]);;
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
