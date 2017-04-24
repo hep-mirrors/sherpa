@@ -450,7 +450,11 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
     if (*infile) {
       getline(*infile,lastline);
       do {
-	if (lastline.length()>0) buffer.push_back(lastline);
+	if (lastline.length()>0) {
+          // handle DOS/Windows line endings
+          if(*lastline.rbegin() == '\r') lastline.erase(lastline.length()-1, 1);
+          buffer.push_back(lastline);
+        }
 	getline(*infile,lastline);
       } while (*infile);
     }
