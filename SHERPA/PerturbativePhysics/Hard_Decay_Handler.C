@@ -308,6 +308,7 @@ void Hard_Decay_Handler::CustomizeDecayTables()
   dr.SetInputFile(m_file);
   dr.AddIgnore("[");
   dr.AddIgnore("]");
+  dr.AddComment("%");
   vector<vector<string> > helpsvv;
   dr.MatrixFromFile(helpsvv,"HDH_STATUS");
   for (size_t i=0;i<helpsvv.size();++i) {
