@@ -57,8 +57,7 @@ bool Soft_Cluster_Handler::CheckOutsideRange() {
 	       <<"   made from <"<<m_flavs.first<<", "<<m_flavs.second<<"> "
 	       <<" with masses "<<m_flavs.first.HadMass()<<" + "
 	       <<m_flavs.second.HadMass()<<".\n";
-    exit(1);
-    return true;
+    return false;
   }
   double mass_dec =
     p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 

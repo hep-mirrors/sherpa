@@ -90,7 +90,7 @@ bool Singlet_Checker::operator()() {
     //msg_Out()<<"---------------------------------------------------\n";
     if (!DealWithProblematicSinglets()) {
       msg_Error()<<METHOD<<" throw error - no rescue possible.\n";
-      exit(1);
+      //exit(1);
       return false;
     }
   }
@@ -153,7 +153,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     }
     else {
       msg_Error()<<METHOD<<" with a hopeless case.\n";
-      exit(1);
+      return false;
     }
   }
   ForcedDecays();
