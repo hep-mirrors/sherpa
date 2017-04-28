@@ -131,8 +131,8 @@ void Output_RootNtuple::Header()
   p_t3->Branch("kf",p_kf,"kf[nparticle]/I");
   p_t3->Branch("weight",&m_wgt,"weight/D");
   p_t3->Branch("weight2",&m_wgt2,"weight2/D");
-  p_t3->Branch("me_wgt",&m_mewgt,"me_wtg/D");
-  p_t3->Branch("me_wgt2",&m_mewgt2,"me_wtg2/D");
+  p_t3->Branch("me_wgt",&m_mewgt,"me_wgt/D");
+  p_t3->Branch("me_wgt2",&m_mewgt2,"me_wgt2/D");
   p_t3->Branch("x1",&m_x1,"x1/D");
   p_t3->Branch("x2",&m_x2,"x2/D");
   p_t3->Branch("x1p",&m_y1,"x1p/D");
