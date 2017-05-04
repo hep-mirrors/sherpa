@@ -6,7 +6,6 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
-  //msg_Out()<<"   "<<METHOD<<" called.\n";
   CalculateLimits();
   m_z1 = m_zselector(m_z1min,m_z1max,p_part1->Flavour());
   m_z2 = m_zselector(m_z2min,m_z2max,p_part2->Flavour());

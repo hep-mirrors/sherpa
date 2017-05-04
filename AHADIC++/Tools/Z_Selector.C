@@ -56,6 +56,7 @@ double Z_Selector::WeightFunction(const double & z) {
 }
 
 double Z_Selector::MassFunction(const double & m2, const double & z) {
+  return 1.;
   return exp(-m2*m_gamma[m_flcnt]/z)/exp(-m2*m_gamma[m_flcnt]);
 }
 

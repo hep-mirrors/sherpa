@@ -19,7 +19,7 @@ namespace AHADIC {
     Flavour_Selector       m_flavourselector;
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
-    
+
     Proto_Particle * p_part1, * p_part2, * p_part3;
     bool   m_barrd;
     double m_minmass;

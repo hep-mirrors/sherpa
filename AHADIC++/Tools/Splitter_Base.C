@@ -19,7 +19,7 @@ void Splitter_Base::Init() {
   m_flavourselector.InitWeights();
   m_ktselector.Init();
   m_zselector.Init();
-  m_minmass           = m_flavourselector.MinimalMass();
+  m_minmass  = m_flavourselector.MinimalMass();
 }
 
 bool Splitter_Base::
