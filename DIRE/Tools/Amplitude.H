@@ -24,8 +24,6 @@ namespace DIRE {
     void Add(Parton *const p);
     void Remove(Parton *const p);
 
-    int Construct();
-
     ATOOLS::Cluster_Amplitude *GetAmplitude() const;
 
     inline void SetSplit(const Splitting &s) { m_s=s; }

@@ -5,6 +5,8 @@
 #include "DIRE/Main/Color_Setter.H"
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 namespace DIRE {
 
@@ -78,9 +80,7 @@ Dire::Dire(const Shower_Key &key):
   int csmode=key.p_read->GetValue<int>("CSS_CSMODE",0);
   if (csmode) p_cs = new Color_Setter(csmode);
   m_reco=key.p_read->GetValue<int>("CSS_RECO_CHECK",0);
-  if (m_reco) msg_Info()<<METHOD<<"(): Reco check "<<m_reco<<"\n";
   m_wcheck=key.p_read->GetValue<int>("CSS_WEIGHT_CHECK",0);
-  if (m_wcheck) msg_Info()<<METHOD<<"(): Weight check "<<m_wcheck<<"\n";
 }
 
 Dire::~Dire()
@@ -103,7 +103,7 @@ int Dire::PerformShowers()
   }
   if (m_wcheck && dabs(m_weight)>m_maxweight) {
     m_maxweight=dabs(m_weight);
-    std::string rname="dire.random.dat";
+    std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
@@ -189,7 +189,7 @@ Amplitude *Dire::Convert
 			 Color(cl->Col().m_i,cl->Col().m_j)));
     ampl->push_back(p);
     p->SetId(p->Counter());
-    if (i<campl->NIn()) p->SetBeam(cl->Id()&3);
+    if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
     lmap[cl]=p;
   }
   msg_Debugging()<<*ampl<<"\n";
@@ -251,7 +251,7 @@ bool Dire::PrepareShower
       int type((ic<campl->NIn()?1:0)|(kc<campl->NIn()?2:0));
       Splitting s=p_clus->KT2
 	     (campl->Leg(ic),campl->Leg(jc),campl->Leg(kc),
-	      lij->Flav(),type,1|(swap?2:0),ws,mu2);
+	      lij->Flav(),campl->Kin(),type,1|(swap?2:0),ws,mu2);
       s.p_s=lmap[lampl->IdLeg(lij->K())];
       s.p_c=lmap[lij];
       (*----m_ampls.end())->SetSplit(s);
@@ -330,18 +330,20 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     if ((*next)[i]==a->Split().p_c->Out(1)) { jc=i; pj=(*next)[i]->Mom(); }
     if ((*next)[i]==a->Split().p_s->Out(0)) { kc=i; pk=(*next)[i]->Mom(); }
   }
-  a->Construct();
+  // a->Construct();
   Cluster_Amplitude *ampl(next->GetAmplitude());
   double ws, mu2;
   Splitting s=p_clus->KT2
     (ampl->Leg(ic),ampl->Leg(jc),ampl->Leg(kc),
-     a->Split().p_c->Flav(),a->Split().m_type,1|(swap?2:0),ws,mu2);
+     a->Split().p_c->Flav(),a->Split().m_kin,
+     a->Split().m_type,1|(swap?2:0),ws,mu2);
   ampl->Delete();
   std::cout.precision(12);
   msg_Debugging()<<"New reco params: t = "<<s.m_t
 		 <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
   msg_Debugging()<<"            vs.: t = "<<a->Split().m_t<<", z = "
-		 <<a->Split().m_z<<", phi = "<<a->Split().m_phi<<"\n";
+		 <<a->Split().m_z<<", phi = "<<a->Split().m_phi
+		 <<", kin = "<<a->Split().m_kin<<"\n";
   if (!IsEqual(s.m_t,a->Split().m_t,1.0e-6) || 
       !IsEqual(s.m_z,a->Split().m_z,1.0e-6) || 
       !IsEqual(s.m_phi,a->Split().m_phi,1.0e-6) ||
@@ -351,7 +353,8 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     msg_Error()<<"Faulty reco params: t = "<<s.m_t
 	       <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
     msg_Error()<<"               vs.: t = "<<a->Split().m_t<<", z = "
-	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi<<"\n";
+	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi
+	       <<", kin = "<<a->Split().m_kin<<"\n\n";
     msg_Error()<<"  "<<pi<<" "<<pj<<" "<<pk<<"\n";
     msg_Error()<<"  "<<ampl->Leg(ic)->Mom()
 	       <<" "<<ampl->Leg(jc)->Mom()

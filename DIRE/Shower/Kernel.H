@@ -19,7 +19,8 @@ namespace DIRE {
     Lorentz *p_lf;
     Gauge   *p_gf;
 
-    int m_type, m_mode, m_on;
+    double m_ef;
+    int    m_type, m_mode, m_on;
 
   public:
 
@@ -49,6 +50,8 @@ namespace DIRE {
     inline int Mode() const { return m_mode; }
 
     inline int On() const { return m_on; }
+
+    inline void SetEF(const double &ef) { m_ef=ef; }
 
   };// end of class Kernel
 

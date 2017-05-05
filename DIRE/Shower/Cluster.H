@@ -54,7 +54,7 @@ namespace DIRE {
 		  const ATOOLS::Cluster_Leg *j,
 		  const ATOOLS::Cluster_Leg *k,
 		  const ATOOLS::Flavour &mo,
-		  const int type,const int mode,
+		  const int kin,const int type,const int mode,
 		  double &ws,double &mu2);
 
     // CS cluster kinematics

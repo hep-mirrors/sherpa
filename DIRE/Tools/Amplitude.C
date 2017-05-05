@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace DIRE;
 using namespace ATOOLS;
@@ -17,20 +18,6 @@ Amplitude::~Amplitude()
 {
   for (const_iterator it(begin());
        it!=end();++it) delete *it;
-}
-
-int Amplitude::Construct()
-{
-  if (m_s.p_c==NULL) return 1;
-  for (iterator it(begin());it!=end();++it)
-    (*it)->Out(0)->SetMom((*it)->Mom());
-  Splitting cs(m_s);
-  cs.p_n=m_s.p_c->Out(1);
-  cs.p_c=m_s.p_c->Out(0);
-  cs.p_s=m_s.p_s->Out(0);
-  cs.p_sk->LF()->SetLimits(cs);
-  cs.p_sk->LF()->Compute(cs);
-  return cs.p_sk->LF()->Construct(cs,1);
 }
 
 void Amplitude::Add(Parton *const p)

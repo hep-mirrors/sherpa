@@ -28,8 +28,9 @@ CParam Cluster::KPerp2
   if (swap) std::swap<int>(i,j);
   double ws, mu2;
   int type((i<ampl.NIn()?1:0)|(k<ampl.NIn()?2:0));
-  Splitting s(KT2(ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,type,swap?2:0,ws,mu2));
-  if (s.m_t) return CParam(s.m_t,ws,s.m_eta,mu2,1,0);
+  Splitting s(KT2(ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,
+		  kin,type,swap?2:0,ws,mu2));
+  if (s.m_t) return CParam(s.m_t,ws,s.m_eta,mu2,s.m_kin,0);
   double t(dabs((ampl.Leg(i)->Mom()+ampl.Leg(j)->Mom()).Abs2()));
   return CParam(t,t,0.0,t,0,0);
 }
@@ -37,7 +38,7 @@ CParam Cluster::KPerp2
 Splitting Cluster::KT2
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo,
- const int type,const int mode,double &ws,double &mu2)
+ const int kin,const int type,const int mode,double &ws,double &mu2)
 {
   Parton c(NULL,li->Flav(),li->Mom(),Color(li->Col().m_i,li->Col().m_j));
   Parton s(NULL,lk->Flav(),lk->Mom(),Color(lk->Col().m_i,lk->Col().m_j));
@@ -47,6 +48,7 @@ Splitting Cluster::KT2
   Splitting sp(&c,&s);
   sp.m_eta=c.GetXB();
   sp.p_n=&n;
+  sp.m_kin=kin;
   sp.m_clu=1;
   sp.m_type=type;
   sp.m_cpl=p_shower->CouplingScheme();

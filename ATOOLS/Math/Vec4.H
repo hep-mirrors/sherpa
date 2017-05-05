@@ -208,6 +208,18 @@ namespace ATOOLS {
        -q[0]*r1s2mr2s1+q[1]*r0s2mr2s0-q[2]*r0s1mr1s0);
   }
 
+  template<typename Scalar> inline
+  double CosPhi(const Vec4<Scalar> &pi,const Vec4<Scalar> &pj,
+		const Vec4<Scalar> &pk,const Vec4<Scalar> &pl)
+  {
+    Scalar sij((pi+pj).Abs2()), sik((pi+pk).Abs2()), sil((pi+pl).Abs2());
+    Scalar sjk((pj+pk).Abs2()), sjl((pj+pl).Abs2()), skl((pk+pl).Abs2());
+    Scalar si(pi.Abs2()), sj(pj.Abs2()), sk(pk.Abs2()), sl(pl.Abs2());
+    Scalar cp(skl*(sik*sjl+sil*sjk)-sk*sil*sjl-sl*sik*sjk-sij*skl*skl+sij*sk*sl);
+    return cp/sqrt((2.0*skl*sik*sil-sk*sil*sil-sl*sik*sik-si*skl*skl+si*sk*sl)*
+		   (2.0*skl*sjk*sjl-sk*sjl*sjl-sl*sjk*sjk-sj*skl*skl+sj*sk*sl));
+  }
+  
   template<typename Scalar>
   std::ostream& operator<<(std::ostream& s, const Vec4<Scalar>& vec) {
     return s<<'('<<vec[0]<<','<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';

@@ -2,6 +2,7 @@
 
 #include "DIRE/Shower/Shower.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace DIRE;
@@ -17,33 +18,39 @@ double Lorentz_FI::Jacobian(const Splitting &s) const
 {
   if (s.m_clu&1) return 1.0;
   double eta(s.p_s->GetXB());
+  double y(s.m_y*(1.0+(s.m_mij2-s.m_mi2-s.m_mj2)/s.m_Q2));
   double fo=p_sk->PS()->GetXPDF(eta,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
-  double fn=p_sk->PS()->GetXPDF(eta/s.m_y,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
+  double fn=p_sk->PS()->GetXPDF(eta/y,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
   if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
-  return s.m_y*fn/fo;
+  return (1.0-s.m_y)/(1.0-y)*fn/fo;
 }
 
 double Lorentz_FI::PDFEstimate(const Splitting &s) const
 {
-  return pow(1.0e6,s.p_s->GetXB()*s.m_t0/Min(s.m_t1,s.m_Q2));
+  return 1.0;
 }
 
 int Lorentz_FI::Construct(Splitting &s,const int mode) const
 {
-  Kin_Args ff(1.0-s.m_y,s.m_x,s.m_phi,1);
+  if (mode&1) return Update(s,mode);
+  s.m_y=1.0-s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_x=s.m_z;
+  Kin_Args ff(1.0-s.m_y,s.m_x,s.m_phi,1|8);
   if (ConstructFIDipole
       (s.m_mi2,s.m_mj2,s.m_mij2,
        s.m_mk2,s.p_c->Mom(),-s.p_s->Mom(),ff)<0)
     return -1;
-  ff.m_pk=-ff.m_pk;
-  return Update(s,ff,mode);
+  s.m_pi=ff.m_pi;
+  s.m_pj=ff.m_pj;
+  s.m_pk=-ff.m_pk;
+  return 1;
 }
 
 bool Lorentz_FI::Cluster(Splitting &s,const int mode) const
 {
   Kin_Args ff=ClusterFIDipole
     (s.m_mi2,s.m_mj2,s.m_mij2,s.m_mk2,
-     s.p_c->Mom(),s.p_n->Mom(),-s.p_s->Mom(),mode);
+     s.p_c->Mom(),s.p_n->Mom(),-s.p_s->Mom(),mode|8);
   if (ff.m_stat<0) return false;
   ff.m_y=1.0-ff.m_y;
   SetParams(s,ff);
@@ -52,18 +59,54 @@ bool Lorentz_FI::Cluster(Splitting &s,const int mode) const
   return true;
 }
 
-bool Lorentz_FI::Compute(Splitting &s) const
+Lorentz_FI_123::Lorentz_FI_123(const Kernel_Key &k):
+  Lorentz_FI(k)
 {
-  s.m_y=1.0-s.m_t/s.m_Q2/(1.0-s.m_z);
-  s.m_x=s.m_z;
-  if (s.m_mi2==0.0 && s.m_mj2==0.0)
-    return s.m_y>s.p_s->GetXB();
-  double nui2(s.m_mi2/s.m_Q2*s.m_y), nuj2(s.m_mj2/s.m_Q2*s.m_y);
-  double viji=sqr(1.0-s.m_y)-4.0*nui2*nuj2;
-  if (viji<0.0 || s.m_y>1.0) return false;
-  viji=sqrt(viji)/(1.0-s.m_y+2.0*nui2);
-  double frac=(1.0-s.m_y+2.0*nui2)/(2.0*(1.0-s.m_y+nui2+nuj2));
-  double zm=frac*(1.0-viji), zp=frac*(1.0+viji);
-  return s.m_x>zm && s.m_x<zp
-    && s.m_y>s.p_s->GetXB();
+}
+
+double Lorentz_FI_123::Jacobian(const Splitting &s) const
+{
+  double eta(s.p_s->GetXB());
+  double y(s.m_y*(1.0-(s.m_mij2-s.m_s-s.m_mj2)/
+		  (s.m_q2-s.m_s-s.m_mj2-s.m_mk2)));
+  double fo=p_sk->PS()->GetXPDF(eta,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
+  double fn=p_sk->PS()->GetXPDF(eta/y,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
+  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
+  double saij(s.m_t*s.m_z2/s.m_z+s.m_s+s.m_mj2);
+  double x((s.m_q2-s.m_mij2-s.m_mk2)/(s.m_q2-saij-s.m_mk2)), rho(x);
+  double J1(rho/x*(saij+s.m_mk2-s.m_q2)/sqrt(Lam(saij,s.m_mk2,s.m_q2)));
+  double sbai(s.m_z/s.m_z2*(s.m_q2-saij-s.m_mk2)+s.m_s+s.m_mk2);
+  double J2((s.m_s+s.m_mk2-sbai)/sqrt(Lam(s.m_s,s.m_mk2,sbai)));
+  return J1*J2*fn/fo/(1.0+(s.m_s+s.m_mj2-s.m_mij2)/(s.m_t*s.m_z2/s.m_z));
+}
+
+int Lorentz_FI_123::Construct(Splitting &s,const int mode) const
+{
+  if ((mode&1) && !(s.m_mode&1)) return Update(s,mode);
+  if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
+  if ((mode&1) && (s.m_mode&1)) s.m_s=0.0;
+  s.m_x=s.m_z/s.m_z2;
+  s.m_y=1.0/(1.0-s.m_t/s.m_x/(s.m_q2-s.m_s-s.m_mj2-s.m_mk2));
+  double y(s.m_y*(1.0-(s.m_mij2-s.m_s-s.m_mj2)/
+		  (s.m_q2-s.m_s-s.m_mj2-s.m_mk2)));
+  if (y<s.p_s->GetXB()) return -1;
+  Kin_Args ff(1.0-s.m_y,s.m_x,s.m_phi,1|8);
+  if (ConstructFIDipole
+      (s.m_s,s.m_mj2,s.m_mij2,
+       s.m_mk2,s.p_c->Mom(),-s.p_s->Mom(),ff)<0) return -1;
+  double y2(2.0*(ff.m_pi*ff.m_pk)/(s.m_s-s.m_mi2-s.m_ml2));
+  Kin_Args ff2(s.m_s?1.0/(1.0-y2):0.0,s.m_z2,s.m_phi2);
+  if (ConstructFFDipole
+      (s.m_mi2,s.m_ml2,s.m_s,
+       s.m_mk2,ff.m_pi,-ff.m_pk,ff2)<0) return -1;
+  s.m_pk=-ff.m_pk;
+  s.m_pi=ff2.m_pi;
+  s.m_pl=ff2.m_pj;
+  s.m_pj=ff.m_pj;
+  return (mode&1)?Update(s,mode):1;
+}
+
+bool Lorentz_FI_123::Cluster(Splitting &s,const int mode) const
+{
+  return false;
 }

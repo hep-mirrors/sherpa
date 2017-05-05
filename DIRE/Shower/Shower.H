@@ -40,10 +40,10 @@ namespace DIRE {
     SKernel_Map   m_sks;
     Kernel_Map    m_kmap;
 
-    double m_tmin[2], m_cplfac[2];
-    double m_weight, m_oef, m_pdfmin;
+    double m_tmin[2], m_cplfac[2], m_rsf;
+    double m_weight, m_oef, m_pdfmin, m_rcf, m_tcef;
 
-    int m_kfac, m_cpl;
+    int m_kin, m_kfac, m_cpl;
 
     unsigned int m_maxem;
 
@@ -52,15 +52,17 @@ namespace DIRE {
     Splitting GeneratePoint(Parton &p,const double &t);
     Splitting GeneratePoint(const Amplitude &a,const double &t);
 
+    void AddWeight(const Amplitude &a,const double &t);
+
   public:
 
     Shower();
 
     ~Shower();
 
-    bool Init(MODEL::Model_Base *const model,
-	      PDF::ISR_Handler *const isr,
-	      ATOOLS::Data_Reader *const read);
+    bool Init(MODEL::Model_Base *const,
+	      PDF::ISR_Handler *const,
+	      ATOOLS::Data_Reader *const);
 
     void SetMS(ATOOLS::Mass_Selector *const ms);
 
@@ -70,6 +72,8 @@ namespace DIRE {
 		   const ATOOLS::Flavour &fl,const int b) const;
 
     Kernel *GetKernel(const Splitting &s,const int mode) const;
+
+    int RemnantTest(Parton *const c,const ATOOLS::Vec4D &p);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
 
@@ -83,6 +87,8 @@ namespace DIRE {
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
+
+    inline double MuRFactor() const { return m_rsf; }
 
   };//end of class Shower
 
