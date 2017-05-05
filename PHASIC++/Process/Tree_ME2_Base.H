@@ -37,9 +37,6 @@ namespace PHASIC {
     virtual ~Tree_ME2_Base();
 
     virtual double Calc(const ATOOLS::Vec4D_Vector &p) = 0;
-    inline const METOOLS::DivArrD& Result() { return m_res; }
-    inline double ME_Born() { return m_born; }
-    inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
     
     virtual void SetCouplings(const MODEL::Coupling_Map& cpls);
     virtual double AlphaQCD() const;

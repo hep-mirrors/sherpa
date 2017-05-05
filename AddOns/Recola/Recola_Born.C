@@ -49,12 +49,12 @@ Recola_Born::Recola_Born(const Process_Info& pi,
       }
       
       int nlight=0;
-      set_mu_ir_rcl(sqrt(m_mur2));
-      set_mu_uv_rcl(sqrt(m_mur2));
-      double default_alphas(Recola_Interface::GetDefaultAlphaS());
-      double default_scale(Recola_Interface::GetDefaultScale());
-      double default_flavscheme(Recola_Interface::GetDefaultFlav());
-      double fixed(Recola_Interface::GetFixed());
+      set_mu_ir_rcl(100);
+      set_mu_uv_rcl(100);
+      set_mu_ir_rcl(100);
+      set_mu_uv_rcl(100);
+      int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",0);
+      double default_flavscheme(fixed);
       double alpha_mat;
       if (default_flavscheme==0)
 	default_flavscheme=fixed;
@@ -88,14 +88,12 @@ Recola_Born::Recola_Born(const Process_Info& pi,
 	msg_Error()<<METHOD<<"(): Too many light flavours: "<<nlight<<"\n   Max is 6\n";
       }
       
-      if (default_scale==-1. || default_alphas==-1. || Recola_Interface::GetPDFDefault()==0){
-	set_alphas_rcl(AlphaQCD(),sqrt(m_mur2),nlight); 
-	msg_Debugging() << "use AlphaQCD\n";
-      }
-      else{	
-	set_alphas_rcl(default_alphas,sqrt(default_scale),nlight); 
-	msg_Debugging() << "use default_alphas\n";
-      }
+      Recola_Interface::SetDefaultFlav(nlight);
+      double default_alphaQCD=Recola_Interface::GetDefaultAlphaQCD();
+      double default_scale=Recola_Interface::GetDefaultScale();
+      set_alphas_rcl(default_alphaQCD,sqrt(default_scale),nlight); 
+      msg_Debugging() << "use AlphaQCD\n";
+            
       
       msg_Out() << "processes in Recola are being generated..." << endl;
       Recola_Interface::setProcGenerationTrue();
@@ -107,7 +105,7 @@ Recola_Born::Recola_Born(const Process_Info& pi,
     double alpha(0);
     get_alpha_rcl(alpha);
     
-    msg_Debugging() << "default_alphas = " << Recola_Interface::GetDefaultAlphaS() << ", sqrt(default_scale) = " << sqrt(Recola_Interface::GetDefaultScale()) << endl;
+    msg_Debugging() << "default_alphas = " << Recola_Interface::GetDefaultAlphaQCD() << ", sqrt(default_scale) = " << sqrt(Recola_Interface::GetDefaultScale()) << endl;
     msg_Debugging() << "AlphaQCD() = " << AlphaQCD() << ", sqrt(m_mur2) = " << sqrt(m_mur2) << endl;
     
     MyTiming* timing;
@@ -126,11 +124,12 @@ Recola_Born::Recola_Born(const Process_Info& pi,
 		  <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
     }
     
-    msg_Debugging() << "m_born = " << m_born << ", m_res = " << m_res << ", m_symfac = " << m_symfac << ", m_res.Finite()*m_symfac" << m_res.Finite()*m_symfac <<"\n";
+    msg_Debugging() << "m_born = " << m_born << ", m_res = " << m_res << ", m_symfac = " << m_symfac << ", m_res.Finite()*m_symfac = " << m_res.Finite()*m_symfac <<"\n";
     //need probably some kind of symmetry factor for the result
     Data_Reader reader(" ",";","#","=");
     m_eventcount+=1;
-    if (reader.GetValue<int>("JUST_ONE_POINT",0)==1){
+    int npoint = reader.GetValue<int>("JUST_ONE_POINT",0);
+    if (npoint){
       std::cout<<std::setprecision(15)<<"\nMomenta are:  "<<momenta<<std::endl;
       std::cout<<"flavour:  "<<m_flavs<<std::endl;
       std::cout<< std::setprecision(15)<<"    and born is:  "<<m_res.Finite()<<std::endl;
@@ -139,7 +138,7 @@ Recola_Born::Recola_Born(const Process_Info& pi,
       std::cout<<"AlphaQED():  "<<AlphaQED()<<std::endl;
       std::cout<<"AlphaQCD():  "<<AlphaQCD()<<std::endl;
     
-    if (m_eventcount==201)
+    if (m_eventcount==npoint)
       exit(1);
     }
     

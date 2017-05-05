@@ -92,9 +92,6 @@ namespace PDF {
 
     virtual void SetAlphaSInfo();
     virtual void SetPDFMember();
-    virtual double GetDefaultAlpha();
-    virtual double GetDefaultScale();
-    virtual int GetFlavourScheme();
     
     static void ShowSyntax(const size_t i);
 

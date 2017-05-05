@@ -54,13 +54,9 @@ namespace Recola {
      int nlight=0;
      set_mu_ir_rcl(m_IRscale);
      set_mu_uv_rcl(m_UVscale);
-     double default_alphas(Recola_Interface::GetDefaultAlphaS());
-     double default_scale(Recola_Interface::GetDefaultScale());
-     double default_flavscheme(Recola_Interface::GetDefaultFlav());
-     double fixed(Recola_Interface::GetFixed());
+     int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",5);
      double alpha_mat;
-     if (default_flavscheme==0)
-      default_flavscheme=fixed;
+     int default_flavscheme(fixed);
      if (default_flavscheme==16) default_flavscheme=-1;
      if (fixed>0 && fixed<10){
       nlight=fixed;
@@ -91,21 +87,16 @@ namespace Recola {
       msg_Error()<<METHOD<<"(): Too many light flavours: "<<nlight<<"\n   Max is 6\n";
      }
      
-     if (default_scale==-1. || default_alphas==-1. || Recola_Interface::GetPDFDefault()==0){
-      set_alphas_rcl(AlphaQCD(),sqrt(m_mur2),nlight);
-      msg_Debugging() << "use AlphaQCD" << AlphaQCD() << "   sqrt(m_mur2) " << sqrt(m_mur2) << "\n";
-     }
-     else{	
-      set_alphas_rcl(default_alphas,sqrt(default_scale),nlight);
-      msg_Debugging() << "use default_alphas\n";
-     }
+     Recola_Interface::SetDefaultFlav(nlight);
+     double default_alphaQCD=Recola_Interface::GetDefaultAlphaQCD();
+     double default_scale=Recola_Interface::GetDefaultScale();
+     set_alphas_rcl(default_alphaQCD,sqrt(default_scale),nlight);
+     msg_Debugging() << "use AlphaQCD" << AlphaQCD() << "   sqrt(m_mur2) " << sqrt(m_mur2) << "\n";
+
      msg_Out() << "processes in Recola are being generated..." << endl;
      generate_processes_rcl();
      Recola_Interface::setProcGenerationTrue();
      msg_Out() << "process generation in Recola completed..." << endl;
-     //get_alpha_rcl(alpha_mat);
-     //cout << "alpha is: " << 1./alpha_mat << endl;	
-     Recola_Interface::SetDefaultFlav(nlight);
     }
     double alpha(0);
     get_alpha_rcl(alpha);

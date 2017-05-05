@@ -18,7 +18,7 @@ namespace Recola {
     static double       s_light_fermion_threshold;
     static unsigned int s_recolaProcIndex;
     static bool         s_processesGenerated;
-    static double       s_default_alpha;
+    static double       s_default_alphaqcd;
     static double       s_default_scale;
     static int          s_default_flav;
     static int          s_getPDF_default;
@@ -49,7 +49,7 @@ namespace Recola {
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta,
                              double& res, METOOLS::DivArrD& virt);
     static bool ExitOnError() { return s_exit_on_error; }
-    static double GetDefaultAlphaS() { return s_default_alpha; }
+    static double GetDefaultAlphaQCD() { return s_default_alphaqcd; }
     static double GetFixed() { return s_fixed; }
     static double GetDefaultScale() { return s_default_scale; }
     static double GetDefaultFlav() { return s_default_flav; }

@@ -25,7 +25,7 @@ namespace Recola {
   double         Recola_Interface::s_light_fermion_threshold=0.1;
   unsigned int   Recola_Interface::s_recolaProcIndex = 0;
   bool           Recola_Interface::s_processesGenerated = false;
-  double         Recola_Interface::s_default_alpha = -1.;
+  double         Recola_Interface::s_default_alphaqcd = -1.;
   double         Recola_Interface::s_default_scale = -1.;
   int            Recola_Interface::s_default_flav = 0.;
   int            Recola_Interface::s_getPDF_default = 0;
@@ -141,8 +141,6 @@ namespace Recola {
 				    PDF::ISR_Handler *const isr)
   {
     // find RECOLA installation prefix with several overwrite options
-    s_default_alpha=s_default_scale=-1.;
-    s_default_flav=0;
     struct stat st;
     Data_Reader reader(" ",";","#","=");
     s_ignore_model = reader.GetValue<int>("RECOLA_IGNORE_MODEL",0); 
@@ -209,9 +207,9 @@ namespace Recola {
     
     PDF::PDF_Base *pdf(NULL);
     pdf=isr->PDF(0);
-    s_default_alpha=pdf->GetDefaultAlpha();
-    s_default_scale=pdf->GetDefaultScale();
-    int pdfnf=pdf->GetFlavourScheme();
+    s_default_alphaqcd=pdf->ASInfo().m_asmz;
+    s_default_scale=pdf->ASInfo().m_mz2;
+    int pdfnf=pdf->ASInfo().m_flavs.size();
 
     if (pdfnf>10) pdfnf-=10;
     if (pdfnf==-1) pdfnf=6;
