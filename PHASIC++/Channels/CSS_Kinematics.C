@@ -415,7 +415,10 @@ int PHASIC::ConstructIIDipole
     return -1;
   }
   ktt=sqrt(ktt);
+  msg_Debugging()<<"Set fixed n_perp\n";
   Vec4D n_perp(0.0,1.0,1.0,0.0);
+  Poincare zrot(iip.m_pi,Vec4D::ZVEC);
+  zrot.RotateBack(n_perp);
   n_perp*=1.0/n_perp.PSpat();
   Vec4D l_perp(LT(iip.m_pi,pb,n_perp));
   l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
