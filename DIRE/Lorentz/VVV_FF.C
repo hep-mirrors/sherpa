@@ -19,6 +19,7 @@ namespace DIRE {
       double z(s.m_z), y(s.m_y);
       double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B=-2.0+z*(1.0-z);
+      if (s.m_mk2==0.0) {
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=p_sk->Mode()?1.0-z:z;
 	double B2=TF*(4*(-1+x)*(-23+x*(6+x*(10+x*(4+23*x))))+24*(1+x)*(2+(-1+x)*x*(3+x*(-3+2*x)))*log(x))+
@@ -30,8 +31,8 @@ namespace DIRE {
 	B2-=2.*(x*x-1.0)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.0*x*(x*x-1.0))/2.0;
       }
-      if (s.m_mk2==0.0)
 	return (p_sk->Mode()?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+      }
       double nuk2(s.m_mk2/s.m_Q2), vijk=sqr(1.0-y)-4.0*y*nuk2;
       if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-y);

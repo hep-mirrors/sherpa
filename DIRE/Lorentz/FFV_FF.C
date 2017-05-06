@@ -23,30 +23,30 @@ namespace DIRE {
       double z(s.m_z), y(s.m_y);
       double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B=-(1.0+z);
-      if (s.m_kfac&2) {
-	if (m_swap) {
-	  B+=A;
-	  A=0.0;
-	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=1.0-s.m_z;
-	  double B2=9*CF*x*(-1+9*x)+144*(CA-CF)*(2+(-2+x)*x)*DiLog(x)+36*CA*(2+x*(2+x))*DiLog(1/(1+x))-
-	    2*CA*(-17+9*(-5+x)*x+44*pow(x,3)+3*sqr(M_PI)*(2+sqr(x)))+
-	    3*(12*log(1-x)*((3*CA-2*CF)*(2+(-2+x)*x)*log(x)+(-CA+CF)*sqr(x))+
-	       log(x)*(3*CF*(-16+x)*x+2*CA*(-18+x*(24+x*(27+8*x)))-3*log(x)*(CF*(-2+x)*x+CA*(8+4*x+6*sqr(x))))-
-	       6*(CA-CF)*(2+(-2+x)*x)*sqr(log(1-x))+6*CA*(2+x*(2+x))*sqr(log(1+x)));
-	  B2-=40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
-	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x);
-	}
-	else {
-	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
-	  double B2=(-1+x)*(4*TF*(-10+x*(-37+x*(29+28*x)))+x*(90*CF*(-1+x)+CA*(53-187*x+3*(1+x)*sqr(M_PI))))+
-	    3*x*log(x)*(34*TF+12*(CF-CF*x+2*TF*x)-2*(9*CF+TF*(17+8*x))*sqr(x)-12*CF*log(1-x)*(1+sqr(x))-
-			CA*(17+5*sqr(x))-3*log(x)*(CA-3*CF+2*TF+(CA-5*CF-2*TF)*sqr(x)));
-	  B2+=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
-	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
-	}
-      }
-      if (s.m_mij2==0.0 && s.m_mi2==0.0 && s.m_mk2==0.0)
+      if (s.m_mij2==0.0 && s.m_mi2==0.0 && s.m_mk2==0.0) {
+	if (s.m_kfac&2)
+	  if (m_swap) {
+	    B+=A;
+	    A=0.0;
+	    double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=1.0-s.m_z;
+	    double B2=9*CF*x*(-1+9*x)+144*(CA-CF)*(2+(-2+x)*x)*DiLog(x)+36*CA*(2+x*(2+x))*DiLog(1/(1+x))-
+	      2*CA*(-17+9*(-5+x)*x+44*pow(x,3)+3*sqr(M_PI)*(2+sqr(x)))+
+	      3*(12*log(1-x)*((3*CA-2*CF)*(2+(-2+x)*x)*log(x)+(-CA+CF)*sqr(x))+
+		 log(x)*(3*CF*(-16+x)*x+2*CA*(-18+x*(24+x*(27+8*x)))-3*log(x)*(CF*(-2+x)*x+CA*(8+4*x+6*sqr(x))))-
+		 6*(CA-CF)*(2+(-2+x)*x)*sqr(log(1-x))+6*CA*(2+x*(2+x))*sqr(log(1+x)));
+	    B2-=40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+	    B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x);
+	  }
+	  else {
+	    double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
+	    double B2=(-1+x)*(4*TF*(-10+x*(-37+x*(29+28*x)))+x*(90*CF*(-1+x)+CA*(53-187*x+3*(1+x)*sqr(M_PI))))+
+	      3*x*log(x)*(34*TF+12*(CF-CF*x+2*TF*x)-2*(9*CF+TF*(17+8*x))*sqr(x)-12*CF*log(1-x)*(1+sqr(x))-
+			  CA*(17+5*sqr(x))-3*log(x)*(CA-3*CF+2*TF+(CA-5*CF-2*TF)*sqr(x)));
+	    B2+=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+	    B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
+	  }
 	return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+      }
       double Q2(s.m_Q2+s.m_mi2+s.m_mj2+s.m_mk2);
       double muij2(s.m_mij2/Q2), mui2(s.m_mi2/Q2);
       double muk2(s.m_mk2/Q2), vtijk=Lam(1.0,muij2,muk2);
@@ -110,11 +110,10 @@ namespace DIRE {
 	return (m_swap?1.0-z:z)*B;
       }
       double nui2(s.m_mi2/s.m_Q2), nuk2(s.m_mk2/s.m_Q2);
-      double vijk=sqr(1.0-y)-4.0*(y+2.0*nui2)*nuk2;
+      double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
       if (vijk<0.0) return 0.0;
-      vijk=sqrt(vijk)/(1.0-y);
-      double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(y/2.0+nui2));
-      V/=1.0+2.0*nui2/y;
+      vijk=sqrt(vijk)/(1.0-s.m_y);
+      double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
       return (m_swap?1.0-z:z)*V;
     }
 

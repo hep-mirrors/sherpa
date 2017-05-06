@@ -41,7 +41,7 @@ namespace DIRE {
     Kernel_Map    m_kmap;
 
     double m_tmin[2], m_cplfac[2], m_rsf;
-    double m_weight, m_oef, m_pdfmin, m_rcf;
+    double m_weight, m_oef, m_pdfmin, m_rcf, m_tcef;
 
     int m_kin, m_kfac, m_cpl;
 
@@ -51,6 +51,8 @@ namespace DIRE {
 
     Splitting GeneratePoint(Parton &p,const double &t);
     Splitting GeneratePoint(const Amplitude &a,const double &t);
+
+    void AddWeight(const Amplitude &a,const double &t);
 
   public:
 

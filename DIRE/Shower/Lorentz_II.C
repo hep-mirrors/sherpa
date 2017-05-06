@@ -36,20 +36,26 @@ double Lorentz_II::PDFEstimate(const Splitting &s) const
     if (fo0 && dabs(fo0)<dabs(fo)) fo=fo0;
     if (dabs(fn0)>dabs(fn)) fn=fn0;
   }
-  if (fo<p_sk->PS()->PDFMin()) return 0.0;
+  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0;
+  if (dabs(fn)<p_sk->PS()->PDFMin()) fn=fo;
   return dabs(fn/fo);
 }
 
 int Lorentz_II::Construct(Splitting &s,const int mode) const
 {
+  if (mode&1) return Update(s,mode);
+  s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_x=s.m_z-s.m_t/s.m_Q2/(1.0-s.m_z);
   Kin_Args ff(s.m_y,s.m_x,s.m_phi,s.m_kin);
   if (ConstructIIDipole
       (s.m_mi2,s.m_mj2,s.m_mij2,
        s.m_mk2,-s.p_c->Mom(),-s.p_s->Mom(),ff)<0)
     return -1;
-  ff.m_pi=-ff.m_pi;
-  ff.m_pk=-ff.m_pk;
-  return Update(s,ff,mode);
+  s.m_pi=-ff.m_pi;
+  s.m_pj=ff.m_pj;
+  s.m_pk=-ff.m_pk;
+  s.m_lam=ff.m_lam;
+  return 1;
 }
 
 bool Lorentz_II::Cluster(Splitting &s,const int mode) const
@@ -64,15 +70,6 @@ bool Lorentz_II::Cluster(Splitting &s,const int mode) const
   return true;
 }
 
-bool Lorentz_II::Compute(Splitting &s,const int mode) const
-{
-  if (mode) {
-    s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
-    s.m_x=s.m_z-s.m_t/s.m_Q2/(1.0-s.m_z);
-  }
-  return s.m_x>s.m_eta && s.m_y>=0.0 && s.m_x+s.m_y<1.0;
-}
-
 Lorentz_II_123::Lorentz_II_123(const Kernel_Key &k):
   Lorentz_II(k)
 {
@@ -80,31 +77,61 @@ Lorentz_II_123::Lorentz_II_123(const Kernel_Key &k):
 
 double Lorentz_II_123::Jacobian(const Splitting &s) const
 {
-  Splitting c(s);
-  c.m_x=s.m_z;
-  return Lorentz_II::Jacobian(c);
+  double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
+  double fn=p_sk->PS()->GetXPDF(s.m_eta/s.m_x,s.m_t,m_fl[1],s.p_c->Beam()-1);
+  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0;
+  double sab(s.m_q2/s.m_z+s.m_mi2+s.m_mk2);
+  double J1((sab-s.m_mi2-s.m_mk2)/sqrt(Lam(sab,s.m_mi2,s.m_mk2)));
+  double sjq(s.m_q2*s.m_z2/s.m_z-s.m_s+s.m_mk2);
+  double J2((sjq+s.m_s-s.m_mk2)/sqrt(Lam(sjq,-s.m_s,s.m_mk2)));
+  return J1*J2*fn/fo/(1.0+(-s.m_s+s.m_mj2-s.m_mij2)/(-s.m_t/s.m_z2));
 }
 
 int Lorentz_II_123::Construct(Splitting &s,const int mode) const
 {
+  if ((mode&1) && !(s.m_mode&1)) return Update(s,mode);
   if (s.m_s<rpa->gen.SqrtAccu()) s.m_s=0.0;
-  double Q2((s.p_c->Mom()+s.p_s->Mom()).Abs2()-s.m_mij2-s.m_mk2);
-  double q2(Q2+s.m_mij2-s.m_mj2+s.m_s), xa(s.m_z2), za(s.m_z);
-  Kin_Args ff(s.m_t/Q2*za/xa,q2/(xa/za*Q2),s.m_phi,s.m_kin);
+  if ((mode&1) && (s.m_mode&1)) s.m_s=0.0;
+  s.m_x=s.m_z*(s.m_q2-s.m_mi2-s.m_ml2-s.m_mk2)/s.m_q2;
+  s.m_y=s.m_z*(s.m_s+s.m_mi2+s.m_ml2)/s.m_q2;
+  double sai(-s.m_s-s.m_mi2-s.m_ml2), xa(s.m_z2), za(s.m_z);
+  double x(za*(s.m_q2-s.m_mi2-s.m_ml2-s.m_mk2)/s.m_q2);
+  Kin_Args ff(-za*sai/s.m_q2,x,s.m_phi,s.m_kin);
+  ff.m_x=xa;
   if (ConstructIIDipole
-      (-s.m_s,s.m_mj2,s.m_mij2,s.m_mk2,
-       -s.p_c->Mom(),-s.p_s->Mom(),ff)<0)
-    return -1;
-  double v((s.m_s+s.m_mi2+s.m_ml2)/(Q2/za));
-  Kin_Args ff2(v,xa-v,s.m_phi2,s.m_kin);
-  if (ConstructIIDipole
-      (s.m_mi2,s.m_ml2,-s.m_s,s.m_mk2,
-       ff.m_pi,ff.m_pk,ff2)<0) return -1;
-  ff.m_pj=ff2.m_lam*ff.m_pj;
-  ff.m_lam.insert(ff.m_lam.end(),ff2.m_lam.begin(),ff2.m_lam.end());
-  ff.m_pk=-ff2.m_pk;
-  ff.m_pi=-ff2.m_pi;
-  return Update(s,ff,mode,ff2.m_pj);
+      (s.m_mi2,s.m_ml2,s.m_mij2,s.m_mk2,
+       -s.p_c->Mom(),-s.p_s->Mom(),ff)<0) return -1;
+  Vec4D pjq(ff.m_pi-ff.m_pj+ff.m_pk);
+  double sjq(s.m_q2*xa/za-s.m_s+s.m_mk2);
+  double y2((s.m_q2*xa/za-2.0*s.m_s)/(sjq-s.m_mj2-s.m_q2));
+  double z2(s.m_t/xa/(s.m_q2*xa/za-2.0*s.m_s));
+  if (y2<0.0 || z2<0.0) return -1;
+  Kin_Args ff2(1.0/(1.0+y2),z2,s.m_phi2);
+  if (ConstructFFDipole
+      (s.m_mj2,s.m_q2,sjq,-s.m_s,
+       pjq,ff.m_pi-ff.m_pj,ff2)<0) return -1;
+  if (mode<0) return 1;
+  Vec4D pj(ff2.m_pi), q(ff2.m_pj), pai(ff2.m_pk);
+  s.m_lam.clear();
+  if (s.m_kin==0) {
+    Vec4D pbh(ff.m_pk);
+    s.m_lam.push_back(ff.m_pi-ff.m_pj-ff2.m_pi+ff.m_pk);
+    s.m_lam.back().Boost(pbh);
+    s.m_lam.push_back(Poincare(pbh,ff.m_pk));
+    s.m_lam.push_back(Poincare(-s.p_c->Mom()+ff.m_pk));
+    s.m_lam.back().Invert();
+    s.m_lam.Invert();
+  }
+  else {
+    s.m_lam.push_back
+      (Poincare(-s.p_c->Mom()-s.p_s->Mom(),
+		ff.m_pi-ff.m_pj-ff2.m_pi+ff.m_pk,1));
+  }
+  s.m_pi=-ff.m_pi;
+  s.m_pk=-ff.m_pk;
+  s.m_pl=ff.m_pj;
+  s.m_pj=ff2.m_pi;
+  return (mode&1)?Update(s,mode):1;
 }
 
 bool Lorentz_II_123::Cluster(Splitting &s,const int mode) const

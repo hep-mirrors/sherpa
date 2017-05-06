@@ -77,10 +77,10 @@ Dire::Dire(const Shower_Key &key):
   p_shower = new Shower();
   p_clus = new Cluster(p_shower);
   p_shower->Init(key.p_model,key.p_isr,key.p_reader);
-  int csmode=key.p_reader->Get<int>("CSS_CSMODE", 0);
+  int csmode=key.p_reader->Get<int>("CSS_CSMODE",0);
   if (csmode) p_cs = new Color_Setter(csmode);
-  m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK", 0, "Reco check", METHOD);
-  m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK", 0, "Weight check", METHOD);
+  m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK",0,"Reco check",METHOD);
+  m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
 }
 
 Dire::~Dire()
@@ -189,7 +189,7 @@ Amplitude *Dire::Convert
 			 Color(cl->Col().m_i,cl->Col().m_j)));
     ampl->push_back(p);
     p->SetId(p->Counter());
-    if (i<campl->NIn()) p->SetBeam(cl->Id()&3);
+    if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
     lmap[cl]=p;
   }
   msg_Debugging()<<*ampl<<"\n";
@@ -330,7 +330,7 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     if ((*next)[i]==a->Split().p_c->Out(1)) { jc=i; pj=(*next)[i]->Mom(); }
     if ((*next)[i]==a->Split().p_s->Out(0)) { kc=i; pk=(*next)[i]->Mom(); }
   }
-  a->Construct();
+  // a->Construct();
   Cluster_Amplitude *ampl(next->GetAmplitude());
   double ws, mu2;
   Splitting s=p_clus->KT2

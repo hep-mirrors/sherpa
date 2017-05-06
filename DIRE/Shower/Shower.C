@@ -51,7 +51,7 @@ public:
 
 bool Shower::Init(MODEL::Model_Base *const model,
 		  PDF::ISR_Handler *const isr,
-		  ATOOLS::Default_Reader *const reader)
+		  ATOOLS::Default_Reader *const read)
 {
   DEBUG_FUNC(this);
   p_model=model;
@@ -61,14 +61,15 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  m_rcf=reader->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_kin=reader->Get<int>("CSS_KIN_SCHEME",1);
-  m_kfac=reader->Get<int>("CSS_KFACTOR_SCHEME",1);
-  m_cpl=reader->Get<int>("CSS_COUPLING_SCHEME",1);
-  m_pdfmin=reader->Get<double>("CSS_PDF_MIN",1.0e-6);
-  m_maxem=reader->Get<unsigned int>
+  m_rcf=read->Get<double>("CSS_RECALC_FACTOR",4.0);
+  m_tcef=read->Get<double>("CSS_TC_ENHANCE",1.0);
+  m_kin=read->Get<int>("CSS_KIN_SCHEME",1);
+  m_kfac=read->Get<int>("CSS_KFACTOR_SCHEME",1);
+  m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
+  m_pdfmin=read->Get<double>("CSS_PDF_MIN",1.0e-6);
+  m_maxem=read->Get<unsigned int>
     ("CSS_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_oef=reader->Get<double>("CSS_OEF",3.0);
+  m_oef=read->Get<double>("CSS_OEF",3.0);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -77,6 +78,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
+  int types(read->Get<int>("CSS_KERNEL_TYPE",15));
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator
@@ -92,17 +94,18 @@ bool Shower::Init(MODEL::Model_Base *const model,
       sfs.insert(FTrip(v->in[0],v->in[2],v->in[1]));
       msg_IODebugging()<<"Add "<<v->in[0].Bar()<<" -> "
 		       <<v->in[1]<<" "<<v->in[2]<<" {\n";
-      {
+      if (!(m_kfac&256)) {
 	msg_Indent();
 	for (int type(0);type<4;++type)
-	  for (int mode(0);mode<2;++mode)
-	    for (int swap(0);swap<2;++swap)
-	      AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,reader)));
+	  if (types&(1<<type))
+	    for (int mode(0);mode<2;++mode)
+	      for (int swap(0);swap<2;++swap)
+		AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,read)));
       }
       msg_IODebugging()<<"}\n";
     }
   }
-  if (!(m_kfac&2)) return true;
+  if (!((m_kfac&2) || (m_kfac&1024)) || (m_kfac&512)) return true;
   ATOOLS::Flavour_Vector fls(4);
   for (long int i(-5);i<=5;++i) {
     if (i==0) continue;
@@ -110,8 +113,10 @@ bool Shower::Init(MODEL::Model_Base *const model,
     for (long int j(-5);j<=5;++j) {
       if (j==0 || j==i) continue;
       fls[3]=(fls[1]=Flavour(j)).Bar();
+      if (fls[0].Mass() || fls[3].Mass()) continue;
       for (int type(0);type<4;++type)
-	AddKernel(new Kernel(this,Kernel_Key(fls,1,type,reader,"FFFF")));
+	if (types&(1<<type))
+	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
     }
   }
   return true;
@@ -125,6 +130,7 @@ void Shower::AddKernel(Kernel *const k)
   }
   k->GF()->SetLimits();
   if (k->On()) m_sks[k->LF()->Flav(0)].push_back(k);
+  if (k->LF()->Flavs().size()>3) k->SetEF(m_tcef);
   m_cks.push_back(k);
   m_kmap[k->Type()|(k->Type()&1?(k->Mode()?4:0):0)]
     [k->LF()->Flav(1)][k->LF()->Flav(2)]=k;
@@ -138,6 +144,18 @@ void Shower::SetMS(ATOOLS::Mass_Selector *const ms)
     (*it)->LF()->SetMS(ms);
 }
 
+void Shower::AddWeight(const Amplitude &a,const double &t)
+{
+  double cw(1.0);
+  for (size_t i(0);i<a.size();++i) {
+    cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]));
+    a[i]->ClearWeights();
+  }
+  m_weight*=cw;
+  msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
+		 <<" ("<<m_weight<<")\n";
+}
+
 int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 {
   DEBUG_FUNC(this);
@@ -148,32 +166,14 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
   for (Splitting s(GeneratePoint(a,t));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t)) {
-    int stat(s.p_sk->Construct(s,0));
-    msg_IODebugging()<<"t = "<<s.m_t<<", w = "<<s.m_w.MC()
-		     <<" / "<<s.m_w.Accept()<<" -> "
-		     <<(stat==1?"accept\n":"reject\n");
-    s.p_c->AddWeight(s.p_s,s.m_t,stat==1?s.m_w.Accept():s.m_w.Reject());
-    msg_Debugging()<<"stat = "<<stat<<"\n";
+    int stat(s.p_sk->Construct(s,1));
+    msg_IODebugging()<<"t = "<<s.m_t<<", stat = "<<stat<<"\n";
+    AddWeight(a,s.m_t);
     if (stat==0) return stat;
     if (stat<0) continue;
-    double cw(1.0);
-    for (size_t i(0);i<a.size();++i) {
-      cw*=a[i]->GetWeight(s.m_t);
-      a[i]->ClearWeights();
-    }
-    m_weight*=cw;
-    msg_Debugging()<<a<<" -> w = "<<cw
-		   <<" ("<<m_weight<<")\n";
     if (++nem>=m_maxem) break;
   }
-  double cw(1.0);
-  for (size_t i(0);i<a.size();++i) {
-    cw*=a[i]->GetWeight(0.0);
-    a[i]->ClearWeights();
-  }
-  m_weight*=cw;
-  msg_Debugging()<<a<<" -> w = "<<cw
-		 <<" ("<<m_weight<<")\n";
+  AddWeight(a,0.0);
   return 1;
 }
 
@@ -255,7 +255,7 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 			     <<", t0 = "<<win.m_t0<<"\n";
 	      break;
 	    }
-	    if (!kit->second[j]->LF()->Compute(win)) break;
+	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
 	    if (win.m_w.MC()<ran->Get()) {
 	      win.p_c->AddWeight(win.p_s,win.m_t,win.m_w.Reject());
@@ -264,6 +264,7 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
 	    }
+	    win.p_c->AddWeight(win.p_s,win.m_t,win.m_w.Accept());
 	    msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			     <<" / "<<win.m_w.Accept()<<" -> select ["
 			     <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
@@ -285,7 +286,7 @@ double Shower::GetXPDF
     if (fl.Strong() || fl.Mass()<10.0) return 0.0;
     return 1.0;
   }
-  if (Q2<sqr(fl.Mass(true))) return 0.0;
+  if (Q2<sqr(2.0*fl.Mass(true))) return 0.0;
   if (x<p_pdf[b]->XMin() ||
       x>p_pdf[b]->XMax()*p_pdf[b]->RescaleFactor() ||
       Q2<p_pdf[b]->Q2Min() || Q2>p_pdf[b]->Q2Max())

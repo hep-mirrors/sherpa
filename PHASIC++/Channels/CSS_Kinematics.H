@@ -6,7 +6,7 @@
 namespace PHASIC {
 
   struct Kin_Args {
-    double m_y, m_z, m_phi, m_mk2;
+    double m_y, m_z, m_phi, m_mk2, m_x;
     ATOOLS::Vec4D m_pi, m_pj, m_pk;
     ATOOLS::Poincare_Sequence m_lam;
     int m_mode, m_stat;
@@ -14,7 +14,7 @@ namespace PHASIC {
     inline Kin_Args(const double &y=0.0,const double &z=0.0,
 		    const double &phi=0.0,const int mode=0,
 		    const int stat=-1):
-      m_y(y), m_z(z), m_phi(phi), m_mk2(-1.0),
+      m_y(y), m_z(z), m_phi(phi), m_mk2(-1.0), m_x(0.0),
       m_mode(mode), m_stat(stat) {}
   };// end of struct Kin_Args
 
@@ -31,8 +31,11 @@ namespace PHASIC {
   LN_Pair GetLN(const ATOOLS::Vec4D &pi,
 		const ATOOLS::Vec4D &pk,const int mode=0);
 
+  ATOOLS::Vec4D LT(const ATOOLS::Vec4D &a,const ATOOLS::Vec4D &b,
+		   const ATOOLS::Vec4D &c);
+
   double ComputePhi(ATOOLS::Vec4D pijt,ATOOLS::Vec4D pkt,
-		    ATOOLS::Vec4D pi,const int mode);
+		    ATOOLS::Vec4D pi);
 
   Kin_Args ClusterFFDipole(const double &mi2,const double &mj2,
 			   const double &mij2,const double &mk2,

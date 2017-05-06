@@ -20,68 +20,70 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      if (m_fl[1].Kfcode()>p_sk->GF()->Nf(s)) return 0.0; 
-      double x(s.m_z), CF(4.0/3.0), CA(3.0), TF(0.5), B2(0.0);
-      if (m_fl[1]==m_fl[0].Bar()) {
-	B2=TF*(3*x*log(x)*(3+x*(15+8*x)-3*(1+x)*log(x))-2*(-1+x)*(10+x+28*sqr(x)))/(9.*x)+
-	  (-CA/2.+CF)*(4-4*x+2*(1+x)*log(x)+(1+sqr(x))*(-12*DiLog(1/(1+x))+sqr(M_PI)+
-							3*sqr(log(x))-6*sqr(log(1+x)))/(3.*(1+x)));
+      if (m_fl[1].Kfcode()>p_sk->GF()->Nf(s)) return 0.0;
+      double TR(0.5), B2(0.0);
+      double s123(-s.m_t/s.m_z2-s.m_s+s.m_mj2);
+      double cf(s.m_q2/(s.m_q2+s.m_t/s.m_z2+s.m_s-s.m_mj2-s.m_mk2));
+      double z3(1.0-s.m_z2/s.m_z*cf), z2((2.0*s.m_pl*s.m_pk)/s.m_q2*cf), z1(1.0-z2-z3);
+      if (z1<1.0 || z2>0.0 || z3>0.0 || -s.m_q2/cf<s.m_t0) return 0.0;
+      if (s.m_mode==0) {// differential kernels
+	if (IsZero(s.m_s)) return 0.0;
+	double s13((s.m_pi+s.m_pj).Abs2()), s23((s.m_pl+s.m_pj).Abs2());
+	double s12(-s.m_s), t123((2.0*(z1*s23-z2*s13)+(z1-z2)*s12)/(z1+z2));
+	double cp13(CosPhi(s.m_pi,s.m_pj,s.m_pl,s.m_pk));
+	B2=0.5*TR*s123/s12*(-sqr(t123)/s12/s123+(4.0*z3+sqr(z1-z2))/(z1+z2)+(z1+z2-s12/s123));
+	B2-=TR*s123/s12*(1.0+z3*z3)/(1.0-z3)*(1-2.0*z1*z2/sqr(z1+z2));
+	B2-=TR*s123/s12*4.0*z1*z2*z3/(1.0-z3)/sqr(z1+z2)*(1.0-2.0*sqr(cp13));
+	if (m_fl[1]==m_fl[0].Bar()) {
+	  double t132((2.0*(z1*s23-z3*s12)+(z1-z3)*s13)/(z1+z3));
+	  double cp12(CosPhi(s.m_pi,s.m_pl,s.m_pj,s.m_pk)), CF(4.0/3.0), CA(3.0);
+	  B2+=0.5*TR*s123/s13*(-sqr(t132)/s13/s123+(4.0*z2+sqr(z1-z3))/(z1+z3)+(z1+z3-s13/s123));
+	  B2-=TR*s123/s13*(1.0+z2*z2)/(1.0-z2)*(1-2.0*z1*z3/sqr(z1+z3));
+	  B2-=TR*s123/s13*4.0*z1*z2*z3/(1.0-z2)/sqr(z1+z3)*(1.0-2.0*sqr(cp12));
+	  B2+=(CF-0.5*CA)*(2.*s23/s12+s123/s12*((1+z1*z1)/(1-z2)-2.0*z2/(1.0-z3))
+			   +2.*s23/s13+s123/s13*((1+z1*z1)/(1-z3)-2.0*z3/(1.0-z2))
+			   -s123*s123/(s12*s13)*z1*(1.0+z1*z1)/(1.0-z2)/(1.0-z3));
+	}
       }
-      else {
-	B2=TF*(3*x*log(x)*(3+x*(15+8*x)-3*(1+x)*log(x))-2*(-1+x)*(10+x+28*sqr(x)))/(9.*x);
+      else {// subtraction terms
+	B2=TR*((1.0+z3*z3)/(1.0-z3)+(1.0-2.0*z1*z2/sqr(z1+z2))*(1.0-z3+(1.0+z3*z3)/(1.0-z3)*(log(z2*z3/z1/(1.0-z3))-1.0)));
+	B2-=2.0*TR*((1.0+z3*z3)/(1.0-z3)*log(-z3/(1.0-z3))+1.0-z3)*(1.0-2.0*z1*z2/sqr(z1+z2));
+	if (m_fl[1]==m_fl[0].Bar()) {
+	  B2+=TR*((1.0+z2*z2)/(1.0-z2)+(1.0-2.0*z1*z3/sqr(z1+z3))*(1.0-z2+(1.0+z2*z2)/(1.0-z2)*(log(z2*z3/z1/(1.0-z2))-1.0)));
+	  B2-=2.0*TR*((1.0+z2*z2)/(1.0-z2)*log(-z2/(1.0-z2))+1.0-z2)*(1.0-2.0*z1*z3/sqr(z1+z3));
+	}
       }
-      B2+=20/(9*x)*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+      // summation and phase-space weight
+      B2*=2.0*log(1.0/s.m_z)*s.m_z/s.m_z2/(1.0+s.m_s/s123);
       B2*=p_sk->GF()->Coupling(s)/(2.0*M_PI);
-      return x*B2;
+      // desymmetrization
+      if (m_fl[1]==m_fl[0].Bar()) B2*=(1.0-s.m_z2)/(1.0-s.m_z);
+      return s.m_z*B2;
     }
 
     double Integral(const Splitting &s) const
     {
-      double I=20.0/9.0*0.5*0.5*log((s.m_Q2+s.m_t0)/(s.m_Q2*sqr(s.m_eta)+s.m_t0));
+      double k(sqrt(s.m_t0/s.m_Q2));
+      double I=20.0/9.0*0.5*(atan(1.0/k)-atan(s.m_eta/k))/k;
       return I*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     double Estimate(const Splitting &s) const
     {
-      double E=20.0/9.0*0.5*s.m_z/(sqr(s.m_z)+s.m_t0/s.m_Q2);
+      double E=20.0/9.0*0.5/(sqr(s.m_z)+s.m_t0/s.m_Q2);
       return E*p_sk->GF()->CplMax(s)/(2.0*M_PI)*m_jmax*PDFEstimate(s);
     }
 
     bool GeneratePoint(Splitting &s) const
     {
-      double k2(s.m_t0/s.m_Q2);
-      s.m_z=sqrt(pow((1.0+k2)/(sqr(s.m_eta)+k2),-ran->Get())*(1.0+k2)-k2);
+      double k(sqrt(s.m_t0/s.m_Q2));
+      s.m_z=k*tan(atan(1.0/k)-ran->Get()*(atan(1.0/k)-atan(s.m_eta/k)));
       s.m_phi=2.0*M_PI*ran->Get();
-      do s.m_z2=1.0/(1.0+ran->Get()*(1.0/s.m_z-1.0));
-      while (1.0-s.m_z2+sqr(s.m_z2)/2.0<ran->Get());
-      s.m_phi2=2.*M_PI*ran->Get();
-      return true;
-    }
-
-    bool Compute(Splitting &s,const int mode) const
-    {
-      double xa(s.m_z2), za(s.m_z), Q2(s.m_Q2);
-      s.m_y=s.m_s=0.0;
-      s.m_x=xa+s.m_t*za/(Q2*xa);
-      s.m_mk2=Q2*(xa/za-1.0)+s.m_t/xa-s.m_mi2-s.m_ml2;
-      if (!Lorentz_IF::Compute(s,0)) return false;
-      Splitting c(s);
-      double amax(p_sk->GF()->CplMax(s));
-      double I(amax/(2.0*M_PI)*4.0/3.0*
-	       (2.0/s.m_z-s.m_z+2.0*log(s.m_z)-1.0));
-      for (s.m_s=s.m_Q2*pow(ran->Get(),Max(1.0/I,1.0e-3));
-      	   s.m_s>s.m_t0;s.m_s*=pow(ran->Get(),Max(1.0/I,1.0e-3))) {
-	s.m_y=(c.m_t=s.m_s)*za/Q2;
-	s.m_x=xa+s.m_t*za/(Q2*xa)+s.m_s*za/Q2;
-	s.m_mk2=Q2*(xa/za-1.0)+s.m_s+s.m_t/xa-s.m_mi2-s.m_ml2;
-      	if (p_sk->GF()->Coupling(c)/amax<ran->Get()) continue;
-      	if (Lorentz_IF::Compute(s,0)) {
-	  s.m_mk2=p_ms->Mass2(s.p_s->Flav());
-	  return true;
-	}
-      }
-      s.m_mk2=p_ms->Mass2(s.p_s->Flav());
-      s.m_y=s.m_s=0.0;
+      s.m_z2=pow(s.m_z,ran->Get());
+      double v(s.m_z/s.m_z2*ran->Get());
+      s.m_s=v/(s.m_z/s.m_z2-v)*(s.m_t/s.m_z2-s.m_mj2);
+      s.m_phi2=2.0*M_PI*ran->Get();
+      s.m_mode=ran->Get()>0.5;
       return true;
     }
 

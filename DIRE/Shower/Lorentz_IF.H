@@ -20,14 +20,10 @@ namespace DIRE {
 
     bool Cluster(Splitting &s,const int mode) const;
 
-    bool Compute(Splitting &s,const int mode=1) const;
-
   };// end of class Lorentz_IF
 
   class Lorentz_IF_123: public Lorentz_IF {
   protected:
-
-    double J(const Splitting &s) const;
 
     double Jacobian(const Splitting &s) const;
 

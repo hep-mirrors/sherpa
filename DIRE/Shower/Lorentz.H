@@ -28,8 +28,7 @@ namespace DIRE {
 
     void SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const;
 
-    int Update(Splitting &s,const PHASIC::Kin_Args &ff,const int mode,
-	       const ATOOLS::Vec4D &pl=ATOOLS::Vec4D()) const;
+    int Update(Splitting &s,const int mode) const;
 
   public:
 
@@ -45,8 +44,6 @@ namespace DIRE {
 
     virtual bool GeneratePoint(Splitting &s) const = 0;
     virtual int Construct(Splitting &s,const int mode) const = 0;
-
-    virtual bool Compute(Splitting &s,const int mode=1) const = 0;
     virtual bool Cluster(Splitting &s,const int mode) const = 0;
 
     bool Allowed(const Splitting &s) const;

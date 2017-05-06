@@ -21,8 +21,16 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
-      double B1=-(1.0+s.m_z);
-      return A1*(1.0+p_sk->GF()->K(s))+B1;
+      double B=-(1.0+s.m_z);
+      if (s.m_kfac&2) {
+	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
+	double B2=(-1+x)*(-8*TF*(-5+(-1+x)*x*(-5+14*x))+x*(90*CF*(-1+x)+CA*(53-187*x+3*(1+x)*sqr(M_PI))))+
+	  3*x*log(x)*(-2*(TF+CF*(-9+6*(-1+x)*x)+TF*x*(12-x*(9+8*x)))+12*CF*log(1-x)*(1+sqr(x))-CA*(17+5*sqr(x)))-
+	  9*x*(CA-CF-2*TF+(CA+CF+2*TF)*sqr(x))*sqr(log(x));
+	B2-=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.));
+      }
+      return A1*(1.0+p_sk->GF()->K(s))+B;
     }
 
     double Integral(const Splitting &s) const
@@ -59,10 +67,22 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      double V=2.0*s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-(2.0-s.m_z);
-      if (s.m_mk2==0.0) return V;
-      V-=2.0*s.m_mk2/s.m_Q2*s.m_y/(1.0-s.m_y);
-      return V;
+      double B=2.0*s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-(2.0-s.m_z);
+      if (s.m_mk2==0.0) {
+	if (s.m_kfac&2) {
+	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
+	  double B2=-9*CF*x*(5+7*x)-16*TF*(5+x*(-5+4*x))+36*CA*(2+x*(2+x))*DiLog(1/(1+x))+
+	    2*CA*(9+x*(19+x*(37+44*x))-3*sqr(M_PI)*(2+sqr(x)))+
+	    3*(-2*log(1-x)*(CA*(-22+(22-17*x)*x)+4*TF*(2+(-2+x)*x)+3*CF*(6+x*(-6+5*x))+6*CA*(2+(-2+x)*x)*log(x))+
+	       x*log(x)*(3*CF*(4+7*x)-2*CA*(36+x*(15+8*x))+3*(CF*(-2+x)+2*CA*(2+x))*log(x))+
+	       6*(CA-CF)*(2+(-2+x)*x)*sqr(log(1-x))+6*CA*(2+x*(2+x))*sqr(log(1+x)));
+	  B2+=2.*40.*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x);
+	}
+	return B;
+      }
+      B-=2.0*s.m_mk2/s.m_Q2*s.m_y/(1.0-s.m_y);
+      return B;
     }
 
     double Integral(const Splitting &s) const

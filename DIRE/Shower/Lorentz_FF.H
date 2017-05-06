@@ -18,8 +18,6 @@ namespace DIRE {
 
     bool Cluster(Splitting &s,const int mode) const;
 
-    bool Compute(Splitting &s,const int mode=1) const;
-
   };// end of class Lorentz_FF
 
   class Lorentz_FF_123: public Lorentz_FF {
