@@ -60,8 +60,8 @@ namespace CSSHOWER {
 			   const int pdfcheck,const int kfmode);
 
     // CS cluster kperps
-    double GetX(const ATOOLS::Cluster_Leg *l,
-		Splitting_Function_Base *const sf) const;
+    double GetX(const ATOOLS::Cluster_Leg*,
+		Splitting_Function_Base* const) const;
     PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),

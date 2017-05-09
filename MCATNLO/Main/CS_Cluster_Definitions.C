@@ -101,13 +101,18 @@ CS_Parameters CS_Cluster_Definitions::KT2
   return cs;
 }
 
-double CS_Cluster_Definitions::GetX
-(const Cluster_Leg *l,Splitting_Function_Base *const sf) const
+double CS_Cluster_Definitions::GetX(const Cluster_Leg* l,
+                                    Splitting_Function_Base* const sf) const
 {
-  int beam((l->Id()&1)?0:1);
-  if ((l->Id()&3)==0) THROW(fatal_error,"Invalid call");
-  if (sf) sf->Lorentz()->SetBeam(beam);
-  return -p_shower->ISR()->CalcX(l->Mom());
+  if ((l->Id() & 3) == 0)
+    THROW(fatal_error, "Invalid call for parton ID="+ToString(l->Id()));
+
+  int beam((l->Id() & 1) ? 0 : 1);
+  if (sf)
+    sf->Lorentz()->SetBeam(beam);
+
+  Vec4D mom( (l->Mom()[0] < 0.0) ? -l->Mom() : l->Mom() );
+  return p_shower->ISR()->CalcX(mom);
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
