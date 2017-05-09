@@ -53,7 +53,8 @@ void Splitter_Base::FillMasses() {
   m_flavs1.first  = m_barrd?p_part1->Flavour().Bar():p_part1->Flavour();
   m_flavs2.second = m_barrd?p_part2->Flavour().Bar():p_part2->Flavour();
   m_Q2    = (p_part1->Momentum()+p_part2->Momentum()).Abs2();
-  m_E     = sqrt(m_Q2)/2.;
+  m_Q     = sqrt(m_Q2);
+  m_E     = m_Q/2.;
   m_mass1 = p_constituents->Mass(p_part1->Flavour());
   m_mass2 = p_constituents->Mass(p_part2->Flavour());
   m_m12   = sqr(m_mass1);

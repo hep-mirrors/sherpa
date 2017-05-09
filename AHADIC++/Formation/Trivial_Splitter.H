@@ -36,7 +36,7 @@ namespace AHADIC {
     void SelectFlavour();
     bool FixTrialKinematics();
     void FixTransverseMomentum(bool rescue=false);
-    void FixBetaAndZ();
+    bool FixBetaAndZ();
     bool ConstructMomenta();
     bool CheckKinematics();
 

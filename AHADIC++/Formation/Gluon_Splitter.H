@@ -6,7 +6,7 @@
 namespace AHADIC {
   class Gluon_Splitter : public Splitter_Base {
   private:
-    double m_z1min, m_z1max, m_z2min, m_z2max, m_x, m_y;
+    double m_zmin, m_zmax, m_z, m_x, m_y;
 
     bool      MakeLongitudinalMomenta();
     void      CalculateLimits();

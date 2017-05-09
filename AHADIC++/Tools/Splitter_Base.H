@@ -23,7 +23,7 @@ namespace AHADIC {
     Proto_Particle * p_part1, * p_part2, * p_part3;
     bool   m_barrd;
     double m_minmass;
-    double m_Q2, m_E, m_mass1, m_mass2, m_mass3, m_Emax;
+    double m_Q2, m_Q, m_E, m_mass1, m_mass2, m_mass3, m_Emax;
     double m_m12, m_m22, m_m32, m_alpha, m_beta;
 
     Flavour_Pair    m_flavs1, m_flavs2;

@@ -1,46 +1,43 @@
 #include "AHADIC++/Formation/Gluon_Splitter.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
 
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
-  CalculateLimits();
-  m_z1 = m_zselector(m_z1min,m_z1max,p_part1->Flavour());
-  m_z2 = m_zselector(m_z2min,m_z2max,p_part2->Flavour());
-  double R2 = 0.;
-  if (CalculateXY()) {
-    R2 = (1.-m_y)*(1.-m_z2)*m_Q2-m_kt2;  
-    //msg_Out()<<"   "<<METHOD<<": "<<sqrt(R2)<<" > "<<m_minQ_1<<".\n";
-    //if (R2<0.) {
-    //  msg_Out()<<"   negative cluster mass: z1 = "<<m_z1<<", z2 = "<<m_z2
-    //	       <<" and x = "<<m_x<<" from z1 in ["<<m_z1min<<", "<<m_z1max<<"]"
-    //	       <<".\n";
-    //}
-    //else if (R2>sqr(m_minQ_1)) {
-    //  msg_Out()<<"*** works:  z1 = "<<m_z1<<", z2 = "<<m_z2<<".\n";
-    //}
+  if (4.*(m_popped_mass2+m_kt2)/sqr(m_Q-m_mass1)>1.) {
+    msg_Error()<<METHOD<<" throws error: impossible kt^2 = "<<m_kt2<<"\n"
+	       <<"   for Q = "<<m_Q<<" and M = "<<m_mass1<<" "
+	       <<"with m = "<<m_popped_mass<<"\n";
+    return false;
   }
-  return (R2>sqr(m_minQ_1));
+  CalculateLimits();
+  do {
+    m_z = m_zselector(m_zmin,m_zmax);
+  } while (!CalculateXY());
+  return true;
 }
 
 void Gluon_Splitter::CalculateLimits() {
-  m_z1min   = m_m12/m_Q2;
-  m_z1max   = 1.;
-  double r2 = (m_popped_mass2+m_kt2)/m_Q2;
-  double R2 = (m_m12+m_kt2)/m_Q2;
-  double ce = (1. + r2 - R2)/2.;
-  double la = Lambda(1,r2,R2);
-  m_z2min   = Max(ce - la,r2);
-  m_z2max   = ce + la;
-  if (m_z2max<m_z2min) abort();
+  double arg = sqrt(1.-4.*(m_popped_mass2+m_kt2)/sqr(m_Q-m_mass1));
+  m_zmin = (1.-arg)/2.;
+  m_zmax = (1.+arg)/2.;
 }
 
 bool Gluon_Splitter::CalculateXY() {
-  m_x = m_m12/(m_z1*m_Q2);
-  m_y = (m_popped_mass2+m_kt2)/(m_z2*m_Q2);
-  return (m_x<=1. && m_y<=1.);
+  double R2  = (m_popped_mass2+m_kt2)/(m_z*(1.-m_z));
+  double arg = sqr(m_Q2+R2-m_m12)-4.*m_Q2*R2;
+  if (arg<0.) return false;
+  m_y = (m_Q2-m_m12+R2-sqrt(arg))/(2.*m_Q2);
+  m_x = m_m12/((1.-m_y)*m_Q2);
+  //msg_Out()<<METHOD<<":\n"
+  //	   <<"*** from {x, y, z, kt = "<<m_x<<", "<<m_y<<", "<<m_z<<", "
+  //	   <<m_kt<<"}\n"
+  //	   <<"*** m2 = "<<m_popped_mass2<<", kt2 = "<<m_kt2<<", "
+  //	   <<"M2 = "<<m_m12<<"}.\n";
+  return (m_x<=1. && m_x>=0. && m_y<=1. && m_y>=0.);
 }
 
 bool Gluon_Splitter::CheckKinematics() {
@@ -66,7 +63,7 @@ void Gluon_Splitter::FillParticlesInLists() {
 
 void Gluon_Splitter::UpdateSpectator() {
   // Replace splitted gluon with (anti-)(di-)quark and correct momentum
-  Vec4D newmom2 = m_E*(m_y*s_AxisP+m_z2*s_AxisM)-m_ktvec;
+  Vec4D newmom2 = m_E*(m_y*(1.-m_z)*s_AxisP + m_z*(1.-m_x)*s_AxisM)-m_ktvec;
   m_rotat.RotateBack(newmom2);
   m_boost.BoostBack(newmom2);
   p_part2->SetFlavour(m_newflav2);
@@ -83,14 +80,30 @@ Cluster * Gluon_Splitter::MakeCluster() {
   // individual components, i.e. the momenta of the Proto_Particles
   // it is made of --- transverse momentum goes to new particle
   //msg_Out()<<METHOD<<".\n";
-  Vec4D newmom11 = m_E*(         m_z1*s_AxisP+          m_x*s_AxisM);
-  Vec4D newmom12 = m_E*((1.-m_y-m_z1)*s_AxisP+(1.-m_x-m_z2)*s_AxisM)+m_ktvec;
+  Vec4D newmom11 = m_E*((1.-m_y)*s_AxisP +               m_x*s_AxisM);
+  Vec4D newmom12 = m_E*( m_y*m_z*s_AxisP + (1.-m_z)*(1.-m_x)*s_AxisM)+m_ktvec;
+  Vec4D newmom2 = m_E*(m_y*(1.-m_z)*s_AxisP + m_z*(1.-m_x)*s_AxisM)-m_ktvec;
   // back into lab system
   m_rotat.RotateBack(newmom11);
   m_boost.BoostBack(newmom11);
   m_rotat.RotateBack(newmom12);
   m_boost.BoostBack(newmom12);
-  if (newmom11.Abs2()-m_m12 > 1.e-8)          abort();
+  if (dabs(newmom11.Abs2()-m_m12)          > 1.e-8 ||
+      dabs(newmom12.Abs2()-m_popped_mass2) > 1.e-8) {
+    msg_Error()<<"Error in "<<METHOD<<": masses not respected.\n"
+	       <<newmom11<<" -> "<<sqrt(dabs(newmom11.Abs2()))
+	       <<" vs. "<<m_mass1<<"\n"
+	       <<newmom12<<" -> "<<sqrt(dabs(newmom12.Abs2()))
+	       <<" vs. "<<m_popped_mass<<" from "<<m_newflav1<<"\n"
+      	       <<newmom2<<" -> "<<sqrt(dabs(newmom2.Abs2()))
+	       <<" vs. "<<m_popped_mass<<" from "<<m_newflav1<<"\n"
+	       <<"*** from {x, y, z, kt} = "
+	       <<"{"<<m_x<<", "<<m_y<<", "<<m_z<<", "<<m_kt<<"}, "
+	       <<" Q = "<<m_Q<<"}.\n"
+	       <<"*** mom = "<<p_part1->Momentum()<<" and "
+	       <<p_part2->Momentum()<<".\n";
+    exit(1);
+  }
   // Update momentum of original (anti-)(di-) quark after gluon splitting
   //if (p_part1->Flavour()==Flavour(kf_b) ||
   //    p_part1->Flavour()==Flavour(kf_b).Bar())

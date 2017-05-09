@@ -57,10 +57,6 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 	     <<(*p_part1)<<(*p_part2)<<"\n";
     return false;
   }
-  //m_z1  = m_zselector(m_z1min,m_z1max,p_part1->Flavour());
-  //m_z2  = m_zselector(m_z2min,m_z2max,p_part2->Flavour());
-  //m_R12 = m_z1*(1.-m_z2)*m_Q2-m_kt2;
-  //m_R21 = (1.-m_z1)*m_z2*m_Q2-m_kt2;
   return CheckIfAllowed();
 }
 
@@ -74,11 +70,14 @@ double Cluster_Splitter::DeltaM2(const double & MC2,const double & mt2,
   else if (flav.IsDiQuark()) {
     m_flcnt = 2;
   }
-  double m(flav.HadMass()), m2(m*m), random(ran->Get());
-  double MQ2(sqr(sqrt(MC2)-sqrt(mt2)-m)/4.);
-  double arg2(m_gamma[m_flcnt]*mt2);
-  return MQ2*pow(random,m_gamma[m_flcnt]);
-  return (-arg2*log((1.-random)+random*exp(-MQ2/arg2)));
+  double m2, M2 = (m_flcnt==1?sqr(flav.HadMass()):MC2);
+  double max = (pow(m_alpha[m_flcnt]*m_gamma[m_flcnt],-m_alpha[m_flcnt]) *
+		exp(-1./m_alpha[m_flcnt]));
+  do {
+    m2 = ran->Get()*MC2;
+  } while (pow(m2/M2,m_alpha[m_flcnt])*
+	   exp(-m_gamma[m_flcnt]*m2/M2)<ran->Get()*max);
+  return m2;
 }
 
 bool Cluster_Splitter::CheckIfAllowed() {
