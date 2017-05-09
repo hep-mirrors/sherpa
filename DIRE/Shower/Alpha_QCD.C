@@ -89,7 +89,7 @@ double Alpha_QCD::Coupling(const Splitting &s) const
   if (s.m_clu&1) return 1.0;
   double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
   double scl(CplFac(scale)*scale*murf);
-  if (scl<p_cpl->CutQ2()) return 0.0;
+  if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   if (!IsEqual(scl,s.m_t)) {
     std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));
@@ -98,8 +98,8 @@ double Alpha_QCD::Coupling(const Splitting &s) const
     if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      if ((s.m_kfac&6)==6) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
+      double L=log(ths[i]/ths[i-1]), ct=0.0;
+      if ((s.m_kfac&6)==6) ct+=cpl/(2.0*M_PI)*B0(nf)*L;
       cpl*=1.0-ct;
     }
   }

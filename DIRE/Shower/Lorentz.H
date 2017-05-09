@@ -46,14 +46,14 @@ namespace DIRE {
     virtual int Construct(Splitting &s,const int mode) const = 0;
     virtual bool Cluster(Splitting &s,const int mode) const = 0;
 
-    bool Allowed(const Splitting &s) const;
+    virtual void SetMS(ATOOLS::Mass_Selector *const ms);
+
+    virtual bool Allowed(const Splitting &s) const;
 
     bool SetLimits(Splitting &s) const;
 
     inline const ATOOLS::Flavour &Flav(const int i) const { return m_fl[i]; }
     inline const ATOOLS::Flavour_Vector &Flavs() const { return m_fl; }
-
-    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
 
   };// end of class Lorentz
 

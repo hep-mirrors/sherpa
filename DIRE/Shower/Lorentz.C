@@ -43,6 +43,11 @@ Lorentz::~Lorentz()
 {
 }
 
+void Lorentz::SetMS(ATOOLS::Mass_Selector *const ms)
+{
+  p_ms=ms;
+}
+
 void Lorentz::SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const
 {
   s.m_y=ff.m_y;

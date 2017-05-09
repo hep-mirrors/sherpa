@@ -51,6 +51,8 @@ namespace DIRE {
 
     inline int On() const { return m_on; }
 
+    inline void SetOn(const int &on) { m_on=on; }
+
     inline void SetEF(const double &ef) { m_ef=ef; }
 
   };// end of class Kernel

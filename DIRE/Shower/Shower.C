@@ -113,7 +113,6 @@ bool Shower::Init(MODEL::Model_Base *const model,
     for (long int j(-5);j<=5;++j) {
       if (j==0 || j==i) continue;
       fls[3]=(fls[1]=Flavour(j)).Bar();
-      if (fls[0].Mass() || fls[3].Mass()) continue;
       for (int type(0);type<4;++type)
 	if (types&(1<<type))
 	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
@@ -221,7 +220,8 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
 	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
-	    if (kit->second[j]->Allowed(cur)) {
+	    if (kit->second[j]->On() &&
+		kit->second[j]->Allowed(cur)) {
 	      specs[j].push_back(cur.p_s);
 	      double I=kit->second[j]->Integral(cur);
 	      psum[j].push_back(csum+=dabs(I));

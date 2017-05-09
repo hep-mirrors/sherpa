@@ -35,6 +35,10 @@ namespace DIRE {
 
     bool Cluster(Splitting &s,const int mode) const;
 
+    void SetMS(ATOOLS::Mass_Selector *const ms);
+
+    bool Allowed(const Splitting &s) const;
+
   };// end of class Lorentz_IF_123
 
 }// end of namepsace DIRE

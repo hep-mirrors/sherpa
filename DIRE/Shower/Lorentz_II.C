@@ -75,6 +75,19 @@ Lorentz_II_123::Lorentz_II_123(const Kernel_Key &k):
 {
 }
 
+void Lorentz_II_123::SetMS(ATOOLS::Mass_Selector *const ms)
+{
+  p_ms=ms;
+  if (p_ms->Mass(m_fl[0]) || p_ms->Mass(m_fl[1])) p_sk->SetOn(0);
+  else p_sk->SetOn(1);
+}
+
+bool Lorentz_II_123::Allowed(const Splitting &s) const
+{
+  if (p_ms->Mass(s.p_s->Flav())) return false;
+  return Lorentz::Allowed(s);
+}
+
 double Lorentz_II_123::Jacobian(const Splitting &s) const
 {
   double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
