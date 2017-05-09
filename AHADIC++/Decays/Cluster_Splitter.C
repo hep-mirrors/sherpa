@@ -42,21 +42,8 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
     }
     m_z1  = ((m_Q2-m_R21+m_R12+sqrt(arg1))/(2.*m_Q2));
     m_z2  = ((m_Q2-m_R12+m_R21+sqrt(arg2))/(2.*m_Q2));
-    //msg_Out()<<"\n\n\n"
-    //         <<METHOD<<"("<<m_flavs1.first<<" "<<m_flavs2.second<<",
-    //	     <<"kt = "<<m_kt<<", mass = "<<m_popped_mass<<"): "
-    // 	     <<"M1 = "<<sqrt(dM12)<<", M2 = "<<sqrt(dM12)<<".\n"
-    //	     <<"   --> "<<m_z1<<" and "<<m_z2
-    //	     <<" from minimals = "<<m_m12min<<" "<<m_m22min
-    //	     <<" --> "<<m_R12<<" and "<<m_R21<<".\n";
   } while (trials++<1000 && (m_z1>1. || m_z2>1. || m_z1<0. || m_z2<0.));
-  if (trials>=999) {
-    msg_Out()<<METHOD<<" failed for cluster with mass = "
-	     <<sqrt(m_Q2)<<", popped = "<<m_newflav2
-	     <<" and kt = "<<sqrt(m_kt2)<<":\n"
-	     <<(*p_part1)<<(*p_part2)<<"\n";
-    return false;
-  }
+  if (trials>=999) return false;
   return CheckIfAllowed();
 }
 
@@ -70,9 +57,12 @@ double Cluster_Splitter::DeltaM2(const double & MC2,const double & mt2,
   else if (flav.IsDiQuark()) {
     m_flcnt = 2;
   }
-  double m2, M2 = (m_flcnt==1?sqr(flav.HadMass()):MC2);
-  double max = (pow(m_alpha[m_flcnt]*m_gamma[m_flcnt],-m_alpha[m_flcnt]) *
-		exp(-1./m_alpha[m_flcnt]));
+  double m2, M2 = sqr(flav.HadMass())+mt2; //+MC2;
+  //if (m_flavs1.first.HadMass()>1. || m_flavs2.second.HadMass()>1.)
+  //  M2 = mt2;//sqr(Max(m_flavs1.first.HadMass(),m_flavs2.second.HadMass()));
+  double max = (m_gamma[m_flcnt]==0?MC2/M2:
+		(pow(m_alpha[m_flcnt]*m_gamma[m_flcnt],-m_alpha[m_flcnt]) *
+		 exp(-1./m_alpha[m_flcnt])));
   do {
     m2 = ran->Get()*MC2;
   } while (pow(m2/M2,m_alpha[m_flcnt])*
@@ -81,26 +71,28 @@ double Cluster_Splitter::DeltaM2(const double & MC2,const double & mt2,
 }
 
 bool Cluster_Splitter::CheckIfAllowed() {
-  //msg_Out()<<METHOD<<"(z1 = "<<m_z1<<", z2 = "<<m_z2<<"):\n"
-  //	   <<"   ("<<p_part1->Flavour()<<"+"<<m_newflav1<<"), "
-  //	   <<"m = "<<sqrt(m_R12)<<" > "<<m_minQ_1<<"\n"
-  //	   <<"   ("<<m_newflav2<<"+"<<p_part2->Flavour()<<"), "
-  //	   <<"m = "<<sqrt(m_R21)<<" > "<<m_minQ_2<<"\n";
   return (m_R12>sqr(m_minQ_1) && m_R21>sqr(m_minQ_2));
 }
 
-void Cluster_Splitter::FillParticlesInLists() {
+bool Cluster_Splitter::FillParticlesInLists() {
   for (size_t i=0;i<2;i++) {
     Cluster * cluster = MakeCluster(i);
-    if (p_softclusters->Treat(cluster)) {
-      //msg_Out()<<"   ---> decays to hadrons, erase it.\n";
+    switch (p_softclusters->Treat(cluster)) {
+    case -1:
+      if (i==1) {
+	delete p_cluster_list->back();
+	p_cluster_list->pop_back();
+      }
+      return false;
+    case 1:
       delete cluster;
-    }
-    else {
-      //msg_Out()<<"   ---> keep it.\n";
+      break;
+    default:
       p_cluster_list->push_back(cluster);
+      break;
     }
   }
+  return true;
 }
 
 Cluster * Cluster_Splitter::MakeCluster(size_t i) {
@@ -134,12 +126,6 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
   (i==0?p_part1:p_part2)->SetMomentum(newmom11);
   Proto_Particle * newp =
     new Proto_Particle((i==0?m_newflav1:m_newflav2),newmom12,'l');
-
-  //msg_Out()<<METHOD<<"["<<p_part1->Flavour()<<", "<<p_part2->Flavour()<<"]"
-  //	   <<" makes cluster [i = "<<i<<": "
-  //	   <<(i==0?p_part1->Flavour():m_newflav2)<<", "
-  //	   <<(i==0?m_newflav1:p_part2->Flavour())<<"]\n";
-
   return (i==0?new Cluster(p_part1,newp):new Cluster(newp,p_part2));
 }
 

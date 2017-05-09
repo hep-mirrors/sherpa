@@ -22,20 +22,21 @@ void Cluster_Decayer::Init() {
 
 bool Cluster_Decayer::operator()() {
   while (!p_cluster_list->empty()) {
-    if (!Treat(p_cluster_list->front())) return false;
+    if (!Treat(p_cluster_list->front())) {
+      return false;
+    }
     p_cluster_list->pop_front();
   }
   return true;
 }
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
-  //msg_Out()<<METHOD<<":\n"<<(*cluster)<<"\n";
   if (!(p_softclusters->MustPromptDecay(cluster)) &&
       m_splitter((*cluster)[0],(*cluster)[1])) {
     delete cluster;
     return true;
   }
-  if (p_softclusters->Treat(cluster,true)) {
+  if (p_softclusters->Treat(cluster,true)==1) {
     cluster->Clear();
     delete cluster;
     return true;

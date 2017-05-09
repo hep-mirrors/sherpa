@@ -12,7 +12,7 @@ namespace AHADIC {
     void      CalculateLimits();
     bool      CalculateXY();
 
-    void      FillParticlesInLists();
+    bool      FillParticlesInLists();
     bool      CheckKinematics();
     Cluster * MakeCluster();
     void      UpdateSpectator();

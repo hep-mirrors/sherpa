@@ -135,7 +135,15 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2) {
   Cluster * cluster = new Cluster(part1,part2);
   p_singlet->pop_front();
   p_singlet->pop_back();
-  if (p_softclusters->Treat(cluster)) delete cluster;
-  else p_cluster_list->push_back(cluster);
+  switch (p_softclusters->Treat(cluster)) {
+  case 1:
+    delete cluster;
+    break;
+  case -1:
+    return false;
+  default:
+    p_cluster_list->push_back(cluster);
+    break;
+  }
   return true;
 }

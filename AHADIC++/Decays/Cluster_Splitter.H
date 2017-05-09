@@ -17,7 +17,7 @@ namespace AHADIC {
 		   const ATOOLS::Flavour & flav);
     void CalculateLimits();
 
-    void FillParticlesInLists();
+    bool FillParticlesInLists();
     bool CheckIfAllowed();
     bool CheckKinematics() { return true; }
     Cluster * MakeCluster(size_t i);

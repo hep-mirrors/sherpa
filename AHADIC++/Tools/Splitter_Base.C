@@ -28,9 +28,6 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   if (!InitSplitting(part1,part2,part3)) return false;
   size_t attempts=100;
   do { attempts--; } while(attempts>0 && !MakeSplitting());
-  //msg_Out()<<"************* "<<METHOD<<" with "<<attempts<<" attempts "
-  //	   <<"(z1,2 = "<<m_z1<<", "<<m_z2<<" and kt = "
-  //	   <<sqrt(m_kt2)<<" < "<<m_ktmax<<").\n";
   return (attempts>0);
 }
 
@@ -94,11 +91,7 @@ void Splitter_Base::ConstructPoincare() {
 bool Splitter_Base::MakeSplitting() {
   PopFlavours();
   DetermineMinimalMasses();
-  if (MakeKinematics()) {
-    FillParticlesInLists();
-    return true;
-  }
-  return false;
+  return (MakeKinematics() && FillParticlesInLists());
 }
 
 void Splitter_Base::PopFlavours() {

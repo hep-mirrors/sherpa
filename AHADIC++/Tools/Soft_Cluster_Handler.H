@@ -25,8 +25,8 @@ namespace AHADIC {
     ATOOLS::Flavour m_hads[2];
     
     bool   FillFlavours(Cluster * cluster);
-    bool   CheckOutsideRange();
-    bool   Decay();
+    int    CheckOutsideRange();
+    int    Decay();
     double PhaseSpace(const double & m2,const double & m3);
     double DecayWeight();
     double RadiationWeight();
@@ -43,7 +43,7 @@ namespace AHADIC {
 
     void Init();
     bool MustPromptDecay(Cluster * cluster);
-    bool Treat(Cluster * cluster,bool force=false);
+    int  Treat(Cluster * cluster,bool force=false);
     bool TreatTwoGluons(Cluster * cluster);
     bool RadiativeDecay(Cluster * cluster);
 

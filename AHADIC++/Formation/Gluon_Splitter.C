@@ -54,11 +54,20 @@ bool Gluon_Splitter::CheckKinematics() {
   return ((newmom2+p_part3->Momentum()).Abs2()>sqr(m_minQ_2));
 }
 
-void Gluon_Splitter::FillParticlesInLists() {
+bool Gluon_Splitter::FillParticlesInLists() {
   Cluster * cluster = MakeCluster();
-  if (p_softclusters->Treat(cluster)) delete cluster;
-  else p_cluster_list->push_back(cluster);
+  switch (p_softclusters->Treat(cluster)) {
+  case 1:
+    delete cluster;
+    break;
+  case -1:
+    return false;
+  default:
+    p_cluster_list->push_back(cluster);
+    break;
+  }
   UpdateSpectator();
+  return true;
 }
 
 void Gluon_Splitter::UpdateSpectator() {

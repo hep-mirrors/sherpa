@@ -47,7 +47,7 @@ namespace AHADIC {
     virtual bool MakeKinematics();
     virtual void MakeTransverseMomentum();
     virtual bool MakeLongitudinalMomenta() = 0;
-    virtual void FillParticlesInLists()    = 0;
+    virtual bool FillParticlesInLists()    = 0;
     virtual bool CheckKinematics()         = 0;
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,

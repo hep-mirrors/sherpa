@@ -36,34 +36,45 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
 	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
 }
 
-bool Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
+int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
   FillFlavours(cluster);
-  if (!force && CheckOutsideRange()) return false;
+  if (!force) {
+    switch (CheckOutsideRange()) {
+    case -1: return -1;
+    case 1:  return 0;
+    default: break;
+    }
+  }
   return Decay();
 }
 
-bool Soft_Cluster_Handler::CheckOutsideRange() {
+int Soft_Cluster_Handler::CheckOutsideRange() {
   // we may want to check if we want to take the full range of possible
   // cluster decays into two hadrons
   double mass_l   = p_singletransitions->GetLightestMass(m_flavs);
-  if (mass_l<0. && m_mass<p_doubletransitions->GetLightestMass(m_flavs))
-    return false;
+  if (mass_l<0. && m_mass<p_doubletransitions->GetLightestMass(m_flavs)) {
+    msg_Tracking()<<"   "<<METHOD<<"("<<p_cluster<<") gives -1.\n"
+		  <<"   Funny cluster from "
+		  <<m_flavs.first<<", "<<m_flavs.second<<".\n";
+    return -1;
+  }
   if (m_mass<=mass_l) {
     Flavour had = p_singletransitions->GetLightestTransition(m_flavs);
-    msg_Error()<<"Problem spotted in "<<METHOD<<":\n"
-	       <<"   test mass = "<<m_mass<<" too light for lightest hadron, "
-	       <<had<<" with mass = "<<mass_l<<"\n"
-	       <<"   made from <"<<m_flavs.first<<", "<<m_flavs.second<<"> "
-	       <<" with masses "<<m_flavs.first.HadMass()<<" + "
-	       <<m_flavs.second.HadMass()<<".\n";
-    return false;
+    msg_Tracking()<<"   "<<METHOD<<" spotted problem:\n"
+		  <<"   test mass = "<<m_mass
+		  <<" too light for lightest hadron, "
+		  <<had<<" with mass = "<<mass_l<<"\n"
+		  <<"   made from <"<<m_flavs.first<<", "<<m_flavs.second<<"> "
+		  <<" with masses "<<m_flavs.first.HadMass()<<" + "
+		  <<m_flavs.second.HadMass()<<".\n";
+    return -1;
   }
   double mass_dec =
     p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
     p_doubletransitions->GetLightestMass(m_flavs) * (1.-m_light); 
-  if (m_mass>mass_dec) return true;
-  return false;
+  if (m_mass>mass_dec) return 1;
+  return 0;
 }
 
 bool Soft_Cluster_Handler::RadiativeDecay(Cluster * cluster) {
@@ -111,14 +122,14 @@ bool Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
   m_flavs.second = (*cluster)[1]->Flavour();
 }
 
-bool Soft_Cluster_Handler::Decay() {
+int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  if (decweight>0.) return FixKinematics();
+  if (decweight>0. && FixKinematics()) return 1;
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();
-  if (radweight>0.) return FixKinematics();
-  return false;
+  if (radweight>0. && FixKinematics()) return 1;
+  return -1;
 }
 
 bool Soft_Cluster_Handler::FixKinematics() {
