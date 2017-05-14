@@ -111,7 +111,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/Remnant/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
-	  MODEL/SM/Makefile \
 	  MODEL/HEFT/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \

@@ -198,10 +198,10 @@ def t0():
     g3 = Symbol('g3', real=True)
     g0 = sqrt(g1**2+g2**2+g3**2)
 
-    m2 = (uplusbar(pb._array[0]._array[0],
-                   pb._array[1]._array[0],
-                   pb._array[2]._array[0],
-                   pb._array[3]._array[0],'a')*
+    m2 = (uminusbar(pb._array[0]._array[0],
+                    pb._array[1]._array[0],
+                    pb._array[2]._array[0],
+                    pb._array[3]._array[0],'a')*
           Gamma('mu','a','b')*
           uplus(p0,p1,p2,p3,'b')*mink_metric('mu','nu')*
           conjugate_tensor1d(epsilonplus(pa._array[0]._array[0],
@@ -210,7 +210,14 @@ def t0():
                                          pa._array[3]._array[0], 'nu', g0,g1,g2,g3)))
 
     M2 = m2._array[0]*cgt(m2._array[0])
+
+    m2 = m2._array[0].simplify()
+
+    from sympy import Q, refine, Abs
+    from sympy.assumptions.refine import refine_abs
+    
     from IPython import embed
+    m2 =refine_abs(m2, Q.real(z._array[0]))
     embed()
     
 
