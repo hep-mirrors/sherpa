@@ -1,4 +1,4 @@
-from ufo_interface import s_parameter
+from ufo_interface import s_parameter, s_particle
 from ufo_interface.templates import run_card_template
 
 # For all parameters except the "decay" parameters
@@ -42,11 +42,16 @@ def write_run_card(model, model_name, run_card_path):
 
     # generate a helpful template for a user specification of coupling orders 
     order_statement = 'Order (' + ','.join(['*' for order in model.all_orders]) + ')'
-    order_comment   = '# Syntax: "Order (' + ','.join([order.name for order in model.all_orders]) + ');"'
+    order_comment   = '# Coupling-syntax: "Order (' + ','.join([order.name for order in model.all_orders]) + ');"'
+
+    # collect all particles of the model for an example process section
+    all_particles = [s_particle(p) for p in model.all_particles]
+    all_particles = ",".join([str(p.kf_code()) for p in all_particles if not (p.is_goldstone() or p.is_ghost())])
         
     with open(run_card_path, "w") as outfile:
         outfile.write(run_card_template.substitute(model=model, 
                                                    model_name=model_name, 
                                                    ufo_params=ufo_params,
                                                    order_statement=order_statement,
-                                                   order_comment=order_comment))
+                                                   order_comment=order_comment,
+                                                   all_particles=all_particles))

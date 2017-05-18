@@ -1,21 +1,21 @@
 (run){
-  # general settings
-  EVENTS 100;
+  # General settings
+  EVENTS 100; EVENT_GENERATION_MODE Weighted;
 
-  # me generator setup
+  # ME generator setup
   ME_SIGNAL_GENERATOR Comix;
   SCALES VAR{Abs2(p[0]+p[1])};
   
   # model setup
   MODEL ${model_name};
 
-  # uncomment to disable underlying event simulation:
+  # Uncomment to disable underlying event simulation:
   # MI_HANDLER None;
 
-  # uncomment to disable hadronization:
+  # Uncomment to disable hadronization:
   # FRAGMENTATION Off;
 
-  # uncomment to disable shower:
+  # Uncomment to disable shower:
   # SHOWER_GENERATOR None;
 
   # LHC beam setup:
@@ -24,14 +24,22 @@
 }(run)
 
 (processes){
-  Process 93 93 -> <REPLACE_ME>;
-  ${order_statement}; 
+  # The statement below generates all 2->2
+  # scattering processes PP initial states
+  Process 93 93 -> (${all_particles}) (${all_particles});
+
   ${order_comment}
+  ${order_statement}; 
+
+  # Generate feynman diagrans in directory 'diagrams'.
+  # Run '<SHERPA_PREFIX>/bin/plot_graphs.sh diagrams'
+  # to plot graphs. Use web browser to view diagrams/index.html
+  Print_Graphs diagrams;
   End process;
 }(processes)
 
 (selector){
-  # phase space cuts for matrix elements
+  # Insert phase space cuts here
 }(selector)
 
 (ufo){

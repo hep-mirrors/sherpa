@@ -51,6 +51,9 @@ class s_particle:
         falses = [0, 0.0, False]
         return any([ self.ufo_particle.__dict__[attr] not in falses for attr in gold_attr ])
 
+    def is_ghost(self):
+        return (self.ufo_particle.spin<0)
+
     def majorana(self):
         # ufo_particle.spin is (2s+1) with spin s
         if self.spin_times_two() != 1:
