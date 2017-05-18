@@ -137,13 +137,14 @@ void Phase_Space_Handler::CheckSinglePoint()
   read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
   std::string file=read.GetValue<std::string>("PS_PT_FILE","");
   if (file!="") {
-    read.SetAddCommandLine(false);
-    read.SetInputFile(file);
-    read.AddIgnore("Vec4D");
-    read.RereadInFile();
+    Data_Reader read_mom(" ",";","#","=");
+    read_mom.SetAddCommandLine(false);
+    read_mom.SetInputFile(file);
+    read_mom.AddIgnore("Vec4D");
+    read_mom.RereadInFile();
     for (size_t i(0);i<p_lab.size();++i) {
       std::vector<std::string> vec;
-      if (!read.VectorFromFile(vec,"p_lab["+ToString(i)+"]"))
+      if (!read_mom.VectorFromFile(vec,"p_lab["+ToString(i)+"]"))
 	THROW(fatal_error,"No ps points in file");
       if (vec.front()=="-") p_lab[i]=-ToType<Vec4D>(vec.back());
       else p_lab[i]=ToType<Vec4D>(vec.front());
