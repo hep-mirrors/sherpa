@@ -57,7 +57,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   else m_eventmode=0;
   //need for LHE-output
   rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
-  m_ovwth = reader.Get("OVERWEIGHT_WARNING_THRESHOLD", 10.0);
+  m_ovwth = reader.Get("OVERWEIGHT_THRESHOLD", 1e12);
   m_seedmode = reader.Get("EVENT_SEED_MODE", 0, "seed mode", METHOD);
   m_rsadd = reader.Get("MEH_RSADD", 1, "RS add mode", METHOD);
   std::string seedfile(reader.Get("EVENT_SEED_FILE",
@@ -254,12 +254,12 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (m_eventmode!=0) {
       double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
       if (dabs(m_evtinfo.m_weight)<disc) continue;
-      if (dabs(m_evtinfo.m_weight)>max*(1.0+m_ovwth))
-	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
-		    <<"' exceeds maximum by "
-		    <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;
-      if (m_eventmode==1 && dabs(m_evtinfo.m_weight)>max*(100.0))
-        m_evtinfo.m_weight=100.0*max;
+      if (dabs(m_evtinfo.m_weight)>max*m_ovwth) {
+        msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
+                  <<"' exceeds maximum by "
+                  <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;
+        m_evtinfo.m_weight=max*m_ovwth;
+      }
       m_weightfactor=dabs(m_evtinfo.m_weight)/max;
       wf/=Min(1.0,m_weightfactor);
     }

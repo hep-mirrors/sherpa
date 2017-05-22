@@ -62,16 +62,36 @@ see @ref{Command line}.
 @node EVENT_GENERATION_MODE
 @subsection EVENT_GENERATION_MODE
 @cindex EVENT_GENERATION_MODE
+@cindex OVERWEIGHT_THRESHOLD
 This parameter specifies the event generation mode.
 It can also be set on the command line
 using option @option{-w}, see @ref{Command line}.
-The three possible options are @option{Weighted} (shortcut
-@option{W}), @option{Unweighted} (shortcut @option{U}) and
-@option{PartiallyUnweighted} (shortcut @option{P}). For partially
-unweighted events, the weight is allowed to exceed a given maximum, 
-which is lower than the true maximum weight. In such cases the
-event weight will exceed the otherwise constant value.
+The three possible options are:
 
+@table @option
+@item Weighted
+(shortcut @option{W}) Weighted events.
+@item Unweighted
+(shortcut @option{U})
+Events with constant weight, which have been unweighted
+against the maximum determined during phase space integration.
+In case of rare events with @code{w > max} the parton level event
+is repeated @code{floor(w/max)} times and the remainder is unweighted.
+While this leads to unity weights for all events it can be misleading since
+the statistical impact of a high-weight event is not accounted for. In the
+extreme case this can lead to a high-weight event looking like a significant
+bump in distributions (in particular after the effects of the parton shower).
+@item PartiallyUnweighted
+(shortcut @option{P})
+Identical to @option{Unweighted} events, but if the weight exceeds the maximum
+determined during the phase space integration, the event will carry a weight
+of @code{w/max} to correct for that. This is the recommended option to
+generate unweighted events and the default setting in Sherpa.
+@end table
+
+For @option{Unweighted} and @option{PartiallyUnweighted} events the user may
+set @option{OVERWEIGHT_THRESHOLD=<maxweight>} to cap the maximal over-weight
+@code{w/max} taken into account.
 
 @node SCALES
 @subsection SCALES
