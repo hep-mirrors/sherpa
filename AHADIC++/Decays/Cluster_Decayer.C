@@ -20,6 +20,8 @@ void Cluster_Decayer::Init() {
   m_splitter.Init();
 }
 
+void Cluster_Decayer::Reset() {}
+
 bool Cluster_Decayer::operator()() {
   while (!p_cluster_list->empty()) {
     if (!Treat(p_cluster_list->front())) {

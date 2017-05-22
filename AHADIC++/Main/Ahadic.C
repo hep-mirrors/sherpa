@@ -154,6 +154,11 @@ void Ahadic::FillOutgoingParticles(Blob * blob) {
 }
 
 void Ahadic::Reset() {
+  m_beamparticles.Reset();
+  m_softclusters.Reset();
+  m_singletchecker.Reset();
+  m_gluondecayer.Reset();
+  m_clusterdecayer.Reset();
   while (!m_singlet_list.empty()) {
     while (!m_singlet_list.front()->empty()) {
       delete m_singlet_list.front()->front();

@@ -19,6 +19,7 @@ namespace AHADIC {
     Beam_Particles_Shifter(std::list<Singlet *> * singlets);
     ~Beam_Particles_Shifter();
     void Init();
+    void Reset();
 
     bool operator()();
   };

@@ -48,6 +48,7 @@ namespace AHADIC {
 		    Soft_Cluster_Handler * softclusters);
     ~Singlet_Checker();
     void Init();
+    void Reset();
     
     bool operator()();
   };

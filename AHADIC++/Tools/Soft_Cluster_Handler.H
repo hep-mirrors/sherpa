@@ -42,6 +42,7 @@ namespace AHADIC {
     ~Soft_Cluster_Handler();
 
     void Init();
+    void Reset();
     bool MustPromptDecay(Cluster * cluster);
     int  Treat(Cluster * cluster,bool force=false);
     bool TreatTwoGluons(Cluster * cluster);

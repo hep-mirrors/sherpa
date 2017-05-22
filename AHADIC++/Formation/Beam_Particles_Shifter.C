@@ -16,6 +16,10 @@ void Beam_Particles_Shifter::Init() {
   p_constituents = hadpars->GetConstituents();
 }
 
+void Beam_Particles_Shifter::Reset() {
+  m_beamparts.clear();
+}
+
 bool Beam_Particles_Shifter::operator()() {
   ExtractBeamParticles();
   return ShiftBeamParticles();

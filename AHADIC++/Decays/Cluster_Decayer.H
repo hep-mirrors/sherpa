@@ -19,6 +19,7 @@ namespace AHADIC {
 		    Soft_Cluster_Handler * softclusters);
     ~Cluster_Decayer();
     void Init();
+    void Reset();
     
     bool operator()();
   };

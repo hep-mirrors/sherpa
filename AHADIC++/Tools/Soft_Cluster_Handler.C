@@ -27,6 +27,13 @@ void Soft_Cluster_Handler::Init() {
   m_ktselector.Init();
 }
 
+void Soft_Cluster_Handler::Reset() {
+  while (!p_hadrons->empty()) {
+    delete p_hadrons->front();
+    p_hadrons->pop_front();
+  }
+}
+
 bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   FillFlavours(cluster);
   // will assume clusters have to decay, if they are lighter than heaviest

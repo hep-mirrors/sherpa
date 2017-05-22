@@ -21,6 +21,8 @@ void Gluon_Decayer::Init() {
   m_breaker.Init();
 }
 
+void Gluon_Decayer::Reset() {}
+
 bool Gluon_Decayer::operator()(Singlet * singlet) {
   p_singlet = singlet;
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {

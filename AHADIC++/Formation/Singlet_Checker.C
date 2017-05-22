@@ -60,6 +60,11 @@ void Singlet_Checker::Init() {
   m_splitter.Init();
 }
 
+void Singlet_Checker::Reset() {
+  m_badones.clear();
+  m_transitions.clear();
+}
+
 bool Singlet_Checker::operator()() {
   list<Singlet *>::iterator lsit(p_singlets->begin());
   while (lsit!=p_singlets->end()) {

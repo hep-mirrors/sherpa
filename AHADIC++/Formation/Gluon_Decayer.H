@@ -30,7 +30,8 @@ namespace AHADIC {
 		  Soft_Cluster_Handler * softclusters);
     ~Gluon_Decayer();
     void Init();
-    
+    void Reset();    
+
     bool operator()(Singlet * singlet);
   };
 }
