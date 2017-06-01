@@ -223,6 +223,7 @@ double Splitting_Function_Base::OverIntegrated
   double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
   if (!(IsBad(lastint)||lastint<0.0)) {
     m_lastint+=lastint;
+    m_lastints.push_back(m_lastint);
   }
   else {
     msg_Error()<<METHOD<<"(): Integral is "<<lastint<<" in ("<<m_type<<") "
@@ -274,13 +275,15 @@ Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 Parton *Splitting_Function_Base::SelectSpec()
 {
   if (m_specs.empty()) return NULL;
-  double disc=ran->Get()*m_specs.size();
-  return SetSpec(m_specs[Min(m_specs.size()-1,(size_t)disc)]);
+  double disc=ran->Get()*m_lastints.back(), sum(0.0);
+  for (size_t i(0);i<m_lastints.size();++i)
+    if (m_lastints[i]>=disc) return SetSpec(m_specs[i]);
 }
 
 void Splitting_Function_Base::ClearSpecs()
 {
   m_specs.clear();
+  m_lastints.clear();
 }
 
 double Splitting_Function_Base::GetXPDF

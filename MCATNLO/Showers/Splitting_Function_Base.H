@@ -234,6 +234,7 @@ namespace MCATNLO {
     double m_symf, m_polfac, m_lpdf, m_mth;
     int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
+    std::vector<double> m_lastints;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
   public:
