@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
       # compile and install
       progress("Compiling sources using scons")
-      sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
+      sconsargs = ['scons','-C',out_dir,'install'] 
       if (args.ncore>1):
             sconsargs.append('-j{0}'.format(args.ncore))
       progress(check_output(sconsargs))
