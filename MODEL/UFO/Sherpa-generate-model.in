@@ -112,9 +112,15 @@ def sort_orders(orders):
       return orders
 
 def check_model(model_name, model_path):
+
+      # Model name cannot begin with a number since class names in C++ cannot
+      if model_name[0].isdigit():
+            error("Model name \"{0}\" starts with a digit. Please raname your UFO model directory".format(model_name))
+            exit(1)
+      
       # Check for conflicts with built-in models
       if model_name in ["SM", "HEFT", "TauPi"]:
-            error("Model name {0} conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
+            error("Model name \"{0}\" conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
             exit(1)
             
       # Try to import the model to check if UFO path is ok
