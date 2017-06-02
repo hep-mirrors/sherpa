@@ -507,9 +507,10 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
     if (p_loopme->Mode()==0) {
       lme = m_lastb*p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_partner->Dipole()->G2())*
-          m_lastb*p_partner->KPTerms()->Coupling();
-        m_cmur[1]+=p_loopme->ME_E2()*m_lastb*p_partner->KPTerms()->Coupling();
+        double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[0]);
+        double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[1]);
+        m_cmur[0]+=e1+(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[1]+=e2;
       }
       else {
         m_cmur[0]+=m_lastb*p_partner->KPTerms()->Coupling()*
@@ -521,9 +522,10 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
     else if (p_loopme->Mode()==1) {
       lme = p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
       if (m_sccmur) {
-        m_cmur[0]+=p_partner->KPTerms()->Coupling()*
-          (p_loopme->ME_E1()+(MaxOrder(0)-1)*p_partner->Dipole()->G2());
-        m_cmur[1]+=p_partner->KPTerms()->Coupling()*p_loopme->ME_E2();
+        double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->p_kpterms->Coupling():-m_cmur[0]);
+        double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->p_kpterms->Coupling():-m_cmur[1]);
+        m_cmur[0]+=e1+(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->KPTerms()->Coupling();
+        m_cmur[1]+=e2;
       }
       else {
         m_cmur[0]+=p_partner->KPTerms()->Coupling()*
