@@ -275,9 +275,10 @@ Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 Parton *Splitting_Function_Base::SelectSpec()
 {
   if (m_specs.empty()) return NULL;
-  double disc=ran->Get()*m_lastints.back(), sum(0.0);
+  double disc=ran->Get()*m_lastints.back();
   for (size_t i(0);i<m_lastints.size();++i)
     if (m_lastints[i]>=disc) return SetSpec(m_specs[i]);
+  THROW(fatal_error, "Spectators ints are not ordered as expected.");
 }
 
 void Splitting_Function_Base::ClearSpecs()
