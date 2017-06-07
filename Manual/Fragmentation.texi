@@ -48,6 +48,10 @@ during event generation.
       @code{MSTJ(<number>)=<value>}.
 @end itemize
 
+The following parameters steer the @option{Ahadic} fragmentation model and
+up-to-date default values of these parameters can be found in
+@code{AHADIC++/Tools/Hadronisation_Parameters.C}.
+
 @subsubsection Hadron constituents
 @cindex M_UP_DOWN
 @cindex M_STRANGE
@@ -59,10 +63,10 @@ during event generation.
 
 The constituent masses of the quarks and diquarks are given by 
 @itemize @bullet
-@item @code{M_UP_DOWN} (175 MeV), 
-@item @code{M_STRANGE} (375 MeV), 
-@item @code{M_CHARM} (1.9 GeV), and 
-@item @code{M_BOTTOM} (5.2 GeV).  
+@item @code{M_UP_DOWN}
+@item @code{M_STRANGE}
+@item @code{M_CHARM}
+@item @code{M_BOTTOM}
 @end itemize
 The diquark masses are composed of the quark 
 masses and some additional parameters,
@@ -72,9 +76,9 @@ masses and some additional parameters,
 @end iftex
 with 
 @itemize @bullet
-@item @code{M_DIQUARK_OFFSET} (550 MeV), 
-@item @code{M_BIND_0} (0 MeV), and 
-@item @code{M_BIND_1} (200 MeV).
+@item @code{M_DIQUARK_OFFSET}
+@item @code{M_BIND_0}
+@item @code{M_BIND_1}
 @end itemize
 
 @subsubsection Hadron multiplets
@@ -106,36 +110,36 @@ an overlap between the cluster flavour content and the flavour part of the
 hadronic wave function is formed.  This may be further modified by production
 probabilities, organised by multiplet and given by the parameters
 @itemize @bullet
-@item @code{MULTI_WEIGHT_L0R0_PSEUDOSCALARS} (default 1.0),
-@item @code{MULTI_WEIGHT_L0R0_VECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS2} (default 0.2),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS3} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS4} (default 0.0),
-@item @code{MULTI_WEIGHT_L1R0_SCALARS} (default 0.25),
-@item @code{MULTI_WEIGHT_L1R0_AXIALVECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L1R0_TENSORS2} (default 0.0),
-@item @code{MULTI_WEIGHT_L2R0_VECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L3R0_VECTORS} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R1_SCALARS} (default 0.5),
-@item @code{MULTI_WEIGHT_L0R1_AXIALVECTORS} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_N_1/2} (default 1.0),
-@item @code{MULTI_WEIGHT_L0R0_N*_1/2} (default 1.0),
-@item @code{MULTI_WEIGHT_L1R0_N*_1/2} (default 0.0),
-@item @code{MULTI_WEIGHT_L1R0_N*_3/2} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_DELTA_3/2} (default 0.45), and
-@item @code{MULTI_WEIGHT_L1R0_DELTA*_3/2} (default 0.0).  
+@item @code{MULTI_WEIGHT_L0R0_PSEUDOSCALARS}
+@item @code{MULTI_WEIGHT_L0R0_VECTORS}
+@item @code{MULTI_WEIGHT_L0R0_TENSORS2}
+@item @code{MULTI_WEIGHT_L0R0_TENSORS3}
+@item @code{MULTI_WEIGHT_L0R0_TENSORS4}
+@item @code{MULTI_WEIGHT_L1R0_SCALARS}
+@item @code{MULTI_WEIGHT_L1R0_AXIALVECTORS}
+@item @code{MULTI_WEIGHT_L1R0_TENSORS2}
+@item @code{MULTI_WEIGHT_L2R0_VECTORS}
+@item @code{MULTI_WEIGHT_L3R0_VECTORS}
+@item @code{MULTI_WEIGHT_L0R1_SCALARS}
+@item @code{MULTI_WEIGHT_L0R1_AXIALVECTORS}
+@item @code{MULTI_WEIGHT_L0R0_N_1/2}
+@item @code{MULTI_WEIGHT_L0R0_N*_1/2}
+@item @code{MULTI_WEIGHT_L1R0_N*_1/2}
+@item @code{MULTI_WEIGHT_L1R0_N*_3/2}
+@item @code{MULTI_WEIGHT_L0R0_DELTA_3/2}
+@item @code{MULTI_WEIGHT_L1R0_DELTA*_3/2}
 @end itemize
 In addition, there are some enhancement and suppression factors applied to 
 heavy baryons and meson singlets,
 @itemize @bullet
-@item @code{HEAVY_BARYON_ENHANCEMEMT} (default 7.5), and 
-@item @code{SINGLET_SUPPRESSION} (default 0.25).  
+@item @code{HEAVY_BARYON_ENHANCEMEMT}
+@item @code{SINGLET_SUPPRESSION}
 @end itemize
 For the latter, Sherpa also allows
 to redfine the mixing angles through parameters such as
 @itemize @bullet
-@item @code{Mixing_0+} (default -0.31416-pi/2) or 
-@item @code{Mixing_1-} (default 0.61075).
+@item @code{Mixing_0+}
+@item @code{Mixing_1-}
 @end itemize
 
 @subsubsection Cluster transition to hadrons - flavour part
@@ -153,11 +157,11 @@ parton shower and in the decay of clusters.  They are further modified by
 relative probabilities with respect to the production of up/down flavours 
 through the parameters 
 @itemize @bullet
-@item @code{STRANGE_FRACTION} (default 0.42), 
-@item @code{BARYON_FRACTION} (default 0.44), 
-@item @code{P_@{QS@}/P_@{QQ@}} (default 0.26), 
-@item @code{P_@{SS@}/P_@{QQ@}} (default 0.18), and 
-@item @code{P_@{QQ_1@}/P_@{QQ_0@}} (default 0.18).  
+@item @code{STRANGE_FRACTION}
+@item @code{BARYON_FRACTION}
+@item @code{P_@{QS@}/P_@{QQ@}}
+@item @code{P_@{SS@}/P_@{QQ@}}
+@item @code{P_@{QQ_1@}/P_@{QQ_0@}}
 @end itemize
 
 The transition of clusters to hadrons is governed by the following 
@@ -173,19 +177,21 @@ considerations:
       the corresponding hadron mass, and the recoil will be distributed to the
       ``neighbouring'' clusters or by emitting a soft photon.  This comparison 
       of masses clearly depends on the multiplets switched on in AHADIC++, 
-      see above, and on an additional offset, which provides an important 
-      tuning parameter, namely 
-      @itemize @bullet
-      @item @code{TRANSITION_OFFSET} (default 0 MeV).   
-      @end itemize
+      see above.
+      @c , and on an additional offset, which provides an important 
+      @c tuning parameter, namely 
+      @c @itemize @bullet
+      @c @item @code{TRANSITION_OFFSET} (default 0 MeV).   
+      @c @end itemize
 @item 
       In addition, clusters may becomes sufficiently light such that they 
       should decay directly into two hadrons instead of two clusters.  
       This decision is based on the heaviest hadrons accessible in
-      a decay, modulated by another offset parameter, 
-      @itemize @bullet
-      @item @code{DECAY_OFFSET} (default 800 MeV).     
-      @end itemize
+      a decay.
+      @c , modulated by another offset parameter, 
+      @c @itemize @bullet
+      @c @item @code{DECAY_OFFSET} (default 800 MeV).     
+      @c @end itemize
 @item
       If both options, transition and decay, are available, there is a 
       competition between  
@@ -212,7 +218,7 @@ wave functions of all hadrons, their respective multiplet suppression weights,
 the flavour weight for the creation of the new flavour q and a kinematical
 factor are relevant.  Here, yet another tuning paramter enters,
 @itemize @bullet
-@item @code{MassExponent_C->HH} (default 3.5) 
+@item @code{MassExponent_C->HH}
 @end itemize
 which partially compensates phase space effects favouring light hadrons,
 @iftex
@@ -257,9 +263,9 @@ term inversemly proportional to the infrared-modified transverse momentum,
 constrained to be below a maximal transverse momentum.  The respective 
 tuning parameters are
 @itemize @bullet
-@item @code{PT^2_0} (default 3.0 GeV*GeV),
-@item @code{PT_MAX} (default 1.66 GeV), and
-@item @code{Q_as^2} (default 1.0 GeV*GeV).
+@item @code{PT^2_0}
+@item @code{PT_MAX}
+@item @code{Q_as^2}
 @end itemize
 @iftex
 The strong coupling is given by 
