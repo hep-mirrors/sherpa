@@ -12,6 +12,7 @@ SUBDIRS       =	\
 		Delphes \
 		Rivet \
 		HepMC \
+		Weights \
 		Root
 
 nobase_dist_pkgdata_DATA = \

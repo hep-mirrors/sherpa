@@ -19,7 +19,7 @@ namespace PHASIC {
     MODEL::Running_AlphaS *p_as;
 
     double m_Q2, m_mur2, m_prec;
-    int m_fo, m_mode;
+    int m_fo, m_mode, m_nfgs;
 
     double K(const double &nf) const;
 
@@ -27,7 +27,8 @@ namespace PHASIC {
 
   public:
 
-    Sudakov(const ATOOLS::Flavour &fl,const int mode,const double prec);
+    Sudakov(const ATOOLS::Flavour &fl,const int mode,
+	    const int nfgs,const double prec);
 
     double Delta(const double &q2,const double &Q2);
     double Delta1(const double &q2,const double &Q2,const double &mur2);
@@ -44,7 +45,7 @@ namespace PHASIC {
     std::map<ATOOLS::Flavour,Sudakov*> m_suds;
 
     double m_sudweight, m_lastmuR2, m_lastq02[2];
-    int    m_vmode, m_rsfvar;
+    int    m_vmode, m_rsfvar, m_ordonly;
 
   public:
 
@@ -88,12 +89,13 @@ MINLO_KFactor_Setter::MINLO_KFactor_Setter
   if (p_minlo==NULL) THROW(fatal_error,"Must use MINLO scale");
   Default_Reader reader;
   int mode(reader.Get<int>("MINLO_SUDAKOV_MODE",3));
-  if (p_proc->Info().m_fi.m_nloqcdtype==0) mode&=~2;
+  m_ordonly=reader.Get<int>("MINLO_ORDERED_ONLY",0);
+  int nfgs(reader.Get<int>("MINLO_SUDAKOV_NF_GSPLIT",6));
   double prec(reader.Get<double>("MINLO_SUDAKOV_PRECISION",1.0e-4));
-  m_suds[Flavour(kf_gluon)] = new Sudakov(Flavour(kf_gluon),mode,prec);
+  m_suds[Flavour(kf_gluon)] = new Sudakov(Flavour(kf_gluon),mode,nfgs,prec);
   for (size_t i(0);i<=6;++i) {
-    m_suds[Flavour(i,0)] = new Sudakov(Flavour(i,0),mode,prec);
-    m_suds[Flavour(i,1)] = new Sudakov(Flavour(i,1),mode,prec);
+    m_suds[Flavour(i,0)] = new Sudakov(Flavour(i,0),mode,nfgs,prec);
+    m_suds[Flavour(i,1)] = new Sudakov(Flavour(i,1),mode,nfgs,prec);
   }
   if (reader.Get<int>("MINLO_SELF_TEST",0)) {
     int fl(reader.Get<int>("MINLO_SELF_TEST_FLAV",21));
@@ -139,9 +141,9 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
   m_lastq02[0]=p_minlo->Q02(0);
   m_lastq02[1]=p_minlo->Q02(1);
   m_lastmuR2=muR2;
-  for (Cluster_Amplitude *ampl=p_proc->Info().Has(nlo_type::real)&&
-	 p_minlo->Ampl()->Next()?p_minlo->Ampl()->Next():p_minlo->Ampl();
-       ampl->Next();ampl=ampl->Next()) {
+  Cluster_Amplitude *ampl=p_proc->Info().Has(nlo_type::real)&&
+    p_minlo->Ampl()->Next()?p_minlo->Ampl()->Next():p_minlo->Ampl();
+  for (;ampl->Next();ampl=ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
     msg_Debugging()<<*ampl<<"\n";
     for (size_t i(0);i<next->Legs().size();++i) {
@@ -150,7 +152,7 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
       if (sit==m_suds.end()) continue;
       int is((l->Id()&3)?1:0);
       double gamma[2]={0.0,0.0};
-      if (mode==1) {
+      if (mode==1 && p_proc->Info().m_fi.m_nloqcdtype!=nlo_type::lo) {
 	gamma[0]=sit->second->Delta1(Q02[is],next->KT2(),muR2);
 	gamma[1]=sit->second->Delta1(Q02[is],ampl->KT2(),muR2);
       }
@@ -165,7 +167,13 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
       m_weight*=delta[0]/delta[1];
       sub+=gamma[0]-gamma[1];
     }
-    if (next->Next()==NULL) msg_Debugging()<<*next<<"\n";
+    if (next->Next()==NULL) {
+      msg_Debugging()<<*next<<"\n";
+      if ((next->Flag()&1) && m_ordonly) {
+	msg_Debugging()<<"Unordered configuration\n";
+	if (m_ordonly&2) m_weight=0.0;
+      }
+    }
   }
   if (m_rsfvar) {
     msg_Debugging()<<"w = "<<m_sudweight<<" * ( 1 + "<<sub<<" )\n";
@@ -176,8 +184,10 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
   return m_weight*=(1.0+sub);
 }
 
-Sudakov::Sudakov(const ATOOLS::Flavour &fl,const int mode,const double prec):
-  m_fl(fl), m_gauss(this), p_as(MODEL::as), m_mode(mode), m_prec(prec)
+Sudakov::Sudakov(const ATOOLS::Flavour &fl,const int mode,
+		 const int nfgs,const double prec):
+  m_fl(fl), m_gauss(this), p_as(MODEL::as),
+  m_mode(mode), m_nfgs(nfgs), m_prec(prec)
 {
 }
 
@@ -228,9 +238,10 @@ double Sudakov::operator()(double q2)
   }
   if (m_fl.IsGluon()) {
     double gam0=Ggq(e,q2), gam=3.0*gam0;
-    for (long int i(4);i<=6;++i)
+    for (long int i(4);i<=m_nfgs;++i) {
       if (Flavour(i).Mass()) gam+=Ggq(e,q2,Flavour(i).Mass());
       else if (nf>=i) gam+=gam0;
+    }
     return as2pi/q2*3.0*
       (2.0*log(1.0/eps)*(1.0+as2pi*K(nf))
        -sqr(1.0-e)/6.0*(11.0-e*(2.0-3.0*e)))

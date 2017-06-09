@@ -24,7 +24,7 @@ if test $# -lt 2; then
 fi;
 pd=$PWD; test -z "$3" || pd=$PWD/$3; echo $0": proc dir is '"$pd"'";
 nt=$(mktemp -d -p$PWD); echo $0": temp dir is '"$nt"'";
-tp=$(grep NLO_QCD $2 | sed -e's/.*NLO_QCD_Part[ \t]*\(\w*\).*/\1/g');
+tp=$(grep NLO_QCD_Part $2 | sed -e's/.*NLO_QCD_Part[ \t]*\(\w*\).*/\1/g');
 if test $tp = RS; then
   if ! grep -q "MEH_RSADD[ \t=]*0" $2; then
     echo "Input file must contain 'MEH_RSADD 0;'";
@@ -50,6 +50,14 @@ for i in $nt/Process/Comix/*.map; do
   fi
 done;
 dirtodb $nt/Process/Comix;
+dbtodir $nt/Process/Sherpa;
+for i in $nt/Process/Sherpa/*.map; do
+  if echo $i | grep -q 'QCD('$tp')'; then continue; fi
+  nn=$(echo $i | sed -e's/\(__NQ_.*\)[.]map/.map\1/g' \
+      -e's/.map/__QCD('$tp').map/g' -e's/.map\(.*\)/\1.map/g');
+  test -f $nn || cp $i $nn;
+done;
+dirtodb $nt/Process/Sherpa;
 $1 -f$2.$tp SHERPA_CPP_PATH=$nt;
 echo -n $0": copying files ...";
 cp -ur $nt/Process $pd;

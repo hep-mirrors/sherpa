@@ -70,26 +70,26 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
-  Default_Reader reader;
-  m_noutmin    = reader.Get("MINLO_NOUT_MIN", 2);
-  m_cmode      = reader.Get("MINLO_CLUSTER_MODE", 1);
-  m_hqmode     = reader.Get("MINLO_HQ_MODE", 1);
-  m_order      = reader.Get("MINLO_FORCE_ORDER", 1);
-  m_orderrs    = reader.Get("MINLO_ORDER_RS", 1);
-  m_usecomb    = reader.Get("MINLO_USE_COMBINABLE", 0);
-  m_usepdfinfo = reader.Get("MINLO_USE_PDFINFO", 1);
-  m_nlocpl     = reader.Get("MINLO_NLO_COUPLING_MODE", 1);
-  m_mufmode    = reader.Get("MINLO_MUF_VARIATION_MODE", 1);
-  m_dr         = reader.Get("MINLO_DELTA_R", 0.4);
-  m_muf2min    = reader.Get("MINLO_MUF2_MIN", p_isr->PDF(0)->Q2Min());
-  if (core == "") {
-    core       = reader.Get<std::string>("CORE_SCALE", "VAR{H_TM2/4}");
-  }
+  Data_Reader read(" ",";","!","=");
+  if (!read.ReadFromFile(m_noutmin,"MINLO_NOUT_MIN")) m_noutmin=2;
+  if (!read.ReadFromFile(m_cmode,"MINLO_CLUSTER_MODE")) m_cmode=1;
+  if (!read.ReadFromFile(m_hqmode,"MINLO_HQ_MODE")) m_hqmode=1;
+  if (!read.ReadFromFile(m_order,"MINLO_FORCE_ORDER")) m_order=1;
+  if (!read.ReadFromFile(m_orderrs,"MINLO_ORDER_RS")) m_orderrs=1;
+  if (!read.ReadFromFile(m_usecomb,"MINLO_USE_COMBINABLE")) m_usecomb=0;
+  if (!read.ReadFromFile(m_usepdfinfo,"MINLO_USE_PDFINFO")) m_usepdfinfo=1;
+  if (!read.ReadFromFile(m_nlocpl,"MINLO_NLO_COUPLING_MODE")) m_nlocpl=1;
+  if (!read.ReadFromFile(m_mufmode,"MINLO_MUF_VARIATION_MODE")) m_mufmode=0;
+  if (!read.ReadFromFile(m_bumode,"MINLO_BACKUP_MODE")) m_bumode=1;
+  if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=1.0;
+  if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
+    m_muf2min=p_isr->PDF(0)->Q2Min();
+  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="VAR{H_TM2/4}";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (reader.Read(m_nfgsplit,"DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2)) {
-    msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
-  }
+  if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
+    m_nfgsplit=Flavour(kf_jet).Size()/2;
+  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
@@ -179,7 +179,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 		trials.insert(cs);
 		continue;
 	      }
-	      KT2(li,lj,lk,cs);
+	      KT2(ampl,li,lj,lk,cs);
 	      if (cs.m_kt2==-1.0) {
 		msg_Debugging()<<"Veto kinematics: "<<cf[f]<<" = "
 			       <<ID(li->Id())<<" & "<<ID(lj->Id())
@@ -190,7 +190,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 	      msg_Debugging()<<ID(li->Id())<<" & "<<ID(lj->Id())
 			     <<" <-> "<<ID(lk->Id())<<" ["<<cf[f]
 			     <<"]: "<<sqrt(cs.m_kt2)
-			     <<" ("<<sqrt(cs.m_op2)<<")\n";
+			     <<" ("<<sqrt(1.0/cs.m_op2)<<")\n";
 	      if (cs.m_op2>ckw.m_op2) ckw=cs;
 	    }
 	  }
@@ -204,8 +204,9 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
       bool ord(true);
       std::vector<std::pair<size_t,double> > 
     	&pops(ops[ampl->Legs().size()-(m_nin+m_noutmin)]);
-      if ((m_order || (m_rproc && ampl->Prev() &&
-		      ampl->Prev()->Prev()==NULL)) &&
+      if (m_bumode==1 &&
+	  (m_order || (m_rproc && ampl->Prev() &&
+		       ampl->Prev()->Prev()==NULL)) &&
 	  kt2core<pops.front().second) {
     	msg_Debugging()<<"unordered configuration (core): "
     		       <<sqrt(kt2core)<<" vs. "
@@ -218,6 +219,8 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
       else {
 	msg_Debugging()<<"Final configuration:\n";
 	msg_Debugging()<<*ampl<<"\n";
+	if (ampl->Legs().size()>m_nin+m_noutmin) ampl->SetFlag(1);
+	if (kt2core<pops.front().second) ampl->SetFlag(1);
 	while (ampl->Prev()) {
 	  ampl=ampl->Prev();
 	  msg_Debugging()<<*ampl<<"\n";
@@ -256,7 +259,17 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
 		     <<sqrt(cops[li].second)<<" vs. "
 		     <<sqrt(pops[li].second)<<" "
 		     <<ID(pops[li].first)<<"\n";
-      continue;
+      if (m_bumode==1) continue;
+      ampl->SetFlag(1);
+      CoreScale(ampl);
+      msg_Debugging()<<"Final configuration:\n";
+      msg_Debugging()<<*ampl<<"\n";
+      while (ampl->Prev()) {
+	ampl=ampl->Prev();
+	msg_Debugging()<<*ampl<<"\n";
+      }
+      double muf2(SetScales(p_vampl=ampl,m_vmode=mode));
+      return muf2;
     }
     ampl->SetKT2(ckw.m_kt2);
     ampl->SetMu2(ckw.m_kt2);
@@ -311,8 +324,13 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
     ass+=cas*coqcd;
     oqcd+=coqcd;
   }
+  double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
+  if ((m_bumode&2) && mu2<m_scale[stp::res]) {
+    ampl->SetKT2(m_scale[stp::res]);
+    ampl->SetMu2(m_scale[stp::res]);
+    mu2=ampl->Mu2();
+  }
   if (ampl->OrderQCD()-(m_vproc?1:0)) {
-    double mu2(Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2()));
     int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
     double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
     msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
@@ -402,8 +420,8 @@ bool MINLO_Scale_Setter::Combine
 }
 
 void MINLO_Scale_Setter::KT2
-(const Cluster_Leg *li,const Cluster_Leg *lj,
- const Cluster_Leg *lk,MCS_Params &cs) const
+(const Cluster_Amplitude *ampl,const Cluster_Leg *li,
+ const Cluster_Leg *lj,const Cluster_Leg *lk,MCS_Params &cs) const
 {
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
   Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom());
@@ -419,7 +437,7 @@ void MINLO_Scale_Setter::KT2
 	double kt2=cs.m_kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
 	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
 	if (ffp.m_stat<0) kt2=-1.0;
-	cs.SetParams(kt2,ffp.m_pi,ffp.m_pk,ffp.m_lam);
+	cs.SetParams(kt2,1.0,ffp.m_pi,ffp.m_pk,ffp.m_lam);
       }
       else {
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
@@ -430,7 +448,7 @@ void MINLO_Scale_Setter::KT2
 	    (cs.m_k==1 && fip.m_pk[3]>0.0) ||
 	    fip.m_pk[0]<0.0 || fip.m_stat<0 ||
 	    fip.m_pk[0]>rpa->gen.PBeam(cs.m_k)[0]) kt2=-1.0;
-	cs.SetParams(kt2,fip.m_pi,-fip.m_pk,fip.m_lam);
+	cs.SetParams(kt2,1.0,fip.m_pi,-fip.m_pk,fip.m_lam);
       }
     }
     else {
@@ -442,7 +460,7 @@ void MINLO_Scale_Setter::KT2
 	    (cs.m_i==1 && ifp.m_pi[3]>0.0) ||
 	    ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
 	    ifp.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
-	cs.SetParams(kt2,-ifp.m_pi,ifp.m_pk,ifp.m_lam);
+	cs.SetParams(kt2,1.0,-ifp.m_pi,ifp.m_pk,ifp.m_lam);
       }
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
@@ -452,11 +470,7 @@ void MINLO_Scale_Setter::KT2
 	    (cs.m_i==1 && iip.m_pi[3]>0.0) ||
 	    iip.m_pi[0]<0.0 || iip.m_stat<0 ||
 	    iip.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
-	cs.SetParams(kt2,-iip.m_pi,-iip.m_pk,iip.m_lam);
-	double pp(pj.PPlus()), pm(pj.PMinus());
-	if (pi[3]>0) std::swap<double>(pp,pm);
-	if (pp>pm) cs.m_op2*=1.000001;
-	else cs.m_op2/=1.000001;
+	cs.SetParams(kt2,1.0,-iip.m_pi,-iip.m_pk,iip.m_lam);
       }
     }
   }
@@ -464,24 +478,29 @@ void MINLO_Scale_Setter::KT2
     if ((li->Id()&3)==0) {
       if (li->Flav().Mass() || lj->Flav().Mass()) {
 	// HQ: massive Durham algorithm
-	double kt2=2.0*Min(pi.PSpat2(),pj.PSpat2())*
-	  (1.0-pi.CosTheta(pj));
-	cs.SetParams(kt2,pi+pj,pk);
+	double kt2=Min(pi.PSpat2(),pj.PSpat2())*
+	  (1.0-pi.CosTheta(pj))/(1.0-cos(m_dr));
+	cs.SetParams(kt2,m_dr,pi+pj,pk);
       }
       else {
 	// LQ: kT algorithm
-	double kt2=2.0*Min(pi.PPerp2(),pj.PPerp2())*
-	  (cosh(pi.DY(pj))-cos(pi.DPhi(pj)))/sqr(m_dr);
-	cs.SetParams(kt2,pi+pj,pk);
+	double kt2=Min(pi.PPerp2(),pj.PPerp2())*
+	  (sqr(pi.DY(pj))+sqr(pi.DPhi(pj)))/sqr(m_dr);
+	cs.SetParams(kt2,m_dr,pi+pj,pk);
       }
     }
     else {
       double kt2=pj.PPerp2();
-      cs.SetParams(kt2,pi+pj,pk);
+      cs.SetParams(kt2,1.0,pi+pj,pk);
+      if ((lk->Id()&3)==0) { cs.m_op2=-1.0; return; }
+      Poincare cms(-pi-pk);
+      cms.Boost(pi);
+      cms.Boost(pj);
+      Poincare zax(-pi,Vec4D::ZVEC);
+      zax.Rotate(pi);
+      zax.Rotate(pj);
       double pp(pj.PPlus()), pm(pj.PMinus());
-      if (pi[3]>0) std::swap<double>(pp,pm);
-      if (pp>pm) cs.m_op2*=1.000001;
-      else cs.m_op2/=1.000001;
+      if (pm>pp) cs.m_op2=-1.0;
     }
   }
   else {

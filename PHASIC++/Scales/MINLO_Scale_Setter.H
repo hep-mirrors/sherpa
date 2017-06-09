@@ -26,11 +26,11 @@ namespace PHASIC {
       if (m_k<ck.m_k) return true; if (m_k>ck.m_k) return false;
       return m_fl<ck.m_fl;
     }
-    void SetParams(const double &kt2,
+    void SetParams(const double &kt2,const double &dr,
 		   const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt,
 		   const ATOOLS::Poincare_Sequence &lam=
 		   ATOOLS::Poincare_Sequence())
-    { m_kt2=kt2; m_op2=1.0/m_kt2; m_pijt=pijt; m_pkt=pkt; m_lam=lam; }
+    { m_kt2=dr*dr*kt2; m_op2=1.0/kt2; m_pijt=pijt; m_pkt=pkt; m_lam=lam; }
   };// end of struct MCS_Params
 
   class MINLO_Scale_Setter: public Scale_Setter_Base {
@@ -48,14 +48,14 @@ namespace PHASIC {
     ATOOLS::Cluster_Amplitude *p_ampl, *p_vampl;
 
     double m_rsf, m_fsf, m_dr, m_q02[2], m_muf2min;
-    size_t m_nfgsplit;
-    int    m_noutmin, m_rproc, m_vproc, m_nproc;
+    int    m_noutmin, m_rproc, m_vproc, m_nproc, m_nfgsplit;
     int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs;
-    int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode;
+    int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode, m_bumode;
 
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
-    void KT2(const ATOOLS::Cluster_Leg *li,
+    void KT2(const ATOOLS::Cluster_Amplitude *ampl,
+	     const ATOOLS::Cluster_Leg *li,
 	     const ATOOLS::Cluster_Leg *lj,
 	     const ATOOLS::Cluster_Leg *lk,MCS_Params &cs) const;
 

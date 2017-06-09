@@ -365,7 +365,7 @@ void Histogram::Output(const std::string name)
   if (!m_active) return;
   My_Out_File ofile(name);
   ofile.Open();
-  ofile->precision(ToType<int>(rpa->gen.Variable("HISTOGRAM_OUTPUT_PRECISION")));
+  if (rpa) ofile->precision(ToType<int>(rpa->gen.Variable("HISTOGRAM_OUTPUT_PRECISION")));
 
   if (m_fills>=0) {
     *ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";

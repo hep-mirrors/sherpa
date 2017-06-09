@@ -280,7 +280,7 @@ bool RootNtuple_Reader::ReadInEntry()
 }
 
 double RootNtuple_Reader::CalculateWeight
-(const RootNtuple_Reader::Weight_Calculation_Args &args, MODEL::Running_AlphaS *as)
+(const RootNtuple_Reader::Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *as)
 {
   const double mur2(args.m_mur2);
   const double muf2(args.m_muf2);
@@ -381,7 +381,7 @@ double RootNtuple_Reader::Reweight(Variation_Parameters * varparams,
     varargs.m_mur2=args.p_scale->Scale(stp::ren);
     varargs.m_muf2=args.p_scale->Scale(stp::fac);
   }
-  double weight(CalculateWeight(varargs, varparams->p_alphas));
+  double weight(CalculateWeight(varargs, varparams->p_alphas->GetAs()));
   if (args.p_kfac && args.p_kfac->UpdateKFactor(*varparams))
     weight*=args.p_kfac->LastKFactor()/args.m_K;
 
@@ -478,7 +478,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       muF2=m_nlos.back()->m_mu2[stp::fac]=scale->Scale(stp::fac);
       const double K(kfac->KFactor(p_vars->m_type[0]=='B'?1:0));
       const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K);
-      double weight=CalculateWeight(args, MODEL::as);
+      double weight=CalculateWeight(args, MODEL::as->GetAs());
       weight*=K/p_vars->m_kfac;
       if (p_variations) {
         subvarweights.push_back(new Variation_Weights(p_variations));
@@ -502,7 +502,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       double weight=CalculateWeight
 	(Weight_Calculation_Args(sqr(p_vars->m_mur),sqr(p_vars->m_muf),
 				 p_vars->m_nuwgt?1:2,NULL,NULL,1.0),
-         MODEL::as);
+         MODEL::as->GetAs());
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
       KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
       weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;

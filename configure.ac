@@ -226,6 +226,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Delphes/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/HepMC/Makefile \
+	  AddOns/Weights/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/Makefile \
 	  Makefile )
