@@ -72,6 +72,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
 					vector<Process_Base *> & errs)
 {
+  DEBUG_FUNC(Name()<<", tree="<<!m_no_tree);
   Init();
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
 
@@ -118,7 +119,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   if (p_tree_process!=p_tree_process->Partner()) {
     string partnerID=p_tree_process->Partner()->Name();
-    partnerID.erase(partnerID.find("("),3);
+    if (partnerID.find("(")!=std::string::npos) partnerID.erase(partnerID.find("("),3);
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       string lname=links[j]->Name();
       lname.erase(lname.find("("),4);
