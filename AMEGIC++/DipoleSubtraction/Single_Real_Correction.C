@@ -119,7 +119,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   if (p_tree_process!=p_tree_process->Partner()) {
     string partnerID=p_tree_process->Partner()->Name();
-    if (partnerID.find("(")!=std::string::npos) partnerID.erase(partnerID.find("("),3);
+    partnerID.erase(partnerID.find("("),3);
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       string lname=links[j]->Name();
       lname.erase(lname.find("("),4);
