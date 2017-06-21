@@ -1,1 +1,1 @@
-SUBDIRS    = Main HEFT TauPi UFO
+SUBDIRS    = Main SM HEFT TauPi UFO

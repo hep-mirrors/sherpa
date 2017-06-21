@@ -12,8 +12,7 @@ libModelMain_la_SOURCES = \
 	Running_AlphaS.C \
 	Strong_Coupling.C \
 	Running_AlphaQED.C \
-	Running_Fermion_Mass.C \
-	Standard_Model.C
+	Running_Fermion_Mass.C
 
 localinc_HEADERS = \
 	Color_Function.H \
@@ -23,5 +22,4 @@ localinc_HEADERS = \
 	Running_AlphaS.H \
 	Strong_Coupling.H \
 	Running_AlphaQED.H \
-	Running_Fermion_Mass.H \
-	Standard_Model.H
+	Running_Fermion_Mass.H

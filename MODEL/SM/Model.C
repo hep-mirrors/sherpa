@@ -1,4 +1,31 @@
-#include "MODEL/Main/Standard_Model.H"
+#include "MODEL/Main/Model_Base.H"
+
+namespace MODEL {
+
+  class Standard_Model: public Model_Base {
+  private:
+
+    int  m_ckmorder, m_dec_g4;
+
+    void FixEWParameters();
+    void FixCKM();
+
+    void ParticleInit();
+
+    void InitQEDVertices();
+    void InitQCDVertices();
+    void InitEWVertices();
+
+  public :
+
+    Standard_Model(std::string,std::string);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    void InitVertices();
+
+  };
+
+}
+
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Strong_Coupling.H"
