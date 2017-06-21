@@ -190,9 +190,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     if (timeslope < 0.0) targettime *= psh->Process()->Process()->Size();
     if (timestep > 0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-stepstart;
     if ((timestep==0.0 && ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) ||
-	(timestep>0.0 && deltat>=targettime) ||
-	(ncontrib>=itminbynode && psh->Process()->Process()->MPISyncRequest())) {
-      psh->Process()->Process()->MPISync(this);
+	(timestep>0.0 && deltat>=targettime)) {
+      MPISync();
       bool optimized=false;
       bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<endl;
@@ -274,8 +273,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       psh->AddStats(stats);
       psh->Process()->StoreResults(1);
       stepstart=ATOOLS::rpa->gen.Timer().RealTime();
+      double var(psh->Process()->TotalVar());
       bool wannabreak = dabs(error)<maxerror ||
-        dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror;
+        (var!=0.0 && dabs(var*rpa->Picobarn())<maxabserror);
       if (fin_opt==0 && nopt>psh->Stats().size() && wannabreak) nopt=psh->Stats().size();
       if (wannabreak && psh->Stats().size()>=nopt+maxopt) return true;
       if (psh->Stats().size()>=nopt+stopopt) return true;

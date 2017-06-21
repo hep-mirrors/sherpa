@@ -48,25 +48,6 @@ namespace PHASIC {
   typedef std::map<nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
 
-#ifdef USING__Threading
-  class Process_Base;
-
-  struct MEH_TID {
-    pthread_t m_id;
-    Process_Base *p_proc;
-    std::string m_respath;
-    MEH_TID *p_prev, *p_next;
-    size_t m_i, m_r;
-    pthread_mutex_t m_s_mtx, *p_t_mtx, m_r_mtx;
-    pthread_cond_t m_s_cnd, *p_t_cnd;
-    MEH_TID(Process_Base *const proc,const size_t i):
-      p_proc(proc), p_prev(this), p_next(this),
-      m_i(i), m_r(0) {}
-  };// end of struct MEH_TID
-
-  typedef std::vector<MEH_TID*> MEH_TID_Vector; 
-#endif
-
   class Process_Base {
   protected:
 
@@ -85,7 +66,7 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    size_t      m_nin, m_nout, m_tinfo, m_mcmode, m_cmode;
+    size_t      m_nin, m_nout, m_mcmode, m_cmode;
     std::string m_name;
 
     std::vector<double> m_maxcpl, m_mincpl;
@@ -102,10 +83,6 @@ namespace PHASIC {
     MODEL::Coupling_Map m_cpls;
 
     NLOTypeStringProcessMap_Map *p_apmap;
-
-#ifdef USING__Threading
-    MEH_TID *p_tid;
-#endif
 
     static int s_usefmm;
 
@@ -135,13 +112,6 @@ namespace PHASIC {
     int NaiveMapping(Process_Base *proc) const;
 
     std::string ShellName(std::string name="") const;
-
-    void MPISync(Phase_Space_Integrator *const psi);
-    bool MPISyncRequest();
-
-#ifdef USING__Threading
-    virtual void AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*));
-#endif
 
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
@@ -276,8 +246,6 @@ namespace PHASIC {
 
     inline bool IsMapped() const { return p_mapproc; }
 
-    inline size_t ThreadInfo() const { return m_tinfo; }
-
     inline size_t MCMode() const      { return m_mcmode; }
     inline size_t ClusterMode() const { return m_cmode;  }
 
@@ -298,10 +266,6 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
-
-#ifdef USING__Threading
-    inline void SetTID(MEH_TID *const tid) { p_tid=tid; }
-#endif
 
   };// end of class Process_Base
 

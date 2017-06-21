@@ -37,7 +37,6 @@ MCatNLO_Process::MCatNLO_Process
   p_bproc(NULL), p_rproc(NULL), p_ddproc(NULL),
   p_nlomc(NULL), p_ampl(NULL)
 {
-  m_tinfo=0;
   static bool ref(false);
   p_apmap=pmap;
   if (!ref) {
