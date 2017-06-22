@@ -32,7 +32,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_hepmc2(NULL), p_filter(NULL)
+  p_inithandler(NULL), p_eventhandler(NULL), p_filter(NULL)
 {
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
@@ -266,18 +266,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
       return 1;
     }
     return 0;
-}
-
-void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
-{
-#ifdef USING__HEPMC2
-  if (p_hepmc2==NULL) p_hepmc2 = new SHERPA::HepMC2_Interface();
-  ATOOLS::Blob_List* blobs=GetEventHandler()->GetBlobs();
-  p_hepmc2->Sherpa2HepMC(blobs, event, blobs->Weight());
-  p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
-#else
-  THROW(fatal_error, "HepMC not linked.");
-#endif
 }
 
 double Sherpa::TotalXS()
