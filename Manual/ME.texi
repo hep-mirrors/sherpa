@@ -343,7 +343,7 @@ will have the electron and the positron at positions @code{p[2]} and
 @code{p[3]} and the gluons on postions @code{p[4]} and @code{p[5]}. However, 
 when finding jets first, the electrons will still be at @code{p[2]} and 
 @code{p[3]} while the harder jet will be at @code{p[4]} and the softer one 
-at @code{p[6]}.
+at @code{p[5]}.
 
 @item H_T2
 Square of the scalar sum of the transverse momenta of all final state particles.
