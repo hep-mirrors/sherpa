@@ -136,7 +136,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   reader->MatrixFromFile(help,"MDME");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>2) {
-      if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
+      if ((int)help[i][0] > 0 && (int)help[i][1] > 0 && (int)help[i][1] <= 2) {
 	pydat3.mdme[(int)help[i][1]-1][(int)help[i][0]-1]=(int)help[i][2];
       }
     }
@@ -144,7 +144,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   reader->MatrixFromFile(help,"MDCYKF");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>2) {
-      if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
+      if ((int)help[i][0] > 0 && (int)help[i][1] > 0 && (int)help[i][1] <= 3) {
 	msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
 		      <<"Set MDCY("<<pycomp((int)help[i][0])<<","<<(int)help[i][1]
 		      <<") ( from KF code "<<(int)help[i][0]<<" ) to "<<(int)help[i][2]<<endl;
