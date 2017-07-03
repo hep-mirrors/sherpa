@@ -89,7 +89,7 @@ void BlackHat_Tree::AddCouplings
     return;
   }
   for (size_t j(pi.m_mincpl[i]);j<=pi.m_maxcpl[i];++j) {
-    cpls[i].second=j;
+    cpls[i].second=2.0*j;
     AddCouplings(pi,couplings,cpls,i+1);
   }
 }
@@ -101,10 +101,10 @@ operator()(const Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="BlackHat" &&
       pi.m_loopgenerator!="WhiteHat") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype==nlo_type::lo ||
-      pi.m_fi.m_nloqcdtype==nlo_type::born ||
-      pi.m_fi.m_nloqcdtype==nlo_type::real) {
+  if (pi.m_fi.m_nlotype==nlo_type::lo ||
+      pi.m_fi.m_nlotype==nlo_type::born ||
+      pi.m_fi.m_nlotype==nlo_type::real) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Flavour_Vector fl=pi.ExtractFlavours();
     std::vector<int> kfvector;
     for (size_t i=0; i<fl.size(); ++i) kfvector.push_back((long int) fl[i]);

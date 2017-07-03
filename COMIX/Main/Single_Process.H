@@ -1,10 +1,11 @@
 #ifndef COMIX_Main_Single_Process_H
 #define COMIX_Main_Single_Process_H
 
-#include "COMIX/Main/Process_Base.H"
-#include "PHASIC++/Process/Single_Process.H"
-#include "PHASIC++/Process/KP_Terms.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "COMIX/Amplitude/Amplitude.H"
+#include "COMIX/Main/Process_Base.H"
+#include "PHASIC++/Process/KP_Terms.H"
+#include "PHASIC++/Process/Single_Process.H"
 
 namespace COMIX {
 
@@ -31,6 +32,7 @@ namespace COMIX {
     double m_w, m_dxs, m_x[2];
     bool   m_checkpoles, m_allowmap;
 
+    ATOOLS::cs_itype::type m_itype;
     ATOOLS::NLO_subevtlist m_subs;
 
     void InitPSGenerator(const size_t &ismode);
@@ -42,8 +44,8 @@ namespace COMIX {
     void FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
     void UpdateKPTerms(const int mode);
-    double KPTerms(const int mode,
-                   double scalefac2=1.0);
+    double KPTerms(const int mode, PDF::PDF_Base *pdfa,
+                                   PDF::PDF_Base *pdfb, double scalefac2=1.0);
 
   public:
 

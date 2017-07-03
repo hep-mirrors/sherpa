@@ -249,10 +249,18 @@ class Order_Flavour {
 	(*p_fmm)[int(b.Kfcode())]) return 1;
     return 0;
   }
+  int Order_Photons(const Flavour &a,const Flavour &b)
+  {
+    if (a.Strong() && a.Mass() && b.IsPhoton()) return 1;
+    return 0;
+  }
+
   int operator()(const Flavour &a,const Flavour &b)
   {
     if (a.Priority()>b.Priority()) return 1;
     if (a.Priority()<b.Priority()) return 0;
+    if (Order_Photons(a,b)) return 1;
+    if (Order_Photons(b,a)) return 0;
     if (!a.Strong()&&b.Strong()) return 1;
     if (a.Strong()&&!b.Strong()) return 0;
     if (a.Mass()>b.Mass()) return 1;
@@ -275,6 +283,12 @@ public:
   { return (*this)(a->Flav(),b->Flav()); }
 };// end of class Order_Flavour
 
+class Order_NDecay {
+public:
+  int operator()(const Decay_Info *a,const Decay_Info *b)
+  { return IdCount(a->m_id)>IdCount(b->m_id); }
+};// end of class Order_NDecay
+
 void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 {
   if (info.m_ps.empty()) return;
@@ -293,7 +307,7 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
   FMMap fmm;
   for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
+    if (fmm.find(int(hfl->Kfcode()))==fmm.end())
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) {
       fmm[int(hfl->Kfcode())]+=10;
@@ -302,7 +316,7 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
   }
   for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
-    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
+    if (fmm.find(int(hfl->Kfcode()))==fmm.end())
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
@@ -355,10 +369,12 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
   name+="["+GenerateName(info.m_ps.front());
   for (size_t i(1);i<info.m_ps.size();++i) 
     name+="__"+GenerateName(info.m_ps[i]);
-  if (info.m_nloqcdtype!=nlo_type::lo) 
-    name+="__QCD("+ToString(info.m_nloqcdtype)+info.m_sv+")";
-  if (info.m_nloewtype!=nlo_type::lo) 
-    name+="__EW("+ToString(info.m_nloewtype)+info.m_sv+")";
+  if (info.m_nlotype!=nlo_type::lo) {
+    if      (info.m_nlocpl[0]==1. && info.m_nlocpl[1]==0.) name+="__QCD(";
+    else if (info.m_nlocpl[0]==0. && info.m_nlocpl[1]==1.) name+="__EW(";
+    else                                                   name+="__QCDEW(";
+    name+=ToString(info.m_nlotype)+info.m_sv+")";
+  }
   return name+="]";
 }
 
@@ -373,18 +389,14 @@ std::string Process_Base::GenerateName
   std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
-  if (fi.m_nloqcdtype!=nlo_type::lo) 
-    name+="__QCD("+ToString(fi.m_nloqcdtype)+fi.m_sv+")";
-  if (fi.m_nloewtype!=nlo_type::lo) 
-    name+="__EW("+ToString(fi.m_nloewtype)+fi.m_sv+")";
+  if (fi.m_nlotype!=nlo_type::lo) {
+    if      (fi.m_nlocpl[0]==1. && fi.m_nlocpl[1]==0.) name+="__QCD(";
+    else if (fi.m_nlocpl[0]==0. && fi.m_nlocpl[1]==1.) name+="__EW(";
+    else                                               name+="__QCDEW(";
+    name+=ToString(fi.m_nlotype)+fi.m_sv+")";
+  }
   return name;
 }
-
-class Order_NDecay {
-public:
-  int operator()(const Decay_Info *a,const Decay_Info *b) 
-  { return IdCount(a->m_id)>IdCount(b->m_id); }
-};// end of class Order_NDecay
 
 void Process_Base::SortFlavours
 (std::vector<Cluster_Leg*> &legs,FMMap *const fmm)
@@ -575,7 +587,7 @@ void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
 void Process_Base::SetSelector(const Selector_Key &key)
 {
   if (IsMapped()) return;
-  if (p_selector==NULL) p_selector = new Combined_Selector(p_int);
+  if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
 }
 
@@ -650,7 +662,7 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     for (size_t i(0);i<Size();++i) (*this)[i]->FillProcessMap(apmap);
   }
   else {
-    nlo_type::code nlot(m_pinfo.m_fi.m_nloqcdtype);
+    nlo_type::code nlot(m_pinfo.m_fi.m_nlotype);
     std::string fname(m_name);
     size_t pos=fname.find("EW");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);

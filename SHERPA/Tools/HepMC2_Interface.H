@@ -7,6 +7,9 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 
 
@@ -38,7 +41,7 @@ namespace SHERPA {
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22;
     double m_alphas, m_alpha;
-    PHASIC::nlo_type::code m_type;
+    ATOOLS::nlo_type::code m_type;
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;

@@ -26,7 +26,9 @@ namespace SHERPA {
         else return false;
       }
     };
-    
+
+    bool m_on;
+
     std::vector<ATOOLS::Vec3D>            *p_kperp[2];
     std::set<ATOOLS::Particle*, partcomp> *p_filled;
     std::set<ATOOLS::Blob*, blobcomp>     *p_boosted;
@@ -77,6 +79,8 @@ namespace SHERPA {
     { if (beam<2) return m_kperpsigma[beam]; else return -1.0; }
     inline unsigned int Scheme() const
     { return m_scheme; }
+    inline bool On() const
+    { return m_on; }
 
   };// end of class Primordial_KPerp
 

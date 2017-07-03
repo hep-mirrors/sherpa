@@ -1,5 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "ATOOLS/Org/Message.H"
+#include "PHASIC++/Process/Process_Base.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Virtual_ME2_Base
@@ -12,11 +13,14 @@ using namespace MODEL;
 
 Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
                              const Flavour_Vector& flavs) :
-  m_pinfo(pi), m_flavs(flavs),
+  m_name(""), m_pinfo(pi), m_flavs(flavs), m_stype(sbt::none),
   m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-  m_mur2(1.0), m_mode(0), m_drmode(0), m_colmode(0),
-  m_born(0.0), m_norm(1.0), p_aqcd(NULL), p_aqed(NULL)
+  m_born(0.0), m_norm(1.0),
+  m_mur2(1.0), m_accu(1.e6),
+  m_mode(0), m_drmode(0), m_colmode(0),
+  p_aqcd(NULL), p_aqed(NULL)
 {
+  m_name=PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi);
 }
 
 Virtual_ME2_Base::~Virtual_ME2_Base()
@@ -39,6 +43,11 @@ double Virtual_ME2_Base::ScaleDependenceCoefficient(const int i)
   return 0.0;
 }
 
+bool Virtual_ME2_Base::IsMappableTo(const Process_Info& pi)
+{
+  return true;
+}
+
 void Virtual_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 {
   p_aqcd=p_aqed=NULL;
@@ -48,12 +57,14 @@ void Virtual_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 
 double Virtual_ME2_Base::AlphaQCD() const
 {
-  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : s_model->ScalarConstant("alpha_S");
+  if (!p_aqcd) THROW(fatal_error,"QCD coupling not set.");
+  return p_aqcd->Default()*p_aqcd->Factor();
 }
 
 double Virtual_ME2_Base::AlphaQED() const
 {
-  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : s_model->ScalarConstant("alpha_QED");
+  if (!p_aqed) THROW(fatal_error,"QED coupling not set.");
+  return p_aqed->Default()*p_aqed->Factor();
 }
 
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>

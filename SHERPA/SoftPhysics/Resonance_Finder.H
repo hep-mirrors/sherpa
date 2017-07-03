@@ -34,6 +34,7 @@ namespace SHERPA {
   private:
     bool   m_on;
     double m_resdist;
+    bool   m_inclres;
     Matrix_Element_Handler  * p_mehandler;
     std::map<std::string,SubInfoVector>      m_proc_lep_map;
     std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;

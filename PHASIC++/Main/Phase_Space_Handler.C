@@ -178,16 +178,6 @@ double Phase_Space_Handler::Integrate()
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
   if (!InitIncoming()) return 0;
-  if (MODEL::s_model->Name()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
-    if (rpa->gen.Ecms()>MODEL::s_model->ScalarConstant(std::string("M_cut"))) {
-      msg_Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
-		 <<"   Use of model ADD at a c.m. energy of "<<rpa->gen.Ecms()<<" GeV,"<<std::endl
-		 <<"   but internal string/cut-off scale of model is "
-		 <<MODEL::s_model->ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
-		 <<"   Return 0 pb as cross section for process "<<p_process->Process()->Name()<<std::endl;
-      return 0.;
-    }
-  }
   msg_Debugging()<<"Phase_Space_Handler::Integrate with : "<<std::endl;
   if (m_nin>1) {
     if (p_beamchannels) 
@@ -342,7 +332,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     Check4Momentum(p_lab);
     CalculatePS();
     CalculateME();
-    if (m_result==0.) { return 0.;}
+    if (m_result==0.) { msg_Debugging()<<"Result is zero. Return."<<std::endl; return 0.;}
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
       msg->SetPrecision(15);

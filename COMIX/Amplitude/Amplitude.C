@@ -129,12 +129,19 @@ bool Amplitude::AddRSDipoles()
 #endif
   Current_Vector scur;
   for (size_t j(0);j<m_n;++j) {
+    Flavour flc(m_cur[1][j]->Flav());
     for (size_t i(0);i<m_cur[2].size();++i) {
       if (m_cur[2][i]->CId()&m_cur[1][j]->CId()) continue;
-      // begin temporary
-      if (!(m_cur[2][i]->In().front()->Order(0)==1 &&
-	    m_cur[1][j]->Flav().StrongCharge())) continue;
-      // end temporary
+      Vertex *v(m_cur[2][i]->In().front());
+      Flavour fla(v->J(0)->Flav()), flb(v->J(1)->Flav());
+      bool isa(v->J(0)->CId()&(1<<m_nin)-1);
+      bool isb(v->J(1)->CId()&(1<<m_nin)-1);
+      if (!((p_dinfo->Type()==0 &&
+	     v->Order(0)==1 && flc.StrongCharge()) ||
+	    (p_dinfo->Type()==1 && !isa &&
+	     fla.IsPhoton() && flc.Charge()) ||
+	    (p_dinfo->Type()==1 && !isb &&
+	     flb.IsPhoton() && flc.Charge()))) continue;
       if (m_cur[2][i]->In().size()!=1)
 	THROW(not_implemented,"Invalid current");
       if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur)) return false;
@@ -212,9 +219,11 @@ bool Amplitude::AddVIDipoles()
     for (size_t j(i+1);j<m_n;++j) {
       int sc[2]={m_cur[1][i]->Flav().StrongCharge(),
 		 m_cur[1][j]->Flav().StrongCharge()};
-      // begin temporary
+      if (p_dinfo->Type()==1) {
+	sc[0]=m_cur[1][i]->Flav().IntCharge();
+	sc[1]=m_cur[1][j]->Flav().IntCharge();
+      }
       if (sc[0]==0 || sc[1]==0) continue;
-      // end temporary
       if (!AddVIDipole(m_cur[1][i],m_cur[1][j],scur)) return false;
     }
   }
@@ -610,13 +619,12 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
   }
   Prune();
   if (p_dinfo->Mode()) {
-    for (Current_Vector::iterator cit(m_cur.back().begin());
-	 cit!=m_cur.back().end();++cit)
-      if ((*cit)->Sub()==NULL) {
-	Current *c(*cit);
-	m_cur.back().erase(cit);
+    for (size_t i(0);i<m_cur.back().size();++i)
+      if (m_cur.back()[i]->Sub()==NULL && 
+	  (i && m_cur.back()[i-1]->Sub())) {
+	Current *c(m_cur.back()[i]);
+	m_cur.back().erase(m_cur.back().begin()+i);
 	m_cur.back().insert(m_cur.back().begin(),c);
-	break;
       }
     for (Current_Vector::iterator cit(m_scur.begin());
 	 cit!=m_scur.end();++cit)
@@ -737,10 +745,13 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
 bool Amplitude::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
  const double &isf,const double &fsf,MODEL::Model_Base *const model,
- MODEL::Coupling_Map *const cpls,const int smode,
+ MODEL::Coupling_Map *const cpls,const int stype,const int smode,
+ const cs_itype::type itype,
  const std::vector<int> &maxcpl, const std::vector<int> &mincpl,
  const size_t &minntc,const size_t &maxntc,const std::string &name)
 {
+  DEBUG_FUNC(flavs<<", stype="<<(sbt::subtype)(stype+1)<<", smode="<<smode
+             <<", itype="<<itype<<", cpls="<<maxcpl<<".."<<mincpl);
   CleanUp();
   m_nin=nin;
   m_nout=nout;
@@ -749,7 +760,9 @@ bool Amplitude::Initialize
   m_maxntc=maxntc;
   m_maxcpl=maxcpl;
   m_mincpl=mincpl;
+  p_dinfo->SetType(stype);
   p_dinfo->SetMode(smode);
+  p_dinfo->SetIType(itype);
   ReadInAmpFile(name);
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
@@ -782,6 +795,8 @@ void Amplitude::ConstructNLOEvents()
     sub->m_i=kin->JI()->Id().front();
     sub->m_j=kin->JJ()->Id().front();
     sub->m_k=kin->JK()->Id().front();
+    sub->m_oqcd=m_maxcpl[0]/2;
+    sub->m_oew=m_maxcpl[1]/2;
     Current_Vector cur(sub->m_n,NULL);
     for (size_t k(0), j(0);k<m_nin+m_nout;++k) {
       if (k==sub->m_j) continue;
@@ -838,6 +853,8 @@ void Amplitude::ConstructNLOEvents()
   PHASIC::Process_Base::SortFlavours(cpi);
   sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
   sub->m_i=sub->m_j=sub->m_k=0;
+  sub->m_oqcd=m_maxcpl[0]/2;
+  sub->m_oew=m_maxcpl[1]/2;
   {
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
@@ -860,8 +877,14 @@ void Amplitude::ConstructDSijMap()
   m_dsf.clear();
   size_t c(0), ifp(0);
   std::vector<int> plist(m_fl.size());
-  for (size_t i(0);i<m_fl.size();++i)
-    plist[i]=m_fl[i].Strong()?c++:0;
+  if (p_dinfo->Type()==0) {
+    for (size_t i(0);i<m_fl.size();++i)
+      plist[i]=m_fl[i].Strong()?c++:0;
+  }
+  else {
+    for (size_t i(0);i<m_fl.size();++i)
+      plist[i]=m_fl[i].Charge()?c++:0;
+  }
   m_dsij.resize(c,std::vector<double>(c));
   Flavour ifl(m_cur[1][0]->Flav());
   if (ifl.IsFermion() && !ifl.IsAnti()) {
@@ -1146,29 +1169,31 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   return p_dinfo->Stat();
 }
 
-bool Amplitude::JetTrigger
+bool Amplitude::RSTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
   if (m_subs.empty() || sel==NULL) return true;
-  NLO_subevtlist tmp;
-  tmp.resize(1,m_subs.back());
+  DEBUG_FUNC(m_subs.size());
+  // first trigger on real event
+  NLO_subevt * tmp(m_subs.back());
   Vec4D_Vector p(m_p);
   for (size_t i(0);i<m_nin;++i) p[i]=-p[i];
-  bool trig(m_trig=sel->JetTrigger(p,&tmp));
+  bool trig(m_trig=sel->Trigger(p,tmp));
   m_subs.back()->m_trig=trig;
+  // then loop over subevents
   for (size_t i(0);i<m_scur.size();++i) {
-    tmp.back()=m_subs[i];
+    tmp=m_subs[i];
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
-    Vec4D_Vector p(kin->Momenta());
-    for (size_t j(0);j<m_nin;++j) p[j]=-p[j];
-    int ltrig(sel->JetTrigger(p,&tmp));
+    Vec4D_Vector lp(kin->Momenta());
+    for (size_t j(0);j<m_nin;++j) lp[j]=-lp[j];
+    bool ltrig(sel->Trigger(lp,tmp));
     kin->SetF(1.0);
     if (m_smth) {
       double a(m_smth>0.0?kin->KT2():kin->Y());
       if (a>0.0 && a<dabs(m_smth)) {
-	kin->SetF(pow(a/dabs(m_smth),m_smpow));
-	if (ltrig==0) kin->SetF(-kin->F());
-	ltrig=1;
+        kin->SetF(pow(a/dabs(m_smth),m_smpow));
+        if (ltrig==0) kin->SetF(-kin->F());
+        ltrig=1;
       }
     }
     kin->AddTrig(ltrig);
@@ -1264,12 +1289,13 @@ bool Amplitude::Evaluate(const Int_Vector &chirs)
   return true;
 }
 
-bool Amplitude::EvaluateAll()
+bool Amplitude::EvaluateAll(const bool& mode)
 {
   if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
   for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset(0);
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
   MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
+  if (p_dinfo->Type()==1) cpl=m_cpls.front().p_aqed;
   double mu2(cpl?cpl->Scale():-1.0);
   p_dinfo->SetMu2(mu2);
   CalcJL();
@@ -1442,7 +1468,7 @@ bool Amplitude::EvaluateAll()
 	m_cmur[0]-=ccsum*asf*(kin->Res(1)+lf*kin->Res(2));
 	ccsum*=-asf*(kin->Res(0)+lf*kin->Res(1)+0.5*sqr(lf)*kin->Res(2));
       }
-      csum+=ccsum;
+      if (mode || p_dinfo->IType()&cs_itype::I) csum+=ccsum;
     }
     if (p_loop) {
       double cw(p_loop->Mode()?1.0/m_sf:m_res);
@@ -1505,6 +1531,7 @@ double Amplitude::Differential
 
 bool Amplitude::ConstructChirs()
 {
+  DEBUG_FUNC("");
   for (size_t i(0);i<m_cur.back().size();++i) {
     m_ress.push_back(Spin_Structure<DComplex>(m_fl,0.0));
     m_cur.back()[i]->HM().resize(m_ress.back().size());
@@ -1546,23 +1573,24 @@ bool Amplitude::ConstructChirs()
 bool Amplitude::CheckOrders()
 {
   std::vector<int> maxcpl(2,0), mincpl(2,99);
-  for (long int i(0);i<m_cur.back().size();++i) {
+  msg_Debugging()<<m_cur.back().size()<<std::endl;
+  for (size_t i(0);i<m_cur.back().size();++i) {
     bool any(false);
     const std::vector<int> &icpls(m_cur.back()[i]->Order());
     for (size_t j(0);j<m_cur.back().size();++j) {
       const std::vector<int> &jcpls(m_cur.back()[j]->Order());
       if (m_cur.back()[i]->Sub()!=
 	  m_cur.back()[j]->Sub()) continue;
-      int on(1);
+      bool on(true);
       std::vector<int> cpls(icpls);
       if (cpls.size()<jcpls.size()) cpls.resize(jcpls.size(),0);
       for (size_t k(0);k<jcpls.size();++k) cpls[k]+=jcpls[k];
       if (m_maxcpl.size()<cpls.size()) m_maxcpl.resize(cpls.size(),99);
       if (m_mincpl.size()<cpls.size()) m_mincpl.resize(cpls.size(),0);
       for (size_t k(0);k<cpls.size();++k)
-	if (cpls[k]<m_mincpl[k] || cpls[k]>m_maxcpl[k]) on=0;
+        if (cpls[k]<m_mincpl[k] || cpls[k]>m_maxcpl[k]) on=false;
       for (size_t k(cpls.size());k<m_mincpl.size();++k)
-	if (m_mincpl[k]) on=0;
+        if (m_mincpl[k]) on=false;
       if (on) {
 	if (maxcpl.size()<cpls.size()) maxcpl.resize(cpls.size(),0);
 	if (mincpl.size()<cpls.size()) mincpl.resize(cpls.size(),99);
@@ -1570,8 +1598,6 @@ bool Amplitude::CheckOrders()
 	  maxcpl[k]=Max(maxcpl[k],cpls[k]);
 	  mincpl[k]=Min(mincpl[k],cpls[k]);
 	}
-      }
-      if (on) {
 	if (m_cur.back()[i]->Sub())
 	  m_son.push_back(std::pair<size_t,size_t>(i,j));
 	else m_on.push_back(std::pair<size_t,size_t>(i,j));
@@ -1605,6 +1631,7 @@ bool Amplitude::CheckOrders()
 
 bool Amplitude::ConstructCouplings(MODEL::Coupling_Map *const cpls)
 {
+  DEBUG_FUNC("");
   MODEL::Coupling_Data *rqcd(cpls->Get("Alpha_QCD"));
   MODEL::Coupling_Data *rqed(cpls->Get("Alpha_QED"));
   for (long int i(0);i<m_cur.back().size();++i) {
@@ -1658,6 +1685,29 @@ bool Amplitude::Construct
   m_dirs=incs;
   if (!Construct(flavs)) return false;
   if (!CheckOrders()) return false;
+  FillCombinations();
+  msg_Debugging()<<METHOD<<"(): Amplitude statistics (n="
+		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
+  size_t csum(0), vsum(0), scsum(0), svsum(0);
+  for (size_t i(1);i<m_n;++i) {
+    size_t cvsum(0), csvsum(0);
+    for (size_t j(0);j<m_cur[i].size();++j) {
+      if (m_cur[i][j]->Sub()) {
+	++scsum;
+	csvsum+=m_cur[i][j]->NIn();
+      }
+      else {
+	++csum;
+	cvsum+=m_cur[i][j]->NIn();
+      }
+    }
+    msg_Debugging()<<"  "<<std::setw(5)<<i<<" "<<std::setw(8)
+		   <<m_cur[i].size()<<" "<<std::setw(8)<<cvsum<<"\n";
+    vsum+=cvsum;
+    svsum+=csvsum;
+  }
+  msg_Debugging()<<std::left<<"} -> "<<csum<<"(+"<<scsum<<") currents, "
+		 <<vsum<<"(+"<<svsum<<") vertices"<<std::endl;
   if (!ConstructChirs()) return false;
   FillCombinations();
   m_sid.resize(m_cur.back().size(),0);
@@ -1748,12 +1798,12 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   }
   SetGauge(1);
   SetMomenta(moms);
-  if (!EvaluateAll()) return false;
+  if (!EvaluateAll(true)) return false;
   double res(m_born?m_born:m_res);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
   SetGauge(0);
   SetMomenta(moms);
-  if (!EvaluateAll()) return false;
+  if (!EvaluateAll(true)) return false;
   double res2(m_born?m_born:m_res);
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Debugging()<<"  \\sigma_{tot} = "<<res<<" vs. "<<res2

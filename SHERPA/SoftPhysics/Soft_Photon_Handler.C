@@ -2,8 +2,10 @@
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Tensor.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "PHOTONS++/Main/Photons.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
@@ -39,7 +41,10 @@ bool Soft_Photon_Handler::AddRadiation(Blob * blob)
 {
   p_yfs->AddRadiation(blob);
   blob->UnsetStatus(blob_status::needs_extraQED);
-  m_photonsadded=p_yfs->AddedAnything();
+  if (m_photonsadded=p_yfs->AddedAnything())
+    for (size_t i(0); i<blob->NOutP(); ++i)
+      if (blob->OutParticle(i)->DecayBlob())
+        BoostDecayBlob(blob->OutParticle(i)->DecayBlob());
   return p_yfs->DoneSuccessfully();
 }
 
@@ -66,3 +71,52 @@ bool Soft_Photon_Handler::AddRadiation(Particle_Vector& leps, Blob_Vector& blobs
   return true;
 }
 
+void Soft_Photon_Handler::BoostDecayBlob(Blob * blob)
+{
+  DEBUG_FUNC("");
+  msg_Debugging()<<*blob<<std::endl;
+  const Vec4D& P((*blob)["p_original"]->Get<Vec4D>());
+  const Vec4D& Pt(blob->InParticle(0)->Momentum());
+  const Vec4D e(P-Pt);
+  msg_Debugging()<<"P-Pt="<<e<<" ["<<e.Mass()<<"]"<<std::endl;
+  const Lorentz_Ten2D lambda(MetricTensor()-2.*BuildTensor(e,e)/e.Abs2());
+  msg_Debugging()<<"\\Lambda="<<std::endl<<lambda<<std::endl;
+  for (size_t i(0);i<blob->NOutP();++i) {
+    Vec4D mom(blob->OutParticle(i)->Momentum());
+    msg_Debugging()<<blob->OutParticle(i)->Flav().IDName()<<" "
+                   <<mom<<" ["<<mom.Mass()<<"] -> ";
+    mom=Contraction(lambda,2,mom);
+    blob->OutParticle(i)->SetMomentum(mom);
+    msg_Debugging()<<mom<<" ["<<mom.Mass()<<"]"<<std::endl;
+  }
+  CheckOnshellness(blob);
+  if (msg_LevelIsDebugging()) {
+    for (size_t i(0);i<blob->NOutP();++i) {
+      Vec4D mom(blob->OutParticle(i)->Momentum());
+      msg_Debugging()<<blob->OutParticle(i)->Flav().IDName()<<" "
+                     <<mom<<" ["<<mom.Mass()<<"]"<<std::endl;
+    }
+  }
+  msg_Debugging()<<"Momentum conservation in decay blob of "
+                 <<blob->InParticle(0)->Flav()<<": "
+                 <<blob->CheckMomentumConservation()<<std::endl;
+}
+
+bool Soft_Photon_Handler::CheckOnshellness(Blob* blob)
+{
+  std::vector<double> masses;
+  bool allonshell(true);
+  double accu(sqrt(Accu()));
+  for (size_t i(0);i<blob->NOutP();++i) {
+    masses.push_back(blob->OutParticle(i)->FinalMass());
+    if (allonshell &&
+        !IsEqual(blob->OutParticle(i)->Momentum().Abs2(),
+                 sqr(blob->OutParticle(i)->FinalMass()),accu)) allonshell=false;
+  }
+  msg_Debugging()<<"masses="<<masses<<std::endl;
+  if (allonshell) return true;
+  msg_Debugging()<<"need to put on-shell"<<std::endl;
+  Momenta_Stretcher momstretch;
+  momstretch.StretchMomenta(blob->GetOutParticles(),masses);
+  return false;
+}

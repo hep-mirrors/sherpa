@@ -19,6 +19,7 @@ namespace PDF {
     std::map<int, double> m_xfx;
     std::map<int, bool>   m_calculated;
     double        m_x,m_Q2;
+    std::vector<int> m_disallowedflavour;
   public:
     LHAPDF_CPP_Interface(const ATOOLS::Flavour,std::string,int);
     ~LHAPDF_CPP_Interface();
@@ -81,18 +82,44 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   kfcs.push_back(-kf_b);
   kfcs.push_back(kf_t);
   kfcs.push_back(-kf_t);
+  kfcs.push_back(kf_e);
+  kfcs.push_back(-kf_e);
+  kfcs.push_back(kf_mu);
+  kfcs.push_back(-kf_mu);
+  kfcs.push_back(kf_tau);
+  kfcs.push_back(-kf_tau);
   kfcs.push_back(kf_gluon);
   kfcs.push_back(kf_photon);
+  kfcs.push_back(kf_Z);
+  kfcs.push_back(kf_Wplus);
+  kfcs.push_back(-kf_Wplus);
+  kfcs.push_back(kf_h0);
   for (int i=0;i<kfcs.size();i++) if (p_pdf->hasFlavor(kfcs[i])) {
     m_partons.insert(Flavour(abs(kfcs[i]),kfcs[i]<0));
     m_xfx[kfcs[i]]=0.;
     m_calculated[kfcs[i]]=false;
   }
-  if (p_pdf->hasFlavor( kf_d))    m_partons.insert(Flavour(kf_quark));
-  if (p_pdf->hasFlavor(-kf_d))    m_partons.insert(Flavour(kf_quark).Bar());
-  if (p_pdf->hasFlavor(kf_gluon)) m_partons.insert(Flavour(kf_jet));
+  if (p_pdf->hasFlavor(kf_d)) {
+    m_partons.insert(Flavour(kf_quark));
+    if (p_pdf->hasFlavor(kf_gluon)) {
+      m_partons.insert(Flavour(kf_jet));
+      if (p_pdf->hasFlavor(kf_photon)) {
+        m_partons.insert(Flavour(kf_ewjet));
+      }
+    }
+  }
 
   m_lhef_number = p_pdf->lhapdfID();
+
+  Data_Reader read(" ",";","#","=");
+  read.VectorFromFile(m_disallowedflavour,"LHAPDF_DISALLOW_FLAVOUR");
+  if (m_disallowedflavour.size()) {
+    msg_Info()<<METHOD<<"(): Set PDF for the following flavours to zero: ";
+    for (size_t i(0);i<m_disallowedflavour.size();++i)
+      msg_Info()<<Flavour(abs(m_disallowedflavour[i]),m_disallowedflavour[i]<0)
+                <<" ";
+    msg_Info()<<std::endl;
+  }
 
   rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
 }
@@ -177,6 +204,13 @@ double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
   int kfc = m_anti*int(infl);
   if (int(infl)==kf_gluon || int(infl)==kf_photon)
     kfc = int(infl);
+  for (size_t i(0);i<m_disallowedflavour.size();++i) {
+    if (kfc==m_disallowedflavour[i]) {
+      m_xfx[kfc]=0.;
+      m_calculated[kfc]=true;
+      break;
+    }
+  }
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;
@@ -193,6 +227,13 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
   int kfc = m_anti*(anti?-kf:kf);
   if (kf==kf_gluon || kf==kf_photon)
     kfc = kf;
+  for (size_t i(0);i<m_disallowedflavour.size();++i) {
+    if (kfc==m_disallowedflavour[i]) {
+      m_xfx[kfc]=0.;
+      m_calculated[kfc]=true;
+      break;
+    }
+  }
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;

@@ -83,8 +83,9 @@ FillBeamBlobs(Blob_List *const bloblist,
       return Return_Value::Retry_Event; 
     }
   }
-  if (p_beampart[0]->Type()==PDF::rtp::hadron || 
-      p_beampart[1]->Type()==PDF::rtp::hadron) {
+  if (p_kperp->On() &&
+      (p_beampart[0]->Type()==PDF::rtp::hadron ||
+       p_beampart[1]->Type()==PDF::rtp::hadron)) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
     for (short unsigned int i=0;i<2;++i) {
       //msg_Out()<<METHOD<<"("<<i<<"):\n"<<(*p_beamblob[i])<<"\n";

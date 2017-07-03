@@ -36,7 +36,7 @@ namespace ATOOLS {
       MyTiming m_timer;
       double m_timeout;
       int m_batchmode;
-      std::string m_username;
+      std::string m_username,m_hostname;
       bool m_softsc, m_hardsc;
       std::map<std::string,std::string> m_variables;
       std::vector<std::string> m_cites;
@@ -69,6 +69,7 @@ namespace ATOOLS {
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline const std::string &UserName() { return m_username; }
+      inline const std::string &HostName() { return m_hostname; }
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 
       { m_variables[key]=value; }

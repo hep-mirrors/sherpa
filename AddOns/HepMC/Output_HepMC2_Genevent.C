@@ -27,7 +27,7 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepmc2g";
-  int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
 #ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
 #ifdef HEPMC_HAS_CROSS_SECTION

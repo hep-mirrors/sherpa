@@ -35,26 +35,26 @@ AMEGIC::Process_Base::Process_Base():
   m_allowmap=allowmap;
 }
 
-AMEGIC::Process_Base::~Process_Base() 
+AMEGIC::Process_Base::~Process_Base()
 {
   delete p_channellibnames;
   if (p_pl) delete [] p_pl;
   if (p_b) delete [] p_b;
 }
 
-double AMEGIC::Process_Base::Result()   
+double AMEGIC::Process_Base::Result()
 {
   return 0.0;
 }
 
-std::string AMEGIC::Process_Base::LibName()                      
-{ 
-  return "error"; 
+std::string AMEGIC::Process_Base::LibName()
+{
+  return "error";
 }
 
-void AMEGIC::Process_Base::SetPrintGraphs(std::string gpath) 
+void AMEGIC::Process_Base::SetPrintGraphs(std::string gpath)
 {
- m_print_graphs=gpath; 
+  m_print_graphs=gpath;
 }
 
 void AMEGIC::Process_Base::Init()
@@ -78,8 +78,8 @@ void AMEGIC::Process_Base::Init()
   }
   SetNTchanmin(m_pinfo.m_ntchan);
   p_b    = new int[NIn()+NOut()];
-  for (size_t i=0;i<NIn();i++) p_b[i] = -1; 
-  for (size_t i=NIn();i<NIn()+NOut();i++) p_b[i] = 1; 
+  for (size_t i=0;i<NIn();i++) p_b[i] = -1;
+  for (size_t i=NIn();i<NIn()+NOut();i++) p_b[i] = 1;
 }
 
 
@@ -274,6 +274,11 @@ std::string  AMEGIC::Process_Base::CreateLibName()
 {
   std::string name(m_name);
   size_t bpos(name.find("__QCD("));
+  if (bpos!=std::string::npos) {
+    size_t epos(name.find(')',bpos));
+    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+  }
+  bpos=name.find("__EW(");
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
     if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);

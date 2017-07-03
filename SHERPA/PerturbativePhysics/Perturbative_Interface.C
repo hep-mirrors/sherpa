@@ -73,7 +73,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     return Return_Value::Error;
   }
   p_hard=blob;
-  if (!p_shower->On() || (p_me && p_me->Process()->Info().m_nlomode==1)) {
+  if (!p_shower->On() ||
+      (p_me && p_me->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
     m_weight=1.0;
     return Return_Value::Success;
   }

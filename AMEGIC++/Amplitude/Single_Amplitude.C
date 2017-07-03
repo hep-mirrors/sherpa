@@ -152,7 +152,7 @@ void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
 void Single_Amplitude::PrintGraph() 
 {
   if (!msg_LevelIsTracking()) return;
-  
+
   msg_Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
 
   Single_Amplitude_Base::PrintGraph();
@@ -161,34 +161,16 @@ void Single_Amplitude::PrintGraph()
   c = CFlist;
   msg_Out()<<"Color-matrix: ";
   while(c) {
-    switch (c->Type()) {
-      case  0: {
-	msg_Out()<<"T("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
-			    <<" "<<c->ParticleArg(2)<<") ";
-	break;
-      }
-      case  1: {
-	msg_Out()<<"F("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
-			    <<" "<<c->ParticleArg(2)<<") ";
-	break;
-      }
-      case 2: {
-        msg_Out()<<"D("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)<<") ";
-        break;	
-      }
-      case 4: {
-        msg_Out()<<"G("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)<<") ";
-	break;
-      }
-      default : break;
-    }
-    c = c->Next();     
+    msg_Out()<<*c<<" ";
+    c = c->Next();
   }
-  msg_Out()<<endl<<"Color-string: "<<CFColstring<<endl<<endl<<"Spinflow:"<<endl;
+  msg_Out()<<endl;
+  msg_Out()<<"Color-string: "<<CFColstring<<endl<<endl;
+  msg_Out()<<"Spinflow:"<<endl;
   SpinorDirection* sd = spind;
   while(sd) {
     msg_Out()<<sd->from<<" -> "<<sd->to<<endl;
-    sd = sd->Next;     
+    sd = sd->Next;
   }
   msg_Out()<<"Overall sign "<<sign<<endl;
 }
@@ -201,14 +183,14 @@ void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph,bool gc,bool cvp)
   if (gc){
     Color_Generator cgen;
     int dummy = 0;
-    cgen.CFConvert(N,dummy,Pointlist);  
+    cgen.CFConvert(N,dummy,Pointlist);
     cgen.CFKill();
-    cgen.CFBuildString(N);  
+    cgen.CFBuildString(N);
     CFlist  = cgen.Get_CF();
     CCFlist = cgen.Get_CCF();
     CFColstring = cgen.CF2String(CFlist);
     CFColstringC = cgen.CF2String(CCFlist);
-  }        
+  }
 
   Zfunc_Generator zgen(cvp,BS);
   zgen.BuildZlist(shand->Get_Generator(),BS,ngraph);
@@ -272,6 +254,10 @@ const std::vector<int> &Single_Amplitude::GetOrder()
 }
 
 
+std::ostream & AMEGIC::operator<<(std::ostream &s,const Single_Amplitude &samp)
+{
+  return s;
+}
 
 
 

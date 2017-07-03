@@ -181,6 +181,9 @@ namespace ATOOLS {
     Scalar DEta(const Vec4<Scalar>& ref) const;
     Scalar DY(const Vec4<Scalar>& ref) const;
     Scalar DR(const Vec4<Scalar>& ref) const;
+    Scalar DR2(const Vec4<Scalar>& ref) const;
+    Scalar DRy(const Vec4<Scalar>& ref) const;
+    Scalar DR2y(const Vec4<Scalar>& ref) const;
 
     // standard vectors:
     const static Vec4<Scalar> XVEC;

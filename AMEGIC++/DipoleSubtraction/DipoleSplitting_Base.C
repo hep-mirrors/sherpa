@@ -16,105 +16,83 @@ using namespace std;
 
 #define SQRT_05 0.70710678118654757
 
-DipoleSplitting_Base::DipoleSplitting_Base() 
+DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
+                                           spt::splittingtype ft,
+                                           dpt::dipoletype dt,
+                                           int m,int i,int j,int k) :
+  m_name(""), m_alpha(1.), m_kt2max(std::numeric_limits<double>::max()),
+  m_amin(max(ATOOLS::Accu(),1.e-8)), m_kappa(2./3.),
+  m_Q2(0.), m_kt2(0.), m_a(-1.),
+  m_sff(std::nan), m_av(std::nan), m_fac(1.),
+  m_mcmode(-1), m_mcsign(-1),
+  m_stype(st), m_dtype(dt), m_ftype(ft),
+  m_i(i), m_j(j), m_k(k), m_tij(-1), m_tk(-1),
+  m_m(m), m_es(-1), m_k0sqf(-1.), m_k0sqi(-1.),
+  m_spfdef(0.), m_collVFF(true), m_Vsubmode(1),
+  p_cpl(NULL)
 {
-  m_type  = dpt::none;
-  m_spfdef = 0.0;
-  p_cpl = NULL;
-  m_av=sqrt(-1.0);
-  m_a=-1.0;
-  
-  Flavour hfl(kf_quark);
-  m_nf = hfl.Size()/2;
+  m_name=ToString(m_dtype)+"["+ToString(m_ftype)
+         +"("+ToString(m_i)+","+ToString(m_j)+")("+ToString(m_k)+")]"
+         +"("+ToString(m_stype)+")";
+  DEBUG_FUNC(m_name);
 
-  CSC.Init();
-  m_g1 = 1.5*CSC.CF;
-  m_g2 = 11./6.*CSC.CA-2./3.*CSC.TR*m_nf;
+  m_amin=ToType<double>(rpa->gen.Variable("DIPOLE_AMIN"));
+  m_kappa=ToType<double>(rpa->gen.Variable("DIPOLE_KAPPA"));
 
-  m_pfactors.clear();m_pfactors.push_back(1.);
-  m_i=-1;
-  m_j=-1;
-  m_k=-1;
-  m_tij=-1;
-  m_tk=-1;
-  m_m=0;
-  m_alpha=1.;
-  m_kt2max=std::numeric_limits<double>::max();
-  m_amin = max(ATOOLS::Accu(),1.e-8);
+  if (m_stype==sbt::qed) m_collVFF=false;
+  m_collVFF=ToType<int>(rpa->gen.Variable("DIPOLE_COLLINEAR_VFF_SPLITTINGS"));
+  m_Vsubmode=ToType<int>(rpa->gen.Variable("DIPOLE_V_SUBTRACTION_MODE"));
+  if (m_Vsubmode<0 || m_Vsubmode>2) THROW(fatal_error,"Unknown mode.");
+  std::string vsm("");
+  if      (m_Vsubmode==0) vsm="scalar";
+  else if (m_Vsubmode==1) vsm="fermionic";
+  else if (m_Vsubmode==2) vsm="eikonal";
+  msg_Tracking()<<"Use "<<vsm<<" V->VP subtraction term."<<std::endl;
+
+  if (st==sbt::qcd) {
+    if      (m_ftype==spt::g2qq) m_fac = CSC.TR/CSC.CA;
+    else if (m_ftype==spt::g2gg) m_fac = 2.;
+  }
+
+  m_pfactors.clear(); m_pfactors.push_back(1.);
   m_k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
-  m_amin=ToType<double>(rpa->gen.Variable("DIPOLE_AMIN"));
-  m_kappa=ToType<double>(rpa->gen.Variable("DIPOLE_KAPPA"));
 }
 
 void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)
 {
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_cpl=cpls->find("Alpha_QCD")->second;
+  std::string cplname("");
+  if      (m_stype==sbt::qcd) cplname="Alpha_QCD";
+  else if (m_stype==sbt::qed) cplname="Alpha_QED";
+  else THROW(fatal_error,"Cannot set coupling for subtraction type"
+                         +ToString(m_stype));
+  msg_Debugging()<<Name()<<" : "<<cplname<<std::endl;
+
+  if (cpls->find(cplname)!=cpls->end()) p_cpl=cpls->find(cplname)->second;
   else THROW(fatal_error,"Coupling not found");
-  msg_Tracking()<<"DipoleSplitting_Base:: alpha = "<<*p_cpl<<endl;
+  msg_Tracking()<<METHOD<<"(): "<<cplname<<" = "<<*p_cpl<<std::endl;
   m_spfdef = -8.*M_PI*p_cpl->Default();
 }
 
-void DipoleSplitting_Base::SetMomenta(const Vec4D* mom)
-{
-  m_mom.clear();
-  for(int i=0;i<=m_m;i++) m_mom.push_back(mom[i]);
-}
-
-void DipoleSplitting_Base::CalcVectors(ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2,double B)
+void DipoleSplitting_Base::CalcVectors(Vec4D& p1, Vec4D& p2, double B)
 {
   m_dpollist.clear();
   m_pfactors.clear();
-  if (1) {
-    Vec3D pv(p2);
-    Vec3D ptp(Vec3D(p1)-(p1[0]/p2[0])*pv);
-    Vec3D ptt(cross(ptp,pv));
 
-    m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs()));
-    m_pfactors.push_back(1.);
+  Vec3D pv(p2);
+  Vec3D ptp=Vec3D(p1)-(p1[0]/p2[0])*pv;
+  Vec3D ptt=cross(ptp,pv);
 
-    Vec4D vh(0.,ptp/ptp.Abs());
-    m_dpollist.push_back(vh);
-    m_pfactors.push_back((B-1.)/B);
-  }
-  else {
-    Vec4D vh1,vh2,p=p1;//+p2;
+  m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs()));
+  m_pfactors.push_back(1.);
 
-    double ps=sqrt(sqr(p[1])+sqr(p[2])+sqr(p[3]));
-    double pt=sqrt(sqr(p[1])+sqr(p[2]));
-    if(!ATOOLS::IsZero(pt)){
-      vh1 = Vec4D(0.,p[1]*p[3]/ps/pt,p[2]*p[3]/ps/pt,-pt/ps);
-      vh2 = Vec4D(0.,-p[2]/pt,p[1]/pt,0.);
-      if(p[1]+p[2]<0)vh2=-1.*vh2;
-    }
-    else {
-       vh1 = SQRT_05*Vec4D(0.,1.,-1.,0.);
-       vh2 = SQRT_05*Vec4D(0.,1.,1.,0.);
-    }
-    m_dpollist.push_back(vh1); m_pfactors.push_back(1.);
-    m_dpollist.push_back(vh2); m_pfactors.push_back(1.);
-
-    int sgn=1;
-    double ph=p.Abs2();//2.*(p1*p2);
-    if (!ATOOLS::IsZero(ps)) {
-     vh1=1./sqrt(dabs(ph))*Vec4D(ps,p[0]*p[1]/ps,p[0]*p[2]/ps,p[0]*p[3]/ps);
-     if (ph<0.) sgn=-1;
-    }
-    else vh1=Vec4D(0.,0.,0.,1.);
-    m_dpollist.push_back(vh1); m_pfactors.push_back(sgn);
-
-    ph = (1.-B)/B/ph;
-
-    if (ph>=0.) sgn = 1;
-    else sgn = -1;
-    vh2 = sqrt(dabs(ph))*p;
-    m_dpollist.push_back(vh2);
-    m_pfactors.push_back(sgn);
-  }
+  Vec4D vh(0.,ptp/ptp.Abs());
+  m_dpollist.push_back(vh);
+  m_pfactors.push_back((B-1.)/B);
 }
 
-double DipoleSplitting_Base::GetR(const ATOOLS::Vec4D* mom,const ATOOLS::Vec4D* LOmom)
+double DipoleSplitting_Base::GetR(const Vec4D* mom,const Vec4D* LOmom)
 {
   double ptijk=2.*(m_ptij*m_pj)*(m_ptk*m_pj)/(m_ptij*m_ptk);
   double spt=0.;
@@ -122,58 +100,11 @@ double DipoleSplitting_Base::GetR(const ATOOLS::Vec4D* mom,const ATOOLS::Vec4D* 
     for(int b=a+1;b<m_m;b++) {
       for(int c=2;c<m_m;c++)
 	if(c!=a&&c!=b) spt+=0.5*sqr((LOmom[a]+LOmom[b])*LOmom[c])/
-			 ((LOmom[a]*LOmom[b])*(LOmom[b]*LOmom[c])*(LOmom[c]*LOmom[a]));
+			    ((LOmom[a]*LOmom[b])*(LOmom[b]*LOmom[c])
+			     *(LOmom[c]*LOmom[a]));
     }
   }
   return 1./(1+ptijk*spt);
-}
-
-
-
-double DipoleSplitting_Base::Vijf(int type,int mode)
-{
-  double loga = log(m_alpha);
-  switch (type) {
-  case 1:
-  case 2:
-    return 5.-0.5*sqr(M_PI)-sqr(loga)+1.5*(m_alpha-1-loga)-(mode?0.5:0.);
-  case 3:
-    return -16./9.-2./3.*(m_alpha-1-loga);
-  case 4:
-    return 50./9.-0.5*sqr(M_PI)-sqr(loga)+11./6.*(m_alpha-1-loga)-(mode?1./6.:0.);
-  }
-  return 0.;
-}
-
-double DipoleSplitting_Base::Vif(int type,int mode)
-{
-  switch (type) {
-  case 1:
-  case 2:
-    return Vijf(1,mode);
-  case 3:
-  case 4:
-    return Vijf(4,mode)+m_nf*CSC.TR/CSC.CA*Vijf(3,mode);
-  }
-  return 0.;
-}
-
-double DipoleSplitting_Base::Vie1(int type)
-{
-  switch (type) {
-  case 1:
-  case 2:
-    return 1.5;
-  case 3:
-  case 4:
-    return m_g2/CSC.CA;
-  }
-  return 0.;
-}
-
-double DipoleSplitting_Base::Vie2(int type)
-{
-  return 1.;
 }
 
 bool DipoleSplitting_Base::Reject(const double &alpha)
@@ -181,9 +112,10 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
   if (IsBad(m_av))
     msg_Error()<<METHOD<<"(): Average is "<<m_av<<" in "
 	       <<Demangle(typeid(*this).name())
-	       <<"[type="<<m_ft<<"]"<<std::endl;
+	       <<"[type="<<m_ftype<<"]"<<std::endl;
   if (m_mcmode==1) {
-    int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))), ds(alpha<=m_alpha);
+    int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
+        ds(alpha<=m_alpha);
     m_mcsign=ds-da;
     return m_mcsign==0;
   }
@@ -196,6 +128,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 
 double DipoleSplitting_Base::GetF()
 {
+  DEBUG_FUNC("a="<<m_a<<", alpha="<<m_alpha<<", sf="<<m_sff<<", av="<<m_av);
   if (Reject(m_a)) return 0.;
   else return GetValue();
 }
@@ -205,3 +138,4 @@ double DipoleSplitting_Base::GetValue()
   THROW(fatal_error, "Virtual function not reimplemented.");
   return 0.0;
 }
+

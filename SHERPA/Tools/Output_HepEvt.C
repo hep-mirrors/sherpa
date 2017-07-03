@@ -14,7 +14,7 @@ Output_HepEvt::Output_HepEvt(const Output_Arguments &args):
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepevt";
-  int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif

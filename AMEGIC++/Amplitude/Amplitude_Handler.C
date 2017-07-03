@@ -28,13 +28,19 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     std::string print_graph,bool create_4V,
 				     bool cutvecprop,const std::string &path)
-  : m_cutvecprop(cutvecprop), shand(_shand), CFCol_Matrix(0), Mi(0),
-    m_print_graph(print_graph)
+  : m_cutvecprop(cutvecprop), shand(_shand), CFCol_Matrix(NULL),
+    ngraph(0), namplitude(0), ntotal(0), Mi(NULL),
+    m_print_graph(print_graph),
+    m_maxcpl(_maxcpl.size(),0), m_mincpl(_mincpl.size(),0)
 {
-  m_maxcpl=_maxcpl;
-  m_mincpl=_mincpl;
-  for (size_t i(0);i<m_mincpl.size();++i) m_mincpl[i]*=2;
-  for (size_t i(0);i<m_maxcpl.size();++i) m_maxcpl[i]*=2;
+  // translate couplings from alpha to g as used in the amplitudes
+  // _maxcpl/_mincpl are the couplings of |M|^2 in powers of alpha
+  // m_mincpl/m_maxcpl are the couplings of M in powers of g needed
+  // O(g in |M|^2) = 2 O(alpha in |M|^2)
+  // O(g in M needed) = O(g in |M|^2) for all possible interferences
+  for (size_t i(0);i<m_mincpl.size();++i) m_mincpl[i]=(int)(2*_mincpl[i]);
+  for (size_t i(0);i<m_maxcpl.size();++i) m_maxcpl[i]=(int)(2*_maxcpl[i]);
+  DEBUG_FUNC(m_mincpl<<" .. "<<m_maxcpl);
   groupname = "Amplitude_Handler";
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -53,54 +59,53 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   }
   else sfl=fl;
 
+  // this counts O(g in M) as reported by the generator for decays and core
   std::vector<int> order;
 
   //decay processes
   for (int i=1;i<=ndecays;i++) {
     int j=i;
     Process_Tags *pi=pinfo->GetDecay(j);
-//     pi->Print();cout<<endl;
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
-    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,std::vector<double>(2,99),-99,BS,shand);
+    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,
+                                  std::vector<int>(2,99),-99,BS,shand);
     subgraphlist[i] = gen->Matching(m_valid);
     m_valid.clear();
     if (subgraphlist[i]==NULL) {
       ndecays = 0;
       subgraphlist[0] = NULL;
     }
-    std::vector<double> corder=gen->Order();
-    if (corder.size()>order.size()) order.resize(corder.size(),0);
+    // order returned from generator is O(g in M)
+    std::vector<int> corder=gen->Order();
+    msg_Debugging()<<"Generator generated order "<<corder<<std::endl;
+    if (corder.size()>order.size()) order.resize(corder.size(),0.);
     for (size_t i(0);i<corder.size();++i) order[i]+=corder[i];
+    msg_Debugging()<<"order is now "<<order<<std::endl;
     delete gen;
   }
-  if (order.size()>_maxcpl.size()) _maxcpl.resize(order.size(),99);
-  for (size_t i(0);i<order.size();++i) _maxcpl[i]-=order[i];
 
   if (ndecays>0) {
     sfl[0] = fl[0];
     sfl[1] = fl[1];
     pinfo->GetFlavList(sfl+nin);
+    msg_Debugging()<<"order in decays is "<<order<<std::endl;
   }
 
-  //core process
+  // core process
   My_In_File topfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Top.dat");
   if (topfile.Open()) {
     int itop, iperm;
     for (*topfile>>itop>>iperm;itop>=0;*topfile>>itop>>iperm)
       m_valid.insert(std::pair<int,int>(itop,iperm));
   }
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_maxcpl,_ntchan,BS,shand,create_4V);
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,
+                                m_maxcpl,_ntchan,BS,shand,create_4V);
   subgraphlist[0] = gen->Matching(m_valid);
-  _maxcpl=gen->Order();
   delete gen;
 
-  if (order.size()>_maxcpl.size()) _maxcpl.resize(order.size(),0);
-  for (size_t i(0);i<order.size();++i) _maxcpl[i]+=order[i];
-  _mincpl=_maxcpl;
-
   if (msg_LevelIsTracking()) {
-    msg_Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;
+    msg_Out()<<METHOD<<":"<<endl;
     int f=1;
     for(int i=0;i<ndecays+1;i++) {
       int j=0;
@@ -110,7 +115,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 	nn = nn->Next;
       }
       msg_Out()<<"Process "<<i;
-      if (i==0)msg_Out()<<" (core)";
+      if (i==0) msg_Out()<<" (core)";
       else msg_Out()<<" (decay)";
       msg_Out()<<" has "<<j<<" Amplitudes"<<endl;
       f*=j;
@@ -123,11 +128,13 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   
   Amplitude_Manipulator(N,fl,b,ndecays).FixSign(firstgraph);
 
+  // survey all occuring O(g in M), count amplitudes
   Single_Amplitude* n = firstgraph;
   Single_Amplitude* prev = firstgraph;
   ntotal = 0;
+  std::vector<std::vector<int> > graphcpls;
   while (n){ 
-    if (TOrder(n)>1) {
+    if (TOrder(n)>1) { // ADD stuff
       Single_Amplitude* next = n->Next;
       if (n==firstgraph) firstgraph = next;
       else prev->Next = next;
@@ -139,11 +146,54 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
       prev = n;
       n->GetPointlist()->GeneratePropID();
       n->SetOrder();
+      bool found(false);
+      for (size_t i(0);i<graphcpls.size();++i)
+        if (graphcpls[i]==n->GetOrder()) { found=true; break; }
+      if (!found) graphcpls.push_back(n->GetOrder());
       n = n->Next;
     }
   }
   msg_Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
+
+  msg_Tracking()<<"There are graphs with the following couplings: ";
+  for (size_t i(0);i<graphcpls.size();++i) msg_Tracking()<<graphcpls[i]<<" ";
+  msg_Tracking()<<"\n";
+  // calculate all O(g in |M|^2) after contraction
+  for (size_t i(0);i<graphcpls.size();++i) {
+    for (size_t j(0);j<graphcpls.size();++j) {
+      std::vector<int> tempcpls;
+      for (size_t k(0);k<graphcpls[i].size();++k) {
+        tempcpls.push_back(graphcpls[i][k]+graphcpls[j][k]);
+      }
+      bool found(false);
+      for (size_t i(0);i<m_possiblecplconfigs.size();++i)
+        if (m_possiblecplconfigs[i]==tempcpls) { found=true; break; }
+      if (!found) m_possiblecplconfigs.push_back(tempcpls);
+    }
+  }
+  msg_Tracking()<<"Possible coupling configurations are: ";
+  for (size_t i(0);i<m_possiblecplconfigs.size();++i)
+    msg_Tracking()<<m_possiblecplconfigs[i]<<" ";
+  msg_Tracking()<<"\n";
+
+  // find minumum and maximum possible config and check against _mincpl/_maxcpl
+  size_t size(m_possiblecplconfigs.size()?m_possiblecplconfigs[0].size():0);
+  std::vector<int> minposcpl(size,99);
+  std::vector<int> maxposcpl(size,0);
+  for (size_t i(0);i<m_possiblecplconfigs.size();++i) {
+    for (size_t j(0);j<m_possiblecplconfigs[i].size();++j) {
+      minposcpl[j]=Min(m_possiblecplconfigs[i][j],minposcpl[j]);
+      maxposcpl[j]=Max(m_possiblecplconfigs[i][j],maxposcpl[j]);
+    }
+  }
+  for (size_t i(0);i<minposcpl.size();++i) {
+    _maxcpl[i] = Min(_maxcpl[i],0.5*(double)maxposcpl[i]);
+    _mincpl[i] = Max(_mincpl[i],0.5*(double)minposcpl[i]);
+  }
+  msg_Tracking()<<"Reseting process orders to: "
+                <<_mincpl<<" .. "<<_maxcpl<<std::endl;
+
 
   if (ngraph!=0) {
     p_aqcd=cpls->Get("Alpha_QCD");
@@ -155,7 +205,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 }
 
 void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
-						  Process_Tags* pinfo,Single_Amplitude** sglist,
+						  Process_Tags* pinfo,
+						  Single_Amplitude** sglist,
 						  Basic_Sfuncs* BS)
 {
   int ndecays=pinfo->Ndecays();
@@ -190,10 +241,12 @@ void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
   }
 }
 
-void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
-					   Topology* top,Basic_Sfuncs* BS,std::string pID,
+void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,
+					   Polarisation* pol,Topology* top,
+					   Basic_Sfuncs* BS,std::string pID,
 					   char emit,char spect)
 {
+  DEBUG_FUNC(emit<<" "<<spect);
   Single_Amplitude* n = firstgraph;
   ngraph = 0;
   while (n) { 
@@ -226,6 +279,8 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   //Colors
   if (emit!=spect && emit!=127) {
+    // Build colour string with insertion for one real subtraction term
+    msg_Debugging()<<"Building color string with insertion."<<std::endl;
     char cemit=emit,cspect=spect;
     if (fl[(int)emit].IsGluon() || IsGluino(fl[(int)emit])) cemit+='A';
     else cemit+='i';
@@ -234,8 +289,11 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID);
   }
   else {
+    // Build colour string without insertions
+    msg_Debugging()<<"Building color string without insertions."<<std::endl;
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,emit,spect,pID);
     if (emit==127) {
+      msg_Debugging()<<"Adding all possible insertions."<<std::endl;
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
 	  char cemit=i,cspect=j;
@@ -244,7 +302,6 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 	  if (fl[j].IsGluon() || IsGluino(fl[j])) cspect+='A';
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
-	  //msg_Out()<<METHOD<<" new CFColor("<<sij<<")."<<std::endl;
 	  CFColor* mcfc = new CFColor(N,firstgraph,fl,cemit,cspect,sij);
 	  CFCol_MMatrixMap[i*100+j] = mcfc;
 	}
@@ -264,7 +321,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
     pointlist.push_back(n->GetPointlist()); 
     graphs[CFCol_Matrix->CFMap(ncount)]->Add(n,CFCol_Matrix->CFSign(ncount));
     n = n->Next;
-    ncount++;	   
+    ncount++;
   }
   
   //delete[] switch_graphs;
@@ -297,14 +354,8 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   }
 
   CheckEqualInGroup();
-  
-  //Probabilities
-  sw_probabs = 0;
 
-  probs = 0;
-
-//   probabs = new double[graphs.size()];
-  Mi      = new Complex[graphs.size()];
+  Mi = new Complex[graphs.size()];
 }
 
 void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
@@ -325,6 +376,7 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
   sqrcplfile.Open();
   m_on.resize(graphs.size());
   m_aon.resize(graphs.size(),0);
+  m_cplmatrix.clear();
   m_cplmatrix.resize(graphs.size());
   for (size_t i=0;i<graphs.size();i++) {
     m_on[i].resize(graphs.size(),1);
@@ -352,16 +404,21 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 
 void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
-  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Cluster.dat";
-  My_In_File cplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Couplings.dat");
-  My_In_File sqrcplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/SquaredCouplings.dat");
+  DEBUG_FUNC(path);
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                     +path+"/Cluster.dat";
+  My_In_File cplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                     +path+"/Couplings.dat");
+  My_In_File sqrcplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                        +path+"/SquaredCouplings.dat");
   if (!cplfile.Open()) THROW(fatal_error,"Missing coupling data");
   if (!sqrcplfile.Open()) THROW(fatal_error,"Missing squared coupling data");
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
+  msg_Debugging()<<cg<<" <-> "<<graphs.size()<<std::endl;
   if (cg!=graphs.size()) {
-    msg_Error()<<"ERROR in Amplitude_Handler::RestoreAmplitudes() :"<<endl
+    msg_Error()<<METHOD<<"(): ERROR :"
 	       <<"   Stored Cluster and Color information incompatible! Abort the run."<<std::endl;
     Abort();
   }
@@ -369,6 +426,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   Amplitude_Base* ab;
   m_on.resize(graphs.size());
   m_aon.resize(graphs.size(),0);
+  m_cplmatrix.clear();
   m_cplmatrix.resize(graphs.size());
   static Data_Reader read(",",";",")","(");
   for (size_t i=0;i<graphs.size();i++) {
@@ -407,10 +465,14 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   namplitude = cnt;
 }
 
-void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib,
+void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,
+					      std::string lib,
 					      char emit,char spect,Flavour* fl)
 {
-  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pID+".map";
+  DEBUG_FUNC(lib<<", emit="<<emit<<"("<<(int)(emit)
+                <<"), spect="<<spect<<"("<<(int)(spect)<<")");
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                     +pID+".map";
   My_In_File from(name);
   from.Open();
   shand->Get_Generator()->ReadCouplings(*from);
@@ -424,8 +486,7 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
   }
 
   //Colors
-  //Colors
-  if (emit!=spect && emit!=127) {
+  if (emit!=spect && emit!=127) { // S operator
     char cemit=emit,cspect=spect;
     if (fl[(int)emit].IsGluon() || IsGluino(fl[(int)emit])) cemit+='A';
     else cemit+='i';
@@ -433,9 +494,9 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
     else cspect+='i';
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,cemit,cspect,pID,true);
   }
-  else {
+  else { // Born amplitudes and I operator
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,emit,spect,pID,true);
-    if (emit==127) {
+    if (emit==127) { // for I operator
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
 	  char cemit=i,cspect=j;
@@ -444,7 +505,6 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
 	  if (fl[j].IsGluon() || IsGluino(fl[j])) cspect+='A';
 	  else cspect+='i';
 	  string sij=pID+string("_S")+ToString(i)+string("_")+ToString(j);
-	  
 	  CFColor* mcfc = new CFColor(N,firstgraph,fl,cemit,cspect,sij,true);
 	  CFCol_MMatrixMap[i*100+j] = mcfc;
 	}
@@ -452,9 +512,11 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
     }
   }
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) {
-    //msg_Out()<<METHOD<<" push_back new Colour_Group["<<i<<"]."<<std::endl;
     graphs.push_back(new Color_Group());
   }
+  msg_Debugging()<<"#colour groups: "<<graphs.size()<<std::endl;
+  msg_Debugging()<<"I-operator colour matrix size: "
+                 <<CFCol_MMatrixMap.size()<<std::endl;
   n = firstgraph;
 
   // fill color groups
@@ -463,14 +525,14 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string 
   while (n) {
     pointlist.push_back(n->GetPointlist()); 
     n = n->Next;
-    ncount++;	   
+    ncount++;
   }
- 
+
   RestoreAmplitudes(lib);
-  
+
   ngraph=pointlist.size();
 
-  Mi      = new Complex[graphs.size()];
+  Mi = new Complex[graphs.size()];
 }
 
 Amplitude_Handler::~Amplitude_Handler() 
@@ -502,16 +564,17 @@ int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
 
   Pfunc_List* pl = f->GetPlist();
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
-    if ((*pit)->arg[0]==iabs(zarg)) return (*pit)->momnum; 
-  }  
-  msg_Error()<<"ERROR in Amplitude_Handler::PropProject() :"<<endl
+    if ((*pit)->arg[0]==iabs(zarg)) return (*pit)->momnum;
+  }
+  msg_Error()<<METHOD<<"(): ERROR :"
 	     <<"   Did not find a mom-number for propagator. Abort the run."<<std::endl;
   Abort();
   return 0;
 }
 
 
-int Amplitude_Handler::CompareZfunc(Amplitude_Base* f1,Zfunc* z1,Amplitude_Base* f2,Zfunc* z2)
+int Amplitude_Handler::CompareZfunc(Amplitude_Base* f1,Zfunc* z1,
+                                    Amplitude_Base* f2,Zfunc* z2)
 {
   if (z1->GetSize()!=z2->GetSize()) return 0;
 
@@ -526,21 +589,22 @@ int Amplitude_Handler::CompareZfunc(Amplitude_Base* f1,Zfunc* z1,Amplitude_Base*
   if (z1->m_nprop!=z2->m_nprop) return 0;
   
   //Arguments
-  for (short int i=0;i<z1->m_narg;i++) {
-    if (PropProject(f1,z1->p_arguments[i])!=PropProject(f2,z2->p_arguments[i])) return 0;
-  }
+  for (short int i=0;i<z1->m_narg;i++)
+    if (PropProject(f1,z1->p_arguments[i])!=PropProject(f2,z2->p_arguments[i]))
+      return 0;
 
   //couplings
-  for (short int i=0;i<z1->m_ncoupl;i++) {
-    if (z1->p_couplings[i]!=z2->p_couplings[i]) return 0;
-  }
+  for (short int i=0;i<z1->m_ncoupl;i++)
+    if (z1->p_couplings[i]!=z2->p_couplings[i])
+      return 0;
 
   //Propagators
   for (short int i=0;i<z1->m_nprop;i++) {
-    if (PropProject(f1,z1->p_propagators[i].numb)!=PropProject(f2,z2->p_propagators[i].numb)) return 0;
+    if (PropProject(f1,z1->p_propagators[i].numb)
+        !=PropProject(f2,z2->p_propagators[i].numb))
+      return 0;
     //Flavour of props
     if (iabs(z1->p_propagators[i].numb)>99) {
-      
       Flavour flav1;
       Pfunc_List* pl = f1->GetPlist();
       for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
@@ -603,10 +667,12 @@ void Amplitude_Handler::OptimizeProps(int N,Single_Amplitude* f1)
 	(*pit)->fl=(*pit)->fl.Bar();
       }
       for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit){
-	for(int j=0;j<(*zit)->m_nprop;j++)if((*zit)->p_propagators[j].numb==(*pit)->arg[0]){
-	  if((*zit)->p_propagators[j].direction==Direction::Incoming)
-	       (*zit)->p_propagators[j].direction=Direction::Outgoing;
-	  else (*zit)->p_propagators[j].direction=Direction::Incoming;
+        for(int j=0;j<(*zit)->m_nprop;j++) {
+          if((*zit)->p_propagators[j].numb==(*pit)->arg[0]) {
+            if((*zit)->p_propagators[j].direction==Direction::Incoming)
+              (*zit)->p_propagators[j].direction=Direction::Outgoing;
+            else (*zit)->p_propagators[j].direction=Direction::Incoming;
+          }
 	}
       }
     }
@@ -656,8 +722,10 @@ void Amplitude_Handler::PreCluster(Single_Amplitude* firstgraph)
 	  if(zh[0]->m_narg>zh[1]->m_narg){zh0=zh[1];zh1=zh[0];}
 	  if(zh[0]->m_narg==zh[1]->m_narg){
 	    for(int j=0;j<zh[0]->m_narg;j++){
-	      if(PropProject(f1,zh[0]->p_arguments[j])<PropProject(f1,zh[1]->p_arguments[j]))break;
-	      if(PropProject(f1,zh[0]->p_arguments[j])>PropProject(f1,zh[1]->p_arguments[j])){zh0=zh[1];zh1=zh[0];break;}
+	      if(PropProject(f1,zh[0]->p_arguments[j])
+		 <PropProject(f1,zh[1]->p_arguments[j])) break;
+	      if(PropProject(f1,zh[0]->p_arguments[j])
+		 >PropProject(f1,zh[1]->p_arguments[j])) {zh0=zh[1];zh1=zh[0];break;}
 	    }
 	  }
 	  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();){
@@ -691,7 +759,8 @@ void Amplitude_Handler::CheckEqual(Single_Amplitude* firstgraph)
 
   while (f1) {
     Zfunc_List* zlist = f1->GetZlist();
-    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) (*zit)->p_equal = *zit;
+    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit)
+      (*zit)->p_equal = *zit;
     f1 = f1->Next;
   }
 
@@ -804,8 +873,20 @@ Point* Amplitude_Handler::GetPointlist(int n)
 { return pointlist[n];}
 
 
+Complex Amplitude_Handler::CommonColorFactor()
+{
+  if (graphs.empty()) return Complex(0.0,0.0);
+  Complex C(CFCol_Matrix->Mij(0,0));
+  for (size_t i=0;i<graphs.size();i++)
+    for (size_t j=0;j<graphs.size();j++)
+      if (C!=CFCol_Matrix->Mij(i,j)) return Complex(0.,0.);
+  return C;
+}
+
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 { // Called when no libraries are present (compiled)
+  DEBUG_FUNC(sh->NumberOfCouplings());
+  msg_Debugging()<<"1: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++){
     Mi[i] = graphs[i]->Zvalue(sh, ihel);
   }
@@ -818,22 +899,14 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
   return M;
 }
 
-Complex Amplitude_Handler::CommonColorFactor()
-{
-  if (graphs.empty()) return Complex(0.0,0.0);
-  Complex C(CFCol_Matrix->Mij(0,0));
-  for (size_t i=0;i<graphs.size();i++)
-    for (size_t j=0;j<graphs.size();j++)
-      if (C!=CFCol_Matrix->Mij(i,j)) return Complex(0.,0.);
-  return C;
-}
-
 Complex Amplitude_Handler::Zvalue(int ihel)
 { 
+  DEBUG_FUNC(ihel);
   // Called for actual calculation of the CS
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
+  msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++) {
     if (m_aon.size() && !m_aon[i]) continue;
     double cplfac(1.0);
@@ -842,26 +915,32 @@ Complex Amplitude_Handler::Zvalue(int ihel)
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
 		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
-#endif     
+#endif
       cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
     }  
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
 		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
-#endif   
+#endif
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0); 
     }
 #ifdef DEBUG__BG
     msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
-#endif  
+#endif
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
+    msg_Debugging()<<"  "<<i<<": O"<<order<<" "<<Mi[i]<<std::endl;
   }
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
-      if (m_on.empty() || m_on[i][j]) 
-      M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+      msg_Debugging()<<(m_on.empty()?"m_on empty, ":"m_on")
+                     <<"["<<i<<"]["<<j<<"]=";
+      if (m_on.empty() || m_on[i][j]) {
+        msg_Debugging()<<"  col="<<CFCol_Matrix->Mij(i,j);
+        M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+      }
+      msg_Debugging()<<std::endl;
     }
   }
 #ifdef DEBUG__BG
@@ -872,22 +951,70 @@ Complex Amplitude_Handler::Zvalue(int ihel)
 
 Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
 {// Called for actual calculation of the CS
+  DEBUG_FUNC(ci<<" "<<cj);
+  return Zvalue(ihel,ci,cj,m_on);
+}
+
+Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
+                                  const std::vector<double>& mxc,
+                                  const std::vector<double>& mnc)
+{
+  std::vector<int> maxcpl(mxc.size(),0),mincpl(mnc.size(),0);
+  for (size_t i(0);i<mnc.size();++i) mincpl[i]=2*mnc[i];
+  for (size_t i(0);i<mxc.size();++i) maxcpl[i]=2*mxc[i];
+  DEBUG_FUNC(ci<<" "<<cj<<" "<<maxcpl<<" "<<mincpl);
+  std::vector<std::vector<int> > on;
+  std::vector<std::vector<std::vector<int> > > cplmatrix;
+  on.resize(graphs.size());
+  cplmatrix.resize(graphs.size());
+  for (size_t i(0);i<graphs.size();++i) {
+    on[i].resize(graphs.size(),1);
+    cplmatrix[i].resize(graphs.size());
+    for (size_t j(0);j<graphs.size();++j) {
+      msg_Debugging()<<"("<<i<<","<<j<<"): ";
+      cplmatrix[i][j].resize(graphs[j]->GetOrder().size(),0);
+      for (size_t k(0);k<graphs[j]->GetOrder().size();++k) {
+        cplmatrix[i][j][k]=graphs[i]->GetOrder()[k]
+                           +graphs[j]->GetOrder()[k];
+      }
+      for (size_t k(0);k<Min(cplmatrix[i][j].size(),maxcpl.size());++k) {
+        msg_Debugging()<<mincpl[k]<<" < "<<cplmatrix[i][j][k]<<" < "
+                       <<maxcpl[k]<<" ? ";
+        if (cplmatrix[i][j][k]>maxcpl[k] || cplmatrix[i][j][k]<mincpl[k]) {
+          msg_Debugging()<<om::bold<<"0"<<om::reset;
+          on[i][j]=0;
+        }
+        else msg_Debugging()<<om::bold<<"1"<<om::reset;
+        msg_Debugging()<<"   ";
+      }
+      msg_Debugging()<<" -> "<<om::blue<<om::bold<<on[i][j]
+                     <<om::reset<<"  "<<m_on[i][j]<<std::endl;
+    }
+  }
+  return Zvalue(ihel,ci,cj,on);
+}
+
+Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
+                                  const std::vector<std::vector<int> >& on)
+{// Called for actual calculation of the CS
+  DEBUG_FUNC(ci<<" "<<cj);
   int cid = 100*ci+cj;
   if (cj<ci) cid = 100*cj+ci;
-  CFColor *col = CFCol_Matrix; 
+  CFColor *col = CFCol_Matrix;
   if (cid!=0) {
     CFC_iterator cit = CFCol_MMatrixMap.find(cid);
     if (cit==CFCol_MMatrixMap.end()) {
-      msg_Error()<<"ERROR in Amplitude_Handler::Zvalue :"<<std::endl
+      msg_Error()<<METHOD<<"(): ERROR :"
 		 <<"   Color matrix ("<<ci<<"/"<<cj<<") not found! Abort the run."<<std::endl;
       Abort();
     }
     col = cit->second;
   }
-  
+  msg_Debugging()<<"3: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
+    msg_Debugging()<<i<<": O("<<order<<")";
     if (p_aqcd && order.size()>0 && order[0]) {
       cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
     }
@@ -895,13 +1022,16 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
     }
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
+    msg_Debugging()<<", cpl="<<cplfac<<", Mi="<<Mi[i]<<std::endl;
   }
-  
+
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
-      if (m_on[i][j]) 
-      M+= Mi[i]*conj(Mi[j])*col->Mij(i,j);  //colfactors[i][j];
+      msg_Debugging()<<"on["<<i<<"]["<<j<<"]="<<on[i][j]<<std::endl;
+      if (on[i][j]) {
+        M+= Mi[i]*conj(Mi[j])*col->Mij(i,j);  //colfactors[i][j];
+      }
     }
   }
   return M;
@@ -909,13 +1039,15 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
 
 double Amplitude_Handler::Zvalue(Helicity* hel)
 { 
+  DEBUG_FUNC("");
   // 2D array for the amplitudes.
   typedef std::vector<Complex> CVec;
   std::vector<CVec> A;
   A.resize(graphs.size());
 
-  /* For all graphs: Calculate all the helicity formalisms amplitudes and transform them to
-     desired polarisation states, if nessecary. */
+  /* For all graphs: Calculate all the helicity formalisms amplitudes
+     and transform them to desired polarisation states, if nessecary. */
+  msg_Debugging()<<"4: #graphs: "<<graphs.size()<<std::endl;
   for (size_t col=0; col<graphs.size(); ++col) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[col]->GetOrder());
@@ -925,12 +1057,13 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
     if (p_aqed && order.size()>1 && order[1]) {
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
     }
-    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(cplfac*(graphs[col]->Zvalue(ihel)));
+    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel)
+      A[col].push_back(cplfac*(graphs[col]->Zvalue(ihel)));
     hel->SpinorTransformation(A[col]);
   }
 
-  /* Calculate the scattering matrix M out of the amplitudes using the color matrix. Sum up
-     the weighted Ms to obtain a pre-cross section sigma. */
+  /* Calculate the scattering matrix M out of the amplitudes using the color
+     matrix. Sum up the weighted Ms to obtain a pre-cross section sigma. */
   double sigma=0;
   for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
     if (hel->On(ihel)) {
@@ -938,7 +1071,7 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
       for (size_t i=0;i<graphs.size();i++) {
 	for (size_t j=0;j<graphs.size();j++) {
 	  if (m_on[i][j]) 
-	  M+= A[i][ihel]*conj(A[j][ihel])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+	  M+= A[i][ihel]*conj(A[j][ihel])*CFCol_Matrix->Mij(i,j);
 	}
       }
       sigma += M.real() * hel->Multiplicity(ihel) * hel->PolarizationFactor(ihel);
@@ -949,7 +1082,10 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
 
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
-{ // This is called for the gauge test
+{
+  // This is called for the gauge test
+  DEBUG_FUNC("");
+  msg_Debugging()<<"5: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
@@ -1125,6 +1261,36 @@ bool Amplitude_Handler::CheckSingleEFM(Point* p)
   if (mf) mf=CheckSingleEFM(p->right);
   if (p->middle && mf) mf=CheckSingleEFM(p->middle);
   return mf;
+}
+
+size_t Amplitude_Handler::PossibleConfigsExist(const std::vector<double>& mxc,
+                                               const std::vector<double>& mnc)
+{
+  std::vector<int> maxcpl(mxc.size(),0),mincpl(mnc.size(),0);
+  for (size_t i(0);i<mnc.size();++i) mincpl[i]=2*mnc[i];
+  for (size_t i(0);i<mxc.size();++i) maxcpl[i]=2*mxc[i];
+  DEBUG_FUNC(mincpl<<" ... "<<maxcpl);
+  std::vector<bool> foundone(maxcpl.size(),true);
+  std::vector<bool> evaluate(maxcpl.size(),false);
+  for (size_t i(0);i<m_possiblecplconfigs.size();++i) {
+    for (size_t j(0);j<m_possiblecplconfigs[i].size();++j) {
+      msg_Debugging()<<mincpl[j]<<" < "<<m_possiblecplconfigs[i][j]<<" < "
+                     <<maxcpl[j]<<" ? ";
+      if (m_possiblecplconfigs[i][j]>=mincpl[j] &&
+          m_possiblecplconfigs[i][j]<=maxcpl[j]) {
+        msg_Debugging()<<"yes"<<std::endl;
+        evaluate[j]=true;
+      }
+      else msg_Debugging()<<"no"<<std::endl;
+    }
+    if (foundone==evaluate) {
+      msg_Debugging()<<"found at least one configuration with correct orders\n";
+      return true;
+    }
+    msg_Debugging()<<"----------------\n";
+  }
+  msg_Debugging()<<"found no configuration with correct orders\n";
+  return false;
 }
 
 

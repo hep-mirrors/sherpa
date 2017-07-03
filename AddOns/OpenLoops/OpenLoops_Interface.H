@@ -56,7 +56,8 @@ namespace OpenLoops {
 
     static bool ExitOnError() { return s_exit_on_error; }
 
-    PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)
+    PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
+                                            bool add)
     { return NULL; }
     bool NewLibraries() { return false; }
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
@@ -65,6 +66,9 @@ namespace OpenLoops {
 
     int  PerformTests();
     void PrepareTerminate();
+
+    static std::map<int,std::string> s_procmap;
+    static size_t      s_vmode;
   };
 
 

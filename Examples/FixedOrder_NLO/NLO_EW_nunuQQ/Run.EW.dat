@@ -1,0 +1,35 @@
+(run){
+  EVENTS 500k;
+  MI_HANDLER None; FRAGMENTATION Off;
+  SHOWER_GENERATOR None; BEAM_REMNANTS 0;
+  EVENT_GENERATION_MODE Weighted;
+  ME_SIGNAL_GENERATOR Amegic OpenLoops;
+  #LOOP_ME_INIT 1;
+
+  BEAM_1  12; BEAM_ENERGY_1 100.;
+  BEAM_2 -12; BEAM_ENERGY_2 100.;
+
+  PDF_LIBRARY None;
+  SCF:=1;
+  SCALES VAR{SCF*sqr(91.2)};
+
+  MASSIVE[5] 1;
+}(run);
+
+(processes){
+  Process 12 -12 -> 5 -5;
+  NLO_EW_Mode Fixed_Order;
+  NLO_EW_Part IRS;
+  Loop_Generator OpenLoops;
+  Integration_Error 0.01;
+  Order_QCD 0;
+  Print_Graphs Graphs;
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    USE_HEPMC_SHORT 1;
+    IGNOREBEAMS 1;
+  } END_RIVET;
+}(analysis);

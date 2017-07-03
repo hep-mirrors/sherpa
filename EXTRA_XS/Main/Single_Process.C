@@ -19,7 +19,6 @@
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
-using PHASIC::nlo_type;
 using PHASIC::Process_Info;
 
 Single_Process::Single_Process() :
@@ -55,8 +54,8 @@ bool Single_Process::Initialize()
   }
 
   m_nlotype=m_pinfo.m_fi.NLOType();
-  
-  if (m_nlotype==nlo_type::loop || m_nlotype==nlo_type::vsub) {
+
+  if (m_nlotype==nlo_type::loop) {
     DEBUG_INFO("searching loop process");
     p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
@@ -94,18 +93,19 @@ bool Single_Process::Initialize()
 double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
 				const int mode) 
 {
-  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result())
-    return m_mewgtinfo.m_B=m_lastxs=0.0;
+    return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   
   p_scale->CalculateScale(momenta);
   if (p_born_me2) {
-    m_mewgtinfo.m_B=m_lastxs=(*p_born_me2)(momenta)*KFactor();
+    m_mewgtinfo.m_B=m_lastbxs=m_lastxs=(*p_born_me2)(momenta)*KFactor();
   }
   else if (p_virtual_me2) {
     p_virtual_me2->SetRenScale(p_scale->Scale(stp::ren));
     p_virtual_me2->Calc(momenta);
-    m_mewgtinfo.m_VI=m_lastxs=p_virtual_me2->Result().GetFinite()*KFactor();
+    m_lastbxs=p_virtual_me2->ME_Born();
+    m_mewgtinfo.m_VI=m_lastxs=p_virtual_me2->ME_Finite()*KFactor();
   }
   return m_lastxs;
 }

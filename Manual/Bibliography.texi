@@ -1134,9 +1134,10 @@
 @mybibitem{Snigirev2003cq,Sni03,A. M. Snigirev,QCD status of factorization ansatz for double parton distributions,Phys. Rev.,D68,(2003),114012,[hep-ph/0304172],hep-ph/0304172}
 @mybibitem{Sobol2011zz,Sob11, K. Sobol,WINHAC++: The object-oriented Monte Carlo for the charged-current Drell-Yan process,Acta Phys.Polon.,B42,(2011),1605-1614,,F+J+Acta Phys.Polon.%2CB42%2C1605}
 @mybibitem{Spira1995rr,Spi95, M. Spira and A. Djouadi and D. Graudenz and P. M. Zerwas,Higgs boson production at the LHC,Nucl. Phys.,B453,(1995),17-82,[hep-ph/9504378],hep-ph/9504378}
-@mybibitem{Stewart2011cf,Ste11, I. W. Stewart and F. J. Tackmann,Theory Uncertainties for Higgs and Other Searches Using Jet Bins,Phys.Rev.,D85,(2012),034011,[arXiv:1107.2117],arXiv:1107.2117}
 @mybibitem{Sterman1986aj,Ste86, G. F. Sterman,Summation of large corrections to short-distance hadronic cross sections,Nucl. Phys.,B281,(1987),310,,F+J+Nucl. Phys.%2CB281%2C310}
 @mybibitem{Stelzer1994ta,Ste94, T. Stelzer and W. F. Long,Automatic generation of tree level helicity amplitudes,Comput. Phys. Commun.,81,(1994),357-371,[hep-ph/9401258],hep-ph/9401258}
+@mybibitem{Stewart2010tn,Ste10, I. W. Stewart and F. J. Tackmann W. J. and Waalewijn,N-Jettiness: An Inclusive Event Shape to Veto Jets,Phys. Rev. Lett.,105,(2010),092002,[arXiv:1004.2489],arXiv:1004.2489}
+@mybibitem{Stewart2011cf,Ste11, I. W. Stewart and F. J. Tackmann,Theory Uncertainties for Higgs and Other Searches Using Jet Bins,Phys.Rev.,D85,(2012),034011,[arXiv:1107.2117],arXiv:1107.2117}
 @mybibitem{Stump2003yu,Stu03, D. Stump and others,Inclusive jet production parton distributions and the search for new physics,JHEP,10,(2003),046,[hep-ph/0303013],hep-ph/0303013}
 @mybibitem{Sudakov1954sw,Sud54,V. V. Sudakov,Vertex parts at very high-energies in quantum electrodynamics,Sov. Phys. JETP,3,(1956),65-71,,F+J+Sov. Phys. JETP%2C3%2C65}
 @mybibitem{Summers1994mc,Sum94, D. J. Summers,Exponentiation of soft photons in a process involving hard photons,Phys. Rev.,D53,(1996),2430-2441,[hep-ph/9405430],hep-ph/9405430}

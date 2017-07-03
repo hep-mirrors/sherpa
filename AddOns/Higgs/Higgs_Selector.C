@@ -12,17 +12,15 @@ namespace HIGGS {
 
   public:
 
-    Higgs_Selector(int nin,int nout,ATOOLS::Flavour *fl,
-		   double pt1,double pt2,double eta,
+    Higgs_Selector(PHASIC::Process_Base *const proc,
+                   double pt1,double pt2,double eta,
 		   double mmin,double mmax,
 		   double dr,double epspt);
 
     ~Higgs_Selector();
 
-    bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
-		      ATOOLS::NLO_subevtlist *const subs);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &,
+                   ATOOLS::NLO_subevt *const sub=NULL);
 
     void   BuildCuts(PHASIC::Cut_Data *cuts);
 
@@ -42,7 +40,7 @@ using namespace HIGGS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Higgs_Selector::Higgs_Selector(int nin, int nout,ATOOLS::Flavour * fl,
+Higgs_Selector::Higgs_Selector(Process_Base *const proc,
 			       double pt1, double pt2, double eta,
 			       double mmin, double mmax,
 			       double dr,double epspt):
@@ -51,15 +49,7 @@ Higgs_Selector::Higgs_Selector(int nin, int nout,ATOOLS::Flavour * fl,
   m_mmin(mmin), m_mmax(mmax),
   m_dr(dr), m_epspt(epspt)
 {
-  m_fl         = fl;
   m_smin       = sqr(m_mmin);
-  m_smax       = sqr(rpa->gen.Ecms());
-
-  m_nin        = nin;
-  m_nout       = nout;
-  m_n          = nin+nout;
-
-  m_sel_log    = new Selector_Log(m_name);
 }
 
 Higgs_Selector::~Higgs_Selector()
@@ -69,51 +59,31 @@ Higgs_Selector::~Higgs_Selector()
 void Higgs_Selector::BuildCuts(PHASIC::Cut_Data *cuts)
 {
   for (int i=m_nin;i<m_n;++i)
-    if (m_fl[i].IsPhoton())
+    if (p_fl[i].IsPhoton())
       for (int j=m_nin;j<m_n;++j)
-	if (m_fl[j].IsPhoton()) {
+        if (p_fl[j].IsPhoton()) {
 	  cuts->scut[j][i] = 
 	    cuts->scut[i][j] = Max(sqr(m_mmin),cuts->scut[i][j]);
 	}
 }
 
-bool Higgs_Selector::NoJetTrigger(const Vec4D_Vector &p)
+bool Higgs_Selector::Trigger(const Vec4D_Vector &p,
+                             ATOOLS::NLO_subevt *const sub)
 {
-  return (p[0]+p[1]).Abs2()>m_smin;
-}
-
-bool Higgs_Selector::Trigger(const Vec4D_Vector &p)
-{
+  DEBUG_FUNC(m_on);
+  if (!m_on) return true;
+  size_t n(sub?sub->m_n:m_n);
+  const Flavour *const fl(sub?sub->p_fl:p_fl);
   Vec4D py1, py2, pj;
-  for (size_t i(m_nin);i<p.size();++i) {
-    if (m_fl[i].IsPhoton()) {
+  for (size_t i(m_nin);i<n;++i) {
+    if (fl[i].IsPhoton()) {
       if (py1==Vec4D()) py1=p[i];
       else {
-	if (py2!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
-	py2=p[i];
+        if (py2!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
+        py2=p[i];
       }
     }
-    if (m_fl[i].Strong()) {
-      if (pj!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
-      pj=p[i];
-  }
-  }
-  return Trigger(py1,py2,pj);
-}
-
-bool Higgs_Selector::JetTrigger(const Vec4D_Vector &p,
-				ATOOLS::NLO_subevtlist *const subs)
-{
-  Vec4D py1, py2, pj;
-  for (size_t i(m_nin);i<subs->back()->m_n;++i) {
-    if (subs->back()->p_fl[i].IsPhoton()) {
-      if (py1==Vec4D()) py1=p[i];
-      else {
-	if (py2!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
-	py2=p[i];
-      }
-    }
-    if (m_fl[i].Strong()) {
+    if (fl[i].Strong()) {
       if (pj!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
       pj=p[i];
     }
@@ -156,8 +126,7 @@ operator()(const Selector_Key &key) const
 
   Higgs_Selector *jf
     (new Higgs_Selector
-     (key.p_proc->NIn(),key.p_proc->NOut(),
-      (Flavour*)&key.p_proc->Process()->Flavours().front(),
+     (key.p_proc,
       ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0])),
       ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1])),
       ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),

@@ -15,4 +15,6 @@ dist_pkgdata_DATA         = \
 			Shower.dat
 
 bin_SCRIPTS = Sherpa@VERSIONING@-config
-dist_bin_SCRIPTS = get_bibtex
+dist_pkgdata_SCRIPTS 	= \
+			get_bibtex \
+			plot_graphs

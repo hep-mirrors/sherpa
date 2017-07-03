@@ -33,15 +33,16 @@ using namespace std;
 
 Single_LOProcess_External::Single_LOProcess_External(const Process_Info &pi,
                                            BEAM::Beam_Spectra_Handler *const beam,
-                                           PDF::ISR_Handler *const isr) :  
-  Single_LOProcess(pi, beam, isr)
+                                           PDF::ISR_Handler *const isr,
+                                           const ATOOLS::sbt::subtype& st) :
+  Single_LOProcess(pi, beam, isr, st)
 {
   m_emitgluon = false;
 }
 
 Single_LOProcess_External::~Single_LOProcess_External()
 {
-  if (p_MHVamp) delete p_MHVamp;
+  if (p_extamp) delete p_extamp;
 }
 
 
@@ -62,24 +63,35 @@ int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   model->p_model->GetCouplings(m_cpls);
   
-  m_partonlist.clear();
-  for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
-  for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
+  m_partonlistqcd.clear();
+  m_partonlistqed.clear();
+  if (m_stype&sbt::qcd) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (m_flavs[i].Strong()) m_partonlistqcd.push_back(i);
+    }
+  }
+  if (m_stype&sbt::qed) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (m_flavs[i].Charge() || m_flavs[i].IsPhoton()) m_partonlistqed.push_back(i);
+    }
+  }
+  msg_Debugging()<<"QCD parton list: "<<m_partonlistqcd<<std::endl;
+  msg_Debugging()<<"QED parton list: "<<m_partonlistqed<<std::endl;
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   
   //////////////////////////////////////////////// 
 
   Process_Info pi(m_pinfo);
-  pi.m_fi.m_nloqcdtype=nlo_type::born;
-  p_MHVamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,0,0); 
-  if (p_MHVamp->Status()==0) {
+  pi.m_fi.m_nlotype=nlo_type::born;
+  p_extamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,0,0);
+  if (p_extamp->Status()==0) {
     msg_Tracking()<<"Single_LOProcess_External::InitAmplitude : No process for "<<m_name<<"."<<endl;
     return 0;
   }
-  m_maxcpl[1]=m_mincpl[1]=p_MHVamp->OrderEW();
-  m_maxcpl[0]=m_mincpl[0]=p_MHVamp->OrderQCD();
-  p_MHVamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
+  m_maxcpl[1]=m_mincpl[1]=p_extamp->OrderEW()*2;
+  m_maxcpl[0]=m_mincpl[0]=p_extamp->OrderQCD()*2;
+  p_extamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
 
   //////////////////////////////////////////////
 
@@ -161,15 +173,15 @@ int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
   //////////////////////////////////////////////// 
 
   Process_Info pi(m_pinfo);
-  pi.m_fi.m_nloqcdtype=nlo_type::born;
-  p_MHVamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,m_emit,m_spect); 
-  if (p_MHVamp->Status()==0) {
+  pi.m_fi.m_nlotype=nlo_type::born;
+  p_extamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,m_emit,m_spect);
+  if (p_extamp->Status()==0) {
     msg_Tracking()<<"Single_LOProcess_External::InitAmplitude : No process for "<<m_name<<"."<<endl;
     return 0;
   }
-  m_maxcpl[1]=m_mincpl[1]=p_MHVamp->OrderEW();
-  m_maxcpl[0]=m_mincpl[0]=p_MHVamp->OrderQCD();
-  p_MHVamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
+  m_maxcpl[1]=m_mincpl[1]=p_extamp->OrderEW()*2;
+  m_maxcpl[0]=m_mincpl[0]=p_extamp->OrderQCD()*2;
+  p_extamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
 
   //////////////////////////////////////////////
 
@@ -231,12 +243,12 @@ int Single_LOProcess_External::Tests(std::vector<double> * pfactors) {
     msg_Tracking()<<"Single_LOProcess_External::Tests for "<<m_name<<std::endl
 		  <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
 		  <<std::endl;
-    if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
-    M2=p_MHVamp->Calc(p_testmoms);
-    if (p_MHVamp->Calc()->NAmps())
+    if (m_emitgluon) p_extamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
+    M2=p_extamp->Calc(p_testmoms);
+    if (p_extamp->Calc()->NAmps())
     for (size_t i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
-	helvalue = p_MHVamp->MSquare(i)*p_hel->PolarizationFactor(i); 
+        helvalue = p_extamp->MSquare(i)*p_hel->PolarizationFactor(i);
 	M2      +=  helvalue;
       } 
     }
@@ -254,12 +266,12 @@ int Single_LOProcess_External::Tests(std::vector<double> * pfactors) {
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
  for (size_t i=0; i<p_hel->MaxHel(); ++i) M_doub[i]=0.;
- if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
- M2g=p_MHVamp->Calc(p_testmoms);
- if (p_MHVamp->Calc()->NAmps())
+ if (m_emitgluon) p_extamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
+ M2g=p_extamp->Calc(p_testmoms);
+ if (p_extamp->Calc()->NAmps())
  for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
      if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
-       M_doub[i]  = p_MHVamp->MSquare(i)*p_hel->PolarizationFactor(i); 
+       M_doub[i]  = p_extamp->MSquare(i)*p_hel->PolarizationFactor(i);
 	 M2g       += M_doub[i];
      } 
  }
@@ -331,13 +343,13 @@ double Single_LOProcess_External::operator()(const ATOOLS::Vec4D_Vector &labmom,
 
   double M2(0.);
 
-  if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],mom[GetEmit()],(*p_epol)[0]);
-  if (p_MHVamp->Calc()->NAmps()==0) M2=p_MHVamp->Calc(mom);
+  if (m_emitgluon) p_extamp->SetSqMatrix((*pfactors)[1],mom[GetEmit()],(*p_epol)[0]);
+  if (p_extamp->Calc()->NAmps()==0) M2=p_extamp->Calc(mom);
   else {
-  p_MHVamp->Calc(mom);
+  p_extamp->Calc(mom);
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
-      double mh=p_MHVamp->MSquare(i);
+      double mh=p_extamp->MSquare(i);
       mh *= p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
       M2 += mh;
     }
@@ -351,33 +363,46 @@ double Single_LOProcess_External::operator()(const ATOOLS::Vec4D_Vector &labmom,
 
 
 void Single_LOProcess_External::Calc_AllXS
-(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
- std::vector<std::vector<double> > &dsij,const int mode) 
+(const ATOOLS::Vec4D_Vector &labmom, const ATOOLS::Vec4D *mom,
+ std::vector<std::vector<double> > &dsijqcd,
+ std::vector<std::vector<double> > &dsijew,
+ const int mode)
+
 {
   p_int->SetMomenta(labmom);
   p_scale->CalculateScale(labmom,mode);
 
-  dsij[0][0] =0.;
-  for (size_t i=0;i<m_partonlist.size();i++) {
-    for (size_t k=i+1;k<m_partonlist.size();k++) {
-      dsij[k][i] =0.;
+  dsijqcd[0][0]=dsijew[0][0]=0.;
+  for (size_t i=0;i<m_partonlistqcd.size();i++) {
+    for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+      dsijqcd[k][i]=0.;
+    }
+  }
+  for (size_t i=0;i<m_partonlistqed.size();i++) {
+    for (size_t k=i+1;k<m_partonlistqed.size();k++) {
+      dsijew[k][i]=0.;
     }
   }
 
-  if (p_MHVamp->Calc()->NAmps()==0) dsij[0][0]=p_MHVamp->Calc(mom);
+  if (p_extamp->Calc()->NAmps()==0) dsijqcd[0][0]=dsijew[0][0]=p_extamp->Calc(mom);
   else {
-  p_MHVamp->Calc(mom);
-  for (size_t h=0;h<p_hel->MaxHel();h++) {
-    if (p_hel->On(h)) {
-      double fac = p_hel->Multiplicity(h) * p_hel->PolarizationFactor(h);
-      dsij[0][0] += p_MHVamp->MSquare(h,0,0)*fac;
-      for (size_t i=0;i<m_partonlist.size();i++) {
-	for (size_t k=i+1;k<m_partonlist.size();k++) {
-	  dsij[i][k] = dsij[k][i] += p_MHVamp->MSquare(h,m_partonlist[i],m_partonlist[k])*fac;
-	}
+    p_extamp->Calc(mom);
+    for (size_t h=0;h<p_hel->MaxHel();h++) {
+      if (p_hel->On(h)) {
+        double fac = p_hel->Multiplicity(h) * p_hel->PolarizationFactor(h);
+        dsijqcd[0][0] = dsijew[0][0] += p_extamp->MSquare(h,0,0)*fac;
+        for (size_t i=0;i<m_partonlistqcd.size();i++) {
+          for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+            dsijqcd[i][k] = dsijqcd[k][i] += p_extamp->MSquare(h,m_partonlistqcd[i],m_partonlistqcd[k])*fac;
+          }
+        }
+        for (size_t i=0;i<m_partonlistqed.size();i++) {
+          for (size_t k=i+1;k<m_partonlistqed.size();k++) {
+            dsijew[i][k] = dsijew[k][i] = dsijew[0][0];
+          }
+        }
       }
     }
-  }
   }
 }
 

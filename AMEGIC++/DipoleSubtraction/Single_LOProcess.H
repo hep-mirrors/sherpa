@@ -19,6 +19,7 @@ namespace AMEGIC {
   protected:
     int                     m_gen_str;
     std::string             m_ptypename,m_libname,m_pslibname;
+    ATOOLS::sbt::subtype    m_stype;
     Polarisation            m_pol;
     bool                    m_newlib;
     double                  m_iresult;
@@ -30,8 +31,15 @@ namespace AMEGIC {
     String_Handler        * p_shand;
 
     Single_LOProcess      * p_partner;
-    std::vector<size_t>     m_partonlist;
+    std::vector<size_t>     m_partonlistqcd, m_partonlistqed;
     std::vector<int>        m_rsmap,m_srmap;
+
+    size_t                  m_pspissplscheme, m_pspfssplscheme;
+
+    std::vector<double>     m_maxcpliqcd, m_mincpliqcd,
+                            m_maxcpliew, m_mincpliew;
+
+    std::map<int, size_t>   m_flavrestrictions;
 
     std::vector<ATOOLS::Vec4D> m_epol;
 
@@ -55,7 +63,8 @@ namespace AMEGIC {
 
    Single_LOProcess(const PHASIC::Process_Info &pi,
                     BEAM::Beam_Spectra_Handler *const beam,
-                    PDF::ISR_Handler *const isr);
+                    PDF::ISR_Handler *const isr,
+                    const ATOOLS::sbt::subtype& st);
     ~Single_LOProcess();
 
     bool Combinable(const size_t &idi,const size_t &idj);
@@ -114,6 +123,17 @@ namespace AMEGIC {
     inline size_t       GetSpect() { return m_spect; }
     int                 PerformTests();
     inline void         SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
+    inline void         SetPhotonSplittingModes(const size_t &im,
+                                                const size_t &fm)
+                        { m_pspissplscheme=im; m_pspfssplscheme=fm; }
+    inline void         SetMaxOrdersIQCD(const std::vector<double> &o)
+                        { m_maxcpliqcd=o; }
+    inline void         SetMinOrdersIQCD(const std::vector<double> &o)
+                        { m_mincpliqcd=o; }
+    inline void         SetMaxOrdersIEW(const std::vector<double> &o)
+                        { m_maxcpliew=o; }
+    inline void         SetMinOrdersIEW(const std::vector<double> &o)
+                        { m_mincpliew=o; }
     /*------------------------------------------------------------------------------
 
       Process management
@@ -124,9 +144,20 @@ namespace AMEGIC {
     std::string      PSLibName()                        { return m_pslibname;   }
     Process_Base   * Partner()   const                  { return p_partner;     }
     void             Minimize();
-    int  Type() { return m_type; }
-    inline const std::vector<size_t>& PartonList() const { return m_partonlist; }
-    Polarisation *GetPolarisation()             { return &m_pol; }
+    inline int  Type() { return m_type; }
+    inline const ATOOLS::sbt::subtype& GetSubType() const   { return m_stype; }
+    inline const std::vector<size_t>& PartonListQCD() const { return m_partonlistqcd; }
+    inline const std::vector<size_t>& PartonListQED() const { return m_partonlistqed; }
+    inline const bool HasInitialStateQCDEmitter() const
+    { return m_partonlistqcd.size()?m_partonlistqcd[0]<m_nin:false; }
+    inline const bool HasInitialStateQEDEmitter() const
+    { return m_partonlistqed.size()?m_partonlistqed[0]<m_nin:false; }
+    inline const bool HasInitialStateEmitter() const
+    { return HasInitialStateQCDEmitter() || HasInitialStateQEDEmitter(); }
+    inline Polarisation *GetPolarisation()             { return &m_pol; }
+    bool CheckIQCDMappability() const;
+    bool CheckIQEDMappability() const;
+    bool IsValid();
 
     /*------------------------------------------------------------------------------
 
@@ -134,7 +165,9 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   private:
-    double         Calc_M2ik(int ci, int ck); 
+    double         Calc_M2ik(const int& ci, const int& ck,
+                             const std::vector<double>&,
+                             const std::vector<double>&);
   public:
     double         Partonic(const ATOOLS::Vec4D_Vector&,const int);
     virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
@@ -142,7 +175,10 @@ namespace AMEGIC {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-			      const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
+                              const ATOOLS::Vec4D *,
+                              std::vector<std::vector<double> > &,
+                              std::vector<std::vector<double> > &,
+                              const int);
     inline const std::vector<int> &RSMap() const { return m_rsmap; }
     inline const std::vector<int> &SRMap() const { return m_srmap; }
   };

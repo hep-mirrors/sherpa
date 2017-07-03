@@ -7,17 +7,13 @@
 
 namespace PHASIC {
   class MinSelector : public Selector_Base {
-    std::vector<Selector_Base *> m_sels; 
   public:
     MinSelector(const Selector_Key &key);
 
     ~MinSelector();
 
-
-    bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
-		      ATOOLS::NLO_subevtlist *const);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &,
+                   ATOOLS::NLO_subevt *const=NULL);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -44,18 +40,10 @@ using namespace ATOOLS;
   --------------------------------------------------------------------- */
 
 MinSelector::MinSelector(const Selector_Key &key) : 
-  Selector_Base("MinSelector")
+  Selector_Base("MinSelector",key.p_proc)
 {
-  for (size_t k=0;k<key.size();++k) {
-    Selector_Key subkey(key.p_proc,key.p_read);
-    subkey.push_back(std::vector<std::string>(key[k].size()-1));
-    for (size_t j=1;j<key[k].size();++j) subkey.back()[j-1]=key[k][j];
-
-    subkey.m_key=key[k][0];
-    Selector_Base *sel(Selector_Getter::GetObject(key[k][0],subkey));
-    if (sel!=NULL) m_sels.push_back(sel);
-  }
-  m_sel_log    = new Selector_Log(m_name);
+  DEBUG_FUNC("");
+  ReadInSubSelectors(key,0);
 }
 
 
@@ -66,35 +54,10 @@ MinSelector::~MinSelector() {
   }
 }
 
-
-bool MinSelector::Trigger(const Vec4D_Vector &p)
+bool MinSelector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
   for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->Trigger(p)) {
-      m_sel_log->Hit(0);
-      return 1;
-    }
-  }
-  m_sel_log->Hit(1);
-  return 0;
-}
-
-bool MinSelector::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
-{
-  for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->JetTrigger(p,subs)) {
-      m_sel_log->Hit(0);
-      return 1;
-    }
-  }
-  m_sel_log->Hit(1);
-  return 0;
-}
-
-bool MinSelector::NoJetTrigger(const Vec4D_Vector & mom)
-{
-  for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->NoJetTrigger(mom)) {
+    if (m_sels[k]->Trigger(p,sub)) {
       m_sel_log->Hit(0);
       return 1;
     }
@@ -105,6 +68,7 @@ bool MinSelector::NoJetTrigger(const Vec4D_Vector & mom)
 
 void MinSelector::BuildCuts(Cut_Data * cuts) 
 {
+  // maybe be smarter here and take minimum of cuts build in subselectors
   return;
 }
 
@@ -120,9 +84,10 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,MinSelector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
+  std::string w(width+4,' ');
   str<<"MinSelector {\n"
-     <<"                          Selector 1\n"
-     <<"                          Selector 2\n"
-     <<"                          ...\n"
-     <<"                        }"; 
+     <<w<<"  Selector 1\n"
+     <<w<<"  Selector 2\n"
+     <<w<<"  ...\n"
+     <<w<<"}";
 }

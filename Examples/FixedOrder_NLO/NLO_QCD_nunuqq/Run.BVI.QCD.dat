@@ -1,0 +1,34 @@
+(run){
+  EVENTS 500k;
+  MI_HANDLER None; FRAGMENTATION Off;
+  SHOWER_GENERATOR None; BEAM_REMNANTS 0;
+  EVENT_GENERATION_MODE Weighted;
+  ME_SIGNAL_GENERATOR Amegic Internal;
+
+  BEAM_1  12; BEAM_ENERGY_1 100.;
+  BEAM_2 -12; BEAM_ENERGY_2 100.;
+
+  PDF_LIBRARY None;
+  SCF:=1;
+  SCALES VAR{SCF*sqr(91.2)};
+  GENERATE_RESULT_DIRECTORY 0;
+
+  MASSIVE[2] 1; MASSIVE[2] 1; MASSIVE[4] 1; MASSIVE[5] 1;  
+}(run);
+
+(processes){
+  Process 12 -12 -> 93 93;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part BVI;
+  Loop_Generator Internal;
+  Integration_Error 0.001;
+  Print_Graphs Graphs;
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    USE_HEPMC_SHORT 1;
+    IGNOREBEAMS 1;
+  } END_RIVET;
+}(analysis);

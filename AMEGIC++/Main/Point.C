@@ -112,33 +112,6 @@ Point* Point::CopyList(Point* p)
   return nx;
 }
 
-namespace AMEGIC {
-
-  std::ostream &operator<<(std::ostream &str,const Point &p)
-  {
-    str<<p.fl<<"("<<p.b<<","<<p.number<<")";
-    if (p.left) {
-      str<<"[->"<<*p.left<<","<<*p.right;
-      if (p.middle) str<<","<<*p.middle;
-      str<<"]";
-    }
-    return str;
-  }
-
-}
-
-void Point::Print()
-{
-  std::cout<<" "<<fl<<"("<<b<<","<<number<<")";
-  if (left) {
-    std::cout<<"[->";
-    left->Print();
-    right->Print();
-    if (middle) middle->Print();
-    std::cout<<"]"<<std::endl;
-  }
-}
-
 int Point::CountKK()
 {
   int KKnum=0;
@@ -196,27 +169,6 @@ std::string Point::GetPropID() const
   return fl.IDName()+ATOOLS::ToString(propid);
 }
 
-std::ostream & operator<<(std::ostream & s, const Point & p)
-{
-//   s<<p;
-//   return s;
-  s<<" t="<<p.t<<" ";
-  if ((p.left==0) && (p.right==0)) {
-    s<<"EndPoint : "<<p.fl<<"("<<p.b<<")"<<std::endl;
-    return s;
-  }
-  s<<" ["<<p.fl<<"("<<p.b<<")]"<<std::endl;
-  s<<"left : ";
-  s<<p.left;
-  s<<"right : ";
-  s<<p.right;
-  if(p.middle){
-    s<<" middle : ";
-    s<<p.middle;
-  }
-  return s;
-}
-
 void Point::FindOrder(std::vector<int> &order)
 {
   // HS added this to prevent run-time segfault when compiled with gcc6
@@ -232,3 +184,19 @@ void Point::FindOrder(std::vector<int> &order)
   if (right) right->FindOrder(order);
   if (middle) middle->FindOrder(order);
 }
+
+std::ostream &AMEGIC::operator<<(std::ostream &str,const Point &p)
+{
+  str<<p.fl<<"("<<p.b<<","<<p.number;
+  if (p.v) str<<",order="<<p.v->order;
+  if (p.Color) str<<",col="<<*p.Color;
+  if (p.Lorentz) str<<",lorentz="<<*p.Lorentz;
+  str<<")";
+  if (p.left) {
+    str<<"[->"<<*p.left<<","<<*p.right;
+    if (p.middle) str<<","<<*p.middle;
+    str<<"]";
+  }
+  return str;
+}
+

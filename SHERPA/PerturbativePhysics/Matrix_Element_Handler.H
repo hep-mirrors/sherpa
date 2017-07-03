@@ -7,6 +7,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
@@ -29,7 +30,6 @@ namespace PDF {
 namespace PHASIC { 
   class Single_Process;
   class Selector_Key;
-  struct nlo_type;
 }
 
 namespace SHERPA {
@@ -48,7 +48,7 @@ namespace SHERPA {
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-	m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
+        m_vsfile, m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
 	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
@@ -56,7 +56,7 @@ namespace SHERPA {
 
       std::string m_gycut;
       int m_cutcore;
-      inline Processblock_Info(): m_cutcore(0) {}
+      inline Processblock_Info() : m_gycut(""), m_cutcore(0) {}
     };// end of struct Processblock_Info
 
   private :
@@ -71,7 +71,8 @@ namespace SHERPA {
     MODEL::Model_Base          *p_model;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
-    int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
+    int         m_eventmode, m_seedmode, m_hasnlo;
+    int         m_nloadd, m_ewaddmode, m_qcdaddmode;
 
     ATOOLS::Weight_Info m_evtinfo;
 
@@ -80,7 +81,8 @@ namespace SHERPA {
     PDF::NLOMC_Base   *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
-    size_t m_globalnlomode, m_ranidx, m_fosettings;
+    size_t m_ranidx, m_fosettings;
+    ATOOLS::nlo_mode::code m_nlomode;
 
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;
@@ -175,7 +177,7 @@ namespace SHERPA {
     inline int HasNLO() const  { return m_hasnlo;  }
 
     double GetWeight(const ATOOLS::Cluster_Amplitude &ampl,
-		     const PHASIC::nlo_type::code type,
+                     const ATOOLS::nlo_type::code type,
 		     const int mode) const;
 
     inline int SeedMode() const { return m_seedmode; }

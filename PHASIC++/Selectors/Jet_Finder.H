@@ -26,10 +26,7 @@ namespace PHASIC {
   public:
     Jet_Finder() : Selector_Base("empty_JF"), m_ycut(1.),
 		   p_yccalc(NULL), p_ampl(NULL), p_jc(NULL) {};
-    Jet_Finder(Process_Integrator *const proc,
-	       const int nin=0,const int nout=0,
-	       ATOOLS::Flavour *const fl=NULL,
-	       const std::string &ycut="1");
+    Jet_Finder(Process_Base *const proc,const std::string &ycut="1");
 
     ~Jet_Finder();
 
@@ -37,10 +34,8 @@ namespace PHASIC {
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
     void          AssignId(ATOOLS::Term *term);
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &p,
-		      ATOOLS::NLO_subevtlist *const subs);
-    bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &p,
+                   ATOOLS::NLO_subevt *const sub=NULL);
 
     void   BuildCuts(Cut_Data *cuts);
 

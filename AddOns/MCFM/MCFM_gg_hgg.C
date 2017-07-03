@@ -335,8 +335,8 @@ operator()(const Process_Info &pi) const
   if (MODEL::s_model->Name()!=std::string("HEFT") ||
       Flavour(kf_b).Yuk()>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
-  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop))           return NULL;
+  if (!(pi.m_fi.m_nlotype&nlo_type::loop))              return NULL;
+  if (pi.m_fi.m_nlocpl[1]!=0.)                          return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   if (!(fl[0].Strong() && fl[1].Strong()))              return NULL;
   if (pi.m_fi.m_ps.size()!=3)                           return NULL;

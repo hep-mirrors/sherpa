@@ -348,10 +348,11 @@ void Initialization_Handler::PrepareTerminate()
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   bool okay = true;
-  Spinor<double>::SetDefaultGauge(1);
-  Spinor<long double>::SetDefaultGauge(1);
+  int defgauge=p_dataread->GetValue<int>("COMIX_DEFAULT_GAUGE",1);
+  Spinor<double>::SetDefaultGauge(defgauge);
+  Spinor<long double>::SetDefaultGauge(defgauge);
   SetGlobalVariables();
-  okay = okay && InitializeTheModel();  
+  okay = okay && InitializeTheModel();
   
   if (m_mode==eventtype::StandardPerturbative) {
   std::string eventtype;
@@ -474,7 +475,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
 bool Initialization_Handler::InitializeTheIO()
 {
-  std::string outpath=p_dataread->Get<std::string>("EVT_FILE_PATH",".");
+  std::string outpath=p_dataread->Get<std::string>("EVENT_FILE_PATH",".");
   std::string format=p_dataread->GetStringNormalisingNoneLikeValues("EVENT_OUTPUT","None");
   std::vector<std::string> outputs;
   Data_Reader readline(",",";","#","");

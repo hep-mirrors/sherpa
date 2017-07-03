@@ -60,14 +60,16 @@ namespace AMEGIC {
       Furthermore, delta functions are eliminated.
 
     */
-    CFColor(int,Single_Amplitude*,ATOOLS::Flavour *,char,char,std::string pID=noname,bool=false);
+    CFColor(int,Single_Amplitude*,ATOOLS::Flavour *,
+            char,char,std::string pID=noname,bool=false);
     ~CFColor();
     //! Outputs the colour matrix.
     void Output(std::string &);
     /*!
       Simple access to individual elements of the colour matrix.
     */
-    inline const Complex& Mij(const int i,const int j) const {return (*CFC)[i][j];}
+    inline const Complex& Mij(const int i,const int j) const
+    {return (*CFC)[i][j];}
     inline const ATOOLS::CMatrix* GetCMatrix() const {return CFC;}
     inline int CFMap(int i) const {return map[i]; }
     inline int CFSign(int i) const {return (id[i]>=0) ? 1 : -1; }

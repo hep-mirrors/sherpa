@@ -159,9 +159,11 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
   ofstream chf;
   chf.open((filename).c_str());
 
+  chf<<"// Channel_Generator3V"<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  
@@ -171,6 +173,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
      <<"  class "<<name<<" : public Single_Channel {"<<endl;
 
   //actual Channel
+  chf <<"    double m_thexp;"<<endl;
   if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
@@ -244,11 +247,12 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"{"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl;
+	<<"  rans  = new double[rannum];"<<endl
+	<<"  m_thexp = ToType<double>(rpa->gen.Variable(\"AMEGIC_THRESHOLD_EPSILON\"));"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.;"<<endl
-	<<"  m_alpha = .9;"<<endl
-	<<"  m_ctmax = 1.;"<<endl
+    chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
+        <<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_TCHANNEL_ALPHA\"));"<<endl
+        <<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
   for (size_t i=0; i<m_idc.size();++i) {
@@ -707,8 +711,6 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     hi = (p->fl).Kfcode();
     if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
   } 
-  string thexp("1.5");
-  if (p->m==0) thexp = string("1.5");
   switch (flag) {
   case -11:
     if (maxpole>0.) {
@@ -727,7 +729,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
       else sf<<"  double s"<< mummy<<" = sqr(fl"<<mummy<<".Mass());"<<endl;
     }
     else {
-      sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta("<<thexp<<","
+      sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta(m_thexp,"
 	<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
 	<<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
@@ -749,7 +751,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
       }
     }
     else {
-      sf<<"  wt *= CE.ThresholdWeight("<<thexp<<","<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
+      sf<<"  wt *= CE.ThresholdWeight(m_thexp,"<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
 	<<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
     }
     rannum++;

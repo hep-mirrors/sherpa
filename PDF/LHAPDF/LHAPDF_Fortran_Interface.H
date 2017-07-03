@@ -11,6 +11,7 @@ namespace PDF {
     int         m_anti;
     double      m_f[13];
     std::vector<double> m_fv;
+    std::vector<int> m_disallowedflavour;
   public:
     LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int);
     PDF_Base * GetCopy();

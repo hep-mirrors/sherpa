@@ -12,6 +12,7 @@
 namespace AMEGIC {
   class Single_DipoleTerm;
   class Helicity;
+
   struct DM_Info {
     ATOOLS::Flavour_Vector *p_fl;
     std::vector<size_t> *p_id;
@@ -21,21 +22,22 @@ namespace AMEGIC {
 	    const std::string &pname=""):
       p_fl(fl), p_id(id), m_pname(pname) {}
   };
+
   class Single_Real_Correction : public Process_Base {
   private:
-    bool                    m_newlib, m_no_tree;
+    bool                    m_newlib, m_no_tree, m_listdips;
     double                  m_iresult;
     double                  m_smear_threshold, m_smear_power;
     int                     m_libnumb;
-    bool                    m_valid;
     bool                    m_ossubon;
+    size_t                  m_pspisrecscheme,m_pspfsrecscheme;
 
     Single_Real_Correction     * p_partner;
 
     Process_Base          * p_tree_process;
     ATOOLS::Vec4D_Vector    m_real_momenta;
     std::vector<Single_DipoleTerm*> m_subtermlist;
-    std::vector<Single_OSTerm*> m_subostermlist;
+    std::vector<Single_OSTerm*>     m_subostermlist;
     ATOOLS::NLO_subevtlist          m_subevtlist;
     ATOOLS::NLO_subevt              m_realevt;
 
@@ -44,6 +46,8 @@ namespace AMEGIC {
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
     void SmearCounterEvents(ATOOLS::NLO_subevtlist& subevtlist);
+    bool AllowAsSpecInISPFF(const size_t &k);
+    bool AllowAsSpecInFSPFF(const size_t &k);
 
     /*------------------------------------------------------------------------------
 
@@ -79,7 +83,6 @@ namespace AMEGIC {
     Amplitude_Handler * GetAmplitudeHandler()          { return p_tree_process->GetAmplitudeHandler();}
     Helicity *          GetHelicity()                  { return p_tree_process->GetHelicity(); }    
     double              Result()                       { return m_iresult; } 
-    bool                IsValid()                      { return m_valid; }
 
     /*------------------------------------------------------------------------------
 

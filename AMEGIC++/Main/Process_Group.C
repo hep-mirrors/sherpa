@@ -31,7 +31,7 @@ using namespace ATOOLS;
 using namespace std;
 
 AMEGIC::Process_Group::Process_Group()
-{ 
+{
   p_testmoms=NULL;
   p_channellibnames = new std::list<std::string>();
 }
@@ -45,26 +45,32 @@ AMEGIC::Process_Group::~Process_Group()
 PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_Info &pi) const
 {
   int typechk(0);
-  if (pi.m_fi.m_nloqcdtype&nlo_type::real) typechk++;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::vsub||
-      pi.m_fi.m_nloqcdtype&nlo_type::loop||
-      pi.m_fi.m_nloqcdtype&nlo_type::born) typechk++;    
-  if (typechk>1) THROW(fatal_error,"NLO_QCD_Parts 'RS', and 'BVI' must be assigned separately!");
+  if (pi.m_fi.m_nlotype&nlo_type::real) typechk++;
+  if (pi.m_fi.m_nlotype&nlo_type::vsub ||
+      pi.m_fi.m_nlotype&nlo_type::loop ||
+      pi.m_fi.m_nlotype&nlo_type::born) typechk++;
+  if (typechk>1)
+    THROW(fatal_error,"NLO_QCD_Parts 'RS' and 'BVI' must be assigned separately!");
 
-  nlo_type::code nloqcd=pi.m_fi.m_nloqcdtype;
-  if ((nloqcd&nlo_type::real) || (nloqcd&nlo_type::rsub)) {
-    Single_Real_Correction *src = new Single_Real_Correction();
-    src->SetNoTree(pi.m_rsmegenerator.length() &&
-		   pi.m_rsmegenerator!="Amegic");
-    return src;
+  nlo_type::code nlotype=pi.m_fi.m_nlotype;
+  // QCD/EW subtraction
+  if (nlotype!=nlo_type::lo) {
+    if (nlotype&nlo_type::real && nlotype&nlo_type::rsub) {
+      Single_Real_Correction *src = new Single_Real_Correction();
+      src->SetNoTree(pi.m_rsmegenerator.length() &&
+                     pi.m_rsmegenerator!="Amegic");
+      return src;
+    }
+    else if (nlotype&nlo_type::born ||
+             nlotype&nlo_type::vsub || nlotype&nlo_type::loop) {
+      return new Single_Virtual_Correction();
+    }
   }
-  else if (nloqcd&nlo_type::born || nloqcd&nlo_type::vsub || nloqcd&nlo_type::loop) {
-    return new Single_Virtual_Correction();
-  }
-  else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::real) {
+  // LO processes
+  else if (nlotype==nlo_type::lo || nlotype==nlo_type::real) {
     if (pi.m_amegicmhv>0) {
       if (pi.m_amegicmhv==10 ||
-	  pi.m_amegicmhv==12) return new Single_Process_External();
+          pi.m_amegicmhv==12) return new Single_Process_External();
       if (pi.m_amegicmhv==11) return new Single_Process_Combined();
       if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
       if (pi.m_amegicmhv==2) return NULL;
@@ -85,23 +91,23 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     if (!p_pinfo) p_pinfo=Translate(m_pinfo);
     p_testmoms = new Vec4D[m_nin+m_nout];
     Phase_Space_Handler::TestPoint(p_testmoms,&Info(),Generator());
-    Vec4D sum;
-    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
-    msg_Debugging()<<"After boost:\n";
-    for (size_t i(0);i<m_nin+m_nout;++i) {
-      lab.Boost(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
-    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
-    msg_Debugging()<<"After rotation:\n";
-    for (size_t i(0);i<m_nin+m_nout;++i) {
-      rot.Rotate(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+//    Vec4D sum;
+//    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
+//    msg_Debugging()<<"After boost:\n";
+//    for (size_t i(0);i<m_nin+m_nout;++i) {
+//      lab.Boost(p_testmoms[i]);
+//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+//    }
+//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+//    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+//    msg_Debugging()<<"After rotation:\n";
+//    for (size_t i(0);i<m_nin+m_nout;++i) {
+//      rot.Rotate(p_testmoms[i]);
+//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+//    }
+//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath);

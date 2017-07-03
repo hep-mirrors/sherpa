@@ -96,7 +96,6 @@ void Particle_Info::SetResummed()
 {
   for (size_t i(0);i<m_content.size();++i) {
     s_kftable[m_content[i]->Kfcode()]->m_resummed=true;
-    s_kftable[kf_resummed]->Add(*m_content[i]);
   }
 }
 

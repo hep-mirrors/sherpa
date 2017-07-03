@@ -23,21 +23,42 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-/*-------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
 
   Constructors
 
-  ------------------------------------------------------------------------------- */
+  ----------------------------------------------------------------------------*/
 
 
 Single_LOProcess::Single_LOProcess(const Process_Info &pi,
                                    BEAM::Beam_Spectra_Handler *const beam,
-                                   PDF::ISR_Handler *const isr) :   
-  m_gen_str(2), m_emit(-1), m_spect(-1),
-  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), p_sub(NULL)
+                                   PDF::ISR_Handler *const isr,
+                                   const ATOOLS::sbt::subtype& st) :
+  m_gen_str(2), m_ptypename(""), m_libname(""), m_pslibname(""),
+  m_stype(st), m_emit(-1), m_spect(-1),
+  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this),
+  m_pspissplscheme(0), m_pspfssplscheme(0),
+  m_maxcpliqcd(2,99.), m_mincpliqcd(2,0.),
+  m_maxcpliew(2,99.), m_mincpliew(2,0.),
+  p_sub(NULL)
 {
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
+
+  std::vector<int> flavrest;
+  std::string frstr=rpa->gen.Variable("DIPOLE_BORN_FLAVOUR_RESTRICTIONS");
+  if (frstr!="") {
+    std::size_t pos=0, found;
+    while ((found=frstr.find_first_of(' ',pos))!=std::string::npos) {
+      flavrest.push_back(ToType<int>(frstr.substr(pos,found-pos)));
+      pos=found+1;
+    }
+    PRINT_INFO("to be debugged:" <<flavrest);
+  }
+  if (flavrest.size()%2)
+    THROW(fatal_error,"Syntax error in DIPOLE_BORN_FLAVOUR_RESTRICTIONS.");
+  for (size_t i(0);i<flavrest.size();i+=2)
+    m_flavrestrictions[flavrest[i]] = flavrest[i+1];
 
   int ord=ToType<int>(rpa->gen.Variable("AMEGIC_SORT_LOPROCESS"));
   static bool print(false);
@@ -111,19 +132,25 @@ Single_LOProcess::~Single_LOProcess()
 
 void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname) 
 {
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                        +m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname,1)) return;
   My_Out_File to(altname);
   to.Open();
   *to<<aname<<" "<<m_sfactor<<endl;
-  for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
+  for (map<string,ATOOLS::Flavour>::const_iterator fit
+         =p_ampl->GetFlavourmap().begin();
+       fit!=p_ampl->GetFlavourmap().end();fit++) {
     *to<<fit->first<<" "<<(long int)fit->second<<endl;
+  }
   to.Close();
 }
 
-bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,string procname)
+bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,
+                                                 string procname)
 {
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                        +m_ptypename+"/"+procname+".alt";
   if (FileExists(altname,1)) {
     double factor;
     string name,dummy; 
@@ -144,6 +171,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	m_maxcpl=p_partner->MaxOrders();
 	m_mincpl=p_partner->MinOrders();
 	m_ntchanmin=p_partner->NTchanMin();
+	m_stype=p_partner->GetSubType();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
 	while (*from) {
@@ -181,15 +209,50 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 
 int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 					    vector<Process_Base *> & links,
-					    vector<Process_Base *> & errs,int checkloopmap)
+					    vector<Process_Base *> & errs,
+					    int checkloopmap)
 {
+  DEBUG_FUNC("loop");
   m_type = 20;
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   model->p_model->GetCouplings(m_cpls);
 
-  m_partonlist.clear();
-  for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
-  for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
+  msg_Debugging()<<m_stype<<std::endl;
+  m_partonlistqcd.clear();
+  m_partonlistqed.clear();
+  if (m_stype&sbt::qcd) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (m_flavs[i].Strong()) {
+        m_partonlistqcd.push_back(i);
+      }
+    }
+  }
+  if (m_stype&sbt::qed) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (m_flavs[i].Charge()) {
+        m_partonlistqed.push_back(i);
+      }
+      else if (m_flavs[i].IsPhoton()) {
+        if      (i<m_nin   && m_pspissplscheme==0) continue;
+        else if (i>=m_nin  && m_pspfssplscheme==0) continue;
+        m_partonlistqed.push_back(i);
+      }
+    }
+  }
+  msg_Debugging()<<"QCD parton list: "<<m_partonlistqcd<<std::endl;
+  msg_Debugging()<<"QED parton list: "<<m_partonlistqed<<std::endl;
+  if (m_stype&sbt::qcd && m_partonlistqcd.size()<2) {
+    msg_Debugging()<<m_partonlistqcd.size()
+                   <<" QCD partons, cannot form a single dipole."
+                   <<" No QCD subtraction."<<std::endl;
+    m_stype^=sbt::qcd;
+  }
+  if (m_stype&sbt::qed && m_partonlistqed.size()<2) {
+    msg_Debugging()<<m_partonlistqed.size()
+                   <<" QED partons, cannot form a single dipole."
+                   <<" No QED subtraction."<<std::endl;
+    m_stype^=sbt::qed;
+  }
 
   if (CheckAlternatives(links,Name())) return 1;
 
@@ -198,27 +261,56 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   bool directload = true;
   int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
     if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+      msg_Info()<<"Enforce full library check. This may take some time."
+                <<std::endl;
       directload = false;
     }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
+    string hstr  = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                   +m_ptypename+"/"+m_libname;
+    string hstr2 = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
+                   +m_ptypename+"/"+m_name+".map";
+    p_BS = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,
+                            hstr,hstr2);
   }
-  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  else p_BS = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
+  p_shand = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
   bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
-                                   &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
+  p_ampl = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,
+                                 model,top,m_maxcpl,m_mincpl,ntchanmin,&m_cpls,
+                                 p_BS,p_shand,m_print_graphs,!directload,cvp,
+                                 m_ptypename+"/"+m_libname);
   m_ntchanmin=ntchanmin;
+
   if (p_ampl->GetGraphNumber()==0) {
-    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<METHOD<<"(): No diagrams for "<<m_name<<"."<<std::endl;
     return 0;
   }
+  // Check whether underlying Born for I_QCD operator exists
+  if (m_stype&sbt::qcd &&
+      !p_ampl->PossibleConfigsExist(m_maxcpliqcd,m_mincpliqcd)) {
+    msg_Tracking()<<METHOD<<"(): No possible combinations exist for "
+                  <<m_mincpliqcd<<" .. "<<m_maxcpliqcd
+                  <<". No QCD subtraction."<<std::endl;
+    m_stype^=sbt::qcd;
+    m_partonlistqcd.clear();
+  }
+  // Check whether underlying Born for I_QED operator exists
+  if (m_stype&sbt::qed &&
+      !p_ampl->PossibleConfigsExist(m_maxcpliew,m_mincpliew)) {
+    msg_Tracking()<<METHOD<<"(): No possible combinations exist for "
+                  <<m_mincpliew<<" .. "<<m_maxcpliew
+                  <<". No QED subtraction."<<std::endl;
+    m_stype^=sbt::qed;
+    m_partonlistqed.clear();
+  }
+  if (m_stype==sbt::none) return 0;
+
+  msg_Debugging()<<"couplings are "<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
+
   if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -229,7 +321,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
@@ -265,7 +356,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
-				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
+                                  m_ptypename+string("/")+m_libname,127,127,
+                                  &m_flavs.front());
     if (p_partner==this) links.push_back(this);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
@@ -322,13 +414,17 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs,
-				    std::vector<ATOOLS::Vec4D>* epol,std::vector<double> * pfactors)
+				    std::vector<ATOOLS::Vec4D>* epol,
+				    std::vector<double> * pfactors)
 {
+  DEBUG_FUNC("real");
   m_type = 10;
   model->p_model->GetCouplings(m_cpls);
-  
-  m_name+= "__S"+ToString((int)m_emit)+"_"+ToString((int)m_spect);
-  if (m_flavs[m_emit].IsGluon()) {
+
+  m_name+= "__S"+ToString((int)m_emit)+"_"+ToString((int)m_spect)
+                +"_"+ToString(m_stype);
+  // FIXMEforQED
+  if (m_flavs[m_emit].IsGluon() || m_flavs[m_emit].IsPhoton()) {
     p_pl[m_emit]=Pol_Info();
     p_pl[m_emit].Init(2);
     p_pl[m_emit].pol_type = 'e'; 
@@ -346,11 +442,13 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 
   bool directload = true;
   int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
-    if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
-      directload = false;
-    }
+  if (libchk==1) {
+    msg_Info()<<"Enforce full library check. This may take some time."
+              <<std::endl;
+    directload = false;
+  }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
+  msg_Debugging()<<"Found mapping file? "<<directload<<std::endl;
   if (m_libname=="0") {
     return 0;
   }
@@ -359,22 +457,29 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
-  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
   p_BS->SetEPol(&m_epol); 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
 
- 
+
   int ntchanmin(m_ntchanmin);
   bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
-    msg_Tracking()<<"Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<METHOD<<"(): No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<METHOD<<"(): No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
     return 0;
   }
 
+  char em(m_emit), sp(m_spect);
+  if (m_stype==sbt::qed) { em=0; sp=0; }
+  msg_Tracking()<<"em="<<em<<" ,  sp="<<sp<<std::endl;
   if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -387,24 +492,18 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     if (m_allowmap && FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
-	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
+	msg_Tracking()<<METHOD<<"(): Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"),1)) { 
+	  msg_Debugging()<<mlname<<std::endl<<mnname<<std::endl;
+	  if (FileExists(mlname+string(".map"),1)) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
 	      CreateMappingFile((Single_LOProcess*)links[j]);
 	    }
 	    My_In_File::CopyInDB(mlname+".col",mnname+".col");
-	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
-	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
-		string sij=string("__S")+ToString(i)+string("_")+ToString(j);
-		My_In_File::CopyInDB(mlname+sij+".col",mnname+sij+".col");
-	      }
-	    }
 	  }
 	}
 
@@ -424,8 +523,8 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
-				  m_ptypename+string("/")+m_libname,
-				  m_emit,m_spect,&m_flavs.front());
+                                  m_ptypename+string("/")+m_libname,
+                                  em,sp,&m_flavs.front());
     if (p_partner==this) links.push_back(this);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
@@ -435,8 +534,8 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   }
 
   p_ampl->CompleteAmplitudes(m_nin+m_nout,&m_flavs.front(),p_b,&m_pol,
-			     top,p_BS,m_ptypename+string("/")+m_name,
-			     m_emit,m_spect);
+                             top,p_BS,m_ptypename+string("/")+m_name,
+                             em,sp);
   m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
   p_BS->Initialize();
   FillCombinations();
@@ -483,8 +582,8 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 
 
 
-int Single_LOProcess::Tests(std::vector<double> * pfactors) {
-
+int Single_LOProcess::Tests(std::vector<double> * pfactors)
+{
   int number      = 1;
   int gauge_test  = 1;
   int string_test = 1;
@@ -516,7 +615,8 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
   if (gauge_test) {
     m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_testmoms,Vec4D(sqrt(3.),1.,1.,-1.));
     if (m_epol.size()>0)
-      for (size_t i=0;i<m_epol.size();i++) m_epol[i]+=p_testmoms[m_emit]/p_testmoms[m_emit][0];
+      for (size_t i=0;i<m_epol.size();i++)
+        m_epol[i]+=p_testmoms[m_emit]/p_testmoms[m_emit][0];
     p_BS->Setk0(0);
     p_BS->CalcEtaMu(p_testmoms);  
     if (m_epol.size()==0) p_BS->InitGaugeTest(.9);
@@ -554,9 +654,10 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
 
-  /* Calculate the squared amplitude of the polarisation states. If a certain external
-     polarisation combination is found not to contribute for the point in phase space
-     tested, it is assumed that is doesn�t contribute at all and is switched off.      */
+  // Calculate the squared amplitude of the polarisation states. If a certain
+  // external polarisation combination is found not to contribute for the
+  // point in phase space tested, it is assumed that is doesn�t contribute at
+  // all and is switched off.
   for (size_t i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
@@ -862,7 +963,7 @@ int Single_LOProcess::CheckLibraries(std::vector<double> * pfactors) {
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
 
-  msg_Info()<<"Single_LOProcess::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
+  msg_Info()<<METHOD<<"(): Looking for a suitable library. This may take some time."<<std::endl;
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
@@ -1020,7 +1121,8 @@ bool Single_LOProcess::FoundLib(std::string& pID)
   return 0;
 }
 
-void AMEGIC::Single_LOProcess::UpdateMappingFile(std::string name, map<string,Complex> & cmap) 
+void AMEGIC::Single_LOProcess::UpdateMappingFile(std::string name,
+                                                 map<string,Complex> & cmap)
 {
   std::string buf;
   int pos;
@@ -1056,11 +1158,11 @@ int AMEGIC::Single_LOProcess::PerformTests()
 }
 
 
-/*------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
   
   Phase space initialization
   
-  ------------------------------------------------------------------------------*/
+  ----------------------------------------------------------------------------*/
 
 
 bool Single_LOProcess::SetUpIntegrator() 
@@ -1068,11 +1170,11 @@ bool Single_LOProcess::SetUpIntegrator()
   return 0;
 }
 
-/*------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
   
   Process management
   
-  ------------------------------------------------------------------------------*/
+  ----------------------------------------------------------------------------*/
 void Single_LOProcess::Minimize()
 {
   if (p_partner==this) return;
@@ -1086,21 +1188,101 @@ void Single_LOProcess::Minimize()
   m_ntchanmin = p_partner->NTchanMin();
 }
 
+bool Single_LOProcess::CheckIQCDMappability() const
+{
+  if (!(m_stype&sbt::qcd)) return true;
+  if (!p_partner || p_partner==this) THROW(fatal_error,"Invalid call.");
+  if (m_partonlistqcd!=p_partner->Get<AMEGIC::Single_LOProcess>()
+                                ->PartonListQCD())
+    THROW(fatal_error,"Mapped processes with different QCD parton lists.");
+  DEBUG_FUNC(Name()<<" -> "<<p_partner->Name());
+  for (size_t i(0);i<m_partonlistqcd.size();++i) {
+    if (m_flavs[m_partonlistqcd[i]].StrongCharge()
+        !=p_partner->Flavours()[m_partonlistqcd[i]].StrongCharge()) {
+      msg_Debugging()<<"QCD charges differ: "
+                     <<m_flavs[m_partonlistqcd[i]]<<" vs "
+                     <<p_partner->Flavours()[m_partonlistqcd[i]]
+                     <<" ==> I_QCD not mappable"<<std::endl;
+      return false;
+    }
+  }
+  msg_Debugging()<<"I_QCD mappable"<<std::endl;
+  return true;
+}
 
-/*------------------------------------------------------------------------------
+bool Single_LOProcess::CheckIQEDMappability() const
+{
+  if (!(m_stype&sbt::qed)) return true;
+  if (!p_partner || p_partner==this) THROW(fatal_error,"Invalid call.");
+  if (m_partonlistqed!=p_partner->Get<AMEGIC::Single_LOProcess>()
+                                ->PartonListQED())
+    THROW(fatal_error,"Mapped processes with different QCD parton lists.");
+  DEBUG_FUNC(Name()<<" -> "<<p_partner->Name());
+  for (size_t i(0);i<m_partonlistqed.size();++i) {
+    if (m_flavs[m_partonlistqed[i]].Charge()
+        !=p_partner->Flavours()[m_partonlistqed[i]].Charge()) {
+      msg_Debugging()<<"QED charges differ: "
+                     <<m_flavs[m_partonlistqed[i]]<<" vs "
+                     <<p_partner->Flavours()[m_partonlistqed[i]]
+                     <<" ==> I_QED not mappable"<<std::endl;
+      return false;
+    }
+  }
+  msg_Debugging()<<"I_QED mappable"<<std::endl;
+  return true;
+}
+
+bool Single_LOProcess::IsValid()
+{
+  DEBUG_FUNC(m_name);
+  if (m_flavrestrictions.size()) {
+    std::map<int, size_t> flavcount;
+    for (size_t i(m_nin);i<m_flavs.size();++i) {
+      for (std::map<int,size_t>::const_iterator it(m_flavrestrictions.begin());
+           it!=m_flavrestrictions.end();++it) {
+        if (it->first==((int)m_flavs[i])) {
+          msg_Debugging()<<"Found restrictions for "<<m_flavs[i]<<std::endl;
+          if (flavcount.find(it->first)==flavcount.end())
+            flavcount[it->first]=1;
+          else
+            flavcount[it->first]+=1;
+        }
+      }
+    }
+    if (msg_LevelIsDebugging()) {
+      for (std::map<int, size_t>::const_iterator it=flavcount.begin();
+           it!=flavcount.end();++it)
+        msg_Out()<<it->first<<": "<<it->second<<std::endl;
+    }
+    for (std::map<int,size_t>::const_iterator it(m_flavrestrictions.begin());
+         it!=m_flavrestrictions.end();++it) {
+      if (flavcount.find(it->first)==m_flavrestrictions.end()) return false;
+      else if (flavcount[it->first]!=it->second)               return false;
+    }
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------------
 
   Calculating total cross sections
-  
-  ------------------------------------------------------------------------------*/
 
-double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms,const int mode) { return 0.; }
+  ----------------------------------------------------------------------------*/
 
-double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATOOLS::Vec4D *mom,
-				    std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol,const int mode)
+double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms,
+                                  const int mode) { return 0.; }
+
+double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
+				    const ATOOLS::Vec4D *mom,
+				    std::vector<double> * pfactors,
+				    std::vector<ATOOLS::Vec4D>* epol,
+				    const int mode)
 {
   if (p_partner!=this) {
-    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
+    return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)
+                      *m_sfactor;
   }
+  DEBUG_FUNC(m_name);
 
   double M2(0.);
   p_int->SetMomenta(labmom);
@@ -1116,8 +1298,11 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATO
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	double multi = (p_hel->Multiplicity(i)%1024);
-	if (p_hel->Multiplicity(i)<1024) multi*=(*pfactors)[p_hel->GetEPol(i)-90];
-	else multi*=(*pfactors)[p_hel->GetEPol(i)-90]+(*pfactors)[p_hel->Multiplicity(i)/1024-90];
+	if (p_hel->Multiplicity(i)<1024)
+	  multi*=(*pfactors)[p_hel->GetEPol(i)-90];
+	else
+	  multi*=(*pfactors)[p_hel->GetEPol(i)-90]
+		 +(*pfactors)[p_hel->Multiplicity(i)/1024-90];
 	double mh=p_ampl->Differential(i);
 	M2 += mh * multi * p_hel->PolarizationFactor(i);
       }
@@ -1142,28 +1327,46 @@ void Single_LOProcess::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
   else p_partner->FillAmplitudes(amps, cols, sfactor*sqrt(m_sfactor));
 }
 
-double Single_LOProcess::Calc_M2ik(int ci, int ck) 
+double Single_LOProcess::Calc_M2ik(const int& ci, const int& ck,
+                                   const std::vector<double>& maxcpl,
+                                   const std::vector<double>& mincpl)
 {
+  DEBUG_FUNC(ci<<" "<<ck<<" "<<maxcpl<<" "<<mincpl);
   double M2=0.;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i)) {
-      M2 += p_ampl->Differential(i,ci,ck) * p_hel->Multiplicity(i) 
-	* p_hel->PolarizationFactor(i);
-      //	  M2     += helvalue;     
+      msg_Debugging()<<i<<": "<<p_ampl->Differential(i,ci,ck,maxcpl,mincpl)<<" * "
+                              <<p_hel->Multiplicity(i)<<" * "
+                              <<p_hel->PolarizationFactor(i)<<std::endl;
+      M2 += p_ampl->Differential(i,ci,ck,maxcpl,mincpl) * p_hel->Multiplicity(i)
+            * p_hel->PolarizationFactor(i);
     }
-  } 
+  }
+  msg_Debugging()<<"-> M2="<<M2<<std::endl;
   return M2;
 }
 
 void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				  const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
+                                  const ATOOLS::Vec4D *mom,
+                                  std::vector<std::vector<double> > &dsijqcd,
+                                  std::vector<std::vector<double> > &dsijqed,
+                                  const int mode)
 {
+  DEBUG_FUNC("QCD: ("<<dsijqcd.size()<<"x"<<(dsijqcd.size()?dsijqcd[0].size():0)
+             <<"), QED: ("<<dsijqed.size()<<"x"<<(dsijqed.size()?dsijqed[0].size():0)
+             <<") ");
   if (p_partner!=this) {
-    p_partner->Calc_AllXS(labmom,mom,dsij,mode);
-    dsij[0][0]*=m_sfactor;
-    for (size_t i=0;i<m_partonlist.size();i++) {
-      for (size_t k=i+1;k<m_partonlist.size();k++) {
-	dsij[i][k] = dsij[k][i]*=m_sfactor;
+    p_partner->Calc_AllXS(labmom,mom,dsijqcd,dsijqed,mode);
+    if (dsijqcd.size()) dsijqcd[0][0]*=m_sfactor;
+    if (dsijqed.size()) dsijqed[0][0]*=m_sfactor;
+    for (size_t i=0;i<m_partonlistqcd.size();i++) {
+      for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+        dsijqcd[i][k] = dsijqcd[k][i]*=m_sfactor;
+      }
+    }
+    for (size_t i=0;i<m_partonlistqed.size();i++) {
+      for (size_t k=i+1;k<m_partonlistqed.size();k++) {
+        dsijqed[i][k] = dsijqed[k][i]*=m_sfactor;
       }
     }
     return;
@@ -1177,10 +1380,18 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
   if (p_shand->Is_String()) {
     p_shand->Calculate();
 
-    dsij[0][0] = Calc_M2ik(0,0);
-    for (size_t i=0;i<m_partonlist.size();i++) {
-      for (size_t k=i+1;k<m_partonlist.size();k++) {
-	dsij[i][k] = dsij[k][i] = Calc_M2ik(m_partonlist[i],m_partonlist[k]);
+    if (dsijqcd.size()) dsijqcd[0][0] = Calc_M2ik(0,0,m_maxcpliqcd,m_mincpliqcd);
+    if (dsijqed.size()) dsijqed[0][0] = Calc_M2ik(0,0,m_maxcpliew,m_mincpliew);
+    for (size_t i=0;i<m_partonlistqcd.size();i++) {
+      for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+        dsijqcd[i][k] = dsijqcd[k][i]
+          = Calc_M2ik(m_partonlistqcd[i],m_partonlistqcd[k],
+                      m_maxcpliqcd,m_mincpliqcd);
+      }
+    }
+    for (size_t i=0;i<m_partonlistqed.size();i++) {
+      for (size_t k=i+1;k<m_partonlistqed.size();k++) {
+        dsijqed[i][k] = dsijqed[k][i] = dsijqed[0][0];
       }
     }
   }

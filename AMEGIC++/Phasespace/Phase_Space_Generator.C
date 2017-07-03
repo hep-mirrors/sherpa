@@ -104,7 +104,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
       for(int j=0;j<ng;j++) {
-	Channel_Generator_Base *cg;
+        Channel_Generator_Base *cg(NULL);
 	if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,proc->Diagram(i),0);
 	else {
 	  if (kk_fs) {
@@ -126,6 +126,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    }
 	  }
 	}
+	if (!cg) THROW(fatal_error, "No channel generated.");
 	for (int k=0;k<cg->NumberOfChannels();k++) {
 	  string chID = cg->CreateChannelID(k);
 	  *lmf<<chID<<endl;

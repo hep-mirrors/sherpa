@@ -3,7 +3,8 @@
 
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Decay_Info.H"
-#include "PHASIC++/Process/Subprocess_Info.H"
+#include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 namespace ATOOLS {
 
@@ -32,6 +33,7 @@ namespace ATOOLS {
     bool operator<(const DDip_ID &di) const;
     inline bool operator==(const DDip_ID &di) const
     { return m_i==di.m_i && m_j==di.m_j && m_k==di.m_k; }
+    std::string PSInfo() const;
   };// end of struct DDip_ID
 
   std::ostream &operator<<(std::ostream &ostr,const DDip_ID &ddi);
@@ -72,10 +74,9 @@ namespace ATOOLS {
     NLO_subevt *p_real;
     void       *p_proc;
 
-    size_t m_n, m_idx;
-    double m_result, m_me, m_mewgt, m_kt2;
-    double m_x1, m_x2, m_xf1, m_xf2, m_K;
-    
+    size_t m_n, m_idx, m_oqcd, m_oew;
+    double m_result, m_me, m_mewgt, m_K;
+    double m_x1, m_x2, m_xf1, m_xf2, m_alpha, m_kt2;
     std::vector<double> m_mu2;
 
     std::string m_pname;
@@ -90,9 +91,9 @@ namespace ATOOLS {
 		      const Flavour *fl=NULL,const Vec4D *mom=NULL,
 		      const int i=-1,const int j=-1,const int k=-1):
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
-      p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
-      m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
-      m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0), m_K(0.0),
+      p_real(NULL), p_proc(NULL), m_n(n), m_idx(0), m_oqcd(0), m_oew(0),
+      m_result(0.0), m_me(0.0), m_mewgt(0.0), m_K(0.0),
+      m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0), m_alpha(0.0), m_kt2(0.0),
       m_mu2(2*stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
 
     ~NLO_subevt();
@@ -128,9 +129,9 @@ namespace ATOOLS {
 
   class NLO_subevtlist: public std::vector<NLO_subevt*> { 
   private:
-    PHASIC::nlo_type::code m_type;
+    ATOOLS::nlo_type::code m_type;
   public:
-    inline NLO_subevtlist() : m_type(PHASIC::nlo_type::lo) {}
+    inline NLO_subevtlist() : m_type(ATOOLS::nlo_type::lo) {}
 
     void Mult(const double &scal);
     void MultME(const double &scal);
@@ -138,8 +139,8 @@ namespace ATOOLS {
 
     NLO_subevtlist& operator*=(const double scal);
 
-    inline PHASIC::nlo_type::code Type() { return m_type; }
-    inline void SetType(PHASIC::nlo_type::code type) { m_type=type; }
+    inline ATOOLS::nlo_type::code Type() { return m_type; }
+    inline void SetType(ATOOLS::nlo_type::code type) { m_type=type; }
   };// end of class NLO_subevtlist
 
 }// end of namespace ATOOLS

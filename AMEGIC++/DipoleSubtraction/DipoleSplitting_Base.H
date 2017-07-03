@@ -2,6 +2,7 @@
 #define AMEGIC_DipoleSubtraction_DipoleSplitting_Base_H
 
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "AMEGIC++/Main/Pol_Info.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include <vector>
@@ -15,86 +16,75 @@ namespace AMEGIC {
 
 #define nan numeric_limits<double>::quiet_NaN()
 
-  class dpt {
-  public:
-    enum dipoltype{  
-      none = 0,
-      f_f  = 1,
-      f_i  = 2,
-      i_f  = 3,
-      i_i  = 4,
-      f_fm = 5,
-      f_im = 6,
-      i_fm = 7
-    };
-  };
-
-  class spt {
-  public:
-    enum splittingtype{  
-      none = 0,
-      qg  = 1,
-      gq  = 2,
-      qq  = 3,
-      gg  = 4,
-      sqg = 5,
-      gsq = 6,
-      gtg = 7,
-      ggt = 8
-    };
-  };
-
   class DipoleSplitting_Base {
   protected:
+    std::string m_name;
     double m_alpha,m_kt2max,m_amin,m_kappa;
-    double m_Q2,m_kt2,m_av,m_a;
-    int m_nf, m_mcmode, m_mcsign;
+    double m_Q2,m_kt2,m_a;
+    double m_sff,m_av,m_fac;
+    int m_mcmode, m_mcsign;
     ATOOLS::Vec4D m_pt1,m_pt2;
 
-    dpt::dipoltype m_type;
+    ATOOLS::sbt::subtype       m_stype;
+    ATOOLS::dpt::dipoletype    m_dtype;
+    ATOOLS::spt::splittingtype m_ftype;
     ATOOLS::Vec4D m_pi,m_pj,m_pk,m_ptij,m_ptk;
     int m_i,m_j,m_k,m_tij,m_tk,m_m,m_es;
     double m_k0sqf,m_k0sqi;
     std::vector<ATOOLS::Vec4D> m_dpollist;
     std::vector<ATOOLS::Vec4D> m_mom;
     std::vector<double> m_pfactors;
-//     spt::splittingtype m_ft;
-    int m_ft;
     double m_spfdef;
-    double m_g1,m_g2;
+    bool m_collVFF;
+    int m_Vsubmode;
     MODEL::Coupling_Data *p_cpl;
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
   public:
-    DipoleSplitting_Base();
+    DipoleSplitting_Base(ATOOLS::sbt::subtype st, ATOOLS::spt::splittingtype ft,
+                         ATOOLS::dpt::dipoletype dt,int m,int i,int j,int k);
     virtual ~DipoleSplitting_Base() {}
-    
-    virtual void SetMomenta(const ATOOLS::Vec4D*);
+
+    inline std::string Name() const                 { return m_name; }
+
     void SetCoupling(const MODEL::Coupling_Map *cpls);
+    inline void   SetChargeFactor(double f) { m_spfdef*=f; }
+    inline double SPFac()                   { return m_spfdef*p_cpl->Factor(); }
+
+    virtual void SetMomenta(const ATOOLS::Vec4D*) = 0;
+    inline std::vector<ATOOLS::Vec4D>* GetMomenta() { return &m_mom; }
+    inline ATOOLS::Vec4D Getptij()                  { return m_ptij; }
+    inline ATOOLS::Vec4D Getptk()                   { return m_ptk; }
+
+    inline void SetMCMode(const int mcmode)         { m_mcmode=mcmode; }
+    inline void SetAlpha(double alp)                { m_alpha=alp; }
+    inline void SetKt2Max(double kt2m)              { m_kt2max=kt2m; }
+    inline double Alpha() const                     { return m_alpha; }
+    inline double KT2() const                       { return m_kt2; }
+
     bool Reject(const double &alpha);
-    void SetMCMode(const int mcmode) { m_mcmode=mcmode; }
-    std::vector<ATOOLS::Vec4D>* GetMomenta() {return &m_mom;}
-    ATOOLS::Vec4D Getptij() {return m_ptij;}
-    ATOOLS::Vec4D Getptk()  {return m_ptk;}
     double GetF();
-    virtual double GetValue();
-    virtual double GetDPSF()   {return 0.;}
-    virtual void CalcDiPolarizations() {}
-    virtual void SetAlpha(double alp) {m_alpha=alp;}
-    virtual void SetKt2Max(double kt2m) { m_kt2max=kt2m; }
-    inline double KT2() const { return m_kt2; }
+    virtual double GetDPSF() = 0;
+    virtual double GetValue() = 0;
+
+    virtual void CalcDiPolarizations() = 0;
     double GetR(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
-    std::vector<ATOOLS::Vec4D>* GetDiPolarizations() {return &m_dpollist;}
-    std::vector<double>* GetFactors() {return &m_pfactors;}
-    dpt::dipoltype GetType() const { return m_type;}
-    double Vijf(int type,int mode);
-    double Vif(int type,int mode);
-    double Vie1(int type);
-    double Vie2(int type);
-    double SPFac() const { return m_spfdef*p_cpl->Factor(); }
-    double G2() const { return m_g2; }
-    int MCSign() const { return m_mcsign; }
-    inline bool KinCheck() const { return m_a>m_amin; }
-    inline const double& LastAlpha() const { return m_a; }
+    inline std::vector<ATOOLS::Vec4D>* GetDiPolarizations()
+                                                    { return &m_dpollist; }
+    inline std::vector<double>* GetFactors()        { return &m_pfactors; }
+
+    inline int MCSign() const                       { return m_mcsign; }
+    inline bool KinCheck() const                    { return m_a>m_amin; }
+    inline const double& LastAlpha() const          { return m_a; }
+
+    inline const ATOOLS::sbt::subtype       GetSubtractionType() const { return m_stype; }
+    inline const ATOOLS::dpt::dipoletype    GetDipoleType() const      { return m_dtype; }
+    inline const ATOOLS::spt::splittingtype GetSplittingType() const   { return m_ftype; }
   };
+
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const DipoleSplitting_Base & dsb)
+  {
+    return s<<dsb.Name();
+  }
 }
 #endif

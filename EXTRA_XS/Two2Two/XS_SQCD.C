@@ -11,7 +11,7 @@ namespace EXTRAXS {
 
     int    m_a, m_p, m_r;
     double m_mgluino2, m_g3;
-    
+
   public:
 
     XS_q1q2_sQ1sQ2(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl);
@@ -26,7 +26,7 @@ namespace EXTRAXS {
 
     int    m_a, m_p, m_r;
     double m_mgluino2, m_msq32, m_msq42, m_g3;
-    
+
   public:
 
     XS_q1q2_sQ1LsQ2R(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl);
@@ -41,7 +41,7 @@ namespace EXTRAXS {
 
     int    m_a, m_p, m_r;
     double m_mgluino2, m_msq32, m_msq42, m_g3;
-    
+
   public:
 
     XS_q1qbar2_sQ1sQbar2(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl);
@@ -126,7 +126,7 @@ namespace EXTRAXS {
     bool SetColours();
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
-  
+
   class XS_gg_sQ1sQbar1 : public ME2_Base {
   private:
 
@@ -144,10 +144,10 @@ namespace EXTRAXS {
 
   class XS_q1g_sQ1Gluino : public ME2_Base {
   private:
-  
+
     int    m_a, m_p, m_finq, m_iniq, m_swaput;
     double m_msquark2, m_mgluino2, m_g3;
-    
+
   public:
 
     XS_q1g_sQ1Gluino(const PHASIC::Process_Info &pi,const ATOOLS::Flavour_Vector &fl) ;
@@ -159,7 +159,7 @@ namespace EXTRAXS {
 
   class XS_gg_GluinoGluino : public ME2_Base {
   private:
-  
+
     double m_g3;
     double m_mgluino2;
   public:
@@ -170,7 +170,7 @@ namespace EXTRAXS {
     bool SetColours(const ATOOLS::Vec4D_Vector &p);
     friend bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm);
   };
- 
+
   inline bool SuperPartner(const ATOOLS::Flavour & susy,const ATOOLS::Flavour & sm) {
     if (susy==ATOOLS::Flavour(kf_Gluino) && 
 	sm==ATOOLS::Flavour(kf_gluon)) return true;
@@ -180,9 +180,9 @@ namespace EXTRAXS {
 	  abs(sm.Kfcode()) == (abs(susy.Kfcode())-2000000)) return true;
     }
     return false;
-    
+
   }
-  
+
 }// end of namespace EXTRAXS
 
 #endif
@@ -203,7 +203,7 @@ using namespace ATOOLS;
   operator()(const Process_Info &pi) const
   {
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-    if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1].IsQuark() &&
@@ -278,8 +278,12 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q2_sQ1LsQ2R>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1].IsQuark() &&
@@ -357,8 +361,12 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar2_sQ1sQbar2>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1].IsQuark() &&
@@ -424,8 +432,12 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_sQ2sQbar2>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
@@ -478,8 +490,12 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_sQ1sQ1>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[2].IsSquark() && 
@@ -551,8 +567,12 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_sQ1LsQ1R>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[2].IsSquark() && 
@@ -630,8 +650,12 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_sQ1sQbar1>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark()  && flavours[1]==flavours[0].Bar() &&
@@ -709,8 +733,12 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_GluinoGluino>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
@@ -802,8 +830,12 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_sQ1sQbar1>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsGluon() && flavours[1].IsGluon() && 
@@ -882,8 +914,12 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1g_sQ1Gluino>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (((flavours[0].IsQuark() && flavours[1].IsGluon()) && 
@@ -979,8 +1015,12 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
     Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_GluinoGluino>::
   operator()(const Process_Info &pi) const
   {
+<<<<<<< .working
+    if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
+=======
     if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+>>>>>>> .merge-right.r26056
     Flavour_Vector flavours=pi.ExtractFlavours();
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsGluon()  && flavours[1].IsGluon() &&

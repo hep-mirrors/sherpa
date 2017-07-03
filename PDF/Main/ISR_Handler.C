@@ -334,17 +334,22 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   }
   x1=CalcX(p1);
   x2=CalcX(p2);
+  if (IsBad(x1) || IsBad(x2) || IsBad(Q12) || IsBad(Q22)) {
+    msg_Error()<<"Bad PDF input: x1="<<x1<<", x2="<<x2
+               <<", Q12="<<Q12<<", Q22="<<Q22<<std::endl;
+    return 0.;
+  }
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
 		   <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
   msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
 		   <<p2.PMinus()<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
-  if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
+  if (warn && PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
     msg_IODebugging()<<"  Q_1^2 out of bounds"<<std::endl;
     return 0.;
   }
-  if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max())) {
+  if (warn && PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max())) {
     msg_IODebugging()<<"  Q_2^2 out of bounds"<<std::endl;
     return 0.;
   }

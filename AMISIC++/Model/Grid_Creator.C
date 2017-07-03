@@ -162,7 +162,7 @@ bool Grid_Creator::InitializeCalculation()
   bounds[2]=ToString(m_gridxmax);
   Data_Reader read;
   for (size_t i=0; i<p_processes.size(); ++i) {
-    PHASIC::Selector_Key skey(p_processes[i]->Integrator(),&read);
+    PHASIC::Selector_Key skey(p_processes[i],&read);
     skey.SetData(m_criterion,bounds);
     p_processes[i]->SetSelector(skey);
     p_processes[i]->Integrator()->PSHandler()->InitCuts();

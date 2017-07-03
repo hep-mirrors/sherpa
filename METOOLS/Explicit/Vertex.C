@@ -55,7 +55,8 @@ Vertex::Vertex(const Vertex_Key &key):
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
     if (key.p_dinfo) {
-      if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
+      if (key.p_dinfo->Type()==1) ctag="S-D";
+      else if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
       else {
 	for (size_t i(0);i<m_lc.size();++i) {

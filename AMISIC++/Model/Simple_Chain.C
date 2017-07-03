@@ -280,8 +280,8 @@ bool Simple_Chain::SetUpInterface()
 
 void Simple_Chain::CalculateSigmaND()
 {
-  if(s_kftable.find(111)==s_kftable.end()) // if not initialized yet
-    s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,1,0,"pi","pi");
+  if(s_kftable.find(kf_pi)==s_kftable.end()) // if not initialized yet
+    s_kftable[kf_pi]=new Particle_Info(kf_pi,0.134976,7.8486e-09,0,0,1,0,"pi","pi");
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
   double s=sqr(rpa->gen.Ecms());

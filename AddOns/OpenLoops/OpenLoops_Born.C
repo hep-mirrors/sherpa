@@ -5,12 +5,11 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
+using namespace OpenLoops;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
-
-namespace OpenLoops {
 
 OpenLoops_Born::OpenLoops_Born(const Process_Info& pi,
                                const Flavour_Vector& flavs,
@@ -52,18 +51,14 @@ int OpenLoops_Born::OrderEW(const int &id)
   return OpenLoops_Interface::GetIntParameter("coupling_ew_0");
 }
 
-}
-
-using namespace OpenLoops;
-
 DECLARE_TREEME2_GETTER(OpenLoops_Born,"OpenLoops_Born")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,OpenLoops_Born>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="OpenLoops") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo && pi.m_fi.m_nloewtype!=nlo_type::real) return NULL;
-  if (pi.m_fi.m_nloqcdtype!=nlo_type::lo && pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo && pi.m_fi.m_nlotype!=nlo_type::born &&
+      pi.m_fi.m_nlotype!=nlo_type::real) return NULL;
 
   OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_maxcpl[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);

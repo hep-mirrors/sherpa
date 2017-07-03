@@ -441,15 +441,15 @@ bool Multi_Channel::ReadIn(std::string pID) {
   My_In_File ifile(pID);
   if (!ifile.Open()) return false;
   size_t      size;
-  std::string name;
+  std::string rname;
   long int    points;
   double      alpha, alphasave, weight, res1, res2;
-  *ifile>>size>>name;
-  if (( size != channels.size()) || ( name != name) ) {
-    msg_Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
+  *ifile>>size>>rname;
+  if (( size != channels.size()) || ( rname != name) ) {
+    msg_Error()<<METHOD<<"(): Error reading in pID="<<pID<<endl
 	       <<"  Multi_Channel file did not coincide with actual Multi_Channel: "<<endl
 	       <<"  "<<size<<" vs. "<<channels.size()<<" and "
-	       <<"  "<<name<<" vs. "<<name<<endl;
+	       <<"  "<<rname<<" vs. "<<name<<endl;
     return 0;
   }
   m_readin=true;
@@ -459,15 +459,15 @@ bool Multi_Channel::ReadIn(std::string pID) {
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {
-    *ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2;
+    *ifile>>rname>>points>>alpha>>alphasave>>weight>>res1>>res2;
     sum+= alpha;
-    if (name != channels[i]->Name()) {
-      msg_Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
+    if (rname != channels[i]->Name()) {
+      msg_Error()<<METHOD<<"(): Error reading in pID="<<pID<<endl
 		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
 		 <<"  "<<name<<" vs. "<<channels[i]->Name()<<endl;
       return 0;
-      if (name.substr(0,name.length()-1)!=
-	  channels[i]->Name().substr(0,name.length()-1)) {
+      if (rname.substr(0,rname.length()-1)!=
+          channels[i]->Name().substr(0,rname.length()-1)) {
 	msg_Error()<<"   return 0."<<std::endl;
 	return 0;
       }

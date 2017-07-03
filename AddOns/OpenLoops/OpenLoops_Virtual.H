@@ -8,7 +8,9 @@ namespace OpenLoops {
   class OpenLoops_Virtual : public PHASIC::Virtual_ME2_Base {
 
     int m_ol_id;
+    bool m_ismapped;
 
+    int m_modebackup;
 
   public:
 
@@ -30,6 +32,7 @@ namespace OpenLoops {
   
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
 
+    bool IsMappableTo(const PHASIC::Process_Info& pi);
   };
 
 }

@@ -2,6 +2,7 @@
 
 #include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -144,7 +145,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
 {
   if (!interface->Shower()->On() ||
       (interface->MEHandler() && 
-       interface->MEHandler()->Process()->Info().m_nlomode==1)) {
+       interface->MEHandler()->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
     AftermathOfNoShower(blob,bloblist);
     return Return_Value::Nothing;
   }

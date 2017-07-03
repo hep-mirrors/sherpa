@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 2.2.0, sherpa@projects.hepforge.org, SHERPA-MC)
+AC_INIT(SHERPA MC, 2.3.0, sherpa@projects.hepforge.org, SHERPA-MC)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
 AM_INIT_AUTOMAKE(tar-ustar)
@@ -10,7 +10,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_CANONICAL_BUILD
 SHERPA_SETUP_BUILDSYSTEM
-AC_DEFINE_UNQUOTED([SHERPA_NAME], ["Cho Oyu"], [Sherpa version name])
+AC_DEFINE_UNQUOTED([SHERPA_NAME], ["Dhaulagiri"], [Sherpa version name])
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
@@ -220,6 +220,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Higgs/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
+	  AddOns/GoSam/Makefile \
           AddOns/MCFM/Makefile \
           AddOns/LH_OLE/Makefile \
 	  AddOns/HZTool/Makefile \

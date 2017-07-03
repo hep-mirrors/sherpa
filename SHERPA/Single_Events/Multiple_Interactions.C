@@ -4,7 +4,6 @@
 #include "PDF/Remnant/Remnant_Base.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "PHASIC++/Selectors/KT_Finder.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
@@ -19,7 +18,7 @@ using namespace ATOOLS;
 using namespace AMISIC;
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
-  p_mihandler(mihandler), p_jetfinder(NULL)
+  p_mihandler(mihandler)
 {
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
@@ -35,7 +34,6 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
 
 Multiple_Interactions::~Multiple_Interactions() 
 {
-  if (p_jetfinder==NULL) delete p_jetfinder;
 }
 
 Return_Value::code Multiple_Interactions::

@@ -1,5 +1,6 @@
 @node Selectors
 @section Selectors
+@cindex SHOW_SELECTOR_SYNTAX
 
 The setup of cuts at the matrix element level is covered
 by the `(selector)' section of the steering file or the 
@@ -8,15 +9,47 @@ selector data file `Selector.dat', respectively.
 Sherpa provides the following selectors
 
 @menu
+* Inclusive selectors::       inclusive particle selectors
 * One particle selectors::    one particle selectors
 * Two particle selectors::    two particle selectors
 * Decay selectors::           decay selectors
-* Jet finders::               cuts on QCD partons
+* Particle dressers::         charged particle photon recombinations
+* Jet selectors::             jet algorithms
 * Universal selector::        user-defined cuts
 * Minimum selector::          cuts that are inclusive for several selectors
-* NLO selectors::             selectors for NLO QCD calculations
-* Fastjet selector::          selector using jets built by Fastjet
 @end menu
+
+@node Inclusive selectors
+@subsection Inclusive selectors
+
+The selectors listed here implement cuts on the
+matrix element level, based on event properties.
+The corresponding syntax in @file{Selector.dat} is 
+@verbatim
+<keyword> [<parameters>] <min value> <max value>
+@end verbatim
+
+@option{<min value>} and @option{<max value>} are floating point
+numbers, which can also be given in a form that is understood
+by the internal algebra interpreter, see @ref{Interpreter}.
+The selectors act on @emph{all} particles in the event. 
+Their respective keywords are
+
+@table @option
+@item ETmis <min value> <max value>
+missing transverse energy cut (at the moment only neutrinos are 
+considered invisible)
+@item IsolationCut 22 <dR> <exponent> <epsilon>
+Frixione isolation cone @mycite{Frixione1998jh}
+@item NJ <N> <algo> <min value> <max value>
+NJettiness from @mycite{Stewart2010tn}, where @code{<algo>} specifies 
+the jet finding algorithm to determine the hard jet directions and 
+@code{<N>} is their multiplicity. 
+@code{algo=kt|antikt|cambridge|siscone,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]}
+@end table
+
+@verbatim
+@end verbatim
 
 @node One particle selectors
 @subsection One particle selectors
@@ -35,15 +68,13 @@ The selectors act on @emph{all} possible particles with
 the given flavour. Their respective keywords are
 
 @table @option
-@item Energy
-energy cut
-@item ET
-transverse energy cut
 @item PT
 transverse momentum cut
-@item Rapidity
+@item ET
+transverse energy cut
+@item Y
 rapidity cut
-@item PseudoRapidity
+@item Eta
 pseudorapidity cut
 @end table
 
@@ -67,20 +98,22 @@ the given flavour. Their respective keywords are
 @table @option
 @item Mass
 invariant mass
-@item Angle
-angular separation (rad)
-@item BeamAngle
-angular separation w.r.t. beam
-
-(@samp{<flavour2 code>} is 0 or 1, referring to beam 1 or 2)
-@item DeltaEta
-pseudorapidity separation
-@item DeltaY
+@item Q2
+DIS-like virtuality
+@item PT2
+pair transverse momentum
+@item MT2
+pair transverse mass
+@item DY
 rapidity separation
-@item DeltaPhi
-azimuthal angle separation (rad)
-@item DeltaR
-R separation
+@item DEta
+pseudorapidity separation
+@item DPhi
+azimuthal separation
+@item DR
+angular separation (build from eta and phi)
+@item DR(y)
+angular separation (build from y and phi)
 @end table
 
 
@@ -89,7 +122,7 @@ R separation
 
 The selectors listed here implement cuts on the matrix element level, 
 based on particle decays, see @ref{Decay} and @ref{DecayOS}.
-
+ 
 @table @option
 @item DecayMass
 Invariant mass of a decaying particle. The syntax is
@@ -118,8 +151,11 @@ numbers, which can also be given in a format that is understood
 by the internal algebra interpreter, see @ref{Interpreter}.
 
 
-@node Jet finders
-@subsection Jet finders
+@node Particle dressers
+@subsection Particle dressers
+
+@node Jet selectors
+@subsection Jet selectors
 
 There are three different types of jet finders
 
@@ -176,6 +212,33 @@ containing b and anti-b is not tagged.
 The option @option{FastjetVeto} allows to use the 
 @uref{http://www.fastjet.fr,,FastJet} plugin to apply
 jet veto cuts. The syntax is identical to option @option{FastjetFinder}.
+
+If @uref{http://www.fastjet.fr,,FastJet} is enabled, the momenta and nodal 
+values of the jets found with Fastjet can be used to calculate more elaborate 
+selector criteria. The syntax of this selector is
+
+@verbatim
+FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<bmode>]
+@end verbatim
+
+wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
+In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
+values of the jets found and @code{p[i]} are their momenta. For details see
+@ref{Scale setters}. For example, in lepton pair production in 
+association with jets
+
+@verbatim
+FastjetSelector Mass(p[4]+p[5])>100. antikt 2 40. 0. 0.5
+@end verbatim
+
+selects all phase space points where two anti-kt jets with at least 40 GeV of
+transverse momentum and an invariant mass of at least 100 GeV are found. The 
+expression must calculate a boolean value.
+The @code{bmode} parameter, if specified different from its default 0, allows
+to use b-tagged jets only, based on the parton-level constituents of the jets.
+There are two options: With @code{<bmode>=1} both b and anti-b quarks are
+counted equally towards b-jets, while for @code{<bmode>=2} they are added with a
+relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.
 
 @node Universal selector
 @subsection Universal selector
@@ -266,9 +329,10 @@ Examples
 @node Minimum selector
 @subsection Minimum selector
 
-This selector can combine several selectors to pass an event if either those passes the event.
-It is mainly designed to generate more inclusive samples that, for instance, include several
-jet finders and that allows a specification later. The syntax is
+This selector can combine several selectors to pass an event if either 
+those passes the event. It is mainly designed to generate more inclusive 
+samples that, for instance, include several jet finders and that allows 
+a specification later. The syntax is
 
 @verbatim
 MinSelector {
@@ -278,73 +342,6 @@ MinSelector {
 } 
 @end verbatim
 
-@node NLO selectors
-@subsection NLO selectors
+The @ref{Minimum selector} can be used if constructed with other 
+selectors mentioned in this section
 
-Phase-space cuts that are applied on next-to-leading order calculations must be defined in a
-infrared safe way. Technically there is also a special treatment for the real (subtracted) 
-correction required. Currently only the following selectors meet this requirement:
-
-@table @asis
-@item QCD parton cuts
-
-@verbatim
-NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>] [<mass max>]
-@end verbatim
-(see @ref{Jet finders})
-
-@item Cuts on not strongly interacting particles
-
-@ref{One particle selectors}
-@verbatim
-PTNLO <flavour code> <min value> <max value>
-RapidityNLO <flavour code> <min value> <max value>
-PseudoRapidityNLO <flavour code> <min value> <max value>
-@end verbatim
-
-@ref{Two particle selectors}
-@verbatim
-PT2NLO <flavour1 code> <flavour2 code> <min value> <max value>
-Mass <flavour1 code> <flavour2 code> <min value> <max value>
-@end verbatim
-
-@item Cuts on photons
-
-@verbatim
-IsolationCut 22 <dR> <exponent> <epsilon>
-@end verbatim
-implements the Frixione isolation cone @mycite{Frixione1998jh}.
-
-@item The @ref{Minimum selector} can be used if constructed with other selectors mentioned in this section
-
-@end table
-
-@node Fastjet selector
-@subsection Fastjet selector
-
-If @uref{http://www.fastjet.fr,,FastJet} is enabled, the momenta and nodal 
-values of the jets found with Fastjet can be used to calculate more elaborate 
-selector criteria. The syntax of this selector is
-
-@verbatim
-FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<bmode>]
-@end verbatim
-
-wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
-In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
-values of the jets found and @code{p[i]} are their momenta. For details see
-@ref{Scale setters}. For example, in lepton pair production in 
-association with jets
-
-@verbatim
-FastjetSelector Mass(p[4]+p[5])>100. antikt 2 40. 0. 0.5
-@end verbatim
-
-selects all phase space points where two anti-kt jets with at least 40 GeV of
-transverse momentum and an invariant mass of at least 100 GeV are found. The 
-expression must calculate a boolean value.
-The @code{bmode} parameter, if specified different from its default 0, allows
-to use b-tagged jets only, based on the parton-level constituents of the jets.
-There are two options: With @code{<bmode>=1} both b and anti-b quarks are
-counted equally towards b-jets, while for @code{<bmode>=2} they are added with a
-relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.

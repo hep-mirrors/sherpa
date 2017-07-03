@@ -34,8 +34,9 @@ using namespace std;
 
 Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi,
                                            BEAM::Beam_Spectra_Handler *const beam,
-                                           PDF::ISR_Handler *const isr) :  
-  Single_LOProcess(pi, beam, isr)
+                                           PDF::ISR_Handler *const isr,
+                                           const ATOOLS::sbt::subtype& st) :
+  Single_LOProcess(pi, beam, isr, st)
 {
   m_ownamps = false;
   m_emitgluon = false;
@@ -71,9 +72,15 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   model->p_model->GetCouplings(m_cpls);
   
-  m_partonlist.clear();
-  for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
-  for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
+  m_partonlistqcd.clear();
+  m_partonlistqed.clear();
+  if (m_stype&sbt::qcd) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (m_flavs[i].Strong()) m_partonlistqcd.push_back(i);
+    }
+  }
+  if (m_stype&sbt::qed) THROW(fatal_error,"MHV cannot cope with EW.");
+  msg_Debugging()<<"QCD parton list: "<<m_partonlistqcd<<std::endl;
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -103,6 +110,10 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
   m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<"Single_LOProcess::InitAmplitude : No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
     return 0;
   }
   map<string,Complex> cplmap;
@@ -219,6 +230,10 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
   m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<"Single_LOProcess::InitAmplitude : No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
     return 0;
   }
 
@@ -445,7 +460,10 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
 
 
 void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				      const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
+                                      const ATOOLS::Vec4D *mom,
+                                      std::vector<std::vector<double> > &dsijqcd,
+                                      std::vector<std::vector<double> > &dsijew,
+                                      const int mode)
 {
   p_int->SetMomenta(labmom);
   p_scale->CalculateScale(labmom,m_cmode);
@@ -455,10 +473,10 @@ void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
   p_momlist->PutMomenta(mom);
 #endif  
 
-  dsij[0][0] =0.;
-  for (size_t i=0;i<m_partonlist.size();i++) {
-    for (size_t k=i+1;k<m_partonlist.size();k++) {
-      dsij[k][i] =0.;
+  dsijqcd[0][0]=0.;
+  for (size_t i=0;i<m_partonlistqcd.size();i++) {
+    for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+      dsijqcd[k][i]=0.;
     }
   }
 
@@ -466,10 +484,10 @@ void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
     if (p_hel->On(i)) {
       double fac = p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i) * p_MHVamp->ParticlesNorm();
       p_MHVamp->CalculateAmps((*p_hel)[i],p_BS);
-      dsij[0][0] += p_MHVamp->MSquare(0,0)*fac;
-      for (size_t i=0;i<m_partonlist.size();i++) {
-	for (size_t k=i+1;k<m_partonlist.size();k++) {
-	  dsij[i][k] = dsij[k][i] += p_MHVamp->MSquare(m_partonlist[i],m_partonlist[k])*fac;
+      dsijqcd[0][0] += p_MHVamp->MSquare(0,0)*fac;
+      for (size_t i=0;i<m_partonlistqcd.size();i++) {
+        for (size_t k=i+1;k<m_partonlistqcd.size();k++) {
+          dsijqcd[i][k] = dsijqcd[k][i] += p_MHVamp->MSquare(m_partonlistqcd[i],m_partonlistqcd[k])*fac;
 	}
       }
     }

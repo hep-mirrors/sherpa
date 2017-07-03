@@ -61,8 +61,7 @@ Complex MHVCalculator::Differential(int* perm, int* sg)
   if ((nh<2 || ph<2) && (n_part!=3 || nh==0 || ph ==0)) return 0.;
   
   if (Min(nh,ph)>4) {
-    std::cout<<"Error in MHVCalculator::Differential: Amplitude not implemented!"<<std::endl;
-    abort();
+    THROW(not_implemented,"Amplitude not implemented!");
   }
 
  
@@ -84,17 +83,12 @@ Complex MHVCalculator::Differential(int* perm, int* sg)
  
   int qlist[9];
   Make_Qlist(perm,m_plist,qlist,n_part);
-  
-  if (m_qlist[0]==1 || m_qlist[0]==3) {
-    std::cout<<"Error in MHVCalculator::Differential: Odd number of quarks"<<std::endl;
-    abort();
-  }
-  if (!Check_Qlist(perm,m_signlist,qlist)) {
+
+  if (m_qlist[0]==1 || m_qlist[0]==3)
+    THROW(fatal_error,"Odd number of quarks.");
+  if (!Check_Qlist(perm,m_signlist,qlist))
     return 0;
-    //std::cout<<"Error in MHVCalculator::Differential: Wrong flavors or helicities for quarks"<<std::endl;
-    //abort();
-  }
-    
+
   if (m_qlist[0]==2) {
     if (nh==2)  return Elementary_MHVQ2_Amplitude(perm,m_signlist,qlist,n_part);
     if (ph==2)  return Elementary_MHVQ2bar_Amplitude(perm,m_signlist,qlist,n_part);
@@ -127,29 +121,24 @@ Complex MHVCalculator::Differential(int* perm, int* sg)
 
 void MHVCalculator::Make_Qlist(int* perm,int* plist,int* qlist,int part) 
 { 
-    int nq=0;
-    int qpos[4];
-    for (int i=0;i<part;i++) {
-	if ( !(plist[perm[i]]/20)  && (plist[perm[i]]!=0)) {
-	    nq++;
-	    qlist[nq]=i;	    
-	    qpos[nq-1]=plist[perm[i]];
-	}
-	else  {
-	    if ((plist[perm[i]]-21)*(plist[perm[i]]+21)*(plist[perm[i]]-25)*(plist[perm[i]]+25))  {
-		std::cout<<"Error in MHVCalculator::Make_Qlist: Amplitude not implemented!"<<std::endl;
-		abort();  
-	    }
-	} 
-	if (nq>4) {
-	    std::cout<<"Error in MHVCalculator::Make_Qlist: Too many quarks"<<std::endl;
-	    abort();
-	}
+  int nq=0;
+  int qpos[4];
+  for (int i=0;i<part;i++) {
+    if ( !(plist[perm[i]]/20)  && (plist[perm[i]]!=0)) {
+      nq++;
+      qlist[nq]=i;
+      qpos[nq-1]=plist[perm[i]];
     }
-    qlist[0]=nq; 
-    if (nq<3) for (int i=0;i<nq;i++) qlist[i+3]=qpos[i];
-    else if (nq<5) for (int i=0;i<nq;i++) qlist[i+5]=qpos[i];
-    return;
+    else  {
+      if ((plist[perm[i]]-21)*(plist[perm[i]]+21)*(plist[perm[i]]-25)*(plist[perm[i]]+25))
+        THROW(fatal_error,"Amplitude not implemented!");
+    }
+    if (nq>4) THROW(fatal_error,"Too many quarks.");
+  }
+  qlist[0]=nq;
+  if (nq<3) for (int i=0;i<nq;i++) qlist[i+3]=qpos[i];
+  else if (nq<5) for (int i=0;i<nq;i++) qlist[i+5]=qpos[i];
+  return;
 }
 
 

@@ -29,20 +29,28 @@ using namespace std;
 
   ------------------------------------------------------------------------------- */
 
-Single_Real_Correction::Single_Real_Correction() :   
-  m_ossubon(0), p_partner(this), p_tree_process(NULL)
+Single_Real_Correction::Single_Real_Correction() :
+  m_newlib(false), m_no_tree(false), m_listdips(false),
+  m_iresult(0.), m_smear_threshold(0.), m_smear_power(0.),
+  m_libnumb(0), m_ossubon(0),
+  m_pspisrecscheme(0), m_pspfsrecscheme(0),
+  p_partner(this), p_tree_process(NULL)
 {
-  m_Norm = 1.;  
+  DEBUG_FUNC("");
+  m_Norm = 1.;
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
-  rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
+    rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
-  m_ossubon = ToType<int>(rpa->gen.Variable("OS_SUB"));
+  m_ossubon = ToType<size_t>(rpa->gen.Variable("OS_SUB"));
   m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
   m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
-  m_no_tree=false;
+
+  m_listdips=ToType<size_t>(rpa->gen.Variable("LIST_DIPOLES"));
+  m_pspisrecscheme=ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_RECOIL_SCHEME"));
+  m_pspfsrecscheme=ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_RECOIL_SCHEME"));
 }
 
 
@@ -72,12 +80,11 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
 					vector<Process_Base *> & errs)
 {
+  DEBUG_FUNC(m_name);
   Init();
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
 
-  m_valid    = true;
   m_newlib   = false;
-//   m_name+= "_REAL";
   if (m_pinfo.m_amegicmhv>0) {
     if (m_pinfo.m_amegicmhv==10 || m_pinfo.m_amegicmhv==12) {
       p_tree_process = new Single_Process_External();
@@ -93,11 +100,12 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   int status;
 
   Process_Info rinfo(m_pinfo);
-  rinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::rsub;
-  rinfo.m_fi.m_nloewtype&=(nlo_type::code)~nlo_type::rsub;
+  rinfo.m_fi.m_nlotype=nlo_type::real;
   p_tree_process->PHASIC::Process_Base::Init(rinfo,p_int->Beam(),p_int->ISR());
   p_tree_process->SetTestMoms(p_testmoms);
+  p_tree_process->SetPrintGraphs(rinfo.m_gpath);
 
+  // build tree process
   if (m_no_tree) {
     p_tree_process->Init();
     if (dynamic_cast<AMEGIC::Single_Process*>(p_tree_process))
@@ -107,28 +115,28 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     status=1;
   }
   else {
-  status = p_tree_process->InitAmplitude(model,top,links,errs);
+    status = p_tree_process->InitAmplitude(model,top,links,errs);
 
-  m_maxcpl=p_tree_process->MaxOrders();
-  m_mincpl=p_tree_process->MinOrders();
-  if (p_tree_process->Partner()->NewLibs()) m_newlib = 1;
+    m_maxcpl=p_tree_process->MaxOrders();
+    m_mincpl=p_tree_process->MinOrders();
+    if (p_tree_process->Partner()->NewLibs()) m_newlib = 1;
 
-  m_iresult=p_tree_process->Result();
-  if (status==0) {
-    return status;
-  }
+    m_iresult=p_tree_process->Result();
+    if (status==0) {
+      return status;
+    }
 
-  if (p_tree_process!=p_tree_process->Partner()) {
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (FlavCompare(links[j])) {
-	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "
-		      <<links[j]->Name()<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
-	p_mapproc = p_partner = (Single_Real_Correction*)links[j];
-	m_sfactor = p_tree_process->GetSFactor();
-	// return 1;
+    if (p_tree_process!=p_tree_process->Partner()) {
+      for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+        if (FlavCompare(links[j])) {
+          msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "
+                        <<links[j]->Name()<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
+          p_mapproc = p_partner = (Single_Real_Correction*)links[j];
+          m_sfactor = p_tree_process->GetSFactor();
+          // return 1;
+        }
       }
     }
-  }
   }
 
   m_real_momenta.resize(m_nin+m_nout);
@@ -138,7 +146,9 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_realevt.p_dec  = &m_decins;
 
   m_realevt.p_mom  = &m_real_momenta.front();
-  m_realevt.m_i = m_realevt.m_j = m_realevt.m_k = 0;
+  m_realevt.m_i    = m_realevt.m_j = m_realevt.m_k = 0;
+  m_realevt.m_oqcd = p_tree_process->MaxOrder(0);
+  m_realevt.m_oew  = p_tree_process->MaxOrder(1);
 
   m_sids.resize(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) m_sids[i]=1<<i;
@@ -149,40 +159,106 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_realevt.p_real = &m_realevt;
 
   Process_Info cinfo(m_pinfo);
-  cinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::real;
-  cinfo.m_fi.m_nloewtype&=(nlo_type::code)~nlo_type::real;
-  vector<int> partlist;
-  for (size_t i=0;i<m_nin+m_nout;i++) {
-    if (m_flavs[i].Strong()) partlist.push_back(i);
-  }
-  for (size_t i=0;i<partlist.size();i++) {
-    for (size_t j=i+1;j<partlist.size();j++) {
-      for (size_t k=0;k<partlist.size();k++) if (k!=i&&k!=j&&i!=j) {
-	Single_DipoleTerm *pdummy = new Single_DipoleTerm(cinfo,partlist[i],partlist[j],partlist[k],p_int);
-	if (pdummy->IsValid()) {
-          pdummy->SetTestMoms(p_testmoms);
-          int st=pdummy->InitAmplitude(model,top,links,errs);
+  cinfo.m_fi.m_nlotype=nlo_type::rsub;
+  size_t nPFFsplittings(0);
+  for (size_t i=0;i<m_flavs.size();i++) {
+    for (size_t j=i+1;j<m_flavs.size();j++) {
+      for (size_t k=0;k<m_flavs.size();k++) if (k!=i&&k!=j&&i!=j) {
+        if (j<m_nin) continue;
+        std::vector<sbt::subtype> stypes;
+        bool isPFFsplitting(false);
+        if (cinfo.m_maxcpl[0]>=1.) {
+          if (m_flavs[i].IsQCD() && m_flavs[j].IsQCD() && m_flavs[k].IsQCD()) {
+            stypes.push_back(sbt::qcd);
+          }
+        }
+        else msg_Debugging()<<"No QCD subtraction possible."<<std::endl;
+        if (cinfo.m_maxcpl[1]>=1.) {
+          if (m_flavs[i].IsPhoton() && m_flavs[j].Charge() &&
+              m_flavs[k].Charge()) {
+            stypes.push_back(sbt::qed);
+          }
+          else if (m_flavs[i].Charge() && m_flavs[j].IsPhoton() &&
+              m_flavs[k].Charge()) {
+            stypes.push_back(sbt::qed);
+          }
+          else if (i<m_nin &&
+                   m_flavs[i].Charge() && m_flavs[j].Charge() &&
+                   m_flavs[i]==m_flavs[j] && AllowAsSpecInISPFF(k)) {
+            stypes.push_back(sbt::qed);
+            isPFFsplitting=true;
+          }
+          else if (i>=m_nin &&
+                   m_flavs[i].Charge() && m_flavs[j].Charge() &&
+                   m_flavs[i]==m_flavs[j].Bar() && AllowAsSpecInFSPFF(k)) {
+            stypes.push_back(sbt::qed);
+            isPFFsplitting=true;
+          }
+        }
+        else msg_Debugging()<<"No QED subtraction possible."<<std::endl;
+        std::string ststr("");
+        for (size_t s(0);s<stypes.size();++s) {
+          ststr+=ToString(stypes[s])+" ";
+        }
+        msg_Debugging()<<"[("<<i<<","<<j<<");"<<k<<"] : "
+                       <<(Combinable(1<<i,1<<j)?"":"not ")<<"combinable"
+                       <<", types: "<<ststr<<std::endl;
+        for (size_t s(0);s<stypes.size();++s) {
+          Single_DipoleTerm *pdummy
+            = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],p_int);
+          msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("
+                         <<stypes[s]<<") -> "
+                         <<(pdummy->IsValid()?"":"in")<<"valid";
           if (pdummy->IsValid()) {
-            status=Min(st,status);
-            if (pdummy->Partner()->NewLibs()) m_newlib = 1;
-            m_subtermlist.push_back(pdummy);
-            m_subtermlist.back()->SetNorm(p_tree_process->Norm());
-	    m_subtermlist.back()->SetSmearThreshold(m_smear_threshold);
+            pdummy->SetTestMoms(p_testmoms);
+            pdummy->SetNPhotonSplittings(1); // TODO: fix me
+            int st=pdummy->InitAmplitude(model,top,links,errs);
+            if (!pdummy->IsValid()) msg_Debugging()<<" -> invalid";
+            if (pdummy->IsValid()) {
+              status=Min(st,status);
+              if (pdummy->Partner()->NewLibs()) m_newlib = 1;
+              m_subtermlist.push_back(pdummy);
+              m_subtermlist.back()->SetNorm(p_tree_process->Norm());
+              m_subtermlist.back()->SetSmearThreshold(m_smear_threshold);
+              if (isPFFsplitting) nPFFsplittings++;
+            }
+            else delete pdummy;
           }
           else delete pdummy;
-	}
-	else delete pdummy;
+          msg_Debugging()<<"\n";
+        }
+        msg_Debugging()<<"---------------------------------------------\n";
       }
     }
   }
-  if (m_ossubon){
+  if (nPFFsplittings)
+    for (size_t i(0);i<m_subtermlist.size();++i)
+      m_subtermlist[i]->SetNPhotonSplittings(nPFFsplittings);
+  for (size_t i(0);i<m_subtermlist.size();++i)
+    m_subtermlist[i]->SetChargeFactors();
+  if (m_listdips || msg_LevelIsTracking()) {
+    msg_Out()<<m_name<<" @ O"<<m_maxcpl<<": "<<m_subtermlist.size()<<" dipoles:\n";
+    if (m_listdips || msg_LevelIsDebugging()) {
+      for (size_t i(0);i<m_subtermlist.size();++i) {
+        Single_DipoleTerm * dt(m_subtermlist[i]);
+        msg_Out()<<"  "<<dt->Name()<<":  "
+                 <<dt->GetLOProcess()->Flavours()
+                 <<" @ O"<<dt->GetLOProcess()->MaxOrders()<<" "
+                 <<dt->GetSubtractionType()
+                 <<"[("<<dt->Li()<<","<<dt->Lj()<<");"<<dt->Lk()<<"] "
+                 <<dt->GetDipoleType()
+                 <<"[("<<dt->Flavours()[dt->Li()]<<","<<dt->Flavours()[dt->Lj()]
+                 <<");"<<dt->Flavours()[dt->Lk()]<<"]"<<std::endl;
+      }
+    }
+  }
+  if (m_ossubon) {
     Process_Info sinfo(m_pinfo);
-    sinfo.m_fi.m_nloqcdtype=nlo_type::lo;
-    sinfo.m_fi.m_nloewtype=nlo_type::lo;
+    sinfo.m_fi.m_nlotype=nlo_type::lo;
     for (size_t i=0;i<m_flavs.size();i++) if (IsSusy(m_flavs[i])){
-      for (size_t j=0;j<partlist.size();j++) if (i!=partlist[j]) {
+      for (size_t j=0;j<m_flavs.size();j++) if (i!=j) {
         for (size_t swit=0;swit<5;swit++) {
-  	  Single_OSTerm *pdummy = new Single_OSTerm(sinfo,i,partlist[j],swit,p_int);
+          Single_OSTerm *pdummy = new Single_OSTerm(sinfo,i,j,swit,p_int);
 	  if (pdummy->IsValid()) {
             pdummy->SetTestMoms(p_testmoms);
             int st=pdummy->InitAmplitude(model,top,links,errs);
@@ -224,7 +300,7 @@ bool AMEGIC::Single_Real_Correction::FillIntegrator
 {
   if (p_partner!=this) return true;
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
-  if (m_pinfo.m_nlomode==2) return true;
+  if (m_pinfo.m_nlomode==nlo_mode::powheg) return true;
   return p_tree_process->FillIntegrator(psh);
 }
 
@@ -282,8 +358,8 @@ void Single_Real_Correction::Minimize()
     }
   m_subevtlist.push_back(new NLO_subevt(p_partner->m_realevt));
   ReMapFlavs(m_subevtlist.back(),1);
-    for (size_t i=0;i<m_subtermlist.size();++i)
-      m_subevtlist[i]->p_proc=m_subtermlist[i];
+  for (size_t i=0;i<m_subtermlist.size();++i)
+    m_subevtlist[i]->p_proc=m_subtermlist[i];
   m_subevtlist.back()->p_proc=this;
   for (size_t i=0;i<m_subevtlist.size();++i)
     m_subevtlist[i]->p_real=m_subevtlist.back();
@@ -320,9 +396,9 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
 {
+  DEBUG_FUNC("mode="<<mode);
   if (mode==1) return m_lastxs;
   m_lastxs = 0.;
-    // So far only massless partons!!!!
 
   // fill m_subevtlist
   if (p_partner == this) m_lastdxs = operator()(moms,mode);
@@ -348,12 +424,13 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     }
     m_subevtlist.Mult(m_sfactor);
   }
-  DEBUG_VAR(m_lastdxs);
+  msg_Debugging()<<"RS="<<m_lastdxs<<std::endl;
   return m_lastxs=m_lastdxs;
 }
 
 double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const int mode)
 {
+  DEBUG_FUNC("");
   m_subevtlist.clear();
   p_tree_process->Integrator()->SetMomenta(_mom);
   for (size_t i=0; i<m_real_momenta.size(); ++i) m_real_momenta[i]=_mom[i];
@@ -361,17 +438,19 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   Vec4D_Vector mom(_mom);
   Poincare cms;
 
-  bool res=true;
-  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
+  bool res(true);
+  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()) {
     m_subtermlist[i]->Integrator()->SetMomenta(_mom);
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
     if (IsBad(test)) res=false;
     m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
+    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(0);
+    m_subevtlist.back()->m_oew = m_subtermlist[i]->MaxOrder(1);
     m_subevtlist.back()->p_real=&m_realevt;
   }
 
-  if (m_ossubon){
-    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()){
+  if (m_ossubon) {
+    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()) {
       double test = (*m_subostermlist[i])(&mom.front(),cms,mode|2);
       if (IsBad(test)) res=false;
       m_subevtlist.push_back(m_subostermlist[i]->GetSubevt());
@@ -384,59 +463,64 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   m_realevt.m_trig = false;
   m_realevt.m_K = 1.0;
 
-  bool trg(false);
+  bool realtrg(false);
 
-  if (!m_no_tree)
-  if (res) {
-  p_tree_process->ScaleSetter()->SetCaller(p_tree_process);
-  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
-  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
-  m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
+  if (!m_no_tree) {
+    if (res) {
+      p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
+      m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
+      m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
+      m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
+    }
   }
   if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
   m_realevt.p_ampl=NULL;
-  if (!m_no_tree)
-  if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
-      p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
-    m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
-    m_realevt.p_ampl->SetProc(this);
+  if (!m_no_tree) {
+    if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
+        p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
+      m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
+      m_realevt.p_ampl->SetProc(this);
+    }
+    realtrg=p_tree_process->Selector()->Trigger(_mom);
   }
-  if (!m_no_tree)
-  trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
-  trg|=!p_tree_process->Selector()->On();
-  m_realevt.m_trig=trg;
+  realtrg|=!p_tree_process->Selector()->On();
+  m_realevt.m_trig=realtrg;
   if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
-  if (!m_no_tree)
-  if (res && trg) {
-    double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
-    m_realevt.m_me += real;
-    m_realevt.m_mewgt += real;
-    m_realevt.m_K = p_tree_process->LastK();
-    if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
+  if (!m_no_tree) {
+    if (res && realtrg) {
+      double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
+      m_realevt.m_me += real;
+      m_realevt.m_mewgt += real;
+      m_realevt.m_K = p_tree_process->LastK();
+      if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
+    }
   }
   for (size_t i(0);i<m_subevtlist.size();++i) {
-    if (m_subevtlist[i]->m_trig==false || !res)
+    if (!m_subevtlist[i]->m_trig || !res)
       m_subevtlist[i]->m_me=m_subevtlist[i]->m_mewgt=0.0;
   }
 
   m_lastdxs = m_realevt.m_me;
 
   if (msg_LevelIsDebugging()) {
+    DEBUG_FUNC(Name());
+    size_t prec(msg->Precision());
     msg->SetPrecision(16);
-    msg_Out() << "// Single_Real_Correction for " << Name() << endl;
-    msg_Out() << "std::vector<Vec4D> p(" << mom.size() << ");" << endl;
-    for (size_t k=0;k<mom.size();++k) {
-      msg_Out() << "p[" << k << "] = Vec4D" << mom[k] << "; // " << m_flavs[k] << endl;
+    for (size_t k(0);k<mom.size();++k) {
+      msg_Out()<<std::setw(4)<<m_flavs[k]<<": p["<<k<<"] = "<<mom[k]<<std::endl;
     }
-    msg_Out() << "double realme = " << m_realevt.m_me << ";" << endl;
-    msg_Out() << "std::vector<double> dipoles(" << m_subtermlist.size() << ");" << endl;
+    msg_Out()<<"dipoles (i,j;k):"<<std::endl;
     for (size_t k=0;k<m_subtermlist.size();++k) {
-      msg_Out() << "dipoles[" << k << "] = " << m_subevtlist[k]->m_me << "; // ("
-                << m_flavs[m_subtermlist[k]->Li()] << ", "
-                << m_flavs[m_subtermlist[k]->Lj()] << "; "
-                << m_flavs[m_subtermlist[k]->Lk()] << ")" << endl;
+      msg_Out()<<std::setw(4)<<k<<" ("
+               <<std::setw(2)<<m_flavs[m_subtermlist[k]->Li()]<<", "
+               <<std::setw(2)<<m_flavs[m_subtermlist[k]->Lj()]<<"; "
+               <<std::setw(2)<<m_flavs[m_subtermlist[k]->Lk()]<<")"
+               <<", alpha="<<m_subevtlist[k]->m_alpha
+               <<", me="<<m_subevtlist[k]->m_me<<std::endl;
     }
-    msg->SetPrecision(6);
+    msg_Out()<<"real:                                        "
+             <<"me="<<m_realevt.m_me<<std::endl;
+    msg->SetPrecision(prec);
   }
 
   return m_lastdxs;
@@ -450,9 +534,7 @@ void Single_Real_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& am
 
 bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
-//   if (p_tree_process->IsMapped() && p_tree_process->LookUp())
-//     return p_tree_process->Selector()->Result();
-  return p_tree_process->Selector()->NoJetTrigger(p);
+  return true;
 }
 
 size_t Single_Real_Correction::SetMCMode(const size_t mcmode)
@@ -507,7 +589,7 @@ Point * Single_Real_Correction::Diagram(int i) {
 
 void Single_Real_Correction::AddChannels(std::list<std::string>* list) 
 { 
-  if (m_pinfo.m_nlomode==2) {
+  if (m_pinfo.m_nlomode==nlo_mode::powheg) {
     for (size_t i(0);i<m_subtermlist.size();++i)
       m_subtermlist[i]->AddChannels(list);
   }
@@ -655,4 +737,56 @@ void Single_Real_Correction::SmearCounterEvents(NLO_subevtlist& subevtlist)
     }
   }
   DEBUG_VAR(m_realevt.m_me);
+}
+
+bool Single_Real_Correction::AllowAsSpecInISPFF(const size_t &k)
+{
+  switch (m_pspisrecscheme) {
+  case 0:
+    if (k<m_nin) return true;
+    break;
+  case 1:
+    if (k>=m_nin) return true;
+    break;
+  case 2:
+    if (m_flavs[k].Charge()) return true;
+    break;
+  case 3:
+    if (!m_flavs[k].Charge()) return true;
+    break;
+  case 4:
+    return true;
+    break;
+  default:
+    THROW(fatal_error,"Unknown IS P->ff recoil scheme.")
+    break;
+  }
+  msg_Debugging()<<k<<" not allowed as spectator for recombined IS photon."
+                 <<std::endl;
+  return false;
+}
+
+bool Single_Real_Correction::AllowAsSpecInFSPFF(const size_t &k)
+{
+  switch (m_pspfsrecscheme) {
+  case 0:
+    if (k<m_nin) return true;
+    break;
+  case 1:
+    if (k>=m_nin) return true;
+    break;
+  case 2:
+    if (m_flavs[k].Charge()) return true;
+    break;
+  case 3:
+    if (!m_flavs[k].Charge()) return true;
+    break;
+  case 4:
+    return true;
+    break;
+  default:
+    THROW(fatal_error,"Unknown FS P->ff recoil scheme.")
+    break;
+  }
+  return false;
 }

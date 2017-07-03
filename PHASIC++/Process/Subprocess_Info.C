@@ -36,7 +36,7 @@ Subprocess_Info::Subprocess_Info
  const std::string &pol,const std::string &mpl):
   m_fl(fl), m_id(id), m_pol(pol), m_mpl(mpl),
   m_nmax(0), m_nmin(100), m_tag(0), m_osf(0),
-  m_nloqcdtype(nlo_type::lo), m_nloewtype(nlo_type::lo) {}
+  m_nlotype(nlo_type::lo), m_nlocpl(2,0) {}
 
 Subprocess_Info::~Subprocess_Info()
 {
@@ -154,8 +154,7 @@ bool Subprocess_Info::AddDecay
     if (m_fl==ii.m_ps.front().m_fl &&
 	m_id==ii.m_ps.front().m_id) {
       m_ps=fi.m_ps;
-      m_nloqcdtype=fi.m_nloqcdtype;
-      m_nloewtype=fi.m_nloewtype;
+      m_nlotype=fi.m_nlotype;
       m_osf=osf;
     }
     return m_ps.size()>0;
@@ -288,33 +287,6 @@ void Subprocess_Info::GetNMax(const Subprocess_Info &ref)
   for (size_t j(0);j<ref.m_ps.size();++j) m_ps[j].GetNMax(ref.m_ps[j]);
 }
 
-nlo_type::code Subprocess_Info::NLOType() const
-{
-  if (m_nloewtype==nlo_type::lo) {
-    return m_nloqcdtype;
-  }
-  else if (m_nloqcdtype==nlo_type::lo) {
-    return m_nloewtype;
-  }
-  else {
-    THROW(fatal_error, "Can't handle NLO EW and NLO QCD in one amplitude.");
-    return nlo_type::lo;
-  }
-}
-
-void Subprocess_Info::SetNLOType(nlo_type::code nlotype)
-{
-  if (m_nloewtype==nlo_type::lo) {
-    m_nloqcdtype=nlotype;
-  }
-  else if (m_nloqcdtype==nlo_type::lo) {
-    m_nloewtype=nlotype;
-  }
-  else {
-    THROW(fatal_error, "Tried to set NLOType for non-NLO amplitude.");
-  }
-}
-
 void Subprocess_Info::SetTags(int& start)
 {
   if (m_ps.size()==0) {
@@ -419,8 +391,8 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   if (m_osf) ostr<<" OS";
   if (m_ps.size()>0) {
     ostr<<" ("<<m_ps.size()<<")";
-    ostr<<", NLO{"<<m_nloqcdtype<<","<<m_nloewtype<<"}";
-    if (m_nmax>0) ostr<<"{"<<m_nmin<<","<<m_nmax<<"}";
+    ostr<<", NLO{"<<m_nlotype<<"} "<<m_nlocpl;
+    if (m_nmax>0) ostr<<" {"<<m_nmin<<","<<m_nmax<<"}";
     ostr <<": {\n";
     for (size_t i(0);i<m_ps.size();++i) m_ps[i].Print(ostr,ni+2);
     ostr<<std::string(ni,' ')<<"}";
@@ -428,26 +400,3 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   ostr<<"\n";
 }
 
-std::ostream &PHASIC::operator<<(std::ostream &str,const nlo_type::code &c) 
-{
-  std::string out="";
-  if (c&nlo_type::born) out+="B";
-  if (c&nlo_type::loop) out+="V";
-  if (c&nlo_type::vsub) out+="I";
-  if (c&nlo_type::real) out+="R";
-  if (c&nlo_type::rsub) out+="S";
-  return str<<out;
-}
-
-std::istream &PHASIC::operator>>(std::istream &str,nlo_type::code &c) 
-{
-  std::string tag;
-  str>>tag;
-  c=nlo_type::lo;
-  if (tag.find('B')!=std::string::npos) c|=nlo_type::born;
-  if (tag.find('V')!=std::string::npos) c|=nlo_type::loop;
-  if (tag.find('I')!=std::string::npos) c|=nlo_type::vsub;
-  if (tag.find('R')!=std::string::npos) c|=nlo_type::real;
-  if (tag.find('S')!=std::string::npos) c|=nlo_type::rsub;
-  return str;
-}

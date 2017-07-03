@@ -17,7 +17,7 @@ namespace MODEL {
 
   protected:
 
-    std::string m_type; 
+    std::string m_type;
 
     int m_partarg[4], m_permcount;
 
@@ -65,6 +65,7 @@ namespace MODEL {
 
   typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
 
+  std::ostream &operator<<(std::ostream &str,const Lorentz_Function &lf);
   class LF_Pol: public Lorentz_Function {
   public:
     LF_Pol();
@@ -75,6 +76,7 @@ namespace MODEL {
     static Lorentz_Function *New();
     void Delete();
   };
+
 
  /*! 
     \file

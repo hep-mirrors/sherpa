@@ -28,6 +28,8 @@ namespace SHERPA {
     Resonance_Finder        * p_clusterer;
     Matrix_Element_Handler  * p_mehandler;
 
+    void BoostDecayBlob(ATOOLS::Blob * blob);
+    bool CheckOnshellness(ATOOLS::Blob * blob);
   public :
     // constructor
     Soft_Photon_Handler(std::string path, std::string datfile,

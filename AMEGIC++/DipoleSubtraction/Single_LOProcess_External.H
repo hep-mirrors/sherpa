@@ -12,7 +12,7 @@ namespace AMEGIC {
 
     std::vector<ATOOLS::Vec4D>* p_epol;
 
-    FullAmplitude_External    * p_MHVamp;
+    FullAmplitude_External    * p_extamp;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -21,8 +21,9 @@ namespace AMEGIC {
   public:
 
    Single_LOProcess_External(const PHASIC::Process_Info &pi,
-                        BEAM::Beam_Spectra_Handler *const beam,
-                        PDF::ISR_Handler *const isr);
+                             BEAM::Beam_Spectra_Handler *const beam,
+                             PDF::ISR_Handler *const isr,
+                             const ATOOLS::sbt::subtype& st);
     ~Single_LOProcess_External();
 
 
@@ -50,8 +51,11 @@ namespace AMEGIC {
   public:
     double  operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
 		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
-    void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
-		       std::vector<std::vector<double> > &dsij,const int);
+    void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,
+                       const ATOOLS::Vec4D *,
+                       std::vector<std::vector<double> > &,
+                       std::vector<std::vector<double> > &,
+                       const int);
     int NumberOfDiagrams();
   };
 }

@@ -4,17 +4,20 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "MODEL/Main/Model_Base.H"
 
 namespace PHASIC {
 
   class Virtual_ME2_Base {
   protected:
+    std::string m_name;
     const Process_Info& m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
+    ATOOLS::sbt::subtype m_stype;
     METOOLS::DivArrD m_res;
     double m_born, m_norm;
-    double m_mur2;
+    double m_mur2, m_accu;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
   public:
@@ -29,12 +32,14 @@ namespace PHASIC {
 
     virtual double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     virtual double ScaleDependenceCoefficient(const int i);
+    virtual bool   IsMappableTo(const Process_Info& pi);
 
     inline double ME_Finite() { return m_res.GetFinite(); }
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
 
+    inline void SetSubType(const ATOOLS::sbt::subtype& st) { m_stype=st; }
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
     inline void SetNorm(const double& norm) { m_norm=norm; }
     void SetCouplings(const MODEL::Coupling_Map& cpls);
@@ -45,6 +50,8 @@ namespace PHASIC {
     inline int Mode() const    { return m_mode;    }
     inline int DRMode() const  { return m_drmode;  }
     inline int ColMode() const { return m_colmode; }
+
+    inline std::string Name() { return m_name; }
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,

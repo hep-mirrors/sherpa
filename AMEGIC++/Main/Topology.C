@@ -44,21 +44,6 @@ void Topology::Build_All(int N)
   for(int i=1;i<N;i++) Build_Single(i+1,top);
 }
 
-void Topology::Print(Point* p)
-{
-  if (!msg_LevelIsDebugging()) return;
-  if (p==0) {msg_Out()<<"End."<<endl;return;}
-
-  msg_Out()<<"Left - ";
-  Print(p->left);
-  msg_Out()<<"Right - ";  
-  Print(p->right);
-  if (p->middle!=0) { 
-    msg_Out()<<"Middle - ";  
-    Print(p->middle);
-  }
-}
-
 Point* Topology::Copy(Point* po,Point* pc,int& ll)
 {
   pc[ll] = *po;
@@ -110,10 +95,60 @@ void Topology::Build_Single(int nlegs,Single_Topology* t)
 	t[nlegs-1].depth = ll;
 	newnumber++;
       }
-    }	   
+    }
   }
 } 
 
+void Single_Topology::Print(std::ostream & ostr)
+{
+  ostr<<"n="<<number<<", depth="<<depth<<std::endl;
+  for (size_t i=0;i<number;++i) {
+    ostr<<"Diagram "<<i<<":  "<<std::endl;
+    size_t indent(0);
+    Print(p[i],ostr,indent);
+  }
+}
+
+void Single_Topology::Print(Point* p,std::ostream & ostr,size_t & indent)
+{
+  if (!p) { ostr<<"End."<<endl; return; }
+
+  size_t indentL(indent), indentR(indent), indentM(indent);
+  ostr<<"Left - ";
+  Print(p->left,ostr,indent);
+  indent+=7;
+  std::string fill(indent,' ');
+  ostr<<fill<<"Right - ";
+  Print(p->right,ostr,indentR);
+  if (p->middle!=0) {
+    ostr<<fill<<"Middle - ";
+    Print(p->middle,ostr,indentM);
+  }
+}
+
+void Topology::Print(std::ostream & ostr)
+{
+  ostr<<"Topologies:"<<std::endl;
+  for (size_t i(0);i<NTop();++i) Print(i,ostr);
+}
+
+void Topology::Print(int n,std::ostream & ostr)
+{
+  ostr<<"n="<<n<<std::endl;
+  Print(n,ostr);
+}
+
+std::ostream & AMEGIC::operator<<(std::ostream &s,Single_Topology &stop)
+{
+  stop.Print(s);
+  return s;
+}
+
+std::ostream & AMEGIC::operator<<(std::ostream &s,Topology &top)
+{
+  top.Print(s);
+  return s;
+}
 
 
 

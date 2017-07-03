@@ -191,8 +191,8 @@ void Process_Integrator::InitWeightHistogram()
 
   double av(dabs(TotalResult()));
   if (!(av>0.)) {
-    msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
-		       <<"No valid result: "<<av<<std::endl;
+    msg_Error()<<METHOD<<"(): "<<p_proc->Name()
+               <<" : no valid result: "<<av<<std::endl;
     return;
   }
   if (av<.3) av/=10.;

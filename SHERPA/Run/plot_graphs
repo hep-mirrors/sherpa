@@ -1,0 +1,125 @@
+#! /usr/bin/env python
+
+import sys,os,subprocess
+
+def printhelp():
+    print "usage: %s <graphs-paths>" % (sys.argv[0])
+
+def plot(htmlfile):
+    texfiles  = []
+    directory = os.getcwd()[os.getcwd().rfind("/")+1:]
+    for f in os.listdir(os.getcwd()):
+	if f.endswith(".tex"):
+	    texfiles.append(f.replace(".tex",""))
+    if not texfiles:
+        return
+    htmlfile.print_tablehead(directory)
+    cleanup(1)
+    for i in texfiles:
+        ngraphs=numberofgraphs(i)
+        ie=escapecharacters(i)
+        print "plotting",i,"with",ngraphs,"graphs"
+        subprocess.check_output("latex "+ie+".tex",shell=True)
+        subprocess.check_output("mpost "+ie+"_fg.mp",shell=True)
+        subprocess.check_output("latex "+ie+".tex",shell=True)
+        subprocess.check_output("dvips "+ie+".dvi",shell=True)
+        subprocess.check_output("ps2pdf "+ie+".ps",shell=True)
+        #subprocess.check_output("ghostscript -dBATCH -dNOPAUSE -sDEVICE=png16m -r96-dUseCropBox  -sOutputFile="+ie+"-%04d.png "+ie+".pdf",shell=True)
+        subprocess.check_output("convert -trim "+ie+".pdf"+" "+ie+"-%04d.png",shell=True)
+        pngfiles = []
+	for f in os.listdir(os.getcwd()):
+	    if f.startswith(i) and f.endswith(".png"):
+		pngfiles.append(f)
+	pngfiles.sort(key=str.lower)
+        htmlfile.print_entry(directory,i,ngraphs,pngfiles)
+    cleanup(0)
+    htmlfile.print_tablefoot()
+
+def sub(subdir,htmlfile):
+    os.chdir(subdir)
+    plot(htmlfile)
+    for i in os.listdir(os.getcwd()):
+        if os.path.isdir(i):
+	    print "plotting in subdir",i
+	    sub(i,htmlfile)
+    os.chdir("..")
+
+def escapecharacters(i):
+    i=i.replace('(','\(')
+    i=i.replace(')','\)')
+    i=i.replace('[','\[')
+    i=i.replace(']','\]')
+    return i
+
+def numberofgraphs(name):
+    texfile = file(name+".tex")
+    for line in texfile:
+	if 'Graph' in line:
+	    n=line[line.find('Graph')+6:]
+	    n=n[:n.find('$')]
+	    n=n[:n.find('\\')]
+    return int(n)
+
+def cleanup(mode):
+    filetypes = [".log",".aux",".dvi",".mp"]
+    rmfgfiles = False
+    if mode==1:
+        filetypes += [".pdf",".ps",".png"]
+        rmfgfiles = True
+    for i in os.listdir(os.getcwd()):
+        if i[i.rfind('.'):] in filetypes or "_fg." in i:
+            os.remove(i)
+
+class HTMLFile:
+    def __init__(self,directory,filename):
+        self.name = directory+"/"+filename
+        self.file = open(self.name,"w")
+
+    def print_header(self):
+        self.file.write('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n')
+        self.file.write('<html>\n')
+        self.file.write('  <body>\n')
+
+    def print_tablehead(self,directory):
+        self.file.write('    <h2>Contents of directory '+directory+'</h2>\n')
+        self.file.write('        <table border="1">\n')
+        self.file.write('      <tr><td>Process</td><td>Graphs</td></tr>\n')
+
+    def print_entry(self,directory,entry,n,pngfiles):
+        self.file.write('      <tr><td>'+str(n)+' graphs for<br>'+entry+'<br>')
+        self.file.write('<a href='+directory+'/'+entry+'.ps>[ps]</a>')
+        self.file.write('<a href='+directory+'/'+entry+'.pdf>[pdf]</a>')
+        self.file.write('</td><td>\n')
+        for f in pngfiles:
+	    self.file.write('<img src="'+directory+"/"+f+'">\n')
+
+    def print_tablefoot(self):
+        self.file.write('    </table>\n')
+
+    def print_footer(self):
+        self.file.write('  </body>\n')
+        self.file.write('</html>\n')
+        self.file.close()
+
+
+## Execute commands
+
+if len(sys.argv)==1 or sys.argv[1]=="-h" or sys.argv[1]=="--help":
+    printhelp()
+    sys.exit(1)
+
+topdir = os.getcwd()+"/"+sys.argv[1]
+htmlfile = HTMLFile(topdir,"index.html")
+
+print "Rendering graphs in %s" % (topdir)
+
+if not os.path.exists(topdir) and not os.path.isdir(topdir):
+    print "%s is not a directory" % s
+    sys.exit(1)
+
+htmlfile.print_header()
+sub(topdir,htmlfile)
+htmlfile.print_footer()
+
+
+

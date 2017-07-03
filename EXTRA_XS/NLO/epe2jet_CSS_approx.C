@@ -47,8 +47,8 @@ XS_egeqq_CSS_approx::XS_egeqq_CSS_approx
   pico2.m_ii.m_ps[1].m_fl=pico2.m_fi.m_ps[2].m_fl;
   pico1.m_fi.m_ps.erase(pico1.m_fi.m_ps.end()-1);
   pico2.m_fi.m_ps.erase(pico2.m_fi.m_ps.end()-2);
-  pico1.m_fi.m_nloqcdtype=nlo_type::born;
-  pico2.m_fi.m_nloqcdtype=nlo_type::born;
+  pico1.m_fi.m_nlotype=nlo_type::born;
+  pico2.m_fi.m_nlotype=nlo_type::born;
   p_bornme1 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico1));
   p_bornme2 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico2));
   if (!p_bornme1 || !p_bornme2) THROW(fatal_error,"no born me found.");
@@ -169,7 +169,7 @@ XS_eqegq_CSS_approx::XS_eqegq_CSS_approx
   PRINT_INFO("initialising XS_eqegq_CSS_approx2");
   Process_Info pico(pi);
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-2);
-  pico.m_fi.m_nloqcdtype=nlo_type::born;
+  pico.m_fi.m_nlotype=nlo_type::born;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
   m_alphasdef = MODEL::as->Default();

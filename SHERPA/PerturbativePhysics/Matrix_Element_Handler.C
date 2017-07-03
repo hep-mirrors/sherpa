@@ -1,26 +1,28 @@
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Exception.H"
-#include "METOOLS/Main/Spin_Structure.H"
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/RUsage.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
-#include "ATOOLS/Phys/Variations.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#include "PDF/Main/Shower_Base.H"
-#include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PHASIC++/Process/MCatNLO_Process.H"
-#include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Weight_Info.H"
+#include "PDF/Main/NLOMC_Base.H"
+#include "PDF/Main/Shower_Base.H"
+#include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/RUsage.H"
+#include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
@@ -38,10 +40,14 @@ Matrix_Element_Handler::Matrix_Element_Handler
   m_gens(dir, file),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
-  m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
-  m_sum(0.0), m_globalnlomode(0),
-  m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL)
+  m_selectorfile(selectorfile), m_respath("Results"),
+  m_eventmode(0), m_seedmode(0), m_hasnlo(0),
+  m_nloadd(1), m_ewaddmode(0), m_qcdaddmode(0),
+  m_evtinfo(Weight_Info()), p_shower(NULL), p_nlomc(NULL),
+  p_variationweights(NULL),
+  m_sum(0.), m_ovwth(10.), m_weightfactor(1.),
+  m_ranidx(0), m_fosettings(0), m_nlomode(nlo_mode::none),
+  p_ranin(NULL), p_ranout(NULL)
 {
   Default_Reader reader;
   reader.SetInputPath(m_path);
@@ -59,7 +65,9 @@ Matrix_Element_Handler::Matrix_Element_Handler
   rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
   m_ovwth = reader.Get("OVERWEIGHT_THRESHOLD", 1e12);
   m_seedmode = reader.Get("EVENT_SEED_MODE", 0, "seed mode", METHOD);
-  m_rsadd = reader.Get("MEH_RSADD", 1, "RS add mode", METHOD);
+  m_nloadd = reader.Get("MEH_NLOADD", 1, "NLO add mode", METHOD);
+  m_ewaddmode = reader.Get("MEH_EWADDMODE", 1, "EW add mode", METHOD);
+  m_qcdaddmode = reader.Get("MEH_QCDADDMODE", 1, "QCD add mode", METHOD);
   std::string seedfile(reader.Get("EVENT_SEED_FILE",
         "ran.stat."+rpa->gen.Variable("RANDOM_SEED"),
         "seed file", METHOD));
@@ -89,17 +97,6 @@ Matrix_Element_Handler::Matrix_Element_Handler
     msg_Info()<<METHOD<<"(): Set seed increment to "
               <<reader.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
-  std::string nlomodestring("");
-  if (!reader.Read<std::string>(nlomodestring,"NLO_Mode", "")) m_globalnlomode=0;
-  else {
-    if (nlomodestring=="MC@NLO" || nlomodestring=="MENLOPS" ||
-        nlomodestring=="MEPS@NLO") m_globalnlomode=3;
-    else if (nlomodestring=="Fixed_Order") m_globalnlomode=1;
-    else m_globalnlomode=ToType<size_t>(nlomodestring);
-  }
-  msg_Debugging()<<METHOD<<"(): NLO_Mode = "<<m_globalnlomode<<std::endl;
-  if (m_globalnlomode!=0 && m_globalnlomode!=1 && m_globalnlomode !=3)
-    THROW(fatal_error,"Unknown NLO_Mode="+nlomodestring);
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -107,7 +104,7 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
   if (p_ranin) delete p_ranin;
   if (p_ranout) delete p_ranout;
   for (size_t i=0;i<m_pmaps.size();++i) {
-    for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
+    for (std::map<ATOOLS::nlo_type::code,StringProcess_Map*>::const_iterator
 	   pmit(m_pmaps[i]->begin());pmit!=m_pmaps[i]->end();++pmit)
       delete pmit->second;
     delete m_pmaps[i];
@@ -122,7 +119,7 @@ void Matrix_Element_Handler::InitNLOMC()
   Default_Reader reader;
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_file);
-  std::string nlomc((m_globalnlomode&2)?"MC@NLO":"");
+  std::string nlomc((m_nlomode==nlo_mode::mcatnlo)?"MC@NLO":"");
   nlomc+="_"+reader.Get<std::string>("NLOMC_GENERATOR","CSS");
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&reader));
 }
@@ -322,7 +319,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
     return procs;
   }
   else {
-    if (m_globalnlomode==3) {
+    if (m_nlomode==nlo_mode::mcatnlo) {
       m_hasnlo=3;
       if (p_nlomc==NULL) InitNLOMC();
       if (pmap==NULL) {
@@ -339,19 +336,27 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       procs.push_back(proc);
       return procs;
     }
-    else if (m_globalnlomode==1) {
+    else if (m_nlomode==nlo_mode::fixedorder) {
       m_hasnlo=1;
       if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	Process_Info rpi(pi);
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|
 					       nlo_type::born));
+	if (m_nloadd) {
+	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
+	  rpi.m_maxcpl[0]+=rpi.m_fi.m_nlocpl[0];
+	  rpi.m_mincpl[0]+=rpi.m_fi.m_nlocpl[0];
+	  rpi.m_maxcpl[1]+=rpi.m_fi.m_nlocpl[1];
+	  rpi.m_mincpl[1]+=rpi.m_fi.m_nlocpl[1];
+	}
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
 	  THROW(critical_error,"Failed to intialize process");
 	}
       }
-      if (pi.m_fi.NLOType()&nlo_type::real || pi.m_fi.NLOType()&nlo_type::rsub){
+      if (pi.m_fi.NLOType()&nlo_type::real ||
+          pi.m_fi.NLOType()&nlo_type::rsub) {
         // if real or rsub is requested, the extra jet is not yet contained
         // in the process info, but has to be added here
         Process_Info rpi(pi);
@@ -359,13 +364,33 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	rpi.m_integrator=rpi.m_rsintegrator;
 	rpi.m_megenerator=rpi.m_rsmegenerator;
 	rpi.m_itmin=rpi.m_rsitmin;
-	if (m_rsadd) {
-	  if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
-	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
+	if (m_nloadd) {
+	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
+	  rpi.m_maxcpl[0]+=rpi.m_fi.m_nlocpl[0];
+	  rpi.m_mincpl[0]+=rpi.m_fi.m_nlocpl[0];
+	  rpi.m_maxcpl[1]+=rpi.m_fi.m_nlocpl[1];
+	  rpi.m_mincpl[1]+=rpi.m_fi.m_nlocpl[1];
+	  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.) {
+	    if (m_ewaddmode==0)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+	    else if (m_ewaddmode==1)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
+	    else if (m_ewaddmode==2)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+	    else
+	      THROW(fatal_error,"Unknown MEH_EWADDMODE.");
 	  }
-	  else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
-	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+	  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.) {
+	    if (m_qcdaddmode==0)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+	    else if (m_qcdaddmode==1)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_gluon,"",""));
+	    else if (m_qcdaddmode==2)
+	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+	    else
+	      THROW(fatal_error,"Unknown MEH_QCDADDMODE.");
 	  }
+	  else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
 	}
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
@@ -402,6 +427,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	  Read_Write_Base::AddCommandLine("ME_QED Off;");
       }
     }
+    else THROW(fatal_error,"NLO_Mode "+ToString(m_nlomode)+" unknown.");
   }
   return procs;
 }
@@ -469,7 +495,7 @@ void Matrix_Element_Handler::BuildProcesses()
   hls::scheme hls((hls::scheme)reader.Get<int>("HELICITY_SCHEME",1));
   reader.SetTags(std::map<std::string,std::string>());
   // set kfactor scheme
-  std::string kfactor=reader.Get<std::string>("KFACTOR","NO");
+  std::string kfactor=reader.Get<std::string>("KFACTOR","None");
   // set scale scheme
   std::string scale=reader.Get<std::string>
     ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
@@ -633,21 +659,17 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_veobs,nf);
 	}
-	if (cur[0]=="NLO_QCD_Mode") {
+	if (cur[0]=="NLO_Mode") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloqcdmode,nf);
+	  ExtractMPvalues(cb,pbi.m_vnlomode,nf);
 	}
-	if (cur[0]=="NLO_QCD_Part") {
+	if (cur[0]=="NLO_Part") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloqcdpart,nf);
+	  ExtractMPvalues(cb,pbi.m_vnlopart,nf);
 	}
-	if (cur[0]=="NLO_EW_Mode") {
+	if (cur[0]=="NLO_Order") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloewmode,nf);
-	}
-	if (cur[0]=="NLO_EW_Part") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloewpart,nf);
+	  ExtractMPvalues(cb,pbi.m_vnlocpl,nf);
 	}
 	if (cur[0]=="Subdivide_Virtual") {
 	  std::string cb(MakeString(cur,1));
@@ -795,8 +817,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	Process_Info cpi(pi);
 	cpi.m_ii=IS;
 	cpi.m_fi=CFS;
-	cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
-	cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
+	cpi.m_fi.m_nlotype=pi.m_fi.m_nlotype;
+	cpi.m_fi.m_nlocpl=pi.m_fi.m_nlocpl;
 	cpi.m_fi.SetNMax(pi.m_fi);
 	if (GetMPvalue(pbi.m_vmaxcpl,nfs,pnid,ds)) {
 	  Data_Reader read(",",";",")","(");
@@ -820,13 +842,38 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	      cpi.m_maxcpl[i]=99;
 	    }
 	}
-	size_t maxsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
-	for (size_t i(0);i<maxsize;++i)
+	// test whether cpls are halfinteger, fill in open spots for same size
+	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
+	size_t maxsize(Max(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
+	double intpart,fracpart;
+	for (size_t i(0);i<cpi.m_mincpl.size();++i) {
+	  fracpart=std::modf(2.*cpi.m_mincpl[i],&intpart);
+	  if (fracpart!=0.)
+	    THROW(fatal_error,"Order/Min_Order contains non-halfinteger entry "
+			      +std::string("at position ")
+			      +ToString(i)+": "+ToString(intpart)+"."
+			      +ToString(abs(fracpart)).substr(1)+". Abort.");
+	}
+	for (size_t i(0);i<cpi.m_maxcpl.size();++i) {
+	  fracpart=std::modf(2.*cpi.m_maxcpl[i],&intpart);
+	  if (fracpart!=0.)
+	    THROW(fatal_error,"Order/Max_Order contains non-halfinteger entry "
+			      +std::string("at position ")
+			      +ToString(i)+": "+ToString(intpart)+"."
+			      +ToString(fracpart)+". Abort.");
+	}
+	for (size_t i(0);i<cpi.m_mincpl.size();++i) {
+	  fracpart=modf(2.*cpi.m_mincpl[i],&intpart);
+	  if (fracpart!=0.)
+	    THROW(fatal_error,"Min_Order contains non-halfinteger entry. Abort.");
+	}
+	for (size_t i(0);i<minsize;++i) {
 	  if (cpi.m_mincpl[i]>cpi.m_maxcpl[i]) {
 	    msg_Error()<<METHOD<<"(): Invalid coupling orders: "
 		       <<cpi.m_mincpl<<" .. "<<cpi.m_maxcpl<<"\n";
 	    THROW(inconsistent_option,"Please correct coupling orders");
 	  }
+	}
 	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
 	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
 	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
@@ -839,33 +886,23 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
 	if (GetMPvalue(pbi.m_vaddname,nfs,pnid,ds)) cpi.m_addname=ds;
 	if (GetMPvalue(pbi.m_vspecial,nfs,pnid,ds)) cpi.m_special=ds;
-	if (GetMPvalue(pbi.m_vnloqcdmode,nfs,pnid,ds)) {
-	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
-	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;
-	  else THROW(fatal_error,"Unknown NLO_QCD_Mode "+ds+" {"+pnid+"}");
-	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
-	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
-	  if (cpi.m_nlomode!=m_globalnlomode)
+	if (GetMPvalue(pbi.m_vnlomode,nfs,pnid,ds)) {
+	  pi.m_nlomode=cpi.m_nlomode=ToType<nlo_mode::code>(ds);
+	  if (cpi.m_nlomode==nlo_mode::unknown)
+	    THROW(fatal_error,"Unknown NLO_Mode "+ds+" {"+pnid+"}");
+	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>("BVIRS");
+	  if (m_nlomode==nlo_mode::none) m_nlomode=cpi.m_nlomode;
+	  if (cpi.m_nlomode!=m_nlomode)
 	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
 			      "same time");
 	}
-	if (GetMPvalue(pbi.m_vnloqcdpart,nfs,pnid,ds)) {
-	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
-	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
+	if (GetMPvalue(pbi.m_vnlopart,nfs,pnid,ds)) {
+	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>(ds);
 	}
-	if (GetMPvalue(pbi.m_vnloewmode,nfs,pnid,ds)) {
-	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
-	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;
-	  else THROW(fatal_error,"Unknown NLO_EW_Mode "+ds+" {"+pnid+"}");
-	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>("BVIRS");
-	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
-	  if (cpi.m_nlomode!=m_globalnlomode)
-	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
-			      "same time");
-	}
-	if (GetMPvalue(pbi.m_vnloewpart,nfs,pnid,ds)) {
-	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
-	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
+	if (GetMPvalue(pbi.m_vnlocpl,nfs,pnid,ds)) {
+	  Data_Reader read(",",";",")","(");
+	  read.SetString(ds);
+	  read.VectorFromString(cpi.m_fi.m_nlocpl,"");
 	}
 	if (GetMPvalue(pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
@@ -936,7 +973,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
   }
 }
 
-size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string buffer)
+size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,
+                                               std::string buffer)
 {
   info.m_ps.resize(1);
   info.m_ps.front().m_ps.clear();
@@ -997,27 +1035,31 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
 
 namespace SHERPA {
 
-  template <> int Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  template <> int Matrix_Element_Handler::ExtractMPvalue
+  (const std::string& str)
   {
     return ToType<int>(str);
   }
 
-  template <> double Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  template <> double Matrix_Element_Handler::ExtractMPvalue
+  (const std::string& str)
   {
     Algebra_Interpreter inter;
     inter.AddTag("E_CMS",ToString(rpa->gen.Ecms()));
     return ToType<double>(inter.Interprete(str));
   }
 
-  template <> std::string Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  template <> std::string Matrix_Element_Handler::ExtractMPvalue
+  (const std::string& str)
   {
     return str;
   }
 
   template <typename Type>
-  void Matrix_Element_Handler::AddMPvalue(std::string lstr,std::string rstr,const Type &val,
-			  std::map<std::string,std::pair<int,Type> >& dv,
-			  const int nfs,const int &priority)
+  void Matrix_Element_Handler::AddMPvalue
+  (std::string lstr,std::string rstr,const Type &val,
+   std::map<std::string,std::pair<int,Type> >& dv,
+   const int nfs,const int &priority)
   {
     if (rstr.length()==0) {
       if (nfs==0 && 

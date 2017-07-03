@@ -70,11 +70,12 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+7)<<" "<<"- ALPHAQED_DEFAULT_SCALE (scale for alpha_QED default)\n"
      <<setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
      <<setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
-     <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
-     <<setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
-     <<setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
-     <<setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
-     <<setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
+     <<setw(width+7)<<" "<<"- CKM_ORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<setw(width+7)<<" "<<"- CKM_CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<setw(width+7)<<" "<<"- CKM_A (Wolfenstein A)\n"
+     <<setw(width+7)<<" "<<"- CKM_RHO (Wolfenstein Rho)\n"
+     <<setw(width+7)<<" "<<"- CKM_ETA (Wolfenstein Eta)\n"
+     <<setw(width+7)<<" "<<"- CKM_ELEMENT[<i>][<j>] (explicit value for element, supersedes parametrisation)\n"
      <<setw(width+7)<<" "<<"- Zprime mass/width via MASS[32] & WIDTH[32]\n"
      <<setw(width+7)<<" "<<"- multiplicative coupling parameter Zp_cpl_L\n"
      <<setw(width+7)<<" "<<"- multiplicative coupling parameter Zp_cpl_R\n"
@@ -114,12 +115,12 @@ void Standard_Model_Zprime::ParticleInit()
   s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,0,1,0,1,1,0,"vmu","vmub", "\\nu_{\\mu}", "\\bar{\\nu}_{\\mu}");
   s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.26735e-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
   s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
-  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
+  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "g", "g");
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
-  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","g_{4}","g_{4}",1);
 }
 
 void Standard_Model_Zprime::ParticleZprimeInit()
@@ -210,7 +211,26 @@ void Standard_Model_Zprime::FixEWParameters()
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=1./(pow(2.,0.25)*sqrt(GF));
-      break;
+      size_t aqedconv(p_dataread->GetValue<size_t>("GMU_CMS_AQED_CONVENTION",0));
+      switch (aqedconv) {
+      case 0:
+        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::abs(muW2*csin2thetaW));
+        break;
+      case 1:
+        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::real(muW2*csin2thetaW));
+        break;
+      case 2:
+        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::real(muW2)*std::real(csin2thetaW));
+        break;
+      case 3 :
+        aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
+        break;
+      case 4 :
+        aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*(1.-sqr(MW/MZ)));
+        break;
+      default:
+        THROW(not_implemented,"\\alpha_QED convention not implemented.");
+      }
     }
     break;
   }

@@ -41,10 +41,9 @@ The following parameters are used to steer the process setup.
                             an MC@@NLO process.
 * Enhance_Function::        Tag to set an enhance function.
 * Enhance_Observable::      Tag to set an enhance observable.
-* NLO_QCD_Mode::            Tag to setup QCD NLO processes.
-* NLO_QCD_Part::            Tag to refine the setup of QCD NLO processes.
-* NLO_EW_Mode::             Tag to setup electroweak NLO processes.
-* NLO_EW_Part::             Tag to refine the setup of electroweak NLO processes.
+* NLO_Mode::                Tag to set up NLO processes.
+* NLO_Part::                Tag to refine the setup of NLO processes.
+* NLO_Order::               Tag to specify the relative order of the NLO calculation.
 * Subdivide_Virtual::       Tag to split virtual contribution into pieces.
 * ME_Generator::            Tag to specifiy the tree ME generator.
 * RS_ME_Generator::         Tag to specifiy the real-subtracted ME generator
@@ -381,7 +380,8 @@ For multijet processes, this parameter can be specified
 per final state multiplicity. An example would be
 @verbatim
 Process 93 93 -> 90 91 93{3};
-NLO_QCD_Mode MC@NLO {2,3};
+NLO_Mode MC@NLO {2,3};
+NLO_Order (1,0) {2,3};
 RS_Enhance_Factor 10 {2};
 RS_Enhance_Factor 20 {3};
 @end verbatim
@@ -453,10 +453,10 @@ function and the final state multiplicity, can be an intricate task.
  error target}, see @ref{Integration_Error}.
 
 
-@node NLO_QCD_Mode
-@subsection NLO_QCD_Mode
+@node NLO_Mode
+@subsection NLO_Mode
 
-This setting specifies whether and in which mode an QCD NLO calculation 
+This setting specifies whether and in which mode an NLO calculation 
 should be performed. Possible values are:
 
 @itemize
@@ -468,19 +468,19 @@ should be performed. Possible values are:
 @end itemize
 
 The usual multiplicity identifier apply to this switch as well.
-Note that this setting implies @code{NLO_QCD_Part BVIRS} for the relevant 
-multiplicities. This can be overridden by setting @code{NLO_QCD_Part} 
+Note that this setting implies @code{NLO_Part BVIRS} for the relevant 
+multiplicities. This can be overridden by setting @code{NLO_Part} 
 explicitly in case of fixed-order calculations.
 
 Note that Sherpa includes only a very limited selection of one-loop 
 corrections. For processes not included external codes can be interfaced, 
 see @ref{External one-loop ME}
 
-@node NLO_QCD_Part
-@subsection NLO_QCD_Part
+@node NLO_Part
+@subsection NLO_Part
 
 In case of fixed-order NLO calculations this switch specifies which pieces 
-of a QCD NLO calculation are computed. Possible choices are
+of a NLO calculation are computed. Possible choices are
 
 @itemize
 @item B  ... born term
@@ -490,36 +490,15 @@ of a QCD NLO calculation are computed. Possible choices are
 @end itemize
 
 Different pieces can be combined in one processes setup. Only pieces with the 
-same number of final state particles and the same order in alpha_S can be 
-treated as one process, otherwise they will be automatically split up.
+same number of final state particles and the same order in alpha_S and alpha 
+can be treated as one process, otherwise they will be automatically split up.
 
-@node NLO_EW_Mode
-@subsection NLO_EW_Mode
+@node NLO_Order
+@subsection NLO_Order
 
-This setting specifies whether and in which mode an electroweak NLO calculation 
-should be performed. Possible values are:
-
-@itemize
-@item @code{Fixed_Order} ... perform a fixed-order next-to-leading order 
-                             calculation
-@end itemize
-
-@node NLO_EW_Part
-@subsection NLO_EW_Part
-
-In case of fixed-order NLO calculations this switch specifies which pieces 
-of a electroweak NLO calculation are computed. Possible choices are
-
-@itemize
-@item B  ... born term
-@item V  ... virtual (one-loop) correction
-@item I  ... integrated subtraction terms
-@item RS ... real correction, regularized using Catani-Seymour subtraction terms
-@end itemize
-
-Different pieces can be combined in one processes setup. Only pieces with the 
-same number of final state particles and the same order in alpha_QED can be 
-treated as one process, otherwise they will be automatically split up.
+Specifies the relative order of the NLO correction wrt. the considered Born 
+process. For example, @code{NLO_Order (1,0)} specifies a QCD correction while 
+@code{NLO_Order (0,1)} specifies an EW correction. 
 
 @node Subdivide_Virtual
 @subsection Subdivide_Virtual

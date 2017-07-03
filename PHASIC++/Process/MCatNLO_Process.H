@@ -6,7 +6,10 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 
-namespace ATOOLS { class Cluster_Amplitude; }
+namespace ATOOLS {
+  class Cluster_Amplitude;
+  struct Weight_Info;
+}
 
 namespace PDF {
   class Cluster_Definitions_Base;
@@ -51,14 +54,13 @@ namespace PHASIC {
 
     /*!
      * @param pi Process_Info Process information object
-     * @param nlotype nlo_type::code NLO type of process
-     * @param real bool Whether this is a real correction or not
+     * @param setlookup bool Whether LookUp should be set
      * @return Pointer to the initialised process
      *
      * This method initialises all needed processes.
      */
     Process_Base *InitProcess(const Process_Info &pi,
-			      const nlo_type::code nlotype,const bool real);
+                              const bool setlookup);
 
     /*!
      * @param ampl Cluster_Amplitude Cluster amplitude for which the process is
@@ -70,7 +72,8 @@ namespace PHASIC {
      * This method retrieves processes from the global process map.
      */
     Process_Base *FindProcess(const ATOOLS::Cluster_Amplitude *ampl,
-			      const nlo_type::code type=nlo_type::lo,
+                              const ATOOLS::nlo_type::code type
+                                    =ATOOLS::nlo_type::lo,
 			      const bool error=true) const;
     /*!
      * @param sub NLO_subevt NLO subevent for which the process is needed
@@ -80,7 +83,8 @@ namespace PHASIC {
      * This method retrieves processes from the global process map.
      */
     Process_Base *FindProcess(const ATOOLS::NLO_subevt *sub,
-			      const nlo_type::code type=nlo_type::lo) const;
+                              const ATOOLS::nlo_type::code type
+                                    =ATOOLS::nlo_type::lo) const;
 
     /*!
      * @param sub NLO_subevt NLO subevent for which the cluster amplitude

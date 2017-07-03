@@ -22,13 +22,14 @@ namespace PHASIC {
 
     Decay_Selector(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p,
+                 ATOOLS::NLO_subevt *const sub=NULL);
 
     void BuildCuts(Cut_Data *) {}
 
-    std::string   ReplaceTags(std::string &expr) const;    
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
-    
+    std::string   ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+
     void AssignId(ATOOLS::Term *term);
 
   };
@@ -44,7 +45,8 @@ namespace PHASIC {
 
     DecayMass_Selector(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p,
+                 ATOOLS::NLO_subevt *const sub=NULL);
 
     void BuildCuts(Cut_Data *);
 
@@ -66,7 +68,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Decay_Selector::Decay_Selector(const Selector_Key &key):
-  Selector_Base("Decay_Selector")
+  Selector_Base("Decay_Selector",key.p_proc)
 {
   if (key.m_key.length()<7 || key[0].size()<3)
     THROW(fatal_error,"Invalid syntax");
@@ -75,8 +77,7 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
   DEBUG_FUNC(tag);
   long int kf(ToType<long int>(key[0][0]));
   Flavour fl(std::abs(kf),kf<0);
-  DecayInfo_Vector decs
-    (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
+  DecayInfo_Vector decs(p_proc->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)
     if (decs[i]->m_fl==fl) {
       m_ids.push_back(ID(decs[i]->m_id));
@@ -96,12 +97,15 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
   m_max=ToType<double>(key[0][2]);
   msg_Debugging()<<"m_min = "<<m_min
 		 <<", m_max = "<<m_max<<"\n";
-  m_sel_log = new Selector_Log(m_name);
 }
 
-bool Decay_Selector::Trigger(const Vec4D_Vector &p)
+bool Decay_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
   DEBUG_FUNC("");
+  if (sub) {
+    THROW(not_implemented,"Decay_Selector not implemented for RS terms.");
+    return false;
+  }
   for (size_t j(0);j<m_ids.size();++j) {
     for (size_t i(0);i<m_ids[j].size();++i) m_p[i]=p[m_ids[j][i]];
     double value(m_calc.Calculate()->Get<double>());
@@ -146,13 +150,12 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
-  Selector_Base("DecayMass_Selector")
+  Selector_Base("DecayMass_Selector",key.p_proc)
 {
   DEBUG_FUNC(key.m_key);
   long int kf(ToType<long int>(key[0][0]));
   Flavour fl(std::abs(kf),kf<0);
-  DecayInfo_Vector decs
-    (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
+  DecayInfo_Vector decs(p_proc->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)
     if (decs[i]->m_fl==fl) {
       m_ids.push_back(ID(decs[i]->m_id));
@@ -166,12 +169,15 @@ DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
   m_max=ToType<double>(key[0][2]);
   msg_Debugging()<<"m_min = "<<m_min
 		 <<", m_max = "<<m_max<<"\n";
-  m_sel_log = new Selector_Log(m_name);
 }
 
-bool DecayMass_Selector::Trigger(const Vec4D_Vector &p)
+bool DecayMass_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
   DEBUG_FUNC("");
+  if (sub) {
+    THROW(not_implemented,"DecayMass_Selector not implemented for RS terms.");
+    return false;
+  }
   for (size_t j(0);j<m_ids.size();++j) {
     Vec4D sum;
     for (size_t i(0);i<m_ids[j].size();++i) sum+=p[m_ids[j][i]];

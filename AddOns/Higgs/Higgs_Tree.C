@@ -454,10 +454,10 @@ operator()(const Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_loopgenerator!="Higgs") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype==nlo_type::lo ||
-      pi.m_fi.m_nloqcdtype==nlo_type::born ||
-      pi.m_fi.m_nloqcdtype==nlo_type::real) {
+  if (pi.m_fi.m_nlotype==nlo_type::lo ||
+      pi.m_fi.m_nlotype==nlo_type::born ||
+      pi.m_fi.m_nlotype==nlo_type::real) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Default_Reader reader;
     int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
     int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);

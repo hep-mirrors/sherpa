@@ -15,8 +15,10 @@ using namespace std;
 
 std::string CFColor::noname=string("noname");
 
-CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,char spect,string pID,bool force)
+CFColor::CFColor(int N, Single_Amplitude* first, ATOOLS::Flavour * fl,
+                 char emit, char spect, string pID, bool force)
 {
+  DEBUG_FUNC(emit<<" "<<spect);
   Single_Amplitude* m1 = first;
 
   mcount = 0;
@@ -26,14 +28,18 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
   while (m1) {
     mcount++;
     m1->on = 1;
-    m1 = m1->Next;  
+    m1 = m1->Next;
   }
-  
+  msg_Debugging()<<"#amplitudes: "<<mcount<<std::endl;
+
   if (pID!=noname) {
     CSC.Init();
     int ncol((int)CSC.Nc);
     if (ncol!=3) pID+="_NC"+ToString(ncol);
-    std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pID+".col";
+//    if (emit!=0 || spect!=0) pID+="_QCD";
+    std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")
+                     +"/Process/Amegic/"+pID+".col";
+    msg_Debugging()<<"Generating file "<<name<<std::endl;
     IO_Handler ioh;
     bool gc(ioh.SetFileNameRO(name)==0);
     if (gc&&force) {
@@ -41,11 +47,15 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
                  <<" Rerun with option 'AMEGIC_ME_LIBCHECK=1'."<<endl;
       THROW(critical_error,"Failed to load color matrix.");
     }
-    if (!gc) { 
+    if (!gc) {
+      // read in colour matrix from file
+      msg_Debugging()<<"Reading colour matrix from "<<name<<std::endl;
       int rmcount;
 
       rmcount = ioh.Input<int>("");
       ncount = ioh.Input<int>("");
+      msg_Debugging()<<"#amplitudes: "<<rmcount
+                     <<", #colour structures: "<<ncount<<std::endl;
 
       if (mcount==rmcount || (force && rmcount>0)) {
 	mcount = rmcount;
@@ -64,7 +74,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 	    map[m]=map[iabs(id[m])];
 	  }
 	}
-	return; 
+	return;
       }
     }
   }
@@ -72,7 +82,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
   Color_Function* cm2;
 
   //looking for zero color structure
-  int sw1;  
+  int sw1;
 
   sw1 = 0;
   Single_Amplitude* m2;
@@ -84,16 +94,17 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
     }
     m1 = m1->Next;
   }
+
   if (sw1) {
-    //no color structure
-    
-    // matrix
+    // no color structure
+    msg_Debugging()<<"All amplitudes have no colour structure"<<std::endl;
+    // trivial colour matrix
     CFC = new CMatrix(1);
     (*CFC)[0][0]=1.;
 
     ncount=1;
 
-    // map table
+    // map table: map everything onto first and only structure
     id = new int[mcount];
     map = new int[mcount];
 
@@ -105,8 +116,11 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 
   }
   else {
+    // at least one amplitude with colour structure
+    msg_Debugging()<<"At least one amplitude has colour structure"<<std::endl;
+
     int prop;
-  
+
     m1 = first;
     while (m1) {
       prop = 120;
@@ -117,10 +131,10 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 	//looking for j
 	while (cm1) {
 	  for(short int i=0;i<3;i++) {
-	    if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && i==2) break;    
+	    if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && i==2) break;
 	    if (cm1->ParticleArg(i)==j) {
 	      for (short int k=0;k<3;k++) {
-		if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && k==2) break;    
+		if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && k==2) break;
 		if ((k!=i) && (cm1->ParticleArg(k)>99) && 
 		    ((cm1->ParticleArg(k)<120) || (cm1->ParticleArg(k)>150)))
 		  hit = cm1->ParticleArg(k);
@@ -247,7 +261,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 	    std::string cs1=m1->CFColstring;
 	    std::string cs2=m2->CFColstringC;
 
-	    DEBUG_VAR(cs1<<" * "<<cs2);
+	    msg_Debugging()<<"colour string: "<<cs1
+			   <<", conjugated colour string: "<<cs2<<std::endl;
+	    // contract colour delta-functions
 	    for (size_t pos(cs1.find("D["));
 		 pos!=string::npos;
 		 pos=cs1.find("D[",pos+2)) {
@@ -288,8 +304,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		if (anti) std::swap<char>(cs2[pos+4],cs2[pos+2]);
 	      }
 	    }
-	    DEBUG_VAR(cs1<<" * "<<cs2);
-	    
+	    msg_Debugging()<<"colour string: "<<cs1
+			   <<", conjugated colour string: "<<cs2<<std::endl;
+
 	    sknot* s1 = st.String2Tree(cs1);
 	    sknot* s2 = st.String2Tree(cs2);
 	    
@@ -297,6 +314,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
             //begin -- subtraction term specifics
 	    
 	    if (emit!=spect) {
+	      msg_Debugging()<<"Doing colour insertion magic."<<std::endl;
 	      
 	      list<sknot*>  fhelp_list;
 	      st.Factors(s2,fhelp_list);
@@ -315,7 +333,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 	      
 	      int te=-1;
 	      int ts=-1;
-	      for (list<sknot*>::iterator itf=fhelp_list.begin();itf!=fhelp_list.end();++itf) {
+	      for (list<sknot*>::iterator itf=fhelp_list.begin();
+		   itf!=fhelp_list.end();++itf) {
 		size_t p1=(*itf)->Str().find(emit,1);
 		size_t p2=(*itf)->Str().find(spect,1);
 		
@@ -578,7 +597,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
     m1->on = 1;
     m1 = m1->Next;
   }
-  
 }
 
 CFColor::~CFColor()
@@ -645,7 +663,8 @@ string CFColor::MapFChain(vector<string> fstring_list)
 
 void CFColor::Output(string & dirname) {
   std::string name;
-  name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+dirname+".col";
+  name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")
+       +dirname+".col";
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",mcount);          // no of ampls

@@ -3,6 +3,8 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
 
+using namespace ATOOLS;
+
 namespace METOOLS {
 
   class D_Calculator: public Color_Calculator {

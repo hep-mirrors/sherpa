@@ -101,6 +101,10 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
     msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
   }
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<"Single_LOProcess::InitAmplitude : No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
+    return 0;
+  }
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -308,8 +312,8 @@ void AMEGIC::Single_Process_MHV::Minimize()
 
 double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
-  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
-  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastxs = 0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
+  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(moms,m_cmode);
   }
@@ -319,7 +323,7 @@ double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int m
 
 double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
-  m_lastxs = 0.;
+  m_lastbxs = m_lastxs = 0.;
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
   }
@@ -327,7 +331,7 @@ double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool
     if (lookup && p_partner->m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
   }
-  return m_lastxs;
+  return m_lastbxs=m_lastxs;
 }
 
 double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)

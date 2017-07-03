@@ -130,12 +130,13 @@ by setting @option{LOOP_ME_INIT=1} in the @code{(run)} section of the input file
 @cindex CHECK_BORN
 @cindex CHECK_FINITE
 @cindex CHECK_POLES
-@cindex CHECK_POLES_THRESHOLD
+@cindex CHECK_THRESHOLD
 To check whether the poles of the dipole subtraction and the interfaced
 one-loop matrix element cancel phase space point by phase space point
-@code{CHECK_POLES=1} can be specified. The accuracy to which the poles
-do have to cancel can be set via @code{CHECK_POLES_THRESHOLD=<accu>}.
+@code{CHECK_POLES=1} can be specified.
 In the same way, the finite contributions of the infrared subtraction
 and the one-loop matrix element can be checked by setting
 @code{CHECK_FINITE=1}, and the Born matrix element via @code{CHECK_BORN=1}.
+The accuracy to which the poles, finite parts and Born matrix elements are
+checked is set via @code{CHECK_THRESHOLD=<accu>}.
 

@@ -58,8 +58,7 @@ Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_
  //Construct OS Process
   Process_Info lopi(m_pinfo);
 
-  lopi.m_fi.m_nloqcdtype=nlo_type::lo;
-  lopi.m_fi.m_nloewtype=nlo_type::lo;
+  lopi.m_fi.m_nlotype=nlo_type::lo;
   lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pi-m_nin));
   if (m_pj>m_pi) lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin-1));
   else lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin));

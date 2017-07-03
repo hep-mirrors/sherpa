@@ -1,0 +1,51 @@
+#!/usr/bin/env python2
+#from mpi4py import MPI
+import sys, os, shutil, tempfile
+sys.path.append('@PYLIBDIR@')
+import Sherpa
+
+# The process definition
+fl=[21,21,22,22,21,21]
+
+if os.path.exists("Process"): shutil.rmtree('Process')
+card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Run_',suffix='.dat')
+card.write("(run){ \n\
+  ME_SIGNAL_GENERATOR Comix; \n\
+  BEAM_1 93 4000; BEAM_2 93 4000; \n\
+  SCALES VAR{sqr(91.188)}; \n\
+  MODEL HEFT; EVENTS 0; \n\
+}(run); \n\
+(processes){ \n\
+  Process "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+"; \n\
+  Order (4,2,2); # gF+2j signal \n\
+  End process; \n\
+}(processes);\n")
+card.flush()
+
+sys.argv.append('-f'+os.path.basename(card.name))
+sys.argv.append('SHERPA_LDADD=PhasicProcess ToolsOrg ToolsPhys ToolsMath ModelMain METoolsExplicit METoolsCurrents;');
+sys.argv.append('INIT_ONLY=2')
+
+Generator=Sherpa.Sherpa()
+try:
+    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Process=Sherpa.MEProcess(Generator)
+
+    for n in fl[0:2]: Process.AddInFlav(n);
+    for n in fl[2:]: Process.AddOutFlav(n);
+    Process.Initialize();
+
+    Process.SetMomentum(0,77.269668120939,0,0,77.269668120939);
+    Process.SetMomentum(1,236.164977070296,0,0,-236.164977070296);
+    Process.SetMomentum(2,66.2157842501182,-55.6529762737472,-22.4858021400283,27.9582727980725);
+    Process.SetMomentum(3,88.9539423070054,64.3957926730905,-14.808289655514,-59.5541794959917);
+    Process.SetMomentum(4,36.3173422828411,3.96044569427437,-26.7147436670196,-24.2814062854105);
+    Process.SetMomentum(5,121.94757635127,-12.7032620936176,64.0088354625618,-103.017995966027);
+
+    print '\nSquared matrix element:'
+    print Process.CSMatrixElement()
+    print '\n'
+
+except Sherpa.Exception as exc:
+    print exc
+    exit(1)

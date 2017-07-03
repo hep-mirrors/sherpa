@@ -39,8 +39,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f1_f1f1>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
 
@@ -173,10 +172,9 @@ namespace EXTRAXS {
 DECLARE_TREEME2_GETTER(XS_f1f1b_f1f1b,"0XS_f1f1b_f1f1b")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f1b_f1f1b>::
 operator()(const Process_Info &pi) const
-{	
+{
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
   if (fl[0]!=fl[1].Bar() || 
@@ -322,8 +320,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f1b_f2f2b>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
   kf_code  kfc1  = fl[0].Kfcode(), kfc2  = fl[2].Kfcode();
@@ -493,8 +490,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f2_f1f2>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
 
@@ -682,8 +678,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f2b_f1f2b>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
 
@@ -860,8 +855,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f2_f3f4>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
 
@@ -1018,8 +1012,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_f1f2b_f3f4b>::
 operator()(const Process_Info &pi) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo)
-    return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
 

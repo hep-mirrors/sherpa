@@ -12,6 +12,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
+  m_on(true),
   p_filled(new std::set<ATOOLS::Particle*, partcomp>()),
   p_boosted(new std::set<ATOOLS::Blob*, blobcomp>()),
   m_scheme(0)
@@ -23,27 +24,60 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   reader.SetInputPath(_m_path);
   reader.SetInputFile(_m_file);
   m_scheme        = reader.Get<int>("K_PERP_SCHEME",0);
-  // defaults from Z peak
-  double defaultmean1(0.0), defaultmean2(0.0),
-    defaultsigma1(0.0), defaultsigma2(0.0);
+  // defaults from Z peak @ 7 TeV
+  double mean1(1.1), mean2(1.1),
+         sigma1(0.85), sigma2(0.85),
+         exp1(0.55), exp2(0.55),
+         eref1(7000.), eref2(7000.);
+  std::vector<std::string> readin;
+  if (reader.ReadVector<std::string>(readin,"INTRINSIC_KPERP")) {
+    if (readin.size()==1 && (readin[0]=="None" || readin[0]=="Off")) m_on=false;
+    else {
+      if (readin.size()>0) mean1=ToType<double>(readin[0]);
+      if (readin.size()>1) mean2=ToType<double>(readin[1]);
+      if (readin.size()>2) sigma1=ToType<double>(readin[2]);
+      if (readin.size()>3) sigma2=ToType<double>(readin[3]);
+      if (readin.size()>4) exp1=ToType<double>(readin[4]);
+      if (readin.size()>5) exp2=ToType<double>(readin[5]);
+      if (readin.size()>6) eref1=ToType<double>(readin[6]);
+      if (readin.size()>7) eref2=ToType<double>(readin[7]);
+    }
+  }
+  mean1  = reader.Get("K_PERP_MEAN_1",mean1);
+  mean2  = reader.Get("K_PERP_MEAN_2",mean2);
+  sigma1 = reader.Get("K_PERP_SIGMA_1",sigma1);
+  sigma2 = reader.Get("K_PERP_SIGMA_2",sigma2);
+  exp1   = reader.Get("K_PERP_EXP_1",exp1);
+  exp2   = reader.Get("K_PERP_EXP_2",exp2);
+  eref1  = reader.Get("K_PERP_EREF_1",eref1);
+  eref2  = reader.Get("K_PERP_EREF_2",eref2);
   if (rpa->gen.Beam1().IsHadron() && rpa->gen.Beam2().IsHadron()) {
-  if (rpa->gen.Beam1().Kfcode()==kf_p_plus) {
-    defaultmean1=1.10;
-    defaultsigma1=0.85;
-    // Energy dependent scaling of K_PERP_SIGMA
-    defaultsigma1*=pow((rpa->gen.Ecms()/7000.),0.55);
+    if (rpa->gen.Beam1().Kfcode()==kf_p_plus &&
+        rpa->gen.Beam2().Kfcode()==kf_p_plus) {
+      sigma1*=pow((rpa->gen.Ecms()/eref1),exp1);
+      sigma2*=pow((rpa->gen.Ecms()/eref2),exp2);
+    }
+    else m_on=false;
   }
-  if (rpa->gen.Beam2().Kfcode()==kf_p_plus) {
-    defaultmean2=1.10;
-    defaultsigma2=0.85;
-    // Energy dependent scaling of K_PERP_SIGMA
-    defaultsigma2*=pow((rpa->gen.Ecms()/7000.),0.55);
+  else m_on=false;
+  m_kperpmean[0]  = mean1;
+  m_kperpmean[1]  = mean2;
+  m_kperpsigma[0] = sigma1;
+  m_kperpsigma[1] = sigma2;
+
+  // Print summary
+  if (m_on) {
+    msg_Info()<<METHOD<<"() {"
+              <<"\n  scheme = "<<m_scheme
+              <<"\n  beam 1: "<<rpa->gen.Beam1()
+              <<", mean = "<<mean1<<", sigma = "<<sigma1
+              <<"\n  beam 2: "<<rpa->gen.Beam2()
+              <<", mean = "<<mean2<<", sigma = "<<sigma2
+              <<"\n}"<<std::endl;
   }
+  else {
+    msg_Info()<<METHOD<<"(): No intrinsic k_\\perp."<<std::endl;
   }
-  m_kperpmean[0]  = reader.Get<double>("K_PERP_MEAN_1",defaultmean1);
-  m_kperpmean[1]  = reader.Get<double>("K_PERP_MEAN_2",defaultmean2);
-  m_kperpsigma[0] = reader.Get<double>("K_PERP_SIGMA_1",defaultsigma1);
-  m_kperpsigma[1] = reader.Get<double>("K_PERP_SIGMA_2",defaultsigma2);
 }
 
 Primordial_KPerp::~Primordial_KPerp()
@@ -56,6 +90,7 @@ Primordial_KPerp::~Primordial_KPerp()
 
 bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 {
+  if (!m_on) return true;
   if (blob1==NULL || blob2==NULL) 
     THROW(critical_error,"Called with NULL pointer.");
   double kpm1=m_kperpmean[0], kpm2=m_kperpmean[1];
@@ -335,6 +370,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 
 void Primordial_KPerp::FillKPerp(ATOOLS::Blob *blob)
 {
+  if (!m_on) return;
   unsigned int beam=blob->InParticle(0)->Beam();
   if (beam==0) {
     m_current[1]=m_current[0]=-1;

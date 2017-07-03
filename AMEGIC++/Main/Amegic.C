@@ -83,7 +83,7 @@ void Amegic::DrawLogo(std::ostream &ostr)
     (1,"Amegic is published under \\cite{Krauss:2001iv}.");
 }
 
-Amegic::Amegic(): 
+Amegic::Amegic():
   ME_Generator_Base("Amegic"), p_mmodel(NULL), p_amodel(NULL), p_cluster(NULL)
 {
   DrawLogo(msg->Info());
@@ -91,13 +91,13 @@ Amegic::Amegic():
   p_gen=this;
 }
 
-Amegic::~Amegic() 
+Amegic::~Amegic()
 {
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_cluster) delete p_cluster;
   delete p_amodel;
 }
- 
+
 bool Amegic::Initialize(const std::string &path,const std::string &file,
 			MODEL::Model_Base *const model,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
@@ -117,9 +117,12 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   p_int->SetISR(isrhandler);
   SetPSMasses(&reader);
 
-  double helpd;
-  size_t helpi;
 
+  double helpd; int helpi; std::string helps;
+  size_t helpt;
+  std::vector<int> helpvi;
+
+  // dipole alpha, kappa, kt2 and gsplit
   helpd = reader.Get("DIPOLE_AMIN", Max(rpa->gen.Accu(),1.0e-8),
                      "dipole \\alpha_{cut}", METHOD);
   rpa->gen.SetVariable("DIPOLE_AMIN", ToString(helpd));
@@ -152,36 +155,98 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "dipole \\kappa", METHOD);
   rpa->gen.SetVariable("DIPOLE_KAPPA", ToString(helpd));
 
-  helpi = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2,
-                     "dipole N_f", METHOD);
-  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT", ToString(helpi));
+  helpt = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2,
+                      "dipole N_f", METHOD);
+  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT", ToString(helpt));
 
   helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()),
                      "dipole \\k_{T,max}^2", METHOD);
   rpa->gen.SetVariable("DIPOLE_KT2MAX", ToString(helpd));
 
+  // parameters in dipole construction
+  helpt = reader.Get("DIPOLE_COLLINEAR_VFF_SPLITTINGS", 1,
+                     "collinear VFF splittings", METHOD);
+  rpa->gen.SetVariable("DIPOLE_COLLINEAR_VFF_SPLITTINGS",ToString(helpt));
+
+  helpt = reader.Get("DIPOLE_V_SUBTRACTION_MODE", 1,
+                     "dipole V->VP subtraction mode", METHOD);
+  rpa->gen.SetVariable("DIPOLE_V_SUBTRACTION_MODE",ToString(helpt));
+
+  helpi = reader.Get("DIPOLE_PFF_IS_SPLIT_SCHEME", 1,
+                     "split scheme in IS P->FF splittings", METHOD);
+  rpa->gen.SetVariable("DIPOLE_PFF_IS_SPLIT_SCHEME",ToString(helpi));
+
+  helpi = reader.Get("DIPOLE_PFF_FS_SPLIT_SCHEME", 1,
+                     "split scheme in FS P->FF splittings", METHOD);
+  rpa->gen.SetVariable("DIPOLE_PFF_FS_SPLIT_SCHEME",ToString(helpi));
+
+  helpi = reader.Get("DIPOLE_PFF_IS_RECOIL_SCHEME", 0,
+                     "recoil scheme in IS P->FF splittings", METHOD);
+  rpa->gen.SetVariable("DIPOLE_PFF_IS_RECOIL_SCHEME",ToString(helpi));
+
+  helpi = reader.Get("DIPOLE_PFF_FS_RECOIL_SCHEME", 0,
+                     "recoil scheme in FS P->FF splittings", METHOD);
+  rpa->gen.SetVariable("DIPOLE_PFF_FS_RECOIL_SCHEME",ToString(helpi));
+
+  helpi = reader.Get("DIPOLE_IS_CLUSTER_TO_LEPTONS", 0,
+                     "cluster dipoles to leptons ", METHOD);
+  rpa->gen.SetVariable("DIPOLE_IS_CLUSTER_TO_LEPTONS",ToString(helpi));
+
+  rpa->gen.SetVariable("LIST_DIPOLES",
+                       ToString(reader.Get("LIST_DIPOLES",0,"list dipoles",METHOD)));
+
+  // flavour restriction
+  helps = reader.Get("DIPOLE_BORN_FLAVOUR_RESTRICTIONS", std::string(""),
+                     "dipole underlying Born flavour restrictions", METHOD);
+  rpa->gen.SetVariable("DIPOLE_BORN_FLAVOUR_RESTRICTIONS",helps);
+
+  // nlo smearing parameters
   rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
-      ToString(reader.Get("NLO_SMEAR_THRESHOLD", 0.0)));
+                       ToString(reader.Get("NLO_SMEAR_THRESHOLD",0.,"NLO smear threshold",METHOD)));
   rpa->gen.SetVariable("NLO_SMEAR_POWER",
-      ToString(reader.Get("NLO_SMEAR_POWER", 0.5)));
-  int ossub = reader.Get<int>("OS_SUB", 0);
-  if (ossub==1) msg_Info()<<"Set on shell subtraction on. "<<std::endl;
-  rpa->gen.SetVariable("OS_SUB",ToString(ossub));
-  int sort = reader.Get<int>("AMEGIC_SORT_LOPROCESS", 1);
-  rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
-  int libcheck = reader.Get<int>("AMEGIC_ME_LIBCHECK", 0);
-  rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(libcheck));
-  int cvp = reader.Get<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1);
-  rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(cvp));
-  double alpha = reader.Get<double>("AMEGIC_TCHANNEL_ALPHA", 0.9);
-  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
-  double salpha = reader.Get<double>("AMEGIC_SCHANNEL_ALPHA", 0.75);
-  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(salpha));
-  double eps = reader.Get<double>("AMEGIC_CHANNEL_EPSILON", 0.0);
-  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
-  int gauge(reader.Get<int>("AMEGIC_DEFAULT_GAUGE", 1, "gauge", METHOD));
-  AMEGIC::Process_Base::SetGauge(gauge);
-  s_partcommit = reader.Get<int>("AMEGIC_PARTIAL_COMMIT", 0);
+		       ToString(reader.Get("NLO_SMEAR_POWER",0.5,"NLO smear power",METHOD)));
+
+  // on-shell subtraction parameters
+  helpi = reader.Get("DIPOLE_ONSHELL_SUBTRACTION", 0,
+                     "on-shell subtraction", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ONSHELL_SUBTRACTION",ToString(helpi));
+
+  // general Amegic parameters
+  helpi = reader.Get("AMEGIC_SORT_LOPROCESS", 1,
+                     "sort LO processes", METHOD);
+  rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(helpi));
+
+  helpi = reader.Get("AMEGIC_ME_LIBCHECK", 0,
+                     "library check", METHOD);
+  rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(helpi));
+
+  helpi = reader.Get("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1,
+                     "cut massive vector propagators", METHOD);
+  rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(helpi));
+
+  helpd = reader.Get("AMEGIC_TCHANNEL_ALPHA", 0.9,
+                     "t-channel \\alpha", METHOD);
+  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(helpd));
+
+  helpd = reader.Get("AMEGIC_SCHANNEL_ALPHA", 0.75,
+                     "s-channel \\alpha", METHOD);
+  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(helpd));
+
+  helpd = reader.Get("AMEGIC_CHANNEL_EPSILON", 0.0,
+                     "channel \\epsilon", METHOD);
+  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(helpd));
+
+  helpd = reader.Get("AMEGIC_THRESHOLD_EPSILON", 1.5,
+                     "threshold \\epsilon", METHOD);
+  rpa->gen.SetVariable("AMEGIC_THRESHOLD_EPSILON",ToString(helpd));
+
+  helpd = reader.Get("AMEGIC_DEFAULT_GAUGE", 1,
+                     "gauge", METHOD);
+  rpa->gen.SetVariable("AMEGIC_DEFAULT_GAUGE",ToString(helpd));
+
+  AMEGIC::Process_Base::SetGauge(ToType<double>(rpa->gen.Variable("AMEGIC_DEFAULT_GAUGE")));
+
+  s_partcommit = reader.Get("AMEGIC_PARTIAL_COMMIT", 0, "partial commit", METHOD);
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return true;
@@ -190,7 +255,6 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
                                                 bool add)
 {
-  if (pi.m_fi.m_nloewtype!=PHASIC::nlo_type::lo) return NULL;
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
   std::string name(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
@@ -237,23 +301,23 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
     Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info(),this);
-    Vec4D sum;
-    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
-    msg_Debugging()<<"After boost:\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      lab.Boost(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
-    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
-    msg_Debugging()<<"After rotation {\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      rot.Rotate(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+//    Vec4D sum;
+//    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
+//    msg_Debugging()<<"After boost:\n";
+//    for (size_t i(0);i<nis+nfs;++i) {
+//      lab.Boost(p_testmoms[i]);
+//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+//    }
+//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+//    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+//    msg_Debugging()<<"After rotation {\n";
+//    for (size_t i(0);i<nis+nfs;++i) {
+//      rot.Rotate(p_testmoms[i]);
+//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+//    }
+//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
     My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");

@@ -49,7 +49,6 @@ void GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& amp
       pi.m_maxcpl[0]+=1;
       pi.m_mincpl[0]+=1;
     }
-
   if(external){
     // set weirdly abused mhv-flag to get external (i.e. OpenLoops) proc
     pi.m_amegicmhv = 10;

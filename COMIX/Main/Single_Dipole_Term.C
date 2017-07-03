@@ -30,17 +30,13 @@ Single_Dipole_Term::Single_Dipole_Term
   p_gen=rs->Generator();
   Process_Info info(rs->Info());
   info.Combine(sub->m_i,sub->m_j,msub->p_fl[sub->m_ijt]);
-  info.m_fi.m_nloqcdtype&=~nlo_type::real;
-  info.m_fi.m_nloewtype&=~nlo_type::real;
+  info.m_fi.m_nlotype&=~nlo_type::real;
   Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR());
   p_rsint=rs->Integrator();
   m_name+="_RS"+ToString(sub->m_i)+"_"
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);
   m_maxcpl=rs->MaxOrders();
   m_mincpl=rs->MinOrders();
-  int type((rs->Info().m_fi.m_nloqcdtype&nlo_type::real)?0:1);
-  --m_maxcpl[type];
-  --m_mincpl[type];
 }
 
 Single_Dipole_Term::~Single_Dipole_Term()
@@ -67,7 +63,7 @@ double COMIX::Single_Dipole_Term::Partonic
     double psm(m_flavs[i].Mass());
     if (p[i][0]<psm) return m_lastxs;
   }
-  if (!p_bg->JetTrigger(Selector(),m_mcmode))
+  if (!p_bg->RSTrigger(Selector(),m_mcmode))
     return m_lastxs=0.0;
   sp->p_scale->CalculateScale(p);
   if (m_mcmode==1) p_rsint->ColorIntegrator()->GeneratePoint();
@@ -83,7 +79,7 @@ double COMIX::Single_Dipole_Term::Partonic
 
 bool Single_Dipole_Term::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
-  if (!Selector()->NoJetTrigger(p)) return false;
+  Selector()->SetResult(1);
   return p_bg->SetMomenta(p);
 }
 

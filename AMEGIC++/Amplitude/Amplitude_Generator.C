@@ -26,12 +26,14 @@ using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Amegic_Model * _model,Topology * _top,
-					 std::vector<double> _order,int _ntchan_min,
+					 std::vector<int> _order,int _ntchan_min,
 					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
   : fl(_fl), b(_b), p_model(_model), top(_top), 
     N(_no), order(_order), ntchan_min(_ntchan_min),
     BS(_BS), shand(_shand), m_create_4V(create_4V)
 {
+  DEBUG_FUNC("n="<<_no<<", order="<<_order<<", ntchannel="<<_ntchan_min
+             <<", 4V="<<create_4V);
   single_top = top->Get(N-2);
   
   // 2 incoming
@@ -628,24 +630,26 @@ int Amplitude_Generator::Kill_Off(Single_Amplitude* &first)
 
 void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
 {
+  // find maximal orders of all amplitudes generated (if valid)
+  DEBUG_FUNC("");
   Single_Amplitude* last;
   last = first;
   Single_Amplitude* f1 = first;
   Single_Amplitude* f2;
   int count=0;
-  std::vector<double> hitmax;
+  std::vector<int> hitmax;
   while (f1) {
     std::vector<int> hit;
     if (f1->GetPointlist()) f1->GetPointlist()->FindOrder(hit);
+    hit.resize(order.size(),0);
     bool valid(true);
-    for (size_t i(0);i<Min(order.size(),hit.size());++i)
+    for (size_t i(0);i<order.size();++i)
       if (hit[i]>order[i]) valid=false;
-    msg_Debugging()<<"Order check: "<<hit<<" vs. "<<order<<" -> "<<valid<<"\n";
-    if (hit.size()>hitmax.size())
-      hitmax.resize(hit.size(),0);
+    msg_Debugging()<<"Order check: "<<hit<<" <= "<<order<<" -> "<<valid<<"\n";
+    if (hit.size()>hitmax.size()) hitmax.resize(hit.size(),0);
     for (size_t i(0);i<Min(hit.size(),hitmax.size());++i)
-      if (order.size()<=i || hit[i]<=order[i])
-	hitmax[i]=Max(hitmax[i],(double)hit[i]);
+      if (order.size()<=i || hit[i]<order[i])
+        hitmax[i]=Max(hitmax[i],hit[i]);
     if (!valid ||
 	!CheckTChannels(f1->GetPointlist())) {
       ++count;
@@ -667,8 +671,9 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
+  msg_Debugging()<<"set order: "<<order<<", calculated order: "<<hitmax<<endl;
   order=hitmax;
-  msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
+  msg_Tracking()<<METHOD<<"(): Kicked number of diagrams: "<<count<<endl;
 }
 
 bool Amplitude_Generator::CheckTChannels(Point * p) {
@@ -688,10 +693,11 @@ bool Amplitude_Generator::CheckOrders(Point * p)
 {
   std::vector<int> hit;
   if (p) p->FindOrder(hit);
+  hit.resize(order.size(),0);
   bool valid(true);
-  for (size_t i(0);i<Min(order.size(),hit.size());++i)
+  for (size_t i(0);i<order.size();++i)
     if (hit[i]>order[i]) valid=false;
-  msg_Debugging()<<"Order check: "<<hit<<" vs. "<<order<<" -> "<<valid<<"\n";
+  msg_Debugging()<<"Order check: "<<hit<<" <= "<<order<<" -> "<<valid<<"\n";
   return valid;
 }
  
@@ -1020,6 +1026,7 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
 
 Single_Amplitude* Amplitude_Generator::Matching(std::set<std::pair<int,int> > &valid)
 {
+  DEBUG_FUNC("N="<<N);
   short int i,j;
   int sw1;
   int qsum,lsum; 
@@ -1027,6 +1034,7 @@ Single_Amplitude* Amplitude_Generator::Matching(std::set<std::pair<int,int> > &v
   first_amp = 0;
 
   int start_top = 0;
+  msg_Debugging()<<*single_top<<std::endl;
   int end_top = single_top->number;
 
   Permutation perms(N);

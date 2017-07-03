@@ -159,6 +159,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   ofstream chf;
   chf.open((filename).c_str());
 
+  chf<<"// Channel_Generator_UniV"<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
@@ -172,7 +173,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
      <<"  class "<<name<<" : public Single_Channel {"<<endl;
 
   //actual Channel
-  chf <<"    double m_salpha;"<<endl;
+  chf <<"    double m_salpha,m_thexp;"<<endl;
   if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
@@ -248,7 +249,8 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl
-	<<"  m_salpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_SCHANNEL_ALPHA\"));"<<endl;
+	<<"  m_salpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_SCHANNEL_ALPHA\"));"<<endl
+	<<"  m_thexp = ToType<double>(rpa->gen.Variable(\"AMEGIC_THRESHOLD_EPSILON\"));"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
 	<<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_TCHANNEL_ALPHA\"));"<<endl
@@ -656,7 +658,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 //     }
 //   }
   //min
-  double dth=false;
+  bool dth=false;
   CalcSmin(flag,"min",mummy,sf,0);
   if (mummy.length()>2 && flag>=0) {
     sf <<"  s"<< mummy <<"_min = Max(s"<< mummy <<"_min,sqr(sqrt(s"<< lm <<")+sqrt(s"<< rm <<")));"<<endl;
@@ -676,10 +678,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
   } 
   string mlexp("m_salpha");
   if (dth) mlexp=string("1.");
-  string thexp("1.5");
   dth=false;
-  //mlexp=string("0.");
-//   if (p->m==0) thexp = string("1.5");
   switch (flag) {
   case -11:
     if (maxpole>0.) {
@@ -700,7 +699,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 	  <<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
       } 
       else {
-	sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta("<<thexp<<","
+        sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta(m_thexp,"
 	  <<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
 	  <<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
       }
@@ -726,7 +725,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 	  <<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
       }
       else {
-	sf<<"  wt *= CE.ThresholdWeight("<<thexp<<","<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
+        sf<<"  wt *= CE.ThresholdWeight(m_thexp,"<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
 	  <<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
       }
     }

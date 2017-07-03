@@ -17,7 +17,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(No_KFactor_Setter,"NO",
+DECLARE_GETTER(No_KFactor_Setter,"None",
 	       KFactor_Setter_Base,KFactor_Setter_Arguments);
 
 KFactor_Setter_Base *ATOOLS::Getter

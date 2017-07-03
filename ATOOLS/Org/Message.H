@@ -132,16 +132,14 @@ namespace ATOOLS {
 
     // member functions
     void Init(const std::string& level,const std::string &logfile);
-    void SetPrecision(const int precision);
     void SetStandard();
 
     std::ostream &Out() const;
-
-    std::ostream &Error() const;     
-    std::ostream &Events() const;    
-    std::ostream &Info() const;      
-    std::ostream &Tracking() const;  
-    std::ostream &Debugging() const; 
+    std::ostream &Error() const;
+    std::ostream &Events() const;
+    std::ostream &Info() const;
+    std::ostream &Tracking() const;
+    std::ostream &Debugging() const;
     std::ostream &IODebugging() const;
 
     std::string ExtractMethodName(std::string cmethod) const;
@@ -150,9 +148,18 @@ namespace ATOOLS {
     inline void SetLevel(const int level)     { m_level = level;    }
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
     inline void SetMPIMode(const int mode)    { m_mpimode = mode;   }
+    inline void SetPrecision(const int precision) {
+      if (p_output) p_output->precision(precision);
+    }
 
     inline int  Level() const      { return m_level;      }
     inline bool Modifiable() const { return m_modifiable; }
+    inline int  MPIMode() const    { return m_mpimode;    }
+    inline size_t Precision() const {
+      if (p_output) return p_output->precision();
+    }
+
+
     inline void Indent(size_t col) { m_buf.Indent(col); }
     inline void DeIndent(size_t col) { m_buf.DeIndent(col); }
 

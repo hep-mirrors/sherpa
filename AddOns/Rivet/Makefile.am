@@ -1,4 +1,3 @@
-
 RIVET_SOURCES       =	Rivet_Interface.C
 
 if RIVET_SUPPORT

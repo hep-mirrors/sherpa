@@ -650,8 +650,10 @@ void Lund_Interface::NextFile(const bool newfile)
     if (newfile) 
       (*outfile)<<(m_outfile+ToString(++m_curfile)+string(".evts"))<<endl;
     if (m_compress) {
-      system((string("gzip ")+oldfile+string(".gz ")+oldfile).c_str());
-      system((string("rm ")+oldfile).c_str());
+      if (!system((string("gzip ")+oldfile+string(".gz ")+oldfile).c_str()))
+        msg_Error()<<METHOD<<"(): Error gzipping "<<oldfile<<std::endl;
+      if (!system((string("rm ")+oldfile).c_str()))
+        msg_Error()<<METHOD<<"(): Could not remove "<<oldfile<<std::endl;
     }
   }
   if (!newfile) {

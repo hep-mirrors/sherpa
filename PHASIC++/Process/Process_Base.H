@@ -17,6 +17,7 @@ namespace ATOOLS {
   class Variation_Weights;
   struct Decay_Info;
   typedef std::vector<Decay_Info* > DecayInfo_Vector;
+  struct Weight_Info;
 }
 
 namespace BEAM { class Beam_Spectra_Handler; }
@@ -45,7 +46,7 @@ namespace PHASIC {
 
   typedef std::map<std::string,Process_Base*> StringProcess_Map;
 
-  typedef std::map<nlo_type::code,StringProcess_Map*>
+  typedef std::map<ATOOLS::nlo_type::code,StringProcess_Map*>
   NLOTypeStringProcessMap_Map;
 
   class Process_Base {

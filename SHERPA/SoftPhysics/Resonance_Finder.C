@@ -25,14 +25,15 @@ using namespace std;
 
 Resonance_Finder::Resonance_Finder(ATOOLS::Data_Reader* reader,
                                    Matrix_Element_Handler * meh) :
-  m_on(true), m_resdist(1.), p_mehandler(meh)
+  m_on(true), m_resdist(1.), m_inclres(false), p_mehandler(meh)
 {
   m_on = (reader->GetValue<std::string>("ME_QED_CLUSTERING","On")=="On");
   m_resdist = reader->GetValue<double>("ME_QED_CLUSTERING_THRESHOLD",1.);
+  m_inclres = reader->GetValue<int>("ME_QED_INCLUDE_RESONANCES",0);
+  InitialiseHelperParticles();
 
   if (!m_on) return;
   ScanModelForEWResonances();
-  InitialiseHelperParticles();
   IdentifyEWSubprocesses();
 }
 
@@ -160,7 +161,7 @@ void Resonance_Finder::FindSubProcessInfosContainingLeptons
 void Resonance_Finder::BuildResonantBlobs
 (Particle_Vector& pv, Blob_Vector& blobs)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(pv.size()<<" particles to treat, clustering = "<<m_on);
   // get production subprocesses for the active process
   std::string name(p_mehandler->Process()->Name());
   SubInfoVector siv(m_proc_lep_map[name]);
@@ -175,6 +176,7 @@ void Resonance_Finder::BuildResonantBlobs
       FillBlob(blobs[i],*siv[i],pv);
       msg_Debugging()<<"built decay blob for subprocess:"<<endl;
       msg_Debugging()<<*blobs[i]<<endl;
+      if (m_inclres) pv.push_back(blobs.back()->InParticle(0));
     }
   }
   // find/reconstruct possible resonances in the final state
@@ -187,15 +189,16 @@ void Resonance_Finder::BuildResonantBlobs
       FillBlob(*blobs.rbegin(),rfl[i],rpvs[i]);
       msg_Debugging()<<"built blob for identified resonance:"<<endl;
       msg_Debugging()<<**blobs.rbegin()<<endl;
+      if (m_inclres) pv.push_back(blobs.back()->InParticle(0));
     }
   }
   // otherwise create global resonant blob
   // if there are leptons not contained in defined resonant blobs
   if (pv.size()) {
-    blobs.push_back(new Blob(Vec4D(0.,0.,0.,0.)));
-    FillBlob(*blobs.rbegin(),DetermineGenericResonance(pv),pv);
+    blobs.insert(blobs.begin(),new Blob(Vec4D(0.,0.,0.,0.)));
+    FillBlob(*blobs.begin(),DetermineGenericResonance(pv),pv);
     msg_Debugging()<<"built generic blob:"<<endl;
-    msg_Debugging()<<**blobs.rbegin()<<endl;
+    msg_Debugging()<<**blobs.begin()<<endl;
   }
 }
 
@@ -242,6 +245,8 @@ void Resonance_Finder::FillBlob
   }
   blob->AddToInParticles(new Particle(-1,resflav,sum,'R'));
   blob->InParticle(0)->SetFinalMass(blob->InParticle(0)->Momentum().Mass());
+  blob->AddData("p_original",
+                new Blob_Data<Vec4D>(blob->InParticle(0)->Momentum()));
 }
 
 bool Resonance_Finder::FindResonances

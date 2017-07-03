@@ -192,11 +192,6 @@ void Message::SetStandard()
   m_file = 0;
 }
 
-void Message::SetPrecision(const int precision) 
-{
-  if (p_output) p_output->precision(precision);
-}
-
 std::ostream &Message::Out() const 
 { 
 #ifdef USING__MPI

@@ -82,6 +82,16 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   if (LHAPDF::hasPhoton()) m_partons.insert(Flavour(kf_photon));
 
 //  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
+
+  Data_Reader read(" ",";","#","=");
+  read.VectorFromFile(m_disallowedflavour,"LHAPDF_DISALLOW_FLAVOUR");
+  if (m_disallowedflavour.size()) {
+    msg_Info()<<METHOD<<"(): Set PDF for the following flavours to zero: ";
+    for (size_t i(0);i<m_disallowedflavour.size();++i)
+      msg_Info()<<Flavour(abs(m_disallowedflavour[i]),m_disallowedflavour[i]<0)
+                <<" ";
+    msg_Info()<<std::endl;
+  }
 }
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
@@ -113,12 +123,17 @@ void LHAPDF_Fortran_Interface::CalculateSpec(const double& ix,const double& Q2) 
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
+  for (size_t i(0);i<m_disallowedflavour.size();++i)
+    if ((infl.IsAnti()?-infl.Kfcode():infl.Kfcode())==m_disallowedflavour[i])
+      return 0.;
   int kfc;
   if (int(infl) == kf_gluon) {
     kfc=0;
-  } else if (LHAPDF::hasPhoton() && int(infl) == kf_photon) {
+  }
+  else if (LHAPDF::hasPhoton() && int(infl) == kf_photon) {
     kfc=7;
-  } else {
+  }
+  else {
     kfc=m_anti*int(infl);
     if (kfc<-6 || kfc>6) {
       msg_Out()<<"WARNING in "<<METHOD<<"("<<infl<<") not supported by this PDF!"<<std::endl;
@@ -129,6 +144,8 @@ double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const kf_code& kf, bool anti) {
+  for (size_t i(0);i<m_disallowedflavour.size();++i)
+    if ((anti?-kf:kf)==m_disallowedflavour[i]) return 0.;
   int kfc(m_anti*(anti?-kf:kf));
   if (kf == kf_gluon) kfc=0;
   else if (LHAPDF::hasPhoton() && kf == kf_photon) kfc=7;

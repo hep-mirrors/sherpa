@@ -87,3 +87,11 @@ std::ostream &MODEL::operator<<(std::ostream &str,const cf::code &c)
   THROW(fatal_error,"Invalid code '"+ToString((int)c)+"'");
   return str;
 }
+
+std::ostream &MODEL::operator<<(std::ostream &str,const Color_Function &cf)
+{
+  str<<cf.Type()<<"("<<cf.ParticleArg(0)<<" "<<cf.ParticleArg(1);
+  if (cf.Type()==cf::T || cf.Type()==cf::F) str<<" "<<cf.ParticleArg(2);
+  str<<")";
+  return str;
+}

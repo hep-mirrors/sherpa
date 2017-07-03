@@ -577,6 +577,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 
   AC_ARG_ENABLE(
+    gosam,
+    AC_HELP_STRING([--enable-gosam=/path/to/gosam], [Enable GoSam.]),
+    [ AC_MSG_CHECKING(for GoSam installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(GoSam not enabled); gosam=false ;;
+        *)   GOSAM_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             gosam=true;
+             if test -d "${GOSAM_PREFIX}"; then
+                AC_MSG_RESULT([${GOSAM_PREFIX}]);
+             else
+                AC_MSG_WARN(${GOSAM_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ gosam=false ]
+  )
+  if test "$gosam" = "true" ; then
+    AC_DEFINE_UNQUOTED([GOSAM_PREFIX], "$GOSAM_PREFIX", [GoSam installation prefix])
+  fi
+  AM_CONDITIONAL(GOSAM_SUPPORT, test "$gosam" = "true")
+
+  AC_ARG_ENABLE(
     mcfm,
     AC_HELP_STRING([--enable-mcfm=/path/to/mcfm], [Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);

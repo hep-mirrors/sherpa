@@ -16,7 +16,6 @@ namespace SHERPA {
     double m_weight, m_ntrials;
 
     MI_Handler         *p_mihandler;
-    PHASIC::KT_Finder  *p_jetfinder;
     PDF::Remnant_Base  *p_remnants[2];
 
     ATOOLS::Blob_List *p_bloblist;

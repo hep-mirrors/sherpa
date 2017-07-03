@@ -12,6 +12,9 @@ namespace AMEGIC {
     int depth;
     //! The list of point lists.
     Point** p;//[number][depth]
+    //! Prints a Single_Topology
+    void   Print(std::ostream &);
+    void   Print(Point*,std::ostream &,size_t &);
   };
   
   //! Creates and handles topologies.
@@ -25,19 +28,25 @@ namespace AMEGIC {
     //! Build all topologies for a certain number of legs.
     void   Build_Single(int,Single_Topology*);
   public:
-    //! Zero Constructor.
+    //! Default Constructor.
     Topology(); 
     //! Constructs all topologies.
     Topology(int); 
     //! Destructs all topologies.
     ~Topology();
     //! Returns a list of topologies with a certain number of legs.
+    inline int NTop() const {return ntop;}
+    //! Returns a list of topologies with a certain number of legs.
     inline Single_Topology* Get(int N) {return &top[N];}
     //! Copies a given point list into another.
     Point* Copy(Point*,Point*,int&);
     //! Prints a topology.
-    void   Print(Point*);
+    void   Print(int,std::ostream &);
+    void   Print(std::ostream &);
   };
+
+  std::ostream & operator<<(std::ostream &s,Single_Topology &stop);
+  std::ostream & operator<<(std::ostream &s,Topology &top);
 }
 #endif
 

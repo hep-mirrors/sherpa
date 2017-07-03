@@ -182,6 +182,9 @@ void Run_Parameter::Init(std::string path,std::string file)
   size_t pos(gen.m_username.find(','));
   if (pos<std::string::npos)
     gen.m_username.erase(pos,gen.m_username.length()-pos);
+  char hn[32];
+  if (gethostname(hn,32)) gen.m_hostname="<unknown host>";
+  else gen.m_hostname=std::string(hn);
   Default_Reader reader;
   reader.SetInputPath(m_path);
   reader.SetInputFile(file);
@@ -191,8 +194,10 @@ void Run_Parameter::Init(std::string path,std::string file)
   std::string logfile = reader.Get<std::string>("LOG_FILE","");
   msg->Init(outputlevel,logfile);
   msg->SetMPIMode(reader.Get<int>("MPI_OUTPUT",0));
-  if (msg->LevelIsInfo()) 
+  msg->SetPrecision(reader.Get<size_t>("OUTPUT_PRECISION",6));
+  if (msg->LevelIsInfo())
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
+             <<" on "<<gen.m_hostname
 	     <<". Initialization of framework underway."<<std::endl;
   msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
   // make path nice
@@ -279,10 +284,12 @@ void Run_Parameter::Init(std::string path,std::string file)
 #endif
 
   std::string seedstr;
-  if (gen.m_seeds[1]>0) 
+  if (gen.m_seeds[1]>0)
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
+  gen.SetVariable("NLO_NF_CONVERSION_TERMS",
+                  reader.Get<std::string>("NLO_NF_CONVERSION_TERMS","None"));
   gen.SetVariable("MEPSNLO_PDFCT",ToString(reader.Get<int>("MEPSNLO_PDFCT",1)));
   gen.SetVariable("MCNLO_DADS",ToString(reader.Get<int>("MCNLO_DADS",1)));
   gen.SetVariable("PB_USE_FMM",ToString(reader.Get<int>("PB_USE_FMM",0)));

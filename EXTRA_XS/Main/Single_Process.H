@@ -13,7 +13,7 @@ namespace EXTRAXS {
   private:
     ME2_Base* p_born_me2;
     PHASIC::Virtual_ME2_Base* p_virtual_me2;
-    PHASIC::nlo_type::code m_nlotype;
+    ATOOLS::nlo_type::code m_nlotype;
 
   public:
 

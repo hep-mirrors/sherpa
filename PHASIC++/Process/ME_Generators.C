@@ -108,14 +108,14 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
   DEBUG_FUNC(&pi);
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (pi.m_megenerator!="" && (*mit)->Name()!=pi.m_megenerator) continue;
-    DEBUG_INFO("trying "<<(*mit)->Name());
+    msg_Debugging()<<"Trying "<<(*mit)->Name()<<std::endl;
     Process_Base *proc((*mit)->InitializeProcess(pi,add));
     if (proc) {
-      DEBUG_INFO("found "<<proc->Name());
+      msg_Debugging()<<"Found "<<proc->Name()<<std::endl;
       return proc;
     }
   }
-  DEBUG_INFO("couldn't initialize process.");
+  msg_Debugging()<<"Couldn't initialize process."<<std::endl;;
   return NULL;
 }
 

@@ -33,7 +33,7 @@ Scale_Setter_Base::Scale_Setter_Base
   }
   size_t nl(0);
   if (p_proc) {
-    for (size_t i(0);i<p_proc->Flavours().size();++i) {
+    for (size_t i(m_nin);i<p_proc->Flavours().size();++i) {
       if (p_proc->Flavours()[i].IsLepton()) {
         nl++;
         if      (nl==1) m_l1=i;
@@ -120,6 +120,15 @@ double Scale_Setter_Base::HT() const
   return ht;
 }
 
+double Scale_Setter_Base::HTMprime() const
+{
+  if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
+  double htmp((m_p[m_l1]+m_p[m_l2]).MPerp());
+  for (size_t i(m_nin);i<m_p.size();++i)
+    if (i!=m_l1 && i!=m_l2) htmp+=m_p[i].MPerp();
+  return htmp;
+}
+
 double Scale_Setter_Base::HTprime() const
 {
   if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
@@ -134,13 +143,6 @@ Vec4D Scale_Setter_Base::PSum() const
   Vec4D sum(0.0,0.0,0.0,0.0);
   for (size_t i(m_nin);i<m_p.size();++i) sum+=m_p[i];
   return sum;
-}
-
-double Scale_Setter_Base::BeamThrust() const
-{
-  double tauB(0.);
-  for (size_t i(m_nin);i<m_p.size();++i) tauB+=m_p[i][0]-dabs(m_p[i][3]);
-  return tauB;
 }
 
 void Scale_Setter_Base::PreCalc(const Vec4D_Vector &p,const size_t &mode)
@@ -217,6 +219,8 @@ double Scale_Setter_Base::CalculateScale
     }
   }
   if (p_proc && p_proc->Integrator()->Beam()) p_cpls->Calculate();
+  msg_Debugging()<<"\\mu_F = "<<sqrt(m_scale[stp::fac])<<std::endl;
+  msg_Debugging()<<"\\mu_R = "<<sqrt(m_scale[stp::ren])<<std::endl;
   return m_scale[stp::fac];
 }
 

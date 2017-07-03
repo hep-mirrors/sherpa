@@ -26,11 +26,26 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Single_Process::Single_Process() :
-  m_lastbxs(0.0), m_lastflux(0.0),
-  m_zero(false), m_dads(true), m_pdfcts(true)
+  m_lastxs(0.0), m_lastbxs(0.0), m_lastflux(0.0),
+  m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
   m_pdfcts = ToType<size_t>(rpa->gen.Variable("MEPSNLO_PDFCT"));
   m_dads = ToType<size_t>(rpa->gen.Variable("MCNLO_DADS"));
+
+  std::string ncs(ToType<std::string>(rpa->gen.Variable("NLO_NF_CONVERSION_TERMS")));
+  if      (ncs=="None" || ncs=="0") m_nfconvscheme=0;
+  else if (ncs=="Off"  || ncs=="0") m_nfconvscheme=0;
+  else if (ncs=="On"   || ncs=="1") m_nfconvscheme=1;
+  else if (ncs=="Only" || ncs=="2") m_nfconvscheme=2;
+  else THROW(fatal_error,"Unknown NLO_NF_CONVERSION_TERMS scheme.");
+  static bool printed(false);
+  if (!printed && m_nfconvscheme>0) {
+    if (m_nfconvscheme==1)
+      msg_Info()<<"NLO n_f scheme conversion terms added to I-operator."<<std::endl;
+    if (m_nfconvscheme==2)
+      msg_Info()<<"NLO n_f scheme conversion terms computed only."<<std::endl;
+    printed=true;
+  }
 }
 
 Single_Process::~Single_Process()
@@ -61,6 +76,63 @@ double Single_Process::KFactor(const int mode) const
 {
   if (p_kfactor) return p_kfactor->KFactor(mode);
   return 1.0;
+}
+
+double Single_Process::NfSchemeConversionTerms() const
+{
+  if (m_nfconvscheme==0) return 0.;
+  DEBUG_FUNC("scheme="<<m_nfconvscheme<<", nlo-type="<<m_pinfo.m_nlomode);
+  if (m_nfconvscheme==1 && !(m_pinfo.m_nlomode&nlo_type::vsub)) return 0.;
+  // determine nf of PDF, if no PDF take from alphaS
+  // nfl from number of light quarks
+  int nfa(p_int->ISR()->PDF(0)?p_int->ISR()->PDF(0)->ASInfo().m_nf:-1);
+  int nfb(p_int->ISR()->PDF(1)?p_int->ISR()->PDF(1)->ASInfo().m_nf:-1);
+  if (nfa!=nfb)       THROW(fatal_error,"Nf(a) and Nf(b) differ. Abort.");
+  if (nfb==-1 && nfb!=MODEL::as->Nf(1.e20))
+    THROW(fatal_error,"Inconsistent Nf between PDFs and \\alpha_s.");
+  if (nfb==-1) nfa=MODEL::as->Nf(1.e20);
+  const size_t nf(nfb);
+  const size_t nfl(Flavour(kf_quark).Size()/2);
+  if (nfl==nf) return 0.;
+  // debugging output
+  msg_Debugging()<<"a="<<m_flavs[0]<<", b="<<m_flavs[1]
+                 <<", nf(a)="<<nfa<<", nf(b)="<<nfb<<", nfl="<<nfl<<std::endl;
+  // compute the scheme conversion terms
+  MODEL::Coupling_Data *qcdcpl(m_cpls.Get("Alpha_QCD"));
+  double as(qcdcpl->Default()*qcdcpl->Factor());
+  MODEL::Coupling_Data *qedcpl(m_cpls.Get("Alpha_QED"));
+  double aqed(qedcpl->Default()*qedcpl->Factor());
+  double res(0.);
+  double p(m_maxcpl[0]-m_pinfo.m_fi.m_nlocpl[0]);
+  double facqcd(as/3./M_PI*MODEL::as->TR()), facqed(aqed/3/M_PI);
+  msg_Debugging()<<"p="<<p<<", facqcd="<<facqcd<<", facqed="<<facqed<<std::endl;
+  double muR2(ScaleSetter(1)->Scale(stp::ren));
+  double muF2(ScaleSetter(1)->Scale(stp::fac));
+  for (size_t i(nfl+1);i<=nf;++i) {
+    Flavour fl((kf_code)(i));
+    double m2(sqr(fl.Mass()));
+    msg_Debugging()<<fl<<": m="<<sqrt(m2)<<", \\mu_R="<<sqrt(muR2)
+                   <<", \\mu_F="<<sqrt(muF2)<<std::endl;
+    // logs only if scale larger than mass
+    double logm2muR2(m2<muR2?log(m2/muR2):0.);
+    double logm2muF2(m2<muF2?((muR2==muF2)?logm2muR2:log(m2/muF2)):0.);
+    msg_Debugging()<<"log(m2/muR2)="<<logm2muR2
+                   <<", log(m2/muF2)="<<logm2muF2<<std::endl;
+    // alphaS term
+    if (p && logm2muR2 && m_flavs[0].Strong()) res+=facqcd*p*logm2muR2;
+    // PDF terms
+    for (size_t j(0);j<2;++j) {
+      if (logm2muF2 &&
+          p_int->ISR()->PDF(j) && p_int->ISR()->PDF(j)->Contains(m_flavs[j])) {
+        if      (m_flavs[j].IsGluon())  res-=facqcd*logm2muF2;
+        else if (m_flavs[j].IsPhoton()) res-=facqed*sqr(fl.Charge())*logm2muF2;
+      }
+    }
+  }
+  // scheme dependent return value
+  msg_Debugging()<<"B = "<<m_lastbxs<<" ,  C_nf = "<<res<<std::endl
+                 <<" => "<<(m_nfconvscheme==2?0.:m_last)+m_lastbxs*res<<std::endl;
+  return (m_nfconvscheme==2?-m_last:0.)+m_lastbxs*res;
 }
 
 double Single_Process::CollinearCounterTerms
@@ -382,7 +454,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_x2=p_int->ISR()->X2();
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
-  m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) : p_int->ISR()->Flux(p[0],p[1]);
+  m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) :
+                              p_int->ISR()->Flux(p[0],p[1]);
   m_lastflux/=m_issymfac;
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
@@ -394,6 +467,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
+    m_last+=NfSchemeConversionTerms();
     ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ?
       scs->Amplitudes() : ClusterAmplitude_Vector();
     const double facscale(scs->Scale(stp::fac));
@@ -709,20 +783,17 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
 
 double Single_Process::KPTerms(ATOOLS::Variation_Parameters * varparams)
 {
-  // insert target PDF into ISR_Handler, such that KP_Terms uses them through
-  // the ISR_Handler instead of the nominal PDF
-  PDF::PDF_Base *nominalpdf1 = p_int->ISR()->PDF(0);
-  PDF::PDF_Base *nominalpdf2 = p_int->ISR()->PDF(1);
-  p_int->ISR()->SetPDF(varparams->p_pdf1, 0);
-  p_int->ISR()->SetPDF(varparams->p_pdf2, 1);
-
-  double KP(KPTerms(0, varparams->m_muF2fac) * m_lastflux);
-
-  // reset
-  p_int->ISR()->SetPDF(nominalpdf1, 0);
-  p_int->ISR()->SetPDF(nominalpdf2, 1);
+  double KP(KPTerms(0, varparams->p_pdf1,
+                       varparams->p_pdf2, varparams->m_muF2fac) * m_lastflux);
 
   return KP;
+}
+
+double Single_Process::KPTerms
+(int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double scalefac2)
+{
+  THROW(fatal_error,"Virtual function not reimplemented.");
+  return 0.;
 }
 
 double Single_Process::MuR2(

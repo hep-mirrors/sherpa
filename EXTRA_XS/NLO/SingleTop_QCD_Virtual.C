@@ -88,8 +88,8 @@ operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+  if (pi.m_fi.m_nlotype&nlo_type::loop) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl.size()!=4) return NULL;
     if (fl[0].IsQuark() && fl[1].IsQuark() &&

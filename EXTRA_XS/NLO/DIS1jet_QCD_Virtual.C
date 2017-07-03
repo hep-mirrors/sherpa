@@ -41,8 +41,8 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="Internal") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype==nlo_type::loop) {
+  if (pi.m_fi.m_nlotype==nlo_type::loop) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl.size()!=4) return NULL;
     if (fl[0].IsLepton() && fl[1].IsQuark() && fl[2]==fl[0]  && fl[3]==fl[1]) {

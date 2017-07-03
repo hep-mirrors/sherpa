@@ -13,7 +13,7 @@ namespace ATOOLS { class Data_Reader; }
 
 namespace PHASIC {
 
-  class Process_Integrator;
+  class Process_Base;
 
   class Selector_Log {
   private:
@@ -31,7 +31,8 @@ namespace PHASIC {
     inline long int Rejections() const { return m_rejected; }
     inline long int Passed() const     { return m_passed;   }
 
-    inline int  Hit() { ++m_rejected; return 0; }
+    inline void ChangeName(std::string newname) { m_name=newname; }
+
     inline int  Hit(bool hit) 
     { 
       if (hit) { ++m_rejected; return 1; } 
@@ -41,14 +42,14 @@ namespace PHASIC {
   };// end of class Selector_Log
 
   struct Selector_Key: public std::vector<std::vector<std::string> > {
-    Process_Integrator  *p_proc;
+    Process_Base        *p_proc;
     ATOOLS::Data_Reader *p_read;
 
     bool m_del;
 
     std::string m_key;
 
-    inline Selector_Key(Process_Integrator *const proc,
+    inline Selector_Key(Process_Base *const proc,
 			ATOOLS::Data_Reader *const read,const bool del=false):
       p_proc(proc), p_read(read), m_del(del) {}
 
@@ -59,46 +60,47 @@ namespace PHASIC {
 
   };// end of struct Selector_Key
 
+  std::ostream & operator<<(std::ostream & s,const PHASIC::Selector_Key & sk);
+
   class Selector_Base {
   protected :
 
     std::string m_name;
+    bool        m_on,m_isnlo;
 
-    Selector_Log       *m_sel_log;
-    Process_Integrator *p_proc;
+    Selector_Log *m_sel_log;
+    Process_Base *p_proc;
+    std::vector<Selector_Base*> m_sels;
 
-    int m_n, m_nin, m_nout;
+    size_t m_nin, m_nout, m_n;
 
-    ATOOLS::Flavour *m_fl;
+    ATOOLS::Flavour *p_fl;
 
     double m_smin,m_smax;
 
   public :
 
-    inline Selector_Base(const std::string &name): 
-      m_name(name), m_sel_log(NULL), p_proc(NULL),
-      m_n(0), m_nin(0), m_nout(0), m_fl(NULL),
-      m_smin(0.), m_smax(std::numeric_limits<double>::max()) {}
+    Selector_Base(const std::string &name,Process_Base *const proc=NULL);
 
     virtual ~Selector_Base();
 
     // member functions
     static void ShowSyntax(const int mode);
 
-    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-			    ATOOLS::NLO_subevtlist *const subs);
-    virtual bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
+    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p,
+                         ATOOLS::NLO_subevt *const sub=NULL) = 0;
 
-    virtual void BuildCuts(Cut_Data *);
+    virtual void BuildCuts(Cut_Data *) = 0;
     virtual void AddOnshellCondition(std::string,double);
     virtual void Output();
-    
-    virtual int IsConditional();
+
+    void ReadInSubSelectors(const Selector_Key &key,size_t idx);
 
     // inline functions
-    inline void SetProcess(Process_Integrator *const proc) 
+    inline void SetProcess(Process_Base *const proc)
     { p_proc=proc; }
+    inline const PHASIC::Process_Base *const Process(Process_Base *const proc) const
+    { return p_proc; }
 
     inline std::string Name() const { return m_name; }
 

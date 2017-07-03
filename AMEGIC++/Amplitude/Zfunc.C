@@ -113,7 +113,8 @@ void Zfunc::Print()
   
   if (m_narg>0) msg_Out()<<p_arguments[m_narg-1];
   msg_Out()<<"][";
-  msg->Out().precision(2);
+  size_t precision(msg->Out().precision());
+  msg->SetPrecision(2);
   for (int i=0;i<m_ncoupl-1;i++) {
     if ( real(p_couplings[i])!=0.0 &&
 	 imag(p_couplings[i])==0.0 )
@@ -141,7 +142,7 @@ void Zfunc::Print()
 	imag(p_couplings[m_ncoupl-1])==0.0 )
 	msg_Out()<<"0])";
   msg_Out()<<endl;
-  msg->Out().precision(6);
+  msg->SetPrecision(precision);
 }
 
 

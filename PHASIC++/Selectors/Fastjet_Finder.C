@@ -13,23 +13,22 @@
 namespace PHASIC {
   class Fastjet_Finder : public Selector_Base {
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_nb, m_nb2, m_eekt;
+    size_t m_nj, m_nb, m_nb2, m_eekt;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
     fastjet::EECambridgePlugin * p_eecamplug;
     fastjet::JadePlugin * p_jadeplug;
 
   public:
-    Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl,std::string algo,
-		   double ptmin, double etmin, double dr, double f, double eta, double y, int nn, int nb, int nb2);
+    Fastjet_Finder(Process_Base *const proc,std::string algo,
+                   double ptmin, double etmin, double dr, double f,
+                   double eta, double y, int nj, int nb, int nb2);
 
     ~Fastjet_Finder();
 
 
-    bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,
-		      ATOOLS::NLO_subevtlist *const subs);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &p,
+                   ATOOLS::NLO_subevt *const sub=NULL);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -53,10 +52,13 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::string algo,
-			       double ptmin, double etmin, double dr, double f, double eta, double y, int nn, int nb, int nb2) :
-  Selector_Base("Fastjetfinder"), m_ptmin(ptmin), m_etmin(etmin), 
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), m_nb2(nb2), m_eekt(0), p_jdef(0),
+Fastjet_Finder::Fastjet_Finder(Process_Base *const proc,
+                               std::string algo, double ptmin, double etmin,
+                               double dr, double f, double eta, double y,
+                               int nj, int nb, int nb2) :
+  Selector_Base("FastjetFinder",proc), m_ptmin(ptmin), m_etmin(etmin),
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y),
+  m_nj(nj), m_nb(nb), m_nb2(nb2), m_eekt(0), p_jdef(0),
   p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
 {
   bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
@@ -80,15 +82,7 @@ Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::stri
   }
   else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
 
-  m_fl         = fl;
   m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
-  m_smax       = sqr(rpa->gen.Ecms());
-
-  m_nin        = nin;
-  m_nout       = nout;
-  m_n          = nn;
-
-  m_sel_log    = new Selector_Log(m_name);
 }
 
 
@@ -100,96 +94,61 @@ Fastjet_Finder::~Fastjet_Finder() {
 }
 
 
-bool Fastjet_Finder::NoJetTrigger(const Vec4D_Vector &p)
+bool Fastjet_Finder::Trigger(const Vec4D_Vector &p,
+                             ATOOLS::NLO_subevt *const sub)
 {
-  if (m_n<1) return true;
+  if (m_nj<1) return true;
+  size_t n(sub?sub->m_n:m_n);
+  const Flavour *const fl (sub?sub->p_fl:p_fl);
 
-  double s=(p[0]+p[1]).Abs2();
-  return (s>m_smin*4.);
-}
-
-bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
-{
-  if (m_n<1) return true;
-
+  DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
   std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<p.size();++i) {
-    if (Flavour(kf_jet).Includes(m_fl[i]) ||
-	((m_nb>0 || m_nb2>0) && m_fl[i].Kfcode()==kf_b)) {
-      input.push_back(MakePseudoJet(m_fl[i], p[i]));
+  for (size_t i(m_nin);i<n;++i) {
+    if (Flavour(kf_jet).Includes(fl[i]) ||
+        ((m_nb>0 || m_nb2>0) && fl[i].Kfcode()==kf_b)) {
+      input.push_back(MakePseudoJet(fl[i], p[i]));
     }
   }
-  
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
-
-  if (m_eekt) {
-    int n(0);
+  if (msg_LevelIsDebugging()) {
     for (size_t i(0);i<input.size();++i)
-      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
-    return (1-m_sel_log->Hit(1-(n>=m_n)));
+      msg_Out()<<input[i].user_index()<<": "
+               <<"("<<input[i].E()<<","<<input[i].px()
+               <<","<<input[i].py()<<","<<input[i].pz()<<")"<<std::endl;
   }
 
-  int n(0), nb(0), nb2(0);
+  fastjet::ClusterSequence cs(input,*p_jdef);
+  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+  msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
+
+  if (m_eekt) {
+    size_t nj(0);
+    for (size_t i(0);i<input.size();++i)
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++nj;
+    return (1-m_sel_log->Hit(1-(nj>=m_nj)));
+  }
+
+  size_t nj(0), nb(0), nb2(0);
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+    msg_Debugging()<<"Jet "<<i<<": pT="<<pj.PPerp()<<", |eta|="<<dabs(pj.Eta())
+                   <<", |y|="<<dabs(pj.Y())<<std::endl;
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
 	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
 	(m_y==100 || dabs(pj.Y())<m_y)) {
-      n++;
+      nj++;
       if (BTag(jets[i], 1)) nb++;
       if (BTag(jets[i], 2)) nb2++;
     }
   }
+  msg_Debugging()<<"njets(fin)="<<n<<std::endl;
 
   bool trigger(true);
-  if (n<m_n) trigger=false;
-  if (nb<m_nb) trigger=false;
+  if (nj<m_nj)   trigger=false;
+  if (nb<m_nb)   trigger=false;
   if (nb2<m_nb2) trigger=false;
 
-  return (1-m_sel_log->Hit(1-trigger));
-}
-
-bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
-				ATOOLS::NLO_subevtlist *const subs)
-{
-  if (m_n<1) return true;
-  std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<subs->back()->m_n;++i) {
-    if (Flavour(kf_jet).Includes(subs->back()->p_fl[i]) ||
-	((m_nb>0 || m_nb2>0) && subs->back()->p_fl[i].Kfcode()==kf_b)) {
-      input.push_back(MakePseudoJet(subs->back()->p_fl[i], p[i]));
-    }
-
-  }
-  
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
-
-  if (m_eekt) {
-    int n(0);
-    for (size_t i(0);i<input.size();++i)
-      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
-    return (1-m_sel_log->Hit(1-(n>=m_n)));
-  }
-
-  int n(0), nb(0), nb2(0);
-  for (size_t i(0);i<jets.size();++i) {
-    Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	(m_y==100 || dabs(pj.Y())<m_y)) {
-      n++;
-      if (BTag(jets[i], 1)) nb++;
-      if (BTag(jets[i], 2)) nb2++;
-    }
-  }
-
-  bool trigger(true);
-  if (n<m_n) trigger=false;
-  if (nb<m_nb) trigger=false;
-  if (nb2<m_nb2) trigger=false;
-
+  if (!trigger) msg_Debugging()<<"Point discarded by jet finder"<<std::endl;
+  else          msg_Debugging()<<"Point passed"<<std::endl;
   return (1-m_sel_log->Hit(1-trigger));
 }
 
@@ -213,14 +172,11 @@ operator()(const Selector_Key &key) const
   if (nb>0 || nb2>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
 #endif
 
-  Fastjet_Finder *jf(new Fastjet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
-					(Flavour*)&key.p_proc->Process()->Flavours().front(),
-					key[0][0],
-					ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
-					ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-					ToType<double>(key[0][4]),f,eta,y,
-					ToType<int>(key[0][1]),nb,nb2));
-  jf->SetProcess(key.p_proc);
+  Fastjet_Finder *jf(new Fastjet_Finder(key.p_proc,key[0][0],
+                                        ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
+                                        ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
+                                        ToType<double>(key[0][4]),f,eta,y,
+                                        ToType<int>(key[0][1]),nb,nb2));
   return jf;
 }
 

@@ -392,9 +392,9 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
     if (!Flavour(kf_jet).Includes(flavs[i])) nojetflavs.push_back(flavs[i]);
   }
 
-  std::vector<Flavour> noresflavs;
+  std::vector<Flavour> noewjetflavs;
   for (size_t i=0; i<nojetflavs.size(); ++i) {
-    if (!Flavour(kf_resummed).Includes(nojetflavs[i])) noresflavs.push_back(nojetflavs[i]);
+    if (!Flavour(kf_ewjet).Includes(nojetflavs[i])) noewjetflavs.push_back(nojetflavs[i]);
   }
 
   std::vector<Flavour> finalflavs;
@@ -402,19 +402,19 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
   for (size_t i=0; i<2; ++i) {
     if (Flavour(kf_jet).Includes(flavs[i]))
       finalflavs.push_back(Flavour(kf_jet));
-    else if (Flavour(kf_resummed).Includes(flavs[i]))
-      finalflavs.push_back(Flavour(kf_resummed));
+    else if (Flavour(kf_ewjet).Includes(flavs[i]))
+      finalflavs.push_back(Flavour(kf_ewjet));
     else
       finalflavs.push_back(flavs[i]);
   }
-  // add all non-jet and non-resummed particles
-  for (size_t i=0; i<noresflavs.size(); ++i) {
-    finalflavs.push_back(noresflavs[i]);
+  // add all non-jet and non-ewjet particles
+  for (size_t i=0; i<noewjetflavs.size(); ++i) {
+    finalflavs.push_back(noewjetflavs[i]);
   }
-  // add all resummed particles
-  for (size_t i=0; i<nojetflavs.size()-noresflavs.size(); ++i) {
+  // add all ewjet particles
+  for (size_t i=0; i<nojetflavs.size()-noewjetflavs.size(); ++i) {
     if (finalflavs.size()>3) break;
-    finalflavs.push_back(Flavour(kf_resummed));
+    finalflavs.push_back(Flavour(kf_ewjet));
   }
   // add all jet particles
   for (size_t i=0; i<flavs.size()-2-nojetflavs.size(); ++i) {

@@ -207,8 +207,7 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
   return vegas;
 }
 
-PHASIC::Vegas *PS_Channel::GetPVegas
-(const PS_Current *cur,const size_t &id)
+PHASIC::Vegas *PS_Channel::GetPVegas(const PS_Current *cur,const size_t &id)
 {
   if (cur!=NULL) {
 #ifdef USING__Threading
@@ -355,7 +354,7 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
 #endif
   }
-  return wgt;
+  return 1.0/wgt;
 }
 
 void PS_Channel::TChannelBounds
@@ -460,7 +459,7 @@ double PS_Channel::TChannelWeight
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
 #endif
   }
-  return wgt;
+  return 1.0/wgt;
 }
 
 void PS_Channel::SChannelBounds
@@ -534,7 +533,7 @@ double PS_Channel::SChannelWeight
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
 #endif
   }
-  return wgt;
+  return 1.0/wgt;
 }
 
 bool PS_Channel::GeneratePoint
@@ -876,10 +875,10 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 			 <<" "<<PSId(cid)<<" "<<did<<"\n";
 #endif
 	  v->SetWeight(cw);
-	  wgt+=v->Alpha()*v->Weight();
+	  wgt+=v->Alpha()/v->Weight();
 	  asum+=v->Alpha();
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    w = "<<1.0/v->Weight()
+	  msg_Debugging()<<"    w = "<<v->Weight()
 			 <<", a = "<<((PS_Vertex*)v)->Alpha()<<"\n";
 #endif
 	  continue;
@@ -896,19 +895,19 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 	}
       }
       v->SetWeight(GenerateWeight(ja,jb,jc,v,nr)*cw);
-      wgt+=v->Alpha()*v->Weight();
+      wgt+=v->Alpha()/v->Weight();
       asum+=v->Alpha();
 #ifdef DEBUG__BG
-      msg_Debugging()<<"    w = "<<1.0/(*v->J(0)->J().front().
-					Get<PS_Info>()->front())[0]
-		     <<" * "<<1.0/(*v->J(1)->J().front().
-				   Get<PS_Info>()->front())[0]
-		     <<" * "<<cw/v->Weight()<<" = "<<1.0/v->Weight()
+      msg_Debugging()<<"    w = "<<(*v->J(0)->J().front().
+				    Get<PS_Info>()->front())[0]
+		     <<" * "<<(*v->J(1)->J().front().
+			       Get<PS_Info>()->front())[0]
+		     <<" * "<<v->Weight()/cw<<" = "<<v->Weight()
 		     <<", a = "<<v->Alpha()<<"\n";
 #endif
     }
   }
-  wgt/=asum;
+  wgt=asum/wgt;
   if (m_omode>0)
     for (size_t i(0);i<cur->In().size();++i) {
       PS_Vertex *v((PS_Vertex*)cur->In()[i]);
@@ -916,15 +915,14 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 #ifdef DEBUG__BG
 	msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
 		       <<","<<PSId(v->J(1)->CId())
-		       <<"}: set w = "<<v->Weight()/wgt<<"\n";
+		       <<"}: set w = "<<wgt/v->Weight()<<"\n";
 #endif
-	if (wgt>0.0) v->SetWeight(v->Weight()/wgt);
+	if (wgt>0.0) v->SetWeight(wgt/v->Weight());
 	else v->SetWeight(0.0);
       }
     }
 #ifdef DEBUG__BG
-  msg_Debugging()<<"  } -> w = "<<1.0/(wgt*asum)
-		 <<" * "<<asum<<" = "<<1.0/wgt<<"\n";
+  msg_Debugging()<<"  } -> w = "<<wgt<<" ( asum =  "<<asum<<" )\n";
 #endif
   cur->ResetJ();
   cur->AddJ(PS_Info::New(PS_Info(0,0,wgt)));
@@ -990,8 +988,8 @@ bool PS_Channel::GenerateWeight()
     }
 #endif
   }
-  weight=1.0/(*(*p_cur)[m_n-1].back()->J().front().
-	      Get<PS_Info>()->front())[0]/
+  weight=(*(*p_cur)[m_n-1].back()->J().front().
+	  Get<PS_Info>()->front())[0]/
     pow(2.0*M_PI,3.0*nout-4.0);
 #ifdef DEBUG__BG
   msg_Debugging()<<"} -> "<<weight<<"\n";

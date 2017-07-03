@@ -14,15 +14,15 @@ namespace PHASIC {
     ATOOLS::Algebra_Interpreter *p_calc;
 
   public:
-    
+
     // constructor
     inline Tag_Setter(Scale_Setter_Base *const setter): 
       p_setter(setter), p_calc(NULL) {}
-    
+
     // member functions
-    std::string   ReplaceTags(std::string &expr) const;    
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
-    
+    std::string   ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+
     void AssignId(ATOOLS::Term *term);
 
     void SetTags(ATOOLS::Algebra_Interpreter *const calc);

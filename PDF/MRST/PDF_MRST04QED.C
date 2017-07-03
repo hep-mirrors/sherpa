@@ -52,7 +52,6 @@ PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch):
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
   m_partons.insert(Flavour(kf_photon));
-  m_partons.insert(Flavour(kf_resummed));
   m_xmin=1.e-5;
   m_xmax=1.;
   m_q2min=1.25;

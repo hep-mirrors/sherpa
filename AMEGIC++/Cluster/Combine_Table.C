@@ -172,8 +172,8 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
   p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL), m_rscale(-1.0),
   p_decids(decids)
 {
-  if (proc->Info().m_fi.NLOType()&PHASIC::nlo_type::loop ||
-      proc->Info().m_fi.NLOType()&PHASIC::nlo_type::vsub)
+  if (proc->Info().m_fi.NLOType()&ATOOLS::nlo_type::loop ||
+      proc->Info().m_fi.NLOType()&ATOOLS::nlo_type::vsub)
     m_nstrong--;
   p_proc=proc;
   m_no=++s_all;
@@ -551,7 +551,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
        cit->second.m_mo,p_ms,
        (mode&1024)||((mode&4096)&&p_up==NULL)?1:-1,
        (cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
-       (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
+       (p_proc->Parent()->Info().m_fi.m_nlotype!=ATOOLS::nlo_type::lo?16:0)|
        ((mode&4096)&&p_up==NULL?32:0));
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"

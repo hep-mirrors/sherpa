@@ -10,10 +10,9 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Combined_Selector::Combined_Selector(Process_Integrator *const proc):
-  Selector_Base("Combined_Selector"), m_count(0), m_on(1)
+Combined_Selector::Combined_Selector(Process_Base *const proc):
+  Selector_Base("Combined_Selector",proc), m_count(0), m_on(1)
 {
-  p_proc=proc;
 }
 
 Combined_Selector::~Combined_Selector()
@@ -66,13 +65,13 @@ Selector_Key Combined_Selector::FindArguments
     }
     if (open==0) break;
     j=0;
-  }  
+  }
   return result;
 }
 
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
-  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()<<"' {\n";
+  DEBUG_FUNC(p_proc->Name());
   for (size_t k=0;k<key.size();++k) {
     if (key[k].size()>0) {
       if (key[k][0]=="{" || key[k][0]=="}") continue;
@@ -85,7 +84,7 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
     if (sel!=NULL) {
       m_sels.push_back(sel);
       if (msg_LevelIsDebugging()) {
-	msg_Out()<<"      new Selector_Base(\""
+        msg_Out()<<"new Selector_Base(\""
 		 <<key[k][0]<<"\",";
 	for (size_t i=0;i<mat.size();++i) {
 	  msg_Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
@@ -101,45 +100,18 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       THROW(fatal_error, "Did not find selector \""+key[startk][0]+"\".");
     }
   }
-  msg_Debugging()<<"   }\n";
   return true;
 }
 
-bool Combined_Selector::Trigger(const Vec4D_Vector &p) 
+bool Combined_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
+  DEBUG_FUNC("");
   m_res=1;
   if (!m_on) return m_res;
-  m_count++;
   for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->Trigger(p))) {
-      m_res=0;
-      return m_res;
-    }
-  }
-  return m_res;
-}
-
-bool Combined_Selector::JetTrigger
-(const Vec4D_Vector &p,NLO_subevtlist *const subs)
-{
-  m_jres=1;
-  if (!m_on) return m_jres;
-  for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->JetTrigger(p,subs))) {
-      m_jres=0;
-      return m_jres;
-    }
-  }
-  return m_jres;
-}
-
-bool Combined_Selector::NoJetTrigger(const Vec4D_Vector &p)
-{
-  m_res=1;
-  if (!m_on) return m_res;
-  m_count++;
-  for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->NoJetTrigger(p))) {
+    msg_Debugging()<<m_sels[i]->Name()<<std::endl;
+    if (!(m_sels[i]->Trigger(p,sub))) {
+      msg_Debugging()<<"Point discarded"<<std::endl;
       m_res=0;
       return m_res;
     }
@@ -149,15 +121,7 @@ bool Combined_Selector::NoJetTrigger(const Vec4D_Vector &p)
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
 {
-  for (size_t i=0; i<m_sels.size(); ++i) 
-    if (!m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
-
-  //smin update!!!
-
-  for (size_t i=0; i<m_sels.size(); ++i) 
-    if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
-  for (size_t i=0; i<m_sels.size(); ++i) 
-    if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
+  for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->BuildCuts(cuts);
 
   for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
   cuts->Complete();
@@ -172,7 +136,7 @@ void Combined_Selector::AddOnshellCondition(std::string s,double d)
 void Combined_Selector::Output()
 {
   msg_Debugging()<<"========================================="<<std::endl
-			    <<"Efficiency of the Selector : "<<m_name<<std::endl;
+                 <<"Efficiency of the Selector : "<<m_name<<std::endl;
   for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
   msg_Debugging()<<"========================================="<<std::endl;
 }
@@ -183,5 +147,12 @@ Selector_Base * Combined_Selector::GetSelector(const std::string &name) const
     if (m_sels[i]->Name()==name) return m_sels[i];
   return 0;
   
+}
+
+void Combined_Selector::ListSelectors() const
+{
+  msg_Info()<<"Selectors:"<<std::endl;
+  for (size_t i=0; i<m_sels.size(); ++i)
+    msg_Info()<<m_sels[i]->Name()<<std::endl;
 }
 

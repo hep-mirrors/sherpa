@@ -110,7 +110,10 @@ void Dipole_FI::AddRadiation() {
         CalculateWeights();
       }
       // optionally increase maximum
+      msg_Debugging()<<"accept? "<<m_genweight
+                     <<" <-> "<<m_genmaxweight*Photons::s_increasemaxweight;
       m_genmaxweight *= Photons::s_increasemaxweight;
+      msg_Debugging()<<" = "<<m_genmaxweight<<std::endl;
       if (ran->Get()*m_genmaxweight < m_genweight)   genreject = false;
       msg_Debugging()<<"-> "<<(genreject?"reject":"accept")<<std::endl;
       // accept new particle momenta if event accepted

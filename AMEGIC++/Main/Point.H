@@ -36,7 +36,6 @@ namespace AMEGIC {
       if (Color) delete Color;
       if (Lorentz) Lorentz->Delete();
     }
-    void Print();
     void ResetExternalNumbers(int);
     void ResetProps();
     void ResetFlag();

@@ -152,7 +152,7 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
       if (sit==m_suds.end()) continue;
       int is((l->Id()&3)?1:0);
       double gamma[2]={0.0,0.0};
-      if (mode==1 && p_proc->Info().m_fi.m_nloqcdtype!=nlo_type::lo) {
+      if (mode==1 && p_proc->Info().m_fi.m_nlotype!=nlo_type::lo) {
 	gamma[0]=sit->second->Delta1(Q02[is],next->KT2(),muR2);
 	gamma[1]=sit->second->Delta1(Q02[is],ampl->KT2(),muR2);
       }

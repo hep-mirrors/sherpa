@@ -25,37 +25,13 @@ namespace MODEL {
   // up to factor 4^(i+1)
 
   class One_Running_AlphaS {
-
-  public:
-
-    One_Running_AlphaS(PDF::PDF_Base *const pdf,
-                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
-                       const int order = 0, const int thmode = 1);
-
-    ~One_Running_AlphaS();
-
-    int    Order()                { return m_order;       }
-    double Beta0(const double q2) { return Beta0(Nf(q2)); }
-    double Beta1(const double q2) { return Beta1(Nf(q2)); }
-    double Beta2(const double q2) { return Beta2(Nf(q2)); }
-    double Beta3(const double q2) { return Beta3(Nf(q2)); }
-    double AsMZ()                 { return m_as_MZ;       }
-    PDF::PDF_Base * PDF()         { return p_pdf;         }
-    double CutQ2()                { return m_cutq2;       }
-    double BoundedAlphaS(const double &q2)
-                                  { return (*this)(std::max(q2, CutQ2())); }
-
-    double operator()(double q2); 
-    double AlphaS(const double q2);
-    int Nf(const double q2);
-    std::vector<double> Thresholds(double q12,double q22);
-
   protected:
 
-    int    m_order, m_pdf;
-    int    m_nthresholds, m_mzset;
-    double m_as_MZ, m_m2_MZ;
-    double m_cutq2, m_cutas;
+    int         m_order,m_pdf;
+    int         m_nthresholds,m_mzset;
+    double      m_CF,m_CA,m_TR;
+    double      m_as_MZ,m_m2_MZ;
+    double      m_cutq2,m_cutas;
 
     AsDataSet     * p_thresh;
     PDF::PDF_Base * p_pdf;
@@ -69,7 +45,38 @@ namespace MODEL {
     double InvZetaOS2(const double,const double,const double,const int);
     double AlphaSLam(const double,const int);
     void   ContinueAlphaS(int &);
+    void   PrintSummary();
 
+  public:
+
+    One_Running_AlphaS(PDF::PDF_Base *const pdf,
+                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                       const int order = 0, const int thmode = 1);
+
+    ~One_Running_AlphaS();
+
+    inline int    Order()                { return m_order;       }
+    inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
+    inline double Beta1(const double q2) { return Beta1(Nf(q2)); }
+    inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
+    inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
+    inline double AsMZ()                 { return m_as_MZ;       }
+    inline PDF::PDF_Base * PDF()         { return p_pdf;         }
+
+    inline double CA() const { return m_CA; }
+    inline double CF() const { return m_CF; }
+    inline double TR() const { return m_TR; }
+
+    int    Nf(const double q2);
+    std::vector<double> Thresholds(double q12,double q22);
+
+    inline double CutQ2()                { return m_cutq2;       }
+
+    inline double BoundedAlphaS(const double &q2)
+    { return (*this)(std::max(q2, CutQ2())); }
+
+    double operator()(double q2);
+    double AlphaS(const double q2);
   };
 
 
@@ -120,6 +127,9 @@ namespace MODEL {
     inline double Beta2(const double q2)  { return p_active->Beta2(q2); }
     inline double Beta3(const double q2)  { return p_active->Beta3(q2); }
     inline double AsMZ()                  { return p_active->AsMZ(); }
+    inline double CA() const              { return p_active->CA(); }
+    inline double CF() const              { return p_active->CF(); }
+    inline double TR() const              { return p_active->TR(); }
     inline int    Nf(const double q2)     { return p_active->Nf(q2); }
     inline std::vector<double> Thresholds(double q12,double q22)
                                           { return p_active->Thresholds(q12,q22); }

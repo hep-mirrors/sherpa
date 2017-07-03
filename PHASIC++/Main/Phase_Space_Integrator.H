@@ -9,32 +9,41 @@ namespace PHASIC {
 
   class Phase_Space_Integrator {
   private:
+    long unsigned int m_iter, m_itmin, m_itmax, m_itminbynode;
+    long unsigned int m_nmin, m_nrawmin;
+    static long unsigned int m_nmax, m_nrawmax;
 
-    size_t itmin, itmax;
-    int iter,nopt,ndecopt,optiter,itminbynode;
-    static long unsigned int nmax;
+    long unsigned int m_nopt, m_ndecopt, m_optiter;
 
-    double starttime, lotime, addtime, lrtime;
-    double value, maxerror, maxabserror, stepstart, timestep, timeslope;
-    long unsigned int n, ncontrib, maxopt, nlo, fin_opt, nstep, ncstep;
-    long int mn, mnstep, mncstep, stopopt;
-    size_t lastrss;
+    long unsigned int m_n, m_nstep, m_ncstep;
+    long unsigned int m_mn, m_mnstep, m_mncstep;
+    long unsigned int m_ncontrib, m_maxopt, m_stopopt, m_nlo;
 
-    Phase_Space_Handler *psh;
+    int m_fin_opt;
+
+    double m_starttime, m_lotime, m_addtime, m_lrtime;
+    double m_maxerror, m_maxabserror;
+
+    size_t m_lastrss;
+
+    double m_stepstart, m_timestep, m_timeslope;
+
+    Phase_Space_Handler *p_psh;
 
   public:
 
     Phase_Space_Integrator(Phase_Space_Handler*);
-    
+
     ~Phase_Space_Integrator();
 
-    double Calculate(double,double,int); 
-    double CalculateDecay(double); 
+    double Calculate(double,double,int);
+    double CalculateDecay(double);
 
     void MPISync();
 
     //! Simple access methods.
     static long int MaxPoints();
+    static long int MaxRawPoints();
     static void     SetMaxPoints(long int _nmax);
 
     bool AddPoint(const double value);

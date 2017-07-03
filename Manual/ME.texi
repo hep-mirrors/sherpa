@@ -361,6 +361,19 @@ takes the form
 @end verbatim
 Typical values to use would by @code{0.3} and @code{1}.
 
+@item H_Tp2
+Scale setter for lepton-pair production in association with jets only,
+implements
+@verbatim
+  H_T' = sqrt(m_ll^2 + pT(ll)^2) + sum_i pT_i (i not l)
+@end verbatim
+
+@item DH_Tp2(<recombination-method>,<dR>)
+Implements a version of @code{H_Tp2} which dresses charged particles first.
+The parameter @code{<recombination-method>} can take the following values:
+@code{Cone}, @code{kt}, @code{CA} or @code{antikt}, while @code{<dR>} is
+the respecitve algorithm's angular distance parameter.
+
 @comment @item TAU_B2
 @comment Square of the beam thrust.
 

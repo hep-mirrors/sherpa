@@ -24,7 +24,8 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   Vec4D K  = m_pi-m_pj+m_pk;
   Vec4D Kt = m_ptij+m_pk;
   Vec4D KKt = K+Kt;
-  for(int i=2;i<=m_m;i++) m_mom[i]-=2.*(m_mom[i]*KKt/KKt.Abs2()*KKt-m_mom[i]*K/K.Abs2()*Kt);
+  for(int i=2;i<=m_m;i++)
+    m_mom[i]-=2.*(m_mom[i]*KKt/KKt.Abs2()*KKt-m_mom[i]*K/K.Abs2()*Kt);
 
   m_vi   = (m_pi*m_pj)/(m_pi*m_pk);
   m_a = m_vi;
@@ -34,15 +35,15 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     m_kt2 = m_Q2*(1.-m_xijk)/m_xijk*m_vi;
   }
   else {
-  m_kt2 = m_Q2/m_xijk*m_vi;
-  switch (m_ft) {
-  case 1:
-    m_kt2*=(1.-m_xijk);
-    break;
-  case 4:
-    m_kt2*=(1.-m_xijk);
-    break;
-  }
+    m_kt2 = m_Q2/m_xijk*m_vi;
+    switch (m_ftype) {
+    case spt::q2qg:
+      m_kt2*=(1.-m_xijk);
+      break;
+    case spt::g2gg:
+      m_kt2*=(1.-m_xijk);
+      break;
+    }
   }
 
 //   m_pt1  =    m_pj;
@@ -50,20 +51,20 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   m_pt1  =    m_pj-m_vi*m_pk;
   m_pt2  =    m_ptij;
 
-  switch (m_ft) {
-  case 1:
+  switch (m_ftype) {
+  case spt::q2qg:
     m_sff = 2./(1.-m_xijk)-(1.+m_xijk);
     m_av  = m_sff;
     break;
-  case 2:
+  case spt::q2gq:
     m_sff = 1.-2.*m_xijk*(1.-m_xijk);
     m_av  = m_sff;
     break;
-  case 3:
+  case spt::g2qq:
     m_sff = m_xijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
     break;
-  case 4:
+  case spt::g2gg:
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
   }
@@ -72,33 +73,20 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
 double II_DipoleSplitting::GetValue()
 {
-  double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
-  switch (m_ft) {
-  case 1:
-    h*=m_sff;
-    return h;
-  case 2:
-    h*=m_sff;   
-    return h;
-  case 3:
-    return h*m_sff*CSC.TR/CSC.CA;
-  case 4:
-    h*=2.*m_sff;
-    return h;
-  }
-  return 0.;
+  double h=1.0/(2.*m_pi*m_pj)/m_xijk;
+  return h*m_fac*m_sff;
 }
 
 void II_DipoleSplitting::CalcDiPolarizations()
 {
-  switch (m_ft) {
-  case 1:
-  case 2:
+  switch (m_ftype) {
+  case spt::q2qg:
+  case spt::q2gq:
     return;
-  case 3:
+  case spt::g2qq:
     CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/4.);
     break;
-  case 4:
+  case spt::g2gg:
     CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/2.);
     break;
   }

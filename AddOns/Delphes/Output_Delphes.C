@@ -88,7 +88,7 @@ Output_Delphes::Output_Delphes(const Output_Arguments &args,int mode):
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=m_mode?"_ge.root":".root";
-  int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_xs = new HepMC::GenCrossSection();
 #endif

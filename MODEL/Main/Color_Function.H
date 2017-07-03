@@ -127,7 +127,9 @@ namespace MODEL {
     std::string FullString() const;
   };  
 
-/*! 
+  std::ostream &operator<<(std::ostream &str,const Color_Function &cf);
+
+  /*!
     \file
     \brief this file contains the classes MODEL::Color_Function
            and MODEL::cf   

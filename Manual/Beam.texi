@@ -137,42 +137,97 @@ Value of alphaQED to be used in the EPA. Defaults to @code{0.0072992701}.
 
 @node Intrinsic Transverse Momentum
 @subsection Intrinsic Transverse Momentum
+@cindex INTRINSIC_KPERP
+@cindex K_PERP_SCHEME
 @cindex K_PERP_MEAN_1
 @cindex K_PERP_MEAN_2
 @cindex K_PERP_SIGMA_1
 @cindex K_PERP_SIGMA_2
+@cindex K_PERP_EXP_1
+@cindex K_PERP_EXP_2
+@cindex K_PERP_EREF_1
+@cindex K_PERP_EREF_2
 @cindex BEAM_REMNANTS
 
 @table @option
+@item K_PERP_SCHEME
+This parameter specifies the scheme to calculate the intrinsic transverse
+momentum of the beams in case of hadronic beams, such as protons.
+@*
+The default value for protons is 0.
+
 @item K_PERP_MEAN_1
 This parameter specifies the mean intrinsic transverse
 momentum for the first (left) beam in case of hadronic 
 beams, such as protons.
 @*
-The default value for protons is 0.8 GeV.
+The default value for protons is 1.1 GeV.
 
 @item K_PERP_MEAN_2
 This parameter specifies the mean intrinsic transverse
 momentum for the second (right) beam in case of hadronic 
 beams, such as protons.
 @*
-The default value for protons is 0.8 GeV.
+The default value for protons is 1.1 GeV.
 
 @item K_PERP_SIGMA_1
 This parameter specifies the width of the Gaussian distribution
 of intrinsic transverse momentum for the first (left) beam in 
 case of hadronic beams, such as protons.
 @*
-The default value for protons is 0.8 GeV.
+The default value for protons is 0.85 GeV.
 
 @item K_PERP_SIGMA_2
 This parameter specifies the width of the Gaussian distribution
+of intrinsic transverse momentum for the second (right) beam in 
+case of hadronic beams, such as protons.
+@*
+The default value for protons is 0.85 GeV.
+
+@item K_PERP_EXP_1
+This parameter specifies the energy extrapolation exponent 
+of the width of the Gaussian distribution
 of intrinsic transverse momentum for the first (left) beam in 
 case of hadronic beams, such as protons.
 @*
-The default value for protons is 0.8 GeV.
+The default value for protons is 0.55.
+
+@item K_PERP_EXP_2
+This parameter specifies the energy extrapolation exponent 
+of the width of the Gaussian distribution
+of intrinsic transverse momentum for the second (right) beam in 
+case of hadronic beams, such as protons.
+@*
+The default value for protons is 0.55.
+
+@item K_PERP_EREF_1
+This parameter specifies the reference scale in the energy extrapolation 
+of the width of the Gaussian distribution
+of intrinsic transverse momentum for the first (left) beam in 
+case of hadronic beams, such as protons.
+@*
+The default value for protons is 7000 GeV.
+
+@item K_PERP_EREF_2
+This parameter specifies the reference scale in the energy extrapolation 
+of the width of the Gaussian distribution
+of intrinsic transverse momentum for the second (right) beam in 
+case of hadronic beams, such as protons.
+@*
+The default value for protons is 7000 GeV.
 
 @end table
+
+All values can also be passed as a space separeted list
+@verbatim
+  INTRINSIC_KPERP <mean1> <mean2> <sigma1> <sigma2> <exp1> <exp2> <eref1> <eref2>
+@end verbatim
+The list can be terminated after any element. The explicit setting through 
+@code{K_PERP_<tag>} takes precedence.
+Alternatively, the intrinsic transverse momentum can be disabled alltogether
+@verbatim
+  INTRINSIC_KPERP None
+@end verbatim
 
 If the option @option{BEAM_REMNANTS=0} is specified, pure parton-level
 events are simulated, i.e. no beam remnants are generated. Accordingly,

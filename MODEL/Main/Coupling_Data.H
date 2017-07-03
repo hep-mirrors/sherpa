@@ -55,6 +55,8 @@ namespace MODEL {
 		       const ATOOLS::NLO_subevt *sub=NULL) const;
   };
 
+  std::ostream &operator<<(std::ostream &str,const Coupling_Map &cm);
+
 }// end of namespace MODEL
 
 #endif

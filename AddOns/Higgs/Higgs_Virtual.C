@@ -195,8 +195,8 @@ operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Higgs") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype==nlo_type::loop) {
+  if (pi.m_fi.m_nlotype==nlo_type::loop) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Default_Reader reader;
     int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
     int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);

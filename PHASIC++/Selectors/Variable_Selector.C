@@ -20,10 +20,11 @@ namespace PHASIC {
 
     std::vector<std::pair<double,double> > m_bounds;
 
-    std::vector<std::vector<int> >    m_sels;
-    std::vector<ATOOLS::Vec4D_Vector> m_moms;
-    ATOOLS::Flavour_Vector            m_cfl;
-    std::vector<size_t>               m_nfl, m_ffl;
+    std::vector<std::vector<ATOOLS::Vec4D_Vector> > m_moms;
+    std::vector<std::vector<std::vector<int> > > m_sels;
+    std::vector<ATOOLS::Flavour_Vector> m_cfl;
+    std::vector<std::vector<size_t> > m_nfl;
+    std::vector<size_t> m_ffl;
 
     std::string m_omode;
 
@@ -31,14 +32,13 @@ namespace PHASIC {
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p,size_t &l,size_t &u,
 		 ATOOLS::Vec4D_Vector &moms,const size_t &f,
-		 const size_t &n,const size_t &m);
+		 const size_t &n,const size_t &m,const size_t &id);
 
   public:
 
     // constructor
-    Variable_Selector(const int &nin,const int &nout,
-		      const int &imode,ATOOLS::Flavour *const fl,
-		      const std::string &name);
+    Variable_Selector(Process_Base *const proc,const int &imode,
+                      const std::string &name);
 
     // destructor
     ~Variable_Selector();
@@ -46,13 +46,12 @@ namespace PHASIC {
     // member functions
     void BuildCuts(Cut_Data *cuts);
 
-    void SetRange(ATOOLS::Flavour_Vector fl,
+    void SetRange(int id,ATOOLS::Flavour_Vector pfl,
+		  ATOOLS::Flavour_Vector fl,
 		  std::vector<std::pair<double,double> > &bounds);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p);
-    bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-		    ATOOLS::NLO_subevtlist *const);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p,const int id);
+    bool Trigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevt *const=NULL);
 
   };// end of class Variable_Selector
 
@@ -74,16 +73,11 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Variable_Selector::Variable_Selector
-(const int &nin,const int &nout,const int &imode,Flavour *const fl,
- const std::string &name): Selector_Base("Variable("+name+")")
+Variable_Selector::Variable_Selector(Process_Base *const proc,const int &imode,
+                                     const std::string &name) :
+  Selector_Base("Variable("+name+")",proc)
 {
-  m_nin=nin;
-  m_nout=nout;
-  m_n=m_nin+m_nout;
   m_imode=imode;
-  m_fl = new Flavour[m_n];
-  for (int i(0);i<m_n;++i) m_fl[i]=fl[i];
   size_t pos(name.find('|'));
   while (pos<name.length()-1 && name[pos+1]=='|') pos=name.find('|',pos+2);
   std::string vname(name.substr(0,pos));
@@ -134,7 +128,6 @@ Variable_Selector::~Variable_Selector()
     m_orders.pop_back();
   }
   delete p_variable;
-  delete [] m_fl;
 }
 
 void Variable_Selector::BuildCuts(Cut_Data *cuts)
@@ -142,31 +135,35 @@ void Variable_Selector::BuildCuts(Cut_Data *cuts)
 }
 
 void Variable_Selector::SetRange
-(std::vector<Flavour> fl,std::vector<std::pair<double,double> > &bounds)
+(int id,std::vector<Flavour> pfl,std::vector<Flavour> fl,
+ std::vector<std::pair<double,double> > &bounds)
 {
+  m_cfl.push_back(Flavour_Vector());
+  m_nfl.push_back(std::vector<size_t>());
+  if (id>=m_cfl.size()) THROW(fatal_error,"Invalid call");
   for (size_t i(0);i<fl.size();++i) {
     bool found(false);
-    for (size_t j(0);j<m_cfl.size();++j)
-      if (m_cfl[j]==fl[i]) {
-	++m_nfl[j];
+    for (size_t j(0);j<m_cfl[id].size();++j)
+      if (m_cfl[id][j]==fl[i]) {
+	++m_nfl[id][j];
 	found=true;
 	break;
       }
     if (!found) {
-      m_cfl.push_back(fl[i]);
-      m_nfl.push_back(1);
+      m_cfl[id].push_back(fl[i]);
+      m_nfl[id].push_back(1);
     }
   }
-  m_sels.resize(m_cfl.size());
-  m_moms.resize(m_cfl.size());
+  m_sels.push_back(std::vector<std::vector<int> >(m_cfl[id].size()));
+  m_moms.push_back(std::vector<Vec4D_Vector>(m_cfl[id].size()));
   m_bounds=bounds;
   m_name="Variable_Selector_"+ToString(m_imode)+"_";
-  for (size_t j(0);j<m_cfl.size();++j) {
-    m_name+="_"+m_cfl[j].IDName()+"-"+ToString(m_nfl[j]);
-    for (int i(m_imode?0:m_nin);i<m_n;++i)
-      if (m_cfl[j].Includes(m_fl[i]))
-	m_sels[j].push_back(i);
-    m_moms[j].resize(m_sels[j].size());
+  for (size_t j(0);j<m_cfl[id].size();++j) {
+    m_name+="_"+m_cfl[id][j].IDName()+"-"+ToString(m_nfl[id][j]);
+    for (int i(m_imode?0:m_nin);i<pfl.size();++i)
+      if (m_cfl[id][j].Includes(pfl[i]))
+	m_sels[id][j].push_back(i);
+    m_moms[id][j].resize(m_sels[id][j].size());
   }
   msg_Debugging()<<METHOD<<"(): order = "<<m_omode
 		 <<", imode = "<<m_imode<<" {\n";
@@ -177,25 +174,24 @@ void Variable_Selector::SetRange
     msg_Debugging()<<" -> "<<m_bounds[j].first
 		   <<" .. "<<m_bounds[j].second<<"\n";
   }
-  for (size_t j(0);j<m_cfl.size();++j) {
-    msg_Debugging()<<"  "<<j<<": "<<m_cfl[j].IDName()
-		   <<" ("<<m_nfl[j]<<") -> {";
-    if (m_sels[j].size()>0) msg_Debugging()<<m_sels[j].front();
-    for (size_t k(1);k<m_sels[j].size();++k)
-      msg_Debugging()<<","<<m_sels[j][k];
+  for (size_t j(0);j<m_cfl[id].size();++j) {
+    msg_Debugging()<<"  "<<j<<": "<<m_cfl[id][j].IDName()
+		   <<" ("<<m_nfl[id][j]<<") -> {";
+    if (m_sels[id][j].size()>0) msg_Debugging()<<m_sels[id][j].front();
+    for (size_t k(1);k<m_sels[id][j].size();++k)
+      msg_Debugging()<<","<<m_sels[id][j][k];
     msg_Debugging()<<"}\n";
   }
   msg_Debugging()<<"}\n";
-  if (m_sel_log!=NULL) delete m_sel_log;
-  m_sel_log = new Selector_Log(m_name);
+  m_sel_log->ChangeName(m_name);
 }
 
 bool Variable_Selector::Trigger
 (const Vec4D_Vector &p,size_t &l,size_t &u,std::vector<Vec4D> &moms,
- const size_t &f,const size_t &n,const size_t &m) 
+ const size_t &f,const size_t &n,const size_t &m,const size_t &id) 
 {
   msg_Indent();
-  if (f==m_cfl.size()) {
+  if (f==m_cfl[id].size()) {
     if (m_ffl.empty()) u=l;
     else if (u>=m_ffl.size() || l!=m_ffl[u]) {
       ++l;
@@ -212,16 +208,16 @@ bool Variable_Selector::Trigger
     ++l; ++u;
     return !m_sel_log->Hit(res);
   }
-  if (n==m_nfl[f]) return Trigger(p,l,u,moms,f+1,0,0);
+  if (n==m_nfl[id][f]) return Trigger(p,l,u,moms,f+1,0,0,id);
   moms.push_back(Vec4D());
-  for (size_t k(m);k<m_sels[f].size();++k) {
+  for (size_t k(m);k<m_sels[id][f].size();++k) {
 #ifdef DEBUG__Variable_Selector
     msg_Debugging()<<"f = "<<f<<", n = "<<n<<", m = "<<m
-		   <<", k = "<<k<<" -> "<<m_cfl[f].IDName()
-		   <<" ("<<m_sels[f][k]<<") {\n";
+		   <<", k = "<<k<<" -> "<<m_cfl[id][f].IDName()
+		   <<" ("<<m_sels[id][f][k]<<") {\n";
 #endif
-    moms.back()=m_moms[f][k];
-    if (!Trigger(p,l,u,moms,f,n+1,k+1)) return false;
+    moms.back()=m_moms[id][f][k];
+    if (!Trigger(p,l,u,moms,f,n+1,k+1,id)) return false;
 #ifdef DEBUG__Variable_Selector
     msg_Debugging()<<"}\n";
 #endif
@@ -230,24 +226,29 @@ bool Variable_Selector::Trigger
   return true;
 }
 
-bool Variable_Selector::Trigger(const Vec4D_Vector &p) 
+bool Variable_Selector::Trigger(const Vec4D_Vector &p,const int id) 
 {
 #ifdef DEBUG__Variable_Selector
-  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<METHOD<<"(id="<<id<<"): {\n";
 #endif
-  for (size_t j(0);j<m_cfl.size();++j) {
-    for (size_t i(0);i<m_sels[j].size();++i)
-      m_moms[j][i]=p[m_sels[j][i]];
+  for (size_t j(0);j<m_cfl[id].size();++j) {
+    for (size_t i(0);i<m_sels[id][j].size();++i)
+      m_moms[id][j][i]=p[m_sels[id][j][i]];
     if (m_orders.size()>j)
-      std::sort(m_moms[j].begin(),m_moms[j].end(),*m_orders[j]);
+      std::sort(m_moms[id][j].begin(),m_moms[id][j].end(),*m_orders[j]);
   }
   size_t l(0), u(0);
   std::vector<Vec4D> moms;
-  bool hit(Trigger(p,l,u,moms,0,0,0));
+  bool hit(Trigger(p,l,u,moms,0,0,0,id));
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<"}\n";
 #endif
   return hit;
+}
+
+bool Variable_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+{
+  return Trigger(p,sub?(sub->IsReal()?0:sub->m_idx+1):0);
 }
 
 DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);
@@ -255,6 +256,9 @@ DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
 operator()(const Selector_Key &key) const
 {
+#ifdef DEBUG__Variable_Selector
+  msg_Debugging()<<"Getter<Variable_Selector>::operator(): {\n";
+#endif
   if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
   Data_Reader reader(",",":","!","=");
   reader.SetString(key[0][0]);
@@ -283,24 +287,20 @@ operator()(const Selector_Key &key) const
   tag+="|"+(key[0].size()>2?key[0][2]:"");
   int imode(0);
   if (key.front().size()>3) imode=ToType<int>(key[0][3]);
-  Variable_Selector *vs(new Variable_Selector
-			(key.p_proc->NIn(),key.p_proc->NOut(),imode,
-			 (Flavour*)&key.p_proc->Process()->
-			 Flavours().front(),tag));
-  vs->SetRange(cflavs,bounds);
-  vs->SetProcess(key.p_proc);
+  Variable_Selector *vs(new Variable_Selector(key.p_proc,imode,tag));
+  vs->SetRange(0,key.p_proc->Flavours(),cflavs,bounds);
+  NLO_subevtlist *subs(key.p_proc->GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i) {
+      Flavour_Vector fls((*subs)[i]->p_fl,
+			 &(*subs)[i]->p_fl[(*subs)[i]->m_n]);
+      vs->SetRange((*subs)[i]->m_idx+1,fls,cflavs,bounds);
+    }
+  }
+#ifdef DEBUG__Variable_Selector
+  msg_Debugging()<<"}\n";
+#endif
   return vs;
-}
-
-bool Variable_Selector::NoJetTrigger(const Vec4D_Vector &p) 
-{
-  return true;
-}
-
-bool Variable_Selector::JetTrigger
-(const Vec4D_Vector &p,NLO_subevtlist *const)
-{
-  return Trigger(p);
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::

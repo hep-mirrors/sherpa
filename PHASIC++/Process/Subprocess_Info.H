@@ -2,33 +2,9 @@
 #define PHASIC_Process_Subprocess_Info_H
 
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 
 namespace PHASIC {
-
-  struct nlo_type {
-    enum code {
-      lo   = 0,
-      born = 1,
-      loop = 2,
-      vsub = 4,
-      real = 8,
-      rsub = 16
-    };
-  };// end of struct nlo_type
-
-  inline nlo_type::code operator~(const nlo_type::code c1)  
-  { return (nlo_type::code)(~(int)c1); }
-  inline nlo_type::code operator|(const nlo_type::code c1,const nlo_type::code c2)  
-  { return (nlo_type::code)((int)c1|(int)c2); }
-  inline const nlo_type::code &operator|=(nlo_type::code &c1,const nlo_type::code c2)  
-  { return c1=(nlo_type::code)((int)c1|(int)c2); }
-  inline nlo_type::code operator&(const nlo_type::code c1,const nlo_type::code c2)  
-  { return (nlo_type::code)((int)c1&(int)c2); }
-  inline const nlo_type::code &operator&=(nlo_type::code &c1,const nlo_type::code c2)  
-  { return c1=(nlo_type::code)((int)c1&(int)c2); }
-
-  std::ostream &operator<<(std::ostream &str,const nlo_type::code &c);
-  std::istream &operator>>(std::istream &str,nlo_type::code &c);
 
   std::string PSId(const size_t &id);
 
@@ -44,7 +20,8 @@ namespace PHASIC {
     size_t m_nmax, m_nmin;
     int    m_tag, m_osf;
 
-    nlo_type::code m_nloqcdtype, m_nloewtype;
+    ATOOLS::nlo_type::code m_nlotype;
+    std::vector<double> m_nlocpl;
 
     void GetExternal(std::vector<ATOOLS::Flavour> &fl) const;
     void SetExternal(const std::vector<ATOOLS::Flavour> &fl,size_t &n);
@@ -94,8 +71,8 @@ namespace PHASIC {
     void SetNMax(const Subprocess_Info &ref);
     void GetNMax(const Subprocess_Info &ref);
 
-    nlo_type::code NLOType() const;
-    void SetNLOType(nlo_type::code nlotype);
+    inline ATOOLS::nlo_type::code NLOType() const { return m_nlotype; }
+    inline void SetNLOType(ATOOLS::nlo_type::code nt) { m_nlotype=nt; }
 
     void SetTags(int& start);
     void SetTags(const std::vector<int>& tags);

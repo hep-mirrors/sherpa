@@ -23,7 +23,7 @@ Output_LHEF::Output_LHEF(const Output_Arguments &args):
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".lhe";
-  int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
   m_bntp=args.p_reader->GetValue<int>("LHEF_BNTP",0);
 #ifdef USING__GZIP
   m_ext += ".gz";

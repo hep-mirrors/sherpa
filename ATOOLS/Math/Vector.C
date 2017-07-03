@@ -72,7 +72,16 @@ template<> double Vec4D::DY(const Vec4D& ref) const {
   return Y()-ref.Y();
 }
 template<> double Vec4D::DR(const Vec4D& ref) const {
-  return sqrt(sqr(DPhi(ref))+sqr(DEta(ref)));
+  return sqrt(DR2(ref));
+}
+template<> double Vec4D::DR2(const Vec4D& ref) const {
+  return sqr(DPhi(ref))+sqr(DEta(ref));
+}
+template<> double Vec4D::DRy(const Vec4D& ref) const {
+  return sqrt(DR2y(ref));
+}
+template<> double Vec4D::DR2y(const Vec4D& ref) const {
+  return sqr(DPhi(ref))+sqr(DY(ref));
 }
 
 std::istream& ATOOLS::operator>>(std::istream& s,Vec4D& vec)

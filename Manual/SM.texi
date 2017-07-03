@@ -11,6 +11,7 @@
 @cindex CKM_ETA
 @cindex CKM_RHO
 @cindex CKM_ELEMENT[<i>][<j>]
+@cindex CKM_OUTPUT
 @cindex ALPHAS(MZ)
 @cindex ALPHAQED_DEFAULT_SCALE
 @cindex ORDER_ALPHAS
@@ -96,6 +97,8 @@ The CKM matrix elements V_ij can also be read in using
 format. Values not explicitly given are taken from the afore computed
 Wolfenstein parametrisation. Setting @code{CKM_OUTPUT} to @code{1} enables
 an output of the CKM matrix.
+The complete CKM matrix can be printed to screen using
+@code{CKM_OUTPUT = 1}.
 
 
 The remaining parameter to fully specify the Standard Model 

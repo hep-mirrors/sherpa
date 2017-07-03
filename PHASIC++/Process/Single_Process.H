@@ -12,6 +12,7 @@ namespace PHASIC {
 
     double m_lastxs, m_lastbxs, m_lastflux;
     bool   m_zero, m_pdfcts, m_dads;
+    size_t m_nfconvscheme;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
@@ -28,6 +29,7 @@ namespace PHASIC {
 
     double KFactor(const int mode=0) const;
 
+    double NfSchemeConversionTerms() const;
     double CollinearCounterTerms
     (const int i,const ATOOLS::Flavour &fl,const ATOOLS::Vec4D &p,
      const double &z,const double &t1,const double &t2,
@@ -120,6 +122,8 @@ namespace PHASIC {
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi);
     //! Generate KP terms weight for variation parameters
     double KPTerms(ATOOLS::Variation_Parameters *);
+    virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
+                                     PDF::PDF_Base *pdfb, double scalefac2=0.);
     //! Calculate MuR for variation parameters
     double MuR2(ATOOLS::Variation_Parameters *,
                 Single_Process::BornLikeReweightingInfo &) const;

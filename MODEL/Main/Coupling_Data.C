@@ -41,4 +41,13 @@ namespace MODEL {
     return str<<"{fac="<<cd.Factor()<<",cpl="<<cd.Default()<<"}";
   }
 
+  std::ostream &operator<<(std::ostream &str,const Coupling_Map &cm)
+  {
+    str<<&cm<<" -> "<<cm.size()<<" couplings stored"<<std::endl;
+    for (Coupling_Map::const_iterator it(cm.begin());it!=cm.end();++it) {
+      str<<"  "<<it->first<<": "<<*it->second<<std::endl;
+    }
+    return str;
+  }
+
 }

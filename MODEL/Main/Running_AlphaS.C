@@ -33,10 +33,12 @@ namespace MODEL {
 
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
                                        const double as_MZ, const double m2_MZ,
-                                       const int order, const int thmode):
-m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
+                                       const int order, const int thmode) :
+  m_order(order), m_pdf(0), m_nthresholds(0), m_mzset(0),
+  m_CF(4./3.), m_CA(3.), m_TR(0.5),
+  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_cutq2(0.0), p_pdf(pdf)
 {
-  m_m2_MZ = (m2_MZ != 0.0) ? m2_MZ : Flavour(kf_Z).Mass();
+  if (m_m2_MZ==0.) m_m2_MZ = Flavour(kf_Z).Mass();
 
   Default_Reader reader;
   m_cutas = reader.Get<double>("ALPHAS_FREEZE_VALUE", 1.);
@@ -78,27 +80,19 @@ m_order(order), m_pdf(0), m_mzset(0), m_as_MZ(as_MZ), m_cutq2(0.0), p_pdf(pdf)
       <<"Overriding \\alpha_s information from PDF. "
       <<"Make sure you know what you are doing!"
       <<om::reset<<std::endl;
-    } else {
+    }
+    else {
       const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
       if (info.m_order>=0) {
         m_order=info.m_order;
         m_as_MZ=info.m_asmz;
         m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         if (pdfas&1) m_pdf=1;
-        msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-        <<"  perturbative order "<<m_order
-        <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-        msg_Info()<<"\n}"<<std::endl;
+        PrintSummary();
       }
     }
   }
-
-  if (!p_pdf || (p_pdf && p_pdf->ASInfo().m_order<0)) {
-    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to input\n"
-    <<"  perturbative order "<<m_order
-    <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-    msg_Info()<<"\n}"<<std::endl;
-  }
+  else PrintSummary();
 
   p_thresh = new AsDataSet[m_nthresholds+1];
   int j = 0;
@@ -359,9 +353,9 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 
 double One_Running_AlphaS::operator()(double q2)
 {
-  if (IsBad(q2)) {
-    msg_Error()<<METHOD<<"(): Encountered bad q2="<<q2<<"), "
-                       <<"returning zero."<<std::endl;
+  if (!(q2>0.)) {
+    msg_Error()<<METHOD<<"(): unphysical scale Q2 = "<<q2<<" GeV^2. Return 0."
+               <<std::endl;
     return 0.;
   }
   if (m_pdf) return p_pdf->AlphaSPDF(q2);
@@ -414,6 +408,22 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
   }
   return thrs;
 }
+
+void One_Running_AlphaS::PrintSummary()
+{
+  if (p_pdf) {
+    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n";
+  }
+  else {
+    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to user input\n";
+  }
+  msg_Info()<<"  perturbative order "<<m_order
+            <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+  // msg_Info<<"\n  quark masses = { ";
+  // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
+  msg_Info()<<"\n}"<<std::endl;
+}
+
 
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const int order, const int thmode,

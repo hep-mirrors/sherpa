@@ -77,8 +77,7 @@ operator()(const Process_Info &pi) const
 {
   return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
-      pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsPhoton() && fl[1].IsPhoton() &&

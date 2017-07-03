@@ -134,6 +134,12 @@ bool Lorentz_Function::CutVectors()
   return false; 
 }
 
+std::ostream &MODEL::operator<<(std::ostream &str,const Lorentz_Function &lf)
+{
+  str<<METHOD<<":<not implemented yet>";
+  return str;
+}
+
 LF_Pol::LF_Pol(): Lorentz_Function("Pol") {}
 
 int LF_Pol::NofIndex() const { return 1; }

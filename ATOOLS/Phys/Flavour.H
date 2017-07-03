@@ -174,6 +174,8 @@ namespace ATOOLS {
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }
     inline double Charge() const
     { double c(p_info->m_icharge/3.0); return m_anti?-c:c; }
+    inline bool IsQED() const
+    { return (IsPhoton()||IntCharge());}
 
     inline double IsoWeak() const 
     { double c((p_info->m_kfc<7 || (p_info->m_kfc>10 && p_info->m_kfc<17))
@@ -183,6 +185,8 @@ namespace ATOOLS {
     { int c(p_info->m_strong); return m_anti?-c:c; }
     inline bool Strong() const
     { return p_info->m_strong!=0&&!IsDiQuark(); }
+    inline bool IsQCD() const
+    { return p_info->m_strong; }
 
     inline bool Resummed() const
     { return p_info->m_resummed; }
@@ -269,6 +273,8 @@ namespace ATOOLS {
 
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
     inline bool IsLepton() const { return Kfcode()>10&&Kfcode()<19; }
+    inline bool IsChargedLepton() const { return IsLepton()&&IsDowntype(); }
+    inline bool IsNeutrino()      const { return IsLepton()&&IsUptype(); }
 
     inline bool IsQuark() const { return Kfcode()<10; }
     inline bool IsGluon() const 

@@ -8,6 +8,7 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
@@ -185,7 +186,9 @@ namespace COMIX {
 		    const std::vector<ATOOLS::Flavour> &flavs,
 		    const double &isf,const double &fsf,
 		    MODEL::Model_Base *const model,
-		    MODEL::Coupling_Map *const cpls,const int smode,
+		    MODEL::Coupling_Map *const cpls,
+		    const int stype,const int smode,
+		    const ATOOLS::cs_itype::type itype,
 		    const std::vector<int> &maxcpl,
 		    const std::vector<int> &mincpl,
 		    const size_t &minntc,const size_t &maxntc,
@@ -195,7 +198,7 @@ namespace COMIX {
     void ResetZero();
 
     bool Evaluate(const Int_Vector &chirs);
-    bool EvaluateAll();
+    bool EvaluateAll(const bool &mode=false);
 
     double Differential(NLO_subevt *const sub=NULL);
     double Differential(const Int_Vector &ci,const Int_Vector &cj,
@@ -208,7 +211,7 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const int set=0);
 
-    bool JetTrigger(PHASIC::Combined_Selector *const sel,const int mode);
+    bool RSTrigger(PHASIC::Combined_Selector *const sel,const int mode);
 
     bool Combinable(const size_t &idi,const size_t &idj) const;
 

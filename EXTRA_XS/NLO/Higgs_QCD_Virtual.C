@@ -62,17 +62,20 @@ operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+  if (pi.m_fi.m_nlotype==nlo_type::loop) {
+    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() &&
         pi.m_fi.m_ps.size()==1 && pi.m_fi.m_ps[0].m_fl.Kfcode()==kf_h0) {
-      for (size_t i=2; i<fl.size(); ++i) {
-        if (fl[i].Strong()) return NULL;
+      if (pi.m_maxcpl[0]==3 && pi.m_maxcpl[1]==1 &&
+          pi.m_mincpl[0]==3 && pi.m_mincpl[1]==1) {
+        for (size_t i=2; i<fl.size(); ++i) {
+          if (fl[i].Strong()) return NULL;
+        }
+        Default_Reader reader;
+        int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
+        return new Higgs_QCD_Virtual(pi, fl, con);
       }
-      Default_Reader reader;
-      int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
-      return new Higgs_QCD_Virtual(pi, fl, con);
     }
   }
   return NULL;

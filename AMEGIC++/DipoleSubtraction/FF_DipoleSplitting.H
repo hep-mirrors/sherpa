@@ -12,11 +12,13 @@ namespace AMEGIC {
   class FF_DipoleSplitting : public DipoleSplitting_Base {
     double m_yijk;
     double m_zi,m_zj;
-    double m_sff;
-//     ATOOLS::Vec4D m_pt;
   public:
-    FF_DipoleSplitting(int ft, int m,int i,int j,int k) 
-    {m_ft=ft; m_type=dpt::f_f; m_m=m; m_i=i;m_j=j;m_k=k;}
+    FF_DipoleSplitting(ATOOLS::sbt::subtype st,
+                       ATOOLS::spt::splittingtype ft,
+                       int m,int i,int j,int k) :
+      DipoleSplitting_Base(st,ft,ATOOLS::dpt::f_f,m,i,j,k),
+      m_yijk(0.), m_zi(0.), m_zj(0.)
+    {}
     
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();
@@ -28,14 +30,19 @@ namespace AMEGIC {
     double m_yijk, m_yp;
     double m_zi,m_zj;
     double m_zim,m_zjm;
-    double m_sff;
-    double m_mi,m_mj,m_mk,m_mij,m_Q2;
+    double m_mi2,m_mj2,m_mk2,m_mij2,m_Q2;
     double m_vijk,m_zpm;
     ATOOLS::Vec4D m_Q;
   public:
-    FF_MassiveDipoleSplitting(int ft, int m,int i,int j,int k, double mi, double mj, double mk, double mij) 
-    { m_ft=ft; m_type=dpt::f_fm; m_m=m; m_i=i;m_j=j;m_k=k;
-      m_mi=mi*mi; m_mj=mj*mj; m_mk=mk*mk; m_mij=mij*mij; }
+    FF_MassiveDipoleSplitting(ATOOLS::sbt::subtype st,
+                              ATOOLS::spt::splittingtype ft,
+                              int m,int i,int j,int k,
+                              double mi, double mj, double mk, double mij) :
+      DipoleSplitting_Base(st,ft,ATOOLS::dpt::f_fm,m,i,j,k),
+      m_yijk(0.), m_yp(0.), m_zi(0.), m_zj(0.), m_zim(0.), m_zjm(0.),
+      m_mi2(mi*mi), m_mj2(mj*mj), m_mk2(mk*mk), m_mij2(mij*mij),
+      m_Q2(0.), m_vijk(0.), m_zpm(0.), m_Q(ATOOLS::Vec4D(0.,0.,0.,0.))
+    {}
     
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();

@@ -26,12 +26,10 @@ namespace AMEGIC {
   class Amplitude_Handler : public Amplitude_Group {
     bool m_cutvecprop;
     String_Handler* shand;
-    CFColor              * CFCol_Matrix;   
-    CFC_map                CFCol_MMatrixMap;   
+    CFColor              * CFCol_Matrix;
+    CFC_map                CFCol_MMatrixMap;
     int       ngraph,namplitude,ntotal;
-    int       sw_probabs;
     Complex * Mi;
-    int probs;
     Single_Amplitude* firstgraph;
     std::vector<Point*> pointlist;
     std::string m_print_graph;
@@ -39,10 +37,11 @@ namespace AMEGIC {
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
     std::vector<size_t> m_hm;
-    std::vector<double> m_maxcpl, m_mincpl;
+    std::vector<int> m_maxcpl, m_mincpl;
     std::vector<int> m_aon;
     std::vector<std::vector<std::vector<int> > > m_cplmatrix;
     std::vector<std::vector<int> > m_on;
+    std::vector<std::vector<int> > m_possiblecplconfigs;
     std::set<std::pair<int,int> > m_valid;
 
     int  PropProject(Amplitude_Base*,int);
@@ -64,27 +63,39 @@ namespace AMEGIC {
 		      Amegic_Model *,Topology *,
 		      std::vector<double> &,std::vector<double> &,
 		      int &,MODEL::Coupling_Map *const cpls,
-		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true,
+		      Basic_Sfuncs *,String_Handler *,
+		      std::string print_graph="", bool create_4V=true,
 		      bool cutvecprop=true,const std::string &path="");
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
-				   Process_Tags* pinfo,Single_Amplitude** sglist,
-				   Basic_Sfuncs* BS);
+                                   Process_Tags* pinfo,
+                                   Single_Amplitude** sglist,Basic_Sfuncs* BS);
     void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,
 			    Topology*,Basic_Sfuncs*,std::string,char=0,char=0);
-    void CompleteLibAmplitudes(int N,std::string,std::string,char=0,char=0,ATOOLS::Flavour* =0);
+    void CompleteLibAmplitudes(int N,std::string,std::string,
+                               char=0,char=0,ATOOLS::Flavour* =NULL);
     void StoreAmplitudeConfiguration(std::string lib);
 
     Complex Zvalue(int,int*);
     Complex Zvalue(int);
     Complex Zvalue(String_Handler*,int);
     Complex Zvalue(int,int,int);
+    Complex Zvalue(int,int,int,const std::vector<double>&,const std::vector<double>&);
+    Complex Zvalue(int,int,int,const std::vector<std::vector<int> >&);
     double Zvalue(Helicity* hel);
     Complex CommonColorFactor();
-    double Differential(int ihel,int* signlist)      { return (Zvalue(ihel,signlist)).real();}
-    double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
-    double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }
-    double Differential(int ihel,int i,int k)        { return (Zvalue(ihel,i,k)).real();}
+    double Differential(int ihel,int* signlist)
+    { return (Zvalue(ihel,signlist)).real();}
+    double Differential(int ihel)
+    { return (Zvalue(ihel)).real();}
+    double Differential(String_Handler * sh,int ihel)
+    { return (Zvalue(sh,ihel)).real(); }
+    double Differential(int ihel,int i,int k)
+    { return (Zvalue(ihel,i,k)).real();}
+    double Differential(int ihel,int i,int k,
+                        const std::vector<double>& maxcpl,
+                        const std::vector<double>& mincpl)
+    { return (Zvalue(ihel,i,k,maxcpl,mincpl)).real();}
     void   FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                           std::vector<std::vector<Complex> >& cols,
                           Helicity* hel, double sfactor);
@@ -92,13 +103,18 @@ namespace AMEGIC {
     inline int GetRealGraphNumber() {return namplitude;}  
     inline int GetTotalGraphNumber() {return ntotal;}
 
+    size_t PossibleConfigsExist(const std::vector<double>& maxcpl,
+                                const std::vector<double>& mincpl);
+
     Single_Amplitude* GetFirstGraph() {return firstgraph;}
     Point* GetPointlist(int);
     void   FillPointlist();
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
     bool   ExistFourVertex(Point *);
-    int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
-    std::map<std::string,ATOOLS::Flavour>& GetFlavourmap() { return m_flavourmap; }
+    int    CompareAmplitudes(Amplitude_Handler*,double &,
+                             std::map<std::string,Complex> &);
+    std::map<std::string,ATOOLS::Flavour>& GetFlavourmap()
+    { return m_flavourmap; }
     bool   CheckEFMap();
   };
 

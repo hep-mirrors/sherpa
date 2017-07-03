@@ -17,6 +17,8 @@
 
 #include <unistd.h>
 
+#define DEBUG__Fill_Combinations
+
 using namespace AMEGIC;
 using namespace MODEL;
 using namespace PHASIC;
@@ -117,7 +119,9 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 					  vector<Process_Base *> & links,
 					  vector<Process_Base *> & errs)
 {
+  DEBUG_FUNC("");
   Init();
+  msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
   model->p_model->GetCouplings(m_cpls);
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   m_newlib   = false;
@@ -133,24 +137,31 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   bool directload = true;
   int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
     if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+      msg_Info()<<"Enforce full library check. This may take some time."
+                <<std::endl;
       directload = false;
     }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
     string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
-  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
   bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+  msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<"Single_Process::InitAmplitude : No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
     return 0;
   }
   if (!directload) {
@@ -162,12 +173,11 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
 	bool found(true);
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"),1)) { 
+	  if (FileExists(mlname+string(".map"),1)) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -189,12 +199,12 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 	Minimize();
 	return 1;
       }
-    } 
+    }
   }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
-				  m_ptypename+string("/")+m_libname);    
+				  m_ptypename+string("/")+m_libname);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) {
       m_newlib=true;
       return 1;
@@ -745,8 +755,8 @@ void AMEGIC::Single_Process::Minimize()
 
 double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 
 { 
-  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
-  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastxs=0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
+  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(_moms,m_cmode);
   }
@@ -756,7 +766,7 @@ double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode
 
 double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &mom,bool lookup)
 {
-  m_lastxs = 0.;
+  m_lastbxs = m_lastxs = 0.;
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
   }
@@ -766,7 +776,7 @@ double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &mom,bool looku
       m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&mom.front())*m_sfactor;
   }
-  return m_lastxs;
+  return m_lastbxs=m_lastxs;
 }
 
 double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
@@ -804,6 +814,9 @@ double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
     p_ampl->ClearCalcList();
   }
   m_lastk=KFactor();
+  msg_Debugging()<<"M2="<<M2<<" ,  kfac="<<m_lastk<<" ,  norm="
+                 <<sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS))
+                 <<std::endl;
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS)) * m_lastk;
 }
 

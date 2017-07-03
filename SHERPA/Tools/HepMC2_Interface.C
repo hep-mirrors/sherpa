@@ -40,7 +40,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
-  m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
+  m_alphas(0.), m_alpha(0.), m_type(ATOOLS::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
   p_variationweights(NULL)
 {

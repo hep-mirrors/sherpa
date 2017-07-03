@@ -79,8 +79,9 @@ namespace MODEL {
 
     // to be called in ModelInit
     void SetAlphaQED(const double& aqed_def);
-    void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
     void SetAlphaQEDByScale(const double& scale2);
+    void SetAlphaQEDByInput(const std::string& tag,const double& def);
+    void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
     void SetRunningFermionMasses();
 
     void ReadExplicitCKM(ATOOLS::CMatrix& CKM);

@@ -61,49 +61,57 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,const int mode)
 {
-  Process_Info cpi(pi);
-  cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
-		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
-  if (cpi.m_fi.m_nloewtype&nlo_type::real)
-    cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
-  else
-    cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-  Process_Base::Init(cpi,beam,isr);
-  m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
-  Process_Info npi(m_pinfo);
-  npi.m_fi.m_ps.pop_back();
-  m_name=GenerateName(m_pinfo.m_ii,npi.m_fi);
-  if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
-    THROW(fatal_error, "R/S can't be initialised separately.");
-  Process_Info spi(pi);
-  ++spi.m_fi.m_nmax;
-  spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
-  p_bproc=InitProcess(spi,nlo_type::lo,false);
-  spi.m_megenerator=spi.m_rsmegenerator;
-  p_rproc=InitProcess(spi,nlo_type::lo,true);
-  spi.m_megenerator=pi.m_megenerator;
-  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
-  p_ddproc=InitProcess(spi,nlo_type::rsub,1);
-  spi.m_integrator=spi.m_rsintegrator;
-  spi.m_megenerator=spi.m_rsmegenerator;
-  spi.m_itmin=spi.m_rsitmin;
-  p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1|2);
-  p_rsproc->FillProcessMap(p_apmap);
-  p_bviproc->FillProcessMap(p_apmap);
-  p_ddproc->FillProcessMap(p_apmap);
-  p_bproc->SetLookUp(false);
-  p_rproc->SetLookUp(false);
-  p_bproc->SetParent(this);
-  p_rproc->SetParent(this);
-  p_bproc->FillProcessMap(p_apmap);
-  p_rproc->FillProcessMap(p_apmap);
+  DEBUG_FUNC(GenerateName(pi.m_ii,pi.m_fi));
+  if (pi.m_fi.NLOType()!=(nlo_type::born|nlo_type::loop|nlo_type::vsub|
+                          nlo_type::real|nlo_type::rsub))
+    THROW(fatal_error,"MC@NLO with only partial NLO components not supported.");
+  Process_Info cpi(pi),ccpi(pi);
+  ccpi.m_maxcpl[0]=cpi.m_maxcpl[0]+=cpi.m_fi.m_nlocpl[0];
+  ccpi.m_mincpl[0]=cpi.m_mincpl[0]+=cpi.m_fi.m_nlocpl[0];
+  ccpi.m_maxcpl[1]=cpi.m_maxcpl[1]+=cpi.m_fi.m_nlocpl[1];
+  ccpi.m_mincpl[1]=cpi.m_mincpl[1]+=cpi.m_fi.m_nlocpl[1];
+  if      (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.) {
+    ccpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+  }
+  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.) {
+    ccpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+  }
+  else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
+  Process_Base::Init(ccpi,beam,isr);
+  m_name=GenerateName(m_pinfo.m_ii,cpi.m_fi);
+  // prepare B info
+  Process_Info bpi(pi);
+  bpi.m_fi.SetNLOType(nlo_type::lo);
+  // prepare R info
+  Process_Info rpi(ccpi);
+  rpi.m_fi.SetNLOType(nlo_type::lo);
+  rpi.m_megenerator=rpi.m_rsmegenerator;
+  // prepare BVI info
+  Process_Info bvipi(cpi);
+  bvipi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|nlo_type::vsub);
+  // prepare DADS info
+  Process_Info ddpi(ccpi);
+  ddpi.m_fi.SetNLOType(nlo_type::real|nlo_type::rsub);
+  // prepare RS info
+  Process_Info rspi(ccpi);
+  rspi.m_fi.SetNLOType(nlo_type::real|nlo_type::rsub);
+  rspi.m_integrator=rspi.m_rsintegrator;
+  rspi.m_megenerator=rspi.m_rsmegenerator;
+  rspi.m_itmin=rspi.m_rsitmin;
+  // intialise processes
+  p_bproc=InitProcess(bpi,true);
+  p_rproc=InitProcess(rpi,true);
+  p_bviproc=InitProcess(bvipi,false);
+  p_ddproc=InitProcess(ddpi,false);
+  p_rsproc=InitProcess(rspi,false);
+  // read in optional modes
   Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_hpsmode  = reader.Get("PP_HPSMODE", 8, "H event shower mode", METHOD);
-  m_kfacmode = reader.Get("PP_KFACTOR_MODE", 0, "K-factor mode", METHOD);
-  m_fomode   = reader.Get("PP_FOMODE", 0, "fixed order mode", METHOD);
-  m_rsscale  = reader.Get<std::string>("PP_RS_SCALE", "", "RS scale", METHOD);
+  m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 8, "H event shower mode", METHOD);
+  m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 0, "K-factor mode", METHOD);
+  m_fomode   = reader.Get("MC@NLO_FOMODE", 0, "fixed order mode", METHOD);
+  m_rsscale  = reader.Get<std::string>("MC@NLO_RS_SCALE", "", "RS scale", METHOD);
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -135,23 +143,20 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
 }
 
-Process_Base* MCatNLO_Process::InitProcess
-(const Process_Info &pi,nlo_type::code nlotype,const bool real)
+Process_Base* MCatNLO_Process::InitProcess(const Process_Info &pi,
+                                           const bool setlookup)
 {
-  Process_Info cpi(pi);
-  cpi.m_fi.SetNLOType(nlotype);
-  if (real) {
-    if (cpi.m_fi.m_nloqcdtype==nlotype)
-      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-    else if (cpi.m_fi.m_nloewtype==nlotype)
-      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
-    else THROW(fatal_error, "Internal error.");
-  }
-  Process_Base *proc(m_gens.InitializeProcess(cpi,false));
+  DEBUG_FUNC(GenerateName(pi.m_ii,pi.m_fi)<<", setlookup="<<setlookup);
+  Process_Base *proc(m_gens.InitializeProcess(pi,false));
   if (proc==NULL) {
-    msg_Error()<<cpi<<std::endl;
+    msg_Error()<<pi<<std::endl;
     THROW(not_implemented, "Process not found.");
   }
+  if (setlookup) {
+    proc->SetLookUp(false);
+    proc->SetParent(this);
+  }
+  proc->FillProcessMap(p_apmap);
   return proc;
 }
 
@@ -362,6 +367,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
+  rproc->GetMEwgtinfo()->m_muf2=
+    p_rsproc->Selected()->GetMEwgtinfo()->m_muf2;
   rproc->Integrator()->SetMomenta(p);
   Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
     *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());

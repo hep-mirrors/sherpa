@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Phys/Variations.H"
 #include <iostream>
 
@@ -456,7 +457,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       if (m_procs.find(info)==m_procs.end()) {
 	Process_Info pi;
 	if (p_vars->m_type[0]!='B' || !m_lomode)
-	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(p_vars->m_type);
+	  pi.m_fi.m_nlotype=ToType<nlo_type::code>(p_vars->m_type);
 	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[0]));
 	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[1]));
 	pi.m_maxcpl[0]=pi.m_mincpl[0]=p_vars->m_oqcd;

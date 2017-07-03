@@ -45,6 +45,8 @@ namespace AMEGIC {
     const std::vector<int> &GetOrder();
     
   };
+
+  std::ostream & operator<<(std::ostream &s,const Single_Amplitude &samp);
 }
 #endif
 

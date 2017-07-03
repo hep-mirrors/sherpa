@@ -15,21 +15,12 @@ using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-Jet_Finder::Jet_Finder
-(Process_Integrator *const proc,
- const int nin,const int nout,Flavour *fl,
- const std::string &ycut):
-  Selector_Base("Jetfinder"), m_cuttag(ycut),
+Jet_Finder::Jet_Finder(Process_Base *const proc,const std::string &ycut):
+  Selector_Base("Jetfinder",proc), m_cuttag(ycut),
   m_on(true), p_yccalc(NULL)
 {
-  p_proc=proc;
   m_ycut=2.0;
-  m_fl=fl;
-  m_nin=nin;
-  m_nout=nout;
-  m_n=m_nin+m_nout;
-  m_smax=m_s=sqr(rpa->gen.Ecms());
-  m_sel_log = new Selector_Log(m_name);
+  m_s=sqr(rpa->gen.Ecms());
   static bool mets(false);
   if (!mets) {
     mets=true;
@@ -39,9 +30,9 @@ Jet_Finder::Jet_Finder
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetNIn(m_nin);
   for (int i(0);i<m_nin+m_nout;++i)
-    p_ampl->CreateLeg(Vec4D(),i<m_nin?m_fl[i].Bar():m_fl[i],ColorID());
+    p_ampl->CreateLeg(Vec4D(),i<m_nin?p_fl[i].Bar():p_fl[i],ColorID());
   p_ampl->SetJF(this);
-  p_ampl->SetMS(proc->Process()->Generator());
+  p_ampl->SetMS(proc->Generator());
   p_yccalc = new Algebra_Interpreter();
   p_yccalc->SetTagReplacer(this);
   for (int i=0;i<m_n;++i) p_yccalc->AddTag
@@ -49,8 +40,7 @@ Jet_Finder::Jet_Finder
   p_yccalc->Interprete(m_cuttag);
   p_jc = JetCriterion_Getter::GetObject
     (rpa->gen.Variable("JET_CRITERION"),
-     JetCriterion_Key(rpa->gen.Variable("JET_CRITERION"),
-		      p_proc->Process()->Shower()));
+     JetCriterion_Key(rpa->gen.Variable("JET_CRITERION"),p_proc->Shower()));
   if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 
@@ -61,54 +51,50 @@ Jet_Finder::~Jet_Finder()
   if (p_jc) delete p_jc;
 }
 
-bool Jet_Finder::Trigger(const Vec4D_Vector &p)
+bool Jet_Finder::Trigger(const ATOOLS::Vec4D_Vector &p,
+                         NLO_subevt *const sub)
 {
-  p_ampl->SetProc(p_proc->Process());
-  for (size_t i(0);i<p.size();++i)
-    p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
-  m_ycut=p_yccalc->Calculate()->Get<double>();
-  if (!m_on) return true;
-  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
-		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
-  p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
-  bool res=p_jc->Jets(p_ampl);
-  msg_Debugging()<<"} -> "<<res<<"\n";
-  return 1-m_sel_log->Hit(!res);
-}
-
-bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
-                            NLO_subevtlist *const subs)
-{
-  if (p.size()!=subs->back()->m_n) THROW(fatal_error,"Invalid call");
-  p_ampl->SetProc(p_proc->Process());
-  if (p_ampl->Legs().size()<subs->back()->m_n)
-    p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
-  else if (p_ampl->Legs().size()>subs->back()->m_n) {
-    p_ampl->Legs().back()->Delete();
-    p_ampl->Legs().pop_back();
+  if (!sub) {
+    p_ampl->SetProc(p_proc);
+    for (size_t i(0);i<p.size();++i)
+      p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
+    m_ycut=p_yccalc->Calculate()->Get<double>();
+    if (!m_on) return true;
+    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
+                   <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
+    p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+    bool res=p_jc->Jets(p_ampl);
+    msg_Debugging()<<"} -> "<<res<<"\n";
+    return 1-m_sel_log->Hit(!res);
   }
-  size_t idij((1<<subs->back()->m_i)|(1<<subs->back()->m_j));
-  if (subs->back()->m_i==subs->back()->m_j) idij=0;
-  for (size_t i(0);i<p.size();++i) {
-    p_ampl->Leg(i)->SetFlav
-      ((int)i<m_nin?subs->back()->p_fl[i].Bar():subs->back()->p_fl[i]);
-    p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
-    p_ampl->Leg(i)->SetId(subs->back()->p_id[i]);
-    p_ampl->Leg(i)->SetK(subs->back()->p_id[i]==idij?
-			 (1<<subs->back()->m_k):0);
+  else {
+    if (p.size()!=sub->m_n) THROW(fatal_error,"Invalid call");
+    p_ampl->SetProc(p_proc);
+    if (p_ampl->Legs().size()<sub->m_n)
+      p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
+    else if (p_ampl->Legs().size()>sub->m_n) {
+      p_ampl->Legs().back()->Delete();
+      p_ampl->Legs().pop_back();
+    }
+    size_t idij((1<<sub->m_i)|(1<<sub->m_j));
+    if (sub->m_i==sub->m_j) idij=0;
+    for (size_t i(0);i<p.size();++i) {
+      p_ampl->Leg(i)->SetFlav
+        ((int)i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i]);
+      p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
+      p_ampl->Leg(i)->SetId(sub->p_id[i]);
+      p_ampl->Leg(i)->SetK(sub->p_id[i]==idij?
+                           (1<<sub->m_k):0);
+    }
+    m_ycut=p_yccalc->Calculate()->Get<double>();
+    if (!m_on) return true;
+    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
+                   <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
+    p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+    bool res=p_jc->Jets(p_ampl,idij?0:1);
+    msg_Debugging()<<"} -> "<<res<<"\n";
+    return 1-m_sel_log->Hit(!res);
   }
-  m_ycut=p_yccalc->Calculate()->Get<double>();
-  if (!m_on) return true;
-  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
-		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
-  p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
-  bool res=p_jc->Jets(p_ampl,idij?0:1);
-  msg_Debugging()<<"} -> "<<res<<"\n";
-  return 1-m_sel_log->Hit(!res);
-}
-
-bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
-{
   return true;
 }
 
@@ -140,11 +126,9 @@ Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Finder>::
 operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
-  Jet_Finder *jf(new Jet_Finder(key.p_proc,key.p_proc->NIn(),key.p_proc->NOut(),
-				(Flavour*)&key.p_proc->Process()->
-				Flavours().front(),key[0][0]));
+  Jet_Finder *jf(new Jet_Finder(key.p_proc,key[0][0]));
   static bool menlots(false);
-  if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
+  if (!menlots && key.p_proc->Info().Has(nlo_type::real)) {
     menlots=true;
     rpa->gen.AddCitation(1,"NLO/LO matrix element merging with truncated showers (MENLOPS) is "+
 			 std::string("published under \\cite{Hoeche:2010kg}."));

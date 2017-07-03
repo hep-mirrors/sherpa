@@ -22,6 +22,11 @@ bool DDip_ID::operator<(const DDip_ID &di) const
   return m_k<di.m_k;
 }
 
+std::string DDip_ID::PSInfo() const
+{
+  return "["+ToString(m_i)+","+ToString(m_j)+","+ToString(m_k)+"]";
+}
+
 bool Dip_ID::operator<(const Dip_ID &di) const
 {
   if (m_ijt<di.m_ijt) return true;
@@ -130,6 +135,7 @@ namespace ATOOLS
     }
     return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
 	       <<", idx "<<sevt.m_idx
+	       <<", orders ("<<sevt.m_oqcd<<","<<sevt.m_oew<<")"
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig

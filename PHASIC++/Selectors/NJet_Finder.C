@@ -7,7 +7,8 @@
 
 namespace PHASIC {
   class NJet_Finder : public Selector_Base {
-    double m_pt2min,m_et2min,m_delta_r,m_r2min,m_etamax,m_massmax;
+    size_t m_nj;
+    double m_pt2min,m_et2min,m_delta_r,m_r2min,m_etamax,m_ymax,m_massmax;
     int    m_exp, m_type;
     double m_ene, m_s, m_sprime; 
     int    m_nstrong;
@@ -29,16 +30,14 @@ namespace PHASIC {
 
     void   ConstructJets(ATOOLS::Vec4D * p, int n);
   public:
-    NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl, 
-		double ptmin, double etmin, double dr, int exp, double etamax, 
-                double massmax, int nn);
+    NJet_Finder(Process_Base *const proc, size_t nj,
+                double ptmin, double etmin, double dr, int exp,
+                double etamax, double ymax, double massmax);
 
     ~NJet_Finder();
 
-
-    bool   NoJetTrigger(const ATOOLS::Vec4D_Vector &);
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
-    bool   JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &,
+                   ATOOLS::NLO_subevt *const=NULL);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -64,28 +63,23 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl, 
-			 double ptmin, double etmin, double dr, int exp, 
-                         double etamax, double massmax, int nn) : 
-  Selector_Base("NJetfinder"), m_pt2min(sqr(ptmin)), m_et2min(sqr(etmin)), 
-  m_delta_r(dr), m_etamax(etamax), m_massmax(massmax), m_exp(exp)
+NJet_Finder::NJet_Finder(Process_Base *const proc, size_t nj,
+                         double ptmin, double etmin, double dr, int exp,
+                         double etamax, double ymax, double massmax) :
+  Selector_Base("NJetfinder",proc),
+  m_nj(nj), m_pt2min(sqr(ptmin)), m_et2min(sqr(etmin)),
+  m_delta_r(dr), m_etamax(etamax), m_ymax(ymax), m_massmax(massmax), m_exp(exp)
 {
-  m_fl         = fl;
   m_ene        = rpa->gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
   m_smin       = Max(m_pt2min,m_et2min);
-  m_smax       = m_s;
 
   m_r2min      = sqr(m_delta_r);
-
-  m_nin        = nin;
-  m_nout       = nout;
-  m_n          = nn;
 
   if (m_nin==2) {
     int instrong(0);
     for (int j=0;j<m_nin;j++) { 
-      if (m_fl[j].Resummed() || m_fl[j].Strong()) instrong++;
+      if (p_fl[j].Resummed() || p_fl[j].Strong()) instrong++;
     }
     if (instrong==0) m_type = 1;
     if (instrong==1) m_type = 2;
@@ -99,117 +93,73 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
   for (int i=0;i<m_nout;++i) p_imap[i] = i;
   
   m_nstrong = 0;
-  for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (fl[i].Resummed() || 
-        (fl[i].Strong() && fl[i].Mass()<m_massmax)) m_nstrong++;
+  for (int i=m_nin;i<m_n;i++) {
+    if (p_fl[i].Resummed() ||
+        (p_fl[i].Strong() && p_fl[i].Mass()<m_massmax)) m_nstrong++;
   }
-
-  m_sel_log    = new Selector_Log(m_name);
 }
 
 
 NJet_Finder::~NJet_Finder() {
-      for (int i=0;i<m_nout;++i) delete [] p_ktij[i];
-      delete [] p_ktij;
-      delete [] p_imap;
-      delete [] p_kis;
+  for (int i=0;i<m_nout;++i) delete [] p_ktij[i];
+  delete [] p_ktij;
+  delete [] p_imap;
+  delete [] p_kis;
 }
 
 
 void NJet_Finder::AddToJetlist(const Vec4D &jet) {
-  if (dabs(jet.Eta())<m_etamax) {
-    if (jet.EPerp2()>=m_et2min&&jet.PPerp2()>=m_pt2min) m_jetpt.push_back(jet.PPerp2());
+  if (dabs(jet.Eta())<m_etamax && dabs(jet.Y()<m_ymax)) {
+    if (jet.EPerp2()>=m_et2min && jet.PPerp2()>=m_pt2min) {
+      m_jetpt.push_back(jet.PPerp2());
+    }
   }
   m_kt2.push_back(jet.PPerp2());
 }
 
-bool NJet_Finder::NoJetTrigger(const Vec4D_Vector &p)
+bool NJet_Finder::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
-  double s=(p[0]+p[1]).Abs2();
-  return (s>m_smin*4.);
-}
-
-bool NJet_Finder::Trigger(const Vec4D_Vector &p)
-{
-  if (m_n==0) return true;
+  if (m_nj==0) return true;
+  size_t nout(sub?sub->m_n-m_nin:m_nout);
+  const Flavour *const fl(sub?sub->p_fl:p_fl);
 
   // create copy
   m_jetpt.clear();
   m_kt2.clear();
-  int n=0;
-  Vec4D * moms = new Vec4D[m_nout];
-  for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (m_fl[i].Resummed() || 
-        (m_fl[i].Strong() && m_fl[i].Mass()<m_massmax)) {
+  size_t n(0);
+  Vec4D * moms = new Vec4D[nout];
+  for (size_t i=m_nin;i<nout+m_nin;i++) {
+    if (fl[i].Resummed() ||
+        (fl[i].Strong() &&
+         fl[i].Mass()<m_massmax)) {
       moms[n]=p[i];
       n++;
     }
   }
 
   // cluster
-  for (int i=0;i<n;++i) p_imap[i] = i;
+  for (size_t i=0;i<n;++i) p_imap[i] = i;
+
   ConstructJets(moms,n);
 
   delete [] moms;
 
-  if (m_n<0) {
+  // what do we need this for? will not work right now
+  if (m_nj<0) {
     size_t np(0);
     for (size_t i(0);i<m_kt2.size();++i) {
       if (i>0 && m_kt2[i]<m_kt2[i-1])
 	return 1-m_sel_log->Hit(1);
       if (m_kt2[i]>m_pt2min) ++np;
     }
-    return 1-m_sel_log->Hit(np<-m_n);
+    return 1-m_sel_log->Hit(np<-m_nj);
   }
 
-  if (n<m_n) return 0;
+  if (n<m_nj) return 0;
 
   bool trigger(true);
-  if (m_jetpt.size()<size_t(m_n)) trigger=false;
+  if (m_jetpt.size()<m_nj) trigger=false;
 
-  return (1-m_sel_log->Hit(1-trigger));
-}
-
-bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
-{
-  if (m_n==0) return true;
-
-  // create copy
-  m_jetpt.clear();
-  m_kt2.clear();
-  int n=0, ns=subs->back()->m_n-m_nin;
-  Vec4D * moms = new Vec4D[ns];
-  for (int i=m_nin;i<ns+m_nin;i++) {
-    if (subs->back()->p_fl[i].Resummed() || 
-        (subs->back()->p_fl[i].Strong() && 
-         subs->back()->p_fl[i].Mass()<m_massmax)) {
-      moms[n]=p[i];
-      n++;
-    }
-  }
-
-  // cluster
-  for (int i=0;i<n;++i) p_imap[i] = i;
-
-  ConstructJets(moms,n);
-
-  delete [] moms;
-
-  if (m_n<0) {
-    size_t np(0);
-    for (size_t i(0);i<m_kt2.size();++i) {
-      if (i>0 && m_kt2[i]<m_kt2[i-1])
-	return 1-m_sel_log->Hit(1);
-      if (m_kt2[i]>m_pt2min) ++np;
-    }
-    return 1-m_sel_log->Hit(np<-m_n);
-  }
-
-  if (n<m_n) return 0;
-
-  bool trigger(true);
-  if (m_jetpt.size()<size_t(m_n)) trigger=false;
-  
   return (1-m_sel_log->Hit(1-trigger));
 }
 
@@ -225,17 +175,14 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
   int ii=0, jj=0;
   double dmin=(m_type>1)?p[0].PPerp2():sqr(p[0][0]);
   dmin=pow(dmin,m_exp);
-  {
-    
-    for (int i=0;i<n;++i) {
-      double di = (m_type>1)?p[i].PPerp2():sqr(p[i][0]);
-      p_ktij[i][i] = di = pow(di,m_exp);
-      if (di<dmin) { dmin=di; ii=i; jj=i;}
-      for (int j=0;j<i;++j) {
-	double dj  = p_ktij[j][j]; 
-	double dij = p_ktij[i][j] = Min(di,dj)*R2(p[i],p[j]) /m_r2min;
-	if (dij<dmin) {dmin=dij; ii=i; jj=j;}
-      }
+  for (int i=0;i<n;++i) {
+    double di = (m_type>1)?p[i].PPerp2():sqr(p[i][0]);
+    p_ktij[i][i] = di = pow(di,m_exp);
+    if (di<dmin) { dmin=di; ii=i; jj=i;}
+    for (int j=0;j<i;++j) {
+      double dj  = p_ktij[j][j];
+      double dij = p_ktij[i][j] = Min(di,dj)*R2(p[i],p[j]) /m_r2min;
+      if (dij<dmin) {dmin=dij; ii=i; jj=j;}
     }
   }
   // recalc matrix
@@ -260,23 +207,19 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
       break;
     }
     // update map (remove precluster)
-    {
-
-    
     // update matrix (only what is necessary)
     int jjx=p_imap[jj];
     p_ktij[jjx][jjx] = pow((m_type>1)?p[jjx].PPerp2():sqr(p[jjx][0]),m_exp);
     for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = 
-			       Min(p_ktij[jjx][jjx],p_ktij[p_imap[j]][p_imap[j]])
+                               Min(p_ktij[jjx][jjx],
+                                   p_ktij[p_imap[j]][p_imap[j]])
 			       *R2(p[jjx],p[p_imap[j]])/m_r2min;
     for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = 
-			       Min(p_ktij[jjx][jjx],p_ktij[p_imap[i]][p_imap[i]])
+                               Min(p_ktij[jjx][jjx],
+                                   p_ktij[p_imap[i]][p_imap[i]])
 			       *R2(p[p_imap[i]],p[jjx])/m_r2min;
-    }
     // redetermine rmin and dmin
     ii=jj=0;
-    {
-
     dmin=p_ktij[p_imap[0]][p_imap[0]];
     for (int i=0;i<n;++i) {
       int ix=p_imap[i];
@@ -287,7 +230,6 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
 	double dij = p_ktij[ix][jx];
 	if (dij<dmin) { dmin=dij; ii=i; jj=j;}
       }
-    }
     }
   }
 
@@ -300,15 +242,14 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
 
 void NJet_Finder::BuildCuts(Cut_Data * cuts) 
 {
-  return;
 }
 
 
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
 
   Utilities
 
-  ----------------------------------------------------------------------------------*/
+  ----------------------------------------------------------------------------*/
 double NJet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   // eta1,2 = -log(tan(theta_1,2)/2)   
@@ -356,22 +297,28 @@ DECLARE_ND_GETTER(NJet_Finder,"NJetFinder",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  
+  if (key.empty() || key.front().size()<4)
+    THROW(critical_error,"Invalid syntax");
+
   int exp(1);
   if (key.front().size()>=5) exp=ToType<int>(key[0][4]);
-  double etamax(100.);
+  double etamax(std::numeric_limits<double>::max());
   if (key.front().size()>=6) etamax=ToType<double>(key[0][5]);
+  double ymax(std::numeric_limits<double>::max());
+  if (key.front().size()>=7) ymax=ToType<double>(key[0][6]);
   double massmax(0.);
-  if (key.front().size()>=7) massmax=ToType<double>(key[0][6]);
+  if (key.front().size()>=8) massmax=ToType<double>(key[0][7]);
 
-  NJet_Finder *jf(new NJet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
-				  (Flavour*)&key.p_proc->Process()->Flavours().front(),
-				  ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1])),
-				  ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
-				  ToType<double>(key[0][3]),exp,etamax,massmax,
-				  ToType<int>(key[0][0])));
-  jf->SetProcess(key.p_proc);
+  if (ToType<int>(key[0][0])<0)
+    THROW(not_implemented,"Negative multiplicities not supported.");
+  NJet_Finder *jf(new NJet_Finder(key.p_proc,
+                                  ToType<int>(key[0][0]),
+                                  ToType<double>(key.p_read->Interpreter()
+                                                       ->Interprete(key[0][1])),
+                                  ToType<double>(key.p_read->Interpreter()
+                                                       ->Interprete(key[0][2])),
+                                  ToType<double>(key[0][3]),
+                                  exp,etamax,ymax,massmax));
   return jf;
 }
 

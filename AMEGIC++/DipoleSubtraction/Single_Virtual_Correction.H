@@ -4,6 +4,7 @@
 #include "AMEGIC++/Main/Process_Base.H"
 
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
+#include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
 #include "PHASIC++/Process/KP_Terms.H"
 
 namespace PDF { class PDF_Base; } 
@@ -14,40 +15,40 @@ namespace AMEGIC {
   class Helicity;
   class Amplitude_Handler;
   class Phase_Space_Generator;
-  class DipoleSplitting_Base;
-  class Flavour_KernelsA;
-  class Massive_KernelsA;
 
   class Single_Virtual_Correction : public Process_Base {
   protected:
     std::string             m_ptypename,m_pslibname;
+    ATOOLS::sbt::subtype    m_stype;
+    ATOOLS::sbt::subtype    m_ipart;
+    ATOOLS::cs_itype::type  m_itype;
     double                  m_iresult;
-    double                  m_dalpha,m_dalpha_ff,
-                            m_dalpha_fi,m_dalpha_if,m_dalpha_ii;
     Phase_Space_Generator * p_psgen;
 
-    std::vector<std::vector<double> > p_dsij;
-
-    double                  m_cmur[2];
-    double                  m_x0,m_x1;
+    std::vector<std::vector<double> > m_dsijqcd,m_dsijew;
+    std::vector<std::vector<double> > m_Q2ij;
 
     Single_Virtual_Correction        * p_partner;
+    Single_LOProcess                 * p_LO_process;
+    PHASIC::Massive_Kernels          * p_kernel_qcd, * p_kernel_ew;
+    PHASIC::KP_Terms                 * p_kpterms_qcd, * p_kpterms_ew;
+    PHASIC::Virtual_ME2_Base         * p_loopme;
 
-    Single_LOProcess      * p_LO_process;
-    DipoleSplitting_Base  * p_dipole;
-    PHASIC::Flavour_Kernels * p_flkern;
-    PHASIC::Massive_Kernels * p_masskern;
-    PHASIC::KP_Terms      * p_kpterms;
-    PHASIC::Virtual_ME2_Base* p_loopme;  
+    double *                p_reqborn;
+    double                  m_cmur[2];
+    double                  m_x0,m_x1,m_eta0,m_eta1,m_z0,m_z1;
 
-    bool m_force_init, m_sccmur;
-    bool m_checkborn, m_checkpoles, m_checkfinite;
-    double m_checkpolesthreshold;
-    int m_bvimode, m_user_bvimode, m_imode, m_checkloopmap;
+    bool   m_force_init, m_sccmur, m_murcoeffvirt, m_loopmapped;
+    bool   m_checkborn, m_checkpoles, m_checkfinite;
+    size_t m_pspisrecscheme, m_pspfsrecscheme;
+    size_t m_pspissplscheme, m_pspfssplscheme;
+    double m_checkthreshold;
+    int    m_bvimode, m_user_bvimode, m_epsmode, m_drmode, m_checkloopmap;
 
     double m_bsum, m_vsum, m_isum, m_n;
     double m_mbsum, m_mvsum, m_misum, m_mn;
     double m_lastb, m_lastv, m_lasti, m_lastkp, m_lastki;
+    double m_finite, m_singlepole, m_doublepole;
 
     /*------------------------------------------------------------------------------
 
@@ -138,19 +139,50 @@ namespace AMEGIC {
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
 
+    inline double * RequestedBorn() { return p_reqborn; }
+
+    inline const PHASIC::KP_Terms*         KPTermsQCD() { return p_kpterms_qcd; }
+    inline const PHASIC::KP_Terms*         KPTermsEW()  { return p_kpterms_ew; }
+    inline const PHASIC::Massive_Kernels * KernelQCD()  { return p_kernel_qcd; }
+    inline const PHASIC::Massive_Kernels * KernelEW()   { return p_kernel_ew; }
+
+    inline double Finite()     const { return m_finite; }
+    inline double SinglePole() const { return m_singlepole; }
+    inline double DoublePole() const { return m_doublepole; }
+
+    inline void SetKPz0(const double &z0) { m_z0=z0; }
+    inline void SetKPz1(const double &z1) { m_z1=z1; }
+
   protected:
-    double         Calc_Imassive(const ATOOLS::Vec4D *mom);
-    double         Calc_I(const ATOOLS::Vec4D*);
-    void           Calc_KP(const ATOOLS::Vec4D*, double, double, double, double, double);
-    double         KPTerms(int mode, double scalefac2=1.0);
-    double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
-                               const double &, const double &,
-                               ATOOLS::Flavour_Vector &,
-                               double scalefac2=1.0);
-    void           CheckPoleCancelation(const ATOOLS::Vec4D*);
+    double         Calc_B();
+    double         Calc_V(const ATOOLS::Vec4D_Vector&);
+    double         Calc_V_WhenMapped(const ATOOLS::Vec4D_Vector&);
+    double         Calc_I(const ATOOLS::Vec4D_Vector&);
+    double         Calc_I(const ATOOLS::sbt::subtype,
+                          const std::vector<size_t>&,
+                          PHASIC::Massive_Kernels *,
+                          const PHASIC::KP_Terms*,
+                          const ATOOLS::Vec4D_Vector &,
+                          std::vector<std::vector<double> >&);
+    void           Calc_KP(const ATOOLS::Vec4D_Vector&);
+    double         KPTerms(int mode, PDF::PDF_Base *pdfa,
+                                     PDF::PDF_Base *pdfb, double scalefac2=1.0);
+    double         Get_KPTerms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
+                               const double&,const double&,
+                               const ATOOLS::Flavour&,const ATOOLS::Flavour&,
+                               const double&);
+    void           CheckBorn();
+    void           CheckFinite(const double &, const double &);
+    void           CheckPoleCancelation(const ATOOLS::Vec4D_Vector);
     void           FillMEwgts(ATOOLS::ME_Weight_Info&);
     void           EndOptimize();
+    void           AttachChargeFactors();
+    void           ComputeChargeFactors();
+    ATOOLS::ist::itype  AssignType(const size_t& id,
+                                   const ATOOLS::sbt::subtype);
+    bool           AllowAsSpecInPFF(const size_t& i,const size_t& k);
 
+    void           PrintDSij();
   };
 }
 

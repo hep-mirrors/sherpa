@@ -92,7 +92,8 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
 }
 
 // To be called in ModelInit, default value will be set to aqed_def argument
-void Model_Base::SetAlphaQED(const double& aqed_def){
+void Model_Base::SetAlphaQED(const double& aqed_def)
+{
   double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault(aqed_def);
@@ -101,10 +102,20 @@ void Model_Base::SetAlphaQED(const double& aqed_def){
 }
 
 // To be called in ModelInit, default will be set to AlphaQED at scale2
-void Model_Base::SetAlphaQEDByScale(const double& scale2){
+void Model_Base::SetAlphaQEDByScale(const double& scale2)
+{
   double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);;
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault((*aqed)(scale2));
+  p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(std::string("alpha_QED"),aqed->Default()));
+}
+
+// To be called in ModelInit, default will be set to AlphaQED as input
+void Model_Base::SetAlphaQEDByInput(const std::string& tag, const double& def)
+{
+  double alphaQED0=1./p_dataread->GetValue<double>(tag,def);
+  aqed=new Running_AlphaQED(alphaQED0);
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
   p_constants->insert(make_pair(std::string("alpha_QED"),aqed->Default()));
 }
@@ -341,23 +352,28 @@ void Model_Base::ReadParticleData() {
 
 void Model_Base::AddStandardContainers()
 {
-  s_kftable[kf_resummed] = new
-    Particle_Info(kf_resummed,0.,0.,0,1,2,1,1,1,0,"r","r","r","r",0,1);
+  // kf,mass,width,icharge,strong,spin,majo,on,stable,massive,
+  //   idname,antiidname,texname,antitexname,dummy,group
   s_kftable[kf_jet] = new
     Particle_Info(kf_jet,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
+  s_kftable[kf_ewjet] = new
+    Particle_Info(kf_ewjet,0.,0.,0,1, 2,1,1,1,0,"ewj","ewj","ewj","ewj",1,1);
   s_kftable[kf_quark] = new
     Particle_Info(kf_quark,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
   s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l","l","l",1,1);
+    Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
   s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0,0, 1,0,1,1,0,"v","v","v","v",1,1);
+    Particle_Info(kf_neutrino,0.,0.,0,0,1,0,1,1,0,"nu","nu","\\nu","\\nu",1,1);
+  s_kftable[kf_fermion] = new
+    Particle_Info(kf_fermion,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_lepton]->m_priority=2;
   s_kftable[kf_neutrino]->m_priority=1;
-  s_kftable[kf_resummed]->Clear();
   s_kftable[kf_jet]->Clear();
+  s_kftable[kf_ewjet]->Clear();
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
+  s_kftable[kf_fermion]->Clear();
   double jet_mass_threshold=p_dataread->Get<double>("JET_MASS_THRESHOLD", 10.0);
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
@@ -365,8 +381,12 @@ void Model_Base::AddStandardContainers()
       if (addit.Mass(true)<=jet_mass_threshold) {
         s_kftable[kf_jet]->Add(addit);
         s_kftable[kf_jet]->Add(addit.Bar());
+        s_kftable[kf_ewjet]->Add(addit);
+        s_kftable[kf_ewjet]->Add(addit.Bar());
         s_kftable[kf_quark]->Add(addit);
         s_kftable[kf_quark]->Add(addit.Bar());
+        s_kftable[kf_fermion]->Add(addit);
+        s_kftable[kf_fermion]->Add(addit.Bar());
       }
       else {
         msg_Info()<<"Ignoring "<<addit<<" due to JET_MASS_THRESHOLD.\n";
@@ -375,11 +395,16 @@ void Model_Base::AddStandardContainers()
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
   s_kftable[kf_jet]->SetResummed();
+  s_kftable[kf_ewjet]->Add(Flavour(kf_gluon));
+  s_kftable[kf_ewjet]->Add(Flavour(kf_photon));
+  s_kftable[kf_ewjet]->SetResummed();
   for (int i=11;i<17;i+=2) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_lepton]->Add(addit);
       s_kftable[kf_lepton]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
       if (s_kftable[i]->m_priority)
 	msg_Error()<<METHOD<<"(): Changing "<<addit<<" sort priority: "
 		   <<s_kftable[i]->m_priority<<" -> "
@@ -392,6 +417,8 @@ void Model_Base::AddStandardContainers()
     if ((addit.Mass()==0.0) && addit.IsOn()) {
       s_kftable[kf_neutrino]->Add(addit);
       s_kftable[kf_neutrino]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
       if (s_kftable[i]->m_priority)
 	msg_Error()<<METHOD<<"(): Changing "<<addit<<" sort priority: "
 		   <<s_kftable[i]->m_priority<<" -> "
@@ -513,25 +540,25 @@ void Model_Base::InitMEInfo()
   m_fls.clear();
   std::set<Flavour> fls;
   msg_Debugging()<<"\n  add vertices\n\n";
-    std::vector<Single_Vertex> &all(m_v);
-    for (size_t i=0;i<all.size();++i) {
-      m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
-      m_vtable[all[i].in[0].Bar()].push_back(&all[i]);
-      for (int j(0);j<all[i].NLegs();++j) fls.insert(all[i].in[j]);
-      if (msg_LevelIsDebugging()) {
-	msg_Debugging()
-	  <<"  "<<all[i].PID()<<" ["<<all[i].id[0];
-	for (size_t j(1);j<all[i].id.size();++j) msg_Out()<<","<<all[i].id[j];
-	msg_Out()<<"] "<<all[i].order<<" "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
-		 <<all[i].Lorentz.front()<<","<<all[i].Color[0].PID();
-	for (size_t j(1);j<all[i].Lorentz.size();++j)
-	  msg_Out()<<"|"<<all[i].Lorentz[j]<<","<<all[i].Color[j].PID();
-	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'));
-	for (size_t l(0);l<all[i].cpl.size();++l)
-	    msg_Out()<<", C"<<l<<" = "<<all[i].Coupling(l);
-	msg_Out()<<"\n";
-      }
+  std::vector<Single_Vertex> &all(m_v);
+  for (size_t i=0;i<all.size();++i) {
+    m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
+    m_vtable[all[i].in[0].Bar()].push_back(&all[i]);
+    for (int j(0);j<all[i].NLegs();++j) fls.insert(all[i].in[j]);
+    if (msg_LevelIsDebugging()) {
+      msg_Debugging()
+        <<"  "<<all[i].PID()<<" ["<<all[i].id[0];
+      for (size_t j(1);j<all[i].id.size();++j) msg_Out()<<","<<all[i].id[j];
+      msg_Out()<<"] "<<all[i].order<<" "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
+               <<all[i].Lorentz.front()<<","<<all[i].Color[0].PID();
+      for (size_t j(1);j<all[i].Lorentz.size();++j)
+        msg_Out()<<"|"<<all[i].Lorentz[j]<<","<<all[i].Color[j].PID();
+      msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'));
+      for (size_t l(0);l<all[i].cpl.size();++l)
+          msg_Out()<<", C"<<l<<" = "<<all[i].Coupling(l);
+      msg_Out()<<"\n";
     }
+  }
   msg_Debugging()<<"\n  add particles\n\n";
   for (std::set<Flavour>::const_iterator 
 	 fit(fls.begin());fit!=fls.end();++fit) {

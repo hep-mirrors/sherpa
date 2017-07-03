@@ -145,11 +145,12 @@ CParam Cluster_Algorithm::GetMeasure
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (p_ampl->Legs().size()>p_ampl->NIn()+m_nmin) {
     int nlo((m_wmode&4096) && p_ampl->Prev()==NULL);
+    PRINT_INFO("check me");
     kt2[idi][idj][idk][mofl]=
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,
 		     (m_wmode&1024)||nlo?1:-1,
 		     (p_xs->Parent()->Info().m_fi.
-		      m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
+		      m_nlotype!=ATOOLS::nlo_type::lo?16:0)|
 		     ((cut||!mmofl.Strong())?1:0)|(nlo?32:0));
   }
   else {

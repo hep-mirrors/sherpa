@@ -51,7 +51,6 @@ namespace PHASIC {
   operator&(const psm::code &c1,const psm::code &c2)
   { return (psm::code)((int)c1&(int)c2); }
 
-
   class Phase_Space_Integrator;
   class Process_Base;
 

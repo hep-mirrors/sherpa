@@ -48,6 +48,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   ofstream chf;
   chf.open((filename).c_str());
 
+  chf<<"// Channel_Generator"<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  

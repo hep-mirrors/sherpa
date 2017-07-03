@@ -134,14 +134,10 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  Default_Reader reader;
-  int libchk; 
-  if (reader.Read(libchk, "AMEGIC_ME_LIBCHECK", 0)) {
-    if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
-      directload = false;
-    }
-  }  
+  if (ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"))) {
+    msg_Info()<<"Enforce full library check. This may take some time."<<std::endl;
+    directload = false;
+  }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
@@ -152,11 +148,15 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(reader.Get<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1));
+  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  if (!p_ampl->PossibleConfigsExist(m_maxcpl,m_mincpl)) {
+    msg_Tracking()<<"Single_LOProcess::InitAmplitude : No possible combinations exist for "<<m_mincpl<<" .. "<<m_maxcpl<<"."<<endl;
     return 0;
   }
   map<string,Complex> cplmap;
@@ -738,8 +738,8 @@ void AMEGIC::Single_Process_Combined::Minimize()
 
 double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
-  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
-  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastxs=0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
+  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(moms);
   }
@@ -749,7 +749,7 @@ double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &moms,const 
 
 double AMEGIC::Single_Process_Combined::DSigma(const ATOOLS::Vec4D_Vector &mom,bool lookup)
 {
-  m_lastxs = 0.;
+  m_lastbxs = m_lastxs = 0.;
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
   }
@@ -758,7 +758,7 @@ double AMEGIC::Single_Process_Combined::DSigma(const ATOOLS::Vec4D_Vector &mom,b
       m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&mom.front())*m_sfactor;
   }
-  return m_lastxs;
+  return m_lastbxs=m_lastxs;
 }
 
 double AMEGIC::Single_Process_Combined::operator()(const ATOOLS::Vec4D* mom)

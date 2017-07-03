@@ -161,8 +161,8 @@ operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="TTH") return NULL;
   if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
-  if (pi.m_oew!=1 || pi.m_fi.m_nloewtype!=nlo_type::lo)return NULL;
-  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop)) return NULL;
+  if (pi.m_oew!=1 || pi.m_fi.m_nlotype!=nlo_type::lo)return NULL;
+  if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   if (fl[0].Strong() && fl[1].Strong() &&
       fl[2].Kfcode()==kf_h0 &&

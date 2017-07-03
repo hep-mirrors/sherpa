@@ -6,6 +6,7 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 
@@ -15,6 +16,7 @@ namespace SHERPA{
 namespace ATOOLS{
   class Cluster_Amplitude;
   class ColorID;
+  class Default_Reader;
   class Mass_Selector;
 }
 namespace PHASIC{
@@ -23,14 +25,16 @@ namespace PHASIC{
 }
 
 class MEProcess{
-  
+
 private:
 
-  std::string m_name;
+  std::string                m_name;
+  ATOOLS::nlo_type::code     m_nlotype;
   ATOOLS::Cluster_Amplitude* p_amp;
   //ATOOLS::Mass_Selector      m_msel;
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
+  ATOOLS::Default_Reader *   p_momentareader;
   PHASIC::Rambo*             p_rambo;
   ATOOLS::Smart_Pointer<PHASIC::Color_Integrator> p_colint;
 
@@ -45,6 +49,7 @@ private:
   ATOOLS::Flavour_Vector         m_flavs; 
 
   size_t m_npsp,m_nin,m_nout;
+  double m_kpz[2];
 
   void SetMomentumIndices(const std::vector<int> &pdgs);
   PHASIC::Process_Base* FindProcess();
@@ -57,13 +62,15 @@ public:
   void AddOutFlav(const int &id);
   void AddInFlav(const int &id, const int &col1, const int &col2);
   void AddOutFlav(const int &id, const int &col1, const int &col2);
+  void ReadInProcess();
   double GenerateColorPoint();
   bool HasColorIntegrator();
   void Initialize();
 
   size_t NumberOfPoints();
 
-  void SetMomenta(size_t n);
+  void ReadProcess(size_t n);
+
   void SetMomenta(const std::vector<double*> &p);
   void SetMomenta(const ATOOLS::Vec4D_Vector &p);
   void SetMomentum(const size_t &id, const double &E , const double &px,
@@ -91,6 +98,8 @@ public:
 
   inline ATOOLS::Cluster_Amplitude* GetAmp() { return p_amp; }
   inline std::string Name() { return m_name; }
+
+  inline void SetNLOType(ATOOLS::nlo_type::code nlotype) { m_nlotype=nlotype; }
 };
 
 #endif

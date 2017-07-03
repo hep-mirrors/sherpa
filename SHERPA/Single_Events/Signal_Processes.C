@@ -12,6 +12,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -130,7 +132,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   bool success(true);
   Particle *particle(NULL);
   blob->SetStatus(blob_status::needs_harddecays);
-  if (proc->Info().m_nlomode!=1)
+  if (proc->Info().m_nlomode!=nlo_mode::fixedorder)
     blob->AddStatus(blob_status::needs_showers);
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
@@ -217,15 +219,16 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("PDFInfo",new Blob_Data<ATOOLS::PDF_Info>(winfo.m_pdf));
   blob->AddData("Orders",new Blob_Data<std::vector<double> >
 		(p_mehandler->Process()->MaxOrders()));
-  blob->AddData("NLOQCDType",new Blob_Data<std::string>
-                (ToString(proc->Info().m_fi.m_nloqcdtype)));
-  blob->AddData("NLOEWType",new Blob_Data<std::string>
-                (ToString(proc->Info().m_fi.m_nloewtype)));
+  blob->AddData("NLOType",new Blob_Data<std::string>
+                (ToString(proc->Info().m_fi.m_nlotype)));
+  blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
+                (proc->Info().m_fi.m_nlocpl));
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
     blob->AddData("MEWeightInfo",new Blob_Data<ME_Weight_Info*>(wgtinfo));
     blob->AddData("Renormalization_Scale",new Blob_Data<double>(wgtinfo->m_mur2));
+    blob->AddData("Factorization_Scale",new Blob_Data<double>(wgtinfo->m_muf2));
   }
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));

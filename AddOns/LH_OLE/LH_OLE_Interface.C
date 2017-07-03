@@ -91,11 +91,13 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   if (!contract) {
     if (lhfile.FileStatus()==0) {
       lhfile.AddParameter("MatrixElementSquareType  CHsummed");
-      lhfile.AddParameter("CorrectionType           QCD");
+      std::string corrtype("QCD");
+      if (pi.m_fi.m_nlocpl[1]) corrtype="EW";
+      lhfile.AddParameter("CorrectionType           "+corrtype);
       if (m_drmode==1) lhfile.AddParameter("IRregularisation         DRED");
       else lhfile.AddParameter("IRregularisation         CDR");
-      lhfile.AddParameter("AlphasPower              "+ToString(pi.m_maxcpl[0]-1));
-      lhfile.AddParameter("AlphaPower               "+ToString(pi.m_maxcpl[1]));
+      lhfile.AddParameter("AlphasPower              "+ToString(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]));
+      lhfile.AddParameter("AlphaPower               "+ToString(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]));
       lhfile.AddParameter("OperationMode            CouplingsStrippedOff");
       std::string widthscheme("FixedWidthScheme");
       if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
@@ -240,13 +242,12 @@ operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="LHOLE") return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
-  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+  if (pi.m_fi.m_nlotype&nlo_type::loop) {
     msg_Info()<<"Les Houches One-Loop Generator called.\n";
     return new LH_OLE_Interface(pi, fl, true);
   }
-  else if (pi.m_fi.m_nloqcdtype&nlo_type::vsub) {
+  else if (pi.m_fi.m_nlotype&nlo_type::vsub) {
     msg_Info()<<"Les Houches One-Loop Generator called in subtracted mode.\n";
     return new LH_OLE_Interface(pi, fl, false);
   }

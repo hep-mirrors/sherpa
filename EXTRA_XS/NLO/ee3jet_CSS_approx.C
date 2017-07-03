@@ -39,7 +39,7 @@ XS_ee3jet_CSS_approx::XS_ee3jet_CSS_approx
   PRINT_INFO("initialised XS_ee3jet_CSS_approx");
   Process_Info pico(pi);
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.begin());
-  pico.m_fi.m_nloqcdtype=nlo_type::lo;
+  pico.m_fi.m_nlotype=nlo_type::lo;
   PRINT_INFO(pico);
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   m_alphasdef = MODEL::as->Default();

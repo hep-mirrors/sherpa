@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -175,8 +176,14 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
   double var(p_int->TotalVar());
+  std::string namestring("");
+  if (p_gen) {
+    namestring+="("+p_gen->Name();
+    if (m_pinfo.Has(nlo_type::loop)) namestring+="+"+m_pinfo.m_loopgenerator;
+    namestring+=")";
+  }
   msg_Info()<<METHOD<<"(): Calculate xs for '"
-	    <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;
+            <<m_name<<"' "<<namestring<<std::endl;
   double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"

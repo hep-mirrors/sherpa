@@ -14,6 +14,7 @@ namespace AMEGIC {
     int subcounter;
     bool super_amplitude;
     std::ofstream  pios;
+    int m_graphmode;
     int nin, nout, nmed;   // total
     int ic, oc, mc;        // counters
     std::vector<std::string> ins;    // incomming points 
@@ -27,12 +28,12 @@ namespace AMEGIC {
 
     std::string Int2String(const int);
     void LegCount(Point * mo);
-    void DrawLine(std::string from, Point * d);
+    void DrawLine(std::string from, Point * d, bool flip);
     int InclInComming(Point * mo);
     void WriteHeader(const std::string &name);
   public:
-    Amplitude_Output() { top=0; ampl=0;}
-    Amplitude_Output(std::string pid, Topology * _top, std::string gpath);
+    Amplitude_Output(std::string pid, Topology * _top,
+                     std::string gpath, int gmode=0);
     void WriteOut(Point *);
     ~Amplitude_Output();
     void BeginSuperAmplitude();
@@ -40,7 +41,7 @@ namespace AMEGIC {
   };
 
   inline void Amplitude_Output::BeginSuperAmplitude() { super_amplitude=true; subcounter=0;}
-  inline void Amplitude_Output::EndSuperAmplitude() { super_amplitude=false; ++maincounter;}
+  inline void Amplitude_Output::EndSuperAmplitude() { super_amplitude=false; if (m_graphmode==1) ++maincounter;}
 }
 
 #endif

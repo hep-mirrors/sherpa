@@ -13,6 +13,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
+#include "PHASIC++/Process/Process_Base.H"
+
 using namespace PHASIC;
 using namespace ATOOLS;
 
@@ -52,8 +54,7 @@ void Selector_Key::SetData(const std::string &tag,
 
 void Selector_Key::ReadData(const std::string &path,const std::string &file)
 {
-  msg_Debugging()<<METHOD<<"('"<<path<<"','"<<file<<"'): {\n";
-  msg_Indent();
+  DEBUG_FUNC("'"<<path<<"','"<<file<<"'");
   if (m_del && p_read!=NULL) delete p_read;
   p_read=new Data_Reader(" ",";","!");
   p_read->AddWordSeparator("\t");
@@ -64,40 +65,36 @@ void Selector_Key::ReadData(const std::string &path,const std::string &file)
   p_read->SetInputFile(file);
   p_read->SetMatrixType(mtc::transposed);
   p_read->MatrixFromFile((*this),"");
-  msg_Debugging()<<"}"<<std::endl;
+  msg_Debugging()<<(*this);
 }
 
 
-Selector_Base::~Selector_Base() 
+std::ostream & PHASIC::operator<<(std::ostream & s,
+                                  const PHASIC::Selector_Key & sk)
+{
+  s<<"Process: "<<(sk.p_proc?sk.p_proc->Name():"unknown")<<"\n";
+  s<<"Key:     "<<sk.m_key<<", del="<<sk.m_del<<"\n";
+  for (size_t i(0);i<sk.size();++i) s<<sk[i]<<std::endl;
+  return s;
+}
+
+Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
+  m_name(name), m_on(false), m_isnlo(false),
+  m_sel_log(new Selector_Log(m_name)), p_proc(proc),
+  m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
+  m_n(m_nin+m_nout), p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
+  m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
+{
+  if (p_proc->Info().Has(nlo_type::real|nlo_type::rsub)) m_isnlo=true;
+}
+
+Selector_Base::~Selector_Base()
 { 
   if (m_sel_log!=NULL) delete m_sel_log;
 }
 
-bool Selector_Base::JetTrigger
-(const Vec4D_Vector &,NLO_subevtlist *const sub)
+void Selector_Base::AddOnshellCondition(std::string,double)
 {
-  THROW(fatal_error,"Virtual method not redefined");
-  return false;
-}
-
-bool Selector_Base::NoJetTrigger(const Vec4D_Vector &)
-{
-  THROW(fatal_error,"Virtual method not redefined");
-  return false;
-}
-
-void Selector_Base::BuildCuts(Cut_Data *) 
-{
-  THROW(fatal_error,"Virtual method not redefined");
-}
-
-void Selector_Base::AddOnshellCondition(std::string,double) 
-{
-}
-
-int Selector_Base::IsConditional()
-{ 
-  return 0; 
 }
 
 void Selector_Base::Output() { 
@@ -109,11 +106,53 @@ void Selector_Base::Output() {
   }
 }
 
+void Selector_Base::ReadInSubSelectors(const Selector_Key &key,size_t idx)
+{
+  DEBUG_FUNC("idx="<<idx);
+  size_t open(0);
+  Selector_Key * subkey(NULL);
+  for (size_t k=idx;k<key.size();++k) {
+    if (open==0) {
+      if (subkey) THROW(fatal_error,"Read-in error.");
+      subkey = new Selector_Key(key.p_proc,key.p_read);
+      subkey->m_key=key[k][0];
+    }
+    if      (open==0 && key[k].back()=="{")                 open++;
+    else if (open==1 && key[k].size()==1 && key[k][0]=="}") open--;
+    else {
+      if (open==0) {
+        subkey->push_back(std::vector<std::string>(key[k].size()-1));
+        for (size_t j=1;j<key[k].size();++j) subkey->back()[j-1]=key[k][j];
+      }
+      else {
+        if      (key[k].back()=="{")                 open++;
+        else if (key[k].size()==1 && key[k][0]=="}") open--;
+        subkey->push_back(std::vector<std::string>(key[k].size()));
+        for (size_t j=0;j<key[k].size();++j) subkey->back()[j]=key[k][j];
+      }
+    }
+    if (open==0) {
+      Selector_Base *sel(Selector_Getter::GetObject(subkey->m_key,*subkey));
+      if (sel!=NULL) m_sels.push_back(sel);
+      else THROW(fatal_error, "Did not find selector \""+subkey->m_key+"\".");
+      if (msg_LevelIsDebugging()) {
+        msg_Debugging()<<"subkey:\n";
+        msg_Debugging()<<"  "<<subkey->m_key<<std::endl;
+        for (size_t i(0);i<subkey->size();++i)
+          msg_Debugging()<<"    "<<(*subkey)[i]<<std::endl;
+        msg_Debugging()<<"-> found "<<(sel?sel->Name():"none")<<std::endl;
+      }
+      subkey=NULL;
+    }
+  }
+  if (subkey) THROW(fatal_error,"Read-in error. Selector not processed.");
+}
+
 void Selector_Base::ShowSyntax(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
   msg_Out()<<METHOD<<"(): {\n\n";
-  Selector_Getter::PrintGetterInfo(msg->Out(),20);
+  Selector_Getter::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
 
@@ -126,14 +165,9 @@ namespace PHASIC {
 
     No_Selector(): Selector_Base("No_Selector") {}
 
-    bool Trigger(const Vec4D_Vector &) { return true; }
-    bool JetTrigger(const Vec4D_Vector &,NLO_subevtlist *const) 
-    { return true; }
-    bool NoJetTrigger(const Vec4D_Vector &) { return true; }
+    bool Trigger(const Vec4D_Vector &,NLO_subevt *const) { return true; }
 
-    void SetRange(ATOOLS::Flavour_Vector,double,double) {}
     void BuildCuts(Cut_Data * cuts) {}
-    void Output() {}
 
   };
 

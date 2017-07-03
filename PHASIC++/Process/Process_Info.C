@@ -45,17 +45,9 @@ std::vector<ATOOLS::Flavour_Vector> Process_Info::ExtractMPL() const
   return fl;
 }
 
-bool Process_Info::Has(nlo_type::code nlotype) const
+bool Process_Info::Has(ATOOLS::nlo_type::code nlotype) const
 {
-  if (m_fi.m_nloewtype==nlo_type::lo) {
-    return (m_fi.m_nloqcdtype&nlotype) ? true : false;
-  }
-  else if (m_fi.m_nloqcdtype==nlo_type::lo) {
-    return (m_fi.m_nloewtype&nlotype) ? true : false;
-  }
-  else {
-    THROW(fatal_error, "Can't handle NLO EW and NLO QCD in one amplitude.");
-  }
+  return m_fi.m_nlotype&nlotype;
 }
 
 int Process_Info::Combine(const size_t &i,const size_t &j,

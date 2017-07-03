@@ -144,8 +144,8 @@ void AMEGIC::Single_Process_External::Minimize()
 
 double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
-  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
-  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastxs = 0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
+  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(moms);
   }
@@ -155,7 +155,7 @@ double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,const 
 
 double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
-  m_lastxs = 0.;
+  m_lastbxs = m_lastxs = 0.;
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
   }
@@ -164,7 +164,7 @@ double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms
       m_lastxs = p_partner->LastXS()*m_sfactor;
     else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
   }
-  return m_lastxs;
+  return m_lastbxs=m_lastxs;
 }
 
 double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)

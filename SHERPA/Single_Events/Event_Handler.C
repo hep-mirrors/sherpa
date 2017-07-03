@@ -185,6 +185,7 @@ bool Event_Handler::AnalyseEvent(double & weight) {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
+  DEBUG_FUNC("weight="<<weight);
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true;
@@ -194,10 +195,12 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       continue;
     }
 
+    msg_Debugging()<<"trying phase: "<<(*pit)->Name();
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
-		    <<rv<<std::endl;
+                    <<rv<<std::endl;
+      msg_Debugging()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     switch (rv) {
     case Return_Value::Success : 
       if (mode==eventtype::StandardPerturbative &&
@@ -256,6 +259,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 
 bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 {
+  DEBUG_FUNC(mode);
   double weight = 1.;
   bool run(true);
 

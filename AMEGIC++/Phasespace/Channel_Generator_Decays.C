@@ -46,9 +46,11 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
   ofstream chf;
   chf.open((filename).c_str());
 
+  chf<<"// Channel_Generator_Decays"<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  

@@ -9,11 +9,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top,
-                                   std::string gpath)
+                                   std::string gpath, int gmode)
 {
+  m_graphmode=gmode;
   std::string script("/plot_graphs");
   if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+script))
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+script+".sh",
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+script,
          rpa->gen.Variable("SHERPA_CPP_PATH")+script);
   gpath+=std::string("/Amegic/");
   MakeDir(gpath);
@@ -50,6 +51,7 @@ void Amplitude_Output::WriteHeader(const std::string &name)
   pios<<"\\setlength{\\tabcolsep}{5mm}  "<<endl;
 
   pios<<"\\begin{document} "<<endl;
+  pios<<"\\pagestyle{empty}"<<endl;
   pios<<"\\begin{fmffile}{"<<name<<"_fg} "<<endl;
 
 }
@@ -64,7 +66,7 @@ string Amplitude_Output::Int2String(const int i) {
 
 void Amplitude_Output::LegCount(Point * mo) {
   if (!mo) {
-    msg_Error()<<"ERROR in Amplitude_Output::LegCount : no point found, continue run."<<endl;
+    msg_Error()<<METHOD<<"(): ERROR: no point found, continue run."<<endl;
     return;
   }
 
@@ -107,6 +109,10 @@ int Amplitude_Output::InclInComming(Point * mo) {
 }
 
 void Amplitude_Output::WriteOut(Point * start) {
+  // count orders
+  std::vector<int> cpls;
+  start->FindOrder(cpls);
+
   // make working copy
   if (ampl==0) ampl=new Point[12*2 + 1];  //  up to 10 outgoing particles
   int count_all=0;
@@ -137,54 +143,74 @@ void Amplitude_Output::WriteOut(Point * start) {
   if (counter%3==0) {
     s<<"\\begin{tabular}{ccc}"<<endl;
   }
+
+  // write caption with graph number
   MyStrStream str;
-  if (super_amplitude) 
-    str<<maincounter<<"("<<subcounter++<<")";
-  else 
+  if (m_graphmode==1) {
+    if (super_amplitude)
+      str<<maincounter<<"("<<subcounter++<<")";
+    else
+      str<<maincounter++;
+  }
+  else {
     str<<maincounter++;
+  }
   str>>captions[counter%3];
   captions[counter%3]=std::string(" Graph ")+captions[counter%3];
+
+  // add orders to caption
+  captions[counter%3]+=std::string(" $\\mathcal{O}(g_s^")+ToString(cpls[0])
+                       +std::string("\\,g^")+ToString(cpls[1]);
+  for (size_t i(2);i<cpls.size();++i)
+    captions[counter%3]+=std::string("\\,g_\text{BSM")+ToString(i-1)
+                         +std::string("}^")+ToString(cpls[i]);
+  captions[counter%3]+=std::string(")$");
 
   s<<" % Graph "<<++counter<<endl;
   s<<"\\begin{fmfgraph*}(40,40) "<<endl;
 
-  // define incoming points
-  s<<"  \\fmfbottom{"<<ins[0];
-  for (int i=1; i<nin; ++i) s<<","<<ins[i];
-  s<<"} "<<endl;
-  // define outgoing points
-  s<<"  \\fmftop{"<<outs[nout-1];
-  for (int i=nout-2; i>=0; --i) s<<","<<outs[i];
-  s<<"} "<<endl;
-  
-  /*
-  // define incoming and outgoints points in a circle
-  s<<"  \\fmfsurround{"<<outs[0];
-  for (int i=1; i<nout; ++i) s<<","<<outs[i];
-  for (int i=0; i<nin; ++i) s<<","<<ins[i];
-  s<<"} "<<endl;
-  */
+  if (m_graphmode==1) {
+    // define incoming points at bottom
+    s<<"  \\fmfbottom{"<<ins[0];
+    for (int i=1; i<nin; ++i) s<<","<<ins[i];
+    s<<"} "<<endl;
+    // define outgoing points at top
+    s<<"  \\fmftop{"<<outs[nout-1];
+    for (int i=nout-2; i>=0; --i) s<<","<<outs[i];
+    s<<"} "<<endl;
+  }
+  else {
+    // define incoming and outgoints points in a circle
+    s<<"  \\fmfsurround{"<<outs[0];
+    for (int i=1; i<nout; ++i) s<<","<<outs[i];
+    for (int i=0; i<nin; ++i) s<<","<<ins[i];
+    s<<"} "<<endl;
+  }
 
-  // draw start line
+  // draw start line (left incoming)
   s<<"  \\fmf{";
   if (ampl->fl.IsPhoton()) s<<"photon";
   else if (ampl->fl.IsGluon()) s<<"gluon";
-  else if (ampl->fl.IsBoson()) s<<"dashes";
-  else s<<"fermion";
-  if (!(ampl->fl.IsGluon())&& !(ampl->fl.IsPhoton()))
-    s<<",label=$"<<ampl->fl.TexName()<<"$}{"<<ins[0]<<","<<meds[0]<<"} "<<endl;
-  else
-    s<<"}{"<<ins[0]<<","<<meds[0]<<"} "<<endl;
+  else if (ampl->fl.IsVector()) s<<"boson";
+  else if (ampl->fl.IsFermion()) s<<"fermion";
+  else if (ampl->fl.IsScalar()) s<<"dashes";
+  else s<<"dots";
+
+  bool flip(ampl->fl.IsAnti());
+  std::string begin(ins[0]);
+  std::string end(meds[0]);
+  if (flip) std::swap(begin,end);
+  s<<",label=$"<<ampl->fl.TexName()<<"$}{"<<begin<<","<<end<<"} "<<endl;
 
   s<<"  \\fmfv{label="<<ampl->number<<"}{"<<ins[0]<<"} "<<endl;
 
   oc=0;
   ic=1;
   mc=1;
-  
-  DrawLine(meds[0],ampl->left);
-  DrawLine(meds[0],ampl->middle);
-  DrawLine(meds[0],ampl->right);
+
+  DrawLine(meds[0],ampl->left,flip);
+  DrawLine(meds[0],ampl->middle,flip);
+  DrawLine(meds[0],ampl->right,flip);
   // draw dots
 
   // draw numbers
@@ -193,7 +219,7 @@ void Amplitude_Output::WriteOut(Point * start) {
   // close graph environment
   s<<"\\end{fmfgraph*} "<<endl<<endl;
   if (counter%3==0) {
-    s<<"\\\\"<<endl;
+    s<<"\\\\[15pt]"<<endl;
     for (int i=0;;++i) {
       s<<captions[i];
       if (i==2) break;
@@ -210,9 +236,10 @@ void Amplitude_Output::WriteOut(Point * start) {
 }
 
 
-void Amplitude_Output::DrawLine(string from, Point * d) {
-  ostream & s= pios;
+void Amplitude_Output::DrawLine(string from, Point * d, bool flip) {
   if (d==0) return;
+
+  ostream & s= pios;
 
   int in_or_out=0;
 
@@ -235,31 +262,33 @@ void Amplitude_Output::DrawLine(string from, Point * d) {
   s<<"  \\fmf{";
   if (d->fl.IsPhoton()) s<<"photon";
   else if (d->fl.IsGluon()) s<<"gluon";
-  else if (d->fl.IsBoson()) s<<"dashes";
-  else if (in_or_out) s<<"fermion";
-  else s<<"plain";
-  if (!(d->fl.IsGluon())&& !(d->fl.IsPhoton()))
-    s<<",label=$"<<d->fl.TexName()<<"$";
-  if (d->b==-1)
-    s<<"}{"<<to<<","<<from<<"} "<<endl;
-  else 
+  else if (d->fl.IsVector()) s<<"boson";
+  else if (d->fl.IsFermion()) s<<"fermion";
+  else if (d->fl.IsScalar()) s<<"dashes";
+  else s<<"dots";
+  s<<",label=$"<<d->fl.TexName()<<"$";
+
+  if (!flip)
     s<<"}{"<<from<<","<<to<<"} "<<endl;
-  
-  DrawLine(to,d->left);
-  DrawLine(to,d->middle);
-  DrawLine(to,d->right);
+  else
+    s<<"}{"<<to<<","<<from<<"} "<<endl;
+
+  DrawLine(to,d->left,flip);
+  DrawLine(to,d->middle,flip);
+  DrawLine(to,d->right,flip);
 }
 
 
 Amplitude_Output::~Amplitude_Output()
 {
   if (counter%3!=0) {
-    pios<<"\\\\"<<endl;
+    pios<<"\\\\[12pt]"<<endl;
     for (int i=0;;++i) {
       pios<<captions[i];
       if (i==counter%3-1) break;
       pios<<" & "<<endl;
     }
+    pios<<endl;
     pios<<"\\end{tabular}"<<endl;
   }
   pios<<"\\end{fmffile} "<<endl;

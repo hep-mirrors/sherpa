@@ -12,11 +12,11 @@ namespace AMEGIC {
   class II_DipoleSplitting : public DipoleSplitting_Base {
     double m_xijk;
     double m_vi;
-    double m_sff;
-//     ATOOLS::Vec4D m_pt;
   public:
-    II_DipoleSplitting(int ft, int m,int i,int j,int k) 
-    {m_ft=ft; m_type=dpt::i_i; m_m=m; m_i=i;m_j=j;m_k=k;}
+    II_DipoleSplitting(ATOOLS::sbt::subtype st,
+                       ATOOLS::spt::splittingtype ft,
+                       int m,int i,int j,int k) :
+      DipoleSplitting_Base(st,ft,ATOOLS::dpt::i_i,m,i,j,k) {}
     
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();

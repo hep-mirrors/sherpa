@@ -87,7 +87,8 @@ namespace MCATNLO {
 			       const int mode);
 
     Weight_Value Differential(ATOOLS::Cluster_Amplitude *const ampl,
-			      const PHASIC::nlo_type::code type=PHASIC::nlo_type::lo,
+                              const ATOOLS::nlo_type::code type
+                                    =ATOOLS::nlo_type::lo,
 			      const std::string add="") const;
 
     Trial_Weight TrialWeight(ATOOLS::Cluster_Amplitude *const ampl);

@@ -93,8 +93,10 @@ FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key):
     m_mij2=sqr(m_mij=p_v->Kin()->JIJT()->Flav().Mass());
   }
   bool nuc(p_v->Info() && p_v->Info()->Mode()&2);
-  m_cpll=SComplex((nuc?1.0:p_v->V()->cpl.front().Value())*p_cc->Coupling());
-  m_cplr=SComplex((nuc?1.0:p_v->V()->cpl.front().Value())*p_cc->Coupling());
+  double fch(p_v->Info()&&p_v->Info()->Type()==1?
+	     dabs(key.p_c->Flav().Charge()):1.0);
+  m_cpll=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
+  m_cplr=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
   m_cl=m_cpll!=SComplex(0.0,0.0);
   m_cr=m_cplr!=SComplex(0.0,0.0);
 }
