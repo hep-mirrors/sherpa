@@ -157,6 +157,7 @@ namespace ATOOLS {
     inline int  MPIMode() const    { return m_mpimode;    }
     inline size_t Precision() const {
       if (p_output) return p_output->precision();
+      return 0;
     }
 
 
