@@ -152,33 +152,35 @@ bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void Standard_Model_Zprime::FixEWParameters()
 {
-  double alphaQED0;
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
   string yukscheme=p_dataread->GetValue<string>("YUKAWA_MASSES","Running");
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
   string widthscheme=p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",1);
+  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",2);
+  int ewrenscheme=p_dataread->GetValue<int>("EW_REN_SCHEME",ewscheme);
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
+  std::string ewschemename(""),ewrenschemename("");
   switch (ewscheme) {
   case 0:
     // all SM parameters given explicitly
+    ewschemename="user-defined, input: all parameters";
     SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23);
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
     ccos2thetaW=1.-csin2thetaW;
     cvev=p_dataread->GetValue<double>("VEV",246.);
-    if (widthscheme=="CMS") THROW(not_implemented,"No CMS in EW_SCHEME=0");
     break;
   case 1: {
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
-    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
+    ewschemename="alpha(0) scheme, input: 1/\\alphaQED(0), m_W, m_Z, m_h, widths";
+    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",0.));
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
     if (widthscheme=="CMS") {
-      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ));
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -187,12 +189,13 @@ void Standard_Model_Zprime::FixEWParameters()
   }
   case 2: {
     // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
-    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(MZ)",128.802));
+    ewschemename="alpha(m_Z) scheme, input: 1/\\alphaQED(m_Z), m_W, m_Z, m_h, widths";
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
     if (widthscheme=="CMS") {
-      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ));
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -200,33 +203,33 @@ void Standard_Model_Zprime::FixEWParameters()
     break;
   }
   case 3: {
-    //gmu scheme -- inputs GF, M_W, M_Z, M_H
+    // Gmu scheme
+    ewschemename="Gmu scheme, input: GF, m_W, m_Z, m_h, widths";
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
     cvev=1./(pow(2.,0.25)*sqrt(GF));
-    SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     if (widthscheme=="CMS") {
-      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ));
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=1./(pow(2.,0.25)*sqrt(GF));
       size_t aqedconv(p_dataread->GetValue<size_t>("GMU_CMS_AQED_CONVENTION",0));
       switch (aqedconv) {
       case 0:
-        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::abs(muW2*csin2thetaW));
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muW2*csin2thetaW));
         break;
       case 1:
-        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::real(muW2*csin2thetaW));
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2*csin2thetaW));
         break;
       case 2:
-        aqed->SetDefault(sqrt(2.)*GF/M_PI*std::real(muW2)*std::real(csin2thetaW));
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2)*std::real(csin2thetaW));
         break;
       case 3 :
-        aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
         break;
       case 4 :
-        aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*(1.-sqr(MW/MZ)));
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*(1.-sqr(MW/MZ)));
         break;
       default:
         THROW(not_implemented,"\\alpha_QED convention not implemented.");
@@ -235,10 +238,58 @@ void Standard_Model_Zprime::FixEWParameters()
     break;
   }
   case 4: {
+    // DY scheme
+    ewschemename="DY scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    ccos2thetaW=1.-csin2thetaW;
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    cvev=2.*MZ*sqrt(ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+
+    if (widthscheme=="CMS") {
+      // now also the W width is defined by the tree-level relations
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=2.*sqrt(muZ2*ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+      break;
+    }
+    break;
+  }
+  case 5: {
+    // CDY scheme
+    ewschemename="CDY scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
+    SetAlphaQEDByInput("1/ALPHAQED(MW)",132.17);
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    ccos2thetaW=1.-csin2thetaW;
+    MZ=MW/sqrt(ccos2thetaW.real());
+    Flavour(kf_Z).SetMass(MZ);
+    cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
+
+    if (widthscheme=="CMS") {
+      // now also the W width is defined by the tree-level relations
+      Complex muW2(MW*(MW-I*GW)), muZ2(0.,0.);
+      muZ2=muW2/ccos2thetaW;
+      MZ=sqrt(muZ2.real());
+      GZ=-muZ2.imag()/MZ;
+      Flavour(kf_Z).SetMass(MZ);
+      Flavour(kf_Z).SetWidth(GZ);
+      cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->Default()));
+      break;
+    }
+    break;
+  }
+  case 10: {
     // FeynRules scheme, inputs: alphaQED, GF, M_Z, M_H
+    ewschemename="FeynRules scheme, input: 1/\\alphaQED(0), GF, m_Z, m_h, widths";
     SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976));
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
-    MW = sqrt(sqr(MZ)/2. + sqrt(pow(MZ,4)/4. - (aqed->Default()*M_PI*sqr(MZ))/(GF*sqrt(2.))));
+    MW=sqrt(sqr(MZ)/2.+sqrt(pow(MZ,4)/4.
+                            -(aqed->Default()*M_PI*sqr(MZ))/(GF*sqrt(2.))));
     Flavour(kf_Wplus).SetMass(MW);
 
     csin2thetaW=1.-sqr(MW/MZ);
@@ -258,21 +309,46 @@ void Standard_Model_Zprime::FixEWParameters()
     THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
     break;
   }
+  switch (ewrenscheme) {
+  case 1:
+    ewrenschemename="alpha(0)";
+    break;
+  case 2:
+    ewrenschemename="alpha(m_Z)";
+    break;
+  case 3:
+    ewrenschemename="alpha(Gmu)";
+    break;
+  default:
+    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to 3."
+              <<std::endl;
+    ewrenscheme=3;
+    ewrenschemename="alpha(Gmu)";
+    break;
+  }
+
+  msg_Info()<<METHOD<<"() {"<<std::endl;
+  msg_Info()<<"  Input scheme: "<<ewscheme<<std::endl;
+  msg_Info()<<"                "<<ewschemename<<std::endl;
+  msg_Info()<<"  Ren. scheme:  "<<ewrenscheme<<std::endl;
+  msg_Info()<<"                "<<ewrenschemename<<std::endl;
+  msg_Info()<<"  Parameters:   sin^2(\\theta_W) = "<<csin2thetaW.real()
+            <<(csin2thetaW.imag()!=0.?(csin2thetaW.imag()>0?" + ":" - ")
+                                       +ToString(abs(csin2thetaW.imag()),
+                                                 msg->Precision())+" i"
+                                     :"")<<std::endl;
+  msg_Info()<<"                vev              = "<<cvev.real()
+            <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
+                                       +ToString(abs(cvev.imag()),
+                                                 msg->Precision())+" i"
+                                     :"")<<std::endl;
+  msg_Info()<<"}"<<std::endl;
+  aqed->PrintSummary();
   p_complexconstants->insert(make_pair(string("ccos2_thetaW"),ccos2thetaW));
   p_complexconstants->insert(make_pair(string("csin2_thetaW"),csin2thetaW));
   p_complexconstants->insert(make_pair(string("cvev"), cvev));
-}
-
-void Standard_Model_Zprime::FixZprimeParameters()
-{
-  p_dataread = new Data_Reader(" ",";","!","=");
-  p_dataread->AddWordSeparator("\t");
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
-  p_constants->insert(make_pair(string("Zp_cpl_L"),
-                                p_dataread->GetValue<double>("Zp_cpl_L",1.)));
-  p_constants->insert(make_pair(string("Zp_cpl_R"),
-                                p_dataread->GetValue<double>("Zp_cpl_R",1.)));
+  rpa->gen.SetVariable("EW_SCHEME",ToString(ewscheme));
+  rpa->gen.SetVariable("EW_REN_SCHEME",ToString(ewrenscheme));
 }
 
 void Standard_Model_Zprime::FixCKM()

@@ -138,7 +138,7 @@ void Standard_Model::FixEWParameters()
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
   string widthscheme=p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",1);
+  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",2);
   int ewrenscheme=p_dataread->GetValue<int>("EW_REN_SCHEME",ewscheme);
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
