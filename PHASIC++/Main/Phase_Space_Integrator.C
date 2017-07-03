@@ -35,9 +35,9 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
 
   // total number of points
   m_nmax = reader.Get("PSI_NMAX", std::numeric_limits<long unsigned int>::max(), "n_{max}", METHOD);
-  m_nmax = reader.Get("PSI_NMIN", 0, "n_{min}", METHOD);
+  m_nmin = reader.Get("PSI_NMIN", 0, "n_{min}", METHOD);
   m_nrawmax = reader.Get("PSI_NRAWMAX", std::numeric_limits<long unsigned int>::max(), "n_{max,raw}", METHOD);
-  m_nrawmax = reader.Get("PSI_NRAWMIN", 0, "n_{min}", METHOD);
+  m_nrawmin = reader.Get("PSI_NRAWMIN", 0, "n_{min}", METHOD);
 
   // number of points per iteration
   m_itmin = reader.Get("PSI_ITMIN", p_psh->Process()->Process()->Info().m_itmin, "n_{it,min,raw}", METHOD);
