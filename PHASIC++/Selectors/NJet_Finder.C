@@ -144,17 +144,6 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 
   delete [] moms;
 
-  // what do we need this for? will not work right now
-  if (m_nj<0) {
-    size_t np(0);
-    for (size_t i(0);i<m_kt2.size();++i) {
-      if (i>0 && m_kt2[i]<m_kt2[i-1])
-	return 1-m_sel_log->Hit(1);
-      if (m_kt2[i]>m_pt2min) ++np;
-    }
-    return 1-m_sel_log->Hit(np<-m_nj);
-  }
-
   if (n<m_nj) return 0;
 
   bool trigger(true);

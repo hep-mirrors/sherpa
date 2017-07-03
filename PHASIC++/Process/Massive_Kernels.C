@@ -89,6 +89,8 @@ void Massive_Kernels::SetNC(const double &nc)
     m_K1t = 7./2.-sqr(M_PI)/6.;
     m_K2t = -10./9.*sumQ2;;
     m_K3t = 4.-sqr(M_PI)/6.;
+  case sbt::none:
+    break;
   }
   m_beta0qcd = 11./6.*m_CA-2./3.*m_TR*m_nf;
   m_beta0qed = -2./3.*sumQ2;

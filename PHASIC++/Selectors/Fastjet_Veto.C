@@ -97,7 +97,6 @@ Fastjet_Veto::~Fastjet_Veto() {
 bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
                            ATOOLS::NLO_subevt *const sub)
 {
-  if (m_nj<0) return false;
   size_t n(sub?sub->m_n:m_n);
   const Flavour *const fl (sub?sub->p_fl:p_fl);
 
@@ -147,8 +146,11 @@ bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
   if (nb>m_nb)   trigger=false;
   if (nb2>m_nb2) trigger=false;
 
-  if (!trigger) msg_Debugging()<<"Point discarded by jet veto"<<std::endl;
-  else          msg_Debugging()<<"Point passed"<<std::endl;
+  if (!trigger) {
+    msg_Debugging()<<"Point discarded by jet veto"<<std::endl;
+  } else {
+    msg_Debugging()<<"Point passed"<<std::endl;
+  }
   return (1-m_sel_log->Hit(1-trigger));
 }
 

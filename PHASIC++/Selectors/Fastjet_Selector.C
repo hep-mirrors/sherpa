@@ -157,7 +157,6 @@ void Fastjet_Selector::AssignId(Term *term)
 bool Fastjet_Selector::Trigger(const Vec4D_Vector &p,
                                ATOOLS::NLO_subevt *const sub)
 {
-  if (m_nj<0) return true;
   size_t n(sub?sub->m_n:m_n);
   const Flavour *const fl(sub?sub->p_fl:p_fl);
 

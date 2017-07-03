@@ -138,6 +138,9 @@ double Single_Virtual_Correction::Eps_Scheme_Factor
       // DIS
       return 2.*M_PI*p_scale->Scale(stp::ren,1)/(mom[0]*mom[1]);
     }
+    else {
+      THROW(fatal_error, "Unknown NLO_EPS_MODE.")
+    }
   }
 }
 
@@ -354,7 +357,7 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     // set requested Born to correct entry
     if      (m_stype==sbt::qcd)               p_reqborn=&m_dsijqcd[0][0];
     else if (m_stype==sbt::qed)               p_reqborn=&m_dsijew[0][0];
-    else if (m_stype==sbt::qcd|sbt::qed) {
+    else if (m_stype==(sbt::qcd|sbt::qed)) {
       if      (m_pinfo.m_fi.m_nlocpl[0]==1 &&
                m_pinfo.m_fi.m_nlocpl[1]==0)   p_reqborn=&m_dsijqcd[0][0];
       else if (m_pinfo.m_fi.m_nlocpl[0]==0 &&

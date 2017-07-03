@@ -65,6 +65,9 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
              nlotype&nlo_type::vsub || nlotype&nlo_type::loop) {
       return new Single_Virtual_Correction();
     }
+    else {
+      THROW(fatal_error, "Unknown NLO type" + ToString(nlotype) + ".");
+    }
   }
   // LO processes
   else if (nlotype==nlo_type::lo || nlotype==nlo_type::real) {

@@ -41,7 +41,8 @@ bool Soft_Photon_Handler::AddRadiation(Blob * blob)
 {
   p_yfs->AddRadiation(blob);
   blob->UnsetStatus(blob_status::needs_extraQED);
-  if (m_photonsadded=p_yfs->AddedAnything())
+  m_photonsadded = p_yfs->AddedAnything();
+  if (m_photonsadded)
     for (size_t i(0); i<blob->NOutP(); ++i)
       if (blob->OutParticle(i)->DecayBlob())
         BoostDecayBlob(blob->OutParticle(i)->DecayBlob());

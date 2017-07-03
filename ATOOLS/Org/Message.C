@@ -129,23 +129,23 @@ std::streambuf::int_type indentbuf::overflow(int_type ch)
   return ch; 
 }
 
-Message::Message() : m_buf(std::cout.rdbuf()), p_log(NULL)
-{      
-  p_output = &std::cout;
-  p_error = &std::cerr;
-  p_no = new std::ofstream("/dev/null",std::ios::app);
+Message::Message() :
+  m_devnull("/dev/null", std::ios::app),
+  m_buf(std::cout.rdbuf()),
+  p_log(NULL),
+  m_output(std::cout.rdbuf()),
+  m_error(std::cerr.rdbuf())
+{
   m_logfile = "";
-  m_file = 0;
   m_level = 0;
   m_modifiable = true;
   m_mpimode = 0;
 }
 
 Message::~Message() 
-{      
-  p_output->rdbuf(m_buf.BaseBuf());
+{
+  SetOutStream(m_buf);
   if (p_log) delete p_log;
-  delete p_no;
 }
 
 void Message::Init(const std::string& level,const std::string &logfile) 
@@ -153,10 +153,11 @@ void Message::Init(const std::string& level,const std::string &logfile)
   if (logfile!="") {
     m_logfile = logfile;
     p_log = new std::ofstream(logfile.c_str(),std::ios::app);
-    p_output=p_log;
+    SetOutStream(*p_log);
   }
-  m_buf.SetBaseBuf(p_output->rdbuf());
-  p_output->rdbuf(&m_buf);
+
+  m_buf.SetBaseBuf(m_output.rdbuf());
+  SetOutStream(m_buf);
 
   Data_Reader dr("|","[","!");
   dr.AddLineSeparator("]");
@@ -186,79 +187,77 @@ void Message::Init(const std::string& level,const std::string &logfile)
 
 void Message::SetStandard() 
 {
-  if (m_file==1) delete p_output;
-  p_output = &std::cout;
-  p_error = &std::cerr;
-  m_file = 0;
+  SetOutStream(std::cout);
+  SetErrStream(std::cerr);
 }
 
-std::ostream &Message::Out() const 
+std::ostream &Message::Out()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  return *p_output; 
+  return m_output; 
 }
 
-std::ostream &Message::Error() const     
+std::ostream &Message::Error()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level >= 0) return *p_output; 
-  return *p_no; 
+  if (m_level >= 0) return m_output; 
+  return m_devnull; 
 }
 
-std::ostream &Message::Events() const    
+std::ostream &Message::Events()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level & 1) return *p_output; 
-  return *p_no;  
+  if (m_level & 1) return m_output; 
+  return m_devnull;  
 }
 
-std::ostream &Message::Info() const      
+std::ostream &Message::Info()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level & 2) return *p_output; 
-  return *p_no;  
+  if (m_level & 2) return m_output; 
+  return m_devnull;  
 }
 
-std::ostream &Message::Tracking() const  
+std::ostream &Message::Tracking()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level & 4) return *p_output; 
-  return *p_no;  
+  if (m_level & 4) return m_output; 
+  return m_devnull;  
 }
 
-std::ostream &Message::Debugging() const 
+std::ostream &Message::Debugging()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level & 8) return *p_output; 
-  return *p_no;  
+  if (m_level & 8) return m_output; 
+  return m_devnull;  
 }
 
-std::ostream &Message::IODebugging() const
+std::ostream &Message::IODebugging()
 {
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      MPI::COMM_WORLD.Get_rank()) return m_devnull;
 #endif
-  if (m_level & 32) return *p_output;
-  return *p_no;
+  if (m_level & 32) return m_output;
+  return m_devnull;
 }
 
 std::string Message::ExtractMethodName(std::string cmethod) const   

@@ -147,8 +147,12 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p,
   if (nb<m_nb)   trigger=false;
   if (nb2<m_nb2) trigger=false;
 
-  if (!trigger) msg_Debugging()<<"Point discarded by jet finder"<<std::endl;
-  else          msg_Debugging()<<"Point passed"<<std::endl;
+  if (!trigger) {
+    msg_Debugging()<<"Point discarded by jet finder"<<std::endl;
+  } else {
+    msg_Debugging()<<"Point passed"<<std::endl;
+  }
+
   return (1-m_sel_log->Hit(1-trigger));
 }
 

@@ -3,6 +3,8 @@
 
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -39,9 +41,21 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
     case spt::q2gq:
       m_kt2*=m_zi;
       break;
+    case spt::g2qq:
+      break;
     case spt::g2gg:
       m_kt2*=m_zi*m_zj;
       break;
+    case spt::none:
+      THROW(fatal_error, "Splitting type not set.");
+    case spt::s2sg:
+    case spt::s2gs:
+    case spt::G2Gg:
+    case spt::G2gG:
+    case spt::V2Vg:
+    case spt::V2gV:
+      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+          + ToString(m_ftype) + ".");
     }
   }
 
@@ -64,6 +78,17 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
   case spt::g2gg:
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
     m_av  = m_sff + m_zi*m_zj;
+    break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+        + ToString(m_ftype) + ".");
   }
   if (m_kt2<m_k0sqf) m_av=1.0;
 }
@@ -77,12 +102,25 @@ double FI_DipoleSplitting::GetValue()
 void FI_DipoleSplitting::CalcDiPolarizations()
 {
   switch (m_ftype) {
+  case spt::q2qg:
+  case spt::q2gq:
+    return;
   case spt::g2qq:
     CalcVectors(m_pt1,m_pt2,m_sff/(4.*m_zi*m_zj));
     break;
   case spt::g2gg:
     CalcVectors(m_pt1,m_pt2,-m_sff/(2.*m_zi*m_zj));
     break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+        + ToString(m_ftype) + ".");
   }
 }
 
@@ -118,9 +156,21 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
     case spt::q2gq:
       m_kt2*=m_zi;
       break;
+    case spt::g2qq:
+      break;
     case spt::g2gg:
       m_kt2*=m_zi*m_zj;
       break;
+    case spt::none:
+      THROW(fatal_error, "Splitting type not set.");
+    case spt::s2sg:
+    case spt::s2gs:
+    case spt::G2Gg:
+    case spt::G2gG:
+    case spt::V2Vg:
+    case spt::V2gV:
+      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+          + ToString(m_ftype) + ".");
     }
   }
 
@@ -186,6 +236,8 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
                                     -m_mij/(m_pi*m_pj);
     m_av  = m_sff;
     break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
   }
   if (m_kt2<m_k0sqf) m_av=1.0;
 }
@@ -199,11 +251,23 @@ double FI_MassiveDipoleSplitting::GetValue()
 void FI_MassiveDipoleSplitting::CalcDiPolarizations()
 {
   switch (m_ftype) {
+  case spt::q2qg:
+  case spt::q2gq:
+    return;
   case spt::g2qq:
     CalcVectors(m_pt1,m_pt2,-m_sff*(m_pi+m_pj).Abs2()/(4.*m_pt1.Abs2()));
     return;
   case spt::g2gg:
     CalcVectors(m_pt1,m_pt2,-m_sff/(2.*m_zi*m_zj));
     return;
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    return;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
   }
 }

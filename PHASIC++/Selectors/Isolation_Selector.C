@@ -172,8 +172,6 @@ Isolation_Selector::~Isolation_Selector() {
 
 bool Isolation_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
 {
-  if (m_nmin<0) return true;
-
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
   size_t n(sub?sub->m_n:m_n);

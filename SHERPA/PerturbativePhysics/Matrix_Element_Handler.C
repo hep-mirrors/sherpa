@@ -852,7 +852,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    THROW(fatal_error,"Order/Min_Order contains non-halfinteger entry "
 			      +std::string("at position ")
 			      +ToString(i)+": "+ToString(intpart)+"."
-			      +ToString(abs(fracpart)).substr(1)+". Abort.");
+			      +ToString(std::abs(fracpart)).substr(1)+". Abort.");
 	}
 	for (size_t i(0);i<cpi.m_maxcpl.size();++i) {
 	  fracpart=std::modf(2.*cpi.m_maxcpl[i],&intpart);

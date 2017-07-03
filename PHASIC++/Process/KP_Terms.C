@@ -547,10 +547,11 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // in QED -Q_i^2 needs to be multiplied in
     else {
       for (size_t i=0;i<quark.Size();i++)
-        if (pdfa->Contains(quark[i]))
+        if (pdfa->Contains(quark[i])) {
           if (m_stype==sbt::qcd)              faqx += pdfa->GetXPDF(quark[i]);
           else                                faqx += sqr(quark[i].Charge())
                                                       *pdfa->GetXPDF(quark[i]);
+        }
       faqx/=eta0;
     }
     // f_a(eta), f_a'(eta)
@@ -572,10 +573,11 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // in QED -Q_i^2 needs to be multiplied in
     else {
       for (size_t i=0;i<quark.Size();i++)
-        if (pdfa->Contains(quark[i]))
+        if (pdfa->Contains(quark[i])) {
           if (m_stype==sbt::qcd)              faq += pdfa->GetXPDF(quark[i]);
           else                                faq += sqr(quark[i].Charge())
                                                      *pdfa->GetXPDF(quark[i]);
+        }
       faq/=eta0;
     }
 
@@ -603,10 +605,11 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // in QED -Q_i^2 needs to be multiplied in
     else {
       for (size_t i=0;i<quark.Size();i++)
-        if (pdfb->Contains(quark[i]))
+        if (pdfb->Contains(quark[i])) {
           if (m_stype==sbt::qcd)              fbqx += pdfb->GetXPDF(quark[i]);
           else                                fbqx += sqr(quark[i].Charge())
                                                       *pdfb->GetXPDF(quark[i]);
+        }
       fbqx/=eta1;
     }
     // f_a(eta), f_a'(eta)
@@ -628,10 +631,11 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // in QED -Q_i^2 needs to be multiplied in
     else {
       for (size_t i=0;i<quark.Size();i++)
-        if (pdfb->Contains(quark[i]))
+        if (pdfb->Contains(quark[i])) {
           if (m_stype==sbt::qcd)              fbq += pdfb->GetXPDF(quark[i]);
           else                                fbq += sqr(quark[i].Charge())
                                                      *pdfb->GetXPDF(quark[i]);
+        }
       fbq/=eta0;
     }
 

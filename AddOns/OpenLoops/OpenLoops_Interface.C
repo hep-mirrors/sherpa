@@ -150,6 +150,7 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
         <<"in~\\cite{Mastrolia:2012bu,Peraro:2014cba}."<<endl;
   }
   rpa->gen.AddCitation(1,cite.str());
+  return true;
 }
 
 // Propagate model parameters to OpenLoops in the standard model

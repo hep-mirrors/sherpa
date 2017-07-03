@@ -107,11 +107,12 @@ namespace ATOOLS {
   class Message {
   private:
 
-    std::ofstream *p_no, *p_log; 
-    std::ostream  *p_output, *p_error;
+    std::ofstream m_devnull;
+    std::ofstream *p_log;
+    std::ostream m_output, m_error;
     indentbuf m_buf;
 
-    int m_file, m_level;
+    int m_level;
     std::string m_logfile;
 
     std::set<std::string,String_Sort> m_contextevents;
@@ -134,13 +135,13 @@ namespace ATOOLS {
     void Init(const std::string& level,const std::string &logfile);
     void SetStandard();
 
-    std::ostream &Out() const;
-    std::ostream &Error() const;
-    std::ostream &Events() const;
-    std::ostream &Info() const;
-    std::ostream &Tracking() const;
-    std::ostream &Debugging() const;
-    std::ostream &IODebugging() const;
+    std::ostream &Out();
+    std::ostream &Error();
+    std::ostream &Events();
+    std::ostream &Info();
+    std::ostream &Tracking();
+    std::ostream &Debugging();
+    std::ostream &IODebugging();
 
     std::string ExtractMethodName(std::string cmethod) const;
 
@@ -149,24 +150,32 @@ namespace ATOOLS {
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
     inline void SetMPIMode(const int mode)    { m_mpimode = mode;   }
     inline void SetPrecision(const int precision) {
-      if (p_output) p_output->precision(precision);
+      m_output.precision(precision);
     }
 
     inline int  Level() const      { return m_level;      }
     inline bool Modifiable() const { return m_modifiable; }
     inline int  MPIMode() const    { return m_mpimode;    }
     inline size_t Precision() const {
-      if (p_output) return p_output->precision();
-      return 0;
+      return m_output.precision();
     }
 
 
     inline void Indent(size_t col) { m_buf.Indent(col); }
     inline void DeIndent(size_t col) { m_buf.DeIndent(col); }
 
-    inline void SetNoStream(std::ostream *const no)      { p_no=(std::ofstream*)no; }
-    inline void SetOutStream(std::ostream *const output) { p_output=output;         }
-    inline void SetErrStream(std::ostream *const error)  { p_error=error;           }
+    inline void SetOutStream(std::ostream& output) {
+      m_output.rdbuf(output.rdbuf());
+    }
+    inline void SetOutStream(ATOOLS::indentbuf& buf) {
+      m_output.rdbuf(&buf);
+    }
+    inline void SetErrStream(std::ostream& error) {
+      m_error.rdbuf(error.rdbuf());
+    }
+    inline void SetErrStream(ATOOLS::indentbuf& buf) {
+      m_error.rdbuf(&buf);
+    }
 
     inline const std::string& LogFile() const { return m_logfile; }
 

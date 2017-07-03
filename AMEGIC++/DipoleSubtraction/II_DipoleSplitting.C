@@ -2,6 +2,8 @@
 #include "AMEGIC++/Main/ColorSC.H"
 
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -43,6 +45,19 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     case spt::g2gg:
       m_kt2*=(1.-m_xijk);
       break;
+    case spt::q2gq:
+    case spt::g2qq:
+      break;
+    case spt::none:
+      THROW(fatal_error, "Splitting type not set.");
+    case spt::s2sg:
+    case spt::s2gs:
+    case spt::G2Gg:
+    case spt::G2gG:
+    case spt::V2Vg:
+    case spt::V2gV:
+      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+          + ToString(m_ftype) + ".");
     }
   }
 
@@ -67,6 +82,16 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case spt::g2gg:
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+        + ToString(m_ftype) + ".");
   }
   if (m_kt2<m_k0sqi) m_av=1.0;
 }
@@ -89,5 +114,15 @@ void II_DipoleSplitting::CalcDiPolarizations()
   case spt::g2gg:
     CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/2.);
     break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+        + ToString(m_ftype) + ".");
   }
 }
