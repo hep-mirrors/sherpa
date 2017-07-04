@@ -109,7 +109,9 @@ bool COMIX::Single_Process::Initialize
   // stype -> 0 QCD, 1 QED
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
   if (m_pinfo.m_fi.m_nlocpl.size()) {
-    if      (m_pinfo.m_fi.m_nlocpl[0]==1. && m_pinfo.m_fi.m_nlocpl[1]==0.)
+    if      (m_pinfo.m_fi.m_nlocpl[0]==0. && m_pinfo.m_fi.m_nlocpl[1]==0.)
+      stype=0;
+    else if (m_pinfo.m_fi.m_nlocpl[0]==1. && m_pinfo.m_fi.m_nlocpl[1]==0.)
       stype=0;
     else if (m_pinfo.m_fi.m_nlocpl[0]==0. && m_pinfo.m_fi.m_nlocpl[1]==1.)
       stype=1;
