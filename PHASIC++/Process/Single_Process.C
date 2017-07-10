@@ -103,6 +103,13 @@ double Single_Process::CollinearCounterTerms(
 		  <<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" ). Skip.\n";
     return 0.0;
   }
+
+  // skip PDF ratio if high-x sanity condition not fullfilled
+  if (dabs(fb)<1.0e-4*log(1.0 - x)/log(1.0 - 1.0e-2)){
+    msg_Debugging() << "Invalid pdf ratio, ct set to zero." << std::endl;
+    return 0.0;
+  }
+
   msg_Debugging()<<"Beam "<<i<<": z = "<<z<<", f_{"<<fl
 		 <<"}("<<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" {\n";
   for (size_t j(0);j<jet.Size();++j) {
@@ -265,11 +272,20 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
                                            currentQ2, currentQ2, f1, f2,
                                            0));
 
+
         // new scale (note: for the core scale we use Q2 instead of ampl->MuF2
         // because we might be reweighting and Q2 could have been multiplied
         // by a scaling factor, whereas ampl->MuF2 would not reflect this)
 	double lastQ2=currentQ2;
-        currentQ2 = (ampl->Next() == NULL) ? Q2 : ampl->KT2();
+	currentQ2 = (ampl->Next() == NULL) ? Q2 : ampl->KT2();
+
+	// skip when a scale is below a (quark) mass threshold, new scale
+        if (currentQ2 < sqr(2.0 * f1.Mass(true)) || currentQ2 < sqr(2.0 * f2.Mass(true))) {
+          msg_Debugging()<<"Skip. Quarks below threshold: t="<<currentQ2
+                         <<" vs. "<<sqr(2.0*f1.Mass(true))
+                         <<" / "<<sqr(2.0*f2.Mass(true))<<std::endl;
+          continue;
+        }
 
 	// numerators
 	double wn1(p_int->ISR()->PDFWeight(2,
@@ -283,9 +299,23 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
                                            currentQ2, currentQ2, f1, f2,
                                            0));
 
-        // add weights
-	if (!IsZero(wn1) && !IsZero(wd1)) csi.AddWeight(wn1 / wd1);
-	if (!IsZero(wn2) && !IsZero(wd2)) csi.AddWeight(wn2 / wd2);
+        double x1=p_int->ISR()->CalcX(-ampl->Leg(0)->Mom());
+        double x2=p_int->ISR()->CalcX(-ampl->Leg(1)->Mom());
+
+        // skip PDF ratio if high-x sanity condition not fullfilled
+        if (!IsZero(wn1) && !IsZero(wd1) && !(dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) ) {
+          csi.AddWeight(wn1 / wd1);
+        } else {
+          msg_Debugging() << "invalid pdf ratio in beam 0," << std::endl;
+          msg_Debugging() << "skip weight." << std::endl;
+        }
+
+        if (!IsZero(wn2) && !IsZero(wd2) && !(dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) ) {
+          csi.AddWeight(wn2 / wd2);
+        } else {
+          msg_Debugging() << "invalid pdf ratio in beam 1," << std::endl;
+          msg_Debugging() << "skip weight." << std::endl;
+        }
 
 	// book-keep PDF ratios excl.
 	//   a) first one correcting outer PDF from muF to t
@@ -328,8 +358,9 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             rn[1] = ran->Get();
           }
 	  for (int i(0); i < 2; ++i) {
-	    if (i == 0 && (IsZero(wn1) || IsZero(wd1))) continue;
-	    if (i == 1 && (IsZero(wn2) || IsZero(wd2))) continue;
+            // skip PDF ratio if high-x sanity condition not fullfilled
+            if (i == 0 && (IsZero(wn1) || IsZero(wd1) || (dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) )) continue;
+            if (i == 1 && (IsZero(wn2) || IsZero(wd2) || (dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) )) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
             const double x(p_int->ISR()->CalcX(p));
             double z(-1.0);
