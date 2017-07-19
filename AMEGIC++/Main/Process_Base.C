@@ -76,7 +76,8 @@ void AMEGIC::Process_Base::Init()
     if (m_maxcpl[i]!=m_pinfo.m_maxcpl[i])
       THROW(not_implemented,"Non-integer couplings not supported by Amegic");
   }
-  SetNTchanmin(m_pinfo.m_ntchan);
+  SetNTchanmin(m_pinfo.m_ntchanmin);
+  SetNTchanmax(m_pinfo.m_ntchanmax);
   p_b    = new int[NIn()+NOut()];
   for (size_t i=0;i<NIn();i++) p_b[i] = -1; 
   for (size_t i=NIn();i<NIn()+NOut();i++) p_b[i] = 1; 

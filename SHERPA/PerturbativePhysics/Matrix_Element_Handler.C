@@ -553,11 +553,11 @@ void Matrix_Element_Handler::BuildProcesses()
 	}
 	if (cur[0]=="Min_N_TChannels") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vntchan,nf);
+	  ExtractMPvalues(cb,pbi.m_vntchanmin,nf);
 	}
 	if (cur[0]=="Max_N_TChannels") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmtchan,nf);
+	  ExtractMPvalues(cb,pbi.m_vntchanmax,nf);
 	}
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
@@ -784,8 +784,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
 	if (GetMPvalue(pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
 	if (GetMPvalue(pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
-	if (GetMPvalue(pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
-	if (GetMPvalue(pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;
+	if (GetMPvalue(pbi.m_vntchanmin,nfs,pnid,di)) cpi.m_ntchanmin=di;
+	if (GetMPvalue(pbi.m_vntchanmax,nfs,pnid,di)) cpi.m_ntchanmax=di;
 	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
 	if (GetMPvalue(pbi.m_vaddname,nfs,pnid,ds)) cpi.m_addname=ds;
 	if (GetMPvalue(pbi.m_vnloqcdmode,nfs,pnid,ds)) {

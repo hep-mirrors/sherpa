@@ -113,7 +113,7 @@ bool COMIX::Single_Process::Initialize
   for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       &m_cpls,smode,maxcpl,mincpl,
-		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
+		       m_pinfo.m_ntchanmin,m_pinfo.m_ntchanmax,m_name)) {
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());
       for (size_t i(0);i<subs->size()-1;++i)
