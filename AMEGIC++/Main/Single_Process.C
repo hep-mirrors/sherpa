@@ -85,6 +85,7 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
 	m_maxcpl=p_partner->MaxOrders();
 	m_mincpl=p_partner->MinOrders();
 	m_ntchanmin=p_partner->NTchanMin();
+	m_ntchanmax=p_partner->NTchanMax();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
 	while (*from) {
@@ -143,10 +144,12 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
-  int ntchanmin(m_ntchanmin);
   bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
-                                   &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,
+                                   model,top,m_maxcpl,m_mincpl,
+                                   m_ntchanmin,m_ntchanmax,
+                                   &m_cpls,p_BS,p_shand,m_print_graphs,
+                                   !directload,cvp);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -739,6 +742,7 @@ void AMEGIC::Single_Process::Minimize()
   m_maxcpl    = p_partner->MaxOrders();
   m_mincpl    = p_partner->MinOrders();
   m_ntchanmin = p_partner->NTchanMin();
+  m_ntchanmax = p_partner->NTchanMax();
 }
 
 double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 

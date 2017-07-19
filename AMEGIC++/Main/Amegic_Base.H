@@ -10,7 +10,7 @@ namespace AMEGIC {
   class Amegic_Base {
   protected:
     Process_Tags *p_pinfo;
-    int m_ntchanmin;
+    size_t m_ntchanmin, m_ntchanmax;
   public:
     static int s_partcommit;
     Amegic_Base();
@@ -20,8 +20,10 @@ namespace AMEGIC {
     virtual void Minimize() = 0;
 
     inline void SetNTchanmin(const size_t &ntch) { m_ntchanmin=ntch; }
+    inline void SetNTchanmax(const size_t &ntch) { m_ntchanmax=ntch; }
 
     inline size_t NTchanMin() const  { return m_ntchanmin; }
+    inline size_t NTchanMax() const  { return m_ntchanmax; }
 
     Pol_Info ExtractPolInfo(const PHASIC::Subprocess_Info &spi);
 

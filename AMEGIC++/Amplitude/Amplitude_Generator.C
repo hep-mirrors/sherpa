@@ -25,12 +25,16 @@ using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Amegic_Model * _model,Topology * _top,
-					 std::vector<double> _order,int _ntchan_min,
-					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
+					 std::vector<double> _order,
+                                         size_t _ntchan_min,size_t _ntchan_max,
+                                         Basic_Sfuncs* _BS,String_Handler* _shand,
+                                         bool create_4V)
   : fl(_fl), b(_b), p_model(_model), top(_top), 
-    N(_no), order(_order), ntchan_min(_ntchan_min),
+    N(_no), order(_order), ntchan_min(_ntchan_min), ntchan_max(_ntchan_max),
     BS(_BS), shand(_shand), m_create_4V(create_4V)
 {
+  DEBUG_FUNC("n="<<_no<<", order="<<_order<<", ntchannel="<<_ntchan_min
+              <<".."<<_ntchan_max<<", 4V="<<create_4V);
   single_top = top->Get(N-2);
   
   // 2 incoming
@@ -684,7 +688,7 @@ bool Amplitude_Generator::CheckTChannels(Point * p) {
   //
   msg_Debugging()<<METHOD<<" yields "<<ntchan<<" t-channel props, "
 		 <<"("<<ntchan_min<<"), start = "<<p->fl<<"."<<std::endl;
-  if (ntchan>=ntchan_min) return true;
+  if (ntchan>=ntchan_min && ntchan<=ntchan_max) return true;
   return false;
 }
  

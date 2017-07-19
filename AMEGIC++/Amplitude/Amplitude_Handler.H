@@ -62,7 +62,8 @@ namespace AMEGIC {
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
 		      Amegic_Model *,Topology *,
 		      std::vector<double> &,std::vector<double> &,
-		      int &,MODEL::Coupling_Map *const cpls,
+                      size_t &,size_t &,
+                      MODEL::Coupling_Map *const cpls,
 		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true,
 		      bool cutvecprop=true);
     ~Amplitude_Handler();

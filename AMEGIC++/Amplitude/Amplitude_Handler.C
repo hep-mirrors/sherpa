@@ -22,7 +22,8 @@ using namespace std;
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Amegic_Model * model,Topology* top,
 				     std::vector<double> & _maxcpl,
-				     std::vector<double> & _mincpl,int & _ntchan,
+				     std::vector<double> & _mincpl,
+				     size_t & _ntchanmin,size_t & _ntchanmax,
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     std::string print_graph,bool create_4V,
@@ -61,7 +62,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 //     pi->Print();cout<<endl;
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
-    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,std::vector<double>(2,99),-99,BS,shand);
+    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,
+                                  std::vector<double>(2,99),0,99,BS,shand);
     subgraphlist[i] = gen->Matching();
     if (subgraphlist[i]==NULL) {
       ndecays = 0;
@@ -82,7 +84,9 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   }
 
   //core process
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_maxcpl,_ntchan,BS,shand,create_4V);
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,
+                                m_maxcpl,_ntchanmin,_ntchanmax,BS,
+                                shand,create_4V);
   subgraphlist[0] = gen->Matching();
   _maxcpl=gen->Order();
   delete gen;

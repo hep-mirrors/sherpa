@@ -30,7 +30,8 @@ namespace AMEGIC {
     int                    * b;
     Amegic_Model        * p_model;
     Topology               * top;
-    int                      N,ntchan_min;
+    int                      N;
+    size_t                   ntchan_min,ntchan_max;
     std::vector<double> order;
 
     Single_Topology        * single_top;
@@ -82,9 +83,10 @@ namespace AMEGIC {
     int Count4G(Point * p);
     int CountRealAmplitudes(Single_Amplitude* first);
   public:
-    Amplitude_Generator(int,ATOOLS::Flavour *,int *,Amegic_Model *,Topology *,
-			std::vector<double>,int,Basic_Sfuncs *,String_Handler *,bool=true);
-    ~Amplitude_Generator(); 
+    Amplitude_Generator(int,ATOOLS::Flavour *,int *,Amegic_Model *,
+                        Topology *,std::vector<double>,size_t,size_t,
+                        Basic_Sfuncs *,String_Handler *,bool=true);
+    ~Amplitude_Generator();
     Single_Amplitude* Matching();
 
     inline const std::vector<double> &Order() const { return order; }
