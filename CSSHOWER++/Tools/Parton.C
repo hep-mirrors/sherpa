@@ -59,7 +59,8 @@ bool Parton::Splits()
 {
   if (this==NULL) return false;
   if (this==p_sing->GetSplit()) return true;
-  return p_next->Splits();
+  if (p_next) return p_next->Splits();
+  else return false;
 }
 
 void Parton::UpdateDaughters()
