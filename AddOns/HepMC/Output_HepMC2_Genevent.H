@@ -5,9 +5,7 @@
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
 #include <fstream>
-#ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
-#endif
 
 namespace HepMC { class IO_GenEvent; class GenCrossSection; }
 
@@ -18,11 +16,7 @@ namespace SHERPA {
     HepMC::IO_GenEvent* p_iogenevent;
     HepMC::GenCrossSection* p_xs;
     std::string m_basename, m_ext;
-#ifdef USING__GZIP
-    ATOOLS::ogzstream m_outstream;
-#else
-    std::ofstream     m_outstream;
-#endif
+    ATOOLS::Gzip_Stream m_outstream;
   public:
     Output_HepMC2_Genevent(const Output_Arguments &args);
     ~Output_HepMC2_Genevent();

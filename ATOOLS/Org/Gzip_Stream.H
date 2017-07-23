@@ -9,9 +9,27 @@
 
 #include <iostream>
 #include <fstream>
-#include <zlib.h>
 
 namespace ATOOLS {
+
+  // Wrapper class which allows to switch between gzip and non-gzip
+  class Gzip_Stream {
+    std::ostream* p_stream;
+    int m_streamtype;
+  public:
+    Gzip_Stream();
+    ~Gzip_Stream();
+    std::ostream* stream();
+
+    void open(const std::string &name);
+    void close();
+
+  };
+
+
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#ifdef USING__GZIP
+#include <zlib.h>
   
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See below for user classes.
@@ -85,8 +103,10 @@ public:
         gzstreambase::open( name, open_mode);
     }
 };
+      
+#endif
 
 } // namespace ATOOLS
 
-#endif
 
+#endif

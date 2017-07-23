@@ -15,13 +15,10 @@ Output_HepEvt::Output_HepEvt(const Output_Arguments &args):
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepevt";
   int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
-#ifdef USING__GZIP
-  m_ext += ".gz";
-#endif
   m_outstream.open((m_basename+m_ext).c_str());
-  if (!m_outstream.good())
+  if (!m_outstream.stream()->good())
     THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-  m_outstream.precision(precision);
+  m_outstream.stream()->precision(precision);
 }
 
 Output_HepEvt::~Output_HepEvt()
@@ -42,7 +39,7 @@ void Output_HepEvt::Output(Blob_List* blobs, const double weight)
 {
   m_hepevt.Sherpa2HepEvt(blobs);
   m_hepevt.SetWeight(weight);
-  m_hepevt.WriteFullHepEvt(m_outstream,m_hepevt.Nhep());
+  m_hepevt.WriteFullHepEvt(*m_outstream.stream(),m_hepevt.Nhep());
 }
 
 DECLARE_GETTER(Output_HepEvt,"HEPEVT",

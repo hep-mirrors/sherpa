@@ -2,7 +2,87 @@
 #include <iostream>
 #include <string.h>  // for memcpy
 
+#include "Data_Reader.H"
+#include "Exception.H"
+
 namespace ATOOLS {
+
+// --------------------------------------
+// class Gzip_Stream
+// --------------------------------------
+
+  Gzip_Stream::Gzip_Stream() : p_stream(NULL), m_streamtype(0) {
+    Data_Reader dr(" ",";","!","=");
+    int use_gzip = dr.GetValue<int>("USE_GZIP",
+#ifdef USING__GZIP
+                                    1
+#else
+                                    0
+#endif
+                                    );
+
+    if (use_gzip==0) {
+      p_stream = new std::ofstream();
+      m_streamtype=1;
+    }
+    else {
+#ifdef USING__GZIP
+      p_stream = new ogzstream();
+      m_streamtype=2;
+#else
+      THROW(fatal_error, "Asked for GZIP but did not compile with GZIP support.");
+#endif
+    }
+  }
+
+  Gzip_Stream::~Gzip_Stream() {
+    delete p_stream;
+  }
+
+  std::ostream* Gzip_Stream::stream() {
+    return p_stream;
+  }
+
+  void Gzip_Stream::open(const std::string &name)
+  {
+    if (m_streamtype==1) {
+      std::ofstream* mystream = dynamic_cast<std::ofstream*>(p_stream);
+      if (mystream==NULL) THROW(fatal_error, "Internal error 1");
+      mystream->open(name.c_str());
+    }
+    if (m_streamtype==2) {
+#ifdef USING__GZIP
+      ATOOLS::ogzstream* mystream = dynamic_cast<ATOOLS::ogzstream*>(p_stream);
+      if (mystream==NULL) THROW(fatal_error, "Internal error 2");
+      mystream->open(name.c_str());
+#else
+      THROW(fatal_error, "Asked for GZIP but did not compile with GZIP support.");
+#endif
+    }
+    return;
+  }
+
+  void Gzip_Stream::close()
+  {
+    if (m_streamtype==1) {
+      std::ofstream* mystream = dynamic_cast<std::ofstream*>(p_stream);
+      if (mystream==NULL) THROW(fatal_error, "Internal error 1");
+      mystream->close();
+    }
+    if (m_streamtype==2) {
+#ifdef USING__GZIP
+      ATOOLS::ogzstream* mystream = dynamic_cast<ATOOLS::ogzstream*>(p_stream);
+      if (mystream==NULL) THROW(fatal_error, "Internal error 2");
+      mystream->close();
+#else
+      THROW(fatal_error, "Asked for GZIP but did not compile with GZIP support.");
+#endif
+    }
+    return;
+  }
+
+
+#ifdef USING__GZIP
 
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See header file for user classes.
@@ -127,5 +207,7 @@ void gzstreambase::close() {
             clear( rdstate() | std::ios::badbit);
 }
 
+#endif
+  
 } // namespace ATOOLS
 

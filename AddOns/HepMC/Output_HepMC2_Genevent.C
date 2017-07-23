@@ -29,7 +29,7 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
   m_ext=".hepmc2g";
   int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
 #ifdef USING__HEPMC2__IOGENEVENT
-  p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
+  p_iogenevent = new HepMC::IO_GenEvent(*m_outstream.stream());
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_iogenevent->precision(precision);
 #endif
@@ -39,18 +39,15 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_xs=new HepMC::GenCrossSection();
 #endif
-#ifdef USING__GZIP
-  m_ext += ".gz";
-#endif
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif
   m_outstream.open((m_basename+m_ext).c_str());
-  if (!m_outstream.good())
+  if (!m_outstream.stream()->good())
     THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-  m_outstream.precision(precision);
+  m_outstream.stream()->precision(precision);
 }
 
 Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
@@ -91,9 +88,9 @@ void Output_HepMC2_Genevent::ChangeFile()
   for (size_t i(0);FileExists(newname);
        newname=m_basename+"."+ToString(++i)+m_ext);
   m_outstream.open(newname.c_str());
-  if (!m_outstream.good())
-    THROW(fatal_error, "Could not open event file "+newname+".")
-  p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
+  if (!m_outstream.stream()->good())
+    THROW(fatal_error, "Could not open event file "+newname+".");
+  p_iogenevent = new HepMC::IO_GenEvent(*m_outstream.stream());
 #endif
 }
 
