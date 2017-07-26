@@ -3,8 +3,8 @@
 SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
 
 # compiler (eg. w/o MPI c++, w/ MPI mpic++)
-CXX    = c++ 
-CXXCPP = c++
+CXX    = mpic++ 
+CXXCPP = mpic++
 
 # add SHERPA_LIBS to LD_LIBRARY PATH environment variable before executing the binary
 

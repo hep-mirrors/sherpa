@@ -35,7 +35,7 @@ if env['PLATFORM']=='darwin':
 " > SConstruct;
 fi;
 test "$procdir" = "x" && exit 0;
-printf "Processing ("$(echo $procdir/?_?__* $procdir/fsr* | wc -w)") ";
+printf "Processing ("$procdir": "$(echo $procdir/?_?__* $procdir/fsr* | wc -w)") ";
 for i in $procdir/?_?__* $procdir/fsr*; do
   test -d $i || continue;
   cd $i; printf ".";
@@ -51,11 +51,14 @@ if test $2 -eq 2 && test -d $procdir; then
   make_scons $(find . -name \*.C | grep -v fsrchannels)
   subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
   echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
-  if test -d fsr*; then
-    cd fsr*; printf ".";
-    subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
-    echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
-  fi
+  for i in fsr*; do
+    if test -d $i; then
+      cd $i; printf ".";
+      subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
+      echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+      cd -;
+    fi
+  done
   cd $basedir;
 fi
 echo " done";
