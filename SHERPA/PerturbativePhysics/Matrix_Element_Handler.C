@@ -215,6 +215,7 @@ void Matrix_Element_Handler::SetRandomSeed()
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
+  Return_Value::IncCall(METHOD);
   p_proc=NULL;
   if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
@@ -252,6 +253,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
       if (dabs(m_evtinfo.m_weight)<disc) continue;
       if (dabs(m_evtinfo.m_weight)>max*m_ovwth) {
+        Return_Value::IncWarning(METHOD);
         msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
                   <<"' exceeds maximum by "
                   <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;

@@ -308,6 +308,11 @@ void Hard_Decay_Handler::CustomizeDecayTables()
   reader.SetInputFile(m_file);
   reader.AddIgnore("[");
   reader.AddIgnore("]");
+
+  if (reader.Get<int>("HDH_ADD_HIGGS_4F",1)) {
+    //AddHiggsSpecial4f();
+  }
+
   vector<vector<string> > helpsvv;
   reader.ReadMatrix(helpsvv,"HDH_STATUS");
   for (size_t i=0;i<helpsvv.size();++i) {
@@ -340,6 +345,19 @@ void Hard_Decay_Handler::CustomizeDecayTables()
     dmit->second.at(0)->UpdateWidth();
   }
 }
+
+/*
+void Hard_Decay_Handler::AddHiggsSpecial4f()
+{
+  Decay_Map::iterator it = p_decaymap->find(Flavour(kf_h0));
+  if (it!=p_decaymap->end()) {
+    if (it->size()>1) THROW(not_implemented,"");
+    for (size_t i=0; i<it->size();++i) {
+      Decay_Table* higgsdecays = (*it)[i];
+      
+      // first remove Vff decaychannels, to add them all back
+}
+*/
 
 
 bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) {
