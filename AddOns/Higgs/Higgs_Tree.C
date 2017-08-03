@@ -398,7 +398,18 @@ void Higgs_Tree::FillCombinations
 
 int Higgs_Tree::OrderQCD(const int &id)
 {
-  return m_n==4?2:3;
+  // NOTE: For RS, the order returned here is not propagated into the weight
+  // info
+  if (m_int == 4) {  // background only
+    return (m_n == 4) ? 0 : 1;
+  } else if ((m_int & 4) == 0) {  // signal only
+    return (m_n == 4) ? 2 : 3;
+  } else {
+    // mixed case, can not return a well-defined value; for reweighting you
+    // have to generate the contributions separately, in particular
+    // interference terms are not supported yet
+    return 99;
+  }
 }
 
 int Higgs_Tree::OrderEW(const int &id)
