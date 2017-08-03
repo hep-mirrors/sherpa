@@ -69,6 +69,8 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
   m_maxcpl[0]=m_mincpl[0]=p_me2->OrderQCD();
   m_maxcpl[1]=m_mincpl[1]=p_me2->OrderEW();
   p_me2->SetCouplings(m_cpls);
+  m_maxcpl[1]=m_mincpl[1]=p_me2->OrderEW();
+  m_maxcpl[0]=m_mincpl[0]=p_me2->OrderQCD();
   p_me2->FillCombinations(m_ccombs,m_cflavs);
   p_me2->SetNorm(m_Norm);
   
