@@ -398,8 +398,6 @@ void Higgs_Tree::FillCombinations
 
 int Higgs_Tree::OrderQCD(const int &id)
 {
-  // NOTE: For RS, the order returned here is not propagated into the weight
-  // info
   if (m_int == 4) {  // background only
     return (m_n == 4) ? 0 : 1;
   } else if ((m_int & 4) == 0) {  // signal only
