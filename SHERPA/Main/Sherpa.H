@@ -23,6 +23,7 @@ namespace SHERPA {
   private:
     std::string   m_path;
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
+    long int      m_evt_output, m_evt_output_start;
     double        m_evt_starttime;
     int           m_showtrials;
     bool          m_filter;

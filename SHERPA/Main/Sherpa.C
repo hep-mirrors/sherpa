@@ -110,6 +110,9 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
     if (m_filter) p_filter = new Filter();
     m_displayinterval=reader.Get<int>("EVENT_DISPLAY_INTERVAL",100);
+    m_evt_output =reader.Get<int>("EVT_OUTPUT",msg->Level());
+    m_evt_output_start=reader.Get<int>("EVT_OUTPUT_START",
+                                       m_evt_output!=msg->Level()?1:0);
     
     return res;
   }
@@ -160,7 +163,6 @@ bool Sherpa::InitializeTheEventHandler()
   p_eventhandler->SetVariations(p_inithandler->GetVariations());
   p_eventhandler->PrintGenericEventStructure();
 
-  msg->SetLevel(p_inithandler->DataReader()->GetValue<int>("EVT_OUTPUT",msg->Level()));
   ran->EraseLastIncrementedSeed();
 
   return 1;
@@ -169,6 +171,10 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
+    if (m_evt_output_start>0 && m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
+      msg->SetLevel(m_evt_output);
+    }
+  
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
 	  rpa->gen.NumberOfGeneratedEvents()==0) {
