@@ -139,6 +139,9 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     }
 
     m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
+    m_evt_output =read.GetValue<int>("EVT_OUTPUT",msg->Level());
+    m_evt_output_start=read.GetValue<int>("EVT_OUTPUT_START",
+                                          m_evt_output!=msg->Level()?1:0);
     
     return res;
   }
@@ -187,14 +190,16 @@ bool Sherpa::InitializeTheEventHandler()
   if (!outs->empty()) p_eventhandler->AddEventPhase(new Output_Phase(outs,p_eventhandler));
   p_eventhandler->PrintGenericEventStructure();
 
-  msg->SetLevel(p_inithandler->DataReader()->GetValue<int>("EVT_OUTPUT",msg->Level()));
-
   return 1;
 }
 
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
+    if (m_evt_output_start>0 && m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
+      msg->SetLevel(m_evt_output);
+    }
+  
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       ran->WriteOutStatus(("random."+fname).c_str());
