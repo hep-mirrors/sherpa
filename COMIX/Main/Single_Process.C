@@ -524,7 +524,7 @@ bool COMIX::Single_Process::Tests()
     ids[i]=i;
     acts[i]=m_flavs[i].Strong();
     if (acts[i]) {
-      if (m_flavs[i].StrongCharge()==8) types[i]=0;
+      if (abs(m_flavs[i].StrongCharge())==8) types[i]=0;
       else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
       else types[i]=i<m_nin?-1:1;
     }
