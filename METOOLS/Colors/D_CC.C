@@ -10,12 +10,12 @@ namespace METOOLS {
 
     const CObject *p_a, *p_b;
 
-    int m_type, m_n[2];
+    int m_gab, m_type, m_n[2];
 
   public:
 
-    inline D_Calculator(const Vertex_Key &key): 
-      Color_Calculator(key) 
+    inline D_Calculator(const Vertex_Key &key,int gab): 
+      Color_Calculator(key), m_gab(gab)
     {
       int n[2]={key.p_mv->Color[key.m_n].ParticleArg(0),
 		key.p_mv->Color[key.m_n].ParticleArg(1)};
@@ -38,6 +38,7 @@ namespace METOOLS {
       if (m_type==0) {
 	p_b=j[m_n[1]];
 	m_stat=(*p_a)(0)==(*p_b)(1) && (*p_a)(1)==(*p_b)(0);
+	if (m_gab) m_stat|=((*p_a)(0)==(*p_a)(1) && (*p_b)(1)==(*p_b)(0));
 	return m_stat;
       }
       m_stat=true;
@@ -63,6 +64,10 @@ namespace METOOLS {
 	  j->Divide(3.0/2.0);
 	}
       }
+      if (m_gab && (*p_a)(0)==(*p_a)(1)) {
+	if ((*p_a)(0)==(*p_b)(1)) j->Divide(3.0/2.0);
+	else j->Divide(-3.0);
+      }
       p_v->AddJ(j);
     }
 
@@ -82,7 +87,7 @@ Color_Calculator *ATOOLS::Getter
 <Color_Calculator,Vertex_Key,D_Calculator>::
 operator()(const Vertex_Key &key) const
 {
-  return new D_Calculator(key);
+  return new D_Calculator(key,0);
 }
 
 void ATOOLS::Getter<Color_Calculator,Vertex_Key,D_Calculator>::
@@ -98,7 +103,7 @@ Color_Calculator *ATOOLS::Getter
 <Color_Calculator,Vertex_Key,G_Calculator>::
 operator()(const Vertex_Key &key) const
 {
-  return new D_Calculator(key);
+  return new D_Calculator(key,1);
 }
 
 void ATOOLS::Getter<Color_Calculator,Vertex_Key,G_Calculator>::

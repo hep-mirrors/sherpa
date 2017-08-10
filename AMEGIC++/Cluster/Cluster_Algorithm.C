@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Message.H"
 
 #include <algorithm>
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -348,7 +349,10 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   Vec4D_Vector clustered_moms=p_clus->Combine
     (*ampl, winner, emitted_idx, 1-winner, Flavour(kf_gluon),p_ms);
 
-  unsigned int color[2] = { Flow::Counter(), Flow::Counter() };
+  int color[2] = { ampl->Leg(winner)->Col().m_i,ampl->Leg(winner)->Col().m_j };
+  assert(color[0] >= 0 || color[1] >= 0);
+  if (color[0]==0) color[0] = ampl->Leg(emitted_idx)->Col().m_i;
+  if (color[1]==0) color[1] = ampl->Leg(emitted_idx)->Col().m_j;
   for (int i=0;i<2; ++i) {
     size_t id=(1<<i);
     if (i==winner) id+=(1<<emitted_idx);
