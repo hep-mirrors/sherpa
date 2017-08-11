@@ -96,23 +96,32 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
   pair         = new Flavour_Pair;
   pair->first  = flavs[1];
   pair->second = flavs[0];
+  
+// AV->  
+  double hfle=1.0;
+  double cse(hadpars->Get("Heavy_CharmStrange_Enhancement"));
+  double bse(hadpars->Get("Heavy_BeautyStrange_Enhancement"));
+  if ((fl1==3||fl2==3)&&(fl1==4||fl2==4)) hfle*=cse;
+  if ((fl1==3||fl2==3)&&(fl1==5||fl2==5)) hfle*=bse;
+// <-AV
+  
   if (fl1!=fl2 && (flavs[0].Charge()+flavs[1].Charge()!=0.)) {
     wavefunction = new Hadron_Wave_Function;
-    wavefunction->AddToWaves(pair,1.);
+    wavefunction->AddToWaves(pair,1.*hfle); //AV
   }
   else if (fl1==fl2) {
     LookUpAngles(lp,spin,costh,sinth);
     if (fl1==1) {
       wavefunction = new Hadron_Wave_Function;
-      wavefunction->AddToWaves(pair,-1./sqrt(2.));
+      wavefunction->AddToWaves(pair,-1./sqrt(2.)*hfle); //AV
       flavs[0]     = Flavour((kf_code)(2));
       pair         = new Flavour_Pair;
       pair->first  = flavs[0];
       pair->second = flavs[0].Bar();
-      wavefunction->AddToWaves(pair,+1./sqrt(2.));
+      wavefunction->AddToWaves(pair,+1./sqrt(2.)*hfle); //AV
     } 
     else if (fl1==2 && iso0==1) {
-      weight       = 1/sqrt(3.);
+      weight       = 1/sqrt(3.)*hfle; //AV
       wavefunction = new Hadron_Wave_Function;
       wavefunction->AddToWaves(pair,weight);
       flavs[0]     = Flavour((kf_code)(1));
@@ -127,7 +136,7 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
       wavefunction->AddToWaves(pair,weight);
     }
     else if (fl1==2) {
-      weight         = (sinth/sqrt(6.)+costh/sqrt(3.));
+      weight         = (sinth/sqrt(6.)+costh/sqrt(3.))*hfle; //AV
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         delete pair;
@@ -141,7 +150,7 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
 	pair->second = flavs[0].Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.));
+      weight         = (-2.*sinth/sqrt(6.)+costh/sqrt(3.))*hfle; //AV
       if (dabs(weight)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(3));
 	pair         = new Flavour_Pair;
@@ -152,14 +161,14 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
       }
     }
     else if (fl1==3) {
-      weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.));
+      weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.))*hfle; //AV
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         pair->first = Flavour((kf_code)(3));
         pair->second = Flavour((kf_code)(3)).Bar();
 	wavefunction->AddToWaves(pair,weight);
       }
-      weight         = (costh/sqrt(6.)-sinth/sqrt(3.));
+      weight         = (costh/sqrt(6.)-sinth/sqrt(3.))*hfle; //AV
       if (dabs(weight)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(1));
 	pair         = new Flavour_Pair;
@@ -175,12 +184,12 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
     }
     else if (fl1==fl2 && (fl1==4 || fl1==5)) {
       wavefunction = new Hadron_Wave_Function;
-      wavefunction->AddToWaves(pair,1.);
+      wavefunction->AddToWaves(pair,1.*hfle); //AV
     }
   }
   else if (flavs[0].Charge()+flavs[1].Charge()==0.) {
     wavefunction = new Hadron_Wave_Function;
-    wavefunction->AddToWaves(pair,1.);
+    wavefunction->AddToWaves(pair,1.*hfle); //AV
   }
   if (wavefunction) wavefunction->SetSpin(spin);
   return wavefunction;
@@ -268,6 +277,12 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
 
   double hbe(hadpars->Get("Heavy_Baryon_Enhancement"));
   double weight = (fl3>=4?hbe:1.);
+// AV->
+  double cse(hadpars->Get("Heavy_CharmStrange_Enhancement"));
+  double bse(hadpars->Get("Heavy_BeautyStrange_Enhancement"));
+  if ((fl1==3||fl2==3)&&fl3==4) weight*=cse;
+  if ((fl1==3||fl2==3)&&fl3==5) weight*=bse;
+// <-AV
 
   switch (wf) {
   case 1020:

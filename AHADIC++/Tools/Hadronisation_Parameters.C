@@ -191,7 +191,11 @@ void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread)
   m_parametermap[string("Baryon_fraction")]      = 
     dataread.GetValue<double>("BARYON_FRACTION",1.00);
   m_parametermap[string("Heavy_Baryon_Enhancement")]    = 
-    dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMENT",4.);
+    dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMENT",1.2);
+  m_parametermap[string("Heavy_CharmStrange_Enhancement")]    = 
+    dataread.GetValue<double>("HEAVY_CHARMSTRANGE_ENHANCEMENT",0.6);
+  m_parametermap[string("Heavy_BeautyStrange_Enhancement")]    = 
+    dataread.GetValue<double>("HEAVY_BEAUTYSTRANGE_ENHANCEMENT",0.3);
   m_parametermap[string("P_qs_by_P_qq")]       = 
     dataread.GetValue<double>("P_{QS}/P_{QQ}",0.3);
   m_parametermap[string("P_ss_by_P_qq")]       = 
