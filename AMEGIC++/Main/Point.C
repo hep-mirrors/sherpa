@@ -171,9 +171,6 @@ std::string Point::GetPropID() const
 
 void Point::FindOrder(std::vector<int> &order)
 {
-  // HS added this to prevent run-time segfault when compiled with gcc6
-  if (v == NULL) return;
-
   if (v) {
     if (order.size()<v->order.size())
       order.resize(v->order.size(),0);
