@@ -219,18 +219,13 @@ std::ostream & operator<<(std::ostream & s, const Point & p)
 
 void Point::FindOrder(std::vector<int> &order)
 {
-  if (!this) return;
-
-  // HS added this to prevent run-time segfault when compiled with gcc6
-  if (v == NULL) return;
-
   if (v) {
     if (order.size()<v->order.size())
       order.resize(v->order.size(),0);
     for (size_t i(0);i<v->order.size();++i)
       order[i]+=v->order[i];
   }
-  left->FindOrder(order);
-  right->FindOrder(order);
+  if (left)   left  ->FindOrder(order);
+  if (left)   right ->FindOrder(order);
   if (middle) middle->FindOrder(order);
 }
