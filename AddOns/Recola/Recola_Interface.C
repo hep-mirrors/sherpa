@@ -218,9 +218,9 @@ namespace Recola {
     double bmass=pdfnf>4?pdf->ASInfo().m_flavs[4].m_thres:Flavour(kf_b).Mass();
     double tmass=pdfnf>5?pdf->ASInfo().m_flavs[5].m_thres:Flavour(kf_t).Mass();
 
-    cmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_C", cmass);
-    bmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_B", bmass);
-    tmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_T", tmass);
+    cmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_C", cmass);
+    bmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_B", bmass);
+    tmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_T", tmass);
 
     for (int i=0; i<3; i++){
       if (i<pdfnf)
