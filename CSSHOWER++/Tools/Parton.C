@@ -57,15 +57,17 @@ Parton *Parton::FollowUp()
 
 bool Parton::Splits()
 {
-  if (this==NULL) return false;
   if (this==p_sing->GetSplit()) return true;
-  if (p_next) return p_next->Splits();
-  else return false;
+  if (p_next == NULL) {
+    return false;
+  } else {
+    return p_next->Splits();
+  }
 }
 
 void Parton::UpdateDaughters()
 {
-  if (this==NULL || p_next==NULL) return;
+  if (p_next==NULL) return;
   msg_Indent();
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
