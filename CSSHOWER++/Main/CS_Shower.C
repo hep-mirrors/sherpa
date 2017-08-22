@@ -110,6 +110,8 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	  else d[j]->SetRight(d[1-j]);
 	}
       }
+      for (Singlet::iterator it((*sit)->begin());it!=(*sit)->end();++it)
+	if (*it!=d[0] && *it!=d[1]) (*it)->SetStart(0.0);
     }
     msg_Debugging()<<**sit;
     size_t pem(nem);
