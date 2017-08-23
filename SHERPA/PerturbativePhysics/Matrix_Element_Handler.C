@@ -500,7 +500,7 @@ void Matrix_Element_Handler::BuildProcesses()
   std::string kfactor=reader.Get<std::string>("KFACTOR","None");
   // set scale scheme
   std::string scale=reader.Get<std::string>
-    ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
+    ("SCALES","STRICT_METS{MU_F2}{MU_R2}{MU_Q2}");
   std::vector<std::string> helpsv;
   if (!reader.ReadVector(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
