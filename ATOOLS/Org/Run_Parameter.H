@@ -26,7 +26,7 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_cutscheme;
       //std::string         m_runtime;
-      long int            m_nevents, m_ngenevents;
+      long int            m_nevents, m_ngenevents, m_ntrials;
       long int            m_seeds[4];
       double              m_ecms;
       double              m_accu, m_sqrtaccu;
@@ -44,6 +44,7 @@ namespace ATOOLS {
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
+      inline long   NumberOfTrials()                      { return m_ntrials; }
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
@@ -68,6 +69,7 @@ namespace ATOOLS {
       inline int    BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
+      inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
       inline const std::string &UserName() { return m_username; }
       inline const std::string &HostName() { return m_hostname; }
       std::string Variable(const std::string &key,const std::string &def="");

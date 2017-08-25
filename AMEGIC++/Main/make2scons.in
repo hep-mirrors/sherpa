@@ -58,7 +58,7 @@ if test $2 -eq 2 && test -d $procdir; then
       cd $i; printf ".";
       subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
       echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
-      cd -;
+      cd ..
     fi
   done
   cd $basedir;

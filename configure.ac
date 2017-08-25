@@ -61,6 +61,20 @@ if test x$ufo == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_UFO, [test x$ufo == xtrue])
 
+AC_ARG_ENABLE(dihiggs,
+  AC_HELP_STRING([--enable-dihiggs], [Enable di-Higgs virtual AddOn]),
+  [ AC_MSG_CHECKING(Di-Higgs AddOn)
+    case "${enableval}" in
+      no) AC_MSG_RESULT(no); dihiggs=false ;;
+      yes)  AC_MSG_RESULT(yes); dihiggs=true ;;
+    esac ],
+  [ AC_MSG_CHECKING(for di-Higgs AddOn); AC_MSG_RESULT(no); dihiggs=false])
+if test x$dihiggs == xtrue; then
+   AX_PYTHON_DEVEL([>=2.7])
+   AM_PATH_PYTHON
+fi
+AM_CONDITIONAL(ENABLE_DIHIGGS, [test x$dihiggs == xtrue])
+
 case "$build_os:$build_cpu:$build_vendor" in
   *darwin*:*:*) ;;
   *linux*:*:*) CXX="$CXX -Wl,--no-as-needed" ;;
@@ -101,6 +115,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/Main/Makefile \
 	  PDF/Electron/Makefile \
 	  PDF/LHAPDF/Makefile \
+          PDF/CT14/Makefile \
           PDF/CT12/Makefile \
           PDF/CT10/Makefile \
           PDF/MSTW/Makefile \
@@ -113,6 +128,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
 	  MODEL/HEFT/Makefile \
+	  MODEL/SMEHC/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \
 	  MODEL/UFO/Sherpa-generate-model \
@@ -134,10 +150,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
-	  EXTRA_XS/Cluster/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
+	  EXTAMP/Main/Makefile \
+	  EXTAMP/Makefile \
 	  AMEGIC++/Main/Makefile \
           AMEGIC++/Main/makelibs \
           AMEGIC++/Main/make2scons \
@@ -146,12 +163,10 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           AMEGIC++/Amplitude/Zfunctions/Makefile \
           AMEGIC++/Phasespace/Makefile \
           AMEGIC++/String/Makefile \
-          AMEGIC++/Cluster/Makefile \
           AMEGIC++/Makefile \
 	  COMIX/Amplitude/Makefile \
 	  COMIX/Phasespace/Makefile \
 	  COMIX/Main/Makefile \
-	  COMIX/Cluster/Makefile \
 	  COMIX/Makefile \
 	  CSSHOWER++/Tools/Makefile \
 	  CSSHOWER++/Calculators/Makefile \
@@ -164,6 +179,12 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  DIRE/Lorentz/Makefile \
 	  DIRE/Main/Makefile \
 	  DIRE/Makefile \
+	  DIM/Tools/Makefile \
+	  DIM/Shower/Makefile \
+	  DIM/Gauge/Makefile \
+	  DIM/Lorentz/Makefile \
+	  DIM/Main/Makefile \
+	  DIM/Makefile \
 	  AMISIC++/Tools/Makefile \
 	  AMISIC++/Model/Makefile \
 	  AMISIC++/Main/Makefile \
@@ -208,6 +229,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  Examples/API/ME2-Python/test.py \
 	  Examples/API/Events/test.py \
 	  Examples/API/MPIEvents/test.py \
+	  AddOns/NNLO/Makefile \
 	  AddOns/Python/Makefile \
 	  AddOns/Analysis/Tools/Makefile \
 	  AddOns/Analysis/Main/Makefile \
@@ -230,6 +252,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/HepMC/Makefile \
 	  AddOns/Weights/Makefile \
 	  AddOns/Root/Makefile \
+	  AddOns/DiHiggsNLO/Makefile \
 	  AddOns/Makefile \
 	  Makefile )
 

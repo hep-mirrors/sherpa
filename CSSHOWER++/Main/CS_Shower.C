@@ -1,14 +1,12 @@
 #include "CSSHOWER++/Main/CS_Shower.H"
 
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PDF/Main/Jet_Criterion.H"
-#include "EXTRA_XS/Main/ME2_Base.H"
-#include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
@@ -27,7 +25,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
 		     Default_Reader *const _reader,const int type) :
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL), p_cs(NULL)
+  p_shower(NULL), p_cluster(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
@@ -59,19 +57,13 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   p_next = new All_Singlets();
 
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
-  p_cluster->SetAMode(amode);
-
-  if (csmode) p_cs = new Color_Setter(csmode);
 }
 
 CS_Shower::~CS_Shower() 
 {
   CleanUp();
-  for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
-       xsit!=m_xsmap.end();++xsit) delete xsit->second;
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
-  if (p_cs) delete p_cs;
   delete p_next;
 }
 
@@ -94,6 +86,12 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     std::map<int,int> colmap;   
     if (ls && (ls->GetSplit()->Stat()&2)) {
       msg_Debugging()<<"Decay. Set color connections.\n";
+      Singlet *sing(*sit);
+      sing->SetJF(NULL);
+      while (sing->GetLeft()) {
+	sing=sing->GetLeft()->GetSing();
+	sing->SetJF(NULL);
+      }
       Parton *d[2]={ls->GetLeft(),ls->GetRight()};
       for (int j=0;j<2;++j) {
 	if (d[1-j]->GetFlow(1) || d[1-j]->GetFlow(2)) continue;
@@ -114,6 +112,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
+    m_allsinglets=*p_next;
     if (colmap.size()) {
       msg_Debugging()<<"Decay. Reset color connections.\n";
       for (Singlet::iterator
@@ -128,9 +127,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	    (*it)->UpdateColours();
 	  }
       }
-    }
-    if ((*sit)->GetLeft()) {
-      p_shower->ReconstructDaughters(*sit,1);
     }
     msg_Debugging()<<"after shower step with "<<nem-pem
 		   <<" of "<<nem<<" emission(s)\n";
@@ -280,9 +276,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
   assert(ampl != NULL);
   CleanUp();
   DEBUG_FUNC("");
-  for (Cluster_Amplitude *campl(ampl);
-       campl;campl=campl->Next())
-    if (campl->Next()==NULL) SetColours(campl);
   p_rampl=ampl;
   p_ms=ampl->MS();
   KT2X_Map kt2xmap;
@@ -369,12 +362,13 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 		     <<", kmode = "<<split->KScheme()<<"\n";
       sing->SetAll(p_next);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
-      if (m_recocheck&1) {
+      if ((m_recocheck&1) && dynamic_cast<CS_Cluster_Definitions*>
+	  (campl->CA<Cluster_Definitions_Base>())!=NULL) {
       std::cout.precision(12);
       Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
       Vec4D oldsf(split->FixSpec()), oldso(split->OldMomentum());
-      sing->BoostBackAllFS(l,r,s);
-      p_shower->ReconstructDaughters(sing,1);
+      double jcv(0.0);
+      p_shower->ReconstructDaughters(sing,jcv,NULL,NULL);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
@@ -420,7 +414,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       l->SetOldMomentum(oldl);
       r->SetOldMomentum(oldr);
       s->SetOldMomentum(olds);
-      sing->BoostBackAllFS(l,r,s);
     }
     double kt2next(0.0);
     if (campl->Prev()) {
@@ -464,12 +457,24 @@ Singlet *CS_Shower::TranslateAmplitude
  const KT2X_Map &kt2xmap)
 {
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):
+  double ktveto2(jf?sqr(jf->Qcut()):
 		 sqrt(std::numeric_limits<double>::max()));
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetJF(jf);
+  singlet->SetShower(p_shower);
+  singlet->SetMuR2(ampl->MuR2());
+  if (ampl->NLO()&8) {
+    if (ampl->Next() && 
+	(ampl->NIn()+ampl->Leg(2)->NMax()-1>
+	 ampl->Legs().size())) ampl->SetNLO(ampl->NLO()&~8);
+  }
   singlet->SetNLO(ampl->NLO()&~1);
+  if (ampl->Proc<PHASIC::Process_Base>())
+    singlet->SetNME(ampl->First()->Legs().size()-ampl->NIn()-
+		    ampl->Proc<PHASIC::Process_Base>()->
+		    Info().m_fi.NMinExternal());
+  if (ampl->Flag()&2) singlet->SetNSkip(1);
   if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);
   singlet->SetLKF(ampl->LKF());
   for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -489,7 +494,6 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetMass2(p_ms->Mass2(p.Flav()));
     pmap[cl]=parton;
     lmap[parton]=cl;
-    parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
     if (is) parton->SetBeam(cl->Mom()[3]<0.0?0:1);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
@@ -498,7 +502,7 @@ Singlet *CS_Shower::TranslateAmplitude
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
     if (cl->KT2(1)>=0.0) parton->SetSoft(1,cl->KT2(1)); 
-    parton->SetKtMax(xit->second.first);
+    if (xit->second.first) singlet->SetNMax(1);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
     parton->SetSing(singlet);
@@ -564,104 +568,6 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
   return ampl->MuQ2();
 }
 
-double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
-                         const ATOOLS::Flavour &flk,const int type,
-			 const int cpl,const double &mu2) const
-{
-  cstp::code stp((type&1)?
-		 (type&2)?cstp::II:cstp::IF:
-		 (type&2)?cstp::FI:cstp::FF);
-  return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
-}
-
-void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
-{
-  bool cs(true);
-  Vec4D_Vector moms(ampl->Legs().size());
-  Flavour_Vector fl(ampl->Legs().size());
-  for (int i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *l(ampl->Leg(i));
-    if (l->Col().m_i>=500 || l->Col().m_j>=500) {
-      return;
-    }
-    moms[i]=i<ampl->NIn()?-l->Mom():l->Mom();
-    fl[i]=i<ampl->NIn()?l->Flav().Bar():l->Flav();
-    if (moms[i][0]<fl[i].Mass()) cs=false;
-  }
-  Flav_ME_Map::const_iterator xit(m_xsmap.find(fl));
-  if (xit==m_xsmap.end()) {
-    Process_Info pi;
-    pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
-    pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
-    for (size_t i(0);i<ampl->NIn();++i)
-      pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
-    for (size_t i(ampl->NIn());i<fl.size();++i)
-      pi.m_fi.m_ps.push_back(Subprocess_Info(fl[i]));
-    EXTRAXS::ME2_Base *me2=dynamic_cast<EXTRAXS::ME2_Base*>
-      (PHASIC::Tree_ME2_Base::GetME2(pi));
-    if (me2) {
-      m_xsmap[fl]=me2;
-      xit=m_xsmap.find(fl);
-    }
-  }
-  if (xit!=m_xsmap.end()) {
-    xit->second->SetColours(moms);
-    for (size_t i(0);i<fl.size();++i) {
-      ColorID c(xit->second->Colours()[i][0],
-		xit->second->Colours()[i][1]);
-      if (i<ampl->NIn())c=ColorID(c.m_j,c.m_i);
-      ampl->Leg(i)->SetCol(c);
-    }
-  }
-  else {
-    if (p_cs==NULL || !cs || !p_cs->SetColors(ampl)) {
-      std::vector<int> tids, atids;
-      for (size_t i(0);i<ampl->Legs().size();++i)
-	if (ampl->Leg(i)->Flav().StrongCharge()>0) {
-	  tids.push_back(i);
-	  if (ampl->Leg(i)->Flav().StrongCharge()==8)
-	    atids.push_back(i);
-	}
-	else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
-	  atids.push_back(i);
-	}
-      while (true) {
-	std::random_shuffle(atids.begin(),atids.end(),*ran);
-	size_t i(0);
-	for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
-	if (i==atids.size()) break;
-      }
-      for (size_t i(0);i<tids.size();++i) {
-	int cl(Flow::Counter());
-	ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
-	ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
-      }
-    }
-  }
-  for (Cluster_Amplitude *campl(ampl->Prev());campl;campl=campl->Prev()) {
-    Cluster_Amplitude *next(campl->Next()); 
-    Cluster_Leg *lij=NULL;
-    for (size_t i(0);i<next->Legs().size();++i)
-      if (next->Leg(i)->K()) {
-	lij=next->Leg(i);
-	break;
-      }
-    if (lij==NULL) THROW(fatal_error,"Invalid amplitude");
-    Cluster_Leg *li=NULL, *lj=NULL;
-    for (size_t i(0);i<campl->Legs().size();++i) {
-      if (campl->Leg(i)->Id()&lij->Id()) {
-	if (li==NULL) li=campl->Leg(i);
-	else if (lj==NULL) lj=campl->Leg(i);
-	else THROW(fatal_error,"Invalid splitting");
-      }
-      else {
-	campl->Leg(i)->SetCol(next->IdLeg(campl->Leg(i)->Id())->Col());
-      }
-    }
-    Cluster_Amplitude::SetColours(lij,li,lj);
-  }
-}
-
 double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		       const ATOOLS::Flavour &fj) const
@@ -675,13 +581,14 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
   return 2.0*dabs(pi*pj)/(Cij+Cji);
 }
 
-bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
-			const int mode)
+double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
+			  const int mode)
 {
   DEBUG_FUNC("mode = "<<mode);
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
+  NLO_subevtlist *subs(NULL);
+  if (mode) subs=ampl->Proc<PHASIC::Process_Base>()->GetRSSubevtList();
   size_t noem(0), nospec(0);
   for (size_t i(0);i<ampl->Decays().size();++i) {
     noem|=ampl->Decays()[i]->m_id;
@@ -689,10 +596,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
       nospec|=ampl->Decays()[i]->m_id;
   }
   msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
-  double q2min(std::numeric_limits<double>::max());
-  size_t imin(0), jmin(0), kmin(0);
-  Vec4D_Vector pmin;
-  Flavour mofl;
+  std::set<Q2_Value> q2list;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     if (li->Id()&noem) continue;
@@ -703,62 +607,59 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
       Flavour fj(j<ampl->NIn()?lj->Flav().Bar():lj->Flav());
       for (size_t k(0);k<ampl->Legs().size();++k) {
 	if (k==i || k==j) continue;
+	if (subs) {
+	  bool found(false);
+	  for (size_t l(0);l<subs->size()-1;++l) {
+	    NLO_subevt *sub((*subs)[l]);
+	    if (k==sub->m_k && ((i==sub->m_i && j==sub->m_j) ||
+				(i==sub->m_j && j==sub->m_i))) {
+	      found=true;
+	      break;
+	    }
+	  }
+	  if (!found) continue;
+	}
 	Cluster_Leg *lk(ampl->Leg(k));
 	if (lk->Id()&nospec) continue;
 	Flavour fk(k<ampl->NIn()?lk->Flav().Bar():lk->Flav());
-	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
-		      (k<ampl->NIn()?cstp::II:cstp::IF):
-		      (k<ampl->NIn()?cstp::FI:cstp::FF));
-	if ((lk->Flav().Strong() &&
-	     li->Flav().Strong() && lj->Flav().Strong()) ||
-	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
+	if (lk->Flav().Strong() &&
+	    li->Flav().Strong() && lj->Flav().Strong() &&
+	    (li->Flav().IsGluon() || lj->Flav().IsGluon() ||
+	     li->Flav()==lj->Flav().Bar())) {
 	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			    li->Flav(),lj->Flav()));
- 	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
+	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<0.0) continue;
-	  if (mode==0) {
-	    if (q2ijk<q2cut) return false;
-	  }
-	  else {
-	    if (q2ijk<q2min) {
-	      mofl=Flavour(kf_gluon);
-	      if (li->Flav().IsGluon()) mofl=lj->Flav();
-	      if (lj->Flav().IsGluon()) mofl=li->Flav();
-	      int beam=li->Id()&1?0:1;
-	      if (p_shower->ISR()->PDF(beam) &&
-		  !p_shower->ISR()->PDF(beam)->Contains(mofl)) {
-		msg_Debugging()<<"Not in PDF: "<<mofl<<".\n";
-		continue;
-	      }
-	      Vec4D_Vector p=p_cluster->Combine
-		(*ampl,i,j,k,mofl,ampl->MS(),1);
-	      if (p.empty()) {
-		msg_Debugging()<<"Combine failed.\n";
-		continue;
-	      }
-	      q2min=q2ijk;
-	      pmin=p;
-	      imin=i;
-	      jmin=j;
-	      kmin=k;
-	    }
-	  }
+	  Flavour mofl=Flavour(kf_gluon);
+	  if (li->Flav().IsGluon()) mofl=lj->Flav();
+	  if (lj->Flav().IsGluon()) mofl=li->Flav();
+	  q2list.insert(Q2_Value(q2ijk,mofl,i,j,k));
 	}
 	else {
-	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj
-			 <<" <-> "<<fk<<" ("<<et<<")\n";
+	  msg_IODebugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "<<fk<<"\n";
 	}
       }
     }
   }
-  if (mode!=0 && imin!=jmin) {
-    Vec4D_Vector p=pmin;
-    if (p.empty()) {
-      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration for:\n"
-		 <<(*ampl)<<"\n";
-      return JetVeto(ampl,0);
-    }
+  if (mode==0) {
+    double q2min(std::numeric_limits<double>::max());
+    if (q2list.size()) q2min=q2list.begin()->m_q2;
+    msg_Debugging()<<"--- "<<sqrt(q2min)<<" ---\n";
+    return q2min;
+  }
+  while (q2list.size()) { 
+    double q2min(q2list.begin()->m_q2);
+    Flavour mofl(q2list.begin()->m_fl);
+    size_t imin(q2list.begin()->m_i);
+    size_t jmin(q2list.begin()->m_j);
+    size_t kmin(q2list.begin()->m_k);
+    q2list.erase(q2list.begin());
+    Cluster_Param cp=p_cluster->Cluster
+      (Cluster_Config(ampl,imin,jmin,kmin,mofl,ampl->MS(),NULL,1));
+    if (cp.m_pijt==Vec4D())
+      cp=p_cluster->Cluster(Cluster_Config(ampl,jmin,imin,kmin,mofl,ampl->MS(),NULL,1));
+    if (cp.m_pijt==Vec4D()) continue;
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
     bampl->SetProc(ampl->Proc<void>());
     bampl->SetNIn(ampl->NIn());
@@ -766,21 +667,22 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     for (int i(0), j(0);i<ampl->Legs().size();++i) {
       if (i==jmin) continue;
       if (i==imin) {
-	bampl->CreateLeg(p[j],mofl,ampl->Leg(i)->Col());
+	bampl->CreateLeg(cp.m_pijt,mofl,ampl->Leg(i)->Col());
 	bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
 	bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
       }
       else {
-	bampl->CreateLeg(p[j],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+	bampl->CreateLeg(i==kmin?cp.m_pkt:cp.m_lam*ampl->Leg(i)->Mom(),
+			 ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
       }
       ++j;
     }
-    bool res=JetVeto(bampl,0);
+    double res=JetVeto(bampl,0);
     bampl->Delete();
     return res;
   }
-  msg_Debugging()<<"--- Jet veto ---\n";
-  return true;
+  msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+  return JetVeto(ampl,0);
 }
 
 DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
@@ -808,7 +710,7 @@ namespace CSSHOWER {
       p_css=dynamic_cast<CS_Shower*>(css);
       if (p_css==NULL) THROW(fatal_error,"CS shower needed but not used");
     }
-    bool Jets(Cluster_Amplitude *ampl,int mode)
+    double Value(Cluster_Amplitude *ampl,int mode)
     {
       return p_css->JetVeto(ampl,mode);
     }

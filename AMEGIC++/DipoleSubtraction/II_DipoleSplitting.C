@@ -33,34 +33,11 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   m_a = m_vi;
 
   m_Q2 = (-m_pi+m_pj-m_pk).Abs2();
-  if (m_es==0) {
-    m_kt2 = m_Q2*(1.-m_xijk)/m_xijk*m_vi;
-  }
-  else {
-    m_kt2 = m_Q2/m_xijk*m_vi;
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::g2gg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::q2gq:
-    case spt::g2qq:
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_xijk,m_vi,m_Q2):
+    m_Q2*(1.-m_xijk-m_vi)/m_xijk*m_vi;
 
+  double zijk(m_xijk);
+  if (m_subtype==1) zijk=m_xijk+m_vi;
 //   m_pt1  =    m_pj;
 //   m_pt2  =-1.*m_vi*m_pk;
   m_pt1  =    m_pj-m_vi*m_pk;
@@ -68,20 +45,24 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
   switch (m_ftype) {
   case spt::q2qg:
-    m_sff = 2./(1.-m_xijk)-(1.+m_xijk);
+    m_sff = 2./(1.-m_xijk)-(1.+zijk);
     m_av  = m_sff;
     break;
   case spt::q2gq:
-    m_sff = 1.-2.*m_xijk*(1.-m_xijk);
+    m_sff = 1.-2.*zijk*(1.-zijk);
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = m_xijk;
+    m_sff = zijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
+    if (m_subtype==1) m_av += 2.0*(zijk/(sqr(zijk)+m_vi*(1.0-zijk))-1.0/m_xijk);
+    if (m_subtype==2) m_av += 2.0*(1.0/(m_xijk+m_vi)-1.0/m_xijk);
     break;
   case spt::g2gg:
-    m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
+    m_sff = m_xijk/(1.-m_xijk)+zijk*(1.-zijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
+    if (m_subtype==1) m_av += zijk/(sqr(zijk)+m_vi*(1.0-zijk))-1.0/m_xijk;
+    if (m_subtype==2) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   case spt::s2sg:
@@ -93,7 +74,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     THROW(fatal_error, "DipoleSplitting can not handle splitting type "
         + ToString(m_ftype) + ".");
   }
-  if (m_kt2<m_k0sqi) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(1):0.0)) m_av=1.0;
 }
 
 double II_DipoleSplitting::GetValue()
@@ -104,15 +85,18 @@ double II_DipoleSplitting::GetValue()
 
 void II_DipoleSplitting::CalcDiPolarizations()
 {
+  double tc((1.-m_xijk)/m_xijk);
+  if (m_subtype==1) tc+=(m_xijk+m_vi)/(sqr(m_xijk+m_vi)+m_vi*(1.0-m_xijk-m_vi))-1.0/m_xijk;
+  if (m_subtype==2) tc+=1.0/(m_xijk+m_vi)-1.0/m_xijk;
   switch (m_ftype) {
   case spt::q2qg:
   case spt::q2gq:
     return;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/4.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/4.);
     break;
   case spt::g2gg:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/2.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/2.);
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");

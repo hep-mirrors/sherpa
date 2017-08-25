@@ -19,8 +19,7 @@ namespace HIGGS {
 
     ~Higgs_Selector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const sub=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
 
     void   BuildCuts(PHASIC::Cut_Data *cuts);
 
@@ -67,23 +66,20 @@ void Higgs_Selector::BuildCuts(PHASIC::Cut_Data *cuts)
 	}
 }
 
-bool Higgs_Selector::Trigger(const Vec4D_Vector &p,
-                             ATOOLS::NLO_subevt *const sub)
+bool Higgs_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   Vec4D py1, py2, pj;
-  for (size_t i(m_nin);i<n;++i) {
-    if (fl[i].IsPhoton()) {
+  for (size_t i(m_nin);i<m_n;++i) {
+    if (p_fl[i].IsPhoton()) {
       if (py1==Vec4D()) py1=p[i];
       else {
         if (py2!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
         py2=p[i];
       }
     }
-    if (fl[i].Strong()) {
+    if (p_fl[i].Strong()) {
       if (pj!=Vec4D()) msg_Error()<<METHOD<<"(): Not a yy event."<<std::endl;
       pj=p[i];
     }

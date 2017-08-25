@@ -1,0 +1,32 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR External OpenLoops; PDF_SET None;
+
+  SCALES VAR{sqr(91.2)};
+
+  ME_SIGNAL_GENERATOR External OpenLoops;
+  EVENT_GENERATION_MODE Weighted;
+
+  OL_PARAMETERS verbose 3 allowed_libs ppll,ppllj;
+
+  % collider setup
+  BEAM_1 -11; BEAM_ENERGY_1 = 1000.;
+  BEAM_2  11; BEAM_ENERGY_2 = 1000.;
+
+  DIPOLE_ALPHA 1.0;
+}(run)
+
+(processes){
+  Process -11 11 -> 93 93
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Integrator Rambo;
+  Min_Order (-1,-1);
+  Max_Order (-1,-1);
+  End process;
+}(processes)
+
+(selector){
+ NJetFinder 2 700.0 0.0 0.4 -1;
+}(selector)

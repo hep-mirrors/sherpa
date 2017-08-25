@@ -19,6 +19,16 @@ namespace MCATNLO {
 
   class CS_Gamma;
 
+  struct JetVeto_Args {
+    Singlet *p_sing;
+    double m_jcv;
+    int m_acc, m_nlo;
+    std::vector<int> m_skip;
+    JetVeto_Args(Singlet *const sing,
+		 const double &jcv,const size_t &n):
+      p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
+  };// end of struct JetVeto_Args
+    
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -52,16 +62,19 @@ namespace MCATNLO {
     bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p);
     int    UpdateDaughters(Parton *const split,Parton *const newpB,
-			   Parton *const newpC,const int mode);
+			   Parton *const newpC,double &jcv);
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
-		       const int mode);
+		       double &jcv);
+    double VetoWeight(ATOOLS::Variation_Parameters *params,
+		      ATOOLS::Variation_Weights *weights,
+		      JetVeto_Args &a);
  public:
     Shower(PDF::ISR_Handler *,const int qed,
 	   ATOOLS::Default_Reader *const);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
-    void SetMS(ATOOLS::Mass_Selector *const ms);
+    void SetMS(const ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline Parton *const *GetLast() const { return m_last; }

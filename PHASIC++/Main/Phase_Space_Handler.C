@@ -54,7 +54,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_error    = reader.Get<double>("INTEGRATION_ERROR", reader.Get<double>("ERROR", 0.01));
   m_abserror    = reader.Get<double>("ABS_ERROR",0.0);
   m_maxtrials = reader.Get<int>("MAX_TRIALS",1000000);
-  m_fin_opt = !reader.IsDisabled("FINISH_OPTIMIZATION", true);
+  m_fin_opt = reader.Get<int>("FINISH_OPTIMIZATION", 1);
   m_enhancexs = reader.Get<int>("ENHANCE_XS",0);
   m_printpspoint = reader.Get<int>("PRINT_PS_POINTS",0); 
   if (error>0.) {
@@ -206,10 +206,12 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
     m_E = m_m[0];
     m_s = m_E*m_E;
     p[0] = Vec4D(m_E,0.,0.,0.);
+    p_cuts->Update(m_s,0.);
     return 1;
   }
   if (m_nin == 2) {
     if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa->gen.Ecms());
+    p_cuts->Update(m_isrspkey[3],0.);
     double Eprime = sqrt(m_isrspkey[3]);
     if ((m_E<m_m[0]+m_m[1])) return 0;
     double x = 1./2.+(m_m2[0]-m_m2[1])/(2.*m_isrspkey[3]);
@@ -327,12 +329,13 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_massboost->BoostBack(p_lab[i]);
   }
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
+  CorrectMomenta(p_lab);
   m_result=0.0;
+  for (size_t i(0);i<p_lab.size();++i) if (p_lab[i].Nan()) return 0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
     CalculatePS();
     CalculateME();
-    if (m_result==0.) { msg_Debugging()<<"Result is zero. Return."<<std::endl; return 0.;}
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
       msg->SetPrecision(15);
@@ -349,7 +352,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
-    const double wgtfac(m_psweight*iscount);
+    double wgtfac(m_psweight*iscount);
+    if (p_variationweights) (*p_variationweights)*=wgtfac;
+    if (!p_active->Process()->Selector()->Pass()) wgtfac=0.0;
     m_result*=wgtfac;
     ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
     if (wgtinfo) {
@@ -360,16 +365,13 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       (*nlos)*=wgtfac;
       (*nlos).MultMEwgt(wgtfac);
     }
-    if (p_variationweights) {
-      (*p_variationweights)*=wgtfac;
-    }
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
     if (m_thkill<0.0) {
       msg_Info()<<METHOD<<"(): Skip point in '"<<p_active->Process()->Name()
 		<<"', w = "<<m_result*rpa->Picobarn()<<".\n";
-      return false;
+      return 0.0;
     }
     ATOOLS::MakeDir("stability");
     std::ofstream sf(("stability/"+p_active->Process()->Name()+
@@ -398,6 +400,42 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     }
   }
   return m_result;
+}
+
+void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
+{
+  if (m_nin!=2) return;
+  Vec4D sum;
+  size_t imax(0);
+  double emax(0.0);
+  for (size_t i(0);i<m_nin;++i) sum+=-p[i];
+  for (size_t i(m_nin);i<p.size();++i) {
+    sum+=p[i];
+    if (p[i][0]>emax) { emax=p[i][0]; imax=i; }
+    p[i][0]=sqrt(p[i].PSpat2()+sqr(p_flavours[i].Mass()));
+  }
+  p[imax]-=sum;
+  p[imax][0]=sqrt(p[imax].PSpat2()+sqr(p_flavours[imax].Mass()));
+  double e0tot(0);
+  for (size_t i(0);i<p.size();++i) e0tot+=i<m_nin?-p[i][0]:p[i][0];
+  double p2[2]={p[0].PSpat2(),p[1].PSpat2()};
+  double E0[2]={-p[0][0],-p[1][0]};
+  double E1[2]={p2[0]/E0[0],-(Vec3D(p[0])*Vec3D(p[1]))/E0[1]};
+  double e1tot=E1[0]+E1[1];
+  double E2[2]={p2[0]*sqr(p_flavours[0].Mass())/(2*pow(E0[0],3)),
+		(p2[0]-sqr(E1[1]))/(2*E0[1])};
+  double e2tot=E2[0]+E2[1];
+  double eps1=-e0tot/e1tot;
+  double eps=eps1*(1-eps1*e2tot/e1tot);
+  p[1]=-p[1]+p[0]*eps;
+  p[0]=-p[0]-p[0]*eps;
+  for (int i(0);i<2;++i) {
+    if (p_flavours[i].Mass()==0.0 && p[i][1]==0.0 && p[i][2]==0.0) 
+      p[i][0]=-std::abs(p[i][3]);
+    else
+      p[i][0]=E0[i]+E1[i]*eps+E2[i]*sqr(eps);
+  }
+  for (size_t i(0);i<m_nin;++i) p[i]=-p[i];
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -430,7 +468,11 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
   double value=Differential(cur,(psm::code)mode);
-  if (value==0.0 || IsBad(value)) return NULL;
+  bool zero(value==0.0);
+  if (zero && p_variationweights)
+    for (size_t i(0);i<p_variationweights->GetNumberOfVariations();++i)
+      if (p_variationweights->GetVariationWeightAt(i)) zero=false;
+  if (zero || IsBad(value)) return NULL;
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
@@ -663,6 +705,7 @@ double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
       nobs+=1.0;
     }
     if (nobs) obs=exp(obs/nobs);
+    else obs=1.0;
   }
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;

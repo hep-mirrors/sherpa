@@ -77,6 +77,7 @@ bool Single_Process::Initialize()
       p_born_me2->SetCouplings(m_cpls);
       m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
       m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
+      p_born_me2->FillCombinations(m_ccombs,m_cfls);
       return true;
     }
     else {
@@ -128,6 +129,11 @@ bool EXTRAXS::Single_Process::FillIntegrator
 
 bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
 {
+  if (m_ccombs.size()) {
+    std::set<std::pair<size_t,size_t> >::const_iterator 
+      cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+    return cit!=m_ccombs.end();
+  }
   size_t sintt(7);
   if (GetME()) sintt=GetME()->SIntType();
   if ((idi==1 && idj==2) || (idi==4 && idj==8)) {
@@ -147,6 +153,11 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
 const Flavour_Vector &Single_Process::
 CombinedFlavour(const size_t &idij)
 {
+  if (m_cfls.size()) {
+    std::map<size_t,ATOOLS::Flavour_Vector>::const_iterator fit(m_cfls.find(idij));
+    if (fit==m_cfls.end()) THROW(fatal_error,"Invalid request");
+    return fit->second;
+  }
   if (GetME()) return GetME()->CombinedFlavour(idij);
   static Flavour_Vector fls(1,kf_none);
   return fls;

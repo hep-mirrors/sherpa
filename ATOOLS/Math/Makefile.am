@@ -10,6 +10,7 @@ libToolsMath_la_SOURCES       =	\
 				Term.C \
 				Algebra_Interpreter.C \
 				Marsaglia.C \
+				Sobol.C \
 				Random.C \
 				Function_Base.C \
 				Poincare.C \
@@ -32,6 +33,7 @@ localinc_HEADERS          =	\
 			Term.H \
 			Algebra_Interpreter.H \
 			Marsaglia.H \
+			Sobol.H \
 			Random.H \
 			Function_Base.H \
 			Poincare.H \
@@ -59,3 +61,14 @@ localinc_HEADERS          =	\
 			Tensor_Build.H \
 			Tensor_Contractions.H \
 			Tensor_Contractions_Epsilon.H
+
+if GZIP_SUPPORT
+Sobol/%.gz: Sobol/%
+	gzip < $< > $@
+SOBOL_EXT = .gz
+else
+SOBOL_EXT = 
+endif
+
+nobase_dist_pkgdata_DATA         =	\
+			Sobol/21201$(SOBOL_EXT)

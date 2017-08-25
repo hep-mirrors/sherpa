@@ -1,0 +1,33 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None; PDF_SET None;
+
+  SCALES VAR{sqr(91.2)};
+
+  ME_SIGNAL_GENERATOR Amegic;
+  EVENT_GENERATION_MODE Weighted; AMEGIC_ALLOW_MAPPING 0;
+
+  OL_PARAMETERS verbose 0 allowed_libs ppll,ppllj,pplljj;
+
+  % collider setup
+  BEAM_1 -11; BEAM_ENERGY_1 = 1000.;
+  BEAM_2  11; BEAM_ENERGY_2 = 1000.;
+
+  DIPOLE_ALPHA 1.0; DIPOLE_AMIN 1.0e-99;
+}(run)
+
+(processes){
+  Process -11 11 -> 1 -1 21 21;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Integrator fsrchannels5;
+  # Min_Order (-1,-1);
+  # Max_Order (-1,-1);
+  Order (*,2);
+  End process;
+}(processes)
+
+(selector){
+ NJetFinder 4 200.0 0.0 0.4 -1;
+}(selector)

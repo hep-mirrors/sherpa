@@ -121,7 +121,6 @@ namespace AMEGIC {
 
     inline size_t       GetEmit()  { return m_emit; }
     inline size_t       GetSpect() { return m_spect; }
-    int                 PerformTests();
     inline void         SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
     inline void         SetPhotonSplittingModes(const size_t &im,
                                                 const size_t &fm)

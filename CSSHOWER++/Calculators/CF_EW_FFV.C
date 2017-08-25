@@ -28,7 +28,7 @@ namespace CSSHOWER {
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
-    bool AllowSpec(const ATOOLS::Flavour &fl);
+    bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
 
   };
 
@@ -53,7 +53,7 @@ namespace CSSHOWER {
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
-    bool AllowSpec(const ATOOLS::Flavour &fl);
+    bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
 
   };
 
@@ -89,7 +89,7 @@ double CF_EW_FFZ::Coupling(const double &scale,const int pol)
   return m_last = (*p_cpl)(scl)*m_q[pol];
 }
 
-bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl) 
+bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   if (m_cfl.IntCharge()==0) return fl.Charge();
 
@@ -142,7 +142,7 @@ double CF_EW_FFW::Coupling(const double &scale,const int pol)
   return (*p_cpl)(scl)*m_q[pol];
 }
 
-bool CF_EW_FFW::AllowSpec(const ATOOLS::Flavour &fl) 
+bool CF_EW_FFW::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   return true;
 }

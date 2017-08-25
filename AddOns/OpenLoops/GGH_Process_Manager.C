@@ -19,7 +19,8 @@ using namespace ATOOLS;
 
 GGH_Process_Manager::GGH_Process_Manager() : p_generators(NULL)  {}
 
-void GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external){
+Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, 
+						     bool external, const std::vector<double>& orders){
   DEBUG_FUNC(this);
   //ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   //My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
@@ -29,39 +30,34 @@ void GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Amplitude& amp
   pi.m_megenerator="Amegic";
   for (size_t i(0);i<ampl.NIn();++i) {
     Flavour fl(ampl.Leg(i)->Flav().Bar());
-    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    //if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
     pi.m_ii.m_ps.push_back(Subprocess_Info(fl,"",""));
   }
   for (size_t i(ampl.NIn());i<ampl.Legs().size();++i) {
     Flavour fl(ampl.Leg(i)->Flav());
-    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    //if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
     pi.m_fi.m_ps.push_back(Subprocess_Info(fl,"",""));
   }
 
   // set coupling orders correctly
-  pi.m_maxcpl.resize(3);
-  pi.m_maxcpl[0] = pi.m_mincpl[0] = 0;
-  pi.m_maxcpl[1] = pi.m_mincpl[1] = 0;
-  pi.m_maxcpl[2] = pi.m_mincpl[2] = 1;
-  Flavour_Vector flav_vec = pi.ExtractFlavours();
-  for(Flavour_Vector::const_iterator it=flav_vec.begin(); it!=flav_vec.end(); ++it)
-    if (it->Strong()) {
-      pi.m_maxcpl[0]+=1;
-      pi.m_mincpl[0]+=1;
-    }
+  pi.m_maxcpl = pi.m_mincpl = orders;
   if(external){
     // set weirdly abused mhv-flag to get external (i.e. OpenLoops) proc
     pi.m_amegicmhv = 10;
-    // order counting in OpenLoops is different
-    pi.m_maxcpl[1] = pi.m_mincpl[1] = 1;
-    pi.m_maxcpl[2] = pi.m_mincpl[2] = 0;
     pi.m_loopgenerator = "OpenLoops";
+    // order counting in OpenLoops is different
+    for(size_t i(2); i<orders.size(); i++){
+      pi.m_maxcpl[1] += pi.m_maxcpl[i];
+      pi.m_mincpl[1] += pi.m_mincpl[i];
+      pi.m_maxcpl[i]  = pi.m_mincpl[i] = 0.0;
+    }
   }
   DEBUG_VAR(pi);
   // initialize the process
   PHASIC::Process_Base *proc= Generators()->InitializeProcess(pi,false);
   if (!proc) {
     //My_In_File::CloseDB(ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
+    PRINT_VAR(pi);
     THROW(fatal_error, "Could not initialize auxiliary process");
   }
 
@@ -93,11 +89,12 @@ Process_Base* GGH_Process_Manager::GetProcess(const std::string& name, bool exte
     return NULL;
 }
   
-Process_Base* GGH_Process_Manager::GetProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external){
+Process_Base* GGH_Process_Manager::GetProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external,
+					      const std::vector<double>& orders){
   std::string name = Process_Base::GenerateName(&ampl);
   Process_Base* ret = GetProcess(name, external);
   if(!ret){
-    InitializeProcess(ampl, external);
+    InitializeProcess(ampl, external, orders);
     ret = GetProcess(name, external);
   }
   if(!ret)

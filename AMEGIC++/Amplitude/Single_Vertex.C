@@ -42,13 +42,6 @@ Complex Single_Vertex::Coupling(size_t i) const
   return cpl[i].Value();
 }
  
-std::string Single_Vertex::PID() const
-{
-  std::string name;
-  for (int i(1);i<nleg;++i) name+='{'+in[i].IDName()+'}';
-  return name+'{'+in[0].IDName()+'}';
-}
-
 int Single_Vertex::CheckCoupling() const
 {
   for (size_t i(0);i<cpl.size();++i) 

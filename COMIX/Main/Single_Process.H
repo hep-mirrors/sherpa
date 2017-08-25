@@ -2,10 +2,10 @@
 #define COMIX_Main_Single_Process_H
 
 #include "ATOOLS/Phys/NLO_Types.H"
-#include "COMIX/Amplitude/Amplitude.H"
 #include "COMIX/Main/Process_Base.H"
-#include "PHASIC++/Process/KP_Terms.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Process/KP_Terms.H"
+#include "COMIX/Amplitude/Amplitude.H"
 
 namespace COMIX {
 
@@ -26,7 +26,8 @@ namespace COMIX {
     ATOOLS::Vec4D_Vector m_p;
     ATOOLS::Flavour_Map  m_fmap;
 
-    CFlavVector_Map m_cfmap;
+    Combination_Set m_ccombs;
+    CFlavVector_Map m_cflavs;
     PSGenerator_Set m_psset;
 
     double m_w, m_dxs, m_x[2];
@@ -44,8 +45,8 @@ namespace COMIX {
     void FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
     void UpdateKPTerms(const int mode);
-    double KPTerms(const int mode, PDF::PDF_Base *pdfa,
-                                   PDF::PDF_Base *pdfb, double scalefac2=1.0);
+    double KPTerms(const int mode,PDF::PDF_Base *pdfa,
+		   PDF::PDF_Base *pdfb,double scalefac2=1.0);
 
   public:
 
@@ -59,6 +60,8 @@ namespace COMIX {
     bool Initialize(std::map<std::string,std::string> *const pmap,
 		    std::vector<Single_Process*> *const procs);
     bool MapProcess();
+
+    int PerformTests();
 
     void ConstructPSVertices(PS_Generator *ps);
 
@@ -86,9 +89,11 @@ namespace COMIX {
 			  const size_t &id) const;
 
     ATOOLS::NLO_subevtlist *GetSubevtList();
+    ATOOLS::NLO_subevtlist *GetRSSubevtList();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     size_t SetMCMode(const size_t mcmode);
     void   SetLookUp(const bool lookup);

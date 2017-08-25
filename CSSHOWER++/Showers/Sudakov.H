@@ -22,7 +22,6 @@ namespace CSSHOWER {
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_qcdmode,m_ewmode;
-    ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
@@ -60,10 +59,6 @@ namespace CSSHOWER {
 			  const double=1.,const int=-1);
 
     inline void GetSplittingParameters(double &,double &,double &,double &);
-
-    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
-
-    inline ATOOLS::Mass_Selector *MS() const { return p_rms; }
 
     inline const SF_EEE_Map &FFFMap() const { return m_fffmap; }
     inline const SF_EEE_Map &FFIMap() const { return m_ffimap; }

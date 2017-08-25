@@ -253,11 +253,6 @@ int AMEGIC::Single_Process_MHV::Tests()
   return 1;
 }
 
-int AMEGIC::Single_Process_MHV::PerformTests()
-{
-  return 1;
-}
-
 /*------------------------------------------------------------------------------
   
   Phase space initialization

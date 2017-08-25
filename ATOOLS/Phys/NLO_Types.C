@@ -113,15 +113,6 @@ std::istream &ATOOLS::operator>>(std::istream &str,cs_kcontrib::type &c)
   return str;
 }
 
-std::ostream &ATOOLS::operator<<(std::ostream &ostr,
-                                 const subtractiontype::type &st) {
-  if      (st==subtractiontype::none)     return ostr<<"NONE";
-  else if (st==subtractiontype::cs)       return ostr<<"Catani-Seymour";
-  else if (st==subtractiontype::antenna)  return ostr<<"Antenna";
-  else if (st==subtractiontype::other)    return ostr<<"Other";
-  return ostr<<"UNKNOWN";
-}
-
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const sbt::subtype &st)
 {
   if      (st==sbt::none) return ostr<<"NONE";

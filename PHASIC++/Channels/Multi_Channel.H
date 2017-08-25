@@ -35,6 +35,7 @@ namespace PHASIC {
     double                        rans[2];
     double                        s1xmin, * s1;
     std::vector<Single_Channel *> channels;
+    std::map<std::string,double>  m_erans;
     bool m_readin;
     double m_minalpha;
     int m_lastdice,m_optcnt;
@@ -107,6 +108,8 @@ namespace PHASIC {
     int                         OType() const  { return m_otype; }
 
     virtual int                 HandicapFactor() { return 1; }
+    inline void AddERan(const std::string &id) { m_erans[id]=0.0; }
+    inline double ERan(const std::string &id) const { return m_erans.find(id)->second; }
   };
 
 

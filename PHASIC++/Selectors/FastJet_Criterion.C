@@ -68,7 +68,7 @@ namespace PHASIC {
       delete p_jdef;
     }
 
-    bool Jets(Cluster_Amplitude *ampl,int mode)
+    double Value(Cluster_Amplitude *ampl,int mode)
     {
       int nj=ampl->NIn();
       std::vector<fastjet::PseudoJet> input,jets;
@@ -78,7 +78,7 @@ namespace PHASIC {
 	  input.push_back(fastjet::PseudoJet(p[1],p[2],p[3],p[0])); 
 	else ++nj;
       }
-      double pt2(ampl->JF<Jet_Finder>()->Ycut()*sqr(rpa->gen.Ecms()));
+      double pt2(sqr(ampl->JF<Jet_Finder>()->Qcut()));
       fastjet::ClusterSequence cs(input,*p_jdef);
       jets=fastjet::sorted_by_pt(cs.inclusive_jets());
       for (size_t i(0);i<jets.size();++i) {

@@ -10,6 +10,7 @@ namespace PDF { class ISR_Handler; }
 
 namespace PHASIC { 
   class Process_Base; 
+  class Multi_Channel;
   class Phase_Space_Handler;
 }
 
@@ -39,6 +40,8 @@ namespace COMIX {
 
     std::map<std::string,std::string> *p_pmap;
     std::vector<Single_Process*>      *p_umprocs;
+
+    PHASIC::Multi_Channel *p_ismc, *p_fsmc;
 
     static int s_partcommit;
 

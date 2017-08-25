@@ -27,34 +27,8 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   m_a = m_uj;
 
   m_Q2 = (-m_pi+m_pj+m_pk).Abs2();
-  if (m_es==0) {
-    m_kt2 = -m_Q2*(1.-m_xijk)/m_xijk*m_uj;
-  }
-  else {
-    m_kt2 = -m_Q2/m_xijk*m_uj;
-    switch (m_ftype) {
-    case spt::q2gq:
-      break;
-    case spt::q2qg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::g2qq:
-      break;
-    case spt::g2gg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_xijk,m_uj,m_Q2):
+    -m_Q2*(1.-m_xijk)/m_xijk*m_uj*(1.0-m_uj);
 
 //   m_pt1  =    m_pj/m_uj;
 //   m_pt2  =-1.*m_pk/m_uk;
@@ -73,10 +47,12 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case spt::g2qq:
     m_sff = m_xijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
+    if (m_subtype==1) m_av += 2.0*(m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk);
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
+    if (m_subtype==1) m_av += m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk;
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -89,7 +65,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
     THROW(fatal_error, "DipoleSplitting can not handle splitting type "
         + ToString(m_ftype) + ".");
   }
-  if (m_kt2<m_k0sqi) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(1):0.0)) m_av=1.0;
 }
 
 double IF_DipoleSplitting::GetValue()
@@ -100,15 +76,17 @@ double IF_DipoleSplitting::GetValue()
 
 void IF_DipoleSplitting::CalcDiPolarizations()
 {
+  double tc((1.-m_xijk)/m_xijk);
+  if (m_subtype==1) tc+=m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk;
   switch (m_ftype) {
   case spt::q2qg:
   case spt::q2gq:
     return;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/4.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/4.);
     break;
   case spt::g2gg:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/2.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/2.);
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -140,31 +118,8 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
   m_uk   = 1.-m_uj;
   m_a = m_uj;
 
-  if (m_es==0) {
-    m_kt2 = 2.0*m_pj*m_pk*m_uj;
-  }
-  else {
-    m_kt2 = 2.0*m_pj*m_pk*m_uj/(1.-m_xijk);
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::g2gg:
-      m_kt2*=(1.-m_xijk);
-      break;
-    case spt::q2gq:
-    case spt::g2qq:
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_xijk,m_uj,m_Q2):
+    2.0*m_pj*m_pk*m_uj*(1.0-m_uj);
 
   m_pt1  =    m_pj/m_uj-m_pk/m_uk;
   m_pt2  =    m_ptij;
@@ -179,13 +134,11 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
     break;
   case spt::g2qq:
     m_sff = m_xijk;
-    m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk
-                  - m_pk.Abs2()/(m_ptk*m_ptij)*m_uj/m_uk;
+    m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk - m_pk.Abs2()/(m_ptk*m_ptij)*m_uj/m_uk;
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
-    m_av  = m_sff + (1.0-m_xijk)/m_xijk
-                  - m_pk.Abs2()/(2.0*m_ptk*m_ptij)*m_uj/m_uk;
+    m_av  = m_sff + (1.0-m_xijk)/m_xijk - m_pk.Abs2()/(2.0*m_ptk*m_ptij)*m_uj/m_uk;
     break;
   case spt::s2sg:
   case spt::s2gs:
@@ -197,7 +150,7 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   }
-  if (m_kt2<m_k0sqi) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(1):0.0)) m_av=1.0;
 }
 
 double IF_MassiveDipoleSplitting::GetValue()

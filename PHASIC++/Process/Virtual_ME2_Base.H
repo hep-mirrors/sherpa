@@ -27,7 +27,13 @@ namespace PHASIC {
 
     virtual void SwitchMode(const int mode=0);
 
+    // Allow to pass a born value for virtuals that don't calculate it
+    // themselves but need it for the renormalization scale dependence
+    virtual void Calc(const ATOOLS::Vec4D_Vector& momenta,
+		      const double& born2) { return Calc(momenta); }
+
     virtual void Calc(const ATOOLS::Vec4D_Vector& momenta)=0;
+    
     inline const METOOLS::DivArrD& Result() { return m_res; }
 
     virtual double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
@@ -68,12 +74,12 @@ namespace PHASIC {
   };
 }
 
-#define DECLARE_VIRTUALME2_GETTER(NAME,TAG)			   \
-  DECLARE_GETTER(NAME,TAG,Virtual_ME2_Base,Process_Info);	   \
-  void ATOOLS::Getter<Virtual_ME2_Base,Process_Info,NAME>::	   \
-  PrintInfo(std::ostream &str,const size_t width) const		   \
-  {                                                                \
-    str<<#TAG;                                                     \
+#define DECLARE_VIRTUALME2_GETTER(NAME,TAG)			            \
+  DECLARE_GETTER(NAME,TAG,PHASIC::Virtual_ME2_Base,PHASIC::Process_Info);   \
+  void ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,NAME>:: \
+  PrintInfo(std::ostream &str,const size_t width) const		            \
+  {                                                                         \
+    str<<#TAG;                                                              \
   }
 
 #endif

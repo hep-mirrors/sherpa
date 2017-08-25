@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Massive_Kernels.H"
 #include "MODEL/Main/Coupling_Data.H"
+#include "PDF/Main/NLOMC_Base.H"
 
 namespace PDF { class PDF_Base; }
 
@@ -21,6 +22,7 @@ namespace PHASIC {
     ATOOLS::cs_kcontrib::type  m_kcontrib;
 
     Process_Base    *p_proc;
+    PDF::NLOMC_Base *p_nlomc;
     Massive_Kernels *p_kernel;
 
     MODEL::Coupling_Data *p_cpl;
@@ -31,7 +33,7 @@ namespace PHASIC {
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
     int    m_Vsubmode, m_collVFF, m_facscheme;
     bool   m_sa,m_sb;
-    int    m_typea, m_typeb;
+    int    m_typea, m_typeb, m_subtype;
 
     std::vector<size_t> m_plist;
 
@@ -65,6 +67,7 @@ namespace PHASIC {
     void SetAlpha(const double &aff,const double &afi=-1.0,
                   const double &aif=-1.0,const double &aii=-1.0);
     void SetKappa(const double &kappa);
+    void SetNLOMC(PDF::NLOMC_Base *const nlomc);
 
     void FillMEwgts(ATOOLS::ME_Weight_Info &wgt);
 

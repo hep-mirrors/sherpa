@@ -200,6 +200,10 @@ PDF_Base * LHAPDF_CPP_Interface::GetCopy()
 }
 
 double LHAPDF_CPP_Interface::AlphaSPDF(const double &scale2) {
+  if (IsBad(scale2) || scale2<0.0) {
+    msg_Error()<<METHOD<<"(): t = "<<scale2<<". Returning zero."<<std::endl;
+    return 0.0;
+  }
   return p_pdf->alphasQ2(scale2);
 }
 
@@ -221,7 +225,7 @@ void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
 }
 
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
-  if (IsBad(m_x) || IsBad(m_Q2)) {
+  if (IsBad(m_x) || IsBad(m_Q2) || m_Q2<0.0) {
     msg_Error()<<METHOD<<"(): Encountered bad (x,Q2)=("<<m_x<<","<<m_Q2<<"), "
                        <<"returning zero."<<std::endl;
     return 0.;
@@ -244,7 +248,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
 }
 
 double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
-  if (IsBad(m_x) || IsBad(m_Q2)) {
+  if (IsBad(m_x) || IsBad(m_Q2) || m_Q2<0.0) {
     msg_Error()<<METHOD<<"(): Encountered bad (x,Q2)=("<<m_x<<","<<m_Q2<<"), "
                        <<"returning zero."<<std::endl;
     return 0.;

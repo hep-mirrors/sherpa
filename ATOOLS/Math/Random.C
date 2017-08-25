@@ -39,7 +39,8 @@ ATOOLS::Random *ATOOLS::ran(NULL);
 
 
 ATOOLS::Random::Random(long nid): 
-  m_nsinceinit(0), m_increment(0), p_external(NULL)
+  m_nsinceinit(0), m_increment(0),
+  p_external(NULL)
 {
   ATOOLS::exh->AddTerminatorObject(this);
   SetSeed(nid); 

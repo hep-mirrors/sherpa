@@ -20,6 +20,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <string>
 
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_name(""), m_nlotype(ATOOLS::nlo_type::lo),
@@ -364,8 +365,10 @@ void MEProcess::Initialize()
         m_quabarinds.push_back(i);
       else if (scharge == 3)
         m_quainds.push_back(i);
-      else
-        THROW(fatal_error, "External leg with unknown strong charge detected.");
+      else {
+	std::stringstream msg; msg << p_amp->Leg(i)->Flav();
+        //THROW(fatal_error, "External leg with unknown strong charge detected: "+msg.str());
+      }
     }
   }
   m_ncolinds = 2*m_gluinds.size() + m_quabarinds.size() + m_quainds.size();

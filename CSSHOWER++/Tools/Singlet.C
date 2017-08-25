@@ -1,7 +1,7 @@
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
-#include "PHASIC++/Process/Process_Base.H"
+#include "CSSHOWER++/Showers/Shower.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Math/ZAlign.H"
@@ -32,9 +32,11 @@ std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
     if (singlet.GetSpec()) str<<"Spec:  "<<singlet.GetSpec()<<"  ";
     str<<"\n";
   }
-  str<<"mom sum "<<sum
-     <<", k_T,next = "<<sqrt(singlet.KtNext())
-     <<", nlo = "<<singlet.NLO()<<", K = "<<singlet.LKF()<<"\n";
+  str<<"k_T,next = "<<sqrt(singlet.KtNext())
+     <<", mu_R = "<<sqrt(singlet.MuR2())
+     <<", nlo = "<<singlet.NLO()<<", nmax = "<<singlet.NMax()
+     <<", K = "<<singlet.LKF()<<"\n";
+  str<<"mom sum "<<sum<<"\n";
   str<<"-------------------------------------------------------------------------"<<endl;
   return str;
 }
@@ -51,17 +53,9 @@ std::ostream& CSSHOWER::operator<<(std::ostream & str,All_Singlets & all) {
 }
 
 
-Singlet::~Singlet() {
-  if (!empty()) {
-    PLiter plit = begin();
-    do {
-      if ((*plit)) { 
-	delete (*plit); (*plit) = NULL; 
-      }
-       plit = erase(plit);
-    } while (plit!=end());
-    clear();
-  }
+Singlet::~Singlet()
+{
+  for (PLiter plit(begin());plit!=end();++plit) delete *plit;
 }
 
 Parton *Singlet::IdParton(const size_t &id) const
@@ -71,9 +65,10 @@ Parton *Singlet::IdParton(const size_t &id) const
   return NULL;
 }
 
-bool Singlet::JetVeto(Sudakov *const sud) const
+double Singlet::JetVeto(Sudakov *const sud) const
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC("jf = "<<p_jf);
+  if (p_jf==NULL) return 0.0;
   msg_Debugging()<<*(Singlet*)this<<"\n";
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (const_iterator iit(begin());iit!=end();++iit) {
@@ -92,10 +87,10 @@ bool Singlet::JetVeto(Sudakov *const sud) const
   ampl->SetJF(p_jf);
   ampl->SetMS(p_ms);
   ampl->Decays()=m_decs;
-  bool res(p_jf->JC()->Jets(ampl));
+  double jcv(p_jf->JC()->Value(ampl));
   ampl->Delete();
-  if (res) msg_Debugging()<<"--- Jet veto ---\n";
-  return res;
+  msg_Debugging()<<"--- "<<jcv<<" ---\n";
+  return jcv;
 }
 
 int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 
@@ -204,7 +199,6 @@ void Singlet::AddParton(Parton *const p)
       np->SetPrev(p);
       np->SetStart(p->KtStart());
       np->SetVeto(p->KtVeto());
-      np->SetKtMax(p->KtMax());
     }
     p_left->GetSing()->AddParton(np);
   }
@@ -239,8 +233,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       *pit=daughter1;
       break;
     }
-  daughter1->SetMEFlow(1,mother->GetFlow(1));
-  daughter1->SetMEFlow(2,mother->GetFlow(2));
   daughter1->SetPrev(mother);
   daughter2->SetFlow(1,0);
   daughter2->SetFlow(2,0);
@@ -364,9 +356,7 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
 void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (l->LT().empty()) return;
-  for (All_Singlets::const_iterator asit(p_all->begin());
-       asit!=p_all->end();++asit) {
-    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+    for (PLiter plit(begin());plit!=end();++plit) {
       if ((*plit)->FixSpec()!=Vec4D()) {
 	(*plit)->SetFixSpec(l->LT()*(*plit)->FixSpec());
 	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());
@@ -377,7 +367,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
       if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
       (*plit)->SetMomentum(p);
     }
-  }
 }
 
 void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
@@ -386,9 +375,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
   Poincare_Sequence lt(l->LT());
   if (lt.size()) lt.Invert();
   if (lt.empty()) return;
-  for (All_Singlets::const_iterator asit(p_all->begin());
-       asit!=p_all->end();++asit) {
-    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+    for (PLiter plit(begin());plit!=end();++plit) {
       Vec4D p(lt*(*plit)->Momentum());
       if ((*plit)->GetType()==pst::IS &&
 	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
@@ -399,12 +386,52 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
 	(*plit)->SetOldMomentum(lt*(*plit)->OldMomentum());
       }
     }
-  }
 }
 
-void Singlet::UpdateDaughters()
+void Singlet::Reduce()
 {
-  for (PLiter plit(begin());plit!=end();++plit) {
-    if (*plit) (*plit)->UpdateDaughters();
+  if (p_split==NULL) return;
+  for (const_iterator it(begin());it!=end();++it) {
+    (*it)->SetNext(NULL);
+    (*it)->SetStat((*it)->Stat()&~1);
+    if ((*it)->Stat()) THROW(fatal_error,"Cannot reduce singlet");
   }
+  Singlet *next(p_left->GetSing());
+  while (next) {
+    bool found(false);
+    for (All_Singlets::iterator asit(p_all->begin());
+	 asit!=p_all->end();++asit)
+      if (*asit==next) {
+	Parton *split(next->GetSplit());
+	if (split && (split->Stat()&2)) {
+	  bool fdec(false);
+	  for (iterator cit(begin());cit!=end();++cit)
+	    if ((*cit)->Id()==split->Id()) {
+	      split->SetPrev(*cit);
+	      double jcv(0.0);
+	      p_shower->ReconstructDaughters(next,jcv,NULL,NULL);
+	      Parton *left(new Parton(next->GetLeft()->GetFlavour(),
+				      next->GetLeft()->Momentum(),
+				      next->GetLeft()->GetType()));
+	      *left=*next->GetLeft();
+	      Parton *right(new Parton(next->GetRight()->GetFlavour(),
+				       next->GetRight()->Momentum(),
+				       next->GetRight()->GetType()));
+	      *right=*next->GetRight();
+	      SplitParton(*cit,left,right);
+	      fdec=true;
+	      break;
+	    }
+	  if (!fdec) THROW(fatal_error,"Invalid tree structure");
+	}
+	next=next->GetLeft()?next->GetLeft()->GetSing():NULL;
+	delete *asit;
+	p_all->erase(asit);
+	found=true;
+	break;
+      }
+    if (!found) THROW(fatal_error,"Invalid tree structure");
+  }
+  p_left=p_right=p_split=p_spec=NULL;
+  m_kt2_next=0.0;
 }

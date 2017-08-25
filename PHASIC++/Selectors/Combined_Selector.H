@@ -24,8 +24,10 @@ namespace PHASIC {
 
     bool Initialize(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &,
-                 ATOOLS::NLO_subevt *const sub=NULL);
+    bool Trigger(const ATOOLS::Vec4D_Vector &);
+    bool JetTrigger(ATOOLS::NLO_subevtlist *const subs);
+
+    bool Pass() const;
 
     void BuildCuts(Cut_Data *);
     void AddOnshellCondition(std::string,double);
@@ -40,6 +42,8 @@ namespace PHASIC {
     inline int On() const { return m_on; }
 
     inline int Result() const { return m_on?m_res:1; }
+
+    inline int JetResult() const { return m_on?m_jres:1; }
 
     inline void SetResult(const int res) { m_res=res; }
 

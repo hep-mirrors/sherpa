@@ -10,9 +10,8 @@
 
 namespace PHASIC {
   class Fastjet_Selector: public Selector_Base, public ATOOLS::Tag_Replacer {
-    size_t m_nj;
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_bmode;
+    int m_nj, m_bmode;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
     ATOOLS::Algebra_Interpreter m_calc;
@@ -34,8 +33,7 @@ namespace PHASIC {
     ~Fastjet_Selector();
 
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const sub=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -154,42 +152,39 @@ void Fastjet_Selector::AssignId(Term *term)
   }
 }
 
-bool Fastjet_Selector::Trigger(const Vec4D_Vector &p,
-                               ATOOLS::NLO_subevt *const sub)
+bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
 {
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
+  if (m_nj<0) return true;
 
   m_p.clear();
   for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
   std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<n;++i) {
-    if (ToBeClustered(fl[i], m_bmode))
-      input.push_back(MakePseudoJet(fl[i],p[i]));
+  for (size_t i(m_nin);i<p.size();++i) {
+    if (ToBeClustered(p_fl[i], m_bmode))
+      input.push_back(MakePseudoJet(p_fl[i],p[i]));
     else m_p.push_back(p[i]);
   }
-  size_t nj(m_p.size());
+  int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
-
   for (size_t i(0);i<jets.size();++i) {
     if (m_bmode==0 || BTag(jets[i], m_bmode)) {
       Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
       if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-          (m_eta==100 || dabs(pj.Eta())<m_eta) &&
-          (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+	  (m_eta==100 || dabs(pj.Eta())<m_eta) &&
+	  (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
     }
   }
-
   for (size_t i(0);i<input.size();++i)
     m_mu2[i]=cs.exclusive_dmerge_max(i);
 
   bool trigger((int)(m_p.size()-nj)>=m_nj);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
-  
+
   return (1-m_sel_log->Hit(1-trigger));
 }
+
 
 DECLARE_ND_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key,true);
 
@@ -200,8 +195,7 @@ operator()(const Selector_Key &key) const
  
   double f(.75);
   if (key.front().size()>6) f=ToType<double>(key[0][6]);
-  double eta(std::numeric_limits<double>::max()),
-         y(std::numeric_limits<double>::max());
+  double eta(100.), y(100.);
   int bmode(0);
   if (key.front().size()>7) eta=ToType<double>(key[0][7]);
   if (key.front().size()>8) y=ToType<double>(key[0][8]);

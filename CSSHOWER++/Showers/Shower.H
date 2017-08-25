@@ -11,12 +11,23 @@
 namespace ATOOLS {
 
   class Cluster_Leg;
+  class Variation_Parameters;
   class Variation_Weights; 
 
 }
 
 namespace CSSHOWER {
 
+  struct JetVeto_Args {
+    Singlet *p_sing;
+    double m_jcv;
+    int m_acc, m_nlo;
+    std::vector<int> m_skip;
+    JetVeto_Args(Singlet *const sing,
+		 const double &jcv,const size_t &n):
+      p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
+  };// end of struct JetVeto_Args
+    
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -28,13 +39,13 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
-    int                m_kscheme, m_noem, m_use_bbw, m_recdec;
+    int                m_kscheme, m_maxpart, m_use_bbw, m_recdec;
 
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
-    double m_weight;
+    double m_weight, m_lastcpl;
 
     ATOOLS::Variation_Weights * p_variationweights;
     //! the maximum number of rew'd emissions
@@ -53,18 +64,24 @@ namespace CSSHOWER {
     bool   TrialEmission(double &,Parton *);
     int    RemnantTest(Parton *const p,const ATOOLS::Poincare_Sequence *lt);
     int    UpdateDaughters(Parton *const split,Parton *const newpB,
-			   Parton *const newpC,int mode);
+			   Parton *const newpC,double &jcv,int mode);
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
-		       const int mode,const int fc);
+		       double &jcv,int mode);
+    double GetWeight(ATOOLS::Variation_Parameters *params,
+		     ATOOLS::Variation_Weights *weights,
+		     std::vector<double> &v);
+    double VetoWeight(ATOOLS::Variation_Parameters *params,
+		      ATOOLS::Variation_Weights *weights,
+		      JetVeto_Args &a);
  public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed,
 	   ATOOLS::Default_Reader *const,int type);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
-    int    ReconstructDaughters(Singlet *const split,const int mode,
-				Parton *const pi=NULL,Parton *const pj=NULL);
-    void SetMS(ATOOLS::Mass_Selector *const ms);
+    int    ReconstructDaughters(Singlet *const split,double &jcv,
+				Parton *const pi,Parton *const pj);
+    void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }

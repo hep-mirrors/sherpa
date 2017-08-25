@@ -4,6 +4,10 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Dipole_Info.H"
 
+namespace ATOOLS { class NLO_subevt; }
+
+namespace PDF { class NLOMC_Base; }
+
 namespace METOOLS {
 
   class Dipole_Kinematics {
@@ -13,7 +17,7 @@ namespace METOOLS {
 
     ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q;
 
-    int m_type, m_swap, m_trig, m_evol;
+    int m_type, m_swap, m_trig;
     double m_kt2c[2];
 
     double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
@@ -25,6 +29,9 @@ namespace METOOLS {
     Current_Vector m_cur;
 
     ATOOLS::Vec4D_Vector m_p;
+
+    ATOOLS::NLO_subevt *p_subevt;
+    PDF::NLOMC_Base    *p_nlomc;
 
     double Lam(const double &s,
 	       const double &sb,const double &sc) const;
@@ -43,6 +50,8 @@ namespace METOOLS {
     void Evaluate();
 
     void CheckKT2Min();
+
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     // inline functions
     inline Current *JI() const { return p_i; }
@@ -99,6 +108,8 @@ namespace METOOLS {
 
     inline void SetF(const double &f) { m_f=f; }
     inline void SetA(const double &a) { m_a=a; }
+
+    inline void SetSubevt(ATOOLS::NLO_subevt *sub)  { p_subevt=sub; }
 
   };// end of class Dipole_Kinematics
   

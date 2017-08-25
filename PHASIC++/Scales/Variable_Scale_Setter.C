@@ -33,8 +33,6 @@ namespace PHASIC {
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
-
   };// end of class Scale_Setter_Base
 
 }// end of namespace PHASIC
@@ -134,14 +132,4 @@ void Variable_Scale_Setter::SetScale
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
   msg_Debugging()<<"}\n";
-}
-
-PDF::CParam Variable_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
-{
-  ampl->SetProc(p_proc);
-  PDF::CParam kt2(p_core->Calculate(ampl));
-  ampl->SetKT2(kt2.m_kt2);
-  ampl->SetMu2(kt2.m_mu2);
-  ampl->SetMuQ2(kt2.m_op2);
-  return kt2;
 }

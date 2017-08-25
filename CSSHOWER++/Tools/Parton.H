@@ -23,10 +23,10 @@ namespace CSSHOWER {
   private:
     ATOOLS::Flavour m_flav;
     ATOOLS::Vec4D   m_mom, m_oldmom, m_fixspec;
-    ATOOLS::Flow    m_flow,m_meflow;
+    ATOOLS::Flow    m_flow;
     pst::code       m_pst;
     int             m_beam,m_stat,m_kin,m_kscheme,m_col;
-    double          m_kt_start, m_kt_veto, m_kt_test, m_kt_max;
+    double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
     double          m_kt_soft[2];
     Parton        * p_left, * p_right;
@@ -46,8 +46,6 @@ namespace CSSHOWER {
 
     Parton *FollowUp();
     bool    Splits();
-    void    UpdateDaughters();
-    void    UpdateNewDaughters(Parton *ref);
     void    UpdateColours();
 
     inline void SetKScheme(const int kscheme) { m_kscheme=kscheme; }
@@ -67,14 +65,11 @@ namespace CSSHOWER {
     inline ATOOLS::Vec4D           Momentum();
     inline pst::code               GetType()     const;
     inline int                     GetFlow(const int) const;
-    inline int                     GetMEFlow(const int) const;
-    inline int                     GetRFlow(const int) const;
     inline int                     Beam()        const;
     inline int                     Stat()        const;
     inline int                     Kin()         const { return m_kin; }
     inline int                     Col()         const { return m_col; }
     inline size_t                  Id()          const;
-    inline double                  KtMax()       const;
     inline double                  KtStart()     const;
     inline double                  KtSoft(int i) const;
     inline double                  KtVeto()      const;
@@ -98,7 +93,6 @@ namespace CSSHOWER {
     inline void SetFixSpec(const ATOOLS::Vec4D &p) { m_fixspec=p; }
     inline void SetStart(const double);
     inline void SetSoft(int i,const double);
-    inline void SetKtMax(const double);
     inline void SetVeto(const double);
     inline void SetKtTest(const double);
     inline void SetZTest(const double);
@@ -117,8 +111,6 @@ namespace CSSHOWER {
     inline void SetNext(Parton *);
     inline void SetSing(Singlet *);
     inline void SetFlow(int code_index,int code=0);
-    inline void SetMEFlow(int code_index,int code=0);
-    inline void SetRFlow();
     inline void SetBeam(int);
     inline void SetStat(int);
     inline void SetKin(int kin) { m_kin=kin; }
@@ -131,7 +123,7 @@ namespace CSSHOWER {
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
     m_pst(pst::none), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
@@ -143,7 +135,7 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
     m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
@@ -156,7 +148,7 @@ namespace CSSHOWER {
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
     m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
-    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
+    m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
@@ -178,16 +170,8 @@ namespace CSSHOWER {
   int                     Parton::GetFlow(const int index) const {
     return m_flow.Code(index);
   }
-  int                     Parton::GetMEFlow(const int index) const {
-    return m_meflow.Code(index);
-  }
-  int                     Parton::GetRFlow(const int index) const {
-    if (m_meflow.Code(index)>0) return m_meflow.Code(index); 
-    return m_flow.Code(index);
-  }
   double                  Parton::KtStart()     const { return m_kt_start; }
   double                  Parton::KtSoft(int i) const { return m_kt_soft[i]; }
-  double                  Parton::KtMax()       const { return m_kt_max; }
   double                  Parton::KtVeto()      const { return m_kt_veto; }
   double                  Parton::KtTest()      const { return m_kt_test; }
   double                  Parton::ZTest()       const { return m_z_test; }
@@ -208,7 +192,6 @@ namespace CSSHOWER {
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
   void Parton::SetStart(const double kt)              { m_kt_start = kt; }
   void Parton::SetSoft(int i,const double kt)         { m_kt_soft[i] = kt; }
-  void Parton::SetKtMax(const double kt)              { m_kt_max   = kt; }
   void Parton::SetVeto(const double kt)               { m_kt_veto  = kt; }
   void Parton::SetKtTest(const double kt)             { m_kt_test  = kt; }
   void Parton::SetZTest(const double z)               { m_z_test   = z; }
@@ -231,13 +214,6 @@ namespace CSSHOWER {
   void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  
   void Parton::SetFlow(const int index, const int code) {
     m_flow.SetCode(index,code);
-  }
-  void Parton::SetMEFlow(const int index, const int code) {
-    m_meflow.SetCode(index,code);
-  }
-  void Parton::SetRFlow() {
-    m_meflow.SetCode(1,m_flow.Code(1));
-    m_meflow.SetCode(2,m_flow.Code(2));
   }
   void Parton::SetBeam(const int beam)                { m_beam = beam;}          
   void Parton::SetStat(const int stat)                { m_stat = stat;}          

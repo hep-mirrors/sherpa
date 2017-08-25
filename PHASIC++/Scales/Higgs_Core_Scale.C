@@ -12,7 +12,7 @@ namespace PHASIC {
     Higgs_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
     ATOOLS::Cluster_Amplitude *Cluster
     (ATOOLS::Cluster_Amplitude *const ampl) const;
@@ -24,14 +24,14 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
   if (ampl->Legs().size()==3 && ampl->NIn()==2) {
     msg_Debugging()<<"2->1 like\n";
     double kt2cmin(ampl->Leg(2)->Mom().Abs2());
-    return PDF::CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);
+    return PDF::Cluster_Param(NULL,kt2cmin,kt2cmin,kt2cmin,-1);
   }
   double muf2(0.0), mur2(0.0), muq2(0.0);
   Cluster_Amplitude *campl(Cluster(ampl->Copy()));
@@ -54,7 +54,7 @@ PDF::CParam Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       q2=sqr(ewsum.Mass()+q2/2.0);
     }
     campl->Delete();
-    return PDF::CParam(q2,dabs(ewsum.Abs2()),0.0,q2,-1);
+    return PDF::Cluster_Param(NULL,dabs(ewsum.Abs2()),q2,q2,-1);
   }
   Flavour fl[4]={campl->Leg(0)->Flav(),campl->Leg(1)->Flav(),
 		 campl->Leg(2)->Flav(),campl->Leg(3)->Flav()};
@@ -93,7 +93,7 @@ PDF::CParam Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
 		 <<"\\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"\\mu_q = "<<sqrt(muq2)<<"\n";
-  return PDF::CParam(muf2,muq2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
 }
 
 Cluster_Amplitude *Higgs_Core_Scale::Cluster

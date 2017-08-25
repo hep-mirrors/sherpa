@@ -45,6 +45,8 @@ public:
   inline ATOOLS::Cluster_Amplitude* GetAmp()
   {return m_amp;}
 
+  std::string GeneratorName();
+
   %extend {
     PyObject* SetMomenta(PyObject* list_list) {
       if (!PyList_Check(list_list)){

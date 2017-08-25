@@ -15,7 +15,7 @@ namespace PHASIC {
     WBF_Core_Scale(const PHASIC::Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };// end of class WBF_Core_Scale
 
@@ -25,7 +25,7 @@ using namespace PHASIC;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double muf2(-1.), mur2(-1.), q2(-1.);
   size_t nlegs(ampl->Legs().size());
@@ -33,7 +33,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     msg_Error()<<"ERROR in "<<METHOD<<": "
 	       <<"Amplitude with "<<nlegs<<" legs only.\n"
 	       <<"   Will return all scales = -1 and hope for the best.\n"; 
-    return PDF::CParam(muf2,q2,0.0,mur2,-1);
+    return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
   }
   std::list<Cluster_Leg *> stronglegs, weaklegs;
   Vec4D weakvec(0.,0.,0.,0.);
@@ -48,7 +48,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   double mass2ew = dabs(weakvec.Abs2());
   /////////////////////////////////////////////////////////////////
   // Comment this in for fixed scale!!!!
-  //return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  //return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
   /////////////////////////////////////////////////////////////////
 
   Vec4D maxvec(0.,0.,0.,0.);
@@ -143,7 +143,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     //msg_Out()<<"Scales good: "<<sqrt(muf2)<<" / "<<sqrt(mur2)<<" / "<<sqrt(q2)
     //	     <<"(wbf kinematics = "<<wbfkin<<").\n";
   }
-  return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
 }
 
 DECLARE_ND_GETTER(WBF_Core_Scale,"WBF",

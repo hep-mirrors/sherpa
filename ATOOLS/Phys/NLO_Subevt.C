@@ -50,6 +50,7 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
 {
   m_me=sub->m_me;
   m_mewgt=sub->m_mewgt;
+  m_trig=sub->m_trig;
   m_K=sub->m_K;
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
   m_result=0.0;

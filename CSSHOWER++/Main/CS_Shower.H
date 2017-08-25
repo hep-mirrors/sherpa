@@ -3,13 +3,8 @@
 
 #include "PDF/Main/Shower_Base.H"
 #include "CSSHOWER++/Main/CS_Cluster_Definitions.H"
-#include "CSSHOWER++/Main/Color_Setter.H"
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Phys/Blob_List.H"
-
-namespace EXTRAXS {
-  class ME2_Base;
-}
 
 namespace CSSHOWER {
 
@@ -22,8 +17,6 @@ namespace CSSHOWER {
     }
   };
 
-  typedef std::map<ATOOLS::Flavour_Vector,EXTRAXS::ME2_Base*> Flav_ME_Map;
-
   class Splitting_Function_Base;
 
   typedef std::map<size_t,std::pair<double,double> > KT2X_Map;
@@ -32,6 +25,18 @@ namespace CSSHOWER {
   
   private:
  
+    struct Q2_Value {
+      double m_q2;
+      ATOOLS::Flavour m_fl;
+      int m_i, m_j, m_k;
+      inline Q2_Value(const double &q2,
+		      const ATOOLS::Flavour &fl,
+		      int i, int j, int k):
+	m_q2(q2), m_fl(fl), m_i(i), m_j(j), m_k(k) {}
+      inline bool operator<(const Q2_Value &v) const
+      { return m_q2<v.m_q2; }
+    };
+
     PDF::ISR_Handler * p_isr;
     int m_weightmode, m_kmode, m_respectq2, m_type;
     size_t m_maxem, m_nem, m_recocheck;
@@ -42,11 +47,8 @@ namespace CSSHOWER {
     All_Singlets *p_next, *p_refs;
 
     ATOOLS::Mass_Selector *p_ms;
-    Color_Setter *p_cs;
 
     ATOOLS::Cluster_Amplitude *p_rampl;
-
-    Flav_ME_Map m_xsmap;
 
     void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,const size_t &id,
 		     KT2X_Map &kt2xmap,std::set<size_t> &aset);
@@ -68,8 +70,6 @@ namespace CSSHOWER {
     double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		const ATOOLS::Flavour &fj) const;
-
-    void SetColours(ATOOLS::Cluster_Amplitude *const ampl);
 
   public:
 
@@ -94,12 +94,8 @@ namespace CSSHOWER {
     PDF::Cluster_Definitions_Base * GetClusterDefinitions();
     bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
 		       const bool & soft=false);
-    bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
-		 const int mode);
-
-    double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
-                  const ATOOLS::Flavour &flk,const int type,
-		  const int cpl,const double &mu2) const;
+    double JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
+		   const int mode);
 
     void SetRBOff();
 

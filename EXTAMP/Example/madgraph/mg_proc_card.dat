@@ -1,0 +1,3 @@
+import model sm
+generate d d~ > g g QED=0 QCD=3
+output standalone_cpp

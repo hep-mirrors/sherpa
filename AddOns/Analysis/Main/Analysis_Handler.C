@@ -136,9 +136,10 @@ bool Analysis_Handler::Init()
     reader.SetOccurrence(i);
     reader.RescanInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
-    bool split=false;
+    int split=false, splitsh=false;
+    if (!reader.ReadFromFile(splitsh,"SPLITSH")) splitsh=true;
     int mode=ANALYSIS::fill_all|ANALYSIS::split_vars|
-      ANALYSIS::splitt_jetseeds|ANALYSIS::split_sh;
+      ANALYSIS::splitt_jetseeds|(splitsh?ANALYSIS::split_sh:0);
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
       else split=true;
@@ -270,6 +271,9 @@ bool Analysis_Handler::WriteOut()
 
 bool Analysis_Handler::Finish()
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "

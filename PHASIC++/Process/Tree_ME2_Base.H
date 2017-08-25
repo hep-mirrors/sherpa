@@ -26,6 +26,10 @@ namespace PHASIC {
     size_t m_namps;
     double m_norm;
 
+    void CompleteCombinations
+    (std::set<std::pair<size_t,size_t> > &combs,
+     std::map<size_t,ATOOLS::Flavour_Vector> &fls) const;
+
   public:
 
     Tree_ME2_Base(const PHASIC::Process_Info &pi,
@@ -51,8 +55,8 @@ namespace PHASIC {
     (std::set<std::pair<size_t,size_t> > &combs,
      std::map<size_t,ATOOLS::Flavour_Vector> &fls);
 
-    virtual int OrderQCD(const int &id=-1) = 0;
-    virtual int OrderEW(const int &id=-1) = 0;
+    virtual int OrderQCD(const int &id=-1) const;
+    virtual int OrderEW(const int &id=-1)  const;
 
     virtual double TR() const;
 

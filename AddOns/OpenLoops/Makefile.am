@@ -2,7 +2,9 @@
 OPENLOOPS_SOURCES      =	\
 			OpenLoops_Virtual.C \
 			OpenLoops_Born.C \
+			OpenLoops_Dipoles.C \
 			OpenLoops_Interface.C \
+			Color_Correlated_ME2.C \
 			GGH_Process_Manager.C \
 			GGH_KFactor_Setter.C \
 			GGH_Decay_KFactor_Setter.C \
@@ -11,7 +13,9 @@ OPENLOOPS_SOURCES      =	\
 OPENLOOPS_ADDS         =	\
 			OpenLoops_Virtual.H \
 			OpenLoops_Born.H \
+			OpenLoops_Dipoles.H \
 			OpenLoops_Interface.H \
+			Color_Correlated_ME2.H \
 			GGH_Process_Manager.H \
 			GGH_KFactor_Setter.H \
 			EWVirtKFactor_Setter.H 

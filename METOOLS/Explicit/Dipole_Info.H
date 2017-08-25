@@ -9,7 +9,7 @@ namespace METOOLS {
   class Dipole_Info {
   private:
 
-    int m_type, m_mode, m_stat, m_drmode, m_nf, m_msv;
+    int m_type, m_subtype, m_mode, m_stat, m_drmode, m_nf, m_msv;
     ATOOLS::cs_itype::type m_itype;
 
     double m_amin, m_kappa, m_amax[4], m_kt2max, m_mu2;
@@ -17,8 +17,10 @@ namespace METOOLS {
   public:
 
     inline void SetType(const int type)   { m_type=type;   }
+    inline void SetSubType(const int sub) { m_subtype=sub; }
     inline void SetMode(const int mode)   { m_mode=mode;   }
     inline void SetDRMode(const int mode) { m_drmode=mode; }
+
     inline void SetIType(const ATOOLS::cs_itype::type itype) { m_itype=itype; }
 
     inline void SetStat(const int stat) { m_stat=stat; }
@@ -36,9 +38,11 @@ namespace METOOLS {
 
     inline void SetMu2(const double &mu2) { m_mu2=mu2; }
 
-    inline int Type() const   { return m_type;   }
-    inline int Mode() const   { return m_mode;   }
-    inline int DRMode() const { return m_drmode; }
+    inline int Type() const    { return m_type;    }
+    inline int SubType() const { return m_subtype; }
+    inline int Mode() const    { return m_mode;    }
+    inline int DRMode() const  { return m_drmode;  }
+
     inline ATOOLS::cs_itype::type IType() const   { return m_itype; }
 
     inline int Stat() const { return m_stat; }

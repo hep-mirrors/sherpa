@@ -36,6 +36,8 @@ namespace CSSHOWER {
 
     virtual int GetCol() const { return p_selected->GetCol(); }
 
+    virtual void SetMS(const ATOOLS::Mass_Selector *const ms);
+
     inline Splitting_Function_Base *Selected() const { return p_selected; }
 
     friend std::ostream& operator<<(std::ostream &,Splitting_Function_Group &);

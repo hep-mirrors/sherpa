@@ -25,12 +25,11 @@ namespace PYTHIA {
     Pythia_Jet_Criterion(const std::string &args)
     { }
 
-    bool Jets(Cluster_Amplitude *ampl,int mode)
+    double Value(Cluster_Amplitude *ampl,int mode)
     {
       DEBUG_FUNC("mode = "<<mode);
       msg_Debugging()<<*ampl<<"\n";
       PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-      double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
       double q2min(std::numeric_limits<double>::max());
       size_t imin(0), jmin(0), kmin(0);
       Flavour mofl;
@@ -57,9 +56,6 @@ namespace PYTHIA {
 			     <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	      if (i<ampl->NIn()) li->SetMom(-li->Mom());
 	      if (k<ampl->NIn()) lk->SetMom(-lk->Mom());
-	      if (mode==0) {
-		if (q2ijk<q2cut) return false;
-	      }
 	      else {
 		if (q2ijk<q2min) {
 		  q2min=q2ijk;
@@ -79,7 +75,7 @@ namespace PYTHIA {
 	Vec4D_Vector p=Combine(*ampl,imin,jmin,kmin,mofl);
 	if (p.empty()) {
 	  msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
-	  return Jets(ampl,0);
+	  return Value(ampl,0);
 	}
 	Cluster_Amplitude *bampl(Cluster_Amplitude::New());
 	bampl->SetProc(ampl->Proc<void>());
@@ -98,12 +94,12 @@ namespace PYTHIA {
 	  }
 	  ++j;
 	}
-	bool res=Jets(bampl,0);
+	bool res=Value(bampl,0);
 	bampl->Delete();
 	return res;
       }
-      msg_Debugging()<<"--- Jet veto ---\n";
-      return true;
+      msg_Debugging()<<"--- "<<sqrt(q2min)<<" ---\n";
+      return sqrt(q2min);
     }
 
     double pT2pythia(Cluster_Amplitude* ampl, const Cluster_Leg& RadAfterBranch,

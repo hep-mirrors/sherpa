@@ -105,9 +105,9 @@ namespace MODEL {
     { std::map<ATOOLS::Flavour,size_t>::const_iterator
 	it(m_maxlegs.find(fl)); return it==m_maxlegs.end()?0:it->second; }
 
-    virtual int                     ScalarNumber(const std::string);
-    virtual double                  ScalarConstant(const std::string);
-    virtual Complex                 ComplexConstant(const std::string);
+    virtual int                     ScalarNumber(const std::string) const;
+    virtual double                  ScalarConstant(const std::string) const;
+    virtual Complex                 ComplexConstant(const std::string) const;
     virtual ATOOLS::Function_Base * GetScalarFunction(const std::string);
     virtual double                  ScalarFunction(const std::string,double);
     virtual std::string             MappedLorentzName(const std::string& label) const {return label;}

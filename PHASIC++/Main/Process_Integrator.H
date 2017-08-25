@@ -87,7 +87,7 @@ namespace PHASIC {
     void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
 
     void AddPoint(const double xs);
-    void Reset();
+    void Reset(const int mode=1);
 
     void SetMax(const double max);
     void SetTotal(const int mode=1);

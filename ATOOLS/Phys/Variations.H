@@ -76,7 +76,7 @@ namespace ATOOLS {
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
-    void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfsandalphas);
+    void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfsandalphas);
     std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
 
     //! whether the central value should be included when expanding VARIATIONS arguments
@@ -120,12 +120,13 @@ namespace ATOOLS {
   struct Variation_Parameters {
     Variation_Parameters(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
+			 double Qcutfac,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
                          bool deletepdfsandalphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
-      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
+      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac), m_Qcutfac(Qcutfac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfsandalphas(deletepdfsandalphas),
       m_name(GenerateName())
@@ -139,7 +140,7 @@ namespace ATOOLS {
 #endif
 
     const double m_muR2fac, m_muF2fac;
-    const double m_showermuR2fac, m_showermuF2fac;
+    const double m_showermuR2fac, m_showermuF2fac, m_Qcutfac;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;
@@ -226,18 +227,16 @@ namespace ATOOLS {
                            Reweighter & reweighter,
                            Data & data)
     {
-      if (m_initialised) {
-        THROW(fatal_error, "The variation weights are already initialised");
-      }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_weights.clear();
       m_weights.reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-        m_weights.push_back((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
+	Subevent_Weights_Vector weightvector((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
+	if (!m_initialised) m_weights.push_back(weightvector);
+	else m_weights[m_currentparametersindex] += weightvector;
       }
       m_reweighting = false;
       m_initialised = true;
@@ -251,6 +250,8 @@ namespace ATOOLS {
 
     //! Add weights from another set of variation weights
     Variation_Weights & operator+=(const Variation_Weights &);
+
+    void CombineSubeventWeights();
 
     //! Get variation name at a given index
     std::string GetVariationNameAt(Variations::Parameters_Vector::size_type) const;
@@ -270,6 +271,9 @@ namespace ATOOLS {
     size_t GetNumberOfSubevents() const { return m_weights[0].size(); }
     Variations * GetVariations() const { return p_variations; }
     Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
+
+    size_t NumberOfParameters() const
+    { return p_variations->GetParametersVector()->size(); }
 
     void IncrementOrInitialiseWarningCounter(const std::string name)
     { p_variations->IncrementOrInitialiseWarningCounter(name); }

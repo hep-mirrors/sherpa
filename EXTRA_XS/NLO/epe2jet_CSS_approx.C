@@ -105,15 +105,13 @@ double XS_egeqq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   msg_Debugging()<<"(2): "<<moms[2]<<std::endl;
   msg_Debugging()<<"(3): "<<moms[3]<<std::endl;
   double born(0.);
-  if (bornterm==1)
-    born=(16.*(*p_bornme1)(moms));
-  else
-    born=(16.*(*p_bornme2)(moms));
+  if (bornterm==1) born=(*p_bornme1)(moms);
+  else born=(*p_bornme2)(moms);
   // SF = 8*pi*TR/(2pipj*x) * (1-2x(1-x))
-  double split(8.*M_PI/((pi+pj).Abs2()*xika)*(1.-2.*xika*(1.-xika)));
+  double split(8.*M_PI/((pi+pj).Abs2()*xika)*.5*(1.-2.*xika*(1.-xika)));
   msg_Debugging()<<8.*M_PI*m_alphasdef<<std::endl;
   msg_Debugging()<<"M2 = "<<born<<" ,  SF = "<<split*m_alphasdef<<std::endl;
-  return born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 DECLARE_TREEME2_GETTER(XS_egeqq_CSS_approx,"XS_egeqq_CSS_approx")
@@ -224,12 +222,12 @@ double XS_eqegq_CSS_approx::LOME2FI(const Vec4D& pi, const Vec4D& pj,
   msg_Debugging()<<"(1): "<<moms[1]<<std::endl;
   msg_Debugging()<<"(2): "<<moms[2]<<std::endl;
   msg_Debugging()<<"(3): "<<moms[3]<<std::endl;
-  double born(16.*(*p_bornme)(moms));
+  double born((*p_bornme)(moms));
   // SF = 8*pi*CF/(2pipj*x) * (2/(2-z-x)-(1+x))
-  double split(8.*M_PI/((pi+pj).Abs2()*xija)*(2./(2.-(1.-zi)-xija)-(1.+(1.-zi))));
+  double split(8.*M_PI/((pi+pj).Abs2()*xija)*4./3.*(2./(2.-(1.-zi)-xija)-(1.+(1.-zi))));
   msg_Debugging()<<8.*M_PI*m_alphasdef<<std::endl;
   msg_Debugging()<<"M2 = "<<born<<" ,  SF = "<<split*m_alphasdef<<std::endl;
-  return born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 double XS_eqegq_CSS_approx::LOME2IF(const Vec4D& pi, const Vec4D& pj,
@@ -264,12 +262,12 @@ double XS_eqegq_CSS_approx::LOME2IF(const Vec4D& pi, const Vec4D& pj,
   msg_Debugging()<<"(1): "<<moms[1]<<std::endl;
   msg_Debugging()<<"(2): "<<moms[2]<<std::endl;
   msg_Debugging()<<"(3): "<<moms[3]<<std::endl;
-  double born(16.*(*p_bornme)(moms));
+  double born((*p_bornme)(moms));
   // SF = 8*pi*CF/(2pipj*x) * (2/(1-x+u)-(1+x))
-  double split(8.*M_PI/((pi+pj).Abs2()*xika)*(2./(1.-xika+ui)-(1.+xika)));
+  double split(8.*M_PI/((pi+pj).Abs2()*xika)*4./3.*(2./(1.-xika+ui)-(1.+xika)));
   msg_Debugging()<<8.*M_PI*m_alphasdef<<std::endl;
   msg_Debugging()<<"M2 = "<<born<<" ,  SF = "<<split*m_alphasdef<<std::endl;
-  return born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 DECLARE_TREEME2_GETTER(XS_eqegq_CSS_approx,"XS_eqegq_CSS_approx")

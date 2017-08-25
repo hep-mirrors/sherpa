@@ -1,0 +1,31 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None; SHERPA_LDADD SherpaMain;
+  ME_SIGNAL_GENERATOR External OpenLoops; PDF_SET None;
+
+  SCALES VAR{sqr(91.2)}; SHERPA_LDADD Proc_fsrchannels4;
+
+  % collider setup
+  BEAM_1  11; BEAM_ENERGY_1 = 10000.;
+  BEAM_2 -11; BEAM_ENERGY_2 = 10000.;
+
+  DIPOLE_ALPHA 1.0; DIPOLE_AMIN 1.0e-7;
+
+  OL_PARAMETERS allowed_libs ppll,ppllj,pplljj check_collection 0;
+
+}(run)
+
+(processes){
+  Process 11 -11 -> 93 93 93;
+  Integrator fsrchannels4;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Min_Order (-1,-1);
+  Max_Order (-1,-1);
+  End process;
+}(processes)
+
+(selector){
+  NJetFinder 3 100.0 0.0 0.4 -1;
+}(selector)

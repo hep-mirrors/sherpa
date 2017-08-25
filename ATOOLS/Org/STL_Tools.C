@@ -92,6 +92,13 @@ namespace ATOOLS {
     return ids;
   }
   
+  size_t ID(const std::vector<int> &id)
+  {
+    size_t cid(0);
+    for (size_t n(0);n<id.size();++n) cid|=1<<id[n];
+    return cid;
+  }
+  
   size_t IdCount(size_t id)
   {
     size_t idc(0);

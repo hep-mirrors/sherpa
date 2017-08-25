@@ -1,24 +1,30 @@
 #include "DIRE/Shower/Shower.H"
 
 #include "DIRE/Tools/Amplitude.H"
-#include "DIRE/Shower/Cluster.H"
+#include "DIRE/Shower/Cluster_Definitions.H"
 #include "DIRE/Tools/Weight.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace DIRE;
+using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
 Shower::Shower():
   p_model(NULL),
-  p_cluster(new Cluster(this))
+  p_cluster(new Cluster_Definitions(this)),
+  p_as(NULL), p_vars(NULL)
 {
   p_pdf[1]=p_pdf[0]=NULL;
 }
@@ -55,20 +61,28 @@ bool Shower::Init(MODEL::Model_Base *const model,
 {
   DEBUG_FUNC(this);
   p_model=model;
+  p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
   m_tmin[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   m_rcf=read->Get<double>("CSS_RECALC_FACTOR",4.0);
   m_tcef=read->Get<double>("CSS_TC_ENHANCE",1.0);
   m_kin=read->Get<int>("CSS_KIN_SCHEME",1);
   m_kfac=read->Get<int>("CSS_KFACTOR_SCHEME",1);
   m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
-  m_pdfmin=read->Get<double>("CSS_PDF_MIN",1.0e-6);
+  m_mec=read->Get<int>("CSS_ME_CORRECTION",0);
+  m_pdfmin[0]=read->Get<double>("CSS_PDF_MIN",1.0e-4);
+  m_pdfmin[1]=read->Get<double>("CSS_PDF_MIN_X",1.0e-2);
   m_maxem=read->Get<unsigned int>
     ("CSS_MAXEM",std::numeric_limits<unsigned int>::max());
+  m_maxpart=read->Get<unsigned int>
+    ("CSS_MAXPART",std::numeric_limits<unsigned int>::max());
+  m_maxrewem=read->Get<unsigned int>
+    ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
   m_oef=read->Get<double>("CSS_OEF",3.0);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
@@ -136,7 +150,7 @@ void Shower::AddKernel(Kernel *const k)
 }
 
 
-void Shower::SetMS(ATOOLS::Mass_Selector *const ms)
+void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
 {
   for (Kernel_Vector::const_iterator
 	 it(m_cks.begin());it!=m_cks.end();++it)
@@ -146,13 +160,57 @@ void Shower::SetMS(ATOOLS::Mass_Selector *const ms)
 void Shower::AddWeight(const Amplitude &a,const double &t)
 {
   double cw(1.0);
+  std::vector<double> cv;
   for (size_t i(0);i<a.size();++i) {
-    cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]));
+    cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
   m_weight*=cw;
+  if (cv.size()) p_vars->UpdateOrInitialiseWeights
+		   (&Shower::GetWeight,*this,cv);
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weight<<")\n";
+		 <<" ("<<m_weight<<"), v = "<<cv<<"\n";
+}
+
+double Shower::GetWeight(Variation_Parameters *params,
+			 Variation_Weights *weights,
+			 std::vector<double> &v)
+{
+  return v[weights->CurrentParametersIndex()];
+}
+
+double Shower::VetoWeight(Variation_Parameters *params,
+			  Variation_Weights *weights,
+			  JetVeto_Args &args)
+{
+  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
+  int stat(args.m_jcv>=0.0);
+  Cluster_Amplitude *ampl(args.p_ampl);
+  Jet_Finder *jf(ampl->JF<Jet_Finder>());
+  if (stat && jf) {
+    double fac(weights?params->m_Qcutfac:1.0);
+    if (jf) {
+      stat=args.m_jcv<sqr(jf->Qcut()*fac);
+      msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
+		     <<jf->Qcut()<<" * "<<fac
+		     <<" = "<<jf->Qcut()*fac<<"\n";
+    }
+  }
+  if (stat==1) {
+    msg_Debugging()<<"} no jet veto\n";
+    args.m_acc=1;
+    return 1.0;
+  }
+  if (ampl->NLO()&2) {
+    msg_Debugging()<<"  skip emission\n";
+    if (weights==NULL) args.m_skip.back()=1;
+    else args.m_skip[weights->CurrentParametersIndex()]=1;
+    args.m_acc=1;
+    msg_Debugging()<<"} no jet veto\n";
+    return 1.0;
+  }
+  msg_Debugging()<<"} jet veto\n";
+  return 0.0;
 }
 
 int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
@@ -160,29 +218,117 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
   DEBUG_FUNC(this);
   m_weight=1.0;
   msg_Debugging()<<a<<"\n";
-  if (nem>=m_maxem) return 1;
-  double t(a.T());
-  for (Splitting s(GeneratePoint(a,t));
-       s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
-       s=GeneratePoint(a,s.m_t)) {
-    int stat(s.p_sk->Construct(s,1));
-    msg_IODebugging()<<"t = "<<s.m_t<<", stat = "<<stat<<"\n";
-    AddWeight(a,s.m_t);
-    if (stat==0) return stat;
-    if (stat<0) continue;
-    if (++nem>=m_maxem) break;
+  Cluster_Amplitude *ampl(a.ClusterAmplitude());
+  if (ampl->NLO()&128) {
+    msg_Debugging()<<"UNLOPS veto (t<t_0)\n";
+    a.Reduce();
+    return 1;
   }
-  AddWeight(a,0.0);
+  if (ampl->NLO()&(4|8)) {
+    msg_Debugging()<<"NLO "<<ampl->NLO()<<" path, skip shower\n";
+    return 1;
+  }
+  if (nem>=m_maxem) return 1;
+  for (Splitting s(GeneratePoint(a,a.T(),nem));
+       s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
+       s=GeneratePoint(a,s.m_t,nem)) {
+    for (size_t i(0);i<a.size();++i) a[i]->Store();
+    int stat(s.p_sk->Construct(s,1));
+    msg_IODebugging()<<"t = "<<s.m_t<<", w = "<<s.m_w.MC()
+		     <<" / "<<s.m_w.Accept()<<" -> "
+		     <<(stat==1?"accept\n":"reject\n");
+    msg_Debugging()<<"stat = "<<stat<<"\n";
+    JetVeto_Args vwa(ampl,stat?0.0:-1.0,
+		     p_vars->NumberOfParameters()+1);
+    Jet_Finder *jf(ampl->JF<Jet_Finder>());
+    if (stat && jf) {
+      Cluster_Amplitude *ampl(a.GetAmplitude());
+      vwa.m_jcv=jf->JC()->Value(ampl);
+      ampl->Delete();
+    }
+    if (ampl->NLO()&64) {
+      if (ampl->Flag()&2) {
+	msg_Debugging()<<"Skip UNLOPS veto\n";
+	a.Remove(s.p_n);
+	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+	for (size_t i(0);i<a.size();++i) a[i]->Restore();
+	ampl->SetFlag(ampl->Flag()&~2);
+	continue;
+      }
+      msg_Debugging()<<"UNLOPS veto\n";
+      if (s.p_l) a.Remove(s.p_l);
+      a.Remove(s.p_n);
+      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+      for (size_t i(0);i<a.size();++i) a[i]->Restore();
+      a.Reduce();
+      s.m_t=a.T0();
+      return 1;
+    }
+    m_weight*=VetoWeight(NULL,NULL,vwa);
+    if (p_vars) p_vars->UpdateOrInitialiseWeights
+		  (&Shower::VetoWeight,*this,vwa);
+    if (ampl->NLO()&2) {
+      int nskip(0);
+      for (size_t i(0);i<vwa.m_skip.size();++i)
+	nskip+=vwa.m_skip[i];
+      double wskip(nskip/double(vwa.m_skip.size()));
+      if (ran->Get()<=wskip) {
+	a.Remove(s.p_n);
+	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+	for (size_t i(0);i<a.size();++i) a[i]->Restore();
+	double lkf(ampl->LKF());
+	for (Cluster_Amplitude *campl(ampl);
+	     campl;campl=campl->Prev()) {
+	  campl->SetLKF(1.0);
+	  ampl->SetNLO(ampl->NLO()&~2);
+	}
+	m_weight*=vwa.m_skip.back()?1.0/lkf/wskip:0.0;
+	std::vector<double> swa(vwa.m_skip.size()-1,0.0);
+	for (size_t i(0);i<swa.size();++i)
+	  if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
+	msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
+	p_vars->UpdateOrInitialiseWeights
+	  (&Shower::GetWeight,*this,swa);
+	continue;
+      }
+      else {
+	m_weight*=vwa.m_skip.back()?0.0:1.0/(1.0-wskip);
+	std::vector<double> swa(vwa.m_skip.size()-1,0.0);
+	for (size_t i(0);i<swa.size();++i)
+	  if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
+	msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
+	p_vars->UpdateOrInitialiseWeights
+	  (&Shower::GetWeight,*this,swa);
+      }
+    }
+    if (vwa.m_acc==0) return 0;
+    AddWeight(a,s.m_t);
+    a.SetJF(NULL);
+    if (++nem>=m_maxem) break;
+    if (a.size()-a.ClusterAmplitude()->NIn()>m_maxpart) {
+      if (s.p_l) a.Remove(s.p_l);
+      a.Remove(s.p_n);
+      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+      for (size_t i(0);i<a.size();++i) a[i]->Restore();
+    }
+    if (a.size()-a.ClusterAmplitude()->NIn()>=m_maxpart) break;
+  }
+  AddWeight(a,a.T0());
+  if (ampl->NLO()&32) {
+    msg_Debugging()<<"UNLOPS sign flip\n";
+    a.Reduce();
+  }
   return 1;
 }
 
-Splitting Shower::GeneratePoint(const Amplitude &a,const double &t)
+Splitting Shower::GeneratePoint
+(const Amplitude &a,const double &t,const unsigned int &nem)
 {
   Splitting win;
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    Splitting cur(GeneratePoint(**it,t));
+    Splitting cur(GeneratePoint(**it,t,nem));
     if (cur.p_c==NULL || cur.p_s==NULL) continue;
     if (cur.m_t<m_tmin[cur.m_type&1]) continue;
     m_tmin[0]=m_tmin[1]=(win=cur).m_t;
@@ -194,13 +340,13 @@ Splitting Shower::GeneratePoint(const Amplitude &a,const double &t)
   return win;
 }
 
-Splitting Shower::GeneratePoint(Parton &p,const double &t)
+Splitting Shower::GeneratePoint
+(Parton &p,const double &t,const unsigned int &nem)
 {
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
-  std::vector<Parton_Vector> specs(kit->second.size());
   std::vector<std::vector<double> > psum(kit->second.size());
   std::vector<std::vector<size_t> > splits(psum.size());
   while (true) {
@@ -208,7 +354,6 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
       sum=0.0;
       ct=win.m_t;
       for (size_t j(0);j<kit->second.size();++j) {
-	specs[j].clear();
 	psum[j].clear();
 	splits[j].clear();
 	double csum=0.0;
@@ -222,7 +367,6 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
 	    if (kit->second[j]->On() &&
 		kit->second[j]->Allowed(cur)) {
-	      specs[j].push_back(cur.p_s);
 	      double I=kit->second[j]->Integral(cur);
 	      psum[j].push_back(csum+=dabs(I));
 	      splits[j].push_back(i);
@@ -257,24 +401,73 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 	    }
 	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
+	    win.m_vars=std::vector<double>
+	      (p_vars->GetVariations()->GetParametersVector()->size(),1.0);
 	    if (win.m_w.MC()<ran->Get()) {
-	      win.p_c->AddWeight(win.p_s,win.m_t,win.m_w.Reject());
+	      if (p_vars && nem<m_maxrewem) {
+		const Reweight_Args args(&win,0);
+		p_vars->UpdateOrInitialiseWeights
+		  (&Shower::Reweight,*this,args);
+	      }
+	      win.p_c->AddWeight(win,0);
 	      msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			       <<" / "<<win.m_w.Reject()<<" -> reject ["
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
 	    }
-	    win.p_c->AddWeight(win.p_s,win.m_t,win.m_w.Accept());
+	    if (p_vars && nem<m_maxrewem) {
+	      const Reweight_Args args(&win,1);
+	      p_vars->UpdateOrInitialiseWeights
+		(&Shower::Reweight,*this,args);
+	    }
+	    win.p_c->AddWeight(win,1);
 	    msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			     <<" / "<<win.m_w.Accept()<<" -> select ["
 			     <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
-	    win.m_ss=specs[j];
 	    return win;
 	  }
 	break;
       }
   }
   return win;
+}
+
+double Shower::Reweight(Variation_Parameters *params,
+			Variation_Weights *weights,
+			const Reweight_Args &a)
+{
+  double rsf(m_rsf), fsf(m_fsf);
+  m_rsf*=params->m_muR2fac;
+  m_fsf*=params->m_muF2fac;
+  MODEL::Running_AlphaS *as(p_as);
+  p_as=params->p_alphas;
+  PDF::PDF_Base *pdf[2]={p_pdf[0],p_pdf[1]};
+  p_pdf[0]=params->p_pdf1;
+  p_pdf[1]=params->p_pdf2;
+  size_t cur(weights->CurrentParametersIndex());
+  if (rsf==m_rsf && fsf==m_fsf && as==p_as &&
+      pdf[0]==p_pdf[0] && pdf[1]==p_pdf[1]) {
+    a.m_s->m_vars[cur]=1.0;
+    return 1.0;
+  }
+  msg_IODebugging()<<METHOD<<"("<<cur<<") {\n  "
+		   <<"\\mu_R -> "<<sqrt(m_rsf)
+		   <<", \\mu_F -> "<<sqrt(m_fsf)<<"\n  PDF "
+		   <<(p_pdf[0]?p_pdf[0]->LHEFNumber():-1)<<" x "
+		   <<(p_pdf[1]?p_pdf[1]->LHEFNumber():-1)<<"\n";
+  Weight w(a.m_s->p_sk->GetWeight(*a.m_s,m_oef,&a.m_s->m_w));
+  msg_IODebugging()<<"  w_ref = "<<a.m_s->m_w
+		   <<"\n  w_new = "<<w<<"\n";
+  if (a.m_acc) a.m_s->m_vars[cur]=w.MC()/a.m_s->m_w.MC();
+  else a.m_s->m_vars[cur]=w.Reject()/a.m_s->m_w.Reject()
+    	 *(1.0-w.MC())/(1.0-a.m_s->m_w.MC());
+  msg_IODebugging()<<"} -> w = "<<a.m_s->m_vars[cur]<<"\n";
+  p_pdf[0]=pdf[0];
+  p_pdf[1]=pdf[1];
+  p_as=as;
+  m_rsf=rsf;
+  m_fsf=fsf;
+  return 1.0;
 }
 
 double Shower::GetXPDF
@@ -291,7 +484,7 @@ double Shower::GetXPDF
       x>p_pdf[b]->XMax()*p_pdf[b]->RescaleFactor() ||
       Q2<p_pdf[b]->Q2Min() || Q2>p_pdf[b]->Q2Max())
     return 0.0;
-  p_pdf[b]->Calculate(x,Q2);
+  p_pdf[b]->Calculate(x,m_fsf*Q2);
   return p_pdf[b]->GetXPDF(fl.Bar());
 }
 

@@ -93,7 +93,7 @@ namespace ANALYSIS {
 
     ~Primitive_Analysis();
     
-    void DoAnalysis(const ATOOLS::Blob_List * const , const double);
+    void DoAnalysis(const ATOOLS::Blob_List * const , double);
     bool DoAnalysisNLO(const ATOOLS::Blob_List * const , const double);
     void FinishAnalysis(const std::string &);
     void RestoreAnalysis();

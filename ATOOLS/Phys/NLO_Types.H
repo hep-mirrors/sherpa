@@ -124,17 +124,6 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &str,const cs_kcontrib::type &csit);
   std::istream &operator>>(std::istream &str,cs_kcontrib::type &csit);
 
-  struct subtractiontype {
-    enum type {
-      none    = 0,
-      cs      = 1,
-      antenna = 2,
-      other   = 3
-    };
-  };
-
-  std::ostream &operator<<(std::ostream &ostr,const subtractiontype::type &st);
-
   struct sbt {
     enum subtype {
       none = 0,

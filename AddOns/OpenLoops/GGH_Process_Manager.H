@@ -34,7 +34,8 @@ namespace PHASIC{
     
     ME_Generators*    Generators();
     ME_Generators*    p_generators;
-    void              InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external);
+    Process_Base*     InitializeProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external, 
+					const std::vector<double>& orders);
     
   public:
     GGH_Process_Manager();
@@ -45,7 +46,8 @@ namespace PHASIC{
        Returns a PARTONIC process corresponding to the
        Cluster_Amplitude. 'External' flag is for OpenLoops processes.
     */
-    Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external);
+    Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl, bool external, 
+			     const std::vector<double>& orders);
     Process_Base* GetProcess(const std::string& name              , bool external);
     inline void SetGenerators(ME_Generators* gens){ p_generators = gens;}
 

@@ -14,6 +14,8 @@ libPhasicProcess_la_SOURCES   =	\
 				MCatNLO_Process.C \
 				Virtual_ME2_Base.C \
 				Tree_ME2_Base.C \
+				Color_Correlated_ME2.C \
+				CS_Dipole.C \
 				Massive_Kernels.C \
 				KP_Terms.C \
 				ME_Generators.C \
@@ -28,6 +30,8 @@ localinc_HEADERS      =	\
 			MCatNLO_Process.H \
 			Virtual_ME2_Base.H \
 			Tree_ME2_Base.H \
+			Color_Correlated_ME2.H \
+			CS_Dipole.H \
 			Massive_Kernels.H \
 			KP_Terms.H \
 			ME_Generators.H \

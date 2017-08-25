@@ -11,17 +11,20 @@ SUBDIRS       = \
 		EXTRA_XS \
 		AMEGIC++ \
 		COMIX \
+		EXTAMP \
 		CSSHOWER++ \
 		DIRE \
+		DIM \
 		AMISIC++ \
 		AHADIC++ \
 		HADRONS++ \
 		PHOTONS++ \
 		SHRiMPS \
+		EXTAMP \
 		SHERPA \
 		AddOns \
 		Manual \
-		Examples
+		Examples 
 
 EXTRA_DIST = GUIDELINES
 

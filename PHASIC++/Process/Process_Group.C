@@ -67,6 +67,14 @@ double Process_Group::Differential(const Vec4D_Vector &p)
   return m_last;
 }
 
+bool Process_Group::InitScale()
+{
+  bool res(true);
+  for (size_t i(0);i<m_procs.size();++i)
+    if (!m_procs[i]->InitScale()) res=false;
+  return res;
+}
+
 void Process_Group::SetScale(const Scale_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetScale(args);
@@ -82,13 +90,13 @@ bool Process_Group::IsGroup() const
   return true;
 }
 
-void Process_Group::Add(Process_Base *const proc) 
+void Process_Group::Add(Process_Base *const proc,const int mode) 
 {
   if (proc==NULL) return;
   std::string name(proc->Name()), add(proc->Info().m_addname);
   if (add.length() && name.rfind(add)!=std::string::npos)
     name.erase(name.rfind(add),add.length());
-  if (m_procmap.find(name)!=m_procmap.end())
+  if (!(mode&1) && m_procmap.find(name)!=m_procmap.end())
     THROW(critical_error,"Doubled process '"+name+"'");
   m_procmap[name]=proc;
   if (m_maxcpl.size()<proc->MaxOrders().size()) {
@@ -297,7 +305,9 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
     if (MPI::COMM_WORLD.Get_rank()==0) {
 #endif
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-			+"/Process/Sherpa/"+m_name+".map");
+			+"/Process/Sherpa/"+m_name);
+    if (pi.m_megenerator.length()) mapfile+="__"+pi.m_megenerator;
+    mapfile+=".map";
     std::string str, tmp;
     My_In_File in(mapfile);
     if (in.Open())
@@ -330,7 +340,9 @@ bool Process_Group::ConstructProcesses()
 {
   Process_Info cpi(m_pinfo);
   std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Sherpa/"+m_name+".map");
+		      +"/Process/Sherpa/"+m_name);
+  if (cpi.m_megenerator.length()) mapfile+="__"+cpi.m_megenerator;
+  mapfile+=".map";
   msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
   if (FileExists(mapfile)) {
     msg_Debugging()<<"found"<<std::endl;
@@ -356,6 +368,12 @@ bool Process_Group::ConstructProcesses()
   My_In_File::ExecDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
+  if (!res) {
+    My_Out_File out(mapfile);
+    if (!out.Open()) THROW(fatal_error,"Cannot open '"+mapfile+"'");
+    *out<<"\n";
+    out.Close();
+  }
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
@@ -376,6 +394,13 @@ void Process_Group::SetShower(PDF::Shower_Base *const ps)
   Process_Base::SetShower(ps);
   for (size_t i(0);i<m_procs.size();++i) 
     m_procs[i]->SetShower(ps);
+}
+
+void Process_Group::SetNLOMC(PDF::NLOMC_Base *const mc) 
+{ 
+  Process_Base::SetNLOMC(mc);
+  for (size_t i(0);i<m_procs.size();++i) 
+    m_procs[i]->SetNLOMC(mc);
 }
 
 void Process_Group::SetVariationWeights(Variation_Weights *const vw)
@@ -426,4 +451,12 @@ void Process_Group::FillOnshellConditions()
   Process_Base::FillOnshellConditions();
   for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->FillOnshellConditions();
+}
+
+int Process_Group::PerformTests()
+{
+  int res(1);
+  for (size_t i=0;i<m_procs.size();i++) 
+    if (m_procs[i]->PerformTests()!=1) res=0;
+  return res;
 }

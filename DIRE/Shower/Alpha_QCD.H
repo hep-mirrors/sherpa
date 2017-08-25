@@ -12,15 +12,14 @@ namespace DIRE {
   class Alpha_QCD: public Gauge {
   protected:
     
-    MODEL::Running_AlphaS *p_cpl;
+    MODEL::Running_AlphaS *const &p_cpl;
 
     double m_fac, m_max;
     double m_Nc, m_CF, m_CA, m_TR;
 
     int m_lc;
 
-    bool  m_mab, m_mba, m_maa, m_mbb;
-    Color m_ca, m_cb;
+    mutable int m_override;
 
     double B0(const double &nf) const;
     double B1(const double &nf) const;

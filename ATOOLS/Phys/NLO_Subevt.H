@@ -83,7 +83,7 @@ namespace ATOOLS {
 
     Cluster_Amplitude *p_ampl;
 
-    bool m_delete, m_trig;
+    int m_delete, m_trig;
 
   public:
 
@@ -121,7 +121,7 @@ namespace ATOOLS {
     { return static_cast<Type*>(p_proc); }
 
     inline void Reset(const int mode=1)
-    { m_result=m_me=m_mewgt=0.0; if (mode) m_trig=false; }
+    { m_result=m_me=m_mewgt=m_K=0.0; if (mode) m_trig=false; }
 
   };// end of class NLO_subevt
 

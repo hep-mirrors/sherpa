@@ -30,13 +30,16 @@ namespace DIRE {
 
     double Value(const Splitting &s) const;
 
-    Weight GetWeight(const Splitting &s,const double &o) const;
+    Weight GetWeight(const Splitting &s,const double &o,
+		     const Weight *w=NULL) const;
 
     bool GeneratePoint(Splitting &s) const;
 
     double Integral(Splitting &s) const;
 
     int Construct(Splitting &s,const int mode) const;
+
+    std::string Class() const;
 
     inline bool Allowed(const Splitting &s)
     { return p_lf->Allowed(s)&&p_gf->Allowed(s); }

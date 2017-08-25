@@ -13,7 +13,7 @@
 namespace PHASIC {
   class Fastjet_Veto : public Selector_Base {
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    size_t m_nj, m_nb, m_nb2, m_eekt;
+    int m_nj, m_nb, m_nb2, m_eekt;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
     fastjet::EECambridgePlugin * p_eecamplug;
@@ -27,8 +27,7 @@ namespace PHASIC {
     ~Fastjet_Veto();
 
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &p,
-                   ATOOLS::NLO_subevt *const sub=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -94,25 +93,15 @@ Fastjet_Veto::~Fastjet_Veto() {
 }
 
 
-bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
-                           ATOOLS::NLO_subevt *const sub)
+bool Fastjet_Veto::Trigger(const Vec4D_Vector &p)
 {
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl (sub?sub->p_fl:p_fl);
-
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
   std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<n;++i) {
-    if (Flavour(kf_jet).Includes(fl[i]) ||
-        ((m_nb>0 || m_nb2>0) && fl[i].Kfcode()==kf_b)) {
-      input.push_back(MakePseudoJet(fl[i], p[i]));
+  for (size_t i(m_nin);i<p.size();++i) {
+    if (Flavour(kf_jet).Includes(p_fl[i]) ||
+	((m_nb>0 || m_nb2>0) && p_fl[i].Kfcode()==kf_b)) {
+      input.push_back(MakePseudoJet(p_fl[i], p[i]));
     }
-  }
-  if (msg_LevelIsDebugging()) {
-    for (size_t i(0);i<input.size();++i)
-      msg_Out()<<input[i].user_index()<<": "
-               <<"("<<input[i].E()<<","<<input[i].px()
-               <<","<<input[i].py()<<","<<input[i].pz()<<")"<<std::endl;
   }
 
   fastjet::ClusterSequence cs(input,*p_jdef);
@@ -120,13 +109,13 @@ bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
 
   if (m_eekt) {
-    size_t nj(0);
+    int n(0);
     for (size_t i(0);i<input.size();++i)
-      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++nj;
-    return (1-m_sel_log->Hit(1-(nj>=m_nj)));
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
+    return (1-m_sel_log->Hit(1-(n>=m_nj)));
   }
 
-  size_t nj(0), nb(0), nb2(0);
+  int n(0), nb(0), nb2(0);
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     msg_Debugging()<<"Jet "<<i<<": pT="<<pj.PPerp()<<", |eta|="<<dabs(pj.Eta())
@@ -134,7 +123,7 @@ bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
 	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
 	(m_y==100 || dabs(pj.Y())<m_y)) {
-      nj++;
+      n++;
       if (BTag(jets[i], 1)) nb++;
       if (BTag(jets[i], 2)) nb2++;
     }
@@ -142,9 +131,9 @@ bool Fastjet_Veto::Trigger(const Vec4D_Vector &p,
   msg_Debugging()<<"njets(fin)="<<n<<std::endl;
 
   bool trigger(true);
-  if (nj>m_nj)   trigger=false;
-  if (nb>m_nb)   trigger=false;
-  if (nb2>m_nb2) trigger=false;
+  if (n>m_nj)   trigger=false;
+  if (m_nb>=0 && nb>m_nb) trigger=false;
+  if (m_nb2>=0 && nb2>m_nb2) trigger=false;
 
   if (!trigger) {
     msg_Debugging()<<"Point discarded by jet veto"<<std::endl;

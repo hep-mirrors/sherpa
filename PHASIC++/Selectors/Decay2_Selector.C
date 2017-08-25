@@ -22,8 +22,7 @@ namespace PHASIC {
 
     Decay2_Selector(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p,
-                 ATOOLS::NLO_subevt *const sub=NULL);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void BuildCuts(Cut_Data *) {}
 
@@ -94,13 +93,9 @@ Decay2_Selector::Decay2_Selector(const Selector_Key &key):
 		 <<", m_max = "<<m_max<<"\n";
 }
 
-bool Decay2_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Decay2_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC("");
-  if (sub) {
-    THROW(not_implemented,"Decay2_Selector not implemented for RS terms.");
-    return false;
-  }
   for (size_t j(0);j<m_ids[0].size();++j) {
     for (size_t i(0);i<m_ids[0][j].size();++i) m_p[0][i]=p[m_ids[0][j][i]];
     for (size_t l(0);l<m_ids[1].size();++l) {

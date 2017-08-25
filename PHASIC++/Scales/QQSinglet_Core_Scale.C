@@ -15,7 +15,7 @@ namespace PHASIC {
     QQSinglet_Core_Scale(const PHASIC::Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };// end of class QQSinglet_Core_Scale
 
@@ -24,7 +24,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double muf2(-1.), mur2(-1.), q2(-1.);
   size_t nlegs(ampl->Legs().size());
@@ -33,7 +33,7 @@ PDF::CParam QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     msg_Error()<<"ERROR in "<<METHOD<<": "
 	       <<"Amplitude with "<<nlegs<<" legs only.\n"
 	       <<"   Will return all scales = -1 and hope for the best.\n"; 
-    return PDF::CParam(muf2,q2,0.0,mur2,-1);
+    return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
   }
   std::list<Cluster_Leg *> stronglegs, weaklegs, lightlegs;
   std::vector<Cluster_Leg *> heavylegs;
@@ -62,7 +62,7 @@ PDF::CParam QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     msg_Error()<<"ERROR in "<<METHOD<<": "
 	       <<"Amplitude with "<<heavylegs.size()<<" heavy quarks only.\n"
 	       <<"   Will return all scales = -1 and hope for the best.\n"; 
-    return PDF::CParam(muf2,q2,0.0,mur2,-1);
+    return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
   }
   //list of top transverse momenta
   double top_perps[2];
@@ -72,7 +72,7 @@ PDF::CParam QQSinglet_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   // define scales
   muf2 = mur2 = pow(pperpqcd,2);
   q2   = Max(pow(top_perps[0],2),pow(top_perps[1],2));
-  return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
 }
 
 DECLARE_ND_GETTER(QQSinglet_Core_Scale,"QQSinglet",

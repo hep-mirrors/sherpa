@@ -8,15 +8,21 @@
 namespace DIRE {
 
   class Amplitude;
+  class Splitting;
 
   class Parton {
   public:
 
     struct Weight {
       double m_t, m_w;
+      std::vector<double> m_v;
       inline Weight(const double &t=-1.0,
-		    const double &w=0.0):
-	m_t(t), m_w(w) {}
+		    const double &w=0.0,
+		    const std::vector<double> &v=
+		    std::vector<double>()):
+	m_t(t), m_w(w), m_v(v) {}
+      inline Weight(const size_t &n):
+	m_t(0.0), m_w(1.0), m_v(n,1.0) {}
     };// end of struct Weight
 
     typedef std::vector<Weight> Weight_Vector;
@@ -28,9 +34,9 @@ namespace DIRE {
     Amplitude *p_ampl;
 
     ATOOLS::Flavour m_f;
-    ATOOLS::Vec4D   m_p;
+    ATOOLS::Vec4D   m_p, m_sp;
 
-    Color m_c;
+    Color m_c, m_sc;
     int   m_h, m_b;
 
     Parton *p_out[2], *p_in;
@@ -51,9 +57,9 @@ namespace DIRE {
 
     double GetXB() const;
 
-    void AddWeight(const Parton *s,const double &t,const double &w);
+    void AddWeight(const Splitting &c,const int acc);
 
-    double GetWeight(const double &t) const;
+    double GetWeight(const double &t,std::vector<double> &v) const;
 
     void SetColor(const Color &c);
 
@@ -79,6 +85,9 @@ namespace DIRE {
 
     inline Parton *In() const             { return p_in; }
     inline void    SetIn(Parton *const p) { p_in=p;      }
+
+    inline void Store()   { m_sp=m_p; m_sc=m_c; }
+    inline void Restore() { m_p=m_sp; m_c=m_sc; }
 
     inline Amplitude *Ampl() const { return p_ampl; }
 

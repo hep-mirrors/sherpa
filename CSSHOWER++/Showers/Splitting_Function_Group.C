@@ -90,3 +90,9 @@ void Splitting_Function_Group::ResetLastInt()
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
     (*m_splitter)->ResetLastInt();
 }
+
+void Splitting_Function_Group::SetMS(const ATOOLS::Mass_Selector *const ms)
+{
+  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) 
+    (*m_splitter)->SetMS(ms);
+}

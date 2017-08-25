@@ -13,12 +13,9 @@ namespace PDF    { class Remnant_Base; }
 namespace COMIX {
 
   class Single_Process;
-  class Cluster_Algorithm;
 
   class Comix: public Process_Group, public PHASIC::ME_Generator_Base {
   private :
-
-    Cluster_Algorithm *p_cluster;
 
     std::vector<std::vector<Single_Process*> > m_umprocs;
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
@@ -51,15 +48,6 @@ namespace COMIX {
     int PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    void PreCluster(PHASIC::Process_Base *const proc,
-		    const ATOOLS::Vec4D_Vector &p);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const ATOOLS::Vec4D_Vector &p,
-     const size_t &mode);
-
   }; // end of class Comix
 
 } // end of namespace COMIX
@@ -76,7 +64,6 @@ namespace COMIX {
 #include "MODEL/Main/Model_Base.H"
 #include "PDF/Remnant/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "COMIX/Cluster/Cluster_Algorithm.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_File.H"
@@ -88,7 +75,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Comix::Comix(): 
-  ME_Generator_Base("Comix"), p_cluster(NULL)
+  ME_Generator_Base("Comix")
 {
 #ifdef USING__Threading
   p_cts=&m_cts;
@@ -112,7 +99,6 @@ Comix::~Comix()
     pthread_cond_destroy(&tid->m_s_cnd);
   }
 #endif
-  if (p_cluster) delete p_cluster;
 }
 
 #define RED(ARG) om::red<<ARG<<om::reset
@@ -316,7 +302,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     My_In_File::ExecDB
       (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
-    DEBUG_VAR("now");
     if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
       My_In_File::ExecDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
@@ -330,7 +315,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     My_In_File::ExecDB
       (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
   }
-  if (add) Add(newxs);
+  if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);
   return newxs;
 }
@@ -348,27 +333,6 @@ int Comix::PerformTests()
 bool Comix::NewLibraries()
 {
   return false;
-}
-
-void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
-{
-  if (p_cluster==NULL) p_cluster = new Cluster_Algorithm(this);
-  p_cluster->SetClusterDefinitions(defs);
-}
-
-void Comix::PreCluster(PHASIC::Process_Base *const proc,const Vec4D_Vector &p)
-{
-  p_cluster->PreCluster(proc->Get<COMIX::Single_Process>(),
-			proc->Get<COMIX::Single_Dipole_Term>(),p);
-}
-
-Cluster_Amplitude *Comix::ClusterConfiguration
-(PHASIC::Process_Base *const proc,const Vec4D_Vector &p,
- const size_t &mode)
-{
-  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),
-		     proc->Get<COMIX::Single_Dipole_Term>(),p,mode);
-  return p_cluster->GetAmplitude();
 }
 
 DECLARE_GETTER(Comix,"Comix",ME_Generator_Base,ME_Generator_Key);

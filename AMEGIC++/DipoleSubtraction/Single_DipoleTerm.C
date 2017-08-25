@@ -424,6 +424,8 @@ bool Single_DipoleTerm::DetermineEWType()
 void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
                                      const ATOOLS::Poincare &cms)
 {
+  p_dipole->SetMomenta(moms);
+  p_dipole->CalcDiPolarizations();
   size_t cnt=0;
   size_t em=p_LO_process->GetEmit();
   size_t sp=p_LO_process->GetSpect();
@@ -438,6 +440,19 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
   
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
   p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
+
+  Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
+  for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
+  size_t ndip=(p_dipole->GetDiPolarizations())->size();
+  for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
+
+  if (m_subevt.m_i<m_nin &&
+      m_subevt.m_ijt!=m_subevt.m_i) {
+    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.Boost(p_LO_labmom[i]);
+  }
+  else {
+    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
+  }
 
 }
 
@@ -465,6 +480,7 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs)
 {
+  p_LO_process->SetSubevtList(p_subevtlist);
   DEBUG_FUNC("");
   switch (m_dtype) {
   case dpt::f_f: 
@@ -508,11 +524,11 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     stream << " (" << m_pi << "," << m_pj << "," << m_pk << ")" << std::endl;
     THROW(not_implemented, stream.str());
   }
+  p_dipole->SetSubevt(&m_subevt);
   msg_Debugging()<<"Initialised dipole "<<*p_dipole<<std::endl;
-  p_dipole->SetMomenta(p_testmoms);
-  p_dipole->CalcDiPolarizations();
   Poincare cms;
   SetLOMomenta(p_testmoms,cms);
+  p_dipole->CalcDiPolarizations();
 
   int status=p_LO_process->InitAmplitude(model,top,links,errs,
                                          p_dipole->GetDiPolarizations(),
@@ -590,6 +606,11 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
   p_int->SetMomenta(_moms);
   Poincare cms;
   Vec4D_Vector pp(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(pp[0]+pp[1]);
+    for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
+  }
+  SetLOMomenta(&pp.front(),cms);
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
 
@@ -604,10 +625,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 
   ResetLastXS();
   p_LO_process->ResetLastXS();
-  p_dipole->SetMomenta(mom);
-  p_dipole->CalcDiPolarizations();
-  SetLOMomenta(mom,cms);
 
+  ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
   p_scale->SetCaller((_mode&2)?p_LO_process->Partner():p_LO_process);
 
   if (p_LO_process->Selector()->On())
@@ -620,7 +639,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   int calc=m_subevt.m_trig;
   if (m_smth) {
     double a=m_smth>0.0?p_dipole->KT2():p_dipole->LastAlpha();
-    if (a<dabs(m_smth)) calc=1;
+    if (a<dabs(m_smth)) calc=m_subevt.p_real->m_trig;
   }
   double M2 = calc ? p_LO_process->operator()
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
@@ -629,46 +648,22 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
   m_subevt.p_ampl=NULL;
 
-  if (m_subevt.m_trig && p_scale->FixedScales().empty() && (_mode&2)) {
+  if (p_scale->FixedScales().empty()) {
     ClusterAmplitude_Vector &ampls
       (ScaleSetter(1)->Amplitudes());
     if (ampls.size()) {
-      m_subevt.p_ampl = Cluster_Amplitude::New();
-      m_subevt.p_ampl->SetNext(ampls.front()->CopyAll());
-      m_subevt.p_ampl->SetMS(m_subevt.p_ampl->Next()->MS());
-      m_subevt.p_ampl->Next()->SetKin(1);
-      m_subevt.p_ampl->SetNIn(m_nin);
-      for (size_t i(0);i<m_nin;++i)
-	m_subevt.p_ampl->CreateLeg(-p_int->Momenta()[i],Flavours()[i].Bar(),ColorID(),1<<i);
-      for (size_t i(m_nin);i<m_nin+m_nout;++i)
-	m_subevt.p_ampl->CreateLeg(p_int->Momenta()[i],Flavours()[i],ColorID(),1<<i);
-      m_subevt.p_ampl->SetMuR2(m_subevt.p_ampl->Next()->MuR2());
-      m_subevt.p_ampl->SetMuF2(m_subevt.p_ampl->Next()->MuF2());
-      m_subevt.p_ampl->SetMuQ2(m_subevt.p_ampl->Next()->MuQ2());
-      m_subevt.p_ampl->SetKT2(p_dipole->KT2());
-      m_subevt.p_ampl->SetMu2(p_dipole->KT2());
-      m_subevt.p_ampl->SetOrderEW(m_subevt.p_ampl->Next()->OrderEW());
-      m_subevt.p_ampl->SetOrderQCD(m_subevt.p_ampl->Next()->OrderQCD()+1);
+      m_subevt.p_ampl = ampls.front()->CopyAll();
+      if (m_subevt.p_ampl->Splitter()==NULL) {
       std::vector<int> rsm(m_nin+m_nout-1);
       for (size_t i(0);i<rsm.size();++i) {
         int cnt=p_LO_process->RSMap()[i];
 	if (cnt==-1) cnt=(1<<m_pi)|(1<<m_pj);
 	else if (cnt==-2) cnt=1<<m_pk;
-	else {
-	  m_subevt.p_ampl->Leg(cnt)->SetCol
-	    (m_subevt.p_ampl->Next()->Leg(i)->Col());
-	  cnt=1<<cnt;
-	}
+	else cnt=1<<cnt;
 	rsm[i]=cnt;
       }
-      m_subevt.p_ampl->Leg(m_subevt.m_k)->SetCol
-	     (m_subevt.p_ampl->Next()->Leg(m_subevt.m_kt)->Col());
-      m_subevt.p_ampl->Next()->Leg(m_subevt.m_ijt)->SetK(1<<m_subevt.m_kt);
-      Cluster_Amplitude::SetColours
-	(m_subevt.p_ampl->Next()->Leg(m_subevt.m_ijt),
-	 m_subevt.p_ampl->Leg(m_pi),
-	 m_subevt.p_ampl->Leg(m_pj));
-      for (Cluster_Amplitude *campl(m_subevt.p_ampl->Next());campl;campl=campl->Next()) {
+      m_subevt.p_ampl->Leg(m_subevt.m_ijt)->SetK(1<<m_subevt.m_kt);
+      for (Cluster_Amplitude *campl(m_subevt.p_ampl);campl;campl=campl->Next()) {
 	for (size_t i(0);i<campl->Legs().size();++i) {
 	  if (p_LO_process->Partner()!=p_LO_process) {
 	    Flavour fl(campl->Leg(i)->Flav());
@@ -686,7 +681,14 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 		      campl->Leg(i)->SetK(id);
 	       }
 	}
+	if (campl->IdNew()) {
+	  std::vector<int> ids(ID(campl->IdNew()));
+	  size_t id(0);
+	  for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
+	  campl->SetIdNew(id);
+	}
       }     
+      }
     }
   }
 
@@ -701,6 +703,10 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
   if (!(df>0.)&& !(df<0.)) {
     m_subevt.m_me = m_subevt.m_mewgt = 0.;
+    m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+    m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
+    m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
+    m_subevt.m_kt2=p_dipole->KT2();
     m_subevt.m_alpha = 0.;
     m_subevt.m_trig = false;
     m_subevt.m_K = 1.0;
@@ -721,7 +727,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
     msg->SetPrecision(prec);
   }
   m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
-  if (m_lastxs) m_lastxs*=m_lastk=KFactor();
+  if (m_lastxs) m_lastxs*=m_lastk=KFactor((m_mcmode&2)?4:0);
   m_subevt.m_K = m_lastk;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
@@ -773,6 +779,12 @@ void Single_DipoleTerm::SetShower(PDF::Shower_Base *const ps)
   if (p_LO_process) p_LO_process->SetShower(ps);
 }
 
+void Single_DipoleTerm::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  p_nlomc=mc;
+  if (p_dipole) p_dipole->SetNLOMC(mc);
+}
+
 int Single_DipoleTerm::NumberOfDiagrams() { 
   if (p_partner==this) return p_LO_process->NumberOfDiagrams(); 
   return p_partner->NumberOfDiagrams();
@@ -816,7 +828,7 @@ void Single_DipoleTerm::SetKFactor(const KFactor_Setter_Arguments &args)
 
 size_t Single_DipoleTerm::SetMCMode(const size_t mcmode)
 {
-  size_t cmcmode(p_LO_process->SetMCMode(mcmode));
+  size_t cmcmode(p_LO_process->Partner()->SetMCMode(mcmode));
   m_mcmode=mcmode;
   return cmcmode;
 }
@@ -828,6 +840,12 @@ size_t Single_DipoleTerm::SetClusterMode(const size_t cmode)
   return ccmode;
 }
 
+void Single_DipoleTerm::SetVariationWeights(Variation_Weights *const vw)
+{
+  Process_Base::SetVariationWeights(vw);
+  if (!p_LO_process->IsMapped()) p_LO_process->SetVariationWeights(vw);
+  p_LO_process->Partner()->SetVariationWeights(vw);
+}
 
 ATOOLS::Flavour Single_DipoleTerm::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const
 {
@@ -840,5 +858,8 @@ void Single_DipoleTerm::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
   p_LO_process->SetProcMap(p_apmap);
   if (p_apmap->find(nlo_type::rsub)==p_apmap->end())
     (*p_apmap)[nlo_type::rsub] = new StringProcess_Map();
-  (*(*p_apmap)[nlo_type::rsub])[Name()]=this;
+  std::string fname(m_name);
+  size_t len(m_pinfo.m_addname.length());
+  if (len) fname=fname.erase(fname.rfind(m_pinfo.m_addname),len);
+  (*(*p_apmap)[nlo_type::rsub])[fname]=this;
 }

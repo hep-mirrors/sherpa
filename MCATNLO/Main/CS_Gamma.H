@@ -64,15 +64,6 @@ namespace MCATNLO {
     int    m_on;
     double m_weight, m_oef;
 
-    bool CheckColors(const ATOOLS::Cluster_Leg *li,
-		     const ATOOLS::Cluster_Leg *lj,
-		     const ATOOLS::Cluster_Leg *lk,
-		     const ATOOLS::Flavour &mo) const;
-    ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
-				  const ATOOLS::Cluster_Leg *lj,
-				  const ATOOLS::Cluster_Leg *lk,
-				  const ATOOLS::Flavour &mo) const;
-
     int SingleWeight(ATOOLS::Cluster_Amplitude *const rampl,
 		     ATOOLS::Cluster_Leg *const li,
 		     ATOOLS::Cluster_Leg *const lj,
@@ -99,7 +90,6 @@ namespace MCATNLO {
 	     CS_Cluster_Definitions *const clus);
 
     bool Reject();
-    void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);
 
     inline void SetOn(const int on) { m_on=on; }
 

@@ -1,0 +1,3 @@
+import model sm
+generate e- e+ > g d d~ QED=2 QCD=1
+output standalone_cpp mg_output

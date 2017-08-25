@@ -33,7 +33,7 @@ namespace ATOOLS {
     double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
-    void *p_jf, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
+    void *p_jf, *p_ca, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
 
     Mass_Selector *p_ms;
 
@@ -87,6 +87,21 @@ namespace ATOOLS {
 
     Cluster_Leg *Splitter() const;
 
+    Cluster_Amplitude *First();
+    Cluster_Amplitude *Last();
+
+    static bool CheckColors(const ATOOLS::Cluster_Leg *li,
+			    const ATOOLS::Cluster_Leg *lj,
+			    const ATOOLS::Cluster_Leg *lk,
+			    const ATOOLS::Flavour &mo);
+    static ColorID CombineColors(const Cluster_Leg *li,
+				 const Cluster_Leg *lj,
+				 const Cluster_Leg *lk,
+				 const ATOOLS::Flavour &mo);
+    static void SetColours(Cluster_Leg *const lij,
+                           Cluster_Leg *const li,
+                           Cluster_Leg *const lj);
+
     // inline functions
     inline const ClusterLeg_Vector &Legs() const { return m_legs; }
     inline ClusterLeg_Vector       &Legs()       { return m_legs; }
@@ -121,6 +136,7 @@ namespace ATOOLS {
     inline void SetPhi(const double &phi) { m_phi=phi; }
 
     inline void SetJF(void *const jf)   { p_jf=jf;   }
+    inline void SetCA(void *const ca)   { p_ca=ca;   }
     inline void SetProc(void *const p)  { p_proc=p;  }
     inline void SetProcs(void *const p) { p_procs=p; }
     inline void SetIInfo(void *const i) { p_iinfo=i; }
@@ -160,10 +176,9 @@ namespace ATOOLS {
 
     template <class Type> inline Type *JF() const 
     { return static_cast<Type*>(p_jf); }
+    template <class Type> inline Type *CA() const 
+    { return static_cast<Type*>(p_ca); }
     
-    static void SetColours(Cluster_Leg *const lij,
-                           Cluster_Leg *const li,
-                           Cluster_Leg *const lj);
     template <class Type> inline Type *Proc() const 
     { return static_cast<Type*>(p_proc); }
     template <class Type> inline Type *Procs() const 

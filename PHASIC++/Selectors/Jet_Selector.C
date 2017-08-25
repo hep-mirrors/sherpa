@@ -37,8 +37,7 @@ namespace PHASIC {
     Jet_Selector(const Selector_Key &key);
     ~Jet_Selector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -191,10 +190,10 @@ Jet_Selector::~Jet_Selector() {
 }
 
 
-bool Jet_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Jet_Selector::Trigger(const Vec4D_Vector &p)
 {
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
+  size_t n(m_n);
+  const Flavour *const fl(p_fl);
 
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
   Vec4D_Vector moms(p.size(),Vec4D(0.,0.,0.,0.));
@@ -281,7 +280,7 @@ bool Jet_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
     return false;
   }
   for (size_t k=0;k<m_sels.size();++k) {
-    if (!m_sels[k]->Trigger(moms,sub)) {
+    if (!m_sels[k]->Trigger(moms)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
       m_sel_log->Hit(true);
       return false;

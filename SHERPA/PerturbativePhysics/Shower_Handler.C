@@ -19,7 +19,7 @@ Shower_Handler::Shower_Handler
   Default_Reader reader;
   reader.SetInputPath(dir);
   reader.SetInputFile(file);
-  m_name=reader.GetStringNormalisingNoneLikeValues("SHOWER_GENERATOR","CSS");
+  m_name=reader.GetStringNormalisingNoneLikeValues("SHOWER_GENERATOR","Dire");
   rpa->gen.SetVariable("JET_CRITERION",reader.Get<std::string>("JET_CRITERION",m_name));
   p_shower = PDF::Shower_Getter::GetObject
     (m_name,PDF::Shower_Key(model,p_isr,&reader,type));

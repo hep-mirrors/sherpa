@@ -19,7 +19,8 @@ namespace SHERPA {
     long int m_lastparticlecounter, m_lastblobcounter;
     double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
     double m_mn, m_msum, m_msumsqr;
-    bool m_checkweight;
+    std::map<std::string,double> m_maxweights;
+    int m_checkweight;
     size_t m_lastrss;
 
     Phase_List        * p_phases;
@@ -27,6 +28,9 @@ namespace SHERPA {
     ATOOLS::Blob      * p_signal;
 
     const ATOOLS::Variations  * p_variations;
+
+    void WriteRNGStatus(const std::string &file,
+			const std::string &message) const;
 
     bool GenerateStandardPerturbativeEvent(eventtype::code & mode);
     bool GenerateMinimumBiasEvent(eventtype::code & mode);

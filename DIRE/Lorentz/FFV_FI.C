@@ -24,6 +24,8 @@ namespace DIRE {
       double z(s.m_z);
       double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B=-(1.0+z);
+      if (p_sk->PS()->MECorrection()&1)
+	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
       if (s.m_mij2==0.0 && s.m_mi2==0.0) {
 	if (s.m_kfac&2) {
 	  if (m_swap) {
@@ -47,11 +49,11 @@ namespace DIRE {
 	    B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
 	  }
 	}
-	return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+	return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
       }
       double pipj=s.m_Q2*(1.0-s.m_y)/s.m_y/2.0;
       B=B-s.m_mi2/pipj;
-      return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+      return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
     }
 
     double Integral(const Splitting &s) const
@@ -90,6 +92,8 @@ namespace DIRE {
     {
       double z(s.m_z);
       double B=1.0-2.0*z*(1.0-z);
+      if (p_sk->PS()->MECorrection()&1)
+	B=B*(1.0-2.*s.m_y*(1.-s.m_y))+4.*s.m_y*s.m_x*(1.-s.m_x);
       if (s.m_mi2==0.0 && s.m_mj2==0.0) {
 	if (s.m_kfac&2) {
 	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=m_swap?1.0-z:z;
@@ -103,11 +107,11 @@ namespace DIRE {
 	  B2+=40*CA/(9.*x)/(1.0+x*x/(s.m_t/s.m_Q2));
 	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/2.0;
 	}
-	return (m_swap?1.0-z:z)*B;
+	return (s.m_clu?1.0:(m_swap?1.0-z:z))*B;
       }
       double nui2(s.m_mi2/s.m_Q2*s.m_y);
       B=1.0-2.0*s.m_z*(1.0-s.m_z)+nui2/((1.0-s.m_y)/2.0+nui2);
-      return (m_swap?1.0-z:z)*B;
+      return (s.m_clu?1.0:(m_swap?1.0-z:z))*B;
     }
 
     double Integral(const Splitting &s) const

@@ -1,0 +1,35 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None;
+  SHERPA_LDADD ExampleME;
+  MODEL sm; UFO_PARAM_CARD param_card.dat;
+
+  SCALES VAR{sqr(91.2)};
+
+  ME_SIGNAL_GENERATOR External;
+  EVENT_GENERATION_MODE Weighted;
+
+  OL_PARAMETERS verbose 3;
+
+  % collider setup
+  BEAM_1 -11; BEAM_ENERGY_1 = 10000.;
+  BEAM_2  11; BEAM_ENERGY_2 = 10000.;
+
+}(run)
+
+(processes){
+  Process -11 11 -> 1 -1;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Integrator Rambo;
+  
+  % Need to increase born order manuall until orders are fixed for NLO
+  Order (1,2);
+  
+  End process;
+}(processes)
+
+(selector){
+  Mass 1 -1 60 120;
+}(selector)

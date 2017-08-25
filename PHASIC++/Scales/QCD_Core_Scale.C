@@ -13,7 +13,7 @@ namespace PHASIC {
     QCD_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };// end of class Scale_Setter_Base
 
@@ -22,7 +22,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam QCD_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param QCD_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double s(2.0*ampl->Leg(0)->Mom()*ampl->Leg(1)->Mom());
   double t(2.0*ampl->Leg(0)->Mom()*ampl->Leg(2)->Mom());
@@ -33,7 +33,7 @@ PDF::CParam QCD_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"  \\mu_q = "<<sqrt(q2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
 }
 
 DECLARE_ND_GETTER(QCD_Core_Scale,"QCD",

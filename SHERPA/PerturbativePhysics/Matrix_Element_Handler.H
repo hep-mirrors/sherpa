@@ -56,7 +56,7 @@ namespace SHERPA {
 
       std::string m_gycut;
       int m_cutcore;
-      inline Processblock_Info() : m_gycut(""), m_cutcore(0) {}
+      inline Processblock_Info(): m_cutcore(0) {}
     };// end of struct Processblock_Info
 
   private :
@@ -103,8 +103,6 @@ namespace SHERPA {
 
     std::string MakeString(const std::vector<std::string> &in,
 			   const size_t &first);
-
-    size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
     template <typename Type> Type ExtractMPvalue(const std::string& str);
     template <typename Type>
@@ -181,6 +179,8 @@ namespace SHERPA {
 		     const int mode) const;
 
     inline int SeedMode() const { return m_seedmode; }
+
+    static size_t ExtractFlavours(PHASIC::Subprocess_Info &infos,std::string buffer);
 
   };// end of class Matrix_Element_Handler
 

@@ -114,7 +114,6 @@ void Jet_Cone_Distribution::Reset()
 }
 
 void Jet_Cone_Distribution::Output(const std::string & pname) {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();i++) {
     std::string fname;
     MyStrStream s;
@@ -265,7 +264,6 @@ void Jet_Cone_Dependence::Reset()
 }
 
 void Jet_Cone_Dependence::Output(const std::string & pname) {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;
@@ -409,7 +407,6 @@ void Jet_Cone_Shape::Reset()
 
 void Jet_Cone_Shape::Output(const std::string & pname)
 {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s1,s2,s3;

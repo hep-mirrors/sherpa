@@ -127,6 +127,7 @@ namespace ATOOLS {
     return s<<'('<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';
   }
 
+    
 }
 
 /*!

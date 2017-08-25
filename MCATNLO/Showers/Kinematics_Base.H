@@ -11,7 +11,7 @@ namespace MCATNLO {
   class Kinematics_Base {
   public:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
-    ATOOLS::Mass_Selector *p_ms;
+    const ATOOLS::Mass_Selector *p_ms;
     Sudakov *p_sud;
     int m_evolscheme;
   public:
@@ -29,9 +29,10 @@ namespace MCATNLO {
 		       const double &mij2,const double &mk2,
 		       const ATOOLS::Vec4D &Q,ATOOLS::Vec4D &pk,
 		       ATOOLS::Vec4D &l,ATOOLS::Vec4D &n) const;
-    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+    inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
     inline void SetSudakov(Sudakov *const sud) { p_sud=sud; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
+    inline int EvolScheme() const { return m_evolscheme; }
   };
 
   class Kinematics_FF : public Kinematics_Base {

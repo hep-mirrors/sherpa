@@ -200,7 +200,6 @@ void Jet_Observable_Base::Restore(double scale) {
 }
 
 void Jet_Observable_Base::Output(const std::string & pname) {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;
@@ -375,7 +374,6 @@ void Two_Jet_Observable_Base::Restore(double scale) {
 }
 
 void Two_Jet_Observable_Base::Output(const std::string & pname) {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;
@@ -988,7 +986,6 @@ void Three_Jet_Observable_Base::Restore(double scale) {
 }
 
 void Three_Jet_Observable_Base::Output(const std::string & pname) {
-  ATOOLS::MakeDir(pname); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;

@@ -9,11 +9,13 @@ namespace PHASIC {
   class Multi_Channel;
 
   struct Channel_Generator_Key {
+    std::string m_key;
     Process_Base * p_proc;
     Multi_Channel *p_mc;
-    Channel_Generator_Key(Process_Base *const proc,
+    Channel_Generator_Key(const std::string &key,
+			  Process_Base *const proc,
 			  Multi_Channel *const mc):
-      p_proc(proc), p_mc(mc) {}
+      m_key(key), p_proc(proc), p_mc(mc) {}
   };// end of struct Channel_Generator_Key
 
   class Channel_Generator {

@@ -10,7 +10,7 @@ namespace PHASIC {
 
   protected:
 
-    double m_lastxs, m_lastbxs, m_lastflux;
+    double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
 
@@ -71,7 +71,7 @@ namespace PHASIC {
     //! Generate cluster sequence info (containing the ISR+beam weight)
     ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
         const ATOOLS::ClusterAmplitude_Vector &,
-        bool skipsfirstampl, const double &Q2,
+        const double &Q2,
         const double &muf2fac=1.0,
         const double &mur2fac=1.0,
         const double &showermuf2fac=1.0,
@@ -79,7 +79,7 @@ namespace PHASIC {
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddISR(ATOOLS::Cluster_Sequence_Info &,
                 const ATOOLS::ClusterAmplitude_Vector &,
-                bool skipsfirstampl, const double &Q2,
+                const double &Q2,
                 const double &muf2fac=1.0,
                 const double &mur2fac=1.0,
                 const double &showermuf2fac=1.0,
@@ -95,9 +95,10 @@ namespace PHASIC {
       double m_x1, m_x2;
       double m_muR2, m_muF2;
       ATOOLS::ClusterAmplitude_Vector m_ampls;
-      bool m_skipsfirstampl;
       double m_fallbackresult;
     };
+    double SetZero(ATOOLS::Variation_Parameters *params,
+		   ATOOLS::Variation_Weights *weights,double &dummy);
     //! Reweighting events with subevents (i.e. RS)
     ATOOLS::Subevent_Weights_Vector ReweightSubevents(
         ATOOLS::Variation_Parameters *,
@@ -123,7 +124,7 @@ namespace PHASIC {
     //! Generate KP terms weight for variation parameters
     double KPTerms(ATOOLS::Variation_Parameters *);
     virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
-                                     PDF::PDF_Base *pdfb, double scalefac2=0.);
+			   PDF::PDF_Base *pdfb, double scalefac2=0.);
     //! Calculate MuR for variation parameters
     double MuR2(ATOOLS::Variation_Parameters *,
                 Single_Process::BornLikeReweightingInfo &) const;

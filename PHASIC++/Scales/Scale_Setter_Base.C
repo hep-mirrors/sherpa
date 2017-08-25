@@ -45,6 +45,11 @@ Scale_Setter_Base::Scale_Setter_Base
   m_p.resize(m_nin+m_nout);
 }
 
+bool Scale_Setter_Base::Initialize()
+{
+  return true;
+}
+
 void Scale_Setter_Base::SetCouplings()
 {
   if (p_proc==NULL || p_proc->Integrator()->Beam()==NULL) return;
@@ -90,11 +95,6 @@ void Scale_Setter_Base::SetCouplings()
 
 Scale_Setter_Base::~Scale_Setter_Base()
 {
-}
-
-PDF::CParam Scale_Setter_Base::CoreScale(Cluster_Amplitude *const ampl) const
-{
-  return PDF::CParam(0.0);
 }
 
 void Scale_Setter_Base::ShowSyntax(const size_t i)
@@ -145,10 +145,6 @@ Vec4D Scale_Setter_Base::PSum() const
   return sum;
 }
 
-void Scale_Setter_Base::PreCalc(const Vec4D_Vector &p,const size_t &mode)
-{
-}
-
 double Scale_Setter_Base::CalculateScale
 (const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
@@ -176,22 +172,12 @@ double Scale_Setter_Base::CalculateScale
   if (p_subs==NULL) {
     m_p.resize(p.size());
     for (size_t j(0);j<m_p.size();++j) m_p[j]=p[j];
-    PreCalc(p,mode);
     Calculate(p,mode);
   }
   else {
-    bool calc(false);
-    for (size_t i(0);i<p_subs->size();++i)
-      if ((*p_subs)[i]->m_trig) {
-	p_caller=p_proc;
-	PreCalc(p,mode);
-	calc=true;
-     	break;
-      }
-    if (!calc) return m_scale[stp::fac];
-    for (size_t i(0);i<p_subs->size();++i) {
+    for (int i(p_subs->size()-1);i>=0;--i) {
       NLO_subevt *sub((*p_subs)[i]);
-      if (!sub->m_trig) {
+      if (!sub->m_trig && !sub->IsReal()) {
 	for (size_t j(0);j<sub->m_mu2.size();++j) sub->m_mu2[j]=0.0;
 	if (sub->p_ampl) {
 	  sub->p_ampl->Delete();
@@ -201,9 +187,19 @@ double Scale_Setter_Base::CalculateScale
       }
       m_p.resize(sub->m_n);
       for (size_t j(0);j<m_p.size();++j)
-	m_p[j]=j<p_proc->NIn()?-sub->p_mom[j]:sub->p_mom[j];
+	m_p[j]=sub->p_mom[j][0] < 0.0 ?-sub->p_mom[j]:sub->p_mom[j];
+
+      /* For EXTAMP::Dipole_Wrapper_Processes, the flavour config does
+	 not match the flavour config of the corresponding subevent
+	 (the former having real emission flavours, the latter born
+	 flavours). Need to locally fix that here. */
       p_caller=static_cast<Process_Base*>(sub->p_proc);
+      Flavour_Vector tmp = p_caller->Flavours();
+      p_caller->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
       Calculate(Vec4D_Vector(m_p),mode);
+      p_caller->SetFlavours(tmp);
+      
+      if (i+1==p_subs->size()) m_escale=m_scale;
       size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));
       for (size_t j(0);j<ssz;++j) sub->m_mu2[j]=m_scale[j];
       if (sub->p_ampl) {
@@ -217,6 +213,8 @@ double Scale_Setter_Base::CalculateScale
 	m_ampls.pop_back();
       }
     }
+    m_scale=m_escale;
+    m_escale.clear();
   }
   if (p_proc && p_proc->Integrator()->Beam()) p_cpls->Calculate();
   msg_Debugging()<<"\\mu_F = "<<sqrt(m_scale[stp::fac])<<std::endl;

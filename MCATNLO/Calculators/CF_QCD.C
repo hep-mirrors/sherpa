@@ -181,9 +181,10 @@ double CF_QCD::Coupling(const double &scale,const int pol,
     }
   }
   cpl*=m_q*s_qfac;
-  if (cpl>cplinfo.MaxCoupling()->front()) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at k_T = "
-	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
+  if (cpl>cplinfo.MaxCoupling()->front()*s_qfac) {
+    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
+               <<sqrt(scale)<<" -> \\mu_R = "<<sqrt(scl)
+               <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
     return m_last = cplinfo.MaxCoupling()->front();
   }
 #ifdef DEBUG__Trial_Weight

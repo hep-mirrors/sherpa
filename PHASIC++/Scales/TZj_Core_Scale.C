@@ -11,7 +11,7 @@ namespace PHASIC {
     TZj_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };// end of class Scale_Setter_Base
 
@@ -20,13 +20,13 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double shat(2.0*ampl->Leg(0)->Mom()*ampl->Leg(1)->Mom());
   double that(2.0*ampl->Leg(0)->Mom()*ampl->Leg(2)->Mom());
   double uhat(2.0*ampl->Leg(0)->Mom()*ampl->Leg(3)->Mom());
   if (ampl->Legs().size()>4) {
-    return PDF::CParam(shat,shat,0.0,shat,-1);
+    return PDF::Cluster_Param(NULL,shat,shat,shat,-1);
   }
   double muf2(-1.),mur2(-1.),muq2(-1.);
   Flavour f[4]={ampl->Leg(0)->Flav(),ampl->Leg(1)->Flav(),
@@ -83,7 +83,7 @@ PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"  \\mu_q = "<<sqrt(muq2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,muq2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
 }
 
 DECLARE_ND_GETTER(TZj_Core_Scale,"TZj",

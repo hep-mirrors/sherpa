@@ -28,7 +28,7 @@ namespace PHASIC {
     size_t Size() const;
     Process_Base *operator[](const size_t &i);
 
-    virtual void Add(Process_Base *const proc);
+    virtual void Add(Process_Base *const proc,const int mode=0);
     virtual bool Remove(Process_Base *const proc);
     virtual bool Delete(Process_Base *const proc);
     virtual void Clear();
@@ -42,6 +42,8 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
+
+    bool InitScale();
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
@@ -60,11 +62,14 @@ namespace PHASIC {
 
     void SetGenerator(ME_Generator_Base *const gen);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
     void SetVariationWeights(ATOOLS::Variation_Weights *const);
     void SetSelector(const Selector_Key &key);
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void FillOnshellConditions();
+
+    int PerformTests();
 
   };// end of class Process_Group
 

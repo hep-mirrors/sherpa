@@ -17,7 +17,7 @@ namespace PHASIC {
 
     ~HTPrime_Core_Scale();
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };
 
@@ -30,7 +30,7 @@ namespace PHASIC {
   {
   }
 
-  PDF::CParam HTPrime_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+  PDF::Cluster_Param HTPrime_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   {
     size_t idx_l1(0), idx_l2(0);
     double ht_hat_prime(0.0);
@@ -66,7 +66,7 @@ namespace PHASIC {
                    <<"  \\mu_r = "<<sqrt(mu2)<<"\n"
                    <<"  \\mu_q = "<<sqrt(muq2)<<"\n";
     msg_Debugging()<<"}\n";
-    return PDF::CParam(mu2,muq2,0.0,mu2,-1);
+    return PDF::Cluster_Param(NULL,muq2,mu2,mu2,-1);
   }
 
 }

@@ -25,6 +25,7 @@ namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { 
   class ISR_Handler;
   class Shower_Base;
+  class NLOMC_Base;
 }
 
 namespace METOOLS { class Spin_Amplitudes; }
@@ -59,10 +60,11 @@ namespace PHASIC {
     ME_Generator_Base  *p_gen;
 
     PDF::Shower_Base   *p_shower;
+    PDF::NLOMC_Base    *p_nlomc;
+
     ATOOLS::Variation_Weights *p_variationweights;
     bool m_variationweightsowned;
     BBar_Multi_Channel *p_mc;
-
 
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
@@ -150,6 +152,8 @@ namespace PHASIC {
 				    const bool create=false) = 0;
     virtual void SetLookUp(const bool lookup) = 0;
 
+    virtual int  PerformTests();
+    virtual bool InitScale();
     virtual void Init(const Process_Info &pi,
 		      BEAM::Beam_Spectra_Handler *const beamhandler,
 		      PDF::ISR_Handler *const isrhandler,const int mode=0);
@@ -160,6 +164,7 @@ namespace PHASIC {
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
+    virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
     virtual void SetVariationWeights(ATOOLS::Variation_Weights *const);
     void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
     ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
@@ -184,6 +189,9 @@ namespace PHASIC {
 			     const int mode=1);
     static void SortFlavours(Process_Info &pi,const int mode=1);
 
+    static std::string BaseName(const std::string &name,
+				const std::string &addname=std::string(""));
+
     static std::string GenerateName(const ATOOLS::Cluster_Amplitude *ampl);
     static std::string GenerateName(const ATOOLS::NLO_subevt *sub,
 				    const size_t &nin);
@@ -199,7 +207,8 @@ namespace PHASIC {
     inline size_t NOut() const { return m_nout; }
 
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
-
+    inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
+    
     inline const std::string &Name() const { return m_name; }
 
     inline void SetMaxOrders(const std::vector<double> &o) { m_maxcpl=o; }
@@ -217,6 +226,7 @@ namespace PHASIC {
     inline double MinOrder(const size_t &id) const { return m_mincpl[id]; }
 
     PDF::Shower_Base *Shower() const { return p_shower; }
+    PDF::NLOMC_Base  *NLOMC() const  { return p_nlomc;  }
 
     inline Process_Info       &Info()       { return m_pinfo; }
     inline const Process_Info &Info() const { return m_pinfo; }

@@ -19,6 +19,11 @@ when photons are present in the NLO calculation or when cuts on
 leptons have been applied at generation level to increase efficiency.
 Every NTuple should therefore be accompanied by an appropriate documentation.
 
+NTuple compression can be customized using the parameter
+@option{ROOTNTUPLE_COMPRESSION}, which is used to call
+@code{TFile::SetCompressionSettings}. For a detailed documentation
+of available options, see @uref{http://root.cern.ch}
+
 This example will generate NTuples for the process pp->lvj,
 where l is an electron or positron, and v is an electron (anti-)neutrino.
 We identify parton-level jets using the anti-k_T algorithm with R=0.4 

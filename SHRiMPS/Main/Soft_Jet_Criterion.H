@@ -33,7 +33,7 @@ namespace SHRIMPS {
       m_kt2veto[leg] = kt2veto;
     }
 
-    bool Jets(ATOOLS::Cluster_Amplitude *ampl,int mode=0);
+    double Value(ATOOLS::Cluster_Amplitude *ampl,int mode=0);
     void Output();
   };
 

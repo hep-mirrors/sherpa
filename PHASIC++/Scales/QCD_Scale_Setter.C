@@ -54,13 +54,6 @@ namespace PHASIC {
 
     Single_Process *p_proc;
 
-    bool CheckColors(const ATOOLS::Cluster_Leg *li,
-		     const ATOOLS::Cluster_Leg *lj,
-		     const ATOOLS::Cluster_Leg *lk);
-    ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
-				  const ATOOLS::Cluster_Leg *lj,
-				  const ATOOLS::Cluster_Leg *lk);
-
   public:
 
     inline QCD_Setter_CS_CD(Single_Process *const proc):
@@ -310,7 +303,12 @@ CS_Params QCD_Setter_CS_CD::KT2
   static const CS_Params nd(std::numeric_limits<double>::max(),0.0,0.0,-1);
   const Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j)), *lk(ampl.Leg(k));
   if (!p_proc->Combinable(li->Id(),lj->Id())) return nd;
-  if (!CheckColors(li,lj,lk)) return nd;
+  const Flavour_Vector &cf(p_proc->CombinedFlavour(li->Id()|lj->Id()));
+  for (size_t i(0);i<cf.size();++i)
+    if (cf[i].Strong()) {
+      if (!ampl.CheckColors(li,lj,lk,cf[i])) return nd;
+      break;
+    }
   if ((li->Id()&3)<(lj->Id()&3)) std::swap<const Cluster_Leg*>(li,lj);
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
@@ -390,162 +388,16 @@ void QCD_Setter_CS_CD::Combine
     li->SetMom(pajt);
     lk->SetMom(pb);
   }
-  li->SetCol(CombineColors(li,lj,lk));
   li->SetId(li->Id()+lj->Id());
   const Flavour_Vector &cf(p_proc->CombinedFlavour(li->Id()));
-  li->SetFlav(cf.front());
   for (size_t i(0);i<cf.size();++i)
     if (cf[i].Strong()) {
       li->SetFlav(cf[i]);
+      li->SetCol(ampl.CombineColors(li,lj,lk,cf[i]));
       break;
     }
   std::vector<Cluster_Leg*>::iterator lit(ampl.Legs().begin());
   for (int l(0);l<j;++l) ++lit;
   (*lit)->Delete();
   ampl.Legs().erase(lit);
-}
-
-bool QCD_Setter_CS_CD::CheckColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk)
-{
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
-	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
-	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lk->Flav().StrongCharge()==0) return false;
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
-	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
-	return true;
-      if (ci.m_j==cj.m_i && 
-	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
-	return true;
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.m_j==cj.m_i &&
-	  (ci.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((cj.m_i==ck.m_j || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.m_i==cj.m_j &&
-	  (ci.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((cj.m_j==ck.m_i || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==8 ||
-	lk->Flav().StrongCharge()==8) {
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
-
-ColorID QCD_Setter_CS_CD::CombineColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk)
-{
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(ci.m_i,cj.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(ci.m_i,0);
-      return ColorID(cj.m_i,0);
-    }
-    else {
-      return ColorID(ci.m_i,0);
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,ci.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(0,ci.m_j);
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,ci.m_j);
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
-	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
-	return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i && 
-	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
-	return ColorID(ci.m_i,cj.m_j);
-      THROW(fatal_error,"Invalid clustering");
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.Singlet()) return ColorID(cj.m_i,0);
-      return ColorID(ci.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.Singlet()) return ColorID(0,cj.m_j);
-      return ColorID(0,ci.m_j);
-    }
-    else {
-      THROW(fatal_error,"Invalid combination");
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,0);
-    }
-  }
-  return ColorID();
 }

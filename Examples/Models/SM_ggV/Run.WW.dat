@@ -1,0 +1,30 @@
+(run){
+  % general settings
+  EVENTS 0;
+  MI_HANDLER None; FRAGMENTATION None;
+  SHOWER_GENERATOR None; ME_QED None;
+
+  % load new model library
+  SHERPA_LDADD SherpaSMGGV;;
+
+  % generators
+  ME_SIGNAL_GENERATOR Amegic;
+  EVENT_GENERATION_MODE Weighted;
+
+  % scales
+  SCALES VAR{sqr(80.385)};
+
+  % model parameters
+  MODEL SMGGV;
+
+  % collider setup
+  BEAM_1 2212;  BEAM_ENERGY_1 7000.;
+  BEAM_2 2212;  BEAM_ENERGY_2 7000.;
+}(run)
+
+(processes){
+  Process 21 21 -> 11 -12 -13 14
+  Order (2,4);
+  Print_Graphs Graphs;
+  End process
+}(processes)

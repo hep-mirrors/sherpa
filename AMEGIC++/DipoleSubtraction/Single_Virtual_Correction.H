@@ -9,7 +9,10 @@
 
 namespace PDF { class PDF_Base; } 
 
-namespace PHASIC { class Virtual_ME2_Base; }
+namespace PHASIC {
+  class Virtual_ME2_Base;
+  class Multi_Channel;
+}
 
 namespace AMEGIC {
   class Helicity;
@@ -24,6 +27,7 @@ namespace AMEGIC {
     ATOOLS::cs_itype::type  m_itype;
     double                  m_iresult;
     Phase_Space_Generator * p_psgen;
+    PHASIC::Multi_Channel * p_fsmc;
 
     std::vector<std::vector<double> > m_dsijqcd,m_dsijew;
     std::vector<std::vector<double> > m_Q2ij;
@@ -69,9 +73,11 @@ namespace AMEGIC {
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
 
     void SetSelector(const PHASIC::Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);
     void SetGenerator(PHASIC::ME_Generator_Base *const gen);
@@ -98,6 +104,7 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();
+    void                RequestVariables(PHASIC::Phase_Space_Handler *const psh);
     Single_LOProcess*   GetLOProcess()                 { return p_LO_process; }
     Amplitude_Handler * GetAmplitudeHandler()          { return p_partner->GetLOProcess()->GetAmplitudeHandler();}
     Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }    
@@ -132,8 +139,6 @@ namespace AMEGIC {
 
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
-
-    int PerformTests() { return 1; }
 
     bool Combinable(const size_t &idi,const size_t &idj);
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);

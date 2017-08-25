@@ -1,0 +1,10 @@
+ BEGIN_RIVET {
+   -a MC_QCD_PARTONS MC_HJETS;
+ } END_RIVET;
+
+ BEGIN_ANALYSIS {
+   LEVEL Shower; PATH_PIECE INCLU/;
+   PT    25  0   200   100   LinErr FinalState;
+   PT    25  1   10000 200   LogErr FinalState;
+   Y     25 -7.5 7.5   150   LinErr FinalState;
+ } END_ANALYSIS

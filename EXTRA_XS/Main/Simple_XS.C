@@ -10,12 +10,8 @@ namespace PDF    { class Remnant_Base; }
 
 namespace EXTRAXS {
 
-  class Cluster_Algorithm;
-
   class Simple_XS: public Process_Group, public PHASIC::ME_Generator_Base {
   private :
-
-    Cluster_Algorithm *p_cluster;
 
     std::string m_path, m_file;
 
@@ -38,12 +34,6 @@ namespace EXTRAXS {
     int PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (Process_Base *const proc,const ATOOLS::Vec4D_Vector &p,
-     const size_t &mode);
-
   }; // end of class Simple_XS
 
 } // end of namespace EXTRAXS
@@ -58,7 +48,6 @@ namespace EXTRAXS {
 #include "MODEL/Main/Model_Base.H"
 #include "PDF/Remnant/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "EXTRA_XS/Cluster/Cluster_Algorithm.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 
@@ -73,14 +62,13 @@ void Simple_XS::DrawLogo(std::ostream &ostr)
 }
 
 Simple_XS::Simple_XS(): 
-  ME_Generator_Base("Internal"), p_cluster(NULL) 
+  ME_Generator_Base("Internal")
 {
   DrawLogo(std::cout);
 }
 
 Simple_XS::~Simple_XS() 
 {
-  if (p_cluster) delete p_cluster;
 }
 
 bool Simple_XS::Initialize(const string &path,const string &file,
@@ -113,7 +101,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
       delete newxs;
       return NULL;
     }
-    if (add) Add(newxs);
+    if (add) Add(newxs,1);
     newxs->SetGenerator(this);
     DEBUG_INFO("Initialized '"<<newxs->Name());
     return newxs;
@@ -144,21 +132,6 @@ int Simple_XS::PerformTests()
 bool Simple_XS::NewLibraries()
 {
   return false;
-}
-
-void Simple_XS::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
-{
-  if (p_cluster==NULL) p_cluster = new Cluster_Algorithm();
-  p_cluster->SetClusterDefinitions(defs);
-}
-
-Cluster_Amplitude *Simple_XS::ClusterConfiguration
-(Process_Base *const proc,const Vec4D_Vector &p,const size_t &mode)
-{
-  if (mode!=2) p_cluster->Cluster(proc->Get<Single_Process>());
-  Cluster_Amplitude *ampl(p_cluster->Amplitude());
-  ampl->SetMS(this);
-  return ampl;
 }
 
 DECLARE_GETTER(Simple_XS,"Internal",

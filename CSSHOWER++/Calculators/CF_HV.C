@@ -39,7 +39,7 @@ namespace CSSHOWER {
 		       const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
-    bool   AllowSpec(const ATOOLS::Flavour &fl);
+    bool   AllowSpec(const ATOOLS::Flavour &fl,const int mode);
 
   };
 
@@ -79,7 +79,7 @@ double CF_HV::Coupling(const double &scale,const int pol)
   return m_last = (*p_cpl)(scl)*m_q;
 }
 
-bool CF_HV::AllowSpec(const ATOOLS::Flavour &fl) 
+bool CF_HV::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   return (fl.Strong()&&fl.Kfcode()>9900000);
 }

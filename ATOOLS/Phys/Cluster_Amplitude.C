@@ -29,7 +29,8 @@ Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   m_kin(0), m_nlo(0), m_flag(0),
   m_mur2(0.0), m_muf2(0.0), m_muq2(0.0), m_mu2(0.0),
   m_kt2(0.0), m_z(0.0), m_phi(0.0), m_lkf(0.0),
-  p_jf(NULL), p_proc(NULL), p_procs(NULL), p_dinfo(NULL), p_ms(NULL)
+  p_jf(NULL), p_ca(NULL), p_proc(NULL), p_procs(NULL),
+  p_iinfo(NULL), p_dinfo(NULL), p_ms(NULL)
 {
   if (p_prev!=NULL) p_prev->p_next=this;
 }
@@ -56,7 +57,7 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->m_nin=ca->m_new=ca->m_ncl=ca->m_kin=ca->m_nlo=ca->m_flag=0;
   ca->m_mur2=ca->m_muf2=ca->m_muq2=ca->m_mu2=0.0;
   ca->m_kt2=ca->m_z=ca->m_phi=ca->m_lkf=0.0;
-  ca->p_jf=ca->p_proc=ca->p_procs=ca->p_dinfo=NULL;
+  ca->p_jf=ca->p_ca=ca->p_proc=ca->p_procs=ca->p_iinfo=ca->p_dinfo=NULL;
   ca->p_ms=NULL;
   if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
   return ca;
@@ -240,6 +241,188 @@ Cluster_Leg *Cluster_Amplitude::Splitter() const
   for (size_t i(0);i<m_legs.size();i++)
     if (m_legs[i]->K()) return m_legs[i];
   return NULL;
+}
+
+Cluster_Amplitude *Cluster_Amplitude::First()
+{
+  return p_prev?p_prev->First():this;
+}
+
+Cluster_Amplitude *Cluster_Amplitude::Last()
+{
+  return p_next?p_next->Last():this;
+}
+
+bool Cluster_Amplitude::CheckColors
+(const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
+ const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo)
+{
+  if (mo.StrongCharge()==8) {
+    if (!lk->Flav().Strong()) return false;
+  }
+  else if (mo.Strong()) {
+    if (!lk->Flav().Strong()) return false;
+  }
+  else {
+    if (lk->Flav().StrongCharge()==8) return false;
+    if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+	lk->Col().m_i==-1) return true;
+    ColorID ci(li->Col()), cj(lj->Col());
+    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
+    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
+    return false;
+  }
+  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+      lk->Col().m_i==-1) return true;
+  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
+  if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
+  if (li->Flav().StrongCharge()==3) {
+    if (lj->Flav().StrongCharge()==-3) {
+      if (lk->Flav().StrongCharge()==0) return true;
+      if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
+      if (ci.m_i==cj.m_j && 
+	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
+      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
+	  cj.Singlet()) return true;
+      if (li->Flav().Kfcode()==25 && mo.IsGluon() &&
+	  (cj.m_i==ck.m_j || cj.m_j==ck.m_i)) return true;
+    }
+    else {
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
+    }
+  }
+  else if (li->Flav().StrongCharge()==-3) {
+    if (lj->Flav().StrongCharge()==3) {
+      if (lk->Flav().StrongCharge()==0) return true;
+      if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
+      if (ci.m_j==cj.m_i && 
+	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
+      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
+	  cj.Singlet()) return true;
+    }
+    else {
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
+    }
+  }
+  else if (li->Flav().StrongCharge()==8) {
+    if (lk->Flav().StrongCharge()==0) return false;
+    if (lj->Flav().StrongCharge()==8) {
+      if (ci.m_i==cj.m_j && 
+	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	return true;
+      if (ci.m_j==cj.m_i && 
+	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
+	return true;
+    }
+    else if (lj->Flav().StrongCharge()==3) {
+      if (ci.m_j==cj.m_i &&
+	  (ci.m_i==ck.m_j || ck.Singlet())) return true;
+      if ((cj.m_i==ck.m_j || ck.Singlet()) &&
+	  ci.Singlet()) return true;
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      if (ci.m_i==cj.m_j &&
+	  (ci.m_j==ck.m_i || ck.Singlet())) return true;
+      if ((cj.m_j==ck.m_i || ck.Singlet()) &&
+	  ci.Singlet()) return true;
+    }
+    else {
+      if (lj->Flav().Kfcode()==25 && mo.IsGluon() &&
+	  (ci.m_i==ck.m_j || ci.m_j==ck.m_i)) return true;
+    }
+  }
+  else {
+    if (lj->Flav().StrongCharge()==8 ||
+	lk->Flav().StrongCharge()==8) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+ColorID Cluster_Amplitude::CombineColors
+(const Cluster_Leg *li,const Cluster_Leg *lj,
+ const Cluster_Leg *lk,const ATOOLS::Flavour &mo)
+{
+  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
+  if (ci.m_i==-1 && cj.m_i==-1 && ck.m_i==-1) return ColorID();
+  if (!mo.Strong()) return ColorID(0,0);
+  if (li->Flav().StrongCharge()==3) {
+    if (lj->Flav().StrongCharge()==-3) {
+      return ColorID(ci.m_i,cj.m_j);
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (cj.Singlet()) return ColorID(ci.m_i,0);
+      return ColorID(cj.m_i,0);
+    }
+    else {
+      return ColorID(ci.m_i,0);
+    }
+  }
+  else if (li->Flav().StrongCharge()==-3) {
+    if (lj->Flav().StrongCharge()==3) {
+      return ColorID(cj.m_i,ci.m_j);
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (cj.Singlet()) return ColorID(0,ci.m_j);
+      return ColorID(0,cj.m_j);
+    }
+    else {
+      return ColorID(0,ci.m_j);
+    }
+  }
+  else if (li->Flav().StrongCharge()==8) {
+    if (lj->Flav().StrongCharge()==8) {
+      if (ci.m_i==cj.m_j && 
+	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	return ColorID(cj.m_i,ci.m_j);
+      if (ci.m_j==cj.m_i && 
+	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
+	return ColorID(ci.m_i,cj.m_j);
+      THROW(fatal_error,"Invalid clustering");
+    }
+    else if (lj->Flav().StrongCharge()==3) {
+      if (ci.Singlet()) return ColorID(cj.m_i,0);
+      return ColorID(ci.m_i,0);
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      if (ci.Singlet()) return ColorID(0,cj.m_j);
+      return ColorID(0,ci.m_j);
+    }
+    else {
+      return ColorID(ci.m_i,ci.m_j);
+    }
+  }
+  else {
+    if (lj->Flav().StrongCharge()==8) {
+      return ColorID(cj.m_i,cj.m_j);
+    }
+    else if (lj->Flav().StrongCharge()==3) {
+      return ColorID(cj.m_i,0);
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      return ColorID(0,cj.m_j);
+    }
+    else {
+      return ColorID(0,0);
+    }
+  }
+  return ColorID();
 }
 
 void Cluster_Amplitude::SetColours

@@ -28,7 +28,7 @@ namespace MCATNLO {
   class CS_Cluster_Definitions: public PDF::Cluster_Definitions_Base {
   private:
 
-    ATOOLS::Mass_Selector *p_ms;
+    const ATOOLS::Mass_Selector *p_ms;
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
@@ -50,24 +50,20 @@ namespace MCATNLO {
     // CS cluster kperps
     double GetX(const ATOOLS::Cluster_Leg*,
 		Splitting_Function_Base* const) const;
-    PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
-		  int i,int j,int k,
-		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		       ATOOLS::Mass_Selector *const ms=NULL,
-		       const int kin=-1,const int kmode=0);
+    PDF::Cluster_Param Cluster(const PDF::Cluster_Config &ca);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
 		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		      ATOOLS::Mass_Selector *const ms=NULL,
+		      const ATOOLS::Mass_Selector *ms=NULL,
 		      const int ikin=1,const int kmode=0);
 
     // CS cluster kinematics
     ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,
 				 int i,int j,int k,
 				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-				 ATOOLS::Mass_Selector *const ms=NULL,
+				 const ATOOLS::Mass_Selector *const ms=NULL,
 				 const int kin=0,const int kmode=0);
     
     //inline methods

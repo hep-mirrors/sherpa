@@ -36,10 +36,10 @@ operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
-  if (ATOOLS::rpa->gen.Beam1().Kfcode()==kf_e || 
-      ATOOLS::rpa->gen.Beam2().Kfcode()==kf_e) jetmode=3;
-  if (ATOOLS::rpa->gen.Beam1().Kfcode()==kf_e && 
-      ATOOLS::rpa->gen.Beam2().Kfcode()==kf_e) jetmode=1;
+  if (ATOOLS::rpa->gen.Beam1().IsLepton() || 
+      ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=3;
+  if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
+      ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=1;
   std::string inlist="FinalState", outlist="Analysed";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {
@@ -574,7 +574,7 @@ Analysis_Object * Final_Selector::GetCopy() const
   Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode,p_qualifier);
   fs->SetAnalysis(p_ana);
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    if (!it->second.ko) fs->AddSelector(it->first,it->second);
+    fs->AddSelector(it->first,it->second);
   }
 
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {

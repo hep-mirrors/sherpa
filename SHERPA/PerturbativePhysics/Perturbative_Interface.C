@@ -27,12 +27,11 @@ using namespace ATOOLS;
 Perturbative_Interface::Perturbative_Interface
 (Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL)
+  p_ampl(NULL), p_localkfactorvarweights(NULL)
 {
   Data_Reader read;
   read.SetInputPath(p_me->Path());
   read.SetInputFile(p_me->File());
-  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
   m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
   m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
@@ -41,17 +40,17 @@ Perturbative_Interface::Perturbative_Interface
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
   p_me(NULL), p_mi(mi), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL) {}
+  p_ampl(NULL), p_localkfactorvarweights(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Decay_Handler_Base *const hdh,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(hdh), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL) {}
+  p_ampl(NULL), p_localkfactorvarweights(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Soft_Collision_Handler *const sch,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
-  p_ampl(NULL), m_cmode(0), p_localkfactorvarweights(NULL)  {}
+  p_ampl(NULL), p_localkfactorvarweights(NULL)  {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
@@ -88,20 +87,12 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   msg_Indent();
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration();
-    p_mi->Process()->Generator()->SetMassMode(1);
-    int stat(p_mi->Process()->Generator()->ShiftMasses(p_ampl));
-    if (stat<0) {
-      msg_Tracking()<<METHOD<<"(): MI Mass shift failed. Reject event."<<std::endl;
+    if (p_ampl==NULL) return Return_Value::Retry_Event;
+    if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
+      msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
       return Return_Value::Retry_Event;
     }
-    if (stat==1) {
-      stat=p_mi->Shower()->GetShower()->
-	GetClusterDefinitions()->ReCluster(p_ampl);
-      if (stat!=1) {
-	msg_Tracking()<<METHOD<<"(): MI Reclustering failed. Reject event.\n";
-	return Return_Value::Retry_Event;
-      }
-    }
+    p_mi->Process()->Generator()->SetMassMode(1);
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;
@@ -127,12 +118,15 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   assert(p_me != NULL);
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
-    (p_me->Process()->Integrator()->Momenta(),m_cmode);
-  if (p_ampl==NULL) return Return_Value::New_Event;
-  if (p_ampl->MS()==NULL)
-    p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
-      (p_me->Process()->Integrator()->Momenta(),m_cmode|256);
-  if (p_ampl==NULL) return Return_Value::New_Event;
+    (p_me->Process()->Integrator()->Momenta());
+  if (p_ampl==NULL) {
+    msg_Error()<<METHOD<<"(): Clustering failed. Reject event."<<std::endl;
+    return Return_Value::New_Event;
+  }
+  if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
+    msg_Tracking()<<METHOD<<"(): Invalid beams. Reject event."<<std::endl;
+    return Return_Value::New_Event;
+  }
   m_weight=1.0;
   if (p_localkfactorvarweights) {
     delete p_localkfactorvarweights;
@@ -141,39 +135,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
-      Cluster_Amplitude *oampl=p_me->Process()->
-	Get<Single_Process>()->Cluster
-	(p_me->Process()->Integrator()->Momenta(),m_cmode);
-      if (!LocalKFactor(oampl)) {
-	DEBUG_INFO("didn't find process using original amplitude");
-	if (m_bbarmode&4) {
-	  Cluster_Amplitude *ampl=p_me->Process()->
-	    Get<Single_Process>()->Cluster
-	    (p_me->Process()->Integrator()->Momenta(),m_cmode|16|256|512);
-	  while (ampl->Prev()) ampl=ampl->Prev();
-	  if (!LocalKFactor(ampl))
-	    DEBUG_INFO("didn't find process using exclusive clustering");
-	  ampl->Delete();
-	}
-      }
-      while (oampl->Prev()) oampl=oampl->Prev();
-      oampl->Delete();
+      if (!LocalKFactor(p_ampl)) DEBUG_INFO("Process not found");
     }
   }
   p_me->Process()->Generator()->SetMassMode(1);
-  int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
-  if (stat<0) {
-    msg_Tracking()<<METHOD<<"(): ME Mass shift failed. Reject event."<<std::endl;
-    return Return_Value::New_Event;
-  }
-  if (stat==1) {
-    stat=p_me->Shower()->GetShower()->
-      GetClusterDefinitions()->ReCluster(p_ampl);
-    if (stat!=1) {
-      msg_Tracking()<<METHOD<<"(): ME Reclustering failed. Reject event."<<std::endl;
-      return Return_Value::New_Event;
-    }
-  }
   size_t cmax(0);
   for (size_t i(0);i<p_ampl->Legs().size();++i)
     cmax=Max(cmax,(size_t)p_ampl->Leg(i)->Col().m_i);
@@ -184,21 +149,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     if (!p_dec->DefineInitialConditions(p_ampl, blob)) {
       msg_Tracking()<<METHOD<<"(): Decay clustering failed. Reject event."<<std::endl;
       return Return_Value::Retry_Event;
-    }
-    Cluster_Amplitude *ampl(p_ampl);
-    while (ampl->Prev()) ampl=ampl->Prev();
-    int stat(p_me->Process()->Generator()->ShiftMasses(ampl));
-    if (stat<0) {
-      msg_Tracking()<<METHOD<<"(): DH Mass shift failed. Reject event."<<std::endl;
-      return Return_Value::Retry_Event;
-    }
-    if (stat==1) {
-      stat=p_me->Shower()->GetShower()->
-	GetClusterDefinitions()->ReCluster(ampl);
-      if (stat!=1) {
-	msg_Tracking()<<METHOD<<"(): DH Reclustering failed. Reject event."<<std::endl;
-	return Return_Value::Retry_Event;
-      }
     }
   }
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
@@ -258,9 +208,14 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   }
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
-    if (ampl->Next() && (m_bbarmode&2)) continue;
     Process_Base::SortFlavours(ampl);
-    for (size_t i=0; i<procs.size(); ++i) {
+    if (m_bbarmode&2) {
+      if (ampl->Next()) continue;
+      Single_Process *proc(ampl->Proc<Single_Process>());
+      if (ampl->Legs().size()-ampl->NIn()>
+	  proc->Info().m_fi.NMinExternal()) break;
+    }
+    for (int i=procs.size()-1; i>=0; --i) {
       if (p_localkfactorvarweights) p_localkfactorvarweights->Reset();
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
@@ -321,7 +276,6 @@ int Perturbative_Interface::PerformShowers()
   Blob_Data_Base *winfo((*p_hard)["Weight"]);
   if (!winfo) THROW(fatal_error,"No weight information in signal blob");
   double meweight(winfo->Get<double>());
-  if (meweight==0.0) return 0;
 
   PDF::Shower_Base *csh(p_shower->GetShower());
 
@@ -335,9 +289,6 @@ int Perturbative_Interface::PerformShowers()
   double weight=csh->Weight();
   p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));
   p_hard->AddData("Weight",new Blob_Data<double>(meweight*weight));
-  if (blob_data_base) {
-    blob_data_base->Get<Variation_Weights>() *= weight;
-  }
   return stat;
 }
 

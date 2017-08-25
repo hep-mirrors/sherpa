@@ -200,7 +200,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
     msg_Debugging()<<"}\n";
     trials.insert(ckw);
     if (ckw.m_i==0 && ckw.m_j==0 && ckw.m_k==0) {
-      double kt2core(CoreScale(ampl).m_op2);
+      double kt2core(CoreScale(ampl).m_op);
       bool ord(true);
       std::vector<std::pair<size_t,double> > 
     	&pops(ops[ampl->Legs().size()-(m_nin+m_noutmin)]);
@@ -287,14 +287,14 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   return 0.0;
 }
 
-PDF::CParam MINLO_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
+PDF::Cluster_Param MINLO_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
 {
   ampl->SetProc(p_proc);
-  PDF::CParam kt2(p_core->Calculate(ampl));
+  PDF::Cluster_Param kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);
   for (Cluster_Amplitude *campl(ampl);
-       campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op2);
+       campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op);
   return kt2;
 }
 

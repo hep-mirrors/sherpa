@@ -17,7 +17,7 @@ using namespace std;
 bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
-  p_rms(NULL), m_qcdmode(qcd), m_ewmode(qed)
+  m_qcdmode(qcd), m_ewmode(qed)
 {
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
@@ -86,26 +86,22 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	if (v->in[2]==v->in[0].Bar()) dmode=1;
 	else if (v->in[1]!=v->in[0].Bar() && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1)));
 	if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
-	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
 	}
 	if (v->in[1]!=v->in[2]) {
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1)));
 	  if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
-	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
-	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
-	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
-	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
 	  }
 	}
       }
@@ -168,17 +164,17 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";
   }
-  if (split->GetCol()<0 || split->GetCol()==0) {
+  if (split->GetCol()<0) {
     switch(split->GetType()) {
     case cstp::IF:
-      m_fifmap[split->GetFlavourA().Bar()]
+      m_fifmap[split->GetFlavourA()]
 	[split->GetFlavourC()]
-	[split->GetFlavourB().Bar()]=split;
+	[split->GetFlavourB()]=split;
       break;
     case cstp::II:
-      m_fiimap[split->GetFlavourA().Bar()]
+      m_fiimap[split->GetFlavourA()]
 	[split->GetFlavourC()]
-	[split->GetFlavourB().Bar()]=split;
+	[split->GetFlavourB()]=split;
       break;
     default: break;
     }
@@ -204,18 +200,18 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
 	[split->GetFlavourA()]=split;
     break;
   case cstp::IF:
-    m_iffmap[split->GetFlavourA().Bar()]
+    m_iffmap[split->GetFlavourA()]
       [split->GetFlavourC()]
-      [split->GetFlavourB().Bar()]=split;
+      [split->GetFlavourB()]=split;
     if (split->On())
       m_sifmap[split->GetFlavourA()]
 	[split->GetFlavourC()]
 	[split->GetFlavourB()]=split;
     break;
   case cstp::II:
-    m_ifimap[split->GetFlavourA().Bar()]
+    m_ifimap[split->GetFlavourA()]
       [split->GetFlavourC()]
-      [split->GetFlavourB().Bar()]=split;
+      [split->GetFlavourB()]=split;
     if (split->On())
       m_siimap[split->GetFlavourA()]
 	[split->GetFlavourC()]
@@ -345,11 +341,12 @@ bool Sudakov::Generate(Parton * split)
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
       (split->GetSpect()->GetType()==pst::FS?cstp::IF:cstp::II);
+    const Mass_Selector *ms(p_selected->Lorentz()->MS());
     switch (m_type) {
     case (cstp::FF) : {
-      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(p_rms->Mass(m_flspec));
+      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+      double mk2 = sqr(ms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       if (Q2<=mi2+mj2+mk2) return false;
       m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2,
@@ -360,10 +357,10 @@ bool Sudakov::Generate(Parton * split)
     }
       break; 
     case (cstp::FI) : {
-      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
-      double ma2 = sqr(p_rms->Mass(m_flspec));
-      double mij2= sqr(p_rms->Mass(((*m_splitter)->GetFlavourA())));
+      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+      double ma2 = sqr(ms->Mass(m_flspec));
+      double mij2= sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinFI()->GetY(-Q2,m_kperp2,m_z,mi2,mj2,ma2,
 				    (*m_splitter)->GetFlavourA(),
@@ -374,9 +371,9 @@ bool Sudakov::Generate(Parton * split)
     }
       break; 
     case (cstp::IF) : {
-      double ma2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourA())));
-      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(p_rms->Mass(m_flspec));
+      double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+      double mk2 = sqr(ms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2,
 				    (*m_splitter)->GetFlavourB(),
@@ -386,9 +383,9 @@ bool Sudakov::Generate(Parton * split)
     }
       break;
     case (cstp::II) : {
-      double ma2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourA())));
-      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
-      double mb2 = sqr(p_rms->Mass(m_flspec));
+      double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+      double mb2 = sqr(ms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2,
 				    (*m_splitter)->GetFlavourB(),
@@ -638,7 +635,8 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 			       const double scale,const double xbj,int beam) {
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
     if ((*m_splitter)->GetType()==m_type && 
-	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
+	(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect ||
+	 (*m_splitter)->Coupling()->AllowSpec(m_flspec))) {
       if ((*m_splitter)->PureQCD() && 
 	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
       bool match=false;

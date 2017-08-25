@@ -29,7 +29,7 @@ namespace PDF {
     
     std::string m_name;
     double      m_weight;
-    int         m_on;
+    int         m_on, m_kttype;
 
     ATOOLS::Variation_Weights * p_variationweights;
 
@@ -54,15 +54,13 @@ namespace PDF {
 
     inline const std::string &Name() const { return m_name; }
 
-    virtual double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
-                          const ATOOLS::Flavour &flk,const int type,
-			  const int cpl,const double &mu2) const = 0;
-
     inline double Weight() const { return m_weight; }
 
     inline int On() { return m_on; }
 
     inline void SetOn(const int on) { m_on=on; }
+
+    inline int KTType() const { return m_kttype; }
 
     inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }

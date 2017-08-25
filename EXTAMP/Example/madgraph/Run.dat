@@ -1,0 +1,30 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;#  SHOWER_GENERATOR None;
+  SHERPA_LDADD SherpaMain ExampleME;
+  MODEL sm; UFO_PARAM_CARD param_card.dat;
+
+  SCALES VAR{Abs2(p[0]+p[1])};
+
+  ME_SIGNAL_GENERATOR External;
+  EVENT_GENERATION_MODE Weighted;
+
+  OL_PARAMETERS verbose 3;
+
+  % collider setup
+  BEAM_1  1; BEAM_ENERGY_1 = 10000.;
+  BEAM_2 -1; BEAM_ENERGY_2 = 10000.;
+
+}(run)
+
+(processes){
+  Process 1 -1 -> 21 21
+  Integrator Rambo;
+  Order (2,0);
+  End process;
+}(processes)
+
+(selector){
+  PT 21 10 E_CMS;
+}(selector)

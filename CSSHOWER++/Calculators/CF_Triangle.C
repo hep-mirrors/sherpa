@@ -16,7 +16,7 @@ namespace CSSHOWER {
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
-    bool AllowSpec(const ATOOLS::Flavour &fl);
+    bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
 
   };
 
@@ -45,7 +45,7 @@ double CF_GGH::Coupling(const double &scale,const int pol)
   return m_last = m_cplmax.front();
 }
 
-bool CF_GGH::AllowSpec(const ATOOLS::Flavour &fl) 
+bool CF_GGH::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   return true;
 }

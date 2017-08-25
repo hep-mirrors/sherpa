@@ -1,0 +1,23 @@
+(run){
+  EVENTS 0; INIT_ONLY 2; OUTPUT 0;
+  SHERPA_LDADD SherpaMain;
+  ME_SIGNAL_GENERATOR None;
+  SCALES VAR{sqr(91.2)};
+}(run)
+
+(beam){
+  BEAM_1  21; BEAM_ENERGY_1 450.6;
+  BEAM_2  21; BEAM_ENERGY_2 450.6;
+}(beam)
+
+(isr){
+  PDF_LIBRARY None;
+}(isr)
+
+(processes){
+  Process 21 21 -> 6 -6 21;
+  Loop_Generator OpenLoops;
+  Integrator Rambo;
+  Order (3,0);
+  End process;
+}(processes)

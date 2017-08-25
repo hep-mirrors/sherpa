@@ -272,7 +272,6 @@ void One_Variable_Observable::Output(const std::string & pname)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   std::string bname(pname+"/"+m_name);
-  ATOOLS::MakeDir(pname); 
   std::set<std::string> names;
   for (size_t i(0);i<m_dists.size();++i) 
     if (m_dists[i]!=NULL) {

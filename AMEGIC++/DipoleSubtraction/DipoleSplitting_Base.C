@@ -31,6 +31,8 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   m_spfdef(0.), m_collVFF(true), m_Vsubmode(1),
   p_cpl(NULL)
 {
+  p_nlomc=NULL;
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
   m_name=ToString(m_dtype)+"["+ToString(m_ftype)
          +"("+ToString(m_i)+","+ToString(m_j)+")("+ToString(m_k)+")]"
          +"("+ToString(m_stype)+")";
@@ -58,6 +60,7 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   m_k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
+  if (m_subtype==1) m_kappa=1.0;
 }
 
 void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)
@@ -116,11 +119,15 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
   if (m_mcmode==1) {
     int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
         ds(alpha<=m_alpha);
+    msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
+		   <<" -> DA = "<<da<<", DS = "<<ds<<" -> DA-DS = "<<da-ds<<"\n";
     m_mcsign=ds-da;
     return m_mcsign==0;
   }
   if (m_mcmode==2) {
     m_mcsign=m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
+    msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
+		   <<" -> DA = "<<m_mcsign<<"\n";
     return m_mcsign==0;
   }
   return alpha>m_alpha || m_kt2>m_kt2max;
@@ -139,3 +146,8 @@ double DipoleSplitting_Base::GetValue()
   return 0.0;
 }
 
+bool DipoleSplitting_Base::KinCheck() const
+{
+  if (m_amin>0.0) return m_a>m_amin;
+  return m_kt2>-m_amin;
+}

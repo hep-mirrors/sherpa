@@ -6,14 +6,10 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 
-namespace ATOOLS {
-  class Cluster_Amplitude;
-  struct Weight_Info;
-}
+namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace PDF {
   class Cluster_Definitions_Base;
-  class NLOMC_Base;
 }
 
 namespace MODEL { class Running_AlphaS; }
@@ -22,6 +18,7 @@ namespace PHASIC {
 
   class ME_Generators;
   class MCatNLO_Process;
+  class Jet_Finder;
 
   //! This class manages all processes contributing to an MC@NLO calculation
   class MCatNLO_Process : public Process_Base {
@@ -43,7 +40,7 @@ namespace PHASIC {
     bool   m_wassevent;
     //! Separate scale for RS events
     std::string m_rsscale;
-
+    
     //! Map of integrated dipoles
     ATOOLS::StringIDipSet_Map m_iinfo;
     //! Map of differential dipoles
@@ -54,13 +51,15 @@ namespace PHASIC {
 
     /*!
      * @param pi Process_Info Process information object
-     * @param setlookup bool Whether LookUp should be set
+     * @param nlotype nlo_type::code NLO type of process
+     * @param real bool Whether this is a real correction or not
      * @return Pointer to the initialised process
      *
      * This method initialises all needed processes.
      */
     Process_Base *InitProcess(const Process_Info &pi,
-                              const bool setlookup);
+			      const ATOOLS::nlo_type::code nlotype,
+			      const int real);
 
     /*!
      * @param ampl Cluster_Amplitude Cluster amplitude for which the process is
@@ -75,16 +74,6 @@ namespace PHASIC {
                               const ATOOLS::nlo_type::code type
                                     =ATOOLS::nlo_type::lo,
 			      const bool error=true) const;
-    /*!
-     * @param sub NLO_subevt NLO subevent for which the process is needed
-     * @param nlotype nlo_type::code NLO type of process needed
-     * @return Pointer to the initialised process
-     *
-     * This method retrieves processes from the global process map.
-     */
-    Process_Base *FindProcess(const ATOOLS::NLO_subevt *sub,
-                              const ATOOLS::nlo_type::code type
-                                    =ATOOLS::nlo_type::lo) const;
 
     /*!
      * @param sub NLO_subevt NLO subevent for which the cluster amplitude
@@ -138,6 +127,17 @@ namespace PHASIC {
     double ReweightLocalKFactor(ATOOLS::Variation_Parameters *,
                                 ATOOLS::Variation_Weights *,
                                 KFactorReweightingInfo &);
+
+    struct HEventVeto_Args {
+      Jet_Finder *p_jf;
+      double m_jcv;
+      HEventVeto_Args(Jet_Finder *const jf,const double &jcv):
+	p_jf(jf), m_jcv(jcv) {}
+    };
+
+    double HEventVetoWeight(ATOOLS::Variation_Parameters *params,
+			    ATOOLS::Variation_Weights *weights,
+			    HEventVeto_Args &args);
 
   public:
 
@@ -226,6 +226,10 @@ namespace PHASIC {
      */
     void SetLookUp(const bool lookup);
     /*!
+     * Inherited from Process_Base, calls InitScale for all subprocesses
+     */
+    bool InitScale();
+    /*!
      * @param scale Scale_Setter_Arguments Scale setter arguments
      *
      * Inherited from Process_Base, calls SetScale for all subprocesses
@@ -255,16 +259,9 @@ namespace PHASIC {
      * Inherited from Process_Base, calls SetShower for all subprocesses
      */
     void SetShower(PDF::Shower_Base *const ps);
-    void SetVariationWeights(ATOOLS::Variation_Weights *const);
-    /*!
-     * @param cluster Cluster_Definitions_Base Cluster definitions
-     *
-     * Inherited from Process_Base, calls SetClusterDefinitions for
-     * p_bproc and p_rproc
-     */
-    void SetClusterDefinitions
-    (PDF::Cluster_Definitions_Base *const cluster);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
 
+    void SetVariationWeights(ATOOLS::Variation_Weights *const);
     /*!
      * @param ampl Cluster_Amplitude Cluster amplitude
      * @return Local KFactor

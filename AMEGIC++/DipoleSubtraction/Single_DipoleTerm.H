@@ -58,6 +58,7 @@ namespace AMEGIC {
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
     size_t SetMCMode(const size_t mcmode);
     size_t SetClusterMode(const size_t cmode);
+    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
 
     /*------------------------------------------------------------------------------
@@ -66,11 +67,11 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
 
+    void           SetLOMomenta(const ATOOLS::Vec4D*,const ATOOLS::Poincare &);
   private:
     bool           DetermineType();
     bool           DetermineQCDType();
     bool           DetermineEWType();
-    void           SetLOMomenta(const ATOOLS::Vec4D*,const ATOOLS::Poincare &);
     bool           CompareLOmom(const ATOOLS::Vec4D*);
 
     /*------------------------------------------------------------------------------
@@ -130,6 +131,9 @@ namespace AMEGIC {
     void SetChargeFactors();
     void SetSelector(const PHASIC::Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
+
+    void SetRealSubevt(ATOOLS::NLO_subevt *real) { m_subevt.p_real=real; }
     
     /*------------------------------------------------------------------------------
 
@@ -141,7 +145,6 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
     int            Type() { return 15; }
-    int PerformTests() { return 1; }
     void PrintLOmom();
     inline void SetSmearThreshold(const double &th) { m_smth=th; }
   };

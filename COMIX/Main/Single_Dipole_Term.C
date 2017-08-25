@@ -31,12 +31,18 @@ Single_Dipole_Term::Single_Dipole_Term
   Process_Info info(rs->Info());
   info.Combine(sub->m_i,sub->m_j,msub->p_fl[sub->m_ijt]);
   info.m_fi.m_nlotype&=~nlo_type::real;
-  Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR());
+  Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR(),1);
   p_rsint=rs->Integrator();
   m_name+="_RS"+ToString(sub->m_i)+"_"
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);
   m_maxcpl=rs->MaxOrders();
   m_mincpl=rs->MinOrders();
+  p_bg->FillCombinations(m_ccombs,m_cflavs,&m_brs,p_sub);
+  if (rs->IsMapped())
+    for (CFlavVector_Map::iterator fit(m_cflavs.begin());
+	 fit!=m_cflavs.end();++fit)
+      for (size_t i(0);i<fit->second.size();++i)
+	fit->second[i]=rs->ReMap(fit->second[i],m_brs[fit->first]);
 }
 
 Single_Dipole_Term::~Single_Dipole_Term()
@@ -59,11 +65,7 @@ double COMIX::Single_Dipole_Term::Partonic
   Single_Dipole_Term *sp(this);
   if (mode==1) return m_lastxs;
   if (m_zero || !Selector()->Result()) return m_lastxs;
-  for (size_t i(0);i<m_nin+m_nout;++i) {
-    double psm(m_flavs[i].Mass());
-    if (p[i][0]<psm) return m_lastxs;
-  }
-  if (!p_bg->RSTrigger(Selector(),m_mcmode))
+  if (!p_bg->JetTrigger(Selector(),m_mcmode))
     return m_lastxs=0.0;
   sp->p_scale->CalculateScale(p);
   if (m_mcmode==1) p_rsint->ColorIntegrator()->GeneratePoint();
@@ -90,11 +92,19 @@ bool Single_Dipole_Term::GeneratePoint()
 
 bool Single_Dipole_Term::Combinable(const size_t &idi,const size_t &idj)
 {
-  return false;
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
 }
 
 const Flavour_Vector &Single_Dipole_Term::CombinedFlavour(const size_t &idij)
 {
-  THROW(fatal_error,"Invalid call");
-  return m_flavs;
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
+}
+
+NLO_subevtlist *Single_Dipole_Term::GetRSSubevtList()
+{
+  return p_rsint->Process()->GetSubevtList();
 }

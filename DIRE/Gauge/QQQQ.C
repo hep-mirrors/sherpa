@@ -32,6 +32,7 @@ namespace DIRE {
 
     bool Allowed(const Splitting &s) const
     {
+      if (s.p_n) return s.p_s->Flav().Strong();
       Color cij(s.p_c->Col()), ck(s.p_s->Col());
       if (s.m_cm==0 && cij.m_i==ck.m_j) return true;
       return false;

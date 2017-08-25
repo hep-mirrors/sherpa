@@ -27,7 +27,6 @@ namespace AMEGIC {
     ~Single_Vertex(); 
     
     Complex Coupling(size_t i) const;
-    std::string PID() const;
 
     int CheckCoupling() const;
     int Compare(const Single_Vertex *v) const;

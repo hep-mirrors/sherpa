@@ -30,7 +30,7 @@ double SF_Lorentz::s_pdfcut=1.0e-6;
 double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
+  p_ms(NULL), p_cf(key.p_cf), m_col(0)
 {
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
@@ -226,6 +226,11 @@ double Splitting_Function_Base::RejectionWeight
   return m_lastacceptwgt;
 }
 
+void Splitting_Function_Base::SetMS(const ATOOLS::Mass_Selector *const ms)
+{
+  p_lf->SetMS(ms);
+}
+
 Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 {
   SetFlavourSpec(spec->GetFlavour());
@@ -255,7 +260,7 @@ double Splitting_Function_Base::GetXPDF
   }
   if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
   if (IsNan(scale) || IsNan(x)) return 0.0;
-  double Q2(scale*p_cf->CplFac(scale));
+  double Q2(scale);
   if (Q2<p_lf->MS()->Mass2(a) || x<p_pdf[beam]->XMin() ||
       x>p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor() ||
       Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())

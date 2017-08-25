@@ -23,7 +23,7 @@ namespace PHASIC {
     double *  energymin;
     double *  etmin;
     int       nin, ncut;
-    double    smin;
+    double    smin, minsijfac;
 
     Cut_Data();
     ~Cut_Data();

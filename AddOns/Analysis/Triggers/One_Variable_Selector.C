@@ -384,7 +384,6 @@ void One_Variable_Selector::Output(const std::string & pname)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   std::string bname(pname+"/"+m_name);
-  ATOOLS::MakeDir(pname); 
   for (size_t i(0);i<m_dists.size();++i) 
     if (m_dists[i]!=NULL) {
       std::string name(bname+"_"+m_vars[i]->IDName());

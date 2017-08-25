@@ -21,12 +21,14 @@
 #include "MODEL/Main/Coupling_Data.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
+#include <algorithm>
+
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-Single_Process::Single_Process() :
-  m_lastxs(0.0), m_lastbxs(0.0), m_lastflux(0.0),
+Single_Process::Single_Process():
+  m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
   m_pdfcts = ToType<size_t>(rpa->gen.Variable("MEPSNLO_PDFCT"));
@@ -74,7 +76,7 @@ Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
 
 double Single_Process::KFactor(const int mode) const
 {
-  if (p_kfactor) return p_kfactor->KFactor(mode);
+  if (p_kfactor && p_kfactor->On()) return p_kfactor->KFactor(mode);
   return 1.0;
 }
 
@@ -167,7 +169,7 @@ double Single_Process::CollinearCounterTerms
   msg_Debugging()<<asvalue<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
 		 <<sqrt(t2)<<") = "<<asvalue/(2.0*M_PI)*lt<<"\n";
   Flavour jet(kf_jet);
-  double fb=p_int->ISR()->PDFWeight((1<<(i+1))|8,p,p,lmuf2,lmuf2,fl,fl,0);
+  double fb=p_int->ISR()->PDFWeight(1<<(i+1),p,p,lmuf2,lmuf2,fl,fl,0);
   if (IsZero(fb,th)) {
     msg_Tracking()<<METHOD<<"(): Zero xPDF ( f_{"<<fl<<"}("
 		  <<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" ). Skip.\n";
@@ -211,7 +213,7 @@ double Single_Process::CollinearCounterTerms
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     const ATOOLS::ClusterAmplitude_Vector &ampls,
-    bool skipsfirstampl, const double &Q2,
+    const double &Q2,
     const double &muf2fac,
     const double &mur2fac,
     const double &showermuf2fac,
@@ -227,14 +229,14 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     THROW(not_implemented, "More than two incoming particles.");
   }
   Cluster_Sequence_Info csi;
-  AddISR(csi, ampls, skipsfirstampl, Q2, muf2fac, mur2fac, showermuf2fac, as, nominalcsi);
+  AddISR(csi, ampls, Q2, muf2fac, mur2fac, showermuf2fac, as, nominalcsi);
   AddBeam(csi, Q2);
   return csi;
 }
 
 void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::ClusterAmplitude_Vector &ampls,
-            bool skipsfirstampl, const double &Q2,
+            const double &Q2,
             const double &muf2fac, const double &mur2fac,
             const double &showermuf2fac,
             MODEL::Running_AlphaS * as,
@@ -249,16 +251,15 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
                                           m_flavs[0], m_flavs[1]));
     msg_Debugging()<<"PDF(fla="<<m_flavs[0]
                    <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0])
-                   <<", ta="<<Q2<<") * "
+                   <<", Qa="<<sqrt(Q2)<<") * "
                    <<"PDF(flb="<<m_flavs[1]
                    <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1])
-                   <<", tb="<<Q2<<") -> "<<pdfext<<std::endl;
+                   <<", Qb="<<sqrt(Q2)<<") -> "<<pdfext<<std::endl;
     csi.AddWeight(pdfext);
 
     // add splittings and their PDF weight ratios from clustering
     if (ampls.size() && (m_pinfo.m_ckkw&1)) {
-      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)
-                 <<", #ampls="<<ampls.size());
+      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2));
       m_mewgtinfo.m_type|=mewgttype::METS;
 
       // add external splitting
@@ -270,10 +271,6 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 
       Cluster_Amplitude *ampl(ampls.front());
       msg_IODebugging()<<*ampl<<"\n";
-      if (skipsfirstampl) {
-        ampl = ampl->Next();
-        msg_IODebugging()<<*ampl<<"\n";
-      }
 
       // add subsequent splittings
       bool addedfirstsplitting(false);
@@ -295,7 +292,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         // add splitting
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
-	if (MapProc() && LookUp() && !skipsfirstampl) {
+	if (MapProc() && LookUp() && !m_pinfo.Has(nlo_type::real)) {
 	  f1=ReMap(f1, ampl->Leg(0)->Id());
 	  f2=ReMap(f2, ampl->Leg(1)->Id());
 	}
@@ -488,21 +485,35 @@ double Single_Process::Differential(const Vec4D_Vector &p)
                               p_int->ISR()->Flux(p[0],p[1]);
   m_lastflux/=m_issymfac;
   if (GetSubevtList()==NULL) {
-    if (m_zero) return 0.0;
+    if (m_zero) {
+      if (p_variationweights)
+	p_variationweights->UpdateOrInitialiseWeights
+	  (&Single_Process::SetZero,*this,m_last);
+      return 0.0;
+    }
     Scale_Setter_Base *scs(ScaleSetter(1));
     scs->SetCaller(Proc());
-    if (Partonic(p,0)==0.0) return 0.0;
+    if (Partonic(p,0)==0.0) {
+      if (p_variationweights)
+	p_variationweights->UpdateOrInitialiseWeights
+	  (&Single_Process::SetZero,*this,m_last);
+      return 0.0;
+    }
     m_mewgtinfo*=m_lastflux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-    if (m_lastxs==0.0) return m_last=0.0;
+    if (m_lastxs==0.0) {
+      if (p_variationweights)
+	p_variationweights->UpdateOrInitialiseWeights
+	  (&Single_Process::SetZero,*this,m_last);
+      return m_last=0.0;
+    }
     m_last=m_lastxs;
     m_last+=NfSchemeConversionTerms();
     ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ?
       scs->Amplitudes() : ClusterAmplitude_Vector();
     const double facscale(scs->Scale(stp::fac));
-    ATOOLS::Cluster_Sequence_Info csi(
-        ClusterSequenceInfo(ampls, false, facscale));
+    Cluster_Sequence_Info csi(ClusterSequenceInfo(ampls,facscale));
     csi.AddFlux(m_lastflux);
     m_mewgtinfo.m_clusseqinfo=csi;
     msg_Debugging()<<m_mewgtinfo;
@@ -510,7 +521,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
     m_lastb=m_lastbxs*
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
-    if (p_mc!=NULL) {
+    if (p_mc!=NULL && m_dsweight) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
       m_mewgtinfo.m_type|=mewgttype::DADS;
@@ -531,15 +542,15 @@ double Single_Process::Differential(const Vec4D_Vector &p)
             ATOOLS::Variation_Weights * vw = new ATOOLS::Variation_Weights(v);
             cp->SetOwnedVariationWeights(vw);
           }
-          double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
+          double dadswgt(cp->Differential(dps.m_p)*dps.m_weight*m_dsweight);
           msg_Debugging()<<"DADS_"<<i<<" = "<<-dadswgt<<std::endl;
-          double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight);
+          double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight*m_dsweight);
           DADS_Info dads(-dadsmewgt,x[0],x[1],
                          cp->Flavours()[0],cp->Flavours()[1]);
           msg_Debugging()<<dads<<std::endl;
           m_mewgtinfo.m_dadsinfos.push_back(dads);
           if (p_variationweights && dadsmewgt != 0.0) {
-            *cp->VariationWeights() *= dps.m_weight;
+            *cp->VariationWeights() *= dps.m_weight*m_dsweight;
           }
           m_last-=dadswgt;
           cp->SetLookUp(lookup);
@@ -547,10 +558,9 @@ double Single_Process::Differential(const Vec4D_Vector &p)
         }
       }
     }
-    if (p_variationweights) {
-      p_variationweights->UpdateOrInitialiseWeights(&Single_Process::ReweightWithoutSubevents,
-                                                    *this, ampls);
-    }
+    if (p_variationweights)
+      p_variationweights->UpdateOrInitialiseWeights
+	(&Single_Process::ReweightWithoutSubevents,*this, ampls);
     return m_last;
   }
   else {
@@ -568,12 +578,11 @@ double Single_Process::Differential(const Vec4D_Vector &p)
                        <<std::endl;
       }
       if (sub->m_me!=0.0) {
-        ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
+        ClusterAmplitude_Vector ampls(sub->p_real->p_ampl?1:0,
+				      sub->p_real->p_ampl);
         if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
         const double facscale(sub->m_mu2[stp::fac]);
-        ATOOLS::Cluster_Sequence_Info csi(
-            ClusterSequenceInfo(ampls, true, facscale));
-        msg_Debugging()<<"fa*fb="<<csi.m_pdfwgt<<std::endl;
+        Cluster_Sequence_Info csi(ClusterSequenceInfo(ampls,facscale));
         csi.AddFlux(m_lastflux);
         if (m_mewgtinfo.m_type&mewgttype::H)
           m_mewgtinfo.m_rdainfos.back().m_csi=csi;
@@ -590,13 +599,13 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     }
     m_mewgtinfo*=m_lastflux;
-    for (size_t i=0;i<subs->size();++i) {
-      m_last+=(*subs)[i]->m_result;
-    }
     if (p_variationweights) {
-      const long emptyadditionaldata(NULL);
+      const long emptyadditionaldata((long)NULL);
       p_variationweights->InitialiseWeights(&Single_Process::ReweightSubevents,
                                             *this, emptyadditionaldata);
+    }
+    for (size_t i=0;i<subs->size();++i) {
+      m_last+=((*subs)[i]->m_trig&1)?(*subs)[i]->m_result:0.0;
     }
     return m_last;
   }
@@ -604,11 +613,18 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   return 0.;
 }
 
+double Single_Process::SetZero
+(Variation_Parameters *params,Variation_Weights *weights,double &dummy)
+{
+  return 0.0;
+}
+
 ATOOLS::Subevent_Weights_Vector Single_Process::ReweightSubevents(
   ATOOLS::Variation_Parameters * varparams,
   ATOOLS::Variation_Weights * varweights,
   const long &additionaldata)
 {
+  DEBUG_FUNC("");
   NLO_subevtlist *sevtlist = GetSubevtList();
   if (!sevtlist) THROW(fatal_error, "Missing subevents.");
 
@@ -628,11 +644,11 @@ ATOOLS::Subevent_Weights_Vector Single_Process::ReweightSubevents(
     info.m_wgt = sub->m_mewgt;
     info.m_muR2 = sub->m_mu2[stp::ren];
     info.m_muF2 = sub->m_mu2[stp::fac];
-    info.m_ampls = ClusterAmplitude_Vector(sub->p_ampl ? 1 : 0,
-                                           sub->p_ampl);
-    info.m_skipsfirstampl = true;
+    info.m_ampls = ClusterAmplitude_Vector(sub->p_real->p_ampl ? 1 : 0,
+                                           sub->p_real->p_ampl);
     info.m_fallbackresult = sub->m_result;
-    weights.push_back(ReweightBornLike(varparams, info));
+    double K(m_mewgtinfo.m_bkw.size()?m_mewgtinfo.m_bkw[varweights->CurrentParametersIndex()]:1.0);
+    weights.push_back(ReweightBornLike(varparams, info)*K);
   }
   return weights;
 }
@@ -642,6 +658,7 @@ double Single_Process::ReweightWithoutSubevents(
   ATOOLS::Variation_Weights * varweights,
   ATOOLS::ClusterAmplitude_Vector & ampls)
 {
+  DEBUG_FUNC("");
   // build type minus METS
   mewgttype::code nometstype((m_mewgtinfo.m_type & mewgttype::METS) ?
                              m_mewgtinfo.m_type ^ mewgttype::METS : m_mewgtinfo.m_type);
@@ -664,15 +681,14 @@ double Single_Process::ReweightWithoutSubevents(
     info.m_muR2 = m_mewgtinfo.m_mur2;
     info.m_muF2 = m_mewgtinfo.m_muf2;
     info.m_ampls = ampls;
-    info.m_skipsfirstampl = false;
-    return ReweightBornLike(varparams, info);
+    double K(m_mewgtinfo.m_bkw.size()?m_mewgtinfo.m_bkw[varweights->CurrentParametersIndex()]:1.0);
+    return ReweightBornLike(varparams, info)*K;
 
   } else { // NLO Born, Virtual Integrated, KP, DADS
     // calculate factors common to all these contributions
     info.m_muR2 = m_mewgtinfo.m_mur2;
     info.m_muF2 = m_mewgtinfo.m_muf2;
     info.m_ampls = ampls;
-    info.m_skipsfirstampl = false;
 
     const double muR2new(MuR2(varparams, info));
     const ATOOLS::Cluster_Sequence_Info csi(
@@ -705,17 +721,20 @@ double Single_Process::ReweightWithoutSubevents(
       }
 
       // KP
-      const double KPnew(KPTerms(varparams) * alphasfac);
+      const double KPnew(m_mewgtinfo.m_bviw*KPTerms(varparams) * alphasfac);
 
       // apply NLO counterterms
-      BVIKPnew = (Bnew + VInew + KPnew) * csi.m_pdfwgt;
+      double K(m_mewgtinfo.m_bkw.size()?m_mewgtinfo.m_bkw[varweights->CurrentParametersIndex()]:1.0);
+      double K1(m_mewgtinfo.m_bkw.size()>varweights->GetNumberOfVariations()?
+		m_mewgtinfo.m_bkw[varweights->GetNumberOfVariations()+varweights->CurrentParametersIndex()]:1.0);
+      BVIKPnew = (Bnew*K*(1.0-csi.m_ct) + (VInew + KPnew)*K1) * csi.m_pdfwgt;
 
     }
 
     // DADS
     double DADSnew(0.0);
     {
-      if (p_mc!=NULL) {
+      if (p_mc!=NULL && m_dsweight) {
         Dipole_Params dps(p_mc->Active(this));
         if (dps.p_dip!=NULL) {
           for (size_t i(0);i<dps.m_procs.size();++i) {
@@ -790,7 +809,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   p_int->ISR()->SetPDF(varparams->p_pdf2, 1);
 
   ATOOLS::Cluster_Sequence_Info csi(
-      ClusterSequenceInfo(info.m_ampls, info.m_skipsfirstampl,
+      ClusterSequenceInfo(info.m_ampls,
                           Q2, varparams->m_muF2fac, mur2fac,
                           varparams->m_showermuF2fac,
                           varparams->p_alphas,
@@ -959,12 +978,14 @@ void Single_Process::SetLookUp(const bool lookup)
 bool Single_Process::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  return true;
+  THROW(not_implemented, "To be implemented by child classes");
+  return false;
 }
 
 const Flavour_Vector &Single_Process::
 CombinedFlavour(const size_t &idij)
 {
+  THROW(not_implemented, "To be implemented by child classes");
   static Flavour_Vector fls(1,kf_none);
   return fls;
 }
@@ -978,32 +999,73 @@ ATOOLS::Flavour Single_Process::ReMap
 Cluster_Amplitude *Single_Process::Cluster
 (const Vec4D_Vector &p,const size_t &mode)
 {
+  if (!(mode&1)) {
   MCatNLO_Process *mp(dynamic_cast<MCatNLO_Process*>(Parent()));
   if (mp) {
     Cluster_Amplitude *ampl(mp->GetAmplitude());
-    if (ampl) return ampl;
+    return ampl;
   }
-  if (!(mode&256)) {
-    ClusterAmplitude_Vector &ampls(ScaleSetter(1)->Amplitudes());
-    if (ampls.size()) {
-      msg_Debugging()<<METHOD<<"(): Found "
-		     <<ampls.size()<<" amplitude(s) ... ";
-      msg_Debugging()<<"select 1st.\n";
-      return ampls.front()->CopyAll();
+  }
+  NLO_subevtlist *subs(GetRSSubevtList());
+  if (subs==NULL) subs=GetSubevtList();
+  if (subs && subs->back()->p_ampl) return subs->back()->p_ampl->CopyAll();
+  ClusterAmplitude_Vector &ampls(ScaleSetter(1)->Amplitudes());
+  if (ampls.size()) {
+    msg_Debugging()<<METHOD<<"(): Found "
+		   <<ampls.size()<<" amplitude(s) ... ";
+    msg_Debugging()<<"select 1st.\n";
+    for (Cluster_Amplitude *ampl(ampls.front());ampl;ampl=ampl->Next())
+      msg_Debugging()<<*ampl<<"\n";
+    return ampls.front()->CopyAll();
+  }
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+  ampl->SetNIn(m_nin);
+  ampl->SetOrderQCD(m_maxcpl[0]);
+  ampl->SetOrderEW(m_maxcpl[1]);
+  ampl->SetProc(this);
+  ampl->SetMS(p_gen);
+  ampl->SetProcs(p_apmap);
+  if (p_int->ColorIntegrator()==NULL) {
+    for (size_t i(0);i<m_nin+m_nout;++i)
+      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
+		      i<m_nin?m_flavs[i].Bar():m_flavs[i]);
+    std::vector<int> tids, atids;
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
+	tids.push_back(i);
+	if (ampl->Leg(i)->Flav().StrongCharge()==8)
+	  atids.push_back(i);
+	else ampl->Leg(i)->SetCol(ColorID(ampl->Leg(i)->Col().m_i,0));
+      }
+      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
+	ampl->Leg(i)->SetCol(ColorID(0,ampl->Leg(i)->Col().m_j));
+	atids.push_back(i);
+      }
+      else {
+	ampl->Leg(i)->SetCol(ColorID(0,0));
+      }
+    while (true) {
+      std::random_shuffle(atids.begin(),atids.end(),*ran);
+      size_t i(0);
+      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
+      if (i==atids.size()) break;
     }
-    if (mode&2048) return NULL;
+    for (size_t i(0);i<tids.size();++i) {
+      int cl(Flow::Counter());
+      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
+      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
+    }
   }
-  PDF::Cluster_Definitions_Base* cd=p_shower->GetClusterDefinitions();
-  int amode=0, cmode=mode;
-  if (cd) {
-    amode=cd->AMode();
-    if (amode) cmode|=512;
-    if (mode&512) cd->SetAMode(1);
-  }
-  p_gen->SetClusterDefinitions(cd);
-  p_gen->PreCluster(this,p);
-  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,p,cmode));
-  if (ampl) ampl->Decays()=m_pinfo.m_fi.GetDecayInfos();
-  if (cd) cd->SetAMode(amode);
+  else {
+    Int_Vector ci(p_int->ColorIntegrator()->I());
+    Int_Vector cj(p_int->ColorIntegrator()->J());
+    for (size_t i(0);i<m_nin+m_nout;++i)
+      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
+		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
+		      ColorID(ci[i],cj[i]));
+  }  
+  ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
+  ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
+  ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
   return ampl;
 }

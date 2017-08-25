@@ -1,0 +1,24 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None; SHERPA_LDADD SherpaMain;
+  ME_SIGNAL_GENERATOR Amegic Internal; INIT_ONLY 2; AMEGIC_ALLOW_MAPPING 0;
+
+  SCALES VAR{sqr(91.2)};
+
+  % collider setup
+  BEAM_1  11; BEAM_ENERGY_1 = 10000.;
+  BEAM_2 -11; BEAM_ENERGY_2 = 10000.;
+  
+
+}(run)
+
+(processes){
+  Process 11 -11 -> 93 93 93 93;
+  Loop_Generator Internal;
+  Integrator Rambo;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Order (*,2);
+  End process;
+}(processes)

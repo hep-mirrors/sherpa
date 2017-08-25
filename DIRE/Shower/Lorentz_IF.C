@@ -19,7 +19,8 @@ double Lorentz_IF::Jacobian(const Splitting &s) const
   if (s.m_clu&1) return 1.0;
   double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(s.m_eta/s.m_x,s.m_t,m_fl[1],s.p_c->Beam()-1);
-  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
+  if (dabs(fo)<p_sk->PS()->PDFMin(0)*
+      log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1))) return 0.0; 
   return fn/fo;
 }
 
@@ -36,8 +37,10 @@ double Lorentz_IF::PDFEstimate(const Splitting &s) const
     if (fo0 && dabs(fo0)<dabs(fo)) fo=fo0;
     if (dabs(fn0)>dabs(fn)) fn=fn0;
   }
-  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0;
-  if (dabs(fn)<p_sk->PS()->PDFMin()) fn=fo;
+  double min=p_sk->PS()->PDFMin(0)*
+    log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1));
+  if (dabs(fo)<min) return 0.0;
+  if (dabs(fn)<min) fn=fo;
   return dabs(fn/fo);
 }
 
@@ -70,7 +73,8 @@ bool Lorentz_IF::Cluster(Splitting &s,const int mode) const
 {
   Kin_Args ff=ClusterIFDipole
     (s.m_mi2,s.m_mj2,s.m_mij2,s.m_mk2,0.0,
-     -s.p_c->Mom(),s.p_n->Mom(),s.p_s->Mom(),Vec4D(),mode|4);
+     -s.p_c->Mom(),s.p_n->Mom(),s.p_s->Mom(),Vec4D(),
+     mode|(s.m_kin?4:0));
   if (ff.m_stat<0) return false;
   SetParams(s,ff);
   s.m_t=s.m_Q2*s.m_y*(1.0-s.m_x);
@@ -100,7 +104,8 @@ double Lorentz_IF_123::Jacobian(const Splitting &s) const
 {
   double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(s.m_eta/s.m_z,s.m_t,m_fl[1],s.p_c->Beam()-1);
-  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
+  if (dabs(fo)<p_sk->PS()->PDFMin(0)*
+      log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1))) return 0.0; 
   double sijk(s.m_q2*(1.0-1.0/s.m_z)-s.m_mi2), rho(s.m_z);
   double J1(rho/s.m_z*(sijk+s.m_mi2-s.m_q2)/sqrt(Lam(sijk,s.m_mi2,s.m_q2)));
   double sjk(-s.m_q2*(s.m_z2/s.m_z-1.0)+s.m_t/s.m_z2+s.m_s);

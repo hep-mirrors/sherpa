@@ -55,10 +55,9 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   nlo_type::code nlotype=pi.m_fi.m_nlotype;
   // QCD/EW subtraction
   if (nlotype!=nlo_type::lo) {
-    if (nlotype&nlo_type::real && nlotype&nlo_type::rsub) {
+    if (nlotype&nlo_type::real || nlotype&nlo_type::rsub) {
       Single_Real_Correction *src = new Single_Real_Correction();
-      src->SetNoTree(pi.m_rsmegenerator.length() &&
-                     pi.m_rsmegenerator!="Amegic");
+      if (!(nlotype&nlo_type::real)) src->SetNoTree(true);
       return src;
     }
     else if (nlotype&nlo_type::born ||
@@ -192,14 +191,6 @@ void AMEGIC::Process_Group::SetPrintGraphs(std::string gpath)
 }
 
 
-int AMEGIC::Process_Group::PerformTests()
-{
-  int res(1);
-  for (size_t i=0;i<m_procs.size();i++) 
-    if (!m_procs[i]->Get<AMEGIC::Amegic_Base>()->PerformTests()) res=0;
-  return res;
-}
-
 #define PTS long unsigned int
 #define PT(ARG) (PTS)(ARG)
 
@@ -222,9 +213,12 @@ PHASIC::Single_Channel *LoadChannels(int nin,int nout,ATOOLS::Flavour* fl,
 bool AMEGIC::Process_Group::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
+  for (size_t i(0);i<m_procs.size();++i)
+    m_procs[i]->Get<AMEGIC::Process_Base>()->RequestVariables(psh);
+  Multi_Channel *mc(psh->FSRIntegrator());
+  if (mc==NULL) return true;
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
   if (p_channellibnames->empty()) return true;
-  Multi_Channel *mc(psh->FSRIntegrator());
   for (std::list<std::string>::iterator it(p_channellibnames->begin());
        it!=p_channellibnames->end();++it) {
     Single_Channel *sc = LoadChannels(NIn(),NOut(),(Flavour*)&Flavours().front(),

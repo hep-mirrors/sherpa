@@ -32,11 +32,6 @@ namespace HIGGS {
     int  PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode);
-
   }; // end of class Higgs_Interface
 
 } // end of namespace WHITEHAT
@@ -124,17 +119,6 @@ int Higgs_Interface::PerformTests()
 bool Higgs_Interface::NewLibraries()
 {
   return false;
-}
-
-void Higgs_Interface::SetClusterDefinitions
-(PDF::Cluster_Definitions_Base *const defs)
-{
-}
-
-Cluster_Amplitude *Higgs_Interface::ClusterConfiguration
-(Process_Base *const proc,const size_t &mode)
-{
-  return NULL;
 }
 
 DECLARE_GETTER(Higgs_Interface,"Higgs",ME_Generator_Base,ME_Generator_Key);

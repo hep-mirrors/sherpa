@@ -20,7 +20,6 @@ MI_Handler::MI_Handler(std::string path,std::string file,
   p_amisic(NULL),
   p_ampl(NULL),
   p_proc(NULL),
-  p_shower(NULL),
   m_type(None),
   m_ycut(1.0e-7)
 {
@@ -214,6 +213,13 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetOrderEW(xs->MaxOrder(1));
   p_ampl->SetOrderQCD(xs->MaxOrder(0));
   p_ampl->SetMS(p_amisic->HardBase()->XS()->Generator());
+  int mm(p_amisic->HardBase()->XS()->Generator()->SetMassMode(1));
+  int stat(p_amisic->HardBase()->XS()->Generator()->ShiftMasses(p_ampl));
+  p_amisic->HardBase()->XS()->Generator()->SetMassMode(mm);
+  if (stat<0) {
+    p_ampl->Delete();
+    return p_ampl=NULL;
+  }
   msg_Debugging()<<*p_ampl<<"\n";
   return p_ampl;
 }

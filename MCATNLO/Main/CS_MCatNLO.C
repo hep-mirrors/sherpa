@@ -21,6 +21,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const mod
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
+  m_subtype=2;
   m_psmode=_reader->Get<int>("NLO_CSS_PSMODE",0);
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
   m_maxweight=_reader->Get<double>("NLO_CSS_MAXWEIGHT",1.0e3);
@@ -34,7 +35,8 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const mod
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
   p_gamma->SetOEF(_reader->Get<double>("CSS_OEF",3.0));
   p_mcatnlo->SetGamma(p_gamma);
-  m_kt2min=p_mcatnlo->GetSudakov()->ISPT2Min();
+  m_kt2min[1]=p_mcatnlo->GetSudakov()->ISPT2Min();
+  m_kt2min[0]=p_mcatnlo->GetSudakov()->FSPT2Min();
 }
 
 CS_MCatNLO::~CS_MCatNLO() 
@@ -102,6 +104,7 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 
 int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfac)
 {
+  if (p_rampl->NLO()&4) return 1;
   SF_Coupling::SetQFac(qfac);
   std::set<Parton*> nxs;
   Singlet *last(*(m_allsinglets.end()-1));
@@ -228,7 +231,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
       }
     }
     parton->SetStart(muQ2);
-    double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
+    double ktveto2(jf?sqr(jf->Qcut()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(0)->NMax()?parton->KtStart():0.0);
     parton->SetKtMax(ktmax2);
@@ -277,9 +280,42 @@ GetRealEmissionAmplitude(const int mode)
   return ampl;
 }
 
-void CS_MCatNLO::AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl)
+double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
+		       const double &x,const double &y,const double &Q2)
 {
-  p_gamma->AddRBPoint(ampl);
+  double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
+  double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
+  double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
+  double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
+  if (sub.m_ijt>=2) {
+    int evol(p_mcatnlo->KinFF()->EvolScheme());
+    double kt2=(Q2-mi2-mj2-mk2)*y;
+    if (sub.m_kt<2) kt2=(-Q2+mij2+mk2)*(1.0-y)/y;
+    if (evol==0) kt2=kt2*x*(1.0-x)-x*x*mj2-sqr(1.0-x)*mi2;
+    else {
+      if (sub.p_real->p_fl[sub.m_i].IsQuark()) {
+	if (sub.p_real->p_fl[sub.m_j].IsGluon()) kt2*=(1.0-x);
+      }
+      else {
+	if (sub.p_real->p_fl[sub.m_j].IsQuark()) kt2*=x;
+	else kt2*=x*(1.0-x);
+      }
+    }
+    return kt2;
+  }
+  else {
+    int evol(p_mcatnlo->KinFF()->EvolScheme());
+    double kt2=-Q2*y/x;
+    if (sub.m_kt<2) kt2=Q2*y/x;
+    if (evol==0) kt2=kt2*(1.0-x);
+    else {
+      if (sub.p_real->p_fl[sub.m_j].IsGluon()) {
+	kt2*=(1.0-x);
+      }
+    }
+    return kt2;
+  }
+  THROW(fatal_error,"Implement me");
 }
 
 DECLARE_GETTER(CS_MCatNLO,"MC@NLO_CSS",NLOMC_Base,NLOMC_Key);

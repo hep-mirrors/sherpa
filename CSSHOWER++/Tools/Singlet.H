@@ -13,6 +13,7 @@ namespace CSSHOWER {
 
   class Singlet;
   class Sudakov;
+  class Shower;
 
   typedef std::vector<Singlet*> All_Singlets;
   typedef All_Singlets::iterator ASiter;
@@ -22,14 +23,16 @@ namespace CSSHOWER {
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
     ATOOLS::Mass_Selector *p_ms;
-    double m_kt2_next, m_lkf;
-    int m_nlo;
+    Shower *p_shower;
+    double m_kt2_next, m_lkf, m_mur2;
+    int m_nlo, m_nskip, m_nme, m_nmax;
     ATOOLS::DecayInfo_Vector m_decs;
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
       p_jf(NULL), p_all(NULL),
-      m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
+      m_kt2_next(0.0), m_lkf(0.0), m_mur2(0.0),
+      m_nlo(0), m_nskip(0), m_nme(0), m_nmax(0) {}
     ~Singlet();
 
     void AddParton(Parton *const p);
@@ -41,13 +44,14 @@ namespace CSSHOWER {
 
     void      ExtractPartons(ATOOLS::Blob *,ATOOLS::Mass_Selector *const ms);
 
-    void        UpdateDaughters();
     void        BoostAllFS(Parton *l,Parton *r,Parton *s);
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
 
     Parton *IdParton(const size_t &id) const;
 
-    bool JetVeto(Sudakov *const sud) const;
+    double JetVeto(Sudakov *const sud) const;
+
+    void Reduce();
       
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 
@@ -68,18 +72,29 @@ namespace CSSHOWER {
     inline All_Singlets *All() const { return p_all; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+    inline void SetShower(Shower *const shower) { p_shower=shower; }
 
     inline void SetDecays(const ATOOLS::DecayInfo_Vector &d) { m_decs=d; }
 
     inline void SetNLO(const int nlo) { m_nlo=nlo; }
+    inline void SetNSkip(const int n) { m_nskip=n; }
+    inline void SetNME(const int nme) { m_nme=nme; }
+    inline void SetNMax(const int nmax) { m_nmax=nmax; }
     inline void SetLKF(const double &lkf) { m_lkf=lkf; } 
 
     inline int NLO() const { return m_nlo; }
+    inline int NSkip() const { return m_nskip; }
+    inline int NME() const { return m_nme; }
+    inline int NMax() const { return m_nmax; }
     inline double LKF() const { return m_lkf; }
 
     inline void SetKtNext(const double &kt2) { m_kt2_next=kt2; } 
 
     inline double KtNext() const { return m_kt2_next; }
+
+    inline void SetMuR2(const double &mur2) { m_mur2=mur2; } 
+
+    inline double MuR2() const { return m_mur2; }
 
   };
 

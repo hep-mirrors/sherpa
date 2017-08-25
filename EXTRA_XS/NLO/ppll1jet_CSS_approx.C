@@ -26,31 +26,32 @@ namespace EXTRAXS {
   class XS_gqllq_CSS_approx : public ME2_Base {
   private:
     EXTRAXS::ME2_Base * p_bornme;
-    bool   m_anti;
+    bool   m_swap;
     double m_alphasdef;
 
   public:
 
-    XS_gqllq_CSS_approx(const Process_Info& pi,const Flavour_Vector& fl);
+    XS_gqllq_CSS_approx(const Process_Info& pi,const Flavour_Vector& fl,
+			const int swap);
     ~XS_gqllq_CSS_approx();
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     double LOME2(const Vec4D&, const Vec4D&, const Vec4D&, const Vec4D&,
                  const Vec4D&, int);
+    void FillCombinations(std::set<std::pair<size_t,size_t> > &combs,
+			  std::map<size_t,ATOOLS::Flavour_Vector> &fls);
   };
 }
 
 XS_gqllq_CSS_approx::XS_gqllq_CSS_approx
-(const Process_Info& pi, const Flavour_Vector& fl) : ME2_Base(pi, fl)
+(const Process_Info& pi, const Flavour_Vector& fl,const int swap) :
+  ME2_Base(pi, fl), m_swap(swap)
 {
   Process_Info pico(pi);
-  m_anti=false;
+  m_oqcd=1;
+  m_oew=2;
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-1);
-  pico.m_ii.m_ps[0].m_fl=pico.m_ii.m_ps[1].m_fl.Bar();
-  if (pico.m_ii.m_ps[0].m_fl.IsAnti()) {
-    std::swap(pico.m_ii.m_ps[0].m_fl,pico.m_ii.m_ps[1].m_fl);
-    m_anti=true;
-  }
+  pico.m_ii.m_ps[m_swap].m_fl=pico.m_ii.m_ps[1-m_swap].m_fl.Bar();
   pico.m_fi.m_nlotype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
@@ -63,16 +64,23 @@ XS_gqllq_CSS_approx::~XS_gqllq_CSS_approx()
   if (p_bornme) delete p_bornme;
 }
 
+void XS_gqllq_CSS_approx::FillCombinations
+(std::set<std::pair<size_t,size_t> > &combs,
+ std::map<size_t,ATOOLS::Flavour_Vector> &fls)
+{
+  combs.insert(std::pair<size_t,size_t>(1<<m_swap,1<<4));
+  fls[(1<<m_swap)|(1<<4)].push_back(Flavour(m_flavs[4]));
+  combs.insert(std::pair<size_t,size_t>(1<<2,1<<3));
+  fls[(1<<2)|(1<<3)].push_back(Flavour(kf_Z));
+  fls[(1<<2)|(1<<3)].push_back(Flavour(kf_photon));
+  CompleteCombinations(combs,fls);
+}
+
 double XS_gqllq_CSS_approx::operator()
 (const ATOOLS::Vec4D_Vector& p)
 {
   double res(0);
-  // (Gqb) q -> ll
-  if (m_anti)
-    res+=LOME2(p[0],p[4],p[1],p[2],p[3],1);
-  // (Gq) qb -> ll
-  else
-    res+=LOME2(p[0],p[4],p[1],p[2],p[3],0);
+  res+=LOME2(p[m_swap],p[4],p[1-m_swap],p[2],p[3],m_swap);
   return res;
 }
 
@@ -105,12 +113,12 @@ double XS_gqllq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   moms[1-ij]=pkt;
   moms[2]=k1t;
   moms[3]=k2t;
-  double born(-48.*(*p_bornme)(moms));
+  double born((*p_bornme)(moms));
   // SF = 8*pi*TR/(2pipj*x) * (1-2x(1-x))
-  double split(8.*M_PI/((pi+pj).Abs2()*xiab)*(1.-2.*xiab*(1.-xiab)));
+  double split(8.*M_PI/((pi+pj).Abs2()*xiab)*.5*(1.-2.*xiab*(1.-xiab)));
   msg_Debugging()<<8.*M_PI*m_alphasdef<<std::endl;
   msg_Debugging()<<"M2 = "<<born<<" ,  SF = "<<split*m_alphasdef<<std::endl;
-  return -born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 DECLARE_TREEME2_GETTER(XS_gqllq_CSS_approx,"XS_gqllq_CSS_approx")
@@ -127,9 +135,17 @@ operator()(const Process_Info &pi) const
   if (fl[1].IsQuark()  && fl[4]==fl[1] &&
       fl[0].IsGluon()  &&
       fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
-    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
-      return new XS_gqllq_CSS_approx(pi,fl);
+    if (pi.m_maxcpl[0]>=1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]<=1 && pi.m_mincpl[1]==2) {
+      return new XS_gqllq_CSS_approx(pi,fl,0);
+    }
+  }
+  if (fl[0].IsQuark()  && fl[4]==fl[0] &&
+      fl[1].IsGluon()  &&
+      fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
+    if (pi.m_maxcpl[0]>=1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]<=1 && pi.m_mincpl[1]==2) {
+      return new XS_gqllq_CSS_approx(pi,fl,1);
     }
   }
   return NULL;
@@ -155,6 +171,8 @@ namespace EXTRAXS {
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     double LOME2(const Vec4D&, const Vec4D&, const Vec4D&, const Vec4D&,
                  const Vec4D&, int);
+    void FillCombinations(std::set<std::pair<size_t,size_t> > &combs,
+			  std::map<size_t,ATOOLS::Flavour_Vector> &fls);
   };
 }
 
@@ -162,6 +180,8 @@ XS_qqllg_CSS_approx::XS_qqllg_CSS_approx
 (const Process_Info& pi, const Flavour_Vector& fl) : ME2_Base(pi, fl)
 {
   Process_Info pico(pi);
+  m_oqcd=1;
+  m_oew=2;
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-1);
   pico.m_fi.m_nlotype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
@@ -172,6 +192,20 @@ XS_qqllg_CSS_approx::XS_qqllg_CSS_approx
 XS_qqllg_CSS_approx::~XS_qqllg_CSS_approx()
 {
   if (p_bornme) delete p_bornme;
+}
+
+void XS_qqllg_CSS_approx::FillCombinations
+(std::set<std::pair<size_t,size_t> > &combs,
+ std::map<size_t,ATOOLS::Flavour_Vector> &fls)
+{
+  combs.insert(std::pair<size_t,size_t>(1<<0,1<<4));
+  fls[(1<<0)|(1<<4)].push_back(Flavour(m_flavs[0].Bar()));
+  combs.insert(std::pair<size_t,size_t>(1<<1,1<<4));
+  fls[(1<<1)|(1<<4)].push_back(Flavour(m_flavs[1].Bar()));
+  combs.insert(std::pair<size_t,size_t>(1<<2,1<<3));
+  fls[(1<<2)|(1<<3)].push_back(Flavour(kf_Z));
+  fls[(1<<2)|(1<<3)].push_back(Flavour(kf_photon));
+  CompleteCombinations(combs,fls);
 }
 
 double XS_qqllg_CSS_approx::operator()
@@ -214,12 +248,12 @@ double XS_qqllg_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   moms[1-ij]=pkt;
   moms[2]=k1t;
   moms[3]=k2t;
-  double born(-48.*(*p_bornme)(moms));
+  double born((*p_bornme)(moms));
   // SF = 8*pi*CF/(2pipj*x) * (2/(1-x)-(1+x))
-  double split(8.*M_PI/((pi+pj).Abs2()*xiab)*(2./(1.-xiab)-(1.+xiab)));
+  double split(8.*M_PI/((pi+pj).Abs2()*xiab)*4./3.*(2./(1.-xiab)-(1.+xiab)));
   msg_Debugging()<<8.*M_PI*m_alphasdef<<std::endl;
   msg_Debugging()<<"M2 = "<<born<<" ,  SF = "<<split*m_alphasdef<<std::endl;
-  return -born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 DECLARE_TREEME2_GETTER(XS_qqllg_CSS_approx,"XS_qqllg_CSS_approx")
@@ -236,8 +270,8 @@ operator()(const Process_Info &pi) const
   if (fl[0].IsQuark()  && fl[1]==fl[0].Bar() &&
       fl[4].IsGluon()  &&
       fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
-    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
+    if (pi.m_maxcpl[0]>=1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]<=1 && pi.m_mincpl[1]==2) {
       return new XS_qqllg_CSS_approx(pi,fl);
     }
   }

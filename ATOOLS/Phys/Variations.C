@@ -20,6 +20,14 @@
 using namespace ATOOLS;
 using namespace SHERPA;
 
+namespace ATOOLS {
+  struct ScaleFactor_Pair: public std::pair<double, double> {
+    double m_qcutfac;
+    ScaleFactor_Pair(const double &a,const double &b,const double &c):
+      std::pair<double, double>(a,b), m_qcutfac(c) {}
+  };
+}
+
 bool Variations::NeedsLHAPDF6Interface(std::string inputpath)
 {
   // set up data reader
@@ -292,6 +300,7 @@ void Variations::AddParameterExpandingScaleFactors(
   // read input scale factors
   double muR2fac(1.0);
   double muF2fac(1.0);
+  double Qcutfac(1.0);
   if (scalevariationrequested) {
     if (scalestringparams.size() == 1) {
       muR2fac = muF2fac = ToType<double>(scalestringparams[0]);
@@ -299,34 +308,36 @@ void Variations::AddParameterExpandingScaleFactors(
       muR2fac = ToType<double>(scalestringparams[0]);
       muF2fac = ToType<double>(scalestringparams[1]);
     }
+    if (scalestringparams.size()>2)
+      Qcutfac = ToType<double>(scalestringparams[2]);
   }
 
   // expand scale factors
-  std::vector<std::pair<double, double> > scalefactorpairs;
-  std::pair<double, double> defaultscalefactorpair(1.0, 1.0);
+  std::vector<ScaleFactor_Pair > scalefactorpairs;
+  ScaleFactor_Pair defaultscalefactorpair(1.0, 1.0,1.0);
 
   if (!scalevariationrequested || expansions == ScaleFactorExpansions::None) {
-    defaultscalefactorpair = std::make_pair(muR2fac, muF2fac);
+    defaultscalefactorpair = ScaleFactor_Pair(muR2fac, muF2fac,Qcutfac);
     scalefactorpairs.push_back(defaultscalefactorpair);
   } else if (expansions & ScaleFactorExpansions::SevenPoint) {
-    scalefactorpairs.push_back(std::pair<double, double>(muR2fac, 1.0));
-    scalefactorpairs.push_back(std::pair<double, double>(1.0, muF2fac));
-    scalefactorpairs.push_back(std::pair<double, double>(muR2fac, muF2fac));
-    scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0));
-    scalefactorpairs.push_back(std::pair<double, double>(1.0, 1.0 / muF2fac));
-    scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, 1.0 / muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0,1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac,1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac,1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0,1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0 / muF2fac,1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0 / muF2fac,1.0));
   } else {
     if (expansions & ScaleFactorExpansions::First) {
       const double defaultmuF2fac = (expansions & ScaleFactorExpansions::Second) ? 1.0 : muF2fac;
       defaultscalefactorpair.second = defaultmuF2fac;
-      scalefactorpairs.push_back(std::pair<double, double>(muR2fac, defaultmuF2fac));
-      scalefactorpairs.push_back(std::pair<double, double>(1.0 / muR2fac, defaultmuF2fac));
+      scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, defaultmuF2fac,1.0));
+      scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, defaultmuF2fac,1.0));
     }
     if (expansions & ScaleFactorExpansions::Second) {
       const double defaultmuR2fac = (expansions & ScaleFactorExpansions::First) ? 1.0 : muR2fac;
       defaultscalefactorpair.first = defaultmuR2fac;
-      scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, muF2fac));
-      scalefactorpairs.push_back(std::pair<double, double>(defaultmuR2fac, 1.0 / muF2fac));
+      scalefactorpairs.push_back(ScaleFactor_Pair(defaultmuR2fac, muF2fac,1.0));
+      scalefactorpairs.push_back(ScaleFactor_Pair(defaultmuR2fac, 1.0 / muF2fac,1.0));
     }
   }
 
@@ -344,15 +355,17 @@ void Variations::AddParameterExpandingScaleFactors(
 
     if (pdfasit != pdfsandalphasvector.begin()
         || (m_includecentralvaluevariation && expansions != ScaleFactorExpansions::None)) {
-      AddParameters(defaultscalefactorpair.first, defaultscalefactorpair.second, pdfasit,
+      AddParameters(defaultscalefactorpair.first, defaultscalefactorpair.second,
+		    defaultscalefactorpair.m_qcutfac, pdfasit,
                     !assignedownershipofpdfsandalphas);
       assignedownershipofpdfsandalphas = true;
     }
 
     if (pdfasit == pdfsandalphasvector.begin()) {
-      for (std::vector<std::pair<double, double> >::const_iterator scalefactorpairit(scalefactorpairs.begin());
+      for (std::vector<ScaleFactor_Pair >::const_iterator scalefactorpairit(scalefactorpairs.begin());
           scalefactorpairit != scalefactorpairs.end(); scalefactorpairit++) {
-        AddParameters(scalefactorpairit->first, scalefactorpairit->second, pdfasit,
+        AddParameters(scalefactorpairit->first, scalefactorpairit->second,
+		      scalefactorpairit->m_qcutfac, pdfasit,
                       !assignedownershipofpdfsandalphas);
         assignedownershipofpdfsandalphas = true;
       }
@@ -361,7 +374,7 @@ void Variations::AddParameterExpandingScaleFactors(
 }
 
 
-void Variations::AddParameters(double muR2fac, double muF2fac,
+void Variations::AddParameters(double muR2fac, double muF2fac, double Qcutfac,
                                std::vector<PDFs_And_AlphaS>::const_iterator pdfsandalphas,
                                bool deletepdfsandalphas)
 {
@@ -369,7 +382,7 @@ void Variations::AddParameters(double muR2fac, double muF2fac,
   const double showermuF2fac = (m_reweightsplittingpdfsscales) ? muF2fac : 1.0;
   Variation_Parameters *params =
     new Variation_Parameters(
-        muR2fac, muF2fac, showermuR2fac, showermuF2fac,
+	muR2fac, muF2fac, showermuR2fac, showermuF2fac, Qcutfac,
         pdfsandalphas->m_pdfs[0], pdfsandalphas->m_pdfs[1],
         pdfsandalphas->p_alphas,
         deletepdfsandalphas);
@@ -583,7 +596,7 @@ std::string Variation_Parameters::GenerateName() const
     } else if (p_alphas->GetAs()->PDF() != NULL) {
       pdfid = p_alphas->GetAs()->PDF()->LHEFNumber();
     } else {
-      THROW(fatal_error, "Cannot obtain PDF IDF");
+      // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
     name = GenerateNamePart("MUR", sqrt(m_muR2fac)) + divider
            + GenerateNamePart("MUF", sqrt(m_muF2fac)) + divider
@@ -599,6 +612,10 @@ std::string Variation_Parameters::GenerateName() const
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
     name += divider + GenerateNamePart("PSMUR", sqrt(m_showermuR2fac));
     name += divider + GenerateNamePart("PSMUF", sqrt(m_showermuF2fac));
+  }
+  // append non-trivial shower scale factors
+  if (m_Qcutfac != 1.0) {
+    name += divider + GenerateNamePart("QCUT",m_Qcutfac);
   }
   return name;
 }
@@ -712,6 +729,23 @@ Variation_Weights & Variation_Weights::operator+=(const Variation_Weights &other
 }
 
 
+void Variation_Weights::CombineSubeventWeights()
+{
+  if (!m_initialised) return;
+  for (Variations::Parameters_Vector::size_type i(0);
+       i < GetNumberOfVariations();
+       ++i) {
+    double weight=0.0;
+    for (Subevent_Weights_Vector::size_type j(0);
+         j < this->m_weights[i].size();
+         ++j) {
+      weight += this->m_weights[i][j];
+    }
+    this->m_weights[i] = Subevent_Weights_Vector(1, weight);
+  }
+}
+
+
 std::string Variation_Weights::GetVariationNameAt(Variations::Parameters_Vector::size_type i) const
 {
   return p_variations->GetParametersVector()->at(i)->m_name;
@@ -721,6 +755,10 @@ std::string Variation_Weights::GetVariationNameAt(Variations::Parameters_Vector:
 double Variation_Weights::GetVariationWeightAt(Variations::Parameters_Vector::size_type paramidx,
                                                int subevtidx) const
 {
+  if (paramidx>=m_weights.size()) {
+    p_variations->IncrementOrInitialiseWarningCounter("Variation weight requested does not exist");
+    return 0.0;
+  }
   if (subevtidx < 0) {
     return std::accumulate(m_weights[paramidx].begin(), m_weights[paramidx].end(), 0.0);
   } else { 
@@ -775,7 +813,7 @@ namespace ATOOLS {
       }
       s << std::endl;
     }
-    s << "}" << std::endl;
+    s << "}";
     return s;
   }
 

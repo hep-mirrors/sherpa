@@ -21,7 +21,8 @@ double Lorentz_FI::Jacobian(const Splitting &s) const
   double y(s.m_y*(1.0+(s.m_mij2-s.m_mi2-s.m_mj2)/s.m_Q2));
   double fo=p_sk->PS()->GetXPDF(eta,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(eta/y,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
-  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
+  if (dabs(fo)<p_sk->PS()->PDFMin(0)*
+      log(1.0-eta)/log(1.0-p_sk->PS()->PDFMin(1))) return 0.0; 
   return (1.0-s.m_y)/(1.0-y)*fn/fo;
 }
 
@@ -84,7 +85,8 @@ double Lorentz_FI_123::Jacobian(const Splitting &s) const
 		  (s.m_q2-s.m_s-s.m_mj2-s.m_mk2)));
   double fo=p_sk->PS()->GetXPDF(eta,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(eta/y,s.m_t,s.p_s->Flav(),s.p_s->Beam()-1);
-  if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
+  if (dabs(fo)<p_sk->PS()->PDFMin(0)*
+      log(1.0-eta)/log(1.0-p_sk->PS()->PDFMin(1))) return 0.0; 
   double saij(s.m_t*s.m_z2/s.m_z+s.m_s+s.m_mj2);
   double x((s.m_q2-s.m_mij2-s.m_mk2)/(s.m_q2-saij-s.m_mk2)), rho(x);
   double J1(rho/x*(saij+s.m_mk2-s.m_q2)/sqrt(Lam(saij,s.m_mk2,s.m_q2)));

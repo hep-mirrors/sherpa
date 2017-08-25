@@ -14,7 +14,7 @@ libDireShower_la_SOURCES = \
 	Lorentz_FI.C \
 	Lorentz_IF.C \
 	Lorentz_II.C \
-	Cluster.C \
+	Cluster_Definitions.C \
 	Shower.C
 
 localinc_HEADERS   = \
@@ -26,5 +26,5 @@ localinc_HEADERS   = \
 	Lorentz_FI.H \
 	Lorentz_IF.H \
 	Lorentz_II.H \
-	Cluster.H \
+	Cluster_Definitions.H \
 	Shower.H

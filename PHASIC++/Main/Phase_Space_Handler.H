@@ -51,6 +51,7 @@ namespace PHASIC {
   operator&(const psm::code &c1,const psm::code &c2)
   { return (psm::code)((int)c1&(int)c2); }
 
+
   class Phase_Space_Integrator;
   class Process_Base;
 
@@ -101,6 +102,7 @@ namespace PHASIC {
     double EnhanceFactor(Process_Base *const proc);
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
+    void CorrectMomenta(ATOOLS::Vec4D_Vector &p);
     bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
 
     void CheckSinglePoint();
@@ -180,6 +182,8 @@ namespace PHASIC {
 
     inline double PSWeight() const { return m_psweight; }
     inline double Enhance() const  { return m_enhance;  }
+
+    inline double AbsError() const { return m_abserror; }
 
     inline void SetError(const double error) 
     { m_error=error; }

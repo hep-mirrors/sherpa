@@ -33,6 +33,7 @@ AMEGIC::Process_Base::Process_Base():
     if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
   }
   m_allowmap=allowmap;
+  m_lastk=1.0;
 }
 
 AMEGIC::Process_Base::~Process_Base()
@@ -101,6 +102,10 @@ PHASIC::Single_Channel *LoadChannel(int nin,int nout,ATOOLS::Flavour* fl,
   if (gf==NULL) return NULL;
   return gf(nin,nout,fl,psh->GetInfo(),psh);
 }
+
+void AMEGIC::Process_Base::RequestVariables(Phase_Space_Handler *const psh)
+{
+} 
 
 bool AMEGIC::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 {
@@ -219,6 +224,11 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
 
   else {
     DO_STACK_TRACE;
+    for (std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.begin());
+	 fit!=m_fmap.end();++fit) PRINT_VAR(fit->first<<" "<<fit->second);
+    for (Flavour_Map::const_iterator fit(m_eflmap.begin());
+	 fit!=m_eflmap.end();++fit) PRINT_VAR(fit->first<<" "<<fit->second);
+    PRINT_VAR(f0<<" "<<id);
     PRINT_VAR(this<<" "<<Name()<<" "<<Demangle(typeid(*this).name()));
     PRINT_VAR(p_mapproc<<" "<<p_mapproc->Name()<<" "<<Demangle(typeid(*p_mapproc).name()));
     PRINT_VAR(((Process_Base*)this)->Parent()<<" "<<((Process_Base*)this)->Parent()->Name());
@@ -234,11 +244,20 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap
   if (Partner()==NULL || Partner()==this) return ifl;
   bool swap(cid&((1<<m_nin)-1));
   Flavour fl(swap?ifl.Bar():ifl);
-  std::string id(ToString(fl)+ToString(cid));
+  static std::map<Flavour,std::string> s_flsmap;
+  std::map<Flavour,std::string>::iterator flsit(s_flsmap.find(fl));
+  if (flsit==s_flsmap.end()) flsit=s_flsmap.insert(make_pair(fl,ToString(fl))).first;
+  static std::map<size_t,std::string> s_idsmap;
+  std::map<size_t,std::string>::iterator idsit(s_idsmap.find(cid));
+  if (idsit==s_idsmap.end()) idsit=s_idsmap.insert(make_pair(cid,ToString(cid))).first;
+  std::string id(flsit->second+idsit->second);
   std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
   if (fit!=m_fmap.end()) return swap?fit->second.Bar():fit->second;
   else {
-    id=ToString(fl.Bar())+ToString(((1<<(m_nin+m_nout))-1)-cid);
+    size_t ccid=((1<<(m_nin+m_nout))-1)-cid;
+    std::map<size_t,std::string>::iterator idsit(s_idsmap.find(ccid));
+    if (idsit==s_idsmap.end()) idsit=s_idsmap.insert(make_pair(ccid,ToString(ccid))).first;
+    id=flsit->second+idsit->second;
     std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
     if (fit!=m_fmap.end()) return swap?fit->second:fit->second.Bar();
     Flavour_Map::const_iterator efit(m_eflmap.find(fl));
@@ -273,6 +292,9 @@ bool AMEGIC::Process_Base::FlavCompare(PHASIC::Process_Base *const proc)
 std::string  AMEGIC::Process_Base::CreateLibName()
 {
   std::string name(m_name);
+  size_t apos(name.find(m_pinfo.m_addname));
+  if (apos!=std::string::npos)
+    name.erase(apos,m_pinfo.m_addname.length());
   size_t bpos(name.find("__QCD("));
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));

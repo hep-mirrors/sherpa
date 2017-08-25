@@ -372,28 +372,7 @@ void Higgs_Tree::FillCombinations
       else m_mode=4;
     }
   }
-  std::set<std::pair<size_t,size_t> > tcombs(combs);
-  for (std::set<std::pair<size_t,size_t> >::const_iterator
-	 cit=tcombs.begin();cit!=tcombs.end();++cit) {
-    size_t ida(cit->first), idb(cit->second);
-    size_t idc((1<<m_n)-1-ida-idb);
-    msg_Debugging()<<"comb "<<ID(ida)
-		   <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
-    combs.insert(std::pair<size_t,size_t>(idb,ida));
-    combs.insert(std::pair<size_t,size_t>(idb,idc));
-    combs.insert(std::pair<size_t,size_t>(idc,idb));
-    combs.insert(std::pair<size_t,size_t>(idc,ida));
-    combs.insert(std::pair<size_t,size_t>(ida,idc));
-  }
-  std::map<size_t,ATOOLS::Flavour_Vector> tfls(fls);
-  for (std::map<size_t,ATOOLS::Flavour_Vector>::const_iterator
-	 cit=tfls.begin();cit!=tfls.end();++cit) {
-    msg_Debugging()<<"flav "<<ID(cit->first)
-		   <<" -> "<<cit->second<<"\n";
-    Flavour_Vector fl(cit->second);
-    for (size_t i(0);i<fl.size();++i) fl[i]=fl[i].Bar();
-    fls[(1<<m_n)-1-cit->first]=fl;
-  }
+  CompleteCombinations(combs,fls);
 }
 
 int Higgs_Tree::OrderQCD(const int &id)

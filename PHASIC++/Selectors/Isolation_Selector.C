@@ -35,8 +35,7 @@ namespace PHASIC {
     Isolation_Selector(const Selector_Key &key);
     ~Isolation_Selector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -170,22 +169,20 @@ Isolation_Selector::~Isolation_Selector() {
 }
 
 
-bool Isolation_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Isolation_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
+  size_t n(m_n);
+  const Flavour *const fl(p_fl);
   Vec4D_Vector pc(p);
   std::vector<size_t> vfsub;
-  if (sub) {
-    for (size_t i=m_nin;i<n;i++) {
-      if (m_iflav.Includes(fl[i])) {
-        vfsub.push_back(i);
-      }
+  for (size_t i=m_nin;i<n;i++) {
+    if (m_iflav.Includes(fl[i])) {
+      vfsub.push_back(i);
     }
   }
-  const std::vector<size_t> *const vf(sub?&vfsub:&m_vf);
+  const std::vector<size_t> *const vf(&vfsub);
   std::vector<bool> vfiso(vf->size(),false);
   size_t cnt(0);
   msg_Debugging()<<"trying to find "<<m_nmin<<"-"<<m_nmax
@@ -255,7 +252,7 @@ bool Isolation_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
     return false;
   }
   for (size_t k=0;k<m_sels.size();++k) {
-    if (!m_sels[k]->Trigger(pc,sub)) {
+    if (!m_sels[k]->Trigger(pc)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
       m_sel_log->Hit(true);
       return false;

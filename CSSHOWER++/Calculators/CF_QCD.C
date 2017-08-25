@@ -95,7 +95,7 @@ namespace CSSHOWER {
 		     const double &isfac,const double &fsfac);
     double CplMax(MODEL::Running_AlphaS * as, double rsf) const;
     double Coupling(const double &scale,const int pol);
-    bool AllowSpec(const ATOOLS::Flavour &fl);
+    bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
     double CplFac(const double &scale) const;
 
     bool AllowsAlternativeCouplingUsage() const { return true; }
@@ -165,29 +165,37 @@ double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
+#ifdef DEBUG__AlphaS
   DEBUG_FUNC("pol="<<pol);
+#endif
   if (pol!=0) return 0.0;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
-  if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
+  if (scale<0.0) return (m_last = (*as)(sqr(rpa->gen.Ecms())))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*cplinfo.RSF());
   double cpl=cplinfo.Coupling()->BoundedAlphaS(scl);
+#ifdef DEBUG__AlphaS
   msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
   msg_Debugging()<<"as(t)="<<cplinfo.Coupling()->BoundedAlphaS(t)<<std::endl;
+#endif
   if (!IsEqual(scl,t)) {
+#ifdef DEBUG__AlphaS
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
+#endif
     std::vector<double> ths(cplinfo.Coupling()->Thresholds(t,scl));
     ths.push_back((scl>t)?scl:t);
     ths.insert(ths.begin(),(scl>t)?t:scl);
     if (t<scl) std::reverse(ths.begin(),ths.end());
+#ifdef DEBUG__AlphaS
     msg_Debugging()<<"thresholds: "<<ths<<std::endl;
+#endif
     double fac(1.),ct(0.);
     // Beta0 from One_Running_AlphaS contains extra factor 1/2
     switch (m_scvmode) {
     case 1:
-      // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
+      // local counterterms and redefinition at threshold
       for (size_t i(1);i<ths.size();++i) {
         ct=cpl/M_PI*cplinfo.Coupling()->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
-        fac*=1.0-ct;
+	cpl*=1.0-ct;
       }
       break;
     case 2:
@@ -200,21 +208,27 @@ double CF_QCD::Coupling(const double &scale,const int pol)
       fac=1.;
       break;
     }
+#ifdef DEBUG__AlphaS
     msg_Debugging()<<"ct="<<ct<<std::endl;
+#endif
     if (fac<0.) {
       msg_Tracking()<<METHOD<<"(): Renormalisation term too large. Remove."
                     <<std::endl;
       fac=1.;
     }
     cpl*=fac;
+#ifdef DEBUG__AlphaS
     msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
+#endif
   }
+  m_last=cpl;
   cpl*=m_q;
   if (cpl>cplinfo.MaxCoupling()->front()) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
+    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at t = "
                <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
                <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
-    return m_last = cplinfo.MaxCoupling()->front();
+    m_last=cplinfo.MaxCoupling()->front()/m_q;
+    return cplinfo.MaxCoupling()->front();
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
@@ -224,9 +238,9 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   return m_last = cpl;
 }
 
-bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
+bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
-  if (m_type==cstp::FF && !fl.Strong()) return true;
+  if (mode) return fl.Strong();
   if (abs(fl.StrongCharge())==3) {
     switch (m_type) {
     case cstp::FF: 

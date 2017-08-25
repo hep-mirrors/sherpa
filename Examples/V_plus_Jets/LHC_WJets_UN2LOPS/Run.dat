@@ -1,0 +1,35 @@
+(run){
+  EVENTS 5M; QTCUT:=1e0;
+  SHERPA_LDADD NNLOqT; LGEN:=BlackHat;
+  ME_SIGNAL_GENERATOR Comix Amegic LGEN;
+  EVENT_GENERATION_MODE W;
+  EVENT_SEED_MODE 3;
+  EW_SCHEME 3;
+  MASS[23] 91.1876; WIDTH[23] 2.4952;
+  MASS[24] 80.385; WIDTH[24] 2.085;
+  GF 1.1663787e-5;
+  BEAM_1 2212 3500; BEAM_2 2212 3500;
+  FRAGMENTATION Off; MI_HANDLER None;
+  SCALES NNLOPS{max(2,Abs2(p[2]+p[3]))}{MU_F2}{Abs2(p[2]+p[3])};
+  PDF_LIBRARY LHAPDFSherpa;
+  PDF_SET MSTW2008nnlo68cl;
+  USE_PDF_ALPHAS 1;
+  RESPECT_MASSIVE_FLAG 1;
+  NLO_BVI_MODE 7;
+  SHOWER_GENERATOR Dire;
+}(run);
+(processes){
+  Process 93 93 -> 11 -12 93{1};
+  NLO_QCD_Mode MC@NLO;
+  Loop_Generator LGEN;
+  ME_Generator Amegic;
+  PSI_ItMin 25000;
+  RS_PSI_ItMin 100000;
+  Special MapOff {2};
+  KFactor DYNNLO;
+  Order (*,2);
+  End process;
+}(processes);
+(selector){
+  NNLOqT QTCUT;
+}(selector);

@@ -26,6 +26,10 @@ namespace METOOLS {
   class Spin_Amplitudes;
 }
 
+namespace PDF {
+  class NLOMC_Base;
+}
+
 using namespace METOOLS;
 
 namespace COMIX {
@@ -49,6 +53,8 @@ namespace COMIX {
 
   typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
   typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
+
+  typedef std::map<size_t,size_t> SizeT_Map;
 
 #ifdef USING__Threading
   class Amplitude;
@@ -107,9 +113,6 @@ namespace COMIX {
     Current_Matrix m_cur;
     Current_Vector m_scur;
 
-    Combination_Set m_combs;
-    CFlavVector_Map m_flavs;
-
     METOOLS::Dipole_Info *p_dinfo;
 
     PHASIC::Color_Integrator    *p_colint;
@@ -125,13 +128,14 @@ namespace COMIX {
 
     ATOOLS::NLO_subevt *p_sub;
 
+    size_t BornID(const size_t &id,const NLO_subevt *sub) const;
+
 #ifdef USING__Threading 
     CDBG_ME_TID_Vector *p_cts;
 #endif 
 
     void CleanUp();
     void Prune();
-    void FillCombinations();
     void ConstructNLOEvents();
     void ConstructDSijMap();
 
@@ -211,13 +215,10 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const int set=0);
 
-    bool RSTrigger(PHASIC::Combined_Selector *const sel,const int mode);
+    bool JetTrigger(PHASIC::Combined_Selector *const sel,const int mode);
 
-    bool Combinable(const size_t &idi,const size_t &idj) const;
-
-    const ATOOLS::Flavour_Vector &
-    CombinedFlavour(const size_t &idij) const;
-
+    void FillCombinations(Combination_Set &combs,CFlavVector_Map &flavs,
+			  SizeT_Map *brs=NULL,const NLO_subevt *sub=NULL) const;
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
 			std::vector<std::vector<Complex> > &cols);
 
@@ -232,6 +233,7 @@ namespace COMIX {
     void   FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
     double KT2Trigger(ATOOLS::NLO_subevt *const sub,const int mode);
+    void   SetNLOMC(PDF::NLOMC_Base *const mc);
 
     void SetCTS(void *const cts);
 

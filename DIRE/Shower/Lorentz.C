@@ -6,13 +6,10 @@
 #define SORT_CRITERION std::less<std::string>
 #include "ATOOLS/Org/Getter_Function.C"
 
-#include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "DIRE/Shower/Shower.H"
 #include "DIRE/Shower/Lorentz_FF.H"
 #include "DIRE/Shower/Lorentz_II.H"
-
 #include "DIRE/Tools/Parton.H"
 
 using namespace DIRE;
@@ -50,6 +47,7 @@ void Lorentz::SetMS(ATOOLS::Mass_Selector *const ms)
 
 void Lorentz::SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const
 {
+  s.m_ff=ff;
   s.m_y=ff.m_y;
   s.m_x=ff.m_z;
   s.m_phi=ff.m_phi;
@@ -57,8 +55,8 @@ void Lorentz::SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const
   s.m_mi2=p_ms->Mass2(m_fl[1]);
   s.m_mj2=p_ms->Mass2(m_fl[2]);
   s.m_mk2=p_ms->Mass2(s.p_s->Flav());
-  s.m_Q2=dabs((s.p_c->Mom()+s.p_n->Mom()+s.p_s->Mom()).Abs2()
-	      -s.m_mi2-s.m_mj2-s.m_mk2);
+  s.m_q2=(s.p_c->Mom()+s.p_n->Mom()+s.p_s->Mom()).Abs2();
+  s.m_Q2=dabs(s.m_q2-s.m_mi2-s.m_mj2-s.m_mk2);
   s.p_sk=p_sk;
 }
 
@@ -88,16 +86,6 @@ int Lorentz::Update(Splitting &s,const int mode) const
   }
   if (mode&2) return 1;
   int stat(s.p_c->Out(0)==NULL);
-  if (stat) {
-    Jet_Finder *jf=s.p_c->Ampl()->JF<Jet_Finder>();
-    if (jf) {
-      Cluster_Amplitude *ampl(s.p_c->Ampl()->GetAmplitude());
-      if (jf->JC()->Jets(ampl)) stat=0;
-      if (stat) s.p_c->Ampl()->SetJF(NULL);
-      msg_Debugging()<<(stat?"no ":"")<<"jet veto\n";
-      ampl->Delete();
-    }
-  }
   return stat;
 }
 

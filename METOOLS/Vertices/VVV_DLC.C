@@ -94,22 +94,27 @@ void VVV_SCalculator<SType>::ConstructSDipole()
   if (p_v->Kin()->Type()==0) {
     double zi(p_v->Kin()->Z()), zj(1.0-zi), y(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    double pipj(pi*pj), rv(1.0), sl(1.0), zim(zi), zjm(zj);
-    p_v->Kin()->SetA(zim*zjm);
+    double pipj(pi*pj), sl(1.0);
+    double zim(zi), zjm(zj), zti(zi), ztj(zj);
+    if (p_v->Info()->SubType()==1) {
+      zti=1.0-(1.0-zti)*(1.0-p_v->Kin()->Y());
+      ztj=1.0-(1.0-ztj)*(1.0-p_v->Kin()->Y());
+    }
+    p_v->Kin()->SetA(0.5*(zti*(1.0-zti)+ztj*(1.0-ztj)));
     if (p_v->Kin()->Massive()) {
       double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2()), s(Q2-m_mk2);
-      rv=sqrt(sqr(2.0*m_mk2+s*(1.0-y))-4.0*m_mk2*Q2)/(s*(1.0-y));
+      double rv(sqrt(sqr(2.0*m_mk2+s*(1.0-y))-4.0*m_mk2*Q2)/(s*(1.0-y)));
       double zm(0.5*(1.0-rv)), zp(0.5*(1.0+rv));
       sl=(1.0-0.5*p_v->Info()->Kappa()*zp*zm)/rv;
       zim-=0.5*(1.0-rv);
       zjm-=0.5*(1.0-rv);
-      p_v->Kin()->SetA((zim*zjm-zp*zm)/rv);
+      p_v->Kin()->SetA((p_v->Kin()->A()-zp*zm)/rv);
     }
     Ai=2.0*(1.0/(1.0-zi*(1.0-y))-sl);
     Aj=2.0*(1.0/(1.0-zj*(1.0-y))-sl);
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
     q=zim*pi-zjm*pj;
-    B=q.Abs2()/pipj/rv;
+    B=-2.0*p_v->Kin()->A();
     t=2.0*pipj;
     p_v->Kin()->SetA(Ai+Aj+2.0*p_v->Kin()->A());
   }
@@ -131,25 +136,33 @@ void VVV_SCalculator<SType>::ConstructSDipole()
     Aj=2.0*x*(1.0-x);
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
     q=pi/ui-pk/(1.0-ui);
-    B=(1.0-x)/x*ui*(1.0-ui)*q.Abs2()/(pi*pk);
+    double tc((1.0-x)/x);
+    if (p_v->Info()->SubType()==1) tc+=x/(x*x+ui*(1.0-x))-1.0/x;
+    B=tc*ui*(1.0-ui)*q.Abs2()/(pi*pk);
     t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA((1.0-x)/x);
+    p_v->Kin()->SetA(tc);
     if (p_v->Kin()->Massive()) {
       double Q2(2.0*(p_v->Kin()->JKT()->P()*p_v->JC()->P()));
-      p_v->Kin()->SetA((1.0-x)/x-pk.Abs2()/Q2*ui/(1.0-ui));
+      p_v->Kin()->SetA(tc-pk.Abs2()/Q2*ui/(1.0-ui));
     }
     p_v->Kin()->SetA(Ai+Aj+2.0*p_v->Kin()->A());
   }
   else {
     double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
+    double z(x), tc((1.0-x)/x);
+    if (p_v->Info()->SubType()==1) {
+      z=x+vi;
+      tc+=z/(z*z+vi*(1.0-z))-1.0/x;
+    }
+    if (p_v->Info()->SubType()==2) tc+=1.0/(x+vi)-1.0/x;
     Ai=2.0*x/(1.0-x);
-    Aj=2.0*x*(1.0-x);
+    Aj=2.0*z*(1.0-z);
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
-    B=-2.0*(1.0-x)/x;
+    B=-2.0*tc;
     q=pi-vi*pk;
     t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA(Ai+Aj+2.0*(1.0-x)/x);
+    p_v->Kin()->SetA(Ai+Aj+2.0*tc);
   }
   p_v->Kin()->CheckKT2Min(); 
   double Ait(Ai-B/2.0), Ajt(Aj-B/2.0);

@@ -16,8 +16,7 @@ namespace PHASIC {
     PT_Selector(Process_Base *const);
     ~PT_Selector();
     void     SetRange(ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -28,8 +27,7 @@ namespace PHASIC {
     ET_Selector(Process_Base *const);
     ~ET_Selector();
     void     SetRange(ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -40,8 +38,7 @@ namespace PHASIC {
     Rapidity_Selector(Process_Base *const);
     ~Rapidity_Selector();
     void     SetRange(ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -52,8 +49,7 @@ namespace PHASIC {
     PseudoRapidity_Selector(Process_Base *const);
     ~PseudoRapidity_Selector();
     void     SetRange(ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -67,8 +63,7 @@ namespace PHASIC {
     IMass_Selector(Process_Base *const);
     ~IMass_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -79,8 +74,7 @@ namespace PHASIC {
     IQ2_Selector(Process_Base *const);
     ~IQ2_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -92,7 +86,6 @@ namespace PHASIC {
     ~PT2_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
     bool     Trigger(const ATOOLS::Vec4D_Vector & );
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevt *const);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -103,8 +96,7 @@ namespace PHASIC {
     MT2_Selector(Process_Base *const);
     ~MT2_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -115,8 +107,7 @@ namespace PHASIC {
     MT2_v2_Selector(Process_Base *const);
     ~MT2_v2_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -127,8 +118,7 @@ namespace PHASIC {
     DeltaY_Selector(Process_Base *const);
     ~DeltaY_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -139,8 +129,7 @@ namespace PHASIC {
     DeltaEta_Selector(Process_Base *const);
     ~DeltaEta_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -151,8 +140,7 @@ namespace PHASIC {
     DeltaPhi_Selector(Process_Base *const);
     ~DeltaPhi_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -163,8 +151,7 @@ namespace PHASIC {
     DeltaR_Selector(Process_Base *const);
     ~DeltaR_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -175,8 +162,7 @@ namespace PHASIC {
     DeltaRy_Selector(Process_Base *const);
     ~DeltaRy_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -187,8 +173,7 @@ namespace PHASIC {
     PhiStar_Selector(Process_Base *const);
     ~PhiStar_Selector();
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -202,8 +187,7 @@ namespace PHASIC {
     Multiplicity_Selector(Process_Base *const);
     ~Multiplicity_Selector();
     void     SetRange(ATOOLS::Flavour,size_t,size_t);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -214,8 +198,7 @@ namespace PHASIC {
     PTMIS_Selector(Process_Base *const);
     ~PTMIS_Selector();
     void     SetRange(double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -226,8 +209,7 @@ namespace PHASIC {
     ETMIS_Selector(Process_Base *const);
     ~ETMIS_Selector();
     void     SetRange(double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -244,8 +226,7 @@ namespace PHASIC {
     Isolation_Cut(Process_Base *const);
 
     void   SetRange(ATOOLS::Flavour,double,double,double,double);
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
     void   BuildCuts(Cut_Data *);
   };
 
@@ -256,8 +237,7 @@ namespace PHASIC {
     NJettiness_Selector(Process_Base *const);
     ~NJettiness_Selector();
     void     SetRange(size_t,double,double);
-    bool     Trigger(const ATOOLS::Vec4D_Vector &,
-                     ATOOLS::NLO_subevt *const=NULL);
+    bool     Trigger(const ATOOLS::Vec4D_Vector &);
     void     BuildCuts(Cut_Data *);
   };
 
@@ -302,16 +282,13 @@ PT_Selector::PT_Selector(Process_Base *const proc):
 PT_Selector::~PT_Selector() {
 }
 
-bool PT_Selector::Trigger(const Vec4D_Vector &mom,
-                             ATOOLS::NLO_subevt *const sub)
+bool PT_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   msg_Debugging()<<mom[2].PPerp()<<" "<<mom[3].PPerp()<<std::endl;
-  for (size_t i=m_nin;i<n;i++) {
-    if (m_flav.Includes(fl[i])) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (m_flav.Includes(p_fl[i])) {
       double pti = mom[i].PPerp();
       if (m_sel_log->Hit( ((pti<m_ptmin) || (pti>m_ptmax)) )) return false;
     }
@@ -400,16 +377,13 @@ ET_Selector::ET_Selector(Process_Base *const proc):
 ET_Selector::~ET_Selector() {
 }
 
-bool ET_Selector::Trigger(const Vec4D_Vector &mom,
-                          ATOOLS::NLO_subevt *const sub)
+bool ET_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   msg_Debugging()<<mom[2].PPerp()<<" "<<mom[3].PPerp()<<std::endl;
-  for (size_t i=m_nin;i<n;i++) {
-    if (m_flav.Includes(fl[i])) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (m_flav.Includes(p_fl[i])) {
       double pti = mom[i].PPerp();
       if (m_sel_log->Hit( ((pti<m_etmin) || (pti>m_etmax)) )) return false;
     }
@@ -498,17 +472,14 @@ Rapidity_Selector::Rapidity_Selector(Process_Base *const proc):
 Rapidity_Selector::~Rapidity_Selector() {
 }
 
-bool Rapidity_Selector::Trigger(const Vec4D_Vector &mom,
-                                ATOOLS::NLO_subevt *const sub)
+bool Rapidity_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
+  for (size_t i=m_nin;i<m_n;i++) {
     if (mom[i][0]==0. && mom[i][1]==0. &&
         mom[i][2]==0. && mom[i][3]==0.) continue;
-    if (m_flav.Includes(fl[i])) {
+    if (m_flav.Includes(p_fl[i])) {
       double yi = mom[i].Y();
       if (m_sel_log->Hit( ((yi<m_ymin) || (yi>m_ymax)) )) return false;
     }
@@ -587,17 +558,14 @@ PseudoRapidity_Selector::PseudoRapidity_Selector(Process_Base *const proc):
 PseudoRapidity_Selector::~PseudoRapidity_Selector() {
 }
 
-bool PseudoRapidity_Selector::Trigger(const Vec4D_Vector &mom,
-                                      ATOOLS::NLO_subevt *const sub)
+bool PseudoRapidity_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
+  for (size_t i=m_nin;i<m_n;i++) {
     if (mom[i][0]==0. && mom[i][1]==0. &&
         mom[i][2]==0. && mom[i][3]==0.) continue;
-    if (m_flav.Includes(fl[i])) {
+    if (m_flav.Includes(p_fl[i])) {
       double etai = mom[i].Eta();
       if (m_sel_log->Hit( ((etai<m_etamin) || (etai>m_etamax)) )) return false;
     }
@@ -678,17 +646,14 @@ IMass_Selector::IMass_Selector(Process_Base *const proc):
 IMass_Selector::~IMass_Selector() {
 }
 
-bool IMass_Selector::Trigger(const Vec4D_Vector &mom,
-                             ATOOLS::NLO_subevt *const sub)
+bool IMass_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double massij = sqrt((mom[i]+mom[j]).Abs2());
         if (m_sel_log->Hit( ((massij<m_massmin) ||
                              (massij>m_massmax)) )) return false;
@@ -770,16 +735,14 @@ IQ2_Selector::IQ2_Selector(Process_Base *const proc):
 IQ2_Selector::~IQ2_Selector() {
 }
 
-bool IQ2_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool IQ2_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   for (int i=0;i<m_nin;i++) {
-    for (int j=m_nin;j<n;j++) {
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+    for (int j=m_nin;j<m_n;j++) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double q2ij = -(p[i]-p[j]).Abs2();
         if (m_sel_log->Hit( ((q2ij < m_q2min) ||
                              (q2ij > m_q2max)) )) return false;
@@ -861,17 +824,14 @@ PT2_Selector::PT2_Selector(Process_Base *const proc):
 PT2_Selector::~PT2_Selector() {
 }
 
-bool PT2_Selector::Trigger(const Vec4D_Vector &mom,
-                           ATOOLS::NLO_subevt *const sub)
+bool PT2_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double ptij = (mom[i]+mom[j]).PPerp();
         if (m_sel_log->Hit( ((ptij<m_ptmin) || (ptij>m_ptmax)) )) return false;
       }
@@ -943,17 +903,14 @@ MT2_Selector::MT2_Selector(Process_Base *const proc):
 MT2_Selector::~MT2_Selector() {
 }
 
-bool MT2_Selector::Trigger(const Vec4D_Vector &mom,
-                           ATOOLS::NLO_subevt *const sub)
+bool MT2_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double mtij = (mom[i]+mom[j]).MPerp();
         if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
       }
@@ -1025,17 +982,14 @@ MT2_v2_Selector::MT2_v2_Selector(Process_Base *const proc):
 MT2_v2_Selector::~MT2_v2_Selector() {
 }
 
-bool MT2_v2_Selector::Trigger(const Vec4D_Vector &mom,
-                           ATOOLS::NLO_subevt *const sub)
+bool MT2_v2_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double mtij = sqrt(2.*mom[i].PPerp()*mom[j].PPerp()*(1.-mom[i].CosDPhi(mom[j])));
         if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
       }
@@ -1107,19 +1061,16 @@ DeltaY_Selector::DeltaY_Selector(Process_Base *const proc):
 DeltaY_Selector::~DeltaY_Selector() {
 }
 
-bool DeltaY_Selector::Trigger(const Vec4D_Vector &mom,
-                              ATOOLS::NLO_subevt *const sub)
+bool DeltaY_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double dyij = dabs(mom[i].DY(mom[j]));
         if (m_sel_log->Hit( ((dyij<m_dymin) || (dyij>m_dymax)) )) return false;
       }
@@ -1189,19 +1140,16 @@ DeltaEta_Selector::DeltaEta_Selector(Process_Base *const proc):
 DeltaEta_Selector::~DeltaEta_Selector() {
 }
 
-bool DeltaEta_Selector::Trigger(const Vec4D_Vector &mom,
-                                ATOOLS::NLO_subevt *const sub)
+bool DeltaEta_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double detaij = dabs(mom[i].DEta(mom[j]));
         if (m_sel_log->Hit( ((detaij<m_detamin) || (detaij>m_detamax)) )) return false;
       }
@@ -1271,19 +1219,16 @@ DeltaPhi_Selector::DeltaPhi_Selector(Process_Base *const proc):
 DeltaPhi_Selector::~DeltaPhi_Selector() {
 }
 
-bool DeltaPhi_Selector::Trigger(const Vec4D_Vector &mom,
-                                ATOOLS::NLO_subevt *const sub)
+bool DeltaPhi_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double dphiij = dabs(mom[i].DPhi(mom[j]));
         if (m_sel_log->Hit( ((dphiij<m_dphimin) || (dphiij>m_dphimax)) )) return false;
       }
@@ -1353,19 +1298,16 @@ DeltaR_Selector::DeltaR_Selector(Process_Base *const proc):
 DeltaR_Selector::~DeltaR_Selector() {
 }
 
-bool DeltaR_Selector::Trigger(const Vec4D_Vector &mom,
-                              ATOOLS::NLO_subevt *const sub)
+bool DeltaR_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double dRij = mom[i].DR(mom[j]);
         if (m_sel_log->Hit( ((dRij<m_dRmin) || (dRij>m_dRmax)) )) return false;
       }
@@ -1435,19 +1377,16 @@ DeltaRy_Selector::DeltaRy_Selector(Process_Base *const proc):
 DeltaRy_Selector::~DeltaRy_Selector() {
 }
 
-bool DeltaRy_Selector::Trigger(const Vec4D_Vector &mom,
-                               ATOOLS::NLO_subevt *const sub)
+bool DeltaRy_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         double dRyij = mom[i].DRy(mom[j]);
         if (m_sel_log->Hit( ((dRyij<m_dRymin) || (dRyij>m_dRymax)) )) return false;
       }
@@ -1517,19 +1456,16 @@ PhiStar_Selector::PhiStar_Selector(Process_Base *const proc):
 PhiStar_Selector::~PhiStar_Selector() {
 }
 
-bool PhiStar_Selector::Trigger(const Vec4D_Vector &mom,
-                               ATOOLS::NLO_subevt *const sub)
+bool PhiStar_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
-  for (size_t i=m_nin;i<n;i++) {
-    for (size_t j=i+1;j<n;j++) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    for (size_t j=i+1;j<m_n;j++) {
       if (mom[i][0]==0. && mom[i][1]==0. &&
           mom[i][2]==0. && mom[i][3]==0.) continue;
-      if ( ((m_flav1.Includes(fl[i])) && (m_flav2.Includes(fl[j])) ) ||
-           ((m_flav1.Includes(fl[j])) && (m_flav2.Includes(fl[i])) ) ) {
+      if ( ((m_flav1.Includes(p_fl[i])) && (m_flav2.Includes(p_fl[j])) ) ||
+           ((m_flav1.Includes(p_fl[j])) && (m_flav2.Includes(p_fl[i])) ) ) {
         // phi* = tan((pi-dphi)/2) * sin(theta*)
         //      = tan((pi-dphi)/2) * sqrt(1-cos^2(theta*))
         // with
@@ -1605,16 +1541,13 @@ Multiplicity_Selector::Multiplicity_Selector(Process_Base *const proc):
 Multiplicity_Selector::~Multiplicity_Selector() {
 }
 
-bool Multiplicity_Selector::Trigger(const Vec4D_Vector &mom,
-                                    ATOOLS::NLO_subevt *const sub)
+bool Multiplicity_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   double cnt(0);
-  for (size_t i=m_nin;i<n;i++) {
-    if (m_flav.Includes(fl[i])) {
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (m_flav.Includes(p_fl[i])) {
       cnt++;
     }
   }
@@ -1681,17 +1614,14 @@ PTMIS_Selector::PTMIS_Selector(Process_Base *const proc):
 PTMIS_Selector::~PTMIS_Selector() {
 }
 
-bool PTMIS_Selector::Trigger(const Vec4D_Vector &mom,
-                             ATOOLS::NLO_subevt *const sub)
+bool PTMIS_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   Vec4D mismom(0.,0.,0.,0.);
   for (size_t k=0;k<m_flavs.size();k++) {
-    for (size_t i=m_nin;i<n;i++) {
-      if (m_flavs[k].Includes(fl[i])) {
+    for (size_t i=m_nin;i<m_n;i++) {
+      if (m_flavs[k].Includes(p_fl[i])) {
         mismom+=mom[i];
       }
     }
@@ -1760,17 +1690,14 @@ ETMIS_Selector::ETMIS_Selector(Process_Base *const proc):
 ETMIS_Selector::~ETMIS_Selector() {
 }
 
-bool ETMIS_Selector::Trigger(const Vec4D_Vector &mom,
-                             ATOOLS::NLO_subevt *const sub)
+bool ETMIS_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   Vec4D mismom(0.,0.,0.,0.);
   for (size_t k=0;k<m_flavs.size();k++) {
-    for (size_t i=m_nin;i<n;i++) {
-      if (m_flavs[k].Includes(fl[i])) {
+    for (size_t i=m_nin;i<m_n;i++) {
+      if (m_flavs[k].Includes(p_fl[i])) {
         mismom+=mom[i];
       }
     }
@@ -1867,27 +1794,19 @@ int Order_edrt::operator()(const edrt a, const edrt b) {
   return 0;
 }
 
-bool Isolation_Cut::Trigger(const Vec4D_Vector &p,
-                            ATOOLS::NLO_subevt *const sub)
+bool Isolation_Cut::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   vector<size_t> vfsub;
-  if (sub) {
-    for (size_t i=m_nin;i<n;i++) {
-      if (m_iflav.Includes(fl[i])) {
-        vfsub.push_back(i);
-      }
-    }
-  }
-  const vector<size_t> *const vf(sub?&vfsub:&m_vf);
+  for (size_t i=m_nin;i<m_n;i++)
+    if (m_iflav.Includes(p_fl[i])) vfsub.push_back(i);
+  const vector<size_t> *const vf(&vfsub);
   for (size_t k=0;k<vf->size();k++) {
     double egamma=p[(*vf)[k]].PPerp();
     vector<edrt> edrlist;
-    for (size_t i=m_nin;i<n;i++) {
-      if (Flavour(kf_jet).Includes(fl[i]) ||
+    for (size_t i=m_nin;i<m_n;i++) {
+      if (Flavour(kf_jet).Includes(p_fl[i]) ||
           (p_fl[i].Strong() && p_fl[i].Mass()<m_massmax)) {
         double dr=DR(p[(*vf)[k]],p[i]);
         if (dr<m_dR) edrlist.push_back(edrt(p[i].PPerp(),dr));
@@ -1981,13 +1900,10 @@ NJettiness_Selector::NJettiness_Selector(Process_Base *const proc):
 NJettiness_Selector::~NJettiness_Selector() {
 }
 
-bool NJettiness_Selector::Trigger(const Vec4D_Vector &mom,
-                                  ATOOLS::NLO_subevt *const sub)
+bool NJettiness_Selector::Trigger(const Vec4D_Vector &mom)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
-  size_t n(sub?sub->m_n:m_n);
-  const Flavour *const fl(sub?sub->p_fl:p_fl);
   // find all reference vectors n_i
   Vec4D_Vector ni(m_N+2,Vec4D(0.,0.,0.,0));
   ni[0]=Vec4D(1.,0.,0.,1.);

@@ -1,5 +1,6 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
+#include "PHASIC++/Process/ME_Generators.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Function_Base.H"
@@ -19,6 +20,47 @@ using namespace ATOOLS;
 
 ME_Generator_Base::~ME_Generator_Base()
 {
+}
+
+Process_Base *ME_Generator_Base::InitializeProcess
+(Cluster_Amplitude *const ampl,const int mode,
+ const std::string &gen,const std::string &addname)
+{
+  Process_Info pi;
+  pi.m_addname=addname;
+  pi.m_megenerator=gen.length()?gen:m_name;
+  for (size_t i(0);i<ampl->NIn();++i) {
+    Flavour fl(ampl->Leg(i)->Flav().Bar());
+    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    pi.m_ii.m_ps.push_back(Subprocess_Info(fl,"",""));
+  }
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    Flavour fl(ampl->Leg(i)->Flav());
+    if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
+    pi.m_fi.m_ps.push_back(Subprocess_Info(fl,"",""));
+  }
+  if (mode&8) {
+    pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
+    pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
+  }
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+  if (mode&2) My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")
+				 +"/Process/"+m_name+"/");
+  PHASIC::Process_Base *proc=p_gens->InitializeProcess(pi,mode&1);
+  if (proc==NULL) {
+    if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
+				    +"/Process/"+m_name+"/");
+    return proc;
+  }
+  Selector_Key skey(NULL,NULL,true);
+  proc->SetSelector(skey);
+  std::string stag("VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}");
+  proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,stag,"Alpha_QCD 1"));
+  proc->SetKFactor(KFactor_Setter_Arguments("NO"));
+  proc->PerformTests();
+  if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
+				  +"/Process/"+m_name+"/");
+  return proc;
 }
 
 void ME_Generator_Base::SetPSMasses(Default_Reader *const reader)
@@ -151,7 +193,10 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   if (ampl->NIn()>1) {
     ShiftMasses_Energy etot(this,ampl,-1);
     double xi(etot.WDBSolve(cms[0],0.0,1.0));
-    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
+      if (m_massmode==0) xi=etot.WDBSolve(cms[0],1.0,2.0);
+      if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+    }
     for (size_t i(0);i<ampl->NIn();++i) {
       Vec4D p(xi*ampl->Leg(i)->Mom());
       p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
@@ -160,17 +205,16 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   }
   ShiftMasses_Energy etot(this,ampl,1);
   double xi(etot.WDBSolve(cms[0],0.0,1.0));
-  if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+  if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
+    if (m_massmode==0) xi=etot.WDBSolve(cms[0],1.0,2.0);
+    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+  }
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     Vec4D p(xi*ampl->Leg(i)->Mom());
     p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     ampl->Leg(i)->SetMom(boost*p);
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
-  if (ampl->NIn()==2) {
-    if (ampl->Leg(0)->Mom()[3]*pb[0][3]<0.0) return -1;
-    if (ampl->Leg(1)->Mom()[3]*pb[1][3]<0.0) return -1;
-  }
   return 1;
 }
 
@@ -179,22 +223,6 @@ double ME_Generator_Base::Mass(const ATOOLS::Flavour &fl) const
   if (m_massmode==0) return fl.Mass();
   if (m_psmass.find(fl)!=m_psmass.end()) return fl.Mass(true);
   return fl.Mass();
-}
-
-void ME_Generator_Base::SetClusterDefinitions
-(PDF::Cluster_Definitions_Base *const defs)
-{
-}
-
-void ME_Generator_Base::PreCluster
-(Process_Base *const proc,const ATOOLS::Vec4D_Vector &p)
-{
-}
-
-Cluster_Amplitude *ME_Generator_Base::ClusterConfiguration
-(Process_Base *const proc,const Vec4D_Vector &p,const size_t &mode)
-{
-  return NULL;
 }
 
 void ME_Generator_Base::ShowSyntax(const int mode)

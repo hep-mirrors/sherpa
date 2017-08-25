@@ -55,6 +55,7 @@ namespace AMEGIC {
 			       std::vector<Process_Base *> &) = 0;
 
     virtual bool SetUpIntegrator() = 0; 
+    virtual void RequestVariables(PHASIC::Phase_Space_Handler *const psh); 
     virtual void AddChannels(std::list<std::string>*) = 0;
     virtual Amplitude_Handler *GetAmplitudeHandler() = 0;   
     virtual Helicity *GetHelicity() = 0;

@@ -184,7 +184,7 @@ operator()(const Process_Info &pi) const
   if (pi.m_fi.m_nlotype&nlo_type::loop) {
     if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Default_Reader reader;
-    int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
+    int con = reader.Get<int>("HNNLO_KF_MODE", 0);
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() && 
         pi.m_fi.m_ps.size()==2 && 

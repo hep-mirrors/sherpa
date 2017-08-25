@@ -14,7 +14,7 @@ namespace PHASIC {
     TTBar_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
   };// end of class Scale_Setter_Base
 
@@ -23,7 +23,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double s(2.0*ampl->Leg(0)->Mom()*ampl->Leg(1)->Mom());
   double t(2.0*ampl->Leg(0)->Mom()*ampl->Leg(2)->Mom());
@@ -31,7 +31,7 @@ PDF::CParam TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (ampl->Legs().size()>4) {
     msg_Tracking()<<METHOD<<"(): 2->"<<ampl->Legs().size()-2
 		  <<" process. Returning \\hat{s}."<<std::endl;
-    return PDF::CParam(s,s,0.0,s,-1);
+    return PDF::Cluster_Param(NULL,s,s,s,-1);
   }
   double muf2(-1.0);
   Flavour f[4]={ampl->Leg(0)->Flav(),ampl->Leg(1)->Flav(),
@@ -50,7 +50,9 @@ PDF::CParam TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     muf2=dabs((f[0].IsAnti()!=f[2].IsAnti())?t:u);
   }
   else {
-    THROW(fatal_error,"Invalid call");
+    double t2(2.0*ampl->Leg(1)->Mom()*ampl->Leg(3)->Mom());
+    double u2(2.0*ampl->Leg(1)->Mom()*ampl->Leg(2)->Mom());
+    muf2=-1.0/(1.0/s+2.0/(t+t2)+2.0/(u+u2))/sqrt(2.0);
   }
   double mur2(muf2), muq2(muf2);
   msg_Debugging()<<METHOD<<"(): Set {\n"
@@ -58,7 +60,7 @@ PDF::CParam TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"  \\mu_q = "<<sqrt(muq2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,muq2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
 }
 
 DECLARE_ND_GETTER(TTBar_Core_Scale,"TTBar",

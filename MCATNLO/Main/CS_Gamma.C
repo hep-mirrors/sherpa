@@ -70,7 +70,7 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	for (size_t k(0);k<ampl->Legs().size();++k) {
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k==i || k==j) continue;
-	  if (!CheckColors(li,lj,lk,cf[f])) continue;
+	  if (!ampl->CheckColors(li,lj,lk,cf[f])) continue;
 	  if (cur) {
 	    if (((idmap.find(li->Id())->second|
 		  idmap.find(lj->Id())->second)&cur[0]->Id())==0 ||
@@ -101,7 +101,7 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  for (size_t l(0), m(0);l<ampl->Legs().size();++l) {
 	    if (l==j) continue;
 	    else if (l==i) {
-	      nampl->CreateLeg(p[m],cf[f],CombineColors
+	      nampl->CreateLeg(p[m],cf[f],nampl->CombineColors
 			       (li,lj,lk,cf[f]),li->Id()|lj->Id());
 	      nampl->Legs().back()->SetK(lk->Id());
 	    }
@@ -258,43 +258,6 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   return Trial_Weight(rme,g,h);
 }
 
-void CS_Gamma::AddRBPoint(Cluster_Amplitude *const ampl)
-{
-  DEBUG_FUNC("");
-  p_ms=ampl->MS();
-  p_shower->SetMS(p_ms);
-  Weight_Map ws(CalculateWeight(ampl,1));
-  if (ws.empty()) return;
-#ifdef DEBUG__Trial_Weight
-  msg_Debugging()<<"Accumulate weights {\n";
-#endif
-  for (Weight_Map::const_iterator
-	 wit(ws.begin());wit!=ws.end();++wit) {
-#ifdef DEBUG__Trial_Weight
-    msg_Debugging()<<"  "<<wit->first<<" -> "<<wit->second<<"\n";
-#endif
-    int i(-1), j(-1), k(-1);
-    for (size_t l(0);l<ampl->Legs().size();++l)
-      if (ampl->Leg(l)->Id()&wit->first.m_k) k=l;
-      else if (ampl->Leg(l)->Id()&wit->first.m_ij) {
-	if (i<0) i=l;
-	else j=l;
-      }
-    std::string nadd("__QCD(S)_RS"+ToString(i)+
-		     "_"+ToString(j)+"_"+ToString(k));
-    double rme(Differential(ampl,nlo_type::rsub,nadd).m_me);
-    double wgt(wit->second.m_me);
-    Process_Base *bproc(wit->second.p_proc);
-    msg_Debugging()<<"  Set weight for '"<<bproc->Name()
-		   <<"'"<<wit->first<<" -> ";
-    msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wgt
-		   <<" = "<<rme/wgt<<"\n";
-  }
-#ifdef DEBUG__Trial_Weight
-  msg_Debugging()<<"}\n";
-#endif
-}
-
 Weight_Value CS_Gamma::Differential
 (Cluster_Amplitude *const ampl,const nlo_type::code type,
  const std::string add) const
@@ -306,13 +269,15 @@ Weight_Value CS_Gamma::Differential
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
   Process_Base::SortFlavours(ampl);
-  int rm(ampl->Leg(0)->Mom()[3]<0.0?0:1024);
   std::string pname(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname+add));
-  if (pit==(*(*procs)[nlo_type::lo]).end()) 
-    THROW(fatal_error,"Process '"+pname+"' not found");
+  if (pit==(*(*procs)[type]).end())
+    THROW(fatal_error,"Process '"+pname+add+"' not found");
   Weight_Value meps(pit->second);
-  meps.m_b=meps.m_me=pit->second->Differential(*ampl,2|4|rm);
+  bool kon(pit->second->KFactorSetter(true)->On());
+  pit->second->KFactorSetter(true)->SetOn(false);
+  meps.m_b=meps.m_me=pit->second->Differential(*ampl,1|2|4);
+  pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();
   meps.m_mur2=ampl->MuR2();
@@ -320,169 +285,6 @@ Weight_Value CS_Gamma::Differential
   msg->SetLevel(olv);
 #endif
   return meps;
-}
-
-bool CS_Gamma::CheckColors
-(const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
- const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
-{
-  if (mo.Strong()) {
-    if (!lk->Flav().Strong()) return false;
-  }
-  else {
-    if (lk->Flav().StrongCharge()==8) return false;
-    if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
-	lk->Col().m_i==-1) return true;
-    ColorID ci(li->Col()), cj(lj->Col());
-    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
-    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
-    return false;
-  }
-  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
-      lk->Col().m_i==-1) return true;
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
-	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      if (lk->Flav().StrongCharge()==0) return true;
-      if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
-	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
-	  cj.Singlet()) return true;
-    }
-    else {
-      if (lk->Flav().StrongCharge()==8) return false;
-      return true;
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lk->Flav().StrongCharge()==0) return false;
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
-	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
-	return true;
-      if (ci.m_j==cj.m_i && 
-	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
-	return true;
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.m_j==cj.m_i &&
-	  (ci.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((cj.m_i==ck.m_j || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.m_i==cj.m_j &&
-	  (ci.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((cj.m_j==ck.m_i || ck.Singlet()) &&
-	  ci.Singlet()) return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==8 ||
-	lk->Flav().StrongCharge()==8) {
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
-
-ColorID CS_Gamma::CombineColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk,
- const ATOOLS::Flavour &mo) const
-{
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (ci.m_i==-1 && cj.m_i==-1 && ck.m_i==-1) return ColorID();
-  if (!mo.Strong()) return ColorID(0,0);
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(ci.m_i,cj.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(ci.m_i,0);
-      return ColorID(cj.m_i,0);
-    }
-    else {
-      return ColorID(ci.m_i,0);
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,ci.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(0,ci.m_j);
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,ci.m_j);
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
-	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
-	return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i && 
-	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
-	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
-	return ColorID(ci.m_i,cj.m_j);
-      THROW(fatal_error,"Invalid clustering");
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.Singlet()) return ColorID(cj.m_i,0);
-      return ColorID(ci.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.Singlet()) return ColorID(0,cj.m_j);
-      return ColorID(0,ci.m_j);
-    }
-    else {
-      THROW(fatal_error,"Invalid combination");
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,0);
-    }
-  }
-  return ColorID();
 }
 
 namespace MCATNLO {

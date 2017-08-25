@@ -127,6 +127,8 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
+  if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
+    WriteRNGStatus("random","");
 #ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
 #endif
@@ -461,7 +463,8 @@ void Event_Handler::MPISync()
     values[1]=m_msum;
     values[2]=m_msumsqr;
     mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_maxweight,1,MPI::DOUBLE,MPI::MAX);
+    if (!(m_checkweight&2))
+      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_maxweight,1,MPI::DOUBLE,MPI::MAX);
     m_mn=values[0];
     m_msum=values[1];
     m_msumsqr=values[2];
@@ -525,19 +528,44 @@ double Event_Handler::TotalErrMPI()
   return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);
 }
 
+void Event_Handler::WriteRNGStatus
+(const std::string &file,const std::string &message) const
+{
+  std::string ranfilename=file+".dat";
+  if (m_checkweight&2) ranfilename=file+"."+rpa->gen.Variable("RNG_SEED")+".dat";
+  if (ATOOLS::msg->LogFile()!="") ranfilename=ATOOLS::msg->LogFile()+"."+ranfilename;
+  ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
+  std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
+  outstream<<"\n"<<message<<"\n";
+  outstream.close();
+}
+
 bool Event_Handler::WeightIsGood(const double& weight)
 {
   if (IsBad(weight)) return false;
 
   if (m_checkweight && fabs(weight)>m_maxweight) {
     m_maxweight=fabs(weight);
-    std::string ranfilename="random.dat";
-    if (ATOOLS::msg->LogFile()!="") ranfilename=ATOOLS::msg->LogFile()+"."+ranfilename;
-    ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
-    std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
-    outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<weight<<" in event "<<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
-    outstream.close();
+    WriteRNGStatus("maxweight","# Wrote status for weight="+ToString(weight)+
+		   " in event "+ToString(rpa->gen.NumberOfGeneratedEvents()+1)+
+		   " trial "+ToString(rpa->gen.NumberOfTrials()-1));
+  }
+  if (m_checkweight&8 && p_variations) {
+    Blob_Data_Base *data((*m_blobs.FindFirst(btp::Signal_Process))["Variation_Weights"]);
+    if (data) {
+      const Variation_Weights &variations(data->Get<Variation_Weights>());
+      for (size_t i(0);i<variations.GetNumberOfVariations();++i) {
+	double weight=variations.GetVariationWeightAt(i);
+	const std::string &name(variations.GetVariationNameAt(i));
+	if (m_maxweights.find(name)==m_maxweights.end()) m_maxweights[name]=0.0; 
+	if (fabs(weight)>m_maxweights[name]) {
+	  m_maxweights[name]=fabs(weight);
+	  WriteRNGStatus("maxweight."+name,"# Wrote status for weight="+ToString(weight)+
+			 " in event "+ToString(rpa->gen.NumberOfGeneratedEvents()+1)+
+			 " trial "+ToString(rpa->gen.NumberOfTrials()-1));
+	}
+      }
+    }
   }
 
   return true;

@@ -28,6 +28,7 @@ namespace ATOOLS {
   };// end of class String_Sort
 
   std::vector<int> ID(size_t id);
+  size_t ID(const std::vector<int> &id);
 
   size_t IdCount(size_t id);
 

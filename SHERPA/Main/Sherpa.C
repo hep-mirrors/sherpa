@@ -198,6 +198,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
       if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
         std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
         std::ofstream eventout(("refevent."+fname).c_str());
+        eventout<<"# trial "<<rpa->gen.NumberOfTrials()-1<<std::endl;
         eventout<<*p_eventhandler->GetBlobs()<<std::endl;
         eventout.close();
       }

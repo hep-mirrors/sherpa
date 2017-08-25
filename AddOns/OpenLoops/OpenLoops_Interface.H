@@ -12,7 +12,18 @@ namespace ATOOLS {
 
 }
 
+namespace MODEL {
+
+  class Model_Base;
+
+}
+
 namespace OpenLoops {
+
+  enum AmplitudeType {
+    Tree = 1,
+    Loop2 = 12
+  };
 
   class OpenLoops_Interface: public PHASIC::ME_Generator_Base,
                              public ATOOLS::Terminator_Object {
@@ -21,6 +32,11 @@ namespace OpenLoops {
     static bool        s_ignore_model;
     static bool        s_exit_on_error;
     static std::vector<std::string> s_evgen_params;
+
+    // Do not use the global MODEL::s_model in this class, since this
+    // leads to problems when using the python interface due to the
+    // order in which libraries are loaded.
+    static MODEL::Model_Base* s_model;
 
   public :
     OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}
@@ -43,15 +59,36 @@ namespace OpenLoops {
     static void EvaluateLoop2(int id, const ATOOLS::Vec4D_Vector& momenta,
                               double& res);
 
+    /* Returns <1,2,...|p_{mu_i}T_iT_j p_{nu_i}|1,2,...> / p^2 with
+       i=emitter, j=spectator */
+    static double EvaluateSpinCorrelator(int id, const Vec4D_Vector& momenta,
+					 const Vec4D& p,
+					 size_t emitter, size_t spectator,
+					 AmplitudeType type);
+    
+    /* Evaluate all color correlators. Return the one corresponding to
+       <1,2,...|TiTj|...,2,1>, with i=emitter, j=spectator */
+    static double EvaluateColorCorrelator(int id, const Vec4D_Vector& momenta,
+					  size_t emitter, size_t spectator,
+					  AmplitudeType type);
+    
+    /* Evaluate all color correlators and fill matrix such that
+       ccmatrix[i][j] = <1,2,...|TiTj|...,2,1> */
+    static void
+    PopulateColorCorrelatorMatrix(int id, const Vec4D_Vector& momenta,
+				  double& born2, double* ccmatrix,
+				  AmplitudeType type);
+
     static void SetParameter(const std::string & key, double value);
     static void SetParameter(const std::string & key, int value);
     static void SetParameter(const std::string & key, std::string value);
     static double GetDoubleParameter(const std::string & key);
     static int GetIntParameter(const std::string & key);
 
-    // Propagate model parameters to OpenLoops in the standard model
+    /* Propagate model parameters to OpenLoops in SM */
     static void SetParametersSM();
-    // Propagate model parameters to OpenLoops in UFO models
+    
+    /* Propagate model parameters to OpenLoops in UFO models */
     static void SetParametersUFO();
 
     static bool ExitOnError() { return s_exit_on_error; }

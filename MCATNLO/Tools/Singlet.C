@@ -55,8 +55,9 @@ Singlet::~Singlet() {
   
 }
 
-bool Singlet::JetVeto(Sudakov *const sud) const
+double Singlet::JetVeto(Sudakov *const sud) const
 {
+  if (p_jf==NULL) return 0.0;
   Cluster_Amplitude *ampl(Cluster_Amplitude::New()); 
   ampl->SetJF(p_jf);
   size_t nin(0);
@@ -71,9 +72,9 @@ bool Singlet::JetVeto(Sudakov *const sud) const
     if ((*iit)->GetType()==pst::FS)
       ampl->CreateLeg((*iit)->Momentum(),
 		      (*iit)->GetFlavour(),ColorID());
-  bool veto(p_jf?p_jf->JC()->Jets(ampl):false);
+  double jcv(p_jf->JC()->Value(ampl));
   ampl->Delete();
-  return veto;
+  return jcv;
 }
 
 int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 

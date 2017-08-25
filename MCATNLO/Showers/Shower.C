@@ -1,6 +1,7 @@
 #include "MCATNLO/Showers/Shower.H"
 #include "MCATNLO/Tools/Parton.H"
 #include "MCATNLO/Main/CS_Gamma.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PDF/Remnant/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
@@ -10,6 +11,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 
 using namespace MCATNLO;
+using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
@@ -80,7 +82,7 @@ int Shower::RemnantTest(Parton *const p)
 }
 
 int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
-			    Parton *const newpC,const int mode)
+			    Parton *const newpC,double &jcv)
 {
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
@@ -117,8 +119,9 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   if (rd==1) rd=p_gamma->Reject()?-1:1;
   DEBUG_VAR(p_gamma->Weight());
   m_weight*=p_gamma->Weight();
+  if (p_variationweights) *p_variationweights*=p_gamma->Weight();
   if (rd==1 && split->KtTest()>split->KtMax())
-    rd=!split->GetSing()->JetVeto(&m_sudakov);
+    jcv=split->GetSing()->JetVeto(&m_sudakov);
   split->SetFlavour(m_flav);
   split->SetFlow(1,sci[0]);
   split->SetFlow(2,sci[1]);
@@ -155,9 +158,9 @@ void Shower::SetSplitInfo
 
 int Shower::MakeKinematics
 (Parton *split,const Flavour &fla,const Flavour &flb,
- const Flavour &flc,const int mode)
+ const Flavour &flc,double &jcv)
 {
-  DEBUG_FUNC(mode);
+  DEBUG_FUNC("");
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
   int stype(-1), stat(-1);
@@ -195,14 +198,13 @@ int Shower::MakeKinematics
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
   if (stype&1) pi->SetBeam(split->Beam());
-  if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
+  SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->push_back(pj);
   if (stype) split->GetSing()->BoostAllFS(split,pj,spect);
   Flavour fls(split->GetFlavour());
-  if (mode!=0) split->SetFlavour(pi->GetFlavour());
-  int ustat(UpdateDaughters(split,pi,pj,mode));
+  int ustat(UpdateDaughters(split,pi,pj,jcv));
   split->GetSing()->pop_back();
-  if (ustat<=0 || mode!=0) {
+  if (ustat<=0) {
     split->SetFlavour(fls);
     if (stype) split->GetSing()->BoostBackAllFS(split,pj,spect);
     delete pi;
@@ -214,6 +216,32 @@ int Shower::MakeKinematics
   }
   split->GetSing()->SplitParton(split,pi,pj);
   return 1;
+}
+
+double Shower::VetoWeight(Variation_Parameters *params,
+			  Variation_Weights *weights,
+			  JetVeto_Args &args)
+{
+  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
+  int stat(args.m_jcv>=0.0);
+  Singlet *sing(args.p_sing);
+  Jet_Finder *jf(sing->JF());
+  if (stat && jf) {
+    double fac(weights?params->m_Qcutfac:1.0);
+    if (jf) {
+      stat=args.m_jcv<sqr(jf->Qcut()*fac);
+      msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
+		     <<jf->Qcut()<<" * "<<fac
+		     <<" = "<<jf->Qcut()*fac<<"\n";
+    }
+  }
+  if (stat==1) {
+    msg_Debugging()<<"} no jet veto\n";
+    args.m_acc=1;
+    return 1.0;
+  }
+  msg_Debugging()<<"} jet veto\n";
+  return 0.0;
 }
 
 bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
@@ -246,9 +274,18 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
       ResetScales(split);
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
+      double jcv(0.0);
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,jcv));
+      msg_Debugging()<<"stat = "<<kstat<<"\n";
       if (kstat<0) continue;
-      if (kstat==0) return false;
+      JetVeto_Args vwa(p_actual,kstat?jcv:-1.0,
+		       p_variationweights?
+		       p_variationweights->NumberOfParameters()+1:1);
+      m_weight*=VetoWeight(NULL,NULL,vwa);
+      if (p_variationweights)
+	p_variationweights->UpdateOrInitialiseWeights
+	  (&Shower::VetoWeight,*this,vwa);
+      if (vwa.m_acc==0) return false;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (++nem>=maxem) return true;
     }
@@ -284,7 +321,7 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   return false;
 }
 
-void Shower::SetMS(ATOOLS::Mass_Selector *const ms)
+void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
 {
   m_sudakov.SetMS(ms);
   m_kinFF.SetMS(ms);

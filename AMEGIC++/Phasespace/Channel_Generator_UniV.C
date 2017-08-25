@@ -384,8 +384,8 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       if (help1.length()>0) help1 = string("p0_") + help1;
       else help1 = string("p[0]");
 
-       if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
-       else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
+      if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,Order(help1)+string("-p")+help2,1,sf);
+      else AddToVariables(flag,string("0_")+pin0sum,Order(help1)+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
     }
     if (pin1.size()>0) {
       for (size_t i=0;i<pin1.size();++i) pin1sum+=pin1[i];
@@ -395,9 +395,8 @@ void Channel_Generator_UniV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       for (size_t i=0;i<pin1.size()-1;++i) help1+=pin1[i];
       if (help1.length()>0) help1 = string("p1_") + help1;
       else help1 = string("p[1]");
-
-      if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,help1+string("-p")+help2,1,sf);
-      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
+      if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,Order(help1)+string("-p")+help2,1,sf);
+      else AddToVariables(flag,string("1_")+pin1sum,Order(help1)+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
     }
     pin0sum = string("0_") + pin0sum; 
     pin1sum = string("1_") + pin1sum; 

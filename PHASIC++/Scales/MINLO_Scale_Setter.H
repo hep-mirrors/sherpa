@@ -52,7 +52,7 @@ namespace PHASIC {
     int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs;
     int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode, m_bumode;
 
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
+    PDF::Cluster_Param CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     void KT2(const ATOOLS::Cluster_Amplitude *ampl,
 	     const ATOOLS::Cluster_Leg *li,

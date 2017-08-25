@@ -15,10 +15,8 @@ using namespace DIRE;
 using namespace ATOOLS;
 
 Alpha_QCD::Alpha_QCD(const Kernel_Key &key):
-  Gauge(key)
+  Gauge(key), p_cpl(p_sk->PS()->AlphaS()), m_override(0)
 {
-  p_cpl=(MODEL::Running_AlphaS*)
-    p_sk->PS()->Model()->GetScalarFunction("alpha_S");
   m_lc=key.p_rd->GetValue<unsigned int>("CSS_CMODE",1);
   m_Nc=key.p_rd->GetValue<unsigned int>("CSS_NCOL",3);
   m_CF=(m_Nc*m_Nc-1.)/(2.0*m_Nc);
@@ -29,9 +27,9 @@ Alpha_QCD::Alpha_QCD(const Kernel_Key &key):
 void Alpha_QCD::SetLimits()
 {
   Shower *ps(p_sk->PS());
-  m_fac=(m_type&1)?ps->CplFac(1):ps->CplFac(0);
-  double scale=(m_type&1)?ps->TMin(1):ps->TMin(0);
-  double scl(Min(1.0,CplFac(scale))*scale);
+  m_fac=ps->CplFac((m_type&1)?1:0);
+  double scale(ps->TMin((m_type&1)?1:0));
+  double scl(CplFac(scale)*scale*p_sk->PS()->MuR2Factor());
   m_max=(*p_cpl)(Max(p_cpl->CutQ2(),scl));
 }
 
@@ -61,7 +59,9 @@ double Alpha_QCD::G3(const double &nf) const
 double Alpha_QCD::K(const Splitting &s) const
 {
   if (!(s.m_kfac&1)) return 0.0;
+  m_override=1;
   double asf=Coupling(s)/(2.0*M_PI), nf=Nf(s);
+  m_override=0;
   if (!(s.m_kfac&4)) return asf*G2(nf);
   return asf*G2(nf)+sqr(asf)*G3(nf);
 }
@@ -86,15 +86,18 @@ double Alpha_QCD::CplFac(const double &scale) const
 
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
-  if (s.m_clu&1) return 1.0;
-  double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
+  if (m_override==0) {
+    if (s.m_clu&1) return 1.0;
+    if (s.m_clu&2) return (*p_cpl)(s.m_t1);
+  }
+  double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
   double scl(CplFac(scale)*scale*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
-  if (!IsEqual(scl,s.m_t)) {
-    std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));
-    if (murf>1.0) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(s.m_t,ths.back())) ths.push_back(s.m_t);
+  if (!IsEqual(scl,scale)) {
+    std::vector<double> ths(p_cpl->Thresholds(scale,scl));
+    if (scl>scale) std::reverse(ths.begin(),ths.end());
+    if (ths.empty() || !IsEqual(scale,ths.back())) ths.push_back(scale);
     if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
@@ -102,10 +105,6 @@ double Alpha_QCD::Coupling(const Splitting &s) const
       if ((s.m_kfac&6)==6) ct+=cpl/(2.0*M_PI)*B0(nf)*L;
       cpl*=1.0-ct;
     }
-  }
-  if (cpl>m_max) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at \\mu = "
-	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
   }
   return cpl;
 }

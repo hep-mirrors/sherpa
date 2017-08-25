@@ -46,7 +46,7 @@ namespace DIRE {
 	    B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
 	  }
 	}
-	return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+	return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
       }
       double Q2(s.m_Q2+s.m_mi2+s.m_mj2+s.m_mk2);
       double muij2(s.m_mij2/Q2), mui2(s.m_mi2/Q2);
@@ -56,8 +56,13 @@ namespace DIRE {
       vtijk=sqrt(vtijk)/(1.0-muij2-muk2);
       vijk=sqrt(vijk)/((1.0-mui2-muk2)*(1.0-y));
       double pipj=s.m_Q2*s.m_y/2.0;
-      B=vtijk/vijk*(B-s.m_mi2/pipj);
-      return (m_swap?1.0-z:z)*(A*(1.0+p_sk->GF()->K(s))+B);
+      B=vtijk/vijk*(B-s.m_mi2/pipj*(1.0-z)/(1.0-z+y));
+      if (muk2) {
+	double vtkji=sqrt(1.0-4.0*muk2*mui2/sqr(1.0-muk2-mui2));
+	double vkji=sqrt(1.0-4.0*(s.m_Q2*(1.0-z)+s.m_mk2)*s.m_mi2/sqr(s.m_Q2*z));
+	B-=vtkji/vkji*2.0*s.m_mk2/(s.m_Q2*(1.-z))*y/(1.0-z+y);
+      }
+      return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
     }
 
     double Integral(const Splitting &s) const
@@ -108,14 +113,14 @@ namespace DIRE {
 	  B2+=40*CA/(9.*x)/(1.0+x*x/(s.m_t/s.m_Q2));
 	  B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/2.0;
 	}
-	return (m_swap?1.0-z:z)*B;
+	return (s.m_clu?1.0:(m_swap?1.0-z:z))*B;
       }
       double nui2(s.m_mi2/s.m_Q2), nuk2(s.m_mk2/s.m_Q2);
       double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
       if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-s.m_y);
       double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
-      return (m_swap?1.0-z:z)*V;
+      return (s.m_clu?1.0:(m_swap?1.0-z:z))*V;
     }
 
     double Integral(const Splitting &s) const

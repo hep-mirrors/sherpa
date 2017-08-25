@@ -1,7 +1,6 @@
 #include "DIRE/Tools/Amplitude.H"
 
 #include "DIRE/Shower/Kernel.H"
-#include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -9,8 +8,9 @@
 using namespace DIRE;
 using namespace ATOOLS;
 
-Amplitude::Amplitude(Cluster_Amplitude *const a):
-  m_t(0.0), m_t0(0.0), p_ampl(a)
+Amplitude::Amplitude(Cluster_Amplitude *const a,
+		     std::vector<Amplitude*> *const all):
+  m_t(0.0), m_t0(0.0), p_ampl(a), p_all(all)
 {
 }
 
@@ -18,6 +18,21 @@ Amplitude::~Amplitude()
 {
   for (const_iterator it(begin());
        it!=end();++it) delete *it;
+}
+
+void Amplitude::Reduce()
+{
+  for (iterator it(begin());it!=end();++it) {
+    (*it)->SetOut(0,NULL);  
+    (*it)->SetOut(1,NULL);
+  }
+  bool kill(false);
+  for (Amplitude_Vector::iterator
+	 ait(p_all->begin());ait!=p_all->end();) {
+    if (!kill) ++ait;
+    else { delete *ait; ait=p_all->erase(ait); }
+    if (*(ait-1)==this) kill=true;
+  }
 }
 
 void Amplitude::Add(Parton *const p)
@@ -58,6 +73,8 @@ namespace DIRE {
     Vec4D p;
     int c[4]={0,0,0};
     s<<"("<<&a<<"): t = "<<a.T()<<", t0 = "<<a.T0()
+     <<", nlo = "<<ID(a.ClusterAmplitude()->NLO())
+     <<", flag = "<<ID(a.ClusterAmplitude()->Flag())
      <<" {\n  "<<a.Split()<<"\n";
     for (Amplitude::const_iterator
 	   it(a.begin());it!=a.end();++it) {

@@ -13,7 +13,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
                    const std::vector<size_t>& partonlist):
   m_stype(st), m_itype(cs_itype::K|cs_itype::P),
   m_kcontrib(cs_kcontrib::Kb|cs_kcontrib::KFS|cs_kcontrib::t|cs_kcontrib::Kt),
-  p_proc(proc), p_kernel(NULL),
+  p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
   m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
   m_Vsubmode(1), m_collVFF(1), m_facscheme(0),
@@ -22,6 +22,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_plist(partonlist)
 {
   DEBUG_FUNC("");
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
   Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
@@ -34,6 +35,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
                                  +ToString(nf)+").");
   const size_t nmf(nfgs-nf);
   p_kernel=new Massive_Kernels(st,nf,nmf);
+  p_kernel->SetSubType(m_subtype);
 
   m_kcontrib=ToType<cs_kcontrib::type>
              (reader.Get<std::string>("KP_KCONTRIB","BSGT"));
@@ -127,6 +129,14 @@ void KP_Terms::SetColourFactors()
     msg_Debugging()<<m_flavs[i]<<": "<<cpls[i]<<std::endl;
   }
   p_kernel->SetCpls(cpls);
+}
+
+void KP_Terms::SetNLOMC(PDF::NLOMC_Base *const nlomc)
+{
+  p_nlomc=nlomc;
+  m_subtype=p_nlomc->SubtractionType();
+  p_kernel->SetSubType(m_subtype);
+  if (m_subtype==1) p_kernel->SetKappa(1.0);
 }
 
 void KP_Terms::SetMassive()

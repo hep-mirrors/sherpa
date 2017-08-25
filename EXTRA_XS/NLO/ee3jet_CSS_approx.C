@@ -30,6 +30,8 @@ namespace EXTRAXS {
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     double LOME2(const Vec4D&, const Vec4D&, const Vec4D&, const Vec4D&,
 		 const Vec4D&, int);
+    void FillCombinations(std::set<std::pair<size_t,size_t> > &combs,
+			  std::map<size_t,ATOOLS::Flavour_Vector> &fls);
   };
 }
 
@@ -38,17 +40,31 @@ XS_ee3jet_CSS_approx::XS_ee3jet_CSS_approx
 {
   PRINT_INFO("initialised XS_ee3jet_CSS_approx");
   Process_Info pico(pi);
+  m_oqcd=1;
+  m_oew=2;
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.begin());
   pico.m_fi.m_nlotype=nlo_type::lo;
-  PRINT_INFO(pico);
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   m_alphasdef = MODEL::as->Default();
-  PRINT_INFO("initialised XS_ee3jet_CSS_approx2");
 }
 
 XS_ee3jet_CSS_approx::~XS_ee3jet_CSS_approx()
 {
   if (p_bornme) delete p_bornme;
+}
+
+void XS_ee3jet_CSS_approx::FillCombinations
+(std::set<std::pair<size_t,size_t> > &combs,
+ std::map<size_t,ATOOLS::Flavour_Vector> &fls)
+{
+  combs.insert(std::pair<size_t,size_t>(1<<2,1<<3));
+  fls[(1<<2)|(1<<3)].push_back(Flavour(m_flavs[3]));
+  combs.insert(std::pair<size_t,size_t>(1<<2,1<<4));
+  fls[(1<<2)|(1<<4)].push_back(Flavour(m_flavs[4]));
+  combs.insert(std::pair<size_t,size_t>(1<<0,1<<1));
+  fls[(1<<0)|(1<<1)].push_back(Flavour(kf_Z));
+  fls[(1<<0)|(1<<1)].push_back(Flavour(kf_photon));
+  CompleteCombinations(combs,fls);
 }
 
 double XS_ee3jet_CSS_approx::operator()
@@ -77,7 +93,7 @@ double XS_ee3jet_CSS_approx::LOME2(const Vec4D& p0, const Vec4D& p1,
   double born((*p_bornme)(moms));
   double zi=(pi*pk)/(pi*pk+pj*pk), yijk=(pi*pj)/(pi*pj+pi*pk+pj*pk);
   double split(8.*M_PI*CF/((pi+pj).Abs2())*(2./(1.-zi+yijk*zi)-(1.+zi)));
-  return born*split*m_alphasdef;
+  return born*split*m_alphasdef*CouplingFactor(1,0);
 }
 
 DECLARE_TREEME2_GETTER(XS_ee3jet_CSS_approx,
@@ -95,8 +111,8 @@ operator()(const Process_Info &pi) const
   if (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
       fl[2].IsGluon()  &&
       fl[3].IsQuark()  && fl[3]==fl[4].Bar()) {
-    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
+    if (pi.m_maxcpl[0]>=1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]<=1 && pi.m_mincpl[1]==2) {
       return new XS_ee3jet_CSS_approx(pi,fl);
     }
   }

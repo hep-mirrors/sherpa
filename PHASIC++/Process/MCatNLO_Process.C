@@ -35,7 +35,7 @@ MCatNLO_Process::MCatNLO_Process
 (ME_Generators& gens,NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bviproc(NULL), p_rsproc(NULL),
   p_bproc(NULL), p_rproc(NULL), p_ddproc(NULL),
-  p_nlomc(NULL), p_ampl(NULL)
+  p_ampl(NULL)
 {
   static bool ref(false);
   p_apmap=pmap;
@@ -61,50 +61,44 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,const int mode)
 {
-  DEBUG_FUNC(GenerateName(pi.m_ii,pi.m_fi));
-  if (pi.m_fi.NLOType()!=(nlo_type::born|nlo_type::loop|nlo_type::vsub|
-                          nlo_type::real|nlo_type::rsub))
-    THROW(fatal_error,"MC@NLO with only partial NLO components not supported.");
-  Process_Info cpi(pi),ccpi(pi);
-  ccpi.m_maxcpl[0]=cpi.m_maxcpl[0]+=cpi.m_fi.m_nlocpl[0];
-  ccpi.m_mincpl[0]=cpi.m_mincpl[0]+=cpi.m_fi.m_nlocpl[0];
-  ccpi.m_maxcpl[1]=cpi.m_maxcpl[1]+=cpi.m_fi.m_nlocpl[1];
-  ccpi.m_mincpl[1]=cpi.m_mincpl[1]+=cpi.m_fi.m_nlocpl[1];
-  if      (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.) {
-    ccpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
-  }
-  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.) {
-    ccpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-  }
+  Process_Info cpi(pi);
+  cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
+		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
+  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+    cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
+    cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
   else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
-  Process_Base::Init(ccpi,beam,isr);
-  m_name=GenerateName(m_pinfo.m_ii,cpi.m_fi);
-  // prepare B info
-  Process_Info bpi(pi);
-  bpi.m_fi.SetNLOType(nlo_type::lo);
-  // prepare R info
-  Process_Info rpi(ccpi);
-  rpi.m_fi.SetNLOType(nlo_type::lo);
-  rpi.m_megenerator=rpi.m_rsmegenerator;
-  // prepare BVI info
-  Process_Info bvipi(cpi);
-  bvipi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|nlo_type::vsub);
-  // prepare DADS info
-  Process_Info ddpi(ccpi);
-  ddpi.m_fi.SetNLOType(nlo_type::real|nlo_type::rsub);
-  // prepare RS info
-  Process_Info rspi(ccpi);
-  rspi.m_fi.SetNLOType(nlo_type::real|nlo_type::rsub);
-  rspi.m_integrator=rspi.m_rsintegrator;
-  rspi.m_megenerator=rspi.m_rsmegenerator;
-  rspi.m_itmin=rspi.m_rsitmin;
-  // intialise processes
-  p_bproc=InitProcess(bpi,true);
-  p_rproc=InitProcess(rpi,true);
-  p_bviproc=InitProcess(bvipi,false);
-  p_ddproc=InitProcess(ddpi,false);
-  p_rsproc=InitProcess(rspi,false);
-  // read in optional modes
+  Process_Base::Init(cpi,beam,isr);
+  m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
+  Process_Info npi(m_pinfo);
+  npi.m_fi.m_ps.pop_back();
+  m_name=GenerateName(m_pinfo.m_ii,npi.m_fi);
+  if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
+    THROW(fatal_error, "R/S can't be initialised separately.");
+  Process_Info spi(pi);
+  ++spi.m_fi.m_nmax;
+  spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
+  p_bproc=InitProcess(spi,nlo_type::lo,false);
+  if (p_bproc==NULL) return;
+  spi.m_megenerator=spi.m_rsmegenerator;
+  p_rproc=InitProcess(spi,nlo_type::lo,true);
+  spi.m_megenerator=pi.m_megenerator;
+  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
+  p_ddproc=InitProcess(spi,nlo_type::rsub,1);
+  spi.m_integrator=spi.m_rsintegrator;
+  spi.m_megenerator=spi.m_rsmegenerator;
+  spi.m_itmin=spi.m_rsitmin;
+  p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1|2);
+  p_rsproc->FillProcessMap(p_apmap);
+  p_bviproc->FillProcessMap(p_apmap);
+  p_ddproc->FillProcessMap(p_apmap);
+  p_bproc->SetLookUp(false);
+  p_rproc->SetLookUp(false);
+  p_bproc->SetParent(this);
+  p_rproc->SetParent(this);
+  p_bproc->FillProcessMap(p_apmap);
+  p_rproc->FillProcessMap(p_apmap);
   Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
@@ -143,21 +137,19 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
 }
 
-Process_Base* MCatNLO_Process::InitProcess(const Process_Info &pi,
-                                           const bool setlookup)
+Process_Base* MCatNLO_Process::InitProcess
+(const Process_Info &pi,nlo_type::code nlotype,const int real)
 {
-  DEBUG_FUNC(GenerateName(pi.m_ii,pi.m_fi)<<", setlookup="<<setlookup);
-  Process_Base *proc(m_gens.InitializeProcess(pi,false));
-  if (proc==NULL) {
-    msg_Error()<<pi<<std::endl;
-    THROW(not_implemented, "Process not found.");
+  Process_Info cpi(pi);
+  cpi.m_fi.SetNLOType(nlotype);
+  if (real) {
+    if (pi.m_fi.m_nlocpl[1]==0. && pi.m_fi.m_nlocpl[0]==1.)
+      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+    else if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+    else THROW(fatal_error, "Internal error.");
   }
-  if (setlookup) {
-    proc->SetLookUp(false);
-    proc->SetParent(this);
-  }
-  proc->FillProcessMap(p_apmap);
-  return proc;
+  return m_gens.InitializeProcess(cpi,false);
 }
 
 bool MCatNLO_Process::InitSubtermInfo()
@@ -184,19 +176,24 @@ Process_Base *MCatNLO_Process::FindProcess
 {
   std::string name(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit(p_apmap->find(type)->second->find(name));
-  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
+  if (pit!=p_apmap->find(type)->second->end()) {
+    if (type==nlo_type::lo) {
+      for (size_t i(0);i<p_bproc->Size();++i)
+	if ((*p_bproc)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_rproc->Size();++i)
+	if ((*p_rproc)[i]==pit->second) return pit->second;
+    }
+    if (type&nlo_type::vsub) {
+      for (size_t i(0);i<p_bviproc->Size();++i)
+	if ((*p_bviproc)[i]==pit->second) return pit->second;
+    }
+    if (type&nlo_type::rsub) {
+      for (size_t i(0);i<p_rsproc->Size();++i)
+	if ((*p_rsproc)[i]==pit->second) return pit->second;
+    }
+  }
   if (error)
     THROW(fatal_error,"Process '"+name+"'("+ToString(type)+") not found");
-  return NULL;
-}
-
-Process_Base *MCatNLO_Process::FindProcess
-(const NLO_subevt *sub,const nlo_type::code type) const
-{
-  StringProcess_Map::const_iterator pit
-    (p_apmap->find(type)->second->find(sub->m_pname));
-  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
-  THROW(fatal_error,"Process '"+sub->m_pname+"'("+ToString(type)+") not found");
   return NULL;
 }
 
@@ -253,19 +250,25 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   msg_Debugging()<<*rampl<<"\n";
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
-  if (rsproc->VariationWeights() && rsproc->VariationWeights() != p_variationweights) {
-    THROW(fatal_error, "Variation weights already set.");
-  }
   rsproc->SetVariationWeights(--rsvarweights);
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
+  Cluster_Amplitude *crampl(rampl->Copy());
+  int mm(p_bproc->Generator()->SetMassMode(0));
+  p_bproc->Generator()->ShiftMasses(crampl);
+  p_bproc->Generator()->SetMassMode(mm);
   int rmode = rampl->ColorMap().empty() ? 128 : 0;
-  double rs(rsproc->Differential(*rampl, rmode));
+  double rs(rsproc->Differential(*crampl, rmode));
   double r(rsproc->GetSubevtList()->back()->m_result);
+  if (rmode && r==0.0 && rsproc->Differential(*crampl,64))
+    for (int i(0);i<100 && r==0.0;++i) {
+      rsvarweights->Reset();
+      rs=rsproc->Differential(*crampl, rmode);
+      r=rsproc->GetSubevtList()->back()->m_result;
+    }
+  crampl->Delete();
   rsproc->SetVariationWeights(NULL);
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
-  if (IsEqual(rs,r,1.0e-6) || r==0.0) {
-    return 1.0;
-  }
+  if (r==0.0) return 0.0;
 
   // evaluate BVI process
   msg_Debugging()<<ampl<<"\n";
@@ -277,15 +280,28 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   bviproc->SetVariationWeights(--bvivarweights);
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
+  Cluster_Amplitude *campl(ampl.Copy());
+  p_bproc->Generator()->SetMassMode(0);
+  p_bproc->Generator()->ShiftMasses(campl);
+  p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   if (bproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
   bproc->SetVariationWeights(--bvarweights);
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
-  double b(bproc->Differential(ampl, bmode));
+  double b(bproc->Differential(*campl, bmode));
+  if (bmode && b==0.0 && bproc->Differential(*campl,64))
+    for (int i(0);i<100 && b==0.0;++i) {
+      bvarweights->Reset();
+      b=bproc->Differential(*campl, bmode);
+    }
   bproc->SetVariationWeights(NULL);
-  if (b==0.0) return 0.0;
-  bviproc->BBarMC()->GenerateEmissionPoint(ampl);
-  double bvi(bviproc->Differential(ampl, bmode));
+  if (b==0.0) {
+    campl->Delete();
+    return 0.0;
+  }
+  bviproc->BBarMC()->GenerateEmissionPoint(*campl);
+  double bvi(bviproc->Differential(*campl, bmode));
+  campl->Delete();
   bviproc->SetVariationWeights(NULL);
 
   // eventually calculate local K factor
@@ -307,18 +323,19 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
                                      double random,
                                      const ATOOLS::Cluster_Amplitude *ampl)
 {
-  double s(0.), h(0.);
-  if      (m_kfacmode==0) { s=bvi/b*(1.0-rs/r); h=rs/r; }
-  else if (m_kfacmode==1) { s=bvi/b*(1.0-rs/r); h=0; }
-  else if (m_kfacmode==2) { s=0;                h=rs/r; }
-  else if (m_kfacmode==3) { s=bvi/b;            h=0.; }
+  double s(0.), h(0.), bvib(b?bvi/b:0.0), rsr(r?rs/r:0.);
+  if      (m_kfacmode%10==0) { s=bvib*(1.0-rsr); h=rsr; }
+  else if (m_kfacmode%10==1) { s=bvib*(1.0-rsr); h=0; }
+  else if (m_kfacmode%10==2) { s=0;              h=rsr; }
+  else if (m_kfacmode%10==3) { s=bvib;           h=0.; }
   else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
+  if (s==0.0 && h==0.0) return 0.0;
   double sw(dabs(s)/(dabs(s)+dabs(h)));
   if (sw>random) {
     msg_Debugging()<<"S selected ( w = "<<s/sw<<" )\n";
-    if (ampl) {
+    if (m_kfacmode/10 && ampl) {
       for (Cluster_Amplitude *campl(ampl->Next());
           campl;campl=campl->Next()) {
         campl->SetLKF(bvi/b);
@@ -328,6 +345,8 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
     return s/sw;
   }
   msg_Debugging()<<"H selected ( w = "<<h/(1.0-sw)<<" )\n";
+  if (m_kfacmode/10 && ampl)
+    ((Cluster_Amplitude*)ampl)->SetNLO(m_hpsmode);
   return h/(1.0-sw);
 }
 
@@ -337,7 +356,8 @@ double MCatNLO_Process::ReweightLocalKFactor(
     MCatNLO_Process::KFactorReweightingInfo &info)
 {
   size_t i(varweights->CurrentParametersIndex());
-  size_t subevtcount(info.m_rsvarweights->GetNumberOfSubevents());
+  size_t subevtcount(info.m_rsvarweights->GetNumberOfVariations()?
+		     info.m_rsvarweights->GetNumberOfSubevents():1);
   return LocalKFactor(info.m_bvivarweights->GetVariationWeightAt(i),
                       info.m_bvarweights->GetVariationWeightAt(i),
                       info.m_rsvarweights->GetVariationWeightAt(i),
@@ -347,7 +367,24 @@ double MCatNLO_Process::ReweightLocalKFactor(
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
 {
-  return p_ampl?p_ampl->CopyAll():NULL;
+  if (p_ampl==NULL) return NULL;
+  Cluster_Amplitude *ampl(p_ampl->CopyAll());
+  ME_Generator_Base *gen((ME_Generator_Base*)ampl->MS());
+  int mm(gen->SetMassMode(1));
+  int stat(gen->ShiftMasses(ampl));
+  if (stat<0) {
+    msg_Error()<<METHOD<<"(): Mass shift failed."<<std::endl;
+    gen->SetMassMode(mm);
+    return NULL;
+  }
+  if (stat==1) {
+    stat=p_shower->GetClusterDefinitions()->ReCluster(ampl);
+    if (stat!=1) {
+      msg_Debugging()<<METHOD<<"(): Reclustering failed."<<std::endl;
+    }
+  }
+  gen->SetMassMode(mm);
+  return ampl;
 }
 
 double MCatNLO_Process::OneHEvent(const int wmode)
@@ -357,7 +394,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   if (p_ampl) p_ampl->Delete();
   p_selected=p_rproc;
   const size_t selectedindex(p_rproc->SynchronizeSelectedIndex(*p_rsproc));
-  assert(selectedindex > -1);
+  assert(selectedindex != std::numeric_limits<size_t>::max());
   Process_Base *rproc((*p_rproc)[selectedindex]);
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
@@ -377,10 +414,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ci->SetJ(rci->J());
   }
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
-  if (p_ampl) p_ampl = p_ampl->CopyAll();
-  else {
-    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
-  }
+  if (p_ampl) p_ampl=p_ampl->CopyAll();
+  else p_ampl=((Single_Process*)(rproc))->Cluster(p,1);
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
@@ -392,19 +427,39 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ampl->SetMuF2(scs->Scale(stp::fac));
     ampl->SetMuQ2(scs->Scale(stp::res));
   }
-  if (p_ampl->Next()) p_ampl->Next()->SetNLO(m_hpsmode);
+  if (p_ampl->Next()) {
+    p_ampl->Next()->SetNLO
+      (p_ampl->Next()->NLO()|m_hpsmode);
+  }
+  p_variationweights->CombineSubeventWeights();
   Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
     for (Cluster_Amplitude *ampl(p_ampl);
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
-    bool res(static_cast<Jet_Finder*>(jf)->JC()->Jets(p_ampl));
-    if (res) {
-      msg_Debugging()<<"--- Jet veto ---\n";
-      return 0.0;
-    }
+    Jet_Finder *cjf(static_cast<Jet_Finder*>(jf));
+    HEventVeto_Args hva(cjf,cjf->JC()->Value(p_ampl));
+    bool res(HEventVetoWeight(NULL,NULL,hva));
+    if (p_variationweights)
+      p_variationweights->UpdateOrInitialiseWeights
+	(&MCatNLO_Process::HEventVetoWeight,*this,hva);
+    if (!res) return 0.0;
   }
   return 1.0;
+}
+
+double MCatNLO_Process::HEventVetoWeight
+(Variation_Parameters *params,Variation_Weights *weights,
+ HEventVeto_Args &args)
+{
+  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
+  double fac(weights?params->m_Qcutfac:1.0);
+  msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
+		 <<args.p_jf->Qcut()<<" * "<<fac
+		 <<" = "<<args.p_jf->Qcut()*fac<<"\n";
+  int stat=args.m_jcv<sqr(args.p_jf->Qcut()*fac);
+  msg_Debugging()<<"} "<<(stat?"no ":"")<<"jet veto\n";
+  return stat?1.0:0.0;
 }
 
 double MCatNLO_Process::OneSEvent(const int wmode)
@@ -414,10 +469,9 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl) p_ampl->Delete();
   p_ampl=NULL;
   const size_t selectedindex(p_bproc->SynchronizeSelectedIndex(*p_bviproc));
-  assert(selectedindex > -1);
+  assert(selectedindex != std::numeric_limits<size_t>::max());
   Process_Base *bproc((*p_bproc)[selectedindex]);
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
-  bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>
     (p_bviproc->Selected())->Cluster(p);
   SortFlavours(p_ampl);
@@ -427,6 +481,12 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   p_ampl->Decays()=m_decins;
   p_nlomc->SetShower(p_shower);
   p_nlomc->SetVariationWeights(p_variationweights);
+  if (p_ampl->JF<void>())
+    for (Cluster_Amplitude *sampl(p_ampl);
+	 sampl;sampl=sampl->Next()) sampl->SetNLO(2);
+  double lkf(p_bviproc->Selected()->Last()/p_bviproc->Selected()->LastB());
+  for (Cluster_Amplitude *ampl(p_ampl);
+       ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
   int stat(p_nlomc->GeneratePoint(p_ampl));
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
@@ -460,8 +520,14 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     Cluster_Amplitude *campl(ampl->Copy());
     campl->IdSort();
     Cluster_Definitions_Base *clus(p_shower->GetClusterDefinitions());
-    CParam kt2(clus->KPerp2(*campl,ids[0],ids[1],ids[2],
-			    lij->Flav(),p_bviproc->Generator(),1));
+    Cluster_Param kt2=clus->Cluster
+      (Cluster_Config(campl,ids[0],ids[1],ids[2],lij->Flav(),
+		      p_bviproc->Generator(),NULL,1));
+    if (kt2.m_kt2<=0.0) {
+      kt2=clus->Cluster
+	(Cluster_Config(campl,ids[1],ids[0],ids[2],lij->Flav(),
+			p_bviproc->Generator(),NULL,1));
+    }
     campl->Delete();
     ampl->SetKT2(kt2.m_kt2);
     ampl->SetMu2(kt2.m_kt2);
@@ -471,6 +537,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);
     ampl->SetJF(ampl->Next()->JF<void>());
+    ampl->Next()->SetCA(clus);
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
@@ -514,6 +581,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   Weight_Info *winfo(NULL);
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
+    p_bviproc->SetVariationWeights(p_variationweights);
     winfo = p_bviproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
@@ -522,34 +590,14 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);
-      const double wgtfac(Swgt * selwgtratio);
-      winfo->m_weight *= wgtfac;
-      *(p_selected->Selected()->GetMEwgtinfo()) *= wgtfac;
+      const double wgtfac(selwgtratio);
+      winfo->m_weight *= Swgt*wgtfac;
+      *(p_selected->Selected()->GetMEwgtinfo()) *= Swgt*wgtfac;
       *p_variationweights *= wgtfac;
-
-      // calculate and set local K factors
-      const double lkf(p_bviproc->Selected()->Last() / p_bviproc->Selected()->LastB());
-      for (Cluster_Amplitude *ampl(p_ampl);
-           ampl; ampl = ampl->Next()) {
-        ampl->SetLKF(lkf);
-      }
-
-      // enforce correct NLO flag throughout cluster amplitudes
-      Cluster_Amplitude *ampl(p_ampl->Next());
-      if (ampl) {
-        Selector_Base *jf = (*p_bviproc)[0]->Selector()->GetSelector("Jetfinder");
-        if (jf) {
-          if (ampl->NLO() != 0) {
-            ampl=ampl->Next();
-          }
-          for (; ampl; ampl = ampl->Next()) {
-            ampl->SetNLO(2);
-          }
-        }
-      }
     }
   } else {
     p_selected = p_rsproc;
+    p_rsproc->SetVariationWeights(p_variationweights);
     winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
@@ -557,9 +605,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double Rsel(p_rproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double RSsel(p_rsproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Rsel / RSsel);
-      const double wgtfac(Hwgt * selwgtratio);
-      winfo->m_weight *= wgtfac;
-      *p_selected->Selected()->GetMEwgtinfo() *= wgtfac;
+      const double wgtfac(selwgtratio);
+      winfo->m_weight *= Hwgt*wgtfac;
+      *p_selected->Selected()->GetMEwgtinfo() *= Hwgt*wgtfac;
       *p_variationweights *= wgtfac;
     }
   }
@@ -570,8 +618,14 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     ampl->SetMS(ms);
   }
   if (winfo && winfo->m_weight==0) {
-    delete winfo;
-    winfo=NULL;
+    int pass(0);
+    if (p_variationweights)
+      for (size_t i(0);i<p_variationweights->GetNumberOfVariations();++i)
+	if (p_variationweights->GetVariationWeightAt(i)) pass=1;
+    if (!pass) {
+      delete winfo;
+      winfo=NULL;
+    }
   }
   if (winfo==NULL) return winfo;
 
@@ -616,8 +670,9 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   ampl->Delete();
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
   psh=p_rsproc->Integrator()->PSHandler();
-  psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		   dabs(p_bviproc->Integrator()->TotalResult()));
+  if (psh->AbsError()==0.0)
+    psh->SetAbsError(psh->Error()*rpa->Picobarn()*
+		     dabs(p_bviproc->Integrator()->TotalResult()));
 #ifndef USING__Threading
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
 #endif
@@ -633,6 +688,17 @@ void MCatNLO_Process::SetLookUp(const bool lookup)
   p_bviproc->SetLookUp(lookup);
   p_ddproc->SetLookUp(lookup);
   p_rsproc->SetLookUp(lookup);
+}
+
+bool MCatNLO_Process::InitScale()
+{
+  bool res(true);
+  if (!p_bviproc->InitScale()) res=false;
+  if (!p_ddproc->InitScale()) res=false;
+  if (!p_rsproc->InitScale()) res=false;
+  if (!p_rproc->InitScale()) res=false;
+  if (!p_bproc->InitScale()) res=false;
+  return res;
 }
 
 void MCatNLO_Process::SetScale(const Scale_Setter_Arguments &scale)
@@ -686,13 +752,6 @@ Process_Base *MCatNLO_Process::operator[](const size_t &i)
   return p_bviproc;
 }
 
-void MCatNLO_Process::SetClusterDefinitions
-(PDF::Cluster_Definitions_Base *const cluster)
-{
-  p_bproc->Generator()->SetClusterDefinitions(cluster);
-  p_rproc->Generator()->SetClusterDefinitions(cluster);
-}
-
 void MCatNLO_Process::SetSelector(const Selector_Key &key)
 {
   p_bviproc->SetSelector(key);
@@ -710,6 +769,16 @@ void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)
   p_rsproc->SetShower(ps);
   p_rproc->SetShower(ps);
   p_bproc->SetShower(ps);
+}
+
+void MCatNLO_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  p_nlomc=mc;
+  p_bviproc->SetNLOMC(mc);
+  p_ddproc->SetNLOMC(mc);
+  p_rsproc->SetNLOMC(mc);
+  p_rproc->SetNLOMC(mc);
+  p_bproc->SetNLOMC(mc);
 }
 
 void MCatNLO_Process::SetVariationWeights(ATOOLS::Variation_Weights *vw)

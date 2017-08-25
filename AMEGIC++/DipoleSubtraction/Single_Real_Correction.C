@@ -126,17 +126,17 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
       return status;
     }
 
-    if (p_tree_process!=p_tree_process->Partner()) {
-      for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-        if (FlavCompare(links[j])) {
-          msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "
-                        <<links[j]->Name()<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
-          p_mapproc = p_partner = (Single_Real_Correction*)links[j];
-          m_sfactor = p_tree_process->GetSFactor();
-          // return 1;
-        }
+  if (p_tree_process!=p_tree_process->Partner()) {
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+      if (p_tree_process->Partner()->Flavours()==links[j]->Flavours()) {
+	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "
+		      <<links[j]->Name()<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
+	p_mapproc = p_partner = (Single_Real_Correction*)links[j];
+	m_sfactor = p_tree_process->GetSFactor();
+	// return 1;
       }
     }
+  }
   }
 
   m_real_momenta.resize(m_nin+m_nout);
@@ -158,6 +158,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_realevt.p_proc = this;
   m_realevt.p_real = &m_realevt;
 
+  if (p_tree_process==p_tree_process->Partner()) {
   Process_Info cinfo(m_pinfo);
   cinfo.m_fi.m_nlotype=nlo_type::rsub;
   size_t nPFFsplittings(0);
@@ -209,7 +210,8 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
           msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("
                          <<stypes[s]<<") -> "
                          <<(pdummy->IsValid()?"":"in")<<"valid";
-          if (pdummy->IsValid()) {
+	  if (pdummy->IsValid()) {
+	    pdummy->SetRealSubevt(&m_realevt);
             pdummy->SetTestMoms(p_testmoms);
             pdummy->SetNPhotonSplittings(1); // TODO: fix me
             int st=pdummy->InitAmplitude(model,top,links,errs);
@@ -223,6 +225,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               if (isPFFsplitting) nPFFsplittings++;
             }
             else delete pdummy;
+	    m_subevtlist.push_back(pdummy->GetSubevt());
           }
           else delete pdummy;
           msg_Debugging()<<"\n";
@@ -267,6 +270,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               if (pdummy->NewLibs()) m_newlib = 1;
               m_subostermlist.push_back(pdummy);
               m_subostermlist.back()->SetNorm(p_tree_process->Norm());
+	      m_subevtlist.push_back(pdummy->GetSubevt());
             }
             else delete pdummy;
 	  }
@@ -275,9 +279,10 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
       }
     }
   }
-  if (m_no_tree) {
+  if (m_no_tree)
     if (m_subtermlist.empty() && m_subostermlist.empty()) return 0;
   }
+  m_subevtlist.push_back(&m_realevt);
 
   if (p_mapproc && !p_partner->NewLibs()) Minimize();
   if (p_partner==this) msg_Info()<<"."<<std::flush;
@@ -344,12 +349,12 @@ void Single_Real_Correction::SetLookUp(const bool lookup)
 
 void Single_Real_Correction::Minimize()
 {
-//   p_tree_process->Minimize();
-//   for (size_t i=0;i<m_subtermlist.size();i++) 
-//     m_subtermlist[i]->Minimize();
-//   for (size_t i=0;i<m_subostermlist.size();i++) 
-//     m_subostermlist[i]->Minimize();
-  for (size_t i=0;i<m_subevtlist.size();++i) delete m_subevtlist[i];
+  if (p_partner==this) return;
+  p_tree_process->Minimize();
+  for (size_t i=0;i<m_subtermlist.size();i++) 
+    m_subtermlist[i]->Minimize();
+  for (size_t i=0;i<m_subostermlist.size();i++) 
+    m_subostermlist[i]->Minimize();
   m_subevtlist.clear();
   for (size_t i=0;i<p_partner->m_subtermlist.size();i++)
     if (p_partner->m_subtermlist[i]->IsValid()) {
@@ -409,10 +414,15 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     if (partnerlist->size()!=m_subevtlist.size()) THROW(fatal_error,"Internal error");
     for (size_t i=0;i<partnerlist->size();++i) {
       m_subevtlist[i]->CopyXSData((*partnerlist)[i]);
-      if (m_subevtlist[i]->p_ampl) m_subevtlist[i]->p_ampl->Delete();
-      m_subevtlist[i]->p_ampl=NULL;
       if ((*partnerlist)[i]->p_ampl) {
-	m_subevtlist[i]->p_ampl = (*partnerlist)[i]->p_ampl->CopyAll();
+	if (i+1<partnerlist->size() && m_subevtlist[i]->p_ampl->IdNew()) {
+	  m_subevtlist[i]->p_ampl->Delete();
+	  m_subevtlist[i]->p_ampl=partnerlist->back()->p_ampl->CopyAll();
+	  if (m_subevtlist[i]->p_ampl->Next()) {
+	    m_subevtlist[i]->p_ampl=m_subevtlist[i]->p_ampl->Next();
+	    m_subevtlist[i]->p_ampl->DeletePrev();
+	  }
+	}
 	for (Cluster_Amplitude *campl(m_subevtlist[i]->p_ampl);campl;campl=campl->Next()) {
 	  for (size_t i(0);i<campl->Legs().size();++i) {
 	    Flavour fl(campl->Leg(i)->Flav());
@@ -431,47 +441,21 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
 double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const int mode)
 {
   DEBUG_FUNC("");
-  m_subevtlist.clear();
   p_tree_process->Integrator()->SetMomenta(_mom);
   for (size_t i=0; i<m_real_momenta.size(); ++i) m_real_momenta[i]=_mom[i];
 
   Vec4D_Vector mom(_mom);
   Poincare cms;
-
-  bool res(true);
-  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()) {
-    m_subtermlist[i]->Integrator()->SetMomenta(_mom);
-    double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
-    if (IsBad(test)) res=false;
-    m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
-    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(0);
-    m_subevtlist.back()->m_oew = m_subtermlist[i]->MaxOrder(1);
-    m_subevtlist.back()->p_real=&m_realevt;
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(mom[0]+mom[1]);
+    for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }
-
-  if (m_ossubon) {
-    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()) {
-      double test = (*m_subostermlist[i])(&mom.front(),cms,mode|2);
-      if (IsBad(test)) res=false;
-      m_subevtlist.push_back(m_subostermlist[i]->GetSubevt());
-      m_subevtlist.back()->p_real=&m_realevt;
-    }
-  }
-
-  m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me = m_realevt.m_mewgt = 0.0;
-  m_realevt.m_trig = false;
-  m_realevt.m_K = 1.0;
-
-  bool realtrg(false);
 
   if (!m_no_tree) {
-    if (res) {
-      p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
-      m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
-      m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
-      m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
-    }
+  p_tree_process->ScaleSetter()->SetCaller(p_tree_process);
+  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
+  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
+  m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
   }
   if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
   m_realevt.p_ampl=NULL;
@@ -481,19 +465,42 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
       m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
       m_realevt.p_ampl->SetProc(this);
     }
-    realtrg=p_tree_process->Selector()->Trigger(_mom);
   }
-  realtrg|=!p_tree_process->Selector()->On();
-  m_realevt.m_trig=realtrg;
-  if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
-  if (!m_no_tree) {
-    if (res && realtrg) {
-      double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
-      m_realevt.m_me += real;
-      m_realevt.m_mewgt += real;
-      m_realevt.m_K = p_tree_process->LastK();
-      if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
+  m_realevt.m_me = m_realevt.m_mewgt = 0.0;
+  m_realevt.m_trig = false;
+  m_realevt.m_K = 1.0;
+  for (size_t i=0;i<m_subtermlist.size();i++)
+    if (m_subtermlist[i]->IsValid()) {
+      m_subtermlist[i]->Integrator()->SetMomenta(_mom);
+      m_subtermlist[i]->SetLOMomenta(&mom.front(),cms);
     }
+  p_tree_process->Selector()->JetTrigger(&m_subevtlist);
+  m_realevt.m_trig|=!p_tree_process->Selector()->On();
+
+  bool res=true;
+  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
+    double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
+    if (IsBad(test)) res=false;
+    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(0);
+    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(1);
+    m_subtermlist[i]->GetSubevt()->p_real=&m_realevt;
+  }
+
+  if (m_ossubon){
+    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()){
+      double test = (*m_subostermlist[i])(&mom.front(),cms,mode|2);
+      if (IsBad(test)) res=false;
+      m_subostermlist[i]->GetSubevt()->p_real=&m_realevt;
+    }
+  }
+
+  if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
+  if (!m_no_tree && res) {
+    double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
+    m_realevt.m_me += real;
+    m_realevt.m_mewgt += real;
+    m_realevt.m_K = p_tree_process->LastK();
+    if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
   }
   for (size_t i(0);i<m_subevtlist.size();++i) {
     if (!m_subevtlist[i]->m_trig || !res)
@@ -522,6 +529,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
              <<"me="<<m_realevt.m_me<<std::endl;
     msg->SetPrecision(prec);
   }
+  m_mewgtinfo.m_bkw = p_tree_process->GetMEwgtinfo()->m_bkw;
 
   return m_lastdxs;
 }
@@ -567,6 +575,12 @@ void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
   for (size_t i(0);i<m_subostermlist.size();++i) {
     m_subostermlist[i]->SetScale(args);
   }
+}
+
+void Single_Real_Correction::SetVariationWeights(Variation_Weights *const vw)
+{
+  Process_Base::SetVariationWeights(vw);
+  p_tree_process->SetVariationWeights(vw);
 }
  
 void Single_Real_Correction::SetKFactor(const KFactor_Setter_Arguments &args)
@@ -669,6 +683,16 @@ void Single_Real_Correction::SetShower(PDF::Shower_Base *const ps)
   for (size_t i=0;i<m_subtermlist.size();++i) {
     if (m_subtermlist[i]->GetLOProcess())
     m_subtermlist[i]->SetShower(ps);
+  }
+}
+
+void Single_Real_Correction::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  p_nlomc=mc;
+  p_tree_process->SetNLOMC(mc);
+  for (size_t i=0;i<m_subtermlist.size();++i) {
+    if (m_subtermlist[i]->GetLOProcess())
+    m_subtermlist[i]->SetNLOMC(mc);
   }
 }
 

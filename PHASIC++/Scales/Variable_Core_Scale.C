@@ -23,7 +23,7 @@ namespace PHASIC {
 
     ~Variable_Core_Scale();
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc,
@@ -74,7 +74,7 @@ Variable_Core_Scale::~Variable_Core_Scale()
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
 }
 
-PDF::CParam Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   p_ampl=ampl;
   double muf2(m_calcs[0]->Calculate()->Get<double>()), mur2(muf2), q2(muf2);
@@ -85,7 +85,7 @@ PDF::CParam Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"  \\mu_q = "<<sqrt(q2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,q2,muf2,mur2,-1);
 }
 
 void Variable_Core_Scale::SetScale

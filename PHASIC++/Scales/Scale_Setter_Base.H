@@ -53,9 +53,6 @@ namespace PHASIC {
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
-    virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
-			 const size_t &mode);
-
     virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
 			     const size_t &mode) = 0;
 
@@ -64,6 +61,8 @@ namespace PHASIC {
     Scale_Setter_Base(const Scale_Setter_Arguments &args);
 
     virtual ~Scale_Setter_Base();
+
+    virtual bool Initialize();
 
     void SetCouplings();
 
@@ -77,8 +76,6 @@ namespace PHASIC {
     double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
 
     virtual bool UpdateScale(const ATOOLS::Variation_Parameters &var);
-
-    virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 

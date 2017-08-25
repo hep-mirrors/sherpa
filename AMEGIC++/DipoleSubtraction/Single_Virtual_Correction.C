@@ -8,6 +8,7 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 
@@ -53,6 +54,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_lastb(0.0), m_lastv(0.0), m_lasti(0.0), m_lastkp(0.0),
   m_finite(0.0), m_singlepole(0.0), m_doublepole(0.0)
 {
+  p_fsmc=NULL;
   Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
@@ -452,8 +454,17 @@ bool AMEGIC::Single_Virtual_Correction::FillIntegrator
   if (p_partner!=this) return true;
   if (p_LO_process!=p_LO_process->Partner()) return 1;
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  RequestVariables(psh);
   return Process_Base::FillIntegrator(psh);
 }
+
+void Single_Virtual_Correction::RequestVariables(Phase_Space_Handler *const psh)
+{
+  p_fsmc=psh->ISRIntegrator();
+  if (p_fsmc==NULL) return;
+  p_fsmc->AddERan("z_1");
+  p_fsmc->AddERan("z_2");
+} 
 
 bool Single_Virtual_Correction::SetUpIntegrator() 
 {  
@@ -782,14 +793,14 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_eta0 = mom[0].PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
     if (m_z0>0.) m_x0 = m_z0;
-    else         m_x0 = m_eta0+ran->Get()*(1.-m_eta0);
+    else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
     m_eta1 = mom[1].PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
     if (m_z1>0.) m_x1 = m_z1;
-    else         m_x1 = m_eta1+ran->Get()*(1.-m_eta1);
+    else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
     weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
@@ -957,8 +968,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
                            m_dsijqcd,m_dsijew,mode);
   AttachChargeFactors();
   PrintDSij();
-  double kfactorb(KFactor(1));
-  double kfactorvi(m_lastk=KFactor());
+  double kfactorb((m_bvimode&1)?KFactor(1|2):1.0);
+  double kfactorvi(m_lastki=m_lastk=(m_bvimode&6)?KFactor((m_bvimode&1)?0:2):1.0);
   m_lastb=Calc_B()*kfactorb;
 
   if ((m_stype!=sbt::none) && (m_pinfo.m_fi.m_nlotype&nlo_type::born) &&
@@ -1079,6 +1090,14 @@ void Single_Virtual_Correction::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps;
 }
 
+void Single_Virtual_Correction::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  if (p_LO_process) p_LO_process->SetNLOMC(mc);
+  if (p_kpterms_qcd) p_kpterms_qcd->SetNLOMC(mc);
+  if (p_kpterms_ew) p_kpterms_ew->SetNLOMC(mc);
+  p_nlomc=mc;
+}
+
 void Single_Virtual_Correction::SetFixedScale(const std::vector<double> &s)
 {
   p_LO_process->SetFixedScale(s);
@@ -1095,10 +1114,10 @@ void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
   wgtinfo.m_y1=wgtinfo.m_swap?m_x1:m_x0;
   wgtinfo.m_y2=wgtinfo.m_swap?m_x0:m_x1;
   if (wgtinfo.m_type&mewgttype::VI)
-    for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
+    for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i]*=m_lastki;
   if (p_kpterms_qcd) p_kpterms_qcd->FillMEwgts(wgtinfo);
   if (p_kpterms_ew)  p_kpterms_ew->FillMEwgts(wgtinfo);
-  for (size_t i=0;i<wgtinfo.m_wren.size();++i) wgtinfo.m_wren[i]*=m_lastk;
+  for (size_t i=2;i<wgtinfo.m_wren.size();++i) wgtinfo.m_wren[i]*=m_lastk;
   for (size_t i=0;i<wgtinfo.m_wfac.size();++i) wgtinfo.m_wfac[i]*=m_lastk;
 }
 
@@ -1332,3 +1351,10 @@ bool Single_Virtual_Correction::AllowAsSpecInPFF(const size_t& i,
   }
   return false;
 }
+
+void Single_Virtual_Correction::SetVariationWeights(Variation_Weights *const vw)
+{
+  Process_Base::SetVariationWeights(vw);
+  p_LO_process->SetVariationWeights(vw);
+}
+

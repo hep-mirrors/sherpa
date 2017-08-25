@@ -101,8 +101,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && key.p_model->Name()!="HEFT") return NULL;	\
-    return new CLASS(key.p_sgen,key.p_bs); }				\
+  { return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
@@ -110,8 +109,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && key.p_model->Name()!="ADD") return NULL;	\
-    return new CLASS(key.p_sgen,key.p_bs); }				\
+  { return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
@@ -119,8 +117,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && key.p_model->Name()!="AGC") return NULL;	\
-    return new CLASS(key.p_sgen,key.p_bs); }				\
+  { return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }

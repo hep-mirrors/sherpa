@@ -66,8 +66,8 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
   m_pn=m_flavs.size();
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
-  m_maxcpl[0]=m_mincpl[0]=p_me2->OrderQCD();
-  m_maxcpl[1]=m_mincpl[1]=p_me2->OrderEW();
+  m_maxcpl = m_pinfo.m_maxcpl;
+  m_maxcpl = m_pinfo.m_mincpl;
   p_me2->SetCouplings(m_cpls);
   m_maxcpl[1]=m_mincpl[1]=p_me2->OrderEW();
   m_maxcpl[0]=m_mincpl[0]=p_me2->OrderQCD();
@@ -95,11 +95,6 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
 }
 
 
-
-int AMEGIC::Single_Process_External::PerformTests()
-{
-  return 1;
-}
 
 /*------------------------------------------------------------------------------
   

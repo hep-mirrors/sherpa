@@ -22,6 +22,8 @@ namespace DIRE {
     {
       double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
       double B=-(1.0+s.m_z);
+      if (p_sk->PS()->MECorrection()&1)
+	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
 	double B2=(-1+x)*(-8*TF*(-5+(-1+x)*x*(-5+14*x))+x*(90*CF*(-1+x)+CA*(53-187*x+3*(1+x)*sqr(M_PI))))+
@@ -68,6 +70,8 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double B=2.0*s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-(2.0-s.m_z);
+      if (p_sk->PS()->MECorrection()&1)
+	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
       if (s.m_mk2==0.0) {
 	if (s.m_kfac&2) {
 	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
@@ -120,6 +124,8 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double B=1.0-2.0*s.m_z*(1.0-s.m_z);
+      if (p_sk->PS()->MECorrection()&1)
+	B=B*(1.0-2.*s.m_y*(1.-s.m_y))+4.*s.m_y*s.m_x*(1.-s.m_x);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., x=s.m_z;
 	double B2=CF*(4-9*x+4*log(1-x)+(-1+4*x)*log(x)-(2*(1+2*(-1+x)*x)*(-15-3*(-2+log(-1+1/x))*log(-1+1/x)+sqr(M_PI)))/3.+(-1+2*x)*sqr(log(x)))

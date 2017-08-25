@@ -52,9 +52,7 @@ bool Process_Integrator::Initialize
   m_swmode=ToType<int>(rpa->gen.Variable("SELECTION_WEIGHT_MODE"));
   static bool minit(false);
   if (!minit) {
-    int smode;
     Default_Reader reader;
-    m_smode = reader.Get("IB_SMODE", m_smode, "sum mode", METHOD);
     s_whbins = reader.Get("IB_WHBINS", 100, "weight histo bin number", METHOD);
     s_genresdir = reader.Get("GENERATE_RESULT_DIRECTORY", 1);
     minit=true;
@@ -191,8 +189,8 @@ void Process_Integrator::InitWeightHistogram()
 
   double av(dabs(TotalResult()));
   if (!(av>0.)) {
-    msg_Error()<<METHOD<<"(): "<<p_proc->Name()
-               <<" : no valid result: "<<av<<std::endl;
+    msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
+	       <<"Average = "<<av<<" in "<<p_proc->Name()<<std::endl;
     return;
   }
   if (av<.3) av/=10.;
@@ -288,8 +286,11 @@ void Process_Integrator::SetTotal(const int mode)
       m_max+=(*p_proc)[i]->Integrator()->Max();
     }
   }
-  m_totalxs=TotalResult();
-  m_totalerr=TotalVar();
+  double totalxs=TotalResult();
+  double totalerr=TotalVar();
+  if (m_totalxs==0.0) Reset(0);
+  m_totalxs=totalxs;
+  m_totalerr=totalerr;
   if (mode && m_totalxs!=0.0) {
     if (p_proc->NIn()==1) {
       msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
@@ -431,7 +432,7 @@ void Process_Integrator::SetMax(const double max)
   }
 } 
 
-void Process_Integrator::Reset()
+void Process_Integrator::Reset(const int mode)
 {
   m_n=0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
@@ -441,9 +442,9 @@ void Process_Integrator::Reset()
   m_vsmax.clear(); 
   m_vsn.clear();   
   m_vsum.clear(); 
-  if (p_proc->IsGroup())
+  if (p_proc->IsGroup() && mode==1)
     for (size_t i(0);i<p_proc->Size();++i) 
-      (*p_proc)[i]->Integrator()->Reset();
+      (*p_proc)[i]->Integrator()->Reset(mode);
 }
 
 void Process_Integrator::ResetMax(int flag) 
@@ -589,6 +590,7 @@ void Process_Integrator::StoreBackupResults()
 
 void Process_Integrator::StoreResults(const int mode)
 {
+  if (m_msn) MPISync();
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 

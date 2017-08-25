@@ -114,7 +114,6 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
-    int PerformTests();
 
   };
 }

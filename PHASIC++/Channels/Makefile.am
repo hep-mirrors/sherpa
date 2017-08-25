@@ -17,6 +17,7 @@ libPhasicChannels_la_SOURCES  =	\
 				VHAAG.C \
 				VHAAG_ND.C \
 				VHAAG_res.C \
+				VHAAG_Threshold.C \
 				Decay_Dalitz.C \
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \

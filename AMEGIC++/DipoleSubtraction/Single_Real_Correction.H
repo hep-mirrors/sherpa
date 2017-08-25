@@ -98,6 +98,7 @@ namespace AMEGIC {
 
     void SetSelector(const PHASIC::Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
+    void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     inline ATOOLS::NLO_subevtlist*             GetSubevtList()
     { return &m_subevtlist; }
@@ -123,14 +124,13 @@ namespace AMEGIC {
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
 
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
-
-    int PerformTests() { return 1; }
 
    /*------------------------------------------------------------------------------
 

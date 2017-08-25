@@ -2,17 +2,13 @@
 #define AddOns_OpenLoops_OpenLoops_Born_H
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "AddOns/OpenLoops/OpenLoops_Interface.H"
 
 namespace MODEL {
   class Model_Base;
 }
 
 namespace OpenLoops {
-
-  enum AmplitudeType {
-    Tree = 1,
-    Loop2 = 12
-  };
 
   class OpenLoops_Born: public PHASIC::Tree_ME2_Base {
 

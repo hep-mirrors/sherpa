@@ -32,17 +32,15 @@ namespace CSSHOWER {
 
   struct SF_Key {
   public:
-    ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
     int m_mode, m_kfmode, m_qcdmode, m_ewmode, m_col;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
-    inline SF_Key(ATOOLS::Mass_Selector *&ms,
-		  const MODEL::Single_Vertex *v,
+    inline SF_Key(const MODEL::Single_Vertex *v,
 		  const int mode,const cstp::code type,const int kfmode,
 		  const int qcdmode,const int ewmode,const int col):
-      p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
+      p_v(v), m_mode(mode), m_kfmode(kfmode),
       m_qcdmode(qcdmode), m_ewmode(ewmode), m_col(col), m_type(type),
       p_cf(NULL) {}
     std::string ID(const int mode) const;
@@ -56,7 +54,7 @@ namespace CSSHOWER {
   protected:
 
     ATOOLS::Flavour m_flavs[3], m_flspec;
-    ATOOLS::Mass_Selector *&p_ms;
+    const ATOOLS::Mass_Selector *p_ms;
 
     SF_Coupling *p_cf;
 
@@ -120,6 +118,8 @@ namespace CSSHOWER {
 
     inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
 
+    inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
     inline int Col() const { return m_col; }
@@ -137,13 +137,9 @@ namespace CSSHOWER {
     SF_Lorentz *p_lf;
 
     cstp::code m_type;
-    double     m_cplfac;
-
-    //! Last unpolarized coupling value
-    double     m_last;
+    double     m_cplfac, m_last;
 
     int        m_kfmode;
-
     /**
       * m_cplmax[i] = max_{scale} Coupling(scale, i)
       */
@@ -172,7 +168,7 @@ namespace CSSHOWER {
     virtual void SetAlternativeUnderlyingCoupling(void * cpl, double sf=1.0) {}
 
     virtual double Coupling(const double &scale,const int pol) = 0;
-    virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
+    virtual bool AllowSpec(const ATOOLS::Flavour &fl,const int mode=0) = 0;
 
     //! Last unpolarized coupling value
     double Last() const { return m_last; }
@@ -187,6 +183,8 @@ namespace CSSHOWER {
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
 
     inline double CplFac() const { return m_cplfac; }
+
+    inline double Last() { return m_last; }
 
   };
 
@@ -247,6 +245,8 @@ namespace CSSHOWER {
 
     virtual void ResetLastInt();
     virtual void ClearSpecs();
+
+    virtual void SetMS(const ATOOLS::Mass_Selector *const ms);
 
     double GetXPDF(const double &scale,const double &x,
 		   const ATOOLS::Flavour &a,const int beam,

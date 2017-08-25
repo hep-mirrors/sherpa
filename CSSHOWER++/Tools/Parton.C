@@ -15,8 +15,7 @@ namespace CSSHOWER {
        <<", col="<<part.m_col<<" ["<<ATOOLS::ID(part.m_id)
        <<"]: "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
-       <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
-       <<"["<<part.GetRFlow(1)<<","<<part.GetRFlow(2)<<"]"<<endl;
+       <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"<<endl;
     if (part.m_pst==pst::IS)      str<<"     (Initial state parton)";
     else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
     else                     str<<"                           ";
@@ -28,7 +27,7 @@ namespace CSSHOWER {
     }
     str<<"  k_T start : "<<sqrt(part.m_kt_start);
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
-    str<<"  k_T veto : "<<sqrt(part.m_kt_veto)<<"("<<sqrt(part.m_kt_max)<<")";
+    str<<"  k_T veto : "<<sqrt(part.m_kt_veto);
     str<<"  x_B : "<<part.m_xBj<<std::endl;
     if (part.p_prev || part.p_next) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
@@ -57,54 +56,15 @@ Parton *Parton::FollowUp()
 
 bool Parton::Splits()
 {
+  if (this==NULL) return false;
   if (this==p_sing->GetSplit()) return true;
-  if (p_next == NULL) {
-    return false;
-  } else {
-    return p_next->Splits();
-  }
-}
-
-void Parton::UpdateDaughters()
-{
-  if (p_next==NULL) return;
-  msg_Indent();
-  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
-  p_next->SetMomentum(m_mom);
-  p_next->SetFlavour(m_flav);
-  p_next->SetMass2(m_t);
-  msg_IODebugging()<<*p_next;
-  p_next->UpdateDaughters();
-  msg_IODebugging()<<"}\n";
-}
-
-void Parton::UpdateNewDaughters(Parton *ref)
-{
-  if (p_next==NULL) return;
-  ref=ref->GetSing()->GetLeft();
-  if (ref==NULL) THROW(fatal_error,"Internal error");
-  msg_Indent();
-  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
-  p_next->SetMomentum(m_mom);
-  p_next->SetFlavour(m_flav);
-  p_next->SetMass2(m_t);
-  for (int n(1);n<=2;++n) {
-    p_next->SetFlow(n,GetFlow(n));
-    p_next->SetMEFlow(n,GetMEFlow(n));
-  }
-  p_next->SetStart(m_kt_start);
-  p_next->SetKtMax(m_kt_max);
-  p_next->SetVeto(m_kt_veto);
-  p_next->SetId(m_id);
-  msg_IODebugging()<<*p_next;
-  p_next->UpdateNewDaughters(ref);
-  msg_IODebugging()<<"}\n";
+  return p_next->Splits();
 }
 
 void Parton::UpdateColours()
 {
+  if (this==NULL) return;
   msg_IODebugging()<<METHOD<<"("<<this<<"): ("
-		   <<GetMEFlow(1)<<","<<GetMEFlow(2)<<") -> ("
 		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";
   {
     msg_Indent();
@@ -116,21 +76,6 @@ void Parton::UpdateColours()
       if (f2 && f2==(*pit)->GetFlow(1)) (p_right=*pit)->SetLeft(this);
     }
     msg_IODebugging()<<*this;
-    if (this==p_sing->GetSplit() ||
-	(p_prev && p_prev==p_sing->GetSplit())) {
-      Parton *ds[2]={p_sing->GetLeft(),p_sing->GetRight()};
-      for (int i(0);i<2;++i)
-	for (int n(1);n<=2;++n)
-	  if (ds[i]->GetFlow(n)==GetMEFlow(n)) {
-	    ds[i]->SetFlow(n,GetFlow(n));
-	    ds[i]->UpdateColours();
-	  }
-    }
-    else if (p_next) {
-      for (int n(1);n<=2;++n) p_next->SetFlow(n,GetFlow(n));
-      p_next->UpdateColours();
-    }
-    for (int n(1);n<=2;++n) SetMEFlow(n,GetFlow(n));
   }
   msg_IODebugging()<<"}\n";
 }

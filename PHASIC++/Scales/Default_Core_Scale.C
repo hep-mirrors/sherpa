@@ -12,7 +12,7 @@ namespace PHASIC {
     Default_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
     ATOOLS::Cluster_Amplitude *Cluster
     (ATOOLS::Cluster_Amplitude *const ampl) const;
@@ -24,13 +24,13 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
   if (ampl->Legs().size()==3 && ampl->NIn()==2) {
     double kt2cmin(ampl->Leg(2)->Mom().Abs2());
-    return PDF::CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);
+    return PDF::Cluster_Param(NULL,kt2cmin,kt2cmin,kt2cmin,-1);
   }
   double muf2(0.0), mur2(0.0), muq2(0.0);
   Cluster_Amplitude *campl(Cluster(ampl->Copy()));
@@ -45,7 +45,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
     q+=sqrt(dabs(ewsum.MPerp2()));
     campl->Delete();
-    return PDF::CParam(q*q/4.0,q*q/4.0,0.0,q*q/4.0,-1);
+    return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
   }
   Flavour_Vector fl; fl.resize(4);
   fl[0]=campl->Leg(0)->Flav();
@@ -60,7 +60,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       double u1(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
       double t2(2.0*campl->Leg(1)->Mom()*campl->Leg(3)->Mom());
       double u2(2.0*campl->Leg(1)->Mom()*campl->Leg(2)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/4.0;
+      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/sqrt(2.0);
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
@@ -68,11 +68,21 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=campl->Leg(3)->Mom().MPerp2()/4.0;
+      muq2=muf2=mur2=campl->Leg(2)->Mom().PPerp2();
+      muq2=Max(muq2,campl->Leg(3)->Mom().Abs2());
+      if (fl[3].Kfcode()==25) {
+	msg_Debugging()<<"H special\n";
+	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.); 
+      }
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2()/4.0;
+      muq2=muf2=mur2=campl->Leg(3)->Mom().PPerp2();
+      muq2=Max(muq2,campl->Leg(2)->Mom().Abs2());
+      if (fl[2].Kfcode()==25) {
+	msg_Debugging()<<"H special\n";
+	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.); 
+      }
     }
     else THROW(fatal_error,"Internal error.");
   }
@@ -98,7 +108,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
 		 <<"\\mu_r = "<<sqrt(mur2)<<"\n"
 		 <<"\\mu_q = "<<sqrt(muq2)<<"\n";
-  return PDF::CParam(muf2,muq2,0.0,mur2,-1);
+  return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
 }
 
 Cluster_Amplitude *Default_Core_Scale::Cluster

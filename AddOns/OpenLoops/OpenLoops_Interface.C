@@ -42,6 +42,12 @@ extern "C" {
   void ol_evaluate_loop(int id, double* pp, double* m2l0, double* m2l1, double* acc);
   void ol_evaluate_tree(int id, double* pp, double* m2l0);
   void ol_evaluate_loop2(int id, double* pp, double* m2l0, double* acc);
+  void ol_evaluate_sc (int id, double* pp, int emitter, double* polvect, double* m2sc);
+  void ol_evaluate_sc2(int id, double* pp, int emitter, double* polvect, double* m2sc);
+  void ol_evaluate_cc (int id, double* pp, double* tree, double* m2cc, double *m2ewcc);
+  void ol_evaluate_cc2(int id, double* pp, double* tree, double* m2cc, double *m2ewcc);
+  void ol_evaluate_ccmatrix (int id, double* pp, double* tree, double* m2cc, double* m2ewcc);
+  void ol_evaluate_ccmatrix2(int id, double* pp, double* tree, double* m2cc, double* m2ewcc);
 }
 
 
@@ -199,6 +205,14 @@ void OpenLoops_Interface::SetParametersSM()
   }
 }
 
+void OpenLoops_Interface::SetParametersUFO()
+{
+  // All external UFO parameters are stored in this map
+  for(MODEL::ScalarConstantsMap::const_iterator it=s_model->ScalarConstants().begin();
+      it!=s_model->ScalarConstants().end(); ++it)
+    SetParameter(it->first, it->second);
+}
+
 void OpenLoops_Interface::SwitchMode(const int mode)
 {
   for (size_t i=1; i<s_evgen_params.size(); i=i+2)
@@ -283,6 +297,85 @@ void OpenLoops_Interface::EvaluateLoop2(int id, const Vec4D_Vector& momenta, dou
   ol_evaluate_loop2(id, &pp[0], &res, &acc);
 }
 
+double OpenLoops_Interface::EvaluateSpinCorrelator(int id, const Vec4D_Vector& momenta,
+						   const Vec4D& polv,
+						   size_t emitter, size_t spectator,
+						   AmplitudeType type)
+{
+  vector<double> pp(5*momenta.size());
+  for (size_t i=0; i<momenta.size(); ++i) {
+    pp[0+i*5]=momenta[i][0];
+    pp[1+i*5]=momenta[i][1];
+    pp[2+i*5]=momenta[i][2];
+    pp[3+i*5]=momenta[i][3];
+  }
+  double polvec[4] = {polv[0], polv[1], polv[2], polv[3]};
+  std::vector<double> res(momenta.size(), 0.0);
+
+  /* Add +1 to emitter index: fortran-style */
+  if(type == Tree)
+    ol_evaluate_sc(id, &pp[0], emitter+1,  polvec, &res[0]);
+  else if(type == Loop2)
+    ol_evaluate_sc2(id, &pp[0], emitter+1,  polvec, &res[0]);
+  else
+    THROW(fatal_error, "Unknown amplitude type");
+
+  return res[spectator];
+}
+
+double OpenLoops_Interface::EvaluateColorCorrelator(int id, const Vec4D_Vector& momenta,
+						    size_t emitter, size_t spectator,
+						    AmplitudeType type)
+{
+  vector<double> pp(5*momenta.size());
+  for (size_t i=0; i<momenta.size(); ++i) {
+    pp[0+i*5]=momenta[i][0];
+    pp[1+i*5]=momenta[i][1];
+    pp[2+i*5]=momenta[i][2];
+    pp[3+i*5]=momenta[i][3];
+  }
+  size_t dim = momenta.size();
+  vector<double> cc_qcd(dim*(dim-1)/2, 0.0);
+  double cc_ew, dummy_tree;
+
+  if(type == Tree)
+    ol_evaluate_cc(id, &pp[0], &dummy_tree, &cc_qcd[0], &cc_ew);
+  else if(type == Loop2)
+    ol_evaluate_cc2(id, &pp[0], &dummy_tree, &cc_qcd[0], &cc_ew);
+  else
+    THROW(fatal_error, "Unknown amplitude type");
+
+  if(emitter>spectator) std::swap(emitter, spectator);
+  size_t index = emitter+spectator*(spectator-1)/2;
+
+  return cc_qcd[index];
+}
+
+void OpenLoops_Interface::PopulateColorCorrelatorMatrix(int id, const Vec4D_Vector& momenta,
+							double& born2, double* ccmatrix,
+							AmplitudeType type)
+{
+  /* In principle no need to return the born2 (the squared
+     uncorrelated ME) because it is proportional to the diagonal
+     elements of the ccmatrix. Expose it nonetheless for validation
+     purposes. */
+
+  vector<double> pp(5*momenta.size());
+  for (size_t i=0; i<momenta.size(); ++i) {
+    pp[0+i*5]=momenta[i][0];
+    pp[1+i*5]=momenta[i][1];
+    pp[2+i*5]=momenta[i][2];
+    pp[3+i*5]=momenta[i][3];
+  }
+  double dummy_cc_ew;
+
+  if(type == Tree)
+    ol_evaluate_ccmatrix(id, &pp[0], &born2, ccmatrix, &dummy_cc_ew);
+  else if(type == Loop2)
+    ol_evaluate_ccmatrix2(id, &pp[0], &born2, ccmatrix, &dummy_cc_ew);
+  else
+    THROW(fatal_error, "Unknown amplitude type");
+}
 
 double OpenLoops_Interface::GetDoubleParameter(const std::string & key)
 {

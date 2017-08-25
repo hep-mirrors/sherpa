@@ -1,1 +1,1 @@
-SUBDIRS       = Amplitude Main Phasespace Cluster
+SUBDIRS       = Amplitude Main Phasespace

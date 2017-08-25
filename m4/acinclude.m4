@@ -109,11 +109,17 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${AMEGICBUILDDIR}/Amplitude/libAmplitude.la \
 	\${AMEGICBUILDDIR}/Phasespace/libAmegicPSGen.la \
 	\${AMEGICBUILDDIR}/String/libString.la \
-	\${AMEGICBUILDDIR}/Amplitude/Zfunctions/libZfunctions.la \
-	\${AMEGICBUILDDIR}/Cluster/libAmegicCluster.la"
+	\${AMEGICBUILDDIR}/Amplitude/Zfunctions/libZfunctions.la"
   AC_SUBST(AMEGICDIR)
   AC_SUBST(AMEGICBUILDDIR)
   AC_SUBST(AMEGICLIBS)
+
+  EXTAMPDIR="\${top_srcdir}/EXTAMP"
+  EXTAMPBUILDDIR="\${top_builddir}/EXTAMP"
+  EXTAMPLIBS="\${EXTAMPBUILDDIR}/Main/libExtAmp.la"
+  AC_SUBST(EXTAMPDIR)
+  AC_SUBST(EXTAMPBUILDDIR)
+  AC_SUBST(EXTAMPLIBS)
 
   AMISICDIR="\${top_srcdir}/AMISIC++"
   AMISICBUILDDIR="\${top_builddir}/AMISIC++"
@@ -169,7 +175,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${EXTRAXSBUILDDIR}/Two2Two/libExtraXS2_2.la \
 	\${EXTRAXSBUILDDIR}/One2Two/libExtraXS1_2.la \
 	\${EXTRAXSBUILDDIR}/One2Three/libExtraXS1_3.la \
-	\${EXTRAXSBUILDDIR}/Cluster/libExtraXSCluster.la \
 	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
@@ -206,13 +211,22 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(DIREBUILDDIR)
   AC_SUBST(DIRELIBS)
   
-
+  DIMDIR="\${top_srcdir}/DIM"
+  DIMBUILDDIR="\${top_builddir}/DIM"
+  DIMLIBS="\${DIMBUILDDIR}/Tools/libDIMTools.la \
+	\${DIMBUILDDIR}/Shower/libDIMShower.la \
+	\${DIMBUILDDIR}/Gauge/libDIMGauge.la \
+	\${DIMBUILDDIR}/Lorentz/libDIMLorentz.la \
+	\${DIMBUILDDIR}/Main/libDIMMain.la"
+  AC_SUBST(DIMDIR)
+  AC_SUBST(DIMBUILDDIR)
+  AC_SUBST(DIMLIBS)
+  
   COMIXDIR="\${top_srcdir}/COMIX"
   COMIXBUILDDIR="\${top_builddir}/COMIX"
   COMIXLIBS="\${COMIXBUILDDIR}/Amplitude/libComixAmplitude.la \
 	\${COMIXBUILDDIR}/Phasespace/libComixPhasespace.la \
-	\${COMIXBUILDDIR}/Main/libComix.la \
-	\${COMIXBUILDDIR}/Cluster/libComixCluster.la"
+	\${COMIXBUILDDIR}/Main/libComix.la"
   AC_SUBST(COMIXDIR)
   AC_SUBST(COMIXBUILDDIR)
   AC_SUBST(COMIXLIBS)
@@ -304,6 +318,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AS_AC_EXPAND(BINDIR, ${bindir})
   AS_AC_EXPAND(DATADIR, ${pkgdatadir})
   AS_AC_EXPAND(SHERPAPREFIX, ${prefix})
+  AS_AC_EXPAND(PYTHONLIBS, ${pythondir})
 
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
@@ -311,12 +326,13 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR", [Sherpa include directory])
   AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR", [Sherpa library directory])
   AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([PYTHON_LIBS], "$PYTHONLIBS", [Sherpa python library directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 
   AM_CPPFLAGS="-I\$(top_srcdir)"
   AC_SUBST(AM_CPPFLAGS)
 
-  AM_CXXFLAGS="-g -O2"
+  AM_CXXFLAGS="-g -O2 -fcx-fortran-rules"
   AC_LANG_PUSH([C++])
   AX_CHECK_COMPILE_FLAG(
     -fcx-fortran-rules,

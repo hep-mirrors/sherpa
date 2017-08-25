@@ -49,7 +49,7 @@ size_t Soft_Jet_Criterion::FindCombination(ATOOLS::Cluster_Amplitude *ampl) {
   return winner;
 }
 
-bool Soft_Jet_Criterion::Jets(ATOOLS::Cluster_Amplitude *ampl,int mode) {
+double Soft_Jet_Criterion::Value(ATOOLS::Cluster_Amplitude *ampl,int mode) {
   m_pt2  = 1.e12;
   ClusterLeg_Vector newlegs(ampl->Legs());
   for (size_t i=2;i<newlegs.size();i++) {
@@ -71,9 +71,9 @@ bool Soft_Jet_Criterion::Jets(ATOOLS::Cluster_Amplitude *ampl,int mode) {
     msg_Out()<<METHOD<<": "<<winner<<" yields pt^2 = "<<m_pt2
 	     <<" vs. "<<m_kt2veto[m_reflegs[winner]]<<".\n";
     Output();
-    return true;
+    return m_pt2;
   }
-  return false;
+  return 0.0;
 }
 
 void Soft_Jet_Criterion::Output() {

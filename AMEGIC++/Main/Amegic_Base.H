@@ -15,7 +15,6 @@ namespace AMEGIC {
     static int s_partcommit;
     Amegic_Base();
     virtual ~Amegic_Base();
-    virtual int PerformTests() = 0;
     virtual bool NewLibs() = 0;
     virtual void Minimize() = 0;
 

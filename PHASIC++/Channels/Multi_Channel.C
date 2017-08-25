@@ -317,6 +317,12 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 
 void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 {
+  if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
+  for (std::map<std::string,double>::iterator
+	 it(m_erans.begin());it!=m_erans.end();++it) {
+    it->second=ran->Get();
+    msg_Debugging()<<"  "<<it->first<<" -> "<<it->second<<"\n";
+  }
   if (channels.empty()) {
     if (nin>1) p[2]=p[0]+p[1];
     else p[1]=p[0];
@@ -351,6 +357,12 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
 {
+  if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
+  for (std::map<std::string,double>::iterator
+	 it(m_erans.begin());it!=m_erans.end();++it) {
+    it->second=ran->Get();
+    msg_Debugging()<<"  "<<it->first<<" -> "<<it->second<<"\n";
+  }
   for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
   double disc=ran->Get();
   double sum=0.;

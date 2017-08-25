@@ -6,8 +6,6 @@
 
 namespace AMEGIC {
 
-  class Cluster_Algorithm;
-
   class Amegic: public Process_Group,
 		public PHASIC::ME_Generator_Base {
   private :
@@ -16,8 +14,6 @@ namespace AMEGIC {
 
     MODEL::Model_Base *p_mmodel;
     Amegic_Model      *p_amodel;
-
-    Cluster_Algorithm *p_cluster;
 
     std::vector<PHASIC::Process_Base*> m_rsprocs;
 
@@ -41,12 +37,6 @@ namespace AMEGIC {
     int PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const ATOOLS::Vec4D_Vector &p,
-     const size_t &mode);
-
   };// end of class Amegic
 
 }// end of namespace AMEGIC
@@ -55,7 +45,6 @@ namespace AMEGIC {
 
 #include "AMEGIC++/Main/Topology.H"
 #include "AMEGIC++/Main/Process_Base.H"
-#include "AMEGIC++/Cluster/Cluster_Algorithm.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -63,6 +52,7 @@ namespace AMEGIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/UFO/UFO_Model.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -84,7 +74,7 @@ void Amegic::DrawLogo(std::ostream &ostr)
 }
 
 Amegic::Amegic():
-  ME_Generator_Base("Amegic"), p_mmodel(NULL), p_amodel(NULL), p_cluster(NULL)
+  ME_Generator_Base("Amegic"), p_mmodel(NULL), p_amodel(NULL)
 {
   DrawLogo(msg->Info());
   p_testmoms=NULL;
@@ -94,7 +84,6 @@ Amegic::Amegic():
 Amegic::~Amegic()
 {
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
-  if (p_cluster) delete p_cluster;
   delete p_amodel;
 }
 
@@ -331,7 +320,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     }
     My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
   }
-  if (add) Add(newxs);
+  if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);
   newxs->SetGenerator(this);
   return newxs;
@@ -340,10 +329,9 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 int Amegic::PerformTests()
 {
   int tests(Process_Group::PerformTests());
-  if (NewLibs()) THROW(normal_exit,"New libraries created. Please compile.");
+  if (NewLibs()) return -1;
   for (size_t i(0);i<m_rsprocs.size();++i) 
-    if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs())
-      THROW(normal_exit,"New libraries created. Please compile.");
+    if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return -1;
   Minimize();
   return tests;
 }
@@ -354,20 +342,6 @@ bool Amegic::NewLibraries()
   for (size_t i(0);i<m_rsprocs.size();++i)
     if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return true;
   return false;
-}
-
-void Amegic::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
-{
-  if (p_cluster==NULL) p_cluster = new Cluster_Algorithm(this);
-  p_cluster->SetClusterDefinitions(defs);
-}
-
-Cluster_Amplitude *Amegic::ClusterConfiguration
-(PHASIC::Process_Base *const proc,const Vec4D_Vector &p,
- const size_t &mode)
-{
-  p_cluster->Cluster(proc->Get<AMEGIC::Process_Base>(),mode);
-  return p_cluster->Amplitude();
 }
 
 DECLARE_GETTER(Amegic,"Amegic",ME_Generator_Base,ME_Generator_Key);

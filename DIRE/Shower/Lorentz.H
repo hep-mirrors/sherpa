@@ -19,7 +19,7 @@ namespace DIRE {
 
     ATOOLS::Flavour_Vector m_fl;
 
-    ATOOLS::Mass_Selector *p_ms;
+    const ATOOLS::Mass_Selector *p_ms;
 
     inline double Lam(const double &a,
 		      const double &b,
@@ -54,6 +54,8 @@ namespace DIRE {
 
     inline const ATOOLS::Flavour &Flav(const int i) const { return m_fl[i]; }
     inline const ATOOLS::Flavour_Vector &Flavs() const { return m_fl; }
+
+    inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
 
   };// end of class Lorentz
 

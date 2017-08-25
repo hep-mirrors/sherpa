@@ -352,7 +352,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   Spinor<double>::SetDefaultGauge(defgauge);
   Spinor<long double>::SetDefaultGauge(defgauge);
   SetGlobalVariables();
-  okay = okay && InitializeTheModel();
+  std::string stag(rpa->gen.Variable("RNG_SEED"));
+  while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
+  p_dataread->AddTag("RNG_SEED",stag);
+  okay = okay && InitializeTheModel();  
   
   if (m_mode==eventtype::StandardPerturbative) {
   std::string eventtype;
@@ -552,8 +555,8 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="NNPDFSherpa";
-      defset[beam]="NNPDF30NNLO";
+      deflib="CT14Sherpa";
+      defset[beam]="ct14nn";
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
       deflib="PDFESherpa";
@@ -718,7 +721,6 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
-  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
@@ -907,9 +909,9 @@ void Initialization_Handler::SetGlobalVariables()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  int cmode=reader.Get<int>("METS_CLUSTER_MODE",0);
-  rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
-  if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
+  int subtype=reader.GetValue<int>("NLO_SUBTRACTION_SCHEME",0);
+  rpa->gen.SetVariable("NLO_SUBTRACTION_SCHEME",ToString(subtype));
+  if (subtype!=0) msg_Info()<<METHOD<<"(): Set subtraction scheme "<<subtype<<".\n";
   Default_Reader css_reader;
   css_reader.SetInputPath(m_path);
   css_reader.SetInputFile(m_showerdat);
@@ -917,10 +919,10 @@ void Initialization_Handler::SetGlobalVariables()
   int kfmode        = css_reader.Get<int>("CSS_KFACTOR_SCHEME",1);
   int scs           = css_reader.Get<int>("CSS_SCALE_SCHEME",0);
   int svmode        = css_reader.Get<double>("CSS_SCALE_VARIATION_SCHEME",1);
-  double k0sqf      = css_reader.Get<double>("CSS_FS_PT2MIN",1.0);
-  double k0sqi      = css_reader.Get<double>("CSS_IS_PT2MIN",2.00);
+  double k0sqf      = css_reader.Get<double>("CSS_FS_PT2MIN",2.0);
+  double k0sqi      = css_reader.Get<double>("CSS_IS_PT2MIN",2.0);
   double fs_as_fac  = css_reader.Get<double>("CSS_FS_AS_FAC",1.0);
-  double is_as_fac  = css_reader.Get<double>("CSS_IS_AS_FAC",0.5);
+  double is_as_fac  = css_reader.Get<double>("CSS_IS_AS_FAC",1.0);
   double as_var_fac = css_reader.Get<double>("CSS_SCALE_FACTOR",1.);
   double mth        = css_reader.Get<double>("CSS_MASS_THRESHOLD",0.0);
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));

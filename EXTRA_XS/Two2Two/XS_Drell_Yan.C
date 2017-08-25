@@ -93,7 +93,7 @@ double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
   double s(0.),t(0.);
   if (kswitch == 0 || kswitch==1) {
     s=(momenta[0]+momenta[1]).Abs2();
-    t=(momenta[0]-momenta[2]).Abs2();
+    t=(momenta[barred]-momenta[2]).Abs2();
   }
   else if (kswitch==2) { // meaning of t and s interchanged in DIS
     t=(momenta[0]+momenta[1]).Abs2();

@@ -2,7 +2,7 @@
 #define PDF_Main_NLOMC_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include <string>
 
@@ -24,19 +24,6 @@ namespace PDF {
   class ISR_Handler;
   class Shower_Base;
 
-  typedef std::pair<double,double> SH_Pair;
-
-  struct Dipole_Value {
-    PHASIC::Process_Base *p_proc;
-    double m_d, m_b, m_t, m_mu2;
-    bool m_trig;
-    inline Dipole_Value(PHASIC::Process_Base *const proc=NULL,
-			const double &d=0.0,const double &b=0.0,
-			const double &t=0.0,const double &mu2=0.0,
-			const bool trig=true):
-      p_proc(proc), m_d(d), m_b(b), m_t(t), m_mu2(mu2), m_trig(trig) {}
-  };// end of struct Dipole_Value
-
   class NLOMC_Base {
   protected:
 
@@ -44,7 +31,9 @@ namespace PDF {
 
     Shower_Base *p_shower;
 
-    double m_kt2min, m_weight;
+    double m_kt2min[2], m_weight;
+
+    int m_subtype;
 
     ATOOLS::Variation_Weights * p_variationweights;
 
@@ -56,16 +45,21 @@ namespace PDF {
 
     virtual int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
-    virtual void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl) = 0;
+    virtual double KT2(const ATOOLS::NLO_subevt &sub,
+		       const double &x,const double &y,
+		       const double &Q2) = 0;
 
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
 
-    inline double KT2Min() const { return m_kt2min; }
+    inline double KT2Min(const int mode) const { return m_kt2min[mode]; }
+
     inline double Weight() const { return m_weight; }
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
+
+    inline int SubtractionType() const { return m_subtype; }
 
     inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }

@@ -531,7 +531,6 @@ void STwo2D_Particle_Observable_Base::Restore(double scale)
 
 void STwo2D_Particle_Observable_Base::Output(const std::string & pname) {
   if (p_2dhisto) {
-    ATOOLS::MakeDir(pname); 
     p_2dhisto->Output((pname+std::string("/")+m_name).c_str());
   }
 }

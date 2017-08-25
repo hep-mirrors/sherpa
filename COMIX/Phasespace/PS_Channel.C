@@ -1353,4 +1353,5 @@ void PS_Channel::ReadIn(std::string pid)
       }
     }
   }
+  p_cur=NULL;
 }

@@ -5,6 +5,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
+#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -19,8 +20,6 @@ Jet_Finder::Jet_Finder(Process_Base *const proc,const std::string &ycut):
   Selector_Base("Jetfinder",proc), m_cuttag(ycut),
   m_on(true), p_yccalc(NULL)
 {
-  m_ycut=2.0;
-  m_s=sqr(rpa->gen.Ecms());
   static bool mets(false);
   if (!mets) {
     mets=true;
@@ -51,51 +50,105 @@ Jet_Finder::~Jet_Finder()
   if (p_jc) delete p_jc;
 }
 
-bool Jet_Finder::Trigger(const ATOOLS::Vec4D_Vector &p,
-                         NLO_subevt *const sub)
+bool Jet_Finder::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
-  if (!sub) {
-    p_ampl->SetProc(p_proc);
-    for (size_t i(0);i<p.size();++i)
-      p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
-    m_ycut=p_yccalc->Calculate()->Get<double>();
-    if (!m_on) return true;
-    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
-                   <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
-    p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-    bool res=p_jc->Jets(p_ampl);
-    msg_Debugging()<<"} -> "<<res<<"\n";
-    return 1-m_sel_log->Hit(!res);
+  m_pass=true;
+  p_ampl->SetProc(p_proc);
+  for (size_t i(0);i<p.size();++i)
+    p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
+  m_qcut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
+  msg_Debugging()<<METHOD<<"("<<this<<"): '"<<p_proc->Name()
+		 <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
+  p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+  double jcv=p_jc->Value(p_ampl);
+  bool res=m_pass=jcv>sqr(m_qcut);
+  msg_Debugging()<<"} -> "<<res<<"\n";
+  if (p_proc->VariationWeights()) {
+    Reweight_Args args(jcv,0);
+    p_proc->VariationWeights()->UpdateOrInitialiseWeights
+      (&Jet_Finder::Reweight,*this,args);
+    if (args.m_acc) res=1;
   }
-  else {
-    if (p.size()!=sub->m_n) THROW(fatal_error,"Invalid call");
-    p_ampl->SetProc(p_proc);
-    if (p_ampl->Legs().size()<sub->m_n)
-      p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
-    else if (p_ampl->Legs().size()>sub->m_n) {
-      p_ampl->Legs().back()->Delete();
-      p_ampl->Legs().pop_back();
+  return 1-m_sel_log->Hit(!res);
+}
+
+double Jet_Finder::Reweight(Variation_Parameters *params,
+			    Variation_Weights *weights,
+			    Reweight_Args &args)
+{
+  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
+		 <<"' Q_cut = "<<m_qcut*params->m_Qcutfac<<"\n";
+  bool res=args.m_jcv>sqr(m_qcut*params->m_Qcutfac);
+  msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<"\n";
+  msg_Debugging()<<"} -> "<<res<<"\n";
+  if (res) args.m_acc=1;
+  return res?1.0:0.0;
+}
+
+bool Jet_Finder::JetTrigger(NLO_subevtlist *const subs)
+{
+  for (size_t i(0);i<m_nin+m_nout;++i)
+    p_ampl->Leg(i)->SetMom(i<m_nin && subs->back()->p_mom[i][0]>0.0?
+			   -subs->back()->p_mom[i]:subs->back()->p_mom[i]);
+  m_qcut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
+  int res(0);
+  m_pass=0;
+  ReweightSubevt_Args args(subs->size());
+  for (size_t n(0);n<subs->size();++n) {
+    msg_Debugging()<<METHOD<<"("<<n<<"): '"<<p_proc->Name()
+		   <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
+    {
+      msg_Indent();
+      p_ampl->SetProc(p_proc);
+      if (p_ampl->Legs().size()<(*subs)[n]->m_n)
+	p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
+      else if (p_ampl->Legs().size()>(*subs)[n]->m_n) {
+	p_ampl->Legs().back()->Delete();
+	p_ampl->Legs().pop_back();
+      }
+      size_t idij((1<<(*subs)[n]->m_i)|(1<<(*subs)[n]->m_j));
+      if ((*subs)[n]->m_i==(*subs)[n]->m_j) idij=0;
+      for (size_t i(0);i<(*subs)[n]->m_n;++i) {
+	p_ampl->Leg(i)->SetFlav
+	  ((int)i<m_nin?(*subs)[n]->p_fl[i].Bar():(*subs)[n]->p_fl[i]);
+	p_ampl->Leg(i)->SetMom(i<m_nin && subs->back()->p_mom[i][0]>0.0?
+			       -(*subs)[n]->p_mom[i]:(*subs)[n]->p_mom[i]);
+	p_ampl->Leg(i)->SetId((*subs)[n]->p_id[i]);
+	p_ampl->Leg(i)->SetK((*subs)[n]->p_id[i]==idij?
+			     (1<<(*subs)[n]->m_k):0);
+      }
+      p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+      args.m_jcv[n]=p_jc->Value(p_ampl,idij?0:1);
+      (*subs)[n]->m_trig=args.m_acc[n]=args.m_jcv[n]>sqr(m_qcut);
+      if (args.m_acc[n]) res=m_pass=1;
     }
-    size_t idij((1<<sub->m_i)|(1<<sub->m_j));
-    if (sub->m_i==sub->m_j) idij=0;
-    for (size_t i(0);i<p.size();++i) {
-      p_ampl->Leg(i)->SetFlav
-        ((int)i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i]);
-      p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
-      p_ampl->Leg(i)->SetId(sub->p_id[i]);
-      p_ampl->Leg(i)->SetK(sub->p_id[i]==idij?
-                           (1<<sub->m_k):0);
-    }
-    m_ycut=p_yccalc->Calculate()->Get<double>();
-    if (!m_on) return true;
-    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
-                   <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
-    p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-    bool res=p_jc->Jets(p_ampl,idij?0:1);
-    msg_Debugging()<<"} -> "<<res<<"\n";
-    return 1-m_sel_log->Hit(!res);
+    msg_Debugging()<<"} -> "<<args.m_acc[n]<<"\n";
   }
-  return true;
+  if (p_proc->VariationWeights()) {
+    p_proc->VariationWeights()->InitialiseWeights
+      (&Jet_Finder::ReweightSubevents,*this,args);
+    for (size_t n(0);n<subs->size();++n)
+      res|=(*subs)[n]->m_trig|=(args.m_acc[n]?2:0);
+  }
+  return 1-m_sel_log->Hit(!res);
+}
+
+Subevent_Weights_Vector Jet_Finder::ReweightSubevents
+(Variation_Parameters *params,Variation_Weights *weights,
+ ReweightSubevt_Args &args)
+{
+  Subevent_Weights_Vector wgts(args.m_jcv.size());
+  for (size_t i(0);i<args.m_jcv.size();++i) {
+    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
+		   <<"' Q_cut = "<<m_qcut*params->m_Qcutfac<<"\n";
+    wgts[i]=args.m_jcv[i]>sqr(m_qcut*params->m_Qcutfac);
+    msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv[i])<<"\n";
+    msg_Debugging()<<"} -> "<<wgts[i]<<"\n";
+    if (wgts[i]) args.m_acc[i]=1;
+  }
+  return wgts;
 }
 
 void Jet_Finder::BuildCuts(Cut_Data *cuts) 

@@ -58,3 +58,5 @@
 
 /* Using colour */
 #undef USING__COLOUR
+
+#undef PYTHON_LIBS

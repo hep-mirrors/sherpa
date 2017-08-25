@@ -1,0 +1,39 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None; PDF_SET None;
+
+  SCALES VAR{sqr(91.2)};
+
+  ME_SIGNAL_GENERATOR External OpenLoops; SHERPA_LDADD Proc_fsrchannels6;
+
+  OL_PARAMETERS verbose 0 allowed_libs eellllbb;
+
+  % collider setup
+  BEAM_1 -11; BEAM_ENERGY_1 = 1000.;
+  BEAM_2  11; BEAM_ENERGY_2 = 1000.;
+
+  DIPOLE_ALPHA 1.0; DIPOLE_AMIN 1.0e-99;
+}(run)
+
+(processes){
+  Process -11 11 -> -11 12 13 -14 5 -5;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Print_Graphs graphs;
+  Integrator fsrchannels6;
+  Min_Order (-1,-1);
+  Max_Order (-1,-1);
+  #Order (*,6);
+  End process;
+}(processes)
+
+(selector){
+ PT -11 10 E_CMS;
+ PT  12 10 E_CMS;
+ PT  13 10 E_CMS;
+ PT -14 10 E_CMS;
+ Mass -11  12 60 100;
+ Mass  13 -14 60 100;
+ NJetFinder 2 100.0 0.0 0.4 -1;
+}(selector)

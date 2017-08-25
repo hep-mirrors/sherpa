@@ -39,7 +39,7 @@ namespace MCATNLO {
     void        BoostAllFS(Parton *l,Parton *r,Parton *s);
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
 
-    bool JetVeto(Sudakov *const sud) const;
+    double JetVeto(Sudakov *const sud) const;
       
     friend std::ostream& operator<<(std::ostream &,Singlet &);
 

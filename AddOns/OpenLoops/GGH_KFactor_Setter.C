@@ -38,11 +38,17 @@ GGH_KFactor_Setter::GGH_KFactor_Setter
     }
   else
     {
+      // set coupling orders correctly
+      std::vector<double> orders = {0.,0.,1.};
+      Flavour_Vector flav_vec = p_proc->Flavours();
+      for(Flavour_Vector::const_iterator it=flav_vec.begin(); it!=flav_vec.end(); ++it)
+        if (it->Strong())
+          orders[0] += 1.;
       s_procmanager.SetGenerators(p_proc->Generator()->Generators());
       p_default_tree = static_cast<AMEGIC::Single_Process*>
-	(s_procmanager.GetProcess(*p_ampl, false));
+	(s_procmanager.GetProcess(*p_ampl, false, orders));
       p_default_loop = static_cast<AMEGIC::Single_Process_External*>
-	(s_procmanager.GetProcess(*p_ampl, true ));
+	(s_procmanager.GetProcess(*p_ampl, true , orders));
     }
 }
   
@@ -111,8 +117,8 @@ void GGH_KFactor_Setter::SetOSVertexCorrection(){
   amp->CreateLeg(gmom1,Flavour(kf_gluon));
   amp->CreateLeg(hmom, Flavour(kf_h0));
   fake_p.push_back(gmom0); fake_p.push_back(gmom1); fake_p.push_back(hmom);
-  AMEGIC::Single_Process*          tree = static_cast<AMEGIC::Single_Process*>(s_procmanager.GetProcess(*amp, false));
-  AMEGIC::Single_Process_External* loop = static_cast<AMEGIC::Single_Process_External*>(s_procmanager.GetProcess(*amp, true));
+  AMEGIC::Single_Process*          tree = static_cast<AMEGIC::Single_Process*>(s_procmanager.GetProcess(*amp, false, std::vector<double>({2.,0.,1.})));
+  AMEGIC::Single_Process_External* loop = static_cast<AMEGIC::Single_Process_External*>(s_procmanager.GetProcess(*amp, true, std::vector<double>({2.,0.,1.})));
   vertex_correction = loop->DSigma(fake_p,false)/tree->DSigma(fake_p,false);
   m_set_vcorrection = true;
 }
@@ -131,9 +137,9 @@ double GGH_KFactor_Setter::MassCorrectionFactor(const Cluster_Amplitude& ampl)
     p.push_back(p_next_ampl->Leg(i)->Mom());
   }
   AMEGIC::Single_Process*          tree = static_cast<AMEGIC::Single_Process*>
-    (s_procmanager.GetProcess(ampl, false));
+    (s_procmanager.GetProcess(ampl, false, std::vector<double>({2.0,0.0,1.0})));
   AMEGIC::Single_Process_External* loop = static_cast<AMEGIC::Single_Process_External*>
-    (s_procmanager.GetProcess(ampl, true ));
+    (s_procmanager.GetProcess(ampl, true , std::vector<double>({2.0,0.0,1.0})));
   return loop->DSigma(p,false)/tree->DSigma(p,false);
 }
 

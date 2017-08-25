@@ -1152,12 +1152,6 @@ bool AMEGIC::Single_LOProcess::CompareTestMoms(const ATOOLS::Vec4D* p)
 }
 
 
-int AMEGIC::Single_LOProcess::PerformTests()
-{
-  return 1;
-}
-
-
 /*----------------------------------------------------------------------------
   
   Phase space initialization
@@ -1286,6 +1280,7 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
 
   double M2(0.);
   p_int->SetMomenta(labmom);
+  p_scale->SetCaller(this);
   p_scale->CalculateScale(labmom,m_cmode);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
@@ -1454,18 +1449,19 @@ void AMEGIC::Single_LOProcess::FillCombinations
   m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
   if (idc!=1) {
     bool in(false);
-    Flavour_Vector cf(m_cflavs[idc]);
+    Flavour fl(ReMap(p->fl,p->GetPropID()));
+    Flavour_Vector cf(m_cflavs[id]);
     for (size_t i(0);i<cf.size();++i)
-      if (cf[i]==p->fl) {
+      if (cf[i]==fl) {
 	in=true;
 	break;
       }
     if (!in) {
-      m_cflavs[idc].push_back(p->fl.Bar());
-      m_cflavs[id].push_back(p->fl);
+      m_cflavs[idc].push_back(fl.Bar());
+      m_cflavs[id].push_back(fl);
 #ifdef DEBUG__Fill_Combinations
       msg_Debugging()<<"  flav "<<ID(idc)<<" / "
-		     <<ID(id)<<" -> "<<p->fl<<"\n";
+		     <<ID(id)<<" -> "<<fl<<"\n";
 #endif
     }
   }

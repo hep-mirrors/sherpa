@@ -1,1 +1,1 @@
-SUBDIRS = Main DipoleSubtraction Amplitude Phasespace String Cluster
+SUBDIRS = Main DipoleSubtraction Amplitude Phasespace String

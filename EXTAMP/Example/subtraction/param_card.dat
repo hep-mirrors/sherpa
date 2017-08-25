@@ -1,0 +1,35 @@
+block wolfenstein
+	1  0.2253        # lamWS
+	2  0.808         # AWS
+	3  0.132         # rhoWS
+	4  0.341         # etaWS
+
+block mass
+	23 91.188        # MZ
+	4  1.27          # MC
+	6  172.0         # MT
+	5  4.7           # MB
+	25 125.0         # MH
+	11 0.000511      # Me
+	13 0.10566       # MM
+	15 1.777         # MTA
+
+block sminputs
+	1  132.50698     # aEWM1
+	2  1.16639e-05   # Gf
+	3  0.118         # aS
+
+block yukawa
+	4  1.27          # ymc
+	5  4.2           # ymb
+	6  164.5         # ymt
+	11 0.000511      # yme
+	13 0.10566       # ymm
+	15 1.777         # ymtau
+
+decay 	23 2.44140351    # WZ
+decay 	24 2.04759951    # WW
+decay 	6  1.50833649    # WT
+decay 	25 0.00638233934 # WH
+decay 	15 2.27e-12      # WTau
+

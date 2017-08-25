@@ -19,9 +19,11 @@ namespace PDF {
   class Jet_Criterion {
   public:
 
+    inline Jet_Criterion() {}
+
     virtual ~Jet_Criterion();
 
-    virtual bool Jets(ATOOLS::Cluster_Amplitude *ampl,int mode=0) = 0;
+    virtual double Value(ATOOLS::Cluster_Amplitude *ampl,int mode=0) = 0;
 
   };// end of class Jet_Criterion
 

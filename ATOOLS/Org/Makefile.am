@@ -37,7 +37,6 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				Command_Line_Interface.C \
-				Option_Parser.C \
 				$(GZIPSTREAMSOURCES) \
 				binreloc.c
 
@@ -75,6 +74,7 @@ localinc_HEADERS         =	\
 			Integration_Info.inl.H \
 			Library_Loader.H \
 			Command_Line_Interface.H \
+			Command_Line_Options.H \
 			Option_Parser.H \
 			Enum_Flags.H \
 			Node.H \

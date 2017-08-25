@@ -29,35 +29,8 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
   m_zj   = 1.-m_zi;
 
   m_Q2 = (m_pi+m_pj-m_pk).Abs2();
-  if (m_es==0) {
-    m_kt2 = -m_Q2*(1.-m_xijk)/m_xijk*m_zi*m_zj;
-  }
-  else {
-    m_kt2 = -m_Q2*(1.-m_xijk)/m_xijk;
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=m_zj;
-      break;
-    case spt::q2gq:
-      m_kt2*=m_zi;
-      break;
-    case spt::g2qq:
-      break;
-    case spt::g2gg:
-      m_kt2*=m_zi*m_zj;
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_xijk,m_Q2):
+    -m_Q2*(1.-m_xijk)/m_xijk*m_zi*m_zj;
 
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
   m_pt2   =     m_ptij;
@@ -90,7 +63,7 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
     THROW(fatal_error, "DipoleSplitting can not handle splitting type "
         + ToString(m_ftype) + ".");
   }
-  if (m_kt2<m_k0sqf) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
 }
 
 double FI_DipoleSplitting::GetValue()
@@ -144,35 +117,8 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   m_zi   = (m_pi*m_pk)/(m_pj*m_pk+m_pk*m_pi);
   m_zj   = 1.-m_zi;
 
-  if (m_es==0) {
-    m_kt2 = 2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj-sqr(m_zj)*m_mi;
-  }
-  else {
-    m_kt2 = 2.0*m_pi*m_pj;
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=m_zj;
-      break;
-    case spt::q2gq:
-      m_kt2*=m_zi;
-      break;
-    case spt::g2qq:
-      break;
-    case spt::g2gg:
-      m_kt2*=m_zi*m_zj;
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_xijk,m_Q2):
+    2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj-sqr(m_zj)*m_mi;
 
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
   m_pt2   =     m_ptij;
@@ -239,7 +185,7 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   }
-  if (m_kt2<m_k0sqf) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
 }
 
 double FI_MassiveDipoleSplitting::GetValue()

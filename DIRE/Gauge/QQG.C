@@ -13,7 +13,7 @@ namespace DIRE {
   class qqG: public Alpha_QCD {
   private:
 
-    double m_C[3], m_N;
+    double m_N;
 
     int m_mode;
 
@@ -23,22 +23,19 @@ namespace DIRE {
       Alpha_QCD(key), m_N(1.0),
       m_mode(key.p_v->in[1+key.m_mode].IsGluon())
     {
-      m_C[0]=(m_Nc-1.0)/(2.0*m_CF);
-      m_C[1]=m_C[0]/(m_Nc*m_Nc);
-      m_C[2]=m_C[1]*(m_Nc-1.0);
       if ((key.m_type&1) && m_mode) m_N=m_Nc/(m_Nc*m_Nc-1.0);
     }
 
     double Scale(const Splitting &s) const
     {
-      return s.m_t;
+      if (s.m_cpl) return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
+      if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
+      return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
     }
 
     bool Allowed(const Splitting &s) const
     {
-      if (s.p_n)
-	return s.p_s->Flav().StrongCharge()==8 ||
-	  s.p_s->Flav().StrongCharge()<0;
+      if (s.p_n) return s.p_s->Flav().Strong();
       Color cij(s.p_c->Col()), ck(s.p_s->Col());
       if (s.m_cm==0 && cij.m_i==ck.m_j) return true;
       return false;
@@ -80,7 +77,7 @@ namespace DIRE {
   class QQG: public Alpha_QCD {
   private:
 
-    double m_C[3], m_N;
+    double m_N;
 
     int m_mode;
 
@@ -90,22 +87,19 @@ namespace DIRE {
       Alpha_QCD(key), m_N(1.0),
       m_mode(key.p_v->in[1+key.m_mode].IsGluon())
     {
-      m_C[0]=(m_Nc-1.0)/(2.0*m_CF);
-      m_C[1]=m_C[0]/(m_Nc*m_Nc);
-      m_C[2]=m_C[1]*(m_Nc-1.0);
       if ((key.m_type&1) && m_mode) m_N=m_Nc/(m_Nc*m_Nc-1.0);
     }
 
     double Scale(const Splitting &s) const
     {
-      return s.m_t;
+      if (s.m_cpl) return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
+      if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
+      return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
     }
 
     bool Allowed(const Splitting &s) const
     {
-      if (s.p_n)
-	return s.p_s->Flav().StrongCharge()==8 ||
-	  s.p_s->Flav().StrongCharge()>0;
+      if (s.p_n) return s.p_s->Flav().Strong();
       Color cij(s.p_c->Col()), ck(s.p_s->Col());
       if (s.m_cm==1 && cij.m_j==ck.m_i) return true;
       return false;

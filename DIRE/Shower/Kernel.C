@@ -58,16 +58,24 @@ Kernel::~Kernel()
   if (p_lf) delete p_lf;
 }
 
+std::string Kernel::Class() const
+{
+  return "("+Demangle(typeid(*p_lf).name()).substr(6)
+    +","+Demangle(typeid(*p_gf).name()).substr(6)
+    +","+ToString(m_mode)+")";
+}
+
 double Kernel::Value(const Splitting &s) const
 {
   return p_gf->Value(s)*p_lf->Value(s)*p_lf->Jacobian(s);
 }
 
-Weight Kernel::GetWeight(const Splitting &s,const double &o) const
+Weight Kernel::GetWeight
+(const Splitting &s,const double &o,const Weight *w) const
 {
   double f(p_gf->Value(s)*p_lf->Value(s)*p_lf->Jacobian(s));
-  double h(p_gf->Estimate(s)*p_lf->Estimate(s));
-  double g(dabs(f)<h?(f>=0.0?h:-h):o*f);
+  double h(w?w->m_h:p_gf->Estimate(s)*p_lf->Estimate(s));
+  double g(dabs(w?w->m_f:f)<h?(f>=0.0?h:-h):o*f);
   return Weight(f,g,m_ef*h);
 }
 

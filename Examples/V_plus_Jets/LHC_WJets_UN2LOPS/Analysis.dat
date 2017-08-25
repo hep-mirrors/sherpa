@@ -1,0 +1,18 @@
+ BEGIN_RIVET {
+   -a Wjets2011 MC_QCD_PARTONS MC_WJETS ATLAS_2012_I1083318 ATLAS_2011_I925932 ATLAS_2010_S8919674;
+ } END_RIVET;
+
+BEGIN_ANALYSIS {
+  LEVEL Shower; PATH_PIECE INCLU/;
+  Mass   11 -12  60  120   120   LinErr FinalState;
+  Mass   11 -12  60  120   1     LinErr FinalState;
+  PT2    11 -12  0   150   300   LinErr FinalState;
+  PT2    11 -12  1   1000  100   LogErr FinalState;
+  Y2     11 -12 -7.5 7.5   150   LinErr FinalState;
+  Eta    11     -5   5     200   LinErr FinalState;
+  PT     11      0   100   200   LinErr FinalState;
+  PT     11      1   1000  100   LogErr FinalState;
+  Eta   -12     -5   5     200   LinErr FinalState;
+  PT    -12      0   100   200   LinErr FinalState;
+  PT    -12      1   1000  100   LogErr FinalState;
+} END_ANALYSIS

@@ -14,17 +14,24 @@ namespace DIRE {
     double    m_t, m_t0;
 
     ATOOLS::Cluster_Amplitude *p_ampl;
+    std::vector<Amplitude*>   *p_all;
 
   public:
 
-    Amplitude(ATOOLS::Cluster_Amplitude *const a);
+    Amplitude(ATOOLS::Cluster_Amplitude *const a,
+	      std::vector<Amplitude*> *const all);
 
     ~Amplitude();
 
     void Add(Parton *const p);
     void Remove(Parton *const p);
 
+    void Reduce();
+
     ATOOLS::Cluster_Amplitude *GetAmplitude() const;
+
+    inline ATOOLS::Cluster_Amplitude *
+    ClusterAmplitude() const { return p_ampl; }
 
     inline void SetSplit(const Splitting &s) { m_s=s; }
 

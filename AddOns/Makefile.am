@@ -1,4 +1,5 @@
 SUBDIRS       =	\
+		NNLO \
 		Python \
 		Analysis \
 		Pythia \
@@ -13,8 +14,9 @@ SUBDIRS       =	\
 		Delphes \
 		Rivet \
 		HepMC \
+		Root \
 		Weights \
-		Root
+		DiHiggsNLO
 
 nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \

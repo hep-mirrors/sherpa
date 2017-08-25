@@ -28,7 +28,7 @@ namespace PHASIC {
 
     virtual ~Core_Scale_Setter();
 
-    virtual PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl) = 0;
+    virtual PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     static void ShowSyntax(const size_t i);
 

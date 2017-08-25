@@ -1,0 +1,26 @@
+(run){
+  % general setting
+  EVENTS 1M; ERROR 0.001; MI_HANDLER None; FRAGMENTATION Off;
+  RANDOM_SEED 0;  SHOWER_GENERATOR None; SHERPA_LDADD SherpaMain;
+  ME_SIGNAL_GENERATOR Amegic Internal; INIT_ONLY 2; AMEGIC_ALLOW_MAPPING 0;
+  PDF_LIBRARY NNPDFSherpa;  PDF_SET NNPDF30NNLO;
+
+  SCALES VAR{sqr(91.2)};
+
+  % collider setup
+  BEAM_1 -11 27.5; BEAM_2 2212 820; 
+  PDF_SET_1 None;
+
+  DIPOLE_ALPHA 1.0; DIPOLE_AMIN 1.0e-99;
+
+}(run)
+
+(processes){
+  Process -11 93 -> -11 93 93;
+  Loop_Generator Internal;
+  Integrator Rambo;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Order (*,2);
+  End process;
+}(processes)

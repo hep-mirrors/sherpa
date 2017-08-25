@@ -1,8 +1,7 @@
 #include "PDF/Main/Shower_Base.H"
 
 #include "DIRE/Shower/Shower.H"
-#include "DIRE/Shower/Cluster.H"
-#include "DIRE/Main/Color_Setter.H"
+#include "DIRE/Shower/Cluster_Definitions.H"
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -15,8 +14,7 @@ namespace DIRE {
 
     Shower *p_shower;
 
-    Cluster      *p_clus;
-    Color_Setter *p_cs;
+    Cluster_Definitions *p_clus;
 
     Amplitude_Vector m_ampls;
 
@@ -26,8 +24,6 @@ namespace DIRE {
     double m_maxweight;
 
     void RecoCheck(Amplitude *const a,int swap) const;
-
-    void SetColors(ATOOLS::Cluster_Amplitude *ampl) const;
 
     Amplitude *Convert(ATOOLS::Cluster_Amplitude *const campl,
 		       std::map<ATOOLS::Cluster_Leg*,Parton*> &lmap);
@@ -51,10 +47,6 @@ namespace DIRE {
     bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
 		       const bool & soft=false);
 
-    double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
-		  const ATOOLS::Flavour &flk,const int type,
-		  const int cpl,const double &mu2) const;
-
   };// end of class Dire
 
 }// end of namespace DIRE
@@ -71,21 +63,19 @@ using namespace PDF;
 using namespace ATOOLS;
 
 Dire::Dire(const Shower_Key &key):
-  Shower_Base("Dire"), p_cs(NULL), p_ms(NULL),
+  Shower_Base("Dire"), p_ms(NULL),
   m_maxweight(1.0)
 {
+  m_kttype=1;
   p_shower = new Shower();
-  p_clus = new Cluster(p_shower);
+  p_clus = new Cluster_Definitions(p_shower);
   p_shower->Init(key.p_model,key.p_isr,key.p_reader);
-  int csmode=key.p_reader->Get<int>("CSS_CSMODE",0);
-  if (csmode) p_cs = new Color_Setter(csmode);
   m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK",0,"Reco check",METHOD);
   m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
 }
 
 Dire::~Dire()
 {
-  if (p_cs) delete p_cs;
   delete p_clus;
   delete p_shower;
 }
@@ -93,11 +83,11 @@ Dire::~Dire()
 int Dire::PerformShowers()
 {
   DEBUG_FUNC(this);
+  p_shower->SetVariations(p_variationweights);
   m_weight=1.0;
   unsigned int nem=0;
-  for (Amplitude_Vector::const_iterator
-	 it(m_ampls.begin());it!=m_ampls.end();++it) {
-    int stat(p_shower->Evolve(**it,m_weight,nem));
+  for (size_t i(0);i<m_ampls.size();++i) {
+    int stat(p_shower->Evolve(*m_ampls[i],m_weight,nem));
     m_weight*=p_shower->GetWeight();
     if (stat!=1) return stat;
   }
@@ -180,7 +170,7 @@ Amplitude *Dire::Convert
 (Cluster_Amplitude *const campl,
  std::map<Cluster_Leg*,Parton*> &lmap)
 {
-  Amplitude *ampl(new Amplitude(campl));
+  Amplitude *ampl(new Amplitude(campl,&m_ampls));
   ampl->SetT(campl->KT2());
   if (campl->Prev()) ampl->SetT0(campl->Prev()->KT2());
   for (size_t i(0);i<campl->Legs().size();++i) {
@@ -204,12 +194,16 @@ bool Dire::PrepareShower
   p_shower->SetMS(p_ms);
   Cluster_Amplitude *campl(ampl);
   while (campl->Next()) campl=campl->Next();
-  SetColors(campl);
   double Q2(campl->MuQ2());
   std::map<Cluster_Leg*,Parton*> lmap;
   for (;campl;campl=campl->Prev()) {
     Amplitude *ampl(Convert(campl,lmap));
     m_ampls.push_back(ampl);
+    if (campl->NLO()&8) {
+      if (campl->Next() && 
+	  (campl->NIn()+campl->Leg(2)->NMax()-1>
+	   campl->Legs().size())) campl->SetNLO(campl->NLO()&~8);
+    }
     if (campl->NIn()+campl->Leg(2)->NMax()==
 	campl->Legs().size()) ampl->SetJF(NULL);
     Cluster_Amplitude *lampl(campl->Next());
@@ -250,8 +244,8 @@ bool Dire::PrepareShower
       if (swap) std::swap<int>(ic,jc);
       int type((ic<campl->NIn()?1:0)|(kc<campl->NIn()?2:0));
       Splitting s=p_clus->KT2
-	     (campl->Leg(ic),campl->Leg(jc),campl->Leg(kc),
-	      lij->Flav(),campl->Kin(),type,1|(swap?2:0),ws,mu2);
+	(*campl,ic,jc,kc,lij->Flav(),lampl->Kin(),
+	 type,1|(swap?2:0)|(lampl->NLO()?16<<2:0),ws,mu2);
       s.p_s=lmap[lampl->IdLeg(lij->K())];
       s.p_c=lmap[lij];
       (*----m_ampls.end())->SetSplit(s);
@@ -260,62 +254,6 @@ bool Dire::PrepareShower
   }
   m_ampls.front()->SetT(Q2);
   return true;
-}
-
-void Dire::SetColors(ATOOLS::Cluster_Amplitude *ampl) const
-{
-  if (p_cs==NULL || !p_cs->SetColors(ampl)) {
-    std::vector<int> tids, atids;
-    for (size_t i(0);i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
-	tids.push_back(i);
-	if (ampl->Leg(i)->Flav().StrongCharge()==8)
-	  atids.push_back(i);
-      }
-      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
-	atids.push_back(i);
-      }
-    while (true) {
-      std::random_shuffle(atids.begin(),atids.end(),*ran);
-      size_t i(0);
-      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
-      if (i==atids.size()) break;
-    }
-    for (size_t i(0);i<tids.size();++i) {
-      int cl(Flow::Counter());
-      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
-      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
-    }
-  }
-  for (Cluster_Amplitude *campl(ampl->Prev());campl;campl=campl->Prev()) {
-    Cluster_Amplitude *next(campl->Next()); 
-    Cluster_Leg *lij=NULL;
-    for (size_t i(0);i<next->Legs().size();++i)
-      if (next->Leg(i)->K()) {
-	lij=next->Leg(i);
-	break;
-      }
-    if (lij==NULL) THROW(fatal_error,"Invalid amplitude");
-    Cluster_Leg *li=NULL, *lj=NULL;
-    for (size_t i(0);i<campl->Legs().size();++i) {
-      if (campl->Leg(i)->Id()&lij->Id()) {
-	if (li==NULL) li=campl->Leg(i);
-	else if (lj==NULL) lj=campl->Leg(i);
-	else THROW(fatal_error,"Invalid splitting");
-      }
-      else {
-	campl->Leg(i)->SetCol(next->IdLeg(campl->Leg(i)->Id())->Col());
-      }
-    }
-    Cluster_Amplitude::SetColours(lij,li,lj);
-  }
-}
-
-double Dire::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
-		    const ATOOLS::Flavour &flk,const int type,
-		    const int cpl,const double &mu2) const
-{
-  return 1.0;
 }
 
 void Dire::RecoCheck(Amplitude *const a,int swap) const
@@ -330,15 +268,12 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     if ((*next)[i]==a->Split().p_c->Out(1)) { jc=i; pj=(*next)[i]->Mom(); }
     if ((*next)[i]==a->Split().p_s->Out(0)) { kc=i; pk=(*next)[i]->Mom(); }
   }
-  // a->Construct();
   Cluster_Amplitude *ampl(next->GetAmplitude());
   double ws, mu2;
   Splitting s=p_clus->KT2
-    (ampl->Leg(ic),ampl->Leg(jc),ampl->Leg(kc),
-     a->Split().p_c->Flav(),a->Split().m_kin,
-     a->Split().m_type,1|(swap?2:0),ws,mu2);
+    (*ampl,ic,jc,kc,a->Split().p_c->Flav(),a->Split().m_kin,
+     a->Split().m_type,1|(swap?2:0)|(ampl->NLO()?16<<2:0),ws,mu2);
   ampl->Delete();
-  std::cout.precision(12);
   msg_Debugging()<<"New reco params: t = "<<s.m_t
 		 <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
   msg_Debugging()<<"            vs.: t = "<<a->Split().m_t<<", z = "

@@ -1,5 +1,6 @@
 #include "DIRE/Tools/Parton.H"
 
+#include "DIRE/Tools/Splitting.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/STL_Tools.H"
@@ -33,15 +34,19 @@ double Parton::GetXB() const
   return 0.0;
 }
 
-void Parton::AddWeight(const Parton *s,const double &t,const double &w)
+void Parton::AddWeight(const Splitting &s,const int acc)
 {
-  if (w==1.0) return;
-  Weight_Map::iterator wit=m_ws.insert(make_pair(s,Weight_Vector())).first;
-  double l(wit->second.empty()?1.0:wit->second.back().m_w);
-  wit->second.push_back(Weight(t,l*w));
+  double w(acc?s.m_w.Accept():s.m_w.Reject());
+  if (w==1.0 && s.m_vars.empty()) return;
+  Weight_Map::iterator wit=m_ws.insert(make_pair(s.p_s,Weight_Vector())).first;
+  Weight c(wit->second.empty()?Weight(s.m_vars.size()):wit->second.back());
+  c.m_t=s.m_t;
+  c.m_w*=w;
+  for (size_t i(0);i<s.m_vars.size();++i) c.m_v[i]*=w*s.m_vars[i];
+  wit->second.push_back(c);
 }
 
-double Parton::GetWeight(const double &t) const
+double Parton::GetWeight(const double &t,std::vector<double> &v) const
 {
   if (m_ws.empty()) return 1.0;
   double wgt(1.0);
@@ -56,8 +61,16 @@ double Parton::GetWeight(const double &t) const
       c=(l+r)/2;
       a=ws[c].m_t;
     }
-    if (t<=ws[r].m_t) wgt*=ws[r].m_w;
-    else if (t<=ws[l].m_t) wgt*=ws[l].m_w;
+    if (t<=ws[r].m_t) {
+      wgt*=ws[r].m_w;
+      v.resize(ws[r].m_v.size(),1.0);
+      for (size_t i(0);i<v.size();++i) v[i]*=ws[r].m_v[i];
+    }
+    else if (t<=ws[l].m_t) {
+      wgt*=ws[l].m_w;
+      v.resize(ws[r].m_v.size(),1.0);
+      for (size_t i(0);i<v.size();++i) v[i]*=ws[l].m_v[i];
+    }
   }
   return wgt;
 }

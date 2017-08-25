@@ -39,7 +39,7 @@ double PHASIC::ComputePhi(Vec4D pijt,Vec4D pkt,Vec4D pi)
 {
   Vec4D n_perp(0.0,cross(Vec3D(pijt),Vec3D(pkt)));
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
-    msg_Debugging()<<"Set fixed n_perp\n";
+    msg_IODebugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
     Poincare zrot(pijt,Vec4D::ZVEC);
     zrot.RotateBack(n_perp);
@@ -62,7 +62,7 @@ Kin_Args PHASIC::ClusterFFDipole
   double po(sqr(Q2-mij2-mk2)-4.0*mij2*mk2);
   double pn(sqr(Q2-sij-mk2)-4.0*sij*mk2);
   if (pn<0.0 || po<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   Vec4D Q(pi+pj+pk);
@@ -70,7 +70,7 @@ Kin_Args PHASIC::ClusterFFDipole
   res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q;
   res.m_pi=Q-res.m_pk;
   if (res.m_pi[0]<0.0 || res.m_pk[0]<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   if (mode&1) res.m_phi=ComputePhi(res.m_pi,res.m_pk,pi);
@@ -83,7 +83,7 @@ int PHASIC::ConstructFFDipole
 {
   Vec4D n_perp(0.0,cross(Vec3D(pij),Vec3D(pk)));
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
-    msg_Debugging()<<"Set fixed n_perp\n";
+    msg_IODebugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
     Poincare zrot(pij,Vec4D::ZVEC);
     zrot.RotateBack(n_perp);
@@ -96,7 +96,7 @@ int PHASIC::ConstructFFDipole
   double po(sqr(Q2-mij2-mk2)-4.0*mij2*mk2);
   double pn(sqr(Q2-sij-mk2)-4.0*sij*mk2);
   if (po<0.0 || pn<0.0) {
-    msg_Debugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Kinematics does not fit."<<std::endl;
     return -1;
   }
   double ecm(Q2-sij-mk2);
@@ -106,7 +106,7 @@ int PHASIC::ConstructFFDipole
   double zt(ecm/pn*(ffp.m_z-mk2/gam*(sij+mi2-mj2)/ecm));
   double ktt(sij*zt*(1.0-zt)-(1.0-zt)*mi2-zt*mj2);
   if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   ktt=sqrt(ktt);
@@ -132,7 +132,7 @@ Kin_Args PHASIC::ClusterFIDipole
   double pn(sqr(Q2-sij-ma2)-4.0*ma2*(sij+kt2));
   if (!(mode&8)) xija/=(Q2-mi2-mj2-ma2)/(Q2-mij2-ma2);
   if (pn<0.0 || po<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   Kin_Args res(1.0-xija,zi,0.0,(mode&4)?1:0,1);
@@ -140,7 +140,7 @@ Kin_Args PHASIC::ClusterFIDipole
     +(Q2+ma2-mij2)/(2.0*(Q2+kt2))*Ql;
   res.m_pi=res.m_pk-Q;
   if (res.m_pi[0]<0.0 || res.m_pk[0]<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   if (mode&1) res.m_phi=ComputePhi(pi+pj,pa,pi);
@@ -159,7 +159,7 @@ int PHASIC::ConstructFIDipole
   double po(sqr(Q2-mij2-ma2)-4.0*ma2*(mij2+kt2));
   double ecm(Q2-sij-ma2), pn(sqr(ecm)-4.0*ma2*(sij+kt2));
   if (pn<0.0 || po<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   pn=sqrt(pn);
@@ -170,7 +170,7 @@ int PHASIC::ConstructFIDipole
   Vec4D x(fip.m_pi), y(fip.m_pk);
   Vec4D n_perp(0.0,cross(Vec3D(fip.m_pi),Vec3D(fip.m_pk)));
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
-    msg_Debugging()<<"Set fixed n_perp\n";
+    msg_IODebugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
     Poincare zrot(fip.m_pi,Vec4D::ZVEC);
     zrot.RotateBack(n_perp);
@@ -182,7 +182,7 @@ int PHASIC::ConstructFIDipole
   double zt(ecm/pnn*(fip.m_z-ma2/gam*(sij+mi2-mj2)/ecm));
   double ktt(sij*zt*(1.0-zt)-(1.0-zt)*mi2-zt*mj2);
   if (ktt<0.0 || gam==0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   ktt=sqrt(ktt);
@@ -209,14 +209,14 @@ Kin_Args PHASIC::ClusterIFDipole
     double po(sqr(Q2-mk2-maj2)-4.0*maj2*(mk2+kt2));
     double pn(sqr(Q2-sjk-ma2)-4.0*ma2*(sjk+kt2));
     if (pn<0.0 || po<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return Kin_Args();
     }
     res.m_pi=sqrt(po/pn)*(pa-(Q2+ma2-sjk)/(2.0*(Q2+kt2))*Ql)
       +(Q2+maj2-mk2)/(2.0*(Q2+kt2))*Ql;
     res.m_pk=res.m_pi-Q;
     if (res.m_pi[0]<0.0 || res.m_pk[0]<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return Kin_Args();
     }
     if (mode&1) res.m_phi=ComputePhi(pj+pk,pa,pj);
@@ -226,19 +226,19 @@ Kin_Args PHASIC::ClusterIFDipole
     double po(sqr(Q2-maj2-mk2)-4.0*maj2*mk2);
     double pn(sqr(Q2-saj-mk2)-4.0*saj*mk2);
     if (pn<0.0 || po<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)-(Q2+mk2-maj2)/(2.0*Q2)*Q;
     res.m_pi=Q+res.m_pk;
     if (dabs(res.m_pk.Abs2()-mk2)>rpa->gen.SqrtAccu() ||
 	dabs(res.m_pi.Abs2()-maj2)>rpa->gen.SqrtAccu()) {
-      msg_Debugging()<<METHOD<<"(): Unstable point. Using scheme 1.\n";
+      msg_IODebugging()<<METHOD<<"(): Unstable point. Using scheme 1.\n";
       return ClusterIFDipole(ma2,mj2,maj2,mk2,mb2,pa,pj,pk,pb,mode|4);
     }
     ZAlign lam(res.m_pi,pb,maj2,mb2);
     if (lam.Status()<0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return Kin_Args();
     }
     res.m_lam=lam;
@@ -262,7 +262,7 @@ int PHASIC::ConstructIFDipole
     double po(sqr(Q2-mkt2-maj2)-4.0*maj2*(mkt2+kt2));
     double ecm(Q2-sjk-ma2), pn(sqr(ecm)-4.0*ma2*(sjk+kt2));
     if (pn<0.0 || po<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     pn=sqrt(pn);
@@ -272,7 +272,7 @@ int PHASIC::ConstructIFDipole
     ifp.m_pk=ifp.m_pj=(ifp.m_pi=pa)-Q;
     Vec4D n_perp(0.0,cross(Vec3D(ifp.m_pj),Vec3D(ifp.m_pi)));
     if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
-      msg_Debugging()<<"Set fixed n_perp\n";
+      msg_IODebugging()<<"Set fixed n_perp\n";
       n_perp=Vec4D(0.0,1.0,1.0,0.0);
       Poincare zrot(ifp.m_pj,Vec4D::ZVEC);
       zrot.RotateBack(n_perp);
@@ -284,7 +284,7 @@ int PHASIC::ConstructIFDipole
     double zt(ecm/pnn*(ifp.m_y-ma2/gam*(sjk+mj2-mk2)/ecm));
     double ktt(sjk*zt*(1.0-zt)-(1.0-zt)*mj2-zt*mk2);
     if (ktt<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     ktt=sqrt(ktt);
@@ -304,7 +304,7 @@ int PHASIC::ConstructIFDipole
     double yt(ifp.m_y/ifp.m_z), saj(yt*(Q2-mk2)+(1.0-yt)*(ma2+mj2));
     double ecm(Q2-saj-mk2), pn(sqr(ecm)-4.0*saj*mk2);
     if (pn<0.0 || po<0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     pn=Sign(ecm)*sqrt(pn);
@@ -315,7 +315,7 @@ int PHASIC::ConstructIFDipole
     double zt(ecm/pn*((ifp.m_z-1.0)/rf-mk2/gam*(saj+mj2-ma2)/ecm));
     double ktt(saj*zt*(1.0-zt)-(1.0-zt)*mj2-zt*ma2);
     if (ktt<0.0 || gam==0.0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     rf=dabs(rf);
@@ -329,7 +329,7 @@ int PHASIC::ConstructIFDipole
     ifp.m_pi=Q+ifp.m_pj+ifp.m_pk;
     ZAlign lam(ifp.m_pi,pb,ma2,mb2);
     if (lam.Status()<0) {
-      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     ifp.m_lam=lam;
@@ -348,14 +348,14 @@ Kin_Args PHASIC::ClusterIIDipole
   double papb(pa*pb), pjpa(pj*pa), pjpb(pj*pb);
   double xjab(1.0-(pjpa+pjpb)/papb), vj(pjpa/papb);
   if (xjab<0.0 || vj<0.0 || 1.0<xjab+vj) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   double sab((pa+pb).Abs2()), Q2((pa-pj+pb).Abs2());
   double po(sqr(Q2-maj2-mb2)-4.0*maj2*mb2);
   double pn(sqr(sab-ma2-mb2)-4.0*ma2*mb2);
   if (po<0.0 || pn<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   pn=sqrt(pn);
@@ -373,7 +373,7 @@ Kin_Args PHASIC::ClusterIIDipole
     2.0*maj2/(Q2-maj2-mb2+po)*pb;
   res.m_pk=pb;
   if (res.m_pi[0]<0.0 || IsEqual(Q2+po,maj2+mb2)) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
   }
   if (mode&2) {
@@ -398,7 +398,7 @@ int PHASIC::ConstructIIDipole
   double po(sqr(Q2-maj2-mb2)-4.0*maj2*mb2);
   double pn(sqr(sab-ma2-mb2)-4.0*ma2*mb2);
   if (po<0.0 || pn<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   pn=sqrt(pn);
@@ -411,11 +411,11 @@ int PHASIC::ConstructIIDipole
   double zt(ecm/pn*(x-mb2/gam*(saj+ma2-mj2)/ecm));
   double ktt(vj*(sab-ma2-mb2)*(1.0-zt)-sqr(1.0-zt)*ma2-mj2);
   if (ktt<0.0) {
-    msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return -1;
   }
   ktt=sqrt(ktt);
-  msg_Debugging()<<"Set fixed n_perp\n";
+  msg_IODebugging()<<"Set fixed n_perp\n";
   Vec4D n_perp(0.0,1.0,1.0,0.0);
   Poincare zrot(iip.m_pi,Vec4D::ZVEC);
   zrot.RotateBack(n_perp);

@@ -15,7 +15,6 @@ namespace AMISIC { class Amisic;               }
 namespace SHERPA {
 
   class Matrix_Element_Handler;
-  class Shower_Handler;
 
   class MI_Handler: public ATOOLS::Mass_Selector {
   public:
@@ -31,8 +30,6 @@ namespace SHERPA {
 
     ATOOLS::Cluster_Amplitude *p_ampl;
     PHASIC::Process_Base      *p_proc;
-
-    Shower_Handler *p_shower;
 
     TypeID      m_type;
     std::string m_name;
@@ -81,10 +78,6 @@ namespace SHERPA {
 
     inline PHASIC::Process_Base *Process() const
     { return p_proc; }
-
-    inline void SetShowerHandler(Shower_Handler *const sh) { p_shower=sh; }
-
-    inline Shower_Handler *Shower() const { return p_shower; }
 
   }; // end of class MI_Handler
 

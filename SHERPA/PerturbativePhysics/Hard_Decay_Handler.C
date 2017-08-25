@@ -686,7 +686,6 @@ bool Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
     ampl->Leg(initial_blob->NInP()+i)->SetMom
       (initial_blob->OutParticle(i)->Momentum());
   }
-  if (p_clus->ReCluster(ampl)<0) return false;
   if (ampl->NIn()==2) {
     for (Cluster_Amplitude *campl(ampl);
 	 campl;campl=campl->Next()) {
@@ -773,10 +772,12 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                   copy->IdLeg(idmother),
                                   copy->Legs().back());
+    copy->SetIdNew(idnew);
     DEBUG_VAR(*copy);
     Cluster_Amplitude* tmp=copy;
     while (tmp->Next()) {
       tmp=tmp->Next();
+      if (tmp->IdNew()&idmother) tmp->SetIdNew(tmp->IdNew()|idnew);
       for (size_t i=0; i<tmp->Legs().size(); ++i) {
         if (tmp->Leg(i)->Id()&idmother) {
           tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew);
@@ -863,10 +864,12 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                   step1->IdLeg(idmother),
                                   step1->Legs().back());
+    step1->SetIdNew(idnew1);
     DEBUG_VAR(*step1);
     Cluster_Amplitude* tmp=step1;
     while (tmp->Next()) {
       tmp=tmp->Next();
+      if (tmp->IdNew()&idmother) tmp->SetIdNew(tmp->IdNew()|idnew1);
       for (size_t i=0; i<tmp->Legs().size(); ++i) {
         if (tmp->Leg(i)->Id()&idmother) {
           tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew1);
@@ -900,10 +903,13 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Cluster_Amplitude::SetColours(step1->IdLeg(idnew1),
                                   step2->IdLeg(idnew1),
                                   step2->Legs().back());
+    step2->SetIdNew(idnew2);
     DEBUG_VAR(*step2);
     tmp=step2;
     while (tmp->Next()) {
       tmp=tmp->Next();
+      if (tmp->IdNew()&(idmother|idnew1))
+	tmp->SetIdNew(tmp->IdNew()|idnew2);
       for (size_t i=0; i<tmp->Legs().size(); ++i) {
         if (tmp->Leg(i)->Id()&idnew1) {
           tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew2);
@@ -1006,10 +1012,12 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
   Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                 copy->IdLeg(idmother),
                                 copy->Legs().back());
+  copy->SetIdNew(idnew);
   DEBUG_VAR(*copy);
   Cluster_Amplitude* tmp=copy;
   while (tmp->Next()) {
     tmp=tmp->Next();
+    if (tmp->IdNew()&idmother) tmp->SetIdNew(tmp->IdNew()|idnew);
     for (size_t i=0; i<tmp->Legs().size(); ++i) {
       if (tmp->Leg(i)->Id()&idmother) {
         tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew);

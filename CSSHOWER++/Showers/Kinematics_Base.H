@@ -10,7 +10,7 @@ namespace CSSHOWER {
   class Sudakov;
   class Kinematics_Base {
   public:
-    ATOOLS::Mass_Selector *p_ms;
+    const ATOOLS::Mass_Selector *p_ms;
     int m_evolscheme;
   public:
     Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
@@ -19,8 +19,8 @@ namespace CSSHOWER {
 			       const double &,const ATOOLS::Flavour &,
 			       Parton *&,const int mode=0) = 0;
     void SetFixVec(Parton *const p,ATOOLS::Vec4D mom) const;
-    inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
-    inline ATOOLS::Mass_Selector *MS() const { return p_ms; }
+    inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+    inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
   };
 

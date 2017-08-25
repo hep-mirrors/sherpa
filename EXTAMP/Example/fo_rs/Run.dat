@@ -1,0 +1,22 @@
+(run){
+  EVENTS 0;
+  ME_SIGNAL_GENERATOR External OpenLoops;
+  SCALES METS;
+
+  AMEGIC_ALLOW_MAPPING 0;
+}(run)
+
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 6500;
+  BEAM_2  2212; BEAM_ENERGY_2 6500;
+}(beam)
+
+(processes){
+  Process 93 93 -> 6 -6;
+  Loop_Generator OpenLoops;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part RS;
+  Integrator Rambo;
+  Max_Order (3,0);
+  End process;
+}(processes)

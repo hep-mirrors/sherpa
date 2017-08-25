@@ -18,6 +18,11 @@ namespace COMIX {
 
     double m_w;
 
+    Combination_Set m_ccombs;
+    CFlavVector_Map m_cflavs;
+
+    SizeT_Map m_brs;
+
   public:
 
     // constructors
@@ -41,6 +46,8 @@ namespace COMIX {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
+    ATOOLS::NLO_subevtlist *GetRSSubevtList();
+
     inline void SetScaleSetter(PHASIC::Scale_Setter_Base *const scale)
     { p_scale=scale; }
 
@@ -49,6 +56,8 @@ namespace COMIX {
     inline Single_Process *Process() const { return p_proc; }
 
     inline NLO_subevt *Sub() const { return p_sub; }
+
+    inline const SizeT_Map &BRSMap() const { return m_brs; }
 
   };// end of class Single_Dipole_Term
 

@@ -50,8 +50,8 @@ namespace PHASIC {
 		  ATOOLS::Flavour_Vector fl,
 		  std::vector<std::pair<double,double> > &bounds);
 
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
     bool Trigger(const ATOOLS::Vec4D_Vector &p,const int id);
-    bool Trigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevt *const=NULL);
 
   };// end of class Variable_Selector
 
@@ -246,9 +246,9 @@ bool Variable_Selector::Trigger(const Vec4D_Vector &p,const int id)
   return hit;
 }
 
-bool Variable_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Variable_Selector::Trigger(const Vec4D_Vector &p)
 {
-  return Trigger(p,sub?(sub->IsReal()?0:sub->m_idx+1):0);
+  return Trigger(p,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
 DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);

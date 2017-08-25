@@ -30,24 +30,22 @@ void Command_Line_Interface::Parse(int argc, char* argv[], bool allowoverwrite)
   const bool allow_mixing_options_and_nonoptions(true);
   Option_Parser::Stats  stats(allow_mixing_options_and_nonoptions, usage,
                               argc, argv);
-  SP(Option_Parser::Option) options(
-      new Option_Parser::Option[stats.options_max]);
-  SP(Option_Parser::Option) buffer(
-      new Option_Parser::Option[stats.buffer_max]);
+  std::vector<Option_Parser::Option> options(stats.options_max);
+  std::vector<Option_Parser::Option> buffer(stats.buffer_max);
 
   // parse arguments
   Option_Parser::Parser parser(allow_mixing_options_and_nonoptions, usage,
-                               argc, argv, --options, --buffer);
+                               argc, argv, &options.front(), &buffer.front());
 
   if (parser.error()) {
     THROW(fatal_error, "Command line syntax error");
   }
 
-  if ((--options)[HELP]) {
+  if (options[HELP]) {
     PrintUsageAndExit();
   }
 
-  if ((--options)[VERSION]) {
+  if (options[VERSION]) {
     msg_Out() << "Sherpa version "
               << SHERPA_VERSION << "." << SHERPA_SUBVERSION
               << " (" << SHERPA_NAME << ")" << std::endl;
@@ -65,14 +63,14 @@ void Command_Line_Interface::Parse(int argc, char* argv[], bool allowoverwrite)
   }
 }
 
-bool Command_Line_Interface::ParseOptions(SP(Option_Parser::Option)& options,
+bool Command_Line_Interface::ParseOptions(std::vector<Option_Parser::Option> &options,
                                           bool allowoverwrite)
 {
   bool success(true);
 
   // check unknown
-  if ((--options)[UNKNOWN]) {
-    for (Option_Parser::Option* opt = (--options)[UNKNOWN];
+  if (options[UNKNOWN]) {
+    for (Option_Parser::Option* opt = options[UNKNOWN];
          opt;
          opt = opt->next()) {
       msg_Error() << "ERROR: Unknown option: '" << opt->name << "'"
@@ -86,12 +84,12 @@ bool Command_Line_Interface::ParseOptions(SP(Option_Parser::Option)& options,
   for (It it(parameter_index_map.begin());
       it != parameter_index_map.end();
       ++it) {
-    const char* arg((--options)[it->second].last()->arg);
+    const char* arg(options[it->second].last()->arg);
     if (arg) {
       SetParameterValue(it->first, std::string(arg), allowoverwrite);
-    } else if ((--options)[it->second].last()->type() == DISABLE) {
+    } else if (options[it->second].last()->type() == DISABLE) {
       SetParameterValue(it->first, "0", allowoverwrite);
-    } else if ((--options)[it->second].last()->type() == ENABLE) {
+    } else if (options[it->second].last()->type() == ENABLE) {
       SetParameterValue(it->first, "1", allowoverwrite);
     }
   }

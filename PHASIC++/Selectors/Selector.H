@@ -73,8 +73,10 @@ namespace PHASIC {
     std::vector<Selector_Base*> m_sels;
 
     size_t m_nin, m_nout, m_n;
+    int m_pass;
 
     ATOOLS::Flavour *p_fl;
+    ATOOLS::NLO_subevt *p_sub;
 
     double m_smin,m_smax;
 
@@ -87,8 +89,8 @@ namespace PHASIC {
     // member functions
     static void ShowSyntax(const int mode);
 
-    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p,
-                         ATOOLS::NLO_subevt *const sub=NULL) = 0;
+    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p) = 0;
+    virtual bool JetTrigger(ATOOLS::NLO_subevtlist *const subs);
 
     virtual void BuildCuts(Cut_Data *) = 0;
     virtual void AddOnshellCondition(std::string,double);
@@ -103,6 +105,8 @@ namespace PHASIC {
     { return p_proc; }
 
     inline std::string Name() const { return m_name; }
+
+    inline int Pass() const { return m_pass; }
 
   };// end of class Selector_Base
 

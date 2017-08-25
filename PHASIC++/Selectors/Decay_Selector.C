@@ -22,8 +22,7 @@ namespace PHASIC {
 
     Decay_Selector(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p,
-                 ATOOLS::NLO_subevt *const sub=NULL);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void BuildCuts(Cut_Data *) {}
 
@@ -45,8 +44,7 @@ namespace PHASIC {
 
     DecayMass_Selector(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p,
-                 ATOOLS::NLO_subevt *const sub=NULL);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void BuildCuts(Cut_Data *);
 
@@ -99,13 +97,9 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
 		 <<", m_max = "<<m_max<<"\n";
 }
 
-bool Decay_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Decay_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC("");
-  if (sub) {
-    THROW(not_implemented,"Decay_Selector not implemented for RS terms.");
-    return false;
-  }
   for (size_t j(0);j<m_ids.size();++j) {
     for (size_t i(0);i<m_ids[j].size();++i) m_p[i]=p[m_ids[j][i]];
     double value(m_calc.Calculate()->Get<double>());
@@ -171,13 +165,9 @@ DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
 		 <<", m_max = "<<m_max<<"\n";
 }
 
-bool DecayMass_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool DecayMass_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC("");
-  if (sub) {
-    THROW(not_implemented,"DecayMass_Selector not implemented for RS terms.");
-    return false;
-  }
   for (size_t j(0);j<m_ids.size();++j) {
     Vec4D sum;
     for (size_t i(0);i<m_ids[j].size();++i) sum+=p[m_ids[j][i]];

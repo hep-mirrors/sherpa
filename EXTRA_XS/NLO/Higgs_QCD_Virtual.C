@@ -48,7 +48,7 @@ using namespace EXTRAXS;
 void Higgs_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   double p2  = 2.*momenta[0]*momenta[1];
   // 1/epsIR
-  m_res.IR()=-2.*m_pij*m_fac;
+  m_res.IR()=(-2.*m_pij+2.*log(p2/m_mur2))*m_fac;
   // 1/epsIR2
   m_res.IR2()=-2.*m_fac;
   // finite
@@ -73,7 +73,7 @@ operator()(const Process_Info &pi) const
           if (fl[i].Strong()) return NULL;
         }
         Default_Reader reader;
-        int con = reader.Get<int>("HNLO_COEFF_MODE", 0);
+        int con = reader.Get<int>("HNNLO_KF_MODE", 0);
         return new Higgs_QCD_Virtual(pi, fl, con);
       }
     }

@@ -98,9 +98,9 @@ DECLARE_TREEME2_GETTER(BlackHat_Tree,"BlackHat_Tree")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,BlackHat_Tree>::
 operator()(const Process_Info &pi) const
 {
+  if (pi.m_megenerator.length() &&
+      pi.m_megenerator!="BlackHat") return NULL;
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="BlackHat" &&
-      pi.m_loopgenerator!="WhiteHat") return NULL;
   if (pi.m_fi.m_nlotype==nlo_type::lo ||
       pi.m_fi.m_nlotype==nlo_type::born ||
       pi.m_fi.m_nlotype==nlo_type::real) {

@@ -4,6 +4,7 @@
 #include "DIRE/Tools/Color.H"
 #include "DIRE/Tools/Parton.H"
 #include "DIRE/Tools/Weight.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Math/Poincare.H"
 
 namespace DIRE {
@@ -13,7 +14,6 @@ namespace DIRE {
   struct Splitting {
 
     Parton *p_c, *p_s, *p_n, *p_l;
-    Parton_Vector m_ss;
     const Kernel *p_sk;
     double m_t, m_z, m_phi, m_s, m_z2, m_phi2;
     double m_q2, m_Q2, m_x, m_y;
@@ -25,6 +25,8 @@ namespace DIRE {
     int m_h[3], m_mode;
     int m_type, m_cm, m_kin, m_cpl, m_kfac, m_clu;
     Weight m_w;
+    std::vector<double> m_vars;
+    PHASIC::Kin_Args m_ff;
 
     Splitting(Parton *const c=NULL,Parton *const s=NULL,
 	      const double &t=0.0,const double &z=0.0,

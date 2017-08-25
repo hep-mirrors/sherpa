@@ -103,20 +103,41 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
   return true;
 }
 
-bool Combined_Selector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool Combined_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC("");
   m_res=1;
   if (!m_on) return m_res;
   for (size_t i=0; i<m_sels.size(); ++i) {
     msg_Debugging()<<m_sels[i]->Name()<<std::endl;
-    if (!(m_sels[i]->Trigger(p,sub))) {
+    if (!(m_sels[i]->Trigger(p))) {
       msg_Debugging()<<"Point discarded"<<std::endl;
       m_res=0;
       return m_res;
     }
   }
   return m_res;
+}
+
+bool Combined_Selector::JetTrigger(NLO_subevtlist *const subs)
+{
+  for (size_t i(0);i<subs->size();++i) (*subs)[i]->m_trig=1;
+  m_jres=1;
+  if (!m_on) return m_jres;
+  for (size_t i=0; i<m_sels.size(); ++i) {
+    if (!(m_sels[i]->JetTrigger(subs))) {
+      m_jres=0;
+      return m_jres;
+    }
+  }
+  return m_jres;
+}
+
+bool Combined_Selector::Pass() const 
+{
+  for (size_t i=0;i<m_sels.size();++i)
+    if (!m_sels[i]->Pass()) return false;
+  return true;
 }
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)

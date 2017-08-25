@@ -42,36 +42,14 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zj   = 1.-m_zi;
 
   m_Q2 = (m_pi+m_pj+m_pk).Abs2();
-  if (m_es==0) {
-    m_kt2 = m_Q2*m_yijk*m_zi*m_zj;
-  }
-  else {
-    m_kt2 = m_Q2*m_yijk;
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=m_zj;
-      break;
-    case spt::q2gq:
-      m_kt2*=m_zi;
-      break;
-    case spt::g2qq:
-      break;
-    case spt::g2gg:
-      m_kt2*=m_zi*m_zj;
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+    m_Q2*m_yijk*m_zi*m_zj;
 
+  double zi(m_zi), zj(m_zj);
+  if (m_subtype==1) {
+    zi=1.0-(1.0-zi)*(1.0-m_yijk);
+    zj=1.0-(1.0-zj)*(1.0-m_yijk);
+  }
 //   m_pt1   =     m_zi*m_pi;
 //   m_pt2   = -1.*m_zj*m_pj;
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
@@ -79,20 +57,20 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 
   switch (m_ftype) {
   case spt::q2qg:
-    m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+m_zi);
+    m_sff = 2./(1.-m_zi*(1.-m_yijk))-(1.+zi);
     m_av  = m_sff;
     break;
   case spt::q2gq:
-    m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+m_zj);
+    m_sff = 2./(1.-m_zj*(1.-m_yijk))-(1.+zj);
     m_av  = m_sff;
     break;
   case spt::g2qq:
     m_sff = 1.;
-    m_av  = m_sff - 2.0*m_zi*m_zj;
+    m_av  = m_sff - zi*(1.-zi) - zj*(1.-zj);
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))-2.;
-    m_av  = m_sff + m_zi*m_zj;
+    m_av  = m_sff + ( zi*(1.-zi) + zj*(1.-zj) ) / 2.;
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -105,7 +83,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
     THROW(fatal_error, "DipoleSplitting can not handle splitting type "
         + ToString(m_ftype) + ".");
   }
-  if (m_kt2<m_k0sqf) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
 }
 
 double FF_DipoleSplitting::GetValue()
@@ -116,15 +94,20 @@ double FF_DipoleSplitting::GetValue()
 
 void FF_DipoleSplitting::CalcDiPolarizations()
 {
+  double zi(m_zi), zj(m_zj);
+  if (m_subtype==1) {
+    zi=1.0-(1.0-zi)*(1.0-m_yijk);
+    zj=1.0-(1.0-zj)*(1.0-m_yijk);
+  }
   switch (m_ftype) {
   case spt::q2qg:
   case spt::q2gq:
     return;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,m_sff/(4.*m_zi*m_zj));
+    CalcVectors(m_pt1,m_pt2,m_sff/(2.*(zi*(1.-zi)+zj*(1.-zj))));
     break;
   case spt::g2gg:
-    CalcVectors(m_pt1,m_pt2,-m_sff/(2.*m_zi*m_zj));
+    CalcVectors(m_pt1,m_pt2,-m_sff/(zi*(1.-zi)+zj*(1.-zj)));
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -173,35 +156,8 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
 
-  if (m_es==0) {
-    m_kt2  = 2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj2-sqr(m_zj)*m_mi2;
-  }
-  else {
-    m_kt2  = 2.0*m_pi*m_pj;
-    switch (m_ftype) {
-    case spt::q2qg:
-      m_kt2*=m_zj;
-      break;
-    case spt::q2gq:
-      m_kt2*=m_zi;
-      break;
-    case spt::g2qq:
-      break;
-    case spt::g2gg:
-      m_kt2*=m_zi*m_zj;
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
-  }
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+    2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj2-sqr(m_zj)*m_mi2;
 
   m_vijk = Vrel(m_pi+m_pj,m_pk);
   
@@ -217,25 +173,30 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pt1   =     m_zim*m_pi-m_zjm*m_pj;
   m_pt2   =     m_ptij;
 
+  double zi(m_zi), zj(m_zj);
+  if (m_subtype==1) {
+    zi=1.0-(1.0-zi)*(1.0-m_yijk);
+    zj=1.0-(1.0-zj)*(1.0-m_yijk);
+  }
   switch (m_ftype) {
   case spt::q2qg:
-    m_sff = 2./(1.-m_zi*(1.-m_yijk))
-            -Vrel(m_ptij,m_ptk)/m_vijk*(1.+m_zi+m_mij2/(m_pi*m_pj));
+    m_sff = 2./(1.-m_zi*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(1.+zi+m_mij2/(m_pi*m_pj));
     m_av  = m_sff;
     break;
   case spt::q2gq:
-    m_sff = 2./(1.-m_zj*(1.-m_yijk))
-            -Vrel(m_ptij,m_ptk)/m_vijk*(1.+m_zj+m_mij2/(m_pi*m_pj));
+    m_sff = 2./(1.-m_zj*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(1.+zj+m_mij2/(m_pi*m_pj));
     m_av  = m_sff;
     break;
   case spt::g2qq:
     m_sff = (1.-2.*m_kappa*(m_zpm-m_mi2/(m_pi+m_pj).Abs2()))/m_vijk;
     m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm )/m_vijk;
+    if (m_subtype==1) m_av = m_sff - ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/m_vijk;
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))
             -(2.-m_kappa*m_zpm)/m_vijk;
     m_av  = m_sff + ( m_zi*m_zj - m_zpm )/m_vijk;
+    if (m_subtype==1) m_av = m_sff + ( zi*(1.-zi) + zj*(1.-zj) - 2.*m_zpm )/(2.*m_vijk);
     break;
   case spt::s2sg:
     m_sff = 2./(1.-m_zi*(1.-m_yijk))
@@ -282,7 +243,7 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   }
-  if (m_kt2<m_k0sqf) m_av=1.0;
+  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
 }
 
 double FF_MassiveDipoleSplitting::GetValue()
@@ -293,15 +254,20 @@ double FF_MassiveDipoleSplitting::GetValue()
 
 void FF_MassiveDipoleSplitting::CalcDiPolarizations()
 {
+  double zi(m_zi), zj(m_zj);
+  if (m_subtype==1) {
+    zi=1.0-(1.0-zi)*(1.0-m_yijk);
+    zj=1.0-(1.0-zj)*(1.0-m_yijk);
+  }
   switch (m_ftype) {
   case spt::q2qg:
   case spt::q2gq:
     return;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_vijk*(m_pi+m_pj).Abs2()/(4.*m_pt1.Abs2()));
+    CalcVectors(m_pt1,m_pt2,m_sff*m_vijk/(2.*(zi*(1.-zi)+zj*(1.-zj)-2.0*m_zpm)));
     break;
   case spt::g2gg:
-    CalcVectors(m_pt1,m_pt2,m_sff*m_vijk*(m_pi+m_pj).Abs2()/(2.*m_pt1.Abs2()));
+    CalcVectors(m_pt1,m_pt2,-m_sff*m_vijk/(zi*(1.-zi)+zj*(1.-zj)-2.0*m_zpm));
     break;
   case spt::s2sg:
   case spt::s2gs:

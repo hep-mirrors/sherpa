@@ -44,6 +44,8 @@ namespace PHASIC {
 
     inline void SetOn(const bool on) { m_on=on; }
 
+    inline bool On() const { return m_on; }
+
     inline double LastKFactor() const { return m_weight; }
 
     static void ShowSyntax(const size_t i);

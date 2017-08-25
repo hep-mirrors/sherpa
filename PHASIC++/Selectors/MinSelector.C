@@ -12,8 +12,8 @@ namespace PHASIC {
 
     ~MinSelector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &,
-                   ATOOLS::NLO_subevt *const=NULL);
+    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   JetTrigger(ATOOLS::NLO_subevtlist *const);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -54,10 +54,22 @@ MinSelector::~MinSelector() {
   }
 }
 
-bool MinSelector::Trigger(const Vec4D_Vector &p,NLO_subevt *const sub)
+bool MinSelector::Trigger(const Vec4D_Vector &p)
 {
   for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->Trigger(p,sub)) {
+    if (m_sels[k]->Trigger(p)) {
+      m_sel_log->Hit(0);
+      return 1;
+    }
+  }
+  m_sel_log->Hit(1);
+  return 0;
+}
+
+bool MinSelector::JetTrigger(NLO_subevtlist *const subs)
+{
+  for (size_t k=0;k<m_sels.size();++k) {
+    if (m_sels[k]->JetTrigger(subs)) {
       m_sel_log->Hit(0);
       return 1;
     }

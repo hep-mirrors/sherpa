@@ -2,6 +2,8 @@
 #define AMEGIC_DipoleSubtraction_DipoleSplitting_Base_H
 
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "AMEGIC++/Main/Pol_Info.H"
 #include "MODEL/Main/Coupling_Data.H"
@@ -34,10 +36,13 @@ namespace AMEGIC {
     std::vector<ATOOLS::Vec4D> m_dpollist;
     std::vector<ATOOLS::Vec4D> m_mom;
     std::vector<double> m_pfactors;
+    int m_subtype;
     double m_spfdef;
     bool m_collVFF;
     int m_Vsubmode;
     MODEL::Coupling_Data *p_cpl;
+    ATOOLS::NLO_subevt *p_subevt;
+    PDF::NLOMC_Base *p_nlomc;
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
   public:
     DipoleSplitting_Base(ATOOLS::sbt::subtype st, ATOOLS::spt::splittingtype ft,
@@ -62,23 +67,27 @@ namespace AMEGIC {
     inline double KT2() const                       { return m_kt2; }
 
     bool Reject(const double &alpha);
+    bool KinCheck() const;
     double GetF();
     virtual double GetDPSF() = 0;
     virtual double GetValue() = 0;
 
     virtual void CalcDiPolarizations() = 0;
     double GetR(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
+    inline void SetSubevt(ATOOLS::NLO_subevt *const sub) { p_subevt=sub; }
     inline std::vector<ATOOLS::Vec4D>* GetDiPolarizations()
                                                     { return &m_dpollist; }
     inline std::vector<double>* GetFactors()        { return &m_pfactors; }
 
     inline int MCSign() const                       { return m_mcsign; }
-    inline bool KinCheck() const                    { return m_a>m_amin; }
     inline const double& LastAlpha() const          { return m_a; }
 
     inline const ATOOLS::sbt::subtype       GetSubtractionType() const { return m_stype; }
     inline const ATOOLS::dpt::dipoletype    GetDipoleType() const      { return m_dtype; }
     inline const ATOOLS::spt::splittingtype GetSplittingType() const   { return m_ftype; }
+    inline void SetNLOMC(PDF::NLOMC_Base *const mc)
+    { p_nlomc=mc; m_subtype=p_nlomc->SubtractionType();
+      if (m_subtype==1) m_kappa=1.0; }
   };
 
   inline std::ostream & operator<<(std::ostream & s,

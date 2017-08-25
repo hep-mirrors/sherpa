@@ -6,10 +6,7 @@
 
 namespace ATOOLS { class Cluster_Amplitude; class Default_Reader; }
 namespace BEAM { class Beam_Spectra_Handler; }
-namespace PDF {
-  class Cluster_Definitions_Base; 
-  class ISR_Handler;
-}
+namespace PDF { class ISR_Handler; }
 namespace MODEL { class Model_Base; }
 
 namespace PHASIC {
@@ -49,15 +46,9 @@ namespace PHASIC {
     virtual int PerformTests() = 0;
     virtual bool NewLibraries() = 0;
 
-    virtual void SetClusterDefinitions
-    (PDF::Cluster_Definitions_Base *const defs);
-
-    virtual void PreCluster(Process_Base *const proc,
-			    const ATOOLS::Vec4D_Vector &p);
-    virtual ATOOLS::Cluster_Amplitude *
-    ClusterConfiguration(Process_Base *const proc,
-			 const ATOOLS::Vec4D_Vector &p,
-			 const size_t &mode=0);
+    Process_Base *InitializeProcess
+    (ATOOLS::Cluster_Amplitude *const ampl,const int mode,
+     const std::string &gen="",const std::string &addname="");
 
     int ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
 
@@ -68,7 +59,8 @@ namespace PHASIC {
     // inline functions
     inline std::string Name() const { return m_name; }
 
-    inline void SetMassMode(const int mode) { m_massmode=mode; }
+    inline int SetMassMode(const int mode)
+    { int mm(m_massmode); m_massmode=mode; return mm; }
 
     inline int MassMode() { return m_massmode; }
 

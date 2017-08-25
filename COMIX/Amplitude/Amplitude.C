@@ -18,6 +18,7 @@
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
 
+#include <algorithm>
 #include <cassert>
 
 using namespace COMIX;
@@ -57,6 +58,9 @@ Amplitude::Amplitude():
   p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
   p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
   p_dinfo->SetDRMode(0);
+  int subtype(ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME")));
+  p_dinfo->SetSubType(subtype);
+  if (subtype==1) p_dinfo->SetKappa(1.0);
   m_sccmur=GetParameter<int>("USR_WGT_MODE");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
@@ -83,8 +87,6 @@ void Amplitude::CleanUp()
   m_cress=m_ress=std::vector<Spin_Structure<DComplex> >();
   m_on=m_son=std::vector<std::pair<size_t,size_t> >();
   m_cchirs=m_dirs=Int_Vector();
-  m_combs.clear();
-  m_flavs.clear();
   for (size_t i(0);i<m_subs.size();++i) {
     delete [] m_subs[i]->p_id;
     delete [] m_subs[i]->p_fl;
@@ -815,6 +817,7 @@ void Amplitude::ConstructNLOEvents()
       ids[j]=cur[j]->CId();
       ++j;
     }
+    kin->SetSubevt(sub);
     kin->SetCurrents(cur);
     sub->p_mom=&kin->Momenta().front();
     for (size_t j(0);j<m_nin;++j) fls[j]=fls[j].Bar();
@@ -826,7 +829,6 @@ void Amplitude::ConstructNLOEvents()
       cpi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
     for (size_t j(m_nin);j<m_nin+m_nout-1;++j)
       cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
-    PHASIC::Process_Base::SortFlavours(cpi);
     sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
@@ -920,45 +922,91 @@ void Amplitude::ConstructDSijMap()
   }
 }
 
-void Amplitude::FillCombinations()
+size_t Amplitude::BornID(const size_t &id,const NLO_subevt *sub) const
 {
-  msg_Debugging()<<METHOD<<"(): {\n";
+  if (sub==NULL) return id;
+  Int_Vector mid(ID(id));
+  for (size_t n(0);n<mid.size();++n)
+    for (size_t m(0);m<sub->m_n;++m)
+      if (sub->p_id[m]&(1<<mid[n])) {
+	mid[n]=m;
+	break;
+      }
+  size_t cid(0);
+  for (Int_Vector::iterator it(mid.begin());it!=mid.end();)
+    if (cid&(1<<*it)) it=mid.erase(it);
+    else cid|=1<<*it++;
+  return cid;
+}
+
+void Amplitude::FillCombinations
+(Combination_Set &combs,CFlavVector_Map &flavs,
+ SizeT_Map *brs,const NLO_subevt *sub) const
+{
+  size_t idk(sub?1<<sub->m_k:0), idij(sub?(1<<sub->m_i)|(1<<sub->m_j):0);
+  msg_Debugging()<<METHOD<<"(sub = "<<ID(idij)<<"<->"<<ID(idk)<<"): {\n";
   msg_Debugging()<<"  flavours {\n";
   for (size_t i(2);i<m_n-1;++i)
     for (size_t j(0);j<m_cur[i].size();++j) {
-      if (m_cur[i][j]->Sub() || 
-	  m_cur[i][j]->Flav().IsDummy()) continue;
-      size_t id(m_cur[i][j]->CId());
-      m_flavs[id].push_back(m_cur[i][j]->Flav());
-      m_flavs[(1<<m_n)-1-id].push_back(m_cur[i][j]->Flav().Bar());
-      msg_Debugging()<<"    "<<ID(id)<<" / "<<ID((1<<m_n)-1-id)
+      if (m_cur[i][j]->Flav().IsDummy()) continue;
+      if (sub==NULL) {
+	if (m_cur[i][j]->Sub()) continue;
+      }
+      else {
+	if (m_cur[i][j]->CId()&(idij|idk))
+	  if (m_cur[i][j]->Sub()==NULL ||
+	      m_cur[i][j]->Id().size()==2 ||
+	      m_cur[i][j]->Sub()->CId()!=idk ||
+	      m_cur[i][j]->Sub()->Sub()->CId()!=idij) continue;
+      }
+      size_t id(BornID(m_cur[i][j]->CId(),sub));
+      size_t cid(BornID((1<<m_n)-1-m_cur[i][j]->CId(),sub));
+      Flavour_Vector &fs(flavs[id]), &cfs(flavs[cid]);
+      Flavour f(m_cur[i][j]->Flav()), cf(f.Bar());
+      if (std::find(fs.begin(),fs.end(),f)==fs.end()) fs.push_back(f);
+      if (std::find(cfs.begin(),cfs.end(),cf)==cfs.end()) cfs.push_back(cf);
+      msg_Debugging()<<"    "<<ID(id)<<" / "<<ID(cid)
 		     <<" -> "<<m_cur[i][j]->Flav()<<"\n";
     }
-  msg_Debugging()<<"  } -> "<<m_flavs.size()<<"\n";
+  msg_Debugging()<<"  } -> "<<flavs.size()<<"\n";
   msg_Debugging()<<"  combinations {\n";
   for (size_t i(2);i<m_n;++i)
     for (size_t j(0);j<m_cur[i].size();++j) {
-      if (m_cur[i][j]->Sub() ||
-	  m_cur[i][j]->Flav().IsDummy()) continue;
+      if (m_cur[i][j]->Flav().IsDummy()) continue;
+      if (sub==NULL) {
+	if (m_cur[i][j]->Sub()) continue;
+      }
+      else {
+	if (m_cur[i][j]->CId()&(idij|idk))
+	  if (m_cur[i][j]->Sub()==NULL ||
+	      m_cur[i][j]->Id().size()==2 ||
+	      m_cur[i][j]->Sub()->CId()!=idk ||
+	      m_cur[i][j]->Sub()->Sub()->CId()!=idij) continue;
+      }
       Vertex_Vector ins(m_cur[i][j]->In());
       for (size_t k(0);k<ins.size();++k) {
 	if (ins[k]->J().size()>2 ||
 	    ins[k]->J(0)->Flav().IsDummy() ||
 	    ins[k]->J(1)->Flav().IsDummy()) continue;
-	size_t ida(ins[k]->J(0)->CId());
-	size_t idb(ins[k]->J(1)->CId());
-	size_t idc((1<<m_n)-1-ins[k]->JC()->CId());
+	size_t ida(BornID(ins[k]->J(0)->CId(),sub));
+	size_t idb(BornID(ins[k]->J(1)->CId(),sub));
+	size_t idc(BornID((1<<m_n)-1-ins[k]->JC()->CId(),sub));
+	if (brs) {
+	  (*brs)[ida]=ins[k]->J(0)->CId();
+	  (*brs)[idb]=ins[k]->J(1)->CId();
+	  (*brs)[idc]=(1<<m_n)-1-ins[k]->JC()->CId();
+	}
 	msg_Debugging()<<"    "<<ID(ida)
 		       <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
-	m_combs.insert(std::pair<size_t,size_t>(ida,idb));
-	m_combs.insert(std::pair<size_t,size_t>(idb,ida));
-	m_combs.insert(std::pair<size_t,size_t>(idb,idc));
-	m_combs.insert(std::pair<size_t,size_t>(idc,idb));
-	m_combs.insert(std::pair<size_t,size_t>(idc,ida));
-	m_combs.insert(std::pair<size_t,size_t>(ida,idc));
+	combs.insert(std::pair<size_t,size_t>(ida,idb));
+	combs.insert(std::pair<size_t,size_t>(idb,ida));
+	combs.insert(std::pair<size_t,size_t>(idb,idc));
+	combs.insert(std::pair<size_t,size_t>(idc,idb));
+	combs.insert(std::pair<size_t,size_t>(idc,ida));
+	combs.insert(std::pair<size_t,size_t>(ida,idc));
       }
     }
-  msg_Debugging()<<"  } -> "<<m_combs.size()<<"\n";
+  msg_Debugging()<<"  } -> "<<combs.size()<<"\n";
   msg_Debugging()<<"}\n";
 }
 
@@ -1169,35 +1217,26 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   return p_dinfo->Stat();
 }
 
-bool Amplitude::RSTrigger
+bool Amplitude::JetTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
   if (m_subs.empty() || sel==NULL) return true;
-  DEBUG_FUNC(m_subs.size());
-  // first trigger on real event
-  NLO_subevt * tmp(m_subs.back());
-  Vec4D_Vector p(m_p);
-  for (size_t i(0);i<m_nin;++i) p[i]=-p[i];
-  bool trig(m_trig=sel->Trigger(p,tmp));
-  m_subs.back()->m_trig=trig;
-  // then loop over subevents
+  sel->JetTrigger(&m_subs);
+  int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {
-    tmp=m_subs[i];
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
-    Vec4D_Vector lp(kin->Momenta());
-    for (size_t j(0);j<m_nin;++j) lp[j]=-lp[j];
-    bool ltrig(sel->Trigger(lp,tmp));
+    int ltrig(m_subs[i]->m_trig);
     kin->SetF(1.0);
     if (m_smth) {
-      double a(m_smth>0.0?kin->KT2():kin->Y());
+      double a(m_smth>0.0?m_subs[i]->m_kt2=kin->KT2():kin->Y());
       if (a>0.0 && a<dabs(m_smth)) {
         kin->SetF(pow(a/dabs(m_smth),m_smpow));
         if (ltrig==0) kin->SetF(-kin->F());
         ltrig=1;
       }
     }
-    kin->AddTrig(ltrig);
-    m_subs[i]->m_trig=kin->Trig();
+    kin->AddTrig(ltrig?1:0);
+    m_subs[i]->m_trig=kin->Trig()?ltrig:0;
     trig|=kin->Trig();
   }
   return trig;
@@ -1455,8 +1494,12 @@ bool Amplitude::EvaluateAll(const bool& mode)
       else {
 	Dipole_Kinematics *kin=m_cur.back()[j]->
 	  Sub()->Sub()->In().front()->Kin();
+	m_p[0]=-m_p[0];
+	m_p[1]=-m_p[1];
 	double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
 		      dabs(kin->JIJT()->P()*kin->JK()->P())));
+	m_p[0]=-m_p[0];
+	m_p[1]=-m_p[1];
 #ifdef DEBUG__BG
 	msg_Debugging()<<"e^2 = "<<kin->Res(2)<<", e = "<<kin->Res(1)
 		       <<", f = "<<kin->Res(0)<<", l = "<<lf
@@ -1501,13 +1544,17 @@ bool Amplitude::EvaluateAll(const bool& mode)
 	m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
       }
     }
-    if ((p_dinfo->Mode()&18) && !(p_dinfo->Mode()&4)) m_born=m_res=0.0;
+    if (!(p_dinfo->Mode()&4)) {
+      if (p_dinfo->Mode()&2) m_born=m_res=0.0;
+      if ((p_dinfo->Mode()&16) && p_loop) m_born=m_res=0.0;
+    }
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"m_res = "<<m_res<<", csum = "<<csum
 		 <<" -> "<<m_res+csum<<"\n";
 #endif
   m_res+=csum;
+  ResetJ();
   return true;
 }
 
@@ -1685,7 +1732,6 @@ bool Amplitude::Construct
   m_dirs=incs;
   if (!Construct(flavs)) return false;
   if (!CheckOrders()) return false;
-  FillCombinations();
   msg_Debugging()<<METHOD<<"(): Amplitude statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
   size_t csum(0), vsum(0), scsum(0), svsum(0);
@@ -1709,27 +1755,11 @@ bool Amplitude::Construct
   msg_Debugging()<<std::left<<"} -> "<<csum<<"(+"<<scsum<<") currents, "
 		 <<vsum<<"(+"<<svsum<<") vertices"<<std::endl;
   if (!ConstructChirs()) return false;
-  FillCombinations();
   m_sid.resize(m_cur.back().size(),0);
   if (p_dinfo->Mode()==1) ConstructNLOEvents();
   if (p_dinfo->Mode()&2) ConstructDSijMap();
   if (!ConstructCouplings(cpls)) return false;
   return true;
-}
-
-bool Amplitude::Combinable(const size_t &idi,const size_t &idj) const
-{
-  Combination_Set::const_iterator 
-    cit(m_combs.find(std::pair<size_t,size_t>(idi,idj)));
-  return cit!=m_combs.end();
-}
-
-const ATOOLS::Flavour_Vector &
-Amplitude::CombinedFlavour(const size_t &idij) const
-{
-  CFlavVector_Map::const_iterator fit(m_flavs.find(idij));
-  if (fit==m_flavs.end()) THROW(fatal_error,"Invalid request");
-  return fit->second;
 }
 
 void Amplitude::FillAmplitudes
@@ -1756,6 +1786,12 @@ void Amplitude::FillMEWeights(ME_Weight_Info &wgtinfo) const
   if (wgtinfo.m_wren.size()<2) return;
   for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
   wgtinfo.m_VI=m_res-m_born;
+}
+
+void Amplitude::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  for (size_t i(0);i<m_scur.size();++i)
+    m_scur[i]->Sub()->In().front()->Kin()->SetNLOMC(mc);
 }
 
 void Amplitude::SetGauge(const size_t &n)
@@ -1796,14 +1832,23 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     int sd(Spinor<double>::DefaultGauge());
     Spinor<double>::SetGauge(sd>0?sd-1:sd+1);
   }
+  PHASIC::Virtual_ME2_Base *loop(p_loop);
+  p_loop=NULL;
   SetGauge(1);
   SetMomenta(moms);
-  if (!EvaluateAll(true)) return false;
+  if (!EvaluateAll(true)) {
+    p_loop=loop;
+    return false;
+  }
   double res(m_born?m_born:m_res);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
   SetGauge(0);
   SetMomenta(moms);
-  if (!EvaluateAll(true)) return false;
+  if (!EvaluateAll(true)) {
+    p_loop=loop;
+    return false;
+  }
+  p_loop=loop;
   double res2(m_born?m_born:m_res);
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Debugging()<<"  \\sigma_{tot} = "<<res<<" vs. "<<res2

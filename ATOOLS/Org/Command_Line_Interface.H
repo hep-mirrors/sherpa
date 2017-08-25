@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Smart_Pointer.H"
 
 #include <string>
+#include <vector>
 #include <map>
 
 namespace ATOOLS {
@@ -44,7 +45,7 @@ namespace ATOOLS {
 
       void Parse(int argc, char* argv[], bool allowoverwrite=true);
 
-      bool ParseOptions(SP(Option_Parser::Option)&, bool allowoverwrite=true);
+    bool ParseOptions(std::vector<Option_Parser::Option>&, bool allowoverwrite=true);
       bool ParseNoneOptions(Option_Parser::Parser&, bool allowoverwrite=true);
 
       void PrintUsageAndExit();

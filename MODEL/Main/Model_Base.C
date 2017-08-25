@@ -363,7 +363,7 @@ void Model_Base::AddStandardContainers()
   s_kftable[kf_lepton] = new
     Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
   s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0,0,1,0,1,1,0,"nu","nu","\\nu","\\nu",1,1);
+    Particle_Info(kf_neutrino,0.,0.,0,0,1,0,1,1,0,"v","v","\\nu","\\nu",1,1);
   s_kftable[kf_fermion] = new
     Particle_Info(kf_fermion,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_lepton]->m_priority=2;
@@ -499,19 +499,19 @@ void Model_Base::InitializeInteractionModel()
   InitMEInfo();
 }
 
-int Model_Base::ScalarNumber(const std::string _name) {
+int Model_Base::ScalarNumber(const std::string _name) const {
   if (p_numbers->count(_name)>0) return (*p_numbers)[_name];
   THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
-double Model_Base::ScalarConstant(const std::string _name) {
+double Model_Base::ScalarConstant(const std::string _name) const {
   if (p_constants->count(_name)>0) return (*p_constants)[_name];
   THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
-Complex Model_Base::ComplexConstant(const std::string _name) {
+Complex Model_Base::ComplexConstant(const std::string _name) const {
   if (p_complexconstants->count(_name)>0) return (*p_complexconstants)[_name];
   THROW(fatal_error, "Key "+_name+" not found");
 }

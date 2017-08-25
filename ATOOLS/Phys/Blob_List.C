@@ -6,6 +6,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
@@ -210,6 +212,12 @@ bool Blob_List::FourMomentumConservation() const
     msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
                <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
                <<"   diff = "<<finsum-inisum<<"."<<std::endl;
+    static int allow(-1);
+    if (allow<0) {
+      Data_Reader dr(" ",";","!","=");
+      allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
+    }
+    if (!allow) Abort();
     if (msg_LevelIsDebugging()) {
       msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {

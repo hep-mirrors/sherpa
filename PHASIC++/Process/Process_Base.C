@@ -31,7 +31,7 @@ Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
   p_sproc(NULL), p_proc(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
-  p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_mc(NULL),
+  p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
@@ -76,11 +76,11 @@ bool Process_Base::SetSelected(Process_Base *const proc)
 size_t Process_Base::SynchronizeSelectedIndex(Process_Base & proc)
 {
   size_t otherindex(proc.SelectedIndex());
-  if (otherindex > -1 && otherindex < Size()) {
+  if (otherindex < Size()) {
     SetSelected((*this)[otherindex]);
     return otherindex;
   }
-  return -1;
+  return std::numeric_limits<size_t>::max();
 }
 
 size_t Process_Base::SelectedIndex()
@@ -90,7 +90,7 @@ size_t Process_Base::SelectedIndex()
       return i;
     }
   }
-  return -1;
+  return std::numeric_limits<size_t>::max();
 }
 
 Process_Base *Process_Base::Parent()
@@ -167,6 +167,8 @@ void Process_Base::SetUseBIWeight(bool on)
 
 double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
 {
+  DEBUG_FUNC(this<<" -> "<<m_name<<", mode = "<<mode);
+  msg_Debugging()<<ampl<<"\n";
   Vec4D_Vector p(ampl.Legs().size());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   if (mode&16) THROW(not_implemented,"Invalid mode");
@@ -176,11 +178,10 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     return Trigger(p);
   }
   bool selon(Selector()->On());
+  if (mode&1) SetSelectorOn(false);
   if (!Trigger(p)) {
-    if ((mode&1) && selon) {
-      SetSelectorOn(false);
-      Trigger(p);
-    }
+    if (Selector()->On()!=selon) SetSelectorOn(selon);
+    return 0.0;
   }
   if (mode&2) {
     std::vector<double> s(ScaleSetter(1)->Scales().size(),0.0);
@@ -192,8 +193,16 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
-  if (mode&128) this->GeneratePoint(); 
-  double res(this->Differential(p));
+  if (mode&128) while (!this->GeneratePoint()); 
+  double res(this->Differential(p)/m_issymfac);
+  NLO_subevtlist *subs(this->GetSubevtList());
+  if (subs) {
+    (*subs)*=1.0/m_issymfac;
+    (*subs).MultMEwgt(1.0/m_issymfac);
+  }
+  if (this->VariationWeights()) {
+    *this->VariationWeights()*=1.0/m_issymfac;
+  }
   if (mode&32) {
     SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
     res*=psh->Weight(p);
@@ -207,6 +216,11 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
 bool Process_Base::IsGroup() const
 {
   return false;
+}
+
+int Process_Base::PerformTests()
+{
+  return 1;
 }
 
 bool Process_Base::FillIntegrator
@@ -324,6 +338,12 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
   SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
 }
 
+bool Process_Base::InitScale()
+{
+  if (p_scale==NULL) return true;
+  return p_scale->Initialize();
+}
+
 void Process_Base::Init(const Process_Info &pi,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler,const int mode)
@@ -359,6 +379,22 @@ void Process_Base::Init(const Process_Info &pi,
       isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
+}
+
+std::string Process_Base::BaseName
+(const std::string &name,const std::string &addname)
+{
+  std::string fname(name);
+  size_t len(addname.length());
+  if (len) {
+    size_t apos(fname.rfind(addname));
+    if (apos!=std::string::npos) fname=fname.erase(apos,len);
+  }
+  size_t pos=fname.find("EW");
+  if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
+  pos=fname.find("QCD");
+  if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
+  return fname;
 }
 
 std::string Process_Base::GenerateName(const Subprocess_Info &info) 
@@ -550,6 +586,11 @@ void Process_Base::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps; 
 }
 
+void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
+  p_nlomc=mc; 
+}
+
 void Process_Base::SetVariationWeights(ATOOLS::Variation_Weights *const vw)
 {
   if (m_variationweightsowned) {
@@ -558,6 +599,7 @@ void Process_Base::SetVariationWeights(ATOOLS::Variation_Weights *const vw)
   }
   p_variationweights=vw;
   if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
+  if (IsMapped()) p_mapproc->SetVariationWeights(vw);
 }
 
 void Process_Base::SetOwnedVariationWeights(ATOOLS::Variation_Weights *vw)
@@ -664,7 +706,10 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
   else {
     nlo_type::code nlot(m_pinfo.m_fi.m_nlotype);
     std::string fname(m_name);
-    size_t pos=fname.find("EW");
+    size_t pos=m_pinfo.m_addname.length()?
+      fname.find(m_pinfo.m_addname):std::string::npos;
+    if (pos!=std::string::npos) fname=fname.substr(0,pos);
+    pos=fname.find("EW");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     pos=fname.find("QCD");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
@@ -680,8 +725,8 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
                                <<Demangle(typeid(*old).name())
                                <<" -> "<<Demangle(typeid(*this).name())<<"\n";
       }
-      (*cmap)[fname]=this;
     }
+    (*cmap)[fname]=this;
   }
 }
 

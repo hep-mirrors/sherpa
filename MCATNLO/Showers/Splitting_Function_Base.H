@@ -34,13 +34,13 @@ namespace MCATNLO {
 
   struct SF_Key {
   public:
-    ATOOLS::Mass_Selector *&p_ms;
+    const ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
     int m_mode, m_kfmode, m_ewmode, m_col;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
-    inline SF_Key(ATOOLS::Mass_Selector *&ms,
+    inline SF_Key(const ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
 		  const int mode,const cstp::code type,
 		  const int kfmode,const int ewmode,const int col):
@@ -57,7 +57,7 @@ namespace MCATNLO {
   protected:
 
     ATOOLS::Flavour m_flavs[3], m_flspec;
-    ATOOLS::Mass_Selector *&p_ms;
+    const ATOOLS::Mass_Selector *&p_ms;
 
     SF_Coupling *p_cf;
 

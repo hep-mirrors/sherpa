@@ -13,7 +13,7 @@ libToolsPhys_la_SOURCES       =	\
 				Particle_List.C \
 				Particle_Dresser.C \
 				NLO_Subevt.C \
-                                NLO_Types.C \
+				NLO_Types.C \
 				Decay_Info.C \
 				Cluster_Leg.C \
 				Cluster_Amplitude.C \
@@ -39,7 +39,7 @@ localinc_HEADERS      =	\
 			Particle_List.H \
 			Particle_Dresser.H \
 			NLO_Subevt.H \
-                        NLO_Types.H \
+			NLO_Types.H \
 			Decay_Info.H \
 			Cluster_Leg.H \
 			Cluster_Amplitude.H \

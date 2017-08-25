@@ -65,6 +65,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
   m_ovwth = reader.Get("OVERWEIGHT_THRESHOLD", 1e12);
   m_seedmode = reader.Get("EVENT_SEED_MODE", 0, "seed mode", METHOD);
+  std::string imode(reader.Get("NLO_IMODE", std::string("IKP"), "I-Term mode", METHOD));
+  rpa->gen.SetVariable("NLO_IMODE",imode);
   m_nloadd = reader.Get("MEH_NLOADD", 1, "NLO add mode", METHOD);
   m_ewaddmode = reader.Get("MEH_EWADDMODE", 1, "EW add mode", METHOD);
   m_qcdaddmode = reader.Get("MEH_QCDADDMODE", 1, "QCD add mode", METHOD);
@@ -120,7 +122,7 @@ void Matrix_Element_Handler::InitNLOMC()
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_file);
   std::string nlomc((m_nlomode==nlo_mode::mcatnlo)?"MC@NLO":"");
-  nlomc+="_"+reader.Get<std::string>("NLOMC_GENERATOR","CSS");
+  nlomc+="_"+reader.Get<std::string>("NLOMC_GENERATOR",p_shower->ShowerGenerator());
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&reader));
 }
 
@@ -223,6 +225,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   for (size_t i(0);i<m_procs.size();++i)
     m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
+    rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
     double disc(m_sum*ran->Get()), csum(0.0);
@@ -330,10 +333,14 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       }
       MCatNLO_Process *proc=new MCatNLO_Process(m_gens,pmap);
       proc->Init(pi,p_beam,p_isr);
+      if ((*proc)[0]==NULL) {
+	delete proc;
+	return procs;
+      }
       if (!p_shower->GetShower())
         THROW(fatal_error,"Shower needs to be set for MC@NLO");
       proc->SetShower(p_shower->GetShower());
-      proc->SetMCatNLO(p_nlomc);
+      proc->SetNLOMC(p_nlomc);
       m_procs.push_back(proc);
       procs.push_back(proc);
       return procs;
@@ -346,10 +353,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 					       nlo_type::born));
 	if (m_nloadd) {
 	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
-	  rpi.m_maxcpl[0]+=rpi.m_fi.m_nlocpl[0];
-	  rpi.m_mincpl[0]+=rpi.m_fi.m_nlocpl[0];
-	  rpi.m_maxcpl[1]+=rpi.m_fi.m_nlocpl[1];
-	  rpi.m_mincpl[1]+=rpi.m_fi.m_nlocpl[1];
+	  for (int i(0);i<2;++i) {
+	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[i];
+	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[i];
+	  }
 	}
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
@@ -368,10 +375,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	rpi.m_itmin=rpi.m_rsitmin;
 	if (m_nloadd) {
 	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
-	  rpi.m_maxcpl[0]+=rpi.m_fi.m_nlocpl[0];
-	  rpi.m_mincpl[0]+=rpi.m_fi.m_nlocpl[0];
-	  rpi.m_maxcpl[1]+=rpi.m_fi.m_nlocpl[1];
-	  rpi.m_mincpl[1]+=rpi.m_fi.m_nlocpl[1];
+	  for (int i(0);i<2;++i) {
+	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[i];
+	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[i];
+	  }
 	  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.) {
 	    if (m_ewaddmode==0)
 	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
@@ -463,8 +470,6 @@ int Matrix_Element_Handler::InitializeProcesses
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  if (m_gens.NewLibraries())
-    THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
   msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
   rbtime=retime;
   btime=etime;
@@ -480,6 +485,20 @@ int Matrix_Element_Handler::InitializeProcesses
   for (size_t i(0);i<m_procs.size();++i) 
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
+  msg_Info()<<METHOD<<"(): Initializing scales "<<std::flush;
+  rbtime=retime;
+  btime=etime;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i=0; i<m_procs.size(); ++i) m_procs[i]->InitScale();
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  retime=ATOOLS::rpa->gen.Timer().RealTime();
+  etime=ATOOLS::rpa->gen.Timer().UserTime();
+  rss=GetCurrentRSS();
+  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<" / "
+	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  if (m_gens.NewLibraries())
+    THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
   return res;
 }
 
@@ -500,7 +519,7 @@ void Matrix_Element_Handler::BuildProcesses()
   std::string kfactor=reader.Get<std::string>("KFACTOR","None");
   // set scale scheme
   std::string scale=reader.Get<std::string>
-    ("SCALES","STRICT_METS{MU_F2}{MU_R2}{MU_Q2}");
+    ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
   std::vector<std::string> helpsv;
   if (!reader.ReadVector(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
@@ -509,7 +528,7 @@ void Matrix_Element_Handler::BuildProcesses()
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   std::vector<std::vector<std::string> > procdata;
-  Data_Reader pread(" ",";","%",":");
+  Data_Reader pread(" ",";","%","=");
   pread.AddComment("#");
   pread.AddWordSeparator("\t");
   pread.SetAddCommandLine(false);
@@ -561,22 +580,12 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmincpl,nf);
 	}
-	if (cur[0]=="Order_EW") {
-          THROW(fatal_error,
-                std::string("You are using the obsolete setting:\n")
-                +"    'Order_EW "+MakeString(cur,1)+"'\n"+
-                +"  Please refer to the Sherpa manual for how to transition "
-                +"to the new 'Order (<qcd>, <ew>[, ...])' syntax, e.g. using:\n"
-                +"    'Order (*,"+MakeString(cur,1)+")'");
-        }
-	if (cur[0]=="Max_Order_EW" ||
-            cur[0]=="Max_Order_QCD" ||
-            cur[0]=="Order_QCD") {
-          THROW(fatal_error,
-                std::string("You are using an obsolete (Max_)Order_* setting) ")
-                +"in your processes section. Please refer to the Sherpa manual "
-                +"for how to transition to the new "
-                +"'Order (<qcd>, <ew>[, ...])' syntax.");
+	if (cur[0]=="Order_EW" || cur[0]=="Order_QCD" ||
+	    cur[0]=="Max_Order_EW" || cur[0]=="Max_Order_QCD") {
+	  msg_Error()<<"\n"<<METHOD<<"(): "<<om::red<<"'"<<cur[0]
+		     <<"' is obsolete. Refer to the manual for"
+		     <<" the new syntax 'Order (<qcd>,<ew>[,...])'."
+		     <<om::reset<<std::endl;
         }
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
 	if (cur[0]=="CKKW") {
@@ -863,11 +872,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
 			      +std::string("at position ")
 			      +ToString(i)+": "+ToString(intpart)+"."
 			      +ToString(fracpart)+". Abort.");
-	}
-	for (size_t i(0);i<cpi.m_mincpl.size();++i) {
-	  fracpart=modf(2.*cpi.m_mincpl[i],&intpart);
-	  if (fracpart!=0.)
-	    THROW(fatal_error,"Min_Order contains non-halfinteger entry. Abort.");
 	}
 	for (size_t i(0);i<minsize;++i) {
 	  if (cpi.m_mincpl[i]>cpi.m_maxcpl[i]) {

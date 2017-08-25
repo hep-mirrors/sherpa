@@ -30,13 +30,13 @@ bool FSR_Channels::Initialize()
   for (size_t i(0);i<inttypes.size();++i) { Channel_Generator *cg=
       Channel_Generator::Getter_Function::GetObject
       (inttypes[i],Channel_Generator_Key
-       (p_psh->Process()->Process(),this));
+       (inttypes[i],p_psh->Process()->Process(),this));
     if (cg==NULL) {
       s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
       if (s_loader->LoadLibrary("Proc_"+inttypes[i])) {
 	cg=Channel_Generator::Getter_Function::GetObject
 	  (inttypes[i],Channel_Generator_Key
-	   (p_psh->Process()->Process(),this));
+	   (inttypes[i],p_psh->Process()->Process(),this));
       }
       if (cg==NULL) {
 	THROW(fatal_error,"Channel generator '"
