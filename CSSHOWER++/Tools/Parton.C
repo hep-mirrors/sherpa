@@ -10,10 +10,9 @@ using namespace std;
 
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
-    str<<"  Parton "<<&part<<" ("<<part.p_sing<<"), stat="
+    str<<"  Parton ["<<ATOOLS::ID(part.m_id)<<"], stat="
        <<part.m_stat<<", kin="<<part.m_kin<<", kscheme="<<part.m_kscheme
-       <<", col="<<part.m_col<<" ["<<ATOOLS::ID(part.m_id)
-       <<"]: "<<part.m_flav<<" : "<<part.m_mom
+       <<", col="<<part.m_col<<" : "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
        <<"["<<part.GetRFlow(1)<<","<<part.GetRFlow(2)<<"]"<<endl;
@@ -21,7 +20,8 @@ namespace CSSHOWER {
     else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
     else                     str<<"                           ";
     str<<"  Colour partners ("
-       <<part.p_left<<","<<part.p_right<<")"<<endl;
+       <<(part.p_left?ATOOLS::ID(part.p_left->m_id):vector<int>())<<","
+       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<")"<<endl;
     if (part.m_kt_soft[0]<std::numeric_limits<double>::max() ||
 	part.m_kt_soft[1]<std::numeric_limits<double>::max()) {
       str<<"  k_T left : "<<sqrt(part.KtSoft(0))<<", k_T right : "<<sqrt(part.KtSoft(1))<<endl;

@@ -375,8 +375,7 @@ namespace ATOOLS {
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl)
   {
-    ostr<<"("<<&ampl<<"): "<<ampl.NIn()
-	<<" -> "<<ampl.Legs().size()-ampl.NIn()<<" {\n";
+    ostr<<ampl.NIn()<<" -> "<<ampl.Legs().size()-ampl.NIn()<<" {\n";
     ostr<<"  \\mu_r = "<<sqrt(ampl.MuR2())
 	<<", \\mu_f = "<<sqrt(ampl.MuF2())
 	<<", \\mu_q = "<<sqrt(ampl.MuQ2())

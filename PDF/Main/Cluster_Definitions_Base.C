@@ -24,7 +24,7 @@ Cluster_Definitions_Base::~Cluster_Definitions_Base()
 int Cluster_Definitions_Base::ReCluster
 (Cluster_Amplitude *const ampl)
 {
-  DEBUG_FUNC(this);
+  DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
   for (Cluster_Amplitude *campl(ampl->Next());
        campl;campl=campl->Next()) {
