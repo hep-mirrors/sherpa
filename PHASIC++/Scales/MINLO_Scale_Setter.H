@@ -47,10 +47,10 @@ namespace PHASIC {
 
     ATOOLS::Cluster_Amplitude *p_ampl, *p_vampl;
 
-    double m_rsf, m_fsf, m_dr, m_q02[2], m_muf2min;
+    double m_rsf, m_fsf, m_dr, m_q02[2], m_muf2min, m_muravg[2];
     int    m_noutmin, m_rproc, m_vproc, m_nproc, m_nfgsplit;
-    int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs;
-    int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode, m_bumode;
+    int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs, m_bumode;
+    int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode, m_murmode;
 
     PDF::Cluster_Param CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
@@ -79,6 +79,8 @@ namespace PHASIC {
     inline ATOOLS::Cluster_Amplitude *Ampl() const { return p_ampl; }
 
     inline double Q02(const int i) const { return m_q02[i]; }
+
+    inline double MuRAvg(const int i) const { return m_muravg[i]; }
 
   };// end of class MINLO_Scale_Setter
 

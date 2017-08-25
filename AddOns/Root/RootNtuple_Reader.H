@@ -37,7 +37,7 @@ namespace SHERPA {
 
   class RootNtuple_Reader : public Event_Reader_Base {
     RootNTupleReader_Variables *p_vars;
-    int                m_check,m_calc,m_ftype,m_lomode;
+    int                m_check,m_calc,m_ftype,m_otype,m_lomode;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     ATOOLS::PDF_Info   m_pdfinfo;
@@ -57,12 +57,12 @@ namespace SHERPA {
       Weight_Calculation_Args(double mur2, double muf2, int mode,
 			      PHASIC::Scale_Setter_Base *const scale,
 			      PHASIC::KFactor_Setter_Base *const kfac,
-			      const double &K):
-	m_mur2(mur2), m_muf2(muf2), m_K(K), m_mode(mode),
+			      const double &K,const double &mur2f):
+	m_mur2(mur2), m_muf2(muf2), m_K(K), m_mur2f(mur2f), m_mode(mode),
 	p_scale(scale), p_kfac(kfac) {};
       PHASIC::Scale_Setter_Base *p_scale;
       PHASIC::KFactor_Setter_Base *p_kfac;
-      double m_mur2, m_muf2, m_K;
+      double m_mur2, m_muf2, m_K, m_mur2f;
       int m_mode;
     };
 

@@ -6,6 +6,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <map>
 
@@ -135,19 +136,48 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
   m_vmode=mode;
   if (!m_on) return 1.0;
   DEBUG_FUNC(p_proc->Name()<<", mode = "<<mode);
+#ifdef DEBUG__MINLO
+  std::cout.precision(12);
+  std::string name(p_proc->Name().substr(5));
+  for (size_t pos(name.find('_'));pos!=std::string::npos;pos=name.find('_')) name.replace(pos,1," ");
+  msg_Debugging()<<"DEBUG MINLO Event "<<rpa->gen.NumberOfGeneratedEvents()+1
+		 <<" { "<<name<<"\n";
+#endif
   m_weight=1.0;
-  double muR2(p_proc->ScaleSetter()->Scale(stp::ren));
+  double muR2(p_minlo->MuRAvg(1));
   double Q02[2]={p_minlo->Q02(0),p_minlo->Q02(1)}, sub(0.0);
   m_lastq02[0]=p_minlo->Q02(0);
   m_lastq02[1]=p_minlo->Q02(1);
+#ifdef DEBUG__MINLO
+  msg_Debugging()<<"DEBUG MINLO   \\mu_{NLO} = "<<sqrt(muR2)<<" -> "<<(*MODEL::as)(muR2)<<"\n";
+#endif
   m_lastmuR2=muR2;
   Cluster_Amplitude *ampl=p_proc->Info().Has(nlo_type::real)&&
     p_minlo->Ampl()->Next()?p_minlo->Ampl()->Next():p_minlo->Ampl();
+#ifdef DEBUG__MINLO
+  bool ord(!(ampl->Flag()&1));
+  int step(0);
+#endif
   for (;ampl->Next();ampl=ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
     msg_Debugging()<<*ampl<<"\n";
+#ifdef DEBUG__MINLO
+    msg_Debugging()<<"DEBUG MINLO   Step "<<++step<<" {\n";
+#endif
     for (size_t i(0);i<next->Legs().size();++i) {
       Cluster_Leg *l(next->Leg(i));
+#ifdef DEBUG__MINLO
+      if (l->K()) {
+	Cluster_Leg *li(NULL), *lj(NULL);
+	for (size_t j(0);j<ampl->Legs().size();++j)
+	  if (ampl->Leg(j)->Id()&l->Id())
+	    if (li==NULL) li=ampl->Leg(j);
+	    else lj=ampl->Leg(j);
+	msg_Debugging()<<"DEBUG MINLO     Clustering "<<ID(li->Id())
+		       <<ID(lj->Id())<<"->"<<ID(l->Id())<<" "
+		       <<l->Flav()<<" "<<ampl->KT2()<<"\n";
+      }
+#endif
       std::map<ATOOLS::Flavour,Sudakov*>::iterator sit(m_suds.find(l->Flav()));
       if (sit==m_suds.end()) continue;
       int is((l->Id()&3)?1:0);
@@ -164,17 +194,45 @@ double MINLO_KFactor_Setter::KFactor(const int mode)
 		     <<"}("<<sqrt(Q02[is])<<","<<sqrt(ampl->KT2())
 		     <<") = "<<delta[0]<<" / "<<delta[1]<<" = "
 		     <<delta[0]/delta[1]<<" ("<<gamma[0]-gamma[1]<<")\n";
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO     Sudakovs "<<ID(l->Id())
+		     <<" -> \\Delta_{"<<l->Flav()<<"}("<<sqrt(Q02[is])
+		     <<","<<sqrt(next->KT2())<<") / \\Delta_{"<<l->Flav()
+		     <<"}("<<sqrt(Q02[is])<<","<<sqrt(ampl->KT2())
+		     <<") = "<<delta[0]<<" / "<<delta[1]<<" = "
+		     <<delta[0]/delta[1]<<"\n";
+      msg_Debugging()<<"DEBUG MINLO     Sudakov subtractions "<<ID(l->Id())
+		     <<" -> \\Delta^1_{"<<l->Flav()<<"}("<<sqrt(Q02[is])
+		     <<","<<sqrt(next->KT2())<<") - \\Delta^1_{"<<l->Flav()
+		     <<"}("<<sqrt(Q02[is])<<","<<sqrt(ampl->KT2())
+		     <<") = "<<-gamma[0]<<" - "<<-gamma[1]<<" = "
+		     <<(-gamma[0]+gamma[1])<<"\n";
+#endif
       m_weight*=delta[0]/delta[1];
       sub+=gamma[0]-gamma[1];
     }
+#ifdef DEBUG__MINLO
+    msg_Debugging()<<"DEBUG MINLO   }\n";
+#endif
     if (next->Next()==NULL) {
       msg_Debugging()<<*next<<"\n";
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO   Core "<<next->KT2()<<"\n";
+#endif
       if ((next->Flag()&1) && m_ordonly) {
 	msg_Debugging()<<"Unordered configuration\n";
 	if (m_ordonly&2) m_weight=0.0;
+#ifdef DEBUG__MINLO
+	ord=false;
+#endif
       }
     }
   }
+#ifdef DEBUG__MINLO
+  msg_Debugging()<<"DEBUG MINLO } "<<(ord?"ordered":"unordered")
+		 <<" -> weight = "<<m_weight<<" * ( 1 - "<<-sub
+		 <<" ) = "<<m_weight*(1.0+sub)<<"\n";
+#endif
   if (m_rsfvar) {
     msg_Debugging()<<"w = "<<m_sudweight<<" * ( 1 + "<<sub<<" )\n";
     return m_weight=m_sudweight*(1.0+sub);
@@ -219,7 +277,7 @@ double Sudakov::operator()(double q2)
 {
   double eps(sqrt(q2/m_Q2));
   double e((m_mode&1)?eps:0.0);
-  double nf(p_as->Nf(m_fo?m_mur2:q2));
+  double nf(Min(m_nfgs,p_as->Nf(m_fo?m_mur2:q2)));
   double as2pi((*p_as)(m_fo?m_mur2:q2)/(2.0*M_PI));
   if (m_fl.IsQuark()) {
     double gam=as2pi/q2*4.0/3.0*

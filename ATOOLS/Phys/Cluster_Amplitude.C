@@ -253,6 +253,16 @@ Cluster_Amplitude *Cluster_Amplitude::Last()
   return p_next?p_next->Last():this;
 }
 
+const Cluster_Amplitude *Cluster_Amplitude::First() const
+{
+  return p_prev?p_prev->First():this;
+}
+
+const Cluster_Amplitude *Cluster_Amplitude::Last() const
+{
+  return p_next?p_next->Last():this;
+}
+
 bool Cluster_Amplitude::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo)

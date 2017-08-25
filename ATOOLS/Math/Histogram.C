@@ -468,6 +468,10 @@ void Histogram::Insert(double coordinate) {
 }
 
 void Histogram::Insert(int i,double value,double ncount) {
+  if (IsBad(value)) {
+    msg_Error()<<METHOD<<"("<<i<<","<<value<<","<<ncount<<"): Skip bad weight.";
+    return;
+  }
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -533,6 +537,10 @@ void Histogram::Insert(int i,double value,double ncount) {
 }
 
 void Histogram::InsertMCB(double coordinate,double value,double ncount) {
+  if (IsBad(value)) {
+    msg_Error()<<METHOD<<"("<<coordinate<<","<<value<<","<<ncount<<"): Skip bad weight.";
+    return;
+  }
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -567,6 +575,10 @@ void Histogram::InsertMCB(double coordinate,double value,double ncount) {
 }
 
 void Histogram::InsertMCBIM(double coordinate,double value) {
+  if (IsBad(value)) {
+    msg_Error()<<METHOD<<"("<<coordinate<<","<<value<<"): Skip bad weight.";
+    return;
+  }
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -616,6 +628,10 @@ void Histogram::FinishMCB()
 }
 
 void Histogram::Insert(double coordinate,double value,double ncount) {
+  if (IsBad(value)) {
+    msg_Error()<<METHOD<<"("<<coordinate<<","<<value<<","<<ncount<<"): Skip bad weight.";
+    return;
+  }
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -735,6 +751,10 @@ void Histogram::Insert(double coordinate,double value,double ncount) {
 }
 
 void Histogram::InsertRange(double start, double end, double value) {
+  if (IsBad(value)) {
+    msg_Error()<<METHOD<<"("<<start<<","<<end<<","<<value<<"): Skip bad weight.";
+    return;
+  }
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;

@@ -81,6 +81,7 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   if (!read.ReadFromFile(m_nlocpl,"MINLO_NLO_COUPLING_MODE")) m_nlocpl=1;
   if (!read.ReadFromFile(m_mufmode,"MINLO_MUF_VARIATION_MODE")) m_mufmode=0;
   if (!read.ReadFromFile(m_bumode,"MINLO_BACKUP_MODE")) m_bumode=1;
+  if (!read.ReadFromFile(m_murmode,"MINLO_MUR_MODE")) m_murmode=1;
   if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=1.0;
   if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
     m_muf2min=p_isr->PDF(0)->Q2Min();
@@ -339,11 +340,15 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
     ass+=cas*coqcd;
     oqcd+=coqcd;
   }
-  if (oqcd==0.0) mur2=m_rsf*ampl->Mu2();
+  if (oqcd==0.0) m_muravg[1]=m_muravg[0]=mur2=m_rsf*ampl->Mu2();
   else {
     ass/=oqcd;
+    m_muravg[0]=pow(mur2,1.0/oqcd);
+    m_muravg[1]=MODEL::as->WDBSolve(ass,m_rsf*MODEL::as->CutQ2(),
+				    m_rsf*1.01*sqr(rpa->gen.Ecms()));
+    msg_Debugging()<<"  as_{NLO} = "<<ass
+		   <<" ( \\mu = "<<sqrt(m_muravg[1])<<" )\n";
     if (m_nproc && m_nlocpl==1) {
-      msg_Debugging()<<"  as_{NLO} = "<<ass<<"\n";
       as=pow(as*ass,1.0/(oqcd+1.0));
     }
     else {
@@ -354,7 +359,13 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
     if (!IsEqual((*MODEL::as)(mur2),as))
       msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
   }
-  msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
+  msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)
+		 <<" ( avg "<<sqrt(m_muravg[0])<<" )\n";
+  m_ampls.clear();
+  if (m_murmode&1) {
+    mur2=m_muravg[0];
+    m_ampls.push_back(p_ampl);
+  }
   m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
@@ -430,7 +441,7 @@ void MINLO_Scale_Setter::KT2
   if (li->Stat()==3) mi2=pi.Abs2();
   if (lj->Stat()==3) mj2=pj.Abs2();
   if (lk->Stat()==3) mk2=pk.Abs2();
-  if (m_cmode==0) {// CSS algorithm
+  if (!(m_cmode&1)) {// CSS algorithm
     if ((li->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
 	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
@@ -474,7 +485,7 @@ void MINLO_Scale_Setter::KT2
       }
     }
   }
-  else if (m_cmode==1) {// KT algorithm, E-scheme
+  else {// KT algorithm, E-scheme
     if ((li->Id()&3)==0) {
       if (li->Flav().Mass() || lj->Flav().Mass()) {
 	// HQ: massive Durham algorithm
@@ -493,17 +504,33 @@ void MINLO_Scale_Setter::KT2
       double kt2=pj.PPerp2();
       cs.SetParams(kt2,1.0,pi+pj,pk);
       if ((lk->Id()&3)==0) { cs.m_op2=-1.0; return; }
-      Poincare cms(-pi-pk);
-      cms.Boost(pi);
-      cms.Boost(pj);
-      Poincare zax(-pi,Vec4D::ZVEC);
-      zax.Rotate(pi);
-      zax.Rotate(pj);
+      if (m_cmode&4) {
+	Vec4D pi0(ampl->First()->Leg(0)->Mom());
+	Vec4D pk0(ampl->First()->Leg(1)->Mom());
+	Poincare cms(-pi0-pk0);
+	cms.Boost(pi);
+	cms.Boost(pj);
+	cms.Boost(pk);
+	double y(pj.Y()), ycm(0.5*log(pi[3]/-pk[3]));
+	if (pi[3]<0.0?y<ycm:y>-ycm) cs.m_op2=-1.0;
+	return;
+      }
+      else if (m_cmode&2) {
+	Poincare cms(Vec4D(-pi[0]-pk[0],0.0,0.0,-pi[3]-pk[3]));
+	cms.Boost(pi);
+	cms.Boost(pj);
+      }
+      else {
+	Poincare cms(-pi-pk);
+	cms.Boost(pi);
+	cms.Boost(pj);
+	Poincare zax(-pi,Vec4D::ZVEC);
+	zax.Rotate(pi);
+	zax.Rotate(pj);
+      }
       double pp(pj.PPlus()), pm(pj.PMinus());
+      if (pi.PPlus()>pi.PMinus()) std::swap<double>(pp,pm);
       if (pm>pp) cs.m_op2=-1.0;
     }
-  }
-  else {
-    THROW(fatal_error,"Invalid clustering scheme");
   }
 }

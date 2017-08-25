@@ -90,6 +90,9 @@ namespace ATOOLS {
     Cluster_Amplitude *First();
     Cluster_Amplitude *Last();
 
+    const Cluster_Amplitude *First() const;
+    const Cluster_Amplitude *Last() const;
+
     static bool CheckColors(const ATOOLS::Cluster_Leg *li,
 			    const ATOOLS::Cluster_Leg *lj,
 			    const ATOOLS::Cluster_Leg *lk,

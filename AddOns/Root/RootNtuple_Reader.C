@@ -1,6 +1,8 @@
 #include "AddOns/Root/RootNtuple_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Scales/MINLO_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -91,14 +93,14 @@ namespace SHERPA {
     Int_t m_id1,m_id2,m_id1p,m_id2p,m_nuwgt;
     Double_t p_uwgt[18];
     Short_t m_oqcd;
-    Char_t m_type[2];
+    Char_t m_type[2], m_coqcd;
     TChain* p_f;
 #endif
   };
 }
 
 RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int ftype) :
-  Event_Reader_Base(args), m_ftype(ftype),
+  Event_Reader_Base(args), m_ftype(ftype), m_otype(0),
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
 {
@@ -230,7 +232,14 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     p_vars->p_f->SetBranchAddress("id2p",&p_vars->m_id2p);
   p_vars->p_f->SetBranchAddress("nuwgt",&p_vars->m_nuwgt);
   p_vars->p_f->SetBranchAddress("usr_wgts",p_vars->p_uwgt);
-  p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_oqcd);
+  m_otype=p_vars->p_f->GetLeaf("alphasPower")->GetTypeName()[0]=='C';
+  if (m_otype) {
+    msg_Info()<<METHOD<<"(): Found order QCD type char."<<std::endl;
+    p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_coqcd);
+  }
+  else {
+    p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_oqcd);
+  }
   p_vars->p_f->SetBranchAddress("part",p_vars->m_type);
 #else
   msg_Error()<<"Sherpa must be linked with root to read in root files!"<<endl;
@@ -276,6 +285,7 @@ bool RootNtuple_Reader::ReadInEntry()
   p_vars->p_f->GetEntry(m_evtpos);
   m_evtpos++;
   m_evtid=p_vars->m_id;
+  if (m_otype) p_vars->m_oqcd=p_vars->m_coqcd;
 #endif
   return 1;
 }
@@ -297,6 +307,56 @@ double RootNtuple_Reader::CalculateWeight
   double fa=m_xf1/p_vars->m_x1;
   double fb=m_xf2/p_vars->m_x2;
   double asf=pow((*as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
+  MINLO_Scale_Setter *minlo(dynamic_cast<MINLO_Scale_Setter*>(args.p_scale));
+  if (minlo && minlo->Amplitudes().size()) {
+    asf=1.0;
+    Cluster_Amplitude *ampl(minlo->Amplitudes().back());
+    double moqcd(0);
+    if (p_vars->m_type[0]=='R') {
+      if (ampl->Next()) ampl=ampl->Next();
+      else moqcd=1;
+    }
+    for (;ampl->Next();ampl=ampl->Next()) {
+      double oqcd=ampl->OrderQCD()-ampl->Next()->OrderQCD();
+      double casf=pow((*as)(ampl->KT2()*args.m_mur2f)/p_vars->m_as,oqcd);
+      asf*=casf;
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO   local \\alpha_s weight "<<casf<<"  <-  ( "
+		     <<(*as)(ampl->KT2()*args.m_mur2f)<<" / "<<p_vars->m_as
+		     <<" ) ^ "<<oqcd<<"  <-  ( k_T = "<<sqrt(ampl->KT2())<<" ) \n";
+#endif
+    }
+    int oqcd(ampl->OrderQCD()-moqcd);
+    if (p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I') oqcd-=1;
+    if (oqcd>0) {
+      double casf=pow((*as)(ampl->KT2()*args.m_mur2f)/p_vars->m_as,oqcd);
+      asf*=casf;
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO   local \\alpha_s weight "<<casf<<"  <-  ( "
+		     <<(*as)(ampl->KT2()*args.m_mur2f)<<" / "<<p_vars->m_as<<" ) ^ "
+		     <<oqcd<<"  <-  ( k_T = "<<sqrt(ampl->KT2())<<" )\n";
+#endif
+    }
+    if (p_vars->m_type[0]!='B' && !m_lomode) {
+      double casf=(*as)(minlo->MuRAvg(1)*args.m_mur2f)/p_vars->m_as;
+      asf*=casf;
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO   nlo \\alpha_s weight "<<casf<<"  <-  "
+		     <<(*as)(minlo->MuRAvg(1)*args.m_mur2f)<<" / "<<p_vars->m_as
+		     <<"  <-  ( k_T = "<<sqrt(minlo->MuRAvg(1))<<" )\n";
+#endif
+    }
+#ifdef DEBUG__MINLO
+    msg_Debugging()<<"DEBUG MINLO   full \\alpha_s weight "<<asf<<"\n";
+  }
+  else {
+    msg_Debugging()<<"DEBUG MINLO   \\alpha_s weight "<<asf<<"  <-  ( "
+		   <<(*as)(mur2)<<" / "<<p_vars->m_as<<" ) ^ "<<p_vars->m_oqcd<<"\n";
+#endif
+  }
+#ifdef DEBUG__MINLO
+  msg_Debugging()<<"DEBUG MINLO   \\mu_F = "<<sqrt(muf2)<<", \\mu_R = "<<sqrt(mur2)<<"\n";
+#endif
   if (mode==0) {
     return p_vars->m_mewgt*asf*fa*fb;
   }
@@ -377,7 +437,7 @@ double RootNtuple_Reader::Reweight(Variation_Parameters * varparams,
   Weight_Calculation_Args varargs(args.m_mur2 * varparams->m_muR2fac,
 				  args.m_muf2 * varparams->m_muF2fac,
 				  args.m_mode, args.p_scale,args.p_kfac,
-				  args.m_K);
+				  args.m_K, varparams->m_muR2fac);
   if (args.p_scale && args.p_scale->UpdateScale(*varparams)) {
     varargs.m_mur2=args.p_scale->Scale(stp::ren);
     varargs.m_muf2=args.p_scale->Scale(stp::fac);
@@ -478,7 +538,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       muR2=m_nlos.back()->m_mu2[stp::ren]=scale->Scale(stp::ren);
       muF2=m_nlos.back()->m_mu2[stp::fac]=scale->Scale(stp::fac);
       const double K(kfac->KFactor(p_vars->m_type[0]=='B'?1:0));
-      const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K);
+      const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K,1.);
       double weight=CalculateWeight(args, MODEL::as->GetAs());
       weight*=K/p_vars->m_kfac;
       if (p_variations) {
@@ -487,6 +547,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	  (&RootNtuple_Reader::Reweight,*this,args);
         (*subvarweights.back())*=K/p_vars->m_kfac;
       }
+#ifdef DEBUG__MINLO
+      msg_Debugging()<<"DEBUG MINLO   total weight "<<weight/p_vars->m_wgt2<<"\n";
+#endif
       m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
@@ -502,7 +565,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     else if (m_check) {
       double weight=CalculateWeight
 	(Weight_Calculation_Args(sqr(p_vars->m_mur),sqr(p_vars->m_muf),
-				 p_vars->m_nuwgt?1:2,NULL,NULL,1.0),
+				 p_vars->m_nuwgt?1:2,NULL,NULL,1.0,1.0),
          MODEL::as->GetAs());
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
       KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
