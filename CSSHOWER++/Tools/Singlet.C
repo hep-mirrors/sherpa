@@ -18,7 +18,7 @@ using namespace std;
 
 std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
   Vec4D sum;
-  str<<"Singlet parton list from CS_Shower : "<<&singlet<<", jf = "<<singlet.JF()<<endl;
+  str<<"Singlet parton list from CS_Shower:"<<endl;
   Parton * part;
   for (PLiter plit=singlet.begin();plit!=singlet.end();plit++) {
     part = (*plit);
