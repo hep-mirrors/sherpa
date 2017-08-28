@@ -29,6 +29,7 @@ namespace CSSHOWER {
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto);
     str<<"  x_B : "<<part.m_xBj<<std::endl;
+    str<<"  fromdec : "<<part.m_fromdec <<std::endl;
     if (part.p_prev || part.p_next) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
       if (part.p_next) str<<"  N="<<part.p_next;
@@ -81,6 +82,7 @@ void Parton::UpdateDaughters()
     p_next->SetMomentum(m_mom);
     p_next->SetFlavour(m_flav);
     p_next->SetMass2(m_t);
+    p_next->SetFromDec(m_fromdec);
     msg_IODebugging()<<*p_next;
     p_next->UpdateDaughters();
   }

@@ -291,6 +291,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       Parton *k(pmap[cl]);
       k->SetId(cl->Id());
       k->SetStat(cl->Stat());
+      k->SetFromDec(cl->FromDec());
       almap[apmap[cl]=k]=cl;
       std::map<size_t,Parton*>::iterator cit(kmap.find(cl->Id()));
       if (cit!=kmap.end()) {
