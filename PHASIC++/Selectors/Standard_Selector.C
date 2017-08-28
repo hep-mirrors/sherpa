@@ -737,7 +737,6 @@ IQ2_Selector::~IQ2_Selector() {
 
 bool IQ2_Selector::Trigger(const Vec4D_Vector &p)
 {
-  DEBUG_FUNC(m_on);
   if (!m_on) return true;
   for (int i=0;i<m_nin;i++) {
     for (int j=m_nin;j<m_n;j++) {
@@ -771,17 +770,7 @@ void IQ2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   m_flav2=flav2;
   m_q2min=min;
   m_q2max=max;
-
-  for (size_t i=m_nin;i<m_n;i++) {
-    for (size_t j=i+1;j<m_n;j++) {
-      if ( (m_flav1.Includes(p_fl[i]) && m_flav2.Includes(p_fl[j])) ||
-           (m_flav1.Includes(p_fl[j]) && m_flav2.Includes(p_fl[i])) ) {
-        m_on=true;
-        // if more than one pair is found maybe increase m_smin
-        if (sqr(m_q2min)>m_smin) m_smin = Max(sqr(m_q2min),m_smin);
-      }
-    }
-  }
+  m_on=true;
 }
 
 DECLARE_ND_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key,true);
