@@ -87,7 +87,7 @@ Particle::Particle():
   m_fl(Flavour(kf_none)), m_momentum(Vec4D(0,0,0,0)), 
   p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
-  m_dec_time(0.), m_finalmass(0.)
+  m_dec_time(0.), m_finalmass(0.), m_fromdec(false)
 {
   ++s_totalnumber;
 }
@@ -98,7 +98,7 @@ Particle::Particle(const Particle &in):
   m_fl(in.m_fl), m_momentum(in.m_momentum), 
   p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
-  m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
+  m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass), m_fromdec(in.m_fromdec)
 {
   ++s_totalnumber;
   p_flow->SetCode(1,in.GetFlow(1));
@@ -117,6 +117,7 @@ Particle& Particle::operator=(const Particle &in)
     m_momentum  = in.m_momentum;
     m_dec_time  = in.m_dec_time;
     m_finalmass = in.m_finalmass;
+    m_fromdec = in.m_fromdec;
     p_startblob = NULL;
     p_endblob   = NULL;
     p_flow->SetCode(1,in.GetFlow(1));
@@ -132,7 +133,7 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_fl(fl), m_momentum(p),
   p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
-  m_dec_time(0.), m_finalmass(fl.Mass())
+  m_dec_time(0.), m_finalmass(fl.Mass()), m_fromdec(false)
 {
   ++s_totalnumber;
 }
@@ -148,6 +149,7 @@ void Particle::Copy(Particle * in)  {
   m_momentum  = in->m_momentum;
   m_dec_time  = in->m_dec_time;
   m_finalmass = in->m_finalmass;
+  m_fromdec =in->m_fromdec;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   p_originalpart = in->p_originalpart,

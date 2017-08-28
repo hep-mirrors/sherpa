@@ -162,6 +162,7 @@ void Singlet::ExtractPartons
 	}
       }
     }
+    part->SetFromDec((*plit)->FromDec());
     if ((*plit)->GetType()==pst::FS) {
       part->SetFlow(1,(*plit)->GetFlow(1));
       part->SetFlow(2,(*plit)->GetFlow(2));

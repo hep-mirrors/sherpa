@@ -52,6 +52,7 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_fl=fl;
   cl->m_c=c;
   cl->m_kt2[0]=cl->m_kt2[1]=-1.0;
+  cl->m_fromdec=false;
   return cl;
 }
 
@@ -78,6 +79,7 @@ namespace ATOOLS {
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
     if (leg.KT2(0)>=0.0 || leg.KT2(1)>=0.0)
       ostr<<" k_T = "<<sqrt(leg.KT2(0))<<" / "<<sqrt(leg.KT2(1));
+      ostr<<" ,dec: " << leg.FromDec();
     return ostr;
   }
 

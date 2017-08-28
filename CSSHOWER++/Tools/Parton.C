@@ -29,7 +29,8 @@ namespace CSSHOWER {
     str<<"  k_T start : "<<sqrt(part.m_kt_start);
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto)<<"("<<sqrt(part.m_kt_max)<<")";
-    str<<"  x_B : "<<part.m_xBj<<std::endl;
+    str<<"  x_B : "<<part.m_xBj;
+    str<<"  fromdec : "<<part.m_fromdec <<std::endl;
     if (part.p_prev || part.p_next) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
       if (part.p_next) str<<"  N="<<part.p_next;
@@ -96,6 +97,7 @@ void Parton::UpdateNewDaughters(Parton *ref)
   p_next->SetKtMax(m_kt_max);
   p_next->SetVeto(m_kt_veto);
   p_next->SetId(m_id);
+  p_next->SetFromDec(m_fromdec);
   msg_IODebugging()<<*p_next;
   p_next->UpdateNewDaughters(ref);
   msg_IODebugging()<<"}\n";

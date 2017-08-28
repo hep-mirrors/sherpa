@@ -250,6 +250,8 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpB->SetVeto(split->KtVeto());
   newpC->SetVeto(split->KtVeto());
   newpB->SetStat(split->Stat());
+  newpB->SetFromDec(split->FromDec());
+  newpC->SetFromDec(split->FromDec());
   if (split->GetNext()) {
     split->GetNext()->SetPrev(newpB);
     newpB->SetNext(split->GetNext());
