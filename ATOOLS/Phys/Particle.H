@@ -98,6 +98,7 @@ namespace ATOOLS {
   typedef Part_List::const_iterator Part_Const_Iterator;
   typedef Particle_Vector::iterator PVIt;
 
+  std::ostream & operator<<(std::ostream &,const Particle &);
   std::ostream & operator<<(std::ostream & s, const Part_List & pl);
 
   typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;

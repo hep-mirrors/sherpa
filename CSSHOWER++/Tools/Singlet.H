@@ -98,6 +98,7 @@ namespace CSSHOWER {
 
   };
 
+  std::ostream& operator<<(std::ostream &,Singlet &);
   std::ostream& operator<<(std::ostream &,All_Singlets &); 
 }
 

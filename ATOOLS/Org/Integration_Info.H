@@ -77,6 +77,7 @@ namespace ATOOLS {
 
   };// end of class Integration_Info
 
+  std::ostream &operator<<(std::ostream &str,const Integration_Info &info);
   std::ostream &operator<<(std::ostream &str,const Double_Container &doubles);
   std::ostream &operator<<(std::ostream &str,const Vector_Container &vectors);
 
