@@ -85,6 +85,8 @@ namespace ATOOLS {
 
   };// end of class Info_Key
 
+  std::ostream &operator<<(std::ostream &str,const Info_Key &key);
+
   /*!
     \class Info_Key
     \brief Handles access to Integration_Info

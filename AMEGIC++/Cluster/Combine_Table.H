@@ -198,6 +198,7 @@ namespace AMEGIC {
     inline double RScale() const { return m_rscale; }
 
   };// end of class Combine_Table
+  std::ostream& operator<< (std::ostream&,const Combine_Table &);
 
 }// end of namespace AMEGIC
 

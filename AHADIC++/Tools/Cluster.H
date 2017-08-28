@@ -159,6 +159,8 @@ namespace AHADIC {
     };
   };
 
+  std::ostream& operator<<(std::ostream &,const Cluster &);
+
 
   
   inline bool Cluster::Active() const                  { return m_active;  }

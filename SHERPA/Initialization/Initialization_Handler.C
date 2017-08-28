@@ -169,8 +169,9 @@ Initialization_Handler::~Initialization_Handler()
        ++pdflib) {
     if (*pdflib=="None") continue;
     void *exit(s_loader->GetLibraryFunction(*pdflib,"ExitPDFLib"));
-    if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library "+*pdflib);
-    ((PDF_Exit_Function)exit)();
+    if (exit==NULL)
+      PRINT_INFO("Error: Cannot unload PDF library "+*pdflib);
+    else ((PDF_Exit_Function)exit)();
   }
 }
 

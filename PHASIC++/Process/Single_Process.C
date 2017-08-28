@@ -517,7 +517,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       m_last+=(*subs)[i]->m_result;
     }
     if (p_variationweights) {
-      const long emptyadditionaldata(NULL);
+      const long emptyadditionaldata((long)NULL);
       p_variationweights->InitialiseWeights(&Single_Process::ReweightSubevents,
                                             *this, emptyadditionaldata);
     }

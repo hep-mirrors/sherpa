@@ -297,6 +297,8 @@ namespace ATOOLS {
     
   };// end of class Flavour
 
+  std::ostream &operator<<(std::ostream &os, const Flavour &fl);
+  
   typedef std::vector<Flavour> Flavour_Vector;
   typedef std::map<Flavour,Flavour> Flavour_Map;
   typedef std::set<Flavour> Flavour_Set;

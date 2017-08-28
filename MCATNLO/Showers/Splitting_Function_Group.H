@@ -40,6 +40,7 @@ namespace MCATNLO {
 
     friend std::ostream& operator<<(std::ostream &,Splitting_Function_Group &);
   };
+  std::ostream& operator<<(std::ostream &,Splitting_Function_Group &);
 }
 
 #endif
