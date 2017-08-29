@@ -122,7 +122,7 @@ int main(int argc,char **argv)
     for (i=0;i<filelist.size();i++) {
       vector<Histogram*> hvec;
       for (size_t j=0;j<inlist.size();j++) {
-	hvec.push_back(new Histogram (inlist[j]+filelist[i]));
+	hvec.push_back(new Histogram (inlist[j]+filelist[i],1));
       }
       for (size_t j=0;j<inlist.size();j++) {
 	for (size_t k=j+1;k<inlist.size();k++) {
@@ -182,12 +182,12 @@ int main(int argc,char **argv)
 
   int sc=0;
   for (i=0;i<filelist.size();i++) {
-    Histogram h0(inlist[0]+filelist[i]);
+    Histogram h0(inlist[0]+filelist[i],1);
     if (h0.Fills()>0) {
       bool valid=1;
       if (mode==0) h0.Restore();
       for (int j=1;j<inlist.size();j++) {
-	Histogram histo(inlist[j]+filelist[i]);
+	Histogram histo(inlist[j]+filelist[i],1);
 	if (histo.Fills()>0) {
 	  if (mode==0) histo.Restore();
 	  switch (mode) {

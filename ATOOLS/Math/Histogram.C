@@ -150,7 +150,7 @@ void Histogram::CopyFrom(const Histogram *histo)
   MPIInit();
 }
 
-Histogram::Histogram(const std::string & pID)
+Histogram::Histogram(const std::string & pID,const int mode)
   :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
   m_finished=true;
   My_In_File ifile(pID.c_str());
@@ -178,24 +178,55 @@ Histogram::Histogram(const std::string & pID)
       return;
     }
     
+    std::string helps;
     m_active = 1;
     m_yvalues   = new double[m_nbin];
-    *ifile>>m_yvalues[0];
+    if (mode==0) *ifile>>m_yvalues[0];
+    else {
+      *ifile>>helps;
+      if (helps.find("nan")!=std::string::npos) helps="0";
+      m_yvalues[0]=ToType<double>(helps);
+    }
     if (m_depth>1) {
       m_y2values   = new double[m_nbin];
-      *ifile>>m_y2values[0];
+      if (mode==0) *ifile>>m_y2values[0];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_y2values[0]=ToType<double>(helps);
+      }
     }    
     if (m_depth>2) {
       m_psvalues   = new double[m_nbin];
-      *ifile>>m_psvalues[0];
+      if (mode==0) *ifile>>m_psvalues[0];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_psvalues[0]=ToType<double>(helps);
+      }
     }    
 
-    *ifile>>m_yvalues[m_nbin-1];
+    if (mode==0) *ifile>>m_yvalues[m_nbin-1];
+    else {
+      *ifile>>helps;
+      if (helps.find("nan")!=std::string::npos) helps="0";
+      m_yvalues[m_nbin-1]=ToType<double>(helps);
+    }
     if (m_depth>1) {
-      *ifile>>m_y2values[m_nbin-1];
+      if (mode==0) *ifile>>m_y2values[m_nbin-1];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_y2values[m_nbin-1]=ToType<double>(helps);
+      }
     }    
     if (m_depth>2) {
-      *ifile>>m_psvalues[m_nbin-1];
+      if (mode==0) *ifile>>m_psvalues[m_nbin-1];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_psvalues[m_nbin-1]=ToType<double>(helps);
+      }
     }    
     *ifile>>m_fills;
 
@@ -207,13 +238,28 @@ Histogram::Histogram(const std::string & pID)
       m_active=0;
       break;
     }
-    *ifile>>m_yvalues[i+1];
+    if (mode==0) *ifile>>m_yvalues[i+1];
+    else {
+      *ifile>>helps;
+      if (helps.find("nan")!=std::string::npos) helps="0";
+      m_yvalues[i+1]=ToType<double>(helps);
+    }
     if (m_depth>1) {
-      *ifile>>m_y2values[i+1];
+      if (mode==0) *ifile>>m_y2values[i+1];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_y2values[i+1]=ToType<double>(helps);
+      }
       m_y2values[i+1] = sqr(m_y2values[i+1]);
     }    
     if (m_depth>2) {
-      *ifile>>m_psvalues[i+1];
+      if (mode==0) *ifile>>m_psvalues[i+1];
+      else {
+	*ifile>>helps;
+	if (helps.find("nan")!=std::string::npos) helps="0";
+	m_psvalues[i+1]=ToType<double>(helps);
+      }
     }    
   }
   if (ifile->eof()) {

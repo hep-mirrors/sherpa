@@ -94,7 +94,9 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
-  m_fsf=1.0;
+  m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
+  if (m_fsf!=1.0) msg_Debugging()<<METHOD<<
+		    "(): Renormalization scale factor "<<sqrt(m_fsf)<<"\n";
 }
 
 MINLO_Scale_Setter::~MINLO_Scale_Setter()
@@ -107,10 +109,10 @@ bool MINLO_Scale_Setter::UpdateScale(const ATOOLS::Variation_Parameters &var)
 {
   DEBUG_FUNC("ren scale fac = "<<var.m_muR2fac);
   m_rsf*=var.m_muR2fac;
-  m_fsf=var.m_muF2fac;
+  m_fsf*=var.m_muF2fac;
   SetScales(p_vampl,m_vmode);
   m_rsf/=var.m_muR2fac;
-  m_fsf=1.0;
+  m_fsf/=var.m_muF2fac;
   return true;
 }
 

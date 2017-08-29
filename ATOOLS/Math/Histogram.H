@@ -26,7 +26,7 @@ namespace ATOOLS {
     Histogram(int type,double xmin, double xmax, int nbins,
 	      const std::string &name="");
     Histogram(const Histogram *);
-    Histogram(const std::string &);
+    Histogram(const std::string &,const int=0);
     ~Histogram();
     void MPISync();
     void Reset();
