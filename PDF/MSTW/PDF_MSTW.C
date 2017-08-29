@@ -76,6 +76,12 @@ PDF_MSTW::PDF_MSTW
   m_xmin=p_pdf->xmin;
   m_xmax=p_pdf->xmax;
   m_q2min=p_pdf->qsqmin;
+  if (file.find("nf4")!=-1)
+    m_asinfo.m_flavs.resize(4);
+  else if (file.find("nf3")!=-1)
+    m_asinfo.m_flavs.resize(3);
+  else
+    m_asinfo.m_flavs.resize(5);
   m_q2max=p_pdf->qsqmax;
   m_asinfo.m_order=p_pdf->alphaSorder;
   m_asinfo.m_asmz=p_pdf->alphaSMZ;

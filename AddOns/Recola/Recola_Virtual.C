@@ -54,7 +54,9 @@ namespace Recola {
      int nlight=0;
      set_mu_ir_rcl(m_IRscale);
      set_mu_uv_rcl(m_UVscale);
-     int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",5);
+     int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",Recola_Interface::GetDefaultFlav()+10);
+     if (Recola_Interface::GetDefaultFlav()==0) fixed=5;
+
      double alpha_mat;
      int default_flavscheme(fixed);
      if (default_flavscheme==16) default_flavscheme=-1;
@@ -87,7 +89,8 @@ namespace Recola {
       msg_Error()<<METHOD<<"(): Too many light flavours: "<<nlight<<"\n   Max is 6\n";
      }
      
-     Recola_Interface::SetDefaultFlav(nlight);
+     // Recola_Interface::SetDefaultFlav(nlight);
+     
      double default_alphaQCD=Recola_Interface::GetDefaultAlphaQCD();
      double default_scale=Recola_Interface::GetDefaultScale();
      set_alphas_rcl(default_alphaQCD,sqrt(default_scale),nlight);

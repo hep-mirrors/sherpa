@@ -51,6 +51,7 @@ namespace PDF {
         iset = 100+m_member;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	  m_asinfo.m_flavs.resize(5);
         if (m_member==0) m_lhef_number=10800;
         else m_lhef_number=10801;
       }
@@ -60,40 +61,47 @@ namespace PDF {
           iset = 10+i;
           m_asinfo.m_order=1;
           m_asinfo.m_asmz=asmz[i];
+	  m_asinfo.m_flavs.resize(5);
         }
       }
       if (m_set==std::string("ct10.3f") && m_member==0) {
         iset = 30;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	m_asinfo.m_flavs.resize(3);
       }
       if (m_set==std::string("ct10.4f") && m_member==0) {
         iset = 31;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	m_asinfo.m_flavs.resize(4);
       }
 
       if (m_set==std::string("ct10w")) {
         iset = 200+m_member;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	m_asinfo.m_flavs.resize(5);
       }
       for (size_t i=0; i<10; ++i) {
         if (m_set==std::string("ct10was"+ToString(i)) && m_member==0) {
           iset = 20+i;
           m_asinfo.m_order=1;
           m_asinfo.m_asmz=asmz[i];
+	  m_asinfo.m_flavs.resize(5);
         }
       }
       if (m_set==std::string("ct10w3f") && m_member==0) {
         iset = 32;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	m_asinfo.m_flavs.resize(3);
       }
       if (m_set==std::string("ct10w4f") && m_member==0) {
         iset = 33;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+	m_asinfo.m_flavs.resize(4);
       }
 
       if (iset==0) {

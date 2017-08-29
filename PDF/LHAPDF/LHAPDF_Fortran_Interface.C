@@ -47,6 +47,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     LHAPDF::initPDFSet(m_set);
     LHAPDF::initPDF(m_member);
     m_asinfo.m_order=LHAPDF::getOrderAlphaS();
+    m_asinfo.m_allflavs.resize(6);
     if (LHAPDF::getNf()<0) {
       Data_Reader read(" ",";","#","=");
       int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
@@ -56,9 +57,24 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     else m_asinfo.m_flavs.resize(LHAPDF::getNf());
     for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
       m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
-      m_asinfo.m_flavs[i].m_mass=LHAPDF::getQMass(i+1);
+      //      m_asinfo.m_flavs[i].m_mass=LHAPDF::getQMass(i+1);
       m_asinfo.m_flavs[i].m_thres=LHAPDF::getThreshold(i+1);
     }
+    for (size_t i(0);i<6;++i) 
+      m_asinfo.m_allflavs[i].m_mass=LHAPDF::getQMass(i+1);
+    if (m_asinfo.m_allflavs[3].m_mass<m_asinfo.m_allflavs[2].m_mass){
+	msg_Out()<<"WARNING: M_CHARM="<<m_asinfo.m_allflavs[3].m_mass<<"  replacing with SHERPA charm mass: M_CHARM="<<ATOOLS::Flavour(kf_c).Mass()<<std::endl;
+	m_asinfo.m_allflavs[3].m_mass=ATOOLS::Flavour(kf_c).Mass();
+    }
+    if (m_asinfo.m_allflavs[4].m_mass<m_asinfo.m_allflavs[3].m_mass){
+	msg_Out()<<"WARNING: M_BOTTOM="<<m_asinfo.m_allflavs[4].m_mass<<"  replacing with SHERPA bottom mass: M_BOTTOM="<<ATOOLS::Flavour(kf_b).Mass()<<std::endl;
+	m_asinfo.m_allflavs[4].m_mass=ATOOLS::Flavour(kf_b).Mass();
+    }
+    if (m_asinfo.m_allflavs[5].m_mass<1 || m_asinfo.m_allflavs[5].m_mass>1000){
+	msg_Out()<<"WARNING: M_TOP="<<m_asinfo.m_allflavs[5].m_mass<<"  replacing with SHERPA top mass: M_TOP="<<ATOOLS::Flavour(kf_t).Mass()<<std::endl;
+	m_asinfo.m_allflavs[5].m_mass=ATOOLS::Flavour(kf_t).Mass();
+    }
+      
     // m_Z cannot be queried, use Sherpa's
     m_asinfo.m_mz2=sqr(Flavour(kf_Z).Mass());
     m_asinfo.m_asmz=AlphaSPDF(m_asinfo.m_mz2);

@@ -42,6 +42,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     iset = 400;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ66Grid";
     m_lhef_number=10550+m_member;
   }
@@ -49,60 +50,70 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     iset = 460;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.125;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a2")) {
     iset = 461;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.122;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a3")) {
     iset = 462;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.114;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6.6a4")) {
     iset = 463;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.112;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ66Grid";
   }
   if (m_set==std::string("cteq6m")) {
     iset = 1;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6d")) {
     iset = 2;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6l")) {
     iset = 3;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.117981;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   if (m_set==std::string("cteq6l1")) {
     iset = 4;
     m_asinfo.m_order=0;
     m_asinfo.m_asmz=0.129783;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   if (iset==1 && m_member>0 && m_member<=40) {
     iset=100+m_member;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   if (iset==400 && m_member>0 && m_member<=44) {
     iset+=m_member;
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
+    m_asinfo.m_flavs.resize(5);
     path+="CTEQ6Grid";
   }
   m_asinfo.m_mz2=sqr(91.1876);

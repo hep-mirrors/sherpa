@@ -210,16 +210,27 @@ namespace Recola {
     s_default_alphaqcd=pdf->ASInfo().m_asmz;
     s_default_scale=pdf->ASInfo().m_mz2;
     int pdfnf=pdf->ASInfo().m_flavs.size();
-
+    s_default_flav=pdfnf;
     if (pdfnf>10) pdfnf-=10;
     if (pdfnf==-1) pdfnf=6;
-
-    double cmass=pdfnf>3?pdf->ASInfo().m_flavs[3].m_thres:Flavour(kf_c).Mass();
-    double bmass=pdfnf>4?pdf->ASInfo().m_flavs[4].m_thres:Flavour(kf_b).Mass();
-    double tmass=pdfnf>5?pdf->ASInfo().m_flavs[5].m_thres:Flavour(kf_t).Mass();
-
+    double cmass(0), bmass(0), tmass(0);
+    
+    if (pdf->ASInfo().m_allflavs.size()==0){
+      cmass=Flavour(kf_c).Mass();
+      bmass=Flavour(kf_b).Mass();
+      tmass=Flavour(kf_t).Mass();
+    }
+    
+    else{
+      cmass=pdf->ASInfo().m_allflavs[3].m_mass;
+      bmass=pdf->ASInfo().m_allflavs[4].m_mass;
+      tmass=pdf->ASInfo().m_allflavs[5].m_mass;
+    }
+    cmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_C", cmass);
     cmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_C", cmass);
+    bmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_B", bmass);
     bmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_B", bmass);
+    tmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_T", tmass);
     tmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_T", tmass);
 
     for (int i=0; i<3; i++){
@@ -229,7 +240,6 @@ namespace Recola {
     s_pdfmass[3]=cmass;
     s_pdfmass[4]=bmass;
     s_pdfmass[5]=tmass;
-
     set_alphas_masses_rcl(cmass,bmass,tmass,Flavour(kf_c).Width(),Flavour(kf_b).Width(),Flavour(kf_t).Width()); 
     return true;
   }

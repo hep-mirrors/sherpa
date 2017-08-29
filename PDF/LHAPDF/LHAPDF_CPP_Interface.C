@@ -113,6 +113,7 @@ void LHAPDF_CPP_Interface::SetAlphaSInfo()
   // TODO: get alphaS info
   m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
   int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
+  m_asinfo.m_allflavs.resize(6);
   if (nf<0) {
     Data_Reader read(" ",";","#","=");
     int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
@@ -141,6 +142,42 @@ void LHAPDF_CPP_Interface::SetAlphaSInfo()
     else if (i==5)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
 	=p_pdf->info().get_entry_as<double>("MTop");
+  }
+  for (size_t i(0);i<m_asinfo.m_allflavs.size();++i) {
+    m_asinfo.m_allflavs[i]=PDF_Flavour((kf_code)i+1);
+    if      (i==0)
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MDown");
+    else if (i==1)
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MUp");
+    else if (i==2)
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MStrange");
+    else if (i==3){
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MCharm");
+      if (m_asinfo.m_allflavs[i].m_mass<m_asinfo.m_allflavs[i-1].m_mass){
+	msg_Out()<<"WARNING: M_CHARM="<<m_asinfo.m_allflavs[i].m_mass<<"  replacing with SHERPA charm mass: M_CHARM="<<ATOOLS::Flavour(kf_c).Mass()<<std::endl;
+	m_asinfo.m_allflavs[i].m_mass=ATOOLS::Flavour(kf_c).Mass();
+      }
+    }
+    else if (i==4){
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MBottom");
+      if (m_asinfo.m_allflavs[i].m_mass<m_asinfo.m_allflavs[3].m_mass){
+	msg_Out()<<"WARNING: M_BOTTOM="<<m_asinfo.m_allflavs[i].m_mass<<"  replacing with SHERPA bottom mass: M_BOTTOM="<<ATOOLS::Flavour(kf_b).Mass()<<std::endl;
+	m_asinfo.m_allflavs[i].m_mass=ATOOLS::Flavour(kf_b).Mass();
+      }
+    }
+    else if (i==5){
+      m_asinfo.m_allflavs[i].m_mass
+	=p_pdf->info().get_entry_as<double>("MTop");
+      if (m_asinfo.m_allflavs[i].m_mass<1 || m_asinfo.m_allflavs[i].m_mass>1000){
+	msg_Out()<<"WARNING: M_TOP="<<m_asinfo.m_allflavs[i].m_mass<<"  replacing with SHERPA top mass: M_TOP="<<ATOOLS::Flavour(kf_t).Mass()<<std::endl;
+	m_asinfo.m_allflavs[i].m_mass=ATOOLS::Flavour(kf_t).Mass();
+      }
+    }
   }
   m_asinfo.m_asmz=p_pdf->info().get_entry_as<double>("AlphaS_MZ");
   m_asinfo.m_mz2=sqr(p_pdf->info().get_entry_as<double>("MZ"));

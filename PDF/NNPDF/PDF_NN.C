@@ -100,6 +100,7 @@ PDF_NNPDF::PDF_NNPDF
   int nf(p_pdf->GetNFlavors());
   if (nf<0) m_asinfo.m_flavs.resize(5);
   else      m_asinfo.m_flavs.resize(nf);
+  m_asinfo.m_allflavs.resize(6);
   // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
   for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
     m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
@@ -114,15 +115,33 @@ PDF_NNPDF::PDF_NNPDF
           =p_pdf->GetMStrange();
     else if (i==3)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-          =p_pdf->GetMCharm();
+	=p_pdf->GetMCharm();
     else if (i==4)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-          =p_pdf->GetMBottom();
+	=p_pdf->GetMBottom();
     else if (i==5)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-          =p_pdf->GetMTop();
+	=p_pdf->GetMTop();
   }
-
+    m_asinfo.m_allflavs[0]=p_pdf->GetMDown();
+  m_asinfo.m_allflavs[1]=p_pdf->GetMUp();
+  m_asinfo.m_allflavs[2]=p_pdf->GetMStrange();
+  m_asinfo.m_allflavs[3]=p_pdf->GetMCharm();
+  m_asinfo.m_allflavs[4]=p_pdf->GetMBottom();
+  m_asinfo.m_allflavs[5]=p_pdf->GetMTop();
+  if (m_asinfo.m_allflavs[3].m_mass<m_asinfo.m_allflavs[2].m_mass){
+    msg_Out()<<"WARNING: M_CHARM="<<m_asinfo.m_allflavs[3].m_mass<<"  replacing with SHERPA charm mass: M_CHARM="<<ATOOLS::Flavour(kf_c).Mass()<<std::endl;
+    m_asinfo.m_allflavs[3].m_mass=ATOOLS::Flavour(kf_c).Mass();
+      }
+  if (m_asinfo.m_allflavs[4].m_mass<m_asinfo.m_allflavs[3].m_mass){
+    msg_Out()<<"WARNING: M_BOTTOM="<<m_asinfo.m_allflavs[4].m_mass<<"  replacing with SHERPA hottom mass: M_BOTTOM="<<ATOOLS::Flavour(kf_b).Mass()<<std::endl;
+    m_asinfo.m_allflavs[4].m_mass=ATOOLS::Flavour(kf_b).Mass();
+  }
+  if (m_asinfo.m_allflavs[5].m_mass<1 || m_asinfo.m_allflavs[5].m_mass>1000){
+    msg_Out()<<"WARNING: M_TOP="<<m_asinfo.m_allflavs[5].m_mass<<"  replacing with SHERPA top mass: M_TOP="<<ATOOLS::Flavour(kf_t).Mass()<<std::endl;
+    m_asinfo.m_allflavs[5].m_mass=ATOOLS::Flavour(kf_t).Mass();
+  }
+  
   // Read more stuff from .info
   m_xmin=p_pdf->GetXMin(); 
   m_xmax=p_pdf->GetXMax(); 
