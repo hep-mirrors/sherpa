@@ -22,6 +22,7 @@ Sherpa_TEXINFOS = \
 	UFO.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
+	HERA_DIS.texi \
 	InclusiveCrossSections.texi \
 	Input.texi \
 	Integration.texi \
@@ -29,6 +30,7 @@ Sherpa_TEXINFOS = \
 	ISR.texi \
 	LHC_HInt.texi \
 	LHC_HJets.texi \
+	LHC_HJets_FiniteMt.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \
 	LHC_TTBar.texi \
@@ -48,6 +50,7 @@ Sherpa_TEXINFOS = \
 	MinimumBiasEvents.texi \
 	Models.texi \
 	MPIEvents.texi \
+	MSSM.texi \
 	NewModel.texi \
 	NLOtips.texi \
 	OLE.texi \

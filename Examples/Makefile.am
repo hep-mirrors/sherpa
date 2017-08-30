@@ -17,6 +17,7 @@ nobase_dist_examples_DATA         =	\
 		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
 		FixedOrder_NLO/NTuples/Run.R-like.dat \
 		FixedOrder_NLO/NTuples/Reweight.R-like.dat \
+		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
 		V_plus_Jets/LHC_WJets/Run.dat \
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
 		V_plus_Jets/LHC_WJets/SConstruct \
@@ -61,6 +62,8 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
+		Soft_QCD/Run.Xsecs.dat \
+		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Run.dat \
 		Tops_plus_V/LHC_TTW/Run.dat \
 		UFO_MSSM/MSSM/__init__.py \
