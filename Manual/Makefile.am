@@ -22,6 +22,7 @@ Sherpa_TEXINFOS = \
 	UFO.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
+	HERA_DIS.texi \
 	InclusiveCrossSections.texi \
 	Input.texi \
 	Integration.texi \
@@ -49,6 +50,7 @@ Sherpa_TEXINFOS = \
 	MinimumBiasEvents.texi \
 	Models.texi \
 	MPIEvents.texi \
+	MSSM.texi \
 	NewModel.texi \
 	NLOtips.texi \
 	OLE.texi \
