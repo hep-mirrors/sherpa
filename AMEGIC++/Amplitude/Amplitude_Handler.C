@@ -85,7 +85,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 
   //core process
   gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,
-                                m_maxcpl,_ntchanmin,_ntchanmax,BS,
+                                _maxcpl,_ntchanmin,_ntchanmax,BS,
                                 shand,create_4V);
   subgraphlist[0] = gen->Matching();
   _maxcpl=gen->Order();
