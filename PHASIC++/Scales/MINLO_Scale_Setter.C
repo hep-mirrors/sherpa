@@ -96,7 +96,7 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   if (m_fsf!=1.0) msg_Debugging()<<METHOD<<
-		    "(): Renormalization scale factor "<<sqrt(m_fsf)<<"\n";
+		    "(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
 }
 
 MINLO_Scale_Setter::~MINLO_Scale_Setter()
@@ -368,6 +368,7 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
     mur2=m_muravg[0];
     m_ampls.push_back(p_ampl);
   }
+  if (m_murmode&2) m_muravg[1]=mur2;
   m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
@@ -506,7 +507,19 @@ void MINLO_Scale_Setter::KT2
       double kt2=pj.PPerp2();
       cs.SetParams(kt2,1.0,pi+pj,pk);
       if ((lk->Id()&3)==0) { cs.m_op2=-1.0; return; }
-      if (m_cmode&4) {
+      if (m_cmode&8) {
+	double pp(pj.PPlus()), pm(pj.PMinus());
+	if (pi[3]>0) std::swap<double>(pp,pm);
+	if (m_cmode&16) {
+	  if (pm>pp) cs.m_op2=-1.0;
+	}
+	else {
+	  if (pp>pm) cs.m_op2*=1.000001;
+	  else cs.m_op2/=1.000001;
+	}
+	return;
+      }
+      else if (m_cmode&4) {
 	Vec4D pi0(ampl->First()->Leg(0)->Mom());
 	Vec4D pk0(ampl->First()->Leg(1)->Mom());
 	Poincare cms(-pi0-pk0);

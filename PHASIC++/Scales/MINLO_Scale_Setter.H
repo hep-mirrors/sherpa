@@ -82,6 +82,8 @@ namespace PHASIC {
 
     inline double MuRAvg(const int i) const { return m_muravg[i]; }
 
+    inline double RSF() const { return m_rsf; }
+
   };// end of class MINLO_Scale_Setter
 
 }// end of namespace PHASIC

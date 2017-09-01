@@ -182,6 +182,9 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     msg_Error()<<"ERROR: Event file "<<filename<<" does not contain any event."<<std::endl;
     THROW(fatal_error,"Missing input");
   }
+  msg_Info()<<METHOD<<"(): Found "<<m_entries<<" entries."<<std::endl;
+  if (args.p_reader->GetValue<int>("ROOTNTUPLE_SET_NEVT",0))
+    rpa->gen.SetNumberOfEvents(m_entries);
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
   p_vars->m_ncount=1.0;
   if (p_vars->p_f->GetBranch("ncount")) {
@@ -318,23 +321,25 @@ double RootNtuple_Reader::CalculateWeight
     }
     for (;ampl->Next();ampl=ampl->Next()) {
       double oqcd=ampl->OrderQCD()-ampl->Next()->OrderQCD();
-      double casf=pow((*as)(ampl->KT2())/p_vars->m_as,oqcd);
+      double casf=pow((*as)(ampl->KT2()*minlo->RSF()*args.m_mur2f)/p_vars->m_as,oqcd);
       asf*=casf;
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   local \\alpha_s weight "<<casf<<"  <-  ( "
-		     <<(*as)(ampl->KT2())<<" / "<<p_vars->m_as<<" ) ^ "<<oqcd
-		     <<"  <-  ( k_T = "<<sqrt(ampl->KT2())<<" ) \n";
+		     <<casf*p_vars->m_as<<" / "<<p_vars->m_as<<" ) ^ "<<oqcd
+		     <<"  <-  ( k_T = "<<sqrt(minlo->RSF()*args.m_mur2f)
+		     <<" * "<<sqrt(ampl->KT2())<<" ) \n";
 #endif
     }
     int oqcd(ampl->OrderQCD()-moqcd);
     if (p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I') oqcd-=1;
     if (oqcd>0) {
-      double casf=pow((*as)(ampl->KT2())/p_vars->m_as,oqcd);
+      double casf=pow((*as)(ampl->KT2()*minlo->RSF()*args.m_mur2f)/p_vars->m_as,oqcd);
       asf*=casf;
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   local \\alpha_s weight "<<casf<<"  <-  ( "
-		     <<(*as)(ampl->KT2())<<" / "<<p_vars->m_as<<" ) ^ "<<oqcd
-		     <<"  <-  ( k_T = "<<sqrt(ampl->KT2())<<" )\n";
+		     <<casf*p_vars->m_as<<" / "<<p_vars->m_as<<" ) ^ "<<oqcd
+		     <<"  <-  ( k_T = "<<sqrt(minlo->RSF()*args.m_mur2f)
+		     <<" * "<<sqrt(ampl->KT2())<<" )\n";
 #endif
     }
     if (p_vars->m_type[0]!='B' && !m_lomode) {
@@ -342,8 +347,8 @@ double RootNtuple_Reader::CalculateWeight
       asf*=casf;
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   nlo \\alpha_s weight "<<casf<<"  <-  "
-		     <<(*as)(minlo->MuRAvg(1))<<" / "<<p_vars->m_as
-		     <<"  <-  ( k_T = "<<sqrt(minlo->MuRAvg(1))<<" )\n";
+		     <<casf*p_vars->m_as<<" / "<<p_vars->m_as<<"  <-  ( k_T = "
+		     <<sqrt(minlo->MuRAvg(1))<<" )\n";
 #endif
     }
 #ifdef DEBUG__MINLO
