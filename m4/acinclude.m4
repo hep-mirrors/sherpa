@@ -332,7 +332,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AM_CPPFLAGS="-I\$(top_srcdir)"
   AC_SUBST(AM_CPPFLAGS)
 
-  AM_CXXFLAGS="-g -O2 -fcx-fortran-rules"
+  AM_CXXFLAGS="-g -O2"
   AC_LANG_PUSH([C++])
   AX_CHECK_COMPILE_FLAG(
     -fcx-fortran-rules,
