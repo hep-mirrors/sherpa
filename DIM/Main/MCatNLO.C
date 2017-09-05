@@ -66,13 +66,13 @@ int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
       rampl=rampl->Next();
       for (size_t i(0);i<rampl->Legs().size();++i) {
 	size_t cid(rampl->Leg(i)->Id());
-	if (cid&(1<<s.p_c->Id()-1)) {
+	if (cid&(1<<(s.p_c->Id()-1))) {
 	  for (size_t j(0);j<rampl->Legs().size();++j)
 	    if (rampl->Leg(j)->K()==cid)
 	      rampl->Leg(j)->SetK(cid|idnew);
 	  rampl->Leg(i)->SetId(cid|idnew);
 	  if (rampl->Prev()->Prev()==NULL) {
-	    rampl->Leg(i)->SetK(1<<s.p_s->Id()-1);
+	    rampl->Leg(i)->SetK(1<<(s.p_s->Id()-1));
 	    ampl->Prev()->SetIdNew(idnew);
 	  }
 	  break;
@@ -90,12 +90,12 @@ GetRealEmissionAmplitude(const int mode)
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->CopyFrom(p_rampl,1);
   ampl->SetProcs(p_rampl->Procs<void>());
-  ampl->SetIdNew(1<<m_ampls.back()->size()-1);
+  ampl->SetIdNew(1<<(m_ampls.back()->size()-1));
   for (Amplitude::const_iterator pit(m_ampls.back()->begin());
        pit!=m_ampls.back()->end();++pit) {
     ampl->CreateLeg((*pit)->Mom(),(*pit)->Flav(),
 		    ColorID((*pit)->Col().m_i,(*pit)->Col().m_j),
-		    1<<(*pit)->Id()-1);
+		    1<<((*pit)->Id()-1));
     ampl->Legs().back()->SetNMax(nmax);
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);

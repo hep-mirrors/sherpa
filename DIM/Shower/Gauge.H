@@ -21,7 +21,7 @@ namespace DIM {
 
     Gauge(const Kernel_Key &k);
 
-    ~Gauge();
+    virtual ~Gauge();
 
     double Value(const Splitting &s) const;
     double Estimate(const Splitting &s) const;

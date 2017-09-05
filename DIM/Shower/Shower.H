@@ -97,7 +97,7 @@ namespace DIM {
 
     ~Shower();
 
-    bool Init(MODEL::Model_Base *const model,
+    void Init(MODEL::Model_Base *const model,
 	      PDF::ISR_Handler *const isr,
 	      ATOOLS::Default_Reader *const read);
 

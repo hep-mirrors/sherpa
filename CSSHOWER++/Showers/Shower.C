@@ -123,7 +123,7 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
 				 Parton *const pi,Parton *const pj)
 {
-  if (split->GetSplit())
+  if (split->GetSplit()) {
     if (split->GetSplit()->Stat()&2) {
       msg_Debugging()<<"Decay. Skip truncated shower veto\n";
     }
@@ -131,6 +131,7 @@ int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
       msg_Debugging()<<"Truncated shower veto\n";
       return 0;
     }
+  }
   jcv=split->JetVeto(&m_sudakov);
   return 1;
 }

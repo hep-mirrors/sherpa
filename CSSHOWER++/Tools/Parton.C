@@ -54,16 +54,8 @@ Parton *Parton::FollowUp()
   return this;
 }
 
-bool Parton::Splits()
-{
-  if (this==NULL) return false;
-  if (this==p_sing->GetSplit()) return true;
-  return p_next->Splits();
-}
-
 void Parton::UpdateColours()
 {
-  if (this==NULL) return;
   msg_IODebugging()<<METHOD<<"("<<this<<"): ("
 		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";
   {

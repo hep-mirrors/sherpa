@@ -45,7 +45,6 @@ namespace CSSHOWER {
     void DeleteAll();
 
     Parton *FollowUp();
-    bool    Splits();
     void    UpdateColours();
 
     inline void SetKScheme(const int kscheme) { m_kscheme=kscheme; }

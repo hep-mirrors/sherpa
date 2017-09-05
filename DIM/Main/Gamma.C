@@ -61,8 +61,8 @@ Weight_Map Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
   s.m_clu=2;
   s.m_kfac=0;
   s.m_t1=ampl->MuR2();
-  Cluster_Leg *li(ampl->IdLeg(1<<s.p_c->Id()-1));
-  Cluster_Leg *lk(ampl->IdLeg(1<<s.p_s->Id()-1));
+  Cluster_Leg *li(ampl->IdLeg(1<<(s.p_c->Id()-1)));
+  Cluster_Leg *lk(ampl->IdLeg(1<<(s.p_s->Id()-1)));
   Cluster_Leg *lj(ampl->IdLeg(ampl->IdNew()));
 #ifdef DEBUG__Trial_Weight
   DEBUG_FUNC(ID(li->Id())<<","<<ID(lj->Id())<<"<->"<<ID(lk->Id()));
@@ -122,8 +122,8 @@ MC_Weight Gamma::TrialWeight(Cluster_Amplitude *const ampl)
     msg_Debugging()<<"  "<<wit->first<<" -> "<<wit->second;
 #endif
     wgt+=wit->second.m_me;
-    if ((wit->first.m_ij==((1<<s.p_c->Id()-1)|ampl->IdNew())) &&
-	(wit->first.m_k==(1<<s.p_s->Id()-1))) {
+    if ((wit->first.m_ij==((1<<(s.p_c->Id()-1))|ampl->IdNew())) &&
+	(wit->first.m_k==(1<<(s.p_s->Id()-1)))) {
       ait=wit;
       wact=ait->second;
       idij=wit->first.m_ij;

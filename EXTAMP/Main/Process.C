@@ -75,6 +75,7 @@ namespace EXTAMP {
   {
     ATOOLS::Vec4D_Vector p(m_flavs.size(), ATOOLS::Vec4D());
     PHASIC::Phase_Space_Handler::TestPoint(&p.front(),&Info(),Generator(),1);
+    return 1;
   }
   
 }

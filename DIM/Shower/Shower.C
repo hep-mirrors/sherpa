@@ -53,7 +53,7 @@ public:
   }
 };
 
-bool Shower::Init(MODEL::Model_Base *const model,
+void Shower::Init(MODEL::Model_Base *const model,
 		  PDF::ISR_Handler *const isr,
 		  ATOOLS::Default_Reader *const read)
 {

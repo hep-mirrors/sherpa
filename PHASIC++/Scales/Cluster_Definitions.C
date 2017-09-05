@@ -149,7 +149,7 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
       if (lj->Flav().IsFermion()) {
 	if (!isi) cp.m_op*=1.0-2.0*z*(1.0-z);// VFF
 	else {// FVF
-	  if (isi && (cc.m_i<cc.m_j^li->Flav().IsAnti())) cp.m_op=0.0;
+	  if (isi && ((cc.m_i<cc.m_j)^li->Flav().IsAnti())) cp.m_op=0.0;
 	  else cp.m_op*=2.0*z/(z*z+cp.m_kt2/Q2)-2.0+z;
 	}
       }
@@ -160,14 +160,14 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &cc)
       if (lj->Flav().IsFermion()) {
 	if (!isi) cp.m_op=0.0;// FVF
 	else {// VFF
-	  if (isi && (cc.m_i<cc.m_j^lj->Flav().IsAnti())) cp.m_op=0.0;
+	  if (isi && ((cc.m_i<cc.m_j)^lj->Flav().IsAnti())) cp.m_op=0.0;
 	  else cp.m_op*=1.0-2.0*z*(1.0-z);
 	}
       }
     }
     else if (li->Flav().IsFermion()) {
       if (lj->Flav().IsVector()) {// FFV
-	if (isi && (cc.m_i>cc.m_j^li->Flav().IsAnti())) cp.m_op=0.0;
+	if (isi && ((cc.m_i>cc.m_j)^li->Flav().IsAnti())) cp.m_op=0.0;
 	else cp.m_op*=2.0*(1.0-z)/(sqr(1-z)+cp.m_kt2/Q2)-2.0+(1.0-z);
       }
     }
