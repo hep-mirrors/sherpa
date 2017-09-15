@@ -377,6 +377,11 @@ double ISR_Handler::Flux(const Vec4D& p1, const Vec4D& p2)
   return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
 }
 
+double ISR_Handler::Flux(const Vec4D& p1)
+{
+  return 0.5/p1.Mass();
+}
+
 double ISR_Handler::CalcX(const ATOOLS::Vec4D& p)
 {
   if (p[3]>0.) return Min(1.0,p.PPlus()/p_beam[0]->OutMomentum().PPlus());
