@@ -36,6 +36,7 @@ namespace SHERPA {
     int                      m_store_results;
     bool                     m_decay_tau, m_set_widths,
                              m_br_weights, m_usemass;
+    double                   m_min_prop_width;
     ATOOLS::Flavour_Set      m_decmass;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > >
                              m_read;

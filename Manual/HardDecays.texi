@@ -201,6 +201,7 @@ To keep all intermediate particles onshell use @option{HARD_MASS_SMEARING=0}.
 @node RESOLVE_DECAYS
 @subsection RESOLVE_DECAYS
 @cindex RESOLVE_DECAYS
+@cindex HDH_MIN_PROP_WIDTH
 
 There are different options how to decide when a 1->2 process should be replaced
 by the respective 1->3 processes built from its decaying daughter particles.
@@ -214,6 +215,9 @@ As soon as the sum of 1->3 partial widths exceeds the 1->2 partial width.
 @item RESOLVE_DECAYS=None
 No 1->3 decays are taken into account.
 @end table
+
+In all cases, one can exclude the replacement of a particle below a given
+width threshold using @option{HDH_MIN_PROP_WIDTH=<threshold>} (default 0.0).
 
 @node DECAY_TAU_HARD
 @subsection DECAY_TAU_HARD

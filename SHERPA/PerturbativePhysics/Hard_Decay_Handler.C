@@ -52,7 +52,7 @@ public:
 Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   p_newsublist(NULL), m_path(path), m_file(file), m_resultdir(""), m_offshell(""),
   m_store_results(0), m_decay_tau(false), m_set_widths(false),
-  m_br_weights(true), m_usemass(true)
+  m_br_weights(true), m_usemass(true), m_min_prop_width(0.0)
 {
   Default_Reader reader;
   reader.SetInputPath(m_path);
@@ -67,6 +67,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_br_weights=reader.Get<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=reader.Get<int>("DECAY_TAU_HARD",0);
   m_set_widths=reader.Get<int>("HDH_SET_WIDTHS",0);
+  m_min_prop_width=reader.Get<double>("HDH_MIN_PROP_WIDTH",0.0);
 
   m_int_accuracy=reader.Get<double>("HDH_INT_ACCURACY", 0.01);
   m_int_niter=reader.Get<int>("HDH_INT_NITER", 2500);
@@ -373,6 +374,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
   const std::vector<ATOOLS::Flavour> flavs1(dc1->Flavs());
   for (size_t j=1;j<flavs1.size();++j) {
     bool ignore=false;
+    if (flavs1[j].Width()<m_min_prop_width) continue;
     for (size_t k=1; k<j; ++k) {
       // TODO Do we really have to avoid double counting e.g. in h -> Z Z?
       // Further iterations: W+ -> b t -> b W b -> b b .. ?
