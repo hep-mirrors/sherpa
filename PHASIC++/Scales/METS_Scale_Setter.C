@@ -714,7 +714,7 @@ double METS_Scale_Setter::SetScales
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
-  if (ampl==NULL || ampl->Prev()==NULL)
+  if (ampl==NULL || ampl->Prev()==NULL || (ampl->Prev()->Prev()==0 && m_rproc ) )
     m_scale[stp::size+stp::res]=m_scale[stp::res];
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
