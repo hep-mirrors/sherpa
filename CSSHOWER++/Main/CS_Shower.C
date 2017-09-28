@@ -728,11 +728,13 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	      mofl=Flavour(kf_gluon);
 	      if (li->Flav().IsGluon()) mofl=lj->Flav();
 	      if (lj->Flav().IsGluon()) mofl=li->Flav();
-	      int beam=li->Id()&1?0:1;
-	      if (p_shower->ISR()->PDF(beam) &&
-		  !p_shower->ISR()->PDF(beam)->Contains(mofl)) {
-		msg_Debugging()<<"Not in PDF: "<<mofl<<".\n";
-		continue;
+	      if (li->Id() & 3) {
+		int beam = li->Id() & 1 ? 0 : 1;
+		if (p_shower->ISR()->PDF(beam) &&
+		    !p_shower->ISR()->PDF(beam)->Contains(mofl)) {
+		  msg_Debugging() << "Not in PDF: " << mofl << ".\n";
+		  continue;
+		}
 	      }
 	      Vec4D_Vector p=p_cluster->Combine
 		(*ampl,i,j,k,mofl,ampl->MS(),1);
