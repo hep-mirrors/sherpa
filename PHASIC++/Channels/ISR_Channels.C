@@ -17,7 +17,9 @@ bool ISR_Channels::MakeChannels()
   int    type;
   double mass,width;
   std::set<double> ths;
-  ths.insert(sqrt(p_psh->Cuts()->Smin()));
+  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
+    ths.insert(sqrt(p_psh->Cuts()->Smin()));
+  }
   Multi_Channel *fsr(p_psh->FSRIntegrator());
   std::vector<int> ts(fsr->Number(),0);
   std::vector<double> ms(fsr->Number(),0.0), ws(fsr->Number(),0.0);
