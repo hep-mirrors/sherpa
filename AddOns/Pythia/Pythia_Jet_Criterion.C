@@ -117,8 +117,8 @@ namespace PYTHIA {
       double Qsq = sign * Q.Abs2();
       // Mass term of radiator
       DEBUG_VAR(ampl->MS());
-      double m2Rad = ( abs(RadAfterBranch.Flav().Kfcode()) >= 4
-                   && abs(RadAfterBranch.Flav().Kfcode()) < 7)
+      double m2Rad = ( RadAfterBranch.Flav().Kfcode() >= 4
+                   && RadAfterBranch.Flav().Kfcode() < 7)
                    ? ampl->MS()->Mass2(RadAfterBranch.Flav())
                    : 0.;
       // Construct 2->3 variables for FSR

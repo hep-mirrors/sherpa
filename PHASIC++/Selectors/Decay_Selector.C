@@ -74,7 +74,7 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
   tag.erase(tag.length()-1,1);
   DEBUG_FUNC(tag);
   long int kf(ToType<long int>(key[0][0]));
-  Flavour fl(abs(kf),kf<0);
+  Flavour fl(std::abs(kf),kf<0);
   DecayInfo_Vector decs
     (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)
@@ -150,7 +150,7 @@ DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
 {
   DEBUG_FUNC(key.m_key);
   long int kf(ToType<long int>(key[0][0]));
-  Flavour fl(abs(kf),kf<0);
+  Flavour fl(std::abs(kf),kf<0);
   DecayInfo_Vector decs
     (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)

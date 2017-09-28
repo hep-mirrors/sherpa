@@ -188,13 +188,13 @@ ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
     if (m_constit[i]==flav && !found) found=true;
     else rem[j++]=m_constit[i].Kfcode();
   }
-  Flavour anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+3));
+  Flavour anti=Flavour((kf_code)(rem[0]*1000+rem[1]*100+3));
   if (rem[0]!=rem[1]) {
     if (ran->Get()<0.25) 
-      anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+1));
+      anti=Flavour((kf_code)(rem[0]*1000+rem[1]*100+1));
   }
   else {
-    anti=Flavour((kf_code)(abs(rem[0])*1100+3));
+    anti=Flavour((kf_code)(rem[0]*1100+3));
   }
   if (flav.IsAnti()) anti=anti.Bar();
   return anti;
