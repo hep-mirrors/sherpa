@@ -42,7 +42,7 @@ namespace PHASIC {
       m_ckkw(0), m_itmin(5000), m_rsitmin(5000),
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99),
       m_nlomode(ATOOLS::nlo_mode::none),
-      m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
+      m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
       m_selectorfile(""), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;

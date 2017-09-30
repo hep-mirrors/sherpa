@@ -152,7 +152,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
       proc->SetScale
 	(Scale_Setter_Arguments
 	 (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
-      proc->SetKFactor(KFactor_Setter_Arguments("NO"));
+      proc->SetKFactor(KFactor_Setter_Arguments("None"));
       proc->Get<COMIX::Process_Base>()->Tests();
       proc->FillProcessMap(&m_pmap);
       My_In_File::CloseDB

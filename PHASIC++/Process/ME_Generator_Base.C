@@ -56,7 +56,7 @@ Process_Base *ME_Generator_Base::InitializeProcess
   proc->SetSelector(skey);
   std::string stag("VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}");
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,stag,"Alpha_QCD 1"));
-  proc->SetKFactor(KFactor_Setter_Arguments("NO"));
+  proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->PerformTests();
   if (mode&4) My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")
 				  +"/Process/"+m_name+"/");

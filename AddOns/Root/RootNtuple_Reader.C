@@ -118,7 +118,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
   m_lomode=args.p_reader->GetValue<int>("ROOTNTUPLE_LO_MODE",0);
   if (m_lomode) msg_Info()<<METHOD<<"(): Ntuple LO mode set to "<<m_lomode<<"."<<std::endl;
-  std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","NO");
+  std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","None");
   std::vector<std::string> helpsv;
   if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
   std::string coupling(helpsv.size()?helpsv[0]:"");
