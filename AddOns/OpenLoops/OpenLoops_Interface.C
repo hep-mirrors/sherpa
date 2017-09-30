@@ -50,14 +50,16 @@ extern "C" {
   void ol_evaluate_ccmatrix2(int id, double* pp, double* tree, double* m2cc, double* m2ewcc);
 }
 
+// private static member definitions
+std::string OpenLoops_Interface::s_olprefix = std::string("");
+bool OpenLoops_Interface::s_ignore_model = false;
+bool OpenLoops_Interface::s_exit_on_error = true;
+std::vector<std::string> OpenLoops_Interface::s_evgen_params;
+MODEL::Model_Base* OpenLoops_Interface::s_model;
 
+// private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
-
-std::string OpenLoops_Interface::s_olprefix     = std::string("");
-bool        OpenLoops_Interface::s_ignore_model = false;
-bool        OpenLoops_Interface::s_exit_on_error= true;
-size_t      OpenLoops_Interface::s_vmode;
-  std::vector<std::string> OpenLoops_Interface::s_evgen_params;
+size_t OpenLoops_Interface::s_vmode;
 
 OpenLoops_Interface::~OpenLoops_Interface()
 {
