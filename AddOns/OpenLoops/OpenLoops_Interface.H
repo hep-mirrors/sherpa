@@ -33,11 +33,6 @@ namespace OpenLoops {
     static bool        s_exit_on_error;
     static std::vector<std::string> s_evgen_params;
 
-    // Do not use the global MODEL::s_model in this class, since this
-    // leads to problems when using the python interface due to the
-    // order in which libraries are loaded.
-    static MODEL::Model_Base* s_model;
-
   public :
     OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}
     ~OpenLoops_Interface();

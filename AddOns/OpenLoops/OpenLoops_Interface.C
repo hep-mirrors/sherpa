@@ -55,7 +55,6 @@ std::string OpenLoops_Interface::s_olprefix = std::string("");
 bool OpenLoops_Interface::s_ignore_model = false;
 bool OpenLoops_Interface::s_exit_on_error = true;
 std::vector<std::string> OpenLoops_Interface::s_evgen_params;
-MODEL::Model_Base* OpenLoops_Interface::s_model;
 
 // private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
@@ -100,7 +99,7 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
   SetParameter("verbose",ol_verbosity);
 
   // tell OL about the current model and check whether accepted
-  if (!s_ignore_model) SetParameter("model", MODEL::s_model->Name());
+  if (!s_ignore_model) SetParameter("model", s_model->Name());
 
   // Propagate model parameters to OpenLoops
   if(dynamic_cast<UFO::UFO_Model*>(s_model))
@@ -182,7 +181,7 @@ void OpenLoops_Interface::SetParametersSM()
         flav.Mass()!=flav.Yuk()) {
       SetParameter("yuk("+ToString(id)+")", flav.Yuk());
       if (flav.IsQuark()) { // not supported/needed for leptons
-        if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
+        if (s_model->ScalarNumber(std::string("YukawaScheme"))==1)
           SetParameter("muy("+ToString(id)+")", Flavour(kf_h0).Mass(true));
         else
           SetParameter("muy("+ToString(id)+")", flav.Yuk());
