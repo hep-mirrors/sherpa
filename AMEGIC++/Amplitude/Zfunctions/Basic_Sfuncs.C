@@ -376,49 +376,50 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     return 0;
   }
   double Mass = fl.Mass();
-  Momfunc* Mom = new Momfunc;
-  Mom->argnum = 2;
-  Mom->arg    = new int[Mom->argnum];
-  Mom->arg[1] = momindex;
-  Mom->mass  = Mass;
-  Mom->kfc = fl.Kfcode(); 
+  Momfunc Mom;
+  Mom.argnum = 2;
+  Mom.arg    = new int[Mom.argnum];
+  Mom.arg[0] = -1;
+  Mom.arg[1] = momindex;
+  Mom.mass  = Mass;
+  Mom.kfc = fl.Kfcode(); 
 
   if (GetPolNumber(momindex,mt::p_lh,0,1)==-1) {
     //Polarisation -1
-    Mom->arg[0] = momcount;
-    Mom->type=mt::p_lh;
+    Mom.arg[0] = momcount;
+    Mom.type=mt::p_lh;
     momcount++;
-    Momlist.push_back(*Mom);
+    Momlist.push_back(Mom);
 
     //Polarisation +1
-    Mom->arg[0] = momcount;
-    Mom->type=mt::p_lp;
+    Mom.arg[0] = momcount;
+    Mom.type=mt::p_lp;
     momcount++;
-    Momlist.push_back(*Mom);
-    if(momindex<nvec&&Mass==0.0)  return momcount;
+    Momlist.push_back(Mom);
+    if(momindex<nvec&&Mass==0.0) return momcount;
 
     //Polarisation longitudinal
-    Mom->arg[0] = momcount;
-    Mom->type=mt::p_l;
+    Mom.arg[0] = momcount;
+    Mom.type=mt::p_l;
     momcount++;
-    Momlist.push_back(*Mom);
-    }
+    Momlist.push_back(Mom);
+  }
   
   if(Mass==0.0){ 
     if (GetPolNumber(momindex,mt::p_si,0,1)==-1 && rpa->gen.CutScheme()!=1 ) {
-      Mom->arg[0] = momcount;
-      Mom->type=mt::p_si;
+      Mom.arg[0] = momcount;
+      Mom.type=mt::p_si;
       momcount++;
-      Momlist.push_back(*Mom);
+      Momlist.push_back(Mom);
     }
     return momcount;
   }
   if (GetPolNumber(momindex,mt::p_s,Mass,1)==-1) {
     //Polarisation scalar
-    Mom->arg[0] = momcount;
-    Mom->type=mt::p_s;
+    Mom.arg[0] = momcount;
+    Mom.type=mt::p_s;
     momcount++;
-    Momlist.push_back(*Mom);
+    Momlist.push_back(Mom);
   }
  
   return momcount;
