@@ -107,6 +107,7 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
   if (fl1!=fl2 && (flavs[0].Charge()+flavs[1].Charge()!=0.)) {
     wavefunction = new Hadron_Wave_Function;
     wavefunction->AddToWaves(pair,1.);
+    pair = nullptr;
   }
   else if (fl1==fl2) {
     LookUpAngles(lp,spin,costh,sinth);
@@ -118,6 +119,7 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
       pair->first  = flavs[0];
       pair->second = flavs[0].Bar();
       wavefunction->AddToWaves(pair,+1./sqrt(2.));
+      pair = nullptr;
     } 
     else if (fl1==2 && iso0==1) {
       weight       = 1/sqrt(3.);
@@ -133,15 +135,13 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
       pair->first  = flavs[0];
       pair->second = flavs[0].Bar();
       wavefunction->AddToWaves(pair,weight);
+      pair = nullptr;
     }
     else if (fl1==2) {
       weight         = (sinth/sqrt(6.)+costh/sqrt(3.));
       double weight2 = (-2.*sinth/sqrt(6.)+costh/sqrt(3.));
-      assert(dabs(weight) > 1.e-3 || dabs(weight2) > 1.e-3);
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
-        delete pair;
-        pair = new Flavour_Pair;
         pair->first = Flavour((kf_code)(1));
         pair->second = pair->first.Bar();
         wavefunction->AddToWaves(pair,weight);
@@ -150,28 +150,32 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
 	wavefunction->AddToWaves(pair,weight);
+        pair = nullptr;
       }
       if (dabs(weight2)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(3));
+        if (pair) delete pair;
 	pair         = new Flavour_Pair;
 	pair->first  = flavs[0];
 	pair->second = flavs[0].Bar();
 	if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
 	wavefunction->AddToWaves(pair,weight2);
+        pair = nullptr;
       }
     }
     else if (fl1==3) {
       weight         = (-2.*costh/sqrt(6.)-sinth/sqrt(3.));
       double weight2 = (costh/sqrt(6.)-sinth/sqrt(3.));
-      assert(dabs(weight) > 1.e-3 || dabs(weight2) > 1.e-3);
       if (dabs(weight)>1.e-3) {
 	wavefunction = new Hadron_Wave_Function;
         pair->first = Flavour((kf_code)(3));
         pair->second = Flavour((kf_code)(3)).Bar();
 	wavefunction->AddToWaves(pair,weight);
+        pair = nullptr;
       }
       if (dabs(weight2)>1.e-3) {
 	flavs[0]     = Flavour((kf_code)(1));
+        if (pair) delete pair;
 	pair         = new Flavour_Pair;
 	pair->first  = Flavour((kf_code)(1));
 	pair->second = Flavour((kf_code)(1)).Bar();
@@ -181,17 +185,21 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
 	pair->first  = Flavour((kf_code)(2));
 	pair->second = Flavour((kf_code)(2)).Bar();
 	wavefunction->AddToWaves(pair,weight2);
+        pair = nullptr;
       }
     }
     else { // charm or bottom pair
       wavefunction = new Hadron_Wave_Function;
       wavefunction->AddToWaves(pair,1.);
+      pair = nullptr;
     }
   }
   else { // total charge is zero and flavours are not equal
     wavefunction = new Hadron_Wave_Function;
     wavefunction->AddToWaves(pair,1.);
+    pair = nullptr;
   }
+  assert(pair == nullptr);  // should have consumed any allocated flavour pair
   if (wavefunction) wavefunction->SetSpin(spin);
   return wavefunction;
 }
