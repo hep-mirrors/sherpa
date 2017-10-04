@@ -79,7 +79,8 @@ size_t MEProcess::NumberOfPoints()
 void MEProcess::ReadProcess(size_t n)
 {
   DEBUG_FUNC("n="<<n);
-  if (p_amp) { p_amp->Delete(); p_amp=ATOOLS::Cluster_Amplitude::New(); }
+  p_amp->Delete();
+  p_amp=ATOOLS::Cluster_Amplitude::New();
   std::vector<std::vector<std::string> > momdata;
   if (!p_momentareader->ReadMatrix(momdata,""))
     THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
