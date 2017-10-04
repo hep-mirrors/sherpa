@@ -41,7 +41,7 @@ void Massive_Kernels::SetNC(const double &nc)
   DEBUG_FUNC(m_stype<<((m_stype==sbt::qcd)?(" Nc="+ToString(nc)):""));
   // all massless charged particles in the model,
   //
-  double sumQ2(0.),sumQ2quark(0.),sumQ2lepton(0.),sumQ2other(0.);
+  double sumQ2(0.),sumQ2quark(0.),sumQ2lepton(0.);
   Flavour_Vector flavs(MODEL::s_model->IncludedFlavours());
   for (size_t i(0);i<flavs.size();++i) {
     if (flavs[i].IsAnti()) continue;
@@ -53,12 +53,11 @@ void Massive_Kernels::SetNC(const double &nc)
         sumQ2lepton += sqr(flavs[i].Charge());
       }
       else {
-        sumQ2other += sqr(flavs[i].Charge());
         THROW(fatal_error,"Massless charged flavour encountered. Cannot cope. Abort.");
       }
     }
   }
-  sumQ2=sumQ2quark+sumQ2lepton+sumQ2other;
+  sumQ2=sumQ2quark+sumQ2lepton;
   switch (m_stype) {
   case sbt::qcd:
     // T_j^2 for all quarks the same -> define m_g1, m_K1
