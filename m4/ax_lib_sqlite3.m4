@@ -92,10 +92,7 @@ AC_DEFUN([AX_LIB_SQLITE3],
         AC_MSG_CHECKING([for SQLite3 library >= $sqlite3_version_req])
 
         if test "$ac_sqlite3_path" != ""; then
-            ac_sqlite3_ldflags="-L$ac_sqlite3_path/lib"
-            if ! test -d "$ac_sqlite3_path/lib"; then
-              ac_sqlite3_ldflags="-L$ac_sqlite3_path/lib64"
-            fi;
+            ac_sqlite3_ldflags="-L$ac_sqlite3_path/lib -L$ac_sqlite3_path/lib64"
             ac_sqlite3_cppflags="-I$ac_sqlite3_path/include"
         else
             for ac_sqlite3_path_tmp in /usr /usr/local /opt ; do
@@ -103,10 +100,7 @@ AC_DEFUN([AX_LIB_SQLITE3],
                     && test -r "$ac_sqlite3_path_tmp/include/$ac_sqlite3_header"; then
                     ac_sqlite3_path=$ac_sqlite3_path_tmp
                     ac_sqlite3_cppflags="-I$ac_sqlite3_path_tmp/include"
-                    ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib"
-                    if ! test -d "$ac_sqlite3_path_tmp/lib"; then
-                        ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib64";
-                    fi;
+                    ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib -L$ac_sqlite3_path_tmp/lib64";
                     break;
                 fi
             done
@@ -120,10 +114,7 @@ AC_DEFUN([AX_LIB_SQLITE3],
                         && test -r "$sqlite_include_path/include/$ac_sqlite3_header"; then
                         ac_sqlite3_path=$sqlite_include_path
                         ac_sqlite3_cppflags="-I$sqlite_include_path/include"
-                        ac_sqlite3_ldflags="-L$sqlite_include_path/lib"
-                        if ! test -d "$sqlite_include_path/lib"; then
-                            ac_sqlite3_ldflags="-L$sqlite_include_path/lib64";
-                        fi;
+                        ac_sqlite3_ldflags="-L$sqlite_include_path/lib -L$sqlite_include_path/lib64";
                         break;
                     fi
                 done
