@@ -17,7 +17,7 @@ using namespace std;
 bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
-  m_qcdmode(qcd), m_ewmode(qed)
+  m_qcdmode(qcd), m_ewmode(qed), m_pdfmin(1.0e-4, 1.0e-2)
 {
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
@@ -86,22 +86,22 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	if (v->in[2]==v->in[0].Bar()) dmode=1;
 	else if (v->in[1]!=v->in[0].Bar() && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
-	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1)));
-	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1)));
-	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1)));
-	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
 	if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
-	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
-	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
-	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
-	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
 	}
 	if (v->in[1]!=v->in[2]) {
 	  if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
-	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1)));
-	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1)));
-	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1)));
-	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
+	    Add(new Splitting_Function_Base(SF_Key(v,1-dmode,cstp::II,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
 	  }
 	}
       }

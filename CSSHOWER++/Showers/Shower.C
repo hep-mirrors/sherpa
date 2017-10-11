@@ -57,6 +57,10 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
+  std::pair<double, double> pdfmin;
+  pdfmin.first = reader->GetValue<double>("CSS_PDF_MIN", 1.0e-4);
+  pdfmin.second = reader->GetValue<double>("CSS_PDF_MIN_X", 1.0e-2);
+  m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightAlphaS(reweightalphas);
