@@ -566,7 +566,8 @@ double LF_FVF_IF::OverIntegrated
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.;
+  if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
+    return 0.0;
   m_Jmax = 5.*fresh/old;
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
@@ -606,7 +607,8 @@ double LF_FVF_II::OverIntegrated
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
+    return 0.0;
   m_Jmax = 5.*fresh/old;
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* log(zmax/zmin) * m_Jmax;
 }
@@ -791,7 +793,8 @@ double LF_VFF_IF::OverIntegrated
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
+    return 0.0;
   m_Jmax = 5.*fresh/old; 
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
@@ -831,7 +834,8 @@ double LF_VFF_II::OverIntegrated
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
-  if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
+  if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
+    return 0.0;
   m_Jmax = 5.*fresh/old;
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }

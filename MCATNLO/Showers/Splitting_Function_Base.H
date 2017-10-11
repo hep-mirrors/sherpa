@@ -39,13 +39,16 @@ namespace MCATNLO {
     int m_mode, m_kfmode, m_ewmode, m_col;
     cstp::code m_type;
     SF_Coupling *p_cf;
+    std::pair<double, double> m_pdfmin;
   public:
     inline SF_Key(const ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
 		  const int mode,const cstp::code type,
-		  const int kfmode,const int ewmode,const int col):
+		  const int kfmode,const int ewmode,const int col,
+                  std::pair<double, double>& pdfmin):
       p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
-      m_ewmode(ewmode), m_col(col), m_type(type), p_cf(NULL) {}
+      m_ewmode(ewmode), m_col(col), m_type(type),
+      p_cf(NULL), m_pdfmin{ pdfmin } {}
     std::string ID(const int mode) const;
   };
 
@@ -68,9 +71,13 @@ namespace MCATNLO {
 
     double m_lastJ;
 
-    static double s_pdfcut, s_kappa;
+    std::pair<double, double> m_pdfmin;
+
+    static double s_kappa;
 
     double Lambda(const double &a,const double &b,const double &c) const;
+    bool PDFValueAllowedAsDenominator(const double& val,
+                                      const double& eta);
 
   public:
 

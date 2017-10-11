@@ -31,6 +31,7 @@ namespace MCATNLO {
     std::vector<SFC_Getter*> m_cgets;
     ATOOLS::Variation_Weights *p_variationweights;
     bool m_reweightalphas, m_reweightpdfs;
+    std::pair<double, double> m_pdfmin;
     std::vector<size_t> m_disallowflav;
     void ProduceT();
     bool Veto(double,double);
@@ -54,6 +55,7 @@ namespace MCATNLO {
 		     const double &isfac,const double &fsfac);
     void SetReweightAlphaS(bool v) { m_reweightalphas = v; }
     void SetReweightPDFs(bool v) { m_reweightpdfs = v; }
+    void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);

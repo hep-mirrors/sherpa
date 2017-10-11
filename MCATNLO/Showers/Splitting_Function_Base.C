@@ -26,11 +26,10 @@ using namespace MCATNLO;
 using namespace MODEL;
 using namespace ATOOLS;
 
-double SF_Lorentz::s_pdfcut=1.0e-6;
 double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
+  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin }
 {
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
@@ -323,11 +322,10 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
   } else {
     const double fresh = p_sf->GetXPDF(scale,eta/(1.0-y),m_flspec,m_beam);
     const double old = p_sf->GetXPDF(scale,eta,m_flspec,m_beam);
-    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
+    if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, eta))
       m_lastJ = 0.;
-    } else {
+    else
       m_lastJ = (1.0 - y) * fresh / old;
-    }
   }
   return m_lastJ;
 }
@@ -340,11 +338,10 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
   } else {
     const double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
     const double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
-      m_lastJ = 0.0;
-    } else {
+    if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, eta))
+      m_lastJ = 0.;
+    else
       m_lastJ = fresh / old;
-    }
   }
   return m_lastJ;
 }
@@ -357,13 +354,20 @@ double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
   } else {
     const double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
     const double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
-    if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) {
+    if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, eta))
       m_lastJ = 0.;
-    } else {
-      m_lastJ = fresh/old;
-    }
+    else
+      m_lastJ = fresh / old;
   }
   return m_lastJ;
+}
+
+bool SF_Lorentz::PDFValueAllowedAsDenominator(const double& val,
+                                              const double& eta)
+{
+  const double dynamic_pdf_threshold{
+    m_pdfmin.first * log(1.0 - eta) / log(1.0 - m_pdfmin.second) };
+  return (std::abs(val) > dynamic_pdf_threshold);
 }
 
 void Splitting_Function_Base::ResetLastInt()
