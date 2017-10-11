@@ -31,6 +31,7 @@ namespace CSSHOWER {
     std::vector<SFC_Getter*> m_cgets;
     ATOOLS::Variation_Weights *p_variationweights;
     bool m_reweightalphas, m_reweightpdfs;
+    double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
     void ProduceT();
@@ -55,6 +56,7 @@ namespace CSSHOWER {
 		     const double &isfac,const double &fsfac);
     void SetReweightAlphaS(bool v) { m_reweightalphas = v; }
     void SetReweightPDFs(bool v) { m_reweightpdfs = v; }
+    void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,

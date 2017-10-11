@@ -17,7 +17,8 @@ using namespace std;
 bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
-  m_qcdmode(qcd), m_ewmode(qed), m_pdfmin(1.0e-4, 1.0e-2)
+  m_qcdmode(qcd), m_ewmode(qed), m_pdfmin(1.0e-4, 1.0e-2),
+  m_reweightscalecutoff{ 0.0 }
 {
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
@@ -416,7 +417,7 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
                          Variation_Weights * varweights,
                          const bool &success)
 {
-  // retrieve and validate acceptance weight of the last emission
+  // retrieve and validate acceptance weight and scale of the last emission
   const double accwgt(Selected()->LastAcceptanceWeight());
   std::string error;
   bool abort(false);
@@ -433,6 +434,9 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
     // will lead to weight factor of 1. Because the target parameters of the
     // reweighting might have a non-zero accwgt, this is a problem. However,
     // because accwgt is so often zero, we do not emit a warning.
+    abort = true;
+  } else if (Selected()->LastScale() < m_reweightscalecutoff) {
+    error = "CSS emission scale is below the reweighting scale cut-off";
     abort = true;
   }
   if (error != "") {
