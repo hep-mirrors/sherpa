@@ -172,10 +172,8 @@ std::string Point::GetPropID() const
 void Point::FindOrder(std::vector<int> &order)
 {
   if (v) {
-    if (order.size()<v->order.size())
-      order.resize(v->order.size(),0);
-    for (size_t i(0);i<v->order.size();++i)
-      order[i]+=v->order[i];
+    if (order.size()<v->order.size())        order.resize(v->order.size(),0);
+    for (size_t i(0);i<v->order.size();++i)  order[i]+=v->order[i];
   }
   if (left) left->FindOrder(order);
   if (right) right->FindOrder(order);

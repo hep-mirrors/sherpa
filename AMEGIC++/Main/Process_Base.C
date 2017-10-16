@@ -22,14 +22,15 @@ int AMEGIC::Process_Base::s_gauge=10;
 AMEGIC::Process_Base::Process_Base(): 
   p_model(NULL),
   p_b(0), m_eoreset(0), p_pl(0), 
-  m_print_graphs(""), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
+  m_print_graphs(""), p_testmoms(0),
+  m_Norm(1.), m_sfactor(1.), m_lastdxs(0.), m_lastk(1.)
 {
   p_subevtlist=NULL;
   p_channellibnames = new std::list<std::string>();
   static int allowmap(-1);
   if (allowmap<0) {
     Default_Reader read;
-    allowmap = read.Get<int>("AMEGIC_ALLOW_MAPPING", 1);
+    allowmap = ToType<size_t>(rpa->gen.Variable("AMEGIC_ALLOW_MAPPING"));
     if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
   }
   m_allowmap=allowmap;

@@ -31,10 +31,7 @@ using namespace std;
 AMEGIC::Single_Process_External::Single_Process_External():
   p_me2(NULL), p_partner(this)
 {
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_keep_zero_procs = reader.Get<int>("AMEGIC_KEEP_ZERO_PROCS", 0);
+  m_keep_zero_procs = ToType<size_t>(rpa->gen.Variable("AMEGIC_KEEP_ZERO_PROCS"));
   m_lastk=1.0;
 }
 

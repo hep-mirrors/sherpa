@@ -55,34 +55,29 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_finite(0.0), m_singlepole(0.0), m_doublepole(0.0)
 {
   p_fsmc=NULL;
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_checkborn=reader.Get("CHECK_BORN",false);
-  m_checkpoles=reader.Get("CHECK_POLES",false);
-  m_checkfinite=reader.Get("CHECK_FINITE",false);
-  m_checkthreshold=reader.Get("CHECK_THRESHOLD",0.0);
-  m_force_init=reader.Get("LOOP_ME_INIT",0);
-  m_sccmur=reader.Get("USR_WGT_MODE",1);
-  m_murcoeffvirt=reader.Get("NLO_MUR_COEFFICIENT_FROM_VIRTUAL",1);
-  m_user_bvimode=reader.Get("NLO_BVI_MODE",0);
-  m_itype=ToType<cs_itype::type>(reader.Get("NLO_IMODE",std::string("IKP")));
-  m_ipart=ToType<sbt::subtype>(reader.Get("NLO_IPART",std::string("QCD+QED")));
-  m_epsmode=reader.Get("NLO_EPS_MODE",0);
-  m_drmode=reader.Get("NLO_DR_MODE",0);
-  m_checkloopmap=reader.Get("CHECK_LOOP_MAP",0);
-  m_pspisrecscheme=reader.Get("DIPOLE_PFF_IS_RECOIL_SCHEME",0);
-  m_pspfsrecscheme=reader.Get("DIPOLE_PFF_FS_RECOIL_SCHEME",0);
-  msg_Tracking()<<METHOD<<"(): Set recoil scheme in IS P->FF splittings to "
-                        <<m_pspisrecscheme<<"."<<std::endl;
-  msg_Tracking()<<METHOD<<"(): Set recoil scheme in FS P->FF splittings to "
-                        <<m_pspfsrecscheme<<"."<<std::endl;
-  m_pspissplscheme=reader.Get("DIPOLE_PFF_IS_SPLITTING_SCHEME",1);
-  m_pspfssplscheme=reader.Get("DIPOLE_PFF_FS_SPLITTING_SCHEME",0);
-  msg_Tracking()<<METHOD<<"(): Set splitting scheme in IS P->FF splittings to "
-                        <<m_pspissplscheme<<"."<<std::endl;
-  msg_Tracking()<<METHOD<<"(): Set splitting scheme in FS P->FF splittings to "
-                        <<m_pspfssplscheme<<"."<<std::endl;
+  m_checkborn = ToType<size_t>(rpa->gen.Variable("CHECK_BORN"));
+  m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
+  m_checkfinite = ToType<size_t>(rpa->gen.Variable("CHECK_FINITE"));
+  m_checkthreshold = ToType<double>(rpa->gen.Variable("CHECK_THRESHOLD"));
+  m_force_init = ToType<size_t>(rpa->gen.Variable("LOOP_ME_INIT"));
+  m_sccmur = ToType<size_t>(rpa->gen.Variable("USR_WGT_MODE"));
+  m_murcoeffvirt
+    = ToType<size_t>(rpa->gen.Variable("NLO_MUR_COEFFICIENT_FROM_VIRTUAL"));
+  m_user_bvimode = ToType<size_t>(rpa->gen.Variable("NLO_BVI_MODE"));
+  m_itype = ToType<cs_itype::type>(rpa->gen.Variable("NLO_IMODE"));
+  m_ipart = ToType<sbt::subtype>(rpa->gen.Variable("NLO_IPART"));
+  m_epsmode = ToType<size_t>(rpa->gen.Variable("NLO_EPS_MODE"));
+  m_drmode = ToType<size_t>(rpa->gen.Variable("NLO_DR_MODE"));
+  m_checkloopmap = ToType<size_t>(rpa->gen.Variable("AMEGIC_CHECK_LOOP_MAP"));
+  m_pspisrecscheme
+    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_RECOIL_SCHEME"));
+  m_pspfsrecscheme
+    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_RECOIL_SCHEME"));
+  m_pspissplscheme
+    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_SPLIT_SCHEME"));
+  m_pspfssplscheme
+    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_SPLIT_SCHEME"));
+
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
@@ -470,7 +465,8 @@ bool Single_Virtual_Correction::SetUpIntegrator()
 {  
   if (m_nin==2) {
     if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
+         (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) )
+      p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
@@ -483,7 +479,9 @@ bool Single_Virtual_Correction::CreateChannelLibrary()
   if (p_LO_process->Partner()!=p_LO_process || p_psgen) return true;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,p_LO_process->PSLibName(),&m_flavs.front(),p_LO_process); 
+  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,
+                                            p_LO_process->PSLibName(),
+                                            &m_flavs.front(),p_LO_process);
   if (newch>0) return 0;
   return 1;
 }

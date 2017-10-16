@@ -108,8 +108,13 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 
 
   double helpd; int helpi; std::string helps;
-  size_t helpt;
+  size_t helpt; cs_itype::type helpcsit; sbt::subtype helpst;
   std::vector<int> helpvi;
+
+  // N_color
+  helpd = reader.Get("N_COLOR", 3.0,
+                     "number of colours", METHOD);
+  rpa->gen.SetVariable("N_COLOR", ToString(helpd));
 
   // dipole alpha, kappa, kt2 and gsplit
   helpd = reader.Get("DIPOLE_AMIN", Max(rpa->gen.Accu(),1.0e-8),
@@ -165,7 +170,7 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "split scheme in IS P->FF splittings", METHOD);
   rpa->gen.SetVariable("DIPOLE_PFF_IS_SPLIT_SCHEME",ToString(helpi));
 
-  helpi = reader.Get("DIPOLE_PFF_FS_SPLIT_SCHEME", 1,
+  helpi = reader.Get("DIPOLE_PFF_FS_SPLIT_SCHEME", 0,
                      "split scheme in FS P->FF splittings", METHOD);
   rpa->gen.SetVariable("DIPOLE_PFF_FS_SPLIT_SCHEME",ToString(helpi));
 
@@ -181,8 +186,9 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "cluster dipoles to leptons ", METHOD);
   rpa->gen.SetVariable("DIPOLE_IS_CLUSTER_TO_LEPTONS",ToString(helpi));
 
-  rpa->gen.SetVariable("LIST_DIPOLES",
-                       ToString(reader.Get("LIST_DIPOLES",0,"list dipoles",METHOD)));
+  helpi = reader.Get("LIST_DIPOLES", 0,
+                     "list dipoles", METHOD);
+  rpa->gen.SetVariable("LIST_DIPOLES", ToString(helpi));
 
   // flavour restriction
   helps = reader.Get("DIPOLE_BORN_FLAVOUR_RESTRICTIONS", std::string(""),
@@ -190,24 +196,95 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   rpa->gen.SetVariable("DIPOLE_BORN_FLAVOUR_RESTRICTIONS",helps);
 
   // nlo smearing parameters
-  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
-                       ToString(reader.Get("NLO_SMEAR_THRESHOLD",0.,"NLO smear threshold",METHOD)));
-  rpa->gen.SetVariable("NLO_SMEAR_POWER",
-		       ToString(reader.Get("NLO_SMEAR_POWER",0.5,"NLO smear power",METHOD)));
+  helpd = reader.Get("NLO_SMEAR_THRESHOLD", 0.,
+                     "NLO smear threshold", METHOD);
+  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD", ToString(helpd));
+
+  helpd = reader.Get("NLO_SMEAR_POWER", 0.5,
+                     "NLO smear power", METHOD);
+  rpa->gen.SetVariable("NLO_SMEAR_POWER", ToString(helpd));
 
   // on-shell subtraction parameters
-  helpi = reader.Get("DIPOLE_ONSHELL_SUBTRACTION", 0,
-                     "on-shell subtraction", METHOD);
+  helpi = reader.Get("DIPOLE_ONSHELL_SUBTRACTION", 0, "on-shell subtraction", METHOD);
   rpa->gen.SetVariable("DIPOLE_ONSHELL_SUBTRACTION",ToString(helpi));
 
+  helpd = reader.Get("DIPOLE_ONSHELL_SUBTRACTION_WINDOW", 5.0, "on-shell subtraction window", METHOD);
+  rpa->gen.SetVariable("DIPOLE_ONSHELL_SUBTRACTION_WINDOW",ToString(helpd));
+
+  // OLP checks
+  helpi = reader.Get("CHECK_BORN", 0,
+                     "check Born against OLP", METHOD);
+  rpa->gen.SetVariable("CHECK_BORN", ToString(helpi));
+
+  helpi = reader.Get("CHECK_POLES", 0,
+                     "check poles against OLP", METHOD);
+  rpa->gen.SetVariable("CHECK_POLES", ToString(helpi));
+
+  helpi = reader.Get("CHECK_FINITE", 0,
+                     "check finite parts against OLP", METHOD);
+  rpa->gen.SetVariable("CHECK_FINITE", ToString(helpi));
+
+  helpi = reader.Get("CHECK_THRESHOLD", 0.0,
+                     "threshold for checks", METHOD);
+  rpa->gen.SetVariable("CHECK_THRESHOLD", ToString(helpi));
+
+  // NLO options
+  helpi =  reader.Get("LOOP_ME_INIT", 0,
+                      "init the loop ME even when not needed", METHOD);
+  rpa->gen.SetVariable("LOOP_ME_INIT", ToString(helpi));
+
+  helpi = reader.Get("USR_WGT_MODE", 1,
+                     "fill weight components for reweighting", METHOD);
+  rpa->gen.SetVariable("USR_WGT_MODE", ToString(helpi));
+
+  helpi = reader.Get("NLO_MUR_COEFFICIENT_FROM_VIRTUAL", 1,
+                     "retrieve \\mu_R reweighting coefficients from OLP", METHOD);
+  rpa->gen.SetVariable("NLO_MUR_COEFFICIENT_FROM_VIRTUAL", ToString(helpi));
+
+  helpi = reader.Get("NLO_BVI_MODE", 0,
+                     "BVI mode", METHOD);
+  rpa->gen.SetVariable("NLO_BVI_MODE", ToString(helpi));
+
+  helpcsit = reader.Get("NLO_IMODE", ToType<cs_itype::type>("IKP"),
+                        "I-term component to calculate", METHOD);
+  rpa->gen.SetVariable("NLO_IMODE", ToString(helpcsit));
+
+  helpst = reader.Get("NLO_IPART", ToType<sbt::subtype>("QCD+QED"),
+                      "I-term part", METHOD);
+  rpa->gen.SetVariable("NLO_IPART", ToString(helpst));
+
+  helpi = reader.Get("NLO_EPS_MODE", 0,
+                     "prefactor mode", METHOD);
+  rpa->gen.SetVariable("NLO_EPS_MODE", ToString(helpi));
+
+  helpi = reader.Get("NLO_DR_MODE", 0,
+                     "use dim. reduction if not dictated by OLP", METHOD);
+  rpa->gen.SetVariable("NLO_DR_MODE", ToString(helpi));
+
   // general Amegic parameters
+  helpi = reader.Get("AMEGIC_ALLOW_MAPPING", 1,
+                     "allow process mapping", METHOD);
+  rpa->gen.SetVariable("AMEGIC_ALLOW_MAPPING",ToString(helpi));
+
+  helpi = reader.Get("AMEGIC_CHECK_LOOP_MAP", 0,
+                     "check loop map", METHOD);
+  rpa->gen.SetVariable("AMEGIC_CHECK_LOOP_MAP",ToString(helpi));
+
   helpi = reader.Get("AMEGIC_SORT_LOPROCESS", 1,
                      "sort LO processes", METHOD);
   rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(helpi));
 
+  helpi = reader.Get("AMEGIC_KEEP_ZERO_PROCS", 0,
+                     "keep zero processes", METHOD);
+  rpa->gen.Variable("AMEGIC_KEEP_ZERO_PROCS", ToString(helpi));
+
   helpi = reader.Get("AMEGIC_ME_LIBCHECK", 0,
                      "library check", METHOD);
   rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(helpi));
+
+  helpi = reader.Get("AMEGIC_LIBRARY_MODE", 0,
+                     "library mode", METHOD);
+  rpa->gen.SetVariable("AMEGIC_LIBRARY_MODE",ToString(helpi));
 
   helpi = reader.Get("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1,
                      "cut massive vector propagators", METHOD);

@@ -1,6 +1,7 @@
 #include "AMEGIC++/Main/ColorSC.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -21,8 +22,8 @@ void ColorSC::Init()
 {
   if (init) return;
   init = true;
-  Default_Reader reader;
-  if (reader.Read(Nc, "N_COLOR", Nc)) {
+  Nc = ToType<double>(rpa->gen.Variable("N_COLOR"));
+  if (Nc!=3.) {
     msg_Out()<<"Set N_color="<<Nc<<"."<<std::endl;
     CF = 0.5*(Nc-1./Nc);
     CA = Nc;

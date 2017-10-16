@@ -29,8 +29,7 @@ namespace AMEGIC {
 
     ATOOLS::Vec4D* p_testmoms;
 
-    double         m_Norm;
-    double         m_sfactor, m_lastdxs, m_lastk;
+    double         m_Norm, m_sfactor, m_lastdxs, m_lastk;
 
     std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
     std::map<std::string,ATOOLS::Flavour> m_fmap;

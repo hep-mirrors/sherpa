@@ -14,7 +14,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include "AMEGIC++/DipoleSubtraction/FF_DipoleSplitting.H"
@@ -78,12 +77,10 @@ Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_
   }
   m_osinfo= lopi;
 
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  double helpd;
-  if (reader.Read(helpd, "OS_SUB_WINDOW", 5.0)) {
-    m_wwindow = helpd;
+  m_wwindow = ToType<double>(rpa->gen.Variable("DIPOLE_ONSHELL_SUBTRACTION_WINDOW"));
+  static bool print(true);
+  if (print) {
+    print=false;
     msg_Tracking()<<"Set width window for os subtraction="<<m_wwindow<<"."<<std::endl;
   }
 }
