@@ -74,7 +74,6 @@ as massless.
 @cindex CSS_IS_AS_FAC
 @cindex CSS_FS_AS_FAC
 @cindex CSS_EW_MODE
-@cindex CSS_NOEM
 @cindex CSS_MAXEM
 @cindex CSS_MASS_THRESHOLD
 @cindex CSS_EVOLUTION_SCHEME
@@ -103,13 +102,10 @@ matrix-element final state, they are by default treated by a soft
 photon resummation as explained in @ref{QED Corrections}. To avoid
 double counting, this has to be disabled as explained in that section.
 
-The CS Shower can be forced not to emit any partons setting
-@option{CSS_NOEM=1}. Sudakov rejection weights for merged samples
-are calculated nontheless. Setting @option{CSS_MAXEM=<N>}, on the
-other hand, forces the CS Shower to truncate its evolution at the
-Nth emission. This setting, however does not necessarily compute all
-Sudakov weights correctly. Both settings still enable the CS Shower
-to be used in the METS scale setter, cf. @ref{SCALES}.
+Setting @option{CSS_MAXEM=<N>} forces the CS Shower to truncate its evolution
+at the Nth emission. Note that in this case not all of the Sudakov weights
+might be computed correctly. On the other hand, the use of CS Shower in the
+METS scale setter is not affected, cf. @ref{SCALES}.
 
 The evolution variable of the CS shower can be changed using 
 @option{CSS_EVOLUTION_SCHEME}. Two options are currently implemented,
