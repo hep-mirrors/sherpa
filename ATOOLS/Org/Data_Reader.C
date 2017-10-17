@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 #include <typeinfo>
 #include <ctype.h>
 
@@ -254,6 +255,10 @@ namespace ATOOLS {
   (double &,std::string);
   template bool Data_Reader::ReadFromFile<std::string>
   (std::string &,std::string);
+  template bool Data_Reader::ReadFromFile<cs_itype::type>
+  (cs_itype::type &,std::string);
+  template bool Data_Reader::ReadFromFile<sbt::subtype>
+  (sbt::subtype &,std::string);
 
   template bool Data_Reader::ReadFromString<int>
   (int &,std::string);
@@ -269,6 +274,10 @@ namespace ATOOLS {
   (double &,std::string);
   template bool Data_Reader::ReadFromString<std::string>
   (std::string &,std::string);
+  template bool Data_Reader::ReadFromString<cs_itype::type>
+  (cs_itype::type &,std::string);
+  template bool Data_Reader::ReadFromString<sbt::subtype>
+  (sbt::subtype &,std::string);
 
   template bool Data_Reader::VectorFromFile<bool>
   (std::vector<bool> &,std::string);

@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 
 using namespace ATOOLS;
 
@@ -562,6 +563,8 @@ namespace ATOOLS {
   template unsigned long int Read_Write_Base::Default<unsigned long int>() const;
   template float Read_Write_Base::Default<float>() const;
   template double Read_Write_Base::Default<double>() const;
+  template cs_itype::type Read_Write_Base::Default<cs_itype::type>() const;
+  template sbt::subtype Read_Write_Base::Default<sbt::subtype>() const;
 
   template <> bool Read_Write_Base::Default<bool>() const
   {
