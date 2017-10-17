@@ -244,19 +244,9 @@ typedef Values* (*Lib_Getter_Function)(Basic_Sfuncs*);
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
-  static int s_mode(-1);
-  if (s_mode<0) {
-    s_mode = ToType<size_t>(rpa->gen.Variable("AMEGIC_LIBRARY_MODE"));
-  }  
   s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
-  if (s_mode==1) {
-    Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
-      ("Proc_P"+pID.substr(1,pID.find("__")-1),"Getter_"+pID);
-    if (gf==NULL) return NULL;
-    return gf(BS);
-  }
-  Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
-    ("Proc_"+pID.substr(1),"Getter_"+pID);
+  Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction(
+      "Proc_P"+pID.substr(1,pID.find("__")-1),"Getter_"+pID);
   if (gf==NULL) return NULL;
   return gf(BS);
 }

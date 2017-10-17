@@ -282,10 +282,6 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "library check", METHOD);
   rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(helpi));
 
-  helpi = reader.Get("AMEGIC_LIBRARY_MODE", 0,
-                     "library mode", METHOD);
-  rpa->gen.SetVariable("AMEGIC_LIBRARY_MODE",ToString(helpi));
-
   helpi = reader.Get("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1,
                      "cut massive vector propagators", METHOD);
   rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(helpi));
