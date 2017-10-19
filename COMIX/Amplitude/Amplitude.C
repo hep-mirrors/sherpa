@@ -350,7 +350,7 @@ Vertex *Amplitude::AddCurrent
     for (size_t j(0);j<vkey.m_j[i]->Order().size();++j)
       order[j]+=vkey.m_j[i]->Order(j);
     ntc+=vkey.m_j[i]->NTChannel();
-    if ((vkey.m_j[i]->CId()&1)^(vkey.m_j[i]->CId()&2)) ++ist;
+    if (bool(vkey.m_j[i]->CId()&1)^bool(vkey.m_j[i]->CId()&2)) ++ist;
   }
   if (ist==1) ntc+=!ckey.m_fl.Strong();
   bool valid(true);
