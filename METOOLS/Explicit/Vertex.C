@@ -290,6 +290,7 @@ bool Vertex::Map(const Vertex &v)
 		 <<"|"<<(v.m_lc.size()?GetName(*v.m_lc.front()):"")
 		 <<" "<<v.VId()<<" "<<v.CVLabel()<<"\n";
 #endif
+  if(m_cc.size()!=v.m_cc.size()) return false;
   for (size_t i(0);i<m_cc.size();++i) {
     Color_Calculator& cc1{ *m_cc[i] };
     Color_Calculator& cc2{ *v.m_cc[i] };
