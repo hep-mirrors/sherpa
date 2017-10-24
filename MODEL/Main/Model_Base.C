@@ -399,13 +399,14 @@ void Model_Base::InitializeInteractionModel()
   InitVertices();
   for (std::vector<Single_Vertex>::iterator
 	 vit(m_v.begin());vit!=m_v.end();) {
-    for (size_t i(0);i<vit->cpl.size();++i)
+    for (size_t i(0);i<vit->cpl.size();)
       if (vit->cpl[i].Value().real()==0.0 &&
 	  vit->cpl[i].Value().imag()==0.0) {
 	vit->cpl.erase(vit->cpl.begin()+i);
 	vit->Color.erase(vit->Color.begin()+i);
 	vit->Lorentz.erase(vit->Lorentz.begin()+i);
       }
+      else { ++i; }
     if (vit->cpl.empty()) vit=m_v.erase(vit);
     else ++vit;
   }
