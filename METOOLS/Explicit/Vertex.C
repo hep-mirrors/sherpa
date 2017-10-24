@@ -287,6 +287,7 @@ bool Vertex::Map(const Vertex &v)
 		 <<"|"<<(v.m_lc.size()?GetName(*v.m_lc.front()):"")
 		 <<" "<<v.VId()<<" "<<v.CVLabel()<<"\n";
 #endif
+  if(m_cc.size()!=v.m_cc.size()) return false;
   for (size_t i(0);i<m_cc.size();++i) {
     if (typeid(*m_cc[i])!=typeid(*v.m_cc[i])) return false;
     if (typeid(*m_lc[i])!=typeid(*v.m_lc[i])) return false;
