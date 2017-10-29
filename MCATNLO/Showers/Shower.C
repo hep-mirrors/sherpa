@@ -43,6 +43,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightAlphaS(reweightalphas);
   m_sudakov.SetReweightPDFs(reweightpdfs);
+  m_sudakov.SetReweightScaleCutoff(dataread->GetValue<double>(
+        "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);

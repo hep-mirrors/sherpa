@@ -13,8 +13,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) : 
-  p_rms(NULL)
+Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
+  p_rms(NULL), m_reweightscalecutoff(0.0)
 {
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
@@ -383,7 +383,7 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
                          const bool &success)
 {
-  // retrieve and validate acceptance weight of the last emission
+  // retrieve and validate acceptance weight and scale of the last emission
   const double accwgt(Selected()->LastAcceptanceWeight());
   std::string error;
   if (accwgt > 1.0) {
@@ -396,6 +396,8 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
     // might not be valid. In any case, the (1 - rejwgt) factor for rejections
     // will lead to weight factor of 1.
     error = "MCatNLO emission acceptance weight is zero";
+  } else if (Selected()->LastScale() < m_reweightscalecutoff) {
+    error = "MC@NLO emission scale is below the reweighting scale cut-off";
   }
   if (error != "") {
     return 1.0;
