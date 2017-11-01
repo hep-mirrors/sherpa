@@ -75,13 +75,7 @@ employed. This affects mostly @ref{MPI Parameters} and
 @ref{Intrinsic Transverse Momentum} parameters. Possible values are:
 @itemize @bullet
 @item
-@code{CT10} MPI tune for the Sherpa's default PDF, CT10. This is the default tune.
-@item
-@code{CT10_UEup} Upward variation of MPI activity, variation of the CT10 tune to 
-assess MPI uncertainties.
-@item
-@code{CT10_UEdown} Downward variation of MPI activity, variation of the CT10 tune to 
-assess MPI uncertainties.
+@code{None} The current version does not include alternative tunes.
 @end itemize
 
 @node OUTPUT
