@@ -1504,8 +1504,13 @@ CombinedFlavour(const size_t &idij)
 
 std::string  AMEGIC::Single_LOProcess::CreateLibName()
 {
+  std::string tag("");
+  if      (m_stype==sbt::qcd) tag="__QCD(";
+  else if (m_stype==sbt::qed) tag="__EW(";
+  else THROW(fatal_error,"Unknown subtraction type.");
   std::string name(m_name);
-  size_t bpos(name.find("__QCD("));
+  size_t bpos(name.find(tag));
+  PRINT_VAR(bpos);
   name.erase(bpos,name.length()-bpos+1);
   if (m_emit>=0) name+="__E"+ToString(m_emit);
   return ShellName(name);
