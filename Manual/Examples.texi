@@ -82,6 +82,10 @@ of the main features of these examples.
 @node SingleTopChannels
 @section Single-top production in the s, t and tW channel
 
+In this section, examples for single-top production in three different channels
+are described.  For the channel definitions and a validation of these setups,
+see @mycite{Bothmann:2017jfv}.
+
 @menu
 * t-channel single-top production::
 * t-channel single-top production with N_f=4::
