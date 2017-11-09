@@ -450,6 +450,10 @@ scale setter.
 @item TTBar
 Core scale setter for processes involving top quarks. Implementation details 
 are described in Appendix C of @mycite{Hoeche2013mua}.
+@item SingleTop
+Core scale setter for single-top production in association with one jet.
+If the W is in the t-channel (s-channel), the squared scales are set to the
+Mandelstam variables @code{t=2*p[0]*p[2]} (@code{t=2*p[0]*p[1]}).
 @end table
 
 @node COUPLING_SCHEME

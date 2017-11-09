@@ -12,6 +12,7 @@ of the main features of these examples.
 * Jets::
 * HJets::
 * TopsJets::
+* SingleTopChannels::
 * VVJets::
 * MSSM/UFO::
 * DIS::
@@ -77,6 +78,20 @@ of the main features of these examples.
 
 @include LHC_TTBar.texi
 @include LHC_TTW.texi
+
+@node SingleTopChannels
+@section Single-top production in the s, t and tW channel
+
+@menu
+* t-channel single-top production::
+* t-channel single-top production with N_f=4::
+* s-channel single-top production::
+* tW-channel single-top production::
+@end menu
+
+@include LHC_TJ_tch.texi
+@include LHC_TJ_sch.texi
+@include LHC_TW.texi
 
 @node VVJets
 @section Vector boson pairs + jets production
