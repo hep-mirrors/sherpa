@@ -94,9 +94,9 @@ If unstable particles (e.g. W/Z bosons) appear as intermediate propagators
 in the process, Sherpa uses the complex mass scheme to construct MEs
 in a gauge-invariant way. For full consistency with this scheme,
 by default the dependent EW parameters are also calculated from the complex
-masses (@option{WIDTHSCHEME=CMS}), yielding complex values e.g. for
+masses (@option{WIDTH_SCHEME=CMS}), yielding complex values e.g. for
 the weak mixing angle.
-To keep the parameters real one can set @option{WIDTHSCHEME=Fixed}. This may
+To keep the parameters real one can set @option{WIDTH_SCHEME=Fixed}. This may
 spoil gauge invariance though.
 
 With the following switches it is possible to change the properties of
