@@ -35,15 +35,18 @@ namespace SHERPA {
     Output_Weights(const Output_Arguments &args):
       Output_Base("Weights")
     {
-      m_basename=args.m_outpath+"/"+args.m_outfile;
+      MyStrStream basename;
+      basename << args.m_outpath << "/" << args.m_outfile;
       m_ext=".wts";
 #ifdef USING__GZIP
       m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-      if (MPI::COMM_WORLD.Get_size()>1)
-	m_basename+="_"+MPI::COMM_WORLD.Get_rank();
+      if (MPI::COMM_WORLD.Get_size()>1) {
+        basename << "_" << MPI::COMM_WORLD.Get_rank();
+      }
 #endif
+      m_basename = basename.str();
       m_outstream.open((m_basename+m_ext).c_str());
       if (!m_outstream.good())
 	THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
