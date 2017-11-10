@@ -1,0 +1,16 @@
+@node tW-channel single-top production
+@subsection tW-channel single-top production
+
+@example
+@smallformat
+@verbatiminclude Examples/SingleTop_Channels/Run.tW.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item By setting @option{No_Decay -6}, the doubly-resonant TTbar diagrams are
+removed. Only the singly-resonant diagrams remain as required by the definition
+of the channel.
+@item See @ref{t-channel single-top production} for more comments
+@end itemize
