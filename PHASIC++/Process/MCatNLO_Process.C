@@ -513,6 +513,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
 	lij=next->Leg(i);
       }
     }
+    if (!lij) THROW(fatal_error,"Internal error");
     std::vector<int> ids(ID(lij->Id()));
     size_t iid(1<<ids.front()), jid(1<<ids.back()), kid(lij->K());
     ids.push_back(ID(lij->K()).front());
@@ -630,13 +631,15 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (winfo==NULL) return winfo;
 
   if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
-    DEBUG_INFO("Calcing Differential for spin correlations using "
-	       <<Selected()->Generator()->Name()<<":");
+    msg_Debugging()<<"Calcing Differential for spin correlations using "
+                   <<Selected()->Generator()->Name()<<":"<<std::endl;
+    ME_Weight_Info mwi(*Selected()->GetMEwgtinfo());
     if (Selected()->Integrator()->ColorIntegrator()!=NULL)
       while (Selected()->Differential(*p_ampl,1|2|4|128)==0.0);
     else
       Selected()->Differential(*p_ampl,1|2|4|128);
-    }
+    Selected()->SetMEwgtinfo(mwi);
+  }
   return winfo;
 }
 
