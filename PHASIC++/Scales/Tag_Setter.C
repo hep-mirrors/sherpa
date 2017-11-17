@@ -125,7 +125,7 @@ namespace PHASIC {
           nl++;
           if      (nl==1) m_l1=i;
           else if (nl==2) m_l2=i;
-          else           {m_l1=m_l2=0;}
+          else           {m_l1=0; m_l2=1;}
         }
         if      (p_setter->Process()->Flavours()[i].Charge())
           m_charges.push_back(i);
@@ -191,7 +191,9 @@ namespace PHASIC {
     Term *Evaluate(const std::vector<Term*> &args) const
     {
       DEBUG_FUNC(p_setter->Process()->Name()<<" "<<m_l1<<" "<<m_l2);
-      if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
+      if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
+        msg_Error()<<METHOD<<"(): Error: Lepton indices not set for "
+                   <<p_setter->Process()->Name()<<std::endl;
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
@@ -321,8 +323,10 @@ namespace PHASIC {
 
     Term *Evaluate(const std::vector<Term*> &args) const
     {
-      if (m_leptons.size()==0) THROW(fatal_error,"No leptons available.");
       DEBUG_FUNC(p_setter->Process()->Name());
+      if (m_leptons.size()==0)
+        msg_Error()<<METHOD<<"(): Error: No leptons found in "
+                   <<p_setter->Process()->Name()<<std::endl;
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
@@ -391,7 +395,7 @@ namespace PHASIC {
           nl++;
           if      (nl==1) m_l1=i;
           else if (nl==2) m_l2=i;
-          else           {m_l1=m_l2=0;}
+          else           {m_l1=0; m_l2=1;}
         }
         if      (p_setter->Process()->Flavours()[i].Charge())
           m_charges.push_back(i);
@@ -455,8 +459,10 @@ namespace PHASIC {
 
     Term *Evaluate(const std::vector<Term*> &args) const
     {
-      if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
       DEBUG_FUNC(p_setter->Process()->Name()<<" "<<m_l1<<" "<<m_l2);
+      if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
+        msg_Error()<<METHOD<<"(): Error: Lepton indices not set for "
+                   <<p_setter->Process()->Name()<<std::endl;
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
