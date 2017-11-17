@@ -51,14 +51,14 @@ std::istream& AMEGIC::operator>>(std::istream& is, Momfunc& mf) {
 }
 
 Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b) 
-  : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
+  : momcount(0), fl(flav), nmom(_nmom), nvec(_nvec), p(NULL),
+    m_k1(Vec4D(0.,0.,0.,0.)), m_k2(Vec4D(0.,0.,0.,0.)),
+    m_k3(Vec4D(0.,0.,0.,0.)), p_epol(NULL), b(_b),
+    _eta(NULL), _mu(NULL), _S0(NULL), _S1(NULL), calc_st(NULL),
+    k0_n(0), m_precalc(0)
 {
   momcount = InitializeMomlist();
-  _eta=_mu=0;
-  _S0=_S1=0;
-  m_precalc=0;
   Setk0(10);
-  p_epol=NULL;
 }
 
 Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string name,string name2) 
