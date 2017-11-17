@@ -1217,11 +1217,16 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   return p_dinfo->Stat();
 }
 
-bool Amplitude::JetTrigger
+bool Amplitude::RSTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
   if (m_subs.empty() || sel==NULL) return true;
-  sel->JetTrigger(&m_subs);
+  for (size_t i(0);i<m_subs.size();++i) {
+    NLO_subevt *sub(m_subs[i]);
+    Vec4D_Vector p;
+    for (size_t i(0);i<sub->m_n;++i) p.push_back(sub->p_mom[i]);
+    sub->m_trig=sel->Trigger(p);
+  }
   int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());

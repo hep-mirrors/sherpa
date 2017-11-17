@@ -223,9 +223,9 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
               m_subtermlist.back()->SetNorm(p_tree_process->Norm());
               m_subtermlist.back()->SetSmearThreshold(m_smear_threshold);
               if (isPFFsplitting) nPFFsplittings++;
+              m_subevtlist.push_back(pdummy->GetSubevt());
             }
             else delete pdummy;
-	    m_subevtlist.push_back(pdummy->GetSubevt());
           }
           else delete pdummy;
           msg_Debugging()<<"\n";
@@ -440,7 +440,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
 
 double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const int mode)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(m_name);
   p_tree_process->Integrator()->SetMomenta(_mom);
   for (size_t i=0; i<m_real_momenta.size(); ++i) m_real_momenta[i]=_mom[i];
 
@@ -451,57 +451,57 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }
 
-  if (!m_no_tree) {
-  p_tree_process->ScaleSetter()->SetCaller(p_tree_process);
-  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
-  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
-  m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
-  }
-  if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
-  m_realevt.p_ampl=NULL;
-  if (!m_no_tree) {
-    if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
-        p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
-      m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
-      m_realevt.p_ampl->SetProc(this);
-    }
-  }
-  m_realevt.m_me = m_realevt.m_mewgt = 0.0;
-  m_realevt.m_trig = false;
-  m_realevt.m_K = 1.0;
-  for (size_t i=0;i<m_subtermlist.size();i++)
-    if (m_subtermlist[i]->IsValid()) {
-      m_subtermlist[i]->Integrator()->SetMomenta(_mom);
-      m_subtermlist[i]->SetLOMomenta(&mom.front(),cms);
-    }
-  p_tree_process->Selector()->JetTrigger(&m_subevtlist);
-  m_realevt.m_trig|=!p_tree_process->Selector()->On();
-
-  bool res=true;
-  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
+  bool res(true);
+  for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()) {
+    m_subtermlist[i]->Integrator()->SetMomenta(_mom);
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
     if (IsBad(test)) res=false;
-    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(0);
-    m_subevtlist.back()->m_oqcd = m_subtermlist[i]->MaxOrder(1);
-    m_subtermlist[i]->GetSubevt()->p_real=&m_realevt;
+    m_subevtlist[i]->m_oqcd = m_subtermlist[i]->MaxOrder(0);
+    m_subevtlist[i]->m_oew = m_subtermlist[i]->MaxOrder(1);
+    m_subevtlist[i]->p_real = &m_realevt;
   }
 
   if (m_ossubon){
-    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()){
+    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()) {
       double test = (*m_subostermlist[i])(&mom.front(),cms,mode|2);
       if (IsBad(test)) res=false;
-      m_subostermlist[i]->GetSubevt()->p_real=&m_realevt;
+      m_subevtlist[i]->m_oqcd = m_subostermlist[i]->MaxOrder(0);
+      m_subevtlist[i]->m_oew = m_subostermlist[i]->MaxOrder(1);
+      m_subevtlist[i]->p_real = &m_realevt;
     }
   }
-
   if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
-  if (!m_no_tree && res) {
-    double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
-    m_realevt.m_me += real;
-    m_realevt.m_mewgt += real;
-    m_realevt.m_K = p_tree_process->LastK();
-    if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
+
+  m_realevt.m_me = m_realevt.m_mewgt = 0.0;
+  m_realevt.m_trig = false;
+  m_realevt.m_K = 1.0;
+
+  if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
+  m_realevt.p_ampl=NULL;
+
+  bool realtrg(true);
+
+  if (!m_no_tree) {
+    realtrg=p_tree_process->Trigger(_mom);
+    if (res && realtrg) {
+      p_tree_process->ScaleSetter()->SetCaller(p_tree_process);
+      p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
+      m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
+      m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
+      m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
+      if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
+          p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
+        m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
+        m_realevt.p_ampl->SetProc(this);
+      }
+      double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
+      if (IsBad(real) || real == 0. ) res=false;
+      m_realevt.m_me = real;
+      m_realevt.m_mewgt = real;
+      m_realevt.m_K = p_tree_process->LastK();
+    }
   }
+  m_realevt.m_trig=realtrg;
   for (size_t i(0);i<m_subevtlist.size();++i) {
     if (!m_subevtlist[i]->m_trig || !res)
       m_subevtlist[i]->m_me=m_subevtlist[i]->m_mewgt=0.0;
@@ -510,7 +510,6 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   m_lastdxs = m_realevt.m_me;
 
   if (msg_LevelIsDebugging()) {
-    DEBUG_FUNC(Name());
     size_t prec(msg->Precision());
     msg->SetPrecision(16);
     for (size_t k(0);k<mom.size();++k) {

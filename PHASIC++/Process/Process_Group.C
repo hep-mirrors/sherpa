@@ -221,6 +221,7 @@ void Process_Group::SetLookUp(const bool lookup)
 bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
+  DEBUG_FUNC(m_name);
   int charge(0), strong(0);
   size_t quarks(0), nin(ii.m_ps.size()), nout(fi.m_ps.size());
   for (size_t i(0);i<nin;++i) {

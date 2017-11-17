@@ -431,7 +431,7 @@ double COMIX::Single_Process::Partonic
   }
   else {
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub &&
-        !sp->p_bg->JetTrigger(Selector(),m_mcmode))
+        !sp->p_bg->RSTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
     sp->p_scale->CalculateScale(p);
     m_dxs=sp->p_bg->Differential();

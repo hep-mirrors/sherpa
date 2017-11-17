@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Combined_Selector::Combined_Selector(Process_Base *const proc):
-  Selector_Base("Combined_Selector",proc), m_count(0), m_on(1)
+  Selector_Base("Combined_Selector",proc), m_count(0), m_on(1), m_res(0)
 {
 }
 
@@ -117,20 +117,6 @@ bool Combined_Selector::Trigger(const Vec4D_Vector &p)
     }
   }
   return m_res;
-}
-
-bool Combined_Selector::JetTrigger(NLO_subevtlist *const subs)
-{
-  for (size_t i(0);i<subs->size();++i) (*subs)[i]->m_trig=1;
-  m_jres=1;
-  if (!m_on) return m_jres;
-  for (size_t i=0; i<m_sels.size(); ++i) {
-    if (!(m_sels[i]->JetTrigger(subs))) {
-      m_jres=0;
-      return m_jres;
-    }
-  }
-  return m_jres;
 }
 
 bool Combined_Selector::Pass() const 

@@ -65,7 +65,7 @@ double COMIX::Single_Dipole_Term::Partonic
   Single_Dipole_Term *sp(this);
   if (mode==1) return m_lastxs;
   if (m_zero || !Selector()->Result()) return m_lastxs;
-  if (!p_bg->JetTrigger(Selector(),m_mcmode))
+  if (!p_bg->RSTrigger(Selector(),m_mcmode))
     return m_lastxs=0.0;
   sp->p_scale->CalculateScale(p);
   if (m_mcmode==1) p_rsint->ColorIntegrator()->GeneratePoint();

@@ -90,7 +90,6 @@ namespace PHASIC {
     static void ShowSyntax(const int mode);
 
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual bool JetTrigger(ATOOLS::NLO_subevtlist *const subs);
 
     virtual void BuildCuts(Cut_Data *) = 0;
     virtual void AddOnshellCondition(std::string,double);

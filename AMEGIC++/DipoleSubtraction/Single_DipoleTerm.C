@@ -625,6 +625,9 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 
   ResetLastXS();
   p_LO_process->ResetLastXS();
+  p_dipole->SetMomenta(mom);
+  p_dipole->CalcDiPolarizations();
+  SetLOMomenta(mom,cms);
 
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
   p_scale->SetCaller((_mode&2)?p_LO_process->Partner():p_LO_process);
@@ -633,7 +636,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
     m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
   else m_subevt.m_trig=true;
   msg_Debugging()<<"Trigger: "<<m_subevt.m_trig
-                 <<" ("<<p_dipole->KinCheck()<<")"<<std::endl;
+                 <<", kinematics check: "<<p_dipole->KinCheck()<<std::endl;
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
   int calc=m_subevt.m_trig;

@@ -268,7 +268,7 @@ double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p, const int
      but whatever... */
   PHASIC::Process_Base* rsproc = (PHASIC::Process_Base*)(p_subevent->p_real->p_proc);
   ATOOLS::NLO_subevtlist* subs = rsproc->GetRSSubevtList();
-  rsproc->Selector()->JetTrigger(subs);
+//  rsproc->Selector()->JetTrigger(subs);
 
   /* This method is called in MC@NLO matching from outside an
      RS_Process. Hence have to calc scales ourselves */

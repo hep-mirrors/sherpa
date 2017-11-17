@@ -215,7 +215,7 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const int set=0);
 
-    bool JetTrigger(PHASIC::Combined_Selector *const sel,const int mode);
+    bool RSTrigger(PHASIC::Combined_Selector *const sel,const int mode);
 
     void FillCombinations(Combination_Set &combs,CFlavVector_Map &flavs,
 			  SizeT_Map *brs=NULL,const NLO_subevt *sub=NULL) const;

@@ -1504,14 +1504,17 @@ CombinedFlavour(const size_t &idij)
 
 std::string  AMEGIC::Single_LOProcess::CreateLibName()
 {
+  DEBUG_FUNC(m_stype<<", E="<<m_flavs[m_emit]<<" ("<<m_emit<<")");
   std::string tag("");
   if      (m_stype==sbt::qcd) tag="__QCD(";
   else if (m_stype==sbt::qed) tag="__EW(";
   else THROW(fatal_error,"Unknown subtraction type.");
   std::string name(m_name);
   size_t bpos(name.find(tag));
-  PRINT_VAR(bpos);
   name.erase(bpos,name.length()-bpos+1);
-  if (m_emit>=0) name+="__E"+ToString(m_emit);
+  // need to add emitter for spin-correlated libs: only for gluon and photon
+  if (m_emit>=0)
+//    if (m_flavs[m_emit].IsGluon() || m_flavs[m_emit].IsPhoton())
+      name+="__E"+ToString(m_emit);
   return ShellName(name);
 }

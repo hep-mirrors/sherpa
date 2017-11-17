@@ -45,6 +45,7 @@ namespace EXTAMP {
        subtraction terms have to be triggered separately. This is done
        in RS::Process::Partonic. */
     bool Trigger(const ATOOLS::Vec4D_Vector &p) const { return true; }
+    bool TriggerSubevts();
 
     /* Overloaded from PHASIC::Process_Base such that dipole dummy
        processes are initialized as well */

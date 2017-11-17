@@ -46,6 +46,14 @@ namespace EXTAMP {
   }
 
 
+  bool RS_Process::TriggerSubevts()
+  {
+    DEBUG_FUNC("");
+    THROW(not_implemented,"Please reimplement me.");
+    return false;
+  }
+
+
   void RS_Process::Init(const PHASIC::Process_Info &pi,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler,const int mode)
@@ -98,8 +106,8 @@ namespace EXTAMP {
       }
 
     /* Check trigger and set m_trig of subevents accordingly */
-    Selector()->JetTrigger(&m_subevents);
-    
+    TriggerSubevts();
+
     /* Trigger the calculation scales (including those of dipoles) */
     ScaleSetter()->CalculateScale(p);
 
