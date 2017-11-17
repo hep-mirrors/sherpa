@@ -68,8 +68,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   std::string imode(reader.Get("NLO_IMODE", std::string("IKP"), "I-Term mode", METHOD));
   rpa->gen.SetVariable("NLO_IMODE",imode);
   m_nloadd = reader.Get("MEH_NLOADD", 1, "NLO add mode", METHOD);
-  m_ewaddmode = reader.Get("MEH_EWADDMODE", 1, "EW add mode", METHOD);
-  m_qcdaddmode = reader.Get("MEH_QCDADDMODE", 1, "QCD add mode", METHOD);
+  m_ewaddmode = reader.Get("MEH_EWADDMODE", 0, "EW add mode", METHOD);
+  m_qcdaddmode = reader.Get("MEH_QCDADDMODE", 0, "QCD add mode", METHOD);
   std::string seedfile(reader.Get("EVENT_SEED_FILE",
         "ran.stat."+rpa->gen.Variable("RANDOM_SEED"),
         "seed file", METHOD));
