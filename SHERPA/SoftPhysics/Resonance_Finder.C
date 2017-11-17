@@ -218,6 +218,7 @@ bool Resonance_Finder::ContainsNoAmbiguities
 void Resonance_Finder::FillBlob
 (Blob * blob, const Subprocess_Info& spi, Particle_Vector& pv)
 {
+  DEBUG_FUNC(pv.size());
   // find the leptons owned by this subprocess
   Particle_Vector localpv;
   bool onlyleptons(true);
@@ -238,6 +239,7 @@ void Resonance_Finder::FillBlob
 void Resonance_Finder::FillBlob
 (Blob * blob, const Flavour& resflav, Particle_Vector& pv)
 {
+  DEBUG_FUNC(resflav);
   Vec4D sum(MomentumSum(pv));
   for (Particle_Vector::iterator it=pv.begin();it!=pv.end();) {
     blob->AddToOutParticles(*it);
