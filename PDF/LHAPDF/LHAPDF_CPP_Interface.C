@@ -154,7 +154,7 @@ void LHAPDF_CPP_Interface::SetAlphaSInfo()
   if (m_asinfo.m_order>=0) return;
   // TODO: get alphaS info
   m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
-  m_asinfo.m_nf=p_pdf->info().get_entry_as<int>("NumFlavors");
+  m_asinfo.m_nf=p_pdf->info().get_entry_as<int>("NumFlavors",-1);
   if (m_asinfo.m_nf<0) {
     Default_Reader reader;
     int nf(reader.Get<int>("LHAPDF_NUMBER_OF_FLAVOURS", 5));
