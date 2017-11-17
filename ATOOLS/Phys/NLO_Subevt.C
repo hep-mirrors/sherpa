@@ -141,9 +141,9 @@ namespace ATOOLS
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
 	       <<"), K = "<<sevt.m_K
-               <<"\n  \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
-	       <<",  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
+	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
+	       <<", \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
 	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
   }
   std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)

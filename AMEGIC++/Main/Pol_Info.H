@@ -35,7 +35,7 @@ namespace AMEGIC {
 		   p_l0   = 3,   //             linear with direction
 		   p_l1   = 4,   //             linear, perpendicular to p_l0
 		   p_lh   = 5,   //             horizontaly (linear)
-		   p_lp   = 6,    //             perpendicular (linear)
+		   p_lp   = 6,   //             perpendicular (linear)
 		   p_none = 8,
 		   p_spec = 9,
 		   
