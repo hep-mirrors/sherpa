@@ -12,10 +12,7 @@ namespace SHNNLO {
     int m_type;
   public:
     QT_Selector(const PHASIC::Selector_Key &key);
-    bool Trigger(const ATOOLS::Vec4D_Vector & );
-    bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-		    ATOOLS::NLO_subevtlist *const);
-    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &) { return 1; }
+    bool Trigger(ATOOLS::Selector_List &);
     void BuildCuts(PHASIC::Cut_Data *) {}
     inline double QTCut() const { return m_cqtmin; }
   };

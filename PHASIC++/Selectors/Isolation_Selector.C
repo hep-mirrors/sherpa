@@ -20,7 +20,6 @@ namespace PHASIC {
     double m_dR,m_exp,m_emax;
     double m_ptmin,m_etmin,m_etamin,m_etamax,m_ymin,m_ymax;
     size_t m_nmin, m_nmax;
-    std::vector<size_t> m_vf;
     ATOOLS::Flavour m_iflav;
     ATOOLS::Flavour_Vector m_rejflav;
     kf_code m_outisokf;
@@ -35,7 +34,7 @@ namespace PHASIC {
     Isolation_Selector(const Selector_Key &key);
     ~Isolation_Selector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &sl);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -130,13 +129,8 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
     }
   }
 
-  m_vf.clear();
-  for (int i=m_nin;i<m_nin+m_nout;i++) {
-    if (m_iflav.Includes(p_fl[i])) {
-      m_on=true;
-      m_vf.push_back(i);
-    }
-  }
+  for (int i=m_nin;i<m_nin+m_nout;i++)
+    if (m_iflav.Includes(p_fl[i])) m_on=true;
 
   if (m_outisokf==kf_none) m_outisokf=m_iflav.Kfcode();
 
@@ -152,7 +146,6 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
              <<", "<<m_etamin<<"<eta<"<<m_etamax
              <<", "<<m_ymin<<"<y<"<<m_ymax<<std::endl;
     msg_Out()<<"NMin: "<<m_nmin<<", NMax: "<<m_nmax<<std::endl;
-    msg_Out()<<m_vf.size()<<" flavours found at "<<m_vf<<std::endl;
     msg_Out()<<"Isolated particles assigned ID="<<m_outisokf<<std::endl;
     msg_Out()<<"Isolated particles are "<<(m_removeiso?"":"not ")
              <<"removed from the particle list."<<std::endl;
@@ -169,16 +162,15 @@ Isolation_Selector::~Isolation_Selector() {
 }
 
 
-bool Isolation_Selector::Trigger(const Vec4D_Vector &p)
+bool Isolation_Selector::Trigger(Selector_List &sl)
 {
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
   size_t n(m_n);
-  const Flavour *const fl(p_fl);
-  Vec4D_Vector pc(p);
+  Vec4D_Vector pc();
   std::vector<size_t> vfsub;
   for (size_t i=m_nin;i<n;i++) {
-    if (m_iflav.Includes(fl[i])) {
+    if (m_iflav.Includes(sl[i].Flavour())) {
       vfsub.push_back(i);
     }
   }
@@ -189,21 +181,21 @@ bool Isolation_Selector::Trigger(const Vec4D_Vector &p)
                  <<" out of "<<vf->size()<<std::endl;
   for (size_t k=0;k<vf->size();k++) {
     size_t idx((*vf)[k]);
-    if ((m_ptmin==0. || pc[idx].PPerp()>m_ptmin) &&
-        (m_etmin==0. || pc[idx].MPerp()>m_etmin) &&
-        (m_etamin<-100000. || pc[idx].Eta()>m_etamin) &&
-        (m_etamax>100000. || pc[idx].Eta()<m_etamax) &&
-        (m_ymin<-100000. || pc[idx].Y()>m_ymin) &&
-        (m_ymax>100000. || pc[idx].Y()<m_ymax)) {
+    if ((m_ptmin==0. || sl[idx].Momentum().PPerp()>m_ptmin) &&
+        (m_etmin==0. || sl[idx].Momentum().MPerp()>m_etmin) &&
+        (m_etamin<-100000. || sl[idx].Momentum().Eta()>m_etamin) &&
+        (m_etamax>100000. || sl[idx].Momentum().Eta()<m_etamax) &&
+        (m_ymin<-100000. || sl[idx].Momentum().Y()>m_ymin) &&
+        (m_ymax>100000. || sl[idx].Momentum().Y()<m_ymax)) {
       bool iso(true);
-      double egamma(pc[idx].MPerp());
+      double egamma(sl[idx].Momentum().MPerp());
       std::vector<edr> edrlist;
       for (size_t i=m_nin;i<n;i++) {
         if (i!=idx) {
           for (size_t j(0);j<m_rejflav.size();j++) {
-            if (m_rejflav[j].Includes(fl[i])) {
-              double dr=DR(pc[(*vf)[k]],pc[i]);
-              if (dr<m_dR) edrlist.push_back(edr(pc[i].MPerp(),dr));
+            if (m_rejflav[j].Includes(sl[i].Flavour())) {
+              double dr=DR(sl[(*vf)[k]].Momentum(),sl[i].Momentum());
+              if (dr<m_dR) edrlist.push_back(edr(sl[i].Momentum().MPerp(),dr));
             }
           }
         }
@@ -237,12 +229,12 @@ bool Isolation_Selector::Trigger(const Vec4D_Vector &p)
   if (m_removeiso) {
     for (size_t i(0);i<vfiso.size();++i)
       if (vfiso[i])
-        pc[(*vf)[i]]=Vec4D(0.,0.,0.,0.);
+        sl[(*vf)[i]].Momentum()=Vec4D(0.,0.,0.,0.);
   }
   if (m_removenoniso) {
     for (size_t i(0);i<vfiso.size();++i)
       if (!vfiso[i])
-        pc[(*vf)[i]]=Vec4D(0.,0.,0.,0.);
+        sl[(*vf)[i]].Momentum()=Vec4D(0.,0.,0.,0.);
   }
 
   bool trigger(cnt>=m_nmin && cnt<=m_nmax);
@@ -252,7 +244,7 @@ bool Isolation_Selector::Trigger(const Vec4D_Vector &p)
     return false;
   }
   for (size_t k=0;k<m_sels.size();++k) {
-    if (!m_sels[k]->Trigger(pc)) {
+    if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
       m_sel_log->Hit(true);
       return false;

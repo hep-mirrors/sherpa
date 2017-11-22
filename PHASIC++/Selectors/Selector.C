@@ -81,8 +81,9 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_name(name), m_on(false), m_isnlo(false),
   m_sel_log(new Selector_Log(m_name)), p_proc(proc),
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
-  m_n(m_nin+m_nout), m_pass(1), p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
-  p_sub(NULL), m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
+  m_n(m_nin+m_nout), m_pass(1),
+  p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
+  m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
 {
   if (p_proc->Info().Has(nlo_type::real|nlo_type::rsub)) m_isnlo=true;
 }
@@ -90,6 +91,12 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
 Selector_Base::~Selector_Base()
 { 
   if (m_sel_log!=NULL) delete m_sel_log;
+}
+
+bool Selector_Base::Trigger(const Vec4D_Vector &p,const Flavour *fl, size_t n)
+{
+  THROW(fatal_error,"Virtual function not reimplemented.");
+  return false;
 }
 
 void Selector_Base::AddOnshellCondition(std::string,double)
@@ -164,7 +171,8 @@ namespace PHASIC {
 
     No_Selector(): Selector_Base("No_Selector") {}
 
-    bool Trigger(const Vec4D_Vector &) { return true; }
+    bool Trigger(const Vec4D_Vector &,const Particle_List * pl=NULL) { return true; }
+    bool Trigger(Selector_List &) { return true; }
 
     void BuildCuts(Cut_Data * cuts) {}
 

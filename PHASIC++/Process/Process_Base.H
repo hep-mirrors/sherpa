@@ -208,7 +208,7 @@ namespace PHASIC {
 
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
-    
+
     inline const std::string &Name() const { return m_name; }
 
     inline void SetMaxOrders(const std::vector<double> &o) { m_maxcpl=o; }

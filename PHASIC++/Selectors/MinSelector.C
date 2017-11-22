@@ -12,7 +12,7 @@ namespace PHASIC {
 
     ~MinSelector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -53,10 +53,10 @@ MinSelector::~MinSelector() {
   }
 }
 
-bool MinSelector::Trigger(const Vec4D_Vector &p)
+bool MinSelector::Trigger(Selector_List &sl)
 {
   for (size_t k=0;k<m_sels.size();++k) {
-    if (m_sels[k]->Trigger(p)) {
+    if (m_sels[k]->Trigger(sl)) {
       m_sel_log->Hit(0);
       return 1;
     }

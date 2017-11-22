@@ -30,11 +30,12 @@ namespace PHASIC {
   public:
     NJet_Finder(Process_Base *const proc, size_t nj,
                 double ptmin, double etmin, double dr, int exp,
-                double etamax, double ymax, double massmax);
+                double etamax, double ymax, double massmax,
+                int type);
 
     ~NJet_Finder();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -62,10 +63,12 @@ using namespace ATOOLS;
 
 NJet_Finder::NJet_Finder(Process_Base *const proc, size_t nj,
                          double ptmin, double etmin, double dr, int exp,
-                         double etamax, double ymax, double massmax) :
+                         double etamax, double ymax, double massmax,
+                         int type) :
   Selector_Base("NJetfinder",proc),
   m_pt2min(sqr(ptmin)), m_et2min(sqr(etmin)),
-  m_delta_r(dr), m_etamax(etamax), m_ymax(ymax), m_massmax(massmax), m_exp(exp)
+  m_delta_r(dr), m_etamax(etamax), m_ymax(ymax), m_massmax(massmax),
+  m_exp(exp), m_type(type)
 {
   m_ene        = rpa->gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
@@ -74,16 +77,6 @@ NJet_Finder::NJet_Finder(Process_Base *const proc, size_t nj,
   m_r2min      = sqr(m_delta_r);
 
   m_njet       = nj;
-
-  if (m_nin==2) {
-    int instrong(0);
-    for (int j=0;j<m_nin;j++) { 
-      if (p_fl[j].Resummed() || p_fl[j].Strong()) instrong++;
-    }
-    if (instrong==0) m_type = 1;
-    if (instrong==1) m_type = 2;
-    if (instrong==2) m_type = 4;
-  }
 
   p_kis  = new double[m_nout];
   p_imap = new int[m_nout];
@@ -111,7 +104,7 @@ void NJet_Finder::AddToJetlist(const Vec4D &jet) {
   m_kt2.push_back(jet.PPerp2());
 }
 
-bool NJet_Finder::Trigger(const Vec4D_Vector &p)
+bool NJet_Finder::Trigger(Selector_List &sl)
 {
   if (m_njet==0) return true;
 
@@ -120,10 +113,10 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
   m_kt2.clear();
   size_t n(0);
   Vec4D * moms = new Vec4D[m_nout];
-  for (size_t i=m_nin;i<m_nout+m_nin;i++) {
-    if (p_fl[i].Resummed() ||
-        (p_fl[i].Strong() && p_fl[i].Mass()<m_massmax)) {
-      moms[n]=p[i];
+  for (size_t i=m_nin;i<sl.size();i++) {
+    if (sl[i].Flavour().Resummed() ||
+        (sl[i].Flavour().Strong() && sl[i].Flavour().Mass()<m_massmax)) {
+      moms[n]=sl[i].Momentum();
       n++;
     }
   }
@@ -296,6 +289,8 @@ operator()(const Selector_Key &key) const
   if (key.front().size()>=7) ymax=ToType<double>(key[0][6]);
   double massmax(0.);
   if (key.front().size()>=8) massmax=ToType<double>(key[0][7]);
+  int type(2);
+  if (key.front().size()>=9) type=ToType<double>(key[0][8]);
 
   if (ToType<int>(key[0][0])<0)
     THROW(not_implemented,"Negative multiplicities not supported.");
@@ -306,12 +301,12 @@ operator()(const Selector_Key &key) const
                                   ToType<double>(key.p_read->Interpreter()
                                                        ->Interprete(key[0][2])),
                                   ToType<double>(key[0][3]),
-                                  exp,etamax,ymax,massmax));
+                                  exp,etamax,ymax,massmax,type));
   return jf;
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"NJetFinder n ptmin etmin dr [exp=1] [etamax=100] [maxmass=0]"; 
+  str<<"NJetFinder n ptmin etmin dr [exp=1] [etamax=100] [maxmass=0] [type=2]";
 }

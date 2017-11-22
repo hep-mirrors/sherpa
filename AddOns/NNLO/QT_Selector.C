@@ -25,25 +25,13 @@ QT_Selector::QT_Selector(const Selector_Key &key):
   m_type=m_nout-(p_proc->Info().Has(nlo_type::real)?nnj+1:nnj);
 }
 
-bool QT_Selector::Trigger(const Vec4D_Vector &p) 
+bool QT_Selector::Trigger(Selector_List &sl)
 {
   Vec4D q;
-  for (size_t i(m_nin);i<p.size();++i)
-    if (Flavour(kf_jet).Includes(p_fl[i])) q+=p[i];
+  for (size_t i(m_nin);i<sl.size();++i)
+    if (Flavour(kf_jet).Includes(p_fl[i])) q+=sl[i].Momentum();
   double qt=q.PPerp();
-  m_cqtmin=m_qtmin>0.0?m_qtmin:-m_qtmin*(p[0]+p[1]-q).Mass();
-  bool trig=(m_type==0 && qt<m_cqtmin) || (m_type==1 && qt>m_cqtmin);
-  return 1-m_sel_log->Hit(1-trig);
-}
-
-bool QT_Selector::JetTrigger
-(const Vec4D_Vector &p,NLO_subevtlist *const subs)
-{
-  Vec4D q;
-  for (size_t i=m_nin;i<subs->back()->m_n;i++)
-    if (Flavour(kf_jet).Includes(subs->back()->p_fl[i])) q+=p[i];
-  double qt=q.PPerp();
-  m_cqtmin=m_qtmin>0.0?m_qtmin:-m_qtmin*(p[0]+p[1]-q).Mass();
+  m_cqtmin=m_qtmin>0.0?m_qtmin:-m_qtmin*(sl[0].Momentum()+sl[1].Momentum()-q).Mass();
   bool trig=(m_type==0 && qt<m_cqtmin) || (m_type==1 && qt>m_cqtmin);
   return 1-m_sel_log->Hit(1-trig);
 }

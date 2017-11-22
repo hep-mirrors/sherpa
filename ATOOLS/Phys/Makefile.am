@@ -25,6 +25,7 @@ libToolsPhys_la_SOURCES       =	\
 				Flow.C \
 				Color.C \
 				Spinor.C \
+				Selector_List.C \
 				Fastjet_Helpers.C \
 				Momenta_Stretcher.C \
 				Weight_Info.C \
@@ -51,6 +52,7 @@ localinc_HEADERS      =	\
 			Momentum_Shifter.H \
 			Color.H \
 			Spinor.H \
+			Selector_List.H \
 			Fastjet_Helpers.H \
 			Momenta_Stretcher.H \
 			Weight_Info.H \

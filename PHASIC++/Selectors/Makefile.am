@@ -17,7 +17,6 @@ libPhasicSelectors_la_SOURCES = \
                                 NJet_Finder.C \
                                 Standard_Selector.C \
                                 Decay_Selector.C \
-                                Decay2_Selector.C \
                                 MinSelector.C \
                                 DressedParticleSelector.C \
                                 Fastjet_Finder.C \

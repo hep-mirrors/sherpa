@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/Selector_List.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -103,14 +104,23 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
   return true;
 }
 
-bool Combined_Selector::Trigger(const Vec4D_Vector &p)
+bool Combined_Selector::Trigger(const Vec4D_Vector &p,
+                                const Flavour *fl, size_t n)
 {
   DEBUG_FUNC("");
+  Selector_List sl(n?Selector_List(fl,n,p):Selector_List(p_proc->Flavours(),p));
+  return Trigger(sl);
+}
+
+bool Combined_Selector::Trigger(Selector_List& sl)
+{
+  DEBUG_FUNC("");
+  // BEWARE: Selector_List will be modified
   m_res=1;
   if (!m_on) return m_res;
   for (size_t i=0; i<m_sels.size(); ++i) {
     msg_Debugging()<<m_sels[i]->Name()<<std::endl;
-    if (!(m_sels[i]->Trigger(p))) {
+    if (!(m_sels[i]->Trigger(sl))) {
       msg_Debugging()<<"Point discarded"<<std::endl;
       m_res=0;
       return m_res;
@@ -119,7 +129,7 @@ bool Combined_Selector::Trigger(const Vec4D_Vector &p)
   return m_res;
 }
 
-bool Combined_Selector::Pass() const 
+bool Combined_Selector::Pass() const
 {
   for (size_t i=0;i<m_sels.size();++i)
     if (!m_sels[i]->Pass()) return false;

@@ -17,7 +17,7 @@ namespace PHASIC {
     ~DressedParticleSelector();
 
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -92,17 +92,12 @@ DressedParticleSelector::~DressedParticleSelector() {
   }
 }
 
-bool DressedParticleSelector::Trigger(const Vec4D_Vector &p)
+bool DressedParticleSelector::Trigger(Selector_List &sl)
 {
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
-  Particle_Dresser * dresser(p_sub?m_dressers[p_sub->m_idx]:p_dresser);
-  Vec4D_Vector pd(dresser->Dress(p));
-  if (msg_LevelIsIODebugging()) {
-    for (size_t i(0);i<p.size();++i)
-      msg_Debugging()<<i<<": "<<p[i]<<" -> "<<pd[i]<<std::endl;
-  }
+  p_dresser->Dress(sl);
   for (size_t k=0;k<m_sels.size();++k) {
-    if (!m_sels[k]->Trigger(pd)) {
+    if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded"<<std::endl;
       m_sel_log->Hit(true);
       return false;

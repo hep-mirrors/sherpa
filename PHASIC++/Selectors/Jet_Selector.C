@@ -37,7 +37,7 @@ namespace PHASIC {
     Jet_Selector(const Selector_Key &key);
     ~Jet_Selector();
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *);
   };
@@ -190,23 +190,22 @@ Jet_Selector::~Jet_Selector() {
 }
 
 
-bool Jet_Selector::Trigger(const Vec4D_Vector &p)
+bool Jet_Selector::Trigger(Selector_List &sl)
 {
   size_t n(m_n);
-  const Flavour *const fl(p_fl);
 
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
-  Vec4D_Vector moms(p.size(),Vec4D(0.,0.,0.,0.));
-  for (size_t i(0);i<m_nin;++i) moms[i]=p[i];
+  Vec4D_Vector moms(sl.size(),Vec4D(0.,0.,0.,0.));
+  for (size_t i(0);i<m_nin;++i) moms[i]=sl[i].Momentum();
   std::vector<fastjet::PseudoJet> input,jets;
   // book-keep where jet input was taken from
   std::vector<size_t> jetinputidx;
-  for (size_t i(m_nin);i<n;++i) if (p[i]!=moms[i]) {
-    if (ToBeClustered(fl[i], p[i], m_jetinput)) {
-      input.push_back(MakePseudoJet(fl[i],p[i]));
+  for (size_t i(m_nin);i<n;++i) if (sl[i].Momentum()!=moms[i]) {
+    if (ToBeClustered(sl[i].Flavour(), sl[i].Momentum(), m_jetinput)) {
+      input.push_back(MakePseudoJet(sl[i].Flavour(),sl[i].Momentum()));
       jetinputidx.push_back(i);
     }
-    else moms[i]=p[i];
+    else moms[i]=sl[i].Momentum();
   }
   if (msg_LevelIsDebugging()) {
     for (size_t i(0);i<input.size();++i)
@@ -248,7 +247,7 @@ bool Jet_Selector::Trigger(const Vec4D_Vector &p)
     bool assigned(false);
     if (cjit->first.Kfcode()!=kf_none) {
       for (size_t j(0);j<moms.size();++j) {
-        if (moms[j]==Vec4D(0.,0.,0.,0.) && cjit->first.Includes(fl[j])) {
+        if (moms[j]==Vec4D(0.,0.,0.,0.) && cjit->first.Includes(sl[j].Flavour())) {
           moms[j]=cjit->second;
           jetinputidx.erase(std::remove(jetinputidx.begin(),jetinputidx.end(),j),
                             jetinputidx.end());
@@ -270,7 +269,7 @@ bool Jet_Selector::Trigger(const Vec4D_Vector &p)
   // remaining spots remain empty
   if (msg_LevelIsDebugging()) {
     msg_Out()<<"Final momenta list:\n";
-    for (size_t i(0);i<moms.size();++i) msg_Out()<<fl[i]<<": "<<moms[i]<<std::endl;
+    for (size_t i(0);i<moms.size();++i) msg_Out()<<sl[i]<<std::endl;
   }
 
   bool trigger(njets>=m_nmin && njets<=m_nmax);
@@ -280,7 +279,7 @@ bool Jet_Selector::Trigger(const Vec4D_Vector &p)
     return false;
   }
   for (size_t k=0;k<m_sels.size();++k) {
-    if (!m_sels[k]->Trigger(moms)) {
+    if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
       m_sel_log->Hit(true);
       return false;

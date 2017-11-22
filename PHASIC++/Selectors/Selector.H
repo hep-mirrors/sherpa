@@ -2,10 +2,11 @@
 #define PHASIC_Selectors_Selector_H
 
 #include "PHASIC++/Selectors/Cut_Data.H"
-#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Selector_List.H"
 
 #include <limits>
 
@@ -76,7 +77,6 @@ namespace PHASIC {
     int m_pass;
 
     ATOOLS::Flavour *p_fl;
-    ATOOLS::NLO_subevt *p_sub;
 
     double m_smin,m_smax;
 
@@ -89,7 +89,9 @@ namespace PHASIC {
     // member functions
     static void ShowSyntax(const int mode);
 
-    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p) = 0;
+    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p,
+                         const ATOOLS::Flavour *fl=NULL, size_t n=0);
+    virtual bool Trigger(ATOOLS::Selector_List &sl) = 0;
 
     virtual void BuildCuts(Cut_Data *) = 0;
     virtual void AddOnshellCondition(std::string,double);

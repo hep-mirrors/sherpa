@@ -63,6 +63,27 @@ Vec4D_Vector Particle_Dresser::Dress(const Vec4D_Vector& p)
   return p;
 }
 
+void Particle_Dresser::Dress(Selector_List &sl)
+{
+  m_photons.clear();
+  m_charges.clear();
+  Vec4D_Vector p;
+  for (size_t i(0);i<sl.size();++i) {
+    if (sl[i].Flavour().IsPhoton()) m_photons.push_back(i);
+    if (sl[i].Flavour().Charge())   m_charges.push_back(i);
+    p.push_back(sl[i].Momentum());
+  }
+  Vec4D_Vector pd(Dress(p));
+  if (pd.size()!=p.size()) THROW(fatal_error,"Inconsistent output.");
+  for (size_t i(0);i<sl.size();++i) {
+    sl[i].SetMomentum(pd[i]);
+  }
+  for (Selector_List::iterator it(sl.begin());it<sl.end();) {
+    if (it->Momentum()==Vec4D(0.,0.,0.,0.)) it=sl.erase(it);
+    else ++it;
+  }
+}
+
 Vec4D_Vector Particle_Dresser::ConeDress(const Vec4D_Vector& p)
 {
   Vec4D_Vector pp(p);

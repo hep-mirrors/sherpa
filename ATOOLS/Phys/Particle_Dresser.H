@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Selector_List.H"
 
 namespace ATOOLS {
   class Particle_Dresser {
@@ -39,6 +40,7 @@ namespace ATOOLS {
     void CompleteConeLists();
 
     ATOOLS::Vec4D_Vector Dress(const ATOOLS::Vec4D_Vector& p);
+    void                 Dress(Selector_List& sl);
 
     inline bool IsOn() const { return m_on; }
 

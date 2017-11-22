@@ -24,7 +24,9 @@ namespace PHASIC {
 
     bool Initialize(const Selector_Key &key);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &);
+    bool Trigger(const ATOOLS::Vec4D_Vector &p,
+                 const ATOOLS::Flavour *fl=NULL, size_t n=0);
+    bool Trigger(ATOOLS::Selector_List &sl);
 
     bool Pass() const;
 

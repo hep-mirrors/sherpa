@@ -39,10 +39,10 @@ namespace PHASIC {
     double Reweight(ATOOLS::Variation_Parameters *params,
 		    ATOOLS::Variation_Weights *weights,
 		    Reweight_Args &args);
-    ATOOLS::Subevent_Weights_Vector 
-    ReweightSubevents(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      ReweightSubevt_Args &args);
+//    ATOOLS::Subevent_Weights_Vector
+//    ReweightSubevents(ATOOLS::Variation_Parameters *params,
+//		      ATOOLS::Variation_Weights *weights,
+//		      ReweightSubevt_Args &args);
 
   protected:
     PDF::Jet_Criterion *p_jc;
@@ -57,8 +57,7 @@ namespace PHASIC {
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
     void          AssignId(ATOOLS::Term *term);
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool   JetTrigger(ATOOLS::NLO_subevtlist *const subs);
+    bool   Trigger(ATOOLS::Selector_List &p);
 
     void   BuildCuts(Cut_Data *cuts);
 

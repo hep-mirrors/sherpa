@@ -1225,7 +1225,7 @@ bool Amplitude::RSTrigger
     NLO_subevt *sub(m_subs[i]);
     Vec4D_Vector p;
     for (size_t i(0);i<sub->m_n;++i) p.push_back(sub->p_mom[i]);
-    sub->m_trig=sel->Trigger(p);
+    sub->m_trig=sel->Trigger(p,sub->p_fl);
   }
   int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {

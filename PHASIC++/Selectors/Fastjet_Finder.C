@@ -27,7 +27,7 @@ namespace PHASIC {
     ~Fastjet_Finder();
 
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -93,17 +93,16 @@ Fastjet_Finder::~Fastjet_Finder() {
 }
 
 
-bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
+bool Fastjet_Finder::Trigger(Selector_List &sl)
 {
   if (m_nj<1) return true;
 
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
 
   std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<p.size();++i) {
-    if (Flavour(kf_jet).Includes(p_fl[i]) ||
-	((m_nb>0 || m_nb2>0) && p_fl[i].Kfcode()==kf_b)) {
-      input.push_back(MakePseudoJet(p_fl[i], p[i]));
+  for (size_t i(m_nin);i<sl.size();++i) {
+    if (ToBeClustered(sl[i].Flavour(), (m_nb>0 || m_nb2>0))) {
+      input.push_back(MakePseudoJet(sl[i].Flavour(), sl[i].Momentum()));
     }
   }
   

@@ -30,7 +30,7 @@ namespace PHASIC {
 
     int m_imode;
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p,size_t &l,size_t &u,
+    bool Trigger(const ATOOLS::Selector_List &sl,size_t &l,size_t &u,
 		 ATOOLS::Vec4D_Vector &moms,const size_t &f,
 		 const size_t &n,const size_t &m,const size_t &id);
 
@@ -50,8 +50,7 @@ namespace PHASIC {
 		  ATOOLS::Flavour_Vector fl,
 		  std::vector<std::pair<double,double> > &bounds);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool Trigger(const ATOOLS::Vec4D_Vector &p,const int id);
+    bool Trigger(ATOOLS::Selector_List &);
 
   };// end of class Variable_Selector
 
@@ -187,7 +186,7 @@ void Variable_Selector::SetRange
 }
 
 bool Variable_Selector::Trigger
-(const Vec4D_Vector &p,size_t &l,size_t &u,std::vector<Vec4D> &moms,
+(const Selector_List &sl,size_t &l,size_t &u,std::vector<Vec4D> &moms,
  const size_t &f,const size_t &n,const size_t &m,const size_t &id) 
 {
   msg_Indent();
@@ -208,7 +207,7 @@ bool Variable_Selector::Trigger
     ++l; ++u;
     return !m_sel_log->Hit(res);
   }
-  if (n==m_nfl[id][f]) return Trigger(p,l,u,moms,f+1,0,0,id);
+  if (n==m_nfl[id][f]) return Trigger(sl,l,u,moms,f+1,0,0,id);
   moms.push_back(Vec4D());
   for (size_t k(m);k<m_sels[id][f].size();++k) {
 #ifdef DEBUG__Variable_Selector
@@ -217,7 +216,7 @@ bool Variable_Selector::Trigger
 		   <<" ("<<m_sels[id][f][k]<<") {\n";
 #endif
     moms.back()=m_moms[id][f][k];
-    if (!Trigger(p,l,u,moms,f,n+1,k+1,id)) return false;
+    if (!Trigger(sl,l,u,moms,f,n+1,k+1,id)) return false;
 #ifdef DEBUG__Variable_Selector
     msg_Debugging()<<"}\n";
 #endif
@@ -226,29 +225,24 @@ bool Variable_Selector::Trigger
   return true;
 }
 
-bool Variable_Selector::Trigger(const Vec4D_Vector &p,const int id) 
+bool Variable_Selector::Trigger(Selector_List &sl)
 {
 #ifdef DEBUG__Variable_Selector
-  msg_Debugging()<<METHOD<<"(id="<<id<<"): {\n";
+  msg_Debugging()<<METHOD<<"(id="<<0<<"): {\n";
 #endif
-  for (size_t j(0);j<m_cfl[id].size();++j) {
-    for (size_t i(0);i<m_sels[id][j].size();++i)
-      m_moms[id][j][i]=p[m_sels[id][j][i]];
-    if (m_orders.size()>j)
-      std::sort(m_moms[id][j].begin(),m_moms[id][j].end(),*m_orders[j]);
-  }
+//  for (size_t j(0);j<m_cfl[id].size();++j) {
+//    for (size_t i(0);i<m_sels[id][j].size();++i)
+//      m_moms[id][j][i]=p[m_sels[id][j][i]];
+//    if (m_orders.size()>j)
+//      std::sort(m_moms[id][j].begin(),m_moms[id][j].end(),*m_orders[j]);
+//  }
   size_t l(0), u(0);
   std::vector<Vec4D> moms;
-  bool hit(Trigger(p,l,u,moms,0,0,0,id));
+  bool hit(Trigger(sl,l,u,moms,0,0,0,0));
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<"}\n";
 #endif
   return hit;
-}
-
-bool Variable_Selector::Trigger(const Vec4D_Vector &p)
-{
-  return Trigger(p,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
 DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);

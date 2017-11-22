@@ -33,7 +33,7 @@ namespace PHASIC {
     ~Fastjet_Selector();
 
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &);
+    bool   Trigger(ATOOLS::Selector_List &);
 
     void   BuildCuts(Cut_Data *) {}
   };
@@ -152,17 +152,17 @@ void Fastjet_Selector::AssignId(Term *term)
   }
 }
 
-bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
+bool Fastjet_Selector::Trigger(Selector_List &sl)
 {
   if (m_nj<0) return true;
 
   m_p.clear();
-  for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
+  for (size_t i(0);i<m_nin;++i) m_p.push_back(sl[i].Momentum());
   std::vector<fastjet::PseudoJet> input,jets;
-  for (size_t i(m_nin);i<p.size();++i) {
-    if (ToBeClustered(p_fl[i], m_bmode))
-      input.push_back(MakePseudoJet(p_fl[i],p[i]));
-    else m_p.push_back(p[i]);
+  for (size_t i(m_nin);i<sl.size();++i) {
+    if (ToBeClustered(sl[i].Flavour(), m_bmode))
+      input.push_back(MakePseudoJet(sl[i].Flavour(),sl[i].Momentum()));
+    else m_p.push_back(sl[i].Momentum());
   }
   int nj=m_p.size();
   
