@@ -315,7 +315,7 @@ Weight_Value CS_Gamma::Differential
   if (pit==(*(*procs)[nlo_type::lo]).end()) 
     THROW(fatal_error,"Process '"+pname+"' not found");
   Weight_Value meps(pit->second);
-  meps.m_b=meps.m_me=pit->second->Differential(*ampl,2|4|rm);
+  meps.m_b=meps.m_me=pit->second->Differential(*ampl,1|2|4|rm);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();
   meps.m_mur2=ampl->MuR2();
