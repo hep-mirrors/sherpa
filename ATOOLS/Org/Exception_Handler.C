@@ -3,7 +3,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+
 #include <sys/types.h>
+#include <signal.h>
 #include <unistd.h>
 
 #define USING_Stack_Trace

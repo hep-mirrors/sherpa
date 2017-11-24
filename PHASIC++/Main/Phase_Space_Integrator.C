@@ -7,9 +7,10 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/RUsage.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
-#include "ATOOLS/Org/RUsage.H"
+#include <signal.h>
 #include <unistd.h>
 
 using namespace PHASIC;

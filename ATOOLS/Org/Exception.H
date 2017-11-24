@@ -3,7 +3,6 @@
 
 #include "ATOOLS/Org/Message.H"
 #include <exception>
-#include <signal.h>
 
 namespace ATOOLS {
 
