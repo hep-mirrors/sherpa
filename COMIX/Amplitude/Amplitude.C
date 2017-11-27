@@ -1220,12 +1220,13 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 bool Amplitude::RSTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
+  DEBUG_FUNC("mode="<<mode);
   if (m_subs.empty() || sel==NULL) return true;
   for (size_t i(0);i<m_subs.size();++i) {
     NLO_subevt *sub(m_subs[i]);
     Vec4D_Vector p;
     for (size_t i(0);i<sub->m_n;++i) p.push_back(sub->p_mom[i]);
-    sub->m_trig=sel->Trigger(p,sub->p_fl);
+    sub->m_trig=sel->Trigger(p,sub->p_fl,sub->m_n);
   }
   int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {
