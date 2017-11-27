@@ -739,9 +739,9 @@ bool IQ2_Selector::Trigger(Selector_List &sl)
   for (int i=0;i<m_nin;i++) {
     for (int j=m_nin;j<sl.size();j++) {
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double q2ij = -(sl[i].Momentum()-sl[j].Momentum()).Abs2();
         if (m_sel_log->Hit( ((q2ij < m_q2min) ||
                              (q2ij > m_q2max)) )) return false;
@@ -820,9 +820,9 @@ bool PT2_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double ptij = (sl[i].Momentum()+sl[j].Momentum()).PPerp();
         if (m_sel_log->Hit( ((ptij<m_ptmin) || (ptij>m_ptmax)) )) return false;
       }
@@ -901,9 +901,9 @@ bool MT2_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double mtij = (sl[i].Momentum()+sl[j].Momentum()).MPerp();
         if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
       }
@@ -982,9 +982,9 @@ bool MT2_v2_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double mtij = sqrt(2.*sl[i].Momentum().PPerp()*sl[j].Momentum().PPerp()
                            *(1.-sl[i].Momentum().CosDPhi(sl[j].Momentum())));
         if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
@@ -1065,9 +1065,9 @@ bool DeltaY_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<sl.size();j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double dyij = dabs(sl[i].Momentum().DY(sl[j].Momentum()));
         if (m_sel_log->Hit( ((dyij<m_dymin) || (dyij>m_dymax)) )) return false;
       }
@@ -1145,9 +1145,9 @@ bool DeltaEta_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<sl.size();j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double detaij = dabs(sl[i].Momentum().DEta(sl[j].Momentum()));
         if (m_sel_log->Hit( ((detaij<m_detamin) || (detaij>m_detamax)) )) return false;
       }
@@ -1225,9 +1225,9 @@ bool DeltaPhi_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<m_n;j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double dphiij = dabs(sl[i].Momentum().DPhi(sl[j].Momentum()));
         if (m_sel_log->Hit( ((dphiij<m_dphimin) || (dphiij>m_dphimax)) )) return false;
       }
@@ -1305,9 +1305,9 @@ bool DeltaR_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<sl.size();j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double dRij = sl[i].Momentum().DR(sl[j].Momentum());
         if (m_sel_log->Hit( ((dRij<m_dRmin) || (dRij>m_dRmax)) )) return false;
       }
@@ -1385,9 +1385,9 @@ bool DeltaRy_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<sl.size();j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         double dRyij = sl[i].Momentum().DRy(sl[j].Momentum());
         if (m_sel_log->Hit( ((dRyij<m_dRymin) || (dRyij>m_dRymax)) )) return false;
       }
@@ -1465,9 +1465,9 @@ bool PhiStar_Selector::Trigger(Selector_List &sl)
     for (size_t j=i+1;j<sl.size();j++) {
       if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
-            m_flav2.Includes(sl[j].Flavour()) ||
+            m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
-            m_flav2.Includes(sl[i].Flavour())) ) ) {
+            m_flav2.Includes(sl[i].Flavour())) ) {
         // phi* = tan((pi-dphi)/2) * sin(theta*)
         //      = tan((pi-dphi)/2) * sqrt(1-cos^2(theta*))
         // with

@@ -167,7 +167,7 @@ bool Isolation_Selector::Trigger(Selector_List &sl)
   DEBUG_FUNC(m_on);
   if (!m_on) return true;
   size_t n(m_n);
-  Vec4D_Vector pc();
+  Vec4D_Vector pc;
   std::vector<size_t> vfsub;
   for (size_t i=m_nin;i<n;i++) {
     if (m_iflav.Includes(sl[i].Flavour())) {
