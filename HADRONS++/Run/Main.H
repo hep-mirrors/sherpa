@@ -35,6 +35,8 @@
 #include "TROOT.h"
 #endif
 
+#include <signal.h>
+
 using namespace std;
 using namespace HADRONS;
 using namespace ATOOLS;

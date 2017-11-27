@@ -5,17 +5,18 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/RUsage.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
+
+#include <signal.h>
 #include <unistd.h>
+
 #include <cassert>
-
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/RUsage.H"
-
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -23,7 +24,7 @@ using namespace ATOOLS;
 static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
-  m_lastparticlecounter(0), m_lastblobcounter(0), 
+  m_lastparticlecounter(0), m_lastblobcounter(0),
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
   m_mn(0), m_msum(0.0), m_msumsqr(0.0),
   p_variations(NULL)
@@ -34,20 +35,20 @@ Event_Handler::Event_Handler():
   m_lastrss=0;
 }
 
-Event_Handler::~Event_Handler() 
+Event_Handler::~Event_Handler()
 {
   Reset();
   m_blobs.Clear();
   EmptyEventPhases();
-  
+
   if (p_phases)   { delete p_phases;   p_phases   = NULL; }
 }
 
-void Event_Handler::AddEventPhase(Event_Phase_Handler * phase) 
+void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
 {
   eph::code type   = phase->Type();
   std::string name = phase->Name();
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
       msg_Out()<<"WARNING in Event_Handler::AddEventPhase"
 	       <<"("<<type<<":"<<name<<") "
@@ -60,7 +61,7 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   p_phases->push_back(phase);
 }
 
-void Event_Handler::EmptyEventPhases() 
+void Event_Handler::EmptyEventPhases()
 {
   if (p_phases) {
     while (!p_phases->empty()) {
@@ -68,9 +69,9 @@ void Event_Handler::EmptyEventPhases()
       p_phases->pop_back();
     }
   }
-}  
+}
 
-void Event_Handler::PrintGenericEventStructure() 
+void Event_Handler::PrintGenericEventStructure()
 {
   if (!msg_LevelIsInfo()) return;
   msg_Out()<<"----------------------------------------------------------\n"

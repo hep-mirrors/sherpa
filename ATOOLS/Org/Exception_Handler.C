@@ -4,7 +4,9 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
+
 #include <sys/types.h>
+#include <signal.h>
 #include <unistd.h>
 
 #define USING_Stack_Trace
