@@ -19,21 +19,21 @@
   Process 98 98 -> 11 -11;
   NLO_Mode Fixed_Order;
   NLO_Part RS;
-  NLO_Order (0,1);
+  NLO_Order (1,0);
   Order (0,2);
   Print_Graphs Graphs;
   End process;
 }(processes);
 
 (selector){
-  DressedParticleSelector {
-    DressingAlgorithm Cone 0.1;
+#  DressedParticleSelector {
+#    DressingAlgorithm Cone 0.1
     N     11 1 1;
     N    -11 1 1;
-    Mass  11 -11 60. 120.;
-    PT   -11 10. E_CMS;
-    PT    11 10. E_CMS;
-  }
+    Mass  11 -11 60. 120.
+    PT   -11 10. E_CMS
+    PT    11 10. E_CMS
+ # }
 }(selector);
 
 (analysis){
