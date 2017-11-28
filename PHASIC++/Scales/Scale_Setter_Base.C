@@ -175,6 +175,7 @@ double Scale_Setter_Base::CalculateScale
     Calculate(p,mode);
   }
   else {
+    msg_Debugging()<<"calculating scales for subevents"<<std::endl;
     for (int i(p_subs->size()-1);i>=0;--i) {
       NLO_subevt *sub((*p_subs)[i]);
       if (!sub->m_trig && !sub->IsReal()) {
@@ -219,6 +220,7 @@ double Scale_Setter_Base::CalculateScale
   if (p_proc && p_proc->Integrator()->Beam()) p_cpls->Calculate();
   msg_Debugging()<<"\\mu_F = "<<sqrt(m_scale[stp::fac])<<std::endl;
   msg_Debugging()<<"\\mu_R = "<<sqrt(m_scale[stp::ren])<<std::endl;
+  msg_Debugging()<<"\\mu_Q = "<<sqrt(m_scale[stp::res])<<std::endl;
   return m_scale[stp::fac];
 }
 

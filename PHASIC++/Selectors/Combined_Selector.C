@@ -107,7 +107,7 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
 bool Combined_Selector::Trigger(const Vec4D_Vector &p,
                                 const Flavour *fl, size_t n)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(p.size()<<" momenta, "<<n<<" flavours");
   Selector_List sl(n?Selector_List(fl,n,p):Selector_List(p_proc->Flavours(),p));
   return Trigger(sl);
 }
@@ -126,6 +126,7 @@ bool Combined_Selector::Trigger(Selector_List& sl)
       return m_res;
     }
   }
+  msg_Debugging()<<"Point passed"<<std::endl;
   return m_res;
 }
 
