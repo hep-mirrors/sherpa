@@ -43,6 +43,7 @@ Vec4D_Vector Selector_List::ExtractMomenta()
 {
   Vec4D_Vector p;
   for (size_t i(0);i<size();++i) p.push_back(at(i).Momentum());
+  return p;
 }
 
 namespace ATOOLS {
