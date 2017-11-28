@@ -8,10 +8,11 @@ using namespace std;
 
 Selector_Particle::~Selector_Particle() {}
 
-Selector_List::Selector_List() {}
+Selector_List::Selector_List() : m_nin(0) {}
 
 Selector_List::Selector_List(const Flavour_Vector &fl,
-                             const Vec4D_Vector &p)
+                             const Vec4D_Vector &p, const size_t &nin)
+ : m_nin(nin)
 {
   if (fl.size()!=p.size())
     THROW(fatal_error,"Number of flavours and momenta does not match.");
@@ -19,7 +20,8 @@ Selector_List::Selector_List(const Flavour_Vector &fl,
 }
 
 Selector_List::Selector_List(const Flavour *fl, size_t n,
-                             const Vec4D_Vector &p)
+                             const Vec4D_Vector &p, const size_t &nin)
+ : m_nin(nin)
 {
   if (n!=p.size())
     THROW(fatal_error,"Number of flavours and momenta does not match.");

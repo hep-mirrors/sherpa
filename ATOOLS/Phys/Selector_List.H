@@ -30,17 +30,23 @@ namespace ATOOLS {
 
   class Selector_List : public std::vector<Selector_Particle> {
   private:
+    size_t m_nin;
   public:
     Selector_List();
     Selector_List(const ATOOLS::Flavour_Vector &fl,
-                  const ATOOLS::Vec4D_Vector &p);
+                  const ATOOLS::Vec4D_Vector &p,
+                  const size_t& nin);
     Selector_List(const ATOOLS::Flavour *fl, size_t n,
-                  const ATOOLS::Vec4D_Vector &p);
+                  const ATOOLS::Vec4D_Vector &p,
+                  const size_t& nin);
 
     void AddFlavour(ATOOLS::Flavour fl);
 
     void SetMomenta(ATOOLS::Vec4D_Vector p);
     ATOOLS::Vec4D_Vector ExtractMomenta();
+
+    inline void SetNIn(const size_t& nin) { m_nin=nin; }
+    inline const size_t& NIn() const      { return m_nin; }
   };
 
   std::ostream &operator<<(std::ostream &ostr,const Selector_List &p);

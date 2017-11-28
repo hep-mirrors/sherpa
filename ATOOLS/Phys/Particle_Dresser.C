@@ -23,6 +23,7 @@ Particle_Dresser::Particle_Dresser(const Flavour * fl,
     if (p_sl->back().Flavour().IsPhoton()) m_photons.push_back(i);
     if (p_sl->back().Flavour().Charge())   m_charges.push_back(i);
   }
+  p_sl->SetNIn(nin);
   m_dR2.resize(m_charges.size(),m_dR2global);
   m_di.resize(m_charges.size(),0.);
   m_dj.resize(m_photons.size(),0.);
@@ -75,11 +76,11 @@ Vec4D_Vector Particle_Dresser::Dress(const Vec4D_Vector& p)
   p_sl->SetMomenta(p);
   switch (m_algo) {
   case 0:
-    ConeDress(*p_sl);
+    ConeDress(*p_sl); break;
   case 1:
-    RecombinationDress(*p_sl);
+    RecombinationDress(*p_sl); break;
   default:
-    THROW(fatal_error,"Unknown dressing algorithm.");
+    THROW(fatal_error,"Unknown dressing algorithm."); break;
   }
   return p_sl->ExtractMomenta();
 }
@@ -90,12 +91,11 @@ void Particle_Dresser::Dress(Selector_List &sl)
   // operates on the flavours and momenta given
   m_photons.clear();
   m_charges.clear();
-  for (size_t i(0);i<sl.size();++i) {
+  for (size_t i(sl.NIn());i<sl.size();++i) {
     if (sl[i].Flavour().IsPhoton()) m_photons.push_back(i);
     if (sl[i].Flavour().Charge())   m_charges.push_back(i);
   }
   DEBUG_FUNC("N_P="<<m_photons.size()<<", N_C="<<m_charges.size());
-  msg_Debugging()<<sl<<std::endl;
   m_dR2.resize(m_charges.size(),m_dR2global);
   m_di.resize(m_charges.size(),0.);
   m_dj.resize(m_photons.size(),0.);
@@ -104,6 +104,7 @@ void Particle_Dresser::Dress(Selector_List &sl)
   if (!m_charges.size() || !m_photons.size()) m_on=false;
   if (!m_on) msg_Debugging()<<"switched off"<<std::endl;
   if (!m_on) return;
+  msg_Debugging()<<sl<<std::endl;
 
   // dress
   switch (m_algo) {
