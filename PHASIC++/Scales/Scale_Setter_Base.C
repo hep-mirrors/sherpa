@@ -179,7 +179,7 @@ double Scale_Setter_Base::CalculateScale
     for (int i(p_subs->size()-1);i>=0;--i) {
       NLO_subevt *sub((*p_subs)[i]);
       if (!sub->m_trig && !sub->IsReal()) {
-	for (size_t j(0);j<sub->m_mu2.size();++j) sub->m_mu2[j]=0.0;
+        for (size_t j(0);j<sub->m_mu2.size();++j) sub->m_mu2[j]=-1.0;
 	if (sub->p_ampl) {
 	  sub->p_ampl->Delete();
 	  sub->p_ampl=NULL;

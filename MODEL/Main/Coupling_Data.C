@@ -12,7 +12,7 @@ void Coupling_Data::Calculate()
 {
   if (p_scl==NULL) return;
   m_fac=1.;
-  if (*p_scl>0.) m_fac=(*p_cpl)(*p_scl)/m_def;
+  if (*p_scl>=0.) m_fac=(*p_cpl)(*p_scl)/m_def;
   msg_Debugging()<<METHOD<<": scl = "<<sqrt(*p_scl)<<" -> "<<*this<<"\n";
 }
 
