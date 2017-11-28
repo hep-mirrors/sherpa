@@ -31,12 +31,16 @@ namespace ATOOLS {
   class Selector_List : public std::vector<Selector_Particle> {
   private:
   public:
+    Selector_List();
     Selector_List(const ATOOLS::Flavour_Vector &fl,
                   const ATOOLS::Vec4D_Vector &p);
     Selector_List(const ATOOLS::Flavour *fl, size_t n,
                   const ATOOLS::Vec4D_Vector &p);
 
+    void AddFlavour(ATOOLS::Flavour fl);
+
     void SetMomenta(ATOOLS::Vec4D_Vector p);
+    ATOOLS::Vec4D_Vector ExtractMomenta();
   };
 
   std::ostream &operator<<(std::ostream &ostr,const Selector_List &p);

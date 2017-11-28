@@ -10,7 +10,6 @@ namespace PHASIC {
 
   class DressedParticleSelector : public Selector_Base {
     ATOOLS::Particle_Dresser *               p_dresser;
-    std::vector<ATOOLS::Particle_Dresser * > m_dressers;
   public:
     DressedParticleSelector(const Selector_Key &key);
 
@@ -42,35 +41,23 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
 {
   DEBUG_FUNC("");
   NLO_subevtlist * subs(p_proc->GetSubevtList());
-  if (subs) m_dressers.resize(subs->size(),NULL);
   double dR(0.),exp(1.);
   for (size_t k=0;k<key.size();++k) {
     if (key[k].size()>2 && key[k][0]=="DressingAlgorithm") {
       if (p_dresser) THROW(fatal_error,"Too many dressing algorithms.");
       std::string algo(ToType<std::string>(key[k][1]));
       dR=ToType<double>(key.p_read->Interpreter()->Interprete(key[k][2]));
-      if (key[k].size()>3)
-        exp=ToType<double>(key.p_read->Interpreter()->Interprete(key[k][3]));
-      p_dresser = new Particle_Dresser(p_fl,m_nin,m_nout,algo,dR,exp);
-      for (size_t i(0);i<m_dressers.size();++i) {
-        NLO_subevt * sub((*subs)[i]);
-        m_dressers[i] = new Particle_Dresser(sub->p_fl,m_nin,sub->m_n-m_nin,
-                                            algo,dR,exp);
-      }
+      p_dresser = new Particle_Dresser(algo,dR);
     }
-    else if (key[k].size()>2 && key[k][0]=="FlavourDependentCone") {
+    else if (key[k].size()>2 && key[k][0]=="FlavourDependentRadius") {
       if (!p_dresser) THROW(fatal_error,"No dressing algorithm set yet.");
       kf_code kf=ToType<kf_code>(key.p_read->Interpreter()->Interprete(key[k][1]));
       dR=ToType<double>(key.p_read->Interpreter()->Interprete(key[k][2]));
       p_dresser->SetFlavourDependentCone(kf,dR);
-      for (size_t i(0);i<m_dressers.size();++i)
-        m_dressers[i]->SetFlavourDependentCone(kf,dR);
     }
     else {
       if (!p_dresser) THROW(fatal_error,"No dressing algorithm defined.");
       p_dresser->CompleteConeLists();
-      for (size_t i(0);i<m_dressers.size();++i)
-        m_dressers[i]->CompleteConeLists();
       ReadInSubSelectors(key,k);
       break;
     }
@@ -84,8 +71,6 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
 
 DressedParticleSelector::~DressedParticleSelector() {
   if (p_dresser) delete p_dresser;
-  for (size_t i(0);i<m_dressers.size();++i) delete m_dressers[i];
-  m_dressers.resize(0);
   while (m_sels.size()>0) {
     delete *m_sels.begin();
     m_sels.erase(m_sels.begin());
