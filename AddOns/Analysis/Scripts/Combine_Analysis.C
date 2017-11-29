@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   MakeDir(output);
   string flname=output+"fl.tmp";
   string tmp="ls "+filter+inlist[0]+" > "+flname;
-  system(tmp.c_str());
+  int retls(system(tmp.c_str()));
   vector<string> filelist;
   std::string buf;
   ifstream from(flname.c_str());
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
       if (FileExists(inlist[0]+buf)) filelist.push_back(buf);
   }
   from.close();
-  system(("rm "+flname).c_str());
+  int retrm(system(("rm "+flname).c_str()));
 
   if (check) {
     double** csmatrix=new double*[inlist.size()];
