@@ -8,6 +8,8 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
+#include "ATOOLS/Phys/NLO_Types.H"
+
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
@@ -112,8 +114,8 @@ PHASIC::Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,
   if (pi.m_loopgenerator!="DiHiggs") return NULL;
 
   /* Check NLO type (allow only QCD, not EW)  */
-  if (pi.m_fi.m_nloewtype ==PHASIC::nlo_type::loop) return NULL;
-  if (pi.m_fi.m_nloqcdtype!=PHASIC::nlo_type::loop) return NULL;
+  if (pi.m_fi.m_nlotype!=ATOOLS::nlo_type::loop ||
+      (pi.m_fi.m_nlocpl[0]!=1 && pi.m_fi.m_nlocpl[1]!=0)) return NULL;
 
   /* Check flavours */
   ATOOLS::Flavour_Vector flavs = pi.ExtractFlavours();
