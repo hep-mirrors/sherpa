@@ -6,6 +6,7 @@
 #include "mpi.h"
 #endif
 #ifdef USING__Threading
+#include <pthread.h>
 inline int pthread_cond_signal
 (pthread_cond_t *c,pthread_mutex_t *m)
 {
