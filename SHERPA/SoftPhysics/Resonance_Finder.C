@@ -28,7 +28,7 @@ Resonance_Finder::Resonance_Finder(ATOOLS::Data_Reader* reader,
   m_on(true), m_resdist(1.), m_inclres(false), p_mehandler(meh)
 {
   m_on = (reader->GetValue<std::string>("ME_QED_CLUSTERING","On")=="On");
-  m_resdist = reader->GetValue<double>("ME_QED_CLUSTERING_THRESHOLD",1.);
+  m_resdist = reader->GetValue<double>("ME_QED_CLUSTERING_THRESHOLD",10.);
   m_inclres = reader->GetValue<int>("ME_QED_INCLUDE_RESONANCES",0);
   InitialiseHelperParticles();
 
