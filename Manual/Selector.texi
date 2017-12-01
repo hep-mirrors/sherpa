@@ -19,6 +19,11 @@ Sherpa provides the following selectors
 * Minimum selector::          cuts that are inclusive for several selectors
 @end menu
 
+Some selectors modify the momenta and flavours of the set of 
+final state particles. These selectors also take a list of 
+subselectors which then act on the modified flavours and momenta. 
+Details are explained in the respective selectors' description.
+
 @node Inclusive selectors
 @subsection Inclusive selectors
 
@@ -36,20 +41,25 @@ The selectors act on @emph{all} particles in the event.
 Their respective keywords are
 
 @table @option
-@item ETmis <min value> <max value>
-missing transverse energy cut (at the moment only neutrinos are 
+@item N <kf> <min value> <max value>
+Minimum and maximum multiplicity of flavour @code{<kf>} in the 
+final state.
+@item PTmis <min value> <max value>
+Missing transverse momentum cut (at the moment only neutrinos are 
 considered invisible)
-@item IsolationCut 22 <dR> <exponent> <epsilon>
-Frixione isolation cone @mycite{Frixione1998jh}
+@item ETmis <min value> <max value>
+Missing transverse energy cut (at the moment only neutrinos are 
+considered invisible)
+@item IsolationCut <kf> <dR> <exponent> <epsilon>
+Smooth cone isolation @mycite{Frixione1998jh}, the parameters given 
+are the flavour @code{<kf>} to be isolated against massless partons 
+and the isolation cone parameters.
 @item NJ <N> <algo> <min value> <max value>
 NJettiness from @mycite{Stewart2010tn}, where @code{<algo>} specifies 
 the jet finding algorithm to determine the hard jet directions and 
 @code{<N>} is their multiplicity. 
 @code{algo=kt|antikt|cambridge|siscone,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]}
 @end table
-
-@verbatim
-@end verbatim
 
 @node One particle selectors
 @subsection One particle selectors
