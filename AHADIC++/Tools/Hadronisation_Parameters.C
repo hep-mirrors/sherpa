@@ -1,10 +1,10 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
@@ -13,63 +13,64 @@ using namespace MODEL;
 using namespace std;
 
 
-Hadronisation_Parameters *AHADIC::hadpars=NULL;
+Hadronisation_Parameters * AHADIC::hadpars = NULL;
 
-
-Hadronisation_Parameters::Hadronisation_Parameters() :
-  p_constituents(NULL),p_multiplets(NULL),
-  p_singletransitions(NULL),p_doubletransitions(NULL),
-  p_softclusters(NULL)
-{ }
+Hadronisation_Parameters::Hadronisation_Parameters() {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
-  if (p_constituents!=NULL)      { delete p_constituents;      p_constituents=NULL;       }
-  if (p_multiplets!=NULL)        { delete p_multiplets;        p_multiplets=NULL;         }
-  if (p_singletransitions!=NULL) { delete p_singletransitions; p_singletransitions=NULL;  }
-  if (p_doubletransitions!=NULL) { delete p_doubletransitions; p_doubletransitions=NULL;  }
-  if (p_softclusters!=NULL)      { delete p_softclusters;      p_softclusters=NULL;       }
+  if (p_constituents!=NULL) {
+    delete p_constituents;
+    p_constituents=NULL;
+  }
+  if (p_stransitions!=NULL) {
+    delete p_stransitions;
+    p_stransitions=NULL;
+  }
+  if (p_dtransitions!=NULL) {
+    delete p_dtransitions;
+    p_dtransitions=NULL;
+  }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)
 {
-  msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
+  msg_Out()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
 
-  p_constituents      = new Constituents(false);
-
-  if (msg_LevelIsTracking()) 
+  bool test      = false;
+  bool diquarks  = true;
+  p_constituents = new Constituents(diquarks);
+  Multiplet_Constructor multipletconstructor(false);
+  Wave_Functions * wavefunctions = multipletconstructor.GetWaveFunctions();
+  p_stransitions = new Single_Transitions(wavefunctions);
+  p_dtransitions = new Double_Transitions(p_stransitions);
+  
+  if (test) {
     p_constituents->PrintConstituents();
-
-  p_multiplets        = new All_Hadron_Multiplets();
-  if (msg_LevelIsTracking()) {
-    p_multiplets->PrintWaveFunctions(); 
-    p_multiplets->PrintMultiplets();
+    //multipletconstructor.PrintWaveFunctions(true); 
+    multipletconstructor.PrintMultiplets();
+    p_stransitions->Print();
+    p_dtransitions->Print(true);
+    //p_dtransitions->Print(false);
+    exit(1);
   }
-
-  p_singletransitions = new Single_Transitions();
-  if (msg_LevelIsTracking()) 
-    p_singletransitions->PrintSingleTransitions(); 
-
-  p_doubletransitions = new Double_Transitions();
-  if (msg_LevelIsTracking()) 
-    p_doubletransitions->PrintDoubleTransitions(); 
-
-  p_softclusters      = new Soft_Cluster_Handler(m_ana);
 }
 
 
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
 {
-  Default_Reader reader;
-  reader.SetInputPath(dir);
-  reader.SetInputFile(file);
-  ReadGeneralSwitches(reader);
-  ReadMassParameters(reader);
-  ReadPoppingParameters(reader);
-  ReadMesonWeights(reader);
-  ReadGluonSplittingParameters(reader);
-  ReadClusterDecayParameters(reader);
-  ReadClusterToMesonParameters(reader);
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  dataread.SetInputPath(dir);
+  dataread.SetInputFile(file);
+  ReadGeneralSwitches(dataread);
+  ReadMassParameters(dataread);
+  ReadPoppingParameters(dataread);
+  ReadMesonWeights(dataread);
+  ReadGluonSplittingParameters(dataread);
+  ReadClusterDecayParameters(dataread);
+  ReadClusterToMesonParameters(dataread);
 }
 
 double Hadronisation_Parameters::Get(string keyword) 
@@ -83,142 +84,149 @@ double Hadronisation_Parameters::Get(string keyword)
 }
 
 void Hadronisation_Parameters::
-ReadGluonSplittingParameters(Default_Reader & reader) {
-  m_parametermap[string("pt02")]                 = 
-    reader.Get<double>("PT^2_0",1.562);
-  m_parametermap[string("G2QQ_Exponent")]        = 
-    reader.Get<double>("G2QQ_EXPONENT",1.08);
-  m_parametermap[string("G2QQ_LeadExponent")]    = 
-    reader.Get<double>("G2QQ_LEADEXPONENT",0.00);
-  m_parametermap[string("ptmax")]                = 
-    reader.Get<double>("PT_MAX",1.00);
-  m_parametermap[string("ptmax_factor")]         = 
-    reader.Get<double>("PT_MAX_FACTOR",1.0);
+ReadGluonSplittingParameters(Data_Reader & dataread) {
+  m_parametermap[string("kt_o")]   =
+    dataread.GetValue<double>( "KT_O",      1.00 );
+  // gluon fragmentation function
+  m_parametermap[string("alphaG")] =
+    dataread.GetValue<double>( "ALPHA_G",   2.00 );
+  m_parametermap[string("betaG")]  =
+    dataread.GetValue<double>( "BETA_G",    2.00 );
+  // light quark fragmentation function
+  m_parametermap[string("alphaL")] =
+    dataread.GetValue<double>( "ALPHA_L",   0.25 );
+  m_parametermap[string("betaL")]  =
+    dataread.GetValue<double>( "BETA_L",    1.20 );
+  m_parametermap[string("gammaL")] =
+    dataread.GetValue<double>( "GAMMA_L",   0.50 );
+  // di-quark fragmentation function
+  m_parametermap[string("alphaD")] =
+    dataread.GetValue<double>( "ALPHA_D",   m_parametermap[string("alphaL")] );
+  m_parametermap[string("betaD")]  =
+    dataread.GetValue<double>( "BETA_D",    m_parametermap[string("betaL")] );
+  m_parametermap[string("gammaD")] =
+    dataread.GetValue<double>( "GAMMA_D",   m_parametermap[string("gammaL")] );
+  // heavy quark fragmentation function
+  m_parametermap[string("alphaH")] =
+    dataread.GetValue<double>( "ALPHA_H",   0.50 );
+  m_parametermap[string("betaH")]  =
+    dataread.GetValue<double>( "BETA_H",    1.00 );
+  m_parametermap[string("gammaH")] =
+    dataread.GetValue<double>( "GAMMA_H",   0.25 );
 }
 
 void Hadronisation_Parameters::
-ReadClusterDecayParameters(Default_Reader & reader) {
-  m_parametermap[string("MaxNumberOfPairs")]  =
-    reader.Get<int>("MAX_PAIRS",1);
-  m_parametermap[string("SplitExponent")]     = 
-    reader.Get<double>("SPLIT_EXPONENT",0.1608);
-  m_parametermap[string("SplitLeadExponent")] = 
-    reader.Get<double>("SPLIT_LEADEXPONENT",8);
-  m_parametermap[string("SpectExponent")]     = 
-    reader.Get<double>("SPECT_EXPONENT",1.739);
-  m_parametermap[string("SpectLeadExponent")] = 
-    reader.Get<double>("SPECT_LEADEXPONENT",8);
+ReadClusterDecayParameters(Data_Reader & dataread) {
+  // Probably irrelevant as long as they are small.
+  // We will probably not have to tune them.
+  m_parametermap[string("decay_threshold")] =
+    dataread.GetValue<double>("DECAY_THRESHOLD",     0.500);
+  m_parametermap[string("piphoton_threshold")] =
+    dataread.GetValue<double>("PI_PHOTON_THRESHOLD", 0.150);
+  m_parametermap[string("dipion_threshold")] =
+    dataread.GetValue<double>("DI_PION_THRESHOLD",   0.300);
+  m_parametermap[string("open_threshold")] =
+    dataread.GetValue<double>("OPEN_THRESHOLD",      0.100);
 }
 
 void Hadronisation_Parameters::
-ReadDeprecatedParameters(Default_Reader & reader) {
+ReadDeprecatedParameters(Data_Reader & dataread) {
   m_parametermap[string("colour_reconnection_strength")] = 
-    reader.Get<double>("COLOUR_RECONNECTION_STRENGTH",0.23);
+    dataread.GetValue<double>("COLOUR_RECONNECTION_STRENGTH",0.23);
 }
 
 void Hadronisation_Parameters::
-ReadClusterToMesonParameters(Default_Reader & reader) {
-  m_parametermap[string("Offset_C->H")]          =
-    reader.Get<double>("TRANSITION_OFFSET",0.8);
-  m_parametermap[string("MassExponent_C->H")]    =
-    reader.Get<double>("TRANSITION_EXPONENT",0.15);
-  m_parametermap[string("WidthExponent_C->H")]   =
-    reader.Get<double>("TRANSITION_EXPONENT2",-0.32);
-  m_parametermap[string("Offset_C->HH")]         =
-    reader.Get<double>("DECAY_OFFSET",1.202);
-  m_parametermap[string("MassExponent_C->HH")]   =
-    reader.Get<double>("DECAY_EXPONENT",2.132);
+ReadClusterToMesonParameters(Data_Reader & dataread) {
+  m_parametermap[string("mass_exponent")]   = 
+    dataread.GetValue<double>("MASS_EXPONENT",4.0);
 }
 
-void Hadronisation_Parameters::ReadMesonWeights(Default_Reader & reader) 
+void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread) 
 {
   m_parametermap[string("Singlet_Suppression")]   = 
-    reader.Get<double>("SINGLET_SUPPRESSION",0.57);
-  m_parametermap[string("Multiplet_Meson_L0R0S0")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_PSEUDOSCALARS",1.00);
-  m_parametermap[string("Multiplet_Meson_L0R0S1")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_VECTORS",0.75);
-  m_parametermap[string("Multiplet_Meson_L0R0S2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_TENSORS2",0.30);
-  m_parametermap[string("Multiplet_Meson_L0R0S3")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_TENSORS3",0.00);
-  m_parametermap[string("Multiplet_Meson_L0R0S4")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_TENSORS4",0.00);
-  m_parametermap[string("Multiplet_Meson_L1R0S0")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_SCALARS",1.00);
-  m_parametermap[string("Multiplet_Meson_L1R0S1")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_AXIALVECTORS",0.75);
-  m_parametermap[string("Multiplet_Meson_L1R0S2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_TENSORS2",0.00);
-  m_parametermap[string("Multiplet_Meson_L2R0S1")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L2R0_VECTORS",0.80);
-  m_parametermap[string("Multiplet_Meson_L3R0S1")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L3R0_VECTORS",0.00);
-  m_parametermap[string("Multiplet_Meson_L0R1S0")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R1_SCALARS",0.50);
-  m_parametermap[string("Multiplet_Meson_L0R1S1")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R1_AXIALVECTORS",0.00);
-  m_parametermap[string("Multiplet_Nucleon_L0R0S1/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_N_1/2",1.00);
-  m_parametermap[string("Multiplet_exc_Nucleon_L0R0S1/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_N*_1/2",1.00);
-  m_parametermap[string("Multiplet_exc_Nucleon_L1R0S1/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_N*_1/2",0.00);
-  m_parametermap[string("Multiplet_exc_Nucleon_L1R0S3/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_N*_3/2",0.00);
-  m_parametermap[string("Multiplet_Delta_L0R0S3/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L0R0_DELTA_3/2",0.45);
-  m_parametermap[string("Multiplet_exc_Delta_L1R0S3/2")]   = 
-    reader.Get<double>("MULTI_WEIGHT_L1R0_DELTA*_3/2",0.00);
+    dataread.GetValue<double>("SINGLET_SUPPRESSION",  1.0); // 0.8
   m_parametermap[string("Mixing_Angle_0+")]    = 
-    reader.Get<double>("Mixing_0+",-0.31416)-M_PI/2.;
+    dataread.GetValue<double>("Mixing_0+",            -14.1/180.*M_PI);
   m_parametermap[string("Mixing_Angle_1-")]    = 
-    reader.Get<double>("Mixing_1-",0.61075);
+    dataread.GetValue<double>("Mixing_1-",             36.4/180.*M_PI);
   m_parametermap[string("Mixing_Angle_2+")]    = 
-    reader.Get<double>("Mixing_2+",0.4887);
+    dataread.GetValue<double>("Mixing_2+",             27.0/180.*M_PI);
   m_parametermap[string("Mixing_Angle_3-")]    = 
-    reader.Get<double>("Mixing_3-",0.5411);
+    dataread.GetValue<double>("Mixing_3-",             0.5411);
   m_parametermap[string("Mixing_Angle_4+")]    = 
-    reader.Get<double>("Mixing_4+",0.6283);
+    dataread.GetValue<double>("Mixing_4+",             0.6283);
+
+  // Mesons currently included
+  m_parametermap[string("Multiplet_Meson_R0L0S0")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_PSEUDOSCALARS", 1.00);
+  m_parametermap[string("Multiplet_Meson_R0L0S1")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_VECTORS",       1.00);  
+  m_parametermap[string("Multiplet_Meson_R0L0S2")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_TENSORS2",      0.50); 
+  m_parametermap[string("Multiplet_Meson_R0L1S0")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_SCALARS",       0.10);  
+  m_parametermap[string("Multiplet_Meson_R0L1S1")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_AXIALVECTORS",  0.10); 
+  m_parametermap[string("Multiplet_Meson_R0L2S2")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L2_VECTORS",       0.25); 
+  // Baryons currently included
+  m_parametermap[string("Multiplet_Baryon_R0L0S1/2")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_N_1/2",         1.00); 
+  m_parametermap[string("Multiplet_Baryon_R1L0S1/2")]   =  
+    dataread.GetValue<double>("MULTI_WEIGHT_R1L0_N_1/2",         1.00); 
+  m_parametermap[string("Multiplet_Baryon_R2L0S1/2")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R2L0_N_1/2",         0.20); 
+  m_parametermap[string("Multiplet_Baryon_R1_1L0S1/2")] = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R1_1L0_N_1/2",       0.20); 
+  m_parametermap[string("Multiplet_Baryon_R0L0S3/2")]   = 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_DELTA_3/2",     0.25); 
+  // Individual hadrons
+  m_parametermap[string("eta_modifier")]   = 
+    dataread.GetValue<double>("ETA_MODIFIER",                 0.15);
+  m_parametermap[string("eta_prime_modifier")]   = 
+    dataread.GetValue<double>("ETA_PRIME_MODIFIER",           1.00);
 }
 
-void Hadronisation_Parameters::ReadPoppingParameters(Default_Reader & reader) 
+void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread) 
 {
-  m_parametermap[string("Strange_fraction")]     =
-    reader.Get<double>("STRANGE_FRACTION",0.6049);
+  double sfrac; 
+  m_parametermap[string("Strange_fraction")]     = sfrac = 
+    dataread.GetValue<double>("STRANGE_FRACTION",                0.42);
   m_parametermap[string("Baryon_fraction")]      = 
-    reader.Get<double>("BARYON_FRACTION",1.00);
-  m_parametermap[string("Heavy_Baryon_Enhancement")]    = 
-    reader.Get<double>("HEAVY_BARYON_ENHANCEMENT",4.);
+    dataread.GetValue<double>("BARYON_FRACTION",                 0.80);
+  m_parametermap[string("charm_baryon_modifier")]    = 
+    dataread.GetValue<double>("CHARM_BARYON_MODIFIER",           1.00);
+  m_parametermap[string("beauty_baryon_modifier")]    = 
+    dataread.GetValue<double>("BEAUTY_BARYON_MODIFIER",          1.00);
   m_parametermap[string("P_qs_by_P_qq")]       = 
-    reader.Get<double>("P_{QS}/P_{QQ}",0.3);
+    dataread.GetValue<double>("P_{QS}/P_{QQ}",                   0.20);  
   m_parametermap[string("P_ss_by_P_qq")]       = 
-    reader.Get<double>("P_{SS}/P_{QQ}",0.01);
+    dataread.GetValue<double>("P_{SS}/P_{QQ}",                   0.04);
   m_parametermap[string("P_di_1_by_P_di_0")]   = 
-    reader.Get<double>("P_{QQ_1}/P_{QQ_0}",1.0);
+    dataread.GetValue<double>("P_{QQ_1}/P_{QQ_0}",               0.20); 
 }
 
-void Hadronisation_Parameters::ReadMassParameters(Default_Reader & reader) 
+void Hadronisation_Parameters::ReadMassParameters(Data_Reader & dataread) 
 {
-  m_parametermap[string("minmass2")]             = 
-    reader.Get<double>("MIN_MASS2",0.0);
-  m_parametermap[string("Mass_glue")]          = 
-    reader.Get<double>("M_GLUE",0.);
+  m_parametermap[string("minmass2")] = 
+    dataread.GetValue<double>("MIN_MASS2",                      0.25);
+  m_parametermap[string("Mass_glue")] = 
+    dataread.GetValue<double>("M_GLUE",                         0.00);
   Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
   double mud = m_parametermap[string("Mass_updown")] = 
-    reader.Get<double>("M_UP_DOWN",0.3);
+    dataread.GetValue<double>("M_UP_DOWN",                      0.30);
   double ms = m_parametermap[string("Mass_strange")] = 
-    reader.Get<double>("M_STRANGE",0.45);
-  double mc = m_parametermap[string("Mass_charm")]         = 
-    reader.Get<double>("M_CHARM",1.8);
-  double mb = m_parametermap[string("Mass_bottom")]        = 
-    reader.Get<double>("M_BOTTOM",5.1);
-  double mdiq = m_parametermap[string("Mass_diquark")]           = 
-    reader.Get<double>("M_DIQUARK_OFFSET",0.12);
-  double bind0 = m_parametermap[string("Mass_bind0")]           = 
-    reader.Get<double>("M_BIND_0",0.12);
-  double bind1 = m_parametermap[string("Mass_bind1")]           = 
-    reader.Get<double>("M_BIND_1",0.25);
+    dataread.GetValue<double>("M_STRANGE",                      0.40);
+  double mc = m_parametermap[string("Mass_charm")] = 
+    dataread.GetValue<double>("M_CHARM",                        1.80);
+  double mb = m_parametermap[string("Mass_bottom")] = 
+    dataread.GetValue<double>("M_BOTTOM",                       5.10);
+  double mdiq = m_parametermap[string("Mass_diquark")] = 
+    dataread.GetValue<double>("M_DIQUARK_OFFSET",               0.30);
+  double bind0 = m_parametermap[string("Mass_bind0")] = 
+    dataread.GetValue<double>("M_BIND_0",                       0.12);
+  double bind1 = m_parametermap[string("Mass_bind1")] = 
+    dataread.GetValue<double>("M_BIND_1",                       0.50);
   Flavour(kf_d).SetHadMass(mud);
   Flavour(kf_u).SetHadMass(mud);
   Flavour(kf_s).SetHadMass(ms);
@@ -235,12 +243,12 @@ void Hadronisation_Parameters::ReadMassParameters(Default_Reader & reader)
   Flavour(kf_ss_1).SetHadMass((2.*ms+mdiq)*(1.+bind1));
 }
 
-void Hadronisation_Parameters::ReadGeneralSwitches(Default_Reader & reader) 
+void Hadronisation_Parameters::ReadGeneralSwitches(Data_Reader & dataread) 
 {
   // General switches for operational modes
-  m_ana = reader.Get<int>("FRAGMENTATION_ANALYSIS",0)==1;
+  m_ana = dataread.GetValue<int>("FRAGMENTATION_ANALYSIS",0)==1;
   m_parametermap[string("colour_reconnections")] = 
-    reader.Get<int>("COLOUR_RECONNECTIONS",0);
+    dataread.GetValue<int>("COLOUR_RECONNECTIONS",0);
 }
 
 
