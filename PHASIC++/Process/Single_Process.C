@@ -549,7 +549,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
                          cp->Flavours()[0],cp->Flavours()[1]);
           msg_Debugging()<<dads<<std::endl;
           m_mewgtinfo.m_dadsinfos.push_back(dads);
-          if (p_variationweights && dadsmewgt != 0.0) {
+          if (p_variationweights && dadsmewgt != 0.0 && !IsNan(dadsmewgt)) {
             *cp->VariationWeights() *= dps.m_weight*m_dsweight;
           }
           m_last-=dadswgt;
