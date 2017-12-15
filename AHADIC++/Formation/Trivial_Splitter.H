@@ -41,7 +41,7 @@ namespace AHADIC {
     bool CheckKinematics();
 
     bool Rescue();
-    bool ConstructRescueMomenta();
+    void ConstructRescueMomenta();
  public:
     Trivial_Splitter();
     ~Trivial_Splitter() {}  

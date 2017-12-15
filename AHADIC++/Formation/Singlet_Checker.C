@@ -303,8 +303,8 @@ bool Singlet_Checker::TransitProblematicSinglets() {
     }
     m_transitions.clear();
   }
-  delete moms;
-  delete masses;
+  delete[] moms;
+  delete[] masses;
   return success;
 }
 
@@ -327,8 +327,8 @@ bool Singlet_Checker::TransitProblematicSingletWithRecoiler() {
     delete p_singlet;
     m_transitions.clear();
   }
-  delete moms;
-  delete masses;
+  delete[] moms;
+  delete[] masses;
   return success;
 }
 
@@ -394,7 +394,7 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
   if (m_mass > 2.*m_minQmass) {
     if (m_splitter(p_part1,p_part2)) {
       Cluster * cluster = new Cluster(p_part1,p_part2);
-      if (!p_softclusters->Treat(cluster,true)==1) {
+      if ((!p_softclusters->Treat(cluster,true))==1) {
 	msg_Error()<<"Error in "<<METHOD<<": transformed two gluons into\n"
 		   <<(*cluster)
 		   <<"but did not decay further.  Insert into cluster list.\n";

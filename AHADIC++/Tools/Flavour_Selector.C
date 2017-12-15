@@ -28,6 +28,7 @@ operator()(const double & Emax,const bool & vetodi) {
       return fdit->first.IsDiQuark()?fdit->first.Bar():fdit->first;
     }
   }
+  THROW(fatal_error, "No flavour selected.");
 }
 
 double Flavour_Selector::Norm(const double & mmax,const bool & vetodi) 

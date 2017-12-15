@@ -120,8 +120,8 @@ bool Soft_Cluster_Handler::TreatSingletCluster() {
   }
   return FixKinematics();
 }
-  
-bool Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
+
+void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
   p_cluster      = cluster;
   m_mass2        = cluster->Momentum().Abs2();
   m_mass         = sqrt(m_mass2);

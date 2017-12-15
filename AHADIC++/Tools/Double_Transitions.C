@@ -2,6 +2,8 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <cmath>
+
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
@@ -35,10 +37,10 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       if (2.*popped.HadMass()+0.1<pair.first.HadMass()+pair.second.HadMass())
 	weight = 1.;
       if (popped.IsDiQuark()) {
-	if (abs(pair.first.Kfcode())==4)  weight *= m_charm_baryon_modifier;
-	if (abs(pair.second.Kfcode())==4) weight *= m_charm_baryon_modifier;
-	if (abs(pair.first.Kfcode())==5)  weight *= m_beauty_baryon_modifier;
-	if (abs(pair.second.Kfcode())==5) weight *= m_beauty_baryon_modifier;
+	if (pair.first.Kfcode()==4)  weight *= m_charm_baryon_modifier;
+	if (pair.second.Kfcode()==4) weight *= m_charm_baryon_modifier;
+	if (pair.first.Kfcode()==5)  weight *= m_beauty_baryon_modifier;
+	if (pair.second.Kfcode()==5) weight *= m_beauty_baryon_modifier;
 	msg_Out()<<METHOD<<"["<<pair.first<<", "<<pair.second<<"] "
 		 <<"for popped diquark; weight = "<<weight<<".\n";
       }

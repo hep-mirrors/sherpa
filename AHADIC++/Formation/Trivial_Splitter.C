@@ -151,7 +151,7 @@ bool Trivial_Splitter::Rescue() {
   return true;
 }
 
-bool Trivial_Splitter::ConstructRescueMomenta() {
+void Trivial_Splitter::ConstructRescueMomenta() {
   double z = 0.5*(1.+sqrt(1.-4.*(m_kt2+m_popped_mass2)/m_Q2));
   m_q1mom  = m_E*(     z*s_AxisP + (1.-z)*s_AxisM)-m_ktvec;
   m_q2mom  = m_E*((1.-z)*s_AxisP +      z*s_AxisM)+m_ktvec;
@@ -159,6 +159,4 @@ bool Trivial_Splitter::ConstructRescueMomenta() {
   m_rotat.RotateBack(m_q2mom);
   m_boost.BoostBack(m_q1mom);
   m_boost.BoostBack(m_q2mom);
-}  
-
-
+}

@@ -56,7 +56,7 @@ bool Beam_Particles_Shifter::ShiftBeamParticles() {
       (*pit)->SetMomentum(moms[i]);
     }
   }
-  delete moms;
-  delete masses;
+  delete[] moms;
+  delete[] masses;
   return success;
 }

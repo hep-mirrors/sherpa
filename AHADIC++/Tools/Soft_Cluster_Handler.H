@@ -25,8 +25,8 @@ namespace AHADIC {
     
     ATOOLS::Vec4D   m_moms[2];
     ATOOLS::Flavour m_hads[2];
-    
-    bool   FillFlavours(Cluster * cluster);
+
+    void   FillFlavours(Cluster * cluster);
     int    CheckOutsideRange();
     int    Decay();
     double PhaseSpace(const double & m2,const double & m3);
