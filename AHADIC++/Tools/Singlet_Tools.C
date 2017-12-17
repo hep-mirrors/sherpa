@@ -97,7 +97,6 @@ Singlet_Tools::Singlet_Tools() {}
 void Singlet_Tools::Init() {
   p_constituents = hadpars->GetConstituents();
   m_minQmass     = p_constituents->MinMass();
-
 }
 
 bool Singlet_Tools::CheckMass(Proto_Particle * part1,Proto_Particle * part2) {

@@ -132,11 +132,13 @@ void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
 int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  if (decweight>0. && m_mass>80.) {
-    msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
-	     <<m_hads[0]<<" + "<<m_hads[1]<<"  "
-	     <<"(forced = "<<m_forceddecay<<")\n";
-  }
+  //if (decweight>0. &&
+  //    (m_mass-m_flavs.first.HadMass()-m_flavs.second.HadMass())>10.) {
+  //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
+  //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
+  //	     <<"(forced = "<<m_forceddecay<<")\n";
+  //  exit(1);
+  //}
   if (decweight>0. && FixKinematics()) return 1;
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();

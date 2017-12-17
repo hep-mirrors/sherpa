@@ -36,7 +36,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   if (p_singlet->size()==2) {
     bool flag = Trivial(p_singlet->front(),p_singlet->back(),false);
     if (!flag) {
-      msg_Out()<<"   from singlet size==2\n";
+      msg_Error()<<"Couldn't deal with 2-parton singlet.\n"<<(*singlet)<<"\n";
       exit(1);
     }
     return flag;
@@ -130,23 +130,21 @@ bool Gluon_Decayer::LastStep() {
   size_t gluon(1),split(0),spect(2);
   for (list<Proto_Particle *>::iterator pliter=p_singlet->begin();
        pliter!=p_singlet->end();pliter++) part[i++] = (*pliter);
-  if ((!part[0]->IsLeading() && part[2]->IsLeading()) ||
-      (!part[0]->IsLeading() && !part[2]->IsLeading() &&
-       (part[0]->Momentum()+part[1]->Momentum()).Abs2()>
-       (part[2]->Momentum()+part[1]->Momentum()).Abs2())) {
+  if ( (!part[0]->IsLeading() && part[2]->IsLeading()) ||
+       (!part[0]->IsLeading() && !part[2]->IsLeading() &&
+	(((part[0]->Momentum()+part[1]->Momentum()).Abs2()-
+	  sqr(p_constituents->Mass(part[0]->Flavour())))    <
+	 ((part[2]->Momentum()+part[1]->Momentum()).Abs2()-
+	  sqr(p_constituents->Mass(part[2]->Flavour())))))) {
     split = 2; spect = 0;
   }
-  int stepres(Step(part[split],part[gluon],part[spect]));
+  int stepres = Step(part[split],part[gluon],part[spect]);
   if (stepres==0) {
-    bool flag = Trivial(p_singlet->front(),p_singlet->back());
-    if (!flag) msg_Out()<<"   from stepres == 0\n";
-    return flag;
+    return Trivial(p_singlet->front(),p_singlet->back());
   }
   if (split==0) p_singlet->pop_front();
            else p_singlet->pop_back();
-  bool flag = Trivial(p_singlet->front(),p_singlet->back());
-  if (!flag) msg_Out()<<"   from the end == 0\n";
-  return flag;
+  return Trivial(p_singlet->front(),p_singlet->back(),false);
 }
 
 bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,

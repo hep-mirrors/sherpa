@@ -94,9 +94,9 @@ ReadGluonSplittingParameters(Data_Reader & dataread) {
     dataread.GetValue<double>( "BETA_G",    2.00 );
   // light quark fragmentation function
   m_parametermap[string("alphaL")] =
-    dataread.GetValue<double>( "ALPHA_L",   0.25 );
+    dataread.GetValue<double>( "ALPHA_L",   1.50 );
   m_parametermap[string("betaL")]  =
-    dataread.GetValue<double>( "BETA_L",    1.20 );
+    dataread.GetValue<double>( "BETA_L",    0.25 );
   m_parametermap[string("gammaL")] =
     dataread.GetValue<double>( "GAMMA_L",   0.50 );
   // di-quark fragmentation function
@@ -108,9 +108,9 @@ ReadGluonSplittingParameters(Data_Reader & dataread) {
     dataread.GetValue<double>( "GAMMA_D",   m_parametermap[string("gammaL")] );
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    dataread.GetValue<double>( "ALPHA_H",   0.50 );
+    dataread.GetValue<double>( "ALPHA_H",   0.25 );
   m_parametermap[string("betaH")]  =
-    dataread.GetValue<double>( "BETA_H",    1.00 );
+    dataread.GetValue<double>( "BETA_H",    1.20 );
   m_parametermap[string("gammaH")] =
     dataread.GetValue<double>( "GAMMA_H",   0.25 );
 }
@@ -162,7 +162,7 @@ void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread)
   m_parametermap[string("Multiplet_Meson_R0L0S1")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_R0L0_VECTORS",       1.00);  
   m_parametermap[string("Multiplet_Meson_R0L0S2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_TENSORS2",      0.50); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L0_TENSORS2",      0.75); 
   m_parametermap[string("Multiplet_Meson_R0L1S0")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_R0L1_SCALARS",       0.10);  
   m_parametermap[string("Multiplet_Meson_R0L1S1")]   = 
@@ -182,7 +182,7 @@ void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread)
     dataread.GetValue<double>("MULTI_WEIGHT_R0L0_DELTA_3/2",     0.25); 
   // Individual hadrons
   m_parametermap[string("eta_modifier")]   = 
-    dataread.GetValue<double>("ETA_MODIFIER",                 0.15);
+    dataread.GetValue<double>("ETA_MODIFIER",                 0.12);
   m_parametermap[string("eta_prime_modifier")]   = 
     dataread.GetValue<double>("ETA_PRIME_MODIFIER",           1.00);
 }
@@ -193,7 +193,7 @@ void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread)
   m_parametermap[string("Strange_fraction")]     = sfrac = 
     dataread.GetValue<double>("STRANGE_FRACTION",                0.42);
   m_parametermap[string("Baryon_fraction")]      = 
-    dataread.GetValue<double>("BARYON_FRACTION",                 0.80);
+    dataread.GetValue<double>("BARYON_FRACTION",                 1.00);
   m_parametermap[string("charm_baryon_modifier")]    = 
     dataread.GetValue<double>("CHARM_BARYON_MODIFIER",           1.00);
   m_parametermap[string("beauty_baryon_modifier")]    = 
@@ -209,7 +209,7 @@ void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread)
 void Hadronisation_Parameters::ReadMassParameters(Data_Reader & dataread) 
 {
   m_parametermap[string("minmass2")] = 
-    dataread.GetValue<double>("MIN_MASS2",                      0.25);
+    dataread.GetValue<double>("MIN_MASS2",                      0.10);
   m_parametermap[string("Mass_glue")] = 
     dataread.GetValue<double>("M_GLUE",                         0.00);
   Flavour(kf_gluon).SetHadMass(m_parametermap["Mass_glue"]);
