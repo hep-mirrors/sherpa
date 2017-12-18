@@ -5,6 +5,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>
 
 using namespace ATOOLS;
@@ -35,6 +36,16 @@ void PrintInfo()
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/My_File.H"
+#include <sqlite3.h>
+
+int AddFiles(void *data,int argc,char **argv,char **name)
+{
+  if (argc!=1 || strcmp(name[0],"file")) return 1;
+  msg_IODebugging()<<"  '"<<argv[0]<<"'\n";
+  static_cast<std::vector<std::string>*>(data)->push_back(argv[0]);
+  return 0;
+}
 
 int main(int argc,char **argv)
 {
@@ -89,13 +100,45 @@ int main(int argc,char **argv)
   i++;
   vector<string> inlist;
   for (;i<argc;++i) {
-    inlist.push_back(string(argv[i])+"/");
+    inlist.push_back(string(argv[i]));
+    if (inlist.back().rfind(".db")!=
+	inlist.back().length()-3) inlist.back()+="/";
+    else {
+      inlist.back()=inlist.back().substr(0,inlist.back().length()-3);
+      My_In_File::OpenDB(inlist.back()+"/");
+    }
   }
   MakeDir(output);
+  vector<string> filelist;
+  if (inlist[0][inlist[0].length()-1]!='/') {
+    sqlite3 *db=NULL;
+    int res=sqlite3_open((inlist[0]+".db").c_str(),&db);
+    if (res!=SQLITE_OK) {
+      msg_Error()<<METHOD<<"(): '"<<inlist[0]<<"' returns '"
+		 <<sqlite3_errmsg(db)<<"'."<<std::endl;
+    }
+    if (db==NULL) {
+      msg_Error()<<METHOD<<"(): '"<<inlist[0]<<"' not found."<<std::endl;
+      return 1;
+    }
+    char sql[100], *zErrMsg=0;
+    strcpy(sql,"select file from path");
+    msg_IODebugging()<<METHOD<<"(\""<<inlist[0]<<"\"): {\n";
+    int rc=sqlite3_exec(db,sql,AddFiles,(void*)&filelist,&zErrMsg);
+    if(rc!=SQLITE_OK) {
+      msg_IODebugging()<<METHOD<<"(): '"<<inlist[0]
+		       <<"' returns '"<<zErrMsg<<"'."<<std::endl;
+      sqlite3_free(zErrMsg);
+      sqlite3_close(db);
+      return 1;
+    }
+    sqlite3_close(db);
+    msg_IODebugging()<<"}\n";
+  }
+  else {
   string flname=output+"fl.tmp";
   string tmp="ls "+filter+inlist[0]+" > "+flname;
   int retls(system(tmp.c_str()));
-  vector<string> filelist;
   std::string buf;
   ifstream from(flname.c_str());
   while (from) {
@@ -105,7 +148,7 @@ int main(int argc,char **argv)
   }
   from.close();
   int retrm(system(("rm "+flname).c_str()));
-
+  }
   if (check) {
     double** csmatrix=new double*[inlist.size()];
     int** nummatrix=new int*[inlist.size()];
@@ -122,7 +165,7 @@ int main(int argc,char **argv)
     for (i=0;i<filelist.size();i++) {
       vector<Histogram*> hvec;
       for (size_t j=0;j<inlist.size();j++) {
-	hvec.push_back(new Histogram (inlist[j]+filelist[i],1));
+	hvec.push_back(new Histogram (inlist[j]+"/"+filelist[i],1));
       }
       for (size_t j=0;j<inlist.size();j++) {
 	for (size_t k=j+1;k<inlist.size();k++) {
@@ -182,12 +225,12 @@ int main(int argc,char **argv)
 
   int sc=0;
   for (i=0;i<filelist.size();i++) {
-    Histogram h0(inlist[0]+filelist[i],1);
+    Histogram h0(inlist[0]+"/"+filelist[i],1);
     if (h0.Fills()>0) {
       bool valid=1;
       if (mode==0) h0.Restore();
       for (int j=1;j<inlist.size();j++) {
-	Histogram histo(inlist[j]+filelist[i],1);
+	Histogram histo(inlist[j]+"/"+filelist[i],1);
 	if (histo.Fills()>0) {
 	  if (mode==0) histo.Restore();
 	  switch (mode) {
@@ -209,6 +252,8 @@ int main(int argc,char **argv)
 	if (mode==0) h0.Finalize();
 	if (mode==5) h0.Scale(factor);
 	if (noheader) h0.SetFills(-1);
+	if (filelist[i].rfind("/")!=std::string::npos)
+	  ATOOLS::MakeDir(output+filelist[i].substr(0,filelist[i].rfind("/")));
 	h0.Output(output+filelist[i]);
 	sc++;
       }
@@ -216,6 +261,10 @@ int main(int argc,char **argv)
   }
   if (sc>0) cout<<"successfully combined "<<inlist.size()
 		<<" directories containing "<<sc<<" histograms"<<endl; 
+  for (int i(0);i<inlist.size();++i) {
+    if (inlist[i].rfind("/")!=inlist[i].length()-1)
+      My_In_File::CloseDB(inlist[i]);
+  }
   if (rm>0) {
     for (size_t i=0;i<inlist.size();++i) {
       Remove(inlist[i]);

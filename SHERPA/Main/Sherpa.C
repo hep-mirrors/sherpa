@@ -137,6 +137,7 @@ bool Sherpa::InitializeTheEventHandler()
   if (mode==eventtype::EventReader) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader(),
                                                       p_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {

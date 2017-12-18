@@ -52,6 +52,8 @@ namespace PHASIC {
     int    m_vmode, m_cmode, m_hqmode, m_order, m_orderrs, m_bumode;
     int    m_usecomb, m_usepdfinfo, m_nlocpl, m_mufmode, m_murmode;
 
+    std::vector<ATOOLS::Flavour_Vector> m_cores;
+
     PDF::Cluster_Param CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     void KT2(const ATOOLS::Cluster_Amplitude *ampl,

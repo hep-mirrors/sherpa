@@ -608,6 +608,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
                  vars.m_type[0]=='S');
   int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-vars.m_oqcd);
   signalblob->SetStatus(blob_status::needs_beams);
+  signalblob->AddStatus(blob_status::needs_harddecays);
   signalblob->SetWeight(m_weight);
   // fill variation weights such that later event phases can update them
   if (p_variations) {

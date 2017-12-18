@@ -170,6 +170,9 @@ bool Analysis_Handler::Init()
     mode=mode|m_weighted;
     m_analyses.push_back(new Primitive_Analysis(this,ToString(i),mode));
     m_analyses.back()->SetOutputPath(outpath);
+    int usedb;
+    if (!reader.ReadFromFile(usedb,"USE_DB")) usedb=0;
+    m_analyses.back()->SetUseDB(usedb);
     std::string maxjettag;
     if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
     m_analyses.back()->SetMaxJetTag(maxjettag);
@@ -263,7 +266,7 @@ bool Analysis_Handler::WriteOut()
   }
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
-    (*ait)->FinishAnalysis(OutputPath());
+    (*ait)->FinishAnalysis(OutputPath(),0);
     (*ait)->RestoreAnalysis();
   }
   return true;
@@ -286,7 +289,7 @@ bool Analysis_Handler::Finish()
        ait!=m_analyses.end();++ait) {
     msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
 	      <<"'."<<std::endl; 
-    (*ait)->FinishAnalysis(OutputPath());
+    (*ait)->FinishAnalysis(OutputPath(),0);
     (*ait)->RestoreAnalysis();
   }
   msg_Info()<<"}"<<std::endl;

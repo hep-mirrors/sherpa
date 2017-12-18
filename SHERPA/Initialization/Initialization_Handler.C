@@ -400,6 +400,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
     InitializeTheReweighting();

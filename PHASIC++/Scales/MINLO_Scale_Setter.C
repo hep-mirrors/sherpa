@@ -70,7 +70,23 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
-  Data_Reader read(" ",";","!","=");
+  Data_Reader read(" ",";","#","=");
+  std::vector<std::string> cores;
+  if (read.VectorFromFile(cores,"MINLO_ALLOW_CORE")) {
+    msg_Debugging()<<METHOD<<"(): Allow cores ";
+    Data_Reader cread(",",";","#","=");
+    cread.SetAddCommandLine(false);
+    for (size_t i(0);i<cores.size();++i) {
+      cread.SetString(cores[i]);
+      std::vector<int> flavs;
+      cread.VectorFromString(flavs,"");
+      m_cores.resize(m_cores.size()+1);
+      for (size_t j(0);j<flavs.size();++j)
+	m_cores.back().push_back(flavs[j]);
+      msg_Debugging()<<m_cores.back()<<" ";
+    }  
+    msg_Debugging()<<"\n";
+  }
   if (!read.ReadFromFile(m_noutmin,"MINLO_NOUT_MIN")) m_noutmin=2;
   if (!read.ReadFromFile(m_cmode,"MINLO_CLUSTER_MODE")) m_cmode=1;
   if (!read.ReadFromFile(m_hqmode,"MINLO_HQ_MODE")) m_hqmode=1;
@@ -283,6 +299,31 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
       ampl=ampl->Prev();
       ampl->DeleteNext();
       continue;
+    }
+    if (m_cores.size()) {
+      bool found(true);
+      for (size_t i(0);i<m_cores.size();++i) {
+	if (ampl->Legs().size()!=m_cores[i].size()) continue;
+	found=false;
+	bool match(true);
+	for (size_t j(0);j<ampl->Legs().size();++j)
+	  if (!m_cores[i][j].Includes(ampl->Leg(j)->Flav())) {
+	    msg_Debugging()<<ampl->Leg(j)->Flav()<<" does not match "
+			   <<m_cores[i][j]<<" in "<<m_cores[i]<<"\n";
+	    match=false;
+	    break;
+	  }
+	if (match) {
+	  found=true;
+	  break;
+	}
+      }
+      if (!found) {
+	msg_Debugging()<<"core check failed\n";
+	ampl=ampl->Prev();
+	ampl->DeleteNext();
+	continue;
+      }
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-1);
   }
