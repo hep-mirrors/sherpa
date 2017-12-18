@@ -22,3 +22,4 @@ nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \
 			HEPEVT/Makefile
 
+EXTRA_DIST =  Dir2Db  Db2Dir
