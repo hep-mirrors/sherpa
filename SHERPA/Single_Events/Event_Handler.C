@@ -143,8 +143,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
 }
 
 bool Event_Handler::AnalyseEvent(double & weight) {
-  double trials((*p_signal)["Trials"]->Get<double>());
-  double cxs((*p_signal)["Weight"]->Get<double>());
+  double trials(1.0), cxs(1.0);
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((*pit)->Type()==eph::Analysis) {
       switch ((*pit)->Treat(&m_blobs,weight)) {
@@ -158,6 +157,8 @@ bool Event_Handler::AnalyseEvent(double & weight) {
         Return_Value::IncError((*pit)->Name());
         return false;
       case Return_Value::New_Event :
+        trials=(*p_signal)["Trials"]->Get<double>();
+        cxs=(*p_signal)["Weight"]->Get<double>();
         m_n      -= trials;
         m_addn    = trials;
         m_sum    -= cxs;
