@@ -497,7 +497,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     if ((*it)->Momentum().Nan()) {
       msg_Error()<<METHOD<<" encountered NaN in momentum. Ignoring event:"
                  <<endl<<*bl<<endl;
-      return false;
+      return true;
     }
   }
 
