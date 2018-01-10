@@ -23,7 +23,7 @@
 #include <string>
 
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
-  m_name(""), m_nlotype(ATOOLS::nlo_type::lo),
+  m_nlotype(ATOOLS::nlo_type::lo),
   p_amp(ATOOLS::Cluster_Amplitude::New()),
   p_gen(a_Generator), p_proc(NULL), p_momentareader(NULL), p_rambo(NULL),
   m_ncolinds(0), m_npsp(0), m_nin(0), m_nout(0), p_colint(NULL)
@@ -39,6 +39,12 @@ MEProcess::~MEProcess()
 {
   if (p_momentareader) { delete p_momentareader; p_momentareader=NULL; }
   if (p_rambo)         { delete p_rambo; p_rambo=NULL; }
+}
+
+std::string MEProcess::Name() const
+{
+  if(!p_proc) THROW(fatal_error, "Process not initialized");
+  return p_proc->Name();
 }
 
 void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
@@ -293,13 +299,10 @@ void MEProcess::SetColors()
   p_colint->SetJ(cj);
 }
 
-PHASIC::Process_Base* MEProcess::FindProcess()
+void MEProcess::PrintProcesses() const
 {
-  DEBUG_FUNC("");
-  SHERPA::Matrix_Element_Handler*
-      me_handler(p_gen->GetInitHandler()->GetMatrixElementHandler());
-  m_name = PHASIC::Process_Base::GenerateName(p_amp);
-  msg_Debugging()<<"Looking for "<<m_name<<std::endl;
+  SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()
+    ->GetMatrixElementHandler();
   msg_Info()<<"Available processes:"<<std::endl;
   for (size_t i(0); i<me_handler->ProcMaps().size(); i++) {
     for (PHASIC::NLOTypeStringProcessMap_Map::const_iterator
@@ -311,52 +314,63 @@ PHASIC::Process_Base* MEProcess::FindProcess()
       }
     }
   }
-  for (size_t i(0); i<me_handler->ProcMaps().size(); i++) {
-    msg_Debugging()<<"i="<<i<<std::endl;
-    PHASIC::StringProcess_Map::const_iterator
+}
+
+PHASIC::Process_Base* MEProcess::FindProcess()
+{
+  SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()
+    ->GetMatrixElementHandler();
+  PHASIC::Process_Vector procs = me_handler->AllProcesses();
+  if (procs.size()>1) THROW(fatal_error,"More than one process initialised.");
+  return procs[0];
+}
+
+PHASIC::Process_Base* MEProcess::FindProcess(const ATOOLS::Cluster_Amplitude* amp)
+{
+  DEBUG_FUNC("");
+  SHERPA::Matrix_Element_Handler*
+      me_handler(p_gen->GetInitHandler()->GetMatrixElementHandler());
+  std::string name = PHASIC::Process_Base::GenerateName(amp);
+  msg_Debugging()<<"Looking for "<<name<<std::endl;
+  for (size_t i(0); i<me_handler->ProcMaps().size(); i++)
+    {
+      PHASIC::StringProcess_Map::const_iterator
         pit(me_handler->ProcMaps()[i]->find(m_nlotype)
-            ->second->find(m_name));
-    if (msg_LevelIsDebugging()) {
-      msg_Info()<<"Initialized Processes: "<<std::endl;
-      msg_Info()<<me_handler->ProcMaps()[i]<<std::endl;
-      for (PHASIC::StringProcess_Map::const_iterator it
-             =me_handler->ProcMaps()[i]->find(m_nlotype)
-                                      ->second->begin();
-           it !=me_handler->ProcMaps()[i]->find(m_nlotype)
-                                         ->second->end();
-           ++it) {
-        msg_Info()<<"Process "<<(it->first)<<std::endl;
-      }
+            ->second->find(name));
+      if (pit == me_handler->ProcMaps()[i]->find(m_nlotype)
+	                    ->second->end()) continue;
+      return pit->second;
     }
-    if (pit == me_handler->ProcMaps()[i]->find(m_nlotype)
-                                        ->second->end()) continue;
-    else return pit->second;
-  }
   return NULL;
 }
 
 void MEProcess::Initialize()
 {
   DEBUG_FUNC((p_proc?p_proc->Name():"no process set yet"));
-  if(!p_proc){
-    p_proc=FindProcess();
-    if (!p_proc) THROW(fatal_error,"No process found.");
-    msg_Debugging()<<"Process: "<<p_proc->Name()<<std::endl;
-    // fill cluster amplitude according to process
-    bool fill(m_inpdgs.size()==0 && m_outpdgs.size()==0);
-    if (fill) {
-      for (size_t i(0);i<p_proc->Flavours().size();++i) {
-        if(i<p_proc->NIn()) AddInFlav((long int)p_proc->Flavours()[i]);
-        else                AddOutFlav((long int)p_proc->Flavours()[i]);
-      }
+
+  if (msg_LevelIsDebugging()) PrintProcesses();
+
+  // Try to find process by amplitude (assumes it has been filled
+  // through AddInFlav methods etc)
+  p_proc=FindProcess(p_amp);
+
+  if(!p_proc)
+    {
+      // If not found, assume no flavours have been added and we just want
+      // the first (and only) process initialized through the run card. Check
+      // first if amplitude is really empty to avoid returning a wrong proc.
+      if(p_amp->Legs().size()!=0) THROW(fatal_error, "Requested process not found");
+      
+      // Retrieve proc initialized through run card and fill amplitude
+      p_proc = FindProcess();
+      for (size_t i(0);i<p_proc->Flavours().size();++i)
+	{
+	  if(i<p_proc->NIn()) AddInFlav((long int)p_proc->Flavours()[i]);
+	  else                AddOutFlav((long int)p_proc->Flavours()[i]);
+	}
     }
-    else {
-      // flip initial states
-      for (size_t i(0);i<m_nin;++i) m_inpdgs[i]=-m_inpdgs[i];
-    }
-    p_amp->SetNIn(m_nin);
-  }
-  m_name=p_proc->Name();
+
+  // Set up color structure
   for (unsigned int i = 0; i<p_amp->Legs().size(); i++) {
     if (p_amp->Leg(i)->Flav().Strong()) {
       int scharge = p_amp->Leg(i)->Flav().StrongCharge();
@@ -368,7 +382,7 @@ void MEProcess::Initialize()
         m_quainds.push_back(i);
       else {
 	std::stringstream msg; msg << p_amp->Leg(i)->Flav();
-        //THROW(fatal_error, "External leg with unknown strong charge detected: "+msg.str());
+        THROW(fatal_error, "External leg with unknown strong charge detected: "+msg.str());
       }
     }
   }

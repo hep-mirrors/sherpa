@@ -28,7 +28,6 @@ class MEProcess{
 
 private:
 
-  std::string                m_name;
   ATOOLS::nlo_type::code     m_nlotype;
   ATOOLS::Cluster_Amplitude* p_amp;
   //ATOOLS::Mass_Selector      m_msel;
@@ -52,6 +51,7 @@ private:
   double m_kpz[2];
 
   void SetMomentumIndices(const std::vector<int> &pdgs);
+  PHASIC::Process_Base* FindProcess(const ATOOLS::Cluster_Amplitude* amp);
   PHASIC::Process_Base* FindProcess();
   void SetColors();
 
@@ -69,6 +69,7 @@ public:
 
   size_t NumberOfPoints();
 
+  void PrintProcesses() const;
   void ReadProcess(size_t n);
 
   void SetMomenta(const std::vector<double*> &p);
@@ -97,7 +98,7 @@ public:
   inline ATOOLS::Flavour GetOutFlav(size_t i) { return GetFlav(i+m_nin); }
 
   inline ATOOLS::Cluster_Amplitude* GetAmp() { return p_amp; }
-  inline std::string Name() { return m_name; }
+  std::string Name() const;
 
   inline void SetNLOType(ATOOLS::nlo_type::code nlotype) { m_nlotype=nlotype; }
 };
