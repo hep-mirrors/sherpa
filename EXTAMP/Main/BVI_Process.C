@@ -119,7 +119,6 @@ namespace EXTAMP {
     m_mewgtinfo.m_KP      = KP ;
     m_mewgtinfo.m_wren[0] = scaleterms.first;
     m_mewgtinfo.m_wren[1] = scaleterms.second;
-    m_mewgtinfo.m_bviw    = 1.0;
 
     /* Results to debugging output */
     msg_Debugging() << "Results of " << METHOD << "() {"

@@ -721,7 +721,7 @@ double Single_Process::ReweightWithoutSubevents(
       }
 
       // KP
-      const double KPnew(m_mewgtinfo.m_bviw*KPTerms(varparams) * alphasfac);
+      const double KPnew(KPTerms(varparams) * alphasfac);
 
       // apply NLO counterterms
       double K(m_mewgtinfo.m_bkw.size()?m_mewgtinfo.m_bkw[varweights->CurrentParametersIndex()]:1.0);
