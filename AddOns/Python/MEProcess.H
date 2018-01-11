@@ -30,7 +30,6 @@ private:
 
   ATOOLS::nlo_type::code     m_nlotype;
   ATOOLS::Cluster_Amplitude* p_amp;
-  //ATOOLS::Mass_Selector      m_msel;
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
   ATOOLS::Default_Reader *   p_momentareader;
