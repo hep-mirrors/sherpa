@@ -40,13 +40,8 @@ Proto_Particle::~Proto_Particle()
 } 
 
 void Proto_Particle::Reset() {
-  if (!s_protos.empty()) {
-    //msg_Error()<<METHOD<<" has to erase "<<s_protos.size()
-    //	       <<" proto particless.\n";
-    for (std::set<Proto_Particle *>::iterator sit=s_protos.begin();
-	 sit!=s_protos.end();sit++) {
-      delete (*sit);
-    }
+  for (auto it = s_protos.begin(); it != s_protos.end(); ) {
+    delete (*(it++));
   }
 }
 
