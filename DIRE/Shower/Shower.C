@@ -83,6 +83,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     ("CSS_MAXPART",std::numeric_limits<unsigned int>::max());
   m_maxrewem=read->Get<unsigned int>
     ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
+  m_rewtmin=read->Get<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0);
   m_oef=read->Get<double>("CSS_OEF",3.0);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
@@ -404,7 +405,7 @@ Splitting Shower::GeneratePoint
 	    win.m_vars=std::vector<double>
 	      (p_vars->GetVariations()->GetParametersVector()->size(),1.0);
 	    if (win.m_w.MC()<ran->Get()) {
-	      if (p_vars && nem<m_maxrewem) {
+	      if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
 		const Reweight_Args args(&win,0);
 		p_vars->UpdateOrInitialiseWeights
 		  (&Shower::Reweight,*this,args);
@@ -415,7 +416,7 @@ Splitting Shower::GeneratePoint
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
 	    }
-	    if (p_vars && nem<m_maxrewem) {
+	    if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
 	      const Reweight_Args args(&win,1);
 	      p_vars->UpdateOrInitialiseWeights
 		(&Shower::Reweight,*this,args);

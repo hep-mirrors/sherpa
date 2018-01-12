@@ -63,7 +63,7 @@ namespace DIM {
     SKernel_Map   m_sks;
     Kernel_Map    m_kmap;
 
-    double m_tmin[2], m_cplfac[2], m_rsf, m_fsf;
+    double m_tmin[2], m_rewtmin, m_cplfac[2], m_rsf, m_fsf;
     double m_weight, m_oef, m_pdfmin[2], m_rcf;
 
     int m_kfac, m_cpl;
