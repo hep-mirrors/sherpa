@@ -150,7 +150,7 @@ namespace SHERPA {
            m_currentparametersindex < paramsvec->size();
            ++m_currentparametersindex ) {
         double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_weights[m_currentparametersindex] *= weight;
+        m_absoluteweights[m_currentparametersindex] *= weight;
       }
       m_reweighting = false;
     }
@@ -172,13 +172,16 @@ namespace SHERPA {
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_weights.clear();
-      m_weights.reserve(size);
+      m_absoluteweights.clear();
+      m_absoluteweights.reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-        m_weights.push_back((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
+        m_absoluteweights.push_back(
+            (reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex],
+                                      this,
+                                      data));
       }
       m_reweighting = false;
       m_initialised = true;
@@ -204,8 +207,8 @@ namespace SHERPA {
                                 int subevtidx=-1) const;
 
     // Obtain informations about the parameter variations
-    size_t GetNumberOfVariations() const { return m_weights.size(); }
-    size_t GetNumberOfSubevents() const { return m_weights[0].size(); }
+    size_t GetNumberOfVariations() const { return m_absoluteweights.size(); }
+    size_t GetNumberOfSubevents() const { return m_absoluteweights[0].size(); }
     Variations * GetVariations() const { return p_variations; }
     Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
 
@@ -215,7 +218,7 @@ namespace SHERPA {
 private:
     Variations * p_variations;
     //! a vector of (sub)event weights for each set of parameters
-    std::vector<Subevent_Weights_Vector> m_weights;
+    std::vector<Subevent_Weights_Vector> m_absoluteweights;
     //! whether the vector of (sub)event weights has been initialised
     bool m_initialised;
     /*!

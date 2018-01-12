@@ -393,7 +393,7 @@ Subevent_Weights_Vector::operator*=(const double &scalefactor)
 
 void Variation_Weights::Reset()
 {
-  m_weights.clear();
+  m_absoluteweights.clear();
   m_initialised = false;
 }
 
@@ -403,8 +403,10 @@ Variation_Weights & Variation_Weights::operator*=(const double &scalefactor)
   if (!m_initialised) {
     THROW(fatal_error, "Can not multiply uninitialised variation weights.");
   }
-  for (std::vector<Subevent_Weights_Vector>::iterator it(m_weights.begin());
-       it != m_weights.end(); ++it) {
+  typedef std::vector<Subevent_Weights_Vector>::iterator It_type;
+  for (It_type it(m_absoluteweights.begin());
+       it != m_absoluteweights.end();
+       ++it) {
     *it *= scalefactor;
   }
   return *this;
@@ -422,7 +424,7 @@ Variation_Weights & Variation_Weights::operator*=(const Variation_Weights &other
   for (Variations::Parameters_Vector::size_type i(0);
        i < GetNumberOfVariations();
        ++i) {
-    this->m_weights[i] *= other.GetVariationWeightAt(i);
+    this->m_absoluteweights[i] *= other.GetVariationWeightAt(i);
   }
   return *this;
 }
@@ -438,9 +440,11 @@ double Variation_Weights::GetVariationWeightAt(Variations::Parameters_Vector::si
                                                int subevtidx) const
 {
   if (subevtidx < 0) {
-    return std::accumulate(m_weights[paramidx].begin(), m_weights[paramidx].end(), 0.0);
+    return std::accumulate(m_absoluteweights[paramidx].begin(),
+                           m_absoluteweights[paramidx].end(),
+                           0.0);
   } else { 
-    return m_weights[paramidx][subevtidx];
+    return m_absoluteweights[paramidx][subevtidx];
   }
 }
 
@@ -454,10 +458,10 @@ Variations::Parameters_Vector::size_type Variation_Weights::CurrentParametersInd
 
 void Variation_Weights::InitialiseWeights(const Subevent_Weights_Vector & subweights) {
   const size_t size(p_variations->GetParametersVector()->size());
-  m_weights.clear();
-  m_weights.reserve(size);
+  m_absoluteweights.clear();
+  m_absoluteweights.reserve(size);
   for (size_t i(0); i < size; ++i) {
-    m_weights.push_back(subweights);
+    m_absoluteweights.push_back(subweights);
   }
   m_initialised = true;
 }
@@ -487,7 +491,7 @@ namespace SHERPA {
       if (!weights.m_initialised) {
         s << "not initialised";
       } else {
-        s << weights.m_weights[i];
+        s << weights.m_absoluteweights[i];
       }
       s << std::endl;
     }
