@@ -336,7 +336,7 @@ namespace PHASIC {
     Jet_Selector(const Selector_Key &key) :
       Selector_Base("Jet_Selector",key.p_proc) {}
 
-    bool   Trigger(const ATOOLS::Vec4D_Vector &) { return true; }
+    bool   Trigger(ATOOLS::Selector_List &) { return true; }
     void   BuildCuts(Cut_Data *) {}
   };
 }
