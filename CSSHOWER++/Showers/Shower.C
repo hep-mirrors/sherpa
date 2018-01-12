@@ -30,7 +30,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   const bool reweightalphas = reader->Get<int>("CSS_REWEIGHT_ALPHAS",1);
   const bool reweightpdfs = reader->Get<int>("CSS_REWEIGHT_PDFS",1);
-  m_maxrewem = reader->Get<int>("REWEIGHT_MAXEM",0);
+  m_maxrewem = reader->Get<int>("REWEIGHT_MAXEM",
+                                std::numeric_limits<int>::max());
   if (m_maxrewem < 0) {
     m_maxrewem = std::numeric_limits<int>::max();
   }
