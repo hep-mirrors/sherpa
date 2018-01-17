@@ -1,1 +1,1 @@
-SUBDIRS       = Main Channels Process Selectors Scales Enhance Decays
+SUBDIRS       = Main Channels Process Selectors Scales EWSudakov Enhance Decays
