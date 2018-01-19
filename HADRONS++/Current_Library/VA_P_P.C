@@ -69,8 +69,7 @@ void VA_P_P::SetModelParameters( struct GeneralModel model )
       Vxx=Tools::Vcd;
   }
   else if (kf0==kf_D_s_plus) {
-    
-    if (kf1==kf_eta_prime_958 || kf1==kf_eta)
+    if (kf1==kf_eta_prime_958 || kf1==kf_eta || kf1==kf_f_0_980)
       Vxx=Tools::Vcs;
     else if (kf1==kf_K || kf1==kf_K_S || kf1==kf_K_L)
       Vxx=Tools::Vcd;

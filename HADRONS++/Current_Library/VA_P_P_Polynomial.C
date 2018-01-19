@@ -48,6 +48,31 @@ Polynomial::Polynomial(GeneralModel model, double* masses,
     }
   }
 
+  else if (kf0==kf_D_s_plus) {
+    if (kf1==kf_eta) {
+      // hep-ph/0107137
+      // QCD sum rules
+      m_fplus_0 = 0.50;
+      m_fplus_lambda = 1.0108;
+      m_fplus_m2 = 1.9*1.9;
+      
+      m_f0_0  = 0.0;
+      m_f0_lambda = 0.0;
+      m_f0_m2 = 1.9*1.9;
+    }
+    else if (kf1==kf_eta_prime_958) {
+      // hep-ph/0107137
+      // QCD sum rules
+      m_fplus_0 = 0.61745;
+      m_fplus_lambda = 1.0108;
+      m_fplus_m2 = 1.9*1.9;
+      
+      m_f0_0  = 0.0;
+      m_f0_lambda = 0.0;
+      m_f0_m2 = 1.9*1.9;
+    }  
+  }
+  
   m_fplus_0 = model("fplus_0",m_fplus_0);
   m_fplus_lambda = model("fplus_lambda",m_fplus_lambda);
   m_fplus_m2 = model("fplus_m2",m_fplus_m2);
