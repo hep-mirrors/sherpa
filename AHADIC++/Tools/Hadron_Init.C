@@ -441,7 +441,7 @@ void Hadron_Init::Init() {
 				      "Xi(1820)","\\Xi(1820)");
   s_kftable[102134]=new Particle_Info(102134,1.5195,0.0156,0,3,1,0,
 				      "Lambda(1520)","\\Lambda(1520)");
-  s_kftable[102144]=new Particle_Info(104214,2.625,0.002,3,3,1,0,
+  s_kftable[102144]=new Particle_Info(102144,2.625,0.002,3,3,1,0,
 				  "Lambda(c)(2625)+","\\Lambda_{c}^{+}(2625)");
   s_kftable[104314]=new Particle_Info(104314,2.815,0.002,0,3,1,0,
 				      "Xi(c)(2815)","\\Xi_{c}(2815)");
