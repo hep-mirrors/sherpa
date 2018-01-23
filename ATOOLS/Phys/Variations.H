@@ -87,7 +87,7 @@ namespace ATOOLS {
     const bool m_reweightsplittingpdfsscales;
   };
 
-  std::ostream & operator<<(std::ostream &, const Variations &);
+  std::ostream& operator<<(std::ostream&, const Variations&);
 
 
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
@@ -173,10 +173,30 @@ namespace ATOOLS {
     //! Construct a weight vector of size times 1.0 (i.e. we do not use the standard default 0.0!)
     Subevent_Weights_Vector(size_type count, const double& value = 1.0);
     //! Multiply all weights with a common factor
-    Subevent_Weights_Vector & operator*=(const double &);
-    //! Add another subevent weight vector of the same size
-    Subevent_Weights_Vector & operator+=(const Subevent_Weights_Vector &);
+    Subevent_Weights_Vector & operator*=(const double&);
+    /*!
+     * Multiply all subevent weights one by one with those of another vec
+     *
+     * The other subevent weights must either be of equal size or they have to
+     * contain only one entry. In the latter case, this single entry is used as
+     * a common factor for all subevent weights.
+     */
+    Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
   };
+
+  std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
+
+
+  //! Types to denote different variation sources
+  enum class Variations_Type {
+    all,     //!< use for weight retrieval, to get the product of the below
+    main,    //!< use for everything that is not one of the below
+    sudakov  //!< use for weight factors from the reweighting of the Sudakov
+             //!< Veto Algorithm, i.e. the reweighting of parton shower
+             //!< emissions
+  };
+
+  std::ostream& operator<<(std::ostream&, const Variations_Type&);
 
 
   //! Wrap the actual event weight variations and apply reweighting functions to it
@@ -185,7 +205,6 @@ namespace ATOOLS {
 
     Variation_Weights(Variations * v):
       p_variations(v),
-      m_initialised(false),
       m_reweighting(false)
     {}
 
@@ -197,12 +216,14 @@ namespace ATOOLS {
      * The reweighting function is evaluated once for each parameter variation.
      */
     template <class Reweighter, class Data>
-    void UpdateOrInitialiseWeights(double (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-                                   Reweighter & reweighter,
-                                   Data & data)
+    void UpdateOrInitialiseWeights(
+        double (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
+        Reweighter & reweighter,
+        Data & data,
+        Variations_Type t=Variations_Type::main)
     {
-      if (!m_initialised) {
-        InitialiseWeights(Subevent_Weights_Vector(1, 1.0));
+      if (!AreWeightsInitialised(t)) {
+        InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       m_reweighting = true;
@@ -210,7 +231,7 @@ namespace ATOOLS {
            m_currentparametersindex < paramsvec->size();
            ++m_currentparametersindex ) {
         double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_weights[m_currentparametersindex] *= weight;
+        m_weights[t][m_currentparametersindex] *= weight;
       }
       m_reweighting = false;
     }
@@ -223,23 +244,27 @@ namespace ATOOLS {
      * possible subevent weights.
      */
     template <class Reweighter, class Data>
-    void InitialiseWeights(Subevent_Weights_Vector (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-                           Reweighter & reweighter,
-                           Data & data)
+    void InitialiseWeights(
+        Subevent_Weights_Vector (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
+        Reweighter & reweighter,
+        Data & data,
+        Variations_Type t=Variations_Type::main)
     {
+      if (AreWeightsInitialised(t)) {
+       THROW(fatal_error, "The variation weights are already initialised");
+      }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_weights.reserve(size);
+      m_weights[t].clear();
+      m_weights[t].reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-	Subevent_Weights_Vector weightvector((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-	if (!m_initialised) m_weights.push_back(weightvector);
-	else m_weights[m_currentparametersindex] += weightvector;
+        m_weights[t].push_back(
+            (reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
       }
       m_reweighting = false;
-      m_initialised = true;
     }
 
     //! Multiply *all* weights with a common factor
@@ -247,9 +272,6 @@ namespace ATOOLS {
 
     //! Multiply weights with weights from another set of variation weights
     Variation_Weights & operator*=(const Variation_Weights &);
-
-    //! Add weights from another set of variation weights
-    Variation_Weights & operator+=(const Variation_Weights &);
 
     void CombineSubeventWeights();
 
@@ -264,11 +286,12 @@ namespace ATOOLS {
      * just returning the first (and only) weight.
      */
     double GetVariationWeightAt(Variations::Parameters_Vector::size_type,
+                                Variations_Type t=Variations_Type::all,
                                 int subevtidx=-1) const;
 
     // Obtain informations about the parameter variations
-    size_t GetNumberOfVariations() const { return m_weights.size(); }
-    size_t GetNumberOfSubevents() const { return m_weights[0].size(); }
+    size_t GetNumberOfVariations() const;
+    size_t GetNumberOfSubevents() const;
     Variations * GetVariations() const { return p_variations; }
     Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
 
@@ -281,9 +304,8 @@ namespace ATOOLS {
 private:
     Variations * p_variations;
     //! a vector of (sub)event weights for each set of parameters
-    std::vector<Subevent_Weights_Vector> m_weights;
-    //! whether the vector of (sub)event weights has been initialised
-    bool m_initialised;
+    std::map<Variations_Type, std::vector<Subevent_Weights_Vector>>
+      m_weights;
     /*!
      * index of the parameters for the current reweighting
      *
@@ -299,6 +321,11 @@ private:
     friend std::ostream & operator<<(std::ostream &, const Variation_Weights &);
 
     void InitialiseWeights(const Subevent_Weights_Vector & subweights);
+    void InitialiseWeights(const Subevent_Weights_Vector & subweights,
+                           const Variations_Type t=Variations_Type::main);
+
+    bool AreWeightsInitialised(
+        const Variations_Type t=Variations_Type::main) const;
   };
 
   std::ostream & operator<<(std::ostream &, const Variation_Weights &);

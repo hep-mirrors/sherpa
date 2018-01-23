@@ -11,7 +11,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
-
+#include "ATOOLS/Phys/Variations.H"
 
 #include <map>
 #include <set>
@@ -35,8 +35,9 @@ namespace SHERPA {
 
   class EventInfo {
   private:
-    size_t m_usenamedweights, m_extendedweights;
     ATOOLS::Blob * p_sp;
+    bool m_usenamedweights, m_extendedweights;
+    std::vector<ATOOLS::Variations_Type> m_variationtypes;
     std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22;
@@ -51,7 +52,9 @@ namespace SHERPA {
 
   public:
     EventInfo(ATOOLS::Blob * sp, const double &wgt,
-              bool namedweights, bool minimalweights);
+              bool namedweights,
+              bool extendedweights,
+              bool includemeonlyweights);
     EventInfo(const EventInfo &evtinfo);
     ~EventInfo() {}
     bool WriteTo(HepMC::GenEvent &evt, const int& idx=-1);
@@ -68,7 +71,8 @@ namespace SHERPA {
 
   class HepMC2_Interface {
   private :
-    bool m_usenamedweights, m_extendedweights, m_hepmctree;
+    bool m_usenamedweights, m_extendedweights, m_includemeonlyweights;
+    bool m_hepmctree;
 
     std::map<ATOOLS::Blob*,HepMC::GenVertex *> m_blob2genvertex;
     std::map<ATOOLS::Particle*,HepMC::GenParticle *> m_particle2genparticle;

@@ -142,7 +142,7 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
   }
   m_weight*=cw;
   if (cv.size()) p_vars->UpdateOrInitialiseWeights
-		   (&Shower::GetWeight,*this,cv);
+		   (&Shower::GetWeight,*this,cv,Variations_Type::sudakov);
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
 		 <<" ("<<m_weight<<"), v = "<<cv<<"\n";
 }
@@ -204,7 +204,7 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
 	std::vector<double> gwa
 	  (p_vars->NumberOfParameters(),p_gamma->Weight());
 	p_vars->UpdateOrInitialiseWeights
-	  (&Shower::GetWeight,*this,gwa);
+	  (&Shower::GetWeight,*this,gwa,Variations_Type::sudakov);
       }
       if (veto) {
 	a.Remove(m_s.p_n);
@@ -222,7 +222,7 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
     }
     m_weight*=VetoWeight(NULL,NULL,vwa);
     if (p_vars) p_vars->UpdateOrInitialiseWeights
-		  (&Shower::VetoWeight,*this,vwa);
+		  (&Shower::VetoWeight,*this,vwa,Variations_Type::sudakov);
     if (vwa.m_acc==0) return 0;
     AddWeight(a,m_s.m_t);
     a.SetJF(NULL);
@@ -314,7 +314,7 @@ Splitting Shower::GeneratePoint
 	      if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
 		const Reweight_Args args(&win,0);
 		p_vars->UpdateOrInitialiseWeights
-		  (&Shower::Reweight,*this,args);
+		  (&Shower::Reweight,*this,args,Variations_Type::sudakov);
 	      }
 	      win.p_c->AddWeight(win,0);
 	      msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
@@ -325,7 +325,7 @@ Splitting Shower::GeneratePoint
 	    if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
 	      const Reweight_Args args(&win,1);
 	      p_vars->UpdateOrInitialiseWeights
-		(&Shower::Reweight,*this,args);
+		(&Shower::Reweight,*this,args,Variations_Type::sudakov);
 	    }
 	    win.p_c->AddWeight(win,1);
 	    msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()

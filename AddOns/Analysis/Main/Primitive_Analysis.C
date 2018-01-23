@@ -371,7 +371,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
       Blob_Data_Base *info((*sp)["Variation_Weights"]);
       if (info==NULL) THROW(fatal_error,"Expected variation weights but didn't find them");
       ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
-      weight=vars.GetVariationWeightAt(m_varid,j);
+      weight=vars.GetVariationWeightAt(m_varid,ATOOLS::Variations_Type::all,j);
       msg_Debugging()<<"variation weight "<<m_varid<<"["<<j<<"] is "<<weight<<"\n";
     }
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();

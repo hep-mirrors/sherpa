@@ -361,7 +361,8 @@ double MCatNLO_Process::ReweightLocalKFactor(
   return LocalKFactor(info.m_bvivarweights->GetVariationWeightAt(i),
                       info.m_bvarweights->GetVariationWeightAt(i),
                       info.m_rsvarweights->GetVariationWeightAt(i),
-                      info.m_rsvarweights->GetVariationWeightAt(i, subevtcount - 1),
+                      info.m_rsvarweights->GetVariationWeightAt(
+                        i, Variations_Type::all, subevtcount - 1),
                       info.m_random);
 }
 

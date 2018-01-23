@@ -401,7 +401,8 @@ bool Sudakov::Generate(Parton * split)
     }
     const bool veto(Veto(Q2, m_x));
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(&Sudakov::Reweight, *this, veto);
+      p_variationweights->UpdateOrInitialiseWeights(
+          &Sudakov::Reweight, *this, veto, Variations_Type::sudakov);
     }
     if (veto) {
       success = true;

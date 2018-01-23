@@ -368,7 +368,8 @@ bool Sudakov::Generate(Parton * split)
     }
     const bool veto(Veto(Q2, m_x));
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(&Sudakov::Reweight, *this, veto);
+      p_variationweights->UpdateOrInitialiseWeights(
+          &Sudakov::Reweight, *this, veto, Variations_Type::sudakov);
     }
     if (veto) {
       success = true;
@@ -441,15 +442,15 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
       switch (m_type) {
         case cstp::II:
           newJ = Selected()->Lorentz()->JII(
-              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale, NULL);
+              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::IF:
           newJ = Selected()->Lorentz()->JIF(
-              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale, NULL);
+              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::FI:
           newJ = Selected()->Lorentz()->JFI(
-              m_y, m_x, varparams->m_showermuF2fac * lastscale, NULL);
+              m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::FF:
         case cstp::none:
@@ -477,7 +478,7 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
     if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
       const double lastcpl(Selected()->Coupling()->Last());
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, varparams->m_showermuR2fac);
+          varparams->p_alphas, varparams->m_muR2fac);
       double newcpl(Selected()->Coupling()->Coupling(lastscale, 0, NULL));
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
       Selected()->Coupling()->SetLast(lastcpl); // reset last coupling

@@ -647,24 +647,22 @@ Subevent_Weights_Vector::operator*=(const double &scalefactor)
   return *this;
 }
 
-
 Subevent_Weights_Vector &
-Subevent_Weights_Vector::operator+=(const Subevent_Weights_Vector &other)
+Subevent_Weights_Vector::operator*=(const Subevent_Weights_Vector &other)
 {
-  if (size() != other.size()) {
-    THROW(fatal_error, "Can not add subevent weights of different size.");
-  }
-  for (size_t i(0); i < size(); i++) {
-    (*this)[i] *= other[i];
+  if (size() == other.size()) {
+    for (size_t i(0); i < size(); ++i) {
+      (*this)[i] *= other[i];
+    }
+  } else if (other.size() == 1) {
+    *this *= other[0];
   }
   return *this;
 }
 
-
 void Variation_Weights::Reset()
 {
   m_weights.clear();
-  m_initialised = false;
 }
 
 
@@ -673,57 +671,29 @@ Variation_Weights & Variation_Weights::operator*=(const double &scalefactor)
   if (GetNumberOfVariations() == 0) {
     return *this;
   }
-  if (!m_initialised) {
+  if (!AreWeightsInitialised()) {
     THROW(fatal_error, "Can not multiply uninitialised variation weights.");
   }
-  for (std::vector<Subevent_Weights_Vector>::iterator it(m_weights.begin());
-       it != m_weights.end(); ++it) {
-    *it *= scalefactor;
-  }
+  for (auto& w : m_weights[Variations_Type::main])
+    w *= scalefactor;
   return *this;
 }
 
 
 Variation_Weights & Variation_Weights::operator*=(const Variation_Weights &other)
 {
-  if (GetNumberOfVariations() == 0) {
+  if (GetNumberOfVariations() == 0)
     return *this;
-  }
-  if (!m_initialised) {
+  if (!AreWeightsInitialised())
     THROW(fatal_error, "Can not multiply uninitialised variation weights.");
-  }
-  if (!other.m_initialised) {
+  if (other.m_weights.size() == 0)
     return *this;
-  }
+  if (other.m_weights.size() > 1)
+    THROW(fatal_error, "Refuse to multiply variation weights with more than one variation type.");
   for (Variations::Parameters_Vector::size_type i(0);
        i < GetNumberOfVariations();
        ++i) {
-    this->m_weights[i] *= other.GetVariationWeightAt(i);
-  }
-  return *this;
-}
-
-Variation_Weights & Variation_Weights::operator+=(const Variation_Weights &other)
-{
-  if (!other.m_initialised) {
-    return *this;
-  }
-  if (!m_initialised) {
-    InitialiseWeights(Subevent_Weights_Vector(other.GetNumberOfSubevents(), 0.0));
-  } else if (GetNumberOfSubevents() != other.GetNumberOfSubevents()) {
-    THROW(fatal_error, "Can not add variation weights with differing numbers of subevents.");
-  }
-  if (GetNumberOfVariations() != other.GetNumberOfVariations()) {
-    THROW(fatal_error, "Can not add variation weights with differing numbers of variations.");
-  }
-  for (Variations::Parameters_Vector::size_type i(0);
-       i < GetNumberOfVariations();
-       ++i) {
-    for (Subevent_Weights_Vector::size_type j(0);
-         j < GetNumberOfSubevents();
-         ++j) {
-      this->m_weights[i][j] += other.GetVariationWeightAt(i, j);
-    }
+    this->m_weights[Variations_Type::main][i] *= other.GetVariationWeightAt(i);
   }
   return *this;
 }
@@ -731,17 +701,15 @@ Variation_Weights & Variation_Weights::operator+=(const Variation_Weights &other
 
 void Variation_Weights::CombineSubeventWeights()
 {
-  if (!m_initialised) return;
-  for (Variations::Parameters_Vector::size_type i(0);
-       i < GetNumberOfVariations();
-       ++i) {
-    double weight=0.0;
-    for (Subevent_Weights_Vector::size_type j(0);
-         j < this->m_weights[i].size();
-         ++j) {
-      weight += this->m_weights[i][j];
-    }
-    this->m_weights[i] = Subevent_Weights_Vector(1, weight);
+  if (!AreWeightsInitialised()) return;
+  if (m_weights.size() > 1)
+    THROW(fatal_error, "Refuse to combine subevent weights when more than one variation type is stored.");
+  auto& weights = m_weights.begin()->second;
+  for (auto& subeventweights : weights) {
+    const auto combinedweight{
+      std::accumulate(subeventweights.begin(), subeventweights.end(), 0.0) };
+    subeventweights.clear();
+    subeventweights.push_back(combinedweight);
   }
 }
 
@@ -752,17 +720,33 @@ std::string Variation_Weights::GetVariationNameAt(Variations::Parameters_Vector:
 }
 
 
-double Variation_Weights::GetVariationWeightAt(Variations::Parameters_Vector::size_type paramidx,
-                                               int subevtidx) const
+double Variation_Weights::GetVariationWeightAt(
+    Variations::Parameters_Vector::size_type paramidx,
+    Variations_Type t,
+    int subevtidx) const
 {
-  if (paramidx>=m_weights.size()) {
-    p_variations->IncrementOrInitialiseWarningCounter("Variation weight requested does not exist");
-    return 0.0;
-  }
   if (subevtidx < 0) {
-    return std::accumulate(m_weights[paramidx].begin(), m_weights[paramidx].end(), 0.0);
-  } else { 
-    return m_weights[paramidx][subevtidx];
+    Subevent_Weights_Vector weights(GetNumberOfSubevents());
+    for (const auto kv : m_weights)
+      if (t == Variations_Type::all || t == kv.first)
+        weights *= kv.second[paramidx];
+    return std::accumulate(weights.begin(), weights.end(), 0.0);
+  } else {
+    double weight(1.0);
+    for (const auto kv : m_weights) {
+      if (t == Variations_Type::all || t == kv.first) {
+        if (subevtidx > 0 && kv.second[paramidx].size() == 1) {
+          if (kv.first == Variations_Type::main) {
+            THROW(fatal_error,
+                "The main variation weights do not have enough entries.");
+          }
+          weight *= kv.second[paramidx][0];
+        } else {
+          weight *= kv.second[paramidx][subevtidx];
+        }
+      }
+    }
+    return weight;
   }
 }
 
@@ -774,20 +758,48 @@ Variations::Parameters_Vector::size_type Variation_Weights::CurrentParametersInd
 }
 
 
-void Variation_Weights::InitialiseWeights(const Subevent_Weights_Vector & subweights) {
+size_t Variation_Weights::GetNumberOfVariations() const
+{
+  std::map<Variations_Type, std::vector<Subevent_Weights_Vector>>::const_iterator it{
+    m_weights.find(Variations_Type::main) };
+  if (it == m_weights.end())
+    return 0;
+  return it->second.size();
+}
+
+
+size_t Variation_Weights::GetNumberOfSubevents() const
+{
+  std::map<Variations_Type, std::vector<Subevent_Weights_Vector>>::const_iterator it{
+    m_weights.find(Variations_Type::main) };
+  if (it == m_weights.end())
+    return 0;
+  return it->second[0].size();
+}
+
+
+void Variation_Weights::InitialiseWeights(const Subevent_Weights_Vector & subweights,
+                                          const Variations_Type t)
+{
   const size_t size(p_variations->GetParametersVector()->size());
-  m_weights.clear();
-  m_weights.reserve(size);
+  m_weights[t].clear();
+  m_weights[t].reserve(size);
   for (size_t i(0); i < size; ++i) {
-    m_weights.push_back(subweights);
+    m_weights[t].push_back(subweights);
   }
-  m_initialised = true;
+}
+
+
+bool Variation_Weights::AreWeightsInitialised(
+    const Variations_Type t) const
+{
+  return (m_weights.find(t) != m_weights.end());
 }
 
 
 namespace ATOOLS {
 
-  std::ostream& operator<<(std::ostream &s, const Variations &v)
+  std::ostream& operator<<(std::ostream& s, const Variations& v)
   {
     const Variations::Parameters_Vector * const paramsvec(v.GetParametersVector());
     s << "Named variations:" << std::endl;
@@ -798,19 +810,44 @@ namespace ATOOLS {
     return s;
   }
 
-
-  std::ostream & operator<<(std::ostream & s, const Variation_Weights & weights)
+  std::ostream& operator<<(std::ostream& s, const Subevent_Weights_Vector& v)
   {
-    const Variations::Parameters_Vector * const paramsvec(weights.p_variations->GetParametersVector());
+    if (v.size() == 1) {
+      s << v[0];
+    } else {
+      s << "(";
+      for (size_t j{ 0 }; j < v.size(); ++j) {
+        if (j != 0)
+          s << ", ";
+        s << v[j];
+      }
+      s << ")";
+    }
+    return s;
+  }
+
+  std::ostream& operator<<(std::ostream& s, const Variations_Type &c)
+   {
+    switch (c) {
+      case Variations_Type::all:
+        return s << "All";
+      case Variations_Type::main:
+        return s << "Main";
+      case Variations_Type::sudakov:
+        return s << "Sudakov";
+    }
+  }
+
+  std::ostream& operator<<(std::ostream& s, const Variation_Weights& weights)
+  {
+    const Variations::Parameters_Vector * const paramsvec(
+        weights.p_variations->GetParametersVector());
     s << "Variation weights: {" << std::endl;
     for (Variations::Parameters_Vector::size_type i(0);
          i < paramsvec->size(); ++i) {
       s << "    " << (*paramsvec)[i]->m_name << ": ";
-      if (!weights.m_initialised) {
-        s << "not initialised";
-      } else {
-        s << weights.m_weights[i];
-      }
+      for (auto& kv : weights.m_weights)
+        s << kv.first << "=" << kv.second[i] << " ";
       s << std::endl;
     }
     s << "}";

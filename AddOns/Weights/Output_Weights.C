@@ -78,8 +78,11 @@ namespace SHERPA {
 	for (size_t j(0);j<subs->size();++j) {
 	  m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
 	  for (size_t i(0);i<numvars;++i)
-	    m_outstream<<variationweights->GetVariationNameAt(i)<<" "
-		       <<variationweights->GetVariationWeightAt(i,j)<<" ";
+	    m_outstream
+              <<variationweights->GetVariationNameAt(i)
+              <<" "
+              <<variationweights->GetVariationWeightAt(i,Variations_Type::all,j)
+              <<" ";
 	  m_outstream<<"\n";
 	}
       m_outstream<<"\n";
