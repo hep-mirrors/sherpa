@@ -11,7 +11,6 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "SHERPA/Tools/Variations.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -33,10 +32,14 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
-                     bool namedweights, bool extendedweights) :
-  m_usenamedweights(namedweights),
-  m_extendedweights(extendedweights), p_sp(sp),
+                     bool namedweights,
+                     bool extendedweights,
+                     bool includemeonlyweights) :
+  p_sp(sp),
   m_wgt(wgt),
+  m_usenamedweights(namedweights),
+  m_extendedweights(extendedweights),
+  m_variationtypes(1, Variations_Type::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
@@ -76,6 +79,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
 
     ReadIn(db,"Variation_Weights",false);
     if (db) {
+      if (includemeonlyweights)
+        m_variationtypes.push_back(Variations_Type::main);
       p_variationweights=&db->Get<Variation_Weights>();
       if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
         THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
@@ -88,6 +93,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
 EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
   m_extendedweights(evtinfo.m_extendedweights),
+  m_variationtypes(evtinfo.m_variationtypes),
   p_sp(evtinfo.p_sp),
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
@@ -215,10 +221,18 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       msg_Debugging()<<"#named wgts: "<<numvars<<std::endl;
       for (size_t i(0); i < numvars; ++i) {
         std::string varname(p_variationweights->GetVariationNameAt(i));
-        if (idx==-1) {
-          wc[varname]=p_variationweights->GetVariationWeightAt(i);
-        } else { 
-          wc[varname]=p_variationweights->GetVariationWeightAt(i, idx);
+        typedef std::vector<Variations_Type::code>::const_iterator It_type;
+        for (It_type it(m_variationtypes.begin());
+             it != m_variationtypes.end();
+             ++it) {
+          const std::string typevarname(
+              (*it == Variations_Type::main) ? "ME_ONLY_" + varname : varname);
+          if (idx==-1) {
+            wc[typevarname]=p_variationweights->GetVariationWeightAt(i, *it);
+          } else {
+            wc[typevarname]=p_variationweights->GetVariationWeightAt(
+                i, *it, idx);
+          }
         }
       }
     }
@@ -266,8 +280,11 @@ void EventInfo::SetAlpha()
 }
 
 HepMC2_Interface::HepMC2_Interface() :
-  m_usenamedweights(false), m_extendedweights(false),
-  m_hepmctree(false), p_event(NULL)
+  m_usenamedweights(false),
+  m_extendedweights(false),
+  m_includemeonlyweights(false),
+  m_hepmctree(false),
+  p_event(NULL)
 {
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
@@ -276,6 +293,8 @@ HepMC2_Interface::HepMC2_Interface() :
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",false);
 #endif
   m_extendedweights=reader.GetValue<int>("HEPMC_EXTENDED_WEIGHTS",false);
+  m_includemeonlyweights =
+    reader.GetValue<int>("HEPMC_INCLUDE_ME_ONLY_VARIATIONS",false);
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE",false);
 }
@@ -296,7 +315,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
+  EventInfo evtinfo(sp,weight,
+                    m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -435,7 +455,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
+  EventInfo evtinfo(sp,weight,
+                    m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();

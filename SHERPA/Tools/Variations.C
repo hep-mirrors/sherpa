@@ -455,6 +455,7 @@ std::string Variation_Weights::GetVariationNameAt(Variations::Parameters_Vector:
 
 double Variation_Weights::GetVariationWeightAt(
     Variations::Parameters_Vector::size_type paramidx,
+    Variations_Type::code t,
     int subevtidx) const
 {
   if (subevtidx < 0) {
@@ -462,21 +463,24 @@ double Variation_Weights::GetVariationWeightAt(
     for (Subevent_Weights_Map::const_iterator it(m_weights.begin());
          it != m_weights.end();
          ++it)
-      weights *= it->second[paramidx];
+      if (t == Variations_Type::all || t == it->first)
+        weights *= it->second[paramidx];
     return std::accumulate(weights.begin(), weights.end(), 0.0);
   } else {
     double weight(1.0);
     for (Subevent_Weights_Map::const_iterator it(m_weights.begin());
          it != m_weights.end();
          ++it) {
-      if (subevtidx > 0 && it->second[paramidx].size() == 1) {
-        if (it->first == Variations_Type::main) {
-          THROW(fatal_error,
-                "The main variation weights do not have enough entries.");
+      if (t == Variations_Type::all || t == it->first) {
+        if (subevtidx > 0 && it->second[paramidx].size() == 1) {
+          if (it->first == Variations_Type::main) {
+            THROW(fatal_error,
+                  "The main variation weights do not have enough entries.");
+          }
+          weight *= it->second[paramidx][0];
+        } else {
+          weight *= it->second[paramidx][subevtidx];
         }
-        weight *= it->second[paramidx][0];
-      } else {
-        weight *= it->second[paramidx][subevtidx];
       }
     }
     return weight;
@@ -555,6 +559,8 @@ namespace SHERPA {
   std::ostream& operator<<(std::ostream& s, const Variations_Type::code &c)
   {
     switch (c) {
+      case Variations_Type::all:
+        return s << "All";
       case Variations_Type::main:
         return s << "Main";
       case Variations_Type::sudakov:

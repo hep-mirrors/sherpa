@@ -129,13 +129,15 @@ namespace SHERPA {
   std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
 
 
-  /*!
-   * Types to denote different variation sources
-   *
-   * The total variations are the product over the variations for all types.
-   */
+  //! Types to denote different variation sources
   struct Variations_Type {
-    enum code { main, sudakov };
+    enum code {
+      all,     //!< use for weight retrieval, to get the product of the below
+      main,    //!< use for everything that is not one of the below
+      sudakov  //!< use for weight factors from the reweighting of the Sudakov
+               //!< Veto Algorithm, i.e. the reweighting of parton shower
+               //!< emissions
+    };
   };
 
   std::ostream& operator<<(std::ostream&, const Variations_Type::code&);
@@ -165,10 +167,11 @@ namespace SHERPA {
     template <class Reweighter, class Data>
     void UpdateOrInitialiseWeights(double (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
                                    Reweighter & reweighter,
-                                   Data & data)
+                                   Data & data,
+                                   Variations_Type::code t=Variations_Type::main)
     {
-      if (!AreWeightsInitialised()) {
-        InitialiseWeights(Subevent_Weights_Vector(1, 1.0));
+      if (!AreWeightsInitialised(t)) {
+        InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       m_reweighting = true;
@@ -176,7 +179,7 @@ namespace SHERPA {
            m_currentparametersindex < paramsvec->size();
            ++m_currentparametersindex ) {
         double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_weights[Variations_Type::main][m_currentparametersindex] *= weight;
+        m_weights[t][m_currentparametersindex] *= weight;
       }
       m_reweighting = false;
     }
@@ -191,20 +194,21 @@ namespace SHERPA {
     template <class Reweighter, class Data>
     void InitialiseWeights(Subevent_Weights_Vector (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
                            Reweighter & reweighter,
-                           Data & data)
+                           Data & data,
+                           Variations_Type::code t=Variations_Type::main)
     {
-      if (AreWeightsInitialised()) {
+      if (AreWeightsInitialised(t)) {
         THROW(fatal_error, "The variation weights are already initialised");
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_weights[Variations_Type::main].clear();
-      m_weights[Variations_Type::main].reserve(size);
+      m_weights[t].clear();
+      m_weights[t].reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-        m_weights[Variations_Type::main].push_back(
+        m_weights[t].push_back(
             (reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex],
                                       this,
                                       data));
@@ -229,6 +233,7 @@ namespace SHERPA {
      * just returning the first (and only) weight.
      */
     double GetVariationWeightAt(Variations::Parameters_Vector::size_type,
+                                Variations_Type::code t=Variations_Type::all,
                                 int subevtidx=-1) const;
 
     // Obtain informations about the parameter variations
