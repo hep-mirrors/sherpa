@@ -61,7 +61,7 @@ namespace SHERPA {
     bool m_reweightsplittingpdfsscales;
   };
 
-  std::ostream & operator<<(std::ostream &, const Variations &);
+  std::ostream& operator<<(std::ostream&, const Variations&);
 
 
   /*!
@@ -115,8 +115,35 @@ namespace SHERPA {
     //! Construct a weight vector of size times 1.0 (i.e. we do not use the standard default 0.0!)
     Subevent_Weights_Vector(size_type count, const double& value = 1.0);
     //! Multiply all weights with a common factor
-    Subevent_Weights_Vector & operator*=(const double &);
+    Subevent_Weights_Vector & operator*=(const double&);
+    /*!
+     * Multiply all subevent weights one by one with those of another vec
+     *
+     * The other subevent weights must either be of equal size or they have to
+     * contain only one entry. In the latter case, this single entry is used as
+     * a common factor for all subevent weights.
+     */
+    Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
   };
+
+  std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
+
+
+  /*!
+   * Types to denote different variation sources
+   *
+   * The total variations are the product over the variations for all types.
+   */
+  struct Variations_Type {
+    enum code { main, sudakov };
+  };
+
+  std::ostream& operator<<(std::ostream&, const Variations_Type::code&);
+
+
+  typedef
+    std::map<Variations_Type::code, std::vector<Subevent_Weights_Vector>>
+    Subevent_Weights_Map;
 
 
   //! Wrap the actual event weight variations and apply reweighting functions to it
@@ -125,7 +152,6 @@ namespace SHERPA {
 
     Variation_Weights(Variations * v):
       p_variations(v),
-      m_initialised(false),
       m_reweighting(false)
     {}
 
@@ -141,7 +167,7 @@ namespace SHERPA {
                                    Reweighter & reweighter,
                                    Data & data)
     {
-      if (!m_initialised) {
+      if (!AreWeightsInitialised()) {
         InitialiseWeights(Subevent_Weights_Vector(1, 1.0));
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
@@ -150,7 +176,7 @@ namespace SHERPA {
            m_currentparametersindex < paramsvec->size();
            ++m_currentparametersindex ) {
         double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_absoluteweights[m_currentparametersindex] *= weight;
+        m_weights[Variations_Type::main][m_currentparametersindex] *= weight;
       }
       m_reweighting = false;
     }
@@ -167,24 +193,23 @@ namespace SHERPA {
                            Reweighter & reweighter,
                            Data & data)
     {
-      if (m_initialised) {
+      if (AreWeightsInitialised()) {
         THROW(fatal_error, "The variation weights are already initialised");
       }
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_absoluteweights.clear();
-      m_absoluteweights.reserve(size);
+      m_weights[Variations_Type::main].clear();
+      m_weights[Variations_Type::main].reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-        m_absoluteweights.push_back(
+        m_weights[Variations_Type::main].push_back(
             (reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex],
                                       this,
                                       data));
       }
       m_reweighting = false;
-      m_initialised = true;
     }
 
     //! Multiply *all* weights with a common factor
@@ -207,8 +232,8 @@ namespace SHERPA {
                                 int subevtidx=-1) const;
 
     // Obtain informations about the parameter variations
-    size_t GetNumberOfVariations() const { return m_absoluteweights.size(); }
-    size_t GetNumberOfSubevents() const { return m_absoluteweights[0].size(); }
+    size_t GetNumberOfVariations() const;
+    size_t GetNumberOfSubevents() const;
     Variations * GetVariations() const { return p_variations; }
     Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
 
@@ -218,9 +243,7 @@ namespace SHERPA {
 private:
     Variations * p_variations;
     //! a vector of (sub)event weights for each set of parameters
-    std::vector<Subevent_Weights_Vector> m_absoluteweights;
-    //! whether the vector of (sub)event weights has been initialised
-    bool m_initialised;
+    Subevent_Weights_Map m_weights;
     /*!
      * index of the parameters for the current reweighting
      *
@@ -235,7 +258,11 @@ private:
     // the non-member function operator<< will have access to private members
     friend std::ostream & operator<<(std::ostream &, const Variation_Weights &);
 
-    void InitialiseWeights(const Subevent_Weights_Vector & subweights);
+    void InitialiseWeights(const Subevent_Weights_Vector & subweights,
+                           const Variations_Type::code t=Variations_Type::main);
+
+    bool AreWeightsInitialised(
+        const Variations_Type::code t=Variations_Type::main) const;
   };
 
   std::ostream & operator<<(std::ostream &, const Variation_Weights &);
