@@ -40,10 +40,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   m_kmode      = _reader->Get("CSS_KMODE",              2, "kernel mode", METHOD);
   m_recocheck  = _reader->Get("CSS_RECO_CHECK",         0, "reco check mode", METHOD);
   m_respectq2  = _reader->Get("CSS_RESPECT_Q2",         0, "respect Q2 mode", METHOD);
-  int amode    = _reader->Get("EXCLUSIVE_CLUSTER_MODE", 0, "cluster KF mode", METHOD);
   int ckfmode  = _reader->Get("CSS_CKFMODE",            1, "kernel mode", METHOD);
   int pdfcheck = _reader->Get("CSS_PDFCHECK",           1, "PDF check mode", METHOD);
-  int csmode   = _reader->Get("CSS_CSMODE",             0, "color setter mode", METHOD);
   
   m_weightmode = _reader->Get<int>("WEIGHT_MODE", 1);
   
@@ -586,7 +584,6 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 {
   DEBUG_FUNC("mode = "<<mode);
   msg_Debugging()<<*ampl<<"\n";
-  PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   NLO_subevtlist *subs(NULL);
   if (mode) subs=ampl->Proc<PHASIC::Process_Base>()->GetRSSubevtList();
   size_t noem(0), nospec(0);
@@ -649,7 +646,6 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     return q2min;
   }
   while (q2list.size()) { 
-    double q2min(q2list.begin()->m_q2);
     Flavour mofl(q2list.begin()->m_fl);
     size_t imin(q2list.begin()->m_i);
     size_t jmin(q2list.begin()->m_j);

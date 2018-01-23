@@ -35,7 +35,7 @@ void Parton_Luminosity::FillGrids(Inelastic_Event_Generator * generator) {
 			   1./(1.+(*eikiter)->EffectiveIntercept()));
       m_smin *= s0ratio;
       m_kernel.SetSmin(m_smin);
-      totallumi = CalculateTotalXSec(maxdl);
+      CalculateTotalXSec(maxdl);
     }
     m_maxdls[(*eikiter)]    = maxdl;
     m_deltalogs[(*eikiter)] = m_deltalog;

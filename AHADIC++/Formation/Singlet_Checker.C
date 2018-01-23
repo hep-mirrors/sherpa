@@ -358,9 +358,6 @@ void Singlet_Checker::ForcedDecays() {
     else {
       Flavour flav1 = (**bit)->front()->Flavour(); 
       Flavour flav2 = (**bit)->back()->Flavour();
-      double  mass  = sqrt(((**bit)->front()->Momentum()+
-			    (**bit)->back()->Momentum()).Abs2());  
-      double  hmass = p_softclusters->MinSingleMass(flav1,flav2);
       Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
       bit++;
     }

@@ -81,8 +81,6 @@ PHASIC::Process_Info Dipole_Wrapper_Process::ConstructBornProcessInfo
 {
   PHASIC::Process_Info ret(rsinfo);
   ret.m_fi.m_nlotype&=~ATOOLS::nlo_type::real;
-  size_t nin  = ret.m_ii.NExternal();
-  size_t nout = ret.m_fi.NExternal();
   ret.Combine(i,j,flav_ij);
   return ret;
 }
@@ -262,13 +260,6 @@ void Dipole_Wrapper_Process::CalculateScale(const ATOOLS::Vec4D_Vector& real_p,
 double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p, const int mode)
 {
   CalcKinematics(p);
-
-  /* Use the trigger method of the RS process to set the m_trig member
-     of this subevent. Also triggers the real and all other dipoles
-     but whatever... */
-  PHASIC::Process_Base* rsproc = (PHASIC::Process_Base*)(p_subevent->p_real->p_proc);
-  ATOOLS::NLO_subevtlist* subs = rsproc->GetRSSubevtList();
-//  rsproc->Selector()->JetTrigger(subs);
 
   /* This method is called in MC@NLO matching from outside an
      RS_Process. Hence have to calc scales ourselves */

@@ -91,7 +91,7 @@ void MEProcess::ReadProcess(size_t n)
   if (!p_momentareader->ReadMatrix(momdata,""))
     THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
                         +ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE")+"'.");
-  size_t begin(0),id(0),nin(m_nin>0?m_nin:2);
+  size_t begin(0),id(0);
   for (size_t nf(0);nf<momdata.size();++nf) {
     std::vector<std::string> &cur(momdata[nf]);
     if (cur.size()==2 && cur[0]=="Point" &&
@@ -103,10 +103,7 @@ void MEProcess::ReadProcess(size_t n)
     // either "flav mom" or "flav mom col"
     if (cur.size()==2 && cur[0]=="End" && cur[1]=="point") break;
     if (cur.size()!=2 && cur.size()!=5 && cur.size()!=7) continue;
-    if (cur[0]=="NIn") {
-      nin=ATOOLS::ToType<int>(cur[1]);
-    }
-    else if (cur[0]=="KP_z_0") {
+    if (cur[0]=="KP_z_0") {
       msg_Debugging()<<"Set KP-eta values for Beam 0."<<std::endl;
       m_kpz[0]=ATOOLS::ToType<double>(cur[1]);
     }

@@ -294,12 +294,9 @@ void Quark_Replace::ConstructMandelstams(const ATOOLS::Vec4D & out1,const ATOOLS
 		     const double & mu2,double & hats, double & hatt, double & hatu)
 {
   double y1(out1.Y()), y2(out2.Y());
-  double ystar((y1-y2)/2.), ybar((y1+y2)/2.), coshy(cosh(ystar)), tanhy(tanh(ystar));
+  double ystar((y1-y2)/2.), coshy(cosh(ystar)), tanhy(tanh(ystar));
   hats  = (out1+out2).Abs2();
   hatt  = -hats/2.*(1.+tanhy)-mu2; 
   hatu  = -hats/2.*(1.-tanhy)-mu2;
-  double pperp(sqrt(hats/ATOOLS::sqr(2.*coshy)));
   hats += 2.*mu2;
-  //x1    = 2.*pperp/m_Ecms*exp(ybar)*coshy;
-  //x2    = 2.*pperp/m_Ecms*exp(-ybar)*coshy;
-}  
+}

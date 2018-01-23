@@ -121,7 +121,6 @@ void Final_State::ConstructKinematics() {
   TPropList::iterator down(p_ladder->GetProps()->begin());
   TPropList::iterator up(p_ladder->GetProps()->end());up--;
   Vec4D downqt(0.,0.,0.,0.),upqt(0.,0.,0.,0.),qt;
-  bool FWBW(false);
   while (forward!=backward) {
     if (dabs(forward->first)>dabs(backward->first)) {
       next   = forward; next++;
@@ -129,7 +128,6 @@ void Final_State::ConstructKinematics() {
       ConstructEmission(forward,downqt-down->m_q);
       downqt = down->m_q;
       forward++; down++;
-      FWBW = true;
     }
     else {
       next   = backward; next--;
@@ -137,7 +135,6 @@ void Final_State::ConstructKinematics() {
       ConstructEmission(backward,-up->m_q-upqt);
       upqt   = -up->m_q;
       backward--; up--;
-      FWBW = false;
     }
   }
   ConstructEmission(next,downqt-upqt);
@@ -191,7 +188,7 @@ double Final_State::SelectQT2(const double & qt2max,const double & reggefac) {
   // where expo is the typical regge exponent - it may need fixing -
   // which is set in QT2 and is either 0 for singlets or Nc/pi*|Delta y|
   double qt2(0.),mu2(1.);
-  double arg((qt2max+mu2)/mu2),expmax(reggefac*p_alphaS->MaxValue());
+  double arg((qt2max+mu2)/mu2);
   do {
     qt2 = mu2*(pow(arg,ran->Get())-1.);
   } while (dabs(reggefac)>1.e-12 && 

@@ -98,7 +98,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      double z(s.m_z), y(s.m_y);
+      double z(s.m_z);
       if (s.m_mi2==0.0 && s.m_mj2==0.0 && s.m_mk2==0.0) {
 	double B=1.0-2.0*z*(1.0-z);
 	if (s.m_kfac&2) {

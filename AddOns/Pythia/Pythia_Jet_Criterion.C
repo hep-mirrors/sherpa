@@ -29,7 +29,6 @@ namespace PYTHIA {
     {
       DEBUG_FUNC("mode = "<<mode);
       msg_Debugging()<<*ampl<<"\n";
-      PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
       double q2min(std::numeric_limits<double>::max());
       size_t imin(0), jmin(0), kmin(0);
       Flavour mofl;

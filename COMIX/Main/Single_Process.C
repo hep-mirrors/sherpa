@@ -134,7 +134,6 @@ bool COMIX::Single_Process::Initialize
   if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,&*p_model,
                        &m_cpls,stype,smode,m_itype,maxcpl,mincpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
-    nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
     m_mincpl.resize(p_bg->MinCpl().size());
     m_maxcpl.resize(p_bg->MaxCpl().size());
     for (size_t i(0);i<m_maxcpl.size();++i) {

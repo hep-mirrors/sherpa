@@ -667,7 +667,6 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     }
     if (oqcd==0) mur2=m_rsf*ampl->Mu2();
     else {
-      mur2=pow(mur2,1.0/oqcd);
       sas/=oqcd;
       if (m_nproc) {
 	if (s_nlocpl==1) {

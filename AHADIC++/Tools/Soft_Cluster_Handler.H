@@ -58,7 +58,6 @@ namespace AHADIC {
 			 const ATOOLS::Flavour & fl2);
     ATOOLS::Flavour GetDecHadron(const size_t & i) { return m_hads[i]; }
 
-    void PrintHadrons();
     std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; } 
   };
 }

@@ -93,7 +93,7 @@ void Colour_Generator::UpdateColours() {
     if (beam0->GetFlow(3-trial)!=beam1->GetFlow(trial))
       hit = ReplaceColours(trial);
     if (!hit && beam0->GetFlow(trial)!= beam1->GetFlow(3-trial))
-      hit = ReplaceColours(3-trial);
+      ReplaceColours(3-trial);
   }
   else {
     for (size_t pos=1;pos<3;pos++)

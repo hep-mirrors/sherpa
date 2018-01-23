@@ -495,12 +495,12 @@ operator()(double theta1) {
 
 
 void Single_Channel_Eikonal::PrintOmega_ik() {
-  double b1(0.), b2(0.), y(-m_Y);
+  double b1(0.), b2(0.);
   double deltab1(3.), deltab2(3.), deltay(0.1);
   while (b1<3.) {
     while (b2<3.) {
       std::cout<<"Omega_ik for b1 = "<<b1<<" b2 = "<<b2<<"."<<std::endl;
-      y = -m_Y;
+      double y(-m_Y);
       while (y<m_Y) {
 	std::cout<<" "<<y<<"  "<<Omega12(b1,b2,y)<<std::endl;
 	y += deltay;

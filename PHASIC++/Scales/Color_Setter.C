@@ -207,6 +207,8 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
   }
   if (xit!=m_xsmap.end() && xit->second!=NULL) {
     bool test(xit->second->SetColours(moms));
+    if (!test)
+      msg_Debugging() << "ME colour setter returned false.\n";
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
 		xit->second->Colours()[i][1]);

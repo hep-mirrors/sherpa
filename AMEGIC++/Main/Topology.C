@@ -113,7 +113,7 @@ void Single_Topology::Print(Point* p,std::ostream & ostr,size_t & indent)
 {
   if (!p) { ostr<<"End."<<endl; return; }
 
-  size_t indentL(indent), indentR(indent), indentM(indent);
+  size_t indentR(indent), indentM(indent);
   ostr<<"Left - ";
   Print(p->left,ostr,indent);
   indent+=7;

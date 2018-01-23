@@ -50,7 +50,6 @@ namespace DIRE {
     {
       DEBUG_FUNC("mode = "<<mode);
       msg_Debugging()<<*ampl<<"\n";
-      Jet_Finder *jf(ampl->JF<Jet_Finder>());
       NLO_subevtlist *subs(NULL);
       if (mode) subs=ampl->Proc<PHASIC::Process_Base>()->GetRSSubevtList();
       size_t noem(0), nospec(0);
@@ -113,7 +112,6 @@ namespace DIRE {
 	return q2min;
       }
       while (q2list.size()) { 
-	double q2min(q2list.begin()->m_q2);
 	Flavour mofl(q2list.begin()->m_fl);
 	size_t imin(q2list.begin()->m_i);
 	size_t jmin(q2list.begin()->m_j);

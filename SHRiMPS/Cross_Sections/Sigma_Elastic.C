@@ -34,7 +34,7 @@ void Sigma_Elastic::FillDifferentialGrids() {
   double Qmax(5.);
   FillDiffQGrid(Qmax);
   m_intgrid.clear();
-  double cumul = FillIntQGridAndNormalize();
+  FillIntQGridAndNormalize();
 }
 
 void Sigma_Elastic::FillDiffQGrid(const double & Qmax) {

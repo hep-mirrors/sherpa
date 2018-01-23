@@ -855,7 +855,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	}
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
-	size_t maxsize(Max(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
 	double intpart,fracpart;
 	for (size_t i(0);i<cpi.m_mincpl.size();++i) {
 	  fracpart=std::modf(2.*cpi.m_mincpl[i],&intpart);

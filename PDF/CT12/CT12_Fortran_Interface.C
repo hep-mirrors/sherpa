@@ -186,7 +186,7 @@ namespace PDF {
       MakeFortranString(tablefile,cset,40);
       setct12_(tablefile);
       if (stat==0) {
-        int ret = chdir(buffer);
+        chdir(buffer);
       }
       else {
         msg_Error()<<"Error in CT12_Fortran_Interface.C "<<std::endl

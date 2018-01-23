@@ -62,7 +62,7 @@ namespace DIM {
 
     double Value(const Splitting &s) const
     {
-      double z(s.m_z), y(s.m_y);
+      double z(s.m_z);
       if (s.m_mi2==0.0 && s.m_mj2==0.0 && s.m_mk2==0.0) {
 	double V=1.0-2.0*z*(1.0-z);
 	return V;
@@ -71,7 +71,6 @@ namespace DIM {
       double vijj=sqr(s.m_y)-4.0*nui2*nui2;
       double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
       if (vijj<0.0 || vijk<0.0) return 0.0;
-      vijj=sqrt(vijj)/(s.m_y+2.0*nui2);
       vijk=sqrt(vijk)/(1.0-s.m_y);
       double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
       V/=1.0+2.0*nui2/s.m_y;
@@ -88,7 +87,6 @@ namespace DIM {
       double vijj=sqr(s.m_y)-4.0*nui2*nui2;
       double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
       if (vijj<0.0 || vijk<0.0) return 0.0;
-      vijj=sqrt(vijj)/(s.m_y+2.0*nui2);
       vijk=sqrt(vijk)/(1.0-s.m_y);
       B11=1/vijk*(1.0-2.0*zi*(1.0-zi)+nui2/(s.m_y/2.0+nui2));
       B12=1/vijk*(1.0-2.0*zj*(1.0-zj)+nui2/(s.m_y/2.0+nui2));

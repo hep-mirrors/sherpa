@@ -340,10 +340,3 @@ MinDoubleMass(const Flavour & fl1,const Flavour & fl2) {
   m_flavs.second = fl2;
   return p_doubletransitions->GetLightestMass(m_flavs);
 }
-
-void Soft_Cluster_Handler::PrintHadrons() {
-  for (list<Proto_Particle *>::iterator hit=p_hadrons->begin();
-       hit!=p_hadrons->end();hit++) {
-    Proto_Particle * hadron = (*hit);
-  }
-}

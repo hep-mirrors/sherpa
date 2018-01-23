@@ -116,7 +116,6 @@ CalculateParallelMomenta(Vec4D & qmom,Vec4D & dimom) {
 void Hadron_Dissociation::SelectTrialTransverseMomenta() {
   for (std::map<Particle *,Vec4D>::iterator pvit=m_qtmap->begin();
        pvit!=m_qtmap->end();pvit++) {
-    double qt  = sqrt(p_ff->SelectQT2(m_QT2max,0.));
     double phi = ran->Get()*2.*M_PI;
     pvit->second = Vec4D(0.,cos(phi),sin(phi),0.);
   }

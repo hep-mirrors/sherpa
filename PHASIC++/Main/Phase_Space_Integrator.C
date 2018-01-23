@@ -140,7 +140,6 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   numberofchannels += p_psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<p_psh->FSRIntegrator()->NChannels()
                 <<" FSR integrators."<<endl;
-  long unsigned int procitmin(p_psh->Process()->ItMin());
   m_iter = Min(m_itmax,Max(m_itmin,Max(p_psh->Process()->ItMin(),20*numberofchannels)));
 
   m_ncontrib = p_psh->FSRIntegrator()->ValidN();

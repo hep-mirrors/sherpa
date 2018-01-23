@@ -1918,9 +1918,6 @@ bool NJettiness_Selector::Trigger(Selector_List &sl)
   // find x_a, x_b, Q2
   Vec4D sumq(q);
   for (size_t i(0);i<qi.size();++i) sumq+=qi[i];
-  double xa(ni[1]*sumq/rpa->gen.Ecms()), xb(ni[0]*sumq/rpa->gen.Ecms());
-  double Q2(xa*xb*sqr(rpa->gen.Ecms())), Q(sqrt(Q2));
-  //
   return true;
 }
 

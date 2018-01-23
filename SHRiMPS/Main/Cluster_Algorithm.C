@@ -102,9 +102,7 @@ double Cluster_Algorithm::SetShowerScales() {
   size_t nlegs(legs.size());
 
   double kt2, kt2test, sij, sijtest, sijmax(m_minkt2);
-  bool   connected;
   for (size_t i=2;i<nlegs;i++) {
-    connected = false;
     kt2 = 0.;
     sij = 0.;
     Cluster_Leg * split = legs[i];
@@ -112,7 +110,6 @@ double Cluster_Algorithm::SetShowerScales() {
       if (i==j) continue;
       Cluster_Leg * spect = legs[j];
       if (ColorConnected(split->Col(),spect->Col())==0) continue;
-      connected = true;
       sijtest = (split->Mom()+spect->Mom()).Abs2();
       if (sijtest>sij) sij = sijtest;
       kt2test = PTij2(split->Mom(),spect->Mom());
@@ -126,7 +123,6 @@ double Cluster_Algorithm::SetShowerScales() {
     if (sij>sijmax) sijmax = sij;
   }
   return (legs[0]->Mom()+legs[1]->Mom()).Abs2();
-  //return sijmax;
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)

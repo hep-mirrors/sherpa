@@ -241,19 +241,15 @@ void Amplitude_Output::DrawLine(string from, Point * d, bool flip) {
 
   ostream & s= pios;
 
-  int in_or_out=0;
-
   string to;
   if (d->left==0 && d->b==1) {
     // if (d->left==0) {
     to=outs[oc++];
     s<<"  \\fmfv{label="<<d->number<<"}{"<<to<<"} "<<endl;
-    in_or_out=1;
   }
   else if (d->left==0) {
     to=ins[ic++];
     s<<"  \\fmfv{label="<<d->number<<"}{"<<to<<"} "<<endl;
-    in_or_out=1;
   }
   else 
     to=meds[mc++];

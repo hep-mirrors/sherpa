@@ -40,7 +40,6 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
   Selector_Base("DressedParticleSelector",key.p_proc), p_dresser(NULL)
 {
   DEBUG_FUNC("");
-  NLO_subevtlist * subs(p_proc->GetSubevtList());
   double dR(0.),exp(1.);
   for (size_t k=0;k<key.size();++k) {
     if (key[k].size()>2 && key[k][0]=="DressingAlgorithm") {

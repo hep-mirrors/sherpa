@@ -42,7 +42,7 @@ namespace DIM {
       double nuk2(s.m_mk2/s.m_Q2), vijk=sqr(1.0-y)-4.0*y*nuk2;
       if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-y);
-      double zm=0.5*(1.0-vijk), zp=0.5*(1.0+vijk);
+      double zm=0.5*(1.0-vijk);
       B11=(-2.0+zi*(1.0-zi))/vijk;
       B12=(-2.0+zj*(1.0-zj))/vijk;
       return (A11*(1.0+p_sk->GF()->K(s))+B11)/
