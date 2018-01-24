@@ -9,7 +9,7 @@ namespace AHADIC {
     double m_alpha, m_beta, m_gamma;
     double m_arg, m_x, m_y;
     
-    long int  m_kin_fails;
+    long int  m_kin_fails{ 0 };
     
     bool      MakeLongitudinalMomenta();
     void      CalculateLimits();
