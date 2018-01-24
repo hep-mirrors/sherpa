@@ -25,7 +25,7 @@ namespace SHERPA {
     void ChangeFile();
     void SetXS(const double& xs, const double& xserr);
     void Header();
-    void Output(ATOOLS::Blob_List* blobs, double weight);
+    void Output(ATOOLS::Blob_List* blobs);
     void Footer();
   };
 

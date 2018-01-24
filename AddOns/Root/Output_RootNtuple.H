@@ -73,7 +73,7 @@ namespace SHERPA {
     void Header();
     void Footer();
     void ChangeFile();
-    void Output(ATOOLS::Blob_List* blobs, double weight);
+    void Output(ATOOLS::Blob_List* blobs);
     void PrepareTerminate();
   };
 

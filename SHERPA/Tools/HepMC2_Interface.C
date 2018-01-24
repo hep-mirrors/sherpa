@@ -305,8 +305,9 @@ HepMC2_Interface::~HepMC2_Interface()
 
 
 bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         HepMC::GenEvent& event, double weight)
+                                         HepMC::GenEvent& event)
 {
+  const auto weight(blobs->Weight());
 #ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
@@ -431,8 +432,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 }
 
 
-bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         double weight)
+bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -443,13 +443,12 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (p_event!=NULL) delete p_event;
   DeleteGenSubEventList();
   p_event = new HepMC::GenEvent();
-  return Sherpa2ShortHepMC(blobs, *p_event, weight);
+  return Sherpa2ShortHepMC(blobs, *p_event);
 }
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-				    double weight)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -462,13 +461,14 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     delete m_subeventlist[i];
   m_subeventlist.clear();
   p_event = new HepMC::GenEvent();
-  return Sherpa2HepMC(blobs, *p_event, weight);
+  return Sherpa2HepMC(blobs, *p_event);
 }
 
 // The actual code --- calls the Blob to GenVertex code
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event, double weight)
+                                    HepMC::GenEvent& event)
 {
+  const auto weight(blobs->Weight());
   DEBUG_FUNC("");
 #ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,

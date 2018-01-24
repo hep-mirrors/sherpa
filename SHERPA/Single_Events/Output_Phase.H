@@ -23,7 +23,7 @@ namespace SHERPA {
     Output_Phase(Output_Vector *const ana,Event_Handler *const h);
 
     // member functions
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*, double&);
 
     void CleanUp(const size_t & mode=0);
 

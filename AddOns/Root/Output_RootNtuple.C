@@ -215,7 +215,7 @@ void Output_RootNtuple::AddDecayProducts(Particle *part,int &np)
   ++m_fcnt;
 }
 
-void Output_RootNtuple::Output(Blob_List* blobs, const double weight) 
+void Output_RootNtuple::Output(Blob_List* blobs) 
 {
   Blob* signal=0, *shower=0;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit) 

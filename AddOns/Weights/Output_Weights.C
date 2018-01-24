@@ -59,7 +59,7 @@ namespace SHERPA {
       m_outstream.close();
     }
 
-    void Output(Blob_List* blobs, const double weight)
+    void Output(Blob_List* blobs)
     {
       Blob_Data_Base *sd((*blobs->FindFirst(btp::Signal_Process))["NLO_subeventlist"]);
       NLO_subevtlist *subs=sd?sd->Get<NLO_subevtlist*>():NULL;

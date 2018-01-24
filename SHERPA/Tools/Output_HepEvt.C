@@ -38,10 +38,10 @@ void Output_HepEvt::ChangeFile()
   m_outstream.open(newname.c_str());
 }
 
-void Output_HepEvt::Output(Blob_List* blobs, const double weight) 
+void Output_HepEvt::Output(Blob_List* blobs) 
 {
   m_hepevt.Sherpa2HepEvt(blobs);
-  m_hepevt.SetWeight(weight);
+  m_hepevt.SetWeight(blobs->Weight());
   m_hepevt.WriteFullHepEvt(m_outstream,m_hepevt.Nhep());
 }
 

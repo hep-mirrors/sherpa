@@ -121,8 +121,9 @@ void Output_LHEF::Header()
   m_outstream<<"</init>"<<std::endl;
 }
 
-void Output_LHEF::Output(Blob_List* blobs, const double weight) 
+void Output_LHEF::Output(Blob_List* blobs)
 {
+  const auto weight(blobs->Weight());
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   m_outstream<<"<event trials='"<<(int)(*sp)["Trials"]->Get<double>();
   if ((*sp)["MC@NLO_KT2_Start"])

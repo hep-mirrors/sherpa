@@ -23,7 +23,7 @@ namespace SHERPA {
     Output_HepEvt(const Output_Arguments &args);
     ~Output_HepEvt();
     void ChangeFile();
-    void Output(ATOOLS::Blob_List* blobs, double weight);
+    void Output(ATOOLS::Blob_List* blobs);
   };
 
 }

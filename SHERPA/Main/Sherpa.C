@@ -286,7 +286,7 @@ void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
   if (!p_hepmc2)
     p_hepmc2 = new SHERPA::HepMC2_Interface();
   ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
-  p_hepmc2->Sherpa2HepMC(blobs, event, blobs->Weight());
+  p_hepmc2->Sherpa2HepMC(blobs, event);
   p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
 #else
   THROW(missing_module, "HepMC is not linked.");

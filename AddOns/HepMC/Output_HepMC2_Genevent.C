@@ -71,10 +71,10 @@ void Output_HepMC2_Genevent::SetXS(const double& xs, const double& xserr)
 #endif
 }
 
-void Output_HepMC2_Genevent::Output(Blob_List* blobs, const double weight) 
+void Output_HepMC2_Genevent::Output(Blob_List* blobs) 
 {
 #ifdef USING__HEPMC2__IOGENEVENT
-  m_hepmc2.Sherpa2HepMC(blobs, weight);
+  m_hepmc2.Sherpa2HepMC(blobs);
 #ifdef HEPMC_HAS_CROSS_SECTION
   m_hepmc2.GenEvent()->set_cross_section(*p_xs);
 #endif

@@ -53,7 +53,7 @@ namespace DELPHES {
     ~Output_Delphes();
 
     void SetXS(const double& xs, const double& xserr);
-    void Output(ATOOLS::Blob_List* blobs, double weight);
+    void Output(ATOOLS::Blob_List* blobs);
     void ChangeFile();
 
   };// end of class Output_Delphes
@@ -115,21 +115,22 @@ void Output_Delphes::SetXS(const double& xs, const double& xserr)
 #endif
 }
 
-void Output_Delphes::Output(Blob_List* blobs, const double weight)
+void Output_Delphes::Output(Blob_List* blobs)
 {
 #ifdef USING__HEPMC2__IOGENEVENT
   if (m_mode==0) {
     p_event->clear();
-    m_hepmc2.Sherpa2ShortHepMC(blobs,*p_event,weight);
+    m_hepmc2.Sherpa2ShortHepMC(blobs,*p_event);
   }
   else {
-    m_hepmc2.Sherpa2HepMC(blobs,weight);
+    m_hepmc2.Sherpa2HepMC(blobs);
     p_event = m_hepmc2.GenEvent();
   }
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_event->set_cross_section(*p_xs);
 #endif
   p_treeWriter->Clear();
+  const auto weight(blobs->Weight());
   AnalyseEvent(p_branchGenEvent,*p_event,
 	       p_event->event_number()+1,weight);
   AnalyseParticles(p_branchGenParticle,*p_event);      

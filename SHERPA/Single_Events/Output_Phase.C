@@ -36,13 +36,13 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,Event_Handler *const h):
   }
 }
 
-Return_Value::code Output_Phase::Treat(Blob_List *bloblist,double &weight) 
+Return_Value::code Output_Phase::Treat(Blob_List* bloblist, double& weight) 
 {
   if (!bloblist->empty())
     for (Output_Vector::iterator it=p_outputs->begin(); it!=p_outputs->end(); ++it) {
       (*it)->SetXS(p_eventhandler->TotalXS(),
 		   p_eventhandler->TotalErr());
-      (*it)->Output(bloblist,weight);
+      (*it)->Output(bloblist);
     }
   if (rpa->gen.NumberOfGeneratedEvents()>0 &&
       (rpa->gen.NumberOfGeneratedEvents()+1)%m_wit==0 &&

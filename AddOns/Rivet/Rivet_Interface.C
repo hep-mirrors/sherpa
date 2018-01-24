@@ -501,10 +501,9 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
-  double weight(bl->Weight());
   HepMC::GenEvent event;
-  if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event, weight);
-  else                  m_hepmc2.Sherpa2HepMC(bl, event, weight);
+  if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
+  else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later

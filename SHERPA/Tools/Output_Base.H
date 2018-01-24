@@ -44,7 +44,7 @@ namespace SHERPA {
     virtual void ChangeFile();
 
     virtual void SetXS(const double&, const double&);
-    virtual void Output(ATOOLS::Blob_List* blobs, double weight) = 0;
+    virtual void Output(ATOOLS::Blob_List* blobs) = 0;
 
     inline const std::string Name() { return m_name; }
 
