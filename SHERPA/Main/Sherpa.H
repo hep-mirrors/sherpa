@@ -30,6 +30,7 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
+    HepMC2_Interface       * p_hepmc2;
     Filter                 * p_filter;
 
     void DrawLogo(const int mode);  
@@ -45,6 +46,8 @@ namespace SHERPA {
     bool InitializeTheEventHandler();
 
     bool GenerateOneEvent(bool reset=true);
+
+    void FillHepMCEvent(HepMC::GenEvent&);
 
     double TotalXS();
     double TotalErr();

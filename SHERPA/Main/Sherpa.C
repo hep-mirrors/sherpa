@@ -32,7 +32,10 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_filter(NULL)
+  p_inithandler(nullptr),
+  p_eventhandler(nullptr),
+  p_hepmc2(nullptr),
+  p_filter(nullptr)
 {
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
@@ -58,9 +61,10 @@ Sherpa::~Sherpa()
     }
   }
   rpa->gen.WriteCitationInfo();
-  if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
-  if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
-  if (p_filter)       { delete p_filter;       p_filter       = NULL; }
+  if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
+  if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
+  if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
+  if (p_filter)       { delete p_filter;       p_filter       = nullptr; }
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
@@ -218,7 +222,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
       }
 
       /// Increase m_trials --- based on signal blob["Trials"] if existent
-      if (blobs->FindFirst(btp::Signal_Process) == NULL) {
+      if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
         m_trials+=1;
 	msg_Debugging()<<"  No Signal_Process Blob found, increasing m_trials by 1\n";
       }
@@ -274,6 +278,19 @@ bool Sherpa::GenerateOneEvent(bool reset)
       return 1;
     }
     return 0;
+}
+
+void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
+{
+#ifdef USING__HEPMC2
+  if (!p_hepmc2)
+    p_hepmc2 = new SHERPA::HepMC2_Interface();
+  ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
+  p_hepmc2->Sherpa2HepMC(blobs, event, blobs->Weight());
+  p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
+#else
+  THROW(missing_module, "HepMC is not linked.");
+#endif
 }
 
 double Sherpa::TotalXS()
