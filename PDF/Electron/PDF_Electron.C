@@ -42,7 +42,7 @@ double PDF_Electron::GetXPDF(const kf_code& kf, bool anti)
   return 0.;
 }
 
-PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_order,m_izetta); }
+PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_izetta,m_order); }
 
 void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
 {
@@ -112,8 +112,8 @@ PDF_Base *PDFE_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (args.m_bunch.Kfcode()!=kf_e) return NULL;
-  int izetta=args.p_read->GetValue<int>("ISR_E_ORDER",1);
-  int order=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
+  int izetta=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
+  int order=args.p_read->GetValue<int>("ISR_E_ORDER",1);
   return new PDF_Electron(args.m_bunch,izetta,order);
 }
 
