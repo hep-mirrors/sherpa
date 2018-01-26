@@ -118,6 +118,8 @@ namespace SHERPA {
     inline bool HepMCExtendedWeights()         { return m_extendedweights; }
     inline void SetHepMCTreeLike(bool x)       { m_hepmctree=x; }
     inline bool HepMCTreeLike()                { return m_hepmctree; }
+    inline void SetHepMCIncludeMEOnlyVariations(bool x)
+    { m_includemeonlyweights=x; }
 
     void DeleteGenSubEventList();
 
