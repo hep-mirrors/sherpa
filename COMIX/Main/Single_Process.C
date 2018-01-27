@@ -152,7 +152,7 @@ bool COMIX::Single_Process::Initialize
     if (smode&2) {
       int massive(0);
       std::vector<size_t> pl;
-      for (size_t i(m_nin);i<m_nin+m_nout;++i)
+      for (size_t i(0);i<m_nin+m_nout;++i)
 	if (m_flavs[i].Strong()) {
 	  if (m_flavs[i].Mass()) massive=1;
 	  pl.push_back(i);
@@ -271,7 +271,7 @@ bool COMIX::Single_Process::MapProcess()
 	m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
 	if (p_map->p_kpterms) {
 	  std::vector<size_t> pl;
-	  for (size_t j(m_nin);j<m_nin+m_nout;++j)
+	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
 	  p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
 	  p_kpterms->SetIType(p_map->m_itype);
@@ -324,7 +324,7 @@ bool COMIX::Single_Process::MapProcess()
       if (p_kpterms) {
 	delete p_kpterms;
 	std::vector<size_t> pl;
-	for (size_t j(m_nin);j<m_nin+m_nout;++j)
+	for (size_t j(0);j<m_nin+m_nout;++j)
 	  if (m_flavs[j].Strong()) pl.push_back(j);
 	p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
 	p_kpterms->SetIType(p_map->m_itype);
@@ -480,14 +480,13 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
   Single_Process *sp(p_map!=NULL?p_map:this);
-  double w=sp->p_bg->Coupling(0)/(2.0*M_PI);
+  double w(1.0);
   bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
-  if (m_flavs[0].Strong()) {
+  if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_x[0]=map?p_map->m_x[0]:eta0+p_ismc->ERan("z_1")*(1.0-eta0);
     w*=(1.0-eta0);
   }
-  if (m_flavs[1].Strong()) {
-    eta1=p_int->ISR()->X2();
+  if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
     m_x[1]=map?p_map->m_x[1]:eta1+p_ismc->ERan("z_2")*(1.-eta1);
     w*=(1.0-eta1);
   }
@@ -504,7 +503,7 @@ double COMIX::Single_Process::KPTerms
 	      p0.PMinus()/rpa->gen.PBeam(1).PMinus());
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBeam(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBeam(0).PPlus());
-  double muf2(ScaleSetter()->Scale(stp::fac,1));
+  double muf2(ScaleSetter(1)->Scale(stp::fac,1));
   return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
 			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);
 }

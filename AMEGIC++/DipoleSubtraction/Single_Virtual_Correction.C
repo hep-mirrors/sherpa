@@ -789,14 +789,16 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   double weight(1.);
   // dice eta0 and eta1, incorporate phase space weight in weight
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
-    m_eta0 = mom[0].PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
+    m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBeam(0).PPlus():
+      mom[0].PMinus()/rpa->gen.PBeam(1).PMinus();
     if (m_z0>0.) m_x0 = m_z0;
     else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
-    m_eta1 = mom[1].PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
+    m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBeam(1).PMinus():
+      mom[1].PPlus()/rpa->gen.PBeam(0).PPlus();
     if (m_z1>0.) m_x1 = m_z1;
     else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
     weight*=(1.-m_eta1);

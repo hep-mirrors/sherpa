@@ -9,7 +9,7 @@ namespace PHASIC {
   protected: 
 
     long int m_count;
-    int      m_on, m_res;
+    int      m_on, m_res, m_rsres;
     std::vector<Selector_Base *> m_sels;
     std::vector<std::pair<std::string,double> > m_osc;
 
@@ -26,6 +26,7 @@ namespace PHASIC {
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p,
                  const ATOOLS::Flavour *fl=NULL, size_t n=0);
+    bool RSTrigger(ATOOLS::NLO_subevtlist *const subs);
     bool Trigger(ATOOLS::Selector_List &sl);
 
     bool Pass() const;
@@ -43,6 +44,7 @@ namespace PHASIC {
     inline int On() const { return m_on; }
 
     inline int Result() const { return m_on?m_res:1; }
+    inline int RSResult() const { return m_on?m_rsres:1; }
 
     inline void SetResult(const int res) { m_res=res; }
 

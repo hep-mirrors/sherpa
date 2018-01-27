@@ -81,11 +81,34 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_name(name), m_on(false), m_isnlo(false),
   m_sel_log(new Selector_Log(m_name)), p_proc(proc),
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
-  m_n(m_nin+m_nout), m_pass(1),
+  m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
   m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
 {
   if (p_proc->Info().Has(nlo_type::real|nlo_type::rsub)) m_isnlo=true;
+}
+
+bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
+{
+  Flavour_Vector fl(p_fl,&p_fl[m_n]);
+  int pass(0), nout(m_nout), nn(m_n);
+  for (size_t n(0);n<subs->size();++n) {
+    p_sub=(*subs)[n];
+    m_nout=(m_n=p_sub->m_n)-m_nin;
+    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
+    Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
+    for (size_t i(0);i<m_nin;++i)
+      if (mom[i][0]<0.0) mom[i]=-mom[i];
+    Selector_List sl=Selector_List
+      (p_sub->p_fl,p_sub->m_n,mom,m_nin);
+    if (!Trigger(sl)) p_sub->m_trig=0;
+    if (p_sub->m_trig) pass=1;
+    p_sub=NULL;
+  }
+  m_n=nn;
+  m_nout=nout;
+  for (size_t i(0);i<m_n;++i) p_fl[i]=fl[i];
+  return pass;
 }
 
 Selector_Base::~Selector_Base()
