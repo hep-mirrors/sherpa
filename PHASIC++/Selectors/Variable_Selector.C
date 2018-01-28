@@ -21,7 +21,6 @@ namespace PHASIC {
     std::vector<std::pair<double,double> > m_bounds;
 
     std::vector<std::vector<ATOOLS::Vec4D_Vector> > m_moms;
-    std::vector<std::vector<std::vector<int> > > m_sels;
     std::vector<ATOOLS::Flavour_Vector> m_cfl;
     std::vector<std::vector<size_t> > m_nfl;
     std::vector<size_t> m_ffl;
@@ -50,7 +49,8 @@ namespace PHASIC {
 		  ATOOLS::Flavour_Vector fl,
 		  std::vector<std::pair<double,double> > &bounds);
 
-    bool Trigger(ATOOLS::Selector_List &);
+    bool Trigger(ATOOLS::Selector_List &sl);
+    bool Trigger(ATOOLS::Selector_List &sl,const int id);
 
   };// end of class Variable_Selector
 
@@ -153,7 +153,6 @@ void Variable_Selector::SetRange
       m_nfl[id].push_back(1);
     }
   }
-  m_sels.push_back(std::vector<std::vector<int> >(m_cfl[id].size()));
   m_moms.push_back(std::vector<Vec4D_Vector>(m_cfl[id].size()));
   m_bounds=bounds;
   m_name="Variable_Selector_"+ToString(m_imode)+"_";
@@ -161,8 +160,7 @@ void Variable_Selector::SetRange
     m_name+="_"+m_cfl[id][j].IDName()+"-"+ToString(m_nfl[id][j]);
     for (int i(m_imode?0:m_nin);i<pfl.size();++i)
       if (m_cfl[id][j].Includes(pfl[i]))
-	m_sels[id][j].push_back(i);
-    m_moms[id][j].resize(m_sels[id][j].size());
+	m_moms[id][j].push_back(Vec4D());
   }
   msg_Debugging()<<METHOD<<"(): order = "<<m_omode
 		 <<", imode = "<<m_imode<<" {\n";
@@ -176,9 +174,9 @@ void Variable_Selector::SetRange
   for (size_t j(0);j<m_cfl[id].size();++j) {
     msg_Debugging()<<"  "<<j<<": "<<m_cfl[id][j].IDName()
 		   <<" ("<<m_nfl[id][j]<<") -> {";
-    if (m_sels[id][j].size()>0) msg_Debugging()<<m_sels[id][j].front();
-    for (size_t k(1);k<m_sels[id][j].size();++k)
-      msg_Debugging()<<","<<m_sels[id][j][k];
+    if (m_moms[id][j].size()>0) msg_Debugging()<<m_moms[id][j].front();
+    for (size_t k(1);k<m_moms[id][j].size();++k)
+      msg_Debugging()<<","<<m_moms[id][j][k];
     msg_Debugging()<<"}\n";
   }
   msg_Debugging()<<"}\n";
@@ -209,11 +207,11 @@ bool Variable_Selector::Trigger
   }
   if (n==m_nfl[id][f]) return Trigger(sl,l,u,moms,f+1,0,0,id);
   moms.push_back(Vec4D());
-  for (size_t k(m);k<m_sels[id][f].size();++k) {
+  for (size_t k(m);k<m_moms[id][f].size();++k) {
 #ifdef DEBUG__Variable_Selector
     msg_Debugging()<<"f = "<<f<<", n = "<<n<<", m = "<<m
 		   <<", k = "<<k<<" -> "<<m_cfl[id][f].IDName()
-		   <<" ("<<m_sels[id][f][k]<<") {\n";
+		   <<" ("<<m_moms[id][f][k]<<") {\n";
 #endif
     moms.back()=m_moms[id][f][k];
     if (!Trigger(sl,l,u,moms,f,n+1,k+1,id)) return false;
@@ -225,17 +223,18 @@ bool Variable_Selector::Trigger
   return true;
 }
 
-bool Variable_Selector::Trigger(Selector_List &sl)
+bool Variable_Selector::Trigger(Selector_List &sl,const int id)
 {
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<METHOD<<"(id="<<0<<"): {\n";
 #endif
-//  for (size_t j(0);j<m_cfl[id].size();++j) {
-//    for (size_t i(0);i<m_sels[id][j].size();++i)
-//      m_moms[id][j][i]=p[m_sels[id][j][i]];
-//    if (m_orders.size()>j)
-//      std::sort(m_moms[id][j].begin(),m_moms[id][j].end(),*m_orders[j]);
-//  }
+  for (size_t j(0);j<m_cfl[id].size();++j) {
+    size_t i(0);
+    for (size_t k(m_imode?0:m_nin);k<sl.size();++k)
+      if (m_cfl[id][j].Includes(sl[k].Flavour()))
+	m_moms[id][j][i++]=sl[k].Momentum();
+    while (i<m_moms[id][j].size()) m_moms[id][j][i++]=Vec4D();
+  }
   size_t l(0), u(0);
   std::vector<Vec4D> moms;
   bool hit(Trigger(sl,l,u,moms,0,0,0,0));
@@ -243,6 +242,11 @@ bool Variable_Selector::Trigger(Selector_List &sl)
   msg_Debugging()<<"}\n";
 #endif
   return hit;
+}
+
+bool Variable_Selector::Trigger(Selector_List &sl)
+{
+  return Trigger(sl,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
 DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);
