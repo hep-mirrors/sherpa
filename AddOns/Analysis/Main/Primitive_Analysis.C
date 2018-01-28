@@ -227,7 +227,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 	  ana->DoAnalysis(bl,value);
 	  m_called.insert(ana);
 	}
-	return;
+	if (m_mode&ANALYSIS::do_menlo) return;
       }
     }
   }
@@ -473,8 +473,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     it->second->FinishAnalysis(dir,mode);
   }
 
-  if (!(m_mode&ANALYSIS::splitt_phase) &&
-      !((m_mode&ANALYSIS::split_vars) && m_nvar)) {
+  if (!(m_mode&ANALYSIS::splitt_phase)) {
     for (size_t i=0;i<m_objects.size();i++) {
       m_objects[i]->EndEvaluation();
       if (m_mode&ANALYSIS::output_this) 
