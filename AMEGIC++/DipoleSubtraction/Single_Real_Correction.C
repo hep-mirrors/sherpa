@@ -44,7 +44,6 @@ Single_Real_Correction::Single_Real_Correction() :
     rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
-  m_ossubon = ToType<size_t>(rpa->gen.Variable("OS_SUB"));
   m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
   m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
 
