@@ -86,6 +86,71 @@ double Jet_Finder::Reweight(Variation_Parameters *params,
   return res?1.0:0.0;
 }
 
+bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
+{
+  for (size_t i(0);i<m_nin+m_nout;++i)
+    p_ampl->Leg(i)->SetMom(i<m_nin && subs->back()->p_mom[i][0]>0.0?
+			   -subs->back()->p_mom[i]:subs->back()->p_mom[i]);
+  m_qcut=p_yccalc->Calculate()->Get<double>();
+  if (!m_on) return true;
+  int res(0);
+  m_pass=0;
+  ReweightSubevt_Args args(subs->size());
+  for (size_t n(0);n<subs->size();++n) {
+    msg_Debugging()<<METHOD<<"("<<n<<"): '"<<p_proc->Name()
+		   <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
+    {
+      msg_Indent();
+      p_ampl->SetProc(p_proc);
+      if (p_ampl->Legs().size()<(*subs)[n]->m_n)
+	p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
+      else if (p_ampl->Legs().size()>(*subs)[n]->m_n) {
+	p_ampl->Legs().back()->Delete();
+	p_ampl->Legs().pop_back();
+      }
+      size_t idij((1<<(*subs)[n]->m_i)|(1<<(*subs)[n]->m_j));
+      if ((*subs)[n]->m_i==(*subs)[n]->m_j) idij=0;
+      for (size_t i(0);i<(*subs)[n]->m_n;++i) {
+	p_ampl->Leg(i)->SetFlav
+	  ((int)i<m_nin?(*subs)[n]->p_fl[i].Bar():(*subs)[n]->p_fl[i]);
+	p_ampl->Leg(i)->SetMom(i<m_nin && subs->back()->p_mom[i][0]>0.0?
+			       -(*subs)[n]->p_mom[i]:(*subs)[n]->p_mom[i]);
+	p_ampl->Leg(i)->SetId((*subs)[n]->p_id[i]);
+	p_ampl->Leg(i)->SetK((*subs)[n]->p_id[i]==idij?
+			     (1<<(*subs)[n]->m_k):0);
+      }
+      p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+      args.m_jcv[n]=p_jc->Value(p_ampl,idij?0:1);
+      (*subs)[n]->m_trig=args.m_acc[n]=args.m_jcv[n]>sqr(m_qcut);
+      if (args.m_acc[n]) res=m_pass=1;
+    }
+    msg_Debugging()<<"} -> "<<args.m_acc[n]<<"\n";
+  }
+  if (p_proc->VariationWeights()) {
+    p_proc->VariationWeights()->InitialiseWeights
+      (&Jet_Finder::ReweightSubevents,*this,args);
+    for (size_t n(0);n<subs->size();++n)
+      res|=(*subs)[n]->m_trig|=(args.m_acc[n]?2:0);
+  }
+  return 1-m_sel_log->Hit(!res);
+}
+
+Subevent_Weights_Vector Jet_Finder::ReweightSubevents
+(Variation_Parameters *params,Variation_Weights *weights,
+ ReweightSubevt_Args &args)
+{
+  Subevent_Weights_Vector wgts(args.m_jcv.size());
+  for (size_t i(0);i<args.m_jcv.size();++i) {
+    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
+		   <<"' Q_cut = "<<m_qcut*params->m_Qcutfac<<"\n";
+    wgts[i]=args.m_jcv[i]>sqr(m_qcut*params->m_Qcutfac);
+    msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv[i])<<"\n";
+    msg_Debugging()<<"} -> "<<wgts[i]<<"\n";
+    if (wgts[i]) args.m_acc[i]=1;
+  }
+  return wgts;
+}
+
 void Jet_Finder::BuildCuts(Cut_Data *cuts) 
 {
 }

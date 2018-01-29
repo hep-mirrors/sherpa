@@ -182,6 +182,7 @@ namespace ATOOLS {
      * a common factor for all subevent weights.
      */
     Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
+    Subevent_Weights_Vector & operator+=(const Subevent_Weights_Vector &);
   };
 
   std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
@@ -250,19 +251,17 @@ namespace ATOOLS {
         Data & data,
         Variations_Type t=Variations_Type::main)
     {
-      if (AreWeightsInitialised(t)) {
-       THROW(fatal_error, "The variation weights are already initialised");
-      }
+      int initialized(AreWeightsInitialised(t));
       const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
       const size_t size(paramsvec->size());
-      m_weights[t].clear();
       m_weights[t].reserve(size);
       m_reweighting = true;
       for (m_currentparametersindex = 0;
            m_currentparametersindex < size;
            ++m_currentparametersindex ) {
-        m_weights[t].push_back(
-            (reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
+	Subevent_Weights_Vector weightvector((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
+	if (!initialized) m_weights[t].push_back(weightvector);
+	else m_weights[t][m_currentparametersindex] += weightvector;
       }
       m_reweighting = false;
     }
@@ -272,6 +271,9 @@ namespace ATOOLS {
 
     //! Multiply weights with weights from another set of variation weights
     Variation_Weights & operator*=(const Variation_Weights &);
+
+    //! Add weights from another set of variation weights
+    Variation_Weights & operator+=(const Variation_Weights &);
 
     void CombineSubeventWeights();
 
