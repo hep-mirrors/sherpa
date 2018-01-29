@@ -1504,7 +1504,7 @@ CombinedFlavour(const size_t &idij)
 
 std::string  AMEGIC::Single_LOProcess::CreateLibName()
 {
-  DEBUG_FUNC(m_name<<": "<<m_stype<<", E="<<m_flavs[m_emit]<<" ("<<m_emit<<")");
+  DEBUG_FUNC(m_name<<": "<<m_stype<<", E="<<m_emit);
   std::string name(m_name);
   size_t bpos(name.find("__QCD("));
   if (bpos==std::string::npos) {
