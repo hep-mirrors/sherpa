@@ -428,7 +428,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   m_aon.resize(graphs.size(),0);
   m_cplmatrix.clear();
   m_cplmatrix.resize(graphs.size());
-  static Data_Reader read(",",";",")","(");
+  Data_Reader read(",",";",")","(");
   for (size_t i=0;i<graphs.size();i++) {
     int *nums, ci, cj;
     std::string ords;

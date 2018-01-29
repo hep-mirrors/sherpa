@@ -66,6 +66,10 @@ Sherpa::~Sherpa()
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
   if (p_filter)       { delete p_filter;       p_filter       = nullptr; }
   exh->RemoveTerminatorObject(this);
+  {// don't remove
+    ATOOLS::Default_Reader reader;
+    reader.Finalize();
+  }// don't remove
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
@@ -78,9 +82,6 @@ Sherpa::~Sherpa()
   for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
     delete kfit->second;
   ATOOLS::s_kftable.clear();
-
-  ATOOLS::Default_Reader reader;
-  reader.Finalize();
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
