@@ -34,7 +34,8 @@ namespace CSSHOWER {
  
     PDF::ISR_Handler * p_isr;
     int m_weightmode, m_kmode, m_respectq2, m_type;
-    size_t m_maxem, m_nem, m_recocheck;
+    size_t m_maxem, m_maxdecem, m_nem, m_recocheck;
+    double m_decscalefac;
     
     Shower          * p_shower;
     All_Singlets m_allsinglets;

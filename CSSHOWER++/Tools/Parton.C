@@ -21,7 +21,9 @@ namespace CSSHOWER {
     else                     str<<"                           ";
     str<<"  Colour partners ("
        <<(part.p_left?ATOOLS::ID(part.p_left->m_id):vector<int>())<<","
-       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<")"<<endl;
+       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<") "
+       <<(part.p_colspec[0]?ATOOLS::ID(part.p_colspec[0]->m_id):vector<int>())<<","
+       <<(part.p_colspec[1]?ATOOLS::ID(part.p_colspec[1]->m_id):vector<int>())<<endl;
     if (part.m_kt_soft[0]<std::numeric_limits<double>::max() ||
 	part.m_kt_soft[1]<std::numeric_limits<double>::max()) {
       str<<"  k_T left : "<<sqrt(part.KtSoft(0))<<", k_T right : "<<sqrt(part.KtSoft(1))<<endl;

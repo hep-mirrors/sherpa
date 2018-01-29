@@ -51,6 +51,12 @@ namespace CSSHOWER {
 
   class Splitting_Function_Base;
 
+  struct Split_Args {
+    Parton *p_split, *p_spect;
+    Split_Args(Parton *split,Parton *spect):
+      p_split(split), p_spect(spect) {}
+  };
+  
   class SF_Lorentz {
   protected:
 
@@ -65,6 +71,8 @@ namespace CSSHOWER {
     int m_beam, m_col;
 
     double m_lastJ;
+
+    Split_Args *p_split;
 
     static double s_pdfcut, s_kappa;
 
@@ -119,6 +127,8 @@ namespace CSSHOWER {
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
     inline int Col() const { return m_col; }
+
+    inline void SetSplit(Split_Args *const split) { p_split=split; }
 
     inline static void SetKappa(const double &kap) { s_kappa=kap; }
 

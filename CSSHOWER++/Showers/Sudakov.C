@@ -400,11 +400,16 @@ bool Sudakov::Generate(Parton * split)
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       abort();
     }
+    m_phi = 2.0*M_PI*ran->Get();
+    p_split->SetPhi(m_phi);
+    Split_Args splitargs(p_split,p_split->GetColSpec());
+    if (p_split->GetColSpec()) p_selected->Lorentz()->SetSplit(&splitargs);
     const bool veto(Veto(Q2, m_x));
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
       p_variationweights->UpdateOrInitialiseWeights(
           &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
     }
+    p_selected->Lorentz()->SetSplit(NULL);
     if (veto) {
       success = true;
       break;
@@ -420,7 +425,6 @@ bool Sudakov::Generate(Parton * split)
     <<" with kt2 = "<<m_kperp2<<", y = "<<m_y<<", z = "<<m_z<<endl;
     }
   */
-  m_phi = 2.0*M_PI*ran->Get();
   return success;
 }
 

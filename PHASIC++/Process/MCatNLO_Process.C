@@ -473,7 +473,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
     ampl->SetOrderQCD(next->OrderQCD()+1);
-    ampl->Next()->SetNLO(4);
+    ampl->Next()->SetNLO(ampl->Next()->NLO()|4);
     ampl->SetJF(ampl->Next()->JF<void>());
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
@@ -504,7 +504,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
     std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
-  ampl->SetNLO(4);
+  ampl->SetNLO(ampl->NLO()|4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";

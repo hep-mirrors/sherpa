@@ -93,6 +93,7 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 	}
       }
     }
+    ampl->SetNLO(ampl->NLO()|256);
   }
   return stat;
   }

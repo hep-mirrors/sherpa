@@ -1,4 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "CSSHOWER++/Tools/Parton.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 namespace CSSHOWER {
   
@@ -165,6 +167,17 @@ double LF_VVV1_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    if (p_split) {
+      massive -= 2./(1.-z+z*y);
+      Parton * spect = p_split->p_split->GetSpect();
+      Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
+      double mk2 = p2.Abs2();
+      if (spect->KScheme()) mk2=p2.Abs2();
+      PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
+      if (PHASIC::ConstructFFDipole(0.,0.,0.,mk2,p1,p2,ff)<0) return 0.;
+      Vec4D pl = p_split->p_spect->Momentum();
+      massive += 2.*(ff.m_pi*pl)/(ff.m_pj*pl) - pl.Abs2()*(Q2*(1.0-muk2)*y/2.0)/sqr(ff.m_pj*pl);
+    }
     double value = 2.0 * p_cf->Coupling(scale,0) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -206,6 +219,17 @@ double LF_VVV2_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    if (p_split) {
+      massive -= 2./(1.-z+z*y);
+      Parton * spect = p_split->p_split->GetSpect();
+      Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
+      double mk2 = p2.Abs2();
+      if (spect->KScheme()) mk2=p2.Abs2();
+      PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
+      if (PHASIC::ConstructFFDipole(0.,0.,0.,mk2,p1,p2,ff)<0) return 0.;
+      Vec4D pl = p_split->p_spect->Momentum();
+      massive += 2.*(ff.m_pj*pl)/(ff.m_pi*pl) - pl.Abs2()*(Q2*(1.0-muk2)*y/2.0)/sqr(ff.m_pi*pl);
+    }
     double value = 2.0 * p_cf->Coupling(scale,0) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }

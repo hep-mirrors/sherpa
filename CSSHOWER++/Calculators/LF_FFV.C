@@ -1,4 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "CSSHOWER++/Tools/Parton.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 // #define USING_DIS_MEC 
 
@@ -257,6 +259,17 @@ double LF_FFV_FF::operator()
     vijk  = sqrt(vijk)/((1.-mui2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
+    if (p_split) {
+      massive -= 2./(1.-z+z*y) - vtijk/vijk * mi2/pipj;
+      Parton * spect = p_split->p_split->GetSpect();
+      Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
+      double mij2 = muij2*Q2, mk2 = muk2*Q2;
+      if (spect->KScheme()) mk2=p2.Abs2();
+      PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
+      if (PHASIC::ConstructFFDipole(mi2,0.,mij2,mk2,p1,p2,ff)<0) return 0.;
+      Vec4D pl = p_split->p_spect->Momentum();
+      massive += 2.*(ff.m_pi*pl)/(ff.m_pj*pl) - mi2/pipj - pl.Abs2()*pipj/sqr(ff.m_pj*pl);
+    }
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;

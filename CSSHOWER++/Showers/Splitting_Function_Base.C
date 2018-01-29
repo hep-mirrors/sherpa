@@ -30,7 +30,8 @@ double SF_Lorentz::s_pdfcut=1.0e-6;
 double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
+  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0),
+  p_split(NULL)
 {
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {

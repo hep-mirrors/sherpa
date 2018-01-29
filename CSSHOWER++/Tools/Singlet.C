@@ -357,6 +357,14 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   }
   daughter1->UpdateColours();
   daughter2->UpdateColours();
+  if (mother->GetColSpec(0)) {
+    if (daughter1->GetLeft()==mother->GetLeft()) daughter1->SetColSpec(0,mother->GetColSpec(0));
+    if (daughter2->GetLeft()==mother->GetLeft()) daughter2->SetColSpec(0,mother->GetColSpec(0));
+  }
+  if (mother->GetColSpec(1)) {
+    if (daughter1->GetRight()==mother->GetRight()) daughter1->SetColSpec(1,mother->GetColSpec(1));
+    if (daughter2->GetRight()==mother->GetRight()) daughter2->SetColSpec(1,mother->GetColSpec(1));
+  }
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
   return true;

@@ -31,7 +31,7 @@ namespace CSSHOWER {
     double          m_kt_soft[2];
     bool            m_fromdec;
     Parton        * p_left, * p_right;
-    Parton        * p_spect, * p_prev, * p_next;
+    Parton        * p_spect, * p_prev, * p_next, * p_colspec[2];
     Singlet       * p_sing;
     size_t          m_id;
     ATOOLS::Poincare_Sequence m_lt;
@@ -89,6 +89,8 @@ namespace CSSHOWER {
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
     inline Parton *                GetSpect();
+    inline Parton *                GetColSpec(int);
+    inline Parton *                GetColSpec();
     inline Parton *                GetPrev();
     inline Parton *                GetNext();
     inline Singlet*                GetSing();
@@ -114,6 +116,7 @@ namespace CSSHOWER {
     inline void SetLeft(Parton *);
     inline void SetRight(Parton *);
     inline void SetSpect(Parton *);
+    inline void SetColSpec(int,Parton *);
     inline void SetPrev(Parton *);
     inline void SetNext(Parton *);
     inline void SetSing(Singlet *);
@@ -139,6 +142,7 @@ namespace CSSHOWER {
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0),m_fromdec(false)
   { 
+    p_colspec[0]=p_colspec[1]=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -151,6 +155,7 @@ namespace CSSHOWER {
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0), m_fromdec(false)
   {
+    p_colspec[0]=p_colspec[1]=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -164,6 +169,7 @@ namespace CSSHOWER {
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0), m_fromdec(part->FromDec())
   {
+    p_colspec[0]=p_colspec[1]=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     if (m_pst==pst::FS) {
       m_flow.SetCode(1,part->GetFlow(1));
@@ -204,6 +210,8 @@ namespace CSSHOWER {
   Parton *                Parton::GetLeft()           { return p_left;  }
   Parton *                Parton::GetRight()          { return p_right; }
   Parton *                Parton::GetSpect()          { return p_spect; }
+  Parton *                Parton::GetColSpec(int i)   { return p_colspec[i]; }
+  Parton *                Parton::GetColSpec() { return p_colspec[p_colspec[0]?0:1]; }
   Parton *                Parton::GetPrev()           { return p_prev; }
   Parton *                Parton::GetNext()           { return p_next; }
   Singlet*                Parton::GetSing()           { return p_sing; }
@@ -229,6 +237,7 @@ namespace CSSHOWER {
   void Parton::SetLeft(Parton * part)                 { p_left    = part; }  
   void Parton::SetRight(Parton * part)                { p_right   = part; }  
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  
+  void Parton::SetColSpec(int i,Parton * part)        { p_colspec[i] = part; }  
   void Parton::SetPrev(Parton * part)                 { p_prev    = part; }  
   void Parton::SetNext(Parton * part)                 { p_next    = part; }  
   void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  
