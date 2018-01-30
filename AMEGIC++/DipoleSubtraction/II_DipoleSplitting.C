@@ -63,6 +63,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
     if (m_subtype==1) m_av += zijk/(sqr(zijk)+m_vi*(1.0-zijk))-1.0/m_xijk;
     if (m_subtype==2) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
+    break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   case spt::s2sg:
