@@ -776,7 +776,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
  const std::string &ini,const std::string &fin,
  const std::vector<std::string> &dectags)
 {
-  int aoqcd(0);
+  int aoqcd(0), loprocs(0);
   Subprocess_Info AIS, AFS;
   ExtractFlavours(AIS,ini);
   ExtractFlavours(AFS,fin);
@@ -952,6 +952,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
 	}
+	if (loprocs==0) loprocs=procs.size();
       }
     }
   }
@@ -968,7 +969,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
       std::vector<std::string> jfargs(1,pbi.m_gycut);
       GetMPvalue(pbi.m_vycut,cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
-      if (i==0) {
+      if (i<loprocs) {
 	jfargs.push_back("LO");
 	if (pbi.m_cutcore==true) {
 	  jfargs.push_back("CUT");
