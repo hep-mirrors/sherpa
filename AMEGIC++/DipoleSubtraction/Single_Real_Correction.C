@@ -204,6 +204,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
                        <<(Combinable(1<<i,1<<j)?"":"not ")<<"combinable"
                        <<", types: "<<ststr<<std::endl;
         for (size_t s(0);s<stypes.size();++s) {
+	  if (m_pinfo.m_ckkw && stypes[s]==sbt::qed) continue;
           Single_DipoleTerm *pdummy
             = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],p_int);
           msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("
@@ -455,18 +456,18 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     m_subtermlist[i]->Integrator()->SetMomenta(_mom);
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
     if (IsBad(test)) res=false;
-    m_subevtlist[i]->m_oqcd = m_subtermlist[i]->MaxOrder(0);
-    m_subevtlist[i]->m_oew = m_subtermlist[i]->MaxOrder(1);
-    m_subevtlist[i]->p_real = &m_realevt;
+    m_subtermlist[i]->GetSubevt()->m_oqcd = m_subtermlist[i]->MaxOrder(0);
+    m_subtermlist[i]->GetSubevt()->m_oew = m_subtermlist[i]->MaxOrder(1);
+    m_subtermlist[i]->GetSubevt()->p_real=&m_realevt;
   }
 
   if (m_ossubon){
     for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()) {
       double test = (*m_subostermlist[i])(&mom.front(),cms,mode|2);
       if (IsBad(test)) res=false;
-      m_subevtlist[i]->m_oqcd = m_subostermlist[i]->MaxOrder(0);
-      m_subevtlist[i]->m_oew = m_subostermlist[i]->MaxOrder(1);
-      m_subevtlist[i]->p_real = &m_realevt;
+      m_subtermlist[i]->GetSubevt()->m_oqcd = m_subostermlist[i]->MaxOrder(0);
+      m_subtermlist[i]->GetSubevt()->m_oew = m_subostermlist[i]->MaxOrder(1);
+      m_subostermlist[i]->GetSubevt()->p_real=&m_realevt;
     }
   }
   if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);

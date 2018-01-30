@@ -776,6 +776,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
  const std::string &ini,const std::string &fin,
  const std::vector<std::string> &dectags)
 {
+  int aoqcd(0);
   Subprocess_Info AIS, AFS;
   ExtractFlavours(AIS,ini);
   ExtractFlavours(AFS,fin);
@@ -852,6 +853,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	      cpi.m_mincpl[i]=0;
 	      cpi.m_maxcpl[i]=99;
 	    }
+	}
+	if (cpi.m_ckkw&1) {
+	  cpi.m_mincpl[0]+=aoqcd;
+	  cpi.m_maxcpl[0]+=aoqcd;
+	  ++aoqcd;
 	}
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));

@@ -37,6 +37,10 @@ Single_Dipole_Term::Single_Dipole_Term
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);
   m_maxcpl=rs->MaxOrders();
   m_mincpl=rs->MinOrders();
+  for (size_t i(0);i<m_maxcpl.size();++i) {
+    m_maxcpl[i]=m_maxcpl[i]-info.m_fi.m_nlocpl[i];
+    m_mincpl[i]=m_mincpl[i]-info.m_fi.m_nlocpl[i];
+  }
   p_bg->FillCombinations(m_ccombs,m_cflavs,&m_brs,p_sub);
   if (rs->IsMapped())
     for (CFlavVector_Map::iterator fit(m_cflavs.begin());

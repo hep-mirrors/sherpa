@@ -137,8 +137,8 @@ bool COMIX::Single_Process::Initialize
     m_mincpl.resize(p_bg->MinCpl().size());
     m_maxcpl.resize(p_bg->MaxCpl().size());
     for (size_t i(0);i<m_maxcpl.size();++i) {
-      m_mincpl[i]=p_bg->MinCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
-      m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
+      m_mincpl[i]=p_bg->MinCpl()[i]/2.0;
+      m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0;
     }
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());

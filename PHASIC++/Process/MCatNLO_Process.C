@@ -81,6 +81,10 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   if (p_bproc==NULL) return;
+  for (size_t i(0);i<m_pinfo.m_fi.m_nlocpl.size();++i) {
+    spi.m_maxcpl[i]+=spi.m_fi.m_nlocpl[i];
+    spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
+  }
   spi.m_megenerator=spi.m_rsmegenerator;
   p_rproc=InitProcess(spi,nlo_type::lo,true);
   spi.m_megenerator=pi.m_megenerator;
