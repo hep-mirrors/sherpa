@@ -172,7 +172,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   std::string key;
   int mode;
   if (m_mode&ANALYSIS::splitt_jetseeds) {
-    mode=m_mode^ANALYSIS::splitt_jetseeds;
+    mode=m_mode&~(ANALYSIS::splitt_jetseeds|ANALYSIS::split_vars);
     if (!m_splitjetconts)
       mode=mode-(mode&ANALYSIS::output_this);
     std::string fsname(name.substr(name.find("__")+3));
@@ -294,6 +294,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     weight=vars.GetVariationWeightAt(m_varid);
     msg_Debugging()<<"variation weight "<<m_varid<<" is "<<weight<<"\n";
   }
+  if (value==0.0) weight=0.0;
   // do nonsplittable (helper and legacy objects) first
   if (m_mode&ANALYSIS::fill_helper) {
     for (size_t i=0;i<m_objects.size();i++) {
@@ -317,11 +318,12 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     std::string type="";
     if (typespec=="+S") type="S";
     else if (typespec=="+H") type="H";
-
+    if (type.length()) {
     Primitive_Analysis * ana=
-      GetSubAnalysis(bl,type,m_mode^ANALYSIS::split_sh);
+      GetSubAnalysis(bl,type,m_mode&~(ANALYSIS::split_sh|ANALYSIS::splitt_jetseeds|ANALYSIS::split_vars));
     ana->DoAnalysis(bl,weight);
     m_called.insert(ana);
+    }
   }
 
   if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,weight);
