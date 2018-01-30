@@ -233,7 +233,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
   if (m_mode&ANALYSIS::splitt_phase) {
     m_mode=m_mode|ANALYSIS::output_this;
-    int mode=m_mode^ANALYSIS::splitt_phase;
+    int mode=m_mode&~(ANALYSIS::splitt_phase|ANALYSIS::split_vars);
     if (m_mode&ANALYSIS::do_me)     {
       Primitive_Analysis *ana(GetSubAnalysis(bl,"ME",mode));
       ana->DoAnalysis(bl,value);
