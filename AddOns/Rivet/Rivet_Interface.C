@@ -472,7 +472,7 @@ bool Rivet_Interface::Init()
     }
 
     // configure HepMC interface
-    auto usehepmcnamedweights{ false };
+    bool usehepmcnamedweights(false);
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
     usehepmcnamedweights=reader.GetValue<int>("USE_HEPMC_NAMED_WEIGHTS",1);
 #endif
