@@ -57,7 +57,7 @@ void Comix_Interface::InitializeProcesses()
   //My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   //My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   Process_Info pi;
-  pi.m_addname="__SOFT";
+  pi.m_addname="__Sudakov";
   pi.m_megenerator="Comix";
   for (size_t i(0);i<p_ampl->NIn();++i) {
     Flavour fl(p_ampl->Leg(i)->Flav().Bar());
@@ -77,12 +77,11 @@ void Comix_Interface::InitializeProcesses()
     Generator()->Generators()->InitializeProcess(pi,false);
   if (proc==NULL) THROW(fatal_error,"Invalid process");
   Selector_Key skey(NULL,NULL,true);
-  
   proc->SetSelector(skey);
   proc->SetScale
     (Scale_Setter_Arguments
      (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
-  proc->SetKFactor(KFactor_Setter_Arguments("NO"));
+  proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&m_apmap);
   //My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");

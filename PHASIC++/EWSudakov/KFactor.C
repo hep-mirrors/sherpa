@@ -45,10 +45,9 @@ double Sudakov_KFactor::KFactor(const ATOOLS::NLO_subevt &evt)
 }
 
 DECLARE_GETTER(Sudakov_KFactor,"EWSudakov",
-               KFactor_Setter_Base, KFactor_Setter_Arguments);
+               KFactor_Setter_Base,KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *ATOOLS::Getter
-<KFactor_Setter_Base,KFactor_Setter_Arguments,Sudakov_KFactor>::
+KFactor_Setter_Base *ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,Sudakov_KFactor>::
 operator()(const KFactor_Setter_Arguments &args) const
 {
   return new Sudakov_KFactor(args);
@@ -59,3 +58,4 @@ PrintInfo(std::ostream &str, const size_t width) const
 {
   str << "EW Sudakov K-Factor is implemented in ref ... \n";
 }
+
