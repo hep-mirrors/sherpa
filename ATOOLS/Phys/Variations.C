@@ -743,16 +743,16 @@ void Variation_Weights::CombineSubeventWeights()
 {
   if (!AreWeightsInitialised()) return;
   if (m_weights.size() > 1)
-    THROW(fatal_error, "Refuse to combine subevent weights when more than one variation type is stored.");
-  auto& weights = m_weights.begin()->second;
+    THROW(fatal_error, std::string("Refuse to combine subevent weights when")
+                       + " more than one variation type is stored.");
+  auto& weights = m_weights.begin()->second;  // select the only type
   for (auto& subeventweights : weights) {
-    const auto combinedweight{
+    const double combinedweight{
       std::accumulate(subeventweights.begin(), subeventweights.end(), 0.0) };
     subeventweights.clear();
     subeventweights.push_back(combinedweight);
   }
 }
-
 
 std::string Variation_Weights::GetVariationNameAt(Variations::Parameters_Vector::size_type i) const
 {

@@ -275,6 +275,7 @@ namespace ATOOLS {
     //! Add weights from another set of variation weights
     Variation_Weights & operator+=(const Variation_Weights &);
 
+    //! Sum up the subevent-specific weights
     void CombineSubeventWeights();
 
     //! Get variation name at a given index
