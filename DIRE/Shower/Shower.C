@@ -402,7 +402,7 @@ Splitting Shower::GeneratePoint
 	    }
 	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
-	    win.m_vars=std::vector<double>
+	    if (p_vars) win.m_vars=std::vector<double>
 	      (p_vars->GetVariations()->GetParametersVector()->size(),1.0);
 	    if (win.m_w.MC()<ran->Get()) {
 	      if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
