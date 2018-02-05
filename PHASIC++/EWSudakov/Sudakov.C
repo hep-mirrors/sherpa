@@ -19,16 +19,41 @@ using namespace ATOOLS;
 // TODO: in the final implementation we should read this from the SIN2THETAW
 // setting instead, for now this value is useful for comparisons to
 // Denner:2000jv
-constexpr auto sinw2 = 0.22356;
-constexpr auto cosw2 = 1 - sinw2;
-constexpr auto sinw = 0.472821;
-constexpr auto cosw = 0.881158;
-
 Sudakov::Sudakov(Process_Base& proc):
   m_proc{ proc },
   p_ampl{ Sudakov::CreateAmplitude(m_proc) },
   m_ci{ m_proc, *p_ampl }
-{ }
+{
+  m_sw2 = MODEL::s_model->ComplexConstant("csin2_thetaW").real();
+  m_cw2 = 1. - m_sw2;
+}
+
+
+/// effective electroweak Casimir operator, cf. eq. (B.10)
+double Sudakov::Cew(const Flavour& flav, int pol)
+{
+  // pol is either chirality or polarisation:
+  // 0: + (right-handed or transverse polarisation)
+  // 1: - (left-handed or transverse polarisation)
+  // 2: 0 (longitudinal polarisation)
+  if (flav.IsLepton()) {
+    if (pol == 0)
+      return 1/m_cw2;
+    else
+      return (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
+  } else if (flav.IsQuark()) {
+    if (pol == 1) {
+      return (m_sw2 + 27*m_cw2) / (36*m_sw2*m_cw2);
+    } else {
+      if (flav.IsUptype())
+        return 4 / (9*m_cw2);
+      else
+        return 1 / (9*m_cw2);
+    }
+  } else {
+    THROW(not_implemented, "Missing implementation");
+  }
+}
 
 ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
 {
@@ -111,23 +136,23 @@ double Sudakov::DiagonalCew(const Flavour& flav, int pol)
   // 0: + (right-handed or transverse polarisation)
   // 1: - (left-handed or transverse polarisation)
   // 2: 0 (longitudinal polarisation)
-  constexpr auto CewLefthandedLepton = (1 + 2*cosw2) / (4*sinw2*cosw2);
+  constexpr auto CewLefthandedLepton = (1 + 2*m_sw2) / (4*m_sw2*m_sw2);
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return 1/cosw2;
+      return 1/m_sw2;
     } else {
       return CewLefthandedLepton;
     }
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 1) {
-      return (sinw2 + 27*cosw2) / (36*sinw2*cosw2);
+      return (m_sw2 + 27*m_sw2) / (36*m_sw2*m_sw2);
     } else {
       if (flav.IsUptype())
-        return 4 / (9*cosw2);
+        return 4 / (9*m_sw2);
       else
-        return 1 / (9*cosw2);
+        return 1 / (9*m_sw2);
     }
   } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
     return CewLefthandedLepton;
@@ -136,7 +161,7 @@ double Sudakov::DiagonalCew(const Flavour& flav, int pol)
     if (pol == 2)
       return CewLefthandedLepton;
     else
-      return 2/sinw2;
+      return 2/m_sw2;
   } else {
     THROW(not_implemented, "Missing implementation");
   }
@@ -151,6 +176,6 @@ double Sudakov::NondiagonalCew(kf_code from, kf_code to)
   if (from == kf_photon)
     return 2.0;
   if (from == kf_Z)
-    return 2.0 * cosw2/sinw2;
+    return 2.0 * m_sw2/m_sw2;
   THROW(fatal_error, "Logic error");
 }
