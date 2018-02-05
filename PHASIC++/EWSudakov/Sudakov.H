@@ -18,8 +18,9 @@ namespace PHASIC {
     std::vector<Spin_Amplitudes> m_spinampls;
     static ATOOLS::Cluster_Amplitude* CreateAmplitude(Process_Base&);
 
-    /// calculate effective electroweak Casimir operator, cf. eq. (B.10)
-    static double Cew(const Flavour& flav, int pol);
+    /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
+    static double DiagonalCew(const Flavour& flav, int pol);
+    static double NondiagonalCew(kf_code from, kf_code to);  // only Z/\gamma
 
     /// calculate coefficients for L(s) terms for each m_spinampls entry
     double CalculateDoubleLogarithmicCoefficient() const;
