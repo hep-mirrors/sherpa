@@ -16,14 +16,20 @@ namespace PHASIC {
     ATOOLS::Cluster_Amplitude *p_ampl;
     Comix_Interface m_ci;
     std::vector<Spin_Amplitudes> m_spinampls;
+    std::vector<double> m_coeffs;
     static ATOOLS::Cluster_Amplitude* CreateAmplitude(Process_Base&);
+    void UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom);
+
+    /// calculate coeffs for each m_spinampls entry
+    void CalculateSpinAmplitudeCoeffs();
+
+    /// calculate double-logarithmic (DL) coefficient, \sigma_DL * L(s)
+    double DoubleLogCoeff(std::vector<int> spincombination) const;
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     static double DiagonalCew(const Flavour& flav, int pol);
     static double NondiagonalCew(kf_code from, kf_code to);  // only Z/\gamma
 
-    /// calculate coefficients for L(s) terms for each m_spinampls entry
-    double CalculateDoubleLogarithmicCoefficient() const;
   };
 }
 #endif

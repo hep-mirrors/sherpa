@@ -98,45 +98,60 @@ ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
 
 double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
-  for (size_t i{ 0 }; i < mom.size(); ++i) {
-    p_ampl->Leg(i)->SetMom(mom[i]);
-  }
+  DEBUG_FUNC("");
+  UpdateAmplitude(mom);
   m_ci.FillSpinAmplitudes(m_spinampls);
-  const auto DLCoeff = CalculateDoubleLogarithmicCoefficient();
-  DEBUG_VAR(DLCoeff);
+  CalculateSpinAmplitudeCoeffs();
+  // TODO: combine and return coefficients
   return 1.0;
 }
 
-double Sudakov::CalculateDoubleLogarithmicCoefficient() const
+void Sudakov::UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom)
 {
-  DEBUG_FUNC("");
-  std::vector<double> coeffs(m_spinampls[0].size());
-  for (size_t i{ 0 }; i < m_spinampls[0].size(); ++i) {
+  for (size_t i{ 0 }; i < mom.size(); ++i) {
+    p_ampl->Leg(i)->SetMom(mom[i]);
+  }
+}
+
+void Sudakov::CalculateSpinAmplitudeCoeffs()
+{
+  const auto spinamplnum = m_spinampls[0].size();
+  m_coeffs = std::vector<double>(spinamplnum, 0.0);
+  for (size_t i{ 0 }; i < spinamplnum; ++i) {
     const auto value = m_spinampls[0].Get(i);
     if (value == 0.0)
       continue;
     const auto spincombination = m_spinampls[0].GetSpinCombination(i);
     if (spincombination.size() != p_ampl->Legs().size())
       THROW(fatal_error, "Inconsistent state");
-    for (size_t j{ 0 }; j < spincombination.size(); ++j) {
-      const Flavour flav{ p_ampl->Leg(j)->Flav() };
-      if (flav.IsBoson() && flav.Charge() == 0) {
-        // mixing between neutral gauge bosons: non-diagonal terms appear
-        const auto from = flav.Kfcode();
-        coeffs[i] -= NondiagonalCew(from, from) / 2.0;
-        const auto to = (from == kf_photon) ? kf_Z : kf_photon;
-        const auto prefactor = -NondiagonalCew(from, to) / 2.0;
-        const auto amplratio = 0.0;
-        // TODO: obtain SU(2)-rotated ampl (i.e. `from` replaced with `to`)
-        // const auto amplratio = SU(2)-rotated ampl / old ampl
-        coeffs[i] += prefactor * amplratio;
-        THROW(not_implemented, "Missing non-diagonal terms");
-      } else {
-        // only diagonal terms appear
-        coeffs[i] -= DiagonalCew(flav, spincombination[j]) / 2.0;
-      }
+    const auto DLcoeff = DoubleLogCoeff(spincombination);
+    m_coeffs[i] += DLcoeff;
+    // TODO: add other coefficients
+  }
+  DEBUG_VAR(m_coeffs);
+}
+
+double Sudakov::DoubleLogCoeff(std::vector<int> spincombination) const
+{
+  auto coeff = 0.0;
+  for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+    const Flavour flav{ p_ampl->Leg(i)->Flav() };
+    if (flav.IsBoson() && flav.Charge() == 0) {
+      // mixing between neutral gauge bosons: non-diagonal terms appear
+      const auto from = flav.Kfcode();
+      coeff -= NondiagonalCew(from, from) / 2.0;
+      const auto to = (from == kf_photon) ? kf_Z : kf_photon;
+      const auto prefactor = -NondiagonalCew(from, to) / 2.0;
+      const auto amplratio = 0.0;
+      // TODO: obtain SU(2)-rotated ampl (i.e. `from` replaced with `to`)
+      // const auto amplratio = SU(2)-rotated ampl / old ampl
+      coeff += prefactor * amplratio;
+      THROW(not_implemented, "Missing non-diagonal terms");
+    } else {
+      // only diagonal terms appear
+      coeff -= DiagonalCew(flav, spincombination[i]) / 2.0;
     }
   }
-  DEBUG_VAR(coeffs);
-  return 0.0;
+  // TODO: multiply with L(s)
+  return coeff;
 }
