@@ -17,6 +17,7 @@ namespace PHASIC {
     Comix_Interface m_ci;
     std::vector<Spin_Amplitudes> m_spinampls;
     std::vector<double> m_coeffs;
+
     static ATOOLS::Cluster_Amplitude* CreateAmplitude(Process_Base&);
     void UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom);
 

@@ -30,57 +30,6 @@ Sudakov::Sudakov(Process_Base& proc):
   m_ci{ m_proc, *p_ampl }
 { }
 
-/// effective electroweak Casimir operator, cf. eq. (B.10)
-double Sudakov::DiagonalCew(const Flavour& flav, int pol)
-{
-  // pol is either chirality or polarisation:
-  // 0: + (right-handed or transverse polarisation)
-  // 1: - (left-handed or transverse polarisation)
-  // 2: 0 (longitudinal polarisation)
-  constexpr auto CewLefthandedLepton = (1 + 2*cosw2) / (4*sinw2*cosw2);
-  if (flav.IsLepton()) {  // cf. eq. (B.16)
-    if (pol == 0) {
-      if (flav.IsUptype())
-        THROW(fatal_error, "Right-handed neutrino are not supported");
-      return 1/cosw2;
-    } else {
-      return CewLefthandedLepton;
-    }
-  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
-    if (pol == 1) {
-      return (sinw2 + 27*cosw2) / (36*sinw2*cosw2);
-    } else {
-      if (flav.IsUptype())
-        return 4 / (9*cosw2);
-      else
-        return 1 / (9*cosw2);
-    }
-  } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
-    return CewLefthandedLepton;
-  } else if (flav.Kfcode() == kf_Wplus) {
-    // NOTE: for longitudinal bosons, use the Goldstone equivalence theorem
-    if (pol == 2)
-      return CewLefthandedLepton;
-    else
-      return 2/sinw2;
-  } else {
-    THROW(not_implemented, "Missing implementation");
-  }
-}
-
-double Sudakov::NondiagonalCew(kf_code from, kf_code to)
-{
-  if ((from != kf_Z && from != kf_photon) || (to != kf_Z && to != kf_photon))
-    THROW(fatal_error, "Only neutral gauge bosons are supported");
-  if (from != to)
-    return -2.0 * cosw/sinw;
-  if (from == kf_photon)
-    return 2.0;
-  if (from == kf_Z)
-    return 2.0 * cosw2/sinw2;
-  THROW(fatal_error, "Logic error");
-}
-
 ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
 {
   ATOOLS::Cluster_Amplitude* ampl{ Cluster_Amplitude::New() };
@@ -154,4 +103,54 @@ double Sudakov::DoubleLogCoeff(std::vector<int> spincombination) const
   }
   // TODO: multiply with L(s)
   return coeff;
+}
+
+double Sudakov::DiagonalCew(const Flavour& flav, int pol)
+{
+  // pol is either chirality or polarisation:
+  // 0: + (right-handed or transverse polarisation)
+  // 1: - (left-handed or transverse polarisation)
+  // 2: 0 (longitudinal polarisation)
+  constexpr auto CewLefthandedLepton = (1 + 2*cosw2) / (4*sinw2*cosw2);
+  if (flav.IsLepton()) {  // cf. eq. (B.16)
+    if (pol == 0) {
+      if (flav.IsUptype())
+        THROW(fatal_error, "Right-handed neutrino are not supported");
+      return 1/cosw2;
+    } else {
+      return CewLefthandedLepton;
+    }
+  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
+    if (pol == 1) {
+      return (sinw2 + 27*cosw2) / (36*sinw2*cosw2);
+    } else {
+      if (flav.IsUptype())
+        return 4 / (9*cosw2);
+      else
+        return 1 / (9*cosw2);
+    }
+  } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
+    return CewLefthandedLepton;
+  } else if (flav.Kfcode() == kf_Wplus) {
+    // NOTE: for longitudinal bosons, use the Goldstone equivalence theorem
+    if (pol == 2)
+      return CewLefthandedLepton;
+    else
+      return 2/sinw2;
+  } else {
+    THROW(not_implemented, "Missing implementation");
+  }
+}
+
+double Sudakov::NondiagonalCew(kf_code from, kf_code to)
+{
+  if ((from != kf_Z && from != kf_photon) || (to != kf_Z && to != kf_photon))
+    THROW(fatal_error, "Only neutral gauge bosons are supported");
+  if (from != to)
+    return -2.0 * cosw/sinw;
+  if (from == kf_photon)
+    return 2.0;
+  if (from == kf_Z)
+    return 2.0 * cosw2/sinw2;
+  THROW(fatal_error, "Logic error");
 }
