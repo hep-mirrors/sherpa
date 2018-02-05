@@ -16,43 +16,15 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-// TODO: in the final implementation we should read this from the SIN2THETAW
-// setting instead, for now this value is useful for comparisons to
-// Denner:2000jv
 Sudakov::Sudakov(Process_Base& proc):
   m_proc{ proc },
   p_ampl{ Sudakov::CreateAmplitude(m_proc) },
-  m_ci{ m_proc, *p_ampl }
+  m_ci{ m_proc, *p_ampl },
+  m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
+  m_cw2{ 1.0 - m_sw2 },
+  m_sw{ sqrt(m_sw2) },
+  m_cw{ sqrt(m_cw2) }
 {
-  m_sw2 = MODEL::s_model->ComplexConstant("csin2_thetaW").real();
-  m_cw2 = 1. - m_sw2;
-}
-
-
-/// effective electroweak Casimir operator, cf. eq. (B.10)
-double Sudakov::Cew(const Flavour& flav, int pol)
-{
-  // pol is either chirality or polarisation:
-  // 0: + (right-handed or transverse polarisation)
-  // 1: - (left-handed or transverse polarisation)
-  // 2: 0 (longitudinal polarisation)
-  if (flav.IsLepton()) {
-    if (pol == 0)
-      return 1/m_cw2;
-    else
-      return (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
-  } else if (flav.IsQuark()) {
-    if (pol == 1) {
-      return (m_sw2 + 27*m_cw2) / (36*m_sw2*m_cw2);
-    } else {
-      if (flav.IsUptype())
-        return 4 / (9*m_cw2);
-      else
-        return 1 / (9*m_cw2);
-    }
-  } else {
-    THROW(not_implemented, "Missing implementation");
-  }
 }
 
 ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
@@ -130,29 +102,29 @@ double Sudakov::DoubleLogCoeff(std::vector<int> spincombination) const
   return coeff;
 }
 
-double Sudakov::DiagonalCew(const Flavour& flav, int pol)
+double Sudakov::DiagonalCew(const Flavour& flav, int pol) const
 {
   // pol is either chirality or polarisation:
   // 0: + (right-handed or transverse polarisation)
   // 1: - (left-handed or transverse polarisation)
   // 2: 0 (longitudinal polarisation)
-  constexpr auto CewLefthandedLepton = (1 + 2*m_sw2) / (4*m_sw2*m_sw2);
+  static auto CewLefthandedLepton = (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return 1/m_sw2;
+      return 1/m_cw2;
     } else {
       return CewLefthandedLepton;
     }
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 1) {
-      return (m_sw2 + 27*m_sw2) / (36*m_sw2*m_sw2);
+      return (m_sw2 + 27*m_cw2) / (36*m_sw2*m_cw2);
     } else {
       if (flav.IsUptype())
-        return 4 / (9*m_sw2);
+        return 4 / (9*m_cw2);
       else
-        return 1 / (9*m_sw2);
+        return 1 / (9*m_cw2);
     }
   } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
     return CewLefthandedLepton;
@@ -167,15 +139,15 @@ double Sudakov::DiagonalCew(const Flavour& flav, int pol)
   }
 }
 
-double Sudakov::NondiagonalCew(kf_code from, kf_code to)
+double Sudakov::NondiagonalCew(kf_code from, kf_code to) const
 {
   if ((from != kf_Z && from != kf_photon) || (to != kf_Z && to != kf_photon))
     THROW(fatal_error, "Only neutral gauge bosons are supported");
   if (from != to)
-    return -2.0 * cosw/sinw;
+    return -2.0 * m_cw/m_sw;
   if (from == kf_photon)
     return 2.0;
   if (from == kf_Z)
-    return 2.0 * m_sw2/m_sw2;
+    return 2.0 * m_cw2/m_sw2;
   THROW(fatal_error, "Logic error");
 }
