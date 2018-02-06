@@ -291,18 +291,17 @@ bool Vertex::Map(const Vertex &v)
 		 <<" "<<v.VId()<<" "<<v.CVLabel()<<"\n";
 #endif
   if(m_cc.size()!=v.m_cc.size()) return false;
-  for (size_t i(0);i<m_cc.size();++i) {
-    Color_Calculator& cc1{ *m_cc[i] };
-    Color_Calculator& cc2{ *v.m_cc[i] };
-    if (typeid(cc1)!=typeid(cc2)) return false;
-
-    Lorentz_Calculator& lc1{ *m_lc[i] };
-    Lorentz_Calculator& lc2{ *v.m_lc[i] };
-    if (typeid(lc1)!=typeid(lc2)) return false;
-
-    const Complex& c1{ p_v->cpl[i].Value() };
-    const Complex& c2{ v.p_v->cpl[i].Value() };
-    if (c1!=c2) return false;
+  for (size_t i{ 0 }; i < m_cc.size(); ++i) {
+    const Color_Calculator* cc{ m_cc[i] };
+    const Color_Calculator* other_cc{ v.m_cc[i] };
+    if (typeid(*cc) != typeid(*other_cc))
+      return false;
+    const Lorentz_Calculator* lc{ m_lc[i] };
+    const Lorentz_Calculator* other_lc{ v.m_lc[i] };
+    if (typeid(*lc) != typeid(*other_lc))
+      return false;
+    if (p_v->cpl[i].Value() != v.p_v->cpl[i].Value())
+      return false;
   }
   return VId()==v.VId();
 }
