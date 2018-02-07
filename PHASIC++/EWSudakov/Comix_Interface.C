@@ -17,31 +17,19 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-Comix_Interface::Comix_Interface(Process_Base& proc,
-                                 Cluster_Amplitude& ampl) :
-  m_proc{ proc },
-  m_ampl{ ampl }
-{ }
-
-Comix_Interface::~Comix_Interface()
-{ }
-
-/*
-** Initialize Comix processes
-*/
-
 void Comix_Interface::FillSpinAmplitudes(
-    std::vector<Spin_Amplitudes>& spinampls)
+    std::vector<Spin_Amplitudes>& spinampls,
+    ATOOLS::Cluster_Amplitude& ampl) const
 {
-  DEBUG_VAR(m_ampl);
+  DEBUG_VAR(ampl);
   NLOTypeStringProcessMap_Map *procs
-    (m_ampl.Procs<NLOTypeStringProcessMap_Map>());
+    (ampl.Procs<NLOTypeStringProcessMap_Map>());
   if (procs==NULL)
     THROW(fatal_error, "Process map not found");
   nlo_type::code type=nlo_type::lo;
   if (procs->find(type)==procs->end())
     THROW(fatal_error, "LO entry in process map not found");
-  Cluster_Amplitude *campl(m_ampl.Copy());
+  Cluster_Amplitude* campl(ampl.Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));

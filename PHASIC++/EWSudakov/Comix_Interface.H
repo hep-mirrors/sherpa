@@ -9,13 +9,8 @@ namespace PHASIC {
 
   class Comix_Interface {
   public:
-    Comix_Interface(Process_Base&, ATOOLS::Cluster_Amplitude&);
-    ~Comix_Interface();
-    void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&);
-  private:
-    Process_Base& m_proc;
-    ATOOLS::Cluster_Amplitude& m_ampl;
-    NLOTypeStringProcessMap_Map m_apmap;
+    void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
+                            ATOOLS::Cluster_Amplitude&) const;
   };
 } 
 #endif

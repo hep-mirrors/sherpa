@@ -19,7 +19,6 @@ using namespace ATOOLS;
 Sudakov::Sudakov(Process_Base& proc):
   m_proc{ proc },
   p_ampl{ Sudakov::CreateAmplitude(m_proc) },
-  m_ci{ m_proc, *p_ampl },
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
@@ -27,9 +26,9 @@ Sudakov::Sudakov(Process_Base& proc):
 {
 }
 
-ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
+Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
 {
-  ATOOLS::Cluster_Amplitude* ampl{ Cluster_Amplitude::New() };
+  Cluster_Amplitude* ampl{ Cluster_Amplitude::New() };
   ampl->SetNIn(proc.NIn());
   ampl->SetOrderQCD(proc.MaxOrder(0));
   for (size_t i(1);i<proc.MaxOrders().size();++i)
@@ -42,11 +41,28 @@ ATOOLS::Cluster_Amplitude* Sudakov::CreateAmplitude(Process_Base& proc)
   return ampl;
 }
 
+Cluster_Amplitude* Sudakov::CreateSU2RotatedAmplitude(size_t legindex) const
+{
+  auto* ampl = p_ampl->Copy();
+  auto* leg = ampl->Leg(legindex);
+  auto flav = leg->Flav();
+  Flavour newflav;
+  // TODO: generalise to other flavours (preferredly, add an WeakIsoPartner
+  // function to the Flavour class
+  if (flav.IsPhoton())
+    newflav = Flavour{kf_Z};
+  else if (flav.Kfcode() == kf_Z)
+    newflav = Flavour{kf_photon};
+  leg->SetFlav(newflav);
+  return ampl;
+}
+
 double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   UpdateAmplitude(mom);
-  m_ci.FillSpinAmplitudes(m_spinampls);
+  m_SU2rotatedspinampls.clear();  // they will be calculated on demand
+  m_ci.FillSpinAmplitudes(m_spinampls, *p_ampl);
   CalculateSpinAmplitudeCoeffs();
   // TODO: combine and return coefficients
   return 1.0;
@@ -77,7 +93,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
   DEBUG_VAR(m_coeffs);
 }
 
-double Sudakov::DoubleLogCoeff(std::vector<int> spincombination) const
+double Sudakov::DoubleLogCoeff(std::vector<int> spincombination)
 {
   auto coeff = 0.0;
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
@@ -89,8 +105,11 @@ double Sudakov::DoubleLogCoeff(std::vector<int> spincombination) const
       const auto to = (from == kf_photon) ? kf_Z : kf_photon;
       const auto prefactor = -NondiagonalCew(from, to) / 2.0;
       const auto amplratio = 0.0;
-      // TODO: obtain SU(2)-rotated ampl (i.e. `from` replaced with `to`)
-      // const auto amplratio = SU(2)-rotated ampl / old ampl
+      auto* ampl = CreateSU2RotatedAmplitude(i);
+      std::vector<Spin_Amplitudes> rotatedspinampls;
+      m_ci.FillSpinAmplitudes(rotatedspinampls, *ampl);
+      ampl->Delete();
+      // TODO: const auto amplratio = SU(2)-rotated ampl / old ampl
       coeff += prefactor * amplratio;
       THROW(not_implemented, "Missing non-diagonal terms");
     } else {
