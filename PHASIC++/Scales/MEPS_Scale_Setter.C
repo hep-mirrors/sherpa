@@ -118,8 +118,8 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   if (s_cmode<0) {
     Data_Reader read(" ",";","!","=");
     s_nmaxall=read.GetValue<int>("MEPS_NMAX_ALLCONFIGS",-1);
-    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",10);
-    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",8|64|256);
+    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",-1);
+    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",8|64|128|256);
     s_nlocpl=read.GetValue<int>("MEPS_NLO_COUPLING_MODE",2);
     s_nfgsplit=read.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2);
     s_csmode=read.GetValue<int>("MEPS_COLORSET_MODE",0);
