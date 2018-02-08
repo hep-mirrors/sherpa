@@ -164,20 +164,20 @@ void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread)
   m_parametermap[string("Multiplet_Meson_R0L0S2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_R0L0_TENSORS2",      0.75); 
   m_parametermap[string("Multiplet_Meson_R0L1S0")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_SCALARS",       0.10);  
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_SCALARS",       0.00);  
   m_parametermap[string("Multiplet_Meson_R0L1S1")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_AXIALVECTORS",  0.10); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L1_AXIALVECTORS",  0.00); 
   m_parametermap[string("Multiplet_Meson_R0L2S2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R0L2_VECTORS",       0.25); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R0L2_VECTORS",       0.00); 
   // Baryons currently included
   m_parametermap[string("Multiplet_Baryon_R0L0S1/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_R0L0_N_1/2",         1.00); 
   m_parametermap[string("Multiplet_Baryon_R1L0S1/2")]   =  
-    dataread.GetValue<double>("MULTI_WEIGHT_R1L0_N_1/2",         1.00); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R1L0_N_1/2",         0.00); 
   m_parametermap[string("Multiplet_Baryon_R2L0S1/2")]   = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R2L0_N_1/2",         0.20); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R2L0_N_1/2",         0.00); 
   m_parametermap[string("Multiplet_Baryon_R1_1L0S1/2")] = 
-    dataread.GetValue<double>("MULTI_WEIGHT_R1_1L0_N_1/2",       0.20); 
+    dataread.GetValue<double>("MULTI_WEIGHT_R1_1L0_N_1/2",       0.00); 
   m_parametermap[string("Multiplet_Baryon_R0L0S3/2")]   = 
     dataread.GetValue<double>("MULTI_WEIGHT_R0L0_DELTA_3/2",     0.25); 
   // Individual hadrons
