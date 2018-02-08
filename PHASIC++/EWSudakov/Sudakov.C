@@ -77,25 +77,26 @@ void Sudakov::UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom)
 
 void Sudakov::CalculateSpinAmplitudeCoeffs()
 {
-  const auto spinamplnum = m_spinampls[0].size();
-  m_coeffs = std::vector<double>(spinamplnum, 0.0);
+  const auto& ampls = m_spinampls[0];
+  const auto spinamplnum = ampls.size();
+  m_coeffs = std::vector<Complex>(spinamplnum, 0.0);
   for (size_t i{ 0 }; i < spinamplnum; ++i) {
-    const auto value = m_spinampls[0].Get(i);
+    const auto value = ampls.Get(i);
     if (value == 0.0)
       continue;
-    const auto spincombination = m_spinampls[0].GetSpinCombination(i);
-    if (spincombination.size() != p_ampl->Legs().size())
-      THROW(fatal_error, "Inconsistent state");
-    const auto DLcoeff = DoubleLogCoeff(spincombination);
-    m_coeffs[i] += DLcoeff;
+    m_coeffs[i] = DoubleLogCoeff(m_spinampls[0], i);
     // TODO: add other coefficients
   }
-  DEBUG_VAR(m_coeffs);
+  for (const auto& coeff : m_coeffs)
+    DEBUG_VAR(coeff);
 }
 
-double Sudakov::DoubleLogCoeff(std::vector<int> spincombination)
+Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
 {
-  auto coeff = 0.0;
+  const auto spincombination = m_spinampls[0].GetSpinCombination(spinidx);
+  if (spincombination.size() != p_ampl->Legs().size())
+    THROW(fatal_error, "Inconsistent state");
+  Complex coeff{ 0.0 };
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ p_ampl->Leg(i)->Flav() };
     if (flav.IsBoson() && flav.Charge() == 0) {
@@ -105,13 +106,14 @@ double Sudakov::DoubleLogCoeff(std::vector<int> spincombination)
       const auto to = (from == kf_photon) ? kf_Z : kf_photon;
       const auto prefactor = -NondiagonalCew(from, to) / 2.0;
       const auto amplratio = 0.0;
-      auto* ampl = CreateSU2RotatedAmplitude(i);
-      std::vector<Spin_Amplitudes> rotatedspinampls;
-      m_ci.FillSpinAmplitudes(rotatedspinampls, *ampl);
-      ampl->Delete();
-      // TODO: const auto amplratio = SU(2)-rotated ampl / old ampl
-      coeff += prefactor * amplratio;
-      THROW(not_implemented, "Missing non-diagonal terms");
+      auto it = m_SU2rotatedspinampls.find(i);
+      if (it == m_SU2rotatedspinampls.end()) {
+        auto* ampl = CreateSU2RotatedAmplitude(i);
+        m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], *ampl);
+        it = m_SU2rotatedspinampls.find(i);
+        ampl->Delete();
+      }
+      coeff += prefactor * it->second[0].Get(spinidx) / ampls.Get(spinidx);
     } else {
       // only diagonal terms appear
       coeff -= DiagonalCew(flav, spincombination[i]) / 2.0;
