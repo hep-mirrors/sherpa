@@ -19,6 +19,7 @@ using namespace ATOOLS;
 Sudakov::Sudakov(Process_Base& proc):
   m_proc{ proc },
   p_ampl{ Sudakov::CreateAmplitude(m_proc) },
+  m_ci{ m_proc, p_ampl },
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
@@ -62,7 +63,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   DEBUG_FUNC("");
   UpdateAmplitude(mom);
   m_SU2rotatedspinampls.clear();  // they will be calculated on demand
-  m_ci.FillSpinAmplitudes(m_spinampls, *p_ampl);
+  m_ci.FillSpinAmplitudes(m_spinampls, p_ampl);
   CalculateSpinAmplitudeCoeffs();
   // TODO: combine and return coefficients
   return 1.0;
@@ -109,7 +110,7 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
       auto it = m_SU2rotatedspinampls.find(i);
       if (it == m_SU2rotatedspinampls.end()) {
         auto* ampl = CreateSU2RotatedAmplitude(i);
-        m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], *ampl);
+        m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], ampl);
         it = m_SU2rotatedspinampls.find(i);
         ampl->Delete();
       }
