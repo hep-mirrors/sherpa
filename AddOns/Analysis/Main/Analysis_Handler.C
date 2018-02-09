@@ -301,7 +301,6 @@ bool Analysis_Handler::Finish()
 
 bool Analysis_Handler::Run(ATOOLS::Blob_List *const bl)
 {
-  Blob *sp(bl->FindFirst(btp::Signal_Process));
   DoAnalysis(bl,1.0);
   return true;
 }

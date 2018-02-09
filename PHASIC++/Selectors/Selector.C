@@ -85,7 +85,8 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
   m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
 {
-  if (p_proc->Info().Has(nlo_type::real|nlo_type::rsub)) m_isnlo=true;
+  if (p_proc && p_proc->Info().Has(nlo_type::real|nlo_type::rsub))
+    m_isnlo=true;
 }
 
 bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)

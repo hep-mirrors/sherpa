@@ -350,10 +350,9 @@ int Cstable_cones::update_cone(){
  * pass the last test: stability with quadtree intersection
  ************************************************************************/
 int Cstable_cones::proceed_with_stability(){
-  int i,n;
+  int i;
   hash_element *elm;
 
-  n=0;
   for (i=0;i<=hc->mask;i++){
     // test ith cell of the hash array
     elm = hc->hash_array[i];

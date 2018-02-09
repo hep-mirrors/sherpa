@@ -641,6 +641,10 @@ void Leading_Particle::Evaluate(const Blob_List &,double value, double ncount) {
   for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
     if ((*p_qualifier)(*pit)) {
       //std::cout<<"Test "<<(*pit)->Flav()<<" successful."<<std::endl;
+      // NOTE: to have no break-statement for case 1 is probably a bug, also is
+      // the intent here really to update test in the following if-statement
+      // instead of actually updating crit instead (i.e. crit=test, not
+      // test=crit)?
       switch (m_mode) {
       case 1:  test =(*pit)->Momentum().PPerp2();
       default: test =(*pit)->Momentum()[0];

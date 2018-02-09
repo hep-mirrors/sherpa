@@ -89,10 +89,8 @@ void Breit_Frame::Evaluate(const ATOOLS::Blob_List &bl,double weight,double ncou
   if (!IsEqual(pp,mp,1.0e-3) || !IsEqual(qq,mq,1.0e-3))
     msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
-  if (inlist==NULL) {
-    msg_Error()<<METHOD<<"(): Missing list: '"
-	       <<m_inlist<<"'."<<std::endl;
-  }
+  if (!inlist)
+    THROW(fatal_error, "Missing list: '" + m_inlist + "'");
   Particle_List *outlist(new Particle_List());
   outlist->resize(inlist->size());
   for (size_t i(0);i<outlist->size();++i) {

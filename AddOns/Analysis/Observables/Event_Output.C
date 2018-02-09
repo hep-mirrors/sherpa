@@ -100,7 +100,6 @@ namespace ANALYSIS {
       if (pl->empty()) return;
       m_sum+=weight;
       m_sumsqr+=sqr(weight);
-      Blob_List* blobsptr=const_cast<Blob_List*>(&blobs);
       if (blobs.size())
 	for (Output_Vector::iterator it=m_outputs.begin(); it!=m_outputs.end(); ++it) {
 	  (*it)->SetXS(p_ana->AnalysisHandler()->EventHandler()->TotalXS(),

@@ -76,9 +76,6 @@ void Primitive_Calorimeter::SmearEnergy(const Flavour & fl, double & E)
 void Primitive_Calorimeter::Fill(const Particle_List * pl)
 {
   Reset();
-  double maxet=0.;
-  Vec4D  mom=Vec4D(0.,0.,0.,0.);
-  int ii,jj;
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     if (p_qualifier!=NULL && !(*p_qualifier)(*it)) continue;
     if (!((*it)->Flav().IsLepton())) {
@@ -92,7 +89,6 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
       int j = int(phi/m_delta_phi);
       if (i>=0&&i<m_nx) {
 	p_cells[i][j] += p_sintheta[i]*E;
-	if (maxet<p_sintheta[i]*E) { maxet = p_sintheta[i]*E; mom=(*it)->Momentum(); ii=i; jj=j; }
       }
     }
   }  

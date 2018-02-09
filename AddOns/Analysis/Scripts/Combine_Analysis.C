@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   else {
   string flname=output+"fl.tmp";
   string tmp="ls "+filter+inlist[0]+" > "+flname;
-  int retls(system(tmp.c_str()));
+  system(tmp.c_str());
   std::string buf;
   ifstream from(flname.c_str());
   while (from) {
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
       if (FileExists(inlist[0]+buf)) filelist.push_back(buf);
   }
   from.close();
-  int retrm(system(("rm "+flname).c_str()));
+  system(("rm "+flname).c_str());
   }
   if (check) {
     double** csmatrix=new double*[inlist.size()];

@@ -287,6 +287,8 @@ bool Singlet_Checker::TransitProblematicSinglets() {
       msg_Out()<<"Singlet with "<<tit->first->Momentum()<<" --> "
 	       <<tit->second<<" ("<<tit->second.Mass()<<")\n";
     }
+    delete[] moms;
+    delete[] masses;
     return false;
   }
   bool success = hadpars->AdjustMomenta(n,moms,masses);

@@ -157,7 +157,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     if (p_me->EventGenerationMode()!=0) {
       if (m_weight>=ran->Get()) {
         if (m_weight < 1.0) {
-          *p_localkfactorvarweights *= 1.0 / m_weight;
+          if (p_localkfactorvarweights)
+            *p_localkfactorvarweights *= 1.0 / m_weight;
           m_weight = 1.0;
         }
       } else {

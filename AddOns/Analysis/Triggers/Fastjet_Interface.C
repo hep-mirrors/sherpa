@@ -123,7 +123,7 @@ operator()(const Argument_Matrix &parameters) const
   fastjet::JetAlgorithm algo(fastjet::kt_algorithm);
   fastjet::RecombinationScheme recom(fastjet::E_scheme);
   fastjet::Strategy strategy(fastjet::Best);
-  double R=0.4, f=0.75, p=1.0, ptmin=0.0, etamax=1000.;
+  double R=0.4, f=0.75, ptmin=0.0, etamax=1000.;
   size_t njets=0, siscone=0, btag=0;
   std::string inlist="FinalState", outlist="FastJets";
   for (size_t i=0;i<parameters.size();++i) {
@@ -147,7 +147,6 @@ operator()(const Argument_Matrix &parameters) const
     }
     else if (parameters[i][0]=="R") R=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="f") f=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="p") p=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="Strategy") {
       if (parameters[i][1]=="N2Plain") strategy=fastjet::N2Plain;
       if (parameters[i][1]=="N2Tiled") strategy=fastjet::N2Tiled;
@@ -183,7 +182,6 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"Algorithm algorithm [kt|antikt|cambridge|siscone] (default kt)\n"
      <<std::setw(width+7)<<" "<<"Scheme    scheme [E|pt|pt2|Et|Et2|BIpt|BIpt2] (default E)\n"
      <<std::setw(width+7)<<" "<<"R         R (default 0.4)\n"
-     <<std::setw(width+7)<<" "<<"p         p (default 1.0)\n"
      <<std::setw(width+7)<<" "<<"f         f (siscone only, default 0.75)\n"
      <<std::setw(width+7)<<" "<<"Strategy  strategy [N2Plain|N2Tiled|N2MinHeapTiled|NlnN|NlnNCam|Best] (default Best)\n"
      <<std::setw(width+7)<<" "<<"BTag      0|1 (default 0 -> no b-tag)\n"

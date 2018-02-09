@@ -458,8 +458,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  for (size_t i(0);i<swa.size();++i)
 	    if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
 	  msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
-	  p_variationweights->UpdateOrInitialiseWeights
-	    (&Shower::GetWeight,*this,swa);
+          if (p_variationweights)
+            p_variationweights->UpdateOrInitialiseWeights(
+                &Shower::GetWeight, *this, swa);
 	  continue;
 	}
 	else {
@@ -468,8 +469,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  for (size_t i(0);i<swa.size();++i)
 	    if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
 	  msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
-	  p_variationweights->UpdateOrInitialiseWeights
-	    (&Shower::GetWeight,*this,swa);
+          if (p_variationweights)
+            p_variationweights->UpdateOrInitialiseWeights(
+                &Shower::GetWeight, *this, swa);
 	}
       }
       if (vwa.m_acc==0) return false;

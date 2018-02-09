@@ -637,7 +637,6 @@ double Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-      mur2*=pow(m_rsf*mu2,coqcd);
       as*=pow(cas,coqcd);
       sas+=cas*coqcd;
       oqcd+=coqcd;
