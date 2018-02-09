@@ -240,7 +240,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 		     <<(stat==1?"accept\n":"reject\n");
     msg_Debugging()<<"stat = "<<stat<<"\n";
     JetVeto_Args vwa(ampl,stat?0.0:-1.0,
-		     p_vars->NumberOfParameters()+1);
+		     (p_vars ? p_vars->NumberOfParameters() : 0)+1);
     Jet_Finder *jf(ampl->JF<Jet_Finder>());
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
