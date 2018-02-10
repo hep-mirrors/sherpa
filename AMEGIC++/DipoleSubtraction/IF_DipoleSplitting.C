@@ -47,12 +47,10 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case spt::g2qq:
     m_sff = m_xijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
-    if (m_subtype==1) m_av += 2.0*(m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk);
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
-    if (m_subtype==1) m_av += m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk;
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -77,7 +75,6 @@ double IF_DipoleSplitting::GetValue()
 void IF_DipoleSplitting::CalcDiPolarizations()
 {
   double tc((1.-m_xijk)/m_xijk);
-  if (m_subtype==1) tc+=m_xijk/(sqr(m_xijk)+m_uj*(1.0-m_xijk))-1.0/m_xijk;
   switch (m_ftype) {
   case spt::q2qg:
   case spt::q2gq:

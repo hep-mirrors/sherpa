@@ -175,7 +175,6 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
     q=pi/ui-pk/(1.0-ui);
     A=x;
     double tc((1.0-x)/x);
-    if (p_v->Info()->SubType()==1) tc+=x/(x*x+ui*(1.0-x))-1.0/x;
     B=2.0*tc*ui*(1.0-ui)*q.Abs2()/(pi*pk);
     t=-2.0*(pi*p_v->Kin()->PI())*x;
     p_v->Kin()->SetA(tc);
@@ -189,11 +188,8 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
     double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
     double z(x), tc((1.0-x)/x);
-    if (p_v->Info()->SubType()==1) {
-      z=x+vi;
-      tc+=z/(z*z+vi*(1.0-z))-1.0/x;
-    }
-    if (p_v->Info()->SubType()==2) tc+=1.0/(x+vi)-1.0/x;
+    if (p_v->Info()->SubType()==1) z=x+vi;
+    if (p_v->Info()->SubType()&3) tc+=1.0/(x+vi)-1.0/x;
     A=z;
     B=-4.0*tc;
     q=pi-vi*pk;

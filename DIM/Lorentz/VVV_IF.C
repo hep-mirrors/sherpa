@@ -23,10 +23,10 @@ namespace DIM {
     double Value(const Splitting &s) const
     {
       double A=0.0, B=0.0;
-      if (m_mode) B=2.0*s.m_z*(1.0-s.m_z)+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
+      if (m_mode) B=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
       else {
 	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
-	B=-2.0+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
+	B=-2.0+(1.0-s.m_z)/s.m_z;
 	A*=1.0+p_sk->GF()->K(s);
       }
       if (s.m_mk2==0.0) return A+B;
@@ -51,8 +51,7 @@ namespace DIM {
 
     double Integral(const Splitting &s) const
     {
-      if (m_mode) 
-	return 0.5*log((s.m_Q2+s.m_t0)/(s.m_Q2*sqr(s.m_eta)+s.m_t0))*m_jmax;
+      if (m_mode) return log(1.0/s.m_eta)*m_jmax;
       double k2=s.m_t0/s.m_Q2;
       double I=log((k2+sqr(1.0-s.m_eta))/(s.m_eta*k2));
       return I*(1.0+p_sk->GF()->KMax(s))*m_jmax;
@@ -60,7 +59,7 @@ namespace DIM {
 
     double Estimate(const Splitting &s) const
     {
-      if (m_mode) return s.m_z/(sqr(s.m_z)+s.m_t0/s.m_Q2)*m_jmax;
+      if (m_mode) return 1.0/s.m_z*m_jmax;
       double E=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t0/s.m_Q2)+1.0/s.m_z;
       return E*(1.0+p_sk->GF()->KMax(s))*m_jmax;
     }
@@ -69,7 +68,7 @@ namespace DIM {
     {
       double k2(s.m_t0/s.m_Q2);
       if (m_mode) {
-	s.m_z=sqrt(pow((1.0+k2)/(sqr(s.m_eta)+k2),-ran->Get())*(1.0+k2)-k2);
+	s.m_z=pow(s.m_eta,ran->Get());
       }
       else {
 	double FF((k2+sqr(1.0-s.m_eta))/(s.m_eta*k2));

@@ -59,26 +59,25 @@ namespace DIM {
 
     double Value(const Splitting &s) const
     {
-      double V=2.0*s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-(2.0-s.m_z);
+      double V=2.0/s.m_z-(2.0-s.m_z);
       return V;
     }
 
     double Integral(const Splitting &s) const
     {
-      double I=log((s.m_Q2+s.m_t0)/(s.m_Q2*sqr(s.m_eta)+s.m_t0));
+      double I=2.0*log(1.0/s.m_eta);
       return I*m_jmax*PDFEstimate(s);
     }
 
     double Estimate(const Splitting &s) const
     {
-      double E=2.0*s.m_z/(sqr(s.m_z)+s.m_t0/s.m_Q2);
+      double E=2.0/s.m_z;
       return E*m_jmax*PDFEstimate(s);
     }
 
     bool GeneratePoint(Splitting &s) const
     {
-      double k2(s.m_t0/s.m_Q2);
-      s.m_z=sqrt(pow((1.0+k2)/(sqr(s.m_eta)+k2),-ran->Get())*(1.0+k2)-k2);
+      s.m_z=pow(s.m_eta,ran->Get());
       s.m_phi=2.0*M_PI*ran->Get();
       return true;
     }

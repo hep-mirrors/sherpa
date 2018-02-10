@@ -700,17 +700,15 @@ double Massive_Kernels::Kb2(int type)
 double Massive_Kernels::Kb3(int type,double x)
 {
   if (m_stype==sbt::qed && type==4) return 0.;
-  double c=0.;
-  if (m_subtype==1) c=-log(1./x+sqr(1./x-1.))/x;
   switch(type) {
   case 1:
     return (-(1.+x)*log((1.-x)/x)+(1.-x));
   case 2:
-    return m_CFbyCA*((1.+sqr(1.-x))/x*log((1.-x)/x)+x+2.*c);
+    return m_CFbyCA*((1.+sqr(1.-x))/x*log((1.-x)/x)+x);
   case 3:
     return m_TRbyCF*((x*x+sqr(1.-x))*log((1.-x)/x)+2.*x*(1.-x));
   case 4:
-    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+c);
+    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x));
   }
   return 0.;
 }
@@ -826,8 +824,7 @@ double Massive_Kernels::Kt2(int type)
 double Massive_Kernels::Kt3(int type,double x)
 {
   if (m_stype==sbt::qed && type==4) return 0.;
-  double ax=0., c=0.;
-  if (m_subtype==1) c=-log(1./x+sqr(1./x-1.))/x;
+  double ax=0.;
   if (m_alpha_ii<(1.-x)) ax=log(m_alpha_ii/(1.-x));
   switch(type) {
   case 1:
@@ -836,7 +833,7 @@ double Massive_Kernels::Kt3(int type,double x)
     return -(1.+x)*log(1.-x)+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
-    if (m_subtype==1) ax+=(1.-x)+4.*log(x)/x/(1.+x)-2.*c;
+    if (m_subtype==1) ax+=(1.-x)+2.*log(x)/x;
     if (m_subtype==2) ax+=2.*log(x)/x;
     return m_CFbyCA*((1.+sqr(1.-x))/x*log(1.-x)+ax);
   case 3:
@@ -845,7 +842,7 @@ double Massive_Kernels::Kt3(int type,double x)
     return m_TRbyCF*((x*x+sqr(1.-x))*log(1.-x)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
-    if (m_subtype==1) ax+=0.5*(1.-x*(4.-3.*x)+4.*log(x)/x/(1.+x)-2.*c);
+    if (m_subtype==1) ax+=0.5*(1.-x*(4.-3.*x)+2.*log(x)/x);
     if (m_subtype==2) ax+=log(x)/x;
     return 2.*((1.-x)/x-1.+x*(1.-x))*log(1.-x)+2.*ax;
   }
