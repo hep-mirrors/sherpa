@@ -36,6 +36,10 @@ namespace AHADIC {
     bool   FixKinematics();
     bool   DiQuarkToQuarks(const ATOOLS::Flavour & di,
 			   ATOOLS::Flavour & q1,ATOOLS::Flavour & q2);
+    bool   AnnihilateFlavour(const ATOOLS::Flavour & one1,
+			     const ATOOLS::Flavour & one2,
+			     const ATOOLS::Flavour & two1,
+			     const ATOOLS::Flavour & two2);
     double DefineHadronsInAnnihilation(const Flavour_Pair & one,
 				       const Flavour_Pair & two);
     bool   TreatSingletCluster();

@@ -258,7 +258,8 @@ double Soft_Cluster_Handler::Annihilation() {
   one.second = one1;
   two.first  = disc?two2:two1;
   two.second = one2;
-  if (DefineHadronsInAnnihilation(one,two)) return true;
+  if (DefineHadronsInAnnihilation(one,two) ||
+      AnnihilateFlavour(one1,one2,two1,two2)) return true;
   msg_Error()<<METHOD<<" yields error - no annihilation defined for:\n"
 	     <<(*p_cluster)
 	     <<"   Will return false and hope for the best.\n";
@@ -273,6 +274,50 @@ DiQuarkToQuarks(const Flavour & di,Flavour & q1,Flavour & q2) {
   q2 = Flavour(kf2);
   if (di.IsAnti()) { q1 = q1.Bar(); q2 = q2.Bar(); }
   return true;
+}
+
+bool Soft_Cluster_Handler::
+AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
+		  const Flavour & two1,const Flavour & two2) {
+  kf_code kf11(one1.Kfcode()),kf12(one2.Kfcode());
+  kf_code kf21(two1.Kfcode()),kf22(two2.Kfcode());
+  m_hads[0] = Flavour(kf_photon);;
+  Flavour_Pair residual;
+  if (kf12==kf22) {
+    residual.first = two1; residual.second = one1;
+    Single_Transition_List * trans = (*p_singletransitions)[residual];
+    if (trans->rbegin()->first.Mass()<m_mass) {
+      m_hads[1] = trans->rbegin()->first;
+      return true;
+    }
+    //msg_Out()<<"   "<<residual.first<<" + "<<residual.second
+    //	     <<" --> "<<trans->rbegin()->first<<"\n";
+  }
+  if (kf12==kf21) {
+    residual.first = two2; residual.second = one1;
+    Single_Transition_List * trans = (*p_singletransitions)[residual];
+    if (trans->rbegin()->first.Mass()<m_mass) {
+      m_hads[1] = trans->rbegin()->first;
+      return true;
+    }
+  }
+  if (kf11==kf22) {
+    residual.first = two1; residual.second = one2;
+    Single_Transition_List * trans = (*p_singletransitions)[residual];
+    if (trans->rbegin()->first.Mass()<m_mass) {
+      m_hads[1] = trans->rbegin()->first;
+      return true;
+    }
+  }
+  if (kf11==kf21) {
+    residual.first = two2; residual.second = one2;
+    Single_Transition_List * trans = (*p_singletransitions)[residual];
+    if (trans->rbegin()->first.Mass()<m_mass) {
+      m_hads[1] = trans->rbegin()->first;
+      return true;
+    }
+  }
+  return false;
 }
 
 double Soft_Cluster_Handler::

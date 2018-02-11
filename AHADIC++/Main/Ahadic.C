@@ -52,10 +52,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
 		      <<"   Hadronization for blob "
-		      <<"("<<blob<<"; "
+		      <<"("<<blobs<<"; "
 		      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "
 		      <<"did not work out,\n"
-		      <<"   will trigger retrying the event.\n";
+		      <<"   will trigger retrying the event:\n"
+		      <<(*blobs);
 	CleanUp(blob);
 	if (rpa->gen.Beam1().IsLepton() ||
 	    rpa->gen.Beam2().IsLepton()) {
@@ -78,15 +79,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
-  //msg_Out()<<"============================================================\n"
-  //	   <<"============================================================\n"
-  //	   <<"============================================================\n";
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
-    msg_Error()<<"ERROR in "<<METHOD<<" (formation): Will retry event.\n"
+    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
 	       <<(*blob);
-    //exit(1);
     Reset(blob);
     return Return_Value::Retry_Event;
   }
@@ -102,7 +99,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
-  //msg_Out()<<(*blob)<<"\n";
   return Return_Value::Success;
 }
   

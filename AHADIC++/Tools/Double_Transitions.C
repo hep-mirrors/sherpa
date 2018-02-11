@@ -41,8 +41,8 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	if (pair.second.Kfcode()==4) weight *= m_charm_baryon_modifier;
 	if (pair.first.Kfcode()==5)  weight *= m_beauty_baryon_modifier;
 	if (pair.second.Kfcode()==5) weight *= m_beauty_baryon_modifier;
-	msg_Out()<<METHOD<<"["<<pair.first<<", "<<pair.second<<"] "
-		 <<"for popped diquark; weight = "<<weight<<".\n";
+	//msg_Out()<<METHOD<<"["<<pair.first<<", "<<pair.second<<"] "
+	//	 <<"for popped diquark; weight = "<<weight<<".\n";
       }
       if (m_transitions.find(pair)==m_transitions.end())
 	m_transitions[pair] = new Double_Transition_List;
