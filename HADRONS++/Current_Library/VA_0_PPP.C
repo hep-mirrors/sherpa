@@ -49,11 +49,11 @@ void VA_0_PPP::SetModelParameters( struct GeneralModel _md )
   switch( m_mode ) {
     case 3000 : /* pi- pi- pi+ mode */
                 A123 = m_Vud*SQRT_05;
-				m_B123 = 0.;
+		m_B123 = 0.;
                 break;
     case 1200 : /* pi0 pi0 pi- mode */
                 A123 = m_Vud*SQRT_05;
-				m_B123 = 0.;
+		m_B123 = 0.;
                 break;
     case 1020 : /* K- pi- K+ */
                 m_B123 = 2.;
@@ -65,12 +65,12 @@ void VA_0_PPP::SetModelParameters( struct GeneralModel _md )
                 break;
     case  111 : /* K- pi0 K0 */
                 A123 = 1.5*m_Vud*SQRT_05;
-				m_B123 = -2./3.;
+		m_B123 = -2./3.;
                 break;
     case  210 : /* pi0 pi0 K- mode */
                 A123 = m_Vus/4.;
-				m_B123 = 1.;
-                break;
+		m_B123 = 1.;
+		break;
     case 2010 : /* K- pi- pi+ */
                 m_B123 = -1.;
                 A123 = -0.5*m_Vus;
@@ -294,43 +294,43 @@ VA_0_PPP::RChT::RChT(int mode, int kaon_mode, string path, GeneralModel _md, dou
       m_mode != 3000 && 
       m_mode != 1020 ) {
     msg_Error()<<"Error: The mode "<<m_mode<<endl
-        <<"     hasn't been implemented yet (RChT). Please use KS model."
-        <<"     Don't know what to do. Will abort"<<endl;
+	       <<"     hasn't been implemented yet (RChT). Please use KS model."
+	       <<"     Don't know what to do. Will abort"<<endl;
     Abort();
-      }
-   
-      m_MO     = _md("Mass_omega(782)", Flavour(kf_omega_782).HadMass());
-      m_MO2    = sqr(m_MO);
-      m_GO     = _md("Width_omega(782)", Flavour(kf_omega_782).Width());
-      
-      m_l0     = _md("lambda0", 1.);                    // fit parameter lambda0
-      m_gammaR = _md("gamma_rho(770)", 1.);              // global factor for rho width
-      m_m      = Flavour( kf_pi_plus ).HadMass();         // pion mass
-      m_m2     = sqr(m_m);                              // pion mass^2
-      m_mK2    = sqr( Flavour( kf_K_plus ).HadMass() );   // Kaon mass^2
-      m_exp_alpha = _md("exp_alpha", 2.45);             // exponent in off-shell GA
-      m_l1     = _md("lambda1", 0.5);                   // fit parameter        
-      m_l2     = _md("lambda2", 0.);                    // fit parameter
-      m_lsum   = m_l1 + m_l2; 
+  }
+  
+  m_MO     = _md("Mass_omega(782)", Flavour(kf_omega_782).HadMass());
+  m_MO2    = sqr(m_MO);
+  m_GO     = _md("Width_omega(782)", Flavour(kf_omega_782).Width());
+  
+  m_l0     = _md("lambda0", 1.);                    // fit parameter lambda0
+  m_gammaR = _md("gamma_rho(770)", 1.);              // global factor for rho width
+  m_m      = Flavour( kf_pi_plus ).HadMass();         // pion mass
+  m_m2     = sqr(m_m);                              // pion mass^2
+  m_mK2    = sqr( Flavour( kf_K_plus ).HadMass() );   // Kaon mass^2
+  m_exp_alpha = _md("exp_alpha", 2.45);             // exponent in off-shell GA
+  m_l1     = _md("lambda1", 0.5);                   // fit parameter        
+  m_l2     = _md("lambda2", 0.);                    // fit parameter
+  m_lsum   = m_l1 + m_l2; 
   // constraints due to short-distance behaviour
-      m_FV2    = 2*m_fpi2;                              // vector coupling
-      m_FV     = sqrt(m_FV2);
-      m_GV     = m_FV/2.;
-      m_FA2    = m_FV2 - m_fpi2;                        // axial coupling
-      m_FA     = sqrt(m_FA2);
+  m_FV2    = 2*m_fpi2;                              // vector coupling
+  m_FV     = sqrt(m_FV2);
+  m_GV     = m_FV/2.;
+  m_FA2    = m_FV2 - m_fpi2;                        // axial coupling
+  m_FA     = sqrt(m_FA2);
 }
 
 double VA_0_PPP::RChT::MassWidthVector( int a, double s )
 { 
   if(m_V[0].Running()) {
     switch(m_mode) {
-      case 3000:
-        case 1200: return MassWidthVector( s );
-        case 1020: return (a==0)? MassWidthVector(s) : m_V[1].MassWidth();
+    case 3000:
+    case 1200: return MassWidthVector( s );
+    case 1020: return (a==0)? MassWidthVector(s) : m_V[1].MassWidth();
     }
     // default:
     msg_Error()<<"Warning: this form factor (RChT) for the three-pseudoe mode "<<m_mode<<"\n"
-        <<"     hasn't been implemented yet. Please use KS model."<<endl;
+	       <<"     hasn't been implemented yet. Please use KS model."<<endl;
   }
   return( m_V[a].MassWidth() );
 }
@@ -350,46 +350,46 @@ double VA_0_PPP::RChT::MassWidthAxial( double Q2 )
     return(  m_A.OffShellMassWidth(Q2)*pow(m_A.Mass2()/Q2,m_exp_alpha-2.) );
   return m_A.MassWidth();
 }
- 
+
 Complex VA_0_PPP::RChT::FormFactor( int j, double Q2, double s, double t )
 {
   switch( m_mode ) {
-    case 1200: 
-      case 3000: { // 3pion mode
-        if (j==1 || j==2) {        // axial contributions
-          double u = Q2-s-t+Mass2(1-1)+Mass2(2-1)+Mass2(3-1);
-          double x = (j==1)? s : t;
-          double y = (j==1)? t : s;
-          double MVGV_x = MassWidthVector(x);
-          double MVGV_y = MassWidthVector(y);
-          double MAGA = MassWidthAxial(Q2);
-          double F_Q2_x = x/2./Q2 - m_l0*m_m2/Q2;
-          double F_Q2_y = y/2./Q2 - m_l0*m_m2/Q2;
-          double MV2 = m_V[0].Mass2();
-          Complex alpha = 1. - 3./2.*x/Complex(x-MV2, MVGV_x);
-          Complex beta =  -3./2.*x/Complex(x-MV2, MVGV_x)
-              + F_Q2_x*(2.*Q2+x-u)/Complex(x-MV2, MVGV_x)
-              + F_Q2_y*(u-x)/Complex(y-MV2, MVGV_y);
-          return alpha - Q2/Complex(Q2-m_A.Mass2(),MAGA)*beta;
-        }
-        else {                     // pseudoscalar, vector
-          return Complex(0.,0.);
-        }
-      }
-      case 1020: { // K- pi- K+ mode
-        double u = Q2-s-t+Mass2(1-1)+Mass2(2-1)+Mass2(3-1);
-        switch(j) {
-          case 1:
-          case 2: {                // axial contributions
-              double x = (j==1)? s : t;
-              double y = (j==1)? t : s;
-              int    a = j-1;                          // resonance assoc. with x
-              int    b = (a==1)? 0 : 1;                 // resonance assoc. with y
-              Complex FAchi = Complex(1.,0.);
-              Complex FA1r  = 0.5 * m_FV*m_GV/m_fpi2 * ( 
-                  1./Complex(m_V[a].Mass2()-x,-1.*MassWidthVector(a,x))*
-                  ( 3.*x + Mass2(2)-Mass2(a) + (1.-2.*m_GV/m_FV)*(2.*Q2-2.*x-u+Mass2(a)-Mass2(b)) )
-                  +1./Complex(m_V[b].Mass2()-y,-1.*MassWidthVector(b,y))*
+  case 1200: 
+  case 3000: { // 3pion mode
+    if (j==1 || j==2) {        // axial contributions
+      double u = Q2-s-t+Mass2(1-1)+Mass2(2-1)+Mass2(3-1);
+      double x = (j==1)? s : t;
+      double y = (j==1)? t : s;
+      double MVGV_x = MassWidthVector(x);
+      double MVGV_y = MassWidthVector(y);
+      double MAGA = MassWidthAxial(Q2);
+      double F_Q2_x = x/2./Q2 - m_l0*m_m2/Q2;
+      double F_Q2_y = y/2./Q2 - m_l0*m_m2/Q2;
+      double MV2 = m_V[0].Mass2();
+      Complex alpha = 1. - 3./2.*x/Complex(x-MV2, MVGV_x);
+      Complex beta =  -3./2.*x/Complex(x-MV2, MVGV_x)
+	+ F_Q2_x*(2.*Q2+x-u)/Complex(x-MV2, MVGV_x)
+	+ F_Q2_y*(u-x)/Complex(y-MV2, MVGV_y);
+      return alpha - Q2/Complex(Q2-m_A.Mass2(),MAGA)*beta;
+    }
+    else {                     // pseudoscalar, vector
+      return Complex(0.,0.);
+    }
+  }
+  case 1020: { // K- pi- K+ mode
+    double u = Q2-s-t+Mass2(1-1)+Mass2(2-1)+Mass2(3-1);
+    switch(j) {
+    case 1:
+    case 2: {                // axial contributions
+      double x = (j==1)? s : t;
+      double y = (j==1)? t : s;
+      int    a = j-1;                          // resonance assoc. with x
+      int    b = (a==1)? 0 : 1;                 // resonance assoc. with y
+      Complex FAchi = Complex(1.,0.);
+      Complex FA1r  = 0.5 * m_FV*m_GV/m_fpi2 * ( 
+						1./Complex(m_V[a].Mass2()-x,-1.*MassWidthVector(a,x))*
+						( 3.*x + Mass2(2)-Mass2(a) + (1.-2.*m_GV/m_FV)*(2.*Q2-2.*x-u+Mass2(a)-Mass2(b)) )
+						+1./Complex(m_V[b].Mass2()-y,-1.*MassWidthVector(b,y))*
                   ( 2.*(Mass2(b)-Mass2(2)) + (1.-2.*m_GV/m_FV)*(u-x+Mass2(2)-Mass2(b)) )    
                                                        );
               Complex FA2r  = -sqrt(2.) * m_FA*m_GV/m_fpi2 * Q2/Complex(m_A.Mass2()-Q2,-1.*MassWidthAxial(Q2)) * (

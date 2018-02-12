@@ -17,20 +17,20 @@ using namespace ATOOLS;
 #include "HADRONS++/Current_Library/VA_P_P_hepph160208918.C"
 
 namespace HADRONS { namespace VA_P_P_FFs {
-  FormFactor_Base::~FormFactor_Base()
-  {
+    FormFactor_Base::~FormFactor_Base() {}
+    
+    class NoFF : public FormFactor_Base {
+    public:
+      NoFF(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+	   std::vector<int>& i) : 
+	FormFactor_Base(model, masses, flavs, i) {}
+      void CalcFFs( ATOOLS::Vec4D p0, ATOOLS::Vec4D p1 ) {
+	m_fplus=1.0; m_f0=0.0;
+	m_calced=true;
+      }
+    };
   }
-class NoFF : public FormFactor_Base {
-public:
-  NoFF(GeneralModel model, double* masses, const Flavour_Vector& flavs,
-       std::vector<int>& i) : 
-    FormFactor_Base(model, masses, flavs, i) {}
-  void CalcFFs( ATOOLS::Vec4D p0, ATOOLS::Vec4D p1 ) {
-    m_fplus=1.0; m_f0=0.0;
-    m_calced=true;
-  }
-};
-} }
+}
 
 void VA_P_P::SetModelParameters( struct GeneralModel model )
 {
