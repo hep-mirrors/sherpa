@@ -1,3 +1,3 @@
 #include "ATOOLS/Org/SVN_Info.H"
 static ATOOLS::SVN_Info initializer
-("AHADIC++/Tools","trunk/SHERPA","31666M","e6a2bd38058515655aa4a0b9aba59881");
+("AHADIC++/Tools","trunk/SHERPA","31687M","2979133d7caafae6d7347c73f5a141bb");

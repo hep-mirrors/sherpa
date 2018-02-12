@@ -7,6 +7,7 @@
 % model parameters
   ALPHAS(MZ) 0.1188;  
   ORDER_ALPHAS 2;
+  SHOWER_GENERATOR CSS
   CSS_FS_PT2MIN = 1.0
   %# CSS_NOEM = 1
 
@@ -15,16 +16,18 @@
   BEAM_2 -11; BEAM_ENERGY_2 45.6;
 
 % process helpers
-  NJET:=2;
+  NJET:=1;
   MASSIVE[4] 1; 
   MASSIVE[5] 1; 
   PARTICLE_CONTAINER 1098 C  4 -4;
   PARTICLE_CONTAINER 1099 B  5 -5;
+  PDF_LIBRARY None;
+  YFS_MODE = 0
 }(run)
 
 (processes){
   Process 11 -11 -> (93,1098,1099) (93,1098,1099) (93,1098,1099){NJET};
-  CKKW pow(10,-2.25);
+  CKKW 5.
   Order (*,2);
   End process;
 }(processes)

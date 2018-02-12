@@ -76,11 +76,12 @@ bool Soft_Photon_Handler::AddRadiation(Particle_Vector& leps, Blob_Vector& blobs
 void Soft_Photon_Handler::BoostDecayBlob(Blob * blob)
 {
   DEBUG_FUNC("");
-  msg_Debugging()<<*blob<<std::endl;
+  msg_Out()<<*blob<<std::endl;
   const Vec4D& P((*blob)["p_original"]->Get<Vec4D>());
   const Vec4D& Pt(blob->InParticle(0)->Momentum());
   const Vec4D e(P-Pt);
   msg_Debugging()<<"P-Pt="<<e<<" ["<<e.Mass()<<"]"<<std::endl;
+  msg_Out()<<"Before builidng tensors.\n";
   const Lorentz_Ten2D lambda(MetricTensor()-2.*BuildTensor(e,e)/e.Abs2());
   msg_Debugging()<<"\\Lambda="<<std::endl<<lambda<<std::endl;
   for (size_t i(0);i<blob->NOutP();++i) {
@@ -91,6 +92,7 @@ void Soft_Photon_Handler::BoostDecayBlob(Blob * blob)
     blob->OutParticle(i)->SetMomentum(mom);
     msg_Debugging()<<mom<<" ["<<mom.Mass()<<"]"<<std::endl;
   }
+  msg_Out()<<"Before checkong onshell-ness.\n";
   CheckOnshellness(blob);
   if (msg_LevelIsDebugging()) {
     for (size_t i(0);i<blob->NOutP();++i) {
