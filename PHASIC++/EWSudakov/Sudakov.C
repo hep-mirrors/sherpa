@@ -246,9 +246,21 @@ const Sudakov::HelicityCoeffMap& Sudakov::ReferenceCoeffs()
     mapWW[{1, 1, 2, 2}] = -7.35;
     mapWW[{1, 1, 0, 1}] = -12.6;
     mapWW[{1, 1, 1, 0}] = -12.6;
-    //coeffs["2_2__e-__e+__P__P"]     = {-1.29,-8.15};
-    //coeffs["2_2__e-__e+__Z__P"]     = {-1.29,-12.2};
-    //coeffs["2_2__e-__e+__Z__Z"]     = {-1.29,-16.2};
+    auto& mapPP = coeffs["2_2__e-__e+__P__P"];
+    mapPP[{0, 0, 0, 1}] = -1.29;
+    mapPP[{0, 0, 1, 0}] = -1.29;
+    mapPP[{1, 1, 0, 1}] = -8.15;
+    mapPP[{1, 1, 1, 0}] = -8.15;
+    auto& mapZP = coeffs["2_2__e-__e+__Z__P"];
+    mapZP[{0, 0, 0, 1}] = -1.29;
+    mapZP[{0, 0, 1, 0}] = -1.29;
+    mapZP[{1, 1, 0, 1}] = -12.2;
+    mapZP[{1, 1, 1, 0}] = -12.2;
+    auto& mapZZ = coeffs["2_2__e-__e+__Z__Z"];
+    mapZZ[{0, 0, 0, 1}] = -1.29;
+    mapZZ[{0, 0, 1, 0}] = -1.29;
+    mapZZ[{1, 1, 0, 1}] = -16.2;
+    mapZZ[{1, 1, 1, 0}] = -16.2;
   }
 
   // check proc name is inside the few we have
