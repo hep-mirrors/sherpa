@@ -22,15 +22,15 @@ Comix_Interface::Comix_Interface(Process_Base& proc,
   m_proc{ proc },
   p_ampl{ ampl }
 {
-  m_proc.FillProcessMap(&m_apmap);
+  // m_proc.FillProcessMap(&m_apmap);
   InitializeSU2RotatedProcesses();
+  InitializeSU2RotatedProcesses(1);
 }
 
 void Comix_Interface::FillSpinAmplitudes(
     std::vector<Spin_Amplitudes>& spinampls,
     ATOOLS::Cluster_Amplitude* ampl) const
 {
-  DEBUG_VAR(*ampl);
   const auto loprocmapit{ m_apmap.find(nlo_type::lo) };
   if (loprocmapit == m_apmap.end())
     THROW(fatal_error, "LO entry in process map not found");
@@ -38,41 +38,39 @@ void Comix_Interface::FillSpinAmplitudes(
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
-  Process_Base::SortFlavours(campl);
+  Process_Base::SortFlavours(campl); 
   std::string pname(Process_Base::GenerateName(campl));
-  StringProcess_Map::const_iterator pit(loprocmapit->second->find(pname));
-  if (pit->second==NULL) {
+  StringProcess_Map::const_iterator
+    pit(loprocmapit->second->find(pname));
+  if (pit->second==NULL) 
     THROW(fatal_error, "Process not found");
-  }
-  if (ampl != p_ampl) {
-    int kfon(pit->second->KFactorSetter(true)->On());
-    pit->second->KFactorSetter(true)->SetOn(false);
-    pit->second->Differential(*campl,2|4|128);
-    pit->second->KFactorSetter(true)->SetOn(kfon);
-  }
+    
+  pit->second->Differential(*campl,2|4|128);
   campl->Delete();
   std::vector<std::vector<Complex> > cols;
   pit->second->FillAmplitudes(spinampls,cols);
 }
 
-void Comix_Interface::InitializeSU2RotatedProcesses()
+void Comix_Interface::InitializeSU2RotatedProcesses(const size_t mode)
 {
   for (size_t i{ 0 }; i < p_ampl->Legs().size(); ++i) {
     auto* ampl = p_ampl->Copy();
-    auto* leg = ampl->Leg(i);
-    auto flav = leg->Flav();
-    Flavour newflav;
-    // TODO: generalise to other flavours (preferredly, add an WeakIsoPartner
-    // function to the Flavour class
-    if (flav.IsPhoton()) {
-      newflav = Flavour{kf_Z};
-    } else if (flav.Kfcode() == kf_Z) {
-      newflav = Flavour{kf_photon};
-    } else {
-      ampl->Delete();
-      continue;
+    if(mode == 1 ) { // rotate 
+      auto* leg = ampl->Leg(i);
+      auto flav = leg->Flav();
+      Flavour newflav;
+      // TODO: generalise to other flavours (preferredly, add an WeakIsoPartner
+      // function to the Flavour class
+      if (flav.IsPhoton()) {
+	newflav = Flavour{kf_Z};
+      } else if (flav.Kfcode() == kf_Z) {
+	newflav = Flavour{kf_photon};
+      } else {
+	ampl->Delete();
+	continue;
+      }
+      leg->SetFlav(newflav);
     }
-    leg->SetFlav(newflav);
     PHASIC::Process_Base::SortFlavours(ampl);
     std::string name(PHASIC::Process_Base::GenerateName(ampl)+"__Sudakov");
     Process_Info pi;

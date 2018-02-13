@@ -1,10 +1,10 @@
 # If Sherpa-config is not in your $PATH, change this variable to point to your
 # Sherpa installation directory manually
-SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
+SHERPA_PREFIX ?= $(shell ~/work/hep/code/sudakov/sudakovew/bin/Sherpa-config --prefix)
 
-# compiler
-CXX    = $(shell Sherpa-config --cxx)
-CXXCPP = $(shell Sherpa-config --cxx)
+# compiler (eg. w/o MPI c++, w/ MPI mpic++)
+CXX    = c++ 
+CXXCPP = c++
 
 # add SHERPA_LIBS to LD_LIBRARY PATH environment variable before executing the binary
 
@@ -12,7 +12,6 @@ SHERPA_INCLUDE = $(SHERPA_PREFIX)/include/SHERPA-MC
 SHERPA_LIBS    = $(SHERPA_PREFIX)/lib/SHERPA-MC
 
 all: test
-	@echo "Please set the LD_LIBRARY_PATH to" $(shell Sherpa-config --libdir)
 
 test: test.o 
 	$(CXX)  test.o -L$(SHERPA_LIBS) -lMEProcess -lToolsOrg -lToolsMath -lToolsPhys -lSherpaMain -lPhasicProcess -o test

@@ -19,6 +19,7 @@ namespace PHASIC {
     double m_sw2, m_cw2, m_sw, m_cw;
     std::vector<Spin_Amplitudes> m_spinampls;
     std::map<size_t, std::vector<Spin_Amplitudes>> m_SU2rotatedspinampls;
+    size_t m_check;
 
     static ATOOLS::Cluster_Amplitude* CreateAmplitude(Process_Base&);
     void UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom);
@@ -33,6 +34,9 @@ namespace PHASIC {
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour& flav, int pol) const;
     double NondiagonalCew(kf_code from, kf_code to) const;  // only Z/\gamma
+    
+    std::vector<double>  denners();
+    bool test_coeff();
   };
 }
 #endif

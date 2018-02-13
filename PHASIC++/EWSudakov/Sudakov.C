@@ -12,6 +12,8 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <iterator>
+
 using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
@@ -23,7 +25,8 @@ Sudakov::Sudakov(Process_Base& proc):
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
-  m_cw{ sqrt(m_cw2) }
+  m_cw{ sqrt(m_cw2) },
+  m_check{ true } // read from runcard...
 {
 }
 
@@ -65,15 +68,23 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_SU2rotatedspinampls.clear();  // they will be calculated on demand
   m_ci.FillSpinAmplitudes(m_spinampls, p_ampl);
   CalculateSpinAmplitudeCoeffs();
+  if(m_check){
+    if(test_coeff())  { msg_Debugging() << " Everything's fine ..." << std::endl;}
+    else {
+      THROW(fatal_error, "Something wrong with the coeff...");
+    }
+  }
+
   // TODO: combine and return coefficients
   return 1.0;
 }
 
 void Sudakov::UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom)
 {
-  for (size_t i{ 0 }; i < mom.size(); ++i) {
-    p_ampl->Leg(i)->SetMom(mom[i]);
-  }
+  p_ampl->SetProcs(m_proc.AllProcs());
+  // this weirdly makes a difference... check
+  for(int i(0); i < m_proc.NIn()+m_proc.NOut();++i)
+    p_ampl->Leg(i)->SetMom(mom[i]);//i<m_proc.NIn()?-mom[i]:mom[i]);
 }
 
 void Sudakov::CalculateSpinAmplitudeCoeffs()
@@ -101,26 +112,33 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ p_ampl->Leg(i)->Flav() };
     if (flav.IsBoson() && flav.Charge() == 0) {
-      // mixing between neutral gauge bosons: non-diagonal terms appear
-      const auto from = flav.Kfcode();
-      coeff -= NondiagonalCew(from, from) / 2.0;
-      const auto to = (from == kf_photon) ? kf_Z : kf_photon;
-      const auto prefactor = -NondiagonalCew(from, to) / 2.0;
-      const auto amplratio = 0.0;
-      auto it = m_SU2rotatedspinampls.find(i);
-      if (it == m_SU2rotatedspinampls.end()) {
-        auto* ampl = CreateSU2RotatedAmplitude(i);
-        m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], ampl);
-        it = m_SU2rotatedspinampls.find(i);
-        ampl->Delete();
+       // only transverly polarized 
+      if(std::find(std::begin(spincombination),
+		   std::end(spincombination),2) == std::end(spincombination)){
+	// mixing between neutral gauge bosons: non-diagonal terms appear
+	const auto from = flav.Kfcode();
+	coeff -= NondiagonalCew(from, from) / 2.0;
+	const auto to = (from == kf_photon) ? kf_Z : kf_photon;
+	const auto prefactor = -NondiagonalCew(from, to) / 2.0;
+	const auto amplratio = 0.0;
+	auto it = m_SU2rotatedspinampls.find(i);
+	if (it == m_SU2rotatedspinampls.end()) {
+	  auto* ampl = CreateSU2RotatedAmplitude(i);
+	  m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], ampl);
+	  it = m_SU2rotatedspinampls.find(i);
+	  ampl->Delete();
+	}      
+	const auto rotated = it->second[0].Get(spincombination);
+	const auto born    = ampls.Get(spincombination);
+	coeff += (born!=0.)?(prefactor * rotated / born):0.0;
       }
-      coeff += prefactor * it->second[0].Get(spinidx) / ampls.Get(spinidx);
-    } else {
+      else continue;
+    }
+    else {
       // only diagonal terms appear
       coeff -= DiagonalCew(flav, spincombination[i]) / 2.0;
     }
   }
-  // TODO: multiply with L(s)
   return coeff;
 }
 
@@ -172,4 +190,53 @@ double Sudakov::NondiagonalCew(kf_code from, kf_code to) const
   if (from == kf_Z)
     return 2.0 * m_cw2/m_sw2;
   THROW(fatal_error, "Logic error");
+}
+
+std::vector<double> Sudakov::denners()
+{
+  const auto pname(m_proc.Name());
+  std::map<std::string, std::vector<double> > _procs;
+  
+  _procs["2_2__e-__e+__mu-__mu+"] = {-2.58,-4.96,-7.35};
+  _procs["2_2__e-__e+__u__ub"]    = {-1.86,-4.68,-4.25,-7.07};
+  _procs["2_2__e-__e+__d__db"]    = {-1.43,-4.68,-3.82,-7.07};
+  _procs["2_2__e-__e+__W+__W-"]   = {-7.35,-4.96,-12.6};
+  _procs["2_2__e-__e+__P__P"]     = {-1.29,-8.15};
+  _procs["2_2__e-__e+__Z__P"]     = {-1.29,-12.2};
+  _procs["2_2__e-__e+__Z__Z"]     = {-1.29,-16.2};
+
+  // check proc name is inside the few we have
+  size_t check_name(0);
+  for(std::map<std::string, std::vector<double> >::iterator it = _procs.begin();
+      it != _procs.end(); ++it){
+    if(it->first == pname) check_name = 1;
+  }
+  if(!check_name) THROW(not_implemented, "No test for proc: " + pname);
+ 
+  return _procs[pname];
+}
+
+bool Sudakov::test_coeff()
+{
+  /*
+    This simply grabs the process' name and check if it
+    finds the right coefficients in.
+   */
+  bool res(false); size_t count(0);
+
+  const auto denners_coeff = denners();
+  for(const auto cc : m_coeffs){
+    for(const auto dc : denners_coeff){
+      if(std::abs(cc.real()-dc) < 1.e-1){
+	msg_Debugging() << om::red 
+			<< "  Calculated coeff: " << cc.real() << "\t vs \t  Paper's : " << dc
+			<< "\n \t Test = " << (std::abs(cc.real()-dc) < 1.e-2)
+			<< om::reset << std::endl;
+	count += 1;
+	break;
+      }
+    }
+  }
+  if(count >= denners_coeff.size()) res = true;
+  return res;
 }

@@ -388,7 +388,6 @@ bool COMIX::Single_Process::GeneratePoint()
 double COMIX::Single_Process::Differential
 (const Cluster_Amplitude &ampl,int mode) 
 {
-  DEBUG_FUNC(Name());
   m_zero=false;
   if ((mode&128)==0) p_int->ColorIntegrator()->SetPoint(&ampl);
   return PHASIC::Process_Base::Differential(ampl,mode);
