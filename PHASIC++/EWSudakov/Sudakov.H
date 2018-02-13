@@ -37,7 +37,8 @@ namespace PHASIC {
 
     // check coefficients against the literature
     bool CheckCoeffs();
-    std::vector<double> ReferenceCoeffs();
+    using HelicityCoeffMap = std::map<std::vector<int>, double>;
+    const HelicityCoeffMap& ReferenceCoeffs();
   };
 }
 #endif

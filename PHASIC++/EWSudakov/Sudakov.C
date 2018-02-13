@@ -201,49 +201,54 @@ double Sudakov::NondiagonalCew(kf_code from, kf_code to) const
 
 bool Sudakov::CheckCoeffs()
 {
-  /*
-    This simply grabs the process' name and check if it
-    finds the right coefficients in.
-   */
-  bool res(false); size_t count(0);
-
-  const auto denners_coeff = ReferenceCoeffs();
-  for(const auto cc : m_coeffs){
-    for(const auto dc : denners_coeff){
-      if(std::abs(cc.real()-dc) < 1.e-1){
-	msg_Debugging() << om::red 
-			<< "  Calculated coeff: " << cc.real() << "\t vs \t  Paper's : " << dc
-			<< "\n \t Test = " << (std::abs(cc.real()-dc) < 1.e-2)
-			<< om::reset << std::endl;
-	count += 1;
-	break;
-      }
+  auto res = true;
+  const auto& refs = ReferenceCoeffs();
+  for (const auto& refkv : refs) {
+    const auto& helicities = refkv.first;
+    const auto idx = m_spinampls[0].GetNumber(helicities);
+    const auto coeff = m_coeffs[idx];
+    msg_Debugging() << om::red;
+    for (const auto& h : helicities)
+      msg_Debugging() << h << " ";
+    msg_Debugging()
+      << "coeff: " << coeff.real()
+      << "\t vs \t  reference value: " << refkv.second
+      << om::reset << std::endl;
+    if(std::abs(coeff.real() - refkv.second) > 1.e-2){
+      res = false;
     }
   }
-  if(count >= denners_coeff.size()) res = true;
   return res;
 }
 
-std::vector<double> Sudakov::ReferenceCoeffs()
+const Sudakov::HelicityCoeffMap& Sudakov::ReferenceCoeffs()
 {
-  const auto pname(m_proc.Name());
-  std::map<std::string, std::vector<double> > _procs;
-
-  _procs["2_2__e-__e+__mu-__mu+"] = {-2.58,-4.96,-7.35};
-  _procs["2_2__e-__e+__u__ub"]    = {-1.86,-4.68,-4.25,-7.07};
-  _procs["2_2__e-__e+__d__db"]    = {-1.43,-4.68,-3.82,-7.07};
-  _procs["2_2__e-__e+__W+__W-"]   = {-7.35,-4.96,-12.6};
-  _procs["2_2__e-__e+__P__P"]     = {-1.29,-8.15};
-  _procs["2_2__e-__e+__Z__P"]     = {-1.29,-12.2};
-  _procs["2_2__e-__e+__Z__Z"]     = {-1.29,-16.2};
+  static std::map<std::string, HelicityCoeffMap> coeffs;
+  if (coeffs.empty()) {
+    auto& map = coeffs["2_2__e-__e+__mu-__mu+"];
+    map[{0, 0, 0, 0}] = -2.58;
+    map[{1, 1, 0, 0}] = -4.96;
+    map[{0, 0, 1, 1}] = -4.96;
+    map[{1, 1, 1, 1}] = -7.35;
+    //coeffs["2_2__e-__e+__u__ub"]    = {-1.86,-4.68,-4.25,-7.07};
+    //coeffs["2_2__e-__e+__d__db"]    = {-1.43,-4.68,-3.82,-7.07};
+    //coeffs["2_2__e-__e+__W+__W-"]   = {-7.35,-4.96,-12.6};
+    //coeffs["2_2__e-__e+__P__P"]     = {-1.29,-8.15};
+    //coeffs["2_2__e-__e+__Z__P"]     = {-1.29,-12.2};
+    //coeffs["2_2__e-__e+__Z__Z"]     = {-1.29,-16.2};
+  }
 
   // check proc name is inside the few we have
+  const auto pname(m_proc.Name());
   size_t check_name(0);
-  for(std::map<std::string, std::vector<double> >::iterator it = _procs.begin();
-      it != _procs.end(); ++it){
-    if(it->first == pname) check_name = 1;
+  for(auto it = coeffs.begin(); it != coeffs.end(); ++it) {
+    if (it->first == pname) {
+      check_name = 1;
+      break;
+    }
   }
-  if(!check_name) THROW(not_implemented, "No test for proc: " + pname);
- 
-  return _procs[pname];
+  if (!check_name)
+    THROW(not_implemented, "No test for proc: " + pname);
+
+  return coeffs[pname];
 }
