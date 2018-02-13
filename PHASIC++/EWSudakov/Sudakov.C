@@ -203,8 +203,8 @@ bool Sudakov::CheckCoeffs()
 {
   auto res = true;
   const auto& refs = ReferenceCoeffs();
-  for (const auto& refkv : refs) {
-    const auto& helicities = refkv.first;
+  for (const auto& helrefpair : refs) {
+    const auto& helicities = helrefpair.first;
     const auto idx = m_spinampls[0].GetNumber(helicities);
     const auto coeff = m_coeffs[idx];
     msg_Debugging() << om::red;
@@ -212,9 +212,10 @@ bool Sudakov::CheckCoeffs()
       msg_Debugging() << h << " ";
     msg_Debugging()
       << "coeff: " << coeff.real()
-      << "\t vs \t  reference value: " << refkv.second
+      << "\t vs \t  reference value: " << helrefpair.second
       << om::reset << std::endl;
-    if(std::abs(coeff.real() - refkv.second) > 1.e-2){
+    const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
+    if (std::abs(coeff.real() - helrefpair.second) > prec) {
       res = false;
     }
   }
@@ -225,14 +226,26 @@ const Sudakov::HelicityCoeffMap& Sudakov::ReferenceCoeffs()
 {
   static std::map<std::string, HelicityCoeffMap> coeffs;
   if (coeffs.empty()) {
-    auto& map = coeffs["2_2__e-__e+__mu-__mu+"];
-    map[{0, 0, 0, 0}] = -2.58;
-    map[{1, 1, 0, 0}] = -4.96;
-    map[{0, 0, 1, 1}] = -4.96;
-    map[{1, 1, 1, 1}] = -7.35;
-    //coeffs["2_2__e-__e+__u__ub"]    = {-1.86,-4.68,-4.25,-7.07};
-    //coeffs["2_2__e-__e+__d__db"]    = {-1.43,-4.68,-3.82,-7.07};
-    //coeffs["2_2__e-__e+__W+__W-"]   = {-7.35,-4.96,-12.6};
+    auto& mapmm = coeffs["2_2__e-__e+__mu-__mu+"];
+    mapmm[{0, 0, 0, 0}] = -2.58;
+    mapmm[{1, 1, 0, 0}] = -4.96;
+    mapmm[{0, 0, 1, 1}] = -4.96;
+    mapmm[{1, 1, 1, 1}] = -7.35;
+    auto& mapuu = coeffs["2_2__e-__e+__u__ub"];
+    mapuu[{0, 0, 0, 0}] = -1.86;
+    mapuu[{1, 1, 0, 0}] = -4.25;
+    mapuu[{0, 0, 1, 1}] = -4.68;
+    mapuu[{1, 1, 1, 1}] = -7.07;
+    auto& mapdd = coeffs["2_2__e-__e+__d__db"];
+    mapdd[{0, 0, 0, 0}] = -1.43;
+    mapdd[{1, 1, 0, 0}] = -3.82;
+    mapdd[{0, 0, 1, 1}] = -4.68;
+    mapdd[{1, 1, 1, 1}] = -7.07;
+    auto& mapWW = coeffs["2_2__e-__e+__W+__W-"];
+    mapWW[{0, 0, 2, 2}] = -4.96;
+    mapWW[{1, 1, 2, 2}] = -7.35;
+    mapWW[{1, 1, 0, 1}] = -12.6;
+    mapWW[{1, 1, 1, 0}] = -12.6;
     //coeffs["2_2__e-__e+__P__P"]     = {-1.29,-8.15};
     //coeffs["2_2__e-__e+__Z__P"]     = {-1.29,-12.2};
     //coeffs["2_2__e-__e+__Z__Z"]     = {-1.29,-16.2};
