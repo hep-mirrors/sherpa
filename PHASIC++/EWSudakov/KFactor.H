@@ -13,7 +13,6 @@ namespace PHASIC {
     //MODEL::One_Running_AlphaS m_runas;
     MODEL::Running_AlphaQED m_runaqed;
     Sudakov m_ews;
-    // ATOOLS::Vec4D_Vector m_mom;
   public:
     Sudakov_KFactor(const KFactor_Setter_Arguments &args);
     double KFactor(const int mode=0);

@@ -34,9 +34,10 @@ namespace PHASIC {
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour& flav, int pol) const;
     double NondiagonalCew(kf_code from, kf_code to) const;  // only Z/\gamma
-    
-    std::vector<double>  denners();
-    bool test_coeff();
+
+    // check coefficients against the literature
+    bool CheckCoeffs();
+    std::vector<double> ReferenceCoeffs();
   };
 }
 #endif
