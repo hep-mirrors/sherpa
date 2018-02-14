@@ -125,14 +125,29 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
 	const auto to = (from == kf_photon) ? kf_Z : kf_photon;
 	const auto prefactor = -NondiagonalCew(from, to) / 2.0;
 	const auto amplratio = 0.0;
-	auto it = m_SU2rotatedspinampls.find(i);
-	if (it == m_SU2rotatedspinampls.end()) {
+	auto amplit = m_SU2rotatedspinampls.find(i);
+	auto permit = m_SU2rotatedflavourordering.find(i);
+	if (amplit == m_SU2rotatedspinampls.end()) {
+          // TODO: this should be moved to a higher level, also make sure that
+          // the spin amplitudes are re-calculated for each event
 	  auto* ampl = CreateSU2RotatedAmplitude(i);
+          msg_Debugging() << "rotated ampl after switching leg #" << i
+                          << ": " << *ampl << "\n";
 	  m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], ampl);
-	  it = m_SU2rotatedspinampls.find(i);
+	  amplit = m_SU2rotatedspinampls.find(i);
+          const auto changed_flav = ampl->Leg(i)->Flav();
+          Process_Base::SortFlavours(ampl); 
+          msg_Debugging() << "rotated ampl after sorting: " << *ampl << "\n";
+          m_SU2rotatedflavourordering[i] = NewOrdering(ampl);
+          msg_Debugging() << "resulting flav permutation: "
+                          << m_SU2rotatedflavourordering[i] << "\n";
+          permit = m_SU2rotatedflavourordering.find(i);
 	  ampl->Delete();
 	}
-	const auto rotated = it->second[0].Get(spincombination);
+        std::vector<int> rotatedspincombination;
+        for (const auto& idx : permit->second)
+          rotatedspincombination.push_back(spincombination[idx]);
+	const auto rotated = amplit->second[0].Get(rotatedspincombination);
         // TODO: check if we can just use the spinidx to get the unrotated
         // result
 	const auto unrotated = ampls.Get(spincombination);
@@ -147,6 +162,18 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
     }
   }
   return coeff;
+}
+
+std::vector<size_t> Sudakov::NewOrdering(Cluster_Amplitude* changed) const
+{
+  std::vector<size_t> v;
+  for (const auto* leg : changed->Legs()) {
+    if (IdCount(leg->Id()) > 1)
+      // TODO: handle multi-ID legs
+      THROW(not_implemented, "Clustering not supported yet.");
+    v.push_back(ID(leg->Id()).front());
+  }
+  return v;
 }
 
 double Sudakov::DiagonalCew(const Flavour& flav, int pol) const
