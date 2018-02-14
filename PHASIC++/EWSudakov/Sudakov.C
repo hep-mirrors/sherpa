@@ -85,7 +85,7 @@ void Sudakov::UpdateAmplitude(const ATOOLS::Vec4D_Vector& mom)
   p_ampl->SetProcs(m_proc.AllProcs());
   // TODO: this weirdly makes a difference... check
   for(int i(0); i < m_proc.NIn()+m_proc.NOut();++i)
-    p_ampl->Leg(i)->SetMom(mom[i]);//i<m_proc.NIn()?-mom[i]:mom[i]);
+    p_ampl->Leg(i)->SetMom(i<m_proc.NIn()?-mom[i]:mom[i]);
 }
 
 void Sudakov::CalculateSpinAmplitudeCoeffs()
@@ -120,10 +120,11 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
           spincombination.cbegin(), spincombination.cend(), 2);
       if(it == spincombination.cend()){
 	// mixing between neutral gauge bosons: non-diagonal terms appear
+        //coeff = 0.0;
 	const auto from = flav.Kfcode();
 	coeff -= NondiagonalCew(from, from) / 2.0;
 	const auto to = (from == kf_photon) ? kf_Z : kf_photon;
-	const auto prefactor = -NondiagonalCew(from, to) / 2.0;
+	const auto prefactor = -NondiagonalCew(to, from) / 2.0;
 	const auto amplratio = 0.0;
 	auto amplit = m_SU2rotatedspinampls.find(i);
 	auto permit = m_SU2rotatedflavourordering.find(i);
@@ -154,7 +155,10 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
         // unrotated is guaranteed to be non-zero by virtue of caller logic in
         // CalculateSpinAmplitudeCoeffs
         assert(unrotated != 0.0);
-	coeff += prefactor * rotated / unrotated;
+        msg_Debugging() << "coeff was: " << coeff << ", ";
+	coeff -= prefactor * rotated / unrotated;
+        msg_Debugging() << spincombination << ", ME ratio: " << rotated / unrotated;
+        msg_Debugging() << "coeff is now : " << coeff << "\n";
       }
     } else {
       // only diagonal terms appear
@@ -238,7 +242,7 @@ bool Sudakov::CheckCoeffs()
     for (const auto& h : helicities)
       msg_Debugging() << h << " ";
     msg_Debugging()
-      << "coeff: " << coeff.real()
+      << "coeff: " << coeff
       << "\t vs \t  reference value: " << helrefpair.second
       << om::reset << std::endl;
     const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
