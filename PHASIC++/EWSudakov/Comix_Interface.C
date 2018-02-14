@@ -22,7 +22,7 @@ Comix_Interface::Comix_Interface(Process_Base& proc,
   m_proc{ proc },
   p_ampl{ ampl }
 {
-  // m_proc.FillProcessMap(&m_apmap);
+  // TODO: Refactor
   InitializeSU2RotatedProcesses();
   InitializeSU2RotatedProcesses(1);
 }

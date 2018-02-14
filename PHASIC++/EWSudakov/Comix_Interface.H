@@ -14,7 +14,7 @@ namespace PHASIC {
     void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                             ATOOLS::Cluster_Amplitude*) const;
   private:
-    Process_Base& m_proc;
+    const Process_Base& m_proc;
     ATOOLS::Cluster_Amplitude* p_ampl;
     NLOTypeStringProcessMap_Map m_apmap;
   };
