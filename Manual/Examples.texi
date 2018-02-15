@@ -84,7 +84,7 @@ of the main features of these examples.
 
 In this section, examples for single-top production in three different channels
 are described.  For the channel definitions and a validation of these setups,
-see @mycite{Bothmann:2017jfv}.
+see @mycite{Bothmann2017jfv}.
 
 @menu
 * t-channel single-top production::
