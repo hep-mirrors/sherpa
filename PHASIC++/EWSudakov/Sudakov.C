@@ -21,7 +21,7 @@ using namespace ATOOLS;
 Sudakov::Sudakov(Process_Base& proc):
   m_proc{ proc },
   m_ampls{ proc },
-  m_ci{ m_proc, &m_ampls.Unrotated() },
+  m_comixinterface{ m_proc, m_ampls },
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
@@ -36,7 +36,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_ampls.UpdateMomenta(mom);
   m_SU2rotatedspinampls.clear();
   m_spinampls.clear();
-  m_ci.FillSpinAmplitudes(m_spinampls, &m_ampls.Unrotated());
+  m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
   if (m_check && !CheckCoeffs()) {
     THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
@@ -76,15 +76,14 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
       // terms appear, cf. e.g. eq. (6.30)
       const auto from = flav.Kfcode();
       const auto to = (from == kf_photon) ? kf_Z : kf_photon;
-      const auto prefactor = -NondiagonalCew(to, from) / 2.0;
+      const auto prefactor = -NondiagonalCew() / 2.0;
       const auto amplratio = 0.0;
       auto amplit = m_SU2rotatedspinampls.find(i);
       auto& legpermutation = m_ampls.LegPermutation(i);
       if (amplit == m_SU2rotatedspinampls.end()) {
-        // TODO: this should be moved to a higher level, also make sure that
-        // the spin amplitudes are re-calculated for each event
         auto& rotatedampl(m_ampls.Rotated(i));
-        m_ci.FillSpinAmplitudes(m_SU2rotatedspinampls[i], &rotatedampl);
+        m_comixinterface.FillSpinAmplitudes(m_SU2rotatedspinampls[i],
+                                            rotatedampl);
         amplit = m_SU2rotatedspinampls.find(i);
       }
       std::vector<int> rotatedspincombination;
@@ -95,7 +94,7 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
       assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
       // TODO: minus sign not understood here!
       coeff -= prefactor * rotated / unrotated;
-    } 
+    }
   }
   return coeff;
 }
@@ -133,21 +132,21 @@ double Sudakov::DiagonalCew(const Flavour& flav, int pol) const
     else
       return 2/m_sw2;
   } else if (flav.IsBoson() && flav.Charge() == 0) {
-    if (pol == 2)
-      // TODO: confirm that this is true even for photons
+    if (pol == 2) {
+      assert(!flav.IsPhoton());
       return CewLefthandedLepton;
-    else if (flav.IsPhoton())
+    } else if (flav.IsPhoton()) {
       return 2.0;
-    else
+    } else {
       return 2.0 * m_cw2/m_sw2;
+    }
   } else {
     THROW(not_implemented, "Missing implementation");
   }
 }
 
-double Sudakov::NondiagonalCew(kf_code from, kf_code to) const
+double Sudakov::NondiagonalCew() const
 {
-  assert((from == kf_Z && to == kf_photon) || (from == kf_photon && to == kf_Z));
   return -2.0 * m_cw/m_sw;
 }
 

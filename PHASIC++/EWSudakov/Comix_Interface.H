@@ -7,16 +7,19 @@
 
 namespace PHASIC {
 
+  class EWSudakov_Amplitudes;
+
   class Comix_Interface {
+
   public:
-    Comix_Interface(Process_Base&, ATOOLS::Cluster_Amplitude*);
-    void InitializeSU2RotatedProcesses(const size_t mode=0);
+    Comix_Interface(Process_Base&, EWSudakov_Amplitudes&);
+    void InitializeProcesses(EWSudakov_Amplitudes&);
     void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
-                            ATOOLS::Cluster_Amplitude*) const;
+                            ATOOLS::Cluster_Amplitude&) const;
   private:
     const Process_Base& m_proc;
-    ATOOLS::Cluster_Amplitude* p_ampl;
     NLOTypeStringProcessMap_Map m_apmap;
+
   };
 } 
 #endif

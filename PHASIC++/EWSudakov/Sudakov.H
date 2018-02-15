@@ -21,26 +21,24 @@ namespace PHASIC {
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour& flav, int pol) const;
-    double NondiagonalCew(kf_code from, kf_code to) const;  // only Z/\gamma
+    double NondiagonalCew() const;  // only for neutral gauge bosons, eq. (B.25)
 
     // check coefficients against the literature
-    // TODO: move checking into separate class
     bool CheckCoeffs();
     using HelicityCoeffMap = std::map<std::vector<int>, double>;
     const HelicityCoeffMap& ReferenceCoeffs();
 
     Process_Base& m_proc;
     EWSudakov_Amplitudes m_ampls;
-    const Comix_Interface m_ci;
+    const Comix_Interface m_comixinterface;
+
     const double m_sw2, m_cw2, m_sw, m_cw;
     const size_t m_check;
 
     // intermediate results
     mutable std::vector<Complex> m_coeffs;
-
-    // TODO: migrate into EWSudakov_Amplitudes class (and have Reset function)
-    std::map<size_t, std::vector<Spin_Amplitudes>> m_SU2rotatedspinampls;
-    std::vector<Spin_Amplitudes> m_spinampls;
+    mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_SU2rotatedspinampls;
+    mutable std::vector<Spin_Amplitudes> m_spinampls;
   };
 }
 

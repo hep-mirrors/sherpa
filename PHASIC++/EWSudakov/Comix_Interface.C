@@ -1,5 +1,6 @@
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 
+#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -18,61 +19,38 @@ using namespace COMIX;
 using namespace ATOOLS;
 
 Comix_Interface::Comix_Interface(Process_Base& proc,
-                                 ATOOLS::Cluster_Amplitude* ampl) :
-  m_proc{ proc },
-  p_ampl{ ampl }
+                                 EWSudakov_Amplitudes& ampls):
+  m_proc{ proc }
 {
-  // TODO: Refactor
-  InitializeSU2RotatedProcesses();
-  InitializeSU2RotatedProcesses(1);
+  InitializeProcesses(ampls);
 }
 
 void Comix_Interface::FillSpinAmplitudes(
     std::vector<Spin_Amplitudes>& spinampls,
-    ATOOLS::Cluster_Amplitude* ampl) const
+    ATOOLS::Cluster_Amplitude& ampl) const
 {
   const auto loprocmapit{ m_apmap.find(nlo_type::lo) };
   if (loprocmapit == m_apmap.end())
     THROW(fatal_error, "LO entry in process map not found");
-  Cluster_Amplitude* campl(ampl->Copy());
+  Cluster_Amplitude* campl(ampl.Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
-  Process_Base::SortFlavours(campl); 
   std::string pname(Process_Base::GenerateName(campl));
-  StringProcess_Map::const_iterator
-    pit(loprocmapit->second->find(pname));
-  if (pit->second==NULL) 
+  auto pit = loprocmapit->second->find(pname);
+  if (pit->second == NULL)
     THROW(fatal_error, "Process not found");
-    
-  pit->second->Differential(*campl,2|4|128);
+  pit->second->Differential(*campl, 2|4|128);
   campl->Delete();
-  std::vector<std::vector<Complex> > cols;
-  pit->second->FillAmplitudes(spinampls,cols);
+  std::vector<std::vector<Complex>> cols;
+  pit->second->FillAmplitudes(spinampls, cols);
 }
 
-void Comix_Interface::InitializeSU2RotatedProcesses(const size_t mode)
+void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
-  for (size_t i{ 0 }; i < p_ampl->Legs().size(); ++i) {
-    auto* ampl = p_ampl->Copy();
-    if(mode == 1 ) { // rotate 
-      auto* leg = ampl->Leg(i);
-      auto flav = leg->Flav();
-      Flavour newflav;
-      // TODO: generalise to other flavours (preferredly, add an WeakIsoPartner
-      // function to the Flavour class
-      if (flav.IsPhoton()) {
-	newflav = Flavour{kf_Z};
-      } else if (flav.Kfcode() == kf_Z) {
-	newflav = Flavour{kf_photon};
-      } else {
-	ampl->Delete();
-	continue;
-      }
-      leg->SetFlav(newflav);
-    }
-    PHASIC::Process_Base::SortFlavours(ampl);
-    std::string name(PHASIC::Process_Base::GenerateName(ampl)+"__Sudakov");
+  for (auto& amplkv : ampls) {
+    const auto& ampl = amplkv.second;
+    std::string name(PHASIC::Process_Base::GenerateName(ampl.get())+"__Sudakov");
     Process_Info pi;
     pi.m_addname="__Sudakov";
     pi.m_megenerator="Comix";
@@ -99,7 +77,5 @@ void Comix_Interface::InitializeSU2RotatedProcesses(const size_t mode)
     proc->SetKFactor(KFactor_Setter_Arguments("None"));
     proc->Get<COMIX::Process_Base>()->Tests();
     proc->FillProcessMap(&m_apmap);
-    ampl->Delete();
-    ampl = NULL;
   }
 }
