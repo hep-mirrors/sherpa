@@ -1,6 +1,7 @@
 #include "PHASIC++/EWSudakov/Sudakov.H"
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
 
+#include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "PHASIC++/EWSudakov/Coefficient_Checker.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -26,7 +27,8 @@ Sudakov::Sudakov(Process_Base& proc):
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
   m_cw{ sqrt(m_cw2) },
-  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) }
+  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) },
+  m_coeffs{ {"L", {}}, {"lZ", {}} }
 {
 }
 
@@ -38,9 +40,12 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_spinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
-  if (m_check && !CheckCoeffs()) {
-    THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
-                       " the results in hep-ph/0010201.");
+  if (m_check) {
+    Coefficient_Checker checker(m_proc.Name());
+    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
+      THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
+                         " the results in hep-ph/0010201.");
+    }
   }
   // TODO: dress with logs, calculate factor for squared amplitude
   return 1.0;
@@ -50,23 +55,29 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
 {
   const auto& ampls = m_spinampls[0];
   const auto spinamplnum = ampls.size();
-  m_coeffs = std::vector<Complex>(spinamplnum, 0.0);
+  for (auto& kv : m_coeffs) {
+    kv.second.clear();
+    kv.second.resize(spinamplnum);
+  }
   for (size_t i{ 0 }; i < spinamplnum; ++i) {
     const auto value = ampls.Get(i);
+    const auto spincombination = ampls.GetSpinCombination(i);
+    if (spincombination.size() != m_ampls.NumberOfLegs())
+      THROW(fatal_error, "Inconsistent state");
     if (value == 0.0)
       continue;
-    m_coeffs[i] = DoubleLogCoeff(m_spinampls[0], i);
-    // TODO: add other coefficients
+    m_coeffs["L"][i] = LsCoeff(value, spincombination, i);
+    m_coeffs["lZ"][i] = lsZCoeff(value, spincombination, i);
+    // TODO: add other coefficients (remember to init m_coeffs in ctor)
   }
-  for (const auto& coeff : m_coeffs)
+  for (const auto& coeff : m_coeffs["L"])
     DEBUG_VAR(coeff);
 }
 
-Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
+Complex Sudakov::LsCoeff(Complex amplvalue,
+                         std::vector<int> spincombination,
+                         size_t spinidx)
 {
-  const auto spincombination = m_spinampls[0].GetSpinCombination(spinidx);
-  if (spincombination.size() != m_ampls.NumberOfLegs())
-    THROW(fatal_error, "Inconsistent state");
   Complex coeff{ 0.0 };
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
@@ -90,11 +101,23 @@ Complex Sudakov::DoubleLogCoeff(const Spin_Amplitudes& ampls, size_t spinidx)
       for (const auto& idx : legpermutation)
         rotatedspincombination.push_back(spincombination[idx]);
       const auto rotated = amplit->second[0].Get(rotatedspincombination);
-      const auto unrotated = ampls.Get(spinidx);
+      const auto unrotated = amplvalue;
       assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
       // TODO: minus sign not understood here!
       coeff -= prefactor * rotated / unrotated;
     }
+  }
+  return coeff;
+}
+
+Complex Sudakov::lsZCoeff(Complex amplvalue,
+                          std::vector<int> spincombination,
+                          size_t spinidx)
+{
+  Complex coeff{ 0.0 };
+  for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+    const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
+    coeff += IZ2(flav, spincombination[i]) * std::log(1.0/m_cw2);
   }
   return coeff;
 }
@@ -150,81 +173,46 @@ double Sudakov::NondiagonalCew() const
   return -2.0 * m_cw/m_sw;
 }
 
-bool Sudakov::CheckCoeffs()
+double Sudakov::IZ2(const Flavour& flav, int pol) const
 {
-  auto res = true;
-  const auto& refs = ReferenceCoeffs();
-  for (const auto& helrefpair : refs) {
-    const auto& helicities = helrefpair.first;
-    const auto idx = m_spinampls[0].GetNumber(helicities);
-    const auto coeff = m_coeffs[idx];
-    msg_Debugging() << om::red;
-    for (const auto& h : helicities)
-      msg_Debugging() << h << " ";
-    msg_Debugging()
-      << "coeff: " << coeff
-      << "\t vs \t  reference value: " << helrefpair.second
-      << om::reset << std::endl;
-    const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
-    if (IsBad(coeff.real()) || std::abs(coeff.real() - helrefpair.second) > prec) {
-      res = false;
+  static auto IZ2LefthandedLepton = std::pow(m_cw2 - m_sw2, 2) / (4*m_sw2*m_cw2);
+  static auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
+  if (flav.IsLepton()) {  // cf. eq. (B.16)
+    if (pol == 0) {
+      if (flav.IsUptype())
+        THROW(fatal_error, "Right-handed neutrino are not supported");
+      return m_sw2/m_cw2;
+    } else {
+      if (flav.IsUptype())
+        return IZ2Neutrino;
+      else
+        return IZ2LefthandedLepton;
     }
-  }
-  return res;
-}
-
-const Sudakov::HelicityCoeffMap& Sudakov::ReferenceCoeffs()
-{
-  static std::map<std::string, HelicityCoeffMap> coeffs;
-  if (coeffs.empty()) {
-    auto& mapmm = coeffs["2_2__e-__e+__mu-__mu+"];
-    mapmm[{0, 0, 0, 0}] = -2.58;
-    mapmm[{1, 1, 0, 0}] = -4.96;
-    mapmm[{0, 0, 1, 1}] = -4.96;
-    mapmm[{1, 1, 1, 1}] = -7.35;
-    auto& mapuu = coeffs["2_2__e-__e+__u__ub"];
-    mapuu[{0, 0, 0, 0}] = -1.86;
-    mapuu[{1, 1, 0, 0}] = -4.25;
-    mapuu[{0, 0, 1, 1}] = -4.68;
-    mapuu[{1, 1, 1, 1}] = -7.07;
-    auto& mapdd = coeffs["2_2__e-__e+__d__db"];
-    mapdd[{0, 0, 0, 0}] = -1.43;
-    mapdd[{1, 1, 0, 0}] = -3.82;
-    mapdd[{0, 0, 1, 1}] = -4.68;
-    mapdd[{1, 1, 1, 1}] = -7.07;
-    auto& mapWW = coeffs["2_2__e-__e+__W+__W-"];
-    mapWW[{0, 0, 2, 2}] = -4.96;
-    mapWW[{1, 1, 2, 2}] = -7.35;
-    mapWW[{1, 1, 0, 1}] = -12.6;
-    mapWW[{1, 1, 1, 0}] = -12.6;
-    auto& mapPP = coeffs["2_2__e-__e+__P__P"];
-    mapPP[{0, 0, 0, 1}] = -1.29;
-    mapPP[{0, 0, 1, 0}] = -1.29;
-    mapPP[{1, 1, 0, 1}] = -8.15;
-    mapPP[{1, 1, 1, 0}] = -8.15;
-    auto& mapZP = coeffs["2_2__e-__e+__Z__P"];
-    mapZP[{0, 0, 0, 1}] = -1.29;
-    mapZP[{0, 0, 1, 0}] = -1.29;
-    mapZP[{1, 1, 0, 1}] = -12.2;
-    mapZP[{1, 1, 1, 0}] = -12.2;
-    auto& mapZZ = coeffs["2_2__e-__e+__Z__Z"];
-    mapZZ[{0, 0, 0, 1}] = -1.29;
-    mapZZ[{0, 0, 1, 0}] = -1.29;
-    mapZZ[{1, 1, 0, 1}] = -16.2;
-    mapZZ[{1, 1, 1, 0}] = -16.2;
-  }
-
-  // check proc name is inside the few we have
-  const auto pname(m_proc.Name());
-  size_t check_name(0);
-  for(auto it = coeffs.begin(); it != coeffs.end(); ++it) {
-    if (it->first == pname) {
-      check_name = 1;
-      break;
+  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
+    if (pol == 0) {
+      if (flav.IsUptype())
+        return 4*m_sw2 / (9*m_cw2);
+      else
+        return 1*m_sw2 / (9*m_cw2);
+    } else {
+      if (flav.IsUptype())
+        return std::pow(3*m_cw2 - m_sw2, 2) / (36*m_sw2*m_cw2);
+      else
+        return std::pow(3*m_cw2 + m_sw2, 2) / (36*m_sw2*m_cw2);
     }
+  } else if (flav.Kfcode() == kf_Wplus) {
+    if (pol == 2)
+      return IZ2LefthandedLepton;
+    else
+      return m_cw2/m_sw2;
+  } else if (flav.IsBoson() && flav.Charge() == 0) {
+    if (pol == 2) {
+      assert(!flav.IsPhoton());
+      return IZ2Neutrino;
+    } else {
+      return 0.0;
+    }
+  } else {
+    THROW(not_implemented, "Missing implementation");
   }
-  if (!check_name)
-    THROW(not_implemented, "No test for proc: " + pname);
-
-  return coeffs[pname];
 }
