@@ -7,7 +7,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-EWSudakov_Amplitudes::EWSudakov_Amplitudes(Process_Base& proc):
+EWSudakov_Amplitudes::EWSudakov_Amplitudes(Process_Base* proc):
   ampls{ CreateAmplitudes(proc) },
   legpermutations{ CalculateLegPermutations(ampls) }
 {
@@ -40,7 +40,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
   }
 }
 
-std::map<int, Cluster_Amplitude_UP> EWSudakov_Amplitudes::CreateAmplitudes(Process_Base& proc)
+std::map<int, Cluster_Amplitude_UP> EWSudakov_Amplitudes::CreateAmplitudes(Process_Base* proc)
 {
   std::map<int, Cluster_Amplitude_UP> ampls;
   auto itbool = ampls.insert(std::make_pair(-1, CreateAmplitude(proc)));
@@ -56,18 +56,18 @@ std::map<int, Cluster_Amplitude_UP> EWSudakov_Amplitudes::CreateAmplitudes(Proce
   return ampls;
 }
 
-Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base& proc)
+Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base* proc)
 {
   auto ampl = MakeClusterAmpl();
-  ampl->SetNIn(proc.NIn());
-  ampl->SetOrderQCD(proc.MaxOrder(0));
-  for (size_t i(1);i<proc.MaxOrders().size();++i)
-    ampl->SetOrderEW(ampl->OrderEW()+proc.MaxOrder(i));
-  for(int i(0);i<proc.NIn()+proc.NOut();++i)
-    if (i<proc.NIn()) ampl->CreateLeg(Vec4D(),proc.Flavours()[i].Bar());
-    else ampl->CreateLeg(Vec4D(),proc.Flavours()[i]);
-  ampl->SetProc(&proc);
-  ampl->SetProcs(proc.AllProcs());
+  ampl->SetNIn(proc->NIn());
+  ampl->SetOrderQCD(proc->MaxOrder(0));
+  for (size_t i(1);i<proc->MaxOrders().size();++i)
+    ampl->SetOrderEW(ampl->OrderEW()+proc->MaxOrder(i));
+  for(int i(0);i<proc->NIn()+proc->NOut();++i)
+    if (i<proc->NIn()) ampl->CreateLeg(Vec4D(),proc->Flavours()[i].Bar());
+    else ampl->CreateLeg(Vec4D(),proc->Flavours()[i]);
+  ampl->SetProc(proc);
+  ampl->SetProcs(proc->AllProcs());
   return ampl;
 }
 

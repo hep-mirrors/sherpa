@@ -23,7 +23,7 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args),
   // m_runas{ p_proc->Integrator()->ISR()->PDF(0) },
   m_runaqed{ 1./137.03599976 },
-  m_ews{ *p_proc }
+  m_ews{ p_proc }
 { }
 
 double Sudakov_KFactor::KFactor(const int mode)

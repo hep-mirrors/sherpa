@@ -3,6 +3,8 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
+#include <memory>
+
 // TODO: Migrate this to Cluster_Amplitude
 namespace ATOOLS {
   auto delAmpl = [](Cluster_Amplitude* ampl) { ampl->Delete(); };
@@ -34,7 +36,7 @@ namespace PHASIC {
 
   public:
 
-    EWSudakov_Amplitudes(Process_Base&);
+    EWSudakov_Amplitudes(Process_Base*);
 
     ATOOLS::Cluster_Amplitude& Unrotated() noexcept { return *ampls.find(-1)->second; }
     ATOOLS::Cluster_Amplitude& Rotated(size_t legindex);
@@ -52,8 +54,8 @@ namespace PHASIC {
   private:
 
     // helper methods for the construction
-    static std::map<int, ATOOLS::Cluster_Amplitude_UP> CreateAmplitudes(Process_Base&);
-    static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base&);
+    static std::map<int, ATOOLS::Cluster_Amplitude_UP> CreateAmplitudes(Process_Base*);
+    static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP CreateSU2RotatedAmplitude(
         const ATOOLS::Cluster_Amplitude_UP&, size_t legindex);
     static std::map<size_t, std::vector<size_t>> CalculateLegPermutations(

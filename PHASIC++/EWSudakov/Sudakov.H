@@ -9,7 +9,7 @@
 namespace PHASIC {
   class Sudakov {
   public:
-    Sudakov(Process_Base&);
+    Sudakov(Process_Base*);
     double EWSudakov(const ATOOLS::Vec4D_Vector& mom);
   private:
 
@@ -31,7 +31,7 @@ namespace PHASIC {
     double NondiagonalCew() const;  // only for neutral gauge bosons, eq. (B.25)
     double IZ2(const Flavour&, int pol) const;
 
-    Process_Base& m_proc;
+    Process_Base* p_proc;
     EWSudakov_Amplitudes m_ampls;
     const Comix_Interface m_comixinterface;
 

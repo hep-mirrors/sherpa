@@ -19,10 +19,10 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-Sudakov::Sudakov(Process_Base& proc):
-  m_proc{ proc },
-  m_ampls{ proc },
-  m_comixinterface{ m_proc, m_ampls },
+Sudakov::Sudakov(Process_Base* proc):
+  p_proc{ proc },
+  m_ampls{ p_proc },
+  m_comixinterface{ p_proc, m_ampls },
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
   m_sw{ sqrt(m_sw2) },
@@ -41,7 +41,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
   if (m_check) {
-    Coefficient_Checker checker(m_proc.Name());
+    Coefficient_Checker checker(p_proc->Name());
     if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
       THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
                          " the results in hep-ph/0010201.");

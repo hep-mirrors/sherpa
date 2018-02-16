@@ -12,12 +12,12 @@ namespace PHASIC {
   class Comix_Interface {
 
   public:
-    Comix_Interface(Process_Base&, EWSudakov_Amplitudes&);
+    Comix_Interface(Process_Base*, EWSudakov_Amplitudes&);
     void InitializeProcesses(EWSudakov_Amplitudes&);
     void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                             ATOOLS::Cluster_Amplitude&) const;
   private:
-    const Process_Base& m_proc;
+    const Process_Base* p_proc;
     NLOTypeStringProcessMap_Map m_apmap;
 
   };

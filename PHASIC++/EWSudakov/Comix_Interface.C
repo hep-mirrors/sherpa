@@ -18,9 +18,9 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-Comix_Interface::Comix_Interface(Process_Base& proc,
+Comix_Interface::Comix_Interface(Process_Base* proc,
                                  EWSudakov_Amplitudes& ampls):
-  m_proc{ proc }
+  p_proc{ proc }
 {
   InitializeProcesses(ampls);
 }
@@ -29,7 +29,7 @@ void Comix_Interface::FillSpinAmplitudes(
     std::vector<Spin_Amplitudes>& spinampls,
     ATOOLS::Cluster_Amplitude& ampl) const
 {
-  const auto loprocmapit{ m_apmap.find(nlo_type::lo) };
+  const auto loprocmapit = m_apmap.find(nlo_type::lo);
   if (loprocmapit == m_apmap.end())
     THROW(fatal_error, "LO entry in process map not found");
   Cluster_Amplitude* campl(ampl.Copy());
@@ -64,10 +64,10 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
       if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
       pi.m_fi.m_ps.push_back(Subprocess_Info(fl,"",""));
     }
-    pi.m_maxcpl=m_proc.Info().m_maxcpl;
-    pi.m_mincpl=m_proc.Info().m_mincpl;
+    pi.m_maxcpl=p_proc->Info().m_maxcpl;
+    pi.m_mincpl=p_proc->Info().m_mincpl;
     PHASIC::Process_Base *proc=
-      m_proc.Generator()->Generators()->InitializeProcess(pi,false);
+      p_proc->Generator()->Generators()->InitializeProcess(pi,false);
     if (proc==NULL) THROW(fatal_error,"Invalid process");
     Selector_Key skey(NULL,NULL,true);
     proc->SetSelector(skey);
