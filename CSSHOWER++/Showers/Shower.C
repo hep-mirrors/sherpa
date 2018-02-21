@@ -22,7 +22,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"),0);
+  int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"));
   double k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   double k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
