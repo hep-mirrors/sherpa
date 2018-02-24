@@ -431,13 +431,16 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
       double newJ;
       switch (m_type) {
         case cstp::II:
-          newJ = Selected()->Lorentz()->JII(m_z, m_y, m_x, lastscale, NULL);
+          newJ = Selected()->Lorentz()->JII(
+              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::IF:
-          newJ = Selected()->Lorentz()->JIF(m_z, m_y, m_x, lastscale, NULL);
+          newJ = Selected()->Lorentz()->JIF(
+              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::FI:
-          newJ = Selected()->Lorentz()->JFI(m_y, m_x, lastscale, NULL);
+          newJ = Selected()->Lorentz()->JFI(
+              m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
           break;
         case cstp::FF:
         case cstp::none:
@@ -465,7 +468,8 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
   if (m_reweightalphas) {
     if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
       const double lastcpl(Selected()->Coupling()->Last());
-      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(varparams->p_alphas);
+      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
+          varparams->p_alphas, varparams->m_muR2fac);
       double newcpl(Selected()->Coupling()->Coupling(lastscale, 0, NULL));
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
       Selected()->Coupling()->SetLast(lastcpl); // reset last coupling

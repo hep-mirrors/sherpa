@@ -144,6 +144,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     bool skipsfirstampl, const double &Q2,
     const double &muf2fac,
     const double &mur2fac,
+    const double &showermuf2fac,
     MODEL::One_Running_AlphaS * as,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
@@ -156,7 +157,9 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
     THROW(not_implemented, "More than two incoming particles.");
   }
   Cluster_Sequence_Info csi;
-  AddISR(csi, ampls, skipsfirstampl, Q2, muf2fac, mur2fac, as, nominalcsi);
+  AddISR(csi, ampls, skipsfirstampl,
+         Q2, muf2fac, mur2fac, showermuf2fac, as,
+         nominalcsi);
   AddBeam(csi, Q2);
   return csi;
 }
@@ -165,6 +168,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::ClusterAmplitude_Vector &ampls,
             bool skipsfirstampl, const double &Q2,
             const double &muf2fac, const double &mur2fac,
+            const double &showermuf2fac,
             MODEL::One_Running_AlphaS * as,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
@@ -206,6 +210,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
       // add subsequent splittings
       bool addedfirstsplitting(false);
       double currentQ2(Q2);
+      double currentscalefactor(1.0);
       double pdfnum(pdfext), pdfden(pdfext);
       for (; ampl; ampl = ampl->Next()) {
         // skip decays, equal scales, unordered configs,
@@ -232,8 +237,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 			 f1, f2);
 
         // skip equal scales
-        if (IsEqual(currentQ2, ampl->Next() ? ampl->KT2() : Q2)) {
-          msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2
+        if (IsEqual(currentQ2 / currentscalefactor, ampl->Next() ? showermuf2fac * ampl->KT2() : Q2)) {
+          msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2 / currentscalefactor
                          <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q2)
                          <<std::endl;
           if (ampl->Next() == NULL) {
@@ -245,16 +250,18 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         }
 
         // skip unordered configuration
-	if (addedfirstsplitting && currentQ2 > ampl->KT2()) {
+	if (addedfirstsplitting && (currentQ2 / currentscalefactor > ampl->KT2())) {
 	  msg_Debugging()<<"Skip. Unordered history "<<
-	    sqrt(currentQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
+	    sqrt(currentQ2 / currentscalefactor)<<" > "<<sqrt(ampl->KT2())<<"\n";
 	  currentQ2 = sqrt(std::numeric_limits<double>::max());
 	  continue;
 	}
 
         // skip when a scale is below a (quark) mass threshold
-	if (currentQ2 < sqr(2.0 * f1.Mass(true)) || currentQ2 < sqr(2.0 * f2.Mass(true))) {
-	  msg_Debugging()<<"Skip. Quarks below threshold: t="<<currentQ2
+	if (currentQ2 / currentscalefactor < sqr(2.0 * f1.Mass(true))
+            || currentQ2 / currentscalefactor < sqr(2.0 * f2.Mass(true))) {
+	  msg_Debugging()<<"Skip. Quarks below threshold: t="
+                         <<currentQ2 / currentscalefactor
 			 <<" vs. "<<sqr(2.0*f1.Mass(true))
 			 <<" / "<<sqr(2.0*f2.Mass(true))<<std::endl;
 	  continue;
@@ -277,7 +284,13 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         // because we might be reweighting and Q2 could have been multiplied
         // by a scaling factor, whereas ampl->MuF2 would not reflect this)
 	double lastQ2=currentQ2;
-	currentQ2 = (ampl->Next() == NULL) ? Q2 : ampl->KT2();
+        if (ampl->Next() == NULL) {
+          currentQ2 = Q2;
+          currentscalefactor = 1.0;
+        } else {
+          currentQ2 = showermuf2fac * ampl->KT2();
+          currentscalefactor = showermuf2fac;
+        }
 
 	// skip when a scale is below a (quark) mass threshold, new scale
         if (currentQ2 < sqr(2.0 * f1.Mass(true)) || currentQ2 < sqr(2.0 * f2.Mass(true))) {
@@ -720,6 +733,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   ATOOLS::Cluster_Sequence_Info csi(
       ClusterSequenceInfo(info.m_ampls, info.m_skipsfirstampl,
                           Q2, varparams->m_muF2fac, varparams->m_muR2fac,
+                          varparams->m_showermuF2fac,
                           varparams->p_alphas,
                           nominalcsi));
 

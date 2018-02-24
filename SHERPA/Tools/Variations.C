@@ -31,9 +31,6 @@ Variations::Variations(Data_Reader * const reader)
   // read settings that are relevant for parsing the prompted variations
   m_reweightsplittingalphasscales = reader->GetValue<int>("REWEIGHT_SPLITTING_ALPHAS_SCALES", 0);
   m_reweightsplittingpdfsscales = reader->GetValue<int>("REWEIGHT_SPLITTING_PDF_SCALES", 0);
-  if (m_reweightsplittingpdfsscales) {
-    THROW(not_implemented, "PDF scale factors in shower splittings is not implemented yet.");
-  }
 
   InitialiseParametersVector(reader);
 
@@ -204,6 +201,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
   const double muR2fac(ToType<double>(stringparams[0]));
   const double muF2fac(ToType<double>(stringparams[1]));
   const double showermuR2fac = (m_reweightsplittingalphasscales) ? muR2fac : 1.0;
+  const double showermuF2fac = (m_reweightsplittingpdfsscales) ? muF2fac : 1.0;
 
   // parse PDF member(s)
   std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
@@ -258,7 +256,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
         pdfasit != pdfsandalphasvector.end(); pdfasit++) {
     Variation_Parameters *params =
       new Variation_Parameters(muR2fac, muF2fac,
-          showermuR2fac,
+          showermuR2fac, showermuF2fac,
           pdfasit->m_pdfs[0],
           pdfasit->m_pdfs[1],
           pdfasit->p_alphas,
@@ -356,9 +354,9 @@ std::string Variation_Parameters::GenerateName() const
            + GenerateNamePart("PDF", p_pdf2->LHEFNumber());
   }
   // append non-trivial shower scale factors
-  if (m_showermuR2fac != 1.0) {
+  if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
     name += divider + GenerateNamePart("PSMUR", sqrt(m_showermuR2fac));
-    name += divider + GenerateNamePart("PSMUF", 1.0);
+    name += divider + GenerateNamePart("PSMUF", sqrt(m_showermuF2fac));
   }
   return name;
 }

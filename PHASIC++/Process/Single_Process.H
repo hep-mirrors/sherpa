@@ -73,6 +73,7 @@ namespace PHASIC {
         bool skipsfirstampl, const double &Q2,
         const double &muf2fac=1.0,
         const double &mur2fac=1.0,
+        const double &showermuf2fac=1.0,
         MODEL::One_Running_AlphaS * as=NULL,
         const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddISR(ATOOLS::Cluster_Sequence_Info &,
@@ -80,6 +81,7 @@ namespace PHASIC {
                 bool skipsfirstampl, const double &Q2,
                 const double &muf2fac=1.0,
                 const double &mur2fac=1.0,
+                const double &showermuf2fac=1.0,
                 MODEL::One_Running_AlphaS * as=NULL,
                 const ATOOLS::Cluster_Sequence_Info * const nominalcsi=NULL);
     void AddBeam(ATOOLS::Cluster_Sequence_Info &, const double &Q2);

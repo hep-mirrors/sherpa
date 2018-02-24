@@ -481,13 +481,16 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
       double newJ;
       switch (m_type) {
         case cstp::II:
-          newJ = Selected()->Lorentz()->JII(m_z, m_y, m_x, lastscale);
+          newJ = Selected()->Lorentz()->JII(
+              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
           break;
         case cstp::IF:
-          newJ = Selected()->Lorentz()->JIF(m_z, m_y, m_x, lastscale);
+          newJ = Selected()->Lorentz()->JIF(
+              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
           break;
         case cstp::FI:
-          newJ = Selected()->Lorentz()->JFI(m_y, m_x, lastscale);
+          newJ = Selected()->Lorentz()->JFI(
+              m_y, m_x, varparams->m_showermuF2fac * lastscale);
           break;
         case cstp::FF:
         case cstp::none:
