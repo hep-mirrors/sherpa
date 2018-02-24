@@ -165,13 +165,15 @@ namespace MCATNLO {
 
     //! Subclasses can return true if they support alternative couplings to be used (e.g. for reweighting)
     virtual bool AllowsAlternativeCouplingUsage() const { return false; }
-    /*! 
+    /*!
      * Use an alternative coupling
-     * 
+     *
      * @param cpl See subclass implementation(s) for the accepted pointer type.
      * Passing NULL ends the use of the alternative coupling.
+     * @param sf An optional scale factor, see subclass implementations for the
+     * concrete meaning of this argument.
      */
-    virtual void SetAlternativeUnderlyingCoupling(void * cpl) {}
+    virtual void SetAlternativeUnderlyingCoupling(void * cpl, double sf=1.0) {}
 
     virtual double Coupling(const double &scale,const int pol,
 			    ATOOLS::Cluster_Amplitude *const sub) = 0;

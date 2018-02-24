@@ -164,13 +164,13 @@ namespace CSSHOWER {
 
     //! Subclasses can return true if they support alternative couplings to be used (e.g. for reweighting)
     virtual bool AllowsAlternativeCouplingUsage() const { return false; }
-    /*! 
+    /*!
      * Use an alternative coupling
-     * 
+     *
      * @param cpl See subclass implementation(s) for the accepted pointer type.
+     * Passing NULL ends the use of the alternative coupling.
      * @param sf An optional scale factor, see subclass implementations for the
      * concrete meaning of this argument.
-     * Passing NULL ends the use of the alternative coupling.
      */
     virtual void SetAlternativeUnderlyingCoupling(void * cpl, double sf=1.0) {}
 
