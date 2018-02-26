@@ -8,6 +8,8 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <stdio.h>
 
+#include <sstream>
+
 using namespace ATOOLS;
 
 void Histogram::MPIInit()
@@ -150,13 +152,25 @@ void Histogram::CopyFrom(const Histogram *histo)
   MPIInit();
 }
 
-Histogram::Histogram(const std::string & pID,const int mode)
+Histogram::Histogram(const std::string & pID,const int mode,std::string content)
   :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
   m_finished=true;
-  My_In_File ifile(pID.c_str());
-  ifile.Open();
 
-    *ifile>>m_type>>m_nbin>>m_lower>>m_upper;
+  std::stringstream ifile;
+ 
+  if (content=="") {
+    My_In_File file(pID.c_str());
+    file.Open();
+    std::istream *is=dynamic_cast<std::istream*>(&*file);
+    ifile << (*is).rdbuf();
+    file.Close();    
+  }
+  else {
+    ifile.str(content);
+  }
+
+    ifile>>m_type>>m_nbin>>m_lower>>m_upper;
+
 
     m_logarithmic = int(m_type/10);
     m_depth       = m_type-m_logarithmic*10+1;
@@ -181,97 +195,96 @@ Histogram::Histogram(const std::string & pID,const int mode)
     std::string helps;
     m_active = 1;
     m_yvalues   = new double[m_nbin];
-    if (mode==0) *ifile>>m_yvalues[0];
+    if (mode==0) ifile>>m_yvalues[0];
     else {
-      *ifile>>helps;
+      ifile>>helps;
       if (helps.find("nan")!=std::string::npos) helps="0";
       m_yvalues[0]=ToType<double>(helps);
     }
     if (m_depth>1) {
       m_y2values   = new double[m_nbin];
-      if (mode==0) *ifile>>m_y2values[0];
+      if (mode==0) ifile>>m_y2values[0];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_y2values[0]=ToType<double>(helps);
       }
     }    
     if (m_depth>2) {
       m_psvalues   = new double[m_nbin];
-      if (mode==0) *ifile>>m_psvalues[0];
+      if (mode==0) ifile>>m_psvalues[0];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_psvalues[0]=ToType<double>(helps);
       }
     }    
 
-    if (mode==0) *ifile>>m_yvalues[m_nbin-1];
+    if (mode==0) ifile>>m_yvalues[m_nbin-1];
     else {
-      *ifile>>helps;
+      ifile>>helps;
       if (helps.find("nan")!=std::string::npos) helps="0";
       m_yvalues[m_nbin-1]=ToType<double>(helps);
     }
     if (m_depth>1) {
-      if (mode==0) *ifile>>m_y2values[m_nbin-1];
+      if (mode==0) ifile>>m_y2values[m_nbin-1];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_y2values[m_nbin-1]=ToType<double>(helps);
       }
     }    
     if (m_depth>2) {
-      if (mode==0) *ifile>>m_psvalues[m_nbin-1];
+      if (mode==0) ifile>>m_psvalues[m_nbin-1];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_psvalues[m_nbin-1]=ToType<double>(helps);
       }
     }    
-    *ifile>>m_fills;
+    ifile>>m_fills;
 
   double x;
   for (int i=0;i<m_nbin-1;i++) {
-    *ifile>>x;
-    if (!IsEqual(x,m_lower+i*m_binsize,ifile->precision()-1)) {
+    ifile>>x;
+    if (!IsEqual(x,m_lower+i*m_binsize,ifile.precision()-1)) {
       msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
       m_active=0;
       break;
     }
-    if (mode==0) *ifile>>m_yvalues[i+1];
+    if (mode==0) ifile>>m_yvalues[i+1];
     else {
-      *ifile>>helps;
+      ifile>>helps;
       if (helps.find("nan")!=std::string::npos) helps="0";
       m_yvalues[i+1]=ToType<double>(helps);
     }
     if (m_depth>1) {
-      if (mode==0) *ifile>>m_y2values[i+1];
+      if (mode==0) ifile>>m_y2values[i+1];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_y2values[i+1]=ToType<double>(helps);
       }
       m_y2values[i+1] = sqr(m_y2values[i+1]);
     }    
     if (m_depth>2) {
-      if (mode==0) *ifile>>m_psvalues[i+1];
+      if (mode==0) ifile>>m_psvalues[i+1];
       else {
-	*ifile>>helps;
+	ifile>>helps;
 	if (helps.find("nan")!=std::string::npos) helps="0";
 	m_psvalues[i+1]=ToType<double>(helps);
       }
     }    
   }
-  if (ifile->eof()) {
+  if (ifile.eof()) {
     msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
     m_active=0;
   }
-  *ifile>>x;
-  if (!ifile->eof()) {
+  ifile>>x;
+  if (!ifile.eof()) {
     msg_Error()<<METHOD<<"(): Corrupted input file '"<<pID<<"'."<<std::endl;
     m_active=0;
   }
-  ifile.Close();
   MPIInit();
 }
 
@@ -379,6 +392,29 @@ void Histogram::Scale(double scale) {
     m_yvalues[i]*= scale;
     if (m_depth>1) m_y2values[i]*=sqr(scale); 
     if (m_depth>2) m_psvalues[i]*=scale; 
+  }
+}
+
+void Histogram::ScaleHistogramWidth(double factor, int mode)
+{
+  if (!m_active) {
+    msg_Error()<<"Error in Histogram : Tried to access a "
+	       <<"histogram with binsize <= 0 !"<<std::endl;
+    return;
+  }
+  if (factor<=0) {
+    msg_Error()<<"Error in Histogram : Tried to scale binsize "
+               <<"of a histogram with a factor <= 0 !"<<std::endl;
+    return;
+  }
+  m_upper   *= factor;
+  m_binsize *= factor;
+  if (!mode) {
+    for (int i=0;i<m_nbin;i++) {
+      m_yvalues[i] /= factor;
+      if (m_depth>1) m_y2values[i] /= sqr(factor); 
+      if (m_depth>2) m_psvalues[i] /= factor;
+    }
   }
 }
 

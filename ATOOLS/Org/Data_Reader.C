@@ -28,21 +28,43 @@ Data_Reader::Data_Reader(const std::string &wordsep,const std::string &linesep,
   SetInFileMode(fom::permanent);
 }
 
-void Data_Reader::SetString(const std::string string)
+void Data_Reader::SetString(const std::string string, bool multiline)
 { 
-  m_string=string; 
-  FileContent(1).clear();
-  AddFileContent(m_string,1);
-#ifdef DEBUG__Data_Reader
-  msg_IODebugging()<<METHOD<<"(): Read string content '"<<m_string<<"' {\n";
-  for (size_t j(0);j<FileContent(1).size();++j) {
-    msg_IODebugging()<<"  ";
-    for (size_t k(0);k<FileContent(1)[j].size();++k)
-      msg_IODebugging()<<"'"<<FileContent(1)[j][k]<<"' ";
-    msg_IODebugging()<<"\n";
+  if (multiline) {
+    size_t linebreak = string.find("\n");
+    if (linebreak!=std::string::npos) {
+      std::string line, endline = "";
+      for (int k(0);k<(int)string.length();++k) {
+        line+=string[k];
+        endline=string[k];
+        if (endline=="\n") {
+          AddFileContent(line,1);
+          line="";
+        }
+      }
+    }
   }
-  msg_IODebugging()<<"}\n";
+  else {
+    m_string=string; 
+    FileContent(1).clear();
+    AddFileContent(m_string,1);
+#ifdef DEBUG__Data_Reader
+    msg_IODebugging()<<METHOD<<"(): Read string content '"<<m_string<<"' {\n";
+    for (size_t j(0);j<FileContent(1).size();++j) {
+      msg_IODebugging()<<"  ";
+      for (size_t k(0);k<FileContent(1)[j].size();++k)
+        msg_IODebugging()<<"'"<<FileContent(1)[j][k]<<"' ";
+      msg_IODebugging()<<"\n";
+    }
+    msg_IODebugging()<<"}\n";
 #endif
+  }
+}
+
+bool Data_Reader::RescanFileContent(const std::string content, bool multiline)
+{
+  FileContent(1).clear();
+  SetString(content, multiline);
 }
 
 template <class Read_Type>
@@ -342,5 +364,4 @@ namespace ATOOLS {
   (std::vector<std::vector<double> > &,std::string);
   template bool Data_Reader::MatrixFromString<std::string>
   (std::vector<std::vector<std::string> > &,std::string);
-
 }

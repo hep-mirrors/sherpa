@@ -1,5 +1,6 @@
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Read_Write_Base.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
@@ -41,8 +42,10 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
     }
   }
 
-  string decaypath=reader.Get<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH"))+"/"
-    +reader.Get<string>("DECAYPATHPIECE",string("Decaydata/"));
+  string tmp=reader.Get<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH")+"/");
+  if (tmp[tmp.length()-1]!='/') tmp+="/";
+  string decaydatazip=reader.Get<string>("DECAYDATA",tmp+"Decaydata.zip");
+  string decaydata=decaydatazip.replace(decaydatazip.length()-4,4,"/");
   string decayfile=reader.Get<string>("DECAYFILE",string("HadronDecays.dat"));
   string decayconstfile=reader.Get<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
@@ -57,26 +60,22 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   m_mass_smearing=reader.Get<int>("SOFT_MASS_SMEARING",1);
   m_spincorr=rpa->gen.SoftSC();
   m_cluster=false;
-
-  My_In_File::OpenDB(decaypath);
-  My_In_File::ExecDB(decaypath,"PRAGMA cache_size = 100000");
-  My_In_File::ExecDB(decaypath,"BEGIN");
+  Read_Write_Base::OpenZip(decaydatazip);
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
-  dmap->ReadInConstants(decaypath, decayconstfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_b),decaypath,bdecayfile);
-  dmap->ReadInPartonicDecays(Flavour(kf_c),decaypath,cdecayfile);
-  dmap->ReadHadronAliases(decaypath, aliasfile);
-  dmap->Read(decaypath, decayfile, true);
-  dmap->Read(decaypath, aliasdecayfile);
+  dmap->ReadInConstants(decaydata, decayconstfile);
+  dmap->ReadInPartonicDecays(Flavour(kf_b),decaydata,bdecayfile);
+  dmap->ReadInPartonicDecays(Flavour(kf_c),decaydata,cdecayfile);
+  dmap->ReadHadronAliases(decaydata, aliasfile);
+  dmap->Read(decaydata, decayfile, true);
+  dmap->Read(decaydata, aliasdecayfile);
   dmap->Initialise();
-  dmap->ReadFixedTables("", "FixedDecays.dat");
+  dmap->ReadFixedTables(decaydata, "FixedDecays.dat");
   p_decaymap=dmap;
   
   p_mixinghandler = new Mixing_Handler();
   p_mixinghandler->SetModel(dmap->StartModel());
   dmap->SetMixingHandler(p_mixinghandler);
-  My_In_File::ExecDB(decaypath,"END");
-  My_In_File::CloseDB(decaypath);
+  Read_Write_Base::CloseZip(decaydatazip);
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler()

@@ -59,13 +59,6 @@ namespace HADRONS {
     void Read(std::string path, std::string file);
 
     /** 
-     * Writes the decay table in the same format it can read.
-     * 
-     * @param ostr The stream to write to.
-     */
-    void Write(std::ostream& ostr);
-
-    /** 
      * Initialises all decay channels.
      * 
      * @param startmd The global hadron decay parameters.

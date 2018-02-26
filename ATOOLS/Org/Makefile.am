@@ -37,6 +37,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				Command_Line_Interface.C \
+				libzippp.cpp \
 				$(GZIPSTREAMSOURCES) \
 				binreloc.c
 
@@ -79,12 +80,13 @@ localinc_HEADERS         =	\
 			Enum_Flags.H \
 			Node.H \
 			Node.C \
+			libzippp.h \
 			$(GZIPSTREAMHEADERS) \
 			binreloc.h
 
-libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @SQLITE3_LDFLAGS@
+libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @SQLITE3_LDFLAGS@ @LIBZIP_LDFLAGS@
 
-libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @SQLITE3_CFLAGS@
+libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @SQLITE3_CFLAGS@ @LIBZIP_CPPFLAGS@
 
 EXTRA_DIST    = $(GZIPEXTRADIST) CXXFLAGS.H.in
 

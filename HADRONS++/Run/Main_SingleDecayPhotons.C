@@ -28,12 +28,12 @@ static TH1D * multipoleframeangles;
 
 void InitialiseGenerator(int argc, char *argv[])
 {
+  small_sherpa_init(argc, argv);
+
   if(argc<2) {
     cout<<"Usage: ./SingleDecay <PDG_CODE>"<<endl;
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
-
-  small_sherpa_init(argc, argv);
 
   hadrons = new SHERPA::Hadron_Decay_Handler(".", "Fragmentation.dat");
 

@@ -22,7 +22,6 @@ Hadron_Decay_Table::~Hadron_Decay_Table()
 {
 }
 
-
 void Hadron_Decay_Table::Read(std::string path, std::string file)
 {
   Data_Reader reader = Data_Reader("|",";","!");
@@ -31,9 +30,15 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
   reader.AddComment("//");
   reader.SetInputPath(path);
   reader.SetInputFile(file);
+
   // read decay table file
   vector<vector<string> > helpsvv;
-  if(!reader.MatrixFromFile(helpsvv)) {
+  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",path,file);
+  string p_path = split.first;
+  string p_file = split.second;
+  string content = reader.GetZipFileContent(p_path,p_file);
+  reader.SetString(content,true);
+  if(!reader.MatrixFromString(helpsvv,"")) {
     msg_Error()<<"ERROR in "<<METHOD<<endl
       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
     Abort();
@@ -78,6 +83,19 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       if(helpsvv[i].size()==3) hdc->SetFileName(helpsvv[i][2]);
       else {
         hdc->SetFileName();
+
+        double dBR=hdc->DeltaWidth()/Flav().Width();
+        msg_Info()<<"{"<<int(hdc->Flavs()[1]);
+        if (hdc->Flavs().size()>2) {
+          for (size_t k=2; k<hdc->Flavs().size();++k) msg_Info()<<","<<int(hdc->Flavs()[k]);
+        }
+        msg_Info()<<"}\t | ";
+        msg_Info()<<hdc->Width()/Flav().Width();
+        if(dBR>0.0)           msg_Info()<<"("<<dBR<<")";
+        if(hdc->Origin()!="") msg_Info()<<"["<<hdc->Origin()<<"]";
+        msg_Info()<<"\t | ";
+        msg_Info()<<hdc->FileName()<<";"<<endl;
+    
         rewrite=1;
       }
       if(charge!=0)
@@ -88,6 +106,9 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       AddDecayChannel(hdc);
       nchannels++;
     }
+  }
+  if (rewrite) {
+    PRINT_INFO("Found new decay channels. Please add the above lines to "<<p_file<<".");
   }
 
   DEBUG_VAR(totBR);
@@ -169,14 +190,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       }
     }
   }
-
-
-  if(rewrite) {
-    My_Out_File ostr(path + file);
-    ostr.Open();
-    Write(*ostr);
-    ostr.Close();
-  }
   ScaleToWidth();
 }
 
@@ -198,23 +211,6 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
   for (size_t i=0; i<size(); i++) {
     hdc = at(i);
     hdc->Initialise(startmd);
-  }
-}
-
-void Hadron_Decay_Table::Write(std::ostream& ostr)
-{
-  ostr<<"# outgoing part. \t | BR(Delta BR) \t [Origin] \t | DC-file\n"<<endl;
-  for (size_t j=0; j<size();j++) {
-    Hadron_Decay_Channel* hdc = at(j);
-    double dBR=hdc->DeltaWidth()/Flav().Width();
-    ostr<<"{"<<int(hdc->Flavs()[0]);
-    for (size_t k=0; k<hdc->Flavs().size();++k) ostr<<","<<int(hdc->Flavs()[k]);
-    ostr<<"}\t | ";
-    ostr<<hdc->Width()/Flav().Width();
-    if(dBR>0.0)           ostr<<"("<<dBR<<")";
-    if(hdc->Origin()!="") ostr<<"["<<hdc->Origin()<<"]";
-    ostr<<"\t | ";
-    ostr<<hdc->FileName()<<";"<<endl;
   }
 }
 

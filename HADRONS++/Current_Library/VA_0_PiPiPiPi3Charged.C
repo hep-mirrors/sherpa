@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Read_Write_Base.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -58,9 +59,14 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   double z_phase = _md("z_phase", 0.43585036 );
   m_z = Complex( z_abs*cos(z_phase), z_abs*sin(z_phase) );
 
+  // parse path and file name into right form
+  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",path);
+  path = split.first;
+  string file = split.second;
+
   // G(q2) function (read as histogram)
-  My_In_File fG("",path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
-  if( !fG.Open() ) {                            // if file does not exist
+  // if file does not exist
+  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat")) {
     msg_Error()<<"The file "<<path<<"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -69,14 +75,13 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read G_{pi-pi+pi-pi0}(q2)."<<endl;
-    std::string found_file_name = fG.Path()+fG.File();
-    fG.Close();
-    p_G = new Histogram( found_file_name );
+    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
+    p_G = new Histogram("PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat",0,found_file_name);
   }
 
   // Gomega(q2) function (read as histogram)
-  My_In_File fGo("",path+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
-  if( !fGo.Open() ) {                            // if file does not exist
+  // if file does not exist
+  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat")) {
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/Gomega_pi+pi0pi-pi-.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -85,14 +90,13 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read Gomega_{pi+pi0pi-pi-}(q2)."<<endl;
-    std::string found_file_name = fGo.Path()+fGo.File();
-    fGo.Close();
-    p_Go = new Histogram( found_file_name );
+    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
+    p_Go = new Histogram("PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat",0,found_file_name);
   }
 
   // RunningWidth_a1(q2) function (read as histogram)
-  My_In_File fW("",path+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
-  if( !fW.Open() ) {                            // if file does not exist
+  // if file does not exist
+  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat")) {
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -101,10 +105,17 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read a1's running width (q2)."<<endl;
-    std::string found_file_name = fW.Path()+fW.File();
-    fW.Close();
-    p_a1width = new Histogram( found_file_name );
+    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
+    p_a1width = new Histogram("PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat",0,found_file_name);
   }
+
+  // scale histograms if MASS_SCALE is set in decay channel file
+  // if not set -> scaled by tau_mass/tau_mass = 1
+  double tau_mass = Flavour(kf_tau).HadMass();
+  double mass_scale = double(_md("MASS_SCALE", tau_mass)) / tau_mass;
+  p_G->ScaleHistogramWidth(mass_scale);
+  p_Go->ScaleHistogramWidth(mass_scale);
+  p_a1width->ScaleHistogramWidth(mass_scale * mass_scale);
 }
 
 // global form factor

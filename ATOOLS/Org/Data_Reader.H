@@ -20,7 +20,7 @@ namespace ATOOLS {
     template <class Read_Type > std::vector<Read_Type> 
     ReadVector(const std::string &parameter,const size_t &file);
     template <class Read_Type > std::vector< std::vector<Read_Type> > 
-    ReadMatrix(const std::string &parameter,const size_t &file);
+    ReadMatrix(const std::string &parameter,const size_t &file);   
 
   public:
 
@@ -59,7 +59,9 @@ namespace ATOOLS {
     bool StringVectorFromStringNormalisingNoneLikeValues(std::vector<std::string>& vals,
                                                          std::string parameter=nullstring);
 
-    void SetString(const std::string string);
+    void SetString(const std::string string, bool multiline=false);
+
+    bool RescanFileContent(const std::string content, bool multiline=false);
 
     // inline functions
     inline const std::string String() const

@@ -45,6 +45,19 @@ namespace HADRONS {
     GeneralModel            m_startmd;
     /// mapping of alias flavours to physical flavours
     ATOOLS::Flavour_Vector  m_physicalflavours;
+
+    /**
+     *  Gets relevant section between begin and end from a decay channel
+     *  file and rescans it.
+     *  
+     *  @param content Content of decay channel file
+     *  @param begin Begin of needed section
+     *  @param end End of needed section
+     *  @param reader The DataReader dealing with the decay channel file
+     */
+    bool   Process(std::string content, std::string begin,
+                   std::string end,
+                   ATOOLS::Data_Reader                  & reader);
     
     /** 
      * Process <Options> section in decay channel file.
@@ -99,9 +112,11 @@ namespace HADRONS {
      * Writes out to a decay channel file.
      * 
      * @param newfile If true write a completely new file with trivial
-                      sections, otherwise only update the <Results> section.
+     *                sections, otherwise only update the <Results> section.
+     * @param path    Path of the file that has to be edited/created.
+     * @param file    File name of the file that has to be edited/created.
      */
-    void WriteOut(bool newfile=false);
+    void WriteOut(bool newfile, std::string path, std::string file);
 
     /** 
      * Select a matrix element from a string like B_KStar_Semileptonic[0,1,2,3]

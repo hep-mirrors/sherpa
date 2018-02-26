@@ -26,7 +26,7 @@ namespace ATOOLS {
     Histogram(int type,double xmin, double xmax, int nbins,
 	      const std::string &name="");
     Histogram(const Histogram *);
-    Histogram(const std::string &,const int=0);
+    Histogram(const std::string &,const int=0, std::string content="");
     ~Histogram();
     void MPISync();
     void Reset();
@@ -39,6 +39,7 @@ namespace ATOOLS {
     void FinishMCB();
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
+    void ScaleHistogramWidth(double factor, int mode=0);
     void Output();
     void Output(const std::string);
     void Finalize();
@@ -124,8 +125,9 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Histogram::Histogram(std::string)
-    \brief Constructor reading in values from a file
+    \fn Histogram::Histogram(const std::string & pID,const int mode=0, std::string content="")
+    \brief Constructor reading in values from a file or from string content
+           if provided.
   */    
 
   /*!
@@ -157,6 +159,14 @@ namespace ATOOLS {
     \fn void  Histogram::Scale(double factor)
     \brief multiply all bins with a given scale factor
   */
+
+  /*!
+    \fn void  Histogarm::ScaleHistogramWidth(double factor, int mode);
+    \brief multiply binsize and Xmax with factor ("stretch" the histogram)
+    \default: mode = 0: rescale bin height with factor (don't change integral over bins)
+    \         mode = 1: don't rescale bin height
+  */
+
     
   /*!
     \fn void  Histogram::Output()
