@@ -989,6 +989,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         cd libzip-1.2.0;
         ./configure --prefix=${ac_libzip_path} || exit;
         make || exit; make install || exit;
+        mv ${ac_libzip_path}/lib/libzip/include/zipconf.h ${ac_libzip_path}/include/;
         cd ..;
         rm -rf libzip-1.2.0.tar.gz libzip-1.2.0;
         echo "Successfully installed libzip into ${ac_libzip_path}."
