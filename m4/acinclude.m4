@@ -976,33 +976,34 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_WITH([libzip],
     AS_HELP_STRING(
-       [--with-libzip=@<:@ARG@:>@],
-            [use libzip library from @<:@ARG@:>@]
-        ),
-        [
-        WANT_LIBZIP="yes";
-        if test "$withval" = "install"; then
-	    ac_libzip_path=$ac_default_prefix;
-    	    test "x$prefix" != xNONE && ac_libzip_path=$prefix;
-	    if ! test -f ${ac_libzip_path}/include/zip.h; then
-    	       wget http://www.nih.at/libzip/libzip-1.2.0.tar.gz
-    	       tar xzf libzip-1.2.0.tar.gz;
-    	       cd libzip-1.2.0;
-    	       ./configure --prefix=${ac_libzip_path} || exit;
-    	       make || exit; make install || exit;
-    	       cd ..;
-    	       rm -rf libzip-1.2.0.tar.gz libzip-1.2.0;
-    	       echo "Successfully installed libzip into ${ac_libzip_path}."
-	    fi
-        else
-            ac_libzip_path="$withval"
-        fi
-        ],
-        [WANT_LIBZIP="yes"]
-    )
-    LIBZIP_CPPFLAGS="-I$ac_libzip_path/include"
-    LIBZIP_LDFLAGS="-L$ac_libzip_path/lib -lzip"
-    AC_SUBST(LIBZIP_CPPFLAGS)
-    AC_SUBST(LIBZIP_LDFLAGS)
+      [--with-libzip=@<:@ARG@:>@],
+      [use libzip library from @<:@ARG@:>@]
+    ),
+    [
+      if test "$withval" = "install"; then
+      ac_libzip_path=$ac_default_prefix;
+      test "x$prefix" != xNONE && ac_libzip_path=$prefix;
+      if ! test -f ${ac_libzip_path}/include/zip.h; then
+        wget http://www.nih.at/libzip/libzip-1.2.0.tar.gz
+        tar xzf libzip-1.2.0.tar.gz;
+        cd libzip-1.2.0;
+        ./configure --prefix=${ac_libzip_path} || exit;
+        make || exit; make install || exit;
+        cd ..;
+        rm -rf libzip-1.2.0.tar.gz libzip-1.2.0;
+        echo "Successfully installed libzip into ${ac_libzip_path}."
+      fi
+      else
+        ac_libzip_path="$withval"
+      fi
+    ],
+  )
+  if ! test -f ${ac_libzip_path}/include/zip.h; then
+    AC_MSG_ERROR(Did not find required dependency libzip in ${ac_libzip_path}. Please specify its installation prefix using '--with-libzip=/path' or enable its automatic installation using '--with-libzip=install'.)
+  fi
+  LIBZIP_CPPFLAGS="-I$ac_libzip_path/include"
+  LIBZIP_LDFLAGS="-L$ac_libzip_path/lib -lzip"
+  AC_SUBST(LIBZIP_CPPFLAGS)
+  AC_SUBST(LIBZIP_LDFLAGS)
 
 ])
