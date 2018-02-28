@@ -28,7 +28,11 @@ namespace PHASIC {
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour&, int pol) const;
-    double NondiagonalCew() const;  // only for neutral gauge bosons, eq. (B.25)
+
+    /// the same, but non-diagonal neutral gauge bosons terms, eq. (B.25)
+    double NondiagonalCew() const;
+
+    /// calculate the squared coupling to the Z
     double IZ2(const Flavour&, int pol) const;
 
     Process_Base* p_proc;
