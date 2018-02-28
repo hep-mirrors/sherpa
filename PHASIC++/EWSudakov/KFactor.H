@@ -10,9 +10,9 @@
 namespace PHASIC {
   class Sudakov_KFactor: public KFactor_Setter_Base {
   private:
-    //MODEL::One_Running_AlphaS m_runas;
     MODEL::Running_AlphaQED m_runaqed;
     Sudakov m_ews;
+    size_t m_check;
   public:
     Sudakov_KFactor(const KFactor_Setter_Arguments &args);
     double KFactor(const int mode=0);

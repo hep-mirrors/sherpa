@@ -35,11 +35,16 @@ namespace PHASIC {
     /// calculate the squared coupling to the Z
     double IZ2(const Flavour&, int pol) const;
 
+    /// combine m_coeff with logs to give delta
+    Complex deltaEW(const double s);
+
+    
     Process_Base* p_proc;
     EWSudakov_Amplitudes m_ampls;
     const Comix_Interface m_comixinterface;
 
-    const double m_sw2, m_cw2, m_sw, m_cw;
+    const double m_sw2, m_cw2, m_sw, m_cw,
+      m_mw2, m_mz2;
     const size_t m_check;
 
     // intermediate results

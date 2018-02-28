@@ -21,17 +21,18 @@ using namespace ATOOLS;
 
 Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args),
-  // m_runas{ p_proc->Integrator()->ISR()->PDF(0) },
   m_runaqed{ 1./137.03599976 },
+  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) },
   m_ews{ p_proc }
 { }
 
 double Sudakov_KFactor::KFactor(const int mode)
 {
+  const auto pref  = m_runaqed.AqedThomson()/4./M_PI;
   const auto level = msg->Level();
-  msg->SetLevel(8);
-  m_weight = m_ews.EWSudakov(p_proc->Integrator()->Momenta());
-  msg->SetLevel(level);
+  if(m_check) msg->SetLevel(8);
+  m_weight = 1. + pref*m_ews.EWSudakov(p_proc->Integrator()->Momenta());
+  if(m_check) msg->SetLevel(level);
   return m_weight;
 }
 
