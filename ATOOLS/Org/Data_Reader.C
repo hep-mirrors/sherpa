@@ -61,7 +61,7 @@ void Data_Reader::SetString(const std::string string, bool multiline)
   }
 }
 
-bool Data_Reader::RescanFileContent(const std::string content, bool multiline)
+void Data_Reader::RescanFileContent(const std::string content, bool multiline)
 {
   FileContent(1).clear();
   SetString(content, multiline);

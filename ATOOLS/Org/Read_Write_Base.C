@@ -474,7 +474,7 @@ bool Read_Write_Base::CloseZip(std::string archive)
   }
   ZipArchive zf(archive);
   int res=zf.close();
-  if (res=LIBZIPPP_OK) {
+  if (res!=LIBZIPPP_OK) {
     msg_Error()<<"Could not close '"<<archive<<"'."<<std::endl
                <<"Ignoring." <<std::endl;
   }

@@ -61,7 +61,7 @@ namespace ATOOLS {
 
     void SetString(const std::string string, bool multiline=false);
 
-    bool RescanFileContent(const std::string content, bool multiline=false);
+    void RescanFileContent(const std::string content, bool multiline=false);
 
     // inline functions
     inline const std::string String() const
