@@ -46,6 +46,7 @@ namespace PHASIC {
     const double m_sw2, m_cw2, m_sw, m_cw,
       m_mw2, m_mz2;
     const size_t m_check;
+    Complex m_born;
 
     // intermediate results
     mutable std::map<std::string, std::vector<Complex>> m_coeffs;

@@ -97,6 +97,7 @@ namespace COMIX {
 
     size_t SetMCMode(const size_t mcmode);
     void   SetLookUp(const bool lookup);
+    inline double Getdxs_beforeKFactor() { return m_dxs; }
 
   };// end of class Single_Process
 

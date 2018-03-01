@@ -58,7 +58,9 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 	    = |M0|^2 (1 + 2 * alpha * Re(delta) / 4 pi) + O(alpha^2)
     This function gives 2 Re(delta), the rest is handled by KFactor.C
   */
-  return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real();
+  
+  const auto born { p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor() };
+  return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real()/born;
 }
 
 Complex Sudakov::deltaEW(const double s)
@@ -68,8 +70,8 @@ Complex Sudakov::deltaEW(const double s)
     dict with the same names as the coefficients
     then sum all contributions * that log.
    */
-  const auto L  = sqr(std::log(s/m_mw2));
-  const auto lZ = std::log(s/m_mz2);
+  const auto L  = (s>m_mw2)?sqr(std::log(s/m_mw2)):0.;
+  const auto lZ = (s>m_mw2)?std::log(s/m_mz2):0.;
 
   // for now this is a bit of an overkill, but useful
   // if we add more logs...
@@ -81,7 +83,7 @@ Complex Sudakov::deltaEW(const double s)
   for(auto c : m_coeffs){
     const auto named_log = c.first;
     for(auto c_val : c.second){
-      res += c_val * logs[named_log]; 
+      res += c_val * logs[named_log];
     }
   }
   
@@ -103,8 +105,9 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       THROW(fatal_error, "Inconsistent state");
     if (value == 0.0)
       continue;
-    m_coeffs["L"][i] = LsCoeff(value, spincombination, i);
-    m_coeffs["lZ"][i] = lsZCoeff(value, spincombination, i);
+    Complex B0i{ value * std::conj(value) };
+    m_coeffs["L"][i]  = B0i * LsCoeff(value, spincombination, i);
+    m_coeffs["lZ"][i] = B0i * lsZCoeff(value, spincombination, i);
     // TODO: add other coefficients (remember to init m_coeffs in ctor)
   }
   for (const auto& coeff : m_coeffs["L"])
