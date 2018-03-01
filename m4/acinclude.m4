@@ -1003,7 +1003,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if ! test -f ${ac_libzip_path}/include/zip.h; then
     AC_MSG_ERROR(Did not find required dependency libzip in ${ac_libzip_path}. Please specify its installation prefix using '--with-libzip=/path' or enable its automatic installation using '--with-libzip=install'.)
   fi
-  LIBZIP_CPPFLAGS="-I$ac_libzip_path/include"
+  LIBZIP_CPPFLAGS="-I$ac_libzip_path/include -I$ac_libzip_path/lib/libzip/include"
   LIBZIP_LDFLAGS="-L$ac_libzip_path/lib -L$ac_libzip_path/lib64 -lzip"
   AC_SUBST(LIBZIP_CPPFLAGS)
   AC_SUBST(LIBZIP_LDFLAGS)
