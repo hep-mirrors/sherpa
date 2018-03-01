@@ -205,17 +205,22 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     delete info;
     double wf(rpa->Picobarn()/sw);
     if (m_eventmode!=0) {
-      double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
-      if (dabs(m_evtinfo.m_weight)<disc) continue;
-      if (dabs(m_evtinfo.m_weight)>max*m_ovwth) {
+      const double max = p_proc->Integrator()->Max();
+      const double disc = max * ran->Get();
+      const double abswgt = std::abs(m_evtinfo.m_weight);
+      if (abswgt < disc)
+        continue;
+      if (abswgt > max * m_ovwth) {
         Return_Value::IncWarning(METHOD);
-        msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
-                  <<"' exceeds maximum by "
-                  <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;
-        m_evtinfo.m_weight=(m_evtinfo.m_weight<0 ? -max*m_ovwth : max*m_ovwth);
+        msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
+                   << "' exceeds maximum by "
+                   << abswgt / max - 1.0 << "." << std::endl;
+        m_weightfactor = m_ovwth;
+        wf *= max * m_ovwth / abswgt;
+      } else {
+        m_weightfactor = abswgt / max;
+        wf /= Min(1.0, m_weightfactor);
       }
-      m_weightfactor=dabs(m_evtinfo.m_weight)/max;
-      wf/=Min(1.0,m_weightfactor);
     }
     m_evtinfo.m_weight*=wf;
     if (p_proc->GetSubevtList()) {
