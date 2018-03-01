@@ -221,66 +221,85 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   p_proc=NULL;
   if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
+
+  // calculate total selection weight sum
   m_sum=0.0;
   for (size_t i(0);i<m_procs.size();++i)
     m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+
+  // generate trial events until we accept one
   for (size_t n(1);true;++n) {
     rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
-    double disc(m_sum*ran->Get()), csum(0.0);
-    Process_Base *proc(NULL);
-    for (size_t i(0);i<m_procs.size();++i) {
-      if ((csum+=m_procs[i]->Integrator()->
-	   SelectionWeight(m_eventmode))>=disc) {
-	proc=m_procs[i];
-	break;
-      }
-    }
-    if (proc==NULL) THROW(fatal_error,"No process selected");
-    p_variationweights->Reset();
-    proc->SetVariationWeights(p_variationweights);
-    ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
-    proc->SetVariationWeights(NULL);
-    p_proc=proc->Selected();
-    if (p_proc->Generator()==NULL)
-      THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-    if (p_proc->Generator()->MassMode()!=0)
-      THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
-    double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
-    if (info==NULL) continue;
-    m_evtinfo=*info;
-    delete info;
-    double wf(rpa->Picobarn()/sw);
-    if (m_eventmode!=0) {
-      const auto max = p_proc->Integrator()->Max();
-      const auto disc = max * ran->Get();
-      const auto abswgt = std::abs(m_evtinfo.m_weight);
-      if (abswgt < disc)
-        continue;
-      if (abswgt > max * m_ovwth) {
-        Return_Value::IncWarning(METHOD);
-        msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
-                   << "' exceeds maximum by "
-                   << abswgt / max - 1.0 << "." << std::endl;
-        m_weightfactor = m_ovwth;
-        wf *= max * m_ovwth / abswgt;
-      } else {
-        m_weightfactor = abswgt / max;
-        wf /= Min(1.0, m_weightfactor);
-      }
-    }
-    m_evtinfo.m_weight*=wf;
-    if (p_proc->GetSubevtList()) {
-      (*p_proc->GetSubevtList())*=wf;
-      p_proc->GetSubevtList()->MultMEwgt(wf);
-    }
-    if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-    (*p_variationweights)*=wf;
+    if (!GenerateOneTrialEvent())
+      continue;
     m_evtinfo.m_ntrial=n;
     return true;
   }
   return false;
+}
+
+bool Matrix_Element_Handler::GenerateOneTrialEvent()
+{
+  // select process
+  double disc(m_sum*ran->Get()), csum(0.0);
+  Process_Base *proc(NULL);
+  for (size_t i(0);i<m_procs.size();++i) {
+    if ((csum+=m_procs[i]->Integrator()->
+          SelectionWeight(m_eventmode))>=disc) {
+      proc=m_procs[i];
+      break;
+    }
+  }
+
+  // try to generate an event for the selected process
+  if (proc==NULL) THROW(fatal_error,"No process selected");
+  p_variationweights->Reset();
+  proc->SetVariationWeights(p_variationweights);
+  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+  proc->SetVariationWeights(NULL);
+  p_proc=proc->Selected();
+  if (p_proc->Generator()==NULL)
+    THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
+  if (p_proc->Generator()->MassMode()!=0)
+    THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
+  if (info==NULL)
+    return false;
+  m_evtinfo=*info;
+  delete info;
+
+  // calculate weight factor and/or apply unweighting and weight threshold
+  const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
+  double wf(rpa->Picobarn()/sw);
+  if (m_eventmode!=0) {
+    const auto max = p_proc->Integrator()->Max();
+    const auto disc = max * ran->Get();
+    const auto abswgt = std::abs(m_evtinfo.m_weight);
+    if (abswgt < disc)
+      return false;
+    if (abswgt > max * m_ovwth) {
+      Return_Value::IncWarning(METHOD);
+      msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
+                 << "' exceeds maximum by "
+                 << abswgt / max - 1.0 << "." << std::endl;
+      m_weightfactor = m_ovwth;
+      wf *= max * m_ovwth / abswgt;
+    } else {
+      m_weightfactor = abswgt / max;
+      wf /= Min(1.0, m_weightfactor);
+    }
+  }
+
+  // trial event is accepted, apply weight factor
+  m_evtinfo.m_weight*=wf;
+  if (p_proc->GetSubevtList()) {
+    (*p_proc->GetSubevtList())*=wf;
+    p_proc->GetSubevtList()->MultMEwgt(wf);
+  }
+  if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+  (*p_variationweights)*=wf;
+  return true;
 }
 
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess

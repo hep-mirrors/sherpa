@@ -124,8 +124,11 @@ namespace SHERPA {
 
     void BuildProcesses();
 
-    void SetRandomSeed();
     void InitNLOMC();
+
+    // event generation helper functions
+    void SetRandomSeed();
+    bool GenerateOneTrialEvent();
 
   public :
 
