@@ -769,26 +769,26 @@ std::vector<double> Single_Process::AlphaSRatios(
   Single_Process::BornLikeReweightingInfo & info) const
 {
   std::vector<double> ratios;
-  if (varparams->m_showermuR2fac != 1.0) {
-    ATOOLS::ClusterAmplitude_Vector &ampls = info.m_ampls;
-    if (ampls.size() && (m_pinfo.m_ckkw & 1)) {
-      // go through cluster sequence
-      for (Cluster_Amplitude *ampl(ampls.front()); ampl; ampl = ampl->Next()) {
-        const size_t power = ampl->Next() ?
-          ampl->OrderQCD() - ampl->Next()->OrderQCD() : ampl->OrderQCD();
-        if (power > 0) {
-          const double mu2(Max(ampl->Mu2(), MODEL::as->CutQ2()));
-          const double mu2new(mu2 * varparams->m_showermuR2fac);
-          const double alphasold(MODEL::as->BoundedAlphaS(mu2));
-          const double alphasnew(varparams->p_alphas->BoundedAlphaS(mu2new));
-          const double alphasratio(alphasnew / alphasold);
-          for (size_t i(0); i < power; i++) {
-            ratios.push_back(alphasratio);
-          }
+  if ((m_pinfo.m_ckkw & 1) && (varparams->m_showermuR2fac != 1.0)) {
+    // go through cluster sequence
+    for (Cluster_Amplitude *ampl(info.m_ampls.front());
+         ampl;
+         ampl = ampl->Next()) {
+      const size_t power = ampl->Next() ?
+        ampl->OrderQCD() - ampl->Next()->OrderQCD() : ampl->OrderQCD();
+      if (power > 0) {
+        const double mu2(Max(ampl->Mu2(), MODEL::as->CutQ2()));
+        const double mu2new(mu2 * varparams->m_showermuR2fac);
+        const double alphasold(MODEL::as->BoundedAlphaS(mu2));
+        const double alphasnew(varparams->p_alphas->BoundedAlphaS(mu2new));
+        const double alphasratio(alphasnew / alphasold);
+        for (size_t i(0); i < power; i++) {
+          ratios.push_back(alphasratio);
         }
       }
     }
   } else {
+    // no merging or shower reweighting, just reweight the core process
     const double muR2new(info.m_muR2 * varparams->m_muR2fac);
     const double alphasnew((*varparams->p_alphas)(muR2new));
     const double alphasold((*MODEL::as)(info.m_muR2));
