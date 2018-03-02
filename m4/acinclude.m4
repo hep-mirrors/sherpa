@@ -984,7 +984,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       ac_libzip_path=$ac_default_prefix;
       test "x$prefix" != xNONE && ac_libzip_path=$prefix;
       if ! test -f ${ac_libzip_path}/include/zip.h; then
-        wget http://www.nih.at/libzip/libzip-1.2.0.tar.gz
+        wget https://libzip.org/download/libzip-1.2.0.tar.gz
         tar xzf libzip-1.2.0.tar.gz;
         cd libzip-1.2.0;
         ./configure --prefix=${ac_libzip_path} || exit;
