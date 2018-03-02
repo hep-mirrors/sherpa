@@ -70,14 +70,14 @@ PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
       m_fplus_a0 = -0.48;
       m_fplus_b0 = -0.30;
       m_fplus_c0 = 0.47;
-      m_fplus_a0 = -0.99;
+      m_fplus_d0 = -0.99;
 
       m_fmin_F0 = -1.7*0.24;
       m_fmin_m0 = m_m0;
       m_fmin_a0 = -0.41;
       m_fmin_b0 = -0.42;
       m_fmin_c0 = 0.95;
-      m_fmin_a0 = -1.55;
+      m_fmin_d0 = -1.55;
     }
   }
   else if (kf0==kf_D_plus) {
@@ -88,19 +88,170 @@ PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
       m_fplus_a0 = -0.89;
       m_fplus_b0 = -0.40;
       m_fplus_c0 = -0.18;
-      m_fplus_a0 = -1.00;
+      m_fplus_d0 = -1.00;
+    }
+    else if (kf1==kf_pi) {
+      m_fplus_F0 = 0.6704555546;
+      m_fplus_m0 = 1.99;
+      m_fplus_a0 = -0.09 - 1;
+      m_fplus_b0 = 0.09;      
+    }
+    else if (kf1==kf_K) {
+      m_fplus_F0 = 0.7530074068;
+      m_fplus_m0 = 2.02;
+      m_fplus_a0 = -0.12 - 1;
+      m_fplus_b0 = 0.12;
+    }
+  }
+  else if (kf0==kf_D) {
+    if (kf1==kf_pi_plus) {
+      m_fplus_F0 = 0.6660154516;
+      m_fplus_m0 = 1.94;
+      m_fplus_a0 = -0.18 - 1;
+      m_fplus_b0 = 0.18;
+    }
+    else if (kf1==kf_K_plus) {
+      m_fplus_F0 = 0.738;
+      m_fplus_m0 = 1.9207;
+      m_fplus_a0 = -1;
+      m_fplus_b0 = 0;
     }
   }
   else if (kf0==kf_D_s_plus) {
     if (kf1==kf_f_0_980) {
-      // hep-ph 0701108
-      m_fplus_F0 = 1.7*0.27;
-      m_fplus_m0 = m_m0;
-      m_fplus_a0 = -0.87;
-      m_fplus_b0 = -0.17;
-      m_fplus_c0 = -0.37;
-      m_fplus_a0 = 1.46;
+      switch( int(model("FORM_FACTOR_TUNE", 3)+0.5)) {
+      case 2:
+        // hep-ph 0304193 QCD sum rules
+        m_fplus_F0 = 0.44;
+        m_fplus_m0 = 1.6;
+        m_fplus_a0 = 1.0;
+        break;
+      case 3:
+        // hep-ph 0701108 3-point QCD sum rules (2007)
+        m_fplus_F0 = 1.7*0.27;
+        m_fplus_m0 = m_m0;
+        m_fplus_a0 = -0.87;
+        m_fplus_b0 = -0.17;
+        m_fplus_c0 = -0.37;
+        m_fplus_d0 = 1.46;
+        break;
+      case 5:
+        // hep-ph 1002.2466 light-front quark model
+        m_fplus_F0 = 0.46;
+        m_fplus_m0 = m_m0;
+        m_fplus_a0 = 0.29;
+        m_fplus_b0 = 0.07;
+        break;
+      case 6:
+        // hep-ph 0907.3201 experimental fit
+        m_fplus_F0 = 1.0;
+        m_fplus_m0 = 1.7;
+        m_fplus_a0 = 1.0;
+        break;
+      case 7:
+        // doi:10.1209/0295-5075/90/61001 3-point QCD sum rules (2010)
+        m_fplus_F0 = 0.48;
+        m_fplus_m0 = m_m0;
+        m_fplus_a0 = -0.81;
+        m_fplus_b0 = -0.18;
+        m_fplus_c0 = -0.19;
+        m_fplus_d0 = 0.86;
+        break;
+      default:
+        msg_Error()<<METHOD<<": You chose a form factor tune which does not "
+                   <<"exist. Aborting."<<std::endl;
+        abort();
+      }
     }
+    else if (kf1==kf_eta) {
+      switch( int(model("FORM_FACTOR_TUNE", 3)+0.5)) {
+      case 1:
+	// hep-ph 1209.3386 lattice QCD
+	m_fplus_F0 = 0.75;
+	m_fplus_m0 = 1.9;
+	m_fplus_a0 = -(1.0+0.21);
+	m_fplus_b0 = 0.21;
+	break;
+      case 4:
+	// hep-ph 1011.6046 light-cone sum rules (2011)
+	m_fplus_F0 = 0.45;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.96;
+	m_fplus_b0 = 1.12;
+	break;
+      case 5:
+	// hep-ph 1011.6046 light-front quark model 1
+	m_fplus_F0 = 0.50;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.17;
+	m_fplus_b0 = 0.34;
+	break;
+      case 8:
+	// hep-ph 1011.6046 light-front quark model 2
+	m_fplus_F0 = 0.48;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.11;
+	m_fplus_b0 = 0.25;
+
+	m_fmin_F0 = -0.44;
+	m_fmin_m0 = 1.9685;
+	m_fmin_a0 = -2.05;
+	m_fmin_b0 = 1.08;
+	break;
+      default:
+        msg_Error()<<METHOD<<": You chose a form factor tune which does not "
+                   <<"exist. Aborting."<<std::endl;
+        abort();
+      }
+    }
+    else if (kf1==kf_eta_prime_958) {
+      switch( int(model("FORM_FACTOR_TUNE", 3)+0.5)) {
+      case 1:
+	// hep-ph 1209.3386 lattice QCD
+	m_fplus_F0 = 0.86;
+	m_fplus_m0 = 1.9;
+	m_fplus_a0 = -(1.0+0.21);
+	m_fplus_b0 = 0.21;
+	break;
+      case 4:
+	// hep-ph 1011.6046 light-cone sum rules (2011)
+	m_fplus_F0 = 0.55;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.96;
+	m_fplus_b0 = 1.12;
+	break;
+      case 5:
+	// hep-ph 1011.6046 light-front quark model 1
+	m_fplus_F0 = 0.62;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.17;
+	m_fplus_b0 = 0.34;
+	break;
+      case 8:
+	// hep-ph 1011.6046 light-front quark model 2
+	m_fplus_F0 = 0.60;
+	m_fplus_m0 = 1.9685;
+	m_fplus_a0 = -1.11;
+	m_fplus_b0 = 0.25;
+	break;
+      default:
+        msg_Error()<<METHOD<<": You chose a form factor tune which does not "
+                   <<"exist. Aborting."<<std::endl;
+        abort();
+      }
+    }
+    else if (kf1==kf_K) {
+      // PhysRevD.78.054002 light-front quark model
+      m_fplus_F0 = 0.67;
+      m_fplus_m0 = 1.9685;
+      m_fplus_a0 = -1.17;
+      m_fplus_b0 = 0.29;
+
+      m_f0_F0 = 0.67;
+      m_f0_m0 = 1.9685;
+      m_f0_a0 = -0.50;
+      m_f0_b0 = -0.005;
+    }  
   }
   else if (kf0==kf_B_c) {
     // hep-ph/0007169

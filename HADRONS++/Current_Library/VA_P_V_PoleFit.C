@@ -131,26 +131,115 @@ PoleFit::PoleFit(GeneralModel model, double* masses,
   }
   else if (kf0==kf_D_s_plus) {
     if (kf1==kf_phi_1020) {
-      m_V_F0 = 0.9;
-      m_V_m0 = 1.9685;
-      m_V_a0 = -2.82;
-      m_V_b0 = 1.51;
+      switch( int(model("FORM_FACTOR_TUNE", 1)+0.5)) {
+      case 1:
+	// hep-lat 1311.6669v1 lattice QCD
+	m_V_F0 = 1.059;
+	m_V_m0 = 2.112;
+	m_V_a0 = -1.0;
 
-      m_A0_F0 = 0.56;
-      m_A0_m0 = 1.9685;
-      m_A0_a0 = -0.13;
-      m_A0_b0 = 0.46;
+	m_A0_F0 = 0.706;
+	m_A0_m0 = 2.459;
+	m_A0_a0 = -1.0;
 
-      m_A1_F0 = 0.65;
-      m_A1_m0 = 1.9685;
-      m_A1_a0 = -1.36;
-      m_A1_b0 = -0.31;
+	m_A1_F0 = 0.615;
+	m_A1_m0 = 2.459;
+	m_A1_a0 = -1.0;
 
-      m_A2_F0 = 0.85;
-      m_A2_m0 = 1.9685;
-      m_A2_a0 = -4.5;
-      m_A2_b0 = 5.55;
+	m_A2_F0 = 0.457;
+	m_A2_m0 = 2.459;
+	m_A2_a0 = -1.0;
+	break;
+      case 2:
+	// hep-ph 0308259 QCD sum rules
+	m_V_F0 = 1.21;
+	m_V_m0 = 2.08;
+	m_V_a0 = -1.0;
+
+	m_A0_F0 = 0.42;
+	m_A0_m0 = 1.9;
+	m_A0_a0 = -1.0;
+
+	m_A1_F0 = 0.55;
+	m_A1_m0 = 1.9;
+	m_A1_a0 = -1.0;
+
+	m_A2_F0 = 0.59;
+	m_A2_m0 = 1.9;
+	m_A2_a0 = -1.0;
+	break;
+      case 4:
+	// hep-ph/0401181 light-cone sum rules
+	m_V_F0 = 0.9;
+	m_V_m0 = 1.9685;
+	m_V_a0 = -2.82;
+	m_V_b0 = 1.51;
+
+	m_A0_F0 = 0.56;
+	m_A0_m0 = 1.9685;
+	m_A0_a0 = -0.13;
+	m_A0_b0 = -0.46;
+
+	m_A1_F0 = 0.65;
+	m_A1_m0 = 1.9685;
+	m_A1_a0 = -1.36;
+	m_A1_b0 = -0.31;
+
+	m_A2_F0 = 0.85;
+	m_A2_m0 = 1.9685;
+	m_A2_a0 = -4.5;
+	m_A2_b0 = 5.55;
+	break;
+      case 5:
+	// PhysRevD.78.054002 light-front quark model
+	m_V_F0 = 0.91;
+	m_V_m0 = 1.9685;
+	m_V_a0 = -1.15;
+	m_V_b0 = 0.39;
+
+	m_A0_F0 = 0.62;
+	m_A0_m0 = 1.9685;
+	m_A0_a0 = -1.02;
+	m_A0_b0 = 0.45;
+
+	m_A1_F0 = 0.61;
+	m_A1_m0 = 1.9685;
+	m_A1_a0 = -0.69;
+	m_A1_b0 = 0.02;
+
+	m_A2_F0 = 0.58;
+	m_A2_m0 = 1.9685;
+	m_A2_a0 = -0.98;
+	m_A2_b0 = 0.27;
+	break;
+      default:
+	msg_Error()<<METHOD<<": You chose a form factor tune which does not "
+	           <<"exist. Aborting."<<std::endl;
+	abort();
+      }
     }
+    else if (kf1==kf_K_star_892) {
+      // doi:10.1103/PhysRevD.78.054002 light-front quark model
+      m_V_F0 = 0.79;
+      m_V_m0 = 1.9685;
+      m_V_a0 = -1.24;
+      m_V_b0 = 0.50;
+
+      m_A0_F0 = 0.54;
+      m_A0_m0 = 1.9685;
+      m_A0_a0 = -1.03;
+      m_A0_b0 = 0.62;
+
+      m_A1_F0 = 0.53;
+      m_A1_m0 = 1.9685;
+      m_A1_a0 = -0.53;
+      m_A1_b0 = 0.03;
+
+      m_A2_F0 = 0.49;
+      m_A2_m0 = 1.9685;
+      m_A2_a0 = -1.03;
+      m_A2_b0 = 0.34;
+    }  
   }
 
   m_V_F0 = model("V_F0",m_V_F0); m_V_F1 = model("V_F1",m_V_F1);

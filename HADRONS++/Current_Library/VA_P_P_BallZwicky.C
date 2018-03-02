@@ -33,7 +33,26 @@ BallZwicky::BallZwicky(GeneralModel model, double* masses,
       m_fplus_m2 = 5.33*5.33;
     }
   }
-
+  else if (kf0==kf_D) {
+    m_fplus_0 = 0.6100701536;
+    m_fplus_alpha = 0.68;
+    m_fplus_r = 0.963;
+    m_fplus_m2 = 2.45*2.45;
+  }
+  else if (kf0==kf_D_s_plus) {
+    if (kf1==kf_eta) {
+      m_fplus_0 = 0.432;
+      m_fplus_alpha = 0.252;
+      m_fplus_r = 0.284;
+      m_fplus_m2 = 1.9685*1.9685;
+    }
+    else if (kf1==kf_eta_prime_958) {
+      m_fplus_0 = 0.520;
+      m_fplus_alpha = 0.252;
+      m_fplus_r = 0.284;
+      m_fplus_m2 = 1.9685*1.9685;
+    }
+  }
 
   m_fplus_0 = model("fplus_0",m_fplus_0);
   m_fplus_r = model("fplus_r",m_fplus_r);
