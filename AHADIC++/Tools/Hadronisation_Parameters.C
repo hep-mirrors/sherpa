@@ -224,7 +224,7 @@ void Hadronisation_Parameters::ReadMassParameters(Data_Reader & dataread)
   double mb = m_parametermap[string("Mass_bottom")]        = 
     dataread.GetValue<double>("M_BOTTOM",5.1);
   double mdiq = m_parametermap[string("Mass_diquark")]           = 
-    dataread.GetValue<double>("M_DIQUARK_OFFSET",0.12);
+    dataread.GetValue<double>("M_DIQUARK_OFFSET",0.3);
   double bind0 = m_parametermap[string("Mass_bind0")]           = 
     dataread.GetValue<double>("M_BIND_0",0.12);
   double bind1 = m_parametermap[string("Mass_bind1")]           = 
