@@ -26,6 +26,7 @@ namespace HADRONS {
       int  ChNumber()                 { return m_chnumber;       }
       void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
       std::string ChID()              { return name;}
+      void MPISync() {};
   }; // end of class
 
   /*!

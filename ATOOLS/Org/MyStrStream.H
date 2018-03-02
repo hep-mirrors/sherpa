@@ -98,6 +98,10 @@ namespace ATOOLS {
   std::string StringReplace(const std::string &original,
                             const std::string &from, const std::string &to);
 
+  std::string SubString(const std::string& original,
+                        const std::string& begin, const std::string& end);
+
+
   std::string ReplaceUnits(std::string v);
 
 }// end of namespace ATOOLS;

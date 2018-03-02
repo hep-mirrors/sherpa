@@ -49,6 +49,14 @@ namespace HADRONS
       std::map<std::string,double>::const_iterator fit(find(tag));
       return fit!=end()?fit->second:def;
     }
+
+    /** 
+     * Helper function to create a GeneralModel from parameter = value pairs
+     * 
+     * @param parameters string containing parameter = value lines
+     * 
+     */    
+    void AddParameters(const std::string& parameters);
   };
 
   /** 

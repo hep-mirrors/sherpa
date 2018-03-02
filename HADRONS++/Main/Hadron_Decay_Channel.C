@@ -43,23 +43,20 @@ void Hadron_Decay_Channel::SetFileName(std::string filename)
   m_filename = filename;
 }
 
-bool Hadron_Decay_Channel::Process(std::string content, std::string begin,
-                                   std::string end,
-                                   ATOOLS::Data_Reader & reader)
+vector<vector<string> > Hadron_Decay_Channel::Process(const string& content,
+                                                      const string& begin,
+                                                      const string& end)
 {
-    size_t found_begin = content.find(begin);
-    size_t found_end = content.find(end);
-    string line="";
-    if (found_begin!=string::npos) {
-      for (int k=found_begin+begin.length();k<found_end;++k) {
-        line += content[k];
-      }
-      reader.RescanFileContent(line,true);
-      return true;
-    }
-    else {
-      return false;
-    }
+  Data_Reader reader(" ",";","!","=");
+  reader.SetAddCommandLine(false);
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetMatrixType(mtc::transposed);
+  reader.AddLineSeparator("\n");
+  reader.RescanFileContent(SubString(content,begin,end),true);
+  vector<vector<string> > helpsvv;
+  reader.MatrixFromString(helpsvv,"");
+  return helpsvv;
 }
 
 bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
@@ -94,61 +91,14 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   // check if dc file exists
   if (Read_Write_Base::FileInZip(path,file)) {
     msg_Tracking()<<METHOD<<": read "<<m_path<<m_filename<<endl;
-    Data_Reader reader(" ",";","!");
-    reader.SetAddCommandLine(false);
-    reader.AddComment("#");
-    reader.AddComment("//");
-    reader.SetMatrixType(mtc::transposed);
+    string content = Read_Write_Base::GetZipFileContent(path,file);
+    DEBUG_VAR(content);
 
-    // process <Options>
-    vector<vector<string> > options_svv;
-    string content = reader.GetZipFileContent(path,file);
-    reader.AddLineSeparator("\n");
-    Process(content,"<Options>","</Options>",reader);
-
-    if(reader.MatrixFromString(options_svv,"")) {
-      ProcessOptions(options_svv);
-    }
-    else {
-      msg_Error()<<METHOD<<": Error.\n"
-		 <<"   Read in failure for <Options> section in "
-		 <<m_path<<m_filename<<".\n"
-		 <<"   Will abort."<<endl;
-      Abort();
-    }
-
-    // process <ME>
-    vector<vector<string> > me_svv;
-    GeneralModel model_for_ps;
-    reader.AddLineSeparator("\n");
-    Process(content,"<ME>","</ME>",reader);
-    if(reader.MatrixFromString(me_svv,"")) ProcessME(me_svv, reader, model_for_ps);
-    else {
-      msg_Error()<<METHOD<<": Error.\n"
-                 <<"  Read in failure for <ME> section in "<<m_path
-                 <<m_filename<<", will abort."<<endl;
-      Abort();
-    }
-
-    // process <Phasespace>
-    vector<vector<string> > ps_svv;
-    Process(content,"<Phasespace>","</Phasespace>",reader);
-
-    if(!reader.MatrixFromString(ps_svv,"")) {
-    msg_Error()<<METHOD<<": Error.\n"
-	       <<"   Read in failure for <Phasespace> section in "
-	       <<m_path<<m_filename<<".\n"
-	       <<"   Will abort."<<endl;
-      Abort();
-    }
-    ProcessPhasespace(ps_svv, reader, model_for_ps);
-
-    // process <Result> 
-    // don't do it before ME and phasespace, or CalcNormWidth doesn't work!
-    vector<vector<string> > result_svv;
-    Process(content,"<Result>","</Result>",reader);
-    reader.MatrixFromString(result_svv,"");
-    ProcessResult(result_svv);
+    GeneralModel model_for_ps = m_startmd;
+    ProcessOptions(content);
+    ProcessME(content, model_for_ps);
+    ProcessPhasespace(content, model_for_ps);
+    ProcessResult(content);
   }
   else { // if DC file does not exist yet
     PRINT_INFO("Decay channel file "<<m_filename<<" in "<<m_path<<" does not exist yet. Will use Isotropic decay.");
@@ -167,17 +117,19 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   return true;
 }
 
-void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)
+void Hadron_Decay_Channel::ProcessOptions(const string& content)
 {
+  vector<vector<string> > helpsvv = Process(content,"<Options>","</Options>");
+  
   for (size_t i=0;i<helpsvv.size();i++) {
     if (helpsvv[i][0]==string("AlwaysIntegrate")) {
-      m_always_integrate=atoi(helpsvv[i][2].c_str());
+      m_always_integrate=atoi(helpsvv[i][1].c_str());
     }
     else if (helpsvv[i][0]==string("CPAsymmetryS")) {
-      m_cp_asymmetry_S = ToType<double>(helpsvv[i][2]);
+      m_cp_asymmetry_S = ToType<double>(helpsvv[i][1]);
     }
     else if (helpsvv[i][0]==string("CPAsymmetryC")) {
-      m_cp_asymmetry_C = ToType<double>(helpsvv[i][2]);
+      m_cp_asymmetry_C = ToType<double>(helpsvv[i][1]);
     }
   }
   // convert C and S to lambda, assuming DeltaGamma=0 for the determination 
@@ -189,10 +141,11 @@ void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)
   m_cp_asymmetry_lambda = Complex(Re, Im);
 }
 
-void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
-                                             Data_Reader           & reader,
-                                             GeneralModel const    & model_for_ps)
+void Hadron_Decay_Channel::ProcessPhasespace(const string& content,
+                                             const GeneralModel& model_for_ps)
 {
+  vector<vector<string> > ps_svv = Process(content,"<Phasespace>","</Phasespace>");
+  
   int nr_of_channels=0;
   for (size_t i=0;i<ps_svv.size();i++) {
     double weight = ToType<double>(ps_svv[i][0]);
@@ -211,17 +164,14 @@ void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
   }
 }
 
-void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
-                                      Data_Reader           & reader,
-                                      GeneralModel          & model_for_ps )
+void Hadron_Decay_Channel::ProcessME(const string& content,
+                                     GeneralModel& model_for_ps )
 {
+  vector<vector<string> > me_svv = Process(content,"<ME>","</ME>");
+
   int nr_of_mes=0;
   Algebra_Interpreter ip;
   ip.AddTag("GF", "8.24748e-6");
-  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",m_path,m_filename);
-  string path = split.first;
-  string file = split.second;
-  string content = reader.GetZipFileContent(path,file);
 
   for (size_t i=0;i<me_svv.size();i++) {
     if(me_svv[i].size()==3) {
@@ -229,12 +179,9 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       HD_ME_Base* me = SelectME( me_svv[i][2] );
       me->SetPath(m_path);
       msg_Tracking()<<"  "<<me->Name()<<endl;
-      vector<vector<string> > parameter_svv;
-      if (!Process(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">",reader)) {
-        reader.RescanFileContent(me_svv[i][2],true);
-      }
-      reader.MatrixFromString(parameter_svv,"");
-      GeneralModel me_model=Parameters2Model(parameter_svv,model_for_ps);
+      GeneralModel me_model = m_startmd;
+      me_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
       me->SetModelParameters( me_model );
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
                                ToType<double>(ip.Interprete(me_svv[i][1])));
@@ -246,22 +193,16 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       msg_Tracking()<<"Selecting currents for "<<Name()<<endl;
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
-      vector<vector<string> > parameter1_svv;
-      if (!Process(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">",reader)) {
-        reader.RescanFileContent(me_svv[i][2],true);
-      }
-      reader.MatrixFromString(parameter1_svv,"");
-      GeneralModel current1_model=Parameters2Model(parameter1_svv,model_for_ps);
+      GeneralModel current1_model = m_startmd;
+      current1_model.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
+      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][2]+">","</"+me_svv[i][2]+">"));
       current1->SetModelParameters( current1_model );
 
       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
       current2->SetPath(m_path);
-      vector<vector<string> > parameter2_svv;
-      if (!Process(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">",reader)) {
-        reader.RescanFileContent(me_svv[i][3],true);
-      }
-      reader.MatrixFromString(parameter2_svv,"");
-      GeneralModel current2_model=Parameters2Model(parameter2_svv,model_for_ps);
+      GeneralModel current2_model = m_startmd;
+      current2_model.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
+      model_for_ps.AddParameters(SubString(content,"<"+me_svv[i][3]+">","</"+me_svv[i][3]+">"));
       current2->SetModelParameters( current2_model );
 
       msg_Tracking()<<"  "<<current1->Name()<<endl;
@@ -301,8 +242,10 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
   }
 }
 
-void Hadron_Decay_Channel::ProcessResult(vector<vector<string> > result_svv)
+void Hadron_Decay_Channel::ProcessResult(const string& content)
 {
+  vector<vector<string> > result_svv = Process(content,"<Result>","</Result>");
+  
   if(result_svv.size()!=1) {
     msg_Info()<<"Calculating width (PR1) for "<<Name()<<endl;
     CalculateWidth();
@@ -323,50 +266,10 @@ void Hadron_Decay_Channel::ProcessResult(vector<vector<string> > result_svv)
     m_ideltawidth=ToType<double>(result_svv[0][1]);
     m_max=ToType<double>(result_svv[0][2]);
   }
-  else
+  else {
     THROW(fatal_error, "Result section of "+m_path+"/"+m_filename+" did not "+
           "contain three entries. Aborting.");
-}
-
-GeneralModel
-Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > helpsvv,
-                                       GeneralModel& other_model)
-{
-  GeneralModel model(m_startmd);
-  Algebra_Interpreter ip;
-  for (size_t i=0;i<helpsvv.size();i++) {
-    if ( helpsvv[i][1] == string("=")) {
-      if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
-        double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
-        model[helpsvv[i][0]] = real;
-        other_model[helpsvv[i][0]] = real;
-      }
-      if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
-        double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
-        double phase = ToType<double>( ip.Interprete(helpsvv[i][3]) );
-        model[helpsvv[i][0]+string("_abs")] = abs;
-        model[helpsvv[i][0]+string("_phase")] = phase;
-        other_model[helpsvv[i][0]+string("_abs")] = abs;
-        other_model[helpsvv[i][0]+string("_phase")] = phase;
-      }
-    }
-    if ( helpsvv[i][2] == string("=")) {
-      if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
-        double real = ToType<double>( ip.Interprete(helpsvv[i][3]) );
-        model[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
-        other_model[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
-      }
-      if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
-        double abs   = ToType<double> ( ip.Interprete(helpsvv[i][3]) );
-        double phase = ToType<double> ( ip.Interprete(helpsvv[i][4]) );
-        model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"] = abs;
-        model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"] = phase;
-        other_model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"]=abs;
-        other_model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"]=phase;
-      }
-    }
   }
-  return model;
 }
 
 void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
@@ -425,10 +328,6 @@ void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
     file = split.second;
     content = Read_Write_Base::GetZipFileContent(path,file);
 
-    // save old channel in <filename>.dat.old
-    Read_Write_Base::AddZipEntry("Decaydata/",path+file+".old",
-                                 !newfile,content);
-
     // change integration results and overwrite result section
     string resultline;
     size_t found_begin = content.find("<Result>");
@@ -437,8 +336,10 @@ void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
     to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
     to<<"</Result>"<<endl;
     resultline=to.str();
-    content.replace(found_begin,found_end,resultline);
-    Read_Write_Base::AddZipEntry("Decaydata/",path,!newfile,content,file);
+    if (found_begin!=string::npos) content.replace(found_begin,found_end,resultline);
+    else content.append(resultline);
+    msg_IODebugging()<<content<<endl;
+    Read_Write_Base::AddZipEntry("Decaydata/",path,true,content,file);
   }
 }
 

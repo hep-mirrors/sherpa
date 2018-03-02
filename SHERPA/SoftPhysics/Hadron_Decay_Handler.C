@@ -45,6 +45,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   string tmp=reader.Get<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH")+"/");
   if (tmp[tmp.length()-1]!='/') tmp+="/";
   string decaydatazip=reader.Get<string>("DECAYDATA",tmp+"Decaydata.zip");
+  msg_Info()<<METHOD<<": Opening Decaydata from "<<decaydatazip<<endl;
+  // @todo this is obsolete, decaydata == decaydatazip after this?!?
   string decaydata=decaydatazip.replace(decaydatazip.length()-4,4,"/");
   string decayfile=reader.Get<string>("DECAYFILE",string("HadronDecays.dat"));
   string decayconstfile=reader.Get<string>("DECAYCONSTFILE",

@@ -26,7 +26,17 @@ namespace ATOOLS {
     }
     return result;
   }
-
+  
+  std::string SubString(const std::string& original,
+                        const std::string& begin, const std::string& end)
+  {
+    size_t ibegin = original.find(begin);
+    if (ibegin == std::string::npos) return "";
+    ibegin += begin.length();
+    size_t iend = original.find(end);
+    return original.substr(ibegin, iend-ibegin);
+  }
+  
   std::string ReplaceUnits(std::string v)
   {
     std::string f("");

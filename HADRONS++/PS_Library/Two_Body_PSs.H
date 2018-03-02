@@ -15,6 +15,7 @@ namespace HADRONS {
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
     std::string ChID()              { return std::string("Iso2");}
+    void MPISync() {};
   }; // end of class
 
   class Iso1Channel : public PHASIC::Single_Channel {
@@ -27,6 +28,7 @@ namespace HADRONS {
     int  ChNumber()                 { return m_chnumber;       }
     void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
     std::string ChID()              { return std::string("Iso1");}
+    void MPISync() {};
   }; // end of class
 
 

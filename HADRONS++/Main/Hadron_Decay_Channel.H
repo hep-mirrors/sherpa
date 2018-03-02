@@ -48,65 +48,47 @@ namespace HADRONS {
 
     /**
      *  Gets relevant section between begin and end from a decay channel
-     *  file and rescans it.
+     *  file.
      *  
      *  @param content Content of decay channel file
      *  @param begin Begin of needed section
      *  @param end End of needed section
-     *  @param reader The DataReader dealing with the decay channel file
      */
-    bool   Process(std::string content, std::string begin,
-                   std::string end,
-                   ATOOLS::Data_Reader                  & reader);
+    std::vector<std::vector<std::string> > Process(const std::string& content,
+                                                   const std::string& begin,
+                                                   const std::string& end);
     
     /** 
      * Process <Options> section in decay channel file.
      * 
-     * @param helpsvv Contents of <Options> section
+     * @param content of DC file
      */
-    void   ProcessOptions(std::vector<std::vector<std::string> > helpsvv);
+    void   ProcessOptions(const std::string& content);
 
     /** 
      * Process <Phasespace> section in decay channel file.
      * 
-     * @param ps_svv Contents of <Phasespace> section
-     * @param reader The DataReader dealing with the decay channel file
+     * @param content of DC file
      * @param model Global hadron decay parameters
      */
-    void   ProcessPhasespace(std::vector<std::vector<std::string> > ps_svv,
-                             ATOOLS::Data_Reader                  & reader,
-                             GeneralModel                   const & model );
+    void   ProcessPhasespace(const std::string& content,
+                             const GeneralModel& model );
 
     /** 
      * Process <ME> section in decay channel file.
      * 
-     * @param me_svv Contents of <ME> section
-     * @param reader The DataReader dealing with the decay channel file, which
-     *               is needed for reading the options for each extracted
-     *               matrix element.
+     * @param content of DC file
      * @param model Global hadron decay parameters
      */
-    void   ProcessME( std::vector<std::vector<std::string> > me_svv,
-                      ATOOLS::Data_Reader                  & reader,
-                      GeneralModel                         & model_for_ps );
+    void   ProcessME(const std::string& content,
+                     GeneralModel& model_for_ps );
 
     /** 
      * Process <Result> section in decay channel file.
      * 
-     * @param result_svv Contents of <Result> section 
+     * @param content of DC file
      */
-    void   ProcessResult(std::vector<std::vector<std::string> > result_svv);
-
-    /** 
-     * Helper function to create a GeneralModel from parameter = value pairs
-     * 
-     * @param helpsvv vector of lines of parameter = value pairs
-     * @param md additional model to be filled at the same time
-     * 
-     * @return New model filled from helpsvv
-     */    
-    GeneralModel Parameters2Model(std::vector<std::vector<std::string> >helpsvv,
-                                  GeneralModel& md);
+    void   ProcessResult(const std::string& content);
 
     /** 
      * Writes out to a decay channel file.

@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 
 #include <vector>
@@ -12,6 +13,7 @@
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace std;
 
 PHASIC::Decay_Table * Tools::partonic_b = 
   new PHASIC::Decay_Table(Flavour(kf_b),NULL);
@@ -187,4 +189,46 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
   br=ToType<double>(sbr);
 
   if (dbr==-1.0) dbr = br;
+}
+
+void GeneralModel::AddParameters(const std::string& params)
+{
+  Data_Reader reader(" ",";","!");
+  reader.SetAddCommandLine(false);
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetMatrixType(mtc::transposed);
+  reader.AddLineSeparator("\n");
+
+  if (params!="") reader.RescanFileContent(params,true);
+  vector<vector<string> > helpsvv;
+  reader.MatrixFromString(helpsvv,"");
+
+  Algebra_Interpreter ip;
+  for (size_t i=0;i<helpsvv.size();i++) {
+    if ( helpsvv[i][1] == string("=")) {
+      if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
+        double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
+        (*this)[helpsvv[i][0]] = real;
+      }
+      if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
+        double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
+        double phase = ToType<double>( ip.Interprete(helpsvv[i][3]) );
+        (*this)[helpsvv[i][0]+string("_abs")] = abs;
+        (*this)[helpsvv[i][0]+string("_phase")] = phase;
+      }
+    }
+    if ( helpsvv[i][2] == string("=")) {
+      if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
+        double real = ToType<double>( ip.Interprete(helpsvv[i][3]) );
+        (*this)[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
+      }
+      if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
+        double abs   = ToType<double> ( ip.Interprete(helpsvv[i][3]) );
+        double phase = ToType<double> ( ip.Interprete(helpsvv[i][4]) );
+        (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"] = abs;
+        (*this)[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"] = phase;
+      }
+    }
+  }
 }

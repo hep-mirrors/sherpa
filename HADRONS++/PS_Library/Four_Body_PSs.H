@@ -41,6 +41,7 @@ namespace HADRONS {
     void   EndOptimize()             { p_vegas->EndOptimize(); } 
     void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } 
     void   ReadIn(std::string pId)   { p_vegas->ReadIn(pId); } 
+    void MPISync() {};
   }; // end of class
 
   class IsotropicSpectator : public PHASIC::Single_Channel {
@@ -55,6 +56,7 @@ namespace HADRONS {
 		       double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);
     std::string ChID()    { return std::string("IsotropicSpectator");}
+    void MPISync() {};
   }; // end of class
 
   /*!
