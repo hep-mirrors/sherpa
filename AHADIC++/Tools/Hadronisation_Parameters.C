@@ -105,7 +105,7 @@ ReadClusterDecayParameters(Data_Reader & dataread) {
   m_parametermap[string("SplitExponent")]     = 
     dataread.GetValue<double>("SPLIT_EXPONENT",0.1608);
   m_parametermap[string("SplitLeadExponent")] = 
-    dataread.GetValue<double>("SPLIT_LEADEXPONENT",8);
+    dataread.GetValue<double>("SPLIT_LEADEXPONENT",1.0);
   m_parametermap[string("SpectExponent")]     = 
     dataread.GetValue<double>("SPECT_EXPONENT",1.739);
   m_parametermap[string("SpectLeadExponent")] = 
@@ -190,12 +190,16 @@ void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread)
     dataread.GetValue<double>("STRANGE_FRACTION",0.6049);
   m_parametermap[string("Baryon_fraction")]      = 
     dataread.GetValue<double>("BARYON_FRACTION",1.00);
-  m_parametermap[string("Heavy_Baryon_Enhancement")]    = 
-    dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMENT",0.8);
+  m_parametermap[string("Heavy_CharmBaryon_Enhancement")]    = 
+    dataread.GetValue<double>("HEAVY_CHARMBARYON_ENHANCEMENT",0.9);
+  m_parametermap[string("Heavy_BeautyBaryon_Enhancement")]    = 
+    dataread.GetValue<double>("HEAVY_BEAUTYBARYON_ENHANCEMENT",1.7);
   m_parametermap[string("Heavy_CharmStrange_Enhancement")]    = 
     dataread.GetValue<double>("HEAVY_CHARMSTRANGE_ENHANCEMENT",0.6);
   m_parametermap[string("Heavy_BeautyStrange_Enhancement")]    = 
     dataread.GetValue<double>("HEAVY_BEAUTYSTRANGE_ENHANCEMENT",1.0);
+  m_parametermap[string("Heavy_BeautyCharm_Enhancement")]    = 
+    dataread.GetValue<double>("HEAVY_BEAUTYCHARM_ENHANCEMENT",3.0);
   m_parametermap[string("P_qs_by_P_qq")]       = 
     dataread.GetValue<double>("P_{QS}/P_{QQ}",0.3);
   m_parametermap[string("P_ss_by_P_qq")]       = 

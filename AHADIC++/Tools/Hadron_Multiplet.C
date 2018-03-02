@@ -101,8 +101,10 @@ ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
   double hfle=1.0;
   double cse(hadpars->Get("Heavy_CharmStrange_Enhancement"));
   double bse(hadpars->Get("Heavy_BeautyStrange_Enhancement"));
+  double bce(hadpars->Get("Heavy_BeautyCharm_Enhancement"));
   if ((fl1==3||fl2==3)&&(fl1==4||fl2==4)) hfle*=cse;
   if ((fl1==3||fl2==3)&&(fl1==5||fl2==5)) hfle*=bse;
+  if ((fl1==4||fl2==4)&&(fl1==5||fl2==5)) hfle*=bce;
 // <-AV
   
   if (fl1!=fl2 && (flavs[0].Charge()+flavs[1].Charge()!=0.)) {
@@ -274,10 +276,11 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
   Flavour_Pair         * pair;
-
-  double hbe(hadpars->Get("Heavy_Baryon_Enhancement"));
-  double weight = (fl3>=4?hbe:1.);
 // AV->
+  double hcbe(hadpars->Get("Heavy_CharmBaryon_Enhancement"));
+  double hbbe(hadpars->Get("Heavy_BeautyBaryon_Enhancement"));
+  double weight =1.0; if (fl3==4) weight=hcbe;if (fl3==5) weight=hbbe;
+
   double cse(hadpars->Get("Heavy_CharmStrange_Enhancement"));
   double bse(hadpars->Get("Heavy_BeautyStrange_Enhancement"));
   if ((fl1==3||fl2==3)&&fl3==4) weight*=cse;

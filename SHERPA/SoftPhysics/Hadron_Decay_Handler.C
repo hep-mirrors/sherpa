@@ -191,8 +191,12 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       for(int i=0;i<decayblob->NOutP();i++) {
 	if (decayblob->OutParticle(i)->GetFlow(1)==0 &&
 	    decayblob->OutParticle(i)->GetFlow(2)==0)
-	  tmp.push_back(anti?decayblob->OutParticle(i)->Flav().Bar():
-			decayblob->OutParticle(i)->Flav());
+	    {
+          Flavour flav(anti?decayblob->OutParticle(i)->Flav().Bar():
+                       decayblob->OutParticle(i)->Flav());
+          tmp.push_back(flav);
+          tmpno.push_back(flav);
+      }
       }
     }
     std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
