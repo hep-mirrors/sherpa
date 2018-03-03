@@ -385,7 +385,7 @@ void SMEHC::FixEFT()
   double ph(-2.*47./18.); double pfac(1.);
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
     double hm=Flavour(kf_h0).Mass();
-    double tm=Flavour(kf_t).Mass();
+    double tm=Flavour(kf_t).Yuk();
     Effective_Higgs_Coupling ehc(hm);
     eh = ehc.GetFermionContribution(tm);
     double taut(sqr(hm/2./tm));
