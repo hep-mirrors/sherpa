@@ -67,8 +67,8 @@ operator()(const Process_Info &pi) const
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() &&
         pi.m_fi.m_ps.size()==1 && pi.m_fi.m_ps[0].m_fl.Kfcode()==kf_h0) {
-      if (pi.m_maxcpl[0]==3 && pi.m_maxcpl[1]==1 &&
-          pi.m_mincpl[0]==3 && pi.m_mincpl[1]==1) {
+      if (pi.m_maxcpl[0]==3 && (pi.m_maxcpl[1]==1 || (pi.m_maxcpl.size()>2 && pi.m_maxcpl[2]==1)) &&
+          pi.m_mincpl[0]==3 && (pi.m_mincpl[1]==1 || (pi.m_mincpl.size()>2 && pi.m_mincpl[2]==1))) {
         for (size_t i=2; i<fl.size(); ++i) {
           if (fl[i].Strong()) return NULL;
         }
