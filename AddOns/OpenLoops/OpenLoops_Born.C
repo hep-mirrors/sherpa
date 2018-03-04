@@ -41,12 +41,12 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   return m_symfac*result;
 }
 
-int OpenLoops_Born::OrderQCD(const int &id)
+int OpenLoops_Born::OrderQCD(const int &id) const
 {
   return OpenLoops_Interface::GetIntParameter("coupling_qcd_0");
 }
 
-int OpenLoops_Born::OrderEW(const int &id)
+int OpenLoops_Born::OrderEW(const int &id) const
 {
   return OpenLoops_Interface::GetIntParameter("coupling_ew_0");
 }
