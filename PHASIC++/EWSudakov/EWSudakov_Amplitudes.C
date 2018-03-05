@@ -8,48 +8,69 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 EWSudakov_Amplitudes::EWSudakov_Amplitudes(Process_Base* proc):
-  ampls{ CreateAmplitudes(proc) },
-  legpermutations{ CalculateLegPermutations(ampls) }
+  baseampl{ CreateAmplitude(proc) },
+  zphotoninterferenceampls{ CreateZPhotonInterferenceAmplitudes(proc) },
+  zphotonlegpermutations{ CalculateLegPermutations(zphotoninterferenceampls) }
 {
 }
 
-Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(size_t legindex)
+Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(EWSudakov_Amplitude_Type type,
+                                                 size_t legindex)
 {
-  const auto it = ampls.find(legindex);
-  if (it == ampls.end())
-    THROW(fatal_error, "Leg " + ToString(legindex) + "has not been rotated");
-  return *ampls.find(legindex)->second;
+  switch (type) {
+    case EWSudakov_Amplitude_Type::Base:
+      return Unrotated();
+    case EWSudakov_Amplitude_Type::ZPhotonInterference: {
+      const auto it = zphotoninterferenceampls.find(legindex);
+      if (it == zphotoninterferenceampls.end())
+        THROW(fatal_error, "Rotated amplitude not found");
+      return *(it->second);
+    }
+    default:
+      THROW(not_implemented, "EWSudakov Amplitude type not implemented");
+  }
 }
 
 std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(
-    size_t legindex)
+    EWSudakov_Amplitude_Type type, size_t legindex)
 {
-  const auto it = legpermutations.find(legindex);
-  if (it == legpermutations.end())
-    THROW(fatal_error, "Leg " + ToString(legindex) + "has not been rotated");
-  return legpermutations.find(legindex)->second;
+  switch (type) {
+    case EWSudakov_Amplitude_Type::ZPhotonInterference: {
+      const auto it = zphotonlegpermutations.find(legindex);
+      if (it == zphotonlegpermutations.end())
+        THROW(fatal_error, "Permutation not found");
+      return it->second;
+    }
+    default:
+      THROW(not_implemented, "EWSudakov Amplitude type not implemented");
+  }
 }
 
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
-  for (auto& ampl : ampls) {
-    for(int i(0); i < ampl.second->Legs().size(); ++i) {
-      const auto j = (ampl.first == -1) ? i : LegPermutation(ampl.first)[i];
-      ampl.second->Leg(i)->SetMom(mom[j]);
+  for(int i{ 0 }; i < baseampl->Legs().size(); ++i) {
+    baseampl->Leg(i)->SetMom(mom[i]);
+  }
+  for (auto& ampl : zphotoninterferenceampls) {
+    const auto& permutation =
+      LegPermutation(EWSudakov_Amplitude_Type::ZPhotonInterference, ampl.first);
+    for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
+      ampl.second->Leg(i)->SetMom(mom[permutation[i]]);
     }
   }
 }
 
-std::map<int, Cluster_Amplitude_UP> EWSudakov_Amplitudes::CreateAmplitudes(Process_Base* proc)
+EWSudakov_Amplitudes::Cluster_Amplitude_UPM
+EWSudakov_Amplitudes::CreateZPhotonInterferenceAmplitudes(Process_Base* proc) const
 {
-  std::map<int, Cluster_Amplitude_UP> ampls;
-  auto itbool = ampls.insert(std::make_pair(-1, CreateAmplitude(proc)));
-  auto& ampl = itbool.first->second;
-  for (size_t i{ 0 }; i < ampl->Legs().size(); ++i) {
-    const auto flav = ampl->Leg(i)->Flav();
-    if (flav.IsPhoton() || flav.Kfcode() == kf_Z)
-      // TODO: include more flavours when needed
-      ampls.insert(std::make_pair(i, CreateSU2RotatedAmplitude(ampl, i)));
+  Cluster_Amplitude_UPM ampls;
+  // create amplitudes needed for Z/photon interference terms
+  for (size_t i{ 0 }; i < baseampl->Legs().size(); ++i) {
+    const auto flav = baseampl->Leg(i)->Flav();
+    if (flav.IsPhoton() || flav.Kfcode() == kf_Z) {
+      ampls.insert(
+          std::make_pair(i, CreateZPhotonInterferenceAmplitude(baseampl, i)));
+    }
   }
   for (auto& kv : ampls)
     Process_Base::SortFlavours(kv.second.get());
@@ -71,7 +92,7 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base* proc)
   return ampl;
 }
 
-Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSU2RotatedAmplitude(
+Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateZPhotonInterferenceAmplitude(
     const Cluster_Amplitude_UP& ampl, size_t legindex)
 {
   auto campl = CopyClusterAmpl(ampl);
@@ -88,13 +109,12 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSU2RotatedAmplitude(
   return campl;
 }
 
-std::map<size_t, std::vector<size_t>> EWSudakov_Amplitudes::CalculateLegPermutations(
-    const std::map<int, Cluster_Amplitude_UP>& ampls)
+std::map<size_t, std::vector<size_t>>
+EWSudakov_Amplitudes::CalculateLegPermutations(
+    const Cluster_Amplitude_UPM& ampls)
 {
   std::map<size_t, std::vector<size_t>> permutations;
   for (const auto& kv : ampls) {
-    if (kv.first == -1)
-      continue;
     permutations[kv.first] = CalculateLegPermutation(kv.second);
   }
   return permutations;
@@ -111,5 +131,14 @@ std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
       THROW(not_implemented, "Clustering not supported yet.");
     v.push_back(ID(leg->Id()).front());
   }
+  return v;
+}
+
+ClusterAmplitude_Vector EWSudakov_Amplitudes::AllAmplitudes() noexcept
+{
+  ClusterAmplitude_Vector v;
+  v.push_back(baseampl.get());
+  for (const auto& ampl : zphotoninterferenceampls)
+    v.push_back(ampl.second.get());
   return v;
 }

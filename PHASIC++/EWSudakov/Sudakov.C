@@ -133,14 +133,14 @@ Complex Sudakov::LsCoeff(Complex amplvalue,
     if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
-      const auto from = flav.Kfcode();
-      const auto to = (from == kf_photon) ? kf_Z : kf_photon;
       const auto prefactor = -NondiagonalCew() / 2.0;
       const auto amplratio = 0.0;
       auto amplit = m_SU2rotatedspinampls.find(i);
-      auto& legpermutation = m_ampls.LegPermutation(i);
+      auto& legpermutation = m_ampls.LegPermutation(
+          EWSudakov_Amplitude_Type::ZPhotonInterference, i);
       if (amplit == m_SU2rotatedspinampls.end()) {
-        auto& rotatedampl(m_ampls.Rotated(i));
+        auto& rotatedampl =
+            m_ampls.Rotated(EWSudakov_Amplitude_Type::ZPhotonInterference, i);
         m_comixinterface.FillSpinAmplitudes(m_SU2rotatedspinampls[i],
                                             rotatedampl);
         amplit = m_SU2rotatedspinampls.find(i);
@@ -169,6 +169,49 @@ Complex Sudakov::lsZCoeff(Complex amplvalue,
     coeff += IZ2(flav, spincombination[i]) * std::log(1.0/m_cw2);
   }
   return coeff;
+}
+
+std::map<std::pair<size_t, size_t>, Complex> Sudakov::lsLogROverSCoeffs(
+    Complex amplvalue,
+    std::vector<int> spincombination,
+    size_t spinidx)
+{
+  std::map<std::pair<size_t, size_t>, Complex> coeffs;
+  // loop over pairs of external legs
+  for (size_t k{ 0 }; k < spincombination.size(); ++k) {
+    const Flavour kflav{ m_ampls.Unrotated().Leg(k)->Flav() };
+    for (size_t l{ 0 }; l < k; ++l) {
+      const Flavour lflav{ m_ampls.Unrotated().Leg(k)->Flav() };
+      const auto key = std::make_pair(k, l);
+
+      // add contribution for each vector boson connecting the leg pairs
+
+      // photon
+      const auto IAk = -kflav.Charge();
+      const auto IAl = -lflav.Charge();
+      coeffs[key] += 2*IAk*IAl;
+
+      // Z
+      const auto IZk = IZ(kflav, spincombination[k]);
+      const auto IZl = IZ(lflav, spincombination[l]);
+      coeffs[key] += 2*IZk*IZl;
+
+      // W
+      const auto Ipk = Ipm(kflav, spincombination[k], "+");
+      const auto Iml = Ipm(lflav, spincombination[l], "-");
+      if (Ipk != 0.0 && Iml != 0.0) {
+        const auto meratio = 0.0;  // TODO: calculate
+        coeffs[key] += 2*Ipk*Iml*meratio;
+      }
+      const auto Imk = Ipm(kflav, spincombination[k], "-");
+      const auto Ipl = Ipm(lflav, spincombination[l], "+");
+      if (Imk != 0.0 && Ipl != 0.0) {
+        const auto meratio = 0.0;  // TODO: calculate
+        coeffs[key] += 2*Imk*Ipl*meratio;
+      }
+    }
+  }
+  return coeffs;
 }
 
 double Sudakov::DiagonalCew(const Flavour& flav, int pol) const
@@ -261,6 +304,32 @@ double Sudakov::IZ2(const Flavour& flav, int pol) const
     } else {
       return 0.0;
     }
+  } else {
+    THROW(not_implemented, "Missing implementation");
+  }
+}
+
+double Sudakov::IZ(const Flavour& flav, int pol) const
+{
+  if (flav.IsScalar())
+    THROW(not_implemented,
+          "non-diagonal Z coupling terms for scalars not implemented");
+  if (flav.IsLepton()) {
+    if (pol == 0)
+      return m_sw/m_cw;
+    else
+      return -(m_cw2 - m_sw2)/(2*m_cw*m_sw);
+  } else {
+    THROW(not_implemented, "Missing implementation");
+  }
+}
+
+double Sudakov::Ipm(const Flavour& flav, int pol, const std::string& sign) const
+{
+  if (pol == 0)
+    return 0.0;
+  if (flav.IsLepton()) {
+    return ((flav.IsAnti()) ? -1 : 1) / (sqrt(2)*m_sw);
   } else {
     THROW(not_implemented, "Missing implementation");
   }

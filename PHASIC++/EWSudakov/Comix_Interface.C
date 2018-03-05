@@ -48,9 +48,8 @@ void Comix_Interface::FillSpinAmplitudes(
 
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
-  for (auto& amplkv : ampls) {
-    const auto& ampl = amplkv.second;
-    std::string name(PHASIC::Process_Base::GenerateName(ampl.get())+"__Sudakov");
+  for (auto ampl : ampls.AllAmplitudes()) {
+    std::string name(PHASIC::Process_Base::GenerateName(ampl)+"__Sudakov");
     Process_Info pi;
     pi.m_addname="__Sudakov";
     pi.m_megenerator="Comix";

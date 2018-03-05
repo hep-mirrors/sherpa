@@ -26,19 +26,30 @@ namespace PHASIC {
                      std::vector<int> spincombination,
                      size_t spinidx);
 
+    /// calculate SSC l(s) coefficients
+    std::map<std::pair<size_t, size_t>, Complex> lsLogROverSCoeffs(
+        Complex amplvalue,
+        std::vector<int> spincombination,
+        size_t spinidx);
+
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour&, int pol) const;
 
     /// the same, but non-diagonal neutral gauge bosons terms, eq. (B.25)
     double NondiagonalCew() const;
 
-    /// calculate the squared coupling to the Z
+    /// calculate the squared coupling to Z
     double IZ2(const Flavour&, int pol) const;
+
+    /// calculate the coupling to Z
+    double IZ(const Flavour&, int pol) const;
+
+    /// calculate the coupling to W plus/minus
+    double Ipm(const Flavour&, int pol, const std::string& sign) const;
 
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
 
-    
     Process_Base* p_proc;
     EWSudakov_Amplitudes m_ampls;
     const Comix_Interface m_comixinterface;
