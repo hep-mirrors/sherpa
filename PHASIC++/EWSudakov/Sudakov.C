@@ -42,23 +42,16 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_spinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
-  if (m_check) {
-    Coefficient_Checker checker(p_proc->Name());
-    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
-      THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
-	    " the results in hep-ph/0010201.");
-    }
-  }
-  
+
   /*
     // pref = alpha/4 pi is added in KFactor method.
 
     Born_EW = |M0 + alpha * delta * M0 / 4 pi |^2 
             = |M0|^2 |1 + alpha * delta / 4 pi|^2 
-	    = |M0|^2 (1 + 2 * alpha * Re(delta) / 4 pi) + O(alpha^2)
+            = |M0|^2 (1 + 2 * alpha * Re(delta) / 4 pi) + O(alpha^2)
     This function gives 2 Re(delta), the rest is handled by KFactor.C
   */
-  
+
   const auto born { p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor() };
   return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real()/born;
 }
@@ -105,10 +98,25 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       THROW(fatal_error, "Inconsistent state");
     if (value == 0.0)
       continue;
+    m_coeffs["L"][i] = LsCoeff(value, spincombination, i);
+    m_coeffs["lZ"][i] = lsZCoeff(value, spincombination, i);
+    // TODO: add other coefficients (remember to init m_coeffs in ctor and to
+    // multiply B0i below)
+  }
+  if (m_check) {
+    Coefficient_Checker checker(p_proc->Name());
+    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
+      THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
+                         " the results in hep-ph/0010201.");
+    }
+  }
+  for (size_t i{ 0 }; i < spinamplnum; ++i) {
+    const auto value = ampls.Get(i);
+    if (value == 0.0)
+      continue;
     Complex B0i{ value * std::conj(value) };
-    m_coeffs["L"][i]  = B0i * LsCoeff(value, spincombination, i);
-    m_coeffs["lZ"][i] = B0i * lsZCoeff(value, spincombination, i);
-    // TODO: add other coefficients (remember to init m_coeffs in ctor)
+    m_coeffs["L"][i] *= B0i;
+    m_coeffs["lZ"][i] *= B0i;
   }
   for (const auto& coeff : m_coeffs["L"])
     DEBUG_VAR(coeff);
