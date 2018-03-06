@@ -4,56 +4,51 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
+#include <numeric>
+
 using namespace PHASIC;
 using namespace ATOOLS;
 
+const EWSudakov_Amplitudes::Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
+= std::make_pair(EWSudakov_Amplitude_Type::Base, Leg_Index_Set{});
+
 EWSudakov_Amplitudes::EWSudakov_Amplitudes(Process_Base* proc):
-  baseampl{ CreateAmplitude(proc) },
-  zphotoninterferenceampls{ CreateZPhotonInterferenceAmplitudes(proc) },
-  zphotonlegpermutations{ CalculateLegPermutations(zphotoninterferenceampls) }
+  ampls{ CreateAmplitudes(proc) },
+  permutations{ CreatePermutations(ampls) }
 {
+}
+
+Cluster_Amplitude& EWSudakov_Amplitudes::Unrotated() noexcept
+{
+  return Rotated(s_baseamplkey.first, s_baseamplkey.second);
 }
 
 Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(EWSudakov_Amplitude_Type type,
-                                                 size_t legindex)
+                                                 Leg_Index_Set indizes)
 {
-  switch (type) {
-    case EWSudakov_Amplitude_Type::Base:
-      return Unrotated();
-    case EWSudakov_Amplitude_Type::ZPhotonInterference: {
-      const auto it = zphotoninterferenceampls.find(legindex);
-      if (it == zphotoninterferenceampls.end())
-        THROW(fatal_error, "Rotated amplitude not found");
-      return *(it->second);
-    }
-    default:
-      THROW(not_implemented, "EWSudakov Amplitude type not implemented");
-  }
+  const auto key = std::make_pair(type, indizes);
+  const auto it = ampls.find(key);
+  if (it == ampls.end())
+    THROW(fatal_error, "Rotated amplitude not found");
+  return *(it->second);
 }
 
 std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(
-    EWSudakov_Amplitude_Type type, size_t legindex)
+    EWSudakov_Amplitude_Type type, Leg_Index_Set indizes)
 {
-  switch (type) {
-    case EWSudakov_Amplitude_Type::ZPhotonInterference: {
-      const auto it = zphotonlegpermutations.find(legindex);
-      if (it == zphotonlegpermutations.end())
-        THROW(fatal_error, "Permutation not found");
-      return it->second;
-    }
-    default:
-      THROW(not_implemented, "EWSudakov Amplitude type not implemented");
-  }
+  const auto key = std::make_pair(type, indizes);
+  const auto it = permutations.find(key);
+  if (it == permutations.end())
+    THROW(fatal_error, "Permutation not found");
+  return it->second;
 }
 
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
-  for(int i{ 0 }; i < baseampl->Legs().size(); ++i) {
-    baseampl->Leg(i)->SetMom(mom[i]);
-  }
-  for (auto& ampl : zphotoninterferenceampls) {
-    const auto& permutation =
-      LegPermutation(EWSudakov_Amplitude_Type::ZPhotonInterference, ampl.first);
+  for (auto& ampl : ampls) {
+    const auto ampltype = ampl.first.first;
+    const auto legindizes = ampl.first.second;
+    const auto& permutation = LegPermutation(ampltype, legindizes);
     for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
       ampl.second->Leg(i)->SetMom(mom[permutation[i]]);
     }
@@ -61,15 +56,18 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 }
 
 EWSudakov_Amplitudes::Cluster_Amplitude_UPM
-EWSudakov_Amplitudes::CreateZPhotonInterferenceAmplitudes(Process_Base* proc) const
+EWSudakov_Amplitudes::CreateAmplitudes(Process_Base* proc) const
 {
   Cluster_Amplitude_UPM ampls;
+  const auto& baseampl
+    = ampls.insert(std::make_pair(s_baseamplkey, CreateAmplitude(proc))).first->second;
   // create amplitudes needed for Z/photon interference terms
   for (size_t i{ 0 }; i < baseampl->Legs().size(); ++i) {
     const auto flav = baseampl->Leg(i)->Flav();
     if (flav.IsPhoton() || flav.Kfcode() == kf_Z) {
-      ampls.insert(
-          std::make_pair(i, CreateZPhotonInterferenceAmplitude(baseampl, i)));
+      const auto key
+        = std::make_pair(EWSudakov_Amplitude_Type::LSCZ, Leg_Index_Set{i});
+      ampls.insert(std::make_pair(key, CreateLSCZAmplitude(baseampl, i)));
     }
   }
   for (auto& kv : ampls)
@@ -92,7 +90,7 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base* proc)
   return ampl;
 }
 
-Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateZPhotonInterferenceAmplitude(
+Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateLSCZAmplitude(
     const Cluster_Amplitude_UP& ampl, size_t legindex)
 {
   auto campl = CopyClusterAmpl(ampl);
@@ -109,18 +107,29 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateZPhotonInterferenceAmplitude(
   return campl;
 }
 
-std::map<size_t, std::vector<size_t>>
-EWSudakov_Amplitudes::CalculateLegPermutations(
+EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
     const Cluster_Amplitude_UPM& ampls)
 {
-  std::map<size_t, std::vector<size_t>> permutations;
+  Permutation_Map permutations;
   for (const auto& kv : ampls) {
-    permutations[kv.first] = CalculateLegPermutation(kv.second);
+    std::vector<size_t> permutation;
+    switch (kv.first.first) {
+      case EWSudakov_Amplitude_Type::Base:
+        permutation.resize(kv.second->Legs().size());
+        std::iota(std::begin(permutation), std::end(permutation), 0);
+        break;
+      case EWSudakov_Amplitude_Type::LSCZ:
+        permutation = CalculateLSCZLegPermutation(kv.second);
+        break;
+      default:
+        THROW(not_implemented, "Missing implementation");
+    }
+    permutations.insert(std::make_pair(kv.first, permutation));
   }
   return permutations;
 }
 
-std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
+std::vector<size_t> EWSudakov_Amplitudes::CalculateLSCZLegPermutation(
     const Cluster_Amplitude_UP& ampl)
 {
   // TODO: This assumes that the unrotated amplitude is ordered 0, 1, 2, ...
@@ -131,14 +140,5 @@ std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
       THROW(not_implemented, "Clustering not supported yet.");
     v.push_back(ID(leg->Id()).front());
   }
-  return v;
-}
-
-ClusterAmplitude_Vector EWSudakov_Amplitudes::AllAmplitudes() noexcept
-{
-  ClusterAmplitude_Vector v;
-  v.push_back(baseampl.get());
-  for (const auto& ampl : zphotoninterferenceampls)
-    v.push_back(ampl.second.get());
   return v;
 }

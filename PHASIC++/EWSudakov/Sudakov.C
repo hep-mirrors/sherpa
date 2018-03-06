@@ -38,7 +38,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
-  m_SU2rotatedspinampls.clear();
+  m_lsczspinampls.clear();
   m_spinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
@@ -135,16 +135,15 @@ Complex Sudakov::LsCoeff(Complex amplvalue,
       // terms appear, cf. e.g. eq. (6.30)
       const auto prefactor = -NondiagonalCew() / 2.0;
       const auto amplratio = 0.0;
-      auto amplit = m_SU2rotatedspinampls.find(i);
-      auto& legpermutation = m_ampls.LegPermutation(
-          EWSudakov_Amplitude_Type::ZPhotonInterference, i);
-      if (amplit == m_SU2rotatedspinampls.end()) {
+      auto amplit = m_lsczspinampls.find(i);
+      if (amplit == m_lsczspinampls.end()) {
         auto& rotatedampl =
-            m_ampls.Rotated(EWSudakov_Amplitude_Type::ZPhotonInterference, i);
-        m_comixinterface.FillSpinAmplitudes(m_SU2rotatedspinampls[i],
-                                            rotatedampl);
-        amplit = m_SU2rotatedspinampls.find(i);
+            m_ampls.Rotated(EWSudakov_Amplitude_Type::LSCZ, {i});
+        m_comixinterface.FillSpinAmplitudes(m_lsczspinampls[i], rotatedampl);
+        amplit = m_lsczspinampls.find(i);
       }
+      auto& legpermutation = m_ampls.LegPermutation(
+          EWSudakov_Amplitude_Type::LSCZ, {i});
       std::vector<int> rotatedspincombination;
       for (const auto& idx : legpermutation)
         rotatedspincombination.push_back(spincombination[idx]);
@@ -195,20 +194,6 @@ std::map<std::pair<size_t, size_t>, Complex> Sudakov::lsLogROverSCoeffs(
       const auto IZk = IZ(kflav, spincombination[k]);
       const auto IZl = IZ(lflav, spincombination[l]);
       coeffs[key] += 2*IZk*IZl;
-
-      // W
-      const auto Ipk = Ipm(kflav, spincombination[k], "+");
-      const auto Iml = Ipm(lflav, spincombination[l], "-");
-      if (Ipk != 0.0 && Iml != 0.0) {
-        const auto meratio = 0.0;  // TODO: calculate
-        coeffs[key] += 2*Ipk*Iml*meratio;
-      }
-      const auto Imk = Ipm(kflav, spincombination[k], "-");
-      const auto Ipl = Ipm(lflav, spincombination[l], "+");
-      if (Imk != 0.0 && Ipl != 0.0) {
-        const auto meratio = 0.0;  // TODO: calculate
-        coeffs[key] += 2*Imk*Ipl*meratio;
-      }
     }
   }
   return coeffs;

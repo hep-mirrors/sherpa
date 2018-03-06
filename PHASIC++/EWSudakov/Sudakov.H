@@ -61,7 +61,9 @@ namespace PHASIC {
 
     // intermediate results
     mutable std::map<std::string, std::vector<Complex>> m_coeffs;
-    mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_SU2rotatedspinampls;
+    mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_lsczspinampls;
+    mutable std::map<size_t, std::map<size_t, std::vector<Spin_Amplitudes>>>
+      m_sscwspinampls;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
   };
 }
