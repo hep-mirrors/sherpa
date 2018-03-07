@@ -90,7 +90,7 @@ C3_3::C3_3(int nin,int nout,Flavour* fl,Integration_Info * const info)
   rannum = 5;
   rans  = new double[rannum];
   m_amct  = 1.0+ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_EPSILON"));
-  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_ALPHA"));
+  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_SCHANNEL_ALPHA"));
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kTC_0__1_4_3_2.Assign(std::string("TC_0__1_4_3_2"),2,0,info);

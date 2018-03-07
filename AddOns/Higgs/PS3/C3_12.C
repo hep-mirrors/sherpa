@@ -97,7 +97,7 @@ C3_12::C3_12(int nin,int nout,Flavour* fl,Integration_Info * const info)
   rannum = 5-m_onshell;
   rans  = new double[rannum];
   m_amct  = 1.0+ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_EPSILON"));
-  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_ALPHA"));
+  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_SCHANNEL_ALPHA"));
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);

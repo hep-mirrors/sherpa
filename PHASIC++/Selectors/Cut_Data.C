@@ -83,8 +83,7 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   smin = sqr(smin);
 
   Default_Reader reader;
-  double sijminfac = reader.Get<double>("INT_MINSIJ_FACTOR", 0.);
-  minsijfac = reader.Get<double>("LOCAL_MINSIJ_FACTOR", 1.e-12);
+  double sijminfac = reader.Get<double>("INT_MINSIJ_FACTOR", 1.e-12);
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
@@ -246,7 +245,7 @@ void Cut_Data::Setscut(std::string str,double d)
 void Cut_Data::Update(double sprime,double y) 
 {
   // reset cuts to lab values
-  Reset(true);
+  Reset(false);
   // boost from lab to cms
   double chy(cosh(y)), shy(sinh(y));
   Poincare cms[2]={Poincare(Vec4D(chy,0.0,0.0,shy)),
@@ -272,10 +271,4 @@ void Cut_Data::Update(double sprime,double y)
       cosmin[i][a]=cosmin[a][i]=Max(cosmin[a][i],-ct);
     }
   }
-  for (int i=0;i<ncut;i++) {
-    for (int j=i+1;j<ncut;j++) {
-      if ((i<nin)^(j<nin)) continue;
-      scut[i][j] = scut[j][i] = Max(scut_save[i][j],sprime*minsijfac);
-    }
-  } 
 }

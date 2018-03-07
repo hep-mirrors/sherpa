@@ -80,7 +80,9 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
   if (muR>0.0) muR=sqrt(muR);
   else muR=rpa->gen.Ecms();
   mu_sq=sqr(muR);
-  alpha0=s_model->ScalarConstant("alpha_QED");
+  Running_AlphaQED* aqed =
+    dynamic_cast<Running_AlphaQED*>(s_model->GetScalarFunction("alpha_QED"));
+  alpha0=aqed->AqedThomson();
   msg_Debugging()<<"\\mu_R = "<<muR<<" -> alpha = "
 		 <<alpha0<<", alpha_s = "<<alpha_s(muR)<<"\n";
   for (size_t i(0);i<p.size();++i)
@@ -375,7 +377,7 @@ void Higgs_Tree::FillCombinations
   CompleteCombinations(combs,fls);
 }
 
-int Higgs_Tree::OrderQCD(const int &id)
+int Higgs_Tree::OrderQCD(const int &id) const
 {
   if (m_int == 4) {  // background only
     return (m_n == 4) ? 0 : 1;
@@ -389,7 +391,7 @@ int Higgs_Tree::OrderQCD(const int &id)
   }
 }
 
-int Higgs_Tree::OrderEW(const int &id)
+int Higgs_Tree::OrderEW(const int &id) const
 {
   return 2;
 }
