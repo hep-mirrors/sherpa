@@ -146,7 +146,7 @@ namespace SHERPA {
 
 
   typedef
-    std::map<Variations_Type::code, std::vector<Subevent_Weights_Vector>>
+    std::map<Variations_Type::code, std::vector<Subevent_Weights_Vector> >
     Subevent_Weights_Map;
 
 
