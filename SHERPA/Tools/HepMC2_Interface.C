@@ -42,7 +42,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_variationtypes(1, Variations_Type::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),
-  m_mur2(0.), m_muf12(0.), m_muf22(0.),
+  m_mur2(0.), m_muf12(0.), m_muf22(0.), m_muq2(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
   p_variationweights(NULL)
@@ -65,6 +65,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     }
     ReadIn(db,"Renormalization_Scale",false);
     if (db) m_mur2=db->Get<double>();
+    ReadIn(db,"Resummation_Scale",false);
+    if (db) m_muq2=db->Get<double>();
     SetAlphaS();
     SetAlpha();
     if (m_extendedweights) {
@@ -98,7 +100,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
-  m_mur2(0.), m_muf12(0.), m_muf22(0.),
+  m_mur2(0.), m_muf12(0.), m_muf22(0.), m_muq2(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
@@ -129,6 +131,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       // additional entries for LO/LOPS reweighting
       // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
       wc["MuR2"]=m_mur2;
+      wc["MuQ2"]=m_muq2;
       wc["OQCD"]=m_orders[0];
       wc["OEW"]=m_orders[1];
       if (p_wgtinfo) {
@@ -251,6 +254,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc.push_back(m_mur2);
       wc.push_back(m_muf12);
       wc.push_back(m_muf22);
+      wc.push_back(m_muq2);
       wc.push_back(m_orders[0]);
       wc.push_back(m_orders[1]);
     }
@@ -264,6 +268,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                            q,p_pdfinfo->m_xf1,p_pdfinfo->m_xf2);
     evt.set_pdf_info(pdfinfo);
   }
+  evt.set_event_scale(sqrt(m_muq2));
   evt.set_alphaQCD(m_alphas);
   evt.set_alphaQED(m_alpha);
   return true;
@@ -398,6 +403,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
     subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
     subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
+    subevtinfo.SetMuQ2(sub->m_mu2[stp::res]);
     subevtinfo.SetAlphaS();
     subevtinfo.SetAlpha();
     subevtinfo.WriteTo(*subevent,i);

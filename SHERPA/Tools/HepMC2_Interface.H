@@ -39,7 +39,7 @@ namespace SHERPA {
     std::vector<Variations_Type::code> m_variationtypes;
     std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
-    double m_mur2, m_muf12, m_muf22;
+    double m_mur2, m_muf12, m_muf22, m_muq2;
     double m_alphas, m_alpha;
     PHASIC::nlo_type::code m_type;
     ATOOLS::ME_Weight_Info * p_wgtinfo;
@@ -64,6 +64,7 @@ namespace SHERPA {
     inline void SetMuR2(const double &mur2)           { m_mur2=mur2; }
     inline void SetMuF12(const double &muf12)         { m_muf12=muf12; }
     inline void SetMuF22(const double &muf22)         { m_muf22=muf22; }
+    inline void SetMuQ2(const double &muq2)           { m_muq2=muq2; }
     void SetAlphaS();
     void SetAlpha();
   };
