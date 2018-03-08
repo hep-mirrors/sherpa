@@ -5,7 +5,7 @@ nobase_dist_examples_DATA         =	\
 		API/ME2-Python/test.py.in \
 		API/ME2-CPP/Run.dat \
 		API/ME2-CPP/test.cpp \
-		API/ME2-CPP/Makefile \
+		API/ME2-CPP/SConstruct \
 		API/Events/Run.dat \
 		API/Events/test.py.in \
 		API/MPIEvents/Run.dat \
