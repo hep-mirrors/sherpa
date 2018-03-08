@@ -181,8 +181,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>
                     (ampl->Next()->Next()?ampl->Next()->KT2():ampl->MuQ2()));
     }
-    blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
   }
+  if (ampl) blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
   if (ampl) ampl->Delete();
   ATOOLS::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
