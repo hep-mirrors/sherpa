@@ -1,0 +1,28 @@
+def get_config(exec_string):
+   from subprocess import check_output
+   return check_output(exec_string.split()).rstrip().split()
+
+import os
+env = Environment(ENV=os.environ)
+
+sherpa_path    = env['ENV']['SHERPA']
+sherpa_libpath = sherpa_path+'lib/SHERPA-MC/'
+sherpa_config  = sherpa_path+'/bin/Sherpa-config'
+
+env.Append(CXXFLAGS = get_config(sherpa_config+' --cppflags'))
+
+env.Append(RPATH = [sherpa_libpath] )
+
+env.Append(LINKFLAGS = get_config(sherpa_config+' --libs')+
+           ['-lMEProcess',
+            '-lToolsPhys',
+            '-lToolsMath',
+            '-lToolsOrg',
+            '-lPhasicProcess',
+            '-lSherpaPerturbativePhysics',
+            '-lPhasicMain',
+            '-lModelMain'])
+
+env.Replace(CXX=get_config(sherpa_config+' --cxx'))
+
+env.Program('test', ['test.cpp'])
