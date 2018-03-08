@@ -337,6 +337,13 @@ outgoing particles are stored. Intermediate and decayed particles are not
 listed. The event weights stored as the same as above, and 
 @code{HEPMC_USE_NAMED_WEIGHTS} and @code{HEPMC_EXTENDED_WEIGHTS} can be used to 
 customise.
+
+@item HepMC3_GenEvent
+Generates output using HepMC3 library. The format of the output is set with  @code{HEPMC3_IO_TYPE=<0|1|2|3|4>} tag.
+The default value is 0 and corresponds to ASCII GenEvent. Other available options are 
+1: HepEvt 2: ROOT file with every event written as an object of class GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
+Otherwise similar to  @code{HepMC_GenEvent}.
+
 @item Delphes_GenEvent
 Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
 @uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
