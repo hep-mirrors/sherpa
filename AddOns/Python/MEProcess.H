@@ -65,6 +65,7 @@ public:
   double GenerateColorPoint();
   bool HasColorIntegrator();
   void Initialize();
+  void SetUpColorStructure();
 
   size_t NumberOfPoints();
 

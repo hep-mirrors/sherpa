@@ -57,12 +57,13 @@ operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="OpenLoops") return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo && pi.m_fi.m_nlotype!=nlo_type::born &&
-      pi.m_fi.m_nlotype!=nlo_type::real) return NULL;
 
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_maxcpl[0]);
+  /* Can't be dealt with by OpenLoops at this time */
+  if(pi.ExtractFlavours().size()<3) return NULL;
+
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_mincpl[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
-  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_maxcpl[1]);
+  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_mincpl[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1", 0);
 
   AmplitudeType types[2] = {Loop2, Tree};

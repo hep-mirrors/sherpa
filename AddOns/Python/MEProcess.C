@@ -331,6 +331,8 @@ PHASIC::Process_Base* MEProcess::FindProcess(const ATOOLS::Cluster_Amplitude* am
   msg_Debugging()<<"Looking for "<<name<<std::endl;
   for (size_t i(0); i<me_handler->ProcMaps().size(); i++)
     {
+      if(me_handler->ProcMaps()[i]->find(m_nlotype)==
+	 me_handler->ProcMaps()[i]->end()) continue;
       PHASIC::StringProcess_Map::const_iterator
         pit(me_handler->ProcMaps()[i]->find(m_nlotype)
             ->second->find(name));
@@ -367,7 +369,29 @@ void MEProcess::Initialize()
 	}
     }
 
-  // Set up color structure
+  // Check if any of the flavours are 'containters'.
+  // In this case we can't assign any color structure
+  bool container(false);
+  for (size_t i(0);i<p_proc->Flavours().size();++i)
+    if (p_proc->Flavours()[i].Size() > 1)
+      container=true;
+  if(!container) SetUpColorStructure();
+
+  std::vector<int> allpdgs;
+  for (std::vector<int>::const_iterator it=m_inpdgs.begin();
+       it!=m_inpdgs.end(); it++)  allpdgs.push_back(*it);
+  for (std::vector<int>::const_iterator it=m_outpdgs.begin();
+       it!=m_outpdgs.end(); it++) allpdgs.push_back(*it);
+  SetMomentumIndices(allpdgs);
+  
+  p_rambo = new PHASIC::Rambo(m_nin,m_nout,
+			      &m_flavs.front(),
+			      p_proc->Generator());
+}
+
+void MEProcess::SetUpColorStructure()
+{
+
   for (unsigned int i = 0; i<p_amp->Legs().size(); i++) {
     if (p_amp->Leg(i)->Flav().Strong()) {
       int scharge = p_amp->Leg(i)->Flav().StrongCharge();
@@ -383,8 +407,10 @@ void MEProcess::Initialize()
       }
     }
   }
+
   m_ncolinds = 2*m_gluinds.size() + m_quabarinds.size() + m_quainds.size();
   if (m_ncolinds%2) THROW(fatal_error, "Odd number of color indices");
+
   for (int i(0); i<pow(3, m_ncolinds); i++) {
     int k(i);
     int mod(0);
@@ -414,18 +440,8 @@ void MEProcess::Initialize()
     if (rb==r&&gb==g&&bb==b) m_colcombinations.push_back(combination);
   }
 
-  std::vector<int> allpdgs;
-  for (std::vector<int>::const_iterator it=m_inpdgs.begin();
-       it!=m_inpdgs.end(); it++)  allpdgs.push_back(*it);
-  for (std::vector<int>::const_iterator it=m_outpdgs.begin();
-       it!=m_outpdgs.end(); it++) allpdgs.push_back(*it);
-  SetMomentumIndices(allpdgs);
   if(p_proc->Integrator()->ColorIntegrator()!=NULL)
     p_colint = p_proc->Integrator()->ColorIntegrator();
-  
-  p_rambo = new PHASIC::Rambo(m_nin,m_nout,
-			      &m_flavs.front(),
-			      p_proc->Generator());
 }
 
 double MEProcess::TestPoint(const double& E){
@@ -449,11 +465,6 @@ double MEProcess::MatrixElement()
   if(p_colint!=NULL) p_colint->SetWOn(false);
   double res(p_proc->Differential(*p_amp,1|4));
   if(p_colint!=NULL) p_colint->SetWOn(true);
-  // if(res!=0.0){
-  //   PRINT_VAR(*p_amp);
-  //   PRINT_VAR(res);
-  //   exit(0);
-  // }
   return res;
 }
 
