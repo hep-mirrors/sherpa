@@ -99,13 +99,13 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
   SetParameter("verbose",ol_verbosity);
 
   // tell OL about the current model and check whether accepted
-  if (!s_ignore_model) SetParameter("model", s_model->Name());
+  if (!s_ignore_model) SetParameter("model", model->Name());
 
   // Propagate model parameters to OpenLoops
-  if(dynamic_cast<UFO::UFO_Model*>(s_model))
-    SetParametersUFO();
+  if(dynamic_cast<UFO::UFO_Model*>(model))
+    SetParametersUFO(model);
   else
-    SetParametersSM();
+    SetParametersSM(model);
 
   // set nf in alpha-s evolution
   int asnf0(isr->PDF(0)?isr->PDF(0)->ASInfo().m_nf:-1);
@@ -161,7 +161,7 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
 }
 
 // Propagate model parameters to OpenLoops in the standard model
-void OpenLoops_Interface::SetParametersSM()
+void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
 {
   // set ew scheme to as(mZ), irrespective of the Sherpa scheme,
   // we give parameters to OL as as(MZ) and masses
@@ -181,7 +181,7 @@ void OpenLoops_Interface::SetParametersSM()
         flav.Mass()!=flav.Yuk()) {
       SetParameter("yuk("+ToString(id)+")", flav.Yuk());
       if (flav.IsQuark()) { // not supported/needed for leptons
-        if (s_model->ScalarNumber(std::string("YukawaScheme"))==1)
+        if (model->ScalarNumber(std::string("YukawaScheme"))==1)
           SetParameter("muy("+ToString(id)+")", Flavour(kf_h0).Mass(true));
         else
           SetParameter("muy("+ToString(id)+")", flav.Yuk());
@@ -189,16 +189,16 @@ void OpenLoops_Interface::SetParametersSM()
     }
   }
   // Set CKM parameters
-  if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
-      s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
+  if (model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 3);
   }
-  else if (s_model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
-      s_model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
+  else if (model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 2);
   }
-  else if (s_model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
-      s_model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
+  else if (model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 1);
   }
   else {
@@ -206,11 +206,11 @@ void OpenLoops_Interface::SetParametersSM()
   }
 }
 
-void OpenLoops_Interface::SetParametersUFO()
+void OpenLoops_Interface::SetParametersUFO(const MODEL::Model_Base* model)
 {
   // All external UFO parameters are stored in this map
-  for(MODEL::ScalarConstantsMap::const_iterator it=s_model->ScalarConstants().begin();
-      it!=s_model->ScalarConstants().end(); ++it)
+  for(MODEL::ScalarConstantsMap::const_iterator it=model->ScalarConstants().begin();
+      it!=model->ScalarConstants().end(); ++it)
     SetParameter(it->first, it->second);
 }
 

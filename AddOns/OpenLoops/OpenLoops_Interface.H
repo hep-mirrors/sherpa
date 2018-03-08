@@ -81,10 +81,10 @@ namespace OpenLoops {
     static int GetIntParameter(const std::string & key);
 
     /* Propagate model parameters to OpenLoops in SM */
-    static void SetParametersSM();
+    static void SetParametersSM(const MODEL::Model_Base* model);
     
     /* Propagate model parameters to OpenLoops in UFO models */
-    static void SetParametersUFO();
+    static void SetParametersUFO(const MODEL::Model_Base* model);
 
     static bool ExitOnError() { return s_exit_on_error; }
 
