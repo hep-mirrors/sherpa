@@ -187,6 +187,8 @@ namespace ATOOLS {
     { double c((p_info->m_kfc<7 || (p_info->m_kfc>10 && p_info->m_kfc<17))
 	       ?((p_info->m_kfc%2)?-0.5:0.5):0); return m_anti?-c:c; }
 
+    Flavour IsoWeakPartner() const;
+
     inline int  StrongCharge() const 
     { int c(p_info->m_strong); return m_anti?-c:c; }
     inline bool Strong() const

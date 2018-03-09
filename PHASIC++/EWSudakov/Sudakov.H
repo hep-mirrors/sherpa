@@ -7,6 +7,10 @@
 #include "PHASIC++/Process/Process_Base.H"
 
 namespace PHASIC {
+
+  using LogType_Coeff_Map = std::map<std::string, std::vector<Complex>>;
+  using LegIndizes_Coeff_Map = std::map<Two_Leg_Indizes, Complex>;
+
   class Sudakov {
   public:
     Sudakov(Process_Base*);
@@ -27,10 +31,9 @@ namespace PHASIC {
                      size_t spinidx);
 
     /// calculate SSC l(s) coefficients
-    std::map<std::pair<size_t, size_t>, Complex> lsLogROverSCoeffs(
-        Complex amplvalue,
-        std::vector<int> spincombination,
-        size_t spinidx);
+    LegIndizes_Coeff_Map lsLogROverSCoeffs(Complex amplvalue,
+                                           std::vector<int> spincombination,
+                                           size_t spinidx);
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour&, int pol) const;
@@ -60,10 +63,10 @@ namespace PHASIC {
     Complex m_born;
 
     // intermediate results
-    mutable std::map<std::string, std::vector<Complex>> m_coeffs;
+    mutable LogType_Coeff_Map m_coeffs;
+    mutable std::vector<LegIndizes_Coeff_Map> m_angularcoeffs;
     mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_lsczspinampls;
-    mutable std::map<size_t, std::map<size_t, std::vector<Spin_Amplitudes>>>
-      m_sscwspinampls;
+    mutable std::map<Two_Leg_Indizes, std::vector<Spin_Amplitudes>> m_sscwspinampls;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
   };
 }

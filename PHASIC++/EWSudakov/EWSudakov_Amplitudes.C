@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 
 #include <numeric>
+#include <cassert>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -70,6 +71,22 @@ EWSudakov_Amplitudes::CreateAmplitudes(Process_Base* proc) const
       ampls.insert(std::make_pair(key, CreateLSCZAmplitude(baseampl, i)));
     }
   }
+  // create amplitudes needed for W loops
+  for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
+    for (size_t l{ 0 }; l < k; ++l) {
+      const auto kflav = baseampl->Leg(k)->Flav();
+      const auto lflav = baseampl->Leg(l)->Flav();
+      const auto newkflav = kflav.IsoWeakPartner();
+      const auto newlflav = lflav.IsoWeakPartner();
+      if (kflav.IntCharge() + lflav.IntCharge()
+          != newkflav.IntCharge() + newlflav.IntCharge())
+        continue;
+      const auto key
+        = std::make_pair(EWSudakov_Amplitude_Type::SSCW, Leg_Index_Set{k, l});
+      ampls.insert(std::make_pair(
+            key, CreateSSCWAmplitude(baseampl, Two_Leg_Indizes{k, l})));
+    }
+  }
   for (auto& kv : ampls)
     Process_Base::SortFlavours(kv.second.get());
   return ampls;
@@ -107,6 +124,21 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateLSCZAmplitude(
   return campl;
 }
 
+Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSSCWAmplitude(
+    const Cluster_Amplitude_UP& ampl, Two_Leg_Indizes indizes)
+{
+  DEBUG_FUNC(*ampl);
+  msg_Debugging() << "indizes: " << indizes[0] << indizes[1] << std::endl;
+  assert(indizes[0] > indizes[1]);
+  auto campl = CopyClusterAmpl(ampl);
+  for (const auto& i : indizes) {
+    auto* leg = campl->Leg(i);
+    auto newflav = leg->Flav().IsoWeakPartner();
+    leg->SetFlav(newflav);
+  }
+  return campl;
+}
+
 EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
     const Cluster_Amplitude_UPM& ampls)
 {
@@ -119,7 +151,8 @@ EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
         std::iota(std::begin(permutation), std::end(permutation), 0);
         break;
       case EWSudakov_Amplitude_Type::LSCZ:
-        permutation = CalculateLSCZLegPermutation(kv.second);
+      case EWSudakov_Amplitude_Type::SSCW:
+        permutation = CalculateLegPermutation(kv.second);
         break;
       default:
         THROW(not_implemented, "Missing implementation");
@@ -129,7 +162,7 @@ EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
   return permutations;
 }
 
-std::vector<size_t> EWSudakov_Amplitudes::CalculateLSCZLegPermutation(
+std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
     const Cluster_Amplitude_UP& ampl)
 {
   // TODO: This assumes that the unrotated amplitude is ordered 0, 1, 2, ...

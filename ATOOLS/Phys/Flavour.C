@@ -400,6 +400,19 @@ bool Flavour::IsStable() const
   return false;
 }
 
+Flavour Flavour::IsoWeakPartner() const
+{
+  if (IsoWeak() != 0) {
+    auto code = Kfcode();
+    if (code % 2 == 0)
+      --code;
+    else
+      ++code;
+    return Flavour(code, m_anti);
+  }
+  return *this;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 {
   return os<<fl.IDName();

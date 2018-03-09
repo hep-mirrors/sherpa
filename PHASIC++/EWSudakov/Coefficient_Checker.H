@@ -2,6 +2,8 @@
 #define PHASIC_EWSudakov_CoefficientChecker_H
 
 #include "METOOLS/Main/Spin_Structure.H"
+#include "PHASIC++/EWSudakov/Sudakov.H"
+#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 
 #include <string>
 #include <map>
@@ -17,13 +19,16 @@ namespace PHASIC {
     { }
 
     // check coefficients against a ref value when available
-    bool CheckCoeffs(const std::map<std::string, std::vector<Complex>>& coeffs,
+    bool CheckCoeffs(const LogType_Coeff_Map& coeffs,
                      const METOOLS::Spin_Amplitudes&);
+    bool CheckAngularCoeffs(const std::vector<LegIndizes_Coeff_Map>& coeffs,
+                            const METOOLS::Spin_Amplitudes&);
 
   private:
 
     using HelicityCoeffMap = std::map<std::vector<int>, double>;
     const std::map<std::string, HelicityCoeffMap>& ReferenceCoeffs();
+    const std::map<Two_Leg_Indizes, HelicityCoeffMap>& AngularReferenceCoeffs();
 
     const std::string procname;
 

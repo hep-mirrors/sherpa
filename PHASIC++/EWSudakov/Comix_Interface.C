@@ -48,8 +48,10 @@ void Comix_Interface::FillSpinAmplitudes(
 
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
+  DEBUG_FUNC("");
   for (auto& kv : ampls) {
     auto& ampl = kv.second;
+    msg_Debugging() << "Initialize process for ampl=" << *ampl << std::endl;
     std::string name(PHASIC::Process_Base::GenerateName(ampl.get())
                      + "__Sudakov");
     Process_Info pi;

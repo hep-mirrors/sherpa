@@ -11,24 +11,66 @@ bool Coefficient_Checker::CheckCoeffs(
   const auto& refs = ReferenceCoeffs();
   for (const auto& typecoeffspair : refs) {
     const auto& type = typecoeffspair.first;
-    for (const auto& helrefpair : typecoeffspair.second) {
+  for (const auto& helrefpair : typecoeffspair.second) {
+    const auto& helicities = helrefpair.first;
+    const auto idx = spinampls.GetNumber(helicities);
+    const auto coeffsit = coeffs.find(type);
+    if (coeffsit == coeffs.end())
+      THROW(fatal_error, "EW Sudakov coeffs not found");
+    const auto coeff = coeffsit->second[idx];
+    const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
+    const auto singlecoeffres =
+      (IsBad(coeff.real()) || std::abs(coeff.real() - helrefpair.second) < prec);
+    if (singlecoeffres) {
+      msg_Debugging() << om::green;
+    } else {
+      msg_Debugging() << om::red;
+    }
+    for (const auto& h : helicities)
+      msg_Debugging() << h << " ";
+    msg_Debugging()
+      << type + " coeff: " << coeff
+      << "\t vs \t  reference value: " << helrefpair.second
+      << om::reset << std::endl;
+    if (!singlecoeffres)
+      res = false;
+  }
+}
+return res;
+}
+
+bool Coefficient_Checker::CheckAngularCoeffs(
+    const std::vector<LegIndizes_Coeff_Map>& coeffs,
+    const METOOLS::Spin_Amplitudes& spinampls)
+{
+  auto res = true;
+  const auto& refs = AngularReferenceCoeffs();
+  for (const auto& legscoeffspair : refs) {
+    const auto& legs = legscoeffspair.first;
+    for (const auto& helrefpair : legscoeffspair.second) {
       const auto& helicities = helrefpair.first;
       const auto idx = spinampls.GetNumber(helicities);
-      const auto coeffsit = coeffs.find(type);
-      if (coeffsit == coeffs.end())
+      const auto legscoeffsmap = coeffs[idx];
+      const auto coeffit = legscoeffsmap.find(legs);
+      if (coeffit == legscoeffsmap.end())
         THROW(fatal_error, "EW Sudakov coeffs not found");
-      const auto coeff = coeffsit->second[idx];
-      msg_Debugging() << om::red;
+      const auto coeff = coeffit->second;
+      const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
+      const auto singlecoeffres =
+        (IsBad(coeff.real()) || std::abs(coeff.real() - helrefpair.second) < prec);
+      if (singlecoeffres) {
+        msg_Debugging() << om::green;
+      } else {
+        msg_Debugging() << om::red;
+      }
       for (const auto& h : helicities)
         msg_Debugging() << h << " ";
       msg_Debugging()
-        << type + " coeff: " << coeff
+        << "(" << legs[0] << ", " << legs[1] << ") coeff: " << coeff
         << "\t vs \t  reference value: " << helrefpair.second
         << om::reset << std::endl;
-      const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
-      if (IsBad(coeff.real()) || std::abs(coeff.real() - helrefpair.second) > prec) {
+      if (!singlecoeffres)
         res = false;
-      }
     }
   }
   return res;
@@ -96,6 +138,39 @@ Coefficient_Checker::ReferenceCoeffs()
     mapZZ["L"][{1, 1, 0, 1}] = -16.2;
     mapZZ["L"][{1, 1, 1, 0}] = -16.2;
     mapZZ["lZ"] = mapPP["lZ"];
+  }
+
+  // check proc name is inside the few we have
+  const auto it = coeffs.find(procname);
+  if (it == coeffs.end())
+    THROW(not_implemented, "No test for this proc");
+  return it->second;
+}
+
+const std::map<Two_Leg_Indizes, Coefficient_Checker::HelicityCoeffMap>&
+Coefficient_Checker::AngularReferenceCoeffs()
+{
+  static std::map<std::string, std::map<Two_Leg_Indizes, HelicityCoeffMap>> coeffs;
+  if (coeffs.empty()) {
+    auto& mapmm = coeffs["2_2__e-__e+__mu-__mu+"];
+
+    mapmm[{2, 0}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
+    mapmm[{3, 0}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
+    mapmm[{3, 1}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
+    mapmm[{2, 1}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
+
+    mapmm[{2, 0}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
+    mapmm[{3, 0}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
+    mapmm[{3, 1}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
+    mapmm[{2, 1}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
+    mapmm[{2, 0}][{0, 0, 1, 1}] = -1.29;  // same as for RL
+    mapmm[{3, 0}][{0, 0, 1, 1}] =  1.29;  // same as for RL
+    mapmm[{3, 1}][{0, 0, 1, 1}] = -1.29;  // same as for RL
+    mapmm[{2, 1}][{0, 0, 1, 1}] =  1.29;  // same as for RL
+
+    mapmm[{2, 0}][{1, 1, 1, 1}] = -19.7;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)
+    mapmm[{3, 0}][{1, 1, 1, 1}] =  2.88;  // -4*R_lq(LL)
+    mapmm[{2, 1}][{1, 1, 1, 1}] =  2.88;  // -4*R_lq(LL)
   }
 
   // check proc name is inside the few we have

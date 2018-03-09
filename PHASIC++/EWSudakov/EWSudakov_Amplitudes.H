@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
+#include <array>
 #include <memory>
 #include <unordered_set>
 #include <map>
@@ -25,6 +26,8 @@ namespace ATOOLS {
 }
 
 namespace PHASIC {
+
+  using Two_Leg_Indizes = std::array<size_t, 2>;
 
   enum class EWSudakov_Amplitude_Type {
     Base,
@@ -75,8 +78,10 @@ namespace PHASIC {
     static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP CreateLSCZAmplitude(
         const ATOOLS::Cluster_Amplitude_UP&, size_t legindex);
+    static ATOOLS::Cluster_Amplitude_UP CreateSSCWAmplitude(
+        const ATOOLS::Cluster_Amplitude_UP&, Two_Leg_Indizes indizes);
     static Permutation_Map CreatePermutations(const Cluster_Amplitude_UPM&);
-    static std::vector<size_t> CalculateLSCZLegPermutation(
+    static std::vector<size_t> CalculateLegPermutation(
         const ATOOLS::Cluster_Amplitude_UP& ampl);
 
     /// amplitudes for the Z/photon interference
