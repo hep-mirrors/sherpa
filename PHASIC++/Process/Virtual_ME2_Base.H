@@ -1,13 +1,14 @@
 #ifndef PHASIC_Process_Virtual_ME2_Base_H
 #define PHASIC_Process_Virtual_ME2_Base_H
 
-#include "PHASIC++/Process/Process_Info.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "MODEL/Main/Model_Base.H"
 
 namespace PHASIC {
+
+  class Process_Info;
 
   class Virtual_ME2_Base {
   protected:

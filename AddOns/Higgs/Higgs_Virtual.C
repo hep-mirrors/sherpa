@@ -1,3 +1,4 @@
+#include "PHASIC++/Process/Process_Info.H"
 #include "Higgs_Virtual.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"

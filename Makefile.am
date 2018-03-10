@@ -11,7 +11,6 @@ SUBDIRS       = \
 		EXTRA_XS \
 		AMEGIC++ \
 		COMIX \
-		EXTAMP \
 		CSSHOWER++ \
 		DIRE \
 		DIM \

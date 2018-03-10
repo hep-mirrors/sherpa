@@ -147,6 +147,12 @@ void *Library_Loader::GetLibraryFunction(const std::string &libname,
 		 <<"' from 'lib"<<libname<<LIB_SUFFIX<<"' ... "<<std::flush;
   if (module==NULL) module=LoadLibrary(libname);
   if (module==NULL) return NULL;
+  return GetLibraryFunction(funcname, module);
+}
+
+void *Library_Loader::GetLibraryFunction(const std::string &funcname,
+					 void * const & module) const
+{
   void *func(dlsym(module,funcname.c_str()));
   char *error(dlerror());
   if (error!=NULL) {

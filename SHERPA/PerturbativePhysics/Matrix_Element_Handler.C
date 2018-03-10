@@ -604,6 +604,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmincpl,nf);
 	}
+	if (cur[0]=="Born_Order") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vborncpl,nf);
+	}
 	if (cur[0]=="Order_EW" || cur[0]=="Order_QCD" ||
 	    cur[0]=="Max_Order_EW" || cur[0]=="Max_Order_QCD") {
 	  msg_Error()<<"\n"<<METHOD<<"(): "<<om::red<<"'"<<cur[0]
@@ -865,6 +869,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  Data_Reader read(",",";",")","(");
 	  read.SetString(ds);
 	  read.VectorFromString(cpi.m_mincpl,"");
+	}
+	if (GetMPvalue(pbi.m_vborncpl,nfs,pnid,ds)) {
+	  Data_Reader read(",",";",")","(");
+	  read.SetString(ds);
+	  read.VectorFromString(cpi.m_borncpl,"");
 	}
 	if (GetMPvalue(pbi.m_vcpl,nfs,pnid,ds)) {
 	  Data_Reader read(",",";",")","(");

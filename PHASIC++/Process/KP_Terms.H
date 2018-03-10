@@ -64,8 +64,8 @@ namespace PHASIC {
                const double &muf02fac,const double &muf12fac,
                const ATOOLS::Flavour &fl0,const ATOOLS::Flavour &fl1);
 
-    void SetAlpha(const double &aff,const double &afi=-1.0,
-                  const double &aif=-1.0,const double &aii=-1.0);
+    void SetAlpha(const double &aff,const double &afi,
+                  const double &aif,const double &aii);
     void SetKappa(const double &kappa);
     void SetNLOMC(PDF::NLOMC_Base *const nlomc);
 

@@ -57,9 +57,9 @@ PHASIC::Color_Correlated_ME2 *ATOOLS::Getter
 operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_mincpl[0]);
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_borncpl[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
-  OpenLoops_Interface::SetParameter("coupling_ew_0",  (int) pi.m_mincpl[1]);
+  OpenLoops_Interface::SetParameter("coupling_ew_0",  (int) pi.m_borncpl[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1",  0);
 
   AmplitudeType types[2] = {Loop2, Tree};

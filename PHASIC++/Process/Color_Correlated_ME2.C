@@ -8,7 +8,6 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace MODEL;
 
 
 Color_Correlated_ME2::Color_Correlated_ME2(const Process_Info &pi,
@@ -25,13 +24,13 @@ void Color_Correlated_ME2::SetCouplings(const MODEL::Coupling_Map& cpls)
 
 double Color_Correlated_ME2::AlphaQCD() const
 {
-  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : s_model->ScalarConstant("alpha_S");
+  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : MODEL::s_model->ScalarConstant("alpha_S");
 }
 
 
 double Color_Correlated_ME2::AlphaQED() const
 {
-  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : s_model->ScalarConstant("alpha_QED");
+  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : MODEL::s_model->ScalarConstant("alpha_QED");
 }
 
 

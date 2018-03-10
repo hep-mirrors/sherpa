@@ -15,7 +15,7 @@ libPhasicProcess_la_SOURCES   =	\
 				Virtual_ME2_Base.C \
 				Tree_ME2_Base.C \
 				Color_Correlated_ME2.C \
-				CS_Dipole.C \
+				Spin_Color_Correlated_ME2.C \
 				Massive_Kernels.C \
 				KP_Terms.C \
 				ME_Generators.C \
@@ -31,7 +31,7 @@ localinc_HEADERS      =	\
 			Virtual_ME2_Base.H \
 			Tree_ME2_Base.H \
 			Color_Correlated_ME2.H \
-			CS_Dipole.H \
+			Spin_Color_Correlated_ME2.H \
 			Massive_Kernels.H \
 			KP_Terms.H \
 			ME_Generators.H \

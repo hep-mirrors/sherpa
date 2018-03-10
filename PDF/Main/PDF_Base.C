@@ -50,6 +50,7 @@ int PDF_Base::GetFlavourScheme()
 
 double PDF_Base::AlphaSPDF(const double &q2)
 {
+  THROW(not_implemented, "PDF doesn't implement alpha_s running.");
   return -1.0;
 }
 

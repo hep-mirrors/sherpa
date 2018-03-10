@@ -153,7 +153,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
-	  EXTAMP/Main/Makefile \
 	  EXTAMP/Makefile \
 	  AMEGIC++/Main/Makefile \
           AMEGIC++/Main/makelibs \

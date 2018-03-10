@@ -220,6 +220,18 @@ void OpenLoops_Interface::SwitchMode(const int mode)
     SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
 }
 
+int OpenLoops_Interface::RegisterProcess(const ATOOLS::Flavour_Vector& isflavs,
+					 const ATOOLS::Flavour_Vector& fsflavs,
+					 int amptype)
+{
+  PHASIC::Subprocess_Info ii;  PHASIC::Subprocess_Info fi;
+  for (auto fl : isflavs)
+    ii.m_ps.push_back(PHASIC::Subprocess_Info(fl));
+  for (auto fl : fsflavs)
+    fi.m_ps.push_back(PHASIC::Subprocess_Info(fl));
+  return RegisterProcess(ii,fi,amptype);
+}
+
 int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
                                          const Subprocess_Info& fs,
                                          int amptype)
@@ -270,11 +282,8 @@ void OpenLoops_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta,
     pp[2+i*5]=momenta[i][2];
     pp[3+i*5]=momenta[i][3];
   }
-
   vector<double> m2l1(3);
   ol_evaluate_loop(id, &pp[0], &res, &m2l1[0], &acc);
-//  res=1.;
-//  m2l1[0]=m2l1[1]=m2l1[2]=0.3;
   virt.Finite()=m2l1[0];
   virt.IR()=m2l1[1];
   virt.IR2()=m2l1[2];
@@ -321,7 +330,8 @@ double OpenLoops_Interface::EvaluateSpinCorrelator(int id, const Vec4D_Vector& m
   else
     THROW(fatal_error, "Unknown amplitude type");
 
-  return res[spectator];
+  /* OpenLoops gets the sign wrong! */
+  return -res[spectator];
 }
 
 double OpenLoops_Interface::EvaluateColorCorrelator(int id, const Vec4D_Vector& momenta,

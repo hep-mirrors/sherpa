@@ -24,8 +24,6 @@ namespace PHASIC {
     
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
     
-    double m_norm;
-
 
   public:
 

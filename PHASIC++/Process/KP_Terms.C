@@ -28,7 +28,8 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
 
   const size_t nf(Flavour(kf_quark).Size()/2);
-  int nfgs(ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT")));
+  int nfgs = ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT", ToString(nf)));
+  
   if (nfgs<nf) THROW(fatal_error,"Number of flavours in g->qq splitting ("
                                  +ToString(nfgs)
                                  +") smaller than number of light flavours ("

@@ -47,6 +47,9 @@ namespace OpenLoops {
     static int RegisterProcess(const PHASIC::Subprocess_Info& is,
                                const PHASIC::Subprocess_Info& fs,
                                int amptype);
+    static int RegisterProcess(const ATOOLS::Flavour_Vector& infl,
+                               const ATOOLS::Flavour_Vector& oufl,
+                               int amptype);
     static void EvaluateTree(int id, const ATOOLS::Vec4D_Vector& momenta,
                              double& res);
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta,

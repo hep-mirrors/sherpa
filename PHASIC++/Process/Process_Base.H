@@ -249,6 +249,7 @@ namespace PHASIC {
     inline bool LookUp() const { return m_lookup; }
 
     inline double SymFac() const { return m_symfac; }
+    inline double ISSymFac() const { return m_issymfac; }
 
     inline Scale_Setter_Base *ScaleSetter(const int map=0) const
     { return map?(p_mapproc?p_mapproc->p_scale:p_scale):p_scale; }

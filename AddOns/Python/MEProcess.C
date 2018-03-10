@@ -465,6 +465,10 @@ double MEProcess::MatrixElement()
   if(p_colint!=NULL) p_colint->SetWOn(false);
   double res(p_proc->Differential(*p_amp,1|4));
   if(p_colint!=NULL) p_colint->SetWOn(true);
+  // Cancel out initial state swap factor
+  // which can be accessed through
+  // PHASIC::Process_Base::ISSymFac()
+  res *= p_proc->ISSymFac();
   return res;
 }
 
@@ -496,6 +500,10 @@ double MEProcess::CSMatrixElement()
     SetColors();
     r_csme+=MatrixElement();
   }
+  // Cancel out initial state swap factor
+  // which can be accessed through
+  // PHASIC::Process_Base::ISSymFac()
+  r_csme *= p_proc->ISSymFac();
   return r_csme;
 }
 

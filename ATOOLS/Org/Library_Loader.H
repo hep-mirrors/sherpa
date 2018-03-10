@@ -34,6 +34,8 @@ namespace ATOOLS {
     void *GetLibraryFunction(const std::string &libname,
 			     const std::string &funcname,
 			     void *&module);
+    void *GetLibraryFunction(const std::string &funcname,
+			     void* const & module) const;
 
     // inline functions
     void AddPath(const std::string &path,const int mode=0);

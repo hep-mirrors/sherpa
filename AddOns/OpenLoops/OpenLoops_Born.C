@@ -56,14 +56,13 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,OpenLoops_Born>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="OpenLoops") return NULL;
 
   /* Can't be dealt with by OpenLoops at this time */
   if(pi.ExtractFlavours().size()<3) return NULL;
 
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_mincpl[0]);
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_borncpl[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
-  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_mincpl[1]);
+  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_borncpl[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1", 0);
 
   AmplitudeType types[2] = {Loop2, Tree};
