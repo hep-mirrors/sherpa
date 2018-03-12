@@ -127,7 +127,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*rsf);
   if (t < as->ShowerCutQ2()) return m_last = 0.0;
-  double cpl=(*as)[t];
+  double cpl=(*as)(scl);
   if (!IsEqual(scl,t)) {
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
     std::vector<double> ths(as->Thresholds(t,scl));
