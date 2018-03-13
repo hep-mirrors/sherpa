@@ -1,4 +1,5 @@
 #include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Tree_ME2_Base
@@ -111,6 +112,21 @@ Tree_ME2_Base *Tree_ME2_Base::GetME2(const std::string& tag,
     THROW(fatal_error, "Did not find ME^2 "+tag);
   }
   else return me2;
+}
+
+Tree_ME2_Base *Tree_ME2_Base::GetME2(const External_ME_Args& args)
+{
+  PHASIC::Subprocess_Info ii;  PHASIC::Subprocess_Info fi;
+  for (Flavour_Vector::const_iterator it=args.m_inflavs.begin();
+       it!=args.m_inflavs.end(); ++it)
+    ii.m_ps.push_back(PHASIC::Subprocess_Info(*it));
+  for (Flavour_Vector::const_iterator it=args.m_outflavs.begin();
+       it!=args.m_outflavs.end(); ++it)
+    fi.m_ps.push_back(PHASIC::Subprocess_Info(*it));
+  Process_Info pi(ii,fi); 
+  pi.m_mincpl = pi.m_maxcpl = args.m_orders; 
+  pi.m_megenerator = args.m_source;
+  return GetME2(pi);
 }
 
 void Tree_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)

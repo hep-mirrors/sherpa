@@ -9,11 +9,8 @@ namespace OpenLoops {
 
   public:
     
-    Spin_Color_Correlated_ME2(const PHASIC::Correlator_Args& args,
-			      int ol_id, const AmplitudeType& type) :
-      PHASIC::Spin_Color_Correlated_ME2(args),
-      m_ol_id(ol_id), m_amptype(type) {}
-
+    Spin_Color_Correlated_ME2(const PHASIC::External_ME_Args& args,
+			      int ol_id, const AmplitudeType& type);
 
     ~Spin_Color_Correlated_ME2() {}
 
@@ -27,7 +24,8 @@ namespace OpenLoops {
 			      const size_t& born_k) const;
 
   private:
-
+    
+    double m_norm;
     int m_ol_id;
     AmplitudeType m_amptype;
     const AmplitudeType AmpType() const { return m_amptype; }

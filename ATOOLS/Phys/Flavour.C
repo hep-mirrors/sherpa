@@ -157,6 +157,37 @@ kf_code KF_Table::KFFromIDName(const std::string &idname) const
   return kf_none;
 }
 
+double Flavour::ISSymmetryFactor(const ATOOLS::Flavour_Vector& flavs)
+{
+  double sf(1.0);
+  for (ATOOLS::Flavour_Vector::const_iterator 
+	 it=flavs.begin(); it!=flavs.end(); ++it)
+    {
+      double pols(2.0*it->Spin()+1.0);
+      if (it->IntSpin()==2 &&
+	  it->Mass()==0.0) pols=2.0;
+      sf*=pols;
+      if (it->Strong())sf*=abs(it->StrongCharge());
+    }
+  return sf;
+}
+
+double Flavour::FSSymmetryFactor(const ATOOLS::Flavour_Vector& flavs)
+{
+  double sf(1.0);
+  std::map<ATOOLS::Flavour,size_t> fc;
+  for (ATOOLS::Flavour_Vector::const_iterator 
+	 it=flavs.begin(); it!=flavs.end(); ++it)
+    fc[*it] = 0;
+  for (ATOOLS::Flavour_Vector::const_iterator 
+	 it=flavs.begin(); it!=flavs.end(); ++it)
+    fc[*it] +=1;
+  for (std::map<ATOOLS::Flavour,size_t>::const_iterator 
+	 it(fc.begin()); it!=fc.end(); ++it) 
+    sf*=Factorial(it->second);
+  return sf;
+}
+
 std::string Flavour::TexName() const 
 {
   if (!IsHadron()) return m_anti?p_info->m_antitexname:p_info->m_texname;

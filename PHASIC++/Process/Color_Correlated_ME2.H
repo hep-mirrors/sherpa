@@ -1,7 +1,7 @@
 #ifndef PHASIC_Process_Color_Correlated_ME2_H
 #define PHASIC_Process_Color_Correlated_ME2_H
 
-#include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Math/Vector.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -18,17 +18,11 @@ namespace PHASIC {
     
     typedef std::vector< std::vector<double> > CCMatrix;
 
-    const Process_Info &m_pinfo;
-    
-    const ATOOLS::Flavour_Vector m_flavs;
-    
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
-    
 
   public:
 
-    Color_Correlated_ME2(const PHASIC::Process_Info &pi,
-			 const ATOOLS::Flavour_Vector &flavs);
+    Color_Correlated_ME2 (const External_ME_Args& args);
 
     virtual ~Color_Correlated_ME2() {}
 
@@ -48,9 +42,9 @@ namespace PHASIC {
     virtual double AlphaQCD() const;
     virtual double AlphaQED() const;
 
-    static Color_Correlated_ME2 *GetME2(const PHASIC::Process_Info& pi);
+    static Color_Correlated_ME2 *GetME2(const PHASIC::External_ME_Args& args);
     static Color_Correlated_ME2 *GetME2(const std::string& tag,
-					const PHASIC::Process_Info& pi);
+					const PHASIC::External_ME_Args& args);
 
   };
 
@@ -58,8 +52,8 @@ namespace PHASIC {
 
 
 #define DECLARE_COLORCORRELATEDME2_GETTER(NAME,TAG)		                \
-  DECLARE_GETTER(NAME,TAG,PHASIC::Color_Correlated_ME2,PHASIC::Process_Info);   \
-  void ATOOLS::Getter<PHASIC::Color_Correlated_ME2,PHASIC::Process_Info,NAME>:: \
+  DECLARE_GETTER(NAME,TAG,PHASIC::Color_Correlated_ME2,PHASIC::External_ME_Args);   \
+  void ATOOLS::Getter<PHASIC::Color_Correlated_ME2,PHASIC::External_ME_Args,NAME>:: \
   PrintInfo(std::ostream &str,const size_t width) const		                \
   {                                                                             \
     str<<#TAG;                                                                  \

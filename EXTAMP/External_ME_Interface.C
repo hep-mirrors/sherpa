@@ -12,12 +12,15 @@
 #include "PHASIC++/Process/Process_Group.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 
+#include "ATOOLS/Org/Run_Parameter.H"
+
 #include <assert.h>
 
 namespace EXTAMP{
 
 
-  External_ME_Interface::External_ME_Interface() : PHASIC::ME_Generator_Base("External") {}
+  External_ME_Interface::External_ME_Interface() :
+    PHASIC::ME_Generator_Base("External") {}
 
 
   bool External_ME_Interface::Initialize(const std::string &path,const std::string &file,
@@ -116,7 +119,11 @@ namespace EXTAMP{
     if ( nlotype&ATOOLS::nlo_type::vsub )
       {
 	cpi.m_maxcpl[0] += 1;
-	return new BVI_Process(cpi);
+	int subtractiontype = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
+	double virtfrac = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("VIRTUAL_EVALUATION_FRACTION"));
+	if (virtfrac!=1.0)
+	  msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
+	return new BVI_Process(cpi, virtfrac, subtractiontype);
       }
     
     if ( nlotype&ATOOLS::nlo_type::rsub )

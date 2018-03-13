@@ -1,22 +1,12 @@
 #ifndef PHASIC_Process_Spin_Color_Correlated_ME2_H
 #define PHASIC_Process_Spin_Color_Correlated_ME2_H
 
-#include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "MODEL/Main/Model_Base.H"
 
 namespace MODEL { struct Coupling_Map; }
 
 namespace PHASIC {
-
-  struct Correlator_Args {
-    
-    Correlator_Args(const ATOOLS::Flavour_Vector& flavs,
-		    const std::vector<double>& orders)
-      : m_flavs(flavs), m_orders(orders) {}
-      
-    const ATOOLS::Flavour_Vector& m_flavs;
-    const std::vector<double>& m_orders;
-  };
 
   /* Spin- and Color-correlated matrix elements [arXiv:hep-ph/9605323]
      of the form <1,2,3,... | Vij*Ti*Tj |...,3,2,1 > */
@@ -25,13 +15,11 @@ namespace PHASIC {
 
   protected:
 
-    const ATOOLS::Flavour_Vector m_flavs;
-    
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
 
   public:
 
-    Spin_Color_Correlated_ME2(const Correlator_Args& args);
+    Spin_Color_Correlated_ME2(const External_ME_Args& args);
 
     virtual ~Spin_Color_Correlated_ME2() {}
 
@@ -57,19 +45,19 @@ namespace PHASIC {
     MODEL::Coupling_Data* RunningQCD() const { return p_aqcd; }
     MODEL::Coupling_Data* RunningQED() const { return p_aqed; }
 
-    static Spin_Color_Correlated_ME2 *GetME2(const Correlator_Args& args);
+    static Spin_Color_Correlated_ME2 *GetME2(const External_ME_Args& args);
 
   };
 
 }
 
 
-#define DECLARE_SPINCOLORCORRELATEDME2_GETTER(NAME,TAG)		                        \
-  DECLARE_GETTER(NAME,TAG,PHASIC::Spin_Color_Correlated_ME2,PHASIC::Correlator_Args);   \
-  void ATOOLS::Getter<PHASIC::Spin_Color_Correlated_ME2,PHASIC::Correlator_Args,NAME>:: \
-  PrintInfo(std::ostream &str,const size_t width) const		                        \
-  {                                                                                     \
-    str<<#TAG;                                                                          \
+#define DECLARE_SPINCOLORCORRELATEDME2_GETTER(NAME,TAG)		                         \
+  DECLARE_GETTER(NAME,TAG,PHASIC::Spin_Color_Correlated_ME2,PHASIC::External_ME_Args);   \
+  void ATOOLS::Getter<PHASIC::Spin_Color_Correlated_ME2,PHASIC::External_ME_Args,NAME>:: \
+  PrintInfo(std::ostream &str,const size_t width) const		                         \
+  {                                                                                      \
+    str<<#TAG;                                                                           \
   }
 
 #endif

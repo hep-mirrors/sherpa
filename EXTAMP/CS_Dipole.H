@@ -179,10 +179,9 @@ namespace EXTAMP {
        ATOOLS::NLO_Subevents, which own a pointer to such a vector. */
     std::vector<size_t> m_id_vector;
 
-    /* Usual symmetry factor and kinematics-independent factor of
-       splitting operators, e.g. prefactor of eq (5.8) of
-       hep-ph/9605323v3 for case of FF dipole */
-    double m_symfac;
+    /* Kinematics-independent factor of splitting operators, e.g.
+       prefactor of eq (5.8) of hep-ph/9605323v3 for case of FF
+       dipole */
     double m_const_prefac;
 
     Dipole_Info m_dip_info;

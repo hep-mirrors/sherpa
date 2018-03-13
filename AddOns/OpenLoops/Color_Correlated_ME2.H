@@ -9,8 +9,7 @@ namespace OpenLoops {
 
   public:
     
-    Color_Correlated_ME2(const PHASIC::Process_Info &,
-			 const ATOOLS::Flavour_Vector &,
+    Color_Correlated_ME2(const PHASIC::External_ME_Args& args,
 			 int ol_id, const AmplitudeType& type);
 
     ~Color_Correlated_ME2();

@@ -32,6 +32,7 @@ localinc_HEADERS      =	\
 			Tree_ME2_Base.H \
 			Color_Correlated_ME2.H \
 			Spin_Color_Correlated_ME2.H \
+			External_ME_Args.H \
 			Massive_Kernels.H \
 			KP_Terms.H \
 			ME_Generators.H \

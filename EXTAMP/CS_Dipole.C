@@ -83,17 +83,6 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
 {
   m_born_flavs = ConstructBornFlavours(I(),J(),di.m_real_flavs);
   m_id_vector  = ConstructIDVector    (I(),J(),di.m_real_flavs);
-  
-  PHASIC::Subprocess_Info ii;  PHASIC::Subprocess_Info fi;
-  for (size_t n=0; n<2; n++)
-    ii.m_ps.push_back(PHASIC::Subprocess_Info(Flavours()[n]));
-  for (size_t n=2; n<Flavours().size(); n++)
-    fi.m_ps.push_back(PHASIC::Subprocess_Info(Flavours()[n]));
-
-
-  m_symfac = ii.ISSymmetryFactor();
-  m_symfac*= fi.FSSymmetryFactor();
-
 
   switch(FlavType())
     {
@@ -125,8 +114,10 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
     }
 
   /* TODO: pass orders correctly!! */
-  p_corr_me =
-    PHASIC::Spin_Color_Correlated_ME2::GetME2(PHASIC::Correlator_Args(Flavours(), std::vector<double>()));
+  PHASIC::External_ME_Args args(ATOOLS::Flavour_Vector(Flavours().begin(),Flavours().begin()+2),
+				ATOOLS::Flavour_Vector(Flavours().begin()+2, Flavours().end()),
+				std::vector<double>());
+  p_corr_me = PHASIC::Spin_Color_Correlated_ME2::GetME2(args);
   if(!p_corr_me) THROW(fatal_error, "Could not find correlated ME for this process.");
 
 }
@@ -136,7 +127,7 @@ double CS_Dipole::Calc() const
 {
   double alphas = p_corr_me->AlphaQCD();
   
-  return alphas * m_symfac * m_const_prefac * CalcKinDependentPrefac() * CalcCorrelator();
+  return alphas * m_const_prefac * CalcKinDependentPrefac() * CalcCorrelator();
 }
 
 

@@ -9,6 +9,8 @@ namespace MODEL { struct Coupling_Map; }
 
 namespace PHASIC {
 
+  class External_ME_Args;
+
   class Tree_ME2_Base {
   public:
 
@@ -62,7 +64,11 @@ namespace PHASIC {
 
     static Tree_ME2_Base *GetME2(const PHASIC::Process_Info& pi);
     static Tree_ME2_Base *GetME2(const std::string& tag,
-                                    const PHASIC::Process_Info& pi);
+				 const PHASIC::Process_Info& pi);
+
+    /* Getter method for the new interface, simple wrapper around 
+       the legacy methods based on Process_Infos */
+    static Tree_ME2_Base *GetME2(const PHASIC::External_ME_Args& args);
 
     inline size_t NAmps() const { return m_namps; }
 

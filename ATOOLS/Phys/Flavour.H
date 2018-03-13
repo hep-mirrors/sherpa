@@ -139,6 +139,12 @@ namespace ATOOLS {
     double RelBWMass(const double& min, const double& max,
                      double peak=-1.0, double width=-1.0) const;
 
+
+
+
+    static double ISSymmetryFactor(const std::vector<Flavour>& flavs);
+    static double FSSymmetryFactor(const std::vector<Flavour>& flavs);
+
     // inline functions
     inline Flavour Bar() const { return Flavour(*p_info,!m_anti); }
 

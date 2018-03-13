@@ -4,13 +4,14 @@
 
 using namespace OpenLoops;
 
-Color_Correlated_ME2::Color_Correlated_ME2(const PHASIC::Process_Info& pi,
-					   const ATOOLS::Flavour_Vector& flavs,
-					   int ol_id, const AmplitudeType& type) :
-  PHASIC::Color_Correlated_ME2(pi, flavs), m_ol_id(ol_id), m_dim(flavs.size()), m_amptype(type)
+Color_Correlated_ME2::
+Color_Correlated_ME2(const PHASIC::External_ME_Args& args,
+		     int ol_id, const AmplitudeType& type) :
+  PHASIC::Color_Correlated_ME2(args), m_amptype(type), m_ol_id(ol_id),
+  m_dim(args.m_inflavs.size()+args.m_outflavs.size())
 {
-  m_symfac =pi.m_fi.FSSymmetryFactor();
-  m_symfac*=pi.m_ii.ISSymmetryFactor();
+  m_symfac =ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
+  m_symfac*=ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
   
   m_ccmatrix = new double[m_dim*m_dim];
 }
@@ -52,20 +53,24 @@ DECLARE_COLORCORRELATEDME2_GETTER(Color_Correlated_ME2,
 
 PHASIC::Color_Correlated_ME2 *ATOOLS::Getter
 <PHASIC::Color_Correlated_ME2,
- PHASIC::Process_Info,
+ PHASIC::External_ME_Args,
  Color_Correlated_ME2>::
-operator()(const PHASIC::Process_Info &pi) const
+operator()(const PHASIC::External_ME_Args &args) const
 {
-  DEBUG_FUNC(pi);
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_borncpl[0]);
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) args.m_orders[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
-  OpenLoops_Interface::SetParameter("coupling_ew_0",  (int) pi.m_borncpl[1]);
+  OpenLoops_Interface::SetParameter("coupling_ew_0",  (int) args.m_orders[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1",  0);
+
+  if (args.m_source != "" && args.m_source != "OpenLoops")
+    return NULL;
 
   AmplitudeType types[2] = {Loop2, Tree};
   for (size_t i=0; i<2; ++i) {
-    int id = OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, (int)(types[i]));
-    if (id>0) return new Color_Correlated_ME2(pi, pi.ExtractFlavours(), id, types[i]);
+    int id = OpenLoops_Interface::RegisterProcess(args.m_inflavs, 
+						  args.m_outflavs, 
+						  (int)(types[i]));
+    if (id>0) return new Color_Correlated_ME2(args, id, types[i]);
   }
   return NULL;
 }

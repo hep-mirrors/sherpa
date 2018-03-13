@@ -11,6 +11,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <iomanip>
+#include <assert.h>
 
 using namespace ATOOLS;
 
@@ -93,30 +94,42 @@ void *Library_Loader::LoadLibrary(const std::string &name)
       continue;
     }
     msg_Debugging()<<" found"<<std::endl;
-    std::string lockname(m_paths[i]+"/lib"+name+
-			 std::string(LIB_SUFFIX)+".lock");
-    if (!CreateLockFile(lockname)) return NULL;
-    if (!CreateLockFile(rpa->gen.Variable("HOME")+
- 			"/.sherpa/.liblock")) return NULL;
-    void *module(dlopen(libname.c_str(),RTLD_LAZY|RTLD_GLOBAL));
-    if (!RemoveLockFile(rpa->gen.Variable("HOME")+
- 			"/.sherpa/.liblock")) return NULL;
-    if (!RemoveLockFile(lockname)) return NULL;
-    if (module!=NULL) {
-      msg_Debugging()<<"} found in '"<<m_paths[i]<<"'"<<std::endl;
-      m_libs[name]=module;
-      return module;
-    }
-    char *err(dlerror());
-    if (err!=NULL) {
-      msg_Error()<<METHOD<<"(): "<<err<<std::endl;
-      break;
-    }
+
+    void *module = LoadLibrary(m_paths[i], name);
+    msg_Debugging()<<"} found in '"<<m_paths[i]<<"'"<<std::endl;
+    m_libs[name]=module;
+    return module;
   }
   msg_Debugging()<<"} failed"<<std::endl;
   msg_Info()<<METHOD<<"(): Failed to load library 'lib"
 	    <<name<<LIB_SUFFIX<<"'."<<std::endl;
   return NULL;
+}
+
+
+void *Library_Loader::LoadLibrary(const std::string &path,
+				  const std::string &name)
+{
+  std::string fullpath(path+"/lib"+name+LIB_SUFFIX);
+
+  struct stat buffer;
+  if (stat(fullpath.c_str(),&buffer))
+    THROW(fatal_error, "File " + fullpath + " not found");
+
+  std::string lockname(path+"/lib"+name+
+		       std::string(LIB_SUFFIX)+".lock");
+  if (!CreateLockFile(lockname)) return NULL;
+  if (!CreateLockFile(rpa->gen.Variable("HOME")+
+		      "/.sherpa/.liblock")) return NULL;
+  void *module(dlopen(fullpath.c_str(),RTLD_LAZY|RTLD_GLOBAL));
+  if (!RemoveLockFile(rpa->gen.Variable("HOME")+
+		      "/.sherpa/.liblock")) return NULL;
+  if (!RemoveLockFile(lockname)) return NULL;
+  char *err(dlerror());
+  if (err!=NULL)
+    THROW(fatal_error, std::string("Error loading library: ") + err);
+  assert(module!=NULL);
+  return module;
 }
 
 void *Library_Loader::GetLibraryFunction(const std::string &libname,

@@ -7,6 +7,17 @@
 using namespace OpenLoops;
 
 
+Spin_Color_Correlated_ME2::
+Spin_Color_Correlated_ME2(const PHASIC::External_ME_Args& args,
+			  int ol_id, const AmplitudeType& type) :
+  PHASIC::Spin_Color_Correlated_ME2(args),
+  m_ol_id(ol_id), m_amptype(type)
+{
+  m_norm =ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
+  m_norm*=ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
+}
+
+
 double Spin_Color_Correlated_ME2::
 CalcColorCorrelator(const ATOOLS::Vec4D_Vector& born_moms,
 		    const size_t& born_ij,
@@ -19,7 +30,7 @@ CalcColorCorrelator(const ATOOLS::Vec4D_Vector& born_moms,
   return OpenLoops_Interface::EvaluateColorCorrelator(m_ol_id,
 						      born_moms,
 						      born_ij, born_k,
-						      AmpType());
+						      AmpType()) * m_norm;
 }
 
 
@@ -37,7 +48,7 @@ CalcSpinCorrelator(const ATOOLS::Vec4D_Vector& born_moms,
 						     born_moms,
 						     p_tilde,
 						     born_ij, born_k,
-						     AmpType());
+						     AmpType()) * m_norm;
 }
 
 
@@ -47,9 +58,9 @@ DECLARE_SPINCOLORCORRELATEDME2_GETTER(Spin_Color_Correlated_ME2,
 
 PHASIC::Spin_Color_Correlated_ME2 *ATOOLS::Getter
 <PHASIC::Spin_Color_Correlated_ME2,
- PHASIC::Correlator_Args,
+ PHASIC::External_ME_Args,
  Spin_Color_Correlated_ME2>::
-operator()(const PHASIC::Correlator_Args& args) const
+operator()(const PHASIC::External_ME_Args& args) const
 {
   DEBUG_FUNC(this);
   OpenLoops_Interface::SetParameter("coupling_qcd_0", -1);
@@ -57,15 +68,14 @@ operator()(const PHASIC::Correlator_Args& args) const
   OpenLoops_Interface::SetParameter("coupling_ew_0",  -1);
   OpenLoops_Interface::SetParameter("coupling_ew_1",  -1);
 
-  assert(args.m_flavs.size()>2);
-  ATOOLS::Flavour_Vector inflavs(args.m_flavs.begin(),
-				 args.m_flavs.begin()+2);
-  ATOOLS::Flavour_Vector ouflavs(args.m_flavs.begin()+2, 
-				 args.m_flavs.end());
+  if (args.m_source != "" && args.m_source != "OpenLoops")
+    return NULL;
   
   AmplitudeType types[2] = {Loop2, Tree};
   for (size_t i=0; i<2; ++i) {
-    int id = OpenLoops_Interface::RegisterProcess(inflavs,ouflavs, (int)(types[i]));
+    int id = OpenLoops_Interface::RegisterProcess(args.m_inflavs, 
+						  args.m_outflavs, 
+						  (int)(types[i]));
     if (id>0) return new Spin_Color_Correlated_ME2(args, id, types[i]);
   }
   return NULL;

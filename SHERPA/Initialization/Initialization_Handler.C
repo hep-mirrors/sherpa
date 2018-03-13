@@ -927,6 +927,8 @@ void Initialization_Handler::SetGlobalVariables()
   double is_as_fac  = css_reader.Get<double>("CSS_IS_AS_FAC",1.0);
   double as_var_fac = css_reader.Get<double>("CSS_SCALE_FACTOR",1.);
   double mth        = css_reader.Get<double>("CSS_MASS_THRESHOLD",0.0);
+  double virtfrac   = css_reader.Get<double>("VIRTUAL_EVALUATION_FRACTION",1.0);
+  rpa->gen.SetVariable("VIRTUAL_EVALUATION_FRACTION", ToString(virtfrac));
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
   rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
   rpa->gen.SetVariable("CSS_SCALE_SCHEME",ToString(scs));

@@ -16,22 +16,25 @@ namespace EXTAMP {
 
   double BVI_Process::m_NF = 5.0;
 
-  BVI_Process::BVI_Process(const PHASIC::Process_Info& pi) :
-    Process(pi)
+  BVI_Process::BVI_Process(const PHASIC::Process_Info& pi,
+			   const double& vfrac,
+			   const int& subtraction_type) :
+    Process(pi), m_vfrac(vfrac), m_subtype(subtraction_type)
   {
 
-    m_subtype = ATOOLS::ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
-      
-    /* Load loop ME and color-correlated ME */
+    /* Load loop ME */
     PHASIC::Process_Info loop_pi(pi);
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::loop;
     loop_pi.m_borncpl[0] = pi.m_borncpl[0] + 1;
-
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
-    p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(pi);
-
     if (!p_loop_me)
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
+
+    /* Load color-correlated ME. TODO: orders */
+    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
+				  pi.m_fi.GetExternal(),
+				  pi.m_borncpl);
+    p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);
     if (!p_corr_me)
       THROW(not_implemented, "Couldn't find color-correlated ME for this process.");
 
@@ -45,6 +48,7 @@ namespace EXTAMP {
     
     /* Set Dipole alpha for KP_Terms and make them calc both K and P*/
     p_kpterms->SetAlpha(1.0, 1.0, 1.0, 1.0);
+    p_kpterms->SetKappa(1.0);
     p_kpterms->SetIType(cs_itype::K|cs_itype::P);
 
     /* Set Couplings for individual components */
@@ -73,7 +77,8 @@ namespace EXTAMP {
     DEBUG_FUNC(this);
     
     double B(0.0),V(0.0),I(0.0),KP(0.0);
-				   
+    std::pair<double,double> scaleterms;
+    
     /* Maybe move to PHASIC::Single_Process */
     ScaleSetter()->CalculateScale(p);
     double mur = p_scale->Scale(stp::ren,1);
@@ -84,31 +89,27 @@ namespace EXTAMP {
     /* Get squared Born from correlator ME */
     B = p_corr_me->GetBorn2();
 
-    /* Calculate V */
-    p_loop_me->SetRenScale(mur);
-    p_loop_me->Calc(p,B);
-
-    /* mode 0: loop ME is missing Born factor 
-       mode 1: loop ME includes Born factor   
-       mode 2: loop ME includes Born factor and integrated subtraction terms */
-    switch(p_loop_me->Mode())
-      {
-      case 0:
-	V = p_loop_me->AlphaQCD()/(2.0*M_PI) *  p_loop_me->ME_Finite() * B ; break;
-      case 1:
-	V = p_loop_me->AlphaQCD()/(2.0*M_PI) *  p_loop_me->ME_Finite()     ; break;
-      default:
-	THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
-      }
-
-    /* Calculate integrated subtraction terms I */
+    /* Calculate integrated subtraction terms I and corresponding
+       scale dependence terms */
     I = Calc_I(p, mur);
-
+    scaleterms = Calc_ScaleDependenceTerms_I(p, mur);
+    
     /* Calculate KP terms */
     if(m_flavs[0].Strong() || m_flavs[1].Strong())
       KP = Calc_KP(p);
-
-    std::pair<double,double> scaleterms = Calc_ScaleDependenceTerms(p, mur);
+    
+    /* Calculate V and corresponding scale dependence terms only for a
+       fraction m_vfrac of PS points. */
+    if(ATOOLS::ran->Get() < m_vfrac)
+      {
+	V = Calc_V(p,B,mur)/m_vfrac;
+	
+	std::pair<double,double> vscterms =
+	  Calc_ScaleDependenceTerms_V(p,B,mur);
+	
+	scaleterms.first  += vscterms.first/m_vfrac; 
+	scaleterms.second += vscterms.second/m_vfrac; 
+      }
 
     /* Now divide all components by the symfac */
     B  /= NormFac(); V  /= NormFac(); I  /= NormFac(); KP /= NormFac();
@@ -136,6 +137,32 @@ namespace EXTAMP {
 
     /* Store full XS in m_lastxs (used in PHASIC::Single_Process) */
     return m_lastxs = (B + V + I + KP);
+  }
+
+
+  double BVI_Process::Calc_V(const ATOOLS::Vec4D_Vector& p,
+			     const double& B,
+			     const double& mur) const
+  {
+    double V(0.0);
+
+    p_loop_me->SetRenScale(mur);
+    p_loop_me->Calc(p,B);
+    
+    /* mode 0: loop ME is missing Born factor 
+       mode 1: loop ME includes Born factor   
+       mode 2: loop ME includes Born factor and integrated subtraction terms */
+    switch(p_loop_me->Mode())
+      {
+      case 0:
+	V = p_loop_me->AlphaQCD()/(2.0*M_PI) *  p_loop_me->ME_Finite() * B ; break;
+      case 1:
+	V = p_loop_me->AlphaQCD()/(2.0*M_PI) *  p_loop_me->ME_Finite()     ; break;
+      default:
+	THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
+      }
+
+    return V;
   }
 
 
@@ -171,17 +198,16 @@ namespace EXTAMP {
     return -p_corr_me->AlphaQCD()/(2.0*M_PI) * I;
   }
 
-
+  
   std::pair<double,double> BVI_Process::
-  Calc_ScaleDependenceTerms(const ATOOLS::Vec4D_Vector& p,
-			    const double& mur) const
+  Calc_ScaleDependenceTerms_V(const ATOOLS::Vec4D_Vector& p,
+			      const double& B,
+			      const double& mur) const
   {
     /* First item: first derivative of all terms with respect to logf,
        second item: second derivative of all terms with respect to logf */
     std::pair<double,double> terms =  std::make_pair(0.0,0.0);
 
-    /* Terms in virtual correction */
-    double B = p_corr_me->GetBorn2();
     assert(MinOrder(0) == MaxOrder(0)-1);
     switch(p_loop_me->Mode())
       {
@@ -197,6 +223,23 @@ namespace EXTAMP {
     	THROW(not_implemented, "Not implemented");
       }
    
+    /* Do not divide by symfac at this stage, this is done for all
+       components simultaneously in Partonic */
+    terms.first  *= p_corr_me->AlphaQCD()/(2.0*M_PI);
+    terms.second *= p_corr_me->AlphaQCD()/(2.0*M_PI);
+    
+    return terms;
+  }
+  
+
+  std::pair<double,double> BVI_Process::
+  Calc_ScaleDependenceTerms_I(const ATOOLS::Vec4D_Vector& p,
+			      const double& mur) const
+  {
+    /* First item: first derivative of all terms with respect to logf,
+       second item: second derivative of all terms with respect to logf */
+    std::pair<double,double> terms =  std::make_pair(0.0,0.0);
+
     /* Terms in integrated dipoles: compare to Calc_I */
     for(std::vector<size_t>::const_iterator i=PartonIndices().begin(); i!=PartonIndices().end(); ++i)
       for(std::vector<size_t>::const_iterator j=i+1; j!=PartonIndices().end(); ++j)
@@ -302,13 +345,6 @@ namespace EXTAMP {
 	w *= (1.-m_eta1);
       }
 
-    /* Set all relevant members of ME_Weight_Info */
-    bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
-    m_mewgtinfo.m_swap = swap;
-    m_mewgtinfo.m_y1   = swap?m_x1:m_x0;
-    m_mewgtinfo.m_y2   = swap?m_x0:m_x1;
-    p_kpterms->FillMEwgts(m_mewgtinfo);
-
     /* Populate a 2D array with color correlated MEs for KP_Terms.
        This assumes that p_corr_me->Calc(p) has already been called!
        Diagonal entries must remain zero exept for the [0][0] entry,
@@ -323,8 +359,14 @@ namespace EXTAMP {
     dsij[0][0] = p_corr_me->GetBorn2();
 
     /* Let KP_Terms class calculate */
-    double cpl = p_corr_me->AlphaQCD()/(2.0*M_PI);
-    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w*cpl);
+    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
+
+    /* Set all relevant members of ME_Weight_Info */
+    bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+    m_mewgtinfo.m_swap = swap;
+    m_mewgtinfo.m_y1   = swap?m_x1:m_x0;
+    m_mewgtinfo.m_y2   = swap?m_x0:m_x1;
+    p_kpterms->FillMEwgts(m_mewgtinfo);
 
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
