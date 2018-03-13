@@ -21,6 +21,15 @@ namespace PHASIC {
     const ATOOLS::Flavour_Vector m_outflavs;
     const std::vector<double>    m_orders;
     const std::string            m_source;
+
+    ATOOLS::Flavour_Vector Flavours() const
+    {
+      ATOOLS::Flavour_Vector flavs = m_inflavs;
+      flavs.insert(flavs.end(),
+		   m_outflavs.begin(),
+		   m_outflavs.end());
+      return flavs;
+    }
   };
 
 }

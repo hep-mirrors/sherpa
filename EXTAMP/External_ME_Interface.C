@@ -7,6 +7,7 @@
 #include "EXTAMP/CS_Dipole.H"
 
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Process_Group.H"
@@ -69,7 +70,7 @@ namespace EXTAMP{
     newproc->Init(pi,p_beam,p_isr);
     newproc->ConstructProcesses();
     newproc->SetGenerator(this);
-
+    
     /* In case no valid partonic channels are found, return NULL so the
        Matrix_Element_Hanlder knows and throws a 'No hard process found' */
     return  (newproc->Size()>0) ? newproc : NULL;
@@ -77,23 +78,32 @@ namespace EXTAMP{
 
 
   /* Determine if a PARTONIC born Process as specified by pi exists */
-  bool External_ME_Interface::PartonicProcessExists(PHASIC::Process_Info &pi)
+  bool External_ME_Interface::PartonicProcessExists(const PHASIC::Process_Info &pi)
   {
-    return PHASIC::Tree_ME2_Base::GetME2(pi)!=NULL;
+    /* For an RS process, we need to check for a born with the QCD
+       order incremented by one relative to the born */
+    std::vector<double> orders = pi.m_borncpl;
+    if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub ) orders[0] += 1;
+
+    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
+				  pi.m_fi.GetExternal(),
+				  orders);
+
+    return PHASIC::Tree_ME2_Base::GetME2(args)!=NULL;
   };
 
+  /* Determine if a PARTONIC born Process as specified by args exists */
+  bool External_ME_Interface::PartonicProcessExists(const PHASIC::External_ME_Args &args)
+  {
+    return PHASIC::Tree_ME2_Base::GetME2(args)!=NULL;
+  };
 
-  PHASIC::Tree_ME2_Base* External_ME_Interface::GetExternalBornME(const PHASIC::Process_Info& pi)
+  PHASIC::Tree_ME2_Base* External_ME_Interface::
+  GetExternalBornME(const PHASIC::External_ME_Args& args)
   {
     /* Use the getter to find an implementation of born matrix element */
-    PHASIC::Tree_ME2_Base* me2 = PHASIC::Tree_ME2_Base::GetME2(pi);
-
-    if(!me2)
-      {
-	std::stringstream msg; msg << "No ME found for this process:\n" << pi;
-	THROW(fatal_error, msg.str());
-      }
-
+    PHASIC::Tree_ME2_Base* me2 = PHASIC::Tree_ME2_Base::GetME2(args);
+    if(!me2) THROW(fatal_error, "No external ME found");
     return me2;
   }
 
@@ -103,31 +113,21 @@ namespace EXTAMP{
   (const PHASIC::Process_Info &pi)
   {
     ATOOLS::nlo_type::code nlotype=pi.m_fi.m_nlotype;
-    
-    /* Need to set orders according to our conventions before passing
-       on: through previous call to PartonicProcessExists, it is
-       ensured that a born-like ME with orders specified by mincpl
-       exists. Can therefore set mincpl=maxcpl for non-loop
-       contributions (born and real). For BVI, need to increase
-       maxcpl[0] by one though. */
-    PHASIC::Process_Info cpi(pi);
-    cpi.m_maxcpl = cpi.m_mincpl;
 
     if( nlotype==ATOOLS::nlo_type::lo )
-      return new Born_Process(cpi);
+      return new Born_Process(pi);
     
     if ( nlotype&ATOOLS::nlo_type::vsub )
       {
-	cpi.m_maxcpl[0] += 1;
 	int subtractiontype = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
 	double virtfrac = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("VIRTUAL_EVALUATION_FRACTION"));
 	if (virtfrac!=1.0)
 	  msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
-	return new BVI_Process(cpi, virtfrac, subtractiontype);
+	return new BVI_Process(pi, virtfrac, subtractiontype);
       }
     
     if ( nlotype&ATOOLS::nlo_type::rsub )
-      return new RS_Process(cpi);
+      return new RS_Process(pi);
 
     THROW(fatal_error, "Internal error");
     return NULL;
@@ -173,8 +173,15 @@ namespace EXTAMP{
 	PHASIC::Process_Info cpi(pinfo);
 	/* Need to reverse the flavour of incoming particles yet again
 	   because convention for PHASIC::Process_Info is different */
-	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij); cpi.m_mincpl[0] -= 1;
-	if(!External_ME_Interface::PartonicProcessExists(cpi)){
+	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
+
+	std::vector<double> orders = cpi.m_borncpl;
+	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
+	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
+				      cpi.m_fi.GetExternal(),
+				      orders);
+
+	if(!External_ME_Interface::PartonicProcessExists(args)){
 	  msg_Debugging() << "Discarding clustering "
 			  << fl_i << "[" <<  i << "] + " << fl_j << "[" << j << "] "
 			  << "since no born ME found for process\n " << cpi << "\n";

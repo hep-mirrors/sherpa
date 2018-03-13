@@ -21,7 +21,6 @@ namespace PHASIC {
 
   protected:
 
-    const Process_Info &m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
 
@@ -34,8 +33,7 @@ namespace PHASIC {
 
   public:
 
-    Tree_ME2_Base(const PHASIC::Process_Info &pi,
-                  const ATOOLS::Flavour_Vector &flavs);
+    Tree_ME2_Base(const External_ME_Args& args);
 
     virtual ~Tree_ME2_Base();
 
@@ -62,13 +60,12 @@ namespace PHASIC {
 
     virtual double TR() const;
 
-    static Tree_ME2_Base *GetME2(const PHASIC::Process_Info& pi);
+    static Tree_ME2_Base *GetME2(const PHASIC::External_ME_Args& pi);
     static Tree_ME2_Base *GetME2(const std::string& tag,
-				 const PHASIC::Process_Info& pi);
+				 const PHASIC::External_ME_Args& pi);
 
-    /* Getter method for the new interface, simple wrapper around 
-       the legacy methods based on Process_Infos */
-    static Tree_ME2_Base *GetME2(const PHASIC::External_ME_Args& args);
+    // Legacy method, implemented as wrapper around new versions
+    static Tree_ME2_Base *GetME2(const PHASIC::Process_Info& pi);
 
     inline size_t NAmps() const { return m_namps; }
 
@@ -82,9 +79,8 @@ namespace PHASIC {
   class Trivial_Tree : public Tree_ME2_Base {
   public:
 
-    Trivial_Tree(const PHASIC::Process_Info &pi,
-                 const ATOOLS::Flavour_Vector &flavs) :
-      Tree_ME2_Base(pi,flavs) {}
+    Trivial_Tree(const PHASIC::External_ME_Args& args) :
+      Tree_ME2_Base(args) {}
 
     double Calc(const ATOOLS::Vec4D_Vector &p);
 
@@ -92,8 +88,8 @@ namespace PHASIC {
 }
 
 #define DECLARE_TREEME2_GETTER(NAME,TAG)			   \
-  DECLARE_GETTER(NAME,TAG,Tree_ME2_Base,Process_Info);		   \
-  void ATOOLS::Getter<Tree_ME2_Base,Process_Info,NAME>::	   \
+  DECLARE_GETTER(NAME,TAG,Tree_ME2_Base,External_ME_Args);	   \
+  void ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,NAME>::	   \
   PrintInfo(std::ostream &str,const size_t width) const		   \
   {                                                                \
     str<<#TAG;                                                     \

@@ -4,6 +4,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Model_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
 
@@ -26,7 +27,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1q2_q1q2(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1q2_q1q2(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -35,29 +36,28 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1q2_q1q2,"1XS_q1q2_q1q2")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q2_q1q2>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1q2_q1q2>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsQuark() && fl[1].IsQuark() &&
       fl[0]!=fl[1] &&
       ((fl[2]==fl[0] && fl[3]==fl[1]) ||
        (fl[3]==fl[0] && fl[2]==fl[1]))) {
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1q2_q1q2(pi,fl);
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1q2_q1q2(args);
     }
   }
   return NULL;
 }
 
-XS_q1q2_q1q2::XS_q1q2_q1q2(const Process_Info& pi, const Flavour_Vector& fl):
-  ME2_Base(pi,fl) 
+XS_q1q2_q1q2::XS_q1q2_q1q2(const External_ME_Args& args):
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const ATOOLS::Flavour_Vector& fl = args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=!(fl[0] == fl[2]);
   m_a=fl[0].IsAnti();
@@ -129,7 +129,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1qbar1_q2qbar2(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1qbar1_q2qbar2(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -138,29 +138,27 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1qbar1_q2qbar2,"1XS_q1qbar1_q2qbar2")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_q2qbar2>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_q2qbar2>::
+operator()(const External_ME_Args& args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsQuark() && fl[1]==fl[0].Bar() &&
       fl[2].IsQuark() && fl[3]==fl[2].Bar() &&
       fl[0]!=fl[2] && fl[0]!=fl[3]) {
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1qbar1_q2qbar2(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1qbar1_q2qbar2(args); 
     }
   }
   return NULL;
 }
 
-XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const Process_Info& pi,
-                                       const Flavour_Vector& fl):
-  ME2_Base(pi,fl)
+XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const External_ME_Args& args):
+  ME2_Base(args)
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const ATOOLS::Flavour_Vector fl = args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=!(fl[0].IsAnti()==fl[2].IsAnti());
   m_a=fl[0].IsAnti();
@@ -211,7 +209,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1q1_q1q1(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1q1_q1q1(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -220,27 +218,26 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1q1_q1q1,"1XS_q1q1_q1q1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_q1q1>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1q1_q1q1>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector& fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsQuark() && fl[1]==fl[0] &&
       fl[2]==fl[0] && fl[3]==fl[0]) { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1q1_q1q1(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1q1_q1q1(args); 
     }
   }
   return NULL;
 }
 
-XS_q1q1_q1q1::XS_q1q1_q1q1(const Process_Info& pi, const Flavour_Vector& fl): 
-  ME2_Base(pi,fl) 
+XS_q1q1_q1q1::XS_q1q1_q1q1(const External_ME_Args& args): 
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const Flavour_Vector& fl=args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -313,7 +310,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1qbar1_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1qbar1_q1qbar1(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -321,29 +318,27 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1qbar1_q1qbar1,"1XS_q1qbar1_q1qbar1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_q1qbar1>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_q1qbar1>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector& fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsQuark() && fl[1]==fl[0].Bar() &&
       ((fl[2]==fl[0] && fl[3]==fl[1]) ||
        (fl[3]==fl[0] && fl[2]==fl[1]))) { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1qbar1_q1qbar1(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1qbar1_q1qbar1(args); 
     }
   }
   return NULL;
 }
 
-XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const Process_Info& pi,
-                                       const Flavour_Vector& fl):
-  ME2_Base(pi,fl) 
+XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const External_ME_Args& args):
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const Flavour_Vector& fl=args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
@@ -424,7 +419,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1qbar1_gg(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1qbar1_gg(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -434,27 +429,25 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1qbar1_gg,"1XS_q1qbar1_gg")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_gg>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1qbar1_gg>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+  const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsQuark() && fl[1]==fl[0].Bar() &&
       fl[2].IsGluon() && fl[3].IsGluon()) { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1qbar1_gg(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1qbar1_gg(args); 
     }
   }
   return NULL;
 }
 
-XS_q1qbar1_gg::XS_q1qbar1_gg(const Process_Info& pi, const Flavour_Vector& fl): 
-  ME2_Base(pi,fl) 
+XS_q1qbar1_gg::XS_q1qbar1_gg(const External_ME_Args& args): 
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const Flavour_Vector fl=args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
@@ -536,7 +529,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_gg_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_gg_q1qbar1(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -545,27 +538,25 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_gg_q1qbar1,"1XS_gg_q1qbar1")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_q1qbar1>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_gg_q1qbar1>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+  const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsGluon() && fl[1].IsGluon() && 
       fl[2].IsQuark() && fl[3]==fl[2].Bar()) { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_gg_q1qbar1(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_gg_q1qbar1(args); 
     }
   }
   return NULL;
 }
 
-XS_gg_q1qbar1::XS_gg_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl): 
-  ME2_Base(pi,fl) 
+XS_gg_q1qbar1::XS_gg_q1qbar1(const External_ME_Args& args): 
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const Flavour_Vector fl = args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
@@ -646,7 +637,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_q1g_q1g(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_q1g_q1g(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -655,12 +646,12 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_q1g_q1g,"1XS_q1g_q1g")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1g_q1g>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_q1g_q1g>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (((fl[0].IsQuark() && fl[1].IsGluon()) && 
        ((fl[2]==fl[0] && fl[3].IsGluon()) || 
@@ -668,18 +659,17 @@ operator()(const Process_Info &pi) const
       ((fl[1].IsQuark() && fl[0].IsGluon()) && 
        ((fl[2]==fl[1] && fl[3].IsGluon()) || 
         (fl[3]==fl[1] && fl[2].IsGluon()))))  { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_q1g_q1g(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_q1g_q1g(args); 
     }
   }
   return NULL;
 }
 
-XS_q1g_q1g::XS_q1g_q1g(const Process_Info& pi, const Flavour_Vector& fl): 
-  ME2_Base(pi,fl) 
+XS_q1g_q1g::XS_q1g_q1g(const External_ME_Args& args):
+  ME2_Base(args)
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
+  const Flavour_Vector fl = args.Flavours();
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_iniq=0;
   m_swaput=0;
@@ -783,7 +773,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_gg_gg(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_gg_gg(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -792,27 +782,25 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(XS_gg_gg,"1XS_gg_gg")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_gg>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_gg_gg>::
+operator()(const External_ME_Args &args) const
 {
-  //if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsGluon() && fl[1].IsGluon() &&
       fl[2].IsGluon() && fl[3].IsGluon()) { 
-    if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
-	pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
-      return new XS_gg_gg(pi,fl); 
+    if (args.m_orders[0]==2 && args.m_orders[1]==0) {
+      return new XS_gg_gg(args); 
     }
   }
   return NULL;
 }
 
-XS_gg_gg::XS_gg_gg(const Process_Info& pi, const Flavour_Vector& fl): 
-  ME2_Base(pi,fl) 
+XS_gg_gg::XS_gg_gg(const External_ME_Args& args): 
+  ME2_Base(args) 
 {
-  DEBUG_FUNC(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_oew=0; m_oqcd=2;

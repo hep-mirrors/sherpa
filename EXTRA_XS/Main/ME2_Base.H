@@ -14,8 +14,7 @@ namespace EXTRAXS {
     double m_symfac;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
   public:
-    ME2_Base(const PHASIC::Process_Info& pi,
-             const ATOOLS::Flavour_Vector& flavs);
+    ME2_Base(const PHASIC::External_ME_Args&);
     virtual ~ME2_Base();
 
     double CouplingFactor(const int oqcd,const int oew) const;

@@ -8,6 +8,7 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Spin_Color_Correlated_ME2.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 
@@ -18,7 +19,11 @@ namespace EXTAMP {
   RS_Process::RS_Process(const PHASIC::Process_Info& pi) : Process(pi) {
     DEBUG_FUNC(pi);
 
-    p_real_me = External_ME_Interface::GetExternalBornME(pi);
+    std::vector<double> orders = pi.m_borncpl; orders[0] += 1;
+    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
+				  pi.m_fi.GetExternal(),
+				  orders);
+    p_real_me = External_ME_Interface::GetExternalBornME(args);
     p_real_me->SetCouplings(m_cpls);
 
     /* Construct dipoles, these do not require any input beyond flavour config */

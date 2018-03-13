@@ -194,8 +194,8 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
   if (xit==m_xsmap.end() && ampl->Legs().size()==4) {
     Process_Info pi;
     pi.m_megenerator="Internal";
-    pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
-    pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
+    pi.m_borncpl[0]=pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
+    pi.m_borncpl[1]=pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
     for (size_t i(0);i<ampl->NIn();++i)
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
     for (size_t i(ampl->NIn());i<fl.size();++i)

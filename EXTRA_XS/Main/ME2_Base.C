@@ -1,20 +1,21 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "ATOOLS/Org/Exception.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE EXTRAXS::ME2_Base
-#define PARAMETER_TYPE PHASIC::Process_Info
+#define PARAMETER_TYPE PHASIC::External_ME_Args
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-ME2_Base::ME2_Base(const Process_Info& pi, const Flavour_Vector& flavs) : 
-  Tree_ME2_Base(pi,flavs), m_oew(99), m_oqcd(99), m_sintt(7)
+ME2_Base::ME2_Base(const External_ME_Args& args) : 
+  Tree_ME2_Base(args), m_oew(99), m_oqcd(99), m_sintt(7)
 {
-  m_symfac=pi.m_fi.FSSymmetryFactor();
-  m_symfac*=pi.m_ii.ISSymmetryFactor();
+  m_symfac= Flavour::FSSymmetryFactor(args.m_outflavs);
+  m_symfac*=Flavour::ISSymmetryFactor(args.m_inflavs);
   p_colours = new int*[m_flavs.size()];
   for (size_t i(0);i<m_flavs.size();++i) {
     p_colours[i] = new int[2];

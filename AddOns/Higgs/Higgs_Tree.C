@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/UFO/UFO_Model.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 
 #include "Wrappers.H"
 #include "dilog.h"
@@ -23,11 +24,10 @@ using namespace ATOOLS;
 
 MODEL::Model_Base *HIGGS::Higgs_Tree::s_model=NULL;
 
-Higgs_Tree::Higgs_Tree(const Process_Info &pi,
-		       const Flavour_Vector &flavs,
+Higgs_Tree::Higgs_Tree(const External_ME_Args& args,
 		       int mode,int io,int spin,
 		       double kg,double kq):
-  Tree_ME2_Base(pi,flavs), m_int(mode), m_io(io),
+  Tree_ME2_Base(args), m_int(mode), m_io(io),
   m_spin(spin), m_kg(kg), m_kq(kq)
 {
   m_mh=Flavour(kf_h0).Mass();
@@ -438,43 +438,37 @@ std::vector<Tree_ME2_Base::Map_Info> Higgs_Tree::GetFlavourHelicityMap()
 }
 
 DECLARE_TREEME2_GETTER(Higgs_Tree,"Higgs_Tree")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,Higgs_Tree>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,Higgs_Tree>::
+operator()(const External_ME_Args &args) const
 {
-  DEBUG_FUNC(pi);
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_loopgenerator!="Higgs") return NULL;
-  if (pi.m_fi.m_nlotype==nlo_type::lo ||
-      pi.m_fi.m_nlotype==nlo_type::born ||
-      pi.m_fi.m_nlotype==nlo_type::real) {
-    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
-    Default_Reader reader;
-    int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
-    int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);
-    int spin = reader.Get<int>("HIGGS_INTERFERENCE_SPIN", 0);
-    double kg = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAG", 1.0);
-    double kq = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAQ", 1.0);
-    Flavour_Vector fl(pi.ExtractFlavours());
-    if (fl.size()==4) {
-      if (fl[2].IsPhoton() && fl[3].IsPhoton()) {
-	if (((mode&3) && fl[0].IsGluon() && fl[1].IsGluon()) ||
-	    (((mode&4)||(spin!=0)) &&
-	     fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
-	  msg_Info()<<"!";
-	  return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq);
-	}
-      }
-    }
-    if (fl.size()==5 &&
-	fl[2].IsPhoton() && fl[3].IsPhoton()) {
-      if ((fl[0].IsGluon() && fl[1].IsGluon() && fl[4].IsGluon()) ||
-	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[4]==fl[1]) ||
-	  (fl[0].IsQuark() && fl[1].IsGluon() && fl[4]==fl[0]) ||
-	  (fl[0].IsQuark() && fl[1]==fl[0].Bar() && fl[4].IsGluon())) {
+  Default_Reader reader;
+  int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
+  int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);
+  int spin = reader.Get<int>("HIGGS_INTERFERENCE_SPIN", 0);
+  double kg = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAG", 1.0);
+  double kq = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAQ", 1.0);
+  const Flavour_Vector& fl = args.Flavours();
+  if (fl.size()==4) {
+    if (fl[2].IsPhoton() && fl[3].IsPhoton()) {
+      if (((mode&3) && fl[0].IsGluon() && fl[1].IsGluon()) ||
+	  (((mode&4)||(spin!=0)) &&
+	   fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
 	msg_Info()<<"!";
-	return new Higgs_Tree(pi,fl,mode,io,spin,kg,kq);
+	return new Higgs_Tree(args,mode,io,spin,kg,kq);
       }
     }
   }
+  if (fl.size()==5 &&
+      fl[2].IsPhoton() && fl[3].IsPhoton()) {
+    if ((fl[0].IsGluon() && fl[1].IsGluon() && fl[4].IsGluon()) ||
+	(fl[0].IsGluon() && fl[1].IsQuark() && fl[4]==fl[1]) ||
+	(fl[0].IsQuark() && fl[1].IsGluon() && fl[4]==fl[0]) ||
+	(fl[0].IsQuark() && fl[1]==fl[0].Bar() && fl[4].IsGluon())) {
+      msg_Info()<<"!";
+      return new Higgs_Tree(args,mode,io,spin,kg,kq);
+    }
+  }
+  
   return NULL;
 }

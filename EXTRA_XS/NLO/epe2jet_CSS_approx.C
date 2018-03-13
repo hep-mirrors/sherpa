@@ -6,6 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Org/Default_Reader.H"
 
 #define CF 1.33333333333333333
@@ -29,7 +30,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_egeqq_CSS_approx(const Process_Info& pi,const Flavour_Vector& fl);
+    XS_egeqq_CSS_approx(const External_ME_Args& args);
     ~XS_egeqq_CSS_approx();
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
@@ -39,18 +40,31 @@ namespace EXTRAXS {
 }
 
 XS_egeqq_CSS_approx::XS_egeqq_CSS_approx
-(const Process_Info& pi, const Flavour_Vector& fl) : ME2_Base(pi, fl)
+(const External_ME_Args& args) : ME2_Base(args)
 {
   PRINT_INFO("initialising XS_egeqq_CSS_approx2");
-  Process_Info pico1(pi), pico2(pi);
-  pico1.m_ii.m_ps[1].m_fl=pico1.m_fi.m_ps[1].m_fl;
-  pico2.m_ii.m_ps[1].m_fl=pico2.m_fi.m_ps[2].m_fl;
-  pico1.m_fi.m_ps.erase(pico1.m_fi.m_ps.end()-1);
-  pico2.m_fi.m_ps.erase(pico2.m_fi.m_ps.end()-2);
-  pico1.m_fi.m_nlotype=nlo_type::born;
-  pico2.m_fi.m_nlotype=nlo_type::born;
-  p_bornme1 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico1));
-  p_bornme2 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico2));
+
+  Flavour_Vector inflavs1  = args.m_inflavs;
+  Flavour_Vector inflavs2  = args.m_inflavs;
+  Flavour_Vector outflavs1 = args.m_outflavs;
+  Flavour_Vector outflavs2 = args.m_outflavs;
+
+  inflavs1[1] = args.m_outflavs[1];
+  inflavs2[1] = args.m_outflavs[2];
+
+  outflavs1.erase(outflavs1.end()-1);
+  outflavs2.erase(outflavs2.end()-2);
+
+  p_bornme1 = dynamic_cast<ME2_Base*>
+    (PHASIC::Tree_ME2_Base::GetME2(External_ME_Args(inflavs1,
+						    outflavs1,
+						    {0,2})));
+
+  p_bornme2 = dynamic_cast<ME2_Base*>
+    (PHASIC::Tree_ME2_Base::GetME2(External_ME_Args(inflavs2,
+						    outflavs2,
+						    {0,2})));
+
   if (!p_bornme1 || !p_bornme2) THROW(fatal_error,"no born me found.");
   m_alphasdef = MODEL::as->Default();
   PRINT_INFO("initialised XS_egeqq_CSS_approx2");
@@ -116,21 +130,19 @@ double XS_egeqq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
 
 DECLARE_TREEME2_GETTER(XS_egeqq_CSS_approx,"XS_egeqq_CSS_approx")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,Process_Info,XS_egeqq_CSS_approx>::
-operator()(const Process_Info &pi) const
+<Tree_ME2_Base,External_ME_Args,XS_egeqq_CSS_approx>::
+operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   Default_Reader reader;
   if (reader.Get<int>("EXTRAXS_CSS_APPROX_ME", 0) == 0) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=5) return NULL;
   if (fl[0].IsLepton() && fl[2]==fl[0] &&
       fl[1].IsGluon()  &&
       fl[3].IsQuark()  && fl[4]==fl[3].Bar()) {
-    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
-      return new XS_egeqq_CSS_approx(pi,fl);
+    if (args.m_orders[0]==1 && args.m_orders[1]==2) {
+      return new XS_egeqq_CSS_approx(args);
     }
   }
   return NULL;
@@ -150,7 +162,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_eqegq_CSS_approx(const Process_Info& pi,const Flavour_Vector& fl);
+    XS_eqegq_CSS_approx(const External_ME_Args& args);
     ~XS_eqegq_CSS_approx();
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
@@ -162,13 +174,13 @@ namespace EXTRAXS {
 }
 
 XS_eqegq_CSS_approx::XS_eqegq_CSS_approx
-(const Process_Info& pi, const Flavour_Vector& fl) : ME2_Base(pi, fl)
+(const External_ME_Args& args) : ME2_Base(args)
 {
   PRINT_INFO("initialising XS_eqegq_CSS_approx2");
-  Process_Info pico(pi);
-  pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-2);
-  pico.m_fi.m_nlotype=nlo_type::born;
-  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
+  const Flavour_Vector outflavs = args.m_outflavs;
+  outflavs.erase(outflavs.end()-2);
+  External_ME_Args bargs(args.m_inflavs, outflavs,{0,2});
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(bargs));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
   m_alphasdef = MODEL::as->Default();
   PRINT_INFO("initialised XS_eqegq_CSS_approx2");
@@ -272,21 +284,19 @@ double XS_eqegq_CSS_approx::LOME2IF(const Vec4D& pi, const Vec4D& pj,
 
 DECLARE_TREEME2_GETTER(XS_eqegq_CSS_approx,"XS_eqegq_CSS_approx")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,Process_Info,XS_eqegq_CSS_approx>::
-operator()(const Process_Info &pi) const
+<Tree_ME2_Base,External_ME_Args,XS_eqegq_CSS_approx>::
+operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   Default_Reader reader;
   if (reader.Get<int>("EXTRAXS_CSS_APPROX_ME", 0) == 0) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=5) return NULL;
   if (fl[0].IsLepton() && fl[2]==fl[0] &&
       fl[3].IsGluon()  &&
       fl[1].IsQuark()  && fl[4]==fl[1]) {
-    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
-      return new XS_eqegq_CSS_approx(pi,fl);
+    if (args.m_orders[0]==1 && args.m_orders[1]==2) {
+      return new XS_eqegq_CSS_approx(args);
     }
   }
   return NULL;

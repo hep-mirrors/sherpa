@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Phys/Flow.H"
@@ -24,7 +25,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_PP_ffbar(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_PP_ffbar(const External_ME_Args& args);
 
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -32,22 +33,22 @@ namespace EXTRAXS {
   };
 }
 
-XS_PP_ffbar::XS_PP_ffbar(const Process_Info& pi, const Flavour_Vector& fl):
-  ME2_Base(pi,fl)
+XS_PP_ffbar::XS_PP_ffbar(const External_ME_Args& args) :
+  ME2_Base(args)
 {
   m_sintt=2|4;
-  m_r=fl[2].IsAnti();
-  m_qcd=fl[2].StrongCharge();
+  m_r=m_flavs[2].IsAnti();
+  m_qcd=m_flavs[2].StrongCharge();
   m_cpl=sqr(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED"))
         *sqr(sqr(m_flavs[2].Charge()))
         *(m_flavs[2].Strong()?3.0:1.0);
   m_m2=sqr(m_flavs[2].Mass());
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_oew=2; m_oqcd=0;
-  m_cfls[PropID(0,2)].push_back(fl[2]);
-  m_cfls[PropID(1,2)].push_back(fl[2]);
-  m_cfls[PropID(0,3)].push_back(fl[3]);
-  m_cfls[PropID(1,3)].push_back(fl[3]);
+  m_cfls[PropID(0,2)].push_back(m_flavs[2]);
+  m_cfls[PropID(1,2)].push_back(m_flavs[2]);
+  m_cfls[PropID(0,3)].push_back(m_flavs[3]);
+  m_cfls[PropID(1,3)].push_back(m_flavs[3]);
 }
 
 double XS_PP_ffbar::operator()(const Vec4D_Vector& mom)
@@ -72,21 +73,18 @@ bool XS_PP_ffbar::SetColours(const Vec4D_Vector& mom)
 }
 
 DECLARE_TREEME2_GETTER(XS_PP_ffbar,"XS_PP_ffbar")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_PP_ffbar>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_PP_ffbar>::
+operator()(const External_ME_Args &args) const
 {
-  return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+
+  const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsPhoton() && fl[1].IsPhoton() &&
       fl[2].IsFermion() && fl[2].Charge() &&
       fl[3]==fl[2].Bar()) {
-    if (pi.m_maxcpl[0]==0 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]==0 && pi.m_mincpl[1]==2) {
-      return new XS_PP_ffbar(pi,fl);
-    }
+    if (args.m_orders[0]==0 && args.m_orders[1]==2) 
+      return new XS_PP_ffbar(args);
   }
   return NULL;
 }

@@ -2,12 +2,17 @@
 #include "EXTAMP/Born_Process.H"
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 
 namespace EXTAMP {
 
   Born_Process::Born_Process(const PHASIC::Process_Info& pi) : Process(pi)
   {
-    p_born_me = External_ME_Interface::GetExternalBornME(pi);
+    PHASIC::External_ME_Args args (pi.m_ii.GetExternal(),
+				   pi.m_fi.GetExternal(),
+				   pi.m_borncpl);
+    p_born_me = 
+      External_ME_Interface::GetExternalBornME(args);
     p_born_me->SetCouplings(m_cpls);
   }
 

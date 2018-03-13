@@ -6,6 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Org/Default_Reader.H"
 
 #define CF 1.33333333333333333
@@ -24,7 +25,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_ee3jet_CSS_approx(const Process_Info& pi,const Flavour_Vector& fl);
+    XS_ee3jet_CSS_approx(const External_ME_Args& args);
     ~XS_ee3jet_CSS_approx();
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
@@ -36,16 +37,17 @@ namespace EXTRAXS {
 }
 
 XS_ee3jet_CSS_approx::XS_ee3jet_CSS_approx
-(const Process_Info& pi, const Flavour_Vector& fl) : ME2_Base(pi, fl)
+(const External_ME_Args& args) : ME2_Base(args)
 {
   PRINT_INFO("initialised XS_ee3jet_CSS_approx");
-  Process_Info pico(pi);
-  m_oqcd=1;
-  m_oew=2;
-  pico.m_fi.m_ps.erase(pico.m_fi.m_ps.begin());
-  pico.m_fi.m_nlotype=nlo_type::lo;
-  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
+  Flavour_Vector outflavs = args.m_outflavs;
+  outflavs.erase(outflavs.begin());
+  External_ME_Args bargs(args.m_inflavs, outflavs, {0,2});
+  p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(bargs));
+  if (!p_bornme) THROW(fatal_error,"no born me found.");
   m_alphasdef = MODEL::as->Default();
+  m_oqcd = 1;
+  m_oew  = 2;
 }
 
 XS_ee3jet_CSS_approx::~XS_ee3jet_CSS_approx()
@@ -99,21 +101,20 @@ double XS_ee3jet_CSS_approx::LOME2(const Vec4D& p0, const Vec4D& p1,
 DECLARE_TREEME2_GETTER(XS_ee3jet_CSS_approx,
                    "XS_ee3jet_CSS_approx")
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,Process_Info,XS_ee3jet_CSS_approx>::
-operator()(const Process_Info &pi) const
+<Tree_ME2_Base,External_ME_Args,XS_ee3jet_CSS_approx>::
+operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   Default_Reader reader;
   if (reader.Get<int>("EXTRAXS_CSS_APPROX_ME", 0) == 0) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=5) return NULL;
   if (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
       fl[2].IsGluon()  &&
       fl[3].IsQuark()  && fl[3]==fl[4].Bar()) {
-    if (pi.m_maxcpl[0]>=1 && pi.m_maxcpl[1]==2 &&
-	pi.m_mincpl[0]<=1 && pi.m_mincpl[1]==2) {
-      return new XS_ee3jet_CSS_approx(pi,fl);
+    if (args.m_orders[0]==1 && args.m_orders[1]==2) {
+      return new XS_ee3jet_CSS_approx(args);
     }
   }
   return NULL;

@@ -1,8 +1,9 @@
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/UFO/UFO_Model.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -33,14 +34,14 @@ namespace EXTRAXS {
 
   public:
 
-    XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl);
+    XS_ee_ffbar(const External_ME_Args& args);
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
   };
 }
 
-XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
-  : ME2_Base(pi, fl)
+XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
+  : ME2_Base(args)
 {
   DEBUG_INFO("now entered EXTRAXS::XS_ee_ffbar ...");
   m_sintt=1;
@@ -56,11 +57,11 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
   else
     kappa  = 0.;
 
-  mass     = fl[2].Mass();
-  qe       = fl[0].Charge();
-  qf       = fl[2].Charge();
-  ae       = fl[0].IsoWeak();      
-  af       = fl[2].IsoWeak();
+  mass     = m_flavs[2].Mass();
+  qe       = m_flavs[0].Charge();
+  qf       = m_flavs[2].Charge();
+  ae       = m_flavs[0].IsoWeak();      
+  af       = m_flavs[2].IsoWeak();
   ve       = ae - 2.*qe*sin2tw;
   vf       = af - 2.*qf*sin2tw;
   colfac   = 1.;
@@ -70,14 +71,14 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  if (fl[0].IsLepton() && fl[1].IsLepton()) {
-    barred = fl[2].IsAnti();
+  if (m_flavs[0].IsLepton() && m_flavs[1].IsLepton()) {
+    barred = m_flavs[2].IsAnti();
     p_colours[2][barred] = p_colours[3][1-barred] = 500;
     colfac = 3.;
   }
 
-  if (fl[0].IsQuark() && fl[1].IsQuark())  {
-    barred = fl[0].IsAnti();
+  if (m_flavs[0].IsQuark() && m_flavs[1].IsQuark())  {
+    barred = m_flavs[0].IsAnti();
     p_colours[0][barred] = p_colours[1][1-barred] = 500;
     colfac  = 1./3.;
     kswitch = 1;
@@ -114,19 +115,19 @@ double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
 }
 
 DECLARE_TREEME2_GETTER(XS_ee_ffbar,"XS_ee_ffbar")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_ee_ffbar>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,XS_ee_ffbar>::
+operator()(const External_ME_Args& args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+
+  const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
   if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
        fl[1]==fl[0].Bar()) ||   
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
        fl[3]==fl[2].Bar())) {
-    if (pi.m_mincpl[1]==2 && pi.m_maxcpl[1]==2) {
-      return new XS_ee_ffbar(pi, fl);
+    if (args.m_orders[0]==0 && args.m_orders[1]==2) {
+      return new XS_ee_ffbar(args);
     }
   }
   return NULL;

@@ -5,6 +5,7 @@
 
 namespace PHASIC {
   class Tree_ME2_Base;
+  struct External_ME_Args;
 }
 
 namespace EXTAMP {
@@ -34,14 +35,15 @@ namespace EXTAMP {
        initializes a high-level group-type process (e.g. 93 93 -> 90 90) */
     virtual PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
 
+    /* Determine if a PARTONIC Process as specified by args */
+    static bool PartonicProcessExists(const PHASIC::External_ME_Args &args);
 
-    /* Determine if a PARTONIC Process as specified by pi exists, and
-       set couplings in pi (m_mincpl) according to the first process
-       found */
-    static bool PartonicProcessExists(PHASIC::Process_Info &pi);
+    /* Determine if a PARTONIC Process as specified by pi exists */
+    static bool PartonicProcessExists(const PHASIC::Process_Info &pi);
 
     /* Instantiate a PARTONIC Process as specified by pi */
-    static PHASIC::Process_Base *InstantiatePartonicProcess(const PHASIC::Process_Info &pi);
+    static PHASIC::Process_Base *
+    InstantiatePartonicProcess(const PHASIC::Process_Info &pi);
     
     /* Pure virtual from PHASIC::ME_Generator_Base. Initialize this class. */
     virtual bool Initialize(const std::string &path,const std::string &file,
@@ -50,7 +52,8 @@ namespace EXTAMP {
 			    PDF::ISR_Handler *const isr);
 
     /* Use getter to load an external matrix element */
-    static PHASIC::Tree_ME2_Base* GetExternalBornME(const PHASIC::Process_Info& pi);
+    static PHASIC::Tree_ME2_Base* 
+    GetExternalBornME(const PHASIC::External_ME_Args& args);
 
     /* Given indices of external flavours i_1,i_2,i_3,... and the
        combined index k=(1<<i_1) & (1<<i_2) & (1<<i_3) & ... of some

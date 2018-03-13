@@ -3,17 +3,16 @@
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Tree_ME2_Base
-#define PARAMETER_TYPE PHASIC::Process_Info
+#define PARAMETER_TYPE PHASIC::External_ME_Args
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-Tree_ME2_Base::Tree_ME2_Base(const Process_Info &pi,
-                             const Flavour_Vector &flavs):
-  m_pinfo(pi), m_flavs(flavs), p_aqcd(NULL), p_aqed(NULL),
-  m_namps(0), m_norm(1.0)
+Tree_ME2_Base::Tree_ME2_Base(const External_ME_Args& args) :
+  p_aqcd(NULL), p_aqed(NULL), m_namps(0), m_norm(1.0), 
+  m_flavs(args.Flavours())
 {
 }
 
@@ -91,43 +90,36 @@ double Tree_ME2_Base::TR() const
 }
 
 typedef ATOOLS::Getter_Function
-<Tree_ME2_Base,PHASIC::Process_Info> Tree_ME2_Getter;
+<Tree_ME2_Base,PHASIC::External_ME_Args> Tree_ME2_Getter;
 
-Tree_ME2_Base* Tree_ME2_Base::GetME2(const PHASIC::Process_Info& pi)
+Tree_ME2_Base* Tree_ME2_Base::GetME2(const PHASIC::External_ME_Args& args)
 {
   Tree_ME2_Getter::Getter_List glist(Tree_ME2_Getter::GetGetters());
   for (Tree_ME2_Getter::Getter_List::const_iterator git(glist.begin());
        git!=glist.end();++git) {
-    Tree_ME2_Base *me2=(*git)->GetObject(pi);
+    Tree_ME2_Base *me2=(*git)->GetObject(args);
     if (me2) return me2;
   }
   return NULL;
 }
 
 Tree_ME2_Base *Tree_ME2_Base::GetME2(const std::string& tag,
-				     const Process_Info& pi)
+				     const External_ME_Args& args)
 {
-  Tree_ME2_Base* me2=Tree_ME2_Getter::GetObject(tag, pi);
+  Tree_ME2_Base* me2=Tree_ME2_Getter::GetObject(tag, args);
   if (me2==NULL) {
     THROW(fatal_error, "Did not find ME^2 "+tag);
   }
   else return me2;
 }
 
-Tree_ME2_Base *Tree_ME2_Base::GetME2(const External_ME_Args& args)
-{
-  PHASIC::Subprocess_Info ii;  PHASIC::Subprocess_Info fi;
-  for (Flavour_Vector::const_iterator it=args.m_inflavs.begin();
-       it!=args.m_inflavs.end(); ++it)
-    ii.m_ps.push_back(PHASIC::Subprocess_Info(*it));
-  for (Flavour_Vector::const_iterator it=args.m_outflavs.begin();
-       it!=args.m_outflavs.end(); ++it)
-    fi.m_ps.push_back(PHASIC::Subprocess_Info(*it));
-  Process_Info pi(ii,fi); 
-  pi.m_mincpl = pi.m_maxcpl = args.m_orders; 
-  pi.m_megenerator = args.m_source;
-  return GetME2(pi);
-}
+Tree_ME2_Base* Tree_ME2_Base::GetME2(const PHASIC::Process_Info& pi)
+ {
+   External_ME_Args args(pi.m_ii.GetExternal(),
+			 pi.m_fi.GetExternal(),
+			 pi.m_borncpl);
+   return GetME2(args);
+ }
 
 void Tree_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 {
@@ -137,16 +129,15 @@ void Tree_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 
 double Tree_ME2_Base::AlphaQCD() const
 {
-  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : s_model->ScalarConstant("alpha_S");
+  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : 
+    s_model->ScalarConstant("alpha_S");
 }
 
 double Tree_ME2_Base::AlphaQED() const
 {
-  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : s_model->ScalarConstant("alpha_QED");
+  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : 
+    s_model->ScalarConstant("alpha_QED");
 }
-
-
-
 
 double Trivial_Tree::Calc(const ATOOLS::Vec4D_Vector &p)
 {

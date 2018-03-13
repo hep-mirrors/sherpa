@@ -3,6 +3,10 @@
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 
+namespace PHASIC {
+  struct External_ME_Args;
+}
+
 namespace MODEL {
   class Model_Base;
   class Coupling_Data;
@@ -28,8 +32,7 @@ namespace HIGGS {
 
   public:
 
-    Higgs_Tree(const PHASIC::Process_Info& pi,
-	       const ATOOLS::Flavour_Vector& flavs,
+    Higgs_Tree(const PHASIC::External_ME_Args& args,
 	       int mode,int io,int spin,
 	       double kg,double kq);
 

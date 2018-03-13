@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -19,13 +20,13 @@ namespace EXTRAXS {
     double m_fac;
   public:
 
-    gg_yy(const Process_Info& pi, const Flavour_Vector& fl);
+    gg_yy(const External_ME_Args& args);
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
   };
 
-  gg_yy::gg_yy(const Process_Info& pi, const Flavour_Vector& fl)
-    : ME2_Base(pi, fl)
+  gg_yy::gg_yy(const External_ME_Args& args)
+    : ME2_Base(args)
   {
     rpa->gen.AddCitation
       (1,"The box diagram implementation for $gg \\to \\gamma \\gamma$ is\
@@ -91,19 +92,17 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(gg_yy,"gg_yy")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,gg_yy>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,gg_yy>::
+operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born)
-    return NULL;
-  if (pi.m_loopgenerator!="gg_yy") return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+  if(args.m_orders[0]!=2 || args.m_orders[1]!=2) return NULL;
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].Kfcode()==kf_gluon && fl[1].Kfcode()==kf_gluon &&
       fl[2].Kfcode()==kf_photon && fl[3].Kfcode()==kf_photon)
   {
-    return new gg_yy(pi, fl);
+    return new gg_yy(args);
   }
   return NULL;
 }

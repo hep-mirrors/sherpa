@@ -2,7 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/UFO/UFO_Model.H"
-
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 
 using namespace EXTRAXS;
@@ -21,18 +21,18 @@ namespace EXTRAXS {
     void doSelfTest();
   public:
 
-    yy_bobo(const Process_Info& pi, const Flavour_Vector& fl);
+    yy_bobo(const External_ME_Args& args);
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
   };
 
-  yy_bobo::yy_bobo(const Process_Info& pi, const Flavour_Vector& fl)
-    : ME2_Base(pi, fl)
+  yy_bobo::yy_bobo(const External_ME_Args& args)
+    : ME2_Base(args)
   {
     m_sintt=1;
     m_oew=0;
     m_oqcd=0;
-
+    const Flavour_Vector fl = args.Flavours();
     m_mass = fl[2].HadMass();
     m_charge = fl[2].Charge();
     if (m_charge == 0) THROW(fatal_error, "You should change a known particle's mass to zero!");
@@ -74,20 +74,19 @@ namespace EXTRAXS {
 }
 
 DECLARE_TREEME2_GETTER(yy_bobo,"yy_bobo")
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,yy_bobo>::
-operator()(const Process_Info &pi) const
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,yy_bobo>::
+operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born)
-    return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
+
+  const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (fl[0]==Flavour(kf_photon) && fl[1]==Flavour(kf_photon) &&
       (fl[2].Kfcode()==kf_pi_plus || fl[2].Kfcode()==kf_K_plus ||
        fl[2].Kfcode()==kf_D_plus || fl[2].Kfcode()==kf_D_s_plus) &&
       fl[3]==fl[2].Bar())
   {
-    return new yy_bobo(pi, fl);
+    return new yy_bobo(args);
   }
   return NULL;
 }

@@ -208,15 +208,15 @@ namespace EXTAMP {
        second item: second derivative of all terms with respect to logf */
     std::pair<double,double> terms =  std::make_pair(0.0,0.0);
 
-    assert(MinOrder(0) == MaxOrder(0)-1);
+    double born_order = Info().m_borncpl[0];
     switch(p_loop_me->Mode())
       {
       case 0:
-    	terms.first  += B*p_loop_me->ME_E1() + B*MinOrder(0)*m_beta0/2.0;
+    	terms.first  += B*p_loop_me->ME_E1() + B*born_order*m_beta0/2.0;
     	terms.second += B*p_loop_me->ME_E2();
     	break;
       case 1:
-    	terms.first  +=   p_loop_me->ME_E1() + B*MinOrder(0)*m_beta0/2.0;
+    	terms.first  +=   p_loop_me->ME_E1() + B*born_order*m_beta0/2.0;
     	terms.second +=   p_loop_me->ME_E2();
     	break;
       default:
