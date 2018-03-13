@@ -1,7 +1,7 @@
 
 OPENLOOPS_SOURCES      =	\
 			OpenLoops_Virtual.C \
-n			OpenLoops_Born.C \
+			OpenLoops_Born.C \
 			OpenLoops_Interface.C \
 			Color_Correlated_ME2.C \
 			Spin_Color_Correlated_ME2.C \
