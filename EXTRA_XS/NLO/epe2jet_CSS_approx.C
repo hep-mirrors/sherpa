@@ -177,7 +177,7 @@ XS_eqegq_CSS_approx::XS_eqegq_CSS_approx
 (const External_ME_Args& args) : ME2_Base(args)
 {
   PRINT_INFO("initialising XS_eqegq_CSS_approx2");
-  const Flavour_Vector outflavs = args.m_outflavs;
+  Flavour_Vector outflavs = args.m_outflavs;
   outflavs.erase(outflavs.end()-2);
   External_ME_Args bargs(args.m_inflavs, outflavs,{0,2});
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(bargs));
