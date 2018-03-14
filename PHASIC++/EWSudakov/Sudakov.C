@@ -232,6 +232,7 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
     const auto Ik = Ipm(kflav, spincombination[k], ksign);
     const auto Il = Ipm(lflav, spincombination[l], lsign);
     if (Ik != 0.0 && Il != 0.0) {
+      // TODO: remove duplication when calculating ampl ratios
       auto amplit = m_sscwspinampls.find(indizes);
       if (amplit == m_sscwspinampls.end()) {
         auto& rotatedampl =
