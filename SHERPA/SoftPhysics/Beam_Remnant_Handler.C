@@ -151,7 +151,7 @@ ATOOLS::Blob * Beam_Remnant_Handler::InitBeamBlob(const int beam)
   blob->SetStatus(blob_status::needs_beams |
 		  blob_status::needs_softUE |
 		  blob_status::needs_hadronization);
-  Particle * beampart = new Particle(-1,p_beam->GetBeam(beam)->Beam(),
+  Particle * beampart = new Particle(-1,p_beam->GetBeam(beam)->Bunch(),
 				     p_beam->GetBeam(beam)->OutMomentum());
   beampart->SetNumber(0);
   beampart->SetBeam(beam);
