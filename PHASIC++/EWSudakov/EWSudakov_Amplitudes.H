@@ -2,10 +2,9 @@
 #define PHASIC_EWSudakov_EWSudakovAmplitudes_H
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "PHASIC++/EWSudakov/EWSudakov.H"
 
-#include <array>
 #include <memory>
-#include <unordered_set>
 #include <map>
 
 // TODO: Migrate this to Cluster_Amplitude
@@ -27,8 +26,6 @@ namespace ATOOLS {
 
 namespace PHASIC {
 
-  using Two_Leg_Indizes = std::array<size_t, 2>;
-
   enum class EWSudakov_Amplitude_Type {
     Base,
     LSCZ,  ///< at leg i, Z is replaced with photon or vice versa
@@ -43,8 +40,6 @@ namespace PHASIC {
    */
   class EWSudakov_Amplitudes {
 
-    using Leg_Index_Set
-      = std::set<size_t>;
     using Cluster_Ampl_Key
       = std::pair<EWSudakov_Amplitude_Type, Leg_Index_Set>;
     using Cluster_Amplitude_UPM
@@ -56,7 +51,8 @@ namespace PHASIC {
 
   public:
 
-    EWSudakov_Amplitudes(Process_Base*);
+    EWSudakov_Amplitudes(Process_Base*,
+                         const std::set<EWSudakov_Log_Type>& _activecoeffs);
 
     ATOOLS::Cluster_Amplitude& Unrotated() noexcept;
     ATOOLS::Cluster_Amplitude& Rotated(EWSudakov_Amplitude_Type, Leg_Index_Set);
@@ -74,13 +70,15 @@ namespace PHASIC {
   private:
 
     // helper methods for the construction
-    Cluster_Amplitude_UPM CreateAmplitudes(Process_Base*) const;
+    Cluster_Amplitude_UPM CreateAmplitudes(
+        Process_Base*, const std::set<EWSudakov_Log_Type>& activecoeffs) const;
     static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP CreateLSCZAmplitude(
         const ATOOLS::Cluster_Amplitude_UP&, size_t legindex);
     static ATOOLS::Cluster_Amplitude_UP CreateSSCWAmplitude(
         const ATOOLS::Cluster_Amplitude_UP&, Two_Leg_Indizes indizes);
-    static Permutation_Map CreatePermutations(const Cluster_Amplitude_UPM&);
+    static Permutation_Map CreatePermutations(
+        const Cluster_Amplitude_UPM&);
     static std::vector<size_t> CalculateLegPermutation(
         const ATOOLS::Cluster_Amplitude_UP& ampl);
 

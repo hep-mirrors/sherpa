@@ -21,7 +21,8 @@ using namespace ATOOLS;
 
 Sudakov::Sudakov(Process_Base* proc):
   p_proc{ proc },
-  m_ampls{ p_proc },
+  m_activecoeffs{ EWSudakov_Log_Type::Ls, EWSudakov_Log_Type::lZ, EWSudakov_Log_Type::lSSC },
+  m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
@@ -29,8 +30,7 @@ Sudakov::Sudakov(Process_Base* proc):
   m_cw{ sqrt(m_cw2) },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
   m_mz2{ sqr(s_kftable[kf_Z]->m_mass) },
-  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) },
-  m_coeffs{ {"L", {}}, {"lZ", {}} }
+  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) }
 {
 }
 
@@ -70,18 +70,18 @@ Complex Sudakov::deltaEW(const double s)
 
   // for now this is a bit of an overkill, but useful
   // if we add more logs...
-  std::map<std::string, double> logs;
-  logs["L"] = L; logs["lZ"] = lZ;
-  
+  std::map<Coeff_Map_Key, double> logs;
+  logs[{EWSudakov_Log_Type::Ls, {}}] = L;
+  logs[{EWSudakov_Log_Type::lZ, {}}] = lZ;
+
   Complex res{ 0. };
 
-  for(auto c : m_coeffs){
-    const auto named_log = c.first;
-    for(auto c_val : c.second){
-      res += c_val * logs[named_log];
+  for (const auto& coeffkv : m_coeffs) {
+    for (const auto c_val : coeffkv.second) {
+      res += c_val * logs[coeffkv.first];
     }
   }
-  
+
   return res;
 }
 
@@ -89,12 +89,20 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
 {
   const auto& ampls = m_spinampls[0];
   const auto spinamplnum = ampls.size();
-  for (auto& kv : m_coeffs) {
-    kv.second.clear();
-    kv.second.resize(spinamplnum);
+  m_coeffs.clear();
+  for (const auto& key : m_activecoeffs) {
+    switch (key) {
+      case EWSudakov_Log_Type::Ls:
+      case EWSudakov_Log_Type::lZ:
+        m_coeffs[{key, {}}].resize(spinamplnum);
+        break;
+      case EWSudakov_Log_Type::lSSC:
+        for (size_t k{ 0 }; k < ampls.GetSpinCombination(0).size(); ++k)
+          for (size_t l{ 0 }; l < k; ++l)
+            m_coeffs[{key, {k, l}}].resize(spinamplnum);
+        break;
+    }
   }
-  m_angularcoeffs.clear();
-  m_angularcoeffs.resize(spinamplnum);
   for (size_t i{ 0 }; i < spinamplnum; ++i) {
     const auto value = ampls.Get(i);
     const auto spincombination = ampls.GetSpinCombination(i);
@@ -102,21 +110,32 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       THROW(fatal_error, "Inconsistent state");
     if (value == 0.0)
       continue;
-    m_coeffs["L"][i] = LsCoeff(value, spincombination, i);
-    m_coeffs["lZ"][i] = lsZCoeff(value, spincombination, i);
-    m_angularcoeffs[i] = lsLogROverSCoeffs(value, spincombination, i);
-    // TODO: add other coefficients (remember to init m_coeffs in ctor and to
-    // multiply B0i below)
+    for (const auto& key : m_activecoeffs) {
+      switch (key) {
+        case EWSudakov_Log_Type::Ls:
+          m_coeffs[{key, {}}][i] = LsCoeff(value, spincombination, i);
+          break;
+        case EWSudakov_Log_Type::lZ:
+          m_coeffs[{key, {}}][i] = lsZCoeff(value, spincombination, i);
+          break;
+        case EWSudakov_Log_Type::lSSC:
+          for (size_t k{ 0 }; k < spincombination.size(); ++k) {
+            for (size_t l{ 0 }; l < k; ++l) {
+              const auto angularkey
+                = Coeff_Map_Key{EWSudakov_Log_Type::lSSC, {k, l}};
+              m_coeffs[angularkey][i]
+                = lsLogROverSCoeffs(value, spincombination, i, {k, l});
+            }
+          }
+          break;
+      }
+    }
   }
   if (m_check) {
-    Coefficient_Checker checker(p_proc->Name());
+    Coefficient_Checker checker(p_proc->Name(), m_activecoeffs);
     if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
       THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
                          " the results in hep-ph/0010201.");
-    }
-    if (!checker.CheckAngularCoeffs(m_angularcoeffs, m_spinampls[0])) {
-      THROW(fatal_error, "EWSudakov angular coeffs for this process are not"
-                         " equal to the results in hep-ph/0010201.");
     }
   }
   for (size_t i{ 0 }; i < spinamplnum; ++i) {
@@ -124,10 +143,8 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
     if (value == 0.0)
       continue;
     Complex B0i{ value * std::conj(value) };
-    m_coeffs["L"][i] *= B0i;
-    m_coeffs["lZ"][i] *= B0i;
-    for (auto& coeffkv : m_angularcoeffs[i])
-      coeffkv.second *= B0i;
+    for (auto& coeffkv : m_coeffs)
+      coeffkv.second[i] *= B0i;
   }
 }
 
@@ -178,120 +195,118 @@ Complex Sudakov::lsZCoeff(Complex amplvalue,
   return coeff;
 }
 
-LegIndizes_Coeff_Map Sudakov::lsLogROverSCoeffs(
-    Complex amplvalue, std::vector<int> spincombination, size_t spinidx)
+Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
+                                   std::vector<int> spincombination,
+                                   size_t spinidx,
+                                   const Two_Leg_Indizes& indizes)
 {
-  LegIndizes_Coeff_Map coeffs;
-  // loop over pairs of external legs
-  for (size_t k{ 0 }; k < spincombination.size(); ++k) {
-    auto kflav = m_ampls.Unrotated().Leg(k)->Flav();
-    for (size_t l{ 0 }; l < k; ++l) {
-      auto lflav = m_ampls.Unrotated().Leg(l)->Flav();
+  Complex coeff{ 0.0 };
 
-      const auto key = Two_Leg_Indizes{k, l};
+  const auto k = indizes[0];
+  const auto l = indizes[1];
+  auto kflav = m_ampls.Unrotated().Leg(k)->Flav();
+  auto lflav = m_ampls.Unrotated().Leg(l)->Flav();
 
-      // add contribution for each vector boson connecting the leg pairs
+  // add contribution for each vector boson connecting the leg pairs
 
-      // photon
-      const auto IAk = -kflav.Charge();
-      const auto IAl = -lflav.Charge();
-      coeffs[key] += 2*IAk*IAl;
+  // photon
+  const auto IAk = -kflav.Charge();
+  const auto IAl = -lflav.Charge();
+  coeff += 2*IAk*IAl;
 
-      // Z
-      const auto IZk = IZ(kflav, spincombination[k]);
-      const auto IZl = IZ(lflav, spincombination[l]);
-      coeffs[key] += 2*IZk*IZl;
+  // Z
+  const auto IZk = IZ(kflav, spincombination[k]);
+  const auto IZl = IZ(lflav, spincombination[l]);
+  coeff += 2*IZk*IZl;
 
-      // W
-      const auto Ipk = Ipm(kflav, spincombination[k], "+");
-      const auto Iml = Ipm(lflav, spincombination[l], "-");
-      if (Ipk != 0.0 && Iml != 0.0) {
-        msg_Debugging()
-          << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
-          << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
-        msg_Debugging() << "I+k, I-l = (" << Ipk << ", " << Iml << ")\n";
+  // W
+  const auto Ipk = Ipm(kflav, spincombination[k], "+");
+  const auto Iml = Ipm(lflav, spincombination[l], "-");
+  if (Ipk != 0.0 && Iml != 0.0) {
+    msg_Debugging()
+      << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
+      << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
+    msg_Debugging() << "I+k, I-l = (" << Ipk << ", " << Iml << ")\n";
 
-        const auto key = Two_Leg_Indizes{k, l};
-        auto amplit = m_sscwspinampls.find(key);
-        if (amplit == m_sscwspinampls.end()) {
-          auto& rotatedampl =
-            m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
-          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
-          amplit = m_sscwspinampls.find(key);
-          msg_Debugging() << rotatedampl << std::endl;
-        }
-        auto& legpermutation = m_ampls.LegPermutation(
-            EWSudakov_Amplitude_Type::SSCW, {k, l});
-        msg_Debugging() << "leg permutation: ";
-        for (const auto& leg : legpermutation)
-          msg_Debugging() << leg << " ";
-        msg_Debugging() << "- spin combination: ";
-        for (const auto& helindx : spincombination)
-          msg_Debugging() << helindx << " ";
-        std::vector<int> rotatedspincombination;
-        for (const auto& idx : legpermutation)
-          rotatedspincombination.push_back(spincombination[idx]);
-        msg_Debugging() << "-> ";
-        for (const auto& helindx : rotatedspincombination)
-          msg_Debugging() << helindx << " ";
-        msg_Debugging() << "\n";
-        const auto rotated = amplit->second[0].Get(rotatedspincombination);
-        const auto unrotated = amplvalue;
-        assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-        // TODO: understand why we need to use abs here
-        const auto amplratio = std::abs(rotated/unrotated);
-        msg_Debugging()
-          << "rotated/unrotated"
-          << rotated << "/" << unrotated << "=" << amplratio << std::endl;
-
-        coeffs[key] += 2*Ipk*Iml*amplratio;
-      }
-
-      const auto Imk = Ipm(kflav, spincombination[k], "-");
-      const auto Ipl = Ipm(lflav, spincombination[l], "+");
-      if (Imk != 0.0 && Ipl != 0.0) {
-        msg_Debugging()
-          << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
-          << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
-        msg_Debugging() << "I-k, I+l = (" << Imk << ", " << Ipl << ")\n";
-
-        const auto key = Two_Leg_Indizes{k, l};
-        auto amplit = m_sscwspinampls.find(key);
-        if (amplit == m_sscwspinampls.end()) {
-          auto& rotatedampl =
-            m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
-          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
-          amplit = m_sscwspinampls.find(key);
-          msg_Debugging() << rotatedampl << std::endl;
-        }
-        auto& legpermutation = m_ampls.LegPermutation(
-            EWSudakov_Amplitude_Type::SSCW, {k, l});
-        msg_Debugging() << "leg permutation: ";
-        for (const auto& leg : legpermutation)
-          msg_Debugging() << leg << " ";
-        msg_Debugging() << "- spin combination: ";
-        for (const auto& helindx : spincombination)
-          msg_Debugging() << helindx << " ";
-        std::vector<int> rotatedspincombination;
-        for (const auto& idx : legpermutation)
-          rotatedspincombination.push_back(spincombination[idx]);
-        msg_Debugging() << "-> ";
-        for (const auto& helindx : rotatedspincombination)
-          msg_Debugging() << helindx << " ";
-        msg_Debugging() << "\n";
-        const auto rotated = amplit->second[0].Get(rotatedspincombination);
-        const auto unrotated = amplvalue;
-        assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-        const auto amplratio = rotated/unrotated;
-        msg_Debugging()
-          << "rotated/unrotated"
-          << rotated << "/" << unrotated << "=" << amplratio << std::endl;
-
-        coeffs[key] += 2*Imk*Ipl*amplratio;
-      }
+    const auto key = Two_Leg_Indizes{k, l};
+    auto amplit = m_sscwspinampls.find(key);
+    if (amplit == m_sscwspinampls.end()) {
+      auto& rotatedampl =
+        m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
+      m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
+      amplit = m_sscwspinampls.find(key);
+      msg_Debugging() << rotatedampl << std::endl;
     }
+    auto& legpermutation = m_ampls.LegPermutation(
+        EWSudakov_Amplitude_Type::SSCW, {k, l});
+    msg_Debugging() << "leg permutation: ";
+    for (const auto& leg : legpermutation)
+      msg_Debugging() << leg << " ";
+    msg_Debugging() << "- spin combination: ";
+    for (const auto& helindx : spincombination)
+      msg_Debugging() << helindx << " ";
+    std::vector<int> rotatedspincombination;
+    for (const auto& idx : legpermutation)
+      rotatedspincombination.push_back(spincombination[idx]);
+    msg_Debugging() << "-> ";
+    for (const auto& helindx : rotatedspincombination)
+      msg_Debugging() << helindx << " ";
+    msg_Debugging() << "\n";
+    const auto rotated = amplit->second[0].Get(rotatedspincombination);
+    const auto unrotated = amplvalue;
+    assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+    // TODO: understand why we need to use abs here
+    const auto amplratio = std::abs(rotated/unrotated);
+    msg_Debugging()
+      << "rotated/unrotated"
+      << rotated << "/" << unrotated << "=" << amplratio << std::endl;
+
+    coeff += 2*Ipk*Iml*amplratio;
   }
-  return coeffs;
+
+  const auto Imk = Ipm(kflav, spincombination[k], "-");
+  const auto Ipl = Ipm(lflav, spincombination[l], "+");
+  if (Imk != 0.0 && Ipl != 0.0) {
+    msg_Debugging()
+      << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
+      << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
+    msg_Debugging() << "I-k, I+l = (" << Imk << ", " << Ipl << ")\n";
+
+    const auto key = Two_Leg_Indizes{k, l};
+    auto amplit = m_sscwspinampls.find(key);
+    if (amplit == m_sscwspinampls.end()) {
+      auto& rotatedampl =
+        m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
+      m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
+      amplit = m_sscwspinampls.find(key);
+      msg_Debugging() << rotatedampl << std::endl;
+    }
+    auto& legpermutation = m_ampls.LegPermutation(
+        EWSudakov_Amplitude_Type::SSCW, {k, l});
+    msg_Debugging() << "leg permutation: ";
+    for (const auto& leg : legpermutation)
+      msg_Debugging() << leg << " ";
+    msg_Debugging() << "- spin combination: ";
+    for (const auto& helindx : spincombination)
+      msg_Debugging() << helindx << " ";
+    std::vector<int> rotatedspincombination;
+    for (const auto& idx : legpermutation)
+      rotatedspincombination.push_back(spincombination[idx]);
+    msg_Debugging() << "-> ";
+    for (const auto& helindx : rotatedspincombination)
+      msg_Debugging() << helindx << " ";
+    msg_Debugging() << "\n";
+    const auto rotated = amplit->second[0].Get(rotatedspincombination);
+    const auto unrotated = amplvalue;
+    assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+    const auto amplratio = rotated/unrotated;
+    msg_Debugging()
+      << "rotated/unrotated"
+      << rotated << "/" << unrotated << "=" << amplratio << std::endl;
+
+    coeff += 2*Imk*Ipl*amplratio;
+  }
+  return coeff;
 }
 
 double Sudakov::DiagonalCew(const Flavour& flav, int pol) const
@@ -418,4 +433,20 @@ double Sudakov::Ipm(const Flavour& flav, int pol, const std::string& sign) const
   } else {
     THROW(not_implemented, "Missing implementation");
   }
+}
+
+namespace PHASIC {
+
+  std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key& k)
+  {
+    os << k.first;
+    if (!k.second.empty()) {
+      os << " { ";
+      for (const auto& i : k.second)
+        os << i << " ";
+      os << "}";
+    }
+    return os;
+  }
+
 }

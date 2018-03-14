@@ -13,8 +13,9 @@ using namespace ATOOLS;
 const EWSudakov_Amplitudes::Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
 = std::make_pair(EWSudakov_Amplitude_Type::Base, Leg_Index_Set{});
 
-EWSudakov_Amplitudes::EWSudakov_Amplitudes(Process_Base* proc):
-  ampls{ CreateAmplitudes(proc) },
+EWSudakov_Amplitudes::EWSudakov_Amplitudes(
+    Process_Base* proc, const std::set<EWSudakov_Log_Type>& activecoeffs):
+  ampls{ CreateAmplitudes(proc, activecoeffs) },
   permutations{ CreatePermutations(ampls) }
 {
 }
@@ -57,34 +58,40 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 }
 
 EWSudakov_Amplitudes::Cluster_Amplitude_UPM
-EWSudakov_Amplitudes::CreateAmplitudes(Process_Base* proc) const
+EWSudakov_Amplitudes::CreateAmplitudes(
+    Process_Base* proc,
+    const std::set<EWSudakov_Log_Type>& activecoeffs) const
 {
   Cluster_Amplitude_UPM ampls;
   const auto& baseampl
     = ampls.insert(std::make_pair(s_baseamplkey, CreateAmplitude(proc))).first->second;
   // create amplitudes needed for Z/photon interference terms
-  for (size_t i{ 0 }; i < baseampl->Legs().size(); ++i) {
-    const auto flav = baseampl->Leg(i)->Flav();
-    if (flav.IsPhoton() || flav.Kfcode() == kf_Z) {
-      const auto key
-        = std::make_pair(EWSudakov_Amplitude_Type::LSCZ, Leg_Index_Set{i});
-      ampls.insert(std::make_pair(key, CreateLSCZAmplitude(baseampl, i)));
+  if (activecoeffs.find(EWSudakov_Log_Type::Ls) != activecoeffs.end()) {
+    for (size_t i{ 0 }; i < baseampl->Legs().size(); ++i) {
+      const auto flav = baseampl->Leg(i)->Flav();
+      if (flav.IsPhoton() || flav.Kfcode() == kf_Z) {
+        const auto key
+          = std::make_pair(EWSudakov_Amplitude_Type::LSCZ, Leg_Index_Set{i});
+        ampls.insert(std::make_pair(key, CreateLSCZAmplitude(baseampl, i)));
+      }
     }
   }
   // create amplitudes needed for W loops
-  for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
-    for (size_t l{ 0 }; l < k; ++l) {
-      const auto kflav = baseampl->Leg(k)->Flav();
-      const auto lflav = baseampl->Leg(l)->Flav();
-      const auto newkflav = kflav.IsoWeakPartner();
-      const auto newlflav = lflav.IsoWeakPartner();
-      if (kflav.IntCharge() + lflav.IntCharge()
-          != newkflav.IntCharge() + newlflav.IntCharge())
-        continue;
-      const auto key
-        = std::make_pair(EWSudakov_Amplitude_Type::SSCW, Leg_Index_Set{k, l});
-      ampls.insert(std::make_pair(
-            key, CreateSSCWAmplitude(baseampl, Two_Leg_Indizes{k, l})));
+  if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
+    for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
+      for (size_t l{ 0 }; l < k; ++l) {
+        const auto kflav = baseampl->Leg(k)->Flav();
+        const auto lflav = baseampl->Leg(l)->Flav();
+        const auto newkflav = kflav.IsoWeakPartner();
+        const auto newlflav = lflav.IsoWeakPartner();
+        if (kflav.IntCharge() + lflav.IntCharge()
+            != newkflav.IntCharge() + newlflav.IntCharge())
+          continue;
+        const auto key
+          = std::make_pair(EWSudakov_Amplitude_Type::SSCW, Leg_Index_Set{k, l});
+        ampls.insert(std::make_pair(
+              key, CreateSSCWAmplitude(baseampl, Two_Leg_Indizes{k, l})));
+      }
     }
   }
   for (auto& kv : ampls)
