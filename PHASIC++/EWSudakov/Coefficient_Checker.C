@@ -168,7 +168,9 @@ Coefficient_Checker::AngularReferenceCoeffs()
     mapmm[{3, 1}][{0, 0, 1, 1}] = -1.29;  // same as for RL
     mapmm[{2, 1}][{0, 0, 1, 1}] =  1.29;  // same as for RL
 
-    mapmm[{2, 0}][{1, 1, 1, 1}] = -19.7;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)
+    mapmm[{2, 0}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)
+    mapmm[{3, 1}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)
+
     mapmm[{3, 0}][{1, 1, 1, 1}] =  2.88;  // -4*R_lq(LL)
     mapmm[{2, 1}][{1, 1, 1, 1}] =  2.88;  // -4*R_lq(LL)
   }

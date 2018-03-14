@@ -185,12 +185,8 @@ LegIndizes_Coeff_Map Sudakov::lsLogROverSCoeffs(
   // loop over pairs of external legs
   for (size_t k{ 0 }; k < spincombination.size(); ++k) {
     auto kflav = m_ampls.Unrotated().Leg(k)->Flav();
-    //if (k < m_ampls.Unrotated().NIn())
-    //  kflav = kflav.Bar();
     for (size_t l{ 0 }; l < k; ++l) {
       auto lflav = m_ampls.Unrotated().Leg(l)->Flav();
-      //if (l < m_ampls.Unrotated().NIn())
-      //  lflav = lflav.Bar();
 
       const auto key = Two_Leg_Indizes{k, l};
 
@@ -226,13 +222,24 @@ LegIndizes_Coeff_Map Sudakov::lsLogROverSCoeffs(
         }
         auto& legpermutation = m_ampls.LegPermutation(
             EWSudakov_Amplitude_Type::SSCW, {k, l});
+        msg_Debugging() << "leg permutation: ";
+        for (const auto& leg : legpermutation)
+          msg_Debugging() << leg << " ";
+        msg_Debugging() << "- spin combination: ";
+        for (const auto& helindx : spincombination)
+          msg_Debugging() << helindx << " ";
         std::vector<int> rotatedspincombination;
         for (const auto& idx : legpermutation)
           rotatedspincombination.push_back(spincombination[idx]);
+        msg_Debugging() << "-> ";
+        for (const auto& helindx : rotatedspincombination)
+          msg_Debugging() << helindx << " ";
+        msg_Debugging() << "\n";
         const auto rotated = amplit->second[0].Get(rotatedspincombination);
         const auto unrotated = amplvalue;
         assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-        const auto amplratio = rotated/unrotated;
+        // TODO: understand why we need to use abs here
+        const auto amplratio = std::abs(rotated/unrotated);
         msg_Debugging()
           << "rotated/unrotated"
           << rotated << "/" << unrotated << "=" << amplratio << std::endl;
@@ -259,9 +266,19 @@ LegIndizes_Coeff_Map Sudakov::lsLogROverSCoeffs(
         }
         auto& legpermutation = m_ampls.LegPermutation(
             EWSudakov_Amplitude_Type::SSCW, {k, l});
+        msg_Debugging() << "leg permutation: ";
+        for (const auto& leg : legpermutation)
+          msg_Debugging() << leg << " ";
+        msg_Debugging() << "- spin combination: ";
+        for (const auto& helindx : spincombination)
+          msg_Debugging() << helindx << " ";
         std::vector<int> rotatedspincombination;
         for (const auto& idx : legpermutation)
           rotatedspincombination.push_back(spincombination[idx]);
+        msg_Debugging() << "-> ";
+        for (const auto& helindx : rotatedspincombination)
+          msg_Debugging() << helindx << " ";
+        msg_Debugging() << "\n";
         const auto rotated = amplit->second[0].Get(rotatedspincombination);
         const auto unrotated = amplvalue;
         assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
