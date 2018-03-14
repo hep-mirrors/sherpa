@@ -38,7 +38,7 @@ namespace PHASIC {
     inline Process_Info(const Subprocess_Info &ii=Subprocess_Info(),
 			const Subprocess_Info &fi=Subprocess_Info()):
       m_ii(ii), m_fi(fi), m_cls(cls::sum), m_hls(hls::sum),
-      m_maxcpl(2,99), m_mincpl(2,0), m_borncpl(0,0), m_nminq(0), m_nmaxq(99),
+      m_maxcpl(2,99), m_mincpl(2,0), m_borncpl(2,0), m_nminq(0), m_nmaxq(99),
       m_ckkw(0), m_itmin(5000), m_rsitmin(5000),
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99),
       m_nlomode(ATOOLS::nlo_mode::none),
