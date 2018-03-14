@@ -51,8 +51,8 @@ namespace PHASIC {
     /// calculate the coupling to Z
     double IZ(const Flavour&, int pol) const;
 
-    /// calculate the coupling to W plus/minus
-    double Ipm(const Flavour&, int pol, const std::string& sign) const;
+    /// calculate the coupling to W plus/minus (for sign == '+'/'-', respectively)
+    double Ipm(const Flavour&, int pol, char sign) const;
 
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);

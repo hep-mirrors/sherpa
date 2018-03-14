@@ -220,91 +220,37 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
   coeff += 2*IZk*IZl;
 
   // W
-  const auto Ipk = Ipm(kflav, spincombination[k], "+");
-  const auto Iml = Ipm(lflav, spincombination[l], "-");
-  if (Ipk != 0.0 && Iml != 0.0) {
-    msg_Debugging()
-      << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
-      << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
-    msg_Debugging() << "I+k, I-l = (" << Ipk << ", " << Iml << ")\n";
-
-    const auto key = Two_Leg_Indizes{k, l};
-    auto amplit = m_sscwspinampls.find(key);
-    if (amplit == m_sscwspinampls.end()) {
-      auto& rotatedampl =
-        m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
-      m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
-      amplit = m_sscwspinampls.find(key);
-      msg_Debugging() << rotatedampl << std::endl;
+  for (int i{ 0 }; i < 2; ++i) {
+    char ksign, lsign;
+    if (i == 0) {
+      ksign = '+';
+      lsign = '-';
+    } else {
+      ksign = '-';
+      lsign = '+';
     }
-    auto& legpermutation = m_ampls.LegPermutation(
-        EWSudakov_Amplitude_Type::SSCW, {k, l});
-    msg_Debugging() << "leg permutation: ";
-    for (const auto& leg : legpermutation)
-      msg_Debugging() << leg << " ";
-    msg_Debugging() << "- spin combination: ";
-    for (const auto& helindx : spincombination)
-      msg_Debugging() << helindx << " ";
-    std::vector<int> rotatedspincombination;
-    for (const auto& idx : legpermutation)
-      rotatedspincombination.push_back(spincombination[idx]);
-    msg_Debugging() << "-> ";
-    for (const auto& helindx : rotatedspincombination)
-      msg_Debugging() << helindx << " ";
-    msg_Debugging() << "\n";
-    const auto rotated = amplit->second[0].Get(rotatedspincombination);
-    const auto unrotated = amplvalue;
-    assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-    // TODO: understand why we need to use abs here
-    const auto amplratio = std::abs(rotated/unrotated);
-    msg_Debugging()
-      << "rotated/unrotated"
-      << rotated << "/" << unrotated << "=" << amplratio << std::endl;
-
-    coeff += 2*Ipk*Iml*amplratio;
-  }
-
-  const auto Imk = Ipm(kflav, spincombination[k], "-");
-  const auto Ipl = Ipm(lflav, spincombination[l], "+");
-  if (Imk != 0.0 && Ipl != 0.0) {
-    msg_Debugging()
-      << "(" << kflav << ", " << lflav << ") [" << k << l << "]"
-      << " pol=" << spincombination[k] << "," << spincombination[l] << "\n";
-    msg_Debugging() << "I-k, I+l = (" << Imk << ", " << Ipl << ")\n";
-
-    const auto key = Two_Leg_Indizes{k, l};
-    auto amplit = m_sscwspinampls.find(key);
-    if (amplit == m_sscwspinampls.end()) {
-      auto& rotatedampl =
-        m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
-      m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
-      amplit = m_sscwspinampls.find(key);
-      msg_Debugging() << rotatedampl << std::endl;
+    const auto Ik = Ipm(kflav, spincombination[k], ksign);
+    const auto Il = Ipm(lflav, spincombination[l], lsign);
+    if (Ik != 0.0 && Il != 0.0) {
+      auto amplit = m_sscwspinampls.find(indizes);
+      if (amplit == m_sscwspinampls.end()) {
+        auto& rotatedampl =
+          m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
+        m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[indizes], rotatedampl);
+        amplit = m_sscwspinampls.find(indizes);
+      }
+      auto& legpermutation = m_ampls.LegPermutation(
+          EWSudakov_Amplitude_Type::SSCW, {k, l});
+      std::vector<int> rotatedspincombination;
+      for (const auto& idx : legpermutation)
+        rotatedspincombination.push_back(spincombination[idx]);
+      const auto rotated = amplit->second[0].Get(rotatedspincombination);
+      const auto unrotated = amplvalue;
+      assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+      // TODO: understand why we need to use abs here (only when rotated ampl is permutated?)
+      const auto amplratio = std::abs(rotated/unrotated);
+      coeff += 2*Ik*Il*amplratio;
     }
-    auto& legpermutation = m_ampls.LegPermutation(
-        EWSudakov_Amplitude_Type::SSCW, {k, l});
-    msg_Debugging() << "leg permutation: ";
-    for (const auto& leg : legpermutation)
-      msg_Debugging() << leg << " ";
-    msg_Debugging() << "- spin combination: ";
-    for (const auto& helindx : spincombination)
-      msg_Debugging() << helindx << " ";
-    std::vector<int> rotatedspincombination;
-    for (const auto& idx : legpermutation)
-      rotatedspincombination.push_back(spincombination[idx]);
-    msg_Debugging() << "-> ";
-    for (const auto& helindx : rotatedspincombination)
-      msg_Debugging() << helindx << " ";
-    msg_Debugging() << "\n";
-    const auto rotated = amplit->second[0].Get(rotatedspincombination);
-    const auto unrotated = amplvalue;
-    assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-    const auto amplratio = rotated/unrotated;
-    msg_Debugging()
-      << "rotated/unrotated"
-      << rotated << "/" << unrotated << "=" << amplratio << std::endl;
-
-    coeff += 2*Imk*Ipl*amplratio;
   }
   return coeff;
 }
@@ -420,14 +366,14 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
   }
 }
 
-double Sudakov::Ipm(const Flavour& flav, int pol, const std::string& sign) const
+double Sudakov::Ipm(const Flavour& flav, int pol, char sign) const
 {
   if (pol == 0)
     return 0.0;
   if (flav.IsLepton()) {
-    if (flav.IsAnti() && sign == "-")
+    if (flav.IsAnti() && sign == '-')
       return -1 / (sqrt(2)*m_sw);
-    else if (!flav.IsAnti() && sign == "+")
+    else if (!flav.IsAnti() && sign == '+')
       return  1 / (sqrt(2)*m_sw);
     return 0.0;
   } else {
