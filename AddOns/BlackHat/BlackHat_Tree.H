@@ -10,6 +10,10 @@ namespace MODEL {
   class Coupling_Data;
 }
 
+namespace PHASIC {
+  struct External_ME_Args;
+}
+
 namespace BLACKHAT {
 
   class BlackHat_Tree: public PHASIC::Tree_ME2_Base {
@@ -27,8 +31,7 @@ namespace BLACKHAT {
 
   public:
 
-    BlackHat_Tree(const PHASIC::Process_Info& pi,
-		  const ATOOLS::Flavour_Vector& flavs,
+    BlackHat_Tree(const PHASIC::External_ME_Args& args,
 		  BH::BH_Ampl *ampl,const int mode);
 
     ~BlackHat_Tree();
@@ -36,7 +39,7 @@ namespace BLACKHAT {
     double Calc(const ATOOLS::Vec4D_Vector& momenta);
 
     static void AddCouplings
-    (const PHASIC::Process_Info &pi,
+    (const PHASIC::External_ME_Args &args,
      std::vector<std::vector<std::pair<std::string,int> > > &couplings,
      std::vector<std::pair<std::string,int> > cpls,size_t i=0);
 
