@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDireMain.la
 
-SVNTAG = DIRE/Main
-include ../../svn.make
+GITTAG = DIRE/Main
+include ../../git.make
 
 libDireMain_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Color_Setter.C \
 	Jet_Criterion.C \
 	Dire.C

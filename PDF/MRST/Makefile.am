@@ -3,19 +3,19 @@ pkglib_LTLIBRARIES    = \
 			libMRST01LOSherpa.la \
 			libMRST04QEDSherpa.la
 
-SVNTAG = PDF/MRST99
-include ../../svn.make
+GITTAG = PDF/MRST99
+include ../../git.make
 
 libMRST99Sherpa_la_SOURCES    =	\
-				SVN_Info.C \
+				Git_Info.C \
 				mrst99.cc \
 				PDF_MRST99.C
 libMRST01LOSherpa_la_SOURCES  =	\
-				SVN_Info.C \
+				Git_Info.C \
 				mrst2001lo.f \
 				PDF_MRST01LO.C
 libMRST04QEDSherpa_la_SOURCES =	\
-				SVN_Info.C \
+				Git_Info.C \
 				mrst2004qed.f \
 				PDF_MRST04QED.C
 

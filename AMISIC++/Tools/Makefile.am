@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       = libAmisicTools.la
 
-SVNTAG = AMISIC++/Tools
-include ../../svn.make
+GITTAG = AMISIC++/Tools
+include ../../git.make
 
 libAmisicTools_la_SOURCES     = \
-				SVN_Info.C \
+				Git_Info.C \
 				Amisic_Histogram.C \
 				Fixed_Variable_Channel.C \
 				MPI_Scale_Setter.C \

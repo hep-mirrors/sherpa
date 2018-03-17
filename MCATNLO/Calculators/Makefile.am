@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libMCatNLOCalculators.la
 
-SVNTAG = MCATNLO/Calculators
-include ../../svn.make
+GITTAG = MCATNLO/Calculators
+include ../../git.make
 
 libMCatNLOCalculators_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	CF_QCD.C \
 	LF_FFV.C \
 	LF_VVV.C
