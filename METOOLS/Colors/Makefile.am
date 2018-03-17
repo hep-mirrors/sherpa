@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libMEToolsColors.la
 
-SVNTAG = METOOLS/Colors
-include ../../svn.make
+GITTAG = METOOLS/Colors
+include ../../git.make
 
 libMEToolsColors_la_SOURCES           =	\
-					SVN_Info.C \
+					Git_Info.C \
 					None_CC.C \
 					ST_CC.C \
 					SF_CC.C \

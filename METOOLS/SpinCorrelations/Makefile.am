@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libMEToolsSpinCorrelations.la
 
-SVNTAG = METOOLS/SpinCorrelations
-include ../../svn.make
+GITTAG = METOOLS/SpinCorrelations
+include ../../git.make
 
 libMEToolsSpinCorrelations_la_SOURCES       =	\
-			SVN_Info.C \
+			Git_Info.C \
 			Amplitude2_Tensor.C \
 			Amplitude2_Matrix.C \
 			Decay_Matrix.C \

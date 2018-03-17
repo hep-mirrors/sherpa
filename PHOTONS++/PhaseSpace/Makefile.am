@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libPhotonsPhaseSpace.la
 
-SVNTAG = PHOTONS++/PhaseSpace
-include ../../svn.make
+GITTAG = PHOTONS++/PhaseSpace
+include ../../git.make
 
-libPhotonsPhaseSpace_la_SOURCES = 	SVN_Info.C \
+libPhotonsPhaseSpace_la_SOURCES = 	Git_Info.C \
 					Avarage_Photon_Number.C \
 					Generate_Dipole_Photon_Angle.C \
 					Generate_Multipole_Photon_Angle.C

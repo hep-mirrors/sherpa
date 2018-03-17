@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicEnhance.la
 
-SVNTAG = PHASIC++/Enhance
-include ../../svn.make
+GITTAG = PHASIC++/Enhance
+include ../../git.make
 
 libPhasicEnhance_la_SOURCES   =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Enhance_Observable_Base.C \
 				Variable_Enhance_Observable.C \
 				Fastjet_Enhance_Observable.C

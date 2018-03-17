@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPhotonsTools.la
 
-SVNTAG = PHOTONS++/Tools
-include ../../svn.make
+GITTAG = PHOTONS++/Tools
+include ../../git.make
 
 libPhotonsTools_la_SOURCES = 	\
-				SVN_Info.C \
+				Git_Info.C \
 				Dipole_FF.C \
 				Dipole_FI.C \
 				Dress_Blob_Base.C \

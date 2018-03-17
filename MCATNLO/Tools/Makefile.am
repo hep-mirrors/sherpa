@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libMCatNLOTools.la
 
-SVNTAG = MCATNLO/Tools
-include ../../svn.make
+GITTAG = MCATNLO/Tools
+include ../../git.make
 
 libMCatNLOTools_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Parton.C \
 	Singlet.C
 

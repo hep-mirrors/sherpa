@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libCSTools.la
 
-SVNTAG = CSSHOWER++/Tools
-include ../../svn.make
+GITTAG = CSSHOWER++/Tools
+include ../../git.make
 
 libCSTools_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Parton.C \
 	Singlet.C
 
