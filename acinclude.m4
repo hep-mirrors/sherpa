@@ -305,7 +305,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(no);
               SVNINCLUDE="";;
         yes) AC_MSG_RESULT(yes);
-              SVNINCLUDE=".svn";;
+              SVNINCLUDE=".git";;
       esac ],
     [ AC_MSG_CHECKING(whether to enable SVN synchronization); AC_MSG_RESULT(no); SVNINCLUDE="" ] 
   )

@@ -1,17 +1,17 @@
-SVNTAG = PDF/LHAPDF
-include ../../svn.make
+GITTAG = PDF/LHAPDF
+include ../../git.make
 
 if LHAPDF_SUPPORT
 pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
 
 if LHAPDF_NATIVE_WRAPPER
 libLHAPDFSherpa_la_SOURCES  =	\
-			SVN_Info.C \
+			Git_Info.C \
 			LHAPDF_Fortran_Interface.C
 LHAPDFEXTRADIST = lhapdf_inter.f Dummy.C
 else
 libLHAPDFSherpa_la_SOURCES  =	\
-			SVN_Info.C \
+			Git_Info.C \
 			LHAPDF_Fortran_Interface.C \
 			lhapdf_inter.f 
 LHAPDFEXTRADIST = Dummy.C
@@ -20,7 +20,7 @@ endif
 localinc_HEADERS      =	LHAPDF_Fortran_Interface.H
 
 else
-libLHAPDFSherpa_la_SOURCES  =	SVN_Info.C Dummy.C
+libLHAPDFSherpa_la_SOURCES  =	Git_Info.C Dummy.C
 
 LHAPDFEXTRADIST = LHAPDF_Fortran_Interface.H LHAPDF_Fortran_Interface.C \
 			lhapdf_inter.f

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsPSs.la
 
-SVNTAG = HADRONS++/PS_Library
-include ../../svn.make
+GITTAG = HADRONS++/PS_Library
+include ../../git.make
 
 libHadronsPSs_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
 		HD_PS_Base.C \
 		Three_Body_PSs.C \
 		Two_Body_PSs.C  \

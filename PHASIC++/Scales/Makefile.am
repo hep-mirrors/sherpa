@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicScales.la
 
-SVNTAG = PHASIC++/Scales
-include ../../svn.make
+GITTAG = PHASIC++/Scales
+include ../../git.make
 
 libPhasicScales_la_SOURCES    =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Scale_Setter_Base.C \
 				KFactor_Setter_Base.C \
 				Tag_Setter.C \

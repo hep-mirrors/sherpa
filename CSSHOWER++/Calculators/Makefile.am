@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libCSCalculators.la
 
-SVNTAG = CSSHOWER++/Calculators
-include ../../svn.make
+GITTAG = CSSHOWER++/Calculators
+include ../../git.make
 
 libCSCalculators_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	CF_QCD.C \
 	CF_QED.C \
 	CF_EW_FFV.C \

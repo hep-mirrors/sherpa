@@ -257,7 +257,7 @@ void Sherpa::DrawLogo()
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  rpa.gen.PrintSVNVersion(msg->Info());
-  rpa.gen.AddCitation
+  rpa->gen.PrintGitVersion(msg->Info());
+  rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
 }

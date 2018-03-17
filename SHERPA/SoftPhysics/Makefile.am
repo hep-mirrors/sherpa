@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 
-SVNTAG = SHERPA/SoftPhysics
-include ../../svn.make
+GITTAG = SHERPA/SoftPhysics
+include ../../git.make
 
 libSherpaSoftPhysics_la_SOURCES	      =	\
-					SVN_Info.C \
+					Git_Info.C \
 					Primordial_KPerp.C \
 					Beam_Remnant_Handler.C \
 				   	Fragmentation_Handler.C \

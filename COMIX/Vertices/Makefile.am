@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libComixVertices.la
 
-SVNTAG = COMIX/Vertices
-include ../../svn.make
+GITTAG = COMIX/Vertices
+include ../../git.make
 
 libComixVertices_la_SOURCES   =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Vertex.C \
 				QED_Vertices.C \
 				QCD_Vertices.C \

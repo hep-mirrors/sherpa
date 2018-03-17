@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libPDF.la
 
-SVNTAG = PDF/Main
-include ../../svn.make
+GITTAG = PDF/Main
+include ../../git.make
 
 libPDF_la_SOURCES     =	\
-		    	SVN_Info.C \
+		    	Git_Info.C \
 			PDF_Base.C \
 			ISR_Base.C \
 		    	Intact.C \

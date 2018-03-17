@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsMain.la
 
-SVNTAG = HADRONS++/Main
-include ../../svn.make
+GITTAG = HADRONS++/Main
+include ../../git.make
 
 libHadronsMain_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
 		Hadrons.C \
 		Hadron_Decay_Map.C \
 		Hadron_Decay_Table.C \

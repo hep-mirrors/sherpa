@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libComixModels.la
 
-SVNTAG = COMIX/Models
-include ../../svn.make
+GITTAG = COMIX/Models
+include ../../git.make
 
 libComixModels_la_SOURCES     =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Model_SM.C
 

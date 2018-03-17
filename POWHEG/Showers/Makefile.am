@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPOWHEGShowers.la
 
-SVNTAG = POWHEG/Showers
-include ../../svn.make
+GITTAG = POWHEG/Showers
+include ../../git.make
 
 libPOWHEGShowers_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Splitting_Function_Base.C \
 	Splitting_Function_Group.C \
 	Sudakov.C \

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPOWHEGCalculators.la
 
-SVNTAG = POWHEG/Calculators
-include ../../svn.make
+GITTAG = POWHEG/Calculators
+include ../../git.make
 
 libPOWHEGCalculators_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	CF_QCD.C \
 	LF_FFV.C \
 	LF_VVV.C

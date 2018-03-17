@@ -7,11 +7,11 @@ else
 GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
-SVNTAG = ATOOLS/Org
-include ../../svn.make
+GITTAG = ATOOLS/Org
+include ../../git.make
 
 libToolsOrg_la_SOURCES        = \
-				SVN_Info.C \
+				Git_Info.C \
 				MyStrStream.C \
 				Return_Value.C \
 				Shell_Tools.C \
@@ -37,7 +37,7 @@ libToolsOrg_la_SOURCES        = \
 localinc_HEADERS         =	\
 			CXXFLAGS_PACKAGES.H \
 			CXXFLAGS.H \
-			SVN_Info.H \
+			Git_Info.H \
 			Return_Value.H \
 			Smart_Pointer.H \
 			Smart_Pointer.C \

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPhotonsMain.la
 
-SVNTAG = PHOTONS++/Main
-include ../../svn.make
+GITTAG = PHOTONS++/Main
+include ../../git.make
 
 libPhotonsMain_la_SOURCES = \
-				SVN_Info.C \
+				Git_Info.C \
 				Photons.C \
 				Define_Dipole.C
 

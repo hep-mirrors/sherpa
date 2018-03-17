@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libHelicitiesLoops.la
 
-SVNTAG = METOOLS/Loops
-include ../../svn.make
+GITTAG = METOOLS/Loops
+include ../../git.make
 
 libHelicitiesLoops_la_SOURCES       =	\
-                        SVN_Info.C \
+                        Git_Info.C \
 			Master_Tadpole.C \
                         Master_Bubble.C \
                         Master_Triangle.C \

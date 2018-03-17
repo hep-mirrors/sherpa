@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPOWHEGMain.la
 
-SVNTAG = POWHEG/Main
-include ../../svn.make
+GITTAG = POWHEG/Main
+include ../../git.make
 
 libPOWHEGMain_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
                 CS_Cluster_Definitions.C \
 		CS_Gamma.C \
 		CS_POWHEG.C

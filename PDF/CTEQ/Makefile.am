@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libCTEQ6Sherpa.la
 
-SVNTAG = PDF/CTEQ
-include ../../svn.make
+GITTAG = PDF/CTEQ
+include ../../git.make
 
 libCTEQ6Sherpa_la_SOURCES     =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Cteq6Pdf-2008.f \
 			    	CTEQ6_Fortran_Interface.C 
 

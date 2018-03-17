@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libComixCluster.la
 
-SVNTAG = COMIX/Cluster
-include ../../svn.make
+GITTAG = COMIX/Cluster
+include ../../git.make
 
 libComixCluster_la_SOURCES    =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Color_Setter.C \
 				Cluster_Algorithm.C
 

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libPDFESherpa.la
 
-SVNTAG = PDF/Electron
-include ../../svn.make
+GITTAG = PDF/Electron
+include ../../git.make
 
 libPDFESherpa_la_SOURCES     =	\
-			    	SVN_Info.C \
+			    	Git_Info.C \
 				PDF_Electron.C 
 
 localinc_HEADERS      =	\

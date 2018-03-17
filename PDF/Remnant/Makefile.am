@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libRemnant.la
 
-SVNTAG = PDF/Remnant
-include ../../svn.make
+GITTAG = PDF/Remnant
+include ../../git.make
 
 libRemnant_la_SOURCES =	\
-			SVN_Info.C \
+			Git_Info.C \
 			Remnant_Base.C \
 			No_Remnant.C \
 			Color_Dipole.C \

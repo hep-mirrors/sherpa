@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libHelicitiesMain.la
 
-SVNTAG = METOOLS/Main
-include ../../svn.make
+GITTAG = METOOLS/Main
+include ../../git.make
 
 libHelicitiesMain_la_SOURCES       =	\
-			SVN_Info.C \
+			Git_Info.C \
 			C_Scalar.C \
 			C_Tensor.C \
 			C_Spinor.C \

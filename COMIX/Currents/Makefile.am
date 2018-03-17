@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libComixCurrents.la
 
-SVNTAG = COMIX/Currents
-include ../../svn.make
+GITTAG = COMIX/Currents
+include ../../git.make
 
 libComixCurrents_la_SOURCES   =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Current.C \
 				Currents.C
 

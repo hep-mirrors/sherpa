@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libDipoleSubtraction.la
 
-SVNTAG = AMEGIC++/DipoleSubtraction
-include ../../svn.make
+GITTAG = AMEGIC++/DipoleSubtraction
+include ../../git.make
 
 libDipoleSubtraction_la_SOURCES = \
-		       SVN_Info.C \
+		       Git_Info.C \
 		       Flavour_KernelsA.C \
 		       Massive_KernelsA.C \
 		       DipoleSplitting_Base.C \

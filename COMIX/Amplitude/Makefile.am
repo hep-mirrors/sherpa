@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libComixAmplitude.la
 
-SVNTAG = COMIX/Amplitude
-include ../../svn.make
+GITTAG = COMIX/Amplitude
+include ../../git.make
 
 libComixAmplitude_la_SOURCES  =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Vertex_Base.C \
 				Current_Base.C \
 				Amplitude.C \

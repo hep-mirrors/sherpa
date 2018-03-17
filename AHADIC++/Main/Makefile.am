@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libAhadicMain.la
 
-SVNTAG = AHADIC++/Main
-include ../../svn.make
+GITTAG = AHADIC++/Main
+include ../../git.make
 
 libAhadicMain_la_SOURCES = \
-                           SVN_Info.C \
+                           Git_Info.C \
 			   Ahadic.C
 
 localincdir = $(pkgincludedir)/AHADIC++/Main

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libPOWHEGTools.la
 
-SVNTAG = POWHEG/Tools
-include ../../svn.make
+GITTAG = POWHEG/Tools
+include ../../git.make
 
 libPOWHEGTools_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Parton.C \
 	Singlet.C
 
