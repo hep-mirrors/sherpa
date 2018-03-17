@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsCurrents.la
 
-SVNTAG = HADRONS++/Current_Library
-include ../../svn.make
+GITTAG = HADRONS++/Current_Library
+include ../../git.make
 
 libHadronsCurrents_la_SOURCES = \
-        SVN_Info.C \
+        Git_Info.C \
 	Current_Base.C \
 	VA_P_P.C \
 	VA_P_S.C \

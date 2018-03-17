@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDireTools.la
 
-SVNTAG = DIRE/Tools
-include ../../svn.make
+GITTAG = DIRE/Tools
+include ../../git.make
 
 libDireTools_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Color.C \
 	Parton.C \
 	Splitting.C \

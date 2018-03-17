@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       = libAmisic.la
 
-SVNTAG = AMISIC++/Main
-include ../../svn.make
+GITTAG = AMISIC++/Main
+include ../../git.make
 
 libAmisic_la_SOURCES  = \
-			SVN_Info.C \
+			Git_Info.C \
 			MI_Base.C \
 			Amisic.C 
 localinc_HEADERS          = \

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libSherpaTools.la
 
-SVNTAG = SHERPA/Tools
-include ../../svn.make
+GITTAG = SHERPA/Tools
+include ../../git.make
 
 libSherpaTools_la_SOURCES = \
-    SVN_Info.C \
+    Git_Info.C \
     Output_Base.C \
     Event_Reader_Base.C \
     HepEvt_Interface.C \

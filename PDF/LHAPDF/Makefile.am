@@ -1,11 +1,11 @@
-SVNTAG = PDF/LHAPDF
-include ../../svn.make
+GITTAG = PDF/LHAPDF
+include ../../git.make
 
 pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
 
 if LHAPDF_SUPPORT
 libLHAPDFSherpa_la_SOURCES    = \
-				SVN_Info.C
+				Git_Info.C
 if LHAPDF6_SUPPORT
 libLHAPDFSherpa_la_SOURCES += \
 				LHAPDF_CPP_Interface.C
@@ -17,7 +17,7 @@ localinc_HEADERS            = \
 endif
 else
 LHAPDFEXTRADIST = \
-		SVN_Info.C \
+		Git_Info.C \
 		LHAPDF_Fortran_Interface.H \
 		LHAPDF_Fortran_Interface.C \
 		LHAPDF_CPP_Interface.C

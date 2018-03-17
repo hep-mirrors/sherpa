@@ -1,8 +1,8 @@
 pkglib_LTLIBRARIES = libSherpaSM.la
 
-SVNTAG = MODEL/SM
-include ../../svn.make
+GITTAG = MODEL/SM
+include ../../git.make
 
 libSherpaSM_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Model.C
