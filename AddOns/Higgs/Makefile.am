@@ -1,12 +1,12 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
-SVNTAG = AddOns/Higgs
-include ../../svn.make
+GITTAG = AddOns/Higgs
+include ../../git.make
 
 pkglib_LTLIBRARIES    =	libSherpaHiggs.la
 
 libSherpaHiggs_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	dilog.C \
 	Wrappers.C \
 	Higgs_Tree.C \

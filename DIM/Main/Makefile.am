@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDIMMain.la
 
-SVNTAG = DIM/Main
-include ../../svn.make
+GITTAG = DIM/Main
+include ../../git.make
 
 libDIMMain_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Gamma.C \
 	MCatNLO.C
 

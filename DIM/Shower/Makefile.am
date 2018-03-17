@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDIMShower.la
 
-SVNTAG = DIM/Shower
-include ../../svn.make
+GITTAG = DIM/Shower
+include ../../git.make
 
 libDIMShower_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Gauge.C \
 	Lorentz.C \
 	Kernel.C \

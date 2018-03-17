@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libSherpaSMEHC.la
 
-SVNTAG = MODEL/SMEHC
-include ../../svn.make
+GITTAG = MODEL/SMEHC
+include ../../git.make
 
 libSherpaSMEHC_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Effective_Higgs_Coupling.C \
 	Model.C \
 	SVV_LC.C \

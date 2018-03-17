@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libAhadicTools.la
 
-SVNTAG = AHADIC++/Tools
-include ../../svn.make
+GITTAG = AHADIC++/Tools
+include ../../git.make
 
 libAhadicTools_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
 		Proto_Particle.C \
 		Cluster.C \
                 Constituents.C \

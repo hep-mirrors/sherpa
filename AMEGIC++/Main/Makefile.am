@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libAmegic.la
 
-SVNTAG = AMEGIC++/Main
-include ../../svn.make
+GITTAG = AMEGIC++/Main
+include ../../git.make
 
 libAmegic_la_SOURCES = \
-			SVN_Info.C \
+			Git_Info.C \
 			ColorSC.C \
 			Helicity.C Topology.C Polarisation.C Pol_Info.C Point.C \
 			Process_Tags.C Amegic_Base.C Process_Base.C \

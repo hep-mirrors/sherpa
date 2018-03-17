@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libExtAmp.la
 
-SVNTAG = EXTAMP
-include ../svn.make
+GITTAG = EXTAMP
+include ../git.make
 
 libExtAmp_la_SOURCES = \
-			SVN_Info.C \
+			Git_Info.C \
 			External_ME_Interface.C \
 			Process.C \
 			Born_Process.C \

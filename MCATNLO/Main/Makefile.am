@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libMCatNLOMain.la
 
-SVNTAG = MCATNLO/Main
-include ../../svn.make
+GITTAG = MCATNLO/Main
+include ../../git.make
 
 libMCatNLOMain_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
                 CS_Cluster_Definitions.C \
 		CS_Gamma.C \
 		CS_MCatNLO.C

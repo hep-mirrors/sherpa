@@ -1,11 +1,11 @@
 
-SVNTAG = ATOOLS/Math
-include ../../svn.make
+GITTAG = ATOOLS/Math
+include ../../git.make
 
 pkglib_LTLIBRARIES       =	libToolsMath.la
 
 libToolsMath_la_SOURCES       =	\
-				SVN_Info.C \
+				Git_Info.C \
 				MathTools.C \
 				Term.C \
 				Algebra_Interpreter.C \

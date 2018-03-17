@@ -1,11 +1,11 @@
 
-SVNTAG = AddOns/NNLO
-include ../../svn.make
+GITTAG = AddOns/NNLO
+include ../../git.make
 
 pkglib_LTLIBRARIES    =	libNNLOqT.la
 
 libNNLOqT_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	polylog.c \
 	Tools.C \
 	QT_Selector.C \

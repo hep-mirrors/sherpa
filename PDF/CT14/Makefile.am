@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libCT14Sherpa.la
 
-SVNTAG = PDF/CT14
-include ../../svn.make
+GITTAG = PDF/CT14
+include ../../git.make
 
 libCT14Sherpa_la_SOURCES     =	\
-				SVN_Info.C \
+				Git_Info.C \
                                 CT14Pdf.f \
                                 CT14_Fortran_Interface.C
 

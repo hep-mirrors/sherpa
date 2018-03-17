@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDIMTools.la
 
-SVNTAG = DIM/Tools
-include ../../svn.make
+GITTAG = DIM/Tools
+include ../../git.make
 
 libDIMTools_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Color.C \
 	Parton.C \
 	Splitting.C \

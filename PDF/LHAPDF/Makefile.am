@@ -1,10 +1,10 @@
-SVNTAG = PDF/LHAPDF
-include ../../svn.make
+GITTAG = PDF/LHAPDF
+include ../../git.make
 
 pkglib_LTLIBRARIES       = libLHAPDFSherpa.la 
 
 libLHAPDFSherpa_la_SOURCES    = \
-				SVN_Info.C
+				Git_Info.C
 if LHAPDF_SUPPORT
 if LHAPDF6_SUPPORT
 libLHAPDFSherpa_la_SOURCES += \

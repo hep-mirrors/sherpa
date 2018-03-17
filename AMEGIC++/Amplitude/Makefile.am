@@ -2,10 +2,10 @@ SUBDIRS = Zfunctions
 
 pkglib_LTLIBRARIES = libAmplitude.la
 
-SVNTAG = AMEGIC++/Amplitude
-include ../../svn.make
+GITTAG = AMEGIC++/Amplitude
+include ../../git.make
 
-libAmplitude_la_SOURCES = SVN_Info.C \
+libAmplitude_la_SOURCES = Git_Info.C \
 			  Single_Vertex.C Vertex.C \
 			  CFColor.C Amplitude_Base.C \
 			  Single_Amplitude.C Amplitude_Manipulator.C \

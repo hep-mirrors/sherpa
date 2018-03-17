@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDIMGauge.la
 
-SVNTAG = DIM/Gauge
-include ../../svn.make
+GITTAG = DIM/Gauge
+include ../../git.make
 
 libDIMGauge_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	GGG.C \
 	GQQ.C \
 	QQG.C

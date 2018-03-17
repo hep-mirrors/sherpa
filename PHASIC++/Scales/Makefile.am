@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicScales.la
 
-SVNTAG = PHASIC++/Scales
-include ../../svn.make
+GITTAG = PHASIC++/Scales
+include ../../git.make
 
 libPhasicScales_la_SOURCES    =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Cluster_Definitions.C \
 				Scale_Setter_Base.C \
 				Core_Scale_Setter.C \

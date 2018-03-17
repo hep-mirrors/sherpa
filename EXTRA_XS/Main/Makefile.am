@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libExtraXS.la
 
-SVNTAG = EXTRA_XS/Main
-include ../../svn.make
+GITTAG = EXTRA_XS/Main
+include ../../git.make
 
 libExtraXS_la_SOURCES =	\
-			SVN_Info.C \
+			Git_Info.C \
 			Single_Process.C \
 			Process_Group.C \
 			Simple_XS.C \

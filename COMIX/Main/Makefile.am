@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libComix.la
 
-SVNTAG = COMIX/Main
-include ../../svn.make
+GITTAG = COMIX/Main
+include ../../git.make
 
 libComix_la_SOURCES   =	\
-			SVN_Info.C \
+			Git_Info.C \
 			Process_Base.C \
 			Process_Group.C \
 			Single_Process.C \

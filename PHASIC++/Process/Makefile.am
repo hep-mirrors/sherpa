@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicProcess.la
 
-SVNTAG = PHASIC++/Process
-include ../../svn.make
+GITTAG = PHASIC++/Process
+include ../../git.make
 
 libPhasicProcess_la_SOURCES   =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Subprocess_Info.C \
 				Process_Info.C \
 				Process_Base.C \

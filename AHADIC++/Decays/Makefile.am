@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libAhadicDecays.la
 
-SVNTAG = AHADIC++/Decays
-include ../../svn.make
+GITTAG = AHADIC++/Decays
+include ../../git.make
 
 libAhadicDecays_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
 		Cluster_Decayer.C \
 		Cluster_Splitter.C
 
