@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libSherpaTauPi.la
 
-SVNTAG = MODEL/TauPi
-include ../../svn.make
+GITTAG = MODEL/TauPi
+include ../../git.make
 
 libSherpaTauPi_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	TauPi_LC.C \
 	Model.C

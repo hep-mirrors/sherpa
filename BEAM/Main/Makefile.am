@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libBeam.la
 
-SVNTAG = BEAM/Main
-include ../../svn.make
+GITTAG = BEAM/Main
+include ../../git.make
 
-libBeam_la_SOURCES    =	SVN_Info.C \
+libBeam_la_SOURCES    =	Git_Info.C \
 			Beam_Base.C \
 			Monochromatic.C \
 			Laser_Backscattering.C \

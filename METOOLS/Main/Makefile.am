@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libMEToolsMain.la
 
-SVNTAG = METOOLS/Main
-include ../../svn.make
+GITTAG = METOOLS/Main
+include ../../git.make
 
 libMEToolsMain_la_SOURCES     =	\
-			SVN_Info.C \
+			Git_Info.C \
 			Polarization_Tools.C  \
 			XYZFuncs.C  \
 			Polarization_Index.C \

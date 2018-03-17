@@ -1,11 +1,11 @@
 pkglib_LTLIBRARIES    = \
 			libNNPDFSherpa.la
 
-SVNTAG = PDF/NNPDF
-include ../../svn.make
+GITTAG = PDF/NNPDF
+include ../../git.make
 
 libNNPDFSherpa_la_SOURCES      =	\
-				SVN_Info.C \
+				Git_Info.C \
 				NNPDFDriver.cc \
 				PDF_NN.C
 

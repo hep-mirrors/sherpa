@@ -7,13 +7,13 @@ PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
 
 MD5_EXCLUDE   =	pythia-6.4.18.f
 
-SVNTAG = SHERPA/LundTools
-include ../../svn.make
+GITTAG = SHERPA/LundTools
+include ../../git.make
 
 if PYTHIA_SUPPORT
-libLundTools_la_SOURCES       =	$(PYTHIASOURCES) SVN_Info.C
+libLundTools_la_SOURCES       =	$(PYTHIASOURCES) Git_Info.C
 localinc_HEADERS        =      $(PYTHIAHEADERS) Dummy.C
 else
-libLundTools_la_SOURCES       = SVN_Info.C Dummy.C
+libLundTools_la_SOURCES       = Git_Info.C Dummy.C
 localinc_HEADERS        =       $(PYTHIASOURCES) $(PYTHIAHEADERS)
 endif

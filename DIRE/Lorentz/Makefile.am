@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDireLorentz.la
 
-SVNTAG = DIRE/Lorentz
-include ../../svn.make
+GITTAG = DIRE/Lorentz
+include ../../git.make
 
 libDireLorentz_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	FFV_FF.C \
 	FFV_FI.C \
 	FFV_IF.C \

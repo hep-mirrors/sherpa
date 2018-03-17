@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libSherpaHEFT.la
 
-SVNTAG = MODEL/HEFT
-include ../../svn.make
+GITTAG = MODEL/HEFT
+include ../../git.make
 
 libSherpaHEFT_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Effective_Higgs_Coupling.C \
 	Model.C \
 	SVV_LC.C \

@@ -1,10 +1,10 @@
-SVNTAG = MODEL/UFO
-include ../../svn.make
+GITTAG = MODEL/UFO
+include ../../git.make
 
 pkglib_LTLIBRARIES = libModelUFO.la
 
 libModelUFO_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	UFO_Param_Reader.C \
 	UFO_Model.C \
 	UFO_Color_Functions.C
