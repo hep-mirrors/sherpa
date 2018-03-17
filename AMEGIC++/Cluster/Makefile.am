@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libAmegicCluster.la
 
-SVNTAG = AMEGIC++/Cluster
-include ../../svn.make
+GITTAG = AMEGIC++/Cluster
+include ../../git.make
 
 libAmegicCluster_la_SOURCES   =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Combine_Table.C \
 				Cluster_Algorithm.C
 

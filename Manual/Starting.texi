@@ -17,10 +17,10 @@ working directory with
 @code{ tar -zxf SHERPA-MC-@value{VERSION}.tar.gz}
 @end example
 
-Alternatively, it can also be accessed via SVN through the location specified
+Alternatively, it can also be accessed via Git through the location specified
 on the download page. In that case, before continuing, it is necessary to
-construct the build scripts by running @code{autoreconf -i} once after checking
-out the SVN working copy.
+construct the build scripts by running @code{autoreconf -i} once after cloning
+the Git repo.
 
 To guarantee successful installation, the following tools should be
 available on the system:

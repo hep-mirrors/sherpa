@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 
-SVNTAG = SHERPA/Single_Events
-include ../../svn.make
+GITTAG = SHERPA/Single_Events
+include ../../git.make
 
 libSherpaSingleEvents_la_SOURCES      =	\
-					SVN_Info.C \
+					Git_Info.C \
 					Event_Handler.C \
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \

@@ -1,11 +1,11 @@
 
-SVNTAG = ATOOLS/Phys
-include ../../svn.make
+GITTAG = ATOOLS/Phys
+include ../../git.make
 
 pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Flavour.C \
 				Ordering.C \
 				Particle.C \

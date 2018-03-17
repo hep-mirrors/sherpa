@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libModelInteractions.la
 
-SVNTAG = MODEL/Interaction_Models
-include ../../svn.make
+GITTAG = MODEL/Interaction_Models
+include ../../git.make
 
 libModelInteractions_la_SOURCES = \
-				SVN_Info.C \
+				Git_Info.C \
 				Lorentz_Function.C \
 				Lorentz_Functions.C \
 				Color_Function.C \

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libExtraXSCluster.la
 
-SVNTAG = EXTRA_XS/Cluster
-include ../../svn.make
+GITTAG = EXTRA_XS/Cluster
+include ../../git.make
 
 libExtraXSCluster_la_SOURCES  =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Cluster_Algorithm.C
 localinc_HEADERS      =	\
 			Cluster_Algorithm.H

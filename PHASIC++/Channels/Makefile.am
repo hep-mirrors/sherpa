@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicChannels.la
 
-SVNTAG = PHASIC++/Channels
-include ../../svn.make
+GITTAG = PHASIC++/Channels
+include ../../git.make
 
 libPhasicChannels_la_SOURCES  =	\
-				SVN_Info.C \
+				Git_Info.C \
 				CSS_Kinematics.C \
 				Channel_Basics.C \
 				Channel_Elements.C \

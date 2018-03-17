@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libMEToolsExplicit.la
 
-SVNTAG = METOOLS/Explicit
-include ../../svn.make
+GITTAG = METOOLS/Explicit
+include ../../git.make
 
 libMEToolsExplicit_la_SOURCES         =	\
-					SVN_Info.C \
+					Git_Info.C \
 					C_Object.C \
 					Current.C \
 					Vertex_Key.C \

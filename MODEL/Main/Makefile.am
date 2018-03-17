@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libModelMain.la
 
-SVNTAG = MODEL/Main
-include ../../svn.make
+GITTAG = MODEL/Main
+include ../../git.make
 
-libModelMain_la_SOURCES = SVN_Info.C \
+libModelMain_la_SOURCES = Git_Info.C \
 			  Coupling_Data.C Model_Base.C Model_Base_GF.C \
 			  Standard_Model.C SM_AGC.C MSSM.C SM_MSSM_EHC.C \
 			  THDM.C ADD.C SM_Phantom_U1.C SM_AxiGluon.C \

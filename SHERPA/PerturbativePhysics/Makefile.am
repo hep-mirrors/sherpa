@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 
-SVNTAG = SHERPA/PerturbativePhysics
-include ../../svn.make
+GITTAG = SHERPA/PerturbativePhysics
+include ../../git.make
 
 libSherpaPerturbativePhysics_la_SOURCES       =	\
-						SVN_Info.C \
+						Git_Info.C \
 						Matrix_Element_Handler.C \
 						MI_Handler.C \
 						Shower_Handler.C \

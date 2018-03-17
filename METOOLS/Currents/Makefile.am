@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libMEToolsCurrents.la
 
-SVNTAG = METOOLS/Currents
-include ../../svn.make
+GITTAG = METOOLS/Currents
+include ../../git.make
 
 libMEToolsCurrents_la_SOURCES         =	\
-					SVN_Info.C \
+					Git_Info.C \
 					C_Scalar.C \
 					C_Spinor.C \
 					C_Vector.C \
