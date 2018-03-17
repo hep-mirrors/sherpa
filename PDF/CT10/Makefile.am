@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libCT10Sherpa.la
 
-SVNTAG = PDF/CT10
-include ../../svn.make
+GITTAG = PDF/CT10
+include ../../git.make
 
 libCT10Sherpa_la_SOURCES     =	\
-				SVN_Info.C \
+				Git_Info.C \
 				CT10Pdf.f \
 			    	CT10_Fortran_Interface.C 
 

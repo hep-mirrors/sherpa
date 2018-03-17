@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libCSMain.la
 
-SVNTAG = CSSHOWER++/Main
-include ../../svn.make
+GITTAG = CSSHOWER++/Main
+include ../../git.make
 
 libCSMain_la_SOURCES = \
-                SVN_Info.C \
+                Git_Info.C \
 		CS_Cluster_Definitions.C \
 		Color_Setter.C \
 		CS_Shower.C

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES       = libAmisicModel.la
 
-SVNTAG = AMISIC++/Model
-include ../../svn.make
+GITTAG = AMISIC++/Model
+include ../../git.make
 
 libAmisicModel_la_SOURCES     = \
-			       	SVN_Info.C \
+			       	Git_Info.C \
 				Grid_Creator.C \
 				Profile_Function_Base.C \
 				Profile_Function.C \

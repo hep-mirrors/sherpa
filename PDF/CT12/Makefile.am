@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libCT12Sherpa.la
 
-SVNTAG = PDF/CT12
-include ../../svn.make
+GITTAG = PDF/CT12
+include ../../git.make
 
 libCT12Sherpa_la_SOURCES     =	\
-				SVN_Info.C \
+				Git_Info.C \
                                 CT12Pdf.f \
                                 CT12_Fortran_Interface.C
 

@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libPhotonsMEs.la
 
-SVNTAG = PHOTONS++/MEs
-include ../../svn.make
+GITTAG = PHOTONS++/MEs
+include ../../git.make
 
-libPhotonsMEs_la_SOURCES =	SVN_Info.C \
+libPhotonsMEs_la_SOURCES =	Git_Info.C \
 				PHOTONS_ME_Base.C \
 				Scalar_To_Scalar_Scalar.C \
 				Scalar_To_Fermion_Fermion.C \

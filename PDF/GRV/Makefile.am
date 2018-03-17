@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libGRVSherpa.la
 
-SVNTAG = PDF/GRV
-include ../../svn.make
+GITTAG = PDF/GRV
+include ../../git.make
 
 libGRVSherpa_la_SOURCES       =	\
-				SVN_Info.C \
+				Git_Info.C \
 				grvphoton.f \
 				GRVph_Fortran_Interface.C 
 

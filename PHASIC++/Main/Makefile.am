@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES    =	libPhasicMain.la
 
-SVNTAG = PHASIC++/Main
-include ../../svn.make
+GITTAG = PHASIC++/Main
+include ../../git.make
 
 libPhasicMain_la_SOURCES      =	\
-				SVN_Info.C \
+				Git_Info.C \
 				Color_Integrator.C \
 				Helicity_Integrator.C \
 				Process_Integrator.C \

@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libComixPhasespace.la
 
-SVNTAG = COMIX/Phasespace
-include ../../svn.make
+GITTAG = COMIX/Phasespace
+include ../../git.make
 
 libComixPhasespace_la_SOURCES =	\
-				SVN_Info.C \
+				Git_Info.C \
 				PS_Info.C \
 				PS_Vertex.C \
 				PS_Current.C \
