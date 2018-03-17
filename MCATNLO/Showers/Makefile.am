@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libMCatNLOShowers.la
 
-SVNTAG = MCATNLO/Showers
-include ../../svn.make
+GITTAG = MCATNLO/Showers
+include ../../git.make
 
 libMCatNLOShowers_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Splitting_Function_Base.C \
 	Splitting_Function_Group.C \
 	Sudakov.C \

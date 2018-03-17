@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libHadronsMEs.la
 
-SVNTAG = HADRONS++/ME_Library
-include ../../svn.make
+GITTAG = HADRONS++/ME_Library
+include ../../git.make
 
 libHadronsMEs_la_SOURCES = \
-		SVN_Info.C \
+		Git_Info.C \
 		HD_ME_Base.C \
 		Generic.C \
 		Current_ME.C \

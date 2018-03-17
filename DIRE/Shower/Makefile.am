@@ -1,11 +1,11 @@
 
 pkglib_LTLIBRARIES = libDireShower.la
 
-SVNTAG = DIRE/Shower
-include ../../svn.make
+GITTAG = DIRE/Shower
+include ../../git.make
 
 libDireShower_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Gauge.C \
 	Lorentz.C \
 	Kernel.C \

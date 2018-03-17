@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libAmegicPSGen.la
 
-SVNTAG = AMEGIC++/Phasespace
-include ../../svn.make
+GITTAG = AMEGIC++/Phasespace
+include ../../git.make
 
-libAmegicPSGen_la_SOURCES = SVN_Info.C \
+libAmegicPSGen_la_SOURCES = Git_Info.C \
 			    Phase_Space_Generator.C Channel_Generator_Base.C \
 			    Channel_Generator.C Channel_Generator_NPV.C \
                             Channel_Generator3V.C Channel_Generator3_NPV.C \

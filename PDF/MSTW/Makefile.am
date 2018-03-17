@@ -1,11 +1,11 @@
 pkglib_LTLIBRARIES    = \
 			libMSTW08Sherpa.la
 
-SVNTAG = PDF/MSTW
-include ../../svn.make
+GITTAG = PDF/MSTW
+include ../../git.make
 
 libMSTW08Sherpa_la_SOURCES      =	\
-				SVN_Info.C \
+				Git_Info.C \
 				mstwpdf.cc \
 				PDF_MSTW.C
 

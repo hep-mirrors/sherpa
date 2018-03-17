@@ -12,7 +12,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Data_Writer.H"
-#include "ATOOLS/Org/SVN_Info.H"
+#include "ATOOLS/Org/Git_Info.H"
 #include "ATOOLS/Org/binreloc.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -73,10 +73,10 @@ int getncpu()
 using namespace ATOOLS;
 using namespace std;
 
-std::map<const std::string,const SVN_Info*> *
-ATOOLS::SVN_Info::s_objects=NULL;
+std::map<const std::string,const Git_Info*> *
+ATOOLS::Git_Info::s_objects=NULL;
 
-SVN_Info::SVN_Info(const std::string &name,
+Git_Info::Git_Info(const std::string &name,
 		   const std::string &branch,
 		   const std::string &revision,
 		   const std::string &checksum):
@@ -85,15 +85,15 @@ SVN_Info::SVN_Info(const std::string &name,
 {
   static bool init(false);
   if (!init || s_objects==NULL) {
-    s_objects = new std::map<const std::string,const SVN_Info*>();
+    s_objects = new std::map<const std::string,const Git_Info*>();
     init=true;
   }
   s_objects->insert(make_pair(name,this));
 }
 
-SVN_Info::~SVN_Info()
+Git_Info::~Git_Info()
 {
-  for (std::map<const std::string,const SVN_Info*>::iterator
+  for (std::map<const std::string,const Git_Info*>::iterator
 	 it(s_objects->begin());it!=s_objects->end();++it)
     if (it->second==this) {
       s_objects->erase(it);
@@ -408,7 +408,7 @@ void Run_Parameter::Gen::WriteCitationInfo()
   }
   f<<"\n\\end{document}\n\n"<<std::endl;
   f<<"%% You have used the following configuration:\n";
-  PrintSVNVersion(f,1,"%% ");
+  PrintGitVersion(f,1,"%% ");
   std::cout<<std::string(72,'-')<<"\n"
 	   <<om::bold<<"Please cite the publications listed in '"
 	   <<om::red<<refname<<om::reset<<om::bold<<"'."<<om::reset
@@ -435,17 +435,17 @@ std::string Run_Parameter::Gen::Variable(const std::string &key,const std::strin
   return m_variables.find(key)!=m_variables.end()?m_variables[key]:def; 
 }
 
-void Run_Parameter::Gen::PrintSVNVersion(std::ostream &str,const int mode,
+void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
 					 const std::string &prefix)
 {
-  const std::map<const std::string,const SVN_Info*> &info(*SVN_Info::Infos());
-  if (info.empty()) THROW(fatal_error,"No SVN information");
+  const std::map<const std::string,const Git_Info*> &info(*Git_Info::Infos());
+  if (info.empty()) THROW(fatal_error,"No Git information");
   std::string branch(info.begin()->second->Branch());
   std::string revision(info.begin()->second->Revision());
-  str<<prefix<<"SVN branch "<<branch<<", revision "<<revision;
+  str<<prefix<<"Git branch "<<branch<<", revision "<<revision;
   if (mode&1) str<<" {\n";
   else str<<"."<<std::endl;
-  for (std::map<const std::string,const SVN_Info*>::const_iterator
+  for (std::map<const std::string,const Git_Info*>::const_iterator
 	 iit(info.begin());iit!=info.end();++iit) {
     if (mode&1) str<<prefix<<" "<<iit->second->Checksum()
 		   <<"  "<<iit->second->Name()<<"\n";

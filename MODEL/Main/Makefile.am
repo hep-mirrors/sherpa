@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libModelMain.la
 
-SVNTAG = MODEL/Main
-include ../../svn.make
+GITTAG = MODEL/Main
+include ../../git.make
 
 libModelMain_la_SOURCES = \
-	SVN_Info.C \
+	Git_Info.C \
 	Color_Function.C \
 	Single_Vertex.C \
 	Coupling_Data.C \

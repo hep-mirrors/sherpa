@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libMEToolsVertices.la
 
-SVNTAG = METOOLS/Vertices
-include ../../svn.make
+GITTAG = METOOLS/Vertices
+include ../../git.make
 
 libMEToolsVertices_la_SOURCES =	\
-	SVN_Info.C \
+	Git_Info.C \
 	FFV_DLC.C \
 	VVV_DLC.C \
 	SSS_LC.C \

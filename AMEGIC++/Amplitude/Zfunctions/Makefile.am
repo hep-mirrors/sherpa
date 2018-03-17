@@ -1,9 +1,9 @@
 pkglib_LTLIBRARIES = libZfunctions.la
 
-SVNTAG = AMEGIC++/Amplitude/Zfunctions
-include ../../../svn.make
+GITTAG = AMEGIC++/Amplitude/Zfunctions
+include ../../../git.make
 
-libZfunctions_la_SOURCES = SVN_Info.C Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
+libZfunctions_la_SOURCES = Git_Info.C Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   Basic_Mfunc.C Basic_MassTermfunc.C \
 			   Basic_Vfunc.C Basic_Xfunc.C Basic_Yfunc.C \
 			   Basic_Zfunc.C \

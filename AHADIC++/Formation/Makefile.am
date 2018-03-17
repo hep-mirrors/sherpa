@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES = libAhadicFormation.la
 
-SVNTAG = AHADIC++/Formation
-include ../../svn.make
+GITTAG = AHADIC++/Formation
+include ../../git.make
 
 libAhadicFormation_la_SOURCES = \
-                                SVN_Info.C \
+                                Git_Info.C \
 				Cluster_Formation_Handler.C \
                                 Gluon_Decayer.C \
                                 Cluster_Former.C \
