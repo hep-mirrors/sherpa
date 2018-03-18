@@ -544,7 +544,7 @@ namespace SHERPA {
       s << v[0];
     } else {
       s << "(";
-      for (size_t j{ 0 }; j < v.size(); ++j) {
+      for (size_t j(0); j < v.size(); ++j) {
         if (j != 0)
           s << ", ";
         s << v[j];
