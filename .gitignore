@@ -50,16 +50,20 @@ Makefile.in
 
 /Manual/Sherpa.html
 *.l[ao]
+*.o
 .libs
 Git_Info.C
 Git_Info.C.tmp.bak
+/ATOOLS/Math/Sobol/21201.gz
+/AddOns/Analysis/Scripts/Combine_Analysis
 /AddOns/Higgs/PS[23]/.dirstamp
+/AddOns/Python/Sherpa.py
+/AddOns/Python/Sherpa_wrap.cxx
 /Manual/Sherpa.info
 /Manual/Sherpa.info-[12]
 /Manual/completion.index
 /Manual/stamp-vti
 /Manual/version.texi
-/SHERPA/Run/Main.o
 /SHERPA/Run/Sherpa
 
 
@@ -69,14 +73,3 @@ Git_Info.C.tmp.bak
 /include/
 /lib/
 /share/
-
-
-# IDEs/editors
-
-# vim
-*.sw[a-p]
-.*.sw[a-p]
-Session.vim
-.netrwhist
-*~
-tags
