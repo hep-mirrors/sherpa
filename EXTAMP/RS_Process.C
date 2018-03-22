@@ -11,6 +11,7 @@
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Spin_Color_Correlated_ME2.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "YODA/WriterYODA.h"
 
 #include <assert.h>
 
@@ -51,6 +52,12 @@ namespace EXTAMP {
     /* In AMEGIC, m_alpha_0>0.0 is used for a functional form different from alpha. */
     if(m_alpha_0>0.0) THROW(not_implemented, "Smearing only implemented for alpha parameter");
     
+    int n_bin = 100;
+        std::vector<double> bins;
+        for(int i=0; i<=n_bin;i++) { bins.push_back(pow(10,10.*(1.*i/n_bin - 1))); }
+    m_hist_mreal_y46 = YODA::Histo1D(bins, "RSterm/y46", "Mreal_y46");
+    m_hist_dipole_y46 = YODA::Histo1D(bins, "RSterm/y46", "dipole_y46");
+//    m_hist_alpha_min = YODA::Histo1D(bins, "alpha_min", "alpha_min");
   }
 
 
@@ -99,7 +106,12 @@ namespace EXTAMP {
     CalculateKinematics(p);
 
     /* Now check if any of the has alpha<alpha_min */
-    if(!PassesAlphaMin(m_dipoles))
+    /* for ID */
+//    const ATOOLS::Vec4D n = p[0]+p[1]-p[3]-p[5]-p[6];
+//    m_hist_alpha_min.fill( p[4]*p[5] / (p[5]*n), 1.);  // vi_tilde for b-quark
+    /* for CS */
+//    m_hist_alpha_min.fill( p[4]*p[5] / (p[4]*p[5]+p[4]*p[6]+p[5]*p[6]), 1.);  // y for b-quark
+    if(!PassesAlphaMin(m_dipoles, p))
       {
 	SetSubEventsToZero(m_subevents);
 	return m_lastxs = 0.0;
@@ -122,6 +134,9 @@ namespace EXTAMP {
 	bool sub_trig   = m_subevents[i]->m_trig;
 	double sub_dxs = (sub_trig ? m_dipole_wrappers[i]->Calc(m_subevents[i]) : 0.0);
 	S += sub_dxs;
+//      if (msg_LevelIsDebugging()) {
+//        std::cout << "dipole[" << i << "] = " << sub_dxs << "\n"; 
+//      }
       }
 
     /* Check if kinematics passes trigger before calculating real
@@ -137,6 +152,10 @@ namespace EXTAMP {
 
     /* Apply smearing to reduce binning fluctuations */
     if(m_alpha_0!=0.0) SmearSubEvents(m_dipoles, m_subevents, ATOOLS::dabs(m_alpha_0), m_smear_power);
+    DEBUG_VAR(R);
+    DEBUG_VAR(S);
+    m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
+    m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
 
     return m_lastxs = R + S;
   }
@@ -152,10 +171,10 @@ namespace EXTAMP {
   }
 
 
-  bool RS_Process::PassesAlphaMin(const Dipole_Vector& dv) const
+  bool RS_Process::PassesAlphaMin(const Dipole_Vector& dv, const ATOOLS::Vec4D_Vector& p) const
   {
     for(Dipole_Vector::const_iterator it=dv.begin(); it!=dv.end(); ++it)
-      if(! ((*it)->PassesAlphaMin()))
+      if(! ((*it)->PassesAlphaMin(p)))
 	 return false;
     return true;
   }
@@ -167,7 +186,55 @@ namespace EXTAMP {
       (*it)->m_trig = (*it)->m_me = (*it)->m_result = (*it)->m_mewgt = 0;
   }
 
+
+  bool RS_Process::ApplyIDdipole(const Dipole_Info &di) const
+  {
+    /* return true, if both real config. and Born-config. have (at least) one b- and 
+       one bbar-quark */
+//    /* AND if there is no g->gg splitting*/
+//
+//    /* check whether there is g->gg splitting */
+//    if (di.m_flav_type == FlavourType::gtogg) return false;
+    
+    /* count b&bbar quarks in final state of real config,
+       require, to have at least one b-quark and
+       one bbar-quark*/
+    int cnt_b=0, cnt_bbar=0;
+    for(size_t cnt=2; cnt<di.m_real_flavs.size();cnt++){
+      if(di.m_real_flavs[cnt].IsbQuark())    cnt_b++;
+      if(di.m_real_flavs[cnt].IsbbarQuark()) cnt_bbar++;
+    }
+    if(cnt_b<1 || cnt_bbar<1) return false;
   
+    /* initialisation of auxiliary dipoles, necessary to have access to Born flavours */
+    CS_Dipole *dipole;
+    switch(di.m_split_type){
+    case SplittingType::FF:
+      dipole = new FF_Dipole(di); break;
+    case SplittingType::FI:
+      dipole = new FI_Dipole(di); break;
+    case SplittingType::IF:
+      dipole = new IF_Dipole(di); break;
+    case SplittingType::II:
+      dipole = new II_Dipole(di); break;
+    default:
+      THROW(fatal_error, "Internal error");
+    }
+
+    /* count b&bbar quarks in final state of Born-config,
+       require, to have at least one b-quark and
+       one bbar-quark*/
+    cnt_b=0, cnt_bbar=0;
+    for(size_t cnt=2; cnt<dipole->Flavours().size();cnt++){
+      if(dipole->Flavours()[cnt].IsbQuark())    cnt_b++;
+      if(dipole->Flavours()[cnt].IsbbarQuark()) cnt_bbar++;
+    }
+    if(cnt_b<1 || cnt_bbar<1) return false;
+
+    return true;
+  }
+  
+
   RS_Process::Dipole_Vector RS_Process::ConstructDipoles()
   {
     /* Get subtraction parameters */
@@ -184,7 +251,13 @@ namespace EXTAMP {
 	  {
 	    if(i==k || j==k) continue;
 	    if(!Combinable((1<<(*i)), (1<<(*j)))) continue;
-	    Dipole_Info di(m_flavs, *i, *j, *k, subtraction_type, alphamin, alphamax);
+        Dipole_Info di(m_flavs, *i, *j, *k, subtraction_type, alphamin, alphamax, m_dipole_case);
+
+        /* for pp>WWjj, pseudo-dipoles are not always used */
+        if(m_dipole_case == DipoleCase::IDin && !ApplyIDdipole(di) )
+	      di = Dipole_Info(m_flavs, *i, *j, *k, subtraction_type, alphamin, alphamax,
+               DipoleCase::CS);
+
 	    switch(di.m_split_type)
 	      {
 	      case SplittingType::FF:
@@ -367,6 +440,19 @@ namespace EXTAMP {
       if(*it) delete *it;
     DeleteSubevents();
     DeleteDipoleWrappers();
+
+    const std::string dir = "histograms";
+    std::ofstream myfile;
+    myfile.open(dir+"/mreal_y46.yoda");
+      YODA::WriterYODA::write(myfile, m_hist_mreal_y46);
+    myfile.close();
+    myfile.open(dir+"/dipole_y46.yoda");
+      YODA::WriterYODA::write(myfile, m_hist_dipole_y46);
+    myfile.close();
+
+//    myfile.open("alpha_min.yoda");
+//      YODA::WriterYODA::write(myfile, m_hist_alpha_min);
+//    myfile.close();
   }
 
   

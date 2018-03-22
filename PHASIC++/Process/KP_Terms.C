@@ -514,6 +514,56 @@ void KP_Terms::Calculate
       <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 }
 
+double KP_Terms::CalculateHP
+(const Vec4D_Vector &mom, const double &z, const double &cpl,
+ const std::vector<size_t> &parton_indices, PHASIC::Color_Correlated_ME2* corr_me,
+ const EXTAMP::DipoleCase &dipole_case)
+{ /* calculate H- and P- term for ID-dipole */
+
+  m_H = 0;
+  double H_temp; 
+  for(auto ai: parton_indices){    // sum over emitter-partons = ID-partons
+      for(auto b: parton_indices){ // sum over all partons, except ai itself
+        if(b==ai) continue;
+
+        H_temp = 0;
+        ATOOLS::Vec4D n, pai, pb;  // momenta of BVI-kinematics
+        ATOOLS::Vec4D nz, pa;      // z-dependent momenta
+        // labeling: 2=W+, 3=W-, 4=b, 5=bbar, is checked
+        pa = z*mom[ai]; pb = mom[b]; pai = mom[ai];
+        if(ai==4){ 
+          n = mom[0]+mom[1]-pai-mom[3]-mom[5];      // b emitts
+          nz = mom[0]+mom[1]-pa-mom[3]-mom[5];      // b emitts
+          if(dipole_case == EXTAMP::DipoleCase::IDb){
+            n = mom[0]+mom[1]-pai-mom[2];
+            n = mom[0]+mom[1]-pa-mom[2];
+          }
+        }
+        else if(ai==5){ 
+          n = mom[0]+mom[1]-pai-mom[2]-mom[4];      // bbar emitts
+          nz = mom[0]+mom[1]-pa-mom[2]-mom[4];      // bbar emitts
+          if(dipole_case == EXTAMP::DipoleCase::IDb){
+            n = mom[0]+mom[1]-pai-mom[3];
+            nz = mom[0]+mom[1]-pa-mom[3]; 
+          }
+        }
+        double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
+
+        double v = sqrt(1-(n.Abs2())*((pai+pb).Abs2())/pow((pai+pb)*n,2.));  // eq.(C.21) in CS
+        H_temp += -( 0.25 +
+                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))     // prefactor 2 is correct,
+                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )   // as Jsoft in CS has mistake
+                                                                    // has delta(1-z) prefactor
+                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) );
+
+        H_temp *= Mab;
+        m_H    += H_temp;
+      }
+  }
+  return cpl*m_H;
+}
+
+  
 double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                      const double &x0,const double &x1,
                      const double &eta0,const double &eta1,

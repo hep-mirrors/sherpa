@@ -31,6 +31,19 @@ std::ostream& EXTAMP::operator<<(std::ostream& str,const FlavourType& ft)
 }
 
 
+std::ostream& EXTAMP::operator<<(std::ostream& str,const DipoleCase& dc)
+{
+  switch(dc)
+    {
+    case DipoleCase::CS:   return str<<"CS";
+    case DipoleCase::IDa:  return str<<"IDa";
+    case DipoleCase::IDb:  return str<<"IDb";
+    case DipoleCase::IDin: return str<<"IDin";
+    default: THROW(fatal_error, "Internal error");
+    }
+}
+
+
 std::ostream& EXTAMP::operator<<(std::ostream& str, const Dipole_Info& di)
 {
   return str << di.m_real_flavs <<
@@ -38,18 +51,20 @@ std::ostream& EXTAMP::operator<<(std::ostream& str, const Dipole_Info& di)
     " j=" << di.m_real_j <<
     " k=" << di.m_real_k <<
     " "   << di.m_flav_type <<
-    " ["  << di.m_split_type << "]";
+    " ["  << di.m_split_type << "]" <<
+    " ("  << di.m_case << ")";
 }
 
 
 Dipole_Info::Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
 			 const size_t& i, const size_t& j, const size_t& k,
-			 const int& subtrtype, const double& alphamin, const double& alphamax)
+             const int& subtrtype, const double& alphamin, const double& alphamax, DipoleCase dpc)
   : m_real_flavs(flavs), m_subtype(subtrtype), m_alphamin(alphamin), m_alphamax(alphamax)
 {
 
   /* Position of flavours i,j,k in the real emission flavour vector */
   m_real_i = i; m_real_k = k; m_real_j = j;
+  m_case = dpc;
 
   bool IS_emitter(i<2||j<2);
   bool IS_spectator(k<2);
@@ -126,7 +141,7 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
 double CS_Dipole::Calc() const
 {
   double alphas = p_corr_me->AlphaQCD();
-  
+
   return alphas * m_const_prefac * CalcKinDependentPrefac() * CalcCorrelator();
 }
 
@@ -220,7 +235,7 @@ ATOOLS::Flavour CS_Dipole::CombinedFlavour(const size_t& i, const size_t& j,
 }
 
 
-bool CS_Dipole::PassesAlphaMin() const
+bool CS_Dipole::PassesAlphaMin(const ATOOLS::Vec4D_Vector& p) const
 {
   const double& alphamin = Info().m_alphamin;
   return LastKinematics()->PassesAlphaMin(alphamin);

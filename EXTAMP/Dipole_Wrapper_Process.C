@@ -215,14 +215,17 @@ void Dipole_Wrapper_Process::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
   /* Dipole and dipole wrapper share the same flavour and momentum
      ordering in the real emission configuration, pass momentum on
      as-is */
+  DEBUG_VAR(Dipole()->Info());
   Dipole()->CalcKinematics(p);
 
   /* Apply re-mapping of (Born-) momenta, invert incoming momenta for
      NLO_subevts */
   for(size_t i(0); i<NIn(); i++)
-    m_moms[i] = -(Dipole()->Momenta()[m_indexmap[i]]);
+    {m_moms[i] = -(Dipole()->Momenta()[m_indexmap[i]]);
+    /*DEBUG_VAR(m_moms[i]);*/}
   for(size_t i(NIn()); i<m_moms.size(); i++)
-    m_moms[i] =  (Dipole()->Momenta()[m_indexmap[i]]);
+    {m_moms[i] =  (Dipole()->Momenta()[m_indexmap[i]]);
+    /*DEBUG_VAR(m_moms[i]);*/}
 }
 
 

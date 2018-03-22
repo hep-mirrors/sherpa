@@ -2,6 +2,7 @@
 #define PHASIC__Process__Massive_Kernels_H
 
 #include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Math/Vector.H"
 #include <vector>
 #include <cstddef>
 
@@ -121,6 +122,12 @@ namespace PHASIC {
     double P2(int type);
     double P3(int type,double x);
     double P4(int type,double x);
+
+    // L for pseudo-dipoles
+    double L2(int type, const ATOOLS::Vec4D &pa, 
+              const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n);
+    double L3(int type, double x, const ATOOLS::Vec4D &pa, 
+              const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n);
 
     double t1(int type,int spin,double muq,double x);
     double t2(int type,int spin,double muq);

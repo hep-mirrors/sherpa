@@ -39,6 +39,8 @@ MEProcess::~MEProcess()
 {
   if (p_momentareader) { delete p_momentareader; p_momentareader=NULL; }
   if (p_rambo)         { delete p_rambo; p_rambo=NULL; }
+  delete p_proc; // brute force invokation of destructor of RS_Process
+                 // in order to write yoda files 
 }
 
 std::string MEProcess::Name() const
@@ -463,7 +465,9 @@ double MEProcess::TestPoint(const double& E){
 double MEProcess::MatrixElement()
 {
   if(p_colint!=NULL) p_colint->SetWOn(false);
-  double res(p_proc->Differential(*p_amp,1|4));
+  //double res(p_proc->Differential(*p_amp,1|4));
+  double res(p_proc->Differential(*p_amp,4));   // submit mode 100 instead of 101
+                                                // in order to enable selector
   if(p_colint!=NULL) p_colint->SetWOn(true);
   // Cancel out initial state swap factor
   // which can be accessed through

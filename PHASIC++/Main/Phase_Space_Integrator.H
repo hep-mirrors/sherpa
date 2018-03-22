@@ -2,6 +2,7 @@
 #define PHASIC_Main_Phase_Space_Integrator_H
 
 #include <stddef.h>
+#include <fstream>
 
 namespace PHASIC {class Phase_Space_Handler;}
 

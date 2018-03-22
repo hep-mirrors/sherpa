@@ -1229,3 +1229,30 @@ double Massive_Kernels::at4(int type,int spin,double muq2,double x)
   return res;
 }
 
+
+double Massive_Kernels::L2(int type, const ATOOLS::Vec4D &pa, 
+             const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
+{
+  double v = sqrt(1-n.Abs2()*(pa+pb).Abs2()/pow((pa+pb)*n,2.));
+  switch(type){
+    case 1:
+      return 2.*m_CF*( DiLog(1.-(1.+v)/2.*(pa+pb)*n/(pa*n))
+                     + DiLog(1.-(1.-v)/2.*(pa+pb)*n/(pa*n)));
+    default:
+      THROW(fatal_error,"Invalid Splitting occured!");
+  }
+  return 0;
+}
+
+double Massive_Kernels::L3(int type, double x, const ATOOLS::Vec4D &pa, 
+             const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
+{ 
+  switch(type){
+    case 1: 
+      return m_CF*(1+x)
+             *log(n.Abs2()*(pa*pb)/(2.*(pa*n)*(pa*n)));
+    default:
+      THROW(fatal_error,"Invalid Splitting occured!");
+  }
+  return 0;
+}

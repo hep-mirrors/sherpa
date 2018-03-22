@@ -12,13 +12,23 @@ namespace EXTAMP {
     ATOOLS::Vec4D m_pi;
     ATOOLS::Vec4D m_pj;
     ATOOLS::Vec4D m_pk;
+    ATOOLS::Vec4D m_pl;
+    ATOOLS::Vec4D m_n;         // for id case
+    ATOOLS::Vec4D m_pa;         // for id case
     ATOOLS::Vec4D m_pij_tilde;
     ATOOLS::Vec4D m_pk_tilde;
+    ATOOLS::Vec4D m_pl_tilde;  // for res case
+    ATOOLS::Vec4D m_n_tilde;   // for id case   //TODO: discard if not needed
     double m_zi;
     double m_zj;
+    double m_zain;   // for id case
     double m_y;
+    double m_viab;   // for id case
+    double m_xain;   // for id case
+    double m_vitilde;// for id case
+    double m_alphamin; 
 
-    double Alpha() const { return m_y; }
+    double Alpha() const { return m_alphamin; }
 
     double ShowerX()  const { return m_zi; }
     double ShowerY()  const { return m_y ; }
@@ -68,11 +78,18 @@ namespace EXTAMP {
     ATOOLS::Vec4D m_pa;
     ATOOLS::Vec4D m_pij_tilde;
     ATOOLS::Vec4D m_pa_tilde;
+    ATOOLS::Vec4D m_pb;        // for id case
+    ATOOLS::Vec4D m_n;         // for id case
     double m_x;
     double m_zi;
     double m_zj;
+    double m_zain;   // for id case
+    double m_viab;   // for id case
+    double m_xain;   // for id case
+    double m_vitilde;// for id case
+    double m_alphamin; 
 
-    double Alpha() const { return 1.-m_x; }
+    double Alpha() const { return m_alphamin; }
 
     double ShowerX()  const { return m_zi; }
     double ShowerY()  const { return m_x ; }

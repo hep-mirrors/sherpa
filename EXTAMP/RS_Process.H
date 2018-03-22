@@ -2,6 +2,7 @@
 #define EXTAMP_RS_Process_H
 
 #include "EXTAMP/Process.H"
+#include "YODA/Histo1D.h"
 
 namespace PHASIC {
   class Tree_ME2_Base;
@@ -66,6 +67,10 @@ namespace EXTAMP {
 
     PHASIC::Tree_ME2_Base* p_real_me;
 
+    /* decide whether pseudo-dipoles are applied in subprocess of
+       pp > WWjj */
+    bool ApplyIDdipole(const Dipole_Info &di) const;
+
     /* Construct a complete vector of CS dipoles. m_dipoles holds
        pointers instead of objects because EXTAMP::Dipole is
        abstract */
@@ -94,7 +99,7 @@ namespace EXTAMP {
 
     /* Check if any of the dipole misses the minimum alpha
        criterion */
-    bool PassesAlphaMin(const Dipole_Vector& dv) const;
+    bool PassesAlphaMin(const Dipole_Vector& dv, const ATOOLS::Vec4D_Vector& p) const;
 
     /* If alpha_min cut is not passed, use this method to set all
        subevents to zero */
@@ -112,6 +117,8 @@ namespace EXTAMP {
 			       const double& power);
     double m_alpha_0, m_smear_power;
 
+    YODA::Histo1D         m_hist_dipole_y46, m_hist_mreal_y46;
+//    YODA::Histo1D         m_hist_alpha_min;
   };
 
 }

@@ -417,7 +417,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
       if ((*partnerlist)[i]->p_ampl) {
 	if (i+1<partnerlist->size() && m_subevtlist[i]->p_ampl->IdNew()) {
 	  m_subevtlist[i]->p_ampl->Delete();
-	  m_subevtlist[i]->p_ampl=partnerlist->back()->p_ampl->CopyAll();
+	  m_subevtlist[i]->p_ampl=(*partnerlist)[i]->p_ampl->First()->CopyAll();
 	  if (m_subevtlist[i]->p_ampl->Next()) {
 	    m_subevtlist[i]->p_ampl=m_subevtlist[i]->p_ampl->Next();
 	    m_subevtlist[i]->p_ampl->DeletePrev();
@@ -508,7 +508,6 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_lastdxs = m_realevt.m_me;
-
   if (msg_LevelIsDebugging()) {
     size_t prec(msg->Precision());
     msg->SetPrecision(16);
@@ -529,6 +528,12 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     msg->SetPrecision(prec);
   }
   m_mewgtinfo.m_bkw = p_tree_process->GetMEwgtinfo()->m_bkw;
+
+    double dipole=0;
+    for (size_t k=0;k<m_subtermlist.size();++k) dipole += m_subevtlist[k]->m_me;
+    if (msg_LevelIsDebugging()) {
+      msg_Out() << "summed dipoles = " << dipole << endl;
+    }
 
   return m_lastdxs;
 }

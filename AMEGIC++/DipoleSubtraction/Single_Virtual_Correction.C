@@ -87,6 +87,15 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
+  ATOOLS::Data_Reader read(" ",";","#","=");
+  read.SetInputPath(ATOOLS::rpa->GetPath());
+  read.SetInputFile(ATOOLS::rpa->gen.Variable("RUN_DATA_FILE"));
+  std::string dipole_string=read.GetValue<std::string>("DIPOLES","");
+  if      (dipole_string == "CS")   m_dipolecase=DipoleCase::CS;
+  else if (dipole_string == "IDa")  m_dipolecase=DipoleCase::IDa;
+  else if (dipole_string == "IDb")  m_dipolecase=DipoleCase::IDb;
+  else if (dipole_string == "IDin") m_dipolecase=DipoleCase::IDin;
+  else                              m_dipolecase=DipoleCase::CS;
 }
 
 
@@ -780,6 +789,55 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
   return finite;
 }
 
+double Single_Virtual_Correction::HPTerms(const ATOOLS::Vec4D_Vector &p,
+                                          const PHASIC::KP_Terms *kpterms,
+                                          std::vector<std::vector<double> >& dsij){
+  // e-__e+__W+__W-__b__bb
+  // 0   1   2   3   4  5 
+
+  // b has emitted
+  double H_temp = 0.;
+  double z = ATOOLS::ran->Get();
+  ATOOLS::Vec4D pai = p[4];
+  ATOOLS::Vec4D pb  = p[5];
+  ATOOLS::Vec4D n;
+  ATOOLS::Vec4D nz;
+  if(m_dipolecase==IDa){ 
+    n  = p[2];
+    nz = p[2]+pai*(1-z);
+  }
+  if(m_dipolecase==IDb){ 
+    n  = p[3]+p[5];
+    nz = p[3]+p[5]+pai*(1-z);
+  }
+  double v = sqrt(1-n.Abs2()*(pai+pb).Abs2()/pow((pai+pb)*n,2.));
+
+  H_temp = (0.25 + 2.*DiLog(1-(1+v)/2.*(pai+pb)*n / (pai*n)) 
+                 + 2.*DiLog(1-(1-v)/2.*(pai+pb)*n / (pai*n)) 
+           + (1+z)*log(nz.Abs2()*(pai*pb) / (2*z*pow(pai*nz,2))) )
+           *dsij[0][1];
+
+  // bbar has emitted
+  std::swap(pai,pb);
+  if(m_dipolecase==IDa){ 
+    n  = p[3];
+    nz = p[3]+pai*(1-z);
+  }
+  if(m_dipolecase==IDb){ 
+    n  = p[2]+p[4];
+    nz = p[2]+p[4]+pai*(1-z);
+  }
+  v = sqrt(1-n.Abs2()*(pai+pb).Abs2()/pow((pai+pb)*n,2.));
+
+  H_temp += (0.25 + 2.*DiLog(1-(1+v)/2.*(pai+pb)*n / (pai*n)) 
+                  + 2.*DiLog(1-(1-v)/2.*(pai+pb)*n / (pai*n)) 
+           + (1+z)*log(nz.Abs2()*(pai*pb) / (2*z*pow(pai*nz,2))) )
+           *dsij[0][1];
+
+return -kpterms->Coupling()*H_temp; 
+}
+
+
 void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
 {
   if (!((m_itype&cs_itype::K) || (m_itype&cs_itype::P))) return;
@@ -999,6 +1057,12 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   m_lastv=V;
   m_lasti=I;
   double M2(B+V+I);
+
+  m_lasthp = 0;
+  if(m_dipolecase==IDa  || 
+     m_dipolecase==IDb  ||
+     m_dipolecase==IDin   ) m_lasthp = HPTerms(mom,p_kpterms_qcd,m_dsijqcd);
+    M2 += m_lasthp;
 
 
   if (IsBad(M2) || msg_LevelIsDebugging()) {

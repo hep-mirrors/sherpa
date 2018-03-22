@@ -12,14 +12,16 @@ namespace AMEGIC {
   class FF_DipoleSplitting : public DipoleSplitting_Base {
     double m_yijk;
     double m_zi,m_zj;
+    double m_vi_tilde, m_zain, m_viab, m_xain; // for ID-dipoles
+    ATOOLS::Vec4D m_n;                         // for ID-dipoles
   public:
     FF_DipoleSplitting(ATOOLS::sbt::subtype st,
                        ATOOLS::spt::splittingtype ft,
                        int m,int i,int j,int k) :
       DipoleSplitting_Base(st,ft,ATOOLS::dpt::f_f,m,i,j,k),
-      m_yijk(0.), m_zi(0.), m_zj(0.)
+      m_yijk(0.), m_zi(0.), m_zj(0.) 
     {}
-    
+
     void SetMomenta(const ATOOLS::Vec4D*);
     double GetValue();
     double GetDPSF()   {return m_yijk;}

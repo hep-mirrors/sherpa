@@ -21,7 +21,6 @@ namespace EXTAMP {
 			   const int& subtraction_type) :
     Process(pi), m_vfrac(vfrac), m_subtype(subtraction_type)
   {
-
     /* Load loop ME */
     PHASIC::Process_Info loop_pi(pi);
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::loop;
@@ -76,7 +75,7 @@ namespace EXTAMP {
   {
     DEBUG_FUNC(this);
     
-    double B(0.0),V(0.0),I(0.0),KP(0.0);
+    double B(0.0),V(0.0),I(0.0),KP(0.0),HP(0.0);
     std::pair<double,double> scaleterms;
     
     /* Maybe move to PHASIC::Single_Process */
@@ -93,6 +92,13 @@ namespace EXTAMP {
        scale dependence terms */
     I = Calc_I(p, mur);
     scaleterms = Calc_ScaleDependenceTerms_I(p, mur);
+
+    /* Calculate HP terms for pseudo-dipoles */
+    if(m_dipole_case == EXTAMP::DipoleCase::IDa ||
+       m_dipole_case == EXTAMP::DipoleCase::IDb ||
+       m_dipole_case == EXTAMP::DipoleCase::IDin){
+    HP = Calc_HP(p);
+    }
     
     /* Calculate KP terms */
     if(m_flavs[0].Strong() || m_flavs[1].Strong())
@@ -113,6 +119,7 @@ namespace EXTAMP {
 
     /* Now divide all components by the symfac */
     B  /= NormFac(); V  /= NormFac(); I  /= NormFac(); KP /= NormFac();
+    HP /= NormFac();
     scaleterms.first /= NormFac(); scaleterms.second /= NormFac();
     
     /* Store all XS components in ME weight info */
@@ -128,6 +135,7 @@ namespace EXTAMP {
 		    << "\n  V       = " << V
 		    << "\n  I       = " << I
 		    << "\n  KP      = " << KP
+            << "\n  HP      = " << HP
 		    << "\n  wren[0] = " << scaleterms.first
 		    << "\n  wren[1] = " << scaleterms.second
 		    << "\n}" << std::endl;
@@ -136,7 +144,7 @@ namespace EXTAMP {
     m_lastbxs        = B;
 
     /* Store full XS in m_lastxs (used in PHASIC::Single_Process) */
-    return m_lastxs = (B + V + I + KP);
+    return m_lastxs = (B + V + I + KP + HP);
   }
 
 
@@ -196,6 +204,15 @@ namespace EXTAMP {
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     return -p_corr_me->AlphaQCD()/(2.0*M_PI) * I;
+  }
+
+  double BVI_Process::Calc_HP(const ATOOLS::Vec4D_Vector& p)
+  {
+    double cpl = p_corr_me->AlphaQCD()/(2.0*M_PI);
+    double m_z = ATOOLS::ran->Get();
+    return p_kpterms->CalculateHP(p,m_z,cpl,PartonIndices(),p_corr_me,m_dipole_case); 
+    // pass p_corr_me and do not use m_dsij from p_kpterms as indices of m_dsij are
+    // like this: dsij[i][j] = M(PartonIndices()[i], PartonIndices()[j]) -> less handy
   }
 
   

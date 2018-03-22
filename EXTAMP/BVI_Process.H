@@ -53,6 +53,8 @@ namespace EXTAMP {
     double Calc_KP(const ATOOLS::Vec4D_Vector& p);
     double m_x0, m_x1, m_eta0, m_eta1;
 
+    double Calc_HP(const ATOOLS::Vec4D_Vector& p);
+
     /* Used by PHASIC::Single_Process for reweighting op KP terms */
     double KPTerms(int mode, double scalefac2=1.0);
 

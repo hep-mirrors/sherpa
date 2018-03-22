@@ -14,6 +14,12 @@ libExtAmp_la_SOURCES = \
 			CS_Dipoles.C \
 			Dipole_Wrapper_Process.C
 
+if RIVET_SUPPORT
+libExtAmp_la_LIBADD   =	@CONDITIONAL_RIVETLDADD@
+
+libExtAmp_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_RIVETCPPFLAGS@
+endif
+
 localinc_HEADERS   = \
 			External_ME_Interface.H \
 			Process_Group.H \

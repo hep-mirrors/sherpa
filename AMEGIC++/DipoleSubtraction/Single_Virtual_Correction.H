@@ -6,6 +6,7 @@
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
 #include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
 #include "PHASIC++/Process/KP_Terms.H"
+#include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
 
 namespace PDF { class PDF_Base; } 
 
@@ -52,6 +53,9 @@ namespace AMEGIC {
     double m_bsum, m_vsum, m_isum, m_n;
     double m_mbsum, m_mvsum, m_misum, m_mn;
     double m_lastb, m_lastv, m_lasti, m_lastkp, m_lastki;
+    double m_lasthp;
+ 
+    DipoleCase m_dipolecase;
     double m_finite, m_singlepole, m_doublepole;
 
     /*------------------------------------------------------------------------------
@@ -172,6 +176,9 @@ namespace AMEGIC {
     void           Calc_KP(const ATOOLS::Vec4D_Vector&);
     double         KPTerms(int mode, PDF::PDF_Base *pdfa,
                                      PDF::PDF_Base *pdfb, double scalefac2=1.0);
+    double         HPTerms(const ATOOLS::Vec4D_Vector &mom,
+                           const PHASIC::KP_Terms *kpterms,
+                           std::vector<std::vector<double> >&);
     double         Get_KPTerms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                                const double&,const double&,
                                const ATOOLS::Flavour&,const ATOOLS::Flavour&,

@@ -3,6 +3,8 @@
 
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <assert.h>
 
@@ -44,6 +46,15 @@ namespace EXTAMP {
       = External_ME_Interface::ConstructCombinableMap(Flavours(),
 						      Info(),
 						      NIn());
+    ATOOLS::Data_Reader read(" ",";","#","=");
+    read.SetInputPath(ATOOLS::rpa->GetPath());
+    read.SetInputFile(ATOOLS::rpa->gen.Variable("RUN_DATA_FILE"));
+    std::string dipole_string=read.GetValue<std::string>("DIPOLES","");
+    if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+    else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+    else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+    else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+    else                               m_dipole_case = EXTAMP::DipoleCase::CS;
   }
 
 

@@ -16,6 +16,16 @@ using namespace std;
 
 #define SQRT_05 0.70710678118654757
 
+std::ostream& operator<<(std::ostream& str, const DipoleCase& dc)
+{
+  if     (dc == DipoleCase::CS)  return str << "DipoleCase = CS\n";
+  else if(dc == DipoleCase::IDa)  return str << "DipoleCase = IDa\n";
+  else if(dc == DipoleCase::IDb)  return str << "DipoleCase = IDb\n";
+  else if(dc == DipoleCase::IDin) return str << "DipoleCase = IDin\n";
+  else                            return str << "DipoleCase = non\n";
+  return str;
+}
+
 DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
                                            spt::splittingtype ft,
                                            dpt::dipoletype dt,
@@ -61,6 +71,20 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   if (m_subtype==1) m_kappa=1.0;
+
+  ATOOLS::Data_Reader read(" ",";","#","=");  // TODO: move to DipoleSplitting_Base
+  read.SetInputPath(ATOOLS::rpa->GetPath());
+  read.SetInputFile(ATOOLS::rpa->gen.Variable("RUN_DATA_FILE"));
+  std::string dipole_string=read.GetValue<std::string>("DIPOLES","");
+  if      (dipole_string == "CS")   m_dipolecase=DipoleCase::CS;
+  else if (dipole_string == "IDa")  m_dipolecase=DipoleCase::IDa;
+  else if (dipole_string == "IDb")  m_dipolecase=DipoleCase::IDb;
+  else if (dipole_string == "IDin") m_dipolecase=DipoleCase::IDin;
+  else                              m_dipolecase=DipoleCase::CS;
+  switch(m_dipolecase){
+    case IDa: m_pIDspec.resize(1); break; // # of kinematic spectators
+    case IDb: m_pIDspec.resize(2); break; // # of kinematic spectators
+  }
 }
 
 void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)

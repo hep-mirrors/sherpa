@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace EXTAMP {
 
@@ -32,6 +33,7 @@ namespace EXTAMP {
        (polarizations, colors) */
     double NormFac() const { return m_norm; }
     double m_norm;
+    EXTAMP::DipoleCase m_dipole_case;
     
     const std::vector<size_t>& PartonIndices() const
     { return m_parton_indices; }

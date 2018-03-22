@@ -5,6 +5,8 @@
 #include "PHASIC++/Process/Massive_Kernels.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "PDF/Main/NLOMC_Base.H"
+#include "EXTAMP/CS_Dipole.H"
+#include "PHASIC++/Process/Color_Correlated_ME2.H"
 
 namespace PDF { class PDF_Base; }
 
@@ -30,6 +32,7 @@ namespace PHASIC {
     ATOOLS::Flavour_Vector m_flavs;
 
     bool   m_massive, m_cemode, m_negativepdf;
+    double m_H, m_P;  // for pseudo-dipoles
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
     int    m_Vsubmode, m_collVFF, m_facscheme;
     bool   m_sa,m_sb;
@@ -56,6 +59,13 @@ namespace PHASIC {
                    const double &x0,const double &x1,
                    const double &eta0,const double &eta1,
                    const double &wgt);
+
+    double CalculateHP(const ATOOLS::Vec4D_Vector& mom,
+                   const double &z,
+                   const double &cpl,
+                   const std::vector<size_t> &parton_indices,
+                   PHASIC::Color_Correlated_ME2 *corr_me,
+                   const EXTAMP::DipoleCase &);
 
     double Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                const double &x0,const double &x1,

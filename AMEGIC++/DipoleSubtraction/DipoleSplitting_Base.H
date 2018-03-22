@@ -18,6 +18,10 @@ namespace AMEGIC {
 
 #define nan numeric_limits<double>::quiet_NaN()
 
+enum DipoleCase { CS,IDa,IDb,IDin };
+
+std::ostream& operator<<(std::ostream& str, const DipoleCase& dc);
+
   class DipoleSplitting_Base {
   protected:
     std::string m_name;
@@ -32,6 +36,7 @@ namespace AMEGIC {
     ATOOLS::spt::splittingtype m_ftype;
     ATOOLS::Vec4D m_pi,m_pj,m_pk,m_ptij,m_ptk;
     int m_i,m_j,m_k,m_tij,m_tk,m_m,m_es;
+    std::vector<ATOOLS::Vec4D> m_pIDspec; // for ID-dipoles
     double m_k0sqf,m_k0sqi;
     std::vector<ATOOLS::Vec4D> m_dpollist;
     std::vector<ATOOLS::Vec4D> m_mom;
@@ -44,7 +49,9 @@ namespace AMEGIC {
     ATOOLS::NLO_subevt *p_subevt;
     PDF::NLOMC_Base *p_nlomc;
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
+    DipoleCase m_dipolecase;                   // switch to steer between CS,ID-dipoles
   public:
+    DipoleCase GetDipoleCase() const           { return m_dipolecase; }
     DipoleSplitting_Base(ATOOLS::sbt::subtype st, ATOOLS::spt::splittingtype ft,
                          ATOOLS::dpt::dipoletype dt,int m,int i,int j,int k);
     virtual ~DipoleSplitting_Base() {}
@@ -59,6 +66,8 @@ namespace AMEGIC {
     inline std::vector<ATOOLS::Vec4D>* GetMomenta() { return &m_mom; }
     inline ATOOLS::Vec4D Getptij()                  { return m_ptij; }
     inline ATOOLS::Vec4D Getptk()                   { return m_ptk; }
+    ATOOLS::Vec4D Getpk()                           { return m_pk; }      // TODO: for ID-dipoles?
+    std::vector<ATOOLS::Vec4D> GetpIDspec()         { return m_pIDspec; } // for ID-dipoles
 
     inline void SetMCMode(const int mcmode)         { m_mcmode=mcmode; }
     inline void SetAlpha(double alp)                { m_alpha=alp; }

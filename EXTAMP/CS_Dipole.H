@@ -17,24 +17,28 @@ namespace EXTAMP {
   enum SplittingType { FF,IF,FI,II };
   std::ostream &operator<<(std::ostream &str,const SplittingType& st);
 
-
   enum FlavourType { gtogg,gtoqq,qtoqg };
   std::ostream &operator<<(std::ostream &str,const FlavourType& ft);
+  
+  enum DipoleCase { CS,IDa,IDb,IDin };
+  std::ostream &operator<<(std::ostream &str,const DipoleCase& dc);
   
 
   struct Dipole_Info {
     
     Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
 		const size_t& i, const size_t& j, const size_t& k,
-		const int& subtrtype, const double& alphamin, const double& alphamax);
+		const int& subtrtype, const double& alphamin, const double& alphamax,
+        DipoleCase dpc);
 
     SplittingType          m_split_type;
     FlavourType            m_flav_type;
     ATOOLS::Flavour_Vector m_real_flavs;
+    DipoleCase             m_case;
     
     /* Indices i,j,k in momentum/flavour vector of corresponding real
        emission process */
-    size_t m_real_i, m_real_j, m_real_k;
+    size_t                 m_real_i, m_real_j, m_real_k;
     
     /* Subtraction type: 0: plain Catani-Seymour
                          1: Dire
@@ -96,7 +100,7 @@ namespace EXTAMP {
     double  Calc() const;
 
     bool PassesAlphaCuts() const;
-    bool PassesAlphaMin () const;
+    bool PassesAlphaMin (const ATOOLS::Vec4D_Vector& p) const;
     
     /* Indices i,j,k in the real emission flavour config */
     const size_t& I() const { return m_dip_info.m_real_i; }
@@ -116,6 +120,7 @@ namespace EXTAMP {
 
     const FlavourType&   FlavType()  const { return m_dip_info.m_flav_type;  }
     const SplittingType& SplitType() const { return m_dip_info.m_split_type; }
+    const DipoleCase& DipCase() const { return m_dip_info.m_case; }
 
     const ATOOLS::Flavour_Vector& Flavours()     const {return m_born_flavs; }
     const ATOOLS::Flavour_Vector& RealFlavours() const {return m_dip_info.m_real_flavs; }

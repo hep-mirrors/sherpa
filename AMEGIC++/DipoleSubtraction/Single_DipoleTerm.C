@@ -67,6 +67,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   m_noISclustertolepton
     =ToType<size_t>(rpa->gen.Variable("DIPOLE_IS_CLUSTER_TO_LEPTONS"));
 
+  
   if (!DetermineType()) return;
 
   // determine LO indices
@@ -428,18 +429,48 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
   p_dipole->CalcDiPolarizations();
   size_t cnt=0;
   size_t em=p_LO_process->GetEmit();
-  size_t sp=p_LO_process->GetSpect();
+  size_t sp=p_LO_process->GetSpect();   // in Pseudo-dipoles = colour spectator
   if (em==sp) {
     THROW(fatal_error,"Incorrect emitter and spectator assignments.");
   }
-  for (size_t i=0;i<m_nin+m_nout;i++) {
-    int cnt=p_LO_process->SRMap()[i];
+
+  for (size_t i=0;i<m_nin+m_nout;i++) { // particles not involved in dipole (ij,k) are set
+    int cnt=p_LO_process->SRMap()[i]; 
     if (cnt<0) continue;
     p_LO_labmom[cnt] = p_LO_mom[cnt] = (*(p_dipole->GetMomenta()))[i];
   }
-  
+  switch(p_dipole->GetDipoleCase()){
+  case IDa:{
+    /* e- e+ > W+ W- b bbar */
+    /* 0  1  > 2  3  4 5    */
+    size_t sp_kin;
+    if (em==4) sp_kin = 2;
+    else if (em==5) sp_kin = 3;
+    else  THROW(fatal_error, "Invalid assignment in Born-kinematics");
+    p_LO_labmom[sp_kin] = p_LO_mom[sp_kin] = p_dipole->GetpIDspec()[0];
+    p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getpk();
+    break;
+    }
+  case IDb:{
+    std::vector<size_t> sp_kin(2);
+    if (em==4) sp_kin = {3,5};
+    else if (em==5) sp_kin = {2,4};
+    else  THROW(fatal_error, "Invalid assignment in Born-kinematics");
+    p_LO_labmom[sp_kin[0]] = p_LO_mom[sp_kin[0]] = p_dipole->GetpIDspec()[0];
+    p_LO_labmom[sp_kin[1]] = p_LO_mom[sp_kin[1]] = p_dipole->GetpIDspec()[1];
+    //p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getpk(); // already set by GetpIDspec()[1] !!!
+    break;
+    }
+  case CS:
+  default:
+    p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
+    break;
+  }
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
-  p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
+//for(int i=0;i<=5;i++){
+//DEBUG_VAR(i);
+//DEBUG_VAR(p_LO_mom[i]);
+//}
 
   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
