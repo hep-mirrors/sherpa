@@ -221,16 +221,9 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
   // W
   for (int i{ 0 }; i < 2; ++i) {
-    char ksign, lsign;
-    if (i == 0) {
-      ksign = '+';
-      lsign = '-';
-    } else {
-      ksign = '-';
-      lsign = '+';
-    }
-    const auto Ik = Ipm(kflav, spincombination[k], ksign);
-    const auto Il = Ipm(lflav, spincombination[l], lsign);
+    const auto kplus = (i == 0);
+    const auto Ik = Ipm(kflav, spincombination[k], kplus);
+    const auto Il = Ipm(lflav, spincombination[l], !kplus);
     if (Ik != 0.0 && Il != 0.0) {
       // TODO: remove duplication when calculating ampl ratios
       auto amplit = m_sscwspinampls.find(indizes);
@@ -248,8 +241,12 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
       const auto rotated = amplit->second[0].Get(rotatedspincombination);
       const auto unrotated = amplvalue;
       assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-      // TODO: understand why we need to use abs here (only when rotated ampl is permutated?)
-      const auto amplratio = std::abs(rotated/unrotated);
+      // TODO: understand why we need to use abs here when calculating coeffs
+      // for ee->mumu, but when we want to calculate coeffs for ee->uu, we can
+      // use the (expected) unmodified ratio; is this connected to the
+      // extraneous minus sign in Sudakov::LsCoeff?
+      //const auto amplratio = std::abs(rotated/unrotated);
+      const auto amplratio = rotated/unrotated;
       coeff += 2*Ik*Il*amplratio;
     }
   }
@@ -353,28 +350,41 @@ double Sudakov::IZ2(const Flavour& flav, int pol) const
 
 double Sudakov::IZ(const Flavour& flav, int pol) const
 {
+  const auto sign = (flav.IsAnti() ? -1 : 1);
   if (flav.IsScalar())
     THROW(not_implemented,
           "non-diagonal Z coupling terms for scalars not implemented");
   if (flav.IsLepton()) {
-    const auto sign = (flav.IsAnti() ? -1 : 1);
     if (pol == 0)
       return sign * m_sw/m_cw;
     else
       return sign * (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
+    if (pol == 0) {
+      if (flav.IsUptype())
+        return -sign * 2/3.0 * m_sw/m_cw;
+      else
+        return sign * 1/3.0 * m_sw/m_cw;
+    } else {
+      if (flav.IsUptype())
+        return sign * (3*m_cw2 - m_sw2) / (6*m_sw*m_cw);
+      else
+        return -sign * (3*m_cw2 + m_sw2) / (6*m_sw*m_cw);
+    }
   } else {
     THROW(not_implemented, "Missing implementation");
   }
 }
 
-double Sudakov::Ipm(const Flavour& flav, int pol, char sign) const
+double Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
 {
   if (pol == 0)
     return 0.0;
-  if (flav.IsLepton()) {
-    if (flav.IsAnti() && sign == '-')
+  if (flav.IsFermion()) {
+    const auto isfermionplus = flav.IsUptype();
+    if (flav.IsAnti() && (isplus == isfermionplus))
       return -1 / (sqrt(2)*m_sw);
-    else if (!flav.IsAnti() && sign == '+')
+    else if (!flav.IsAnti() && (isplus != isfermionplus))
       return  1 / (sqrt(2)*m_sw);
     return 0.0;
   } else {
