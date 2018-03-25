@@ -1,10 +1,10 @@
 pkglib_LTLIBRARIES    =	libPhasicEWSudakov.la
 
-SVNTAG = PHASIC++/EWSudakov
-include ../../svn.make
+GITTAG = PHASIC++/EWSudakov
+include ../../git.make
 
 libPhasicEWSudakov_la_SOURCES   = \
-	SVN_Info.C \
+	Git_Info.C \
 	EWSudakov.C \
 	Comix_Interface.C \
 	Sudakov.C \
