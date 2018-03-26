@@ -338,7 +338,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(Rivet_Map& rm, std::string proc,
   else {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     AnalysisHandler* rivet(new AnalysisHandler());
-#ifdef USING__RIVET__SETSOW
+#ifdef USING__RIVET__IGNOREBEAMS
     rivet->setIgnoreBeams(m_ignorebeams);
 #endif
     rivet->addAnalyses(m_analyses);
@@ -628,9 +628,10 @@ bool Rivet_Interface::Finish()
     }
     for (Rivet_Map::iterator it=mit->second->RivetMap().begin();
          it!=mit->second->RivetMap().end(); ++it) {
-#ifdef USING__RIVET__SETSOW
-      it->second->setSumOfWeights(mit->second->SumOfWeights());
-#endif
+      const double wgtfrac = it->second->sumOfWeights()/mit->second->SumOfWeights();
+      const double totalxs = it->second->crossSection();
+      const double thisxs  = totalxs*wgtfrac;
+      it->second->setCrossSection(thisxs);
       std::string jout=out;
       if (it->first.first!="") jout+="."+it->first.first;
       if (it->first.second!=0) jout+=".j"+ToString(it->first.second);

@@ -487,7 +487,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       fi;
       rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
       if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetsetsow=true;
+        rivetignorebeams=true;
       fi
     ],
     [ rivet=false ]
@@ -495,8 +495,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$rivet" = "true" ; then
     AC_DEFINE([USING__RIVET], "1", [using Rivet])
   fi
-  if test "$rivetsetsow" = "true" ; then
-    AC_DEFINE([USING__RIVET__SETSOW], "1", [setSumOfWeights function available in Rivet])
+  if test "$rivetignorebeams" = "true" ; then
+    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
   fi
   if test "$rivetyoda" = "true" ; then
     AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
