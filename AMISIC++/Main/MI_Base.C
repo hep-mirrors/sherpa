@@ -1,7 +1,7 @@
 #include "AMISIC++/Main/MI_Base.H"
 
 #include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 

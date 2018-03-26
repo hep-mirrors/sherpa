@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;

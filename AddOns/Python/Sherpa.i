@@ -1,4 +1,5 @@
 %module Sherpa
+%include "Terminator_Objects.i"
 %include "Exception.i"
 %include "Flavour.i"
 %include "Vec4.i"
@@ -18,7 +19,7 @@
 #include "MODEL/Main/Model_Base.H"
   %}
 
-%catches (ATOOLS::Exception) SHERPA::Sherpa::InitializeTheRun(int, char**);
+%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun(int, char**);
 
 // A typemap is required in order to be able to pass
 // the python arguments to SHERPA::Sherpa::InitializeTheRun(int, char**)

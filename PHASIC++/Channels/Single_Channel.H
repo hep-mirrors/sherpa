@@ -2,6 +2,7 @@
 #define PHASIC_Channels_Single_Channel_H
 
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "PHASIC++/Selectors/Cut_Data.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"

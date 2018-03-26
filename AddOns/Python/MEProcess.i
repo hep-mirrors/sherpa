@@ -6,7 +6,7 @@
 #include "AddOns/Python/MEProcess.H"
 %}
 
-%catches (ATOOLS::Exception) MEProcess::Initialize();
+%catches (const ATOOLS::Exception&) MEProcess::Initialize();
 
 namespace SHERPA{
   class Sherpa;

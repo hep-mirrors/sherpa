@@ -1,7 +1,7 @@
 #ifndef SHERPA_Main_Sherpa_H
 #define SHERPA_Main_Sherpa_H
 
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "SHERPA/Main/Filter.H"
 
 namespace ATOOLS {

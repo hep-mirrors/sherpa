@@ -197,7 +197,7 @@ void Run_Parameter::Init(std::string path,std::string file)
   msg->SetMPIMode(reader.Get<int>("MPI_OUTPUT",0));
   msg->SetPrecision(reader.Get<size_t>("OUTPUT_PRECISION",6));
   if (msg->LevelIsInfo())
-    msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
+    msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
              <<" on "<<gen.m_hostname
 	     <<". Initialization of framework underway."<<std::endl;
   msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
@@ -355,8 +355,6 @@ void Run_Parameter::Init(std::string path,std::string file)
   msg_Info()<<METHOD<<"(): Setting memory limit to "
 	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
 #endif
-  int stacktrace = reader.Get<int>("STACK_TRACE",1);
-  exh->SetStackTrace(stacktrace);
   gen.m_accu = reader.Get<double>("NUM_ACCURACY", 1.e-10);
   gen.m_sqrtaccu = sqrt(gen.m_accu);
   if (gen.m_seeds[1]>0) {

@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Exception.H"
 #include "AHADIC++/Main/Ahadic.H"
 
 using namespace SHERPA;

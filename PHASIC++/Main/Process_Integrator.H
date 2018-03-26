@@ -5,7 +5,7 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 
 #include <string>
 
