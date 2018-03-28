@@ -11,8 +11,7 @@ namespace ANALYSIS {
 
   typedef ANALYSIS::Argument_Matrix Argument_Matrix;
   
-  class Analysis_Handler: public ATOOLS::Tester_Object,
-			  public ATOOLS::File_IO_Base,
+  class Analysis_Handler: public ATOOLS::File_IO_Base,
 			  public SHERPA::Analysis_Interface {
   public:
 
@@ -32,7 +31,6 @@ namespace ANALYSIS {
     bool   m_write;
 
     void Clean();
-    bool ApproveTerminate();
 
     void DoAnalysis(const ATOOLS::Blob_List *bloblist,const double weight);
 

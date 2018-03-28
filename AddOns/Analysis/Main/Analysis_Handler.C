@@ -39,7 +39,6 @@ Analysis_Handler::Analysis_Handler():
 Analysis_Handler::~Analysis_Handler()
 {
   Clean();
-  exh->RemoveTesterObject(this);
 }
 
 void Analysis_Handler::Clean()
@@ -227,7 +226,6 @@ bool Analysis_Handler::Init()
   msg_Info()<<"}"<<std::endl;
   if (success) {
     m_write=true;
-    exh->AddTesterObject(this);
   }
   return true;
 }
@@ -245,14 +243,9 @@ void Analysis_Handler::CleanUp()
        ait!=m_analyses.end();++ait) (*ait)->ClearAllData(); 
 }
 
-bool Analysis_Handler::ApproveTerminate()
-{
-  if (rpa->gen.BatchMode()&1) m_write=false;
-  return true;
-}
-
 bool Analysis_Handler::WriteOut()
 {
+  if (rpa->gen.BatchMode()&1) m_write=false;
   if (!m_write) return true;
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
@@ -293,9 +286,6 @@ bool Analysis_Handler::Finish()
     (*ait)->RestoreAnalysis();
   }
   msg_Info()<<"}"<<std::endl;
-  if (m_analyses.size()) {
-    exh->RemoveTesterObject(this);
-  }
   return true;
 }
 
