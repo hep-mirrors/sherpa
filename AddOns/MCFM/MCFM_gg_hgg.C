@@ -5,7 +5,7 @@
 
 namespace MCFM {
   // README:
-  // For Higgs production, choose model: MODEL = SM+EHC
+  // For Higgs production, choose model: MODEL = SMEHC
   // It is important for the Higgs production to have all five flavours 
   // in the initial state, but the Yukawa coupling of the b must be
   // switched off:  YUKAWA[5] = 0.
