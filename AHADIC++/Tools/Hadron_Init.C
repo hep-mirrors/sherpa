@@ -350,6 +350,8 @@ void Hadron_Init::Init() {
   s_kftable[103112]=new Particle_Info(103112,1.75,0.09,-3,1,1,0,"Sigma(1750)-","\\Sigma-(1750)");
   s_kftable[103212]=new Particle_Info(103212,1.75,0.09,0,1,1,0,"Sigma(1750)","\\Sigma(1750)");
   s_kftable[103222]=new Particle_Info(103222,1.75,0.09,3,1,1,0,"Sigma(1750)+","\\Sigma^{+}(1750)");
+  s_kftable[103312]=new Particle_Info(103312,1.75,0.09,-3,1,1,0,"Xi(1750)-","\\Xi^{-}(1750)");
+  s_kftable[103322]=new Particle_Info(103322,1.75,0.09,0,1,1,0,"Xi(1750)","\\Xi(1750)");
   s_kftable[103122]=new Particle_Info(103122,1.67,0.06,0,1,0,0,"Lambda(1670)","\\Lambda(1670)");
   s_kftable[102132]=new Particle_Info(102132,1.407,0.05,0,1,1,0,"Lambda(1405)","\\Lambda(1405)");
   s_kftable[102142]=new Particle_Info(102142,2.5954,0.0036,3,1,1,0,"Lambda(c)(2595)+","\\Lambda_{c}(2595)^{+}");
