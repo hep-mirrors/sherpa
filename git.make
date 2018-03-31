@@ -3,7 +3,7 @@ MD5_EXCLUDE ?=
 
 Git_Info.C: Git_Info.C.in
 	@if ! which git > /dev/null || \
-	  ! git -C $(top_srcdir) rev-parse HEAD > /dev/null 2>&1; then \
+	  ! (cd $(top_srcdir); git rev-parse HEAD > /dev/null 2>&1); then \
 	  if test -f $(srcdir)/$@; then \
 	    cp $(srcdir)/$@ $@.tmp; chmod u+rw $@.tmp; \
 	  else \
@@ -15,7 +15,10 @@ Git_Info.C: Git_Info.C.in
 	    exit 1; \
 	  fi; \
 	else \
-	  rev=$$(git -C $(top_srcdir) rev-parse HEAD); \
+	  rev=$$(cd $(top_srcdir); git rev-parse HEAD); \
+	  if test -n "$$(cd $(srcdir); git status -s --untracked-files=no .)"; then \
+	    rev=$$rev"-dirty"; \
+	  fi; \
 	  url=$$(git rev-parse --abbrev-ref HEAD); \
 	  echo '#include "ATOOLS/Org/Git_Info.H"' > $@.tmp; \
 	  echo 'static ATOOLS::Git_Info initializer' >> $@.tmp; \
