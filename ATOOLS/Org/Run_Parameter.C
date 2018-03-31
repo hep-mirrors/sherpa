@@ -446,6 +446,8 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
   if (info.empty()) THROW(fatal_error,"No Git information");
   std::string branch(info.begin()->second->Branch());
   std::string revision(info.begin()->second->Revision());
+  if (branch.find("rel-")!=0)
+    msg_Info()<<"WARNING: You are using an unsupported development branch."<<endl;
   str<<prefix<<"Git branch "<<branch<<", revision "<<revision;
   if (mode&1) str<<" {\n";
   else str<<"."<<std::endl;
@@ -453,12 +455,9 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
 	 iit(info.begin());iit!=info.end();++iit) {
     if (mode&1) str<<prefix<<" "<<iit->second->Checksum()
 		   <<"  "<<iit->second->Name()<<"\n";
-    if (iit->second->Branch()!=branch) str<<prefix
-      <<"===> "<<iit->second->Name()<<" has branch "<<iit->second->Branch()
-      <<", first seen was "<<branch<<" <===\n";
     if (iit->second->Revision()!=revision) str<<prefix
-      <<"===> "<<iit->second->Name()<<" has revision "<<iit->second->Revision()
-      <<", first seen was "<<revision<<" <===\n";
+      <<"===> "<<iit->second->Name()<<" has local modifications "
+      <<" <===\n";
   }
   if (mode&1) str<<prefix<<"}\n";
   str<<std::endl;
