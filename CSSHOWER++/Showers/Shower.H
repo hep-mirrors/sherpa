@@ -58,6 +58,9 @@ namespace CSSHOWER {
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv,int mode);
 
+    ATOOLS::Cluster_Amplitude *  SingletToAmplitude(const Singlet * sing, ATOOLS::Cluster_Amplitude * ampl);
+    void   PartonToAmplitude(const Parton *  parton, ATOOLS::Cluster_Amplitude *);
+    void   CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl);
   public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
     ~Shower();
