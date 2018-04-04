@@ -401,6 +401,10 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   m_wgtmapsum += wgtmap;
   m_wgtmapsumsqr += wgtmap*wgtmap;
 
+  /* TODO fusing: check/implement the following change from rel-2-2-x:
+-  return AnalyseEvent(weight);
++  return AnalyseEvent(cxs);
+  */
   return AnalyseEvent();
 }
 

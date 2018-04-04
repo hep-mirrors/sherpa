@@ -68,7 +68,7 @@ namespace PDF {
     ATOOLS::Flavour     m_bunch;
 
     std::string m_type, m_set;
-    int m_member, m_lhef_number, m_nf;
+    int m_member, m_lhef_number, m_nf, m_force_4f;
 
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
@@ -109,12 +109,6 @@ namespace PDF {
     inline std::string Set() const                    { return m_set; }
     inline ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
-    inline bool Contains(const ATOOLS::Flavour & flav) const {
-      if (m_partons.find(flav) != m_partons.end()) return true;
-      for (size_t i(0); i < flav.Size(); ++i)
-        if (m_partons.find(flav[i]) == m_partons.end()) return false;
-      return true;
-    }
     inline int Member() const         { return m_member; }
     inline int LHEFNumber() const     { return m_lhef_number; }
     inline PDF_Base *operator->()     { return GetBasicPDF(); }
@@ -128,6 +122,8 @@ namespace PDF {
     inline void ResetRescaleFactor()                 { m_rescale = 1.; }
     inline void SetRescaling(const bool & resc=true) { m_rescX   = resc; }
     inline double RescaleFactor() const              { return m_rescale; }
+
+    bool Contains(const ATOOLS::Flavour &a) const;
   };
 
   /*!
