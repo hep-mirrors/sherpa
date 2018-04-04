@@ -18,6 +18,9 @@ namespace ATOOLS {
 
     ClusterAmplitude_PVector();
 
+    Cluster_Amplitude * OneAmpl();
+
+
     ~ClusterAmplitude_PVector();
 
   };// end of class ClusterAmplitude_PVector
@@ -41,14 +44,16 @@ namespace ATOOLS {
     static ClusterAmplitude_PVector s_ampls;
 
     friend class ClusterAmplitude_PVector;
+    friend class std::shared_ptr<ATOOLS::Cluster_Amplitude>;
 
   protected:
 
     Cluster_Amplitude(Cluster_Amplitude *const prev=NULL);
 
-    ~Cluster_Amplitude();
 
   public:
+    // TODO fusing: this should be protected, but then the shared_ptr compilation fails in CS_Shower.C
+    ~Cluster_Amplitude();
 
     static Cluster_Amplitude* New(Cluster_Amplitude *const prev=NULL);
 
@@ -219,6 +224,10 @@ namespace ATOOLS {
 
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl);
+
+  std::ostream &operator<<
+    (std::ostream &ostr,const Cluster_Amplitude * ampl);
+
 
   typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
 
