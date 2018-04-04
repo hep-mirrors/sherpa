@@ -183,9 +183,9 @@ bool EPA::CalculateWeight(double x,double q2)
     double f = alpha/M_PI*(1+sqr(1-m_x))/m_x*log(2.*m_energy/m_mass);
     if (f < 0) f = 0.;
     m_weight = f;
-    msg_Out()<<METHOD<<"(x = "<<m_x<<", q^2 = "<<q2<<") = "<<f<<", "
-	     <<"energy = "<<m_energy<<", "<<"mass = "<<m_mass<<".\n";
-    return 1;    
+    msg_Debugging()<<METHOD<<"(x = "<<m_x<<", q^2 = "<<q2<<") = "<<f<<", "
+                   <<"energy = "<<m_energy<<", "<<"mass = "<<m_mass<<".\n";
+    return 1;
   }
   else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
