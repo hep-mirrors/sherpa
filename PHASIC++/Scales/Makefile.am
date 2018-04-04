@@ -25,7 +25,8 @@ libPhasicScales_la_SOURCES    =	\
 				HTPrime_Core_Scale.C \
 				METS_Scale_Setter.C \
 				Variable_KFactor_Setter.C \
-				No_KFactor_Setter.C
+				No_KFactor_Setter.C \
+				TTBB_Core_Scale.C
 
 localinc_HEADERS      =	\
 			Scale_Setter_Base.H \

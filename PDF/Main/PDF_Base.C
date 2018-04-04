@@ -20,6 +20,7 @@ PDF_Base::PDF_Base():
 {
   Data_Reader dr(" ",";","!","=");
   m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);
+  m_force_4f = dr.GetValue<int>("PDF_FORCE_4F",0);
 }
 
 PDF_Base::~PDF_Base()
@@ -120,4 +121,10 @@ void PDF_Base::ShowSyntax(const size_t i)
 	   <<"   // available PDF sets (specified by PDF_SET=<value>)\n\n";
   PDF_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
+}
+
+
+bool PDF_Base::Contains(const ATOOLS::Flavour &a) const
+{if (m_force_4f && (abs(a.Kfcode())==5 || abs(a.Kfcode())==6)) return false;
+ return m_partons.find(a)!=m_partons.end();
 }

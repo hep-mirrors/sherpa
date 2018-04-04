@@ -60,6 +60,10 @@ Singlet::~Singlet() {
       }
        plit = erase(plit);
     } while (plit!=end());
+    if (p_ampl){
+       while(p_ampl->Prev()) p_ampl = p_ampl->Prev();
+        p_ampl->Delete();
+    }
     clear();
   }
 }
@@ -415,4 +419,20 @@ void Singlet::UpdateDaughters()
 {
   for (PLiter plit(begin());plit!=end();++plit)
     (*plit)->UpdateDaughters();
+}
+
+void Singlet::UpdateAmplitude( ATOOLS::Cluster_Amplitude *ampl){
+  if (p_ampl==NULL) {
+      p_ampl = ATOOLS::Cluster_Amplitude::New(ampl);
+      p_ampl = p_ampl->Prev();
+      p_ampl->DeleteNext();
+    }
+  else {
+      Cluster_Amplitude *tmp = ATOOLS::Cluster_Amplitude::New(ampl);
+      tmp = tmp->Prev();
+      p_ampl->SetNext(tmp);
+      p_ampl=p_ampl->Next();
+      p_ampl->DeleteNext();
+  }
+
 }

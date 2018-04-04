@@ -55,6 +55,8 @@ namespace PDF {
     int m_member;
     int m_lhef_number;
 
+    int m_force_4f;
+
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
 
@@ -115,8 +117,8 @@ namespace PDF {
     inline void Reset()
     { GetBasicPDF()->SingleReset(); }
 
-    inline bool Contains(const ATOOLS::Flavour &a) const
-    { return m_partons.find(a)!=m_partons.end(); }
+    bool Contains(const ATOOLS::Flavour &a) const;
+
 
     inline double RescaleFactor() const { return m_rescale; }
 

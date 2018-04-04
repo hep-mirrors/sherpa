@@ -332,7 +332,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   m_sumsqr += sqr(cxs);
   m_addn    = 0.0;
 
-  return AnalyseEvent(weight);
+  return AnalyseEvent(cxs);
 }
 
 bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {

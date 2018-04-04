@@ -21,6 +21,7 @@ namespace CSSHOWER {
     Parton *p_split, *p_left, *p_right, *p_spec;
     PHASIC::Jet_Finder *p_jf;
     All_Singlets *p_all;
+    ATOOLS::Cluster_Amplitude *p_ampl;
     ATOOLS::Mass_Selector *p_ms;
     double m_kt2_next, m_lkf;
     int m_nlo;
@@ -28,7 +29,7 @@ namespace CSSHOWER {
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
-      p_jf(NULL), p_all(NULL),
+      p_jf(NULL), p_all(NULL),p_ampl(NULL),
       m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
     ~Singlet();
 
@@ -44,6 +45,9 @@ namespace CSSHOWER {
     void        UpdateDaughters();
     void        BoostAllFS(Parton *l,Parton *r,Parton *s);
     void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
+
+    void        UpdateAmplitude(ATOOLS::Cluster_Amplitude *ampl);
+    inline      ATOOLS::Cluster_Amplitude * GetAmplitude(){return p_ampl;}
 
     Parton *IdParton(const size_t &id) const;
 

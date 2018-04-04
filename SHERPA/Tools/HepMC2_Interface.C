@@ -41,7 +41,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_extendedweights(extendedweights),
   m_variationtypes(1, Variations_Type::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
-  m_pswgt(0.), m_pwgt(0.),
+  m_pswgt(0.), m_pwgt(0.), m_veto(-1),
   m_mur2(0.), m_muf12(0.), m_muf22(0.), m_muq2(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
@@ -62,6 +62,10 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
+    }
+    ReadIn(db,"Veto",false);
+    if (db) {
+      m_veto=db->Get<int>();
     }
     ReadIn(db,"Renormalization_Scale",false);
     if (db) m_mur2=db->Get<double>();
@@ -126,6 +130,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
+    if (m_veto>=0) wc["Veto"]=m_veto;
     if (m_extendedweights) {
       wc["PSWeight"]=m_pswgt;
       // additional entries for LO/LOPS reweighting
