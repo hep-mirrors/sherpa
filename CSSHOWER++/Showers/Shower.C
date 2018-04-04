@@ -10,6 +10,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 
 using namespace CSSHOWER;
 using namespace PHASIC;
@@ -228,6 +229,19 @@ int Shower::MakeKinematics
   DEBUG_FUNC("");
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
+
+
+  // first step for the amplitude: create parton list
+  Singlet *s_test = split->GetSing();
+  Parton_List p_list;
+  for (Singlet::const_iterator it=s_test->begin();it!=s_test->end();++it){
+      Parton *parton = *it;
+      if (parton == split) continue;
+      if (parton == spect) continue;
+      p_list.push_back(parton);
+  }
+  s_test =NULL;
+
   int stype(-1), stat(-1);
   double mc2(m_kinFF.MS()->Mass2(flc)), mi2(0.0);
   if (split->GetType()==pst::FS) {
@@ -308,12 +322,51 @@ int Shower::MakeKinematics
   for (PLiter plit(singlet->begin());
        plit!=singlet->end();++plit)
     (*plit)->UpdateDaughters();
+
+  // add missing particles to parton list
+  p_list.push_back(pi);
+  p_list.push_back(pj);
+  p_list.push_back(spect);
+
+  /*  p_list now contains all relevant partons. add first the IS partons and
+      afterwards the FS partons to the amplitude*/
+
+  Cluster_Amplitude * tmp_ampl = Cluster_Amplitude::New();
+  size_t count_is(0);
+  for(Parton_List::const_iterator it=p_list.begin(); it!=p_list.end(); ++it){
+    Parton *parton = *it;
+    if (parton->GetType()==pst::IS)  {
+      PartonToAmplitude(parton, tmp_ampl);
+      count_is++;
+    }
+  }
+
+  for(Parton_List::const_iterator it=p_list.begin(); it!=p_list.end(); ++it){
+    Parton *parton = *it;
+    if (parton->GetType()==pst::FS)  PartonToAmplitude(parton, tmp_ampl);
+  }
+
+  tmp_ampl->SetNIn(count_is);
+  CheckAmplitude(tmp_ampl);
+  p_actual->UpdateAmplitude(tmp_ampl);
+
+  msg_Debugging() << "Amplitude after Make kinematics: " << *tmp_ampl << "\n";
+  tmp_ampl=NULL;
+
   return 1;
 }
 
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
   p_actual=act;
+
+  Cluster_Amplitude * cl_tmp = Cluster_Amplitude::New();
+  cl_tmp = SingletToAmplitude(act, cl_tmp);
+  msg_Debugging() << "Amplitude from Singlet: " << *cl_tmp<< "\n" ;
+  p_actual->UpdateAmplitude(cl_tmp);
+  cl_tmp=NULL;
+
+
   Vec4D mom;
   double kt2win;
   if (p_actual->NLO()&128) {
@@ -417,6 +470,11 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 			       p_actual->NME()+nem>=m_maxpart));
       msg_Debugging()<<"stat = "<<kstat<<"\n";
       if (kstat<0) continue;
+      /* TODO fusing: implement the following change from rel-2-2-x somewhere:
+-       if (vstat==0) {
++       //next line: special treatment for Qcut=Infinity, needed for fusing with massive calculation
++       if (vstat==0 || (p_actual->JF()->Ycut() > 1.0 && p_actual->NLO()&2)) {
+      */
       if (p_actual->NLO()&64) {
 	msg_Debugging()<<"UNLOPS veto\n";
 	p_actual->Reduce();
@@ -698,3 +756,45 @@ void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
   m_kinIF.SetMS(ms);
   m_kinII.SetMS(ms);
 }
+
+ATOOLS::Cluster_Amplitude *  Shower::SingletToAmplitude(const Singlet * sing, ATOOLS::Cluster_Amplitude * ampl){
+  size_t is(0);
+  for (Singlet::const_iterator it=sing->begin();it!=sing->end();++it){
+      Parton *parton = *it;
+      if(parton->GetType()==pst::IS){
+          PartonToAmplitude(parton, ampl);
+          is++;
+      }
+  }
+  for (Singlet::const_iterator it=sing->begin();it!=sing->end();++it){
+      Parton *parton = *it;
+      if(parton->GetType()==pst::FS)   PartonToAmplitude(parton, ampl);
+  }
+  ampl->SetNIn(is);
+  CheckAmplitude(ampl);
+  return ampl;
+}
+
+
+void Shower::PartonToAmplitude(const Parton *parton, Cluster_Amplitude * ampl){
+  ampl->CreateLeg(parton->Momentum(), parton->GetFlavour(),parton->Col(),parton->Id());
+  // TODO: treat colors correctly. not needed so far
+  ATOOLS::Cluster_Leg * leg = ampl->Legs().back();
+  leg->SetFromDec(parton->FromDec());
+  if (parton->GetType()==pst::IS) leg->SetMom(-leg->Mom());
+  if(ampl->KT2()==0){
+      ampl->SetKT2(parton->KtStart());
+    }
+}
+
+void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){
+  ATOOLS::Vec4D check;
+  for(ClusterLeg_Vector::const_iterator it=ampl->Legs().begin(); it !=ampl->Legs().end(); ++it){
+      ATOOLS::Cluster_Leg *leg = *it;
+      check+=leg->Mom();
+  }
+  msg_Debugging() << " mom sum: " << check << "\n";
+  //problematic: hadron decays, where the decaying hadron does not show up in the amplitude since its not a parton
+
+}
+
