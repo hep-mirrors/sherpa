@@ -9,7 +9,8 @@
 namespace PHASIC {
 
   using Coeff_Map_Key = std::pair<EWSudakov_Log_Type, Leg_Index_Set>;
-  using Coeff_Map_Value = std::vector<Complex>;
+  using Coeff_Value = std::pair<Complex, Complex>;
+  using Coeff_Map_Value = std::vector<Coeff_Value>;
   using Coeff_Map = std::map<Coeff_Map_Key, Coeff_Map_Value>;
 
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key&);
@@ -24,20 +25,20 @@ namespace PHASIC {
     void CalculateSpinAmplitudeCoeffs();
 
     /// calculate LSC L(s) coefficient
-    Complex LsCoeff(Complex amplvalue,
-                    std::vector<int> spincombination,
-                    size_t spinidx);
+    Coeff_Value LsCoeff(Complex amplvalue,
+                        std::vector<int> spincombination,
+                        size_t spinidx);
 
     /// calculate Z contribution to LSC l(s) coefficient
-    Complex lsZCoeff(Complex amplvalue,
-                     std::vector<int> spincombination,
-                     size_t spinidx);
+    Coeff_Value lsZCoeff(Complex amplvalue,
+                         std::vector<int> spincombination,
+                         size_t spinidx);
 
     /// calculate SSC l(s) coefficients
-    Complex lsLogROverSCoeffs(Complex amplvalue,
-                              std::vector<int> spincombination,
-                              size_t spinidx,
-                              const Two_Leg_Indizes& indizes);
+    Coeff_Value lsLogROverSCoeffs(Complex amplvalue,
+                                  std::vector<int> spincombination,
+                                  size_t spinidx,
+                                  const Two_Leg_Indizes& indizes);
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
     double DiagonalCew(const Flavour&, int pol) const;

@@ -78,7 +78,7 @@ Complex Sudakov::deltaEW(const double s)
 
   for (const auto& coeffkv : m_coeffs) {
     for (const auto c_val : coeffkv.second) {
-      res += c_val * logs[coeffkv.first];
+      res += c_val.first * logs[coeffkv.first];
     }
   }
 
@@ -144,18 +144,20 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       continue;
     Complex B0i{ value * std::conj(value) };
     for (auto& coeffkv : m_coeffs)
-      coeffkv.second[i] *= B0i;
+      coeffkv.second[i].first *= B0i;
   }
 }
 
-Complex Sudakov::LsCoeff(Complex amplvalue,
-                         std::vector<int> spincombination,
-                         size_t spinidx)
+Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
+                             std::vector<int> spincombination,
+                             size_t spinidx)
 {
-  Complex coeff{ 0.0 };
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
-    coeff -= DiagonalCew(flav, spincombination[i]) / 2.0;
+    const auto diagonal = DiagonalCew(flav, spincombination[i]) / 2.0;
+    coeff.first -= diagonal;
+    coeff.second -= diagonal;
     if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
@@ -175,32 +177,34 @@ Complex Sudakov::LsCoeff(Complex amplvalue,
       const auto rotated = amplit->second[0].Get(rotatedspincombination);
       const auto unrotated = amplvalue;
       assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-      // TODO: minus sign not understood here!
-      coeff -= prefactor * rotated / unrotated;
+      coeff.first += prefactor * rotated / unrotated;
+      coeff.second -= prefactor * rotated / unrotated;
     }
   }
   return coeff;
 }
 
-Complex Sudakov::lsZCoeff(Complex amplvalue,
-                          std::vector<int> spincombination,
-                          size_t spinidx)
+Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
+                              std::vector<int> spincombination,
+                              size_t spinidx)
 {
-  Complex coeff{ 0.0 };
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
     // 1/m_cw2 = (mZ/mW)^2 !!! 
-    coeff += IZ2(flav, spincombination[i]) * std::log(1.0/m_cw2);
+    const auto contrib = IZ2(flav, spincombination[i]) * std::log(1.0/m_cw2);
+    coeff.first += contrib;
+    coeff.second += contrib;
   }
   return coeff;
 }
 
-Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
-                                   std::vector<int> spincombination,
-                                   size_t spinidx,
-                                   const Two_Leg_Indizes& indizes)
+Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
+                                       std::vector<int> spincombination,
+                                       size_t spinidx,
+                                       const Two_Leg_Indizes& indizes)
 {
-  Complex coeff{ 0.0 };
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
 
   const auto k = indizes[0];
   const auto l = indizes[1];
@@ -212,12 +216,14 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
   // photon
   const auto IAk = -kflav.Charge();
   const auto IAl = -lflav.Charge();
-  coeff += 2*IAk*IAl;
+  coeff.first += 2*IAk*IAl;
+  coeff.second += 2*IAk*IAl;
 
   // Z
   const auto IZk = IZ(kflav, spincombination[k]);
   const auto IZl = IZ(lflav, spincombination[l]);
-  coeff += 2*IZk*IZl;
+  coeff.first += 2*IZk*IZl;
+  coeff.second += 2*IZk*IZl;
 
   // W
   for (int i{ 0 }; i < 2; ++i) {
@@ -242,12 +248,13 @@ Complex Sudakov::lsLogROverSCoeffs(Complex amplvalue,
       const auto unrotated = amplvalue;
       assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
       // TODO: understand why we need to use abs here when calculating coeffs
-      // for ee->mumu, but when we want to calculate coeffs for ee->uu, we can
-      // use the (expected) unmodified ratio; is this connected to the
+      // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
+      // can use the (expected) unmodified ratio; is this connected to the
       // extraneous minus sign in Sudakov::LsCoeff?
       //const auto amplratio = std::abs(rotated/unrotated);
       const auto amplratio = rotated/unrotated;
-      coeff += 2*Ik*Il*amplratio;
+      coeff.first += 2*Ik*Il*amplratio;
+      coeff.second += 2*Ik*Il*std::abs(amplratio);
     }
   }
   return coeff;
