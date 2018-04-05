@@ -231,6 +231,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
     const auto Ik = Ipm(kflav, spincombination[k], kplus);
     const auto Il = Ipm(lflav, spincombination[l], !kplus);
     if (Ik != 0.0 && Il != 0.0) {
+      msg_Debugging() << "calc {" << k << ", " << l << "} i=" << i << std::endl;
       // TODO: remove duplication when calculating ampl ratios
       auto amplit = m_sscwspinampls.find(indizes);
       if (amplit == m_sscwspinampls.end()) {
@@ -253,8 +254,11 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
       // extraneous minus sign in Sudakov::LsCoeff?
       //const auto amplratio = std::abs(rotated/unrotated);
       const auto amplratio = rotated/unrotated;
+      DEBUG_VAR(amplratio);
       coeff.first += 2*Ik*Il*amplratio;
-      coeff.second += 2*Ik*Il*std::abs(amplratio);
+      const auto amplratio2
+        = Complex{ std::abs(amplratio.real()), amplratio.imag() };
+      coeff.second += 2*Ik*Il*amplratio2;
     }
   }
   return coeff;
