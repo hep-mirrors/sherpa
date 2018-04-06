@@ -382,8 +382,18 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
       else
         return -sign * (3*m_cw2 + m_sw2) / (6*m_sw*m_cw);
     }
+  } else if (flav.Kfcode() == kf_Wplus) {
+    if (pol == 2) {
+      // TODO: understand extra minus sign here to get same results as in ref
+      // with the Coeff Checker
+      return -sign * (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+    } else {
+      return sign * m_cw/m_sw;
+    }
   } else {
-    THROW(not_implemented, "Missing implementation");
+    MyStrStream s;
+    s << "Missing implementation for flavour: " << flav;
+    THROW(not_implemented, s.str());
   }
 }
 
@@ -398,8 +408,13 @@ double Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
     else if (!flav.IsAnti() && (isplus != isfermionplus))
       return  1 / (sqrt(2)*m_sw);
     return 0.0;
+  } else if (flav.Kfcode() == kf_Wplus) {
+    // TODO: This is just a placeholder
+    return 0.0;
   } else {
-    THROW(not_implemented, "Missing implementation");
+    MyStrStream s;
+    s << "Missing implementation for flavour: " << flav;
+    THROW(not_implemented, s.str());
   }
 }
 

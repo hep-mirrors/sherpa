@@ -141,6 +141,37 @@ Coefficient_Checker::ReferenceCoeffs()
     mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 2, 2}] = 0.45;
     mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.98;
     mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.98;
+
+    // TODO: add contributions from W loops
+    // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
+    // reference, because their process is ordered differently with the
+    // contributions considered so far (no W loops), this just means that we
+    // have to swap the minus sign between t-ch and u-ch compared to the
+    // reference; another issue is the extra minus sign we still have to
+    // understand in the IZ for longitudinal W bosons
+    // LT t-ch;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
+    // LT u-ch
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47;
+    // RL t-ch
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
+    // RL u-ch
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
+    // LL t-ch
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
+    // LL u-ch
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88;
+
     auto& mapPP = coeffs["2_2__e-__e+__P__P"];
     mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
     mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
