@@ -362,6 +362,7 @@ double Sudakov::IZ2(const Flavour& flav, int pol) const
 double Sudakov::IZ(const Flavour& flav, int pol) const
 {
   const auto sign = (flav.IsAnti() ? -1 : 1);
+  static auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
   if (flav.IsScalar())
     THROW(not_implemented,
           "non-diagonal Z coupling terms for scalars not implemented");
@@ -369,7 +370,7 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
     if (pol == 0)
       return sign * m_sw/m_cw;
     else
-      return sign * (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+      return sign * IZLefthandedLepton;
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
@@ -384,9 +385,13 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
     }
   } else if (flav.Kfcode() == kf_Wplus) {
     if (pol == 2) {
-      // TODO: understand extra minus sign here to get same results as in ref
-      // with the Coeff Checker
-      return -sign * (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+      // add an extra minus sign here wrt the corresponding lepton coupling,
+      // because W+ is the particle, whereas W- is the anti-particle, and
+      // they correspond via the Goldstone boson equivalence theorem to the
+      // positron (anti-particle) and the electron (particle) respectively;
+      // i.e. the roles of the particle/anti-particle swap wrt the
+      // correspondence
+      return -sign * IZLefthandedLepton;
     } else {
       return sign * m_cw/m_sw;
     }
