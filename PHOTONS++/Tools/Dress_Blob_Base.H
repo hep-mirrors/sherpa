@@ -77,6 +77,7 @@ namespace PHOTONS {
       virtual void   ResetVariables() = 0;
       virtual void   ReturnMomenta() = 0;
       virtual void   DetermineKappa() = 0;
+      virtual void   DetermineQAndKappa() = 0;
 
     public:
       Dress_Blob_Base();

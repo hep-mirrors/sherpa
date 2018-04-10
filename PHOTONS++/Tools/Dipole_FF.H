@@ -19,6 +19,7 @@ namespace PHOTONS {
       virtual void   ResetVariables();
       virtual void   ReturnMomenta();
       virtual void   DetermineKappa();
+      virtual void   DetermineQAndKappa();
 
     public:
       Dipole_FF(const Particle_Vector_Vector&);

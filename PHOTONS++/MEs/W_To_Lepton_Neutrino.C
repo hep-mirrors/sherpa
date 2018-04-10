@@ -62,7 +62,7 @@ void W_To_Lepton_Neutrino::BoostOriginalPVVToMultipoleCMS() {
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
   p_boost->Boost(p1);
-  p_rot   = new Poincare(p1,Vec4D(0.,0.,0.,1.));
+  p_rot   = new Poincare(p1,Vec4D(0.,0.,0.,-1.));
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
     Vec4D vec = m_olddipole[i]->Momentum();
     p_boost->Boost(vec);
@@ -107,6 +107,7 @@ void W_To_Lepton_Neutrino::FillMomentumArrays
     for (unsigned int i=0; i<pvv_one[4].size(); i++) {
       m_softphotons.push_back(pvv_one[4][i]);
       m_K = CalculateMomentumSum(m_softphotons);
+      DetermineQAndKappa();
       CorrectMomenta();
       m_moms1[i][0] = m_newdipole[0]->Momentum();
       m_moms1[i][1] = m_newdipole[1]->Momentum();
