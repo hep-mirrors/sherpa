@@ -159,5 +159,6 @@ Cluster * Gluon_Splitter::MakeCluster() {
   // Make new particle
   Proto_Particle * newp12 = new Proto_Particle(m_newflav1,newmom12,'l');
   // Take care of sequence in cluster = triplet + anti-triplet
-  return (m_barrd?new Cluster(newp12,p_part1):new Cluster(p_part1,newp12));
+  Cluster * cluster(m_barrd?new Cluster(newp12,p_part1):new Cluster(p_part1,newp12));
+  return cluster;
 }

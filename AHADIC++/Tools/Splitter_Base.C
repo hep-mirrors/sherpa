@@ -116,21 +116,27 @@ void Splitter_Base::PopFlavours() {
 
 void Splitter_Base::DetermineMinimalMasses() {
   if (!m_flavs1.first.IsGluon() && !m_flavs1.second.IsGluon()) {
-    m_minQ_1 = Min(Max(0.,p_singletransitions->GetLightestMass(m_flavs1)),
-		   p_doubletransitions->GetLightestMass(m_flavs1));
+    m_minQ_1 = p_doubletransitions->GetLightestMass(m_flavs1);
+  if (!m_flavs1.first.IsDiQuark() && !m_flavs1.second.IsDiQuark()) 
+    m_minQ_1 = Min(m_minQ_1,
+		   Max(0.,p_singletransitions->GetLightestMass(m_flavs1)));
   }
   else {
     m_minQ_1 = (p_constituents->Mass(m_flavs1.first)+
     		p_constituents->Mass(m_flavs1.second));
   }
   if (!m_flavs2.first.IsGluon() && !m_flavs2.second.IsGluon()) {
-    m_minQ_2 = Min(Max(0.,p_singletransitions->GetLightestMass(m_flavs2)),
-		   p_doubletransitions->GetLightestMass(m_flavs2));
+    m_minQ_2 = p_doubletransitions->GetLightestMass(m_flavs2);
+  if (!m_flavs2.first.IsDiQuark() && !m_flavs2.second.IsDiQuark()) 
+    m_minQ_2 = Min(m_minQ_2,
+		   Max(0.,p_singletransitions->GetLightestMass(m_flavs2)));
   }
   else {
     m_minQ_2 = (p_constituents->Mass(m_flavs2.first)+
     		p_constituents->Mass(m_flavs2.second));
   }
+  //msg_Out()<<METHOD<<"("<<m_flavs1.first<<"+"<<m_flavs1.second<<" --> "<<m_minQ_1<<", "
+  //	   <<m_flavs2.first<<"+"<<m_flavs2.second<<" --> "<<m_minQ_2<<").\n";
   m_minQ_12 = sqr(m_minQ_1);
   m_minQ_22 = sqr(m_minQ_2);
 }

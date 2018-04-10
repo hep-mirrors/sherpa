@@ -85,7 +85,11 @@ bool Singlet_Checker::operator()() {
       }
       // more than two partons - fusing partons may help in retry.
       // if fusing does not work we will re-try the event
-      else if (!FusePartonsInLowMassSinglet()) return false;
+      else if (!FusePartonsInLowMassSinglet()) {
+	msg_Error()<<METHOD<<" throws error - fusing didn't work out.\n"
+		   <<(*p_singlet)<<"\n";
+	return false;
+      }
     }
     // everything is fine -- the singlet can go on as normal.
     else lsit++;
@@ -93,7 +97,7 @@ bool Singlet_Checker::operator()() {
   // invoking the rescue system, if neccessary.
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throw error - no rescue possible.\n";
+      msg_Error()<<METHOD<<" throws error - no rescue possible.\n";
       return false;
     }
   }
@@ -123,7 +127,8 @@ bool Singlet_Checker::CheckSinglet() {
     plit1++;
   }
   // is gluon "ring" must also check for pair made of first and last particle
-  if (m_isring) {
+  if (p_singlet->front()->Flavour().IsGluon() &&
+      p_singlet->back()->Flavour().IsGluon()) {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
     if (!CheckMass(p_part1,p_part2)) return false;
