@@ -1,0 +1,4 @@
+.SConstruct
+.sconsign.dblite
+Userhook_Example.os
+libSherpaUserhookExample.so

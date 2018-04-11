@@ -14,6 +14,7 @@ libSherpaTools_la_SOURCES = \
     Output_HepEvt.C \
     Output_LHEF.C \
     Analysis_Interface.C \
+    Userhook_Base.C \
     Variations.C
 
 localinc_HEADERS = \
@@ -27,6 +28,7 @@ localinc_HEADERS = \
     Output_HepEvt.H \
     Output_LHEF.H \
     Analysis_Interface.H \
+    Userhook_Base.H \
     Variations.H
 
 libSherpaTools_la_LIBADD = @CONDITIONAL_HEPMC3LIBS@ @CONDITIONAL_HEPMC2LIBS@  @CONDITIONAL_LHAPDFLIBS@

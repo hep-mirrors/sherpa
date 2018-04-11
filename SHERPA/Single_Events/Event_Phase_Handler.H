@@ -13,6 +13,7 @@ namespace SHERPA {
       Perturbative        =    1,
       Hadronization       =    2,
       Analysis            =   10,
+      Userhook            =   20,
       Read_In             =   90
     };
   };// end of struct eph
