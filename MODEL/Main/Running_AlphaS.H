@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace PDF { struct PDF_Base; }
+namespace PDF { class PDF_Base; }
 
 namespace MODEL {
 
