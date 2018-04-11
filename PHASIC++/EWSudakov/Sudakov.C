@@ -239,7 +239,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         msg_Debugging() << "spin {" << spincombination[k]
                             << ", " << spincombination[l]
                             << "}" << std::endl;
-        // TODO: remove duplication when calculating ampl ratios
+        // TODO: remove code duplication when calculating ampl ratios
         const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
         auto amplit = m_sscwspinampls.find(key);
         if (amplit == m_sscwspinampls.end()) {
@@ -258,7 +258,6 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
         // can use the (expected) unmodified ratio; is this connected to the
         // extraneous minus sign in Sudakov::LsCoeff?
-        //const auto amplratio = std::abs(rotated/unrotated);
         const auto amplratio = rotated/unrotated;
         DEBUG_VAR(amplratio);
         coeff.first += 2*kcoupling.second*lcoupling.second*amplratio;
