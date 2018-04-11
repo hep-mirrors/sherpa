@@ -159,18 +159,17 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
     coeff.first -= diagonal;
     coeff.second -= diagonal;
     if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
+      const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
       const auto prefactor = -NondiagonalCew() / 2.0;
       auto amplit = m_lsczspinampls.find(i);
       if (amplit == m_lsczspinampls.end()) {
-        auto& rotatedampl =
-            m_ampls.Rotated(EWSudakov_Amplitude_Type::LSCZ, {i});
+        auto& rotatedampl = m_ampls.Rotated({std::make_pair(i, newkf)});
         m_comixinterface.FillSpinAmplitudes(m_lsczspinampls[i], rotatedampl);
         amplit = m_lsczspinampls.find(i);
       }
-      auto& legpermutation = m_ampls.LegPermutation(
-          EWSudakov_Amplitude_Type::LSCZ, {i});
+      auto& legpermutation = m_ampls.LegPermutation({std::make_pair(i, newkf)});
       std::vector<int> rotatedspincombination;
       for (const auto& idx : legpermutation)
         rotatedspincombination.push_back(spincombination[idx]);
@@ -228,37 +227,45 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
   // W
   for (int i{ 0 }; i < 2; ++i) {
     const auto kplus = (i == 0);
-    const auto Ik = Ipm(kflav, spincombination[k], kplus);
-    const auto Il = Ipm(lflav, spincombination[l], !kplus);
-    if (Ik != 0.0 && Il != 0.0) {
-      msg_Debugging() << "calc {" << k << ", " << l << "} i=" << i << std::endl;
-      // TODO: remove duplication when calculating ampl ratios
-      auto amplit = m_sscwspinampls.find(indizes);
-      if (amplit == m_sscwspinampls.end()) {
-        auto& rotatedampl =
-          m_ampls.Rotated(EWSudakov_Amplitude_Type::SSCW, {k, l});
-        m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[indizes], rotatedampl);
-        amplit = m_sscwspinampls.find(indizes);
+    const auto kcouplings = Ipm(kflav, spincombination[k], kplus);
+    const auto lcouplings = Ipm(lflav, spincombination[l], !kplus);
+
+    for (const auto kcoupling : kcouplings) {
+      for (const auto lcoupling : lcouplings) {
+        msg_Debugging() << "calc {" << k << ", " << l << "} i=" << i << std::endl;
+        msg_Debugging() << "flav {" << kcoupling.first
+                            << ", " << lcoupling.first
+                            << "}" << std::endl;
+        msg_Debugging() << "spin {" << spincombination[k]
+                            << ", " << spincombination[l]
+                            << "}" << std::endl;
+        // TODO: remove duplication when calculating ampl ratios
+        const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
+        auto amplit = m_sscwspinampls.find(key);
+        if (amplit == m_sscwspinampls.end()) {
+          auto& rotatedampl = m_ampls.Rotated(key);
+          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
+          amplit = m_sscwspinampls.find(key);
+        }
+        auto& legpermutation = m_ampls.LegPermutation(key);
+        std::vector<int> rotatedspincombination;
+        for (const auto& idx : legpermutation)
+          rotatedspincombination.push_back(spincombination[idx]);
+        const auto rotated = amplit->second[0].Get(rotatedspincombination);
+        const auto unrotated = amplvalue;
+        assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+        // TODO: understand why we need to use abs here when calculating coeffs
+        // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
+        // can use the (expected) unmodified ratio; is this connected to the
+        // extraneous minus sign in Sudakov::LsCoeff?
+        //const auto amplratio = std::abs(rotated/unrotated);
+        const auto amplratio = rotated/unrotated;
+        DEBUG_VAR(amplratio);
+        coeff.first += 2*kcoupling.second*lcoupling.second*amplratio;
+        const auto amplratio2
+          = Complex{ std::abs(amplratio.real()), amplratio.imag() };
+        coeff.second += 2*kcoupling.second*lcoupling.second*amplratio2;
       }
-      auto& legpermutation = m_ampls.LegPermutation(
-          EWSudakov_Amplitude_Type::SSCW, {k, l});
-      std::vector<int> rotatedspincombination;
-      for (const auto& idx : legpermutation)
-        rotatedspincombination.push_back(spincombination[idx]);
-      const auto rotated = amplit->second[0].Get(rotatedspincombination);
-      const auto unrotated = amplvalue;
-      assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-      // TODO: understand why we need to use abs here when calculating coeffs
-      // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
-      // can use the (expected) unmodified ratio; is this connected to the
-      // extraneous minus sign in Sudakov::LsCoeff?
-      //const auto amplratio = std::abs(rotated/unrotated);
-      const auto amplratio = rotated/unrotated;
-      DEBUG_VAR(amplratio);
-      coeff.first += 2*Ik*Il*amplratio;
-      const auto amplratio2
-        = Complex{ std::abs(amplratio.real()), amplratio.imag() };
-      coeff.second += 2*Ik*Il*amplratio2;
     }
   }
   return coeff;
@@ -367,10 +374,17 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
     THROW(not_implemented,
           "non-diagonal Z coupling terms for scalars not implemented");
   if (flav.IsLepton()) {
-    if (pol == 0)
+    if (pol == 0) {
+      if (flav.IsUptype())
+        THROW(fatal_error, "Right-handed neutrino are not supported");
       return sign * m_sw/m_cw;
-    else
-      return sign * IZLefthandedLepton;
+    } else {
+      if (flav.IsUptype())
+        return sign / (2*m_sw*m_cw);
+      else
+        return sign * IZLefthandedLepton;
+    }
+
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
@@ -402,23 +416,37 @@ double Sudakov::IZ(const Flavour& flav, int pol) const
   }
 }
 
-double Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
+Couplings Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
 {
-  if (pol == 0)
-    return 0.0;
   if (flav.IsFermion()) {
+    if (pol == 0)
+      return {};
     const auto isfermionplus = flav.IsUptype();
     if (flav.IsAnti() && (isplus == isfermionplus))
-      return -1 / (sqrt(2)*m_sw);
+      return { {flav.IsoWeakPartner().Kfcode(), -1 / (sqrt(2)*m_sw)} };
     else if (!flav.IsAnti() && (isplus != isfermionplus))
-      return  1 / (sqrt(2)*m_sw);
-    return 0.0;
+      return { {flav.IsoWeakPartner().Kfcode(),  1 / (sqrt(2)*m_sw)} };
+    else
+      return {};
+
   } else if (flav.Kfcode() == kf_Wplus) {
-    // TODO: This is just a placeholder
-    return 0.0;
+    if (pol == 2) {
+      // TODO: remove this placeholder
+      return {};
+    } else {
+      // cf. (B.26) and (B.27)
+      if (isplus != flav.IsAnti())
+        return {};
+      return {
+        {kf_photon, isplus ? -1.0 : 1.0},
+        {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}
+      };
+    }
+
   } else {
     MyStrStream s;
-    s << "Missing implementation for flavour: " << flav;
+    s << "Missing implementation for flavour: " << flav
+      << " (pol: " << pol << ')';
     THROW(not_implemented, s.str());
   }
 }

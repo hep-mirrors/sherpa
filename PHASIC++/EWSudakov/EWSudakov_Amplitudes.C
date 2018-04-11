@@ -11,7 +11,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 const EWSudakov_Amplitudes::Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
-= std::make_pair(EWSudakov_Amplitude_Type::Base, Leg_Index_Set{});
+= Leg_Set{};
 
 EWSudakov_Amplitudes::EWSudakov_Amplitudes(
     Process_Base* proc, const std::set<EWSudakov_Log_Type>& activecoeffs):
@@ -22,24 +22,20 @@ EWSudakov_Amplitudes::EWSudakov_Amplitudes(
 
 Cluster_Amplitude& EWSudakov_Amplitudes::Unrotated() noexcept
 {
-  return Rotated(s_baseamplkey.first, s_baseamplkey.second);
+  return Rotated(s_baseamplkey);
 }
 
-Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(EWSudakov_Amplitude_Type type,
-                                                 Leg_Index_Set indizes)
+Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(const Leg_Set& legs)
 {
-  const auto key = std::make_pair(type, indizes);
-  const auto it = ampls.find(key);
+  const auto it = ampls.find(legs);
   if (it == ampls.end())
     THROW(fatal_error, "Rotated amplitude not found");
   return *(it->second);
 }
 
-std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(
-    EWSudakov_Amplitude_Type type, Leg_Index_Set indizes)
+std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(const Leg_Set& legs)
 {
-  const auto key = std::make_pair(type, indizes);
-  const auto it = permutations.find(key);
+  const auto it = permutations.find(legs);
   if (it == permutations.end())
     THROW(fatal_error, "Permutation not found");
   return it->second;
@@ -48,9 +44,7 @@ std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
   for (auto& ampl : ampls) {
-    const auto ampltype = ampl.first.first;
-    const auto legindizes = ampl.first.second;
-    const auto& permutation = LegPermutation(ampltype, legindizes);
+    const auto& permutation = LegPermutation(ampl.first);
     for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
       ampl.second->Leg(i)->SetMom(mom[permutation[i]]);
     }
@@ -63,34 +57,64 @@ EWSudakov_Amplitudes::CreateAmplitudes(
     const std::set<EWSudakov_Log_Type>& activecoeffs) const
 {
   Cluster_Amplitude_UPM ampls;
+
+  // create unmodified amplitude
   const auto& baseampl
-    = ampls.insert(std::make_pair(s_baseamplkey, CreateAmplitude(proc))).first->second;
+    = ampls.insert(std::make_pair(s_baseamplkey,
+                                  CreateAmplitude(proc))).first->second;
+
   // create amplitudes needed for Z/photon interference terms
   if (activecoeffs.find(EWSudakov_Log_Type::Ls) != activecoeffs.end()) {
     for (size_t i{ 0 }; i < baseampl->Legs().size(); ++i) {
       const auto flav = baseampl->Leg(i)->Flav();
-      if (flav.IsPhoton() || flav.Kfcode() == kf_Z) {
-        const auto key
-          = std::make_pair(EWSudakov_Amplitude_Type::LSCZ, Leg_Index_Set{i});
-        ampls.insert(std::make_pair(key, CreateLSCZAmplitude(baseampl, i)));
+      int newkf{ kf_none };
+      if (flav.IsPhoton())
+        newkf = kf_Z;
+      else if (flav.Kfcode() == kf_Z)
+        newkf = kf_photon;
+      if (newkf != kf_none) {
+        ampls.insert({
+          Leg_Set{ {i, newkf} },
+          CreateRotatedAmplitude(baseampl, {{i, Flavour(newkf)}})
+        });
       }
     }
   }
+
   // create amplitudes needed for W loops
   if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
     for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
       for (size_t l{ 0 }; l < k; ++l) {
         const auto kflav = baseampl->Leg(k)->Flav();
         const auto lflav = baseampl->Leg(l)->Flav();
-        const auto newkflav = kflav.IsoWeakPartner();
-        const auto newlflav = lflav.IsoWeakPartner();
-        if (kflav.IntCharge() + lflav.IntCharge()
-            != newkflav.IntCharge() + newlflav.IntCharge())
-          continue;
-        const auto key
-          = std::make_pair(EWSudakov_Amplitude_Type::SSCW, Leg_Index_Set{k, l});
-        ampls.insert(std::make_pair(
-              key, CreateSSCWAmplitude(baseampl, Two_Leg_Indizes{k, l})));
+
+        // collect transformed particles
+        Flavour_Vector newkflavs, newlflavs;
+        if (kflav.IsLepton() || kflav.IsQuark()) {
+          newkflavs.push_back(kflav.IsoWeakPartner());
+        } else if (kflav.Kfcode() == kf_Wplus) {
+          newkflavs.push_back(Flavour(kf_Z));
+          newkflavs.push_back(Flavour(kf_photon));
+        }
+        if (lflav.IsLepton() || lflav.IsQuark()) {
+          newlflavs.push_back(lflav.IsoWeakPartner());
+        } else if (lflav.Kfcode() == kf_Wplus) {
+          newlflavs.push_back(Flavour(kf_Z));
+          newlflavs.push_back(Flavour(kf_photon));
+        }
+
+        // create valid amplitudes
+        for (const auto newkflav : newkflavs) {
+          for (const auto newlflav : newlflavs) {
+            if (kflav.IntCharge() + lflav.IntCharge()
+                != newkflav.IntCharge() + newlflav.IntCharge())
+              continue;
+            ampls.insert({
+              Leg_Set{ {k, newkflav.Kfcode()}, {l, newlflav.Kfcode()} },
+              CreateRotatedAmplitude(baseampl, {{k, newkflav}, {l, newlflav}})
+            });
+          }
+        }
       }
     }
   }
@@ -114,34 +138,13 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base* proc)
   return ampl;
 }
 
-Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateLSCZAmplitude(
-    const Cluster_Amplitude_UP& ampl, size_t legindex)
+Cluster_Amplitude_UP
+EWSudakov_Amplitudes::CreateRotatedAmplitude(const Cluster_Amplitude_UP& ampl,
+                                             const LegIndex_Flavour_Map& flavs)
 {
   auto campl = CopyClusterAmpl(ampl);
-  auto* leg = campl->Leg(legindex);
-  auto flav = leg->Flav();
-  Flavour newflav;
-  // TODO: generalise to other flavours, and, when generalised, migrate to
-  // Flavour class where it belongs
-  if (flav.IsPhoton())
-    newflav = Flavour{kf_Z};
-  else if (flav.Kfcode() == kf_Z)
-    newflav = Flavour{kf_photon};
-  leg->SetFlav(newflav);
-  return campl;
-}
-
-Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSSCWAmplitude(
-    const Cluster_Amplitude_UP& ampl, Two_Leg_Indizes indizes)
-{
-  DEBUG_FUNC(*ampl);
-  msg_Debugging() << "indizes: " << indizes[0] << indizes[1] << std::endl;
-  assert(indizes[0] > indizes[1]);
-  auto campl = CopyClusterAmpl(ampl);
-  for (const auto& i : indizes) {
-    auto* leg = campl->Leg(i);
-    auto newflav = leg->Flav().IsoWeakPartner();
-    leg->SetFlav(newflav);
+  for (const auto& kv : flavs) {
+    campl->Leg(kv.first)->SetFlav(kv.second);
   }
   return campl;
 }
@@ -152,17 +155,11 @@ EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
   Permutation_Map permutations;
   for (const auto& kv : ampls) {
     std::vector<size_t> permutation;
-    switch (kv.first.first) {
-      case EWSudakov_Amplitude_Type::Base:
-        permutation.resize(kv.second->Legs().size());
-        std::iota(std::begin(permutation), std::end(permutation), 0);
-        break;
-      case EWSudakov_Amplitude_Type::LSCZ:
-      case EWSudakov_Amplitude_Type::SSCW:
-        permutation = CalculateLegPermutation(kv.second);
-        break;
-      default:
-        THROW(not_implemented, "Missing implementation");
+    if (kv.first.empty()) {
+      permutation.resize(kv.second->Legs().size());
+      std::iota(std::begin(permutation), std::end(permutation), 0);
+    } else {
+      permutation = CalculateLegPermutation(kv.second);
     }
     permutations.insert(std::make_pair(kv.first, permutation));
   }

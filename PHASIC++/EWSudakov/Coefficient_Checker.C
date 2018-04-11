@@ -144,21 +144,19 @@ Coefficient_Checker::ReferenceCoeffs()
 
     // TODO: add contributions from W loops
     // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
-    // reference, because their process is ordered differently with the
-    // contributions considered so far (no W loops), this just means that we
-    // have to swap the minus sign between t-ch and u-ch compared to the
-    // reference; another issue is the extra minus sign we still have to
-    // understand in the IZ for longitudinal W bosons
+    // reference (and vice versa), because their process is ordered differently
+    // NOTE: if two contributions are given separately, the first is the N-loop
+    // and the second the W-loop contribution
     // LT t-ch;
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
     // LT u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47;
     // RL t-ch
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;

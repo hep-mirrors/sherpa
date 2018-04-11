@@ -53,7 +53,7 @@ namespace PHASIC {
     double IZ(const Flavour&, int pol) const;
 
     /// calculate the coupling to W plus/minus
-    double Ipm(const Flavour&, int pol, bool isplus) const;
+    Couplings Ipm(const Flavour& flav, int pol, bool isplus) const;
 
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
@@ -71,7 +71,7 @@ namespace PHASIC {
     // intermediate results
     mutable Coeff_Map m_coeffs;
     mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_lsczspinampls;
-    mutable std::map<Two_Leg_Indizes, std::vector<Spin_Amplitudes>> m_sscwspinampls;
+    mutable std::map<Leg_Set, std::vector<Spin_Amplitudes>> m_sscwspinampls;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
   };
 }
