@@ -93,7 +93,6 @@ ATOOLS::Blob* Mixing_Handler::PerformMixing(Particle* decayer) const
       mixingblob->AddToInParticles(decayer);
       mixingblob->AddToOutParticles(mixed_part);
       mixingblob->SetPosition(decayer->ProductionBlob()->Position());
-      mixingblob->SetStatus(blob_status::needs_hadrondecays);
       return mixingblob;
     }
   }

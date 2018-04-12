@@ -99,9 +99,7 @@ Decay_Matrix* Hadron_Decay_Handler::FillDecayTree(Blob * blob, Spin_Density* s0)
 {
   Blob* mixingblob=p_mixinghandler->PerformMixing(blob->InParticle(0));
   if (mixingblob) {
-    Blob_List::iterator bit;
-    for (bit=p_bloblist->begin();bit!=p_bloblist->end();++bit) 
-      if (*bit==blob) p_bloblist->erase(bit);
+    p_bloblist->Delete(blob);
     p_bloblist->push_back(mixingblob);
     CreateDecayBlob(mixingblob->OutParticle(0));
     return Decay_Handler_Base::FillDecayTree
