@@ -25,9 +25,7 @@ ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
 
 Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl()
 {
-  // links all amplitude from this vector and return the linked, single amplitude
-
-  //connect all amplitudes
+  // links all amplitudes from this amplitude vector and return the linked, single amplitude
   if (this->size()==0) return Cluster_Amplitude::New();
   Cluster_Amplitude * tmp = this->at(0)->CopyAll();
   for(int i=1; i< this->size(); i++){

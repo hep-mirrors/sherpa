@@ -218,7 +218,7 @@ void CS_Shower::CleanUp()
 {
   m_nem=0;
   for (All_Singlets::const_iterator 
-        sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
+         sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();

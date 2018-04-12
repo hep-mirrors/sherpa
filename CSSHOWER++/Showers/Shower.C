@@ -323,7 +323,7 @@ int Shower::MakeKinematics
   Vec4D pef(split->FixSpec()), psf(spect->FixSpec());
 
 
-  // first step for amplitude: create parton list
+  // first step for the amplitude: create parton list
   Singlet *s_test = split->GetSing();
   Parton_List p_list;
   for (Singlet::const_iterator it=s_test->begin();it!=s_test->end();++it){
@@ -422,14 +422,13 @@ int Shower::MakeKinematics
   split->GetSing()->SplitParton(split,pi,pj);
 
 
-  // second step of filling the amplitude
-
+  // add missing particles to parton list
   p_list.push_back(pi);
   p_list.push_back(pj);
   p_list.push_back(spect);
 
-  //  p_list now contains all relevant partons. add first the IS partons and
-  //     afterwards the FS partons to theamplitude
+  /*  p_list now contains all relevant partons. add first the IS partons and
+      afterwards the FS partons to the amplitude*/
 
   Cluster_Amplitude * tmp_ampl = Cluster_Amplitude::New();
   size_t count_is(0);
@@ -536,6 +535,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       if (p_actual->JF()) {
 	int vstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2,fc));
+	//next line: special treatment for Qcut=Infinity, needed for fusing with massive calculation
 	if (vstat==0 || (p_actual->JF()->Ycut() > 1.0 && p_actual->NLO()&2)) {
 	  if (p_actual->NLO()&2) {
 	    msg_Debugging()<<"Skip first truncated emission, K = "
@@ -660,37 +660,19 @@ void Shower::PartonToAmplitude(const Parton *parton, Cluster_Amplitude * ampl){
   ATOOLS::Cluster_Leg * leg = ampl->Legs().back();
   leg->SetFromDec(parton->FromDec());
   if (parton->GetType()==pst::IS) leg->SetMom(-leg->Mom());
+  if(ampl->KT2()==0){
+      ampl->SetKT2(parton->KtStart());
+    }
 }
 
 void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){
-  /*Four momentum cross check. buggy, if one uses only Amplitudes from Singlets, since there
-   * the initial state partons are the one entering the ME and not the real initial state partons*/
-
   ATOOLS::Vec4D check;
   for(ClusterLeg_Vector::const_iterator it=ampl->Legs().begin(); it !=ampl->Legs().end(); ++it){
       ATOOLS::Cluster_Leg *leg = *it;
       check+=leg->Mom();
   }
   msg_Debugging() << " mom sum: " << check << "\n";
+  //problematic: hadron decays, where the decaying hadron does not show up in the amplitude since its not a parton
 
-  //problem: hadron decays, where the decaying hadron does not show up in the amplitude since its not a parton
-
-  /*
-  bool error = false;
- if (ampl->NIn()!=0){
-  if ((check[0]*check[0]) >rpa->gen.Accu()) error=true;
-  if ((check[1]*check[1])>rpa->gen.Accu()) error=true;
-  if ((check[2]*check[2]) >rpa->gen.Accu()) error=true;
-  if ((check[3]*check[3]) >rpa->gen.Accu()) error=true;
-} else msg_Debugging() << "Incomplete Amplitude, no initial state particle. Assume hadron decay and continue. \n";
-
-if (error){
-    msg_Error() << "Warning: four momentum not conserved! {\n";
-    msg_Debugging() << check;
-    msg_Debugging() << *ampl;
-    msg_Debugging() << "} \n";
-
-  }
-  */
 }
 

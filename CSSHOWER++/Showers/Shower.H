@@ -30,6 +30,7 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
+
     double m_weight;
 
     SHERPA::Variation_Weights * p_variationweights;

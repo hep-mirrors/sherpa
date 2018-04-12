@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
 
 #include <vector>
 #include <map>
@@ -43,8 +44,9 @@ namespace ATOOLS {
     static ClusterAmplitude_PVector s_ampls;
 
     friend class ClusterAmplitude_PVector;
+    friend class SP(ATOOLS::Cluster_Amplitude);
 
-  public: //protected:
+  protected:
 
     Cluster_Amplitude(Cluster_Amplitude *const prev=NULL);
 
