@@ -643,11 +643,13 @@ bool Blob::IsConnectedTo(const btp::code &type,
   checked.insert(this);
   if (Type()==type) return true;
   for (int i(0);i<NOutP();++i) 
-    if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked)) 
-      return true;
+    if (ConstOutParticle(i)->DecayBlob())
+      if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked))
+        return true;
   for (int i(0);i<NInP();++i) 
-    if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked)) 
-      return true;
+    if (ConstInParticle(i)->ProductionBlob())
+      if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked))
+        return true;
   return false;
 }
 
