@@ -51,6 +51,24 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
   }
 }
 
+double EWSudakov_Amplitudes::MandelstamS()
+{
+  const auto& ampl = Unrotated();
+  return (ampl.Leg(0)->Mom() + ampl.Leg(1)->Mom()).Abs2();
+}
+
+double EWSudakov_Amplitudes::MandelstamT()
+{
+  const auto& ampl = Unrotated();
+  return (ampl.Leg(0)->Mom() - ampl.Leg(2)->Mom()).Abs2();
+}
+
+double EWSudakov_Amplitudes::MandelstamU()
+{
+  const auto& ampl = Unrotated();
+  return (ampl.Leg(0)->Mom() - ampl.Leg(3)->Mom()).Abs2();
+}
+
 EWSudakov_Amplitudes::Cluster_Amplitude_UPM
 EWSudakov_Amplitudes::CreateAmplitudes(
     Process_Base* proc,

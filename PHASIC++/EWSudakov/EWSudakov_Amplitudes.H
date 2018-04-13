@@ -7,7 +7,8 @@
 #include <memory>
 #include <map>
 
-// TODO: Migrate this to Cluster_Amplitude on trunk and use it everywhere
+// TODO: Migrate this to Cluster_Amplitude on master and use it everywhere
+// when doing this we can get rid of custom smart pointers on master
 namespace ATOOLS {
   auto delAmpl = [](Cluster_Amplitude* ampl) { ampl->Delete(); };
   using Cluster_Amplitude_UP =
@@ -54,6 +55,9 @@ namespace PHASIC {
     size_t NumberOfLegs() noexcept { return Unrotated().Legs().size(); }
 
     void UpdateMomenta(const ATOOLS::Vec4D_Vector& mom);
+    double MandelstamS();
+    double MandelstamT();
+    double MandelstamU();
 
     Cluster_Amplitude_UPM::iterator begin() { return ampls.begin(); }
     Cluster_Amplitude_UPM::iterator end() { return ampls.end(); }

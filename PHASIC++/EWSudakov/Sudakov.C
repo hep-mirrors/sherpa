@@ -260,10 +260,32 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         // extraneous minus sign in Sudakov::LsCoeff?
         const auto amplratio = rotated/unrotated;
         DEBUG_VAR(amplratio);
-        coeff.first += 2*kcoupling.second*lcoupling.second*amplratio;
+        auto contribution = 2*kcoupling.second*lcoupling.second*amplratio;
         const auto amplratio2
           = Complex{ std::abs(amplratio.real()), amplratio.imag() };
-        coeff.second += 2*kcoupling.second*lcoupling.second*amplratio2;
+        auto contribution2 = 2*kcoupling.second*lcoupling.second*amplratio2;
+
+        // this is a hack for an easier comparison with the Denner/Pozzorini
+        // ref; it turns out it only affects the result by a few permille and
+        // is probably not responsible for the observed deviations in the eeWW
+        // LT W-loop contributions, which are larger
+        if ((k == 2 && l == 1) || (k == 3 && l == 0)) {
+          std::cout << spincombination << std::endl;
+          if (spincombination[0] == 1 && spincombination[1] == 1
+              && (spincombination[2] != spincombination[3])) {
+            if (kflav.Kfcode() == kf_Wplus && lflav.Kfcode() == kf_e) {
+              const auto t = m_ampls.MandelstamT();
+              const auto u = m_ampls.MandelstamU();
+              const auto fac = (1 - u/t);
+              DEBUG_VAR(fac);
+              contribution /= fac;
+              contribution2 /= fac;
+            }
+          }
+        }
+
+        coeff.first += contribution;
+        coeff.second += contribution2;
       }
     }
   }
