@@ -51,6 +51,8 @@ Makefile.in
 /Manual/Sherpa.html
 *.l[ao]
 *.o
+*.so
+*.dylib
 .libs
 Git_Info.C
 Git_Info.C.tmp.bak

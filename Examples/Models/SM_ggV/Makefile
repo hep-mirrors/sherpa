@@ -12,11 +12,18 @@ LDFLAGS=$(shell $(SHERPA_PREFIX)/bin/Sherpa-config --ldflags)
 
 OBJECTS=$(SOURCES:.C=.o)
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	LIB_SUFFIX=dylib
+else
+	LIB_SUFFIX=so
+endif
+
 all: $(SOURCES) $(OBJECTS) 
-	$(CC) -shared -o libSherpaSMGGV.so $(OBJECTS) $(LDFLAGS)
+	$(CC) -shared -o libSherpaSMGGV.$(LIB_SUFFIX) $(OBJECTS) $(LDFLAGS)
 
 .C.o:
 	$(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJECTS) libSherpaSMGGV.so
+	rm -rf $(OBJECTS) libSherpaSMGGV.$(LIB_SUFFIX)

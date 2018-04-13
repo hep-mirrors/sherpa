@@ -36,6 +36,7 @@ namespace MODEL {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace MODEL;
