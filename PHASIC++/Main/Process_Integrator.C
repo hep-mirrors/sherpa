@@ -91,7 +91,7 @@ double Process_Integrator::Sigma2() const
 	       <<p_proc->Name()<<"' \\in '"<<p->Process()->Name()
 	       <<"', m_sn = "<<m_sn<<" vs. p->m_sn = "
 	       <<p->m_sn<<"."<<std::endl;
-    if (msg_LevelIsTracking()) exh->GenerateStackTrace(std::cout);
+    if (msg_LevelIsTracking()) DO_STACK_TRACE;
   }
   if (m_sn<2) return 0.0;
   return 1.0/

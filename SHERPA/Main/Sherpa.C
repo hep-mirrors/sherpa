@@ -38,7 +38,7 @@ Sherpa::Sherpa() :
   p_filter(nullptr)
 {
   ATOOLS::mpi = new My_MPI();
-  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::exh = new Terminator_Object_Handler();
   ATOOLS::msg = new Message();
   ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();

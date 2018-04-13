@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #ifdef USING__ROOT
 #include "Riostream.h"
 #include "TTree.h"

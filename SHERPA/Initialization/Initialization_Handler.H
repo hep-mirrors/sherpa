@@ -2,7 +2,7 @@
 #define SHERPA_Initialization_Initialization_Handler_H
 
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"

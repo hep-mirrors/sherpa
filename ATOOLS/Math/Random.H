@@ -4,7 +4,7 @@
 #include <fstream>
 #include <stddef.h>
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
 namespace ATOOLS {

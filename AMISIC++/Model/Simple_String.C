@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;

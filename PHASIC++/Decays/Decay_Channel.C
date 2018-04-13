@@ -43,12 +43,14 @@ bool Decay_Channel::FlavourSort(const Flavour &fl1,const Flavour &fl2)
   if (kf1>kf2) return true;
   if (kf1<kf2) return false;
   /*
-      anti anti -> true
+      anti anti -> false
       anti part -> false
       part anti -> true
-      anti anti -> true
+      part part -> false
       */
-  return !(fl1.IsAnti()&&!fl2.IsAnti());
+
+  if (!fl1.IsAnti() && fl2.IsAnti()) return true;
+  else return false;
 }
 
 

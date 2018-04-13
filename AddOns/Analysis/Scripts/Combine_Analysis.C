@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include <termios.h>
@@ -52,7 +53,7 @@ int main(int argc,char **argv)
 #ifdef USING__MPI
   MPI::Init(argc,argv);
 #endif
-  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::exh = new Terminator_Object_Handler();
   ATOOLS::msg = new Message();
   if (argc<3){
     PrintInfo();

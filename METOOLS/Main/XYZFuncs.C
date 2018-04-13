@@ -113,7 +113,7 @@ void XYZFunc::CalcEtaMu()
         THROW(not_implemented, "");
     }
     m_eta.push_back( _m_eta );
-    Complex help( p_flav[i].HadMass(), 0. );
+    Complex help = Complex( ((pi*pi>0.)?sqrt(pi*pi):0.0), 0. );
     m_mu.push_back( help/m_eta[i] );
     if((p_flav[i].IsAnti() && m_anti==false) ||
        (!p_flav[i].IsAnti() && m_anti==true)) m_mu[i] *= -1.;
@@ -224,6 +224,7 @@ Complex XYZFunc::Z( const int t1, const int t2, const int t3, const int t4,
 			  z -= m_mu[t1]*m_mu[t3]*m_eta[t2]*m_eta[t4]*cL1*cR2;
 			  z -= m_mu[t2]*m_mu[t4]*m_eta[t1]*m_eta[t3]*cR1*cL2;
 			  z *= -2.;
+			  break;
   case 7	: z  = S(+1,t2,t4)*m_mu[t1]*cL1;
 			  z -= S(+1,t1,t4)*m_mu[t2]*cR1;
 			  z *= -2.*m_eta[t3]*cL2;
@@ -238,6 +239,7 @@ Complex XYZFunc::Z( const int t1, const int t2, const int t3, const int t4,
 			  z -= m_mu[t1]*m_mu[t3]*m_eta[t2]*m_eta[t4]*cR1*cL2;
 			  z -= m_mu[t2]*m_mu[t4]*m_eta[t1]*m_eta[t3]*cL1*cR2;
 			  z *= -2.;
+			  break;
   case 10	: z  = Complex( 0., 0. );
 			  break;
   case 11	: z  = S(-1,t3,t1)*m_mu[t2]*cL1;
@@ -410,8 +412,8 @@ Complex XYZFunc::Y(
 {
   const int hel_comb = (l1<<1) + l2;
   return m_anti?
-    conj(Y(t2,t1,hel_comb,conj(cL),conj(cR))):
-    Y(t2,t1,hel_comb,cR,cL);
+    conj(Y(t1,t2,hel_comb,conj(cL),conj(cR))):
+    Y(t1,t2,hel_comb,cR,cL);
 }
 
 Complex XYZFunc::X( 
@@ -422,8 +424,8 @@ Complex XYZFunc::X(
 {
   const int hel_comb = (l1<<1) + l3;
   return m_anti?
-    conj(X(t3,p2,t1,hel_comb,conj(cR),conj(cL))):
-    X(t3,p2,t1,hel_comb,cR,cL);
+    conj(X(t1,conj(p2),t3,hel_comb,conj(cR),conj(cL))):
+    X(t1,p2,t3,hel_comb,cR,cL);
 }
 
 Complex XYZFunc::G(

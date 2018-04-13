@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Default_Reader.H"

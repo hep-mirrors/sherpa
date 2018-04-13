@@ -22,7 +22,7 @@ libToolsOrg_la_SOURCES        = \
 				Getter_Function.C \
 				My_MPI.C \
 				Exception.C \
-				Exception_Handler.C \
+				Terminator_Objects.C \
 				My_File.C \
 				File_IO_Base.C \
 				Read_Write_Base.C \
@@ -32,6 +32,7 @@ libToolsOrg_la_SOURCES        = \
 				Run_Parameter.C \
 				MyTiming.C \
 				Message.C \
+				Stacktrace.C \
 				IO_Handler.C \
 				Info_Key.C \
 				Integration_Info.C \
@@ -55,7 +56,7 @@ localinc_HEADERS         =	\
 			Getter_Function.C \
 			My_MPI.H \
 			Exception.H \
-			Exception_Handler.H \
+			Terminator_Objects.H \
 			My_File.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
@@ -66,6 +67,7 @@ localinc_HEADERS         =	\
 			My_Limits.H \
 			Run_Parameter.H \
 			Message.H \
+			Stacktrace.H \
 			MyTiming.H \
 			IO_Handler.H \
 			MyStrStream.H \

@@ -53,6 +53,8 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
     Erase(part1);
     return true;
   }
+  msg_Debugging()<<METHOD<<" tries to combine two partons:\n"
+		 <<(*part1)<<"\n"<<(*part2)<<".\n";
   return false;
 }
 

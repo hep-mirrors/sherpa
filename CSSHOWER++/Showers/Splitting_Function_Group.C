@@ -1,4 +1,5 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Group.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/Random.H"
 
 using namespace CSSHOWER;

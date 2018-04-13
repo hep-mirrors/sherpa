@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 
 

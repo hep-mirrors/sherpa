@@ -244,59 +244,6 @@ void Process_Base::UpdateIntegrator
 {
 }
 
-class Order_Flavour {
-  FMMap* p_fmm;
-  int Order_SVFT(const Flavour &a,const Flavour &b) 
-  {
-    if (a.IsScalar() && !b.IsScalar()) return 1;
-    if (a.IsVector() && !b.IsScalar() && 
-	!b.IsVector()) return 1;
-    if (a.IsFermion() && !b.IsFermion() && 
-	!b.IsScalar() && !b.IsVector()) return 1;
-    return 0;
-  }
-  int Order_Multi(const Flavour &a,const Flavour &b)
-  {
-    if ((*p_fmm)[int(a.Kfcode())]==0 || 
-	(*p_fmm)[int(b.Kfcode())]==0) return 0;
-    if ((*p_fmm)[int(a.Kfcode())]>
-	(*p_fmm)[int(b.Kfcode())]) return 1;
-    return 0;
-  }
-  int Order_Photons(const Flavour &a,const Flavour &b)
-  {
-    if (a.Strong() && a.Mass() && b.IsPhoton()) return 1;
-    return 0;
-  }
-
-  int operator()(const Flavour &a,const Flavour &b)
-  {
-    if (a.Priority()>b.Priority()) return 1;
-    if (a.Priority()<b.Priority()) return 0;
-    if (Order_Photons(a,b)) return 1;
-    if (Order_Photons(b,a)) return 0;
-    if (!a.Strong()&&b.Strong()) return 1;
-    if (a.Strong()&&!b.Strong()) return 0;
-    if (a.Mass()>b.Mass()) return 1;
-    if (a.Mass()<b.Mass()) return 0;
-    if (p_fmm) {
-      if (Order_Multi(a,b)) return 1;
-      if (Order_Multi(b,a)) return 0;
-    }
-    if (Order_SVFT(a,b)) return 1;
-    if (Order_SVFT(b,a)) return 0;
-    if (!a.IsAnti()&&b.IsAnti()) return 1;
-    if (a.IsAnti()&&!b.IsAnti()) return 0;
-    return a.Kfcode()<b.Kfcode();
-  }
-public:
-  Order_Flavour(FMMap* fmm): p_fmm(fmm) {}
-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
-  { return (*this)(a.m_fl,b.m_fl); }
-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
-  { return (*this)(a->Flav(),b->Flav()); }
-};// end of class Order_Flavour
-
 class Order_NDecay {
 public:
   int operator()(const Decay_Info *a,const Decay_Info *b)

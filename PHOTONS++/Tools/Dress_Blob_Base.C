@@ -15,6 +15,7 @@
 #include "PHOTONS++/Tools/Generate_One_Photon.H"
 #include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 #include <iomanip>
 

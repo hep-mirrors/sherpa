@@ -2,7 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Constituents.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include <cassert>
 
 using namespace AHADIC;
