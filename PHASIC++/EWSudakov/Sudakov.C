@@ -53,7 +53,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
     This function gives 2 Re(delta), the rest is handled by KFactor.C
   */
 
-  const auto born { p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor() };
+  const auto born = p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor();
   return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real()/born;
 }
 

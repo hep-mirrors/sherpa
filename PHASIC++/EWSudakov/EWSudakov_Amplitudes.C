@@ -91,10 +91,10 @@ EWSudakov_Amplitudes::CreateAmplitudes(
       else if (flav.Kfcode() == kf_Z)
         newkf = kf_photon;
       if (newkf != kf_none) {
-        ampls.insert({
-          Leg_Set{ {i, newkf} },
-          CreateRotatedAmplitude(baseampl, {{i, Flavour(newkf)}})
-        });
+        auto ampl = std::make_pair(
+            Leg_Set{ {i, newkf} },
+            CreateRotatedAmplitude(baseampl, {{i, Flavour(newkf)}}));
+        ampls.insert(std::move(ampl));
       }
     }
   }
@@ -127,10 +127,10 @@ EWSudakov_Amplitudes::CreateAmplitudes(
             if (kflav.IntCharge() + lflav.IntCharge()
                 != newkflav.IntCharge() + newlflav.IntCharge())
               continue;
-            ampls.insert({
-              Leg_Set{ {k, newkflav.Kfcode()}, {l, newlflav.Kfcode()} },
-              CreateRotatedAmplitude(baseampl, {{k, newkflav}, {l, newlflav}})
-            });
+	    auto ampl = std::make_pair(
+                Leg_Set{ {k, newkflav.Kfcode()}, {l, newlflav.Kfcode()} },
+                CreateRotatedAmplitude(baseampl, {{k, newkflav}, {l, newlflav}}));
+            ampls.insert(std::move(ampl));
           }
         }
       }
