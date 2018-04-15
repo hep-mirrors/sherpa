@@ -125,6 +125,8 @@ void PDF_Base::ShowSyntax(const size_t i)
 
 
 bool PDF_Base::Contains(const ATOOLS::Flavour &a) const
-{if (m_force_4f && (abs(a.Kfcode())==5 || abs(a.Kfcode())==6)) return false;
- return m_partons.find(a)!=m_partons.end();
+{
+  if (m_force_4f && (a.Kfcode()==5 || a.Kfcode()==6))
+    return false;
+  return m_partons.find(a)!=m_partons.end();
 }
