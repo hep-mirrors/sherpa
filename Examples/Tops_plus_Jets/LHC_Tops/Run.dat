@@ -35,7 +35,7 @@
 }(run)
 
 (processes){
-  Process : 93 93 ->  6 -6 93{NJET};
+  Process 93 93 ->  6 -6 93{NJET};
   Order (*,0); CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET};
   ME_Generator Amegic {LJET};

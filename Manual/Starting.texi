@@ -558,7 +558,7 @@ with the results plus integration errors written to the screen.
 
 For the example, the @code{(processes)} section alters to
 @verbatim
-  Process : 21 1 -> 11 -11 1
+  Process 21 1 -> 11 -11 1
   Order (*,2);
   End process
 @end verbatim
