@@ -5,8 +5,8 @@
 #define PARAMETER_TYPE PDF::Shower_Key
 #define EXACTMATCH false
 #include "ATOOLS/Org/Getter_Function.C"
-
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 
 using namespace PDF;
 using namespace ATOOLS;

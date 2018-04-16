@@ -72,11 +72,10 @@ namespace SHERPA {
     // inline functions
     inline double Weight() const { return m_weight; }
     
-    inline Matrix_Element_Handler *MEHandler() { return p_me; }
-
-    ATOOLS::Cluster_Amplitude *Amplitude() const { return p_ampl; }
-
-    Shower_Handler* Shower() { return p_shower; }
+    inline Matrix_Element_Handler    * MEHandler() const { return p_me; }
+    inline ATOOLS::Cluster_Amplitude * Amplitude() const { return p_ampl; }
+    inline Shower_Handler            * Shower() { return p_shower; }
+    inline MI_Handler                * MIHandler()  const { return p_mi; }
 
   };// end of class Perturbative_Interface
 

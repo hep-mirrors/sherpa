@@ -124,8 +124,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AMISICDIR="\${top_srcdir}/AMISIC++"
   AMISICBUILDDIR="\${top_builddir}/AMISIC++"
   AMISICLIBS="\${AMISICBUILDDIR}/Main/libAmisic.la \
-	\${AMISICBUILDDIR}/Tools/libAmisicTools.la \
-	\${AMISICBUILDDIR}/Model/libAmisicModel.la"
+        \${AMISICBUILDDIR}/Tools/libAmisicTools.la \
+        \${AMISICBUILDDIR}/Perturbative/libAmisicPerturbative.la"
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICBUILDDIR)
   AC_SUBST(AMISICLIBS)
@@ -261,13 +261,20 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   PDFDIR="\${top_srcdir}/PDF"
   PDFBUILDDIR="\${top_builddir}/PDF"
-  PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant"
-  PDFLIBS="\${PDFBUILDDIR}/Main/libPDF.la \
-	\${PDFBUILDDIR}/Remnant/libRemnant.la"
+  PDFINCS="-I\${PDFDIR}/Main"
+  PDFLIBS="\${PDFBUILDDIR}/Main/libPDF.la"
   AC_SUBST(PDFDIR)
   AC_SUBST(PDFBUILDDIR)
   AC_SUBST(PDFLIBS)
   
+  REMNANTSDIR="\${top_srcdir}/REMNANTS"
+  REMNANTSBUILDDIR="\${top_builddir}/REMNANTS"
+  REMNANTSLIBS="\${REMNANTSBUILDDIR}/Tools/libRemnantsTools.la \
+        \${REMNANTSBUILDDIR}/Main/libRemnants.la"
+  AC_SUBST(REMNANTSDIR)
+  AC_SUBST(REMNANTSBUILDDIR)
+  AC_SUBST(REMNANTSLIBS)
+
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
   PHASICLIBS="\${PHASICBUILDDIR}/Main/libPhasicMain.la \

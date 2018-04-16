@@ -3,27 +3,19 @@
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/Shower_Base.H"
 
-namespace MODEL { class Model_Base; }
-
-namespace PDF { 
-
-  class Shower_Base;
-
-}
+namespace MODEL    { class Model_Base; }
+namespace REMNANTS { class Remnants_Handler; }
 
 namespace SHERPA {
 
   class Shower_Handler {
   private:
-
     PDF::Shower_Base *p_shower;
     PDF::ISR_Handler *p_isr;       
-
     std::string m_name;
-
   public:
-
     //constructor
     Shower_Handler(const std::string &dir,const std::string &file,
 		   MODEL::Model_Base *const model,PDF::ISR_Handler *const isr,
@@ -38,12 +30,13 @@ namespace SHERPA {
     void  CleanUp();
 
     // inline functions
-    inline PDF::Shower_Base *GetShower()     { return p_shower; }
-    inline PDF::ISR_Handler *GetISRHandler() { return p_isr;    }
-
-    inline std::string ShowerGenerator() { return m_name; }
-
-    inline bool On() { return p_shower!=NULL; }
+    inline PDF::Shower_Base  * GetShower()     { return p_shower; }
+    inline PDF::ISR_Handler  * GetISRHandler() { return p_isr;    }
+    inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
+      p_shower->SetRemnants(remnants);
+    } 
+    inline std::string ShowerGenerator()     { return m_name; }
+    inline bool On()                         { return p_shower!=NULL; }
 
   };
   typedef std::map<PDF::isr::id, Shower_Handler*> Shower_Handler_Map;

@@ -41,6 +41,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       msg_Error()<<"Couldn't deal with 2-parton singlet.\n"<<(*singlet)<<"\n";
       exit(1);
     }
+    delete p_singlet;
     return flag;
   }
   m_origsize=p_singlet->size();
@@ -77,6 +78,8 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       else 
 	p_singlet->pop_back();
     case 0:
+      //msg_Out()<<METHOD<<": Step("<<part1<<", "<<part2<<") yields 0, now "
+      //	       <<p_singlet->size()<<" partons in singlet.\n";
       break;
     case -1:
     default:

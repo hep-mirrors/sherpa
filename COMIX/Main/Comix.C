@@ -7,8 +7,8 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/My_MPI.H"
 
-namespace MODEL  { class Model_Base;   }
-namespace PDF    { class Remnant_Base; }
+namespace MODEL    { class Model_Base;   }
+//namespace REMNANTS { class Remnant_Base; }
 
 namespace COMIX {
 
@@ -62,7 +62,7 @@ namespace COMIX {
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
-#include "PDF/Remnant/Remnant_Base.H"
+//#include "REMNANTS/Main/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Shell_Tools.H"

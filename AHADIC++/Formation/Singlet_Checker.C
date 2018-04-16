@@ -55,8 +55,8 @@ Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
 {}
 
 Singlet_Checker::~Singlet_Checker() {
-  msg_Out()<<METHOD<<" with "<<m_direct_transitions
-	   <<" direct enforced transitions in total.\n";
+  msg_Tracking()<<METHOD<<" with "<<m_direct_transitions
+		<<" direct enforced transitions in total.\n";
 }
 
 void Singlet_Checker::Init() {
@@ -98,6 +98,12 @@ bool Singlet_Checker::operator()() {
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
       msg_Error()<<METHOD<<" throws error - no rescue possible.\n";
+      if (msg_LevelIsTracking()) {
+	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
+	     bit!=m_badones.end();bit++) {
+	  msg_Out()<<(***bit)<<"\n";
+	}
+      }
       return false;
     }
   }
@@ -289,8 +295,8 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   if (totmom.Abs2()<sqr(totmass)) {
     for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
 	 tit!=m_transitions.end();tit++,i++) {
-      msg_Out()<<"Singlet with "<<tit->first->Momentum()<<" --> "
-	       <<tit->second<<" ("<<tit->second.Mass()<<")\n";
+      msg_Debugging()<<"Singlet with "<<tit->first->Momentum()<<" --> "
+		     <<tit->second<<" ("<<tit->second.Mass()<<")\n";
     }
     delete[] moms;
     delete[] masses;

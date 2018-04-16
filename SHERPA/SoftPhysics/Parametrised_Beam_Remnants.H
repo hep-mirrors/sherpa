@@ -2,7 +2,7 @@
 #define SHERPA_SoftPhysics_Parametrised_Beam_Remnants_H
 
 #include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "SHERPA/SoftPhysics/Primordial_KPerp.H"
@@ -13,7 +13,7 @@ namespace SHERPA {
   class Parametrised_Beam_Remnants {
   private:
     PDF::ISR_Handler           * p_isr;
-    PDF::Remnant_Base          * p_beampart[2];
+    REMNANTS::Remnant_Base     * p_beampart[2];
     Primordial_KPerp           * p_kperp;
 
     ATOOLS::Blob               * p_beamblob[2];
@@ -36,12 +36,12 @@ namespace SHERPA {
 					     ATOOLS::Particle_List *const=NULL);
 
     // inline functions
-    inline PDF::Remnant_Base * BeamParticle(const size_t i) const { 
+    inline REMNANTS::Remnant_Base * BeamParticle(const size_t i) const { 
       return p_beampart[i]; 
     }
     inline void SetBeamBlob(ATOOLS::Blob * const blob,const int & beam) {
-      p_beampart[beam]->Clear();
-      p_beampart[beam]->ClearErrors();
+      p_beampart[beam]->Reset();
+      p_beampart[beam]->ResetErrors();
       p_beamblob[beam] = blob;
     }
     inline void SetScale(const double & scale) {

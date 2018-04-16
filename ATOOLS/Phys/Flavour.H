@@ -317,14 +317,11 @@ namespace ATOOLS {
 
   class Mass_Selector {
   public:
-
     virtual ~Mass_Selector();
-
-    virtual double Mass(const Flavour &fl) const = 0;
-
-    inline double Mass2(const Flavour &fl) const
-    { double m(Mass(fl)); return m*m; }
-
+    virtual double Mass(const Flavour &fl)  const = 0;
+    inline  double Mass2(const Flavour &fl) const {
+      double m(Mass(fl)); return m*m;
+    }
   };// end of class Mass_Selector
 
 }// end of namespace ATOOLS

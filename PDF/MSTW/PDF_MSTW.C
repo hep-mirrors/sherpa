@@ -14,7 +14,7 @@ namespace PDF {
 
     std::string m_path, m_file;
 
-    int    m_anti;
+    int    m_anti, m_nf;
     double m_x, m_Q2;
 
   public:

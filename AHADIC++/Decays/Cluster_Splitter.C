@@ -33,8 +33,6 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
   m_z2  = m_zselector(m_z2min,m_z2max);
   m_R12 = m_z1*(1.-m_z2)*m_Q2-m_kt2;
   m_R21 = (1.-m_z1)*m_z2*m_Q2-m_kt2;
-  //msg_Out()<<METHOD<<"("<<p_part1->Flavour()<<"/"<<m_newflav1<<", "<<m_R12<<", "<<m_minQ_1<<") "
-  //	   <<"("<<m_newflav2<<"/"<<p_part2->Flavour()<<", "<<m_R21<<", "<<m_minQ_2<<")\n";
   return CheckIfAllowed();
 }
 

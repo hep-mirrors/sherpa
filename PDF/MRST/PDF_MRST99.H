@@ -13,7 +13,7 @@ namespace PDF {
     static c_mrst * p_proton;
     s_partoncontent m_content;
     std::string     m_path;
-    int             m_anti;
+    int             m_anti, m_nf;
     bool            m_overscaled;
 
   public:

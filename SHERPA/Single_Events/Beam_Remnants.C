@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Beam_Remnants.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -7,7 +8,8 @@ using namespace std;
 Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler * _beamremnant) :
   p_beamremnanthandler(_beamremnant)
 {
-  m_name = "Beam_Remnants"+std::string(p_beamremnanthandler->Fill()?"":":None");
+  m_name = "Beam_Remnants:"+(p_beamremnanthandler->Fill()==1?
+			     p_beamremnanthandler->Name():string("None"));
   m_type = eph::Hadronization;
 }
 

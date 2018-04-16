@@ -4,6 +4,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
@@ -68,6 +69,7 @@ namespace SHERPA {
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
+    REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
@@ -160,12 +162,18 @@ namespace SHERPA {
 
     inline ATOOLS::Weight_Info WeightInfo() const { return m_evtinfo; }
 
-    inline BEAM::Beam_Spectra_Handler *GetBeam() const { return p_beam; }
-    inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }
-
-    inline void SetShowerHandler(Shower_Handler *const sh)       { p_shower=sh;           }
-    inline void SetVariationWeights(ATOOLS::Variation_Weights *const vw) { p_variationweights=vw; }
-
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
+      p_remnants = rh;
+    }
+    inline void SetShowerHandler(Shower_Handler *const sh) {
+      p_shower=sh;
+    }
+    inline void SetVariationWeights(ATOOLS::Variation_Weights *const vw) {
+      p_variationweights=vw;
+    }
+    inline BEAM::Beam_Spectra_Handler *GetBeam() const  { return p_beam; }
+    inline PDF::ISR_Handler           *GetISR() const   { return p_isr;  }
+    inline REMNANTS::Remnant_Handler  *Remnants() const { return p_remnants; }
     inline Shower_Handler *Shower() const { return p_shower; }
 
     inline double WeightFactor() const { return m_weightfactor; }

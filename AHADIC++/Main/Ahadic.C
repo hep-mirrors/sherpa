@@ -48,7 +48,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       switch (Hadronize(blob)) {
       case Return_Value::Success :
 	break;
-      case Return_Value::Retry_Event : 
+      case Return_Value::Retry_Event :
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
 		      <<"   Hadronization for blob "
@@ -78,13 +78,19 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 }  
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
+  //msg_Out()<<"######################################################################\n"
+  //       <<(*blob)<<"\n";
+  //	   <<"######################################################################\n"
+  //	   <<"######################################################################\n";
   Reset();
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
     msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
 	       <<(*blob);
+    //exit(1);
     Reset(blob);
+    Reset();
     return Return_Value::Retry_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
@@ -113,7 +119,6 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 
 bool Ahadic::ShiftBeamParticles()
 {
-  //msg_Out()<<METHOD<<"\n";
   if (!m_beamparticles()) {
     msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
@@ -123,7 +128,6 @@ bool Ahadic::ShiftBeamParticles()
 
 bool Ahadic::CheckSinglets()
 {
-  //msg_Out()<<METHOD<<"\n";
   if (!m_singletchecker()) {
     msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
@@ -132,7 +136,6 @@ bool Ahadic::CheckSinglets()
 }
 
 bool Ahadic::DecayGluons() {
-  //msg_Out()<<METHOD<<"\n";
   while (!m_singlet_list.empty()) {
     if (m_gluondecayer(m_singlet_list.front())) 
       m_singlet_list.pop_front();
@@ -145,14 +148,12 @@ bool Ahadic::DecayGluons() {
 }
 
 bool Ahadic::DecayClusters() {
-  //msg_Out()<<METHOD<<":\n"<<m_cluster_list<<"\n";
   bool success = m_clusterdecayer();
   if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 
 void Ahadic::FillOutgoingParticles(Blob * blob) {
-  //msg_Out()<<METHOD<<"\n";
   while (!m_hadron_list.empty()) {
     Particle * part = (*m_hadron_list.front())();
     part->SetNumber();
@@ -197,5 +198,6 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 }
 
 void Ahadic::CleanUp(Blob * blob) {
+  Reset();
   if(blob) blob->DeleteOutParticles(0);
 }

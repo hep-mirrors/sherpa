@@ -1,6 +1,5 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 
-#include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Default_Reader.H"
@@ -11,9 +10,9 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Shower_Handler::Shower_Handler
-(const std::string &dir,const std::string &file,
- MODEL::Model_Base *const model,PDF::ISR_Handler *const isr,const int type):
+Shower_Handler::Shower_Handler(const std::string &dir,const std::string &file,
+			       MODEL::Model_Base *const model,
+			       PDF::ISR_Handler *const isr,const int type):
   p_shower(NULL), p_isr(isr)
 {
   Default_Reader reader;

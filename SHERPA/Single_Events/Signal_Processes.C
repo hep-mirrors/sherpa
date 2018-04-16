@@ -149,7 +149,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     }
     if (p_remnants[i]!=NULL) {
       if (proc->NIn()>1) {
-      p_remnants[i]->QuickClear();
+	p_remnants[i]->Reset();
       if (!p_remnants[i]->TestExtract(particle)) success=false;
       }
     }

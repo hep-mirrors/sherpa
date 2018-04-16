@@ -15,19 +15,12 @@ namespace PHASIC {
 
   class ME_Generator_Base: public ATOOLS::Mass_Selector {
   private:
-
-    std::string m_name;
-
-    int m_massmode;
-
+    std::string         m_name;
     ATOOLS::Flavour_Set m_psmass;
-
-    ME_Generators *p_gens;
-
+    ME_Generators     * p_gens;
   protected:
-
+    int  m_massmode;
     void SetPSMasses(ATOOLS::Default_Reader *const);
-
   public :
 
     // constructor

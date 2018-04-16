@@ -3,10 +3,12 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
@@ -18,10 +20,8 @@
 #include <iostream> 
 
 namespace ATOOLS {
-
   class Default_Reader;
   class Variations;
-
 }
 
 namespace SHERPA {
@@ -42,24 +42,26 @@ namespace SHERPA {
   private :
     std::string m_path,m_file, m_evtform;
     std::set<std::string> m_pdflibs;
-    std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_showerdat;
-    std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
+    std::string m_modeldat, m_medat, m_midat, m_showerdat;
+    std::string m_beamdat, m_isrdat[2], m_beamremnantdat;
+    std::string m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
     std::string m_softcollisiondat, m_softphotonsdat;
     std::string m_processesdat;
     std::string m_selectordat;
     std::string m_momentadat;
 
-    double              m_bunch_splimits[2];
-    ATOOLS::Flavour     m_bunch_particles[2];
+    double          m_bunch_splimits[2];
+    ATOOLS::Flavour m_bunch_particles[2];
 
-    ATOOLS::Default_Reader *p_dataread;
+    ATOOLS::Default_Reader * p_dataread;
 
     eventtype::code m_mode;
-    bool m_savestatus;
+    bool            m_savestatus;
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
-    PDF::ISR_Handler_Map              m_isrhandlers;
+    PDF::ISR_Handler_Map         m_isrhandlers;
+    REMNANTS::Remnant_Handler  * p_remnants;
     Matrix_Element_Handler     * p_mehandler;
     Hard_Decay_Handler         * p_harddecays;
     Shower_Handler_Map           m_showerhandlers;
@@ -83,6 +85,7 @@ namespace SHERPA {
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
+    bool InitializeTheRemnants();
     bool InitializeTheMatrixElements();
     bool InitializeTheUnderlyingEvents();
     bool InitializeTheHardDecays();

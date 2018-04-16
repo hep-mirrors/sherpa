@@ -183,6 +183,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 	m_psmass.end()) run=true;
   }
   if (!run) return 1;
+
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
   Poincare boost(cms);

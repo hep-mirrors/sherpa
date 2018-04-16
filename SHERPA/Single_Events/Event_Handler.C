@@ -98,9 +98,8 @@ void Event_Handler::PrintGenericEventStructure()
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<p_variations->EventPhaseType()<<" : ";
-    msg_Out()<<p_variations->GetParametersVector()->size();
-    msg_Out()<<" variations"<<std::endl;
+    msg_Out()<<p_variations->EventPhaseType()<<" : "
+	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
   msg_Out()<<"---------------------------------------------------------\n";
 }
@@ -210,8 +209,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       continue;
     }
 
-    msg_Debugging()<<"trying phase: "<<(*pit)->Name();
+    //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<".\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
+    //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -231,11 +231,13 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
     case Return_Value::Nothing :
       ++pit;
       break;
-    case Return_Value::Retry_Phase : 
+    case Return_Value::Retry_Phase :
+      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
-    case Return_Value::Retry_Event : 
+    case Return_Value::Retry_Event :
+      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
@@ -254,7 +256,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
 		   <<" trials. Request new event.\n";
       }
-    case Return_Value::New_Event : 
+    case Return_Value::New_Event :
+      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();

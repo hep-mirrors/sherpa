@@ -1,7 +1,7 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
@@ -123,8 +123,7 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   double x(p_isr->CalcX(mom));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBeam(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_isr->GetRemnant(p->Beam())->
-    TestExtract(p->GetFlavour(),mom)?1:-1;
+  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,

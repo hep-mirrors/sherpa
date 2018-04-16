@@ -81,7 +81,6 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
 	       <<"   Masses & momenta:"<<std::endl;
     for (int i=n0;i<n;i++) msg_Error()<<"  "<<masses[i]<<" : "<<momenta[i]<<std::endl;
     return false;
-    Abort();
   }
   return false;
 }
@@ -91,9 +90,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
 {
   int n=0;
   if(momenta.size()==masses.size()) n = momenta.size();
-  else {
-    return false;
-  }
+  else return false;
   if ((n-n0)==2) {
     Vec4D cms         = momenta[n0]+momenta[n-1];
     Poincare boost(cms);
@@ -157,13 +154,12 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     delete [] oldens2;
     delete [] ens;
     msg_Error()<<"==================================================="<<std::endl
-	       <<"Warning in "<<METHOD<<" : "<<endl
+	       <<"Warning in "<<METHOD<<"(for n = "<<n<<"): "<<endl
 	       <<"   Not enough energy ("<<cms<<") for the "
 	       <<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
 	       <<"   Masses & momenta:"<<endl;
     for (int i=n0;i<n;i++) msg_Error()<<masses[i]<<" : "<<momenta[i]<<std::endl;
     return false;
-    Abort();
   }
   return false;
 }
@@ -273,13 +269,13 @@ bool Momenta_Stretcher::StretchBlob(Blob* blob)
     masses.push_back(outparts[i]->FinalMass());
     momenta.push_back(outparts[i]->Momentum());
     total+=outparts[i]->Momentum();
-// =======
-//   //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
-//   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
-//     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
-//     momenta.push_back( (*pit)->Momentum() );
-// //     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
-// >>>>>>> .merge-right.r13247
+    // =======
+    //   //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
+    //   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
+    //     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
+    //     momenta.push_back( (*pit)->Momentum() );
+    // //     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
+    // >>>>>>> .merge-right.r13247
   }
   Poincare cms(total);
   for (size_t i=0; i<momenta.size(); ++i) cms.Boost(momenta[i]);

@@ -6,10 +6,10 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet::Singlet() { }
+Singlet::Singlet() {}
 
 Singlet::~Singlet() {
-  while (size()>0) {
+  while (!empty()) {
     delete front();
     pop_front();
   }
@@ -89,7 +89,7 @@ std::ostream& AHADIC::operator<<(std::ostream & str,const Singlet & sing) {
        <<(*pliter)->Flavour()
        <<" (lead = "<<(*pliter)->IsLeading()<<", "
        <<"beam = "<<(*pliter)->IsBeam()<<")"
-       <<": "<<(*pliter)->Momentum()<<"\n";
+       <<": "<<(*pliter)->Momentum()<<"("<<(*pliter)->Momentum().Abs2()<<")\n";
   str<<"***********************************************************\n";
   return str;
 }

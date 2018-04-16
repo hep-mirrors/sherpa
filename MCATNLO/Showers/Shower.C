@@ -2,7 +2,7 @@
 #include "MCATNLO/Tools/Parton.H"
 #include "MCATNLO/Main/CS_Gamma.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"

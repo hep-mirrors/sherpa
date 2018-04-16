@@ -25,7 +25,7 @@ namespace PDF {
 
   class CT10_Fortran_Interface : public PDF_Base {
   private:
-    int         m_anti;
+    int         m_anti, m_nf;
     double      m_f[11], m_x, m_Q;
     bool        m_calculated[11];
 

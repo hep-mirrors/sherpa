@@ -123,7 +123,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/NNPDF/Makefile \
 	  PDF/CTEQ/Makefile \
 	  PDF/GRV/Makefile \
-	  PDF/Remnant/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
@@ -185,7 +184,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  DIM/Main/Makefile \
 	  DIM/Makefile \
 	  AMISIC++/Tools/Makefile \
-	  AMISIC++/Model/Makefile \
+	  AMISIC++/Perturbative/Makefile \
 	  AMISIC++/Main/Makefile \
 	  AMISIC++/Makefile \
 	  AHADIC++/Tools/Makefile \
@@ -204,7 +203,10 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           PHOTONS++/PhaseSpace/Makefile \
           PHOTONS++/MEs/Makefile \
 	  PHOTONS++/Makefile \
-	  SHRiMPS/Makefile \
+          REMNANTS/Main/Makefile \
+          REMNANTS/Tools/Makefile \
+	  REMNANTS/Makefile \
+ 	  SHRiMPS/Makefile \
 	  SHRiMPS/Main/Makefile \
 	  SHRiMPS/Event_Generation/Makefile \
 	  SHRiMPS/Beam_Remnants/Makefile \

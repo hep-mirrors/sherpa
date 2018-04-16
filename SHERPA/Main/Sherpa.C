@@ -181,108 +181,107 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-    if (m_evt_output_start>0 && m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
-      msg->SetLevel(m_evt_output);
-    }
+  if (m_evt_output_start>0 && m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
+    msg->SetLevel(m_evt_output);
+  }
   
+  if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
+    if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
+	rpa->gen.NumberOfGeneratedEvents()==0) {
+      std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
+      ran->WriteOutStatus(("random."+fname).c_str());
+    }
+  }
+  if (m_debugstep>=0) {
+    if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
+      ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+    else {
+      ran->ReadInStatus("random.0.dat");
+      ran->FastForward(m_debugstep);
+    }
+  }
+  
+  if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+  
+  if (reset) p_eventhandler->Reset();
+  if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-      if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
-	  rpa->gen.NumberOfGeneratedEvents()==0) {
-	std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
-	ran->WriteOutStatus(("random."+fname).c_str());
-      }
+      std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
+      std::ofstream eventout(("refevent."+fname).c_str());
+      eventout<<"# trial "<<rpa->gen.NumberOfTrials()-1<<std::endl;
+      eventout<<*p_eventhandler->GetBlobs()<<std::endl;
+      eventout.close();
     }
     if (m_debugstep>=0) {
-      if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
-	ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
-      else {
-	ran->ReadInStatus("random.0.dat");
-	ran->FastForward(m_debugstep);
-      }
+      std::ofstream event(("event."+ToString(m_debugstep)+".dat").c_str());
+      event<<*p_eventhandler->GetBlobs()<<std::endl;
+      event.close();
+      THROW(normal_exit,"Debug event written.");
     }
-
-    if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+    rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
+    Blob_List *blobs(p_eventhandler->GetBlobs());
+    if (m_filter && (*p_filter)(blobs)) {
+      msg_Out()<<"  -------------------------------------------------\n";
+      msg_Out()<<(*blobs)<<"\n"; 
+      msg_Out()<<"  -------------------------------------------------\n";
+    }
     
-    if (reset) p_eventhandler->Reset();
-    if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-        std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
-        std::ofstream eventout(("refevent."+fname).c_str());
-        eventout<<"# trial "<<rpa->gen.NumberOfTrials()-1<<std::endl;
-        eventout<<*p_eventhandler->GetBlobs()<<std::endl;
-        eventout.close();
-      }
-      if (m_debugstep>=0) {
-        std::ofstream event(("event."+ToString(m_debugstep)+".dat").c_str());
-        event<<*p_eventhandler->GetBlobs()<<std::endl;
-        event.close();
-        THROW(normal_exit,"Debug event written.");
-      }
-      rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
-      Blob_List *blobs(p_eventhandler->GetBlobs());
-      if (m_filter && (*p_filter)(blobs)) {
-	msg_Out()<<"  -------------------------------------------------\n";
-	msg_Out()<<(*blobs)<<"\n"; 
-	msg_Out()<<"  -------------------------------------------------\n";
-      }
-
-      /// Increase m_trials --- based on signal blob["Trials"] if existent
-      if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
-        m_trials+=1;
-	msg_Debugging()<<"  No Signal_Process Blob found, increasing m_trials by 1\n";
-      }
-      else {
-        m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
-      }
-
-      if (msg_LevelIsEvents()) {
-	if (!blobs->empty()) {
-	  msg_Out()<<"  -------------------------------------------------\n";
-	  for (Blob_List::iterator blit=blobs->begin();
-	       blit!=blobs->end();++blit) 
-	    msg_Out()<<*(*blit)<<std::endl;
-	  msg_Out()<<"  -------------------------------------------------\n";
-	}
-	else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
-      }
-
-      for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
-          double currQ = (*bit)->CheckChargeConservation();
-          if (fabs(currQ)>1e-12) {
-              msg_Error() << "Charge conservation failed, aborting: " << currQ << "\n";
-              msg_Error() << (**bit) << "\n";
-              Abort();
-          }
-      }
-
-      int i=rpa->gen.NumberOfGeneratedEvents();
-      int nevt=rpa->gen.NumberOfEvents();
-      msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
-      int exp;
-      for (exp=5; i/int(pow(10,exp))==0; --exp) {}
-      if (((rpa->gen.BatchMode()&4 && i%m_displayinterval==0) ||
-           (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
-          i<rpa->gen.NumberOfEvents()) {
-        double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
-        msg_Info()<<"  Event "<<i<<(m_showtrials?"("+ToString(m_trials)+")":"")<<" ( "
-                  <<FormatTime(size_t(diff))<<" elapsed / "
-                  <<FormatTime(size_t((nevt-i)/(double)i*diff))
-                  <<" left ) -> ETA: "<<rpa->gen.Timer().
-          StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-        double xs(GetEventHandler()->TotalXSMPI());
-        double err(GetEventHandler()->TotalErrMPI());
-        if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
-        msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
-                  <<((int(err/xs*10000))/100.0)<<" % )  ";
-        if (!(rpa->gen.BatchMode()&2))
-          msg_Info()<<mm(1,mm::up);
-        if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
-        else { msg_Info()<<bm::cr<<std::flush; }
-      }
-      
-      return 1;
+    /// Increase m_trials --- based on signal blob["Trials"] if existent
+    if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
+      m_trials+=1;
+      msg_Debugging()<<"  No Signal_Process Blob found, increasing m_trials by 1\n";
     }
-    return 0;
+    else {
+      m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
+    }
+    
+    if (msg_LevelIsEvents()) {
+      if (!blobs->empty()) {
+	msg_Out()<<"  -------------------------------------------------\n";
+	for (Blob_List::iterator blit=blobs->begin();
+	     blit!=blobs->end();++blit) 
+	  msg_Out()<<*(*blit)<<std::endl;
+	msg_Out()<<"  -------------------------------------------------\n";
+      }
+      else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
+    }
+    
+    for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
+      double currQ = (*bit)->CheckChargeConservation();
+      if (fabs(currQ)>1e-12) {
+	msg_Error() << "Charge conservation failed, aborting: " << currQ << "\n";
+	msg_Error() << (**bit) << "\n";
+	Abort();
+      }
+    }
+    
+    int i=rpa->gen.NumberOfGeneratedEvents();
+    int nevt=rpa->gen.NumberOfEvents();
+    msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+    int exp;
+    for (exp=5; i/int(pow(10,exp))==0; --exp) {}
+    if (((rpa->gen.BatchMode()&4 && i%m_displayinterval==0) ||
+	 (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
+	i<rpa->gen.NumberOfEvents()) {
+      double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
+      msg_Info()<<"  Event "<<i<<(m_showtrials?"("+ToString(m_trials)+")":"")<<" ( "
+		<<FormatTime(size_t(diff))<<" elapsed / "
+		<<FormatTime(size_t((nevt-i)/(double)i*diff))
+		<<" left ) -> ETA: "<<rpa->gen.Timer().
+	StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
+      double xs(GetEventHandler()->TotalXSMPI());
+      double err(GetEventHandler()->TotalErrMPI());
+      if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
+      msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
+		<<((int(err/xs*10000))/100.0)<<" % )  ";
+      if (!(rpa->gen.BatchMode()&2))
+	msg_Info()<<mm(1,mm::up);
+      if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
+      else { msg_Info()<<bm::cr<<std::flush; }
+    }
+    return 1;
+  }
+  return 0;
 }
 
 void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)

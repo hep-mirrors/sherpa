@@ -1,0 +1,23 @@
+#ifndef AMISIC_Perturbative_QCD_Processes_H
+#define AMISIC_Perturbative_QCD_Processes_H
+
+#include "AMISIC++/Perturbative/MI_Process.H"
+#include "ATOOLS/Phys/Flavour.H"
+
+namespace AMISIC {
+  class qg_qgam: public XS_Base {
+  public:
+    qg_qgam();
+    void Calc(const double & s,const double & t,const double & u);
+    bool SetColours(const ATOOLS::Flavour_Vector & flavs);
+  };
+  
+  class qqbar_ggam: public XS_Base {
+  public:
+    qqbar_ggam();
+    void Calc(const double & s,const double & t,const double & u);
+    bool SetColours(const ATOOLS::Flavour_Vector & flavs);
+  };
+}
+
+#endif

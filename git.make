@@ -1,4 +1,3 @@
-
 MD5_EXCLUDE ?= 
 
 Git_Info.C: Git_Info.C.in

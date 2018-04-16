@@ -107,7 +107,7 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
     success = p_ahadic->Hadronize(bloblist);
     if (success!=Return_Value::Success &&
 	success!=Return_Value::Nothing) {
-      msg_Tracking()<<"Potential problem in "<<METHOD<<":\n"<<(*bloblist)<<"\n";
+      msg_Out()<<"Potential problem in "<<METHOD<<": "<<success<<".\n";
     }
     if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
     return success;

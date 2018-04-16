@@ -17,7 +17,7 @@ namespace PDF {
 
     std::string m_path, m_file;
 
-    int    m_anti;
+    int    m_anti, m_nf;
     int m_lookup[28];
     int m_prefix;
 

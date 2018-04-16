@@ -2,11 +2,9 @@
 
 #include "BEAM/Main/Beam_Base.H"
 #include "PDF/Main/ISR_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
+#include "ATOOLS/Phys/Blob.H" 
 #include "ATOOLS/Org/Run_Parameter.H" 
-#include "PDF/Remnant/Hadron_Remnant.H"
-#include "PDF/Remnant/Electron_Remnant.H"
-#include "PDF/Remnant/Photon_Remnant.H"
-#include "PDF/Remnant/No_Remnant.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -41,27 +39,10 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_mode=0;
   for (short int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) m_mode += i+1;
+    m_mass2[i]=sqr(p_isrbase[i]->Flavour().Mass());
+    m_x[i]   = 1.;
+    m_mu2[i] = m_xf1[i] = m_xf2[i] = 0.;
   }
-  m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
-  m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
-  m_x[1]=m_x[0]=1.; 
-  m_mu2[1]=m_mu2[0]=0.0; 
-  m_xf1[1]=m_xf1[0]=0.0;
-  m_xf2[1]=m_xf2[0]=0.0;
-  for (size_t i=0;i<2;++i) {
-    if (Flav(i).IsHadron()) {
-      Hadron_Remnant *remnant = new Hadron_Remnant(this,i);
-      remnant->SetStringDrawing(1.0,0);
-      remnant->SetStringDrawing(0.0,1);
-      p_remnants[i]=remnant;
-    }
-    else if (Flav(i).IsLepton()) 
-      p_remnants[i] = new Electron_Remnant(this,i);
-    else if (Flav(i).IsPhoton()) 
-      p_remnants[i] = new Photon_Remnant(i);
-    else p_remnants[i] = new No_Remnant(i);
-  }
-  for (size_t i=0;i<2;++i) p_remnants[i]->SetPartner(p_remnants[1-i]);
 }
 
 ISR_Handler::~ISR_Handler() 
@@ -72,15 +53,10 @@ ISR_Handler::~ISR_Handler()
     }
     delete[] p_isrbase; p_isrbase = 0;
   }
-  for (size_t i(0);i<2;++i) 
-    if (p_remnants[i]!=NULL) delete p_remnants[i];
 }
 
 void ISR_Handler::Init(double *splimits) 
 {
-  m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
-  m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
-
   double s=(p_beam[0]->OutMomentum()+
 	    p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa->gen.SetEcms(sqrt(s));
@@ -99,8 +75,6 @@ void ISR_Handler::Init(double *splimits)
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
   double E2=E-E1;
-  p_remnants[0]->SetBeam(p_beam[0]);
-  p_remnants[1]->SetBeam(p_beam[1]);
   m_fixvecs[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
 }
@@ -381,7 +355,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     default : return 0.;
   }
   if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
-                    CheckRemnantKinematics(fl2,x2,1,false))) {
+		   CheckRemnantKinematics(fl2,x2,1,false))) {
     double f1=(cmode&1)?p_isrbase[0]->Weight(fl1):1.0;
     double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
     m_xf1[0]=x1*f1;
@@ -436,30 +410,22 @@ bool ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
 }
 
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
-					 double &x,int beam,bool swaped)
+					 double &x,int beam,bool swapped)
 {
   if (x>p_isrbase[beam]->PDF()->RescaleFactor()) return false;
   if (m_rmode==0) return true;
-  p_remnants[beam]->QuickClear();
+  p_remnants[beam]->Reset();
   double pp(beam==0?x*p_beam[0]->OutMomentum().PPlus():
-	    x*p_beam[1]->OutMomentum().PMinus());
+	            x*p_beam[1]->OutMomentum().PMinus());
   double pm(sqr(fl.Mass()));
   pm/=pp;
   Vec4D mom((pp+pm)/2.0,0.0,0.0,beam==0?(pp-pm)/2.0:(pm-pp)/2.0);
   return p_remnants[beam]->TestExtract(fl,mom);
 }
 
-void ISR_Handler::Extract(const ATOOLS::Flavour flavour,const double energy,
-			  const size_t i) const 
-{ 
-  if (p_isrbase[i]->PDF()!=NULL) {
-    p_isrbase[i]->Extract(flavour,2.*energy/sqrt(Pole())); 
-  }
-}
-
 void ISR_Handler::Reset(const size_t i) const 
 { 
-  if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset(); 
+  //if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset(); 
 }
 
 ATOOLS::Blob_Data_Base* ISR_Handler::Info(const int frame) const

@@ -834,11 +834,11 @@ void Hadron_Init::Init() {
 				    "thomas","thomas");
   s_kftable[5508]=new Particle_Info(5508,1000000.0,1000,0,0,0,0,
 				    "tanju","tanju");
-  s_kftable[5508]=new Particle_Info(5509,1000000.0,1000,0,0,0,0,
+  s_kftable[5509]=new Particle_Info(5509,1000000.0,1000,0,0,0,0,
 				    "jennifer","jennifer");
-  s_kftable[5508]=new Particle_Info(6505,1000000.0,1000,0,0,0,0,
+  s_kftable[6505]=new Particle_Info(6505,1000000.0,1000,0,0,0,0,
 				    "hendrik","hendrik");
-  s_kftable[5508]=new Particle_Info(6506,1000000.0,1000,0,0,0,0,
+  s_kftable[6506]=new Particle_Info(6506,1000000.0,1000,0,0,0,0,
 				    "jan","jan");
   // ##########################################################################
   // ##########################################################################

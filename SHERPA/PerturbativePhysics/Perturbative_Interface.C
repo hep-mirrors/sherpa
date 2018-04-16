@@ -86,13 +86,29 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_shower->CleanUp();
   msg_Indent();
   if (p_mi) {
-    p_ampl=p_mi->ClusterConfiguration();
+    p_ampl=p_mi->ClusterConfiguration(blob);
     if (p_ampl==NULL) return Return_Value::Retry_Event;
     if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
       msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
       return Return_Value::Retry_Event;
     }
-    p_mi->Process()->Generator()->SetMassMode(1);
+    p_mi->SetMassMode(1);
+    int stat(p_mi->ShiftMasses(p_ampl));
+    if (stat<0) {
+      msg_Out()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
+	       <<(*blob)<<"\n";
+      exit(1);
+      return Return_Value::Retry_Event;
+    }
+    if (stat==1) {
+      stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
+      if (stat!=1) {
+	msg_Out()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
+		 <<(*blob)<<"\n";
+	exit(1);
+	return Return_Value::Retry_Event;
+      }
+    }
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;

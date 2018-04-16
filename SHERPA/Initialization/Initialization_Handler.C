@@ -18,7 +18,6 @@
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
-#include "AMISIC++/Main/MI_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
@@ -49,6 +48,7 @@ using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
+using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
@@ -145,6 +145,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
   if (p_softcollisions){ delete p_softcollisions;p_softcollisions= NULL; } 
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
+  if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
@@ -377,6 +378,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
+  okay = okay && InitializeTheRemnants();
   if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   okay = okay && p_beamspectra->Init();
@@ -694,6 +696,13 @@ bool Initialization_Handler::InitializeThePDFs()
   return 1;
 }
 
+bool Initialization_Handler::InitializeTheRemnants() {
+  isr::id id=isr::hard_process;
+  p_remnants = new Remnant_Handler(m_isrhandlers[id],p_beamspectra,
+				   m_path,m_beamremnantdat);
+  return true;
+}
+
 bool Initialization_Handler::InitializeTheHardDecays()
 {
   Default_Reader reader;
@@ -712,6 +721,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
+  p_mehandler->SetRemnantHandler(p_remnants);
   int ret(p_mehandler->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]));
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
@@ -721,8 +731,10 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
   as->SetActiveAs(isr::hard_subprocess);
-  p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
+  p_mihandler = new MI_Handler(m_path,m_midat,p_model,
 			       m_isrhandlers[isr::hard_subprocess]);
+  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
+  p_mihandler->SetRemnantHandler(p_remnants);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
@@ -738,8 +750,9 @@ bool Initialization_Handler::InitializeTheShowers()
     as->SetActiveAs(isrtypes[i]);
     Shower_Handler_Map::iterator it=m_showerhandlers.find(isrtypes[i]);
     if (it!=m_showerhandlers.end()) delete it->second;
-    m_showerhandlers[isrtypes[i]]=new Shower_Handler
-      (m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]],i);
+    m_showerhandlers[isrtypes[i]] =
+      new Shower_Handler(m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]],i);
+    m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
@@ -762,8 +775,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = 
     new Beam_Remnant_Handler(m_path,m_beamremnantdat,
-			     p_beamspectra,
-			     m_isrhandlers[isr::hard_process],
+			     p_beamspectra,p_remnants,
 			     p_softcollisions);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;

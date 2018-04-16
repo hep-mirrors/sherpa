@@ -405,7 +405,7 @@ bool Blob::MomentumConserved() {
   return true;
 }
 
-bool Blob::CheckColour() {
+bool Blob::CheckColour(const bool & transient) {
   std::list<int> trips, antis;
   Particle * part;
   bool error(false);
@@ -417,9 +417,11 @@ bool Blob::CheckColour() {
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   Wrong colour state for particle "<<part->Number()<<"\n";
-      error = true;
+      if (!transient) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	error = true;
+      }
     }
     if (part->GetFlow(1)!=0) antis.push_back(part->GetFlow(1));
     if (part->GetFlow(2)!=0) trips.push_back(part->GetFlow(2));
@@ -432,9 +434,11 @@ bool Blob::CheckColour() {
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   Wrong colour state for particle "<<part->Number()<<"\n";
-      error = true;
+      if (!transient) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	error = true;
+      }
     }
     if (part->GetFlow(1)!=0) trips.push_back(part->GetFlow(1));
     if (part->GetFlow(2)!=0) antis.push_back(part->GetFlow(2));

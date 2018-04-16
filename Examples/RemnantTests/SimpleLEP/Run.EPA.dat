@@ -1,0 +1,32 @@
+(run){
+% general settings
+  EVENTS 50k;
+  EVENT_OUTPUT=HepMC_Short[a.short]
+% Has to stay until soft photons are fixed
+  YFS_MODE = 0
+
+% model parameters
+  ALPHAS(MZ) 0.1188;  
+  ORDER_ALPHAS 2;
+  CSS_FS_PT2MIN = 1.00
+
+% collider setup
+  BEAM_1  11; BEAM_ENERGY_1 45.6;
+  BEAM_2 -11; BEAM_ENERGY_2 45.6;
+  BEAM_SPECTRUM_1 EPA;
+  BEAM_SPECTRUM_2 EPA;
+  BUNCH_1 22;
+  BUNCH_2 22;
+  PDF_LIBRARY None
+}(run)
+
+(processes){
+  Process 22 22 -> 15 -15
+  Order (*,2);
+  End process;
+}(processes)
+
+(selector){
+  Mass 15 -15  10. E_CMS
+  PT   15       5. E_CMS
+}(selector)

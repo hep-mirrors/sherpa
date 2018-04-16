@@ -2,6 +2,7 @@
 #define CSSHOWER_Showers_Shower_H
 
 #include "PDF/Main/ISR_Handler.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
@@ -37,7 +38,8 @@ namespace CSSHOWER {
     ATOOLS::Flavour    m_flavA, m_flavB, m_flavC;
     Singlet      *     p_actual;
     Sudakov            m_sudakov;
-    PDF::ISR_Handler * p_isr;
+    PDF::ISR_Handler          * p_isr;
+    REMNANTS::Remnant_Handler * p_remnants;
     Parton           * m_last[4];
     int                m_kscheme, m_maxpart, m_use_bbw, m_recdec;
 
@@ -104,7 +106,9 @@ namespace CSSHOWER {
 
     inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
-
+    inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
+      p_remnants = remnants;
+    }
   };
 }
 

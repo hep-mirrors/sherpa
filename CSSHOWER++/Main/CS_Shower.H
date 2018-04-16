@@ -6,9 +6,10 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Phys/Blob_List.H"
 
+
+namespace REMNANTS { class Remnant_Handler; }
+
 namespace CSSHOWER {
-
-
   struct partcomp{
     bool operator() (const Parton * part1, const Parton * part2) const
     {
@@ -98,6 +99,9 @@ namespace CSSHOWER {
 		   const int mode);
 
     void SetRBOff();
+    inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
+      p_shower->SetRemnants(remnants);
+    }
 
   };// end of class CS_Shower
 

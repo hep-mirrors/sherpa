@@ -9,25 +9,32 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
+
+namespace REMNANTS { class Remnant_Handler; }
+
 namespace SHERPA {
   
   class Hard_Decay_Handler;
 
   class Jet_Evolution: public Event_Phase_Handler {
   private :
-    PertInterfaceMap          m_interfaces;
+    REMNANTS::Remnant_Handler * p_remnants;
+    PertInterfaceMap            m_interfaces;
 
     ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
 					     Perturbative_Interface *);
     
     void Reset();
-    void Update(const ATOOLS::Blob *,const size_t,
+    void Update(ATOOLS::Blob *,const size_t,
                 Perturbative_Interface *interface);
     bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *,
                                  Perturbative_Interface *interface);
-    void AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
-    void AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
-				     Perturbative_Interface *);    
+    bool AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
+    bool AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
+				     Perturbative_Interface *);
+    ATOOLS::Blob * CreateMockShowerBlobs(ATOOLS::Blob * const meblob,
+					 ATOOLS::Blob_List * const bloblist);
+
   public :
 
     // constructor

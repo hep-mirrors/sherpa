@@ -3,7 +3,7 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Phys/Variations.H"
 
 namespace SHERPA {
@@ -15,7 +15,7 @@ namespace SHERPA {
     Matrix_Element_Handler    *p_mehandler;
     ATOOLS::Variations        *p_variations;
     ATOOLS::Variation_Weights  m_variationweights;
-    PDF::Remnant_Base         *p_remnants[2];
+    REMNANTS::Remnant_Base    *p_remnants[2];
 
     double m_overweight;
     int m_setcolors, m_cmode, m_docmode;

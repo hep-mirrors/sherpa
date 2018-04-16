@@ -7,15 +7,15 @@
 #include <string>
 
 namespace ATOOLS {
-
   class Cluster_Amplitude;
   class Blob_List;
   class Default_Reader;
   class Variation_Weights; 
-
 }
 
-namespace MODEL { class Model_Base; }
+namespace MODEL    { class Model_Base; }
+
+namespace REMNANTS { class Remnant_Handler; }
 
 namespace PDF {
 
@@ -50,6 +50,8 @@ namespace PDF {
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
                                const bool & soft=false) = 0;
 
+    virtual void SetRemnants(REMNANTS::Remnant_Handler * remnants) {}
+
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
@@ -62,9 +64,9 @@ namespace PDF {
 
     inline int KTType() const { return m_kttype; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
-
+    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts) {
+      p_variationweights = varwgts;
+    }
   };// end of class Shower_Base
 
   struct Shower_Key {
