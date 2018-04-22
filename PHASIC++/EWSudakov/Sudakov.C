@@ -272,23 +272,62 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
           m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
           amplit = m_sscwspinampls.find(key);
         }
+
+        // correct spin index when a longitudinal vector boson is replaced with
+        // a scalar using the Goldstone boson equivalence theorem
+        std::vector<int> goldstonespincombination;
+        //msg_Debugging() << "checking spin index " << spinidx << "...";
+        //msg_Debugging() << " (k, l)=(" << k << ", " << l << ") ";
+        //msg_Debugging() << " (kfl, lfl)=(" << kcoupling.first << ", " << lcoupling.first << ") ";
+        //msg_Debugging() << "spincombination { ";
+        //for (const auto& s : spincombination)
+        //  msg_Debugging() << s << ' ';
+        //msg_Debugging() << "} ...";
+        for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+          auto lambda = spincombination[i];
+          if (lambda == 2) {
+            if (i == k && kflav.IsVector() && kcoupling.first != kf_Z) {
+              lambda = 0;
+            } else if (i == l && lflav.IsVector() && lcoupling.first != kf_Z) {
+              lambda = 0;
+            }
+          }
+          goldstonespincombination.push_back(lambda);
+        }
+
         auto& legpermutation = m_ampls.LegPermutation(key);
         std::vector<int> rotatedspincombination;
-        for (const auto& idx : legpermutation)
-          rotatedspincombination.push_back(spincombination[idx]);
+        for (const auto& idx : legpermutation) {
+          rotatedspincombination.push_back(goldstonespincombination[idx]);
+        }
+        msg_Debugging() << "obtain rotated { ";
+        for (const auto& s : rotatedspincombination)
+          msg_Debugging() << s << ' ';
+        msg_Debugging() << "} from\n" << amplit->second[0] << "...";
         const auto rotated = amplit->second[0].Get(rotatedspincombination);
+        msg_Debugging() << " done\n";
         const auto unrotated = amplvalue;
         assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         // TODO: understand why we need to use abs here when calculating coeffs
         // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
         // can use the (expected) unmodified ratio; is this connected to the
         // extraneous minus sign in Sudakov::LsCoeff?
-        const auto amplratio = rotated/unrotated;
-        DEBUG_VAR(amplratio);
-        auto contribution = 2*kcoupling.second*lcoupling.second*amplratio;
+
+        //const auto amplratio = rotated/unrotated;  // TODO: reinstate
+        auto amplratio = Complex{1.09805};
+        if (k == 3) {  // W+
+          amplratio *= -1.0;
+        } else {
+          if (kcoupling.first == kf_h0) {
+            amplratio *= -1.0;
+          }
+        }
+
+        DEBUG_VAR(rotated/unrotated);
+        auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
         const auto amplratio2
           = Complex{ std::abs(amplratio.real()), amplratio.imag() };
-        auto contribution2 = 2*kcoupling.second*lcoupling.second*amplratio2;
+        auto contribution2 = 2.0*kcoupling.second*lcoupling.second*amplratio2;
 
         // this is a hack for an easier comparison with the Denner/Pozzorini
         // ref; it turns out it only affects the result by a few permille and
@@ -476,13 +515,19 @@ Couplings Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
       return {};
 
   } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2) {
-      // TODO: remove this placeholder
+    // cf. (B.22), (B.26) and (B.27)
+    if (isplus != flav.IsAnti())
       return {};
+    if (pol == 2) {
+      return {
+        // we return the coupling to the pseudoscalar, but tell the recipient
+        // to use the ME with the Z instead of the W which makes use of the
+        // Goldstone equivalence theorem; this is corrected by multiplying here
+        // with an extra factor of (-i), cf. (4.26)
+        {kf_Z, -1.0 / (2.0*m_sw)},  // -i * I_\chi^\pm
+        {kf_h0, (isplus ? -1.0 : 1.0) / (2.0*m_sw)}  // I_H^\pm
+      };
     } else {
-      // cf. (B.26) and (B.27)
-      if (isplus != flav.IsAnti())
-        return {};
       return {
         {kf_photon, isplus ? -1.0 : 1.0},
         {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}
