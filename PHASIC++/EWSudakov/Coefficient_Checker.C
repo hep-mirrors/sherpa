@@ -148,24 +148,24 @@ Coefficient_Checker::ReferenceCoeffs()
     // NOTE: if two contributions are given separately, the first is the N-loop
     // and the second the W-loop contribution
     // LT t-ch;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
-    // LT u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47;
-    // RL t-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
-    // RL u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
-    // LL t-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
+    //// LT u-ch
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47;
+    //// RL t-ch
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
+    //// RL u-ch
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
+    //// LL t-ch
+    //mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
+    //mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
     // LL u-ch
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88 - 6.95;
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88 - 6.95;
