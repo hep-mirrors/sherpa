@@ -38,11 +38,31 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
+  const auto s = std::abs(m_ampls.MandelstamT());
+  const auto t = std::abs(m_ampls.MandelstamT());
+  const auto u = std::abs(m_ampls.MandelstamU());
+  static const auto threshold = 2e2;
+  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
+  msg_Debugging() << "log2(s/mW) = " << sqr(std::log(s/m_mw2)) << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(t/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(u/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) << "\n";
+  if (sqr(std::log(s/m_mw2)) < threshold) {
+    msg_Debugging() << "event LSC too small\n";
+    return 1.0;
+  }
+  if ((std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) < threshold)
+      && (std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) < threshold)) {
+    msg_Debugging() << "event SSC too small\n";
+    return 1.0;
+  }
+  DEBUG_VAR(t/s);
+  DEBUG_VAR(u/s);
   m_lsczspinampls.clear();
   m_sscwspinampls.clear();
   m_spinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
   CalculateSpinAmplitudeCoeffs();
+  THROW(normal_exit, "Finish.");
 
   /*
     // pref = alpha/4 pi is added in KFactor method.
