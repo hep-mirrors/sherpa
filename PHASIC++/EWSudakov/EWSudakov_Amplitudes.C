@@ -28,8 +28,11 @@ Cluster_Amplitude& EWSudakov_Amplitudes::Unrotated() noexcept
 Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(const Leg_Set& legs)
 {
   const auto it = ampls.find(legs);
-  if (it == ampls.end())
-    THROW(fatal_error, "Rotated amplitude not found");
+  if (it == ampls.end()) {
+    MyStrStream s;
+    s << "Rotated amplitude not found:\n" << legs;
+    THROW(fatal_error, s.str());
+  }
   return *(it->second);
 }
 

@@ -1,6 +1,9 @@
 #include "PHASIC++/EWSudakov/EWSudakov.H"
+#include "ATOOLS/Phys/Flavour.H"
 
 #include <iostream>
+
+using namespace ATOOLS;
 
 namespace PHASIC {
 
@@ -14,6 +17,14 @@ namespace PHASIC {
       case EWSudakov_Log_Type::lSSC:
         return os << "l_s";
     }
+  }
+
+  std::ostream& operator<<(std::ostream& os, const Leg_Set& legset)
+  {
+    os << "leg:kf_code list: { ";
+    for (const auto& leg : legset)
+      os << leg.first << ":" << Flavour{leg.second} << " ";
+    return os << '}';
   }
 
 }

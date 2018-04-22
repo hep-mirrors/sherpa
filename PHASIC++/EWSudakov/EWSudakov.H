@@ -25,6 +25,7 @@ namespace PHASIC {
   };
 
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
+  std::ostream& operator<<(std::ostream& os, const Leg_Set&);
 
 }
 
