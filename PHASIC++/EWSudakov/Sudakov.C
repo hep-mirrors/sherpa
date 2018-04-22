@@ -141,6 +141,11 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
         case EWSudakov_Log_Type::lSSC:
           for (size_t k{ 0 }; k < spincombination.size(); ++k) {
             for (size_t l{ 0 }; l < k; ++l) {
+              // s-channel-related loops will have vanishing log coeffs
+              if (k == 1 && l == 0)
+                continue;
+              if (spincombination.size() == 4 && k == 3 && l == 2)
+                continue;
               const auto angularkey
                 = Coeff_Map_Key{EWSudakov_Log_Type::lSSC, {k, l}};
               m_coeffs[angularkey][i]

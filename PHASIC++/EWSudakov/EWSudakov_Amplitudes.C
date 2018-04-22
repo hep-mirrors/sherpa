@@ -106,6 +106,13 @@ EWSudakov_Amplitudes::CreateAmplitudes(
   if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
     for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
       for (size_t l{ 0 }; l < k; ++l) {
+
+        // s-channel-related loops will have vanishing log coeffs
+        if (k == 1 && l == 0)
+          continue;
+        if (baseampl->Legs().size() == 4 && k == 3 && l == 2)
+          continue;
+
         const auto kflav = baseampl->Leg(k)->Flav();
         const auto lflav = baseampl->Leg(l)->Flav();
 
