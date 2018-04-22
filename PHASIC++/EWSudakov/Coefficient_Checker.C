@@ -167,8 +167,8 @@ Coefficient_Checker::ReferenceCoeffs()
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
     // LL u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88 - 6.95;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88 - 6.95;
 
     auto& mapPP = coeffs["2_2__e-__e+__P__P"];
     mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
