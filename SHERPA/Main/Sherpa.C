@@ -2,6 +2,7 @@
 #include "SHERPA/Initialization/Initialization_Handler.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
 #include "SHERPA/Single_Events/Analysis_Phase.H"
+#include "SHERPA/Single_Events/Userhook_Phase.H"
 #include "SHERPA/Single_Events/Output_Phase.H"
 #include "SHERPA/Single_Events/EvtReadin_Phase.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
@@ -135,7 +136,6 @@ bool Sherpa::InitializeTheEventHandler()
 {
   eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
-  Output_Vector *outs(p_inithandler->GetOutputs());
   Analysis_Vector *anas(p_inithandler->GetAnalyses());
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
@@ -166,8 +166,10 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
 
   }
+  p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
-  if (!outs->empty()) p_eventhandler->AddEventPhase(new Output_Phase(outs,p_eventhandler));
+  if (!p_inithandler->GetOutputs()->empty())
+    p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
   p_eventhandler->SetVariations(p_inithandler->GetVariations());
   p_eventhandler->PrintGenericEventStructure();
 

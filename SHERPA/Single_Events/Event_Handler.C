@@ -205,7 +205,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
   int retry = 0;
   bool hardps = true;
   do {
-    if ((*pit)->Type()==eph::Analysis) {
+    if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;
       continue;
     }
@@ -268,7 +268,40 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       THROW(fatal_error,"Invalid return value");
     }
   } while (pit!=p_phases->end());
-  msg_Tracking()<<METHOD<<": Event ended normally.\n";
+  msg_Tracking()<<METHOD<<": Event phases ended normally.\n";
+
+  msg_Tracking()<<METHOD<<": Running user hooks now.\n";
+  for (size_t i=0; i<p_phases->size(); ++i) {
+    Event_Phase_Handler* phase=(*p_phases)[i];
+    if (phase->Type()!=eph::Userhook) continue;
+
+    Return_Value::code rv(phase->Treat(&m_blobs, weight));
+    if (rv!=Return_Value::Nothing)
+      msg_Tracking()<<METHOD<<"(): ran '"<<phase->Name()<<"' -> "
+		    <<rv<<std::endl;
+    switch (rv) {
+    case Return_Value::Success :
+      Return_Value::IncCall(phase->Name());
+      msg_Debugging()<<m_blobs;
+      break;
+    case Return_Value::Nothing :
+      break;
+    case Return_Value::New_Event :
+      Return_Value::IncCall(phase->Name());
+      Return_Value::IncNewEvent(phase->Name());
+      if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+      Reset();
+      return 2;
+    case Return_Value::Error :
+      Return_Value::IncCall(phase->Name());
+      Return_Value::IncError(phase->Name());
+      return 3;
+    default:
+      THROW(fatal_error,"Invalid return value");
+    }
+  }
+  msg_Tracking()<<METHOD<<": User hooks ended normally.\n";
+
   return 0;
 }
 

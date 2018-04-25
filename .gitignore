@@ -14,6 +14,7 @@ Makefile.in
 /Examples/API/Events/test.py
 /Examples/API/ME2-Python/test.py
 /Examples/API/MPIEvents/test.py
+/Examples/Userhook/Userhook_Example.os
 /INSTALL
 /MODEL/UFO/Sherpa-generate-model
 /MODEL/UFO/sconstruct_template
@@ -54,6 +55,8 @@ Makefile.in
 *.so
 *.dylib
 .libs
+.SConstruct
+.sconsign.dblite
 Git_Info.C
 Git_Info.C.tmp.bak
 /ATOOLS/Math/Sobol/21201.gz
