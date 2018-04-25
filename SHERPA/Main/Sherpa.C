@@ -63,7 +63,9 @@ Sherpa::~Sherpa()
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
+#ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
+#endif
   if (p_filter)       { delete p_filter;       p_filter       = nullptr; }
   exh->RemoveTerminatorObject(this);
   {// don't remove
