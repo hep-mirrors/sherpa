@@ -99,6 +99,9 @@ namespace PHASIC {
 
     bool m_printpspoint;
 
+    std::vector<std::string> m_generator;
+    long int m_seed;
+
     double EnhanceFactor(Process_Base *const proc);
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
@@ -110,7 +113,7 @@ namespace PHASIC {
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
 			  const Subprocess_Info *info,size_t &n,
-                          const ATOOLS::Mass_Selector* ms);
+			  const ATOOLS::Mass_Selector* ms);
 
   public:
 

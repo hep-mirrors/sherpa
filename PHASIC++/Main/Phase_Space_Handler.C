@@ -56,7 +56,10 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_maxtrials = reader.Get<int>("MAX_TRIALS",1000000);
   m_fin_opt = reader.Get<int>("FINISH_OPTIMIZATION", 1);
   m_enhancexs = reader.Get<int>("ENHANCE_XS",0);
-  m_printpspoint = reader.Get<int>("PRINT_PS_POINTS",0); 
+  m_printpspoint = reader.Get<int>("PRINT_PS_POINTS",0);
+  reader.SetInputFile(ATOOLS::rpa->gen.Variable("RUN_DATA_FILE"));
+  reader.ReadStringVectorNormalisingNoneLikeValues(m_generator,"ME_SIGNAL_GENERATOR");
+  m_seed = reader.Get<long int>("RANDOM_SEED",1234);
   if (error>0.) {
     m_error   = error;
   }
@@ -807,6 +810,14 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
   if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
   if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
+
+  /* when OL, is used as ME-generator, channels are reversed */
+  if(m_generator[0]=="External" && m_generator[1]=="OpenLoops") p_fsrchannels->ReverseChannels();
+  /* reset seed, to obtain same momenta in AMEGIC & OL */
+  ran->SetSeed(m_seed);
+#ifdef USING__MPI
+  ran->SetSeed(m_seed + MPI::COMM_WORLD.Get_rank());
+#endif
   return true;
 }
 
