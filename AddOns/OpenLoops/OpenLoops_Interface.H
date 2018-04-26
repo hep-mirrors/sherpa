@@ -33,6 +33,9 @@ namespace OpenLoops {
                              double& res, METOOLS::DivArrD& virt);
     static void EvaluateLoop2(int id, const ATOOLS::Vec4D_Vector& momenta,
                               double& res);
+    static void EvaluateAssociated(int id, const ATOOLS::Vec4D_Vector& momenta,
+                                   int ass, double& res);
+    static int ConvertAssociatedContributions(const PHASIC::asscontrib::type at);
 
     static void SetParameter(const std::string & key, double value);
     static void SetParameter(const std::string & key, int value);

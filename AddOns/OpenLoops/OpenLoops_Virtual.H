@@ -8,6 +8,7 @@ namespace OpenLoops {
   class OpenLoops_Virtual : public PHASIC::Virtual_ME2_Base {
 
     int m_ol_id;
+    size_t m_ol_asscontribs;
 
 
   public:

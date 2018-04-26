@@ -197,6 +197,11 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Higgs") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype==nlo_type::loop) {
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"Higgs_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     Data_Reader read(" ",";","#","=");
     int io=read.GetValue<int>("HIGGS_INTERFERENCE_ONLY",0);
     int mode=read.GetValue<int>("HIGGS_INTERFERENCE_MODE",7);

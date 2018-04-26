@@ -623,6 +623,8 @@ double Single_Process::ReweightWithoutSubevents(
       alphasfac *= *it;
     }
     double bornalphasfac(1.0);
+    const bool needslowerorderqcd(nometstype & mewgttype::VI ||
+                                  nometstype & mewgttype::KP);
     if (alphasfac != 1.0) {
       // for the Born contribution within BVIKP, we need to evaluate at the lower order
       // divide out one of the core AlphaS ratios
@@ -630,12 +632,33 @@ double Single_Process::ReweightWithoutSubevents(
       // sequence has to be divided out, is most certainly wrong and this will
       // lead to an error in MEPS@NLO/MENLOPS runs, where we reweight the
       // AlphaS argument for individual splittings
-      const bool needslowerorderqcd(nometstype & mewgttype::VI || nometstype & mewgttype::KP);
-      bornalphasfac = needslowerorderqcd ? alphasfac / alphasratios.back() : alphasfac;
+      bornalphasfac = needslowerorderqcd ? alphasfac / alphasratios.back() :
+                                           alphasfac;
     }
 
     // Born
     const double Bnew(m_mewgtinfo.m_B * bornalphasfac);
+
+    // associated Born-type
+    double Bassnew(0.0);
+    {
+      // if Born is at power as^N, then
+      // entries of m_wass at power as^(N-i),
+      // eg. m_wass[0] is EW Sudakov-type correction
+      //     m_wass[1] is the subleading Born
+      //     m_wass[2] is the subsubleading Born, etc
+      // same as above, assume that all entries in alphasratios
+      // are the same, not true when also PS reweighting
+      double bornassalphasfac(bornalphasfac);
+      size_t oqcd(info.m_orderqcd-needslowerorderqcd);
+      for (size_t i(0);i<m_mewgtinfo.m_wass.size();++i) {
+        if (m_mewgtinfo.m_wass[i] && varparams->m_asscontrib&(1<<i)) {
+          Bassnew += m_mewgtinfo.m_wass[i] * bornassalphasfac;
+        }
+        if ((oqcd-i)==0) break;
+        bornassalphasfac /= alphasratios.back();
+      }
+    }
 
     // Virtual Integrated
     double VInew(0.0);
@@ -650,7 +673,7 @@ double Single_Process::ReweightWithoutSubevents(
     const double KPnew(KPTerms(varparams) * alphasfac);
 
     // apply NLO counterterms
-    double BVIKPnew(((Bnew + VInew + KPnew) - Bnew * csi.m_ct) * csi.m_pdfwgt);
+    double BVIKPnew(((Bnew + Bassnew + VInew + KPnew) - Bnew * csi.m_ct) * csi.m_pdfwgt);
 
     // DADS
     double DADSnew(0.0);

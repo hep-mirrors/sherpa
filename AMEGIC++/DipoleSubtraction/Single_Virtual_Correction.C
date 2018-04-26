@@ -33,8 +33,9 @@ using namespace std;
 
   ------------------------------------------------------------------------------- */
 
-Single_Virtual_Correction::Single_Virtual_Correction() :   
-  p_psgen(0), p_partner(this), p_LO_process(NULL), 
+Single_Virtual_Correction::Single_Virtual_Correction() :
+  m_cmur(2,0.), m_wass(4,0.),
+  p_psgen(0), p_partner(this), p_LO_process(NULL),
   p_dipole(0), p_kpterms(0), p_loopme(0),
   m_bsum(0.0), m_vsum(0.0), m_isum(0.0), m_n(0.0),
   m_mbsum(0.0), m_mvsum(0.0), m_misum(0.0), m_mn(0.0),
@@ -105,8 +106,6 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_sccmur=reader.GetValue("USR_WGT_MODE",1);
   m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
   m_imode=reader.GetValue<int>("NLO_IMODE",7);
-  m_cmur[0]=0.;
-  m_cmur[1]=0.;
 
   static bool addcite(false);
   if (!addcite) {
@@ -469,10 +468,14 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms);
     m_lasti=p_partner->m_lasti*m_sfactor;
+    for (size_t i(0);i<m_wass.size();++i)
+      m_wass[i]=p_partner->m_wass[i]*m_sfactor;
   }
 
   m_mewgtinfo.m_B = m_lastbxs/m_sfactor;
   m_mewgtinfo.m_VI = (m_lastv+m_lasti)/m_sfactor;
+  for (size_t i=0;i<m_mewgtinfo.m_wass.size();++i)
+    m_mewgtinfo.m_wass[i]=m_wass[i]/m_sfactor;
   p_partner->FillMEwgts(m_mewgtinfo);
   m_mewgtinfo*=m_Norm*m_sfactor;
 
@@ -866,6 +869,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     }
     else THROW(not_implemented,"Unknown mode");
   }
+  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+    m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
   if (m_checkpoles)
     CheckPoleCancelation(&mom.front());
   if (m_checkfinite) {
@@ -889,6 +894,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_lastb=p_dsij[0][0] * kfactor;
   m_lasti=I            * kfactor;
   m_lastv=lme          * kfactor;
+  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+    m_wass[i] *= kfactor;
   M2+=I+lme;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) &&
       (m_bvimode&1)) {

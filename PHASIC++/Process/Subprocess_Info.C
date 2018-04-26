@@ -451,3 +451,27 @@ std::istream &PHASIC::operator>>(std::istream &str,nlo_type::code &c)
   if (tag.find('S')!=std::string::npos) c|=nlo_type::rsub;
   return str;
 }
+
+std::ostream & PHASIC::operator<<(std::ostream & s,
+                                  const PHASIC::asscontrib::type & at)
+{
+  if (at==asscontrib::none)  s<<"none";
+  if (at&asscontrib::EW)     s<<"EW";
+  if (at&asscontrib::LO1)    s<<"LO1";
+  if (at&asscontrib::LO2)    s<<"LO2";
+  if (at&asscontrib::LO3)    s<<"LO3";
+  return s;
+}
+
+std::istream &PHASIC::operator>>(std::istream &s,PHASIC::asscontrib::type &at)
+{
+  std::string tag;
+  getline(s,tag);
+  at=asscontrib::none;
+  if (tag.find("EW")!=std::string::npos)  at|=asscontrib::EW;
+  if (tag.find("LO1")!=std::string::npos) at|=asscontrib::LO1;
+  if (tag.find("LO2")!=std::string::npos) at|=asscontrib::LO2;
+  if (tag.find("LO3")!=std::string::npos) at|=asscontrib::LO3;
+  return s;
+}
+

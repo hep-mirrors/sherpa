@@ -10,6 +10,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Phys/Weight_Info.H"
+#include "PHASIC++/Process/Subprocess_Info.H"
 
 #define VARIATION_WARNINGS 0
 
@@ -70,8 +72,20 @@ namespace SHERPA {
    * Used as an argument to a reweighting function.
    */
   struct Variation_Parameters {
+    const double m_muR2fac, m_muF2fac;
+    const double m_showermuR2fac, m_showermuF2fac;
+    PHASIC::asscontrib::type m_asscontrib;
+    //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
+    PDF::PDF_Base * const p_pdf1;
+    PDF::PDF_Base * const p_pdf2;
+    MODEL::One_Running_AlphaS * const p_alphas;
+    //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
+    const bool m_deletepdfsandalphas;
+    const std::string m_name;
+
     Variation_Parameters(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
+                         PHASIC::asscontrib::type asscontrib,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::One_Running_AlphaS *alphas,
@@ -85,16 +99,6 @@ namespace SHERPA {
     ~Variation_Parameters();
 
     void IncrementOrInitialiseWarningCounter(const std::string);
-
-    const double m_muR2fac, m_muF2fac;
-    const double m_showermuR2fac, m_showermuF2fac;
-    //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
-    PDF::PDF_Base * const p_pdf1;
-    PDF::PDF_Base * const p_pdf2;
-    MODEL::One_Running_AlphaS * const p_alphas;
-    //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
-    const bool m_deletepdfsandalphas;
-    const std::string m_name;
 
   private:
     //! Return a name based on the scale and PDF variations

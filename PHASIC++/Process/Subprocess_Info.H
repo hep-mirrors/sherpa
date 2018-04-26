@@ -16,17 +16,53 @@ namespace PHASIC {
     };
   };// end of struct nlo_type
 
-  inline nlo_type::code operator|(const nlo_type::code c1,const nlo_type::code c2)  
+  inline nlo_type::code operator|(const nlo_type::code c1,
+                                  const nlo_type::code c2)
   { return (nlo_type::code)((int)c1|(int)c2); }
-  inline const nlo_type::code &operator|=(nlo_type::code &c1,const nlo_type::code c2)  
+  inline const nlo_type::code &operator|=(nlo_type::code &c1,
+                                          const nlo_type::code c2)
   { return c1=(nlo_type::code)((int)c1|(int)c2); }
-  inline nlo_type::code operator&(const nlo_type::code c1,const nlo_type::code c2)  
+  inline nlo_type::code operator&(const nlo_type::code c1,
+                                  const nlo_type::code c2)
   { return (nlo_type::code)((int)c1&(int)c2); }
-  inline const nlo_type::code &operator&=(nlo_type::code &c1,const nlo_type::code c2)  
+  inline const nlo_type::code &operator&=(nlo_type::code &c1,
+                                          const nlo_type::code c2)
   { return c1=(nlo_type::code)((int)c1&(int)c2); }
 
   std::ostream &operator<<(std::ostream &str,const nlo_type::code &c);
   std::istream &operator>>(std::istream &str,nlo_type::code &c);
+
+  struct asscontrib {
+    enum type {
+      none = 0,
+      EW   = 1,
+      LO1  = 2,
+      LO2  = 4,
+      LO3  = 8
+    };
+  };
+
+  inline asscontrib::type operator|(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1|(int)at2); }
+  inline const asscontrib::type &operator|=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1|(int)at2); }
+  inline asscontrib::type operator&(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1&(int)at2); }
+  inline const asscontrib::type &operator&=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1&(int)at2); }
+  inline asscontrib::type operator^(const asscontrib::type at1,
+                                 const asscontrib::type at2)
+  { return (asscontrib::type)((int)at1^(int)at2); }
+  inline const asscontrib::type &operator^=(asscontrib::type &at1,
+                                         const asscontrib::type at2)
+  { return at1=(asscontrib::type)((int)at1^(int)at2); }
+
+  std::ostream & operator<<(std::ostream & s,const asscontrib::type & at);
+  std::istream & operator>>(std::istream & s,asscontrib::type &at);
 
   std::string PSId(const size_t &id);
 
@@ -43,6 +79,7 @@ namespace PHASIC {
     int    m_tag, m_osf;
 
     nlo_type::code m_nloqcdtype, m_nloewtype;
+    asscontrib::type m_asscontribs;
 
     void GetExternal(std::vector<ATOOLS::Flavour> &fl) const;
     void SetExternal(const std::vector<ATOOLS::Flavour> &fl,size_t &n);

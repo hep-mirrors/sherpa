@@ -153,7 +153,7 @@ void Variations::InitialiseParametersVector(Data_Reader * const reader)
 
 std::vector<std::string> Variations::VariationArguments(Data_Reader * const reader)
 {
-  std::vector<std::string> varargs, pdfvarargs;
+  std::vector<std::string> varargs, pdfvarargs, assargs;
   varargs = VariationArguments(reader, "SCALE_VARIATIONS");
   // the PDF_VARIATIONS has a more specific syntax that must be transformed to
   // the more general syntax of SCALE_VARIATIONS
@@ -161,6 +161,14 @@ std::vector<std::string> Variations::VariationArguments(Data_Reader * const read
   for (size_t i(0); i < pdfvarargs.size(); ++i) {
     varargs.push_back("1.,1.," + pdfvarargs[i]);
   }
+  assargs = VariationArguments(reader, "ASSOCIATED_CONTRIBUTIONS_VARIATIONS");
+  for (size_t i(0); i < assargs.size(); ++i) {
+    varargs.push_back("1.,1.," + PDF::pdfdefs->DefaultPDFSet(kf_p_plus)
+                               + ",ASS_" + assargs[i]);
+  }
+  if (msg_LevelIsDebugging())
+    for (size_t i(0);i<varargs.size();++i)
+      msg_Out()<<"constructed: "<<varargs[i]<<std::endl;
   return varargs;
 }
 
@@ -205,6 +213,10 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
 
   // parse PDF member(s)
   std::vector<PDFs_And_AlphaS> pdfsandalphasvector;
+
+  // associated contribs
+  PHASIC::asscontrib::type asscontrib(PHASIC::asscontrib::none);
+
   bool ownedpdfsandalphas(false);
   if (stringparams.size() > 2) {
     // PDF variation requested
@@ -221,7 +233,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
     } else {
       // all PDF members: "Set[all]"
       pdfname=pdfname.substr(0, pdfname.find("[all]"));
-      if (pdfname=="NNPDF30NNLO") {
+      if (pdfname==PDF::pdfdefs->DefaultPDFSet(kf_p_plus)) {
         for (size_t j(0); j < 101; ++j) {
           pdfsandalphasvector.push_back(PDFs_And_AlphaS(reader, pdfname, j));
         }
@@ -248,6 +260,11 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
 #endif
       }
     }
+    // filter associated contrib
+    if (stringparams.size() > 3) {
+      std::string assparam(stringparams[3].substr(stringparams[3].find("ASS_")));
+      asscontrib=ToType<PHASIC::asscontrib::type>(assparam);
+    }
   } else {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
   }
@@ -256,11 +273,12 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
         pdfasit != pdfsandalphasvector.end(); pdfasit++) {
     Variation_Parameters *params =
       new Variation_Parameters(muR2fac, muF2fac,
-          showermuR2fac, showermuF2fac,
-          pdfasit->m_pdfs[0],
-          pdfasit->m_pdfs[1],
-          pdfasit->p_alphas,
-          ownedpdfsandalphas);
+                               showermuR2fac, showermuF2fac,
+                               asscontrib,
+                               pdfasit->m_pdfs[0],
+                               pdfasit->m_pdfs[1],
+                               pdfasit->p_alphas,
+                               ownedpdfsandalphas);
     m_parameters_vector.push_back(params);
   }
 }
@@ -352,6 +370,10 @@ std::string Variation_Parameters::GenerateName() const
            + GenerateNamePart("MUF", sqrt(m_muF2fac)) + divider
            + GenerateNamePart("PDF", p_pdf1->LHEFNumber()) + divider
            + GenerateNamePart("PDF", p_pdf2->LHEFNumber());
+  }
+  // append non-trivial added associated contribs
+  if (m_asscontrib != PHASIC::asscontrib::none) {
+    name += divider + GenerateNamePart("ASS", m_asscontrib);
   }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {

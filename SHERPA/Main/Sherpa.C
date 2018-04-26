@@ -25,6 +25,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "PDF/Main/PDF_Base.H"
 #include <cstring>
 
 using namespace SHERPA;
@@ -40,6 +41,7 @@ Sherpa::Sherpa() :
   ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
+  PDF::pdfdefs = new PDF::PDF_Defaults();
   m_trials = 100;
   m_debuginterval = 0;
   m_debugstep = -1;

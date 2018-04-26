@@ -28,7 +28,7 @@ namespace AMEGIC {
 
     std::vector<std::vector<double> > p_dsij;
 
-    double                  m_cmur[2];
+    std::vector<double>     m_cmur,m_wass;
     double                  m_x0,m_x1;
 
     Single_Virtual_Correction        * p_partner;

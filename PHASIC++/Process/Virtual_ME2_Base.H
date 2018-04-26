@@ -19,7 +19,8 @@ namespace PHASIC {
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
     bool m_fixedIRscale;
     double m_IRscale, m_UVscale;
-    
+    std::vector<double> m_asscontribs;
+
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -35,6 +36,10 @@ namespace PHASIC {
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
+
+    inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
+    inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
+
     inline bool fixedIRscale() { return m_fixedIRscale; }
     inline double IRscale() { return m_IRscale; }
     inline double UVscale() { return m_UVscale; }

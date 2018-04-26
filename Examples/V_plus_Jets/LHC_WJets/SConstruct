@@ -1,8 +1,13 @@
+import os
+vars = Variables()
+vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
+vars.Add('CXX','The C++ Compiler','mpic++ -Wl,--no-as-needed')
+vars.Add('CXXFLAGS','The C++ Flags',['-g -O2'.split( ),''.split( ),'-g0','-O2'])
+vars.Add(PathVariable('incdir','include path','/home/marek/work/sherpa/rel-2-2-4/include/SHERPA-MC',PathVariable.PathIsDir))
+env = Environment(variables=vars,CPPPATH=['${incdir}'])
+env['ENV']=os.environ
+if env['PLATFORM']=='darwin':
+   env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
 
-vars = Variables('.SConstruct')
-vars.Add(PathVariable('sherpa','path to sherpa','../../..',PathVariable.PathIsDir))
-vars.Add(PathVariable('fastjet','path to fastjet','../../..',PathVariable.PathIsDir))
-env = Environment(variables=vars,CPPPATH=['${sherpa}','${fastjet}'])
-vars.Save('.SConstruct',env)
-
-env.SharedLibrary('MyJetCriterion', ['My_JetCriterion.C'])
+SConscript('Process/Amegic/P2_2/SConscript',exports='env')
+SConscript('Process/Amegic/P2_2/fsrchannels2/SConscript',exports='env')

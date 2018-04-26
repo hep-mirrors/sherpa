@@ -182,6 +182,11 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"Higgs_Jet_QCD_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() && 
         pi.m_fi.m_ps.size()==2 && 

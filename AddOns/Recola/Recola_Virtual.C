@@ -157,18 +157,24 @@ DECLARE_VIRTUALME2_GETTER(Recola_Virtual,"Recola_Virtual")
 Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,Recola_Virtual>::
 operator()(const Process_Info &pi) const
 {
- DEBUG_FUNC(pi);
- if (pi.m_loopgenerator!="Recola") return NULL;
- 
- if (pi.m_fi.m_nloqcdtype!=nlo_type::loop) return NULL;
- 
- int procIndex=Recola_Interface::RegisterProcess(pi, 11);
- 
- if (procIndex>0) {
-  Flavour_Vector flavs = pi.ExtractFlavours();
-  return new Recola_Virtual(pi, flavs, procIndex);
- }
- else {
-  return NULL;
- }
+  DEBUG_FUNC(pi);
+  if (pi.m_loopgenerator!="Recola") return NULL;
+
+  if (pi.m_fi.m_nloqcdtype!=nlo_type::loop) return NULL;
+
+  if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+    msg_Error()<<"Recola_Virtual(): Error: cannot provide requested "
+               <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+    return NULL;
+  }
+
+  int procIndex=Recola_Interface::RegisterProcess(pi, 11);
+
+  if (procIndex>0) {
+    Flavour_Vector flavs = pi.ExtractFlavours();
+    return new Recola_Virtual(pi, flavs, procIndex);
+  }
+  else {
+    return NULL;
+  }
 }

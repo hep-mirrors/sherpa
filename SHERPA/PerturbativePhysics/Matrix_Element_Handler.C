@@ -611,6 +611,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vnlosubv,nf);
 	}
+	if (cur[0]=="Associated_Contributions") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vasscontribs,nf);
+	}
 	if (cur[0]=="ME_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmegen,nf);
@@ -825,6 +829,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
 	}
 	if (GetMPvalue(pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
+	if (GetMPvalue(pbi.m_vasscontribs,nfs,pnid,ds))
+	  cpi.m_fi.m_asscontribs=ToType<asscontrib::type>(ds);
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
 	else cpi.m_rsmegenerator=cpi.m_megenerator;

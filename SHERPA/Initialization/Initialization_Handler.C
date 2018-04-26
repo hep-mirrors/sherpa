@@ -569,16 +569,16 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="NNPDFSherpa";
-      defset[beam]="NNPDF30NNLO";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
-      deflib="PDFESherpa";
-      defset[beam]="PDFe";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_e);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_e);
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton()) {
-      deflib="GRVSherpa";
-      defset[beam]="GRV";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_photon);
     }
     std::vector<std::string> pdflibs;
     std::string mpilib, beamlib;
@@ -1019,6 +1019,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     else if (ExtractValArg(helpsv,oit,"-l","LOG_FILE"));
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","0"));
     else if (ExtractValArg(helpsv,oit,"-V","PRINT_VERSION_INFO","1"));
+    else if (ExtractValArg(helpsv,oit,"-I","INIT_ONLY","1"));
     else if (par=="--version" || par=="-v"){
       msg_Out()<<"Sherpa version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
 	       <<" ("<<SHERPA_NAME<<")"<<endl;
