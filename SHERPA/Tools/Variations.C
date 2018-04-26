@@ -163,8 +163,7 @@ std::vector<std::string> Variations::VariationArguments(Data_Reader * const read
   }
   assargs = VariationArguments(reader, "ASSOCIATED_CONTRIBUTIONS_VARIATIONS");
   for (size_t i(0); i < assargs.size(); ++i) {
-    varargs.push_back("1.,1.," + PDF::pdfdefs->DefaultPDFSet(kf_p_plus)
-                               + ",ASS_" + assargs[i]);
+    varargs.push_back("1.,1.,default,ASS_" + assargs[i]);
   }
   if (msg_LevelIsDebugging())
     for (size_t i(0);i<varargs.size();++i)
@@ -205,6 +204,7 @@ std::vector<std::string> Variations::VariationArgumentParameters(std::string arg
 void Variations::AddParameters(std::vector<std::string> stringparams,
     Data_Reader * const reader)
 {
+  DEBUG_FUNC(stringparams);
   // parse ME and PS scale factors
   const double muR2fac(ToType<double>(stringparams[0]));
   const double muF2fac(ToType<double>(stringparams[1]));
@@ -222,7 +222,10 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
     // PDF variation requested
     ownedpdfsandalphas = true;
     std::string pdfname(stringparams[2]);
-    if (pdfname.find("[all]") == std::string::npos) {
+    if (pdfname=="default") {
+      pdfsandalphasvector.push_back(PDFs_And_AlphaS());
+    }
+    else if (pdfname.find("[all]") == std::string::npos) {
       // single PDF member: "Set/i" or just "Set"
       int member(0);
       if (pdfname.find("/") != std::string::npos) {

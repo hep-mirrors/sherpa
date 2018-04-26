@@ -92,6 +92,7 @@ namespace SHERPA {
                          bool deletepdfsandalphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
+      m_asscontrib(asscontrib),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfsandalphas(deletepdfsandalphas),
       m_name(GenerateName())
