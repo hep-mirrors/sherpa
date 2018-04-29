@@ -58,6 +58,7 @@ void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout,
 				    const bool & sort)
 {
   m_flavours.push_back(flout);
+  m_minmass += p_ms->Mass(flout);
   if (!sort) return;
   // sort
   Flavour flin=m_flavours[0];
@@ -72,8 +73,6 @@ void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout,
   for (size_t i=0; i<flouts.size(); ++i) {
     m_flavours[i+1]=flouts[i];
   }
-
-  m_minmass += p_ms->Mass(flout);
 }
 
 void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp) {
