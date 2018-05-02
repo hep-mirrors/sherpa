@@ -1,0 +1,52 @@
+before_script:
+  - apt-get update
+  - apt-get -qq install gfortran libsqlite3-dev libzip-dev
+
+
+
+build:
+  stage: build
+
+  # make this manual job blocking (such that tests will only be started when
+  # the build has been started manually and completed successfully)
+  when: manual
+  allow_failure: false
+
+  # accelerate git-clone by making it shallow
+  variables:
+    GIT_DEPTH: "3"
+
+  script:
+    - apt-get -qq install texinfo
+    - autoreconf -i
+    - ./configure
+    - make -j
+    - make install
+
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 1 days
+    paths:
+      - bin/
+      - lib/
+      - include/
+      - share/
+      - Examples/CI/
+
+
+
+# define test runs as single jobs; this is less dynamic then just cycling
+# through all sub-directories of Examples/CI, but it makes sure that all test
+# jobs will be run simultaneously; at least we use anchors and map merging to
+# inherit parameters set in .test_template
+
+.test_template: &test
+  stage: test
+  variables:
+    GIT_STRATEGY: none  # we only need the artifacts from the build
+
+test-LO_Z:
+  <<: *test
+  script:
+    - cd Examples/CI/LO_Z
+    - ../../../bin/Sherpa
