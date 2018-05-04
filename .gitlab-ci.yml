@@ -10,7 +10,6 @@ build:
   # make this manual job blocking (such that tests will only be started when
   # the build has been started manually and completed successfully)
   when: manual
-  allow_failure: false
 
   # accelerate git-clone by making it shallow
   variables:
@@ -42,6 +41,7 @@ build:
 
 .test_template: &test
   stage: test
+  when: manual
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
