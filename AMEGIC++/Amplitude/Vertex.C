@@ -420,12 +420,12 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     
 void Vertex::ColorExchange(MODEL::Color_Function* colfunc,int new0,int new1,int new2,int new3)
 {
-  //T[0,1,2] -> T[new0,new1,new2]
   int  partarg[3]  ={-1,-1,-1};
-  char strarg[3]   ={-1,-1,-1};
+  char strarg[3]   ={'?','?','?'};
   int  partargn[3] ={-1,-1,-1};
-  char strargn[3]  ={-1,-1,-1};
+  char strargn[3]  ={'?','?','?'};
  
+  //T[0,1,2] -> T[new0,new1,new2]
   for (short int i=0;i<3;i++) {
     if (colfunc->Type()==MODEL::cf::D && i==2) break;
     switch (colfunc->ParticleArg(i)) {
@@ -451,6 +451,7 @@ void Vertex::ColorExchange(MODEL::Color_Function* colfunc,int new0,int new1,int 
       break;
     }
   }
+
   //T[0,1,4]T[3,4,2] -> T[new0,new1,4]T[new3,4,new2]
   if (colfunc->Next()) {
   for (short int i=0;i<3;i++) {
@@ -479,6 +480,7 @@ void Vertex::ColorExchange(MODEL::Color_Function* colfunc,int new0,int new1,int 
       }
     }
   }
+
   colfunc->SetStringArg(strarg[0],strarg[1],strarg[2]);
   colfunc->SetParticleArg(partarg[0],partarg[1],partarg[2]);
   if (colfunc->Next()) {
