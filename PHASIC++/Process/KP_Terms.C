@@ -536,7 +536,7 @@ double KP_Terms::CalculateHP
           nz = mom[0]+mom[1]-pa-mom[3]-mom[5];      // b emitts
           if(dipole_case == EXTAMP::DipoleCase::IDb){
             n = mom[0]+mom[1]-pai-mom[2];
-            n = mom[0]+mom[1]-pa-mom[2];
+            nz = mom[0]+mom[1]-pa-mom[2];
           }
         }
         else if(ai==5){ 
