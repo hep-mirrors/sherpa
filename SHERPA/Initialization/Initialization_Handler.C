@@ -939,6 +939,24 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
   rpa->gen.SetVariable("CSS_SCALE_FACTOR",ToString(as_var_fac));
   rpa->gen.SetVariable("CSS_MASS_THRESHOLD",ToString(mth));
+
+  /* set AMEGICs integrator parameters */
+  double helpd;
+  helpd = css_reader.Get("AMEGIC_SCHANNEL_ALPHA", 0.75,
+                     "s-channel \\alpha", METHOD);
+  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(helpd));
+
+  helpd = css_reader.Get("AMEGIC_TCHANNEL_ALPHA", 0.9,
+                     "t-channel \\alpha", METHOD);
+  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(helpd));
+
+  helpd = css_reader.Get("AMEGIC_CHANNEL_EPSILON", 0.0,
+                     "channel \\epsilon", METHOD);
+  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(helpd));
+
+  helpd = css_reader.Get("AMEGIC_THRESHOLD_EPSILON", 1.5,
+                     "threshold \\epsilon", METHOD);
+  rpa->gen.SetVariable("AMEGIC_THRESHOLD_EPSILON",ToString(helpd));
 }
 
 void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])

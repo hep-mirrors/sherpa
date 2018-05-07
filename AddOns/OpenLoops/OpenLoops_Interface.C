@@ -157,22 +157,6 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
         <<"in~\\cite{Mastrolia:2012bu,Peraro:2014cba}."<<endl;
   }
   rpa->gen.AddCitation(1,cite.str());
-
-  /* set AMEGIC-parameters for integration */
-  double helpd;
-  helpd = reader.Get("AMEGIC_SCHANNEL_ALPHA", 0.75,
-                     "s-channel \\alpha", METHOD);
-  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(helpd));
-  helpd = reader.Get("AMEGIC_TCHANNEL_ALPHA", 0.9,
-                     "t-channel \\alpha", METHOD);
-  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(helpd));
-  helpd = reader.Get("AMEGIC_CHANNEL_EPSILON", 0.0,
-                     "channel \\epsilon", METHOD);
-  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(helpd));
-  helpd = reader.Get("AMEGIC_THRESHOLD_EPSILON", 1.5,
-                     "threshold \\epsilon", METHOD);
-  rpa->gen.SetVariable("AMEGIC_THRESHOLD_EPSILON",ToString(helpd));
-
   return true;
 }
 
