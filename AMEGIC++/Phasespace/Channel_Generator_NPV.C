@@ -212,6 +212,7 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Multi_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/Default_Reader.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
@@ -298,7 +299,8 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl
-	<<"  m_thexp = ToType<double>(rpa->gen.Variable(\"AMEGIC_THRESHOLD_EPSILON\"));"<<endl;
+	<<"  ATOOLS::Default_Reader reader;"<<endl
+	<<"  m_thexp = reader.Get(\"AMEGIC_THRESHOLD_EPSILON\", 1.5);"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.;"<<endl
 	<<"  m_alpha = .5;"<<endl
