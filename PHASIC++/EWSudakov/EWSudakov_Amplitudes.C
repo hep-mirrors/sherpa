@@ -49,7 +49,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
   for (auto& ampl : ampls) {
     const auto& permutation = LegPermutation(ampl.first);
     for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
-      ampl.second->Leg(i)->SetMom(mom[permutation[i]]);
+      ampl.second->Leg(i)->SetMom(i < ampl.second->NIn() ? -mom[permutation[i]] : mom[permutation[i]]);
     }
   }
 }
