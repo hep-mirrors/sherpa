@@ -13,6 +13,28 @@ using namespace ATOOLS;
 Rambo::Rambo(int _nin,int _nout,const Flavour * fl, const Mass_Selector* _ms) :
   p_ms(_ms)
 {
+  std::vector<double> masses(_nin+_nout, 0.0);
+  for (short int i=0;i<_nin+_nout;i++) 
+    {
+      masses[i]=0.0;
+      for (size_t j(0);j<fl[i].Size();++j) 
+	masses[i]+=p_ms ? p_ms->Mass(fl[i][j]) : fl[i][j].Mass();
+      masses[i]/=fl[i].Size();
+    }
+  Init(_nin,_nout, masses);
+}
+
+Rambo::Rambo(size_t _nin,
+	     std::vector<double> masses) 
+  : p_ms(NULL)
+{
+  Init(_nin, masses.size()-_nin, masses);
+}
+
+void Rambo::Init(const size_t& _nin,
+		 const size_t& _nout,
+		 const std::vector<double>& masses)
+{
   nin=_nin; nout=_nout;
   xm2 = new double[nin+nout+1];
   p2  = new double[nin+nout+1];  
@@ -21,12 +43,12 @@ Rambo::Rambo(int _nin,int _nout,const Flavour * fl, const Mass_Selector* _ms) :
   rans= 0;
   rannum=0;
   massflag = 0;
-  for (short int i=0;i<nin+nout;i++) {
-    ms[i]=0.0;
-    for (size_t j(0);j<fl[i].Size();++j) ms[i]+=p_ms->Mass(fl[i][j]);
-    ms[i]=sqr(ms[i]/fl[i].Size());
-    if (!ATOOLS::IsZero(ms[i])) massflag = 1;
-  } 
+
+  for (short int i=0;i<nin+nout;i++)
+    {
+      ms[i]=sqr(masses[i]);
+      if (!ATOOLS::IsZero(ms[i])) massflag = 1;
+    } 
 
   double   pi2log = log(M_PI/2.);
   double * Z      = new double[nout+1];
@@ -56,6 +78,17 @@ void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   weight   *= exp((2.*nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,nout*3.-4.);
 }
 
+ATOOLS::Vec4D_Vector Rambo::GeneratePoint(const double& E)
+{
+  ATOOLS::Vec4D_Vector p; p.resize(nin+nout);
+  if (E<ms[0]+ms[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
+  double x=1.0/2.0+(ms[0]*ms[0]-ms[1]*ms[1])/(2.0*E*E);
+  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-ms[0]*ms[0]));
+  p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
+  GeneratePoint(&p[0]);
+  return p;
+}
+
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
   Vec4D sump(0.,0.,0.,0.);
@@ -67,7 +100,7 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   short int i;
   Vec4D R;
   Vec3D B;
-  
+
   for(i=nin;i<nin+nout;i++) {
     C     = 2*ran->Get()-1;
     S     = sqrt(1-C*C);

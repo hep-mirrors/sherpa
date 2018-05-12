@@ -234,44 +234,6 @@ void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
   m_nout+=1;
 }
 
-void MEProcess::ReadInProcess()
-{
-  return;
-  DEBUG_FUNC("");
-  std::vector<std::vector<std::string> > momdata;
-  if (!p_momentareader->ReadMatrix(momdata,""))
-    THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
-                        +ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE")+"'.");
-  size_t begin(0),id(0);
-  for (size_t nf(0);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    if (cur.size()==2 && cur[0]=="Point" &&
-        ATOOLS::ToType<int>(cur[1])==1) { begin=nf+1; break; }
-  }
-  for (size_t nf(begin);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    // either "flav mom" or "flav mom col"
-    if (cur.size()==2 && cur[0]=="End" && cur[1]=="point") break;
-    if (cur.size()!=5 && cur.size()!=7) continue;
-    int kf(ATOOLS::ToType<int>(cur[0]));
-    ATOOLS::Vec4D p(ATOOLS::ToType<double>(cur[1]),
-                    ATOOLS::ToType<double>(cur[2]),
-                    ATOOLS::ToType<double>(cur[3]),
-                    ATOOLS::ToType<double>(cur[4]));
-    ATOOLS::ColorID col(0,0);
-    if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
-                                           ATOOLS::ToType<size_t>(cur[6]));
-    int kfamp(p_amp->Leg(id)->Flav().Kfcode());
-    if (id<m_nin) kfamp=-kfamp;
-    if (p_amp->Leg(id)->Flav().IsAnti()) kfamp=-kfamp;
-    if (kf!=kfamp) THROW(fatal_error,"Wrong momentum ordering.");
-    if (id<m_nin) p_amp->Leg(id)->SetMom(-p);
-    else          p_amp->Leg(id)->SetMom(p);
-    if (id<m_nin) p_amp->Leg(id)->SetCol(col.Conj());
-    else          p_amp->Leg(id)->SetCol(col);
-    id++;
-  }
-}
 
 double MEProcess::GenerateColorPoint()
 {
@@ -445,18 +407,10 @@ void MEProcess::SetUpColorStructure()
 }
 
 double MEProcess::TestPoint(const double& E){
-  ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
-  if(m_nin<2)
-    THROW(not_implemented, "Not implemented for 1->n process");
-  double m[2]={m_flavs[0].Mass(),m_flavs[1].Mass()};
-  if (E<m[0]+m[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
-  double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
-  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-m[0]*m[0]));
-  p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
-  p_rambo->GeneratePoint(&p[0],(PHASIC::Cut_Data*)(NULL));
+  ATOOLS::Vec4D_Vector p = p_rambo->GeneratePoint(E);
   SetMomenta(p);
   if(p_colint!=NULL) GenerateColorPoint();
-  p_rambo->GenerateWeight(&p[0],(PHASIC::Cut_Data*)(NULL));
+  p_rambo->GenerateWeight(&p[0]);
   return p_rambo->Weight();
 }
 
@@ -529,3 +483,18 @@ ATOOLS::Flavour MEProcess::GetFlav(size_t i)
   return (i<m_nin?fl.Bar():fl);
 }
 
+std::vector<double> MEProcess::NLOSubContributions()
+  {
+    if (p_proc->IsGroup() && p_proc->Size()>1)
+      THROW(not_implemented, "Not implemented for process groups");
+    
+    PHASIC::Process_Base* proc = 
+      p_proc->IsGroup() ? (*p_proc)[0] : p_proc;
+
+    std::vector<double> ret;
+    if(proc->GetRSSubevtList())
+      for(auto& sub : *(proc->GetRSSubevtList()))
+	ret.push_back(sub->m_result);
+
+    return ret;
+  }

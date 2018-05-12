@@ -32,6 +32,8 @@ public:
   double GenerateColorPoint();
   void Initialize();
 
+  std::vector<double> NLOSubContributions();
+
   void SetMomentum(int, double, double, double, double);
   void SetMomenta(ATOOLS::Vec4D_Vector&);
 

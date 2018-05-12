@@ -53,6 +53,7 @@ private:
   PHASIC::Process_Base* FindProcess(const ATOOLS::Cluster_Amplitude* amp);
   PHASIC::Process_Base* FindProcess();
   void SetColors();
+  void SetUpColorStructure();
 
 public:
   MEProcess(SHERPA::Sherpa* Generator);
@@ -61,11 +62,11 @@ public:
   void AddOutFlav(const int &id);
   void AddInFlav(const int &id, const int &col1, const int &col2);
   void AddOutFlav(const int &id, const int &col1, const int &col2);
-  void ReadInProcess();
   double GenerateColorPoint();
   bool HasColorIntegrator();
   void Initialize();
-  void SetUpColorStructure();
+
+  std::vector<double> NLOSubContributions();
 
   size_t NumberOfPoints();
 

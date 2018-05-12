@@ -13,8 +13,11 @@ namespace PHASIC {
     double accu;
     const ATOOLS::Mass_Selector* p_ms;
   public:
-    Rambo(int,int,const ATOOLS::Flavour *,const ATOOLS::Mass_Selector* ms);
+    Rambo(int,int,const ATOOLS::Flavour *,const ATOOLS::Mass_Selector* ms=NULL);
+    Rambo(size_t nin, std::vector<double> masses);
     ~Rambo();
+    void Init(const size_t& nin, const size_t& nout, const std::vector<double>& masses);
+    ATOOLS::Vec4D_Vector GeneratePoint(const double& E);
     void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);  
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     void GenerateWeight(ATOOLS::Vec4D * p) { GenerateWeight(p,NULL); }  

@@ -1,4 +1,11 @@
 %module Sherpa
+
+%include "std_vector.i"
+namespace std {
+  %template(vectori) vector<int>;
+  %template(vectord) vector<double>;
+};
+
 %include "Terminator_Objects.i"
 %include "Exception.i"
 %include "Flavour.i"
@@ -9,6 +16,7 @@
 %include "MEProcess.i"
 %include "Random.i"
 %include "Model_Base.i"
+%include "Rambo.i"
 
 %{
 #include <SHERPA/Main/Sherpa.H>
