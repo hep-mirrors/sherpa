@@ -939,6 +939,7 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
   rpa->gen.SetVariable("CSS_SCALE_FACTOR",ToString(as_var_fac));
   rpa->gen.SetVariable("CSS_MASS_THRESHOLD",ToString(mth));
+
 }
 
 void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])

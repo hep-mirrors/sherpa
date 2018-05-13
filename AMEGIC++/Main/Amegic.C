@@ -286,22 +286,6 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
                      "cut massive vector propagators", METHOD);
   rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(helpi));
 
-  helpd = reader.Get("AMEGIC_TCHANNEL_ALPHA", 0.9,
-                     "t-channel \\alpha", METHOD);
-  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(helpd));
-
-  helpd = reader.Get("AMEGIC_SCHANNEL_ALPHA", 0.75,
-                     "s-channel \\alpha", METHOD);
-  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(helpd));
-
-  helpd = reader.Get("AMEGIC_CHANNEL_EPSILON", 0.0,
-                     "channel \\epsilon", METHOD);
-  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(helpd));
-
-  helpd = reader.Get("AMEGIC_THRESHOLD_EPSILON", 1.5,
-                     "threshold \\epsilon", METHOD);
-  rpa->gen.SetVariable("AMEGIC_THRESHOLD_EPSILON",ToString(helpd));
-
   helpd = reader.Get("AMEGIC_DEFAULT_GAUGE", 1,
                      "gauge", METHOD);
   rpa->gen.SetVariable("AMEGIC_DEFAULT_GAUGE",ToString(helpd));

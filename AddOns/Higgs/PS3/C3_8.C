@@ -96,8 +96,8 @@ C3_8::C3_8(int nin,int nout,Flavour* fl,Integration_Info * const info)
   name = std::string("C3_8");
   rannum = 5-m_onshell;
   rans  = new double[rannum];
-  m_amct  = 1.0+ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_EPSILON"));
-  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_SCHANNEL_ALPHA"));
+  m_amct  = 1.0+Default_Reader().Get("AMEGIC_CHANNEL_EPSILON", 0.0);
+  m_alpha = Default_Reader().Get("AMEGIC_SCHANNEL_ALPHA", 0.75);
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);

@@ -163,6 +163,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/Default_Reader.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
@@ -249,11 +250,12 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl
-	<<"  m_salpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_SCHANNEL_ALPHA\"));"<<endl
-	<<"  m_thexp = ToType<double>(rpa->gen.Variable(\"AMEGIC_THRESHOLD_EPSILON\"));"<<endl;
+	<<"  ATOOLS::Default_Reader reader;"<<endl
+	<<"  m_salpha = reader.Get(\"AMEGIC_SCHANNEL_ALPHA\", 0.75);"<<endl
+	<<"  m_thexp = reader.Get(\"AMEGIC_THRESHOLD_EPSILON\", 1.5);"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
-	<<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_TCHANNEL_ALPHA\"));"<<endl
+    chf	<<"  m_amct  = 1.0+reader.Get(\"AMEGIC_CHANNEL_EPSILON\", 0.0);"<<endl
+	<<"  m_alpha = reader.Get(\"AMEGIC_TCHANNEL_ALPHA\", 0.9);"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
