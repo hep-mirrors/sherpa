@@ -82,8 +82,6 @@ PHASIC::Process_Info Dipole_Wrapper_Process::ConstructBornProcessInfo
 {
   PHASIC::Process_Info ret(rsinfo);
   ret.m_fi.m_nlotype&=~ATOOLS::nlo_type::real;
-  size_t nin  = ret.m_ii.NExternal();
-  size_t nout = ret.m_fi.NExternal();
   ret.Combine(i,j,flav_ij);
   return ret;
 }

@@ -329,7 +329,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   pznew=sqrt(sp*sqr(oldcms[3]/oldcms[0])/(1.0-sqr(oldcms[3]/oldcms[0])));
   double yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
   double spo=oldcms.Abs2();
-  for (double sign=1.0;sign>=-1.0;sign-=2.0) {
+  for (int sign {1}; sign >= -1; sign -= 2) {
     E1=0.5/sp*((sp+sp1-sp2)*Enew+sign*sqrt(Lambda2(sp,sp1,sp2))*pznew);
     E2=Enew-E1;
     pz1=Sign(old1[3])*sqrt(E1*E1-sp1);

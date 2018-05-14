@@ -14,6 +14,8 @@
 #define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
+#include <cassert>
+
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
@@ -163,9 +165,11 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   if (sp==NULL) {
     msg_Debugging()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
     // if no signal process (i.e. hadrons execs etc.), proceed anyways
-    // do not split jetseeds
+    // but do not split jetseeds or S/H
     if (m_mode&ANALYSIS::splitt_jetseeds)
       m_mode=m_mode^ANALYSIS::splitt_jetseeds;
+    if (m_mode&ANALYSIS::split_sh)
+      m_mode=m_mode^ANALYSIS::split_sh;
   }
   else name = sp->TypeSpec();
 
@@ -313,6 +317,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
 
   if (m_mode&ANALYSIS::split_sh) {
+    assert(sp != nullptr);
     std::string typespec=sp->TypeSpec();
     typespec=typespec.substr(typespec.length()-2, 2);
     std::string type="";

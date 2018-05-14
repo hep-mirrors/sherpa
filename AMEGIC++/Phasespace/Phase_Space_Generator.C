@@ -468,7 +468,7 @@ void Phase_Space_Generator::Copy(string sfrom,string sto)
   from.open(sfrom.c_str());
   to.open(sto.c_str()); 
 
-  char ch;
+  char ch {0};
   while(from.get(ch)) to.put(ch);
   from.close();
   to.close();  

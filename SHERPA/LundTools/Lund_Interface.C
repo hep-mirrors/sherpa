@@ -41,7 +41,6 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   p_jdahep(new int[2*HEPEVT_CB_SIZE])
 {
   exh->AddTerminatorObject(this);
-  double win;
   string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa->gen.Bunch(i);
@@ -81,7 +80,6 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
     pypars.mstp[47]=1;
     pydat1.mstj[100]=5;
   }
-  win=rpa->gen.Ecms();
   s_maxerrors=rpa->gen.NumberOfEvents();
   vector<vector<double> > help;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
@@ -378,7 +376,6 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
 	msg_Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
     AddPartonToString(help2,nhep);
     delete help2;
-      lastc=0;
   }
   else {
       for (;i<blob->NInP();i++) {
@@ -642,10 +639,8 @@ void Lund_Interface::NextFile(const bool newfile)
 {
   if (!m_writeout) return; 
   string oldfile;
-  bool oldfileexists=false;
   ofstream *outfile=p_hepevt->GetOutStream();
   if (outfile!=NULL) {
-    oldfileexists=true;
     oldfile=m_outfile+ToString(m_curfile)+string(".evts");
     if (newfile) 
       (*outfile)<<(m_outfile+ToString(++m_curfile)+string(".evts"))<<endl;

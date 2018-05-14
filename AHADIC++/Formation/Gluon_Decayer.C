@@ -2,6 +2,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <cassert>
+
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
@@ -115,6 +117,8 @@ Proto_Particle * Gluon_Decayer::FirstGluon() {
 
 int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
 			Proto_Particle * part3) {
+  assert(part1 != nullptr);
+  assert(part2 != nullptr);
   Vec4D momsave1(part1->Momentum()), momsave2(part2->Momentum());
   if (CheckMass(part1,part2) && m_splitter(part1,part2,part3)) {
     return 1;
@@ -125,11 +129,17 @@ int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
 }
 
 bool Gluon_Decayer::LastStep() {
-  Proto_Particle * part[3];
-  size_t i(0);
+  // collect particles
+  Proto_Particle* part[3] {nullptr, nullptr, nullptr};
+  {
+    size_t i {0};
+    for (auto& p : *p_singlet) {
+      part[i] = p;
+      ++i;
+    }
+  }
+  // assign roles
   size_t gluon(1),split(0),spect(2);
-  for (list<Proto_Particle *>::iterator pliter=p_singlet->begin();
-       pliter!=p_singlet->end();pliter++) part[i++] = (*pliter);
   if ( (!part[0]->IsLeading() && part[2]->IsLeading()) ||
        (!part[0]->IsLeading() && !part[2]->IsLeading() &&
 	(((part[0]->Momentum()+part[1]->Momentum()).Abs2()-
@@ -138,6 +148,7 @@ bool Gluon_Decayer::LastStep() {
 	  sqr(p_constituents->Mass(part[2]->Flavour())))))) {
     split = 2; spect = 0;
   }
+  // perform step and return result
   int stepres = Step(part[split],part[gluon],part[spect]);
   if (stepres==0) {
     return Trivial(p_singlet->front(),p_singlet->back());
