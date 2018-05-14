@@ -53,6 +53,7 @@ namespace EXTAMP {
     double Calc_KP(const ATOOLS::Vec4D_Vector& p);
     double m_x0, m_x1, m_eta0, m_eta1;
 
+    bool ApplyIDdipole() const;
     double Calc_HP(const ATOOLS::Vec4D_Vector& p);
 
     /* Used by PHASIC::Single_Process for reweighting op KP terms */

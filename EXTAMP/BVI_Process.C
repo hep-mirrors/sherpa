@@ -86,17 +86,17 @@ namespace EXTAMP {
     p_corr_me->Calc(p);
 
     /* Get squared Born from correlator ME */
-    B = p_corr_me->GetBorn2();
+//    B = p_corr_me->GetBorn2();
 
     /* Calculate integrated subtraction terms I and corresponding
        scale dependence terms */
-    I = Calc_I(p, mur);
+//    I = Calc_I(p, mur);
     scaleterms = Calc_ScaleDependenceTerms_I(p, mur);
 
     /* Calculate HP terms for pseudo-dipoles */
-    if(m_dipole_case == EXTAMP::DipoleCase::IDa ||
-       m_dipole_case == EXTAMP::DipoleCase::IDb ||
-       m_dipole_case == EXTAMP::DipoleCase::IDin){
+    if( m_dipole_case == EXTAMP::DipoleCase::IDa ||
+        m_dipole_case == EXTAMP::DipoleCase::IDb ||
+       (m_dipole_case == EXTAMP::DipoleCase::IDin && ApplyIDdipole()) ){
     HP = Calc_HP(p);
     }
     
@@ -108,7 +108,7 @@ namespace EXTAMP {
        fraction m_vfrac of PS points. */
     if(ATOOLS::ran->Get() < m_vfrac)
       {
-	V = Calc_V(p,B,mur)/m_vfrac;
+//	V = Calc_V(p,B,mur)/m_vfrac;
 	
 	std::pair<double,double> vscterms =
 	  Calc_ScaleDependenceTerms_V(p,B,mur);
@@ -206,11 +206,35 @@ namespace EXTAMP {
     return -p_corr_me->AlphaQCD()/(2.0*M_PI) * I;
   }
 
+
+  bool BVI_Process::ApplyIDdipole() const
+  {
+    /* return true, if Born-config. has (at least) one b- and 
+       one bbar-quark */
+    
+    /* count b&bbar quarks in final state of Born-config,
+       require, to have at least one b-quark and
+       one bbar-quark*/
+    int cnt_b=0, cnt_bbar=0;
+    for(std::vector<size_t>::const_iterator cnt=PartonIndices().begin(); 
+        cnt!=PartonIndices().end();++cnt){
+      if(*cnt==0 || *cnt==1) continue;    // exclude initial state partons from counting
+      if(m_flavs[*cnt].IsbQuark())    cnt_b++;
+      if(m_flavs[*cnt].IsbbarQuark()) cnt_bbar++;
+    }
+    if(cnt_b<1 || cnt_bbar<1) return false;
+
+    return true;
+  }
+
+
   double BVI_Process::Calc_HP(const ATOOLS::Vec4D_Vector& p)
   {
+//for(auto i: PartonIndices()){
+//  DEBUG_VAR(m_flavs[i]);  
+//}
     double cpl = p_corr_me->AlphaQCD()/(2.0*M_PI);
-    double m_z = ATOOLS::ran->Get();
-    return p_kpterms->CalculateHP(p,m_z,cpl,PartonIndices(),p_corr_me,m_dipole_case); 
+    return p_kpterms->CalculateHP(p,cpl,PartonIndices(),p_corr_me,m_dipole_case,m_flavs); 
     // pass p_corr_me and do not use m_dsij from p_kpterms as indices of m_dsij are
     // like this: dsij[i][j] = M(PartonIndices()[i], PartonIndices()[j]) -> less handy
   }
@@ -376,7 +400,8 @@ namespace EXTAMP {
     dsij[0][0] = p_corr_me->GetBorn2();
 
     /* Let KP_Terms class calculate */
-    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
+    bool applyID = m_dipole_case == EXTAMP::DipoleCase::IDin && ApplyIDdipole();
+    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w,applyID);
 
     /* Set all relevant members of ME_Weight_Info */
     bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];

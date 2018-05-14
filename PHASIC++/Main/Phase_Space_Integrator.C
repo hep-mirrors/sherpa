@@ -41,13 +41,19 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_nrawmin = reader.Get("PSI_NRAWMIN", 0, "n_{min}", METHOD);
 
   // number of points per iteration
+DEBUG_VAR(m_itmin);
   m_itmin = reader.Get("PSI_ITMIN", p_psh->Process()->Process()->Info().m_itmin, "n_{it,min,raw}", METHOD);
+DEBUG_VAR(m_itmin);
   m_itmax = reader.Get("PSI_ITMAX", 100 * m_itmin, "n_{it,max}", METHOD);
 
   // number of optimisation steps
   m_nopt = reader.Get("PSI_NOPT", 25, "n_{opt}", METHOD);
   m_maxopt = reader.Get("PSI_MAXOPT", 5, "n_{maxopt}", METHOD);
+DEBUG_VAR(m_stopopt);
   m_stopopt = reader.Get("PSI_STOPOPT", 1000, "n_{stopopt}", METHOD);
+DEBUG_VAR(m_stopopt);
+  m_stopopt = 1000000;
+DEBUG_VAR(m_stopopt);
   m_ndecopt = reader.Get("PSI_NDECOPT", 10, "n_{opt,dec}", METHOD);
 
   // time steps
@@ -303,6 +309,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       if (m_fin_opt==0 && wannabreak && m_nopt>p_psh->Stats().size())
         m_nopt=p_psh->Stats().size();
       if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
+DEBUG_VAR(p_psh->Stats().size());
+DEBUG_VAR(m_nopt);
+DEBUG_VAR(m_stopopt);
       if (p_psh->Stats().size()>=m_nopt+m_stopopt) return true;
     }
   }

@@ -1256,3 +1256,54 @@ double Massive_Kernels::L3(int type, double x, const ATOOLS::Vec4D &pa,
   }
   return 0;
 }
+
+
+double Massive_Kernels::K_fi1(int type, double x)
+{
+  double gamma_Ti2;  // gamma_i divided by T_i^2
+  switch(type){
+    case 1:
+    case 3:
+      gamma_Ti2=m_g1t;
+      break;
+    case 2:
+    case 4:
+      gamma_Ti2=m_g2t;
+  }
+  return -2./(1.-x)*log(1.-x)-gamma_Ti2/(1.-x);
+}
+
+double Massive_Kernels::K_fi2(int type)
+{
+  double gamma_Ti2;  // gamma_i divided by T_i^2
+  switch(type){
+    case 1:
+    case 3:
+      gamma_Ti2=m_g1t;
+      break;
+    case 2:
+    case 4:
+      gamma_Ti2=m_g2t;
+  }
+  return -gamma_Ti2;
+}
+
+double Massive_Kernels::K_fi3(int type, double x)
+{
+  return 2./(1.-x)*log(2.-x);
+}
+
+double Massive_Kernels::K_fi4(int type, double eta)
+{
+  double gamma_Ti2;  // gamma_i divided by T_i^2
+  switch(type){
+    case 1:
+    case 3:
+      gamma_Ti2=m_g1t;
+      break;
+    case 2:
+    case 4:
+      gamma_Ti2=m_g2t;
+  }
+  return log(1-eta)*log(1.-eta)+gamma_Ti2*log(1.-eta);
+}

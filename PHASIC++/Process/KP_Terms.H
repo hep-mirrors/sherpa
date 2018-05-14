@@ -58,14 +58,14 @@ namespace PHASIC {
                    const std::vector<std::vector<double > > &dsij,
                    const double &x0,const double &x1,
                    const double &eta0,const double &eta1,
-                   const double &wgt);
+                   const double &wgt, 
+                   const bool &applyID=false);
 
     double CalculateHP(const ATOOLS::Vec4D_Vector& mom,
-                   const double &z,
                    const double &cpl,
                    const std::vector<size_t> &parton_indices,
                    PHASIC::Color_Correlated_ME2 *corr_me,
-                   const EXTAMP::DipoleCase &);
+                   const EXTAMP::DipoleCase &dipole_case, const ATOOLS::Flavour_Vector &flavs);
 
     double Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                const double &x0,const double &x1,

@@ -58,6 +58,7 @@ namespace EXTAMP {
     m_hist_mreal_y46 = YODA::Histo1D(bins, "RSterm/y46", "Mreal_y46");
     m_hist_dipole_y46 = YODA::Histo1D(bins, "RSterm/y46", "dipole_y46");
 //    m_hist_alpha_min = YODA::Histo1D(bins, "alpha_min", "alpha_min");
+    m_myfile.open ("RSdata.dat");
   }
 
 
@@ -104,8 +105,8 @@ namespace EXTAMP {
   {
     /* Calculate dipole kinematics and update subevents accordingly */
     CalculateKinematics(p);
+DEBUG_VAR(p);
 
-    /* Now check if any of the has alpha<alpha_min */
     /* for ID */
 //    const ATOOLS::Vec4D n = p[0]+p[1]-p[3]-p[5]-p[6];
 //    m_hist_alpha_min.fill( p[4]*p[5] / (p[5]*n), 1.);  // vi_tilde for b-quark
@@ -132,6 +133,7 @@ namespace EXTAMP {
 	   Dipole_Wrapper_Processes is such that ADDING their
 	   contribution cancels divergencies. */
 	bool sub_trig   = m_subevents[i]->m_trig;
+DEBUG_VAR(sub_trig);
 	double sub_dxs = (sub_trig ? m_dipole_wrappers[i]->Calc(m_subevents[i]) : 0.0);
 	S += sub_dxs;
 //      if (msg_LevelIsDebugging()) {
@@ -156,6 +158,9 @@ namespace EXTAMP {
     DEBUG_VAR(S);
     m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
     m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
+
+    m_myfile << p[4]*p[6]/(p[1]*p[0]) << " " << p[5]*p[6]/(p[1]*p[0]) << " "
+           << R << " " << S << std::endl;
 
     return m_lastxs = R + S;
   }
@@ -453,6 +458,7 @@ namespace EXTAMP {
 //    myfile.open("alpha_min.yoda");
 //      YODA::WriterYODA::write(myfile, m_hist_alpha_min);
 //    myfile.close();
+    m_myfile.close();
   }
 
   

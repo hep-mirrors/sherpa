@@ -3,6 +3,8 @@
 
 #include "EXTAMP/Process.H"
 #include "YODA/Histo1D.h"
+#include <fstream>   // for python-plot with pseudo-dipoles
+#include <iostream>
 
 namespace PHASIC {
   class Tree_ME2_Base;
@@ -119,6 +121,7 @@ namespace EXTAMP {
 
     YODA::Histo1D         m_hist_dipole_y46, m_hist_mreal_y46;
 //    YODA::Histo1D         m_hist_alpha_min;
+    std::ofstream m_myfile;
   };
 
 }

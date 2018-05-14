@@ -1,5 +1,6 @@
 #include "PHASIC++/Process/KP_Terms.H"
 
+#include "ATOOLS/Math/Random.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Default_Reader.H"
@@ -186,7 +187,7 @@ void KP_Terms::SetKappa(const double &kappa)
 void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
  const double &x0,const double &x1,const double &eta0,const double &eta1,
- const double &wgt)
+ const double &wgt, const bool &applyID)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
@@ -201,7 +202,6 @@ void KP_Terms::Calculate
   double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
-
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
 
   // itype&K
@@ -348,6 +348,19 @@ void KP_Terms::Calculate
           <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
           <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
     }
+
+  /* subtract contribution of K-terms from IF-dipoles,
+     i.e. eq.(8.26) in CS-paper */
+  if(applyID) // subtract only if pseudo-dipoles are used
+    for (size_t i=0;i<m_plist.size();i++) {
+      if(i==0 || i==1) continue;
+      DEBUG_VAR(i);
+      m_kpca[0]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)  // type (i.e. first argument) is always 1,
+                             +p_kernel->K_fi2(1)       // as the associated splitting is q > q
+                             -p_kernel->K_fi4(1,eta0));
+      m_kpca[1]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
+                               +p_kernel->K_fi3(1,x0)));
+    }
   }
 
   if (m_sb) {
@@ -490,6 +503,18 @@ void KP_Terms::Calculate
           <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
           <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
     }
+  /* subtract contribution of K-terms from IF-dipoles,
+     i.e. eq.(8.26) in CS-paper */
+  if(applyID) // subtract only if pseudo-dipoles are used
+    for (size_t i=0;i<m_plist.size();i++) {
+      if(i==0 || i==1) continue;
+      DEBUG_VAR(i);
+      m_kpcb[0]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
+                             +p_kernel->K_fi2(1)
+                             -p_kernel->K_fi4(1,eta1));
+      m_kpcb[1]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
+                               +p_kernel->K_fi3(1,x1)));
+    }
   }
 
   double cplfac(wgt*cpl);
@@ -515,50 +540,104 @@ void KP_Terms::Calculate
 }
 
 double KP_Terms::CalculateHP
-(const Vec4D_Vector &mom, const double &z, const double &cpl,
+(const Vec4D_Vector &mom, const double &cpl,
  const std::vector<size_t> &parton_indices, PHASIC::Color_Correlated_ME2* corr_me,
- const EXTAMP::DipoleCase &dipole_case)
+ const EXTAMP::DipoleCase &dipole_case, const ATOOLS::Flavour_Vector &flavs)
 { /* calculate H- and P- term for ID-dipole */
 
+  double z = ATOOLS::ran->Get();
   m_H = 0;
   double H_temp; 
-  for(auto ai: parton_indices){    // sum over emitter-partons = ID-partons
-      for(auto b: parton_indices){ // sum over all partons, except ai itself
-        if(b==ai) continue;
+  ATOOLS::Vec4D n, pai, pb;  // momenta of BVI-kinematics
+  ATOOLS::Vec4D nz, pa;      // z-dependent momenta
+  ATOOLS::Vec4D pfs;         // momentum of other final state parton than ai (only used for IDin)
+  size_t other_finalstate_parton; // other final state parton than ai (only used for IDin)
 
+  switch(dipole_case){
+  case EXTAMP::DipoleCase::IDa:
+  case EXTAMP::DipoleCase::IDb:
+    for(auto ai: parton_indices){    // sum over emitter-partons = ID-partons
+      for(auto b: parton_indices){   // sum over all partons, except ai itself
+        if(b==ai) continue;
+  
         H_temp = 0;
-        ATOOLS::Vec4D n, pai, pb;  // momenta of BVI-kinematics
-        ATOOLS::Vec4D nz, pa;      // z-dependent momenta
         // labeling: 2=W+, 3=W-, 4=b, 5=bbar, is checked
         pa = z*mom[ai]; pb = mom[b]; pai = mom[ai];
-        if(ai==4){ 
-          n = mom[0]+mom[1]-pai-mom[3]-mom[5];      // b emitts
-          nz = mom[0]+mom[1]-pa-mom[3]-mom[5];      // b emitts
-          if(dipole_case == EXTAMP::DipoleCase::IDb){
+        if(ai==4){                                    // b emitts
+          switch(dipole_case){
+          case EXTAMP::DipoleCase::IDa:
+            n = mom[0]+mom[1]-pai-mom[3]-mom[5];
+            nz = mom[0]+mom[1]-pa-mom[3]-mom[5];
+            break;
+          case EXTAMP::DipoleCase::IDb:
             n = mom[0]+mom[1]-pai-mom[2];
             nz = mom[0]+mom[1]-pa-mom[2];
           }
         }
-        else if(ai==5){ 
-          n = mom[0]+mom[1]-pai-mom[2]-mom[4];      // bbar emitts
-          nz = mom[0]+mom[1]-pa-mom[2]-mom[4];      // bbar emitts
-          if(dipole_case == EXTAMP::DipoleCase::IDb){
+        else if(ai==5){                               // bbar emitts
+          switch(dipole_case){
+          case EXTAMP::DipoleCase::IDa:
+            n = mom[0]+mom[1]-pai-mom[2]-mom[4];
+            nz = mom[0]+mom[1]-pa-mom[2]-mom[4];
+            break;
+          case EXTAMP::DipoleCase::IDb:
             n = mom[0]+mom[1]-pai-mom[3];
             nz = mom[0]+mom[1]-pa-mom[3]; 
           }
         }
         double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
-
+  
         double v = sqrt(1-(n.Abs2())*((pai+pb).Abs2())/pow((pai+pb)*n,2.));  // eq.(C.21) in CS
         H_temp += -( 0.25 +
-                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))     // prefactor 2 is correct,
-                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )   // as Jsoft in CS has mistake
-                                                                    // has delta(1-z) prefactor
-                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) );
-
+                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))        // has delta(1-z) prefactor
+                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )
+                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) ); // has no delta(1-z) prefactor
+  
         H_temp *= Mab;
         m_H    += H_temp;
       }
+    }
+    break;
+
+  case EXTAMP::DipoleCase::IDin:
+    /* parton_indices = (0,1,4,5) */
+    for(auto ai: parton_indices){    // sum over emitter-partons = ID-partons
+      if(ai<2) continue;             // emitter is in initial-state
+      other_finalstate_parton = 9-ai;
+      for(auto b: parton_indices){   // sum over all spectator-partons
+        if(b==ai) continue;
+//        if(b<2) continue;            // spectator is in initial-state
+  
+        H_temp = 0;
+        // labeling: 2=W+, 3=W-, 4=j, 5=j
+        pa = z*mom[ai]; pai = mom[ai];
+        pb = mom[b];    pfs = mom[other_finalstate_parton];
+        if(flavs[ai].IsbQuark()) {
+          n = mom[0]+mom[1]-pai-mom[3]-pfs;
+          nz = mom[0]+mom[1]-pa-mom[3]-pfs;
+          if(!flavs[other_finalstate_parton].IsbbarQuark()) 
+            THROW(fatal_error,"Something went wrong in Assignment.");
+        }
+        else if (flavs[ai].IsbbarQuark()){
+          n = mom[0]+mom[1]-pai-mom[2]-pfs;
+          nz = mom[0]+mom[1]-pa-mom[2]-pfs;
+          if(!flavs[other_finalstate_parton].IsbQuark()) 
+            THROW(fatal_error,"Something went wrong in Assignment.");
+        }
+        else THROW(fatal_error,"Something went wrong in Assignment.");
+
+        double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
+  
+        double v = sqrt(1-(n.Abs2())*((pai+pb).Abs2())/pow((pai+pb)*n,2.));  // eq.(C.21) in CS
+        H_temp += -( 0.25 +
+                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))        // has delta(1-z) prefactor
+                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )
+                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) ); // has no delta(1-z) prefactor
+  
+        H_temp *= Mab;
+        m_H    += H_temp;
+      }
+    }
   }
   return cpl*m_H;
 }
