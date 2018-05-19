@@ -2,9 +2,6 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
-
-namespace ATOOLS { template class SP(Integration_Info); }
 
 using namespace ATOOLS;
 

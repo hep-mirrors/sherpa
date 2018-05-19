@@ -204,7 +204,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     *this->VariationWeights()*=1.0/m_issymfac;
   }
   if (mode&32) {
-    SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
+    auto psh = Parent()->Integrator()->PSHandler();
     res*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
@@ -619,7 +619,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
+  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
   p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);

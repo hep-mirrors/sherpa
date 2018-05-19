@@ -6,7 +6,6 @@
 #include "AddOns/Analysis/Triggers/Calorimeter_Cone.H"
 #include "AddOns/Analysis/Triggers/Kt_Algorithm.H"
 #include "AddOns/Analysis/Triggers/Durham_Algorithm.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include <vector>
 
 namespace ANALYSIS {
@@ -29,12 +28,13 @@ namespace ANALYSIS {
 
   typedef std::map<ATOOLS::Flavour,Final_Selector_Data>                            Final_Data_Map;
   typedef std::map<std::pair<ATOOLS::Flavour,ATOOLS::Flavour>,Final_Selector_Data> Final_Correlator_Map;
-
+  using Particle_Qualifier_Base_SP
+    = std::shared_ptr<ATOOLS::Particle_Qualifier_Base>;
 
 
   class Final_Selector : public Analysis_Object {
   protected:
-    SP(ATOOLS::Particle_Qualifier_Base) p_qualifier;
+    Particle_Qualifier_Base_SP        p_qualifier;
     std::string                       m_inlistname, m_outlistname;
     bool                              m_ownlist, m_extract;
     int                               m_mode;
@@ -57,7 +57,7 @@ namespace ANALYSIS {
  public:
     Final_Selector(const std::string &,const std::string &);
     Final_Selector(const std::string &,const std::string &, int mode, 
-		   SP(ATOOLS::Particle_Qualifier_Base) qualifier=NULL);
+                   Particle_Qualifier_Base_SP qualifier=nullptr);
 
     void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour & ,const ATOOLS::Flavour &, const Final_Selector_Data &);

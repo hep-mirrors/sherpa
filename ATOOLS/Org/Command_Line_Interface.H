@@ -1,8 +1,6 @@
 #ifndef ATOOLS_Org_Command_Line_Interface_H
 #define ATOOLS_Org_Command_Line_Interface_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
-
 #include <string>
 #include <vector>
 #include <map>

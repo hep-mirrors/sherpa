@@ -29,7 +29,7 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    SP(PHASIC::Phase_Space_Handler) p_pshandler; 
+    std::shared_ptr<PHASIC::Phase_Space_Handler> p_pshandler;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -59,8 +59,8 @@ namespace PHASIC {
 
     ATOOLS::Histogram *p_whisto;
 
-    SP(Color_Integrator)    p_colint;
-    SP(Helicity_Integrator) p_helint;
+    std::shared_ptr<Color_Integrator>    p_colint;
+    std::shared_ptr<Helicity_Integrator> p_helint;
 
     double Sigma2() const;
 
@@ -95,7 +95,7 @@ namespace PHASIC {
     void ResetMax(int);  
     void OptimizeSubResult(const double &s2);
 
-    void SetPSHandler(const SP(Phase_Space_Handler) &pshandler);
+    void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
     void SetISRThreshold(const double threshold);
     
     void InitWeightHistogram();
@@ -165,17 +165,17 @@ namespace PHASIC {
     inline PDF::ISR_Handler           *ISR() const  
     { return p_isrhandler;  }
 
-    inline SP(Phase_Space_Handler) PSHandler() const
+    inline std::shared_ptr<Phase_Space_Handler> PSHandler() const
     { return p_pshandler; }
 
-    inline void SetColorIntegrator(const SP(Color_Integrator) colint)
+    inline void SetColorIntegrator(const std::shared_ptr<Color_Integrator> colint)
     { p_colint=colint; }
-    inline void SetHelicityIntegrator(const SP(Helicity_Integrator) helint)
+    inline void SetHelicityIntegrator(const std::shared_ptr<Helicity_Integrator> helint)
     { p_helint=helint; }
 
-    inline SP(Color_Integrator) ColorIntegrator() const
+    inline std::shared_ptr<Color_Integrator> ColorIntegrator() const
     { return p_colint; }
-    inline SP(Helicity_Integrator) HelicityIntegrator() const 
+    inline std::shared_ptr<Helicity_Integrator> HelicityIntegrator() const
     { return p_helint; }
 
     inline long unsigned int ItMin() const { return m_itmin; }

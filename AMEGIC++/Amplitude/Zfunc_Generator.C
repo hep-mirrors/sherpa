@@ -32,7 +32,8 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   for (ZFCalc_Getter::Getter_List::const_iterator 
 	 git(zfclist.begin());git!=zfclist.end();++git) {
     Zfunc_Calc *nc((*git)->GetObject(key));
-    if (nc!=NULL) zcalc.push_back(nc);
+    if (nc != nullptr)
+      zcalc.push_back(std::shared_ptr<Zfunc_Calc> {nc});
   }
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n   Implemented calculators:\n\n";

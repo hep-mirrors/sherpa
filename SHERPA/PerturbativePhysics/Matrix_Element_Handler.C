@@ -1235,8 +1235,8 @@ double Matrix_Element_Handler::GetWeight
     StringProcess_Map::const_iterator pit
       (m_pmaps[i]->find(type)->second->find(name));
     if(pit==m_pmaps[i]->find(type)->second->end()) continue;
-    SP(Color_Integrator) ci(pit->second->Integrator()->ColorIntegrator());
-    if (ci!=NULL) {
+    auto ci = pit->second->Integrator()->ColorIntegrator();
+    if (ci != nullptr) {
       ci->GeneratePoint();
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));

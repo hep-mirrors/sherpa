@@ -2,7 +2,6 @@
 #define COMIX_Main_Process_Base_H
 
 #include "METOOLS/Explicit/Vertex.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace BEAM { class Beam_Spectra_Handler; }
 
@@ -29,7 +28,7 @@ namespace COMIX {
     PHASIC::Process_Base *p_proc;
     MODEL::Model_Base    *p_model;
     
-    SP(PS_Generator) p_psgen;
+    std::shared_ptr<PS_Generator> p_psgen;
 
     Int_Matrix m_colours;
 
@@ -75,7 +74,7 @@ namespace COMIX {
 
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
-    inline SP(PS_Generator) PSGenerator() const { return p_psgen; }
+    inline std::shared_ptr<PS_Generator> PSGenerator() const { return p_psgen; }
 
     inline void SetModel(MODEL::Model_Base *const model) { p_model=model; }
 

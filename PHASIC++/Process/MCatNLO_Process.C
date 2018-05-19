@@ -260,19 +260,20 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // we'll use a set of temporary variation weights,
   // which are combined only in the end
   ATOOLS::Variations *variations(NULL);
-  SP(ATOOLS::Variation_Weights) rsvarweights, bvivarweights, bvarweights;
+  std::shared_ptr<ATOOLS::Variation_Weights>
+    rsvarweights, bvivarweights, bvarweights;
   if (p_variationweights) {
     variations = p_variationweights->GetVariations();
-    rsvarweights  = new ATOOLS::Variation_Weights(variations);
-    bvivarweights = new ATOOLS::Variation_Weights(variations);
-    bvarweights   = new ATOOLS::Variation_Weights(variations);
+    rsvarweights  = std::make_shared<ATOOLS::Variation_Weights>(variations);
+    bvivarweights = std::make_shared<ATOOLS::Variation_Weights>(variations);
+    bvarweights   = std::make_shared<ATOOLS::Variation_Weights>(variations);
   }
 
   // evaluate RS process
   msg_Debugging()<<*rampl<<"\n";
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
-  rsproc->SetVariationWeights(--rsvarweights);
+  rsproc->SetVariationWeights(rsvarweights.get());
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
   Cluster_Amplitude *crampl(rampl->Copy());
   int mm(p_bproc->Generator()->SetMassMode(0));
@@ -299,7 +300,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
-  bviproc->SetVariationWeights(--bvivarweights);
+  bviproc->SetVariationWeights(bvivarweights.get());
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   Cluster_Amplitude *campl(ampl.Copy());
@@ -308,7 +309,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   if (bproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
-  bproc->SetVariationWeights(--bvarweights);
+  bproc->SetVariationWeights(bvarweights.get());
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
   double b(bproc->Differential(*campl, bmode));
   if (bmode && b==0.0 && bproc->Differential(*campl,64))
@@ -688,7 +689,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
-  SP(Phase_Space_Handler) psh(p_ddproc->Integrator()->PSHandler());
+  auto psh = p_ddproc->Integrator()->PSHandler();
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
     for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);

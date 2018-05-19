@@ -37,7 +37,7 @@ namespace SHNNLO {
 
     PHASIC::Tag_Setter m_tagset;
 
-    SP(PHASIC::Color_Integrator) p_ci;
+    std::shared_ptr<PHASIC::Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
     int    m_cmode, m_kfac, m_nmin;

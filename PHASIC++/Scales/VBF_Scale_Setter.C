@@ -35,7 +35,7 @@ namespace PHASIC {
 
     Tag_Setter m_tagset;
 
-    SP(Color_Integrator) p_ci;
+    std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
     int    m_cmode, m_kfac, m_nmin;

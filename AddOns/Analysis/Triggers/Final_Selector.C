@@ -41,18 +41,19 @@ operator()(const Argument_Matrix &parameters) const
   if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
       ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=1;
   std::string inlist="FinalState", outlist="Analysed";
-  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
+  Particle_Qualifier_Base_SP qualifier;
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
     else if (cur[0]=="Qual" && cur.size()>1) {
-      if (!qualifier) delete qualifier;
-      qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
+      qualifier = Particle_Qualifier_Base_SP {
+        ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1])};
     }
   }
-  if (!qualifier) qualifier = new ATOOLS::Is_Not_Lepton(); 
+  if (!qualifier)
+    qualifier = std::make_shared<ATOOLS::Is_Not_Lepton>();
   Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode,qualifier);
   selector->SetAnalysis(parameters());
   for (size_t i=0;i<parameters.size();++i) {
@@ -179,7 +180,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname,
-			       int mode, SP(ATOOLS::Particle_Qualifier_Base) qualifier) :
+			       int mode, Particle_Qualifier_Base_SP qualifier) :
   p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname),
   m_ownlist(false), m_extract(false), m_mode(mode), p_jetalg(NULL)
 {
@@ -187,9 +188,9 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 		<<mode<<","<<qualifier<<")"<<std::endl;
   m_name="Trigger";
   switch (mode) {
-  case 1: p_jetalg = new Durham_Algorithm(--p_qualifier); break;
-  case 0: p_jetalg = new Kt_Algorithm(--p_qualifier); break;
-  case 3: p_jetalg = new DIS_Algorithm(--p_qualifier); break;
+  case 1: p_jetalg = new Durham_Algorithm(p_qualifier.get()); break;
+  case 0: p_jetalg = new Kt_Algorithm(p_qualifier.get()); break;
+  case 3: p_jetalg = new DIS_Algorithm(p_qualifier.get()); break;
   default:
     break;
   }
@@ -217,11 +218,11 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     switch(m_mode) {
     case 2: p_jetalg = new 
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
-    case 10: p_jetalg = new Midpoint_Cone(--p_qualifier,0,fs.f); break;
-    case 11: p_jetalg = new Midpoint_Cone(--p_qualifier,1,fs.f); break;
-    case 20: p_jetalg = new SISCone(--p_qualifier,fs.f); break;
-    case 30: p_jetalg = new MCFMCone(--p_qualifier,fs.f); break;
-    case 40: p_jetalg = new Kt_Algorithm(--p_qualifier); break;
+    case 10: p_jetalg = new Midpoint_Cone(p_qualifier.get(),0,fs.f); break;
+    case 11: p_jetalg = new Midpoint_Cone(p_qualifier.get(),1,fs.f); break;
+    case 20: p_jetalg = new SISCone(p_qualifier.get(),fs.f); break;
+    case 30: p_jetalg = new MCFMCone(p_qualifier.get(),fs.f); break;
+    case 40: p_jetalg = new Kt_Algorithm(p_qualifier.get()); break;
     }
     if (p_jetalg) p_jetalg->Setbflag(fs.bf);
   }

@@ -4,7 +4,6 @@
 #include "AMEGIC++/Main/Point.H"
 #include <vector>
 #include "AMEGIC++/Amplitude/Zfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -12,7 +11,7 @@ namespace AMEGIC {
   class Basic_Sfuncs;
   class Virtual_String_Generator;
 
-  typedef std::vector<SP(Zfunc_Calc)> ZF_Vector;
+  typedef std::vector<std::shared_ptr<Zfunc_Calc>> ZF_Vector;
 
   class Zfunc_Generator {
     bool  cutvecprop;

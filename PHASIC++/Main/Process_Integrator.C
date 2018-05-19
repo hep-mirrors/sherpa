@@ -12,7 +12,6 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -21,11 +20,10 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 static int s_whbins(100);
-namespace ATOOLS { template class SP(Process_Integrator); }
 static int s_genresdir(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):
-  p_proc(proc), p_pshandler(NULL),
+  p_proc(proc),
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
@@ -34,7 +32,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
   m_writeout(false),
-  p_whisto(NULL), p_colint(NULL), p_helint(NULL)
+  p_whisto(NULL)
 {
   m_colorscheme=cls::sum;
   m_helicityscheme=hls::sum;
@@ -494,7 +492,8 @@ void Process_Integrator::ResetMax(int flag)
   }
 } 
 
-void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
+void Process_Integrator::SetPSHandler(
+  const std::shared_ptr<Phase_Space_Handler> &pshandler)
 {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())

@@ -16,8 +16,10 @@ void Info_Key::Assign(const std::string name,const size_t doubles,
   info->AssignKey(*this,doubles,vectors);
 }
 
-void Info_Key::Assign(const std::string name,const size_t doubles,
-		      const size_t vectors,const SP(Integration_Info) &info)
+void Info_Key::Assign(const std::string name,
+                      const size_t doubles,
+                      const size_t vectors,
+                      const std::shared_ptr<Integration_Info> &info)
 {
   m_name=name;
   info->AssignKey(*this,doubles,vectors);

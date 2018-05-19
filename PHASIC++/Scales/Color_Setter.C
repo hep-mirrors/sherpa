@@ -46,7 +46,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   }
   if (vc==0) {
     // select new color configuration
-    SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+    auto colint = p_xs->Integrator()->ColorIntegrator();
     while (!colint->GeneratePoint());
     PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
     for (size_t i(0);i<ampl->Legs().size();++i)
@@ -98,7 +98,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
     }
     if ((trials%9==0 && trials>0) || sing) {
       // select new color configuration
-      SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+      auto colint = p_xs->Integrator()->ColorIntegrator();
       while (!colint->GeneratePoint());
       PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
       msg_Debugging()<<"new color point "<<ni<<nj<<"\n";
@@ -115,7 +115,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 
 bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 {
-  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  std::shared_ptr<Color_Integrator> colint(p_xs->Integrator()->ColorIntegrator());
   colint->GenerateOrders();
   const Idx_Matrix &orders(colint->Orders());
   std::vector<double> psum(orders.size());
@@ -234,7 +234,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
     if (p_xs==NULL) return false;
   }
   msg_Debugging()<<*ampl<<"\n";
-  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  auto colint(p_xs->Integrator()->ColorIntegrator());
   PHASIC::Int_Vector ci(colint->I()), cj(colint->J());
   bool sol(false);
   switch (m_cmode) {

@@ -1,11 +1,11 @@
 #ifndef ATOOLS_Org_Info_Key_H
 #define ATOOLS_Org_Info_Key_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Math/Vector.H"
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 namespace ATOOLS {
 
@@ -61,8 +61,10 @@ namespace ATOOLS {
     // member functions
     void Assign(const std::string name,const size_t doubles,
 		const size_t vectors,Integration_Info *const info);
-    void Assign(const std::string name,const size_t doubles,
-		const size_t vectors,const SP(Integration_Info) &info);
+    void Assign(const std::string name,
+                const size_t doubles,
+                const size_t vectors,
+                const std::shared_ptr<Integration_Info> &info);
 
     inline Double_Container &Doubles() const;
     inline Vector_Container &Vectors() const;

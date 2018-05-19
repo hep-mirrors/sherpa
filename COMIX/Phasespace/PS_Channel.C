@@ -710,7 +710,7 @@ bool PS_Channel::GenerateChannels()
 {
   PHASIC::Process_Base *cur(p_xs->Process());
   p_gen=cur->Get<Process_Base>()->PSGenerator();
-  if (p_gen==NULL) 
+  if (p_gen == nullptr)
     THROW(fatal_error,"No phasespace generator for "+cur->Name());
   p_gen->SetZMode(m_zmode);
   if (!p_gen->Evaluate()) return false;
@@ -1160,8 +1160,8 @@ void PS_Channel::ISRInfo(int &type,double &mass,double &width)
 void PS_Channel::ISRInfo
 (std::vector<int> &ts,std::vector<double> &ms,std::vector<double> &ws) const
 {
-  SP(PS_Generator) ps(p_xs->PSGenerator());
-  if (ps==NULL) {
+  auto ps = p_xs->PSGenerator();
+  if (ps == nullptr) {
     ps=(*p_xs->Process())[0]->Get<Process_Base>()->PSGenerator();
   }
   msg_Debugging()<<METHOD<<"(): Add isr infos {\n";

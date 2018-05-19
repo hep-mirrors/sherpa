@@ -47,8 +47,6 @@ localinc_HEADERS         =	\
 			CXXFLAGS.H \
 			Git_Info.H \
 			Return_Value.H \
-			Smart_Pointer.H \
-			Smart_Pointer.C \
 			Shell_Tools.H \
 			STL_Tools.H \
 			RUsage.H \

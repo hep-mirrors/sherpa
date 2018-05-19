@@ -1,11 +1,8 @@
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Particle_Qualifier_Base); }
 
 Particle_Qualifier_Base::~Particle_Qualifier_Base()
 {

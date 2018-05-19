@@ -37,7 +37,7 @@ namespace PHASIC {
 
     Tag_Setter m_tagset;
 
-    SP(Color_Integrator) p_ci;
+    std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
     int    m_cmode, m_kfac, m_nmin;
@@ -367,7 +367,7 @@ double MEPS_Scale_Setter::Calculate
   for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
     ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
   ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
-  if (p_ci!=NULL) {
+  if (p_ci != nullptr) {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],

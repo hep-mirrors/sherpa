@@ -16,7 +16,6 @@
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 
 #include <iomanip>
 
@@ -25,8 +24,6 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 const double s_pwmin(1.0e-6);
-
-namespace ATOOLS { template class SP(PS_Generator); }
 
 PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
@@ -132,7 +129,7 @@ bool PS_Generator::Evaluate()
 	  break;
 	}
     }
-    SP(Color_Integrator) ci(cur->Integrator()->ColorIntegrator());
+    std::shared_ptr<Color_Integrator> ci(cur->Integrator()->ColorIntegrator());
     if (ci==NULL) 
       THROW(fatal_error,"No color integrator for "+cur->Name());
     SetColors(ci->I(),ci->J());

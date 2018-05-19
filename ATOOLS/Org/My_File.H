@@ -1,13 +1,13 @@
 #ifndef ATOOLS_Org_My_File_H
 #define ATOOLS_Org_My_File_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 #include <fstream>
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 namespace ATOOLS {
 
@@ -38,8 +38,8 @@ namespace ATOOLS {
 
     std::string m_path, m_file;
 
-    SP(File_Type)   p_file;
-    SP(MyStrStream) p_stream;
+    std::shared_ptr<File_Type>   p_file;
+    std::shared_ptr<MyStrStream> p_stream;
     
     fom::code m_mode;
 

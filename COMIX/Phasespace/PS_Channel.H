@@ -82,7 +82,7 @@ namespace COMIX {
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
 
-    SP(PS_Generator) p_gen;
+    std::shared_ptr<PS_Generator> p_gen;
 
     CId_Map  *p_cid;
     

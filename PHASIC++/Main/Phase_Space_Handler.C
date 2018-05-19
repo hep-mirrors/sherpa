@@ -23,7 +23,6 @@
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace PHASIC;
@@ -33,8 +32,6 @@ using namespace PDF;
 using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
-
-namespace ATOOLS { template class SP(Phase_Space_Handler); }
 
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),

@@ -531,13 +531,13 @@ bool COMIX::Single_Process::Tests()
     p_bg->WriteOutGraphs(m_gpath+"/"+ShellName(m_name)+".tex");
   }
   if (p_int->HelicityScheme()==hls::sample) {
-    p_int->SetHelicityIntegrator(new Helicity_Integrator());
+    p_int->SetHelicityIntegrator(std::make_shared<Helicity_Integrator>());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
     Flavour_Vector fl(m_nin+m_nout);
     for (size_t i(0);i<fl.size();++i) fl[i]=m_flavs[i];
     if (!p_int->HelicityIntegrator()->Construct(fl)) return false;
   }
-  p_int->SetColorIntegrator(new Color_Integrator());
+  p_int->SetColorIntegrator(std::make_shared<Color_Integrator>());
   p_bg->SetColorIntegrator(&*p_int->ColorIntegrator());
   Idx_Vector ids(m_nin+m_nout,0);
   Int_Vector acts(m_nin+m_nout,0), types(m_nin+m_nout,0);
@@ -597,10 +597,10 @@ void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)
 {
   if (p_map!=NULL) {
     p_psgen=p_map->p_psgen;
-    if (p_psgen==NULL) p_psgen = new PS_Generator(p_map);
-  }
-  else {
-    p_psgen = new PS_Generator(this);
+    if (p_psgen == nullptr)
+      p_psgen = std::make_shared<PS_Generator>(p_map);
+  } else {
+    p_psgen = std::make_shared<PS_Generator>(this);
   }
 }
 

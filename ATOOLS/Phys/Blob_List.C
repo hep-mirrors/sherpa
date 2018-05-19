@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 
@@ -452,8 +451,8 @@ Blob_List Blob_List::Copy() const
   if (signal) {
     Blob_Data_Base* data = (*signal)["ATensor"];
     if (data) {
-      SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
-      SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+      auto origamps = data->Get<METOOLS::Amplitude2_Tensor_SP>();
+      auto newamps = std::make_shared<METOOLS::Amplitude2_Tensor>(*origamps);
       newamps->UpdateParticlePointers(pmap);
       data->Set(newamps);
     }

@@ -96,7 +96,7 @@ bool COMIX::Process_Group::Tests()
 void COMIX::Process_Group::InitPSGenerator(const size_t &ismode)
 {
   if (!(ismode&1)) {
-    p_psgen = new PS_Generator(this);
+    p_psgen = std::make_shared<PS_Generator>(this);
   }
   else {
     for (size_t i(0);i<Size();++i) 

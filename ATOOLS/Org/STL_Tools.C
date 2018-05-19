@@ -1,16 +1,9 @@
 #include "ATOOLS/Org/STL_Tools.H"
 
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
 #include <fstream>
 #include <string>
-
-namespace ATOOLS {
- template class SP(std::ifstream);
- template class SP(std::ofstream);
- template class SP(std::stringstream);
-}
 
 namespace std {
 

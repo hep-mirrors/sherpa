@@ -7,7 +7,6 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include <iomanip>
 #include <limits>
 
@@ -15,8 +14,6 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Color_Integrator); }
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
 {
