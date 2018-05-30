@@ -215,6 +215,9 @@ void Standard_Model::FixEWParameters()
       default:
         THROW(not_implemented,"\\alpha_QED convention not implemented.");
       }
+    } else if (widthscheme=="Fixed") {
+      assert(csin2thetaW.imag() == 0.0);
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     }
     break;
   }
