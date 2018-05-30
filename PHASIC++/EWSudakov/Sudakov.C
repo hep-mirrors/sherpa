@@ -41,7 +41,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   m_lsczspinampls.clear();
   m_sscwspinampls.clear();
   m_spinampls.clear();
-  m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.Unrotated());
+  m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
   CalculateSpinAmplitudeCoeffs();
 
   /*
@@ -154,7 +154,7 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
-    const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
+    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     const auto diagonal = DiagonalCew(flav, spincombination[i]) / 2.0;
     coeff.first -= diagonal;
     coeff.second -= diagonal;
@@ -165,19 +165,22 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
       const auto prefactor = -NondiagonalCew() / 2.0;
       auto amplit = m_lsczspinampls.find(i);
       if (amplit == m_lsczspinampls.end()) {
-        auto& rotatedampl = m_ampls.Rotated({std::make_pair(i, newkf)});
-        m_comixinterface.FillSpinAmplitudes(m_lsczspinampls[i], rotatedampl);
+        auto& transformedampl
+          = m_ampls.SU2TransformedAmplitude({std::make_pair(i, newkf)});
+        m_comixinterface.FillSpinAmplitudes(m_lsczspinampls[i],
+                                            transformedampl);
         amplit = m_lsczspinampls.find(i);
       }
       auto& legpermutation = m_ampls.LegPermutation({std::make_pair(i, newkf)});
-      std::vector<int> rotatedspincombination;
+      std::vector<int> transformedspincombination;
       for (const auto& idx : legpermutation)
-        rotatedspincombination.push_back(spincombination[idx]);
-      const auto rotated = amplit->second[0].Get(rotatedspincombination);
-      const auto unrotated = amplvalue;
-      assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-      coeff.first += prefactor * rotated / unrotated;
-      coeff.second -= prefactor * rotated / unrotated;
+        transformedspincombination.push_back(spincombination[idx]);
+      const auto transformed
+        = amplit->second[0].Get(transformedspincombination);
+      const auto base = amplvalue;
+      assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+      coeff.first += prefactor * transformed / base;
+      coeff.second -= prefactor * transformed / base;
     }
   }
   return coeff;
@@ -189,7 +192,7 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
-    const Flavour flav{ m_ampls.Unrotated().Leg(i)->Flav() };
+    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     // 1/m_cw2 = (mZ/mW)^2 !!! 
     const auto contrib = IZ2(flav, spincombination[i]) * std::log(1.0/m_cw2);
     coeff.first += contrib;
@@ -207,8 +210,8 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
   const auto k = indizes[0];
   const auto l = indizes[1];
-  auto kflav = m_ampls.Unrotated().Leg(k)->Flav();
-  auto lflav = m_ampls.Unrotated().Leg(l)->Flav();
+  auto kflav = m_ampls.BaseAmplitude().Leg(k)->Flav();
+  auto lflav = m_ampls.BaseAmplitude().Leg(l)->Flav();
 
   // add contribution for each vector boson connecting the leg pairs
 
@@ -243,22 +246,24 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
         auto amplit = m_sscwspinampls.find(key);
         if (amplit == m_sscwspinampls.end()) {
-          auto& rotatedampl = m_ampls.Rotated(key);
-          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key], rotatedampl);
+          auto& transformedampl = m_ampls.SU2TransformedAmplitude(key);
+          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key],
+                                              transformedampl);
           amplit = m_sscwspinampls.find(key);
         }
         auto& legpermutation = m_ampls.LegPermutation(key);
-        std::vector<int> rotatedspincombination;
+        std::vector<int> transformedspincombination;
         for (const auto& idx : legpermutation)
-          rotatedspincombination.push_back(spincombination[idx]);
-        const auto rotated = amplit->second[0].Get(rotatedspincombination);
-        const auto unrotated = amplvalue;
-        assert(unrotated != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+          transformedspincombination.push_back(spincombination[idx]);
+        const auto transformed
+          = amplit->second[0].Get(transformedspincombination);
+        const auto base = amplvalue;
+        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         // TODO: understand why we need to use abs here when calculating coeffs
         // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
         // can use the (expected) unmodified ratio; is this connected to the
         // extraneous minus sign in Sudakov::LsCoeff?
-        const auto amplratio = rotated/unrotated;
+        const auto amplratio = transformed/base;
         DEBUG_VAR(amplratio);
         auto contribution = 2*kcoupling.second*lcoupling.second*amplratio;
         const auto amplratio2

@@ -20,17 +20,18 @@ EWSudakov_Amplitudes::EWSudakov_Amplitudes(
 {
 }
 
-Cluster_Amplitude& EWSudakov_Amplitudes::Unrotated() noexcept
+Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
 {
-  return Rotated(s_baseamplkey);
+  return SU2TransformedAmplitude(s_baseamplkey);
 }
 
-Cluster_Amplitude& EWSudakov_Amplitudes::Rotated(const Leg_Set& legs)
+Cluster_Amplitude& EWSudakov_Amplitudes::SU2TransformedAmplitude(
+  const Leg_Set& legs)
 {
   const auto it = ampls.find(legs);
   if (it == ampls.end()) {
     MyStrStream s;
-    s << "Rotated amplitude not found:\n" << legs;
+    s << "SU(2)-transformed amplitude not found:\n" << legs;
     THROW(fatal_error, s.str());
   }
   return *(it->second);
@@ -56,19 +57,19 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 
 double EWSudakov_Amplitudes::MandelstamS()
 {
-  const auto& ampl = Unrotated();
+  const auto& ampl = BaseAmplitude();
   return (ampl.Leg(0)->Mom() + ampl.Leg(1)->Mom()).Abs2();
 }
 
 double EWSudakov_Amplitudes::MandelstamT()
 {
-  const auto& ampl = Unrotated();
+  const auto& ampl = BaseAmplitude();
   return (ampl.Leg(0)->Mom() - ampl.Leg(2)->Mom()).Abs2();
 }
 
 double EWSudakov_Amplitudes::MandelstamU()
 {
-  const auto& ampl = Unrotated();
+  const auto& ampl = BaseAmplitude();
   return (ampl.Leg(0)->Mom() - ampl.Leg(3)->Mom()).Abs2();
 }
 
@@ -96,7 +97,7 @@ EWSudakov_Amplitudes::CreateAmplitudes(
       if (newkf != kf_none) {
         auto ampl = std::make_pair(
             Leg_Set{ {i, newkf} },
-            CreateRotatedAmplitude(baseampl, {{i, Flavour(newkf)}}));
+            CreateSU2TransformedAmplitude(baseampl, {{i, Flavour(newkf)}}));
         ampls.insert(std::move(ampl));
       }
     }
@@ -130,9 +131,10 @@ EWSudakov_Amplitudes::CreateAmplitudes(
             if (kflav.IntCharge() + lflav.IntCharge()
                 != newkflav.IntCharge() + newlflav.IntCharge())
               continue;
+            LegIndex_Flavour_Map legflavmap{{k, newkflav}, {l, newlflav}};
 	    auto ampl = std::make_pair(
                 Leg_Set{ {k, newkflav.Kfcode()}, {l, newlflav.Kfcode()} },
-                CreateRotatedAmplitude(baseampl, {{k, newkflav}, {l, newlflav}}));
+                CreateSU2TransformedAmplitude(baseampl, legflavmap));
             ampls.insert(std::move(ampl));
           }
         }
@@ -160,8 +162,8 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateAmplitude(Process_Base* proc)
 }
 
 Cluster_Amplitude_UP
-EWSudakov_Amplitudes::CreateRotatedAmplitude(const Cluster_Amplitude_UP& ampl,
-                                             const LegIndex_Flavour_Map& flavs)
+EWSudakov_Amplitudes::CreateSU2TransformedAmplitude(
+  const Cluster_Amplitude_UP& ampl, const LegIndex_Flavour_Map& flavs)
 {
   auto campl = CopyClusterAmpl(ampl);
   for (const auto& kv : flavs) {
@@ -190,7 +192,7 @@ EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
 std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
     const Cluster_Amplitude_UP& ampl)
 {
-  // TODO: This assumes that the unrotated amplitude is ordered 0, 1, 2, ...
+  // TODO: This assumes that the base amplitude is ordered 0, 1, 2, ...
   std::vector<size_t> v;
   for (const auto* leg : ampl->Legs()) {
     if (IdCount(leg->Id()) > 1)
