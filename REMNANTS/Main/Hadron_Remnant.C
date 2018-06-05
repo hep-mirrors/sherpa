@@ -80,17 +80,17 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   return part;
 }
 
-bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap) {
+bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   m_residualE = p_beam->OutMomentum()[0];
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants();
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta(ktmap);
+  MakeLongitudinalMomenta(ktmap,copy);
   bool colourconserved = p_beamblob->CheckColour(true);
   if (!colourconserved) {
-    msg_Out()<<(*p_beamblob)<<"\n";
+    msg_Error()<<"Error in "<<METHOD<<" for \n"<<(*p_beamblob)<<"\n";
     p_colours->Output();
-    exit(1);
+    return false;
   }
   return true;
 }
@@ -140,7 +140,7 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   return Flavour(kfcode);
 }
 
-void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap) {
+void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & copy) {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
@@ -149,10 +149,13 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap) {
   for (Part_Iterator pmit=m_extracted.begin();
        pmit!=m_extracted.end();pmit++) {
     availMom -= (*pmit)->Momentum();
-    Particle * copy = new Particle(**pmit);
-    copy->SetNumber();
-    copy->SetBeam(m_beam);
-    p_beamblob->AddToOutParticles(copy);
+    if (copy) {
+      Particle * pcopy = new Particle(**pmit);
+      pcopy->SetNumber();
+      pcopy->SetBeam(m_beam);
+      p_beamblob->AddToOutParticles(pcopy);
+    }
+    else p_beamblob->AddToOutParticles(*pmit);
     (*ktmap)[(*pmit)] = Vec4D();
   }
   for (Part_Iterator pmit=m_spectators.begin();
@@ -164,10 +167,13 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap) {
       part->SetMomentum(z*availMom);
       availMom -= part->Momentum();
     }
-    Particle * copy = new Particle(*part);
-    copy->SetNumber();
-    copy->SetBeam(m_beam);
-    p_beamblob->AddToOutParticles(copy);
+    if (copy) {
+      Particle * pcopy = new Particle(*part);
+      pcopy->SetNumber();
+      pcopy->SetBeam(m_beam);
+      p_beamblob->AddToOutParticles(pcopy);
+    }
+    else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
 }

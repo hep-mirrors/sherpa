@@ -27,14 +27,35 @@ bool Beam_Particles_Shifter::operator()() {
 
 void Beam_Particles_Shifter::ExtractBeamParticles() {
   m_beamparts.clear();
+  Singlet * singlet, * bsinglet;
+  Vec4D  mom(0.,0.,0.,0.);
+  double mass(0.);
   for (list<Singlet *>::iterator sit=p_singlets->begin();
        sit!=p_singlets->end();sit++) {
-    Singlet * singlet = (*sit);
+    singlet = (*sit);
     for (list<Proto_Particle *>::iterator pit=singlet->begin();
 	 pit!=singlet->end();pit++) {
-      if ((*pit)->IsBeam()) m_beamparts.push_back((*pit));
+      if ((*pit)->IsBeam()) {
+	mom  += (*pit)->Momentum();
+	mass += p_constituents->Mass((*pit)->Flavour());
+	m_beamparts.push_back((*pit));
+      }
     }
   }
+  if (m_beamparts.size()==0) return;
+  if (m_beamparts.size()==1 || (mom.Abs2()<=sqr(mass+0.1))) {
+    for (list<Singlet *>::iterator sit=p_singlets->begin();
+	 sit!=p_singlets->end();sit++) {
+      singlet = (*sit);
+      for (list<Proto_Particle *>::iterator pit=singlet->begin();
+	   pit!=singlet->end();pit++) {
+	if ((*pit)->IsBeam()) continue;
+	mom  += (*pit)->Momentum();
+	m_beamparts.push_back(*pit);
+	if (mom.Abs2()>sqr(mass)) return;
+      }
+    }
+  } 
 }
 
 bool Beam_Particles_Shifter::ShiftBeamParticles() {

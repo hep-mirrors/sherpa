@@ -25,11 +25,11 @@ bool Amisic::Initialize(Default_Reader *const defaultreader,
   bool shown = false;
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
-      msg_Out()<<"Potential error in "<<METHOD<<":\n"
-	       <<"   IR cutoff of MPI model "<<(*mipars)("pt_0")
-	       <<" below minimal scale of PDFs.\n"
-	       <<"   Will freeze PDFs at their minimal scale: "
-	       <<sqrt(isr->PDF(beam)->Q2Min())<<" GeV.\n";
+      msg_Error()<<"Potential error in "<<METHOD<<":\n"
+		 <<"   IR cutoff of MPI model "<<(*mipars)("pt_0")
+		 <<" below minimal scale of PDFs.\n"
+		 <<"   Will freeze PDFs at their minimal scale: "
+		 <<sqrt(isr->PDF(beam)->Q2Min())<<" GeV.\n";
       shown = true;
     }
   }
@@ -173,6 +173,9 @@ void Amisic::InitAnalysis() {
   m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
   m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
   m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
+  m_histos[string("P_T(2)")]     = new Histogram(0,0,100,100);
+  m_histos[string("Y(2)")]       = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y(2)")] = new Histogram(0,0,10,10);
 }
 
 void Amisic::FinishAnalysis() {
@@ -190,12 +193,21 @@ void Amisic::FinishAnalysis() {
 }
 
 void Amisic::Analyse(const bool & last) {
-  if (!last && m_nscatters==0) {
-    m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));
-    m_histos[string("Y(1)")]->Insert(m_singlecollision.Y3());
-    m_histos[string("Y(1)")]->Insert(m_singlecollision.Y4());
-    m_histos[string("Delta_Y(1)")]->Insert(dabs(m_singlecollision.Y3()-
-						m_singlecollision.Y4()));
+  if (!last) {
+    if (m_nscatters==0) {
+      m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y(1)")]->Insert(dabs(m_singlecollision.Y3()-
+						  m_singlecollision.Y4()));
+    }
+    if (m_nscatters==1) {
+      m_histos[string("P_T(2)")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y(2)")]->Insert(dabs(m_singlecollision.Y3()-
+						  m_singlecollision.Y4()));
+    }
   }
   m_nscatters++;
   if (last) {

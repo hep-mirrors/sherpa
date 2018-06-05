@@ -79,7 +79,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   //msg_Out()<<"######################################################################\n"
-  //       <<(*blob)<<"\n";
+  //	   <<(*blob)<<"\n"
   //	   <<"######################################################################\n"
   //	   <<"######################################################################\n";
   Reset();
@@ -88,7 +88,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
       !DecayGluons() ||!DecayClusters()) {
     msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
 	       <<(*blob);
-    //exit(1);
     Reset(blob);
     Reset();
     return Return_Value::Retry_Event;

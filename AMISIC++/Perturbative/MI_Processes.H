@@ -50,7 +50,7 @@ namespace AMISIC {
     
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
 					    bool add) {}
-    int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) { return 1; }
+    //int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) { return 1; }
     MI_Process * SelectProcess(); 
   
     inline const double &  Ecms()      const { return m_ecms; }

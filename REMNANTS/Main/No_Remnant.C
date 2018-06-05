@@ -5,11 +5,9 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 
 No_Remnant::No_Remnant(const unsigned int _m_beam):
-  Remnant_Base(rtp::intact,_m_beam) {
-  msg_Out()<<METHOD<<" for "<<_m_beam<<".\n";
-}
+  Remnant_Base(rtp::intact,_m_beam) { }
 
-bool No_Remnant::FillBlob(ParticleMomMap *ktmap) {
+bool No_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   if (m_extracted.size()==0) {
     THROW(critical_error,"No particles extracted from intact beam.");
   }
@@ -21,19 +19,15 @@ bool No_Remnant::FillBlob(ParticleMomMap *ktmap) {
 }
 
 bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
-  msg_Out()<<METHOD<<" for "<<flav<<", "<<mom<<"\n"<<" vs. "
-	   <<p_beam->Bunch()<<", "<<p_beam->OutMomentum()<<".\n";
   if (flav!=p_beam->Bunch()) return false;
   for (size_t i=0;i<4;i++) {
     double diff = ((mom[i]-p_beam->OutMomentum()[i])/
 		   (mom[i]+p_beam->OutMomentum()[i])); 
     if (diff>1.e-6) {
-      msg_Out()<<"  fail, diff = "<<diff<<" for i = "<<i<<": "
-	       <<mom[i]<<" vs. "<<p_beam->OutMomentum()[i]
-	       <<".\n";
+      msg_Error()<<"Error in "<<METHOD<<": difference in four-momenta = "
+		 <<diff<<" = "<<mom<<" - "<<p_beam->OutMomentum()<<".\n";
       return false;
     }
   }
-  msg_Out()<<"  --> success.\n";
   return true;
 }

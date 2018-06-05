@@ -75,9 +75,11 @@ void Remnant_Handler::DefineRemnantStrategy() {
     m_type = strat::simple;
   else if (p_remnants[0]->Type()==rtp::lepton && p_remnants[1]->Type()==rtp::lepton)
     m_type = strat::ll;
-  else if (p_remnants[0]->Type()==rtp::hadron && p_remnants[1]->Type()==rtp::lepton)
+  else if (p_remnants[0]->Type()==rtp::hadron && (p_remnants[1]->Type()==rtp::lepton ||
+						  p_remnants[1]->Type()==rtp::intact))
     m_type = strat::DIS1;
-  else if (p_remnants[0]->Type()==rtp::lepton && p_remnants[1]->Type()==rtp::hadron)
+  else if ((p_remnants[0]->Type()==rtp::lepton ||
+	    p_remnants[0]->Type()==rtp::intact) && p_remnants[1]->Type()==rtp::hadron)
     m_type = strat::DIS2;
   else if (p_remnants[0]->Type()==rtp::hadron && p_remnants[1]->Type()==rtp::hadron)
     m_type = strat::hh;
@@ -129,39 +131,16 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // if they are seaquarks, suitable spectators are generated.  The colours of the shower
   // initiators and, possibly, spectators will be added to a stack which will in turn partially
   // replace the new colours.  This is handled in the Colour_Generator.
-
-  //bool printit = false;
-  //Vec4D check(0.,0.,0.,0.);
-  //for (size_t i=0;i<showerblob->NOutP();i++) {
-  //  Particle * part = showerblob->OutParticle(i);
-  //  if (part->Info()=='F') check += part->Momentum();
-  //  if (part->Momentum()[0]<0.) printit = true;
-  //}
-  //for (size_t i=0;i<showerblob->NInP();i++) {
-  //  Particle * part = showerblob->InParticle(i);
-  //  if (part->Momentum()[0]<0.) printit = true;
-  //}
-  //if (printit || check.PPerp()>1.) {
-  //  msg_Out()<<"#########################################################################\n"
-  //  	     <<"#########################################################################\n"
-  //  	     <<METHOD<<" for showerblob ("<<showerblob->Id()<<") with transverse momentum "
-  //	     <<"kt = "<<check.PPerp()<<"\n"<<(*showerblob)<<"\n";
-  //x}
   m_colours.ConnectColours(showerblob);
-  //msg_Out()<<METHOD<<" done.\n"
-  //	   <<"#########################################################################\n";
 }
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
 						  Particle_List *const particlelist)
 {
-  //msg_Out()<<"#########################################################################\n"
-  //	   <<"Enter "<<METHOD<<".\n";
-    
   // Adding the blobs related to the breakup of incident beams: one for each beam,
   // plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
-  // Fill in the transverse momenta though the Kinematics_Generator.
+  // Fill in the transverse momenta through the Kinematics_Generator.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     Reset();
     return Return_Value::Retry_Event;
@@ -173,10 +152,22 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
 void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   // Making a new blob (softblob) to locally compensate 4 momentum.  Ultimately,
   // it will reflect different strategies of how to compensate intrinsic kperp:
-  // hadron colliders vs. DIS (DIS still needs to be implemented).
+  // hadron colliders vs. DIS
+  // For hh collisions, the softblob is inserted after the beam blobs and before the parton 
+  // shower blobs, to capture the kperp of both beams, pair-by-pair of the shower initiators, 
+  // to combine them into one transverse momentum, "kicking" the full shower blob around.
+  // In this way we can guarantee that the kperps between the two beams and their recoils
+  // are compensated by each other.
+  // For DIS we do not want to change the kinematics of the incident lepton, so we cannot use
+  // the other beam for the recoils.  Instad we take the full coloured final state after the
+  // shower for the kperp compensation.  Effectively we distribute the kperp of the shower
+  // initiator over all coloured FS particles and then shuffle their momenta together with
+  // the beam remnants.  To visualise this better, here the soft blob is inserted after both
+  // beam and shower blobs.
   if (m_type!=strat::simple && m_type!=strat::ll) {
     p_softblob = m_kinematics.MakeSoftBlob();
-    bloblist->push_front(p_softblob);
+    if (m_type==strat::DIS1 || m_type==strat::DIS2) bloblist->push_back(p_softblob);
+    else bloblist->push_back(p_softblob);
   }  
   // Look for shower blobs that need beams and unset the flag
   for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
@@ -193,34 +184,26 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
 
 bool Remnant_Handler::CheckBeamBreakup(Blob_List * bloblist) {
   // Final checks on beam breakup: four-momentum and colour conservation
-  if (m_type==strat::simple) return 1;
-  if (!m_check || (bloblist->FourMomentumConservation() &&
-		   bloblist->ColorConservation())) return true;
-  if (m_output) msg_Error()<<"Error in "<<METHOD<<": "
-			   <<"colour or four-momentum not conserved.\n";
-  bool mom(false), col(false);
-  for (Blob_List::iterator bit=bloblist->begin();
-       bit!=bloblist->end();++bit) {
-    Vec4D checkmom = (*bit)->CheckMomentumConservation();
-    if (dabs(checkmom.Abs2())>0.01 || dabs(checkmom[0])>0.1) {
-      if (m_output) msg_Error()<<"   momentum non-conservation ("<<checkmom<<") in\n"
-			       <<(**bit)<<"\n";
-      mom = true;
+  if (m_type==strat::simple || !m_check) return true;
+  bool ok = true;
+  for (size_t beam=0;beam<2;beam++) {
+    if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
+	!p_remnants[beam]->GetBlob()->CheckColour()) {
+      ok = false;
+      if (m_output)
+	msg_Error()<<"Error in "<<METHOD<<": "
+		   <<"colour or four-momentum not conserved in:\n"
+		   <<(*p_remnants[beam]->GetBlob())<<"\n";
     }
   }
-  for (Blob_List::iterator bit=bloblist->begin();
-       bit!=bloblist->end();++bit) {
-    bool transient = ((*bit)->Type()==btp::Signal_Process ||
-		      ((*bit)->Type()==btp::Shower &&
-		       (*bit)->InParticle(0)->ProductionBlob()->Type()==btp::Signal_Process));
-    if (!(*bit)->CheckColour(transient)) {
-      if (m_output) msg_Error()<<"   colour non-conservation in\n"
-			       <<(**bit)<<"\n";
-      col = true;
-    }
+  if (!p_softblob->MomentumConserved() || !p_softblob->CheckColour()) {
+    ok = false; 
+    if (m_output)
+      msg_Error()<<"Error in "<<METHOD<<": "
+		 <<"colour or four-momentum not conserved in:\n"
+		 <<(*p_softblob)<<"\n";
   }
-  if (col) exit(1);
-  return false;
+  return ok;
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {

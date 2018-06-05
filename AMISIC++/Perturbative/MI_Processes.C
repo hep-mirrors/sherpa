@@ -189,9 +189,9 @@ bool MI_Processes::PrepareSudakovFactor() {
     pt2last        = pt2;
   }
   m_integral *= m_sigmaND;
-  msg_Out()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
-	   <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
-	   <<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
+  msg_Info()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
+	    <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
+	    <<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
   return true;
 }
 
@@ -225,9 +225,7 @@ double MI_Processes::dSigma(const double & pt2) {
     res2 += dsigma*dsigma;
   }
   double result = res/double(m_MCpoints);
-  double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
-  //msg_Out()<<METHOD<<"("<<pt2<<") yields "<<result<<" +/- "<<(uncert/result*100.)<<"% "
-  //	   <<"from "<<res<<", "<<res2<<".\n";
+  //double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
   return result;
 }
 

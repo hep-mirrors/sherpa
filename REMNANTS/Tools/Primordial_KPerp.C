@@ -10,7 +10,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Primordial_KPerp::Primordial_KPerp() :
-  m_defform("dipole_limited"),
+  m_defform("gauss_limited"),
   m_defmean(0.0), m_defsigma(1.0), m_refE(7000.), m_scaleexpo(0.55),
   m_defQ2(0.77), m_defktmax(5.), m_defeta(5.),
   m_analysis(false)

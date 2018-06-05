@@ -14,10 +14,9 @@ Electron_Remnant::Electron_Remnant(PDF::PDF_Base * pdf,
   // This will be used explicitly in methods TestExtract and Fillblob
   m_constituents.push_back(p_pdfbase->Bunch());
   m_constituents.push_back(Flavour(kf_photon));
-  msg_Out()<<METHOD<<" for "<<p_pdfbase->Bunch()<<".\n";
 }
 
-bool Electron_Remnant::FillBlob(ParticleMomMap *ktmap)
+bool Electron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy)
 {
   if (m_extracted.size()==0) {
     THROW(critical_error,"No particles extracted from intact beam.");
@@ -37,12 +36,13 @@ bool Electron_Remnant::FillBlob(ParticleMomMap *ktmap)
 
 bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   if (m_extracted.size()==1) {
-    msg_Out()<<METHOD<<" already extracted\n"
-	     <<(**m_extracted.begin())<<"\n";
+    msg_Error()<<"Error in "<<METHOD<<" already extracted\n"
+	       <<"   "<<(**m_extracted.begin())<<"\n"
+	       <<"   will ignore it.\n";
   }
   if (flav!=m_constituents.front() || (p_beam->OutMomentum()[0]-mom[0])<0.) {
-    msg_Out()<<METHOD<<" fails: "<<mom<<" vs. "<<p_beam->OutMomentum()<<", "
-	     <<m_constituents.front()<<".\n";
+    msg_Error()<<"Error in "<<METHOD<<": "<<mom<<" vs. "<<p_beam->OutMomentum()<<", "
+	       <<m_constituents.front()<<".\n";
     return false;
   }
   return true;

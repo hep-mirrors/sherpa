@@ -22,9 +22,9 @@ bool MI_Parameters::Init(Default_Reader *const defaultreader)
 void MI_Parameters::ReadParameters(Default_Reader *const defaultreader)
 {
   m_parameters[string("pt_0(ref)")] =
-    defaultreader->GetValue<double>("AMISIC::PT_0(ref)",1.26);
+    defaultreader->GetValue<double>("AMISIC::PT_0(ref)",1.);
   m_parameters[string("pt_min(ref)")]    =
-    defaultreader->GetValue<double>("AMISIC::PT_Min(ref)",2.5);
+    defaultreader->GetValue<double>("AMISIC::PT_Min(ref)",1.5);
   m_parameters[string("eta")]       =
     defaultreader->GetValue<double>("AMISIC::Eta",0.16);
   m_parameters[string("Ecms(ref)")] =

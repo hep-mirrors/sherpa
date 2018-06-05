@@ -144,10 +144,10 @@ bool Colour_Generator::SChannelColourFlows() {
   for (size_t beam=0;beam<2;beam++) {
     if (m_cols[beam][0].empty() || m_cols[1-beam][1].empty()) continue;
     if (m_cols[beam][0].front()==m_cols[1-beam][1].front()) {
-      msg_Out()<<"Potential problem in "<<METHOD<<": identical colour "
-	       <<"("<<m_cols[beam][0].front()<<") on stack for "
-	       <<p_inparts[0]->Flav()<<" + "<<p_inparts[1]->Flav()<<".\n";
-      Output();
+      //msg_Out()<<"Potential problem in "<<METHOD<<": identical colour "
+      //       <<"("<<m_cols[beam][0].front()<<") on stack for "
+      //       <<p_inparts[0]->Flav()<<" + "<<p_inparts[1]->Flav()<<".\n";
+      //Output();
       return ConstrainedColourFlows(beam);
     }
   }
@@ -226,10 +226,10 @@ bool Colour_Generator::ConstrainedGGFlows(const size_t & tbeam) {
     newcola = p_inparts[1-tbeam]->GetFlow(2);
     break;    
   }
-  msg_Out()<<METHOD<<"(replace = "<<replace<<"): "
-	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-	   <<(*p_inparts[0]->DecayBlob());
-  Output();
+  //msg_Out()<<METHOD<<"(replace = "<<replace<<"): "
+  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
+  //	   <<(*p_inparts[0]->DecayBlob());
+  //Output();
   return true;
 }
 
@@ -241,7 +241,7 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t & tbeam) {
   int newcolt, oldcolt, newcola, oldcola;
   bool anti = p_inparts[1-tbeam]->Flav().IsAnti();
   Particle * aspec = p_remnants[1-tbeam]->GetSpectator();
-  msg_Out()<<METHOD<<"(anti = "<<anti<<", aspec = ["<<aspec<<"], ncol_t = "<<ncolt<<")\n";
+  //msg_Out()<<METHOD<<"(anti = "<<anti<<", aspec = ["<<aspec<<"], ncol_t = "<<ncolt<<")\n";
   if (!anti) {
     // Quark on anti-triplet beam is a quark, therefore it cannot replace its original colour
     // with a dangerous one, and the gluon can do the replacement with a tricky colour.
@@ -295,11 +295,11 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t & tbeam) {
       newcola = p_inparts[1-tbeam]->GetFlow(2);
     }
   }
-  msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<aspec<<"): "
-	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-	   <<(*p_inparts[0]->DecayBlob());
-  if (aspec) msg_Out()<<(*aspec)<<"\n";
-  Output();
+  //msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<aspec<<"): "
+  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
+  //	   <<(*p_inparts[0]->DecayBlob());
+  //if (aspec) msg_Out()<<(*aspec)<<"\n";
+  //Output();
   return true;
 }
 
@@ -311,7 +311,7 @@ bool Colour_Generator::ConstrainedQGFlows(const size_t & tbeam) {
   int newcolt, oldcolt, newcola, oldcola;
   bool anti = p_inparts[tbeam]->Flav().IsAnti();
   Particle * tspec = p_remnants[tbeam]->GetSpectator();
-  msg_Out()<<METHOD<<"(anti = "<<anti<<", tspec = ["<<tspec<<", ncol_a = "<<ncola<<"])\n";
+  //msg_Out()<<METHOD<<"(anti = "<<anti<<", tspec = ["<<tspec<<", ncol_a = "<<ncola<<"])\n";
   if (anti) {
     // Quark on triplet beam is an anti-quark, therefore it cannot replace its original colour
     // with a dangerous one, and the gluon can do the replacement with a tricky colour.
@@ -363,11 +363,11 @@ bool Colour_Generator::ConstrainedQGFlows(const size_t & tbeam) {
       newcola = p_inparts[1-tbeam]->GetFlow(2);
     }
   }
-  msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<tspec<<"): "
-	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-	   <<(*p_inparts[0]->DecayBlob());
-  if (tspec) msg_Out()<<(*tspec)<<"\n";
-  Output();
+  //msg_Out()<<METHOD<<"(ncol_a = "<<ncola<<" for anti = "<<anti<<", spec = "<<tspec<<"): "
+  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
+  //	   <<(*p_inparts[0]->DecayBlob());
+  //if (tspec) msg_Out()<<(*tspec)<<"\n";
+  //Output();
   return true;
 }
 
@@ -379,9 +379,9 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
   Particle * aspec = p_remnants[1-tbeam]->GetSpectator();
   int newcolt = 0, oldcolt = 0, newcola = 0, oldcola = 0;
   bool replacecol = false;
-  msg_Out()<<METHOD<<" for\n"
-	   <<"   triplet (tanti = "<<tanti<<", tspec = ["<<tspec<<"]) and "
-	   <<"anti-triplet (aanti = "<<aanti<<", aspec = ["<<aspec<<"]).\n";
+  //msg_Out()<<METHOD<<" for\n"
+  //	   <<"   triplet (tanti = "<<tanti<<", tspec = ["<<tspec<<"]) and "
+  //	   <<"anti-triplet (aanti = "<<aanti<<", aspec = ["<<aspec<<"]).\n";
   if (tanti && aanti) {
     // harmless - both quarks are anti-quarks - the anti-quark on the anti-triplet beam
     // will get the potentially dangerous anti-triplet colour, the anti-quark on the triplet beam
@@ -432,7 +432,7 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
     if (tspec && aspec)       replace = ran->Get()>0.5?1:2;
     else if (tspec && !aspec) replace = 1;
     else if (!tspec && aspec) replace = 2;
-    msg_Out()<<"--> replace = "<<replace<<"\n";
+    //msg_Out()<<"--> replace = "<<replace<<"\n";
     if (replace==1) {
       m_vetoed[tbeam][1].erase(p_inparts[tbeam]->GetFlow(1));
       oldcolt = tspec->GetFlow(2);
@@ -480,13 +480,13 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
     }
     replacecol = true;
   }
-  msg_Out()<<"--> (ncol_a = "<<ncola<<" for anti = "<<aanti<<", spec = "<<aspec<<") "
-	   <<"(ncol_t = "<<ncolt<<" for trip = "<<tanti<<", spec = "<<tspec<<"): "
-	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
-	   <<(*p_inparts[0]->DecayBlob())<<"\n"<<"Spectators:\n";
-  if (tspec) msg_Out()<<(*tspec)<<"\n";
-  if (aspec) msg_Out()<<(*aspec)<<"\n";
-  Output();
+  //msg_Out()<<"--> (ncol_a = "<<ncola<<" for anti = "<<aanti<<", spec = "<<aspec<<") "
+  //	   <<"(ncol_t = "<<ncolt<<" for trip = "<<tanti<<", spec = "<<tspec<<"): "
+  //	   <<oldcolt<<" --> "<<newcolt<<" and "<<oldcola<<" --> "<<newcola<<".\n"
+  //	   <<(*p_inparts[0]->DecayBlob())<<"\n"<<"Spectators:\n";
+  //if (tspec) msg_Out()<<(*tspec)<<"\n";
+  //if (aspec) msg_Out()<<(*aspec)<<"\n";
+  //Output();
   if (replacecol) return true;
   exit(1);
   return true;

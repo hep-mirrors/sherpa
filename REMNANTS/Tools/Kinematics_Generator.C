@@ -46,10 +46,8 @@ void Kinematics_Generator::SetKinType(Remnant_Handler * const rhandler) {
 
 void Kinematics_Generator::Reset() {
   if (m_kintype==kin_type::intact) return;
-  for (size_t beam=0;beam<2;beam++) {
-    m_ktmap.clear();
-    m_shuffledmap.clear();
-  }
+  for (size_t beam=0;beam<2;beam++) { m_ktmap[beam].clear(); }
+  m_shuffledmap.clear();
   m_boostedblobs.clear();
 }
 
@@ -87,11 +85,83 @@ bool Kinematics_Generator::CollinearKinematics() {
 }
 
 bool Kinematics_Generator::TransverseKinematics() {
+  switch (m_kintype) {
+  case kin_type::DIS1:
+    return TransverseKinematicsDIS(0);
+  case kin_type::DIS2:
+    return TransverseKinematicsDIS(1);
+  case kin_type::hh:
+    return TransverseKinematicsHH();
+  }
+  msg_Error()<<"Error in "<<METHOD<<":\n"
+	     <<"   no meaningful kinematics strategy "<<m_kintype<<"\n";
+  exit(1);
+}
+
+bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
+  // Remnants fill the beam blobs with spectators and copies of the shower initiators
+  // (they will become outging particles of the soft blob, as well as copies of the spectators).
+  // if beam blobs cannot be filled return false and trigger retrial
+    // Fill the beam remnant blob with the original particles and put them also into the ktmaps.
+  if (!p_remnants[beam]->FillBlob(&m_ktmap[beam],false)) return false;
+  for (size_t i=0;i<2;i++) m_inmom[i] = p_remnants[i]->InMomentum();
+  // Initialise particle-momentum maps to track the transverse momenta
+  InitKTMaps();
+  // Distribute transverse momenta - this will involve mostly minor reshuffling of longitudinal
+  // momenta in the remnant break-up.  The check is to make sure this does not violate momentum
+  // conservation, as a by-product is already produces the momenta used in the boosting
+  // of the connected blobs.  If we produce too large transverse momenta we start by scaling them
+  // down by factors of 10 after 100 mistrials.  If we have to scale them down by a factor of
+  // 1000 we force all of them to be exactly zero.
+  // I still have to think about an error treatment in case this goes wrong.
+  size_t maxnum = 100;
+  double scale  = 1.;
+  do {
+    if (p_remnants[beam]->Type()==rtp::hadron) {
+      m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap[beam],scale);
+    }
+    maxnum--;
+    if (maxnum<=0)   {
+      maxnum = 100; scale *= 0.1;
+      msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+    }
+    if (scale<1.e-3) scale = 0.;
+  } while (!CheckDIS(beam) && scale>0. && maxnum>=0);
+  // Adjust the kinematics, with the momenta stored in the shufflemap of particles and momenta
+  if ((scale<1.e-4 && maxnum<=0) || !AdjustFinalStateDIS(beam)) return false;
+  return true;
+}
+
+bool Kinematics_Generator::AdjustFinalStateDIS(const size_t & beam) {
+  // Logic: In DIS we have broken the link between shower initiators and the beam blobs -
+  // because the soft blob here comes ** after ** the shower.  So we have to fix this
+  // manually, by
+  // 1. adding the shower initiator to the beam blob.
+  // 2. copying the particles from the map of particles to shuffled momenta
+  //    (the originals are the FS particles of shower and beam blobs)
+  //    and add the cipies with the shuffled momenta as outgoing particles to the soft blob.
+  // 3. Add the originals, with the original momenta, as inconing particles to the soft blob.
+  p_remnants[1-beam]->GetBlob()->AddToOutParticles(p_remnants[1-beam]->GetExtracted()->front());
+  for (ParticleMomMap::iterator pit=m_shuffledmap.begin();
+       pit!=m_shuffledmap.end();pit++) {
+    Particle * part = new Particle(*pit->first);
+    part->SetNumber();
+    part->SetMomentum(pit->second);
+    p_softblob->AddToOutParticles(part);
+    p_softblob->AddToInParticles(pit->first);
+    pit->first->SetStatus(part_status::decayed);
+  }
+  return true;
+}
+
+bool Kinematics_Generator::TransverseKinematicsHH() {
   // Remnants fill the beam blobs with spectators and copies of the shower initiators
   // (they will become outging particles of the soft blob, as well as copies of the spectators).
   for (size_t beam=0;beam<2;beam++) {
     // if beam blobs cannot be filled return false and trigger retrial
-    if (!p_remnants[beam]->FillBlob(&m_ktmap)) return false;
+    // Fill the beam remnant blobs with copies of the spectators and the extracted shower
+    // initiators and keep the original particles in the ktmaps.
+    if (!p_remnants[beam]->FillBlob(&m_ktmap[beam],true)) return false;
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   // Initialise particle-momentum maps to track the transverse momenta
@@ -106,22 +176,26 @@ bool Kinematics_Generator::TransverseKinematics() {
   size_t maxnum = 100;
   double scale  = 1.;
   do {
-    for (short unsigned int beam=0;beam<2;++beam)
-      m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap,scale);
+    for (short unsigned int beam=0;beam<2;++beam) {
+      if (p_remnants[beam]->Type()==rtp::hadron) {
+	m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap[beam],scale);
+      }
+    }
     maxnum--;
     if (maxnum<=0)   {
       maxnum = 100; scale *= 0.1;
       msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
-  } while (!Check() && scale>0. && maxnum>=0);
+  } while (!CheckHH() && scale>0. && maxnum>=0);
   // Fill particles from remnant break-up into soft blob, unless we have simple
   // collinear kinematics with no momentum shuffling
   for (size_t beam=0;beam<2;beam++) {
     Blob * beamblob = p_remnants[beam]->GetBlob();
     for (size_t i=0;i<beamblob->NOutP();i++) {
       Particle * part = beamblob->OutParticle(i);
-      p_softblob->AddToInParticles(part);
+      if (part->Flav().Strong() || part->Flav().IsDiQuark())
+	p_softblob->AddToInParticles(part);
     }
   }
   // Adjust the kinematics, proceed in two steps:
@@ -141,16 +215,81 @@ void Kinematics_Generator::InitKTMaps() {
   for (short unsigned int beam=0;beam<2;++beam) {
     for (Part_Iterator pit=p_extracted[beam]->begin();
 	 pit!=p_extracted[beam]->end();pit++) {
-      m_ktmap[(*pit)] = Vec4D();
+      m_ktmap[beam][(*pit)] = Vec4D();
     }
     for (Part_Iterator pit=p_spectators[beam]->begin();
 	 pit!=p_spectators[beam]->end();pit++) {
-      m_ktmap[(*pit)] = Vec4D();
+      m_ktmap[beam][(*pit)] = Vec4D();
     }
   }
 }
 
-bool Kinematics_Generator::Check() {
+const Vec4D Kinematics_Generator::
+ExtractColourfulFS(const size_t & beam,vector<Vec4D> & moms,
+		   vector<double> & masses,vector<Particle *> & parts) {
+  // Extract momenta, masses, and particle pointers of colourful FS objects in the
+  // showerblob (the decayblob of the ** only ** extracted particle) for beam.
+  Vec4D  tot(0.,0.,0.,0.), help;
+  Blob * blob  = p_extracted[beam]->front()->DecayBlob();
+  for (size_t i=0;i<blob->NOutP();i++) {
+    Particle * part = blob->OutParticle(i);
+    if (part->DecayBlob()!=NULL) continue;
+    help = part->Momentum();
+    if (!part->Flav().Strong()) continue;
+    tot += help;
+    moms.push_back(help);
+    parts.push_back(part);
+    masses.push_back(part->Flav().Mass());
+  }
+  // Add the transverse momentum of the shower initiator to the total momentum
+  // (and the check), and distribute it equally over all outgoing coloured particles.
+  Vec4D kttot       = m_ktmap[beam][p_extracted[beam]->front()];
+  tot              += kttot;
+  for (size_t i=0;i<moms.size();i++) moms[i] += kttot/double(moms.size());
+  return tot;
+}
+
+const Vec4D Kinematics_Generator::
+ExtractSpectators(const size_t & beam,vector<Vec4D> & moms,
+		  vector<double> & masses,vector<Particle *> & parts) {
+  // Extract momenta, masses, and particle pointers of spectators for beam.
+  Vec4D  tot(0.,0.,0.,0.), help;
+  Part_List * spectators = p_remnants[beam]->GetSpectators();
+  for (Part_List::iterator spit=spectators->begin();
+       spit!=spectators->end();spit++) {
+    tot              += help = (*spit)->Momentum()+m_ktmap[beam][(*spit)];
+    //m_checkmom[beam] += help;
+    moms.push_back(help);
+    parts.push_back(*spit);
+    masses.push_back((*spit)->Flav().Mass());
+  }
+  return tot;
+}
+
+bool Kinematics_Generator::CheckDIS(const size_t & beam) {
+  vector<Vec4D>      moms;
+  vector<Particle *> parts;
+  vector<double>     masses;  
+  Vec4D tot = (ExtractColourfulFS(beam,moms,masses,parts) +
+	       ExtractSpectators(beam,moms,masses,parts));
+  Poincare residualcms(tot);
+  // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
+  // particles onto their mass shells and to account for their transverse momenta.
+  for (size_t i=0;i<moms.size();i++) { residualcms.Boost(moms[i]); }
+  if (!m_stretcher.ZeroThem(0,moms) ||
+      !m_stretcher.MassThem(0,moms,masses)) {
+    msg_Error()<<"Error in "<<METHOD<<" will return false and hope for the best.\n";
+    return false;
+  }
+  // The boost back into the lab system and store the momenta in the shuffled momenta.
+  for (size_t i=0;i<moms.size();i++) {
+    residualcms.BoostBack(moms[i]);
+    m_shuffledmap[parts[i]] = moms[i];
+  }
+  return true;
+}
+  
+bool Kinematics_Generator::CheckHH() {
   bool success  = true;
   Part_Iterator plit[2];
   for (size_t beam=0;beam<2;beam++) {
@@ -170,11 +309,11 @@ bool Kinematics_Generator::Check() {
 bool Kinematics_Generator::CheckScatter(Particle * part[2]) {
   Vec4D labmom[2], kperp[2], oldLab(0.,0.,0.,0.), Kperp(0.,0.,0.,0.);
   double mt2[2];
-  // Harvest momenta etc. from both shower/scatter initiators: will cehck, scatter-by-scatter,
+  // Harvest momenta etc. from both shower/scatter initiators: will check, scatter-by-scatter,
   // if new momenta can be constructed and if there is enough energy in the system.
   for (size_t beam=0;beam<2;beam++) {
     oldLab   += labmom[beam] = part[beam]->Momentum();
-    Kperp    += kperp[beam]  = m_ktmap[part[beam]];
+    Kperp    += kperp[beam]  = m_ktmap[beam][part[beam]];
     mt2[beam] = sqr(part[beam]->Flav().Mass())-kperp[beam].Abs2();
   }
   double M2  = oldLab.Abs2(), M = sqrt(M2), Y = oldLab.Y();
@@ -225,7 +364,7 @@ bool Kinematics_Generator::CheckRemnants() {
 	 plit!=p_spectators[beam]->end();plit++) {
       Particle * part = (*plit);
       if (part==recoiler) continue;
-      tot += mom = part->Momentum()+m_ktmap[part];
+      tot += mom = part->Momentum()+m_ktmap[beam][part];
       parts.push_back(part);
       moms.push_back(mom);
       masses.push_back(part->Flav().Mass());
@@ -237,7 +376,7 @@ bool Kinematics_Generator::CheckRemnants() {
 		     <<beam<<", "<<m_checkmom[beam]<<"\n";
       return false;
     }
-    tot += mom = m_checkmom[beam] + m_ktmap[recoiler];
+    tot += mom = m_checkmom[beam] + m_ktmap[beam][recoiler];
     parts.push_back(recoiler);
     moms.push_back(mom);
     masses.push_back(recoiler->Flav().Mass());
@@ -254,7 +393,7 @@ bool Kinematics_Generator::CheckRemnants() {
 	Particle * recoiler = p_remnants[beam]->GetRecoiler();
 	for (Part_Iterator plit=p_spectators[beam]->begin();
 	     plit!=p_spectators[beam]->end();plit++) {
-	  mom = (*plit)->Momentum()+m_ktmap[(*plit)];
+	  mom = (*plit)->Momentum()+m_ktmap[beam][(*plit)];
 	  msg_Out()<<"  "<<(*plit)->Number()<<": "<<mom
 		   <<" --> "<<(*plit)->Flav().Mass()<<"\n";
 	}

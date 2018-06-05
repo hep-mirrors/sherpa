@@ -55,7 +55,7 @@ namespace REMNANTS {
     virtual bool TestExtract(ATOOLS::Particle *parton);
     virtual bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom)=0;
     virtual ATOOLS::Blob * MakeBlob();
-    virtual bool FillBlob(ParticleMomMap *ktmap=NULL)=0;
+    virtual bool FillBlob(ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
     virtual void Reset();
