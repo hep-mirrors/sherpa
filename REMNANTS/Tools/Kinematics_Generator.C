@@ -1,7 +1,9 @@
 #include "REMNANTS/Tools/Kinematics_Generator.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -92,9 +94,11 @@ bool Kinematics_Generator::TransverseKinematics() {
     return TransverseKinematicsDIS(1);
   case kin_type::hh:
     return TransverseKinematicsHH();
+  default:
+    THROW(fatal_error, "Error in " + METHOD + ":\n"
+		       + "   no meaningful kinematics strategy "
+		       + ToString(m_kintype) + "\n");
   }
-  msg_Error()<<"Error in "<<METHOD<<":\n"
-	     <<"   no meaningful kinematics strategy "<<m_kintype<<"\n";
   exit(1);
 }
 
@@ -113,7 +117,7 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
   // of the connected blobs.  If we produce too large transverse momenta we start by scaling them
   // down by factors of 10 after 100 mistrials.  If we have to scale them down by a factor of
   // 1000 we force all of them to be exactly zero.
-  // I still have to think about an error treatment in case this goes wrong.
+  // TODO: I still have to think about an error treatment in case this goes wrong.
   size_t maxnum = 100;
   double scale  = 1.;
   do {
@@ -121,14 +125,14 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
       m_kperpGenerator.CreateBreakupKinematics(beam,&m_ktmap[beam],scale);
     }
     maxnum--;
-    if (maxnum<=0)   {
+    if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
       msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
-  } while (!CheckDIS(beam) && scale>0. && maxnum>=0);
+  } while (!CheckDIS(beam) && scale>0.);
   // Adjust the kinematics, with the momenta stored in the shufflemap of particles and momenta
-  if ((scale<1.e-4 && maxnum<=0) || !AdjustFinalStateDIS(beam)) return false;
+  if ((scale<1.e-4) || !AdjustFinalStateDIS(beam)) return false;
   return true;
 }
 
@@ -172,7 +176,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   // of the connected blobs.  If we produce too large transverse momenta we start by scaling them
   // down by factors of 10 after 100 mistrials.  If we have to scale them down by a factor of
   // 1000 we force all of them to be exactly zero.
-  // I still have to think about an error treatment in case this goes wrong.
+  // TODO: I still have to think about an error treatment in case this goes wrong.
   size_t maxnum = 100;
   double scale  = 1.;
   do {
@@ -182,12 +186,12 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
       }
     }
     maxnum--;
-    if (maxnum<=0)   {
+    if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
       msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
-  } while (!CheckHH() && scale>0. && maxnum>=0);
+  } while (!CheckHH() && scale>0.);
   // Fill particles from remnant break-up into soft blob, unless we have simple
   // collinear kinematics with no momentum shuffling
   for (size_t beam=0;beam<2;beam++) {
@@ -204,7 +208,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   // - then adjust the remnant partons that are not initiating a shower/collision.
   // First, reset momenta of beam particles - successively we will subtract momenta
   // of extracted particles and use this to monitor longitudinal momentum conservation.
-  if ((scale<1.e-4 && maxnum<=0) ||
+  if ((scale<1.e-4) ||
       !AdjustShowerInitiators() || !AdjustRemnants()) return false;
   return true;
 }

@@ -149,6 +149,7 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
     }
     m_emax[beam] -= particle->Momentum()[0];
   }
+  return true;
 }
 
 bool Multiple_Interactions::InitNewEvent() {

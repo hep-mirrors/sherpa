@@ -47,10 +47,12 @@ namespace AMISIC {
     const double operator()(const double & shat,const double & that,
 			    const double & uhat);
     const double SudakovArgument(const double & pt2) const;
-    
-    PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
-					    bool add) {}
-    //int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) { return 1; }
+
+    PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &,
+					    bool add) final {
+      THROW(fatal_error,
+	    "MI_Processes::InitializeProcess should not be called.");
+    }
     MI_Process * SelectProcess(); 
   
     inline const double &  Ecms()      const { return m_ecms; }

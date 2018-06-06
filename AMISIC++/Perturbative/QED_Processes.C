@@ -24,7 +24,7 @@ using namespace std;
 qg_qgamma::qg_qgamma() : XS_Base() { m_name = string("qg->qgam"); }
 
 void qg_qgamma::Calc(const double & s,const double & t,const double & u) {
-  m_lastxs -1./3. * (s/u + u/s);
+  m_lastxs = -1./3. * (s/u + u/s);
 }
 
 bool qg_qgamma::SetColours(const ATOOLS::Flavour_Vector & flavs) {
