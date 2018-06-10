@@ -14,41 +14,49 @@ bool Coefficient_Checker::CheckCoeffs(
     if (activecoeffs.find(type) == activecoeffs.end())
       continue;
     const auto& key = refkv.first;
+    msg_Debugging() << "Tests for " << key << " reference values:\n";
     for (const auto& helrefpair : refkv.second) {
       const auto& helicities = helrefpair.first;
       const auto idx = spinampls.GetNumber(helicities);
       const auto coeffsit = coeffs.find(key);
       if (coeffsit == coeffs.end())
         THROW(fatal_error, "EW Sudakov coeffs not found");
-      for (int i{ 0 }; i < 2; ++i) {
-        auto coeff = (i == 0)
-          ? coeffsit->second[idx].first : coeffsit->second[idx].second;
-        const auto prec = (std::abs(helrefpair.second) < 10.0) ? 1.e-2 : 1.e-1;
-        const auto singlecoeffres
-          = (IsBad(coeff.real())
-             || std::abs(coeff.real() - helrefpair.second) < prec);
-        if (singlecoeffres) {
-          msg_Debugging() << om::green;
-        } else {
-          msg_Debugging() << om::red;
-        }
-        if (i == 0) {
-          for (const auto& h : helicities)
-            msg_Debugging() << h << " ";
-          msg_Debugging() << key << " coeff: " << coeff;
-          if (!singlecoeffres)
-            res = false;
-        }
-        if (i == 1) {
-          msg_Debugging() << " alt: " << coeff;
-        }
-        msg_Debugging() << om::reset;
-      }
-      msg_Debugging()
-            << "\t vs \t  reference value: " << helrefpair.second
-            << std::endl;
+      if (!CheckCoeff(coeffsit->second[idx], helrefpair.second, helicities))
+        res = false;
     }
   }
+  return res;
+}
+
+bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeffpair,
+                                     Complex ref,
+                                     const std::vector<int>& helicities) const
+{
+  auto res = true;
+  for (int i{ 0 }; i < 2; ++i) {
+    auto coeff = (i == 0) ? coeffpair.first : coeffpair.second;
+    const auto prec = (std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
+    const auto singlecoeffres
+      = (IsBad(coeff.real())
+         || std::abs(coeff.real() - ref) < prec);
+    if (singlecoeffres) {
+      msg_Debugging() << om::green;
+    } else {
+      msg_Debugging() << om::red;
+    }
+    if (i == 0) {
+      for (const auto& h : helicities)
+        msg_Debugging() << h << " ";
+      msg_Debugging() << " coeff: " << coeff;
+      if (!singlecoeffres)
+        res = false;
+    }
+    if (i == 1) {
+      msg_Debugging() << " alt: " << coeff;
+    }
+    msg_Debugging() << om::reset;
+  }
+  msg_Debugging() << "\t vs \t  reference value: " << ref << std::endl;
   return res;
 }
 

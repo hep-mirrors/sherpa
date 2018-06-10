@@ -32,6 +32,10 @@ namespace PHASIC {
     const std::string procname;
     const std::set<EWSudakov_Log_Type> activecoeffs;
 
+    bool CheckCoeff(const Coeff_Value&,
+                    Complex ref,
+                    const std::vector<int>& helicities) const;
+
   };
 
 }
