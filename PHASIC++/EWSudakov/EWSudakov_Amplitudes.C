@@ -46,11 +46,40 @@ std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(const Leg_Set& legs)
 
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
+  DEBUG_FUNC(mom);
+  for (int i{ 0 }; i < Unrotated().Legs().size(); ++i) {
+    Unrotated().Leg(i)->SetMom(i < Unrotated().NIn() ? -mom[i] : mom[i]);
+  }
+  // TODO: generalise the momentum rescaling below to handle 2->n
+  // TODO: also, reuse existing implementation elsewhere if existing
+  assert(Unrotated().NIn() == 2 && Unrotated().Legs().size() == 4);
+  const auto Etot2 = MandelstamS();
   for (auto& ampl : ampls) {
+    if (ampl.first == s_baseamplkey)
+      continue;
     const auto& permutation = LegPermutation(ampl.first);
-    for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
-      ampl.second->Leg(i)->SetMom(i < ampl.second->NIn() ? -mom[permutation[i]] : mom[permutation[i]]);
+
+    // set incoming momenta
+    // TODO: drop the implicit assumption that all initial-state particles are
+    // massless (?)
+    for (int i{ 0 }; i < ampl.second->NIn(); ++i) {
+      ampl.second->Leg(i)->SetMom(-mom[permutation[i]]);
     }
+
+    // calc outgoing momenta such that all particles are on their mass shell;
+    // to guarantee this we modify the energy and the absolute value of the
+    // momenta, but not the directions of the momenta
+    const Vec3D out_mom {Unrotated().Leg(permutation[2])->Mom()};
+    const auto normed_out_mom {out_mom / out_mom.Abs()};
+    const auto m22 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(2)->Flav().Mass()));
+    const auto m32 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(3)->Flav().Mass()));
+    // calc the fraction of energy that will be assigned to leg 2
+    const auto x = (Etot2 + m22 - m32) / (2*Etot2);
+    // calc the absolute momentum assigned to leg 2
+    const auto p
+      = sqrt((Etot2*Etot2 - 2*Etot2*(m22 + m32) + sqr(m22 - m32)) / (4*Etot2));
+    ampl.second->Leg(2)->SetMom(Vec4D{x*sqrt(Etot2), p*normed_out_mom});
+    ampl.second->Leg(3)->SetMom(Vec4D{(1-x)*sqrt(Etot2), -p*normed_out_mom});
   }
 }
 
