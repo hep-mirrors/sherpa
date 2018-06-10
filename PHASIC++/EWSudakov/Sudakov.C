@@ -38,11 +38,31 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
+  const auto s = std::abs(m_ampls.MandelstamS());
+  const auto t = std::abs(m_ampls.MandelstamT());
+  const auto u = std::abs(m_ampls.MandelstamU());
+  static const auto threshold = 2e2;
+  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
+  msg_Debugging() << "log2(s/mW) = " << sqr(std::log(s/m_mw2)) << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(t/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(u/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) << "\n";
+  if (sqr(std::log(s/m_mw2)) < threshold) {
+    msg_Debugging() << "event LSC too small\n";
+    return 1.0;
+  }
+  if ((std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) < threshold)
+      && (std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) < threshold)) {
+    msg_Debugging() << "event SSC too small\n";
+    return 1.0;
+  }
+  DEBUG_VAR(t/s);
+  DEBUG_VAR(u/s);
   m_lsczspinampls.clear();
   m_sscwspinampls.clear();
   m_spinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
   CalculateSpinAmplitudeCoeffs();
+  THROW(normal_exit, "Finish.");
 
   /*
     // pref = alpha/4 pi is added in KFactor method.
@@ -113,18 +133,30 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
     for (const auto& key : m_activecoeffs) {
       switch (key) {
         case EWSudakov_Log_Type::Ls:
-          m_coeffs[{key, {}}][i] = LsCoeff(value, spincombination, i);
+          m_coeffs[{key, {}}][i] = LsCoeff(value, spincombination);
           break;
         case EWSudakov_Log_Type::lZ:
-          m_coeffs[{key, {}}][i] = lsZCoeff(value, spincombination, i);
+          m_coeffs[{key, {}}][i] = lsZCoeff(value, spincombination);
           break;
         case EWSudakov_Log_Type::lSSC:
+          if (m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_Z
+              || m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_photon) {
+            msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for a ";
+            msg_Error() << "ampl with a gauge boson for now due to missing ";
+            msg_Error() << "implementations\n";
+            break;
+          }
           for (size_t k{ 0 }; k < spincombination.size(); ++k) {
             for (size_t l{ 0 }; l < k; ++l) {
+              // s-channel-related loops will have vanishing log coeffs
+              if (k == 1 && l == 0)
+                continue;
+              if (spincombination.size() == 4 && k == 3 && l == 2)
+                continue;
               const auto angularkey
                 = Coeff_Map_Key{EWSudakov_Log_Type::lSSC, {k, l}};
               m_coeffs[angularkey][i]
-                = lsLogROverSCoeffs(value, spincombination, i, {k, l});
+                = lsLogROverSCoeffs(value, spincombination, {k, l});
             }
           }
           break;
@@ -149,8 +181,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
 }
 
 Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
-                             std::vector<int> spincombination,
-                             size_t spinidx)
+                             std::vector<int> spincombination)
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
@@ -187,8 +218,7 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
 }
 
 Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
-                              std::vector<int> spincombination,
-                              size_t spinidx)
+                              std::vector<int> spincombination)
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
@@ -203,7 +233,6 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
 
 Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
                                        std::vector<int> spincombination,
-                                       size_t spinidx,
                                        const Two_Leg_Indizes& indizes)
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
@@ -235,13 +264,6 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        msg_Debugging() << "calc {" << k << ", " << l << "} i=" << i << std::endl;
-        msg_Debugging() << "flav {" << kcoupling.first
-                            << ", " << lcoupling.first
-                            << "}" << std::endl;
-        msg_Debugging() << "spin {" << spincombination[k]
-                            << ", " << spincombination[l]
-                            << "}" << std::endl;
         // TODO: remove code duplication when calculating ampl ratios
         const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
         auto amplit = m_sscwspinampls.find(key);
@@ -251,43 +273,57 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
                                               transformedampl);
           amplit = m_sscwspinampls.find(key);
         }
-        auto& legpermutation = m_ampls.LegPermutation(key);
-        std::vector<int> transformedspincombination;
-        for (const auto& idx : legpermutation)
-          transformedspincombination.push_back(spincombination[idx]);
-        const auto transformed
-          = amplit->second[0].Get(transformedspincombination);
-        const auto base = amplvalue;
-        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-        // TODO: understand why we need to use abs here when calculating coeffs
-        // for ee->mumu, but when we want to calculate coeffs for ee->uu/dd, we
-        // can use the (expected) unmodified ratio; is this connected to the
-        // extraneous minus sign in Sudakov::LsCoeff?
-        const auto amplratio = transformed/base;
-        DEBUG_VAR(amplratio);
-        auto contribution = 2*kcoupling.second*lcoupling.second*amplratio;
-        const auto amplratio2
-          = Complex{ std::abs(amplratio.real()), amplratio.imag() };
-        auto contribution2 = 2*kcoupling.second*lcoupling.second*amplratio2;
 
-        // this is a hack for an easier comparison with the Denner/Pozzorini
-        // ref; it turns out it only affects the result by a few permille and
-        // is probably not responsible for the observed deviations in the eeWW
-        // LT W-loop contributions, which are larger
-        if ((k == 2 && l == 1) || (k == 3 && l == 0)) {
-          std::cout << spincombination << std::endl;
-          if (spincombination[0] == 1 && spincombination[1] == 1
-              && (spincombination[2] != spincombination[3])) {
-            if (kflav.Kfcode() == kf_Wplus && lflav.Kfcode() == kf_e) {
-              const auto t = m_ampls.MandelstamT();
-              const auto u = m_ampls.MandelstamU();
-              const auto fac = (1 - u/t);
-              DEBUG_VAR(fac);
-              contribution /= fac;
-              contribution2 /= fac;
+        // correct spin index when a longitudinal vector boson is replaced with
+        // a scalar using the Goldstone boson equivalence theorem
+        std::vector<int> goldstonespincombination;
+        for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+          auto lambda = spincombination[i];
+          if (lambda == 2) {
+            if (i == k && kflav.IsVector() && kcoupling.first != kf_Z) {
+              lambda = 0;
+            } else if (i == l && lflav.IsVector() && lcoupling.first != kf_Z) {
+              lambda = 0;
             }
           }
+          goldstonespincombination.push_back(lambda);
         }
+
+        auto& legpermutation = m_ampls.LegPermutation(key);
+        std::vector<int> transformedspincombination;
+        for (const auto& idx : legpermutation) {
+          transformedspincombination.push_back(goldstonespincombination[idx]);
+        }
+        const auto transformed = amplit->second[0].Get(transformedspincombination);
+        const auto base = amplvalue;
+        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+
+        // TODO: understand why we need to use a minus sign here when
+        // calculating certain coeffs for ee->WW, but otherwise, we can use the
+        // (expected) unmodified ratio; is this connected to the extraneous
+        // minus sign in Sudakov::LsCoeff?
+        auto amplratio = transformed/base;
+        auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
+        const auto amplratio2 = -amplratio;
+        auto contribution2 = 2.0*kcoupling.second*lcoupling.second*amplratio2;
+
+        // this is a hack for an easier comparison with the Denner/Pozzorini
+        // ref; however, it turns out that it only affects the result by a few
+        // permille
+        //if ((k == 2 && l == 1) || (k == 3 && l == 0)) {
+        //  std::cout << spincombination << std::endl;
+        //  if (spincombination[0] == 1 && spincombination[1] == 1
+        //      && (spincombination[2] != spincombination[3])) {
+        //    if (kflav.Kfcode() == kf_Wplus && lflav.Kfcode() == kf_e) {
+        //      const auto t = m_ampls.MandelstamT();
+        //      const auto u = m_ampls.MandelstamU();
+        //      const auto fac = (1 - u/t);
+        //      DEBUG_VAR(fac);
+        //      contribution /= fac;
+        //      contribution2 /= fac;
+        //    }
+        //  }
+        //}
 
         coeff.first += contribution;
         coeff.second += contribution2;
@@ -456,13 +492,19 @@ Couplings Sudakov::Ipm(const Flavour& flav, int pol, bool isplus) const
       return {};
 
   } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2) {
-      // TODO: remove this placeholder
+    // cf. (B.22), (B.26) and (B.27)
+    if (isplus != flav.IsAnti())
       return {};
+    if (pol == 2) {
+      return {
+        // we return the coupling to the pseudoscalar, but tell the recipient
+        // to use the ME with the Z instead of the W which makes use of the
+        // Goldstone equivalence theorem; this is corrected by multiplying here
+        // with an extra factor of (-i), cf. (4.26)
+        {kf_Z, -1.0 / (2.0*m_sw)},  // -i * I_\chi^\pm
+        {kf_h0, (isplus ? -1.0 : 1.0) / (2.0*m_sw)}  // I_H^\pm
+      };
     } else {
-      // cf. (B.26) and (B.27)
-      if (isplus != flav.IsAnti())
-        return {};
       return {
         {kf_photon, isplus ? -1.0 : 1.0},
         {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}

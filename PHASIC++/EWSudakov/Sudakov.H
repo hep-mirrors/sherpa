@@ -26,18 +26,15 @@ namespace PHASIC {
 
     /// calculate LSC L(s) coefficient
     Coeff_Value LsCoeff(Complex amplvalue,
-                        std::vector<int> spincombination,
-                        size_t spinidx);
+                        std::vector<int> spincombination);
 
     /// calculate Z contribution to LSC l(s) coefficient
     Coeff_Value lsZCoeff(Complex amplvalue,
-                         std::vector<int> spincombination,
-                         size_t spinidx);
+                         std::vector<int> spincombination);
 
     /// calculate SSC l(s) coefficients
     Coeff_Value lsLogROverSCoeffs(Complex amplvalue,
                                   std::vector<int> spincombination,
-                                  size_t spinidx,
                                   const Two_Leg_Indizes& indizes);
 
     /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)

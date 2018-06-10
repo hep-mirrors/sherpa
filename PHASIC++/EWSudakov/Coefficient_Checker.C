@@ -142,7 +142,6 @@ Coefficient_Checker::ReferenceCoeffs()
     mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.98;
     mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.98;
 
-    // TODO: add contributions from N/W loops
     // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
     // reference (and vice versa), because their process is ordered differently
     // NOTE: if two contributions are given separately, the first is the N-loop
@@ -167,9 +166,10 @@ Coefficient_Checker::ReferenceCoeffs()
     mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
     mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
     // LL u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88;
+    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88 - 6.95;
+    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88 - 6.95;
 
+    // TODO: add contributions from N/W loops
     auto& mapPP = coeffs["2_2__e-__e+__P__P"];
     mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
     mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;

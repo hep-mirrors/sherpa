@@ -47,11 +47,40 @@ std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(const Leg_Set& legs)
 
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
+  DEBUG_FUNC(mom);
+  for (int i{ 0 }; i < BaseAmplitude().Legs().size(); ++i) {
+    BaseAmplitude().Leg(i)->SetMom(i < BaseAmplitude().NIn() ? -mom[i] : mom[i]);
+  }
+  // TODO: generalise the momentum rescaling below to handle 2->n
+  // TODO: also, reuse existing implementation elsewhere if existing
+  assert(BaseAmplitude().NIn() == 2 && BaseAmplitude().Legs().size() == 4);
+  const auto Etot2 = MandelstamS();
   for (auto& ampl : ampls) {
+    if (ampl.first == s_baseamplkey)
+      continue;
     const auto& permutation = LegPermutation(ampl.first);
-    for(int i{ 0 }; i < ampl.second->Legs().size(); ++i) {
-      ampl.second->Leg(i)->SetMom(mom[permutation[i]]);
+
+    // set incoming momenta
+    // TODO: drop the implicit assumption that all initial-state particles are
+    // massless (?)
+    for (int i{ 0 }; i < ampl.second->NIn(); ++i) {
+      ampl.second->Leg(i)->SetMom(-mom[permutation[i]]);
     }
+
+    // calc outgoing momenta such that all particles are on their mass shell;
+    // to guarantee this we modify the energy and the absolute value of the
+    // momenta, but not the directions of the momenta
+    const Vec3D out_mom {BaseAmplitude().Leg(permutation[2])->Mom()};
+    const auto normed_out_mom {out_mom / out_mom.Abs()};
+    const auto m22 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(2)->Flav().Mass()));
+    const auto m32 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(3)->Flav().Mass()));
+    // calc the fraction of energy that will be assigned to leg 2
+    const auto x = (Etot2 + m22 - m32) / (2*Etot2);
+    // calc the absolute momentum assigned to leg 2
+    const auto p
+      = sqrt((Etot2*Etot2 - 2*Etot2*(m22 + m32) + sqr(m22 - m32)) / (4*Etot2));
+    ampl.second->Leg(2)->SetMom(Vec4D{x*sqrt(Etot2), p*normed_out_mom});
+    ampl.second->Leg(3)->SetMom(Vec4D{(1-x)*sqrt(Etot2), -p*normed_out_mom});
   }
 }
 
@@ -107,6 +136,13 @@ EWSudakov_Amplitudes::CreateAmplitudes(
   if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
     for (size_t k{ 0 }; k < baseampl->Legs().size(); ++k) {
       for (size_t l{ 0 }; l < k; ++l) {
+
+        // s-channel-related loops will have vanishing log coeffs
+        if (k == 1 && l == 0)
+          continue;
+        if (baseampl->Legs().size() == 4 && k == 3 && l == 2)
+          continue;
+
         const auto kflav = baseampl->Leg(k)->Flav();
         const auto lflav = baseampl->Leg(l)->Flav();
 
@@ -115,14 +151,16 @@ EWSudakov_Amplitudes::CreateAmplitudes(
         if (kflav.IsLepton() || kflav.IsQuark()) {
           newkflavs.push_back(kflav.IsoWeakPartner());
         } else if (kflav.Kfcode() == kf_Wplus) {
-          newkflavs.push_back(Flavour(kf_Z));
-          newkflavs.push_back(Flavour(kf_photon));
+          newkflavs.push_back(Flavour(kf_Z));  // for any W
+          newkflavs.push_back(Flavour(kf_photon));  // for transverse W
+          newkflavs.push_back(Flavour(kf_h0));  // for longitudinal W
         }
         if (lflav.IsLepton() || lflav.IsQuark()) {
           newlflavs.push_back(lflav.IsoWeakPartner());
         } else if (lflav.Kfcode() == kf_Wplus) {
-          newlflavs.push_back(Flavour(kf_Z));
-          newlflavs.push_back(Flavour(kf_photon));
+          newlflavs.push_back(Flavour(kf_Z));  // for any W
+          newlflavs.push_back(Flavour(kf_photon));  // for transverse W
+          newlflavs.push_back(Flavour(kf_h0));  // for longitudinal W
         }
 
         // create valid amplitudes
