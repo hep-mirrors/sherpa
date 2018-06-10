@@ -22,6 +22,8 @@ namespace PHASIC {
     double EWSudakov(const ATOOLS::Vec4D_Vector& mom);
   private:
 
+    bool IsInHighEnergyLimit();
+
     /// calculate coeffs for each m_spinampls entry
     void CalculateSpinAmplitudeCoeffs();
 

@@ -34,25 +34,9 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
-  const auto s = std::abs(m_ampls.MandelstamS());
-  const auto t = std::abs(m_ampls.MandelstamT());
-  const auto u = std::abs(m_ampls.MandelstamU());
-  static const auto threshold = 2e2;
-  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
-  msg_Debugging() << "log2(s/mW) = " << sqr(std::log(s/m_mw2)) << "\n";
-  msg_Debugging() << "2*log(s/mW)*log(t/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) << "\n";
-  msg_Debugging() << "2*log(s/mW)*log(u/s) = " << std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) << "\n";
-  if (sqr(std::log(s/m_mw2)) < threshold) {
-    msg_Debugging() << "event LSC too small\n";
+  if (!IsInHighEnergyLimit())
     return 1.0;
-  }
-  if ((std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s)) < threshold)
-      && (std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s)) < threshold)) {
-    msg_Debugging() << "event SSC too small\n";
-    return 1.0;
-  }
-  DEBUG_VAR(t/s);
-  DEBUG_VAR(u/s);
+
   m_lsczspinampls.clear();
   m_sscwspinampls.clear();
   m_spinampls.clear();
@@ -71,6 +55,37 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 
   const auto born = p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor();
   return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real()/born;
+}
+
+bool Sudakov::IsInHighEnergyLimit()
+{
+  DEBUG_FUNC("");
+  static const auto threshold = 2e2;
+  const auto s = std::abs(m_ampls.MandelstamS());
+  const auto t = std::abs(m_ampls.MandelstamT());
+  const auto u = std::abs(m_ampls.MandelstamU());
+  DEBUG_VAR(t/s);
+  DEBUG_VAR(u/s);
+
+  const auto LSC = sqr(std::log(s/m_mw2));
+  const auto SSCt = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s));
+  const auto SSCu = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s));
+
+  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
+  msg_Debugging() << "log2(s/mW) = " << LSC << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(t/s) = " << SSCt << "\n";
+  msg_Debugging() << "2*log(s/mW)*log(u/s) = " << SSCu << "\n";
+
+  if (LSC < threshold) {
+    msg_Debugging() << "event LSC too small\n";
+    return false;
+  }
+  if ((SSCt < threshold) && (SSCu < threshold)) {
+    msg_Debugging() << "event SSC too small\n";
+    return false;
+  }
+
+  return true;
 }
 
 Complex Sudakov::deltaEW(const double s)
