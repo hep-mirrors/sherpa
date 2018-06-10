@@ -49,6 +49,8 @@ void Comix_Interface::FillSpinAmplitudes(
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
   DEBUG_FUNC("");
+  const auto gpath =
+    Default_Reader{}.Get<std::string>("PRINT_EWSUDAKOV_GRAPHS", "");
   for (auto& kv : ampls) {
     auto& ampl = kv.second;
     msg_Debugging() << "Initialize process for ampl=" << *ampl << std::endl;
@@ -57,6 +59,8 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
     Process_Info pi;
     pi.m_addname="__Sudakov";
     pi.m_megenerator="Comix";
+    if (gpath != "")
+      pi.m_gpath=gpath;
     for (size_t i(0);i<ampl->NIn();++i) {
       Flavour fl(ampl->Leg(i)->Flav().Bar());
       if (Flavour(kf_jet).Includes(fl)) fl=Flavour(kf_jet);
