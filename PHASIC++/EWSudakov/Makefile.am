@@ -3,18 +3,20 @@ pkglib_LTLIBRARIES    =	libPhasicEWSudakov.la
 GITTAG = PHASIC++/EWSudakov
 include ../../git.make
 
-libPhasicEWSudakov_la_SOURCES   = \
-	Git_Info.C \
-	EWSudakov.C \
-	Comix_Interface.C \
-	Sudakov.C \
-	EWSudakov_Amplitudes.C \
+libPhasicEWSudakov_la_SOURCES = \
 	Coefficient_Checker.C \
-	KFactor.C
-localinc_HEADERS      =	\
-	Comix_Interface.H \
-	EWSudakov.H \
-	Sudakov.H \
-	EWSudakov_Amplitudes.H \
+	Comix_Interface.C \
+	EWGroupConstants.C \
+	EWSudakov.C \
+	EWSudakov_Amplitudes.C \
+	Git_Info.C \
+	KFactor.C \
+	Sudakov.C
+localinc_HEADERS = \
 	Coefficient_Checker.H \
-	KFactor.H
+	Comix_Interface.H \
+	EWGroupConstants.H \
+	EWSudakov.H \
+	EWSudakov_Amplitudes.H \
+	KFactor.H \
+	Sudakov.H

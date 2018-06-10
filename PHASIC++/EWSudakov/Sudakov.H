@@ -2,6 +2,7 @@
 #define PHASIC__EWSudakov__Sudakov_H
 
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "PHASIC++/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 
 #include "PHASIC++/Process/Process_Base.H"
@@ -37,21 +38,6 @@ namespace PHASIC {
                                   std::vector<int> spincombination,
                                   const Two_Leg_Indizes& indizes);
 
-    /// calculate effective electroweak Casimir operator, cf. eq. (B.10, B.25)
-    double DiagonalCew(const Flavour&, int pol) const;
-
-    /// the same, but non-diagonal neutral gauge bosons terms, eq. (B.25)
-    double NondiagonalCew() const;
-
-    /// calculate the squared coupling to Z
-    double IZ2(const Flavour&, int pol) const;
-
-    /// calculate the coupling to Z
-    double IZ(const Flavour&, int pol) const;
-
-    /// calculate the coupling to W plus/minus
-    Couplings Ipm(const Flavour& flav, int pol, bool isplus) const;
-
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
 
@@ -59,9 +45,9 @@ namespace PHASIC {
     const std::set<EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
     const Comix_Interface m_comixinterface;
+    const EWGroupConstants m_ewgroupconsts;
 
-    const double m_sw2, m_cw2, m_sw, m_cw,
-      m_mw2, m_mz2;
+    const double m_mw2, m_mz2;
     const size_t m_check;
     Complex m_born;
 
