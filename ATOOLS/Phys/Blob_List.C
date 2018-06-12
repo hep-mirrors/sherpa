@@ -217,7 +217,7 @@ bool Blob_List::FourMomentumConservation() const
       Data_Reader dr(" ",";","!","=");
       allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
     }
-    //if (!allow) Abort();
+    if (!allow) Abort();
     if (msg_LevelIsDebugging()) {
       msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {

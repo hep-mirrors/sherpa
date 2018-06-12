@@ -207,6 +207,10 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
 
 void Hadron_Remnant::Reset() {
   Remnant_Base::Reset();
+  while (!m_spectators.empty()) {
+    delete m_spectators.front();
+    m_spectators.pop_front();
+  }
   m_spectators.clear();
   m_residualE = p_beam->OutMomentum()[0];
   m_valence   = false;

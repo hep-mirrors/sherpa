@@ -17,7 +17,7 @@ using namespace std;
 Remnant_Handler::
 Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
 		const std::string & path,const std::string & file) :
-  m_check(true), m_output(true)
+  p_softblob(0), m_check(true), m_output(true)
 {
   InitializeRemnants(isr,beam);
   DefineRemnantStrategy();
@@ -164,11 +164,11 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   // initiator over all coloured FS particles and then shuffle their momenta together with
   // the beam remnants.  To visualise this better, here the soft blob is inserted after both
   // beam and shower blobs.
-  if (m_type!=strat::simple && m_type!=strat::ll) {
+  if (!(m_type==strat::simple || m_type==strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type==strat::DIS1 || m_type==strat::DIS2) bloblist->push_back(p_softblob);
     else bloblist->push_back(p_softblob);
-  }  
+  }
   // Look for shower blobs that need beams and unset the flag
   for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
     if ((*bit)->Has(blob_status::needs_beams) && (*bit)->Type()==btp::Shower) {
@@ -196,6 +196,7 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List * bloblist) {
 		   <<(*p_remnants[beam]->GetBlob())<<"\n";
     }
   }
+  if (!p_softblob) return ok;
   if (!p_softblob->MomentumConserved() || !p_softblob->CheckColour()) {
     ok = false; 
     if (m_output)

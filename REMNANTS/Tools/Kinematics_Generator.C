@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include <algorithm>
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -145,6 +146,7 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t & beam) {
   //    (the originals are the FS particles of shower and beam blobs)
   //    and add the cipies with the shuffled momenta as outgoing particles to the soft blob.
   // 3. Add the originals, with the original momenta, as inconing particles to the soft blob.
+  //    Erase them from the specators.
   p_remnants[1-beam]->GetBlob()->AddToOutParticles(p_remnants[1-beam]->GetExtracted()->front());
   for (ParticleMomMap::iterator pit=m_shuffledmap.begin();
        pit!=m_shuffledmap.end();pit++) {
@@ -153,6 +155,7 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t & beam) {
     part->SetMomentum(pit->second);
     p_softblob->AddToOutParticles(part);
     p_softblob->AddToInParticles(pit->first);
+    p_spectators[beam]->remove(pit->first);
     pit->first->SetStatus(part_status::decayed);
   }
   return true;
@@ -198,8 +201,9 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     Blob * beamblob = p_remnants[beam]->GetBlob();
     for (size_t i=0;i<beamblob->NOutP();i++) {
       Particle * part = beamblob->OutParticle(i);
-      if (part->Flav().Strong() || part->Flav().IsDiQuark())
+      if (part->Flav().Strong() || part->Flav().IsDiQuark()) {
 	p_softblob->AddToInParticles(part);
+      }
     }
   }
   // Adjust the kinematics, proceed in two steps:
@@ -258,11 +262,9 @@ ExtractSpectators(const size_t & beam,vector<Vec4D> & moms,
 		  vector<double> & masses,vector<Particle *> & parts) {
   // Extract momenta, masses, and particle pointers of spectators for beam.
   Vec4D  tot(0.,0.,0.,0.), help;
-  Part_List * spectators = p_remnants[beam]->GetSpectators();
-  for (Part_List::iterator spit=spectators->begin();
-       spit!=spectators->end();spit++) {
-    tot              += help = (*spit)->Momentum()+m_ktmap[beam][(*spit)];
-    //m_checkmom[beam] += help;
+  for (Part_List::iterator spit=p_spectators[beam]->begin();
+       spit!=p_spectators[beam]->end();spit++) {
+    tot += help = (*spit)->Momentum()+m_ktmap[beam][(*spit)];
     moms.push_back(help);
     parts.push_back(*spit);
     masses.push_back((*spit)->Flav().Mass());
@@ -475,13 +477,14 @@ bool Kinematics_Generator::BoostConnectedBlob(ATOOLS::Blob * blob,size_t & catch
 }
 
 bool Kinematics_Generator::AdjustRemnants() {
-  // iterate over all spectators and give them the new momenta from the Kinematics_Generator
+  // Iterate over all spectators and give them the new momenta from the Kinematics_Generator.
+  // Add them as outgoing particles to the softblob and erase them from the spectators.
   for (size_t beam=0;beam<2;beam++) {
-    for (Part_Iterator plit=p_remnants[beam]->GetSpectators()->begin();
-	 plit!=p_remnants[beam]->GetSpectators()->end();plit++) {
-      Particle * part = (*plit);
+    while (!p_spectators[beam]->empty()) {
+      Particle * part = p_spectators[beam]->front();
       part->SetMomentum(ShuffledMomentum(part));
       p_softblob->AddToOutParticles(part);
+      p_spectators[beam]->pop_front();
     }
   }
   return true;

@@ -90,7 +90,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 	       <<(*blob);
     Reset(blob);
     Reset();
-    return Return_Value::Retry_Event;
+    return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
   blob->SetStatus(blob_status::needs_hadrondecays);
