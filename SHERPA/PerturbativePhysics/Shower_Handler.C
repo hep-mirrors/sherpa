@@ -63,3 +63,8 @@ void Shower_Handler::CleanUp()
   if (p_shower) p_shower->CleanUp();
 }
 
+void Shower_Handler::SetRemnants(REMNANTS::Remnant_Handler* remnants)
+{
+  if (p_shower)
+    p_shower->SetRemnants(remnants);
+}

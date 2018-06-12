@@ -25,6 +25,7 @@ namespace SHERPA {
     ~Shower_Handler();
 
     // member functions
+    void  SetRemnants(REMNANTS::Remnant_Handler*);
     void  FillBlobs(ATOOLS::Blob_List *const bl);
     void  FillDecayBlobs(ATOOLS::Blob_List *const bl);
     void  CleanUp();
@@ -32,9 +33,6 @@ namespace SHERPA {
     // inline functions
     inline PDF::Shower_Base  * GetShower()     { return p_shower; }
     inline PDF::ISR_Handler  * GetISRHandler() { return p_isr;    }
-    inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
-      p_shower->SetRemnants(remnants);
-    } 
     inline std::string ShowerGenerator()     { return m_name; }
     inline bool On()                         { return p_shower!=NULL; }
 
