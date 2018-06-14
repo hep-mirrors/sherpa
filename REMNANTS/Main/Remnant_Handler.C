@@ -137,6 +137,7 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
 						  Particle_List *const particlelist)
 {
+  //msg_Out()<<METHOD<<" with\n"<<(*bloblist)<<"\n";
   // Adding the blobs related to the breakup of incident beams: one for each beam,
   // plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
@@ -167,7 +168,7 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   if (!(m_type==strat::simple || m_type==strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type==strat::DIS1 || m_type==strat::DIS2) bloblist->push_back(p_softblob);
-    else bloblist->push_back(p_softblob);
+    else bloblist->push_front(p_softblob);
   }
   // Look for shower blobs that need beams and unset the flag
   for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {

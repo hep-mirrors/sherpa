@@ -26,8 +26,7 @@ namespace REMNANTS {
 }
   
 namespace REMNANTS {
-  typedef std::list<ATOOLS::Flavour>                  FlavourList;
-  typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D>  ParticleMomMap;
+  typedef std::list<ATOOLS::Flavour> FlavourList;
 
   class Colour_Generator;
   
@@ -55,7 +54,7 @@ namespace REMNANTS {
     virtual bool TestExtract(ATOOLS::Particle *parton);
     virtual bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom)=0;
     virtual ATOOLS::Blob * MakeBlob();
-    virtual bool FillBlob(ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
+    virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
     virtual void Reset();

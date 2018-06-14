@@ -218,8 +218,8 @@ bool Blob_List::FourMomentumConservation() const
       allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
     }
     if (!allow) Abort();
-    if (msg_LevelIsDebugging()) {
-      msg_Out()<<*this<<std::endl;
+    //if (msg_LevelIsDebugging()) {
+    //msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
 	Vec4D sum((*bit)->CheckMomentumConservation());
 	if (sum!=Vec4D()) {
@@ -227,7 +227,7 @@ bool Blob_List::FourMomentumConservation() const
 		   <<" in\n"<<**bit<<std::endl;
 	}
       }
-    }
+      //}
   }
   return test;
 }

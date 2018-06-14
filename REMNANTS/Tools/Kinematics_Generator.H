@@ -34,8 +34,8 @@ namespace REMNANTS {
     ATOOLS::Poincare          m_oldcmsboost, m_newcmsboost, m_rotate;
     std::set<ATOOLS::Blob *>  m_boostedblobs;
 
-    ATOOLS::Vec4D  m_inmom[2], m_checkmom[2];
-    ParticleMomMap m_ktmap[2], m_shuffledmap;
+    ATOOLS::Vec4D          m_inmom[2], m_checkmom[2];
+    ATOOLS::ParticleMomMap m_ktmap[2], m_shuffledmap;
 
     void SetKinType(Remnant_Handler * const rhandler);
     bool CollinearKinematics();

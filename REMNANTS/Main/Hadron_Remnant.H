@@ -25,7 +25,7 @@ namespace REMNANTS {
     bool IsValence(ATOOLS::Particle * part);
     void MakeSpectator(ATOOLS::Particle * parton);
     bool MakeRemnants();
-    void MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & copy=true);
+    void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
     bool ConstructPartner(ATOOLS::Particle * part);
     double SelectZ(const ATOOLS::Flavour & flav,const bool & isvalence);
     ATOOLS::Particle * MakeParticle(const ATOOLS::Flavour & flav);
@@ -35,7 +35,7 @@ namespace REMNANTS {
     Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam);    
     ~Hadron_Remnant() {}
 
-    bool FillBlob(ParticleMomMap *ktmap,const bool & copy=true);
+    bool FillBlob(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
     bool AdjustKinematics();
     bool AdjustColours();
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);

@@ -7,8 +7,6 @@
 #include <string>
 
 namespace REMNANTS {
-  typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D> ParticleMomMap;
-
   struct prim_kperp_form {
     enum code {
       undefined      = 0,
@@ -26,7 +24,7 @@ namespace REMNANTS {
     double m_defmean, m_defsigma, m_refE, m_scaleexpo, m_defQ2, m_defktmax, m_defeta;
     double m_mean[2], m_sigma[2], m_Q2[2], m_ktmax[2], m_eta[2];
     size_t            m_beam;
-    ParticleMomMap  * p_ktmap;
+    ATOOLS::ParticleMomMap * p_ktmap;
 
     prim_kperp_form::code SelectForm(const std::string & form=std::string("dipole_limited"));
     ATOOLS::Vec4D         KT(const ATOOLS::Vec4D & mom);
@@ -47,7 +45,7 @@ namespace REMNANTS {
     ~Primordial_KPerp();
 
     void Initialize(const std::string path,const std::string file);
-    bool CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,
+    bool CreateBreakupKinematics(const size_t & beam,ATOOLS::ParticleMomMap * ktmap,
 				 const double & scale);
   };
 }

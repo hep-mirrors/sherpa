@@ -326,7 +326,7 @@ bool Kinematics_Generator::CheckScatter(Particle * part[2]) {
   double KT2 = -Kperp.Abs2(), MT2 = M2+KT2, MT = sqrt(MT2);
   // Make sure the transverse momentum is kinematically viable
   if (sqr(MT2-mt2[0]-mt2[1])<4.*mt2[0]*mt2[1]) {
-    msg_Error()<<METHOD<<" throws error: transverse momentum not viable.\n";
+    msg_Debugging()<<METHOD<<" throws error: transverse momentum not viable.\n";
     return false;
   }
   // Reconstruct momenta, assuming the rapidity of the produced system is conserved
@@ -340,8 +340,9 @@ bool Kinematics_Generator::CheckScatter(Particle * part[2]) {
     m_shuffledmap[part[beam]] = labmom[beam] = Vec4D(E,0.,0.,PZ) + kperp[beam];
     m_checkmom[beam] -= Vec4D(E,0.,0.,PZ);
     if (m_checkmom[beam][0]<0.) {
-      msg_Error()<<METHOD<<" throws error: no momentum left in beam "
-		 <<beam<<", "<<m_checkmom[beam]<<" for M = "<<M<<" and Y = "<<Y<<".\n";
+      msg_Debugging()<<METHOD<<" throws error: no momentum left in beam "
+		     <<beam<<", "<<m_checkmom[beam]
+		     <<" for M = "<<M<<" and Y = "<<Y<<".\n";
       return false;
     }
   }
@@ -493,10 +494,8 @@ bool Kinematics_Generator::AdjustRemnants() {
 const Vec4D & Kinematics_Generator::ShuffledMomentum(Particle *const part) {
   if (m_shuffledmap.find(part)!=m_shuffledmap.end())
     return m_shuffledmap.find(part)->second;
-  msg_Error()<<"Error in "<<METHOD<<": did not find\n"
-	     <<(*part)<<"\n"
+  msg_Error()<<"Error in "<<METHOD<<": did not find\n"<<(*part)<<"\n"
 	     <<"   will return original momentum.\n";
-  abort();
   return part->Momentum();
 }
 

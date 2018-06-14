@@ -361,17 +361,23 @@ bool Singlet_Checker::BoostRecoilerInNewSystem(const Vec4D & newmom) {
 
 
 void Singlet_Checker::ForcedDecays() {
+  //msg_Out()<<METHOD<<"("<<m_badones.size()<<" bad singlets):\n";
   list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
   while (bit!=m_badones.end()) {
     p_singlet = (**bit);
     if (ForcedDecayOfTwoPartonSinglet()) {
       p_singlets->erase((*bit));
       bit = m_badones.erase(bit);
+      //msg_Out()<<"   forced decay of two parton singlet worked out.\n";
     }
     else {
       Flavour flav1 = (**bit)->front()->Flavour(); 
       Flavour flav2 = (**bit)->back()->Flavour();
       Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
+      //msg_Out()<<METHOD<<": "<<flav1<<" + "<<flav2<<" --> "<<had<<" "
+      //       <<"(mass = "<<sqrt((**bit)->Mass2())<<" from "
+      //       <<(**bit)->front()->Momentum().Abs2()<<" and "
+      //       <<(**bit)->back()->Momentum().Abs2()<<").\n";
       bit++;
     }
   }
