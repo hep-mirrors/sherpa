@@ -1,6 +1,7 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -43,8 +44,7 @@ void MI_Parameters::ReadParameters(Default_Reader *const defaultreader)
     defaultreader->GetValue<double>("AMISIC::MATTER_RADIUS2",1.0);
   string form = defaultreader->GetValue<string>("AMISIC::MATTER_FORM",
 						"Single_Gaussian");
-  if (form=="Double_Gaussian") m_overlapform = overlap_form::Double_Gaussian;
-  if (form=="Single_Gaussian") m_overlapform = overlap_form::Single_Gaussian;
+  m_overlapform = ToType<overlap_form::code>(form);
   m_parameters[string("nPT_bins")]    =
     defaultreader->GetValue<int>("AMISIC::nPT_bins",200);
   m_parameters[string("nMC_points")]    =
@@ -68,3 +68,23 @@ double MI_Parameters::operator()(string keyword)
   return 0.;
 }
 
+std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)
+{
+  switch (f) {
+    case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
+    case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
+  }
+}
+
+std::istream& AMISIC::operator>>(std::istream& s, overlap_form::code& f)
+{
+  std::string tag;
+  s >> tag;
+  if (tag == "Single_Gaussian")
+    f = overlap_form::Single_Gaussian;
+  else if (tag == "Double_Gaussian")
+    f = overlap_form::Double_Gaussian;
+  else
+    THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
+  return s;
+}

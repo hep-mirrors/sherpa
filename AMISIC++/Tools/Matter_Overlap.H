@@ -33,8 +33,6 @@ namespace AMISIC {
 	return m_radius1;
       case overlap_form::Double_Gaussian:
 	return m_radius3;
-      default:
-	exit(1);
       }
     }
   };

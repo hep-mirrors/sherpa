@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -21,34 +22,36 @@ Matter_Overlap::~Matter_Overlap() {}
 void Matter_Overlap::Initialize() {
   InitializeFormFactors();
   CalculateIntegral();
-  msg_Out()<<METHOD<<"(form = "<<int(m_overlapform)<<" --> r = "<<m_radius12<<"), "
+  msg_Out()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
 	   <<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
 }
 
 double Matter_Overlap::operator()(double b) {
   // Matter overlap in two forms available, but only Single_Gaussian fully
   // functional at the moment.
-  if (m_overlapform==overlap_form::Single_Gaussian) {
-    return m_norm * m_norm1 * exp(-b*b/m_radius12);
+  switch (m_overlapform) {
+    case overlap_form::Single_Gaussian:
+      return m_norm * m_norm1 * exp(-b*b/m_radius12);
+    case overlap_form::Double_Gaussian:
+      double b2(b*b);
+      return m_norm * (m_norm1 * exp(-b2/m_radius12) +
+		       m_norm2 * exp(-b2/m_radius22) +
+		       m_norm3 * exp(-b2/m_radius32));
   }
-  if (m_overlapform==overlap_form::Double_Gaussian) {
-    double b2(b*b);
-    return m_norm * (m_norm1 * exp(-b2/m_radius12) +
-		     m_norm2 * exp(-b2/m_radius22) +
-		     m_norm3 * exp(-b2/m_radius32));      
-  }
-  exit(1);
-  return 0.;
 }
 
 double Matter_Overlap::SelectB() const {
   double b, b2, radius;
-  if (m_overlapform==overlap_form::Single_Gaussian) radius = m_radius1;
-  if (m_overlapform==overlap_form::Double_Gaussian) {
-    double rand = ran->Get();
-    if ((rand-=sqr(m_fraction1))<=0.)        radius = m_radius1;
-    else if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
-    else                                     radius = m_radius3;
+  switch (m_overlapform) {
+    case overlap_form::Single_Gaussian:
+      radius = m_radius1;
+      break;
+    case overlap_form::Double_Gaussian:
+      double rand = ran->Get();
+      if ((rand-=sqr(m_fraction1))<=0.)        radius = m_radius1;
+      else if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
+      else                                     radius = m_radius3;
+      break;
   }
   do {
     ran->Gaussian(b,b2);
@@ -63,25 +66,27 @@ void Matter_Overlap::InitializeFormFactors() {
   // Matter overlap in two forms available, but only Single_Gaussian fully
   // functional at the moment.
   m_overlapform = mipars->GetOverlapForm();
-  if (m_overlapform==overlap_form::Single_Gaussian) {
-    m_fraction1 = 1.;
-    m_radius1   = (*mipars)("Matter_Radius1");
-    m_radius12  = 2.*sqr(m_radius1);
-    m_norm1     = 1./m_radius12;
-    m_bstep     = m_radius1/100.;
-  }
-  if (m_overlapform==overlap_form::Double_Gaussian) {
-    m_fraction1 = (*mipars)("Matter_Fraction1");
-    m_radius1   = (*mipars)("Matter_Radius1");
-    m_radius12  = 2.*sqr(m_radius1);
-    m_radius2   = (*mipars)("Matter_Radius2");
-    m_radius22  = 2.*sqr(m_radius2);
-    m_radius32  = (m_radius12+m_radius22)/2.;
-    m_radius3   = sqrt(m_radius32);
-    m_norm1     = sqr(m_fraction1)/m_radius12;
-    m_norm2     = sqr(1.-m_fraction1)/m_radius22;
-    m_norm3     = 2.*m_fraction1*(1.-m_fraction1)/m_radius32;
-    m_bstep     = Min(m_radius1,m_radius2)/100.;
+  switch (m_overlapform) {
+    case overlap_form::Single_Gaussian:
+      m_fraction1 = 1.;
+      m_radius1   = (*mipars)("Matter_Radius1");
+      m_radius12  = 2.*sqr(m_radius1);
+      m_norm1     = 1./m_radius12;
+      m_bstep     = m_radius1/100.;
+      break;
+    case overlap_form::Double_Gaussian:
+      m_fraction1 = (*mipars)("Matter_Fraction1");
+      m_radius1   = (*mipars)("Matter_Radius1");
+      m_radius12  = 2.*sqr(m_radius1);
+      m_radius2   = (*mipars)("Matter_Radius2");
+      m_radius22  = 2.*sqr(m_radius2);
+      m_radius32  = (m_radius12+m_radius22)/2.;
+      m_radius3   = sqrt(m_radius32);
+      m_norm1     = sqr(m_fraction1)/m_radius12;
+      m_norm2     = sqr(1.-m_fraction1)/m_radius22;
+      m_norm3     = 2.*m_fraction1*(1.-m_fraction1)/m_radius32;
+      m_bstep     = Min(m_radius1,m_radius2)/100.;
+      break;
   }
 }
   

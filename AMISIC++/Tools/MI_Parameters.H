@@ -9,12 +9,13 @@
 namespace AMISIC {
   struct overlap_form {
     enum code {
-      Single_Gaussian = 1,
-      Double_Gaussian = 2,
-      unknown         = -1
+      Single_Gaussian,
+      Double_Gaussian
     };
   };
-  
+  std::ostream &operator<<(std::ostream&, const overlap_form::code&);
+  std::istream &operator>>(std::istream&, overlap_form::code&);
+
   class MI_Parameters {
   private:
     overlap_form::code m_overlapform;
