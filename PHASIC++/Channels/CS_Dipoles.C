@@ -53,7 +53,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
   else {
     double Q2((p[m_ijt]+p[m_kt]).Abs2());
     double eps(Q2-m_mi2-m_mj2-m_mk2);
-    double ymin(Max(ymin,2.0*m_mi*m_mj/eps));
+    double ymin(Max(0.0,2.0*m_mi*m_mj/eps));
     double ymax(1.0-2.0*m_mk*(sqrt(Q2)-m_mk)/eps);
     m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,ymin,ymax,1,rn[0]);
     double viji(sqrt(sqr(eps*m_rn[0])-sqr(2.0*m_mi*m_mj))/
@@ -120,7 +120,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   else {
     double Q2((pp[m_ijt]+pp[m_kt]).Abs2());
     double eps(Q2-m_mi2-m_mj2-m_mk2);
-    double ymin(Max(ymin,2.0*m_mi*m_mj/eps));
+    double ymin(Max(0.0,2.0*m_mi*m_mj/eps));
     double ymax(1.0-2.0*m_mk*(sqrt(Q2)-m_mk)/eps);
     double viji(sqrt(sqr(eps*m_rn[0])-sqr(2.0*m_mi*m_mj))/
 		(eps*m_rn[0]+2.0*m_mi2));
