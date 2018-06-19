@@ -44,6 +44,46 @@ void Comix_Interface::FillSpinAmplitudes(
   campl->Delete();
   std::vector<std::vector<Complex>> cols;
   pit->second->FillAmplitudes(spinampls, cols);
+
+  // TODO: understand the following sign corrections that we had to hard-code
+  // in order to get amplitude ratios with the expected sign from COMIX
+
+  // flip signs of all ee->ZP amplitudes
+  if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
+      && ampl.Legs()[1]->Flav().Kfcode() == kf_e
+      && ampl.Legs()[2]->Flav().Kfcode() == kf_Z
+      && ampl.Legs()[3]->Flav().Kfcode() == kf_photon) {
+    for (size_t i {0}; i < spinampls[0].size(); ++i) {
+      const auto& spins = spinampls[0].GetSpinCombination(i);
+      spinampls[0][i] = -spinampls[0][i];
+    }
+  }
+
+  // flip signs of all e- ve -> mu- vmu amplitudes
+  else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
+             && !ampl.Legs()[0]->Flav().IsAnti()
+             && ampl.Legs()[1]->Flav().Kfcode() == kf_nue
+             && ampl.Legs()[2]->Flav().Kfcode() == kf_mu
+             && ampl.Legs()[3]->Flav().Kfcode() == kf_numu) {
+    for (size_t i {0}; i < spinampls[0].size(); ++i) {
+      const auto& spins = spinampls[0].GetSpinCombination(i);
+      spinampls[0][i] = -spinampls[0][i];
+    }
+  }
+
+  // flip signs of the e- ve -> Z/h0 W- amplitudes when the bosons are
+  // longitudinally polarised
+  else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
+      && !ampl.Legs()[0]->Flav().IsAnti()
+      && ampl.Legs()[1]->Flav().Kfcode() == kf_nue
+      && (ampl.Legs()[2]->Flav().Kfcode() == kf_Z || ampl.Legs()[2]->Flav().Kfcode() == kf_h0)
+      && ampl.Legs()[3]->Flav().Kfcode() == kf_Wplus) {
+    for (size_t i {0}; i < spinampls[0].size(); ++i) {
+      const auto& spins = spinampls[0].GetSpinCombination(i);
+      if ((spins[2] == 2 || spins[2] == 0) && spins[3] == 2)
+        spinampls[0][i] = -spinampls[0][i];
+    }
+  }
 }
 
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)

@@ -60,7 +60,7 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
 bool Sudakov::IsInHighEnergyLimit()
 {
   DEBUG_FUNC("");
-  static const auto threshold = 2e2;
+  static const auto threshold = 1e2;
   const auto s = std::abs(m_ampls.MandelstamS());
   const auto t = std::abs(m_ampls.MandelstamT());
   const auto u = std::abs(m_ampls.MandelstamU());
@@ -198,9 +198,9 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     const auto diagonal
-      = m_ewgroupconsts.DiagonalCew(flav, spincombination[i]) / 2.0;
-    coeff.first -= diagonal;
-    coeff.second -= diagonal;
+      = -m_ewgroupconsts.DiagonalCew(flav, spincombination[i]) / 2.0;
+    coeff.first += diagonal;
+    coeff.second += diagonal;
     if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
       const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
       // special case of neutral gauge bosons, they mix and hence non-diagonal
@@ -218,12 +218,12 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
       std::vector<int> transformedspincombination;
       for (const auto& idx : legpermutation)
         transformedspincombination.push_back(spincombination[idx]);
-      const auto transformed
-        = amplit->second[0].Get(transformedspincombination);
+      auto transformed = amplit->second[0].Get(transformedspincombination);
       const auto base = amplvalue;
       assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-      coeff.first += prefactor * transformed / base;
-      coeff.second -= prefactor * transformed / base;
+      auto amplratio = transformed/base;
+      coeff.first += prefactor * amplratio;
+      coeff.second -= prefactor * amplratio;
     }
   }
   return coeff;
@@ -310,10 +310,9 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         for (const auto& idx : legpermutation) {
           transformedspincombination.push_back(goldstonespincombination[idx]);
         }
-        const auto transformed = amplit->second[0].Get(transformedspincombination);
+        auto transformed = amplit->second[0].Get(transformedspincombination);
         const auto base = amplvalue;
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-
         // TODO: understand why we need to use a minus sign here when
         // calculating certain coeffs for ee->WW, but otherwise, we can use the
         // (expected) unmodified ratio; is this connected to the extraneous
