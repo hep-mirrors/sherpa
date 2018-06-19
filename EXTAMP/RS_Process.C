@@ -52,11 +52,11 @@ namespace EXTAMP {
     /* In AMEGIC, m_alpha_0>0.0 is used for a functional form different from alpha. */
     if(m_alpha_0>0.0) THROW(not_implemented, "Smearing only implemented for alpha parameter");
     
-    int n_bin = 100;
-        std::vector<double> bins;
-        for(int i=0; i<=n_bin;i++) { bins.push_back(pow(10,10.*(1.*i/n_bin - 1))); }
-    m_hist_mreal_y46 = YODA::Histo1D(bins, "RSterm/y46", "Mreal_y46");
-    m_hist_dipole_y46 = YODA::Histo1D(bins, "RSterm/y46", "dipole_y46");
+//    int n_bin = 100;
+//        std::vector<double> bins;
+//        for(int i=0; i<=n_bin;i++) { bins.push_back(pow(10,10.*(1.*i/n_bin - 1))); }
+//    m_hist_mreal_y46 = YODA::Histo1D(bins, "RSterm/y46", "Mreal_y46");
+//    m_hist_dipole_y46 = YODA::Histo1D(bins, "RSterm/y46", "dipole_y46");
 //    m_hist_alpha_min = YODA::Histo1D(bins, "alpha_min", "alpha_min");
     m_myfile.open ("RSdata.dat");
   }
@@ -105,7 +105,7 @@ namespace EXTAMP {
   {
     /* Calculate dipole kinematics and update subevents accordingly */
     CalculateKinematics(p);
-DEBUG_VAR(p);
+//DEBUG_VAR(p);
 
     /* for ID */
 //    const ATOOLS::Vec4D n = p[0]+p[1]-p[3]-p[5]-p[6];
@@ -133,12 +133,12 @@ DEBUG_VAR(p);
 	   Dipole_Wrapper_Processes is such that ADDING their
 	   contribution cancels divergencies. */
 	bool sub_trig   = m_subevents[i]->m_trig;
-DEBUG_VAR(sub_trig);
+//DEBUG_VAR(sub_trig);
 	double sub_dxs = (sub_trig ? m_dipole_wrappers[i]->Calc(m_subevents[i]) : 0.0);
 	S += sub_dxs;
-//      if (msg_LevelIsDebugging()) {
-//        std::cout << "dipole[" << i << "] = " << sub_dxs << "\n"; 
-//      }
+      if (msg_LevelIsDebugging()) {
+        std::cout << "dipole[" << i << "] = " << sub_dxs << "\n"; 
+      }
       }
 
     /* Check if kinematics passes trigger before calculating real
@@ -156,11 +156,11 @@ DEBUG_VAR(sub_trig);
     if(m_alpha_0!=0.0) SmearSubEvents(m_dipoles, m_subevents, ATOOLS::dabs(m_alpha_0), m_smear_power);
     DEBUG_VAR(R);
     DEBUG_VAR(S);
-    m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
-    m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
+//    m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
+//    m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
 
-    m_myfile << p[4]*p[6]/(p[1]*p[0]) << " " << p[5]*p[6]/(p[1]*p[0]) << " "
-           << R << " " << S << std::endl;
+    m_myfile << std::setprecision(9) << p[4]*p[6]/(p[1]*p[0]) << " " << p[5]*p[6]/(p[1]*p[0]) << " "
+             << R << " " << S << std::endl;
 
     return m_lastxs = R + S;
   }
@@ -446,14 +446,14 @@ DEBUG_VAR(sub_trig);
     DeleteSubevents();
     DeleteDipoleWrappers();
 
-    const std::string dir = "histograms";
-    std::ofstream myfile;
-    myfile.open(dir+"/mreal_y46.yoda");
-      YODA::WriterYODA::write(myfile, m_hist_mreal_y46);
-    myfile.close();
-    myfile.open(dir+"/dipole_y46.yoda");
-      YODA::WriterYODA::write(myfile, m_hist_dipole_y46);
-    myfile.close();
+//    const std::string dir = "histograms";
+//    std::ofstream myfile;
+//    myfile.open(dir+"/mreal_y46.yoda");
+//      YODA::WriterYODA::write(myfile, m_hist_mreal_y46);
+//    myfile.close();
+//    myfile.open(dir+"/dipole_y46.yoda");
+//      YODA::WriterYODA::write(myfile, m_hist_dipole_y46);
+//    myfile.close();
 
 //    myfile.open("alpha_min.yoda");
 //      YODA::WriterYODA::write(myfile, m_hist_alpha_min);

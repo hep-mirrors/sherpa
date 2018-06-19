@@ -20,7 +20,7 @@ namespace EXTAMP {
   enum FlavourType { gtogg,gtoqq,qtoqg };
   std::ostream &operator<<(std::ostream &str,const FlavourType& ft);
   
-  enum DipoleCase { CS,IDa,IDb,IDin };
+  enum DipoleCase { CS,IDa,IDb,IDin,RES,ID };
   std::ostream &operator<<(std::ostream &str,const DipoleCase& dc);
   
 
@@ -38,7 +38,7 @@ namespace EXTAMP {
     
     /* Indices i,j,k in momentum/flavour vector of corresponding real
        emission process */
-    size_t                 m_real_i, m_real_j, m_real_k;
+    size_t                 m_real_i, m_real_j, m_real_k, m_real_l;
     
     /* Subtraction type: 0: plain Catani-Seymour
                          1: Dire
@@ -106,6 +106,7 @@ namespace EXTAMP {
     const size_t& I() const { return m_dip_info.m_real_i; }
     const size_t& J() const { return m_dip_info.m_real_j; }
     const size_t& K() const { return m_dip_info.m_real_k; }
+    const size_t& L() const { return m_dip_info.m_real_l; }
 
     /* Indices (ij) and k in the born flavour config */
     const size_t& BornIJ() const { return Emitter(); }

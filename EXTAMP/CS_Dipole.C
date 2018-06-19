@@ -39,6 +39,8 @@ std::ostream& EXTAMP::operator<<(std::ostream& str,const DipoleCase& dc)
     case DipoleCase::IDa:  return str<<"IDa";
     case DipoleCase::IDb:  return str<<"IDb";
     case DipoleCase::IDin: return str<<"IDin";
+    case DipoleCase::RES: return str<<"RES";
+    case DipoleCase::ID: return str<<"ID";
     default: THROW(fatal_error, "Internal error");
     }
 }
@@ -50,6 +52,7 @@ std::ostream& EXTAMP::operator<<(std::ostream& str, const Dipole_Info& di)
     " i=" << di.m_real_i <<
     " j=" << di.m_real_j <<
     " k=" << di.m_real_k <<
+    " l=" << di.m_real_l <<
     " "   << di.m_flav_type <<
     " ["  << di.m_split_type << "]" <<
     " ("  << di.m_case << ")";
@@ -64,6 +67,7 @@ Dipole_Info::Dipole_Info(const ATOOLS::Flavour_Vector& flavs,
 
   /* Position of flavours i,j,k in the real emission flavour vector */
   m_real_i = i; m_real_k = k; m_real_j = j;
+  m_real_l = 14-i-j-k;
   m_case = dpc;
 
   bool IS_emitter(i<2||j<2);

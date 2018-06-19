@@ -167,6 +167,69 @@ void FF_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
     m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
     break;
     }
+  case RES:{
+    const ATOOLS::Vec4D& pi = p[I()];
+    const ATOOLS::Vec4D& pj = p[J()];
+    const ATOOLS::Vec4D& pk = p[K()];
+    const ATOOLS::Vec4D& pl = p[L()];
+    /* e-__e+__G__j__b__bb */
+    /* 0   1   2  3  4  5  */
+    m_kin.m_y         = pi*pj/(pi*pj+pj*pl+pl*pi);
+    m_kin.m_alphamin  = pi*pj/(pi*pj+pj*pk+pk*pi);
+    m_kin.m_zi        = pi*pl/(pj*pl+pi*pl);
+    m_kin.m_zj        = 1.0-m_kin.m_zi;
+    m_kin.m_pl_tilde  = 1.0/(1.0-m_kin.m_y)*pl;
+    m_kin.m_pij_tilde = pi+pj-m_kin.m_y/(1.0-m_kin.m_y)*pl;
+    m_kin.m_pi        = pi;
+    m_kin.m_pj        = pj;
+    m_kin.m_pk        = pk;
+    m_kin.m_pl        = pl;
+ 
+    /* Replace emitter momentum with combined momentum of (ij) and
+       remove emitted. */
+    m_kin.m_born_mom = p;
+    m_kin.m_born_mom[Emitter()] = m_kin.m_pij_tilde;
+    m_kin.m_born_mom[L()]       = m_kin.m_pl_tilde;
+    m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
+    break;
+    }
+  case ID:{
+    const ATOOLS::Vec4D& pi = p[J()];  // emitted (J<I)
+    const ATOOLS::Vec4D& pa = p[I()];  // emitter
+    const ATOOLS::Vec4D& pb = p[K()];  // colour spectator
+    const ATOOLS::Vec4D   n = p[0]+p[1]-pa;
+    /* e-__e+__G__j__b__bb */
+    /* 0   1   2  3  4  5  */
+
+    m_kin.m_vitilde   = pa*pi/(pa*n);
+    m_kin.m_alphamin  = m_kin.m_vitilde;
+    m_kin.m_viab      = pa*pb/((pa+pb)*pi);
+    m_kin.m_zain      = pa*n/((pa+pi)*n);
+    m_kin.m_xain      = (pa-pi)*n/(pa*n);
+    m_kin.m_pij_tilde = pa/m_kin.m_zain;
+    m_kin.m_pi        = pi;
+    m_kin.m_pa        = pa;
+    m_kin.m_n         = n;
+
+    /* setting momenta of underlying Born config. */
+    m_kin.m_born_mom = p;
+    /* Apply transformation of spectator(s) */
+    ATOOLS::Vec4D Ka      = n-pi;
+    ATOOLS::Vec4D Katilde = n-(1-m_kin.m_xain)*pa;
+    size_t other = 14-J()-I()-K();
+    std::vector<size_t> kj = {other,K()};
+    for(auto j: kj){
+      m_kin.m_born_mom[j] = p[j]-2.0*p[j]*(Ka+Katilde)/(Ka+Katilde).Abs2()*(Ka+Katilde)
+                            +2.0*(p[j]*Ka)/Ka.Abs2()*Katilde;
+    }
+    m_kin.m_viab = pa*m_kin.m_born_mom[K()]/((pa+m_kin.m_born_mom[K()])*pi);
+
+      /* Replace emitter momentum with combined momentum of (ij) and
+         remove emitted. */
+      m_kin.m_born_mom[Emitter()] = m_kin.m_pij_tilde;
+      m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
+    break;
+    }
   }
 }
 
@@ -197,9 +260,6 @@ void FI_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
     m_kin.m_born_mom[Emitter()] = m_kin.m_pij_tilde;
     m_kin.m_born_mom[K()]       = m_kin.m_pa_tilde;
     m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
-DEBUG_VAR(m_kin.m_born_mom);
-DEBUG_VAR(m_kin.m_born_mom[4]*m_kin.m_born_mom[5]);
-DEBUG_VAR(m_kin.m_born_mom[3]*m_kin.m_born_mom[5]);
     break;
     }
   case IDin:{ // (J<I)
@@ -265,9 +325,6 @@ DEBUG_VAR(m_kin.m_born_mom[3]*m_kin.m_born_mom[5]);
        remove emitted. */
     m_kin.m_born_mom[Emitter()] = m_kin.m_pij_tilde;
     m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
-DEBUG_VAR(m_kin.m_born_mom);
-DEBUG_VAR(m_kin.m_born_mom[4]*m_kin.m_born_mom[5]);
-DEBUG_VAR(m_kin.m_born_mom[3]*m_kin.m_born_mom[5]);
     break;
     }
   default:
@@ -354,6 +411,7 @@ double FF_Dipole::CalcKinDependentPrefac() const
   if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
 
   switch(DipCase()){
+  case RES:
   case CS: {
     const ATOOLS::Vec4D& pi = m_kin.m_pi;
     const ATOOLS::Vec4D& pj = m_kin.m_pj;
@@ -361,6 +419,7 @@ double FF_Dipole::CalcKinDependentPrefac() const
     /* hep-ph/9605323v3 eq. (5.2) */
     return -1.0/(2.0*pi*pj);
     }
+  case ID:
   case IDa:
   case IDb:
   case IDin: {
@@ -370,6 +429,7 @@ double FF_Dipole::CalcKinDependentPrefac() const
     return -1.0/(2.0*pi*pa);
     }
   }
+      THROW(fatal_error, "Internal Error.");
 }
 
 double FI_Dipole::CalcKinDependentPrefac() const
@@ -386,7 +446,6 @@ double FI_Dipole::CalcKinDependentPrefac() const
     return -1.0/(2.0*pi*pj*x);
     }
   case IDin: {
-    // TODO: check whether pi & pa agree with the ones in CalcKinematics()
     const ATOOLS::Vec4D& pi = m_kin.m_pi;
     const ATOOLS::Vec4D& pa = m_kin.m_pa;
  
@@ -455,6 +514,59 @@ double FF_Dipole::CalcA() const
       return 2.*m_kin.m_viab/m_kin.m_zain - (1+m_kin.m_zain);
     default:
       THROW(fatal_error, "Cannot treat other splitting than q>qg with pseudo-dipoles.");
+    }
+  case ID:
+    switch(FlavType()){
+    case FlavourType::qtoqg:
+      return 2.*m_kin.m_viab/m_kin.m_zain - (1+m_kin.m_zain);
+    case FlavourType::gtogg:
+      return m_kin.m_viab/m_kin.m_zain -1. +(1-m_kin.m_zain)/m_kin.m_zain;
+    }
+  case RES:{
+    using namespace ATOOLS;
+    double cos_phi = 0;
+    Vec4D ptij = m_kin.m_pij_tilde;
+    Vec4D pi   = m_kin.m_pi;
+    Vec4D pk   = m_kin.m_pk;
+    const Vec4D &pj  = m_kin.m_pj;
+    const Vec4D &pl  = m_kin.m_pl;
+    const Vec4D &ptl = m_kin.m_pl_tilde;
+    const Vec4D &p   = ptij+ptl;
+    const double &yijl = m_kin.m_y;
+    const double &zil  = m_kin.m_zi;
+    const double &zjl  = m_kin.m_zj;
+
+    if (ATOOLS::dabs(ptij*pk) > pow(10.,-5) &&  // else pk_perp = (0,0,0) -> cosphi=nan
+        pk != pl){                     // in that case prefactor=0 anyway
+      Poincare bst(p);
+      bst.Boost(pi);
+      bst.Boost(pk);
+      bst.Boost(ptij);
+      Vec3D pk_perp = Vec3D(pk) - Vec3D(pk)*Vec3D(ptij)/Vec3D(ptij).Sqr()*Vec3D(ptij);
+      Vec3D pi_perp = Vec3D(pi) - Vec3D(pi)*Vec3D(ptij)/Vec3D(ptij).Sqr()*Vec3D(ptij);
+       cos_phi = pi_perp*pk_perp/(pi_perp.Abs()*pk_perp.Abs());
+      bst.BoostBack(pi);
+      bst.BoostBack(pk);
+      bst.BoostBack(ptij);
+    }
+
+    switch (FlavType()) {
+    case FlavourType::qtoqg:  // dabs introduced as m_ptij*m_pk may take very small negativ values
+                              // which result from numerical inaccuracy
+      return 2.*((ptij*ptl+ptl*pk)*yijl + ptij*pk)/
+              (ptij*ptl*yijl+ptl*pk*yijl*zil+ptij*pk*(1.-zil) +
+              sqrt(4*dabs(ptij*pk)*(ptl*pk)*yijl*zil*(1.-zil))*cos_phi) - (1.+zil);
+    case FlavourType::gtoqq:
+      return 1.0;
+    case FlavourType::gtogg:
+      return  ((ptij*ptl+ptl*pk)*yijl + ptij*pk)/
+              (ptij*ptl*yijl+ptl*pk*yijl*zil+ptij*pk*(1.-zil) +
+              sqrt(4*dabs(ptij*pk)*(ptl*pk)*yijl*zil*(1.-zil))*cos_phi)
+            + ((ptij*ptl+ptl*pk)*yijl + ptij*pk)/
+              (ptij*ptl*yijl+ptl*pk*yijl*zjl+ptij*pk*(1.-zjl) -
+              sqrt(4*dabs(ptij*pk)*(ptl*pk)*yijl*zjl*(1.-zjl))*cos_phi) - 2.;
+      break;
+      }
     }
   }
   
@@ -551,12 +663,17 @@ double II_Dipole::CalcA() const
 
 ATOOLS::Vec4D FF_Dipole::CalcPtilde() const
 {
+  switch(DipCase()){
+  case ID:
+    return m_kin.m_n*m_kin.m_pa/(m_kin.m_pi*m_kin.m_pa)*m_kin.m_pi - m_kin.m_n;
+  default:
 /* for pseudo-dipoles not necessary as only q>qg splitting function is used
    and this has a trivial spin correlation delta_ssprime,
    i.e. this function is not called when pseudodipoles are used */
 
     /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.8), (5.9)  */
     return m_kin.m_zi*m_kin.m_pi - m_kin.m_zj*m_kin.m_pj;
+  }
 }
   
 ATOOLS::Vec4D FI_Dipole::CalcPtilde() const
@@ -587,17 +704,35 @@ ATOOLS::Vec4D II_Dipole::CalcPtilde() const
 
 double FF_Dipole::CalcB() const
 {
-  /* ID applies only for q>qg case: no diffenrence to CS */
-  const double& zi(m_kin.m_zi);
-  const double& zj(m_kin.m_zj);
+  switch(DipCase()){
+  case ID:{
+    const double& zi(m_kin.m_zain);
+    const double& zj(m_kin.m_zain);
 
-  switch(FlavType()){
-  case FlavourType::qtoqg:
-    return 0.0;            // will be multiplied with zero anyway
-  case FlavourType::gtoqq:
-    return +4.0*zi*zj;
-  case FlavourType::gtogg:
-    return -2.0*zi*zj;
+    switch(FlavType()){
+    case FlavourType::qtoqg:
+      return 0.0;            // will be multiplied with zero anyway
+    case FlavourType::gtoqq:
+      return +4.0*zi*zj;
+    case FlavourType::gtogg:
+      return -2.0*zi*zj;
+    }
+
+  }
+  default:{
+    /* ID applies only for q>qg case: no diffenrence to CS */
+    const double& zi(m_kin.m_zi);
+    const double& zj(m_kin.m_zj);
+
+    switch(FlavType()){
+    case FlavourType::qtoqg:
+      return 0.0;            // will be multiplied with zero anyway
+    case FlavourType::gtoqq:
+      return +4.0*zi*zj;
+    case FlavourType::gtogg:
+      return -2.0*zi*zj;
+    }
+    }
   }
   THROW(fatal_error, "Internal error");
 }
