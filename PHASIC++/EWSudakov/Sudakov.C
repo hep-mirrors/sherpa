@@ -151,9 +151,9 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
           break;
         case EWSudakov_Log_Type::lSSC:
           if (m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_Z
-              || m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_photon) {
-            msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for a ";
-            msg_Error() << "ampl with a gauge boson for now due to missing ";
+              || m_ampls.BaseAmplitude().Leg(3)->Flav().Kfcode() == kf_Z) {
+            msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for ";
+            msg_Error() << "an ampl with a Z boson for now due to missing ";
             msg_Error() << "implementations\n";
             break;
           }
@@ -313,10 +313,6 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         auto transformed = amplit->second[0].Get(transformedspincombination);
         const auto base = amplvalue;
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
-        // TODO: understand why we need to use a minus sign here when
-        // calculating certain coeffs for ee->WW, but otherwise, we can use the
-        // (expected) unmodified ratio; is this connected to the extraneous
-        // minus sign in Sudakov::LsCoeff?
         auto amplratio = transformed/base;
         auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
         const auto amplratio2 = -amplratio;
@@ -339,6 +335,30 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         //    }
         //  }
         //}
+
+        // TODO: remove this hack, which is only used to compare the
+        // coefficients to the Denner/Pozzorini ref, where the
+        // Mandelstam-dependent part of the coefficient is left un-evaluated;
+        // leaving this hack here will lead to unphysical coefficients!
+        if (spincombination[0] == 1 && spincombination[1] == 1
+            && (spincombination[2] != spincombination[3])) {
+          if (kflav.Kfcode() == kf_photon && lflav.Kfcode() == kf_e) {
+            const auto s = m_ampls.MandelstamS();
+            const auto t = m_ampls.MandelstamT();
+            const auto u = m_ampls.MandelstamU();
+            auto fac = 0.0;
+            if ((k == 2 && l == 0) || (k == 3 && l == 1)) {
+              // t/s logarithm
+              fac = u/s;
+            } else {
+              // u/s logarithm
+              fac = t/s;
+            }
+            DEBUG_VAR(fac);
+            contribution /= fac;
+            contribution2 /= fac;
+          }
+        }
 
         coeff.first += contribution;
         coeff.second += contribution2;

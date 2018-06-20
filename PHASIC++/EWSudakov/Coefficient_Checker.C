@@ -199,6 +199,19 @@ Coefficient_Checker::ReferenceCoeffs()
     mapZZ[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -16.2;
     mapZZ[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -16.2;
     mapZZ[{EWSudakov_Log_Type::lZ, {}}] = mapPP[{EWSudakov_Log_Type::lZ, {}}];
+
+    // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
+    // reference (and vice versa), because their process is ordered differently
+    // LT t-ch;
+    mapPP[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47;
+    // LT u-ch
+    mapPP[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47;
+    mapPP[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47;
   }
 
   // check proc name is inside the few we have

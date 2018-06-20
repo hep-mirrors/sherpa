@@ -153,6 +153,24 @@ double EWGroupConstants::IZ(const Flavour& flav, int pol) const
     } else {
       return sign * m_cw/m_sw;
     }
+  } else if (flav.Kfcode() == kf_Z) {
+    if (pol == 2) {
+
+      THROW(not_implemented,
+            "non-diagonal Z coupling terms for longitudinal Z not implemented");
+
+      // TODO: enable the following snippet, which requires to modify the
+      // signature of this function to return `Couplings`
+
+      // we return the coupling to the scalar, this is corrected by multiplying
+      // here with an extra factor of i, cf. (4.26)
+      //return {kf_h0, 1.0 / (2.0*m_sw*m_cw)};
+
+    } else {
+      return 0.0;  // the Z self-coupling is zero
+    }
+  } else if (flav.Kfcode() == kf_photon) {
+    return 0.0;  // the Z does not couple to the photon
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav;
@@ -193,6 +211,18 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
         {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}
       };
     }
+  } else if (flav.Kfcode() == kf_Z) {
+    // cf. (B.22), (B.26) and (B.27)
+    if (pol == 2) {
+      // we assume the incoming flavour is the \chi instead of the Z in
+      // accordance with the Goldstone equivalence theorem; we correct this
+      // by multiplying an extra factor of i, cf. (4.26)
+      return { {kf_Wplus, -1.0 / (2.0*m_sw)} };
+    } else {
+      return { {kf_Wplus, (isplus ? -1.0 : 1.0) * m_cw/m_sw} };
+    }
+  } else if (flav.Kfcode() == kf_photon) {
+    return { {kf_Wplus, (isplus ? 1.0 : -1.0)} };
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav

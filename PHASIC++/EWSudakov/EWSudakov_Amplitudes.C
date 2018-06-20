@@ -154,6 +154,9 @@ EWSudakov_Amplitudes::CreateAmplitudes(
           newkflavs.push_back(Flavour(kf_Z));  // for any W
           newkflavs.push_back(Flavour(kf_photon));  // for transverse W
           newkflavs.push_back(Flavour(kf_h0));  // for longitudinal W
+        } else if (kflav.Kfcode() == kf_Z || kflav.Kfcode() == kf_photon) {
+          newkflavs.push_back(Flavour(kf_Wplus, false));
+          newkflavs.push_back(Flavour(kf_Wplus, true));
         }
         if (lflav.IsLepton() || lflav.IsQuark()) {
           newlflavs.push_back(lflav.IsoWeakPartner());
@@ -161,6 +164,9 @@ EWSudakov_Amplitudes::CreateAmplitudes(
           newlflavs.push_back(Flavour(kf_Z));  // for any W
           newlflavs.push_back(Flavour(kf_photon));  // for transverse W
           newlflavs.push_back(Flavour(kf_h0));  // for longitudinal W
+        } else if (kflav.Kfcode() == kf_Z || lflav.Kfcode() == kf_photon) {
+          newlflavs.push_back(Flavour(kf_Wplus, false));
+          newlflavs.push_back(Flavour(kf_Wplus, true));
         }
 
         // create valid amplitudes
