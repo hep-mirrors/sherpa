@@ -66,6 +66,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
 {
   std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap> coeffs;
 
+  const double u_over_t = mandelstam.u/mandelstam.t;
+  const double u_over_s = mandelstam.u/mandelstam.s;
+  const double t_over_s = mandelstam.t/mandelstam.s;
+
   if (procname == "2_2__e-__e+__mu-__mu+") {
 
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -2.58;
@@ -168,10 +172,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
     // LT u-ch
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
 
   } else if (procname == "2_2__e-__e+__P__P") {
 
@@ -183,22 +187,20 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
-    // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
-    // reference (and vice versa), because their process is ordered differently
+
     // LT t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.u/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.u/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.u/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.u/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
     // LT u-ch
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.t/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.t/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.t/mandelstam.s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.t/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
 
   } else if (procname == "2_2__e-__e+__Z__P") {
 
-    // TODO: add contributions from N/W loops
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -12.2;
@@ -208,9 +210,21 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
 
+    // NOTE: 0<->1 and 2<->3 wrt to the Denner/Pozzorini reference, due to a
+    // different process ordering
+    // LT t-ch;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * (-1.81*t_over_s + u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * (-1.81*t_over_s + u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * u_over_s;
+    // LT u-ch;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (-1.81*u_over_s + t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (-1.81*u_over_s + t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * t_over_s;
+
   } else if (procname == "2_2__e-__e+__Z__Z") {
 
-    // TODO: add contributions from N/W loops
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -16.2;
@@ -219,6 +233,17 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
+
+    // LT t-ch;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    // LT u-ch
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
 
   } else {
     THROW(not_implemented, "No test for this proc");

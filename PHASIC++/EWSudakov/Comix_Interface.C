@@ -71,19 +71,29 @@ void Comix_Interface::FillSpinAmplitudes(
     }
   }
 
-  // flip signs of the e- ve -> Z/h0 W- amplitudes when the bosons are
+  // flip signs of the e- ve -> Z/h0 W- amplitudes
   // longitudinally polarised
   else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
-      && !ampl.Legs()[0]->Flav().IsAnti()
       && ampl.Legs()[1]->Flav().Kfcode() == kf_nue
       && (ampl.Legs()[2]->Flav().Kfcode() == kf_Z || ampl.Legs()[2]->Flav().Kfcode() == kf_h0)
       && ampl.Legs()[3]->Flav().Kfcode() == kf_Wplus) {
     for (size_t i {0}; i < spinampls[0].size(); ++i) {
       const auto& spins = spinampls[0].GetSpinCombination(i);
-      if ((spins[2] == 2 || spins[2] == 0) && spins[3] == 2)
-        spinampls[0][i] = -spinampls[0][i];
+      spinampls[0][i] = -spinampls[0][i];
     }
   }
+
+  // flip signs of the e- e+ -> W+ W- amplitudes
+  else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
+      && ampl.Legs()[1]->Flav().Kfcode() == kf_e
+      && ampl.Legs()[2]->Flav().Kfcode() == kf_Wplus
+      && ampl.Legs()[3]->Flav().Kfcode() == kf_Wplus) {
+    for (size_t i {0}; i < spinampls[0].size(); ++i) {
+      const auto& spins = spinampls[0].GetSpinCombination(i);
+      spinampls[0][i] = -spinampls[0][i];
+    }
+  }
+
 }
 
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)

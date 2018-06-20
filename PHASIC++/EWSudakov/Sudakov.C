@@ -150,11 +150,14 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
           m_coeffs[{key, {}}][i] = lsZCoeff(value, spincombination);
           break;
         case EWSudakov_Log_Type::lSSC:
-          if (m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_Z
-              || m_ampls.BaseAmplitude().Leg(3)->Flav().Kfcode() == kf_Z) {
+          if ((m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_Z
+               && spincombination[2] == 2)
+              ||
+              (m_ampls.BaseAmplitude().Leg(3)->Flav().Kfcode() == kf_Z
+               && spincombination[3] == 2)) {
             msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for ";
-            msg_Error() << "an ampl with a Z boson for now due to missing ";
-            msg_Error() << "implementations\n";
+            msg_Error() << "an eeZZ (with Z longitudinal) , for now due to ";
+            msg_Error() << "missing implementations\n";
             break;
           }
           for (size_t k{ 0 }; k < spincombination.size(); ++k) {
