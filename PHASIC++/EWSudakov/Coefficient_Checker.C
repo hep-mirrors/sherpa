@@ -5,10 +5,11 @@ using namespace ATOOLS;
 
 bool Coefficient_Checker::CheckCoeffs(
     const Coeff_Map& coeffs,
-    const METOOLS::Spin_Amplitudes& spinampls)
+    const METOOLS::Spin_Amplitudes& spinampls,
+    const Mandelstam_Variables& mandelstam)
 {
   auto res = true;
-  const auto& refs = ReferenceCoeffs();
+  const auto& refs = ReferenceCoeffs(mandelstam);
   for (const auto& refkv : refs) {
     const auto& type = refkv.first.first;
     if (activecoeffs.find(type) == activecoeffs.end())
@@ -60,163 +61,167 @@ bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeffpair,
   return res;
 }
 
-const std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap>&
-Coefficient_Checker::ReferenceCoeffs()
+std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap>
+Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
 {
-  static std::map<std::string, std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap>> coeffs;
-  if (coeffs.empty()) {
-    auto& mapmm = coeffs["2_2__e-__e+__mu-__mu+"];
-    mapmm[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -2.58;
-    mapmm[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -4.96;
-    mapmm[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.96;
-    mapmm[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.35;
-    mapmm[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.29;
-    mapmm[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.37;
-    mapmm[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.37;
-    mapmm[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.45;
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)/)2
-    mapmm[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
-    mapmm[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
-    auto& mapuu = coeffs["2_2__e-__e+__u__ub"];
-    mapuu[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -1.86;
-    mapuu[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -4.25;
-    mapuu[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.68;
-    mapuu[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.07;
-    mapuu[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.21;
-    mapuu[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.29;
-    mapuu[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.50;
-    mapuu[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.58;
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    mapuu[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
-    mapuu[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
-    auto& mapdd = coeffs["2_2__e-__e+__d__db"];
-    mapdd[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -1.43;
-    mapdd[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -3.82;
-    mapdd[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.68;
-    mapdd[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.07;
-    mapdd[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.16;
-    mapdd[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.24;
-    mapdd[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.67;
-    mapdd[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.75;
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    mapdd[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
-    mapdd[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
-    auto& mapWW = coeffs["2_2__e-__e+__W+__W-"];
-    mapWW[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 2, 2}] = -4.96;
-    mapWW[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 2, 2}] = -7.35;
-    mapWW[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -12.6;
-    mapWW[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -12.6;
-    mapWW[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 2, 2}] = 0.37;
-    mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 2, 2}] = 0.45;
-    mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.98;
-    mapWW[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.98;
+  std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap> coeffs;
+
+  if (procname == "2_2__e-__e+__mu-__mu+") {
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -2.58;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -4.96;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.96;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.35;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.29;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.37;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.37;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.45;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)/)2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
+
+  } else if (procname == "2_2__e-__e+__u__ub") {
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -1.86;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -4.25;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.68;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.07;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.21;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.29;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.50;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.58;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+
+  } else if (procname == "2_2__e-__e+__d__db") {
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 0}] = -1.43;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 0}] = -3.82;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 1}] = -4.68;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 1}] = -7.07;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 0}] = 0.16;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.24;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.67;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.75;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
+
+  } else if (procname == "2_2__e-__e+__W+__W-") {
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 2, 2}] = -4.96;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 2, 2}] = -7.35;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -12.6;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -12.6;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 2, 2}] = 0.37;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 2, 2}] = 0.45;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.98;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.98;
 
     // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
     // reference (and vice versa), because their process is ordered differently
     // NOTE: if two contributions are given separately, the first is the N-loop
     // and the second the W-loop contribution
     // LT t-ch;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
     // LT u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47;
-    // RL t-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
-    // RL u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
-    // LL t-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
-    // LL u-ch
-    mapWW[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -2.88 - 6.95;
-    mapWW[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -2.88 - 6.95;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - mandelstam.u/mandelstam.t);
 
-    // TODO: add contributions from N/W loops
-    auto& mapPP = coeffs["2_2__e-__e+__P__P"];
-    mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
-    mapPP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
-    mapPP[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -8.15;
-    mapPP[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -8.15;
-    mapPP[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 1}] = 0.15;
-    mapPP[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
-    mapPP[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
-    mapPP[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
-    auto& mapZP = coeffs["2_2__e-__e+__Z__P"];
-    mapZP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
-    mapZP[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
-    mapZP[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -12.2;
-    mapZP[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -12.2;
-    mapZP[{EWSudakov_Log_Type::lZ, {}}] = mapPP[{EWSudakov_Log_Type::lZ, {}}];
-    auto& mapZZ = coeffs["2_2__e-__e+__Z__Z"];
-    mapZZ[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
-    mapZZ[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
-    mapZZ[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -16.2;
-    mapZZ[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -16.2;
-    mapZZ[{EWSudakov_Log_Type::lZ, {}}] = mapPP[{EWSudakov_Log_Type::lZ, {}}];
+  } else if (procname == "2_2__e-__e+__P__P") {
 
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -8.15;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -8.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 1}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
     // NOTE: t-ch in Sherpa corresponds to u-ch in the Denner/Pozzorini
     // reference (and vice versa), because their process is ordered differently
     // LT t-ch;
-    mapPP[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.u/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.u/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.u/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.u/mandelstam.s);
     // LT u-ch
-    mapPP[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47;
-    mapPP[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47;
-  }
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.t/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * (mandelstam.t/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.t/mandelstam.s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * (mandelstam.t/mandelstam.s);
 
-  // check proc name is inside the few we have
-  const auto it = coeffs.find(procname);
-  if (it == coeffs.end())
+  } else if (procname == "2_2__e-__e+__Z__P") {
+
+    // TODO: add contributions from N/W loops
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -12.2;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -12.2;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 1}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
+
+  } else if (procname == "2_2__e-__e+__Z__Z") {
+
+    // TODO: add contributions from N/W loops
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 1, 0}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -16.2;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -16.2;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 0, 1}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 0}] = 0.15;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 0.22;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
+
+  } else {
     THROW(not_implemented, "No test for this proc");
-  return it->second;
+  }
+  return coeffs;
 }

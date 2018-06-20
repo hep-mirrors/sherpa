@@ -176,7 +176,11 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
   }
   if (m_check) {
     Coefficient_Checker checker(p_proc->Name(), m_activecoeffs);
-    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0])) {
+    Mandelstam_Variables mandelstam {
+      m_ampls.MandelstamS(),
+      m_ampls.MandelstamT(),
+      m_ampls.MandelstamU() };
+    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0], mandelstam)) {
       THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
                          " the results in hep-ph/0010201.");
     }
@@ -317,48 +321,6 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
         const auto amplratio2 = -amplratio;
         auto contribution2 = 2.0*kcoupling.second*lcoupling.second*amplratio2;
-
-        // this is a hack for an easier comparison with the Denner/Pozzorini
-        // ref; however, it turns out that it only affects the result by a few
-        // permille
-        //if ((k == 2 && l == 1) || (k == 3 && l == 0)) {
-        //  std::cout << spincombination << std::endl;
-        //  if (spincombination[0] == 1 && spincombination[1] == 1
-        //      && (spincombination[2] != spincombination[3])) {
-        //    if (kflav.Kfcode() == kf_Wplus && lflav.Kfcode() == kf_e) {
-        //      const auto t = m_ampls.MandelstamT();
-        //      const auto u = m_ampls.MandelstamU();
-        //      const auto fac = (1 - u/t);
-        //      DEBUG_VAR(fac);
-        //      contribution /= fac;
-        //      contribution2 /= fac;
-        //    }
-        //  }
-        //}
-
-        // TODO: remove this hack, which is only used to compare the
-        // coefficients to the Denner/Pozzorini ref, where the
-        // Mandelstam-dependent part of the coefficient is left un-evaluated;
-        // leaving this hack here will lead to unphysical coefficients!
-        if (spincombination[0] == 1 && spincombination[1] == 1
-            && (spincombination[2] != spincombination[3])) {
-          if (kflav.Kfcode() == kf_photon && lflav.Kfcode() == kf_e) {
-            const auto s = m_ampls.MandelstamS();
-            const auto t = m_ampls.MandelstamT();
-            const auto u = m_ampls.MandelstamU();
-            auto fac = 0.0;
-            if ((k == 2 && l == 0) || (k == 3 && l == 1)) {
-              // t/s logarithm
-              fac = u/s;
-            } else {
-              // u/s logarithm
-              fac = t/s;
-            }
-            DEBUG_VAR(fac);
-            contribution /= fac;
-            contribution2 /= fac;
-          }
-        }
 
         coeff.first += contribution;
         coeff.second += contribution2;
