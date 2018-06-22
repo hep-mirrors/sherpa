@@ -76,7 +76,12 @@ bool Soft_Photon_Handler::AddRadiation(Particle_Vector& leps, Blob_Vector& blobs
 void Soft_Photon_Handler::BoostDecayBlob(Blob * blob)
 {
   DEBUG_FUNC("");
-  //msg_Out()<<*blob<<std::endl;
+  // check whether p_original exist, only then can we boost
+  if (!((*blob)["p_original"])) {
+    msg_Debugging()<<"no boosting information found, do not boost then"
+                   <<std::endl;
+    return;
+  }
   const Vec4D& P((*blob)["p_original"]->Get<Vec4D>());
   const Vec4D& Pt(blob->InParticle(0)->Momentum());
   const Vec4D e(P-Pt);
