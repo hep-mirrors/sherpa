@@ -181,16 +181,17 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     }
     // or just leave the particle off-shell.
     else {
-      Vec4D mom   = m_transitions.begin()->first->Momentum();
+      auto& transition = m_transitions.front();
+      Vec4D mom   = transition.first->Momentum();
       bool isbeam = false;
-      Proto_Particle * part = new Proto_Particle(m_transitions.begin()->second,
+      Proto_Particle * part = new Proto_Particle(transition.second,
 						 mom,false,isbeam);
       p_hadrons->push_back(part);
       m_direct_transitions++;
       msg_Tracking()<<METHOD<<" with a transition for "
 		    <<"("<<p_singlets->size()<<" singlets).\n"
-		    <<m_transitions.begin()->second<<" from "
-		    <<(*m_transitions.begin()->first)<<"\n";
+		    <<transition.second<<" from "
+		    <<(*transition.first)<<"\n";
       return true;
     }
   }
@@ -207,7 +208,7 @@ void Singlet_Checker::SortProblematicSinglets() {
     if (!flav1.IsGluon()) {
       Flavour had = p_softclusters->LowestTransition(flav1,flav2);
       if (had.Mass()>sqrt(p_singlet->Mass2())) {
-	m_transitions[p_singlet] = had;
+	AddOrUpdateTransition(p_singlet, had);
 	p_singlets->erase((*bit));
 	bit = m_badones.erase(bit);
 	continue;
@@ -239,7 +240,7 @@ bool Singlet_Checker::FindOtherSingletToTransit() {
     bit++;
   }
   if (hit!=m_badones.end() && hadron!=Flavour(kf_none)) {
-    m_transitions[(**hit)] = hadron;
+    AddOrUpdateTransition(**hit, hadron);
     p_singlets->erase(*hit);
     m_badones.erase(hit);
     return true;
@@ -287,16 +288,15 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   size_t   n      = m_transitions.size(), i=0;
   Vec4D *  moms   = new Vec4D[n],  totmom  = Vec4D(0.,0.,0.,0.);
   double * masses = new double[n], totmass = 0;
-  for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-       tit!=m_transitions.end();tit++,i++) {
-    totmom  += moms[i]   = tit->first->Momentum();
-    totmass += masses[i] = tit->second.Mass();
+  for (const auto t : m_transitions) {
+    totmom += moms[i] = t.first->Momentum();
+    totmass += masses[i] = t.second.Mass();
+    ++i;
   }
   if (totmom.Abs2()<sqr(totmass)) {
-    for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-	 tit!=m_transitions.end();tit++,i++) {
-      msg_Debugging()<<"Singlet with "<<tit->first->Momentum()<<" --> "
-		     <<tit->second<<" ("<<tit->second.Mass()<<")\n";
+    for (const auto t : m_transitions) {
+      msg_Debugging()<<"Singlet with "<<t.first->Momentum()<<" --> "
+        <<t.second<<" ("<<t.second.Mass()<<")\n";
     }
     delete[] moms;
     delete[] masses;
@@ -305,14 +305,14 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   bool success = hadpars->AdjustMomenta(n,moms,masses);
   if (success) {
     i = 0;
-    for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-	 tit!=m_transitions.end();tit++,i++) {
-      bool isbeam = (tit->first->front()->IsBeam() ||
-		     tit->first->back()->IsBeam());
-      Proto_Particle * part = new Proto_Particle(tit->second,moms[i],
+    for (const auto t : m_transitions) {
+      bool isbeam = (t.first->front()->IsBeam() ||
+		     t.first->back()->IsBeam());
+      Proto_Particle * part = new Proto_Particle(t.second,moms[i],
 						 false,isbeam);
       p_hadrons->push_back(part);
-      delete tit->first;
+      delete t.first;
+      ++i;
     }
     m_transitions.clear();
   }
@@ -444,3 +444,13 @@ bool Singlet_Checker::TwoQuarkSingletToHadrons() {
   return false;
 }
 
+void Singlet_Checker::AddOrUpdateTransition(Singlet* singlet,
+					    Flavour& hadron) {
+  // make sure that there is only at most one transition for a given singlet
+  auto result = std::find_if(m_transitions.begin(), m_transitions.end(),
+    [&singlet] (Transition& t) { return t.first == singlet; } );
+  if (result == m_transitions.end())
+    m_transitions.push_back({p_singlet, hadron});
+  else
+    result->second = hadron;
+}
