@@ -216,7 +216,7 @@ void Standard_Model::FixEWParameters()
         THROW(not_implemented,"\\alpha_QED convention not implemented.");
       }
     } else if (widthscheme=="Fixed") {
-      assert(csin2thetaW.imag() == 0.0);
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
       SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     }
     break;
@@ -321,7 +321,7 @@ void Standard_Model::FixEWParameters()
                                        +ToString(abs(csin2thetaW.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"                vev              = "<<cvev.real()
+  msg_Info()<<"                vev             = "<<cvev.real()
             <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
                                        +ToString(abs(cvev.imag()),
                                                  msg->Precision())+" i"

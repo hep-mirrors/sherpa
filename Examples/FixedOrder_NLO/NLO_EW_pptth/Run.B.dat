@@ -27,9 +27,6 @@
 (processes){
   Process 98 98 -> 6 -6 25;
   Order (0,3);
-  NLO_Mode Fixed_Order;
-  NLO_Part RS;
-  NLO_Order (0,1);
   Print_Graphs Graphs;
   End process;
 }(processes);
