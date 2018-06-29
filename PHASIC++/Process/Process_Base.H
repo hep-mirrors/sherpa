@@ -60,6 +60,7 @@ namespace PHASIC {
 
     PDF::Shower_Base   *p_shower;
     SHERPA::Variation_Weights *p_variationweights;
+    SHERPA::Variation_Weights *p_lkfvariationweights;
     bool m_variationweightsowned;
     BBar_Multi_Channel *p_mc;
 
@@ -161,6 +162,8 @@ namespace PHASIC {
     virtual void SetVariationWeights(SHERPA::Variation_Weights *const);
     void SetOwnedVariationWeights(SHERPA::Variation_Weights *);
     SHERPA::Variation_Weights *VariationWeights() const { return p_variationweights; }
+    SHERPA::Variation_Weights *LKFVariationWeights() const
+    { return p_lkfvariationweights; }
     virtual void SetSelector(const Selector_Key &key);
 
     virtual void InitCuts(Cut_Data *const cuts);

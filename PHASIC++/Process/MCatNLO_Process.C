@@ -534,9 +534,12 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 
       // calculate and set local K factors
       const double lkf(p_bviproc->Selected()->Last() / p_bviproc->Selected()->LastB());
+      SHERPA::Variation_Weights* lkfvarweights
+        = p_bviproc->Selected()->LKFVariationWeights();
       for (Cluster_Amplitude *ampl(p_ampl);
            ampl; ampl = ampl->Next()) {
         ampl->SetLKF(lkf);
+        ampl->SetLKFVariationWeights(lkfvarweights);
       }
 
       // enforce correct NLO flag throughout cluster amplitudes

@@ -131,6 +131,12 @@ namespace SHERPA {
      * a common factor for all subevent weights.
      */
     Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
+    /*!
+     * Divide all subevent weights one by one with those of another vec
+     *
+     * Cf. the documentation for `operator*=`.
+     */
+    Subevent_Weights_Vector & operator/=(const Subevent_Weights_Vector&);
   };
 
   std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
@@ -163,6 +169,8 @@ namespace SHERPA {
       p_variations(v),
       m_reweighting(false)
     {}
+
+    Variation_Weights(Variation_Weights *);
 
     void Reset();
 
@@ -228,6 +236,16 @@ namespace SHERPA {
 
     //! Multiply weights with weights from another set of variation weights
     Variation_Weights & operator*=(const Variation_Weights &);
+
+    //! Divide weights by weights from another set of variation weights
+    Variation_Weights & operator/=(const Variation_Weights &);
+
+    friend Variation_Weights operator/(Variation_Weights lhs,
+                                       const Variation_Weights& rhs)
+    {
+      lhs /= rhs;
+      return lhs;
+    }
 
     //! Get variation name at a given index
     std::string GetVariationNameAt(Variations::Parameters_Vector::size_type) const;

@@ -24,13 +24,16 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Amplitude *p_ampl;
     ATOOLS::Mass_Selector *p_ms;
     double m_kt2_next, m_lkf;
+    SHERPA::Variation_Weights* p_lkfvariationweights;
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
       p_jf(NULL), p_all(NULL),p_ampl(NULL),
-      m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
+      m_kt2_next(0.0), m_lkf(0.0),
+      p_lkfvariationweights(NULL),
+      m_nlo(0) {}
     ~Singlet();
 
     void AddParton(Parton *const p);
@@ -80,6 +83,11 @@ namespace CSSHOWER {
 
     inline int NLO() const { return m_nlo; }
     inline double LKF() const { return m_lkf; }
+
+    SHERPA::Variation_Weights* LKFVariationWeights()
+    { return p_lkfvariationweights; }
+    inline void SetLKFVariationWeights(SHERPA::Variation_Weights* vw)
+    { p_lkfvariationweights = vw; }
 
     inline void SetKtNext(const double &kt2) { m_kt2_next=kt2; } 
 

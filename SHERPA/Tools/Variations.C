@@ -427,6 +427,26 @@ Subevent_Weights_Vector::operator*=(const Subevent_Weights_Vector &other)
   return *this;
 }
 
+Subevent_Weights_Vector &
+Subevent_Weights_Vector::operator/=(const Subevent_Weights_Vector &other)
+{
+  if (size() == other.size()) {
+    for (size_t i(0); i < size(); ++i) {
+      (*this)[i] /= other[i];
+    }
+  } else if (other.size() == 1) {
+    *this /= other[0];
+  }
+  return *this;
+}
+
+Variation_Weights::Variation_Weights(Variation_Weights * vw):
+  p_variations(vw->GetVariations()),
+  m_weights(vw->m_weights),
+  m_currentparametersindex(vw->m_currentparametersindex),
+  m_reweighting(vw->m_reweighting)
+{}
+
 void Variation_Weights::Reset()
 {
   m_weights.clear();
@@ -465,6 +485,28 @@ Variation_Weights & Variation_Weights::operator*=(const Variation_Weights &other
       THROW(fatal_error,
             "The second variation weights does not contain the same types.");
     this->m_weights[Variations_Type::main][i] *= it->second[i];
+  }
+  return *this;
+}
+
+
+Variation_Weights & Variation_Weights::operator/=(const Variation_Weights &other)
+{
+  if (!AreWeightsInitialised()) {
+    THROW(fatal_error, "Can not divide uninitialised variation weights.");
+  }
+  if (!other.AreWeightsInitialised()) {
+    return *this;
+  }
+  for (Variations::Parameters_Vector::size_type i(0);
+       i < GetNumberOfVariations();
+       ++i) {
+    Subevent_Weights_Map::const_iterator it(
+        other.m_weights.find(Variations_Type::main));
+    if (it == other.m_weights.end())
+      THROW(fatal_error,
+            "The second variation weights does not contain the same types.");
+    this->m_weights[Variations_Type::main][i] /= it->second[i];
   }
   return *this;
 }

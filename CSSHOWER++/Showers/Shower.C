@@ -33,7 +33,6 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   if (m_maxrewem < 0) {
     m_maxrewem = std::numeric_limits<int>::max();
   }
-  m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
   m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
@@ -540,7 +539,16 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  if (p_actual->NLO()&2) {
 	    msg_Debugging()<<"Skip first truncated emission, K = "
 			   <<p_actual->LKF()<<"\n";
-	    if (m_use_bbw) m_weight*=1.0/p_actual->LKF();
+	    if (m_use_bbw) {
+              m_weight*=1.0/p_actual->LKF();
+              if (p_variationweights && p_actual->LKFVariationWeights()) {
+                // only apply the *relative* variation here, as m_weight will
+                // be applied to the variation weights later, which will divide
+                // out the nominal LKF again
+                *p_variationweights *= p_actual->LKF();
+                *p_variationweights /= *p_actual->LKFVariationWeights();
+              }
+            }
 	    if (IsBad(m_weight) || m_weight==0.0) {
 	      msg_Error()<<METHOD<<"(): Bad weight '"<<m_weight
 			 <<"'. Set it to one."<<std::endl;

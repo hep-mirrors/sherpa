@@ -35,7 +35,8 @@ Process_Base::Process_Base():
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_tinfo(1), m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true), p_apmap(NULL),
-  p_variationweights(NULL), m_variationweightsowned(false)
+  p_variationweights(NULL), m_variationweightsowned(false),
+  p_lkfvariationweights(NULL)
 {
   m_last=m_lastb=0.0;
   if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
@@ -46,6 +47,7 @@ Process_Base::~Process_Base()
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
   if (m_variationweightsowned && p_variationweights) delete p_variationweights;
+  if (p_lkfvariationweights) delete p_lkfvariationweights;
   delete p_selector;
   delete p_int;
 }

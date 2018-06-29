@@ -484,8 +484,22 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       }
     }
     if (p_variationweights) {
-      p_variationweights->UpdateOrInitialiseWeights(&Single_Process::ReweightWithoutSubevents,
-                                                    *this, ampls);
+      // calculate reweighted B(VI) weights
+      p_variationweights->UpdateOrInitialiseWeights(
+          &Single_Process::ReweightWithoutSubevents, *this, ampls);
+      // if needed, calculate reweighted local K factor, i.e. B/BVI
+      if (p_lkfvariationweights) {
+        delete p_lkfvariationweights;
+        p_lkfvariationweights = NULL;
+      }
+      if (m_mcmode == 1 && p_shower && p_shower->UsesBBW()) {
+        p_lkfvariationweights
+          = new SHERPA::Variation_Weights(p_variationweights->GetVariations());
+        p_lkfvariationweights->UpdateOrInitialiseWeights(
+            &Single_Process::ReweightBorn, *this, ampls);
+        *p_lkfvariationweights
+          = (*p_variationweights) / (*p_lkfvariationweights);
+      }
     }
     return m_last;
   }
@@ -567,7 +581,7 @@ SHERPA::Subevent_Weights_Vector Single_Process::ReweightSubevents(
                                            sub->p_ampl);
     info.m_skipsfirstampl = true;
     info.m_fallbackresult = sub->m_result;
-    weights.push_back(ReweightBornLike(varparams, info));
+    weights.push_back(ReweightBornLike(varparams, info, false));
   }
   return weights;
 }
@@ -600,7 +614,7 @@ double Single_Process::ReweightWithoutSubevents(
     info.m_muF2 = m_mewgtinfo.m_muf2;
     info.m_ampls = ampls;
     info.m_skipsfirstampl = false;
-    return ReweightBornLike(varparams, info);
+    return ReweightBornLike(varparams, info, false);
 
   } else { // NLO Born, Virtual Integrated, KP, DADS
     // calculate factors common to all these contributions
@@ -699,9 +713,32 @@ double Single_Process::ReweightWithoutSubevents(
   }
 }
 
+double Single_Process::ReweightBorn(SHERPA::Variation_Parameters * varparams,
+                                    SHERPA::Variation_Weights * varweights,
+                                    ATOOLS::ClusterAmplitude_Vector & ampls)
+{
+  BornLikeReweightingInfo info;
+  info.m_orderqcd = m_mewgtinfo.m_oqcd;
+  info.m_fl1 = m_mewgtinfo.m_fl1;
+  info.m_fl2 = m_mewgtinfo.m_fl2;
+  info.m_x1 = p_int->ISR()->X1();
+  info.m_x2 = p_int->ISR()->X2();
+  info.m_fallbackresult = m_lastb;
+  info.m_wgt = m_mewgtinfo.m_B;
+  info.m_muR2 = m_mewgtinfo.m_mur2;
+  info.m_muF2 = m_mewgtinfo.m_muf2;
+  info.m_ampls = ampls;
+  info.m_skipsfirstampl = false;
+  mewgttype::code nometstype((m_mewgtinfo.m_type & mewgttype::METS) ?
+                             m_mewgtinfo.m_type ^ mewgttype::METS : m_mewgtinfo.m_type);
+  const bool needslowerorderqcd(nometstype & mewgttype::VI || nometstype & mewgttype::KP);
+  return ReweightBornLike(varparams, info, needslowerorderqcd);
+}
+
 double Single_Process::ReweightBornLike(
   SHERPA::Variation_Parameters * varparams,
-  Single_Process::BornLikeReweightingInfo & info)
+  Single_Process::BornLikeReweightingInfo & info,
+  bool decrementalphasorder)
 {
   if (info.m_wgt == 0.0) {
     return 0.0;
@@ -718,7 +755,11 @@ double Single_Process::ReweightBornLike(
     alphasfac *= *it;
   }
   const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
-  return newweight;
+  if (decrementalphasorder && alphasfac != 1.0) {
+    return newweight / alphasratios.back();
+  } else {
+    return newweight;
+  }
 }
 
 std::pair<double, double> Single_Process::GetPairOfPDFValuesOrOne(

@@ -31,6 +31,7 @@ namespace PDF {
     std::string m_name;
     double      m_weight;
     int         m_on;
+    bool        m_use_bbw;
 
     SHERPA::Variation_Weights * p_variationweights;
 
@@ -64,6 +65,8 @@ namespace PDF {
     inline int On() { return m_on; }
 
     inline void SetOn(const int on) { m_on=on; }
+
+    inline bool UsesBBW() { return m_use_bbw; }
 
     inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }

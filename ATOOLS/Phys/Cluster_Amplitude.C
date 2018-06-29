@@ -78,6 +78,7 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->m_kt2=ca->m_z=ca->m_phi=ca->m_lkf=0.0;
   ca->p_jf=ca->p_proc=ca->p_procs=ca->p_dinfo=NULL;
   ca->p_ms=NULL;
+  ca->p_lkfvariationweights=NULL;
   if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
   return ca;
 }
@@ -92,6 +93,7 @@ void Cluster_Amplitude::Delete()
   if (p_prev) p_prev->p_next=NULL;
   p_prev=p_next=NULL;
   s_ampls.push_back(this);
+  p_lkfvariationweights = NULL;
 }
 
 void Cluster_Amplitude::CreateLeg
@@ -120,6 +122,7 @@ void Cluster_Amplitude::CopyFrom
   if (mode==1) m_legs.clear();
   else for (size_t i(0);i<m_legs.size();++i)
     m_legs[i] = Cluster_Leg::New(this,*master->m_legs[i]);
+  p_lkfvariationweights = master->p_lkfvariationweights;
 }
 
 Cluster_Amplitude *Cluster_Amplitude::CopyNext() const

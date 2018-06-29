@@ -106,9 +106,14 @@ namespace PHASIC {
     double ReweightWithoutSubevents(SHERPA::Variation_Parameters *,
                                     SHERPA::Variation_Weights *,
                                     ATOOLS::ClusterAmplitude_Vector &);
-    //! Return (wgt * \alpha_S * csi.pdfwgt)
+    //! Reweighting pure Born events
+    double ReweightBorn(SHERPA::Variation_Parameters *,
+                        SHERPA::Variation_Weights *,
+                        ATOOLS::ClusterAmplitude_Vector &);
+    //! Reweighting B(VI) events
     double ReweightBornLike(SHERPA::Variation_Parameters *,
-                            BornLikeReweightingInfo &);
+                            BornLikeReweightingInfo &,
+                            bool decrementalphasorder);
     //! Return (pdf1, pdf2)
     std::pair<double, double> GetPairOfPDFValuesOrOne(
         SHERPA::Variation_Parameters *,

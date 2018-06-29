@@ -25,7 +25,8 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
-    int                m_kscheme, m_noem, m_use_bbw, m_recdec;
+    int                m_kscheme, m_noem, m_recdec;
+    bool               m_use_bbw;
 
     ATOOLS::Cluster_Leg *p_old[2];
 
@@ -88,6 +89,8 @@ namespace CSSHOWER {
 
     inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
+
+    inline void SetUsesBBW(bool on) { m_use_bbw = on; }
 
   };
 }

@@ -58,6 +58,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (csmode!=1) msg_Info()<<METHOD<<"(): Set color setter mode "<<csmode<<"\n";
   m_decscalefac=_dataread->GetValue<double>("CSS_DECAY_SCALE_FACTOR",1.0);
   if (m_decscalefac!=1.0) msg_Info()<<METHOD<<"(): Set decay scale factor "<<m_decscalefac<<"\n";
+  m_use_bbw=_dataread->GetValue<int>("CSS_USE_BBW",1);
+  if (m_use_bbw!=true) msg_Info()<<METHOD<<"(): Set use bbar/b weight "<<m_use_bbw<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -66,6 +68,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
     s_kftable[kf_photon]->SetResummed();
   }
   p_shower = new Shower(_isr,_qed,_dataread,type);
+  p_shower->SetUsesBBW(m_use_bbw);
   
   p_next = new All_Singlets();
 
@@ -512,6 +515,7 @@ Singlet *CS_Shower::TranslateAmplitude
   singlet->SetNLO(ampl->NLO()&~1);
   if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);
   singlet->SetLKF(ampl->LKF());
+  singlet->SetLKFVariationWeights(ampl->LKFVariationWeights());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
