@@ -159,8 +159,11 @@ namespace EXTAMP {
 //    m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
 //    m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
 
-    m_myfile << std::setprecision(9) << p[4]*p[6]/(p[1]*p[0]) << " " << p[5]*p[6]/(p[1]*p[0]) << " "
+    if( R!=0 && S!=0){
+    m_myfile << std::setprecision(9) << p[4]*p[5]/(p[1]*p[0]) << " " 
+             << p[4][0] << " "
              << R << " " << S << std::endl;
+    }
 
     return m_lastxs = R + S;
   }

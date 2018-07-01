@@ -138,34 +138,45 @@ void Phase_Space_Handler::CheckSinglePoint()
   Data_Reader read(" ",";","#","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
-  std::string file=read.GetValue<std::string>("PS_PT_FILE","");
-  if (file!="") {
+  std::string myfilename=read.GetValue<std::string>("PS_PT_FILE","");
+    int n = 0; // number of events
+    std::string line;
+    ifstream myfile;
+    myfile.open(myfilename);
+    while(std::getline(myfile, line)){ n++; }
+    myfile.close();
+    n = n/(p_lab.size()+1); // add line which labels events
+    msg_Out() << "Number of events: " << n << endl;
+  if (myfilename!="") {
     Data_Reader read_mom(" ",";","#","=");
     read_mom.SetAddCommandLine(false);
-    read_mom.SetInputFile(file);
+    read_mom.SetInputFile(myfilename);
     read_mom.AddIgnore("Vec4D");
     read_mom.RereadInFile();
-    for (size_t i(0);i<p_lab.size();++i) {
-      std::vector<std::string> vec;
-      if (!read_mom.VectorFromFile(vec,"p_lab["+ToString(i)+"]"))
-	THROW(fatal_error,"No ps points in file");
-      if (vec.front()=="-") p_lab[i]=-ToType<Vec4D>(vec.back());
-      else p_lab[i]=ToType<Vec4D>(vec.front());
-      msg_Debugging()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
-    }
     Process_Base *proc(p_active->Process());
-    proc->Trigger(p_lab);
-    CalculateME();
-    msg->SetPrecision(16);
-    msg_Out()<<"// "<<proc->Name()<<"\n";
-    for (size_t i(0);i<p_lab.size();++i)
-      msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
-    if (proc->Get<Single_Process>()) {
-      msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
-	       <<"; // in GeV^2, incl. symfacs"<<std::endl;
-      if (proc->GetSubevtList()) {
-	NLO_subevtlist * subs(proc->GetSubevtList());
-	for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+    for (int j(0); j<n; j++) {  // loop over events in momenta file
+      msg_Out() << "Event " << j << " from "  << n << " from " << myfilename << endl;
+      for (size_t i(0);i<p_lab.size();++i) {  // loop over momenta
+        std::vector<std::string> vec;
+        if (!read_mom.VectorFromFile(vec,"p_lab["+ToString(i+j*p_lab.size())+"]"))
+         THROW(fatal_error,"No ps points in file");
+        if (vec.front()=="-") p_lab[i]=-ToType<Vec4D>(vec.back());
+        else p_lab[i]=ToType<Vec4D>(vec.front());
+        msg_Debugging()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
+      }
+      proc->Trigger(p_lab);
+      CalculateME();
+      msg->SetPrecision(16);
+      msg_Out()<<"// "<<proc->Name()<<"\n";
+      for (size_t i(0);i<p_lab.size();++i)
+        msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
+      if (proc->Get<Single_Process>()) {
+        msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
+          <<"; // in GeV^2, incl. symfacs"<<std::endl;
+        if (proc->GetSubevtList()) {
+   NLO_subevtlist * subs(proc->GetSubevtList());
+   for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+        }
       }
     }
     THROW(normal_exit,"Computed ME^2");
