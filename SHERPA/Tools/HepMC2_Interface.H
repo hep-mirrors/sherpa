@@ -41,7 +41,8 @@ namespace SHERPA {
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22, m_muq2;
     double m_alphas, m_alpha;
-    double m_userhook;
+    bool m_userhook;
+    double m_userweight;
     PHASIC::nlo_type::code m_type;
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
