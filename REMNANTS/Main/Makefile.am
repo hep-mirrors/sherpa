@@ -8,6 +8,7 @@ libRemnants_la_SOURCES =	\
 			Remnant_Base.C \
 			Hadron_Remnant.C \
 			Electron_Remnant.C \
+			Photon_Remnant.C \
 			No_Remnant.C 
 
 localinc_HEADERS          =	\
@@ -15,4 +16,5 @@ localinc_HEADERS          =	\
 			Remnant_Base.H \
 			Hadron_Remnant.H \
 			Electron_Remnant.H \
+			Photon_Remnant.H \
 			No_Remnant.H 
