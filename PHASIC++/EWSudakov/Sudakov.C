@@ -327,18 +327,36 @@ Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i {0}; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
-    auto contrib = 0.0;
     if (flav.IsFermion()) {
-      contrib = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+      const auto contrib
+        = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+      coeff.first += contrib;
+      coeff.second += contrib;
     } else if (flav.Kfcode() == kf_Wplus && spincombination[i] != 2) {
-      contrib = m_ewgroupconsts.Bew(flav, spincombination[i]) / 2.0;
+      const auto contrib
+        = m_ewgroupconsts.DiagonalBew(flav, spincombination[i]) / 2.0;
+      coeff.first += contrib;
+      coeff.second += contrib;
+    } else if (flav.IsVector()
+               && flav.Charge() == 0
+               && spincombination[i] != 2) {
+      const auto contrib
+        = m_ewgroupconsts.DiagonalBew(flav, spincombination[i]) / 2.0;
+      coeff.first += contrib;
+      coeff.second += contrib;
+      if (flav.Kfcode() == kf_Z) {
+        const auto transformed
+          = TransformedAmplitudeValue({{i, kf_photon}}, spincombination);
+        const auto base = amplvalue;
+        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+        auto amplratio = transformed/base;
+        coeff.first += m_ewgroupconsts.NondiagonalBew() * amplratio;
+        coeff.second -= m_ewgroupconsts.NondiagonalBew() * amplratio;
+      }
     }
-    coeff.first += contrib;
-    coeff.second += contrib;
   }
   return coeff;
 }
-
 
 Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
                                 std::vector<int> spincombination)
