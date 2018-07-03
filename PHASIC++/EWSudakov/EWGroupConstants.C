@@ -230,3 +230,15 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     THROW(not_implemented, s.str());
   }
 }
+
+double EWGroupConstants::Bew(const ATOOLS::Flavour& flav, int pol) const
+{
+  if (flav.Kfcode() == kf_Wplus && pol != 2) {
+    return 19.0/(6.0*m_sw2);
+  } else {
+    MyStrStream s;
+    s << "Missing implementation for flavour: " << flav
+      << " (pol: " << pol << ')';
+    THROW(not_implemented, s.str());
+  }
+}

@@ -353,8 +353,12 @@ Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i {0}; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
-    const auto contrib
-      = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+    auto contrib = 0.0;
+    if (flav.IsFermion()) {
+      contrib = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+    } else if (flav.Kfcode() == kf_Wplus && spincombination[i] != 2) {
+      contrib = m_ewgroupconsts.Bew(flav, spincombination[i]) / 2.0;
+    }
     coeff.first += contrib;
     coeff.second += contrib;
   }

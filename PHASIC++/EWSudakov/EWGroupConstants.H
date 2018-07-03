@@ -26,6 +26,9 @@ namespace PHASIC {
     /// calculate the coupling to W plus/minus
     Couplings Ipm(const ATOOLS::Flavour& flav, int pol, bool isplus) const;
 
+    /// calculate the one-loop coefficient of the beta function
+    double Bew(const ATOOLS::Flavour& flav, int pol) const;
+
     /// sine and cosine (squared) of the Weinberg angle theta_W
     const double m_sw2, m_cw2, m_sw, m_cw;
 
