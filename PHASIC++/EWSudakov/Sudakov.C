@@ -21,7 +21,7 @@ using namespace ATOOLS;
 
 Sudakov::Sudakov(Process_Base* proc):
   p_proc{ proc },
-  m_activecoeffs{ EWSudakov_Log_Type::Ls, EWSudakov_Log_Type::lZ, EWSudakov_Log_Type::lSSC },
+  m_activecoeffs{ EWSudakov_Log_Type::Ls, EWSudakov_Log_Type::lZ, EWSudakov_Log_Type::lSSC, EWSudakov_Log_Type::lC },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
@@ -125,6 +125,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
     switch (key) {
       case EWSudakov_Log_Type::Ls:
       case EWSudakov_Log_Type::lZ:
+      case EWSudakov_Log_Type::lC:
         m_coeffs[{key, {}}].resize(spinamplnum);
         break;
       case EWSudakov_Log_Type::lSSC:
@@ -173,6 +174,9 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
                 = lsLogROverSCoeffs(value, spincombination, {k, l});
             }
           }
+          break;
+        case EWSudakov_Log_Type::lC:
+          m_coeffs[{key, {}}][i] = lsCCoeff(value, spincombination);
           break;
       }
     }
@@ -329,6 +333,20 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         coeff.second += contribution2;
       }
     }
+  }
+  return coeff;
+}
+
+Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
+                              std::vector<int> spincombination)
+{
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  for (size_t i {0}; i < spincombination.size(); ++i) {
+    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
+    const auto contrib
+      = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+    coeff.first += contrib;
+    coeff.second += contrib;
   }
   return coeff;
 }

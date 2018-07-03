@@ -40,6 +40,10 @@ namespace PHASIC {
                                   std::vector<int> spincombination,
                                   const Two_Leg_Indizes& indizes);
 
+    /// calculate l_C(s) coefficients
+    Coeff_Value lsCCoeff(Complex amplvalue,
+                         std::vector<int> spincombination);
+
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
 

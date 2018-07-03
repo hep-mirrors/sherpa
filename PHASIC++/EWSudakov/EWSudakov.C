@@ -16,6 +16,8 @@ namespace PHASIC {
         return os << "l_Z";
       case EWSudakov_Log_Type::lSSC:
         return os << "l_s";
+      case EWSudakov_Log_Type::lC:
+        return os << "l_C";
     }
   }
 
