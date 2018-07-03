@@ -353,6 +353,10 @@ Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
         coeff.first += m_ewgroupconsts.NondiagonalBew() * amplratio;
         coeff.second -= m_ewgroupconsts.NondiagonalBew() * amplratio;
       }
+    } else if (flav.IsVector() && spincombination[i] == 2) {
+      const auto contrib = 2.0*m_ewgroupconsts.DiagonalCew(flav, 2);
+      coeff.first += contrib;
+      coeff.second += contrib;
     }
   }
   return coeff;
@@ -364,17 +368,23 @@ Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
   for (size_t i {0}; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
-    if (flav.Kfcode() != kf_t && flav.Kfcode() != kf_b)
-      continue;
-    auto contrib = sqr(flav.Mass()/Flavour{kf_Wplus}.Mass());
-    if (spincombination[i] == 0)
-      contrib *= 2.0;
-    else
-      contrib
-        += sqr(flav.IsoWeakPartner().Mass()/Flavour{kf_Wplus}.Mass());
-    contrib *= -1.0/(8.0*m_ewgroupconsts.m_sw2);
-    coeff.first += contrib;
-    coeff.second += contrib;
+    if (flav.Kfcode() == kf_t || flav.Kfcode() == kf_b) {
+      auto contrib = sqr(flav.Mass()/Flavour{kf_Wplus}.Mass());
+      if (spincombination[i] == 0)
+        contrib *= 2.0;
+      else
+        contrib
+          += sqr(flav.IsoWeakPartner().Mass()/Flavour{kf_Wplus}.Mass());
+      contrib *= -1.0/(8.0*m_ewgroupconsts.m_sw2);
+      coeff.first += contrib;
+      coeff.second += contrib;
+    } else if (flav.IsVector() && spincombination[i] == 2) {
+      const auto contrib
+        = - 3.0/(4.0*m_ewgroupconsts.m_sw2)
+        * sqr(Flavour{kf_t}.Mass()/Flavour{kf_Wplus}.Mass());
+      coeff.first += contrib;
+      coeff.second += contrib;
+    }
   }
   return coeff;
 }

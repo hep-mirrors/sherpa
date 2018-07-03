@@ -261,8 +261,13 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
 
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 2, 2}] = 18.6;
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 2, 2}] = 25.7;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 25.2;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 25.2;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 2, 2}] = -31.8;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 2, 2}] = -31.8;
 
   } else if (procname == "2_2__e-__e+__P__P") {
 
