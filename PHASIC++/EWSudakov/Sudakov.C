@@ -43,9 +43,8 @@ double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
   if (!IsInHighEnergyLimit())
     return 1.0;
 
-  m_lsczspinampls.clear();
-  m_sscwspinampls.clear();
   m_spinampls.clear();
+  m_transformedspinampls.clear();
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
   CalculateSpinAmplitudeCoeffs();
   THROW(normal_exit, "Finish.");
@@ -227,19 +226,8 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
       const auto prefactor = -m_ewgroupconsts.NondiagonalCew() / 2.0;
-      auto amplit = m_lsczspinampls.find(i);
-      if (amplit == m_lsczspinampls.end()) {
-        auto& transformedampl
-          = m_ampls.SU2TransformedAmplitude({std::make_pair(i, newkf)});
-        m_comixinterface.FillSpinAmplitudes(m_lsczspinampls[i],
-                                            transformedampl);
-        amplit = m_lsczspinampls.find(i);
-      }
-      auto& legpermutation = m_ampls.LegPermutation({std::make_pair(i, newkf)});
-      std::vector<int> transformedspincombination;
-      for (const auto& idx : legpermutation)
-        transformedspincombination.push_back(spincombination[idx]);
-      auto transformed = amplit->second[0].Get(transformedspincombination);
+      const auto transformed
+        = TransformedAmplitudeValue({{i, newkf}}, spincombination);
       const auto base = amplvalue;
       assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
       auto amplratio = transformed/base;
@@ -301,16 +289,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        // TODO: remove code duplication when calculating ampl ratios
         const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
-        auto amplit = m_sscwspinampls.find(key);
-        if (amplit == m_sscwspinampls.end()) {
-          auto& transformedampl = m_ampls.SU2TransformedAmplitude(key);
-          m_comixinterface.FillSpinAmplitudes(m_sscwspinampls[key],
-                                              transformedampl);
-          amplit = m_sscwspinampls.find(key);
-        }
-
         // correct spin index when a longitudinal vector boson is replaced with
         // a scalar using the Goldstone boson equivalence theorem
         std::vector<int> goldstonespincombination;
@@ -325,13 +304,8 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
           }
           goldstonespincombination.push_back(lambda);
         }
-
-        auto& legpermutation = m_ampls.LegPermutation(key);
-        std::vector<int> transformedspincombination;
-        for (const auto& idx : legpermutation) {
-          transformedspincombination.push_back(goldstonespincombination[idx]);
-        }
-        auto transformed = amplit->second[0].Get(transformedspincombination);
+        const auto transformed
+          = TransformedAmplitudeValue(key, goldstonespincombination);
         const auto base = amplvalue;
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         auto amplratio = transformed/base;
@@ -385,6 +359,23 @@ Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
     coeff.second += contrib;
   }
   return coeff;
+}
+
+Complex Sudakov::TransformedAmplitudeValue(
+    const Leg_Set& legs, const std::vector<int>& spincombination)
+{
+  auto amplit = m_transformedspinampls.find(legs);
+  if (amplit == m_transformedspinampls.end()) {
+    auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+    m_comixinterface.FillSpinAmplitudes(m_transformedspinampls[legs],
+                                        transformedampl);
+    amplit = m_transformedspinampls.find(legs);
+  }
+  auto& legpermutation = m_ampls.LegPermutation(legs);
+  std::vector<int> transformedspincombination;
+  for (const auto& idx : legpermutation)
+    transformedspincombination.push_back(spincombination[idx]);
+  return amplit->second[0].Get(transformedspincombination);
 }
 
 

@@ -51,6 +51,9 @@ namespace PHASIC {
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
 
+    /// calculate transformed amplitude value
+    Complex TransformedAmplitudeValue(const Leg_Set&, const std::vector<int>&);
+
     Process_Base* p_proc;
     const std::set<EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
@@ -63,9 +66,8 @@ namespace PHASIC {
 
     // intermediate results
     mutable Coeff_Map m_coeffs;
-    mutable std::map<size_t, std::vector<Spin_Amplitudes>> m_lsczspinampls;
-    mutable std::map<Leg_Set, std::vector<Spin_Amplitudes>> m_sscwspinampls;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
+    mutable std::map<Leg_Set, std::vector<Spin_Amplitudes>> m_transformedspinampls;
   };
 }
 
