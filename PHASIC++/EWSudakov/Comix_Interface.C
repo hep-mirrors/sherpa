@@ -71,6 +71,18 @@ void Comix_Interface::FillSpinAmplitudes(
     }
   }
 
+  // flip signs of all e- ve -> b tbar amplitudes
+  else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e
+             && ampl.Legs()[0]->Flav().IsAnti()
+             && ampl.Legs()[1]->Flav().Kfcode() == kf_nue
+             && ampl.Legs()[2]->Flav().Kfcode() == kf_t
+             && ampl.Legs()[3]->Flav().Kfcode() == kf_b) {
+    for (size_t i {0}; i < spinampls[0].size(); ++i) {
+      const auto& spins = spinampls[0].GetSpinCombination(i);
+      spinampls[0][i] = -spinampls[0][i];
+    }
+  }
+
   // flip signs of the e- ve -> Z/h0 W- amplitudes
   // longitudinally polarised
   else if (ampl.Legs()[0]->Flav().Kfcode() == kf_e

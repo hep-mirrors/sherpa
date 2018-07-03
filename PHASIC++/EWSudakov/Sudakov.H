@@ -44,6 +44,10 @@ namespace PHASIC {
     Coeff_Value lsCCoeff(Complex amplvalue,
                          std::vector<int> spincombination);
 
+    /// calculate l_Yuk(s) coefficients
+    Coeff_Value lsYukCoeff(Complex amplvalue,
+                           std::vector<int> spincombination);
+
     /// combine m_coeff with logs to give delta
     Complex deltaEW(const double s);
 

@@ -22,7 +22,8 @@ namespace PHASIC {
     Ls,       ///< correction \propto \log(s/m_mW2)^2
     lZ,       ///< correction \propto \log(s/m_mZ2)
     lSSC,     ///< correction \propto \log(s/m_mW2) \log(|r_kl|/s)
-    lC,       ///< collinear corrections \propto \log(s/m_mW2)
+    lC,       ///< collinear non-Yukawa corrections \propto \log(s/m_mW2)
+    lYuk,     ///< collinear Yukawa corrections \propto \log(s/m_mW2)
   };
 
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);

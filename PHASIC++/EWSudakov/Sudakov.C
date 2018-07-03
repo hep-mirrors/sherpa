@@ -21,7 +21,13 @@ using namespace ATOOLS;
 
 Sudakov::Sudakov(Process_Base* proc):
   p_proc{ proc },
-  m_activecoeffs{ EWSudakov_Log_Type::Ls, EWSudakov_Log_Type::lZ, EWSudakov_Log_Type::lSSC, EWSudakov_Log_Type::lC },
+  m_activecoeffs{
+    EWSudakov_Log_Type::Ls,
+    EWSudakov_Log_Type::lZ,
+    EWSudakov_Log_Type::lSSC,
+    EWSudakov_Log_Type::lC,
+    EWSudakov_Log_Type::lYuk
+  },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
@@ -126,6 +132,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       case EWSudakov_Log_Type::Ls:
       case EWSudakov_Log_Type::lZ:
       case EWSudakov_Log_Type::lC:
+      case EWSudakov_Log_Type::lYuk:
         m_coeffs[{key, {}}].resize(spinamplnum);
         break;
       case EWSudakov_Log_Type::lSSC:
@@ -177,6 +184,9 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
           break;
         case EWSudakov_Log_Type::lC:
           m_coeffs[{key, {}}][i] = lsCCoeff(value, spincombination);
+          break;
+        case EWSudakov_Log_Type::lYuk:
+          m_coeffs[{key, {}}][i] = lsYukCoeff(value, spincombination);
           break;
       }
     }
@@ -345,6 +355,28 @@ Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     const auto contrib
       = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
+    coeff.first += contrib;
+    coeff.second += contrib;
+  }
+  return coeff;
+}
+
+
+Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
+                                std::vector<int> spincombination)
+{
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  for (size_t i {0}; i < spincombination.size(); ++i) {
+    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
+    if (flav.Kfcode() != kf_t && flav.Kfcode() != kf_b)
+      continue;
+    auto contrib = sqr(flav.Mass()/Flavour{kf_Wplus}.Mass());
+    if (spincombination[i] == 0)
+      contrib *= 2.0;
+    else
+      contrib
+        += sqr(flav.IsoWeakPartner().Mass()/Flavour{kf_Wplus}.Mass());
+    contrib *= -1.0/(8.0*m_ewgroupconsts.m_sw2);
     coeff.first += contrib;
     coeff.second += contrib;
   }
