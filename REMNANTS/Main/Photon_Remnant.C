@@ -12,11 +12,12 @@ bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   if (p_partner==NULL) {
     THROW(critical_error,"Partner Remnant not set.");
   }
-  for (size_t j=0;j<m_extracted.size();++j) {
-    beamblob->AddToOutParticles(m_extracted[j]);
+  for (ATOOLS::Part_Iterator pmit=m_extracted.begin();
+       pmit!=m_extracted.end();pmit++) {
+    beamblob->AddToOutParticles(*pmit);
     if (particlelist!=NULL) {
-      m_extracted[j]->SetNumber(particlelist->size());
-      particlelist->push_back(m_extracted[j]);
+      (*pmit)->SetNumber(particlelist->size());
+      particlelist->push_back(*pmit);
     }
   }
   return true;
