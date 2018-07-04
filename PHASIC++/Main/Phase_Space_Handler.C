@@ -139,23 +139,27 @@ void Phase_Space_Handler::CheckSinglePoint()
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
   std::string myfilename=read.GetValue<std::string>("PS_PT_FILE","");
+  if (myfilename!="") {
+std::cout << "Start reading in. \n";
+for(int i=1;i<1001;i++){
     int n = 0; // number of events
     std::string line;
     ifstream myfile;
-    myfile.open(myfilename);
+    std::string myfilename_ = myfilename + std::string("_") + std::to_string(i) + std::string(".dat");
+    msg_Out() << "Read in '" << myfilename_ << "'\n";
+    myfile.open(myfilename_);
     while(std::getline(myfile, line)){ n++; }
     myfile.close();
-    n = n/(p_lab.size()+1); // add line which labels events
+    n = n/(p_lab.size()+1); // 1 line per event which contains no momenta
     msg_Out() << "Number of events: " << n << endl;
-  if (myfilename!="") {
     Data_Reader read_mom(" ",";","#","=");
     read_mom.SetAddCommandLine(false);
-    read_mom.SetInputFile(myfilename);
+    read_mom.SetInputFile(myfilename_);
     read_mom.AddIgnore("Vec4D");
     read_mom.RereadInFile();
     Process_Base *proc(p_active->Process());
     for (int j(0); j<n; j++) {  // loop over events in momenta file
-      msg_Out() << "Event " << j << " from "  << n << " from " << myfilename << endl;
+      msg_Out() << "Event " << j+1 << " from "  << n << " from " << myfilename_ << endl;
       for (size_t i(0);i<p_lab.size();++i) {  // loop over momenta
         std::vector<std::string> vec;
         if (!read_mom.VectorFromFile(vec,"p_lab["+ToString(i+j*p_lab.size())+"]"))
@@ -179,6 +183,7 @@ void Phase_Space_Handler::CheckSinglePoint()
         }
       }
     }
+}
     THROW(normal_exit,"Computed ME^2");
   }
 }
