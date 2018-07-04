@@ -10,6 +10,7 @@ using namespace ANALYSIS;
 #include "AddOns/Analysis/Triggers/MySISCone.H"
 #include "AddOns/Analysis/Triggers/MCFMCone.H"
 #include <iomanip>
+#include <memory>
 
 DECLARE_GETTER(Final_Selector,"Trigger",
  	       Analysis_Object,Argument_Matrix);

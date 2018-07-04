@@ -7,6 +7,7 @@
 #include "AddOns/Analysis/Triggers/Kt_Algorithm.H"
 #include "AddOns/Analysis/Triggers/Durham_Algorithm.H"
 #include <vector>
+#include <memory>
 
 namespace ANALYSIS {
   struct Final_Selector_Data {
