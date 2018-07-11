@@ -4,13 +4,10 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/EWSudakov/Sudakov.H"
-#include "MODEL/Main/Running_AlphaS.H"
-#include "MODEL/Main/Running_AlphaQED.H"
 
 namespace PHASIC {
   class Sudakov_KFactor: public KFactor_Setter_Base {
   private:
-    MODEL::Running_AlphaQED m_runaqed;
     Sudakov m_ews;
     size_t m_check;
   public:

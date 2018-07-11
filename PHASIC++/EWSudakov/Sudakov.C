@@ -26,100 +26,104 @@ Sudakov::Sudakov(Process_Base* proc):
     EWSudakov_Log_Type::lZ,
     EWSudakov_Log_Type::lSSC,
     EWSudakov_Log_Type::lC,
-    EWSudakov_Log_Type::lYuk
+    EWSudakov_Log_Type::lYuk,
+    EWSudakov_Log_Type::lPR
   },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
-  m_mz2{ sqr(s_kftable[kf_Z]->m_mass) },
+  m_runaqed{ 1./137.03599976 },
   m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) }
 {
 }
 
-double Sudakov::EWSudakov(const ATOOLS::Vec4D_Vector& mom)
+double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
   if (!IsInHighEnergyLimit())
     return 1.0;
-
-  m_spinampls.clear();
-  m_transformedspinampls.clear();
-  m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
+  ClearSpinAmplitudes();
+  FillBaseSpinAmplitudes();
   CalculateSpinAmplitudeCoeffs();
-  THROW(normal_exit, "Finish.");
-
-  /*
-    // pref = alpha/4 pi is added in KFactor method.
-
-    Born_EW = |M0 + alpha * delta * M0 / 4 pi |^2 
-            = |M0|^2 |1 + alpha * delta / 4 pi|^2 
-            = |M0|^2 (1 + 2 * alpha * Re(delta) / 4 pi) + O(alpha^2)
-    This function gives 2 Re(delta), the rest is handled by KFactor.C
-  */
-
-  const auto born = p_proc->Get<COMIX::Single_Process>()->Getdxs_beforeKFactor();
-  return 2.*deltaEW((mom[0]+mom[1]).Abs2()).real()/born;
+  return KFactor();
 }
 
 bool Sudakov::IsInHighEnergyLimit()
 {
+  // TODO: generalise beyond 2->2 processes
+
   DEBUG_FUNC("");
-  static const auto threshold = 1e2;
+  static const auto threshold = 10.0*m_mw2;
   const auto s = std::abs(m_ampls.MandelstamS());
   const auto t = std::abs(m_ampls.MandelstamT());
   const auto u = std::abs(m_ampls.MandelstamU());
+
+  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
   DEBUG_VAR(t/s);
   DEBUG_VAR(u/s);
+
+  if (s < threshold || t < threshold || u < threshold) {
+    msg_Debugging() << "at least one of the kin. invariants does not pass the"
+                    << " threshold\n";
+    return false;
+  }
 
   const auto LSC = sqr(std::log(s/m_mw2));
   const auto SSCt = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s));
   const auto SSCu = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s));
 
-  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
   msg_Debugging() << "log2(s/mW) = " << LSC << "\n";
-  msg_Debugging() << "2*log(s/mW)*log(t/s) = " << SSCt << "\n";
-  msg_Debugging() << "2*log(s/mW)*log(u/s) = " << SSCu << "\n";
-
-  if (LSC < threshold) {
-    msg_Debugging() << "event LSC too small\n";
-    return false;
-  }
-  if ((SSCt < threshold) && (SSCu < threshold)) {
-    msg_Debugging() << "event SSC too small\n";
-    return false;
-  }
+  msg_Debugging() << "2*|log(s/mW)*log(t/s)| = " << SSCt << "\n";
+  msg_Debugging() << "2*|log(s/mW)*log(u/s)| = " << SSCu << "\n";
 
   return true;
 }
 
-Complex Sudakov::deltaEW(const double s)
+void Sudakov::ClearSpinAmplitudes()
 {
-  // TODO: include m_angularcoeffs
-  /*
-    Define the various logs -> store them in 
-    dict with the same names as the coefficients
-    then sum all contributions * that log.
-   */
-  const auto L  = (s>m_mw2)?sqr(std::log(s/m_mw2)):0.;
-  const auto lZ = (s>m_mw2)?std::log(s/m_mz2):0.;
+  m_spinampls.clear();
+  m_transformedspinampls.clear();
+}
 
-  // for now this is a bit of an overkill, but useful
-  // if we add more logs...
+void Sudakov::FillBaseSpinAmplitudes()
+{
+  m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
+}
+
+double Sudakov::KFactor()
+{
+  const auto s = std::abs(m_ampls.MandelstamS());
+  const auto ls = std::log(s/m_mw2);
+
+  // pre-calculate the logarithms we need below
   std::map<Coeff_Map_Key, double> logs;
-  logs[{EWSudakov_Log_Type::Ls, {}}] = L;
-  logs[{EWSudakov_Log_Type::lZ, {}}] = lZ;
+  logs[{EWSudakov_Log_Type::Ls, {}}] = sqr(ls);
+  logs[{EWSudakov_Log_Type::lZ, {}}] = ls;
+  logs[{EWSudakov_Log_Type::lC, {}}] = ls;
+  logs[{EWSudakov_Log_Type::lYuk, {}}] = ls;
+  logs[{EWSudakov_Log_Type::lPR, {}}] = ls;
+  for (size_t k {0}; k < m_ampls.NumberOfLegs(); ++k)
+    for (size_t l {0}; l < k; ++l)
+      logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = ls*std::log(std::abs(
+          (m_ampls.BaseAmplitude().Leg(k)->Mom()
+           + m_ampls.BaseAmplitude().Leg(l)->Mom()).Abs2())/s);
 
-  Complex res{ 0. };
-
-  for (const auto& coeffkv : m_coeffs) {
-    for (const auto c_val : coeffkv.second) {
-      res += c_val.first * logs[coeffkv.first];
-    }
+  // calculate K = (\sum_{i} (1 + 2 Re(delta))|M_i|^2) / (\sum_{i} |M_i|^2),
+  // where the sum is over the spin configurations
+  auto num = 0.0;
+  auto den = m_spinampls[0].SumSquare();
+  for (size_t i {0}; i < m_spinampls[0].size(); ++i) {
+    static const auto delta_prefactor = m_runaqed.AqedThomson()/4./M_PI;
+    auto delta = 0.0;
+    for (const auto& coeffkv : m_coeffs)
+      delta += (coeffkv.second[i].first * logs[coeffkv.first]).real();
+    num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
   }
 
-  return res;
+  return num/den;
 }
+
 
 void Sudakov::CalculateSpinAmplitudeCoeffs()
 {
@@ -132,6 +136,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       case EWSudakov_Log_Type::lZ:
       case EWSudakov_Log_Type::lC:
       case EWSudakov_Log_Type::lYuk:
+      case EWSudakov_Log_Type::lPR:
         m_coeffs[{key, {}}].resize(spinamplnum);
         break;
       case EWSudakov_Log_Type::lSSC:
@@ -187,6 +192,9 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
         case EWSudakov_Log_Type::lYuk:
           m_coeffs[{key, {}}][i] = lsYukCoeff(value, spincombination);
           break;
+        case EWSudakov_Log_Type::lPR:
+          m_coeffs[{key, {}}][i] = lsPRCoeff(value, spincombination);
+          break;
       }
     }
   }
@@ -196,18 +204,12 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       m_ampls.MandelstamS(),
       m_ampls.MandelstamT(),
       m_ampls.MandelstamU() };
-    if (!checker.CheckCoeffs(m_coeffs, m_spinampls[0], mandelstam)) {
+    if (checker.CheckCoeffs(m_coeffs, m_spinampls[0], mandelstam)) {
+      THROW(normal_exit, "Finish after checking EW Sudakov coefficients.");
+    } else {
       THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"
                          " the results in hep-ph/0010201.");
     }
-  }
-  for (size_t i{ 0 }; i < spinamplnum; ++i) {
-    const auto value = ampls.Get(i);
-    if (value == 0.0)
-      continue;
-    Complex B0i{ value * std::conj(value) };
-    for (auto& coeffkv : m_coeffs)
-      coeffkv.second[i].first *= B0i;
   }
 }
 
@@ -386,6 +388,35 @@ Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
       coeff.second += contrib;
     }
   }
+  return coeff;
+}
+
+Coeff_Value Sudakov::lsPRCoeff(Complex amplvalue,
+                               std::vector<int> spincombination)
+{
+  // TODO: implement dynamic calculation, this placeholder just returns the
+  // coefficients given in the Denner/Pozzorini reference for ee->mumu
+  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  if (spincombination[0] == 0
+      && spincombination[1] == 0
+      && spincombination[2] == 0
+      && spincombination[3] == 0)
+    coeff.first = coeff.second = 8.80;
+  else if (spincombination[0] == 0
+      && spincombination[1] == 0
+      && spincombination[2] == 1
+      && spincombination[3] == 1)
+    coeff.first = coeff.second = 8.80;
+  else if (spincombination[0] == 1
+      && spincombination[1] == 1
+      && spincombination[2] == 0
+      && spincombination[3] == 0)
+    coeff.first = coeff.second = 8.80;
+  else if (spincombination[0] == 1
+      && spincombination[1] == 1
+      && spincombination[2] == 1
+      && spincombination[3] == 1)
+    coeff.first = coeff.second = -9.03;
   return coeff;
 }
 

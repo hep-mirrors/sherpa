@@ -4,6 +4,7 @@
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 #include "PHASIC++/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
 #include "PHASIC++/Process/Process_Base.H"
 
@@ -19,10 +20,12 @@ namespace PHASIC {
   class Sudakov {
   public:
     Sudakov(Process_Base*);
-    double EWSudakov(const ATOOLS::Vec4D_Vector& mom);
+    double KFactor(const ATOOLS::Vec4D_Vector& mom);
   private:
 
     bool IsInHighEnergyLimit();
+    void ClearSpinAmplitudes();
+    void FillBaseSpinAmplitudes();
 
     /// calculate coeffs for each m_spinampls entry
     void CalculateSpinAmplitudeCoeffs();
@@ -48,8 +51,11 @@ namespace PHASIC {
     Coeff_Value lsYukCoeff(Complex amplvalue,
                            std::vector<int> spincombination);
 
-    /// combine m_coeff with logs to give delta
-    Complex deltaEW(const double s);
+    /// calculate l_PR(s) coefficients
+    Coeff_Value lsPRCoeff(Complex amplvalue,
+                          std::vector<int> spincombination);
+
+    double KFactor();
 
     /// calculate transformed amplitude value
     Complex TransformedAmplitudeValue(const Leg_Set&, const std::vector<int>&);
@@ -60,7 +66,8 @@ namespace PHASIC {
     const Comix_Interface m_comixinterface;
     const EWGroupConstants m_ewgroupconsts;
 
-    const double m_mw2, m_mz2;
+    const double m_mw2;
+    MODEL::Running_AlphaQED m_runaqed;
     const size_t m_check;
     Complex m_born;
 

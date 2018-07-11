@@ -6,9 +6,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
-#include "MODEL/Main/Running_AlphaS.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -21,18 +18,17 @@ using namespace ATOOLS;
 
 Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args),
-  m_runaqed{ 1./137.03599976 },
   m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) },
   m_ews{ p_proc }
 { }
 
 double Sudakov_KFactor::KFactor(const int mode)
 {
-  const auto pref  = m_runaqed.AqedThomson()/4./M_PI;
   const auto level = msg->Level();
   if(m_check) msg->SetLevel(8);
-  m_weight = 1. + pref*m_ews.EWSudakov(p_proc->Integrator()->Momenta());
+  m_weight = m_ews.KFactor(p_proc->Integrator()->Momenta());
   if(m_check) msg->SetLevel(level);
+  auto kfac = m_weight; PRINT_VAR(kfac);
   return m_weight;
 }
 
