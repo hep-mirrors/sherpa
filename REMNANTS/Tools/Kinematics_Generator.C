@@ -451,11 +451,11 @@ bool Kinematics_Generator::AdjustShowerInitiators() {
 
 bool Kinematics_Generator::BoostConnectedBlob(ATOOLS::Blob * blob,size_t & catchit) {
   // Iterate recursively through blobs and boost them into their new systems.
+  if (blob==NULL || m_boostedblobs.find(blob)!=m_boostedblobs.end()) return true;
   if (++catchit>100) {
     msg_Error()<<METHOD<<": Error\n"<<"   Blob nesting is too deep.\n";
     return false;
   }
-  if (blob==NULL || m_boostedblobs.find(blob)!=m_boostedblobs.end()) return true;
   m_boostedblobs.insert(blob);
   btp::code btype   = blob->Type();
   for (size_t i=0;i<blob->NOutP();++i) {
