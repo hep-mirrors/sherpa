@@ -144,7 +144,7 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   // Fill in the transverse momenta through the Kinematics_Generator.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     Reset();
-    return Return_Value::Retry_Event;
+    return Return_Value::New_Event;
   }
   Reset();
   return Return_Value::Success;
