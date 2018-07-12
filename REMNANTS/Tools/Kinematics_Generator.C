@@ -52,6 +52,7 @@ void Kinematics_Generator::Reset() {
   for (size_t beam=0;beam<2;beam++) { m_ktmap[beam].clear(); }
   m_shuffledmap.clear();
   m_boostedblobs.clear();
+  m_stretcher.Reset();
 }
 
 Blob * Kinematics_Generator::MakeSoftBlob() {
