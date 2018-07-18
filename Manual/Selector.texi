@@ -45,6 +45,9 @@ transverse momentum cut
 rapidity cut
 @item PseudoRapidity
 pseudorapidity cut
+@item PZIN
+cut on the z-component of the momentum, acts on initial-state flavours only
+(commonly used in DIS analyses)
 @end table
 
 
@@ -81,6 +84,9 @@ rapidity separation
 azimuthal angle separation (rad)
 @item DeltaR
 R separation
+@item INEL
+inelasticity, one of the flavours must be in the initial-state (commonly used
+in DIS analyses)
 @end table
 
 
