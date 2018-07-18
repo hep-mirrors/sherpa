@@ -29,7 +29,7 @@ int Process_Base::s_usefmm(-1);
 
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
-  p_sproc(NULL), p_proc(this),
+  p_sproc(NULL), p_caller(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
@@ -578,6 +578,11 @@ void Process_Base::SetSelector(const Selector_Key &key)
   if (IsMapped()) return;
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
+}
+
+void Process_Base::SetCaller(Process_Base *const proc)
+{
+  p_caller=proc;
 }
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)

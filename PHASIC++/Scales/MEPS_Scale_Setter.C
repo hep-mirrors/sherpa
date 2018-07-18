@@ -274,7 +274,7 @@ bool MEPS_Scale_Setter::CheckSplitting
 
 bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
-  NLO_subevtlist *subs(p_caller->GetRSSubevtList());
+  NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
     if (cc.m_k==sub->m_k &&
@@ -325,22 +325,22 @@ double MEPS_Scale_Setter::Calculate
 {
   m_p=momenta;
   if (m_nproc || m_cmode&8) p_ci=NULL;
-  else p_ci=p_caller->Integrator()->ColorIntegrator();
-  for (size_t i(0);i<p_caller->NIn();++i) m_p[i]=-m_p[i];
+  else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
+  for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
     m_ampls.back()->Delete();
     m_ampls.pop_back();
   }
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
-  m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_sproc=p_caller->Info().Has(nlo_type::rsub);
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name());
+  m_rproc=p_proc->Caller()->Info().Has(nlo_type::real);
+  m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
-  m_rsproc=m_rproc||(m_sproc&&p_caller->GetRSSubevtList());
-  const Flavour_Vector &fl=p_caller->Flavours();
+  m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   if ((m_cmode&128) && m_sproc && !m_rproc &&
-      p_caller->GetRSSubevtList()) {
+      p_proc->Caller()->GetRSSubevtList()) {
     msg_Debugging()<<"S event, use R configuration\n";
-    Cluster_Amplitude *ampl(p_caller->GetRSSubevtList()->back()->p_ampl);
+    Cluster_Amplitude *ampl(p_proc->Caller()->GetRSSubevtList()->back()->p_ampl);
     if (ampl && ampl->Next()) {
       m_ampls.push_back(ampl->CopyAll());
       m_ampls.back()=m_ampls.back()->Next();
@@ -348,13 +348,13 @@ double MEPS_Scale_Setter::Calculate
     }
     else {
       Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-      ampl->SetNIn(p_caller->NIn());
-      ampl->SetOrderQCD(p_caller->MaxOrder(0));
-      for (size_t i(1);i<p_caller->MaxOrders().size();++i)
-	ampl->SetOrderEW(ampl->OrderEW()+p_caller->MaxOrder(i));
+      ampl->SetNIn(p_proc->Caller()->NIn());
+      ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
+      for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
+	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
       for (size_t i(0);i<m_p.size();++i)
 	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
-      ampl->SetProc(p_caller->Get<Single_Process>());
+      ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
       m_ampls.push_back(ampl);      
     }
@@ -362,10 +362,10 @@ double MEPS_Scale_Setter::Calculate
   }
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  ampl->SetNIn(p_caller->NIn());
-  ampl->SetOrderQCD(p_caller->MaxOrder(0));
-  for (size_t i(1);i<p_caller->MaxOrders().size();++i)
-    ampl->SetOrderEW(ampl->OrderEW()+p_caller->MaxOrder(i));
+  ampl->SetNIn(p_proc->Caller()->NIn());
+  ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
+  for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
+    ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
   ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
   if (p_ci!=NULL) {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
@@ -382,12 +382,12 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   ClusterAmplitude_Vector ampls;
-  p_sproc=p_caller->Get<Single_Process>();
+  p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
-  int mm(p_caller->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc) p_caller->Generator()->ShiftMasses(ampl);
+  int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
+  if (!m_nproc) p_proc->Caller()->Generator()->ShiftMasses(ampl);
   Cluster(ampl,ampls,1);
-  p_caller->Generator()->SetMassMode(mm);
+  p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
     if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()-1);
@@ -702,7 +702,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
@@ -722,7 +722,7 @@ void MEPS_Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_caller->Name()<<"' {\n";
+		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

@@ -36,7 +36,7 @@ namespace PHASIC {
 
   protected:
 
-    Process_Base *p_proc, *p_caller;
+    Process_Base *p_proc;
 
     MODEL::Model_Base   *p_model;
     MODEL::Coupling_Map *p_cpls;
@@ -78,8 +78,6 @@ namespace PHASIC {
     virtual bool UpdateScale(const ATOOLS::Variation_Parameters &var);
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
-
-    inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
     inline double Scale(const ATOOLS::stp::id type,const int mode=0) const
     { return mode==0?m_scale[type]:m_fac[type]*m_scale[type]; }

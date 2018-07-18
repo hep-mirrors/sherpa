@@ -480,7 +480,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_x1=p_int->ISR()->X1();
   m_mewgtinfo.m_x2=p_int->ISR()->X2();
   p_int->SetMomenta(p);
-  if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
+  if (IsMapped()) {
+    p_mapproc->Integrator()->SetMomenta(p);
+    p_mapproc->SetCaller(this);
+  }
   m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) :
                               p_int->ISR()->Flux(p[0],p[1]);
   m_lastflux/=m_issymfac;
@@ -492,7 +495,6 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       return 0.0;
     }
     Scale_Setter_Base *scs(ScaleSetter(1));
-    scs->SetCaller(Proc());
     if (Partonic(p,0)==0.0) {
       if (p_variationweights)
 	p_variationweights->UpdateOrInitialiseWeights

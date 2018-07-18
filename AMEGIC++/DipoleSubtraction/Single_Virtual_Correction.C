@@ -945,10 +945,10 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   msg->SetPrecision(precision);
 }
 
-double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
-                                             const int mode)
+double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,const int mode)
 {
   DEBUG_FUNC("bvimode="<<m_bvimode);
+  m_lastxs = m_lastdxs = m_lastbxs = 0.;
   if (p_partner!=this) {
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
     return p_partner->operator()(mom,mode)*m_sfactor;
@@ -1358,3 +1358,8 @@ void Single_Virtual_Correction::SetVariationWeights(Variation_Weights *const vw)
   p_LO_process->SetVariationWeights(vw);
 }
 
+void Single_Virtual_Correction::SetCaller(PHASIC::Process_Base *const proc)
+{
+  p_caller=proc;
+  p_LO_process->SetCaller(static_cast<Single_Virtual_Correction*>(proc)->p_LO_process);
+}

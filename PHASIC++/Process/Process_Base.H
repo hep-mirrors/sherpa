@@ -53,7 +53,7 @@ namespace PHASIC {
   class Process_Base {
   protected:
 
-    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc, *p_proc;
+    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc, *p_caller;
     Process_Integrator *p_int;
     Combined_Selector  *p_selector;
     Cut_Data           *p_cuts;
@@ -169,6 +169,7 @@ namespace PHASIC {
     void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
     ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
     virtual void SetSelector(const Selector_Key &key);
+    virtual void SetCaller(Process_Base *const proc);
 
     virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);
@@ -237,7 +238,6 @@ namespace PHASIC {
     inline ATOOLS::ME_Weight_Info *GetMEwgtinfo() { return &m_mewgtinfo; }
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
-
     inline Process_Integrator *Integrator() const { return p_int; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
@@ -264,7 +264,7 @@ namespace PHASIC {
     inline ME_Generator_Base *Generator() const { return p_gen; }
 
     inline Process_Base *MapProc() const  { return p_mapproc; }
-    inline Process_Base *Proc() const     { return p_proc;    }
+    inline Process_Base *Caller() const   { return p_caller;  }
 
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 

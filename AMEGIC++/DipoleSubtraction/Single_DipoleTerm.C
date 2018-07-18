@@ -630,7 +630,6 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   SetLOMomenta(mom,cms);
 
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
-  p_scale->SetCaller((_mode&2)?p_LO_process->Partner():p_LO_process);
 
   if (p_LO_process->Selector()->On())
     m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
@@ -682,51 +681,6 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
   m_subevt.m_kt2=p_dipole->KT2();
   if (!m_subevt.m_trig) m_lastxs=0.0;
-
-  if (p_scale->FixedScales().empty()) {
-    ClusterAmplitude_Vector &ampls
-      (ScaleSetter(1)->Amplitudes());
-    if (ampls.size()) {
-      m_subevt.p_ampl = ampls.front()->CopyAll();
-      if (m_subevt.p_ampl->Splitter()==NULL) {
-      std::vector<int> rsm(m_nin+m_nout-1);
-      for (size_t i(0);i<rsm.size();++i) {
-        int cnt=p_LO_process->RSMap()[i];
-	if (cnt==-1) cnt=(1<<m_pi)|(1<<m_pj);
-	else if (cnt==-2) cnt=1<<m_pk;
-	else cnt=1<<cnt;
-	rsm[i]=cnt;
-      }
-      m_subevt.p_ampl->Leg(m_subevt.m_ijt)->SetK(1<<m_subevt.m_kt);
-      for (Cluster_Amplitude *campl(m_subevt.p_ampl);campl;campl=campl->Next()) {
-	for (size_t i(0);i<campl->Legs().size();++i) {
-	  if (p_LO_process->Partner()!=p_LO_process) {
-	    Flavour fl(campl->Leg(i)->Flav());
-	    fl=ReMap(i<m_nin?fl.Bar():fl,campl->Leg(i)->Id());
-	    campl->Leg(i)->SetFlav(i<m_nin?fl.Bar():fl);
-	  }
-	  std::vector<int> ids(ID(campl->Leg(i)->Id()));
-	  size_t id(0);
-	  for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
-          campl->Leg(i)->SetId(id);
-	       if (campl->Leg(i)->K()) {
-		 std::vector<int> ids(ID(campl->Leg(i)->K()));
-		 size_t id(0);
-		 for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
-		      campl->Leg(i)->SetK(id);
-	       }
-	}
-	if (campl->IdNew()) {
-	  std::vector<int> ids(ID(campl->IdNew()));
-	  size_t id(0);
-	  for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
-	  campl->SetIdNew(id);
-	}
-      }     
-      }
-    }
-  }
-
   DEBUG_VAR(m_lastxs);
   return m_lastxs;
 }
@@ -854,4 +808,10 @@ void Single_DipoleTerm::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
   size_t len(m_pinfo.m_addname.length());
   if (len) fname=fname.erase(fname.rfind(m_pinfo.m_addname),len);
   (*(*p_apmap)[nlo_type::rsub])[fname]=this;
+}
+
+void Single_DipoleTerm::SetCaller(PHASIC::Process_Base *const proc)
+{
+  p_caller=proc;
+  p_LO_process->SetCaller(static_cast<Single_DipoleTerm*>(proc)->p_LO_process);
 }

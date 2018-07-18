@@ -62,6 +62,7 @@ namespace AMEGIC {
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     bool Combinable(const size_t &idi,const size_t &idj);
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+    void SetCaller(PHASIC::Process_Base *const proc);
 
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);

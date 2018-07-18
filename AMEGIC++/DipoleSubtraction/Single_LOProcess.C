@@ -1280,7 +1280,6 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
 
   double M2(0.);
   p_int->SetMomenta(labmom);
-  p_scale->SetCaller(this);
   p_scale->CalculateScale(labmom,m_cmode);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];

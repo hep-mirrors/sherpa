@@ -137,11 +137,11 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   m_p=momenta;
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   if (p_ampl) p_ampl->Delete();
-  m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_vproc=p_caller->Info().Has(nlo_type::loop) || p_caller->Info().Has(nlo_type::vsub);
-  m_f=p_caller->Flavours();
-  for (size_t i(0);i<p_caller->NIn();++i) m_f[i]=m_f[i].Bar();
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
+  m_rproc=p_proc->Caller()->Info().Has(nlo_type::real);
+  m_vproc=p_proc->Caller()->Info().Has(nlo_type::loop) || p_proc->Caller()->Info().Has(nlo_type::vsub);
+  m_f=p_proc->Caller()->Flavours();
+  for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_f[i]=m_f[i].Bar();
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
   Cluster_Amplitude *ampl(p_ampl = Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
   for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
@@ -152,7 +152,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   ops[ampl->Legs().size()-(m_nin+m_noutmin)].push_back
     (std::pair<size_t,double>((1<<ampl->Legs().size())-1,0.0));
   if (ampl->Legs().size()==m_nin+m_noutmin) CoreScale(ampl);
-  ampl->SetOrderQCD(p_caller->MaxOrder(0));
+  ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
   while (ampl->Legs().size()>=m_nin+m_noutmin) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     std::set<MCS_Params> &trials(alltrials[ampl->Legs().size()-(m_nin+m_noutmin)]);
@@ -422,7 +422,7 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   ampl->SetMuF2(m_scale[stp::fac]);
   ampl->SetMuR2(m_scale[stp::ren]);
   ampl->SetMuQ2(m_scale[stp::res]);
@@ -441,7 +441,7 @@ void MINLO_Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_caller->Name()<<"' {\n";
+		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

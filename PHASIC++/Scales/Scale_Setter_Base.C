@@ -20,7 +20,7 @@ using namespace ATOOLS;
 
 Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args):
-  p_proc(args.p_proc), p_caller(p_proc),
+  p_proc(args.p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
   m_nin(args.m_nin), m_nout(args.m_nout),
@@ -194,11 +194,11 @@ double Scale_Setter_Base::CalculateScale
 	 not match the flavour config of the corresponding subevent
 	 (the former having real emission flavours, the latter born
 	 flavours). Need to locally fix that here. */
-      p_caller=static_cast<Process_Base*>(sub->p_proc);
-      Flavour_Vector tmp = p_caller->Flavours();
-      p_caller->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
+      p_proc->SetCaller(static_cast<Process_Base*>(sub->p_proc));
+      Flavour_Vector tmp = p_proc->Caller()->Flavours();
+      p_proc->Caller()->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
       Calculate(Vec4D_Vector(m_p),mode);
-      p_caller->SetFlavours(tmp);
+      p_proc->Caller()->SetFlavours(tmp);
       
       if (i+1==p_subs->size()) m_escale=m_scale;
       size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));

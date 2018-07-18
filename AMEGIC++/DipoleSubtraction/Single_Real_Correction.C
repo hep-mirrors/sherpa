@@ -423,13 +423,6 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
 	    m_subevtlist[i]->p_ampl->DeletePrev();
 	  }
 	}
-	for (Cluster_Amplitude *campl(m_subevtlist[i]->p_ampl);campl;campl=campl->Next()) {
-	  for (size_t i(0);i<campl->Legs().size();++i) {
-	    Flavour fl(campl->Leg(i)->Flav());
-	    fl=ReMap(i<m_nin?fl.Bar():fl,campl->Leg(i)->Id());
-	    campl->Leg(i)->SetFlav(i<m_nin?fl.Bar():fl);
-	  }
-	}
       }
     }
     m_subevtlist.Mult(m_sfactor);
@@ -812,4 +805,10 @@ bool Single_Real_Correction::AllowAsSpecInFSPFF(const size_t &k)
     break;
   }
   return false;
+}
+
+void Single_Real_Correction::SetCaller(PHASIC::Process_Base *const proc)
+{
+  p_caller=proc;
+  p_tree_process->SetCaller(static_cast<Single_Real_Correction*>(proc)->p_tree_process);
 }
