@@ -86,6 +86,9 @@ transverse energy cut
 rapidity cut
 @item Eta
 pseudorapidity cut
+@item PZIN
+cut on the z-component of the momentum, acts on initial-state flavours only
+(commonly used in DIS analyses)
 @end table
 
 
@@ -124,6 +127,9 @@ azimuthal separation
 angular separation (build from eta and phi)
 @item DR(y)
 angular separation (build from y and phi)
+@item INEL
+inelasticity, one of the flavours must be in the initial-state (commonly used
+in DIS analyses)
 @end table
 
 
