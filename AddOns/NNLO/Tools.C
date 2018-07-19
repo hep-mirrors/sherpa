@@ -254,6 +254,7 @@ double SHNNLO::Weight
     return sqrt(-1.0);
   }
   if (kt2>ampl->Next()->KT2()) return 1.0;
+  if (mode!=1) return 1.0;
   double Q2[2]={muf2,muf2};
   double asmu((*s_as)(mur2));
   double askt((*s_as)(ampl->Mu2()));
