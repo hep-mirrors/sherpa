@@ -265,6 +265,10 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       s.m_t=a.T0();
       return 1;
     }
+    if (ampl->NLO()&16) {
+      msg_Debugging()<<"UNLOPS veto 2\n";
+      return 0;
+    }
     m_weight*=VetoWeight(NULL,NULL,vwa);
     if (p_vars) p_vars->UpdateOrInitialiseWeights
 		  (&Shower::VetoWeight,*this,vwa,Variations_Type::sudakov);
