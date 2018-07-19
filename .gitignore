@@ -10,6 +10,7 @@ Makefile.in
 /ATOOLS/Org/CXXFLAGS_PACKAGES.H
 /ATOOLS/Org/stamp-h2
 /ATOOLS/Org/stamp-h3
+/ATOOLS/Math/Sobol/21201.gz
 /COPYING
 /Examples/API/Events/test.py
 /Examples/API/ME2-Python/test.py
@@ -23,6 +24,10 @@ Makefile.in
 /Manual/texinfo.tex
 /SHERPA/LundTools/pythia-6.4.18.f
 /SHERPA/Run/Sherpa-config
+/AddOns/Analysis/Scripts/Combine_Analysis
+/AddOns/Analysis/Scripts/Combine_Analysis.o
+/AddOns/Python/Sherpa.py
+/AddOns/Python/Sherpa_wrap.cxx
 /aclocal.m4
 /autom4te.cache/
 /compile
