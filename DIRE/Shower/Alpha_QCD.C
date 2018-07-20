@@ -94,6 +94,19 @@ double Alpha_QCD::Coupling(const Splitting &s) const
   double scl(CplFac(scale)*scale*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
+  return cpl;
+}
+
+double Alpha_QCD::RenCT(const Splitting &s) const
+{
+  if (m_override==0) {
+    if (s.m_clu&3) return 0.0;
+  }
+  double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
+  double scl(CplFac(scale)*scale*murf);
+  if (scl<murf*p_cpl->CutQ2()) return 0.0;
+  double cpl=(*p_cpl)(scl);
+  double ct=0;
   if (!IsEqual(scl,scale)) {
     std::vector<double> ths(p_cpl->Thresholds(scale,scl));
     if (scl>scale) std::reverse(ths.begin(),ths.end());
@@ -101,12 +114,11 @@ double Alpha_QCD::Coupling(const Splitting &s) const
     if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=0.0;
-      if ((s.m_kfac&6)==6) ct+=cpl/(2.0*M_PI)*B0(nf)*L;
-      cpl*=1.0-ct;
+      double L=log(ths[i]/ths[i-1]);
+      if (s.m_kfac&8) ct-=cpl/(2.0*M_PI)*B0(nf)*L;
     }
   }
-  return cpl;
+  return ct;
 }
 
 double Alpha_QCD::CplMax(const Splitting &s) const

@@ -20,7 +20,7 @@ namespace DIM {
       double A1=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B1=-(1.0+z);
       if (s.m_mij2==0.0 && s.m_mi2==0.0 && s.m_mk2==0.0)
-	return A1*(1.0+p_sk->GF()->K(s))+B1;
+	return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
       double Q2(s.m_Q2+s.m_mi2+s.m_mj2+s.m_mk2);
       double muij2(s.m_mij2/Q2), mui2(s.m_mi2/Q2);
       double muk2(s.m_mk2/Q2), vtijk=Lam(1.0,muij2,muk2);
@@ -30,7 +30,7 @@ namespace DIM {
       vijk=sqrt(vijk)/((1.0-mui2-muk2)*(1.0-y));
       double pipj=s.m_Q2*s.m_y/2.0;
       B1=vtijk/vijk*(B1-s.m_mi2/pipj);
-      return A1*(1.0+p_sk->GF()->K(s))+B1;
+      return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
     }
 
     double Integral(const Splitting &s) const

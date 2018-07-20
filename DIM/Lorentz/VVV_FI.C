@@ -23,7 +23,7 @@ namespace DIM {
       double z(s.m_z);
       double A1=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B1=-2.0+z*(1.0-z);
-      return A1*(1.0+p_sk->GF()->K(s))+B1;
+      return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
     }
 
     double AsymmetryFactor(const Splitting &s) const
@@ -32,8 +32,8 @@ namespace DIM {
       double A11=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double A12=2.0*(1.0-z)/(z*(1.0-z)+s.m_t/s.m_Q2);
       double B11=-2.0+z*(1.0-z), B12=B11;
-      return (A11*(1.0+p_sk->GF()->K(s))+B11)/
-	((A11+A12)*(1.0+p_sk->GF()->K(s))+(B11+B12));
+      return (A11*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B11)/
+	((A11+A12)*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+(B11+B12));
     }
 
     double Integral(const Splitting &s) const

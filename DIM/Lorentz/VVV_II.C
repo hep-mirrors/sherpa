@@ -27,7 +27,7 @@ namespace DIM {
       else {
 	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
 	B=-2.0+(1.0-s.m_z)/s.m_z;
-	A*=1.0+p_sk->GF()->K(s);
+	A*=1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s);
       }
       return A+B;
     }
@@ -39,12 +39,12 @@ namespace DIM {
       else {
 	double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
 	double B1=-2.0+(1.0-s.m_z)/s.m_z;
-	V=A1*(1.0+p_sk->GF()->K(s))+B1;
+	V=A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
       }
       double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
       double B11=-2.0+(1.0-s.m_z)/s.m_z;
       double B12=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
-      return V/(A1*(1.0+p_sk->GF()->K(s))+(B11+B12));
+      return V/(A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+(B11+B12));
     }
 
     double Integral(const Splitting &s) const

@@ -23,10 +23,10 @@ namespace DIM {
       double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
       double B1=-(1.0+s.m_z);
       if (s.m_mij2==0.0 && s.m_mi2==0.0)
-	return A1*(1.0+p_sk->GF()->K(s))+B1;
+	return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
       double pipj=s.m_Q2*(1.0-s.m_y)/s.m_y/2.0;
       B1=B1-s.m_mi2/pipj;
-      return A1*(1.0+p_sk->GF()->K(s))+B1;
+      return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
     }
 
     double Integral(const Splitting &s) const

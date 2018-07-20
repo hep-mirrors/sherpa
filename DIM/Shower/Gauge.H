@@ -36,6 +36,7 @@ namespace DIM {
     virtual double Charge(const Splitting &s) const = 0;
 
     virtual double Coupling(const Splitting &s) const = 0;
+    virtual double RenCT(const Splitting &s) const = 0;
     virtual double CplMax(const Splitting &s) const = 0;
 
     virtual bool GeneratePoint(Splitting &s) const = 0;

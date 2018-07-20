@@ -34,6 +34,7 @@ namespace DIRE {
     Alpha_QCD(const Kernel_Key &key);
 
     double Coupling(const Splitting &s) const;
+    double RenCT(const Splitting &s) const;
     double CplMax(const Splitting &s) const;
 
     double K(const Splitting &s) const;
