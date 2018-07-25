@@ -5,6 +5,7 @@
 #include "REMNANTS/Main/No_Remnant.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -14,22 +15,25 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
-Remnant_Handler::
-Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
-		const std::string & path,const std::string & file) :
+Remnant_Handler::Remnant_Handler(Default_Reader *const defaultreader,
+				 PDF::ISR_Handler * isr,
+				 BEAM::Beam_Spectra_Handler * beam) :
   p_softblob(0), m_check(true), m_output(true)
 {
-  InitializeRemnants(isr,beam);
+  InitializeRemnants(defaultreader,isr,beam);
   DefineRemnantStrategy();
-  InitializeKinematicsAndColours(path,file);
+  InitializeKinematicsAndColours();
 }
 
 Remnant_Handler::~Remnant_Handler() {
   for (size_t i(0);i<2;++i) { if (p_remnants[i]!=NULL) delete p_remnants[i]; }
 }
 
-void Remnant_Handler::
-InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) {
+void Remnant_Handler::InitializeRemnants(Default_Reader *const defaultreader,
+					 PDF::ISR_Handler * isr,
+					 BEAM::Beam_Spectra_Handler * beam) {
+  repars = new Remnant_Parameters();
+  repars->Init(defaultreader);
   for (size_t i=0;i<2;++i) {
     p_remnants[i] = NULL;
     Flavour flav  = isr->Flav(i);
@@ -92,8 +96,8 @@ void Remnant_Handler::DefineRemnantStrategy() {
 }
 
 void Remnant_Handler::
-InitializeKinematicsAndColours(const std::string & path,const std::string & file) {
-  m_kinematics.Initialize(this,path,file);
+InitializeKinematicsAndColours() {
+  m_kinematics.Initialize(this);
   m_colours.Initialize(this);
 }
 
@@ -167,7 +171,7 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List *const bloblist) {
   if (!(m_type==strat::simple || m_type==strat::ll)) {
     p_softblob = m_kinematics.MakeSoftBlob();
     if (m_type==strat::DIS1 || m_type==strat::DIS2) bloblist->push_back(p_softblob);
-    else bloblist->push_back(p_softblob);
+    else bloblist->push_front(p_softblob);
   }
   // Look for shower blobs that need beams and unset the flag
   for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
@@ -205,6 +209,13 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List * bloblist) {
 		 <<(*p_softblob)<<"\n";
   }
   return ok;
+}
+
+void Remnant_Handler::SetImpactParameter(const double & b) {
+  double phi = 2.*M_PI*ran->Get(), cosphi = cos(phi), sinphi = sin(phi); 
+  for (size_t i=0;i<2;i++) {
+    p_remnants[i]->SetPosition((i==0?1.:-1.) * b/2. * Vec4D(0.,cosphi,sinphi,0.));      
+  }
 }
 
 bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {

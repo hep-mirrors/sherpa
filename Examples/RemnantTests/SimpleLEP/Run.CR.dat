@@ -1,0 +1,32 @@
+(run){
+% general settings
+  EVENTS 10;
+
+% Has to stay until soft photons are fixed
+  YFS_MODE = 0
+% model parameters
+  ALPHAS(MZ) 0.1188;  
+  ORDER_ALPHAS 2;
+  CSS_FS_PT2MIN = 1.00
+
+% collider setup
+  BEAM_1  11; BEAM_ENERGY_1 45.6;
+  BEAM_2 -11; BEAM_ENERGY_2 45.6;
+  PDF_LIBRARY None
+  
+  COLOUR_RECONNECTIONS On
+  ANALYSIS Rivet
+  ANALYSIS_OUTPUT randomCR
+}(run)
+
+(processes){
+  Process 11 -11 -> 93 93
+  Order (*,2);
+  End process;
+}(processes)
+
+(analysis){
+  BEGIN_RIVET {
+  -a JADE_OPAL_2000_S4300807 OPAL_1994_S2927284 OPAL_2004_S6132243 DELPHI_1996_S3430090 DELPHI_2011_I890503
+  } END_RIVET
+}(analysis)

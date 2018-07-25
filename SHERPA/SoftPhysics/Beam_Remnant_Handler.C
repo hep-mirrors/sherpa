@@ -99,7 +99,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
   blob->SetBeam(beam);
   blob->SetId();
   blob->SetStatus(blob_status::needs_beams &
-		  blob_status::needs_softUE &
+		  blob_status::needs_reconnections &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&

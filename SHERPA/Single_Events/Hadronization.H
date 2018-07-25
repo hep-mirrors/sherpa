@@ -2,14 +2,31 @@
 #define SHERPA_Single_Events_Hadronization_H
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 namespace SHERPA {
   class Hadronization : public Event_Phase_Handler {
   private :
-    Fragmentation_Handler * p_fragmentationhandler;
+    Colour_Reconnection_Handler * p_reconnectionhandler;
+    Fragmentation_Handler       * p_fragmentationhandler;
+
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
+    void HarvestParticles(ATOOLS::Blob_List *,
+			  std::vector<SP(ATOOLS::Part_List)> * const plists);
+    void FillParticleList(ATOOLS::Blob * blob,
+			  SP(ATOOLS::Part_List) & plist,
+			  std::vector<ATOOLS::Particle*> hadrons);
+    void DealWithHadrons(ATOOLS::Blob_List * bloblist, 
+			 std::vector<ATOOLS::Particle*> hadrons);
+    bool DecomposeIntoSinglets(SP(ATOOLS::Part_List) plist,
+			       std::vector<SP(ATOOLS::Part_List)> & partlists);
+    ATOOLS::Part_List * NextSinglet(SP(ATOOLS::Part_List) plist,bool triplet);
+    ATOOLS::Particle  * FindNext(SP(ATOOLS::Part_List) plist,const size_t col);
+    ATOOLS::Blob *      MakeBlob(std::vector<SP(ATOOLS::Part_List)> & partlists);
   public :
-    Hadronization(Fragmentation_Handler *);
+    Hadronization(Colour_Reconnection_Handler *,
+		  Fragmentation_Handler *);
     ~Hadronization();
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
     void                       CleanUp(const size_t & mode=0);

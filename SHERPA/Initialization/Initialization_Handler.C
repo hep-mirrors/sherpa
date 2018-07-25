@@ -3,6 +3,7 @@
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
@@ -106,6 +107,7 @@ void Initialization_Handler::SetFileNames()
   m_midat            = p_dataread->Get<string>("MI_DATA_FILE",fname+"|(mi){|}(mi)");
   m_showerdat        = p_dataread->Get<string>("SHOWER_DATA_FILE",fname+"|(shower){|}(shower)");
   m_beamremnantdat   = p_dataread->Get<string>("BEAMREMNANT_DATA_FILE",fname+"|(beam){|}(beam)");
+  m_colourreconndat  = p_dataread->Get<string>("COLOUR_RECONNECTIONS_DATA_FILE",fname+"|(reconnections){|}(reconnections)");
   m_fragmentationdat = p_dataread->Get<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
   m_softcollisiondat = p_dataread->Get<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
   m_hadrondecaysdat  = p_dataread->Get<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
@@ -326,6 +328,7 @@ void Initialization_Handler::PrepareTerminate()
   Copy(m_path+StripSectionTags(m_midat),path+StripSectionTags(m_midat));
   Copy(m_path+StripSectionTags(m_showerdat),path+StripSectionTags(m_showerdat));
   Copy(m_path+StripSectionTags(m_beamremnantdat),path+StripSectionTags(m_beamremnantdat));
+  Copy(m_path+StripSectionTags(m_colourreconndat),path+StripSectionTags(m_colourreconndat));
   Copy(m_path+StripSectionTags(m_fragmentationdat),path+StripSectionTags(m_fragmentationdat));
   Copy(m_path+StripSectionTags(m_hadrondecaysdat),path+StripSectionTags(m_hadrondecaysdat));
   Copy(m_path+StripSectionTags(m_analysisdat),path+StripSectionTags(m_analysisdat));
@@ -410,8 +413,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   PHASIC::Phase_Space_Handler::GetInfo();
   if (rpa->gen.NumberOfEvents()>0) {
-  okay = okay && InitializeTheFragmentation();
-  okay = okay && InitializeTheSoftCollisions();
+    okay = okay && InitializeTheColourReconnections();
+    okay = okay && InitializeTheFragmentation();
+    okay = okay && InitializeTheSoftCollisions();
   }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheMatrixElements();
@@ -698,8 +702,7 @@ bool Initialization_Handler::InitializeThePDFs()
 
 bool Initialization_Handler::InitializeTheRemnants() {
   isr::id id=isr::hard_process;
-  p_remnants = new Remnant_Handler(m_isrhandlers[id],p_beamspectra,
-				   m_path,m_beamremnantdat);
+  p_remnants = new Remnant_Handler(p_dataread,m_isrhandlers[id],p_beamspectra);
   return true;
 }
 
@@ -778,6 +781,14 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 			     p_beamspectra,p_remnants,
 			     p_softcollisions);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
+  return 1;
+}
+
+bool Initialization_Handler::InitializeTheColourReconnections() 
+{
+  if (p_colourreconnections) { delete p_colourreconnections; p_colourreconnections = NULL; }
+  p_colourreconnections = new Colour_Reconnection_Handler(m_path,m_colourreconndat);
+  msg_Info()<<"Initialized the ColourReconnection_Handler."<<endl;
   return 1;
 }
 

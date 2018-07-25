@@ -36,12 +36,7 @@ MI_Handler::~MI_Handler()
 void MI_Handler::InitAmisic(string & path,Default_Reader *const dr,
 			    MODEL::Model_Base *model)
 {
-  path       += dr->GetValue<string>("INPUT_PATH","");
-  string file = dr->GetValue<string>("INPUT_FILE","");
   p_amisic    = new AMISIC::Amisic();
-  p_amisic->SetInputPath(path);
-  p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-  p_amisic->SetInputFile(file);
   if (!p_amisic->Initialize(dr,model,p_isr)) {
     msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
 	       <<"Continue without.\n";
@@ -61,8 +56,14 @@ bool MI_Handler::InitialiseMPIs(const double & scale)
       m_stop = true;
       return false;
     }
+    p_remnants->SetImpactParameter(p_amisic->B());
   }
   return true;
+}
+
+const Vec4D MI_Handler::SelectPositionForScatter() const {
+  if (m_type==Amisic) return p_amisic->SelectPositionForScatter(p_amisic->B());
+  return Vec4D(0.,0.,0.,0.);
 }
 
 void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
@@ -117,6 +118,11 @@ const double MI_Handler::ScaleMax() const
 {
   if (m_type==Amisic) return p_amisic->ScaleMax();
   return -1.;
+}
+
+const double MI_Handler::ImpactParameter() const {
+  if (p_amisic) return p_amisic->B();
+  return 0.;
 }
 
 void MI_Handler::SetMassMode(const int & massmode) {

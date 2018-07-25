@@ -57,11 +57,13 @@ namespace SHERPA {
     
     const double ScaleMin() const;
     const double ScaleMax() const;
+    const double ImpactParameter() const;
+    const ATOOLS::Vec4D SelectPositionForScatter() const;
     
-    inline TypeID      Type() const { return m_type; }
-    inline std::string Name() const { return m_name; }
-    inline bool        Done() const { return m_stop; }
-    inline double      YCut() const { return m_ycut; }
+    inline const TypeID      & Type() const { return m_type; }
+    inline const std::string & Name() const { return m_name; }
+    inline const bool        & Done() const { return m_stop; }
+    inline const double      & YCut() const { return m_ycut; }
     
     inline PDF::ISR_Handler          * ISRHandler() const { return p_isr; }
     inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }

@@ -161,6 +161,10 @@ bool Multiple_Interactions::InitNewEvent() {
   m_ptmax=ptinfo->Get<double>();
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     p_mihandler->InitialiseMPIs(4.*m_ptmax);
+    p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
+    Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
+    if (showerblob) showerblob->SetPosition(p_lastblob->Position());
+    msg_Out()<<METHOD<<" set x = "<<p_lastblob->Position()<<".\n";
     m_newevent = false;
     return true;
   }

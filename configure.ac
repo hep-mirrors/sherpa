@@ -206,6 +206,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           REMNANTS/Main/Makefile \
           REMNANTS/Tools/Makefile \
 	  REMNANTS/Makefile \
+          RECONNECTIONS/Main/Makefile \
+	  RECONNECTIONS/Makefile \
  	  SHRiMPS/Makefile \
 	  SHRiMPS/Main/Makefile \
 	  SHRiMPS/Event_Generation/Makefile \

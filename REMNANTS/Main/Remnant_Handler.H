@@ -40,15 +40,16 @@ namespace REMNANTS {
 
     bool m_check, m_output;
     
-    void InitializeRemnants(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    void InitializeRemnants(ATOOLS::Default_Reader *const defaultreader,
+			    PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
     void DefineRemnantStrategy();
-    void InitializeKinematicsAndColours(const std::string & path,const std::string & file);
+    void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
     ATOOLS::Blob * InitBeamBlob(const int beam);
  public:
-    Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
-		    const std::string & path,const std::string & file);
+    Remnant_Handler(ATOOLS::Default_Reader *const defaultreader,
+		    PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
     ~Remnant_Handler();
     
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
@@ -60,7 +61,8 @@ namespace REMNANTS {
 					     ATOOLS::Particle_List *const=NULL);
 
 
-
+    void SetImpactParameter(const double & b);
+    
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:NULL;
     }

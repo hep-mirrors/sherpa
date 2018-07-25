@@ -1,8 +1,5 @@
 #include "REMNANTS/Tools/Primordial_KPerp.H"
-#include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace REMNANTS;
@@ -10,9 +7,6 @@ using namespace ATOOLS;
 using namespace std;
 
 Primordial_KPerp::Primordial_KPerp() :
-  m_defform("gauss_limited"),
-  m_defmean(0.0), m_defsigma(1.0), m_refE(7000.), m_scaleexpo(0.55),
-  m_defQ2(0.77), m_defktmax(5.), m_defeta(5.),
   m_analysis(false)
 { }
     
@@ -20,48 +14,17 @@ Primordial_KPerp::~Primordial_KPerp() {
   if (m_analysis) FinishAnalysis();
 }
 
-void Primordial_KPerp::Initialize(const string path,const string file) {
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(path);
-  dataread.SetInputFile(file);
-  // Setting the mean and width of the Gaussian - we could discuss
-  // more functional forms of the distribution here.  Default for leptons
-  // is zero transverse momentum, only hadrons have a kT distribution of
-  // remnants - again, this may have to change or become more
-  // sophisticated for photons with hadronic structure.
+void Primordial_KPerp::Initialize() {
   for (size_t beam=0;beam<2;beam++) {
-    string formtag   = "K_PERP_FORM_"+to_string(beam);
-    string meantag   = "K_PERP_MEAN_"+to_string(beam);
-    string sigmatag  = "K_PERP_SIGMA_"+to_string(beam);
-    string Q2tag     = "K_PERP_Q2_"+to_string(beam);
-    string refEtag   = "K_PERP_REFE_"+to_string(beam);
-    string expotag   = "K_PERP_SCALE_EXPO_"+to_string(beam);
-    string ktmaxtag  = "K_PERP_MAX_"+to_string(beam);
-    string ktexpotag = "K_PERP_CUT_EXPO_"+to_string(beam);
-    double refE      = dataread.GetValue<double>(refEtag,m_refE);
-    double expo      = dataread.GetValue<double>(expotag,m_scaleexpo);
-    double mean      = dataread.GetValue<double>(meantag,m_defmean);
-    double sigma     = dataread.GetValue<double>(sigmatag,m_defsigma);
-    double Q2        = dataread.GetValue<double>(Q2tag,m_defQ2);
-    m_form[beam]     = SelectForm(dataread.GetValue<string>(formtag,m_defform));
-    m_mean[beam]     = mean;
-    m_sigma[beam]    = sigma * pow((rpa->gen.Ecms()/refE),expo);
-    m_Q2[beam]       = Q2 * pow((rpa->gen.Ecms()/refE),expo);
-    m_ktmax[beam]    = dataread.GetValue<double>(ktmaxtag,m_defktmax);
-    m_eta[beam]      = dataread.GetValue<double>(ktexpotag,m_defeta);
+    string beamtag   = to_string(beam);
+    m_form[beam]     = repars->GetKTForm(beam);
+    m_mean[beam]     = (*repars)("kt_mean_"+beamtag);
+    m_sigma[beam]    = (*repars)("kt_sigma_"+beamtag);
+    m_Q2[beam]       = (*repars)("Q2_"+beamtag);
+    m_ktmax[beam]    = (*repars)("kt_max_"+beamtag);
+    m_eta[beam]      = (*repars)("eta_"+beamtag);
   }
   if (m_analysis) InitAnalysis();
-}
-
-prim_kperp_form::code Primordial_KPerp::SelectForm(const std::string & form) {
-  prim_kperp_form::code pkf = prim_kperp_form::undefined;
-  if      (form=="gauss")          pkf = prim_kperp_form::gauss;
-  else if (form=="gauss_limited")  pkf = prim_kperp_form::gauss_limited;
-  else if (form=="dipole")         pkf = prim_kperp_form::dipole;
-  else if (form=="dipole_limited") pkf = prim_kperp_form::dipole_limited;
-  return pkf;
 }
 
 bool Primordial_KPerp::

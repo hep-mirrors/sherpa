@@ -86,7 +86,7 @@ void Amisic::SetMaxScale(const double & scale) {
 void Amisic::SetB(const double & b) {
   // Select b and set the enhancement factor
   m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
-  m_bfac = Max(0.,m_impact.Enhancement());
+  m_bfac = Max(0.,m_impact(m_b));
 }
   
 bool Amisic::VetoEvent(const double & scale) {
@@ -102,12 +102,13 @@ const double Amisic::ScaleMax() const {
   return m_pt2;
 }
 
-
 Blob * Amisic::GenerateScatter()
 {
   Blob * blob = m_singlecollision.NextScatter(m_bfac);
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
+    blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
+    blob->SetTypeSpec("AMISIC++ 1.1");
     if (m_ana) Analyse(false);
     return blob;
   }

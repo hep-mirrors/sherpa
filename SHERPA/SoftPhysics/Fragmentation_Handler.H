@@ -28,8 +28,6 @@ namespace SHERPA {
 #ifdef USING__PYTHIA
     Lund_Interface * p_lund;
 #endif
-
-    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
     void Shrink(ATOOLS::Blob_List *);
     void PrepareTerminate(); 
   public:
@@ -40,8 +38,7 @@ namespace SHERPA {
     PerformFragmentation(ATOOLS::Blob_List *,
 			 ATOOLS::Particle_List * = NULL);
     
-    const std::string & FragmentationModel() const 
-    { return m_fragmentationmodel; }
+    const std::string & FragmentationModel() const { return m_fragmentationmodel; }
 #ifdef USING__PYTHIA
     inline Lund_Interface * GetLundInterface() const { return p_lund; }
 #endif

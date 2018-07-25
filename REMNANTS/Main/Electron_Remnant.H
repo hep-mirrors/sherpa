@@ -13,7 +13,7 @@ namespace REMNANTS {
   public:
     Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int _m_beam);
 
-    bool FillBlob(ParticleMomMap *ktmap=NULL,const bool & copy=true);
+    bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true);
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);
   };
 }

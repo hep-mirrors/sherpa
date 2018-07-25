@@ -9,10 +9,38 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
+Form_Factor::Form_Factor() {
+  m_overlapform = repars->GetBTForm();
+  if (m_overlapform==overlap_form::Single_Gaussian) {
+    m_fraction1 = 1.;
+    m_radius1   = (*repars)("Matter_Radius1");
+  }
+  if (m_overlapform==overlap_form::Double_Gaussian) {
+    m_fraction1 = (*repars)("Matter_Fraction1");
+    m_radius1   = (*repars)("Matter_Radius1");
+    m_radius2   = (*repars)("Matter_Radius2");
+    m_radius3   = sqrt(sqr(m_radius1)+sqr(m_radius2));
+  }
+}
+
+Vec4D Form_Factor::operator()() {
+  double radius = m_radius1;
+  if (m_overlapform==overlap_form::Double_Gaussian) {
+    double rand = ran->Get()-sqr(m_fraction1);
+    if (rand>=0.) {
+      if ((rand-=sqr(1-m_fraction1))<=0.) radius = m_radius2;
+      else                                radius = m_radius3;
+    }
+  }
+  double x1,x2;
+  ran->Gaussian(x1,x2);
+  return Vec4D(0.,radius*x1,radius*x2,0.);
+}
+
 Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int beam):
   Remnant_Base(rtp::hadron,beam),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())), m_beamflav(pdf->Bunch()),
-  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL),
+  p_valence(NULL), p_remnant(NULL), p_recoiler(NULL), m_ff(Form_Factor()), 
   m_alpha(0.), m_gamma(1.), m_beta(-1.5),  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
 {
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -77,6 +105,8 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   Particle * part = new Particle(-1,flav,Vec4D(0.,0.,0.,0.),'B');
   part->SetNumber();
   part->SetBeam(m_beam);
+  part->SetPosition(m_position+m_ff());
+  msg_Out()<<METHOD<<" for "<<part->Number()<<" --> xpos = "<<m_position<<" + ff = "<<part->XProd()<<"\n";
   return part;
 }
 

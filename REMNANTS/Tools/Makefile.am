@@ -6,9 +6,11 @@ include ../../git.make
 libRemnantsTools_la_SOURCES =	\
 			Kinematics_Generator.C \
 			Colour_Generator.C \
-			Primordial_KPerp.C
+			Primordial_KPerp.C \
+			Remnant_Parameters.C
 
 localinc_HEADERS          =	\
 			Kinematics_Generator.H \
 			Colour_Generator.H \
-			Primordial_KPerp.H
+			Primordial_KPerp.H \
+			Remnant_Parameters.H

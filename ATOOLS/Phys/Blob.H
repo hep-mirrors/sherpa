@@ -46,7 +46,7 @@ namespace ATOOLS {
       needs_showers       = 2,
       needs_harddecays    = 4,
       needs_beams         = 8,
-      needs_softUE        = 16,
+      needs_reconnections = 16,
       needs_hadronization = 32,
       needs_hadrondecays  = 64,
       needs_extraQED      = 128,

@@ -87,7 +87,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
             MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
 	    break;
 	  case (int(btp::Hadron_Decay))   : 
-	    tag = string("HadronDecays"); 
+	    tag = string("HadronDecays");
             MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
 	    break;
 	  default:
@@ -236,7 +236,10 @@ bool Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus(blob_status::needs_beams|blob_status::needs_hadronization);
+  noshowerblob->SetStatus(blob_status::needs_beams | blob_status::needs_hadronization);
+  if (blob->Type()!=btp::Hadron_Decay) {
+    noshowerblob->AddStatus(blob_status::needs_reconnections);
+  }
   noshowerblob->SetId();
   noshowerblob->SetTypeSpec("No_Shower");
   bloblist->push_back(noshowerblob);
@@ -248,15 +251,30 @@ bool Jet_Evolution::
 AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
 			    Perturbative_Interface * interface)
 {
-  if (blob->NInP()==1 && 
-      blob->Type()!=btp::Hadron_Decay) blob->InParticle(0)->SetInfo('h');
+  if (blob->Type()!=btp::Hadron_Decay && blob->NInP()==1)
+    blob->InParticle(0)->SetInfo('h');
   interface->FillBlobs(bloblist);
   blob->UnsetStatus(blob_status::needs_showers);
-  Blob * showerblob = (!interface->Shower()->On()?
-		       CreateMockShowerBlobs(blob,bloblist):
-		       bloblist->FindLast(btp::Shower));
-  if (showerblob!=NULL) return p_remnants->ExtractShowerInitiators(showerblob);
-  return true;
+  Blob * showerblob;
+  if (!interface->Shower()->On()) {
+    showerblob = CreateMockShowerBlobs(blob,bloblist);
+  }
+  else {
+    showerblob = bloblist->FindLast(btp::Shower);
+    if (showerblob!=NULL) {
+      showerblob->SetStatus(blob_status::needs_hadronization |
+			    blob_status::needs_beams);
+      if (blob->Type()!=btp::Hadron_Decay) {
+	showerblob->AddStatus(blob_status::needs_reconnections);
+	//msg_Out()<<"Regular blob: include reconnections!\n";
+      }
+      //else {
+      //	msg_Out()<<"Hadron decay blob: no reconnections!\n";
+      //}
+    }
+    else return true;
+  }
+  return p_remnants->ExtractShowerInitiators(showerblob);
 }
 
 ATOOLS::Blob * Jet_Evolution::
@@ -282,7 +300,11 @@ CreateMockShowerBlobs(Blob * const meblob,Blob_List * const bloblist) {
   for (int i=0;i<meblob->NOutP();i++) {
     Blob * FSRblob = new Blob();
     FSRblob->SetType(btp::Shower);
-    FSRblob->SetStatus(blob_status::needs_hadronization);
+    FSRblob->SetStatus(blob_status::needs_hadronization |
+		       blob_status::needs_beams);
+    if (meblob->Type()!=btp::Hadron_Decay) {
+      FSRblob->AddStatus(blob_status::needs_reconnections);
+    }
     Particle * part = new Particle(*meblob->OutParticle(i));
     if (meblob->OutParticle(i)->DecayBlob()) {
       Blob * dec  = meblob->OutParticle(i)->DecayBlob();

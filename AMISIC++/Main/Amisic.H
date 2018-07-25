@@ -89,6 +89,13 @@ namespace AMISIC {
     inline double Mass(const ATOOLS::Flavour &fl) const {
       return p_processes->Mass(fl);
     }
+    inline const double & B() const { return m_b; }
+    inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
+      return m_impact.SelectPositionForScatter(b);
+    }
+    inline ATOOLS::Vec4D  SelectRelativePositionForParton() const {
+      return m_impact.SelectRelativePositionForParton();
+    }
     
     void Reset();
     void CleanUp();
