@@ -229,7 +229,13 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     msg_Debugging()<<"NLO "<<ampl->NLO()<<" path, skip shower\n";
     return 1;
   }
-  if (nem>=m_maxem) return 1;
+  if (nem>=m_maxem) {
+    if (ampl->NLO()&32) {
+      msg_Debugging()<<"UNLOPS sign flip\n";
+      a.Reduce();
+    }
+    return 1;
+  }
   for (Splitting s(GeneratePoint(a,a.T(),nem));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t,nem)) {
