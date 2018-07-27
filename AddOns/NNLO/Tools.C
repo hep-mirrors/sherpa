@@ -324,7 +324,7 @@ double SHNNLO::NLODiffWeight
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl==NULL || ampl->Next()==NULL) return wgt;
   msg_Debugging()<<*ampl<<"\n";
-  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,0);
+  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,1);
   msg_Debugging()<<"K = "<<K<<"\n";
   if (IsBad(K)) {
     ampl->Next()->SetNLO(128);
