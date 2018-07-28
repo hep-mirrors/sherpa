@@ -1,5 +1,7 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "PDF/Main/PDF_Base.H"
 
 namespace PHASIC {
@@ -9,6 +11,8 @@ namespace PHASIC {
 
     double m_k0sq[2];
     int    m_fomode;
+
+    PHASIC::Multi_Channel *p_fsmc;
 
     double F1q(double x, int hel_q);
     double F2q(double x, int hel_q);
@@ -86,7 +90,7 @@ using namespace ATOOLS;
 
 DIS_KFactor::DIS_KFactor
 (const KFactor_Setter_Arguments &args):
-  KFactor_Setter_Base(args)
+  KFactor_Setter_Base(args), p_fsmc(NULL)
 {
   Data_Reader read(" ",";","#","=");
   if (s_pdf==NULL) {
@@ -102,6 +106,15 @@ DIS_KFactor::DIS_KFactor
   int beam1(p_proc->Flavours()[0].Kfcode());
   if(abs(beam1)!=11) THROW(fatal_error, "Electron beam must be first beam");
   m_flpre=(beam1==11)?1.0:-1.0;
+  if (p_proc->Integrator()->PSHandler()!=NULL) {
+    p_fsmc=p_proc->Integrator()->PSHandler()->FSRIntegrator();
+    p_fsmc->AddERan("zeta_1");
+    p_fsmc->AddERan("zeta_2");
+    p_fsmc->AddERan("zeta_1'");
+    p_fsmc->AddERan("zeta_2'");
+    p_fsmc->AddERan("zeta_1''");
+    p_fsmc->AddERan("zeta_2''");
+  }
 }
 
 double DIS_KFactor::F1q(double x, int hel){
@@ -127,11 +140,17 @@ double DISNNLO_KFactor::KFactor(const int mode)
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name());
   const int lmode(mode&~2);
+  if (p_fsmc) {
+    s_z[0]=p_fsmc->ERan("zeta_1'");
+    s_z[1]=p_fsmc->ERan("zeta_2'");
+    s_z[2]=p_fsmc->ERan("zeta_1''");
+    s_z[3]=p_fsmc->ERan("zeta_2''");
+  }
   m_weight=KFactor(NULL,NULL,lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
   if (p_proc->VariationWeights()) {
     Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
     vw.UpdateOrInitialiseWeights(&DISNNLO_KFactor::KFactor,*this,lmode);
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
@@ -177,7 +196,7 @@ double DISNNLO_KFactor::KFactor
     double weight(1.0);
     weight=NNLODiffWeight(p_proc,weight,mur2,muf2,m_k0sq,
 			  mode,m_fomode,1,weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
   }
   return DIS_KFactor::KFactor(params,weights,mode,1);
@@ -187,10 +206,16 @@ double DISNLO_KFactor::KFactor(const int mode)
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name());
   const int lmode(mode&~2);
+  if (p_fsmc) {
+    s_z[0]=p_fsmc->ERan("zeta_1'");
+    s_z[1]=p_fsmc->ERan("zeta_2'");
+    s_z[2]=p_fsmc->ERan("zeta_1''");
+    s_z[3]=p_fsmc->ERan("zeta_2''");
+  }
   m_weight=KFactor(NULL,NULL,lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
   if (p_proc->VariationWeights()) {
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
     p_proc->VariationWeights()->UpdateOrInitialiseWeights
       (&DISNLO_KFactor::KFactor,*this,lmode);
@@ -232,7 +257,7 @@ double DISNLO_KFactor::KFactor
     double weight(1.0);
     weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,1,
 			 weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
   }
   return DIS_KFactor::KFactor(params,weights,mode,0);
@@ -269,7 +294,7 @@ double DIS_KFactor::KFactor
   Cluster_Amplitude *ampl(NULL);
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl) ampl->SetNLO(4);
-  double z(ran->Get());
+  double z(p_fsmc->ERan("zeta_1"));
   double anti=(p_proc->Flavours()[0]).IsAnti()?1.0:-1.0;
   anti*=(p_proc->Flavours()[1]).IsAnti()?1.0:-1.0;
   double asmur((*s_as)(sqr(mur)));
@@ -298,7 +323,7 @@ double DIS_KFactor::KFactor
   }
   double weight=nom/denom;
   if (IsBad(weight)) weight=1.0;
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+  if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
   return weights?1.0:weight;
 }
 
