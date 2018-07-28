@@ -69,7 +69,7 @@ void Shower::Init(MODEL::Model_Base *const model,
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   m_rcf=read->Get<double>("CSS_RECALC_FACTOR",2.0);
   m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",0);
+  m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
   m_pdfmin[0]=read->Get<double>("CSS_PDF_MIN",1.0e-4);
   m_pdfmin[1]=read->Get<double>("CSS_PDF_MIN_X",1.0e-2);
   m_maxem=read->Get<unsigned int>("NLO_CSS_MAXEM",1);
