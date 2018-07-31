@@ -359,8 +359,20 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     msg_Debugging()<<"Skip EW clustering\n";
     return true;
   }
-  if (p_actual->NME()+nem>m_maxpart) return true;
-  if (nem>=maxem) return true;
+  if (p_actual->NME()+nem>m_maxpart) {
+    if (p_actual->NLO()&32) {
+      p_actual->Reduce();
+      p_actual->SetNLO(0);
+    }
+    return true;
+  }
+  if (nem>=maxem) {
+    if (p_actual->NLO()&32) {
+      p_actual->Reduce();
+      p_actual->SetNLO(0);
+    }
+    return true;
+  }
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
       if ((*it)->GetType()==pst::IS) SetXBj(*it);

@@ -85,6 +85,7 @@ void Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
+  int types(read->Get<int>("CSS_KERNEL_TYPE",15));
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator
@@ -103,8 +104,9 @@ void Shower::Init(MODEL::Model_Base *const model,
       {
 	msg_Indent();
 	for (int type(0);type<4;++type)
-	  for (int mode(0);mode<2;++mode)
-	    AddKernel(new Kernel(this,Kernel_Key(v,mode,type,read)));
+	  if (types&(1<<type))
+	    for (int mode(0);mode<2;++mode)
+	      AddKernel(new Kernel(this,Kernel_Key(v,mode,type,read)));
       }
       msg_IODebugging()<<"}\n";
     }
