@@ -238,7 +238,7 @@ bool Scale_Setter::CheckOrdering
   if (m_rproc && ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
-	(ampl->OrderQCD()==0 ||
+	(ampl->OrderQCD()==(m_nproc&&!(m_sproc||m_rproc)?1:0) ||
 	 (ampl->OrderQCD()>1 && ampl->Legs().size()==3))) {
       msg_Debugging()<<"No ordering veto: "<<sqrt(ampl->KT2())
 		     <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
