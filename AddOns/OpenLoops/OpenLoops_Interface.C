@@ -25,7 +25,7 @@ extern "C" {
 
   void ol_getparameter_double(const char* key, double* val);
   void ol_getparameter_int(const char* key, int* val);
-  void ol_setparameter_double(const char* key, double* val);
+  void ol_setparameter_double(const char* key, double val);
   void ol_setparameter_int(const char* key, int val);
   void ol_setparameter_string(const char* key, const char* val);
 
@@ -290,7 +290,7 @@ namespace OpenLoops {
   }
 
   void OpenLoops_Interface::SetParameter(const std::string & key, double value) {
-    ol_setparameter_double(key.c_str(), &value);
+    ol_setparameter_double(key.c_str(), value);
     HandleParameterStatus(ol_get_error(), key, value);
   }
   void OpenLoops_Interface::SetParameter(const std::string & key, int value) {
