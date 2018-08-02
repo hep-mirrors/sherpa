@@ -28,9 +28,9 @@ extern "C" {
   void ol_set_init_error_fatal(int flag);
   int  ol_get_error();
 
-  void ol_getparameter_double(const char* key, double val);
+  void ol_getparameter_double(const char* key, double* val);
   void ol_getparameter_int(const char* key, int* val);
-  void ol_setparameter_double(const char* key, double* val);
+  void ol_setparameter_double(const char* key, double val);
   void ol_setparameter_int(const char* key, int val);
   void ol_setparameter_string(const char* key, const char* val);
 
@@ -391,7 +391,7 @@ void OpenLoops_Interface::PopulateColorCorrelatorMatrix(int id, const Vec4D_Vect
 double OpenLoops_Interface::GetDoubleParameter(const std::string & key)
 {
   double value;
-  ol_getparameter_double(key.c_str(), value);
+  ol_getparameter_double(key.c_str(), &value);
   return value;
 }
 int OpenLoops_Interface::GetIntParameter(const std::string & key)
@@ -419,7 +419,7 @@ void HandleParameterStatus(int err, const std::string & key, ValueType value)
 }
 void OpenLoops_Interface::SetParameter(const std::string & key, double value)
 {
-  ol_setparameter_double(key.c_str(), &value);
+  ol_setparameter_double(key.c_str(), value);
   HandleParameterStatus(ol_get_error(), key, value);
 }
 void OpenLoops_Interface::SetParameter(const std::string & key, int value)
