@@ -22,7 +22,7 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double z(s.m_z);
-      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
+      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/(s.m_Q2/s.m_y));
       double B=-(1.0+z);
       if (p_sk->PS()->MECorrection()&1)
 	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));

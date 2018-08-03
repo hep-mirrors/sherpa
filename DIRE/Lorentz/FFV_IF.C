@@ -20,7 +20,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
       double B=-(1.0+s.m_z);
       if (p_sk->PS()->MECorrection()&1)
 	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));

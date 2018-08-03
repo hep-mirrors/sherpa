@@ -17,7 +17,7 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double z(s.m_z);
-      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
+      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/(s.m_Q2/s.m_y));
       double B=-2.0+z*(1.0-z);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=p_sk->Mode()?1.0-z:z;

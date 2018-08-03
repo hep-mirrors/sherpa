@@ -172,7 +172,10 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   if (sub.m_ijt>=2) {
     double t;
     if (sub.m_kt>=2) t=(Q2-mi2-mj2-mk2)*y*(1.0-y);
-    else t=(-Q2+mi2+mj2+mk2)*(1.0-y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+    else {
+      double x(y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+      t=(-Q2+mi2+mj2+mk2)/x*(1.0-x);
+    }
     if (sub.p_real->p_fl[sub.m_i].IsGluon()) {
       if (!sub.p_real->p_fl[sub.m_j].IsGluon()) return t*x;
       // approximate, need to split g->gg kernel
@@ -185,7 +188,7 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     }
   }
   if (sub.m_ijt<2 && sub.m_kt>=2) {
-    return (-Q2+mi2+mj2+mk2)*y*(1.0-x);
+    return (-Q2+mi2+mj2+mk2)*y/x*(1.0-x);
   }
   if (sub.m_ijt<2 && sub.m_kt<2) {
     return (Q2-mi2-mj2-mk2)*y*(1.0-x-y);

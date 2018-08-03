@@ -47,7 +47,7 @@ double Lorentz_IF::PDFEstimate(const Splitting &s) const
 int Lorentz_IF::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_y=s.m_t/s.m_Q2*s.m_z/(1.0-s.m_z);
   s.m_x=s.m_z;
   Parton *b(NULL);
   if (s.m_kin==0)
@@ -77,7 +77,7 @@ bool Lorentz_IF::Cluster(Splitting &s,const int mode) const
      mode|(s.m_kin?4:0));
   if (ff.m_stat<0) return false;
   SetParams(s,ff);
-  s.m_t=s.m_Q2*s.m_y*(1.0-s.m_x);
+  s.m_t=s.m_Q2*s.m_y/s.m_x*(1.0-s.m_x);
   s.m_z=s.m_x;
   return true;
 }

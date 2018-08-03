@@ -20,7 +20,7 @@ namespace DIM {
 
     double Value(const Splitting &s) const
     {
-      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_y));
       double B1=-(1.0+s.m_z);
       if (s.m_mij2==0.0 && s.m_mi2==0.0)
 	return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;

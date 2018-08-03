@@ -55,7 +55,7 @@ int Lorentz_IF::Construct(Splitting &s,const int mode) const
 
 bool Lorentz_IF::Compute(Splitting &s) const
 {
-  s.m_y=s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_y=s.m_t/s.m_Q2*s.m_z/(1.0-s.m_z);
   s.m_x=s.m_z;
   if (s.m_mk2==0.0)
     return s.m_y>0.0 && s.m_y<1.0;
