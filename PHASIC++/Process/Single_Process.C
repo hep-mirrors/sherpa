@@ -492,6 +492,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       if (p_variationweights)
 	p_variationweights->UpdateOrInitialiseWeights
 	  (&Single_Process::SetZero,*this,m_last);
+      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
       return 0.0;
     }
     Scale_Setter_Base *scs(ScaleSetter(1));
@@ -499,6 +500,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       if (p_variationweights)
 	p_variationweights->UpdateOrInitialiseWeights
 	  (&Single_Process::SetZero,*this,m_last);
+      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
       return 0.0;
     }
     m_mewgtinfo*=m_lastflux;
@@ -508,6 +510,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       if (p_variationweights)
 	p_variationweights->UpdateOrInitialiseWeights
 	  (&Single_Process::SetZero,*this,m_last);
+      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
       return m_last=0.0;
     }
     m_last=m_lastxs;
@@ -572,6 +575,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
 	p_int->SetMomenta(p);
       }
     }
+    if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
     return m_last;
   }
   else {
@@ -628,6 +632,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
 	}
       }
     }
+    if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
     return m_last;
   }
   THROW(fatal_error,"Internal error.");
