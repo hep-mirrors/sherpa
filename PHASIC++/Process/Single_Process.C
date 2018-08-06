@@ -622,8 +622,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     for (size_t i=0;i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
       m_last+=(sub->m_trig&1)?sub->m_result:0.0;
-      if (sub->p_ampl) {
-	Cluster_Amplitude *ampl(sub->p_ampl->Last());
+      if (sub->p_real->p_ampl) {
+	Cluster_Amplitude *ampl(sub->p_real->p_ampl->Last());
 	if (ampl->NLO()&256) {
 	  for (size_t i(0);i<ampl->Legs().size();++i)
 	    *((Vec4D*)&sub->p_mom[i])=ampl->Leg(i)->Mom();
