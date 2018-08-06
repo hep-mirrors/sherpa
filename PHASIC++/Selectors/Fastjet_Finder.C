@@ -62,6 +62,20 @@ Fastjet_Finder::Fastjet_Finder(Process_Base *const proc,
 {
   bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
 
+  fastjet::RecombinationScheme recom(fastjet::E_scheme);
+
+  size_t sep(algo.find('|'));
+  if (sep!=std::string::npos) {
+    std::string reco(algo.substr(sep+1));
+    algo=algo.substr(0,sep);
+    if (reco=="pt") recom=fastjet::pt_scheme;
+    if (reco=="pt2") recom=fastjet::pt2_scheme;
+    if (reco=="Et") recom=fastjet::Et_scheme;
+    if (reco=="Et2") recom=fastjet::Et2_scheme;
+    if (reco=="BIpt") recom=fastjet::BIpt_scheme;
+    if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
+  }
+
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
   if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
@@ -79,7 +93,7 @@ Fastjet_Finder::Fastjet_Finder(Process_Base *const proc,
     p_jdef=new fastjet::JetDefinition(fastjet::ee_kt_algorithm);
     m_eekt=1;
   }
-  else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
+  else p_jdef=new fastjet::JetDefinition(ja,m_delta_r,recom);
 
   m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
 }
@@ -99,10 +113,39 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
 
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
 
+  std::vector<ATOOLS::Vec4D> p(sl.size());
+  for (size_t i(0);i<p.size();++i) p[i]=sl[i].Momentum();
+  if (m_fl[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+    msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
+    Vec4D pp(rpa->gen.PBeam(1)), qq(p[0]-p[2]);
+    Poincare cms(pp+qq);
+    double Q2(-qq.Abs2()), x(Q2/(2.0*pp*qq)), E(sqrt(Q2)/(2.0*x));
+    Vec4D P(sqrt(E*E+pp.Abs2()),0.0,0.0,-E);
+    Vec4D q(0.0,0.0,0.0,2.0*x*E);
+    cms.Boost(pp);
+    cms.Boost(qq);
+    Poincare zrot(pp,-Vec4D::ZVEC);
+    zrot.Rotate(pp);
+    zrot.Rotate(qq);
+    Poincare breit(P+q);
+    breit.BoostBack(pp);
+    breit.BoostBack(qq);
+    if (!IsEqual(pp,P,1.0e-3) || !IsEqual(qq,q,1.0e-3))
+      msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
+    for (int i(0);i<p.size();++i) {
+      msg_Debugging()<<"  "<<i<<": "<<p[i];
+      cms.Boost(p[i]);
+      zrot.Rotate(p[i]);
+      breit.BoostBack(p[i]);
+      msg_Debugging()<<" -> "<<p[i]<<"\n";
+    }
+    msg_Debugging()<<"}\n";
+  }
+
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<sl.size();++i) {
     if (ToBeClustered(sl[i].Flavour(), (m_nb>0 || m_nb2>0))) {
-      input.push_back(MakePseudoJet(sl[i].Flavour(), sl[i].Momentum()));
+      input.push_back(MakePseudoJet(sl[i].Flavour(), p[i]));
     }
   }
   
