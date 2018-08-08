@@ -692,7 +692,7 @@ double DIS_Scale::SetScales(Cluster_Amplitude *ampl)
       cms.Boost(moms[i]);
       zrot.Rotate(moms[i]);
       breit.BoostBack(moms[i]);
-      HT+=moms[i].PPerp();
+      if (p_proc->Flavours()[i].Strong()) HT+=moms[i].PPerp();
     }
     m_scale[stp::fac]=m_scale[stp::ren]=Max(Q2,sqr(HT/2.0));
   }
