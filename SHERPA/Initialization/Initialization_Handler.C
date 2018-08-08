@@ -948,7 +948,7 @@ void Initialization_Handler::SetGlobalVariables()
   css_reader.SetInputPath(m_path);
   css_reader.SetInputFile(m_showerdat);
   int evol          = css_reader.Get<int>("CSS_EVOLUTION_SCHEME",1);
-  int kfmode        = css_reader.Get<int>("CSS_KFACTOR_SCHEME",1);
+  int kfmode        = css_reader.Get<int>("CSS_KFACTOR_SCHEME",9);
   int scs           = css_reader.Get<int>("CSS_SCALE_SCHEME",0);
   int svmode        = css_reader.Get<double>("CSS_SCALE_VARIATION_SCHEME",1);
   double k0sqf      = css_reader.Get<double>("CSS_FS_PT2MIN",2.0);

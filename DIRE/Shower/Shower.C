@@ -72,7 +72,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_rcf=read->Get<double>("CSS_RECALC_FACTOR",4.0);
   m_tcef=read->Get<double>("CSS_TC_ENHANCE",1.0);
   m_kin=read->Get<int>("CSS_KIN_SCHEME",1);
-  m_kfac=read->Get<int>("CSS_KFACTOR_SCHEME",1);
+  m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
   m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
   m_mec=read->Get<int>("CSS_ME_CORRECTION",0);
   m_pdfmin[0]=read->Get<double>("CSS_PDF_MIN",1.0e-4);
