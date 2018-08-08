@@ -18,7 +18,8 @@ libNNLOqT_la_SOURCES = \
 	higgsfullsm.C \
 	H_KFactor.C \
 	DISinclu.C \
-	DIS_KFactor.C
+	DIS_KFactor.C \
+	DIS_Scale.C
 
 NNLOqT_EXTRA_DIST = \
 	Tools.H \
