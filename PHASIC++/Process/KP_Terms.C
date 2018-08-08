@@ -354,12 +354,23 @@ void KP_Terms::Calculate
   if(applyID) // subtract only if pseudo-dipoles are used
     for (size_t i=0;i<m_plist.size();i++) {
       if(i==0 || i==1) continue;
-      DEBUG_VAR(i);
-      m_kpca[0]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)  // type (i.e. first argument) is always 1,
-                             +p_kernel->K_fi2(1)       // as the associated splitting is q > q
-                             -p_kernel->K_fi4(1,eta0));
-      m_kpca[1]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
-                               +p_kernel->K_fi3(1,x0)));
+      /* convolved with quark-PDF, for uu>WWbb */
+      if(m_typea==1){
+        m_kpca[0]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)  // type (i.e. first argument) is always 1,
+                               +p_kernel->K_fi2(1)       // as the associated splitting is q > q
+                               -p_kernel->K_fi4(1,eta0));
+        m_kpca[1]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
+                                 +p_kernel->K_fi3(1,x0)));
+      }
+      /* convolved with gluon-PDF, for gg>WWbb */
+      else if(m_typea==2){
+        m_kpca[2]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)
+                               +p_kernel->K_fi2(1)
+                               -p_kernel->K_fi4(1,eta0));
+        m_kpca[3]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
+                                 +p_kernel->K_fi3(1,x0)));
+      }
+      else THROW(fatal_error, "Unvalid splitting type in KP-term subtraction.")
     }
   }
 
@@ -508,12 +519,23 @@ void KP_Terms::Calculate
   if(applyID) // subtract only if pseudo-dipoles are used
     for (size_t i=0;i<m_plist.size();i++) {
       if(i==0 || i==1) continue;
-      DEBUG_VAR(i);
-      m_kpcb[0]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
-                             +p_kernel->K_fi2(1)
-                             -p_kernel->K_fi4(1,eta1));
-      m_kpcb[1]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
-                               +p_kernel->K_fi3(1,x1)));
+      /* convolved with quark-PDF, for uu>WWbb */
+      if(m_typeb==1){
+        m_kpcb[0]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
+                               +p_kernel->K_fi2(1)
+                               -p_kernel->K_fi4(1,eta1));
+        m_kpcb[1]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
+                                 +p_kernel->K_fi3(1,x1)));
+      }
+      /* convolved with gluon-PDF, for gg>WWbb */
+      else if(m_typeb==2){
+        m_kpcb[2]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
+                               +p_kernel->K_fi2(1)
+                               -p_kernel->K_fi4(1,eta1));
+        m_kpcb[3]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
+                                 +p_kernel->K_fi3(1,x1)));
+      }
+      else THROW(fatal_error, "Unvalid splitting type in KP-term subtraction.")
     }
   }
 

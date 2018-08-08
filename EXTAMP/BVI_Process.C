@@ -210,7 +210,7 @@ namespace EXTAMP {
   bool BVI_Process::ApplyIDdipole() const
   {
     /* return true, if Born-config. has (at least) one b- and 
-       one bbar-quark */
+       one bbar-quark in final state */
     
     /* count b&bbar quarks in final state of Born-config,
        require, to have at least one b-quark and

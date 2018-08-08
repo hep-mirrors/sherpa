@@ -58,7 +58,7 @@ namespace EXTAMP {
 //    m_hist_mreal_y46 = YODA::Histo1D(bins, "RSterm/y46", "Mreal_y46");
 //    m_hist_dipole_y46 = YODA::Histo1D(bins, "RSterm/y46", "dipole_y46");
 //    m_hist_alpha_min = YODA::Histo1D(bins, "alpha_min", "alpha_min");
-    m_myfile.open ("RSdata.dat", std::ios_base::app);
+//    m_myfile.open ("RSdata.dat", std::ios_base::app);
   }
 
 
@@ -159,11 +159,11 @@ namespace EXTAMP {
 //    m_hist_dipole_y46.fill(p[4]*p[6]/(p[1]*p[0]), S);
 //    m_hist_mreal_y46.fill( p[4]*p[6]/(p[1]*p[0]), R);
 
-    if( R!=0 && S!=0){
-    m_myfile << std::setprecision(9) << 2.*p[4]*p[5]/((p[4]+p[5]+p[6])*(p[4]+p[5]+p[6])) << " " 
-             << 2.*p[4]*p[6]/((p[4]+p[5]+p[6])*(p[4]+p[5]+p[6])) << " "
-             << R << " " << S << std::endl;
-    }
+//    if( R!=0 && S!=0){
+//    m_myfile << std::setprecision(9) << 2.*p[4]*p[5]/((p[4]+p[5]+p[6])*(p[4]+p[5]+p[6])) << " " 
+//             << 2.*p[4]*p[6]/((p[4]+p[5]+p[6])*(p[4]+p[5]+p[6])) << " "
+//             << R << " " << S << std::endl;
+//    }
 
     return m_lastxs = R + S;
   }
@@ -461,7 +461,7 @@ namespace EXTAMP {
 //    myfile.open("alpha_min.yoda");
 //      YODA::WriterYODA::write(myfile, m_hist_alpha_min);
 //    myfile.close();
-    m_myfile.close();
+//    m_myfile.close();
   }
 
   
