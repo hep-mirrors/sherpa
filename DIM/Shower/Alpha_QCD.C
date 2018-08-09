@@ -84,14 +84,20 @@ double Alpha_QCD::CplFac(const double &scale) const
   return m_fac;
 }
 
+double Alpha_QCD::TrueScale(const Splitting &s) const
+{
+  double scale(Scale(s));
+  return CplFac(scale)*scale;
+}
+
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
   if (m_override==0) {
     if (s.m_clu&1) return 1.0;
     if (s.m_clu&2) return (*p_cpl)(s.m_t1);
   }
-  double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
-  double scl(CplFac(scale)*scale*murf);
+  double murf(p_sk->PS()->MuR2Factor());
+  double scl(TrueScale(s)*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   return cpl;
@@ -103,7 +109,7 @@ double Alpha_QCD::RenCT(const Splitting &s) const
     if (s.m_clu&3) return 0.0;
   }
   double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
-  double scl(CplFac(scale)*scale*murf);
+  double scl(TrueScale(s)*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   double ct=0;

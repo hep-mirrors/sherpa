@@ -36,6 +36,8 @@ namespace DIM {
 
     Alpha_QCD(const Kernel_Key &key);
 
+    double TrueScale(const Splitting &s) const;
+
     double Coupling(const Splitting &s) const;
     double RenCT(const Splitting &s) const;
     double CplMax(const Splitting &s) const;

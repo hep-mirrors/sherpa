@@ -1,13 +1,13 @@
-#ifndef DIRE__Shower__Alpha_QCD_H
-#define DIRE__Shower__Alpha_QCD_H
+#ifndef DIM__Shower__Alpha_QCD_H
+#define DIM__Shower__Alpha_QCD_H
 
-#include "DIRE/Shower/Gauge.H"
+#include "DIM/Shower/Gauge.H"
 
 namespace MODEL {
   class Running_AlphaS;
 }
 
-namespace DIRE {
+namespace DIM {
   
   class Alpha_QCD: public Gauge {
   protected:
@@ -21,6 +21,9 @@ namespace DIRE {
 
     mutable int m_override;
 
+    bool  m_mab, m_mba, m_maa, m_mbb;
+    Color m_ca, m_cb;
+
     double B0(const double &nf) const;
     double B1(const double &nf) const;
 
@@ -32,8 +35,6 @@ namespace DIRE {
   public:
 
     Alpha_QCD(const Kernel_Key &key);
-
-    double TrueScale(const Splitting &s) const;
 
     double Coupling(const Splitting &s) const;
     double RenCT(const Splitting &s) const;
@@ -50,6 +51,6 @@ namespace DIRE {
 
   };// end of class Alpha_QCD
 
-}// end of namespace DIRE
+}// end of namespace DIM
 
 #endif

@@ -31,6 +31,7 @@ namespace DIRE {
 
     virtual double Nf(const Splitting &s) const;
     virtual double Scale(const Splitting &s) const = 0;
+    virtual double TrueScale(const Splitting &s) const;
 
     virtual double Weight(const Splitting &s) const = 0;
     virtual double Charge(const Splitting &s) const = 0;
