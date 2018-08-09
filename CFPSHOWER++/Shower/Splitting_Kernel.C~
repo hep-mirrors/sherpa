@@ -1,0 +1,55 @@
+#include "CFPSHOWER++/Shower/Splitting_Kernel.H"
+#define COMPILE__Getter_Function
+#define PARAMETER_TYPE CFPSHOWER::Splitting_Kernel_Info
+#define OBJECT_TYPE    CFPSHOWER::Splitting_Kernel
+#define SORT_CRITERION std::less<std::string>
+#include "ATOOLS/Org/Getter_Function.C"
+#include "ATOOLS/Org/Message.H"
+
+using namespace CFPSHOWER;
+using namespace ATOOLS;
+using namespace std;
+
+Splitting_Kernel::Splitting_Kernel(const Splitting_Kernel_Info & info) :
+  m_type(info.Type()), m_flavs(info.GetFlavs()) { }
+
+double Splitting_Kernel::Integral(const Splitting & split) {
+  return p_sfunction->Integral(split) * p_gauge->OverEstimator(split);
+}
+
+double Splitting_Kernel::operator()(const Splitting & split) {
+  exit(1);
+}
+
+ostream & CFPSHOWER::operator<<(ostream &s,const Splitting_Kernel & kernel) {
+  s<<"Kernel["<<(kernel.GetSFunction()->Name())<<" / "<<(kernel.GetGaugePart()->Name())<<"].\n";
+  return s;
+}
+
+
+
+using namespace CFPSHOWER;
+
+DECLARE_GETTER(Splitting_Kernel,"Kernel",Splitting_Kernel,Splitting_Kernel_Info);
+
+Splitting_Kernel *
+ATOOLS::Getter<Splitting_Kernel,Splitting_Kernel_Info,Splitting_Kernel>::
+operator()(const Parameter_Type & info) const
+{
+  Splitting_Function_Base * sfunction = SF_Getter::GetObject(info.SFName(),info);
+  Gauge_Part_Base         * gaugepart = GP_Getter::GetObject(info.GPName(),info);
+  if (!sfunction || !gaugepart) return NULL;
+  Splitting_Kernel * kernel = new Splitting_Kernel(info);
+  kernel->SetSFunction(sfunction);
+  kernel->SetGaugePart(gaugepart);
+  //msg_Out()<<"Kernel("<<info.Type()<<", "<<info.GetFlavs()[0]<<" --> "
+  //	   <<info.GetFlavs()[1]<<" + "<<info.GetFlavs()[2]<<", swap = "<<info.Swapped()<<")"
+  //	   <<" --> "<<sfunction<<" + "<<gaugepart<<"\n";
+  return kernel;
+}
+
+void ATOOLS::Getter<Splitting_Kernel,Splitting_Kernel_Info,Splitting_Kernel>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Splitting Kernel";
+}

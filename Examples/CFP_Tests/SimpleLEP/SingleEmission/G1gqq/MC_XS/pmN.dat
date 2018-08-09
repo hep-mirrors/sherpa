@@ -1,0 +1,54 @@
+# BEGIN PLOT
+LegendOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gqqonly.yoda/MC_XS/pmN //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gqqonly.yoda/MC_XS/pmN //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG1gqqqonly.yoda/MC_XS/pmN
+DrawOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gqqonly.yoda/MC_XS/pmN //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gqqonly.yoda/MC_XS/pmN //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG1gqqqonly.yoda/MC_XS/pmN
+Title=Number of positive and negative weighted events
+XMajorTickMarks=20
+RatioPlot=1
+LogY=0
+RatioPlotYLabel=Ratio
+RatioPlotReference=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gqqonly.yoda/MC_XS/pmN
+XLabel=$\pm$
+ShowZero=0
+XMax=1
+YLabel=$N_\pm$
+XMin=-1
+XMinorTickMarks=0
+Legend=1
+# END PLOT
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gqqonly.yoda/MC_XS/pmN
+LineColor=red
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gqqonly.yoda/MC_XS/pmN
+Title=CFPG1_noswap_gqqonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	5.000000e+06	2.236068e+03	2.236068e+03
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gqqonly.yoda/MC_XS/pmN
+LineColor=blue
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gqqonly.yoda/MC_XS/pmN
+Title=CFPG1gqqonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	5.000000e+06	2.236068e+03	2.236068e+03
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG1gqqqonly.yoda/MC_XS/pmN
+LineColor=green
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG1gqqqonly.yoda/MC_XS/pmN
+Title=DireG1gqqqonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	5.000000e+06	2.236068e+03	2.236068e+03
+# END HISTO1D
+

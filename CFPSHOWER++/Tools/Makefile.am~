@@ -1,0 +1,18 @@
+pkglib_LTLIBRARIES = libCFPTools.la
+
+GITTAG = CFPSHOWER++/Tools
+include ../../git.make
+
+libCFPTools_la_SOURCES = \
+	Git_Info.C \
+	Parton.C \
+	Configuration.c  \
+	CFP_Parameters.C \
+	Kernel_Info.C
+
+localinc_HEADERS   = \
+	Parton.H  \
+	Configuration.H  \
+	CFP_Parameters.H \
+	Kernel_Info.H
+

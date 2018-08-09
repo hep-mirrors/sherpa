@@ -1,0 +1,59 @@
+# BEGIN PLOT
+LegendOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG2_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG2/CFPG2_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/CFPG1_swap_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/DireG1_swap_gggonly.yoda/MC_XS/N
+DrawOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG2_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG2/CFPG2_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/CFPG1_swap_gggonly.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/DireG1_swap_gggonly.yoda/MC_XS/N
+Title=Number of generated events
+XMajorTickMarks=20
+RatioPlot=1
+LogY=0
+RatioPlotYLabel=Ratio
+RatioPlotReference=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG2_gggonly.yoda/MC_XS/N
+XLabel=
+XMinorTickMarks=0
+YLabel=$N$
+Legend=1
+# END PLOT
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG2_gggonly.yoda/MC_XS/N
+LineColor=red
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireG2_gggonly.yoda/MC_XS/N
+Title=DireG2_gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	1.000000e+06	1.000000e+03	1.000000e+03
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG2/CFPG2_gggonly.yoda/MC_XS/N
+LineColor=blue
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG2/CFPG2_gggonly.yoda/MC_XS/N
+Title=CFPG2_gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	7.340800e+04	2.709391e+02	2.709391e+02
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/CFPG1_swap_gggonly.yoda/MC_XS/N
+LineColor=green
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/CFPG1_swap_gggonly.yoda/MC_XS/N
+Title=CFPG1_swap_gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	1.000000e+07	3.162278e+03	3.162278e+03
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/DireG1_swap_gggonly.yoda/MC_XS/N
+LineColor=orange
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/cleanG1_singlemode/DireG1_swap_gggonly.yoda/MC_XS/N
+Title=DireG1_swap_gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	1.000000e+07	3.162278e+03	3.162278e+03
+# END HISTO1D
+

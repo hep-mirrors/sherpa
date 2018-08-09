@@ -1,0 +1,70 @@
+# BEGIN PLOT
+LegendOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPG2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPQ2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireG2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireQ2_noggg.yoda/MC_XS/pmXS
+DrawOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPG2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPQ2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireG2_noggg.yoda/MC_XS/pmXS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireQ2_noggg.yoda/MC_XS/pmXS
+Title=Fraction of positive and negative weighted events
+XMajorTickMarks=20
+RatioPlot=1
+LogY=0
+RatioPlotYLabel=Ratio
+RatioPlotReference=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPG2_noggg.yoda/MC_XS/pmXS
+XLabel=$\text{sgn}(w)$
+ShowZero=0
+XMax=1
+YLabel=$\text{d}\sigma/\text{d sgn}(w)$ [pb]
+XMin=-1
+XMinorTickMarks=0
+Legend=1
+# END PLOT
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPG2_noggg.yoda/MC_XS/pmXS
+LineColor=red
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPG2_noggg.yoda/MC_XS/pmXS
+ScaledBy=4.44341594176779024e-08
+Title=CFPG2_noggg
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	1.422807e-06	4.499309e-10	4.499309e-10
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPQ2_noggg.yoda/MC_XS/pmXS
+LineColor=blue
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/CFPQ2_noggg.yoda/MC_XS/pmXS
+ScaledBy=5.63067184613400933e-08
+Title=CFPQ2_noggg
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	4.254547e+04	1.345406e+01	1.345406e+01
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireG2_noggg.yoda/MC_XS/pmXS
+LineColor=green
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireG2_noggg.yoda/MC_XS/pmXS
+ScaledBy=4.44341594176779024e-08
+Title=DireG2_noggg
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	1.422807e-06	4.499309e-10	4.499309e-10
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireQ2_noggg.yoda/MC_XS/pmXS
+LineColor=orange
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/clean2_noggg/DireQ2_noggg.yoda/MC_XS/pmXS
+ScaledBy=5.63067184613400933e-08
+Title=DireQ2_noggg
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-1.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+0.000000e+00	1.000000e+00	4.254547e+04	1.345406e+01	1.345406e+01
+# END HISTO1D
+

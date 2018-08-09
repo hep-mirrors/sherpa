@@ -1,0 +1,48 @@
+#ifndef CFPSHOWER_Shower_Cluster_Definitions_H
+#define CFPSHOWER_Shower_Cluster_Definitions_H
+
+#include "CFPSHOWER++/Tools/Parton.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
+
+namespace CFPSHOWER {
+  class Shower;
+  class Splitting;
+  
+  class Cluster_Definitions: public PDF::Cluster_Definitions_Base {
+  private:
+    const ATOOLS::Mass_Selector * p_ms;
+    ATOOLS::Cluster_Leg         * p_b;
+    
+    Shower * p_shower;
+    int      m_mode, m_amode;
+
+    double Lambda(const double &s,const double &sb,const double &sc) const;
+    double Phi(const ATOOLS::Vec4D & pijt, const ATOOLS::Vec4D & pkt,
+	       const ATOOLS::Vec4D & pi,const bool ii=false) const;
+    ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl) const;
+
+    inline Parton * const GetParton(const ATOOLS::Cluster_Leg * const leg) const {
+      return new Parton(leg->Flav(),leg->Mom(),
+			Color(leg->Col().m_i,leg->Col().m_j),GetBeam(leg));
+    }
+    inline size_t GetBeam(const ATOOLS::Cluster_Leg * const leg) const {
+      if (leg->Id()&1) return 1;
+      if (leg->Id()&2) return 2;
+      return 0;
+    }
+  public:
+    Cluster_Definitions(Shower *const shower);
+
+    PDF::Cluster_Param Cluster(const PDF::Cluster_Config &ca);
+    Splitting KT2(const ATOOLS::Cluster_Amplitude &ampl,
+		  int i,int j,int k,const ATOOLS::Flavour &mo,
+		  const int kin,const int type,const int mode,
+		  double &ws,double &mu2);
+    inline ATOOLS::Cluster_Leg *LegB() const { return p_b; }
+    inline void SetAMode(const size_t mode)  { m_amode=mode; }
+
+  };// end of class Cluster_Definitions
+
+}// end of namespace CFPSHOWER
+
+#endif

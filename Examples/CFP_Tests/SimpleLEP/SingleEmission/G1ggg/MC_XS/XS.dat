@@ -1,0 +1,49 @@
+# BEGIN PLOT
+LegendOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gggonly.yoda/MC_XS/XS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gggonly.yoda/MC_XS/XS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/DireG1gggonly.yoda/MC_XS/XS
+DrawOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gggonly.yoda/MC_XS/XS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gggonly.yoda/MC_XS/XS //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/DireG1gggonly.yoda/MC_XS/XS
+Title=Total generated cross section
+XMajorTickMarks=20
+RatioPlot=1
+LogY=0
+RatioPlotYLabel=Ratio
+RatioPlotReference=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gggonly.yoda/MC_XS/XS
+XLabel=
+ShowZero=0
+XMinorTickMarks=0
+YLabel=$\sigma_\text{total}$ [pb]
+Legend=1
+# END PLOT
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gggonly.yoda/MC_XS/XS
+LineColor=red
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPG1_noswap_gggonly.yoda/MC_XS/XS
+Title=CFPG1_noswap_gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-5.000000e-01	5.000000e-01	1.423293e-06	4.744101e-10	4.744101e-10
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gggonly.yoda/MC_XS/XS
+LineColor=blue
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/CFPG1gggonly.yoda/MC_XS/XS
+Title=CFPG1gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-5.000000e-01	5.000000e-01	1.423293e-06	4.744101e-10	4.744101e-10
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/DireG1gggonly.yoda/MC_XS/XS
+LineColor=green
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/SingleEmission/DireG1gggonly.yoda/MC_XS/XS
+Title=DireG1gggonly
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+-5.000000e-01	5.000000e-01	1.423293e-06	4.744101e-10	4.744101e-10
+# END HISTO1D
+

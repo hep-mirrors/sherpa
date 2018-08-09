@@ -1,0 +1,173 @@
+#include "PDF/Main/Jet_Criterion.H"
+#include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Message.H"
+
+using namespace PHASIC;
+using namespace PDF;
+using namespace ATOOLS;
+
+namespace CFPSHOWER {
+  class Jet_Criterion: public PDF::Jet_Criterion {
+  private:
+    struct Q2_Value {
+      double          m_q2;
+      ATOOLS::Flavour m_fl;
+      int             m_i, m_j, m_k;
+      
+      inline Q2_Value(const double &q2,const ATOOLS::Flavour &fl,
+		      int i, int j, int k):
+	m_q2(q2), m_fl(fl), m_i(i), m_j(j), m_k(k) {}
+      
+      inline bool operator<(const Q2_Value &v) const {
+	return m_q2<v.m_q2;
+      }
+    };
+
+    PDF::Cluster_Definitions_Base *p_clus;
+  public:
+    Jet_Criterion(const PDF::JetCriterion_Key &args) :
+      p_clus(args.p_shower->GetClusterDefinitions()) {}
+    
+    double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+		const ATOOLS::Vec4D &pk,
+		const ATOOLS::Flavour &fi,const ATOOLS::Flavour &fj) const;
+    double Value(ATOOLS::Cluster_Amplitude *ampl,int mode);
+  };
+}
+  
+namespace CFPSHOWER {
+  double Jet_Criterion::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
+			     const Flavour &fi,const Flavour &fj) const
+  {
+    Vec4D npi(pi), npj(pj);
+    if (npi[0]<0.0) npi = -pi-pj;
+    if (npj[0]<0.0) npj = -pj-pi;
+    double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
+    double Cij(pipk/(pipj+pjpk)), Cji(pjpk/(pipj+pipk));
+    return 2.0*dabs(pi*pj)/(Cij+Cji);
+  }
+  
+  double Jet_Criterion::Value(Cluster_Amplitude *ampl,int mode)
+  {
+    DEBUG_FUNC("mode = "<<mode);
+    msg_Debugging()<<*ampl<<"\n";
+    NLO_subevtlist *subs(NULL);
+    if (mode) subs=ampl->Proc<PHASIC::Process_Base>()->GetRSSubevtList();
+    size_t noem(0), nospec(0);
+    for (size_t i(0);i<ampl->Decays().size();++i) {
+      noem|=ampl->Decays()[i]->m_id;
+      if (!ampl->Decays()[i]->m_fl.Strong())
+	nospec|=ampl->Decays()[i]->m_id;
+    }
+    msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
+    std::set<Q2_Value> q2list;
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      Cluster_Leg *li(ampl->Leg(i));
+      if (li->Id()&noem) continue;
+      Flavour fi(i<ampl->NIn()?li->Flav().Bar():li->Flav());
+      for (size_t j(Max(i+1,ampl->NIn()));j<ampl->Legs().size();++j) {
+	Cluster_Leg *lj(ampl->Leg(j));
+	if (lj->Id()&noem) continue;
+	Flavour fj(j<ampl->NIn()?lj->Flav().Bar():lj->Flav());
+	for (size_t k(0);k<ampl->Legs().size();++k) {
+	  if (k==i || k==j) continue;
+	  if (subs) {
+	    bool found(false);
+	    for (size_t l(0);l<subs->size()-1;++l) {
+	      NLO_subevt *sub((*subs)[l]);
+	      if (k==sub->m_k && ((i==sub->m_i && j==sub->m_j) ||
+				  (i==sub->m_j && j==sub->m_i))) {
+		found=true;
+		break;
+	      }
+	    }
+	    if (!found) continue;
+	  }
+	  Cluster_Leg *lk(ampl->Leg(k));
+	  if (lk->Id()&nospec) continue;
+	  Flavour fk(k<ampl->NIn()?lk->Flav().Bar():lk->Flav());
+	  if (lk->Flav().Strong() &&
+	      li->Flav().Strong() && lj->Flav().Strong() &&
+	      (li->Flav().IsGluon() || lj->Flav().IsGluon() ||
+	       li->Flav()==lj->Flav().Bar())) {
+	    double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+			      li->Flav(),lj->Flav()));
+	    msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
+			   <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
+	    if (q2ijk<0.0) continue;
+	    Flavour mofl=Flavour(kf_gluon);
+	    if (li->Flav().IsGluon()) mofl=lj->Flav();
+	    if (lj->Flav().IsGluon()) mofl=li->Flav();
+	    q2list.insert(Q2_Value(q2ijk,mofl,i,j,k));
+	  }
+	  else {
+	    msg_IODebugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "<<fk<<"\n";
+	  }
+	}
+      }
+    }
+    if (mode==0) {
+      double q2min(std::numeric_limits<double>::max());
+      if (q2list.size()) q2min=q2list.begin()->m_q2;
+      msg_Debugging()<<"--- "<<sqrt(q2min)<<" ---\n";
+      return q2min;
+    }
+    while (q2list.size()) { 
+      Flavour mofl(q2list.begin()->m_fl);
+      size_t imin(q2list.begin()->m_i);
+      size_t jmin(q2list.begin()->m_j);
+      size_t kmin(q2list.begin()->m_k);
+      q2list.erase(q2list.begin());
+      PDF::Cluster_Param cp=
+	p_clus->Cluster(PDF::Cluster_Config(ampl,imin,jmin,kmin,
+					    mofl,ampl->MS(),NULL,1));
+      if (cp.m_pijt==Vec4D())
+	cp=p_clus->Cluster(PDF::Cluster_Config(ampl,jmin,imin,kmin,
+					       mofl,ampl->MS(),NULL,1));
+      if (cp.m_pijt==Vec4D()) continue;
+      Cluster_Amplitude * bampl(Cluster_Amplitude::New());
+      bampl->SetProc(ampl->Proc<void>());
+      bampl->SetNIn(ampl->NIn());
+      bampl->SetJF(ampl->JF<void>());
+      for (int i(0), j(0);i<ampl->Legs().size();++i) {
+	if (i==jmin) continue;
+	if (i==imin) {
+	  bampl->CreateLeg(cp.m_pijt,mofl,ampl->Leg(i)->Col());
+	  bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
+	  bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
+	}
+	else {
+	  bampl->CreateLeg(i==kmin?cp.m_pkt:cp.m_lam*ampl->Leg(i)->Mom(),
+			   ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+	}
+	++j;
+      }
+      double res=Value(bampl,0);
+      bampl->Delete();
+      return res;
+    }
+    msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+    return Value(ampl,0);
+  }
+}
+
+
+DECLARE_GETTER(CFPSHOWER::Jet_Criterion,"CFP",Jet_Criterion,JetCriterion_Key);
+
+Jet_Criterion *Getter<Jet_Criterion,JetCriterion_Key,CFPSHOWER::Jet_Criterion>::
+operator()(const JetCriterion_Key &args) const
+{
+  return new CFPSHOWER::Jet_Criterion(args);
+}
+
+void Getter<Jet_Criterion,JetCriterion_Key,CFPSHOWER::Jet_Criterion>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The CFPSHOWER jet criterion";
+}
+

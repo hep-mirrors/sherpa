@@ -1,0 +1,37 @@
+# BEGIN PLOT
+LegendOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPQ1_noswap.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireQ1_noswap.yoda/MC_XS/N
+DrawOnly=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPQ1_noswap.yoda/MC_XS/N //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireQ1_noswap.yoda/MC_XS/N
+Title=Number of generated events
+XMajorTickMarks=20
+RatioPlot=1
+LogY=0
+RatioPlotYLabel=Ratio
+RatioPlotReference=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPQ1_noswap.yoda/MC_XS/N
+XLabel=
+XMinorTickMarks=0
+YLabel=$N$
+Legend=1
+# END PLOT
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPQ1_noswap.yoda/MC_XS/N
+LineColor=red
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/CFPQ1_noswap.yoda/MC_XS/N
+Title=CFPQ1_noswap
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	1.000000e+05	3.162278e+02	3.162278e+02
+# END HISTO1D
+
+# BEGIN HISTO1D //home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireQ1_noswap.yoda/MC_XS/N
+LineColor=blue
+LineStyle=solid
+Path=//home/frank/SHERPA/cfpshower/Examples/CFP_Tests/SimpleLEP/DireQ1_noswap.yoda/MC_XS/N
+Title=DireQ1_noswap
+XLabel=
+YLabel=
+# xlow	 xhigh	 val	 errminus	 errplus
+0.000000e+00	1.000000e+00	1.000000e+05	3.162278e+02	3.162278e+02
+# END HISTO1D
+

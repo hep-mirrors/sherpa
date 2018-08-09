@@ -1,0 +1,42 @@
+#ifndef CFPSHOWER_Shower_Splitting_Kernel_H
+#define CFPSHOWER_Shower_Splitting_Kernel_H
+
+#include "CFPSHOWER++/Calculators/Splitting_Function_Base.H"
+#include "CFPSHOWER++/Calculators/Gauge_Part_Base.H"
+#include "CFPSHOWER++/Tools/Splitting_Kernel_Info.H"
+#include "CFPSHOWER++/Tools/Splitting.H"
+#include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Math/MathTools.H"
+#include <iostream>
+
+namespace CFPSHOWER {
+  class Splitting_Kernel {
+  private:
+    kernel_type::code      m_type;
+    ATOOLS::Flavour_Vector m_flavs;
+    bool                   m_swapped;
+    
+    Splitting_Function_Base * p_sfunction; 
+    Gauge_Part_Base         * p_gauge;
+
+  public:
+    Splitting_Kernel(const Splitting_Kernel_Info & info);
+
+    double Integral(const Splitting & split);
+    double operator()(const Splitting & split);
+
+    inline void SetSFunction(Splitting_Function_Base * sfunction) { p_sfunction = sfunction; }
+    inline void SetGaugePart(Gauge_Part_Base * gaugepart)         { p_gauge     = gaugepart; }
+
+    inline const Splitting_Function_Base * GetSFunction() const { return p_sfunction; } 
+    inline const Gauge_Part_Base         * GetGaugePart() const { return p_gauge; }
+  };
+
+  std::ostream &operator<<(std::ostream &s,const Splitting_Kernel & kernel);
+  
+  typedef std::vector<Splitting_Kernel *> Kernel_Vector;
+  typedef ATOOLS::Getter_Function<Splitting_Kernel,Splitting_Kernel_Info,
+				  std::less<std::string> > Kernel_Getter;
+}
+
+#endif
