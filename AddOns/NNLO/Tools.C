@@ -254,7 +254,7 @@ double SHNNLO::Weight
     return sqrt(-1.0);
   }
   if (kt2>ampl->Next()->KT2()) return 1.0;
-  if (mode!=1) return 1.0;
+  if ((mode&5)==0) return 1.0;
   double Q2[2]={muf2,muf2};
   double asmu((*s_as)(mur2));
   double askt((*s_as)(ampl->Mu2()));
@@ -267,7 +267,6 @@ double SHNNLO::Weight
     for (size_t i(1);i<ths.size();++i) {
       double nf=MODEL::as->Nf((ths[i]+ths[i-1])/2.0);
       double L=log(ths[i]/ths[i-1]), lct=cpl/(2.0*M_PI)*Beta0(nf)*L;
-      cpl*=1.0-lct;
       ct+=lct;
     }
   }
@@ -324,7 +323,7 @@ double SHNNLO::NLODiffWeight
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl==NULL || ampl->Next()==NULL) return wgt;
   msg_Debugging()<<*ampl<<"\n";
-  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,1);
+  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,4);
   msg_Debugging()<<"K = "<<K<<"\n";
   if (IsBad(K)) {
     ampl->Next()->SetNLO(128);
@@ -381,7 +380,7 @@ double SHNNLO::NNLODiffWeight
     if (umode) return 0.0;
     return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,umode,varid);
   }
-  return wgt=SetWeight(ampl->Next(),mode,wgt,w,w1,umode,varid);
+  return wgt=SetWeight(ampl->Next(),mode,wgt,w+w1,0.0,umode,varid);
 }
 
 double SHNNLO::NNLODeltaWeight
@@ -410,7 +409,7 @@ double SHNNLO::SetWeight
   double p1=s_p1;
   if (gen) {
     s_p2=0.0;
-    p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0)+2.0*dabs(w*w1));
+    p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0));
   }
   if (umode) p1=0.0;
   if (s_disc<=p1) {
@@ -424,35 +423,27 @@ double SHNNLO::SetWeight
     double p2=s_p2;
     if (gen) {
       p2=s_p2=1.0-p1;
-      if (w!=1.0) p2=s_p2/=(1.0+dabs(w*w1/(w-1.0)));
+      if (w!=1.0) p2=s_p2/=(1.0+dabs(w1/(w-1.0)));
     }
     if (umode) p2=1.0;
     if (s_disc<=p1+p2) {
       double pw(0.5*p2);
       wgt*=(umode?w:w-1.0)/pw;
       if (ampl) {
-	if (mode==1) ampl->SetFlag(2);
 	ampl->SetNLO(16);
       }
       if (s_disc>p1+pw) {
 	if (ampl) {
-	  if (mode==1) ampl->SetFlag(2);
 	  ampl->SetNLO(16|32);
 	}
 	wgt*=-1.0;
       }
     }
     else {
-      double pw(0.5*(1.0-p1-p2));
-      wgt*=w*w1/pw;
-      if (ampl)	ampl->SetNLO(16);
-      if (s_disc>p1+p2+pw) {
-	if (ampl) ampl->SetNLO(16|32);
-	wgt*=-1.0;
-      }
+      THROW(fatal_error,"Invalid weights");
     }
   }
-  msg_Debugging()<<"wgt = "<<wgt<<" (w = "<<w<<", w1 = "<<w1
+  msg_Debugging()<<"wgt = "<<wgt<<" (w = "<<w
 		 <<", p1 = "<<s_p1<<", p2 = "<<s_p2
 		 <<", # = "<<s_disc<<") "<<varid<<"\n";
   return wgt;
