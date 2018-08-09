@@ -1,0 +1,14 @@
+pkglib_LTLIBRARIES = libCFPMain.la
+
+GITTAG = CFPSHOWER++/Main
+include ../../git.make
+
+libCFPMain_la_SOURCES = \
+                Git_Info.C \
+		CFP_Cluster_Definitions.C \
+		Jet_Criterion.C \
+		CFP_Shower.C
+
+localinc_HEADERS   = \
+		CFP_Cluster_Definitions.H \
+		CFP_Shower.H

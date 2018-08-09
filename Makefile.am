@@ -12,6 +12,7 @@ SUBDIRS       = \
 		AMEGIC++ \
 		COMIX \
 		CSSHOWER++ \
+		CFPSHOWER++ \
 		DIRE \
 		DIM \
 		EXTAMP \

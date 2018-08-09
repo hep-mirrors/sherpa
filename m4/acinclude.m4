@@ -200,6 +200,17 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(CSSBUILDDIR)
   AC_SUBST(CSSLIBS)
   
+  CFPDIR="\${top_srcdir}/CFPSHOWER++"
+  CFPBUILDDIR="\${top_builddir}/CFPSHOWER++"
+  CFPLIBS="\${CFPBUILDDIR}/Main/libCFPMain.la \
+	\${CFPBUILDDIR}/Calculators/libCFPCalculators.la \
+	\${CFPBUILDDIR}/Calculators/FF/libCFPCalculatorsFF.la \
+	\${CFPBUILDDIR}/Shower/libCFPShower.la \
+	\${CFPBUILDDIR}/Tools/libCFPTools.la"
+  AC_SUBST(CFPDIR)
+  AC_SUBST(CFPBUILDDIR)
+  AC_SUBST(CFPLIBS)
+  
   DIREDIR="\${top_srcdir}/DIRE"
   DIREBUILDDIR="\${top_builddir}/DIRE"
   DIRELIBS="\${DIREBUILDDIR}/Tools/libDireTools.la \

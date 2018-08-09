@@ -1,0 +1,32 @@
+(run){
+  # general settings
+  EVENTS 10M; EVENT_SEED_MODE 3;
+  FRAGMENTATION Off; MI_HANDLER None; ME_QED Off; 
+  K_PERP_MEAN_1 0; K_PERP_SIGMA_1 0;
+  K_PERP_MEAN_2 0; K_PERP_SIGMA_2 0;
+  CSS_TC_ENHANCE 5;
+  # collider setup
+  BEAM_1 2212 4000; BEAM_2 2212 4000;
+  PDF_LIBRARY LHAPDFSherpa; PDF_SET CT10nlo;
+  USE_PDF_ALPHAS 3;
+  # shower setup
+  SHOWER_GENERATOR Dire;
+  SCALES VAR{Abs2(p[2]+p[3])};
+  CORE_SCALE VAR{Abs2(p[2]+p[3])}
+  RESPECT_MASSIVE_FLAG 1;
+  CSS_FS_AS_FAC 1; CSS_IS_AS_FAC 1;
+  CSS_FS_PT2MIN 3; CSS_IS_PT2MIN 3;
+  BEAM_REMNANTS 0;
+}(run);
+
+(processes){
+  Process 93 93 -> 11 -12;
+  Order (*,2);
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    -a PP_JetRates;
+  } END_RIVET;
+}(analysis);

@@ -1,0 +1,26 @@
+(run){
+  # general settings
+  EVENTS 10M; FRAGMENTATION Off;
+  RESPECT_MASSIVE_FLAG 1;
+  # collider setup
+  BEAM_1 15 62.5; BEAM_2 -15 62.5;
+  # shower setup
+  SHOWER_GENERATOR Dire;
+  SCALES VAR{Abs2(p[2]+p[3])};
+  CSS_FS_AS_FAC 1; CSS_FS_PT2MIN 1;
+  ACTIVE[22] 0; ACTIVE[23] 0; MASS[25] 125;
+  MODEL HEFT; YUKAWA[15] 1.777;
+  PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
+}(run);
+
+(processes){
+  Process 15 -15 -> 93 93;
+  Order (*,0,2);
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    -a LL_JetRates;
+  } END_RIVET;
+}(analysis);

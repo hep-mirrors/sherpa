@@ -171,6 +171,12 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  CSSHOWER++/Showers/Makefile \
 	  CSSHOWER++/Main/Makefile \
 	  CSSHOWER++/Makefile \
+	  CFPSHOWER++/Tools/Makefile \
+	  CFPSHOWER++/Calculators/Makefile \
+	  CFPSHOWER++/Calculators/FF/Makefile \
+	  CFPSHOWER++/Shower/Makefile \
+	  CFPSHOWER++/Main/Makefile \
+	  CFPSHOWER++/Makefile \
 	  DIRE/Tools/Makefile \
 	  DIRE/Shower/Makefile \
 	  DIRE/Gauge/Makefile \

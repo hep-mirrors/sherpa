@@ -8,11 +8,12 @@
 #include "ATOOLS/Org/Message.H"
 
 using namespace SHERPA;
+using namespace PDF;
 using namespace ATOOLS;
 
 Shower_Handler::Shower_Handler(const std::string &dir,const std::string &file,
 			       MODEL::Model_Base *const model,
-			       PDF::ISR_Handler *const isr,const int type):
+			       ISR_Handler *const isr,const int type):
   p_shower(NULL), p_isr(isr)
 {
   Default_Reader reader;
@@ -21,12 +22,12 @@ Shower_Handler::Shower_Handler(const std::string &dir,const std::string &file,
   m_name=reader.GetStringNormalisingNoneLikeValues("SHOWER_GENERATOR","Dire");
   rpa->gen.SetVariable("JET_CRITERION",
 		       reader.Get<std::string>("JET_CRITERION",m_name));
-  p_shower = PDF::Shower_Getter::GetObject
-    (m_name,PDF::Shower_Key(model,p_isr,&reader,type));
+  p_shower =
+    Shower_Getter::GetObject(m_name,Shower_Key(model,p_isr,&reader,type));
   if (p_shower==NULL && m_name!="None" &&
       s_loader->LoadLibrary("Sherpa"+m_name)) {
-    p_shower = PDF::Shower_Getter::GetObject
-      (m_name,PDF::Shower_Key(model,p_isr,&reader,type));
+    p_shower =
+      Shower_Getter::GetObject(m_name,Shower_Key(model,p_isr,&reader,type));
   }
   if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
 }

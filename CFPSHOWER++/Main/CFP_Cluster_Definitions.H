@@ -1,0 +1,78 @@
+#ifndef CFPSHOWER_Main_CFP_Cluster_Definitions_H
+#define CFPSHOWER_Main_CFP_Cluster_Definitions_H
+
+#include "PDF/Main/Cluster_Definitions_Base.H"
+#include "ATOOLS/Math/Poincare.H"
+
+
+namespace CFPSHOWER {
+  /*
+  class Splitting_Function_Base;
+  class Shower;
+
+  struct CFP_Parameters {
+    double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_q2, m_mu2;
+    int m_mode, m_cpl, m_kin, m_col, m_kmode;
+    Splitting_Function_Base *p_sf;
+    ATOOLS::Vec4D m_pk, m_pijt, m_pkt;
+    ATOOLS::Poincare_Sequence m_lt;
+    CFP_Parameters(const double &kt2,const double &z,
+		  const double &y,const double &phi,
+		  const double &x,const double &q2,
+		  const int mode,const int kin,const int kmode):
+      m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0),
+      m_q2(q2), m_mu2(kt2), m_mode(mode), m_cpl(-1),
+      m_kin(kin), m_col(0), m_kmode(kmode), p_sf(NULL) {}
+  };// end of struct CFP_Parameters
+
+  std::ostream &operator<<(std::ostream &str,const CFP_Parameters &cs);
+
+  class CFP_Cluster_Definitions: public PDF::Cluster_Definitions_Base {
+  private:
+
+    const ATOOLS::Mass_Selector *p_ms;
+    ATOOLS::Cluster_Leg   *p_b;
+    
+    Shower *p_shower;
+    int     m_kmode, m_pdfcheck, m_kfmode;
+
+    Splitting_Function_Base *GetSF(const ATOOLS::Cluster_Leg *i,
+				   const ATOOLS::Cluster_Leg *j,
+				   const ATOOLS::Cluster_Leg *k,
+				   const ATOOLS::Flavour &mo,CFP_Parameters &cs) const;
+    void KernelWeight(const ATOOLS::Cluster_Leg *i,
+		      const ATOOLS::Cluster_Leg *j,
+		      const ATOOLS::Cluster_Leg *k,
+		      const ATOOLS::Flavour &mo,CFP_Parameters &cs,
+		      const int kmode) const;
+    ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl,const int anti=false) const;
+
+  public:
+    
+    CFP_Cluster_Definitions(Shower *const shower,const int kmode,
+			   const int pdfcheck,const int kfmode);
+
+    // CFP cluster kperps
+    double GetX(const ATOOLS::Cluster_Leg*,
+		Splitting_Function_Base* const) const;
+    PDF::Cluster_Param Cluster(const PDF::Cluster_Config &ca);
+    CFP_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
+		       const ATOOLS::Cluster_Leg *i,
+		       const ATOOLS::Cluster_Leg *j,
+		       const ATOOLS::Cluster_Leg *k,
+		       const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
+		       const ATOOLS::Mass_Selector *const ms=NULL,
+		       const int kin=-1,const int mode=0,const int force=0);
+
+    // CFP cluster kinematics
+    ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,
+				 int i,int j,int k,
+				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
+				 const ATOOLS::Mass_Selector *const ms=NULL,
+				 const int kin=0,const int mode=0);
+    
+  };// end of class CFP_Cluster_Definitions
+  */
+}// end of namespace CFPSHOWER
+
+#endif
