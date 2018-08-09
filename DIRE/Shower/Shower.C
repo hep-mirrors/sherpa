@@ -246,7 +246,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 		     <<(stat==1?"accept\n":"reject\n");
     msg_Debugging()<<"stat = "<<stat<<"\n";
     JetVeto_Args vwa(ampl,stat?0.0:-1.0,
-		     (p_vars ? p_vars->NumberOfParameters() : 0)+1);
+		     (p_vars?p_vars->NumberOfParameters():0)+1);
     Jet_Finder *jf(ampl->JF<Jet_Finder>());
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
@@ -298,7 +298,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	for (size_t i(0);i<swa.size();++i)
 	  if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
 	msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
+	if (p_vars) p_vars->UpdateOrInitialiseWeights
 	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
 	continue;
       }
@@ -308,7 +308,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	for (size_t i(0);i<swa.size();++i)
 	  if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
 	msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
+	if (p_vars) p_vars->UpdateOrInitialiseWeights
 	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
       }
     }

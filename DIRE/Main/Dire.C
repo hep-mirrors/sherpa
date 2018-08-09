@@ -109,6 +109,7 @@ int Dire::PerformShowers()
 int Dire::PerformDecayShowers()
 {
   DEBUG_FUNC(this);
+  p_shower->SetVariations(NULL);
   return PerformShowers();
 }
 
