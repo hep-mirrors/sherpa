@@ -256,6 +256,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     if (ampl->NLO()&64) {
       if (ampl->Flag()&2) {
 	msg_Debugging()<<"Skip UNLOPS veto\n";
+	if (s.p_l) a.Remove(s.p_l);
 	a.Remove(s.p_n);
 	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
 	for (size_t i(0);i<a.size();++i) a[i]->Restore();
@@ -284,6 +285,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	nskip+=vwa.m_skip[i];
       double wskip(nskip/double(vwa.m_skip.size()));
       if (ran->Get()<=wskip) {
+	if (s.p_l) a.Remove(s.p_l);
 	a.Remove(s.p_n);
 	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
 	for (size_t i(0);i<a.size();++i) a[i]->Restore();
