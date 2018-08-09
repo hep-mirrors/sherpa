@@ -1,7 +1,0 @@
-\documentclass[a4]{article}
-\begin{document}
-\section{Description of algorithm}
-\begin{enumerate}
-\item Iterate over all partons in the configuration ({\tt Configuration * config})
-\end{enumerate}
-\end{document}
