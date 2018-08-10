@@ -686,7 +686,7 @@ double DIS_Scale::SetScales(Cluster_Amplitude *ampl)
     breit.BoostBack(pp);
     breit.BoostBack(qq);
     if (!IsEqual(pp,p,1.0e-3) || !IsEqual(qq,q,1.0e-3))
-      msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
+      if (Q2>1.0) msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
     double HT(0.0);
     for (int i(0);i<moms.size();++i) {
       cms.Boost(moms[i]);
