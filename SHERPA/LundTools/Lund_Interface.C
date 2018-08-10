@@ -261,8 +261,8 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 	}
 	msg_Tracking()<<"Error in "<<METHOD<<"."<<endl
 		   <<"   Hadronization failed. Retry the event."<<endl;
-	if (rpa->gen.Beam1().IsLepton() ||
-	    rpa->gen.Beam2().IsLepton()) {
+	if (!rpa->gen.Beam1().IsHadron() ||
+	    !rpa->gen.Beam2().IsHadron()) {
 	  msg_Tracking()<<METHOD<<"(): Non-hh collision. Request new event instead.\n";
 	  return Return_Value::New_Event;
 	}
