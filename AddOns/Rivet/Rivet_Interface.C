@@ -452,7 +452,7 @@ bool Rivet_Interface::Init()
     m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
     m_splitvariations=reader.GetValue<int>("SPLITVARIATIONS", 1);
     m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
-    if (m_usehepmcshort && m_tag!="RIVET") {
+    if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
       THROW(fatal_error, "Internal error.");
     }
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);

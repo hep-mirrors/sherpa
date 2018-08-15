@@ -23,6 +23,7 @@ namespace PHASIC {
     int m_cmode;
 
     bool SetRandomColors(ATOOLS::Cluster_Amplitude *const ampl);
+    bool SetSumSqrColors(ATOOLS::Cluster_Amplitude *const ampl);
     bool SetLargeNCColors(ATOOLS::Cluster_Amplitude *const ampl);
 
   public:
