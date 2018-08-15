@@ -41,7 +41,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   for (size_t i(0);i<ampl->Legs().size();++i) {
     oc[i]=ampl->Leg(i)->Col();
     if (ampl->Leg(i)->Flav().Strong() &&
-	oc[i].m_i==0 && oc[i].m_j==0) vc=0;
+	oc[i].m_i<=0 && oc[i].m_j<=0) vc=0;
   }
   if (vc==0) {
     // select new color configuration
@@ -90,12 +90,17 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 	  if (oc[i].m_i!=0) cmap[ci[i]]=oc[i].m_i;
 	break;
       }
+      else {
+	for (size_t i(0);i<ampl->Legs().size();++i)
+	  ampl->Leg(i)->SetCol(oc[i]);
+      }
     }
     if ((trials%9==0 && trials>0) || sing) {
       // select new color configuration
       SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
       while (!colint->GeneratePoint());
       PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
+      msg_Debugging()<<"new color point "<<ni<<nj<<"\n";
       for (size_t i(0);i<ampl->Legs().size();++i)
 	oc[i]=ColorID(ni[i],nj[i]);
     }
@@ -162,7 +167,6 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
     }
     if (p_xs==NULL) return false;
   }
-  DEBUG_FUNC(p_xs->Name());
   msg_Debugging()<<*ampl<<"\n";
   SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
   PHASIC::Int_Vector ci(colint->I()), cj(colint->J());

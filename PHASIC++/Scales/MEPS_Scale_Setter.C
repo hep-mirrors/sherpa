@@ -431,7 +431,10 @@ double MEPS_Scale_Setter::Calculate
       ampls[i]=NULL;
       if (m_nproc) m_ampls.back()->SetOrderQCD
 		     (m_ampls.back()->OrderQCD()-1);
-      p_cs->SetColors(m_ampls.back()->Last());
+      ClusterAmplitude_Vector ampls(m_ampls);
+      m_ampls.clear();
+      p_cs->SetColors(ampls.back()->Last());
+      m_ampls=ampls;
       if (m_nproc) m_ampls.back()->SetOrderQCD
 		     (m_ampls.back()->OrderQCD()+1);
       msg_Debugging()<<"Selected configuration "<<i<<": {\n";
