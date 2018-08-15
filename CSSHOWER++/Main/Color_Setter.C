@@ -110,6 +110,69 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   return true;
 }
 
+bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
+{
+  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  colint->GenerateOrders();
+  const Idx_Matrix &orders(colint->Orders());
+  std::vector<double> psum(orders.size());
+  double csum(0.0);
+  for (int i(0);i<orders.size();++i) {
+    int last(0);
+    for (size_t j(0);j<orders[i].size();++j) {
+      Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+      if (cl->Flav().StrongCharge()==3) {
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,0));
+      }
+      else if (cl->Flav().StrongCharge()==-3) {
+	cl->SetCol(ColorID(0,last));
+	last=0;
+      }
+      else if (cl->Flav().StrongCharge()==8) {
+	int nlast(last);
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,nlast));
+      }
+      else {
+	cl->SetCol(ColorID(0,0));
+      }
+    }
+    msg_Debugging()<<"odering "<<orders[i]<<"\n";
+    msg_Debugging()<<*ampl<<"\n";
+    csum+=psum[i]=dabs(p_xs->Differential(*ampl,1|2|4));
+    msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
+  }
+  if (csum==0.0) return false;
+  double disc(csum*ran->Get()), sum(0.0);
+  for (size_t i(0);i<orders.size();++i)
+    if ((sum+=psum[i])>=disc) {
+      msg_Debugging()<<"selected ordering "<<i<<" -> "<<orders[i]<<"\n";
+      int last(0);
+      for (size_t j(0);j<orders[i].size();++j) {
+	Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+	if (cl->Flav().StrongCharge()==3) {
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,0));
+	}
+	else if (cl->Flav().StrongCharge()==-3) {
+	  cl->SetCol(ColorID(0,last));
+	  last=0;
+	}
+	else if (cl->Flav().StrongCharge()==8) {
+	  int nlast(last);
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,nlast));
+	}
+	else {
+	  cl->SetCol(ColorID(0,0));
+	}
+      }
+      return true;
+    }
+  THROW(fatal_error,"Internal error");
+}
+
 bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
 {
   Process_Base *proc(ampl->Proc<Process_Base>());
@@ -174,6 +237,11 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
     sol=SetRandomColors(ampl);
     break;
   } 
+  case 2: {
+    sol=SetSumSqrColors(ampl);
+    if (!sol) sol=SetRandomColors(ampl);
+    break;
+  }
   default:
     THROW(fatal_error,"Invalid colour setting mode");
   }

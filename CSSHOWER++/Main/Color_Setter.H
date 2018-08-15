@@ -17,6 +17,7 @@ namespace CSSHOWER {
     int m_cmode;
 
     bool SetRandomColors(ATOOLS::Cluster_Amplitude *const ampl);
+    bool SetSumSqrColors(ATOOLS::Cluster_Amplitude *const ampl);
 
   public:
 
