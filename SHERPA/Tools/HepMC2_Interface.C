@@ -354,7 +354,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
     }
     for (int i=0;i<blob->NOutP();i++) {
-      if (blob->OutParticle(i)->DecayBlob()==NULL) {
+      if (blob->OutParticle(i)->DecayBlob()==NULL ||
+	  m_ignoreblobs.count(blob->OutParticle(i)->DecayBlob()->Type())!=0) {
         Particle* parton=blob->OutParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
@@ -685,6 +686,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   if (parton->DecayBlob()==NULL ||
       m_ignoreblobs.count(parton->DecayBlob()->Type())!=0) {
     status=1;
+    DEBUG_VAR(*parton);
   }
   // Non-stable particles --- what about Hard_Decay?
   else {
