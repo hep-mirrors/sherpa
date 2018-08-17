@@ -133,10 +133,15 @@ namespace EXTAMP {
     ATOOLS::Vec4D m_pk;
     ATOOLS::Vec4D m_pai_tilde;
     ATOOLS::Vec4D m_pk_tilde;
+    ATOOLS::Vec4D m_n;         // for id case
     double m_ui;
     double m_x;
+    double m_xain;             // for id case
+    double m_viab;             // for id case
+    double m_vitilde;          // for id case
+    double m_alphamin;
 
-    double Alpha() const { return m_ui; }
+    double Alpha() const { return m_alphamin; }
 
     double ShowerX()  const { return m_x; }
     double ShowerY()  const { return m_ui; }

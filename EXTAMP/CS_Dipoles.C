@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Poincare.H"
 
 #include "assert.h"
+#include <algorithm>
 
 using namespace EXTAMP;
 
@@ -340,14 +341,14 @@ void IF_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
   assert(K()>1); assert(Emitter()<2); assert(Emitted()>1);
 
   switch(DipCase()){
-  case CS:
-  case IDin: {
+  case CS: {
     const ATOOLS::Vec4D& pa = p[Emitter()];
     const ATOOLS::Vec4D& pi = p[Emitted()];
     const ATOOLS::Vec4D& pk = p[K()];
   
     m_kin.m_x         = (pk*pa + pi*pa - pi*pk)/((pk+pi)*pa);
     m_kin.m_ui        = pi*pa/(pi*pa+pk*pa);
+    m_kin.m_alphamin  = m_kin.m_ui;
   
     m_kin.m_pk_tilde  = pk+pi-(1.0-m_kin.m_x)*pa;
     m_kin.m_pai_tilde = m_kin.m_x*pa;
@@ -363,6 +364,50 @@ void IF_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
     m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
     break;
     }
+  case IDin: {
+    const ATOOLS::Vec4D& pa = p[Emitter()];
+    const ATOOLS::Vec4D& pi = p[Emitted()];
+    const ATOOLS::Vec4D& pb = p[K()];
+    const ATOOLS::Vec4D& n  = p[0]+p[1];
+
+    /* all final-state patricles, except emitted parton */
+    std::vector<size_t> kj = {2,3,4,5,6};
+    std::vector<size_t>::iterator emitted_position = std::find(kj.begin(), kj.end(), Emitted());
+    if (emitted_position != kj.end()) // == kj.end() means the element was not found
+      kj.erase(emitted_position);
+
+    m_kin.m_vitilde   = pa*pi/(pa*n);
+    m_kin.m_alphamin  = m_kin.m_vitilde;
+    m_kin.m_viab      = pa*pb/((pa+pb)*pi);
+    m_kin.m_xain      = (pa-pi)*n/(pa*n);
+
+    m_kin.m_pai_tilde = pa*m_kin.m_xain;
+    m_kin.m_pi        = pi;                         // needed in CalcKinDependentPrefac
+    m_kin.m_pa        = pa;                         // needed in CalcKinDependentPrefac
+    m_kin.m_n         = n;                         // needed in CalcKinDependentPrefac
+
+    /* setting momenta of underlying Born config. */
+    m_kin.m_born_mom = p;
+    /* Apply transformation of kinematic spectator(s) */
+    ATOOLS::Vec4D Ka      = n-pi;
+    ATOOLS::Vec4D Katilde = n-(1-m_kin.m_xain)*pa;
+    for(auto j: kj){
+      m_kin.m_born_mom[j] = p[j]-2.0*p[j]*(Ka+Katilde)/(Ka+Katilde).Abs2()*(Ka+Katilde)
+                            +2.0*(p[j]*Ka)/Ka.Abs2()*Katilde;
+    }
+
+    /* alter v_iab to be calculated with mapped pb (as opposed to Catani-Seymour idea) */
+    m_kin.m_viab = pa*m_kin.m_born_mom[K()]/((pa+m_kin.m_born_mom[K()])*pi);
+
+    /* Replace emitter momentum with combined momentum of (ij) and
+       remove emitted. */
+    m_kin.m_born_mom[Emitter()] = m_kin.m_pai_tilde;
+    m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
+    break;
+    }
+  default:
+    THROW(fatal_error, "Invalid dipole case!");
+    break;
   }
 }
 
@@ -452,6 +497,7 @@ double FI_Dipole::CalcKinDependentPrefac() const
     return -1.0/(2.0*pi*pa);
     }
   }
+  THROW(fatal_error, "Internal Error.");
 }
 
 double IF_Dipole::CalcKinDependentPrefac() const
@@ -460,9 +506,22 @@ double IF_Dipole::CalcKinDependentPrefac() const
 
   const ATOOLS::Vec4D& pi = m_kin.m_pi;
   const ATOOLS::Vec4D& pa = m_kin.m_pa;
-  const double& x = m_kin.m_x;
-  
-  /* hep-ph/9605323v3 eq. (5.61) */
+  double x;
+
+  switch(DipCase()){
+  case CS: {
+    x = m_kin.m_x;
+    break;
+    }
+  case IDin: {
+    x = m_kin.m_xain;
+    break;
+    }
+  default:
+    THROW(fatal_error, "Internal Error.");
+  }
+    /* hep-ph/9605323v3 eq. (5.61) for CS
+                     or eq.(5.159) for IDin */
   return -1.0/(2.0*pi*pa*x);
 }
 
@@ -576,7 +635,7 @@ double FF_Dipole::CalcA() const
 double FI_Dipole::CalcA() const
 {
   switch(DipCase()){
-  case CS:{ 
+  case CS:{
     double zi = m_kin.m_zi;
     double zj = m_kin.m_zj;
     const double& x(m_kin.m_x);
@@ -612,23 +671,46 @@ double FI_Dipole::CalcA() const
 
 double IF_Dipole::CalcA() const
 {
-  const double& x  = (m_kin.m_x);
-  const double& ui = (m_kin.m_ui);
-  
-  /* Need this to distinguish (5.65) from (5.66) */
-  const ATOOLS::Flavour& flav_a = RealFlavours()[std::min(I(),J())];
-  
-  /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.65)
-     - (5.68). */
-  if((FlavType()==FlavourType::qtoqg) && flav_a.IsQuark())
-    return 2.0/(1.0-x+ui) - (1.+x);
-  if((FlavType()==FlavourType::qtoqg) && flav_a.IsGluon())
-    return 1.0-2.0*x*(1.0-x);
-  if(FlavType()==FlavourType::gtoqq)
-    return x;
-  if(FlavType()==FlavourType::gtogg)
-    return 1/(1.0-x+ui)-1.0+x*(1.0-x);
-    
+  switch(DipCase()){
+    case CS:{
+      const double& x  = (m_kin.m_x);
+      const double& ui = (m_kin.m_ui);
+
+      /* Need this to distinguish (5.65) from (5.66) */
+      const ATOOLS::Flavour& flav_a = RealFlavours()[std::min(I(),J())];
+
+      /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.65)
+         - (5.68). */
+      if((FlavType()==FlavourType::qtoqg) && flav_a.IsQuark())
+        return 2.0/(1.0-x+ui) - (1.+x);
+      if((FlavType()==FlavourType::qtoqg) && flav_a.IsGluon())
+        return 1.0-2.0*x*(1.0-x);
+      if(FlavType()==FlavourType::gtoqq)
+        return x;
+      if(FlavType()==FlavourType::gtogg)
+        return 1/(1.0-x+ui)-1.0+x*(1.0-x);
+      break;
+    }
+    case IDin:{
+      const double& xain = (m_kin.m_xain);
+      const double& viab = (m_kin.m_viab);
+
+      /* Need this to distinguish (5.165) from (5.166) */
+      const ATOOLS::Flavour& flav_a = RealFlavours()[std::min(I(),J())];
+
+      /* Coefficients of \delta_{ss^\prime} or -g^{\mu\nu} in eq. (5.165)
+         - (5.168). */
+      if((FlavType()==FlavourType::qtoqg) && flav_a.IsQuark())
+        return 2.0*viab - (1.+xain);
+      if((FlavType()==FlavourType::qtoqg) && flav_a.IsGluon())
+        return 1.0-2.0*xain*(1.0-xain);
+      if(FlavType()==FlavourType::gtoqq)
+        return xain;
+      if(FlavType()==FlavourType::gtogg)
+        return viab-1.0+xain*(1.0-xain);
+      break;
+    }
+  }
   THROW(fatal_error, "Internal error");
 }
 
@@ -665,11 +747,12 @@ ATOOLS::Vec4D FF_Dipole::CalcPtilde() const
 {
   switch(DipCase()){
   case ID:
+  /* test case of ID-dipoles when compared with RES-dipoles */
     return m_kin.m_n*m_kin.m_pa/(m_kin.m_pi*m_kin.m_pa)*m_kin.m_pi - m_kin.m_n;
   default:
-/* for pseudo-dipoles not necessary as only q>qg splitting function is used
-   and this has a trivial spin correlation delta_ssprime,
-   i.e. this function is not called when pseudodipoles are used */
+  /* for pseudo-dipoles not necessary as only q>qg splitting function is used
+     and this has a trivial spin correlation delta_ssprime,
+     i.e. this function is not called when pseudodipoles are used */
 
     /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.8), (5.9)  */
     return m_kin.m_zi*m_kin.m_pi - m_kin.m_zj*m_kin.m_pj;
@@ -682,14 +765,21 @@ ATOOLS::Vec4D FI_Dipole::CalcPtilde() const
   case CS: 
     /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.40), (5.41)  */
     return m_kin.m_zi*m_kin.m_pi - m_kin.m_zj*m_kin.m_pj;
-  case IDin: THROW(fatal_error,"Must not occur");                  // TODO: checked, does not occur
+  case IDin:
+    THROW(fatal_error,"Must not occur");
   }
 }
   
 ATOOLS::Vec4D IF_Dipole::CalcPtilde() const
 {
-  /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.67), (5.68)  */
-  return m_kin.m_pi/m_kin.m_ui - m_kin.m_pk/(1.0-m_kin.m_ui);
+  switch(DipCase()){
+  case CS:
+    /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.67), (5.68)  */
+    return m_kin.m_pi/m_kin.m_ui - m_kin.m_pk/(1.0-m_kin.m_ui);
+  case IDin:
+    /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.167), (5.168)  */
+    return m_kin.m_n*m_kin.m_pa/(m_kin.m_pa*m_kin.m_pi)*m_kin.m_pi-m_kin.m_n;
+  }
 }
 
 ATOOLS::Vec4D II_Dipole::CalcPtilde() const
@@ -705,33 +795,34 @@ ATOOLS::Vec4D II_Dipole::CalcPtilde() const
 double FF_Dipole::CalcB() const
 {
   switch(DipCase()){
-  case ID:{
-    const double& zi(m_kin.m_zain);
-    const double& zj(m_kin.m_zain);
+    case ID:{
+      /* required for ee > uug, which I used for comparison with RES-dipoles */
+      const double& zi(m_kin.m_zain);
+      const double& zj(m_kin.m_zain);
 
-    switch(FlavType()){
-    case FlavourType::qtoqg:
-      return 0.0;            // will be multiplied with zero anyway
-    case FlavourType::gtoqq:
-      return +4.0*zi*zj;
-    case FlavourType::gtogg:
-      return -2.0*zi*zj;
+      switch(FlavType()){
+      case FlavourType::qtoqg:
+        return 0.0;            // will be multiplied with zero anyway
+      case FlavourType::gtoqq:
+        return +4.0*zi*zj;
+      case FlavourType::gtogg:
+        return -2.0*zi*zj;
+      }
+
     }
+    default:{
+      /* IDa, IDb, IDin applies only for q>qg case: no diffenrence to CS */
+      const double& zi(m_kin.m_zi);
+      const double& zj(m_kin.m_zj);
 
-  }
-  default:{
-    /* ID applies only for q>qg case: no diffenrence to CS */
-    const double& zi(m_kin.m_zi);
-    const double& zj(m_kin.m_zj);
-
-    switch(FlavType()){
-    case FlavourType::qtoqg:
-      return 0.0;            // will be multiplied with zero anyway
-    case FlavourType::gtoqq:
-      return +4.0*zi*zj;
-    case FlavourType::gtogg:
-      return -2.0*zi*zj;
-    }
+      switch(FlavType()){
+      case FlavourType::qtoqg:
+        return 0.0;            // will be multiplied with zero anyway
+      case FlavourType::gtoqq:
+        return +4.0*zi*zj;
+      case FlavourType::gtogg:
+        return -2.0*zi*zj;
+      }
     }
   }
   THROW(fatal_error, "Internal error");
@@ -739,7 +830,7 @@ double FF_Dipole::CalcB() const
   
 double FI_Dipole::CalcB() const
 {
-  /* ID applies only for q>qg case: no diffenrence to CS */
+  /* IDa, IDb, IDin applies only for q>qg case: no diffenrence to CS */
   const double& zi(m_kin.m_zi);
   const double& zj(m_kin.m_zj);
 
@@ -756,15 +847,24 @@ double FI_Dipole::CalcB() const
 
 double IF_Dipole::CalcB() const
 {
-  const double& x(m_kin.m_x);
-    
-  if(FlavType()==FlavourType::qtoqg)
-    return -1.0;
-  if(FlavType()==FlavourType::gtoqq)
-    return -4.0*(1.0-x)/x;
-  if(FlavType()==FlavourType::gtogg)
-    return -2.0*(1.0-x)/x;
-    
+  double x;
+  switch(DipCase()){
+    case IDin:
+      x = m_kin.m_xain;
+      break;
+    default:
+      x = m_kin.m_x;
+      break;
+  }
+
+  switch(FlavType()){
+  case FlavourType::qtoqg:
+    return -1.0;            // will be multiplied with zero anyway
+  case FlavourType::gtoqq:
+    return -4.*(1.-x)/x;
+  case FlavourType::gtogg:
+    return -2.*(1.-x)/x;
+  }
   THROW(fatal_error, "Internal error");
 }
 

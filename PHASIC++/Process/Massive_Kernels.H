@@ -129,12 +129,21 @@ namespace PHASIC {
     double L3(int type, double x, const ATOOLS::Vec4D &pa, 
               const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n);
 
-    // K-terms with arise from FI CS-dipoles and have to be 
+    // K-terms which arise from FI CS-dipoles and have to be
     // subtracted, if FI pseudo-dipoles are used
     double K_fi1(int type, double x);
     double K_fi2(int type);
     double K_fi3(int type, double x);
     double K_fi4(int type, double eta);
+
+    // K-terms which arise from IF CS-dipoles and have to be
+    // subtracted, if IF pseudo-dipoles are used
+    double K_if1(int type, double x);
+    double K_if2(int type, const ATOOLS::Vec4D &pa,
+                 const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n);
+    double K_if3(int type, double x, const ATOOLS::Vec4D &pa,
+                 const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n);
+    double K_if4(int type, double eta);
 
     double t1(int type,int spin,double muq,double x);
     double t2(int type,int spin,double muq);

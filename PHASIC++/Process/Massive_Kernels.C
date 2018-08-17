@@ -1233,28 +1233,36 @@ double Massive_Kernels::at4(int type,int spin,double muq2,double x)
 double Massive_Kernels::L2(int type, const ATOOLS::Vec4D &pa, 
              const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
 {
-  double v = sqrt(1-n.Abs2()*(pa+pb).Abs2()/pow((pa+pb)*n,2.));
   switch(type){
-    case 1:
-      return 2.*m_CF*( DiLog(1.-(1.+v)/2.*(pa+pb)*n/(pa*n))
-                     + DiLog(1.-(1.-v)/2.*(pa+pb)*n/(pa*n)));
-    default:
-      THROW(fatal_error,"Invalid Splitting occured!");
+    case 2:
+    case 3:
+      return 0;
   }
-  return 0;
+
+  double v = sqrt(1-n.Abs2()*(pa+pb).Abs2()/pow((pa+pb)*n,2.));
+  return 2.*( DiLog(1.-(1.+v)/2.*(pa+pb)*n/(pa*n))
+              + DiLog(1.-(1.-v)/2.*(pa+pb)*n/(pa*n)));
 }
 
 double Massive_Kernels::L3(int type, double x, const ATOOLS::Vec4D &pa, 
              const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
 { 
+  double P_reg;
   switch(type){
-    case 1: 
-      return m_CF*(1+x)
-             *log(n.Abs2()*(pa*pb)/(2.*(pa*n)*(pa*n)));
-    default:
-      THROW(fatal_error,"Invalid Splitting occured!");
+    case 1:
+      P_reg = -(1.+x);
+      break;
+    case 2:
+      P_reg = m_CFbyCA*(1.+(1.-x)*(1.-x))/x;
+      break;
+    case 3:
+      P_reg = m_TRbyCF*(x*x+(1-x)*(1-x));
+      break;
+    case 4:
+      P_reg = 2.*((1.-x)/x-1+x*(1-x));
+      break;
   }
-  return 0;
+  return -P_reg * log(n.Abs2()*(pa*pb)/(2.*(pa*n)*(pa*n)));
 }
 
 
@@ -1306,4 +1314,51 @@ double Massive_Kernels::K_fi4(int type, double eta)
       gamma_Ti2=m_g2t;
   }
   return log(1-eta)*log(1.-eta)+gamma_Ti2*log(1.-eta);
+}
+
+
+double Massive_Kernels::K_if1(int type, double x)
+{
+  double K_if = 0;
+  switch(type){
+    case 1:
+    case 4:
+       K_if+= -2./(1.-x)*log(1.-x);
+  }
+
+  K_if += Massive_Kernels::Kt1(type,x);
+  return  K_if;
+}
+
+double Massive_Kernels::K_if2(int type, const ATOOLS::Vec4D &pa,
+             const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
+{
+  return Massive_Kernels::Kt2(type) + Massive_Kernels::L2(type,pa,pb,n);
+}
+
+double Massive_Kernels::K_if3(int type, double x, const ATOOLS::Vec4D &pa,
+             const ATOOLS::Vec4D &pb, const ATOOLS::Vec4D &n)
+{
+  double K_if = 0;
+  switch(type){
+    case 1:
+    case 4:
+       K_if+= 2./(1.-x)*log(2.-x);
+  }
+
+  K_if += Massive_Kernels::Kt3(type,x) + Massive_Kernels::L3(type,x,pa,pb,n);
+  return  K_if;
+}
+
+double Massive_Kernels::K_if4(int type, double x)
+{
+  double K_if = 0;
+  switch(type){
+    case 1:
+    case 4:
+       K_if+= log(1.-x)*log(1.-x);
+  }
+
+  K_if += Massive_Kernels::Kt4(type,x);
+  return  K_if;
 }

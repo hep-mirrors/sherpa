@@ -349,28 +349,50 @@ void KP_Terms::Calculate
           <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
     }
 
-  /* subtract contribution of K-terms from IF-dipoles,
-     i.e. eq.(8.26) in CS-paper */
   if(applyID) // subtract only if pseudo-dipoles are used
     for (size_t i=0;i<m_plist.size();i++) {
-      if(i==0 || i==1) continue;
-      /* convolved with quark-PDF, for uu>WWbb */
-      if(m_typea==1){
-        m_kpca[0]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)  // type (i.e. first argument) is always 1,
-                               +p_kernel->K_fi2(1)       // as the associated splitting is q > q
-                               -p_kernel->K_fi4(1,eta0));
-        m_kpca[1]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
-                                 +p_kernel->K_fi3(1,x0)));
+      if(i==0 || i==1)  continue; // II-dipoles
+      else {
+      /* subtract contribution to K-terms, which comes from IF CS-dipoles
+         and add contribution from IF pseudo-dipoles */
+        ATOOLS::Vec4D n = mom[0]+mom[1];
+        ATOOLS::Vec4D nx = mom[0]/x0+mom[1];
+        /* convolved with quark-PDF */
+//        if(m_typea==1){ // only for uu>WWbb and gg>WWbb test cases
+          m_kpca[0]-=dsij[0][i]*(-w*p_kernel->K_if1(m_typea,x0)
+                                 +p_kernel->K_if2(m_typea,mom[0],mom[m_plist[i]],n)
+                                 -p_kernel->K_if4(m_typea,eta0));
+          m_kpca[1]-=dsij[0][i]*(w*(p_kernel->K_if1(m_typea,x0)
+                                    +p_kernel->K_if3(m_typea,x0,mom[0]/x0,mom[m_plist[i]],nx)));
+//        }
+        /* convolved with gluon-PDF */
+//        else if(m_typea==2){ // only for uu>WWbb and gg>WWbb test cases
+          m_kpca[2]-=dsij[0][i]*(-w*p_kernel->K_if1(m_typea+2,x0)
+                                 +p_kernel->K_if2(m_typea+2,mom[0],mom[m_plist[i]],n)
+                                 -p_kernel->K_if4(m_typea+2,eta0));
+          m_kpca[3]-=dsij[0][i]*(w*(p_kernel->K_if1(m_typea+2,x0)
+                                    +p_kernel->K_if3(m_typea+2,x0,mom[0],mom[m_plist[i]],n)));
+//        }
+      /* subtract contribution to K-terms, which comes from FI-CS-dipoles,
+         i.e. eq.(8.29) in CS-paper */
+        /* convolved with quark-PDF */
+        if(m_typea==1){
+          m_kpca[0]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)  // type (i.e. first argument) is always 1,
+                                 +p_kernel->K_fi2(1)       // as the associated splitting is q > q
+                                 -p_kernel->K_fi4(1,eta0));
+          m_kpca[1]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
+                                   +p_kernel->K_fi3(1,x0)));
+        }
+        /* convolved with gluon-PDF */
+        else if(m_typea==2){
+          m_kpca[2]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)
+                                 +p_kernel->K_fi2(1)
+                                 -p_kernel->K_fi4(1,eta0));
+          m_kpca[3]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
+                                   +p_kernel->K_fi3(1,x0)));
+        }
+        else THROW(fatal_error, "Invalid splitting type in KP-term subtraction.")
       }
-      /* convolved with gluon-PDF, for gg>WWbb */
-      else if(m_typea==2){
-        m_kpca[2]+=dsij[0][i]*(-w*p_kernel->K_fi1(1,x0)
-                               +p_kernel->K_fi2(1)
-                               -p_kernel->K_fi4(1,eta0));
-        m_kpca[3]+=dsij[0][i]*(w*(p_kernel->K_fi1(1,x0)
-                                 +p_kernel->K_fi3(1,x0)));
-      }
-      else THROW(fatal_error, "Unvalid splitting type in KP-term subtraction.")
     }
   }
 
@@ -514,28 +536,51 @@ void KP_Terms::Calculate
           <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
           <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
     }
-  /* subtract contribution of K-terms from IF-dipoles,
-     i.e. eq.(8.26) in CS-paper */
+
   if(applyID) // subtract only if pseudo-dipoles are used
     for (size_t i=0;i<m_plist.size();i++) {
-      if(i==0 || i==1) continue;
-      /* convolved with quark-PDF, for uu>WWbb */
-      if(m_typeb==1){
-        m_kpcb[0]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
-                               +p_kernel->K_fi2(1)
-                               -p_kernel->K_fi4(1,eta1));
-        m_kpcb[1]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
-                                 +p_kernel->K_fi3(1,x1)));
+      if(i==0 || i==1)  continue;
+      else {
+        /* subtract contribution to K-terms, which comes from IF CS-dipoles
+           and add contribution from IF pseudo-dipoles */
+        ATOOLS::Vec4D n = mom[0]+mom[1];
+        ATOOLS::Vec4D nx = mom[0]+mom[1]/x1;
+        /* convolved with quark-PDF */
+//        if(m_typeb==1){
+          m_kpcb[0]-=dsij[1][i]*(-w*p_kernel->K_if1(m_typeb,x1)
+                                 +p_kernel->K_if2(m_typeb,mom[1],mom[m_plist[i]],n)
+                                 -p_kernel->K_if4(m_typeb,eta1));
+          m_kpcb[1]-=dsij[1][i]*(w*(p_kernel->K_if1(m_typeb,x1)
+                                   +p_kernel->K_if3(m_typeb,x1,mom[1]/x1,mom[m_plist[i]],nx)));
+//        }
+        /* convolved with gluon-PDF */
+//        else if(m_typeb==2){
+          m_kpcb[2]-=dsij[1][i]*(-w*p_kernel->K_if1(m_typeb+2,x1)
+                                 +p_kernel->K_if2(m_typeb+2,mom[1],mom[m_plist[i]],n)
+                                 -p_kernel->K_if4(m_typeb+2,eta1));
+          m_kpcb[3]-=dsij[1][i]*(w*(p_kernel->K_if1(m_typeb+2,x1)
+                                   +p_kernel->K_if3(m_typeb+2,x1,mom[1],mom[m_plist[i]],n)));
+//        }
+        /* subtract contribution to K-terms which comes from FI-dipoles,
+           i.e. eq.(8.29) in CS-paper */
+        /* convolved with quark-PDF */
+        if(m_typeb==1){
+          m_kpcb[0]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
+                                 +p_kernel->K_fi2(1)
+                                 -p_kernel->K_fi4(1,eta1));
+          m_kpcb[1]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
+                                   +p_kernel->K_fi3(1,x1)));
+        }
+        /* convolved with gluon-PDF */
+        else if(m_typeb==2){
+          m_kpcb[2]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
+                                 +p_kernel->K_fi2(1)
+                                 -p_kernel->K_fi4(1,eta1));
+          m_kpcb[3]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
+                                   +p_kernel->K_fi3(1,x1)));
+        }
+        else THROW(fatal_error, "Unvalid splitting type in KP-term subtraction.")
       }
-      /* convolved with gluon-PDF, for gg>WWbb */
-      else if(m_typeb==2){
-        m_kpcb[2]+=dsij[1][i]*(-w*p_kernel->K_fi1(1,x1)
-                               +p_kernel->K_fi2(1)
-                               -p_kernel->K_fi4(1,eta1));
-        m_kpcb[3]+=dsij[1][i]*(w*(p_kernel->K_fi1(1,x1)
-                                 +p_kernel->K_fi3(1,x1)));
-      }
-      else THROW(fatal_error, "Unvalid splitting type in KP-term subtraction.")
     }
   }
 
@@ -610,10 +655,8 @@ double KP_Terms::CalculateHP
         double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
   
         double v = sqrt(1-(n.Abs2())*((pai+pb).Abs2())/pow((pai+pb)*n,2.));  // eq.(C.21) in CS
-        H_temp += -( 0.25 +
-                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))        // has delta(1-z) prefactor
-                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )
-                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) ); // has no delta(1-z) prefactor
+        H_temp += -( 0.25 + p_kernel->L2(1,pai,pb,n)
+                          + p_kernel->L3(1,z,pa,pb,nz) );
   
         H_temp *= Mab;
         m_H    += H_temp;
@@ -628,7 +671,6 @@ double KP_Terms::CalculateHP
       other_finalstate_parton = 9-ai;
       for(auto b: parton_indices){   // sum over all spectator-partons
         if(b==ai) continue;
-//        if(b<2) continue;            // spectator is in initial-state
   
         H_temp = 0;
         // labeling: 2=W+, 3=W-, 4=j, 5=j
@@ -651,10 +693,8 @@ double KP_Terms::CalculateHP
         double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
   
         double v = sqrt(1-(n.Abs2())*((pai+pb).Abs2())/pow((pai+pb)*n,2.));  // eq.(C.21) in CS
-        H_temp += -( 0.25 +
-                    2.*( DiLog(1.-(1.+v)/2.*(pai+pb)*n/(pai*n))        // has delta(1-z) prefactor
-                       + DiLog(1.-(1.-v)/2.*(pai+pb)*n/(pai*n)) )
-                + (1+z)*log(nz.Abs2()*(pa*pb)/(2.*(pa*nz)*(pa*nz))) ); // has no delta(1-z) prefactor
+        H_temp += -( 0.25 + p_kernel->L2(1,pai,pb,n)
+                          + p_kernel->L3(1,z,pa,pb,nz) );
   
         H_temp *= Mab;
         m_H    += H_temp;
