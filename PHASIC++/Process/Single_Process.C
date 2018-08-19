@@ -26,7 +26,9 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Single_Process::Single_Process() :
-  m_lastbxs(0.0), m_lastflux(0.0), m_zero(false)
+  m_lastbxs(0.0), m_lastflux(0.0), m_zero(false),
+  m_reweightscalecutoff(
+      Data_Reader(" ",";","!","=").GetValue<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0))
 {
 }
 
@@ -236,8 +238,12 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom()),
 			 f1, f2);
 
+        const double nextshowermuf2fac
+          = (ampl->KT2() > m_reweightscalecutoff) ?  showermuf2fac : 1.0;
+
         // skip equal scales
-        if (IsEqual(currentQ2 / currentscalefactor, ampl->Next() ? showermuf2fac * ampl->KT2() : Q2)) {
+        if (IsEqual(currentQ2 / currentscalefactor,
+                    ampl->Next() ? nextshowermuf2fac * ampl->KT2() : Q2)) {
           msg_Debugging()<<"Skip. Scales equal: t_i="<<currentQ2 / currentscalefactor
                          <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():Q2)
                          <<std::endl;
@@ -288,8 +294,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
           currentQ2 = Q2;
           currentscalefactor = 1.0;
         } else {
-          currentQ2 = showermuf2fac * ampl->KT2();
-          currentscalefactor = showermuf2fac;
+          currentQ2 = nextshowermuf2fac * ampl->KT2();
+          currentscalefactor = nextshowermuf2fac;
         }
 
 	// skip when a scale is below a (quark) mass threshold, new scale
@@ -844,12 +850,14 @@ std::vector<double> Single_Process::AlphaSRatios(
         ampl->OrderQCD() - ampl->Next()->OrderQCD() : ampl->OrderQCD();
       if (power > 0) {
         const double mu2(Max(ampl->Mu2(), MODEL::as->CutQ2()));
-        const double mu2new(mu2 * varparams->m_showermuR2fac);
-        const double alphasold(MODEL::as->BoundedAlphaS(mu2));
-        const double alphasnew(varparams->p_alphas->BoundedAlphaS(mu2new));
-        const double alphasratio(alphasnew / alphasold);
-        for (size_t i(0); i < power; i++) {
-          ratios.push_back(alphasratio);
+        if (mu2 > m_reweightscalecutoff) {
+          double mu2new(mu2 * varparams->m_showermuR2fac);
+          const double alphasold(MODEL::as->BoundedAlphaS(mu2));
+          const double alphasnew(varparams->p_alphas->BoundedAlphaS(mu2new));
+          const double alphasratio(alphasnew / alphasold);
+          for (size_t i(0); i < power; i++) {
+            ratios.push_back(alphasratio);
+          }
         }
       }
     }
