@@ -29,7 +29,7 @@ namespace Recola {
   public :
 
     Recola_Interface() : ME_Generator_Base("Recola") {  }
-    ~Recola_Interface();
+    ~Recola_Interface() {};
 
 
     bool Initialize(const std::string &path,const std::string &file,
