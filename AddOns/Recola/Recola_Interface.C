@@ -136,66 +136,6 @@ namespace Recola {
 
     s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
 
-    // Init EW scheme, used to be done at each PS point both in
-    // Recola_Born and Recola_Virtual
-    s_ewscheme = ToType<int>(rpa->gen.Variable("EW_SCHEME"),1);
-    double aqed = MODEL::aqed->Default();
-    switch (s_ewscheme)
-      {
-      case 3:
-	use_gfermi_scheme_and_set_alpha_rcl(aqed);
-	break;
-      case 2:
-	use_alphaz_scheme_rcl();
-	break;
-      case 1:
-	use_alpha0_scheme_rcl();
-	break;
-      default:
-	THROW(fatal_error, "Unsupported EW scheme");
-      }
-
-    // Set IR and UV scales (used to be in Recola_Born/Recola_Virtual
-    // at each PS point)
-    set_mu_ir_rcl(100);
-    set_mu_uv_rcl(100);
-
-    // Used to be done also at each phase space point in both
-    // Recola_Born and Recola_Virtual. This just sets s_default_flav.
-    // Can for sure be simplified and made more transparent
-    int nlight=0;
-    int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",Recola_Interface::GetDefaultFlav()+10);
-    int default_flavscheme(fixed);
-    if (default_flavscheme==16) default_flavscheme=-1;
-    if (fixed>0 && fixed<10){
-      nlight=fixed;
-    }
-    else{
-      if (default_flavscheme>10){
-	nlight=Recola_Interface::PDFnf(sqr(Flavour(kf_Z).Mass()),default_flavscheme-10);
-      }
-      if (default_flavscheme==-1)
-	nlight=-1;
-      if (default_flavscheme==-2 || default_flavscheme==0){
-	if (Flavour(kf_c).Mass()!=0)
-	  nlight=3;
-	else if (Flavour(kf_b).Mass()!=0)
-	  nlight=4;
-	else if (Flavour(kf_t).Mass()!=0)
-	  nlight=5;
-	else {
-	  msg_Out()<<"WARNING: 6 light flavours detected.\n";
-	  nlight=6;
-	}
-      }
-    }
-    s_default_flav=nlight;
-    
-    // Set Alpha
-    set_alphas_rcl(MODEL::as->Default(),
-		   Flavour(kf_Z).Mass(),
-		   s_default_flav);
-
     if(stat(s_recolaprefix.c_str(),&st) != 0) s_recolaprefix = RECOLA_PREFIX;
     s_recolaprefix = reader.GetValue<string>("RECOLA_PREFIX", s_recolaprefix);
     msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
@@ -203,7 +143,8 @@ namespace Recola {
     if(MODEL::s_model->Name() != "SM")
       THROW(not_implemented, "ONLY Standard Model so far supported in RECOLA");
 
-    // load library dynamically
+    // load library dynamically,
+    // keep this at the beginning of the function!
     s_loader->AddPath(s_recolaprefix);
     if (!s_loader->LoadLibrary("recola")) 
       THROW(fatal_error, "Failed to load librecola.");
@@ -271,6 +212,68 @@ namespace Recola {
     s_pdfmass[5]=tmass;
 
     set_alphas_masses_rcl(cmass,bmass,tmass,Flavour(kf_c).Width(),Flavour(kf_b).Width(),Flavour(kf_t).Width()); 
+
+    // Init EW scheme
+    s_ewscheme = ToType<int>(rpa->gen.Variable("EW_SCHEME"),1);
+    double aqed = MODEL::aqed->Default();
+    switch (s_ewscheme)
+      {
+      case 3:
+	use_gfermi_scheme_and_set_alpha_rcl(aqed);
+	break;
+      case 2:
+	//Currently not implemented in Recola, GFermi is used instead!
+        use_alphaz_scheme_rcl();
+        break;
+      case 1:
+	use_alpha0_scheme_rcl();
+	break;
+      default:
+	THROW(fatal_error, "Unsupported EW scheme");
+      }
+
+    // Set IR and UV scales 
+    double IRscale=reader.GetValue<double>("IR_SCALE",100);
+    double UVscale=reader.GetValue<double>("UV_SCALE",100);
+    set_mu_ir_rcl(IRscale);
+    set_mu_uv_rcl(UVscale);
+
+    // Used to be done in both Recola_Born and Recola_Virtual.
+    // This just sets s_default_flav.
+    // Can for sure be simplified and made more transparent
+    int nlight=0;
+    int fixed=reader.GetValue<int>("RECOLA_FIXED_FLAVS",Recola_Interface::GetDefaultFlav()+10);
+    int default_flavscheme(fixed);
+    if (default_flavscheme==16) default_flavscheme=-1;
+    if (fixed>0 && fixed<10){
+      nlight=fixed;
+    }
+    else{
+      if (default_flavscheme>10){
+	nlight=Recola_Interface::PDFnf(sqr(Flavour(kf_Z).Mass()),default_flavscheme-10);
+      }
+      if (default_flavscheme==-1)
+	nlight=-1;
+      if (default_flavscheme==-2 || default_flavscheme==0){
+	if (Flavour(kf_c).Mass()!=0)
+	  nlight=3;
+	else if (Flavour(kf_b).Mass()!=0)
+	  nlight=4;
+	else if (Flavour(kf_t).Mass()!=0)
+	  nlight=5;
+	else {
+	  msg_Out()<<"WARNING: 6 light flavours detected.\n";
+	  nlight=6;
+	}
+      }
+    }
+    s_default_flav=nlight;
+    
+    // Set AlphaS
+    set_alphas_rcl(MODEL::as->Default(),
+		   Flavour(kf_Z).Mass(),
+		   s_default_flav);
+
     return true;
   }
 
