@@ -145,7 +145,7 @@ namespace Recola {
 
     // load library dynamically,
     // keep this at the beginning of the function!
-    s_loader->AddPath(s_recolaprefix);
+    s_loader->AddPath(s_recolaprefix+"/lib");
     if (!s_loader->LoadLibrary("recola")) 
       THROW(fatal_error, "Failed to load librecola.");
 
