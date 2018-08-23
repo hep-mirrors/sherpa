@@ -457,7 +457,7 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
 		   <<"  "<<iit->second->Name()<<"\n";
     if (iit->second->Revision()!=revision) str<<prefix
       <<"===> "<<iit->second->Name()<<" has local modifications "
-      <<" <===\n";
+      <<iit->second->Checksum()<<" <===\n";
   }
   if (mode&1) str<<prefix<<"}\n";
   str<<std::endl;
