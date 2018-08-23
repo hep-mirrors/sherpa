@@ -324,10 +324,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   return true;
 }
 
-std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
-(const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
+    Process_Info pi, NLOTypeStringProcessMap_Map*& pmap)
 {
-  Process_Info cpi(pi);
   std::set<Process_Info> trials;
   std::vector<Process_Base*> procs;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
@@ -339,12 +338,12 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
     Flavour_Vector cfl(fl);
     size_t n(0);
-    cpi.m_ii.SetExternal(cfl,n);
-    cpi.m_fi.SetExternal(cfl,n);
-    Process_Base::SortFlavours(cpi,1);
-    if (trials.find(cpi)==trials.end()) {
-      trials.insert(cpi);
-      std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
+    pi.m_ii.SetExternal(cfl,n);
+    pi.m_fi.SetExternal(cfl,n);
+    Process_Base::SortFlavours(pi,1);
+    if (trials.find(pi)==trials.end()) {
+      trials.insert(pi);
+      std::vector<Process_Base*> cp=InitializeSingleProcess(pi,pmap);
       procs.insert(procs.end(),cp.begin(),cp.end());
     }
     ++fid[hc];

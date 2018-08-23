@@ -130,8 +130,8 @@ namespace SHERPA {
                          const int &priority,
                          std::map<std::string,std::pair<int,Type> >&) const;
 
-    std::vector<PHASIC::Process_Base*> InitializeProcess
-    (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    std::vector<PHASIC::Process_Base*> InitializeProcess(
+        PHASIC::Process_Info, PHASIC::NLOTypeStringProcessMap_Map*&);
     std::vector<PHASIC::Process_Base*> InitializeSingleProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
 
