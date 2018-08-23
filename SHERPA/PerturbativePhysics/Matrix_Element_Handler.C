@@ -327,8 +327,9 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
     Process_Info pi, NLOTypeStringProcessMap_Map*& pmap)
 {
-  std::set<Process_Info> trials;
+  CheckInitialStateOrdering(pi);
   std::vector<Process_Base*> procs;
+  std::set<Process_Info> initialized_pi_set;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
   std::vector<int> fid(fls.size(),0);
   Flavour_Vector fl(fls.size());
@@ -337,12 +338,11 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
     if(fid[hc]==fls[hc].size()){fid[hc--]=0;++fid[hc];continue;}
     fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
     Flavour_Vector cfl(fl);
-    size_t n(0);
-    pi.m_ii.SetExternal(cfl,n);
-    pi.m_fi.SetExternal(cfl,n);
+    pi.m_ii.SetExternal(cfl);
+    pi.m_fi.SetExternal(cfl);
     Process_Base::SortFlavours(pi,1);
-    if (trials.find(pi)==trials.end()) {
-      trials.insert(pi);
+    if (initialized_pi_set.find(pi)==initialized_pi_set.end()) {
+      initialized_pi_set.insert(pi);
       std::vector<Process_Base*> cp=InitializeSingleProcess(pi,pmap);
       procs.insert(procs.end(),cp.begin(),cp.end());
     }
@@ -483,6 +483,25 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
     else THROW(fatal_error,"NLO_Mode "+ToString(m_nlomode)+" unknown.");
   }
   return procs;
+}
+
+void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
+{
+  auto cpi = pi;
+  Process_Base::SortFlavours(cpi, 1);
+  if (cpi.m_ii == pi.m_ii) {
+  } else {
+    msg_Error() << ATOOLS::om::red << "\n\nERROR:" << ATOOLS::om::reset
+      << " Wrong ordering of initial-state particles detected.\n"
+      << "Please re-order the initial state in your Process definition(s) "
+      << "like this:\n  ";
+    pi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << " ->  ";
+    cpi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << "\nYou may need to adjust your other beam-specific "
+      << "parameters accordingly.";
+    exit(-1);
+  }
 }
 
 int Matrix_Element_Handler::InitializeProcesses(

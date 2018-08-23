@@ -134,6 +134,7 @@ namespace SHERPA {
         PHASIC::Process_Info, PHASIC::NLOTypeStringProcessMap_Map*&);
     std::vector<PHASIC::Process_Base*> InitializeSingleProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    void CheckInitialStateOrdering(const PHASIC::Process_Info&);
 
     void BuildProcesses();
     void ReadFinalStateMultiIndependentProcessSettings(
