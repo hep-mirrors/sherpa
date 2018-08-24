@@ -180,7 +180,7 @@ namespace Recola {
     set_pole_mass_charm_rcl(Flavour(kf_c).Mass(),Flavour(kf_c).Width());
     set_pole_mass_bottom_rcl(Flavour(kf_b).Mass(),Flavour(kf_b).Width());
     set_pole_mass_top_rcl(Flavour(kf_t).Mass(),Flavour(kf_t).Width());
-    s_light_fermion_threshold = reader.GetValue<double>("RECOLA_LIGHT_FERMION_THRESHOLD",0);
+    s_light_fermion_threshold = reader.GetValue<double>("RECOLA_LIGHT_FERMION_THRESHOLD",1e-20);
     set_light_fermions_rcl(s_light_fermion_threshold);
     set_delta_ir_rcl(0.0,M_PI*M_PI/6.0); // adapts the conventions from COLLIER to Catani-Seymour
     
