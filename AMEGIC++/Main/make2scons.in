@@ -28,8 +28,7 @@ vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',Path
 vars.Add('CXX','The C++ Compiler','@CXX@')
 vars.Add('CXXFLAGS','The C++ Flags',['@AM_CXXFLAGS@'.split(" "),'@CXXFLAGS@'.split(" "),'-g0','-O2'])
 vars.Add(PathVariable('incdir','include path','@INCLUDEDIR@',PathVariable.PathIsDir))
-env = Environment(variables=vars,CPPPATH=['\${incdir}'])
-env['ENV']=os.environ
+env = Environment(variables=vars,CPPPATH=['\${incdir}'],ENV=os.environ)
 if env['PLATFORM']=='darwin':
    env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
 " > SConstruct;
