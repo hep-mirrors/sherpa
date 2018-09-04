@@ -28,7 +28,7 @@
   #
   # analysis
   ANALYSIS Rivet
-  ANALYSIS_OUTPUT DireG2_ggg
+  ANALYSIS_OUTPUT DireG2_gqqonly
 }(run)
 
 (processes){

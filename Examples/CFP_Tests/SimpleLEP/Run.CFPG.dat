@@ -28,7 +28,7 @@
   #
   # analysis
   ANALYSIS Rivet
-  ANALYSIS_OUTPUT CFPG2_ggg
+  ANALYSIS_OUTPUT CFPG2_ggg_fromgqq
 }(run)
 
 (processes){

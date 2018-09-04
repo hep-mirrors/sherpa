@@ -1,0 +1,11 @@
+Name: DIS_JetRates
+Summary: DIS shower validation analysis
+Status: UNVALIDATED
+Authors:
+ - Stefan Hoeche <shoeche@slac.stanford.edu>
+Energies: ANY
+NumEvents: 1000
+PtCuts: [0]
+Description:
+  KT jet rates in the Breit frame.
+NeedsCrossSection: yes

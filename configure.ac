@@ -174,6 +174,9 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  CFPSHOWER++/Tools/Makefile \
 	  CFPSHOWER++/Calculators/Makefile \
 	  CFPSHOWER++/Calculators/FF/Makefile \
+	  CFPSHOWER++/Calculators/FI/Makefile \
+	  CFPSHOWER++/Calculators/IF/Makefile \
+	  CFPSHOWER++/Calculators/II/Makefile \
 	  CFPSHOWER++/Shower/Makefile \
 	  CFPSHOWER++/Main/Makefile \
 	  CFPSHOWER++/Makefile \

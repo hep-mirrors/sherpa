@@ -1,0 +1,54 @@
+#include "CFPSHOWER++/Calculators/IF/SF_IF.H"
+#include "CFPSHOWER++/Shower/Kernel.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Message.H"
+
+using namespace CFPSHOWER;
+using namespace PHASIC;
+using namespace ATOOLS;
+
+SF_IF::SF_IF(const Kernel_Info & info) : SF_Base(info) {}
+
+double SF_IF::Jacobean(const Splitting & split) const {
+  double eta_old = split.Eta();
+  double eta_new = split.Eta()/split.X();
+  size_t beam    = split.GetSplitter()->Beam()-1;
+  double pdf_old = split.GetKernel()->GetXPDF(eta_old,split.T(),m_flavs[0],beam);
+  double pdf_new = split.GetKernel()->GetXPDF(eta_new,split.T(),m_flavs[1],beam);
+  if (dabs(pdf_old) > (split.GetKernel()->PDFMinValue() *
+		       log(1.-eta_old)/log(1.-split.GetKernel()->PDFXMin())) ) {
+    return pdf_new/pdf_old;
+  }
+  else {
+  }
+  return 0.;
+}
+
+bool SF_IF::InitKinematics(Splitting & split) const {
+  split.SetY(split.T() / (split.Q2() * (1.-split.Z())));
+  split.SetX(split.Z());
+  return true;
+}
+
+int SF_IF::Construct(Splitting & split) const {
+  Kin_Args kin_if(split.Y(),split.X(),split.phi(),split.KinScheme());
+  Parton * helper(NULL);
+  /*
+  if (split.KinScheme()==0)
+    for (size_t i(0);i<split.GetSplitter->Ampl()->size();++i)
+      if ((*s.p_c->Ampl())[i]->Beam()==3-s.p_c->Beam()) {
+	b=(*s.p_c->Ampl())[i];
+	break;
+      }
+  */
+  if (ConstructIFDipole(split.mi2(),split.mj2(),split.mij2(),split.mk2(),
+			helper?split.GetKernel()->GetMSel()->Mass2(helper->Flav()):0.0,
+			-split.GetSplitter()->Mom(),split.GetSpectator()->Mom(),
+			helper?-helper->Mom():Vec4D(),kin_if) < 0) return -1;
+  split.SetMom(0, -kin_if.m_pi);
+  split.SetMom(1,  kin_if.m_pj);
+  split.SetSpecMom(kin_if.m_pk);
+  split.SetSequence(kin_if.m_lam);
+  return 1;
+}

@@ -12,17 +12,21 @@ using namespace ATOOLS;
 using namespace std;
 
 Kernel::Kernel(const Kernel_Info & info) :
-  m_type(info.Type()), m_flavs(info.GetFlavs()), m_swapped(info.Swapped()) {}
+  m_type(info.Type()), m_swapped(info.Swapped()),
+  m_flavs(info.GetFlavs()), p_msel(NULL)
+{
+  for (size_t beam=0;beam<2;beam++) p_pdf[beam] = NULL;
+}
 
 double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
   split.SetKernel(this);
   //if (!split.InitKinematics(msel)) return 0.;
   split.InitKinematics(msel);
-  double I = (p_gauge->Charge() * p_sfunction->Integral(split) *
+  double I = (p_gauge->Charge() * p_sf->Integral(split) *
 	      p_gauge->OverEstimate(split));
-  //msg_Out()<<"   * "<<p_sfunction->Name()<<" ("<<m_swapped<<") "
+  //msg_Out()<<"   * "<<p_sf->Name()<<" ("<<m_swapped<<") "
   //	   <<"("<<m_flavs[0]<<" -> "<<m_flavs[1]<<" "<<m_flavs[2]<<"): "
-  //	   <<p_gauge->Charge()<<" * "<<p_sfunction->Integral(split)<<" * "
+  //	   <<p_gauge->Charge()<<" * "<<p_sf->Integral(split)<<" * "
   //	   <<p_gauge->OverEstimate(split)<<" = "<<I<<" / (2 pi).\n";
   return I/(2.*M_PI);
 }
@@ -38,44 +42,63 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
   // - if this is successful, calculate weights, apply hit-or-miss, attach
   //   acceptance and rejection weights to the splitter-spectator pair
   split.SetKernel(this);
+  p_sf->GeneratePoint(split);
   if (!split.InitKinematics(msel)) {
     //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", no phase space for "
-    //	     <<p_sfunction->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
     //	     <<"Q^2 = "<<split.Q2()<<").\n";
     return false;
   }
-  p_sfunction->GeneratePoint(split);
-  p_sfunction->InitKinematics(split);
+  p_sf->InitKinematics(split);
   if (!p_gauge->SetColours(split)) return false;
-  if (p_sfunction->Construct(split)==1) {
+  if (p_sf->Construct(split)==1) {
     if (split.GetWeight()) { delete split.GetWeight(); } 
     split.SetWeight(MakeWeight(split,overfac));
+    //msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))
+    //	     <<" * "<<(*p_sf)(split)<<" * "<<p_sf->Jacobean(split)<<"\n";
     if ((*split.GetWeight())()>=ran->Get()) {
-      //msg_Out()<<"   * add acceptance weight (t = "<<sqrt(split.T())<<", z = "<<split.Z()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "<<split.GetWeight()->Accept()<<"\n";
+      //msg_Out()<<"   * add acceptance weight "
+      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", eta = "<<split.Eta()<<") "
+      //       <<"from "<<(*split.GetWeight())<<" = "
+      //       <<split.GetWeight()->Accept()<<"\n";
       split.GetSplitter()->AddWeight(split,true);
       return true;
     }
     else {
-      //msg_Out()<<"   * add rejection weight (t = "<<sqrt(split.T())<<", z = "<<split.Z()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "<<split.GetWeight()->Reject()<<"\n";
+      //msg_Out()<<"   * add rejection weight "
+      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", eta = "<<split.Eta()<<") "
+      //       <<"from "<<(*split.GetWeight())<<" = "
+      //       <<split.GetWeight()->Reject()<<"\n";
       split.GetSplitter()->AddWeight(split,false);
     }
   }
-  //else {
-  //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", z = "<<split.Z()<<"), "
-  //	   <<"no kinematics found for "<<p_sfunction->Name()<<"(swap = "<<m_swapped<<").\n";
-  //}
+  else {
+    //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", z = "<<split.Z()<<"), "
+    //	     <<"no kinematics found for "<<p_sf->Name()<<"(swap = "
+    //	     <<m_swapped<<").\n";
+  }
   return false;
+}
+
+double Kernel::GetXPDF(const double & x,const double & Q2,
+		       const ATOOLS::Flavour & flav,const size_t beam) {
+  PDF::PDF_Base * pdf = p_pdf[beam];
+  if (pdf==NULL)                          return 0.;
+  if (x<pdf->XMin()   || x>pdf->XMax() ||
+      Q2<pdf->Q2Min() || Q2>pdf->Q2Max()) return 0.;
+  if (Q2<sqr(2.*flav.Mass(true)))         return 0.;
+  pdf->Calculate(x,Q2);
+  return pdf->GetXPDF(flav);
 }
 
 Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
   double weight   = (p_gauge->Charge() * (*p_gauge)(split) *
-		     (*p_sfunction)(split) *
-		     p_sfunction->Jacobean(split));
+		     (*p_sf)(split) *
+		     p_sf->Jacobean(split));
   double realover = (p_gauge->Charge() * p_gauge->OverEstimate(split) *
-		     p_sfunction->OverEstimate(split));
-  double over     = (dabs(weight)<realover) ? (weight>0.?1.:-1.)*realover : overfac*weight;
+		     p_sf->OverEstimate(split));
+  double over     = ( (dabs(weight)<realover) ?
+		      (weight>0.?1.:-1.)*realover : overfac*weight );
   //msg_Out()<<" *** "<<METHOD<<"("<<weight<<", "<<over<<", "<<realover<<").\n";
   return new Weight(weight,over,realover);
 }
@@ -102,19 +125,22 @@ DECLARE_GETTER(Kernel,"Kernel",Kernel,Kernel_Info);
 
 Kernel * Getter<Kernel,Kernel_Info,Kernel>::operator()(const Parameter_Type & info) const
 {
-  SF_Base    * sfunction = SF_Getter::GetObject(info.SFName(),info);
-  Gauge_Base * gaugepart = GP_Getter::GetObject(info.GPName(),info);
-  if (!sfunction || !gaugepart) {
-    if (sfunction) delete sfunction;
-    if (gaugepart) delete gaugepart;
+  SF_Base    * sf = SF_Getter::GetObject(info.SFName(),info);
+  Gauge_Base * gp = GP_Getter::GetObject(info.GPName(),info);
+  //if (sf)
+  //msg_Out()<<"   * try to init new Kernel("<<info.GetFlavs()[0]<<" -> "
+  //	     <<info.GetFlavs()[1]<<" "<<info.GetFlavs()[2]<<"): "
+  //	     <<sf->Name()<<" for swap = "<<info.Swapped()<<": ";
+  if (!sf || !gp) {
+    if (sf) delete sf;
+    if (gp) delete gp;
+    //if (sf) msg_Out()<<" failed.\n";
     return NULL;
   }
+  //  msg_Out()<<" succeeded.\n";
   Kernel * kernel = new Kernel(info);
-  kernel->SetSF(sfunction);
-  kernel->SetGauge(gaugepart);
-  //msg_Out()<<" *** Init new Kernel("<<info.GetFlavs()[0]<<" -> "
-  //	   <<info.GetFlavs()[1]<<" "<<info.GetFlavs()[2]<<"): "
-  //	   <<sfunction->Name()<<" for swap = "<<info.Swapped()<<".\n";
+  kernel->SetSF(sf);
+  kernel->SetGauge(gp);
   return kernel;
 }
 

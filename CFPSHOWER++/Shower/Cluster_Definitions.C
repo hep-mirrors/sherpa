@@ -54,7 +54,7 @@ Splitting Cluster_Definitions::KT2(const ATOOLS::Cluster_Amplitude &ampl,
   splitting.SetMom(0,li->Mom());
   splitting.SetMom(1,lj->Mom());
   splitting.SetSpecMom(lk->Mom());
-  splitting.SetEta(out1->GetXB());
+  splitting.SetEta(out1->XB());
   splitting.SetKinScheme(kin);
   splitting.SetClustered(1);
   /*

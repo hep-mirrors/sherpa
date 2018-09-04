@@ -23,11 +23,14 @@ Configuration::Configuration(Cluster_Amplitude * const ampl,
 
 void Configuration::Fill(map<Cluster_Leg*,Parton*> & lmap) {
   for (size_t i(0);i<p_ampl->Legs().size();++i) {
-    Cluster_Leg *leg = p_ampl->Leg(i);
-    Parton *parton = new Parton(leg->Flav(),leg->Mom());
+    Cluster_Leg * leg = p_ampl->Leg(i);
+    Parton * parton   = new Parton(leg->Flav(),leg->Mom());
     parton->SetColor(Color(leg->Col().m_i,leg->Col().m_j));
     push_back(parton);
-    if (i<p_ampl->NIn()) parton->SetBeam(leg->Mom()[3]>0.?2:1);
+    if (i<p_ampl->NIn()) {
+      parton->SetBeam(leg->Mom()[3]>0.?2:1);
+      parton->SetXB();
+    }
     lmap[leg] = parton;
   }
   EstablishRelations();

@@ -15,7 +15,7 @@ namespace CFPSHOWER {
 
 Parton::Parton(const Flavour & flav,const Vec4D & mom,
 	       const Color & color,const size_t & beam,const size_t & id) :
-  m_flav(flav), m_mom(mom), m_color(color), m_beam(beam), m_on(true)
+  m_flav(flav), m_mom(mom), m_color(color), m_beam(beam), m_xB(0.), m_on(true)
 {
   s_cid++; s_cnt++;
   if (id>0) m_id = id;
@@ -27,11 +27,10 @@ Parton::~Parton() {
   s_cnt--;
 }
 
-const double Parton::GetXB() const
+void Parton::SetXB() 
 {
-  if (m_beam==1) return -m_mom.PPlus()/rpa->gen.PBeam(0).PPlus();
-  if (m_beam==2) return -m_mom.PMinus()/rpa->gen.PBeam(1).PMinus();
-  return 0.;
+  if (m_beam==1) m_xB = -m_mom.PPlus()/rpa->gen.PBeam(0).PPlus();
+  if (m_beam==2) m_xB = -m_mom.PMinus()/rpa->gen.PBeam(1).PMinus();
 }
 
 void Parton::AddWeight(const Splitting & split,const bool & accept) {
@@ -81,7 +80,9 @@ double Parton::GetWeight(const double & t) const {
 ostream & CFPSHOWER::operator<<(ostream & s,Parton & part) {
   if (part.On()) s<<"  "; else s<<"# ";
   s<<"Parton("<<part.Id()<<", beam = "<<part.Beam()<<"): "
-   <<"["<<part.Flav()<<", mom = "<<part.Mom()<<", "<<"col = "<<part.GetColor()<<"] --> ";
+   <<"["<<part.Flav()<<", mom = "<<part.Mom()<<", ";
+  if (part.Beam()>0) s<<"xB = "<<part.XB()<<", ";
+  s<<"col = "<<part.GetColor()<<"] --> ";
   for (Parton_List::const_iterator pit=part.GetSpectators()->begin();
        pit!=part.GetSpectators()->end(); pit++) s<<(*pit)->Id()<<" ";
   s<<"\n";

@@ -14,6 +14,7 @@ namespace MODEL {
   class Running_AlphaQED;
   class Single_Vertex;
 }
+
 namespace PDF {
   class PDF_Base;
   class ISR_Handler;
@@ -39,7 +40,7 @@ namespace CFPSHOWER {
 
   class Shower {
   private:
-    double   m_t0[2], m_t0min, m_asfactor[2], m_muR2factor, m_muF2factor;
+    double   m_t0[2], m_t0min, m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
     int      m_kinscheme, m_kfactor, m_cplscheme, m_MEcorrs;
     long int m_nmax_em, m_nem;
     
@@ -48,7 +49,7 @@ namespace CFPSHOWER {
     MODEL::Running_AlphaS       * p_as;
     MODEL::Running_AlphaQED     * p_alpha;
     Cluster_Definitions         * p_cluster;
-    const ATOOLS::Mass_Selector * p_massselector;
+    const ATOOLS::Mass_Selector * p_msel;
     Configuration               * p_config;
     Splitting                   * p_winner;
     
@@ -76,11 +77,9 @@ namespace CFPSHOWER {
     bool Evolve(Configuration * config);
 
     void Reset(); 
-    inline void SetMassSelector(const ATOOLS::Mass_Selector * ms) {
-      p_massselector = ms;
-    }
-    inline const double & Weight() { return m_weight; }
-    
+    inline void SetMassSelector(const ATOOLS::Mass_Selector * ms) { p_msel = ms; }
+
+    inline const double &       Weight()                const { return m_weight; }
     Cluster_Definitions * const GetClusterDefinitions() const { return p_cluster; }
   };
 }

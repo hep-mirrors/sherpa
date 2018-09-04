@@ -60,12 +60,12 @@ double FVF_FF::operator()(const Splitting & split) const {
 }
 
 double FVF_FF::Integral(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return log(1.0+split.Q2()/split.T0()) * Kmax;
 }
 
 double FVF_FF::OverEstimate(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return A1inv(split.Z(),split.T0()/split.Q2()) * Kmax;
 }
 

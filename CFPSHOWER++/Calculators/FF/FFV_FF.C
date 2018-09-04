@@ -30,15 +30,16 @@ FFV_FF::FFV_FF(const Kernel_Info & info)  : SF_FF(info) {
 double FFV_FF::operator()(const Splitting & split) const {
   double mij2(split.mij2()), mi2(split.mi2()), mj2(split.mj2()), mk2(split.mk2());
   double z(split.Z()), y(split.Y()), Q2(split.Q2()), kappa2(split.T()/Q2);
-  // Start with the soft term only, including possible K factors (cusp anomalous dimensions),
-  // obtained from the gauge part of the kernel
+  // Start with the soft term only, including possible K factors (cusp anomalous
+  // dimensions), obtained from the gauge part of the kernel
   double Kfactor = (1.+split.GetKernel()->GetGauge()->K(split));
   double value   = A1(z,kappa2) * Kfactor, Beff = 0.;
   // All massless: just add the collinear parts.
   if (mi2==0 && mj2==0 && mk2==0.) {
     if (m_orderB>0) value += Beff = B1(z,kappa2);
   }
-  // Massive splitting - directly return 0 if the splitting is kinematically not viable 
+  // Massive splitting - directly return 0 if the splitting is kinematically
+  // not viable 
   else {
     double sijk(split.sijk());
     double muij2(mij2/sijk), mui2(mi2/sijk), muk2(mk2/sijk);
@@ -54,7 +55,8 @@ double FFV_FF::operator()(const Splitting & split) const {
     vtijk        = sqrt(vtijk)/(1.-muij2-muk2);
     vijk         = sqrt(vijk)/((1.-muij2-muk2) * (1.-y));
     double pipj  = Q2*y/2.;
-    value       += Beff = (vtijk/vijk) * (B1(z,kappa2) - ((1.-z)*mi2)/((1.-z+y)*pipj));
+    value       += Beff = (vtijk/vijk) * (B1(z,kappa2) -
+					  ((1.-z)*mi2)/((1.-z+y)*pipj));
     if (muk2>0.) {
       value    -= 2.*sqrt(vtkji/vkji)*mk2/((1.-z)*Q2)*y/((1.-z)+y);
       Beff     -= 2.*sqrt(vtkji/vkji)*mk2/((1.-z)*Q2)*y/((1.-z)+y);
@@ -65,12 +67,12 @@ double FFV_FF::operator()(const Splitting & split) const {
 }
 
 double FFV_FF::Integral(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return log(1.0+split.Q2()/split.T0()) * Kmax;
 }
 
 double FFV_FF::OverEstimate(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return A1(split.Z(),split.T0()/split.Q2()) * Kmax;
 }
 
@@ -99,7 +101,6 @@ DECLARE_GETTER(FFV_FF,"FF_FFV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FF>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
   if (info.Type()==kernel_type::FF &&
       info.GetFlavs()[0].IsFermion() && 
       info.GetFlavs()[1].IsFermion() &&

@@ -15,6 +15,7 @@ namespace CFPSHOWER {
     bool   m_swap;
 
     std::string m_name;
+    
     virtual double S1(const double & q2) const;
     virtual double S2(const double & q2) const;
     virtual double Lambda(const double & a,const double & b,const double & c) const;
@@ -28,7 +29,7 @@ namespace CFPSHOWER {
     virtual void   GeneratePoint(Splitting & split)      const=0;
     virtual bool   InitKinematics(Splitting & split)     const=0;
     virtual int    Construct(Splitting & split)          const=0;
-
+    
     virtual inline const std::string & Name()                const { return m_name; }
     virtual inline void SetName(const std::string & name)          { m_name = name; }
     virtual inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }

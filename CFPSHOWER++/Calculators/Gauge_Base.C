@@ -13,9 +13,10 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 Gauge_Base::Gauge_Base(const Kernel_Info & info) :
+  m_type(info.Type()),
   p_alphaS(info.GetAlphaS()), p_alpha(info.GetAlpha()),
   m_CF(4./3.), m_CA(3.), m_TR(1./2.), m_zeta3(1.202056903159594),
-  m_charge(1.), m_cplmax(1.), m_Kmax(0.),
+  m_charge(1.), m_cplmax(1.),
   m_muR2factor(info.MuR2Factor()), m_asfactor(info.AsFactor()), 
   m_orderA(1), m_orderB(1),
   m_swap(info.Swapped()), 
@@ -31,12 +32,14 @@ Gauge_Base::Gauge_Base(const Kernel_Info & info) :
   case 1: m_orderA = 2; m_orderB = 1; break;
   case 0: m_orderA = 1; m_orderB = 1; break;
   default:
-    msg_Error()<<"Error in "<<METHOD<<": invalid higher order setting, will use LO.\n";
+    msg_Error()<<"Error in "<<METHOD
+	       <<": invalid higher order setting, will use LO.\n";
     break;
   }
   if (p_alphaS) {
-    m_cplmax = (*p_alphaS)(1.);
-    m_Kmax   = K(1.);
+    m_cplmax = (*p_alphaS)(4.);
+    m_K1max  = K1(3.);
+    m_K2max  = K2(3.);
   }
 }
 
@@ -45,30 +48,37 @@ double Gauge_Base::operator()(const Splitting & split) {
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
-  return m_cplmax;
+  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.T0());
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
   return split.T();
 }
 
-double Gauge_Base::Beta0(const double & NF) const {
+const double Gauge_Base::Beta0(const double & NF) const {
   return 11./6.*m_CA - 2./3.*m_TR*NF;
 }
 
-double Gauge_Base::Beta1(const double & NF) const {
+const double Gauge_Base::Beta1(const double & NF) const {
   return 17./6.*sqr(m_CA) - (5./3.*m_CA+m_CF)*m_TR*NF;
 }
 
-double Gauge_Base::NF(const double & q2) const {
+const double Gauge_Base::NF(const double & q2) const {
   return p_alphaS->Nf(q2);
 }
   
-double Gauge_Base::K(const Splitting & split) const {
+const double Gauge_Base::K(const Splitting & split) const {
   return K(Scale(split));
 }
 
-double Gauge_Base::K(const double & q2) const {
+const double Gauge_Base::KMax(const Splitting & split) const {
+  if (m_orderA<2) return 0.;
+  double alphaS = (*p_alphaS)(split.T0())/(2.*M_PI);
+  if (m_orderA<3) return alphaS * m_K1max;
+  return alphaS * m_K1max + sqr(alphaS) * m_K2max;
+}
+
+const double Gauge_Base::K(const double & q2) const {
   // Coefficients K1 & K2 agree with DIRE.
   if (m_orderA<2) return 0.;
   double nf = NF(q2), alphaS = (*p_alphaS)(q2)/(2.*M_PI);
@@ -76,12 +86,13 @@ double Gauge_Base::K(const double & q2) const {
   return alphaS * K1(nf) + sqr(alphaS) * K2(nf);
 }
 
-double Gauge_Base::K1(const double & NF) const {
+const double Gauge_Base::K1(const double & NF) const {
   return m_CA*(67./18.-sqr(M_PI)/6.)-10./9.*m_TR*NF;
 }
 
-double Gauge_Base::K2(const double & NF) const {
-  return (sqr(m_CA)     * (245./6.-134./27.*sqr(M_PI)+11./45.*pow(M_PI,4)+22./3.*m_zeta3)
+const double Gauge_Base::K2(const double & NF) const {
+  return (sqr(m_CA)     * (245./6.-134./27.*sqr(M_PI)+11./45.*pow(M_PI,4) +
+			   22./3.*m_zeta3)
 	  +m_CA*m_TR*NF * (-418./27.+40./27.*sqr(M_PI)-56./3.*m_zeta3)
 	  +m_CF*m_TR*NF * (-55./3.+16.*m_zeta3)-16./27.*sqr(m_TR*NF))/4.;
 }

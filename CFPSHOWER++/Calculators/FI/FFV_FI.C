@@ -1,0 +1,102 @@
+#include "CFPSHOWER++/Calculators/FI/SF_FI.H"
+#include "CFPSHOWER++/Shower/Kernel.H"
+#include "ATOOLS/Org/Message.H"
+
+namespace CFPSHOWER {
+  class FFV_FI : public SF_FI {
+  private:
+    double m_jmax;
+    
+    double A1(const double & z,const double & kappa2) const;
+    double B1(const double & z,const double & kappa2) const;
+    double B2(const double & z,const double & kappa2) const;
+  public:
+    FFV_FI(const Kernel_Info & info);
+    double operator()(const Splitting & split) const;
+    double Integral(const Splitting & split) const;
+    double OverEstimate(const Splitting & split) const;
+    void   GeneratePoint(Splitting & split) const;
+  };
+}
+
+
+using namespace CFPSHOWER;
+using namespace ATOOLS;
+
+FFV_FI::FFV_FI(const Kernel_Info & info) :
+  SF_FI(info), m_jmax(5.) {
+  SetName(m_swap?"F->VF":"F->FV");
+}
+
+double FFV_FI::operator()(const Splitting & split) const {
+  double mij2(split.mij2()), mi2(split.mi2()), mj2(split.mj2()), mk2(split.mk2());
+  double z(split.Z()), y(split.Y()), Q2(split.Q2()), kappa2(split.T()/Q2);
+  // Start with the soft term only, including possible K factors
+  // (cusp anomalous dimensions), obtained from the gauge part of the kernel
+  double hofactor = (1.+split.GetKernel()->GetGauge()->K(split));
+  double value    = A1(z,kappa2) * hofactor;
+  // All massless: just add the collinear parts.
+  // TODO: Add the B2 parts as soon as the LL shower is validated.
+  if (m_orderB>0) {
+    if (mk2>1.e-12) {
+      msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
+		 <<"   Will exit the run.\n";
+      exit(1);
+    }
+    value += B1(z,kappa2);
+    if (!(mi2==0. && mj2==0.)) {
+      double pipj = Q2*(1.-y)/(2.*y);
+      value -= mi2/pipj;
+    }
+  }
+  if (split.Clustered()==0) value *= m_swap?(1.-z):z;
+  return value;
+}
+
+double FFV_FI::Integral(const Splitting & split) const {
+  double homax = (1.+split.GetKernel()->GetGauge()->KMax(split));
+  return log(1.0+split.Q2()/split.T0()) * homax * m_jmax;
+}
+
+double FFV_FI::OverEstimate(const Splitting & split) const {
+  double homax = (1.+split.GetKernel()->GetGauge()->KMax(split));
+  return A1(split.Z(),split.T0()/split.Q2()) * homax * m_jmax;
+}
+
+void FFV_FI::GeneratePoint(Splitting & split) const {
+  double kappa2 = split.T0()/split.Q2();
+  double z      = 1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)); 
+  split.SetZ(z);
+  split.Setphi();
+}
+
+double FFV_FI::A1(const double & z,const double & kappa2) const {
+  return 2.*(1.-z)/(sqr(1.-z)+kappa2);
+}
+
+double FFV_FI::B1(const double & z,const double & kappa2) const {
+  return -(1.+z);
+}
+
+double FFV_FI::B2(const double & z,const double & kappa2) const {
+  double b2 = 0.0;
+  return b2;
+}
+
+DECLARE_GETTER(FFV_FI,"FI_FFV",SF_Base,Kernel_Info);
+
+SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FI>::
+operator()(const Parameter_Type & info) const
+{
+  if (info.Type()==kernel_type::FI &&
+      info.GetFlavs()[0].IsFermion() && 
+      info.GetFlavs()[1].IsFermion() &&
+      info.GetFlavs()[2].IsVector()) return new FFV_FI(info);
+  return NULL;
+}
+
+void ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FI>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"FFV Splitting Function (FI)";
+}

@@ -28,12 +28,13 @@ namespace CFPSHOWER {
     ATOOLS::Vec4D   m_mom, m_sp;
     Color           m_color;
     size_t          m_id, m_beam;
+    double          m_xB;
     bool            m_on;
-    
-    Parton        * p_in;
+
+    Parton *              p_in;
     std::vector<Parton *> m_offsprings;
     std::list<Parton *>   m_spectators;
-    PWV_Map         m_specweights;
+    PWV_Map               m_specweights;
   public:
     Parton(const ATOOLS::Flavour & m_flav,const ATOOLS::Vec4D & mom,
 	   const Color & color=Color(),const size_t & beam=0,const size_t & id=0);
@@ -44,8 +45,8 @@ namespace CFPSHOWER {
     inline const ATOOLS::Vec4D   & Mom()                 const { return m_mom; }
     inline const size_t          & Beam()                const { return m_beam; }
     inline const size_t          & Id()                  const { return m_id; }
+    inline const double          & XB()                  const { return m_xB; }  
     inline Parton                * Out(const size_t & i) const { return m_offsprings[i]; }
-    inline Parton                * In()                  const { return p_in; }
     inline Color                 & GetColor()                  { return m_color; }
     inline const PWV_Map         & GetWeights()                { return m_specweights; }
     inline const std::list<Parton *>   * GetSpectators() const { return &m_spectators; }
@@ -62,20 +63,19 @@ namespace CFPSHOWER {
     inline void SetBeam(const int & beam)         { m_beam=beam; }
     inline void SetId(const size_t &id)           { m_id=id; }
     inline void SetColor(const Color & color)     { m_color = color; }
-    inline void SetOut(int i,Parton *const p)     { m_offsprings[i]=p; }
     inline void SetIn(Parton *const p)            { p_in=p; }
+    inline void SetOut(int i,Parton *const p)     { m_offsprings[i]=p; }
     inline void SwitchOff()                       { m_on = false; }       
     inline void SwitchOn()                        { m_on = true; }
     inline void ClearWeights()                    { m_specweights.clear(); }
 
-    const double GetXB() const;
     
     double GetWeight(const double & t) const;
     void   AddWeight(const Splitting & split,const bool & accept);
+    void   SetXB();
     
     inline static void Reset(const size_t & id=0) { s_cid = id; }
     inline static size_t Count()                  { return s_cnt; }
-
   };
 
   std::ostream &operator<<(std::ostream & s,Parton & part);

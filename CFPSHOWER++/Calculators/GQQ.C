@@ -13,7 +13,7 @@ namespace CFPSHOWER {
       SetName("8-3-3");
     }
     
-    inline const double Charge(const double & scale) const { return m_charge; }
+    const double Scale(const Splitting & split) const;
     bool SetColours(Splitting & split);
   };
 }
@@ -21,6 +21,19 @@ namespace CFPSHOWER {
 
 using namespace CFPSHOWER;
 using namespace ATOOLS;
+
+const double GQQ::Scale(const Splitting & split) const {
+  double scale = split.T();
+  switch (m_type) {
+  case kernel_type::FI:
+    scale = split.T()/split.Y();
+    break;
+  case kernel_type::FF:
+  default:
+    break;
+  }
+  return scale;
+}
 
 bool GQQ::SetColours(Splitting & split) {
   m_colors.clear();

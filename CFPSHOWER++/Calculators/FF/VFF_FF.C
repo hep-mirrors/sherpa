@@ -7,6 +7,7 @@
 namespace CFPSHOWER {
   class VFF_FF : public SF_FF {
   private:
+    //double A1(const double & z,const double & kappa2) const; // new
     double B1(const double & z,const double & kappa2) const;
     double B2(const double & z,const double & kappa2) const;
   public:
@@ -14,6 +15,7 @@ namespace CFPSHOWER {
     double operator()(const Splitting & split) const;
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
+    //void GeneratePoint(Splitting & split) const; // new
   };
 }
 
@@ -57,13 +59,13 @@ double VFF_FF::B2(const double & z,const double & kappa2) const {
   return b2;
 }
 
+
 DECLARE_GETTER(VFF_FF,"FF_VFF",SF_Base,Kernel_Info);
 
 SF_Base *
 ATOOLS::Getter<SF_Base,Kernel_Info,VFF_FF>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
   if (info.Type()==kernel_type::FF &&
       (info.GetFlavs()[0].IsVector() &&
        info.GetFlavs()[1].IsFermion() && info.GetFlavs()[1].IsAnti() && 

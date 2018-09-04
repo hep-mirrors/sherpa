@@ -16,7 +16,6 @@
 #include "ATOOLS/Org/Exception.H"
 
 using namespace CFPSHOWER;
-//using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
@@ -78,7 +77,6 @@ bool Shower::Evolve(Configuration * config) {
       if ((*pit)->On() && !Evolve(*pit)) continue;
     }
     if (p_winner) {
-      //msg_Out()<<"Found a winning splitting:\n"<<(*p_winner);
       AddWeight(p_winner->T());
       p_config->SetT(p_winner->T());
       p_config->SetT0(m_t0min);
@@ -96,11 +94,11 @@ bool Shower::Evolve(Configuration * config) {
     }
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
-  //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions, "
-  //	   <<"--> "<<config->size()<<" partons.\n"
+  //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
   //	   <<"#########################################################\n"
   //	   <<"#########################################################\n"
   //	   <<"#########################################################\n";
+  if (m_weight!=1.) exit(1);
   return true;
 }
 
@@ -169,16 +167,21 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
     // Select the list of applicable kernels depending on the kinematic configuration
     // and the flavour of the splitter.  Initialise a container "Splitting" for the
     // information defining the potential splitting.
-    kernel_type::code type = GetCode((splitter->Beam()>-1),(spectator->Beam()>-1));
+    kernel_type::code type = GetCode((splitter->Beam()>0),(spectator->Beam()>0));
     map<Flavour, Kernels *>::iterator kit = m_kernels[int(type)].find(splitter->Flav());
     if (kit==m_kernels[int(type)].end()) {
-      return 0.;
-      THROW(fatal_error,"No kernels found for splitting type.");
+      //msg_Out()<<"  Type not found.  Add 0.\n";
+      //return 0.;
+      //THROW(fatal_error,"No kernels found for splitting type.");
     }
-    Kernels * kernels = kit->second;
-    kernels->CalcIntegrals(split,p_massselector);
-    sum                 += kernels->Integral();
-    m_dipoles[spectator] = kernels; 
+    else {
+      Kernels * kernels = kit->second;
+      if (kernels) kernels->CalcIntegrals(split,p_msel);
+      sum                 += kernels->Integral();
+      //msg_Out()<<METHOD<<"(type = "<<type<<", int = "<<kernels->Integral()<<") "
+      //       <<"for \n"<<(*splitter)<<(*spectator);
+      m_dipoles[spectator] = kernels; 
+    }
   }
   return sum;
 }
@@ -186,9 +189,10 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
 Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) {
   const Parton_List * spectators = splitter->GetSpectators();
   double t = p_config->T(), t0 = p_config->T0();
+  // if-bracket below: Test that can be deleted once everything is debugged.
   if (splitter->Flav().IsGluon()) {
     if (spectators->size()!=2) {
-      msg_Out()<<METHOD<<" throws error: only one spectator for gluon.\n";
+      msg_Error()<<METHOD<<" throws error: only one spectator for gluon.\n";
       exit(1);
     }
     if (m_nem>0) {
@@ -197,14 +201,14 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	   spit!=spectators->end();spit++) {
 	if (spit==spectators->begin()) continue;
 	if ((*spit)==spectator) {
-	  msg_Out()<<METHOD<<" throws error: identical spectators.\n";
+	  msg_Error()<<METHOD<<" throws error: identical spectators.\n";
 	  exit(1);
 	}
       }
     }
   }
   //msg_Out()<<"#########################################################\n"
-  //	   <<"### start evolution with t = "<<t<<", t_0 = "<<t0<<".\n";
+  //	   <<"### start evolution with t = "<<t<<", t_0 = "<<t0<<", sum = "<<sum<<".\n";
   while (t>t0) {
     double random = ran->Get();
     t *= exp(log(random)/sum);
@@ -219,17 +223,18 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
       disc     -= kernels->Integral();
       if (disc<=0 && kernels->SelectOne()) {
 	Splitting * split = new Splitting(splitter,spectator,t,t0);
+	split->SetKinScheme(m_kinscheme);
 	// For a valid evolution parameter t, select a kernel according to the overestimated
 	// integral and attach the kernel to the splitting information
 	Kernel * kernel   = kernels->GetSelected();
 	//msg_Out()<<" ### next trial t = "<<sqrt(t)<<", with spectator "
-	//	 <<spectator->Id()<<", Q2 = "<<split->Q2()<<", "
+	//	 <<spectator->Id()<<", Q2 = "<<split->Q2()<<", sum = "<<sum<<", "
 	//	 <<kernel->GetSF()->Name()<<".\n";
 	// Veto and adding of weights is embedded here.
-	// Generate z, phi, run the veto algorithm, and construct the kinematics.  If everything
-	// works out, the splitting is allowed and we keep it.  Rejected splittings add to the
-	// rejection weight related to the parton.
-	if (kernel->Generate(*split,p_massselector,m_weightover)) return split;
+	// Generate z, phi, run the veto algorithm, and construct the kinematics.  If
+	// everything works out, the splitting is allowed and we keep it.  Rejected
+	// splittings add to the rejection weight related to the parton.
+	if (kernel->Generate(*split,p_msel,m_weightover)) return split;
 	else delete split;
 	break;
       }
@@ -325,8 +330,6 @@ bool Shower::InitializeParameters() {
   m_MEcorrs     = (*cfp_pars)["ME_corrections"];
   m_nmax_em     = (*cfp_pars)["max_emissions"];
   m_weightover  = 3.;
-  //m_parameters["PDF_min"]      = reader->Get<double>("CSS_PDF_MIN",1.0e-4);
-  //m_parameters["PDF_min_X"]    = reader->Get<double>("CSS_PDF_MIN_X",1.0e-2);
   return true;
 }
 
@@ -366,34 +369,45 @@ void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
   if (kernel_flavours.find(orig)!=kernel_flavours.end()) return;
   // The kernels are initialised with the information stored in the Kernel_Info
   // struct, which carries information about:
-  // - the flavours, organized in the FlavourTriplet orig (a vector of flavours with 3 entries),
-  // - their configuration for splitter/spectator in the kernel_type struct (FF, FI, IF, and II)
+  // - the flavours, organized in the FlavourTriplet orig (a vector of flavours with
+  //   3 entries),
+  // - their configuration for splitter/spectator in the kernel_type struct (FF, FI, IF,
+  //   and II)
   // - the vertex (which may carries more information for non-QCD interactions)
   // - pointers to alphaS and alpha(QED)
   // - whether the interaction is "swapped" (example: q->qg vs. q->gq)
   // - to be implemented: order information, masses of partiles, etc..
   // Initialised kernels are organised in 4 maps (one for each of the splitter/spectator
-  // configuration), connecting splitting flavours with all possible kernels.  In QCD this means,
-  // for each quark there will be two kernels: q->qg and q->gq, and for gluons we will have
-  // two g->gg splittings (one for the 1/z and one for the 1/(1-z) pole, captured with "swapped")
-  // plus g->q qbar and g->qbar q for six quark flavours.
+  // configuration), connecting splitting flavours with all possible kernels.  In QCD
+  // this means, for each quark there will be two kernels: q->qg and q->gq, and for
+  // gluons we will have two g->gg splittings (one for the 1/z and one for the 1/(1-z)
+  // pole, captured with "swapped") plus g->q qbar and g->qbar q for six quark flavours.
   Kernel_Info info;
   Kernel * kernel;
   kernel_flavours.insert(orig);
-  for (size_t swapped=0;swapped!=2;swapped++) {
-    info   = Kernel_Info(vertex,orig.m_flavs,kernel_type::FF,bool(swapped));
-    info.SetAlphaS(p_as);
-    info.SetKFactor(m_kfactor);
-    info.SetCplScheme(m_cplscheme);
-    info.SetAsFactor(m_asfactor[0]);
-    info.SetMuR2Factor(m_muR2factor);
-    kernel = Kernel_Getter::GetObject("Kernel",info);
-    if (kernel!=0) {
-      if (m_kernels[int(info.Type())].find(info.GetFlavs()[0])==
-	  m_kernels[int(info.Type())].end()) {
-	m_kernels[int(info.Type())][info.GetFlavs()[0]] = new Kernels();
+  for (size_t type=1;type<5;type++) {
+    for (size_t swapped=0;swapped<2;swapped++) {
+      info = Kernel_Info(vertex,orig.m_flavs,kernel_type::code(type),bool(swapped));
+      info.SetAlphaS(p_as);
+      info.SetKFactor(m_kfactor);
+      info.SetCplScheme(m_cplscheme);
+      info.SetAsFactor(m_asfactor[0]);
+      info.SetMuR2Factor(m_muR2factor);
+      //msg_Out()<<"   * looking for "<<info;
+      kernel = Kernel_Getter::GetObject("Kernel",info);
+      if (kernel!=0) {
+	if (m_kernels[int(info.Type())].find(info.GetFlavs()[0])==
+	    m_kernels[int(info.Type())].end()) {
+	  //msg_Out()<<"Init new kernel list for type = "<<info.Type()
+	  //	   <<" & flav = "<<info.GetFlavs()[0]<<"\n";
+	  m_kernels[int(info.Type())][info.GetFlavs()[0]] = new Kernels();
+	}
+	m_kernels[int(info.Type())][info.GetFlavs()[0]]->push_back(kernel);
+	for (size_t beam = 0;beam<2;beam++) kernel->SetPDF(beam,p_pdf[beam]);
+	kernel->SetPDFMinValue((*cfp_pars)("PDF_min"));
+	kernel->SetPDFXMin((*cfp_pars)("PDF_min_X"));
+	kernel->SetMSel(p_msel);
       }
-      m_kernels[int(info.Type())][info.GetFlavs()[0]]->push_back(kernel);
     }
   }
 }

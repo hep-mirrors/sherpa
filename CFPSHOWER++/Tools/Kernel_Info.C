@@ -34,7 +34,7 @@ Kernel_Info::Kernel_Info(MODEL::Single_Vertex * vertex,
   p_alphaS(NULL), p_alpha(NULL),
   p_vertex(vertex), m_flavs(flavs), m_type(type), m_swapped(swapped) {
   m_flavs[0]=m_flavs[0].Bar();
-  if (m_type==kernel_type::FF &&
+  if ((m_type==kernel_type::FF || m_type==kernel_type::FI) &&
       m_flavs[0].IsFermion() && 
       m_flavs[1].IsVector() &&
       m_flavs[2].IsFermion()) {

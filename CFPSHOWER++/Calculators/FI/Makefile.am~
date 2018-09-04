@@ -1,0 +1,10 @@
+pkglib_LTLIBRARIES = libCFPCalculatorsFI.la
+
+GITTAG = CFPSHOWER++/Calculators/FI
+include ../../../git.make
+
+libCFPCalculatorsFI_la_SOURCES = \
+	SF_FI.C  
+
+localinc_HEADERS   = \
+	SF_FI.H

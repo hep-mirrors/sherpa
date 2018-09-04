@@ -1,0 +1,11 @@
+Name: PP_JetRates
+Summary: Shower validation analysis for hadron colliders
+Status: UNVALIDATED
+Authors:
+ - Stefan Hoeche <shoeche@slac.stanford.edu>
+Energies: ANY
+NumEvents: 1000
+PtCuts: [0]
+Description:
+  Longitudinally invariant KT jet rates.
+NeedsCrossSection: yes

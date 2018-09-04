@@ -8,15 +8,31 @@ namespace CFPSHOWER {
   public:
     GGG(const Kernel_Info & info) : Gauge_Base(info) {
       m_charge = 3./2.;
-      m_cplmax = (*p_alphaS)(1.);
       SetName("8-8-8");
     }
+    const double Scale(const Splitting & split) const;
     bool SetColours(Splitting & split);
   };
 }
 
 using namespace CFPSHOWER;
 using namespace ATOOLS;
+
+const double GGG::Scale(const Splitting & split) const {
+  double scale = split.T();
+  switch (m_type) {
+  case kernel_type::IF:
+    scale = split.T()/split.X();
+    break;
+  case kernel_type::FI:
+    scale = split.T()/split.Y();
+    break;
+  case kernel_type::FF:
+  default:
+    break;
+  }
+  return scale;
+}
 
 bool GGG::SetColours(Splitting & split) {
   Parton * splitter = split.GetSplitter(), * spec = split.GetSpectator();

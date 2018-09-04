@@ -53,12 +53,12 @@ double VVV_FF::operator()(const Splitting & split) const {
 }
 
 double VVV_FF::Integral(const Splitting & split) const {
-  double homax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double homax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return log(1.0+split.Q2()/split.T0()) * homax;
 }
 
 double VVV_FF::OverEstimate(const Splitting & split) const {
-  double homax = (1.+split.GetKernel()->GetGauge()->KMax());
+  double homax = (1.+split.GetKernel()->GetGauge()->KMax(split));
   return A1(split.Z(),split.T0()/split.Q2()) * homax;
 }
 
