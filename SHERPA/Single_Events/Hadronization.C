@@ -59,7 +59,7 @@ Return_Value::code Hadronization::ExtractSinglets(Blob_List * bloblist)
   // 3. The plists will be decomposed into singlets and filled into one blob 
   std::vector<SP(Part_List)> plists;
   plists.push_back(new Part_List);
-  HarvestParticles(bloblist,&plists);
+  if (!HarvestParticles(bloblist,&plists)) return Return_Value::New_Event;
   if (plists[0]->empty() && plists.size()<2) {
     msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:\n"
 		   <<"   No coloured particle found leaving shower blobs.\n";
@@ -82,7 +82,7 @@ Return_Value::code Hadronization::ExtractSinglets(Blob_List * bloblist)
   return ret;
 }
 
-void Hadronization::HarvestParticles(Blob_List * bloblist, 
+bool Hadronization::HarvestParticles(Blob_List * bloblist, 
 				     vector<SP(Part_List)> * const plists) {
   vector<Particle*> hadrons;
   for (Blob_List::iterator blit=bloblist->begin();
@@ -94,15 +94,16 @@ void Hadronization::HarvestParticles(Blob_List * bloblist,
         plist=new Part_List;
         plists->push_back(plist);
       }
-      FillParticleList((*blit),plist,hadrons);
+      if (!FillParticleList((*blit),plist,hadrons)) return false;
       (*blit)->UnsetStatus(blob_status::needs_reconnections |
 			   blob_status::needs_hadronization);
     }
   }
-  DealWithHadrons(bloblist,hadrons);    
+  DealWithHadrons(bloblist,hadrons);
+  return true;
 }
 
-void Hadronization::FillParticleList(Blob * blob, SP(Part_List) & plist,
+bool Hadronization::FillParticleList(Blob * blob, SP(Part_List) & plist,
 				     vector<Particle*> hadrons) {
   for (int i=0;i<blob->NOutP();i++) {
     Particle * part = blob->OutParticle(i); 
@@ -113,7 +114,7 @@ void Hadronization::FillParticleList(Blob * blob, SP(Part_List) & plist,
 	  msg_Error()<<"Error in "<<METHOD<<":\n"
 		     <<"   Blob with funny colour assignements.\n"
 		     <<"   Will demand new event and hope for the best.\n";
-	  return;
+	  return false;
 	}
 	plist->push_back(part);
 	part->SetStatus(part_status::fragmented);

@@ -18,7 +18,12 @@ void Reconnection_Weights::SetLists() {
 }
 
 void Reconnection_Weights::Initialize(Default_Reader *const defaultreader) {
+  // Pmode is the mode for the distance measure in momentum space.
+  // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
+  // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
+  m_Pmode     = defaultreader->GetValue<double>("RECONNECTIONS::PMODE",0);
   m_Q02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::Q_0",0.25));
+  m_eta       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::eta",0.16));
   m_R02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::R_0",1.));
   m_reshuffle = 1./defaultreader->GetValue<double>("RECONNECTIONS::RESHUFFLE",1./3.);
   m_restring  = 1./defaultreader->GetValue<double>("RECONNECTIONS::RESTRING",1./3.);
@@ -53,7 +58,7 @@ double Reconnection_Weights::MomDistance(Particle * part1,Particle * part2) {
   // Here we take a variant of the Lund lambda measure for the distance in momentum space
   double p1p2 = ((part1->Momentum()+part2->Momentum()).Abs2() -
 		 (part1->Momentum().Abs2()+part2->Momentum().Abs2()));
-  return log(1.+p1p2/m_Q02);
+  return exp(0.16*log(1.+p1p2/m_Q02));
 }
 
 double Reconnection_Weights::PosDistance(Particle * part1,Particle * part2) {

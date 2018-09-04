@@ -16,7 +16,7 @@
   
   COLOUR_RECONNECTIONS On
   ANALYSIS Rivet
-  ANALYSIS_OUTPUT randomCR
+  ANALYSIS_OUTPUT test
 }(run)
 
 (processes){

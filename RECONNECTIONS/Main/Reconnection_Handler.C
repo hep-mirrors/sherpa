@@ -7,16 +7,37 @@ using namespace ATOOLS;
 using namespace std;
 
 Reconnection_Handler::Reconnection_Handler() :
-  m_on(false), m_weights(Reconnection_Weights(this))
-{ }
+  m_on(false), m_weights(Reconnection_Weights(this)), m_analysis(true)
+{
+  msg_Out()<<METHOD<<"(analysis = "<<m_analysis<<")\n";
+}
 
-Reconnection_Handler::~Reconnection_Handler() {}
+Reconnection_Handler::~Reconnection_Handler() {
+  if (m_analysis) {
+    for (map<string,Histogram *>::iterator hit=m_histomap.begin();
+	 hit!=m_histomap.end();hit++) {
+      Histogram * histo = hit->second;
+      string name  = string("Reconnection_Analysis/")+hit->first+string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      msg_Out()<<METHOD<<": "<<name<<"\n";
+      delete histo;
+    }
+    m_histomap.clear();
+  }
+}
 
 void Reconnection_Handler::Initialize(Default_Reader *const reader) {
-  string onoff = reader->GetStringNormalisingNoneLikeValues("COLOUR_RECONNECTIONS", string("On"));
+  string onoff = reader->GetStringNormalisingNoneLikeValues("COLOUR_RECONNECTIONS",
+							    string("Off"));
   m_on = bool(onoff==string("On"));
   if (m_on) m_weights.Initialize(reader); 
+  if (m_analysis) {
+    m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,100.0,200);
+    m_histomap[string("Reconn_MassAfter")]  = new Histogram(0,0.0,100.0,200);
+  }
 }
+
 
 void Reconnection_Handler::Reset() {
   for (size_t pos=0;pos<2;pos++) { m_cols[pos].clear(); m_parts[pos].clear(); }
@@ -32,9 +53,11 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   Return_Value::code ret = Return_Value::Nothing;
   if (m_on && HarvestParticles(blobs)) {
     MakeSinglets();
+    if (m_analysis) FillMassesInHistogram(m_histomap["Reconn_MassBefore"]);
     m_weights.FillTables();
     ReshuffleSinglets();
-    //ReconnectSinglets();
+    ReconnectSinglets();
+    if (m_analysis) FillMassesInHistogram(m_histomap["Reconn_MassAfter"]);
     AddReconnectionBlob(blobs);
     ret = Return_Value::Success; 
   }
@@ -86,10 +109,11 @@ void Reconnection_Handler::HarvestParticleInfo(ATOOLS::Particle * part) {
 }
 
 void Reconnection_Handler::MakeSinglets() {
-  // Start singlets with triplet particles only (quarks or anti-diquarks, with GetFlow(2)==0, in FindStart),
-  // and look for fitting anti-triplet colours (in FindNext), until we hit an anti-triplet particle and
-  // the singlet is finished.  Once triplet particles are exhausted, repeat with gluons (again, in FindStart),
-  // and make sure we book the starting gluon only once.
+  // Start singlets with triplet particles only (quarks or anti-diquarks, with GetFlow(2)==0,
+  // in FindStart), and look for fitting anti-triplet colours (in FindNext), until we hit an
+  // anti-triplet particle and the singlet is finished.  Once triplet particles are exhausted,
+  // repeat with gluons (again, in FindStart), and make sure we book the starting gluon only
+  // once.
   Particle * part, * start = FindStart();
   size_t col = start->GetFlow(1);
   Part_List * sing = new Part_List;
@@ -114,7 +138,7 @@ void Reconnection_Handler::MakeSinglets() {
 
 Particle * Reconnection_Handler::FindStart() {
   Particle * start(NULL);
-  // Look for triplet only particles.
+  // Look for triplet-only particles.
   for (std::map<unsigned int, ATOOLS::Particle *>::iterator cpit = m_cols[0].begin();
        cpit!=m_cols[0].end();cpit++) {
     if (cpit->second->GetFlow(2)==0) {
@@ -145,6 +169,9 @@ Particle * Reconnection_Handler::FindNext(const size_t & col) {
 }
 
 void Reconnection_Handler::ReshuffleSinglets() {
+  // Go through the singlets.  Reshuffling makes sense only if you have more than 4
+  // particles in the singlet.  Keep in mind: no splitting of singlets into two as
+  // result of reshuffling.  
   for (list<Part_List *>::iterator sit=m_singlets.begin();sit!=m_singlets.end();sit++) {
     if ((*sit)->size()<4) continue;
     bool hit=true;
@@ -155,8 +182,10 @@ void Reconnection_Handler::ReshuffleSinglets() {
 bool Reconnection_Handler::ReshuffleSinglet(Part_List * singlet) {
   Part_Iterator pit[6], stopit=singlet->end(); ((stopit--)--)--;
   // Logic: check if one particle should be reinserted at another position.
-  // Assume particle 3 should be inserted between 0 and 1.  Then we need to compare
-  // <01> * <23> * <34> with <03> * <31> * <24>
+  // Assume particle 4 should be inserted between 0 and 1.  Then we need to compare
+  // <01> * <34> * <45> with <04> * <41> * <35>
+  // Similarly, if we insert 1 between 4 and 5, we need to compare
+  // <01> * <12> * <45> with <02> * <41> * <15>
   pit[0] = singlet->begin(); 
   for (size_t i=1;i<3;i++) { pit[i] = pit[i-1]; pit[i]++; }  
   do {
@@ -299,3 +328,14 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
   blobs->push_back(blob);
 }
 
+void Reconnection_Handler::FillMassesInHistogram(Histogram * histo) {
+  Part_Iterator pit1, pit2;
+  for (list<Part_List *>::iterator sit=m_singlets.begin();sit!=m_singlets.end();sit++) {
+    pit2 = pit1 = (*sit)->begin(); pit2++;
+    while (pit2!=(*sit)->end()) {
+      double mij = sqrt(((*pit1)->Momentum()+(*pit2)->Momentum()).Abs2());
+      histo->Insert(mij,1.);
+      pit2++; pit1++;
+    }
+  }
+}

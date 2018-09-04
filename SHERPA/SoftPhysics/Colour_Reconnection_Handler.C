@@ -19,6 +19,7 @@ Colour_Reconnection_Handler(const string path,const string file) :
 }
 
 Colour_Reconnection_Handler::~Colour_Reconnection_Handler() {
+  msg_Out()<<METHOD<<"\n";
   if (p_reconnections) delete p_reconnections;
 }
 

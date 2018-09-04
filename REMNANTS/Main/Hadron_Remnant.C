@@ -106,7 +106,8 @@ Particle * Hadron_Remnant::MakeParticle(const Flavour & flav) {
   part->SetNumber();
   part->SetBeam(m_beam);
   part->SetPosition(m_position+m_ff());
-  msg_Out()<<METHOD<<" for "<<part->Number()<<" --> xpos = "<<m_position<<" + ff = "<<part->XProd()<<"\n";
+  //msg_Out()<<METHOD<<" for "<<part->Number()
+  //<<" --> xpos = "<<m_position<<" + ff = "<<part->XProd()<<"\n";
   return part;
 }
 

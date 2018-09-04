@@ -150,6 +150,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_remnants)      { delete p_remnants;      p_remnants      = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
   while (m_analyses.size()>0) {
@@ -786,8 +787,8 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 
 bool Initialization_Handler::InitializeTheColourReconnections() 
 {
-  if (p_colourreconnections) { delete p_colourreconnections; p_colourreconnections = NULL; }
-  p_colourreconnections = new Colour_Reconnection_Handler(m_path,m_colourreconndat);
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
+  p_reconnections = new Colour_Reconnection_Handler(m_path,m_colourreconndat);
   msg_Info()<<"Initialized the ColourReconnection_Handler."<<endl;
   return 1;
 }

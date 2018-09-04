@@ -12,9 +12,9 @@ namespace SHERPA {
     Fragmentation_Handler       * p_fragmentationhandler;
 
     ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
-    void HarvestParticles(ATOOLS::Blob_List *,
+    bool HarvestParticles(ATOOLS::Blob_List *,
 			  std::vector<SP(ATOOLS::Part_List)> * const plists);
-    void FillParticleList(ATOOLS::Blob * blob,
+    bool FillParticleList(ATOOLS::Blob * blob,
 			  SP(ATOOLS::Part_List) & plist,
 			  std::vector<ATOOLS::Particle*> hadrons);
     void DealWithHadrons(ATOOLS::Blob_List * bloblist, 

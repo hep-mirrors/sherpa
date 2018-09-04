@@ -12,7 +12,8 @@ namespace RECONNECTIONS {
   class Reconnection_Weights {
   private:
     Reconnection_Handler * p_rhandler;
-    double m_Q02, m_R02, m_reshuffle, m_restring;
+    int    m_Pmode;
+    double m_Q02, m_eta, m_R02, m_reshuffle, m_restring;
 
     ATOOLS::ParticleSet            * p_parts[2];
     std::list<ATOOLS::Part_List *> * p_singlets;
