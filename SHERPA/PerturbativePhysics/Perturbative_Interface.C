@@ -171,15 +171,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
-      if (m_weight>=ran->Get()) {
-        if (m_weight < 1.0) {
-          if (p_localkfactorvarweights)
-            *p_localkfactorvarweights *= 1.0 / m_weight;
-          m_weight = 1.0;
-        }
-      } else {
+      const auto disc = ran->Get();
+      const auto abswgt = std::abs(m_weight);
+      if (abswgt < disc) {
         return Return_Value::New_Event;
       }
+      m_weight /= Min(1.0, abswgt);
+      if (p_localkfactorvarweights)
+        *p_localkfactorvarweights *= 1.0 / Min(1.0, abswgt);
     }
     Blob_Data_Base *winfo((*blob)["Weight"]);
     if (!winfo) THROW(fatal_error,"No weight information in signal blob");
