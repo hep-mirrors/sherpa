@@ -183,18 +183,32 @@ namespace Recola {
     s_light_fermion_threshold = reader.GetValue<double>("RECOLA_LIGHT_FERMION_THRESHOLD",1e-20);
     set_light_fermions_rcl(s_light_fermion_threshold);
     set_delta_ir_rcl(0.0,M_PI*M_PI/6.0); // adapts the conventions from COLLIER to Catani-Seymour
-    
-    PDF::PDF_Base *pdf=isr->PDF(0);
-    int pdfnf=pdf->ASInfo().m_flavs.size();
-    s_default_alphaqcd=pdf->ASInfo().m_asmz;
-    s_default_scale=pdf->ASInfo().m_mz2;
-    s_default_flav=pdfnf;
-    if (pdfnf>10) pdfnf-=10;
-    if (pdfnf==-1) pdfnf=6;
 
-    double cmass=pdf->ASInfo().m_flavs[3].m_mass;
-    double bmass=pdf->ASInfo().m_flavs[4].m_mass;
-    double tmass=pdf->ASInfo().m_flavs[5].m_mass;
+    PDF::PDF_Base *pdf=isr->PDF(0);
+    auto pdfnf = -1;
+    auto cmass = 0.0;
+    auto bmass = 0.0;
+    auto tmass = 0.0;
+    if (pdf) {
+      pdfnf=pdf->ASInfo().m_flavs.size();
+      s_default_alphaqcd=pdf->ASInfo().m_asmz;
+      s_default_scale=pdf->ASInfo().m_mz2;
+      s_default_flav=pdfnf;
+      if (pdfnf>10) pdfnf-=10;
+      if (pdfnf==-1) pdfnf=6;
+      cmass=pdf->ASInfo().m_flavs[3].m_mass;
+      bmass=pdf->ASInfo().m_flavs[4].m_mass;
+      tmass=pdf->ASInfo().m_flavs[5].m_mass;
+    } else {
+      pdfnf = MODEL::as->Nf(1.e20);
+      s_default_alphaqcd=MODEL::as->AsMZ();
+      s_default_scale=Flavour{kf_Z}.Mass();
+      s_default_flav=pdfnf;
+      const auto thresholds = MODEL::as->Thresholds(0.0, 1e20);
+      tmass = sqrt(thresholds[thresholds.size() - 1]);
+      bmass = sqrt(thresholds[thresholds.size() - 2]);
+      cmass = sqrt(thresholds[thresholds.size() - 3]);
+    }
 
     cmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_C", cmass);
     cmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_C", cmass);
@@ -203,9 +217,15 @@ namespace Recola {
     tmass=reader.GetValue<double>("RECOLA_AS_RUN_MASS_T", tmass);
     tmass=reader.GetValue<double>("RECOLA_AS_REN_MASS_T", tmass);
 
-    for (int i=0; i<3; i++){
-      if (i<pdfnf)
-	s_pdfmass[i]=pdf->ASInfo().m_flavs[i].m_thres;
+    if (pdf) {
+      for (int i=0; i<3; i++){
+        if (i<pdfnf)
+          s_pdfmass[i]=pdf->ASInfo().m_flavs[i].m_thres;
+      }
+    } else {
+      for (int i{0}; i < 3; ++i) {
+        s_pdfmass[i] = Flavour{i+1}.Mass(1);
+      }
     }
     s_pdfmass[3]=cmass;
     s_pdfmass[4]=bmass;
