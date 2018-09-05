@@ -411,12 +411,19 @@ double SHNNLO::SetWeight
     s_p2=0.0;
     p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0));
   }
-  if (umode) p1=0.0;
   if (s_disc<=p1) {
     wgt*=1.0/p1;
     if (ampl) {
       if (mode==1) ampl->SetFlag(2);
       ampl->SetNLO(16|64);
+      if (umode) {
+	wgt*=2.0;
+	ampl->SetNLO(16);
+	if (s_disc<p1/2.0) {
+	  ampl->SetNLO(16|32);
+	  wgt*=-1.0;
+	}
+      }
     }
   }
   else {
@@ -425,10 +432,9 @@ double SHNNLO::SetWeight
       p2=s_p2=1.0-p1;
       if (w!=1.0) p2=s_p2/=(1.0+dabs(w1/(w-1.0)));
     }
-    if (umode) p2=1.0;
     if (s_disc<=p1+p2) {
       double pw(0.5*p2);
-      wgt*=(umode?w:w-1.0)/pw;
+      wgt*=(w-1.0)/pw;
       if (ampl) {
 	ampl->SetNLO(16);
       }

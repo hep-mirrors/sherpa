@@ -253,17 +253,17 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       vwa.m_jcv=jf->JC()->Value(ampl);
       ampl->Delete();
     }
+    if (ampl->Flag()&2) {
+      msg_Debugging()<<"Skip UNLOPS veto\n";
+      if (s.p_l) a.Remove(s.p_l);
+      a.Remove(s.p_n);
+      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+      for (size_t i(0);i<a.size();++i) a[i]->Restore();
+      ampl->SetFlag(ampl->Flag()&~2);
+      continue;
+    }
     if (ampl->NLO()&64) {
-      if (ampl->Flag()&2) {
-	msg_Debugging()<<"Skip UNLOPS veto\n";
-	if (s.p_l) a.Remove(s.p_l);
-	a.Remove(s.p_n);
-	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
-	for (size_t i(0);i<a.size();++i) a[i]->Restore();
-	ampl->SetFlag(ampl->Flag()&~2);
-	continue;
-      }
-      msg_Debugging()<<"UNLOPS veto\n";
+      msg_Debugging()<<"UNLOPS projection veto\n";
       if (s.p_l) a.Remove(s.p_l);
       a.Remove(s.p_n);
       s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
@@ -273,7 +273,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       return 1;
     }
     if (ampl->NLO()&16) {
-      msg_Debugging()<<"UNLOPS veto 2\n";
+      msg_Debugging()<<"UNLOPS veto\n";
       return 0;
     }
     m_weight*=VetoWeight(NULL,NULL,vwa);
