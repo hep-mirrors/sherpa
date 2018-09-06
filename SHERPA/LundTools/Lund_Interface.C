@@ -234,6 +234,7 @@ Lund_Interface::~Lund_Interface()
 
 Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist) 
 {
+  s_bloblist=bloblist;
   int nhep(0);
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
@@ -335,6 +336,27 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   return Return_Value::Success;
 } 
 
+int Lund_Interface::IsConnectedToRemnant(Particle *p,int anti)
+{
+  DEBUG_FUNC("("<<p->GetFlow(1)<<","<<p->GetFlow(2)<<") "<<anti);
+  msg_Debugging()<<*p<<"\n";
+  Blob_List remnants(s_bloblist->Find(btp::Beam));
+  for (int i(0);i<remnants.size();++i) {
+    if (!remnants[i]->InParticle(0)->Flav().IsHadron()) continue;
+    if (remnants[i]==p->ProductionBlob()) continue;
+    msg_Debugging()<<*remnants[i];
+    for (int j(1);j<remnants[i]->NOutP();++j) {
+      if (remnants[i]->OutParticle(j)->GetFlow(3-anti)==
+	  p->GetFlow(anti)) {
+	msg_Debugging()<<"connected to "<<j<<"\n";
+	return 1;
+      }
+    }
+  }
+  msg_Debugging()<<"not connected\n";
+  return 0;
+}
+
 int Lund_Interface::PrepareFragmentationBlob(Blob * blob) 
 {
   int nhep = 0;
@@ -351,39 +373,55 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
   hepevt.jdahep[nhep][0]=0;
   hepevt.jdahep[nhep][1]=0;
   
-  // gluon splittings
-  for (int i(0);i<blob->NInP();++i) {
-    Particle * part = blob->InParticle(i);
-  if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
-    Flavour            flav = Flavour(kf_d);
+  // gluon rings
+  int gluonring(1);
+  for (int i(0);i<blob->NInP();++i)
+    if (blob->InParticle(i)->Flav().StrongCharge()==3) {
+      gluonring=false;
+      break;
+    }
+  if (gluonring) {
+    Particle * part = blob->InParticle(0);
+    Flavour flav = Flavour(kf_d);
     if (ran->Get()<0.5) flav = Flavour(kf_u);
-      Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
-      Particle *help2(new Particle(-1,flav.Bar(),help1->Momentum()));
+    Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
+    Particle *help2(new Particle(-1,flav.Bar(),0.5*part->Momentum()));
     help1->SetStatus(part_status::active);
     help2->SetStatus(part_status::active);
     AddPartonToString(help1,nhep);
-    delete help1;
-      unsigned int lastc(part->GetFlow(2));
-      for (++i;i<blob->NInP();++i) {
-      part = blob->InParticle(i);
-      AddPartonToString(part,nhep);
-	if (part->GetFlow(1)==lastc) {
-	  lastc=0;
-	  break;
-	}
-    }      
-      if (lastc!=0)
-	msg_Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
+    for (int i(1);i<blob->NInP();++i)
+      AddPartonToString(blob->InParticle(i),nhep);
     AddPartonToString(help2,nhep);
     delete help2;
+    delete help1;
+    return nhep;
   }
-  else {
-      for (;i<blob->NInP();i++) {
-      part = blob->InParticle(i);
+  // gluons connected to remnant
+  for (int i(0);i<blob->NInP();++i) {
+    Particle * part = blob->InParticle(i);
+    int c1(IsConnectedToRemnant(part,1));
+    int c2(IsConnectedToRemnant(part,2));
+    if (part->GetFlow(1) && part->GetFlow(2) && (c1^c2)) {
+      Flavour flav = Flavour(kf_d);
+      if (ran->Get()<0.5) flav = Flavour(kf_u);
+      double x(ran->Get()), m(flav.HadMass());
+      if (part->Momentum()[0]<m) AddPartonToString(part,nhep);
+      else {
+	if (c1 && !c2) x=pow(m/part->Momentum()[0],ran->Get());
+	if (!c1 && c2) x=1.0-pow(m/part->Momentum()[0],ran->Get());
+	Particle *help1(new Particle(-1,flav,x*part->Momentum()));
+	Particle *help2(new Particle(-1,flav.Bar(),(1.0-x)*part->Momentum()));
+	help1->SetStatus(part_status::active);
+	help2->SetStatus(part_status::active);
+	AddPartonToString(help2,nhep);
+	AddPartonToString(help1,nhep);
+	delete help2;
+	delete help1;
+      }
+    }
+    else {
       AddPartonToString(part,nhep);
-	if (part->GetFlow(1)==0) break;
-      }  
-    }  
+    }
   }
   return nhep;
 }

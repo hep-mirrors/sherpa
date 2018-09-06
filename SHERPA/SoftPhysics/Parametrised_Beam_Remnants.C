@@ -103,13 +103,22 @@ FillBeamBlobs(Blob_List *const bloblist,
     }
   }
   
-  for (short unsigned int i=0;i<2;++i) {
-    msg_Out()<<METHOD<<" adjusting beampart("<<i<<")\n";
-    if (!p_beampart[i]->AdjustKinematics() || 
-	!p_beampart[i]->AdjustColors()) { 
-      //	       <<"failed to adjust kinematics/colours for\n"
-      //	       <<(*p_beamblob[i])<<"\n";
-      return Return_Value::Retry_Event; 
+  if (rpa->gen.Beam1().IsHadron()^
+      rpa->gen.Beam2().IsHadron()) {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
+    }
+  }
+  else {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics() ||
+	  !p_beampart[i]->AdjustColors()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
     }
   }
   //msg_Out()<<"============================================================\n"

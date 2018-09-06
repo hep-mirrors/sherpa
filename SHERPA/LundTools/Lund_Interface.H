@@ -48,6 +48,7 @@ namespace SHERPA {
     int                        PrepareFragmentationBlob(ATOOLS::Blob *);
     ATOOLS::Return_Value::code StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,int); 
     // tools for extracting hadrons
+    int IsConnectedToRemnant(ATOOLS::Particle *,int);
     void AddPartonToString(ATOOLS::Particle *,int &);
     void FillFragmentationBlob(ATOOLS::Blob *);
     void FillOutgoingParticlesInBlob(ATOOLS::Blob *);
