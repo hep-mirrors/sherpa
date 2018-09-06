@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -108,6 +109,32 @@ Variable_Scale_Setter::~Variable_Scale_Setter()
 double Variable_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
+  if (p_proc->Flavours()[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+    msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
+    Vec4D pp(rpa->gen.PBeam(1)), qq(momenta[0]-momenta[2]);
+    Poincare cms(pp+qq);
+    double Q2(-qq.Abs2()), x(Q2/(2.0*pp*qq)), E(sqrt(Q2)/(2.0*x));
+    Vec4D p(sqrt(E*E+pp.Abs2()),0.0,0.0,-E);
+    Vec4D q(0.0,0.0,0.0,2.0*x*E);
+    cms.Boost(pp);
+    cms.Boost(qq);
+    Poincare zrot(pp,-Vec4D::ZVEC);
+    zrot.Rotate(pp);
+    zrot.Rotate(qq);
+    Poincare breit(p+q);
+    breit.BoostBack(pp);
+    breit.BoostBack(qq);
+    if (!IsEqual(pp,p,1.0e-3) || !IsEqual(qq,q,1.0e-3))
+      msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
+    for (int i(0);i<momenta.size();++i) {
+      msg_Debugging()<<"  "<<i<<": "<<m_p[i];
+      cms.Boost(m_p[i]);
+      zrot.Rotate(m_p[i]);
+      breit.BoostBack(m_p[i]);
+      msg_Debugging()<<" -> "<<m_p[i]<<"\n";
+    }
+    msg_Debugging()<<"}\n";
+  }
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
