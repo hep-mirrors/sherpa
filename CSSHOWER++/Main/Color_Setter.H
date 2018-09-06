@@ -11,7 +11,7 @@ namespace CSSHOWER {
 
     PHASIC::Process_Base *p_xs;
 
-    PHASIC::NLOTypeStringProcessMap_Map m_pmap;
+    static PHASIC::NLOTypeStringProcessMap_Map m_pmap;
     PHASIC::Process_Vector m_procs;
 
     int m_cmode;

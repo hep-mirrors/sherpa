@@ -21,15 +21,16 @@ namespace CSSHOWER {
   size_t s_clmaxtrials(900);
 }
 
+PHASIC::NLOTypeStringProcessMap_Map Color_Setter::m_pmap;
+
 Color_Setter::Color_Setter(const int mode): m_cmode(mode)
 {
-  m_pmap[nlo_type::lo] = new StringProcess_Map();
+  if (m_pmap.empty()) m_pmap[nlo_type::lo] = new StringProcess_Map();
 }
 
 Color_Setter::~Color_Setter()
 {
   for (size_t i(0);i<m_procs.size();++i) delete m_procs[i];
-  delete m_pmap[nlo_type::lo];
 }
 
 bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
@@ -80,7 +81,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
     if (!sing) {
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
-      double csum(p_xs->Differential(*ampl,1|2|4));
+      double csum(p_xs->Differential(*ampl,1|4));
       msg_Debugging()<<"sc: csum = "<<csum<<"\n";
       if (csum!=0.0) {
 	CI_Map &cmap(ampl->ColorMap());
@@ -140,7 +141,7 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
     }
     msg_Debugging()<<"odering "<<orders[i]<<"\n";
     msg_Debugging()<<*ampl<<"\n";
-    csum+=psum[i]=dabs(p_xs->Differential(*ampl,1|2|4));
+    csum+=psum[i]=dabs(p_xs->Differential(*ampl,1|4));
     msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
   }
   if (csum==0.0) return false;
@@ -175,9 +176,7 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 
 bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
 {
-  Process_Base *proc(ampl->Proc<Process_Base>());
-  if (proc==NULL || proc->AllProcs()==NULL) return false;
-  StringProcess_Map *pm((*proc->AllProcs())[nlo_type::lo]);
+  StringProcess_Map *pm(m_pmap[nlo_type::lo]);
   Process_Base::SortFlavours(ampl);
   std::string name(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit(pm->find(name));
@@ -188,7 +187,8 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
     pm=m_pmap[nlo_type::lo];
     if ((pit=pm->find(name))!=pm->end()) p_xs=pit->second;
     else {
-      MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+      My_In_File::OpenDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
       Process_Info pi;
@@ -209,6 +209,8 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
       if (proc==NULL) {
 	My_In_File::CloseDB
 	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
+	My_In_File::CloseDB
+	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
 	(*pm)[name]=NULL;
 	return false;
       }
@@ -223,6 +225,8 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
       proc->FillProcessMap(&m_pmap);
       My_In_File::CloseDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
       if ((pit=pm->find(name))==pm->end()) THROW(fatal_error,"Internal error");
       p_xs=pit->second;
     }

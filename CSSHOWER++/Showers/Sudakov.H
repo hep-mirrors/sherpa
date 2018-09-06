@@ -18,8 +18,8 @@ namespace CSSHOWER {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sqi, m_k0sqf, m_phi;
-    double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
+    double m_k0sqi, m_k0sqf, m_sphi;
+    double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_ewmode;
     ATOOLS::Mass_Selector *  p_rms;
@@ -34,9 +34,9 @@ namespace CSSHOWER {
     bool m_keeprewinfo;
     double m_reweightscalecutoff;
     static bool s_init;
-    void ProduceT();
-    bool Veto(double,double);
-    bool Splitting(double,double);
+    double ProduceT(double t);
+    bool Veto(double,double,double,double,double);
+    bool Splitting(double,double,double,double,double);
     bool DefineFFBoundaries(double,double);
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
@@ -54,6 +54,7 @@ namespace CSSHOWER {
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     bool   Generate(Parton *);
+    bool   Generate(Parton *,Parton *,double,double&,double&,double&,double&);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 
@@ -94,7 +95,7 @@ namespace CSSHOWER {
   
   void Sudakov::GetSplittingParameters
   (double & kt2,double & z,double & y,double & phi) {
-    kt2 = m_kperp2; z = m_z; y = m_y; phi = m_phi;
+    kt2 = m_st; z = m_sz; y = m_sy; phi = m_sphi;
   }
 }
 
