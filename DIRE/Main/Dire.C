@@ -180,6 +180,7 @@ Amplitude *Dire::Convert
 			 Color(cl->Col().m_i,cl->Col().m_j)));
     ampl->push_back(p);
     p->SetId(p->Counter());
+    for (int i(0);i<2;++i) p->SetT(i,cl->KT2(i));
     if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
     lmap[cl]=p;
   }

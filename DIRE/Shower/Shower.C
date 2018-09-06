@@ -341,10 +341,14 @@ Splitting Shower::GeneratePoint
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    Splitting cur(GeneratePoint(**it,t,nem));
-    if (cur.p_c==NULL || cur.p_s==NULL) continue;
-    if (cur.m_t<m_tmin[cur.m_type&1]) continue;
-    m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    for (int cm(0);cm<2;++cm) {
+      double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
+      Splitting cur(GeneratePoint(**it,ct,cm,nem));
+      (*it)->SetT(cm,-1.0);
+      if (cur.p_c==NULL || cur.p_s==NULL) continue;
+      if (cur.m_t<m_tmin[cur.m_type&1]) continue;
+      m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    }
   }
   m_tmin[0]=tmin[0];
   m_tmin[1]=tmin[1];
@@ -354,7 +358,7 @@ Splitting Shower::GeneratePoint
 }
 
 Splitting Shower::GeneratePoint
-(Parton &p,const double &t,const unsigned int &nem)
+(Parton &p,const double &t,const int &cm,const unsigned int &nem)
 {
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
@@ -377,13 +381,13 @@ Splitting Shower::GeneratePoint
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
-	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
-	    if (kit->second[j]->On() &&
-		kit->second[j]->Allowed(cur)) {
-	      double I=kit->second[j]->Integral(cur);
-	      psum[j].push_back(csum+=dabs(I));
-	      splits[j].push_back(i);
-	    }
+	  cur.m_cm=cm;
+	  if (kit->second[j]->On() &&
+	      kit->second[j]->Allowed(cur)) {
+	    double I=kit->second[j]->Integral(cur);
+	    psum[j].push_back(csum+=dabs(I));
+	    splits[j].push_back(i);
+	  }
 	}
 	if (psum[j].size()) sum+=psum[j].back();
       }
