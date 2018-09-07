@@ -178,7 +178,9 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"FastjetFinder algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [nb=-1 [nb2=-1]]]]\n"
-     <<"              algorithm: kt,antikt,cambridge,siscone";
+     <<"              algorithm: kt(default),antikt,cambridge,siscone   for hadron colliders\n"
+     <<"              algorithm: eekt(default),jade,eecambridge,siscone for lepton-lepton colliders\n"
+     <<"              only first three arguments are meaningful for eekt,jade and eecambridge";
 }
 
 #endif

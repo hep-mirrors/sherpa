@@ -208,7 +208,8 @@ b-quarks which shall nonetheless satisfy jet criteria.
 The final option @option{FastjetFinder} allows to use the 
 @uref{http://www.fastjet.fr,,FastJet} plugin if enabled during configuration. 
 It takes the following mandatory arguments:
-@code{<algorithm>} can take the values @code{kt,antikt,cambridge,siscone}, 
+@code{<algorithm>} can take the values
+@code{kt,antikt,cambridge,siscone,eecambridge,jade},
 @code{<n>} is the minimum number of jets to be found, @code{<ptmin>} and 
 @code{<etmin>} are the minimum transverse momentum and/or energy, 
 @code{<dr>} is the radial parameter. Optional arguments are: 
@@ -218,6 +219,8 @@ maximal absolute (pseudo-)rapidity (default infinity),
 former both b and anti-b quarks are counted equally towards b-jets, while for
 the latter they are added with a relative sign as constituents, i.e. a jet
 containing b and anti-b is not tagged.
+Note that only @code{<algorithm>}, @code{<n>} and @code{<ptmin>} are relevant
+for the lepton-lepton collider algorithms.
 
 The option @option{FastjetVeto} allows to use the 
 @uref{http://www.fastjet.fr,,FastJet} plugin to apply
@@ -231,7 +234,8 @@ selector criteria. The syntax of this selector is
 FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<bmode>]
 @end verbatim
 
-wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
+wherein @code{algorithm} can take the values
+@code{kt,antikt,cambridge,siscone,eecambridge,jade}.
 In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
 values of the jets found and @code{p[i]} are their momenta. For details see
 @ref{Scale setters}. For example, in lepton pair production in 
@@ -249,6 +253,8 @@ to use b-tagged jets only, based on the parton-level constituents of the jets.
 There are two options: With @code{<bmode>=1} both b and anti-b quarks are
 counted equally towards b-jets, while for @code{<bmode>=2} they are added with a
 relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.
+Note that only @code{<epression>}, @code{<algorithm>}, @code{<n>} and
+@code{<ptmin>} are relevant when using the lepton-lepton collider algorithms.
 
 @node Universal selector
 @subsection Universal selector
