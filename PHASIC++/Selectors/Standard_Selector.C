@@ -1,6 +1,3 @@
-#ifndef ATOOLS_Phys_Standard_Selector_H
-#define ATOOLS_Phys_Standard_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
@@ -242,8 +239,6 @@ namespace PHASIC {
   };
 
 }
-
-#endif
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"

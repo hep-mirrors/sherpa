@@ -1,6 +1,3 @@
-#ifndef PHASIC_Selectors_Variable_Selector_H
-#define PHASIC_Selectors_Variable_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
 
 namespace ATOOLS {
@@ -55,8 +52,6 @@ namespace PHASIC {
   };// end of class Variable_Selector
 
 }// end of namespace PHASIC
-
-#endif
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"

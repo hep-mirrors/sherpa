@@ -1,6 +1,3 @@
-#ifndef PHASIC_Selectors_DressedParticleSelector_h
-#define PHASIC_Selectors_DressedParticleSelector_h
-
 #include "ATOOLS/Phys/Particle_Dresser.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -21,8 +18,6 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *);
   };
 }
-
-#endif
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
