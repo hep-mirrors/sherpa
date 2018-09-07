@@ -1,6 +1,3 @@
-#ifndef PHASIC_Selectors_Decay_Selector_H
-#define PHASIC_Selectors_Decay_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 
@@ -51,8 +48,6 @@ namespace PHASIC {
   };
 
 }
-
-#endif
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
