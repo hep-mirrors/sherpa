@@ -207,8 +207,9 @@ DefineInitialConditions(ATOOLS::Blob *blob)
         return Return_Value::New_Event;
       }
       m_weight /= Min(1.0, abswgt);
-      if (p_localkfactorvarweights)
-        *p_localkfactorvarweights *= 1.0 / Min(1.0, abswgt);
+      // local kfactor varweights not initialized if weight equal to one
+      if (p_localkfactorvarweights && abswgt < 1.)
+        *p_localkfactorvarweights *= 1.0 / abswgt;
     }
     Blob_Data_Base *winfo((*blob)["Weight"]);
     if (!winfo) THROW(fatal_error,"No weight information in signal blob");
