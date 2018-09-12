@@ -158,7 +158,7 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
   size_t posa, posb;        // start and end of things b/w brackets
   size_t posmin;            // start of first bracket
 
-  std::string sbr, sdbr;
+  std::string sbr(""), sdbr("");
 
   // extract Delta BR
   posa = entry.find("(");
@@ -166,7 +166,7 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
   posmin = posa;
   if(posa!=std::string::npos && posb!=std::string::npos)
     sdbr = entry.substr(posa+1,posb-posa-1);
-  else sdbr = "-1.0";
+  if (sdbr=="") sdbr = "-1.0";
 
   // extract Origin
   posa = entry.find("[");
