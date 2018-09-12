@@ -289,7 +289,7 @@ operator()(const Selector_Key &key) const
 
 bool Variable_Selector::NoJetTrigger(const Vec4D_Vector &p) 
 {
-  return true;
+  return Trigger(p);
 }
 
 bool Variable_Selector::JetTrigger

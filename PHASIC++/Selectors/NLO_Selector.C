@@ -181,7 +181,7 @@ bool PTNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *
 
 bool PTNLO_Selector::NoJetTrigger(const Vec4D_Vector & mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
@@ -302,7 +302,7 @@ bool RapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevt
 
 bool RapidityNLO_Selector::NoJetTrigger(const Vec4D_Vector & mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
@@ -424,7 +424,7 @@ bool PseudoRapidityNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_
 
 bool PseudoRapidityNLO_Selector::NoJetTrigger(const Vec4D_Vector & mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
@@ -547,7 +547,7 @@ bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist 
 
 bool PT2NLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
@@ -684,7 +684,7 @@ bool MT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist 
 
 bool MT2NLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
@@ -1007,7 +1007,7 @@ bool DeltaRNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtli
 
 bool DeltaRNLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
 {
-  return 1;
+  return Trigger(mom);
 }
 
 
