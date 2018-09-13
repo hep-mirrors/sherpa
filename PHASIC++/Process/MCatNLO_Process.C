@@ -86,7 +86,18 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
   }
   spi.m_megenerator=spi.m_rsmegenerator;
-  p_rproc=InitProcess(spi,nlo_type::lo,true);
+
+  // Real emission process is initialized with nlo_type::lo. ME
+  // generators hence cannot infer that the coupling orders need to be
+  // increased relative to born coupling order. Therefore do that
+  // explicityly here:
+  Process_Info rpi(spi);
+  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+    rpi.m_borncpl[1]+=1;
+  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
+    rpi.m_borncpl[0]+=1;
+  p_rproc=InitProcess(rpi,nlo_type::lo,true);
+
   spi.m_megenerator=pi.m_megenerator;
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
   p_ddproc=InitProcess(spi,nlo_type::rsub,1);
