@@ -268,6 +268,7 @@ Parton *Splitting_Function_Base::SelectSpec()
   double disc=ran->Get()*m_lastints.back(), sum(0.0);
   for (size_t i(0);i<m_lastints.size();++i)
     if (m_lastints[i]>=disc) return SetSpec(m_specs[i]);
+  return NULL;
 }
 
 void Splitting_Function_Base::ClearSpecs()

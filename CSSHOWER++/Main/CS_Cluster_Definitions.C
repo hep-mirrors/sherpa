@@ -275,12 +275,16 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=1.0/cs.m_wk;
-  msg_Debugging()<<"Kernel weight (A="<<AMode()<<"/NLO="<<(kmode&16)
-		 <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
-		 <<" ) "<<Demangle(typeid(*cdip->Lorentz()).name()).substr(10)
-		 <<"|"<<Demangle(typeid(*cdip->Coupling()).name()).substr(10)
-		 <<" {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
-		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
+  if (msg_LevelIsDebugging()) {
+    SF_Lorentz *lf = cdip->Lorentz();
+    SF_Coupling *cf = cdip->Coupling();
+    msg_Debugging()<<"Kernel weight (A="<<AMode()<<"/NLO="<<(kmode&16)
+                   <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
+                   <<" ) "<<Demangle(typeid(*lf).name()).substr(10)
+                   <<"|"<<Demangle(typeid(*cf).name()).substr(10)
+                   <<" {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
+                   <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
+  }
   }
 }
 

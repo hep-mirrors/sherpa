@@ -11,7 +11,7 @@
 namespace SHRIMPS {
   class Rap_Order {
   public :
-    inline bool operator()(ATOOLS::Particle * p1,ATOOLS::Particle * p2)
+    inline bool operator()(ATOOLS::Particle * p1,ATOOLS::Particle * p2) const
     {
       if (p1->Momentum().Y()<p2->Momentum().Y()) return true;
       return false;
@@ -21,7 +21,7 @@ namespace SHRIMPS {
   typedef std::set<ATOOLS::Particle *,Rap_Order> PartYSet;
   class Rap_Order2 {
   public :
-    inline bool operator()(PartYSet * ps1,PartYSet * ps2) {
+    inline bool operator()(PartYSet * ps1,PartYSet * ps2) const {
       if (ps1->empty()) return true;
       if (ps2->empty()) return false;
       if ((*ps1->begin())->Momentum().Y()<
