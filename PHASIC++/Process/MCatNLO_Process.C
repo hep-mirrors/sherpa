@@ -153,7 +153,14 @@ Process_Base* MCatNLO_Process::InitProcess
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
     else THROW(fatal_error, "Internal error.");
   }
-  return m_gens.InitializeProcess(cpi,false);
+  Process_Base* proc = m_gens.InitializeProcess(cpi,false);
+  if (!proc)
+    {
+      std::stringstream msg;
+      msg << "Unable to initialize process:\n" << cpi;
+      THROW(fatal_error,  msg.str());
+    }
+  return proc;
 }
 
 bool MCatNLO_Process::InitSubtermInfo()
