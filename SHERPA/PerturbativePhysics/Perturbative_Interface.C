@@ -201,8 +201,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
-      const auto disc = ran->Get();
-      const auto abswgt = std::abs(m_weight);
+      const double disc = ran->Get();
+      const double abswgt = std::abs(m_weight);
       if (abswgt < disc) {
         return Return_Value::New_Event;
       }
