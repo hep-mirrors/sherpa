@@ -86,11 +86,11 @@ namespace EXTAMP {
     p_corr_me->Calc(p);
 
     /* Get squared Born from correlator ME */
-//    B = p_corr_me->GetBorn2();
+    B = p_corr_me->GetBorn2();
 
     /* Calculate integrated subtraction terms I and corresponding
        scale dependence terms */
-//    I = Calc_I(p, mur);
+    I = Calc_I(p, mur);
     scaleterms = Calc_ScaleDependenceTerms_I(p, mur);
 
     /* Calculate HP terms for pseudo-dipoles */
@@ -108,7 +108,7 @@ namespace EXTAMP {
        fraction m_vfrac of PS points. */
     if(ATOOLS::ran->Get() < m_vfrac)
       {
-//	V = Calc_V(p,B,mur)/m_vfrac;
+	V = Calc_V(p,B,mur)/m_vfrac;
 	
 	std::pair<double,double> vscterms =
 	  Calc_ScaleDependenceTerms_V(p,B,mur);

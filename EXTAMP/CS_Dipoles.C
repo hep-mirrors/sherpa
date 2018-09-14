@@ -453,7 +453,7 @@ void II_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
 
 double FF_Dipole::CalcKinDependentPrefac() const
 {
-  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
+//  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
 
   switch(DipCase()){
   case RES:
