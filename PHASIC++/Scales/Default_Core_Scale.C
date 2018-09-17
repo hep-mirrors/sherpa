@@ -48,6 +48,7 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
   }
   Flavour_Vector fl; fl.resize(4);
+  Process_Base::SortFlavours(campl, 1);
   fl[0]=campl->Leg(0)->Flav();
   fl[1]=campl->Leg(1)->Flav();
   fl[2]=campl->Leg(2)->Flav();
@@ -88,18 +89,18 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   }
   else if (!fl[0].Strong() && !fl[1].Strong()) {// ll collision
     if (fl[2].Strong() && fl[3].Strong()) {
-      msg_Debugging()<<"jets like\n";
-      muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
+      msg_Debugging()<<"ll->jets like\n";
+    } else {
+      msg_Debugging()<<"ll->unknown, Mandelstam s will be used as the scale\n";
     }
+    muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
   }
   else {
     if (!fl[0].Strong() && !fl[2].Strong()) {
       msg_Debugging()<<"DIS like\n";
-      muq2=muf2=mur2=dabs((campl->Leg(fl[0].Strong()?1:0)->Mom()+
-			   campl->Leg(fl[2].Strong()?3:2)->Mom()).Abs2());
-    }
-    else {
-      msg_Debugging()<<"QCD Compton like\n";
+      muq2=muf2=mur2=dabs((campl->Leg(0)->Mom()+campl->Leg(2)->Mom()).Abs2());
+    } else {
+      msg_Debugging()<<"QCD Compton like, i.e. q+gamma -> q+gluon\n";
       muq2=muf2=mur2=dabs(sqrt(campl->Leg(2)->Mom().MPerp2()*
 			       campl->Leg(3)->Mom().MPerp2()));
     }
