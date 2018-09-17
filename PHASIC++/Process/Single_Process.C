@@ -792,7 +792,9 @@ std::vector<double> Single_Process::AlphaSRatios(
   Single_Process::BornLikeReweightingInfo & info) const
 {
   std::vector<double> ratios;
-  if ((m_pinfo.m_ckkw & 1) && (varparams->m_showermuR2fac != 1.0)) {
+  if ((m_pinfo.m_ckkw & 1)
+      && varparams->m_showermuR2fac != 1.0
+      && !info.m_ampls.empty()) {
     // go through cluster sequence
     for (Cluster_Amplitude *ampl(info.m_ampls.front());
          ampl;
