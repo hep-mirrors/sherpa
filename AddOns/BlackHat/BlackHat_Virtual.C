@@ -90,7 +90,7 @@ void BlackHat_Virtual::AddCouplings
     return;
   }
   for (size_t j(pi.m_mincpl[i]);j<=pi.m_maxcpl[i];++j) {
-    cpls[i].second=2.0*j;
+    cpls[i].second=j;
     if (i<2 && pi.m_fi.m_nlotype&nlo_type::loop) cpls[i].second+=pi.m_fi.m_nlocpl[i];
     AddCouplings(pi,couplings,cpls,i+1);
   }
@@ -122,7 +122,7 @@ operator()(const Process_Info &pi) const
       std::vector<std::pair<std::string,int> > cpls;
       cpls.push_back(std::pair<std::string,int>("alpha_QCD",0));
       cpls.push_back(std::pair<std::string,int>("alpha_QED",0));
-      if (MODEL::s_model->Name()=="HEFT")
+      if (BLACKHAT::BlackHat_Virtual::s_model->Name()=="HEFT")
 	cpls.push_back(std::pair<std::string,int>("YUK2",0));
       std::vector<std::vector<std::pair<std::string,int> > > couplings;
       BlackHat_Virtual::AddCouplings(pi,couplings,cpls);

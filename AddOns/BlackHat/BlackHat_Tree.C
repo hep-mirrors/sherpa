@@ -69,12 +69,12 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
   return res;
 }
 
-int BlackHat_Tree::OrderQCD(const int &id)
+int BlackHat_Tree::OrderQCD(const int &id) const
 {
   return m_oqcd;
 }
 
-int BlackHat_Tree::OrderEW(const int &id)
+int BlackHat_Tree::OrderEW(const int &id) const
 {
   return m_oew;
 }
@@ -88,7 +88,7 @@ void BlackHat_Tree::AddCouplings
     couplings.push_back(cpls);
     return;
   }
-  cpls[i].second=2.0*args.m_orders[i];
+  cpls[i].second=args.m_orders[i];
   AddCouplings(args,couplings,cpls,i+1);
 }
 
@@ -106,7 +106,7 @@ operator()(const External_ME_Args &args) const
     std::vector<std::pair<std::string,int> > cpls;
     cpls.push_back(std::pair<std::string,int>("alpha_QCD",0));
     cpls.push_back(std::pair<std::string,int>("alpha_QED",0));
-    if (MODEL::s_model->Name()=="HEFT")
+    if (BLACKHAT::BlackHat_Tree::s_model->Name()=="HEFT")
       cpls.push_back(std::pair<std::string,int>("YUK2",0));
     std::vector<std::vector<std::pair<std::string,int> > > couplings;
     BlackHat_Tree::AddCouplings(args,couplings,cpls);
