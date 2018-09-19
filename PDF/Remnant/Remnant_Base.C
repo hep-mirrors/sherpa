@@ -69,6 +69,7 @@ bool Remnant_Base::AdjustKinematics()
   for (size_t i=0;i<2;++i) {
     ATOOLS::Blob *cur=p_beamblob;
     if (i==1) cur=p_partner->p_beamblob;
+    if (!cur) continue;
     for (int j=0;j<cur->NOutP();++j) {
       if (cur->OutParticle(j)!=p_last[i]) {
 	if (cur->OutParticle(j)->DecayBlob()==NULL) {
@@ -90,10 +91,16 @@ bool Remnant_Base::AdjustKinematics()
   if (p_last[1]==NULL && p_last[0]==NULL) {
     THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
   }
-  ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
+  ATOOLS::Vec4D pr1=ATOOLS::Vec4D(0.,0.,0.,1.);
+  double m1=0;
+  double m2=0;
+  if (p_last[0]){pr1=p_last[0]->Momentum(); m1=ATOOLS::sqr(p_last[0]->Flav().Mass());}
+  ATOOLS::Vec4D pr2=ATOOLS::Vec4D(0.,0.,0.,1.);
+  if (p_last[1]) {pr2=p_last[1]->Momentum();m2=ATOOLS::sqr(p_last[1]->Flav().Mass());}
+
   ATOOLS::Momentum_Shifter shift(p_last[0],p_last[1]);
-  shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().Mass())+pr1.PPerp2(),1);
-  shift.SetSPerp(ATOOLS::sqr(p_last[1]->Flav().Mass())+pr2.PPerp2(),2);
+  shift.SetSPerp(m1+pr1.PPerp2(),1);
+  shift.SetSPerp(m2+pr2.PPerp2(),2);
   if (!ATOOLS::IsZero(m_pzrem-(pr1+pr2)[3])) {
     shift.SetShift(ATOOLS::Vec4D(m_erem-(pr1+pr2)[0],0.,0.,
 				 m_pzrem-(pr1+pr2)[3]));
@@ -111,6 +118,7 @@ bool Remnant_Base::AdjustKinematics()
     return false;
   }
   for (size_t i=0;i<2;++i) {
+    if (!p_last[i]) continue;
     if (!(p_last[i]->Momentum()[0]>0.)) {
       msg_Error()<<"Remnant_Base::AdjustKinematics(): "
 			 <<"Parton ("<<p_last[i]<<") has non-positive energy "
