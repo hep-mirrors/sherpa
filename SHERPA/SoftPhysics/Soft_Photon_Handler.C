@@ -30,9 +30,9 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile,
   m_mode = softphotons::code(dataread->GetValue<int>("YFS_MODE",2));
   if (m_mode != softphotons::off) {
     p_yfs       = new PHOTONS::Photons(dataread);
-    p_clusterer = new Resonance_Finder(dataread,meh);
     m_name      = p_yfs->Name();
   }
+  p_clusterer = new Resonance_Finder(dataread,meh);
 
   delete dataread;
 }
