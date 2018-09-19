@@ -181,12 +181,11 @@ bool Color_Setter::SetColors(Cluster_Amplitude *const ampl)
   std::string name(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit(pm->find(name));
   p_xs=NULL;
-  if (pit!=pm->end() && pit->second->
+  if (pit!=pm->end() && pit->second && pit->second->
       Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
   if (p_xs==NULL) {
     pm=m_pmap[nlo_type::lo];
-    if ((pit=pm->find(name))!=pm->end()) p_xs=pit->second;
-    else {
+    {
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
       My_In_File::OpenDB
