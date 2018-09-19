@@ -585,7 +585,8 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
     if (li->Flav().StrongCharge()==3 ||
 	li->Flav().StrongCharge()==8)
       li->SetKT2(0,sqr(rpa->gen.Ecms()));
-    if (li->Flav().StrongCharge()==-3)
+    if (li->Flav().StrongCharge()==-3 ||
+	li->Flav().StrongCharge()==8)
       li->SetKT2(1,sqr(rpa->gen.Ecms()));
   }
   for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -601,8 +602,14 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
 	msg_Debugging()<<"  Q_{"<<i<<j<<"} = "<<sqrt(sij)
 		       <<" vs "<<sqrt(li->KT2(mij?0:1))
 		       <<", match = "<<mij<<" / "<<mji<<"\n";
-	li->SetKT2(mij?0:1,Min(sij,li->KT2(mij?0:1)));   
-	lj->SetKT2(mij?1:0,Min(sij,lj->KT2(mij?1:0)));   
+	if (mij) {
+	  li->SetKT2(0,Min(sij,li->KT2(0)));
+	  lj->SetKT2(1,Min(sij,lj->KT2(1)));
+	}
+	if (mji) {
+	  li->SetKT2(1,Min(sij,li->KT2(1)));
+	  lj->SetKT2(0,Min(sij,lj->KT2(0)));
+	}
 	htp+=sij;
       }
     }
