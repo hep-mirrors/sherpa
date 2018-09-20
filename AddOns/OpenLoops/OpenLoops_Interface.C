@@ -37,7 +37,9 @@ extern "C" {
   void ol_evaluate_loop(int id, double* pp, double* m2l0, double* m2l1, double* acc);
   void ol_evaluate_tree(int id, double* pp, double* m2l0);
   void ol_evaluate_loop2(int id, double* pp, double* m2l0, double* acc);
+#ifdef USING__OPENLOOPS__ASSOCIATED
   void ol_evaluate_associated(int id, double* pp, int ass, double* m2l0);
+#endif
 }
 
 
@@ -172,9 +174,17 @@ namespace OpenLoops {
 
     // set negative of requested associated amps such that they are only
     // initialised, but not computed by default
+#if USING__OPENLOOPS__ASSOCIATED
     SetParameter("add_associated_EW",-ConvertAssociatedContributions(fs.m_asscontribs));
+#else
+    if (ConvertAssociatedContributions(fs.m_asscontribs))
+      THROW(fatal_error,"Separate evaluation of associated EW contribution not "
+                        +std::string("support in used OpenLoops version."));
+#endif
     int procid(ol_register_process(procname.c_str(), amptype));
+#if USING__OPENLOOPS__ASSOCIATED
     SetParameter("add_associated_EW",0);
+#endif
 
     return procid;
   }
@@ -226,6 +236,7 @@ namespace OpenLoops {
 
   void OpenLoops_Interface::EvaluateAssociated(int id, const Vec4D_Vector& momenta, int ass, double& res)
   {
+#if USING__OPENLOOPS__ASSOCIATED
     vector<double> pp(5*momenta.size());
     for (size_t i=0; i<momenta.size(); ++i) {
       pp[0+i*5]=momenta[i][0];
@@ -235,6 +246,7 @@ namespace OpenLoops {
     }
 
     ol_evaluate_associated(id, &pp[0], ass, &res);
+#endif
   }
 
   int OpenLoops_Interface::ConvertAssociatedContributions
