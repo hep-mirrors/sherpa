@@ -18,7 +18,6 @@ namespace MODEL { class Running_AlphaS; }
 namespace PHASIC {
 
   class ME_Generators;
-  class MCatNLO_Process;
 
   class MCatNLO_Process : public Process_Base {
   private:
