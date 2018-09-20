@@ -18,7 +18,6 @@ namespace MODEL { class Running_AlphaS; }
 namespace PHASIC {
 
   class ME_Generators;
-  class MCatNLO_Process;
   class Jet_Finder;
 
   //! This class manages all processes contributing to an MC@NLO calculation
