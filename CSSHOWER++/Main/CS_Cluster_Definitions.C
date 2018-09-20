@@ -180,7 +180,7 @@ double CS_Cluster_Definitions::Differential
 {
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
-  if (procs==NULL) return 1.0;
+  if (procs==NULL || kmode &128) return 1.0;
   nlo_type::code type=nlo_type::lo;
   if (procs->find(type)==procs->end()) return 0.0;
   Process_Base::SortFlavours(ampl);
