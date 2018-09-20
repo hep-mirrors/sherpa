@@ -127,7 +127,7 @@ void Variations::LoadLHAPDFInterfaceIfNecessary(Data_Reader * const reader)
   // check whether LHAPDF is already loaded, if not load and init interface
   if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
     s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
-    s_loader->LoadLibrary("LHAPDF");
+    s_loader->LoadLibrary("LHAPDFSherpa");
     void *init(s_loader->GetLibraryFunction("LHAPDFSherpa","InitPDFLib"));
     if (init==NULL) THROW(fatal_error,"Cannot load PDF library LHAPDFSherpa");
     ((PDF_Init_Function)init)();
