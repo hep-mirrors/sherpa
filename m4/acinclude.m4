@@ -14,6 +14,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       fi
       SEDCOMMAND="sed -i.bak -E"
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
+      LIB_SUFFIX=dylib
       AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
     *linux*:*:*)
@@ -23,6 +24,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
+      LIB_SUFFIX=so
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
     *)
@@ -37,6 +39,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
+      LIB_SUFFIX=so
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
@@ -590,7 +593,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              openloops=true;
              if test -d "${OPENLOOPS_PREFIX}"; then
                 AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
-		if nm "${OPENLOOPS_PREFIX}/lib/libopenloops.so" | grep ol_evaluate_associated > /dev/null; then
+		if nm "${OPENLOOPS_PREFIX}/lib/libopenloops.${LIB_SUFFIX}" | grep ol_evaluate_associated > /dev/null; then
 		  openloopsass=true;
 		fi
              else
