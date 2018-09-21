@@ -43,8 +43,8 @@ bool Gluon_Splitter::CalculateXY() {
   double arg = sqr(M2-m_kt2-m_m12)-4*m_m12*m_kt2;
   if (arg<0.) return false;
   m_x = ((M2-m_kt2+m_m12)+sqrt(arg))/(2.*M2);
-  m_y = m_kt2/M2/(1.-m_x);  
-  return (m_x<=1. && m_x>=0. && m_y<=1. && m_y>=0.);
+  m_y = m_kt2>1.e-6?m_kt2/M2/(1.-m_x):1.;
+  return (!(m_x>1.) && !(m_x<0.) && !(m_y>1.) && !(m_y<0.));
 }
 
 double Gluon_Splitter::

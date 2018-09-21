@@ -143,7 +143,6 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
     throw Return_Value::Retry_Event;
   }
   blob->AddData("dc",new Blob_Data<Decay_Channel*>(table->Select()));
-
   blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum()));
   DEBUG_VAR(inpart->Momentum());
 }
