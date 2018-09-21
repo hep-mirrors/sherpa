@@ -337,7 +337,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),2);
+	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),4);
         vertex->add_particle_in(inpart);
 	inparticles.push_back(inpart);
         // distinct because SHRIMPS has no bunches for some reason
@@ -366,7 +366,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
       beamparticles.push_back
 	(new HepMC::GenParticle(mombeam,(long int)
-				(j?rpa->gen.Beam2():rpa->gen.Beam1()),2));
+				(j?rpa->gen.Beam2():rpa->gen.Beam1()),4));
       beamvertex->add_particle_in(beamparticles[j]);
       beamvertex->add_particle_out(inparticles[j]);
     }
@@ -400,7 +400,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
       beamparticles[j] = new HepMC::GenParticle
-	(mombeam,(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1()),2);
+	(mombeam,(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1()),4);
       beamvertex->add_particle_in(beamparticles[j]);
       double flip(sub->p_mom[j][0]<0.);
       HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],
@@ -408,7 +408,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
                                  (flip?-1.:1.)*sub->p_mom[j][3],
                                  (flip?-1.:1.)*sub->p_mom[j][0]);
       HepMC::GenParticle* inpart =
-        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
+        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],4);
       subvertex->add_particle_in(inpart);
       beamvertex->add_particle_out(inpart);
     }
@@ -530,8 +530,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     HepMC::FourVector pa(pbeam[0][1],pbeam[0][2],pbeam[0][3],pbeam[0][0]);
     HepMC::FourVector pb(pbeam[1][1],pbeam[1][2],pbeam[1][3],pbeam[1][0]);
     HepMC::GenParticle *inpart[2] = {
-      new HepMC::GenParticle(pa,(long int)rpa->gen.Beam1(),2),
-      new HepMC::GenParticle(pb,(long int)rpa->gen.Beam2(),2)};
+      new HepMC::GenParticle(pa,(long int)rpa->gen.Beam1(),4),
+      new HepMC::GenParticle(pb,(long int)rpa->gen.Beam2(),4)};
     psvertex->add_particle_in(inpart[0]);
     psvertex->add_particle_in(inpart[1]);
     event.set_beam_particles(inpart[0],inpart[1]);
