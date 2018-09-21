@@ -29,6 +29,7 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   m_corecheck=read.GetValue<int>("COMIX_CLUSTER_CORE_CHECK",0);
   m_ordered=read.GetValue<int>("COMIX_CLUSTER_ORDERED",0);
   m_nocluster=read.GetValue<int>("COMIX_NO_CLUSTER",0);
+  m_dipolecheck=read.GetValue<int>("COMIX_CLUSTER_DIPOLE_CHECK",1);
 }
 
 Cluster_Algorithm::~Cluster_Algorithm()
@@ -198,7 +199,7 @@ void Cluster_Algorithm::CalculateMeasures
 	if (find(ccurs.begin(),ccurs.end(),in[j]->J(0))==ccurs.end()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->J(1))==ccurs.end()) continue;
 	size_t idi(in[j]->J(0)->CId()), idj(in[j]->J(1)->CId());
-	if (p_xs!=p_proc && step==2) {
+    if (p_xs!=p_proc && step==2 && m_dipolecheck) {
 	  NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
 	  if (!(m_id[idi]==(1<<sub->m_i) && m_id[idj]==(1<<sub->m_j)) &&
 	      !(m_id[idj]==(1<<sub->m_i) && m_id[idi]==(1<<sub->m_j))) continue;
@@ -214,7 +215,7 @@ void Cluster_Algorithm::CalculateMeasures
 	for (size_t k(0);k<p_ampl->Legs().size();++k) {
 	  size_t idk(p_ampl->Leg(k)->Id());
 	  if (idk==m_id[idi] || idk==m_id[idj]) continue;
-	  if (p_xs!=p_proc && step==2) {
+      if (p_xs!=p_proc && step==2 && m_dipolecheck) {
 	    NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
 	    if (idk!=(1<<sub->m_k)) continue;
 	  }
@@ -253,7 +254,7 @@ void Cluster_Algorithm::CalculateMeasures
 	if (in[j]->Order()[1]>p_ampl->OrderEW() ||
 	    in[j]->Order()[0]>p_ampl->OrderQCD()) continue;
 	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
-	if (p_xs!=p_proc && step==2) {
+    if (p_xs!=p_proc && step==2 && m_dipolecheck) {
 	  NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
 	  if (!(m_id[idi]==(1<<sub->m_i) && m_id[idj]==(1<<sub->m_j)) &&
 	      !(m_id[idj]==(1<<sub->m_i) && m_id[idi]==(1<<sub->m_j))) continue;
@@ -268,7 +269,7 @@ void Cluster_Algorithm::CalculateMeasures
 	  for (size_t k(0);k<p_ampl->Legs().size();++k) {
 	    size_t idk(p_ampl->Leg(k)->Id());
 	    if (idk==m_id[idi] || idk==m_id[idj]) continue;
-	    if (p_xs!=p_proc && step==2) {
+        if (p_xs!=p_proc && step==2 && m_dipolecheck) {
 	      NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
 	      if (idk!=(1<<sub->m_k)) continue;
 	    }
