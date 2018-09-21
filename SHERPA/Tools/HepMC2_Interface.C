@@ -344,7 +344,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),2);
+	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),4);
         vertex->add_particle_in(inpart);
         // distinct because SHRIMPS has no bunches for some reason
         if (blob->Type()==btp::Beam || blob->Type()==btp::Bunch) {
@@ -390,7 +390,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
       HepMC::GenParticle* inpart =
-        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
+        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],4);
       subvertex->add_particle_in(inpart);
     }
     for (size_t j(2);j<sub->m_n;++j) {
