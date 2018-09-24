@@ -64,7 +64,7 @@ namespace METOOLS {
 	  j->Divide(3.0/2.0);
 	}
       }
-      if (m_gab && (*p_a)(0)==(*p_a)(1)) {
+      else if (m_gab && (*p_a)(0)==(*p_a)(1)) {
 	if ((*p_a)(0)==(*p_b)(1)) j->Divide(3.0/2.0);
 	else j->Divide(-3.0);
       }
