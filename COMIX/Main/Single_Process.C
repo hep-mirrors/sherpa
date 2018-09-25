@@ -438,8 +438,9 @@ double COMIX::Single_Process::Partonic
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
-    double kb(sp->p_bg->Born()?sp->KFactor(1):1.0);
-    double kf(m_mewgtinfo.m_K=isb?kb:sp->KFactor());
+    double kb(sp->p_bg->Born()?sp->KFactor(1|2):1.0);
+    double kf(m_mewgtinfo.m_K=isb?kb:
+	      sp->KFactor(sp->p_bg->Born()?0:2));
     m_mewgtinfo.m_B=sp->p_bg->Born()*kb/kf;
     m_dxs+=sp->p_bg->Born()*(kb/kf-1.0);
     m_w*=kf;

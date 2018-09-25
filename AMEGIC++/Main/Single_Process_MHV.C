@@ -346,7 +346,7 @@ double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
 	  M2       += helvalue;
       }
   }
-  m_lastk=KFactor();
+  m_lastk=KFactor(2);
   return M2*p_MHVamp->ParticlesNorm() * m_lastk;
 }
 

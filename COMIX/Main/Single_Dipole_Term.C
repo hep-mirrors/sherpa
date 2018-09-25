@@ -79,7 +79,7 @@ double COMIX::Single_Dipole_Term::Partonic
   m_w*=p_rsint->ColorIntegrator()->GlobalWeight();
   if (p_rsint->HelicityIntegrator()!=NULL) 
     m_w*=p_rsint->HelicityIntegrator()->Weight();
-  m_w*=sp->KFactor();
+  m_w*=sp->KFactor(2);
   return m_lastxs*=m_w;
 }
 

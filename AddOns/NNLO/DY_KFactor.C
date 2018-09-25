@@ -144,7 +144,7 @@ double DYNNLO_KFactor::KFactor
   double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>(p_proc->Info().Has(nlo_type::real)?m_newfs+1:m_newfs)) {
     double weight(1.0);
-    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,
+    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
 			  weights?params->m_name:"");
     if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
@@ -252,7 +252,7 @@ double DYNLO_KFactor::KFactor
   double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>m_newfs) {
     double weight(1.0);
-    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,
+    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,0,
 			 weights?params->m_name:"");
     if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;

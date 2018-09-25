@@ -827,7 +827,7 @@ double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
-  m_lastk=KFactor();
+  m_lastk=KFactor(2);
   msg_Debugging()<<"M2="<<M2<<" ,  kfac="<<m_lastk<<" ,  norm="
                  <<sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS))
                  <<std::endl;

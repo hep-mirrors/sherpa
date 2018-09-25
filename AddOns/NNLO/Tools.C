@@ -2,6 +2,7 @@
 
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -313,7 +314,7 @@ double SHNNLO::NLODiffWeight
 (Process_Base *const proc,double &wgt,
  const double &mur2,const double &muf2,
  const double *k0sq,const int fomode,
- const std::string &varid)
+ const int umode,const std::string &varid)
 {
   if (fomode) return wgt;
   DEBUG_FUNC(proc->Name());
@@ -326,7 +327,7 @@ double SHNNLO::NLODiffWeight
   msg_Debugging()<<"K = "<<K<<"\n";
   if (IsBad(K)) {
     ampl->Next()->SetNLO(128);
-    return wgt;
+    return umode?0.0:wgt;
   }
   bool gen=rpa->gen.NumberOfTrials()>s_ntrials;
   s_ntrials=rpa->gen.NumberOfTrials();
@@ -334,13 +335,14 @@ double SHNNLO::NLODiffWeight
   else msg_Debugging()<<"keep random point\n";
   double p1=s_p1;
   if (gen) p1=s_p1=1.0/(1.0+2.0*dabs(K-1.0));
+  if (umode) p1=0.0;
   if (s_disc<=p1) {
     wgt*=1.0/p1;
     ampl->Next()->SetNLO(16|64);
   }
   else {
     double pw(0.5*(1.0-p1));
-    wgt*=(K-1.0)/pw;
+    wgt*=(umode?K:K-1.0)/pw;
     ampl->Next()->SetNLO(16);
     if (s_disc>p1+pw) {
       ampl->Next()->SetNLO(16|32);
@@ -355,27 +357,30 @@ double SHNNLO::NNLODiffWeight
 (Process_Base *const proc,double &wgt,
  const double &mur2,const double &muf2,
  const double *k0sq,const int mode,
- const int fomode,const std::string &varid)
+ const int fomode,const int umode,
+ const std::string &varid)
 {
   nlo_type::code nlot=proc->Info().m_fi.m_nlotype;
   DEBUG_FUNC(proc->Name()<<", wgt = "<<wgt
 	     <<", type "<<nlot<<", mode = "<<mode);
   if (fomode || rpa->gen.NumberOfTrials()<1) return wgt;
   Cluster_Amplitude *ampl(NULL);
-  Scale_Setter_Base *sc(proc->ScaleSetter());
+  Scale_Setter_Base *sc(proc->ScaleSetter(1));
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   NLO_subevtlist *subs(proc->GetRSSubevtList());
-  if (subs) ampl=subs->back()->p_ampl->Next();
+  if (subs) ampl=subs->back()->Proc<Single_Process>()->
+	      ScaleSetter(1)->Amplitudes().front()->Next();
   if (ampl==NULL || ampl->Next()==NULL)
-    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,varid);
+    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,umode,varid);
   msg_Debugging()<<*ampl<<"\n";
   double w1, w=Weight(w1,ampl,mur2,muf2,k0sq,mode|(subs?2:0));
   msg_Debugging()<<"w = "<<w<<", w1 = "<<w1<<"\n";
   if (IsBad(w) || IsBad(w1)) {
     ampl->Next()->SetNLO(128);
-    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,varid);
+    if (umode) return 0.0;
+    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,umode,varid);
   }
-  return wgt=SetWeight(ampl->Next(),mode,wgt,w,w1,varid);
+  return wgt=SetWeight(ampl->Next(),mode,wgt,w,w1,umode,varid);
 }
 
 double SHNNLO::NNLODeltaWeight
@@ -395,7 +400,7 @@ double SHNNLO::NNLODeltaWeight
 double SHNNLO::SetWeight
 (ATOOLS::Cluster_Amplitude *const ampl,const int mode,
  double wgt,const double &w,const double &w1,
- const std::string &varid)
+ const int umode,const std::string &varid)
 {
   bool gen=rpa->gen.NumberOfTrials()>s_ntrials;
   s_ntrials=rpa->gen.NumberOfTrials();
@@ -406,6 +411,7 @@ double SHNNLO::SetWeight
     s_p2=0.0;
     p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0)+2.0*dabs(w*w1));
   }
+  if (umode) p1=0.0;
   if (s_disc<=p1) {
     wgt*=1.0/p1;
     if (ampl) {
@@ -419,9 +425,10 @@ double SHNNLO::SetWeight
       p2=s_p2=1.0-p1;
       if (w!=1.0) p2=s_p2/=(1.0+dabs(w*w1/(w-1.0)));
     }
+    if (umode) p2=1.0;
     if (s_disc<=p1+p2) {
       double pw(0.5*p2);
-      wgt*=(w-1.0)/pw;
+      wgt*=(umode?w:w-1.0)/pw;
       if (ampl) {
 	if (mode==1) ampl->SetFlag(2);
 	ampl->SetNLO(16);

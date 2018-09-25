@@ -651,6 +651,38 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
   m_subevt.p_ampl=NULL;
 
+  p_dipole->SetMCMode(m_mcmode);
+  if (m_subevt.m_trig && m_mcmode) {
+    p_dipole->SetKt2Max(p_scale->Scale(stp::res));
+    if (p_scale->Scales().size()>(stp::size+stp::res)) {
+      p_dipole->SetKt2Max(p_scale->Scale(stp::id(stp::size+stp::res)));
+    }
+  }
+
+  double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
+  if (!(df>0.)&& !(df<0.)) {
+    m_subevt.m_me = m_subevt.m_mewgt = 0.;
+    m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+    m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
+    m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
+    m_subevt.m_kt2=p_dipole->KT2();
+    m_subevt.m_trig = false;
+    m_subevt.m_K = 1.0;
+    return m_lastxs=(m_mcmode&1)?0.0:df;
+  }
+
+  if (m_mcmode && p_dipole->MCSign()<0) df=-df;
+
+  m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
+  if (m_lastxs) m_lastxs*=m_lastk=KFactor(2|((m_mcmode&2)?4:0));
+  m_subevt.m_K = m_lastk;
+  m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
+  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+  m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
+  m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
+  m_subevt.m_kt2=p_dipole->KT2();
+  if (!m_subevt.m_trig) m_lastxs=0.0;
+
   if (p_scale->FixedScales().empty()) {
     ClusterAmplitude_Vector &ampls
       (ScaleSetter(1)->Amplitudes());
@@ -695,50 +727,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
     }
   }
 
-  p_dipole->SetMCMode(m_mcmode);
-  if (m_subevt.m_trig && m_mcmode) {
-    p_dipole->SetKt2Max(p_scale->Scale(stp::res));
-    if (p_scale->Scales().size()>(stp::size+stp::res)) {
-      p_dipole->SetKt2Max(p_scale->Scale(stp::id(stp::size+stp::res)));
-    }
-  }
-
-  double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
-  if (!(df>0.)&& !(df<0.)) {
-    m_subevt.m_me = m_subevt.m_mewgt = 0.;
-    m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
-    m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
-    m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
-    m_subevt.m_kt2=p_dipole->KT2();
-    m_subevt.m_alpha = 0.;
-    m_subevt.m_trig = false;
-    m_subevt.m_K = 1.0;
-    return m_lastxs=(m_mcmode&1)?0.0:df;
-  }
-
-  if (m_mcmode && p_dipole->MCSign()<0) df=-df;
-
-  if (msg_LevelIsDebugging()) {
-    size_t prec(msg->Precision());
-    msg->SetPrecision(16);
-    msg_Debugging()<<"  |M|^2 = "<<M2*Norm()<<"\n"
-                   <<"+  splf = "<<df<<" * "<<p_dipole->SPFac()
-                   <<" = "<<df*p_dipole->SPFac()<<"\n"
-                   <<"--------------------------------------------------\n"
-                   <<"          "<<M2 * df * p_dipole->SPFac() * Norm()<<"\n"
-                   <<"kfac ="<<KFactor()<<" ,  norm="<<Norm()<<std::endl;
-    msg->SetPrecision(prec);
-  }
-  m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
-  if (m_lastxs) m_lastxs*=m_lastk=KFactor((m_mcmode&2)?4:0);
-  m_subevt.m_K = m_lastk;
-  m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
-  m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
-  m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
-  m_subevt.m_alpha = p_dipole->LastAlpha();
-  m_subevt.m_kt2=p_dipole->KT2();
-  if (!m_subevt.m_trig) m_lastxs=0.0;
+  DEBUG_VAR(m_lastxs);
   return m_lastxs;
 }
 

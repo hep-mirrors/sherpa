@@ -417,7 +417,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
       if ((*partnerlist)[i]->p_ampl) {
 	if (i+1<partnerlist->size() && m_subevtlist[i]->p_ampl->IdNew()) {
 	  m_subevtlist[i]->p_ampl->Delete();
-	  m_subevtlist[i]->p_ampl=partnerlist->back()->p_ampl->CopyAll();
+	  m_subevtlist[i]->p_ampl=(*partnerlist)[i]->p_ampl->First()->CopyAll();
 	  if (m_subevtlist[i]->p_ampl->Next()) {
 	    m_subevtlist[i]->p_ampl=m_subevtlist[i]->p_ampl->Next();
 	    m_subevtlist[i]->p_ampl->DeletePrev();

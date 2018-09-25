@@ -123,7 +123,7 @@ int main(int argc,char **argv)
       return 1;
     }
     char sql[100], *zErrMsg=0;
-    strcpy(sql,"select file from path");
+    strcpy(sql,"select distinct file from path");
     msg_IODebugging()<<METHOD<<"(\""<<inlist[0]<<"\"): {\n";
     int rc=sqlite3_exec(db,sql,AddFiles,(void*)&filelist,&zErrMsg);
     if(rc!=SQLITE_OK) {

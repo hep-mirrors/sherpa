@@ -176,6 +176,7 @@ void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
     (fatal_error,"Process "+p_proc->Name()+" has no scale setter");
   for (size_t i(0);i<p_proc->ScaleSetter()->Scales().size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
+  m_p.resize(p_proc->NIn()+p_proc->NOut(),Vec4D());
   for (size_t i(0);i<p_proc->NIn()+p_proc->NOut();++i)
     p_calc->AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   std::string res=p_calc->Interprete(kftag);

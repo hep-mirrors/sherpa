@@ -65,11 +65,13 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
     SetAlphaSInfo();
   }
 
+  Default_Reader reader;
+  int q2lim(reader.Get<int>("LHAPDF_USE_Q2LIMIT",1));
   // get x,Q2 ranges from PDF
   m_xmin=p_pdf->xMin();
   m_xmax=p_pdf->xMax();
-  m_q2min=p_pdf->q2Min();
-  m_q2max=p_pdf->q2Max();
+  m_q2min=q2lim?p_pdf->q2Min():0.0;
+  m_q2max=q2lim?p_pdf->q2Max():1.0e37;
   m_nf=m_asinfo.m_nf;
 
   // initialise all book-keep arrays etc.

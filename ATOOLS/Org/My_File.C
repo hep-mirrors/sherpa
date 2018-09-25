@@ -70,10 +70,10 @@ int ListFiles(void *data,int argc,char **argv,char **name)
 
 void PrepareStatements(sqlite3 *db)
 {
-  char sqlget[41];
-  sprintf(sqlget,"select content from path where file = ?1");
+  char sqlget[69];
+  sprintf(sqlget,"select content from path where file = ?1 order by rowid desc limit 1");
   sqlite3_stmt *stmt=NULL;
-  int rc=sqlite3_prepare_v2(db,sqlget,41,&stmt,NULL);
+  int rc=sqlite3_prepare_v2(db,sqlget,69,&stmt,NULL);
   if(rc!=SQLITE_OK)
     msg_IODebugging()<<METHOD<<"(): '"<<db<<"' returns '"
 		     <<sqlite3_errmsg(db)<<"'."<<std::endl;

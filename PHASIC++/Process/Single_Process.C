@@ -561,6 +561,15 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (p_variationweights)
       p_variationweights->UpdateOrInitialiseWeights
 	(&Single_Process::ReweightWithoutSubevents,*this, ampls);
+    if (ampls.size()) {
+      Cluster_Amplitude *ampl(ampls.front()->Last());
+      if (ampl->NLO()&256) {
+	Vec4D_Vector p(m_nin+m_nout);
+	for (size_t i(0);i<ampl->Legs().size();++i)
+	       p[i]=i<m_nin?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom();
+	p_int->SetMomenta(p);
+      }
+    }
     return m_last;
   }
   else {
@@ -605,7 +614,17 @@ double Single_Process::Differential(const Vec4D_Vector &p)
                                             *this, emptyadditionaldata);
     }
     for (size_t i=0;i<subs->size();++i) {
-      m_last+=((*subs)[i]->m_trig&1)?(*subs)[i]->m_result:0.0;
+      NLO_subevt *sub((*subs)[i]);
+      m_last+=(sub->m_trig&1)?sub->m_result:0.0;
+      if (sub->p_ampl) {
+	Cluster_Amplitude *ampl(sub->p_ampl->Last());
+	if (ampl->NLO()&256) {
+	  for (size_t i(0);i<ampl->Legs().size();++i)
+	    *((Vec4D*)&sub->p_mom[i])=ampl->Leg(i)->Mom();
+	  for (size_t i(ampl->Legs().size());i<sub->m_n;++i)
+	    *((Vec4D*)&sub->p_mom[i])=Vec4D();
+	}
+      }
     }
     return m_last;
   }

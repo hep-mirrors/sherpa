@@ -137,6 +137,8 @@ namespace ANALYSIS {
 
     inline void SetUseDB(const int &usedb) { m_usedb=usedb; }
 
+    inline const ATOOLS::Blob_List *GetBlobList() { return p_blobs; }
+
   };// end of class Primitive_Analysis
 
 }// end of namespace ANALYSIS

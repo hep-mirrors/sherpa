@@ -166,8 +166,7 @@ Scale_Setter::Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
-  if (p_proc->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  p_clu=p_proc->Shower()->GetClusterDefinitions();
+  p_clu=p_proc->Shower()?p_proc->Shower()->GetClusterDefinitions():NULL;
   p_ms=p_proc->Generator();
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
@@ -195,7 +194,8 @@ Scale_Setter::Scale_Setter
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
-  p_qdc = new Cluster_Definitions(m_kfac,m_nproc,p_proc->Shower()->KTType());
+  p_qdc = new Cluster_Definitions(m_kfac,m_nproc,p_proc->Shower()?
+				  p_proc->Shower()->KTType():1);
 }
 
 Scale_Setter::~Scale_Setter()
@@ -472,7 +472,7 @@ void Scale_Setter::Cluster
 			       <<lj->Col()<<" <-> "<<lk->Col()<<"\n";
 		continue;
 	      }
-	      Cluster_Info ci(cc,strict?p_clu->Cluster(cc):
+	      Cluster_Info ci(cc,strict&&p_clu?p_clu->Cluster(cc):
 			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
 	      if (ci.second.m_kt2<0.0) continue;
 	      ccs.push_back(ci);

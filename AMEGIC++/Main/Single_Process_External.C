@@ -164,7 +164,7 @@ double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms
 double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
-  return p_me2->Calc(moms)*(m_lastk=KFactor());
+  return p_me2->Calc(moms)*(m_lastk=KFactor(2));
 }
 
 bool AMEGIC::Single_Process_External::Combinable

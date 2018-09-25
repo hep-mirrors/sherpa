@@ -211,7 +211,7 @@ double HNNLO_KFactor::KFactor
   }
   if (p_proc->NOut()>
       (p_proc->Info().Has(nlo_type::real)?2:1)) {
-    double weight(NNLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,mode,m_fomode,
+    double weight(NNLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
 				 weights?params->m_name:""));
     if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
@@ -448,7 +448,7 @@ double HNLO_KFactor::KFactor
   }
   if (m_kfmode&1) norm*=1.0+as4pi*(H1+4.*sqr(M_PI));
   if (p_proc->NOut()>1) {
-    double weight(NLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,m_fomode,
+    double weight(NLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,m_fomode,0,
 				weights?params->m_name:""));
     if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;

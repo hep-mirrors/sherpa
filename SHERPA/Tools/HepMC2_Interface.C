@@ -331,13 +331,20 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     Blob* blob=*blit;
+    if (m_ignoreblobs.count(blob->Type())) continue;
     for (int i=0;i<blob->NInP();i++) {
       if (blob->InParticle(i)->ProductionBlob()==NULL) {
         Particle* parton=blob->InParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
+	long int flav=(long int)parton->Flav();
+	if (flav==kf_lepton) {
+	  if (sp->InParticle(0)->Flav().IsLepton())
+	    flav=(long int)sp->InParticle(0)->Flav();
+	  else flav=(long int)sp->InParticle(1)->Flav();
+	}
         HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),4);
+	  new HepMC::GenParticle(momentum,flav,4);
         vertex->add_particle_in(inpart);
 	inparticles.push_back(inpart);
         // distinct because SHRIMPS has no bunches for some reason
@@ -364,9 +371,9 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       event.add_vertex(beamvertex);
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
-      beamparticles.push_back
-	(new HepMC::GenParticle(mombeam,(long int)
-				(j?rpa->gen.Beam2():rpa->gen.Beam1()),4));
+      long int flav=(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1());
+      if (flav==kf_lepton) flav=(long int)sp->InParticle(j)->Flav();
+      beamparticles.push_back(new HepMC::GenParticle(mombeam,flav,4));
       beamvertex->add_particle_in(beamparticles[j]);
       beamvertex->add_particle_out(inparticles[j]);
     }
@@ -399,8 +406,9 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
       subevent->add_vertex(beamvertex);
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
-      beamparticles[j] = new HepMC::GenParticle
-	(mombeam,(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1()),4);
+      long int flav=(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1());
+      if (flav==kf_lepton) flav=(long int)sub->p_fl[j];
+      beamparticles[j] = new HepMC::GenParticle(mombeam,flav,4);
       beamvertex->add_particle_in(beamparticles[j]);
       double flip(sub->p_mom[j][0]<0.);
       HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],

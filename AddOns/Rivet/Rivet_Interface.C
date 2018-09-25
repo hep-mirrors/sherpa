@@ -677,8 +677,10 @@ operator()(const Analysis_Arguments &args) const
   if (outpath[outpath.length()-1]=='/') {
     outpath.erase(outpath.length()-1, 1);
   }
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
   return new Rivet_Interface
-    (args.m_inpath,args.m_infile,outpath, std::vector<btp::code>(), "RIVET");
+    (args.m_inpath,args.m_infile,outpath,ignoreblobs, "RIVET");
 }
 
 void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,Rivet_Interface>::
@@ -700,6 +702,7 @@ operator()(const Analysis_Arguments &args) const
     outpath.erase(outpath.length()-1, 1);
   }
   std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
   ignoreblobs.push_back(btp::Fragmentation);
   ignoreblobs.push_back(btp::Hadron_Decay);
   ignoreblobs.push_back(btp::Hadron_Mixing);
@@ -726,6 +729,7 @@ operator()(const Analysis_Arguments &args) const
     outpath.erase(outpath.length()-1, 1);
   }
   std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
   ignoreblobs.push_back(btp::Fragmentation);
   ignoreblobs.push_back(btp::Hadron_Decay);
   ignoreblobs.push_back(btp::Hadron_Mixing);

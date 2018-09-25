@@ -15,6 +15,7 @@ ANATRIGGER_SOURCES    =	\
 			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
+			Q2_Selector.C \
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
 			Kt_Algorithm.C \

@@ -652,7 +652,7 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, dou
     return;
   }
   Particle_List * pl=p_ana->GetParticleList(m_reflistname);
-  if (!pl) {
+  if (!pl || pl->empty()) {
     msg_Debugging()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
     for (size_t i=0; i<m_histos.size();++i) m_histos[i]->Insert(0.,0.,ncount);
     return;
@@ -695,8 +695,8 @@ void Jet_Differential_Rates::EvaluateNLOcontrib(double weight, double ncount)
     return;
   }
   Particle_List * pl=p_ana->GetParticleList(m_reflistname);
-  if (!pl) {
-    msg_Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
+  if (!pl || pl->empty()) {
+    msg_Debugging()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
     return;
   }
 
