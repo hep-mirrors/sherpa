@@ -36,7 +36,8 @@ Subprocess_Info::Subprocess_Info
  const std::string &pol,const std::string &mpl):
   m_fl(fl), m_id(id), m_pol(pol), m_mpl(mpl),
   m_nmax(0), m_nmin(100), m_tag(0), m_osf(0),
-  m_nloqcdtype(nlo_type::lo), m_nloewtype(nlo_type::lo) {}
+  m_nloqcdtype(nlo_type::lo), m_nloewtype(nlo_type::lo),
+  m_asscontribs(asscontrib::none) {}
 
 Subprocess_Info::~Subprocess_Info()
 {
@@ -420,6 +421,7 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   if (m_ps.size()>0) {
     ostr<<" ("<<m_ps.size()<<")";
     ostr<<", NLO{"<<m_nloqcdtype<<","<<m_nloewtype<<"}";
+    ostr<<", ASS{"<<m_asscontribs<<"}";
     if (m_nmax>0) ostr<<"{"<<m_nmin<<","<<m_nmax<<"}";
     ostr <<": {\n";
     for (size_t i(0);i<m_ps.size();++i) m_ps[i].Print(ostr,ni+2);
