@@ -220,7 +220,6 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
   bool ownedpdfsandalphas(false);
   if (stringparams.size() > 2) {
     // PDF variation requested
-    ownedpdfsandalphas = true;
     std::string pdfname(stringparams[2]);
     if (pdfname=="default") {
       pdfsandalphasvector.push_back(PDFs_And_AlphaS());
@@ -233,6 +232,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
         pdfname = pdfname.substr(0, pdfname.find("/"));
       }
       pdfsandalphasvector.push_back(PDFs_And_AlphaS(reader, pdfname, member));
+      ownedpdfsandalphas = true;
     } else {
       // all PDF members: "Set[all]"
       pdfname=pdfname.substr(0, pdfname.find("[all]"));
@@ -262,6 +262,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
           + std::string(" Otherwise specify separately."));
 #endif
       }
+      ownedpdfsandalphas = true;
     }
     // filter associated contrib
     if (stringparams.size() > 3) {
