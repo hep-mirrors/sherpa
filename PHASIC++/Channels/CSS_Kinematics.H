@@ -75,6 +75,8 @@ namespace PHASIC {
 			const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			Kin_Args &iip);
 
+  bool ValidateMomentum(const ATOOLS::Vec4D&, double m2);
+
 }// end of namespace PHASIC
 
 #endif
