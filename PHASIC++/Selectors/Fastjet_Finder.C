@@ -115,7 +115,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
 
   std::vector<ATOOLS::Vec4D> p(sl.size());
   for (size_t i(0);i<p.size();++i) p[i]=sl[i].Momentum();
-  if (m_fl[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+  if (sl[0].Flavour().IsLepton()&&rpa->gen.Beam2().IsHadron()) {
     msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
     Vec4D pp(rpa->gen.PBeam(1)), qq(p[0]-p[2]);
     Poincare cms(pp+qq);

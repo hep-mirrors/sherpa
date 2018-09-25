@@ -247,7 +247,6 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   p_LO_process->SetMinOrdersIQCD(mincpliqcd);
   p_LO_process->SetMaxOrdersIEW(maxcpliew);
   p_LO_process->SetMinOrdersIEW(mincpliew);
-  p_proc=p_LO_process;
 
   PolarizationNorm();
 

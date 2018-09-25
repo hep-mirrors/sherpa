@@ -11,10 +11,7 @@ namespace SHNNLO {
   public:
     DIS_Selector(const PHASIC::Selector_Key &key);
     double KT2(ATOOLS::Vec4D_Vector &moms,const int beam);
-    bool Trigger(const ATOOLS::Vec4D_Vector & );
-    bool JetTrigger(const ATOOLS::Vec4D_Vector &,
-		    ATOOLS::NLO_subevtlist *const);
-    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &) { return 1; }
+    bool Trigger(ATOOLS::Selector_List &sl);
     void BuildCuts(PHASIC::Cut_Data *) {}
   };
 
@@ -35,12 +32,11 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 DIS_Selector::DIS_Selector(const Selector_Key &key):
-  Selector_Base("DISNNLO_Selector"), p_proc(key.p_proc->Process())
+  Selector_Base("DISNNLO_Selector"), p_proc(key.p_proc)
 {
   m_nin=key.p_proc->NIn();
   m_nout=key.p_proc->NOut();
   m_n=m_nin+m_nout;
-  m_fl=(Flavour*)&key.p_proc->Process()->Flavours().front();
   m_smin=0.0;
   m_smax=sqr(rpa->gen.Ecms());
   m_sel_log = new Selector_Log(m_name);
@@ -48,11 +44,12 @@ DIS_Selector::DIS_Selector(const Selector_Key &key):
   m_type=m_nout-(p_proc->Info().Has(nlo_type::real)?2+1:2);
 }
 
-bool DIS_Selector::Trigger(const Vec4D_Vector &ip) 
+bool DIS_Selector::Trigger(ATOOLS::Selector_List &sl) 
 {
   DEBUG_FUNC(p_proc->Name());
-  Vec4D_Vector p(1,ip[1]);
-  p.insert(p.end(),&ip[3],&ip[m_nin+m_nout]);
+  Vec4D_Vector p(1,sl[1].Momentum());
+  for (size_t i(3);i<m_nin+m_nout;++i)
+    p.push_back(sl[i].Momentum());
   double kt2(KT2(p,1));
   msg_Debugging()<<"kT = "<<sqrt(kt2)<<"\n";
   if (kt2==-1.0) return 1-m_sel_log->Hit(1-false);
