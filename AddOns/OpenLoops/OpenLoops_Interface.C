@@ -289,7 +289,7 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
 #else
   if (ConvertAssociatedContributions(fs.m_asscontribs))
     THROW(fatal_error,"Separate evaluation of associated EW contribution not "
-                      +std::string("support in used OpenLoops version."));
+                      +std::string("supported in used OpenLoops version."));
 #endif
   int procid(ol_register_process(olprocname.c_str(), amptype));
 #if USING__OPENLOOPS__ASSOCIATED
