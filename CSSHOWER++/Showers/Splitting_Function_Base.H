@@ -16,6 +16,12 @@ namespace CSSHOWER {
   class Shower;
 
   class Splitting_Function_Base {
+
+  private:
+
+    static SF_Lorentz* InitLorentzCalc(const MODEL::Single_Vertex& v,
+				       const SF_Key& key);
+
   protected:
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
