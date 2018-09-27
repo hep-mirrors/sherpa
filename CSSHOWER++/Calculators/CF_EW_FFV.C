@@ -66,7 +66,9 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
 			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
-  double stw(std::abs(md->ComplexConstant("csin2_thetaW")));
+  double MW =Flavour(kf_Wplus).Mass();
+  double MZ =Flavour(kf_Z).Mass();
+  double stw=1.0-sqr(MW/MZ);
   Flavour ffl(p_lf->FlB().IsFermion()?p_lf->FlB():p_lf->FlC());
   if (!ffl.IsFermion()) THROW(fatal_error,"Internal error");
   if (ffl.IsAnti()) ffl=ffl.Bar();
@@ -109,7 +111,9 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
 			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
-  double stw(std::abs(md->ComplexConstant("csin2_thetaW")));
+  double MW =Flavour(kf_Wplus).Mass();
+  double MZ =Flavour(kf_Z).Mass();
+  double stw=1.0-sqr(MW/MZ);
   Complex vij(Complex(1.0,0.0));
   Flavour f1(p_lf->FlB()), f2(p_lf->FlC());
   if (!f1.IsFermion()) f1=p_lf->FlA();
