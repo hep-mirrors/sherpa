@@ -288,18 +288,21 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   double bvi(bviproc->Differential(ampl,rm));
   bviproc->SetVariationWeights(NULL);
 
-  // eventually calculate local K factor
   const double random(ran->Get());
+  // calculate LocalKFactor
+  double lkf(LocalKFactor(bvi, b, rs, r, random, &ampl));
+  // eventually calculate local K factor
   if (p_variationweights) {
     KFactorReweightingInfo info;
     info.m_rsvarweights = rsvarweights;
     info.m_bvivarweights = bvivarweights;
     info.m_bvarweights = bvarweights;
     info.m_random = random;
+    msg_Debugging()<<"Calc'ing LocalKFactor weights."<<std::endl;
     p_variationweights->UpdateOrInitialiseWeights(&MCatNLO_Process::ReweightLocalKFactor,
                                                   *this, info);
   }
-  return LocalKFactor(bvi, b, rs, r, random, &ampl);
+  return lkf;
 }
 
 double MCatNLO_Process::LocalKFactor(double bvi, double b,
@@ -336,6 +339,7 @@ double MCatNLO_Process::ReweightLocalKFactor(
     SHERPA::Variation_Weights * varweights,
     MCatNLO_Process::KFactorReweightingInfo &info)
 {
+  DEBUG_FUNC(varparams->m_name);
   size_t i(varweights->CurrentParametersIndex());
   size_t subevtcount(info.m_rsvarweights->GetNumberOfSubevents());
   return LocalKFactor(info.m_bvivarweights->GetVariationWeightAt(i),
