@@ -319,7 +319,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     size_t n(0);
     cpi.m_ii.SetExternal(cfl,n);
     cpi.m_fi.SetExternal(cfl,n);
-    Process_Base::SortFlavours(cpi,0);
+    Process_Base::SortFlavours(cpi,1);
     if (trials.find(cpi)==trials.end()) {
       trials.insert(cpi);
       std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
