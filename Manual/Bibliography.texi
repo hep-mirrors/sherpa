@@ -1179,3 +1179,5 @@
 @mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
 @mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
 @mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa, [arXiv:1711.02568]}
+@mybibitem{Kallweit2015dum,Kal15, S. Kallweit and J. M. Lindert and P. Maierhofer and S. Pozzorini and M. Schonherr}
+@mybibitem{Gutschow2018tuk,Gut18,C. Gutschow and J. M. Lindert and M. Schonherr, Multi-jet merged top-pair production including electroweak corrections, Eur. Phys. J., C78,(2018),317, [arXiv:1803.00950]}

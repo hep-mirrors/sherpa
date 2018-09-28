@@ -73,6 +73,7 @@ of the main features of these examples.
 
 @menu
 * Top quark pair production::
+* Top quark pair production including approximate EW corrections::
 * Tops plus W in MC@@NLO::
 @end menu
 

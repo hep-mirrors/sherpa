@@ -14,4 +14,23 @@ Things to notice:
 for massive particles, as described in @mycite{Hoeche2013mua}.
 @item A non-default METS core scale setter is used, cf. @ref{METS scale setting with multiparton core processes}
 @item We enable top decays through the internal decay module using @option{HARD_DECAYS 1}
+@item We calculate on-the-fly a 7-point scale variation, cf. @ref{Scale and PDF variations}.
+@end itemize
+
+
+
+@node Top quark pair production including approximate EW corrections
+@subsection Top quark pair production including approximate EW corrections
+
+@example
+@smallformat
+@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops/Run.EWapprox.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item In addition to the setup in @ref{Top quark pair production} we add approximate EW corrections, cf. @mycite{Gutschow2018tuk}.
+@item Please note: this setup currently only works with a beta version of the upcoming OpenLoops release.
+@item The approximate EW corrections are added as additional variations on the event weight.
 @end itemize

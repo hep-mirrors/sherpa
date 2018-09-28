@@ -407,11 +407,12 @@ Sherpa can compute alternative event weights for different scale and
 PDF choices on-the-fly, resulting in alternative weights for the generated 
 event. The can be evoked with the following syntax
 @verbatim
-SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-1>,<muF-fac-1>[,<PDF-1>] ...
+SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>[,<associated-contrib-1>]]  <muR-fac-1>,<muF-fac-1>[,<PDF-1>[,<associated-contrib-1>]] ...
 @end verbatim
 The key word @code{SCALE_VARIATIONS} takes a space separated list of 
-variation factors for the nominal renormalisation and factorisation scale 
-and an associated PDF set. Any set present in any of the PDF library interfaces
+variation factors for the nominal renormalisation and factorisation scale, 
+an associated PDF set and associated approximate NLO EW and sub-leading order
+contributions. Any set present in any of the PDF library interfaces
 loaded through @code{PDF_LIBRARY} can be used. If no PDF set is given it 
 defaults to the nominal one. Specific PDF members can be 
 specified by appending the PDF set name with @code{/<member-id>}. The 
@@ -431,6 +432,12 @@ Thus, a complete variation using the PDF4LHC convention would read
 @end verbatim
 Please note, this syntax will create 7+53+51+101=212 additional weights
 for each event.
+
+Similarly, the associated NLO EW and sub-leading order contributions can 
+be included orthogonally to scale and PDF variations through
+@verbatim
+  ASSOCIATED_CONTRIBUTIONS_VARIATIONS EW EW|LO1 EW|LO1|LO2 EW|LO1|LO2|LO3;
+@end verbatim
 
 The additional event weights can then be written into the event output. 
 However, this is currently only supported for @code{HepMC_GenEvent} and 
