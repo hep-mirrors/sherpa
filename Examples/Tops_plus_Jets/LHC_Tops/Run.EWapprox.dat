@@ -6,6 +6,7 @@
   FSF:=1.; RSF:=1.; QSF:=1.;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
   SCALE_VARIATIONS 0.25,0.25 0.25,1. 1.,0.25 1.,1. 1.,4. 4.,1. 4.,4.;
+  ASSOCIATED_CONTRIBUTIONS_VARIATIONS EW EW|LO1 EW|LO1|LO2 EW|LO1|LO2|LO3;
   CORE_SCALE QCD;
   METS_BBAR_MODE 5;
 
@@ -15,6 +16,7 @@
   % me generator settings
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
+  OL_PARAMETERS preset 2 ew_renorm_scheme 1;
   LOOPGEN:=OpenLoops;
 
   % collider setup
@@ -40,6 +42,8 @@
   ME_Generator Amegic {LJET};
   RS_ME_Generator Comix {LJET};
   Loop_Generator LOOPGEN {LJET};
+  Associated_Contributions EW|LO1|LO2|LO3 {2};
+  Associated_Contributions EW|LO1|LO2|LO3 {3};
   Max_N_Quarks 6 {5,6,7,8};
   Integration_Error 0.05 {5,6,7,8};
   Scales LOOSE_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2} {5,6,7,8};
