@@ -195,11 +195,11 @@ void Hadron_Init::Init() {
 				     "K(0)*(1430)+","K_{0}*^{+}(1430)");
   s_kftable[10331]=new Particle_Info(10331,1.7,0.5,0,0,1,0,
 				     "f(0)(1710)","f_{0}(1710)");
-  s_kftable[10411]=new Particle_Info(10411,2.26511,0.05,3,0,1,0,
+  s_kftable[10411]=new Particle_Info(10411,2.351,0.23,3,0,1,0,
 				     "D(0)*(2400)+","D_{0}*^{+}(2400)");
-  s_kftable[10421]=new Particle_Info(10421,2.272,0.05,0,0,1,0,
+  s_kftable[10421]=new Particle_Info(10421,2.318,0.267,0,0,1,0,
 				     "D(0)*(2400)","D_{0}*(2400)");
-  s_kftable[10431]=new Particle_Info(10431,2.3178,0.05,3,0,1,0,
+  s_kftable[10431]=new Particle_Info(10431,2.3177,0.03,3,0,1,0,
 				     "D(s0)*(2317)+","D_{s0}*^{+}(2317)");
   s_kftable[10441]=new Particle_Info(10441,3.4173,0.014,0,0,1,0,
 				     "chi(c0)(1P)","chi_{c0}(1P)");
@@ -226,11 +226,11 @@ void Hadron_Init::Init() {
 				     "K(1)(1270)+","K_{1}^{+}(1270)");
   s_kftable[10333]=new Particle_Info(10333,1.386,0.091,0,2,1,0,
 				     "h(1)(1380)","h_{1}(1380)");
-  s_kftable[10413]=new Particle_Info(10413,2.424,0.02,3,2,1,0,
+  s_kftable[10413]=new Particle_Info(10413,2.4232,0.025,3,2,1,0,
 				     "D(1)(2420)+","D_{1}^{+}(2420)");
-  s_kftable[10423]=new Particle_Info(10423,2.4222,0.0189,0,2,1,0,
+  s_kftable[10423]=new Particle_Info(10423,2.4208,0.0317,0,2,1,0,
 				     "D(1)(2420)","D_{1}(2420)");
-  s_kftable[10433]=new Particle_Info(10433,2.5353,0.001,3,2,1,0,
+  s_kftable[10433]=new Particle_Info(10433,2.5351,0.00092,3,2,1,0,
 				     "D(s1)(2536)+","D_{s1}^{+}(2536)");
   s_kftable[10443]=new Particle_Info(10443,3.46,0.01,0,2,1,0,
 				     "h(c)(1P)","h_{c}(1P)");
@@ -257,11 +257,11 @@ void Hadron_Init::Init() {
 				     "K(1)(1400)+","K_{1}^{+}(1400)");
   s_kftable[20333]=new Particle_Info(20333,1.4262,0.055,0,2,1,0,
 				     "f(1)(1420)","f_{1}(1420)");
-  s_kftable[20413]=new Particle_Info(20413,2.39155,0.003,3,2,1,0,
+  s_kftable[20413]=new Particle_Info(20413,2.427,0.384,3,2,1,0,
 				     "D(1)(H)+","D_{1}^{+}(H)");
-  s_kftable[20423]=new Particle_Info(20423,2.43267,0.003,0,2,1,0,
+  s_kftable[20423]=new Particle_Info(20423,2.427,0.384,0,2,1,0,
 				     "D(1)(2430)","D_{1}(2430)");
-  s_kftable[20433]=new Particle_Info(20433,2.4596,0.003,3,2,1,0,
+  s_kftable[20433]=new Particle_Info(20433,2.4595,0.003,3,2,1,0,
 				     "D(s1)(2460)+","D_{s1}^{+}(2460)");
   s_kftable[20443]=new Particle_Info(20443,3.51053,0.00088,0,2,1,0,
 				     "chi(c1)(1P)","chi_{c1}(1P)");
