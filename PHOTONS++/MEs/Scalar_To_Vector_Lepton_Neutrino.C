@@ -64,7 +64,7 @@ void Scalar_To_Vector_Lepton_Neutrino::BoostOriginalPVVToMultipoleCMS() {
   Vec4D p1 = m_olddipole[0]->Momentum();
   p_boost = new Poincare(sum);
   p_boost->Boost(p1);
-  p_rot   = new Poincare(p1,Vec4D(0.,0.,0.,-1.));
+  p_rot   = new Poincare(p1,Vec4D(0.,0.,0.,1.));
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
     Vec4D vec = m_olddipole[i]->Momentum();
     p_boost->Boost(vec);
