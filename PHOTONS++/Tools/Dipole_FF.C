@@ -313,6 +313,18 @@ double Dipole_FF::Func(const double& M2, const std::vector<double>& mC2,
   return sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)-nN*m_kappaN).Sqr()) - m_K[0] - sum;
 }
 
+double Dipole_FF::DFunc(const double& M2, const std::vector<double>& mC2,
+                       const std::vector<double>& mN2,
+                       const std::vector<Vec3D>& q, const double& u) {
+  double sum = 0.;
+  double nN = m_mN.size();
+  for (unsigned int i=0; i<mC2.size(); i++)
+    sum+=u*(q[i]*q[i])/sqrt(mC2[i]+u*u*(q[i]*q[i]));
+  for (unsigned int i=0; i<mN2.size(); i++)
+    sum+=(u*(q[mC2.size()+i]*q[mC2.size()+i])-q[mC2.size()+i]*m_kappaN)/sqrt(mN2[i]+(u*q[i+mC2.size()]-m_kappaN).Sqr());
+  return (u*(Vec3D(m_QN)*Vec3D(m_QN))+(Vec3D(m_QN)*(Vec3D(m_K)-nN*m_kappaN)))/(sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)-nN*m_kappaN).Sqr())) - sum;
+}
+
 void Dipole_FF::ResetVariables() {
   DeleteAllPhotons();
   for (unsigned int i=0; i<m_olddipole.size(); i++)
@@ -358,27 +370,16 @@ void Dipole_FF::DetermineQAndKappa() {
   // require this function to initialise m_Q and m_kappaC/N in the momentum reconstruction in the
   // MEs
   m_Q = Vec4D(0.,0.,0.,0.);
-  Vec4D sumdip = Vec4D(0.,0.,0.,0.);
-  for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sumdip = sumdip + m_olddipole[i]->Momentum();
-  }
-  // boost into dipole CMS and rotate p_1 into z-axis
-  Poincare boost(sumdip);
-  boost.Boost(sumdip);
-  Poincare rotate;
+  // No need to boost/rotate here, as this is already taken care of in the ME
+  // Only use this function if you have already rotated the olddipole/oldspectator momenta!!!!!!
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
     Vec4D mom = m_olddipole[i]->Momentum();
-    boost.Boost(mom);
-    if (i==0)  rotate = Poincare(mom,Vec4D(0.,0.,0.,1.));
-    rotate.Rotate(mom);
     m_olddipole[i]->SetMomentum(mom);
     m_Q = m_Q + mom;
   }
   // also transform neutral particles' momenta into Q-CMS
   for (unsigned int i=0; i<m_oldspectator.size(); i++) {
     Vec4D mom = m_oldspectator[i]->Momentum();
-    boost.Boost(mom);
-    rotate.Rotate(mom);
     m_oldspectator[i]->SetMomentum(mom);
     m_QN = m_QN + mom;
   }

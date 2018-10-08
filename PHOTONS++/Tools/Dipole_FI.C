@@ -338,6 +338,19 @@ double Dipole_FI::Func(const double& M2, const std::vector<double>& mC2,
   return sqrt(M2+(u*Vec3D(m_Q)-nC*m_kappaC).Sqr()) - sum - m_K[0];
 }
 
+double Dipole_FI::DFunc(const double& M2, const std::vector<double>& mC2,
+                       const std::vector<double>& mN2,
+                       const std::vector<Vec3D>& q, const double& u) {
+  double sum  = 0.;
+  int    nC   = m_mC.size();
+  // first entry in q belongs to initial state dipole constituent
+  for (unsigned int i=0; i<mC2.size(); i++)
+    sum+=(u*(q[1+i]*q[1+i])-q[1+i]*m_kappaC)/sqrt(mC2[i]+(u*q[1+i]-m_kappaC).Sqr());
+  for (unsigned int i=0; i<mN2.size(); i++)
+    sum+=(u*(q[1+nC+i]*q[1+nC+i])-q[1+nC+i]*m_kappaN)/sqrt(mN2[i]+(u*q[1+nC+i]-m_kappaN).Sqr());
+  return (u*(Vec3D(m_Q)*Vec3D(m_Q))-nC*(Vec3D(m_Q)*m_kappaC))/sqrt(M2+(u*Vec3D(m_Q)-nC*m_kappaC).Sqr()) - sum;
+}
+
 void Dipole_FI::ResetVariables() {
   DeleteAllPhotons();
   for (unsigned int i=0; i<m_olddipole.size(); i++)
@@ -384,19 +397,12 @@ void Dipole_FI::DetermineQAndKappa() {
   // require this function to initialise m_Q and m_kappaC/N in the momentum reconstruction in the
   // MEs
   m_Q = Vec4D(0.,0.,0.,0.);
-  Vec4D sumdip = Vec4D(0.,0.,0.,0.);
-  for (unsigned int i=0; i<m_olddipole.size(); i++) {
-    sumdip = sumdip + m_olddipole[i]->Momentum();
-  }
-  // boost into dipole CMS and initial state particle into -z
-  Poincare boost(sumdip);
-  boost.Boost(sumdip);
-  Poincare rotate;
+
+  // No need to boost/rotate here, as this is already taken care of in the ME
+  // Only use this function if you have already rotated the olddipole/oldspectator momenta!!!!!!
+
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
     Vec4D mom = m_olddipole[i]->Momentum();
-    boost.Boost(mom);
-    if (i==0)  rotate = Poincare(mom/mom.PSpat2(),Vec4D(0.,0.,0.,-1.));
-    rotate.Rotate(mom);
     m_olddipole[i]->SetMomentum(mom);
     if (i==0)  m_p = m_olddipole[0]->Momentum();
     else       m_Q = m_Q + m_olddipole[i]->Momentum();
@@ -404,8 +410,6 @@ void Dipole_FI::DetermineQAndKappa() {
   // also transform neutral particles' momenta into (p+Q)-CMS
   for (unsigned int i=0; i<m_oldspectator.size(); i++) {
     Vec4D mom = m_oldspectator[i]->Momentum();
-    boost.Boost(mom);
-    rotate.Rotate(mom);
     m_oldspectator[i]->SetMomentum(mom);
     m_QN = m_QN + mom;
   }

@@ -216,6 +216,104 @@ void Dress_Blob_Base::DetermineU()
   for (unsigned int i=0; i<m_oldspectator.size(); i++)
     q.push_back(Vec3D(m_oldspectator[i]->Momentum()));
 
+  double test;
+  bool specialcase = false;
+  if (m_mC.size() == 2 && m_mN.size() == 0) {
+    if (m_mC[0] == m_mC[1]) {
+      specialcase = true;
+      // case for H/Z -> ll: q = 3-mom of lepton, K[0] = energy of photon, K = 3-mom of photon, 
+      // M = mass of decaying particle, ml = mass of leptons
+      // u^2 = 1/(4*q^2) * ((K[0])^2+M^2+K^2-2*K[0]*sqrt(M^2+K^2)-4*ml^2)
+      //     = 1/(4*q^2) * ((K[0]-sqrt(M^2+K^2))^2-4*ml^2)
+      double en = sqrt(M2+Vec3D(m_K)*Vec3D(m_K));
+      double numerator = sqr(m_K[0]-en) - 4.*mC2[1];
+      double denominator = 4.*q[0]*q[0];
+      m_u = sqrt(numerator/denominator);
+      test = m_u;
+      return;
+    }
+  }
+  else if (m_mC.size() == 1 && m_mN.size() == 1) {
+    if (m_mN[0] == 0.) {
+      specialcase = true;
+      // case for W -> l\nu
+      // use Newton-Raphson method to find root. Start at 0.5, i. e. in the middle of the interval
+      bool closeenough = false;
+      double f0,g0;
+      double x = 0.5;
+      double iter = 0;
+      while (!closeenough) {
+	// shortcuts for often used variables: QC2 = square of QC, QN2 = square of QN2, EW energy of W
+	// El = energy of lepton, En = energy of neutrino
+	double QC2 = Vec3D(m_olddipole[1]->Momentum())*Vec3D(m_olddipole[1]->Momentum());
+	double QN2 = Vec3D(m_oldspectator[0]->Momentum())*Vec3D(m_oldspectator[0]->Momentum());
+	double EW = sqrt(M2+sqr(x)*QC2);
+	double El = sqrt(mC2[0]+sqr(x)*QC2);
+	double En = sqrt(Vec3D(x*m_oldspectator[0]->Momentum()-m_K)*Vec3D(x*m_oldspectator[0]->Momentum()-m_K));
+
+	// Estimate of sum of E-components at x
+	double f0 = EW - El - En - m_K[0];
+	// Consider result close to 0 if f0 is within 10^(-14) of 0
+	if (dabs(f0) < pow(10.,-14.)*m_olddipole[0]->Momentum()[0]) closeenough = true;
+	iter++;
+	if (iter > 10) break;
+	// Derivative of f0 at x
+	g0 = x*QC2/EW - x*QC2/El - (x*QN2-Vec3D(m_K)*Vec3D(m_oldspectator[0]->Momentum()))/En;
+	// Update x
+	if (g0 != 0.) x -= f0/g0;
+	else {
+	  msg_Debugging() << METHOD << "Encountered f'(x) = 0.\n";
+	  x = -1.;
+	  break;
+	}
+      }
+      if (x > 1. || x < 0.) {
+	msg_Debugging() << METHOD << "Newton-Raphson found value outside [0,1]: u = " 
+		  << x << " iter " << iter << ".\nTry bisection.\n";
+	test = x;
+      }
+      if (x > 0. && x < 1.) {
+	m_u = x;
+	return;
+      }
+    }
+  }
+  if (!specialcase) {
+    // Use Newton-Raphson method
+    bool closeenough = false;
+    double f0,g0;
+    double x = 0.5;
+    double iter = 0;
+    while (!closeenough) {
+      // Sum of energy components
+      f0 = Func(M2,mC2,mN2,q,x);
+      if (dabs(f0) < pow(10.,-14.)*m_olddipole[0]->Momentum()[0]) closeenough = true;
+      iter++;
+      if (iter > 10) break;
+      // Derivative of Sum of energy components
+      g0 = DFunc(M2,mC2,mN2,q,x);
+      if (g0 != 0.) x -= f0/g0;
+      else {
+	msg_Debugging() << METHOD << "Encountered f'(x) = 0.\n";
+	x = -1.;
+	break;
+      }
+    }
+    if (x > 1. || x < 0.) {
+      msg_Debugging() << METHOD << "Newton-Raphson found value outside [0,1]: u = " 
+		<< x << " iter " << iter << ". Try bisection.\n";
+      test = x;
+    }
+    if (x > 0. && x < 1.) {
+      m_u = x;
+      return;
+    }
+  }
+
+  msg_Debugging() << "Newton-Raphson found value of u: " << test << " , which is outside the"
+		  << " allowed range [0,1]. Try bisection method instead and hope for the best.\n";
+
+
   double c = Func(M2,mC2,mN2,q,1.);
 
   if (abs(c) < 1E-12)    m_u = 1.;
@@ -226,32 +324,32 @@ void Dress_Blob_Base::DetermineU()
     else {
       i = i - 1E-2;
       double j = 0.;
-      while (c*Func(M2,mC2,mN2,q,1.-i-j) > 0.)    j = j + 1E-4;
+      while ((c*Func(M2,mC2,mN2,q,1.-i-j) > 0.) && (j<=1E-2))    j = j + 1E-4;
       if (abs(Func(M2,mC2,mN2,q,1.-i-j)) < 1E-14)    m_u = 1.-i-j;
       else {
         j = j - 1E-4;
         double k = 0.;
-        while (c*Func(M2,mC2,mN2,q,1.-i-j-k) > 0.)    k = k + 1E-6;
+        while ((c*Func(M2,mC2,mN2,q,1.-i-j-k) > 0.) && (k<=1E-4))    k = k + 1E-6;
         if (abs(Func(M2,mC2,mN2,q,1.-i-j-k)) < 1E-14)    m_u = 1.-i-j-k;
         else {
           k = k - 1E-6;
           double l = 0.;
-          while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l) > 0.)    l = l + 1E-8;
+          while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l) > 0.) && (l<=1E-6))  l = l + 1E-8;
           if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l)) < 1E-14)    m_u = 1.-i-j-k-l;
           else {
             l = l - 1E-8;
             double m = 0.;
-            while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m) > 0.)   m = m + 1E-10;
+            while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m) > 0.) && (m<=1E-8))   m = m + 1E-10;
             if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m)) < 1E-14)    m_u = 1.-i-j-k-l-m;
             else {
               m = m - 1E-10;
               double n = 0.;
-              while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n) > 0.)    n = n + 1E-12;
+              while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n) > 0.) && (n<=1E-10))    n = n + 1E-12;
               if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n)) < 1E-14)    m_u = 1.-i-j-k-l-m-n;
               else {
                 n = n - 1E-12;
                 double o = 0.;
-                while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o) > 0.)    o = o + 1E-14;
+                while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o) > 0.) && (o<=1E-12))   o = o + 1E-14;
                 if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o)) < 1E-14)    m_u = 1.-i-j-k-l-m-n-o;
                 else {
                   o = o - 1E-14;
@@ -266,6 +364,11 @@ void Dress_Blob_Base::DetermineU()
         }
       }
     }
+  }
+  if (abs(test-m_u) > pow(10.,-10.)) {
+    msg_Debugging()<<"u from Newton-Raphson: " << test << " , u from bisection: " << m_u << "\n";
+    msg_Debugging()<<"abs(u_Newton-u_bisection): " << abs(test-m_u) << " , accuracy for Newton: " 
+		   << pow(10.,-14.)*m_olddipole[0]->Momentum()[0] << "\n\n";
   }
   msg_Debugging()<<"u:    "<<m_u<<std::endl;
 }
