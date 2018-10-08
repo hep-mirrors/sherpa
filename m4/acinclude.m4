@@ -243,10 +243,19 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   PHOTONSDIR="\${top_srcdir}/PHOTONS++"
   PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++"
-  PHOTONSLIBS="\${PHOTONSBUILDDIR}/Main/libPhotonsMain.la \
-	\${PHOTONSBUILDDIR}/Tools/libPhotonsTools.la \
+  if test "$yfsnnlo" = "true" ; then
+     PHOTONSLIBS="\${PHOTONSBUILDDIR}/Main/libPhotonsMain.la \
+     	\${PHOTONSBUILDDIR}/Tools/libPhotonsTools.la \
 	\${PHOTONSBUILDDIR}/PhaseSpace/libPhotonsPhaseSpace.la \
-	\${PHOTONSBUILDDIR}/MEs/libPhotonsMEs.la"
+	\${PHOTONSBUILDDIR}/MEs/libPhotonsMEs.la \
+	\${PHOTONSBUILDDIR}/MEs/RVTools/libPhotonsRVTools.la"		
+  fi	
+  if test "$yfsnnlo" = "false" ; then
+     PHOTONSLIBS="\${PHOTONSBUILDDIR}/Main/libPhotonsMain.la \
+     	\${PHOTONSBUILDDIR}/Tools/libPhotonsTools.la \
+	\${PHOTONSBUILDDIR}/PhaseSpace/libPhotonsPhaseSpace.la \
+	\${PHOTONSBUILDDIR}/MEs/libPhotonsMEs.la"		
+  fi	
   AC_SUBST(PHOTONSDIR)
   AC_SUBST(PHOTONSBUILDDIR)
   AC_SUBST(PHOTONSLIBS)
@@ -405,6 +414,21 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for analysis); AC_MSG_RESULT(no); analysis=false ]
   )
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
+
+  AC_ARG_ENABLE(
+    yfsnnlo,
+    AC_HELP_STRING([--enable-yfsnnlo], [Enable NNLO QED in YFS formalism]),
+    [ AC_MSG_CHECKING(for YFS NNLO)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); yfsnnlo=false ;;
+        yes) AC_MSG_RESULT(yes); yfsnnlo=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for YFS NNLO); AC_MSG_RESULT(no); yfsnnlo=false ]
+  )
+  if test "$yfsnnlo" = "true" ; then
+    AC_DEFINE([USING__YFS_NNLO], "1", [using YFS NNLO])
+  fi
+  AM_CONDITIONAL(USING__YFS_NNLO, test "$yfsnnlo" = "true" )
 
   AC_ARG_ENABLE(
     hepmc2,
