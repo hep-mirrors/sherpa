@@ -6,6 +6,7 @@
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 #include "METOOLS/Loops/PV_Integrals.H"
+#include "ATOOLS/Org/Message.H"
 
 
 using namespace PHOTONS;
@@ -16,6 +17,7 @@ using namespace std;
 Scalar_To_Vector_Lepton_Neutrino::Scalar_To_Vector_Lepton_Neutrino
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Scalar_To_Vector_Lepton_Neutrino";
+  m_no_weight = 0;
   m_flavs[0]  = pvv[1][0]->Flav();    // neutral IS scalar
   m_masses[0] = pvv[1][0]->FinalMass();
   m_flavs[3]  = pvv[3][0]->Flav();    // neutrino (calcs with m_nu = 0)
@@ -112,6 +114,20 @@ void Scalar_To_Vector_Lepton_Neutrino::FillMomentumArrays
     boost.Boost(vec);
     m_moms0[2] = vec;
   }
+  // Store fully rescaled final state
+  m_momsFull[0] = pvv_one[1][0]->Momentum();
+  m_momsFull[3] = pvv_one[3][0]->Momentum();
+  if (m_switch == false) {
+    m_momsFull[1] = pvv_one[2][0]->Momentum();
+    m_momsFull[2] = pvv_one[2][1]->Momentum();
+  }
+  else {
+    m_momsFull[2] = pvv_one[2][0]->Momentum();
+    m_momsFull[1] = pvv_one[2][1]->Momentum();
+  }
+  for (size_t i = 0; i < pvv_one[4].size(); i++) {
+    m_momsFull[i+4] = pvv_one[4][i]->Momentum();
+  }
 
   // m_moms1 - project multiphoton state onto one photon phase space
   // do reconstruction procedure again pretending only one photon was generated
@@ -138,6 +154,12 @@ void Scalar_To_Vector_Lepton_Neutrino::FillMomentumArrays
       m_K = CalculateMomentumSum(m_softphotons);
       DetermineQAndKappa();
       CorrectMomenta();
+      if (m_u == -1.) {
+	// if any u = -1. is found, momenta are not corrected properly since root could not be found
+	// return no weights in this case!
+	m_no_weight = 1;
+	continue;
+      }
       if (m_switch == false) {
         m_moms1[i][1] = m_newdipole[0]->Momentum();
         m_moms1[i][2] = m_newdipole[1]->Momentum();
@@ -154,7 +176,30 @@ void Scalar_To_Vector_Lepton_Neutrino::FillMomentumArrays
   }
 }
 
+
+double Scalar_To_Vector_Lepton_Neutrino::SmodFull(unsigned int kk) {
+  // Smod calculated using fully dressed momenta 
+  // Used to cancel the Smod in the dipole weight
+
+  // Index kk denotes which photon is used in calculation. Note that m_momsFull contains all photons
+  // starting at position 3, hence index of photon kk is 3+kk.
+  m_moms = m_momsFull;
+  Vec4D k   = m_moms[4+kk];
+  Vec4D pi  = m_moms[1];
+  Vec4D pj  = m_moms[2];
+  double Zi = m_flavs[1].Charge();
+  double Zj = m_flavs[2].Charge();
+  int    ti = +1;
+  int    tj = +1;
+  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+}
+
 double Scalar_To_Vector_Lepton_Neutrino::Smod(unsigned int kk) {
+  // Smod calculated with momenta dressed with one additional hard photon
+  // Used in the subtraction in single-real matrix elements
+
+  // Index kk denotes which photon is taken to be hard - determines which set of momenta m_moms1[kk]
+  // needs to be called. Note that the photon is always at position 3 in the sets.
   m_moms = m_moms1[kk];
   Vec4D k   = m_moms[4];
   Vec4D pi  = m_moms[1];
@@ -164,6 +209,10 @@ double Scalar_To_Vector_Lepton_Neutrino::Smod(unsigned int kk) {
   int    ti = +1;   // always both final state
   int    tj = +1;
   return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+}
+
+double Scalar_To_Vector_Lepton_Neutrino::Smod(unsigned int a, unsigned int b, unsigned int c) {
+  return 0.;
 }
 
 Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_0() {
@@ -183,7 +232,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   return 0;
 }
 
-Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_1() {
+Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_1(const int& ewmode) {
   m_moms = m_moms0;
   return 0;
 }
@@ -192,7 +241,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_2() {
   return 0;
 }
 
-Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
+Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i, const double& xi) {
   m_moms       = m_moms1[i];                // set to set of momenta to be used
   Vec4C epsV   = conj(Polarization_Vector(m_moms[1]).at(m_spins[1]));
   Vec4C epsP   = conj(Polarization_Vector(m_moms[4]).at(m_spins[4]));
@@ -243,7 +292,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
   return 0;
 }
 
-Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_15(unsigned int i) {
+Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_15(unsigned int i, const double& xi) {
   return 0;
 }
 
@@ -271,7 +320,7 @@ double Scalar_To_Vector_Lepton_Neutrino::GetBeta_0_0() {
   return sum;
 }
 
-double Scalar_To_Vector_Lepton_Neutrino::GetBeta_0_1() {
+double Scalar_To_Vector_Lepton_Neutrino::GetBeta_0_1(const int& ewmode) {
   return 0;
 //   double sum = 0;
 //   for (unsigned int i=0; i<=1; i++) {           // spin neutrino
@@ -354,6 +403,15 @@ Lorentz_Ten2D Scalar_To_Vector_Lepton_Neutrino::AuxiliaryTensor(Vec4D p1, Vec4D 
          -FormFactorAm(tt)*BuildTensor(p1-p2,p1+p2);
 }
 
+void Scalar_To_Vector_Lepton_Neutrino::Print_Info() {
+  msg_Out() << " --------------------------- \n"
+	    << "Incoming Momenta, flavours, masses: \n"
+	    << m_moms0[0] << " , " << m_flavs[0].Kfcode() << " , " << m_flavs[0].Mass() <<  "\n"
+	    << "Outgoing Momenta, flavours, masses: \n"
+	    << m_moms0[1] << " , " << m_flavs[1].Kfcode() << " , " << m_flavs[1].Mass() << "\n"
+	    << m_moms0[2] << " , " << m_flavs[2].Kfcode() << " , " << m_flavs[2].Mass() << "\n";
+    
+}
 
 DECLARE_PHOTONS_ME_GETTER(Scalar_To_Vector_Lepton_Neutrino,
                           "Scalar_To_Vector_Lepton_Neutrino")

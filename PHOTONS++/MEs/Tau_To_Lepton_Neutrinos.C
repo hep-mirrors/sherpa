@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "METOOLS/Main/XYZFuncs.H"
 #include "METOOLS/Main/Polarization_Tools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -28,6 +29,7 @@ using namespace std;
 Tau_To_Lepton_Neutrinos::Tau_To_Lepton_Neutrinos
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FI(pvv) {
   m_name = "Tau_To_Lepton_Neutrinos";
+  m_no_weight = 0;
   m_flavs[0]  = pvv[0][0]->Flav();    // tau
   m_masses[0] = pvv[0][0]->FinalMass();
   m_flavs[1]  = pvv[2][0]->Flav();    // lepton
@@ -119,6 +121,20 @@ void Tau_To_Lepton_Neutrinos::FillMomentumArrays
     boost.Boost(vec);
     m_moms0[3] = vec;
   }
+  // Store fully rescaled final state
+  m_momsFull[0] = pvv_one[2][0]->Momentum();
+  m_momsFull[1] = pvv_one[2][1]->Momentum();
+  if (m_switch == false) {
+    m_momsFull[2] = pvv_one[3][0]->Momentum();
+    m_momsFull[3] = pvv_one[3][1]->Momentum();
+  }
+  else {
+    m_momsFull[3] = pvv_one[3][0]->Momentum();
+    m_momsFull[2] = pvv_one[3][1]->Momentum();
+  }
+  for (size_t i = 0; i < pvv_one[4].size(); i++) {
+    m_momsFull[i+4] = pvv_one[4][i]->Momentum();
+  }
 
   // m_moms1 - project multiphoton state onto one photon phase space
   // do reconstruction procedure again pretending only one photon was generated
@@ -145,6 +161,12 @@ void Tau_To_Lepton_Neutrinos::FillMomentumArrays
       m_K = CalculateMomentumSum(m_softphotons);
       DetermineQAndKappa();
       CorrectMomenta();
+      if (m_u == -1.) {
+	// if any u = -1. is found, momenta are not corrected properly since root could not be found
+	// return no weights in this case!
+	m_no_weight = 1;
+	continue;
+      }
       m_moms1[i][0] = m_newdipole[0]->Momentum();
       m_moms1[i][1] = m_newdipole[1]->Momentum();
       if (m_switch == true) {
@@ -161,7 +183,29 @@ void Tau_To_Lepton_Neutrinos::FillMomentumArrays
   }
 }
 
+double Tau_To_Lepton_Neutrinos::SmodFull(unsigned int kk) {
+  // Smod calculated using fully dressed momenta 
+  // Used to cancel the Smod in the dipole weight
+
+  // Index kk denotes which photon is used in calculation. Note that m_momsFull contains all photons
+  // starting at position 3, hence index of photon kk is 3+kk.
+  m_moms = m_momsFull;
+  Vec4D k   = m_moms[4+kk];
+  Vec4D pi  = m_moms[1];
+  Vec4D pj  = m_moms[2];
+  double Zi = m_flavs[1].Charge();
+  double Zj = m_flavs[2].Charge();
+  int    ti = +1;
+  int    tj = +1;
+  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+}
+
 double Tau_To_Lepton_Neutrinos::Smod(unsigned int kk) {
+  // Smod calculated with momenta dressed with one additional hard photon
+  // Used in the subtraction in single-real matrix elements
+
+  // Index kk denotes which photon is taken to be hard - determines which set of momenta m_moms1[kk]
+  // needs to be called. Note that the photon is always at position 3 in the sets.
   m_moms = m_moms1[kk];
   Vec4D k   = m_moms[4];
   Vec4D pi  = m_moms[0];
@@ -171,6 +215,10 @@ double Tau_To_Lepton_Neutrinos::Smod(unsigned int kk) {
   int    ti = -1;   // always one initial state, one final state
   int    tj = +1;
   return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+}
+
+double Tau_To_Lepton_Neutrinos::Smod(unsigned int a, unsigned int b, unsigned int c) {
+  return 0.;
 }
 
 Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_0() {
@@ -192,7 +240,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_0() {
                           *XYZ.X(1,m_spins[1],q,2,m_spins[2],m_cR,m_cL));
 }
 
-Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_1() {
+Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_1(const int& ewmode) {
   return 0.;
 }
 
@@ -200,7 +248,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_2() {
   return 0.;
 }
 
-Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
+Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i, const double& xi) {
   m_moms       = m_moms1[i];                // set to set of momenta to be used
   Vec4C epsP   = conj(Polarization_Vector(m_moms[4])[m_spins[4]]);
   Vec4D qt     = m_moms[0]-m_moms[4];       // tau propagator momenta
@@ -315,7 +363,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
   }
 }
 
-Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_15(unsigned int i) {
+Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_15(unsigned int i, const double& xi) {
   return 0.;
 }
 
@@ -344,7 +392,7 @@ double Tau_To_Lepton_Neutrinos::GetBeta_0_0() {
   return sum;
 }
 
-double Tau_To_Lepton_Neutrinos::GetBeta_0_1() {
+double Tau_To_Lepton_Neutrinos::GetBeta_0_1(const int& ewmode) {
   return 0.;
 }
 
@@ -383,6 +431,16 @@ double Tau_To_Lepton_Neutrinos::GetBeta_1_2(unsigned int i) {
 
 double Tau_To_Lepton_Neutrinos::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
+}
+
+void Tau_To_Lepton_Neutrinos::Print_Info() {
+  msg_Out() << " --------------------------- \n"
+	    << "Incoming Momenta, flavours, masses: \n"
+	    << m_moms0[0] << " , " << m_flavs[0].Kfcode() << " , " << m_flavs[0].Mass() <<  "\n"
+	    << "Outgoing Momenta, flavours, masses: \n"
+	    << m_moms0[1] << " , " << m_flavs[1].Kfcode() << " , " << m_flavs[1].Mass() << "\n"
+	    << m_moms0[2] << " , " << m_flavs[2].Kfcode() << " , " << m_flavs[2].Mass() << "\n";
+    
 }
 
 DECLARE_PHOTONS_ME_GETTER(Tau_To_Lepton_Neutrinos,
