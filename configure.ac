@@ -202,6 +202,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           PHOTONS++/Tools/Makefile \
           PHOTONS++/PhaseSpace/Makefile \
           PHOTONS++/MEs/Makefile \
+          PHOTONS++/MEs/RVTools/Makefile \
 	  PHOTONS++/Makefile \
           REMNANTS/Main/Makefile \
           REMNANTS/Tools/Makefile \

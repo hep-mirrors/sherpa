@@ -78,3 +78,6 @@
 
 /* using Delphes */
 #undef USING__DELPHES
+
+/* using YFS NNLO */
+#undef USING__YFS_NNLO
