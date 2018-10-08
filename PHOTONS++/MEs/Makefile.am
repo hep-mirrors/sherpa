@@ -1,3 +1,9 @@
+if USING__YFS_NNLO
+RVDIR = RVTools
+endif
+SUBDIRS = $(RVDIR)
+DIST_SUBDIRS = RVTools
+
 pkglib_LTLIBRARIES = libPhotonsMEs.la
 
 GITTAG = PHOTONS++/MEs
@@ -5,6 +11,7 @@ include ../../git.make
 
 libPhotonsMEs_la_SOURCES =	Git_Info.C \
 				PHOTONS_ME_Base.C \
+				PHOTONS_Virtual_ME2_Base.C \
 				Scalar_To_Scalar_Scalar.C \
 				Scalar_To_Fermion_Fermion.C \
 				Scalar_To_Scalar_Lepton_Neutrino.C \
@@ -13,10 +20,18 @@ libPhotonsMEs_la_SOURCES =	Git_Info.C \
 				W_To_Lepton_Neutrino.C \
 				Z_To_Fermion_Fermion.C \
 				Vector_To_Fermion_Fermion.C \
-				Vector_To_Scalar_Scalar.C
+				Vector_To_Scalar_Scalar.C \
+				Higgs_To_Fermion_Fermion.C \
+				EW_One_Loop_Functions_Base.C \
+				Z_Decay_EW_One_Loop_Functions.C \
+				W_Decay_EW_One_Loop_Functions.C \
+				Higgs_Decay_EW_One_Loop_Functions.C \
+				Collinear_Approximation_FF.C \
+				Collinear_Approximation_FI.C 
 
 
 localinc_HEADERS =	PHOTONS_ME_Base.H \
+			PHOTONS_Virtual_ME2_Base.H \
 			Scalar_To_Scalar_Scalar.H \
 			Scalar_To_Fermion_Fermion.H \
 			Scalar_To_Scalar_Lepton_Neutrino.H \
@@ -25,4 +40,11 @@ localinc_HEADERS =	PHOTONS_ME_Base.H \
 			W_To_Lepton_Neutrino.H \
 			Z_To_Fermion_Fermion.H \
 			Vector_To_Fermion_Fermion.H \
-			Vector_To_Scalar_Scalar.H
+			Vector_To_Scalar_Scalar.H \
+			Higgs_To_Fermion_Fermion.H \
+			EW_One_Loop_Functions_Base.H \
+			Z_Decay_EW_One_Loop_Functions.H \
+			W_Decay_EW_One_Loop_Functions.H \
+			Higgs_Decay_EW_One_Loop_Functions.H \
+			Collinear_Approximation_FF.H \
+			Collinear_Approximation_FI.H 
