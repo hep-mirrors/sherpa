@@ -57,6 +57,7 @@ int    PHOTONS::Photons::s_firecscheme   = 0;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 double PHOTONS::Photons::s_alpha_input          = 0.;
+int    PHOTONS::Photons::s_ew_scheme            = 2;
 bool   PHOTONS::Photons::s_userunningparameters = false;
 
 #ifdef PHOTONS_DEBUG
@@ -101,7 +102,16 @@ Photons::Photons(Data_Reader* reader) :
   s_uvcutoff = reader->GetValue<double>("YFS_UV_CUTOFF",
                                         std::numeric_limits<double>::max());
   s_alpha_input   = reader->GetValue<double>("YFS_1/ALPHAQED",0.);
+  // EW scheme: 1 = alpha(MZ) (default), 2 = alpha(0), 3 = Gmu
+  s_ew_scheme = reader->GetValue<int>("YFS_EW_SCHEME",2); 
   s_alpha_input = (s_alpha_input?1./s_alpha_input:MODEL::aqed->AqedThomson());
+  if (s_ew_scheme == 2) s_alpha_input = MODEL::aqed->AqedThomson(); // For consistency
+  else if (s_ew_scheme == 3) {
+    double GF = 1.16639e-5;
+    double  MW2  = sqr(Flavour(kf_Wplus).Mass());
+    double  MZ2  = sqr(Flavour(kf_Z).Mass());
+    s_alpha_input = GF*MW2*(1.-MW2/MZ2)*sqrt(2.)/M_PI;
+  }
   s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
   std::string irframe = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME",
                                                       "Multipole_CMS");
