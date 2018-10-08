@@ -21,17 +21,17 @@ using namespace METOOLS;
 //! C_38(p2,p2,0;m02,m2,m2)
 /*! all momenta incoming
 
-        p2
-       -----|\              p1 + p2 + p3 = 0
-            | \ m0
-            |  \            s12 = p3^2 = (-p1-p2)^2 = (p1+p2)^2
-            |   \   p3
-         m2 |    |-----
+        k2
+       -----|\              k1 + k2 + k3 = 0
+            | \ m2, l+p2
+            |  \            s12 = k3^2 = (-k1-k2)^2 = (p1-p2)^2
+            |   \   k3
+       m0,l |    |-----
             |   /
             |  /            s12 > 0    s-channel
-            | / m1          s12 < 0    t-channel
+            | / m1, l+p1    s12 < 0    t-channel
        -----|/              s12 = 0    in wave-function corrections
-        p1
+        k1
 */
 METOOLS::DivArrC
 METOOLS::PV_Triangle_10(const double&  p12, const double&  p22, const double&  s12,
@@ -79,10 +79,12 @@ METOOLS::PV_Triangle_11(const double&  p12, const double&  p22, const double&  s
     //!                   + f1C C_0(p12,p22,s12;m02,m12,m22) )
     //!           - (p1p2) ( B_0(p12;m02,m12) - B_0(s;m12,m22)
     //!                       + f2C C_0(p12,p22,s12;m02,m12,m22) ) )
-    double p1p2(0.5*(s12-p12-p22));
+    // Need the minus sign here as the convention is to define p1, p2 as the loop momenta,
+    // whereas what is put in are the external momenta. 
+    double p1p2(-0.5*(s12-p12-p22)); 
     Complex f1C(-p12+m12-m02), f2C(-p22+m22-m02);
-    if (IsZero(p12*p22-sqr(p1p2))) {
-      msg_Out()<<"not implemented yet\n";
+    if (IsZero(sqrt(p12*p22-sqr(p1p2)))) {
+      msg_Out()<<"C11:not implemented yet\n";
       return DivArrC(0.,0.,0.,0.,0.,0.);
     }
     else {
@@ -107,8 +109,45 @@ METOOLS::DivArrC
 METOOLS::PV_Triangle_12(const double&  p12, const double&  p22, const double&  s12,
                         const Complex& m02, const Complex& m12, const Complex& m22,
                         double mu2=0.) {
-  //! C_12(p12,p22,s12;m02,m12,m22) = C_11(p22,p12,s12;m02,m22,m12)
-  return PV_Triangle_11(p22,p12,s12,m02,m22,m12,mu2);
+  // //! C_12(p12,p22,s12;m02,m12,m22) = C_11(p22,p12,s12;m02,m22,m12)
+  // return PV_Triangle_11(p22,p12,s12,m02,m22,m12,mu2); This is incorrect as the ordering of masses/momenta matters in the C_0-function that is being called!
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  if (IsZero(s12)) {
+    //! s12 = 0  ==>  p1 = p2
+    //!   ==> C_12(p12,p22,0;m02,m12,m22) = C_10(p2,p2,0;m02,m12,m22)
+    return PV_Triangle_10(p12,p22,s12,m02,m12,m22,mu2);
+  }
+  else {
+    //! C_12(p12,p22,s12;m02,m12,m22)
+    //!   = 1/2 * 1/(p12p22-(p1p2)^2)
+    //!        * ( p12 ( B_0(p12;m02,m22) - B_0(s12;m12,m22)
+    //!                   + f1C C_0(p12,p22,s12;m02,m12,m22) )
+    //!           - (p1p2) ( B_0(p22;m02,m12) - B_0(s;m12,m22)
+    //!                       + f2C C_0(p12,p22,s12;m02,m12,m22) ) )
+    // Need the minus sign here as the convention is to define p1, p2 as the loop momenta,
+    // whereas what is put in are the external momenta. 
+    double p1p2(-0.5*(s12-p12-p22)); 
+    Complex f1C(-p12+m12-m02), f2C(-p22+m22-m02);
+    if (IsZero(sqrt(p12*p22-sqr(p1p2)))) {
+      msg_Out()<<"not implemented yet\n";
+      return DivArrC(0.,0.,0.,0.,0.,0.);
+    }
+    else {
+      DivArrC C0(((!IsZero(f1C)) || (!IsZero(f2C)))?
+                      Master_Triangle(p12,p22,s12,m02,m12,m22,mu2):
+                      DivArrC(0.,0.,0.,0.,0.,0.));
+      return 0.5/(p12*p22-sqr(p1p2))
+             * ((!IsZero(p12)?p12*(Master_Bubble(p12,m02,m22,mu2)
+                                   -Master_Bubble(s12,m12,m22,mu2)
+                                   +f1C*C0)
+                             :DivArrC(0.,0.,0.,0.,0.,0.))
+                -(!IsZero(p1p2)?p1p2*(Master_Bubble(p22,m02,m12,mu2)
+                                      -Master_Bubble(s12,m12,m22,mu2)
+                                      +f2C*C0)
+                               :DivArrC(0.,0.,0.,0.,0.,0.)));
+    }
+  }
+  return DivArrC(0.,0.,0.,0.,0.,0.);
 }
 
 
@@ -160,19 +199,19 @@ METOOLS::PV_Triangle_21(const double&  p12, const double&  p22, const double&  s
   //!                   - 2 C_24(p12,p22,s12;m02,m12,m22) )
   //!           - (p1p2) ( B_1(p12;m02,m12) - B_1(s12;m22,m12)
   //!                       + f2C C_12(p12,p22,s12;m02,m12,m22) ) )
-  double p1p2(0.5*(s12-p12-p22));
-  if (IsZero(p12*p22-sqr(p1p2))) {
+  double p1p2(-0.5*(s12-p12-p22));
+  if (IsZero(sqrt(p12*p22-sqr(p1p2)))) {
     msg_Out()<<"not implemented yet\n";
     return DivArrC(0.,0.,0.,0.,0.,0.);
   }
   else {
     Complex f1C(-p12+m12-m02), f2C(-p22+m22-m02);
     DivArrC C11(((!IsZero(f1C)) || (!IsZero(f2C)))?
-                    PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2):
+                    PV_Triangle_11(p12,p22,s12,m02,m12,m22,mu2):
                     DivArrC(0.,0.,0.,0.,0.,0.));
     return 0.5/(p12*p22-sqr(p1p2))
             *((!IsZero(p22)?p22*(PV_Bubble_1(s12,m12,m22,mu2)
-                                 -Master_Bubble(s12,m12,m22,mu2)
+                                 +Master_Bubble(s12,m12,m22,mu2)
                                  +f1C*C11
                                  -2.*PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2))
                            :DivArrC(0.,0.,0.,0.,0.,0.))
@@ -188,9 +227,39 @@ METOOLS::DivArrC
 METOOLS::PV_Triangle_22(const double&  p12, const double&  p22, const double&  s12,
                         const Complex& m02, const Complex& m12, const Complex& m22,
                         double mu2=0.) {
+  // if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  // //! C_22(p12,p22,s12;m02,m12,m22) = C_21(p22,p12,s12;m02,m22,m12)
+  // return PV_Triangle_21(p22,p12,s12,m02,m22,m12,mu2); Also incorrect
   if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
-  //! C_22(p12,p22,s12;m02,m12,m22) = C_21(p22,p12,s12;m02,m22,m12)
-  return PV_Triangle_21(p22,p12,s12,m02,m22,m12,mu2);
+  //! C_22(p12,p22,s12;m02,m12,m22)
+  //!   = 1/2 * 1/(p12p22-(p1p2)^2)
+  //!        * ( p12 ( B_1(s12;m22,m12) - B_0(s12;m12,m22)
+  //!                   + f1C C_11(p12,p22,s12;m02,m12,m22)
+  //!                   - 2 C_24(p12,p22,s12;m02,m12,m22) )
+  //!           - (p1p2) ( B_1(p22;m02,m22) - B_1(s12;m12,m22)
+  //!                       + f2C C_12(p12,p22,s12;m02,m12,m22) ) )
+  double p1p2(-0.5*(s12-p12-p22));
+  if (IsZero(sqrt(p12*p22-sqr(p1p2)))) {
+    msg_Out()<<"not implemented yet\n";
+    return DivArrC(0.,0.,0.,0.,0.,0.);
+  }
+  else {
+    Complex f1C(-p12+m12-m02), f2C(-p22+m22-m02);
+    DivArrC C11(((!IsZero(f1C)) || (!IsZero(f2C)))?
+                    PV_Triangle_11(p12,p22,s12,m02,m12,m22,mu2):
+                    DivArrC(0.,0.,0.,0.,0.,0.));
+    return 0.5/(p12*p22-sqr(p1p2))
+            *((!IsZero(p12)?p12*(PV_Bubble_1(s12,m22,m12,mu2)
+                                 +Master_Bubble(s12,m12,m22,mu2)
+                                 +f1C*C11
+                                 -2.*PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2))
+                           :DivArrC(0.,0.,0.,0.,0.,0.))
+              -(!IsZero(p1p2)?p1p2*(PV_Bubble_1(p22,m02,m22,mu2)
+                                    -PV_Bubble_1(s12,m12,m22,mu2)
+                                    +f2C*C11)
+                             :DivArrC(0.,0.,0.,0.,0.,0.)));
+  }
+  return DivArrC(0.,0.,0.,0.,0.,0.);
 }
 
 METOOLS::DivArrC
@@ -205,15 +274,15 @@ METOOLS::PV_Triangle_23(const double&  p12, const double&  p22, const double&  s
   //!           - (p1p2) ( B_1(s12;m12,m12) + B_0(s12;m12,m22)
   //!                       + f1C C_11(p12,p22,s12;m02,m12,m22)
   //!                      - 2 C_24(p12,p22,s12;m02,m12,m22) ) )
-  double p1p2(0.5*(s12-p12-p22));
-  if (IsZero(p12*p22-sqr(p1p2))) {
+  double p1p2(-0.5*(s12-p12-p22));
+  if (IsZero(sqrt(p12*p22-sqr(p1p2)))) {
     msg_Out()<<"not implemented yet\n";
     return DivArrC(0.,0.,0.,0.,0.,0.);
   }
   else {
     Complex f1C(-p12+m12-m02), f2C(-p22+m22-m02);
     DivArrC C11(((!IsZero(f1C)) || (!IsZero(f2C)))?
-                    PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2):
+                    PV_Triangle_11(p12,p22,s12,m02,m12,m22,mu2):
                     DivArrC(0.,0.,0.,0.,0.,0.));
     return 0.5/(p12*p22-sqr(p1p2))
             *((!IsZero(p12)?p12*(PV_Bubble_1(p12,m02,m12,mu2)
@@ -221,7 +290,7 @@ METOOLS::PV_Triangle_23(const double&  p12, const double&  p22, const double&  s
                                  +f2C*C11)
                            :DivArrC(0.,0.,0.,0.,0.,0.))
               -(!IsZero(p1p2)?p1p2*(PV_Bubble_1(s12,m12,m22,mu2)
-                                    -Master_Bubble(s12,m12,m22,mu2)
+                                    +Master_Bubble(s12,m12,m22,mu2)
                                     +f1C*C11
                                     -2.*PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2))
                              :DivArrC(0.,0.,0.,0.,0.,0.)));        
@@ -260,10 +329,10 @@ METOOLS::PV_Triangle_24(const double&  p12, const double&  p22, const double&  s
     return 1./(D-2.)*((!IsZero(m02)?m02*Master_Triangle(p12,p22,s12,m02,m12,m22,mu2)
                                    :DivArrC(0.,0.,0.,0.,0.,0.))
                       +0.5*Master_Bubble(s12,m12,m22,mu2)
-                      -(!IsZero(f1C)?f1C*PV_Triangle_11(p12,p22,s12,m02,m12,m22,mu2)
+                      -(!IsZero(f1C)?0.5*f1C*PV_Triangle_11(p12,p22,s12,m02,m12,m22,mu2)
                                     :DivArrC(0.,0.,0.,0.,0.,0.))
-                      -(!IsZero(f2C)?f2C*PV_Triangle_12(p12,p22,s12,m02,m12,m22,mu2)
-                                    :DivArrC(0.,0.,0.,0.,0.,0.)));
+                      -(!IsZero(f2C)?0.5*f2C*PV_Triangle_12(p12,p22,s12,m02,m12,m22,mu2)
+			            :DivArrC(0.,0.,0.,0.,0.,0.)));
   }
   return DivArrC(0.,0.,0.,0.,0.,0.);
 }
@@ -307,6 +376,142 @@ METOOLS::PV_Triangle_30(const double&  p12, const double&  p22, const double&  s
   }
   return DivArrC(0.,0.,0.,0.,0.,0.);
 }
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_31(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  if (IsZero(s12) && IsEqual(m12,m22)) {
+    // s12 = 0 -> p1 = p2
+    return PV_Triangle_30(p12,p22,s12,m02,m12,m22,mu2);
+  }
+  else {
+    double p1p2(-0.5*(s12-p12-p22));
+    if (IsZero(p12*p22-sqr(p1p2))) {
+      msg_Out()<<"not implemented yet\n";
+      return DivArrC(0.,0.,0.,0.,0.,0.);
+    }
+    else {
+      //! C_31(p12,p22,s12;m02,m12,m22)
+      //!   = 1/(2*(p12*p22-sqr(p1p2))) * ( p22 (f1C C_21(p12,p22,s12,m02,m12,m22)
+      //!     - B_21(s12;m12,m22) - 2*B_1(s12;m12,m22) - B_0(s12,m12,m22) - 4*C_35(p12,p22,s12,m02,m12,m22))
+      //!     - p1p2 * ( B_21(p12,m02,m12) - B_21(s12,m22,m12) + f2C C_21(p12,p22,s12,m02,m12,m22)))
+      Complex f1C(m12-m02-p12);
+      Complex f2C(m22-m02-p22);
+      return 0.5/(p12*p22-sqr(p1p2))*((!IsZero(p22)?(p22*
+		   ((!IsZero(f1C)?f1C*PV_Triangle_21(p12,p22,s12,m02,m12,m22,mu2)
+		     :DivArrC(0.,0.,0.,0.,0.,0.))
+		    - PV_Bubble_21(s12,m12,m22,mu2) - 2.*PV_Bubble_1(s12,m12,m22,mu2) 
+		    - Master_Bubble(s12,m12,m22,mu2) - 4.*PV_Triangle_35(p12,p22,s12,m02,m12,m22,mu2))):DivArrC(0.,0.,0.,0.,0.,0.))
+		 -(!IsZero(p1p2)?(p1p2*
+		   ((!IsZero(f2C)?f2C*PV_Triangle_21(p12,p22,s12,m02,m12,m22,mu2)
+		     :DivArrC(0.,0.,0.,0.,0.,0.))
+		    +PV_Bubble_21(p12,m02,m12,mu2)-PV_Bubble_21(s12,m22,m12,mu2)))
+		                                         :DivArrC(0.,0.,0.,0.,0.,0.)));
+    }
+  }
+  return DivArrC(0.,0.,0.,0.,0.,0.);
+}
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_32(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  //! C_32(p12,p22,s12,m02,m12,m22) = C_31(p22,p12,s12,m02,m22,m12)
+  return PV_Triangle_31(p22,p12,s12,m02,m22,m12,mu2);
+}
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_33(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  if (IsZero(s12) && IsEqual(m12,m22)) {
+    THROW(fatal_error,"call in ill-defined situation");
+  }
+  else {
+    double p1p2(-0.5*(s12-p12-p22));
+    if (IsZero(p12*p22-sqr(p1p2))) {
+      msg_Out()<<"not implemented yet\n";
+      return DivArrC(0.,0.,0.,0.,0.,0.);
+    }
+    else {
+      //! C_33(p12,p22,s12;m02,m12,m22)
+      //!   = 1/(2*(p12*p22-sqr(p1p2))) * ( -p1p2 (f1C C_21(p12,p22,s12,m02,m12,m22)
+      //!     - B_21(s12;m12,m22) - 2*B_1(s12;m12,m22) - B_0(s12,m12,m22) - 4*C_35(p12,p22,s12,m02,m12,m22))
+      //!     + p12 * ( B_21(p12,m02,m12) - B_21(s12,m22,m12) + f2C C_21(p12,p22,s12,m02,m12,m22)))
+      Complex f1C(m12-m02-p12);
+      Complex f2C(m22-m02-p22);
+      return 0.5/(p12*p22-sqr(p1p2))*((!IsZero(p1p2)?(-p1p2*
+		   ((!IsZero(f1C)?f1C*PV_Triangle_21(p12,p22,s12,m02,m12,m22,mu2):DivArrC(0.,0.,0.,0.,0.,0.))
+		    -PV_Bubble_21(s12,m12,m22,mu2) - 2.*PV_Bubble_1(s12,m12,m22,mu2) - Master_Bubble(s12,m12,m22,mu2)-4.*PV_Triangle_35(p12,p22,s12,m02,m12,m22,mu2))):DivArrC(0.,0.,0.,0.,0.,0.))
+		 +(!IsZero(p12)?(p12*
+		   ((!IsZero(f2C)?f2C*PV_Triangle_21(p12,p22,s12,m02,m12,m22,mu2):DivArrC(0.,0.,0.,0.,0.,0.))
+		    +PV_Bubble_21(p12,m02,m12,mu2)-PV_Bubble_21(s12,m22,m12,mu2))):DivArrC(0.,0.,0.,0.,0.,0.)));
+    }
+  }
+  return DivArrC(0.,0.,0.,0.,0.,0.);
+}
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_34(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  //! C_34(p12,p22,s12,m02,m12,m22) = C_33(p22,p12,s12,m02,m22,m12)
+  return PV_Triangle_33(p22,p12,s12,m02,m22,m12,mu2);
+}
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_35(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  if (IsZero(s12) && IsEqual(m12,m22)) {
+    // s12 = 0 -> p1 = p2
+    return PV_Triangle_38(p12,p22,s12,m02,m12,m22,mu2);
+  }
+  else {
+    double p1p2(-0.5*(s12-p12-p22));
+    if (IsZero(p12*p22-sqr(p1p2))) {
+      msg_Out()<<"not implemented yet\n";
+      return DivArrC(0.,0.,0.,0.,0.,0.);
+    }
+    else {
+      //! C_35(p12,p22,s12;m02,m12,m22)
+      //!   = 1/(2*(p12*p22-sqr(p1p2))) * ( p22 (f1C C_24(p12,p22,s12,m02,m12,m22)
+      //!     + B_22(p22;m02,m22) - B_22(s12;m12,m22))
+      //!     - p1p2 * ( B_22(p12,m02,m12) - B_22(s12,m22,m12) + f2C C_24(p12,p22,s12,m02,m12,m22)))
+      Complex f1C(m12-m02-p12);
+      Complex f2C(m22-m02-p22);
+      return 0.5/(p12*p22-sqr(p1p2))*((!IsZero(p22)?(p22*
+		   ((!IsZero(f1C)?f1C*PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2):DivArrC(0.,0.,0.,0.,0.,0.))
+		    +PV_Bubble_22(p22,m02,m22,mu2) - PV_Bubble_22(s12,m12,m22,mu2))):DivArrC(0.,0.,0.,0.,0.,0.))
+		 -(!IsZero(p1p2)?(p1p2*
+		   ((!IsZero(f2C)?f2C*PV_Triangle_24(p12,p22,s12,m02,m12,m22,mu2):DivArrC(0.,0.,0.,0.,0.,0.))
+		    +PV_Bubble_22(p12,m02,m12,mu2)-PV_Bubble_21(s12,m22,m12,mu2))):DivArrC(0.,0.,0.,0.,0.,0.)));
+    }
+  }
+  return DivArrC(0.,0.,0.,0.,0.,0.);
+}
+
+
+METOOLS::DivArrC
+METOOLS::PV_Triangle_36(const double&  p12, const double&  p22, const double&  s12,
+                        const Complex& m02, const Complex& m12, const Complex& m22,
+                        double mu2=0.) {
+  if (mu2 == 0.)   mu2 = GLOBAL_RENORMALISATION_SCALE;
+  //! C_36(p12,p22,s12,m02,m12,m22) = C_35(p22,p12,s12,m02,m22,m12)
+  return PV_Triangle_35(p22,p12,s12,m02,m22,m12,mu2);
+}
+
 
 METOOLS::DivArrC
 METOOLS::PV_Triangle_38(const double&  p12, const double&  p22, const double&  s12,

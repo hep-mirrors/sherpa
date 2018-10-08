@@ -12,6 +12,23 @@ namespace METOOLS {
   //! dimension D=4-2epsilon
   inline DivArrD D() { return DivArrD(0.,0.,0.,4.,-2.,0.); }
 #define D D()
+  // Helper functions
+  Complex CLog(const double&, const int& = 1);
+  Complex CLog(const Complex&, const int& = 1);
+  Complex Eta(const Complex&, const int&, const Complex&, const int&); 
+  double Theta(const double&);
+  Complex K(const double&, const Complex&, const Complex&);
+  Complex Dilog(const Complex&, const int& = 1);
+  int ReSign(const Complex&);
+  int ImSign(const Complex&);
+  int Prod2Sign(const Complex&,const int&, const Complex&,const int&);
+  int Prod3Sign(const Complex&,const int&, const Complex&,const int&, const Complex&,const int&);
+  int DivSign(const Complex&,const int&, const Complex&,const int&);
+  int ProdDivSign(const Complex&,const int&, const Complex&,const int&, const Complex&,const int&);
+  int DivProdSign(const Complex&,const int&, const Complex&,const int&, const Complex&,const int&);
+  void rfun(Complex&, Complex&, const Complex&);
+  void solabc(Complex&, Complex&, Complex&, const Complex&, const Complex&,
+		       const Complex&);
   /*! Convention on input:
       - \f$ p_i^2 \f$ labels the squared outer momenta
       - \f$ m_i^2 \f$ labels the masses of the internal lines
@@ -37,6 +54,11 @@ namespace METOOLS {
   Master_Bubble(const double&,
                 const Complex&, const Complex&,
                 double);
+  //! B_0_prime(s12;m02,m12;mu2)
+  DivArrC
+  Master_Bubble_Prime(const double&,
+		      const Complex&, const Complex&,
+		      double);
   //! C_0(p12,p22,s12;m02,m12,m22;mu2)
   DivArrC
   Master_Triangle(const double&,  const double&,  const double&,

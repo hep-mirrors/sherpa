@@ -143,7 +143,7 @@ namespace METOOLS {
                                             +m_result[2]*da[4]+da[2]*m_result[4],
                                              m_result[2]*da[3]+da[2]*m_result[3]
                                             +m_result[1]*da[1]+da[1]*m_result[1],
-                                             m_result[3]*da[3]+da[3]*m_result[3]
+                                             m_result[3]*da[3]//+da[3]*m_result[3]
                                             +m_result[0]*da[4]+da[0]*m_result[4]
                                             +m_result[1]*da[4]+da[1]*m_result[4]
                                             +m_result[2]*da[5]+da[2]*m_result[5],

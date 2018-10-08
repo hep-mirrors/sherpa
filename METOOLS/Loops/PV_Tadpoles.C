@@ -23,9 +23,9 @@ METOOLS::PV_Tadpole_2(const Complex& m2, double mu2=0.) {
     return DivArrC(0.,0.,0.,0.,0.,0.);
   }
   //! massive internal line
-  //! A_2(m^2) = m^4(1/epsUV + ln(mu^2/m^2) + 3/2)
+  //! A_2(m^2) = 1./4.*m^4(1/epsUV + ln(mu^2/m^2) + 3/2)
   else {
-    return DivArrC(m2*m2,0.,0.,m2*m2*(log(mu2/m2) + 3./2.),0.,0.);
+    return 1./4.*DivArrC(m2*m2,0.,0.,m2*m2*(log(mu2/m2) + 3./2.),0.,0.);
   }
   return DivArrC(0.,0.,0.,0.,0.,0.);
 }
