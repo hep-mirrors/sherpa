@@ -6,6 +6,7 @@
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 #include "METOOLS/Loops/PV_Integrals.H"
+#include "ATOOLS/Org/Message.H"
 
 #define A_0(A,M)             Master_Tadpole(A,M)
 #define B_0(A,B,C,M)         Master_Bubble(A,B,C,M)
@@ -28,6 +29,7 @@ using namespace std;
 Scalar_To_Fermion_Fermion::Scalar_To_Fermion_Fermion
 (const Particle_Vector_Vector& pvv) : PHOTONS_ME_Base(pvv), Dipole_FF(pvv) {
   m_name = "Scalar_To_Fermion_Fermion";
+  m_no_weight = 0;
   m_flavs[0] = pvv[1][0]->Flav();
   m_masses[0] = pvv[1][0]->FinalMass();
   // switch ordering if necessary
@@ -100,6 +102,19 @@ void Scalar_To_Fermion_Fermion::FillMomentumArrays
     m_moms0[2] = m_pvv_zero[2][0]->Momentum();
     m_moms0[1] = m_pvv_zero[2][1]->Momentum();
   }
+  // Store fully rescaled final state
+  m_momsFull[0] = pvv_one[1][0]->Momentum();
+  if (m_switch == false) {
+    m_momsFull[1] = pvv_one[2][0]->Momentum();
+    m_momsFull[2] = pvv_one[2][1]->Momentum();
+  }
+  else {
+    m_momsFull[2] = pvv_one[2][0]->Momentum();
+    m_momsFull[1] = pvv_one[2][1]->Momentum();
+  }
+  for (size_t i = 0; i < pvv_one[4].size(); i++) {
+    m_momsFull[i+3] = pvv_one[4][i]->Momentum();
+  }
   // m_moms1 - project multiphoton state onto one photon phase space
   // do reconstruction procedure again pretending only one photon was generated
 
@@ -124,6 +139,12 @@ void Scalar_To_Fermion_Fermion::FillMomentumArrays
       m_K = CalculateMomentumSum(m_softphotons);
       DetermineQAndKappa();
       CorrectMomenta();
+      if (m_u == -1.) {
+	// if any u = -1. is found, momenta are not corrected properly since root could not be found
+	// return no weights in this case!
+	m_no_weight = 1;
+	continue;
+      }
       if (!m_switch) {
         m_moms1[i][1] = m_newdipole[0]->Momentum();
         m_moms1[i][2] = m_newdipole[1]->Momentum();
@@ -139,7 +160,29 @@ void Scalar_To_Fermion_Fermion::FillMomentumArrays
   }
 }
 
+double Scalar_To_Fermion_Fermion::SmodFull(unsigned int kk) {
+  // Smod calculated using fully dressed momenta 
+  // Used to cancel the Smod in the dipole weight
+
+  // Index kk denotes which photon is used in calculation. Note that m_momsFull contains all photons
+  // starting at position 3, hence index of photon kk is 3+kk.
+  m_moms = m_momsFull;
+  Vec4D k   = m_moms[3+kk];
+  Vec4D pi  = m_moms[1];
+  Vec4D pj  = m_moms[2];
+  double Zi = m_flavs[1].Charge();
+  double Zj = m_flavs[2].Charge();
+  int    ti = +1;
+  int    tj = +1;
+  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+}
+
 double Scalar_To_Fermion_Fermion::Smod(unsigned int kk) {
+  // Smod calculated with momenta dressed with one additional hard photon
+  // Used in the subtraction in single-real matrix elements
+
+  // Index kk denotes which photon is taken to be hard - determines which set of momenta m_moms1[kk]
+  // needs to be called. Note that the photon is always at position 3 in the sets.
   m_moms = m_moms1[kk];
   double sum = 0.;
   Vec4D k   = m_moms[3];
@@ -153,6 +196,10 @@ double Scalar_To_Fermion_Fermion::Smod(unsigned int kk) {
   return sum;
 }
 
+double Scalar_To_Fermion_Fermion::Smod(unsigned int a, unsigned int b, unsigned int c) {
+  return 0.;
+}
+
 Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   if (m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].first)
     return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second;
@@ -164,7 +211,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second;
 }
 
-Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
+Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1(const int& ewmode) {
   m_moms = m_moms0;
   double m2   = sqr(0.5*(m_masses[1]+m_masses[2]));
   double s    = sqr(m_masses[0]);
@@ -177,9 +224,8 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
           +0.5*D*p1p2*C_23(m2,m2,s,0.,m2,m2,mu2)
           +0.25*sqr(D)*C_24(m2,m2,s,0.,m2,m2,mu2)
           +0.25*(B_0(s,m2,m2,mu2)-B_0(0.,m2,m2,mu2))
-          +0.5*(D-2.)*B_0(0.,m2,m2,mu2)
-          -0.25*(D-2.)/m2*A_0(m2,mu2)
-          -0.5*(B_0(m2,0.,m2,mu2)-B_0(0.,m2,m2,mu2));
+          +0.25*D*B_0(0.,m2,m2,mu2)
+          -0.5*B_0(m2,0.,m2,mu2);
   term2 = -m2*C_11(m2,m2,s,0.,m2,m2,mu2);
   Complex t1(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL)*term1.Finite());
   Complex t2(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR)*term2.Finite());
@@ -190,7 +236,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_2() {
   return 0.;
 }
 
-Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
+Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i, const double& xi) {
   m_moms       = m_moms1[i];                // set to set of momenta to be used
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3])[m_spins[3]]);
   Vec4D pa     = m_moms[1]+m_moms[3];       // fermion propagator momenta
@@ -221,7 +267,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   return (r1+r2+r3+r4);
 }
 
-Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_15(unsigned int i) {
+Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_15(unsigned int i, const double& xi) {
   return 0.;
 }
 
@@ -246,7 +292,7 @@ double Scalar_To_Fermion_Fermion::GetBeta_0_0() {
   return sum;
 }
 
-double Scalar_To_Fermion_Fermion::GetBeta_0_1() {
+double Scalar_To_Fermion_Fermion::GetBeta_0_1(const int& ewmode) {
   double sum = 0.;
   for (unsigned int i=0; i<=1; i++) {           // spin l.Bar
     for (unsigned int j=0; j<=1; j++) {         // spin l
@@ -297,16 +343,26 @@ double Scalar_To_Fermion_Fermion::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
 }
 
+void Scalar_To_Fermion_Fermion::Print_Info() {
+  msg_Out() << " --------------------------- \n"
+	    << "Incoming Momenta, flavours, masses: \n"
+	    << m_moms0[0] << " , " << m_flavs[0].Kfcode() << " , " << m_flavs[0].Mass() <<  "\n"
+	    << "Outgoing Momenta, flavours, masses: \n"
+	    << m_moms0[1] << " , " << m_flavs[1].Kfcode() << " , " << m_flavs[1].Mass() << "\n"
+	    << m_moms0[2] << " , " << m_flavs[2].Kfcode() << " , " << m_flavs[2].Mass() << "\n";
+    
+}
+
 // DECLARE_PHOTONS_ME_GETTER(Scalar_To_Fermion_Fermion_Getter,
-//                           "Scalar_To_Fermion_Fermion")
-// 
+// 			  "Scalar_To_Fermion_Fermion")
+
 // PHOTONS_ME_Base * Scalar_To_Fermion_Fermion_Getter::operator()
 // (const Particle_Vector_Vector &pvv) const
 // {
 //   // same mass restriction can be lifted if M_0_1 is computed for general case
 //   if ( (pvv.size() == 4) &&
 //        (pvv[0].size() == 0) &&
-//        (pvv[1].size() == 1) && pvv[1][0]->Flav().IsScalar() &&
+//        (pvv[1].size() == 1) && pvv[1][0]->Flav().IsScalar() && !(pvv[1][0]->Flav().Kfcode()==25) &&
 //        (pvv[2].size() == 2) && pvv[2][0]->Flav().IsFermion() &&
 //        (pvv[2][0]->Flav() == pvv[2][1]->Flav().Bar()) &&
 //        (pvv[3].size() == 0) )

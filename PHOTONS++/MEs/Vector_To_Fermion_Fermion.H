@@ -14,11 +14,11 @@ namespace PHOTONS {
 
 
       virtual Complex InfraredSubtractedME_0_0();
-      virtual Complex InfraredSubtractedME_0_1();
+      virtual Complex InfraredSubtractedME_0_1(const int& = 1);
       virtual Complex InfraredSubtractedME_0_2();
 
-      virtual Complex InfraredSubtractedME_1_05(unsigned int);
-      virtual Complex InfraredSubtractedME_1_15(unsigned int);
+      virtual Complex InfraredSubtractedME_1_05(unsigned int, const double& = 1.);
+      virtual Complex InfraredSubtractedME_1_15(unsigned int, const double& = 1.);
 
       virtual Complex InfraredSubtractedME_2_1(unsigned int, unsigned int);
 
@@ -27,7 +27,7 @@ namespace PHOTONS {
       virtual ~Vector_To_Fermion_Fermion();
 
       virtual double GetBeta_0_0();
-      virtual double GetBeta_0_1();
+      virtual double GetBeta_0_1(const int& = 1);
       virtual double GetBeta_0_2();
 
       virtual double GetBeta_1_1(unsigned int);
@@ -35,7 +35,10 @@ namespace PHOTONS {
 
       virtual double GetBeta_2_2(unsigned int, unsigned int);
 
+      virtual double SmodFull(unsigned int);
       virtual double Smod(unsigned int);
+      virtual double Smod(unsigned int, unsigned int, unsigned int);
+      virtual void Print_Info();
   };
 }
 #endif
