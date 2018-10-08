@@ -18,6 +18,21 @@ using namespace METOOLS;
     p1 /          \ p4
       /            \
 */
+
+Complex METOOLS::K(const double& z, const Complex& sm12, const Complex& sm22) {
+  // Analytic continuation via z -> z+ieps => creates -ieps as imaginary part
+  // Complex rat = (z-sqr(sm12-sm22))/(4.*sm12*sm22);
+  // Complex root = sqrt((rat-1.)/rat);
+  // Complex invopr = 1./(1.+root);
+  if (z == sqr(sm12-sm22)) {
+    return -1.;
+  }
+  else {
+    // return -pow(invopr,2.)/rat;
+    return (1.-sqrt(1.-4.*sm12*sm22/(z-sqr(sm12-sm22))))/(1.+sqrt(1.-4.*sm12*sm22/(z-sqr(sm12-sm22))));
+  }
+}
+
 METOOLS::DivArrC
 METOOLS::Master_Box(const double&  p12, const double&  p22, const double&  p32, const double&  p42,
                     const double&  s12, const double&  s23,
@@ -51,14 +66,21 @@ METOOLS::Master_Box(const double&  p12, const double&  p22, const double&  p32, 
     //!                                s23 -> s23 + i0
     //!                                 p2 ->  p2 + i0
     //! maybe use other method -> easier to continue analytically
-    else if (IsZero(p12) && IsZero(p22) && IsZero(p32))
+    else if (IsZero(p22) && IsZero(p32) && IsZero(p42)) 
+      return Master_Box(p22,p32,p42,p12,s23,s12,m22,m32,m42,m12,mu2);
+    else if (IsZero(p12) && IsZero(p32) && IsZero(p42)) 
+      return Master_Box(p32,p42,p12,p22,s12,s23,m32,m42,m12,m22,mu2);
+    else if (IsZero(p12) && IsZero(p22) && IsZero(p42)) 
+      return Master_Box(p42,p12,p22,p32,s23,s12,m42,m12,m22,m32,mu2);
+    else if (IsZero(p12) && IsZero(p22) && IsZero(p32)) {
       return 1./(s12*s23)*DivArrC(0.,
-                                  2.*log(-mu2*p42/(s12*s23)),
+                                  2.*CLog(-mu2*p42/(s12*s23),-DivProdSign(p42,1,s12,1,s23,1)),
                                   2.,
-                                  sqr(log(mu2/(-s12))) + sqr(log(mu2/(-s23))) - sqr(log(mu2/(-p42)))
-                                  - 2.*DiLog(1.-p42/s12) - 2.*DiLog(1.-p42/s23)
-                                  - sqr(log((-s12)/(-s23))) - M_PI*M_PI/3.,
+                                  sqr(CLog(mu2/(-s12),1)) + sqr(CLog(mu2/(-s23),1)) - sqr(CLog(mu2/(-p42),1))
+                                  - 2.*Dilog(1.-p42/s12,-DivSign(p42,1,s12,1)) - 2.*Dilog(1.-p42/s23,-DivSign(p42,1,s23,1))
+                                  - sqr(CLog((-s12)/(-s23),DivSign(-s12,-1,-s23,-1))) - M_PI*M_PI/3.,
                                   0.,0.);
+    }
     //! two opposite legs off-shell
     //! Ellis, Zanderighi Box.3
     //! D_0(0,p22,0,p42;s12,s23;0,0,0,0) = 1/(s12s23-p22p42)*(2/epsIR*ln(p22p42/s12s23)
@@ -149,8 +171,51 @@ METOOLS::Master_Box(const double&  p12, const double&  p22, const double&  p32, 
   //! *******************************************************************************************
   //! one massless internal line
     //! Ellis, Zanderighi Box.16
-  else if (IsZero(m12))
-    return DivArrC(0.,0.,0.,0.,0.,0.);
+  else if (IsZero(m22) && !IsZero(m12) && !IsZero(m32) && !IsZero(m42)) 
+    return Master_Box(p22,p32,p42,p12,s23,s12,m22,m32,m42,m12,mu2);
+  else if (IsZero(m32) && !IsZero(m12) && !IsZero(m22) && !IsZero(m42)) 
+    return Master_Box(p32,p42,p12,p22,s12,s23,m32,m42,m12,m22,mu2);
+  else if (IsZero(m42) && !IsZero(m12) && !IsZero(m22) && !IsZero(m32)) 
+    return Master_Box(p42,p12,p22,p32,s23,s12,m42,m12,m22,m32,mu2);
+
+  else if (IsZero(m12) && IsZero(p22) && IsEqual(p12,p42) && IsEqual(p12,m42) && !IsEqual(p12,p32) && IsEqual(m22,m42) && IsEqual(m32,m42)) {
+    Complex m2 = 1./3.*(m22+m32+m42);
+    Complex b23 = sqrt(1.-4.*m42/s23);
+    Complex x23 = (b23-1.)/(b23+1.);
+    Complex b3 = sqrt(1.-4.*m42/p32);
+    Complex x3 = (b3-1.)/(b3+1.);
+    return 1./((s12-m2)*s23*b23)*DivArrC(0.,CLog(x23,1),0.,
+					 CLog(x23,1)*CLog(mu2/m2,1)-Dilog(sqr(x23),1)-2.*CLog(x23,1)*CLog(1.-sqr(x23),-1)-2.*CLog(x23,1)*CLog(1.-s12/m2,-1)-sqr(CLog(x3,1))+sqr(M_PI)/6.-2.*(Dilog(1.-x23*x3,-Prod2Sign(x23,1,x3,1))+CLog(1.-x23*x3,-Prod2Sign(x23,1,x3,1))*(CLog(x23*x3,Prod2Sign(x23,1,x3,1))-CLog(x3,1)-CLog(x23,1)) + Dilog(1.-x23/x3,-DivSign(x23,1,x3,1))+CLog(1.-x23/x3,-DivSign(x23,1,x3,1))*(CLog(x23/x3,DivSign(x23,1,x3,1))-CLog(1./x3,-1)-CLog(x23,1))),0.,0.);
+  }
+  else if (IsZero(m12)) {
+    Complex sm22 = sqrt(m22);
+    Complex sm32 = sqrt(m32);
+    Complex sm42 = sqrt(m42);
+    Complex x23 = -K(s23,sm22,sm42);
+    Complex x2 = -K(p22,sm22,sm32);
+    Complex x3 = -K(p32,sm32,sm42);
+    int ieps = 1; // -K(s,m1,m2) comes with +ieps or imaginary part of respective result
+    // full expression:
+    if (IsEqual(s23,sqr(sm22-sm42))) {
+      return 1./(2.*sm22*sm42*(s12-m32))*
+	DivArrC(0.,1.,0.,
+		2.*CLog(sm32*sqrt(mu2)/(m32-s12),DivSign(sm32*sqrt(mu2),1,(m32-s12),-1)) 
+		- (1.+x2*x3)/(1.-x2*x3)*(CLog(x2,ieps)+CLog(x3,ieps))
+		- (x3+x2)/(x3-x2)*(CLog(x2,ieps)-CLog(x3,ieps)) - 2.,
+		0.,0.);
+    }
+    else {
+      return x23/(sm22*sm42*(s12-m32)*(1.-sqr(x23)))*
+	DivArrC(0.,-CLog(x23,ieps),0.,
+		-2.*CLog(x23,ieps)*CLog(sm32*sqrt(mu2)/(m32-s12),DivSign(sm32*sqrt(mu2),1,(m32-s12),-1)) 
+		+ sqr(CLog(x2,ieps)) + sqr(CLog(x3,ieps))
+		-Dilog(1.-sqr(x23),-ieps) + Dilog(1.-x23*x2*x3,-Prod3Sign(x23,ieps,x2,ieps,x3,ieps))
+		+ Dilog(1.-x23/(x2*x3),-DivProdSign(x23,ieps,x2,ieps,x3,ieps))
+		+ Dilog(1.-x23*x2/x3,-ProdDivSign(x23,ieps,x2,ieps,x3,ieps)) 
+		+ Dilog(1.-x23*x3/x2,-ProdDivSign(x23,ieps,x3,ieps,x2,ieps)),
+		0.,0.);
+    }
+  }
   //! *******************************************************************************************
   //! no massless internal lines
   else {

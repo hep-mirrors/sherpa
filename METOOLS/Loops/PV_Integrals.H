@@ -41,10 +41,20 @@ namespace METOOLS {
   PV_Bubble_1(const double&,
               const Complex&, const Complex&,
               double);
+  //! B_mu' =d/dp2(p_mu B_1)
+  //!   B_1'(s12;m02,m12;mu2)
+  DivArrC
+  PV_Bubble_1_Prime(const double&,
+		    const Complex&, const Complex&,
+		    double);
   //! B_munu = p_mu p_nu B_21 + g_munu B_22
   //!   B_21(s12;m02,m12;mu2)
   DivArrC
   PV_Bubble_21(const double&,
+               const Complex&, const Complex&,
+               double);
+  DivArrC
+  PV_Bubble_21_Prime(const double&,
                const Complex&, const Complex&,
                double);
   //!   B_22(s12;m02,m12;mu2)
@@ -155,6 +165,161 @@ namespace METOOLS {
                  const Complex&, const Complex&, const Complex&,
                  double);
 
+  DivArrC
+  PV_Box_11(const double&, const double&, const double&, const double&,
+	    const double&, const double&,
+	    const Complex&, const Complex&, const Complex&, const Complex&,
+	    double);
+    
+  DivArrC
+  PV_Box_12(const double&, const double&, const double&, const double&,
+	    const double&, const double&,
+	    const Complex&, const Complex&, const Complex&, const Complex&,
+	    double);
+    
+  DivArrC
+  PV_Box_13(const double&, const double&, const double&, const double&,
+	    const double&, const double&,
+	    const Complex&, const Complex&, const Complex&, const Complex&,
+	    double);
+    
+  DivArrC
+  PV_Box_211(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_212(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_213(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_221(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_222(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_223(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_231(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_232(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_233(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_200(const double&, const double&, const double&, const double&,
+	     const double&, const double&,
+	     const Complex&, const Complex&, const Complex&, const Complex&,
+	     double);
+    
+  DivArrC
+  PV_Box_3111(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3112(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3113(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+    
+  DivArrC
+  PV_Box_3122(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3123(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+    
+  DivArrC
+  PV_Box_3133(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3222(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3223(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3233(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+    
+  DivArrC
+  PV_Box_3333(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3001(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3002(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
+
+  DivArrC
+  PV_Box_3003(const double&, const double&, const double&, const double&,
+	      const double&, const double&,
+	      const Complex&, const Complex&, const Complex&, const Complex&,
+	      double);
 
 }
 
