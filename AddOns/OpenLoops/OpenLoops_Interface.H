@@ -33,6 +33,7 @@ namespace OpenLoops {
     static std::string s_olprefix;
     static bool        s_ignore_model;
     static bool        s_exit_on_error;
+    static int         s_ass_ew;
     static std::map<std::string, std::string> s_evgen_params;
 
     void RegisterDefaults() const;
