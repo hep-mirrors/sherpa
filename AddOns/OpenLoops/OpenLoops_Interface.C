@@ -48,6 +48,7 @@ namespace OpenLoops {
   std::string OpenLoops_Interface::s_olprefix     = std::string("");
   bool        OpenLoops_Interface::s_ignore_model = false;
   bool        OpenLoops_Interface::s_exit_on_error= true;
+  int         OpenLoops_Interface::s_ass_ew       = 0;
 
   OpenLoops_Interface::~OpenLoops_Interface()
   {
@@ -126,7 +127,11 @@ namespace OpenLoops {
     // set remaining OL parameters specified by user
     vector<string> parameters;
     reader.VectorFromFile(parameters,"OL_PARAMETERS");
-    for (size_t i=1; i<parameters.size(); i=i+2) SetParameter(parameters[i-1], parameters[i]);
+    for (size_t i=1; i<parameters.size(); i=i+2) {
+      if (parameters[i-1]=="add_associated_ew")
+        s_ass_ew=ToType<int>(parameters[i]);
+      SetParameter(parameters[i-1], parameters[i]);
+    }
 
     char welcomestr[GetIntParameter("welcome_length")];
     ol_welcome(welcomestr);
@@ -183,7 +188,7 @@ namespace OpenLoops {
 #endif
     int procid(ol_register_process(procname.c_str(), amptype));
 #ifdef USING__OPENLOOPS__ASSOCIATED
-    SetParameter("add_associated_ew",0);
+    SetParameter("add_associated_ew",s_ass_ew);
 #endif
 
     return procid;
