@@ -288,7 +288,7 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
   // set negative of requested associated amps such that they are only
   // initialised, but not computed by default
 #if USING__OPENLOOPS__ASSOCIATED
-  SetParameter("add_associated_ew",-ConvertAssociatedContributions(fs.m_asscontribs));
+  if (s_ass_ew==0) SetParameter("add_associated_ew",-ConvertAssociatedContributions(fs.m_asscontribs));
 #else
   if (ConvertAssociatedContributions(fs.m_asscontribs))
     THROW(fatal_error,"Separate evaluation of associated EW contribution not "
@@ -296,7 +296,7 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
 #endif
   int procid(ol_register_process(olprocname.c_str(), amptype));
 #if USING__OPENLOOPS__ASSOCIATED
-  SetParameter("add_associated_ew",s_ass_ew);
+  if (s_ass_ew==0) SetParameter("add_associated_ew",0);
 #endif
   if (s_procmap.find(procid)==s_procmap.end())
     s_procmap[procid]=shprocname;
