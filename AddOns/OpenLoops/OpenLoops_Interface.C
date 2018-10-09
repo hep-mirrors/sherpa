@@ -57,6 +57,7 @@ extern "C" {
 std::string OpenLoops_Interface::s_olprefix = std::string("");
 bool OpenLoops_Interface::s_ignore_model = false;
 bool OpenLoops_Interface::s_exit_on_error = true;
+int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
 
 // private static member definitions
@@ -154,6 +155,8 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // set remaining OL parameters specified by user
   for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
     const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    if (key == "add_associated_ew")
+      s_ass_ew = ToType<int>(val);
     s_evgen_params[key] = val;
     SetParameter(key, val);
   }
@@ -293,7 +296,7 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
 #endif
   int procid(ol_register_process(olprocname.c_str(), amptype));
 #if USING__OPENLOOPS__ASSOCIATED
-  SetParameter("add_associated_ew",0);
+  SetParameter("add_associated_ew",s_ass_ew);
 #endif
   if (s_procmap.find(procid)==s_procmap.end())
     s_procmap[procid]=shprocname;
