@@ -1,0 +1,55 @@
+% pp -> Z/g -> ee: soft-collinear approximation in YFS
+(run){
+  % general settings
+  EVENTS 1M;
+
+  ME_SIGNAL_GENERATORS Internal;
+  SCALES VAR{sqr(91.1876)};
+  % collider setup
+  BEAM_1 2212; BEAM_ENERGY_1 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 6500.;
+
+  % Set YFS_MODE=2 to calculate corrections to soft approximation
+  YFS_MODE=2;
+  YFS_IR_CUTOFF=0.1;
+  YFS_1/ALPHAQED=128.;
+
+  % retain YFS_USE_ME=0 to obtain soft-collinear approximation
+  % real MEs are augmented by collinear splitting functions
+  YFS_USE_ME=0;
+
+  % all these parameters have no effect in this case
+  YFS_SMALL_MASS_LIMIT=0;
+  YFS_EW_CORRECTIONS=1;
+  YFS_OL_COMPARISON=0;
+  YFS_NNLO_QED=1;
+  
+  % ensure lepton masses are set
+  MASSIVE[11] 1;
+  MASSIVE[13] 1;
+  MASSIVE[15] 1;
+
+  % to turn off parton shower, cannot use SHOWER_GENERATOR=None since that would result in no YFS correction at all
+  % hence set maximum number of CSS emissions to 0
+  CSS_MAXEM=0;
+  BEAM_REMNANTS=0;
+  ME_QED=On;
+  MI_HANDLER None;
+  FRAGMENTATION=Off;
+}(run)
+
+(processes){
+  Process 93 93 -> 11 -11;
+  Order (*,2);
+  End process;
+}(processes)
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_Zee
+  }  END_RIVET
+}(analysis)
+
+(selector){
+ Mass 11 -11 65. 115.
+}(selector)

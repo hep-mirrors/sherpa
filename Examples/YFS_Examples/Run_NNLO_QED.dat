@@ -1,0 +1,60 @@
+% pp -> Z/g -> ee: NNLO QED in YFS.
+(run){
+  % general settings
+  EVENTS 1M;
+
+  ME_SIGNAL_GENERATORS Internal;
+  SCALES VAR{sqr(91.1876)};
+  % collider setup
+  BEAM_1 2212; BEAM_ENERGY_1 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 6500.;
+
+  % Set YFS_MODE=2 to calculate corrections to soft approximation
+  % For NNLO calculations, never use IR cutoff much below 0.1 GeV - subtraction becomes unreliable
+  YFS_MODE=2;
+  YFS_IR_CUTOFF=0.1;
+  YFS_1/ALPHAQED=128.;
+
+  % set YFS_USE_ME=1 to obtain full matrix elements
+  % YFS_EW_CORRECTIONS=0 means only QED corrections are taken into account in NLO part of the ME
+  % YFS_NNLO_QED=1 means NNLO QED corrections are also calculated (only available for Z -> ll, H -> ll)
+  YFS_USE_ME=1;
+  YFS_EW_CORRECTIONS=0;
+  YFS_NNLO_QED=1;
+
+  % technical parameters that can be set:
+  % YFS_RV_STABILITY is the cutoff scale for the RV amplitude: if (m2/sik) is larger than this value, the RV amplitude is evaluated in soft-collinear approximation - default is 0.1
+  YFS_RV_STABILITY=0.1;
+
+  % YFS_RV_SCALING is the factor which is used to scale the RV amplitude in the scaling test. Default is 0.1
+  YFS_RV_SCALING=0.1;
+    
+  % ensure lepton masses are set
+  MASSIVE[11] 1;
+  MASSIVE[13] 1;
+  MASSIVE[15] 1;
+
+  % to turn off parton shower, cannot use SHOWER_GENERATOR=None since that would result in no YFS correction at all
+  % hence set maximum number of CSS emissions to 0
+  CSS_MAXEM=0;
+  BEAM_REMNANTS=0;
+  ME_QED=On;
+  MI_HANDLER None;
+  FRAGMENTATION=Off;
+}(run)
+
+(processes){
+  Process 93 93 -> 11 -11;
+  Order (*,2);
+  End process;
+}(processes)
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_Zee
+  }  END_RIVET
+}(analysis)
+
+(selector){
+ Mass 11 -11 65. 115.
+}(selector)
