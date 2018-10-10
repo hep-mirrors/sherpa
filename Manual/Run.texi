@@ -443,7 +443,10 @@ The additional event weights can then be written into the event output.
 However, this is currently only supported for @code{HepMC_GenEvent} and 
 @code{HepMC_Short} with versions >2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
 The alternative event weights follow the Les Houches naming convention 
-for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}.
+for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}. 
+In case associated NLO EW and sub-leading order contributions are used, 
+this convention is extended to @code{MUR<fac>_MUF<fac>_PDF<id>_ASS<contrib>}.
+
 When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate 
 instances of Rivet, one for each alternative event weight in addition to 
 the nominal one, are instantiated leading to one set of histograms each.
