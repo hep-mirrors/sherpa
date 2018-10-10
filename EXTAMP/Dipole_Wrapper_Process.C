@@ -88,7 +88,8 @@ Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
       /* Now check that the flavour in real configuration has been
 	 properly mapped */
       const ATOOLS::Flavour& real_flav = Flavours()[id.front()];
-      assert(real_flav==born_flav);
+      if(real_flav != born_flav)
+	THROW(fatal_error, "Inconsistent flavour mapping");
     }
 
   m_moms.resize(Dipole()->Flavours().size());
