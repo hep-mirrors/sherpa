@@ -27,7 +27,7 @@ bool Electron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy)
   Particle * particle = (*m_extracted.begin()), * remnant(NULL);
   p_beamblob->AddToOutParticles(particle);
   Vec4D diff = p_beamblob->InParticle(0)->Momentum()-particle->Momentum();
-  if (diff[0]>0. && diff[0]/p_beamblob->InParticle(0)->Momentum()[0]>1.e-6) {
+  if (diff[0]>0. && diff[0]/p_beamblob->InParticle(0)->Momentum()[0]>1.e-8) {
     remnant = new Particle(-1,m_constituents.back(),diff);
     p_beamblob->AddToOutParticles(remnant);
   }

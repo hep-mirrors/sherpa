@@ -40,10 +40,21 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
-  bool force = (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
-			   p_doubletransitions->GetLightestMass(m_flavs)) ||
-		m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
-  return force;
+  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
+		     p_doubletransitions->GetLightestMass(m_flavs)) ||
+	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+}
+
+bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
+					   const Flavour & flav2,
+					   const double & mass) {
+  m_flavs.first  = flav1;
+  m_flavs.second = flav2;
+  m_mass         = mass;
+  m_mass2        = mass*mass;
+  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
+		     p_doubletransitions->GetLightestMass(m_flavs)) ||
+	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
 }
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)

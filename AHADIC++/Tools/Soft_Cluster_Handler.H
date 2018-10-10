@@ -50,6 +50,9 @@ namespace AHADIC {
     void Init();
     void Reset();
     bool MustPromptDecay(Cluster * cluster);
+    bool MustPromptDecay(const ATOOLS::Flavour & fl1,
+			 const ATOOLS::Flavour & fl2,
+			 const double & mass);
     int  Treat(Cluster * cluster,bool force=false);
     bool TreatTwoGluons(Cluster * cluster);
     bool RadiativeDecay(Cluster * cluster);

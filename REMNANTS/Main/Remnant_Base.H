@@ -57,7 +57,7 @@ namespace REMNANTS {
     virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
     virtual void MakeSpectator(ATOOLS::Particle * parton) {}
     
-    virtual void Reset();
+    virtual void Reset(const bool & DIS=false);
     inline rtp::code    Type() const                 { return m_type; }
     inline unsigned int Beam() const                 { return m_beam; }
     inline void SetPartner(Remnant_Base * partner)   { p_partner = partner; }

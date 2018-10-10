@@ -34,6 +34,7 @@ namespace REMNANTS {
     ATOOLS::Poincare          m_oldcmsboost, m_newcmsboost, m_rotate;
     std::set<ATOOLS::Blob *>  m_boostedblobs;
 
+    double                 m_mass_sum;
     ATOOLS::Vec4D          m_inmom[2], m_checkmom[2];
     ATOOLS::ParticleMomMap m_ktmap[2], m_shuffledmap;
 

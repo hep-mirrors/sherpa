@@ -137,13 +137,13 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
 						  Particle_List *const particlelist)
 {
-  //msg_Out()<<METHOD<<" with\n"<<(*bloblist)<<"\n";
   // Adding the blobs related to the breakup of incident beams: one for each beam,
   // plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
   // Fill in the transverse momenta through the Kinematics_Generator.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
     Reset();
+    msg_Error()<<"Warning in "<<METHOD<<": return new event\n";
     return Return_Value::New_Event;
   }
   Reset();
@@ -219,7 +219,8 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 }
 
 void Remnant_Handler::Reset() {
-  for (size_t beam=0;beam<2;beam++) p_remnants[beam]->Reset();
+  bool DIS=m_type==strat::DIS1 || m_type==strat::DIS2;
+  for (size_t beam=0;beam<2;beam++) p_remnants[beam]->Reset(DIS);
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

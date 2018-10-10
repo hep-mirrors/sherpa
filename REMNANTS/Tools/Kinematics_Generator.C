@@ -142,13 +142,14 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t & beam) {
   // Logic: In DIS we have broken the link between shower initiators and the beam blobs -
   // because the soft blob here comes ** after ** the shower.  So we have to fix this
   // manually, by
+  // 0. just fill the lepton beam blob - we will assume collinear kinematics here
   // 1. adding the shower initiator to the beam blob.
   // 2. copying the particles from the map of particles to shuffled momenta
   //    (the originals are the FS particles of shower and beam blobs)
   //    and add the cipies with the shuffled momenta as outgoing particles to the soft blob.
   // 3. Add the originals, with the original momenta, as inconing particles to the soft blob.
   //    Erase them from the specators.
-  p_remnants[1-beam]->GetBlob()->AddToOutParticles(p_remnants[1-beam]->GetExtracted()->front());
+  p_remnants[1-beam]->FillBlob();  
   for (ParticleMomMap::iterator pit=m_shuffledmap.begin();
        pit!=m_shuffledmap.end();pit++) {
     Particle * part = new Particle(*pit->first);
@@ -238,6 +239,7 @@ ExtractColourfulFS(const size_t & beam,vector<Vec4D> & moms,
 		   vector<double> & masses,vector<Particle *> & parts) {
   // Extract momenta, masses, and particle pointers of colourful FS objects in the
   // showerblob (the decayblob of the ** only ** extracted particle) for beam.
+  m_mass_sum = 0.;
   Vec4D  tot(0.,0.,0.,0.), help;
   Blob * blob  = p_extracted[beam]->front()->DecayBlob();
   for (size_t i=0;i<blob->NOutP();i++) {
@@ -248,7 +250,9 @@ ExtractColourfulFS(const size_t & beam,vector<Vec4D> & moms,
     tot += help;
     moms.push_back(help);
     parts.push_back(part);
-    masses.push_back(part->Flav().Mass());
+    double mass2 = help.Abs2();
+    masses.push_back((mass2<1.e-6?0.:sqrt(mass2)));
+    m_mass_sum += masses.back();
   }
   // Add the transverse momentum of the shower initiator to the total momentum
   // (and the check), and distribute it equally over all outgoing coloured particles.
@@ -268,7 +272,8 @@ ExtractSpectators(const size_t & beam,vector<Vec4D> & moms,
     tot += help = (*spit)->Momentum()+m_ktmap[beam][(*spit)];
     moms.push_back(help);
     parts.push_back(*spit);
-    masses.push_back((*spit)->Flav().Mass());
+    masses.push_back((*spit)->Flav().HadMass());
+    m_mass_sum += masses.back();
   }
   return tot;
 }
@@ -279,16 +284,17 @@ bool Kinematics_Generator::CheckDIS(const size_t & beam) {
   vector<double>     masses;  
   Vec4D tot = (ExtractColourfulFS(beam,moms,masses,parts) +
 	       ExtractSpectators(beam,moms,masses,parts));
+  // If there is no solution, do not even try
+  if (tot.Abs2()<sqr(m_mass_sum)) return false;
   Poincare residualcms(tot);
   // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
   // particles onto their mass shells and to account for their transverse momenta.
   for (size_t i=0;i<moms.size();i++) { residualcms.Boost(moms[i]); }
   if (!m_stretcher.ZeroThem(0,moms) ||
       !m_stretcher.MassThem(0,moms,masses)) {
-    msg_Error()<<"Error in "<<METHOD<<" will return false and hope for the best.\n";
     return false;
   }
-  // The boost back into the lab system and store the momenta in the shuffled momenta.
+  // Then boost back into the lab system and store the momenta in the shuffled momenta.
   for (size_t i=0;i<moms.size();i++) {
     residualcms.BoostBack(moms[i]);
     m_shuffledmap[parts[i]] = moms[i];
@@ -366,6 +372,7 @@ bool Kinematics_Generator::CheckRemnants() {
   vector<double> masses;
   vector<Particle *>parts;
   Vec4D tot(0.,0.,0.,0.), mom, kt[2];
+  double totmass(0.);
   for (size_t beam=0;beam<2;beam++) {
     Particle * recoiler = p_remnants[beam]->GetRecoiler();
     for (Part_Iterator plit=p_spectators[beam]->begin();
@@ -376,6 +383,7 @@ bool Kinematics_Generator::CheckRemnants() {
       parts.push_back(part);
       moms.push_back(mom);
       masses.push_back(part->Flav().Mass());
+      totmass += masses.back();
       m_checkmom[beam] -= part->Momentum();
     }
     // Check if energies still positive - otherwise we are in deep truoble
@@ -388,7 +396,10 @@ bool Kinematics_Generator::CheckRemnants() {
     parts.push_back(recoiler);
     moms.push_back(mom);
     masses.push_back(recoiler->Flav().Mass());
+    totmass += masses.back();
   }
+  // If there is no solution, do not even try to fix it.
+  if (tot.Abs2()<sqr(totmass)) return false;
   Poincare residualcms(tot);
   // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
   // particles onto their mass shells and to account for their transvers momenta.  

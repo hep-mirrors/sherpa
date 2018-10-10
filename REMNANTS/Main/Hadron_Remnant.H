@@ -39,7 +39,7 @@ namespace REMNANTS {
     bool AdjustKinematics();
     bool AdjustColours();
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);
-    void Reset();
+    void Reset(const bool & DIS=false);
     
     inline ATOOLS::Particle * GetRecoiler()  { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator() { return p_spectator; }

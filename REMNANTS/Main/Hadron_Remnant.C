@@ -205,10 +205,10 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
   return z;
 }
 
-void Hadron_Remnant::Reset() {
+void Hadron_Remnant::Reset(const bool & DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
-    delete m_spectators.front();
+    if (DIS) delete m_spectators.front();
     m_spectators.pop_front();
   }
   m_spectators.clear();

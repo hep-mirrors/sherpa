@@ -14,9 +14,9 @@ using namespace std;
 
 
 Ahadic::Ahadic(string path, string file) :
-  m_beamparticles(Beam_Particles_Shifter(&m_singlet_list)),
-  m_sformer(Singlet_Former(&m_singlet_list)),
   m_softclusters(Soft_Cluster_Handler(&m_hadron_list)),
+  m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
+  m_sformer(Singlet_Former(&m_singlet_list)),
   m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
@@ -65,6 +65,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  return Return_Value::New_Event;
 	}
 	return Return_Value::Retry_Event;
+      case Return_Value::New_Event:
+	msg_Out()<<"Momentum problems in\n"<<(*blobs)<<"\n";
+	exit(1);
+	break;
       case Return_Value::Nothing :
       default:
 	msg_Tracking()<<"Warning in "<<METHOD<<":\n"
