@@ -37,7 +37,8 @@ namespace SHERPA {
   class Event_Reader_Base;
   class Analysis_Interface;
   class Soft_Collision_Handler;
-
+  class Filter;
+  
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
     std::string m_path,m_file, m_evtform;
@@ -47,7 +48,7 @@ namespace SHERPA {
     std::string m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
     std::string m_softcollisiondat, m_softphotonsdat;
     std::string m_processesdat;
-    std::string m_selectordat;
+    std::string m_selectordat, m_filterdat;
     std::string m_momentadat;
 
     double          m_bunch_splimits[2];
@@ -75,6 +76,8 @@ namespace SHERPA {
     Analysis_Vector              m_analyses;
     Output_Vector                m_outputs;
     ATOOLS::Variations         * p_variations;
+    Filter                     * p_filter;
+    
     void ShowParameterSyntax();
     void CheckVersion();
     bool CompareVersions(const size_t& a1,const size_t& b1,const size_t& c1,
@@ -95,6 +98,7 @@ namespace SHERPA {
     bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
     bool InitializeTheSoftPhotons();
+    bool InitializeTheFilter();
     bool InitializeTheAnalyses();
     bool InitializeTheReweighting();
 
@@ -134,7 +138,8 @@ namespace SHERPA {
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
     Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
     ATOOLS::Variations           * GetVariations()            const { return p_variations;      }
-
+    Filter                       * GetFilter()                const { return p_filter;          }
+    
     eventtype::code Mode() const { return m_mode; };
 
     inline  ATOOLS::Data_Reader *DataReader() const { return p_dataread; }

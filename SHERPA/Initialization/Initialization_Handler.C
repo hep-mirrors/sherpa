@@ -11,6 +11,7 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
+#include "SHERPA/Main/Filter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -61,7 +62,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
-  p_variations(NULL)
+  p_variations(NULL), p_filter(NULL)
 {
   m_path=std::string("");
   m_file=std::string("Run.dat");
@@ -112,6 +113,7 @@ void Initialization_Handler::SetFileNames()
   m_softphotonsdat   = p_dataread->Get<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
   m_processesdat     = p_dataread->Get<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
   m_selectordat      = p_dataread->Get<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
+  m_filterdat        = p_dataread->Get<string>("FILTERFILE",fname+"|(filter){|}(filter)");
   m_analysisdat      = p_dataread->Get<string>("ANALYSIS_DATA_FILE",FileExists("Analysis.dat")?
 						    "Analysis.dat":fname+"|(analysis){|}(analysis)");
   std::string integrationdat = p_dataread->Get<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
@@ -150,6 +152,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   if (p_variations)    { delete p_variations;    p_variations    = NULL; }
+  if (p_filter)        { delete p_filter;        p_filter        = NULL; }
   while (m_analyses.size()>0) {
     delete m_analyses.back();
     m_analyses.pop_back();
@@ -284,6 +287,12 @@ void Initialization_Handler::ShowParameterSyntax()
     PHASIC::Selector_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+  helpi = reader.Get("SHOW_FILTER_SYNTAX", 0);
+  if (helpi>0) {
+    msg->SetLevel(2);
+    //Filter::ShowSyntax(helpi);
+    //THROW(normal_exit,"Syntax shown.");
+  }
   helpi = reader.Get("SHOW_MODEL_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
@@ -329,10 +338,9 @@ void Initialization_Handler::PrepareTerminate()
   Copy(m_path+StripSectionTags(m_fragmentationdat),path+StripSectionTags(m_fragmentationdat));
   Copy(m_path+StripSectionTags(m_hadrondecaysdat),path+StripSectionTags(m_hadrondecaysdat));
   Copy(m_path+StripSectionTags(m_analysisdat),path+StripSectionTags(m_analysisdat));
-  Copy(m_path+StripSectionTags(m_selectordat),
-	   path+StripSectionTags(m_selectordat));
-  Copy(m_path+StripSectionTags(m_processesdat),
-	   path+StripSectionTags(m_processesdat));
+  Copy(m_path+StripSectionTags(m_selectordat),path+StripSectionTags(m_selectordat));
+  Copy(m_path+StripSectionTags(m_filterdat),path+StripSectionTags(m_filterdat));
+  Copy(m_path+StripSectionTags(m_processesdat),path+StripSectionTags(m_processesdat));
   Copy(m_path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")),
 	   path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")));
   Data_Writer writer;
@@ -424,6 +432,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheReweighting();
+    okay = okay && InitializeTheFilter();
   }
   return okay;
 }
@@ -886,6 +895,13 @@ bool Initialization_Handler::InitializeTheReweighting()
   Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(&dataread);
   msg_Info()<<"Initialized the Reweighting."<<endl;
+  return true;
+}
+
+bool Initialization_Handler::InitializeTheFilter() 
+{
+  p_filter = new Filter();
+  if (!p_filter->Init(m_path,m_filterdat)) { delete p_filter; p_filter = NULL; }
   return true;
 }
 

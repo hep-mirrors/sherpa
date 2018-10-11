@@ -35,8 +35,7 @@ using namespace std;
 Sherpa::Sherpa() :
   p_inithandler(nullptr),
   p_eventhandler(nullptr),
-  p_hepmc2(nullptr),
-  p_filter(nullptr)
+  p_hepmc2(nullptr)
 {
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Terminator_Object_Handler();
@@ -49,7 +48,6 @@ Sherpa::Sherpa() :
   m_debugstep = -1;
   m_displayinterval = 100;
   m_evt_starttime = -1.0;
-  m_filter = false;
   exh->AddTerminatorObject(this);
 }
 
@@ -67,7 +65,6 @@ Sherpa::~Sherpa()
 #ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
 #endif
-  if (p_filter)       { delete p_filter;       p_filter       = nullptr; }
   exh->RemoveTerminatorObject(this);
   {// don't remove
     ATOOLS::Default_Reader reader;
@@ -116,7 +113,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     m_debuginterval = reader.Get("DEBUG_INTERVAL", m_debuginterval, "debug interval");
     m_debugstep     = reader.Get("DEBUG_STEP", m_debugstep);
 
-    if (m_filter) p_filter = new Filter();
     m_displayinterval=reader.Get<int>("EVENT_DISPLAY_INTERVAL",100);
     m_evt_output =reader.Get<int>("EVT_OUTPUT",msg->Level());
     m_evt_output_start=reader.Get<int>("EVT_OUTPUT_START",
@@ -171,6 +167,7 @@ bool Sherpa::InitializeTheEventHandler()
   if (!p_inithandler->GetOutputs()->empty())
     p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
   p_eventhandler->SetVariations(p_inithandler->GetVariations());
+  p_eventhandler->SetFilter(p_inithandler->GetFilter());
   p_eventhandler->PrintGenericEventStructure();
 
   ran->EraseLastIncrementedSeed();
@@ -220,11 +217,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
     Blob_List *blobs(p_eventhandler->GetBlobs());
-    if (m_filter && (*p_filter)(blobs)) {
-      msg_Out()<<"  -------------------------------------------------\n";
-      msg_Out()<<(*blobs)<<"\n"; 
-      msg_Out()<<"  -------------------------------------------------\n";
-    }
     
     /// Increase m_trials --- based on signal blob["Trials"] if existent
     if (blobs->FindFirst(btp::Signal_Process) == nullptr) {
