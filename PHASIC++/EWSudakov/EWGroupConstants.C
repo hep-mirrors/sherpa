@@ -9,7 +9,7 @@ using namespace PHASIC;
 EWGroupConstants::EWGroupConstants():
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
-  m_sw{ sqrt(m_sw2) },
+  m_sw{ -sqrt(m_sw2) },
   m_cw{ sqrt(m_cw2) }
 {}
 
@@ -217,12 +217,12 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
       // we assume the incoming flavour is the \chi instead of the Z in
       // accordance with the Goldstone equivalence theorem; we correct this
       // by multiplying an extra factor of i, cf. (4.26)
-      return { {kf_Wplus, -1.0 / (2.0*m_sw)} };
+      return { {kf_Wplus, 1.0 / (2.0*m_sw)} };
     } else {
-      return { {kf_Wplus, (isplus ? -1.0 : 1.0) * m_cw/m_sw} };
+      return { {kf_Wplus, (isplus ? 1.0 : -1.0) * m_cw/m_sw} };
     }
   } else if (flav.Kfcode() == kf_photon) {
-    return { {kf_Wplus, (isplus ? 1.0 : -1.0)} };
+    return { {kf_Wplus, (isplus ? -1.0 : 1.0)} };
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav

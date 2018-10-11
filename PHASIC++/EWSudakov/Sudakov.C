@@ -264,8 +264,10 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
   const auto k = indizes[0];
   const auto l = indizes[1];
-  auto kflav = m_ampls.BaseAmplitude().Leg(k)->Flav();
-  auto lflav = m_ampls.BaseAmplitude().Leg(l)->Flav();
+  // NOTE: use antiflavours, because the convention is all-incoming in
+  // Denner/Pozzorini whereas for Cluster Amplitudes it's all-outgoing
+  auto kflav = m_ampls.BaseAmplitude().Leg(k)->Flav().Bar();
+  auto lflav = m_ampls.BaseAmplitude().Leg(l)->Flav().Bar();
 
   // add contribution for each vector boson connecting the leg pairs
 

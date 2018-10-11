@@ -185,8 +185,8 @@ EWSudakov_Amplitudes::CreateAmplitudes(
       }
     }
   }
-  for (auto& kv : ampls)
-    Process_Base::SortFlavours(kv.second.get());
+  //for (auto& kv : ampls)
+  //  Process_Base::SortFlavours(kv.second.get());
   return ampls;
 }
 
