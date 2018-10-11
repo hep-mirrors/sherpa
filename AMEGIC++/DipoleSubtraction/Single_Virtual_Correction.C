@@ -957,6 +957,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_cmur[0]=m_cmur[1]=0.;
 
   Vec4D_Vector _mom(mom);
+  Poincare cms;
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(_mom[0]+_mom[1]);
+    for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
+  }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   msg_Debugging()<<"CMS momenta"<<std::endl;

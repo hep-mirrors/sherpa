@@ -496,23 +496,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       return 0.0;
     }
     Scale_Setter_Base *scs(ScaleSetter(1));
-    if (Partonic(p,0)==0.0) {
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Single_Process::SetZero,*this,m_last);
-      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
-      return 0.0;
-    }
+    Partonic(p,0);
     m_mewgtinfo*=m_lastflux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-    if (m_lastxs==0.0) {
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Single_Process::SetZero,*this,m_last);
-      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
-      return m_last=0.0;
-    }
     m_last=m_lastxs;
     m_last+=NfSchemeConversionTerms();
     ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ?
