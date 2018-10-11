@@ -3,9 +3,9 @@ pkglib_LTLIBRARIES       =	libSherpaMain.la
 GITTAG = SHERPA/Main
 include ../../git.make
 
-libSherpaMain_la_SOURCES      =	Git_Info.C Sherpa.C 
+libSherpaMain_la_SOURCES      =	Git_Info.C Sherpa.C Filter.C
 
-localinc_HEADERS          =    Sherpa.H 
+localinc_HEADERS          =    Sherpa.H Filter.H
 
 SYSLIBS	      =	$(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
 

@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "SHERPA/Main/Filter.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -28,7 +29,7 @@ Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
   m_mn(0), m_msum(0.0), m_msumsqr(0.0),
-  p_variations(NULL)
+  p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
   Data_Reader reader(" ",";","!","=");
@@ -181,13 +182,26 @@ bool Event_Handler::AnalyseEvent(double & weight) {
 int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
-  bool hardps = true;
+  bool hardps = true, filter = p_filter!=NULL;
   do {
     if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;
       continue;
     }
-
+    if ((*pit)->Type()==eph::Hadronization && filter) {
+      msg_Out()<<"Filter kicks in now: "<<m_blobs.back()->Type()<<".\n";
+      if ((*p_filter)(&m_blobs)) {
+	msg_Out()<<METHOD<<": filters accepts event.\n";
+	filter = false;
+      }
+      else {
+	msg_Out()<<METHOD<<": filter rejects event.\n";
+	Return_Value::IncNewEvent("Filter");
+	if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+	Reset();
+	return 2;
+      }
+    }
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): ran '"<<(*pit)->Name()<<"' -> "
@@ -207,11 +221,11 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
     case Return_Value::Nothing :
       ++pit;
       break;
-    case Return_Value::Retry_Phase : 
+    case Return_Value::Retry_Phase :
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
-    case Return_Value::Retry_Event : 
+    case Return_Value::Retry_Event :
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
@@ -230,7 +244,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
 		   <<" trials. Request new event.\n";
       }
-    case Return_Value::New_Event : 
+    case Return_Value::New_Event :
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();

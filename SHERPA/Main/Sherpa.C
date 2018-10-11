@@ -148,7 +148,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     m_evt_output =read.GetValue<int>("EVT_OUTPUT",msg->Level());
     m_evt_output_start=read.GetValue<int>("EVT_OUTPUT_START",
                                           m_evt_output!=msg->Level()?1:0);
-    
+
     return res;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
@@ -195,6 +195,7 @@ bool Sherpa::InitializeTheEventHandler()
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   if (!p_inithandler->GetOutputs()->empty())
     p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
+  p_eventhandler->SetFilter(p_inithandler->GetFilter());
   p_eventhandler->PrintGenericEventStructure();
 
   return 1;

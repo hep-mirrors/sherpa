@@ -9,6 +9,7 @@
 #include "SHERPA/Tools/Variations.H"
 
 namespace SHERPA {
+  class Filter;
 
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
@@ -25,6 +26,7 @@ namespace SHERPA {
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
+    Filter            * p_filter;
 
     const Variations  * p_variations;
 
@@ -54,6 +56,8 @@ namespace SHERPA {
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
+
+    void SetFilter(Filter * filter) { p_filter = filter; }
 
     void MPISync();
     double TotalXS();
