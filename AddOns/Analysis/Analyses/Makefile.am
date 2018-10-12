@@ -1,5 +1,8 @@
+GITTAG = AddOns/Analysis/Analyses
+include ../../../git.make
 
 ANAANA_SOURCES        =	\
+			Git_Info.C \
 			Analysis_Base.C \
 			WPolarization_Analysis.C \
 			ATLAS_CONF_2011_038.C \

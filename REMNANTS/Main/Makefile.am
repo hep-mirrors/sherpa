@@ -4,6 +4,7 @@ GITTAG = REMNANTS/Main
 include ../../git.make
 
 libRemnants_la_SOURCES =	\
+			Git_Info.C \
 			Remnant_Handler.C \
 			Remnant_Base.C \
 			Hadron_Remnant.C \

@@ -1,4 +1,8 @@
+GITTAG = AddOns/Analysis/Triggers
+include ../../../git.make
+
 ANATRIGGER_SOURCES    =	\
+			Git_Info.C \
 			Trigger_Base.C \
 			One_Variable_Selector.C \
 			One_Particle_Selector.C \

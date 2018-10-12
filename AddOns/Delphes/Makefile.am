@@ -1,5 +1,9 @@
 
+GITTAG = AddOns/Delphes
+include ../../git.make
+
 DELPHES_SOURCES   =	\
+		Git_Info.C \
 		Output_Delphes.C
 
 if DELPHES_SUPPORT

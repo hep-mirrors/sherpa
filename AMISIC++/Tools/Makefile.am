@@ -4,6 +4,7 @@ GITTAG = AMISIC++/Tools
 include ../../git.make
 
 libAmisicTools_la_SOURCES     = \
+			Git_Info.C \
 			MI_Parameters.C \
 			MPI_Scale_Setter.C \
 			MPI_KFactor_Setter.C \
