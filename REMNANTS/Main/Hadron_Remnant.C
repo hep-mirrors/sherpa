@@ -240,18 +240,6 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     msg_Error()<<METHOD<<": out of limits, x = "<<m_x<<".\n";
     return false;
   }
-  // Added flavour mass to play it safe - this should be caught in the
-  // parton shower through a proper treatment of mass thresholds.
-  // Otherwise we assume intrinsic charm/beauty here.
-  p_pdf->Calculate(m_x,sqr(flav.Mass())+m_scale2);
-  if (p_pdf->GetXPDF(flav)<0.) {
-    // this may cause a warning but no abort
-    // if returning false here we will not recover 
-    // the NLO cross section in a matched simulation
-    msg_Tracking()<<METHOD<<": negative pdf "<<flav<<"("<<m_x<<" = "
-	       <<p_pdf->GetXPDF(flav)<<".\n";
-    return true;
-  }
   return true;
 }
 
