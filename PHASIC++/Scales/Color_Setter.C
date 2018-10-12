@@ -186,7 +186,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
   if (pit!=pm->end() && pit->second && pit->second->
       Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
   if (p_xs==NULL) {
-    if (pit!=pm->end()) return false;
+    pm=m_pmap[nlo_type::lo];
     {
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -282,8 +282,6 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
   }
   if (xit!=m_xsmap.end() && xit->second!=NULL) {
     bool test(xit->second->SetColours(moms));
-    if (!test)
-      msg_Debugging() << "ME colour setter returned false.\n";
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
 		xit->second->Colours()[i][1]);
