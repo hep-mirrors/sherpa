@@ -245,9 +245,12 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   // Otherwise we assume intrinsic charm/beauty here.
   p_pdf->Calculate(m_x,sqr(flav.Mass())+m_scale2);
   if (p_pdf->GetXPDF(flav)<0.) {
-    msg_Error()<<METHOD<<": negative pdf "<<flav<<"("<<m_x<<" = "
+    // this may cause a warning but no abort
+    // if returning false here we will not recover 
+    // the NLO cross section in a matched simulation
+    msg_Tracking()<<METHOD<<": negative pdf "<<flav<<"("<<m_x<<" = "
 	       <<p_pdf->GetXPDF(flav)<<".\n";
-    return false;
+    return true;
   }
   return true;
 }
