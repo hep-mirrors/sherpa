@@ -1,5 +1,9 @@
 
-LHOLE_SOURCES  =	LH_OLE_Interface.C \
+GITTAG = AddOns/LH_OLE
+include ../../git.make
+
+LHOLE_SOURCES  =	Git_Info.C \
+			LH_OLE_Interface.C \
                         LH_OLE_Communicator.C
 
 LHOLE_ADDS     =	LH_OLE_Communicator.H

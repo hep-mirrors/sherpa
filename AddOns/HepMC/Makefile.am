@@ -1,6 +1,9 @@
 
-HEPMC2_SOURCES =	Output_HepMC2_Genevent.C Output_HepMC2_Short.C
-HEPMC3_SOURCES =	Output_HepMC3_Genevent.C
+GITTAG = AddOns/HepMC
+include ../../git.make
+
+HEPMC2_SOURCES =	Git_Info.C Output_HepMC2_Genevent.C Output_HepMC2_Short.C
+HEPMC3_SOURCES =	Git_Info.C Output_HepMC3_Genevent.C
 HEPMC2_ADDS    =	Output_HepMC2_Genevent.H Output_HepMC2_Short.H
 HEPMC3_ADDS    =	Output_HepMC3_Genevent.H
 

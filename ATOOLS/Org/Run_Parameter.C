@@ -76,6 +76,8 @@ using namespace std;
 std::map<const std::string,const Git_Info*> *
 ATOOLS::Git_Info::s_objects=NULL;
 
+bool ATOOLS::Git_Info::s_check=false;
+
 Git_Info::Git_Info(const std::string &name,
 		   const std::string &branch,
 		   const std::string &revision,
@@ -89,6 +91,13 @@ Git_Info::Git_Info(const std::string &name,
     init=true;
   }
   s_objects->insert(make_pair(name,this));
+  if (s_check) {
+    std::string branch(s_objects->begin()->second->Branch());
+    std::string revision(s_objects->begin()->second->Revision());
+    if (m_branch!=branch || m_revision!=revision)
+      msg_Info()<<"===> "<<m_name<<" has local modifications "
+		<<m_checksum<<" <===\n";
+  }
 }
 
 Git_Info::~Git_Info()
@@ -461,4 +470,5 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
   }
   if (mode&1) str<<prefix<<"}\n";
   str<<std::endl;
+  Git_Info::SetCheck(true);
 }
