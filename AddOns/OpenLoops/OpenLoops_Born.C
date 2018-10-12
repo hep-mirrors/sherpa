@@ -73,3 +73,8 @@ operator()(const External_ME_Args &args) const
   return NULL;
 }
 
+int OpenLoops_Born::OrderQCD(const int &id) const
+{ return m_order_qcd; }
+
+int OpenLoops_Born::OrderEW(const int &id) const
+{ return m_order_ew; }
