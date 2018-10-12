@@ -57,6 +57,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
 double Process_Group::Differential(const Vec4D_Vector &p)
 {
   m_lastb=m_last=0.0;
+  p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
     m_last+=m_procs[i]->Differential(p);
     m_lastb+=m_procs[i]->LastB();
