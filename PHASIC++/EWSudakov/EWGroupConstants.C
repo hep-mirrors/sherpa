@@ -9,6 +9,8 @@ using namespace PHASIC;
 EWGroupConstants::EWGroupConstants():
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
+  // TODO: understand why this ad-hoc minus sign solves our previous minus sign
+  // issues
   m_sw{ -sqrt(m_sw2) },
   m_cw{ sqrt(m_cw2) }
 {}
