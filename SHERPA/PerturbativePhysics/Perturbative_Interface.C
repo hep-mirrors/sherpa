@@ -32,7 +32,7 @@ Perturbative_Interface::Perturbative_Interface
   Data_Reader read;
   read.SetInputPath(p_me->Path());
   read.SetInputFile(p_me->File());
-  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
+  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",3);
   m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
   m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
 }
