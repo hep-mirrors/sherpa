@@ -69,6 +69,7 @@ Variable_Enhance_Observable::Variable_Enhance_Observable
   for (int i(0);i<m_n;++i)
     m_calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   m_calc.AddTag("H_T2","1.0");
+  m_calc.AddTag("H_TM2","1.0");
   m_calc.Interprete(arg);
 }
 
@@ -93,6 +94,12 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
     term->Set(p_p[term->Id()-100]);
     return term;
   }
+  if (term->Id()==4) {
+    double htm(0.0);
+    for (size_t i(0);i<m_n;++i) htm+=p_p[i].MPerp();
+    term->Set(sqr(htm));
+    return term;
+  }
   if (term->Id()==5) {
     double ht(0.0);
     for (size_t i(0);i<m_n;++i) ht+=p_p[i].PPerp();
@@ -105,6 +112,7 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
 void Variable_Enhance_Observable::AssignId(Term *term)
 {
   if (term->Tag()=="H_T2") term->SetId(5);
+  if (term->Tag()=="H_TM2") term->SetId(4);
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
