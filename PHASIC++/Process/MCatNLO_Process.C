@@ -117,7 +117,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Default_Reader reader;
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 8, "H event shower mode", METHOD);
+  m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 4, "H event shower mode", METHOD);
   m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 0, "K-factor mode", METHOD);
   m_fomode   = reader.Get("MC@NLO_FOMODE", 0, "fixed order mode", METHOD);
   m_rsscale  = reader.Get<std::string>("MC@NLO_RS_SCALE", "", "RS scale", METHOD);
