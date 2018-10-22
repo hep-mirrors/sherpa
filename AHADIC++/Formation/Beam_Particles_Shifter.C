@@ -103,10 +103,11 @@ bool Beam_Particles_Shifter::RescueLightClusters() {
     if (beam) {
       double mass = sqrt(sing->Mass2());
       if (p_softclusters->MustPromptDecay(trip,anti,mass)) {
-	//msg_Out()<<"Gotcha pair ("<<trip<<", "<<anti<<") -> mass = "<<mass<<"!\n";
 	if (sing->size()>2) {
-	  msg_Out()<<"   have to add gluons to trip/anti.\n";
-	  exit(1);
+	  msg_Out()<<"Gotcha pair ("<<trip<<", "<<anti<<") -> mass = "<<mass<<"!\n"
+		   <<"   have to add gluons to trip/anti.\n"<<(*sing)<<"n";
+	  sing->StripSingletOfGluons();
+	  //exit(1);
 	}
 	Cluster cluster((*sing->begin()),(*sing->rbegin()));
 	if (p_softclusters->Treat(&cluster,true)) {

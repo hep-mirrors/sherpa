@@ -208,7 +208,12 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
 void Hadron_Remnant::Reset(const bool & DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
-    if (DIS) delete m_spectators.front();
+    Particle * part = m_spectators.front();
+    if (part->ProductionBlob())
+      part->ProductionBlob()->RemoveOutParticle(part);
+    if (part->DecayBlob())
+      part->DecayBlob()->RemoveInParticle(part);
+    delete part;
     m_spectators.pop_front();
   }
   m_spectators.clear();
