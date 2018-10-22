@@ -112,7 +112,7 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
 void Variable_Enhance_Observable::AssignId(Term *term)
 {
   if (term->Tag()=="H_T2") term->SetId(5);
-  if (term->Tag()=="H_TM2") term->SetId(4);
+  else if (term->Tag()=="H_TM2") term->SetId(4);
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
