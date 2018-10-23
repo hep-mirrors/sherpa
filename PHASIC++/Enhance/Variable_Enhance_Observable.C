@@ -70,6 +70,8 @@ Variable_Enhance_Observable::Variable_Enhance_Observable
     m_calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   m_calc.AddTag("H_T2","1.0");
   m_calc.AddTag("H_TM2","1.0");
+  m_calc.AddTag("H_Tp2","1.0");
+  m_calc.AddTag("H_TMp2","1.0");
   m_calc.Interprete(arg);
 }
 
@@ -106,13 +108,33 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
     term->Set(sqr(ht));
     return term;
   }
+  if (term->Id()==6) {
+    double htm(0.0);
+    Vec4D ewsum(0.0,0.0,0.0,0.0);
+    for (size_t i(0);i<m_n;++i)
+      if (!p_proc->Flavours()[i].Strong()) ewsum+=p_p[i];
+      else htm+=p_p[i].MPerp();
+    term->Set(sqr(htm+ewsum.MPerp()));
+    return term;
+  }
+  if (term->Id()==7) {
+    double htm(0.0);
+    Vec4D ewsum(0.0,0.0,0.0,0.0);
+    for (size_t i(0);i<m_n;++i)
+      if (!p_proc->Flavours()[i].Strong()) ewsum+=p_p[i];
+      else htm+=p_p[i].PPerp();
+    term->Set(sqr(htm+ewsum.PPerp()));
+    return term;
+  }
   return term;
 }
 
 void Variable_Enhance_Observable::AssignId(Term *term)
 {
-  if (term->Tag()=="H_T2") term->SetId(5);
-  else if (term->Tag()=="H_TM2") term->SetId(4);
+  if (term->Tag()=="H_TM2") term->SetId(4);
+  else if (term->Tag()=="H_T2") term->SetId(5);
+  else if (term->Tag()=="H_TMp2") term->SetId(6);
+  else if (term->Tag()=="H_Tp2") term->SetId(7);
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
