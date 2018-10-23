@@ -212,7 +212,8 @@ up to the specified values. This is useful e.g. in calculations with massive
 b-quarks which shall nonetheless satisfy jet criteria.
 
 The final option @option{FastjetFinder} allows to use the 
-@uref{http://www.fastjet.fr,,FastJet} plugin if enabled during configuration. 
+@uref{http://www.fastjet.fr,,FastJet} plugin if enabled during configuration(*).
+
 It takes the following mandatory arguments:
 @code{<algorithm>} can take the values
 @code{kt,antikt,cambridge,siscone,eecambridge,jade},
@@ -367,3 +368,7 @@ MinSelector {
 The @ref{Minimum selector} can be used if constructed with other 
 selectors mentioned in this section
 
+(*) If FastJet has not been enabled during configuration of your Sherpa
+installation, you can still build a FastJet-based selector plugin by including
+the content of any necessary functions (e.g. from @code{Fastjet_Helpers.[HC]})
+explicitly and linking against FastJet at compile time of the plugin.
