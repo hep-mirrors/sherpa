@@ -1,6 +1,7 @@
 #include "AHADIC++/Formation/Beam_Particles_Shifter.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -63,7 +64,6 @@ void Beam_Particles_Shifter::ExtractBeamParticles() {
 
 bool Beam_Particles_Shifter::ShiftBeamParticles() {
   size_t n = m_beamparts.size(), i(0);
-  //msg_Out()<<METHOD<<"(n = "<<n<<").\n";
   if (n<=1) return true;
   Vec4D  * moms   = new Vec4D[n];
   double * masses = new double[n];
@@ -103,25 +103,102 @@ bool Beam_Particles_Shifter::RescueLightClusters() {
     if (beam) {
       double mass = sqrt(sing->Mass2());
       if (p_softclusters->MustPromptDecay(trip,anti,mass)) {
+	//msg_Out()<<METHOD<<" for singlet with mass = "<<mass
+	//	 <<" ["<<trip<<", "<<anti<<"]\n";
 	if (sing->size()>2) {
-	  msg_Out()<<"Gotcha pair ("<<trip<<", "<<anti<<") -> mass = "<<mass<<"!\n"
-		   <<"   have to add gluons to trip/anti.\n"<<(*sing)<<"n";
+	  //msg_Out()<<"   have to add gluons to trip/anti.\n"<<(*sing)<<"n";
 	  sing->StripSingletOfGluons();
-	  //exit(1);
 	}
 	Cluster cluster((*sing->begin()),(*sing->rbegin()));
-	if (p_softclusters->Treat(&cluster,true)) {
-	  list<Proto_Particle * > * hadrons = p_softclusters->GetHadrons();
+	if (p_softclusters->Treat(&cluster,true)==1) {
+	  //list<Proto_Particle * > * hadrons = p_softclusters->GetHadrons();
 	  //for (list<Proto_Particle * >::iterator hit=hadrons->begin();
-	  //   hit!=hadrons->end();hit++) {
-	  //msg_Out()<<(**hit);
-	  //}
+	  //     hit!=hadrons->end();hit++) msg_Out()<<(**hit);
 	  decayed = true;
+	}
+	else {
+	  Flavour transition = p_softclusters->LowestTransition(trip,anti);
+	  double  transmass  = transition.Mass();
+	  //msg_Out()<<"   mass too low to transit to single hadron: "
+	  //	   <<"transit to "<<transition<<" with "<<transmass<<".\n";
+	  Proto_Particle * recoiler = GetRecoilPartner(transmass,cluster.Momentum(),sing);
+	  if (recoiler && ShuffleMomenta(recoiler,&cluster,transition,transmass)) {
+	    decayed = true;
+	  }
 	}
       }
     }
     if (decayed) sit = p_singlets->erase(sit);
     else sit++;
   }
+}
+
+bool Beam_Particles_Shifter::
+ShuffleMomenta(Proto_Particle * recoiler,Cluster * cluster,const Flavour & target,
+	       const double & targetmass) {
+  Vec4D momR = recoiler->Momentum(), momC = cluster->Momentum(), lab = momR+momC;
+  Poincare boost(lab);
+  boost.Boost(momR); boost.Boost(momC);
+  Poincare rotat(momR,Vec4D::ZVEC);
+  double cmsE = momR[0] + momC[0];
+  rotat.Rotate(momR); rotat.Rotate(momC);
+  double mR2 = sqr(p_constituents->Mass(recoiler->Flavour()));
+  double mC2 = sqr(targetmass);
+  double ER  = (sqr(cmsE)+mR2-mC2)/(2.*cmsE);
+  double EC  = (sqr(cmsE)+mC2-mR2)/(2.*cmsE);
+  double p   = sqrt(Max(0.,sqr(ER)-mR2));
+  momR = Vec4D(ER,0.,0.,p); momC = Vec4D(EC,0.,0.,-p);
+  rotat.RotateBack(momR); rotat.RotateBack(momC);
+  boost.BoostBack(momR); boost.BoostBack(momC);
+  recoiler->SetMomentum(momR);
+  Proto_Particle * part = new Proto_Particle(target,momC,false);
+  p_softclusters->GetHadrons()->push_back(part);
+  return true;
+}
+
+Proto_Particle *Beam_Particles_Shifter::
+GetRecoilPartner(const double & targetmass,const ATOOLS::Vec4D & mom,
+		 const Singlet * veto) {
+  Proto_Particle * recoiler(NULL);
+  double pt2max = 1.e6, pt2, mass;
+  list<Proto_Particle *> * hadrons = p_softclusters->GetHadrons();
+  if (hadrons->size()>0) {
+    for (list<Proto_Particle *>::iterator hit=hadrons->begin();
+	 hit!=hadrons->end();hit++) {
+      mass = sqrt((mom+(*hit)->Momentum()).Abs2());
+      pt2  = (*hit)->Momentum().PPerp2();
+      if (mass>targetmass+(*hit)->Flavour().Mass() &&
+	  pt2<pt2max) {
+	recoiler = (*hit);
+	pt2max = pt2; 
+      }
+    }
+  }
+  if (!recoiler) {
+    Proto_Particle * lastresort(NULL);
+    double pt2max_last = 1.e12;
+    for (list<Singlet *>::iterator sit=p_singlets->begin();
+	 sit!=p_singlets->end();sit++) {
+      Singlet * sing = (*sit);
+      if (sing==veto) continue;
+      for (list<Proto_Particle *>::iterator pit=sing->begin();
+	   pit!=sing->end();pit++) {
+	mass = sqrt((mom+(*pit)->Momentum()).Abs2());
+	pt2  = (*pit)->Momentum().PPerp2();
+	if (mass>targetmass+(*pit)->Flavour().Mass()) {
+	  if (pt2<pt2max && (*pit)->IsBeam()) {
+	    recoiler = (*pit);
+	    pt2max = pt2; 
+	  }
+	  else if (!recoiler && pt2<pt2max_last) {
+	    lastresort  = (*pit);
+	    pt2max_last = pt2; 
+	  }
+	}
+      }
+    }
+    if (!recoiler) recoiler = lastresort;
+  }
+  return recoiler;
 }
 

@@ -143,16 +143,19 @@ void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
 int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  //if (decweight>0. &&
-  //    (m_mass-m_flavs.first.HadMass()-m_flavs.second.HadMass())>10.) {
+  //if (m_forceddecay && decweight>0.) {
   //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
   //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
   //	     <<"(forced = "<<m_forceddecay<<")\n";
-  //  exit(1);
   //}
   if (decweight>0. && FixKinematics()) return 1;
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();
+  //if (m_forceddecay && radweight>0.) {
+  //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
+  //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
+  //	     <<"(forced = "<<m_forceddecay<<")\n";
+  //}
   if (radweight>0. && FixKinematics()) return 1;
   if (m_flavs.first==m_flavs.second.Bar() && TreatSingletCluster()) return 1;
   return -1;

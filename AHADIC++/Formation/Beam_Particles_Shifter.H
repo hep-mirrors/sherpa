@@ -17,6 +17,11 @@ namespace AHADIC {
     void ExtractBeamParticles();
     bool ShiftBeamParticles();
     bool RescueLightClusters();
+    Proto_Particle * GetRecoilPartner(const double & targetmass,
+				      const ATOOLS::Vec4D & mom,
+				      const Singlet * veto);
+    bool ShuffleMomenta(Proto_Particle * recoiler,Cluster * cluster,
+			const ATOOLS::Flavour & target,const double & tagetmass);
   public:
     Beam_Particles_Shifter(std::list<Singlet *> * singlets,
 			   Soft_Cluster_Handler * softclusters);

@@ -100,9 +100,9 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   blob->SetTypeSpec("AHADIC-1.0");
   FillOutgoingParticles(blob);
   if (dabs(blob->CheckMomentumConservation()[0])>1.e-3) {
-    msg_Error()<<"\n"<<METHOD<<" yields "<<blob->CheckMomentumConservation()
-	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n"
-	       <<(*blob)<<"\n";
+    msg_Error()<<"\n"<<METHOD<<" violates four-momentum conservation by "
+	       <<blob->CheckMomentumConservation()
+	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n";
     Reset(blob);
     return Return_Value::Retry_Event;
   }
