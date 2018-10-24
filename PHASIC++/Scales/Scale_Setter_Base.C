@@ -132,7 +132,7 @@ double Scale_Setter_Base::HTMprime() const
 double Scale_Setter_Base::HTprime() const
 {
   if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
-  double htp((m_p[m_l1]+m_p[m_l2]).MPerp());
+  double htp((m_p[m_l1]+m_p[m_l2]).PPerp());
   for (size_t i(m_nin);i<m_p.size();++i)
     if (i!=m_l1 && i!=m_l2) htp+=m_p[i].PPerp();
   return htp;
