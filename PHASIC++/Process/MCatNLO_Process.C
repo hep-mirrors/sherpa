@@ -118,7 +118,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 4, "H event shower mode", METHOD);
-  m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 0, "K-factor mode", METHOD);
+  m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 14, "K-factor mode", METHOD);
   m_fomode   = reader.Get("MC@NLO_FOMODE", 0, "fixed order mode", METHOD);
   m_rsscale  = reader.Get<std::string>("MC@NLO_RS_SCALE", "", "RS scale", METHOD);
   if (!m_fomode) {
@@ -350,6 +350,7 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
   else if (m_kfacmode%10==1) { s=bvib*(1.0-rsr); h=0; }
   else if (m_kfacmode%10==2) { s=0;              h=rsr; }
   else if (m_kfacmode%10==3) { s=bvib;           h=0.; }
+  else if (m_kfacmode%10==4) { s=bvib+rs/b;      h=0.; }
   else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
