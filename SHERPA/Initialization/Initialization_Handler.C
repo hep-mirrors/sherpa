@@ -290,8 +290,8 @@ void Initialization_Handler::ShowParameterSyntax()
   helpi = reader.Get("SHOW_FILTER_SYNTAX", 0);
   if (helpi>0) {
     msg->SetLevel(2);
-    //Filter::ShowSyntax(helpi);
-    //THROW(normal_exit,"Syntax shown.");
+    Filter::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
   }
   helpi = reader.Get("SHOW_MODEL_SYNTAX", 0);
   if (helpi>0) {

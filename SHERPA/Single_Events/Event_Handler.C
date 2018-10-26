@@ -210,13 +210,13 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       continue;
     }
     if ((*pit)->Type()==eph::Hadronization && filter) {
-      msg_Out()<<"Filter kicks in now: "<<m_blobs.back()->Type()<<".\n";
+      msg_Debugging()<<"Filter kicks in now: "<<m_blobs.back()->Type()<<".\n";
       if ((*p_filter)(&m_blobs)) {
-	msg_Out()<<METHOD<<": filters accepts event.\n";
+	msg_Debugging()<<METHOD<<": filters accepts event.\n";
 	filter = false;
       }
       else {
-	msg_Out()<<METHOD<<": filter rejects event.\n";
+	msg_Debugging()<<METHOD<<": filter rejects event.\n";
 	Return_Value::IncNewEvent("Filter");
 	if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
 	Reset();
