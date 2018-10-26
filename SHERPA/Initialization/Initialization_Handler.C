@@ -900,6 +900,8 @@ bool Initialization_Handler::InitializeTheReweighting()
 
 bool Initialization_Handler::InitializeTheFilter() 
 {
+  if (p_filter)
+    delete p_filter;
   p_filter = new Filter();
   if (!p_filter->Init(m_path,m_filterdat)) { delete p_filter; p_filter = NULL; }
   return true;
