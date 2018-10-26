@@ -30,6 +30,7 @@ namespace SHERPA {
     Filter();
     ~Filter();
     bool Init(const std::string & path, const std::string & file);
+    static void ShowSyntax(int mode);
 
     bool operator()(ATOOLS::Blob_List * blobs);
   };

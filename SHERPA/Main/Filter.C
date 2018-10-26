@@ -44,6 +44,17 @@ void Filter::Add(const std::vector<std::string> & entry) {
   m_filters[crit->m_flav] = crit;
 }
 
+void Filter::ShowSyntax(int mode)
+{
+  if (!msg_LevelIsInfo() || mode == 0) return;
+  msg_Out() << METHOD << "(): {\n\n";
+  msg_Out() << "  (filter){\n";
+  msg_Out() << "    kf etamin etamax ptmin ptmax nmin nmax\n";
+  msg_Out() << "    ...\n";
+  msg_Out() << "  }(filter)";
+  msg_Out() << "\n}" << std::endl;
+}
+
 bool Filter::operator()(Blob_List * blobs) {
   if (!m_on) return true;
   Reset();
