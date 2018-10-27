@@ -45,30 +45,30 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
       Blob * blob = (*blit);
-      switch (Hadronize(blob)) {
+      const auto result = Hadronize(blob);
+      switch (result) {
       case Return_Value::Success :
 	break;
       case Return_Value::Retry_Event :
+      case Return_Value::New_Event:
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
 		      <<"   Hadronization for blob "
 		      <<"("<<blobs<<"; "
 		      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "
-		      <<"did not work out,\n"
-		      <<"   will trigger retrying the event:\n"
-		      <<(*blobs);
+		      <<"did not work out,";
+        if (result == Return_Value::New_Event)
+          msg_Tracking()<<" due to momentum problems,";
+        msg_Tracking()<<"\n   will trigger "<<result<<":\n"
+                      <<(*blobs);
 	CleanUp(blob);
-	if (rpa->gen.Beam1().IsLepton() ||
-	    rpa->gen.Beam2().IsLepton()) {
+	if (result == Return_Value::Retry_Event
+            && (rpa->gen.Beam1().IsLepton() || rpa->gen.Beam2().IsLepton())) {
 	  msg_Tracking()<<METHOD<<": Non-hh collision.\n"
 			<<"   Request new event instead.\n";
 	  return Return_Value::New_Event;
 	}
-	return Return_Value::Retry_Event;
-      case Return_Value::New_Event:
-	msg_Out()<<"Momentum problems in\n"<<(*blobs)<<"\n";
-	exit(1);
-	break;
+	return result;
       case Return_Value::Nothing :
       default:
 	msg_Tracking()<<"Warning in "<<METHOD<<":\n"
