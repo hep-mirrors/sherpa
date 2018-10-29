@@ -46,7 +46,7 @@ void Beam_Particles_Shifter::ExtractBeamParticles() {
     }
   }
   if (m_beamparts.size()==0 ||
-      m_beamparts.size()==1 && dabs(mom.Abs2()-mass*mass)<1.e-6) return;
+      (m_beamparts.size()==1 && dabs(mom.Abs2()-mass*mass)<1.e-6)) return;
   if (m_beamparts.size()==1 || mom.Abs2()<sqr(mass+0.1)) {
     for (list<Singlet *>::iterator sit=p_singlets->begin();
 	 sit!=p_singlets->end();sit++) {
@@ -86,7 +86,7 @@ bool Beam_Particles_Shifter::ShiftBeamParticles() {
   return success;
 }
 
-bool Beam_Particles_Shifter::RescueLightClusters() {
+void Beam_Particles_Shifter::RescueLightClusters() {
   Singlet * sing;
   Flavour flav, trip, anti;
   bool    beam, decayed;

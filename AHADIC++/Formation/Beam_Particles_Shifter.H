@@ -16,7 +16,7 @@ namespace AHADIC {
     
     void ExtractBeamParticles();
     bool ShiftBeamParticles();
-    bool RescueLightClusters();
+    void RescueLightClusters();
     Proto_Particle * GetRecoilPartner(const double & targetmass,
 				      const ATOOLS::Vec4D & mom,
 				      const Singlet * veto);
