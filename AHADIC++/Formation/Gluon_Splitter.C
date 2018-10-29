@@ -40,7 +40,7 @@ void Gluon_Splitter::CalculateLimits() {
 bool Gluon_Splitter::CalculateXY() {
   m_z1 = 1.-(m_popped_mass2+m_kt2)/(m_z2*m_Q2);
   double M2  = m_z1*(1.-m_z2)*m_Q2;
-  if (M2/m_m12 > 1e3 && M2/m_kt2 > 1e3) {
+  if (M2/m_m12 > 1e6 && M2/m_kt2 > 1e6) {
     // Use Taylor expansion to first order in m12/M2 and kt2/M2 to avoid
     // numerical instability for x, y -> 1.0
     m_x = 1.0 - m_kt2/M2;

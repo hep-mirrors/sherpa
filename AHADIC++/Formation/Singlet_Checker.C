@@ -114,11 +114,11 @@ bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
-    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().Abs2()<-1.e-8) {
+    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().Abs2()<-1.e-4) {
       msg_Out()<<"Error in "<<METHOD<<":\n"
 	       <<"   negative energy or mass^2 particle in singlet:\n"
 	       <<(*p_singlet)<<"n";
-      return false;
+      //return false;
     }
   }
   list<Proto_Particle *>::iterator plit1(p_singlet->begin()), plit2(plit1);
