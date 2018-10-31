@@ -11,7 +11,6 @@ include ../../git.make
 
 libPhotonsMEs_la_SOURCES =	Git_Info.C \
 				PHOTONS_ME_Base.C \
-				PHOTONS_Virtual_ME2_Base.C \
 				Scalar_To_Scalar_Scalar.C \
 				Scalar_To_Fermion_Fermion.C \
 				Scalar_To_Scalar_Lepton_Neutrino.C \
@@ -31,7 +30,6 @@ libPhotonsMEs_la_SOURCES =	Git_Info.C \
 
 
 localinc_HEADERS =	PHOTONS_ME_Base.H \
-			PHOTONS_Virtual_ME2_Base.H \
 			Scalar_To_Scalar_Scalar.H \
 			Scalar_To_Fermion_Fermion.H \
 			Scalar_To_Scalar_Lepton_Neutrino.H \
