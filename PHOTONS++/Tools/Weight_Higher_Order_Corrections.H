@@ -17,7 +17,6 @@ namespace PHOTONS {
       unsigned int    m_n;
 
       PHOTONS_ME_Base * p_pme;
-      PHOTONS_ME_Base * p_app;
 
       virtual void CalculateWeight();
       virtual void CalculateMax();

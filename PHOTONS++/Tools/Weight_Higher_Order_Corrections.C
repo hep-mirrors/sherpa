@@ -14,7 +14,7 @@ using namespace std;
 
 Weight_Higher_Order_Corrections::Weight_Higher_Order_Corrections
 (const Particle_Vector_Vector& pvv_old, const Particle_Vector_Vector& pvv_new,
- Dipole_Type::code dtype) : m_n(pvv_new[4].size()), p_pme(NULL), p_app(NULL) {
+ Dipole_Type::code dtype) : m_n(pvv_new[4].size()), p_pme(NULL) {
   DEBUG_FUNC(PHOTONS::Photons::s_useme);
   if (PHOTONS::Photons::s_useme)
     p_pme = PHOTONS_ME_Base::GetIRsubtractedME(pvv_old);
@@ -41,15 +41,15 @@ Weight_Higher_Order_Corrections::Weight_Higher_Order_Corrections
     // Get collinear approximation
     if (m_dtype == Dipole_Type::ff) {
       m_M = pvv_old[1][0]->FinalMass();
-      p_app = PHOTONS_ME_Base::GetIRsubtractedME("Collinear_Approximation_FF",pvv_old);
+      p_pme = PHOTONS_ME_Base::GetIRsubtractedME("Collinear_Approximation_FF",pvv_old);
     }
     if (m_dtype == Dipole_Type::fi) {
       m_M = pvv_old[0][0]->FinalMass();
-      p_app = PHOTONS_ME_Base::GetIRsubtractedME("Collinear_Approximation_FI",pvv_old);
+      p_pme = PHOTONS_ME_Base::GetIRsubtractedME("Collinear_Approximation_FI",pvv_old);
     }
-    if (p_app) {
-      msg_Debugging()<<"ME -> "<<p_app->Name()<<std::endl;
-      p_app->FillMomentumArrays(pvv_new);
+    if (p_pme) {
+      msg_Debugging()<<"ME -> "<<p_pme->Name()<<std::endl;
+      p_pme->FillMomentumArrays(pvv_new);
       // Reject calculation of higher order corrections entirely if momenta are not corrected properly
       // for some case in momentum reconstruction.
       // In that case return only the soft approximation.
@@ -69,7 +69,6 @@ Weight_Higher_Order_Corrections::Weight_Higher_Order_Corrections
 
 Weight_Higher_Order_Corrections::~Weight_Higher_Order_Corrections() {
   if (p_pme) delete p_pme;
-  if (p_app) delete p_app;
 }
 
 void Weight_Higher_Order_Corrections::CalculateWeight() {
