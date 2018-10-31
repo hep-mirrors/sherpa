@@ -74,6 +74,10 @@ namespace PHOTONS {
                           const std::vector<double>&,
                           const std::vector<ATOOLS::Vec3D>&,
                           const double&) = 0;
+      virtual double DFunc(const double&, const std::vector<double>&,
+                          const std::vector<double>&,
+                          const std::vector<ATOOLS::Vec3D>&,
+                          const double&) = 0;
       virtual void   ResetVariables() = 0;
       virtual void   ReturnMomenta() = 0;
       virtual void   DetermineKappa() = 0;

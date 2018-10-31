@@ -17,6 +17,9 @@ namespace PHOTONS {
       virtual double Func(const double&, const std::vector<double>&,
                           const std::vector<double>&,
                           const std::vector<ATOOLS::Vec3D>&, const double&);
+      virtual double DFunc(const double&, const std::vector<double>&,
+                          const std::vector<double>&,
+                          const std::vector<ATOOLS::Vec3D>&, const double&);
       virtual void   ResetVariables();
       virtual void   ReturnMomenta();
       virtual void   DetermineKappa();
