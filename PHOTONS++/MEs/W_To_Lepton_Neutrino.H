@@ -8,6 +8,7 @@
 #include "AddOns/OpenLoops/OpenLoops_Virtual.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "PHOTONS++/MEs/PHOTONS_Virtual_ME2_Base.H"
 
 
 namespace PHOTONS {
