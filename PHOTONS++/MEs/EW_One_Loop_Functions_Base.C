@@ -221,7 +221,7 @@ DivArrC EW_One_Loop_Functions_Base::Sigma_W(const double& p2)
   DivArrC fermDenner(0.,0.,0.,0.,0.,0.);
   for (int i = 0; i < 3; ++i) {
     // leptonic contribution
-    Flavour flav(Flavour(kfl[2*i]));
+    Flavour flav(kfl[2*i]);
     double m2(pow(flav.Mass(),2.));
     fermDenner += 1./(12.*m_sw2)*(-(p2-m2/2.)*B_0(p2,0.,m2,m_mu2) + 1./3.*p2*One
 				  +m2*B_0(0.,m2,m2,m_mu2) 
@@ -229,7 +229,7 @@ DivArrC EW_One_Loop_Functions_Base::Sigma_W(const double& p2)
   }
   for (int i = 0; i < 3; ++i) {
     // quark contribution - note that CKM matrix is the identity
-    Flavour flavd(Flavour(kfq[2*i])),flavu(Flavour(kfq[2*i+1]));
+    Flavour flavd(kfq[2*i]),flavu(kfq[2*i+1]);
     // make sure to use correct value of mt2 for comparison
     double m2d(pow(flavd.Mass(),2.)),m2u(((i==2)?mt2:pow(flavu.Mass(),2.)));
     fermDenner += 1./(4.*m_sw2)*(-(p2-(m2d+m2u)/2.)*B_0(p2,m2u,m2d,m_mu2)+1./3.*p2*One
@@ -275,7 +275,7 @@ DivArrC EW_One_Loop_Functions_Base::dSigma_W(const double& p2)
   // fermionic contributions
   for (int i = 0; i < 3; ++i) {
     // leptonic contributions
-    Flavour flav(Flavour(kfl[2*i]));
+    Flavour flav(kfl[2*i]);
     double m2(pow(flav.Mass(),2.));
     fermDenner += 1./(12.*m_sw2)*(-(p2-m2/2.)*B_0p(p2,0.,m2,m_mu2)
 				  -B_0(p2,0.,m2,m_mu2)
@@ -285,7 +285,7 @@ DivArrC EW_One_Loop_Functions_Base::dSigma_W(const double& p2)
   }
   for (int i = 0; i < 3; ++i) {
     // quark contributions - note that CKM is the identity matrix
-    Flavour flavd(Flavour(kfq[2*i])),flavu(Flavour(kfq[2*i+1]));
+    Flavour flavd(kfq[2*i]),flavu(kfq[2*i+1]);
     // make sure to use correct value of mt2 for comparison
     double m2d(pow(flavd.Mass(),2.)),m2u(((i==2)?mt2:pow(flavu.Mass(),2.)));
     fermDenner += 1./(4.*m_sw2)*(-(p2-(m2d+m2u)/2.)*B_0p(p2,m2u,m2d,m_mu2)
