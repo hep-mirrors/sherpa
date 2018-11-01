@@ -110,7 +110,8 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Default_Reader * reader
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   std::vector<double> beam;
-  if (!reader->ReadVector(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
+  beam.resize(2,0.0);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
@@ -144,7 +145,8 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Default_Reader * reader,int 
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
   std::vector<double> beam;
-  if (!reader->ReadVector(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
+  beam.resize(2,0.0);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
@@ -167,7 +169,8 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Default_Reader * reader,int n
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
   std::vector<double> beam;
-  if (!reader->ReadVector(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
+  beam.resize(2,0.0);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
@@ -183,7 +186,8 @@ bool Beam_Spectra_Handler::InitializeEPA(Default_Reader * reader,int num)
 {
   std::string number(ToString(num+1));
   std::vector<double> beam;
-  if (!reader->ReadVector(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
+  beam.resize(2,0.0);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)(abs(flav)));
