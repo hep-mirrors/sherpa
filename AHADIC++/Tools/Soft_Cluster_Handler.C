@@ -208,6 +208,7 @@ double Soft_Cluster_Handler::RadiationWeight() {
     weight     = sit->second * PhaseSpace(m2,0.);
     totweight += weights[sit->first] = weight;
   }
+  if (weights.empty()) return 0.;
   double disc = totweight * ran->Get();
   map<Flavour,double>::iterator wit=weights.begin();
   do {
