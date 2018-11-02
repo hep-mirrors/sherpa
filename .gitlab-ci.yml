@@ -1,35 +1,55 @@
+image: scientificlinux/sl
+
 before_script:
-  - apt-get update
-  - apt-get -qq install gfortran libsqlite3-dev libzip-dev
+  - yum install --assumeyes epel-release  # needed for clang
+  # NOTE: the el7 package for libzip-devel is too outdated and will therefore be installed by Sherpa-config
+  - yum install --assumeyes clang gcc-c++ gcc-gfortran make automake libtool git texinfo wget zlib-devel sqlite-devel
 
 
 
-build:
+.build_template: &build
   stage: build
-
   # make this manual job blocking (such that tests will only be started when
   # the build has been started manually and completed successfully)
   when: manual
-
   # accelerate git-clone by making it shallow
   variables:
     GIT_DEPTH: "3"
 
+# default build with gcc
+build:
+  <<: *build
   script:
-    - apt-get -qq install texinfo
     - autoreconf -i
-    - ./configure
+    - mkdir build
+    - cd build
+    - ../configure --prefix="$PWD/install" --with-libzip=install
     - make -j
     - make install
-
   # store what's required to run the tests
   artifacts:
-    expire_in: 1 days
+    expire_in: 2 days
     paths:
-      - bin/
-      - lib/
-      - include/
-      - share/
+      - build/install
+      - Examples/CI/
+
+# build with clang and -Werror
+build-clang-strict:
+  <<: *build
+  script:
+    - autoreconf -i
+    - mkdir build-clang-strict
+    - cd build-clang-strict
+    # enable strict compilation
+    - cxxflags="-Werror"
+    - ../configure CC=clang CXX=clang++ CXXFLAGS="${cxxflags}" --prefix="$PWD/install" --with-libzip=install
+    - make -j
+    - make install
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build-clang-strict/install
       - Examples/CI/
 
 
@@ -48,5 +68,13 @@ build:
 test-LO_Z:
   <<: *test
   script:
-    - cd Examples/CI/LO_Z
-    - ../../../bin/Sherpa
+    - mkdir test-LO_Z
+    - cd test-LO_Z
+    - ../build/install/bin/Sherpa -f ../Examples/CI/LO_Z/Run.dat
+
+test-clang-strict-LO_Z:
+  <<: *test
+  script:
+    - mkdir test-clang-strict-LO_Z
+    - cd test-clang-strict-LO_Z
+    - ../build-clang-strict/install/bin/Sherpa -f ../Examples/CI/LO_Z/Run.dat
