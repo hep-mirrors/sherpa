@@ -19,7 +19,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     *linux*:*:*)
       echo "checking for architecture...  Linux"
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
@@ -33,13 +33,18 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "(will continue in 10 seconds)"
       sleep 10
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
+  if test "x$LDFLAGS" = "x"; then
+    AX_CHECK_LINK_FLAG([-Wl,-fatal_warnings], [LDSTRICTFLAG="-fatal_warnings"], [LDSTRICTFLAG="--fatal-warnings"])
+    AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed], AM_LDFLAGS, [-Wl,$LDSTRICTFLAG])
+  fi
+
   AC_SUBST(AM_LDFLAGS)
   if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
   elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";

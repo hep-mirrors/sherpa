@@ -75,11 +75,9 @@ if test x$dihiggs == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_DIHIGGS, [test x$dihiggs == xtrue])
 
-case "$build_os:$build_cpu:$build_vendor" in
-  *darwin*:*:*) ;;
-  *linux*:*:*) CXX="$CXX -Wl,--no-as-needed" ;;
-  *) CXX="$CXX -Wl,--no-as-needed" ;;
-esac
+AX_CHECK_COMPILE_FLAG(
+  [-Werror -Wl,--no-as-needed],
+  [CXX="$CXX -Wl,--no-as-needed"])
 
 AM_PROG_LIBTOOL
 dnl Checks for header files.
