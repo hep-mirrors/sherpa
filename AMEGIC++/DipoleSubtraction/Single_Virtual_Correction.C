@@ -590,7 +590,7 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
 
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
       double lsc(0.);
-      if (!(p_loopme->fixedIRscale()))
+      if (!p_loopme || !(p_loopme->fixedIRscale()))
        lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
       else{
        double irscale=p_loopme->IRscale();
@@ -623,7 +623,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
       int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
       Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
       double lsc(0.);
-      if (!(p_loopme->fixedIRscale()))
+      if (!p_loopme || !(p_loopme->fixedIRscale()))
        lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
       else{
        double irscale=p_loopme->IRscale();
