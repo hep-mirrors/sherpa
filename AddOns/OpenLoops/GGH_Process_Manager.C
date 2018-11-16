@@ -76,6 +76,7 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   m_maps.push_back(new NLOTypeStringProcessMap_Map);
   m_procs.push_back(proc);
   proc->FillProcessMap(m_maps.back());
+  return proc;
 }
 
 Process_Base* GGH_Process_Manager::GetProcess(const std::string& name, bool external){
