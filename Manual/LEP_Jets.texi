@@ -35,6 +35,9 @@ element calculation, see @ref{Particle containers}.
 @item some model parameters have been set. In this example, the running 
 of alpha_s is set to leading order and the value of alpha_s at the Z-mass 
 is set.
+@item note that initial-state radiation is enabled by default. See @ref{ISR
+Parameters} on how to disable it if you want to evaluate the (unphysical) case
+where the energy for the incoming leptons is fixed.
 @end itemize
 
 @node LEP_Jets_NLOmerging

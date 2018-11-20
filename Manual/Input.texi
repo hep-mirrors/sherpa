@@ -163,7 +163,7 @@ during read-in. An example tag definition could read
   <prefix>/bin/Sherpa QCUT:=20 NJET:=3
 @end verbatim
 
-and then be used in the (me) and (processes) sections like
+and then be used in the @code{(me)} and @code{(processes)} sections like this
 @verbatim
   (me){
     RESULT_DIRECTORY Result_QCUT;
@@ -171,7 +171,7 @@ and then be used in the (me) and (processes) sections like
   (processes){
     Process 93 93 -> 11 -11 93{NJET};
     Order (*,2);
-    CKKW sqr(QCUT/E_CMS);
+    CKKW QCUT;
     End process;
   }(processes)
 @end verbatim

@@ -12,7 +12,7 @@
 (processes){
   Process 93 93 -> 11 -11 93{0}
   Order (*,2);
-  CKKW sqr(30/E_CMS)
+  CKKW 30
   End process;
 }(processes)
 

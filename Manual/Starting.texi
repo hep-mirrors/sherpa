@@ -385,7 +385,7 @@ In the @code{(processes)} part of the steering file this translates into
 @verbatim
   Process 93 93 -> 11 -11 93{4}
   Order (*,2);
-  CKKW sqr(30/E_CMS)
+  CKKW 30
   End process;
 @end verbatim
 The physics model for these processes is the Standard Model (@option{SM}) 
@@ -401,7 +401,7 @@ parameters and scale setting procedures are used.
 
 The QCD radiation matrix elements have to be
 regularised to obtain meaningful cross sections. This is achieved by
-specifying @samp{CKKW sqr(30/E_CMS)} in the @code{(processes)} part of
+specifying @samp{CKKW 30} in the @code{(processes)} part of
 @code{Run.dat}. Simultaneously, this tag initiates the ME-PS merging procedure.
 To eventually obtain fully hadronized events, the @code{FRAGMENTATION} tag
 has been left on it's default setting @option{Ahadic} (and therefore been 

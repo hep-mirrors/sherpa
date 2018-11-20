@@ -12,7 +12,7 @@
 
 (processes){
   Process 11 -11 -> 93 93 93{NJET};
-  CKKW pow(10,-2.25);
+  CKKW pow(10,-2.25/2.00)*E_CMS;
   Order (*,2);
   End process;
 }(processes)

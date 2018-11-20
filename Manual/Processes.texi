@@ -231,15 +231,14 @@ For the corresponding syntax see @ref{COUPLINGS}.
 @node CKKW
 @subsection CKKW
 Sets up multijet merging according to @mycite{Hoeche2009rj}.
-The additional argument specifies the separation cut
-in the form (Q_@{cut@}/E_@{cms@})^2.
+The additional argument specifies the parton separation criterion ("merging cut") Q_@{cut@} in GeV.
 It can be given in any form which is understood by the internal
-interpreter, see @ref{Interpreter}.
-Examples are
+interpreter, see @ref{Interpreter}. Examples are
 
 @itemize
-@item CKKW pow(10,-2.5)
-@item CKKW sqr(20/E_CMS)
+@item Hadronic collider: @code{CKKW 20}
+@item Leptonic collider: @code{CKKW pow(10,-2.5/2.0)*E_CMS}
+@item DIS: @code{CKKW QCUT/sqrt(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]))}
 @end itemize
 
 
