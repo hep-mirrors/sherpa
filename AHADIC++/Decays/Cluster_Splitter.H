@@ -6,6 +6,7 @@
 namespace AHADIC {
   class Cluster_Splitter : public Splitter_Base {
   private:
+    int    m_mode;
     double m_alpha[3], m_beta[3], m_gamma[3], m_a, m_b, m_c;
     size_t m_flcnt;
 
@@ -15,8 +16,7 @@ namespace AHADIC {
     bool m_output;
     
     bool MakeLongitudinalMomenta();
-    double DeltaM2(const double & MC2,const double & mt2,
-		   const ATOOLS::Flavour & flav);
+    double DeltaM2();
     void FixCoefficients(const ATOOLS::Flavour & flav1,
 			 const ATOOLS::Flavour & flav2);
     void CalculateLimits();
