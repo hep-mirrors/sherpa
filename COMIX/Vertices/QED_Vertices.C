@@ -57,23 +57,23 @@ template <typename SType>
 void QED_FFP<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
 {
   if (a()!=b()) return;
-  bool cl(CalcLeft(a,b)), cr(CalcRight(a,b));
+  bool cl(this->CalcLeft(a,b)), cr(this->CalcRight(a,b));
   if (!(cl || cr)) return;
   CVec4Type j(ZERO,ZERO,ZERO,ZERO,0,0,a.H(0)+b.H(0),a.H(1)+b.H(1));
-  if (cl) j+=LorentzLeft(a,b);
-  if (cr) j+=LorentzRight(a,b);
-  AddJ(j*m_cpl*SType(this->m_cplfac));
+  if (cl) j+=this->LorentzLeft(a,b);
+  if (cr) j+=this->LorentzRight(a,b);
+  this->AddJ(j*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>
 void QED_FFP<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
 {
-  bool cl(CalcLeft(a)), cr(CalcRight(a));
+  bool cl(this->CalcLeft(a)), cr(this->CalcRight(a));
   if (!(cl || cr)) return;
   CSpinorType j(a.R(),a.B(),a(),a.H(0)+b.H(0),a.H(1)+b.H(1),0);
-  if (cl) j+=LorentzLeft(a,b);
-  if (cr) j+=LorentzRight(a,b);
-  AddJ(j*m_cpl*SType(this->m_cplfac));
+  if (cl) j+=this->LorentzLeft(a,b);
+  if (cr) j+=this->LorentzRight(a,b);
+  this->AddJ(j*m_cpl*SType(this->m_cplfac));
 }
 
 template <typename SType>

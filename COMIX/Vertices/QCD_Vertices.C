@@ -110,24 +110,24 @@ void QCD_GGG<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
   static SType invsqrttwo(1.0/sqrt(2.0));
   if (a(0)==b(1)) {
     if (a(1)==b(0) && a(0)==a(1)) return;
-    CVec4Type j(invsqrttwo*Lorentz(a,b));
+    CVec4Type j(invsqrttwo*this->Lorentz(a,b));
     j(0)=b(0);
     j(1)=a(1);
 #ifdef DEBUG__BG
     msg_Debugging()<<"'+' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*SType(this->m_cplfac)*j);
+    this->AddJ(m_cpl*SType(this->m_cplfac)*j);
   }
   if (a(1)==b(0)) {
-    CVec4Type j(invsqrttwo*Lorentz(a,b));
+    CVec4Type j(invsqrttwo*this->Lorentz(a,b));
     j(0)=a(0);
     j(1)=b(1);
 #ifdef DEBUG__BG
     msg_Debugging()<<"'-' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(-m_cpl*SType(this->m_cplfac)*j);
+    this->AddJ(-m_cpl*SType(this->m_cplfac)*j);
   }
 }
 
@@ -152,14 +152,14 @@ void QCD_GGT<SType>::Evaluate(const CVec4Type &a,const CVec4Type &b)
     msg_Debugging()<<"'+' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*Lorentz(a,b));
+    this->AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*this->Lorentz(a,b));
   }
   if (a(1)==b(0)) {
 #ifdef DEBUG__BG
     msg_Debugging()<<"'-' "<<a<<"\n";
     msg_Debugging()<<"    "<<b<<"\n";
 #endif
-    AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*Lorentz(b,a));
+    this->AddJ(m_cpl*SType(this->m_cplfac)*invsqrttwo*this->Lorentz(b,a));
   }
 }
 
@@ -170,24 +170,24 @@ void QCD_GGT<SType>::Evaluate(const CVec4Type &a,const CAsT4Type &b)
   if (a(0)==b(1) || a(1)==b(0)) {
     if (a(0)==b(1)) {
       if (a(1)==b(0) && a(0)==a(1)) return;
-      CVec4Type j(invsqrttwo*Lorentz(a,b));
+      CVec4Type j(invsqrttwo*this->Lorentz(a,b));
       j(0)=b(0);
       j(1)=a(1);
 #ifdef DEBUG__BG
       msg_Debugging()<<"'+' "<<a<<"\n";
       msg_Debugging()<<"    "<<b<<"\n";
 #endif
-      AddJ(m_cpl*SType(this->m_cplfac)*j);
+      this->AddJ(m_cpl*SType(this->m_cplfac)*j);
     }
     if (a(1)==b(0)) {
-      CVec4Type j(invsqrttwo*Lorentz(a,b));
+      CVec4Type j(invsqrttwo*this->Lorentz(a,b));
       j(0)=a(0);
       j(1)=b(1);
 #ifdef DEBUG__BG
       msg_Debugging()<<"'-' "<<a<<"\n";
       msg_Debugging()<<"    "<<b<<"\n";
 #endif
-      AddJ(-m_cpl*SType(this->m_cplfac)*j);
+      this->AddJ(-m_cpl*SType(this->m_cplfac)*j);
     }
   }
 }
@@ -207,11 +207,11 @@ template <typename SType>
 void QCD_QQG<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
 {
   static SType invsqrttwo(1.0/sqrt(2.0));
-  bool cl(CalcLeft(a,b)), cr(CalcRight(a,b));
+  bool cl(this->CalcLeft(a,b)), cr(this->CalcRight(a,b));
   if (!(cl || cr)) return;
   CVec4Type j(ZERO,ZERO,ZERO,ZERO,0,0,a.H(0)+b.H(0),a.H(1)+b.H(1));
-  if (cl) j+=LorentzLeft(a,b);
-  if (cr) j+=LorentzRight(a,b);
+  if (cl) j+=this->LorentzLeft(a,b);
+  if (cr) j+=this->LorentzRight(a,b);
   bool singlet(a()==b());
   if (a.B()<0) {
     j(0)=a();
@@ -221,12 +221,12 @@ void QCD_QQG<SType>::Evaluate(const CSpinorType &a,const CSpinorType &b)
     j(0)=b();
     j(1)=a();
   }
-  AddJ(j*=invsqrttwo*m_cpl*SType(this->m_cplfac));
+  this->AddJ(j*=invsqrttwo*m_cpl*SType(this->m_cplfac));
   if (singlet) {
     j*=-1.0/3.0;
     for (size_t i(this->s_cimin);i<=this->s_cimax;++i) {
       j(0)=j(1)=i;
-      AddJ(j);
+      this->AddJ(j);
     }
   }
 }
@@ -238,19 +238,19 @@ void QCD_QQG<SType>::Evaluate(const CSpinorType &a,const CVec4Type &b)
   bool singlet(b(0)==b(1) && this->s_cimin<=this->s_cimax);
   bool match((a.B()<0 && a()==b(1)) || (a.B()>0 && a()==b(0)));
   if (match || singlet) {
-    bool cl(CalcLeft(a)), cr(CalcRight(a));
+    bool cl(this->CalcLeft(a)), cr(this->CalcRight(a));
     if (!(cl || cr)) return;
     CSpinorType j(a.R(),a.B(),a(),a.H(0)+b.H(0),a.H(1)+b.H(1),0);
-    if (cl) j+=LorentzLeft(a,b);
-    if (cr) j+=LorentzRight(a,b);
+    if (cl) j+=this->LorentzLeft(a,b);
+    if (cr) j+=this->LorentzRight(a,b);
     j*=invsqrttwo*m_cpl*SType(this->m_cplfac);
     if (match) {
       j()=a.B()<0?b(0):b(1);
-      AddJ(j);
+      this->AddJ(j);
     }
     if (singlet) {
       j()=a();
-      AddJ(-j/3.0);
+      this->AddJ(-j/3.0);
     }
   }
 }

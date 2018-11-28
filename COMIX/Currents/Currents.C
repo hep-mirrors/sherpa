@@ -212,7 +212,7 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     msg_Debugging()<<METHOD<<"(): '+' "<<this->m_id<<" "<<j
 		   <<" "<<this->m_fl<<", m = "<<p.Mass()<<"\n";
 #endif
-    AddJ(j);
+    this->AddJ(j);
   }
 }
 
@@ -351,7 +351,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
-    AddJ(j);
+    this->AddJ(j);
   }
   if (ch<=0) {
     CSpinorType j(this->m_fl.IsAnti()^(this->m_dir>0)?
@@ -365,7 +365,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
 		   <<", m = "<<m_cmass<<" ("<<p.Mass()<<")\n";
 #endif
-    AddJ(j);
+    this->AddJ(j);
   }
 }
 
@@ -587,7 +587,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
       CVec4Type j(EML(this->m_p,cr,ca));
-      AddJ(this->m_dir>0?j:j.Conj());
+      this->AddJ(this->m_dir>0?j:j.Conj());
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<this->m_j.back()
@@ -598,7 +598,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       CVec4Type j(this->m_msv?this->m_dir>0?
 		  EMM(this->m_p,cr,ca):EMP(this->m_p,cr,ca):
 		  this->m_dir>0?EM(this->m_p,cr,ca):EP(this->m_p,cr,ca));
-      AddJ(this->m_dir>0?j:j.Conj());
+      this->AddJ(this->m_dir>0?j:j.Conj());
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"+ "<<this->m_id<<" "<<this->m_j.back()
@@ -610,7 +610,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CVec4Type j(this->m_msv?this->m_dir>0?
 		EMP(this->m_p,cr,ca):EMM(this->m_p,cr,ca):
 		this->m_dir>0?EP(this->m_p,cr,ca):EM(this->m_p,cr,ca));
-    AddJ(this->m_dir>0?j:j.Conj());
+    this->AddJ(this->m_dir>0?j:j.Conj());
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		   <<"- "<<this->m_id<<" "<<this->m_j.back()
