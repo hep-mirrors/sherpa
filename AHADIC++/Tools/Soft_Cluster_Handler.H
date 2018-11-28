@@ -29,7 +29,7 @@ namespace AHADIC {
     void   FillFlavours(Cluster * cluster);
     int    CheckOutsideRange();
     int    Decay();
-    double PhaseSpace(const double & m2,const double & m3);
+    double PhaseSpace(const double & m2,const double & m3,const bool heavyB);
     double DecayWeight();
     double RadiationWeight();
     double Annihilation();

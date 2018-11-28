@@ -178,16 +178,17 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-  if (m_evt_output_start>0 && m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
+  if (m_evt_output_start>0 &&
+      m_evt_output_start==rpa->gen.NumberOfGeneratedEvents()+1) {
     msg->SetLevel(m_evt_output);
   }
   
-  if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-    if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
-	rpa->gen.NumberOfGeneratedEvents()==0) {
+  if(m_debuginterval>0 &&
+     rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0 &&
+     (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
+      rpa->gen.NumberOfGeneratedEvents()==0)) {
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       ran->WriteOutStatus(("random."+fname).c_str());
-    }
   }
   if (m_debugstep>=0) {
     if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
@@ -202,6 +203,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
   
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
+    //msg_Out()<<"Generate event worked out.\n";
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       std::ofstream eventout(("refevent."+fname).c_str());

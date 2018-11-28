@@ -9,6 +9,7 @@ using namespace ATOOLS;
 Cluster_Splitter::Cluster_Splitter(std::list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
   Splitter_Base(cluster_list,softclusters),
+  m_mode(0),
   m_output(false)
 {}  
 
@@ -27,13 +28,86 @@ void Cluster_Splitter::Init(const bool & isgluon) {
 
 bool Cluster_Splitter::MakeLongitudinalMomenta() {
   CalculateLimits();
-  FixCoefficients(p_part1->Flavour(),p_part2->Flavour());
-  m_z1  = m_zselector(m_z1min,m_z1max);
-  FixCoefficients(p_part2->Flavour(),p_part1->Flavour());
-  m_z2  = m_zselector(m_z2min,m_z2max);
-  m_R12 = m_z1*(1.-m_z2)*m_Q2-m_kt2;
-  m_R21 = (1.-m_z1)*m_z2*m_Q2-m_kt2;
+  if (m_mode==0) {
+    FixCoefficients(p_part1->Flavour(),p_part2->Flavour());
+    m_z1  = m_zselector(m_z1min,m_z1max);
+    FixCoefficients(p_part2->Flavour(),p_part1->Flavour());
+    m_z2  = m_zselector(m_z2min,m_z2max);
+    m_R12 = m_z1*(1.-m_z2)*m_Q2-m_kt2;
+    m_R21 = (1.-m_z1)*m_z2*m_Q2-m_kt2;
+  }
+  else if (m_mode==1) {
+    do {
+      FixCoefficients(p_part1->Flavour(),p_part2->Flavour());
+      m_R12 = m_m12min + DeltaM2(); 
+      FixCoefficients(p_part2->Flavour(),p_part1->Flavour());
+      m_R21 = m_m22min + DeltaM2();
+    } while (m_R12+m_R21>m_Q2);
+    double e12  = (m_R12+m_kt2)/m_Q2, e21 = (m_R21+m_kt2)/m_Q2;
+    double disc = sqr(1-e12-e21)-4.*e12*e21;
+    if (disc<0.) return false;
+    disc = sqrt(disc);
+    m_z1 = (1.+e12-e21+disc)/2.;
+    m_z2 = (1.-e12+e21+disc)/2.;
+  }
   return CheckIfAllowed();
+}
+
+void Cluster_Splitter::
+FixCoefficients(const Flavour & flav1,const Flavour & flav2) {
+  m_flcnt = 0;
+  if (false && !(p_part1->IsLeading() || p_part2->IsLeading())) {
+    m_a = m_b = m_c = 0.;
+    return;
+  }
+  if (flav1==Flavour(kf_b) || flav1==Flavour(kf_b).Bar()) { //||
+      //  flav1==Flavour(kf_c) || flav1==Flavour(kf_c).Bar()) {
+    m_flcnt = 1;
+  }
+  else if (flav1.IsDiQuark()) {
+    m_flcnt = 2;
+  }
+  m_a = m_alpha[m_flcnt];
+  m_b = m_beta[m_flcnt];
+  m_c = m_gamma[m_flcnt];
+  m_masses2 = sqr(p_constituents->Mass(flav1) +
+		  p_constituents->Mass(flav2));
+}
+
+void Cluster_Splitter::CalculateLimits() {
+  m_m12min =
+    sqr(Min(p_softclusters->MinSingleMass(m_flavs1.first,m_newflav1),
+	    p_softclusters->MinDoubleMass(m_flavs1.first,m_newflav1)));
+  m_m22min =
+    sqr(Min(p_softclusters->MinSingleMass(m_newflav2,m_flavs2.second),
+	    p_softclusters->MinDoubleMass(m_newflav2,m_flavs2.second)));
+  double lambda  = sqrt(sqr(m_Q2-m_m12min-m_m22min)-
+			4.*(m_m12min+m_kt2)*(m_m22min+m_kt2));
+  double centre1 = m_Q2-m_m22min+m_m12min;
+  double centre2 = m_Q2-m_m12min+m_m22min;
+  m_z1min = (centre1)/(2.*m_Q2);
+  m_z1max = (centre1+lambda)/(2.*m_Q2);
+  m_z2min = (centre2)/(2.*m_Q2);
+  m_z2max = (centre2+lambda)/(2.*m_Q2);
+}
+
+double Cluster_Splitter::DeltaM2() {
+  double deltaMmax = sqrt(m_Q2-m_m12min-m_m22min);
+  //double wtmax = pow(m_a*m_c,m_a)*exp(-m_a);
+  double wtMmax    = m_a*deltaMmax/(m_c*(m_a+m_b));
+  double wtmax     = pow(wtMmax,m_a)*pow(1.-wtMmax,m_b);
+  double deltaM, weight;
+  do {
+    deltaM = ran->Get()*deltaMmax;
+    weight = pow(deltaM/m_c,m_a)*pow(1.-deltaM/m_c,m_b);
+    //weight = pow(deltaM,m_a)*exp(-deltaM/m_c);
+  } while (weight<ran->Get()*wtmax);
+  return sqr(deltaM);
+}
+
+bool Cluster_Splitter::CheckIfAllowed() {
+  bool allowed = (m_R12>sqr(m_minQ_1) && m_R21>sqr(m_minQ_2));
+  return allowed;
 }
 
 double Cluster_Splitter::
@@ -44,7 +118,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax) {
     norm *= Max(pow(zmin,m_a), pow(1.-zmax,m_b));
   else {
     if (m_a<=0.) norm *= pow(zmin,m_a);
-    if (m_b<=0.)  norm *= pow(1.-zmax,m_b);
+    if (m_b<=0.) norm *= pow(1.-zmax,m_b);
   }
   double wt = pow(z,m_a) * pow(1.-z,m_b) * exp(-arg/z);
   if (wt>norm) {
@@ -54,11 +128,6 @@ WeightFunction(const double & z,const double & zmin,const double & zmax) {
     exit(1);
   }
   return wt / norm;
-}
-
-bool Cluster_Splitter::CheckIfAllowed() {
-  bool allowed = ((m_R12>sqr(m_minQ_1) && m_R21>sqr(m_minQ_2)));
-  return allowed;
 }
 
 bool Cluster_Splitter::FillParticlesInLists() {
@@ -112,42 +181,5 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
   }
   }*/
   return cluster;
-}
-
-void Cluster_Splitter::CalculateLimits() {
-  double m12 =
-    sqr(Min(p_softclusters->MinSingleMass(m_flavs1.first,m_newflav1),
-	    p_softclusters->MinDoubleMass(m_flavs1.first,m_newflav1)));
-  double m22 =
-    sqr(Min(p_softclusters->MinSingleMass(m_newflav2,m_flavs2.second),
-	    p_softclusters->MinDoubleMass(m_newflav2,m_flavs2.second)));
-  double lambda  = sqrt(sqr(m_Q2-m12-m22)-4.*(m12+m_kt2)*(m22+m_kt2));
-  double centre1 = m_Q2-m22+m12;
-  double centre2 = m_Q2-m12+m22;
-  m_z1min = (centre1)/(2.*m_Q2);
-  m_z1max = (centre1+lambda)/(2.*m_Q2);
-  m_z2min = (centre2)/(2.*m_Q2);
-  m_z2max = (centre2+lambda)/(2.*m_Q2);
-}
-
-void Cluster_Splitter::
-FixCoefficients(const Flavour & flav1,const Flavour & flav2) {
-  m_flcnt = 0;
-  if (false && !(p_part1->IsLeading() || p_part2->IsLeading())) {
-    m_a = m_b = m_c = 0.;
-    return;
-  }
-  if (flav1==Flavour(kf_b) || flav1==Flavour(kf_b).Bar()) { //||
-      //  flav1==Flavour(kf_c) || flav1==Flavour(kf_c).Bar()) {
-    m_flcnt = 1;
-  }
-  else if (flav1.IsDiQuark()) {
-    m_flcnt = 2;
-  }
-  m_a = m_alpha[m_flcnt];
-  m_b = m_beta[m_flcnt];
-  m_c = m_gamma[m_flcnt];
-  m_masses2 = sqr(p_constituents->Mass(flav1) +
-		  p_constituents->Mass(flav2));
 }
 

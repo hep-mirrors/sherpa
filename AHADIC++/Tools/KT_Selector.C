@@ -21,7 +21,7 @@ double KT_Selector::operator()(const double & ktmax,const double & M2) {
   m_sig2 = m_sigma2;
   do {
     kttest = ktmax*ran->Get();
-  } while (WeightFunction(kttest)<ran->Get());
+  } while (ran->Get() > WeightFunction(kttest));
   return kttest;
 }
 

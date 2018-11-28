@@ -120,7 +120,7 @@ ReadClusterDecayParameters(Data_Reader & dataread) {
   // Probably irrelevant as long as they are small.
   // We will probably not have to tune them.
   m_parametermap[string("decay_threshold")] =
-    dataread.GetValue<double>("DECAY_THRESHOLD",     0.500);
+    dataread.GetValue<double>("DECAY_THRESHOLD",     0.000);
   m_parametermap[string("piphoton_threshold")] =
     dataread.GetValue<double>("PI_PHOTON_THRESHOLD", 0.150);
   m_parametermap[string("dipion_threshold")] =

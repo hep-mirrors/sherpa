@@ -70,6 +70,7 @@ void Singlet_Checker::Reset() {
 }
 
 bool Singlet_Checker::operator()() {
+  Reset();
   list<Singlet *>::iterator lsit(p_singlets->begin());
   while (lsit!=p_singlets->end()) {
     p_singlet = (*lsit);
@@ -101,7 +102,7 @@ bool Singlet_Checker::operator()() {
       if (msg_LevelIsTracking()) {
 	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
 	     bit!=m_badones.end();bit++) {
-	  msg_Out()<<(***bit)<<"\n";
+	  msg_Error()<<(***bit)<<"\n";
 	}
       }
       return false;
@@ -115,9 +116,9 @@ bool Singlet_Checker::CheckSinglet() {
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
     if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().Abs2()<-1.e-4) {
-      msg_Out()<<"Error in "<<METHOD<<":\n"
-	       <<"   negative energy or mass^2 particle in singlet:\n"
-	       <<(*p_singlet)<<"n";
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   negative energy or mass^2 particle in singlet:\n"
+		 <<(*p_singlet)<<"n";
       //return false;
     }
   }
@@ -130,7 +131,7 @@ bool Singlet_Checker::CheckSinglet() {
 						       (*plit2)->Flavour()),
 			 p_softclusters->MinDoubleMass((*plit1)->Flavour(),
 						       (*plit2)->Flavour()));
-    if (mass < minmass) return false;
+    return (mass > minmass);
   }
   while (plit2!=p_singlet->end()) {
     // this is more or less a plausibility check driven by some external mass
@@ -154,8 +155,8 @@ bool Singlet_Checker::CheckSinglet() {
 bool Singlet_Checker::FusePartonsInLowMassSinglet() {
   if (p_singlet->front()->Flavour().IsGluon() &&
       sqrt(m_mass) > 2.*m_minQmass && m_splitter(p_part1,p_part2)) {
-    // gluons heavy enough to be replaced by two quarks, splits gluon ring
-    // and necessitates reordering the singlet to have a quark as first
+    // gluon system is heavy enough to be replaced by two quarks, splits gluon
+    // ring and necessitates reordering the singlet to have a quark as first
     // particle.
     p_singlet->Reorder();
     return true;
@@ -214,7 +215,7 @@ void Singlet_Checker::SortProblematicSinglets() {
     p_singlet = (**bit);
     Flavour flav1 = p_singlet->front()->Flavour();
     Flavour flav2 = p_singlet->back()->Flavour();
-    if (!flav1.IsGluon()) {
+    if (!flav1.IsGluon() && !flav2.IsGluon()) {
       Flavour had = p_softclusters->LowestTransition(flav1,flav2);
       if (had.Mass()>sqrt(p_singlet->Mass2())) {
 	AddOrUpdateTransition(p_singlet, had);
@@ -370,19 +371,17 @@ bool Singlet_Checker::BoostRecoilerInNewSystem(const Vec4D & newmom) {
 
 
 void Singlet_Checker::ForcedDecays() {
-  //msg_Out()<<METHOD<<"("<<m_badones.size()<<" bad singlets):\n";
   list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
   while (bit!=m_badones.end()) {
     p_singlet = (**bit);
     if (ForcedDecayOfTwoPartonSinglet()) {
       p_singlets->erase((*bit));
       bit = m_badones.erase(bit);
-      //msg_Out()<<"   forced decay of two parton singlet worked out.\n";
     }
     else {
-      Flavour flav1 = (**bit)->front()->Flavour(); 
-      Flavour flav2 = (**bit)->back()->Flavour();
-      Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
+      //Flavour flav1 = p_singlet->front()->Flavour(); 
+      //Flavour flav2 = p_singlet->back()->Flavour();
+      //Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
       //msg_Out()<<METHOD<<": "<<flav1<<" + "<<flav2<<" --> "<<had<<" "
       //       <<"(mass = "<<sqrt((**bit)->Mass2())<<" from "
       //       <<(**bit)->front()->Momentum().Abs2()<<" and "

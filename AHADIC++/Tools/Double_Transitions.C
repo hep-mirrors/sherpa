@@ -34,15 +34,14 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
       pair.second        = pair2.second; 
       double weight      = constituents->TotWeight(popped.Bar());
       if (weight<1.e-6) continue;
-      if (2.*popped.HadMass()+0.1<pair.first.HadMass()+pair.second.HadMass())
+      if (2.*constituents->Mass(popped)+0.1<
+	  constituents->Mass(pair.first)+constituents->Mass(pair.second))
 	weight = 1.;
       if (popped.IsDiQuark()) {
 	if (pair.first.Kfcode()==4)  weight *= m_charm_baryon_modifier;
 	if (pair.second.Kfcode()==4) weight *= m_charm_baryon_modifier;
 	if (pair.first.Kfcode()==5)  weight *= m_beauty_baryon_modifier;
 	if (pair.second.Kfcode()==5) weight *= m_beauty_baryon_modifier;
-	//msg_Out()<<METHOD<<"["<<pair.first<<", "<<pair.second<<"] "
-	//	 <<"for popped diquark; weight = "<<weight<<".\n";
       }
       if (m_transitions.find(pair)==m_transitions.end())
 	m_transitions[pair] = new Double_Transition_List;
@@ -83,7 +82,7 @@ void Double_Transitions::Print(const bool & full) {
 	   <<METHOD<<":\n";
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
        dtmit!=m_transitions.end();dtmit++) {
-    if (dtmit->first.first.Kfcode()!=4) continue;
+    if (dtmit->first.first.Kfcode()!=4 && dtmit->first.second.Kfcode()!=4) continue;
     if (full)
       msg_Out()<<"---------------------------------------------------------\n"
 	       <<"*** ["<<dtmit->first.first<<" "<<dtmit->first.second<<"]:\n";
