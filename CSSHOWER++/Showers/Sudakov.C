@@ -453,6 +453,10 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
                          Variation_Weights * varweights,
                          const bool &success)
 {
+  // TODO: Stefan Hoeche commented out the implementation of this function,
+  // this needs to be resolved. I (eno) have added the following return
+  // statement, to have a meaningful return value in the meantime.
+  return 1.0;
   /*
   // retrieve and validate acceptance weight of the last emission
   const double accwgt(Selected()->LastAcceptanceWeight());
