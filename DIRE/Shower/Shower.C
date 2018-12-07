@@ -360,19 +360,50 @@ Splitting Shower::GeneratePoint
 Splitting Shower::GeneratePoint
 (Parton &p,const double &t,const int &cm,const unsigned int &nem)
 {
+  // first set up a type used to hold a table of cumulative integrals below
+  // rows: kernels that p can split to
+  // cols: spectators of p
+  // NOTE: by using (encapsulated) C arrays we can avoid using vectors of
+  // vectors in this hot-spot function
+  struct CumulativeIntegralTable {
+    CumulativeIntegralTable(int nrows, int _ncols) : ncols {_ncols} {
+      sumsizes = new int[nrows];
+      spects = new size_t[nrows*ncols];
+      sums = new double[nrows*ncols];
+    }
+    ~CumulativeIntegralTable() {
+      delete[] sums; delete[] sumsizes; delete[] spects;
+    }
+    void Clear(int row) { sumsizes[row] = 0; }
+    int Size(int row) { return sumsizes[row]; }
+    double Sum(int row, int col) { return sums[row*ncols + col]; }
+    size_t Spect(int row, int col) { return spects[row*ncols + col]; }
+    double LastSum(int row) { return sums[row*ncols + sumsizes[row] - 1]; }
+    double LastSpect(int row) { return spects[row*ncols + sumsizes[row] - 1]; }
+    void AppendSumAndSpect(int row, double sum, size_t spect) {
+      const auto idx = row*ncols + sumsizes[row];
+      sums[idx] = sum;
+      spects[idx] = spect;
+      ++(sumsizes[row]);
+    }
+    int ncols;
+    int* sumsizes;
+    size_t* spects;
+    double* sums;
+  };
+
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
-  std::vector<std::vector<double> > psum(kit->second.size());
-  std::vector<std::vector<size_t> > splits(psum.size());
+  int nkernels = kit->second.size();
+  CumulativeIntegralTable sums {nkernels, static_cast<int>(p.Ampl()->size())};
   while (true) {
     if (win.m_t*m_rcf<=ct) {
       sum=0.0;
       ct=win.m_t;
       for (size_t j(0);j<kit->second.size();++j) {
-	psum[j].clear();
-	splits[j].clear();
+        sums.Clear(j);
 	double csum=0.0;
 	for (int i(p.Ampl()->size()-1);i>=0;--i) {
 	  if ((*p.Ampl())[i]==&p) continue;
@@ -384,12 +415,11 @@ Splitting Shower::GeneratePoint
 	  cur.m_cm=cm;
 	  if (kit->second[j]->On() &&
 	      kit->second[j]->Allowed(cur)) {
-	    double I=kit->second[j]->Integral(cur);
-	    psum[j].push_back(csum+=dabs(I));
-	    splits[j].push_back(i);
+            csum += dabs(kit->second[j]->Integral(cur));
+            sums.AppendSumAndSpect(j, csum, i);
 	  }
 	}
-	if (psum[j].size()) sum+=psum[j].back();
+        if (sums.Size(j)) sum += sums.LastSum(j);
       }
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
@@ -397,13 +427,12 @@ Splitting Shower::GeneratePoint
     win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
-    for (size_t j(0);j<splits.size();++j)
-      if (splits[j].size() &&
-	  (csum+=psum[j].back())>=disc) {
-	double disc(psum[j].back()*ran->Get());
-	for (size_t i(0);i<splits[j].size();++i)
-	  if (psum[j][i]>=disc) {
-	    win.p_s=(*p.Ampl())[splits[j][i]];
+    for (size_t j(0);j<nkernels;++j)
+      if (sums.Size(j) && (csum+=sums.LastSum(j)) >= disc) {
+	double disc(sums.LastSum(j)*ran->Get());
+	for (size_t i(0);i<sums.Size(j);++i)
+	  if (sums.Sum(j, i) >= disc) {
+	    win.p_s=(*p.Ampl())[sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;
