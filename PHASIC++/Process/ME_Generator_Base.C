@@ -143,29 +143,34 @@ namespace PHASIC {
 
   class ShiftMasses_Energy: public Function_Base {
   private:
+    std::vector<double>::size_type m_nentries;
     std::vector<double> m_m2, m_p2;
   public:
     ShiftMasses_Energy(Mass_Selector *const ms,
 		    Cluster_Amplitude *const ampl,int mode)
     {
-      if (mode<0) {
-	for (size_t i(0);i<ampl->NIn();++i) {
-	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
-	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
-	}
+      const auto nin = ampl->NIn();
+      auto offset = 0;
+      if (mode < 0) {
+        m_nentries = nin;
+      } else {
+        offset = nin;
+        m_nentries = ampl->Legs().size() - nin;
       }
-      else {
-	for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
-	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
-	}
+      m_p2.reserve(m_nentries);
+      m_m2.reserve(m_nentries);
+      const auto end = offset + m_nentries;
+      for (int i {offset}; i < end; ++i) {
+        m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
+        m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
       }
     }
     virtual double operator()(double x)
     {
-      double E=0.0;
-      for (size_t i(0);i<m_m2.size();++i)
-	E+=sqrt(m_m2[i]+x*x*m_p2[i]);
+      const auto x2=x*x;
+      auto E=0.0;
+      for (size_t i {0}; i < m_nentries; ++i)
+	E+=sqrt(m_m2[i]+x2*m_p2[i]);
       return E;
     }
   };// end of class ShiftMasses_Energy

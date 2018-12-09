@@ -442,7 +442,6 @@ void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p)
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
 {
   Vec4D pin,pout;
-  pin = pout = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<m_nin;i++) pin += p[i];
   for (int i=m_nin;i<m_nin+m_nout;i++) pout += p[i];
   double sin = pin.Abs2(), sout = pout.Abs2();

@@ -352,11 +352,13 @@ void Vegas::AddPoint(double value)
 #else
   ++m_nevt;
   if (value>0.) ++m_cevt;
-  double v2 = value*value;
+  const auto v2 = value*value;
+  const auto v4 = v2*v2;
   for (int i=0;i<m_dim;i++) {
-    p_d[i][p_ia[i]]+=v2;
-    p_di[i][p_ia[i]]+=v2*v2;
-    p_hit[i][p_ia[i]]++;
+    const auto idx = p_ia[i];
+    p_d[i][idx]+=v2;
+    p_di[i][idx]+=v4;
+    p_hit[i][idx]++;
   }
   m_mode=0;
   if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {

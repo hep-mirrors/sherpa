@@ -311,7 +311,7 @@ void Run_Parameter::Init(std::string path,std::string file)
   gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
 		  ToString(reader.Get<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
   reader.SetAllowUnits(false);
-  gen.m_timeout = reader.Get<double>("TIMEOUT",std::numeric_limits<double>::max());
+  gen.m_timeout = reader.Get<double>("TIMEOUT",-1.0);
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa->gen.m_timer.Start();
   gen.m_batchmode = reader.Get<int>("BATCH_MODE",logfile==""?1:3);
@@ -385,7 +385,10 @@ Run_Parameter::~Run_Parameter()
 bool Run_Parameter::Gen::CheckTime(const double limit)
 { 
   if (limit==0.) {
-    if (m_timeout>0.) return m_timer.UserTime()<m_timeout;
+    if (m_timeout==0.)
+      return true;
+    else
+      return m_timer.UserTime()<m_timeout;
   }
   else {
     return m_timer.UserTime()<limit;

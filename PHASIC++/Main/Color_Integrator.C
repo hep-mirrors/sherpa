@@ -115,6 +115,9 @@ size_t Color_Integrator::GenerateIndex()
 bool Color_Integrator::GenerateColours()
 {
   Idx_Vector iids, jids;
+  const auto size = m_ids.size();
+  iids.reserve(size);
+  jids.reserve(size);
   for (size_t i(0);i<m_ids.size();++i)
     // collect indices
     if (m_ids[i]->Act()) { 
