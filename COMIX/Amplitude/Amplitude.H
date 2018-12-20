@@ -9,6 +9,7 @@
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace PHASIC {
@@ -169,6 +170,7 @@ namespace COMIX {
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
 		    const double &isf,const double &fsf,
+		    My_In_File &ampfile,
 		    MODEL::Model_Base *const model,
 		    MODEL::Coupling_Map *const cpls,const int smode,
 		    const std::vector<int> &maxcpl,
@@ -208,7 +210,7 @@ namespace COMIX {
     void WriteOutGraphs(const std::string &file) const;
 
     void WriteOutAmpFile(const std::string &name);
-    bool ReadInAmpFile(const std::string &name);
+    bool ReadInAmpFile(const std::string &name,My_In_File &ampfile);
 
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 

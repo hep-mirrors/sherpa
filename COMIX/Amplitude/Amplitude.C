@@ -17,7 +17,6 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
-#include "ATOOLS/Org/My_MPI.H"
 
 using namespace COMIX;
 using namespace ATOOLS;
@@ -712,16 +711,15 @@ void Amplitude::Prune()
       }
 }
 
-bool Amplitude::ReadInAmpFile(const std::string &name)
+bool Amplitude::ReadInAmpFile(const std::string &name,My_In_File &amp)
 {
-  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Comix/"+name+".map");
-  My_In_File amp(ampfile);
-  if (!amp.Open()) return false;
+  if (amp()==NULL) return false;
+  amp->seekg(0);
+  if (!amp->good()) return false;
   std::string cname, cmname;
   *amp>>cname>>cmname;
   if (cname!=name || cmname!=name || amp->eof())
-    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+    THROW(fatal_error,"Corrupted map file '"+name+".map'");
   m_affm.resize(m_n);
   for (size_t size, i(2);i<m_n;++i) {
     while (true) {
@@ -736,15 +734,12 @@ bool Amplitude::ReadInAmpFile(const std::string &name)
   }
   *amp>>cname;
   if (cname!="eof")
-    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+    THROW(fatal_error,"Corrupted map file '"+name+".map'");
   return true;
 }
 
 void Amplitude::WriteOutAmpFile(const std::string &name)
 {
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");
   if (FileExists(ampfile,1)) return;
@@ -775,7 +770,8 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
 
 bool Amplitude::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
- const double &isf,const double &fsf,MODEL::Model_Base *const model,
+ const double &isf,const double &fsf,My_In_File &ampfile,
+ MODEL::Model_Base *const model,
  MODEL::Coupling_Map *const cpls,const int smode,
  const std::vector<int> &maxcpl, const std::vector<int> &mincpl,
  const std::vector<int> &maxacpl, const std::vector<int> &minacpl,
@@ -795,7 +791,7 @@ bool Amplitude::Initialize
   m_maxacpl=maxacpl;
   m_minacpl=minacpl;
   p_dinfo->SetMode(smode);
-  ReadInAmpFile(name);
+  ReadInAmpFile(name,ampfile);
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
   if (!Construct(incs,flavs,model,cpls)) return false;

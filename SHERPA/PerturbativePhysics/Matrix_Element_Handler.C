@@ -145,7 +145,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   if (storeresults<0) return true;
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
-    My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
   rpa->gen.SetPilotRun(true);
   bool okay(true);
@@ -476,10 +475,6 @@ int Matrix_Element_Handler::InitializeProcesses
   if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");

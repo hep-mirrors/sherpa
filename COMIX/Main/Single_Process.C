@@ -18,7 +18,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/My_MPI.H"
 
 using namespace COMIX;
 using namespace PHASIC;
@@ -73,9 +72,10 @@ bool COMIX::Single_Process::Initialize
   }
   std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (FileExists(mapfile,1)) {
+  m_hasmapfile=FileExists(mapfile,1);
+  My_In_File mapstream(mapfile);
+  if (m_hasmapfile) {
     msg_Tracking()<<METHOD<<"(): Map file '"<<mapfile<<"' found.\n";
-    My_In_File mapstream(mapfile);
     if (mapstream.Open()) {
       std::string cname, mapname;
       *mapstream>>cname>>mapname;
@@ -118,7 +118,7 @@ bool COMIX::Single_Process::Initialize
   for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
   for (size_t i(0);i<minacpl.size();++i) minacpl[i]=m_pinfo.m_minacpl[i];
   for (size_t i(0);i<maxacpl.size();++i) maxacpl[i]=m_pinfo.m_maxacpl[i];
-  if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
+  if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,mapstream,&*p_model,
 		       &m_cpls,smode,maxcpl,mincpl,maxacpl,minacpl,
 		       m_pinfo.m_ntchanmin,m_pinfo.m_ntchanmax,m_name)) {
     if (smode&1) {
@@ -187,9 +187,6 @@ bool COMIX::Single_Process::Initialize
     p_hc = new Hard_Matrix();
     return true;
   }
-#ifdef USING__MPI
-  if (mpi->Rank()==0) {
-#endif
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
     +"/Process/Comix/"+Parent()->Name()+".map";
   std::string str, tmp;
@@ -203,9 +200,6 @@ bool COMIX::Single_Process::Initialize
   *out<<str;
   *out<<m_name<<" x\n";
   out.Close();
-#ifdef USING__MPI
-  }
-#endif
   (*pmap)[m_name]="x";
   return false;
 }
@@ -289,9 +283,7 @@ bool COMIX::Single_Process::MapProcess()
       }
     THROW(fatal_error,"Map process '"+mapname+"' not found");
   }
-  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Comix/"+m_name+".map");
-  if (!FileExists(ampfile,1) && m_allowmap) {
+  if (!m_hasmapfile && m_allowmap) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
@@ -309,9 +301,6 @@ bool COMIX::Single_Process::MapProcess()
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
 		    <<mapname<<"'."<<std::endl;
-#ifdef USING__MPI
-      if (mpi->Rank()==0) {
-#endif
       std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix/"+m_name+".map");
       if (!FileExists(mapfile,1)) {
@@ -328,9 +317,6 @@ bool COMIX::Single_Process::MapProcess()
 	  *map<<"eof\n";
 	}
       }
-#ifdef USING__MPI
-      }
-#endif
       MapSubEvts(1);
       delete p_bg;
       p_bg=NULL;
@@ -343,7 +329,7 @@ bool COMIX::Single_Process::MapProcess()
     msg_Tracking()<<ComixLogo()<<" initialized '"<<m_name<<"', ";
     p_bg->PrintStatistics(msg->Tracking(),0);
   }
-  p_bg->WriteOutAmpFile(m_name);
+  if (!m_hasmapfile) p_bg->WriteOutAmpFile(m_name);
   p_umprocs->push_back(this);
   return false;
 }

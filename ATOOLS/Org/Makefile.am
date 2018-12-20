@@ -16,6 +16,7 @@ libToolsOrg_la_SOURCES        = \
 				My_MPI.C \
 				Exception.C \
 				Exception_Handler.C \
+				libzippp.cpp \
 				My_File.C \
 				File_IO_Base.C \
 				Read_Write_Base.C \
@@ -46,6 +47,7 @@ localinc_HEADERS         =	\
 			My_MPI.H \
 			Exception.H \
 			Exception_Handler.H \
+			libzippp.h \
 			My_File.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
@@ -68,9 +70,9 @@ localinc_HEADERS         =	\
 			Gzip_Stream.H \
 			binreloc.h
 
-libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @SQLITE3_LDFLAGS@
+libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @LIBZIP_LDFLAGS@
 
-libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @SQLITE3_CFLAGS@
+libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @LIBZIP_CPPFLAGS@
 
 EXTRA_DIST    = CXXFLAGS.H.in
 

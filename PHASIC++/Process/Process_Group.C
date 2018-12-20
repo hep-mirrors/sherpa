@@ -13,7 +13,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace PHASIC;
@@ -315,9 +314,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
     if (!ConstructProcess(pi)) return false;
-#ifdef USING__MPI
-    if (mpi->Rank()==0) {
-#endif
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name+".map");
     std::string str, tmp;
@@ -335,9 +331,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
     for (size_t i(0);i<fl.size();++i) *out<<(long int)fl[i]<<" ";
     *out<<"0\n";
     out.Close();
-#ifdef USING__MPI
-    }
-#endif
     return true;
   }
   bool one(false);
@@ -372,17 +365,7 @@ bool Process_Group::ConstructProcesses()
     return m_procs.size();
   }
   msg_Debugging()<<"not found"<<std::endl;
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
-  My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
-  My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
   return res;
 }
 
