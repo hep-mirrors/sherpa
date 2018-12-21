@@ -54,9 +54,8 @@ double Matter_Overlap::SelectB() const {
       break;
   }
   do {
-    ran->Gaussian(b,b2);
-    b = dabs(b)*radius;
-    if (b>m_bmax) b = dabs(b2)*radius;
+    auto b = dabs(ran->GetGaussian())*radius;
+    if (b>m_bmax) b = dabs(ran->GetGaussian())*radius;
   } while (b>m_bmax);
   return b;
 }

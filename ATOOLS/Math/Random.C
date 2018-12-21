@@ -418,16 +418,6 @@ ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
   return Min(static_cast<ptrdiff_t>(Get() * max),max-1);
 }
 
-void ATOOLS::Random::Gaussian(double & x,double & y)   
-{
-  double phi(2.*M_PI*Get()), random(Get());
-  while (random==0.) random = Get();
-  double r(sqrt(-2.*log(random)));
-
-  x = r*std::cos(phi);
-  y = r*std::sin(phi);
-}
-
 External_RNG::~External_RNG()
 {
 }

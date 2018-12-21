@@ -69,7 +69,7 @@ namespace ATOOLS {
     void SetSeed(long nid);  // seed for Rnd2()
     void SetSeed(unsigned int i1,unsigned int i2,
 		 unsigned int i3,unsigned int i4);
-    inline long int GetSeed() { return m_id; }
+    long int GetSeed() { return m_id; }
 
     int  WriteOutStatus(const char *outfile);
     int  WriteOutStatus(std::ostream &os,const size_t &idx);
@@ -80,17 +80,35 @@ namespace ATOOLS {
     void RestoreStatus();
     void FastForward(const size_t &n);
     void ResetToLastIncrementedSeed();
-    inline void EraseLastIncrementedSeed() 
+    void EraseLastIncrementedSeed()
     { m_lastincrementedseed.str(std::string()); }
-    inline void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
+    void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();   
     ptrdiff_t operator() (ptrdiff_t max);
-    // produce two Gaussian distributed random number using active Generator
-    void   Gaussian(double &,double &);
+    // produce Gaussian distributed random number using active Generator
+    // according to the Marsaglia method
+    double GetGaussian() {
+      static auto hasSpare = false;
+      static double spare;
+      if (hasSpare) {
+        hasSpare = false;
+        return spare;
+      }
+      double ran1, ran2, R;
+      do {
+        ran1 = 2.*Get()-1.;
+        ran2 = 2.*Get()-1.;
+        R    = ran1*ran1+ran2*ran2;
+      } while (R>1. || R==0.);
+      R  = sqrt(-2.*log(R)/R);
+      hasSpare = true;
+      spare = ran2 * R;
+      return ran1 * R;
+    }
     // produce Poissonian distributed random number using active Generator
-    inline double Poissonian(const double & lambda) {
+    double Poissonian(const double & lambda) {
       if(lambda>500.) {
 	double u = Get();
 	double v = Get();
@@ -102,10 +120,10 @@ namespace ATOOLS {
       return N;
     }
 
-    inline double Theta() { return acos(2.*Get()-1.); }  
-    double        GetNZ();
+    double Theta() { return acos(2.*Get()-1.); }
+    double GetNZ();
     
-    inline External_RNG* GetExternalRng() { return p_external; }
+    External_RNG* GetExternalRng() { return p_external; }
     
 
   };// end of class Random
@@ -156,7 +174,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn inline double Random::Get() 
+    \fn double Random::Get()
     \brief is the main routine, returns a single random number in [0,1]
 
     The number is determined either by using Ran2() or Ran4(), depending on
@@ -164,12 +182,12 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn inline double Random::GetNZ()
+    \fn double Random::GetNZ()
     \brief retrun a not zero random number
   */
 
   /*!
-    \fn inline long Random::GetSeed()
+    \fn long Random::GetSeed()
     \brief returns a the seed
     
     No corresponding method for Ran4() exists so far.
@@ -186,7 +204,7 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn inline double Random::Theta()
+    \fn double Random::Theta()
     \brief returns an angle \f$\phi\f$ for a uniform \f$cos(\phi)\f$ distribution
   */
 
