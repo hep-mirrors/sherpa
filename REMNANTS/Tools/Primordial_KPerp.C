@@ -119,22 +119,13 @@ Vec4D Primordial_KPerp::KT(const Vec4D & mom) {
 }
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
-  // Generate normalised Gaussian random numbers according to the
-  // Marsaglia method
-  double ran1, ran2, R;
-  do {
-    ran1 = 2.*ran->Get()-1.;
-    ran2 = 2.*ran->Get()-1.;
-    R    = ran1*ran1+ran2*ran2;
-  } while (R>1. || R==0.);
-  R  = sqrt(-2.*log(R)/R);
   // shift the Gaussian random numbers
-  return m_mean[m_beam] + R * m_sigma[m_beam];
+  return m_mean[m_beam] + dabs(ran->GetGaussian()) * m_sigma[m_beam];
 }
 
 double Primordial_KPerp::KT_Gauss_Limited(const double & ktmax) const {
-  // Generate normalised Gaussian random numbers according to the
-  // Marsaglia method, with an additional polynomial limitation
+  // Generate normalised Gaussian random numbers
+  // with an additional polynomial limitation
   double ran1, ran2, R, kt;
   do {
     kt = KT_Gauss(ktmax);
@@ -165,7 +156,10 @@ double Primordial_KPerp::DipoleWeight(const double & kt) const {
 }
 
 double Primordial_KPerp::LimitedWeight(const double & kt) const {
-  return Max(0.,pow(m_ktmax[m_beam],m_eta[m_beam])-pow(kt,m_eta[m_beam]));
+  if (kt < m_ktmax[m_beam])
+    return 1.0 - pow(kt/m_ktmax[m_beam], m_eta[m_beam]);
+  else
+    return 0.0;
 }
 
 void Primordial_KPerp::InitAnalysis() {
