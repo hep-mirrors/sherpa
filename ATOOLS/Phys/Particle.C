@@ -74,7 +74,6 @@ namespace ATOOLS {
 
 Particle::~Particle() 
 {
-  delete p_flow; 
   --s_totalnumber;
 }
 
@@ -96,8 +95,8 @@ Particle::Particle(const Particle &in):
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
 {
   ++s_totalnumber;
-  p_flow->SetCode(1,in.GetFlow(1));
-  p_flow->SetCode(2,in.GetFlow(2));
+  m_flow.SetCode(1,in.GetFlow(1));
+  m_flow.SetCode(2,in.GetFlow(2));
 }
 
 Particle& Particle::operator=(const Particle &in)
@@ -114,8 +113,8 @@ Particle& Particle::operator=(const Particle &in)
     m_finalmass = in.m_finalmass;
     p_startblob = NULL;
     p_endblob   = NULL;
-    p_flow->SetCode(1,in.GetFlow(1));
-    p_flow->SetCode(2,in.GetFlow(2));
+    m_flow.SetCode(1,in.GetFlow(1));
+    m_flow.SetCode(2,in.GetFlow(2));
   }
   return *this;
 }
@@ -145,8 +144,8 @@ void Particle::Copy(Particle * in)  {
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   p_originalpart = in->p_originalpart,
-  p_flow->SetCode(1,in->GetFlow(1));
-  p_flow->SetCode(2,in->GetFlow(2));
+  m_flow.SetCode(1,in->GetFlow(1));
+  m_flow.SetCode(2,in->GetFlow(2));
 }
 
 double Particle::ProperTime() 
@@ -236,14 +235,12 @@ Particle *   Particle::OriginalPart() const   {
 Flavour        Particle::Flav() const                   { return m_fl; }
 const Flavour& Particle::RefFlav() const                { return m_fl; }
 void           Particle::SetFlav(const Flavour& fl)     { m_fl   = fl; }
-Flow         * Particle::GetFlow() const                { return p_flow; }
 unsigned int   Particle::GetFlow(const unsigned int index) const {
-  return p_flow->Code(index);
+  return m_flow.Code(index);
 }
-void           Particle::SetFlow(Flow * _flow)          { p_flow = _flow; }
 void           Particle::SetFlow(const int index, const int code) {
   if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
-  p_flow->SetCode(index,code);
+  m_flow.SetCode(index,code);
 }
 
 
