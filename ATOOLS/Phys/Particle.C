@@ -82,7 +82,6 @@ Particle::Particle():
   m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined), 
   m_info('X'), 
   m_fl(Flavour(kf_none)), m_momentum(Vec4D(0,0,0,0)), 
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.)
 {
@@ -93,7 +92,6 @@ Particle::Particle(const Particle &in):
   m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status), 
   m_info(in.m_info), 
   m_fl(in.m_fl), m_momentum(in.m_momentum), 
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
 {
@@ -127,7 +125,6 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_number(number), m_beam(-1), m_meid(0), m_status(part_status::active),
   m_info(a), 
   m_fl(fl), m_momentum(p),
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(fl.Mass())
 {

@@ -28,7 +28,7 @@ operator<<(std::ostream & s, const Ladder_Particle & part) {
 
 Ladder_Particle::Ladder_Particle(const Particle * part) :
   p_part(NULL), m_flav(part->Flav()), m_mom(part->Momentum()), 
-  m_flow(Flow(NULL)), m_marked(false), 
+  m_marked(false),
   m_IS(part->Info()=='I' || part->Info()=='G')
 {
   SetFlow(1,part->GetFlow(1));
