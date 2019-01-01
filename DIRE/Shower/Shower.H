@@ -43,6 +43,63 @@ namespace DIRE {
 	p_ampl(ampl), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
     };// end of struct JetVeto_Args
     
+    // first set up a type used to hold a table of cumulative integrals below
+    // rows: kernels that p can split to
+    // cols: spectators of p
+    // NOTE: by using (encapsulated) C arrays we can avoid using vectors of
+    // vectors in this hot-spot function
+    struct CumulativeIntegralTable {
+      CumulativeIntegralTable() : nrows {0}, ncols {0} {};
+      CumulativeIntegralTable(int _nrows, int _ncols) :
+        nrows{_nrows}, ncols {_ncols}
+      {
+        sumsizes = new int[nrows];
+        spects = new size_t[nrows*ncols];
+        sums = new double[nrows*ncols];
+      }
+      CumulativeIntegralTable& operator=(CumulativeIntegralTable&& other)
+      {
+        if (this == &other)
+          return *this;
+        if (nrows > 0) {
+          delete[] sumsizes;
+          delete[] spects;
+          delete[] sums;
+        }
+        nrows = other.nrows;
+        ncols = other.ncols;
+        sumsizes = other.sumsizes;
+        spects = other.spects;
+        sums = other.sums;
+        other.nrows = 0;
+        return *this;
+      }
+      ~CumulativeIntegralTable() {
+        if (nrows > 0) {
+          delete[] sumsizes;
+          delete[] spects;
+          delete[] sums;
+        }
+      }
+      void Clear(int row) { sumsizes[row] = 0; }
+      int Size(int row) { return sumsizes[row]; }
+      double Sum(int row, int col) { return sums[row*ncols + col]; }
+      size_t Spect(int row, int col) { return spects[row*ncols + col]; }
+      double LastSum(int row) { return sums[row*ncols + sumsizes[row] - 1]; }
+      double LastSpect(int row) { return spects[row*ncols + sumsizes[row] - 1]; }
+      void AppendSumAndSpect(int row, double sum, size_t spect) {
+        const auto idx = row*ncols + sumsizes[row];
+        sums[idx] = sum;
+        spects[idx] = spect;
+        ++(sumsizes[row]);
+      }
+      int nrows, ncols;
+      int* sumsizes;
+      size_t* spects;
+      double* sums;
+    };
+    CumulativeIntegralTable m_sums;
+
     typedef std::map<ATOOLS::Flavour,Kernel_Vector> SKernel_Map;
 
     typedef std::map<ATOOLS::Flavour,Kernel*> EKernel_Map;
