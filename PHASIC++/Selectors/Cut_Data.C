@@ -110,7 +110,7 @@ void Cut_Data::Complete()
     }
   } 
 
-  MyStrStream strs;
+  size_t str(0);
   for (int i=0;i<ncut;i++) {
     energymin_save[i] = energymin[i];
     for (int j=i+1;j<ncut;j++) {
@@ -118,10 +118,8 @@ void Cut_Data::Complete()
       cosmax_save[i][j] = cosmax[i][j];
       scut_save[i][j]   = scut[i][j];
     }
-    if (i>=2) strs<<GetIndexID(i);
+    if (i>=2) str|=(1<<i);
   }
-  std::string str;
-  strs>>str;
   smin = 0.;
   double etmm = 0.; 
   double e1=0.,e2=0.;
@@ -150,7 +148,7 @@ void Cut_Data::Reset(bool update)
     }
   }
   if (update) {
-    map<string,double>::iterator it;
+    map<size_t,double>::iterator it;
     for (it=m_smin_map.begin();it!=m_smin_map.end();++it) it->second = -1.;
   }
 }
@@ -163,15 +161,15 @@ char Cut_Data::GetIndexID(int id)
 }
 
 double Cut_Data::Getscut
-(std::vector<char> pl,std::vector<char> pr,int n,int k,int li)
+(std::vector<int> pl,std::vector<int> pr,int n,int k,int li)
 {
   if (n==k) {
-    std::string idl, idr;
-    for (size_t i(0);i<pl.size();++i) if (pl[i]!=' ') idl+=pl[i];
-    for (size_t i(0);i<pr.size();++i) if (pr[i]!=' ') idr+=pr[i];
+    size_t idl=0, idr=0;
+    for (size_t i(0);i<pl.size();++i) if (pl[i]) idl|=(1<<pl[i]);
+    for (size_t i(0);i<pr.size();++i) if (pr[i]) idr|=(1<<pr[i]);
     double ml(sqrt(Getscut(idl))), mr(sqrt(Getscut(idr)));
 #ifdef DEBUG__Cut_Data
-    msg_Debugging()<<"m_{"<<idl<<"} + m_{"<<idr<<"} = "
+    msg_Debugging()<<"m_"<<ID(idl)<<" + m_"<<ID(idr)<<" = "
 		   <<ml<<" + "<<mr<<" = "<<ml+mr<<"\n";
 #endif
     return sqr(ml+mr);
@@ -179,65 +177,60 @@ double Cut_Data::Getscut
   msg_Indent();
   double sc(0.0);
   for (size_t i(li+1);i<pl.size();++i) {
-    std::swap<char>(pl[i],pr[i]);
+    std::swap<int>(pl[i],pr[i]);
     sc=Max(sc,Getscut(pl,pr,n,k+1,i));
-    std::swap<char>(pl[i],pr[i]);
+    std::swap<int>(pl[i],pr[i]);
   }
   return sc;
 }
 
-double Cut_Data::Getscut(string str)
+double Cut_Data::GetscutAmegic(std::string str)
 {
-  map<string,double>::iterator it = m_smin_map.find(str);
+  size_t id(0);
+  int length = str.length();
+  for (int i=0;i<length;i++) {
+    char cur = str[i];
+    if (cur<58) id|=(1<<(cur-48));
+    else id|=(1<<(cur-55));
+  }
+  return Getscut(id);
+}
+
+double Cut_Data::Getscut(size_t str)
+{
+  map<size_t,double>::iterator it = m_smin_map.find(str);
   if (it!=m_smin_map.end())
     if (it->second>=0.) return it->second;
 
-  int length = str.length();
-  int *legs = new int[length];
-  std::vector<char> pr(length);
-  for (int i=0;i<length;i++) {
-    pr[i] = str[i];
-    if (pr[i]<58) legs[i]=pr[i]-48;
-    else legs[i]=pr[i]-55;
-  }
+  std::vector<int> pr(ID(str));
   double sc = 0.;
 
-  if (length==1) {
-    m_smin_map[str] = sc = sqr(fl[legs[0]].SelMass());
-    delete[] legs;
+  if (pr.size()==1) {
+    m_smin_map[str] = sc = sqr(fl[pr.front()].SelMass());
     return sc;
   }
 
-  if (length==2) {
-    m_smin_map[str] = sc = scut[legs[0]][legs[1]];
-    delete[] legs;
+  if (pr.size()==2) {
+    m_smin_map[str] = sc = scut[pr[0]][pr[1]];
     return sc;
   }
 
-  string help("0"), help2("");
-  for (int i=0;i<length;i++) {
-    help[0] = GetIndexID(legs[i]);
-    sc += Getscut(help);
-  }
-  sc *= 2.-(double)length;
-  help = string("00");
-  for (int i=0;i<length;i++) {
-    for (int j=i+1;j<length;j++) {
-      help[0] = GetIndexID(legs[i]);
-      help[1] = GetIndexID(legs[j]);
-      sc += Getscut(help);
+  for (int i=0;i<pr.size();i++) sc += Getscut(1<<pr[i]);
+  sc *= 2.-(double)pr.size();
+  for (int i=0;i<pr.size();i++) {
+    for (int j=i+1;j<pr.size();j++) {
+      sc += Getscut((1<<pr[i])|(1<<pr[j]));
     }
   }
 
-  std::vector<char> pl(length,' ');
-  for (int i(1);i<=length/2;++i) sc=Max(sc,Getscut(pl,pr,i,0,-1));
+  std::vector<int> pl(pr.size(),0);
+  for (int i(1);i<=pr.size()/2;++i) sc=Max(sc,Getscut(pl,pr,i,0,-1));
   
   m_smin_map[str] = sc;
-  delete[] legs;
   return sc;
 }
 
-void Cut_Data::Setscut(std::string str,double d)
+void Cut_Data::Setscut(size_t str,double d)
 {
   m_smin_map[str]=d;
 }

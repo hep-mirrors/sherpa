@@ -161,9 +161,9 @@ void Combined_Selector::BuildCuts(Cut_Data * cuts)
   for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
 }
 
-void Combined_Selector::AddOnshellCondition(std::string s,double d)
+void Combined_Selector::AddOnshellCondition(size_t s,double d)
 {
-  m_osc.push_back(std::pair<std::string,double>(s,d));
+  m_osc.push_back(std::pair<size_t,double>(s,d));
 }
 
 void Combined_Selector::Output()

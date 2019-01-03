@@ -575,7 +575,7 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
     for (size_t j(0);j<oldsize;++j) {
       size_t cid(m_cur[n][j]->CId());
       size_t pid((cid&3)?(1<<m_n)-1-cid:cid);
-      double psmin(sqrt(cuts->Getscut(PSId(pid))));
+      double psmin(sqrt(cuts->Getscut(pid)));
       double mass(Max(psmin,m_cur[n][j]->Mass()));
       if (m_cur[n][j]->OnShell()) {
 	mmin[cid]=mass;

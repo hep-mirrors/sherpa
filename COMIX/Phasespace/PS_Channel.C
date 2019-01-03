@@ -29,7 +29,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
   p_xs(xs), p_cur(NULL),
   m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
-  p_psid(new PSId_Map()), p_cid(new CId_Map())
+  p_cid(new CId_Map())
 {
   nin=_nin;
   nout=_nout;
@@ -138,31 +138,7 @@ PS_Channel::~PS_Channel()
 #endif
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
-  delete p_psid;
   delete p_cid;
-}
-
-#ifdef USING__Threading
-CDBG_PS_TID *PS_Channel::GetTId() const
-{
-  pthread_t tid(pthread_self());
-  for (size_t i(0);i<m_cts.size();++i)
-    if (pthread_equal(tid,m_cts[i]->m_id)) return m_cts[i];
-  return NULL;
-}
-#endif
-
-const std::string &PS_Channel::GetPSId(const size_t &id)
-{
-  PSId_Map *psid(p_psid);
-#ifdef USING__Threading
-  CDBG_PS_TID *tid(GetTId());
-  if (tid) psid=tid->p_psid;
-#endif
-  PSId_Map::const_iterator iit(psid->find(id));
-  if (iit!=psid->end()) return iit->second;
-  (*psid)[id]=PSId(id);
-  return (*psid)[id];
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
@@ -231,7 +207,7 @@ PHASIC::Vegas *PS_Channel::GetPVegas(const PS_Current *cur,const size_t &id)
   Vegas *vgs(NULL);
   IVegas_Map::const_iterator vit(m_pimap.find(id));
   if (vit!=m_pimap.end()) vgs=vit->second;
-  else vgs=m_pimap[id]=GetVegas("P_"+GetPSId(id));
+  else vgs=m_pimap[id]=GetVegas("P_"+ToString(id));
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
@@ -274,7 +250,7 @@ PHASIC::Vegas *PS_Channel::GetTVegas
     if (it!=vit->second.end()) vgs=it->second;
   }
   if (vgs==NULL) vgs=sit->second[id][cur]=
-    GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()+
+    GetVegas("T_"+ToString(id)+"_"+cur->PSInfo()+
 	     (dip&&dip!=cur->Dip()?"_DS"+dip->PSInfo():""));
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
@@ -290,8 +266,8 @@ bool PS_Channel::Zero(Vertex *const vtx) const
 
 double PS_Channel::SCut(const size_t &id)
 {
-  if (id&3) return p_cuts->Getscut(GetPSId((1<<m_n)-1-id));
-  return p_cuts->Getscut(GetPSId(id));
+  if (id&3) return p_cuts->Getscut((1<<m_n)-1-id);
+  return p_cuts->Getscut(id);
 }
 
 double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
@@ -560,12 +536,12 @@ bool PS_Channel::GeneratePoint
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  t "<<nr<<": ("<<PSId(ja->CId())
-		   <<","<<PSId(m_rid)<<")-"<<PSId(jc->CId())
-		   <<"->("<<PSId(jb->CId())<<","<<PSId(pid)
-		   <<") m_"<<PSId(bid)<<" = "<<sqrt(se)
-		   <<", m_"<<PSId(pid)<<" = "<<sqrt(sp)
-		   <<" -> "<<PSId(cid)<<"\n";
+    msg_Debugging()<<"  t "<<nr<<": {"<<ID(ja->CId())
+		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
+		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
+		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
+		   <<", m_"<<ID(pid)<<" = "<<sqrt(sp)
+		   <<" -> "<<ID(cid)<<"\n";
 #endif
   }
   else {
@@ -585,11 +561,11 @@ bool PS_Channel::GeneratePoint
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  s "<<nr<<": ("<<PSId(cid)
-		   <<")->("<<PSId(aid)<<","<<PSId(bid)
-		   <<") m_"<<PSId(cid)<<" = "<<rts
-		   <<", m_"<<PSId(lid)<<" = "<<sqrt(sl)
-		   <<", m_"<<PSId(rid)<<" = "<<sqrt(sr)<<"\n";
+    msg_Debugging()<<"  s "<<nr<<": {"<<ID(cid)
+		   <<"}->{"<<ID(aid)<<","<<ID(bid)
+		   <<"} m_"<<ID(cid)<<" = "<<rts
+		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
+		   <<", m_"<<ID(rid)<<" = "<<sqrt(sr)<<"\n";
 #endif
   }
   return true;
@@ -678,9 +654,9 @@ bool PS_Channel::GenerateChannel
   if (cur->NIn()==0) return true;
 #ifdef DEBUG__BG
   msg_Indent();
-  msg_Debugging()<<METHOD<<"("<<PSId(cur->CId())
+  msg_Debugging()<<METHOD<<"{"<<ID(cur->CId())
 		 <<","<<cur->J().front().size()
-		 <<"): n = "<<v.size()<<" {\n";
+		 <<"}: n = "<<v.size()<<" {\n";
 #endif
   double sum(0.0);
   Double_Vector psum;
@@ -803,12 +779,12 @@ double PS_Channel::GenerateWeight
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    t "<<nr<<": ("<<PSId(ja->CId())
-		   <<","<<PSId(m_rid)<<")-"<<PSId(jc->CId())
-		   <<"->("<<PSId(jb->CId())<<","<<PSId(pid)
-		   <<") m_"<<PSId(bid)<<" = "<<sqrt(se)
-		   <<", m_"<<PSId(pid)<<" = "<<sqrt(sp)
-		   <<" -> m_"<<PSId(aid^m_rid)<<" = "
+    msg_Debugging()<<"    t "<<nr<<": {"<<ID(ja->CId())
+		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
+		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
+		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
+		   <<", m_"<<ID(pid)<<" = "<<sqrt(sp)
+		   <<" -> m_"<<ID(aid^m_rid)<<" = "
 		   <<(m_p[aid]+m_p[m_rid]).Mass()<<"\n";
 #endif
   }
@@ -826,11 +802,11 @@ double PS_Channel::GenerateWeight
     wgt*=SChannelWeight(jc,((PS_Vertex*)v)->Type(),m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    s "<<nr<<": ("<<PSId(cid)
-		   <<")->("<<PSId(aid)<<","<<PSId(bid)
-		   <<") m_"<<PSId(SId(cid))<<" = "<<rts
-		   <<", m_"<<PSId(lid)<<" = "<<sqrt(sl)
-		   <<", m_"<<PSId(rid)<<" = "<<sqrt(sr)<<"\n";
+    msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
+		   <<"}->{"<<ID(aid)<<","<<ID(bid)
+		   <<"} m_"<<ID(SId(cid))<<" = "<<rts
+		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
+		   <<", m_"<<ID(rid)<<" = "<<sqrt(sr)<<"\n";
 #endif
   }
   return wgt;
@@ -871,8 +847,8 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 	if (cid==m_rid) {
 #ifdef DEBUG__BG
 	  std::string did(v->Dip()?"DS"+v->Dip()->PSInfo():"");
-	  msg_Debugging()<<"    kill "<<PSId(aid)<<" "<<PSId(bid)
-			 <<" "<<PSId(cid)<<" "<<did<<"\n";
+	  msg_Debugging()<<"    kill "<<ID(aid)<<" "<<ID(bid)
+			 <<" "<<ID(cid)<<" "<<did<<"\n";
 #endif
 	  v->SetWeight(cw);
 	  wgt+=v->Alpha()/v->Weight();
@@ -913,8 +889,8 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
       PS_Vertex *v((PS_Vertex*)cur->In()[i]);
       if (!Zero(v) && v->Alpha()>0.0) {
 #ifdef DEBUG__BG
-	msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
-		       <<","<<PSId(v->J(1)->CId())
+	msg_Debugging()<<"    V_{"<<ID(v->J(0)->CId())
+		       <<","<<ID(v->J(1)->CId())
 		       <<"}: set w = "<<wgt/v->Weight()<<"\n";
 #endif
 	if (wgt>0.0) v->SetWeight(wgt/v->Weight());
@@ -1016,8 +992,8 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 	-(m_p[cur->CId()]=m_p[cur->In().front()->J(0)->CId()]
 	  +m_p[cur->In().front()->J(1)->CId()]);
 #ifdef DEBUG__BG
-	msg_Debugging()<<"  -p_"<<PSId((1<<m_n)-1-cur->CId())
-		       <<" = p_"<<PSId(cur->CId())
+	msg_Debugging()<<"  -p_"<<ID((1<<m_n)-1-cur->CId())
+		       <<" = p_"<<ID(cur->CId())
 		       <<" = "<<m_p[cur->CId()]<<"\n";
 #endif
     }
@@ -1038,8 +1014,8 @@ void PS_Channel::AddPoint(double value)
 	  PS_Vertex *v((PS_Vertex *)(*p_cur)[n][i]->In()[j]);
 	  if (!Zero(v)) v->AddPoint(value);
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
-			 <<","<<PSId(v->J(1)->CId())<<"}: <w> = "
+	  msg_Debugging()<<"    V_{"<<ID(v->J(0)->CId())
+			 <<","<<ID(v->J(1)->CId())<<"}: <w> = "
 			 <<v->Mean()<<" +- "<<v->Sigma()<<"\n";
 #endif
 	}
@@ -1129,8 +1105,8 @@ void PS_Channel::Optimize()
 	  if (v->Alpha()!=1.0) {
 	    printed=true;
 	    double re(int(v->Sigma()/v->Mean()*10000)/100.0);
-	    msg_Tracking()<<"  V_{"<<std::setw(6)<<PSId(v->J(0)->CId())
-			  <<","<<std::setw(6)<<PSId(v->J(1)->CId())
+	    msg_Tracking()<<"  V_{"<<std::setw(6)<<ID(v->J(0)->CId())
+			  <<","<<std::setw(6)<<ID(v->J(1)->CId())
 			  <<"}: w' = "<<std::setw(15)<<std::right
 			  <<v->Mean()/wmean<<" +- "<<std::setw(6)<<re
 			  <<" %  =>  a = "<<std::setw(15)<<v->OldAlpha()
