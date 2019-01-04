@@ -446,7 +446,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     {
       if (m_usedb) {
 	My_In_File::OpenDB(resdir+OutputPath()+"/");
-	My_In_File::ExecDB(resdir+OutputPath(),"begin");
       }
       if (mode==0) ATOOLS::MakeDir(resdir+OutputPath());
     }
@@ -459,7 +458,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
 	it->second->FinishAnalysis(dir,mode);
       }
       if (m_usedb) {
-	My_In_File::ExecDB(resdir+OutputPath(),"commit");
 	My_In_File::CloseDB(resdir+OutputPath()+"/");
       }
       return;
@@ -469,7 +467,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       m_objects[i]->Output(resdir+OutputPath());
     }
     if (m_usedb) {
-      My_In_File::ExecDB(resdir+OutputPath(),"commit");
       My_In_File::CloseDB(resdir+OutputPath()+"/");
     }
     return;
@@ -488,7 +485,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     }
   }
   if (m_usedb) {
-    My_In_File::ExecDB(resdir+OutputPath(),"commit");
     My_In_File::CloseDB(resdir+OutputPath()+"/");
   }
 }

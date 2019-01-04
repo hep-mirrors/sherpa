@@ -24,7 +24,6 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
-#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace PHASIC;
@@ -753,9 +752,6 @@ void Phase_Space_Handler::EndOptimize()
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");

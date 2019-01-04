@@ -14,6 +14,7 @@ ME_Generators::ME_Generators(const std::string &path,
 			     const std::string &file):
   m_path(path), m_file(file)
 {
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process");
   Default_Reader reader;
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_file);

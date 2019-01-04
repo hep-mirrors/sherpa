@@ -84,14 +84,12 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   Channels()->SetNout(NOut());
   m_startmd=startmd;
 
-  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",m_path,m_filename);
-  string path = split.first;
-  string file = split.second;
-
   // check if dc file exists
-  if (Read_Write_Base::FileInZip(path,file)) {
+  if (FileExists(m_path+m_filename)) {
     msg_Tracking()<<METHOD<<": read "<<m_path<<m_filename<<endl;
-    string content = Read_Write_Base::GetZipFileContent(path,file);
+    My_In_File infile(m_path+m_filename);
+    infile.Open();
+    string content = infile.FileContent();
     DEBUG_VAR(content);
 
     GeneralModel model_for_ps = m_startmd;
@@ -275,43 +273,42 @@ void Hadron_Decay_Channel::ProcessResult(const string& content)
 void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
 {
   string content, entry;  
-  ostringstream to;
-  to.precision(4);
+  My_Out_File to(path+file);
+  to.Open();
+  to->precision(4);
 
   if ( newfile ) {                // if DC file doesn't exist yet
     // write header
-    to<<"# Decay: "<<Name()<<endl;
-    to<<"#        "<<setw(m_flavours[0].IDName().length())<<left<<"0"<<" --> ";
+    *to<<"# Decay: "<<Name()<<endl;
+    *to<<"#        "<<setw(m_flavours[0].IDName().length())<<left<<"0"<<" --> ";
     int i=0;
     for (size_t i=1; i<m_flavours.size(); ++i) {
-      to<<setw(m_flavours[i].IDName().length()+1)<<left<<i;
+      *to<<setw(m_flavours[i].IDName().length()+1)<<left<<i;
     }
-    to<<endl<<endl;
+    *to<<endl<<endl;
 
     // write out options
-    to<<"<Options>"<<endl;
-    to<<"  AlwaysIntegrate = "<<m_always_integrate
+    *to<<"<Options>"<<endl;
+    *to<<"  AlwaysIntegrate = "<<m_always_integrate
        <<"    # 0...read results and skip integration"<<endl;
-    to<<"                         # 1...don't read results and integrate"<<endl;
-    to<<"</Options>"<<endl<<endl;
+    *to<<"                         # 1...don't read results and integrate"<<endl;
+    *to<<"</Options>"<<endl<<endl;
 
     // write out phasespace settings
-    to<<"<Phasespace>"<<endl;
-    to<<"  1.0 Isotropic"<<endl;
-    to<<"</Phasespace>"<<endl<<endl;
+    *to<<"<Phasespace>"<<endl;
+    *to<<"  1.0 Isotropic"<<endl;
+    *to<<"</Phasespace>"<<endl<<endl;
 
     // write out ME settings
-    to<<"<ME>"<<endl;
-    to<<"  1.0 0.0 Generic"<<endl;
-    to<<"</ME>"<<endl<<endl;
+    *to<<"<ME>"<<endl;
+    *to<<"  1.0 0.0 Generic"<<endl;
+    *to<<"</ME>"<<endl<<endl;
 
     // write out result
-    to<<"<Result>"<<endl;
-    to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl; 
-    to<<"</Result>"<<endl; 
+    *to<<"<Result>"<<endl;
+    *to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl; 
+    *to<<"</Result>"<<endl; 
 
-    content=to.str();
-    Read_Write_Base::AddZipEntry("Decaydata/",path,!newfile,content,file);
   } 
   // if (read DC file)
   else {                                
@@ -323,23 +320,19 @@ void Hadron_Decay_Channel::WriteOut(bool newfile, string path, string file)
     cout.precision(oldprec);
     cout<<"</Result>"<<endl;
 
-    pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",path,file);
-    path = split.first;
-    file = split.second;
-    content = Read_Write_Base::GetZipFileContent(path,file);
+    My_In_File infile(path+file);
+    infile.Open();
+    content = infile.FileContent();
 
     // change integration results and overwrite result section
     string resultline;
     size_t found_begin = content.find("<Result>");
     size_t found_end = content.find("</Result>");
-    to<<"<Result>"<<endl;
-    to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
-    to<<"</Result>"<<endl;
-    resultline=to.str();
+    resultline="<Result>\n  "+ToString(m_iwidth)+" "+ToString(m_ideltawidth)+" "+ToString(m_max)+";\n</Result>\n";
     if (found_begin!=string::npos) content.replace(found_begin,found_end,resultline);
     else content.append(resultline);
     msg_IODebugging()<<content<<endl;
-    Read_Write_Base::AddZipEntry("Decaydata/",path,true,content,file);
+    *to<<content;
   }
 }
 

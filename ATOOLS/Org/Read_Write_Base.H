@@ -7,8 +7,6 @@
 #include <map>
 
 #include <algorithm> // for find function
-#include "ATOOLS/Org/libzippp.h"
-using namespace libzippp;
 
 namespace ATOOLS {
 
@@ -104,12 +102,6 @@ namespace ATOOLS {
 
   public:
 
-    typedef std::map<std::string,std::pair
-                     <ZipEntry,std::string> > DataBase_Map_Zip;
-
-    typedef std::vector<ZipEntry> DataBase;
-    typedef std::vector<std::string> DataBase_str;
-
     // constructors
     Read_Write_Base(const unsigned int infiles,
 		    const unsigned int outfiles);
@@ -126,18 +118,6 @@ namespace ATOOLS {
 
     void CloseInFile(const unsigned int i=0,const int mode=0);
     void CloseOutFile(const unsigned int i=0,const int mode=0);
-
-    // Zip | static member functions
-    static std::string GetZipFileContent(std::string path, std::string file);
-    static bool OpenZip(std::string archive);
-    static bool CloseZip(std::string archive);
-    static bool FileInZip(std::string path, const std::string entry);
-    static bool AddZipEntry(std::string archive, std::string path,
-                int edit, std::string content, std::string file="");
-    static std::pair<std::string,std::string> SplitFilePath
-          (std::string parser,std::string path,
-           std::string file="", bool extend_path=true);
-
 
     std::string StripEscapes(const std::string &buffer) const;
 

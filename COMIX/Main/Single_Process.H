@@ -31,7 +31,7 @@ namespace COMIX {
     PSGenerator_Set m_psset;
 
     double m_w, m_dxs, m_x[2];
-    bool   m_checkpoles, m_allowmap;
+    bool   m_checkpoles, m_allowmap, m_hasmapfile;
 
     ATOOLS::cs_itype::type m_itype;
     ATOOLS::NLO_subevtlist m_subs;

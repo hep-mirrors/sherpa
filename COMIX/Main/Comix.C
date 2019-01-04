@@ -247,10 +247,6 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
     }
   }
 #endif
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   return true;
@@ -278,18 +274,16 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
-    My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
     if (!newxs->Get<PHASIC::Process_Group>()->ConstructProcesses()) {
-      My_In_File::ExecDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
-    My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
+    My_In_File::CloseDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
   }
   else {
@@ -300,11 +294,9 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
-    My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
     if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
-      My_In_File::ExecDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
@@ -312,8 +304,8 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
     if (!newxs->Get<Single_Process>()->MapProcess())
       if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
-    My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
+    My_In_File::CloseDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   }
   if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);
