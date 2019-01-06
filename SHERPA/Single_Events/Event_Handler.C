@@ -223,7 +223,9 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 	return 2;
       }
     }
+    //msg_Out()<<"Trying "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
+    //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;

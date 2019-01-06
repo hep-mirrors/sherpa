@@ -26,6 +26,7 @@ namespace AHADIC {
 
   class Hadronisation_Parameters {
   private:
+    int                  m_shower;
     double               m_offset;
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
@@ -42,13 +43,12 @@ namespace AHADIC {
     void ReadMesonWeights(ATOOLS::Data_Reader & dataread);
     void ReadGluonSplittingParameters(ATOOLS::Data_Reader & dataread);
     void ReadClusterDecayParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterToMesonParameters(ATOOLS::Data_Reader & dataread);
-    void ReadDeprecatedParameters(ATOOLS::Data_Reader & dataread);
+    void ReadClusterToMesonPSParameters(ATOOLS::Data_Reader & dataread);
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();
 
-    void Init(std::string,std::string);
+    void Init(std::string,std::string,std::string);
     double Get(std::string keyword);
     const bool & AnaOn() const { return m_ana; }
 

@@ -13,7 +13,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Ahadic::Ahadic(string path, string file) :
+Ahadic::Ahadic(string path, string file,string shower) :
   m_softclusters(Soft_Cluster_Handler(&m_hadron_list)),
   m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
   m_sformer(Singlet_Former(&m_singlet_list)),
@@ -22,7 +22,7 @@ Ahadic::Ahadic(string path, string file) :
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {  
   hadpars = new Hadronisation_Parameters();
-  hadpars->Init(path,file);
+  hadpars->Init(path,file,shower);
 
   m_beamparticles.Init();
   m_softclusters.Init();

@@ -129,7 +129,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
     maxnum--;
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
-      msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+      //if (scale=1.e-3)
+      //msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckDIS(beam) && scale>0.);
@@ -327,7 +328,7 @@ bool Kinematics_Generator::CheckScatter(Particle * part[2]) {
   for (size_t beam=0;beam<2;beam++) {
     oldLab   += labmom[beam] = part[beam]->Momentum();
     Kperp    += kperp[beam]  = m_ktmap[beam][part[beam]];
-    mt2[beam] = sqr(part[beam]->Flav().Mass())-kperp[beam].Abs2();
+    mt2[beam] = sqr(part[beam]->Flav().HadMass())-kperp[beam].Abs2();
   }
   double M2  = oldLab.Abs2(), M = sqrt(M2), Y = oldLab.Y();
   double KT2 = -Kperp.Abs2(), MT2 = M2+KT2, MT = sqrt(MT2);
@@ -382,7 +383,7 @@ bool Kinematics_Generator::CheckRemnants() {
       tot += mom = part->Momentum()+m_ktmap[beam][part];
       parts.push_back(part);
       moms.push_back(mom);
-      masses.push_back(part->Flav().Mass());
+      masses.push_back(part->Flav().HadMass());
       totmass += masses.back();
       m_checkmom[beam] -= part->Momentum();
     }
@@ -395,7 +396,7 @@ bool Kinematics_Generator::CheckRemnants() {
     tot += mom = m_checkmom[beam] + m_ktmap[beam][recoiler];
     parts.push_back(recoiler);
     moms.push_back(mom);
-    masses.push_back(recoiler->Flav().Mass());
+    masses.push_back(recoiler->Flav().HadMass());
     totmass += masses.back();
   }
   // If there is no solution, do not even try to fix it.
@@ -414,7 +415,7 @@ bool Kinematics_Generator::CheckRemnants() {
 	     plit!=p_spectators[beam]->end();plit++) {
 	  mom = (*plit)->Momentum()+m_ktmap[beam][(*plit)];
 	  msg_Out()<<"  "<<(*plit)->Number()<<": "<<mom
-		   <<" --> "<<(*plit)->Flav().Mass()<<"\n";
+		   <<" --> "<<(*plit)->Flav().HadMass()<<"\n";
 	}
       }
     }

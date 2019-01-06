@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons)
+  p_hadrons(hadrons), m_ktfac(1.)
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
@@ -120,7 +120,7 @@ bool Soft_Cluster_Handler::TreatSingletCluster() {
   }
   // below two-pion threshold
   else {
-    if (ran->Get()>0.5) {
+    if (ran->Get()>0.66) {
       m_hads[0] = m_hads[1] = Flavour(kf_pi);
     }
     else {
@@ -169,14 +169,15 @@ bool Soft_Cluster_Handler::FixKinematics() {
 
   double M2(m_mass*m_mass);
   double m12(sqr(m_hads[0].Mass())),m22(sqr(m_hads[1].Mass()));
-  double E1((M2+m12-m22)/(2.*m_mass)), p1(sqrt(sqr(E1)-m12));
-  //double cth = 1.-ran->Get();  // only between 0 and 1.
-  //double sth = sqrt(1.-cth*cth);
-  double pt  = m_ktselector(p1);
-  double pl  = sqrt(p1*p1-pt*pt);
-  double phi = 2.*M_PI*ran->Get();
-  m_moms[0]  = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
-  m_moms[1]  = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
+  double E1((M2+m12-m22)/(2.*m_mass)), p1(sqrt(sqr(E1)-m12)), pt;
+  bool   lead = (*p_cluster)[0]->IsLeading() || (*p_cluster)[0]->IsLeading();
+  //if (lead)
+  pt = m_ktselector(p1,lead?1.:m_ktfac);
+  //else      pt = p1 * sqrt(1.-sqr(1.-2.*ran->Get()));
+  double pl    = sqrt(p1*p1-pt*pt);
+  double phi   = 2.*M_PI*ran->Get();
+  m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
+  m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
   bool print(false);
   for (size_t i=0;i<2;i++) {
     rotat.RotateBack(m_moms[i]);
@@ -372,7 +373,7 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
   
 double Soft_Cluster_Handler::
 PhaseSpace(const double & m2,const double & m3,const bool heavyB) {
-  if (heavyB) return 1.;
+  if (m_chi<0. || heavyB) return 1.;
   double m22(m2*m2),m32(m3*m3);
   double ps  = sqrt(sqr(m_mass2-m22-m32)-4.*m22*m32)/(8.*M_PI*m_mass2);
   // extra weight to possible steer away from phase space only ... may give

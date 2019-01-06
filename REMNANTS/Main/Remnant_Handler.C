@@ -95,6 +95,7 @@ void Remnant_Handler::
 InitializeKinematicsAndColours(const std::string & path,const std::string & file) {
   m_kinematics.Initialize(this,path,file);
   m_colours.Initialize(this);
+  m_decorrelator.Initialize(this,path,file);
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
@@ -141,11 +142,17 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   // plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
   // Fill in the transverse momenta through the Kinematics_Generator.
+  // Check for colour connected parton-pairs including beam partons and add soft gluons in
+  // between them if their invariant mass is too large.
+  // This still needs debugging - therefore it is commented out.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
+    // || !m_decorrelator(p_softblob)) {
     Reset();
     msg_Error()<<"Warning in "<<METHOD<<": return new event\n";
     return Return_Value::New_Event;
   }
+  //for (size_t beam=0;beam<2;beam++) msg_Out()<<(*p_remnants[beam]->GetBlob())<<"\n";
+  //msg_Out()<<(*p_softblob)<<"\n";
   Reset();
   return Return_Value::Success;
 }

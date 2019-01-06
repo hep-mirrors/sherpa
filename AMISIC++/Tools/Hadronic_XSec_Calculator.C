@@ -7,9 +7,10 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
+// will have to make sure that pions are initialised below.  Argh.
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_Ecms(rpa->gen.Ecms()), m_s(m_Ecms*m_Ecms),
-  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(Flavour(kf_pi).Mass()),
+  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3),
   m_xsecpom(21.70),
   m_xsecregge(rpa->gen.Beam1().IsAnti()^rpa->gen.Beam2().IsAnti()?98.39:56.08)

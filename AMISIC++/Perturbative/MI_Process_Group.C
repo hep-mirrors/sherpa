@@ -18,7 +18,10 @@ using namespace std;
 MI_Process_Group::MI_Process_Group(const std::string & name) :
   m_name(name), m_lastxs(0.), m_pref(M_PI)
 {
-  m_pt02 = sqr((*mipars)("pt_0"));
+  m_muR_scheme = mipars->GetScaleScheme();
+  m_muR_fac    = sqr((*mipars)("RenScale_Factor"));
+  m_muF_fac    = sqr((*mipars)("FacScale_Factor"));
+  m_pt02       = sqr((*mipars)("pt_0"));
 }
 
 MI_Process_Group::~MI_Process_Group() {
@@ -54,7 +57,13 @@ double MI_Process_Group::SoftCorrection(const double & pt2) const {
 
 double MI_Process_Group::Scale(const double & pt2) const {
   // Default scale, including an IR regularisation - maybe we should get more choices.
-  return pt2+m_pt02;
+  switch (m_muR_scheme) {
+  case scale_scheme::PT_with_Raps:
+    exit(1);
+  case scale_scheme::PT:
+  default:
+    return (pt2+m_pt02);
+  }
 }
 
 void MI_Process_Group::Output() const {
@@ -116,7 +125,7 @@ operator()(const double & shat,const double & that,const double & uhat) {
   double pref = m_pref/sqr(shat);
   Flavour gluon(kf_gluon);
   double pdf  = p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(gluon);
-  double cpl  = sqr((*p_alphaS)(Scale(m_scale)));
+  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
   double tot  = 0.;
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) tot += (**mit)();
@@ -198,7 +207,7 @@ double MI_QQB_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(Scale(m_scale)));
+  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
   double pdf  = 0;
   for (size_t i=1;i<6;i++) {
     Flavour flav = Flavour(i);
@@ -236,7 +245,7 @@ double MI_QQ_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(Scale(m_scale)));
+  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
   double pdf  = 0;
   for (size_t i=1;i<6;i++) {
     Flavour flav = Flavour(i);
@@ -300,7 +309,7 @@ double MI_QG_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(Scale(m_scale)));
+  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
   double pdf  = 0;
   Flavour gluon(kf_gluon);
   for (size_t i=1;i<6;i++) {
@@ -370,7 +379,7 @@ double MI_Q1Q2_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(Scale(m_scale)));
+  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
   double pdf  = 0;
   for (size_t i=1;i<6;i++) {
     Flavour flav1 = Flavour(i);
@@ -446,7 +455,7 @@ double MI_QG_QGamma_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double me2  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = (*p_alphaS)(Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
+  double cpl  = (*p_alphaS)(m_muR_fac*Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
   double pdf  = 0;
   Flavour gluon(kf_gluon);
   for (size_t i=1;i<6;i++) {
@@ -510,7 +519,7 @@ double MI_QQ_GGamma_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double me2  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
-  double cpl  = (*p_alphaS)(Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
+  double cpl  = (*p_alphaS)(m_muR_fac*Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
   double pdf  = 0;
   for (size_t i=1;i<6;i++) {
     Flavour quark = Flavour(i);

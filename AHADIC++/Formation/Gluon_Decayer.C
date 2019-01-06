@@ -101,7 +101,7 @@ bool Gluon_Decayer::SplitGluonRing() {
 
 Proto_Particle * Gluon_Decayer::FirstGluon() {
   double minm2(1.e12), m2thres(sqr(2.*m_breaker.MinMass())), m2;
-  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner;
+  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner(p_singlet->end());
   for (list<Proto_Particle *>::iterator ppiter1=p_singlet->begin();
        ppiter1!=p_singlet->end();ppiter1++) {
     Proto_Particle * part1(*ppiter1);
@@ -115,7 +115,7 @@ Proto_Particle * Gluon_Decayer::FirstGluon() {
       winner = ppiter1;
     }
   }
-  return (*winner);
+  return (winner==p_singlet->end()?(*p_singlet->begin()):(*winner));
 }
 
 int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,

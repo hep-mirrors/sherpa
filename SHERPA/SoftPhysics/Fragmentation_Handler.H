@@ -33,7 +33,7 @@ namespace SHERPA {
     void Shrink(ATOOLS::Blob_List *);
     void PrepareTerminate(); 
   public:
-    Fragmentation_Handler(std::string,std::string);
+    Fragmentation_Handler(std::string,std::string,std::string);
     ~Fragmentation_Handler();
 
     ATOOLS::Return_Value::code 

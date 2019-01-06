@@ -1,5 +1,6 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Message.H"
@@ -9,6 +10,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 Over_Estimator::Over_Estimator() :
+  m_muR_fac(1.), m_muF_fac(1.),
   m_nbins(100), m_pref(1.), m_bfac(1.)
 {}
 
@@ -31,6 +33,8 @@ void Over_Estimator::Initialize(MI_Processes * procs) {
 }
 
 void Over_Estimator::FixMaximum(MI_Processes * procs) {
+  m_muR_fac      = (*mipars)("RenScale_Factor"); 
+  m_muF_fac      = (*mipars)("FacScale_Factor"); 
   double pt2step = log(m_s/(4.*m_ptmin2))/double(m_nbins);
   double int1(0.),int2(0.);
   for (size_t bin=0;bin<m_nbins;bin++) {
@@ -69,7 +73,7 @@ double Over_Estimator::ApproxME(const double & pt2) {
   // that the t-channel exchange of gluons in elastic scattering dominates, and that the
   // product of PDFs is largest for both x being minimal, i.e. for x = xT = 4pT^2/s.
   double scale = pt2+m_pt02;
-  double est   = M_PI/2.*sqr((*p_alphaS)(scale)) / sqr(scale);
+  double est   = M_PI/2.*sqr((*p_alphaS)(m_muR_fac * scale/4.)) / sqr(scale);
   for (size_t i=0;i<2;i++) {
     p_pdf[i]->Calculate(m_xt,Max(pt2,p_pdf[i]->Q2Min()));
     double pdfsum = 0.;
@@ -90,7 +94,7 @@ double Over_Estimator::ExactME(MI_Processes * procs,const double & pt2) {
   double shat  = 4.*pt2, that=-2.*pt2, uhat=-2.*pt2;
   double x1    = m_xt, x2 = m_xt;
   double scale = pt2;
-  procs->CalcPDFs(x1,x2,scale);
+  procs->CalcPDFs(x1,x2,m_muF_fac * scale);
   return (*procs)(shat,that,uhat);
 }
   

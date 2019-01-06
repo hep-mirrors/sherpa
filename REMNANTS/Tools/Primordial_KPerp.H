@@ -27,7 +27,6 @@ namespace REMNANTS {
     ATOOLS::ParticleMomMap * p_ktmap;
 
     prim_kperp_form::code SelectForm(const std::string & form=std::string("dipole_limited"));
-    ATOOLS::Vec4D         KT(const ATOOLS::Vec4D & mom);
     double KT_Gauss(const double & ktmax) const;
     double KT_Gauss_Limited(const double & ktmax) const;
     double KT_Dipole(const double & ktmax) const;
@@ -47,6 +46,7 @@ namespace REMNANTS {
     void Initialize(const std::string path,const std::string file);
     bool CreateBreakupKinematics(const size_t & beam,ATOOLS::ParticleMomMap * ktmap,
 				 const double & scale);
+    ATOOLS::Vec4D KT(const double & ktmax);
   };
 }
 

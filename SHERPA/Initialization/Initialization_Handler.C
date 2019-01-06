@@ -418,8 +418,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   PHASIC::Phase_Space_Handler::GetInfo();
   if (rpa->gen.NumberOfEvents()>0) {
-  okay = okay && InitializeTheFragmentation();
-  okay = okay && InitializeTheSoftCollisions();
   }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheMatrixElements();
@@ -427,6 +425,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheFragmentation();
+    okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
@@ -731,7 +731,8 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   p_mehandler = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   p_mehandler->SetRemnantHandler(p_remnants);
-  int ret(p_mehandler->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]));
+  int ret(p_mehandler->InitializeProcesses(p_model,p_beamspectra,
+					   m_isrhandlers[isr::hard_process]));
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return ret==1;
@@ -762,6 +763,7 @@ bool Initialization_Handler::InitializeTheShowers()
     m_showerhandlers[isrtypes[i]] =
       new Shower_Handler(m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]],i);
     m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
+    msg_Out()<<i<<" : "<<m_showerhandlers[isrtypes[i]]<<"\n";
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
@@ -794,7 +796,8 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   as->SetActiveAs(isr::hard_subprocess);
-  p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat);
+  std::string shower = m_showerhandlers[isr::hard_process]->ShowerGenerator();
+  p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat,shower);
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
@@ -805,7 +808,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   Default_Reader reader;
   reader.SetInputPath(m_path);
   reader.SetInputFile(m_hadrondecaysdat);
-  std::string frag=reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", string("Ahadic"));
+  std::string frag=reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION",
+							     string("Ahadic"));
   if (frag=="None") return true;
 
   std::string defdecmodel("Hadrons");

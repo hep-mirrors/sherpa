@@ -30,6 +30,7 @@ bool MI_Processes::Initialize(const std::string &path,const std::string &file,
   // Get PDFs and couplings
   p_model    = model;
   p_isr      = isr;
+  m_muFfac   = sqr((*mipars)("FacScale_Factor"));
   p_pdf[0]   = p_isr->PDF(0);
   p_pdf[1]   = p_isr->PDF(1);
   p_alphaS   = dynamic_cast<MODEL::Running_AlphaS *>
@@ -119,8 +120,8 @@ void MI_Processes::SetAlphaS() {
 void MI_Processes::CalcPDFs(const double & x1,const double & x2,
 			    const double & scale) {
   // Calculate both sets of PDFs at the relevant x and Q^2
-  p_pdf[0]->Calculate(x1,Max(scale,p_pdf[0]->Q2Min()));
-  p_pdf[1]->Calculate(x2,Max(scale,p_pdf[1]->Q2Min()));
+  p_pdf[0]->Calculate(x1,Max(m_muFfac*scale,p_pdf[0]->Q2Min()));
+  p_pdf[1]->Calculate(x2,Max(m_muFfac*scale,p_pdf[1]->Q2Min()));
 }
 
 const double MI_Processes::XSec(const Vec4D_Vector & momenta) {
