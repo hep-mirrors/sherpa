@@ -147,7 +147,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 		fsrpath = fsrpath0 + string(hlp);
 		fsrp = path+string("/")+fsrpath;
 	      }
-	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+fsrp);
+	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+fsrp,true);
 	      String_Library slib(1);
 	      slib.InitMakefile(fsrp);
 	    }

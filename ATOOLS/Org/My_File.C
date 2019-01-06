@@ -4,12 +4,28 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/libzippp.h"
 
+#include <sys/stat.h>
 #include <typeinfo>
 #include <cstdlib>
-#include <sqlite3.h>
 #include <string.h>
+#include <algorithm>
 #define PTS long unsigned int
+
+using namespace libzippp;
+
+namespace ATOOLS {
+
+  typedef std::pair<ZipArchive*,std::vector<std::string> > ZipArchive_Ref;
+  typedef std::map<std::string,ZipArchive_Ref> ZipArchive_Map;
+  typedef std::pair<std::string,int> Zip_Entry;
+  typedef std::map<std::string,Zip_Entry> ZipEntry_Map;
+
+  ZipArchive_Map s_ziparchives;
+  ZipEntry_Map s_zipfiles;
+
+}
 
 using namespace ATOOLS;
 
@@ -25,18 +41,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
 	
 namespace ATOOLS {
 
-  typedef std::map<std::string,std::pair
-		   <sqlite3*,std::string> > DataBase_Map;
-
-  static DataBase_Map  s_databases;
-
-  typedef std::map<std::string,sqlite3*> SQLDB_Map;
-  typedef std::map<sqlite3*,sqlite3_stmt*> SQLS_Map;
-  typedef std::pair<std::string,sqlite3*> DB_Ref;
-
-  SQLDB_Map s_sqldbs;
-  SQLS_Map s_getfile;
-	
   template <> std::ostream &
   operator<<<std::ifstream>(std::ostream &ostr,
 			    const My_File<std::ifstream> &file)
@@ -57,169 +61,94 @@ namespace ATOOLS {
 
 }
 
-int ListFiles(void *data,int argc,char **argv,char **name)
-{
-  if (argc!=1 || strcmp(name[0],"file")) return 1;
-  msg_IODebugging()<<"  '"<<argv[0]<<"' -> '"
-		   <<((DB_Ref*)data)->first+argv[0]<<"'\n";
-  s_databases[((DB_Ref*)data)->first+argv[0]]=
-    std::pair<sqlite3*,std::string>
-    (((DB_Ref*)data)->second,((DB_Ref*)data)->first);
-  return 0;
-}
-
-void PrepareStatements(sqlite3 *db)
-{
-  char sqlget[69];
-  sprintf(sqlget,"select content from path where file = ?1 order by rowid desc limit 1");
-  sqlite3_stmt *stmt=NULL;
-  int rc=sqlite3_prepare_v2(db,sqlget,69,&stmt,NULL);
-  if(rc!=SQLITE_OK)
-    msg_IODebugging()<<METHOD<<"(): '"<<db<<"' returns '"
-		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
-  s_getfile[db]=stmt;
-}
-
 template <class FileType>
 bool My_File<FileType>::OpenDB(std::string file)
 {
-  DB_Ref dbref(file,NULL);
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
-  file+=".db";
-  if (s_sqldbs.find(file)!=s_sqldbs.end()) return true;
-  sqlite3 *db=NULL;
+  std::string path(file);
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()) {
-    MPI::COMM_WORLD.Barrier();
-  }
-  else {
-#endif
-  if (FileExists(file)) {
-#ifdef USING__MPI
-    MPI::COMM_WORLD.Barrier();
-#endif
-  }
-  else {
-    size_t pos(file.rfind('/'));
-    if (pos!=std::string::npos &&
-	!MakeDir(file.substr(0,pos),true)) return false;
-    int res=0;
-    if (s_sqlopenflag.length()==0) res=sqlite3_open(file.c_str(),&db);
-    else res=sqlite3_open_v2(file.c_str(),&db,SQLITE_OPEN_READWRITE|
-			     SQLITE_OPEN_CREATE,s_sqlopenflag.c_str());
-    if (res!=SQLITE_OK) {
-      msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
-		       <<sqlite3_errmsg(db)<<"'."<<std::endl;
+    s_ziparchives[path]=ZipArchive_Ref(NULL,std::vector<std::string>());
+    int size;
+    MPI::COMM_WORLD.Bcast(&size,1,MPI_INT,0);
+    for (int i=0;i<size;++i) {
+      int length;
+      MPI::COMM_WORLD.Bcast(&length,1,MPI_INT,0);
+      char *message = new char[length+1];
+      MPI::COMM_WORLD.Bcast(message,length+1,MPI_CHAR,0);
+      std::string name, content;
+      for (int p=0;p<length;++p)
+	if (message[p]=='\n') {
+	  name=std::string(message,p);
+	  content=std::string(&message[p+1],length-p-1);
+	  break;
+	}
+      s_ziparchives[path].second.push_back(name);
+      s_zipfiles[name]=Zip_Entry(content,0);
+      delete [] message;
     }
-    char *zErrMsg=0;
-    std::string sql="create table path(file,content);";
-    sql+="create index idx_path on path(file); begin";
-    msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): Creating table.\n";
-    int rc=sqlite3_exec(db,sql.c_str(),NULL,NULL,&zErrMsg);
-    if(rc!=SQLITE_OK) {
-      msg_IODebugging()<<METHOD<<"(): '"<<file
-		     <<"' returns '"<<zErrMsg<<"'."<<std::endl;
-      sqlite3_free(zErrMsg);
-      sqlite3_close(db);
-      return false;
-    }
-    s_sqldbs[file]=db;
-    PrepareStatements(db);
-#ifdef USING__MPI
-    MPI::COMM_WORLD.Barrier();
-#endif
     return true;
   }
-#ifdef USING__MPI
-  }
 #endif
-  int res=0;
-  if (s_sqlopenflag.length()==0) res=sqlite3_open(file.c_str(),&db);
-  else res=sqlite3_open_v2(file.c_str(),&db,SQLITE_OPEN_READWRITE,
-			   s_sqlopenflag.c_str());
-  if (res!=SQLITE_OK) {
-    msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
-		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
+  while (file.length() && file[file.length()-1]=='/')
+    file.erase(file.length()-1,1);
+  file+=".zip";
+  ZipArchive *zf(new ZipArchive(file));
+  s_ziparchives[path]=ZipArchive_Ref(zf,std::vector<std::string>());
+  int res=zf->open(ZipArchive::WRITE);
+  const std::vector<ZipEntry> &entries=zf->getEntries();
+  int size=entries.size();
+#ifdef USING__MPI
+  MPI::COMM_WORLD.Bcast(&size,1,MPI_INT,0);
+#endif
+  for(std::vector<ZipEntry>::const_iterator
+	it=entries.begin();it!=entries.end();++it) {
+    std::string name=path+it->getName();
+    std::string content=it->readAsText();
+    s_ziparchives[path].second.push_back(name);
+    s_zipfiles[name]=Zip_Entry(content,0);
+#ifdef USING__MPI
+    int length(name.length()+content.length()+1);
+    content=name+'\n'+content;
+    MPI::COMM_WORLD.Bcast(&length,1,MPI_INT,0);
+    MPI::COMM_WORLD.Bcast(&content[0],length+1,MPI_CHAR,0);
+#endif
   }
-  if (db==NULL) {
-    msg_IODebugging()<<METHOD<<"(): '"<<file
-		     <<"' not found."<<std::endl;
-    return false;
-  }
-  dbref.second=db;
-  char sql[100], *zErrMsg=0;
-  strcpy(sql,"select file from path");
-  msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): {\n";
-  int rc=sqlite3_exec(db,sql,ListFiles,(void*)&dbref,&zErrMsg);
-  if(rc!=SQLITE_OK) {
-    msg_IODebugging()<<METHOD<<"(): '"<<file
-		   <<"' returns '"<<zErrMsg<<"'."<<std::endl;
-    sqlite3_free(zErrMsg);
-    sqlite3_close(db);
-    return false;
-  }
-  msg_IODebugging()<<"}\n";
-  s_sqldbs[file]=db;
-  PrepareStatements(db);
   return true;
 }
 
-template <class FileType> bool
-My_File<FileType>::ExecDB(std::string file,const std::string &cmd)
-{
-  while (file.length() && file[file.length()-1]=='/')
-    file.erase(file.length()-1,1);
-  file+=".db";
-  SQLDB_Map::iterator dbit(s_sqldbs.find(file));
-  if (dbit==s_sqldbs.end()) return true;
-  msg_IODebugging()<<METHOD<<"("<<file<<"): Executing '"<<cmd<<"'.\n";
-  char *zErrMsg=0, *sql = new char[cmd.length()+1];
-  strcpy(sql,cmd.c_str());
-  int rc=sqlite3_exec(dbit->second,sql,NULL,NULL,&zErrMsg);
-  delete [] sql;
-  if(rc!=SQLITE_OK) {
-    msg_IODebugging()<<METHOD<<"(): '"<<file
-		   <<"' returns '"<<zErrMsg<<"'."<<std::endl;
-    sqlite3_free(zErrMsg);
-    return false;
-  }
-  return true; 
-}
-
-void FinalizeStatements(sqlite3 *db)
-{
-  int rc=sqlite3_finalize(s_getfile[db]);
-  if(rc!=SQLITE_OK)
-    msg_IODebugging()<<METHOD<<"(): '"<<db<<"' returns '"
-		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
-  s_getfile.erase(s_getfile.find(db));
-}
-
 template <class FileType>
-bool My_File<FileType>::CloseDB(std::string file)
+bool My_File<FileType>::CloseDB(std::string file,int mode)
 {
+  std::string path(file);
   while (file.length() && file[file.length()-1]=='/')
     file.erase(file.length()-1,1);
-  file+=".db";
-  SQLDB_Map::iterator dbit(s_sqldbs.find(file));
-  if (dbit==s_sqldbs.end()) return true;
-  msg_IODebugging()<<METHOD<<"("<<file
-		 <<"): Closing '"<<dbit->second<<"'.";
-  FinalizeStatements(dbit->second);
-  int res=sqlite3_close(dbit->second);
-  if (res!=SQLITE_OK)
-    msg_Error()<<METHOD<<"(): DB '"<<file<<"' returns '"
-	       <<sqlite3_errmsg(dbit->second)<<"'."<<std::endl;
-  for (DataBase_Map::iterator it(s_databases.begin());
-       it!=s_databases.end();)
-    if (it->second.first!=dbit->second) ++it;
-    else {
-      s_databases.erase(it);
-      it=s_databases.begin();
+  file+=".zip";
+  ZipArchive_Map::iterator ait(s_ziparchives.find(path));
+  if (ait==s_ziparchives.end()) return false;
+  ZipArchive *zf(ait->second.first);
+  const std::vector<std::string> &files(ait->second.second);
+  for (size_t i(0);i<files.size();++i) {
+    ZipEntry_Map::iterator zit(s_zipfiles.find(files[i]));
+    if (zf) {
+      std::string fn(files[i]);
+      fn.erase(0,path.length());
+      if (zit->second.second<0) zf->deleteEntry(fn);
+      if (zit->second.second>0) {
+	char *tmp = new char[zit->second.first.length()+1];
+	strcpy(tmp,zit->second.first.c_str());
+	zf->addData(fn,tmp,strlen(tmp));
+      }
+      zit->second.second=0;
     }
-  s_sqldbs.erase(dbit);
-  return res==SQLITE_OK;
+    if (mode) s_zipfiles.erase(zit);
+  }
+  if (mode) s_ziparchives.erase(ait);
+  if (zf) {
+    zf->close();
+    if (mode) delete zf;
+    else zf->open(ZipArchive::WRITE);
+  }
+  return true;
 }
 
 template <class FileType>
@@ -255,47 +184,19 @@ FileType &My_File<FileType>::operator*() const
 template <class FileType> bool 
 My_File<FileType>::FileInDB(const std::string &name)
 {
-  DataBase_Map::const_iterator sit(s_databases.find(name));
-  if (sit!=s_databases.end()) return true;
-  return false;
+  return s_zipfiles.find(name)!=s_zipfiles.end();
 }
 
 template <class FileType> bool
 My_File<FileType>::CopyInDB(std::string oldfile, std::string newfile)
 {
-  DataBase_Map::const_iterator nit(s_databases.find(newfile));
-  if (nit!=s_databases.end()) {
-    msg_Out()<<METHOD<<"(): '"<<newfile
-		     <<"' already in '"<<nit->second.first<<"'\n";
-    return false;
-  }
-  DataBase_Map::const_iterator sit(s_databases.find(oldfile));
-  if (sit!=s_databases.end()) {
-    std::string fn(newfile);
-    sqlite3 *db=sit->second.first;
-    msg_IODebugging()<<METHOD<<"(): '"<<oldfile<<"' found in '"<<db<<"'\n";
-    oldfile.erase(0,sit->second.second.length());
-    newfile.erase(0,sit->second.second.length());
-    char *zErrMsg=0;
-    std::string sql = "insert into path select '"
-      +newfile+"',content from path where file='"+oldfile+"'";
-    int rc=sqlite3_exec(db,sql.c_str(),NULL,NULL,&zErrMsg);
-    if(rc!=SQLITE_OK) {
-      msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
-		     <<zErrMsg<<"'."<<std::endl;
-      sqlite3_free(zErrMsg);
-    }
-    for (SQLDB_Map::const_iterator dit(s_sqldbs.begin());
-	 dit!=s_sqldbs.end();++dit)
-      if (dit->second==db) {
-	std::string tag(dit->first);
-	tag.replace(tag.length()-3,3,"/");
-	s_databases[fn]=std::pair<sqlite3*,std::string>(db,tag);
-	break;
-      }
-    return true;
-  }
-  return false;
+  if (!FileExists(oldfile)) return false;
+  My_In_File infile(oldfile);
+  if (!infile.Open()) return false;
+  My_Out_File outfile(newfile);
+  if (!outfile.Open()) return false;
+  *outfile<<infile.FileContent();
+  return true;
 }
 
 template <class FileType>
@@ -309,31 +210,44 @@ bool My_File<FileType>::Open()
   p_file = new File_Type();
   std::ifstream *is=dynamic_cast<std::ifstream*>(&*p_file);
   std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
-  DataBase_Map::const_iterator sit(s_databases.find(m_path+m_file));
-  if (is && sit!=s_databases.end()) {
-    sqlite3 *db=sit->second.first;
-    msg_IODebugging()<<METHOD<<"(): '"<<m_path+m_file
-		     <<"' found in '"<<db<<"' {\n";
+  if (is) {
     p_stream = new MyStrStream();
-    std::string fn(m_path+m_file);
-    fn.erase(0,sit->second.second.length());
-    sqlite3_stmt *stmt(s_getfile[db]);
-    sqlite3_bind_text(stmt,1,fn.c_str(),-1,SQLITE_TRANSIENT);
-    int rc=sqlite3_step(stmt);
-    if (rc==SQLITE_ROW) {
-      msg_IODebugging()<<sqlite3_column_text(stmt,0)<<"\n";
-      (*p_stream)<<sqlite3_column_text(stmt,0)<<"\n";
-    }
-    else if (rc==SQLITE_DONE) {
-      msg_Error()<<METHOD<<"(): No file content for '"
-		 <<fn<<"'"<<std::endl;
+    ZipEntry_Map::const_iterator zit=
+      s_zipfiles.find(m_path+m_file);
+    if (zit!=s_zipfiles.end()) {
+      (*p_stream)<<zit->second.first;
     }
     else {
-      msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
-		 <<sqlite3_errmsg(db)<<"'."<<std::endl;
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_rank()) {
+      int fsize;
+      MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
+      if (fsize<0) return false;
+      char *content = new char[fsize+1];
+      MPI::COMM_WORLD.Bcast(content,fsize+1,MPI_CHAR,0);
+      (*p_stream)<<content<<"\n";
+      delete [] content;
     }
-    sqlite3_clear_bindings(stmt);
-    sqlite3_reset(stmt);
+    else {
+#endif
+      std::ifstream infile((m_path+m_file).c_str());
+      int fsize(infile.good()?1:-1);
+      if (fsize<0) {
+#ifdef USING__MPI
+	MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
+#endif
+	return false;
+      }
+      msg_IODebugging()<<infile.rdbuf()<<"\n";
+      (*p_stream)<<infile.rdbuf();
+#ifdef USING__MPI
+      std::string content(p_stream->str());
+      fsize=content.length();
+      MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
+      MPI::COMM_WORLD.Bcast(&content[0],fsize+1,MPI_CHAR,0);
+    }
+#endif
+    }
     msg_IODebugging()<<"}\n";
     p_file->copyfmt(*p_stream);
     p_file->clear(p_stream->rdstate());
@@ -342,43 +256,12 @@ bool My_File<FileType>::Open()
     return true;
   }
   if (os) {
-    if (sit!=s_databases.end()) {
-      p_stream = new MyStrStream();
-      os->std::ios::rdbuf(p_stream->rdbuf());
-      os->seekp(0);
-      return true;
-    }
-    std::string fn(m_path+m_file);
-    for (SQLDB_Map::const_iterator sit(s_sqldbs.begin());
-	 sit!=s_sqldbs.end();++sit) {
-      std::string tag(sit->first);
-      tag.replace(tag.length()-3,3,"/");
-      if (fn.find(tag)==0) {
-	sqlite3 *db=sit->second;
-	std::string fn(m_path+m_file);
-	msg_IODebugging()<<METHOD<<"(): '"<<fn
-			 <<"' added to '"<<db<<"'.\n";
-	fn.erase(0,tag.length());
-	char *zErrMsg=0, *sql = new char[100+fn.length()];
-	sprintf(sql,"insert into path values('%s','')",fn.c_str());
-	int rc=sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
-	delete [] sql;
-	if(rc!=SQLITE_OK) {
-	  msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
-		     <<zErrMsg<<"'."<<std::endl;
-	  sqlite3_free(zErrMsg);
-	}
-	s_databases[m_path+m_file]=
-	  std::pair<sqlite3*,std::string>(db,tag);
-	p_stream = new MyStrStream();
-	os->std::ios::rdbuf(p_stream->rdbuf());
-	os->seekp(0);
-	return true;
-      }
-    }
+    p_stream = new MyStrStream();
+    os->std::ios::rdbuf(p_stream->rdbuf());
+    os->seekp(0);
+    return true;
   }
-  p_file->open((m_path+m_file).c_str());
-  return p_file->good();
+  return false;
 }
 
 template <class FileType>
@@ -386,28 +269,26 @@ bool My_File<FileType>::Close()
 {
   if (p_file==NULL) return false;
   std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
   if (os) {
-    DataBase_Map::const_iterator sit(s_databases.find(m_path+m_file));
-    if (sit!=s_databases.end()) {
-      sqlite3 *db=sit->second.first;
-      std::string fn(m_path+m_file), fc(p_stream->str());
-      msg_IODebugging()<<METHOD<<"(): Write '"<<fn
-		       <<"' to '"<<db<<"' {\n"<<fc;
-      fn.erase(0,sit->second.second.length());
-      if (fc[fc.length()-1]=='\n') fc.erase(fc.length()-1,1);
-      for (size_t pos=fc.find("'");pos!=std::string::npos;
-	   pos=fc.find("'",pos+2)) fc.replace(pos,1,"''");
-      char *zErrMsg=0, *sql = new char[100+fn.length()+fc.length()];
-      sprintf(sql,"update path set content = '%s' where file = '%s'",
-	      fc.c_str(),fn.c_str());
-      int rc=sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
-      delete [] sql;
-      if(rc!=SQLITE_OK) {
-      	msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
-      		   <<zErrMsg<<"'."<<std::endl;
-      	sqlite3_free(zErrMsg);
+    bool indb(false);
+    for (ZipArchive_Map::iterator zit(s_ziparchives.begin());
+	 zit!=s_ziparchives.end();++zit)
+      if ((m_path+m_file).find(zit->first)==0) {
+	ZipEntry_Map::iterator fit(s_zipfiles.find(m_path+m_file));
+	if (fit!=s_zipfiles.end()) fit->second=Zip_Entry(p_stream->str(),2);
+	else {
+	  s_zipfiles[m_path+m_file]=Zip_Entry(p_stream->str(),2);
+	  zit->second.second.push_back(m_path+m_file);
+	}
+	indb=true;
+	break;
       }
-      msg_IODebugging()<<"}\n";
+    if (!indb) {
+      std::ofstream file(m_path+m_file);
+      file<<p_stream->str();
     }
   }
   p_file->close();

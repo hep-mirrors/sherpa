@@ -43,7 +43,7 @@ void C3_2::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s24_max = sqr(sqrt(s234_max)-sqrt(ms[3]));
   double s4 = ms[4];
   double s2 = ms[2];
-  double s24_min = cuts->Getscut(std::string("24"));
+  double s24_min = cuts->Getscut((1<<2)|(1<<4));
   Vec4D  p24;
   double s24 = CE.MasslessPropMomenta(.5,s24_min,s24_max,ran[0]);
   m_ctmax = cuts->cosmax[1][3];
@@ -59,7 +59,7 @@ void C3_2::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
   double s24_max = sqr(sqrt(s234_max)-sqrt(ms[3]));
-  double s24_min = cuts->Getscut(std::string("24"));
+  double s24_min = cuts->Getscut((1<<2)|(1<<4));
   Vec4D  p24 = p[2]+p[4];
   double s24 = dabs(p24.Abs2());
   wt *= CE.MasslessPropWeight(.5,s24_min,s24_max,s24,rans[0]);

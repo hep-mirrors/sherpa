@@ -808,7 +808,7 @@ void Channel_Generator_UniV::CalcSmin(int flag,const char* min,string lm,ofstrea
 
   if (lm.length()>1) {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("cuts->Getscut(std::string(\"") + Order(lm) + string("\"))"),0,sf);
+		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),

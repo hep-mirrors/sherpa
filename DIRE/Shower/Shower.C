@@ -364,17 +364,23 @@ Splitting Shower::GeneratePoint
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
-  std::vector<std::vector<double> > psum(kit->second.size());
-  std::vector<std::vector<size_t> > splits(psum.size());
+  const int nkernels = kit->second.size();
+  const int nspects = static_cast<int>(p.Ampl()->size());
+  if (nkernels > m_sums.nrows || nspects > m_sums.ncols) {
+    m_sums = CumulativeIntegralTable {nkernels, nspects};
+  }
+  else {
+    m_sums.nrows = nkernels;
+    m_sums.ncols = nspects;
+  }
   while (true) {
     if (win.m_t*m_rcf<=ct) {
       sum=0.0;
       ct=win.m_t;
-      for (size_t j(0);j<kit->second.size();++j) {
-	psum[j].clear();
-	splits[j].clear();
+      for (size_t j(0);j<nkernels;++j) {
+        m_sums.Clear(j);
 	double csum=0.0;
-	for (int i(p.Ampl()->size()-1);i>=0;--i) {
+	for (int i(nspects-1);i>=0;--i) {
 	  if ((*p.Ampl())[i]==&p) continue;
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
@@ -384,12 +390,11 @@ Splitting Shower::GeneratePoint
 	  cur.m_cm=cm;
 	  if (kit->second[j]->On() &&
 	      kit->second[j]->Allowed(cur)) {
-	    double I=kit->second[j]->Integral(cur);
-	    psum[j].push_back(csum+=dabs(I));
-	    splits[j].push_back(i);
+            csum += dabs(kit->second[j]->Integral(cur));
+            m_sums.AppendSumAndSpect(j, csum, i);
 	  }
 	}
-	if (psum[j].size()) sum+=psum[j].back();
+        if (m_sums.Size(j)) sum += m_sums.LastSum(j);
       }
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
@@ -397,13 +402,12 @@ Splitting Shower::GeneratePoint
     win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
-    for (size_t j(0);j<splits.size();++j)
-      if (splits[j].size() &&
-	  (csum+=psum[j].back())>=disc) {
-	double disc(psum[j].back()*ran->Get());
-	for (size_t i(0);i<splits[j].size();++i)
-	  if (psum[j][i]>=disc) {
-	    win.p_s=(*p.Ampl())[splits[j][i]];
+    for (size_t j(0);j<nkernels;++j)
+      if (m_sums.Size(j) && (csum+=m_sums.LastSum(j)) >= disc) {
+	double disc(m_sums.LastSum(j)*ran->Get());
+	for (size_t i(0);i<m_sums.Size(j);++i)
+	  if (m_sums.Sum(j, i) >= disc) {
+	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;

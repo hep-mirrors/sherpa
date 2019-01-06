@@ -2,7 +2,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Read_Write_Base.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -59,14 +59,9 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   double z_phase = _md("z_phase", 0.43585036 );
   m_z = Complex( z_abs*cos(z_phase), z_abs*sin(z_phase) );
 
-  // parse path and file name into right form
-  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",path);
-  path = split.first;
-  string file = split.second;
-
   // G(q2) function (read as histogram)
   // if file does not exist
-  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat")) {
+  if (!FileExists(path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat")) {
     msg_Error()<<"The file "<<path<<"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -75,13 +70,15 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read G_{pi-pi+pi-pi0}(q2)."<<endl;
-    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
+    My_In_File infile(path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
+    infile.Open();
+    std::string found_file_name = infile.FileContent();
     p_G = new Histogram("PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat",0,found_file_name);
   }
 
   // Gomega(q2) function (read as histogram)
   // if file does not exist
-  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat")) {
+  if (!FileExists(path+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat")) {
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/Gomega_pi+pi0pi-pi-.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -90,13 +87,15 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read Gomega_{pi+pi0pi-pi-}(q2)."<<endl;
-    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
+    My_In_File infile(path+"PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat");
+    infile.Open();
+    std::string found_file_name = infile.FileContent();
     p_Go = new Histogram("PhaseSpaceFunctions/Gomega_pi-pi+pi-pi0.dat",0,found_file_name);
   }
 
   // RunningWidth_a1(q2) function (read as histogram)
   // if file does not exist
-  if (!Read_Write_Base::FileInZip(path,file+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat")) {
+  if (!FileExists(path+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat")) {
     msg_Error()<<"The file "<<path<<"/PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
 	Abort();		   
@@ -105,7 +104,9 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read a1's running width (q2)."<<endl;
-    std::string found_file_name = Read_Write_Base::GetZipFileContent(path,file+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
+    My_In_File infile(path+"PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat");
+    infile.Open();
+    std::string found_file_name = infile.FileContent();
     p_a1width = new Histogram("PhaseSpaceFunctions/RunningWidth_a1_4pi-channel.dat",0,found_file_name);
   }
 

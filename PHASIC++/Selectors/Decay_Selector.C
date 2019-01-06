@@ -312,8 +312,7 @@ void DecayMass_Selector::BuildCuts(Cut_Data *cuts)
 	cuts->scut[m_ids[j][1]][m_ids[j][0]]=
 	Max(cuts->scut[m_ids[j][0]][m_ids[j][1]],sqr(m_min));
     }
-    std::string id;
-    for (size_t i(0);i<m_ids[j].size();++i) id+=ToString(m_ids[j][i]);
+    size_t id(ID(m_ids[j]));
     double scut(cuts->Getscut(id));
     cuts->Setscut(id,Max(scut,sqr(m_min)));
   }

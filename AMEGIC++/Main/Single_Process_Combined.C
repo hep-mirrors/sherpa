@@ -367,7 +367,7 @@ int AMEGIC::Single_Process_Combined::Tests()
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
-      if (FileExists(searchfilename)) {
+      if (FileExists(searchfilename,1)) {
       	msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::Tests()"<<std::endl
 			   <<"   No compiled & linked library found for process "<<testname<<std::endl
 			   <<"   but files already written out !"<<std::endl
@@ -588,19 +588,19 @@ void AMEGIC::Single_Process_Combined::WriteLibrary()
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/");
   for (;;) {
     testname    = CreateLibName()+string("_")+ToString(m_libnumb);
-    if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
+    if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H"),1))) break;
     ++m_libnumb;
   }
   m_libname = testname;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
+  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
-  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs",1))
     Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process_Combined::WriteLibrary : "<<std::endl
@@ -687,7 +687,9 @@ bool AMEGIC::Single_Process_Combined::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
   if (p_partner!=this) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 

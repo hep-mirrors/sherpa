@@ -12,9 +12,9 @@ namespace PHASIC {
     double ** cosmax_save;
     double ** scut_save;
     double *  energymin_save;
-    std::map<std::string,double> m_smin_map;
+    std::map<size_t,double> m_smin_map;
     char GetIndexID(int id);
-    double Getscut(std::vector<char>,std::vector<char>,int,int,int);
+    double Getscut(std::vector<int>,std::vector<int>,int,int,int);
     void Reset(bool);
   public:
     double ** cosmin;
@@ -32,8 +32,9 @@ namespace PHASIC {
 
     void Complete();
     double Smin() const { return smin; }
-    double Getscut(std::string);
-    void Setscut(std::string,double);
+    double GetscutAmegic(std::string);
+    double Getscut(size_t);
+    void Setscut(size_t,double);
   };    
 
 

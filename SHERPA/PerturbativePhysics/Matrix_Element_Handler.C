@@ -151,7 +151,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
-    My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
   bool okay(true);
 #ifndef USING__Threading
@@ -478,10 +477,6 @@ int Matrix_Element_Handler::InitializeProcesses
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");

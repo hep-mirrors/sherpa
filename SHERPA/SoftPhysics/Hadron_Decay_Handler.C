@@ -62,7 +62,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   m_mass_smearing=reader.Get<int>("SOFT_MASS_SMEARING",1);
   m_spincorr=rpa->gen.SoftSC();
   m_cluster=false;
-  Read_Write_Base::OpenZip(decaydatazip);
+  My_In_File::OpenDB(decaydatazip);
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->ReadInConstants(decaydata, decayconstfile);
   dmap->ReadInPartonicDecays(Flavour(kf_b),decaydata,bdecayfile);
@@ -77,7 +77,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   p_mixinghandler = new Mixing_Handler();
   p_mixinghandler->SetModel(dmap->StartModel());
   dmap->SetMixingHandler(p_mixinghandler);
-  Read_Write_Base::CloseZip(decaydatazip);
+  My_In_File::CloseDB(decaydatazip);
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler()

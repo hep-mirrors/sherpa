@@ -564,7 +564,7 @@ void Process_Base::FillOnshellConditions()
   info.Add(m_pinfo.m_fi);
   for(size_t i=0;i<m_decins.size();i++)
     if (m_decins[i]->m_osd) Selector()->AddOnshellCondition
-      (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
+      (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,

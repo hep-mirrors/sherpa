@@ -189,6 +189,7 @@ namespace COMIX {
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
 		    const double &isf,const double &fsf,
+		    My_In_File &ampfile,
 		    MODEL::Model_Base *const model,
 		    MODEL::Coupling_Map *const cpls,
 		    const int stype,const int smode,
@@ -225,7 +226,7 @@ namespace COMIX {
     void WriteOutGraphs(const std::string &file) const;
 
     void WriteOutAmpFile(const std::string &name);
-    bool ReadInAmpFile(const std::string &name);
+    bool ReadInAmpFile(const std::string &name,My_In_File &ampfile);
 
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 

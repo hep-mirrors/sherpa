@@ -33,12 +33,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 
   // read decay table file
   vector<vector<string> > helpsvv;
-  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",path,file);
-  string p_path = split.first;
-  string p_file = split.second;
-  string content = reader.GetZipFileContent(p_path,p_file);
-  reader.SetString(content,true);
-  if(!reader.MatrixFromString(helpsvv,"")) {
+  if(!reader.MatrixFromFile(helpsvv,"")) {
     msg_Error()<<"ERROR in "<<METHOD<<endl
       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
     Abort();
@@ -108,7 +103,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     }
   }
   if (rewrite) {
-    PRINT_INFO("Found new decay channels. Please add the above lines to "<<p_file<<".");
+    PRINT_INFO("Found new decay channels. Please add the above lines to "<<file<<".");
   }
 
   DEBUG_VAR(totBR);

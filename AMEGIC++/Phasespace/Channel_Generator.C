@@ -925,7 +925,7 @@ void Channel_Generator::CalcSmin(int flag,const char* min,string lm,ofstream& sf
   // sum_{i<j} sij + (2-n)*sum_i m_i^2
 
   AddToVariables(flag,Order(lm) + string("_") + string(min),
-		 string("cuts->Getscut(std::string(\"") + Order(lm) + string("\"))"),0,sf);
+		 string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
 
   /*  string s("");
 
