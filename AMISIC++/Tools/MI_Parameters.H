@@ -15,10 +15,19 @@ namespace AMISIC {
   };
   std::ostream &operator<<(std::ostream&, const overlap_form::code&);
   std::istream &operator>>(std::istream&, overlap_form::code&);
+  struct scale_scheme {
+    enum code {
+      PT,
+      PT_with_Raps
+    };
+  };
+  std::ostream &operator<<(std::ostream&, const scale_scheme::code&);
+  std::istream &operator>>(std::istream&, scale_scheme::code&);
 
   class MI_Parameters {
   private:
     overlap_form::code m_overlapform;
+    scale_scheme::code m_scalescheme;
     std::map<std::string,double> m_parameters;
 
     void   ReadParameters(ATOOLS::Default_Reader *const defaultreader);
@@ -31,6 +40,7 @@ namespace AMISIC {
     double operator()(std::string keyword);
 
     const overlap_form::code & GetOverlapForm() { return m_overlapform; } 
+    const scale_scheme::code & GetScaleScheme() { return m_scalescheme; } 
   };
   
   extern MI_Parameters * mipars;

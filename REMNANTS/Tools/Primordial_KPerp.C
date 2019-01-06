@@ -11,8 +11,8 @@ using namespace std;
 
 Primordial_KPerp::Primordial_KPerp() :
   m_defform("gauss_limited"),
-  m_defmean(0.0), m_defsigma(1.0), m_refE(7000.), m_scaleexpo(0.55),
-  m_defQ2(0.77), m_defktmax(5.), m_defeta(5.),
+  m_defmean(0.0), m_defsigma(1.5), m_refE(7000.), m_scaleexpo(0.55),
+  m_defQ2(0.77), m_defktmax(3.0), m_defeta(5.),
   m_analysis(false)
 { }
     
@@ -45,11 +45,12 @@ void Primordial_KPerp::Initialize(const string path,const string file) {
     double mean      = dataread.GetValue<double>(meantag,m_defmean);
     double sigma     = dataread.GetValue<double>(sigmatag,m_defsigma);
     double Q2        = dataread.GetValue<double>(Q2tag,m_defQ2);
+    double ktmax     = dataread.GetValue<double>(ktmaxtag,m_defktmax);
     m_form[beam]     = SelectForm(dataread.GetValue<string>(formtag,m_defform));
     m_mean[beam]     = mean;
     m_sigma[beam]    = sigma * pow((rpa->gen.Ecms()/refE),expo);
     m_Q2[beam]       = Q2 * pow((rpa->gen.Ecms()/refE),expo);
-    m_ktmax[beam]    = dataread.GetValue<double>(ktmaxtag,m_defktmax);
+    m_ktmax[beam]    = Max(1.,ktmax * pow((rpa->gen.Ecms()/refE),expo));
     m_eta[beam]      = dataread.GetValue<double>(ktexpotag,m_defeta);
   }
   if (m_analysis) InitAnalysis();
@@ -73,7 +74,8 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   // harvesting particles from the beam blob of beam "beam" and
   for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
        pmmit!=p_ktmap->end();pmmit++) {
-    kt_tot += pmmit->second = scale * KT(pmmit->first->Momentum());
+    kt_tot += pmmit->second =
+      scale * KT(Min(m_ktmax[m_beam],pmmit->first->Momentum()[0]));
     E_tot  += pmmit->first->Momentum()[0];
     if (m_analysis) m_histos[string("KT_before")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
   }
@@ -92,8 +94,8 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_tot,const double & E_tot) {
   }
 }
 
-Vec4D Primordial_KPerp::KT(const Vec4D & mom) {
-  double kt=0.,ktmax=mom[0];
+Vec4D Primordial_KPerp::KT(const double & ktmax) {
+  double kt=0.;
   do {
     switch (m_form[m_beam]) {
     case prim_kperp_form::gauss:
@@ -119,8 +121,18 @@ Vec4D Primordial_KPerp::KT(const Vec4D & mom) {
 }
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
-  // shift the Gaussian random numbers
-  return m_mean[m_beam] + dabs(ran->GetGaussian()) * m_sigma[m_beam];
+  double kt;
+  if (ktmax<m_mean[m_beam]+m_sigma[m_beam]) {
+    // use hit-or-miss when we are constrained narrowly around the peak ...
+    do { kt = ktmax*ran->Get(); }
+    while (ran->Get() > exp(-sqr((m_mean[m_beam]-kt)/m_sigma[m_beam])));
+  }
+  else {
+    // ... otherwise use the standard Gaussian rng and veto in case of kt > ktmax
+    do { kt = m_mean[m_beam] + dabs(ran->GetGaussian()) * m_sigma[m_beam]; }
+    while (kt > m_ktmax[m_beam]);
+  }
+  return kt;
 }
 
 double Primordial_KPerp::KT_Gauss_Limited(const double & ktmax) const {

@@ -14,7 +14,7 @@ namespace AHADIC {
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
     KT_Selector                   m_ktselector;
-    double m_light, m_chi;
+    double m_light, m_chi, m_ktfac;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
 
     Cluster    * p_cluster;

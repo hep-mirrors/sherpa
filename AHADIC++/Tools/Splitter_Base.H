@@ -6,6 +6,8 @@
 #include "AHADIC++/Tools/Z_Selector.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Histogram.H"
+#include <map>
 
 namespace AHADIC {
   class Splitter_Base {
@@ -32,12 +34,16 @@ namespace AHADIC {
     double          m_popped_mass, m_popped_mass2;
     ATOOLS::Flavour m_newflav1, m_newflav2;
     double          m_minQ_1, m_minQ_2, m_minQ_12, m_minQ_22;
+    double          m_maxQ_1, m_maxQ_2, m_maxQ_12, m_maxQ_22;
     
     double          m_z1min, m_z1max, m_z2min, m_z2max, m_z1, m_z2;
-    double          m_ktmax, m_kt, m_kt2, m_phi;
+    double          m_ktmax, m_ktfac, m_kt, m_kt2, m_phi;
     ATOOLS::Vec4D   m_ktvec;
     
     ATOOLS::Poincare m_boost, m_rotat;
+
+    bool m_analyse;
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     virtual bool InitSplitting(Proto_Particle * part1,Proto_Particle * part2,
 			       Proto_Particle * part3);
@@ -56,6 +62,7 @@ namespace AHADIC {
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters);
+    ~Splitter_Base();
     virtual void Init(const bool & isgluon);
     
     virtual bool operator()(Proto_Particle * part1,Proto_Particle * part2,

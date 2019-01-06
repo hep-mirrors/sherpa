@@ -73,6 +73,7 @@ namespace REMNANTS {
     ATOOLS::Blob * MakeSoftBlob();
     bool FillBlobs(ATOOLS::Blob_List *const bloblist);
       
+    inline Primordial_KPerp * GetKPerp() { return &m_kperpGenerator; }
     void Reset();
   };
 }

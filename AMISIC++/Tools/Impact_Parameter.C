@@ -22,8 +22,6 @@ void Impact_Parameter::Initialize(const double & xsecratio) {
   m_oexp = p_pint->OverlapExpectation();
   m_fc   = m_oexp/p_mo->Integral()*p_pint->Integral();
   m_bmax = p_mo->Bmax();
-  //msg_Out()<<METHOD<<"("<<xsecratio<<") is finished, f_c = "<<m_fc<<", "
-  //	   <<"<O> = "<<m_oexp<<", and bmax = "<<m_bmax<<".\n";
   if (m_test) Test();
 }
 

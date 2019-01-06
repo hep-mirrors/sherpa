@@ -51,7 +51,7 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_part1->SetMomentum(m_q1mom);
   p_part2->SetMomentum(m_glumom);
 
-  p_singlet->push_back(new Proto_Particle(m_newflav.Bar(),m_q2mom,'l'));
+  p_singlet->push_back(new Proto_Particle(m_newflav.Bar(),m_q2mom));
   return true;
 }
 

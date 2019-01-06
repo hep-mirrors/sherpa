@@ -17,7 +17,8 @@ namespace AMISIC {
     MODEL::Model_Base          * p_model;
     MODEL::Running_AlphaS      * p_alphaS;
     MODEL::Running_AlphaQED    * p_alpha;
-    
+
+    double      m_muFfac;
     double      m_ecms, m_S, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_sigmaND;
     double      m_lastxs, m_integral, m_pt2step;
     std::string m_scale_scheme, m_kfactor_scheme;

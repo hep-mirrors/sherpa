@@ -15,9 +15,10 @@ using namespace std;
 using namespace AHADIC;
 #include "AHADIC++/Tools/Hadron_Init.H"
 
-Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
-  m_dir(_dir), m_file(_file), m_mode(0)
-  ,p_ahadic(NULL)
+Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file,
+					     string _shower):
+  m_dir(_dir), m_file(_file), m_mode(0),
+  p_ahadic(NULL)
 #ifdef USING__PYTHIA
   ,p_lund(NULL)
 #endif
@@ -27,7 +28,8 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   reader.AddIgnore("]");
   reader.SetInputPath(m_dir);
   reader.SetInputFile(m_file);
-  m_fragmentationmodel = reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", string("Ahadic"));
+  m_fragmentationmodel = reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION",
+								   string("Ahadic"));
   m_shrink=reader.Get<int>("COMPRESS_PARTONIC_DECAYS",1);
   m_flagpartonics=reader.Get<int>("FLAG_PARTONIC_DECAYS",1);
   if (m_fragmentationmodel==string("Lund")) {
@@ -54,7 +56,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     init.Init();
     init.OverWriteProperties(reader);
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile);
+    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile,_shower);
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;

@@ -160,7 +160,13 @@ bool Multiple_Interactions::InitNewEvent() {
   if (ptinfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
   m_ptmax=ptinfo->Get<double>();
   if (m_ptmax!=std::numeric_limits<double>::max()) {
-    p_mihandler->InitialiseMPIs(4.*m_ptmax);
+    double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
+    double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
+    if (!IsZero(ptfac-ptren)) m_ptmax = sqrt(sqr(ptfac)/4.+4.*sqr(ptren));
+    else m_ptmax = ptfac/2.;
+    msg_Out()<<METHOD<<": pt = "<<m_ptmax<<" ("<<ptfac<<", "<<ptren<<")\n";
+    //	     <<(*p_lastblob)<<"\n";
+    p_mihandler->InitialiseMPIs(m_ptmax);
     m_newevent = false;
     return true;
   }
@@ -171,7 +177,6 @@ void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
     double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->Energy();
-    //msg_Out()<<METHOD<<" sets PDF("<<i<<") x-rescaling = "<<x_resc<<" for E = "<<m_emax[i]<<"\n";
     p_mihandler->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }

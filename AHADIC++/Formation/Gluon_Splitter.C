@@ -164,7 +164,8 @@ Cluster * Gluon_Splitter::MakeCluster() {
   // Update momentum of original (anti-)(di-) quark after gluon splitting
   p_part1->SetMomentum(newmom11);
   // Make new particle
-  Proto_Particle * newp12 = new Proto_Particle(m_newflav1,newmom12,'l');
+  Proto_Particle * newp12 = new Proto_Particle(m_newflav1,newmom12,false,
+					       p_part1->IsBeam() || p_part2->IsBeam());
   // Take care of sequence in cluster = triplet + anti-triplet
   Cluster * cluster(m_barrd?new Cluster(newp12,p_part1):new Cluster(p_part1,newp12));
   return cluster;

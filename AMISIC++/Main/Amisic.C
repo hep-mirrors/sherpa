@@ -170,6 +170,8 @@ void Amisic::Reset() {}
 void Amisic::InitAnalysis() {
   m_nscatters = 0;
   m_histos[string("N_scatters")] = new Histogram(0,0,20,20);
+  m_histos[string("B")]          = new Histogram(0,0,10,100);
+  m_histos[string("Bfac")]       = new Histogram(0,0,10,100);
   m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
   m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
   m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
@@ -212,6 +214,8 @@ void Amisic::Analyse(const bool & last) {
   m_nscatters++;
   if (last) {
     m_histos[string("N_scatters")]->Insert(double(m_nscatters)+0.5);
+    m_histos[string("B")]->Insert(m_b);
+    m_histos[string("Bfac")]->Insert(m_bfac);
     m_nscatters = 0;
   }
 }

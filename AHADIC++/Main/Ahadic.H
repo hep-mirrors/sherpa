@@ -44,7 +44,8 @@ namespace AHADIC {
     void CleanUp(ATOOLS::Blob * blob);
   public:
     Ahadic(std::string path=std::string("./"),
-	   std::string file=std::string("Cluster.dat"));
+	   std::string file=std::string("Cluster.dat"),
+	   std::string shower="Dire");
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

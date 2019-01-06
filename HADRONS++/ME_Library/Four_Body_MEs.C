@@ -121,6 +121,7 @@ void QQ_QQQQ_Spectator::Calculate(const Vec4D_Vector& p, bool m_anti)
 		msg_Debugging()<<"  "<<partonflavs[i]<<"  "<<partonmoms[i]
 			       <<"  ("<<sqrt(Max(0.,partonmoms[i].Abs2()))<<")\n";
 	      }
+	      msg_Error()<<"Exit run from HADRONS module.\n";
 	      exit(1);
 	    }
 	    Insert(amp,spins);

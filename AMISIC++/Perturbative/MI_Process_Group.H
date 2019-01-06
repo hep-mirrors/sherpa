@@ -2,6 +2,7 @@
 #define AMISIC_Perturbative_MI_Process_Group_H
 
 #include "AMISIC++/Perturbative/MI_Process.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -11,8 +12,10 @@
 namespace AMISIC {
   class MI_Process_Group {
   protected:
-    std::string m_name;
-    double      m_lastxs, m_pt02, m_scale, m_pref;
+    std::string        m_name;
+    scale_scheme::code m_muR_scheme;
+    double      m_muR_fac, m_muF_fac;
+    double      m_lastxs, m_pt02, m_muRfac, m_scale, m_pref;
 
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
