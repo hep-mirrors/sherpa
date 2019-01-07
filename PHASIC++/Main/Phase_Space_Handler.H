@@ -64,7 +64,7 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
-    Enhance_Observable_Base *p_enhancefunc;
+    Enhance_Observable_Base *p_enhanceobs, *p_enhancefunc;
 
     ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
 
@@ -89,7 +89,7 @@ namespace PHASIC {
     long int m_maxtrials, m_killedpoints;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
-    double m_result, m_error, m_abserror, m_enhance, m_osmass; 
+    double m_result, m_error, m_abserror, m_enhance=1.0, m_osmass;
 
     ATOOLS::Variation_Weights * p_variationweights;
 
@@ -136,6 +136,8 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
     void AddPoint(const double xs);
+
+    double EnhanceFunction();
 
     void CalculateME();
     void CalculatePS();
