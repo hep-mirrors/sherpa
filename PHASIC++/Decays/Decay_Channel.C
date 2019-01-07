@@ -346,7 +346,7 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
   int trials(0);
   do {
     if(trials>10000) {
-      msg_Error()<<METHOD<<"("<<Name()<<"): "
+      msg_Tracking()<<METHOD<<"("<<Name()<<"): "
                  <<"Rejected decay kinematics 10000 times. "
                  <<"This indicates a wrong maximum. "
                  <<"Will accept kinematics."
