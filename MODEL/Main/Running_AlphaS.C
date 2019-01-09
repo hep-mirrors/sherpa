@@ -138,15 +138,19 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   }
   for (int i=m_mzset-1;i>=0;--i) {
     double lam2               = Lambda2(i);
-    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
+    if (lam2>p_thresh[i].low_scale) {
       ContinueAlphaS(i);
-    else {
-      if (i>0) {
-        p_thresh[i-1].as_high = p_thresh[i].as_low *
+      break;
+    }
+    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
+    if (p_thresh[i].as_low>1.) {
+      ContinueAlphaS(i);
+      break;
+    }
+    if (i>0) {
+      p_thresh[i-1].as_high = p_thresh[i].as_low *
         ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
                 p_thresh[i].low_scale,p_thresh[i-1].nf);
-      }
     }
   }
 }
