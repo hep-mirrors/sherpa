@@ -230,9 +230,8 @@ double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
   double *  b      = p_thresh[nr].b;
   double & lambda2 = p_thresh[nr].lambda2;
   double L         = log(Q2/lambda2);
-  if (!(L>0.)) return 1.;
-
   double pref      = 1./(beta0*L);
+
   double a         = pref;
   if (m_order==0) return M_PI*a;
 
