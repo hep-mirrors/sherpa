@@ -164,8 +164,6 @@ bool Multiple_Interactions::InitNewEvent() {
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
     if (!IsZero(ptfac-ptren)) m_ptmax = sqrt(sqr(ptfac)/4.+4.*sqr(ptren));
     else m_ptmax = ptfac/2.;
-    msg_Out()<<METHOD<<": pt = "<<m_ptmax<<" ("<<ptfac<<", "<<ptren<<")\n";
-    //	     <<(*p_lastblob)<<"\n";
     p_mihandler->InitialiseMPIs(m_ptmax);
     m_newevent = false;
     return true;
