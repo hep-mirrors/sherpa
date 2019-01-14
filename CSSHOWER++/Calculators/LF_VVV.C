@@ -175,6 +175,7 @@ double LF_VVV1_FF::operator()
       if (spect->KScheme()) mk2=p2.Abs2();
       PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
       if (PHASIC::ConstructFFDipole(0.,0.,0.,mk2,p1,p2,ff)<0) return 0.;
+      if (!ValidateDipoleKinematics(0.0, 0.0, mk2, ff)) return 0;
       Vec4D pl = p_split->p_spect->Momentum();
       massive += 2.*(ff.m_pi*pl)/(ff.m_pj*pl) - pl.Abs2()*(Q2*(1.0-muk2)*y/2.0)/sqr(ff.m_pj*pl);
     }
@@ -227,6 +228,7 @@ double LF_VVV2_FF::operator()
       if (spect->KScheme()) mk2=p2.Abs2();
       PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
       if (PHASIC::ConstructFFDipole(0.,0.,0.,mk2,p1,p2,ff)<0) return 0.;
+      if (!ValidateDipoleKinematics(0.0, 0.0, mk2, ff)) return 0;
       Vec4D pl = p_split->p_spect->Momentum();
       massive += 2.*(ff.m_pj*pl)/(ff.m_pi*pl) - pl.Abs2()*(Q2*(1.0-muk2)*y/2.0)/sqr(ff.m_pi*pl);
     }

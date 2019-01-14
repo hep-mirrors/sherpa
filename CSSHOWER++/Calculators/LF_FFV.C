@@ -267,6 +267,7 @@ double LF_FFV_FF::operator()
       if (spect->KScheme()) mk2=p2.Abs2();
       PHASIC::Kin_Args ff(y,z,p_split->p_split->Phi());
       if (PHASIC::ConstructFFDipole(mi2,0.,mij2,mk2,p1,p2,ff)<0) return 0.;
+      if (!ValidateDipoleKinematics(mi2, 0.0, mk2, ff)) return 0;
       Vec4D pl = p_split->p_spect->Momentum();
       massive += 2.*(ff.m_pi*pl)/(ff.m_pj*pl) - mi2/pipj - pl.Abs2()*pipj/sqr(ff.m_pj*pl);
     }

@@ -2,6 +2,7 @@
 #define PHASIC__Channels__CSS_Kinematics_H
 
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Message.H"
 
 namespace PHASIC {
 
@@ -75,7 +76,17 @@ namespace PHASIC {
 			const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			Kin_Args &iip);
 
-  bool ValidateMomentum(const ATOOLS::Vec4D&, double m2);
+  inline bool ValidateDipoleKinematics(
+      double mi2, double mj2, double mk2, const Kin_Args& args)
+  {
+    if (args.m_pi[0] < sqrt(mi2)
+	|| args.m_pj[0] < sqrt(mj2)
+	|| args.m_pk[0] < sqrt(mk2)) {
+      msg_Debugging() << METHOD << "(): Less energy than mass found\n";
+      return false;
+    }
+    return true;
+  }
 
 }// end of namespace PHASIC
 
