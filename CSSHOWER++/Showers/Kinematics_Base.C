@@ -117,7 +117,8 @@ int Kinematics_FF::MakeKinematics
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
 		split->GetFlavour(),flj,1);
   Kin_Args ff(y,split->ZTest(),split->Phi());
-  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
+  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
+      !ValidateDipoleKinematics(mi2, mj2, mk2, ff)) return -1;
 
   split->SetMomentum(ff.m_pi);
   if (mi2) SetFixVec(split,ff.m_pi);
@@ -191,7 +192,8 @@ int Kinematics_FI::MakeKinematics
   double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
 		split->GetFlavour(),flj,1);
   Kin_Args fi(1.0-y,split->ZTest(),split->Phi(),8);
-  if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
+  if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0 ||
+      !ValidateDipoleKinematics(mi2, mj2, ma2, fi)) return -1;
 
   split->SetMomentum(fi.m_pi);
   if (mi2) SetFixVec(split,fi.m_pi);
@@ -270,7 +272,8 @@ int Kinematics_IF::MakeKinematics
 		split->GetFlavour(),fli,1);
   Kin_Args ifp(y,split->ZTest(),split->Phi(),split->Kin());
   if (dabs(y-split->ZTest())<Kin_Args::s_uxeps) ifp.m_mode=1;
-  if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0) return -1;
+  if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0 ||
+      !ValidateDipoleKinematics(ma2, mi2, ifp.m_mk2>=0.0?ifp.m_mk2:mk2, ifp)) return -1;
 
   split->SetLT(ifp.m_lam);
   ifp.m_lam.Invert();
@@ -336,7 +339,8 @@ int Kinematics_II::MakeKinematics
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,
 		split->GetFlavour(),newfl,1);
   Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
-  if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
+  if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0 ||
+      !ValidateDipoleKinematics(ma2, mi2, mb2, ii)) return -1;
 
   split->SetLT(ii.m_lam);
   ii.m_lam.Invert();
