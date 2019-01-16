@@ -590,6 +590,7 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_msn) MPISync();
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
+  SetTotal(0);
   std::string fname(p_proc->Name());
   WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
