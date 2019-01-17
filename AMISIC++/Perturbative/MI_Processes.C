@@ -190,9 +190,9 @@ bool MI_Processes::PrepareSudakovFactor() {
     pt2last        = pt2;
   }
   m_integral *= m_sigmaND;
-  msg_Info()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
-	    <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
-	    <<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
+  msg_Tracking()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
+		<<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
+		<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
   return true;
 }
 

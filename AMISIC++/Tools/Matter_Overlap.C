@@ -22,8 +22,8 @@ Matter_Overlap::~Matter_Overlap() {}
 void Matter_Overlap::Initialize() {
   InitializeFormFactors();
   CalculateIntegral();
-  msg_Out()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
-	   <<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
+  msg_Tracking()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
+		<<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
 }
 
 double Matter_Overlap::operator()(double b) {

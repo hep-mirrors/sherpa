@@ -14,7 +14,6 @@ MI_Parameters::MI_Parameters() {}
 
 bool MI_Parameters::Init(Default_Reader *const defaultreader)
 {
-  msg_Out()<<"In MI_Parameters::Init"<<endl;
   ReadParameters(defaultreader);
   return true;
 }
