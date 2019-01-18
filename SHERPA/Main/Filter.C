@@ -1,6 +1,7 @@
 #include "SHERPA/Main/Filter.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 
 using namespace SHERPA;
@@ -34,13 +35,13 @@ bool Filter::Init(const std::string & dir,const std::string & file) {
 void Filter::Add(const std::vector<std::string> & entry) {
   if (entry.size()!=7) return;
   FilterCriterion * crit = new FilterCriterion;
-  crit->m_flav   = Flavour(stoi(entry[0]));
-  crit->m_etamin = stof(entry[1]);
-  crit->m_etamax = stof(entry[2]);
-  crit->m_pTmin  = stof(entry[3]);
-  crit->m_pTmax  = stof(entry[4]);
-  crit->m_Nmin   = stoi(entry[5]);
-  crit->m_Nmax   = stoi(entry[6]);
+  crit->m_flav   = Flavour(ToType<long int>(entry[0]));
+  crit->m_etamin = ToType<double>(entry[1]);
+  crit->m_etamax = ToType<double>(entry[2]);
+  crit->m_pTmin  = ToType<double>(entry[3]);
+  crit->m_pTmax  = ToType<double>(entry[4]);
+  crit->m_Nmin   = ToType<size_t>(entry[5]);
+  crit->m_Nmax   = ToType<size_t>(entry[6]);
   m_filters[crit->m_flav] = crit;
 }
 

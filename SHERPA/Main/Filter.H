@@ -10,7 +10,7 @@ namespace SHERPA {
   struct FilterCriterion {
     ATOOLS::Flavour m_flav;
     double m_etamin, m_etamax, m_pTmin, m_pTmax;
-    int    m_Nmin, m_Nmax;
+    size_t m_Nmin, m_Nmax;
   };
 
 
