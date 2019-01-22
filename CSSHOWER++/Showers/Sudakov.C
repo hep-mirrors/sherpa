@@ -405,10 +405,27 @@ bool Sudakov::Generate(Parton * split)
     Split_Args splitargs(p_split,p_split->GetColSpec());
     if (p_split->GetColSpec()) p_selected->Lorentz()->SetSplit(&splitargs);
     const bool veto(Veto(Q2, m_x));
+
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(
-          &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
+      const double accwgt(Selected()->LastAcceptanceWeight());
+      const double lastscale(Selected()->LastScale());
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale < m_reweightscalecutoff) {
+        Sudakov_Reweighting_Info info;
+        info.accepted = veto;
+        info.scale = lastscale;
+        info.accwgt = accwgt;
+        info.lastj = Selected()->Lorentz()->LastJ();
+        info.lastcpl = Selected()->Coupling()->Last();
+        info.sf = Selected();
+        p_split->AddSudakovReweightingInfo(info);
+        // TODO: we need to clear that info after each shower evolution step
+      }
     }
+    //if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
+    //  p_variationweights->UpdateOrInitialiseWeights(
+    //      &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
+    //}
+
     p_selected->Lorentz()->SetSplit(NULL);
     if (veto) {
       success = true;
@@ -428,7 +445,7 @@ bool Sudakov::Generate(Parton * split)
   return success;
 }
 
-
+// TODO: delete me (but first re-use weight calculation)
 double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
                          const bool &success)

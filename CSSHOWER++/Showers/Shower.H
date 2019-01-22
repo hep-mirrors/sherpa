@@ -37,6 +37,10 @@ namespace CSSHOWER {
     SHERPA::Variation_Weights * p_variationweights;
     //! the maximum number of rew'd emissions
     int m_maxrewem;
+    bool m_reweightalphas, m_reweightpdfs;
+    double Reweight(SHERPA::Variation_Parameters*,
+                    SHERPA::Variation_Weights*,
+                    double& kt2win);
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
