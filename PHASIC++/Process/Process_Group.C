@@ -191,7 +191,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     namestring+=")";
   }
   msg_Info()<<METHOD<<"(): Calculate xs for '"
-            <<m_name<<"' "<<namestring<<std::endl;
+            <<m_resname<<"' "<<namestring<<std::endl;
   double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
@@ -338,6 +338,25 @@ bool Process_Group::ConstructProcesses()
 		      +"/Process/Sherpa/"+m_name);
   if (cpi.m_megenerator.length()) mapfile+="__"+cpi.m_megenerator;
   mapfile+=".map";
+  size_t bpos(m_pinfo.m_special.find("Group("));
+  if (bpos!=std::string::npos) {
+    m_resname+="__Group(";
+    size_t epos(m_pinfo.m_special.find(")",bpos)), npos(epos);
+    for (bpos+=6;bpos<epos;bpos=npos+1) {
+      npos=std::min(epos,m_pinfo.m_special.find(',',bpos+1));
+      std::string cur(m_pinfo.m_special.substr(bpos,npos-bpos));
+      m_resname+=(m_blocks.size()?",":"")+cur;
+      size_t dpos(cur.find('-'));
+      if (dpos==std::string::npos) m_blocks.push_back(ToType<int>(cur));
+      else {
+	int start(ToType<int>(cur.substr(0,dpos)));
+	int end(ToType<int>(cur.substr(dpos+1)));
+	for (size_t i(start);i<=end;++i) m_blocks.push_back(i);
+      }
+    }
+    m_resname+=")";
+    msg_Debugging()<<"Group "<<m_blocks<<"\n";
+  }
   msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
   if (FileExists(mapfile)) {
     msg_Debugging()<<"found"<<std::endl;
@@ -350,8 +369,11 @@ bool Process_Group::ConstructProcesses()
         SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(std::abs(cfl),cfl<0),cnt);
         *map>>cfl;
       }
-      if (cnt!=m_nin+m_nout || cfl || !ConstructProcess(cpi))
-	THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      int construct(ConstructProcess(cpi));
+      if (m_blocks.empty()) {
+	if (cnt!=m_nin+m_nout || cfl || !construct)
+	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      }
       *map>>cfl;
     }
     return m_procs.size();

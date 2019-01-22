@@ -326,6 +326,7 @@ void Process_Base::Init(const Process_Info &pi,
       isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
+  m_resname=m_name;
 }
 
 std::string Process_Base::BaseName

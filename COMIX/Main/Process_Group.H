@@ -12,6 +12,8 @@ namespace COMIX {
     public PHASIC::Process_Group, public Process_Base {
   protected:
 
+    size_t m_nproc;
+
     void InitPSGenerator(const size_t &ismode);
 
   public :

@@ -186,9 +186,9 @@ void Process_Integrator::InitWeightHistogram()
   }
 
   double av(dabs(TotalResult()));
-  if (!(av>0.)) {
-    msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
-	       <<"Average = "<<av<<" in "<<p_proc->Name()<<std::endl;
+  if (IsBad(av)) {
+    msg_Error()<<METHOD<<"(): Average = "<<av
+	       <<" in "<<p_proc->ResultsName()<<std::endl;
     return;
   }
   if (av<.3) av/=10.;
@@ -201,7 +201,7 @@ void Process_Integrator::InitWeightHistogram()
 
 bool Process_Integrator::ReadInXSecs(const std::string &path)
 {
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   size_t vn;
   std::string name, dummy;
   My_In_File from(path+"/"+fname);
@@ -237,7 +237,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 
 void Process_Integrator::ReadInHistogram(std::string dir)
 {
-  std::string filename = dir+"/"+p_proc->Name();
+  std::string filename = dir+"/"+p_proc->ResultsName();
   if (!FileExists(filename)) return;
   if (p_whisto) delete p_whisto; 
   p_whisto = new Histogram(filename);	
@@ -248,7 +248,7 @@ void Process_Integrator::ReadInHistogram(std::string dir)
 
 void Process_Integrator::WriteOutXSecs(const std::string &path)
 {
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   My_Out_File outfile(path+"/"+fname);
   if (outfile.Open()) m_writeout=1;
   outfile->precision(16);
@@ -268,7 +268,7 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
 
 void Process_Integrator::WriteOutHistogram(std::string dir)
 {
-  if (p_whisto) p_whisto->Output(dir+"/"+p_proc->Name());	
+  if (p_whisto) p_whisto->Output(dir+"/"+p_proc->ResultsName());	
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutHistogram(dir);
@@ -291,14 +291,14 @@ void Process_Integrator::SetTotal(const int mode)
   m_totalerr=totalerr;
   if (mode && m_totalxs!=0.0) {
     if (p_proc->NIn()==1) {
-      msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
+      msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs<<" GeV"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
                 <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
     else {
-      msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
+      msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs*rpa->Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
@@ -332,8 +332,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
   if (m_maxeps>0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
     if (omode)
-      msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
-		<<max/Max()<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
+      msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+                <<dabs(m_totalxs/max)<<" ) "<<std::endl;
     SetMax(max);
   }
   if (p_proc->IsGroup()) {
@@ -345,8 +346,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
     }
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto)
-    msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
-	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
+    msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+	      <<dabs(m_totalxs/m_max)<<" ) "<<std::endl;
   }
 
 }
@@ -421,7 +423,7 @@ void Process_Integrator::SetMax(const double max)
     if (!ATOOLS::IsEqual(sum,m_totalxs,1e-11)) {
       msg_Error().precision(12);
       msg_Error()<<METHOD<<"(): Summation does not agree for '"
-		 <<p_proc->Name()<<".\n  sum = "<<sum
+		 <<p_proc->ResultsName()<<".\n  sum = "<<sum
 		 <<" vs. total = "<<m_totalxs<<" ("
 		 <<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
       msg_Error().precision(6);
@@ -590,7 +592,7 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0);
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
@@ -601,7 +603,7 @@ void Process_Integrator::StoreResults(const int mode)
 void Process_Integrator::ReadResults()
 {
   if (m_resultpath.length()==0) return;
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   if (!ReadInXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);

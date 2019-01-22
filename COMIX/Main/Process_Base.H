@@ -55,7 +55,8 @@ namespace COMIX {
 
     // member functions
     virtual bool Initialize(std::map<std::string,std::string> *const pmap,
-			    std::vector<Single_Process*> *const procs);
+			    std::vector<Single_Process*> *const procs,
+			    const std::vector<int> &blocks,size_t &nproc);
     virtual bool MapProcess() = 0;
 
     virtual void InitPSGenerator(const size_t &ismode) = 0;

@@ -294,7 +294,8 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
-    if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
+    if (!newxs->Get<Single_Process>()->Initialize
+	(&pmap,&m_umprocs.back(),m_blocks,m_nproc)) {
       My_In_File::CloseDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"

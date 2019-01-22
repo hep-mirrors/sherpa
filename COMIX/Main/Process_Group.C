@@ -19,10 +19,10 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 COMIX::Process_Group::Process_Group(): 
-  COMIX::Process_Base(this) {}
+  COMIX::Process_Base(this), m_nproc(0) {}
 
 COMIX::Process_Group::Process_Group(MODEL::Model_Base *const model):
-  COMIX::Process_Base(this,model) {}
+  COMIX::Process_Base(this,model), m_nproc(0) {}
 
 bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const pmap,
 				      std::vector<Single_Process*> *const procs)
@@ -48,7 +48,7 @@ bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const p
       }
     }
   }
-  return COMIX::Process_Base::Initialize(pmap,procs);
+  return COMIX::Process_Base::Initialize(pmap,procs,m_blocks,m_nproc);
 }
 
 PHASIC::Process_Base *COMIX::Process_Group::GetProcess(const PHASIC::Process_Info &pi) const
@@ -64,7 +64,7 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   cdxs->SetCTS(p_cts);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   proc->SetParent((PHASIC::Process_Base*)this);
-  if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
+  if (!cdxs->Initialize(p_pmap,p_umprocs,m_blocks,m_nproc)) return false;
   if (s_partcommit) My_In_File::CloseDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   if (!cdxs->MapProcess())

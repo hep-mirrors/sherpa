@@ -39,7 +39,8 @@ COMIX::Process_Base::~Process_Base()
 }
 
 bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pmap,
-				     std::vector<Single_Process*> *const procs)
+				     std::vector<Single_Process*> *const procs,
+				     const std::vector<int> &blocks,size_t &nproc)
 {
   p_pmap=pmap;
   p_umprocs=procs;

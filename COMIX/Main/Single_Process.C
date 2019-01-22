@@ -59,11 +59,13 @@ COMIX::Single_Process::~Single_Process()
 
 bool COMIX::Single_Process::Initialize
 (std::map<std::string,std::string> *const pmap,
- std::vector<Single_Process*> *const procs)
+ std::vector<Single_Process*> *const procs,
+ const std::vector<int> &blocks,size_t &nproc)
 {
   DEBUG_FUNC("");
   m_p.resize(m_nin+m_nout);
-  if (!COMIX::Process_Base::Initialize(pmap,procs)) return false;
+  if (!COMIX::Process_Base::Initialize
+      (pmap,procs,blocks,nproc)) return false;
   if (p_bg!=NULL) delete p_bg;
   p_bg=NULL;
   if (pmap->find(m_name)!=pmap->end()) {
@@ -85,7 +87,24 @@ bool COMIX::Single_Process::Initialize
       if (mapname!=m_name) {
 	msg_Debugging()<<METHOD<<"(): Map '"<<m_name
 		       <<"' onto '"<<mapname<<"'\n";
+	if (Parent()->Name()==Name() && mapname=="x") return false;
+	if (blocks.size()) {
+	  for (size_t i(0);i<procs->size();++i)
+	    if ((*procs)[i]->Name()==mapname) {
+	      msg_Debugging()<<"Keep "<<m_name<<"\n";
+	      return true;
+	    }
+	  return false;
+	}
 	return true;
+      }
+      else {
+	++nproc;
+	if (blocks.size()) {
+	  if (std::find(blocks.begin(),blocks.end(),nproc-1)
+	      ==blocks.end()) return false;
+	  msg_Debugging()<<"Keep "<<nproc<<"\n";
+	}
       }
     }
   }

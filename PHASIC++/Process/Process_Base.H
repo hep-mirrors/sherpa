@@ -70,7 +70,7 @@ namespace PHASIC {
     KFactor_Setter_Base *p_kfactor;
 
     size_t      m_nin, m_nout, m_mcmode, m_cmode;
-    std::string m_name;
+    std::string m_name, m_resname;
 
     std::vector<double> m_maxcpl, m_mincpl;
 
@@ -210,7 +210,8 @@ namespace PHASIC {
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
 
-    inline const std::string &Name() const { return m_name; }
+    inline const std::string &Name() const        { return m_name;    }
+    inline const std::string &ResultsName() const { return m_resname; }
 
     inline void SetMaxOrders(const std::vector<double> &o) { m_maxcpl=o; }
     inline void SetMinOrders(const std::vector<double> &o) { m_mincpl=o; }

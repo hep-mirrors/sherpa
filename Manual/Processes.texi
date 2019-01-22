@@ -53,6 +53,7 @@ The following parameters are used to steer the process setup.
 * PSI_ItMin::               Tag to set the number of points per optimization step.
 * RS_PSI_ItMin::            Tag to set the number of points per optimization step
                             in real-minus-subtraction parts.
+* Special Group::           Manual grouping of flavour processes for integration
 * End process::             The process setup end tag.
 @end menu
 
@@ -546,6 +547,25 @@ Sets the number of points per optimization step, see @ref{PSI_ITMIN}.
 @subsection RS_PSI_ItMin
 Sets the number of points per optimization step in real-minus-subtraction
 parts of fixed-order and MC@@NLO calculations, see @ref{PSI_ITMIN}.
+
+@node Special Group
+@subsection Special Group
+Allows to split up individual flavour processes within a process group for
+integrating them separately. This can help improve the integration/unweighting
+efficiency. Note: Only works with Comix so far.
+Example for usage:
+@verbatim
+Process 93 93 -> 11 -11 93
+Special Group(0-1,4)
+[...]
+End process
+Process 93 93 -> 11 -11 93
+Special Group(2-3,5-7)
+[...]
+End process
+@end verbatim
+The numbers for each individual process can be found using a script in the 
+AddOns directory: @code{AddOns/ShowProcessIds.sh Process/Comix.zip}
 
 @node End process
 @subsection End process
