@@ -17,7 +17,7 @@ TAGS: {
 }
 
 # settings for ME generators
-SCALES: METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2};
+SCALES: METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
 ME_GENERATORS:
   - Comix
   - Amegic

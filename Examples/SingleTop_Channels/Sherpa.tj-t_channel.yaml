@@ -21,7 +21,7 @@ EVENT_GENERATION_MODE: Weighted
 #   use CKKW clustering scale for real/MC@NLO emission
 # CORESCALE SingleTop:
 #   use Mandelstam \hat{t} for s-channel 2->2 core process
-SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2};
+SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
 CORE_SCALE: SingleTop
 
 # collider setup

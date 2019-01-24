@@ -18,7 +18,7 @@ ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
 EVENT_GENERATION_MODE: Weighted
 
 # scales, tags for scale variations
-SCALES: VAR{$(FSF)*$(scl2)}{$(RSF)*$(scl2)}{$(QSF)*$(scl2)};
+SCALES: VAR{$(FSF)*$(scl2)}{$(RSF)*$(scl2)}{$(QSF)*$(scl2)}
 
 # collider setup
 BEAMS: 2212

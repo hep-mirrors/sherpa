@@ -8,7 +8,7 @@ TAGS: {
   NJET: 2,
   QCUT: 30
 }
-SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2};
+SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
 ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
 EVENT_GENERATION_MODE: Weighted
 # define custom particle container for easy process declaration
