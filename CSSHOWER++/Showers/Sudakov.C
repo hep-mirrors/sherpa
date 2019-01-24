@@ -16,7 +16,7 @@ using namespace std;
 bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
-  p_rms(NULL), m_reweightscalecutoff(0.0)
+  p_rms(NULL), m_reweightscalecutoff(0.0), m_keeprewinfo(false)
 {
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
@@ -406,7 +406,7 @@ bool Sudakov::Generate(Parton * split)
     if (p_split->GetColSpec()) p_selected->Lorentz()->SetSplit(&splitargs);
     const bool veto(Veto(Q2, m_x));
 
-    if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
+    if (m_keeprewinfo) {
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale < m_reweightscalecutoff) {
@@ -417,14 +417,12 @@ bool Sudakov::Generate(Parton * split)
         info.lastj = Selected()->Lorentz()->LastJ();
         info.lastcpl = Selected()->Coupling()->Last();
         info.sf = Selected();
-        p_split->AddSudakovReweightingInfo(info);
-        // TODO: we need to clear that info after each shower evolution step
+        info.x = m_x;
+        info.y = m_y;
+        info.z = m_z;
+        p_split->SudakovReweightingInfos().push_back(info);
       }
     }
-    //if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-    //  p_variationweights->UpdateOrInitialiseWeights(
-    //      &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
-    //}
 
     p_selected->Lorentz()->SetSplit(NULL);
     if (veto) {
@@ -445,6 +443,7 @@ bool Sudakov::Generate(Parton * split)
   return success;
 }
 
+#if false
 // TODO: delete me (but first re-use weight calculation)
 double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
@@ -563,6 +562,7 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
   }
   return rewfactor;
 }
+#endif
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)
 {

@@ -24,11 +24,12 @@ namespace CSSHOWER {
     bool accepted;
     double scale;
     double accwgt;
-    //double beam; -> can use m_beam?
     double lastj;
     double lastcpl;
     Splitting_Function_Base* sf;
+    double x, y, z;
   };
+  typedef std::vector<Sudakov_Reweighting_Info> Sudakov_Reweighting_Infos;
 
   class Parton {
   private:
@@ -47,10 +48,9 @@ namespace CSSHOWER {
     size_t          m_id;
     ATOOLS::Poincare_Sequence m_lt;
 
-    // TODO: delete?
     std::vector<std::pair<double,double> > m_weights;
 
-    std::vector<Sudakov_Reweighting_Info> m_sudakovrewinfos;
+    Sudakov_Reweighting_Infos m_sudakovrewinfos;
 
 
 
@@ -74,9 +74,7 @@ namespace CSSHOWER {
     inline const ATOOLS::Poincare_Sequence &LT() const { return m_lt; }
 
     inline std::vector<std::pair<double,double> > &Weights() { return m_weights; }
-    void AddSudakovReweightingInfo(Sudakov_Reweighting_Info& info) {
-      m_sudakovrewinfos.push_back(info);
-    }
+    Sudakov_Reweighting_Infos& SudakovReweightingInfos() { return m_sudakovrewinfos; }
 
     double Weight(const double &scale);
 
