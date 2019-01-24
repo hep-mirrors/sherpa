@@ -50,22 +50,21 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
   AMEGIC::Process_Base::Init();
 
+  auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
+
   m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
 
   // read in g->QQ option
-  Flavour flav((kf_code)(ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT"))));
+  Flavour flav(dipolesettings["NF_GSPLIT"].Get<kf_code>());
   m_maxgsmass=flav.Mass();
 
   // read in P->FF split scheme
   // 0 - do not cluster P->FF
   // 1 - cluster P->QQ, but not P->LL
   // 2 - cluster all P->FF
-  m_pspissplitscheme
-    =ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_SPLIT_SCHEME"));
-  m_pspfssplitscheme
-    =ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_SPLIT_SCHEME"));
-  m_noISclustertolepton
-    =ToType<size_t>(rpa->gen.Variable("DIPOLE_IS_CLUSTER_TO_LEPTONS"));
+  m_pspissplitscheme = dipolesettings["PFF_IS_SPLIT_SCHEME"].Get<size_t>();
+  m_pspfssplitscheme = dipolesettings["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
+  m_noISclustertolepton = dipolesettings["IS_CLUSTER_TO_LEPTONS"].Get<size_t>();
 
   if (!DetermineType()) return;
 
@@ -129,16 +128,22 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
 
   if (lopi.m_amegicmhv>0) {
     if (lopi.m_amegicmhv==12)
-      p_LO_process = new Single_LOProcess_External(lopi, p_int->Beam(),
-                                                         p_int->ISR(), m_stype);
+      p_LO_process = new Single_LOProcess_External(lopi,
+                                                   p_int->Beam(),
+                                                   p_int->ISR(),
+                                                   m_stype);
     else if (CF.MHVCalculable(lopi))
-      p_LO_process = new Single_LOProcess_MHV(lopi, p_int->Beam(),
-                                                    p_int->ISR(), m_stype);
+      p_LO_process = new Single_LOProcess_MHV(lopi,
+                                              p_int->Beam(),
+                                              p_int->ISR(),
+                                              m_stype);
     if (lopi.m_amegicmhv==2) { m_valid=false; return; }
   }
   if (!p_LO_process)
-    p_LO_process = new Single_LOProcess(lopi, p_int->Beam(),
-                                              p_int->ISR(), m_stype);
+    p_LO_process = new Single_LOProcess(lopi,
+                                        p_int->Beam(),
+                                        p_int->ISR(),
+                                        m_stype);
   if (!p_LO_process) THROW(fatal_error,"LO process unknown");
 
   if (!(m_valid=p_LO_process->IsValid())) return;
@@ -178,23 +183,23 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
 
   p_LO_process->SetSubEvt(&m_subevt);
 
-  m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA"));
-  m_dkt2max = ToType<double>(rpa->gen.Variable("DIPOLE_KT2MAX"));
+  m_dalpha = dipolesettings["ALPHA"].Get<double>();
+  m_dkt2max = dipolesettings["KT2MAX"].Get<double>();
   switch (m_dtype) {
   case dpt::f_f:
   case dpt::f_fm:
-    m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FF"));
+    m_dalpha = dipolesettings["ALPHA_FF"].Get<double>();
     break;
   case dpt::f_i:
   case dpt::f_im:
-    m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FI"));
+    m_dalpha = dipolesettings["ALPHA_FI"].Get<double>();
     break;
   case dpt::i_f:
   case dpt::i_fm:
-    m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_IF"));
+    m_dalpha = dipolesettings["ALPHA_IF"].Get<double>();
     break;
   case dpt::i_i:
-    m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_II"));
+    m_dalpha = dipolesettings["ALPHA_II"].Get<double>();
     break;
   default:
     break;

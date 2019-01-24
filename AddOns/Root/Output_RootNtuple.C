@@ -2,9 +2,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -29,17 +29,17 @@ Output_RootNtuple::Output_RootNtuple
 (const Output_Arguments &args,int exact,int ftype):
   Output_Base("Root"), m_exact(exact), m_ftype(ftype)
 {
-  args.p_reader->SetAllowUnits(true);
-  m_filesize = args.p_reader->GetValue<long int>("NTUPLE_SIZE",2147483647);
-  args.p_reader->SetAllowUnits(false);
-  m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
-  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
-  m_comp=args.p_reader->GetValue<int>("ROOTNTUPLE_COMPRESSION",101);
+  Settings& s = Settings::GetMainSettings();
+  Common_Root_Settings().RegisterDefaults();
+  RegisterDefaults();
+  m_mode=s["ROOTNTUPLE_MODE"].Get<int>();
+  m_treename=s["ROOTNTUPLE_TREENAME"].Get<std::string>();
+  m_comp=s["ROOTNTUPLE_COMPRESSION"].Get<int>();
   m_basename =args.m_outpath+"/"+args.m_outfile;
   m_ext = ".root";
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
   m_idcnt=0;
-  m_avsize=args.p_reader->GetValue<int>("ROOTNTUPLE_AVSIZE",10000);
+  m_avsize=s["ROOTNTUPLE_AVSIZE"].Get<int>();
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (m_exact) m_avsize=Max((size_t)1,m_avsize/size);
@@ -101,6 +101,14 @@ Output_RootNtuple::Output_RootNtuple
 #endif
 }
 
+void Output_RootNtuple::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["ROOTNTUPLE_MODE"].SetDefault(0);
+  s["ROOTNTUPLE_COMPRESSION"].SetDefault(101);
+  s["ROOTNTUPLE_AVSIZE"].SetDefault(10000);
+}
+
 void Output_RootNtuple::Header()
 {
 #ifdef USING__ROOT
@@ -111,7 +119,7 @@ void Output_RootNtuple::Header()
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_f->SetCompressionSettings(m_comp);
   p_t3 = new TTree(m_treename.c_str(),"Reconst ntuple");
-  p_t3->SetMaxTreeSize(m_filesize);
+  p_t3->SetMaxTreeSize(2147483647);
   p_t3->Branch("id",&m_id,"id/I");
   if (m_exact) p_t3->Branch("ncount",&m_ncount,"ncount/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
@@ -562,3 +570,7 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"Root NTuple output";
 }
 
+void Common_Root_Settings::RegisterDefaults() const
+{
+  Settings::GetMainSettings()["ROOTNTUPLE_TREENAME"].SetDefault("t3");
+}

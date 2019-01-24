@@ -12,6 +12,7 @@ libToolsPhys_la_SOURCES       =	\
 			        Simple_Polarisation_Info.C \
 				Particle_List.C \
 				Particle_Dresser.C \
+                                KF_Table.C \
 				NLO_Subevt.C \
 				NLO_Types.C \
 				Decay_Info.C \
@@ -39,6 +40,7 @@ localinc_HEADERS      =	\
 			Simple_Polarisation_Info.H \
 			Particle_List.H \
 			Particle_Dresser.H \
+                        KF_Table.H \
 			NLO_Subevt.H \
 			NLO_Types.H \
 			Decay_Info.H \

@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -36,7 +37,6 @@ void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
   m_startmd.clear();                            // clear model
   Data_Reader reader = Data_Reader(" ",";","!","|");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -79,7 +79,6 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
 {
   Data_Reader reader = Data_Reader(" ",";","!","|");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -149,7 +148,6 @@ void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader("->", ";", "#", "");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -178,7 +176,6 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -241,7 +238,6 @@ void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);

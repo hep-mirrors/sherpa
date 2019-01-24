@@ -1,6 +1,6 @@
 #include "AddOns/Analysis/Triggers/Durham_Algorithm.H"
 #include "ATOOLS/Phys/Particle_List.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 
 #include <iomanip>
@@ -24,7 +24,8 @@ Durham_Algorithm::Durham_Algorithm(ATOOLS::Particle_Qualifier_Base * const quali
   Jet_Algorithm_Base(qualifier), m_matrixsize(0), p_yij(NULL), p_imap(NULL), m_vectorsize(0), p_moms(NULL), 
   p_bflag(NULL), p_jets(NULL)
 {
-
+  m_durhamscheme =
+    Settings::GetMainSettings()["DURHAM_SCHEME"].SetDefault(0).Get<int>();
 }
 
 Durham_Algorithm::~Durham_Algorithm()
@@ -40,7 +41,6 @@ Durham_Algorithm::~Durham_Algorithm()
     delete [] p_yij;
   }
 }
-
 
 void Durham_Algorithm::AddToKtlist(double kt2) {
    if (p_kts) {
@@ -227,14 +227,9 @@ double Durham_Algorithm::DCos12(const Vec4D & p1,const Vec4D & p2) const
 
 double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
 {
-  static int das(-1);
-  if (das<0) {
-    Default_Reader reader;
-    if (reader.Read(das, "DURHAM_SCHEME", 0)) {
-      msg_Info()<<METHOD<<"(): Setting durham scheme mode "<<das<<".\n";
-    }
-  }
-  if (das==0) return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
-  return 2.*Min(p1.PSpat2(),p2.PSpat2())*(1.-DCos12(p1,p2))/m_sprime;
+  if (m_durhamscheme==0)
+    return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
+  else
+    return 2.*Min(p1.PSpat2(),p2.PSpat2())*(1.-DCos12(p1,p2))/m_sprime;
 }
 

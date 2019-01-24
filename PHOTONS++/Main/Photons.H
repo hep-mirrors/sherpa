@@ -6,7 +6,6 @@
 
 namespace ATOOLS {
   class Blob;
-  class Data_Reader;
 #ifdef PHOTONS_DEBUG
   class Histogram_2D;
 #endif
@@ -30,8 +29,9 @@ namespace PHOTONS {
     std::string                 m_name;
     bool                        m_photonsadded;
     bool                        m_success;
+    void RegisterDefaults();
   public:
-    Photons(ATOOLS::Data_Reader* reader=NULL);
+    Photons();
     ~Photons();
     bool AddRadiation(ATOOLS::Blob *);
     bool CheckStateBeforeTreatment(ATOOLS::Blob *);
@@ -131,16 +131,6 @@ namespace PHOTONS {
   /////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for Photons
   /////////////////////////////////////////////////////////////////////////////////////////
-  /*!
-    \fn Photons::Photons(ATOOLS::Data_Read * reader=NULL,bool=false)
-    \brief sets the all variables to their values defined in Fragmentation.dat
-  */
-
-  /*!
-    \fn Photons::Photons(bool=false)
-    \brief initialises all variables to their default values
-  */
-
   /*!
     \fn bool Photons::AddRadiation(Blob *)
     \brief hands blob to Define_Dipole class if it is supposed to be treated, returns m_photonsadded

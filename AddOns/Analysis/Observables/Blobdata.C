@@ -1,7 +1,7 @@
 #include "AddOns/Analysis/Observables/Primitive_Observable_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -52,27 +52,23 @@ namespace ANALYSIS {
 
 
 DECLARE_GETTER(Blobdata,"Blobdata",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
 Primitive_Observable_Base *
-ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Blobdata>::operator()(const Argument_Matrix &parameters) const
+ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,Blobdata>::operator()(const Analysis_Key &key) const
 {
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<5) return NULL;
-    return new Blobdata(parameters[0][4],
-                        HistogramType(parameters[0][3]),
-                        ATOOLS::ToType<double>(parameters[0][0]),
-                        ATOOLS::ToType<double>(parameters[0][1]),
-                        ATOOLS::ToType<int>(parameters[0][2]));
-  }
-  else {
-    return NULL;
-  }
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size()<5) return NULL;
+  return new Blobdata(parameters[4],
+                      HistogramType(parameters[3]),
+                      s.Interprete<double>(parameters[0]),
+                      s.Interprete<double>(parameters[1]),
+                      s.Interprete<int>(parameters[2]));
 }
 
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Blobdata>::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,Blobdata>::PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"e.g. Blobdata  0.0  500.0  50  LinErr  Factorisation_Scale";
+  str<<"e.g. [Blobdata, 0.0, 500.0, 50, LinErr, Factorisation_Scale]";
 }
 

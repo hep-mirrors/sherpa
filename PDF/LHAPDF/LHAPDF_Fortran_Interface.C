@@ -1,11 +1,11 @@
 #include "PDF/LHAPDF/LHAPDF_Fortran_Interface.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include <cstring>
 #include <dirent.h>
@@ -49,8 +49,8 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_asinfo.m_order=LHAPDF::getOrderAlphaS();
     m_asinfo.m_nf=LHAPDF::getNf();
     if (m_asinfo.m_nf<0) {
-      Default_Reader reader;
-      int nf(reader.Get<int>("LHAPDF_NUMBER_OF_FLAVOURS", 5));
+      Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+      const int nf(s["NUMBER_OF_FLAVOURS"].Get<int>());
       msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
       m_asinfo.m_nf=nf;
     }
@@ -83,8 +83,8 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 
 //  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
 
-  Data_Reader read(" ",";","#","=");
-  read.VectorFromFile(m_disallowedflavour,"LHAPDF_DISALLOW_FLAVOUR");
+  Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+  m_disallowedflavour = s["DISALLOW_FLAVOUR"].GetVector<int>();
   if (m_disallowedflavour.size()) {
     msg_Info()<<METHOD<<"(): Set PDF for the following flavours to zero: ";
     for (size_t i(0);i<m_disallowedflavour.size();++i)
@@ -209,9 +209,9 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  Default_Reader reader;
-  std::string path;
-  if (reader.Read(path, "LHAPDF_GRID_PATH", "")) LHAPDF::setPDFPath(path); 
+  Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+  if (s["GRID_PATH"].IsCustomised())
+    LHAPDF::setPDFPath(s["GRID_PATH"].Get<std::string>());
   std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
   p_get_lhapdf.resize(files.size());
   for (size_t i(0);i<files.size();++i) p_get_lhapdf[i] = new LHAPDF_Getter(files[i]);

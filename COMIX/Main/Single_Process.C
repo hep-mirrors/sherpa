@@ -14,11 +14,11 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace COMIX;
 using namespace PHASIC;
@@ -30,7 +30,8 @@ COMIX::Single_Process::Single_Process():
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
-  m_itype=ToType<cs_itype::type>(rpa->gen.Variable("NLO_IMODE"));
+  Settings& s = Settings::GetMainSettings();
+  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -177,7 +178,7 @@ bool COMIX::Single_Process::Initialize
 	  pl.push_back(i);
 	}
       p_bg->DInfo()->SetMassive(massive);
-      p_kpterms = new KP_Terms(this,ATOOLS::sbt::qcd,pl);
+      p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
       p_kpterms->SetIType(m_itype);
       p_kpterms->SetCoupling(&m_cpls);
       m_mewgtinfo.m_type|=
@@ -203,13 +204,7 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetNorm(1.0/(isf*fsf));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
-      Default_Reader reader;
-      reader.SetInputPath(rpa->GetPath());
-      reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-      if (reader.Read(m_checkpoles, "CHECK_POLES", m_checkpoles)) {
-	m_checkpoles=helpi;
-	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
-      }
+      m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);
@@ -285,7 +280,7 @@ bool COMIX::Single_Process::MapProcess()
 	  std::vector<size_t> pl;
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
-	  p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	  p_kpterms->SetIType(p_map->m_itype);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
 	}
@@ -336,7 +331,7 @@ bool COMIX::Single_Process::MapProcess()
 	std::vector<size_t> pl;
 	for (size_t j(0);j<m_nin+m_nout;++j)
 	  if (m_flavs[j].Strong()) pl.push_back(j);
-	p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	p_kpterms->SetIType(p_map->m_itype);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
       }
@@ -564,7 +559,7 @@ bool COMIX::Single_Process::Tests()
     ids[i]=i;
     acts[i]=m_flavs[i].Strong();
     if (acts[i]) {
-      if (abs(m_flavs[i].StrongCharge())==8) types[i]=0;
+      if (m_flavs[i].StrongCharge()==8) types[i]=0;
       else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
       else types[i]=i<m_nin?-1:1;
     }

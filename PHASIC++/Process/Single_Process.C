@@ -15,8 +15,8 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "METOOLS/Explicit/NLO_Counter_Terms.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -31,12 +31,15 @@ Single_Process::Single_Process():
   m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
-  m_pdfcts = ToType<size_t>(rpa->gen.Variable("MEPSNLO_PDFCT"));
-  m_dads = ToType<size_t>(rpa->gen.Variable("MCNLO_DADS"));
+  Settings& s = Settings::GetMainSettings();
+  m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
+  m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
 
-  std::string ncs(ToType<std::string>(rpa->gen.Variable("NLO_NF_CONVERSION_TERMS")));
+  std::string ncs{ s["NLO_NF_CONVERSION_TERMS"]
+    .SetDefault("None")
+    .UseNoneReplacements()
+    .Get<std::string>() };
   if      (ncs=="None" || ncs=="0") m_nfconvscheme=0;
-  else if (ncs=="Off"  || ncs=="0") m_nfconvscheme=0;
   else if (ncs=="On"   || ncs=="1") m_nfconvscheme=1;
   else if (ncs=="Only" || ncs=="2") m_nfconvscheme=2;
   else THROW(fatal_error,"Unknown NLO_NF_CONVERSION_TERMS scheme.");

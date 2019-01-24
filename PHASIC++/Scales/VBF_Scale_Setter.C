@@ -20,6 +20,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace PHASIC {
 
@@ -111,15 +112,15 @@ VBF_Scale_Setter::VBF_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  Settings& s = Settings::GetMainSettings();
   static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
   if (s_cmode<0) {
-    Data_Reader read(" ",";","!","=");
-    s_nmaxall=read.GetValue<int>("MEPS_NMAX_ALLCONFIGS",-1);
-    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",10);
-    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",64|256);
-    s_nlocpl=read.GetValue<int>("MEPS_NLO_COUPLING_MODE",2);
-    s_nfgsplit=read.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2);
-    s_csmode=read.GetValue<int>("MEPS_COLORSET_MODE",2);
+    s_nmaxall = s["MEPS_NMAX_ALLCONFIGS"].Get<int>();
+    s_nmaxnloall = s["MEPS_NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(10);
+    s_cmode = s["MEPS_CLUSTER_MODE"].GetScalarWithOtherDefault<int>(64|256);
+    s_nlocpl = s["MEPS_NLO_COUPLING_MODE"].Get<int>();
+    s_nfgsplit = s["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_csmode = s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(2);
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale);
@@ -180,7 +181,7 @@ VBF_Scale_Setter::VBF_Scale_Setter
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
   */
-  m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";

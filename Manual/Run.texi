@@ -1,7 +1,8 @@
-@node Run Parameters
-@section Run parameters
+@node General Parameters
+@section General parameters
 
-The following parameters describe general run information. They may be set in the @code{(run)} section of the run-card, see @ref{Input structure}.
+The following parameters describe general run information.  See @ref{Input
+structure} for how to use them in a configuration file or on the command line.
 
 @menu
 * EVENTS::            Number of events to generate.
@@ -62,13 +63,17 @@ Alternatively there are two more specialised modes, namely:
 @node SHERPA_VERSION
 @subsection SHERPA_VERSION
 @cindex SHERPA_VERSION
-This parameter ties a run card to a specific Sherpa version, e.g.
-@code{2.2.0}. If two parameters are given they are interpreted as
-a range of Sherpa versions.
+This parameter ties a config file to a specific Sherpa version, e.g.
+@code{SHERPA_VERSION: 2.2.0}. If two parameters are given they are interpreted
+as a range of Sherpa versions: @code{SHERPA_VERSION: [2.2.0, 2.2.5]} specifies
+that this config file can be used with any Sherpa version between (and
+including) 2.2.0 and 2.2.5.
 
 @node TUNE
 @subsection TUNE
 @cindex TUNE
+This parameter is currently not supported.
+@ignore
 This parameter specifies which tune is to be used. Setting different 
 tunes using this parameter ensures, that consistent settings are 
 employed. This affects mostly @ref{MPI Parameters} and
@@ -83,12 +88,15 @@ assess MPI uncertainties.
 @code{CT10_UEdown} Downward variation of MPI activity, variation of the CT10 tune to 
 assess MPI uncertainties.
 @end itemize
+@end ignore
 
 @node OUTPUT
 @subsection OUTPUT
 @cindex OUTPUT
 @cindex OUTPUT_PRECISION
 @cindex EVT_OUTPUT
+@cindex EVT_OUTPUT_START
+@cindex FUNCTION_OUTPUT
 This parameter specifies the screen output level (verbosity) of the program.
 If you are looking for event file output options please refer to section
 @ref{Event output formats}.
@@ -116,6 +124,20 @@ E.g. @option{OUTPUT=3} would display information, events and errors. Use
 @code{OUTPUT_PRECISION} to set the default output precision (default @code{6}).
 Note: this may be overriden in specific functions' output.
 
+For expert users: The output level can be overriden for individual functions,
+e.g. like this
+@verbatim
+FUNCTION_OUTPUT:
+  "void SHERPA::Matrix_Element_Handler::BuildProcesses()": 8
+  ...
+@end verbatim
+
+where the function signature is given by the value of
+@code{__PRETTY_FUNCTION__} in the function block.  Another expert parameter is
+@option{EVT_OUTPUT_START}, with which the first event affected by
+@option{EVT_OUTPUT} can be specified. This can be useful to generate debugging
+output only for events affected by a some issue.
+
 @node LOG_FILE
 @subsection LOG_FILE
 @cindex LOG_FILE
@@ -136,9 +158,10 @@ Alternatively, a combination of George Marsaglias KISS and SWB
 can be employed, see @uref{http://groups.google.co.uk/group/sci.stat.math/msg/edcb117233979602,,this} 
 @uref{http://groups.google.co.uk/group/sci.math.num-analysis/msg/eb4ddde782b17051,,website}.
 The integer-valued seeds of the generators are specified by 
-@option{RANDOM_SEED=A .. D}. They can also be set directly using 
-@option{RANDOM_SEED1=A} through @option{RANDOM_SEED4=D}. The Ran3 generator 
-takes only one argument. This value can also be set using the command line 
+@option{RANDOM_SEED: [A, .., D]}. They can also be set individually using
+@option{RANDOM_SEED1: A} through @option{RANDOM_SEED4: D}. The Ran3 generator
+takes only one argument (in this case, you can simply use @option{RANDOM_SEED:
+A}). This value can also be set using the command line
 option @option{-R}, see @ref{Command line}.
 
 @node EVENT_SEED_MODE
@@ -154,8 +177,8 @@ No seed files are written out or read in.
 @node ANALYSIS
 @subsection ANALYSIS
 @cindex ANALYSIS
-Analysis routines can be switched on or off by setting the ANALYSIS flag.
-The default is no analysis, corresponding to option @option{0}.
+Analysis routines can be switched on or off using the ANALYSIS parameter.  The
+default is no analysis.
 This parameter can also be specified on the command line using option
 @option{-a}, see @ref{Command line}.
 
@@ -179,14 +202,15 @@ To enable it, HZTool and CERNLIB have to be installed and Sherpa must be configu
 as described in @ref{HZTool analyses}.
 @end table
 
-Multiple options can be combined using a comma, e.g. @samp{ANALYSIS=Internal,Rivet}.
+Multiple options can also be specified, e.g. @code{ANALYSIS: [Internal,
+Rivet]}.
 
 @node ANALYSIS_OUTPUT
 @subsection ANALYSIS_OUTPUT
 @cindex ANALYSIS_OUTPUT
 Name of the directory for histogram files when using the internal analysis
-and name of the Aida file when using Rivet, see @ref{ANALYSIS}. 
-The directory / file will be created w.r.t. the working directory. The default
+and name of the Yoda file when using Rivet, see @ref{ANALYSIS}.  The
+directory/file will be created w.r.t. the working directory. The default
 value is @option{Analysis/}. This parameter can also be specified on the 
 command line using option @option{-A}, see @ref{Command line}.
 
@@ -209,17 +233,17 @@ A memory limitation can be given to prevent Sherpa to crash the system it is
 running on as it continues to build up matrix elements and loads additional 
 libraries at run time. Per default the maximum RAM of the system is determined 
 and set as the memory limit. This can be changed by giving 
-@option{RLIMIT_AS=<size>} where the size is given in the format @code{500 MB}, 
-@code{4 GB}, or @code{10 %}. The space between number and unit is mandatory. 
+@option{RLIMIT_AS: <size>} where the size is given as e.g. @code{500 MB},
+@code{4 GB}, or @code{10 %}.
 When running with @ref{MPI parallelization} it might be necessary to divide 
 the total maximum by the number of cores. This can be done by setting 
-@code{RLIMIT_BY_CPU=1}.
+@code{RLIMIT_BY_CPU: true}.
 
 Sherpa checks for memory leaks during integration and event generation. 
 If the allocated memory after start of integration or event generation exceeds
 the parameter @option{MEMLEAK_WARNING_THRESHOLD}, a warning is printed. 
 Like @option{RLIMIT_AS}, @option{MEMLEAK_WARNING_THRESHOLD} can be set 
-using units. However, no spaces are allowed between the number and the unit.
+using units.
 The warning threshold defaults to @code{16MB}.
 
 @node BATCH_MODE
@@ -253,8 +277,10 @@ The command line option @option{-b} should therefore not be used in this case, s
 @node NUM_ACCURACY
 @subsection NUM_ACCURACY
 @cindex NUM_ACCURACY
-The targeted numerical accuracy can be specified through NUM ACCURACY, e.g. for comparing
+The targeted numerical accuracy can be specified through @option{NUM_ACCURACY},
+e.g. for comparing
 two numbers. This might have to be reduced if gauge tests fail for numerical reasons.
+The default is @code{1E-10}.
 
 @node SHERPA_CPP_PATH
 @subsection SHERPA_CPP_PATH
@@ -262,7 +288,8 @@ two numbers. This might have to be reduced if gauge tests fail for numerical rea
 The path in which Sherpa will eventually store dynamically created C++ source code.
 If not specified otherwise, sets @option{SHERPA_LIB_PATH} to 
 @samp{$SHERPA_CPP_PATH/Process/lib}. This value can also be set using the command line 
-option @option{-L}, see @ref{Command line}.
+option @option{-L}, see @ref{Command line}. Both settings can also be set using
+environment variables.
 
 @node SHERPA_LIB_PATH
 @subsection SHERPA_LIB_PATH
@@ -292,8 +319,15 @@ these formats when selecting them.
 
 If the events are to be written to file, the parameter @option{EVENT_OUTPUT}
 must be specified together with a file name. An example would be
-@code{EVENT_OUTPUT=HepMC_GenEvent[MyFile]}, where @code{MyFile} stands
-for the desired file base name. The following formats are currently available:
+@code{EVENT_OUTPUT: HepMC_GenEvent[MyFile]}, where @code{MyFile} stands for the
+desired file base name. More than one output can also be specified:
+@verbatim
+EVENT_OUTPUT:
+- HepMC_GenEvent[MyFile]
+- Root[MyFile]
+@end verbatim
+
+The following formats are currently available:
 
 @table @option
 @item HepMC_GenEvent
@@ -315,18 +349,18 @@ event weights can also be enabled with HepMC versions >=2.06, cf.
 @ref{Scale and PDF variations}. The following additional customisations 
 can be used
 
-@code{HEPMC_USE_NAMED_WEIGHTS=<0|1>} 
+@code{HEPMC_USE_NAMED_WEIGHTS: <false|true>}
 Enable filling weights with an associated name. The nominal event weight 
 has the key @code{Weight}. @code{MEWeight}, @code{WeightNormalisation} and 
 @code{NTrials} provide additional information for each event as described 
 above. Needs HepMC version >=2.06.
 
-@code{HEPMC_EXTENDED_WEIGHTS=<0|1>}
+@code{HEPMC_EXTENDED_WEIGHTS: <false|true>}
 Write additional event weight information needed for a posteriori reweighting 
 into the WeightContainer, cf. @ref{A posteriori scale and PDF variations using the HepMC GenEvent Output}. Necessitates 
 the use of @code{HEPMC_USE_NAMED_WEIGHTS}.
 
-@code{HEPMC_TREE_LIKE=<0|1>}
+@code{HEPMC_TREE_LIKE: <false|true>}
 Force the event record to be stricly tree-like. Please note that this removes 
 some information from the matrix-element-parton-shower interplay which would 
 be otherwise stored.
@@ -339,7 +373,8 @@ listed. The event weights stored as the same as above, and
 customise.
 
 @item HepMC3_GenEvent
-Generates output using HepMC3 library. The format of the output is set with  @code{HEPMC3_IO_TYPE=<0|1|2|3|4>} tag.
+Generates output using HepMC3 library. The format of the output is set with
+@code{HEPMC3_IO_TYPE: <0|1|2|3|4>} tag.
 The default value is 0 and corresponds to ASCII GenEvent. Other available options are 
 1: HepEvt 2: ROOT file with every event written as an object of class GenEvent. 3: ROOT file with GenEvent objects writen into TTree.
 Otherwise similar to  @code{HepMC_GenEvent}.
@@ -396,14 +431,10 @@ The output can be further customized using the following options:
 @table @option
 @item FILE_SIZE
 Number of events per file (default: unlimited).
-@item NTUPLE_SIZE
-File size per NTuple file (default: unlimited).
-This option is deprecated. It may lead to errors in the subsequent 
-processing of NTuple files. Please use @option{FILE_SIZE} instead.
 @item EVENT_FILE_PATH
 Directory where the files will be stored.
 @item EVENT_OUTPUT_PRECISION
-Steers the precision of all numbers written to file.
+Steers the precision of all numbers written to file (default: 12).
 @end table
 
 For all output formats except ROOT and Delphes, events can be written directly 
@@ -416,34 +447,60 @@ Sherpa can compute alternative event weights for different scale and
 PDF choices on-the-fly, resulting in alternative weights for the generated 
 event. The can be evoked with the following syntax
 @verbatim
-SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-2>,<muF-fac-2>[,<PDF-2>] ...
+VARIATIONS:
+- "<muR-fac-1>,<muF-fac-1>,<PDF-1>"
+- "<muR-fac-2>,<muF-fac-2>,<PDF-2>"
+...
 @end verbatim
-The key word @code{SCALE_VARIATIONS} takes a space separated list of 
+The key word @code{VARIATIONS} takes a list of
 variation factors for the nominal renormalisation and factorisation scale 
-and an associated PDF set. Any set present in any of the PDF library interfaces
+and an associated PDF set. If the scale factors are omitted, they default to 1.
+Any set present in any of the PDF library interfaces
 loaded through @code{PDF_LIBRARY} can be used. If no PDF set is given it 
 defaults to the nominal one. Specific PDF members can be 
-specified by appending the PDF set name with @code{/<member-id>}. The 
-short-hand appendix @code{[all]} will provide the variations for all 
-members of the given set (only works with LHAPDF6 sets or the internal default
-set).  Please note: scales are, as always in Sherpa, given in their quadratic
+specified by appending the PDF set name with @code{/<member-id>}.  Enclosing
+the pdf set with square brackets will expand to variations over all members of
+that set. This only works with LHAPDF6 sets or the internal default sets.
+Please note that scales are, as always in Sherpa, given in their quadratic
 form.  Thus, a variation of factor 4 of the squared scale [GeV^2] means a
 variation of factor 2 on the scale itself [GeV].
-
-PDF variations on their own can also be invoked by giving the list of 
-PDF sets to be reweighted to to @code{PDF_VARIATIONS}.
+Scales also support square bracket expansion, e.g. @code{[4]} expands to
+@code{1/4, 1, 4}. Enclosing both scale tags with square brackets expands to the
+7-point scale variation:
+@verbatim
+VARIATIONS:
+- "[4,4]"
+# is equivalent to
+VARIATIONS:
+- 0.25,0.25
+- 1,0.25
+- 0.25,1
+- 1,1
+- 4,1
+- 1,4
+- 4,4
+@end verbatim
 
 Thus, a complete variation using the PDF4LHC convention would read
 @verbatim
-  SCALE_VARIATIONS 0.25,0.25 0.25,1. 1.,0.25 1.,1. 1.,4. 4.,1. 4.,4.;
-  PDF_VARIATIONS CT10nlo[all] MMHT2014nlo68cl[all] NNPDF30_nlo_as_0118[all];
+VARIATIONS:
+- "[4,4]"
+- "[CT10nlo]"
+- "[MMHT2014nlo68cl]"
+- "[NNPDF30_nlo_as_0118]"
 @end verbatim
+
 Please note, this syntax will create 7+53+51+101=212 additional weights
 for each event.
 
+Note that the square bracket expansion includes trivial scale variations and
+the central PDF set. This can be disabled with @code{VARIATIONS_INCLUDE_CV:
+false}.
+
 The additional event weights can then be written into the event output. 
 However, this is currently only supported for @code{HepMC_GenEvent} and 
-@code{HepMC_Short} with versions >=2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
+@code{HepMC_Short} with versions >=2.06 and @code{HEPMC_USE_NAMED_WEIGHTS:
+true}.
 The alternative event weights follow the Les Houches naming convention 
 for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}.
 When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate 
@@ -459,9 +516,14 @@ number of trials, cf. @ref{Cross section determination}.
 
 The on-the-fly reweighting works for all event generation modes (weighted or
 (partially) unweighted) and all calculation types (LO, LOPS, NLO, NLOPS,
-MEPS@@LO, MEPS@@NLO and MENLOPS).  However, it does not include the reweighting
-of parton shower emissions per default, which is an experimental feature in
-Sherpa 2.2.0.
+MEPS@@LO, MEPS@@NLO and MENLOPS).  The on-the-fly reweighting includes the
+parton shower. All shower emissions with a transverse momentum larger than
+@code{5 GeV^2} are reweighted.  Softer emissions are excluded for reasons of
+numerical stability.  This threshold can be modified using
+@code{CSS_REWEIGHT_SCALE_CUTOFF}.  To include the ME-only variations along with
+the full variations in the HepMC/Rivet output, you can use
+@code{HEPMC_INCLUDE_ME_ONLY_VARIATIONS: true} and @code{RIVET: @{
+INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true @}}, respectively.
 
 @node MPI parallelization
 @subsection MPI parallelization
@@ -488,5 +550,8 @@ Sherpa -f <run-card> INIT_ONLY=1
 and, in case of using Amegic, compile the libraries. Then start your
 parallized integration, e.g.
 @verbatim
-mpirun -n <n> Sherpa -f <run-card>
+mpirun -n <n> Sherpa -f <run-card> -e 0
 @end verbatim
+After the integration has finished, you can submit individual jobs to generate
+event samples (with a different random seed for each job).  Upon completion,
+the results can be merged.

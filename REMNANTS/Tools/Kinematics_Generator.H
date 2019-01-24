@@ -68,8 +68,7 @@ namespace REMNANTS {
     Kinematics_Generator();
     ~Kinematics_Generator();
 
-    void Initialize(Remnant_Handler * const rhandler,
-		    const std::string & path, const std::string & file);
+    void Initialize(Remnant_Handler * const rhandler);
     ATOOLS::Blob * MakeSoftBlob();
     bool FillBlobs(ATOOLS::Blob_List *const bloblist);
       

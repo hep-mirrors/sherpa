@@ -49,11 +49,12 @@ namespace SHERPA {
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-        m_vsfile, m_vnlomode, m_vnlopart, m_vnlocpl,
+        m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
 	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vborncpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
+      ATOOLS::Scoped_Settings m_selectors;
 
       std::string m_gycut;
       int m_cutcore;
@@ -72,7 +73,7 @@ namespace SHERPA {
     REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
 
-    std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
+    std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
 
@@ -96,15 +97,24 @@ namespace SHERPA {
 
     ProcMap_Vector m_pmaps;
 
+    void RegisterDefaults();
+    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&&);
+
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
-    void BuildSingleProcessList
-    (PHASIC::Process_Info &pi,Processblock_Info &pbi,
-     const std::string &ini,const std::string &fin,
-     const std::vector<std::string> &dectags);
 
+    struct Single_Process_List_Args {
+      PHASIC::Process_Info pi;
+      Processblock_Info pbi;
+      std::string ini;
+      std::string fin;
+      std::vector<std::string> dectags;
+    };
+    void BuildSingleProcessList(Single_Process_List_Args&);
+
+    std::string MakeOrderString(ATOOLS::Scoped_Settings&&) const;
     std::string MakeString(const std::vector<std::string> &in,
-			   const size_t &first);
+			   const size_t &first) const;
 
     template <typename Type> Type ExtractMPvalue(const std::string& str);
     template <typename Type>
@@ -115,9 +125,10 @@ namespace SHERPA {
     bool GetMPvalue(std::map<std::string,std::pair<int,Type> >& dv,
 		    const int nfs,const std::string &pnid,Type &rv);
     template <typename Type>
-    void ExtractMPvalues(std::string& str,std::map
-			 <std::string,std::pair<int,Type> >& dv,
-			 const int &priority);
+    void ExtractMPvalues(std::string str,
+                         std::pair<size_t, size_t> multirange,
+                         const int &priority,
+                         std::map<std::string,std::pair<int,Type> >&) const;
 
     std::vector<PHASIC::Process_Base*> InitializeProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
@@ -125,6 +136,12 @@ namespace SHERPA {
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
 
     void BuildProcesses();
+    void ReadFinalStateMultiIndependentProcessSettings(
+      ATOOLS::Scoped_Settings, Single_Process_List_Args&);
+    void ReadFinalStateMultiSpecificProcessSettings(
+      ATOOLS::Scoped_Settings,
+      Single_Process_List_Args&,
+      const std::string& range="-") const;
 
     void InitNLOMC();
 
@@ -134,15 +151,12 @@ namespace SHERPA {
 
   public :
 
-    Matrix_Element_Handler(const std::string &path,const std::string &file,
-                           const std::string &processfile,
-                           const std::string &selectorfile);
+    Matrix_Element_Handler(MODEL::Model_Base*);
 
     ~Matrix_Element_Handler();
 
-    int InitializeProcesses(MODEL::Model_Base *model,
-			     BEAM::Beam_Spectra_Handler *beam,
-			     PDF::ISR_Handler *isr);
+    int InitializeProcesses(BEAM::Beam_Spectra_Handler*,
+                            PDF::ISR_Handler*);
 
 #ifdef USING__Threading
     static void *TCalculateTotalXSecs(void *arg);
@@ -180,9 +194,6 @@ namespace SHERPA {
 
     inline double Sum() const { return m_sum; }
 
-    inline const std::string &Path() const { return m_path; }
-    inline const std::string &File() const { return m_file; }
-    
     inline int HasNLO() const  { return m_hasnlo;  }
 
     double GetWeight(const ATOOLS::Cluster_Amplitude &ampl,

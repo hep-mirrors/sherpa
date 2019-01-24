@@ -10,7 +10,6 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Flow.H"
 
@@ -216,8 +215,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
 	return false;
       }
       m_procs.push_back(proc);
-      Selector_Key skey(NULL,NULL,true);
-      proc->SetSelector(skey);
+      proc->SetSelector(Selector_Key{});
       proc->SetScale
 	(Scale_Setter_Arguments
 	 (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));

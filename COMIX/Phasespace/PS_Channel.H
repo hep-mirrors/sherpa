@@ -55,6 +55,10 @@ namespace COMIX {
 #endif
 
   class PS_Channel: public PHASIC::Single_Channel {
+  private:
+
+    void RegisterDefaults() const;
+
   protected:
 
     Process_Base   *p_xs;

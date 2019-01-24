@@ -25,7 +25,6 @@ Hadron_Decay_Table::~Hadron_Decay_Table()
 void Hadron_Decay_Table::Read(std::string path, std::string file)
 {
   Data_Reader reader = Data_Reader("|",";","!");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -49,7 +48,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
   for (size_t i=0;i<helpsvv.size();i++) {
     if ( helpsvv[i][0] == string("NO_ANTI") )
       continue;
-    if (helpsvv[i].size()!=3 && helpsvv[i][0]==string("SPECTATORS")) {
+    if (helpsvv[i].size()!=3
+        && StringTrim(helpsvv[i][0])==string("SPECTATORS")) {
       haspartonics = true;
       Tools::ExtractSpecs(helpsvv[i][1],specs,specweights);
       DEBUG_INFO("found spectators for "<<m_flin);
@@ -75,7 +75,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       hdc->SetWidth(BR*Flav().Width());
       hdc->SetDeltaWidth(dBR*Flav().Width());
       hdc->SetOrigin(origin);
-      if(helpsvv[i].size()==3) hdc->SetFileName(helpsvv[i][2]);
+      if(helpsvv[i].size()==3) hdc->SetFileName(StringTrim(helpsvv[i][2]));
       else {
         hdc->SetFileName();
 

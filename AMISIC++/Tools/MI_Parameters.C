@@ -1,6 +1,7 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
@@ -12,48 +13,48 @@ MI_Parameters * AMISIC::mipars = NULL;
 
 MI_Parameters::MI_Parameters() {}
 
-bool MI_Parameters::Init(Default_Reader *const defaultreader)
+bool MI_Parameters::Init()
 {
-  ReadParameters(defaultreader);
+  ReadParameters();
   return true;
 }
 
 
-void MI_Parameters::ReadParameters(Default_Reader *const defaultreader)
+void MI_Parameters::ReadParameters()
 {
-  m_parameters[string("pt_0(ref)")] =
-    defaultreader->GetValue<double>("AMISIC::PT_0(ref)",1.);
-  m_parameters[string("pt_min(ref)")]    =
-    defaultreader->GetValue<double>("AMISIC::PT_Min(ref)",1.5);
-  m_parameters[string("eta")]       =
-    defaultreader->GetValue<double>("AMISIC::Eta",0.16);
-  m_parameters[string("Ecms(ref)")] =
-    defaultreader->GetValue<double>("AMISIC::E(ref)",7000.);
+  auto s = Settings::GetMainSettings()["AMISIC"];
+  m_parameters[string("pt_0(ref)")]
+    = s["PT_0(ref)"].SetDefault(1.).Get<double>();
+  m_parameters[string("pt_min(ref)")]
+    = s["PT_Min(ref)"].SetDefault(1.5).Get<double>();
+  m_parameters[string("eta")]
+    = s["Eta"].SetDefault(0.16).Get<double>();
+  m_parameters[string("Ecms(ref)")]
+    = s["E(ref)"].SetDefault(7000.).Get<double>();
   double pt_0   = CalculatePT(m_parameters[string("pt_0(ref)")]);
   double pt_min = CalculatePT(m_parameters[string("pt_min(ref)")]);
-  m_parameters[string("pt_min")]    =
-    defaultreader->GetValue<double>("AMISIC::PT_Min",pt_min);
-  m_parameters[string("pt_0")]      =
-    defaultreader->GetValue<double>("AMISIC::PT_0",pt_0);
-  string scheme = defaultreader->GetValue<string>("AMISIC::MU_R_SCHEME","PT");
-  m_scalescheme = ToType<scale_scheme::code>(scheme);
-  m_parameters[string("RenScale_Factor")] = 
-    defaultreader->GetValue<double>("AMISIC::MU_R_FACTOR",0.5);
-  m_parameters[string("FacScale_Factor")] = 
-    defaultreader->GetValue<double>("AMISIC::MU_F_FACTOR",1.0);
-  m_parameters[string("Matter_Fraction1")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_FRACTION1",0.5);
-  m_parameters[string("Matter_Radius1")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_RADIUS1",0.4);
-  m_parameters[string("Matter_Radius2")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_RADIUS2",1.0);
-  string form = defaultreader->GetValue<string>("AMISIC::MATTER_FORM",
-						"Double_Gaussian");
-  m_overlapform = ToType<overlap_form::code>(form);
-  m_parameters[string("nPT_bins")]    =
-    defaultreader->GetValue<int>("AMISIC::nPT_bins",200);
-  m_parameters[string("nMC_points")]    =
-    defaultreader->GetValue<int>("AMISIC::nMC_points",1000);
+  m_parameters[string("pt_min")]
+    = s["PT_Min"].SetDefault(pt_min).Get<double>();
+  m_parameters[string("pt_0")]
+    = s["PT_0"].SetDefault(pt_0).Get<double>();
+  m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
+  m_parameters[string("RenScale_Factor")]
+    = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
+  m_parameters[string("FacScale_Factor")]
+    = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
+  m_parameters[string("Matter_Fraction1")]
+    = s["MATTER_FRACTION1"].SetDefault(0.5).Get<double>();
+  m_parameters[string("Matter_Radius1")]
+    = s["MATTER_RADIUS1"].SetDefault(0.4).Get<double>();
+  m_parameters[string("Matter_Radius2")]
+    = s["MATTER_RADIUS2"].SetDefault(1.0).Get<double>();
+  m_overlapform = s["MATTER_FORM"]
+	  .SetDefault(overlap_form::Double_Gaussian)
+	  .Get<overlap_form::code>();
+  m_parameters[string("nPT_bins")]
+    = s["nPT_bins"].SetDefault(200).Get<int>();
+  m_parameters[string("nMC_points")]
+    = s["nMC_points"].SetDefault(1000).Get<int>();
 }
 
 double MI_Parameters::CalculatePT(const double & pt) {

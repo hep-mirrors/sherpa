@@ -19,20 +19,21 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include <cstring>
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Sherpa::Sherpa() :
+Sherpa::Sherpa(int argc, char* argv[]) :
   p_inithandler(nullptr),
   p_eventhandler(nullptr),
   p_hepmc2(nullptr)
@@ -40,6 +41,7 @@ Sherpa::Sherpa() :
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Terminator_Object_Handler();
   ATOOLS::msg = new Message();
+  Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
@@ -65,11 +67,8 @@ Sherpa::~Sherpa()
 #ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
 #endif
+  Settings::FinalizeMainSettings();
   exh->RemoveTerminatorObject(this);
-  {// don't remove
-    ATOOLS::Default_Reader reader;
-    reader.Finalize();
-  }// don't remove
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
@@ -84,49 +83,60 @@ Sherpa::~Sherpa()
   ATOOLS::s_kftable.clear();
 }
 
-bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
-{ 
-  m_path = std::string("");
+bool Sherpa::InitializeTheRun()
+{
+  Settings& s = Settings::GetMainSettings();
+  p_inithandler = new Initialization_Handler();
+  RegisterDefaults();
 
-  p_inithandler = new Initialization_Handler(argc, argv);
+  mpi->SetUpSendRecv();
 
-  mpi->SetUpSendRecv(p_inithandler->DataReader());
-
-  DrawLogo(p_inithandler->DataReader()->GetValue("PRINT_VERSION_INFO",0));
+  DrawLogo(s["PRINT_VERSION_INFO"].Get<bool>());
 
   if (p_inithandler->InitializeTheFramework()) {
-    Default_Reader reader;
-    int initonly=reader.Get<int>("INIT_ONLY",0);
+    int initonly=s["INIT_ONLY"].Get<int>();
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
     if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
-    m_showtrials=reader.Get<int>("SHOW_NTRIALS",0);
+    m_showtrials=s["SHOW_NTRIALS"].Get<bool>();
 
     // read in from status path
     bool res(true);
-    std::string statuspath(
-        p_inithandler->DataReader()->GetValue<std::string>("STATUS_PATH", ""));
+    std::string statuspath(s["STATUS_PATH"].Get<std::string>());
     if (statuspath != "") {
       res=exh->ReadInStatus(statuspath);
     }
 
-    m_debuginterval = reader.Get("DEBUG_INTERVAL", m_debuginterval, "debug interval");
-    m_debugstep     = reader.Get("DEBUG_STEP", m_debugstep);
+    m_debuginterval = s["DEBUG_INTERVAL"].Get<long int>();
+    m_debugstep     = s["DEBUG_STEP"].Get<long int>();
 
-    m_displayinterval=reader.Get<int>("EVENT_DISPLAY_INTERVAL",100);
-    m_evt_output =reader.Get<int>("EVT_OUTPUT",msg->Level());
-    m_evt_output_start=reader.Get<int>("EVT_OUTPUT_START",
-                                       m_evt_output!=msg->Level()?1:0);
-    
+    m_displayinterval=s["EVENT_DISPLAY_INTERVAL"].Get<int>();
+    m_evt_output = s["EVT_OUTPUT"].Get<int>();
+    m_evt_output_start = s["EVT_OUTPUT_START"].Get<int>();
+
     return res;
   }
-  msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
+  msg_Error()<<"Error in Sherpa::InitializeRun()"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
-  
+
   return 0;
 }
 
+void Sherpa::RegisterDefaults()
+{
+  Settings& s = Settings::GetMainSettings();
+  s["PRINT_VERSION_INFO"].SetDefault(false);
+  s["INIT_ONLY"].SetDefault(0);
+  s["SHOW_NTRIALS"].SetDefault(false);
+  s["DEBUG_INTERVAL"].SetDefault(0);
+  s["DEBUG_STEP"].SetDefault(-1);
+  s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
+  s["EVT_OUTPUT"].SetDefault(msg->Level());
+
+  const int evtoutput{ s["EVT_OUTPUT"].Get<int>() };
+  s["EVT_OUTPUT_START"].SetDefault(evtoutput != msg->Level() ? 1 : 0);
+}
 
 bool Sherpa::InitializeTheEventHandler() 
 {
@@ -136,7 +146,7 @@ bool Sherpa::InitializeTheEventHandler()
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
   }
-  
+
   if (mode==eventtype::EventReader) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader(),
                                                       p_inithandler->GetVariations()));
@@ -144,8 +154,9 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
-    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
-                                                       p_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(
+        new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
+                             p_inithandler->GetVariations()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
@@ -153,9 +164,12 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetMIHandler(),
 						    p_inithandler->GetSoftCollisionHandler(),
 						    p_inithandler->GetShowerHandlers()));
-    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(p_inithandler->GetMatrixElementHandler(),
-                                                                       p_inithandler->GetSoftPhotonHandler()));
-    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
+    p_eventhandler->AddEventPhase(
+        new Signal_Process_FS_QED_Correction(
+          p_inithandler->GetMatrixElementHandler(),
+          p_inithandler->GetSoftPhotonHandler()));
+    p_eventhandler->AddEventPhase(
+        new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
@@ -351,7 +365,7 @@ double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl,const int mode) const
     GetWeight(ampl,ATOOLS::nlo_type::lo,mode);
 }
 
-void Sherpa::DrawLogo(const int mode) 
+void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
   if (msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
@@ -407,7 +421,7 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  rpa->gen.PrintGitVersion(msg->Info(),mode);
+  rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
 }

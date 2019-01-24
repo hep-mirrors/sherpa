@@ -1,6 +1,7 @@
 #include "PHASIC++/Channels/VHAAG_ND.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -9,7 +10,6 @@
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
@@ -81,10 +81,9 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int size = reader.IsDisabled("VHAAG_AUTOOPT", true) ? 2 : 1;
+  Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
+  int size{ s["AUTOOPT"].SetDefault(false).Get<bool>() ? 1 : 2 };
+
 #ifdef USING__MPI
   size=MPI::COMM_WORLD.Get_size();
 #endif

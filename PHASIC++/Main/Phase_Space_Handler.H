@@ -83,8 +83,8 @@ namespace PHASIC {
 
     ATOOLS::Poincare *p_massboost;
 
-    int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode, m_enhancexs;
-    bool m_initialized, m_sintegrator;
+    int  m_nin, m_nout, m_nvec, m_dmode, m_enhancexs;
+    bool m_initialized, m_sintegrator, m_fin_opt;
 
     long int m_maxtrials, m_killedpoints;
 
@@ -98,6 +98,8 @@ namespace PHASIC {
     psm::code m_cmode;
 
     bool m_printpspoint;
+
+    void RegisterDefaults() const;
 
     double EnhanceFactor(Process_Base *const proc);
 

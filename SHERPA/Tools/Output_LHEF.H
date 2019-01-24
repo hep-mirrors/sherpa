@@ -27,6 +27,8 @@ namespace SHERPA {
     void Header();
     void Output(ATOOLS::Blob_List* blobs);
     void Footer();
+  private:
+    void RegisterDefaults() const;
   };
 
 }

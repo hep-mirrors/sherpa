@@ -3,10 +3,6 @@
 
 #include <string>
 
-namespace ATOOLS {
-  class Data_Reader;
-}
-
 namespace MODEL {
   class Single_Vertex;
 }
@@ -20,13 +16,11 @@ namespace DIM {
     int m_mode, m_type;
     MODEL::Single_Vertex *p_v;
     Kernel *p_k;
-    ATOOLS::Data_Reader *p_rd;
 
     Kernel_Key(MODEL::Single_Vertex *const v,
-	       const int mode,const int type,
-	       ATOOLS::Data_Reader *const rd):
-      p_k(NULL), m_mode(mode), m_type(type), p_v(v),
-      p_rd(rd) {}
+	       const int mode,const int type):
+      p_k(NULL), m_mode(mode), m_type(type), p_v(v)
+    {}
 
   };// end of struct Kernel_Key
 

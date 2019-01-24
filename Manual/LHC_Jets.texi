@@ -9,8 +9,8 @@
 To change any of the following LHC examples to production at the Tevatron 
 simply change the beam settings to
 @verbatim
-  BEAM_1  2212; BEAM_ENERGY_1 980;
-  BEAM_2 -2212; BEAM_ENERGY_2 980;
+BEAMS: [2212, -2212]
+BEAM_ENERGIES: 980
 @end verbatim
 
 @node LHC_Jets_MCatNLO
@@ -24,14 +24,12 @@ using the MC@@NLO prescription detailed in @mycite{Hoeche2011fd} and
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat
+@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions 
-can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
 easy scale variations. Tags are replaced troughout the entire run card by 
 their defined value, see @ref{Tags}.
@@ -58,14 +56,14 @@ of the two jets present at Born level.
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat
+@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize @bullet
 @item
-@code{Order} is set to @option{(*,0)}. This
+@code{Order} is set to @option{@{QCD: Any, EW: 0@}}. This
 ensures that all final state jets are produced via 
 the strong interaction.
 
@@ -75,7 +73,4 @@ set a resolution criterion for the two jets of the core process.
 This is necessary because the `CKKW' tag does not apply any cuts to the core
 process, but only to the extra-jet matrix elements, see 
 @ref{Multijet merged event generation with Sherpa}.
-This cut is applied only to the 2->2 process using the @code{@{2@}}
-specification, since the higher-order matrix elements should only be cut by
-the ME+PS separation criterion.
 @end itemize

@@ -1,0 +1,46 @@
+# general settings
+EVENTS: 10k
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 3500
+
+EVENT_GENERATION_MODE: Weighted
+SHOWER_GENERATOR: None
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+TAGS:
+  LOOPGEN: OpenLoops
+ME_GENERATORS:
+- Amegic
+- $(LOOPGEN)
+SCALES: VAR{PPerp2(p[2])}
+
+WIDTH_SCHEME: CMS
+EW_SCHEME: 1
+1/ALPHAQED(default): 137.03599976
+PARTICLE_DATA:
+  23:
+    Mass: 91.188
+  24:
+    Mass: 80.419
+
+CHECK_POLES: false
+AMEGIC:
+  CHECK_BORN: 0
+
+PROCESSES:
+- Process: "2 -2 -> 21 21"
+  NLO_Mode: Fixed_Order
+  Order: {QCD: Any, EW: 0}
+  NLO_QCD_Part: VI
+  Enable_MHV: 0
+  Loop_Generator: $(LOOPGEN)
+
+SELECTORS:
+- Type: NJetFinder
+  N: 2
+  PTMin: 20.0
+  ETMin: 0.0
+  R: 0.4
+  Exp: -1

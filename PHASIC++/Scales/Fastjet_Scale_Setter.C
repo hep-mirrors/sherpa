@@ -93,7 +93,6 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   jtag=jtag.substr(0,pos);
   Data_Reader read(" ",",","#","=");
   read.AddIgnore(":");
-  read.SetAddCommandLine(false);
   read.SetString(jtag);
   m_mode=read.StringValue<int>("M",1);
   m_bmode=read.StringValue<int>("B",0);

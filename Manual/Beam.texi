@@ -1,25 +1,34 @@
 @node Beam Parameters
 @section Beam parameters
-@cindex BEAM_1
-@cindex BEAM_2
-@cindex BEAM_ENERGY_1
-@cindex BEAM_ENERGY_2
+@cindex BEAMS
+@cindex BEAM_ENERGIES
 
-The setup of the colliding beams is covered by the @code{(beam)}
-section of the steering file or the beam data file @code{Beam.dat},
-respectively, see @ref{Input structure}. The @emph{mandatory settings} to be made are
-
+Mandatory settings to set up the colliding particle beams are
 @itemize @bullet
 @item The initial beam particles specified through 
-@option{BEAM_1} and @option{BEAM_2}, given by their PDG 
+@option{BEAMS}, given by their PDG
 particle number. For (anti)protons and (positrons) electrons, 
 for example, these are given by (-)2212 or (-)11, respectively. 
-The code for photons is 22. 
-@item The energies of both incoming beams, defined through 
-@option{BEAM_ENERGY_1} and @option{BEAM_ENERGY_2}, 
-given in units of GeV. Beam energies may also be specified
-as a second argument to @option{BEAM_1} and @option{BEAM_2}.
+The code for photons is 22. If you provide a single particle number,
+both beams will consist of that particle type. If the beams consist
+of different particles, a list of two values have to be provided.
+@item The energies of both incoming beams are defined through
+@option{BEAM_ENERGIES},
+given in units of GeV. Again, single values apply to both beams,
+whereas a list of two values have to be given when the two beams
+do not have the same energy.
 @end itemize
+
+Examples would be
+@verbatim
+# LHC
+BEAMS: 2212
+BEAM_ENERGIES: 7000
+
+# HERA
+BEAMS: [-11, 2212]
+BEAM_ENERGIES: [27.5, 820]
+@end verbatim
 
 More options related to beamstrahlung and intrinsic transverse momentum can
 be found in the following subsections.
@@ -31,15 +40,13 @@ be found in the following subsections.
 
 @node Beam Spectra
 @subsection Beam Spectra
-@cindex BEAM_SPECTRUM_1
-@cindex BEAM_SPECTRUM_2
-@cindex SPECTRUM_FILE_1
-@cindex SPECTRUM_FILE_2
+@cindex BEAM_SPECTRA
+@cindex SPECTRUM_FILES
 @cindex BEAM_SMIN
 @cindex BEAM_SMAX
 
 If desired, you can also specify spectra for beamstrahlung through
-@code{BEAM_SPECTRUM_1} and @code{BEAM_SPECTRUM_2}. The possible values are
+@code{BEAM_SPECTRA}. The possible values are
 Possible values are
 @table @option
 @item Monochromatic
@@ -69,7 +76,7 @@ implementing and testing the corresponding code. See details below.
 A user defined spectrum is used to describe the energy spectrum
 of the assumed new beam particles. The name of the corresponding
 spectrum file needs to be given through the keywords
-@code{SPECTRUM_FILE_1} and @code{SPECTRUM_FILE_2}.
+@code{SPECTRUM_FILES}.
 @end table
 
 The @code{BEAM_SMIN} and @code{BEAM_SMAX} parameters may be used to specify the
@@ -79,54 +86,51 @@ of mass energy squared of the collision, @emph{not} the
 centre of mass energy after eventual Beamstrahlung.
 @*
 The parameter can be specified using the internal interpreter, see
-@ref{Interpreter}, e.g. as @samp{BEAM_SMIN sqr(20/E_CMS)}.
+@ref{Interpreter}, e.g. as @samp{BEAM_SMIN: sqr(20/E_CMS)}.
 
 @subsubsection Laser Backscattering
-@cindex E_LASER_
-@cindex E_LASER_
-@cindex P_LASER_
-@cindex P_LASER_
+@cindex E_LASER
+@cindex P_LASER
 @cindex LASER_MODE
 @cindex LASER_ANGLES
 @cindex LASER_NONLINEARITY
 The energy distribution of the photon beams is modelled by the CompAZ
 parametrisation, see @mycite{Zarnecki2002qr}, with various assumptions
 valid only for the proposed TESLA photon collider. The laser energies
-can be set by @code{E_LASER_1/2} for the respective beam. @code{P_LASER_1/2}
-sets their polarisations, defaulting to @code{0.}. The @code{LASER_MODE}
+can be set by @code{E_LASER}. @code{P_LASER} sets their polarisations,
+defaulting to @code{0.}.  Both settings can either be set to a single value,
+applying to both beams, or to a list of two values, one for each beam.
+The @code{LASER_MODE}
 takes the values @code{-1}, @code{0}, and @code{1}, defaulting to @code{0}.
-@code{LASER_ANGLES} and @code{LASER_NONLINEARITY} take the values @code{On}
-and @code{Off}, both defaulting to @code{Off}.
+@code{LASER_ANGLES} and @code{LASER_NONLINEARITY} can be set to @code{true} or
+to @code{false} (default).
 
 @subsubsection Simple Compton
 This corresponds to a simple light backscattering off the initial lepton
 beam and produces initial-state photons with a corresponding energy spectrum.
 It is a special case of the above Laser Backscattering with
-@code{LASER_MODE=-1}.
+@code{LASER_MODE: -1}.
 
 @subsubsection EPA
-@cindex EPA_q2Max_1
-@cindex EPA_q2Max_2
-@cindex EPA_ptMin_1
-@cindex EPA_ptMin_2
-@cindex EPA_Form_Factor_1
-@cindex EPA_Form_Factor_2
+@cindex EPA_q2Max
+@cindex EPA_ptMin
+@cindex EPA_Form_Factor
 @cindex EPA_AlphaQED
 
 The equivalent photon approximation,
 cf. @mycite{Archibald2008aa}, @mycite{Budnev1974de},
 has a few free parameters:
 @table @option
-@item EPA_q2Max_1/2
-Parameter of the EPA spectrum of the respective beam, defaults to @code{2.}
+@item EPA_q2Max
+Parameter of the EPA spectra of the two beams, defaults to @code{2.}
 in units of GeV squared.
-@item EPA_ptMin_1/2
-Infrared regulator to EPA spectrum. Given in GeV, the value must be
+@item EPA_ptMin
+Infrared regulator to the EPA beam spectra. Given in GeV, the value must be
 between @code{0.} and @code{1.} for EPA approximation to hold.
 Defaults to @code{0.}, i.e. the spectrum
 has to be regulated by cuts on the observable, cf @ref{Selectors}.
-@item EPA_Form_Factor_1/2
-Form factor model to be used on the respective beam. The options are
+@item EPA_Form_Factor
+Form factor model to be used on the beams. The options are
 @code{0} (pointlike), @code{1} (homogeneously charged sphere,
 @code{2} (gaussian shaped nucleus), and @code{3} (homogeneously charged
 sphere, smoothed at low and high x). Applicable only to heavy ion beams.
@@ -135,101 +139,77 @@ Defaults to @code{0}.
 Value of alphaQED to be used in the EPA. Defaults to @code{0.0072992701}.
 @end table
 
+@code{EPA_q2Max}, @code{EPA_ptMin}, @code{EPA_Form_Factor} can either be set to
+single values that are then applied to both beams, or to a list of two values,
+for the respective beams.
+
+
 @node Intrinsic Transverse Momentum
 @subsection Intrinsic Transverse Momentum
 @cindex INTRINSIC_KPERP
 @cindex K_PERP_SCHEME
-@cindex K_PERP_MEAN_1
-@cindex K_PERP_MEAN_2
-@cindex K_PERP_SIGMA_1
-@cindex K_PERP_SIGMA_2
-@cindex K_PERP_EXP_1
-@cindex K_PERP_EXP_2
-@cindex K_PERP_EREF_1
-@cindex K_PERP_EREF_2
+@cindex K_PERP_MEAN
+@cindex K_PERP_SIGMA
+@cindex K_PERP_EXP
+@cindex K_PERP_EREF
 @cindex BEAM_REMNANTS
 
+The intrinsic transverse momentum of the colliding particles can be
+set by subsettings of the @code{INTRINSIC_KPERP} setting:
+@verbatim
+INTRINSIC_KPERP:
+  Parameter_1: <value_1>
+  Parameter_2: <value_2>
+...
+@end verbatim
+
+The possible parameters and their defaults are
 @table @option
-@item K_PERP_SCHEME
+@item ENABLED (default: true)
+Setting this to @code{false} disables the intrinsic transverse momentum
+altogether.
+
+@item SCHEME (default for protons: 0)
 This parameter specifies the scheme to calculate the intrinsic transverse
 momentum of the beams in case of hadronic beams, such as protons.
-@*
-The default value for protons is 0.
 
-@item K_PERP_MEAN_1
+@item MEAN (default: 1.1)
 This parameter specifies the mean intrinsic transverse
-momentum for the first (left) beam in case of hadronic 
+momentum in GeV for the beams in case of hadronic
 beams, such as protons.
 @*
-The default value for protons is 1.1 GeV.
+If two values are provided, the intrinsic momenta means of the two beams are
+set to these two values, respectively.
 
-@item K_PERP_MEAN_2
-This parameter specifies the mean intrinsic transverse
-momentum for the second (right) beam in case of hadronic 
-beams, such as protons.
-@*
-The default value for protons is 1.1 GeV.
-
-@item K_PERP_SIGMA_1
-This parameter specifies the width of the Gaussian distribution
-of intrinsic transverse momentum for the first (left) beam in 
+@item SIGMA (default: 0.85)
+This parameter specifies the width of the Gaussian distribution in GeV of the
+intrinsic transverse momenta for the beams in
 case of hadronic beams, such as protons.
 @*
-The default value for protons is 0.85 GeV.
+If two values are provided, the intrinsic momenta widths of the two beams are
+set to these two values, respectively.
 
-@item K_PERP_SIGMA_2
-This parameter specifies the width of the Gaussian distribution
-of intrinsic transverse momentum for the second (right) beam in 
-case of hadronic beams, such as protons.
-@*
-The default value for protons is 0.85 GeV.
-
-@item K_PERP_EXP_1
+@item EXP (default: 0.55)
 This parameter specifies the energy extrapolation exponent 
 of the width of the Gaussian distribution
-of intrinsic transverse momentum for the first (left) beam in 
+of intrinsic transverse momentum for the beams in
 case of hadronic beams, such as protons.
 @*
-The default value for protons is 0.55.
+If two values are provided, the exponents for each of the two beams are set
+to these two values, respectively.
 
-@item K_PERP_EXP_2
-This parameter specifies the energy extrapolation exponent 
-of the width of the Gaussian distribution
-of intrinsic transverse momentum for the second (right) beam in 
+@item EREF (default: 7000)
+This parameter specifies the reference scale in GeV in the energy extrapolation
+of the width of the Gaussian distribution of intrinsic transverse momentum for
+the beams in
 case of hadronic beams, such as protons.
 @*
-The default value for protons is 0.55.
-
-@item K_PERP_EREF_1
-This parameter specifies the reference scale in the energy extrapolation 
-of the width of the Gaussian distribution
-of intrinsic transverse momentum for the first (left) beam in 
-case of hadronic beams, such as protons.
-@*
-The default value for protons is 7000 GeV.
-
-@item K_PERP_EREF_2
-This parameter specifies the reference scale in the energy extrapolation 
-of the width of the Gaussian distribution
-of intrinsic transverse momentum for the second (right) beam in 
-case of hadronic beams, such as protons.
-@*
-The default value for protons is 7000 GeV.
+If two values are provided, the reference scales for each of the two beams are
+set to these two values, respectively.
 
 @end table
 
-All values can also be passed as a space separeted list
-@verbatim
-  INTRINSIC_KPERP <mean1> <mean2> <sigma1> <sigma2> <exp1> <exp2> <eref1> <eref2>
-@end verbatim
-The list can be terminated after any element. The explicit setting through 
-@code{K_PERP_<tag>} takes precedence.
-Alternatively, the intrinsic transverse momentum can be disabled alltogether
-@verbatim
-  INTRINSIC_KPERP None
-@end verbatim
-
-If the option @option{BEAM_REMNANTS=0} is specified, pure parton-level
+If the option @option{BEAM_REMNANTS: false} is specified, pure parton-level
 events are simulated, i.e. no beam remnants are generated. Accordingly,
 partons entering the hard scattering process do not acquire primordial
 transverse momentum.

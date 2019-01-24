@@ -60,21 +60,22 @@ public:
 };
 
 DECLARE_GETTER(Blob_Selector,"BlobSel",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Blob_Selector>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,Blob_Selector>::
+operator()(const Analysis_Key& key) const
 { 
-  if (parameters.size()<1) return NULL;
-  if (parameters[0].size()<2) return NULL;
-  std::string outlist=parameters[0].size()>2?parameters[0][2]:"Analysed";
-  return new Blob_Selector(ATOOLS::ToType<int>(parameters[0][0]),
-			   ATOOLS::ToType<int>(parameters[0][1]),outlist); 
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  const auto outlist = parameters.size() > 2 ? parameters[2] : "Analysed";
+  const auto type = s.Interprete<int>(parameters[0]);
+  const auto mode = s.Interprete<int>(parameters[1]);
+  return new Blob_Selector(type, mode, outlist);
 }
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Blob_Selector>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Blob_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"type mode [outlist]"; 
+  str<<"[type, mode, outlist (optionally)]";
 }
 

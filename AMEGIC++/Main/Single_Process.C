@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <unistd.h>
 
@@ -34,7 +35,8 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 AMEGIC::Single_Process::Single_Process():
-  m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0), p_partner(this)
+  m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0),
+  p_partner(this)
 {
   m_lastk=1.0;
 }
@@ -135,12 +137,13 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
-    if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time."
-                <<std::endl;
-      directload = false;
-    }
+  Scoped_Settings amegicsettings{
+    Settings::GetMainSettings()["AMEGIC"] };
+  if (amegicsettings["ME_LIBCHECK"].Get<bool>()) {
+    msg_Info()<<"Enforce full library check. This may take some time."
+              <<std::endl;
+    directload = false;
+  }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
@@ -151,7 +154,8 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+  const bool cvp{
+    amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
   msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
@@ -724,7 +728,7 @@ bool AMEGIC::Single_Process::SetUpIntegrator()
 bool AMEGIC::Single_Process::CreateChannelLibrary()
 {
   if (p_partner!=this || p_psgen) return true;
-  p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
+  p_psgen     = new Phase_Space_Generator(m_nin, m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
   if (newch>0) return 0;

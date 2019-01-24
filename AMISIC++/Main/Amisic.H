@@ -9,7 +9,6 @@
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/File_IO_Base.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <string>
@@ -56,7 +55,7 @@ namespace AMISIC {
     size_t m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos; 
     
-    bool InitParameters(ATOOLS::Default_Reader *const defaultreader);
+    bool InitParameters();
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
@@ -67,8 +66,7 @@ namespace AMISIC {
     Amisic();
     ~Amisic();
     
-    bool Initialize(ATOOLS::Default_Reader *const defaultreader,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr);
 
     bool           VetoEvent(const double & scale=-1.);

@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -30,27 +31,26 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *
-GetGlobalCalculator(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<2) return NULL;
-    return new Class(parameters[0][0],parameters[0][1]);
-  }
+GetGlobalCalculator(const Analysis_Key& key)
+{
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size()<2) return NULL;
+  return new Class(parameters[0],parameters[1]);
   return NULL;
-}									
+}
 
 #define DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS)		\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetGlobalCalculator<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key &key) const \
+  { return GetGlobalCalculator<CLASS>(key); }
 
 #define DEFINE_GLOBAL_CALCULATOR_PRINT_METHOD(NAME)		\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"inlist resulttag"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"[inlist, resulttag]"; }
 
 #define DEFINE_GLOBAL_CALCULATOR_GETTER(CLASS,TAG)		\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS)		\
   DEFINE_GLOBAL_CALCULATOR_PRINT_METHOD(CLASS)
 

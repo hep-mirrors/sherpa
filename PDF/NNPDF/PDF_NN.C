@@ -4,6 +4,7 @@
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "NNPDFDriver.h"
 
 // This is all copied from the MSTW code
@@ -26,6 +27,8 @@ namespace PDF {
     std::map<int, double> m_xfx;
     std::map<int, bool>   m_calculated;
 
+    void RegisterDefaults() const;
+
   public:
 
     PDF_NNPDF(const ATOOLS::Flavour &bunch,const std::string &file,
@@ -47,7 +50,6 @@ namespace PDF {
 
 #include "NNPDFDriver.h"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -60,15 +62,17 @@ PDF_NNPDF::PDF_NNPDF
  const std::string &set,int member, int prefix):
   m_file(bfile), m_anti(1)
 {
-  Default_Reader reader;
-  m_path = reader.Get<string>("NNPDF_GRID_PATH", rpa->gen.Variable("SHERPA_SHARE_PATH"));
+  Settings& s = Settings::GetMainSettings();
+  m_path = s["NNPDF_GRID_PATH"]
+    .SetDefault(rpa->gen.Variable("SHERPA_SHARE_PATH"))
+    .Get<std::string>();
   m_set=set;
   m_member=member;
   m_prefix=prefix;
   m_lhef_number=prefix+member;
   std::string file(m_file);
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
-  
+
   m_bunch=bunch; // This is the beam
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   m_type=set;

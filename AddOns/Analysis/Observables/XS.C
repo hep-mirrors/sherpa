@@ -21,29 +21,25 @@ using namespace ANALYSIS;
 
 
 template <class Class>
-Primitive_Observable_Base *
-GetObservable(const Argument_Matrix &parameters)
-{                                                                       
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    std::string list(parameters[0].size()>0?parameters[0][0]:"FinalState");
-    return new Class(list);
-  }
-  return NULL;
+Primitive_Observable_Base* GetObservable(const Analysis_Key &key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto list = s["List"].SetDefault("FinalState").Get<std::string>();
+  return new Class(list);
 }
-  
-  
+
+
 #define DEFINE_GETTER_METHOD(CLASS)				\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key &key) const \
+  { return GetObservable<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"[list]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {List: FinalState}"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_GETTER_METHOD(CLASS)					\
   DEFINE_PRINT_METHOD(CLASS)
 

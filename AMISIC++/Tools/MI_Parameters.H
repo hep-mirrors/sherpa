@@ -1,8 +1,6 @@
 #ifndef AMISIC_Tools_MI_Parameters_H
 #define AMISIC_Tools_MI_Parameters_H
 
-#include "ATOOLS/Org/Default_Reader.H"
-
 #include <map>
 #include <string>
 
@@ -30,13 +28,13 @@ namespace AMISIC {
     scale_scheme::code m_scalescheme;
     std::map<std::string,double> m_parameters;
 
-    void   ReadParameters(ATOOLS::Default_Reader *const defaultreader);
+    void   ReadParameters();
     double CalculatePT(const double & pt);
   public:
     MI_Parameters();
     ~MI_Parameters() {}
 
-    bool Init(ATOOLS::Default_Reader *const defaultreader);
+    bool Init();
     double operator()(std::string keyword);
 
     const overlap_form::code & GetOverlapForm() { return m_overlapform; } 

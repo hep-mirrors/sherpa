@@ -63,11 +63,11 @@ namespace PHASIC {
     virtual Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
 
     /**
-     * @param idcode IDCode() of the wanted decay channel
+     * @param name Name of the wanted decay channel in the format a->b c ...
      * 
      * @return The decay channel and its decay table.
      */
-    std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string idcode,
+    std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string name,
                                                              bool create=false);
 
     /**

@@ -5,7 +5,6 @@
 
 #include "AMEGIC++/Main/Polarisation.H"
 #include "AMEGIC++/Amplitude/Amplitude_Handler.H"
-// #include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
 #include <vector>
 
 namespace AMEGIC {
@@ -49,7 +48,7 @@ namespace AMEGIC {
 
     Single_Process();
     ~Single_Process();
-    
+
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
     bool Combinable(const size_t &idi,const size_t &idj);

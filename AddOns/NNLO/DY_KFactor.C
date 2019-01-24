@@ -60,8 +60,8 @@ namespace PHASIC {
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "QT_Selector.H"
 #include "coeffqt.H"
@@ -75,16 +75,16 @@ DY_KFactor::DY_KFactor
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args), p_fsmc(NULL)
 {
-  Data_Reader read(" ",";","#","=");
+  Settings& s = Settings::GetMainSettings();
   if (s_pdf==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
-    s_pdfmin[0]=read.GetValue<double>("CSS_PDF_MIN",1.0e-4);
-    s_pdfmin[1]=read.GetValue<double>("CSS_PDF_MIN_X",1.0e-2);
+    s_pdfmin[0] = s["CSS_PDF_MIN"].Get<double>();
+    s_pdfmin[1] = s["CSS_PDF_MIN_X"].Get<double>();
   }
-  m_k0sq[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sq[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_fomode=read.GetValue<int>("NNLOqT_FOMODE",0);
+  m_k0sq[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_k0sq[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_fomode = s["NNLOqT_FOMODE"].Get<int>();
   m_newfs=0;
   for (size_t i(0);i<p_proc->NOut();++i)
     if (!Flavour(kf_jet).Includes

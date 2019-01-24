@@ -23,8 +23,7 @@ MI_Processes::~MI_Processes() {
   m_groups.clear();
 }
 
-bool MI_Processes::Initialize(const std::string &path,const std::string &file,
-			      MODEL::Model_Base *const model,
+bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
 			      PDF::ISR_Handler *const isr) {
   // Get PDFs and couplings
@@ -60,7 +59,7 @@ bool MI_Processes::Initialize(const std::string &path,const std::string &file,
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);
   // Mass scheme for the subsequent parton shower.
   m_massmode       = 1;
-  SetPSMasses(p_defaultreader);
+  SetPSMasses();
   // Now initialize the 2->2 scatters and prepare the integral for the
   // "Sudakov form factor", Eq. (37) of Sjostrand-van der Zijl
   return (InitializeAllProcesses() && PrepareSudakovFactor());

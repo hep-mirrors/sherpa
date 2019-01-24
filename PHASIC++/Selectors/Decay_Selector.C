@@ -1,6 +1,8 @@
 #include "PHASIC++/Selectors/Selector.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 
+#include <cassert>
+
 namespace PHASIC {
 
   class Decay_Selector: public Selector_Base,
@@ -82,7 +84,6 @@ namespace PHASIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -90,13 +91,16 @@ using namespace ATOOLS;
 Decay_Selector::Decay_Selector(const Selector_Key &key):
   Selector_Base("Decay_Selector",key.p_proc)
 {
-  if (key.m_key.length()<7 || key[0].size()<3)
-    THROW(fatal_error,"Invalid syntax");
-  std::string tag(key.m_key.substr(6));
+  Scoped_Settings s{ key.m_settings };
+  s.SetInterpreterEnabled(false);
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters[0].size() < 7 || parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  std::string tag(parameters[0].substr(6));
   tag.erase(tag.length()-1,1);
   DEBUG_FUNC(tag);
-  long int kf(ToType<long int>(key[0][0]));
-  Flavour fl(std::abs(kf),kf<0);
+  const auto kf = s.Interprete<long int>(parameters[1]);
+  Flavour fl = Flavour((kf_code)std::abs(kf),kf<0);
   DecayInfo_Vector decs(p_proc->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)
     if (decs[i]->m_fl==fl) {
@@ -113,8 +117,8 @@ Decay_Selector::Decay_Selector(const Selector_Key &key):
   m_calc.SetTagReplacer(this);
   m_calc.Interprete(tag);
   if (msg_LevelIsDebugging()) m_calc.PrintEquation();
-  m_min=ToType<double>(key[0][1]);
-  m_max=ToType<double>(key[0][2]);
+  m_min = s.Interprete<double>(parameters[2]);
+  m_max = s.Interprete<double>(parameters[3]);
   msg_Debugging()<<"m_min = "<<m_min
 		 <<", m_max = "<<m_max<<"\n";
 }
@@ -162,21 +166,25 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,Decay_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Decay kf min max"; 
+  str<<"[Decay, kf, min, max]";
 }
 
 
 Decay2_Selector::Decay2_Selector(const Selector_Key &key):
   Selector_Base("Decay2_Selector",key.p_proc)
 {
-  if (key.m_key.length()<7 || key[0].size()<3)
-    THROW(fatal_error,"Invalid syntax");
-  std::string tag(key.m_key.substr(7));
+  Scoped_Settings s{ key.m_settings };
+  s.SetInterpreterEnabled(false);
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters[0].size() < 7 || parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  std::string tag(parameters[0].substr(7));
   tag.erase(tag.length()-1,1);
   DEBUG_FUNC(tag);
-  long int kf1(ToType<long int>(key[0][0]));
-  long int kf2(ToType<long int>(key[0][1]));
-  Flavour fl1(std::abs(kf1),kf1<0), fl2(std::abs(kf2),kf2<0);
+  const auto kf1 = s.Interprete<long int>(parameters[1]);
+  const auto kf2 = s.Interprete<long int>(parameters[2]);
+  Flavour fl1 = Flavour((kf_code)std::abs(kf1),kf1<0);
+  Flavour fl2 = Flavour((kf_code)std::abs(kf2),kf2<0);
   DecayInfo_Vector decs(p_proc->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i) {
     if (decs[i]->m_fl==fl1) {
@@ -205,8 +213,8 @@ Decay2_Selector::Decay2_Selector(const Selector_Key &key):
   m_calc.SetTagReplacer(this);
   m_calc.Interprete(tag);
   if (msg_LevelIsDebugging()) m_calc.PrintEquation();
-  m_min=ToType<double>(key[0][2]);
-  m_max=ToType<double>(key[0][3]);
+  m_min = s.Interprete<double>(parameters[3]);
+  m_max = s.Interprete<double>(parameters[4]);
   msg_Debugging()<<"m_min = "<<m_min
                  <<", m_max = "<<m_max<<"\n";
 }
@@ -265,16 +273,20 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,Decay2_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"Decay2 kf1 kf2 min max";
+  str<<"[Decay2, kf1, kf2, min, max]";
 }
 
 
 DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
   Selector_Base("DecayMass_Selector",key.p_proc)
 {
-  DEBUG_FUNC(key.m_key);
-  long int kf(ToType<long int>(key[0][0]));
-  Flavour fl(std::abs(kf),kf<0);
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DecayMass");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  Flavour fl = Flavour((kf_code)abs(kf),kf<0);
   DecayInfo_Vector decs(p_proc->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i)
     if (decs[i]->m_fl==fl) {
@@ -285,8 +297,8 @@ DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
       msg_Debugging()<<"adding "<<m_ids.back()<<"\n";
     }
   if (m_ids.empty()) THROW(fatal_error,"No such flavour");
-  m_min=ToType<double>(key[0][1]);
-  m_max=ToType<double>(key[0][2]);
+  m_min = s.Interprete<double>(parameters[2]);
+  m_max = s.Interprete<double>(parameters[3]);
   msg_Debugging()<<"m_min = "<<m_min
 		 <<", m_max = "<<m_max<<"\n";
 }
@@ -331,6 +343,6 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,DecayMass_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"DecayMass kf min max"; 
+  str<<"[DecayMass, kf, min, max]";
 }
 

@@ -2,17 +2,17 @@
 @section NLO calculations
 
 @menu
-* Choosing DIPOLE_ALPHA::
+* Choosing DIPOLES ALPHA::
 * Integrating complicated Loop-ME::
 * Avoiding misbinning effects::
 * Enforcing the renormalization scheme::
 * Checking the pole cancellation::
 @end menu
 
-@node Choosing DIPOLE_ALPHA
-@subsection Choosing DIPOLE_ALPHA
+@node Choosing DIPOLES ALPHA
+@subsection Choosing DIPOLES ALPHA
 
-A variation of the parameter @code{DIPOLE_ALPHA} 
+A variation of the parameter @code{DIPOLES:ALPHA}
 (see @ref{Dipole subtraction}) changes the 
 contribution from the real (subtracted) piece (@code{RS}) and 
 the integrated subtraction terms (@code{I}), keeping their sum constant.
@@ -26,14 +26,14 @@ determined best by trial.
 
 Hints to find a good value: 
 @itemize
-@item The smaller @code{DIPOLE_ALPHA} is the less dipole term have to be
+@item The smaller @code{DIPOLES:ALPHA} is the less dipole term have to be
 calculated, thus the less time the evaluation/phase space point takes.
 @item Too small choices lead to large cancelations between the @code{RS}
 and the @code{I} parts and thus to large statisical errors.
 @item For very simple processes (with only a total of two 
 partons in the iniatial and the final state
-of the born process) the best choice is typically @code{DIPOLE_ALPHA=1}.
-The more complicated a process is the smaller @code{DIPOLE_ALPHA} should be
+of the born process) the best choice is typically @code{DIPOLES: @{ALPHA: 1@}}.
+The more complicated a process is the smaller @code{DIPOLES:ALPHA} should be
 (e.g. with 5 partons the best choice is typically around 0.01).
 @item A good choice is typically such that the cross section from the 
 @code{RS} piece is significantly positive but not much larger than 
@@ -53,21 +53,21 @@ working under the assumption that the distibutions in phase space are
 rather similar.
 
 This can be done by one of the following methods:
-@enumerate 3
-@item Employ a dummy virtual (requires no computing time, returns 
-      @code{0.} as its finite result) to optimise the grid. This 
+@enumerate
+@item Employ a dummy virtual (requires no computing time, returns a finite
+      value as its result) to optimise the grid. This
       only works if @code{V} is not the only @code{NLO_QCD_Part} 
       specified.
   @enumerate
   @item During integration set the @code{Loop_Generator} to 
-        @code{Internal} and add @code{USE_DUMMY_VIRTUAL=1} to 
-        your @code{(run)@{...@}(run)} section. The grid will 
+        @code{Dummy} and add @code{Dummy} to your list of
+        @option{ME_GENERATORS}. The grid will
         then be optimised to the phase space distribution of 
         the sum of the Born matrix element and the finite part 
-        of the integrated subtraction term. @b{Note:} The 
+        of the integrated subtraction term, plus a finite value from
+        @code{Dummy}. @b{Note:} The
         cross section displayed during integration will also 
-        correspond to the sum of the Born matrix element and 
-        the finite part of the integrated subtraction term.
+        correspond to these contributions.
   @item During event generation reset @code{Loop_Generator} to 
         your generator supplying the virtual correction. The 
         events generated then carry the correct event weight.
@@ -77,8 +77,8 @@ This can be done by one of the following methods:
       matrix element generator for the @code{BVI} pieces and @code{V} 
       is not the only @code{NLO_QCD_Part} specified.
   @enumerate
-  @item During integration add @code{NLO_BVI_MODE=<num>} to your 
-        @code{(run)@{...@}(run)} section. @code{<num>} takes the 
+  @item During integration add @code{AMEGIC: @{ NLO_BVI_MODE: <num> @}} to your
+        configuration. @code{<num>} takes the
         following values: @code{1}-@code{B}, @code{2}-@code{I}, 
         and @code{4}-@code{V}. The values are additive, i.e. 
         @code{3}-@code{BI}. @b{Note:} The cross section displayed 
@@ -111,10 +111,11 @@ calculated as:
 with the function x(alpha)=(alpha/|alpha_0|)^n for alpha<alpha_0 and 1 otherwise.
 
 The threshold can be set by the parameter
-@option{NLO_SMEAR_THRESHOLD=<alpha_0>} and the functional form of alpha and thus
+@option{NLO_SMEAR_THRESHOLD: <alpha_0>} and the functional form of alpha and
+thus
 interpretation of the threshold can be chosen by its sign (positive: relative
 dipole kT in GeV, negative: dipole alpha).
-In addition, the exponent n can be set by @option{NLO_SMEAR_POWER=<n>}.
+In addition, the exponent n can be set by @option{NLO_SMEAR_POWER: <n>}.
 
 @node Enforcing the renormalization scheme
 @subsection Enforcing the renormalization scheme
@@ -123,7 +124,7 @@ Sherpa takes information about the renormalization scheme from the loop ME gener
 The default scheme is MSbar, and this is assumed if no loop ME is provided,
 for example when integrated subtraction terms are computed by themselves.
 This can lead to inconsistencies when combining event samples, which may be avoided
-by setting @option{LOOP_ME_INIT=1} in the @code{(run)} section of the input file.
+by setting @option{AMEGIC: @{ LOOP_ME_INIT: 1 @}}.
 
 @node Checking the pole cancellation
 @subsection Checking the pole cancellation
@@ -131,12 +132,20 @@ by setting @option{LOOP_ME_INIT=1} in the @code{(run)} section of the input file
 @cindex CHECK_FINITE
 @cindex CHECK_POLES
 @cindex CHECK_THRESHOLD
+The following options are all sub-settings for @option{AMEGIC} and can be
+specified as follows:
+@verbatim
+AMEGIC:
+  <option>: <value>
+  ...
+@end verbatim
+
 To check whether the poles of the dipole subtraction and the interfaced
 one-loop matrix element cancel phase space point by phase space point
-@code{CHECK_POLES=1} can be specified.
+@code{CHECK_POLES: 1} can be specified.
 In the same way, the finite contributions of the infrared subtraction
 and the one-loop matrix element can be checked by setting
-@code{CHECK_FINITE=1}, and the Born matrix element via @code{CHECK_BORN=1}.
+@code{CHECK_FINITE: 1}, and the Born matrix element via @code{CHECK_BORN: 1}.
 The accuracy to which the poles, finite parts and Born matrix elements are
-checked is set via @code{CHECK_THRESHOLD=<accu>}.
+checked is set via @code{CHECK_THRESHOLD: <accu>}.
 

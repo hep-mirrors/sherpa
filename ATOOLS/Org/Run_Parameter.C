@@ -4,16 +4,16 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/Git_Info.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/binreloc.h"
+#include "ATOOLS/Org/My_File.H"
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -115,7 +115,6 @@ Run_Parameter::Run_Parameter()
 {
   AnalyseEnvironment();
   gen.m_nevents   = 0;
-  gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu = gen.m_sqrtaccu = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf_none);
   gen.m_pdfset[0] = gen.m_pdfset[1] = NULL;
@@ -146,7 +145,6 @@ void Run_Parameter::AnalyseEnvironment()
   gen.m_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
   gen.m_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
   gen.m_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
-  gen.m_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
   gen.m_variables[LD_PATH_NAME]=std::string(((var=getenv(LD_PATH_NAME))==NULL?"":var));
   gen.m_variables["SHERPA_RUN_PATH"]=GetCWD();
   gen.m_variables["HOME"]=std::string(((var=getenv("HOME"))==
@@ -181,11 +179,50 @@ void Run_Parameter::AnalyseEnvironment()
 
 }
 
-void Run_Parameter::Init(std::string path,std::string file)
+void Run_Parameter::RegisterDefaults()
 {
-  m_path = path;
-  path=gen.m_variables["PATH_PIECE"];
+  Settings& s = Settings::GetMainSettings();
+  s["PRETTY_PRINT"].SetDefault("On");
+  s["LOG_FILE"].SetDefault("");
+  s["SHERPA_CPP_PATH"].SetDefault("");
+  s["SHERPA_LIB_PATH"].SetDefault("");
+  s["EVENTS"].SetDefault(100);
+
+  std::vector<long int> seeds = {-1, -1, -1, -1};
+  s["RANDOM_SEED"].SetDefault(seeds);
+  for (size_t i = 0; i < seeds.size(); ++i)
+    s["RANDOM_SEED" + ToString(i + 1)].SetDefault(seeds[i]);
+
+  s["MEMLEAK_WARNING_THRESHOLD"].SetDefault(1<<24);
+  s["TIMEOUT"].SetDefault(-1.0);
+
+  std::string logfile{ s["LOG_FILE"].Get<std::string>() };
+  s["BATCH_MODE"].SetDefault(logfile==""?1:3);
+
+  s["CITATION_DEPTH"].SetDefault(1);
+  s["MPI_SEED_MODE"].SetDefault(0);
+
+  s["RLIMIT_BY_CPU"].SetDefault(false);
+  s["STACK_TRACE"].SetDefault(1);
+  s["NUM_ACCURACY"].SetDefault(1.e-10);
+}
+
+void Run_Parameter::Init()
+{
+  RegisterDefaults();
+  Settings& s = Settings::GetMainSettings();
+
+  // set path
+  std::string path=s.GetPath();
+  if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
+  while (path.length()>0
+         && (path[path.length()-1]=='/' || path[path.length()-1]=='.')) {
+    path=path.substr(0,path.length()-1);
+  }
+
   gen.m_timer.Start();
+
+  // set user name
   struct passwd* user_info = getpwuid(getuid());
   if (!user_info) gen.m_username="<unknown user>";
   else gen.m_username=user_info->pw_gecos;
@@ -195,74 +232,67 @@ void Run_Parameter::Init(std::string path,std::string file)
   char hn[32];
   if (gethostname(hn,32)) gen.m_hostname="<unknown host>";
   else gen.m_hostname=std::string(hn);
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(file);
-  std::string color=reader.Get<std::string>("PRETTY_PRINT","On");
+
+  // initialise output
+  std::string color = s["PRETTY_PRINT"].Get<std::string>();
   if (color=="Off") msg->SetModifiable(false);
-  std::string outputlevel = reader.Get<std::string>("OUTPUT","2");
-  std::string logfile = reader.Get<std::string>("LOG_FILE","");
-  msg->Init(outputlevel,logfile);
-  msg->SetMPIMode(reader.Get<int>("MPI_OUTPUT",0));
-  msg->SetPrecision(reader.Get<size_t>("OUTPUT_PRECISION",6));
-  if (msg->LevelIsInfo())
-    msg_Out()<<"Welcome to Sherpa, "<<gen.m_username
-             <<" on "<<gen.m_hostname
-	     <<". Initialization of framework underway."<<std::endl;
-  msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
-  // make path nice
-  if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
-  while (path.length()>0 && 
-	 (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
-    path=path.substr(0,path.length()-1);
+  msg->Init();
+
+  // print welcome message
+  if (msg->LevelIsInfo())  {
+    msg_Out()
+      <<"Welcome to Sherpa, "<<gen.m_username
+      <<" on "<<gen.m_hostname
+      <<". Initialization of framework underway."<<std::endl;
+  }
+  msg_Info()
+    <<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
 
   // set cpp path
-  std::string cpppath=reader.Get<std::string>("SHERPA_CPP_PATH",std::string(""));
+  std::string cpppath=s["SHERPA_CPP_PATH"].Get<std::string>();
   if (cpppath.length()==0 || cpppath[0]!='/') {
     if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
     else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
       gen.m_variables["SHERPA_CPP_PATH"]=gen.m_variables["SHERPA_RUN_PATH"];
   }
   if (cpppath.length()) gen.m_variables["SHERPA_CPP_PATH"]+=(cpppath[0]=='/'?"":"/")+cpppath;
+
   // set lib path
-  std::string libpath=reader.Get<std::string>("SHERPA_LIB_PATH",std::string(""));
+  std::string libpath=s["SHERPA_LIB_PATH"].Get<std::string>();
   if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
   else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0) 
     gen.m_variables["SHERPA_LIB_PATH"]=gen.m_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/Amegic/lib");
-  if (gen.m_variables["SHERPA_DAT_PATH"].length()==0) {
-    if (path.length()>0 && path[0]=='/') gen.m_variables["SHERPA_DAT_PATH"]=path;
-    else gen.m_variables["SHERPA_DAT_PATH"]=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
-  }
-  msg_Tracking()<<METHOD<<"(): Paths are {\n"
-		<<"   SHERPA_INC_PATH = "<<gen.m_variables["SHERPA_INC_PATH"]<<"\n"
-		<<"   SHERPA_SHARE_PATH = "<<gen.m_variables["SHERPA_SHARE_PATH"]<<"\n"
-		<<"   SHERPA_CPP_PATH = "<<gen.m_variables["SHERPA_CPP_PATH"]<<"\n"
-		<<"   SHERPA_LIB_PATH = "<<gen.m_variables["SHERPA_LIB_PATH"]<<"\n"
-		<<"   SHERPA_DAT_PATH = "<<gen.m_variables["SHERPA_DAT_PATH"]<<"\n"
-		<<"}"<<std::endl;
+
+  msg_Tracking()
+    <<METHOD<<"(): Paths are {\n"
+    <<"   SHERPA_INC_PATH = "  <<gen.m_variables["SHERPA_INC_PATH"]  <<"\n"
+    <<"   SHERPA_SHARE_PATH = "<<gen.m_variables["SHERPA_SHARE_PATH"]<<"\n"
+    <<"   SHERPA_CPP_PATH = "  <<gen.m_variables["SHERPA_CPP_PATH"]  <<"\n"
+    <<"   SHERPA_LIB_PATH = "  <<gen.m_variables["SHERPA_LIB_PATH"]  <<"\n"
+    <<"}"<<std::endl;
+
 #ifndef __sgi
   setenv(LD_PATH_NAME,(gen.m_variables[LD_PATH_NAME]+std::string(":")+
 			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
+
+  // configure event generation
   gen.m_variables["EVENT_GENERATION_MODE"]="-1";
-  reader.SetAllowUnits(true);
-  gen.m_nevents            = reader.Get<long int>("EVENTS",100);
-  reader.SetAllowUnits(false);
+  gen.m_nevents = s["EVENTS"].Get<long int>();
+
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
   // read only if defined (no error message if not defined)
   long int seed;
-  std::vector<long int> seeds;
+  std::vector<long int> seeds = s["RANDOM_SEED"].GetVector<long int>();
   for (int i(0);i<4;++i) gen.m_seeds[i] = -1;
-  if (reader.ReadVector(seeds,"RANDOM_SEED")) {
-    for (int i(0);i<Min((int)seeds.size(),4);++i) gen.m_seeds[i] = seeds[i];
-  } 
-  else {
-    for (int i(0);i<4;++i)
-      if (reader.Read<long int>(seed, "RANDOM_SEED" + ToString(i + 1), -1)) {
-        gen.m_seeds[i] = seed;
-      }
+  for (int i(0);i<Min((int)seeds.size(),4);++i) gen.m_seeds[i] = seeds[i];
+  for (int i(0);i<4;++i) {
+    seed = s["RANDOM_SEED" + ToString(i + 1)].Get<long int>();
+    if (seed != -1) {
+      gen.m_seeds[i] = seed;
+    }
   }
   int nseed=0;
   for (int i(0);i<4;++i) if (gen.m_seeds[i]>0) ++nseed;
@@ -278,7 +308,7 @@ void Run_Parameter::Init(std::string path,std::string file)
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  if (reader.Get("MPI_SEED_MODE",0)==0) {
+  if (s["MPI_SEED_MODE"].Get<int>()==0) {
     msg_Info()<<METHOD<<"(): Seed mode '*'\n";
     for (int i(0);i<4;++i)
       if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
@@ -294,29 +324,16 @@ void Run_Parameter::Init(std::string path,std::string file)
   if (gen.m_seeds[1]>0)
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
-
-  gen.SetVariable("NLO_NF_CONVERSION_TERMS",
-                  reader.Get<std::string>("NLO_NF_CONVERSION_TERMS","None"));
-  gen.SetVariable("MEPSNLO_PDFCT",ToString(reader.Get<int>("MEPSNLO_PDFCT",1)));
-  gen.SetVariable("MCNLO_DADS",ToString(reader.Get<int>("MCNLO_DADS",1)));
-  gen.SetVariable("PB_USE_FMM",ToString(reader.Get<int>("PB_USE_FMM",0)));
-  gen.SetVariable("HISTOGRAM_OUTPUT_PRECISION",ToString
-		  (reader.Get<int>("HISTOGRAM_OUTPUT_PRECISION",6)));
-  gen.SetVariable("SELECTION_WEIGHT_MODE",ToString
-		  (reader.Get<int>("SELECTION_WEIGHT_MODE",0)));
-  reader.SetAllowUnits(true);
   gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
-		  ToString(reader.Get<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
-  reader.SetAllowUnits(false);
-  gen.m_timeout = reader.Get<double>("TIMEOUT",-1.0);
+		  ToString(s["MEMLEAK_WARNING_THRESHOLD"].Get<int>()));
+  gen.m_timeout = s["TIMEOUT"].Get<double>();
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa->gen.m_timer.Start();
-  gen.m_batchmode = reader.Get<int>("BATCH_MODE",logfile==""?1:3);
-  gen.m_clevel= reader.Get<int>("CITATION_DEPTH",1);
+  gen.m_batchmode = s["BATCH_MODE"].Get<int>();
+  gen.m_clevel= s["CITATION_DEPTH"].Get<int>();
   int ncpus(getncpu());
   msg_Tracking()<<METHOD<<"(): Getting number of CPU cores: "
 		<<ncpus<<"."<<std::endl;
-  gen.SetVariable("NUMBER_OF_CPUS",ToString(ncpus));
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
@@ -330,45 +347,25 @@ void Run_Parameter::Init(std::string path,std::string file)
 #endif
   msg_Tracking()<<METHOD<<"(): Getting memory limit: "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
-  std::vector<std::string> aspars;
-  if (!reader.ReadVector(aspars,"RLIMIT_AS")) {
-    lims.rlim_cur=(rlim_t)(slim-double(100*(1<<20)));
-  }
-  else {
-    if (aspars.size()==1) {
-      lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*slim);
-    }
-    else if (aspars.size()==2) {
-      if (aspars[1]=="MB") lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*(1<<20));
-      else if (aspars[1]=="GB") lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*(1<<30));
-      else if (aspars[1]=="%") lims.rlim_cur=(rlim_t)
-	(ToType<double>(aspars[0])*slim/100.0);
-      else
-	THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
-    }
-    else {
-      THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
-    }
-  }
-  int limpercpu=reader.Get<int>("RLIMIT_BY_CPU",0);
-  if (limpercpu) lims.rlim_cur/=(double)ncpus;
+  const auto rawrlim = s["RLIMIT_AS"]
+    .SetDefault((rlim_t)(slim-double(100*(1<<20))))
+    .Get<double>();
+  lims.rlim_cur = rlim_t(rawrlim < 1.0 ? slim * rawrlim : rawrlim);
+  if (s["RLIMIT_BY_CPU"].Get<bool>()) lims.rlim_cur/=(double)ncpus;
   if (setrlimit(RLIMIT_AS,&lims)!=0)
     msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
   getrlimit(RLIMIT_AS,&lims);
   msg_Info()<<METHOD<<"(): Setting memory limit to "
 	    <<lims.rlim_cur/double(1<<30)<<" GB."<<std::endl;
 #endif
-  gen.m_accu = reader.Get<double>("NUM_ACCURACY", 1.e-10);
+  gen.m_accu = s["NUM_ACCURACY"].Get<double>();
   gen.m_sqrtaccu = sqrt(gen.m_accu);
   if (gen.m_seeds[1]>0) {
     ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],gen.m_seeds[3]);
   }
   else { ran->SetSeed(gen.m_seeds[0]); }
-  msg_Debugging()<<METHOD<<"(): Set global tags {\n";
-  const String_Map &gtags(Read_Write_Base::GlobalTags());
+  msg_Debugging()<<METHOD<<"(): Global tags {\n";
+  const String_Map &gtags{ s.GetTags() };
   for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)
     msg_Debugging()<<"  '"<<tit->first<<"' -> '"<<tit->second<<"'\n";
   msg_Debugging()<<"}\n";
@@ -405,8 +402,8 @@ void Run_Parameter::Gen::AddCitation(const size_t &level,
 void Run_Parameter::Gen::WriteCitationInfo()
 {
   if (Citations().empty()) return;
-  Default_Reader reader;
-  if (!reader.Get<int>("WRITE_REFERENCES_FILE",1)) return;
+  if (!Settings::GetMainSettings()["WRITE_REFERENCES_FILE"].Get<bool>())
+    return;
   std::string refname("Sherpa_References.tex");
   My_Out_File f((rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+refname).c_str());
   f.Open();
@@ -444,12 +441,19 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
   m_beam2  = b;   
 }
 
-std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
+std::string Run_Parameter::Gen::Variable(const std::string &key)
 { 
-  return m_variables.find(key)!=m_variables.end()?m_variables[key]:def; 
+  const auto it = m_variables.find(key);
+  if (it == m_variables.end()) {
+    THROW(fatal_error,
+          "Runtime parameter \"" + key
+          + "\" not registered and no default given to fall back on");
+  }
+  return it->second;
 }
 
-void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
+void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,
+                                         const bool& shouldprintversioninfo,
 					 const std::string &prefix)
 {
   const std::map<const std::string,const Git_Info*> &info(*Git_Info::Infos());
@@ -459,17 +463,17 @@ void Run_Parameter::Gen::PrintGitVersion(std::ostream &str,const int mode,
   if (branch.find("rel-")!=0)
     msg_Info()<<"WARNING: You are using an unsupported development branch."<<endl;
   str<<prefix<<"Git branch "<<branch<<", revision "<<revision;
-  if (mode&1) str<<" {\n";
+  if (shouldprintversioninfo) str<<" {\n";
   else str<<"."<<std::endl;
   for (std::map<const std::string,const Git_Info*>::const_iterator
 	 iit(info.begin());iit!=info.end();++iit) {
-    if (mode&1) str<<prefix<<" "<<iit->second->Checksum()
-		   <<"  "<<iit->second->Name()<<"\n";
+    if (shouldprintversioninfo) str<<prefix<<" "<<iit->second->Checksum()
+                                   <<"  "<<iit->second->Name()<<"\n";
     if (iit->second->Revision()!=revision) str<<prefix
       <<"===> "<<iit->second->Name()<<" has local modifications "
       <<iit->second->Checksum()<<" <===\n";
   }
-  if (mode&1) str<<prefix<<"}\n";
+  if (shouldprintversioninfo) str<<prefix<<"}\n";
   str<<std::endl;
   Git_Info::SetCheck(true);
 }

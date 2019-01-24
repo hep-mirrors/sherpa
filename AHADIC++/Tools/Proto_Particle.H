@@ -17,24 +17,24 @@ namespace AHADIC {
 		   const ATOOLS::Vec4D & mom=ATOOLS::Vec4D(0.,0.,0.,0.),
 		   bool leading=false,bool beam=false);
     ~Proto_Particle();
-    
+
     ATOOLS::Vec4D   Momentum()  const { return m_momentum; } 
     ATOOLS::Flavour Flavour()   const { return m_flav;     }
     bool            IsLeading() const { return m_isleading;  }
     bool            IsBeam()    const { return m_isbeam;  }
-    
+
     void SetMomentum(const ATOOLS::Vec4D & mom)   { m_momentum = mom; }
     void SetFlavour(const ATOOLS::Flavour & flav) { m_flav = flav;    }
     void SetLeading(const bool & lead)            { m_isleading = lead; }
     void SetBeam(const bool & beam)               { m_isbeam = beam; }
-    
+
 
     static std::set<Proto_Particle *> s_protos;
     static void Reset();
 
     ATOOLS::Particle * operator()();
   };
-  
+
   std::ostream & operator<<(std::ostream &,const Proto_Particle &);
 }
 #endif

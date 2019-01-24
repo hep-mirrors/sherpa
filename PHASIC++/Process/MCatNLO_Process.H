@@ -50,6 +50,8 @@ namespace PHASIC {
     //! Cluster amplitude for interface with MC@NLO shower
     ATOOLS::Cluster_Amplitude *p_ampl;
 
+    void RegisterDefaults() const;
+
     /*!
      * @param pi Process_Info Process information object
      * @param nlotype nlo_type::code NLO type of process

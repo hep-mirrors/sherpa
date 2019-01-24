@@ -19,6 +19,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -39,7 +40,9 @@ Process_Base::Process_Base():
   p_variationweights(NULL), m_variationweightsowned(false)
 {
   m_last=m_lastb=0.0;
-  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
+  if (s_usefmm<0)
+    s_usefmm =
+      Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
 }
 
 Process_Base::~Process_Base() 

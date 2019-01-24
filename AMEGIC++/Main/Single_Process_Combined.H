@@ -49,7 +49,7 @@ namespace AMEGIC {
 
     Single_Process_Combined();
     ~Single_Process_Combined();
-    
+
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
     bool Combinable(const size_t &idi,const size_t &idj);

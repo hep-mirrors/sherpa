@@ -8,8 +8,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
@@ -31,6 +31,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
   p_cid(new CId_Map())
 {
+  RegisterDefaults();
   nin=_nin;
   nout=_nout;
   m_p.resize(1<<(m_n+1));
@@ -39,50 +40,21 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
     ms[i]=sqr(_fl[i].Mass());
   }
   name="CDBG_Channel";
-  Default_Reader reader;
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (reader.Read(m_zmode,"CDXS_ZMODE", 0)) {
-    msg_Info() << METHOD << "(): Set zero treatment mode " << m_zmode << "." << std::endl;
-  }
-  if (reader.Read(m_bmode,"CDXS_BMODE", 1)) {
-    msg_Info() << METHOD << "(): Set boundary mode " << m_bmode << "." << std::endl;
-  }
-  if (reader.Read(m_omode,"CDXS_OMODE", 3)) {
-    msg_Info() << METHOD << "(): Set optimization mode " << m_omode << "." << std::endl;
-  }
-  if (reader.Read(m_vmode,"CDXS_VMODE", 9)) {
-    msg_Info() << METHOD << "(): Set Vegas mode " << m_vmode << "." << std::endl;
-  }
-  if (reader.Read(m_tmode,"CDXS_TMODE", 1)) {
-    msg_Info() << METHOD << "(): Set t-channel mode " << m_tmode << "." << std::endl;
-  }
-  if (reader.Read(m_vsopt,"CDXS_VSOPT", 5)) {
-    msg_Info() << METHOD << "(): Set Vegas opt start " << m_vsopt << "." << std::endl;
-  }
-  if (reader.Read(m_nvints,"CDXS_VINTS", 8)) {
-    msg_Info() << METHOD << "(): Set Vegas intervals " << m_nvints << "." << std::endl;
-  }
-  if (reader.Read(m_texp,"CDXS_TEXP", 0.9)) {
-    msg_Info() << METHOD << "(): Set t-channel exp " << m_texp << "." << std::endl;
-  }
-  if (reader.Read(m_stexp,"CDXS_STEXP", 1.0e-3)) {
-    msg_Info() << METHOD << "(): Set t-channel sub exp " << m_stexp << "." << std::endl;
-  }
-  if (reader.Read(m_sexp,"CDXS_SEXP", 0.75)) {
-    msg_Info() << METHOD << "(): Set s-channel exp " << m_sexp << "." << std::endl;
-  }
-  if (reader.Read(m_srbase,"CDXS_SRBASE", 1.05)) {
-    msg_Info() << METHOD << "(): Set s-channel exp scale " << m_srbase << "." << std::endl;
-  }
-  if (reader.Read(m_aexp,"CDXS_AEXP", 0.9)) {
-    msg_Info() << METHOD << "(): Set aniso s-channel exp " << m_aexp << "." << std::endl;
-  }
-  if (reader.Read(m_thexp,"CDXS_THEXP", 1.5)) {
-    msg_Info() << METHOD << "(): Set threshold exp " << m_thexp << "." << std::endl;
-  }
-  if (reader.Read(m_mfac,"CDXS_MFAC", 1.0)) {
-    msg_Info() << METHOD << "(): Set m_{min} factor " << m_mfac << "." << std::endl;
-  }
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  m_zmode = s["CDXS_ZMODE"].Get<int>();
+  m_bmode = s["CDXS_BMODE"].Get<int>();
+  m_omode = s["CDXS_OMODE"].Get<int>();
+  m_vmode = s["CDXS_VMODE"].Get<int>();
+  m_tmode = s["CDXS_TMODE"].Get<int>();
+  m_vsopt = s["CDXS_VSOPT"].Get<int>();
+  m_nvints = s["CDXS_VINTS"].Get<int>();
+  m_texp = s["CDXS_TEXP"].Get<double>();
+  m_stexp = s["CDXS_STEXP"].Get<double>();
+  m_sexp = s["CDXS_SEXP"].Get<double>();
+  m_srbase = s["CDXS_SRBASE"].Get<double>();
+  m_aexp = s["CDXS_AEXP"].Get<double>();
+  m_thexp = s["CDXS_THEXP"].Get<double>();
+  m_mfac = s["CDXS_MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
@@ -90,7 +62,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   rans=new double[rannum];
 #ifdef USING__Threading
   int helpi;
-  if (reader.Read(helpi,"COMIX_THREADS", 0)) {
+  if (s["THREADS"].Get<int>()) {
     msg_Info() << METHOD << "(): Set number of threads " << helpi << "." << std::endl;
   }
   if (helpi>0) {
@@ -139,6 +111,25 @@ PS_Channel::~PS_Channel()
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
   delete p_cid;
+}
+
+void PS_Channel::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  s["CDXS_ZMODE"].SetDefault(0);       // zero treatment mode
+  s["CDXS_BMODE"].SetDefault(1);       // boundary mode
+  s["CDXS_OMODE"].SetDefault(3);       // optimisation mode
+  s["CDXS_VMODE"].SetDefault(9);       // vegas mode
+  s["CDXS_TMODE"].SetDefault(1);       // t-channel mode
+  s["CDXS_VSOPT"].SetDefault(5);       // vegas optimisation start
+  s["CDXS_VINTS"].SetDefault(8);       // vegas intervals
+  s["CDXS_TEXP"].SetDefault(0.9);      // t-channel exp
+  s["CDXS_STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
+  s["CDXS_SEXP"].SetDefault(0.75);     // s-channel exp
+  s["CDXS_SRBASE"].SetDefault(1.05);   // s-channel exp scale
+  s["CDXS_AEXP"].SetDefault(0.9);      // aniso s-channel exp
+  s["CDXS_THEXP"].SetDefault(1.5);     // threshold exponent
+  s["CDXS_MFAC"].SetDefault(1.0);      // m_{min} factor
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
@@ -1262,7 +1253,6 @@ void PS_Channel::ReadIn(std::string pid)
 {
   {
     Data_Reader reader;
-    reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_PS");
     reader.ReadFromFile(m_zmode,"m_zmode");
@@ -1282,7 +1272,6 @@ void PS_Channel::ReadIn(std::string pid)
   p_gen->SetPrefMasses
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
-  reader.SetAddCommandLine(false);
   reader.SetInputPath(pid);
   reader.SetInputFile("_"+name+"_PV");
   std::vector<std::vector<std::string> > pvds;
@@ -1305,7 +1294,6 @@ void PS_Channel::ReadIn(std::string pid)
   }
   if (m_vmode>0) {
     Data_Reader reader;
-    reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");
     reader.SetVectorType(vtc::vertical);

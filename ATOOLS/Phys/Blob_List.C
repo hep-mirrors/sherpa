@@ -5,7 +5,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
@@ -213,8 +213,9 @@ bool Blob_List::FourMomentumConservation() const
                <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
-      Data_Reader dr(" ",";","!","=");
-      allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
+      Settings& s = Settings::GetMainSettings();
+      allow =
+        s["ALLOW_MOMENTUM_NONCONSERVATION"].SetDefault(1).Get<int>();
     }
     if (!allow) Abort();
     //if (msg_LevelIsDebugging()) {

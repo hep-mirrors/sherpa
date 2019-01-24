@@ -1,11 +1,11 @@
 #include "AddOns/HepMC/Output_HepMC2_Genevent.H"
 #include "HepMC/GenEvent.h"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #ifdef USING__HEPMC2__IOGENEVENT
 #include "HepMC/IO_GenEvent.h"
@@ -23,11 +23,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
-  Output_Base("HepMC2")
+  Output_Base{ "HepMC2" }
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepmc2g";
-  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
+  const int precision{
+    Settings::GetMainSettings()["EVENT_OUTPUT_PRECISION"].Get<int>() };
 #ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
 #ifdef HEPMC_HAS_CROSS_SECTION

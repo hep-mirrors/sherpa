@@ -7,12 +7,13 @@
 namespace UFO{
 
   typedef std::map<std::string,std::string> StringMap;
-  
+
   class UFO_Model : public MODEL::Model_Base
   {
+
   public:
-    
-    UFO_Model(std::string path, std::string file, bool elementary);
+
+    UFO_Model(bool elementary);
     ~UFO_Model();
     bool ModelInit(const PDF::ISR_Handler_Map& isr);
     void SetSMMass(const kf_code &kf,const double &m);

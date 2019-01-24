@@ -5,7 +5,6 @@
 #include "REMNANTS/Main/No_Remnant.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -15,13 +14,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Remnant_Handler::
-Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
-		const std::string & path,const std::string & file) :
+Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam) :
   p_softblob(0), m_check(true), m_output(true)
 {
   InitializeRemnants(isr,beam);
   DefineRemnantStrategy();
-  InitializeKinematicsAndColours(path,file);
+  InitializeKinematicsAndColours();
 }
 
 Remnant_Handler::~Remnant_Handler() {
@@ -92,10 +90,10 @@ void Remnant_Handler::DefineRemnantStrategy() {
 }
 
 void Remnant_Handler::
-InitializeKinematicsAndColours(const std::string & path,const std::string & file) {
-  m_kinematics.Initialize(this,path,file);
+InitializeKinematicsAndColours() {
+  m_kinematics.Initialize(this);
   m_colours.Initialize(this);
-  m_decorrelator.Initialize(this,path,file);
+  m_decorrelator.Initialize(this);
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {

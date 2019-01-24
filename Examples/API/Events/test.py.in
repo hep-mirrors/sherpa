@@ -4,9 +4,9 @@ import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
 
-Generator=Sherpa.Sherpa()
+Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:
-    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Generator.InitializeTheRun()
     Generator.InitializeTheEventHandler()
     for n in range(1,1+Generator.NumberOfEvents()):
         Generator.GenerateOneEvent()

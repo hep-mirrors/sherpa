@@ -1,7 +1,45 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <vector>
+#include <algorithm>
+
+#include "ATOOLS/Org/Exception.H"
 
 namespace ATOOLS {
+
+  template<> std::string ToString<std::string>(const std::string& value,
+      const size_t precision)
+  {
+    return value;
+  }
+
+  template<> std::string ToType<std::string>(const std::string& value,
+                                             const size_t precision)
+  {
+    return value;
+  }
+
+  template<> bool ToType<bool>(const std::string& value,
+                               const size_t precision)
+  {
+    std::string v{ value };
+    std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+    if (v == "false" || v == "no" || v == "off" || v == "0") {
+      return false;
+    }
+    return true;
+  }
+
+  std::string StringTrim(const std::string& untrimmed)
+  {
+    std::string s{ untrimmed };
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+          return !std::isspace(ch);
+          }));
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+          return !std::isspace(ch);
+          }).base(), s.end());
+    return s;
+  }
 
   std::string StringReplace(const std::string &original,
                             const std::string &from, const std::string &to)
@@ -37,23 +75,59 @@ namespace ATOOLS {
     return original.substr(ibegin, iend-ibegin);
   }
   
-  std::string ReplaceUnits(std::string v)
+  std::string ReplaceUnits(const std::string& instring)
   {
-    std::string f("");
-    size_t l(v.length());
-    for (size_t i(0);i<l;) {
-      if (v[i]==' ' || v[i]=='\t');
-      else if (v[i]=='k') f+=(i+1<l && v[i+1]=='B')?"*(1<<10)":"*1000";
-      else if (v[i]=='M') f+=(i+1<l && v[i+1]=='B')?"*(1<<20)":"*1000000";
-      else if (v[i]=='G') f+=(i+1<l && v[i+1]=='B')?"*(1<<30)":"*1000000000";
-      else {
-	++i;
-	continue;
+    // - a unit can not be the first character
+    // - a unit can not be preceded by an alphabetic character or an underscore
+    // - a unit can not be succeeded by an alphabetic character (exception: B
+    //   for byte) or an underscore
+
+    auto converter = [](const std::string& s) -> std::string {
+      if      (s == "%")  return "/100.0";
+      else if (s == "k")  return "*1000";
+      else if (s == "M")  return "*1000000";
+      else if (s == "G")  return "*1000000000";
+      else if (s == "kB") return "*(1<<10)";
+      else if (s == "MB") return "*(1<<20)";
+      else if (s == "GB") return "*(1<<30)";
+      else                return "";
+    };
+    auto is_alpha_or_underscore = [](const char c) -> bool {
+      return (std::isalpha(c) || c == '_');
+    };
+
+    const auto length = instring.length();
+    std::string outstring;
+    for (size_t i{ 0 }; i < length;) {
+      if (std::isblank(instring[i])) {
+        ++i;
+        continue;
+      } else if (i > 0) {
+        if (!is_alpha_or_underscore(instring[i - 1])) {
+          size_t nchars{ 0 };
+          if (i + 1 < length) {
+            if (instring[i + 1] == 'B') {
+              if (!(i + 2 < length && is_alpha_or_underscore(instring[i + 2])))
+                nchars = 2;
+            } else if (!is_alpha_or_underscore(instring[i + 1])) {
+              nchars = 1;
+            }
+          } else {
+            nchars = 1;
+          }
+          const auto converted = converter(instring.substr(i, nchars));
+          if (converted != "") {
+            outstring += converted;
+            i += nchars;
+            continue;
+          }
+        }
       }
-      v.replace(i,(i+1<l && v[i+1]=='B')?2:1,f);
-      f="";
+      outstring += instring[i];
+      ++i;
     }
-    return v;
+
+    return outstring;
   }
 
 }// end of namespace ATOOLS;

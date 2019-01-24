@@ -4,7 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS { class Cluster_Amplitude; class Default_Reader; }
+namespace ATOOLS { class Cluster_Amplitude; }
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { class ISR_Handler; }
 namespace MODEL { class Model_Base; }
@@ -13,29 +13,41 @@ namespace PHASIC {
 
   class ME_Generators;
 
-  class ME_Generator_Base: public ATOOLS::Mass_Selector {
+  class ME_Generator_Base: public ATOOLS::Mass_Selector
+  {
   private:
+
     std::string         m_name;
     ATOOLS::Flavour_Set m_psmass;
-    ME_Generators     * p_gens;
+    ME_Generators*      p_gens;
+
+    void RegisterDefaults();
+    void RegisterDipoleParameters();
+    void RegisterNLOParameters();
+    void RegisterOtherParameters();
+    template <typename T>
+    void SetParameter(const std::string& param, const T& def);
+
   protected:
+
     int  m_massmode;
-    void SetPSMasses(ATOOLS::Default_Reader *const);
-  public :
+    void SetPSMasses();
+
+  public:
 
     // constructor
-    inline ME_Generator_Base(const std::string &name):
-      m_name(name), m_massmode(0), p_gens(NULL) {}
+    ME_Generator_Base(const std::string &name);
 
     // destructor
     virtual ~ME_Generator_Base();
 
     // member functions
-    virtual bool Initialize(const std::string &path,const std::string &file,
-			    MODEL::Model_Base *const model,
-			    BEAM::Beam_Spectra_Handler *const beam,
-			    PDF::ISR_Handler *const isr) = 0;
-    virtual Process_Base *InitializeProcess(const Process_Info &pi, bool add)=0;
+    virtual bool Initialize(MODEL::Model_Base* const,
+			    BEAM::Beam_Spectra_Handler* const,
+			    PDF::ISR_Handler* const) = 0;
+
+    virtual Process_Base *InitializeProcess(const Process_Info &pi,
+                                            bool add)=0;
     virtual int PerformTests() = 0;
     virtual bool NewLibraries() = 0;
 
@@ -64,6 +76,7 @@ namespace PHASIC {
   };// end of class ME_Generator_Base
 
   struct ME_Generator_Key {
+    ME_Generator_Key() {};
   };//end of struct ME_Generator_Key
 
   typedef ATOOLS::Getter_Function

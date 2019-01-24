@@ -16,7 +16,6 @@ namespace SHERPA{
 namespace ATOOLS{
   class Cluster_Amplitude;
   class ColorID;
-  class Default_Reader;
   class Mass_Selector;
 }
 namespace PHASIC{
@@ -32,7 +31,6 @@ private:
   ATOOLS::Cluster_Amplitude* p_amp;
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
-  ATOOLS::Default_Reader *   p_momentareader;
   PHASIC::Rambo*             p_rambo;
   std::shared_ptr<PHASIC::Color_Integrator> p_colint;
 

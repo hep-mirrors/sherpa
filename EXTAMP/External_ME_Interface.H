@@ -46,8 +46,7 @@ namespace EXTAMP {
     InstantiatePartonicProcess(const PHASIC::Process_Info &pi);
     
     /* Pure virtual from PHASIC::ME_Generator_Base. Initialize this class. */
-    virtual bool Initialize(const std::string &path,const std::string &file,
-			    MODEL::Model_Base *const model,
+    virtual bool Initialize(MODEL::Model_Base *const model,
 			    BEAM::Beam_Spectra_Handler *const beam,
 			    PDF::ISR_Handler *const isr);
 

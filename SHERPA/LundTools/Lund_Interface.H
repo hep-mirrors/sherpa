@@ -11,6 +11,7 @@ namespace ATOOLS {
   class Blob;
   class Blob_List;
   class Particle;
+  class Settings;
 }
 
 namespace SHERPA {
@@ -22,7 +23,7 @@ namespace SHERPA {
   private:
     static size_t s_errors, s_maxerrors;
 
-    std::string m_path, m_file, m_outfile;
+    std::string m_outfile;
     size_t m_maxtrials;
 
     HepEvt_Interface *p_hepevt;
@@ -40,6 +41,13 @@ namespace SHERPA {
 
     static int    * s_saved_mrpy;
     static double * s_saved_rrpy;
+
+    void RegisterDefaults() const;
+
+    template <typename T>
+    void ReadSettings(ATOOLS::Settings& settings,
+                      const std::string& key,
+                      T *target) const;
 
     void NextFile(const bool newfile);
 
@@ -60,7 +68,7 @@ namespace SHERPA {
     void PrepareTerminate();
   public:
 
-    Lund_Interface(std::string _m_path,std::string _m_file);
+    Lund_Interface();
     ~Lund_Interface();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

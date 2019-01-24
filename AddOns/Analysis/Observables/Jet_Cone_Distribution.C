@@ -9,43 +9,25 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(Jet_Cone_Distribution,"JetConeDist",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
-Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
-					   Jet_Cone_Distribution>::operator()(const Argument_Matrix &parameters) const
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<7) return NULL;
-    return new Jet_Cone_Distribution(HistogramType(parameters[0][6]),
-				     ATOOLS::ToType<double>(parameters[0][0]),
-				     ATOOLS::ToType<double>(parameters[0][1]),
-				     ATOOLS::ToType<double>(parameters[0][2]),
-				     ATOOLS::ToType<double>(parameters[0][3]),
-				     ATOOLS::ToType<double>(parameters[0][4]),
-				     ATOOLS::ToType<int>(parameters[0][5]),
-				     parameters());
-  }
-  else if (parameters.size()<7) return NULL;
-  double etcut=0.0, etamin=-10., etamax=10., rmin=0., rmax=10.;
-  size_t bins=100;
-  std::string scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="ETCUT") etcut=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMIN") etamin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMAX") etamax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMIN")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMAX")   rmax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
-    else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
-  }
-  return new Jet_Cone_Distribution(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,bins,parameters());
-}									
-
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Distribution>::PrintInfo(std::ostream &str,const size_t width) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,
+					   Jet_Cone_Distribution>::operator()(const Analysis_Key& key) const
 {
-  str<<"etcut etamin etamax rmin rmax bins Lin|LinErr|Log|LogErr";
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto etcut = s["ETCut"].SetDefault(0.0).Get<double>();
+  const auto etamin = s["EtaMin"].SetDefault(-10.0).Get<double>();
+  const auto etamax = s["EtaMax"].SetDefault( 10.0).Get<double>();
+  const auto rmin = s["RMin"].SetDefault(0.0).Get<double>();
+  const auto rmax = s["RMax"].SetDefault(10.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  return new Jet_Cone_Distribution(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,bins,key.p_analysis);
+}
+
+void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,Jet_Cone_Distribution>::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"e.g. {ETCut: 0, EtaMin: -10, EtaMax: 10, RMin: 0, RMax: 10, Bins: 100, Scale: Lin}";
 }
 
 Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcut, 
@@ -144,48 +126,28 @@ void Jet_Cone_Distribution::Fill(double weight, double ncount)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 DECLARE_GETTER(Jet_Cone_Dependence,"JetConeDep",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
-Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
-					   Jet_Cone_Dependence>::operator()(const Argument_Matrix &parameters) const
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<9) return NULL;
-    return new Jet_Cone_Dependence(HistogramType(parameters[0][8]),
-				   ATOOLS::ToType<double>(parameters[0][0]),
-				   ATOOLS::ToType<double>(parameters[0][1]),
-				   ATOOLS::ToType<double>(parameters[0][2]),
-				   ATOOLS::ToType<double>(parameters[0][3]),
-				   ATOOLS::ToType<double>(parameters[0][4]),
-				   ATOOLS::ToType<int>(parameters[0][5]),
-				   ATOOLS::ToType<int>(parameters[0][6]),
-				   ATOOLS::ToType<int>(parameters[0][7]),
-				   parameters());
-  }
-  else if (parameters.size()<9) return NULL;
-  double etcut=0.0, etamin=-10., etamax=10., rmin=0., rmax=10.;
-  size_t bins=100,nmin=1,nmax=10;
-  std::string scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="ETCUT") etcut=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMIN") etamin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMAX") etamax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMIN")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMAX")   rmax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="NMIN")   nmin=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="NMAX")   nmax=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
-  }
-  return new Jet_Cone_Dependence(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,
-				 nmin,nmax,bins,parameters());
-}									
-
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Dependence>::PrintInfo(std::ostream &str,const size_t width) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,
+					   Jet_Cone_Dependence>::operator()(const Analysis_Key& key) const
 {
-  str<<"etcut etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto etcut = s["ETCut"].SetDefault(0.0).Get<double>();
+  const auto etamin = s["EtaMin"].SetDefault(-10.0).Get<double>();
+  const auto etamax = s["EtaMax"].SetDefault( 10.0).Get<double>();
+  const auto rmin = s["RMin"].SetDefault(0.0).Get<double>();
+  const auto rmax = s["RMax"].SetDefault(10.0).Get<double>();
+  const auto nmin = s["NMin"].SetDefault(1).Get<size_t>();
+  const auto nmax = s["NMax"].SetDefault(10).Get<size_t>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  return new Jet_Cone_Dependence(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,
+                                 nmin,nmax,bins,key.p_analysis);
+}
+
+void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,Jet_Cone_Dependence>::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"e.g. {ETCut: 0, EtaMin: -10, EtaMax: 10, RMin: 0, RMax: 10, NMin: 1, NMax: 10, Bins: 100, Scale: Lin}";
 }
 
 
@@ -306,50 +268,28 @@ void Jet_Cone_Dependence::Fill(double weight, double ncount)
 
 
 DECLARE_GETTER(Jet_Cone_Shape,"JetConeShape",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
-Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
-					   Jet_Cone_Shape>::operator()(const Argument_Matrix &parameters) const
-{			
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<10) return NULL;
-    return new Jet_Cone_Shape(HistogramType(parameters[0][9]),
-			      ATOOLS::ToType<double>(parameters[0][0]),
-			      ATOOLS::ToType<double>(parameters[0][1]),
-			      ATOOLS::ToType<double>(parameters[0][2]),
-			      ATOOLS::ToType<double>(parameters[0][3]),
-			      ATOOLS::ToType<double>(parameters[0][4]),
-			      ATOOLS::ToType<double>(parameters[0][5]),
-			      ATOOLS::ToType<int>(parameters[0][6]),
-			      ATOOLS::ToType<int>(parameters[0][7]),
-			      ATOOLS::ToType<int>(parameters[0][8]),
-			      parameters());
-  }
-  else if (parameters.size()<10) return NULL;
-  double etcut=0.0,radius=0.7, etamin=-10., etamax=10., rmin=0., rmax=10.;
-  size_t bins=100, nmin=1, nmax=10;
-  std::string scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="ETCUT")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RADIUS") radius=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMIN") etamin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="ETAMAX") etamax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMIN")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="RMAX")   rmax=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
-    else if (parameters[i][0]=="NMIN")   nmin=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="NMAX")   nmax=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
-  }
-  return new Jet_Cone_Shape(HistogramType(scale),etcut,radius,etamin,etamax,rmin,rmax,nmin,nmax,bins,parameters());
-}									
-
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Shape>::PrintInfo(std::ostream &str,const size_t width) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,
+					   Jet_Cone_Shape>::operator()(const Analysis_Key& key) const
 {
-  str<<"etcut radius etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto etcut = s["ETCut"].SetDefault(0.0).Get<double>();
+  const auto radius = s["Radius"].SetDefault(0.7).Get<double>();
+  const auto etamin = s["EtaMin"].SetDefault(-10.0).Get<double>();
+  const auto etamax = s["EtaMax"].SetDefault( 10.0).Get<double>();
+  const auto rmin = s["RMin"].SetDefault(0.0).Get<double>();
+  const auto rmax = s["RMax"].SetDefault(10.0).Get<double>();
+  const auto nmin = s["NMin"].SetDefault(1).Get<size_t>();
+  const auto nmax = s["NMax"].SetDefault(10).Get<size_t>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  return new Jet_Cone_Shape(HistogramType(scale),etcut,radius,etamin,etamax,rmin,rmax,nmin,nmax,bins,key.p_analysis);
+}
+
+void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,Jet_Cone_Shape>::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"e.g. {ETCut: 0, Radius: 0.7, EtaMin: -10, EtaMax: 10, RMin: 0, RMax: 10, NMin: 1, NMax: 10, Bins: 100, Scale: Lin}";
 }
 
 

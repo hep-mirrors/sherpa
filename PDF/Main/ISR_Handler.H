@@ -24,6 +24,7 @@ namespace PDF {
   typedef std::vector<double> Double_Vector;
 
   class ISR_Handler {
+
   protected:
 
     ISR_Base **p_isrbase;

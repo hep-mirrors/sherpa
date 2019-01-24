@@ -13,9 +13,6 @@ namespace PHASIC {
     std::vector<Selector_Base *> m_sels;
     std::vector<std::pair<size_t,double> > m_osc;
 
-    Selector_Key FindArguments(const Selector_Key &strings,
-			       size_t &starty,size_t &startx);
-
   public:
 
     Combined_Selector(Process_Base *const proc);

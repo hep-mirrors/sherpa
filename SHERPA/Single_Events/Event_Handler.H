@@ -23,6 +23,7 @@ namespace SHERPA {
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
     size_t m_lastrss;
+    int m_decayer;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;

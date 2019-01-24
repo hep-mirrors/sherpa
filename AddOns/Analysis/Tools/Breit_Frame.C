@@ -24,26 +24,23 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Breit_Frame,"BreitFrame",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Breit_Frame>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Breit_Frame>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Breit_Frame>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,Breit_Frame>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist("FinalState"), outlist("Selected");
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-  }
+  Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
   return new Breit_Frame(inlist,outlist);
 }
 

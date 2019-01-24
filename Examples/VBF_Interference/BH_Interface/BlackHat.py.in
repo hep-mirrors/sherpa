@@ -8,29 +8,38 @@ import Sherpa
 fl=[21,21,22,22,21,21]
 
 if os.path.exists("Process"): shutil.rmtree('Process')
-card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Run_',suffix='.dat')
-card.write("(run){ \n\
-  ME_SIGNAL_GENERATOR Amegic BlackHat; \n\
-  BEAM_1 93 4000; BEAM_2 93 4000; \n\
-  SCALES VAR{sqr(91.188)}; \n\
-  MODEL HEFT; EVENTS 0; \n\
-}(run); \n\
-(processes){ \n\
-  Process "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+"; \n\
-  NLO_QCD_Mode 1; NLO_QCD_Part V; \n\
-  Loop_Generator BlackHat; Enable_MHV 12; \n\
-  Order (3,2,2); # gF+2j signal \n\
-  End process; \n\
-}(processes);\n")
+card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Sherpa_',suffix='.yaml')
+card.write("ME_GENERATORS: [Amegic, BlackHat]\n\
+BEAMS: 93\n\
+BEAM_ENERGIES: 4000\n\
+SCALES: \"VAR{sqr(91.188)}\"\n\
+MODEL: HEFT\n\
+EVENTS: 0\n\
+SHERPA_LDADD:\n\
+  - PhasicProcess\n\
+  - ToolsOrg\n\
+  - ToolsPhys\n\
+  - ToolsMath\n\
+  - ModelMain\n\
+  - METoolsExplicit\n\
+  - METoolsCurrents\n\
+INIT_ONLY: 2\n\
+PROCESSES:\n\
+  - {\n\
+    Process: "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+",\n\
+    NLO_QCD_Mode: 1,\n\
+    NLO_QCD_Part: V,\n\
+    Loop_Generator: BlackHat,\n\
+    Enable_MHV: 12,\n\
+    Order: \"(3,2,2)\",  # gF+2j signal\n\
+    }\n")
 card.flush()
 
-sys.argv.append('-f'+os.path.basename(card.name))
-sys.argv.append('SHERPA_LDADD=PhasicProcess ToolsOrg ToolsPhys ToolsMath ModelMain METoolsExplicit METoolsCurrents;');
-sys.argv.append('INIT_ONLY=2')
+sys.argv.append('-f '+os.path.basename(card.name))
 
-Generator=Sherpa.Sherpa()
+Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:
-    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Generator.InitializeTheRun()
     Process=Sherpa.MEProcess(Generator)
 
     for n in fl[0:2]: Process.AddInFlav(n);

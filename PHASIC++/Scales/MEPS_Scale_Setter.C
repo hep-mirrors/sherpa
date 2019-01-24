@@ -21,6 +21,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace PHASIC {
 
@@ -113,17 +114,17 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  Settings& s = Settings::GetMainSettings();
   static std::string s_core;
   static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
   if (s_cmode<0) {
-    Data_Reader read(" ",";","!","=");
-    s_nmaxall=read.GetValue<int>("MEPS_NMAX_ALLCONFIGS",-1);
-    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",-1);
-    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",8|64|128|256);
-    s_nlocpl=read.GetValue<int>("MEPS_NLO_COUPLING_MODE",2);
-    s_nfgsplit=read.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2);
-    s_csmode=read.GetValue<int>("MEPS_COLORSET_MODE",0);
-    s_core=read.GetValue<std::string>("CORE_SCALE","Default");
+    s_nmaxall=s["MEPS_NMAX_ALLCONFIGS"].Get<int>();
+    s_nmaxnloall=s["MEPS_NLO_NMAX_ALLCONFIGS"].Get<int>();
+    s_cmode=s["MEPS_CLUSTER_MODE"].Get<int>();
+    s_nlocpl=s["MEPS_NLO_COUPLING_MODE"].Get<int>();
+    s_nfgsplit=s["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_csmode=s["MEPS_COLORSET_MODE"].Get<int>();
+    s_core=s["CORE_SCALE"].Get<std::string>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core);
@@ -185,7 +186,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
   */
-  m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -474,7 +475,7 @@ void MEPS_Scale_Setter::Cluster
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
   bool strict(!(m_cmode&1 && !rpa->gen.NumberOfTrials()));
-  DEBUG_FUNC("Actual = "<<ampl<<", nmin = "<<m_nmin<<", strict = "<<strict);
+  DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
   if (!CoreCandidate(ampl)) {

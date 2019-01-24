@@ -292,21 +292,3 @@ void   Particle::SetFinalMass(const double _lower,const double _upper) {
   }     
   m_finalmass = sqrt(mass2+mw*tan(ran->Get()*yrange + ymin));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

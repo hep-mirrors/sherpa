@@ -84,12 +84,6 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvecto
   // spin 2 particles must be cutted
   if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
-  // "new gauge test" cut all massless propagators
-  if (p->fl.IsVector() && p->number>99  && rpa->gen.CutScheme()==1) {
-    if(p->fl.Mass()==0.0) {
-      p->m=1;
-    }	
-  }
   MarkCut(p->right,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
   MarkCut(p->left,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
   MarkCut(p->middle,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors()); 

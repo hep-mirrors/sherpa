@@ -3,7 +3,6 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "blackhat/BH_interface.h"
 #include "blackhat/BH_error.h"

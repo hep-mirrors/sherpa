@@ -12,19 +12,17 @@ extension of the CKKW method to NLO - as described in @mycite{Hoeche2012yf}
 and @mycite{Gehrmann2012yg}. Finally, even higher multiplicities, calculated 
 at leading order, are merged on top of that. A few things to note are 
 detailed below the example. The example can be converted a simple MENLOPS 
-setup by setting @code{LJET:=1}, or an MEPS setup by setting @code{LJET:=0}, 
+setup by setting @code{LJET: 1}, or an MEPS setup by setting @code{LJET: 0},
 to study the effect of incorporating higher-order matrix elements.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions 
-can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
 easy scale variations. Tags are replaced throughout the entire run card by
 their defined value, see @ref{Tags}.

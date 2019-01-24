@@ -9,9 +9,10 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -29,8 +30,9 @@ AMEGIC::Process_Base::Process_Base():
   p_channellibnames = new std::list<std::string>();
   static int allowmap(-1);
   if (allowmap<0) {
-    Default_Reader read;
-    allowmap = ToType<size_t>(rpa->gen.Variable("AMEGIC_ALLOW_MAPPING"));
+    Scoped_Settings amegicsettings{
+      Settings::GetMainSettings()["AMEGIC"] };
+    allowmap = amegicsettings["ALLOW_MAPPING"].Get<int>();
     if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
   }
   m_allowmap=allowmap;

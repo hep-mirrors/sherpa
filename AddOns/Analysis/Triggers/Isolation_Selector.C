@@ -75,22 +75,25 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(Isolation_Selector,"PhotonIsolation",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
 Analysis_Object *ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Isolation_Selector>::
-operator()(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,Isolation_Selector>::
+operator()(const Analysis_Key& key) const
 {
-  if (parameters.size()<1 || parameters[0].size()<5) return NULL;
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 5)
+    THROW(missing_input, "Missing parameter values.");
   return new Isolation_Selector
-    (ATOOLS::ToType<double>(parameters[0][0]),
-     ATOOLS::ToType<double>(parameters[0][1]),
-     parameters[0][2],parameters[0][3],parameters[0][4]);
+    (s.Interprete<double>(parameters[0]),
+     s.Interprete<double>(parameters[1]),
+     parameters[2],parameters[3],parameters[4]);
 }									
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Isolation_Selector>::
+<Analysis_Object,Analysis_Key,Isolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"DR E_max inlist reflist outlist";
+  str<<"[DR, E_max, inlist, reflist, outlist]";
 }

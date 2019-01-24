@@ -43,7 +43,7 @@ namespace REMNANTS {
     Primordial_KPerp();
     ~Primordial_KPerp();
 
-    void Initialize(const std::string path,const std::string file);
+    void Initialize();
     bool CreateBreakupKinematics(const size_t & beam,ATOOLS::ParticleMomMap * ktmap,
 				 const double & scale);
     ATOOLS::Vec4D KT(const double & ktmax);

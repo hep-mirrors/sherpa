@@ -1,0 +1,35 @@
+EVENTS: 500k
+ME_GENERATORS: Amegic
+EVENT_GENERATION_MODE: Weighted
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis.BRS.scf$(SCF)
+EVENT_SEED_MODE: 3
+BEAMS: 2212
+BEAM_ENERGIES: 3500
+MODEL: SMEHC
+TAGS: {
+  SCF: 1.0,
+  FSF: $(SCF),
+  RSF: $(SCF),
+  RSENH: 15.0
+}
+SCALES: VAR{$(FSF)*sqr(125)}{$(RSF)*sqr(125)}
+PROCESSES:
+- {
+  Process: 93 93 -> 25,
+  NLO_QCD_Mode: Fixed_Order,
+  NLO_QCD_Part: B,
+  Order: {QCD: 2, EW: 1},
+}
+- {
+  Process: 93 93 -> 25,
+  NLO_QCD_Mode: Fixed_Order,
+  NLO_QCD_Part: RS,
+  Enhance_Factor: $(RSENH),
+  Order: {QCD: 2, EW: 1},
+}
+RIVET: {
+  -a: MC_PHOTONPHOTON_JOEY_STABLE,
+  USE_HEPMC_SHORT: 1,
+  IGNOREBEAMS: 1
+}

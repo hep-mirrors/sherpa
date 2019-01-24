@@ -1,0 +1,16 @@
+EVENTS: 10k
+BEAMS: 2212
+BEAM_ENERGIES: 4000
+
+FRAGMENTATION: None
+MI_HANDLER: None
+
+USERHOOKS: Example
+
+PROCESSES:
+- Process: "93 93 -> 11 -11 93{0}"
+  Order: {QCD: Any, EW: 2}
+  CKKW: 30
+
+SELECTORS:
+- [Mass, 11, -11, 66, 116]

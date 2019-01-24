@@ -20,6 +20,7 @@ namespace AMEGIC {
   class Phase_Space_Generator;
 
   class Single_Virtual_Correction : public Process_Base {
+
   protected:
     std::string             m_ptypename,m_pslibname;
     ATOOLS::sbt::subtype    m_stype;

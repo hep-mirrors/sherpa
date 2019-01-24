@@ -8,7 +8,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 
@@ -90,7 +90,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
         THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
               +std::string("HepMC without using named weights. ")
-              +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+              +std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
   }
 }
@@ -292,15 +292,17 @@ HepMC2_Interface::HepMC2_Interface() :
   m_hepmctree(false),
   p_event(NULL)
 {
-  Default_Reader reader;
+  Settings& s = Settings::GetMainSettings();
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-  m_usenamedweights=reader.Get<int>("HEPMC_USE_NAMED_WEIGHTS",false);
+  m_usenamedweights =
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
 #endif
-  m_extendedweights=reader.Get<int>("HEPMC_EXTENDED_WEIGHTS",false);
+  m_extendedweights =
+    s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    reader.GetValue<int>("HEPMC_INCLUDE_ME_ONLY_VARIATIONS",false);
+    s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
-  m_hepmctree=reader.Get<int>("HEPMC_TREE_LIKE",false);
+  m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }
 
 HepMC2_Interface::~HepMC2_Interface()
@@ -517,7 +519,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           THROW(fatal_error,"Events containing correlated subtraction events"
                 +std::string(" cannot be translated into the full HepMC event")
                 +std::string(" format.\n")
-                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
+                +std::string("   Try 'EVENT_OUTPUT: HepMC_Short' instead."));
         }
         event.set_signal_process_vertex(vertex);
       }

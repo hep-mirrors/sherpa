@@ -16,8 +16,7 @@ namespace MCFM {
     ~MCFM_Interface();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
@@ -50,9 +49,9 @@ MCFM_Interface::~MCFM_Interface()
 {
 }
 
-bool MCFM_Interface::Initialize
-(const std::string &path,const std::string &file,MODEL::Model_Base *const model,
- BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
+bool MCFM_Interface::Initialize(MODEL::Model_Base *const model,
+                                BEAM::Beam_Spectra_Handler *const beam,
+                                PDF::ISR_Handler *const isrhandler)
 {
   std::ifstream procfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/process.DAT").c_str());
   if (!procfile.good())

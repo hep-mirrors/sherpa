@@ -1,8 +1,8 @@
 #include "PHOTONS++/Main/Photons.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "PHOTONS++/Main/Define_Dipole.H"
 
@@ -28,9 +28,7 @@ std::istream &PHOTONS::operator>>(std::istream &str,yfsmode::code &ym)
   std::string tag;
   str>>tag;
   ym=yfsmode::full;
-  if      (tag.find("Off")!=std::string::npos)  ym=yfsmode::off;
-  else if (tag.find("None")!=std::string::npos) ym=yfsmode::off;
-  else if (tag.find("0")!=std::string::npos)    ym=yfsmode::off;
+  if      (tag.find("None")!=std::string::npos) ym=yfsmode::off;
   else if (tag.find("Soft")!=std::string::npos) ym=yfsmode::soft;
   else if (tag.find("1")!=std::string::npos)    ym=yfsmode::soft;
   else if (tag.find("Full")!=std::string::npos) ym=yfsmode::full;
@@ -90,21 +88,21 @@ Histogram_2D PHOTONS::Photons::s_histo_t_total
 
 // member functions of class Photons
 
-Photons::Photons(Data_Reader* reader) :
+Photons::Photons() :
   m_name("Photons")
 {
-  rpa->gen.AddCitation
-    (1,"Photons is published under \\cite{Schonherr:2008av}.");
-  s_mode     = ToType<yfsmode::code>(reader->GetValue<std::string>("YFS_MODE","2"));
-  s_useme    = (bool)reader->GetValue<int>("YFS_USE_ME",1);
-  s_ircutoff = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
-  s_uvcutoff = reader->GetValue<double>("YFS_UV_CUTOFF",
-                                        std::numeric_limits<double>::max());
-  s_alpha_input   = reader->GetValue<double>("YFS_1/ALPHAQED",0.);
+  RegisterDefaults();
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  rpa->gen.AddCitation(1,
+                       "Photons is published under \\cite{Schonherr:2008av}.");
+  s_mode     = s["MODE"].Get<yfsmode::code>();
+  s_useme    = (bool)s["USE_ME"].Get<int>();
+  s_ircutoff = s["IR_CUTOFF"].Get<double>();
+  s_uvcutoff = s["UV_CUTOFF"].Get<double>();
+  s_alpha_input   = s["1/ALPHAQED"].Get<double>();
   s_alpha_input = (s_alpha_input?1./s_alpha_input:MODEL::aqed->AqedThomson());
-  s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
-  std::string irframe = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME",
-                                                      "Multipole_CMS");
+  s_userunningparameters = (bool)s["USE_RUNNING_PARAMETERS"].Get<int>();
+  std::string irframe = s["IR_CUTOFF_FRAME"].Get<std::string>();
   if      (irframe == "Multipole_CMS")      s_ircutoffframe = 0;
   else if (irframe == "Lab")                s_ircutoffframe = 1;
   else if (irframe == "Decayer_Rest_Frame") s_ircutoffframe = 2;
@@ -114,20 +112,18 @@ Photons::Photons(Data_Reader* reader) :
               <<"IR cut-off for soft photon radiation unkown ...\n"
               <<"setting it to 'Multipole_CMS' ...\n";
   }
-  s_nmax          = reader->GetValue<int>("YFS_MAXEM",std::numeric_limits<int>::max());
-  s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
-  s_drcut         = reader->GetValue<double>("YFS_DRCUT",
-                                             std::numeric_limits<double>::max());
-  s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
-  s_reducemaxenergy = reader->GetValue<double>("YFS_REDUCE_MAXIMUM_ENERGY",1.);
-  s_increasemaxweight = reader->GetValue<double>("YFS_INCREASE_MAXIMUM_WEIGHT",1.);
-  s_checkfirst    = (bool)reader->GetValue<double>("YFS_CHECK_FIRST",0);
-  s_ffrecscheme   = reader->GetValue<int>("YFS_FF_RECOIL_SCHEME",2);
-  s_firecscheme   = reader->GetValue<int>("YFS_FI_RECOIL_SCHEME",2);
+  s_nmax          = s["MAXEM"].Get<int>();
+  s_nmin          = s["MINEM"].Get<int>();
+  s_drcut         = s["DRCUT"].Get<double>();
+  s_strict        = s["STRICTNESS"].Get<int>();
+  s_reducemaxenergy = s["REDUCE_MAXIMUM_ENERGY"].Get<double>();
+  s_increasemaxweight = s["INCREASE_MAXIMUM_WEIGHT"].Get<double>();
+  s_checkfirst    = (bool)s["CHECK_FIRST"].Get<double>();
+  s_ffrecscheme   = s["FF_RECOIL_SCHEME"].Get<int>();
+  s_firecscheme   = s["FI_RECOIL_SCHEME"].Get<int>();
   s_accu          = sqrt(rpa->gen.Accu());
 #ifdef PHOTONS_DEBUG
-  s_histo_base_name = reader->GetValue<std::string>("YFS_HISTO_BASE_NAME",
-                                                    "weights");
+  s_histo_base_name = s["HISTO_BASE_NAME"].Get<std::string>();
 #endif
   m_success       = true;
   m_photonsadded  = false;
@@ -182,6 +178,28 @@ Photons::~Photons()
   s_histo_t_total.Finalize();
   s_histo_t_total.Output(s_histo_base_name+"-total-t.dat");
 #endif
+}
+
+void Photons::RegisterDefaults()
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  s["MODE"].SetDefault(yfsmode::full).UseNoneReplacements();
+  s["USE_ME"].SetDefault(1);
+  s["IR_CUTOFF"].SetDefault(1E-3);
+  s["UV_CUTOFF"].SetDefault(std::numeric_limits<double>::max());
+  s["1/ALPHAQED"].SetDefault(0.);
+  s["USE_RUNNING_PARAMETERS"].SetDefault(0);
+  s["IR_CUTOFF_FRAME"].SetDefault("Multipole_CMS");
+  s["MAXEM"].SetDefault(std::numeric_limits<int>::max());
+  s["MINEM"].SetDefault(0);
+  s["DRCUT"].SetDefault(std::numeric_limits<double>::max());
+  s["STRICTNESS"].SetDefault(0);
+  s["REDUCE_MAXIMUM_ENERGY"].SetDefault(1.);
+  s["INCREASE_MAXIMUM_WEIGHT"].SetDefault(1.);
+  s["CHECK_FIRST"].SetDefault(0);
+  s["FF_RECOIL_SCHEME"].SetDefault(2);
+  s["FI_RECOIL_SCHEME"].SetDefault(2);
+  s["HISTO_BASE_NAME"].SetDefault("weights");
 }
 
 bool Photons::AddRadiation(Blob * blob)

@@ -8,26 +8,23 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Tensor.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
 
 FF_Dipole::FF_Dipole(NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_yexp(0.5), m_zexp(0.01),
+  CS_Dipole(sub,psh,bmcw),
   m_mi(m_fli.Mass()), m_mj(m_flj.Mass()), m_mk(m_flk.Mass()),
   m_mi2(m_mi*m_mi), m_mj2(m_mj*m_mj), m_mij2(sqr(m_flij.Mass())),
   m_mk2(m_mk*m_mk), m_massive(m_mi||m_mj||m_mij2||m_mk)
 {
-  // read in y,z mode
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_yexp = reader.Get("EEG_FF_Y_EXPONENT", m_yexp);
-  m_zexp = reader.Get("EEG_FF_Z_EXPONENT", m_zexp);
+  Scoped_Settings s{ Settings::GetMainSettings()["EEG"] };
+  m_yexp = s["FF_Y_EXPONENT"].SetDefault(0.5).Get<double>();
+  m_zexp = s["FF_Z_EXPONENT"].SetDefault(0.01).Get<double>();
 }
 
 FF_Dipole::~FF_Dipole() {}
@@ -146,17 +143,14 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
 
 FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_zexp(0.01),
+  CS_Dipole(sub,psh,bmcw),
   m_mi(m_fli.Mass()), m_mj(m_flj.Mass()), 
   m_mi2(m_mi*m_mi), m_mj2(m_mj*m_mj), m_mij2(sqr(m_flij.Mass())),
   m_massive(m_mi||m_mj||m_mij2)
 {
-  // read in x,z mode
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_xexp = reader.Get("EEG_FI_X_EXPONENT", m_xexp);
-  m_zexp = reader.Get("EEG_FI_Z_EXPONENT", m_zexp);
+  Scoped_Settings s{ Settings::GetMainSettings()["EEG"] };
+  m_xexp = s["FI_X_EXPONENT"].SetDefault(0.5).Get<double>();
+  m_zexp = s["FI_Z_EXPONENT"].SetDefault(0.01).Get<double>();
 }
 
 FI_Dipole::~FI_Dipole() {}
@@ -271,15 +265,12 @@ double FI_Dipole::GenerateWeight
 
 IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_uexp(0.5),
+  CS_Dipole(sub,psh,bmcw),
   m_mk2(sqr(m_flk.Mass()))
 {
-  // read in x,u mode
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_xexp = reader.Get("EEG_IF_X_EXPONENT", m_xexp);
-  m_uexp = reader.Get("EEG_IF_U_EXPONENT", m_uexp);
+  Scoped_Settings s{ Settings::GetMainSettings()["EEG"] };
+  m_xexp = s["IF_X_EXPONENT"].SetDefault(0.5).Get<double>();
+  m_uexp = s["IF_U_EXPONENT"].SetDefault(0.5).Get<double>();
 }
 
 IF_Dipole::~IF_Dipole() {}
@@ -374,14 +365,11 @@ double IF_Dipole::GenerateWeight
 
 II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_vexp(0.5)
+  CS_Dipole(sub,psh,bmcw)
 {
-  // read in x,v mode
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_xexp = reader.Get("EEG_II_X_EXPONENT", m_xexp);
-  m_vexp = reader.Get("EEG_II_V_EXPONENT", m_vexp);
+  Scoped_Settings s{ Settings::GetMainSettings()["EEG"] };
+  m_xexp = s["II_X_EXPONENT"].SetDefault(0.5).Get<double>();
+  m_vexp = s["II_V_EXPONENT"].SetDefault(0.5).Get<double>();
 }
 
 II_Dipole::~II_Dipole() {}

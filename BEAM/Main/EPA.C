@@ -3,7 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 
 #include <string>
@@ -14,28 +14,44 @@ using namespace ATOOLS;
 
 EPA::EPA(const Flavour _beam,const double _mass,
 	 const double _charge,const double _energy,
-	 const double _pol,const int _dir,Data_Reader *const read):
+	 const double _pol, const int _dir):
   Beam_Base("EPA",_beam,_energy,_pol,_dir),
   m_mass(_mass), m_charge(_charge)
-{ 
+{
+  Settings& s = Settings::GetMainSettings();
+  RegisterDefaults();
   m_bunch=Flavour(kf_photon);
   m_vecout=Vec4D(m_energy,0.,0.,_dir*m_energy);
-  std::string num(_dir>0?"1":"2");
-  m_q2Max=read->GetValue<double>("EPA_q2Max_"+num,2.0);
-  m_pt_min=read->GetValue<double>("EPA_ptMin_"+num,0.0);
-  m_aqed=read->GetValue<double>("EPA_AlphaQED",0.0072992701);
-  m_debug=read->GetValue<int>("EPA_Debug",0);
-  m_formfactor=read->GetValue<int>("EPA_Form_Factor_"+num,m_beam.FormFactor());
+
+  std::vector<double> q2Max{ s["EPA_q2Max"].GetVector<double>() };
+  if (q2Max.size() != 1 && q2Max.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA_q2Max'.");
+  m_q2Max = (_dir > 0) ? q2Max.front() : q2Max.back();
+
+  std::vector<double> pt_min{ s["EPA_ptMin"].GetVector<double>() };
+  if (pt_min.size() != 1 && pt_min.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA_ptMin'.");
+  m_pt_min = (_dir > 0) ? pt_min.front() : pt_min.back();
+
+  m_aqed = s["EPA_AlphaQED"].Get<double>();
+
+  std::vector<int> formfactors{ s["EPA_Form_Factor"].GetVector<int>() };
+  if (formfactors.size() != 1 && formfactors.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA_Form_Factor'.");
+  m_formfactor = (_dir > 0) ? formfactors.front() : formfactors.back();
 
   if (m_pt_min>1.0) {
     /* pt_min > 1 - according to approximation of 
        'qmi' calculation in CalculateWeight */
     THROW(critical_error,"Too big p_T cut ( "+ToString(m_pt_min)+")");
   }
-  if (m_debug) {
-    std::string filename = 
-      read->GetValue<std::string>("EPA_Debug_File",
-                                  "EPA_debugOutput");
+  if (s["EPA_Debug"].Get<bool>()) {
+    std::vector<std::string> files{
+      s["EPA_Debug_Files"].GetVector<std::string>() };
+    if (files.size() != 1 && files.size() != 2)
+      THROW(fatal_error, "Specify either one or two values for `EPA_Debug_Files'.");
+    std::string filename { (_dir > 0) ? files.front() : files.back() };
+    std::string num(_dir>0?"1":"2");
     filename += num + ".log";
     this->selfTest(filename); 
   }
@@ -43,6 +59,17 @@ EPA::EPA(const Flavour _beam,const double _mass,
 
 EPA::~EPA() 
 {
+}
+
+void EPA::RegisterDefaults()
+{
+  Settings& s = Settings::GetMainSettings();
+  s["EPA_q2Max"].SetDefault(2.0);
+  s["EPA_ptMin"].SetDefault(0.0);
+  s["EPA_Form_Factor"].SetDefault(m_beam.FormFactor());
+  s["EPA_AlphaQED"].SetDefault(0.0072992701);
+  s["EPA_Debug"].SetDefault(false);
+  s["EPA_Debug_Files"].SetDefault("EPA_debugOutput");
 }
 
 double EPA::CosInt::GetCosInt(double X)

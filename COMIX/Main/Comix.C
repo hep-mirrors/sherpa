@@ -6,26 +6,28 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
-namespace MODEL    { class Model_Base;   }
-//namespace REMNANTS { class Remnant_Base; }
+namespace MODEL { class Model_Base; }
 
 namespace COMIX {
 
   class Single_Process;
 
   class Comix: public Process_Group, public PHASIC::ME_Generator_Base {
+
   private :
 
     std::vector<std::vector<Single_Process*> > m_umprocs;
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
-    std::string m_path, m_file;
     time_t m_mets;
 
 #ifdef USING__Threading
     CDBG_ME_TID_Vector m_cts;
 #endif
+
+    void RegisterDefaults() const;
 
     void PrintLogo(std::ostream &s);
     void PrintVertices();
@@ -39,8 +41,7 @@ namespace COMIX {
     ~Comix();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-                    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
                     BEAM::Beam_Spectra_Handler *const beamhandler,
                     PDF::ISR_Handler *const isrhandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
@@ -60,7 +61,6 @@ namespace COMIX {
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 //#include "REMNANTS/Main/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -74,7 +74,7 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-Comix::Comix(): 
+Comix::Comix():
   ME_Generator_Base("Comix")
 {
 #ifdef USING__Threading
@@ -156,80 +156,31 @@ void Comix::PrintVertices()
   }
 }
 
-bool Comix::Initialize(const std::string &path,const std::string &file,
-		       MODEL::Model_Base *const model,
+bool Comix::Initialize(MODEL::Model_Base *const model,
 		       BEAM::Beam_Spectra_Handler *const beamhandler,
-		       PDF::ISR_Handler *const isrhandler) 
+		       PDF::ISR_Handler *const isrhandler)
 {
-  m_path=path;
-  m_file=file;
+  RegisterDefaults();
+
   p_model=model;
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
-  // init mapping file
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  SetPSMasses(&reader);
-  s_partcommit=reader.Get<int>("COMIX_PARTIAL_COMMIT",0);
+  SetPSMasses();
+
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  s_partcommit = s["PARTIAL_COMMIT"].Get<int>();
   PrintLogo(msg->Info());
   PrintVertices();
-  rpa->gen.SetVariable
-    ("COMIX_PMODE",reader.Get<std::string>("COMIX_PMODE","D"));
 
   int helpi;
 
-  helpi = reader.Get("COMIX_WF_MODE", 0, "wave function mode", METHOD);
-  rpa->gen.SetVariable("COMIX_WF_MODE",ToString(helpi));
-
-  helpi = reader.Get("COMIX_PG_MODE", 0, "print graph mode", METHOD);
-  rpa->gen.SetVariable("COMIX_PG_MODE",ToString(helpi));
-
-  helpi = reader.Get("COMIX_VL_MODE", 0, "vertex label mode", METHOD);
+  helpi = s["VL_MODE"].Get<int>();
   Vertex::SetVLMode(helpi);
-
-  helpi = reader.Get("COMIX_N_GPL", 3, "graphs per line", METHOD);
-  rpa->gen.SetVariable("COMIX_N_GPL",ToString(helpi));
 
   double helpd;
 
-  helpd = reader.Get("DIPOLE_AMIN", 1.0e-8, "dipole \\alpha_{cut}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA", 1.0, "dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_FF", 0.0, "FF dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_FI", 0.0, "FI dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_IF", 0.0, "IF dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_II", 0.0, "II dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
-
-
-  helpd = reader.Get("DIPOLE_KAPPA", 2.0/3.0, "dipole \\kappa", METHOD);
-  rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
-
-  helpi = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2, "dipole N_f", METHOD);
-  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
-
-  helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()), "dipole \\k_{T,max}^2", METHOD);
-  rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
-
-  rpa->gen.SetVariable("USR_WGT_MODE",
-		       ToString(reader.Get("USR_WGT_MODE",1)));
-  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
-		       ToString(reader.Get("NLO_SMEAR_THRESHOLD",0.0)));
-  rpa->gen.SetVariable("NLO_SMEAR_POWER",
-		       ToString(reader.Get("NLO_SMEAR_POWER",0.5)));
-
 #ifdef USING__Threading
-  helpi = reader.Get("COMIX_THREADS", 0, "number of threads", METHOD);
+  helpi = s["THREADS"].Get<int>();
   if (helpi>0) {
     m_cts.resize(helpi);
     for (size_t i(0);i<m_cts.size();++i) {
@@ -250,6 +201,18 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   My_In_File::OpenDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   return true;
+}
+
+void Comix::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  s["PARTIAL_COMMIT"].SetDefault(0);
+  s["PMODE"].SetDefault("D");
+  s["WF_MODE"].SetDefault(0);  // wave function mode
+  s["PG_MODE"].SetDefault(0);  // print graph mode
+  s["VL_MODE"].SetDefault(0);  // vertex label mode
+  s["N_GPL"].SetDefault(3);    // graphs per line
+  s["THREADS"].SetDefault(0);  // number of threads
 }
 
 PHASIC::Process_Base *Comix::

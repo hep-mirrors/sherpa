@@ -1,7 +1,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -88,8 +88,9 @@ C3_14::C3_14(int nin,int nout,Flavour* fl,Integration_Info * const info)
   name = std::string("C3_14");
   rannum = 5;
   rans  = new double[rannum];
-  m_amct  = 1.0+Default_Reader().Get("AMEGIC_CHANNEL_EPSILON", 0.0);
-  m_alpha = Default_Reader().Get("AMEGIC_SCHANNEL_ALPHA", 0.75);
+  Settings& s = Settings::GetMainSettings();
+  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
+  m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kI_2_4.Assign(std::string("I_2_4"),2,0,info);

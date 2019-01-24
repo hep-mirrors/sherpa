@@ -70,18 +70,21 @@ Primitive_Observable_Base *xQ2_Analysis::Copy() const
 }
 
 DECLARE_ND_GETTER(xQ2_Analysis,"xQ2",
-		  Primitive_Observable_Base,Argument_Matrix,true);
+		  Primitive_Observable_Base,Analysis_Key,true);
 
 Primitive_Observable_Base *ATOOLS::Getter
-<Primitive_Observable_Base,Argument_Matrix,xQ2_Analysis>::
-operator()(const Argument_Matrix &parameters) const
+<Primitive_Observable_Base,Analysis_Key,xQ2_Analysis>::
+operator()(const Analysis_Key& key) const
 {
-  if (parameters.size()==0 || parameters[0].size()<1) return NULL;
-  return new xQ2_Analysis(parameters[0][0]);
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto listname = s.Get<std::string>();
+  if (listname.empty())
+    THROW(missing_input, "Missing list.");
+  return new xQ2_Analysis(listname);
 }
 
 void ATOOLS::Getter
-<Primitive_Observable_Base,Argument_Matrix,xQ2_Analysis>::
+<Primitive_Observable_Base,Analysis_Key,xQ2_Analysis>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"list";

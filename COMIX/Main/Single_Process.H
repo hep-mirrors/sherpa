@@ -15,6 +15,7 @@ namespace COMIX {
 
   class Single_Process: 
     public PHASIC::Single_Process, public Process_Base {
+
   protected:
 
     Amplitude      *p_bg;

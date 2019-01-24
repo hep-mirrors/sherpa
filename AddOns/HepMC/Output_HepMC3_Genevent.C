@@ -1,6 +1,5 @@
 #include "AddOns/HepMC/Output_HepMC3_Genevent.H"
 #include "HepMC/GenEvent.h"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -27,8 +26,9 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepmc3g";
-  m_iotype=args.p_reader->GetValue<int>("HEPMC3_IO_TYPE",0);
-  
+  m_iotype
+    = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
+
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
@@ -43,6 +43,8 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
                 case 1:
                     p_writer=new HepMC::WriterHEPEVT(m_basename);
                     break;
+                case 2:
+                    THROW(not_implemented, "Asked for HEPMC3_IO_TYPE, which is not yet implemented.");
                 case 3:
 #ifdef USING__HEPMC3__WRITERROOT
                     p_writer=new HepMC::WriterRoot(m_basename);
@@ -58,7 +60,7 @@ Output_HepMC3_Genevent::Output_HepMC3_Genevent(const Output_Arguments &args) :
 #endif
                     break;
                 default:
-                    THROW(fatal_error, "Output format HEPMC3_IO_TYPE= is undefined.");
+                    THROW(fatal_error, "Output format HEPMC3_IO_TYPE is undefined.");
                     break;
                 }
 }

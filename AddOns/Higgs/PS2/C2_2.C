@@ -1,6 +1,6 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -11,7 +11,7 @@ namespace PHASIC {
   class C2_2 : public Single_Channel {
     Info_Key m_kI_2_3,m_kZR25_125;
     Vegas* p_vegas;
-    int m_onshell;
+    bool m_onshell;
   public:
     C2_2(int,int,Flavour*,Integration_Info * const);
     ~C2_2();
@@ -71,8 +71,7 @@ C2_2::C2_2(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);
   m_kZR25_125.Assign(std::string("ZR25_125"),2,0,info);
   p_vegas = new Vegas(rannum,100,name);
-  Default_Reader reader;
-  m_onshell = reader.Get<int>("HIGGS_ON_SHELL", 0);
+  m_onshell = Settings::GetMainSettings()["HIGGS_ON_SHELL"].Get<bool>();
 }
 
 C2_2::~C2_2()

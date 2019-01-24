@@ -1,6 +1,9 @@
 @node Calculation of inclusive cross sections
 @subsection Calculation of inclusive cross sections
 
+Note that this example is not yet updated to the new YAML input format.
+Contact the @ref{Authors} for more information.
+
 @example
 @smallformat
 @verbatiminclude Examples/Soft_QCD/Run.Xsecs.dat

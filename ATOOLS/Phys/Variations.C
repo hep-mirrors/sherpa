@@ -6,8 +6,8 @@
 
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -15,9 +15,6 @@
 #if defined USING__LHAPDF && defined USING__LHAPDF6
 #include "LHAPDF/LHAPDF.h"
 #endif
-
-using namespace ATOOLS;
-using namespace SHERPA;
 
 namespace ATOOLS {
   struct ScaleFactor_Pair: public std::pair<double, double> {
@@ -27,14 +24,14 @@ namespace ATOOLS {
   };
 }
 
-bool Variations::NeedsLHAPDF6Interface(std::string inputpath)
+using namespace ATOOLS;
+using namespace SHERPA;
+
+bool Variations::NeedsLHAPDF6Interface()
 {
-  // set up data reader
-  Default_Reader reader;
-  reader.SetInputPath(inputpath);
   // go through all parameters and return true if any non-double points to a
   // request for a PDF set/member
-  std::vector<std::string> args = VariationArguments(&reader);
+  std::vector<std::string> args = VariationArguments();
   if (args.empty()) {
     return false;
   }
@@ -82,14 +79,12 @@ void Variations::CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *bea
   }
 }
 
-Variations::Variations(Default_Reader * const reader):
-  m_includecentralvaluevariation(reader->Get<int>("VARIATIONS_INCLUDE_CV", 1)),
-  m_reweightsplittingalphasscales(reader->Get<int>("REWEIGHT_SPLITTING_ALPHAS_SCALES", 0)),
-  m_reweightsplittingpdfsscales(reader->Get<int>("REWEIGHT_SPLITTING_PDF_SCALES", 0))
+Variations::Variations()
 {
+  ReadDefaults();
 #if defined USING__LHAPDF && defined USING__LHAPDF6
   int lhapdfverbosity(0);
-  const bool needslhapdf(NeedsLHAPDF6Interface(reader->InputPath()));
+  const bool needslhapdf(NeedsLHAPDF6Interface());
   if (needslhapdf) {
     if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
       THROW(fatal_error, "LHAPDF interface is not initialised.");
@@ -99,7 +94,7 @@ Variations::Variations(Default_Reader * const reader):
   }
 #endif
 
-  InitialiseParametersVector(reader);
+  InitialiseParametersVector();
 
   if (!m_parameters_vector.empty()) {
     rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
@@ -120,6 +115,18 @@ Variations::~Variations()
        ++it) {
     delete *it;
   }
+}
+
+
+void Variations::ReadDefaults()
+{
+  Settings& s = Settings::GetMainSettings();
+  m_includecentralvaluevariation =
+    s["VARIATIONS_INCLUDE_CV"].SetDefault(true).Get<bool>();
+  m_reweightsplittingalphasscales =
+    s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(false).Get<bool>();
+  m_reweightsplittingpdfsscales =
+    s["REWEIGHT_SPLITTING_PDF_SCALES"].SetDefault(false).Get<bool>();
 }
 
 
@@ -179,9 +186,9 @@ void Variations::PrintStatistics(std::ostream &str)
 }
 
 
-void Variations::InitialiseParametersVector(Default_Reader * const reader)
+void Variations::InitialiseParametersVector()
 {
-  std::vector<std::string> args = VariationArguments(reader);
+  std::vector<std::string> args = VariationArguments();
   for (std::vector<std::string>::const_iterator it(args.begin());
       it != args.end(); ++it) {
     std::vector<std::string> params(VariationArgumentParameters(*it));
@@ -190,10 +197,10 @@ void Variations::InitialiseParametersVector(Default_Reader * const reader)
 }
 
 
-std::vector<std::string> Variations::VariationArguments(Default_Reader * const reader)
+std::vector<std::string> Variations::VariationArguments()
 {
-  std::vector<std::string> args;
-  reader->ReadStringVectorNormalisingNoneLikeValues(args, "VARIATIONS");
+  Settings& s = Settings::GetMainSettings();
+  auto args = s["VARIATIONS"].GetVector<std::string>();
   args.erase(std::remove(args.begin(), args.end(), "None"), args.end());
   return args;
 }
@@ -201,11 +208,7 @@ std::vector<std::string> Variations::VariationArguments(Default_Reader * const r
 
 std::vector<std::string> Variations::VariationArgumentParameters(std::string arg)
 {
-  Data_Reader linereader(",",";","#","");
-  linereader.SetString(arg);
-  std::vector<std::string> params;
-  linereader.StringVectorFromStringNormalisingNoneLikeValues(params);
-  return params;
+  return ToVector<std::string>(arg, ',');
 }
 
 
@@ -222,7 +225,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams)
       it != stringparams.end(); it++) {
 
     if ((*it).empty()) continue;
-    
+
     std::string stringparam(*it);
 
     // check and remove openening/closing brackets
@@ -279,8 +282,10 @@ void Variations::AddParameters(std::vector<std::string> stringparams)
   // translate PDF string parameter into actual AlphaS and PDF objects
   std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
   if (!pdfstringparams.empty()) {
-    if (Default_Reader().Get<int>("OVERRIDE_PDF_INFO",0)==1) {
-      THROW(fatal_error, "OVERRIDE_PDF_INFO=1 is incompatible with doing PDF/AlphaS variations.");
+    Settings& s = Settings::GetMainSettings();
+    if (s["OVERRIDE_PDF_INFO"].Get<bool>()) {
+      THROW(fatal_error,
+            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS variations.");
     }
     pdfsandalphasvector = PDFsAndAlphaSVector(pdfstringparams[0], expandpdf);
   }
@@ -452,14 +457,14 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
 }
 
 
-Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(std::string pdfname, size_t pdfmember)
+Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
+    std::string pdfname, int pdfmember)
 {
-  Default_Reader reader;
   // obtain PDFs
   PDF::PDF_Base *aspdf(NULL);
   for (int i(0); i < 2; ++i) {
     if (rpa->gen.Bunch(i).IsHadron()) {
-      PDF::PDF_Arguments args(rpa->gen.Bunch(i), &reader, i, pdfname, pdfmember);
+      PDF::PDF_Arguments args{ rpa->gen.Bunch(i), i, pdfname, pdfmember };
       PDF::PDF_Base *pdf = PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname, args);
       if (pdf == NULL) THROW(fatal_error, "PDF set " + pdfname + " not available.");
       pdf->SetBounds();
@@ -528,9 +533,9 @@ void ReweightingFactorHistogram::Fill(std::string name, double value)
 
 void ReweightingFactorHistogram::Write(std::string filenameaffix)
 {
+  Settings& s = Settings::GetMainSettings();
   // open file
-  Default_Reader reader;
-  std::string outpath = reader.Get<std::string>("ANALYSIS_OUTPUT","Analysis/");
+  std::string outpath = s.Get<std::string>("ANALYSIS_OUTPUT");
   if (outpath.length() > 0) {
     size_t slashpos = outpath.rfind("/");
     if (slashpos != std::string::npos) {
@@ -746,8 +751,8 @@ void Variation_Weights::CombineSubeventWeights()
                        + " more than one variation type is stored.");
   auto& weights = m_weights.begin()->second;  // select the only type
   for (auto& subeventweights : weights) {
-    const double combinedweight{
-      std::accumulate(subeventweights.begin(), subeventweights.end(), 0.0) };
+    const auto combinedweight =
+      std::accumulate(subeventweights.begin(), subeventweights.end(), 0.0);
     subeventweights.clear();
     subeventweights.push_back(combinedweight);
   }

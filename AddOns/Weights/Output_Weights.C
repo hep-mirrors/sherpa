@@ -7,12 +7,12 @@
 #endif
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -33,7 +33,7 @@ namespace SHERPA {
   public:
 
     Output_Weights(const Output_Arguments &args):
-      Output_Base("Weights")
+      Output_Base{ "Weights" }
     {
       MyStrStream basename;
       basename << args.m_outpath << "/" << args.m_outfile;
@@ -50,7 +50,8 @@ namespace SHERPA {
       m_outstream.open((m_basename+m_ext).c_str());
       if (!m_outstream.good())
 	THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-      int precision = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+      const int precision =
+        Settings::GetMainSettings()["OUTPUT_PRECISION"].Get<int>();
       m_outstream.precision(precision);
     }
 

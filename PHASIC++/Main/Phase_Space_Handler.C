@@ -20,9 +20,9 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace PHASIC;
@@ -43,23 +43,22 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
   m_printpspoint(false)
 {
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_thkill=reader.Get<double>("IB_THRESHOLD_KILL",-1.0e12);
-  m_error    = reader.Get<double>("INTEGRATION_ERROR", reader.Get<double>("ERROR", 0.01));
-  m_abserror    = reader.Get<double>("ABS_ERROR",0.0);
-  m_maxtrials = reader.Get<int>("MAX_TRIALS",1000000);
-  m_fin_opt = reader.Get<int>("FINISH_OPTIMIZATION", 1);
-  m_enhancexs = reader.Get<int>("ENHANCE_XS",0);
-  m_printpspoint = reader.Get<int>("PRINT_PS_POINTS",0); 
+  RegisterDefaults();
+  Settings& s = Settings::GetMainSettings();
+  m_thkill = s["IB_THRESHOLD_KILL"].Get<double>();
+  m_error = s["INTEGRATION_ERROR"].Get<double>();
+  m_abserror = s["ABS_ERROR"].Get<double>();
+  m_maxtrials = s["MAX_TRIALS"].Get<int>();
+  m_fin_opt = s["FINISH_OPTIMIZATION"].Get<bool>();
+  m_enhancexs = s["ENHANCE_XS"].Get<int>();
+  m_printpspoint = s["PRINT_PS_POINTS"].Get<int>();
   if (error>0.) {
     m_error   = error;
   }
   m_killedpoints=0;
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
-  double minalpha = reader.Get<double>("INT_MINALPHA",0.0);
+  const double minalpha{ s["INT_MINALPHA"].Get<double>() };
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
@@ -102,6 +101,26 @@ Phase_Space_Handler::~Phase_Space_Handler()
   delete p_integrator;
 }
 
+void Phase_Space_Handler::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["IB_THRESHOLD_KILL"].SetDefault(-1.0e12);
+  s["ERROR"].SetDefault(0.01);
+  const double error{ s["ERROR"].Get<double>() };
+  s["INTEGRATION_ERROR"].SetDefault(error);
+  s["ABS_ERROR"].SetDefault(0.0);
+  s["MAX_TRIALS"].SetDefault(1000000);
+  s["FINISH_OPTIMIZATION"].SetDefault(true);
+  s["ENHANCE_XS"].SetDefault(0);
+  s["PRINT_PS_POINTS"].SetDefault(0);
+  s["INT_MINALPHA"].SetDefault(0.0);
+  s["PS_PT_FILE"].SetDefault("");
+  s["TCHANNEL_ALPHA"].SetDefault(0.9);
+  s["SCHANNEL_ALPHA"].SetDefault(0.75);
+  s["CHANNEL_EPSILON"].SetDefault(0.0);
+  s["THRESHOLD_EPSILON"].SetDefault(1.5);
+}
+
 void Phase_Space_Handler::InitCuts() 
 {
   if (p_cuts!=NULL) delete p_cuts;
@@ -129,13 +148,10 @@ bool Phase_Space_Handler::InitIncoming()
 
 void Phase_Space_Handler::CheckSinglePoint()
 {
-  Data_Reader read(" ",";","#","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
-  std::string file=read.GetValue<std::string>("PS_PT_FILE","");
+  Settings& s = Settings::GetMainSettings();
+  const std::string file{ s["PS_PT_FILE"].Get<std::string>() };
   if (file!="") {
     Data_Reader read_mom(" ",";","#","=");
-    read_mom.SetAddCommandLine(false);
     read_mom.SetInputFile(file);
     read_mom.AddIgnore("Vec4D");
     read_mom.RereadInFile();
@@ -785,7 +801,6 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
                                            "enhancehisto_current");
   }
   Data_Reader reader;
-  reader.SetAddCommandLine(false);
   reader.SetInputPath(pID+"/");
   reader.SetInputFile("Statistics.dat");
   std::vector<std::vector<double> > stats;

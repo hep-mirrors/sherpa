@@ -51,7 +51,8 @@ namespace ANALYSIS {
   class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
 
-    int                    m_mode, m_varid, m_nvar, m_usedb;
+    int                    m_mode, m_varid, m_nvar;
+    bool                   m_usedb;
     long                   m_nevt;
     std::string            m_name, m_maxjettag;
 
@@ -135,7 +136,7 @@ namespace ANALYSIS {
 
     inline const int &VarId() const { return m_varid; }
 
-    inline void SetUseDB(const int &usedb) { m_usedb=usedb; }
+    inline void SetUseDB(const bool &usedb) { m_usedb=usedb; }
 
     inline const ATOOLS::Blob_List *GetBlobList() { return p_blobs; }
 

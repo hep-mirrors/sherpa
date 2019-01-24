@@ -20,8 +20,9 @@ available in two formats:
 Events generated in a LO, LOPS, NLO, NLOPS, MEPS@@LO, MEPS@@NLO or MENLOPS
 calculation can be written out in the HepMC format including all infomation to
 carry out arbitrary scale variations a posteriori. For this feature HepMC of at
-least version 2.06 is necessary and both @code{HEPMC_USE_NAMED_WEIGHTS=1} and 
-@code{HEPMC_EXTENDED_WEIGHTS=1} have to enabled. Detailed instructions on 
+least version 2.06 is necessary and both @code{HEPMC_USE_NAMED_WEIGHTS: true}
+and @code{HEPMC_EXTENDED_WEIGHTS: true} have to enabled. Detailed instructions
+on
 how to use this information to construct the new event weight can be found 
 here @url{https://sherpa.hepforge.org/doc/ScaleVariations-Sherpa-2.2.0.pdf}. 
 
@@ -152,8 +153,7 @@ This may be undesirable, especially when the loop provider splits up
 the calculation of the virtual correction into several pieces, like
 leading and sub-leading color. In this case the loop provider should 
 control the scale dependence coefficients, which can be enforced with
-option @option{USR_WGT_MODE=0;} in the @code{(run)} section of Sherpa's
-input file. 
+option @option{USR_WGT_MODE: false}.
 
 @strong{The loop provider must support this option
   or the scale dependence coefficients will be invalid!}

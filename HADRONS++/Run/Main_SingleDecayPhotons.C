@@ -10,7 +10,6 @@ has to be started with the following specialities:
 #include "HADRONS++/Run/Main.H"
 #include "Shell_Tools.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PHOTONS++/Main/Photons.H"
 
 static Flavour mother_flav;
@@ -35,13 +34,9 @@ void InitialiseGenerator(int argc, char *argv[])
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
 
-  hadrons = new SHERPA::Hadron_Decay_Handler(".", "Fragmentation.dat");
+  hadrons = new SHERPA::Hadron_Decay_Handler();
 
-  Data_Reader * reader = new Data_Reader(" ",";","!","=");
-  reader->AddWordSeparator("\t");
-  reader->SetInputPath("./");
-  reader->SetInputFile("YFS.dat");
-  photons = new PHOTONS::Photons(reader);
+  photons = new PHOTONS::Photons();
 
   mother_flav = Flavour( (kf_code) abs(ToType<int>(argv[1])) );
   mother_flav.SetStable(false);

@@ -3,19 +3,20 @@
 
 #include "AMEGIC++/Main/Process_Group.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace AMEGIC {
 
-  class Amegic: public Process_Group,
-		public PHASIC::ME_Generator_Base {
-  private :
+  class Amegic: public Process_Group, public PHASIC::ME_Generator_Base {
 
-    std::string  m_path, m_file;
+  private :
 
     MODEL::Model_Base *p_mmodel;
     Amegic_Model      *p_amodel;
 
     std::vector<PHASIC::Process_Base*> m_rsprocs;
+
+    void RegisterDefaults() const;
 
     void DrawLogo(std::ostream &ostr);
 
@@ -28,8 +29,7 @@ namespace AMEGIC {
     ~Amegic();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beamhandler,
 		    PDF::ISR_Handler *const isrhandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
@@ -50,7 +50,6 @@ namespace AMEGIC {
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -74,7 +73,8 @@ void Amegic::DrawLogo(std::ostream &ostr)
 }
 
 Amegic::Amegic():
-  ME_Generator_Base("Amegic"), p_mmodel(NULL), p_amodel(NULL)
+  ME_Generator_Base("Amegic"),
+  p_mmodel(NULL), p_amodel(NULL)
 {
   DrawLogo(msg->Info());
   p_testmoms=NULL;
@@ -86,215 +86,56 @@ Amegic::~Amegic()
   delete p_amodel;
 }
 
-bool Amegic::Initialize(const std::string &path,const std::string &file,
-			MODEL::Model_Base *const model,
+bool Amegic::Initialize(MODEL::Model_Base *const model,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
-  m_path=path;
-  m_file=file;
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model) &&
-      !reader.Get<int>("AMEGIC_ALLOW_UFO", 0))
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings amegicsettings{ s["AMEGIC"] };
+  RegisterDefaults();
+
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)
+      && !amegicsettings["ALLOW_UFO"].Get<int>()) {
     THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");
+  }
+
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
-  SetPSMasses(&reader);
+  SetPSMasses();
 
+  AMEGIC::Process_Base::SetGauge(amegicsettings["DEFAULT_GAUGE"].Get<int>());
 
-  double helpd; int helpi; std::string helps;
-  size_t helpt; cs_itype::type helpcsit; sbt::subtype helpst;
-  std::vector<int> helpvi;
+  s_partcommit = amegicsettings["PARTIAL_COMMIT"].Get<int>();
 
-  // N_color
-  helpd = reader.Get("N_COLOR", 3.0,
-                     "number of colours", METHOD);
-  rpa->gen.SetVariable("N_COLOR", ToString(helpd));
-
-  // dipole alpha, kappa, kt2 and gsplit
-  helpd = reader.Get("DIPOLE_AMIN", Max(rpa->gen.Accu(),1.0e-8),
-                     "dipole \\alpha_{cut}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_AMIN", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA", 1.0,
-                     "dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_FF",
-                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
-                     "FF dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FF", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_FI",
-                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
-                     "FI dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_FI", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_IF",
-                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
-                     "IF dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_IF", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_ALPHA_II",
-                     ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA")),
-                     "II dipole \\alpha_{max}", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ALPHA_II", ToString(helpd));
-
-  helpd = reader.Get("DIPOLE_KAPPA", 2./3.,
-                     "dipole \\kappa", METHOD);
-  rpa->gen.SetVariable("DIPOLE_KAPPA", ToString(helpd));
-
-  helpt = reader.Get("DIPOLE_NF_GSPLIT", Flavour(kf_jet).Size()/2,
-                      "dipole N_f", METHOD);
-  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT", ToString(helpt));
-
-  helpd = reader.Get("DIPOLE_KT2MAX", sqr(rpa->gen.Ecms()),
-                     "dipole \\k_{T,max}^2", METHOD);
-  rpa->gen.SetVariable("DIPOLE_KT2MAX", ToString(helpd));
-
-  // parameters in dipole construction
-  helpt = reader.Get("DIPOLE_COLLINEAR_VFF_SPLITTINGS", 1,
-                     "collinear VFF splittings", METHOD);
-  rpa->gen.SetVariable("DIPOLE_COLLINEAR_VFF_SPLITTINGS",ToString(helpt));
-
-  helpt = reader.Get("DIPOLE_V_SUBTRACTION_MODE", 1,
-                     "dipole V->VP subtraction mode", METHOD);
-  rpa->gen.SetVariable("DIPOLE_V_SUBTRACTION_MODE",ToString(helpt));
-
-  helpi = reader.Get("DIPOLE_PFF_IS_SPLIT_SCHEME", 1,
-                     "split scheme in IS P->FF splittings", METHOD);
-  rpa->gen.SetVariable("DIPOLE_PFF_IS_SPLIT_SCHEME",ToString(helpi));
-
-  helpi = reader.Get("DIPOLE_PFF_FS_SPLIT_SCHEME", 0,
-                     "split scheme in FS P->FF splittings", METHOD);
-  rpa->gen.SetVariable("DIPOLE_PFF_FS_SPLIT_SCHEME",ToString(helpi));
-
-  helpi = reader.Get("DIPOLE_PFF_IS_RECOIL_SCHEME", 0,
-                     "recoil scheme in IS P->FF splittings", METHOD);
-  rpa->gen.SetVariable("DIPOLE_PFF_IS_RECOIL_SCHEME",ToString(helpi));
-
-  helpi = reader.Get("DIPOLE_PFF_FS_RECOIL_SCHEME", 0,
-                     "recoil scheme in FS P->FF splittings", METHOD);
-  rpa->gen.SetVariable("DIPOLE_PFF_FS_RECOIL_SCHEME",ToString(helpi));
-
-  helpi = reader.Get("DIPOLE_IS_CLUSTER_TO_LEPTONS", 0,
-                     "cluster dipoles to leptons ", METHOD);
-  rpa->gen.SetVariable("DIPOLE_IS_CLUSTER_TO_LEPTONS",ToString(helpi));
-
-  helpi = reader.Get("LIST_DIPOLES", 0,
-                     "list dipoles", METHOD);
-  rpa->gen.SetVariable("LIST_DIPOLES", ToString(helpi));
-
-  // flavour restriction
-  helps = reader.Get("DIPOLE_BORN_FLAVOUR_RESTRICTIONS", std::string(""),
-                     "dipole underlying Born flavour restrictions", METHOD);
-  rpa->gen.SetVariable("DIPOLE_BORN_FLAVOUR_RESTRICTIONS",helps);
-
-  // nlo smearing parameters
-  helpd = reader.Get("NLO_SMEAR_THRESHOLD", 0.,
-                     "NLO smear threshold", METHOD);
-  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD", ToString(helpd));
-
-  helpd = reader.Get("NLO_SMEAR_POWER", 0.5,
-                     "NLO smear power", METHOD);
-  rpa->gen.SetVariable("NLO_SMEAR_POWER", ToString(helpd));
-
-  // on-shell subtraction parameters
-  helpi = reader.Get("DIPOLE_ONSHELL_SUBTRACTION", 0, "on-shell subtraction", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ONSHELL_SUBTRACTION",ToString(helpi));
-
-  helpd = reader.Get("DIPOLE_ONSHELL_SUBTRACTION_WINDOW", 5.0, "on-shell subtraction window", METHOD);
-  rpa->gen.SetVariable("DIPOLE_ONSHELL_SUBTRACTION_WINDOW",ToString(helpd));
-
-  // OLP checks
-  helpi = reader.Get("CHECK_BORN", 0,
-                     "check Born against OLP", METHOD);
-  rpa->gen.SetVariable("CHECK_BORN", ToString(helpi));
-
-  helpi = reader.Get("CHECK_POLES", 0,
-                     "check poles against OLP", METHOD);
-  rpa->gen.SetVariable("CHECK_POLES", ToString(helpi));
-
-  helpi = reader.Get("CHECK_FINITE", 0,
-                     "check finite parts against OLP", METHOD);
-  rpa->gen.SetVariable("CHECK_FINITE", ToString(helpi));
-
-  helpi = reader.Get("CHECK_THRESHOLD", 0.0,
-                     "threshold for checks", METHOD);
-  rpa->gen.SetVariable("CHECK_THRESHOLD", ToString(helpi));
-
-  // NLO options
-  helpi =  reader.Get("LOOP_ME_INIT", 0,
-                      "init the loop ME even when not needed", METHOD);
-  rpa->gen.SetVariable("LOOP_ME_INIT", ToString(helpi));
-
-  helpi = reader.Get("USR_WGT_MODE", 1,
-                     "fill weight components for reweighting", METHOD);
-  rpa->gen.SetVariable("USR_WGT_MODE", ToString(helpi));
-
-  helpi = reader.Get("NLO_MUR_COEFFICIENT_FROM_VIRTUAL", 1,
-                     "retrieve \\mu_R reweighting coefficients from OLP", METHOD);
-  rpa->gen.SetVariable("NLO_MUR_COEFFICIENT_FROM_VIRTUAL", ToString(helpi));
-
-  helpi = reader.Get("NLO_BVI_MODE", 0,
-                     "BVI mode", METHOD);
-  rpa->gen.SetVariable("NLO_BVI_MODE", ToString(helpi));
-
-  helpcsit = reader.Get("NLO_IMODE", ToType<cs_itype::type>("IKP"),
-                        "I-term component to calculate", METHOD);
-  rpa->gen.SetVariable("NLO_IMODE", ToString(helpcsit));
-
-  helpst = reader.Get("NLO_IPART", ToType<sbt::subtype>("QCD+QED"),
-                      "I-term part", METHOD);
-  rpa->gen.SetVariable("NLO_IPART", ToString(helpst));
-
-  helpi = reader.Get("NLO_EPS_MODE", 0,
-                     "prefactor mode", METHOD);
-  rpa->gen.SetVariable("NLO_EPS_MODE", ToString(helpi));
-
-  helpi = reader.Get("NLO_DR_MODE", 0,
-                     "use dim. reduction if not dictated by OLP", METHOD);
-  rpa->gen.SetVariable("NLO_DR_MODE", ToString(helpi));
-
-  // general Amegic parameters
-  helpi = reader.Get("AMEGIC_ALLOW_MAPPING", 1,
-                     "allow process mapping", METHOD);
-  rpa->gen.SetVariable("AMEGIC_ALLOW_MAPPING",ToString(helpi));
-
-  helpi = reader.Get("AMEGIC_CHECK_LOOP_MAP", 0,
-                     "check loop map", METHOD);
-  rpa->gen.SetVariable("AMEGIC_CHECK_LOOP_MAP",ToString(helpi));
-
-  helpi = reader.Get("AMEGIC_SORT_LOPROCESS", 1,
-                     "sort LO processes", METHOD);
-  rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(helpi));
-
-  helpi = reader.Get("AMEGIC_KEEP_ZERO_PROCS", 0,
-                     "keep zero processes", METHOD);
-  rpa->gen.Variable("AMEGIC_KEEP_ZERO_PROCS", ToString(helpi));
-
-  helpi = reader.Get("AMEGIC_ME_LIBCHECK", 0,
-                     "library check", METHOD);
-  rpa->gen.SetVariable("AMEGIC_ME_LIBCHECK",ToString(helpi));
-
-  helpi = reader.Get("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS", 1,
-                     "cut massive vector propagators", METHOD);
-  rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(helpi));
-
-  helpd = reader.Get("AMEGIC_DEFAULT_GAUGE", 1,
-                     "gauge", METHOD);
-  rpa->gen.SetVariable("AMEGIC_DEFAULT_GAUGE",ToString(helpd));
-
-  AMEGIC::Process_Base::SetGauge(ToType<double>(rpa->gen.Variable("AMEGIC_DEFAULT_GAUGE")));
-
-  s_partcommit = reader.Get("AMEGIC_PARTIAL_COMMIT", 0, "partial commit", METHOD);
   ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
+
   return true;
+}
+
+void Amegic::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["AMEGIC"] };
+  s["ALLOW_UFO"].SetDefault(false);
+  s["SORT_LOPROCESS"].SetDefault(true);
+  s["ME_LIBCHECK"].SetDefault(false);
+  s["CUT_MASSIVE_VECTOR_PROPAGATORS"].SetDefault(true);
+  s["DEFAULT_GAUGE"].SetDefault(1);
+  s["PARTIAL_COMMIT"].SetDefault(0);
+  s["ALLOW_MAPPING"].SetDefault(1);
+  s["CHECK_LOOP_MAP"].SetDefault(0);
+  s["KEEP_ZERO_PROCS"].SetDefault(0);
+  s["CHECK_BORN"].SetDefault(false);
+  s["CHECK_FINITE"].SetDefault(false);
+  s["CHECK_THRESHOLD"].SetDefault(0.0);
+  s["LOOP_ME_INIT"].SetDefault(false);
+  s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
+  s["NLO_BVI_MODE"].SetDefault(0);
+  s["NLO_IPART"].SetDefault("QCD+QED");
+  s["NLO_EPS_MODE"].SetDefault(0);
+  s["NLO_DR_MODE"].SetDefault(0);
 }
 
 PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,

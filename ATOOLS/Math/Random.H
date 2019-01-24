@@ -63,9 +63,9 @@ namespace ATOOLS {
 
     // destructor
     ~Random();
-    
+
     // member functions
-    bool InitExternal(const std::string &path,const std::string &file);
+    bool InitExternal();
     void SetSeed(long nid);  // seed for Rnd2()
     void SetSeed(unsigned int i1,unsigned int i2,
 		 unsigned int i3,unsigned int i4);

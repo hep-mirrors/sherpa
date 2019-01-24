@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -78,56 +77,47 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
   m_removeiso(false), m_removenoniso(false)
 {
   DEBUG_FUNC("");
-  for (size_t k=0;k<key.size();++k) {
-    if      (key[k].size()>1 && key[k][0]=="Isolation_Particles") {
-      int kfc(ToType<long int>(key[k][1]));
-      m_iflav=Flavour(abs(kfc),kfc<0);
-    }
-    else if (key[k].size()>1 && key[k][0]=="Rejection_Particles") {
-      int kfc(ToType<long int>(key[k][1]));
-      m_rejflav.push_back(Flavour(abs(kfc),kfc<0));
-    }
-    else if (key[k].size()>1 && key[k][0]=="Output_ID") {
-      m_outisokf = ToType<kf_code>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="Remove_Isolated") {
-      m_removeiso = ToType<size_t>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="Remove_Nonisolated") {
-      m_removenoniso = ToType<size_t>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="Isolation_Parameters") {
-      for (size_t i(1);i<key[k].size();++i) {
-        std::string ds(key[k][i]);
-        if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
-        std::string var(ds,0,ds.find(':'));
-        std::string val(ds,ds.find(':')+1);
-        if (!var.size() || !val.size()) THROW(fatal_error,"Input error.");
-        if      (var=="R")      m_dR=ToType<double>(val);
-        else if (var=="EMAX")   m_emax=ToType<double>(val);
-        else if (var=="EXP")    m_exp=ToType<double>(val);
-        else if (var=="PT")     m_ptmin=ToType<double>(val);
-        else if (var=="ET")     m_etmin=ToType<double>(val);
-        else if (var=="ETA")    m_etamin=-(m_etamax=ToType<double>(val));
-        else if (var=="ETAMIN") m_etamin=ToType<double>(val);
-        else if (var=="ETAMAX") m_etamax=ToType<double>(val);
-        else if (var=="Y")      m_ymin=-(m_ymax=ToType<double>(val));
-        else if (var=="YMIN")   m_ymin=ToType<double>(val);
-        else if (var=="YMAX")   m_ymax=ToType<double>(val);
-      }
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMin") {
-      m_nmin = ToType<int>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMax") {
-      m_nmax = ToType<int>(key[k][1]);
-    }
-    else {
-      msg_Debugging()<<"Read in subselectors."<<std::endl;
-      ReadInSubSelectors(key,k);
-      break;
-    }
-  }
+  Scoped_Settings s{ key.m_settings };
+
+  auto kfc = s["Isolation_Particles"].SetDefault(kf_none).Get<long int>();
+  m_iflav = Flavour(abs(kfc), kfc<0);
+
+  auto kfcs = s["Rejection_Particles"]
+    .SetDefault<long int>({})
+    .GetVector<long int>();
+  for (const auto rejkfc : kfcs)
+    if (rejkfc != kf_none)
+      m_rejflav.push_back(Flavour(abs(rejkfc), rejkfc<0));
+
+  m_outisokf = s["Output_ID"].SetDefault(kf_none).Get<kf_code>();
+
+  m_removeiso = s["Remove_Isolated"].SetDefault(false).Get<bool>();
+  m_removenoniso = s["Remove_Nonisolated"].SetDefault(false).Get<bool>();
+
+  auto isolation = s["Isolation_Parameters"];
+  m_dR = isolation["R"].SetDefault(0.0).Get<double>();
+  m_emax = isolation["EMAX"].SetDefault(0.0).Get<double>();
+  m_exp = isolation["EXP"].SetDefault(0.0).Get<double>();
+  m_ptmin = isolation["PT"].SetDefault(0.0).Get<double>();
+  m_etmin = isolation["ET"].SetDefault(0.0).Get<double>();
+  const auto eta = isolation["ETA"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_etamax = isolation["ETAMAX"].SetDefault(eta).Get<double>();
+  m_etamin = isolation["ETAMIN"].SetDefault(-eta).Get<double>();
+  const auto y = isolation["Y"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_ymax = isolation["YMAX"].SetDefault(y).Get<double>();
+  m_ymin = isolation["YMIN"].SetDefault(-y).Get<double>();
+
+  // jet numbers
+  m_nmin = s["NMin"].SetDefault(0).Get<size_t>();
+  m_nmax = s["NMax"]
+    .SetDefault(std::numeric_limits<size_t>::max())
+    .Get<size_t>();
+
+  ReadInSubSelectors(key);
 
   for (int i=m_nin;i<m_nin+m_nout;i++)
     if (m_iflav.Includes(p_fl[i])) m_on=true;
@@ -357,18 +347,26 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"Isolation_Selector {\n"
-     <<w<<"  Isolation_Particles <kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  Rejection_Particles <kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  [Rejection_Particles <kf2> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]]\n"
-     <<w<<"  [...]\n"
-     <<w<<"  Isolation_Parameters R:<dR> EMAX:<Emax> EXP:<exp> PT:<ptmin> [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  NMin <nmin>\n"
-     <<w<<"  [NMax <nmax>]\n"
-     <<w<<"  [Output_ID <kf>]\n"
-     <<w<<"  [Remove_Nonisolated <0|1>]\n"
-     <<w<<"  Selector 1\n"
-     <<w<<"  Selector 2\n"
-     <<w<<"}";
+  str<<"{\n"
+     <<w<<"  Type: Isolation_Selector,\n"
+     <<w<<"  Isolation_Particles: <kf1>,\n"
+     <<w<<"  Rejection_Particles [<kf1>, <kf2>, ...],\n"
+     <<w<<"  Isolation_Parameters: {\n"
+     <<w<<"    R: <dR>,\n"
+     <<w<<"    EMAX: <Emax>,\n"
+     <<w<<"    EXP: <exp>,\n"
+     <<w<<"    PT: <ptmin>,\n"
+     <<w<<"    # optional isolation parameters:\n"
+     <<w<<"    ETA: <etamax>,\n"
+     <<w<<"    Y: <ymax>\n"
+     <<w<<"    }\n"
+     <<w<<"  NMin: <nmin>,\n"
+     <<w<<"  # optional parameters:\n"
+     <<w<<"  NMax: <nmax>,\n"
+     <<w<<"  Output_ID: <kf>,\n"
+     <<w<<"  Remove_Isolated: true|false,\n"
+     <<w<<"  Remove_Nonisolated: true|false,\n"
+     <<w<<"  Subselectors: [...]\n"
+     <<w<<"  }";
 }
 

@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -21,7 +21,7 @@ using namespace ATOOLS;
 
 static int s_whbins(100);
 static int s_genresdir(0);
- 
+
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc),
   p_beamhandler(NULL), p_isrhandler(NULL),
@@ -42,17 +42,17 @@ bool Process_Integrator::Initialize
 (BEAM::Beam_Spectra_Handler *const beamhandler,
  PDF::ISR_Handler *const isrhandler)
 {
+  Settings& s = Settings::GetMainSettings();
   m_nin=p_proc->NIn();
   m_nout=p_proc->NOut();
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
-  m_swmode=ToType<int>(rpa->gen.Variable("SELECTION_WEIGHT_MODE"));
+  m_swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
   static bool minit(false);
   if (!minit) {
-    Default_Reader reader;
-    s_whbins = reader.Get("IB_WHBINS", 100, "weight histo bin number", METHOD);
-    s_genresdir = reader.Get("GENERATE_RESULT_DIRECTORY", 1);
+    // weight histo bin number
+    s_whbins = s["IB_WHBINS"].SetDefault(100).Get<int>();
     minit=true;
   }
   return true;

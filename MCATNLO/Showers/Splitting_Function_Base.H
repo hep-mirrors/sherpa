@@ -17,6 +17,8 @@ namespace MCATNLO {
   class Shower;
 
   class Splitting_Function_Base {
+  private:
+    void RegisterDefaults() const;
   protected:
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;

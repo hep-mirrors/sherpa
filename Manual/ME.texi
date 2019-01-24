@@ -1,31 +1,24 @@
 @node Matrix Elements
 @section Matrix elements
 
-The setup of matrix elements is covered by the `(me)' section of
-the steering file or the ME data file `ME.dat', respectively.
-There are no mandatory settings to be made.
-
-The following parameters are used to steer the matrix element setup.
+The following parameters are used to steer the matrix element setup:
 
 @menu
-* ME_SIGNAL_GENERATOR::     The matrix element generator(s).
+* ME_GENERATORS::           The matrix element generator(s).
 * RESULT_DIRECTORY::        The directory to store integration results.
 * EVENT_GENERATION_MODE::   The event generation mode.
 * SCALES::                  How to compute scales. 
-* COUPLING_SCHEME::         Running of SM gauge couplings.
 * COUPLINGS::               How to evaluate couplings.
 * KFACTOR::                 Whether and how to apply a K-factor.
 * YUKAWA_MASSES::           Running of Yukawa couplings.
 * Dipole subtraction::      Parameters for calculations with dipole subtraction.
 @end menu
 
-
-@node ME_SIGNAL_GENERATOR
-@subsection ME_SIGNAL_GENERATOR
-@cindex ME_SIGNAL_GENERATOR
+@node ME_GENERATORS
+@subsection ME_GENERATORS
+@cindex ME_GENERATORS
 The list of matrix element generators to be employed during the run.
-When setting up hard processes from the @option{(processes)} section of the 
-input file (see @ref{Processes}), Sherpa calls these generators in order
+When setting up hard processes, Sherpa calls these generators in order
 to check whether either one is capable of generating the corresponding
 matrix element. This parameter can also be set on the command line using
 option @option{-m}, see @ref{Command line}.
@@ -54,7 +47,7 @@ which is used by Sherpa to store integration results
 and phasespace mappings. The default is @samp{Results/}.
 It can also be set using the command line parameter @option{-r},
 see @ref{Command line}. The directory will be created automatically,
-unless the option @option{GENERATE_RESULT_DIRECTORY=0} is specified.
+unless the option @option{GENERATE_RESULT_DIRECTORY: false} is specified.
 Its location is relative to a potentially specified input path,
 see @ref{Command line}.
 
@@ -70,9 +63,9 @@ The three possible options are:
 
 @table @option
 @item Weighted
-(shortcut @option{W}) Weighted events.
+(alias @option{W}) Weighted events.
 @item Unweighted
-(shortcut @option{U})
+(alias @option{U})
 Events with constant weight, which have been unweighted
 against the maximum determined during phase space integration.
 In case of rare events with @code{w > max} the parton level event
@@ -82,7 +75,7 @@ the statistical impact of a high-weight event is not accounted for. In the
 extreme case this can lead to a high-weight event looking like a significant
 bump in distributions (in particular after the effects of the parton shower).
 @item PartiallyUnweighted
-(shortcut @option{P})
+(alias @option{P})
 Identical to @option{Unweighted} events, but if the weight exceeds the maximum
 determined during the phase space integration, the event will carry a weight
 of @code{w/max} to correct for that. This is the recommended option to
@@ -90,7 +83,7 @@ generate unweighted events and the default setting in Sherpa.
 @end table
 
 For @option{Unweighted} and @option{PartiallyUnweighted} events the user may
-set @option{OVERWEIGHT_THRESHOLD=<maxweight>} to cap the maximal over-weight
+set @option{OVERWEIGHT_THRESHOLD: <maxweight>} to cap the maximal over-weight
 @code{w/max} taken into account.
 
 @node SCALES
@@ -112,26 +105,26 @@ Sherpa provides several built-in scale setting schemes. For each scheme
 the scales are then set using expressions understood by the @ref{Interpreter}. 
 Each scale setter's syntax is 
 @verbatim
-SCALES <scale-setter>{<scale-definition>}
+SCALES: <scale-setter>{<scale-definition>}
 @end verbatim
 to define a single scale for both the factorisation and renormalisation scale. 
 They can be set to different values using
 @verbatim
-SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}
+SCALES: <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}
 @end verbatim
 
 In parton shower matched/merged calculations a third perturbative scale
 is present, the resummation or parton shower starting scale. It can be
 set by the user in the third argument like
 @verbatim
-SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}{<res-scale-definition>}
+SCALES: <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}{<res-scale-definition>}
 @end verbatim
 If the final state of your hard scattering process contains QCD partons,
 their kinematics fix the resummation scale for subsequent emissions
-(cf. the description of the @option{METS} scale setter below).  If
-instead you want to specify your own resummation scale also in such a
-case, you have to set @code{CSS_RESPECT_Q2=1} and use the third argument
-to specify your resummation scale as above.
+(cf. the description of the @option{METS} scale setter below).
+With the CS Shower, you can instead specify your own resummation scale also in
+such a case: Set @code{CSS_RESPECT_Q2: true} and use the third argument to
+specify your resummation scale as above.
 
 @b{Note: for all scales their squares have to be given.} See
 @ref{Predefined scale tags} for some predefined scale tags.
@@ -154,12 +147,12 @@ by the internal interpreter, see @ref{Interpreter}. If, for example the invarian
 mass of the lepton pair in Drell-Yan production is the desired scale,
 the corresponding setup reads
 @verbatim
-SCALES VAR{Abs2(p[2]+p[3])}
+SCALES: VAR{Abs2(p[2]+p[3])}
 @end verbatim
 Renormalization and factorization scales can be chosen differently.
 For example in Drell-Yan + jet production one could set
 @verbatim
-SCALES VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
+SCALES: VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 @end verbatim
 
 @item FASTJET
@@ -180,7 +173,7 @@ and the nodal values of the clustering sequence can be used through @code{MU_n2}
 The syntax is
 
 @verbatim
-SCALES FASTJET[<jet-algo-parameter>]{<scale-definition>}
+SCALES: FASTJET[<jet-algo-parameter>]{<scale-definition>}
 @end verbatim
 
 Therein the parameters of the jet algorithm to be used to define the jets 
@@ -217,7 +210,7 @@ Consider the example of lepton pair production in association with jets. The
 following scale setter 
 
 @verbatim
-SCALES FASTJET[A:kt,PT:10,R:0.4,M:0]{sqrt(PPerp2(p[4])*PPerp2(p[5]))}
+SCALES: FASTJET[A:kt,PT:10,R:0.4,M:0]{sqrt(PPerp2(p[4])*PPerp2(p[5]))}
 @end verbatim
 
 reconstructs jets using the kt-algorithm with R=0.4 and a minimum transverse 
@@ -228,7 +221,7 @@ Similarly, in processes with multiple strong couplings, their renormalisation
 scales can be set to different values, e.g.
 
 @verbatim
-SCALES FASTJET[A:kt,PT:10,R:0.4,M:1]{PPerp2(p[4])}{PPerp2(p[5])}
+SCALES: FASTJET[A:kt,PT:10,R:0.4,M:1]{PPerp2(p[4])}{PPerp2(p[5])}
 @end verbatim
 
 sets the scale of one strong coupling to the transverse momentum of the 
@@ -278,12 +271,12 @@ the final scale.
 for truncated shower merging, see @ref{Multijet merged event generation with Sherpa}, both at 
 leading and next-to-leading order. Thus, Sherpa's default is
 @verbatim
-SCALES METS{MU_F2}{MU_R2}{MU_Q2}
+SCALES: METS{MU_F2}{MU_R2}{MU_Q2}
 @end verbatim
 As the tags @code{MU_F2}, @code{MU_R2} and @code{MU_Q2} are predefined by 
 the @code{METS} scale setter, they may be omitted, i.e.
 @verbatim
-SCALES METS
+SCALES: METS
 @end verbatim
 leads to an identical scale definition.
 
@@ -430,7 +423,7 @@ The factorisation and renormalisation scales in the fixed-order matrix
 elements can be varied separately simply by introducing a prefactor into
 the scale definition, e.g.
 @verbatim
-SCALES VAR{0.25*H_T2}{0.25*H_T2}
+SCALES: VAR{0.25*H_T2}{0.25*H_T2}
 @end verbatim
 for setting both the renormalisation and factorisation scales to H_T/2.
 
@@ -438,7 +431,7 @@ Similarly, the starting scale of the parton shower resummation in a
 ME+PS merged sample can be varied using the METS scale setter's third
 argument like:
 @verbatim
-SCALES METS{MU_F2}{MU_R2}{4.0*MU_Q2}
+SCALES: METS{MU_F2}{MU_R2}{4.0*MU_Q2}
 @end verbatim
 
 
@@ -452,7 +445,7 @@ two subsequent branchings are unordered in terms of the parton shower
 evolution parameter. The core scale of the remaining 2->n process then 
 needs to be defined. This is done by specifying a core scale through
 @verbatim
-CORE_SCALE <core-scale-setter>{<core-fac-scale-definition>}{<core-ren-scale-definition>}{<core-res-scale-definition>}
+CORE_SCALE: <core-scale-setter>{<core-fac-scale-definition>}{<core-ren-scale-definition>}{<core-res-scale-definition>}
 @end verbatim
 As always, for scale setters which define @code{MU_F2}, @code{MU_R2} 
 and @code{MU_Q2} the scale definition can be dropped. Possible core 
@@ -473,17 +466,6 @@ If the W is in the t-channel (s-channel), the squared scales are set to the
 Mandelstam variables @code{t=2*p[0]*p[2]} (@code{t=2*p[0]*p[1]}).
 @end table
 
-@node COUPLING_SCHEME
-@subsection COUPLING_SCHEME
-@cindex COUPLING_SCHEME
-
-The parameter @code{COUPLING_SCHEME} is used to enable the running of the gauge couplings. The 
-default setting is @code{COUPLING_SCHEME=Running_alpha_S}, assuming only the strong coupling 
-as running. The QED coupling is considered running as well by setting 
-@code{COUPLING_SCHEME=Running}. To solely have a running QED coupling set  
-@code{COUPLING_SCHEME=Running_alpha_QED}. If not considered running the values specified by 
-@code{ALPHAS(default)} and @code{1/ALPHAQED(default)} are used, respectively. 
-
 @node COUPLINGS
 @subsection COUPLINGS
 @cindex COUPLINGS
@@ -492,8 +474,10 @@ specified by a scale setter (cf. @ref{SCALES}). The @option{COUPLINGS} tag
 links the argument of a running coupling to one of the respective scales. 
 This is better seen in an example. Assuming the following input
 @verbatim
-SCALES    VAR{...}{PPerp2(p[2])}{Abs2(p[2]+p[3])}
-COUPLINGS Alpha_QCD 1, Alpha_QED 2
+SCALES: VAR{...}{PPerp2(p[2])}{Abs2(p[2]+p[3])}
+COUPLINGS:
+- "Alpha_QCD 1"
+- "Alpha_QED 2"
 @end verbatim
 Sherpa will compute any strong couplings at scale one, i.e. @samp{PPerp2(p[2])} 
 and electroweak couplings at scale two, i.e. @samp{Abs2(p[2]+p[3])}.
@@ -507,7 +491,7 @@ process. This is equivalent to the @option{COUPLINGS} specification of Sherpa
 versions prior to 1.2.2. Currently available options are
 
 @table @option
-@item NO   
+@item None
 No reweighting
 @item VAR
 Couplings specified by an additional parameter in a form which is understood
@@ -519,9 +503,9 @@ one could think of evaluating two powers of the strong coupling at the Higgs mas
 and one power at the transverse momentum squared of the gluon.
 Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
 @verbatim
-SCALES    VAR{...}{PPerp2(p[3])}
-COUPLINGS Alpha_QCD 1
-KFACTOR   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
+SCALES:    VAR{...}{PPerp2(p[3])}
+COUPLINGS: "Alpha_QCD 1"
+KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
 @end verbatim
 As can be seen from this example, scales are referred to as @kbd{MU_<i>2},
 where @kbd{<i>} is replaced with the appropriate number. 
@@ -536,40 +520,50 @@ For advice on this topic please contact the authors, @ref{Authors}.
 @cindex YUKAWA_MASSES
 
 This parameter specifies whether the Yukawa couplings are evaluated using
-running or fixed quark masses: @code{YUKAWA_MASSES=Running} is the default since
-version 1.2.2 while @code{YUKAWA_MASSES=Fixed} was the default until 1.2.1.
+running or fixed quark masses: @code{YUKAWA_MASSES: Running} is the default since
+version 1.2.2 while @code{YUKAWA_MASSES: Fixed} was the default until 1.2.1.
 
 @node Dipole subtraction
 @subsection Dipole subtraction
-@cindex DIPOLE_ALPHA
-@cindex DIPOLE_KAPPA
-@cindex DIPOLE_NF_GSPLIT
-@cindex DIPOLE_AMIN
+@cindex DIPOLES_ALPHA
+@cindex DIPOLES_KAPPA
+@cindex DIPOLES_NF_GSPLIT
+@cindex DIPOLES_AMIN
 This list of parameters can be used to optimize the performance
 when employing the Catani-Seymour dipole subtraction 
 @mycite{Catani1996vz} as implemented in Amegic @mycite{Gleisberg2007md}.
+The dipole parameters are specified as subsettings to the @code{DIPOLES}
+setting, like this:
+@verbatim
+DIPOLES:
+  ALPHA: <alpha>
+  NF_GSPLIT: <nf>
+  # other dipole settings ...
+@end verbatim
+
+The following parameters can be customised:
 
 @table @option
-@item `DIPOLE_ALPHA' 
+@item `ALPHA'
 Specifies a dipole cutoff in the nonsingular region @mycite{Nagy2003tz}.
 Changing this parameter shifts contributions from the subtracted real 
 correction piece (RS) to the piece including integrated dipole terms (I), 
 while their sum remains constant. This parameter can be used to optimize
 the integration performance of the individual pieces. 
 Also the average calculation time for the subtracted real correction
-is reduced with smaller choices of `DIPOLE_ALPHA' due to the (on average)
+is reduced with smaller choices of `ALPHA' due to the (on average)
 reduced number of contributing dipole terms. For most processes
 a reasonable choice is between 0.01 and 1 (default). See also
-@ref{Choosing DIPOLE_ALPHA}
-@item `DIPOLE_AMIN'
+@ref{Choosing DIPOLES ALPHA}
+@item `AMIN'
 Specifies the cutoff of real correction terms in the infrared reagion
 to avoid numerical problems with the subtraction. The default is 1.e-8.
-@item `DIPOLE_NF_GSPLIT'
+@item `NF_GSPLIT'
 Specifies the number of quark flavours that are produced from 
 gluon splittings. This number must be at least the number of massless 
 flavours (default). If this number is larger than the number of massless
 quarks the massive dipole subtraction @mycite{Catani2002hc} is employed.
-@item `DIPOLE_KAPPA'
+@item `KAPPA'
 Specifies the kappa-parameter in the massive dipole subtraction formalism
-@mycite{Catani2002hc}.
+@mycite{Catani2002hc}. The default is 2.0/3.0.
 @end table

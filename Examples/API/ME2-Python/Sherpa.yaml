@@ -1,0 +1,7 @@
+EVENTS: 0
+SHERPA_LDADD: SherpaMain
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+PDF_LIBRARY: None
+PROCESSES:
+  - {Process: "11 -11 -> 93 93"}

@@ -8,7 +8,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -27,10 +27,8 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
       THROW(fatal_error,"No beam remnant handler found.");
     }
   }
-  Default_Reader read;
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
-  m_hardveto=read.GetValue<double>("MPI_PT_MAX",1.0e12);
+  Settings& s = Settings::GetMainSettings();
+  m_hardveto = s["MPI_PT_MAX"].SetDefault(1e12).Get<double>();
   ResetIS();
 }
 

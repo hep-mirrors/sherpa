@@ -1,0 +1,70 @@
+EVENTS: 1M
+ERROR: 0.1
+TAGS: {
+  LOOPGEN: OpenLoops,
+  FSF: 1.0,
+  RSF: 1.0,
+  QSF: 1.0,
+  NJET: 2,
+  QCUT: 30
+}
+SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2};
+ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
+EVENT_GENERATION_MODE: Weighted
+# define custom particle container for easy process declaration
+PARTICLE_CONTAINERS: {
+  901: {Name: lightflavs, Flavours: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+}
+NLO_CSS_DISALLOW_FLAVOUR: 5
+# particle properties (ME widths need to be zero if external)
+PARTICLE_DATA: {
+  23: {Width: 0},
+  25: {Mass: 125.5, Width: 0},
+  15: {Stable: 0, Massive: true}
+}
+# hard decays setup, specify allowed decay channels
+# h->Wenu, h->Wmunu, h->Wtaunu, W->enu, W->munu, W->taunu,
+# Z->ee, Z->mumu, Z->tautau, tau->any + cc
+HARD_DECAYS: {
+  Enabled: true,
+  Channels: {
+    "25 -> 24 -12 11": {Status: 2},
+    "25 -> 24 -14 13": {Status: 2},
+    "25 -> 24 -16 15": {Status: 2},
+    "25 -> -24 12 -11": {Status: 2},
+    "25 -> -24 14 -13": {Status: 2},
+    "25 -> -24 16 -15": {Status: 2},
+    "24 -> 12 -11": {Status: 2},
+    "24 -> 14 -13": {Status: 2},
+    "24 -> 16 -15": {Status: 2},
+    "-24 -> -12 11": {Status: 2},
+    "-24 -> -14 13": {Status: 2},
+    "-24 -> -16 15": {Status: 2},
+    "23 -> 15 -15": {Status: 2},
+    "15 -> 16 -12 11": {Status: 2},
+    "15 -> 16 -14 13": {Status: 2},
+    "-15 -> -16 12 -11": {Status: 2},
+    "-15 -> -16 14 -13": {Status: 2},
+    "15 -> 16 -2 1": {Status: 2},
+    "15 -> 16 -4 3": {Status: 2},
+    "-15 -> -16 2 -1": {Status: 2},
+    "-15 -> -16 4 -3": {Status: 2}
+  },
+  Decay_Tau: 1,
+  Apply_Branching_Ratios: 0
+}
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+PROCESSES:
+- {
+  Process: "901 901 -> 23 25 901{$(NJET)}",
+  Order: {QCD: Any, EW: 2},
+  CKKW: $(QCUT),
+  Loop_Generator: $(LOOPGEN),
+  2-3: {
+    NLO_QCD_Mode: MC@NLO,
+    ME_Generator: Amegic,
+    RS_ME_Generator: Comix
+    }
+}

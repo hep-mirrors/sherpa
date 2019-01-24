@@ -1,6 +1,9 @@
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include <stdio.h>
 
 using namespace AHADIC;

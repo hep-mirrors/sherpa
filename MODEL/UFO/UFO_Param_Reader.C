@@ -1,7 +1,8 @@
 #include "MODEL/UFO/UFO_Param_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <assert.h>
 #include <vector>
@@ -14,34 +15,36 @@ using std::string;
 using std::vector;
 using std::stringstream;
 using ATOOLS::ToType;
-using ATOOLS::Default_Reader;
+using ATOOLS::Data_Reader;
+using ATOOLS::Settings;
 using ATOOLS::rpa;
 
 UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
 {
-  // if filepath not explicitly given, use run card
-  m_use_runcard = (filepath=="");
-  string file_path = m_use_runcard ? rpa->gen.Variable("RUN_DATA_FILE") : filepath;
-  string filename(""), path("");
-  // split filepath into path and name
-  size_t pos(file_path.find_last_of("/"));
-  if (pos!=string::npos){
-    path=file_path.substr(0,pos+1);
-    filename=file_path.substr(pos+1);
-  }
-  else{
-    path=string("");
-    filename=file_path;
-  }
-  if (filename.find("|")!=string::npos) 
-      filename=filename.substr(0,filename.find("|"));
-  if(m_use_runcard) filename+="|(ufo){|}(ufo)";
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(filename);
+  // either read from UFO param card or from Settings
+  Data_Reader reader(" ", ";", "#", "=");
+  reader.AddWordSeparator("\t");
+  reader.AddLineSeparator("\n");
   reader.SetIgnoreCase(true);
-  reader.SetAddCommandLine(false);
-  reader.MatrixFromFile(m_lines);
+  if (filepath != "") {
+    string filename(""), path("");
+    size_t pos(filepath.find_last_of("/"));
+    if (pos!=string::npos){
+      path=filepath.substr(0,pos+1);
+      filename=filepath.substr(pos+1);
+    }
+    else{
+      path=string("");
+      filename=filepath;
+    }
+    reader.SetInputPath(path);
+    reader.SetInputFile(filename);
+    reader.MatrixFromFile(m_lines);
+  } else {
+    Settings& s = Settings::GetMainSettings();
+    reader.SetString(s["UFO_PARAMS"].SetDefault("").Get<std::string>(), true);
+    reader.MatrixFromString(m_lines);
+  }
 }
 
 template<class Read_Type> Read_Type 

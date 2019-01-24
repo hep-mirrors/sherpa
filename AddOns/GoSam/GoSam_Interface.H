@@ -17,6 +17,8 @@ namespace GoSam {
     static bool        s_exit_on_error;
     static bool        s_newlibs;
 
+    void RegisterDefaults() const;
+
   public :
     GoSam_Interface();
     ~GoSam_Interface();

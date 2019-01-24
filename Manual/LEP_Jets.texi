@@ -15,7 +15,7 @@ next-to-leading order accuracy.
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Run.dat
+@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -45,7 +45,7 @@ where the energy for the incoming leptons is fixed.
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat
+@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.NLO.yaml
 @end smallformat
 @end example
 
@@ -59,9 +59,7 @@ Things to notice:
 @item the b b-bar process is specified separately because the 
 @option{93} particle container contains only partons set massless in the matrix
 element calculation, see @ref{Particle containers}. 
-@item some model parameters have been set. In the 
-@code{(model)} section of the run-card, parameters relating
-to the model can be set. In this example, the value of alpha_s at the 
-Z mass is set.
+@item model parameters can be modified in the config file; in this example, the
+value of alpha_s at the Z mass is set.
 @end itemize
 

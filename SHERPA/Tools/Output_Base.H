@@ -3,20 +3,18 @@
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Getter_Function.H"
-#include <string>
 
-namespace ATOOLS { class Data_Reader; }
+#include <string>
 
 namespace SHERPA {
 
   struct Output_Arguments {
     std::string m_outpath, m_outfile;
-    ATOOLS::Data_Reader *p_reader;
     Output_Arguments(const std::string outpath,
-		     const std::string outfile,
-		     ATOOLS::Data_Reader *const read):
-      m_outpath(outpath), m_outfile(outfile), p_reader(read) {}
-  };// end of struct Output_Arguments
+		     const std::string outfile):
+      m_outpath(outpath), m_outfile(outfile)
+    {}
+  };
 
   class Event_Handler;
 

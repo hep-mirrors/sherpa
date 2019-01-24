@@ -4,6 +4,8 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
+#include <algorithm>
+
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;

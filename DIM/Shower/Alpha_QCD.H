@@ -8,10 +8,10 @@ namespace MODEL {
 }
 
 namespace DIM {
-  
+
   class Alpha_QCD: public Gauge {
   protected:
-    
+
     MODEL::Running_AlphaS *const &p_cpl;
 
     double m_fac, m_max;

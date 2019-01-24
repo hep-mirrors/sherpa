@@ -1,29 +1,23 @@
 #include "PHASIC++/Process/ME_Generators.H"
 
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
 
-ME_Generators::ME_Generators(const std::string &path,
-			     const std::string &file):
-  m_path(path), m_file(file)
+ME_Generators::ME_Generators()
 {
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process");
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  std::vector<std::string> megens;
-  if (!reader.ReadStringVectorNormalisingNoneLikeValues(megens,"ME_SIGNAL_GENERATOR")) {
-    megens.push_back("Comix");
-    megens.push_back("Amegic");
-    megens.push_back("Internal");
-  }
+  Settings& s = Settings::GetMainSettings();
+  std::vector<std::string> megens{ s["ME_GENERATORS"]
+    .SetDefault({"Comix", "Amegic", "Internal"})
+    .UseNoneReplacements()
+    .GetVector<std::string>() };
   for (size_t i(0);i<megens.size();++i) {
     if (megens[i]=="None") continue;
     push_back(ME_Generator_Getter::GetObject(megens[i],ME_Generator_Key()));
@@ -65,7 +59,7 @@ bool ME_Generators::LoadGenerator(const std::string &name)
     pop_back();
     return false;
   }
-  if (!back()->Initialize(m_path,m_file,p_model,p_beam,p_isr)) return false;
+  if (!back()->Initialize(p_model,p_beam,p_isr)) return false;
   back()->SetGenerators(this);
   return true;
 }
@@ -78,7 +72,7 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
   p_beam=beam;
   p_model=model;
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
-    if (!(*mit)->Initialize(m_path,m_file,model,beam,isr)) return false;
+    if (!(*mit)->Initialize(model,beam,isr)) return false;
     (*mit)->SetGenerators(this);
   }
   return true;

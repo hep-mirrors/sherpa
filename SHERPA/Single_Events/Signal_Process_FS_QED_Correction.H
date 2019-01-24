@@ -12,6 +12,7 @@ namespace ATOOLS {
   class Particle;
   typedef std::vector<Blob *> Blob_Vector;
   typedef std::vector<Particle* > Particle_Vector;
+  class Scoped_Settings;
 }
 
 namespace PHASIC {
@@ -35,6 +36,8 @@ namespace SHERPA {
     Soft_Photon_Handler     * p_sphotons;
     ATOOLS::NLO_subevtlist  * p_newsublist;
 
+    void RegisterDefaults(ATOOLS::Scoped_Settings&);
+
     bool            PutOnMassShell(const ATOOLS::Particle_Vector&);
     bool            ModifySubEvtList(ATOOLS::Blob *,
                                      const ATOOLS::Particle_Vector&,
@@ -44,7 +47,8 @@ namespace SHERPA {
   public :
 
     // constructor
-    Signal_Process_FS_QED_Correction(Matrix_Element_Handler *,Soft_Photon_Handler *);
+    Signal_Process_FS_QED_Correction(Matrix_Element_Handler*,
+                                     Soft_Photon_Handler*);
 
     // destructor
     ~Signal_Process_FS_QED_Correction();

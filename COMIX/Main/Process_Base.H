@@ -47,7 +47,7 @@ namespace COMIX {
   public:
 
     // constructors
-    Process_Base(PHASIC::Process_Base *const p_proc,
+    Process_Base(PHASIC::Process_Base *const,
 		 MODEL::Model_Base *const model=NULL);
 
     // destructor

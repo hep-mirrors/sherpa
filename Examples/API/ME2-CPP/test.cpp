@@ -12,10 +12,10 @@ int main(int argc,char* argv[])
 #ifdef USING__MPI
   MPI::Init(argc,argv);
 #endif
-  SHERPA::Sherpa *Generator(new SHERPA::Sherpa());
+  SHERPA::Sherpa *Generator(new SHERPA::Sherpa(argc, argv));
   // initialize the framework
   try {
-    Generator->InitializeTheRun(argc,argv);
+    Generator->InitializeTheRun();
 
     // create a MEProcess instance
     MEProcess Process(Generator);

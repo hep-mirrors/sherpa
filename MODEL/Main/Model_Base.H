@@ -9,7 +9,6 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include <map>
 
 namespace MODEL {
@@ -32,10 +31,10 @@ namespace MODEL {
   typedef std::map<std::string,ATOOLS::CMatrix>         ComplexMatricesMap; 
 
   struct Model_Arguments {
-    std::string m_path, m_file;
     bool m_elementary;
-    Model_Arguments(const std::string &path,const std::string &file,const bool &elementary):
-      m_path(path), m_file(file), m_elementary(elementary) {}
+    Model_Arguments(const bool &elementary):
+      m_elementary(elementary)
+    {}
   };// end of struct Model_Arguments
 
   class Model_Base {
@@ -46,11 +45,9 @@ namespace MODEL {
 
   protected:
 
-    std::string               m_dir,m_file;
     std::string               m_name;
     bool                      m_elementary;
 
-    ATOOLS::Default_Reader  * p_dataread;
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
     ComplexConstantsMap     * p_complexconstants;
@@ -74,13 +71,15 @@ namespace MODEL {
 
     virtual void ParticleInit() = 0;
     void ReadParticleData();
+    // Needs to be called by subclasses after initialising particle data
+    virtual void RegisterDefaults() const;
     void AddStandardContainers();
     void InitMEInfo();
 
     // to be called in ModelInit
     void SetAlphaQED(const double& aqed_def);
     void SetAlphaQEDByScale(const double& scale2);
-    void SetAlphaQEDByInput(const std::string& tag,const double& def);
+    void SetAlphaQEDByInput(const std::string& tag);
     void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
     void SetRunningFermionMasses();
 
@@ -88,7 +87,7 @@ namespace MODEL {
     void OutputCKM();
 
   public:
-    Model_Base(std::string,std::string,bool);
+    Model_Base(bool);
     virtual ~Model_Base();
 
     virtual bool ModelInit(const PDF::ISR_Handler_Map& isr) = 0;
@@ -130,6 +129,14 @@ namespace MODEL {
     inline VMIterator_Pair GetVertex(const std::string &key) const
     { return m_vmap.equal_range(key); }
 
+    /**
+     * Map Order keys to the internal ordering of the couplings
+     *
+     * The default implementation returns 0 for "QCD" and 1 for "EW".
+     * Overwrite this in subclasses if different/additional orders are used
+     * therein.
+     **/
+    virtual size_t IndexOfOrderKey(const std::string&) const;
   };
 
   extern Model_Base *s_model;

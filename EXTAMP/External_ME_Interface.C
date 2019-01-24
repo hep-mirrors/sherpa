@@ -24,8 +24,7 @@ namespace EXTAMP{
     PHASIC::ME_Generator_Base("External") {}
 
 
-  bool External_ME_Interface::Initialize(const std::string &path,const std::string &file,
-					 MODEL::Model_Base *const model,
+  bool External_ME_Interface::Initialize(MODEL::Model_Base *const model,
 					 BEAM::Beam_Spectra_Handler *const beam,
 					 PDF::ISR_Handler *const isr)
   {

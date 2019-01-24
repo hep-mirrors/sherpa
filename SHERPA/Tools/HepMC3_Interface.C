@@ -8,7 +8,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "SHERPA/Tools/Variations.H"
@@ -70,7 +69,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
         THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
               +std::string("HepMC without using named weights. ")
-              +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+              +std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
   }
 }
@@ -259,13 +258,13 @@ HepMC3_Interface::HepMC3_Interface() :
   m_usenamedweights(false), m_extendedweights(false),
   m_hepmctree(false), p_event(NULL)
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
+  Settings& s = Settings::GetMainSettings();
   //Case with true to be implemented
-  m_usenamedweights=reader.GetValue<int>("HEPMC3_USE_NAMED_WEIGHTS",false);
+  m_usenamedweights =
+    s["HEPMC3_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
   //Case with true to be implemented
-  m_extendedweights=reader.GetValue<int>("HEPMC3_EXTENDED_WEIGHTS",false);
+  m_extendedweights =
+    s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices, always true for HepMC3
   m_hepmctree=true;
 }
@@ -439,7 +438,7 @@ std::vector<HepMC::GenParticlePtr> beamparticles;
           THROW(fatal_error,"Events containing correlated subtraction events"
                 +std::string(" cannot be translated into the full HepMC event")
                 +std::string(" format.\n")
-                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
+                +std::string("   Try 'EVENT_OUTPUT: HepMC_Short' instead."));
         }
         //event.set_signal_process_vertex(vertex);
       }

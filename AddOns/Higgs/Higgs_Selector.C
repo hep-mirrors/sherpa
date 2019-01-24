@@ -33,7 +33,6 @@ namespace HIGGS {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace HIGGS;
 using namespace PHASIC;
@@ -112,22 +111,22 @@ DECLARE_ND_GETTER(Higgs_Selector,"HiggsFinder",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Higgs_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<5) THROW(critical_error,"Invalid syntax");
- 
-  double dr=0.0, epspt=1.0e12;
-  if (key.front().size()>6) {
-    dr=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][5]));
-    epspt=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][6]));
-  }
-
-  Higgs_Selector *jf
-    (new Higgs_Selector
-     (key.p_proc,
-      ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0])),
-      ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1])),
-      ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
-      ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-      ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4])),dr,epspt));
+  auto s = key.m_settings;
+  const auto pt1 = s["PT1"].SetDefault(0.0).Get<double>();
+  const auto pt2 = s["PT2"].SetDefault(0.0).Get<double>();
+  const auto eta = s["Eta"].SetDefault(0.0).Get<double>();
+  const auto mrange = s["MassRange"]
+    .SetDefault({0.0, std::numeric_limits<double>::max()})
+    .GetVector<double>();
+  if (mrange.size() != 2)
+    THROW(fatal_error, "Invalid syntax, MassRange needs two entries");
+  const auto dr = s["DR"].SetDefault(0.0).Get<double>();
+  const auto epspt = s["EpsPT"].SetDefault(1.0e12).Get<double>();
+  Higgs_Selector *jf(new Higgs_Selector(key.p_proc,
+                                        pt1, pt2,
+                                        eta,
+                                        mrange[0], mrange[1],
+                                        dr, epspt));
   jf->SetProcess(key.p_proc);
   return jf;
 }
@@ -135,5 +134,5 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,Higgs_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"HiggsFinder pt1 pt2 eta mmin mmax [dr epspt]";
+  str<<"{Type: HiggsFinder, PT1: pt1, PT2: pt2, Eta: eta, MassRange: [mmin, mmax], DR: dR, EpsPT: pt}";
 }

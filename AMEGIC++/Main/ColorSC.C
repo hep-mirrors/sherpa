@@ -1,6 +1,6 @@
 #include "AMEGIC++/Main/ColorSC.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
@@ -22,7 +22,8 @@ void ColorSC::Init()
 {
   if (init) return;
   init = true;
-  Nc = ToType<double>(rpa->gen.Variable("N_COLOR"));
+  Settings& s = Settings::GetMainSettings();
+  Nc = s["N_COLOR"].Get<double>();
   if (Nc!=3.) {
     msg_Out()<<"Set N_color="<<Nc<<"."<<std::endl;
     CF = 0.5*(Nc-1./Nc);

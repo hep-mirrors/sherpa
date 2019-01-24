@@ -21,7 +21,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
@@ -61,6 +61,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,const int mode)
 {
+  RegisterDefaults();
+  Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
@@ -114,13 +116,10 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 4, "H event shower mode", METHOD);
-  m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 14, "K-factor mode", METHOD);
-  m_fomode   = reader.Get("MC@NLO_FOMODE", 0, "fixed order mode", METHOD);
-  m_rsscale  = reader.Get<std::string>("MC@NLO_RS_SCALE", "", "RS scale", METHOD);
+  m_hpsmode  = s["HPSMODE"].Get<int>();
+  m_kfacmode = s["KFACTOR_MODE"].Get<int>();
+  m_fomode   = s["FOMODE"].Get<int>();
+  m_rsscale  = s["RS_SCALE"].Get<std::string>();
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -150,6 +149,15 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 
   for (size_t i(0);i<p_rsproc->Size();++i)
     (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
+}
+
+void MCatNLO_Process::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
+  s["HPSMODE"].SetDefault(8);  // H event shower mode
+  s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
+  s["FOMODE"].SetDefault(0);  // fixed order mode
+  s["RS_SCALE"].SetDefault("");  // RS scale
 }
 
 Process_Base* MCatNLO_Process::InitProcess

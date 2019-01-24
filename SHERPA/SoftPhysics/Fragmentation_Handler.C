@@ -1,10 +1,10 @@
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 #include "AHADIC++/Main/Ahadic.H"
 
@@ -14,34 +14,25 @@ using namespace std;
 using namespace AHADIC;
 #include "AHADIC++/Tools/Hadron_Init.H"
 
-Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file,
-					     string _shower):
-  m_dir(_dir), m_file(_file), m_mode(0),
-  p_ahadic(NULL)
+Fragmentation_Handler::Fragmentation_Handler(string _shower):
+  m_mode(0)
+  ,p_ahadic(NULL)
 #ifdef USING__PYTHIA
   ,p_lund(NULL)
 #endif
 {
-  Default_Reader reader;
-  reader.AddIgnore("[");
-  reader.AddIgnore("]");
-  reader.SetInputPath(m_dir);
-  reader.SetInputFile(m_file);
-  m_fragmentationmodel = reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION",
-								   string("Ahadic"));
-  m_shrink=reader.Get<int>("COMPRESS_PARTONIC_DECAYS",1);
-  m_flagpartonics=reader.Get<int>("FLAG_PARTONIC_DECAYS",1);
+  Settings& s = Settings::GetMainSettings();
+  m_fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
+  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
+  m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA
     THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
           string("enabled during compilation (./configure --enable-pythia)."));
 #else
-    m_sfile=reader.GetValue<string>("LUND_FILE",string("Lund.dat"));
-    Hadron_Init init;
-    init.Init();
-    init.OverWriteProperties(reader);
+    Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_lund = new Lund_Interface(m_dir,m_sfile);
+    p_lund = new Lund_Interface();
     m_mode=1;
     exh->AddTerminatorObject(this);
     // hack for particle initialization, because we don't want to replicate
@@ -50,12 +41,9 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file,
 #endif
   }
   else if (m_fragmentationmodel==string("Ahadic")) {
-    m_sfile=reader.Get<string>("AHADIC_FILE",m_file);
-    Hadron_Init init;
-    init.Init();
-    init.OverWriteProperties(reader);
+    Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile,_shower);
+    p_ahadic = new AHADIC::Ahadic(_shower);
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;
@@ -71,13 +59,6 @@ Fragmentation_Handler::~Fragmentation_Handler()
 #endif
   if (p_ahadic!=NULL) { delete p_ahadic; p_ahadic = NULL;   }
   exh->RemoveTerminatorObject(this);
-}
-
-void Fragmentation_Handler::PrepareTerminate() 
-{
-  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
-  if (path=="") return;
-  Copy(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }
 
 Return_Value::code 
@@ -101,7 +82,7 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 #ifdef USING__PYTHIA
   case 1  : 
     success = p_lund->Hadronize(bloblist);
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
+    if (m_shrink && success==Return_Value::Success) Shrink(bloblist);
     return success;
 #endif
   case 2  : 
@@ -110,7 +91,7 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 	success!=Return_Value::Nothing) {
       msg_Debugging()<<"Potential problem in "<<METHOD<<": "<<success<<".\n";
     }
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
+    if (m_shrink && success==Return_Value::Success) Shrink(bloblist);
     return success;
   default : 
     msg_Error()<<"ERROR in "<<METHOD<<":\n"
