@@ -412,7 +412,7 @@ bool Sudakov::Generate(Parton * split)
       static std::ofstream sudakovstr("sudakov");
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
-      if (accwgt < 1.0 && accwgt > 0.0 && lastscale < m_reweightscalecutoff) {
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
         Sudakov_Reweighting_Info info;
         info.accepted = veto;
         info.scale = lastscale;
@@ -519,6 +519,7 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
                          const bool &success)
 {
+  static std::ofstream showerstr("old_impl_rewfacs");
   // retrieve and validate acceptance weight and scale of the last emission
   const double accwgt(Selected()->LastAcceptanceWeight());
   std::string error;
@@ -596,6 +597,7 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
         if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
           varparams->IncrementOrInitialiseWarningCounter("large PDF reweighting factor");
         }
+        showerstr << pdfrewfactor << std::endl;
         accrewfactor *= pdfrewfactor;
       }
     }
