@@ -276,6 +276,7 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
   if (scale < 0.0) {
     m_lastJ = 1.0;
   } else {
+    //PRINT_VAR(m_flspec);
     const double scalea(scale), scaleb(scale);
     const double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
     const double old = p_sf->GetXPDF(scaleb,eta,m_flspec,m_beam);

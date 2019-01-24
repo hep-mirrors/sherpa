@@ -217,6 +217,7 @@ namespace CSSHOWER {
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
   public:
+    std::vector<double> debugfacs;
 
     Splitting_Function_Base();
     Splitting_Function_Base(const SF_Key &key);

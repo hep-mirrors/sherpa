@@ -603,6 +603,7 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
                         SHERPA::Variation_Weights* varweights,
                         double& kt2win)
 {
+  static std::ofstream showerstr("shower");
   double overallrewfactor(1.0);
   for (PLiter splitter = p_actual->begin(); splitter != p_actual->end(); splitter++) {
     Sudakov_Reweighting_Infos& infos = (*splitter)->SudakovReweightingInfos();
@@ -617,6 +618,7 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
       // PDF reweighting
       if (m_reweightpdfs) {
         const cstp::code type = it->sf->GetType();
+        //PRINT_VAR(type);
         if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
           // note that also the Jacobians depend on the Running_AlphaS class,
           // but only through the number of flavours, which should not vary
@@ -624,10 +626,11 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
           // AlphaS for the PDF reweighting
 
           // insert new PDF
-          const int beam(it->sf->Lorentz()->GetBeam());
-          PDF::PDF_Base * swappedpdf = it->sf->PDF()[beam];
-          it->sf->PDF()[beam]
-            = (beam == 0) ? varparams->p_pdf1 : varparams->p_pdf2;
+          const Flavour swappedflspec = it->sf->Lorentz()->FlSpec();
+          it->sf->Lorentz()->SetFlSpec(it->flspec);
+          PDF::PDF_Base** swappedpdf = it->sf->PDF();
+          PDF::PDF_Base* pdf[] = {varparams->p_pdf1, varparams->p_pdf2};
+          it->sf->SetPDF(pdf);
 
           // calculate new J
           const double lastJ(it->sf->Lorentz()->LastJ());
@@ -642,6 +645,9 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
                   it->z, it->y, it->x, varparams->m_showermuF2fac * it->scale);
               break;
             case cstp::FI:
+              //PRINT_VAR(it->y);
+              //PRINT_VAR(it->x);
+              //PRINT_VAR(it->scale);
               newJ = it->sf->Lorentz()->JFI(
                   it->y, it->x, varparams->m_showermuF2fac * it->scale);
               break;
@@ -651,8 +657,9 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
           }
 
           // clean up
-          it->sf->PDF()[beam] = swappedpdf;
+          it->sf->SetPDF(swappedpdf);
           it->sf->Lorentz()->SetLastJ(lastJ);
+          it->sf->Lorentz()->SetFlSpec(swappedflspec);
 
           // validate
           if (newJ == 0.0) {
@@ -663,6 +670,10 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
             if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
               varparams->IncrementOrInitialiseWarningCounter("large PDF reweighting factor");
             }
+            //PRINT_VAR(newJ);
+            //PRINT_VAR(it->lastj);
+            //PRINT_VAR(pdfrewfactor);
+            showerstr << pdfrewfactor << std::endl;
             accrewfactor *= pdfrewfactor;
           }
         }
@@ -681,6 +692,7 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
           if (alphasrewfactor < 0.5 || alphasrewfactor > 2.0) {
             varparams->IncrementOrInitialiseWarningCounter("large AlphaS reweighting factor");
           }
+          //PRINT_VAR(alphasrewfactor);
           accrewfactor *= alphasrewfactor;
         }
       }
@@ -700,6 +712,7 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
       overallrewfactor *= rewfactor;
     }
   }
+  //PRINT_VAR(overallrewfactor);
   return overallrewfactor;
 }
 

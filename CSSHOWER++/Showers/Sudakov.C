@@ -7,6 +7,8 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -407,6 +409,7 @@ bool Sudakov::Generate(Parton * split)
     const bool veto(Veto(Q2, m_x));
 
     if (m_keeprewinfo) {
+      static std::ofstream sudakovstr("sudakov");
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale < m_reweightscalecutoff) {
@@ -420,6 +423,73 @@ bool Sudakov::Generate(Parton * split)
         info.x = m_x;
         info.y = m_y;
         info.z = m_z;
+        info.flspec = Selected()->Lorentz()->FlSpec();
+        // TODO: test here if oldj = newj
+        /////////////////
+        const cstp::code type = Selected()->GetType();
+        //PRINT_VAR(type);
+        if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
+          // note that also the Jacobians depend on the Running_AlphaS class,
+          // but only through the number of flavours, which should not vary
+          // between AlphaS variations anyway; therefore we do not insert
+          // AlphaS for the PDF reweighting
+
+          PDF::PDF_Base** swappedpdf = Selected()->PDF();
+          static PDF::PDF_Base* pdf[] = {nullptr, nullptr};
+          if (pdf[0] == nullptr) {
+          for (int i=0; i<2; ++i) {
+            Data_Reader dataread(" ",";","!","=");
+            dataread.AddComment("#");
+            dataread.AddWordSeparator("\t");
+            dataread.SetInputPath(rpa->GetPath());
+            PDF::PDF_Arguments args(rpa->gen.Bunch(i), &dataread, i, "CT10nlo", 1);
+            PDF::PDF_Base *apdf = PDF::PDF_Base::PDF_Getter_Function::GetObject("CT10nlo", args);
+            if (apdf == NULL) THROW(fatal_error, "PDF set not available.");
+            apdf->SetBounds();
+            pdf[i] = apdf;
+          }
+          }
+          Selected()->SetPDF(pdf);
+
+
+          // calculate new J
+          const double lastJ(Selected()->Lorentz()->LastJ());
+          double newJ;
+          switch (type) {
+            case cstp::II:
+              newJ = Selected()->Lorentz()->JII(
+                  info.z, info.y, info.x, info.scale);
+              break;
+            case cstp::IF:
+              newJ = Selected()->Lorentz()->JIF(
+                  info.z, info.y, info.x, info.scale);
+              break;
+            case cstp::FI:
+              //PRINT_VAR(info.y);
+              //PRINT_VAR(info.x);
+              //PRINT_VAR(info.scale);
+              newJ = Selected()->Lorentz()->JFI(
+                  info.y, info.x, info.scale);
+              break;
+            case cstp::FF:
+            case cstp::none:
+              THROW(fatal_error, "Unexpected splitting configuration");
+          }
+
+          // clean up
+          Selected()->Lorentz()->SetLastJ(lastJ);
+          Selected()->SetPDF(swappedpdf);
+
+          if (newJ == 0.0) {
+          } else {
+            //PRINT_VAR(newJ);
+            //PRINT_VAR(info.lastj);
+            const double pdfrewfactor(newJ / info.lastj);
+            sudakovstr << pdfrewfactor << std::endl;
+            //PRINT_VAR(pdfrewfactor);
+          }
+        }
+        /////////////////
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }

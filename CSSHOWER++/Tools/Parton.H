@@ -28,6 +28,7 @@ namespace CSSHOWER {
     double lastcpl;
     Splitting_Function_Base* sf;
     double x, y, z;
+    ATOOLS::Flavour flspec;
   };
   typedef std::vector<Sudakov_Reweighting_Info> Sudakov_Reweighting_Infos;
 
