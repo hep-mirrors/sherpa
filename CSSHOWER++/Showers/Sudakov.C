@@ -409,7 +409,7 @@ bool Sudakov::Generate(Parton * split)
     const bool veto(Veto(Q2, m_x));
 
     if (m_keeprewinfo) {
-      static std::ofstream sudakovstr("sudakov");
+      //static std::ofstream sudakovstr("sudakov");
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
@@ -426,6 +426,7 @@ bool Sudakov::Generate(Parton * split)
         info.flspec = Selected()->Lorentz()->FlSpec();
         // TODO: test here if oldj = newj
         /////////////////
+#if false
         const cstp::code type = Selected()->GetType();
         //PRINT_VAR(type);
         if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
@@ -485,14 +486,20 @@ bool Sudakov::Generate(Parton * split)
             //PRINT_VAR(newJ);
             //PRINT_VAR(info.lastj);
             const double pdfrewfactor(newJ / info.lastj);
-            sudakovstr << pdfrewfactor << std::endl;
+            //sudakovstr << pdfrewfactor << std::endl;
             //PRINT_VAR(pdfrewfactor);
           }
         }
         /////////////////
+#endif
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }
+    //if (p_variationweights) {
+    //  p_variationweights->UpdateOrInitialiseWeights(
+    //      &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
+    //}
+
 
     p_selected->Lorentz()->SetSplit(NULL);
     if (veto) {
@@ -513,7 +520,6 @@ bool Sudakov::Generate(Parton * split)
   return success;
 }
 
-#if false
 // TODO: delete me (but first re-use weight calculation)
 double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
@@ -551,7 +557,6 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
   const double lastscale(Selected()->LastScale());
 
   // PDF reweighting
-  if (m_reweightpdfs) {
     if (m_type == cstp::II || m_type == cstp::FI || m_type == cstp::IF) {
       // note that also the Jacobians depend on the Running_AlphaS class, but
       // only through the number of flavours, which should not vary between
@@ -597,14 +602,12 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
         if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
           varparams->IncrementOrInitialiseWarningCounter("large PDF reweighting factor");
         }
-        showerstr << pdfrewfactor << std::endl;
+        //showerstr << pdfrewfactor << std::endl;
         accrewfactor *= pdfrewfactor;
       }
     }
-  }
 
   // AlphaS reweighting
-  if (m_reweightalphas) {
     if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
       const double lastcpl(Selected()->Coupling()->Last());
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
@@ -618,7 +621,6 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
       }
       accrewfactor *= alphasrewfactor;
     }
-  }
 
   // calculate and apply overall factor
   if (success) {
@@ -633,8 +635,9 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
     return 1.0;
   }
   return rewfactor;
+  showerstr << rewfactor << std::endl;
+  //return 1.0;
 }
-#endif
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)
 {

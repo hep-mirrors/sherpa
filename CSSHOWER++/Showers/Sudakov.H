@@ -30,6 +30,7 @@ namespace CSSHOWER {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
+    SHERPA::Variation_Weights *p_variationweights;
     bool m_keeprewinfo;
     double m_reweightscalecutoff;
     static bool s_init;
@@ -42,11 +43,9 @@ namespace CSSHOWER {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-#if false
     double Reweight(SHERPA::Variation_Parameters *,
                     SHERPA::Variation_Weights *,
                     const bool &success);
-#endif
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -92,6 +91,8 @@ namespace CSSHOWER {
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
 
+    inline void SetVariationWeights(SHERPA::Variation_Weights * varwgts)
+    { p_variationweights = varwgts; }
   };
   
   void Sudakov::GetSplittingParameters

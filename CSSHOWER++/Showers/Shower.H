@@ -40,7 +40,7 @@ namespace CSSHOWER {
     bool m_reweightalphas, m_reweightpdfs;
     double Reweight(SHERPA::Variation_Parameters*,
                     SHERPA::Variation_Weights*,
-                    double& kt2win);
+                    Parton& splitter);
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
