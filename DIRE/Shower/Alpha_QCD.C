@@ -4,8 +4,8 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "DIRE/Shower/Shower.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <algorithm>
 
@@ -17,8 +17,9 @@ using namespace ATOOLS;
 Alpha_QCD::Alpha_QCD(const Kernel_Key &key):
   Gauge(key), p_cpl(p_sk->PS()->AlphaS()), m_override(0)
 {
-  m_lc=key.p_rd->GetValue<unsigned int>("CSS_CMODE",1);
-  m_Nc=key.p_rd->GetValue<unsigned int>("CSS_NCOL",3);
+  Settings& s = Settings::GetMainSettings();
+  m_lc=s["CSS_CMODE"].Get<unsigned int>();
+  m_Nc=s["CSS_NCOL"].Get<unsigned int>();
   m_CF=(m_Nc*m_Nc-1.)/(2.0*m_Nc);
   m_CA=m_Nc;
   m_TR=1.0/2.0;

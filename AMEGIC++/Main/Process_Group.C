@@ -21,7 +21,6 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
 using namespace AMEGIC;

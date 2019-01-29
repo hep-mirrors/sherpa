@@ -7,6 +7,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Scale_Setter_Base
@@ -26,6 +27,7 @@ Scale_Setter_Base::Scale_Setter_Base
   m_nin(args.m_nin), m_nout(args.m_nout),
   m_l1(0), m_l2(0)
 {
+  RegisterDefaults();
   for (size_t i(0);i<stp::size;++i) m_scale[i]=sqr(rpa->gen.Ecms());
   if (p_proc) {
     m_nin=p_proc->NIn();
@@ -45,6 +47,17 @@ Scale_Setter_Base::Scale_Setter_Base
   m_p.resize(m_nin+m_nout);
 }
 
+void Scale_Setter_Base::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["MEPS_NMAX_ALLCONFIGS"].SetDefault(-1);
+  s["MEPS_NLO_NMAX_ALLCONFIGS"].SetDefault(-1);
+  s["MEPS_CLUSTER_MODE"].SetDefault(8|64|128|256);
+  s["MEPS_NLO_COUPLING_MODE"].SetDefault(2);
+  s["MEPS_COLORSET_MODE"].SetDefault(0);
+  s["CORE_SCALE"].SetDefault("Default");
+}
+
 bool Scale_Setter_Base::Initialize()
 {
   return true;
@@ -58,7 +71,6 @@ void Scale_Setter_Base::SetCouplings()
   p_subs=p_proc->GetSubevtList();
   Data_Reader read(" ",",","#",":");
   std::vector<std::vector<std::string> > helpsvv;
-  read.SetAddCommandLine(false);
   read.SetString(m_coupling);
   read.MatrixFromString(helpsvv,"");
   for (size_t i(0);i<helpsvv.size();++i) {

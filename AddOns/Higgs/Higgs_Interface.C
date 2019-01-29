@@ -6,6 +6,7 @@
 #include "Higgs_Tree.H"
 #include "Higgs_Virtual.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 namespace HIGGS {
@@ -14,6 +15,8 @@ namespace HIGGS {
   private:
 
     MODEL::Model_Base *p_model;
+
+    void RegisterDefaults() const;
 
   public :
 
@@ -24,8 +27,7 @@ namespace HIGGS {
     ~Higgs_Interface();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
@@ -41,25 +43,37 @@ namespace HIGGS {
 #include "Wrappers.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace HIGGS;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Higgs_Interface::Higgs_Interface(): 
+Higgs_Interface::Higgs_Interface():
   ME_Generator_Base("Higgs")
 {
+  RegisterDefaults();
 }
 
-Higgs_Interface::~Higgs_Interface() 
+Higgs_Interface::~Higgs_Interface()
 {
 }
 
-bool Higgs_Interface::Initialize
-(const std::string &path,const std::string &file,MODEL::Model_Base *const model,
- BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
+void Higgs_Interface::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["HIGGS_INTERFERENCE_ONLY"].SetDefault(0);
+  s["HIGGS_INTERFERENCE_MODE"].SetDefault(7);
+  s["HIGGS_INTERFERENCE_SPIN"].SetDefault(0);
+  s["HIGGS_INTERFERENCE_KAPPAG"].SetDefault(1.0);
+  s["HIGGS_INTERFERENCE_KAPPAQ"].SetDefault(1.0);
+  s["HIGGS_ON_SHELL"].SetDefault(false);
+}
+
+bool Higgs_Interface::Initialize(MODEL::Model_Base *const model,
+                                 BEAM::Beam_Spectra_Handler *const beam,
+                                 PDF::ISR_Handler *const isrhandler)
 {
   p_model=model;
   Higgs_Tree::SetModel(p_model);

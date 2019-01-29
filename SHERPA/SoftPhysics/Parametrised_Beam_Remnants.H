@@ -24,13 +24,12 @@ namespace SHERPA {
   public :
 
     // constructor
-    Parametrised_Beam_Remnants(const std::string path,const std::string file,
-			       PDF::ISR_Handler *const isr,
-			       BEAM::Beam_Spectra_Handler *const beam);
+    Parametrised_Beam_Remnants(PDF::ISR_Handler* const,
+                               BEAM::Beam_Spectra_Handler* const);
 
     // destructor
     ~Parametrised_Beam_Remnants();
-    
+
     // member functions
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List *const,
 					     ATOOLS::Particle_List *const=NULL);

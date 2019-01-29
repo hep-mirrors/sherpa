@@ -1,4 +1,5 @@
 #include "AddOns/Root/RootNtuple_Reader.H"
+#include "AddOns/Root/Output_RootNtuple.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -7,10 +8,10 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Phys/Variations.H"
 #include <iostream>
@@ -104,23 +105,22 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
 {
+  Settings& s = Settings::GetMainSettings();
+  Common_Root_Settings().RegisterDefaults();
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
-  m_ecms=args.p_reader->GetValue<double>("ROOTNTUPLE_ECMS",rpa->gen.Ecms());
-  m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",1);
-  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
+  m_ecms = s["ROOTNTUPLE_ECMS"].Get<double>();
+  m_calc = s["ROOTNTUPLE_CALC"].Get<int>();
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
-  m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
+  m_treename = s["ROOTNTUPLE_TREENAME"].Get<std::string>();
+  m_check = s["ROOTNTUPLE_CHECK"].Get<int>();
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
-  args.p_reader->SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  args.p_reader->RereadInFile();
-  std::string scale=args.p_reader->GetValue<std::string>
-    ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
-  m_lomode=args.p_reader->GetValue<int>("ROOTNTUPLE_LO_MODE",0);
+  std::string scale = s["SCALES"].Get<std::string>();
+  m_lomode = s["ROOTNTUPLE_LO_MODE"].Get<int>();
   if (m_lomode) msg_Info()<<METHOD<<"(): Ntuple LO mode set to "<<m_lomode<<"."<<std::endl;
-  std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","None");
-  std::vector<std::string> helpsv;
-  if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
+  std::string kfactor = s["KFACTOR"].Get<std::string>();
+  const std::vector<std::string> helpsv{
+    s["COUPLINGS"].GetVector<std::string>() };
   std::string coupling(helpsv.size()?helpsv[0]:"");
   for (size_t i(1);i<helpsv.size();++i) coupling+=" "+helpsv[i];
   m_sargs=Scale_Setter_Arguments(args.p_model,scale,coupling);
@@ -183,7 +183,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     THROW(fatal_error,"Missing input");
   }
   msg_Info()<<METHOD<<"(): Found "<<m_entries<<" entries."<<std::endl;
-  if (args.p_reader->GetValue<int>("ROOTNTUPLE_SET_NEVT",0))
+  if (s["ROOTNTUPLE_SET_NEVT"].Get<bool>())
     rpa->gen.SetNumberOfEvents(m_entries);
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
   p_vars->m_ncount=1.0;
@@ -247,10 +247,9 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 #else
   msg_Error()<<"Sherpa must be linked with root to read in root files!"<<endl;
 #endif
-  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_MEAN_2 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
+  Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
+  kperp_settings["MEAN"].OverrideScalar(0.0);
+  kperp_settings["SIGMA"].OverrideScalar(0.0);
 }
 
 RootNtuple_Reader::~RootNtuple_Reader()
@@ -259,6 +258,19 @@ RootNtuple_Reader::~RootNtuple_Reader()
 	 sit(m_procs.begin());sit!=m_procs.end();++sit) delete sit->second;
 }
 
+void RootNtuple_Reader::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["ROOTNTUPLE_ECMS"].SetDefault(rpa->gen.Ecms());
+  s["ROOTNTUPLE_CALC"].SetDefault(1);
+  const bool calc{ s["ROOTNTUPLE_CALC"].Get<bool>() };
+  s["ROOTNTUPLE_CHECK"].SetDefault((calc & 2) ? 1 : 0);
+  if (!s["SCALES"].IsCustomised()) {
+    s["SCALES"].OverrideScalar("VAR{sqr(" + ToString(rpa->gen.Ecms()) + ")}");
+  }
+  s["ROOTNTUPLE_LO_MODE"].SetDefault(0);
+  s["ROOTNTUPLE_SET_NEVT"].SetDefault(false);
+}
 
 void RootNtuple_Reader::CloseFile() {
 #ifdef USING__ROOT

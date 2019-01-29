@@ -5,10 +5,10 @@
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Phys/Blob.H" 
 #include "ATOOLS/Org/Run_Parameter.H" 
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace ATOOLS;
 using namespace PDF;
@@ -28,10 +28,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_cms(8)
 {
   if (s_nozeropdf<0) {
-    Default_Reader reader;
-    reader.SetInputPath(rpa->GetPath());
-    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_nozeropdf = reader.Get<int>("NO_ZERO_PDF", 0);
+    Settings& s = Settings::GetMainSettings();
+    s_nozeropdf = s["NO_ZERO_PDF"].SetDefault(0).Get<int>();
   }
   m_mu2[0]=m_mu2[1]=0.0;
   m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;

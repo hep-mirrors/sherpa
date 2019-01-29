@@ -1,11 +1,9 @@
 #include "PDF/CTEQ/CTEQ6_Fortran_Interface.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include <unistd.h> 
+#include <unistd.h>
 
 using namespace PDF;
 using namespace ATOOLS;

@@ -7,7 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
@@ -31,8 +31,9 @@ Event_Handler::Event_Handler():
   p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
-  Default_Reader reader;
-  m_checkweight = reader.Get<int>("CHECK_WEIGHT", 0);
+  Settings& s = Settings::GetMainSettings();
+  m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
+  m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
 }
 
@@ -420,13 +421,10 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
 bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
-
-  Default_Reader reader;
-  int mother_kf(0);
-  if (!reader.Read(mother_kf,"DECAYER", 0)) {
+  if (m_decayer == kf_none) {
     THROW(fatal_error,"Didn't find DECAYER=<PDG_CODE> in parameters.");
   }
-  Flavour mother_flav(mother_kf);
+  Flavour mother_flav(m_decayer);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
 

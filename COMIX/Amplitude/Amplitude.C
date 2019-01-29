@@ -16,6 +16,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <algorithm>
 #include <cassert>
@@ -37,30 +38,33 @@ Amplitude::Amplitude():
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings comixsettings{ s["COMIX"] };
+  m_sccmur = s["USR_WGT_MODE"].Get<bool>();
   p_dinfo->SetType(0);
   p_dinfo->SetMassive(0);
-  m_pmode=rpa->gen.Variable("COMIX_PMODE")[0];
-  m_wfmode=GetParameter<int>("COMIX_WF_MODE");
-  m_pgmode=GetParameter<int>("COMIX_PG_MODE");
-  m_ngpl=Max(1,Min(GetParameter<int>("COMIX_N_GPL"),5));
-  p_dinfo->SetAMin(GetParameter<double>("DIPOLE_AMIN"));
-  double amax(GetParameter<double>("DIPOLE_ALPHA")), cur;
-  cur=GetParameter<double>("DIPOLE_ALPHA_FF");
+  m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
+  m_wfmode = comixsettings["WF_MODE"].Get<int>();
+  m_pgmode = comixsettings["PG_MODE"].Get<int>();
+  m_ngpl = Min(1, Max(5, comixsettings["N_GPL"].Get<int>()));
+  p_dinfo->SetAMin(s["DIPOLES"]["AMIN"].Get<double>());
+  const auto amax = s["DIPOLES"]["ALPHA"].Get<double>();
+  double cur{ 0.0 };
+  cur = s["DIPOLES"]["ALPHA_FF"].Get<double>();
   p_dinfo->SetAMax(0,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_FI");
+  cur = s["DIPOLES"]["ALPHA_FI"].Get<double>();
   p_dinfo->SetAMax(2,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_IF");
+  cur = s["DIPOLES"]["ALPHA_IF"].Get<double>();
   p_dinfo->SetAMax(1,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_II");
+  cur = s["DIPOLES"]["ALPHA_II"].Get<double>();
   p_dinfo->SetAMax(3,cur?cur:amax);
-  p_dinfo->SetKappa(GetParameter<double>("DIPOLE_KAPPA"));
-  p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
-  p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
+  p_dinfo->SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
+  p_dinfo->SetNf(s["DIPOLES"]["NF_GSPLIT"].Get<int>());
+  p_dinfo->SetKT2Max(s["DIPOLES"]["KT2MAX"].Get<double>());
   p_dinfo->SetDRMode(0);
-  int subtype(ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME")));
+  const int subtype{ s["NLO_SUBTRACTION_SCHEME"].Get<int>() };
   p_dinfo->SetSubType(subtype);
   if (subtype==1) p_dinfo->SetKappa(1.0);
-  m_sccmur=GetParameter<int>("USR_WGT_MODE");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
 }

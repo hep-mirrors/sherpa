@@ -2,9 +2,9 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -29,42 +29,45 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
-(Matrix_Element_Handler *_mehandler, Soft_Photon_Handler *_sphotons) :
+Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
+    Matrix_Element_Handler *_mehandler,
+    Soft_Photon_Handler *_sphotons) :
   m_on(true), m_qed(true), m_forceqedonnloqcd(false),
   p_mehandler(_mehandler), p_sphotons(_sphotons), p_newsublist(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings meqedsettings{ s["ME_QED"] };
+
   DEBUG_FUNC("");
   m_name      = string("Lepton_FS_QED_Corrections:");
   m_type      = eph::Perturbative;
   // general switch
-  Default_Reader reader;
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  bool impliciteon = (reader.Get<std::string>("ME_QED","On")=="On");
-  bool expliciteon = (reader.Get<std::string>("ME_QED","")=="On");
+  const bool impliciteon{
+    meqedsettings["ENABLED"].SetDefault(true).Get<bool>() };
+  const bool expliciteon{
+    impliciteon && meqedsettings["ENABLED"].IsCustomised() };
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
   msg_Debugging()<<"impl="<<impliciteon<<", expl="<<expliciteon<<std::endl;
   if (!impliciteon) {
     m_qed = false;
-    Default_Reader fragmentation_reader;
-    fragmentation_reader.SetInputFile(rpa->gen.Variable("FRAGMENTATION_DATA_FILE"));
-    string fragmentation_model(fragmentation_reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", ""));
-    m_on = (fragmentation_model != "None");
+    const string fragmentationmodel{ s["FRAGMENTATION"].Get<string>() };
+    m_on = (fragmentationmodel != "None");
   }
   // switch off if there are hard decays, have their own QED corrections,
   // cannot tell here what has been corrected and what not -- OR --
   // if NLO_Mode Fixed_Order, switch off completely, unless explicitely stated
-  std::string hd(reader.GetStringNormalisingNoneLikeValues("HARD_DECAYS","None"));
+  const auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
   if (!expliciteon &&
-      (p_mehandler->HasNLO() == 1 || !(hd == "None"))) {
+      (p_mehandler->HasNLO() == 1 || hdenabled)) {
     m_on = false; m_qed = false;
   }
   if (expliciteon && p_mehandler->HasNLO()==1) {
-    m_forceqedonnloqcd = reader.Get<size_t>("ME_QED_ON_NLO_QCD",0);
+    m_forceqedonnloqcd =
+      meqedsettings["ON_NLO_QCD"].SetDefault(false).Get<bool>();
   }
   msg_Debugging()<<"on="<<m_on<<" ,  qed="<<m_qed<<std::endl;
-  msg_Debugging()<<"force on on nlo qcd: "<<m_forceqedonnloqcd<<std::endl;
+  msg_Debugging()<<"force on nlo qcd: "<<m_forceqedonnloqcd<<std::endl;
 
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
   else               m_name += "None";
@@ -75,7 +78,6 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction()
   if (p_newsublist) { DeleteNewSubList(); delete p_newsublist; }
 
 }
-
 
 Return_Value::code Signal_Process_FS_QED_Correction::Treat
 (Blob_List * bloblist, double & weight)

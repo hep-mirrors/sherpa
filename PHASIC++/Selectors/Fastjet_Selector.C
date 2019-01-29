@@ -49,7 +49,6 @@ namespace PHASIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 
 using namespace PHASIC;
@@ -220,32 +219,41 @@ DECLARE_ND_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key,
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<6) THROW(critical_error,"Invalid syntax");
- 
-  double f(.75);
-  if (key.front().size()>6) f=ToType<double>(key[0][6]);
-  double eta(100.), y(100.);
-  int bmode(0);
-  if (key.front().size()>7) eta=ToType<double>(key[0][7]);
-  if (key.front().size()>8) y=ToType<double>(key[0][8]);
-  if (key.front().size()>9) bmode=ToType<double>(key[0][9]);
-
-  Fastjet_Selector *jf(new Fastjet_Selector
-                       (key.p_proc,key[0][1],
-                        ToType<size_t>(key[0][2]),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4])),
-			ToType<double>(key[0][5]),f,eta,y,bmode,key[0][0]));
+  auto s = key.m_settings;
+  const auto expression = s["Expression"].SetDefault("").Get<std::string>();
+  const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
+  const auto n = s["N"].SetDefault(0).Get<size_t>();
+  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
+  const auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
+  const auto dr = s["DR"].SetDefault(0.4).Get<double>();
+  const auto f = s["f"].SetDefault(0.75).Get<double>();
+  const auto eta = s["EtaMax"].SetDefault(100.0).Get<double>();
+  const auto y = s["YMax"].SetDefault(100.0).Get<double>();
+  const auto bmode = s["BMode"].SetDefault(0).Get<int>();
+  Fastjet_Selector *jf(
+      new Fastjet_Selector(key.p_proc, algo, n, ptmin, etmin, dr,
+                           f, eta, y, bmode, expression));
   return jf;
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [bmode=0]]]]\n" 
-     <<"                algorithm: kt(default),antikt,cambridge,siscone   for hadron colliders\n"
-     <<"                algorithm: eekt(default),jade,eecambridge,siscone for lepton-lepton colliders\n"
-     <<"                only first four arguments are meaningful for eekt,jade and eecambridge";
+  str<<"{\n"
+     <<width<<"  Type: FastjetFinder,\n"
+     <<width<<"  Expression: boolean expression,\n"
+     <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone, (hadron colliders)\n"
+     <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone, (lepton colliders)\n"
+     <<width<<"  N: number of jets,\n"
+     <<width<<"  # optional settings:\n"
+     <<width<<"  PTMin: minimum jet pT,\n"
+     <<width<<"  ETMin: minimum jet eta,\n"
+     <<width<<"  DR: jet distance parameter,\n"
+     <<width<<"  f: Siscone f parameter,\n"
+     <<width<<"  EtaMax: maximum jet eta,\n"
+     <<width<<"  YMax: maximum jet rapidity,\n"
+     <<width<<"  BMode: 0|1|2\n"
+     <<width<<"  }";
 }
 
 #endif

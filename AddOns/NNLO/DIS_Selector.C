@@ -23,7 +23,6 @@ namespace SHNNLO {
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #define s_ymax std::numeric_limits<double>::max()
 
@@ -40,7 +39,10 @@ DIS_Selector::DIS_Selector(const Selector_Key &key):
   m_smin=0.0;
   m_smax=sqr(rpa->gen.Ecms());
   m_sel_log = new Selector_Log(m_name);
-  m_qtmin=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DISNNLO");
+  m_qtmin=s.Interprete<double>(parameters[1]);
   m_type=m_nout-(p_proc->Info().Has(nlo_type::real)?2+1:2);
 }
 
@@ -144,7 +146,6 @@ DECLARE_ND_GETTER(DIS_Selector,"DISNNLO",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DIS_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
   return new DIS_Selector(key);
 }
 

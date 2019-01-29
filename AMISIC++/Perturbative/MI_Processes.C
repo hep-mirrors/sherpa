@@ -23,8 +23,7 @@ MI_Processes::~MI_Processes() {
   m_groups.clear();
 }
 
-bool MI_Processes::Initialize(const std::string &path,const std::string &file,
-			      MODEL::Model_Base *const model,
+bool MI_Processes::Initialize(MODEL::Model_Base *const model,
 			      BEAM::Beam_Spectra_Handler *const beam,
 			      PDF::ISR_Handler *const isr) {
   // Get PDFs and couplings
@@ -60,7 +59,7 @@ bool MI_Processes::Initialize(const std::string &path,const std::string &file,
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);
   // Mass scheme for the subsequent parton shower.
   m_massmode       = 1;
-  SetPSMasses(p_defaultreader);
+  SetPSMasses();
   // Now initialize the 2->2 scatters and prepare the integral for the
   // "Sudakov form factor", Eq. (37) of Sjostrand-van der Zijl
   return (InitializeAllProcesses() && PrepareSudakovFactor());
@@ -190,9 +189,9 @@ bool MI_Processes::PrepareSudakovFactor() {
     pt2last        = pt2;
   }
   m_integral *= m_sigmaND;
-  msg_Info()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
-	    <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
-	    <<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
+  msg_Tracking()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
+		<<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
+		<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
   return true;
 }
 

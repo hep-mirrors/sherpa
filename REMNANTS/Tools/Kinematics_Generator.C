@@ -16,14 +16,14 @@ Kinematics_Generator::Kinematics_Generator() {}
 Kinematics_Generator::~Kinematics_Generator() {}
 
 void Kinematics_Generator::
-Initialize(Remnant_Handler * const rhandler,const string & path, const string & file) {
+Initialize(Remnant_Handler * const rhandler) {
   p_rhandler = rhandler;
   for (size_t beam=0;beam<2;beam++) {
     p_remnants[beam]   = p_rhandler->GetRemnant(beam);
     p_extracted[beam]  = p_remnants[beam]->GetExtracted();
     p_spectators[beam] = p_remnants[beam]->GetSpectators();
   }
-  if (p_rhandler->Type()!=strat::simple) m_kperpGenerator.Initialize(path,file);
+  if (p_rhandler->Type()!=strat::simple) m_kperpGenerator.Initialize();
   SetKinType(rhandler);
 }
 

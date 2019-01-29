@@ -15,7 +15,6 @@ namespace MODEL {
 }
 
 namespace ATOOLS {
-  class Default_Reader;
   class NLO_subevtlist;
 }
 
@@ -29,7 +28,7 @@ namespace SHERPA {
   typedef std::vector<ParticlePair> ParticlePair_Vector;
 
   class Hard_Decay_Handler : public Decay_Handler_Base {
-    std::string              m_path, m_file, m_resultdir, m_offshell;
+    std::string              m_resultdir, m_offshell;
     std::set<std::string>    m_disabled_channels;
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     std::map<std::string, double> m_external_widths;
@@ -45,7 +44,7 @@ namespace SHERPA {
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
 
-    void SetDecayMasses(ATOOLS::Default_Reader *const);
+    void SetDecayMasses();
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void InitializeOffshellDecays(PHASIC::Decay_Table* dt);
     void CustomizeDecayTables();
@@ -77,7 +76,7 @@ namespace SHERPA {
     double BRFactor(ATOOLS::Blob* blob) const;
 
   public :
-    Hard_Decay_Handler(std::string,std::string);
+    Hard_Decay_Handler();
     ~Hard_Decay_Handler();
 
     void CreateDecayBlob(ATOOLS::Particle* inpart);

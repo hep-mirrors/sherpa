@@ -24,13 +24,13 @@ void Hadronic_XSec_Calculator::operator()()
   m_xsdd  = CalculateDoubleDXSec();
 
   m_xsnd  = m_xstot-m_xsel-2.0*m_xssd-m_xsdd;
-  msg_Info()<<METHOD<<": Results are {\n"
-	    <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
-	    <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
-	    <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
-	    <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
-	    <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
-	    <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
+  msg_Tracking()<<METHOD<<": Results are {\n"
+		<<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
+		<<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
+		<<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
+		<<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
+		<<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
+		<<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
   // convert all cross sections to 1/GeV^2
   m_xstot *= 1.e9/rpa->Picobarn();
   m_xsel  *= 1.e9/rpa->Picobarn();

@@ -15,8 +15,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <iomanip>
 
@@ -26,26 +25,15 @@ using namespace PHASIC;
 
 const double s_pwmin(1.0e-6);
 
-namespace ATOOLS { template class SP(PS_Generator); }
-
 PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
   m_thmass(0.0), m_chmass(0.0)
 {
-  Default_Reader reader;
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (reader.Read<size_t>(m_itmin,"CDXS_ITMIN", 5000)) {
-    msg_Info() << METHOD << "(): Set iteration minimum " << m_itmin << "." << std::endl;
-  }
-  if (reader.Read<size_t>(m_itmax,"CDXS_ITMAX", 50000)) {
-    msg_Info() << METHOD << "(): Set iteration maximum " << m_itmax << "." << std::endl;
-  }
-  if (reader.Read(m_ecmode,"CDXS_ECMODE", 2)) {
-    msg_Info() << METHOD << "(): Set extra channel mode " << m_ecmode << "." << std::endl;
-  }
-  if (reader.Read(m_chmass,"CDXS_PS_CHTH", 0.01)) {
-    msg_Info() << METHOD << "(): Set channel mass threshold " << m_chmass << "." << std::endl;
-  }
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  m_itmin = s["CDXS_ITMIN"].SetDefault(5000).Get<size_t>();
+  m_itmax = s["CDXS_ITMAX"].SetDefault(50000).Get<size_t>();
+  m_ecmode = s["CDXS_ECMODE"].SetDefault(2).Get<size_t>();
+  m_chmass = s["CDXS_PS_CHTH"].SetDefault(0.01).Get<double>();
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSC();
@@ -132,7 +120,7 @@ bool PS_Generator::Evaluate()
 	  break;
 	}
     }
-    SP(Color_Integrator) ci(cur->Integrator()->ColorIntegrator());
+    std::shared_ptr<Color_Integrator> ci(cur->Integrator()->ColorIntegrator());
     if (ci==NULL) 
       THROW(fatal_error,"No color integrator for "+cur->Name());
     SetColors(ci->I(),ci->J());

@@ -1,13 +1,13 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/External_ME_Args.H"
-#include "ATOOLS/Org/Default_Reader.H"
 
 #define CF 1.33333333333333333
 
@@ -105,8 +105,8 @@ Tree_ME2_Base *ATOOLS::Getter
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  Default_Reader reader;
-  if (reader.Get<int>("EXTRAXS_CSS_APPROX_ME", 0) == 0) return NULL;
+  Settings& s = Settings::GetMainSettings();
+  if (!s["EXTRAXS_CSS_APPROX_ME"].Get<bool>()) return NULL;
 
   const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=5) return NULL;

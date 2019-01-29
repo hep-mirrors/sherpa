@@ -15,7 +15,7 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 
 #include <cassert>
@@ -24,17 +24,16 @@ using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Perturbative_Interface::Perturbative_Interface
-(Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
+Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh,
+                                               Hard_Decay_Handler*const dec,
+                                               Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), p_localkfactorvarweights(NULL)
 {
-  Data_Reader read;
-  read.SetInputPath(p_me->Path());
-  read.SetInputFile(p_me->File());
-  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
-  m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
-  m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
+  Settings& s = Settings::GetMainSettings();
+  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(1).Get<int>();
+  m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
+  m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
 
 Perturbative_Interface::Perturbative_Interface

@@ -27,9 +27,9 @@ namespace AHADIC {
     Singlet_Checker        m_singletchecker;
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
-    
+
     ATOOLS::Vec4D m_totmom; 
-    
+
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();
@@ -43,9 +43,7 @@ namespace AHADIC {
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     void CleanUp(ATOOLS::Blob * blob);
   public:
-    Ahadic(std::string path=std::string("./"),
-	   std::string file=std::string("Cluster.dat"),
-	   std::string shower="Dire");
+    Ahadic(std::string shower="Dire");
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

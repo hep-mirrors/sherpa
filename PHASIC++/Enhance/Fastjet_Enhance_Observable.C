@@ -82,7 +82,6 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
   jtag=jtag.substr(0,pos);
   Data_Reader read(" ",",","#","=");
   read.AddIgnore(":");
-  read.SetAddCommandLine(false);
   read.SetString(jtag);
   m_ptmin=read.StringValue<double>("PT",0.0);
   m_etmin=read.StringValue<double>("ET",0.0);

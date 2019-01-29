@@ -27,7 +27,7 @@ Primitive_Analysis::Primitive_Analysis
   m_nevt = 0;
   p_partner = this;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : ") + _name;
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
@@ -38,7 +38,7 @@ Primitive_Analysis::Primitive_Analysis(Analysis_Handler *const ana,const int mod
 {
   p_ana=ana;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : noname");
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;

@@ -1,9 +1,9 @@
 #include "REMNANTS/Tools/Beam_Decorrelator.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -15,22 +15,18 @@ Beam_Decorrelator::Beam_Decorrelator() : m_on(false) {}
 Beam_Decorrelator::~Beam_Decorrelator() {}
 
 void Beam_Decorrelator::
-Initialize(Remnant_Handler * const rhandler,const string & path, const string & file) {
+Initialize(Remnant_Handler * const rhandler) {
   p_rhandler = rhandler;
   if (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2 ||
       p_rhandler->Type()==strat::hh) {
     p_kperpGenerator = p_rhandler->GetKPerp();
-    Data_Reader dataread(" ",";","!","=");
-    dataread.AddComment("#");
-    dataread.AddWordSeparator("\t");
-    dataread.SetInputPath(path);
-    dataread.SetInputFile(file);
-    m_expo    = dataread.GetValue<double>("REMNANT_SOFT_X_EXPONENT",-2.);
+    auto s = Settings::GetMainSettings()["REMNANTS"];
+    m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
     m_xiP     = m_expo+1;
     m_invxiP  = 1./m_xiP; 
-    m_maxeta  = dabs(dataread.GetValue<double>("REMNANT_SOFT_ETA_RANGE",7.5));
-    m_mass2   = sqr(dataread.GetValue<double>("REMNANT_SOFT_MASS",5.));
-    m_deltaM  = dataread.GetValue<double>("REMNANT_DELTA_MASS",1.5);
+    m_maxeta  = dabs(s["SOFT_ETA_RANGE"].SetDefault(7.5).Get<double>());
+    m_mass2   = sqr(s["SOFT_MASS"].SetDefault(5.0).Get<double>());
+    m_deltaM  = s["DELTA_MASS"].SetDefault(1.5).Get<double>();
     m_on      = (m_maxeta>0. && m_mass2>0.);
   }
 }

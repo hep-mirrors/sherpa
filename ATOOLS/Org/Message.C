@@ -2,8 +2,8 @@
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <sys/stat.h>
 #include <iterator>
@@ -148,8 +148,11 @@ Message::~Message()
   if (p_log) delete p_log;
 }
 
-void Message::Init(const std::string& level,const std::string &logfile) 
+void Message::Init()
 { 
+  Settings& s = Settings::GetMainSettings();
+
+  std::string logfile = s["LOG_FILE"].Get<std::string>();
   if (logfile!="") {
     m_logfile = logfile;
     p_log = new std::ofstream(logfile.c_str(),std::ios::app);
@@ -159,30 +162,21 @@ void Message::Init(const std::string& level,const std::string &logfile)
   m_buf.SetBaseBuf(m_output.rdbuf());
   SetOutStream(m_buf);
 
-  Data_Reader dr("|","[","!");
-  dr.AddLineSeparator("]");
-  dr.AddComment("#");
-  dr.SetString(level);
-  std::vector<std::vector<std::string> > svv;
-  dr.MatrixFromString(svv);
+  // set general output level
+  m_level = s["OUTPUT"].SetDefault(2).Get<int>();
 
-  m_level=2;
-  for (size_t i=0;i<svv.size();++i) {
-    if (svv[i].size()==1) m_level=ATOOLS::ToType<int>(svv[i][0]);
-    else if (svv[i].size()==2) {
-      int lev=ToType<int>(svv[i][1]);
-      if (lev&1) m_contextevents.insert(svv[i][0]);
-      if (lev&2) m_contextinfo.insert(svv[i][0]);
-      if (lev&4) m_contexttracking.insert(svv[i][0]);
-      if (lev&8) m_contextdebugging.insert(svv[i][0]);
-      if (lev&32) m_contextiodebugging.insert(svv[i][0]);
-    }
-    else {
-      Out()<<METHOD<<": Do not understand output specification: "<<std::endl;
-      copy(svv[i].begin(), svv[i].end(),
-           std::ostream_iterator<std::string>(Out(), " "));
-    }
+  // set function-specific output level
+  auto fctoutput = s["FUNCTION_OUTPUT"];
+  for (const auto& fctname : fctoutput.GetKeys()) {
+    const auto level = fctoutput[fctname].SetDefault(m_level).Get<int>();
+    if (level & 1)  m_contextevents.insert(fctname);
+    if (level & 2)  m_contextinfo.insert(fctname);
+    if (level & 4)  m_contexttracking.insert(fctname);
+    if (level & 8)  m_contextdebugging.insert(fctname);
+    if (level & 32) m_contextiodebugging.insert(fctname);
   }
+
+  m_mpimode = s["MPI_OUTPUT"].SetDefault(0).Get<int>();
 }
 
 void Message::SetStandard() 

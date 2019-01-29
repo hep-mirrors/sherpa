@@ -770,8 +770,10 @@ void Algebra_Interpreter::AddTerm(Term *const t)
 Node<Function*> *Algebra_Interpreter::
 ExtractLeaf(const std::string &expr) const
 {
-  if (expr.find("{")!=0 || expr.rfind("}")!=expr.length()-1)
-    THROW(fatal_error,"Cannot recover node pointer.");
+  if (expr.find("{") != 0 || expr.rfind("}") != expr.length()-1) {
+    THROW(fatal_error,
+          "Cannot recover node pointer in expression: \"" + expr + "\".");
+  }
   size_t pos(expr.rfind('{')); 
   return (Node<Function*>*)ToType<PTS>
     (expr.substr(pos+1,expr.length()-pos-2));

@@ -10,6 +10,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 using namespace HADRONS;
@@ -48,7 +49,6 @@ vector<vector<string> > Hadron_Decay_Channel::Process(const string& content,
                                                       const string& end)
 {
   Data_Reader reader(" ",";","!","=");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetMatrixType(mtc::transposed);
@@ -260,6 +260,10 @@ void Hadron_Decay_Channel::ProcessResult(const string& content)
     if(oldwidth!=m_iwidth || oldmax!=m_max) WriteOut(false,m_path,m_filename);
   }
   else if(result_svv[0].size()==3) {
+    if (result_svv[0][0].find("nan")!=string::npos) {
+      PRINT_INFO("Found nan in "<<Name()<<". Ignoring and continuing.");
+      return;
+    }
     m_iwidth=ToType<double>(result_svv[0][0]);
     m_ideltawidth=ToType<double>(result_svv[0][1]);
     m_max=ToType<double>(result_svv[0][2]);

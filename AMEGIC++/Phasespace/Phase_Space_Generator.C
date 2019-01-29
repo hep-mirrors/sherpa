@@ -9,11 +9,11 @@
 #include "AMEGIC++/Phasespace/Channel_Generator_KK.H"
 #include "AMEGIC++/Phasespace/Channel_Generator_Decays.H"
 #include "AMEGIC++/Main/Process_Base.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "AMEGIC++/String/String_Library.H"
 
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -24,14 +24,22 @@ using namespace PHASIC;
 using namespace ATOOLS; 
 using namespace std;
 
-Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), nout(_nout) 
+Phase_Space_Generator::Phase_Space_Generator(int _nin, int _nout) :
+  nin(_nin), nout(_nout), m_mode{ 1 }
 {
-  m_mode=1;
+  static int ishadronic{ -1 };
+  if (ishadronic == -1) {
+    ishadronic = (rpa->gen.Beam1().IsHadron() && rpa->gen.Beam2().IsHadron());
+    auto s = Settings::GetMainSettings()["AMEGIC"];
+    s["INTEGRATOR"].SetDefault((ishadronic) ? 6 : 7);
+    s["RS_INTEGRATOR"].SetDefault(7);
+  }
 }
 
 bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pathID,string _pID,
 				      ATOOLS::Flavour* fl,Process_Base * proc)
-{ 
+{
+  auto s = Settings::GetMainSettings()["AMEGIC"];
   path   = _pathID;
   pathID = _pathID + string("/") + _pID;
   pID    = string("P")+_pID;
@@ -45,13 +53,11 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/fsrchannels");
   string mapname  = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/fsrchannels.map");
 
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int inttype  = reader.Get<int>("AMEGIC_INTEGRATOR",
-      (rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?6:7);
+  int inttype{ -1 };
   if (proc->Info().Has(nlo_type::real)) {
-    inttype  = reader.Get<int>("AMEGIC_RS_INTEGRATOR", 7);
+    inttype = s["RS_INTEGRATOR"].Get<int>();
+  } else {
+    inttype = s["INTEGRATOR"].Get<int>();
   }
   if (nout==1) return 0;
   if (nin==1&&nout==2) return 0;

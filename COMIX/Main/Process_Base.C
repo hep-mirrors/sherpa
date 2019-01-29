@@ -11,7 +11,6 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PHASIC++/Channels/VHAAG.H"
 #include "COMIX/Phasespace/PS_Channel.H"
 
@@ -27,8 +26,8 @@ std::string COMIX::ComixLogo()
 
 int COMIX::Process_Base::s_partcommit=0;
 
-COMIX::Process_Base::Process_Base
-(PHASIC::Process_Base *const proc,MODEL::Model_Base *const model):
+COMIX::Process_Base::Process_Base(PHASIC::Process_Base *const proc,
+                                  MODEL::Model_Base *const model):
   p_proc(proc), p_model(model), p_psgen(NULL),
   m_cls(-1), m_hls(-1), p_cts(NULL),
   p_pmap(NULL), p_umprocs(NULL),
@@ -39,7 +38,8 @@ COMIX::Process_Base::~Process_Base()
 }
 
 bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pmap,
-				     std::vector<Single_Process*> *const procs)
+				     std::vector<Single_Process*> *const procs,
+				     const std::vector<int> &blocks,size_t &nproc)
 {
   p_pmap=pmap;
   p_umprocs=procs;

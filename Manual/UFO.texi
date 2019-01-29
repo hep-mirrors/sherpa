@@ -25,17 +25,17 @@ manually. Pleas run
 @end verbatim
 for information on the relevan command line arguments.
 
-An example run card will be written to the working directory while the
-model is generated with @code{Sherpa-generate-model}. This run card
+An example configuration file will be written to the working directory while
+the model is generated with @code{Sherpa-generate-model}. This config file
 shows the syntax for the respective model parameters and can be used as
-a template. It is also possible to use an external parameter card by
-specifying the path to the card with the switch @option{UFO_PARAM_CARD}
-in the @code{(run)@{...@}(run)} section of the run card. Relative and
+a template. It is also possible to use an external parameter file by specifying
+the path to the file with the switch @option{UFO_PARAM_CARD} in the
+configuration file or on the command line. Relative and
 absolute file paths are allowed. This option allows it to use the native
 UFO parameter cards, as used by MadGraph for example.
 
-Note that the use of the SM switches @option{MASS[<id>]},
-@option{MASSIVE[<id>]}, @option{WIDTH[<id>]}, and @option{STABLE[<id>]}
+Note that the use of the SM @option{PARTICLE_DATA} switches @option{Mass},
+@option{Massive}, @option{Width}, and @option{Stable}
 is discouraged when using UFO models as the UFO model completely defines
 all particle properties and their relation to the independent model
 parameters. These model parameters should be set using the standard UFO

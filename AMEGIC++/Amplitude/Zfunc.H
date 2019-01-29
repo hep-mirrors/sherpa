@@ -3,7 +3,8 @@
 
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
 #include "AMEGIC++/Amplitude/Pfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
+
+#include <memory>
 
 namespace AMEGIC {
   class Zfunc_Calc;
@@ -49,8 +50,8 @@ namespace AMEGIC {
     std::string m_str;
     Calc_List m_calclist;
     
-    Zfunc*            p_equal;    
-    SP(Zfunc_Calc)    p_calculator;
+    Zfunc* p_equal;
+    std::shared_ptr<Zfunc_Calc> p_calculator;
 
     Zfunc();
     Zfunc(const Zfunc& z);

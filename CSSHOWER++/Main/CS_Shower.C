@@ -6,12 +6,13 @@
 #include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <algorithm>
 #include <assert.h>
@@ -23,37 +24,33 @@ using namespace ATOOLS;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
-		     Default_Reader *const _reader,const int type) :
+                     const int type) :
   Shower_Base("CSS"), p_isr(_isr), 
   p_shower(NULL), p_cluster(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
-  int maxem=_reader->Get<int>("CSS_MAXEM",-1);
-  if (maxem<0) m_maxem=std::numeric_limits<size_t>::max();
-  else {
-    m_maxem=maxem;
-    msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
-  }
-  SF_Lorentz::SetKappa(_reader->Get<double>("DIPOLE_KAPPA",2.0/3.0));
 
-  m_kmode      = _reader->Get("CSS_KMODE",              2, "kernel mode", METHOD);
-  m_recocheck  = _reader->Get("CSS_RECO_CHECK",         0, "reco check mode", METHOD);
-  m_respectq2  = _reader->Get("CSS_RESPECT_Q2",         0, "respect Q2 mode", METHOD);
-  int ckfmode  = _reader->Get("CSS_CKFMODE",            1, "kernel mode", METHOD);
-  int pdfcheck = _reader->Get("CSS_PDFCHECK",           1, "PDF check mode", METHOD);
-  
-  m_weightmode = _reader->Get<int>("WEIGHT_MODE", 1);
-  
-  int _qcd = _reader->Get<int>("CSS_QCD_MODE", 1);
-  int _qed = _reader->Get<int>("CSS_EW_MODE", 0);
+  m_maxem = s["CSS_MAXEM"].Get<size_t>();
+
+  SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
+
+  m_kmode      = s["CSS_KMODE"].Get<int>();
+  m_recocheck  = s["CSS_RECO_CHECK"].Get<int>();
+  m_respectq2  = s["CSS_RESPECT_Q2"].Get<bool>();
+
+  const int ckfmode { s["CSS_CKFMODE"].Get<bool>() };
+  const int pdfcheck{ s["CSS_PDFCHECK"].Get<bool>() };
+  const int _qcd    { s["CSS_QCD_MODE"].Get<bool>() };
+  const int _qed    { s["CSS_EW_MODE"].Get<bool>() };
+
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qcd,_qed,_reader,type);
-  
-  p_next = new All_Singlets();
 
+  p_shower = new Shower(_isr,_qcd,_qed,type);
+  p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
 }
 
@@ -686,7 +683,7 @@ DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
 Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
 operator()(const Shower_Key &key) const
 {
-  return new CS_Shower(key.p_isr,key.p_model,key.p_reader,key.m_type);
+  return new CS_Shower(key.p_isr,key.p_model,key.m_type);
 }
 
 void Getter<Shower_Base,Shower_Key,CS_Shower>::

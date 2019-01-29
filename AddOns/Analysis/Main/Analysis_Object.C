@@ -4,7 +4,7 @@
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ANALYSIS::Analysis_Object
-#define PARAMETER_TYPE ANALYSIS::Argument_Matrix
+#define PARAMETER_TYPE ANALYSIS::Analysis_Key
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace ANALYSIS;

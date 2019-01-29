@@ -61,11 +61,11 @@ source the @uref{http://mpi4py.scipy.org,,mpi4py} module using
   import Sherpa
 
   # set up the generator
-  Generator=Sherpa.Sherpa()
+  Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 
   try:
       # initialize the generator, pass command line arguments to initialization routine
-      Generator.InitializeTheRun(len(sys.argv),sys.argv)
+      Generator.InitializeTheRun()
 
   # catch exceptions
   except Sherpa.Exception as exc:

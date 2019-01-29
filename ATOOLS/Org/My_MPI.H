@@ -21,8 +21,6 @@ inline int pthread_cond_signal
 
 namespace ATOOLS {
 
-  class Data_Reader;
-
   class My_MPI {
   private:
 
@@ -38,7 +36,7 @@ namespace ATOOLS {
 
     ~My_MPI();
 
-    void SetUpSendRecv(Data_Reader *const read);
+    void SetUpSendRecv();
 
 #ifdef USING__MPI
     inline MPI::Intracomm *MPIComm() { return p_comm; }

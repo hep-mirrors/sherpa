@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -36,8 +37,6 @@ Dipole_Kinematics::Dipole_Kinematics
     }
     m_type|=1;
   }
-  m_kt2c[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_kt2c[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
 }
 
 Dipole_Kinematics::~Dipole_Kinematics()
@@ -179,7 +178,15 @@ void Dipole_Kinematics::Evaluate()
 
 void Dipole_Kinematics::CheckKT2Min()
 {
-  if (m_kt2<m_kt2c[m_type&1]) m_a=1.0;
+  static double kt2c[2];
+  static bool didsetkt2c{ false };
+  if (!didsetkt2c) {
+    Settings& s = Settings::GetMainSettings();
+    kt2c[0] = s["CSS_FS_PT2MIN"].Get<double>();
+    kt2c[1] = s["CSS_IS_PT2MIN"].Get<double>();
+    didsetkt2c = true;
+  }
+  if (m_kt2<kt2c[m_type&1]) m_a=1.0;
 }
 
 std::ostream &METOOLS::operator<<

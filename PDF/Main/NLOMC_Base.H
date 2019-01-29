@@ -2,6 +2,7 @@
 #define PDF_Main_NLOMC_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include <string>
@@ -9,7 +10,6 @@
 namespace ATOOLS {
 
   class Cluster_Amplitude;
-  class Default_Reader;
   class Variation_Weights; 
   struct RB_Data;
 
@@ -69,11 +69,9 @@ namespace PDF {
   struct NLOMC_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    ATOOLS::Default_Reader *p_reader;
     inline NLOMC_Key(MODEL::Model_Base *const model,
-		      ISR_Handler *const isr,
-		      ATOOLS::Default_Reader *const reader):
-      p_model(model), p_isr(isr), p_reader(reader) {}
+		      ISR_Handler *const isr):
+      p_model(model), p_isr(isr) {}
   };//end of struct NLOMC_Key
 
   typedef ATOOLS::Getter_Function

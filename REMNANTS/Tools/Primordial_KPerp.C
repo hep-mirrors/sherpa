@@ -1,9 +1,9 @@
 #include "REMNANTS/Tools/Primordial_KPerp.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -20,38 +20,30 @@ Primordial_KPerp::~Primordial_KPerp() {
   if (m_analysis) FinishAnalysis();
 }
 
-void Primordial_KPerp::Initialize(const string path,const string file) {
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  dataread.SetInputPath(path);
-  dataread.SetInputFile(file);
+void Primordial_KPerp::Initialize() {
   // Setting the mean and width of the Gaussian - we could discuss
   // more functional forms of the distribution here.  Default for leptons
   // is zero transverse momentum, only hadrons have a kT distribution of
   // remnants - again, this may have to change or become more
   // sophisticated for photons with hadronic structure.
+  auto s = Settings::GetMainSettings()["INTRINSIC_KPERP"];
+  auto forms   = s["FORM"]      .SetDefault(m_defform)  .GetTwoVector<string>();
+  auto means   = s["MEAN"]      .SetDefault(m_defmean)  .GetTwoVector<double>();
+  auto sigmas  = s["SIGMA"]     .SetDefault(m_defsigma) .GetTwoVector<double>();
+  auto Q2s     = s["Q2"]        .SetDefault(m_defQ2)    .GetTwoVector<double>();
+  auto ktmaxs  = s["MAX"]       .SetDefault(m_defktmax) .GetTwoVector<double>();
+  auto refEs   = s["REFE"]      .SetDefault(m_refE)     .GetTwoVector<double>();
+  auto expos   = s["SCALE_EXPO"].SetDefault(m_scaleexpo).GetTwoVector<double>();
+  auto ktexpos = s["CUT_EXPO"]  .SetDefault(m_defeta)   .GetTwoVector<double>();
   for (size_t beam=0;beam<2;beam++) {
-    string formtag   = "K_PERP_FORM_"+to_string(beam);
-    string meantag   = "K_PERP_MEAN_"+to_string(beam);
-    string sigmatag  = "K_PERP_SIGMA_"+to_string(beam);
-    string Q2tag     = "K_PERP_Q2_"+to_string(beam);
-    string refEtag   = "K_PERP_REFE_"+to_string(beam);
-    string expotag   = "K_PERP_SCALE_EXPO_"+to_string(beam);
-    string ktmaxtag  = "K_PERP_MAX_"+to_string(beam);
-    string ktexpotag = "K_PERP_CUT_EXPO_"+to_string(beam);
-    double refE      = dataread.GetValue<double>(refEtag,m_refE);
-    double expo      = dataread.GetValue<double>(expotag,m_scaleexpo);
-    double mean      = dataread.GetValue<double>(meantag,m_defmean);
-    double sigma     = dataread.GetValue<double>(sigmatag,m_defsigma);
-    double Q2        = dataread.GetValue<double>(Q2tag,m_defQ2);
-    double ktmax     = dataread.GetValue<double>(ktmaxtag,m_defktmax);
-    m_form[beam]     = SelectForm(dataread.GetValue<string>(formtag,m_defform));
-    m_mean[beam]     = mean;
-    m_sigma[beam]    = sigma * pow((rpa->gen.Ecms()/refE),expo);
-    m_Q2[beam]       = Q2 * pow((rpa->gen.Ecms()/refE),expo);
-    m_ktmax[beam]    = Max(1.,ktmax * pow((rpa->gen.Ecms()/refE),expo));
-    m_eta[beam]      = dataread.GetValue<double>(ktexpotag,m_defeta);
+    const auto e = pow(rpa->gen.Ecms()/refEs[beam], expos[beam]);
+    m_form[beam]     = SelectForm(forms[beam]);
+    m_mean[beam]     = means[beam];
+    m_sigma[beam]    = sigmas[beam] * e;
+    m_Q2[beam]       = Q2s[beam] * e;
+    m_ktmax[beam]
+      = Max(1.0, ktmaxs[beam] * pow((rpa->gen.Ecms()/refEs[beam]), expos[beam]));
+    m_eta[beam]      = ktexpos[beam];
   }
   if (m_analysis) InitAnalysis();
 }
@@ -122,34 +114,22 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
   double kt;
-  //msg_Out()<<METHOD<<"("<<ktmax<<" for "<<m_mean[m_beam]<<" +/- "
-  //	   <<m_sigma[m_beam]<<") < "<<m_ktmax[m_beam]<<".\n";
   if (ktmax<m_mean[m_beam]+m_sigma[m_beam]) {
+    // use hit-or-miss when we are constrained narrowly around the peak ...
     do { kt = ktmax*ran->Get(); }
     while (ran->Get() > exp(-sqr((m_mean[m_beam]-kt)/m_sigma[m_beam])));
   }
   else {
-    // Generate normalised Gaussian random numbers according to the
-    // Marsaglia method
-    double ran1, ran2, R;
-    do {
-      do {
-	ran1 = 2.*ran->Get()-1.;
-	ran2 = 2.*ran->Get()-1.;
-	R    = ran1*ran1+ran2*ran2;
-      } while (R>1. || R==0.);
-      R  = sqrt(-2.*log(R)/R);
-      // shift the Gaussian random numbers
-      kt = m_mean[m_beam] + R * ran1 * m_sigma[m_beam];
-      //msg_Out()<<METHOD<<" tries kt = "<<kt<<"\n";
-    } while (kt<0. || kt>m_ktmax[m_beam]);
+    // ... otherwise use the standard Gaussian rng and veto in case of kt > ktmax
+    do { kt = m_mean[m_beam] + dabs(ran->GetGaussian()) * m_sigma[m_beam]; }
+    while (kt > m_ktmax[m_beam]);
   }
   return kt;
 }
 
 double Primordial_KPerp::KT_Gauss_Limited(const double & ktmax) const {
-  // Generate normalised Gaussian random numbers according to the
-  // Marsaglia method, with an additional polynomial limitation
+  // Generate normalised Gaussian random numbers
+  // with an additional polynomial limitation
   double ran1, ran2, R, kt;
   do {
     kt = KT_Gauss(ktmax);
@@ -180,7 +160,10 @@ double Primordial_KPerp::DipoleWeight(const double & kt) const {
 }
 
 double Primordial_KPerp::LimitedWeight(const double & kt) const {
-  return Max(0.,1.-pow(kt,m_eta[m_beam])/pow(m_ktmax[m_beam],m_eta[m_beam]));
+  if (kt < m_ktmax[m_beam])
+    return 1.0 - pow(kt/m_ktmax[m_beam], m_eta[m_beam]);
+  else
+    return 0.0;
 }
 
 void Primordial_KPerp::InitAnalysis() {

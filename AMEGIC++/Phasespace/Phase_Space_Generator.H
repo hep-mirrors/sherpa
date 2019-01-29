@@ -17,7 +17,6 @@ namespace AMEGIC {
     std::string path,pathID,pID;
     int m_mode;
 
-    //bool  LoadChannels(ATOOLS::Flavour *,PHASIC::Multi_Channel *,Process_Base *);
     bool  GetLibList(std::list<std::string>* liblist);
     bool  IsFile(std::string &);
     bool  Search(std::ifstream &,std::string);
@@ -28,7 +27,7 @@ namespace AMEGIC {
     void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
     void  AddToMakefileAM(std::string, std::string, std::string);
   public:
-    Phase_Space_Generator(int,int);
+    Phase_Space_Generator(int, int);
     bool Construct(std::list<std::string>*,std::string,std::string,ATOOLS::Flavour *, 
 		   Process_Base *);
     //PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&,ATOOLS::Integration_Info * const);

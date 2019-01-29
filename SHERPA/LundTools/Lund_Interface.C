@@ -1,7 +1,6 @@
 #include "SHERPA/LundTools/Lund_Interface.H"
 
 #include "SHERPA/LundTools/Lund_Wrapper.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
@@ -14,6 +13,7 @@
 #include <list>
 #include <cassert>
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "SHERPA/Tools/HepEvt_Interface.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
@@ -31,8 +31,8 @@ double * Lund_Interface::s_saved_rrpy=new double[100];
 
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 
-Lund_Interface::Lund_Interface(string _m_path,string _m_file):
-  m_path(_m_path),m_file(_m_file), m_maxtrials(2),
+Lund_Interface::Lund_Interface():
+  m_maxtrials(2),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
   p_phep(new double[5*HEPEVT_CB_SIZE]),
@@ -40,7 +40,12 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   p_jmohep(new int[2*HEPEVT_CB_SIZE]),
   p_jdahep(new int[2*HEPEVT_CB_SIZE])
 {
+  RegisterDefaults();
   exh->AddTerminatorObject(this);
+  // determine baseline settings from beams
+  // NOTE that these are no default settings, because they get not replaced if
+  // we set an entry or entries in the run card (or command line), they only
+  // get amended.
   string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa->gen.Bunch(i);
@@ -81,75 +86,53 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
     pydat1.mstj[100]=5;
   }
   s_maxerrors=rpa->gen.NumberOfEvents();
-  vector<vector<double> > help;
-  Data_Reader *reader = new Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInputPath(m_path);
-  reader->SetInputFile(m_file);
-  reader->AddIgnore("(");
-  reader->AddIgnore(")");
-  reader->AddIgnore(",");
+  vector<vector<int> > help;
   pysubs.msel=0;
-  reader->MatrixFromFile(help,"MSUB");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
+
+  Settings& s = Settings::GetMainSettings();
+  ReadSettings(s, "MSUB", pysubs.msub);
+  ReadSettings(s, "CKIN", pysubs.ckin);
+  ReadSettings(s, "MSTJ", pydat1.mstj);
+  ReadSettings(s, "MSTP", pypars.mstp);
+  ReadSettings(s, "MSTU", pydat1.mstu);
+  ReadSettings(s, "PARP", pypars.parp);
+  ReadSettings(s, "PARJ", pydat1.parj);
+  ReadSettings(s, "PARU", pydat1.paru);
+
+  for (const auto& row : s["KFIN"].GetMatrix<int>()) {
+    if (row.size() != 3)
+      THROW(inconsistent_option, "KFIN setting entries must have exactly three values.");
+    if (row[0] < 1)
+      THROW(inconsistent_option, "The first value of a KFIN entry must be greater than 0.");
+    if (row[1] < -40)
+      THROW(inconsistent_option, "The second value of a KFIN entry must be greater than -40.");
+    pysubs.kfin[row[1] + 40][row[0] - 1] = row[2];
   }
-  reader->MatrixFromFile(help,"KFIN");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>2) {
-      if (((int)help[i][0]>0)&&((int)help[i][1]>-41)) {
-	pysubs.kfin[(int)help[i][1]+40][(int)help[i][0]-1]=(int)help[i][2];
-      }
-    }
+
+  for (const auto& row : s["MDME"].GetMatrix<int>()) {
+    if (row.size() != 3)
+      THROW(inconsistent_option, "MDME setting entries must have exactly three values.");
+    if (row[0] < 1)
+      THROW(inconsistent_option, "The first value of an MDME entry must be greater than 0.");
+    if (row[1] < 1 || row[1] > 2)
+      THROW(inconsistent_option, "The second value of an MDME entry must be either 1 or 2.");
+    pydat3.mdme[row[1] - 1][row[0] - 1] = row[2];
   }
-  reader->MatrixFromFile(help,"CKIN");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.ckin[(int)help[i][0]-1]=help[i][1];
+
+
+  for (const auto& row : s["MDCYKF"].GetMatrix<int>()) {
+    if (row.size() != 3)
+      THROW(inconsistent_option, "MDCYKF setting entries must have exactly three values.");
+    if (row[0] < 1)
+      THROW(inconsistent_option, "The first value of an MDCYKF entry must be greater than 0.");
+    if (row[1] < 1 || row[1] > 3)
+      THROW(inconsistent_option, "The second value for an MDCYKF setting entry must be either 1, 2 or 3.");
+    msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
+      <<"Set MDCY("<<pycomp(row[0])<<","<<row[1]
+      <<") ( from KF code "<<row[0]<<" ) to "<<row[2]<<endl;
+    pydat3.mdcy[row[1] - 1][pycomp(row[0]) - 1] = row[2];
   }
-  reader->MatrixFromFile(help,"MSTJ");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.mstj[(int)help[i][0]-1]=(int)help[i][1];
-  }
-  reader->MatrixFromFile(help,"MSTP");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pypars.mstp[(int)help[i][0]-1]=(int)help[i][1];
-  }
-  reader->MatrixFromFile(help,"MSTU");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.mstu[(int)help[i][0]-1]=(int)help[i][1];
-  }
-  reader->MatrixFromFile(help,"PARP");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pypars.parp[(int)help[i][0]-1]=help[i][1];
-  }
-  reader->MatrixFromFile(help,"PARJ");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.parj[(int)help[i][0]-1]=help[i][1];
-  }
-  reader->MatrixFromFile(help,"PARU");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.paru[(int)help[i][0]-1]=help[i][1];
-  }
-  reader->MatrixFromFile(help,"MDME");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>2) {
-      if ((int)help[i][0] > 0 && (int)help[i][1] > 0 && (int)help[i][1] <= 2) {
-	pydat3.mdme[(int)help[i][1]-1][(int)help[i][0]-1]=(int)help[i][2];
-      }
-    }
-  }
-  reader->MatrixFromFile(help,"MDCYKF");
-  for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>2) {
-      if ((int)help[i][0] > 0 && (int)help[i][1] > 0 && (int)help[i][1] <= 3) {
-	msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
-		      <<"Set MDCY("<<pycomp((int)help[i][0])<<","<<(int)help[i][1]
-		      <<") ( from KF code "<<(int)help[i][0]<<" ) to "<<(int)help[i][2]<<endl;
-	pydat3.mdcy[(int)help[i][1]-1][pycomp((int)help[i][0])-1]=(int)help[i][2];
-      }
-    }
-  }
+
   // the next lines replace the apyinit_ call
   hepevt.nhep=100;
   for (int i=pydat3.mdcy[2-1][23-1];i<pydat3.mdcy[2-1][23-1]+pydat3.mdcy[3-1][23-1];++i) {
@@ -159,7 +142,29 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   // replacement ends here
   if (msg_LevelIsDebugging()) ListLundParameters();
   pylist(0);
-  delete reader;
+}
+
+void Lund_Interface::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  // empty matrix defaults
+  s.DeclareMatrixSettingsWithEmptyDefault({
+      "MSUB", "MSTP", "MSTJ", "KFIN", "CKIN", "MSTU",
+      "PARP", "PARJ", "PARU", "MDME", "MDCYKF" });
+}
+
+template <typename T>
+void Lund_Interface::ReadSettings(Settings& settings,
+                                  const std::string& key,
+                                  T *target) const
+{
+  for (const auto& row : settings[key].GetMatrix<double>()) {
+    if (row.size() != 2)
+      THROW(inconsistent_option, key + " setting entries must have exactly two values.");
+    if (row[0] < 1)
+      THROW(inconsistent_option, "The first value of a " + key + " entry must be greater than 0.");
+    target[(size_t)row[0] - 1] = row[1];
+  }
 }
 
 bool Lund_Interface::IsAllowedDecay(kf_code can)

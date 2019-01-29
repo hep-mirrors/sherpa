@@ -3,7 +3,7 @@
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -17,11 +17,10 @@ Amisic::~Amisic() {
   if (m_ana) FinishAnalysis();
 }
 
-bool Amisic::Initialize(Default_Reader *const defaultreader,
-			MODEL::Model_Base *const model,
+bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr)
 {
-  if (!InitParameters(defaultreader)) return false;
+  if (!InitParameters()) return false;
   bool shown = false;
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
@@ -50,9 +49,8 @@ bool Amisic::Initialize(Default_Reader *const defaultreader,
   // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
   //   where x_1 and x_2 are identical
   p_processes = new MI_Processes();
-  p_processes->SetDefaultReader(defaultreader);
   p_processes->SetSigmaND(xsecs.XSnd());
-  p_processes->Initialize(string(""),string(""),model,NULL,isr);
+  p_processes->Initialize(model,NULL,isr);
   
   m_overestimator.Initialize(p_processes);
   m_overestimator.SetXSnd(xsecs.XSnd());
@@ -67,9 +65,9 @@ bool Amisic::Initialize(Default_Reader *const defaultreader,
   return true;
 }
 
-bool Amisic::InitParameters(Default_Reader *const defaultreader) {
+bool Amisic::InitParameters() {
   mipars = new MI_Parameters();
-  return mipars->Init(defaultreader);
+  return mipars->Init();
 }
 
 void Amisic::SetMaxEnergies(const double & E1,const double & E2) {

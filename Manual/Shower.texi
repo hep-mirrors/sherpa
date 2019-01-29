@@ -1,11 +1,6 @@
 @node Shower Parameters
 @section Parton showers
 
-The shower setup is covered by the `(shower)' section of
-the steering file or the shower data file `Shower.dat',
-respectively.
-
-
 The following parameters are used to steer the shower setup.
 
 @menu
@@ -14,38 +9,37 @@ The following parameters are used to steer the shower setup.
 * MASSIVE_PS::            Tag to treat partons as massive in the shower.
 * MASSLESS_PS::           Tag to treat partons as massless in the shower.
 
-* CS Shower options::     Options for Sherpa's default shower.         
+* Sherpa Shower options:: Options for Sherpa's Dire and CS Showers
+* CS Shower options::     Options for Sherpa's CS Shower
 @end menu
 
 
 @node SHOWER_GENERATOR
 @subsection SHOWER_GENERATOR
 
-The only full-fledged shower currently available in Sherpa is 
-@option{CSS}, and this is the default for this tag. See the 
+There are two shower generators in Sherpa, @option{Dire} (default) and
+@option{CSS}. See the
 module summaries in @ref{Basic structure} for details about 
-this shower. For cross-checks in pure parton shower setups,
-one can use @option{Dire}. In this case, one also needs to 
-set @option{CSS_IS_AS_FAC=1}, @option{CSS_FS_AS_FAC=1}, 
-@option{CSS_IS_PT2MIN=3}, and @option{CSS_FS_PT2MIN=3}.
+these showers.
 
 Other shower modules are in principle supported and more
 choices will be provided by Sherpa in the near future.
 To list all available shower modules, the tag 
-@code{SHOW_SHOWER_GENERATORS=1} can be specified on the
+@code{SHOW_SHOWER_GENERATORS: 1} can be specified on the
 command line. 
 
-@code{SHOWER_GENERATOR=None} switches parton showering off completely.
+@code{SHOWER_GENERATOR: None} switches parton showering off completely.
 However, even in the case of strict fixed order calculations, this might
 not be the desired behaviour as, for example, then neither the METS scale
 setter, cf. @ref{SCALES}, nor Sudakov rejection weights can be employed.
-To circumvent when using the CS Shower see @ref{CS Shower options}.
+To circumvent when using the Dire or CS Shower see @ref{Sherpa Shower options}.
 
 @node JET_CRITERION
 @subsection JET_CRITERION
 
-The only natively supported option in Sherpa is @option{CSS}, 
-and this is also the default. The corresponding jet criterion is described 
+This option uses the value for @code{SHOWER_GENERATOR} as its default.
+Correspondingly, the only natively supported options in Sherpa are @option{CSS}
+and @option{Dire}. The corresponding jet criterion is described
 in @mycite{Hoeche2009rj}. A custom jet criterion, tailored to a specific
 experimental analysis, can be supplied using Sherpa's plugin mechanism.
 
@@ -54,7 +48,8 @@ experimental analysis, can be supplied using Sherpa's plugin mechanism.
 
 This option instructs Sherpa to treat certain partons as massive 
 in the shower, which have been considered massless by the matrix element.
-The argument is a list of parton flavours, for example @option{MASSIVE_PS 4 5},
+The argument is a list of parton flavours, for example
+@option{MASSIVE_PS: [4, 5]},
 if both c- and b-quarks are to be treated as massive.
 
 @node MASSLESS_PS
@@ -63,21 +58,18 @@ if both c- and b-quarks are to be treated as massive.
 When hard decays are used, Sherpa treats all flavours as massive in the parton
 shower. This option instructs Sherpa to treat certain partons as massless
 in the shower nonetheless. The argument is a list of parton flavours, for
-example @option{MASSLESS_PS 1 2 3}, if u-, d- and s-quarks are to be treated
+example @option{MASSLESS_PS: [1, 2, 3]}, if u-, d- and s-quarks are to be
+treated
 as massless.
 
-@node CS Shower options
-@subsection CS Shower options
+@node Sherpa Shower options
+@subsection Sherpa Shower options
 @cindex CSS_KIN_SCHEME
 @cindex CSS_IS_PT2MIN
 @cindex CSS_FS_PT2MIN
 @cindex CSS_IS_AS_FAC
 @cindex CSS_FS_AS_FAC
-@cindex CSS_EW_MODE
 @cindex CSS_MAXEM
-@cindex CSS_MASS_THRESHOLD
-@cindex CSS_EVOLUTION_SCHEME
-@cindex CSS_SCALE_SCHEME
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -85,9 +77,9 @@ in @mycite{Hoeche2009rj} and a novel recoil strategy for initial state
 splittings was proposed in @mycite{Hoeche2009xc}. 
 While the ordering variable is fixed, the recoil strategy for dipoles 
 with initial-state emitter and final-state spectator can be changed 
-for systematics studies. Setting @option{CSS_KIN_SCHEME=0} 
+for systematics studies. Setting @option{CSS_KIN_SCHEME: 0}
 corresponds to using the recoil scheme proposed in @mycite{Hoeche2009xc}, 
-while @option{CSS_KIN_SCHEME=1} (default) enables the original recoil strategy.
+while @option{CSS_KIN_SCHEME: 1} (default) enables the original recoil strategy.
 The lower cutoff of the shower evolution can be set via @option{CSS_FS_PT2MIN}
 and @option{CSS_IS_PT2MIN} for final and initial state shower, respectively. 
 Note that this value is specified in GeV^2. Scale factors for the evaluation
@@ -95,24 +87,31 @@ of the strong coupling in the parton shower are given by @option{CSS_FS_AS_FAC}
 and @option{CSS_IS_AS_FAC}. They multiply the ordering parameter, which is
 given in units of GeV^2.
 
-By default, only QCD splitting functions are enabled in the shower.
-If you also want to allow for photon splittings, you can enable them
-by using @option{CSS_EW_MODE=1}. Note, that if you have leptons in your
-matrix-element final state, they are by default treated by a soft
-photon resummation as explained in @ref{QED Corrections}. To avoid
-double counting, this has to be disabled as explained in that section.
-
-Setting @option{CSS_MAXEM=<N>} forces the CS Shower to truncate its evolution
+Setting @option{CSS_MAXEM: <N>} forces the CS Shower to truncate its evolution
 at the Nth emission. Note that in this case not all of the Sudakov weights
 might be computed correctly. On the other hand, the use of CS Shower in the
 METS scale setter is not affected, cf. @ref{SCALES}.
+
+@node CS Shower options
+@subsection CS Shower options
+@cindex CSS_EW_MODE
+@cindex CSS_MASS_THRESHOLD
+@cindex CSS_EVOLUTION_SCHEME
+@cindex CSS_SCALE_SCHEME
+
+By default, only QCD splitting functions are enabled in the CS shower.
+If you also want to allow for photon splittings, you can enable them
+by using @option{CSS_EW_MODE: true}. Note, that if you have leptons in your
+matrix-element final state, they are by default treated by a soft
+photon resummation as explained in @ref{QED Corrections}. To avoid
+double counting, this has to be disabled as explained in that section.
 
 The evolution variable of the CS shower can be changed using 
 @option{CSS_EVOLUTION_SCHEME}. Two options are currently implemented,
 which correspond to transverse momentum ordering (option 0) and modified
 transverse momentum ordering (option 1). The scale at which the strong 
 coupling for gluon splitting into quarks is evaluated can be chosen
-with @option{CSS_SCALE_SCHEME}, where 0 corresponds to the ordering 
+with @option{CSS_SCALE_SCHEME}, where 0 (default) corresponds to the ordering
 parameter and 1 corresponds to invariant mass. Additionally, the CS shower
 allows to disable splittings at scales below the on-shell mass of heavy
 quarks. The upper limit for the corresponding heavy quark mass is set

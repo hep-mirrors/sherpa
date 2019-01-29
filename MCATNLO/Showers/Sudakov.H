@@ -2,7 +2,6 @@
 #define MCATNLO_Showers_Sudakov_H
 
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MCATNLO/Showers/Splitting_Function_Group.H"
 #include "MCATNLO/Tools/Parton.H"
@@ -34,6 +33,7 @@ namespace MCATNLO {
     double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
     std::vector<size_t> m_disallowflav;
+    void RegisterDefaults() const;
     void ProduceT();
     bool Veto(double,double);
     bool Splitting(double,double);

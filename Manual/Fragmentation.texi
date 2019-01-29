@@ -1,11 +1,8 @@
 @node Hadronization
 @section Hadronization
 
-The hadronization setup is covered by the `(fragmentation)' section of
-the steering file or the fragmentation data file `Fragmentation.dat',
-respectively.
-
-It covers the fragmentation of partons into primordial hadrons as well as the
+The hadronization setup covers the fragmentation of partons into primordial
+hadrons as well as the
 decays of unstable hadrons into stable final states.
 
 @menu
@@ -36,7 +33,7 @@ during event generation.
       and @mycite{Marchesini1987cf} and implementing some modifications 
       discussed in @mycite{Winter2003tt}.   
 @item 
-      the hadronization can be disabled with the value @option{Off}. 
+      the hadronization can be disabled with the value @option{None}.
 @item 
       To evaluate uncertainties stemming from the hadronization, Sherpa also 
       provides an interface to the Lund string fragmentation in Pythia 6.4 
@@ -44,9 +41,18 @@ during event generation.
       In this case, the standard Pythia switches @option{MSTJ}, @option{MSTP},
       @option{MSTU}, @option{PARP}, @option{PARJ} and @option{PARU}
       can be used to steer the behaviour of the Lund string, see
-      @mycite{Sjostrand2006za}. They are specified as
-      @code{MSTJ(<number>)=<value>}.
+      @mycite{Sjostrand2006za}. They can be specified as a 2xN matrix:
 @end itemize
+@verbatim
+FRAGMENTATION: Lund
+MSTJ:
+- [<number1>, <value1>]
+- [<number2>, <value2>]
+  ...
+MSTP:
+- [<number1>, <value1>]
+  ...
+@end verbatim
 
 @subsubsection Hadron constituents
 @cindex M_UP_DOWN
@@ -59,10 +65,10 @@ during event generation.
 
 The constituent masses of the quarks and diquarks are given by 
 @itemize @bullet
-@item @code{M_UP_DOWN} (175 MeV), 
-@item @code{M_STRANGE} (375 MeV), 
-@item @code{M_CHARM} (1.9 GeV), and 
-@item @code{M_BOTTOM} (5.2 GeV).  
+@item @code{M_UP_DOWN} (0.3 GeV),
+@item @code{M_STRANGE} (0.4 GeV),
+@item @code{M_CHARM} (1.8 GeV), and
+@item @code{M_BOTTOM} (5.1 GeV).
 @end itemize
 The diquark masses are composed of the quark 
 masses and some additional parameters,
@@ -72,80 +78,77 @@ masses and some additional parameters,
 @end iftex
 with 
 @itemize @bullet
-@item @code{M_DIQUARK_OFFSET} (550 MeV), 
-@item @code{M_BIND_0} (0 MeV), and 
-@item @code{M_BIND_1} (200 MeV).
+@item @code{M_DIQUARK_OFFSET} (0.3 GeV),
+@item @code{M_BIND_0} (0.12 GeV), and
+@item @code{M_BIND_1} (0.5 GeV).
 @end itemize
 
 @subsubsection Hadron multiplets
-@cindex MULTI_WEIGHT_L0R0_PSEUDOSCALARS
-@cindex MULTI_WEIGHT_L0R0_VECTORS
-@cindex MULTI_WEIGHT_L0R0_TENSORS2
-@cindex MULTI_WEIGHT_L0R0_TENSORS3
-@cindex MULTI_WEIGHT_L0R0_TENSORS4
-@cindex MULTI_WEIGHT_L1R0_SCALARS
-@cindex MULTI_WEIGHT_L1R0_AXIALVECTORS
-@cindex MULTI_WEIGHT_L1R0_TENSORS2
-@cindex MULTI_WEIGHT_L2R0_VECTORS
-@cindex MULTI_WEIGHT_L3R0_VECTORS
-@cindex MULTI_WEIGHT_L0R1_SCALARS
-@cindex MULTI_WEIGHT_L0R1_AXIALVECTORS
-@cindex MULTI_WEIGHT_L0R0_N_1/2
-@cindex MULTI_WEIGHT_L0R0_N*_1/2
-@cindex MULTI_WEIGHT_L1R0_N*_1/2
-@cindex MULTI_WEIGHT_L1R0_N*_3/2
-@cindex MULTI_WEIGHT_L0R0_DELTA_3/2
-@cindex MULTI_WEIGHT_L1R0_DELTA*_3/2
-@cindex HEAVY_BARYON_ENHANCEMEMT
+@cindex MULTI_WEIGHT_R0L0_PSEUDOSCALARS
+@cindex MULTI_WEIGHT_R0L0_VECTORS
+@cindex MULTI_WEIGHT_R0L0_TENSORS2
+@cindex MULTI_WEIGHT_R0L1_SCALARS
+@cindex MULTI_WEIGHT_R0L1_AXIALVECTORS
+@cindex MULTI_WEIGHT_R0L2_VECTORS
+@cindex MULTI_WEIGHT_R0L0_N_1/2
+@cindex MULTI_WEIGHT_R1L0_N_1/2
+@cindex MULTI_WEIGHT_R2L0_N_1/2
+@cindex MULTI_WEIGHT_R1_1L0_N_1/2
+@cindex MULTI_WEIGHT_R0L0_DELTA_3/2
 @cindex SINGLET_SUPPRESSION
 @cindex Mixing_0+
 @cindex Mixing_1-
+@cindex Mixing_2+
+@cindex Mixing_3-
+@cindex Mixing_4+
+@cindex ETA_MODIFIER
+@cindex ETA_PRIME_MODIFIER
 
 For the selection of hadrons emerging in such cluster transitions and decays,
 an overlap between the cluster flavour content and the flavour part of the 
 hadronic wave function is formed.  This may be further modified by production
 probabilities, organised by multiplet and given by the parameters
 @itemize @bullet
-@item @code{MULTI_WEIGHT_L0R0_PSEUDOSCALARS} (default 1.0),
-@item @code{MULTI_WEIGHT_L0R0_VECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS2} (default 0.2),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS3} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_TENSORS4} (default 0.0),
-@item @code{MULTI_WEIGHT_L1R0_SCALARS} (default 0.25),
-@item @code{MULTI_WEIGHT_L1R0_AXIALVECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L1R0_TENSORS2} (default 0.0),
-@item @code{MULTI_WEIGHT_L2R0_VECTORS} (default 0.5),
-@item @code{MULTI_WEIGHT_L3R0_VECTORS} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R1_SCALARS} (default 0.5),
-@item @code{MULTI_WEIGHT_L0R1_AXIALVECTORS} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_N_1/2} (default 1.0),
-@item @code{MULTI_WEIGHT_L0R0_N*_1/2} (default 1.0),
-@item @code{MULTI_WEIGHT_L1R0_N*_1/2} (default 0.0),
-@item @code{MULTI_WEIGHT_L1R0_N*_3/2} (default 0.0),
-@item @code{MULTI_WEIGHT_L0R0_DELTA_3/2} (default 0.45), and
-@item @code{MULTI_WEIGHT_L1R0_DELTA*_3/2} (default 0.0).  
+@item @code{MULTI_WEIGHT_R0L0_PSEUDOSCALARS} (default 1.0),
+@item @code{MULTI_WEIGHT_R0L0_VECTORS} (default 1.0),
+@item @code{MULTI_WEIGHT_R0L0_TENSORS2} (default 0.75),
+@item @code{MULTI_WEIGHT_R0L1_SCALARS} (default 0.0),
+@item @code{MULTI_WEIGHT_R0L1_AXIALVECTORS} (default 0.0),
+@item @code{MULTI_WEIGHT_R0L2_VECTORS} (default 0.0),
+@item @code{MULTI_WEIGHT_R0L0_N_1/2} (default 1.0),
+@item @code{MULTI_WEIGHT_R1L0_N_1/2} (default 0.0),
+@item @code{MULTI_WEIGHT_R2L0_N_1/2} (default 0.0),
+@item @code{MULTI_WEIGHT_R1_1L0_N_1/2} (default 0.0),
+@item @code{MULTI_WEIGHT_R0L0_DELTA_3/2} (default 0.25),
 @end itemize
-In addition, there are some enhancement and suppression factors applied to 
-heavy baryons and meson singlets,
+In addition, there is a suppression factors applied to
+meson singlets,
 @itemize @bullet
-@item @code{HEAVY_BARYON_ENHANCEMEMT} (default 7.5), and 
-@item @code{SINGLET_SUPPRESSION} (default 0.25).  
+@item @code{SINGLET_SUPPRESSION} (default 1.0).
 @end itemize
 For the latter, Sherpa also allows
-to redfine the mixing angles through parameters such as
+to redefine the mixing angles through parameters such as
 @itemize @bullet
-@item @code{Mixing_0+} (default -0.31416-pi/2) or 
-@item @code{Mixing_1-} (default 0.61075).
+@item @code{Mixing_0+} (default -14.1/180*M_PI),
+@item @code{Mixing_1-} (default 36.4/180*M_PI),
+@item @code{Mixing_2+} (default 27.0/180*M_PI),
+@item @code{Mixing_3-} (default 0.5411),
+@item @code{Mixing_4+} (default 0.6283),
+@end itemize
+And finally, some modifiers are applied to individual hadrons:
+@itemize @bullet
+@item @code{ETA_MODIFIER} (default 0.12),
+@item @code{ETA_PRIME_MODIFIER} (default 1.0),
 @end itemize
 
 @subsubsection Cluster transition to hadrons - flavour part
 @cindex STRANGE_FRACTION
 @cindex BARYON_FRACTION
+@cindex CHARM_BARYON_MODIFIER
+@cindex BEAUTY_BARYON_MODIFIER
 @cindex P_@{QS@}/P_@{QQ@}
 @cindex P_@{SS@}/P_@{QQ@}
 @cindex P_@{QQ_1@}/P_@{QQ_0@}
-@cindex TRANSITION_OFFSET
-@cindex DECAY_OFFSET
 
 The phase space effects due to these masses govern to a large extent the 
 flavour content of the non-perturbative gluon splittings at the end of the 
@@ -153,11 +156,13 @@ parton shower and in the decay of clusters.  They are further modified by
 relative probabilities with respect to the production of up/down flavours 
 through the parameters 
 @itemize @bullet
-@item @code{STRANGE_FRACTION} (default 0.42), 
-@item @code{BARYON_FRACTION} (default 0.44), 
-@item @code{P_@{QS@}/P_@{QQ@}} (default 0.26), 
-@item @code{P_@{SS@}/P_@{QQ@}} (default 0.18), and 
-@item @code{P_@{QQ_1@}/P_@{QQ_0@}} (default 0.18).  
+@item @code{STRANGE_FRACTION} (default 0.42),
+@item @code{BARYON_FRACTION} (default 1.0),
+@item @code{CHARM_BARYON_MODIFIER} (default 1.0),
+@item @code{BEAUTY_BARYON_MODIFIER} (default 1.0),
+@item @code{P_@{QS@}/P_@{QQ@}} (default 0.2),
+@item @code{P_@{SS@}/P_@{QQ@}} (default 0.04), and
+@item @code{P_@{QQ_1@}/P_@{QQ_0@}} (default 0.20).
 @end itemize
 
 The transition of clusters to hadrons is governed by the following 
@@ -172,19 +177,14 @@ considerations:
       be re-iterpreted as such a hadron.  In this case it will be shifted on
       the corresponding hadron mass, and the recoil will be distributed to the
       ``neighbouring'' clusters or by emitting a soft photon.  This comparison 
-      of masses clearly depends on the multiplets switched on in AHADIC++, 
-      see above, and on an additional offset, which provides an important 
-      tuning parameter, namely 
-      @itemize @bullet
-      @item @code{TRANSITION_OFFSET} (default 0 MeV).   
-      @end itemize
+      of masses clearly depends on the multiplets switched on in AHADIC++.
 @item 
       In addition, clusters may becomes sufficiently light such that they 
       should decay directly into two hadrons instead of two clusters.  
       This decision is based on the heaviest hadrons accessible in
       a decay, modulated by another offset parameter, 
       @itemize @bullet
-      @item @code{DECAY_OFFSET} (default 800 MeV).     
+      @item @code{DECAY_THRESHOLD} (default 500 MeV).
       @end itemize
 @item
       If both options, transition and decay, are available, there is a 
@@ -212,7 +212,7 @@ wave functions of all hadrons, their respective multiplet suppression weights,
 the flavour weight for the creation of the new flavour q and a kinematical
 factor are relevant.  Here, yet another tuning paramter enters,
 @itemize @bullet
-@item @code{MassExponent_C->HH} (default 3.5) 
+@item @code{MASS_EXPONENT} (default 4.0)
 @end itemize
 which partially compensates phase space effects favouring light hadrons,
 @iftex
@@ -231,9 +231,6 @@ which partially compensates phase space effects favouring light hadrons,
 
 
 @subsubsection Cluster decays - kinematics
-@cindex PT^2_0
-@cindex PT_MAX
-@cindex Q_as^2
 
 Cluster decays are generated by firstly emitting a non-perturbative ``gluon''
 from one of the quarks, using a transverse momentum distribution as in the
@@ -254,13 +251,7 @@ term inversemly proportional to the infrared-modified transverse momentum,
         \frac{\alpha_s^{(IR)}(p_\perp^2)}{p_\perp^2+p_{\perp,0}^2}\,,
         \eean
 @end iftex
-constrained to be below a maximal transverse momentum.  The respective 
-tuning parameters are
-@itemize @bullet
-@item @code{PT^2_0} (default 3.0 GeV*GeV),
-@item @code{PT_MAX} (default 1.66 GeV), and
-@item @code{Q_as^2} (default 1.0 GeV*GeV).
-@end itemize
+constrained to be below a maximal transverse momentum.
 @iftex
 The strong coupling is given by 
     \bean
@@ -291,10 +282,11 @@ distribution as in the cluster decays to hadrons.
 @cindex SOFT_MASS_SMEARING
 @cindex MAX_PROPER_LIFETIME
 
-The treatment of hadron and tau decays is specified by @code{DECAYMODEL}.
-Its allowed values are either the default choice @option{Hadrons}, which
-renders the HADRONS++ module responsible for performing the decays, or the
-hadron decays can be disabled with the option @option{Off}.
+The treatment of hadron and tau decays is specified by @code{DECAYMODEL}. Its
+allowed values are either the default choice @option{Hadrons} (the default if
+@option{FRAGMENTATION: Ahadic}), @option{Lund} (the default if
+@option{FRAGMENTATION: Lund}), or it can be disabled with the option
+@option{Off}.
 
 HADRONS++ is the module within the Sherpa framework which is responsible for
 treating hadron and tau decays.  It contains decay tables with branching 
@@ -304,8 +296,7 @@ Especially decays of the tau lepton and heavy mesons have form factor models
 similar to dedicated codes like Tauola @mycite{Jadach1993hs} and
 EvtGen @mycite{Lange2001uf}.
 
-Some general switches which relate to hadron decays can be adjusted in the
-@code{(fragmentation)} section:
+Some general switches which relate to hadron decays are
 
 @itemize @bullet
 @item @anchor{DECAYPATH} @code{DECAYPATH} 
@@ -315,8 +306,8 @@ Some general switches which relate to hadron decays can be adjusted in the
   If it doesn't exist, the default Decaydata
   directory (@code{<prefix>/share/SHERPA-MC/Decaydata}) will be used.
 @item  Hadron properties like mass, width, stable/unstable and active can be set
-  in full analogy to the settings for fundamental particles
-  in the @code{(model)} section (cf. @ref{Models}).
+  in full analogy to the settings for fundamental particles using
+  @option{PARTICLE_DATA}, cf. @ref{Models}.
 @item @anchor{SOFT_MASS_SMEARING} 
       @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
   Determines whether particles entering the hadron decay event
@@ -572,11 +563,11 @@ Mixing_B(s) = 0
 
 @strong{Spin correlations:}
 a spin correlation algorithm is implemented. It can be switched on through the
-keyword @option{SOFT_SPIN_CORRELATIONS=1} in the @code{(run)} section.
+setting @option{SOFT_SPIN_CORRELATIONS: 1}.
 
 If spin correlations for tau leptons
 produced in the hard scattering process are supposed to be taken into account,
-one needs to specify @option{HARD_SPIN_CORRELATIONS=1} as well. If using
+one needs to specify @option{HARD_SPIN_CORRELATIONS: 1} as well. If using
 AMEGIC++ as ME generator, note that the Process libraries have to be re-created
 if this is changed.
 

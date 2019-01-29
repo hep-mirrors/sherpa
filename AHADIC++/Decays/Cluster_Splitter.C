@@ -13,7 +13,7 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
   m_mode(1),
   m_output(false) 
 {
-  m_analyse = true;
+  m_analyse = false;
   if (m_analyse) {
     m_histograms[string("kt")]    = new Histogram(0,0.,5.,100);
     m_histograms[string("z1")]    = new Histogram(0,0.,1.,100);

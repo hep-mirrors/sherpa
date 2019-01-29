@@ -1,7 +1,6 @@
 #include "ATOOLS/Org/My_MPI.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -25,7 +24,7 @@ My_MPI::~My_MPI()
 {
 }
 
-void My_MPI::SetUpSendRecv(Data_Reader *const read)
+void My_MPI::SetUpSendRecv()
 {
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();

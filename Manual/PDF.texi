@@ -45,14 +45,13 @@ extern "C" void ExitPDFLib() { delete p_get; }
 
 If the code is compiled into a library called libExamplePDFSherpa.so,
 then this library is loaded dynamically in Sherpa using 
-@samp{PDF_LIBRARY=ExamplePDFSherpa} either on the command line, 
-in @file{Run.dat} or in @file{ISR.dat}. If the library is bound
+@samp{PDF_LIBRARY: ExamplePDFSherpa} either on the command line, or in the
+@file{Sherpa.yaml}. If the library is bound
 at compile time, like e.g. in cmt, you may skip this step.
 It is now possible to list all accessible PDF sets by specifying
-@option{SHOW_PDF_SETS=1} on the command line.
+@option{SHOW_PDF_SETS: 1} on the command line.
 
 Finally Sherpa is instructed to retrieve the external PDF by specifying
-@option{PDF_SET=ExamplePDF} on the command line, in @file{Run.dat}
-or in @file{ISR.dat}.
+@option{PDF_SET: ExamplePDF} on the command line or in the @file{Sherpa.yaml}.
 
 

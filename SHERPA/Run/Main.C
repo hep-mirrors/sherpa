@@ -1,6 +1,7 @@
 #include "SHERPA/Main/Sherpa.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -28,9 +29,9 @@ int main(int argc,char* argv[])
 #endif
 #endif
 
-  Sherpa* Generator = new Sherpa();
+  Sherpa* Generator = new Sherpa(argc, argv);
   try {
-    Generator->InitializeTheRun(argc,argv);
+    Generator->InitializeTheRun();
     int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
       Generator->InitializeTheEventHandler();

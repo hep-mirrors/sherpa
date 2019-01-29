@@ -6,10 +6,10 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace PHASIC {
 
@@ -62,6 +62,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  Settings& s = Settings::GetMainSettings();
   std::string tag(args.m_scale), core;
   size_t pos(tag.find("VAR["));
   if (pos!=std::string::npos) {
@@ -73,8 +74,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
     tag=tag.substr(pos+1);
   }
   if (core == "") {
-    Default_Reader reader;
-    core = reader.Get<std::string>("CORE_SCALE", "Default");
+    core = s["CORE_SCALE"].Get<std::string>();
   }
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");

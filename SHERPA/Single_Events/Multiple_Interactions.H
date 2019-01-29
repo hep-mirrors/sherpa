@@ -12,6 +12,7 @@ namespace SHERPA {
   private:
     double m_hardveto;
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
+    double m_defaultptmax;
     double m_weight, m_ntrials;
 
     MI_Handler              * p_mihandler;

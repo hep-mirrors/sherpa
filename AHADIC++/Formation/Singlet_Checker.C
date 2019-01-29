@@ -2,6 +2,9 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+
+#include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -115,7 +118,7 @@ bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
-    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().Abs2()<-1.e-2) {
+    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   negative energy or mass^2 particle in singlet:\n"
 		 <<(*p_singlet)<<"n";

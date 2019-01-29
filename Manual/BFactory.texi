@@ -5,7 +5,7 @@ Example setup for QCD continuum production at the Belle/KEK collider.
 Please note, it does not include any hadronic resonance.
 @example
 @smallformat
-@verbatiminclude Examples/BFactory/Belle_QCDBackground/Run.dat
+@verbatiminclude Examples/BFactory/Belle_QCDBackground/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -23,7 +23,7 @@ Things to notice:
 Example setup for B-hadron pair production on the Y(4S) pole.
 @example
 @smallformat
-@verbatiminclude Examples/BFactory/Belle_Signal/Run.dat
+@verbatiminclude Examples/BFactory/Belle_Signal/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -40,7 +40,7 @@ This setup is not a collider setup, but a simulation of a hadronic
 decay chain.
 @example
 @smallformat
-@verbatiminclude Examples/BFactory/BDecay/Run.dat
+@verbatiminclude Examples/BFactory/BDecay/Sherpa.yaml
 @end smallformat
 @end example
 

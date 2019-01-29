@@ -1,12 +1,13 @@
 #include "AddOns/Analysis/Main/Analysis_Handler.H"
 
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Variable.H"
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Analysis_Handler
@@ -24,8 +25,6 @@
 using namespace ANALYSIS;
 using namespace SHERPA;
 using namespace ATOOLS;
-
-size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
   Analysis_Interface("Internal"),
@@ -49,176 +48,123 @@ void Analysis_Handler::Clean()
   }
 }
 
-Argument_Matrix
-Analysis_Handler::FindArguments(const Argument_Matrix &strings,
-				size_t &starty,size_t &startx)
-{
-  size_t j=0, open=0;
-  Argument_Matrix result;
-  if (strings[starty].size()>startx) j=startx;
-  for (size_t i=starty;i<strings.size();++i) {
-    result.push_back(std::vector<std::string>(strings[i].size()-j));
-    for (size_t k=0;j<strings[i].size();++j,++k) {
-      result.back()[k]=strings[i][j];
-      size_t opos=result.back()[k].find("{");
-      if (opos!=std::string::npos) {
-	++open;
-	if (open==1) {
-	  if (opos+1<result.back()[k].size()) 
-	    result.back()[k]=result.back()[k].substr(opos+1);
-	  else 
-	    result.back()[k]="";
-	  if (result.back()[k].length()==0) {
-	    --k;
-	    result.back().pop_back();
-	    if (result.back().size()==0) result.pop_back();
-	    continue;
-	  }
-	}
-      }
-      if (open>0) {
-	size_t cpos=result.back()[k].find("}");
-	if (cpos!=std::string::npos) --open;
-	if (open==0) {
-	  result.back()[k]=result.back()[k].substr(0,cpos);
-	  result.back().resize(k+1);
-	  if (k==0 && result.back()[0].length()==0) 
-	    result.resize(result.size()-1);
-	  return result;
-	}
-      }
-    }
-    if (open==0) break;
-    j=0;
-  }  
-  return result;
-}
-
 void Analysis_Handler::ShowSyntax(const int i)
 {
   ATOOLS::Variable_Base<double>::ShowVariables(i);
   ATOOLS::Particle_Qualifier_Base::ShowQualifiers(i);
   if (!msg_LevelIsInfo() || i==0) return;
-  msg_Out()<<"Analysis_Handler::ShowSyntax(): {\n\n"
-	   <<"   ..     -  mandatory variable\n"
-	   <<"   ..|..  -  mandatory selection\n"
-	   <<"   [..]   -  optional variable\n"
-	   <<"   -> ..  -  depends on\n\n"
-	   <<"   list   -  particle list specifier, \n\n"
-	   <<"   BEGIN_ANALYSIS {\n\n"
-	   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
-	   <<"   PATH_PIECE path\n\n"
-	   <<"   // observable listing\n\n";
+  msg_Out()<<METHOD;
+  msg_Out()<<"(): {\n\n"
+	   <<"   You can give analyses as elements of the INTERNAL_ANALYSES\n"
+	   <<"   yaml sequence in your yaml configuration. Each analysis is a\n"
+	   <<"   yaml mapping with the following keys (among others):\n"
+	   <<"\n"
+	   <<"   LEVEL: [...]\n"
+	   <<"   PATH_PIECE: ...\n"
+	   <<"   OBSERVABLES: [...]\n"
+	   <<"   ANALYSES_OBJECTS: [...]\n"
+	   <<"\n"
+	   <<"   LEVEL can be a list of the following keys: MENLO, ME, MI\n"
+	   <<"   Shower, Hadron."
+	   <<"\n"
+	   <<"   Each observable/analysis object is itself a mapping with a\n"
+	   <<"   single key-value pair. The key gives the name of the\n"
+	   <<"   observable/object and the value is either a scalar, mapping\n"
+	   <<"   or a sequence, giving more details on its evaluation.\n"
+	   <<"   In the following we list the possible keys and the\n"
+	   <<"   corresponding value syntax for each observable and\n"
+	   <<"   analysis object.\n"
+	   <<"\n"
+	   <<"   Observables:\n"
+	   <<"\n";
   Observable_Getter_Function::PrintGetterInfo(msg->Out(),15);
-  msg_Out()<<"\n   // detector/trigger & tools listing\n\n";
+  msg_Out()<<"\n\n   Analysis objects:\n\n";
   Object_Getter_Function::PrintGetterInfo(msg->Out(),15);
-  msg_Out()<<"\n   } END_ANALYSIS\n\n"
-	   <<"}"<<std::endl;
+  msg_Out()<<"}"<<std::endl;
 }
 
 bool Analysis_Handler::Init()
 {
   msg_Info()<<"Analysis_Handler::ReadIn(): {\n";
   bool success=false;
-  std::vector<std::string> helpsv;
-  std::vector<std::vector<std::string> > helpsvv;
-  Data_Reader reader(" ",";","//");
-  reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
-  reader.SetInputPath(InputPath());
-  std::string infile(InputFile());
-  if (infile.find('|')!=std::string::npos)
-    infile=infile.substr(0,infile.find('|'));
-  reader.SetInputFile(infile+"|BEGIN_ANALYSIS|END_ANALYSIS");
-  reader.AddComment("#");
-  for (size_t i=0;i<s_maxanalyses;++i) {
-    reader.SetOccurrence(i);
-    reader.RescanInFile();
-    if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
-    int split=false, splitsh=false;
-    if (!reader.ReadFromFile(splitsh,"SPLITSH")) splitsh=true;
-    int mode=ANALYSIS::fill_all|ANALYSIS::split_vars|
-      ANALYSIS::splitt_jetseeds|(splitsh?ANALYSIS::split_sh:0);
-    for (size_t j=0;j<helpsv.size();++j) {
-      if (split) mode=mode|ANALYSIS::splitt_phase;
-      else split=true;
-      if (helpsv[j].find("MENLO")!=std::string::npos) 
-	mode=mode|ANALYSIS::do_menlo;
-      else if (helpsv[j].find("ME")!=std::string::npos) 
-	mode=mode|ANALYSIS::do_me;
-      else if (helpsv[j].find("MI")!=std::string::npos) 
-	mode=mode|ANALYSIS::do_mi;
-      else if (helpsv[j].find("Shower")!=std::string::npos) 
-	mode=mode|ANALYSIS::do_shower;
-      else if (helpsv[j].find("Hadron")!=std::string::npos) 
-	mode=mode|ANALYSIS::do_hadron;
+
+  Scoped_Settings analyses_settings{
+    Settings::GetMainSettings()["INTERNAL_ANALYSES"] };
+  analyses_settings.DeclareVectorSettingsWithEmptyDefault({ "LEVEL" });
+
+  for (auto& s : analyses_settings.GetItems()) {
+    const auto levels = s["LEVEL"].GetVector<std::string>();
+    if (levels.empty())
+      break;
+    auto split = false;
+    const auto splitsh = s["SPLITSH"].SetDefault(true).Get<bool>();
+    int mode = ANALYSIS::fill_all
+               | ANALYSIS::split_vars
+               | ANALYSIS::splitt_jetseeds
+               | (splitsh ? ANALYSIS::split_sh : 0);
+    for (const auto& level : levels) {
+      if (split)
+        mode = mode | ANALYSIS::splitt_phase;
+      if (level == "MENLO")
+        mode = mode | ANALYSIS::do_menlo;
+      else if (level == "ME")
+        mode = mode | ANALYSIS::do_me;
+      else if (level == "MI")
+        mode = mode | ANALYSIS::do_mi;
+      else if (level == "Shower")
+        mode = mode | ANALYSIS::do_shower;
+      else if (level == "Hadron")
+        mode = mode | ANALYSIS::do_hadron;
       else {
-	msg_Error()<<"Analysis_Handler::ReadIn(): "
-		   <<"Invalid analysis mode '"<<helpsv[j]
-		   <<"'"<<std::endl;
-	continue;
+        msg_Error()
+          << "Analysis_Handler::ReadIn(): "
+          << "Invalid analysis mode '" << level << "'" << std::endl;
+        continue;
       }
     }
-    success=true;
-    std::string outpath;
-    if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
-    msg_Info()<<"   new Primitive_Analysis(\""<<outpath<<"\") -> "<<helpsv[0];
-    for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
-    msg_Info()<<"\n";
-    msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
-    mode=mode|m_weighted;
-    m_analyses.push_back(new Primitive_Analysis(this,ToString(i),mode));
+    success  = true;
+    const auto outpath = s["PATH_PIECE"].SetDefault("").Get<std::string>();
+    msg_Info() << "   new Primitive_Analysis(\"" << outpath << "\") -> " << levels[0];
+    for (size_t j{ 1 }; j < levels.size(); ++j) msg_Info() << ", " << levels[j];
+    msg_Info() << "\n";
+    msg_Tracking() << "   new Primitive_Analysis(..) {\n";
+    mode = mode | m_weighted;
+    m_analyses.push_back(new Primitive_Analysis(this, ToString(s.GetIndex()), mode));
     m_analyses.back()->SetOutputPath(outpath);
-    int usedb;
-    if (!reader.ReadFromFile(usedb,"USE_DB")) usedb=0;
+    const auto usedb = s["USE_DB"].SetDefault(false).Get<bool>();
     m_analyses.back()->SetUseDB(usedb);
-    std::string maxjettag;
-    if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
+    const auto& maxjettag = s["NMAX_JETS"].SetDefault("").Get<std::string>();
     m_analyses.back()->SetMaxJetTag(maxjettag);
-    int splitjetconts;
-    if (!reader.ReadFromFile(splitjetconts,"JETCONTS")) splitjetconts=1;
+    const auto& splitjetconts = s["JETCONTS"].SetDefault(1).Get<int>();
     m_analyses.back()->SetSplitJetConts(splitjetconts);
-    reader.MatrixFromFile(helpsvv,"");
-    Argument_Matrix arguments(helpsvv);
-    for (size_t k=0;k<helpsvv.size();++k) {
-      if (arguments[k].size()>0) {
-	if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
+    auto obssettings = s["OBSERVABLES"];
+    for (auto& singleobssettings : obssettings.GetItems()) {
+      const auto& obsnames = singleobssettings.GetKeys();
+      if (obsnames.size() != 1)
+        THROW(fatal_error,
+              "Each observable setting must be a single key-value pair.");
+      const auto& obsname = obsnames.front();
+      Analysis_Key anakey{
+        singleobssettings[obsname], m_analyses.back() };
+      ANALYSIS::Primitive_Observable_Base* observable{
+        Observable_Getter_Function::GetObject(obsname, anakey) };
+      if (observable != nullptr) {
+        m_analyses.back()->AddObject(observable);
       }
-      size_t col=1;
-      Argument_Matrix mat=FindArguments(arguments,k,col);
-      ANALYSIS::Primitive_Observable_Base *observable = 
-	Observable_Getter_Function::GetObject
-	(arguments[k][0],mat(m_analyses.back()));
-      if (observable!=NULL) {
-	m_analyses.back()->AddObject(observable);
-	if (msg_LevelIsTracking()) {
-	  msg_Out()<<"      new Primitive_Observable_Base(\""
-		   <<arguments[k][0]<<"\",";
-	  for (size_t i=0;i<mat.size();++i) {
-	    msg_Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
-	    for (size_t j=1;j<mat[i].size();++j) 
-	      msg_Out()<<","<<mat[i][j];
-	    msg_Out()<<"}";
-	  }
-	  msg_Out()<<")\n";
-	}
-      }
-      ANALYSIS::Analysis_Object *object = 
-	Object_Getter_Function::GetObject
-	(arguments[k][0],mat(m_analyses.back()));
-      if (object!=NULL) {
-	m_analyses.back()->AddObject(object);
-	if (msg_LevelIsTracking()) {
-	  msg_Out()<<"      new Analysis_Object(\""
-		   <<arguments[k][0]<<"\",";
-	  for (size_t i=0;i<mat.size();++i) {
-	    msg_Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
-	    for (size_t j=1;j<mat[i].size();++j) 
-	      msg_Out()<<","<<mat[i][j];
-	    msg_Out()<<"}";
-	  }
-	  msg_Out()<<")\n";
-	}
+    }
+    auto anasettings = s["ANALYSES_OBJECTS"];
+    for (auto& singleanasettings : anasettings.GetItems()) {
+      const auto& ananames = singleanasettings.GetKeys();
+      if (ananames.size() != 1)
+        THROW(fatal_error,
+              "Each observable setting must be a single key-value pair.");
+      const auto& ananame = ananames.front();
+      Analysis_Key anakey{
+        singleanasettings[ananame], m_analyses.back() };
+      ANALYSIS::Analysis_Object* object{
+        Object_Getter_Function::GetObject(ananame, anakey) };
+      if (object != nullptr) {
+        m_analyses.back()->AddObject(object);
       }
     }
     msg_Tracking()<<"   }\n";
@@ -303,8 +249,6 @@ Analysis_Interface *ATOOLS::Getter
 operator()(const Analysis_Arguments &args) const
 {
   Analysis_Handler *analysis(new ANALYSIS::Analysis_Handler());
-  analysis->SetInputPath(args.m_inpath);
-  analysis->SetInputFile(args.m_infile);
   analysis->SetOutputPath(args.m_outpath);
   return analysis;
 }

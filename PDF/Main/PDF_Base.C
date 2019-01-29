@@ -9,7 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -26,12 +26,24 @@ PDF_Base::PDF_Base():
   m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
   m_nf(-1)
 {
-  Default_Reader reader;
-  m_lhef_number = reader.Get<int>("LHEF_PDF_NUMBER", -1);
+  RegisterDefaults();
+  Settings& s = Settings::GetMainSettings();
+  m_lhef_number = s["LHEF_PDF_NUMBER"].Get<int>();
 }
 
 PDF_Base::~PDF_Base()
 {
+}
+
+void PDF_Base::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["LHEF_PDF_NUMBER"].SetDefault(-1);
+
+  Scoped_Settings lhapdfsettings{ s["LHAPDF"] };
+  lhapdfsettings["NUMBER_OF_FLAVOURS"].SetDefault(5);
+  lhapdfsettings["GRID_PATH"].SetDefault("");
+  lhapdfsettings.DeclareVectorSettingsWithEmptyDefault({ "DISALLOW_FLAVOUR" });
 }
 
 double PDF_Base::GetDefaultAlpha()
@@ -120,7 +132,10 @@ void PDF_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   // available PDF sets (specified by PDF_SET=<value>)\n\n";
+	   <<"   // available PDF sets ...\n"
+	   <<"   // specified by PDF_SET: <set for both beams>\n"
+	   <<"   // or PDF_SET: [<set for beam_1>, <set for beam_2>])\n"
+	   <<"   // Default can be used as a placeholder to let Sherpa choose\n\n";
   PDF_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }

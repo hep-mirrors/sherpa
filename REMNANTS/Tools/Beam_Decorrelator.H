@@ -39,8 +39,7 @@ namespace REMNANTS {
     Beam_Decorrelator();
     ~Beam_Decorrelator();
 
-    void Initialize(Remnant_Handler * const rhandler,
-		    const std::string & path, const std::string & file);
+    void Initialize(Remnant_Handler * const rhandler);
     bool operator()(ATOOLS::Blob * softblob);
     void Reset();
   };

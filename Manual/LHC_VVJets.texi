@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -18,7 +18,7 @@ Things to notice:
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -33,7 +33,7 @@ Things to notice:
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -48,7 +48,7 @@ Things to notice:
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets_GluonInitiated/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets_GluonInitiated/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -63,7 +63,7 @@ Things to notice:
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_WqqZnunuJets/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_WqqZnunuJets/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -78,7 +78,7 @@ Things to notice:
 
 @example
 @smallformat
-@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Run.dat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Sherpa.yaml
 @end smallformat
 @end example
 

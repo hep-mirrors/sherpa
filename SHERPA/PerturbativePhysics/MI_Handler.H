@@ -1,8 +1,6 @@
 #ifndef SHERPA_PerturbativePhysics_MI_Handler_H
 #define SHERPA_PerturbativePhysics_MI_Handler_H
 
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
@@ -39,11 +37,9 @@ namespace SHERPA {
 
     double m_ycut; 
     
-    void InitAmisic(std::string & path,ATOOLS::Default_Reader *const dr,
-		    MODEL::Model_Base *model);
+    void InitAmisic(MODEL::Model_Base *model);
   public:
-    MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
-	       PDF::ISR_Handler *isr);
+    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
     ~MI_Handler();
     
     bool InitialiseMPIs(const double & scale);

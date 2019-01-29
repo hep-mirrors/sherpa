@@ -24,7 +24,7 @@ namespace MODEL {
 
   public :
 
-    Standard_Model_Zprime(std::string,std::string);
+    Standard_Model_Zprime();
     bool ModelInit(const PDF::ISR_Handler_Map& isr);
     void InitVertices();
 
@@ -39,10 +39,11 @@ namespace MODEL {
 #include "MODEL/Main/Single_Vertex.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -53,7 +54,7 @@ DECLARE_GETTER(Standard_Model_Zprime,"SMZprime",Model_Base,Model_Arguments);
 Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model_Zprime>::
 operator()(const Model_Arguments &args) const
 {
-  return new Standard_Model_Zprime(args.m_path,args.m_file);
+  return new Standard_Model_Zprime();
 }
 
 void Getter<Model_Base,Model_Arguments,Standard_Model_Zprime>::
@@ -61,7 +62,7 @@ PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
-     <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
      <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,3, EW input schemes, see documentation)\n"
      <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
      <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
@@ -87,13 +88,14 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+4)<<" "<<"}";
 }
 
-Standard_Model_Zprime::Standard_Model_Zprime(string _dir,string _file) :
-  Model_Base(_dir,_file,1)
+Standard_Model_Zprime::Standard_Model_Zprime() :
+  Model_Base(true)
 {
   m_name="SM";
   ParticleInit();
   ParticleZprimeInit();
   ReadParticleData();
+  RegisterDefaults();
   AddStandardContainers();
   CustomContainerInit();
 }
@@ -132,11 +134,11 @@ void Standard_Model_Zprime::ParticleZprimeInit()
 
 bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
-  p_dataread->RereadInFile();
   FixZprimeParameters();
   FixEWParameters();
   FixCKM();
-  SetAlphaQCD(isr,p_dataread->GetValue<double>("ALPHAS(MZ)",0.118));
+  Settings& s = Settings::GetMainSettings();
+  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
@@ -152,13 +154,14 @@ bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void Standard_Model_Zprime::FixEWParameters()
 {
+  Settings& s = Settings::GetMainSettings();
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
-  string yukscheme=p_dataread->GetValue<string>("YUKAWA_MASSES","Running");
+  string yukscheme=s["YUKAWA_MASSES"].Get<string>();
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
-  string widthscheme=p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
+  string widthscheme = s["WIDTH_SCHEME"].Get<string>();
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",2);
-  int ewrenscheme=p_dataread->GetValue<int>("EW_REN_SCHEME",ewscheme);
+  int ewscheme = s["EW_SCHEME"].Get<int>();
+  int ewrenscheme = s["EW_REN_SCHEME"].Get<int>();
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
@@ -167,15 +170,15 @@ void Standard_Model_Zprime::FixEWParameters()
   case 0:
     // all SM parameters given explicitly
     ewschemename="user-defined, input: all parameters";
-    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
-    cvev=p_dataread->GetValue<double>("VEV",246.);
+    cvev = s["VEV"].Get<double>();
     break;
   case 1: {
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     ewschemename="alpha(0) scheme, input: 1/\\alphaQED(0), m_W, m_Z, m_h, widths";
-    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",0.));
+    SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -190,7 +193,7 @@ void Standard_Model_Zprime::FixEWParameters()
   case 2: {
     // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
     ewschemename="alpha(m_Z) scheme, input: 1/\\alphaQED(m_Z), m_W, m_Z, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)");
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -205,7 +208,7 @@ void Standard_Model_Zprime::FixEWParameters()
   case 3: {
     // Gmu scheme
     ewschemename="Gmu scheme, input: GF, m_W, m_Z, m_h, widths";
-    double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
+    double GF = s["GF"].Get<double>();
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
     cvev=1./(pow(2.,0.25)*sqrt(GF));
@@ -214,7 +217,7 @@ void Standard_Model_Zprime::FixEWParameters()
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=1./(pow(2.,0.25)*sqrt(GF));
-      size_t aqedconv(p_dataread->GetValue<size_t>("GMU_CMS_AQED_CONVENTION",0));
+      const auto aqedconv = s["GMU_CMS_AQED_CONVENTION"].Get<size_t>();
       switch (aqedconv) {
       case 0:
         SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muW2*csin2thetaW));
@@ -240,8 +243,8 @@ void Standard_Model_Zprime::FixEWParameters()
   case 4: {
     // DY scheme
     ewschemename="DY scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)");
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MW=MZ*sqrt(ccos2thetaW.real());
     Flavour(kf_Wplus).SetMass(MW);
@@ -263,8 +266,8 @@ void Standard_Model_Zprime::FixEWParameters()
   case 5: {
     // CDY scheme
     ewschemename="CDY scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MW)",132.17);
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    SetAlphaQEDByInput("1/ALPHAQED(MW)");
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MZ=MW/sqrt(ccos2thetaW.real());
     Flavour(kf_Z).SetMass(MZ);
@@ -286,8 +289,8 @@ void Standard_Model_Zprime::FixEWParameters()
   case 10: {
     // FeynRules scheme, inputs: alphaQED, GF, M_Z, M_H
     ewschemename="FeynRules scheme, input: 1/\\alphaQED(0), GF, m_Z, m_h, widths";
-    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976));
-    double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
+    SetAlphaQED(1./s["1/ALPHAQED(0)"].Get<double>());
+    double GF = s["GF"].Get<double>();
     MW=sqrt(sqr(MZ)/2.+sqrt(pow(MZ,4)/4.
                             -(aqed->Default()*M_PI*sqr(MZ))/(GF*sqrt(2.))));
     Flavour(kf_Wplus).SetMass(MW);
@@ -353,28 +356,29 @@ void Standard_Model_Zprime::FixEWParameters()
 
 void Standard_Model_Zprime::FixCKM()
 {
+  auto s = Settings::GetMainSettings()["CKM"];
   CMatrix CKM(3);
   for (int i=0;i<3;i++) {
     for (int j=i;j<3;j++) CKM[i][j] = CKM[j][i] = Complex(0.,0.);
     CKM[i][i] = Complex(1.,0.);
   }
   double Cabibbo=0.0,A=.8,rho,eta;
-  m_ckmorder     = p_dataread->GetValue<int>("CKM_ORDER",0);
+  m_ckmorder     = s["Order"].Get<int>();
   if (m_ckmorder>0) {
-    Cabibbo    = p_dataread->GetValue<double>("CKM_CABIBBO",0.22537);
+    Cabibbo    = s["Cabibbo"].Get<double>();
     CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[0][1] += Cabibbo * Complex( 1.,0.);
     CKM[1][0] += Cabibbo * Complex(-1.,0.);
   }
   if (m_ckmorder>1) {
-    A          = p_dataread->GetValue<double>("CKM_A",0.814);
+    A          = s["A"].Get<double>();
     CKM[1][2] += A*sqr(Cabibbo)  * Complex( 1.,0.);
     CKM[2][1] += A*sqr(Cabibbo)  * Complex(-1.,0.);
   }
   if (m_ckmorder>2) {
-    eta        = p_dataread->GetValue<double>("CKM_ETA",0.353);
-    rho        = p_dataread->GetValue<double>("CKM_RHO",0.117);
+    eta        = s["Eta"].Get<double>();
+    rho        = s["Rho"].Get<double>();
     CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
     CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }
@@ -427,7 +431,8 @@ void Standard_Model_Zprime::InitQEDVertices()
 void Standard_Model_Zprime::InitQCDVertices()
 {
   if (!Flavour(kf_gluon).IsOn()) return;
-  m_dec_g4 = p_dataread->GetValue<int>("DECOMPOSE_4G_VERTEX",1);
+  Settings& s = Settings::GetMainSettings();
+  m_dec_g4 = s["DECOMPOSE_4G_VERTEX"].Get<int>();
   Kabbala g3("g_3",sqrt(4.*M_PI*ScalarConstant("alpha_S")));
   Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
   for (short int i=1;i<=6;++i) {

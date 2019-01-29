@@ -1,6 +1,6 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
@@ -12,7 +12,7 @@ namespace PHASIC {
   class C3_1 : public Single_Channel {
     Info_Key m_kI_2_3,m_kI_4_23,m_kZS_187;
     Vegas* p_vegas;
-    int m_onshell;
+    bool m_onshell;
   public:
     C3_1(int,int,Flavour*,Integration_Info * const);
     ~C3_1();
@@ -48,8 +48,8 @@ void C3_1::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   Vec4D  p23;
   double s23 = CE.MassivePropMomenta(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,ran[0]);
   if (m_onshell) s23=sqr(fl23.Mass());
-  CE.Isotropic2Momenta(p234,s4,s23,p[4],p23,ran[1-m_onshell],ran[2-m_onshell]);
-  CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-m_onshell],ran[4-m_onshell]);
+  CE.Isotropic2Momenta(p234,s4,s23,p[4],p23,ran[1-(size_t)m_onshell],ran[2-(size_t)m_onshell]);
+  CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-(size_t)m_onshell],ran[4-(size_t)m_onshell]);
 }
 
 void C3_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
@@ -69,14 +69,14 @@ void C3_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
     m_kI_4_23<<CE.Isotropic2Weight(p[4],p23,m_kI_4_23[0],m_kI_4_23[1]);
   wt *= m_kI_4_23.Weight();
 
-  rans[1-m_onshell]= m_kI_4_23[0];
-  rans[2-m_onshell]= m_kI_4_23[1];
+  rans[1-(size_t)m_onshell]= m_kI_4_23[0];
+  rans[2-(size_t)m_onshell]= m_kI_4_23[1];
   if (m_kI_2_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_2_3<<CE.Isotropic2Weight(p[2],p[3],m_kI_2_3[0],m_kI_2_3[1]);
   wt *= m_kI_2_3.Weight();
 
-  rans[3-m_onshell]= m_kI_2_3[0];
-  rans[4-m_onshell]= m_kI_2_3[1];
+  rans[3-(size_t)m_onshell]= m_kI_2_3[0];
+  rans[4-(size_t)m_onshell]= m_kI_2_3[1];
   double vw = p_vegas->GenerateWeight(rans);
   if (wt!=0.) wt = vw/wt/pow(2.*M_PI,3*3.-4.);
 
@@ -86,10 +86,9 @@ void C3_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 C3_1::C3_1(int nin,int nout,Flavour* fl,Integration_Info * const info)
        : Single_Channel(nin,nout,fl)
 {
-  Default_Reader reader;
-  m_onshell = reader.Get<int>("HIGGS_ON_SHELL", 0);
+  m_onshell = Settings::GetMainSettings()["HIGGS_ON_SHELL"].Get<bool>();
   name = std::string("C3_1");
-  rannum = 5-m_onshell;
+  rannum = 5-(size_t)m_onshell;
   rans  = new double[rannum];
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);
   m_kI_4_23.Assign(std::string("I_4_23"),2,0,info);

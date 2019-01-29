@@ -22,8 +22,8 @@ Matter_Overlap::~Matter_Overlap() {}
 void Matter_Overlap::Initialize() {
   InitializeFormFactors();
   CalculateIntegral();
-  msg_Out()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
-	   <<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
+  msg_Tracking()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
+		<<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
 }
 
 double Matter_Overlap::operator()(double b) {
@@ -54,9 +54,8 @@ double Matter_Overlap::SelectB() const {
       break;
   }
   do {
-    ran->Gaussian(b,b2);
-    b = dabs(b)*radius;
-    if (b>m_bmax) b = dabs(b2)*radius;
+    auto b = dabs(ran->GetGaussian())*radius;
+    if (b>m_bmax) b = dabs(ran->GetGaussian())*radius;
   } while (b>m_bmax);
   return b;
 }

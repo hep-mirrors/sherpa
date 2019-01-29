@@ -13,8 +13,6 @@ namespace EXTRAXS {
   class Simple_XS: public Process_Group, public PHASIC::ME_Generator_Base {
   private :
 
-    std::string m_path, m_file;
-
     void DrawLogo(std::ostream &ostr);
 
   public :
@@ -26,11 +24,10 @@ namespace EXTRAXS {
     ~Simple_XS();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
-    Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
+    Process_Base *InitializeProcess(const PHASIC::Process_Info &, bool add);
     int PerformTests();
     bool NewLibraries();
 
@@ -44,7 +41,6 @@ namespace EXTRAXS {
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 //#include "REMNANTS/Main/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -71,17 +67,11 @@ Simple_XS::~Simple_XS()
 {
 }
 
-bool Simple_XS::Initialize(const string &path,const string &file,
-			   Model_Base *const model,
+bool Simple_XS::Initialize(Model_Base *const model,
 			   BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isrhandler)
 {
-  m_path=path;
-  m_file=file;
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  SetPSMasses(&reader);
+  SetPSMasses();
   p_int->SetBeam(beam); 
   p_int->SetISR(isrhandler);
   return true;
@@ -128,7 +118,7 @@ int Simple_XS::PerformTests()
 {
   return 1;
 }
-  
+
 bool Simple_XS::NewLibraries()
 {
   return false;

@@ -21,8 +21,6 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace ATOOLS {
 
-  class Default_Reader;
-
   class Variation_Parameters;
   class Variation_Weights;
 
@@ -39,10 +37,10 @@ namespace ATOOLS {
   //! Initialise and hold all information that is needed for varying input parameters
   class Variations {
   public:
-    static bool NeedsLHAPDF6Interface(std::string inputpath);
+    static bool NeedsLHAPDF6Interface();
     static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
-    Variations(ATOOLS::Default_Reader * const);
+    Variations();
     ~Variations();
     typedef std::vector<Variation_Parameters *> Parameters_Vector;
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
@@ -55,21 +53,17 @@ namespace ATOOLS {
     void PrintStatistics(std::ostream &str);
 
   private:
-    Parameters_Vector m_parameters_vector;
-
-    //! (name -> counter value) map used to track warnings
-    std::map<std::string, unsigned long> m_warnings;
-
+    void ReadDefaults();
 #if defined USING__LHAPDF && defined USING__LHAPDF6
-    void LoadLHAPDFInterfaceIfNecessary(ATOOLS::Default_Reader * const);
+    void LoadLHAPDFInterfaceIfNecessary();
 #endif
-    void InitialiseParametersVector(ATOOLS::Default_Reader * const);
-    static std::vector<std::string> VariationArguments(ATOOLS::Default_Reader * const);
+    void InitialiseParametersVector();
+    static std::vector<std::string> VariationArguments();
     static std::vector<std::string> VariationArgumentParameters(std::string);
     void AddParameters(std::vector<std::string>);
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
-      PDFs_And_AlphaS(std::string pdfname, size_t pdfmember);
+      PDFs_And_AlphaS(std::string pdfname, int pdfmember);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::Running_AlphaS *p_alphas;
     };
@@ -79,12 +73,17 @@ namespace ATOOLS {
     void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfsandalphas);
     std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
 
+    Parameters_Vector m_parameters_vector;
+
+    //! (name -> counter value) map used to track warnings
+    std::map<std::string, unsigned long> m_warnings;
+
     //! whether the central value should be included when expanding VARIATIONS arguments
-    const bool m_includecentralvaluevariation;
+    bool m_includecentralvaluevariation;
     //! whether the muR variation factor should be applied to the shower AlphaS scale arguments
-    const bool m_reweightsplittingalphasscales;
+    bool m_reweightsplittingalphasscales;
     //! whether the muF variation factor should be applied to the shower PDF scale arguments
-    const bool m_reweightsplittingpdfsscales;
+    bool m_reweightsplittingpdfsscales;
   };
 
   std::ostream& operator<<(std::ostream&, const Variations&);

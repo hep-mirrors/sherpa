@@ -5,7 +5,6 @@
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Single_Transitions.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <map>
 #include <string>
@@ -36,19 +35,19 @@ namespace AHADIC {
     SDiter               m_piter;
     bool                 m_ana;
     
-    void ReadParameters(std::string,std::string);
-    void ReadGeneralSwitches(ATOOLS::Data_Reader & dataread);
-    void ReadMassParameters(ATOOLS::Data_Reader & dataread);
-    void ReadPoppingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadMesonWeights(ATOOLS::Data_Reader & dataread);
-    void ReadGluonSplittingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterDecayParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterToMesonPSParameters(ATOOLS::Data_Reader & dataread);
+    void ReadParameters();
+    void ReadGeneralSwitches();
+    void ReadMassParameters();
+    void ReadPoppingParameters();
+    void ReadMesonWeights();
+    void ReadGluonSplittingParameters();
+    void ReadClusterDecayParameters();
+    void ReadClusterToMesonPSParameters();
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();
 
-    void Init(std::string,std::string,std::string);
+    void Init(std::string);
     double Get(std::string keyword);
     const bool & AnaOn() const { return m_ana; }
 

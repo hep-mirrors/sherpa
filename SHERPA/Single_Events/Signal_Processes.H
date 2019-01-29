@@ -6,6 +6,8 @@
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Phys/Variations.H"
 
+namespace ATOOLS { class Scoped_Settings; }
+
 namespace SHERPA {
 
 
@@ -18,13 +20,15 @@ namespace SHERPA {
     REMNANTS::Remnant_Base    *p_remnants[2];
 
     double m_overweight;
-    int m_setcolors, m_cmode, m_docmode;
+    int m_cmode;
+    bool m_setcolors, m_adddocumentation;
 
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 
   public:
 
-    Signal_Processes(Matrix_Element_Handler *, ATOOLS::Variations *);
+    Signal_Processes(Matrix_Element_Handler*,
+                     ATOOLS::Variations*);
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
     void CleanUp(const size_t & mode=0);

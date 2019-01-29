@@ -14,11 +14,11 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace COMIX;
 using namespace PHASIC;
@@ -30,7 +30,8 @@ COMIX::Single_Process::Single_Process():
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
-  m_itype=ToType<cs_itype::type>(rpa->gen.Variable("NLO_IMODE"));
+  Settings& s = Settings::GetMainSettings();
+  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -59,11 +60,13 @@ COMIX::Single_Process::~Single_Process()
 
 bool COMIX::Single_Process::Initialize
 (std::map<std::string,std::string> *const pmap,
- std::vector<Single_Process*> *const procs)
+ std::vector<Single_Process*> *const procs,
+ const std::vector<int> &blocks,size_t &nproc)
 {
   DEBUG_FUNC("");
   m_p.resize(m_nin+m_nout);
-  if (!COMIX::Process_Base::Initialize(pmap,procs)) return false;
+  if (!COMIX::Process_Base::Initialize
+      (pmap,procs,blocks,nproc)) return false;
   if (p_bg!=NULL) delete p_bg;
   p_bg=NULL;
   if (pmap->find(m_name)!=pmap->end()) {
@@ -85,7 +88,24 @@ bool COMIX::Single_Process::Initialize
       if (mapname!=m_name) {
 	msg_Debugging()<<METHOD<<"(): Map '"<<m_name
 		       <<"' onto '"<<mapname<<"'\n";
+	if (Parent()->Name()==Name() && mapname=="x") return false;
+	if (blocks.size()) {
+	  for (size_t i(0);i<procs->size();++i)
+	    if ((*procs)[i]->Name()==mapname) {
+	      msg_Debugging()<<"Keep "<<m_name<<"\n";
+	      return true;
+	    }
+	  return false;
+	}
 	return true;
+      }
+      else {
+	++nproc;
+	if (blocks.size()) {
+	  if (std::find(blocks.begin(),blocks.end(),nproc-1)
+	      ==blocks.end()) return false;
+	  msg_Debugging()<<"Keep "<<nproc<<"\n";
+	}
       }
     }
   }
@@ -158,7 +178,7 @@ bool COMIX::Single_Process::Initialize
 	  pl.push_back(i);
 	}
       p_bg->DInfo()->SetMassive(massive);
-      p_kpterms = new KP_Terms(this,ATOOLS::sbt::qcd,pl);
+      p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
       p_kpterms->SetIType(m_itype);
       p_kpterms->SetCoupling(&m_cpls);
       m_mewgtinfo.m_type|=
@@ -184,13 +204,7 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetNorm(1.0/(isf*fsf));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
-      Default_Reader reader;
-      reader.SetInputPath(rpa->GetPath());
-      reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-      if (reader.Read(m_checkpoles, "CHECK_POLES", m_checkpoles)) {
-	m_checkpoles=helpi;
-	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
-      }
+      m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);
@@ -266,7 +280,7 @@ bool COMIX::Single_Process::MapProcess()
 	  std::vector<size_t> pl;
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
-	  p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	  p_kpterms->SetIType(p_map->m_itype);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
 	}
@@ -317,7 +331,7 @@ bool COMIX::Single_Process::MapProcess()
 	std::vector<size_t> pl;
 	for (size_t j(0);j<m_nin+m_nout;++j)
 	  if (m_flavs[j].Strong()) pl.push_back(j);
-	p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	p_kpterms->SetIType(p_map->m_itype);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
       }
@@ -531,13 +545,13 @@ bool COMIX::Single_Process::Tests()
     p_bg->WriteOutGraphs(m_gpath+"/"+ShellName(m_name)+".tex");
   }
   if (p_int->HelicityScheme()==hls::sample) {
-    p_int->SetHelicityIntegrator(new Helicity_Integrator());
+    p_int->SetHelicityIntegrator(std::make_shared<Helicity_Integrator>());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
     Flavour_Vector fl(m_nin+m_nout);
     for (size_t i(0);i<fl.size();++i) fl[i]=m_flavs[i];
     if (!p_int->HelicityIntegrator()->Construct(fl)) return false;
   }
-  p_int->SetColorIntegrator(new Color_Integrator());
+  p_int->SetColorIntegrator(std::make_shared<Color_Integrator>());
   p_bg->SetColorIntegrator(&*p_int->ColorIntegrator());
   Idx_Vector ids(m_nin+m_nout,0);
   Int_Vector acts(m_nin+m_nout,0), types(m_nin+m_nout,0);
@@ -545,7 +559,7 @@ bool COMIX::Single_Process::Tests()
     ids[i]=i;
     acts[i]=m_flavs[i].Strong();
     if (acts[i]) {
-      if (abs(m_flavs[i].StrongCharge())==8) types[i]=0;
+      if (m_flavs[i].StrongCharge()==8) types[i]=0;
       else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
       else types[i]=i<m_nin?-1:1;
     }
@@ -597,10 +611,10 @@ void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)
 {
   if (p_map!=NULL) {
     p_psgen=p_map->p_psgen;
-    if (p_psgen==NULL) p_psgen = new PS_Generator(p_map);
-  }
-  else {
-    p_psgen = new PS_Generator(this);
+    if (p_psgen == nullptr)
+      p_psgen = std::make_shared<PS_Generator>(p_map);
+  } else {
+    p_psgen = std::make_shared<PS_Generator>(this);
   }
 }
 

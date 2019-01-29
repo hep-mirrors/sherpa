@@ -1,6 +1,6 @@
 #include "SHERPA/Main/Filter.H"
 #include "SHERPA/Tools/Output_Base.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 
 using namespace SHERPA;
@@ -16,31 +16,24 @@ Filter::~Filter() {
   m_filters.clear();
 }
 
-bool Filter::Init(const std::string & dir,const std::string & file) {
-  Default_Reader reader;
-  reader.AddIgnore("[");
-  reader.AddIgnore("]");
-  reader.SetAddCommandLine(false);
-  reader.SetInputPath(dir);
-  reader.SetInputFile(file);
-  reader.SetMatrixType(mtc::transposed);
-  std::vector<std::vector<std::string> > entries;
-  reader.MatrixFromFile(entries,"");
-  for (size_t i=0;i<entries.size();i++) Add(entries[i]);
-  //msg_Out()<<METHOD<<" has "<<m_filters.size()<<" individual filters.\n";
+bool Filter::Init() {
+  for (auto s : Settings::GetMainSettings()["FILTERS"].GetItems()) {
+    Add(s);
+  }
   return (m_on = m_filters.size()>0);
 }
 
-void Filter::Add(const std::vector<std::string> & entry) {
-  if (entry.size()!=7) return;
+void Filter::Add(Scoped_Settings& s) {
+  if (!s["Kf"].IsCustomised())
+    THROW(fatal_error, "Every filter needs to specify \"Kf: <kf_code>\".");
   FilterCriterion * crit = new FilterCriterion;
-  crit->m_flav   = Flavour(stoi(entry[0]));
-  crit->m_etamin = stof(entry[1]);
-  crit->m_etamax = stof(entry[2]);
-  crit->m_pTmin  = stof(entry[3]);
-  crit->m_pTmax  = stof(entry[4]);
-  crit->m_Nmin   = stoi(entry[5]);
-  crit->m_Nmax   = stoi(entry[6]);
+  crit->m_flav   = Flavour(s["Kf"].SetDefault(0).Get<int>());
+  crit->m_etamin = s["EtaMin"].SetDefault(-1e20).Get<double>();
+  crit->m_etamax = s["EtaMax"].SetDefault( 1e20).Get<double>();
+  crit->m_pTmin  = s["PTMin"] .SetDefault(    0).Get<double>();
+  crit->m_pTmax  = s["PTMax"] .SetDefault( 1e20).Get<double>();
+  crit->m_Nmin   = s["NMin"]  .SetDefault(    0).Get<int>();
+  crit->m_Nmax   = s["NMax"]  .SetDefault( 1e20).Get<int>();
   m_filters[crit->m_flav] = crit;
 }
 
@@ -48,10 +41,16 @@ void Filter::ShowSyntax(int mode)
 {
   if (!msg_LevelIsInfo() || mode == 0) return;
   msg_Out() << METHOD << "(): {\n\n";
-  msg_Out() << "  (filter){\n";
-  msg_Out() << "    kf etamin etamax ptmin ptmax nmin nmax\n";
-  msg_Out() << "    ...\n";
-  msg_Out() << "  }(filter)";
+  msg_Out() << "  FILTERS:\n";
+  msg_Out() << "  - Kf: <kf_code>\n";
+  msg_Out() << "    # optional:\n";
+  msg_Out() << "    EtaMin: <eta_min>\n";
+  msg_Out() << "    EtaMax: <eta_max>\n";
+  msg_Out() << "    PTMin:  <pt_min>\n";
+  msg_Out() << "    PTMax:  <pt_max>\n";
+  msg_Out() << "    NMin:  <pt_min>\n";
+  msg_Out() << "    NMax:  <pt_max>\n";
+  msg_Out() << "  - ...\n";
   msg_Out() << "\n}" << std::endl;
 }
 

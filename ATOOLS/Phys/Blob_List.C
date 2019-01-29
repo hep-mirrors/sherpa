@@ -5,8 +5,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
@@ -214,8 +213,9 @@ bool Blob_List::FourMomentumConservation() const
                <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
-      Data_Reader dr(" ",";","!","=");
-      allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
+      Settings& s = Settings::GetMainSettings();
+      allow =
+        s["ALLOW_MOMENTUM_NONCONSERVATION"].SetDefault(1).Get<int>();
     }
     if (!allow) Abort();
     //if (msg_LevelIsDebugging()) {
@@ -452,8 +452,8 @@ Blob_List Blob_List::Copy() const
   if (signal) {
     Blob_Data_Base* data = (*signal)["ATensor"];
     if (data) {
-      SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
-      SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+      auto origamps = data->Get<METOOLS::Amplitude2_Tensor_SP>();
+      auto newamps = std::make_shared<METOOLS::Amplitude2_Tensor>(*origamps);
       newamps->UpdateParticlePointers(pmap);
       data->Set(newamps);
     }

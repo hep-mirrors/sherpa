@@ -1,8 +1,8 @@
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -23,8 +23,8 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _yukmass
     m_polemass=_yukmass;
     return;
   }
-  Default_Reader reader;
-  m_runbelowpole = reader.Get<int>("RUN_MASS_BELOW_POLE", 0);
+  Settings& s = Settings::GetMainSettings();
+  m_runbelowpole = s["RUN_MASS_BELOW_POLE"].SetDefault(false).Get<bool>();
   if (m_runbelowpole)
     msg_Debugging()<<METHOD<<"(): "<<m_fl<<" mass runs below pole."<<std::endl;
   m_polemass = GetMSBarMass(_yukmass);

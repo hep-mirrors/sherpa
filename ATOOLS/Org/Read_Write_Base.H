@@ -48,14 +48,11 @@ namespace ATOOLS {
   typedef std::map<std::string,String_Vector> Buffer_Map;
   typedef std::map<std::string,std::string>   String_Map;
 
-  class Read_Write_Base: public File_IO_Base, public Tag_Replacer {
+  class Read_Write_Base: public File_IO_Base {
   private:
 
     static Buffer_Map s_buffermap;
-    static String_Vector s_commandline;
-    static String_Map s_globaltags;
 
-    String_Map    m_tags;
     String_Vector m_comment, m_wordsep, m_linesep;
     String_Vector m_ignore, m_filebegin, m_fileend;
     Char_Vector   m_blank;
@@ -67,7 +64,7 @@ namespace ATOOLS {
     mtc::code m_matrixtype;
 
     bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete, m_cmode;
-    bool m_allownans, m_addcommandline, m_useglobaltags;
+    bool m_allownans;
 
     size_t m_occurrence;
 
@@ -82,7 +79,6 @@ namespace ATOOLS {
     size_t Find(std::string input,std::string parameter,
 		size_t &length) const;
 
-    std::string  ReplaceTags(std::string &expr) const;    
     std::string &KillBlanks(std::string &buffer) const;
     std::string &KillComments(std::string &buffer) const;
     std::string &KillIgnored(std::string &buffer) const;
@@ -130,9 +126,6 @@ namespace ATOOLS {
     size_t IsLineSeparator(const std::string &ch) const;
 
     size_t Find(std::string input,std::string parameter) const;
-
-    static void AddCommandLine(const std::string commandline);
-    static void AddCommandLine(const String_Vector &commandline);
 
     // setters
     inline void SetBlank(const char blank)
@@ -192,10 +185,6 @@ namespace ATOOLS {
 
     inline void SetAllowNans(const bool allownans)
     { m_allownans=allownans; }
-    inline void SetAddCommandLine(const bool commandline)
-    { m_addcommandline=commandline; }
-    inline void SetUseGlobalTags(const bool globaltags)
-    { m_useglobaltags=globaltags; }
 
     inline void SetIgnoreCase(const bool ignorecase)
     { m_ignorecase=ignorecase; }
@@ -213,36 +202,6 @@ namespace ATOOLS {
     { m_escape=escape; }
     inline void SetNameSplit(const char namesplit)
     { m_namesplit=namesplit; }
-
-    inline void SetTags(const std::map<std::string,std::string> &tags)
-    { m_tags=tags; }
-    inline void AddTags(const std::map<std::string,std::string> &tags)
-    { 
-      for (std::map<std::string,std::string>::const_iterator 
-	     tit=tags.begin();tit!=tags.end();++tit) 
-	m_tags[tit->first]=tit->second; 
-    }
-    inline void SetTag(const std::string &tag,const std::string &value)
-    { m_tags.clear(); m_tags[tag]=value; }
-    inline void AddTag(const std::string &tag,const std::string &value)
-    { m_tags[tag]=value; }
-
-    inline static void SetGlobalTags
-    (const std::map<std::string,std::string> &tags)
-    { s_globaltags=tags; }
-    inline static void AddGlobalTags
-    (const std::map<std::string,std::string> &tags)
-    { 
-      for (std::map<std::string,std::string>::const_iterator 
-	     tit=tags.begin();tit!=tags.end();++tit) 
-	s_globaltags[tit->first]=tit->second; 
-    }
-    inline static void SetGlobalTag
-    (const std::string &tag,const std::string &value)
-    { s_globaltags.clear(); s_globaltags[tag]=value; }
-    inline static void AddGlobalTag
-    (const std::string &tag,const std::string &value)
-    { s_globaltags[tag]=value; }
 
     // getters
     inline const Char_Vector &Blank() const
@@ -272,8 +231,6 @@ namespace ATOOLS {
 
     inline bool AllowNans() const
     { return m_allownans; }
-    inline bool AddCommandLine() const
-    { return m_addcommandline; }
 
     inline bool IgnoreCase() const
     { return m_ignorecase; }
@@ -300,29 +257,8 @@ namespace ATOOLS {
     inline Algebra_Interpreter *Interpreter() const
     { return p_interpreter; }
 
-    inline const std::string &Tag(const std::string &tag) const
-    { 
-      std::map<std::string,std::string>::const_iterator 
-	tit(m_tags.find(tag));
-      return tit!=m_tags.end()?nullstring:tit->second;
-    }
-    inline const std::map<std::string,std::string> &Tags() const
-    { return m_tags; }
-    
-    inline static const std::string &GlobalTag(const std::string &tag)
-    { 
-      std::map<std::string,std::string>::const_iterator 
-	tit(s_globaltags.find(tag));
-      return tit!=s_globaltags.end()?nullstring:tit->second;
-    }
-    inline static const std::map<std::string,std::string> &GlobalTags()
-    { return s_globaltags; }
-
     inline const String_Vector &BufferContent(const size_t i=0) const
     { return s_buffermap[InputPath(i)+InputFile(i)]; }
-
-    inline static const String_Vector &CommandLine()
-    { return s_commandline; }
 
   };// end of class Read_Write_Base
 

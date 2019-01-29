@@ -1,0 +1,30 @@
+# general settings
+EVENTS: 0
+MI_HANDLER: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+ME_QED: {ENABLED: false}
+
+# load new model library
+SHERPA_LDADD: SherpaSMGGV
+
+# generators
+ME_GENERATORS: Amegic
+EVENT_GENERATION_MODE: Weighted
+
+# scales
+SCALES: VAR{sqr(80.385)}
+
+# model parameters
+MODEL: SMGGV
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 7000.
+
+PROCESSES:
+  - {
+    Process: 21 21 -> 23 23,
+    Order: {QCD: 2, EW: 2},
+    Print_Graphs: Graphs
+    }

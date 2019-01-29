@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Poincare.H"
 
 using namespace OLE;
@@ -27,6 +27,7 @@ extern "C" void OLP_Option(const char * assignment, int* success);
     double p_result[4], m_Norm;
     static int s_oleinit;
     int m_nf;
+    void RegisterDefaults() const;
   public:
     LH_OLE_Interface(const Process_Info& pi,const Flavour_Vector& flavs,bool active);
     ~LH_OLE_Interface() {
@@ -48,6 +49,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   m_needcmsboost(false), m_gosammode(false), 
   m_OLE_id(-1), p_momenta(NULL), m_nf(0)
 {
+  RegisterDefaults();
   m_Norm = pi.m_ii.ISSymmetryFactor()*pi.m_fi.FSSymmetryFactor();
   m_oqcd = pi.m_maxcpl[0];
   m_oqed = pi.m_maxcpl[1];
@@ -62,20 +64,19 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   msg_Debugging()<<METHOD<<"(): nf = "<<m_nf<<std::endl;
 
   bool contract(0);
-  Default_Reader reader;
-  string orderfn(reader.Get<string>("LHOLE_ORDERFILE", "OLE_order.lh"));
-  string contractfn(reader.Get<string>("LHOLE_CONTRACTFILE", "OLE_contract.lh"));
+  Settings& s = Settings::GetMainSettings();
+  string orderfn(s["LHOLE_ORDERFILE"].Get<string>());
+  string contractfn(s["LHOLE_CONTRACTFILE"].Get<string>());
 
-  std::string irr(reader.Get<string>("LHOLE_IR_REGULARISATION", "DRED"));
+  std::string irr(s["LHOLE_IR_REGULARISATION"].Get<string>());
   if (irr=="DRED") m_drmode=1;
   else if (irr=="CDR") m_drmode=0;
   else THROW(fatal_error,"Unknown regularisation scheme");
-  m_needcmsboost = reader.Get<int>("LHOLE_BOOST_TO_CMS", 0);
-  string lholegen(reader.Get<string>("LHOLE_OLP", ""));
+  string lholegen(s["LHOLE_OLP"].Get<string>());
   if (lholegen=="GoSam") {
     m_gosammode=true;
-    m_needcmsboost=true;
   }
+  m_needcmsboost = s["LHOLE_BOOST_TO_CMS"].Get<bool>();
   ifstream ifile;
   ifile.open(contractfn.c_str());
 
@@ -187,6 +188,20 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   for (size_t i=0;i<3;i++) p_result[i]=0.;
   p_result[3]=1.;
 }
+
+void LH_OLE_Interface::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["LHOLE_ORDERFILE"].SetDefault("OLE_order.lh");
+  s["LHOLE_CONTRACTFILE"].SetDefault("OLE_contract.lh");
+  s["LHOLE_IR_REGULARISATION"].SetDefault("DRED");
+  const auto olp = s["LHOLE_OLP"].SetDefault("").Get<std::string>();
+  s["LHOLE_BOOST_TO_CMS"].SetDefault(false);
+  if (olp == "GoSam")
+    s["LHOLE_BOOST_TO_CMS"].OverrideScalar(true);
+
+}
+
 
 void LH_OLE_Interface::Calc(const Vec4D_Vector& pp) {
   if (!m_active) return;

@@ -9,7 +9,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 namespace HZTOOL {
 
@@ -28,7 +27,7 @@ public:
 
 private:
 
-  std::string m_inpath, m_infile, m_outpath, m_hzfile;
+  std::string m_outpath, m_hzfile;
 
   size_t m_nevt, m_xsnevt, m_flags[4];
   double m_xssum, m_nchsum, m_nsum;
@@ -36,6 +35,8 @@ private:
 
   std::vector<HZTool_Analysis> m_analyses;
   std::vector<std::string>     m_tags;
+
+  void RegisterDefaults() const;
 
   void ConvertParticle(ATOOLS::Particle *const cp,const int sc);
   void Convert(ATOOLS::Blob_List *const bl);
@@ -45,14 +46,12 @@ private:
 
 public:
 
-  inline HZTool_Interface(const std::string &inpath,
-			  const std::string &infile,
-			  const std::string &outpath):
+  inline HZTool_Interface(const std::string &outpath):
     Analysis_Interface("HZTool"),
-    m_inpath(inpath), m_infile(infile), m_outpath(outpath),
+    m_outpath(outpath),
     m_nevt(0), m_xsnevt(10000),
     m_xssum(0.0), m_nchsum(0.0), m_nsum(0.0),
-    m_finished(false) {}
+    m_finished(false) { RegisterDefaults(); }
   ~HZTool_Interface() 
   { if (!m_finished) Finish(); s_hztool=NULL; }
 
@@ -97,18 +96,26 @@ void HZTool_Interface::HZxxxx(int *flag)
   }
 }
 
+void HZTool_Interface::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["HZTOOL"] };
+  s["EVT_CHECK"].SetDefault(1);
+  s["XS_EVENTS"].SetDefault(10000);
+  s["HISTO_NAME"].SetDefault("histo");
+  s.DeclareVectorSettingsWithEmptyDefault({ "HZ_FLAGS", "HZ_ENABLE" });
+}
+
 void HZTool_Interface::ShowSyntax(const int i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   BEGIN_HZTOOL {\n\n"
-	   <<"     HISTO_NAME histogram name\n"
-	   <<"     XS_EVENTS  events for estimating\n"
-	   <<"                \\sigma_{tot} and <N_{chg}>\n"
-	   <<"     EVT_CHECK  checkflag\n"
-	   <<"     HZ_FLAGS   initflag runflag finishflag\n"
-	   <<"     HZ_ENABLE  hzxxxx\n";
-  msg_Out()<<"\n   } END_HZTOOL\n\n"
+	   <<"   HZTOOL: {\n"
+	   <<"     HISTO_NAME: histogram name,\n"
+	   <<"     XS_EVENTS:  events for estimating \\sigma_{tot} and <N_{chg}>,\n"
+	   <<"     EVT_CHECK:  checkflag,\n"
+	   <<"     HZ_FLAGS:   [initflag, runflag, finishflag],\n"
+	   <<"     HZ_ENABLE   [ana1, ana2, ana3, ...]\n";
+  msg_Out()<<"     }\n\n"
 	   <<"}"<<std::endl;
 }
 
@@ -229,6 +236,7 @@ void HZTool_Interface::Check(ATOOLS::Blob_List *const bl)
 
 bool HZTool_Interface::Init()
 {
+  Scoped_Settings s{ Settings::GetMainSettings()["HZTOOL"] };
   if (m_nevt==0) {
     msg_Info()<<METHOD<<"(): {"<<std::endl;
     {
@@ -243,42 +251,29 @@ bool HZTool_Interface::Init()
 	msg_Info()<<"Changed path name '"<<outpath<<"' -> '"<<m_outpath
 		  <<"' to comply with hbook rules."<<std::endl;
       MakeDir(m_outpath);
-      Data_Reader reader(" ",";","//");
-      reader.AddWordSeparator("\t");
-      reader.SetAddCommandLine(false);
-      reader.SetInputPath(m_inpath);
-      std::string infile(m_infile);
-      if (infile.find('|')!=std::string::npos)
-	infile=infile.substr(0,infile.find('|'));
-      reader.SetInputFile(infile+"|BEGIN_HZTOOL|END_HZTOOL");
-      reader.AddComment("#");
-      m_hzfile=reader.GetValue<std::string>("HISTO_NAME","histo");
+      m_hzfile=s["HISTO_NAME"].Get<std::string>();
       MakeFortranString(hzhname.hname,m_outpath+"/"+m_hzfile,128);
-      m_xsnevt=reader.GetValue<int>("XS_EVENTS",10000);
-      m_check=reader.GetValue<int>("EVT_CHECK",1);
+      m_xsnevt=s["XS_EVENTS"].Get<int>();
+      m_check = s["EVT_CHECK"].Get<int>();
       msg_Info()<<"Using "<<m_xsnevt
 		<<" events to estimate cross section."<<std::endl;
-      std::vector<int> helpiv;
-      if (reader.VectorFromFile(helpiv,"HZ_FLAGS") && 
-	  helpiv.size()==3)
+      auto heliv = s["HZ_FLAGS"].GetVector<std::string>();
+      if (helpiv.size()==3)
 	for (size_t i(1);i<=3;++i) m_flags[i]=helpiv[i-1];
       else for (size_t i(1);i<=3;++i) m_flags[i]=i;
-      std::vector<std::vector<std::string> > helpsvv;
-      reader.MatrixFromFile(helpsvv,"HZ_ENABLE");
-      for (size_t i(0);i<helpsvv.size();++i) {
-	for (size_t j(0);j<helpsvv[i].size();++j) {
-	  msg_Info()<<"Set up '"<<helpsvv[i][j]<<"' ... "<<std::flush;
-	  void *func(s_loader->GetLibraryFunction
-		     ("SherpaHZToolAnalysis",helpsvv[i][j]+"_"));
-	  if (func==NULL) {
-	    msg_Info()<<"not found."<<std::endl;
-	  }
-	  else {
-	    m_analyses.push_back((HZTool_Analysis)func);
-	    m_tags.push_back(helpsvv[i][j]);
-	    msg_Info()<<"found."<<std::endl;
-	  }
-	}
+      auto heliv = s["HZ_ENABLE"].GetVector<std::string>();
+      for (const auto ananame : heliv) {
+        msg_Info()<<"Set up '"<<ananame<<"' ... "<<std::flush;
+        void *func(s_loader->GetLibraryFunction
+                   ("SherpaHZToolAnalysis",ananame+"_"));
+        if (func==NULL) {
+          msg_Info()<<"not found."<<std::endl;
+        }
+        else {
+          m_analyses.push_back((HZTool_Analysis)func);
+          m_tags.push_back(ananame);
+          msg_Info()<<"found."<<std::endl;
+        }
       }
     }
     msg_Info()<<"}"<<std::endl;
@@ -379,8 +374,7 @@ Analysis_Interface *ATOOLS::Getter
 <Analysis_Interface,Analysis_Arguments,HZTool_Interface>::
 operator()(const Analysis_Arguments &args) const
 {
-  return new HZTool_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath);
+  return new HZTool_Interface(args.m_outpath);
 }
 
 void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,

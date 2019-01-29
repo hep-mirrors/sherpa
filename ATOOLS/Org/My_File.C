@@ -155,7 +155,7 @@ template <class FileType>
 My_File<FileType>::My_File(const std::string &path,
 			   const std::string &file): 
   m_path(path), m_file(file), 
-  p_file(NULL), m_mode(fom::permanent) {}
+  m_mode(fom::permanent) {}
 
 template <class FileType>
 My_File<FileType>::~My_File() 
@@ -166,13 +166,13 @@ My_File<FileType>::~My_File()
 template <class FileType>
 FileType *My_File<FileType>::operator()() const 
 { 
-  return --p_file; 
+  return p_file.get();
 }
 
 template <class FileType>
 FileType *My_File<FileType>::operator->() const 
 { 
-  return --p_file; 
+  return p_file.get();
 }
 
 template <class FileType>
@@ -203,15 +203,15 @@ template <class FileType>
 bool My_File<FileType>::Open() 
 { 
   if (m_path=="" && m_file=="") {
-    p_file = new File_Type();
+    p_file = std::make_shared<File_Type>();
     return false;
   }
   Close();
-  p_file = new File_Type();
-  std::ifstream *is=dynamic_cast<std::ifstream*>(&*p_file);
-  std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
+  p_file = std::make_shared<File_Type>();
+  std::ifstream *is=dynamic_cast<std::ifstream*>(p_file.get());
+  std::ofstream *os=dynamic_cast<std::ofstream*>(p_file.get());
   if (is) {
-    p_stream = new MyStrStream();
+    p_stream = std::make_shared<MyStrStream>();
     ZipEntry_Map::const_iterator zit=
       s_zipfiles.find(m_path+m_file);
     if (zit!=s_zipfiles.end()) {
@@ -256,7 +256,7 @@ bool My_File<FileType>::Open()
     return true;
   }
   if (os) {
-    p_stream = new MyStrStream();
+    p_stream = std::make_shared<MyStrStream>();
     os->std::ios::rdbuf(p_stream->rdbuf());
     os->seekp(0);
     return true;
@@ -267,8 +267,9 @@ bool My_File<FileType>::Open()
 template <class FileType>
 bool My_File<FileType>::Close()
 {
-  if (p_file==NULL) return false;
-  std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
+  if (p_file == nullptr)
+    return false;
+  auto os = dynamic_cast<std::ofstream*>(p_file.get());
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
@@ -292,8 +293,8 @@ bool My_File<FileType>::Close()
     }
   }
   p_file->close();
-  p_stream=NULL;
-  p_file=NULL;
+  p_stream.reset();
+  p_file.reset();
   return true;
 }
 

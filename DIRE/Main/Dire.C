@@ -5,7 +5,7 @@
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace DIRE {
 
@@ -20,7 +20,8 @@ namespace DIRE {
 
     ATOOLS::Mass_Selector *p_ms;
 
-    int    m_reco, m_wcheck;
+    int    m_reco;
+    bool   m_wcheck;
     double m_maxweight;
 
     void RecoCheck(Amplitude *const a,int swap) const;
@@ -53,7 +54,6 @@ namespace DIRE {
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <algorithm>
@@ -66,12 +66,13 @@ Dire::Dire(const Shower_Key &key):
   Shower_Base("Dire"), p_ms(NULL),
   m_maxweight(1.0)
 {
+  Settings& s = Settings::GetMainSettings();
   m_kttype=1;
   p_shower = new Shower();
   p_clus = new Cluster_Definitions(p_shower);
-  p_shower->Init(key.p_model,key.p_isr,key.p_reader);
-  m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK",0,"Reco check",METHOD);
-  m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
+  p_shower->Init(key.p_model,key.p_isr);
+  m_reco = s["CSS_RECO_CHECK"].Get<int>();
+  m_wcheck = s["CSS_WEIGHT_CHECK"].Get<int>();
 }
 
 Dire::~Dire()

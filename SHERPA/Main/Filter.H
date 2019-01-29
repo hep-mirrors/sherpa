@@ -6,6 +6,10 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include <map>
 
+namespace ATOOLS {
+  class Scoped_Settings;
+}
+
 namespace SHERPA {
   struct FilterCriterion {
     ATOOLS::Flavour m_flav;
@@ -21,7 +25,7 @@ namespace SHERPA {
     std::map<ATOOLS::Flavour, int>              m_accepted;
     bool m_on;
     
-    void Add(const std::vector<std::string> & entry);
+    void Add(ATOOLS::Scoped_Settings&);
     void Reset();
     void HarvestActiveParticles(ATOOLS::Blob_List * blobs);
     void FilterAccepted();
@@ -29,7 +33,7 @@ namespace SHERPA {
   public:
     Filter(); 
     ~Filter();
-    bool Init(const std::string & path, const std::string & file);
+    bool Init();
     static void ShowSyntax(int mode);
 
     bool operator()(ATOOLS::Blob_List * blobs);

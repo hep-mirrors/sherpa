@@ -3,8 +3,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace DIM;
 using namespace PHASIC;
@@ -18,11 +18,10 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   p_mcatnlo = new Shower();
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);
-  p_mcatnlo->Init(key.p_model,key.p_isr,key.p_reader);
-  m_psmode=key.p_reader->Get<int>
-    ("NLO_CSS_PSMODE",0,"PS mode",METHOD);
-  m_wcheck=key.p_reader->Get<int>
-    ("NLO_CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
+  p_mcatnlo->Init(key.p_model,key.p_isr);
+  Settings& s = Settings::GetMainSettings();
+  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
+  m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 

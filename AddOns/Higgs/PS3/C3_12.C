@@ -1,7 +1,8 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -13,7 +14,7 @@ namespace PHASIC {
     double m_amct,m_alpha,m_ctmax,m_ctmin;
     Info_Key m_kI_2_3,m_kTC_0__1__23_4,m_kZS_187;
     Vegas* p_vegas;
-    int m_onshell;
+    bool m_onshell;
   public:
     C3_12(int,int,Flavour*,Integration_Info * const);
     ~C3_12();
@@ -51,8 +52,8 @@ void C3_12::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   if (m_onshell) s23=sqr(fl23.Mass());
   m_ctmax = cuts->cosmax[1][4];
   m_ctmin = cuts->cosmin[1][4];
-  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[1-m_onshell],ran[2-m_onshell]);
-  CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-m_onshell],ran[4-m_onshell]);
+  CE.TChannelMomenta(p[0],p[1],p23,p[4],s23,s4,0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,ran[1-(size_t)m_onshell],ran[2-(size_t)m_onshell]);
+  CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[3-(size_t)m_onshell],ran[4-(size_t)m_onshell]);
 }
 
 void C3_12::GenerateWeight(Vec4D* p,Cut_Data * cuts)
@@ -74,14 +75,14 @@ void C3_12::GenerateWeight(Vec4D* p,Cut_Data * cuts)
     m_kTC_0__1__23_4<<CE.TChannelWeight(p[0],p[1],p23,p[4],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__23_4[0],m_kTC_0__1__23_4[1]);
   wt *= m_kTC_0__1__23_4.Weight();
 
-  rans[1-m_onshell]= m_kTC_0__1__23_4[0];
-  rans[2-m_onshell]= m_kTC_0__1__23_4[1];
+  rans[1-(size_t)m_onshell]= m_kTC_0__1__23_4[0];
+  rans[2-(size_t)m_onshell]= m_kTC_0__1__23_4[1];
   if (m_kI_2_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_2_3<<CE.Isotropic2Weight(p[2],p[3],m_kI_2_3[0],m_kI_2_3[1]);
   wt *= m_kI_2_3.Weight();
 
-  rans[3-m_onshell]= m_kI_2_3[0];
-  rans[4-m_onshell]= m_kI_2_3[1];
+  rans[3-(size_t)m_onshell]= m_kI_2_3[0];
+  rans[4-(size_t)m_onshell]= m_kI_2_3[1];
   double vw = p_vegas->GenerateWeight(rans);
   if (wt!=0.) wt = vw/wt/pow(2.*M_PI,3*3.-4.);
 
@@ -91,13 +92,13 @@ void C3_12::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 C3_12::C3_12(int nin,int nout,Flavour* fl,Integration_Info * const info)
        : Single_Channel(nin,nout,fl)
 {
-  Default_Reader reader;
-  m_onshell=reader.Get<int>("HIGGS_ON_SHELL", 0);
+  Settings& s = Settings::GetMainSettings();
+  m_onshell = s["HIGGS_ON_SHELL"].Get<bool>();
   name = std::string("C3_12");
-  rannum = 5-m_onshell;
+  rannum = 5-(size_t)m_onshell;
   rans  = new double[rannum];
-  m_amct  = 1.0+Default_Reader().Get("AMEGIC_CHANNEL_EPSILON", 0.0);
-  m_alpha = Default_Reader().Get("AMEGIC_SCHANNEL_ALPHA", 0.75);
+  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
+  m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);

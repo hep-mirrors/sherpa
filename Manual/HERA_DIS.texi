@@ -8,7 +8,7 @@ at the HERA collider at DESY Hamburg.
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_in_DIS/HERA/Run.dat
+@verbatiminclude Examples/Jets_in_DIS/HERA/Sherpa.yaml
 @end smallformat
 @end example
  

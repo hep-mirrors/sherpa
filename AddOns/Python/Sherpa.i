@@ -27,10 +27,10 @@ namespace std {
 #include "MODEL/Main/Model_Base.H"
   %}
 
-%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun(int, char**);
+%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun();
 
 // A typemap is required in order to be able to pass
-// the python arguments to SHERPA::Sherpa::InitializeTheRun(int, char**)
+// the python arguments to SHERPA::Sherpa::InitializeTheRun()
 %typemap(in) char ** {
   // Check if is a list
   if (PyList_Check($input)) {
@@ -64,9 +64,9 @@ namespace SHERPA {
   class Sherpa : public ATOOLS::Terminator_Object {
     
   public:
-    Sherpa();
+    Sherpa(int, char**);
     ~Sherpa();
-    bool InitializeTheRun(int, char**);
+    bool InitializeTheRun();
     bool SummarizeRun();
     bool GenerateOneEvent();
     bool InitializeTheEventHandler();

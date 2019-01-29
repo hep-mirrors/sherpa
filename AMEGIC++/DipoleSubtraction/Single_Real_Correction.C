@@ -47,9 +47,10 @@ Single_Real_Correction::Single_Real_Correction() :
   m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
   m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
 
-  m_listdips=ToType<size_t>(rpa->gen.Variable("LIST_DIPOLES"));
-  m_pspisrecscheme=ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_RECOIL_SCHEME"));
-  m_pspfsrecscheme=ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_RECOIL_SCHEME"));
+  auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
+  m_listdips = dipolesettings["LIST"].Get<size_t>();
+  m_pspisrecscheme = dipolesettings["PFF_IS_RECOIL_SCHEME"].Get<size_t>();
+  m_pspfsrecscheme = dipolesettings["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
 }
 
 
@@ -88,11 +89,14 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     if (m_pinfo.m_amegicmhv==10 || m_pinfo.m_amegicmhv==12) {
       p_tree_process = new Single_Process_External();
       m_no_tree=0;
+    } else if (CF.MHVCalculable(m_pinfo)) {
+      p_tree_process = new Single_Process_MHV();
     }
-    else if (CF.MHVCalculable(m_pinfo)) p_tree_process = new Single_Process_MHV();
-    if (m_pinfo.m_amegicmhv==2) return 0;
+    if (m_pinfo.m_amegicmhv==2)
+      return 0;
   }
-  if (!p_tree_process) p_tree_process = new AMEGIC::Single_Process();
+  if (!p_tree_process)
+    p_tree_process = new AMEGIC::Single_Process();
 
   p_tree_process->SetSubevtList(&m_subevtlist);
 
@@ -261,7 +265,8 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     for (size_t i=0;i<m_flavs.size();i++) if (IsSusy(m_flavs[i])){
       for (size_t j=0;j<m_flavs.size();j++) if (i!=j) {
         for (size_t swit=0;swit<5;swit++) {
-          Single_OSTerm *pdummy = new Single_OSTerm(sinfo,i,j,swit,p_int);
+          Single_OSTerm *pdummy = new Single_OSTerm(
+              sinfo,i,j,swit,p_int);
 	  if (pdummy->IsValid()) {
             pdummy->SetTestMoms(p_testmoms);
             int st=pdummy->InitAmplitude(model,top,links,errs);

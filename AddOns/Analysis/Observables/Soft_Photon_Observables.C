@@ -9,37 +9,38 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
+Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
 {
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<7 || parameters[0].size()>15) return NULL;
-    std::vector<ATOOLS::Flavour> f(parameters[0].size()-5);
-    for (size_t i=0;i<f.size();++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((kf_code)abs(kf));
-      if (kf<0) f[i]=f[i].Bar();
-    }
-    std::string list=parameters[0][parameters[0].size()-1];
-    return new Class(f,HistogramType(parameters[0][parameters[0].size()-2]),
-         ATOOLS::ToType<double>(parameters[0][parameters[0].size()-5]),
-         ATOOLS::ToType<double>(parameters[0][parameters[0].size()-4]),
-         ATOOLS::ToType<int>(parameters[0][parameters[0].size()-3]),list);
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 7)
+    THROW(missing_input, "Missing parameter values.");
+  if (parameters.size() > 15)
+    THROW(missing_input, "Too many parameter values.");
+  std::vector<ATOOLS::Flavour> f(parameters.size()-5);
+  for (size_t i=0;i<f.size();++i) {
+    int kf=s.Interprete<int>(parameters[i]);
+    f[i]=ATOOLS::Flavour((kf_code)abs(kf));
+    if (kf<0) f[i]=f[i].Bar();
   }
-  return NULL;
+  std::string list=parameters[parameters.size()-1];
+  return new Class(f,HistogramType(parameters[parameters.size()-2]),
+                   s.Interprete<double>(parameters[parameters.size()-5]),
+                   s.Interprete<double>(parameters[parameters.size()-4]),
+                   s.Interprete<int>(parameters[parameters.size()-3]),list);
 }
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)        \
   Primitive_Observable_Base *         \
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetObservable<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD(NAME)         \
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"kf1 ... kfn min max bins Lin|LinErr|Log|LogErr list , 1<n<11"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"[kf1, ..., kfn, min, max, bins, Lin|LinErr|Log|LogErr, list] ... 1<n<11"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)      \
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix); \
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key); \
   DEFINE_GETTER_METHOD(CLASS,NAME)          \
   DEFINE_PRINT_METHOD(CLASS)
 

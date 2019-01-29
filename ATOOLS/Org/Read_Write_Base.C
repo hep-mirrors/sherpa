@@ -8,9 +8,7 @@
 
 using namespace ATOOLS;
 
-String_Vector Read_Write_Base::s_commandline;
 Buffer_Map Read_Write_Base::s_buffermap;
-String_Map Read_Write_Base::s_globaltags;
 
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles):
@@ -46,8 +44,6 @@ void Read_Write_Base::Init()
   m_vectortype=vtc::horizontal;
   m_matrixtype=mtc::transposed; 
   m_allownans=false;
-  m_addcommandline=true;
-  m_useglobaltags=true;
   m_ignorecase=false;
   m_ignoreblanks=false;
   m_exactmatch=true;
@@ -246,7 +242,6 @@ void Read_Write_Base::InterpreteBuffer(String_Vector &buffer,
 	else arg+=cur;
       }
       if (cur!=')') continue;
-      p_interpreter->SetTagReplacer(this);
       res=ToType<int>(p_interpreter->Interprete(arg));
       while (sline<line || spos<=pos) {
 	buffer[sline][spos]=blank;
@@ -286,31 +281,6 @@ std::string Read_Write_Base::StripEscapes(const std::string &buffer) const
     if (input.length()>pos && input[pos]==Escape()) next=pos+1;
   }
   return input;
-}
-
-std::string Read_Write_Base::ReplaceTags(std::string &expr) const
-{ 
-  std::string tag=expr;
-  bool success=false;
-  for (std::map<std::string,std::string>::const_iterator 
-	 tit=m_tags.begin();tit!=m_tags.end();++tit) {
-    size_t pos=tag.find(tit->first);
-    if (pos!=std::string::npos) {
-      tag.replace(pos,tit->first.length(),tit->second);
-      success=true;
-    }
-  }
-  if (m_useglobaltags)
-    for (std::map<std::string,std::string>::const_iterator 
-	   tit=s_globaltags.begin();tit!=s_globaltags.end();++tit) {
-      size_t pos=tag.find(tit->first);
-      if (pos!=std::string::npos) {
-	tag.replace(pos,tit->first.length(),tit->second);
-	success=true;
-      }
-    }
-  if (success && tag!=expr) return ReplaceTags(tag);
-  return tag;
 }
 
 std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
@@ -384,25 +354,9 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
   }
 }
 
-void Read_Write_Base::AddCommandLine(const std::string commandline)
-{
-  s_commandline.push_back(commandline);
-}
-
-void Read_Write_Base::AddCommandLine(const String_Vector &commandline)
-{
-  s_commandline.insert(s_commandline.end(),
-		       commandline.begin(),commandline.end());
-}  
-
 bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
-{  
+{
   if (InputPath(i)+InputFile(i)==nullstring) {
-    if (m_addcommandline && CommandLine().size()>0) {
-      for (size_t j(0);j<CommandLine().size();++j)
-	AddFileContent(CommandLine()[j],i);
-      return true;
-    }
     return false;
   }
   if (InFileMode(i)==fom::unknown) SetInFileMode(fom::permanent);
@@ -413,7 +367,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
+  file+="||"+ToString(m_occurrence);
   bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
   String_Vector &cbuffer(s_buffermap[file]);
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
@@ -487,10 +441,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
       AddFileContent(cbuffer[j],i);
   }
   }
-  if (m_addcommandline && CommandLine().size()>0) {
-    for (size_t j(0);j<CommandLine().size();++j)
-      AddFileContent(CommandLine()[j],i);
-  }
   msg_IODebugging()<<METHOD<<"(): Read file content '"<<InputPath()
 		 <<InputFile()<<"' {\n";
   for (size_t j(0);j<m_filecontent[i].size();++j) {
@@ -517,7 +467,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
+  file+="||"+ToString(m_occurrence);
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
                    <<file<<"' -> ("<<&s_buffermap[file]<<")\n";

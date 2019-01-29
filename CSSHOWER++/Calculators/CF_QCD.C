@@ -5,6 +5,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <algorithm>
 #include <cassert>
@@ -111,12 +112,12 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
+  // obtain global variables
+  Settings& s = Settings::GetMainSettings();
   MODEL::Running_AlphaS * cpl = (MODEL::Running_AlphaS *)(md->GetScalarFunction("alpha_S"));
-
   double rsf = ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  rsf *= ToType<double>(rpa->gen.Variable("CSS_SCALE_FACTOR"));
-
-  m_scvmode=ToType<int>(rpa->gen.Variable("CSS_SCALE_VARIATION_SCHEME"));
+  rsf *= s["CSS_SCALE_FACTOR"].Get<double>();
+  m_scvmode = s["CSS_SCALE_VARIATION_SCHEME"].Get<int>();
 
   // determine prefactors before calling CplMax below
   m_cplfac=((m_type/10==1)?fsfac:isfac);

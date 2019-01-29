@@ -28,7 +28,7 @@ libToolsOrg_la_SOURCES        = \
 				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
-				Default_Reader.C \
+				Yaml_Reader.C \
 				Data_Writer.C \
 				Run_Parameter.C \
 				MyTiming.C \
@@ -39,6 +39,10 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				Command_Line_Interface.C \
+				Settings.C \
+				Scoped_Settings.C \
+				Settings_Keys.C \
+				Settings_Writer.C \
 				$(GZIPSTREAMSOURCES) \
 				binreloc.c
 
@@ -47,8 +51,6 @@ localinc_HEADERS         =	\
 			CXXFLAGS.H \
 			Git_Info.H \
 			Return_Value.H \
-			Smart_Pointer.H \
-			Smart_Pointer.C \
 			Shell_Tools.H \
 			STL_Tools.H \
 			RUsage.H \
@@ -61,10 +63,9 @@ localinc_HEADERS         =	\
 			My_File.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
-			Read_Write_Base.inl.H \
 			Data_Reader.H \
+			Yaml_Reader.H \
 			Data_Writer.H \
-			Default_Reader.H \
 			My_Limits.H \
 			Run_Parameter.H \
 			Message.H \
@@ -80,6 +81,10 @@ localinc_HEADERS         =	\
 			Command_Line_Interface.H \
 			Command_Line_Options.H \
 			Option_Parser.H \
+			Settings.H \
+			Scoped_Settings.H \
+			Settings_Keys.H \
+			Settings_Writer.H \
 			Enum_Flags.H \
 			Node.H \
 			Node.C \

@@ -6,7 +6,6 @@
 #include "DIRE/Tools/Amplitude.H"
 
 namespace ATOOLS {
-  class Default_Reader;
   class Variation_Parameters;
   class Variation_Weights;
 }
@@ -156,8 +155,7 @@ namespace DIRE {
     ~Shower();
 
     bool Init(MODEL::Model_Base *const,
-	      PDF::ISR_Handler *const,
-	      ATOOLS::Default_Reader *const);
+	      PDF::ISR_Handler *const);
 
     void SetMS(const ATOOLS::Mass_Selector *const ms);
 

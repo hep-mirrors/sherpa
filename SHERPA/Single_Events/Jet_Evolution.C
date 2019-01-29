@@ -27,17 +27,18 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
 
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
-  interface = new Perturbative_Interface(_mehandler, _dechandler,
+  interface = new Perturbative_Interface(_mehandler,
+                                         _dechandler,
 					 shIter->second);
   if (interface!=NULL) m_interfaces.insert(make_pair("SignalMEs",interface));
 
   shIter=showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler,shIter->second);
+  interface = new Perturbative_Interface(_hdhandler, shIter->second);
   if (interface!=NULL) 
     m_interfaces.insert(make_pair("HadronDecays",interface));
 
   if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler,shIter->second);
+    interface = new Perturbative_Interface(_mihandler, shIter->second);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
   }
   if (_schandler) {

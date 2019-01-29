@@ -9,8 +9,6 @@
 
 namespace ANALYSIS {
 
-  typedef ANALYSIS::Argument_Matrix Argument_Matrix;
-  
   class Analysis_Handler: public ATOOLS::File_IO_Base,
 			  public SHERPA::Analysis_Interface {
   public:
@@ -22,8 +20,6 @@ namespace ANALYSIS {
     typedef std::vector<ANALYSIS::Primitive_Analysis*> Analyses_Vector;
     
   private:
-
-    static size_t s_maxanalyses;
 
     Analyses_Vector m_analyses;
 
@@ -51,9 +47,6 @@ namespace ANALYSIS {
     void CleanUp();
     
     void ShowSyntax(const int mode);
-
-    static Argument_Matrix FindArguments(const Argument_Matrix &strings,
-					 size_t &starty,size_t &startx);
 
     // inline functions
     inline void SetWeighted(const int weighted) { m_weighted=weighted; }

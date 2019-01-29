@@ -6,6 +6,7 @@
 #include "AddOns/BlackHat/BlackHat_Virtual.H"
 #include "AddOns/BlackHat/BlackHat_Tree.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 namespace BLACKHAT {
@@ -25,8 +26,7 @@ namespace BLACKHAT {
     ~BlackHat_Interface();
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
@@ -41,7 +41,6 @@ namespace BLACKHAT {
 
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace BLACKHAT;
@@ -58,9 +57,9 @@ BlackHat_Interface::~BlackHat_Interface()
   if (p_interface) delete p_interface;
 }
 
-bool BlackHat_Interface::Initialize
-(const std::string &path,const std::string &file,MODEL::Model_Base *const model,
- BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
+bool BlackHat_Interface::Initialize(MODEL::Model_Base *const model,
+                                    BEAM::Beam_Spectra_Handler *const beam,
+                                    PDF::ISR_Handler *const isrhandler)
 {
   if (p_interface==NULL) {
     rpa->gen.AddCitation(1,"The BlackHat library is described in \\cite{Berger:2008sj}.");
@@ -68,8 +67,10 @@ bool BlackHat_Interface::Initialize
     p_model=model;
     BlackHat_Tree::SetModel(p_model);
     BlackHat_Virtual::SetModel(p_model);
-    Default_Reader reader;
-    p_interface = new BH::BH_interface(reader.Get<std::string>("BH_SETTINGS_FILE", ""));
+    Settings& s = Settings::GetMainSettings();
+    const std::string bhfile{
+      s["BH_SETTINGS_FILE"].SetDefault("").Get<std::string>() };
+    p_interface = new BH::BH_interface(bhfile);
     p_interface->set("Z_mass",Flavour(kf_Z).Mass());
     p_interface->set("Z_width",Flavour(kf_Z).Width());
     p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
@@ -101,7 +102,7 @@ int BlackHat_Interface::PerformTests()
 {
   return 1;
 }
-  
+
 bool BlackHat_Interface::NewLibraries()
 {
   return false;

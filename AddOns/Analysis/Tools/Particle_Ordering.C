@@ -20,36 +20,27 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 template <class Class>
-Analysis_Object *GetOrdering(const Argument_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<2) return NULL;
-    return new Class(parameters[0][0],parameters[0][1]);
-  }
-  else if (parameters.size()<2) return NULL;
-  std::string inlist="FinalState", outlist="Ordered";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="INLIST") inlist=parameters[i][1];
-    else if (parameters[i][0]=="OUTLIST") outlist=parameters[i][1];
-  }
+Analysis_Object *GetOrdering(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Ordered").Get<std::string>();
   return new Class(inlist,outlist);
-}									
+}
 
 #define DEFINE_GETTER_METHOD(CLASS)				\
   Analysis_Object *ATOOLS::Getter				\
-  <Analysis_Object,Argument_Matrix,CLASS>::			\
-  operator()(const Argument_Matrix &parameters) const		\
-  { return GetOrdering<CLASS>(parameters); }
+  <Analysis_Object,Analysis_Key,CLASS>::			\
+  operator()(const Analysis_Key& key) const		\
+  { return GetOrdering<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD(CLASS)					\
-  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::		\
+  void ATOOLS::Getter<Analysis_Object,Analysis_Key,CLASS>::		\
   PrintInfo(std::ostream &str,const size_t width) const			\
-  { str<<"inlist outlist"; }
+  { str<<"e.g. {InList: FinalState, OutList: Ordered}"; }
 
 #define DEFINE_ORDERING_GETTER(CLASS,TAG)				\
-  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);		\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Analysis_Key);		\
   DEFINE_GETTER_METHOD(CLASS)					\
   DEFINE_PRINT_METHOD(CLASS)
 

@@ -1,20 +1,30 @@
 @node Processes
 @section Processes
 
-The process setup is covered by the `(processes)' section of
-the steering file or the process data file `Processes.dat', respectively. 
-It takes the following general form
+The process setup takes the following general form
 
 @verbatim
-  Process <process declaration>;
-  [Decay|DecayOS|No_Decay <decay declaration>];
-  [<parameter> <value> {<multiplicities-to-be-applied-to>}];
-  End process;
+PROCESSES:
+# Process 1:
+- Process: <process declaration>
+  <parameter>: <value>
+  <multiplities-to-be-applied-to>:
+    <parameter>: <value>
+    ...
+# Process 2:
+- Process: <process declaration>
+  ...
 @end verbatim
 
+I.e. @code{PROCESSES} followed by a list of process definitions.  Each process
+definition has one mandatory sub-setting, @code{Process}, which defines the
+initial- and final-state particles.
 
+In addition, several optional parameters steer the process setup.  Most of them
+can be grouped under a multiplicity key, which can either be a single integer
+or a range of integers, e.g. @code{2-4: @{ <settings-that-affect-only-multiplicties-2-to-4> @}}.
 
-The following parameters are used to steer the process setup.
+The following parameters are used to steer the process setup:
 
 @menu
 * Process::                 The process setup start tag.
@@ -24,7 +34,7 @@ The following parameters are used to steer the process setup.
 * Scales::                  Tag to set a process-specific scale.
 * Couplings::               Tag to set process-specific couplings.
 * CKKW::                    Tag to setup multijet merging.
-* Selector_File::           Tag to specify a specific selector file.
+* Process_Selectors::       Tag to specify a specific selector file.
 * Order::                   Tag to fix the coupling order.
 * Max_Order::               Tag to fix the maximum coupling order.
 * Min_Order::               Tag to fix the minimum coupling order.
@@ -53,6 +63,7 @@ The following parameters are used to steer the process setup.
 * PSI_ItMin::               Tag to set the number of points per optimization step.
 * RS_PSI_ItMin::            Tag to set the number of points per optimization step
                             in real-minus-subtraction parts.
+* Special Group::           Manual grouping of flavour processes for integration
 * End process::             The process setup end tag.
 @end menu
 
@@ -61,16 +72,15 @@ The following parameters are used to steer the process setup.
 @subsection Process
 This tag starts the setup of a process or a set of processes 
 with common properties. It must be followed by the specification 
-of the (core) process itself. The setup is completed by the
-@option{End process} tag, see @ref{End process}. The initial and
+of the (core) process itself. The initial and
 final state particles are specified by their PDG codes, or by 
 particle containers, see @ref{Particle containers}. Examples are
 
-@table @asis
-@item Process 93 93 -> 11 -11
+@table @code
+@item Process: 93 93 -> 11 -11
 Sets up a Drell-Yan process group with light quarks
 in the initial state.
-@item Process 11 -11 -> 93 93 93@{3@}
+@item Process: "11 -11 -> 93 93 93@{3@}"
 Sets up jet production in e+e- collisions with up to three
 additional jets.
 @end table
@@ -112,23 +122,34 @@ particles with similar properties, namely
 These containers hold all massless particles and anti-particles 
 of the denoted type and allow for a more efficient definition of 
 initial and final states to be considered. The jet container consists 
-of the gluon and all massless quarks (as set by @code{MASS[..]=0.0} or
-@code{MASSIVE[..]=0}). A list of particle containers
+of the gluon and all massless quarks, as set by
+@verbatim
+PARTICLE_DATA:
+  <id>:
+    Mass: 0
+    # ... and/or ...
+    Massive: false
+@end verbatim
+
+A list of particle containers
 is printed at the start of each Sherpa run, when the @ref{OUTPUT} is set 
 at level @option{2}. 
 
 @cindex PARTICLE_CONTAINER
 It is also possible to define a custom particle container using the keyword 
-@code{PARTICLE_CONTAINER} either on the command line or in the @code{(run)}
-section of the input file. The container must be given an unassigned particle 
-ID (kf-code) and its name (freely chosen by you) and content must be specified.
-An example would be the collection of all down-type quarks, which could be
-declared as
+@code{PARTICLE_CONTAINER}. The container must be given an unassigned particle
+ID (kf-code) and its name (freely chosen by you) and the flavour content must
+be specified.
+An example would be the collection of all down-type quarks using the unassigned
+ID 98, which could be declared as
 @verbatim
-  PARTICLE_CONTAINER 98 downs 1 -1 3 -3 5 -5;
+PARTICLE_CONTAINER:
+  98:
+    Name: downs
+    Flavours: [1, -1, 3, -3, 5, -5]
 @end verbatim
-Note that, if wanted, you have to add both particles and anti-particles.
 
+Note that, if wanted, you have to add both particles and anti-particles.
 
 
 @node Parentheses
@@ -141,14 +162,13 @@ In a setup with massive b-quarks, for example, the b-quark will not be part
 of the jets container. In order to include b-associated processes easily,
 the following can be used:
 @verbatim
-(run){
+PARTICLE_DATA:
+  5: {Massive: true}
+PARTICLE_CONTAINER:
+  98: {Name: B, Flavours: [5, -5]}
+PROCESSES:
+- Process: "11 -11 -> (93,98) (93,98)"
   ...
-  MASSIVE[5] 1; PARTICLE_CONTAINER 98 B 5 -5;
-}(run);
-(processes){
-  Process 11 -11 -> (93,98) (93,98);
-  ...
-}(processes);
 @end verbatim
 
 
@@ -158,8 +178,8 @@ the following can be used:
 The curly bracket notation when specifying a process allows up to 
 a certain number of jets to be included in the final state. This
 is easily seen from an example, 
-@table @asis
-@item Process 11 -11 -> 93 93 93@{3@}
+@table @code
+@item Process: "11 -11 -> 93 93 93@{3@}"
 Sets up jet production in e+e- collisions. The matix element final state may be
 2, 3, 4 or 5 light partons or gluons.
 @end table
@@ -175,11 +195,11 @@ flavour while the phase space is kept general. Consequently, all
 spin correlations are preserved.
 An example would be
 @verbatim
-Process 11 -11 -> 6[a] -6[b]
-Decay 6[a] -> 5 24[c]
-Decay -6[b] -> -5 -24[d]
-Decay 24[c] -> -13 14
-Decay -24[d] -> 94 94
+Process: 11 -11 -> 6[a] -6[b]
+Decay:     6[a] -> 5 24[c]
+Decay:    -6[b] -> -5 -24[d]
+Decay:    24[c] -> -13 14
+Decay:   -24[d] -> 94 94
 @end verbatim
 
 
@@ -194,11 +214,11 @@ flavour and the phase space is factorised as well. Nonetheless, all spin
 correlations are preserved.
 An example would be
 @verbatim
-Process 11 -11 -> 6[a] -6[b]
-DecayOS 6[a] -> 5 24[c]
-DecayOS -6[b] -> -5 -24[d]
-DecayOS 24[c] -> -13 14
-DecayOS -24[d] -> 94 94
+Process: 11 -11 -> 6[a] -6[b]
+DecayOS:   6[a] -> 5 24[c]
+DecayOS:  -6[b] -> -5 -24[d]
+DecayOS:  24[c] -> -13 14
+DecayOS: -24[d] -> 94 94
 @end verbatim
 
 
@@ -210,11 +230,11 @@ single-top production. Note that this method breaks gauge invariance!
 At the moment this flag can only be set for Comix.
 An example would be
 @verbatim
-Process 93 93 -> 6[a] -24[b] 93{1}
-Decay 6[a] -> 5 24[c]
-DecayOS 24[c] -> -13 14
-DecayOS -24[b] -> 11 -12
-No_Decay -6
+Process: "93 93 -> 6[a] -24[b] 93{1}"
+Decay:     6[a] -> 5 24[c]
+DecayOS:  24[c] -> -13 14
+DecayOS: -24[b] -> 11 -12
+No_Decay: -6
 @end verbatim
 
 
@@ -236,15 +256,17 @@ It can be given in any form which is understood by the internal
 interpreter, see @ref{Interpreter}. Examples are
 
 @itemize
-@item Hadronic collider: @code{CKKW 20}
-@item Leptonic collider: @code{CKKW pow(10,-2.5/2.0)*E_CMS}
-@item DIS: @code{CKKW QCUT/sqrt(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]))}
+@item Hadronic collider: @code{CKKW: 20}
+@item Leptonic collider: @code{CKKW: pow(10,-2.5/2.0)*E_CMS}
+@item DIS: @code{CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/$(SDIS))/Abs2(p[2]-p[0]))}
 @end itemize
 
 
-@node Selector_File
-@subsection Selector_File
-Sets a process-specific selector file name.
+@node Process_Selectors
+@subsection Process_Selectors
+Using @code{Selectors: [<selector 1>, <selector 2>]} in a process definition
+sets up process-specific selectors. They use the same syntax as describes in
+@ref{Selectors}.
 
 
 @node Order
@@ -252,11 +274,11 @@ Sets a process-specific selector file name.
 Sets a process-specific coupling order.
 Orders are counted at the amplitude level. 
 For example, the process 1 -1 -> 2 -2 would have
-orders (2,0), (1,1) and (0,2). The first number always
-refers to QCD, the second to electroweak. The third
-and following numbers are model specific. Half-integer
+orders @code{@{QCD: 2, EW: 0@}}, @code{@{QCD: 1, EW: 1@}} and
+@code{@{QCD: 0, EW: 2@}}. There can also be a third entry
+that is model specific (e.g. for HEFT couplings). Half-integer
 orders are so far supported only by Comix.
-An asterisk can be used as a wildcard.
+The word "Any" can be used as a wildcard.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
@@ -265,29 +287,13 @@ the full process, see @ref{Decay} and @ref{DecayOS}.
 @node Max_Order
 @subsection Max_Order
 Sets a process-specific maximum coupling order.
-Orders are counted at the amplitude level. 
-For example, the process 1 -1 -> 2 -2 would have
-orders (2,0), (1,1) and (0,2). The first number always
-refers to QCD, the second to electroweak. The third
-and following numbers are model specific. Half-integer
-orders are so far supported only by Comix.
-
-Note that for decay chains this setting applies to
-the full process, see @ref{Decay} and @ref{DecayOS}.
+See @ref{Order} for the syntax and additional information.
 
 
 @node Min_Order
 @subsection Min_Order
 Sets a process-specific minimum coupling order.
-Orders are counted at the amplitude level. 
-For example, the process 1 -1 -> 2 -2 would have
-orders (2,0), (1,1) and (0,2). The first number always
-refers to QCD, the second to electroweak. The third
-and following numbers are model specific. Half-integer
-orders are so far supported only by Comix.
-
-Note that for decay chains this setting applies to
-the full process, see @ref{Decay} and @ref{DecayOS}.
+See @ref{Order} for the syntax and additional information.
 
 
 @node Min_N_Quarks
@@ -331,16 +337,13 @@ Defines a unique name suffix for the process.
 @node Integration_Error
 @subsection Integration_Error
 Sets a process-specific relative integration error target.
-
-For multijet processes, this parameter can be specified
-per final state multiplicity. An example would be
+An example to specify an error target of 2% for
+2->3 and 2->4 processes would be:
 @verbatim
-Process 93 93 -> 93 93 93{2}
-Integration_Error 0.02 {3,4}
+Process: "93 93 -> 93 93 93{2}"
+3-4:
+  Integration_Error: 0.02
 @end verbatim
-
-Here, the integration error target is set to 2% for
-2->3 and 2->4 processes.
 
 
 @node Max_Epsilon
@@ -360,50 +363,15 @@ inclusive cross section is at most epsilon.
 @subsection Enhance_Factor
 Sets a process specific enhance factor.
 
-For multijet processes, this parameter can be specified
-per final state multiplicity. An example would be
-@verbatim
-Process 93 93 -> 93 93 93{2}
-Enhance_Factor 4 {3}
-Enhance_Factor 16 {4}
-@end verbatim
-
-Here, 3-jet processes are enhanced by a factor of 4,
-4-jet processes by a factor of 16.
-
 @node RS_Enhance_Factor
 @subsection RS_Enhance_Factor
 Sets an enhance factor for the RS-piece of an MC@@NLO process.
-
-For multijet processes, this parameter can be specified
-per final state multiplicity. An example would be
-@verbatim
-Process 93 93 -> 90 91 93{3};
-NLO_Mode MC@NLO {2,3};
-NLO_Order (1,0) {2,3};
-RS_Enhance_Factor 10 {2};
-RS_Enhance_Factor 20 {3};
-@end verbatim
-
-Here, the RS-pieces of the MC@@NLO subprocesses of the 2 particle final 
-state processes are enhanced by a factor of 10, while those of the 3 
-particle final state processes are enhanced by a factor of 20.
 
 @node Enhance_Function
 @subsection Enhance_Function
 Sets a process specific enhance function.
 
 @emph{This feature can only be used when generating weighted events.}
-
-For multijet processes, the parameter can be specified
-per final state multiplicity. An example would be
-@verbatim
-Process 93 93 -> 11 -11 93{1}
-Enhance_Function VAR{PPerp2(p[4])} {3}
-@end verbatim
-
-Here, the 1-jet process is enhanced with the
-transverse momentum squared of the jet.
 
 Note that the convergence of the Monte Carlo integration can be worse
 if enhance functions are employed and therefore the integration can take
@@ -425,13 +393,12 @@ generation should be flattened. Of course, this induces an appropriate weight
 for each event. This option is available for both weighted and unweighted event
 generation, but for the latter as mentioned above the weight stemming from the
 enhancement is introduced.
-For multijet processes, the parameter can be specified
-per final state multiplicity.
 
 An example would be
 @verbatim
-Process 93 93 -> 11 -11 93{1}
-Enhance_Observable VAR{log10(PPerp(p[2]+p[3]))}|1|3 {3}
+Process: "93 93 -> 11 -11 93{1}"
+3:
+  Enhance_Observable: VAR{log10(PPerp(p[2]+p[3]))}|1|3
 @end verbatim
 
 Here, the 1-jet process is flattened with respect to the logarithmic transverse
@@ -458,16 +425,16 @@ function and the final state multiplicity, can be an intricate task.
 This setting specifies whether and in which mode an NLO calculation 
 should be performed. Possible values are:
 
-@itemize
-@item @code{Fixed_Order} ... perform a fixed-order next-to-leading order 
-                             calculation
-@item @code{MC@@NLO} ... perform an MC@@NLO-type matching of a fixed-order 
-                         next-to-leading order calculation to the resummation 
-                         of the parton shower
-@end itemize
+@table @code
+@item Fixed_Order
+perform a fixed-order next-to-leading order calculation
+@item MC@@NLO
+perform an MC@@NLO-type matching of a fixed-order next-to-leading order
+calculation to the resummation of the parton shower
+@end table
 
 The usual multiplicity identifier apply to this switch as well.
-Note that this setting implies @code{NLO_Part BVIRS} for the relevant 
+Note that this setting implies @code{NLO_Part: BVIRS} for the relevant
 multiplicities. This can be overridden by setting @code{NLO_Part} 
 explicitly in case of fixed-order calculations.
 
@@ -475,18 +442,23 @@ Note that Sherpa includes only a very limited selection of one-loop
 corrections. For processes not included external codes can be interfaced, 
 see @ref{External one-loop ME}
 
+
 @node NLO_Part
 @subsection NLO_Part
 
 In case of fixed-order NLO calculations this switch specifies which pieces 
 of a NLO calculation are computed. Possible choices are
 
-@itemize
-@item B  ... born term
-@item V  ... virtual (one-loop) correction
-@item I  ... integrated subtraction terms
-@item RS ... real correction, regularized using Catani-Seymour subtraction terms
-@end itemize
+@table @code
+@item B
+born term
+@item V
+virtual (one-loop) correction
+@item I
+integrated subtraction terms
+@item RS
+real correction, regularized using Catani-Seymour subtraction terms
+@end table
 
 Different pieces can be combined in one processes setup. Only pieces with the 
 same number of final state particles and the same order in alpha_S and alpha 
@@ -495,9 +467,10 @@ can be treated as one process, otherwise they will be automatically split up.
 @node NLO_Order
 @subsection NLO_Order
 
-Specifies the relative order of the NLO correction wrt. the considered Born 
-process. For example, @code{NLO_Order (1,0)} specifies a QCD correction while 
-@code{NLO_Order (0,1)} specifies an EW correction. 
+Specifies the relative order of the NLO correction wrt. the considered Born
+process. For example, @code{NLO_Order: @{QCD: 1, EW: 0@}} specifies a QCD
+correction while @code{NLO_Order: @{QCD: 0, EW: 1@}} specifies an EW
+correction.
 
 @node Subdivide_Virtual
 @subsection Subdivide_Virtual
@@ -511,27 +484,20 @@ sampling to reduce the overall computation time.
 @node ME_Generator
 @subsection ME_Generator
 Set a process specific nametag for the desired
-tree-ME generator, see @ref{ME_SIGNAL_GENERATOR}.
+tree-ME generator, see @ref{ME_GENERATORS}.
 
 @node RS_ME_Generator
 @subsection RS_ME_Generator
 Set a process specific nametag for the desired
 ME generator used for the real minus subtraction part
-of NLO calculations. See also @ref{ME_SIGNAL_GENERATOR}.
+of NLO calculations. See also @ref{ME_GENERATORS}.
 
 @node Loop_Generator
 @subsection Loop_Generator
 Set a process specific nametag for the desired
 loop-ME generator. The only Sherpa-native option is @code{Internal} with a few 
-hard coded loop matrix elements.
-
-@subsubsection BlackHat Interface
-@cindex BH_SETTINGS_FILE
-
-Another source for loop matrix elements is @url{http://projects.hepforge.org/blackhat,BlackHat}.
-To use this Sherpa has to be linked to BlackHat during installation by using the configure option 
-@code{--enable-blackhat=/path/to/blackhat}. The BlackHat settings file can be specified using
-@option{BH_SETTINGS_FILE}.
+hard coded loop matrix elements. Other loop matrix elements are provided by
+external libraries.
 
 
 @node Integrator
@@ -540,12 +506,31 @@ Sets a process-specific integrator, see @ref{INTEGRATOR}.
 
 @node PSI_ItMin
 @subsection PSI_ItMin
-Sets the number of points per optimization step, see @ref{PSI_ITMIN}.
+Sets the number of points per optimization step, see @ref{PSI}.
 
 @node RS_PSI_ItMin
 @subsection RS_PSI_ItMin
 Sets the number of points per optimization step in real-minus-subtraction
-parts of fixed-order and MC@@NLO calculations, see @ref{PSI_ITMIN}.
+parts of fixed-order and MC@@NLO calculations, see @ref{PSI}.
+
+@node Special Group
+@subsection Special Group
+Allows to split up individual flavour processes within a process group for
+integrating them separately. This can help improve the integration/unweighting
+efficiency. Note: Only works with Comix so far.
+Example for usage:
+@verbatim
+Process 93 93 -> 11 -11 93
+Special Group(0-1,4)
+[...]
+End process
+Process 93 93 -> 11 -11 93
+Special Group(2-3,5-7)
+[...]
+End process
+@end verbatim
+The numbers for each individual process can be found using a script in the 
+AddOns directory: @code{AddOns/ShowProcessIds.sh Process/Comix.zip}
 
 @node End process
 @subsection End process

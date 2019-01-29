@@ -89,6 +89,8 @@ namespace MODEL {
     One_Running_AlphaS * p_active;
     PDF::PDF_Base * p_overridingpdf;
 
+    void RegisterDefaults() const;
+
     // construct PDFs that are only used for their AlphaS info and values
     void InitOverridingPDF(const std::string name, const int member);
 

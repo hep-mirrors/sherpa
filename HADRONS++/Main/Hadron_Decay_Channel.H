@@ -3,7 +3,6 @@
 
 #include <string>
 #include <utility>
-#include "ATOOLS/Org/Data_Reader.H"
 #include "HADRONS++/Main/Tools.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Vector.H"

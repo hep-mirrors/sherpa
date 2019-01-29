@@ -187,10 +187,9 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,
   double lambda_qcd=0.2, pspat, critE2(sqr(m_residual_mass));
   do {
     do {
-      double gauss1, gauss2;
-      ran->Gaussian(gauss1,gauss2);
-      pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss1;
-      if(pspat<1e-6) pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss2;
+      pspat = lambda_qcd+lambda_qcd/m_decayer_mass*ran->GetGaussian();
+      if (pspat < 1e-6)
+        pspat = lambda_qcd+lambda_qcd/m_decayer_mass*ran->GetGaussian();
     } while(pspat<1e-6);
   } while (sqr(p[0][0]-sqrt(sqr(m_spectator_mass)+sqr(pspat))) - sqr(pspat) < critE2);
 

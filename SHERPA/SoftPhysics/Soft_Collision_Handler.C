@@ -1,5 +1,5 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -19,20 +19,18 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
-					       BEAM::Beam_Spectra_Handler *beam,
-					       PDF::ISR_Handler *isr):
-  m_dir(_dir), m_file(_file), m_mode(0), p_shrimps(NULL), p_cluster(NULL)
+Soft_Collision_Handler::Soft_Collision_Handler(BEAM::Beam_Spectra_Handler *beam,
+                                               PDF::ISR_Handler *isr):
+  m_mode(0), p_shrimps(NULL), p_cluster(NULL)
 {
-  Default_Reader reader;
-  reader.AddIgnore("[");
-  reader.AddIgnore("]");
-  reader.SetInputPath(m_dir);
-  reader.SetInputFile(m_file);
-  m_softcollisionmodel=reader.Get<string>("SOFT_COLLISIONS",string("Off"));
+  Settings& s = Settings::GetMainSettings();
+  m_dir = s.GetPath();
+  m_softcollisionmodel = s["SOFT_COLLISIONS"]
+    .SetDefault("None")
+    .UseNoneReplacements()
+    .Get<string>();
   if (m_softcollisionmodel==string("Shrimps")) {
-    m_sfile   = reader.Get<string>("SHRIMPS_FILE",string("Shrimps.dat"));
-    p_shrimps = new Shrimps(&reader,beam,isr);
+    p_shrimps = new Shrimps(beam, isr);
     p_cluster = p_shrimps->GetClusterAlgorithm();
     p_cluster->SetShowerParams(p_shrimps->ShowerMode(),
 			       p_shrimps->ShowerMinKT2());
@@ -40,8 +38,9 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
     m_mode=1;
     exh->AddTerminatorObject(this);
     return;
+  } else if (m_softcollisionmodel == "None") {
+    return;
   }
-  else if (m_softcollisionmodel==string("Off")) return;
   THROW(critical_error,"Soft_Collision model not implemented.");
 }
    
@@ -57,9 +56,6 @@ void Soft_Collision_Handler::CleanUp() {
 
 void Soft_Collision_Handler::PrepareTerminate() 
 {
-  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
-  if (path=="") return;
-  Copy(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }
 
 ATOOLS::Return_Value::code 

@@ -2,7 +2,6 @@
 
 #include "AddOns/Analysis/Observables/Primitive_Observable_Base.H"
 #include "ATOOLS/Math/Variable.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -75,28 +74,26 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(One_Variable_Selector,"MomSel",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,One_Variable_Selector>::
+<Analysis_Object,Analysis_Key,One_Variable_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"CndList inlist outlist\n"
-     <<std::setw(width+7)<<" "<<"Tags    flavi1,.. itemi1,.. "
-     <<"vari mini maxi [mini maxi binsi typei [itemi]]\n"
-     <<std::setw(width+7)<<" "<<"Flavs   flav11,.. .. flavN1,..\n"
-     <<std::setw(width+7)<<" "<<"Items   item11,.. .. itemN1,..\n"
-     <<std::setw(width+7)<<" "<<"Vars    var1      .. varN\n"
-     <<std::setw(width+7)<<" "<<"Mins    min1      .. minN\n"
-     <<std::setw(width+7)<<" "<<"Maxs    max1      .. maxN\n"
-     <<std::setw(width+7)<<" "<<"HTypes  [type1   [.. typeN]]\n"
-     <<std::setw(width+7)<<" "<<"HItems  [item1   [.. itemN]]\n"
-     <<std::setw(width+7)<<" "<<"HBins   [bins1   [.. binsN]]\n"
-     <<std::setw(width+7)<<" "<<"HMins   [min1    [.. minN]]\n"
-     <<std::setw(width+7)<<" "<<"HMaxs   [max1    [.. maxN]]\n"
+     <<std::setw(width+7)<<" "<<"InList:  list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"CndList: inlist outlist,\n"
+     <<std::setw(width+7)<<" "<<"Flavs:   [[flav11,..], .., [flavN1,..]],\n"
+     <<std::setw(width+7)<<" "<<"Items:   [[item11,..], .., [itemN1,..]],\n"
+     <<std::setw(width+7)<<" "<<"Vars:    [var1, .., varN],\n"
+     <<std::setw(width+7)<<" "<<"Mins:    [min1, .., minN],\n"
+     <<std::setw(width+7)<<" "<<"Maxs:    [max1, .., maxN],\n"
+     <<std::setw(width+7)<<" "<<"HTypes:  [type1,..],\n"
+     <<std::setw(width+7)<<" "<<"HItems:  [item1,..],\n"
+     <<std::setw(width+7)<<" "<<"HBins:   [bins1,..],\n"
+     <<std::setw(width+7)<<" "<<"HMins:   [min1,..],\n"
+     <<std::setw(width+7)<<" "<<"HMaxs:   [max1,..],\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
@@ -124,133 +121,70 @@ std::string MakeString(const std::vector<__T> &v)
   return s;
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,
 				One_Variable_Selector>::
-operator()(const Argument_Matrix &parameters) const
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist("FinalState"), outlist("Selected");
-  int isobs(0);
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+
+  s.DeclareVectorSettingsWithEmptyDefault({
+      "CndList",
+      "Vars",
+      "Mins",
+      "Maxs",
+      "HTypes",
+      "HItems",
+      "HBins",
+      "HMins",
+      "HMaxs"
+      });
+  s.DeclareMatrixSettingsWithEmptyDefault({ "Flavs", "Items" });
+
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
   String_Matrix cndlist;
+  cndlist.push_back(s["CndList"].GetVector<std::string>());
+  if (cndlist.back().size() != 2)
+    THROW(fatal_error, "CndList must consist of two values.");
+  const auto isobs = s["IsObs"].SetDefault(0).Get<int>();
+
   Flavour_Matrix flavs;
-  Int_Matrix items;
-  String_Vector vtags;
-  Double_Vector mins, maxs;
+  Int_Matrix rawflavs{ s["Flavs"].GetMatrix<int>() };
+  for (const auto& rawflavrow : rawflavs) {
+    flavs.push_back(Flavour_Vector());
+    for (const auto& rawflav : rawflavrow) {
+      flavs.back().push_back(Flavour((kf_code)std::abs(rawflav)));
+      if (rawflav < 0)
+        flavs.back().back() = flavs.back().back().Bar();
+    }
+  }
+
+  auto items = s["Items"].GetMatrix<int>();
+  auto vtags = s["Vars"].GetVector<std::string>();
+  auto mins = s["Mins"].GetVector<double>();
+  auto maxs = s["Maxs"].GetVector<double>();
+
   Double_Matrix histos(5);
-  Data_Reader reader(",",";","!","=");
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="RefList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="CndList" && cur.size()>2) {
-      cndlist.push_back(String_Vector(2));
-      cndlist.back().front()=cur[1];
-      cndlist.back().back()=cur[2];
-    }
-    else if (cur[0]=="IsObs" && cur.size()>1)
-      isobs=ToType<int>(cur[1]);
-    else if (cur[0]=="Tags" && cur.size()>5) {
-      reader.SetString(cur[1]);
-      std::vector<int> cfl;
-      if (!reader.VectorFromString(cfl,"")) {
-	msg_Debugging()<<METHOD<<"(): Invalid flavour syntax '"
-		       <<cur[1]<<"'.\n";
-	continue;
-      }
-      flavs.push_back(Flavour_Vector(cfl.size()));
-      for (size_t k(0);k<cfl.size();++k) {
-	flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
-	if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
-      }
-      reader.SetString(cur[2]);
-      std::vector<int> cit;
-      if (!reader.VectorFromString(cit,"")) {
-	msg_Debugging()<<METHOD<<"(): Invalid item syntax '"
-		       <<cur[2]<<"'.\n";
-	continue;
-      }
-      items.push_back(cit);
-      vtags.push_back(cur[3]);
-      mins.push_back(ToType<double>(cur[4]));
-      maxs.push_back(ToType<double>(cur[5]));
-      if (cur.size()<=9) {
-	for (size_t i(0);i<histos.size();++i) histos[i].push_back(-1);
-      }
-      else {
-	histos[0].push_back(HistogramType(cur[9]));
-	histos[1].push_back(ToType<double>(cur[8]));
-	histos[2].push_back(ToType<double>(cur[6]));
-	histos[3].push_back(ToType<double>(cur[7]));
-	if (cur.size()>10) histos[4].push_back(ToType<double>(cur[10]));
-	else histos[4].push_back(-1);
-      }
-    }
-    else if (cur[0]=="Flavs" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) {
-	reader.SetString(cur[j]);
-	std::vector<int> cfl;
-	if (!reader.VectorFromString(cfl,"")) {
-	  msg_Debugging()<<METHOD<<"(): Invalid flavour syntax '"
-			 <<cur[j]<<"'.\n";
-	  continue;
-	}
-	flavs.push_back(Flavour_Vector(cfl.size()));
-	for (size_t k(0);k<cfl.size();++k) {
-	  flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
-	  if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
-	}
-      }
-    }
-    else if (cur[0]=="Items" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) {
-	reader.SetString(cur[j]);
-	std::vector<int> cit;
-	if (!reader.VectorFromString(cit,"")) {
-	  msg_Debugging()<<METHOD<<"(): Invalid item syntax '"
-			 <<cur[j]<<"'.\n";
-	  continue;
-	}
-	items.push_back(cit);
-      }
-    }
-    else if (cur[0]=="Vars" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	vtags.push_back(cur[j]);
-    }
-    else if (cur[0]=="Mins" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	mins.push_back(ToType<double>(cur[j]));
-    }
-    else if (cur[0]=="Maxs" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	maxs.push_back(ToType<double>(cur[j]));
-    }
-    else if (cur[0]=="HTypes" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[0].push_back(HistogramType(cur[j]));
-    }
-    else if (cur[0]=="HItems" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[4].push_back(ToType<double>(cur[j]));
-    }
-    else if (cur[0]=="HBins" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[1].push_back(ToType<double>(cur[j]));
-    }
-    else if (cur[0]=="HMins" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[2].push_back(ToType<double>(cur[j]));
-    }
-    else if (cur[0]=="HMaxs" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[3].push_back(ToType<double>(cur[j]));
-    }
+  for (const auto& htype : s["HTypes"].GetVector<std::string>()) {
+    histos[0].push_back(HistogramType(htype));
   }
-  if (flavs.empty() || items.empty() || vtags.empty() || 
-      mins.empty() || maxs.empty()) {
-    msg_Debugging()<<METHOD<<"(): Cannot initialize selector.\n";
-    return NULL;
+  for (const auto& hitem : s["HItems"].GetVector<double>()) {
+    histos[4].push_back(hitem);
   }
+  for (const auto& hbin : s["HBins"].GetVector<double>()) {
+    histos[1].push_back(hbin);
+  }
+  for (const auto& hmin : s["HMins"].GetVector<double>()) {
+    histos[2].push_back(hmin);
+  }
+  for (const auto& hmin : s["HMaxs"].GetVector<double>()) {
+    histos[3].push_back(hmin);
+  }
+
+  if (flavs.empty() || items.empty() || vtags.empty() ||
+      mins.empty() || maxs.empty())
+    THROW(fatal_error, "Cannot initialise selector.");
+
   if (histos[0].empty()) histos[0].push_back(-1.0);
   size_t max(Max(vtags.size(),Max(flavs.size(),items.size())));
   max=Max(max,Max(mins.size(),maxs.size()));
@@ -283,7 +217,7 @@ operator()(const Argument_Matrix &parameters) const
   msg_Debugging()<<"}\n";
   return new One_Variable_Selector
     (inlist,outlist,cndlist,isobs,flavs,items,vtags,
-     mins,maxs,histos,parameters());
+     mins,maxs,histos,key.p_analysis);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"

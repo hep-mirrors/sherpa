@@ -54,6 +54,8 @@ namespace PHASIC {
 
     std::vector<ATOOLS::Flavour_Vector> m_cores;
 
+    void RegisterDefaults() const;
+
     PDF::Cluster_Param CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     void KT2(const ATOOLS::Cluster_Amplitude *ampl,

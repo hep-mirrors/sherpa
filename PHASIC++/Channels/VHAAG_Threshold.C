@@ -4,6 +4,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <map>
 
 namespace PHASIC {
@@ -123,10 +124,6 @@ VHAAG_Threshold::VHAAG_Threshold(int _nin,int _nout,int pn,int d1,int d2,double 
     Abort();
   }
   if (!ovl) {
-    Data_Reader dr(" ",";","!","=");
-    dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa->GetPath());
-    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
     m_thmass=th;
     n_d1=d1;
     n_d2=d2;
@@ -752,14 +749,13 @@ namespace PHASIC {
     {
       size_t bpos(key.m_key.find('[')), epos(key.m_key.rfind(']'));
       if (bpos==std::string::npos || epos==std::string::npos) {
-	Data_Reader dr(" ",";","#","=");
-	m_th=dr.GetValue<int>("VHAAG_TH",m_th);
-	m_d1=dr.GetValue<int>("VHAAG_D1",m_d1);
-	m_d2=dr.GetValue<int>("VHAAG_D2",m_d2);
+        Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
+	m_th=s["TH"].SetDefault(40.0).Get<int>();
+	m_d1=s["D1"].SetDefault(2).Get<int>();
+	m_d2=s["D2"].SetDefault(3).Get<int>();
 	return;
       }
       Data_Reader read(":",",","#","=");
-      read.SetAddCommandLine(false);
       read.SetString(key.m_key.substr(bpos+1,epos-bpos-1));
       if (!read.ReadFromString(m_d1,"I")) m_d1=2;
       if (!read.ReadFromString(m_d2,"J")) m_d2=3;

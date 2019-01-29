@@ -9,8 +9,8 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
@@ -22,8 +22,8 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
-Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
-                                   Variations * variations) :
+Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler,
+                                   Variations* variations) :
   p_mehandler(mehandler),
   p_variations(variations),
   m_overweight(0.0),
@@ -35,12 +35,13 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
   p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
-  Default_Reader reader;
-  m_setcolors=reader.Get<int>("SP_SET_COLORS",0);
-  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
-  m_docmode=reader.Get<int>("SP_DOC_MODE",1);
+  Scoped_Settings metssettings{
+    Settings::GetMainSettings()["METS"] };
+  m_cmode=metssettings["CLUSTER_MODE"].Get<int>();
+  Scoped_Settings spsettings{ Settings::GetMainSettings()["SP"] };
+  m_setcolors = spsettings["SET_COLORS"].SetDefault(false).Get<bool>();
+  m_adddocumentation = spsettings["ADD_DOC"].SetDefault(false).Get<bool>();
 }
-
 
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
@@ -90,7 +91,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (mcatnloproc->WasSEvent()) {
         blob->SetTypeSpec(proc->Parent()->Name()+"+S");
 
-        if (m_docmode) {
+        if (m_adddocumentation) {
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
           Process_Base* bproc = mcatnloproc->BProc()->Selected();
@@ -261,10 +262,15 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     vector<int> spin_i(parts.size(), -1), spin_j(parts.size(), -1);
     vector<Particle*> partsonly(parts.size());
     for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
-    Amplitude2_Tensor* atensor = new Amplitude2_Tensor
-      (partsonly, permutation, 0, amps, spin_i, spin_j);
+
+    auto atensor = std::make_shared<Amplitude2_Tensor>(partsonly,
+                                                       permutation,
+                                                       0,
+                                                       amps,
+                                                       spin_i, spin_j);
     DEBUG_VAR(*atensor);
-    blob->AddData("ATensor",new Blob_Data<SP(METOOLS::Amplitude2_Tensor)>(atensor));
+    blob->AddData("ATensor",
+                  new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
   return success;
 }

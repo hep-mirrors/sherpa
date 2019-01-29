@@ -2,7 +2,6 @@
 #define CSSHOWER_Showers_Sudakov_H
 
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PDF/Main/PDF_Base.H"
 #include "CSSHOWER++/Showers/Splitting_Function_Group.H"
 #include "CSSHOWER++/Tools/Parton.H"

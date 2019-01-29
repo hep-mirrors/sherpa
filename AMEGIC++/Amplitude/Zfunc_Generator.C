@@ -32,7 +32,8 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   for (ZFCalc_Getter::Getter_List::const_iterator 
 	 git(zfclist.begin());git!=zfclist.end();++git) {
     Zfunc_Calc *nc((*git)->GetObject(key));
-    if (nc!=NULL) zcalc.push_back(nc);
+    if (nc != nullptr)
+      zcalc.push_back(std::shared_ptr<Zfunc_Calc> {nc});
   }
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n   Implemented calculators:\n\n";
@@ -83,12 +84,6 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvecto
   // spin 2 particles must be cutted
   if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
-  // "new gauge test" cut all massless propagators
-  if (p->fl.IsVector() && p->number>99  && rpa->gen.CutScheme()==1) {
-    if(p->fl.Mass()==0.0) {
-      p->m=1;
-    }	
-  }
   MarkCut(p->right,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
   MarkCut(p->left,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors());
   MarkCut(p->middle,notcut,p->fl.IsFermion(),p->Lorentz->CutVectors()); 

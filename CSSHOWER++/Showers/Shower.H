@@ -3,18 +3,15 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 
 namespace ATOOLS {
-
   class Cluster_Leg;
+  class Variation_Weights;
   class Variation_Parameters;
-  class Variation_Weights; 
-
 }
 
 namespace CSSHOWER {
@@ -28,7 +25,7 @@ namespace CSSHOWER {
 		 const double &jcv,const size_t &n):
       p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
   };// end of struct JetVeto_Args
-    
+
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -51,7 +48,7 @@ namespace CSSHOWER {
 
     ATOOLS::Variation_Weights * p_variationweights;
     //! the maximum number of rew'd emissions
-    int m_maxrewem;
+    unsigned int m_maxrewem;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -77,8 +74,7 @@ namespace CSSHOWER {
 		      ATOOLS::Variation_Weights *weights,
 		      JetVeto_Args &a);
  public:
-    Shower(PDF::ISR_Handler *,const int qcd,const int qed,
-	   ATOOLS::Default_Reader *const,int type);
+    Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,double &jcv,

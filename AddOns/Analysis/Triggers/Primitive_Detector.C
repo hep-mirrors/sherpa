@@ -13,42 +13,36 @@ using namespace ATOOLS;
 #include <iomanip>
 
 DECLARE_GETTER(Primitive_Detector,"Detector",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Primitive_Detector>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Primitive_Detector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"HadCal  etamin etamax etacells phicells\n"
+     <<std::setw(width+7)<<" "<<"InList:  list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"HadCal:  [etamin, etamax, etacells, phicells]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
 Analysis_Object *ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Primitive_Detector>::
-operator()(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,Primitive_Detector>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist="FinalState", outlist="Detected";
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-  }
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Detected").Get<std::string>();
   Primitive_Detector *detector = new Primitive_Detector(inlist,outlist);
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="HadCal" && cur.size()>4) {
-      detector->Add(new Primitive_Calorimeter(ATOOLS::ToType<double>(cur[1]),
-					      ATOOLS::ToType<double>(cur[2]),
-					      ATOOLS::ToType<int>(cur[3]),
-					      ATOOLS::ToType<int>(cur[4]),
-					      cur.size()>5?cur[5]:"NotLepton"));
-    }
-    else if (cur[0]=="CalCone" && cur.size()>4) {
-      msg_Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
-    }
-  }
+  const auto hcparams = s["HadCal"].SetDefault<std::string>({}).GetVector<std::string>();
+  if (hcparams.size() < 4)
+    THROW(fatal_error, "HadCal must have four or more parameters.");
+  detector->Add(new Primitive_Calorimeter(s.Interprete<double>(hcparams[0]),
+                                          s.Interprete<double>(hcparams[1]),
+                                          s.Interprete<int>(hcparams[2]),
+                                          s.Interprete<int>(hcparams[3]),
+                                          hcparams.size()>4?hcparams[4]:"NotLepton"));
+  if (s["CalCone"].IsCustomised())
+    msg_Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
   return detector;
 }
 

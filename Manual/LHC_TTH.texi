@@ -1,6 +1,10 @@
 @node LHC_HTTBar
 @subsection Associated t anti-t H production at the LHC
 
+Note: This example is currently broken. For more information, contact the
+@ref{Authors}.
+
+@ignore
 This set-up illustrates the interface to an external loop matrix element
 generator as well as the possibility of specifying hard decays for 
 particles emerging from the hard interaction. The process generated 
@@ -29,4 +33,4 @@ Things to notice:
   taken from LHAPDF itself as indicated by @option{USE_PDF_ALPHAS 1}
   (see @ref{SM}).
 @end itemize
- 
+@end ignore

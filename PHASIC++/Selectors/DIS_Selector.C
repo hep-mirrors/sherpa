@@ -1,7 +1,6 @@
 #ifndef ATOOLS_Phys_Standard_Selector_DIS_H
 #define ATOOLS_Phys_Standard_Selector_DIS_H
 #include "PHASIC++/Selectors/Selector.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 namespace PHASIC {
     class IPZIN_Selector : public Selector_Base {
@@ -37,7 +36,6 @@ namespace PHASIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 
 using namespace PHASIC;
@@ -91,11 +89,14 @@ DECLARE_ND_GETTER(IINEL_Selector,"INEL",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IINEL_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   IINEL_Selector *sel = new IINEL_Selector(key.p_proc);
@@ -153,10 +154,13 @@ DECLARE_ND_GETTER(IPZIN_Selector,"PZIN",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IPZIN_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   IPZIN_Selector *sel = new IPZIN_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
