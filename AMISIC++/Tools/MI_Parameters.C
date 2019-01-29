@@ -33,31 +33,6 @@ void MI_Parameters::ReadParameters()
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   double pt_0   = CalculatePT(m_parameters[string("pt_0(ref)")]);
   double pt_min = CalculatePT(m_parameters[string("pt_min(ref)")]);
-<<<<<<< HEAD
-  m_parameters[string("pt_min")]    =
-    defaultreader->GetValue<double>("AMISIC::PT_Min",pt_min);
-  m_parameters[string("pt_0")]      =
-    defaultreader->GetValue<double>("AMISIC::PT_0",pt_0);
-  string scheme = defaultreader->GetValue<string>("AMISIC::MU_R_SCHEME","PT");
-  m_scalescheme = ToType<scale_scheme::code>(scheme);
-  m_parameters[string("RenScale_Factor")] = 
-    defaultreader->GetValue<double>("AMISIC::MU_R_FACTOR",0.5);
-  m_parameters[string("FacScale_Factor")] = 
-    defaultreader->GetValue<double>("AMISIC::MU_F_FACTOR",1.0);
-  m_parameters[string("Matter_Fraction1")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_FRACTION1",0.5);
-  m_parameters[string("Matter_Radius1")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_RADIUS1",0.4);
-  m_parameters[string("Matter_Radius2")] =
-    defaultreader->GetValue<double>("AMISIC::MATTER_RADIUS2",1.0);
-  string form = defaultreader->GetValue<string>("AMISIC::MATTER_FORM",
-						"Double_Gaussian");
-  m_overlapform = ToType<overlap_form::code>(form);
-  m_parameters[string("nPT_bins")]    =
-    defaultreader->GetValue<int>("AMISIC::nPT_bins",200);
-  m_parameters[string("nMC_points")]    =
-    defaultreader->GetValue<int>("AMISIC::nMC_points",1000);
-=======
   m_parameters[string("pt_min")]
     = s["PT_Min"].SetDefault(pt_min).Get<double>();
   m_parameters[string("pt_0")]
@@ -80,7 +55,6 @@ void MI_Parameters::ReadParameters()
     = s["nPT_bins"].SetDefault(200).Get<int>();
   m_parameters[string("nMC_points")]
     = s["nMC_points"].SetDefault(1000).Get<int>();
->>>>>>> 4143fa860ef642ed303bb0bf7437715b24c2ea33
 }
 
 double MI_Parameters::CalculatePT(const double & pt) {
