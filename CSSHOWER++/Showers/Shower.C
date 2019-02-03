@@ -510,7 +510,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         m_weight*=(*it)->Weight();
         if (shouldreweight) {
           p_variationweights->UpdateOrInitialiseWeights(
-              &Shower::Reweight, *this, *split,
+              &Shower::Reweight, *this, **it,
               SHERPA::Variations_Type::sudakov);
         }
       }
