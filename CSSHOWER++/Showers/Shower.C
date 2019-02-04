@@ -725,7 +725,6 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
         if (alphasrewfactor < 0.5 || alphasrewfactor > 2.0) {
           varparams->IncrementOrInitialiseWarningCounter("large AlphaS reweighting factor");
         }
-        //PRINT_VAR(alphasrewfactor);
         accrewfactor *= alphasrewfactor;
       }
     }

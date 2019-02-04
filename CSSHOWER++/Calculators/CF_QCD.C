@@ -110,10 +110,9 @@ double CF_QCD::CplMax(T * as, double rsf) const
 {
   double minscale = CplFac(m_k0sq)*m_k0sq;
   double ct(0.);
-  const double boundedscale(Max(as->ShowerCutQ2(), minscale));
   if (m_rsf>1.) // only for f>1 cpl gets larger
-    ct=-(*as)[boundedscale]/M_PI*as->Beta0(0.)*log(m_rsf);
-  return (*as)[boundedscale]*(1.-ct)*m_q;
+    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
@@ -126,8 +125,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
 
   if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*rsf);
-  if (t < as->ShowerCutQ2()) return m_last = 0.0;
-  double cpl=(*as)(scl);
+  double cpl=as->BoundedAlphaS(scl);
   if (!IsEqual(scl,t)) {
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
     std::vector<double> ths(as->Thresholds(t,scl));

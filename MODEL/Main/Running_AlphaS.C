@@ -751,9 +751,9 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     if (m_alphas.find(it->first)!=m_alphas.end())
       THROW(fatal_error, "Internal error.");
     PDF::PDF_Base *pdf(NULL);
-    if (it->second->PDF(0)) pdf=it->second->PDF(0);
-    if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
-      pdf=it->second->PDF(1);
+    //if (it->second->PDF(0)) pdf=it->second->PDF(0);
+    //if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
+    //  pdf=it->second->PDF(1);
     m_alphas.insert(make_pair(it->first, new One_Running_AlphaS
                               (as_MZ,m2_MZ, order, thmode, pdf)));
   }

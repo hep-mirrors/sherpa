@@ -13,7 +13,7 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 
-#define VARIATION_WARNINGS 0
+#define VARIATION_WARNINGS 1
 
 namespace ATOOLS { class Data_Reader; }
 namespace PDF { class PDF_Base; }
@@ -52,6 +52,7 @@ namespace SHERPA {
     void AddParameters(std::vector<std::string>, ATOOLS::Data_Reader * const);
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
+      PDFs_And_AlphaS(ATOOLS::Data_Reader * const, double);
       PDFs_And_AlphaS(ATOOLS::Data_Reader * const, std::string pdfname, size_t pdfmember);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::One_Running_AlphaS *p_alphas;

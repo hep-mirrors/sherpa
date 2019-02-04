@@ -153,7 +153,7 @@ void Variations::InitialiseParametersVector(Data_Reader * const reader)
 
 std::vector<std::string> Variations::VariationArguments(Data_Reader * const reader)
 {
-  std::vector<std::string> varargs, pdfvarargs, assargs;
+  std::vector<std::string> varargs, pdfvarargs, assargs, alphassargs;
   varargs = VariationArguments(reader, "SCALE_VARIATIONS");
   // the PDF_VARIATIONS has a more specific syntax that must be transformed to
   // the more general syntax of SCALE_VARIATIONS
@@ -164,6 +164,10 @@ std::vector<std::string> Variations::VariationArguments(Data_Reader * const read
   assargs = VariationArguments(reader, "ASSOCIATED_CONTRIBUTIONS_VARIATIONS");
   for (size_t i(0); i < assargs.size(); ++i) {
     varargs.push_back("1.,1.,default,ASS_" + assargs[i]);
+  }
+  alphassargs = VariationArguments(reader, "ALPHAS_VARIATIONS");
+  for (size_t i(0); i < alphassargs.size(); ++i) {
+    varargs.push_back("1.,1.,default,," + alphassargs[i]);
   }
   if (msg_LevelIsDebugging())
     for (size_t i(0);i<varargs.size();++i)
@@ -265,9 +269,15 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
       ownedpdfsandalphas = true;
     }
     // filter associated contrib
-    if (stringparams.size() > 3) {
+    if (stringparams.size() > 3 && !stringparams[3].empty()) {
       std::string assparam(stringparams[3].substr(stringparams[3].find("ASS_")));
       asscontrib=ToType<PHASIC::asscontrib::type>(assparam);
+    }
+    // filter alpha_s(ref) values
+    if (stringparams.size() > 4) {
+      pdfsandalphasvector[pdfsandalphasvector.size()-1]
+        = PDFs_And_AlphaS(reader, ToType<double>(stringparams[4]));
+      // TODO: fix memory leak
     }
   } else {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
@@ -298,6 +308,24 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
   m_pdfs = std::vector<PDF::PDF_Base *>(2, nullPtr);
   m_pdfs[0] = rpa->gen.PDF(0);
   m_pdfs[1] = rpa->gen.PDF(1);
+}
+
+
+Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(Data_Reader * const reader, double alphasmz):
+    p_alphas(MODEL::as->GetAs(PDF::isr::hard_process))
+{
+  // Workaround für C++03 (vector constructor is confused when fed
+  // with NULL as the initial value for a pointer)
+  // cf. https://gcc.gnu.org/ml/gcc-help/2013-02/msg00026.html
+  PDF::PDF_Base *nullPtr = NULL;
+  m_pdfs = std::vector<PDF::PDF_Base *>(2, nullPtr);
+  m_pdfs[0] = rpa->gen.PDF(0);
+  m_pdfs[1] = rpa->gen.PDF(1);
+  int    order_alphaS	= reader->GetValue<int>("ORDER_ALPHAS",1);
+  int    th_alphaS	= reader->GetValue<int>("THRESHOLD_ALPHAS",1);
+  double MZ2            = sqr(Flavour(kf_Z).Mass());
+  PRINT_VAR(alphasmz);
+  p_alphas = new MODEL::One_Running_AlphaS(alphasmz,MZ2,order_alphaS,th_alphaS,NULL);
 }
 
 
