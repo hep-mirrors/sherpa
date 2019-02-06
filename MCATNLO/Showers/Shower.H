@@ -37,6 +37,10 @@ namespace MCATNLO {
     SHERPA::Variation_Weights * p_variationweights;
     //! whether to disable the reweighting of the emission
     bool m_norewem;
+    bool m_reweightalphas, m_reweightpdfs;
+    double Reweight(SHERPA::Variation_Parameters*,
+                    SHERPA::Variation_Weights*,
+                    Parton& splitter);
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,

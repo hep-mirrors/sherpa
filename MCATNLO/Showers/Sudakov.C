@@ -7,6 +7,8 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -14,7 +16,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
-  p_rms(NULL), m_reweightscalecutoff(0.0)
+  p_rms(NULL), m_reweightscalecutoff(0.0), m_keeprewinfo(false)
 {
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
@@ -366,9 +368,24 @@ bool Sudakov::Generate(Parton * split)
       abort();
     }
     const bool veto(Veto(Q2, m_x));
-    if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(
-          &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
+
+    if (m_keeprewinfo) {
+      const double accwgt(Selected()->LastAcceptanceWeight());
+      const double lastscale(Selected()->LastScale());
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
+        Sudakov_Reweighting_Info info;
+        info.accepted = veto;
+        info.scale = lastscale;
+        info.accwgt = accwgt;
+        info.lastj = Selected()->Lorentz()->LastJ();
+        info.lastcpl = Selected()->Coupling()->Last();
+        info.sf = Selected();
+        info.x = m_x;
+        info.y = m_y;
+        info.z = m_z;
+        info.flspec = Selected()->Lorentz()->FlSpec();
+        p_split->SudakovReweightingInfos().push_back(info);
+      }
     }
     if (veto) {
       success = true;
@@ -379,7 +396,7 @@ bool Sudakov::Generate(Parton * split)
   return success;
 }
 
-
+// TODO: delete me (but first re-use weight calculation)
 double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
                          SHERPA::Variation_Weights * varweights,
                          const bool &success)
@@ -414,7 +431,6 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
   const double lastscale(Selected()->LastScale());
 
   // PDF reweighting
-  if (m_reweightpdfs) {
     if (m_type == cstp::II || m_type == cstp::FI || m_type == cstp::IF) {
       // note that also the Jacobians depend on the Running_AlphaS class, but
       // only through the number of flavours, which should not vary between
@@ -462,10 +478,8 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
         accrewfactor *= pdfrewfactor;
       }
     }
-  }
 
   // AlphaS reweighting
-  if (m_reweightalphas) {
     if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
       const double lastcpl(Selected()->Coupling()->Last());
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
@@ -479,7 +493,6 @@ double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
       }
       accrewfactor *= alphasrewfactor;
     }
-  }
 
   // calculate and apply overall factor
   if (success) {
