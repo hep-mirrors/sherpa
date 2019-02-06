@@ -614,6 +614,10 @@ double LF_VFF_FF::operator()
   double longpol = 0.5;
   double scale = Q2*(1.0-mui2-muj2-muk2)*y;
   if (p_sf->ScaleScheme()==1) scale=_scale;
+  if (p_sf->ScaleScheme()==2) {
+      double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
+      scale= (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
+  }
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -679,6 +683,7 @@ double LF_VFF_FI::operator()
   double longpol = 0.5;
   double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)-2.0*p_ms->Mass2(m_flavs[1]);
   if (p_sf->ScaleScheme()==1) scale=_scale;
+  if (p_sf->ScaleScheme()==2) scale= (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
@@ -735,8 +740,13 @@ double LF_VFF_IF::CDISMax()
 
 double LF_VFF_IF::operator() 
   (const double z,const double y,const double eta,
-   const double scale,const double Q2)
+   const double _scale,const double Q2)
 {
+  double scale=_scale;
+  if (p_sf->ScaleScheme()==2) {
+      double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+      scale=(Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  }
   double value = 2.0 * p_cf->Coupling(scale,0) * ( (1.-2.*z*(1.-z))*(1.0-0.5/z*CDIS(y,z)) + CDIS(z,y) )
     + p_cf->Coupling(scale,1) * 0.5;
   return value * JIF(z,y,eta,scale);
@@ -765,8 +775,13 @@ double LF_VFF_IF::Z()
 
 double LF_VFF_II::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2)
+   const double _scale,const double Q2)
 {
+  double scale = _scale;
+  if (p_sf->ScaleScheme()==2) {
+      double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+      scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  }
   double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z))
     + p_cf->Coupling(scale,1) * 0.5;
   return value * JII(z,y,eta,scale);
