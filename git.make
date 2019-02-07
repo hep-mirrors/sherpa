@@ -6,12 +6,9 @@ Git_Info.C: Git_Info.C.in
 	  if test -f $(srcdir)/$@; then \
 	    cp $(srcdir)/$@ $@.tmp; chmod u+rw $@.tmp; \
 	  else \
-	    echo "***************************************************"; \
-	    echo "* Incomplete sources and no git information. This *"; \
-	    echo "* copy of Sherpa will not be supported. Please    *"; \
-	    echo "* contact sherpa@projects.hepforge.org for help.  *"; \
-	    echo "***************************************************"; \
-	    exit 1; \
+	    echo '#include "ATOOLS/Org/Git_Info.H"' > $@.tmp; \
+	    echo 'static ATOOLS::Git_Info initializer' >> $@.tmp; \
+	    echo '("$(GITTAG)","unknown","unknown","X");' >> $@.tmp; \
 	  fi; \
 	else \
 	  rev=$$(cd $(top_srcdir); git rev-parse HEAD); \
