@@ -233,30 +233,24 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 
   if (nem>=maxem) return true;
 
-  m_sudakov.SetKeepReweightingInfo(!m_norewem);
-
+  bool reweight = (p_variationweights
+                   && (m_reweightpdfs || m_reweightalphas)
+                   && !m_norewem);
+  m_sudakov.SetKeepReweightingInfo(reweight);
 
   while (true) {
+    m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
     double kt2win = 0.;
     split = SelectSplitting(kt2win);
 
-    // the last conditional statement is not strictly necessary, because the
-    // Sudakov reweighting info of the partons should not have been filled in
-    // this case; however, including it prevents some unnecessary looping
-    bool shouldreweight = (p_variationweights
-                           && (m_reweightpdfs || m_reweightalphas)
-                           && !m_norewem);
-
     // no shower anymore
     if (split==NULL) {
-      // TODO: does this have side effects? we have inserted this line to set
-      // m_last[0] to NULL, which is required in Reweight
-      m_last[0]=m_last[1]=m_last[2]=NULL;
-      for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end(); ++it) {
-        if (shouldreweight) {
-          p_variationweights->UpdateOrInitialiseWeights(
-              &Shower::Reweight, *this, **it,
-              SHERPA::Variations_Type::sudakov);
+      if (reweight) {
+        for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end(); ++it) {
+            p_variationweights->UpdateOrInitialiseWeights(
+                &Shower::Reweight, *this, **it,
+                SHERPA::Variations_Type::sudakov);
+            (*it)->SudakovReweightingInfos().clear();
         }
       }
       return true;
@@ -267,24 +261,19 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 		     <<", z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
-      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
       ResetScales(split);
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
-      if (kstat<0)
-         // kinematics do not work out, try again
-         // TODO: the partons' rej wgt are not cleared here, which is probably a bug?
-         continue;
+      if (kstat<0) continue;
       if (kstat==0) return false;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
-      if (m_last[0]) {
+      assert(m_last[0] != NULL);
+      if (reweight) {
         for (Singlet::const_iterator it=p_actual->begin();
-             it!=p_actual->end();++it) {
-          if (shouldreweight) {
-            p_variationweights->UpdateOrInitialiseWeights(
-                &Shower::Reweight, *this, **it,
-                SHERPA::Variations_Type::sudakov);
-            (*it)->SudakovReweightingInfos().clear();
-          }
+            it!=p_actual->end();++it) {
+          p_variationweights->UpdateOrInitialiseWeights(
+              &Shower::Reweight, *this, **it,
+              SHERPA::Variations_Type::sudakov);
+          (*it)->SudakovReweightingInfos().clear();
         }
       }
       if (++nem>=maxem) return true;

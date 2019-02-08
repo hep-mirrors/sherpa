@@ -482,18 +482,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     return true;
   }
   if (nem>=maxem) return true;
+  bool reweight = (p_variationweights
+                   && (m_reweightpdfs || m_reweightalphas)
+                   && nem < m_maxrewem);
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
       if ((*it)->GetType()==pst::IS) SetXBj(*it);
     kt2win = 0.;
     Parton *split=SelectSplitting(kt2win);
-
-    // the last conditional statement is not strictly necessary, because the
-    // Sudakov reweighting info of the partons should not have been filled in
-    // this case; however, including it prevents some unnecessary looping
-    bool shouldreweight = (p_variationweights
-                           && (m_reweightpdfs || m_reweightalphas)
-                           && nem < m_maxrewem);
 
     // no shower anymore
     if (split==NULL) {
@@ -504,10 +500,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         if ((*it)->Weight()!=1.0)
           msg_Debugging()<<"Add wt for "<<(**it)<<": "<<(*it)->Weight()<<"\n";
         m_weight*=(*it)->Weight();
-        if (shouldreweight) {
+        (*it)->Weights().clear();
+        if (reweight) {
           p_variationweights->UpdateOrInitialiseWeights(
               &Shower::Reweight, *this, **it,
               SHERPA::Variations_Type::sudakov);
+          (*it)->SudakovReweightingInfos().clear();
         }
       }
       return true;
@@ -577,10 +575,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       if (!m_noem) {
 	int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0,fc));
-	if (kstat<0)
-          // kinematics do not work out, try again
-          // TODO: the partons' rej wgt are not cleared here, which is probably a bug?
-          continue;
+	if (kstat<0) continue;
       }
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
@@ -595,9 +590,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
       }
       if (m_noem) continue; // try again until no em found
-      // TODO: Fix the case where we do a reweighting, which is immediately
-      // applied to the global variation weights, when we will actually try
-      // stuff like this again and again
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (m_last[0]) {
         for (Singlet::const_iterator it=p_actual->begin();
@@ -608,7 +600,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             m_weight*=(*it)->Weight(m_last[0]->KtStart());
             (*it)->Weights().clear();
           }
-          if (shouldreweight) {
+          if (reweight) {
             p_variationweights->UpdateOrInitialiseWeights(
                 &Shower::Reweight, *this, **it,
                 SHERPA::Variations_Type::sudakov);
@@ -617,8 +609,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
-      if (nem >= m_maxrewem) m_sudakov.SetVariationWeights(NULL);
-      if (nem >= m_maxrewem) m_sudakov.SetKeepReweightingInfo(false);
+      if (nem >= m_maxrewem) {
+        m_sudakov.SetKeepReweightingInfo(false);
+        reweight = false;
+      }
       if (nem >= maxem) return true;
     }
   }
