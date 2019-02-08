@@ -43,9 +43,6 @@ namespace CSSHOWER {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-    double Reweight(SHERPA::Variation_Parameters *,
-                    SHERPA::Variation_Weights *,
-                    const bool &success);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();

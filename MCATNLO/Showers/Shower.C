@@ -233,10 +233,6 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 
   if (nem>=maxem) return true;
 
-  // TODO: delete
-  {
-    m_sudakov.SetVariationWeights(!m_norewem ? p_variationweights : NULL);
-  }
   m_sudakov.SetKeepReweightingInfo(!m_norewem);
 
 

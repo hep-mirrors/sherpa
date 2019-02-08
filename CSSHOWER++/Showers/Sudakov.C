@@ -407,9 +407,7 @@ bool Sudakov::Generate(Parton * split)
     Split_Args splitargs(p_split,p_split->GetColSpec());
     if (p_split->GetColSpec()) p_selected->Lorentz()->SetSplit(&splitargs);
     const bool veto(Veto(Q2, m_x));
-
     if (m_keeprewinfo) {
-      //static std::ofstream sudakovstr("sudakov");
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
@@ -424,83 +422,9 @@ bool Sudakov::Generate(Parton * split)
         info.y = m_y;
         info.z = m_z;
         info.flspec = Selected()->Lorentz()->FlSpec();
-        // TODO: test here if oldj = newj
-        /////////////////
-#if false
-        const cstp::code type = Selected()->GetType();
-        //PRINT_VAR(type);
-        if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
-          // note that also the Jacobians depend on the Running_AlphaS class,
-          // but only through the number of flavours, which should not vary
-          // between AlphaS variations anyway; therefore we do not insert
-          // AlphaS for the PDF reweighting
-
-          PDF::PDF_Base** swappedpdf = Selected()->PDF();
-          static PDF::PDF_Base* pdf[] = {nullptr, nullptr};
-          if (pdf[0] == nullptr) {
-          for (int i=0; i<2; ++i) {
-            Data_Reader dataread(" ",";","!","=");
-            dataread.AddComment("#");
-            dataread.AddWordSeparator("\t");
-            dataread.SetInputPath(rpa->GetPath());
-            PDF::PDF_Arguments args(rpa->gen.Bunch(i), &dataread, i, "CT10nlo", 1);
-            PDF::PDF_Base *apdf = PDF::PDF_Base::PDF_Getter_Function::GetObject("CT10nlo", args);
-            if (apdf == NULL) THROW(fatal_error, "PDF set not available.");
-            apdf->SetBounds();
-            pdf[i] = apdf;
-          }
-          }
-          Selected()->SetPDF(pdf);
-
-
-          // calculate new J
-          const double lastJ(Selected()->Lorentz()->LastJ());
-          double newJ;
-          switch (type) {
-            case cstp::II:
-              newJ = Selected()->Lorentz()->JII(
-                  info.z, info.y, info.x, info.scale);
-              break;
-            case cstp::IF:
-              newJ = Selected()->Lorentz()->JIF(
-                  info.z, info.y, info.x, info.scale);
-              break;
-            case cstp::FI:
-              //PRINT_VAR(info.y);
-              //PRINT_VAR(info.x);
-              //PRINT_VAR(info.scale);
-              newJ = Selected()->Lorentz()->JFI(
-                  info.y, info.x, info.scale);
-              break;
-            case cstp::FF:
-            case cstp::none:
-              THROW(fatal_error, "Unexpected splitting configuration");
-          }
-
-          // clean up
-          Selected()->Lorentz()->SetLastJ(lastJ);
-          Selected()->SetPDF(swappedpdf);
-
-          if (newJ == 0.0) {
-          } else {
-            //PRINT_VAR(newJ);
-            //PRINT_VAR(info.lastj);
-            const double pdfrewfactor(newJ / info.lastj);
-            //sudakovstr << pdfrewfactor << std::endl;
-            //PRINT_VAR(pdfrewfactor);
-          }
-        }
-        /////////////////
-#endif
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }
-    //if (p_variationweights) {
-    //  p_variationweights->UpdateOrInitialiseWeights(
-    //      &Sudakov::Reweight, *this, veto, SHERPA::Variations_Type::sudakov);
-    //}
-
-
     p_selected->Lorentz()->SetSplit(NULL);
     if (veto) {
       success = true;
@@ -518,125 +442,6 @@ bool Sudakov::Generate(Parton * split)
     }
   */
   return success;
-}
-
-// TODO: delete me (but first re-use weight calculation)
-double Sudakov::Reweight(SHERPA::Variation_Parameters * varparams,
-                         SHERPA::Variation_Weights * varweights,
-                         const bool &success)
-{
-  static std::ofstream showerstr("old_impl_rewfacs");
-  // retrieve and validate acceptance weight and scale of the last emission
-  const double accwgt(Selected()->LastAcceptanceWeight());
-  std::string error;
-  if (accwgt > 1.0) {
-    error = "emission acceptance weight exceeds one";
-  } else if (accwgt < 0.0) {
-    error = "emission acceptance weight is below zero";
-  } else if (accwgt == 0.0) {
-    // This can be due to a Jacobian being 0 (mostly), or by delta in a massive
-    // case dropping below 0. In the latter case, last values for JXX/Coupling
-    // might not be valid. In any case, the (1 - rejwgt) factor for rejections
-    // will lead to weight factor of 1.
-    error = "emission acceptance weight is zero";
-  } else if (Selected()->LastScale() < m_reweightscalecutoff) {
-    error = "CSS emission scale is below the reweighting scale cut-off";
-  }
-  if (error != "") {
-    p_variationweights->IncrementOrInitialiseWarningCounter(error);
-    return 1.0;
-  }
-
-  const double rejwgt(1.0 - accwgt);
-
-  double rewfactor(1.0);
-  double accrewfactor(1.0);
-
-  // depending on the scale scheme, the input scale for the PDFs and the
-  // coupling can be different from m_kperp2
-  const double lastscale(Selected()->LastScale());
-
-  // PDF reweighting
-    if (m_type == cstp::II || m_type == cstp::FI || m_type == cstp::IF) {
-      // note that also the Jacobians depend on the Running_AlphaS class, but
-      // only through the number of flavours, which should not vary between
-      // AlphaS variations anyway; therefore we do not insert AlphaS for the
-      // PDF reweighting
-
-      // insert new PDF
-      const int beam(Selected()->Lorentz()->GetBeam());
-      PDF::PDF_Base * swappedpdf = p_pdf[beam];
-      p_pdf[beam] = (beam == 0) ? varparams->p_pdf1 : varparams->p_pdf2;
-
-      // calculate new J
-      const double lastJ(Selected()->Lorentz()->LastJ());
-      double newJ;
-      switch (m_type) {
-        case cstp::II:
-          newJ = Selected()->Lorentz()->JII(
-              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
-          break;
-        case cstp::IF:
-          newJ = Selected()->Lorentz()->JIF(
-              m_z, m_y, m_x, varparams->m_showermuF2fac * lastscale);
-          break;
-        case cstp::FI:
-          newJ = Selected()->Lorentz()->JFI(
-              m_y, m_x, varparams->m_showermuF2fac * lastscale);
-          break;
-        case cstp::FF:
-        case cstp::none:
-          THROW(fatal_error, "Unexpected splitting configuration");
-      }
-
-      // clean up
-      p_pdf[beam] = swappedpdf;
-      Selected()->Lorentz()->SetLastJ(lastJ);
-
-      // validate
-      if (newJ == 0.0) {
-        varparams->IncrementOrInitialiseWarningCounter("different PDF cut-off");
-        return 1.0;
-      } else {
-        const double pdfrewfactor(newJ / lastJ);
-        if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
-          varparams->IncrementOrInitialiseWarningCounter("large PDF reweighting factor");
-        }
-        //showerstr << pdfrewfactor << std::endl;
-        accrewfactor *= pdfrewfactor;
-      }
-    }
-
-  // AlphaS reweighting
-    if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
-      const double lastcpl(Selected()->Coupling()->Last());
-      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, varparams->m_showermuR2fac);
-      double newcpl(Selected()->Coupling()->Coupling(lastscale, 0));
-      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
-      Selected()->Coupling()->SetLast(lastcpl); // reset last coupling
-      const double alphasrewfactor(newcpl / lastcpl);
-      if (alphasrewfactor < 0.5 || alphasrewfactor > 2.0) {
-        varparams->IncrementOrInitialiseWarningCounter("large AlphaS reweighting factor");
-      }
-      accrewfactor *= alphasrewfactor;
-    }
-
-  // calculate and apply overall factor
-  if (success) {
-    // accepted emission
-    rewfactor = accrewfactor;
-  } else {
-    // rejected emission
-    rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
-  }
-  if (rewfactor < -9.0 || rewfactor > 11.0) {
-    varparams->IncrementOrInitialiseWarningCounter("vetoed large reweighting factor");
-    return 1.0;
-  }
-  return rewfactor;
-  showerstr << rewfactor << std::endl;
-  //return 1.0;
 }
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)

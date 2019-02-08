@@ -84,10 +84,6 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weight=1.0;
-  // TODO: delete
-  {
-    m_sudakov.SetVariationWeights(nem < m_maxrewem ? p_variationweights : NULL);
-  }
   m_sudakov.SetKeepReweightingInfo(nem < m_maxrewem);
   return EvolveSinglet(actual,maxem,nem);
 }
