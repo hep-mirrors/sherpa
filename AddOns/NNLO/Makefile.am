@@ -27,7 +27,6 @@ NNLOqT_EXTRA_DIST = \
 	coeffqt.H \
 	param.H \
 	hard.H \
-	higgsfullsm.H \
-	DIS_KFactor.H
+	higgsfullsm.H
 
 EXTRA_DIST = $(NNLOqT_EXTRA_DIST)

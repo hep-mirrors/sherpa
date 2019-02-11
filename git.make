@@ -23,7 +23,7 @@ Git_Info.C: Git_Info.C.in
 	  echo 'static ATOOLS::Git_Info initializer' >> $@.tmp; \
 	  echo '("$(GITTAG)","'$$url'","'$$rev'","X");' >> $@.tmp; \
 	fi; \
-	if test -z $(NOMD5SUM); then \
+	if test -z $(NOMD5SUM) && test "$(SOURCES) $(HEADERS)" != " "; then \
 	  mds=$$(cat $(addprefix $(srcdir)/, \
 	    $(filter-out $@ $(CONFIG_HEADER) $(MD5_EXCLUDE), \
 	    $(SOURCES) $(HEADERS))) | $(MD5COMMAND)); \
