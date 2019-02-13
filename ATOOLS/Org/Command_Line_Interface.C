@@ -58,8 +58,8 @@ void Command_Line_Interface::Parse(int argc, char* argv[])
   // parse parameters; order matters here, we want to give options precedence
   // over non-options
   bool success(true);
-  success = (ParseOptions(options)    && success);
   success = (ParseNoneOptions(parser) && success);
+  success = (ParseOptions(options)    && success);
 
   if (!success) {
     PrintUsageAndExit();
@@ -109,7 +109,7 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
 {
   String_Map legacysyntaxtags;
   auto didfinddyamltags = false;
-  for (int i {parser.nonOptionsCount()-1}; i >= 0; --i) {
+  for (int i = 0; i < parser.nonOptionsCount(); ++i) {
     auto nonOption = StringTrim(parser.nonOption(i));
 
     // find legacy-syntax tag specifications
