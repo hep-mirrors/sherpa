@@ -27,12 +27,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  const bool reweightalphas = dataread->GetValue<int>("CSS_REWEIGHT_ALPHAS",1);
-  const bool reweightpdfs = dataread->GetValue<int>("CSS_REWEIGHT_PDFS",1);
-  m_maxrewem = dataread->GetValue<int>("REWEIGHT_MAXEM",0);
-  if (m_maxrewem < 0) {
-    m_maxrewem = std::numeric_limits<int>::max();
-  }
+  m_reweight  = dataread->GetValue<int>("CSS_REWEIGHT",0);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
   m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
@@ -56,10 +51,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.SetScaleScheme(scs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
-  m_sudakov.SetReweightAlphaS(reweightalphas);
-  m_sudakov.SetReweightPDFs(reweightpdfs);
   m_sudakov.SetReweightScaleCutoff(dataread->GetValue<double>(
-        "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
+        "CSS_REWEIGHT_SCALE_CUTOFF", 0.0));
   m_kinFF.SetEvolScheme(evol);
   m_kinFI.SetEvolScheme(evol);
   m_kinIF.SetEvolScheme(evol);
@@ -86,11 +79,6 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weight=1.0;
-  if (nem < m_maxrewem) {
-    m_sudakov.SetVariationWeights(p_variationweights);
-  } else {
-    m_sudakov.SetVariationWeights(NULL);
-  }
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -418,6 +406,10 @@ int Shower::MakeKinematics
   m_weight*=split->Weight();
   msg_Debugging()<<"sw = "<<split->Weight()
 		 <<", w = "<<m_weight<<"\n";
+  if (p_variationweights && m_reweight) {
+    p_variationweights->UpdateOrInitialiseWeights(
+        &Shower::Reweight, *this, *split, SHERPA::Variations_Type::sudakov);
+  }
   split->GetSing()->SplitParton(split,pi,pj);
 
 
@@ -481,6 +473,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     return true;
   }
   if (nem>=maxem) return true;
+  const bool reweight = p_variationweights && m_reweight;
+  m_sudakov.SetKeepReweightingInfo(reweight);
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
       if ((*it)->GetType()==pst::IS) SetXBj(*it);
@@ -495,6 +489,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         if ((*it)->Weight()!=1.0)
           msg_Debugging()<<"Add wt for "<<(**it)<<": "<<(*it)->Weight()<<"\n";
         m_weight*=(*it)->Weight();
+        (*it)->Weights().clear();
+        if (reweight) {
+          p_variationweights->UpdateOrInitialiseWeights(
+              &Shower::Reweight, *this, **it,
+              SHERPA::Variations_Type::sudakov);
+          (*it)->SudakovReweightingInfos().clear();
+        }
       }
       return true;
     }
@@ -588,10 +589,15 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             m_weight*=(*it)->Weight(m_last[0]->KtStart());
             (*it)->Weights().clear();
           }
+          if (reweight) {
+            p_variationweights->UpdateOrInitialiseWeights(
+                &Shower::Reweight, *this, **it,
+                SHERPA::Variations_Type::sudakov);
+            (*it)->SudakovReweightingInfos().clear();
+          }
         }
       }
       ++nem;
-      if (nem >= m_maxrewem) m_sudakov.SetVariationWeights(NULL);
       if (nem >= maxem) return true;
     }
   }
@@ -632,6 +638,117 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   return false;
   }
   return false;
+}
+
+double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
+                        SHERPA::Variation_Weights* varweights,
+                        Parton& splitter)
+{
+  const double kt2win = (m_last[0] == NULL) ? 0.0 : m_last[0]->KtStart();
+  Sudakov_Reweighting_Infos& infos = splitter.SudakovReweightingInfos();
+  double overallrewfactor = 1.0;
+
+  for (Sudakov_Reweighting_Infos::const_iterator it = infos.begin();
+      it != infos.end() && it->scale >= kt2win;
+      it++) {
+
+    const double rejwgt(1.0 - it->accwgt);
+    double rewfactor(1.0);
+    double accrewfactor(1.0);
+
+    // PDF reweighting
+    // NOTE: also the Jacobians depend on the Running_AlphaS class, but only
+    // through the number of flavours, which should not vary between AlphaS
+    // variations anyway; therefore we do not insert AlphaS for the PDF
+    // reweighting
+    const cstp::code type = it->sf->GetType();
+    if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
+      // insert new PDF
+      const Flavour swappedflspec = it->sf->Lorentz()->FlSpec();
+      it->sf->Lorentz()->SetFlSpec(it->flspec);
+      PDF::PDF_Base** swappedpdf = it->sf->PDF();
+      PDF::PDF_Base* pdf[] = {varparams->p_pdf1, varparams->p_pdf2};
+      it->sf->SetPDF(pdf);
+      // calculate new J
+      const double lastJ(it->sf->Lorentz()->LastJ());
+      double newJ;
+      switch (type) {
+        case cstp::II:
+          newJ = it->sf->Lorentz()->JII(
+              it->z, it->y, it->x, varparams->m_showermuF2fac * it->scale);
+          break;
+        case cstp::IF:
+          newJ = it->sf->Lorentz()->JIF(
+              it->z, it->y, it->x, varparams->m_showermuF2fac * it->scale);
+          break;
+        case cstp::FI:
+          newJ = it->sf->Lorentz()->JFI(
+              it->y, it->x, varparams->m_showermuF2fac * it->scale);
+          break;
+        case cstp::FF:
+        case cstp::none:
+          THROW(fatal_error, "Unexpected splitting configuration");
+      }
+      // clean up
+      it->sf->SetPDF(swappedpdf);
+      it->sf->Lorentz()->SetLastJ(lastJ);
+      it->sf->Lorentz()->SetFlSpec(swappedflspec);
+      // validate and apply
+      if (newJ == 0.0) {
+        varparams->IncrementOrInitialiseWarningCounter(
+            "different PDF cut-off");
+        continue;
+      } else {
+        const double pdfrewfactor(newJ / it->lastj);
+        if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
+          varparams->IncrementOrInitialiseWarningCounter(
+              "large PDF reweighting factor");
+        }
+        accrewfactor *= pdfrewfactor;
+      }
+    }
+
+    // AlphaS reweighting
+    if (it->sf->Coupling()->AllowsAlternativeCouplingUsage()) {
+      // insert new AlphaS
+      const double lastcpl(it->sf->Coupling()->Last());
+      it->sf->Coupling()->SetAlternativeUnderlyingCoupling(
+          varparams->p_alphas, varparams->m_showermuR2fac);
+      // calculate new coupling
+      double newcpl(it->sf->Coupling()->Coupling(it->scale, 0));
+      // clean up
+      it->sf->Coupling()->SetAlternativeUnderlyingCoupling(NULL);
+      it->sf->Coupling()->SetLast(lastcpl);
+      // validate and apply
+      if (newcpl == 0.0) {
+        varparams->IncrementOrInitialiseWarningCounter(
+            "different coupling cut-off");
+        continue;
+      } else {
+        const double alphasrewfactor(newcpl / it->lastcpl);
+        if (alphasrewfactor < 0.5 || alphasrewfactor > 2.0) {
+          varparams->IncrementOrInitialiseWarningCounter(
+              "large AlphaS reweighting factor");
+        }
+        accrewfactor *= alphasrewfactor;
+      }
+    }
+
+    // calculate and apply overall factor
+    if (it->accepted) {
+      rewfactor = accrewfactor;
+    } else {
+      rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
+    }
+    if (rewfactor < -9.0 || rewfactor > 11.0) {
+      varparams->IncrementOrInitialiseWarningCounter(
+          "vetoed large reweighting factor");
+      continue;
+    }
+    overallrewfactor *= rewfactor;
+  }
+
+  return overallrewfactor;
 }
 
 void Shower::SetMS(ATOOLS::Mass_Selector *const ms)

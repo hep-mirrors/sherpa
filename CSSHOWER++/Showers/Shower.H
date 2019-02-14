@@ -33,10 +33,8 @@ namespace CSSHOWER {
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
     double m_weight;
-
+    bool m_reweight;
     SHERPA::Variation_Weights * p_variationweights;
-    //! the maximum number of rew'd emissions
-    int m_maxrewem;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -66,6 +64,9 @@ namespace CSSHOWER {
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,const int mode,
 				Parton *const pi=NULL,Parton *const pj=NULL);
+    double Reweight(SHERPA::Variation_Parameters*,
+                    SHERPA::Variation_Weights*,
+                    Parton& splitter);
     void SetMS(ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }

@@ -32,11 +32,15 @@ namespace CSSHOWER {
 
     double m_q, m_rsf, m_k0sq;
     int m_scvmode;
+    int m_freezemode;
 
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key), p_altcpl(NULL), m_altcplmax(), m_q(0.), m_rsf(1.), m_k0sq(0.0), m_scvmode(0)
+      SF_Coupling(key),
+      p_altcpl(NULL), m_altcplmax(),
+      m_q(0.), m_rsf(1.), m_k0sq(0.0),
+      m_scvmode(0), m_freezemode(0)
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
@@ -84,6 +88,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"))
         *ToType<double>(rpa->gen.Variable("CSS_SCALE_FACTOR"));
   m_scvmode=ToType<int>(rpa->gen.Variable("CSS_SCALE_VARIATION_SCHEME"));
+  m_freezemode=ToType<int>(rpa->gen.Variable("CSS_ALPHAS_FREEZE_MODE"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
   m_k0sq=(m_type/10==1)?k0sqf:k0sqi;
   m_cplmax.push_back(CplMax(p_cpl, m_rsf));
@@ -108,12 +113,20 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
 template<class T>
 double CF_QCD::CplMax(T * as, double rsf) const
 {
-  double minscale = CplFac(m_k0sq)*m_k0sq;
+  // calculate maximum coupling
+  const double minscale = CplFac(m_k0sq)*m_k0sq;
+  double cpl(0.);
+  if (m_freezemode == 0) {
+    const double boundedscale(Max(as->ShowerCutQ2(), minscale));
+    cpl = (*as)[boundedscale];
+  } else {
+    cpl = as->BoundedAlphaS(minscale);
+  }
+  // calculate counterterm
   double ct(0.);
-  const double boundedscale(Max(as->ShowerCutQ2(), minscale));
-  if (m_rsf>1.) // only for f>1 cpl gets larger
-    ct=-(*as)[boundedscale]/M_PI*as->Beta0(0.)*log(m_rsf);
-  return (*as)[boundedscale]*(1.-ct)*m_q;
+  if (m_rsf > 1.) // cpl gets larger only for f > 1
+    ct = -cpl/M_PI * as->Beta0(0.) * log(m_rsf);
+  return cpl * (1. - ct) * m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
@@ -124,10 +137,20 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
   const double rsf = (p_altcpl) ? m_altrsf : m_rsf;
 
+  // calculate scale
   if (scale<0.0) return m_last = (*as)(sqr(rpa->gen.Ecms()))*m_q;
-  double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*rsf);
-  if (t < as->ShowerCutQ2()) return m_last = 0.0;
-  double cpl=(*as)(scl);
+  const double t(CplFac(scale)*scale);
+  const double scl(CplFac(scale)*scale*rsf);
+
+  // calculate coupling
+  double cpl(0.);
+  if (m_freezemode == 0) {
+    if (t < as->ShowerCutQ2()) return m_last = 0.0;
+    cpl = (*as)(scl);
+  } else {
+    cpl = as->BoundedAlphaS(scl);
+  }
+
   if (!IsEqual(scl,t)) {
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
     std::vector<double> ths(as->Thresholds(t,scl));

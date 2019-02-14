@@ -79,6 +79,7 @@ as massless.
 @cindex CSS_MASS_THRESHOLD
 @cindex CSS_EVOLUTION_SCHEME
 @cindex CSS_SCALE_SCHEME
+@cindex CSS_ALPHAS_FREEZE_MODE
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -105,7 +106,7 @@ double counting, this has to be disabled as explained in that section.
 
 The CS Shower can be forced not to emit any partons setting
 @option{CSS_NOEM=1}. Sudakov rejection weights for merged samples
-are calculated nontheless. Setting @option{CSS_MAXEM=<N>}, on the
+are calculated nonetheless. Setting @option{CSS_MAXEM=<N>}, on the
 other hand, forces the CS Shower to truncate its evolution at the
 Nth emission. This setting, however does not necessarily compute all
 Sudakov weights correctly. Both settings still enable the CS Shower
@@ -121,3 +122,11 @@ parameter and 1 corresponds to invariant mass. Additionally, the CS shower
 allows to disable splittings at scales below the on-shell mass of heavy
 quarks. The upper limit for the corresponding heavy quark mass is set
 using @option{CSS_MASS_THRESHOLD}.
+
+The cut-off behaviour of the strong coupling for scales at which its value
+would formally exceed one can be set using @option{CSS_ALPHAS_FREEZE_MODE}.
+Setting it to 0 (which is the default) means that the strong coupling evaluates
+to zero at such scales (hard cut-off). Setting it to 1 lets it evaluate to one
+instead (freeze-in). A freeze-in behaviour is preferable when reweighting
+shower emissions, but it has not been used in the default Sherpa tune, and
+should therefore not be used when comparing particle-level predictions to data.
