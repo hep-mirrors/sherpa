@@ -200,7 +200,7 @@ node* node_data::get(node& key, shared_memory_holder /* pMemory */) const {
     return NULL;
   }
 
-  for (node_map::const_iterator it = m_map.begin(); it != m_map.end(); ++it) {
+  for (node_map::const_reverse_iterator it = m_map.rbegin(); it != m_map.rend(); ++it) {
     if (it->first->is(key))
       return it->second;
   }
@@ -221,7 +221,7 @@ node& node_data::get(node& key, shared_memory_holder pMemory) {
       throw BadSubscript();
   }
 
-  for (node_map::const_iterator it = m_map.begin(); it != m_map.end(); ++it) {
+  for (node_map::const_reverse_iterator it = m_map.rbegin(); it != m_map.rend(); ++it) {
     if (it->first->is(key))
       return *it->second;
   }
@@ -235,9 +235,9 @@ bool node_data::remove(node& key, shared_memory_holder /* pMemory */) {
   if (m_type != NodeType::Map)
     return false;
 
-  for (node_map::iterator it = m_map.begin(); it != m_map.end(); ++it) {
+  for (node_map::reverse_iterator it = m_map.rbegin(); it != m_map.rend(); ++it) {
     if (it->first->is(key)) {
-      m_map.erase(it);
+      m_map.erase(std::next(it).base());
       return true;
     }
   }

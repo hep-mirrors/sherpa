@@ -47,9 +47,29 @@ Beam_Spectra_Handler::Beam_Spectra_Handler():
 void Beam_Spectra_Handler::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
-  s["BEAMS"].SetDefault(0);
-  s["BEAM_SPECTRA"].SetDefault("Monochromatic");
-  s["BEAM_ENERGIES"].SetDefault(0.0);
+
+  // NOTE: for backwards-compatibility we allow the use of <setting_name>_i
+  // with i=1,2 as alternatives for BEAMS, BEAM_SPECTRA, and BEAM_ENERGIES. We
+  // do not advertise this in the manual, it's only to make conversion of run
+  // cards less error-prone.
+
+  const auto defbeam = 0;
+  const auto beam1 = s["BEAM_1"].SetDefault(defbeam).Get<int>();
+  const auto beam2 = s["BEAM_2"].SetDefault(defbeam).Get<int>();
+  s["BEAMS"].SetDefault({beam1, beam2});
+
+  std::string defspectrum {"Monochromatic"};
+  const auto spectrum1
+    = s["BEAM_SPECTRUM_1"].SetDefault(defspectrum).Get<std::string>();
+  const auto spectrum2
+    = s["BEAM_SPECTRUM_2"].SetDefault(defspectrum).Get<std::string>();
+  s["BEAM_SPECTRA"].SetDefault({spectrum1, spectrum2});
+
+  const auto defenergy = 0.0;
+  const auto energy1 = s["BEAM_ENERGY_1"].SetDefault(defenergy).Get<double>();
+  const auto energy2 = s["BEAM_ENERGY_2"].SetDefault(defenergy).Get<double>();
+  s["BEAM_ENERGIES"].SetDefault({energy1, energy2});
+
   s["BEAM_POLARIZATIONS"].SetDefault(0.0);
   s["BEAM_SMIN"].SetDefault(1e-10);
   s["BEAM_SMAX"].SetDefault(1.0);
