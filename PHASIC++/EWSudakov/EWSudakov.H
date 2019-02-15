@@ -8,6 +8,11 @@
 #include <unordered_map>
 
 /// definitions for types and enums used in the module
+/** Note that this module refers in many places to a publication by
+ *  Denner/Pozzorini, which can be found under arXiv:hep-ph/0010201.
+ *  Also the definitions and calculations follow their conventions
+ *  as far as possible to make comparisons and checks more straightforward.
+ */
 
 namespace PHASIC {
 

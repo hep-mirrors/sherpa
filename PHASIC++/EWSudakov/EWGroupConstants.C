@@ -9,8 +9,15 @@ using namespace PHASIC;
 EWGroupConstants::EWGroupConstants():
   m_sw2{ MODEL::s_model->ComplexConstant("csin2_thetaW").real() },
   m_cw2{ 1.0 - m_sw2 },
-  // TODO: understand why this ad-hoc minus sign solves our previous minus sign
-  // issues
+  // We use the minus sign in \sin\theta_W to translate between the convention
+  // of Denner/Pozzorini and the convention of Sherpa. More specifically, it
+  // accounts for the sign difference in the definition of the EW covariant
+  // derivative in the Denner/Pozzorini language. This can be found in [Böhm,
+  // Denner, Joos: Gauge Theories of the Strong and Electroweak Interaction, 3.
+  // neubearb. Aufl., Stuttgart 2001], eq. (4.2.4).  For more information, see
+  // https://gitlab.com/ebothmann/sherpa/issues/3. By having this minus sign
+  // here, we can use all the constants defined by this class in the language
+  // of Denner/Pozzorini.
   m_sw{ -sqrt(m_sw2) },
   m_cw{ sqrt(m_cw2) }
 {}
