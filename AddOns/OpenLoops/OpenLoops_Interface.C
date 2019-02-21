@@ -81,7 +81,8 @@ void OpenLoops_Interface::RegisterDefaults() const
 
   // find OL installation prefix with several overwrite options
   s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
-  if(stat(s_olprefix.c_str(), nullptr) != 0)
+  struct stat st;
+  if(stat(s_olprefix.c_str(), &st) != 0)
     s_olprefix = OPENLOOPS_PREFIX;
   s["OL_PREFIX"].SetDefault(s_olprefix);
   s_olprefix = s["OL_PREFIX"].Get<string>();
