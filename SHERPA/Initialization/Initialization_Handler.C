@@ -669,8 +669,8 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="CT14Sherpa";
-      defset[beam]="ct14nn";
+      deflib="NNPDFSherpa";
+      defset[beam]="NNPDF31NNLOMC";
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
       deflib="PDFESherpa";

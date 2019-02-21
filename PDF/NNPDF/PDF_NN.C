@@ -210,18 +210,36 @@ PDF_Base *NNPDF_Getter::operator()
   if (!args.m_bunch.IsHadron()) return NULL;
   std::string gfile;
   int pdfsetprefix=-1;
-  if (args.m_set == "NNPDF30NLO") {
-    gfile = std::string("NNPDF30_nlo_as_0118");
-    pdfsetprefix=260000;
+  if (args.m_set == "NNPDF31NLO") {
+    gfile = std::string("NNPDF31_nlo_as_0118");
+    pdfsetprefix=303400;
     if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
-  else if (args.m_set == "NNPDF30NNLO") {
-    gfile = std::string("NNPDF30_nnlo_as_0118");
-    pdfsetprefix=261000;
+  else if (args.m_set == "NNPDF31NNLO") {
+    gfile = std::string("NNPDF31_nnlo_as_0118");
+    pdfsetprefix=303600;
     if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
+    }
+  }
+  else if (args.m_set == "NNPDF31NNLOMC") {
+    gfile = std::string("NNPDF31_nnlo_as_0118_mc_hessian_pdfas");
+    pdfsetprefix=303401;
+
+    /*
+     * For pdf set numbers 1 to 100, it is the same as NNPDF31_nnlo_as_0118_mc but now with symmetric Hessian eigenvectors instead of Monte Carlo replicas
+
+     * pdf set number 101 is the central value of NNPDF31_nnlo_as_0116
+
+     * pdf set number 102 is the central value of NNPDF31_nnlo_as_0120
+
+     so that with numbers 101 and 102 you can compute the alphas uncertainty in a general cross-section and add it in quadrature with the PDF uncertainty.
+     */
+    
+    if (args.m_member>102 || args.m_member <0) {
+      THROW(fatal_error,"PDF_SET_MEMBER out of range [0,102].");
     }
   }
   else THROW(not_implemented,"Requested PDF_SET not available.");
@@ -231,19 +249,20 @@ PDF_Base *NNPDF_Getter::operator()
 void NNPDF_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"NNPDF fit, see arXiv:1410.8849 [hep-ph]";
+  str<<"NNPDF31 fit, see arXiv:1706.00428 [hep-ph]";
 }
 
-NNPDF_Getter *p_get_nnpdf[2];
+NNPDF_Getter *p_get_nnpdf[3];
 
 
 extern "C" void InitPDFLib()
 {
-  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30NLO");
-  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30NNLO");
+  p_get_nnpdf[0] = new NNPDF_Getter("NNPDF31NLO");
+  p_get_nnpdf[1] = new NNPDF_Getter("NNPDF31NNLO");
+  p_get_nnpdf[2] = new NNPDF_Getter("NNPDF31NNLOMC");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<2;++i) delete p_get_nnpdf[i];
+  for (int i(0);i<3;++i) delete p_get_nnpdf[i];
 }

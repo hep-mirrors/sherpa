@@ -12,7 +12,7 @@ libNNPDFSherpa_la_SOURCES      =	\
 localinc_HEADERS      = \
 			NNPDFDriver.h
 
-NNPDF3archive = nnpdf30.tar.bz2
+NNPDF3archive = nnpdf31.tar.bz2
 
 
 nobase_dist_pkgdata_DATA         =	$(NNPDF3archive)
