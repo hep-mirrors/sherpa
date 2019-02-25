@@ -224,6 +224,13 @@ PDF_Base *NNPDF_Getter::operator()
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
+  else if (args.m_set == "NNPDF31_nnlo_as_0118_mc") {
+    gfile = std::string("NNPDF31_nnlo_as_0118_mc");
+    pdfsetprefix=316200;
+    if (args.m_member>100 || args.m_member <0) {
+      THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
+    }
+  }
   else THROW(not_implemented,"Requested PDF_SET not available.");
   return new PDF_NNPDF(args.m_bunch, gfile, args.m_set, args.m_member, pdfsetprefix);
 }
@@ -231,19 +238,20 @@ PDF_Base *NNPDF_Getter::operator()
 void NNPDF_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"NNPDF fit, see arXiv:1410.8849 [hep-ph]";
+  str<<"NNPDF31 fit, see arXiv:1706.00428 [hep-ph]";
 }
 
-NNPDF_Getter *p_get_nnpdf[2];
+NNPDF_Getter *p_get_nnpdf[3];
 
 
 extern "C" void InitPDFLib()
 {
   p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30NLO");
   p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30NNLO");
+  p_get_nnpdf[2] = new NNPDF_Getter("NNPDF31_nnlo_as_0118_mc");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<2;++i) delete p_get_nnpdf[i];
+  for (int i(0);i<3;++i) delete p_get_nnpdf[i];
 }
