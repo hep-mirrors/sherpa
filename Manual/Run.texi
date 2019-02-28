@@ -463,9 +463,9 @@ The on-the-fly reweighting works for all event generation modes (weighted or
 MEPS@@LO, MEPS@@NLO and MENLOPS).
 However, the reweighting of parton shower emissions has to enabled explicitly,
 using @code{CSS_REWEIGHT=1}.  This should work out of the box for both scale
-and PDF variations.  If numerical issues are encountered, one can try to set
-@option{CSS_REWEIGHT_SCALE_CUTOFF} (default: 0) to a finite value, e.g. 3.
-This disables shower variations for emissions at scales below 3 GeV.  An
+and PDF variations.  If numerical issues are encountered, one can try to
+inrease @option{CSS_REWEIGHT_SCALE_CUTOFF} (default: 5).
+This disables shower variations for emissions at scales below the value.  An
 improved accuracy for shower variations at very low scales can be achieved by
 using @code{CSS_ALPHAS_FREEZE_MODE=1}, see @ref{CS Shower options}.
 

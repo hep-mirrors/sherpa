@@ -52,7 +52,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightScaleCutoff(dataread->GetValue<double>(
-        "CSS_REWEIGHT_SCALE_CUTOFF", 0.0));
+        "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
   m_kinFF.SetEvolScheme(evol);
   m_kinFI.SetEvolScheme(evol);
   m_kinIF.SetEvolScheme(evol);
