@@ -246,14 +246,14 @@ values of the jets found with Fastjet can be used to calculate more elaborate
 selector criteria. The syntax of this selector is
 
 @verbatim
-- Type: FastjetSelector,
-  Expression: <expression>,
-  Algorithm: kt,
-  N: 0,
-  PTMin: 0,
-  ETMin: 0,
-  DR: 0.4,
-  f: 0.75,
+- Type: FastjetSelector
+  Expression: <expression>
+  Algorithm: kt
+  N: 0
+  PTMin: 0
+  ETMin: 0
+  DR: 0.4
+  f: 0.75
   EtaMax: 100
   YMax: 100
   BMode: 0
@@ -268,11 +268,11 @@ association with jets
 
 @verbatim
 - Type: FastjetSelector
-  Expression: Mass(p[4]+p[5])>100.
+  Expression: Mass(p[4]+p[5])>100
   Algorithm: antikt
   N: 2
-  PTMin: 40.
-  ETMin: 0.
+  PTMin: 40
+  ETMin: 0
   DR: 0.5
 @end verbatim
 
