@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <sys/stat.h>
 
-#include "GoSam_Interface.H"
+#include "AddOns/GoSam/GoSam_Interface.H"
 
 using namespace GoSam;
 using namespace PHASIC;
@@ -89,39 +89,35 @@ GoSam_Interface::~GoSam_Interface()
   gosam_finish();
 }
 
-void OpenLoops_Interface::RegisterDefaults() const
+void GoSam_Interface::RegisterDefaults() const
 {
   Settings& s = Settings::GetMainSettings();
-  s.SetDefault("GOSAM_VERBOSITY","0");
-  s.SetDefault("GOSAM_VMODE", 0);
-  s.SetDefault("GOSAM_EXIT_ON_ERROR",1);
-  s.SetDefault("GOSAM_IGNORE_MODEL",0);
+  s["GOSAM_VERBOSITY"].SetDefault("0");
+  s["GOSAM_VMODE"].SetDefault(0);
+  s["GOSAM_EXIT_ON_ERROR"].SetDefault(1);
+  s["GOSAM_IGNORE_MODEL"].SetDefault(0);
 
   // find GS installation prefix with several overwrite options
   s_gosamprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam";
-  if(stat(s_gosamprefix.c_str(), nullptr) != 0)
+  if (stat(s_gosamprefix.c_str(), nullptr) != 0)
     s_gosamprefix = GOSAM_PREFIX;
-  s.SetDefault("GOSAM_PREFIX", s_gosamprefix);
-  s_gosamprefix = s.GetScalar<string>("GOSAM_PREFIX");
-
-  // remaining GS parameters specified by user
-  s.DeclareVectorSettingsWithEmptyDefault({ "GOSAM_PARAMETERS" });
+  s["GOSAM_PREFIX"].SetDefault(s_gosamprefix);
+  s_gosamprefix = s["GOSAM_PREFIX"].Get<std::string>();
 }
 
-bool GoSam_Interface::Initialize(const string &path,const string &file,
-                                     MODEL::Model_Base *const model,
-                                     BEAM::Beam_Spectra_Handler *const beam,
-                                     PDF::ISR_Handler *const isr)
+bool GoSam_Interface::Initialize(MODEL::Model_Base *const model,
+                                 BEAM::Beam_Spectra_Handler *const beam,
+                                 PDF::ISR_Handler *const isr)
 {
   msg_Info()<<"Initialising GoSam generator from "<<s_gosamprefix<<endl;
   Settings& s = Settings::GetMainSettings();
-  s_ignore_model = s.GetScalar<int>("GOSAM_IGNORE_MODEL");
+  s_ignore_model = s["GOSAM_IGNORE_MODEL"].Get<size_t>();
   if (s_ignore_model) msg_Info()<<METHOD<<"(): GoSam will use the "
                                 <<"Standard Model, even if you set a "
                                 <<"different model, without warning."
                                 <<std::endl;
-  s_exit_on_error = s.GetScalar<int>("GOSAM_EXIT_ON_ERROR");
-  s_vmode = s.GetScalar<int>("GOSAM_VMODE");
+  s_exit_on_error = s["GOSAM_EXIT_ON_ERROR"].Get<size_t>();
+  s_vmode = s["GOSAM_VMODE"].Get<size_t>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
 
   // load library dynamically
@@ -129,7 +125,7 @@ bool GoSam_Interface::Initialize(const string &path,const string &file,
   if (!s_loader->LoadLibrary("gosam")) THROW(fatal_error, "Failed to load libgosam.");
 
   // set OL verbosity
-  std::string gosam_verbosity = s.GetScalar<std::string>("GOSAM_VERBOSITY");
+  std::string gosam_verbosity = s["GOSAM_VERBOSITY"].Get<std::string>();
   SetParameter("Verbosity",gosam_verbosity);
 
   // tell OL about the current model and check whether accepted
@@ -191,9 +187,10 @@ bool GoSam_Interface::Initialize(const string &path,const string &file,
 //  }
 
   // set remaining GoSam parameters specified by user
-  vector<string> parameters{ s.GetVector<std::string>("GOSAM_PARAMETERS") };
-  for (size_t i=1; i<parameters.size(); i=i+2)
-    SetParameter(parameters[i-1], parameters[i]);
+  for (const auto& key : s["GOSAM_PARAMETERS"].GetKeys()) {
+    const auto val = s["GOSAM_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    SetParameter(key, val);
+  }
 
   // instruct GoSam to return I instead of V
   if (s_vmode&2) SetParameter("VMode","I");

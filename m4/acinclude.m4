@@ -466,7 +466,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
  AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.x) ROOT support]),
+    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -487,9 +487,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes)  if test -d "$HEPMC3DIR"; then
                 CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
                 CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
@@ -498,19 +498,19 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC3DIR="${enableval}"
                 CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
       esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRootTree.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRootTree.h"; then
         hepmc3writerroottree=true;
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRoot.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRoot.h"; then
         hepmc3writerroot=true;
       fi;
 

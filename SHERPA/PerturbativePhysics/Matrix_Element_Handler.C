@@ -655,9 +655,12 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
       continue;
     }
 
-    // ignore certain settings that have sub-settings (otherwise obtaining the
-    // value below will throw); they need to be handled elsewhere
-    if (subkey == "Selectors")
+    // ignore certain settings that are not to be handled by ExtractMPvalues
+    // below
+    if (subkey == "Selectors"
+        || subkey == "Cut_Core"
+        || subkey == "CKKW"
+        || subkey == "Process")
       continue;
 
     // read value (and potentially do some pre-processing for non-scalar
