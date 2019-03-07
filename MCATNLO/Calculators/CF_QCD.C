@@ -135,8 +135,8 @@ double CF_QCD::CplMax(T * as, double rsf) const
   }
   // calculate counterterm
   double ct(0.);
-  if (m_rsf > 1.) // cpl gets larger only for f > 1
-    ct = -cpl/M_PI * as->Beta0(0.) * log(m_rsf);
+  if (rsf > 1.) // cpl gets larger only for f > 1
+    ct = -cpl/M_PI * as->Beta0(0.) * log(rsf);
   return cpl * (1. - ct) * m_q;
 }
 
