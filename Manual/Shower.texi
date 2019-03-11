@@ -109,7 +109,9 @@ double counting, this has to be disabled as explained in that section.
 The evolution variable of the CS shower can be changed using 
 @option{CSS_EVOLUTION_SCHEME}. Two options are currently implemented,
 which correspond to transverse momentum ordering (option 0) and modified
-transverse momentum ordering (option 1). The scale at which the strong 
+transverse momentum ordering (option 1). In addition, modified versions of these
+options (option 2 and option 3) are implemented, which take parton masses into
+account where applicable. The scale at which the strong 
 coupling for gluon splitting into quarks is evaluated can be chosen
 with @option{CSS_SCALE_SCHEME}, where 0 (default) corresponds to the ordering
 parameter and 1 corresponds to invariant mass. Additionally, the CS shower
