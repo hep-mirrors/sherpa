@@ -834,6 +834,15 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  cpi.m_maxcpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
+
+	// If "Born_Order" is specified, we set all max/min orders
+	// here accordingly. This is for the interface to external
+	// amplitudes, where the user has to specify coupling orders
+	// for the born process of all multiplicities explicitly.
+	for(size_t i (0); i<cpi.m_borncpl.size(); i++)
+	  if(cpi.m_borncpl[i])
+	    cpi.m_mincpl[i]=cpi.m_maxcpl[i]=cpi.m_borncpl[i];
+
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
 	double intpart,fracpart;

@@ -796,12 +796,18 @@ void Amplitude::ConstructNLOEvents()
     sub->m_i=kin->JI()->Id().front();
     sub->m_j=kin->JJ()->Id().front();
     sub->m_k=kin->JK()->Id().front();
+    bool order(true);
+    if (sub->m_i>m_nin && sub->m_j>m_nin &&
+	kin->JI()->Flav().IsBoson() &&
+        kin->JJ()->Flav().IsFermion()) order=false;
     sub->m_oqcd=m_maxcpl[0]/2;
     sub->m_oew=m_maxcpl[1]/2;
     Current_Vector cur(sub->m_n,NULL);
     for (size_t k(0), j(0);k<m_nin+m_nout;++k) {
-      if (k==sub->m_j) continue;
-      if (k==sub->m_i) {
+      if ((k==sub->m_j && order) ||
+          (k==sub->m_i && !order)) continue;
+      if ((k==sub->m_i && order) ||
+          (k==sub->m_j && !order)) {
 	cur[j]=kin->JIJT();
 	sub->m_ijt=j;
       }
