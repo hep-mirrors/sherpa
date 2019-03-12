@@ -22,22 +22,22 @@ namespace AHADIC {
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
 
+    bool   m_ktorder;
     size_t m_attempts;
     
-    Proto_Particle * p_part1, * p_part2, * p_part3;
+    Proto_Particle * p_part[3];
     bool   m_barrd;
     double m_minmass;
-    double m_Q2, m_Q, m_E, m_mass1, m_mass2, m_mass3, m_Emax;
-    double m_m12, m_m22, m_m32, m_alpha, m_beta;
+    double m_Q2, m_Q, m_E, m_mass[3], m_m2[3], m_Emax;
+    double m_lc[2];
 
     Flavour_Pair    m_flavs1, m_flavs2;
-    double          m_popped_mass, m_popped_mass2;
-    ATOOLS::Flavour m_newflav1, m_newflav2;
-    double          m_minQ_1, m_minQ_2, m_minQ_12, m_minQ_22;
-    double          m_maxQ_1, m_maxQ_2, m_maxQ_12, m_maxQ_22;
+    double          m_popped_mass, m_popped_mass2, m_msum[2], m_msum2[2];
+    ATOOLS::Flavour m_newflav[2];
+    double          m_minQ[2], m_minQ2[2], m_mdec[2], m_mdec2[2];
     
-    double          m_z1min, m_z1max, m_z2min, m_z2max, m_z1, m_z2;
-    double          m_ktmax, m_ktfac, m_kt, m_kt2, m_phi;
+    double          m_zmin[2], m_zmax[2], m_z[2];
+    double          m_ktmax, m_kt2max, m_ktfac, m_kt, m_kt2, m_phi;
     ATOOLS::Vec4D   m_ktvec;
     
     ATOOLS::Poincare m_boost, m_rotat;
@@ -68,7 +68,8 @@ namespace AHADIC {
     virtual bool operator()(Proto_Particle * part1,Proto_Particle * part2,
 			    Proto_Particle * part3=0);
     virtual double WeightFunction(const double & z,
-				  const double & zmin,const double & zmax)=0;
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt)=0;
   };
   
 }

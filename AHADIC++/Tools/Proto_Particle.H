@@ -9,6 +9,7 @@ namespace AHADIC {
   private:
     ATOOLS::Flavour m_flav;
     ATOOLS::Vec4D   m_momentum;
+    double          m_kt2max;
     bool            m_isleading, m_isbeam;
   public:
     Proto_Particle(const Proto_Particle & proto);
@@ -20,13 +21,15 @@ namespace AHADIC {
 
     ATOOLS::Vec4D   Momentum()  const { return m_momentum; } 
     ATOOLS::Flavour Flavour()   const { return m_flav;     }
+    double          KT2_Max()   const { return m_kt2max; }
     bool            IsLeading() const { return m_isleading;  }
     bool            IsBeam()    const { return m_isbeam;  }
 
-    void SetMomentum(const ATOOLS::Vec4D & mom)   { m_momentum = mom; }
-    void SetFlavour(const ATOOLS::Flavour & flav) { m_flav = flav;    }
+    void SetMomentum(const ATOOLS::Vec4D & mom)   { m_momentum  = mom; }
+    void SetFlavour(const ATOOLS::Flavour & flav) { m_flav      = flav; }
+    void SetKT2_Max(const double & kt2max)        { m_kt2max    = kt2max; }
     void SetLeading(const bool & lead)            { m_isleading = lead; }
-    void SetBeam(const bool & beam)               { m_isbeam = beam; }
+    void SetBeam(const bool & beam)               { m_isbeam    = beam; }
 
 
     static std::set<Proto_Particle *> s_protos;
