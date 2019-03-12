@@ -39,7 +39,8 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)
-    msg_Error()<<METHOD<<"("<<mustdecay<<") throws error for:\n"<<(*cluster)<<"\n";
+    msg_Error()<<METHOD<<"("<<mustdecay<<") throws error for: "<<cluster<<"\n"
+	       <<(*cluster)<<"\n";
     cluster->Clear();
     delete cluster;
     return false;
