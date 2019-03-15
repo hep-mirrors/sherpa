@@ -124,6 +124,11 @@ namespace OpenLoops {
     }
     SetParameter("install_path", s_olprefix.c_str());
 
+    // this interface passes EW parameters in the alpha(mZ) scheme,
+    // irrespective of the actual EW scheme
+    SetParameter("ew_scheme", 2);
+    SetParameter("ew_renorm_scheme", 1);
+
     // set remaining OL parameters specified by user
     vector<string> parameters;
     reader.VectorFromFile(parameters,"OL_PARAMETERS");
