@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/External_ME_Args.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 
 namespace EXTAMP {
 
@@ -19,6 +20,7 @@ namespace EXTAMP {
   double Born_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
 				const int mode)
   {
+    if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
 
     /* Maybe move to PHASIC::Single_Process */
     ScaleSetter()->CalculateScale(p);
