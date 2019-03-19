@@ -683,7 +683,7 @@ void Phase_Space_Handler::EndOptimize()
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");

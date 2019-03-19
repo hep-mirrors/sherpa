@@ -15,7 +15,7 @@ extern "C" int FC_DUMMY_MAIN() { return 1; }
 int main(int argc,char* argv[])
 {
 #ifdef USING__MPI
-  MPI::Init(argc,argv);
+  MPI_Init(&argc, &argv);
 #endif
   Sherpa *Generator(new Sherpa());
   try {
@@ -34,7 +34,7 @@ int main(int argc,char* argv[])
   }
   delete Generator;
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   return 0;
 }

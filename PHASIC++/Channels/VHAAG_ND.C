@@ -88,7 +88,7 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   int size=dr.GetValue<std::string>("VHAAG_AUTOOPT","On")=="On"?1:2;
 #ifdef USING__MPI
-  size=MPI::COMM_WORLD.Get_size();
+  size=mpi->Size();
 #endif
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
@@ -144,7 +144,7 @@ void VHAAG_ND::MPISync()
 void VHAAG_ND::Optimize()
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()<2) return;
+  if (mpi->Size()<2) return;
   if (m_ownvegas) p_vegas->Optimize();
 #endif
 }

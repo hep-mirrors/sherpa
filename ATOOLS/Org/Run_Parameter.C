@@ -268,7 +268,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
 
 #ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank();
+  int rank=mpi->Rank();
   if (dr.GetValue("MPI_SEED_MODE",0)==0) {
     msg_Info()<<METHOD<<"(): Seed mode '*'\n";
     for (int i(0);i<4;++i)
@@ -393,7 +393,7 @@ void Run_Parameter::Gen::AddCitation(const size_t &level,
 void Run_Parameter::Gen::WriteCitationInfo()
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   if (Citations().empty()) return;
   Data_Reader dr(" ",";","!","=");

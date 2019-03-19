@@ -491,14 +491,14 @@ void Event_Handler::MPISync()
   m_msum=m_sum;
   m_msumsqr=m_sumsqr;
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     double values[3];
     values[0]=m_mn;
     values[1]=m_msum;
     values[2]=m_msumsqr;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_maxweight,1,MPI::DOUBLE,MPI::MAX);
+    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
+    mpi->Allreduce(&m_maxweight,1,MPI_DOUBLE,MPI_MAX);
     m_mn=values[0];
     m_msum=values[1];
     m_msumsqr=values[2];

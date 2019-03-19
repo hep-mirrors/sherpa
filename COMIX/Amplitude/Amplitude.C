@@ -731,7 +731,7 @@ bool Amplitude::ReadInAmpFile(const std::string &name)
 void Amplitude::WriteOutAmpFile(const std::string &name)
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");

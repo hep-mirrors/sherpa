@@ -224,7 +224,7 @@ bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
 				const std::string &path) 
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return true;
+  if (mpi->Rank()) return true;
 #endif
   bool success=true;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();

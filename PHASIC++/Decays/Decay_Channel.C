@@ -236,9 +236,9 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
     }
     opt++;
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_size()) {
-      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mv,3,MPI::DOUBLE,MPI::SUM);
-      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_max,1,MPI::DOUBLE,MPI::MAX);
+    if (mpi->Size()) {
+      mpi->Allreduce(mv,3,MPI_DOUBLE,MPI_SUM);
+      mpi->Allreduce(&m_max,1,MPI_DOUBLE,MPI_MAX);
     }
 #endif
     n+=mv[0];

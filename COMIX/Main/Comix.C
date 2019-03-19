@@ -214,7 +214,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   rpa->gen.SetVariable("NLO_SMEAR_POWER",
 		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB

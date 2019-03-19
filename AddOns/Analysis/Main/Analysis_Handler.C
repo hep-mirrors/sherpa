@@ -251,7 +251,7 @@ bool Analysis_Handler::WriteOut()
 {
   if (!m_write) return true;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
@@ -270,6 +270,9 @@ bool Analysis_Handler::WriteOut()
 
 bool Analysis_Handler::Finish()
 {
+#ifdef USING__MPI
+  if (mpi->Rank()==0)
+#endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "

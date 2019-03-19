@@ -91,14 +91,14 @@ bool My_File<FileType>::OpenDB(std::string file)
   sqlite3 *db=NULL;
   int dummy=0;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) {
-    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+  if (mpi->Rank()) {
+    mpi->Bcast(&dummy,1,MPI_INT,0);
   }
   else {
 #endif
   if (FileExists(file)) {
 #ifdef USING__MPI
-    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+    mpi->Bcast(&dummy,1,MPI_INT,0);
 #endif
   }
   else {
@@ -128,7 +128,7 @@ bool My_File<FileType>::OpenDB(std::string file)
     s_sqldbs[file]=db;
     PrepareStatements(db);
 #ifdef USING__MPI
-    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+    mpi->Bcast(&dummy,1,MPI_INT,0);
 #endif
     return true;
   }

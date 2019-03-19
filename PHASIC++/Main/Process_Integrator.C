@@ -543,11 +543,9 @@ void Process_Integrator::MPISync(const int mode)
     size_t i(0), j(0);
     std::vector<double> sv, mv;
     MPICollect(sv,mv,i);
-    if (MPI::COMM_WORLD.Get_size()) {
-      mpi->MPIComm()->Allreduce
-	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
-      mpi->MPIComm()->Allreduce
-	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
+    if (mpi->Size()) {
+      mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
+      mpi->Allreduce(&mv[0],mv.size(),MPI_DOUBLE,MPI_MAX);
     }
     MPIReturn(sv,mv,j);
   }
@@ -583,7 +581,7 @@ void Process_Integrator::SetISRThreshold(const double threshold)
 void Process_Integrator::StoreBackupResults()
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   if (!FileExists(m_resultpath+".db")) return;
   if (!Copy(m_resultpath+".db",m_resultpath+".db.bak",true))
@@ -598,7 +596,7 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   My_In_File::ExecDB(m_resultpath+"/","begin");
   std::string fname(p_proc->Name());

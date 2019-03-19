@@ -164,7 +164,7 @@ bool ATOOLS::Random::ReadInStatus(const std::string &path)
 void ATOOLS::Random::ReadInStatus(const char * filename)
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) return;
+  if (mpi->Size()>1) return;
 #endif
   if (p_external!=NULL) return;
   // check what type of data is in target file
@@ -200,7 +200,7 @@ size_t ATOOLS::Random::ReadInStatus
 {
   if (activeGenerator==4) { ReadInStatus4(myinstream,idx); } 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) return std::string::npos;
+  if (mpi->Size()>1) return std::string::npos;
 #endif
   size_t count;
   while (!myinstream.eof()) {
