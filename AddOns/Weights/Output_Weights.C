@@ -42,8 +42,8 @@ namespace SHERPA {
       m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-      if (MPI::COMM_WORLD.Get_size()>1) {
-        basename << "_" << MPI::COMM_WORLD.Get_rank();
+      if (mpi->Size()>1) {
+        basename << "_" << mpi->Rank();
       }
 #endif
       m_basename = basename.str();

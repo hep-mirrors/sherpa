@@ -66,15 +66,15 @@ bool My_File<FileType>::OpenDB(std::string file)
 {
   std::string path(file);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) {
+  if (mpi->Rank()) {
     s_ziparchives[path]=ZipArchive_Ref(NULL,std::vector<std::string>());
     int size;
-    MPI::COMM_WORLD.Bcast(&size,1,MPI_INT,0);
+    mpi->Bcast(&size,1,MPI_INT,0);
     for (int i=0;i<size;++i) {
       int length;
-      MPI::COMM_WORLD.Bcast(&length,1,MPI_INT,0);
+      mpi->Bcast(&length,1,MPI_INT,0);
       char *message = new char[length+1];
-      MPI::COMM_WORLD.Bcast(message,length+1,MPI_CHAR,0);
+      mpi->Bcast(message,length+1,MPI_CHAR,0);
       std::string name, content;
       for (int p=0;p<length;++p)
 	if (message[p]=='\n') {
@@ -98,7 +98,7 @@ bool My_File<FileType>::OpenDB(std::string file)
   const std::vector<ZipEntry> &entries=zf->getEntries();
   int size=entries.size();
 #ifdef USING__MPI
-  MPI::COMM_WORLD.Bcast(&size,1,MPI_INT,0);
+  mpi->Bcast(&size,1,MPI_INT,0);
 #endif
   for(std::vector<ZipEntry>::const_iterator
 	it=entries.begin();it!=entries.end();++it) {
@@ -109,8 +109,8 @@ bool My_File<FileType>::OpenDB(std::string file)
 #ifdef USING__MPI
     int length(name.length()+content.length()+1);
     content=name+'\n'+content;
-    MPI::COMM_WORLD.Bcast(&length,1,MPI_INT,0);
-    MPI::COMM_WORLD.Bcast(&content[0],length+1,MPI_CHAR,0);
+    mpi->Bcast(&length,1,MPI_INT,0);
+    mpi->Bcast(&content[0],length+1,MPI_CHAR,0);
 #endif
   }
   return true;
@@ -219,12 +219,12 @@ bool My_File<FileType>::Open()
     }
     else {
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_rank()) {
+    if (mpi->Rank()) {
       int fsize;
-      MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
+      mpi->Bcast(&fsize,1,MPI_INT,0);
       if (fsize<0) return false;
       char *content = new char[fsize+1];
-      MPI::COMM_WORLD.Bcast(content,fsize+1,MPI_CHAR,0);
+      mpi->Bcast(content,fsize+1,MPI_CHAR,0);
       (*p_stream)<<content<<"\n";
       delete [] content;
     }
@@ -234,7 +234,7 @@ bool My_File<FileType>::Open()
       int fsize(infile.good()?1:-1);
       if (fsize<0) {
 #ifdef USING__MPI
-	MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
+	mpi->Bcast(&fsize,1,MPI_INT,0);
 #endif
 	return false;
       }
@@ -243,8 +243,8 @@ bool My_File<FileType>::Open()
 #ifdef USING__MPI
       std::string content(p_stream->str());
       fsize=content.length();
-      MPI::COMM_WORLD.Bcast(&fsize,1,MPI_INT,0);
-      MPI::COMM_WORLD.Bcast(&content[0],fsize+1,MPI_CHAR,0);
+      mpi->Bcast(&fsize,1,MPI_INT,0);
+      mpi->Bcast(&content[0],fsize+1,MPI_CHAR,0);
     }
 #endif
     }
@@ -271,7 +271,7 @@ bool My_File<FileType>::Close()
     return false;
   auto os = dynamic_cast<std::ofstream*>(p_file.get());
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   if (os) {
     bool indb(false);
