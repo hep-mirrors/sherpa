@@ -115,16 +115,10 @@ double CF_QCD::CplMax(T * as, double rsf) const
 {
   // calculate maximum coupling
   const double minscale = CplFac(m_k0sq)*m_k0sq;
-  double cpl(0.);
-  if (m_freezemode == 0) {
-    const double boundedscale(Max(as->ShowerCutQ2(), minscale));
-    cpl = (*as)[boundedscale];
-  } else {
-    cpl = as->BoundedAlphaS(minscale);
-  }
+  double cpl = as->BoundedAlphaS(minscale);
   // calculate counterterm
   double ct(0.);
-  if (rsf > 1.) // cpl gets larger only for f > 1
+  if (rsf > 1.)
     ct = -cpl/M_PI * as->Beta0(0.) * log(rsf);
   return cpl * (1. - ct) * m_q;
 }
@@ -145,7 +139,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   // calculate coupling
   double cpl(0.);
   if (m_freezemode == 0) {
-    if (t < as->ShowerCutQ2()) return m_last = 0.0;
+    if (scl < as->CutQ2()) return m_last = 0.0;
     cpl = (*as)(scl);
   } else {
     cpl = as->BoundedAlphaS(scl);
@@ -198,7 +192,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
 		 <<sqrt(scale)<<", \\alpha_s("<<sqrt(scl)<<") = "
-		 <<(*as)[scl]<<", m_q = "<<m_q<<"\n";
+		 <<(*as)(scl)<<", m_q = "<<m_q<<"\n";
 #endif
   return m_last = cpl;
 }
