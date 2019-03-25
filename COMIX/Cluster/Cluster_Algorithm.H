@@ -68,7 +68,7 @@ namespace COMIX {
 
     SizeT_Map m_id;
 
-    size_t m_wmode, m_corecheck, m_nocluster, m_ordered, m_nmin, m_dipolecheck;
+    size_t m_wmode, m_corecheck, m_nocluster, m_ordered, m_nmin, m_dipolecheck, m_skip4096;
     double m_lfrac;
 
     ATOOLS::ColorID GetColor(Current *const j,
