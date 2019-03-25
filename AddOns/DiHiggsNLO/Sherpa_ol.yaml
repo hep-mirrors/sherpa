@@ -21,7 +21,7 @@ SCALES: VAR{Abs2(p[2]+p[3])/4}
 
 # set up Di-Higgs calculation
 SHERPA_LDADD: SherpaDiHiggsNLO
-DIHIGGS_GRID_PATH: /u/th/silvan/work/unlops/AddOns/DiHiggsNLO/Virt_EFT.grid
+DIHIGGS_GRID_PATH: Virt_EFT.grid
 
 # model parameters
 MODEL: HEFT
