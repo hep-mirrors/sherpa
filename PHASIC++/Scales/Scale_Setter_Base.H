@@ -67,6 +67,7 @@ namespace PHASIC {
     void SetCouplings();
 
     double HTM() const;
+    double PTM() const;
     double HT() const;
     double HTprime() const;
 
