@@ -29,7 +29,7 @@ namespace PHASIC {
   {
     os << "leg:kf_code list: { ";
     for (const auto& leg : legset)
-      os << leg.first << ":" << Flavour{leg.second} << " ";
+      os << leg.first << ":" << Flavour{static_cast<long>(leg.second)} << " ";
     return os << '}';
   }
 

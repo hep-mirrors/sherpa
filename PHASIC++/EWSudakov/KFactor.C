@@ -9,7 +9,6 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace PHASIC;
@@ -18,9 +17,11 @@ using namespace ATOOLS;
 
 Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args),
-  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) },
   m_ews{ p_proc }
-{ }
+{
+  auto& s = Settings::GetMainSettings();
+  m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
+}
 
 double Sudakov_KFactor::KFactor(const int mode)
 {

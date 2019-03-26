@@ -9,9 +9,9 @@
 #include "COMIX/Main/Single_Process.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <cassert>
 
@@ -32,9 +32,10 @@ Sudakov::Sudakov(Process_Base* proc):
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
-  m_runaqed{ 1./137.03599976 },
-  m_check{ Default_Reader().Get<bool>("CHECK_EWSUDAKOV", false) }
+  m_runaqed{ 1./137.03599976 }
 {
+  auto& s = Settings::GetMainSettings();
+  m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
 }
 
 double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)

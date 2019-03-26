@@ -68,7 +68,7 @@ namespace PHASIC {
 
     const double m_mw2;
     MODEL::Running_AlphaQED m_runaqed;
-    const size_t m_check;
+    size_t m_check;
     Complex m_born;
 
     // intermediate results

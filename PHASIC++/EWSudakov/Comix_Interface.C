@@ -10,7 +10,6 @@
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -49,8 +48,9 @@ void Comix_Interface::FillSpinAmplitudes(
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
   DEBUG_FUNC("");
-  const auto gpath =
-    Default_Reader{}.Get<std::string>("PRINT_EWSUDAKOV_GRAPHS", "");
+  auto& s = Settings::GetMainSettings();
+  const auto gpath
+    = s["PRINT_EWSUDAKOV_GRAPHS"].SetDefault("").Get<std::string>();
   for (auto& kv : ampls) {
     auto& ampl = kv.second;
     msg_Debugging() << "Initialize process for ampl=" << *ampl << std::endl;
@@ -76,8 +76,7 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
     PHASIC::Process_Base *proc=
       p_proc->Generator()->Generators()->InitializeProcess(pi,false);
     if (proc==NULL) THROW(fatal_error,"Invalid process");
-    Selector_Key skey(NULL,NULL,true);
-    proc->SetSelector(skey);
+    proc->SetSelector(Selector_Key{});
     proc->SetScale
       (Scale_Setter_Arguments
        (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
