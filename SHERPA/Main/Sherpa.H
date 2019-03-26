@@ -21,11 +21,10 @@ namespace SHERPA {
 
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
-    std::string   m_path;
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
     long int      m_evt_output, m_evt_output_start;
     double        m_evt_starttime;
-    int           m_showtrials;
+    bool          m_showtrials;
     bool          m_filter;
 
     Initialization_Handler * p_inithandler;
@@ -33,16 +32,17 @@ namespace SHERPA {
     HepMC2_Interface       * p_hepmc2;
     Filter                 * p_filter;
 
-    void DrawLogo(const int mode);  
+    void RegisterDefaults();
+    void DrawLogo(const bool& shouldprintversioninfo);
 
     void PrepareTerminate();
 
   public:
 
-    Sherpa();
+    Sherpa(int argc, char* argv[]);
     ~Sherpa();
 
-    bool InitializeTheRun(int argc,char * argv[]);
+    bool InitializeTheRun();
     bool InitializeTheEventHandler();
 
     bool GenerateOneEvent(bool reset=true);
@@ -100,10 +100,6 @@ namespace SHERPA {
     the Event_Handler can be found in the subdirectory SingleEvents, whereas specific handlers 
     that are filled into the Event_Phase_Handlers (such as Matrix_Element_Handler or Shower_Handler) 
     can be found in the subdirectories PerturbativePhysics or SoftPhysics.
-  */
-  /*!
-    \var std::string Sherpa::m_path
-    The path for the input files and, eventually, the output.
   */
   /*!
     \var long int Sherpa::m_errors

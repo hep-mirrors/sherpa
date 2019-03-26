@@ -17,7 +17,7 @@ test: test.o
 	$(CXX)  test.o -L$(SHERPA_LIBS) -lMEProcess -lToolsOrg -lToolsMath -lToolsPhys -lSherpaMain -lPhasicProcess -o test
 
 test.o: test.cpp
-	$(CXXCPP) -fPIC -I$(SHERPA_INCLUDE) -o test.o -c test.cpp
+	$(CXXCPP) -std=c++11 -fPIC -I$(SHERPA_INCLUDE) -o test.o -c test.cpp
 
 install: test
 

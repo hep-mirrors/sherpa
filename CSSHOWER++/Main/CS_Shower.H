@@ -6,9 +6,10 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Phys/Blob_List.H"
 
+
+namespace REMNANTS { class Remnant_Handler; }
+
 namespace CSSHOWER {
-
-
   struct partcomp{
     bool operator() (const Parton * part1, const Parton * part2) const
     {
@@ -22,9 +23,9 @@ namespace CSSHOWER {
   typedef std::map<size_t,std::pair<double,double> > KT2X_Map;
 
   class CS_Shower : public PDF::Shower_Base {
-  
+
   private:
- 
+
     struct Q2_Value {
       double m_q2;
       ATOOLS::Flavour m_fl;
@@ -38,9 +39,10 @@ namespace CSSHOWER {
     };
 
     PDF::ISR_Handler * p_isr;
-    int m_weightmode, m_kmode, m_respectq2, m_type;
+    int m_kmode, m_type;
+    bool m_respectq2;
     size_t m_maxem, m_nem, m_recocheck;
-    
+
     Shower          * p_shower;
     All_Singlets m_allsinglets;
     CS_Cluster_Definitions *p_cluster;
@@ -74,8 +76,9 @@ namespace CSSHOWER {
   public:
 
     // constructor 
-    CS_Shower(PDF::ISR_Handler *const, MODEL::Model_Base *const,
-	      ATOOLS::Default_Reader *const,const int type);
+    CS_Shower(PDF::ISR_Handler *const,
+              MODEL::Model_Base *const,
+              const int type);
 
     // destructor
     ~CS_Shower();
@@ -98,6 +101,9 @@ namespace CSSHOWER {
 		   const int mode);
 
     void SetRBOff();
+    inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
+      p_shower->SetRemnants(remnants);
+    }
 
   };// end of class CS_Shower
 

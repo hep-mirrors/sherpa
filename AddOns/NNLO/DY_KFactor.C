@@ -60,8 +60,8 @@ namespace PHASIC {
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "QT_Selector.H"
 #include "coeffqt.H"
@@ -75,16 +75,16 @@ DY_KFactor::DY_KFactor
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args), p_fsmc(NULL)
 {
-  Data_Reader read(" ",";","#","=");
+  Settings& s = Settings::GetMainSettings();
   if (s_pdf==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
-    s_pdfmin[0]=read.GetValue<double>("CSS_PDF_MIN",1.0e-4);
-    s_pdfmin[1]=read.GetValue<double>("CSS_PDF_MIN_X",1.0e-2);
+    s_pdfmin[0] = s["CSS_PDF_MIN"].Get<double>();
+    s_pdfmin[1] = s["CSS_PDF_MIN_X"].Get<double>();
   }
-  m_k0sq[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sq[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_fomode=read.GetValue<int>("NNLOqT_FOMODE",0);
+  m_k0sq[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_k0sq[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_fomode = s["NNLOqT_FOMODE"].Get<int>();
   m_newfs=0;
   for (size_t i(0);i<p_proc->NOut();++i)
     if (!Flavour(kf_jet).Includes
@@ -115,7 +115,7 @@ double DYNNLO_KFactor::KFactor(const int mode)
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
   if (p_proc->VariationWeights()) {
     Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     if (mode&2) bkw.clear();
     size_t oldsize(bkw.size());
     vw.UpdateOrInitialiseWeights(&DYNNLO_KFactor::KFactor,*this,lmode);
@@ -144,21 +144,21 @@ double DYNNLO_KFactor::KFactor
   double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>(p_proc->Info().Has(nlo_type::real)?m_newfs+1:m_newfs)) {
     double weight(1.0);
-    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,
+    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
 			  weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
   }
   if (p_proc->Info().Has(nlo_type::real)) {
     double weight(NNLODeltaWeight(p_proc,1.0,m_fomode));
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
   }
   Cluster_Amplitude *ampl(NULL);
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl) ampl->SetNLO(4);
   if (mode!=1) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0);
     return 1.0;
   }
   QT_Selector *jf=(QT_Selector*)
@@ -206,11 +206,11 @@ double DYNNLO_KFactor::KFactor
   K*=sqr((*s_as)(mur*mur)/(4.0*M_PI));
   DEBUG_VAR(K);
   if (IsBad(K)) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0);
     return 1.0;
   }
   DEBUG_VAR(1.0+K);
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
+  if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
   return weights?1.0:1.0+K;
 }
 
@@ -225,7 +225,7 @@ double DYNLO_KFactor::KFactor(const int mode)
   m_weight=KFactor(NULL,NULL,mode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
   if (p_proc->VariationWeights()) {
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
     p_proc->VariationWeights()->UpdateOrInitialiseWeights
       (&DYNLO_KFactor::KFactor,*this,mode);
@@ -252,9 +252,9 @@ double DYNLO_KFactor::KFactor
   double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>m_newfs) {
     double weight(1.0);
-    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,
+    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,0,
 			 weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
     return weights?1.0:weight;
   }
   QT_Selector *jf=(QT_Selector*)
@@ -285,7 +285,7 @@ double DYNLO_KFactor::KFactor
   K*=(*s_as)(mur*mur)/(4.0*M_PI);
   msg_Debugging()<<"K = "<<1.0+K<<"\n";
   if (IsBad(K)) K=0.0;
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
+  if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
   return weights?1.0:1.0+K;
 }
 

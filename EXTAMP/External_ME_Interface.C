@@ -13,7 +13,7 @@
 #include "PHASIC++/Process/Process_Group.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <assert.h>
 
@@ -24,8 +24,7 @@ namespace EXTAMP{
     PHASIC::ME_Generator_Base("External") {}
 
 
-  bool External_ME_Interface::Initialize(const std::string &path,const std::string &file,
-					 MODEL::Model_Base *const model,
+  bool External_ME_Interface::Initialize(MODEL::Model_Base *const model,
 					 BEAM::Beam_Spectra_Handler *const beam,
 					 PDF::ISR_Handler *const isr)
   {
@@ -118,13 +117,14 @@ namespace EXTAMP{
       return new Born_Process(pi);
     
     if ( nlotype&ATOOLS::nlo_type::vsub )
-      {
-	int subtractiontype = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
-	double virtfrac = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("VIRTUAL_EVALUATION_FRACTION"));
-	if (virtfrac!=1.0)
-	  msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
-	return new BVI_Process(pi, virtfrac, subtractiontype);
-      }
+    {
+      ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+      int subtractiontype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+      double virtfrac     = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
+	  if (virtfrac!=1.0)
+	    msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
+	  return new BVI_Process(pi, virtfrac, subtractiontype);
+    }
     
     if ( nlotype&ATOOLS::nlo_type::rsub )
       return new RS_Process(pi);

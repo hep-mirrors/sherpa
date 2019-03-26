@@ -4,7 +4,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace ATOOLS { class Data_Reader; class Variations; }
+namespace ATOOLS { class Variations; }
 
 namespace MODEL { class Model_Base; }
 
@@ -16,14 +16,12 @@ namespace SHERPA {
     std::string m_inpath, m_infile;
     MODEL::Model_Base *p_model;
     PDF::ISR_Handler *p_isr;
-    ATOOLS::Data_Reader *p_reader;
     Input_Arguments(const std::string inpath,
 		    const std::string infile,
-		    ATOOLS::Data_Reader *const read,
 		    MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr):
       m_inpath(inpath), m_infile(infile),
-      p_reader(read), p_model(model), p_isr(isr) {}
+      p_model(model), p_isr(isr) {}
   };// end of struct Input_Arguments
 
   class Event_Reader_Base {

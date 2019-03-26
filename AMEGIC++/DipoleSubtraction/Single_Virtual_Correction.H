@@ -20,6 +20,7 @@ namespace AMEGIC {
   class Phase_Space_Generator;
 
   class Single_Virtual_Correction : public Process_Base {
+
   protected:
     std::string             m_ptypename,m_pslibname;
     ATOOLS::sbt::subtype    m_stype;
@@ -82,6 +83,7 @@ namespace AMEGIC {
     void SetSelectorOn(const bool on);
     void SetGenerator(PHASIC::ME_Generator_Base *const gen);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
+    void SetCaller(PHASIC::Process_Base *const proc);
     /*------------------------------------------------------------------------------
 
       Generic stuff for initialization of Single_Virtual_Correctiones

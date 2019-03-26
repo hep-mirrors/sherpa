@@ -8,7 +8,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 
@@ -41,7 +41,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_extendedweights(extendedweights),
   m_variationtypes(1, ATOOLS::Variations_Type::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
-  m_pswgt(0.), m_pwgt(0.),
+  m_pswgt(0.), m_pwgt(0.),  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(ATOOLS::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
@@ -62,6 +62,11 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
+    }
+    ReadIn(db,"UserHook",false);
+    if (db) {
+      m_userhook=true;
+      m_userweight=db->Get<double>();
     }
     ReadIn(db,"Renormalization_Scale",false);
     if (db) m_mur2=db->Get<double>();
@@ -85,7 +90,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
         THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
               +std::string("HepMC without using named weights. ")
-              +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+              +std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
   }
 }
@@ -124,6 +129,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
+    if (m_userhook) wc["UserHook"]=m_userweight;
     if (m_extendedweights) {
       wc["PSWeight"]=m_pswgt;
       // additional entries for LO/LOPS reweighting
@@ -266,6 +272,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
   }
   evt.set_alphaQCD(m_alphas);
   evt.set_alphaQED(m_alpha);
+  evt.set_event_scale(m_mur2); 
   return true;
 }
 
@@ -286,15 +293,17 @@ HepMC2_Interface::HepMC2_Interface() :
   m_hepmctree(false),
   p_event(NULL)
 {
-  Default_Reader reader;
+  Settings& s = Settings::GetMainSettings();
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-  m_usenamedweights=reader.Get<int>("HEPMC_USE_NAMED_WEIGHTS",false);
+  m_usenamedweights =
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
 #endif
-  m_extendedweights=reader.Get<int>("HEPMC_EXTENDED_WEIGHTS",false);
+  m_extendedweights =
+    s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
   m_includemeonlyweights =
-    reader.GetValue<int>("HEPMC_INCLUDE_ME_ONLY_VARIATIONS",false);
+    s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
   // Switch for disconnection of 1,2,3 vertices from PS vertices
-  m_hepmctree=reader.Get<int>("HEPMC_TREE_LIKE",false);
+  m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }
 
 HepMC2_Interface::~HepMC2_Interface()
@@ -314,6 +323,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
+  Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
+  if (!mp) event.set_mpi(-1);
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   // when subevtlist, fill hepmc-subevtlist
@@ -325,13 +336,20 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     Blob* blob=*blit;
+    if (m_ignoreblobs.count(blob->Type())) continue;
     for (int i=0;i<blob->NInP();i++) {
       if (blob->InParticle(i)->ProductionBlob()==NULL) {
         Particle* parton=blob->InParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
+	long int flav=(long int)parton->Flav();
+	if (flav==kf_lepton) {
+	  if (sp->InParticle(0)->Flav().IsLepton())
+	    flav=(long int)sp->InParticle(0)->Flav();
+	  else flav=(long int)sp->InParticle(1)->Flav();
+	}
         HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),2);
+	  new HepMC::GenParticle(momentum,flav,4);
         vertex->add_particle_in(inpart);
 	inparticles.push_back(inpart);
         // distinct because SHRIMPS has no bunches for some reason
@@ -341,7 +359,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
     }
     for (int i=0;i<blob->NOutP();i++) {
-      if (blob->OutParticle(i)->DecayBlob()==NULL) {
+      if (blob->OutParticle(i)->DecayBlob()==NULL ||
+	  m_ignoreblobs.count(blob->OutParticle(i)->DecayBlob()->Type())!=0) {
         Particle* parton=blob->OutParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
@@ -358,9 +377,9 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       event.add_vertex(beamvertex);
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
-      beamparticles.push_back
-	(new HepMC::GenParticle(mombeam,(long int)
-				(j?rpa->gen.Beam2():rpa->gen.Beam1()),2));
+      long int flav=(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1());
+      if (flav==kf_lepton) flav=(long int)sp->InParticle(j)->Flav();
+      beamparticles.push_back(new HepMC::GenParticle(mombeam,flav,4));
       beamvertex->add_particle_in(beamparticles[j]);
       beamvertex->add_particle_out(inparticles[j]);
     }
@@ -393,8 +412,9 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
       subevent->add_vertex(beamvertex);
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
 				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
-      beamparticles[j] = new HepMC::GenParticle
-	(mombeam,(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1()),2);
+      long int flav=(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1());
+      if (flav==kf_lepton) flav=(long int)sub->p_fl[j];
+      beamparticles[j] = new HepMC::GenParticle(mombeam,flav,4);
       beamvertex->add_particle_in(beamparticles[j]);
       double flip(sub->p_mom[j][0]<0.);
       HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],
@@ -402,7 +422,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
                                  (flip?-1.:1.)*sub->p_mom[j][3],
                                  (flip?-1.:1.)*sub->p_mom[j][0]);
       HepMC::GenParticle* inpart =
-        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
+        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],4);
       subvertex->add_particle_in(inpart);
       beamvertex->add_particle_out(inpart);
     }
@@ -502,7 +522,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           THROW(fatal_error,"Events containing correlated subtraction events"
                 +std::string(" cannot be translated into the full HepMC event")
                 +std::string(" format.\n")
-                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
+                +std::string("   Try 'EVENT_OUTPUT: HepMC_Short' instead."));
         }
         event.set_signal_process_vertex(vertex);
       }
@@ -524,8 +544,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     HepMC::FourVector pa(pbeam[0][1],pbeam[0][2],pbeam[0][3],pbeam[0][0]);
     HepMC::FourVector pb(pbeam[1][1],pbeam[1][2],pbeam[1][3],pbeam[1][0]);
     HepMC::GenParticle *inpart[2] = {
-      new HepMC::GenParticle(pa,(long int)rpa->gen.Beam1(),2),
-      new HepMC::GenParticle(pb,(long int)rpa->gen.Beam2(),2)};
+      new HepMC::GenParticle(pa,(long int)rpa->gen.Beam1(),4),
+      new HepMC::GenParticle(pb,(long int)rpa->gen.Beam2(),4)};
     psvertex->add_particle_in(inpart[0]);
     psvertex->add_particle_in(inpart[1]);
     event.set_beam_particles(inpart[0],inpart[1]);
@@ -671,6 +691,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
   if (parton->DecayBlob()==NULL ||
       m_ignoreblobs.count(parton->DecayBlob()->Type())!=0) {
     status=1;
+    DEBUG_VAR(*parton);
   }
   // Non-stable particles --- what about Hard_Decay?
   else {

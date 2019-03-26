@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude Examples/SingleTop_Channels/Run.tj-t_channel.dat
+@verbatiminclude Examples/SingleTop_Channels/Sherpa.tj-t_channel.yaml
 @end smallformat
 @end example
 
@@ -13,9 +13,11 @@ Things to notice:
 @item We match matrix elements and parton showers using the MC@@NLO technique 
 for massive particles, as described in @mycite{Hoeche2013mua}.
 @item A non-default METS core scale setter is used, cf. @ref{METS scale setting with multiparton core processes}
-@item We enable top and W decays through the internal decay module using @option{HARD_DECAYS On}.
+@item We enable top and W decays through the internal decay module using
+@option{HARD_DECAYS:Enabled: true}.
 The W is restricted to its leptonic decay channels.
-@item By setting @option{Min_N_TChannels 1}, only t-channel diagrams are used for the calculation
+@item By setting @option{Min_N_TChannels: 1}, only t-channel diagrams are used
+for the calculation
 @end itemize
 
 
@@ -24,7 +26,7 @@ The W is restricted to its leptonic decay channels.
 
 @example
 @smallformat
-@verbatiminclude Examples/SingleTop_Channels/Run.tj-t_channel-nf4.dat
+@verbatiminclude Examples/SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml
 @end smallformat
 @end example
 

@@ -3,8 +3,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace DIM;
 using namespace PHASIC;
@@ -18,11 +18,10 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   p_mcatnlo = new Shower();
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);
-  p_mcatnlo->Init(key.p_model,key.p_isr,key.p_reader);
-  m_psmode=key.p_reader->Get<int>
-    ("NLO_CSS_PSMODE",0,"PS mode",METHOD);
-  m_wcheck=key.p_reader->Get<int>
-    ("NLO_CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
+  p_mcatnlo->Init(key.p_model,key.p_isr);
+  Settings& s = Settings::GetMainSettings();
+  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
+  m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 
@@ -99,6 +98,7 @@ GetRealEmissionAmplitude(const int mode)
     ampl->Legs().back()->SetNMax(nmax);
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);
+  ampl->SetMuQ2(p_rampl->KT2());
   Process_Base::SortFlavours(ampl);
   return ampl;
 }
@@ -171,7 +171,10 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   if (sub.m_ijt>=2) {
     double t;
     if (sub.m_kt>=2) t=(Q2-mi2-mj2-mk2)*y*(1.0-y);
-    else t=(-Q2+mi2+mj2+mk2)*(1.0-y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+    else {
+      double x(y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+      t=(-Q2+mi2+mj2+mk2)/x*(1.0-x);
+    }
     if (sub.p_real->p_fl[sub.m_i].IsGluon()) {
       if (!sub.p_real->p_fl[sub.m_j].IsGluon()) return t*x;
       // approximate, need to split g->gg kernel
@@ -184,7 +187,7 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     }
   }
   if (sub.m_ijt<2 && sub.m_kt>=2) {
-    return (-Q2+mi2+mj2+mk2)*y*(1.0-x);
+    return (-Q2+mi2+mj2+mk2)*y/x*(1.0-x);
   }
   if (sub.m_ijt<2 && sub.m_kt<2) {
     return (Q2-mi2-mj2-mk2)*y*(1.0-x-y);

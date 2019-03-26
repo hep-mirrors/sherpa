@@ -1,3 +1,4 @@
+#include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "AddOns/MCFM/MCFM_Wrapper.H"

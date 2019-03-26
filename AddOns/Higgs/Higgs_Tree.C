@@ -2,9 +2,9 @@
 
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 
@@ -442,18 +442,18 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,Higgs_Tree>::
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  Default_Reader reader;
-  int io = reader.Get<int>("HIGGS_INTERFERENCE_ONLY", 0);
-  int mode = reader.Get<int>("HIGGS_INTERFERENCE_MODE", 7);
-  int spin = reader.Get<int>("HIGGS_INTERFERENCE_SPIN", 0);
-  double kg = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAG", 1.0);
-  double kq = reader.Get<double>("HIGGS_INTERFERENCE_KAPPAQ", 1.0);
+  Settings& s = Settings::GetMainSettings();
+  int io = s["HIGGS_INTERFERENCE_ONLY"].Get<int>();
+  int mode = s["HIGGS_INTERFERENCE_MODE"].Get<int>();
+  int spin = s["HIGGS_INTERFERENCE_SPIN"].Get<int>();
+  double kg = s["HIGGS_INTERFERENCE_KAPPAG"].Get<double>();
+  double kq = s["HIGGS_INTERFERENCE_KAPPAQ"].Get<double>();
   const Flavour_Vector& fl = args.Flavours();
   if (fl.size()==4) {
     if (fl[2].IsPhoton() && fl[3].IsPhoton()) {
       if (((mode&3) && fl[0].IsGluon() && fl[1].IsGluon()) ||
-	  (((mode&4)||(spin!=0)) &&
-	   fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
+          (((mode&4)||(spin!=0)) &&
+           fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
 	msg_Info()<<"!";
 	return new Higgs_Tree(args,mode,io,spin,kg,kq);
       }

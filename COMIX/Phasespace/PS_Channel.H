@@ -28,7 +28,7 @@ namespace COMIX {
   typedef std::map<ATOOLS::NLO_subevt*,CVegas_Map>  SCVegas_Map;
   typedef std::map<ATOOLS::NLO_subevt*,ICVegas_Map> SICVegas_Map;
 
-  typedef std::map<size_t,std::string> PSId_Map;
+  typedef std::map<size_t,size_t> PSId_Map;
 
   typedef std::map<size_t,std::vector<int> > CId_Map;
 
@@ -55,6 +55,10 @@ namespace COMIX {
 #endif
 
   class PS_Channel: public PHASIC::Single_Channel {
+  private:
+
+    void RegisterDefaults() const;
+
   protected:
 
     Process_Base   *p_xs;
@@ -82,9 +86,8 @@ namespace COMIX {
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
 
-    SP(PS_Generator) p_gen;
+    std::shared_ptr<PS_Generator> p_gen;
 
-    PSId_Map *p_psid;
     CId_Map  *p_cid;
     
 #ifdef USING__Threading 
@@ -96,7 +99,6 @@ namespace COMIX {
     CDBG_PS_TID *GetTId() const;
 #endif 
 
-    const std::string      &GetPSId(const size_t &id);
     const std::vector<int> &GetCId(const size_t &id);
 
     inline size_t CIdCount(const size_t &id) { return GetCId(id).size(); }

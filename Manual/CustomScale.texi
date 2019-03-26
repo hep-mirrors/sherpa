@@ -79,6 +79,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 If the code is compiled into a library called libCustomScale.so,
 then this library is loaded dynamically at runtime with the switch
-@samp{SHERPA_LDADD=CustomScale} either on the command line or in the run
+@samp{SHERPA_LDADD: CustomScale} either on the command line or in the run
 section, cf. @ref{Customization}. This then allows to use the custom scale like
-a built-in scale setter by specifying @option{SCALES=CUSTOM} (cf. @ref{SCALES}).
+a built-in scale setter by specifying @option{SCALES: CUSTOM} (cf.
+@ref{SCALES}).

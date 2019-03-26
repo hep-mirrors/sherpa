@@ -196,7 +196,7 @@ namespace ATOOLS {
     double CheckChargeConservation() const;
     std::string ShortProcessName();
     bool  MomentumConserved();
-    bool  CheckColour();
+    bool  CheckColour(const bool & transient=false);
     const Vec4D& Position()              const { return m_position; }
     const Vec4D& CMS()                   const { return m_cms_vec; }
     const btp::code& Type()              const { return m_type; }

@@ -1,4 +1,7 @@
-DIHIGGS_SOURCES = DiHiggs_Virtual.C hhgrid.c
+GITTAG = AddOns/DiHiggsNLO
+include ../../git.make
+
+DIHIGGS_SOURCES = Git_Info.C DiHiggs_Virtual.C hhgrid.c
 DIHIGGS_ADDS = DiHiggs_Virtual.H hhgrid.h
 
 if ENABLE_DIHIGGS

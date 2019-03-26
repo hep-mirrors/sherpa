@@ -7,7 +7,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
@@ -65,83 +64,84 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_outjetkf(kf_none), p_jdef(NULL), p_siscplug(NULL)
 {
   DEBUG_FUNC("");
-  for (size_t k=0;k<key.size();++k) {
-    if      (key[k].size()>1 && key[k][0]=="Input_Particles") {
-      if (key[k][1]=="all") {
-        THROW(not_implemented,"Keyword 'all' not implemented yet.");
-      }
-      else {
-        int kfc(ToType<long int>(key[k][1]));
-        Flavour fl(abs(kfc),kfc<0);
-        m_jetinput.push_back(Jet_Input(fl));
-        for (size_t i(2);i<key[k].size();++i) {
-          std::string ds(key[k][i]);
-          if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
-          std::string var(ds,0,ds.find(':'));
-          std::string val(ds,ds.find(':')+1);
-          if (!var.size() || !val.size()) THROW(fatal_error,"Input error.");
-          if      (var=="PT")  m_jetinput.back().m_ptmin=ToType<double>(val);
-          else if (var=="ETA") m_jetinput.back().m_etamax=ToType<double>(val);
-          else if (var=="Y")   m_jetinput.back().m_ymax=ToType<double>(val);
-        }
-      }
+  Scoped_Settings s{ key.m_settings };
+  s.DeclareVectorSettingsWithEmptyDefault({ "Input_Particles" });
+
+  // input ptcls and output ID
+  const auto inputptcls = s["Input_Particles"].GetVector<std::string>();
+  if (!inputptcls.empty()) {
+    if (inputptcls[1]=="all") {
+      THROW(not_implemented,"Keyword 'all' not implemented yet.");
     }
-    else if (key[k].size()>1 && key[k][0]=="Output_ID") {
-      m_outjetkf = ToType<kf_code>(key[k][1]);
-    }
-    else if (key[k].size()>3 && key[k][0]=="Jet_Algorithm") {
-      m_algo=key[k][1];
-      for (size_t i(2);i<key[k].size();++i) {
-        std::string ds(key[k][i]);
+    else {
+      int kfc(ToType<long int>(inputptcls[0]));
+      Flavour fl(abs(kfc),kfc<0);
+      m_jetinput.push_back(Jet_Input(fl));
+      for (size_t i(1);i<inputptcls.size();++i) {
+        std::string ds(inputptcls[i]);
         if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
         std::string var(ds,0,ds.find(':'));
         std::string val(ds,ds.find(':')+1);
         if (!var.size() || !val.size()) THROW(fatal_error,"Input error.");
-        if      (var=="PT")     m_ptmin=ToType<double>(val);
-        else if (var=="R")      m_R=ToType<double>(val);
-        else if (var=="f")      m_f=ToType<double>(val);
-        else if (var=="ETA")    m_etamin=-(m_etamax=ToType<double>(val));
-        else if (var=="ETAMIN") m_etamin=ToType<double>(val);
-        else if (var=="ETAMAX") m_etamax=ToType<double>(val);
-        else if (var=="Y")      m_ymin=-(m_ymax=ToType<double>(val));
-        else if (var=="YMIN")   m_ymin=ToType<double>(val);
-        else if (var=="YMAX")   m_ymax=ToType<double>(val);
+        if      (var=="PT")  m_jetinput.back().m_ptmin=ToType<double>(val);
+        else if (var=="ETA") m_jetinput.back().m_etamax=ToType<double>(val);
+        else if (var=="Y")   m_jetinput.back().m_ymax=ToType<double>(val);
       }
     }
-    else if (key[k].size()>2 && key[k][0]=="Identify_As") {
-      int kfc(ToType<long int>(key[k][1]));
-      Flavour fl(abs(kfc),kfc<0);
-      std::string input(key[k][2]), rel("");
-      if      (input.find('>')!=std::string::npos) rel=">";
-      else if (input.find('<')!=std::string::npos) rel="<";
-      else THROW(not_implemented,"Unknown relation.");
-      std::string var(input.substr(0,input.find(rel)));
-      input=input.substr(input.find(rel)+1);
-      std::string val(input.substr(0,input.find('[')));
-      input=input.substr(input.find('[')+1);
-      std::string mode(input.substr(0,input.find(']')));
-      double ptmin(0.),etmin(0.),emin(0.);
-      if      (var=="PT") ptmin=ToType<double>(val);
-      else if (var=="ET") etmin=ToType<double>(val);
-      else if (var=="E")  emin=ToType<double>(val);
-      else THROW(not_implemented,"Unknown variable.");
-      JetIdMode::code jetidmode(JetIdMode::unknown);
-      if (rel==">") jetidmode|=JetIdMode::larger;
-      if (mode=="rel") jetidmode|=JetIdMode::relative;
-      m_jetids.push_back(new Jet_Identification(fl,ptmin,etmin,emin,jetidmode));
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMin") {
-      m_nmin = ToType<int>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMax") {
-      m_nmax = ToType<int>(key[k][1]);
-    }
-    else {
-      msg_Debugging()<<"Read in subselectors."<<std::endl;
-      ReadInSubSelectors(key,k);
-      break;
-    }
   }
+  m_outjetkf = s["Output_ID"].SetDefault(kf_none).Get<kf_code>();
+
+  // algorithm
+  auto algosettings = s["Jet_Algorithm"];
+  m_algo   = algosettings["Type"].SetDefault("").Get<std::string>();
+  m_ptmin  = algosettings["PT"].SetDefault(0.0).Get<double>();
+  m_R      = algosettings["R"].SetDefault(0.0).Get<double>();
+  m_f      = algosettings["f"].SetDefault(0.7).Get<double>();
+  const auto eta = algosettings["Eta"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_etamax = algosettings["EtaMax"].SetDefault(eta).Get<double>();
+  m_etamin = algosettings["EtaMin"].SetDefault(-eta).Get<double>();
+  const auto y = algosettings["Y"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_ymax = algosettings["YMax"].SetDefault(y).Get<double>();
+  m_ymin = algosettings["YMin"].SetDefault(-y).Get<double>();
+
+  // identification
+  const auto identifyas = s["Identify_As"]
+    .SetDefault<std::string>({})
+    .GetVector<std::string>();
+  if (identifyas.size() > 1) {
+    int kfc(ToType<long int>(identifyas[0]));
+    Flavour fl(abs(kfc),kfc<0);
+    std::string input(identifyas[1]), rel("");
+    if      (input.find('>')!=std::string::npos) rel=">";
+    else if (input.find('<')!=std::string::npos) rel="<";
+    else THROW(not_implemented,"Unknown relation.");
+    std::string var(input.substr(0,input.find(rel)));
+    input=input.substr(input.find(rel)+1);
+    std::string val(input.substr(0,input.find('[')));
+    input=input.substr(input.find('[')+1);
+    std::string mode(input.substr(0,input.find(']')));
+    double ptmin(0.),etmin(0.),emin(0.);
+    if      (var=="PT") ptmin=ToType<double>(val);
+    else if (var=="ET") etmin=ToType<double>(val);
+    else if (var=="E")  emin=ToType<double>(val);
+    else THROW(not_implemented,"Unknown variable.");
+    JetIdMode::code jetidmode(JetIdMode::unknown);
+    if (rel==">") jetidmode|=JetIdMode::larger;
+    if (mode=="rel") jetidmode|=JetIdMode::relative;
+    m_jetids.push_back(new Jet_Identification(fl,ptmin,etmin,emin,jetidmode));
+  }
+
+  // jet numbers
+  m_nmin = s["NMin"].SetDefault(0).Get<size_t>();
+  m_nmax = s["NMax"]
+    .SetDefault(std::numeric_limits<size_t>::max())
+    .Get<size_t>();
+
+  ReadInSubSelectors(key);
 
   m_smin       = sqr(m_ptmin);
 
@@ -309,17 +309,20 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"Jet_Selector {\n"
-     <<w<<"  Input_Particles <kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  [Input_Particles <kf2> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]]\n"
-     <<w<<"  [...]\n"
-     <<w<<"  Jet_Algorithm <algorithm> PT:<ptmin> R:<dR> [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  Indentify_As <kf> [E/ET/PT><emin>[rel/abs]]\n"
-     <<w<<"  NMin <nmin>\n"
-     <<w<<"  [NMax <nmax>]\n"
-     <<w<<"  [Output_ID <kf>]\n"
-     <<w<<"  Selector 1\n"
-     <<w<<"  Selector 2\n"
+  str<<"{\n"
+     <<w<<"  Type: Jet_Selector,\n"
+     <<w<<"  Input_Particles: [\"<kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\", ...],\n"
+     <<w<<"  Jet_Algorithm: {\n"
+     <<w<<"    Type: <algorithm>, PT: <ptmin>, R: <dR>,\n"
+     <<w<<"    # optional parameters:\n"
+     <<w<<"    ETA: <etamax>, Y: <ymax>\n"
+     <<w<<"    }\n"
+     <<w<<"  Indentify_As: [<kf>, \"[E/ET/PT><emin>[rel/abs]]\"],\n"
+     <<w<<"  NMin: <nmin>\n"
+     <<w<<"  # optional parameters:\n"
+     <<w<<"  NMax: <nmax>,\n"
+     <<w<<"  Output_ID: <kf>,\n"
+     <<w<<"  Subselectors: [...]\n"
      <<w<<"}";
 }
 

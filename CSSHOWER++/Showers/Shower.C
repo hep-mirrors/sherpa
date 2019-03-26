@@ -1,7 +1,7 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
@@ -9,47 +9,45 @@
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace CSSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
-	       Default_Reader *const reader,int type) :
+Shower::Shower(PDF::ISR_Handler * isr,
+               const int qcd, const int qed,
+               int type) :
   p_actual(NULL), m_sudakov(isr,qcd,qed), p_isr(isr),
   p_variationweights(NULL)
 {
-  int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
-  int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"));
-  double k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  double k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
-  double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  const bool reweightalphas = reader->Get<int>("CSS_REWEIGHT_ALPHAS",1);
-  const bool reweightpdfs = reader->Get<int>("CSS_REWEIGHT_PDFS",1);
-  m_maxrewem = reader->Get<int>("REWEIGHT_MAXEM",
-                                std::numeric_limits<int>::max());
-  if (m_maxrewem < 0) {
-    m_maxrewem = std::numeric_limits<int>::max();
-  }
-  m_recdec    = reader->Get<int>("CSS_RECO_DECAYS",0);
-  m_use_bbw   = reader->Get<int>("CSS_USE_BBW",1);
-  m_kscheme   = reader->Get<int>("CSS_KIN_SCHEME",1);
-  m_maxpart   = reader->Get<int>("CSS_MAXPART",std::numeric_limits<int>::max());
-  m_recdec    = reader->Get<int>("CSS_RECO_DECAYS",0);
+  Settings& s = Settings::GetMainSettings();
+  const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
+  int kfmode{ s["CSS_KFACTOR_SCHEME"].Get<int>() };
+  const int scs{ s["CSS_SCALE_SCHEME"].Get<int>() };
+  double k0sqf{ s["CSS_FS_PT2MIN"].Get<double>() };
+  double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
+  double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
+  double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
+  const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
+  const bool reweightalphas = s["CSS_REWEIGHT_ALPHAS"].Get<int>();
+  const bool reweightpdfs = s["CSS_REWEIGHT_PDFS"].Get<int>();
+  m_maxrewem  = s["REWEIGHT_MAXEM"].Get<unsigned int>();
+  m_use_bbw   = s["CSS_USE_BBW"].Get<int>();
+  m_kscheme   = s["CSS_KIN_SCHEME"].Get<int>();
+  m_recdec    = s["CSS_RECO_DECAYS"].Get<int>();
+  m_maxpart   = s["CSS_MAXPART"].Get<int>();
   if (type) {
-    kfmode=reader->Get<int>("MI_CSS_KFACTOR_SCHEME",0);
-    k0sqf=reader->Get<double>("MI_CSS_FS_PT2MIN",1.0);
-    k0sqi=reader->Get<double>("MI_CSS_IS_PT2MIN",4.0);
-    fs_as_fac=reader->Get<double>("MI_CSS_FS_AS_FAC",0.66);
-    is_as_fac=reader->Get<double>("MI_CSS_IS_AS_FAC",0.66);
-    m_kscheme = reader->Get<int>("MI_CSS_KIN_SCHEME",1);
+    kfmode=s["MI_CSS_KFACTOR_SCHEME"].Get<int>();
+    k0sqf=s["MI_CSS_FS_PT2MIN"].Get<double>();
+    k0sqi=s["MI_CSS_IS_PT2MIN"].Get<double>();
+    fs_as_fac=s["MI_CSS_FS_AS_FAC"].Get<double>();
+    is_as_fac=s["MI_CSS_IS_AS_FAC"].Get<double>();
+    m_kscheme = s["MI_CSS_KIN_SCHEME"].Get<int>();
   }
-  std::vector<std::vector<std::string> > helpsvv;
-  reader->ReadMatrix(helpsvv,"CSS_ENHANCE");
+  std::vector<std::vector<std::string> > helpsvv{
+    s["CSS_ENHANCE"].GetMatrix<std::string>() };
   m_efac.clear();
   for (size_t i(0);i<helpsvv.size();++i)
     if (helpsvv[i].size()==2) {
@@ -59,15 +57,15 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed,
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
   std::pair<double, double> pdfmin;
-  pdfmin.first = reader->GetValue<double>("CSS_PDF_MIN", 1.0e-4);
-  pdfmin.second = reader->GetValue<double>("CSS_PDF_MIN_X", 1.0e-2);
+  pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
+  pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightAlphaS(reweightalphas);
   m_sudakov.SetReweightPDFs(reweightpdfs);
-  m_sudakov.SetReweightScaleCutoff(reader->Get<double>(
-        "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
+  m_sudakov.SetReweightScaleCutoff(
+      s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_kinFF.SetEvolScheme(evol);
   m_kinFI.SetEvolScheme(evol);
   m_kinIF.SetEvolScheme(evol);
@@ -123,8 +121,7 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   double x(p_isr->CalcX(mom));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBeam(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_isr->GetRemnant(p->Beam())->
-    TestExtract(p->GetFlavour(),mom)?1:-1;
+  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
@@ -360,8 +357,20 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     msg_Debugging()<<"Skip EW clustering\n";
     return true;
   }
-  if (p_actual->NME()+nem>m_maxpart) return true;
-  if (nem>=maxem) return true;
+  if (p_actual->NME()+nem>m_maxpart) {
+    if (p_actual->NLO()&32) {
+      p_actual->Reduce();
+      p_actual->SetNLO(0);
+    }
+    return true;
+  }
+  if (nem>=maxem) {
+    if (p_actual->NLO()&32) {
+      p_actual->Reduce();
+      p_actual->SetNLO(0);
+    }
+    return true;
+  }
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
       if ((*it)->GetType()==pst::IS) SetXBj(*it);

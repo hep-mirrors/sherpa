@@ -32,24 +32,23 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(List_Merger,"MergeLists",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Merger>::
-operator()(const Argument_Matrix &parameters) const
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<3) return NULL;
-    std::vector<std::string> inlists(parameters[0]);
-    inlists.pop_back();
-    return new List_Merger(inlists,parameters[0].back());
-  }
-  return NULL;
-}									
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,List_Merger>::
+operator()(const Analysis_Key& key) const
+{
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 3)
+    THROW(missing_input, "MergeLists expects at least three parameters.");
+  auto inlists(parameters);
+  inlists.pop_back();
+  return new List_Merger(inlists, parameters.back());
+}
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Merger>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,List_Merger>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"inlist1 .. inlistN outlist"; }
+{ str<<"[inlist1, .., inlistN, outlist]"; }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 

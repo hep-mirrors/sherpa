@@ -27,7 +27,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_f;
 
-    SP(Color_Integrator) p_ci;
+    std::shared_ptr<Color_Integrator> p_ci;
 
   public:
 
@@ -138,7 +138,7 @@ double QCD_Scale_Setter::Calculate
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
-  if (p_ci==NULL) {
+  if (p_ci == nullptr) {
     for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
   }
   else {
@@ -216,7 +216,7 @@ double QCD_Scale_Setter::Calculate
   */
   double kt2cmin(std::numeric_limits<double>::max());
   if (qcd!=15) {
-    if (p_ci==NULL) {
+    if (p_ci == nullptr) {
       bool s[4]={ampl->Leg(0)->Flav().Strong(),
 		 ampl->Leg(1)->Flav().Strong(),
 		 ampl->Leg(2)->Flav().Strong(),

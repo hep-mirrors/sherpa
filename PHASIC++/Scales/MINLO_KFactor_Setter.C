@@ -5,8 +5,8 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <map>
 
@@ -21,6 +21,8 @@ namespace PHASIC {
 
     double m_Q2, m_mur2, m_prec;
     int m_fo, m_mode, m_nfgs;
+
+    void RegisterDefaults() const;
 
     double K(const double &nf) const;
 
@@ -47,6 +49,8 @@ namespace PHASIC {
 
     double m_sudweight, m_lastmuR2, m_lastq02[2];
     int    m_vmode, m_rsfvar, m_ordonly;
+
+    void RegisterDefaults() const;
 
   public:
 
@@ -86,21 +90,22 @@ MINLO_KFactor_Setter::MINLO_KFactor_Setter
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args), m_rsfvar(0)
 {
+  RegisterDefaults();
+  Scoped_Settings s{ Settings::GetMainSettings()["MINLO"] };
   p_minlo=dynamic_cast<MINLO_Scale_Setter*>(p_proc->ScaleSetter());
   if (p_minlo==NULL) THROW(fatal_error,"Must use MINLO scale");
-  Default_Reader reader;
-  int mode(reader.Get<int>("MINLO_SUDAKOV_MODE",3));
-  m_ordonly=reader.Get<int>("MINLO_ORDERED_ONLY",0);
-  int nfgs(reader.Get<int>("MINLO_SUDAKOV_NF_GSPLIT",6));
-  double prec(reader.Get<double>("MINLO_SUDAKOV_PRECISION",1.0e-4));
+  int mode(s["SUDAKOV_MODE"].Get<int>());
+  m_ordonly=s["ORDERED_ONLY"].Get<int>();
+  int nfgs(s["SUDAKOV_NF_GSPLIT"].Get<int>());
+  double prec(s["SUDAKOV_PRECISION"].Get<double>());
   m_suds[Flavour(kf_gluon)] = new Sudakov(Flavour(kf_gluon),mode,nfgs,prec);
   for (size_t i(0);i<=6;++i) {
     m_suds[Flavour(i,0)] = new Sudakov(Flavour(i,0),mode,nfgs,prec);
     m_suds[Flavour(i,1)] = new Sudakov(Flavour(i,1),mode,nfgs,prec);
   }
-  if (reader.Get<int>("MINLO_SELF_TEST",0)) {
-    int fl(reader.Get<int>("MINLO_SELF_TEST_FLAV",21));
-    double ecm2(reader.Get<double>("MINLO_SELF_TEST_ECM",91.2));
+  if (s["SELF_TEST"].Get<int>()) {
+    int fl(s["SELF_TEST_FLAV"].Get<int>());
+    double ecm2(s["SELF_TEST_ECM"].Get<double>());
     std::ofstream q(("R2_"+ToString(fl)+"_"
 		     +ToString(ecm2)+".dat").c_str(),std::ios::trunc);
     ecm2=sqr(ecm2);
@@ -116,6 +121,18 @@ MINLO_KFactor_Setter::~MINLO_KFactor_Setter()
   for (std::map<ATOOLS::Flavour,Sudakov*>::const_iterator
 	 sit(m_suds.begin());sit!=m_suds.end();++sit)
     delete sit->second;
+}
+
+void MINLO_KFactor_Setter::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["MINLO"] };
+  s["SUDAKOV_MODE"].SetDefault(3);
+  s["ORDERED_ONLY"].SetDefault(0);
+  s["SUDAKOV_NF_GSPLIT"].SetDefault(6);
+  s["SUDAKOV_PRECISION"].SetDefault(1.0e-4);
+  s["SELF_TEST"].SetDefault(0);
+  s["SELF_TEST_FLAV"].SetDefault(21);
+  s["SELF_TEST_ECM"].SetDefault(91.2);
 }
 
 bool MINLO_KFactor_Setter::UpdateKFactor(const Variation_Parameters &var)

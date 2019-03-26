@@ -1,0 +1,60 @@
+EVENTS: 100M
+MI_HANDLER: None
+MI_HANDLER: None
+FRAGMENTATION: None
+ME_QED: {ENABLED: false}
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+ME_GENERATORS: [Amegic, BlackHat]
+EVENT_GENERATION_MODE: Weighted
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+FINITE_TOP_MASS: true
+FINITE_W_MASS: true
+MODEL: SMEHC
+EW_SCHEME: 3
+PARTICLE_DATA: {
+  23: {Mass:  91.1876, Width: 2.4952},
+  24: {Mass:  80.385,  Width: 2.085},
+  25: {Mass: 125,      Width: 0.00407},
+   6: {Mass: 173.5},
+  }
+GF: 1.1665787e-5
+SCALES: VAR{sqr(125.)}
+PDF_LIBRARY: MSTW08Sherpa
+PDF_SET: mstw2008lo
+INTEGRATOR: VHAAG
+VHAAG: {FIXED_S0: 1}
+PROCESSES:
+  - {
+    Process: 21 21 -> 22 22 21 21,
+    Loop_Generator: BlackHat,
+    Enable_MHV: 10,
+    Order: {QCD: 4, EW: 2, SMEHC: 0}
+    }
+SELECTORS:
+  - [Mass, 22, 22, 115, 135]
+  - {
+    Type: FastjetSelector,
+    Expression: "(PPerp(p[4])>40)&&(DR(p[2],p[4])>0.4)&&(DR(p[3],p[4])>0.4)&&(DR(p[2],p[5])>0.4)&&(DR(p[3],p[5])>0.4)",
+    Algorithm: antikt,
+    N: 2,
+    PTMin: 25,
+    ETMin: 0.0,
+    DR: 0.4,
+    f: 0.0,
+    EtaMax: 4.5
+    }
+  - [Mass, 93, 93, 400, E_CMS]
+  - [DeltaEta, 93, 93, 2.8, 1e10]
+  - [DeltaR, 22, 22, 0.4, 1e10]
+  - [PseudoRapidity, 22, -2.5, 2.5]
+  - [PseudoRapidity, 22, -2.5, 2.5]
+  - [PT, 22, 30, E_CMS]
+  - {
+    Type: VariableSelector,
+    Variable: PT,
+    Flavs: 22,
+    Ranges: [[40, E_CMS], [30, E_CMS]],
+    Ordering: "[PT_UP]"
+    }

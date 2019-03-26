@@ -21,7 +21,6 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
 using namespace AMEGIC;
@@ -114,11 +113,9 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath);
   apb->SetTestMoms(p_testmoms);
-  if (s_partcommit)
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
   int res=apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs); 
   if (s_partcommit)
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
   if (res) proc->SetParent((PHASIC::Process_Base*)this);
   return res;
 }
@@ -166,11 +163,9 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
 {
   if (p_parent==NULL || (*p_parent)[0]->IsGroup()/* this is fudgy, need mode ... */) {
     for (size_t i(0);i<m_procs.size();i++) {
-      if (s_partcommit)
-	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
       int res=m_procs[i]->Get<AMEGIC::Process_Base>()->SetUpIntegrator();
       if (s_partcommit)
-	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+	My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       if (!res) return false;
     }
   }
@@ -217,7 +212,9 @@ bool AMEGIC::Process_Group::FillIntegrator
     m_procs[i]->Get<AMEGIC::Process_Base>()->RequestVariables(psh);
   Multi_Channel *mc(psh->FSRIntegrator());
   if (mc==NULL) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_channellibnames->empty()) return true;
   for (std::list<std::string>::iterator it(p_channellibnames->begin());
        it!=p_channellibnames->end();++it) {

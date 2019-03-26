@@ -9,13 +9,10 @@ namespace SHERPA {
   class Event_Handler;
 
   struct Analysis_Arguments {
-    std::string m_inpath, m_infile, m_outpath;
-    Analysis_Arguments(const std::string inpath,
-		       const std::string infile,
-		       const std::string outpath):
-      m_inpath(inpath), m_infile(infile), 
+    std::string m_outpath;
+    Analysis_Arguments(const std::string outpath):
       m_outpath(outpath) {}
-  };// end of struct Analysis_Arguments
+  };
 
   class Analysis_Interface {
   protected:

@@ -1,26 +1,5 @@
-#include "PHASIC++/Scales/Scale_Setter_Base.H"
-
-#include "ATOOLS/Math/Algebra_Interpreter.H"
-#include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-
-namespace AMISIC {
-
-  class MPI_Scale_Setter: public PHASIC::Scale_Setter_Base {
-  public:
-
-    MPI_Scale_Setter(const PHASIC::Scale_Setter_Arguments &args);
-
-    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const size_t &mode);
-
-  };// end of class Scale_Setter_Base
-
-}// end of namespace AMISIC
+#include "AMISIC++/Tools/MPI_Scale_Setter.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMISIC;
 using namespace PHASIC;
@@ -40,7 +19,7 @@ void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    MPI_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"mpi scale scheme";
+  str<<"MPI scale scheme: -(1/s + 1/t + 1/u)^{-1}";
 }
 
 MPI_Scale_Setter::MPI_Scale_Setter(const Scale_Setter_Arguments &args):

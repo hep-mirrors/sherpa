@@ -93,7 +93,6 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   jtag=jtag.substr(0,pos);
   Data_Reader read(" ",",","#","=");
   read.AddIgnore(":");
-  read.SetAddCommandLine(false);
   read.SetString(jtag);
   m_mode=read.StringValue<int>("M",1);
   m_bmode=read.StringValue<int>("B",0);
@@ -165,8 +164,35 @@ const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
 }
 
 double Fastjet_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
+(const std::vector<ATOOLS::Vec4D> &_momenta,const size_t &mode) 
 {
+  std::vector<ATOOLS::Vec4D> momenta(_momenta);
+  if (p_proc->Flavours()[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+    msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
+    Vec4D pp(rpa->gen.PBeam(1)), qq(momenta[0]-momenta[2]);
+    Poincare cms(pp+qq);
+    double Q2(-qq.Abs2()), x(Q2/(2.0*pp*qq)), E(sqrt(Q2)/(2.0*x));
+    Vec4D p(sqrt(E*E+pp.Abs2()),0.0,0.0,-E);
+    Vec4D q(0.0,0.0,0.0,2.0*x*E);
+    cms.Boost(pp);
+    cms.Boost(qq);
+    Poincare zrot(pp,-Vec4D::ZVEC);
+    zrot.Rotate(pp);
+    zrot.Rotate(qq);
+    Poincare breit(p+q);
+    breit.BoostBack(pp);
+    breit.BoostBack(qq);
+    if (!IsEqual(pp,p,1.0e-3) || !IsEqual(qq,q,1.0e-3))
+      msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
+    for (int i(0);i<momenta.size();++i) {
+      msg_Debugging()<<"  "<<i<<": "<<momenta[i];
+      cms.Boost(momenta[i]);
+      zrot.Rotate(momenta[i]);
+      breit.BoostBack(momenta[i]);
+      msg_Debugging()<<" -> "<<momenta[i]<<"\n";
+    }
+    msg_Debugging()<<"}\n";
+  }
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];

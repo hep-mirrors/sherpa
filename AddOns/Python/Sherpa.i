@@ -1,4 +1,11 @@
 %module Sherpa
+
+%include "std_vector.i"
+namespace std {
+  %template(vectori) vector<int>;
+  %template(vectord) vector<double>;
+};
+
 %include "Terminator_Objects.i"
 %include "Exception.i"
 %include "Flavour.i"
@@ -9,6 +16,7 @@
 %include "MEProcess.i"
 %include "Random.i"
 %include "Model_Base.i"
+%include "Rambo.i"
 
 %{
 #include <SHERPA/Main/Sherpa.H>
@@ -19,10 +27,10 @@
 #include "MODEL/Main/Model_Base.H"
   %}
 
-%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun(int, char**);
+%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun();
 
 // A typemap is required in order to be able to pass
-// the python arguments to SHERPA::Sherpa::InitializeTheRun(int, char**)
+// the python arguments to SHERPA::Sherpa::InitializeTheRun()
 %typemap(in) char ** {
   // Check if is a list
   if (PyList_Check($input)) {
@@ -56,9 +64,9 @@ namespace SHERPA {
   class Sherpa : public ATOOLS::Terminator_Object {
     
   public:
-    Sherpa();
+    Sherpa(int, char**);
     ~Sherpa();
-    bool InitializeTheRun(int, char**);
+    bool InitializeTheRun();
     bool SummarizeRun();
     bool GenerateOneEvent();
     bool InitializeTheEventHandler();

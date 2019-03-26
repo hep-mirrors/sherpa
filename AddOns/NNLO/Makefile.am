@@ -9,13 +9,17 @@ libNNLOqT_la_SOURCES = \
 	polylog.c \
 	Tools.C \
 	QT_Selector.C \
+	DIS_Selector.C \
 	Scale_Setter.C \
 	coeffqt.C \
 	param.C \
 	hard.C \
         DY_KFactor.C \
 	higgsfullsm.C \
-	H_KFactor.C
+	H_KFactor.C \
+	DISinclu.C \
+	DIS_KFactor.C \
+	DIS_Scale.C
 
 NNLOqT_EXTRA_DIST = \
 	Tools.H \
@@ -23,6 +27,7 @@ NNLOqT_EXTRA_DIST = \
 	coeffqt.H \
 	param.H \
 	hard.H \
-	higgsfullsm.H
+	higgsfullsm.H \
+	DISinclu.H
 
 EXTRA_DIST = $(NNLOqT_EXTRA_DIST)

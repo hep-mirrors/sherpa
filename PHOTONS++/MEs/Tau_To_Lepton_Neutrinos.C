@@ -143,6 +143,7 @@ void Tau_To_Lepton_Neutrinos::FillMomentumArrays
     for (unsigned int i=0; i<pvv_one[4].size(); i++) {
       m_softphotons.push_back(pvv_one[4][i]);
       m_K = CalculateMomentumSum(m_softphotons);
+      DetermineQAndKappa();
       CorrectMomenta();
       m_moms1[i][0] = m_newdipole[0]->Momentum();
       m_moms1[i][1] = m_newdipole[1]->Momentum();

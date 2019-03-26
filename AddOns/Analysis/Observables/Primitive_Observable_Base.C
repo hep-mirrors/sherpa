@@ -8,7 +8,7 @@ using namespace ANALYSIS;
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Primitive_Observable_Base
-#define PARAMETER_TYPE Argument_Matrix
+#define PARAMETER_TYPE Analysis_Key
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace ATOOLS;

@@ -6,7 +6,6 @@
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
 #include "AMEGIC++/Amplitude/Lorentz_Function.H"
 #include "ATOOLS/Org/Getter_Function.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 #define Scalar_Args
 

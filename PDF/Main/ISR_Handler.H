@@ -5,11 +5,11 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "PDF/Main/ISR_Base.H"
 
-namespace ATOOLS { class Blob_Data_Base; }
-namespace BEAM   { class Beam_Base;      }
+namespace ATOOLS   { class Blob_Data_Base; }
+namespace BEAM     { class Beam_Base;      }
+namespace REMNANTS { class Remnant_Base;   }
 
 namespace PDF {
-
   struct isr {
     enum id {
       none            =  0,
@@ -23,9 +23,8 @@ namespace PDF {
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
 
-  class Remnant_Base; 
-
   class ISR_Handler {
+
   protected:
 
     ISR_Base **p_isrbase;
@@ -43,8 +42,8 @@ namespace PDF {
 
     std::vector<double> m_info_lab, m_info_cms;
 
-    BEAM::Beam_Base *p_beam[2];
-    Remnant_Base    *p_remnants[2];
+    BEAM::Beam_Base        * p_beam[2];
+    REMNANTS::Remnant_Base * p_remnants[2];
 
     double m_xf1[2], m_xf2[2];
 
@@ -52,16 +51,10 @@ namespace PDF {
 				double &x,int beam,bool swaped);
 
   public:
-
-    // constructor
     ISR_Handler(ISR_Base **isrbase);
-
-    // destructor
     ~ISR_Handler();
 
-    // member functions
     void Init(double *splimits);
-
     void SetPDFMember() const;
 
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
@@ -95,66 +88,60 @@ namespace PDF {
     void SetLimits(Double_Vector &spkey,Double_Vector &ykey,
 		   Double_Vector &xkey);
     void Reset();
-
-    void Extract(const ATOOLS::Flavour flavour,const double energy,
-		 const size_t i) const; 
     void Reset(const size_t i) const; 
 
     ATOOLS::Blob_Data_Base* Info(const int frame) const;
 
-    // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
     inline void SetName(const std::string name) { m_name = name;        }
+    inline std::string Name() const             { return m_name; }
+    inline std::string Type() const             { return m_type; }
+    inline int On() const                       { return m_mode;    }
+    inline double *SprimeRange()                { return m_splimits;    }
+    inline double *YRange()                     { return m_ylimits;     }
+    inline double  Exponent(const int i) const  { return m_exponent[i]; }
+    inline double SprimeMin() const             { return m_splimits[0]; }
+    inline double SprimeMax() const             { return m_splimits[1]; }
+    inline double Pole() const                  { return m_splimits[2]; }
+    inline double YMin() const                  { return m_ylimits[0];  }
+    inline double YMax() const                  { return m_ylimits[1];  }
+    inline double Upper1() const                { return p_isrbase[0]->XMax(); }
+    inline double Upper2() const                { return p_isrbase[1]->XMax(); }
+    inline double X1() const                    { return m_x[0]; }
+    inline double X2() const                    { return m_x[1]; }
+    inline double  MuF2(int beam) const         { return m_mu2[beam]; }
+    inline void SetMuF2(double mu2, int beam)   { m_mu2[beam]=mu2; }
+    inline double XF1(int beam) const           { return m_xf1[beam]; }
+    inline double XF2(int beam) const           { return m_xf2[beam]; }
 
-    inline std::string Name() { return m_name; }
-    inline std::string Type() { return m_type; }
-
-    // PDF getters/setters, the latter can be used to temporarily swap PDFs
-    // (e.g. for reweighting purposes)
-    inline void             SetPDF(PDF_Base *pdf)
-    { SetPDF(pdf, 0); SetPDF(pdf, 1); }
-    inline void             SetPDF(PDF_Base *pdf, const size_t beam)
-    { p_isrbase[beam]->SetPDF(pdf); }
-    inline PDF_Base        *PDF(const size_t beam)  
-    { return p_isrbase[beam]->PDF();     }
-
-    inline ATOOLS::Flavour  Flav(const size_t beam) 
-    { return p_isrbase[beam]->Flavour(); }
-
-    inline int On()    { return m_mode;    }
-
-    inline double *SprimeRange()         { return m_splimits;    }
-    inline double *YRange()              { return m_ylimits;     }
-    inline double  Exponent(const int i) { return m_exponent[i]; }
-
-    inline double SprimeMin() const { return m_splimits[0]; }
-    inline double SprimeMax() const { return m_splimits[1]; }
-    inline double Pole() const      { return m_splimits[2]; }
-    inline double YMin() const      { return m_ylimits[0];  }
-    inline double YMax() const      { return m_ylimits[1];  }
-    
-    inline double Upper1() const { return p_isrbase[0]->XMax(); }
-    inline double Upper2() const { return p_isrbase[1]->XMax(); }
-
-    inline double X1() const { return m_x[0]; }
-    inline double X2() const { return m_x[1]; }
-
-    inline double  MuF2(int i) const { return m_mu2[i]; }
-    inline void SetMuF2(double mu2, int i) { m_mu2[i]=mu2; }
-
-    inline double XF1(int i) const { return m_xf1[i]; }
-    inline double XF2(int i) const { return m_xf2[i]; }
-
-    inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
-    { if (i<2) p_beam[i]=beam; }
-
-    inline Remnant_Base* GetRemnant(const size_t i) const
-    { return i<2?p_remnants[i]:NULL; }
-
+    inline void SetPDF(PDF_Base *pdf) {
+      SetPDF(pdf, 0); SetPDF(pdf, 1);
+    }
+    inline void SetPDF(PDF_Base *pdf, const size_t beam) {
+      if (beam<2) p_isrbase[beam]->SetPDF(pdf);
+    }
+    inline PDF_Base * PDF(const size_t beam) {
+      return (beam<2?p_isrbase[beam]->PDF():NULL);
+    }
+    inline ATOOLS::Flavour  Flav(const size_t beam) {
+      return p_isrbase[beam]->Flavour();
+    }
+    inline void SetRemnant(REMNANTS::Remnant_Base * remnant,const size_t beam) {
+      if (beam<2) p_remnants[beam] = remnant;
+    }
+    inline void SetRescaleFactor(const double & rescale,const size_t beam) {
+      p_isrbase[beam]->SetRescaleFactor(rescale);
+    }
+    inline void ResetRescaleFactor(const size_t beam) { SetRescaleFactor(1.,beam); }
+    inline void SetBeam(BEAM::Beam_Base *const beambase,const size_t beam) {
+      if (beam<2) p_beam[beam]=beambase;
+    }
+    inline REMNANTS::Remnant_Base* GetRemnant(const size_t beam) const {
+      return beam<2?p_remnants[beam]:NULL;
+    }
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
-
   };// end of class ISR_Handler
   
   /*!
@@ -312,8 +299,7 @@ namespace PDF {
     partons. It corresponds to the "twisted" weight, i.e. for parton 1 stemming from
     bunch 2 and vice versa.
   */
-
-}// end of namespace PDF 
+}
 
 #endif
 

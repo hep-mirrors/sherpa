@@ -15,8 +15,8 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "METOOLS/Explicit/NLO_Counter_Terms.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -31,12 +31,15 @@ Single_Process::Single_Process():
   m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
-  m_pdfcts = ToType<size_t>(rpa->gen.Variable("MEPSNLO_PDFCT"));
-  m_dads = ToType<size_t>(rpa->gen.Variable("MCNLO_DADS"));
+  Settings& s = Settings::GetMainSettings();
+  m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
+  m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
 
-  std::string ncs(ToType<std::string>(rpa->gen.Variable("NLO_NF_CONVERSION_TERMS")));
+  std::string ncs{ s["NLO_NF_CONVERSION_TERMS"]
+    .SetDefault("None")
+    .UseNoneReplacements()
+    .Get<std::string>() };
   if      (ncs=="None" || ncs=="0") m_nfconvscheme=0;
-  else if (ncs=="Off"  || ncs=="0") m_nfconvscheme=0;
   else if (ncs=="On"   || ncs=="1") m_nfconvscheme=1;
   else if (ncs=="Only" || ncs=="2") m_nfconvscheme=2;
   else THROW(fatal_error,"Unknown NLO_NF_CONVERSION_TERMS scheme.");
@@ -480,7 +483,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_x1=p_int->ISR()->X1();
   m_mewgtinfo.m_x2=p_int->ISR()->X2();
   p_int->SetMomenta(p);
-  if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
+  if (IsMapped()) {
+    p_mapproc->Integrator()->SetMomenta(p);
+    p_mapproc->SetCaller(this);
+  }
   m_lastflux = (m_nin == 1) ? p_int->ISR()->Flux(p[0]) :
                               p_int->ISR()->Flux(p[0],p[1]);
   m_lastflux/=m_issymfac;
@@ -489,25 +495,14 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       if (p_variationweights)
 	p_variationweights->UpdateOrInitialiseWeights
 	  (&Single_Process::SetZero,*this,m_last);
+      if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
       return 0.0;
     }
     Scale_Setter_Base *scs(ScaleSetter(1));
-    scs->SetCaller(Proc());
-    if (Partonic(p,0)==0.0) {
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Single_Process::SetZero,*this,m_last);
-      return 0.0;
-    }
+    Partonic(p,0);
     m_mewgtinfo*=m_lastflux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-    if (m_lastxs==0.0) {
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Single_Process::SetZero,*this,m_last);
-      return m_last=0.0;
-    }
     m_last=m_lastxs;
     m_last+=NfSchemeConversionTerms();
     ClusterAmplitude_Vector ampls = scs->Amplitudes().size() ?
@@ -561,6 +556,16 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (p_variationweights)
       p_variationweights->UpdateOrInitialiseWeights
 	(&Single_Process::ReweightWithoutSubevents,*this, ampls);
+    if (ampls.size()) {
+      Cluster_Amplitude *ampl(ampls.front()->Last());
+      if (ampl->NLO()&256) {
+	Vec4D_Vector p(m_nin+m_nout);
+	for (size_t i(0);i<ampl->Legs().size();++i)
+	       p[i]=i<m_nin?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom();
+	p_int->SetMomenta(p);
+      }
+    }
+    if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
     return m_last;
   }
   else {
@@ -605,8 +610,19 @@ double Single_Process::Differential(const Vec4D_Vector &p)
                                             *this, emptyadditionaldata);
     }
     for (size_t i=0;i<subs->size();++i) {
-      m_last+=((*subs)[i]->m_trig&1)?(*subs)[i]->m_result:0.0;
+      NLO_subevt *sub((*subs)[i]);
+      m_last+=(sub->m_trig&1)?sub->m_result:0.0;
+      if (sub->p_real->p_ampl) {
+	Cluster_Amplitude *ampl(sub->p_real->p_ampl->Last());
+	if (ampl->NLO()&256) {
+	  for (size_t i(0);i<ampl->Legs().size();++i)
+	    *((Vec4D*)&sub->p_mom[i])=ampl->Leg(i)->Mom();
+	  for (size_t i(ampl->Legs().size());i<sub->m_n;++i)
+	    *((Vec4D*)&sub->p_mom[i])=Vec4D();
+	}
+      }
     }
+    if (IsMapped()) p_mapproc->SetCaller(p_mapproc);
     return m_last;
   }
   THROW(fatal_error,"Internal error.");
@@ -908,7 +924,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
 					const bool create) 
 { 
   p_int->Reset();
-  SP(Phase_Space_Handler) psh(p_int->PSHandler());
+  auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
       if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||

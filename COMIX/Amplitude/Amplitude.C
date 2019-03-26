@@ -16,7 +16,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_File.H"
-#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <algorithm>
 #include <cassert>
@@ -38,30 +38,33 @@ Amplitude::Amplitude():
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings comixsettings{ s["COMIX"] };
+  m_sccmur = s["USR_WGT_MODE"].Get<bool>();
   p_dinfo->SetType(0);
   p_dinfo->SetMassive(0);
-  m_pmode=rpa->gen.Variable("COMIX_PMODE")[0];
-  m_wfmode=GetParameter<int>("COMIX_WF_MODE");
-  m_pgmode=GetParameter<int>("COMIX_PG_MODE");
-  m_ngpl=Max(1,Min(GetParameter<int>("COMIX_N_GPL"),5));
-  p_dinfo->SetAMin(GetParameter<double>("DIPOLE_AMIN"));
-  double amax(GetParameter<double>("DIPOLE_ALPHA")), cur;
-  cur=GetParameter<double>("DIPOLE_ALPHA_FF");
+  m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
+  m_wfmode = comixsettings["WF_MODE"].Get<int>();
+  m_pgmode = comixsettings["PG_MODE"].Get<int>();
+  m_ngpl = Min(1, Max(5, comixsettings["N_GPL"].Get<int>()));
+  p_dinfo->SetAMin(s["DIPOLES"]["AMIN"].Get<double>());
+  const auto amax = s["DIPOLES"]["ALPHA"].Get<double>();
+  double cur{ 0.0 };
+  cur = s["DIPOLES"]["ALPHA_FF"].Get<double>();
   p_dinfo->SetAMax(0,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_FI");
+  cur = s["DIPOLES"]["ALPHA_FI"].Get<double>();
   p_dinfo->SetAMax(2,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_IF");
+  cur = s["DIPOLES"]["ALPHA_IF"].Get<double>();
   p_dinfo->SetAMax(1,cur?cur:amax);
-  cur=GetParameter<double>("DIPOLE_ALPHA_II");
+  cur = s["DIPOLES"]["ALPHA_II"].Get<double>();
   p_dinfo->SetAMax(3,cur?cur:amax);
-  p_dinfo->SetKappa(GetParameter<double>("DIPOLE_KAPPA"));
-  p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
-  p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
+  p_dinfo->SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
+  p_dinfo->SetNf(s["DIPOLES"]["NF_GSPLIT"].Get<int>());
+  p_dinfo->SetKT2Max(s["DIPOLES"]["KT2MAX"].Get<double>());
   p_dinfo->SetDRMode(0);
-  int subtype(ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME")));
+  const int subtype{ s["NLO_SUBTRACTION_SCHEME"].Get<int>() };
   p_dinfo->SetSubType(subtype);
   if (subtype==1) p_dinfo->SetKappa(1.0);
-  m_sccmur=GetParameter<int>("USR_WGT_MODE");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
 }
@@ -683,16 +686,15 @@ void Amplitude::Prune()
       }
 }
 
-bool Amplitude::ReadInAmpFile(const std::string &name)
+bool Amplitude::ReadInAmpFile(const std::string &name,My_In_File &amp)
 {
-  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Comix/"+name+".map");
-  My_In_File amp(ampfile);
-  if (!amp.Open()) return false;
+  if (amp()==NULL) return false;
+  amp->seekg(0);
+  if (!amp->good()) return false;
   std::string cname, cmname;
   *amp>>cname>>cmname;
   if (cname!=name || cmname!=name || amp->eof())
-    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+    THROW(fatal_error,"Corrupted map file '"+name+".map'");
   m_affm.resize(m_n);
   for (size_t size, i(2);i<m_n;++i) {
     while (true) {
@@ -707,15 +709,12 @@ bool Amplitude::ReadInAmpFile(const std::string &name)
   }
   *amp>>cname;
   if (cname!="eof")
-    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+    THROW(fatal_error,"Corrupted map file '"+name+".map'");
   return true;
 }
 
 void Amplitude::WriteOutAmpFile(const std::string &name)
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");
   if (FileExists(ampfile,1)) return;
@@ -746,9 +745,9 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
 
 bool Amplitude::Initialize
 (const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
- const double &isf,const double &fsf,MODEL::Model_Base *const model,
- MODEL::Coupling_Map *const cpls,const int stype,const int smode,
- const cs_itype::type itype,
+ const double &isf,const double &fsf,My_In_File &ampfile,
+ MODEL::Model_Base *const model,MODEL::Coupling_Map *const cpls,
+ const int stype,const int smode,const cs_itype::type itype,
  const std::vector<int> &maxcpl, const std::vector<int> &mincpl,
  const size_t &minntc,const size_t &maxntc,const std::string &name)
 {
@@ -765,7 +764,7 @@ bool Amplitude::Initialize
   p_dinfo->SetType(stype);
   p_dinfo->SetMode(smode);
   p_dinfo->SetIType(itype);
-  ReadInAmpFile(name);
+  ReadInAmpFile(name,ampfile);
   Int_Vector incs(m_nin,1);
   incs.resize(flavs.size(),-1);
   if (!Construct(incs,flavs,model,cpls)) return false;
@@ -797,12 +796,18 @@ void Amplitude::ConstructNLOEvents()
     sub->m_i=kin->JI()->Id().front();
     sub->m_j=kin->JJ()->Id().front();
     sub->m_k=kin->JK()->Id().front();
+    bool order(true);
+    if (sub->m_i>m_nin && sub->m_j>m_nin &&
+	kin->JI()->Flav().IsBoson() &&
+        kin->JJ()->Flav().IsFermion()) order=false;
     sub->m_oqcd=m_maxcpl[0]/2;
     sub->m_oew=m_maxcpl[1]/2;
     Current_Vector cur(sub->m_n,NULL);
     for (size_t k(0), j(0);k<m_nin+m_nout;++k) {
-      if (k==sub->m_j) continue;
-      if (k==sub->m_i) {
+      if ((k==sub->m_j && order) ||
+          (k==sub->m_i && !order)) continue;
+      if ((k==sub->m_i && order) ||
+          (k==sub->m_j && !order)) {
 	cur[j]=kin->JIJT();
 	sub->m_ijt=j;
       }

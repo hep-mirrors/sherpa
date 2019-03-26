@@ -19,7 +19,7 @@ namespace PHASIC {
     long unsigned int m_mn, m_mnstep, m_mncstep;
     long unsigned int m_ncontrib, m_maxopt, m_stopopt, m_nlo;
 
-    int m_fin_opt;
+    bool m_fin_opt;
 
     double m_starttime, m_lotime, m_addtime, m_lrtime;
     double m_maxerror, m_maxabserror;
@@ -30,13 +30,15 @@ namespace PHASIC {
 
     Phase_Space_Handler *p_psh;
 
+    void RegisterDefaults() const;
+
   public:
 
     Phase_Space_Integrator(Phase_Space_Handler*);
 
     ~Phase_Space_Integrator();
 
-    double Calculate(double,double,int);
+    double Calculate(double,double,bool);
     double CalculateDecay(double);
 
     void MPISync();

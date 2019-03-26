@@ -6,10 +6,10 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet::Singlet() { }
+Singlet::Singlet() {}
 
 Singlet::~Singlet() {
-  while (size()>0) {
+  while (!empty()) {
     delete front();
     pop_front();
   }
@@ -58,6 +58,23 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
   return false;
 }
 
+void Singlet::StripSingletOfGluons() {
+  list<Proto_Particle *>::iterator pit=begin();
+  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "
+  //	   <<(*pit)->Flavour()<<"\n";
+  Vec4D mom = Vec4D(0.,0.,0.,0.);
+  pit++;
+  do {
+    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "
+    //	     <<(*pit)->Flavour()<<", ";
+    mom += (*pit)->Momentum();
+    pit  = erase(pit);
+    //msg_Out()<<size()<<" particles left in singlet.\n";
+  } while ((*pit)!=(*rbegin()));
+  (*begin())->SetMomentum((*begin())->Momentum()+0.5*mom);
+  (*rbegin())->SetMomentum((*rbegin())->Momentum()+0.5*mom);
+}
+
 void Singlet::Erase(Proto_Particle * ref) {
   for (list<Proto_Particle *>::iterator pit=begin();
        pit!=end();pit++) {
@@ -89,7 +106,7 @@ std::ostream& AHADIC::operator<<(std::ostream & str,const Singlet & sing) {
        <<(*pliter)->Flavour()
        <<" (lead = "<<(*pliter)->IsLeading()<<", "
        <<"beam = "<<(*pliter)->IsBeam()<<")"
-       <<": "<<(*pliter)->Momentum()<<"\n";
+       <<": "<<(*pliter)->Momentum()<<"("<<(*pliter)->Momentum().Abs2()<<")\n";
   str<<"***********************************************************\n";
   return str;
 }

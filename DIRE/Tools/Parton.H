@@ -39,6 +39,8 @@ namespace DIRE {
     Color m_c, m_sc;
     int   m_h, m_b;
 
+    double m_t[2];
+
     Parton *p_out[2], *p_in;
 
     size_t m_id;
@@ -70,6 +72,9 @@ namespace DIRE {
     inline void SetFlav(const ATOOLS::Flavour &f) { m_f=f; }
     inline void SetMom(const ATOOLS::Vec4D &p)    { m_p=p; }
     inline void SetCol(const Color &c)            { m_c=c; }
+
+    inline double T(int i) const              { return m_t[i]; }
+    inline void   SetT(int i,const double &t) { m_t[i]=t;      }
 
     inline int  Hel() const   { return m_h; }
     inline void SetHel(int h) { m_h=h;      }

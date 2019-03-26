@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libShrimpsBeamRemnants.la
 
+GITTAG = SHRiMPS/Beam_Remnants
+include ../../git.make
+
 libShrimpsBeamRemnants_la_SOURCES = \
+			Git_Info.C \
 			Continued_PDF.C \
 			Hadron_Dissociation.C \
 			Beam_Remnant_Handler.C \

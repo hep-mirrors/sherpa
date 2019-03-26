@@ -8,16 +8,7 @@
 
 using namespace ATOOLS;
 
-String_Vector Read_Write_Base::s_commandline;
 Buffer_Map Read_Write_Base::s_buffermap;
-String_Map Read_Write_Base::s_globaltags;
-
-// Zip:
-typedef std::map<std::string, std::map<std::string, std::pair
-                  <ZipEntry,std::string> > > DataBase_Map_Zip;
-
-static DataBase_Map_Zip zip_databases;
-
 
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles):
@@ -53,8 +44,6 @@ void Read_Write_Base::Init()
   m_vectortype=vtc::horizontal;
   m_matrixtype=mtc::transposed; 
   m_allownans=false;
-  m_addcommandline=true;
-  m_useglobaltags=true;
   m_ignorecase=false;
   m_ignoreblanks=false;
   m_exactmatch=true;
@@ -253,7 +242,6 @@ void Read_Write_Base::InterpreteBuffer(String_Vector &buffer,
 	else arg+=cur;
       }
       if (cur!=')') continue;
-      p_interpreter->SetTagReplacer(this);
       res=ToType<int>(p_interpreter->Interprete(arg));
       while (sline<line || spos<=pos) {
 	buffer[sline][spos]=blank;
@@ -293,31 +281,6 @@ std::string Read_Write_Base::StripEscapes(const std::string &buffer) const
     if (input.length()>pos && input[pos]==Escape()) next=pos+1;
   }
   return input;
-}
-
-std::string Read_Write_Base::ReplaceTags(std::string &expr) const
-{ 
-  std::string tag=expr;
-  bool success=false;
-  for (std::map<std::string,std::string>::const_iterator 
-	 tit=m_tags.begin();tit!=m_tags.end();++tit) {
-    size_t pos=tag.find(tit->first);
-    if (pos!=std::string::npos) {
-      tag.replace(pos,tit->first.length(),tit->second);
-      success=true;
-    }
-  }
-  if (m_useglobaltags)
-    for (std::map<std::string,std::string>::const_iterator 
-	   tit=s_globaltags.begin();tit!=s_globaltags.end();++tit) {
-      size_t pos=tag.find(tit->first);
-      if (pos!=std::string::npos) {
-	tag.replace(pos,tit->first.length(),tit->second);
-	success=true;
-      }
-    }
-  if (success && tag!=expr) return ReplaceTags(tag);
-  return tag;
 }
 
 std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
@@ -391,194 +354,9 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
   }
 }
 
-void Read_Write_Base::AddCommandLine(const std::string commandline)
-{
-  s_commandline.push_back(commandline);
-}
-
-void Read_Write_Base::AddCommandLine(const String_Vector &commandline)
-{
-  s_commandline.insert(s_commandline.end(),
-		       commandline.begin(),commandline.end());
-}  
-
-void ListZipEntries(std::string archive)
-{ 
-  std::string path = archive; // path = /home/../Decaydata/
-  while (archive.length() && archive[archive.length()-1]=='/') {
-    archive.erase(archive.length()-1,1);
-  }
-  archive+=".zip";
-  ZipArchive zf(archive);
-  zf.open(ZipArchive::WRITE);
-  std::vector<ZipEntry> entries = zf.getEntries();
-  for(std::vector<ZipEntry>::iterator iter=entries.begin();
-      iter!=entries.end(); ++iter) {
-    ZipEntry entry = *iter;
-    std::string name = entry.getName();
-    while (name[0]!='/' && name!=nullstring ) {
-      name.erase(name.begin());
-      if (name[0]=='/') {
-        name.erase(name.begin());
-        break;
-      }
-    }
-    std::string content = entry.readAsText();
-    zip_databases[path][name]=std::pair<ZipEntry,std::string>(entry,content);
-  }
-  zf.close();
-}
-
-bool Read_Write_Base::OpenZip(std::string archive)
-{ 
-  std::string list = archive;
-  if (archive.substr(archive.length()-4,4)==".zip") {
-    list.replace(list.length()-4, 4, "/");
-  }
-  else if (archive[archive.length()-1]!='/') {
-    archive+=".zip";
-    list+="/";
-  }
-  else if (archive[archive.length()-1]=='/') {
-    archive.replace(archive.length()-1,1,".zip");
-  }
-  ZipArchive zf(archive);
-  if (!zf.isOpen() && zf.open(ZipArchive::WRITE)!=true) {
-    return false;
-  }
-  else if (!zf.isOpen() && zf.open(ZipArchive::WRITE)==true) {
-    zf.open(ZipArchive::WRITE);
-    ListZipEntries(list);
-    return true;
-  }
-  else if (zf.open(ZipArchive::WRITE)==true) {
-    zf.open(ZipArchive::WRITE);
-    ListZipEntries(list);
-    return true;
-  }  
-  return false;
-}
-
-bool Read_Write_Base::CloseZip(std::string archive)
-{
-  std::string close = archive;
-  if (archive.substr(archive.length()-4,4)==".zip") {
-    close.replace(close.length()-4, 4, "/");
-  }
-  else if (archive[archive.length()-1]!='/') {
-    archive+=".zip";
-    close+="/";
-  }
-  else if (archive[archive.length()-1]=='/') {
-    archive.replace(archive.length()-1,1,".zip");
-  }
-  ZipArchive zf(archive);
-  int res=zf.close();
-  if (res!=LIBZIPPP_OK) {
-    msg_Error()<<"Could not close '"<<archive<<"'."<<std::endl
-               <<"Ignoring." <<std::endl;
-  }
-  zip_databases[close].clear();
-  return !res;
-}
-
-std::string Read_Write_Base::GetZipFileContent(std::string path,
-                                               std::string file)
-{
-  std::map<std::string,std::pair<ZipEntry,std::string> >::
-          const_iterator pos=zip_databases[path].find(file);
-  if (pos==zip_databases[path].end()) {
-    return nullstring;
-  }
-  else {
-    std::string content = pos->second.second;
-    return content;
-  }
-}
-
-bool Read_Write_Base::FileInZip(std::string path,const std::string entry)
-{
-  std::map<std::string,std::pair<ZipEntry,std::string> >::
-          const_iterator sit = zip_databases[path].find(entry);
-  if (sit!=zip_databases[path].end()) return true;
-  return false;
-}
-
-bool Read_Write_Base::AddZipEntry(std::string archive, std::string 
-                                  path, int edit, std::string content,
-                                  std::string file)
-{
-  std::string entry;
-  if (archive[archive.length()-1]!='/') archive+="/";
-  // get entry in right form: entry = "archive/folder/file"
-  std::pair<std::string,std::string> get_entry =
-          Read_Write_Base::SplitFilePath(archive,path,file,false);
-  entry = get_entry.second;
-
-  std::pair<std::string,std::string> path_file =
-          Read_Write_Base::SplitFilePath(archive,path,file);
-  path = path_file.first;
-  file = path_file.second;
-
-  archive=path.substr(0,path.length()-1)+".zip";
-  ZipArchive zf(archive);
-  zf.open(ZipArchive::WRITE);
-  const char *data = content.c_str();
-
-  if(!FileInZip(path,file)) {
-    zf.addData(entry,data,content.length());
-    return true;     
-  }
-  else if (edit) {
-    zf.deleteEntry(entry);
-    zf.addData(entry,data,content.length());
-    return true;
-  }
-  else return false;
-}
-
-std::pair<std::string,std::string> Read_Write_Base::SplitFilePath
-         (std::string parser, std::string path, std::string file,
-          bool extend_path)
-{
-    size_t found_p = path.rfind(parser);
-    size_t found_f = file.rfind(parser);
-    if (found_p!=std::string::npos) {
-      if (extend_path) {
-        file = path.substr(found_p+parser.size())+file;
-        path.erase(found_p+parser.size(), path.size()-found_p);
-        return std::pair<std::string,std::string>(path,file);
-      }
-      else {
-        file = path.substr(found_p)+file;
-        path.erase(found_p, path.size()-1);
-        return std::pair<std::string,std::string>(path,file);
-      }
-    }
-    else if (found_f!=std::string::npos) {
-      if (extend_path) {
-        path = path + file.substr(0,found_f+parser.size());
-        file = file.erase(0,found_f+parser.size());
-        return std::pair<std::string,std::string>(path,file);
-      }
-      else {
-        path = path + file.substr(0,found_f);
-        file = file.erase(0,found_f);
-        return std::pair<std::string,std::string>(path,file);
-      }
-    }
-    else return std::pair<std::string,std::string>(path,file);
-}
-
-
 bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
-{  
+{
   if (InputPath(i)+InputFile(i)==nullstring) {
-    if (m_addcommandline && CommandLine().size()>0) {
-      for (size_t j(0);j<CommandLine().size();++j)
-	AddFileContent(CommandLine()[j],i);
-      return true;
-    }
     return false;
   }
   if (InFileMode(i)==fom::unknown) SetInFileMode(fom::permanent);
@@ -589,7 +367,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
+  file+="||"+ToString(m_occurrence);
   bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
   String_Vector &cbuffer(s_buffermap[file]);
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
@@ -663,10 +441,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
       AddFileContent(cbuffer[j],i);
   }
   }
-  if (m_addcommandline && CommandLine().size()>0) {
-    for (size_t j(0);j<CommandLine().size();++j)
-      AddFileContent(CommandLine()[j],i);
-  }
   msg_IODebugging()<<METHOD<<"(): Read file content '"<<InputPath()
 		 <<InputFile()<<"' {\n";
   for (size_t j(0);j<m_filecontent[i].size();++j) {
@@ -693,7 +467,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
+  file+="||"+ToString(m_occurrence);
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
                    <<file<<"' -> ("<<&s_buffermap[file]<<")\n";

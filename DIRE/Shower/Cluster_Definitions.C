@@ -68,9 +68,11 @@ Splitting Cluster_Definitions::KT2
   msg_Debugging()<<"Splitting: t = "<<sp.m_t<<" = "<<sqrt(sp.m_t)
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n"; 
   ws=sk->Value(sp);
+  mu2=sk->GF()->TrueScale(sp);
+  msg_Debugging()<<"Scale: "<<sqrt(mu2)<<" <- "
+		 <<sqrt(sk->GF()->Scale(sp))<<"\n";
   msg_Debugging()<<"Kernel: "<<ws<<" ( kfac = "<<sp.m_kfac
 		 <<" )  <-  "<<sk->Class()<<"\n";
-  mu2=sk->GF()->Scale(sp);
   if (p_shower->KFactorScheme() &&
       sp.m_t>p_shower->TMin(type&1)) {
     sp.m_kfac=0;

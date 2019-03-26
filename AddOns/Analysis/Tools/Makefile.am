@@ -1,4 +1,8 @@
+GITTAG = AddOns/Analysis/Tools
+include ../../../git.make
+
 ANATOOLS_SOURCES      =	\
+			Git_Info.C \
 			Lorentz.C \
 			Breit_Frame.C \
 			MET.C \

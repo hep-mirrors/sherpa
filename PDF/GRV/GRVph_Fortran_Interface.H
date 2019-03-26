@@ -9,6 +9,7 @@ namespace PDF {
   private:
     //std::string m_set,m_path;
     float   m_d,m_u,m_s,m_c,m_b,m_g;
+    int m_nf;
   public:
     GRVph_Fortran_Interface(const ATOOLS::Flavour);
     PDF_Base * GetCopy();

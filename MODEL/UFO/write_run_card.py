@@ -25,24 +25,27 @@ def write_run_card(model, model_name, run_card_path):
         if not cur_block in blocks:
             blocks[cur_block]=[par for par in ext_params if par.lha_block().lower()==cur_block]
 
+    yaml_indent = "  "
+
     ufo_params = ""
 
     for block,param_list in blocks.iteritems():
         if (block.lower() == "decay"): continue # in order to comply with weird default ufo param_card format
-        ufo_params += "block {0}\n".format(block)
-        ufo_params += "".join([table_format(nci,param.lha_indices(),
-                                            ncv, param.raw_value(),
-                                            param.name()) for param in param_list])
-        ufo_params += "\n"
+        ufo_params += yaml_indent + "block {0}\n".format(block)
+        ufo_params += "".join([yaml_indent + table_format(nci,param.lha_indices(),
+                                                          ncv, param.raw_value(),
+                                                          param.name()) for param in param_list])
+        ufo_params += yaml_indent + "\n"
 
     # in order to comply with weird default ufo param_card format
     if "decay" in blocks:
         for param in blocks["decay"]:
-            ufo_params += "decay "+table_format(nci, param.lha_indices(), ncv, param.raw_value(), param.name())
+            ufo_params += yaml_indent
+            ufo_params += "decay "
+            ufo_params += table_format(nci, param.lha_indices(), ncv, param.raw_value(), param.name())
 
     # generate a helpful template for a user specification of coupling orders 
-    order_statement = 'Order (' + ','.join(['*' for order in model.all_orders]) + ')'
-    order_comment   = '# Coupling-syntax: "Order (' + ','.join([order.name for order in model.all_orders]) + ');"'
+    order_statement = 'Order: {' + ','.join([order.name + ': Any' for order in model.all_orders]) + '}'
 
     # collect all particles of the model for an example process section
     all_particles = [s_particle(p) for p in model.all_particles]
@@ -53,5 +56,4 @@ def write_run_card(model, model_name, run_card_path):
                                                    model_name=model_name, 
                                                    ufo_params=ufo_params,
                                                    order_statement=order_statement,
-                                                   order_comment=order_comment,
                                                    all_particles=all_particles))

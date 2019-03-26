@@ -163,6 +163,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/Scoped_Settings.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements_KK.H"<<'"'<<endl;  
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
@@ -248,13 +249,14 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
+	<<"  Settings& s = Settings::GetMainSettings();"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl
-	<<"  m_thexp = ToType<double>(rpa->gen.Variable(\"AMEGIC_THRESHOLD_EPSILON\"));"<<endl;
+	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
-        <<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_TCHANNEL_ALPHA\"));"<<endl
+    chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
+        <<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
         <<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -789,7 +791,7 @@ void Channel_Generator_KK::CalcSmin(int flag,const char* min,string lm,ofstream&
 
   if (lm.length()>1) {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("cuts->Getscut(std::string(\"") + Order(lm) + string("\"))"),0,sf);
+		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),

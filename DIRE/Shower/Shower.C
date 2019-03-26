@@ -12,9 +12,10 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace DIRE;
 using namespace PHASIC;
@@ -56,35 +57,32 @@ public:
 };
 
 bool Shower::Init(MODEL::Model_Base *const model,
-		  PDF::ISR_Handler *const isr,
-		  ATOOLS::Default_Reader *const read)
+		  PDF::ISR_Handler *const isr)
 {
+  Settings& s = Settings::GetMainSettings();
   DEBUG_FUNC(this);
   p_model=model;
   p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
-  m_tmin[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  m_tmin[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_tmin[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_cplfac[0] = s["CSS_FS_AS_FAC"].Get<double>();
+  m_cplfac[1] = s["CSS_IS_AS_FAC"].Get<double>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  m_rcf=read->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_tcef=read->Get<double>("CSS_TC_ENHANCE",1.0);
-  m_kin=read->Get<int>("CSS_KIN_SCHEME",1);
-  m_kfac=read->Get<int>("CSS_KFACTOR_SCHEME",1);
-  m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
-  m_mec=read->Get<int>("CSS_ME_CORRECTION",0);
-  m_pdfmin[0]=read->Get<double>("CSS_PDF_MIN",1.0e-4);
-  m_pdfmin[1]=read->Get<double>("CSS_PDF_MIN_X",1.0e-2);
-  m_maxem=read->Get<unsigned int>
-    ("CSS_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_maxpart=read->Get<unsigned int>
-    ("CSS_MAXPART",std::numeric_limits<unsigned int>::max());
-  m_maxrewem=read->Get<unsigned int>
-    ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_rewtmin=read->Get<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0);
-  m_oef=read->Get<double>("CSS_OEF",3.0);
+  m_rcf=s["CSS_RECALC_FACTOR"].Get<double>();
+  m_tcef=s["CSS_TC_ENHANCE"].Get<double>();
+  m_kin=s["CSS_KIN_SCHEME"].Get<int>();
+  m_kfac=s["CSS_KFACTOR_SCHEME"].Get<int>();
+  m_cpl=s["CSS_COUPLING_SCHEME"].Get<int>();
+  m_mec=s["CSS_ME_CORRECTION"].Get<int>();
+  m_pdfmin[0]=s["CSS_PDF_MIN"].Get<double>();
+  m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
+  m_maxem=s["CSS_MAXEM"].Get<size_t>();
+  m_maxpart=s["CSS_MAXPART"].Get<int>();
+  m_maxrewem=s["REWEIGHT_MAXEM"].Get<unsigned int>();
+  m_rewtmin=s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<unsigned int>();
+  m_oef=s["CSS_OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -93,7 +91,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
-  int types(read->Get<int>("CSS_KERNEL_TYPE",15));
+  int types(s["CSS_KERNEL_TYPE"].Get<int>());
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator
@@ -115,7 +113,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	  if (types&(1<<type))
 	    for (int mode(0);mode<2;++mode)
 	      for (int swap(0);swap<2;++swap)
-		AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,read)));
+		AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type)));
       }
       msg_IODebugging()<<"}\n";
     }
@@ -130,7 +128,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
       fls[3]=(fls[1]=Flavour(j)).Bar();
       for (int type(0);type<4;++type)
 	if (types&(1<<type))
-	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
+	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,"FFFF")));
     }
   }
   return true;
@@ -149,7 +147,6 @@ void Shower::AddKernel(Kernel *const k)
   m_kmap[k->Type()|(k->Type()&1?(k->Mode()?4:0):0)]
     [k->LF()->Flav(1)][k->LF()->Flav(2)]=k;
 }
-
 
 void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
 {
@@ -229,7 +226,13 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     msg_Debugging()<<"NLO "<<ampl->NLO()<<" path, skip shower\n";
     return 1;
   }
-  if (nem>=m_maxem) return 1;
+  if (nem>=m_maxem) {
+    if (ampl->NLO()&32) {
+      msg_Debugging()<<"UNLOPS sign flip\n";
+      a.Reduce();
+    }
+    return 1;
+  }
   for (Splitting s(GeneratePoint(a,a.T(),nem));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t,nem)) {
@@ -240,23 +243,24 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 		     <<(stat==1?"accept\n":"reject\n");
     msg_Debugging()<<"stat = "<<stat<<"\n";
     JetVeto_Args vwa(ampl,stat?0.0:-1.0,
-		     (p_vars ? p_vars->NumberOfParameters() : 0)+1);
+		     (p_vars?p_vars->NumberOfParameters():0)+1);
     Jet_Finder *jf(ampl->JF<Jet_Finder>());
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
       vwa.m_jcv=jf->JC()->Value(ampl);
       ampl->Delete();
     }
+    if (ampl->Flag()&2) {
+      msg_Debugging()<<"Skip UNLOPS veto\n";
+      if (s.p_l) a.Remove(s.p_l);
+      a.Remove(s.p_n);
+      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+      for (size_t i(0);i<a.size();++i) a[i]->Restore();
+      ampl->SetFlag(ampl->Flag()&~2);
+      continue;
+    }
     if (ampl->NLO()&64) {
-      if (ampl->Flag()&2) {
-	msg_Debugging()<<"Skip UNLOPS veto\n";
-	a.Remove(s.p_n);
-	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
-	for (size_t i(0);i<a.size();++i) a[i]->Restore();
-	ampl->SetFlag(ampl->Flag()&~2);
-	continue;
-      }
-      msg_Debugging()<<"UNLOPS veto\n";
+      msg_Debugging()<<"UNLOPS projection veto\n";
       if (s.p_l) a.Remove(s.p_l);
       a.Remove(s.p_n);
       s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
@@ -264,6 +268,10 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       a.Reduce();
       s.m_t=a.T0();
       return 1;
+    }
+    if (ampl->NLO()&16) {
+      msg_Debugging()<<"UNLOPS veto\n";
+      return 0;
     }
     m_weight*=VetoWeight(NULL,NULL,vwa);
     if (p_vars) p_vars->UpdateOrInitialiseWeights
@@ -274,6 +282,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	nskip+=vwa.m_skip[i];
       double wskip(nskip/double(vwa.m_skip.size()));
       if (ran->Get()<=wskip) {
+	if (s.p_l) a.Remove(s.p_l);
 	a.Remove(s.p_n);
 	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
 	for (size_t i(0);i<a.size();++i) a[i]->Restore();
@@ -288,7 +297,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	for (size_t i(0);i<swa.size();++i)
 	  if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
 	msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
+	if (p_vars) p_vars->UpdateOrInitialiseWeights
 	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
 	continue;
       }
@@ -298,7 +307,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	for (size_t i(0);i<swa.size();++i)
 	  if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
 	msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
+	if (p_vars) p_vars->UpdateOrInitialiseWeights
 	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
       }
     }
@@ -329,10 +338,14 @@ Splitting Shower::GeneratePoint
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    Splitting cur(GeneratePoint(**it,t,nem));
-    if (cur.p_c==NULL || cur.p_s==NULL) continue;
-    if (cur.m_t<m_tmin[cur.m_type&1]) continue;
-    m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    for (int cm(0);cm<2;++cm) {
+      double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
+      Splitting cur(GeneratePoint(**it,ct,cm,nem));
+      (*it)->SetT(cm,-1.0);
+      if (cur.p_c==NULL || cur.p_s==NULL) continue;
+      if (cur.m_t<m_tmin[cur.m_type&1]) continue;
+      m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    }
   }
   m_tmin[0]=tmin[0];
   m_tmin[1]=tmin[1];
@@ -342,38 +355,43 @@ Splitting Shower::GeneratePoint
 }
 
 Splitting Shower::GeneratePoint
-(Parton &p,const double &t,const unsigned int &nem)
+(Parton &p,const double &t,const int &cm,const unsigned int &nem)
 {
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
-  std::vector<std::vector<double> > psum(kit->second.size());
-  std::vector<std::vector<size_t> > splits(psum.size());
+  const int nkernels = kit->second.size();
+  const int nspects = static_cast<int>(p.Ampl()->size());
+  if (nkernels > m_sums.nrows || nspects > m_sums.ncols) {
+    m_sums = CumulativeIntegralTable {nkernels, nspects};
+  }
+  else {
+    m_sums.nrows = nkernels;
+    m_sums.ncols = nspects;
+  }
   while (true) {
     if (win.m_t*m_rcf<=ct) {
       sum=0.0;
       ct=win.m_t;
-      for (size_t j(0);j<kit->second.size();++j) {
-	psum[j].clear();
-	splits[j].clear();
+      for (size_t j(0);j<nkernels;++j) {
+        m_sums.Clear(j);
 	double csum=0.0;
-	for (int i(p.Ampl()->size()-1);i>=0;--i) {
+	for (int i(nspects-1);i>=0;--i) {
 	  if ((*p.Ampl())[i]==&p) continue;
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
-	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
-	    if (kit->second[j]->On() &&
-		kit->second[j]->Allowed(cur)) {
-	      double I=kit->second[j]->Integral(cur);
-	      psum[j].push_back(csum+=dabs(I));
-	      splits[j].push_back(i);
-	    }
+	  cur.m_cm=cm;
+	  if (kit->second[j]->On() &&
+	      kit->second[j]->Allowed(cur)) {
+            csum += dabs(kit->second[j]->Integral(cur));
+            m_sums.AppendSumAndSpect(j, csum, i);
+	  }
 	}
-	if (psum[j].size()) sum+=psum[j].back();
+        if (m_sums.Size(j)) sum += m_sums.LastSum(j);
       }
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
@@ -381,13 +399,12 @@ Splitting Shower::GeneratePoint
     win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
-    for (size_t j(0);j<splits.size();++j)
-      if (splits[j].size() &&
-	  (csum+=psum[j].back())>=disc) {
-	double disc(psum[j].back()*ran->Get());
-	for (size_t i(0);i<splits[j].size();++i)
-	  if (psum[j][i]>=disc) {
-	    win.p_s=(*p.Ampl())[splits[j][i]];
+    for (size_t j(0);j<nkernels;++j)
+      if (m_sums.Size(j) && (csum+=m_sums.LastSum(j)) >= disc) {
+	double disc(m_sums.LastSum(j)*ran->Get());
+	for (size_t i(0);i<m_sums.Size(j);++i)
+	  if (m_sums.Sum(j, i) >= disc) {
+	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;

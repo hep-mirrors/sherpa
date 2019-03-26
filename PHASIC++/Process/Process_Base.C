@@ -19,6 +19,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -29,7 +30,7 @@ int Process_Base::s_usefmm(-1);
 
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
-  p_sproc(NULL), p_proc(this),
+  p_sproc(NULL), p_caller(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
@@ -39,7 +40,9 @@ Process_Base::Process_Base():
   p_variationweights(NULL), m_variationweightsowned(false)
 {
   m_last=m_lastb=0.0;
-  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
+  if (s_usefmm<0)
+    s_usefmm =
+      Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
 }
 
 Process_Base::~Process_Base() 
@@ -204,7 +207,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     *this->VariationWeights()*=1.0/m_issymfac;
   }
   if (mode&32) {
-    SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
+    auto psh = Parent()->Integrator()->PSHandler();
     res*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
@@ -326,6 +329,7 @@ void Process_Base::Init(const Process_Info &pi,
       isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
+  m_resname=m_name;
 }
 
 std::string Process_Base::BaseName
@@ -564,7 +568,7 @@ void Process_Base::FillOnshellConditions()
   info.Add(m_pinfo.m_fi);
   for(size_t i=0;i<m_decins.size();i++)
     if (m_decins[i]->m_osd) Selector()->AddOnshellCondition
-      (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
+      (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
@@ -578,6 +582,11 @@ void Process_Base::SetSelector(const Selector_Key &key)
   if (IsMapped()) return;
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
+}
+
+void Process_Base::SetCaller(Process_Base *const proc)
+{
+  p_caller=proc;
 }
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)
@@ -614,7 +623,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
+  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
   p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);

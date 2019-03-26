@@ -185,18 +185,18 @@ defined by several parameters, which can all be listed in a
 common file, or data card (Parameters can be
 alternatively specified on the command line; more details are given
 in @ref{Input structure}). 
-This steering file is called @code{Run.dat} and some example setups
-(i.e. @code{Run.dat} files) are distributed with the current version
+This steering file is called @code{Sherpa.yaml} and some example setups
+(i.e. @code{Sherpa.yaml} files) are distributed with the current version
 of Sherpa. They can be found in the directory 
 @code{<prefix>/share/SHERPA-MC/Examples/}, and descriptions of some of 
 their key features can be found in the section @ref{Examples}.
 
-@strong{Please note:} It is not in general possible to reuse run 
-cards from previous Sherpa versions. Often there are small changes 
-in the parameter syntax of the run cards from 
+@strong{Please note:} It is not in general possible to reuse steering
+files from previous Sherpa versions. Often there are small changes
+in the parameter syntax of the files from
 one version to the next. 
 These changes are documented in our manuals. In addition, 
-always use the newer Hadron.dat and Decaydata directories 
+update any custom Decaydata directories you may have used
 (and reapply any changes which you might have applied to the old ones),
 see @ref{Hadron decays}.
  
@@ -205,11 +205,12 @@ is therefore to adjust all parameters to the needs of the
 desired simulation. The details for doing this properly are given in
 @ref{Parameters}. In this section, the focus is on the main
 issues for a successful operation of Sherpa. This is illustrated by
-discussing and referring to the parameter settings that come in the run card 
-@code{./Examples/V_plus_Jets/LHC_ZJets/Run.dat}, cf. @ref{LHC_ZJets}.
-This is a simple run card
+discussing and referring to the parameter settings that come in the example
+steering file
+@code{./Examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml}, cf. @ref{LHC_ZJets}.
+This is a simple configuration
 created to show the basics of how to operate Sherpa. @strong{It should be 
-stressed that this run-card relies on many of Sherpa's default settings,
+stressed that this steering file relies on many of Sherpa's default settings,
 and, as such, you should understand those settings before using it to 
 look at physics.} For more information on the settings and parameters in 
 Sherpa, see @ref{Parameters}, and for more 
@@ -221,7 +222,7 @@ examples see the @ref{Examples} section.
 Central to any Monte Carlo simulation is the choice of the hard
 processes that initiate the events. These hard processes are
 described by matrix elements. In Sherpa,
-the selection of processes happens in the @code{(processes)}
+the selection of processes happens in the @code{PROCESSES}
 part of the steering file.
 Only a few 
 @iftex 
@@ -233,7 +234,7 @@ $2\to2$
 reactions have been hard-coded. They are available in the EXTRA_XS module.
 The more usual way to compute matrix elements is to employ one of Sherpa's
 automated tree-level generators, AMEGIC++ and Comix, see @ref{Basic structure}.
-If no matrix-element generator is selected, using the @ref{ME_SIGNAL_GENERATOR}
+If no matrix-element generator is selected, using the @ref{ME_GENERATORS}
 tag, then Sherpa will use whichever generator is capable of calculating the 
 process, checking Comix first, then AMEGIC++ and then EXTRA_XS. Therefore, 
 for some processes, several of the options are used. In this example, 
@@ -248,10 +249,10 @@ directory and executing
 @end example
 
 You may also run from an arbitrary directory, employing
-@code{<prefix>/bin/Sherpa PATH=<prefix>/share/SHERPA-MC/Examples/V_plus_Jets/LHC_ZJets}. 
-In the example, the keyword @code{PATH} is specified by an absolute path. 
+@code{<prefix>/bin/Sherpa --path=<prefix>/share/SHERPA-MC/Examples/V_plus_Jets/LHC_ZJets}.
+In the example, an absolute path is passed to the optional argument @code{--path}.
 It may also be specified relative to the current working directory. If it is
-not specified at all or it is omitted, the current working directory
+not specified at all, the current working directory
 is understood.
 
 For good book-keeping, it is highly recommended to reserve different
@@ -274,9 +275,9 @@ calculate the cross sections and generate events during the first run.
 As the cross sections are integrated, the
 integration over phase space is optimized to arrive at an
 efficient event generation.
-Subsequently events are generated if @code{EVENTS} was specified
-either on the command line or added to the @code{(run)} section
-in the @code{Run.dat} file. 
+Subsequently events are generated if a number of events is passed to
+the optional argument @code{--events} or set in the @code{Sherpa.yaml}
+file with the @ref{EVENTS} parameters.
 
 The generated events are not stored into a file by
 default; for details on how to store the events see 
@@ -302,17 +303,18 @@ stores these integration results in a directory called @code{Results/}.
 The name of the output directory can be customised via 
 
 @example
-@code{<prefix>/bin/Sherpa RESULT_DIRECTORY=<result>/}
+@code{<prefix>/bin/Sherpa -r <result>/}
 @end example
 
+or with @code{RESULT_DIRECTORY: <result>/} in the steering file,
 see @ref{RESULT_DIRECTORY}. The storage of the integration results can 
 be prevented by either using 
 
 @example
-@code{<prefix>/bin/Sherpa GENERATE_RESULT_DIRECTORY=0}
+@code{<prefix>/bin/Sherpa -g}
 @end example
 
-or the command line option @option{-g} can be invoked, see @ref{Command line}. 
+or by specifying @code{GENERATE_RESULT_DIRECTORY: false} in the steering file.
 
 
 If physics parameters change, the cross sections have to be recomputed. 
@@ -324,8 +326,8 @@ Standard examples are changing the magnitude of couplings,
 renormalisation or factorisation scales, changing the PDF or
 centre-of-mass energy, or, applying different cuts at the parton
 level. If unsure whether a recomputation is required, a simple
-test is to remove the
-@code{RESULT_DIRECTORY} option from the run command and check
+test is to temporarily use a different value for the
+@code{RESULT_DIRECTORY} option and check
 whether the new integration numbers (statistically) comply with the
 stored ones.
 
@@ -351,7 +353,7 @@ procedure to prepare for the generation of events.
 
 @subsection The example set-up: Z+Jets at the LHC
 
-The setup file ( @code{Run.dat} ) provided in @code{./Examples/V_plus_Jets/LHC_ZJets/} 
+The setup file (@code{Sherpa.yaml}) provided in @code{./Examples/V_plus_Jets/LHC_ZJets/}
 can be considered as a standard example to illustrate the generation of fully hadronised 
 events in Sherpa, cf. @ref{LHC_ZJets}. Such events will include effects from
 parton showering, hadronisation into primary hadrons and their subsequent 
@@ -381,12 +383,11 @@ included in the setup are the following:
 @end example
 @end ifnottex
 
-In the @code{(processes)} part of the steering file this translates into
+In the @code{PROCESSES} list of the steering file this translates into
 @verbatim
-  Process 93 93 -> 11 -11 93{4}
-  Order (*,2);
-  CKKW sqr(30/E_CMS)
-  End process;
+  - Process: "93 93 -> 90 90 93{4}"
+    Order: {QCD: Any, EW: 2}
+    CKKW: 30
 @end verbatim
 The physics model for these processes is the Standard Model (@option{SM}) 
 which is the default setting of the parameter @code{MODEL} and is therefore 
@@ -394,19 +395,21 @@ not set explicitly. Fixing the order of electroweak couplings to @option{2},
 matrix elements of all partonic subprocesses for Drell-Yan production without 
 any and with up to two extra QCD parton emissions will be generated.
 Proton--proton collisions are considered at beam energies of 3.5 TeV. 
-The default PDF used by Sherpa is CT10. Model parameters and couplings can 
-be set in section @code{(run)} of @code{Run.dat}. Similarly, the way 
+The default PDF used by Sherpa is CT14. Model parameters and couplings can
+all be defined in the @code{Sherpa.yaml} file. Similarly, the way
 couplings are treated can be defined. As no options are set the default 
 parameters and scale setting procedures are used. 
 
 The QCD radiation matrix elements have to be
 regularised to obtain meaningful cross sections. This is achieved by
-specifying @samp{CKKW sqr(30/E_CMS)} in the @code{(processes)} part of
-@code{Run.dat}. Simultaneously, this tag initiates the ME-PS merging procedure.
-To eventually obtain fully hadronized events, the @code{FRAGMENTATION} tag
-has been left on it's default setting @option{Ahadic} (and therefore been 
-omitted from the run card), which will run Sherpa's cluster hadronisation, 
-and the tag @code{DECAYMODEL} has it's default setting @option{Hadrons}, 
+specifying @code{CKKW: 30} when defining the process in
+@code{Sherpa.yaml}. Simultaneously, this tag initiates the ME-PS merging
+procedure.
+To eventually obtain fully hadronized events, the @code{FRAGMENTATION}
+setting
+has been left on it's default value @option{Ahadic} (and therefore been
+omitted from the steering file), which will run Sherpa's cluster hadronisation,
+and the @code{DECAYMODEL} setting has it's default value @option{Hadrons},
 which will run Sherpa's hadron decays. Additionally corrections owing to 
 photon emissions are taken into account.
 
@@ -423,51 +426,54 @@ the matrix element generator(s). The Sherpa output will look like:
 
 @smallformat
 @verbatim
-Initialized the beams Monochromatic*Monochromatic
-PDF set 'ct10' loaded for beam 1 (P+).
-PDF set 'ct10' loaded for beam 2 (P+).
-Initialized the ISR: (SF)*(SF)
-Initialize the Standard Model from  / Model.dat
-One_Running_AlphaS::One_Running_AlphaS() {
+Welcome to Sherpa, <user name> on <host name>. Initialization of framework underway.
+[...]
+Random::SetSeed(): Seed set to 1234
+[...]
+Beam_Spectra_Handler :
+   type = Monochromatic*Monochromatic
+   for    P+  ((4000,0,0,4000))
+   and    P+  ((4000,0,0,-4000))
+PDF set 'ct14nn' loaded for beam 1 (P+).
+PDF set 'ct14nn' loaded for beam 2 (P+).
+Initialized the ISR.
+Standard_Model::FixEWParameters() {
+  Input scheme: 2
+                alpha(m_Z) scheme, input: 1/\alphaQED(m_Z), m_W, m_Z, m_h, widths
+  Ren. scheme:  2
+                alpha(m_Z)
+  Parameters:   sin^2(\theta_W) = 0.222928 - 0.00110708 i
+                vev              = 243.034 - 3.75492 i
+}
+Running_AlphaQED::PrintSummary() {
+  Setting \alpha according to EW scheme
+  1/\alpha(0)   = 128.802
+  1/\alpha(def) = 128.802
+}
+One_Running_AlphaS::PrintSummary() {
   Setting \alpha_s according to PDF
-  perturbative order 1
+  perturbative order 2
   \alpha_s(M_Z) = 0.118
 }
-One_Running_AlphaS::One_Running_AlphaS() {
-  Setting \alpha_s according to PDF
-  perturbative order 1
-  \alpha_s(M_Z) = 0.118
-}
-Initialized the Soft_Collision_Handler.
-Init shower for 1.
-CS_Shower::CS_Shower(): Set core m_T mode 0
-Shower::Shower(asfacs: IS = 0.73, FS = 1.38)
-Init shower for 2.
-CS_Shower::CS_Shower(): Set core m_T mode 0
-Shower::Shower(asfacs: IS = 0.73, FS = 1.38)
-Initialized the Shower_Handler.
-+----------------------------------+
-|                                  |
-|      CCC  OOO  M   M I X   X     |
-|     C    O   O MM MM I  X X      |
-|     C    O   O M M M I   X       |
-|     C    O   O M   M I  X X      |
-|      CCC  OOO  M   M I X   X     |
-|                                  |
-+==================================+
-|  Color dressed  Matrix Elements  |
-|     http://comix.freacafe.de     |
-|   please cite  JHEP12(2008)039   |
-+----------------------------------+
-Matrix_Element_Handler::BuildProcesses(): Looking for processes . done ( 23252 kB, 0s ).
-Matrix_Element_Handler::InitializeProcesses(): Performing tests . done ( 23252 kB, 0s ).
-Initialized the Matrix_Element_Handler for the hard processes.
-Initialized the Beam_Remnant_Handler.
+[...]
 Hadron_Init::Init(): Initializing kf table for hadrons.
 Initialized the Fragmentation_Handler.
-Initialized the Soft_Photon_Handler.
+Initialized the Soft_Collision_Handler.
+Initialized the Shower_Handler.
+[...]
+Matrix_Element_Handler::BuildProcesses(): Looking for processes .. done
+Matrix_Element_Handler::InitializeProcesses(): Performing tests .. done
+Matrix_Element_Handler::InitializeProcesses(): Initializing scales  done
+Initialized the Matrix_Element_Handler for the hard processes.
+Primordial_KPerp::Primordial_KPerp() {
+  scheme = 0
+  beam 1: P+, mean = 1.1, sigma = 0.914775
+  beam 2: P+, mean = 1.1, sigma = 0.914775
+}
+Initialized the Beam_Remnant_Handler.
 Hadron_Decay_Map::Read:   Initializing HadronDecays.dat. This may take some time.
 Initialized the Hadron_Decay_Handler, Decay model = Hadrons
+[...]
 R@end verbatim
 @end smallformat
 
@@ -521,8 +527,7 @@ output looks like:
 
 @smallformat
 @verbatim
-...
-Event 10000 ( 58 s total )                                         
+Event 10000 ( 72 s total ) = 1.20418e+07 evts/day
 In Event_Handler::Finish : Summarizing the run may take some time.
 +----------------------------------------------------+
 |                                                    |
@@ -549,33 +554,33 @@ robust tools for phase-space integration are provided. Therefore
 Sherpa obviously can be used as a cross-section integrator. Because
 of the way Monte Carlo integration is accomplished, this immediately
 allows for parton-level event generation. Taking the @code{LHC_ZJets}
-setup, users have to modify just a few settings in @code{Run.dat} and
+setup, users have to modify just a few settings in @code{Sherpa.yaml} and
 would arrive at a parton-level generation for the process gluon down-quark to electron 
 positron and down-quark, to name an example. When, for instance, the
-options ``@code{EVENTS=0 OUTPUT=2}'' are added to the command line,
+options ``@code{EVENTS: 0}'' and ``@code{OUTPUT: 2}'' are added to the steering file,
 a pure cross-section integration for that process would be obtained
 with the results plus integration errors written to the screen.
 
-For the example, the @code{(processes)} section alters to
+For the example, the process definition in @code{PROCESSES} simplifies to
 @verbatim
-  Process : 21 1 -> 11 -11 1
-  Order (*,2);
-  End process
+- Process: 21 1 -> 11 -11 1
+  Order: {QCD: Any, EW: 2}
 @end verbatim
+with all other settings in the process block remoted.
 and under the assumption to start afresh, the initialization procedure has
 to be followed as before.
 Picking the same collider environment as in the previous
-example there are only two more changes before the @code{Run.dat} file
+example there are only two more changes before the @code{Sherpa.yaml} file
 is ready for the calculation of the hadronic cross section of the
 process g d to e- e+ d at LHC and subsequent
 parton-level event generation with Sherpa. These changes read
-@code{SHOWER_GENERATOR=None}, to switch off parton showering, 
-@code{FRAGMENTATION=Off}, to do so for the hadronisation effects, 
-@code{MI_HANDLER=None}, to switch off multiparton interactions, and
-@code{ME_QED=Off}, to switch off resummed QED corrections onto the 
+@code{SHOWER_GENERATOR: None}, to switch off parton showering,
+@code{FRAGMENTATION: None}, to do so for the hadronisation effects,
+@code{MI_HANDLER: None}, to switch off multiparton interactions, and
+@code{ME_QED: @{Enabled: false@}}, to switch off resummed QED corrections onto the
 Z -> e- e+ decay. Additionally, the non-perturbative intrinsic transverse 
 momentum may be wished to not be taken into account, therefore set 
-@code{BEAM_REMNANTS=0;}.
+@code{BEAM_REMNANTS: false}.
 
 @subsection Multijet merged event generation with Sherpa
 @anchor{Multijet merged event generation with Sherpa}

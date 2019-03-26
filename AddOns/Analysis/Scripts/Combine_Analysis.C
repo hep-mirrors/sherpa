@@ -38,15 +38,9 @@ void PrintInfo()
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/My_File.H"
-#include <sqlite3.h>
+#include "ATOOLS/Org/libzippp.h"
 
-int AddFiles(void *data,int argc,char **argv,char **name)
-{
-  if (argc!=1 || strcmp(name[0],"file")) return 1;
-  msg_IODebugging()<<"  '"<<argv[0]<<"'\n";
-  static_cast<std::vector<std::string>*>(data)->push_back(argv[0]);
-  return 0;
-}
+using namespace libzippp;
 
 int main(int argc,char **argv)
 {
@@ -102,39 +96,23 @@ int main(int argc,char **argv)
   vector<string> inlist;
   for (;i<argc;++i) {
     inlist.push_back(string(argv[i]));
-    if (inlist.back().rfind(".db")!=
-	inlist.back().length()-3) inlist.back()+="/";
+    if (inlist.back().rfind(".zip")!=
+	inlist.back().length()-4) inlist.back()+="/";
     else {
-      inlist.back()=inlist.back().substr(0,inlist.back().length()-3);
+      inlist.back()=inlist.back().substr(0,inlist.back().length()-4);
       My_In_File::OpenDB(inlist.back()+"/");
     }
   }
   MakeDir(output);
   vector<string> filelist;
   if (inlist[0][inlist[0].length()-1]!='/') {
-    sqlite3 *db=NULL;
-    int res=sqlite3_open((inlist[0]+".db").c_str(),&db);
-    if (res!=SQLITE_OK) {
-      msg_Error()<<METHOD<<"(): '"<<inlist[0]<<"' returns '"
-		 <<sqlite3_errmsg(db)<<"'."<<std::endl;
-    }
-    if (db==NULL) {
-      msg_Error()<<METHOD<<"(): '"<<inlist[0]<<"' not found."<<std::endl;
-      return 1;
-    }
-    char sql[100], *zErrMsg=0;
-    strcpy(sql,"select file from path");
-    msg_IODebugging()<<METHOD<<"(\""<<inlist[0]<<"\"): {\n";
-    int rc=sqlite3_exec(db,sql,AddFiles,(void*)&filelist,&zErrMsg);
-    if(rc!=SQLITE_OK) {
-      msg_IODebugging()<<METHOD<<"(): '"<<inlist[0]
-		       <<"' returns '"<<zErrMsg<<"'."<<std::endl;
-      sqlite3_free(zErrMsg);
-      sqlite3_close(db);
-      return 1;
-    }
-    sqlite3_close(db);
-    msg_IODebugging()<<"}\n";
+    std::string file=inlist[0]+".zip";
+    ZipArchive *zf(new ZipArchive(file));
+    int res=zf->open(ZipArchive::WRITE);
+    const std::vector<ZipEntry> &entries=zf->getEntries();
+    for (size_t i(0);i<entries.size();++i)
+      if (entries[i].getName().find(".dat")!=std::string::npos)
+	filelist.push_back(entries[i].getName());
   }
   else {
   string flname=output+"fl.tmp";

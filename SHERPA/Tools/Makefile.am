@@ -13,6 +13,7 @@ libSherpaTools_la_SOURCES = \
     Pythia_HepEvt_Translator.C \
     Output_HepEvt.C \
     Output_LHEF.C \
+    Userhook_Base.C \
     Analysis_Interface.C
 
 localinc_HEADERS = \
@@ -25,6 +26,7 @@ localinc_HEADERS = \
     Pythia_HepEvt_Translator.H \
     Output_HepEvt.H \
     Output_LHEF.H \
+    Userhook_Base.H \
     Analysis_Interface.H
 
 libSherpaTools_la_LIBADD = @CONDITIONAL_HEPMC3LIBS@ @CONDITIONAL_HEPMC2LIBS@  @CONDITIONAL_LHAPDFLIBS@

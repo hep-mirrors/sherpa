@@ -13,7 +13,7 @@ namespace PDF {
 
     double p_xpdfv[2], p_xpdf[6];
 
-    int  m_anti, m_mode;
+    int  m_anti, m_mode, m_nf;
     bool m_overscaled;
 
   public:

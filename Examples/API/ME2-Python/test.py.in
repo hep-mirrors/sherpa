@@ -5,11 +5,11 @@ sys.path.append('@PYLIBDIR@')
 import Sherpa
 
 # Add this to the execution arguments to prevent Sherpa from starting the cross section integration
-sys.argv.append('INIT_ONLY=2')
+sys.argv.append('INIT_ONLY: 2')
 
-Generator=Sherpa.Sherpa()
+Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:
-    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Generator.InitializeTheRun()
     Process=Sherpa.MEProcess(Generator)
 
     # Incoming flavors must be added first!

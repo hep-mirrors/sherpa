@@ -18,10 +18,6 @@ namespace ATOOLS {
   class Flavour;
   class Mass_Selector;
   
-  void OutputHadrons(std::ostream&);
-  void OutputParticles(std::ostream&);
-  void OutputContainers(std::ostream&);
-  
   typedef std::vector<Flavour*> PFlavour_Vector;
 
   struct Particle_Info {
@@ -48,16 +44,16 @@ namespace ATOOLS {
       m_massive(0), m_hadron(0), m_isgroup(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
-		  const int icharge,const int strong,
-		  const int spin,const int majorana,const bool on,
-		  const int stable,bool massive,const std::string &idname,
-		  const std::string &antiname, const std::string &texname,
-		  const std::string &antitexname ,const bool dummy=0, 
-		  const bool isgroup=false);
+      const int icharge,const int strong,
+      const int spin,const int majorana,const bool on,
+      const int stable,bool massive,const std::string &idname,
+      const std::string &antiname, const std::string &texname,
+      const std::string &antitexname ,const bool dummy=0,
+      const bool isgroup=false);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
-		  const int icharge,const int spin,
-		  const bool on,const int stable,const std::string &idname,
-		  const std::string &texname);
+      const int icharge,const int spin,
+      const bool on,const int stable,const std::string &idname,
+      const std::string &texname);
     Particle_Info(const kf_code &kfc,const double &mass,const int icharge,
                   const int spin,const int formfactor,const std::string &idname,
                   const std::string &texname);
@@ -80,20 +76,12 @@ namespace ATOOLS {
 
   };// end of class Particle_Info
 
-  typedef std::map<kf_code,Particle_Info*> KFCode_ParticleInfo_Map;
-
-  class KF_Table: public KFCode_ParticleInfo_Map {
-  public:
-
-    ~KF_Table();
-
-    kf_code KFFromIDName(const std::string &idname) const;
-
-  };// end of class KF_Table
-
-  extern KF_Table s_kftable;
-
   class Flavour {
+
+  private:
+
+    void InitializeParticleInfo(const kf_code);
+
   protected:
 
     Particle_Info *p_info;
@@ -104,24 +92,10 @@ namespace ATOOLS {
 
   public:
 
-    inline Flavour(Particle_Info &info,const bool &anti=0): 
-      p_info(&info), m_anti(0)
-    { if (anti && p_info->m_majorana==0) m_anti=anti; }
-    
-    inline Flavour(const long int &kfc=kf_none):
-      p_info(NULL), m_anti(0)
-    { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(std::abs(kfc)));
-      if (it!=s_kftable.end()) p_info=it->second; else return;
-      if (kfc<0 && p_info->m_majorana==0) m_anti=1; }
-    
-    inline Flavour(const kf_code &kfc,const bool &anti):
-      p_info(NULL), m_anti(0)
-    { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(kfc));
-      if (it!=s_kftable.end()) p_info=it->second; else return;
-      if (anti && p_info->m_majorana==0) m_anti=anti; }
-    
-    inline Flavour(const Flavour &fl): 
-      p_info(fl.p_info), m_anti(fl.m_anti) {}
+    Flavour(Particle_Info&, bool anti=0);
+    Flavour(long int kfc=kf_none);
+    Flavour(kf_code kfc, bool anti);
+    Flavour(const Flavour& fl);
 
     // member functions
     std::string IDName() const;
@@ -319,14 +293,11 @@ namespace ATOOLS {
 
   class Mass_Selector {
   public:
-
     virtual ~Mass_Selector();
-
-    virtual double Mass(const Flavour &fl) const = 0;
-
-    inline double Mass2(const Flavour &fl) const
-    { double m(Mass(fl)); return m*m; }
-
+    virtual double Mass(const Flavour &fl)  const = 0;
+    inline  double Mass2(const Flavour &fl) const {
+      double m(Mass(fl)); return m*m;
+    }
   };// end of class Mass_Selector
 
 }// end of namespace ATOOLS

@@ -1,53 +1,32 @@
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "AMISIC++/Main/Amisic.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 
-#include "AMISIC++/Main/Amisic.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
+using namespace std;
 
-MI_Handler::MI_Handler(std::string path,std::string file,
-		       MODEL::Model_Base *model,
-		       BEAM::Beam_Spectra_Handler *beam,
+MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr) :
-  p_beam(beam), p_isr(isr),
-  p_amisic(NULL),
-  p_ampl(NULL),
-  p_proc(NULL),
-  m_type(None),
-  m_ycut(1.0e-7)
+  p_isr(isr),p_amisic(NULL),p_ampl(NULL),p_proc(NULL),p_shower(NULL),
+  m_stop(false),m_type(None),m_name("None")
 {
-  std::string mihandler="None";
-  ATOOLS::Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  mihandler=reader.GetStringNormalisingNoneLikeValues("MI_HANDLER","Amisic");
-  path+=reader.Get<std::string>("INPUT_PATH","");
-  file=reader.Get<std::string>("INPUT_FILE",file);
-  if (!ATOOLS::rpa->gen.Beam1().IsHadron() ||
-      !ATOOLS::rpa->gen.Beam2().IsHadron()) mihandler="None";
-  if (mihandler==std::string("Amisic")) {
-    p_amisic = new AMISIC::Amisic(model,beam,isr);
-    p_amisic->SetInputPath(path);
-    p_amisic->SetOutputPath(ATOOLS::rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-    p_amisic->SetInputFile(file);
-    if (!p_amisic->Initialize()) {
-      msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
-		 <<"Continue without."<<std::endl;
-      delete p_amisic;
-      p_amisic=NULL;
-      return;
-    }
-    m_ycut=p_amisic->HardBase()->Stop(0);
-    m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa->gen.Ecms());
-    m_type=Amisic;
-  }
+  if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) return;
+  Settings& s = Settings::GetMainSettings();
+  std::string mihandler{ s["MI_HANDLER"]
+    .SetDefault("Amisic")
+    .UseNoneReplacements()
+    .Get<std::string>() };
+  if (mihandler==string("Amisic")) InitAmisic(model);
 }
 
 MI_Handler::~MI_Handler() 
@@ -55,176 +34,95 @@ MI_Handler::~MI_Handler()
   if (p_amisic!=NULL) delete p_amisic;
 }
 
-bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
+
+void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
-  switch (m_type) {
-  case Amisic: return p_amisic->GenerateHardProcess(blob);
-  default    : break;
+  p_amisic    = new AMISIC::Amisic();
+  p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
+  if (!p_amisic->Initialize(model,p_isr)) {
+    msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
+	       <<"Continue without.\n";
+    delete p_amisic; p_amisic=NULL;
   }
-  return false;
+  m_type=Amisic;
+  m_name="AMISIC";
 }
 
-bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
+bool MI_Handler::InitialiseMPIs(const double & scale) 
 {
-  switch (m_type) {
-  case Amisic: return p_amisic->GenerateSoftProcess(blob);
-  default    : break;
+  if (m_type==Amisic) {
+    p_amisic->SetMassMode(1);
+    p_amisic->SetMaxScale(scale);
+    p_amisic->SetB();
+    if (p_amisic->VetoEvent(scale)) {
+      m_stop = true;
+      return false;
+    }
   }
-  return false;
+  return true;
 }
 
-bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
-{
-  switch (m_type) {
-  case Amisic: break; // p_amisic->GenerateEvent(bloblist);
-  default    : break;
-  }
-  return false;
+void MI_Handler::SetMaxEnergies(const double & E1,const double & E2) {
+  if (m_type==Amisic) p_amisic->SetMaxEnergies(E1,E2); 
 }
 
-bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
-{
-  switch (m_type) {
-  case Amisic: return p_amisic->VetoHardProcess(blob);
-  default    : break;
-  }
-  return false;
+void MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
+  p_remnants->ConnectColours(showerblob);
 }
 
-void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
+Blob * MI_Handler::GenerateHardProcess()
 {
-  switch (m_type) {
-  case Amisic:
-    p_amisic->HardBase()->SetStop(scalemin,i);
-    p_amisic->SoftBase()->SetStart(scalemin,i);
-    break;
-  default:
-    break;
+  if (m_type==Amisic) {
+    Blob * blob = p_amisic->GenerateScatter();
+    if (blob==NULL) m_stop = true;
+    return blob;
   }
+  return NULL;
 }
 
-void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
+bool MI_Handler::VetoScatter(Blob *blob)
 {
-  switch (m_type) {
-  case Amisic:
-    p_amisic->HardBase()->SetStart(scalemax,i);
-    break;
-  default:
-    break;
-  }
-}
-
-double MI_Handler::ScaleMin(unsigned int i)
-{
-  switch (m_type) {
-  case Amisic: return p_amisic->HardBase()->Stop(i);
-  default    : break;
-  }
-  return 0.;
-}
-
-double MI_Handler::ScaleMax(unsigned int i)
-{
-  switch (m_type) {
-  case Amisic: return p_amisic->HardBase()->Start(i);
-  default    : break;
-  }
-  return 0.;
+  if (m_type==Amisic) return p_amisic->VetoScatter(blob);
+  return true;
 }
 
 void MI_Handler::Reset()
 {
-  switch (m_type) {
-  case Amisic: p_amisic->Reset();
-  default    : break;
-  }
+  m_stop = false;
+  if (m_type==Amisic) p_amisic->Reset();
 }
 
 void MI_Handler::CleanUp()
 {
-  switch (m_type) {
-  case Amisic: p_amisic->CleanUp();
-  default    : break;
-  }
+  m_stop = false;
+  if (m_type==Amisic) p_amisic->CleanUp();
 }
 
-std::string MI_Handler::MIGenerator() 
+Cluster_Amplitude * MI_Handler::ClusterConfiguration(Blob * blob)
 {
-  return Name();
+  if (m_type==Amisic) return p_amisic->ClusterConfiguration(blob);
+  return NULL;
 }
 
-MI_Handler::TypeID MI_Handler::Type() 
+const double MI_Handler::ScaleMin() const
 {
-  return m_type;
+  if (m_type==Amisic) return p_amisic->ScaleMin();
+  return -1.;
 }
 
-std::string MI_Handler::Name() 
+const double MI_Handler::ScaleMax() const
 {
-  switch (m_type) {
-  case Amisic: return std::string("Amisic");
-  case None  : return std::string("None");
-  default    : break;
-  }
-  return std::string("Unknown");
+  if (m_type==Amisic) return p_amisic->ScaleMax();
+  return -1.;
 }
 
-PDF::ISR_Handler *MI_Handler::ISRHandler()
-{
-  return p_isr;
+void MI_Handler::SetMassMode(const int & massmode) {
+  if (m_type==Amisic) p_amisic->SetMassMode(massmode);
 }
 
-ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
-{
-  PHASIC::Process_Base *xs(p_proc=p_amisic->HardBase()->XS());
-  if (xs->Get<EXTRAXS::Single_Process>()==NULL) return NULL;
-  if (p_proc->Generator()==NULL)
-    THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-  if (p_proc->Generator()->MassMode()!=0)
-    THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
-  EXTRAXS::ME2_Base *me(xs->Get<EXTRAXS::Single_Process>()->GetME());
-  if (me==NULL) THROW(fatal_error,"Cannot handle non-generic ME's.");
-  msg_Debugging()<<METHOD<<"(): {\n";
-  msg_Indent();
-  p_ampl = Cluster_Amplitude::New();
-  const Vec4D_Vector &moms(xs->Integrator()->Momenta());
-  me->SetColours(moms);
-  double muf2(xs->ScaleSetter()->Scale(stp::fac));
-  double mur2(xs->ScaleSetter()->Scale(stp::ren));
-  double muq2(xs->ScaleSetter()->Scale(stp::res));
-  for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
-    size_t id(1<<p_ampl->Legs().size());
-    size_t idx(i);
-    ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
-    if (i<2) col=col.Conj();
-    Flavour flav(i<2?xs->Flavours()[i].Bar():
-		 xs->Flavours()[i]);
-    Vec4D mom(i<2?-moms[i]:moms[i]);
-    p_ampl->CreateLeg(mom,flav,col,id);
-    p_ampl->Legs().back()->SetStat(0);
-    p_ampl->Legs().back()->SetNMax(xs->Info().m_fi.m_nmax);
-  }
-  // set colour partners
-  p_ampl->SetNIn(xs->NIn());
-  p_ampl->SetMuR2(mur2);
-  p_ampl->SetMuF2(muf2);
-  p_ampl->SetMuQ2(muq2);
-  p_ampl->SetKT2(muf2);
-  p_ampl->SetMu2(mur2);
-  p_ampl->SetOrderEW(xs->MaxOrder(1));
-  p_ampl->SetOrderQCD(xs->MaxOrder(0));
-  p_ampl->SetMS(p_amisic->HardBase()->XS()->Generator());
-  int mm(p_amisic->HardBase()->XS()->Generator()->SetMassMode(1));
-  int stat(p_amisic->HardBase()->XS()->Generator()->ShiftMasses(p_ampl));
-  p_amisic->HardBase()->XS()->Generator()->SetMassMode(mm);
-  if (stat<0) {
-    p_ampl->Delete();
-    return p_ampl=NULL;
-  }
-  msg_Debugging()<<*p_ampl<<"\n";
-  return p_ampl;
+int MI_Handler::ShiftMasses(Cluster_Amplitude * ampl) {
+  if (m_type==Amisic) return p_amisic->ShiftMasses(ampl);
+  return 0;
 }
 
-double MI_Handler::Mass(const ATOOLS::Flavour &fl) const
-{
-  return fl.Mass();
-}
+

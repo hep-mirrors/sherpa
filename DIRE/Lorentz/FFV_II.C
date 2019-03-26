@@ -30,7 +30,7 @@ namespace DIRE {
 	B2-=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.));
       }
-      return A*(1.0+p_sk->GF()->K(s))+B;
+      return A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B;
     }
 
     double Integral(const Splitting &s) const

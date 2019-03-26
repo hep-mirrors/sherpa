@@ -25,8 +25,9 @@ bool Beam_Base::Init(int mode)
 		       <<"   Will lead to termination of program."<<std::endl;
     ATOOLS::Abort();
   }
-  m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));
-  m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));
+  double pz = m_dir*m_energy*sqrt(disc);
+  m_lab     = ATOOLS::Vec4D(m_energy,0.,0.,pz);
+  m_vecout  = ATOOLS::Vec4D(m_energy,0.,0.,pz);
   return true;
 }
 

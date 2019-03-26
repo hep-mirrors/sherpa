@@ -6,7 +6,6 @@
 #include "DIM/Tools/Amplitude.H"
 
 namespace ATOOLS {
-  class Default_Reader;
   class Variation_Parameters;
   class Variation_Weights;
 }
@@ -98,8 +97,7 @@ namespace DIM {
     ~Shower();
 
     void Init(MODEL::Model_Base *const model,
-	      PDF::ISR_Handler *const isr,
-	      ATOOLS::Default_Reader *const read);
+	      PDF::ISR_Handler *const isr);
 
     void SetMS(ATOOLS::Mass_Selector *const ms);
 

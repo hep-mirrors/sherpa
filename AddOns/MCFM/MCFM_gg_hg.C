@@ -1,3 +1,4 @@
+#include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "AddOns/MCFM/MCFM_Wrapper.H"
@@ -199,7 +200,7 @@ operator()(const Process_Info &pi) const
   if (!(fl[0].Strong() && fl[1].Strong()))              return NULL;
   if (pi.m_fi.m_ps.size()!=2)                           return NULL;
   Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
-  if (!flh==Flavour(kf_h0))                             return NULL;
+  if (flh != Flavour(kf_h0))                            return NULL;
 
   msg_Out()<<"Check numbers: "
 	   <<fl.size()<<" external particles, "

@@ -25,7 +25,7 @@ void InitialiseGenerator(int argc, char *argv[])
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
 
-  hadrons = new SHERPA::Hadron_Decay_Handler(".", "Fragmentation.dat");
+  hadrons = new SHERPA::Hadron_Decay_Handler();
 
   mother_flav = Flavour( (kf_code) abs(ToType<int>(argv[1])) );
   mother_flav.SetStable(false);
@@ -50,7 +50,7 @@ void InitialiseGenerator(int argc, char *argv[])
 void InitialiseAnalysis()
 {
 #ifdef USING__ROOT
-  map<string, string> tags=Read_Write_Base::GlobalTags();
+  const String_Map& tags{ Settings::GetMainSettings().GetTags() };
   string filepiece;
   map<string, string>::const_iterator it=tags.find("TAG_FILE_PIECE");
   if(it!=tags.end())

@@ -3,11 +3,10 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <iomanip>
 #include <limits>
 
@@ -15,8 +14,6 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Color_Integrator); }
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
 {
@@ -65,7 +62,9 @@ Color_Integrator::Color_Integrator():
   m_lastconf(0), m_alphamode(0), 
   m_check(false), m_on(true), 
   m_otfcc(false), m_fincc(true), m_nogen(true), m_won(true),
-  m_n(0), m_nv(0), m_over(0.0) {}
+  m_n(0), m_nv(0), m_over(0.0)
+{
+}
 
 Color_Integrator::~Color_Integrator()
 {
@@ -115,6 +114,9 @@ size_t Color_Integrator::GenerateIndex()
 bool Color_Integrator::GenerateColours()
 {
   Idx_Vector iids, jids;
+  const auto size = m_ids.size();
+  iids.reserve(size);
+  jids.reserve(size);
   for (size_t i(0);i<m_ids.size();++i)
     // collect indices
     if (m_ids[i]->Act()) { 
@@ -710,11 +712,9 @@ void Color_Integrator::SetAlpha(const Double_Vector &alpha)
   }
   m_max=sum*Factorial(m_ids.size()-2);
   m_mean=m_max*pow(3.0,m_ids.size());
-  double aexp(0.0);
-  Default_Reader reader;
-  if (reader.Read(aexp,"CI_ALPHA_EXP",0.0)) {
-    msg_Info()<<METHOD<<"(): Set \\alpha exp "<<aexp<<"."<<std::endl;
-  }
+  Settings& s = Settings::GetMainSettings();
+  const double aexp{
+    s["CI_ALPHA_EXP"].SetDefault(0.0).GetScalar<double>() };
   m_cmax=pow(max/min,aexp);
   msg_Tracking()<<METHOD<<"(): m_max = "<<sum<<"*"
 		<<Factorial(m_ids.size()-2)<<" = "<<m_max

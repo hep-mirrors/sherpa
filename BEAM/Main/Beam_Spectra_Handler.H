@@ -6,8 +6,6 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Info_Key.H"
 
-namespace ATOOLS { class Default_Reader; }
-
 namespace BEAM {
   class Beam_Spectra_Handler {
   protected:
@@ -24,15 +22,19 @@ namespace BEAM {
     std::string           m_name,m_type;
     ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
   private:
-    bool InitKinematics(ATOOLS::Default_Reader *);
-    bool SpecifySpectra(ATOOLS::Default_Reader *);
-    bool InitializeLaserBackscattering(ATOOLS::Default_Reader *,int);
-    bool InitializeSpectrumReader(ATOOLS::Default_Reader *,int);
-    bool InitializeMonochromatic(ATOOLS::Default_Reader *,int);
-    bool InitializeEPA(ATOOLS::Default_Reader *,int);
+    void RegisterDefaults();
+    void RegisterLaserDefaults(const int& lasermode);
+    void RegisterSpectrumReaderDefaults();
+    void RegisterLaserEnergyAndPolarizationDefaults();
+    bool InitKinematics();
+    bool SpecifySpectra();
+    bool InitializeLaserBackscattering(int);
+    bool InitializeSpectrumReader(int);
+    bool InitializeMonochromatic(int);
+    bool InitializeEPA(int);
     void InitializeFlav(kf_code);
   public:
-    Beam_Spectra_Handler(ATOOLS::Default_Reader *);
+    Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
     
     bool   Init();
@@ -101,9 +103,9 @@ namespace BEAM {
     \class Beam_Spectra_Handler 
     \brief Handler of all Beam related issues.
     This class manages the set-up of the incoming (bunch-)particles from the beams according to 
-    the strategy named in the file that is inherently passed to the Beam_Spectra_Handler through 
-    the pointer to the Data_Read object. Before coming into full efect during integration or 
-    event generation, this handler initalises a suitable Beam treatment (Beam_Bases) for both 
+    the strategy defined through the global Settings instance. Before coming
+    into full effect during integration or event generation, this handler
+    initalises a suitable Beam treatment (Beam_Bases) for both
     beams and uses them to generate corresponding weights, i.e. energy distributions. At the moment, 
     all outgonig bunch particles are still collinear to the incoming beams, but this is going 
     to change in the (near) future.
@@ -204,9 +206,9 @@ namespace BEAM {
     The c.m. momenta of the two incoming beams.
   */
   /*!
-    \fn Beam_Spectra_Handler::Beam_Spectra_Handler(ATOOLS::Data_Read *)
+    \fn Beam_Spectra_Handler::Beam_Spectra_Handler()
     The explicit constructor managing the initialisation of the beams through calls to
-    SpecifySpectra(ATOOLS::Data_Read *) and InitKinematics(ATOOLS::Data_Read *).
+    SpecifySpectra() and InitKinematics().
     Having succeeded in the initialization of the two Beam_Bases, m_mode is also
     determined. It is foreseen that at this point also the beam geometries - if
     necessary - will be fixed. Having read in the incoming energies also the c.m. energy
@@ -215,17 +217,17 @@ namespace BEAM {
     \todo Enable beam geometries, especially for pile-up events etc.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::SpecifySpectra(ATOOLS::Data_Read *);
+    \fn bool Beam_Spectra_Handler::SpecifySpectra();
     SpecifySpectra reads in the specific spectra of the beams and the corresponding generator 
     and initializes the spectra through appropriate InitializeXXX methods. At the moment, two 
-    such methods are available, namely InitializeLaserBackscattering(ATOOLS::Data_Read *,int)
-    and InitializeMonochromatic(ATOOLS::Data_Read *,int). For every new spectrum, such
+    such methods are available, namely InitializeLaserBackscattering(int)
+    and InitializeMonochromatic(int). For every new spectrum, such
     a method has to be provided as well and SpecifySpectra has to be modified accordingly.
     The idea is that in the long run, beam generators might be linked from outside by
     experimenters aiming at higher precision/better fit to beam data.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(ATOOLS::Data_Read *,int)
+    \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(int)
     Characteristic parameters for laser back scattering are read in and the spectrum is
     instantiated through a call to 
     Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
@@ -233,13 +235,13 @@ namespace BEAM {
 					       const int,const int,bool &)
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitializeMonochromatic(ATOOLS::Data_Read *,int);
+    \fn bool Beam_Spectra_Handler::InitializeMonochromatic(int);
     Characteristic parameters for monochromatic beams are read in and the spectrum is
     instantiated through a call to 
     Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitKinematics(ATOOLS::Data_Read *);
+    \fn bool Beam_Spectra_Handler::InitKinematics();
     Here the two lab momenta of the BeamBases are combined to determnie the c.m. energy of
     the process in their c.m. frame. Furthermore, the two corresponding c.m. momenta of the
     incoming beams are constructed and it is decided whether additional boosts to the lab frame

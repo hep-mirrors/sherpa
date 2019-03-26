@@ -5,88 +5,94 @@ The available command line options for Sherpa.
 
 @table @option
 
-@item -f <file>
-Read input from file @samp{<file>}.
+@item --run-data, -f <file>
+Read settings from input file @samp{<file>}.
 
-@item -p <path>
+@item --path, -p <path>
 Read input file from path @samp{<path>}.
 
-@item -L <path>
+@item --sherpa-lib-path, -L <path>
 Set Sherpa library path to @samp{<path>},
 see @ref{SHERPA_CPP_PATH}.
 
-@item -e <events>
-Set number of events to generate @samp{<events>},
+@item --events, -e <N_events>
+Set number of events to generate @samp{<N_events>},
 see @ref{EVENTS}.
 
-@item -t <events>
-Set the event type to @samp{<events>},
+@item --event-type, -t <event_type>
+Set the event type to @samp{<event_type>},
 see @ref{EVENT_TYPE}.
 
-@item -r <results>
-Set the result directory to @samp{<results>},
+@item --result-directory, -r <path>
+Set the result directory to @samp{<path>},
 see @ref{RESULT_DIRECTORY}.
 
-@item -R <seed>
+@item --random-seed, -R <seed>
 Set the seed of the random number generator to @samp{<seed>},
 see @ref{RANDOM_SEED}.
 
-@item -m <generators>
+@item --me-generators, -m <generators>
 Set the matrix element generator list to @samp{<generators>},
-see @ref{ME_SIGNAL_GENERATOR}.
+see @ref{ME_GENERATORS}. If you specify more than one generator, use the YAML
+sequence syntax, e.g. @samp{-m '[Amegic, Comix]'}.
 
-@item -w <mode>
+@item --mi-handler, -M <handler>
+Set multiple interaction handler to @samp{<handler>}, see @ref{MI_HANDLER}.
+
+@item --event-generation-mode, -w <mode>
 Set the event generation mode to @samp{<mode>},
 see @ref{EVENT_GENERATION_MODE}.
 
-@item -s <generator>
+@item --shower-generator, -s <generator>
 Set the parton shower generator to @samp{<generator>},
 see @ref{SHOWER_GENERATOR}.
 
-@item -F <module>
+@item --fragmentation, -F <module>
 Set the fragmentation module to @samp{<module>},
 see @ref{Fragmentation}.
 
-@item -D <module>
+@item --decay, -D <module>
 Set the hadron decay module to @samp{<module>},
 see @ref{Hadron decays}.
 
-@item -a <analyses>
+@item --analysis, -a <analyses>
 Set the analysis handler list to @samp{<analyses>},
 see @ref{ANALYSIS}.
+If you specify more than one analysis handler, use the YAML sequence syntax,
+e.g. @samp{-a '[Rivet, Internal]'}.
 
-@item -A <path>
+@item --analysis-output, -A <path>
 Set the analysis output path to @samp{<path>},
 see @ref{ANALYSIS_OUTPUT}.
 
-@item -O <level>
+@item --output, -O <level>
 Set general output level @samp{<level>}, see @ref{OUTPUT}.
 
-@item -o <level>
+@item --event-output, -o <level>
 Set output level for event generation @samp{<level>}, see @ref{OUTPUT}.
 
-@item -l <logfile>
+@item --log-file, -l <logfile>
 Set log file name @samp{<logfile>}, see @ref{LOG_FILE}.
 
-@item -g
+@item --disable-result-directory-generation, -g
 Do not create result directory, see @ref{RESULT_DIRECTORY}.
 
-@item -b
+@item --disable-batch-mode, -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
 
-@item -V
+@item --print-version-info, -V
 Print extended version information at startup.
 
-@item -v, --version
+@item --version, -v
 Print versioning information.
 
-@item -h, --help
+@item --help, -h
 Print a help message.
 
-@item PARAMETER=VALUE
+@item 'PARAMETER: Value'
 Set the value of a parameter, see @ref{Parameters}.
 
-@item TAG:=VALUE
+@item 'Tags: @{TAG: Value@}'
 Set the value of a tag, see @ref{Tags}.
 
 @end table

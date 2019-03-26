@@ -1,0 +1,57 @@
+# SHERPA run card for t-channel single top-quark production at MC@NLO
+# and N_f = 5
+
+# general setting
+EVENTS: 1M
+
+TAGS: {
+  LOOPGEN: OpenLoops,
+  SCF: 1.,
+  FSF: $(SCF),
+  RSF: $(SCF),
+  QSF: $(SCF)
+  }
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
+EVENT_GENERATION_MODE: Weighted
+
+# scales
+# SCALES STRICT_METS:
+#   use CKKW clustering scale for real/MC@NLO emission
+# CORESCALE SingleTop:
+#   use Mandelstam \hat{t} for s-channel 2->2 core process
+SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
+CORE_SCALE: SingleTop
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 4000
+
+# disable hadronic W decays
+HARD_DECAYS: {
+  Enabled: true,
+  Channels: {
+    "24 -> 2 -1": {Status: 0},
+    "24 -> 4 -3": {Status: 0},
+    "-24 -> -2 1": {Status: 0},
+    "-24 -> -4 3": {Status: 0}
+    }
+  }
+
+# choose EW Gmu input scheme
+EW_SCHEME: 3
+
+# required for using top-quark in ME
+PARTICLE_DATA: { 6: {Width: 0} }
+
+PROCESSES:
+  - {
+    Process: 93 93 -> 6 93,
+    NLO_QCD_Mode: MC@NLO,
+    Order: {QCD: Any, EW: 2},
+    ME_Generator: Amegic,
+    RS_ME_Generator: Comix,
+    Loop_Generator: $(LOOPGEN),
+    Min_N_TChannels: 1  # require t-channel W
+    }

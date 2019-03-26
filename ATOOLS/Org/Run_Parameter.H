@@ -17,14 +17,14 @@ namespace ATOOLS {
 
   class Run_Parameter {
     std::string m_path, m_file;
+    void RegisterDefaults();
   public:
     Run_Parameter();
     ~Run_Parameter();
-    void Init(std::string path, std::string file);
+    void Init();
     void AnalyseEnvironment();
     
     class Gen {  // general parameters
-      int                 m_cutscheme;
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents, m_ntrials;
       long int            m_seeds[4];
@@ -45,7 +45,6 @@ namespace ATOOLS {
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
       inline long   NumberOfTrials()                      { return m_ntrials; }
-      inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
       void   SetEcms(double _ecms);
@@ -72,7 +71,7 @@ namespace ATOOLS {
       inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
       inline const std::string &UserName() { return m_username; }
       inline const std::string &HostName() { return m_hostname; }
-      std::string Variable(const std::string &key,const std::string &def="");
+      std::string Variable(const std::string &key);
       inline void SetVariable(const std::string &key,const std::string &value) 
       { m_variables[key]=value; }
       inline void AddToVariable(const std::string &key,const std::string &value) 
@@ -80,7 +79,8 @@ namespace ATOOLS {
       inline const std::vector<std::string> &Citations() { return m_cites; }
       void AddCitation(const size_t &level,const std::string &cite);
       void WriteCitationInfo();
-      void PrintGitVersion(std::ostream &str,const int mode=0,
+      void PrintGitVersion(std::ostream &str,
+                           const bool& shouldprintversioninfo,
 			   const std::string &prefix="");
 
       inline double Accu()                                { return m_accu; }

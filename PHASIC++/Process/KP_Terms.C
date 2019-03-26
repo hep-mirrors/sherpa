@@ -2,9 +2,8 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -16,20 +15,22 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
   m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
-  m_Vsubmode(1), m_collVFF(1), m_facscheme(0),
+  m_Vsubmode(1), m_facscheme(0),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
   m_plist(partonlist)
 {
   DEBUG_FUNC("");
-  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  RegisterDefaults();
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings kpsettings{ s["KP"] };
+
+  m_subtype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
 
   const size_t nf(Flavour(kf_quark).Size()/2);
-  int nfgs = ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT", ToString(nf)));
-  
+  const auto nfgs
+    = s["DIPOLES"]["NF_GSPLIT"].GetScalarWithOtherDefault<int>(nf);
+
   if (nfgs<nf) THROW(fatal_error,"Number of flavours in g->qq splitting ("
                                  +ToString(nfgs)
                                  +") smaller than number of light flavours ("
@@ -38,16 +39,16 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_kernel=new Massive_Kernels(st,nf,nmf);
   p_kernel->SetSubType(m_subtype);
 
-  m_kcontrib=ToType<cs_kcontrib::type>
-             (reader.Get<std::string>("KP_KCONTRIB","BSGT"));
+  m_kcontrib=ToType<cs_kcontrib::type>(
+      kpsettings["KCONTRIB"].Get<std::string>());
   msg_Tracking()<<"Set K-Term contribution to "<<m_kcontrib<<" .\n";
 
-  m_cemode=reader.Get("KP_CHECK_ENERGY",0);
+  m_cemode = kpsettings["CHECK_ENERGY"].Get<bool>();
   msg_Tracking()<<"Set KP-term energy check mode "<<m_cemode<<" .\n";
-  m_negativepdf=reader.Get("KP_ACCEPT_NEGATIVE_PDF",1);
+  m_negativepdf = kpsettings["ACCEPT_NEGATIVE_PDF"].Get<bool>();
   msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" .\n";
 
-  m_facscheme=reader.Get("KP_FACTORISATION_SCHEME",0);
+  m_facscheme = kpsettings["FACTORISATION_SCHEME"].Get<int>();
   std::string fs("");
   switch (m_facscheme) {
   case 0:
@@ -63,17 +64,17 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   }
   msg_Tracking()<<"Set KP-term factorisation scheme to "<<m_facscheme<<".\n";
 
-  m_NC = reader.Get("N_COLOR",3.);
+  m_NC = s["N_COLOR"].Get<double>();
   if (m_NC!=3.) msg_Out()<<"Set N_color="<<m_NC<<"."<<std::endl;
   p_kernel->SetNC(m_NC);
   SetColourFactors();
 
-  double dalpha(reader.GetValue<double>("DIPOLE_ALPHA",1.));
-  double dalpha_ff(reader.GetValue<double>("DIPOLE_ALPHA_FF",dalpha));
-  double dalpha_fi(reader.GetValue<double>("DIPOLE_ALPHA_FI",dalpha));
-  double dalpha_if(reader.GetValue<double>("DIPOLE_ALPHA_IF",dalpha));
-  double dalpha_ii(reader.GetValue<double>("DIPOLE_ALPHA_II",dalpha));
-  double kappa(reader.GetValue<double>("DIPOLE_KAPPA",2./3.));
+  double dalpha(s["DIPOLES"]["ALPHA"].Get<double>());
+  double dalpha_ff(s["DIPOLES"]["ALPHA_FF"].Get<double>());
+  double dalpha_fi(s["DIPOLES"]["ALPHA_FI"].Get<double>());
+  double dalpha_if(s["DIPOLES"]["ALPHA_IF"].Get<double>());
+  double dalpha_ii(s["DIPOLES"]["ALPHA_II"].Get<double>());
+  const double kappa = s["DIPOLES"]["KAPPA"].Get<double>();
   msg_Tracking()<<"Set FF dipole alpha="<<dalpha_ff<<" . "<<std::endl;
   msg_Tracking()<<"Set FI dipole alpha="<<dalpha_fi<<" . "<<std::endl;
   msg_Tracking()<<"Set IF dipole alpha="<<dalpha_if<<" . "<<std::endl;
@@ -82,18 +83,18 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   SetAlpha(dalpha_ff,dalpha_fi,dalpha_if,dalpha_ii);
   SetKappa(kappa);
 
-  m_Vsubmode=reader.Get("DIPOLE_V_SUBTRACTION_MODE",1);
+  m_Vsubmode = s["DIPOLES"]["V_SUBTRACTION_MODE"].Get<int>();
   msg_Tracking()<<"Use "<<(m_Vsubmode?"fermionic":"scalar")
                 <<" V->VP subtraction term."<<std::endl;
   if (!(m_Vsubmode==0 || m_Vsubmode==1)) THROW(fatal_error,"Unknown mode.");
   p_kernel->SetVSubtractionMode(m_Vsubmode);
 
-  int cvffdef(1);
-  if (m_stype==sbt::qed) cvffdef=0;
-  m_collVFF=reader.Get("DIPOLE_COLLINEAR_VFF_SPLITTINGS",cvffdef);
-  msg_Tracking()<<"Switch collinear VFF splittings "<<(m_collVFF?"on":"off")
-                <<"."<<std::endl;
-  p_kernel->SetCollinearVFFSplitting(m_collVFF);
+  int collVFF = s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].Get<int>();
+  if (!s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].IsCustomised()
+      && m_stype == sbt::qed) {
+    collVFF = 0;  // overwrite default for QED splittings
+  }
+  p_kernel->SetCollinearVFFSplitting(collVFF);
 
   SetMassive();
   m_sa=((m_stype==sbt::qcd && m_flavs[0].Strong()) ||
@@ -109,6 +110,15 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
 KP_Terms::~KP_Terms()
 {
   if (p_kernel) { delete p_kernel; p_kernel=NULL; }
+}
+
+void KP_Terms::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["KP"] };
+  s["KCONTRIB"].SetDefault("BSGT");
+  s["CHECK_ENERGY"].SetDefault(false);
+  s["ACCEPT_NEGATIVE_PDF"].SetDefault(true);
+  s["FACTORISATION_SCHEME"].SetDefault(0);
 }
 
 void KP_Terms::SetColourFactors()

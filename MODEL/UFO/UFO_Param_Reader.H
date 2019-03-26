@@ -17,7 +17,6 @@ namespace UFO{
 
   private:
     std::vector< std::vector<std::string> > m_lines;
-    int m_use_runcard; // use run card for ufo input instead of separate param_card.dat
     template<class Read_Type> Read_Type GetWidth(const unsigned int& n);
     template<class Read_Type> static Read_Type NotFound(const std::string& block, const unsigned int& n, const unsigned int& m);
     template<class Read_Type> static Read_Type NotFound(const std::string& block, const unsigned int& n);

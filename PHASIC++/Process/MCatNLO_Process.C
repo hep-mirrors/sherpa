@@ -21,7 +21,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
@@ -61,6 +61,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,const int mode)
 {
+  RegisterDefaults();
+  Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
@@ -86,7 +88,18 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
   }
   spi.m_megenerator=spi.m_rsmegenerator;
-  p_rproc=InitProcess(spi,nlo_type::lo,true);
+
+  // Real emission process is initialized with nlo_type::lo. ME
+  // generators hence cannot infer that the coupling orders need to be
+  // increased relative to born coupling order. Therefore do that
+  // explicityly here:
+  Process_Info rpi(spi);
+  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+    rpi.m_borncpl[1]+=1;
+  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
+    rpi.m_borncpl[0]+=1;
+  p_rproc=InitProcess(rpi,nlo_type::lo,true);
+
   spi.m_megenerator=pi.m_megenerator;
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
   p_ddproc=InitProcess(spi,nlo_type::rsub,1);
@@ -103,13 +116,10 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_hpsmode  = reader.Get("MC@NLO_HPSMODE", 8, "H event shower mode", METHOD);
-  m_kfacmode = reader.Get("MC@NLO_KFACTOR_MODE", 0, "K-factor mode", METHOD);
-  m_fomode   = reader.Get("MC@NLO_FOMODE", 0, "fixed order mode", METHOD);
-  m_rsscale  = reader.Get<std::string>("MC@NLO_RS_SCALE", "", "RS scale", METHOD);
+  m_hpsmode  = s["HPSMODE"].Get<int>();
+  m_kfacmode = s["KFACTOR_MODE"].Get<int>();
+  m_fomode   = s["FOMODE"].Get<int>();
+  m_rsscale  = s["RS_SCALE"].Get<std::string>();
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -141,6 +151,15 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
 }
 
+void MCatNLO_Process::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
+  s["HPSMODE"].SetDefault(8);  // H event shower mode
+  s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
+  s["FOMODE"].SetDefault(0);  // fixed order mode
+  s["RS_SCALE"].SetDefault("");  // RS scale
+}
+
 Process_Base* MCatNLO_Process::InitProcess
 (const Process_Info &pi,nlo_type::code nlotype,const int real)
 {
@@ -153,7 +172,14 @@ Process_Base* MCatNLO_Process::InitProcess
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
     else THROW(fatal_error, "Internal error.");
   }
-  return m_gens.InitializeProcess(cpi,false);
+  Process_Base* proc = m_gens.InitializeProcess(cpi,false);
+  if (!proc)
+    {
+      std::stringstream msg;
+      msg << "Unable to initialize process:\n" << cpi;
+      THROW(fatal_error,  msg.str());
+    }
+  return proc;
 }
 
 bool MCatNLO_Process::InitSubtermInfo()
@@ -242,19 +268,20 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   // we'll use a set of temporary variation weights,
   // which are combined only in the end
   ATOOLS::Variations *variations(NULL);
-  SP(ATOOLS::Variation_Weights) rsvarweights, bvivarweights, bvarweights;
+  std::shared_ptr<ATOOLS::Variation_Weights>
+    rsvarweights, bvivarweights, bvarweights;
   if (p_variationweights) {
     variations = p_variationweights->GetVariations();
-    rsvarweights  = new ATOOLS::Variation_Weights(variations);
-    bvivarweights = new ATOOLS::Variation_Weights(variations);
-    bvarweights   = new ATOOLS::Variation_Weights(variations);
+    rsvarweights  = std::make_shared<ATOOLS::Variation_Weights>(variations);
+    bvivarweights = std::make_shared<ATOOLS::Variation_Weights>(variations);
+    bvarweights   = std::make_shared<ATOOLS::Variation_Weights>(variations);
   }
 
   // evaluate RS process
   msg_Debugging()<<*rampl<<"\n";
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
-  rsproc->SetVariationWeights(--rsvarweights);
+  rsproc->SetVariationWeights(rsvarweights.get());
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
   Cluster_Amplitude *crampl(rampl->Copy());
   int mm(p_bproc->Generator()->SetMassMode(0));
@@ -281,7 +308,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (bviproc->VariationWeights() && bviproc->VariationWeights() != p_variationweights) {
     THROW(fatal_error, "Variation weights already set.");
   }
-  bviproc->SetVariationWeights(--bvivarweights);
+  bviproc->SetVariationWeights(bvivarweights.get());
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   Cluster_Amplitude *campl(ampl.Copy());
@@ -290,7 +317,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   if (bproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
-  bproc->SetVariationWeights(--bvarweights);
+  bproc->SetVariationWeights(bvarweights.get());
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
   double b(bproc->Differential(*campl, bmode));
   if (bmode && b==0.0 && bproc->Differential(*campl,64))
@@ -332,6 +359,7 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
   else if (m_kfacmode%10==1) { s=bvib*(1.0-rsr); h=0; }
   else if (m_kfacmode%10==2) { s=0;              h=rsr; }
   else if (m_kfacmode%10==3) { s=bvib;           h=0.; }
+  else if (m_kfacmode%10==4) { s=bvib+rs/b;      h=0.; }
   else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
@@ -669,7 +697,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
-  SP(Phase_Space_Handler) psh(p_ddproc->Integrator()->PSHandler());
+  auto psh = p_ddproc->Integrator()->PSHandler();
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
     for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);

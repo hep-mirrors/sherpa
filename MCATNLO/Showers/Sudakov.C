@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -20,10 +21,8 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
-
-  Default_Reader reader;
-  m_scalescheme = reader.Get<int>("MCATNLO_SCALE_SCHEME", 2);
-  if (m_scalescheme!=2) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
+  Settings& s = Settings::GetMainSettings();
+  m_scalescheme = s["MCATNLO_SCALE_SCHEME"].SetDefault(2).Get<int>();
 }
 
 Sudakov::~Sudakov() 

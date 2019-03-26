@@ -342,7 +342,7 @@ operator()(const Process_Info &pi) const
   if (!(fl[0].Strong() && fl[1].Strong()))              return NULL;
   if (pi.m_fi.m_ps.size()!=3)                           return NULL;
   Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
-  if (!flh==Flavour(kf_h0))                             return NULL;
+  if (flh != Flavour(kf_h0))                            return NULL;
 
   msg_Debugging()<<"Check numbers: "
                  <<fl.size()<<" external particles, "

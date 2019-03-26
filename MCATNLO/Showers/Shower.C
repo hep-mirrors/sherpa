@@ -2,55 +2,53 @@
 #include "MCATNLO/Tools/Parton.H"
 #include "MCATNLO/Main/CS_Gamma.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PDF/Remnant/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,const int qed,
-	       Default_Reader *const reader) :
+Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr),
   p_variationweights(NULL)
 {
-  int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
-  int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"));
-  double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
-  double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  const bool reweightalphas = reader->Get<int>("CSS_REWEIGHT_ALPHAS",1);
-  const bool reweightpdfs = reader->Get<int>("CSS_REWEIGHT_PDFS",1);
-  m_norewem = !reader->Get<int>("REWEIGHT_MCATNLO_EM",0);
-  m_kscheme = reader->Get<int>("NLO_CSS_KIN_SCHEME",1);
-  std::vector<size_t> disallowflavs;
-  reader->ReadVector(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
-  if (disallowflavs.size())
-    msg_Info()<<METHOD<<"(): Disallow splittings involving "<<disallowflavs
-              <<" MC@NLO.\n";
+  Settings& s = Settings::GetMainSettings();
+  const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
+  const int kfmode{ s["CSS_KFACTOR_SCHEME"].Get<int>() };
+  const int scs{ s["CSS_SCALE_SCHEME"].Get<int>() };
+  const double k0sqf{ s["CSS_FS_PT2MIN"].Get<double>() };
+  const double k0sqi{ s["CSS_IS_PT2MIN"].Get<double>() };
+  const double fs_as_fac{ s["CSS_FS_AS_FAC"].Get<double>() };
+  const double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
+  const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
+  const bool reweightalphas = s["CSS_REWEIGHT_ALPHAS"].Get<int>();
+  const bool reweightpdfs = s["CSS_REWEIGHT_PDFS"].Get<int>();
+  m_norewem = !s["REWEIGHT_MCATNLO_EM"].Get<bool>();
+  m_kscheme = s["NLO_CSS_KIN_SCHEME"].Get<int>();
+  std::vector<size_t> disallowflavs{
+    s["NLO_CSS_DISALLOW_FLAVOUR"].GetVector<size_t>() };
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
   std::pair<double, double> pdfmin;
-  pdfmin.first = reader->GetValue<double>("CSS_PDF_MIN", 1.0e-4);
-  pdfmin.second = reader->GetValue<double>("CSS_PDF_MIN_X", 1.0e-2);
+  pdfmin.first = s["CSS_PDF_MIN"].Get<double>();
+  pdfmin.second = s["CSS_PDF_MIN_X"].Get<double>();
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_sudakov.SetReweightAlphaS(reweightalphas);
   m_sudakov.SetReweightPDFs(reweightpdfs);
-  m_sudakov.SetReweightScaleCutoff(reader->Get<double>(
-        "CSS_REWEIGHT_SCALE_CUTOFF", 5.0));
+  m_sudakov.SetReweightScaleCutoff(
+      s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);

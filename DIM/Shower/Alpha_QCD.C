@@ -4,8 +4,8 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "DIM/Shower/Shower.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <algorithm>
 
@@ -17,8 +17,9 @@ using namespace ATOOLS;
 Alpha_QCD::Alpha_QCD(const Kernel_Key &key):
   Gauge(key), p_cpl(p_sk->PS()->AlphaS()), m_override(0)
 {
-  m_lc=key.p_rd->GetValue<unsigned int>("CSS_CMODE",1);
-  m_Nc=key.p_rd->GetValue<unsigned int>("CSS_NCOL",3);
+  Settings& s = Settings::GetMainSettings();
+  m_lc=s["CSS_CMODE"].Get<unsigned int>();
+  m_Nc=s["CSS_NCOL"].Get<unsigned int>();
   m_CF=(m_Nc*m_Nc-1.)/(2.0*m_Nc);
   m_CA=m_Nc;
   m_TR=1.0/2.0;
@@ -84,16 +85,35 @@ double Alpha_QCD::CplFac(const double &scale) const
   return m_fac;
 }
 
+double Alpha_QCD::TrueScale(const Splitting &s) const
+{
+  double scale(Scale(s));
+  return CplFac(scale)*scale;
+}
+
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
   if (m_override==0) {
     if (s.m_clu&1) return 1.0;
     if (s.m_clu&2) return (*p_cpl)(s.m_t1);
   }
-  double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
-  double scl(CplFac(scale)*scale*murf);
+  double murf(p_sk->PS()->MuR2Factor());
+  double scl(TrueScale(s)*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
+  return cpl;
+}
+
+double Alpha_QCD::RenCT(const Splitting &s) const
+{
+  if (m_override==0) {
+    if (s.m_clu&3) return 0.0;
+  }
+  double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
+  double scl(TrueScale(s)*murf);
+  if (scl<murf*p_cpl->CutQ2()) return 0.0;
+  double cpl=(*p_cpl)(scl);
+  double ct=0;
   if (!IsEqual(scl,scale)) {
     std::vector<double> ths(p_cpl->Thresholds(scale,scl));
     if (scl>scale) std::reverse(ths.begin(),ths.end());
@@ -101,12 +121,11 @@ double Alpha_QCD::Coupling(const Splitting &s) const
     if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=0.0;
-      if ((s.m_kfac&6)==6) ct+=cpl/(2.0*M_PI)*B0(nf)*L;
-      cpl*=1.0-ct;
+      double L=log(ths[i]/ths[i-1]);
+      if (s.m_kfac&8) ct-=cpl/(2.0*M_PI)*B0(nf)*L;
     }
   }
-  return cpl;
+  return ct;
 }
 
 double Alpha_QCD::CplMax(const Splitting &s) const

@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <stdio.h>
 
 #include <sstream>
@@ -441,13 +442,14 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
   if (!m_active) return;
   My_Out_File ofile(name);
   ofile.Open();
-  if (rpa) ofile->precision(ToType<int>(rpa->gen.Variable("HISTOGRAM_OUTPUT_PRECISION")));
+  if (rpa) {
+    Settings& s = Settings::GetMainSettings();
+    ofile->precision(
+        s["HISTOGRAM_OUTPUT_PRECISION"].SetDefault(6).GetScalar<int>());
+  }
 
   if (m_fills>=0) {
     *ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";

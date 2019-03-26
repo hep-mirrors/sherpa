@@ -1,216 +1,27 @@
 #ifndef CSSHOWER_Showers_Splitting_Function_Base_H
 #define CSSHOWER_Showers_Splitting_Function_Base_H
 
-#include "ATOOLS/Org/Getter_Function.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "CSSHOWER++/Showers/SF_Key.H"
+#include "CSSHOWER++/Showers/SF_Coupling.H"
+#include "CSSHOWER++/Showers/SF_Lorentz.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace ATOOLS { class Function_Base; }
-
-namespace MODEL {
-  class Model_Base; 
-  class Single_Vertex;
-}
 
 namespace PDF { class PDF_Base; }
 
 namespace CSSHOWER {
 
   class Parton;
-
-  struct cstp {
-    enum code {
-      FF   = 11,
-      FI   = 12,
-      IF   = 21,
-      II   = 22,
-      none = 0
-    };
-  };
-
-  class SF_Coupling;
-
-  struct SF_Key {
-  public:
-    const MODEL::Single_Vertex *p_v;
-    int m_mode, m_kfmode, m_qcdmode, m_ewmode, m_col;
-    cstp::code m_type;
-    SF_Coupling *p_cf;
-    std::pair<double, double> m_pdfmin;
-  public:
-    inline SF_Key(const MODEL::Single_Vertex *v,
-		  const int mode,const cstp::code type,const int kfmode,
-		  const int qcdmode,const int ewmode,const int col,
-                  std::pair<double, double>& pdfmin):
-      p_v(v), m_mode(mode), m_kfmode(kfmode),
-      m_qcdmode(qcdmode), m_ewmode(ewmode), m_col(col), m_type(type),
-      p_cf(NULL), m_pdfmin{ pdfmin } {}
-    std::string ID(const int mode) const;
-  };
-
-  std::ostream &operator<<(std::ostream &str,const SF_Key &k);
-
-  class Splitting_Function_Base;
-
-  class SF_Lorentz {
-  protected:
-
-    ATOOLS::Flavour m_flavs[3], m_flspec;
-    const ATOOLS::Mass_Selector *p_ms;
-
-    SF_Coupling *p_cf;
-
-    Splitting_Function_Base *p_sf;
-
-    double m_zmin, m_zmax;
-    int m_beam, m_col;
-
-    double m_lastJ;
-
-    std::pair<double, double> m_pdfmin;
-
-    static double s_kappa;
-
-    double Lambda(const double &a,const double &b,const double &c) const;
-    bool PDFValueAllowedAsDenominator(const double& val,
-                                      const double& eta);
-
-  public:
-
-    SF_Lorentz(const SF_Key &key);
-
-    virtual ~SF_Lorentz();
-
-    virtual double Scale(const double z,const double y,
-			 const double scale,const double Q2) const;
-
-    virtual double operator()
-      (const double z,const double y,const double eta,
-       const double scale,const double Q2) = 0;
-    /**
-      * Overestimate integrated over [zmin, zmax]
-      */
-    virtual double OverIntegrated(const double zmin,const double zmax,
-				  const double scale,const double xbj) = 0;
-    /**
-      * Overestimate of operator
-      */
-    virtual double OverEstimated(const double z,const double y) = 0;
-    /**
-      * Generate z according to OverEstimated (solve OverIntegrated for new z)
-      */
-    virtual double Z() = 0;
-
-    double LastJ() const { return m_lastJ; }
-    void SetLastJ(double J) { m_lastJ = J; }
-    double JFF(const double &y,const double &mui2,const double &muj2,
-	       const double &muk2,const double &muij2);
-    double JFI(const double &y,const double &eta,const double &scale);
-    double JIF(const double &z,const double &y,
-	       const double &eta,const double &scale);
-    double JII(const double &z,const double &y,
-	       const double &eta,const double &scale);
-
-    inline const ATOOLS::Flavour &FlA() const { return m_flavs[0]; }
-    inline const ATOOLS::Flavour &FlB() const { return m_flavs[1]; }
-    inline const ATOOLS::Flavour &FlC() const { return m_flavs[2]; }
-
-    inline const ATOOLS::Flavour &FlSpec() const { return m_flspec; }
-
-    inline void SetFlSpec(const ATOOLS::Flavour &s) { m_flspec=s; }
-
-    inline int GetBeam() const { return m_beam; }
-    inline void SetBeam(const int beam) { m_beam=beam; }
-
-    inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
-
-    inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
-
-    inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
-
-    inline int Col() const { return m_col; }
-
-    inline static void SetKappa(const double &kap) { s_kappa=kap; }
-
-  };
-
-  typedef ATOOLS::Getter_Function<SF_Lorentz,SF_Key,
-				  std::less<std::string> > SFL_Getter;
-
-  class SF_Coupling {
-  protected:
-
-    SF_Lorentz *p_lf;
-
-    cstp::code m_type;
-    double     m_cplfac, m_last;
-
-    int        m_kfmode;
-    /**
-      * m_cplmax[i] = max_{scale} Coupling(scale, i)
-      */
-    std::vector<double> m_cplmax;
-
-  public:
-
-    SF_Coupling(const SF_Key &key);
-
-    virtual ~SF_Coupling();
-
-    virtual bool SetCoupling(MODEL::Model_Base *md,
-			     const double &k0sqi,const double &k0sqf,
-			     const double &isfac,const double &fsfac) = 0;
-
-    //! Subclasses can return true if they support alternative couplings to be used (e.g. for reweighting)
-    virtual bool AllowsAlternativeCouplingUsage() const { return false; }
-    /*! 
-     * Use an alternative coupling
-     * 
-     * @param cpl See subclass implementation(s) for the accepted pointer type.
-     * @param sf An optional scale factor, see subclass implementations for the
-     * concrete meaning of this argument.
-     * Passing NULL ends the use of the alternative coupling.
-     */
-    virtual void SetAlternativeUnderlyingCoupling(void * cpl, double sf=1.0) {}
-
-    virtual double Coupling(const double &scale,const int pol) = 0;
-    virtual bool AllowSpec(const ATOOLS::Flavour &fl,const int mode=0) = 0;
-
-    //! Last unpolarized coupling value
-    double Last() const { return m_last; }
-
-    //! Set last unpolarized coupling value
-    void SetLast(double last) { m_last = last; } 
-
-    virtual double CplFac(const double &scale) const;
-
-    inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
-
-    inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
-
-    inline double CplFac() const { return m_cplfac; }
-
-    inline double Last() { return m_last; }
-
-  };
-
   class Shower;
 
-  typedef ATOOLS::Getter_Function<SF_Coupling,SF_Key,
-				  std::less<std::string> > SFC_Getter;
-
-  struct SFC_Filler_Key {
-    const MODEL::Model_Base *p_md;
-    std::vector<SFC_Getter*> *p_gets;
-    inline SFC_Filler_Key(const MODEL::Model_Base *const md,
-			  std::vector<SFC_Getter*> *const gets):
-      p_md(md), p_gets(gets) {}
-  };
-
-  typedef ATOOLS::Getter_Function
-  <void,SFC_Filler_Key,std::less<std::string> > SFC_Filler_Getter;
-
   class Splitting_Function_Base {
+
+  private:
+
+    static SF_Lorentz* InitLorentzCalc(const MODEL::Single_Vertex& v,
+				       const SF_Key& key);
+
   protected:
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
@@ -297,19 +108,5 @@ namespace CSSHOWER {
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };
 }
-
-#define DECLARE_CPL_GETTER(NAME)					\
-  									\
-  class NAME: public ATOOLS::Getter_Function				\
-  <SF_Coupling,SF_Key,std::less<std::string> > {			\
-  protected:								\
-    void PrintInfo(std::ostream &str,const size_t width) const;		\
-    Object_Type *							\
-      operator()(const Parameter_Type &parameters) const;		\
-  public:								\
-    NAME(const std::string &name):					\
-      ATOOLS::Getter_Function<SF_Coupling,SF_Key,			\
-      std::less<std::string> >(name) {}					\
-  }
 
 #endif

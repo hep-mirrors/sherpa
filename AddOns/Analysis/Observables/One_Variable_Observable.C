@@ -1,12 +1,12 @@
 #include "AddOns/Analysis/Observables/Primitive_Observable_Base.H"
 
 #include "ATOOLS/Math/Variable.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -62,115 +62,76 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(One_Variable_Observable,"VarObs",
- 	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,One_Variable_Observable>::PrintInfo
+void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,One_Variable_Observable>::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "
-     <<"Tags    flavi1,.. itemi1,.. vari mini maxi binsi typei\n"
-     <<std::setw(width+7)<<" "<<"Flavs   flav11,.. .. flavN1,..\n"
-     <<std::setw(width+7)<<" "<<"Items   item11,.. .. itemN1,..\n"
-     <<std::setw(width+7)<<" "<<"Vars    var1      .. varN\n"
-     <<std::setw(width+7)<<" "<<"Types   type1     .. typeN\n"
-     <<std::setw(width+7)<<" "<<"Bins    bins1     .. binsN\n"
-     <<std::setw(width+7)<<" "<<"Mins    min1      .. minN\n"
-     <<std::setw(width+7)<<" "<<"Maxs    max1      .. maxN\n"
+     <<std::setw(width+7)<<" "<<"InList: <list>,\n"
+     <<std::setw(width+7)<<" "<<"Flavs: [[flav11, ..], .. [flavN1, ..],\n"
+     <<std::setw(width+7)<<" "<<"Items: [[item11, ..], .. [itemN1, ..],\n"
+     <<std::setw(width+7)<<" "<<"Vars:  [var1, ..],\n"
+     <<std::setw(width+7)<<" "<<"Types: [type1, ..],\n"
+     <<std::setw(width+7)<<" "<<"Bins:  [bins1, ..],\n"
+     <<std::setw(width+7)<<" "<<"Mins:  [min1,  ..],\n"
+     <<std::setw(width+7)<<" "<<"Maxs:  [max1,  ..]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
 Primitive_Observable_Base *
-ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,One_Variable_Observable>::operator()
-  (const Argument_Matrix &parameters) const
+ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,One_Variable_Observable>::operator()
+  (const Analysis_Key &key) const
 {
-  std::string inlist("FinalState");
+  Scoped_Settings s{ key.m_settings };
+  s.DeclareVectorSettingsWithEmptyDefault({ "Vars", "Types", "Bins" });
+  s.DeclareMatrixSettingsWithEmptyDefault({ "Flavs", "Items" });
   Flavour_Matrix flavs;
   Int_Matrix items;
   String_Vector vtags;
   Double_Matrix histos(4);
-  Data_Reader reader(",",";","!","=");
-  Algebra_Interpreter *ip=reader.Interpreter();
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="Tags" && cur.size()>7) {
-      reader.SetString(cur[1]);
-      std::vector<int> cfl;
-      if (!reader.VectorFromString(cfl,"")) {
-	msg_Debugging()<<METHOD<<"(): Invalid flavour syntax '"
-		       <<cur[1]<<"'.\n";
-	continue;
-      }
-      flavs.push_back(Flavour_Vector(cfl.size()));
-      for (size_t k(0);k<cfl.size();++k) {
-	flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
-	if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
-      }
-      reader.SetString(cur[2]);
-      std::vector<int> cit;
-      if (!reader.VectorFromString(cit,"")) {
-	msg_Debugging()<<METHOD<<"(): Invalid item syntax '"
-		       <<cur[2]<<"'.\n";
-	continue;
-      }
-      items.push_back(cit);
-      vtags.push_back(cur[3]);
-      histos[0].push_back(HistogramType(cur[7]));
-      histos[1].push_back(ToType<double>(ip->Interprete(cur[6])));
-      histos[2].push_back(ToType<double>(ip->Interprete(cur[4])));
-      histos[3].push_back(ToType<double>(ip->Interprete(cur[5])));
-    }
-    else if (cur[0]=="Flavs" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) {
-	reader.SetString(cur[j]);
-	std::vector<int> cfl;
-	if (!reader.VectorFromString(cfl,"")) {
-	  msg_Debugging()<<METHOD<<"(): Invalid flavour syntax '"
-			 <<cur[j]<<"'.\n";
-	  continue;
-	}
-	flavs.push_back(Flavour_Vector(cfl.size()));
-	for (size_t k(0);k<cfl.size();++k) {
-	  flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
-	  if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
-	}
-      }
-    }
-    else if (cur[0]=="Items" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) {
-	reader.SetString(cur[j]);
-	std::vector<int> cit;
-	if (!reader.VectorFromString(cit,"")) {
-	  msg_Debugging()<<METHOD<<"(): Invalid item syntax '"
-			 <<cur[j]<<"'.\n";
-	  continue;
-	}
-	items.push_back(cit);
-      }
-    }
-    else if (cur[0]=="Vars" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	vtags.push_back(cur[j]);
-    }
-    else if (cur[0]=="Types" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[0].push_back(HistogramType(cur[j]));
-    }
-    else if (cur[0]=="Bins" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[1].push_back(ToType<double>(ip->Interprete(cur[j])));
-    }
-    else if (cur[0]=="Mins" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[2].push_back(ToType<double>(ip->Interprete(cur[j])));
-    }
-    else if (cur[0]=="Maxs" && cur.size()>1) {
-      for (size_t j(1);j<cur.size();++j) 
-	histos[3].push_back(ToType<double>(ip->Interprete(cur[j])));
+
+  const auto inlist = s["InList"].SetDefault("FinalState").GetVector<std::string>()[0];
+
+  auto cfls = s["Flavs"].GetMatrix<int>();
+  for (const auto& cfl : cfls) {
+    flavs.push_back(Flavour_Vector(cfl.size()));
+    for (size_t k(0);k<cfl.size();++k) {
+      flavs.back()[k]=Flavour((kf_code)abs(cfl[k]));
+      if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
     }
   }
+
+  const auto cits = s["Items"].GetMatrix<int>();
+  for (const auto& cit : cits) {
+    items.push_back(cit);
+  }
+
+  const auto vars = s["Vars"].GetVector<std::string>();
+  for (const auto& var : vars) {
+    vtags.push_back(var);
+  }
+
+  const auto types = s["Types"].GetVector<std::string>();
+  for (const auto& type : types) {
+    histos[0].push_back(HistogramType(type));
+  }
+
+  const auto bins = s["Bins"].GetVector<double>();
+  for (const auto& bin : bins) {
+    histos[1].push_back(bin);
+  }
+
+  const auto mins = s["Mins"].GetVector<double>();
+  for (const auto& min : mins) {
+    histos[2].push_back(min);
+  }
+
+  const auto maxs = s["Maxs"].GetVector<double>();
+  for (const auto& max : maxs) {
+    histos[3].push_back(max);
+  }
+
   if (flavs.empty() || items.empty() || vtags.empty()) {
     msg_Debugging()<<METHOD<<"(): Cannot initialize selector.\n";
     return NULL;
@@ -188,8 +149,8 @@ ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,One_Variable_Observable
     for (size_t j(items[i].size());j<max;++j) 
       items[i].push_back(items[i].back());
   }
-  return new One_Variable_Observable
-    (inlist,flavs,items,vtags,histos,parameters());
+  return new One_Variable_Observable(
+      inlist,flavs,items,vtags,histos,key.p_analysis);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"

@@ -6,8 +6,6 @@
 
 namespace PHASIC {
 
-  std::string PSId(const size_t &id);
-
   struct Subprocess_Info {
   public:
 

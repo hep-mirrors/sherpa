@@ -32,8 +32,7 @@ namespace SHERPA {
     bool CheckOnshellness(ATOOLS::Blob * blob);
   public :
     // constructor
-    Soft_Photon_Handler(std::string path, std::string datfile,
-                        Matrix_Element_Handler * meh);
+    Soft_Photon_Handler(Matrix_Element_Handler*);
     // destructor
     ~Soft_Photon_Handler();
     bool AddRadiation(ATOOLS::Blob *);

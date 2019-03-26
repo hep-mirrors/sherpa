@@ -1,7 +1,7 @@
 #include "SHRiMPS/Event_Generation/Single_Diffractive_Event_Generator.H"
 #include "SHRiMPS/Tools/Special_Functions.H"
 #include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"

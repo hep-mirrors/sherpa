@@ -1,10 +1,11 @@
 #ifndef PHASIC_Process_MCATNLO_Process_H
 #define PHASIC_Process_MCATNLO_Process_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Phys/Variations.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+
+#include <memory>
 
 namespace ATOOLS { class Cluster_Amplitude; }
 
@@ -48,6 +49,8 @@ namespace PHASIC {
 
     //! Cluster amplitude for interface with MC@NLO shower
     ATOOLS::Cluster_Amplitude *p_ampl;
+
+    void RegisterDefaults() const;
 
     /*!
      * @param pi Process_Info Process information object
@@ -119,9 +122,9 @@ namespace PHASIC {
 
     struct KFactorReweightingInfo {
       double m_random;
-      SP(ATOOLS::Variation_Weights) m_rsvarweights;
-      SP(ATOOLS::Variation_Weights) m_bvivarweights;
-      SP(ATOOLS::Variation_Weights) m_bvarweights;
+      std::shared_ptr<ATOOLS::Variation_Weights> m_rsvarweights;
+      std::shared_ptr<ATOOLS::Variation_Weights> m_bvivarweights;
+      std::shared_ptr<ATOOLS::Variation_Weights> m_bvarweights;
     };
 
     double ReweightLocalKFactor(ATOOLS::Variation_Parameters *,

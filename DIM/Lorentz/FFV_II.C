@@ -22,7 +22,7 @@ namespace DIM {
     {
       double A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
       double B=-(1.0+s.m_z);
-      return A*(1.0+p_sk->GF()->K(s))+B;
+      return A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B;
     }
 
     double Integral(const Splitting &s) const

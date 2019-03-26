@@ -1,7 +1,7 @@
 #include "PHASIC++/Channels/VHAAG_res.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -35,12 +35,10 @@ VHAAG_res::VHAAG_res(int _nin,int _nout,int pn,VHAAG_res* ovl)
     Abort();
   }
   if (!ovl) {
-    Default_Reader reader;
-    reader.SetInputPath(rpa->GetPath());
-    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    m_rkf = reader.Get<int>("VHAAG_RES_KF",24);
-    n_d1  = reader.Get<int>("VHAAG_RES_D1",2);
-    n_d2  = reader.Get<int>("VHAAG_RES_D2",3);
+    Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
+    m_rkf = s["RES_KF"].SetDefault(24).Get<int>();
+    n_d1 = s["RES_D1"].SetDefault(2).Get<int>();
+    n_d2 = s["RES_D2"].SetDefault(3).Get<int>();
     msg_Out()<<" Initialized VHAAG with "<<Flavour((kf_code)(m_rkf))<<"-resonance."<<std::endl;
   }
   else {

@@ -7,7 +7,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+
+#include <cassert>
 
 #define s_ymax std::numeric_limits<double>::max()
 
@@ -21,7 +22,12 @@ QT_Selector::QT_Selector(const Selector_Key &key):
   int nnj=0;
   for (size_t i(m_nin);i<m_nin+m_nout;++i)
     if (!Flavour(kf_jet).Includes(p_fl[i])) ++nnj;
-  m_qtmin=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  auto s = key.m_settings;
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() != 2)
+    THROW(fatal_error, "Wrong syntax for NNLOqT selector");
+  assert(parameters[0] == "NNLOqT");
+  m_qtmin = s.Interprete<double>(parameters[1]);
   m_type=m_nout-(p_proc->Info().Has(nlo_type::real)?nnj+1:nnj);
 }
 
@@ -41,7 +47,6 @@ DECLARE_ND_GETTER(QT_Selector,"NNLOqT",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,QT_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
   const Flavour_Vector &fl(key.p_proc->Flavours());
   return new QT_Selector(key);
 }

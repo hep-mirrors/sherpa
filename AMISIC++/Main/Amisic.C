@@ -1,205 +1,227 @@
 #include "AMISIC++/Main/Amisic.H"
-
-#include "AMISIC++/Model/Simple_Chain.H"
-#include "AMISIC++/Model/Simple_String.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
+using namespace std;
 
-Amisic::Amisic():
-  m_hardmodel("Unknown"),
-  m_softmodel("Unknown"),
-  p_hardbase(NULL),
-  p_softbase(NULL),
-  p_model(NULL),
-  p_beam(NULL),
-  p_isr(NULL),
-  m_external(false) {}
+Amisic::Amisic() : p_processes(NULL), m_ana(true)
+{}
 
-Amisic::Amisic(MODEL::Model_Base *const model,
-	       BEAM::Beam_Spectra_Handler *const beam,
-	       PDF::ISR_Handler *const isr):
-  m_hardmodel("Unknown"),
-  m_softmodel("Unknown"),
-  p_hardbase(NULL),
-  p_softbase(NULL),
-  p_model(model),
-  p_beam(beam),
-  p_isr(isr),
-  m_external(true) {}
-
-Amisic::~Amisic() 
-{
-  if (p_hardbase!=NULL) delete p_hardbase;
-  if (p_softbase!=NULL) delete p_softbase;
+Amisic::~Amisic() {
+  if (p_processes) delete p_processes;
+  if (m_ana) FinishAnalysis();
 }
 
-bool Amisic::Initialize()
+bool Amisic::Initialize(MODEL::Model_Base *const model,
+			PDF::ISR_Handler *const isr)
 {
-  if (InputPath()=="" && InputFile()=="") return false;
-  Default_Reader reader;
-  reader.SetInputPath(InputPath());
-  reader.SetInputFile(InputFile());
-  std::vector<std::string> model;
-  if (!reader.ReadStringVectorNormalisingNoneLikeValues(model,"HARD_MODEL_NAME")) {
-    model.push_back("Simple_Chain");
-  }
-  for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
-  SelectHardModel(model[0]);
-  if (!reader.ReadStringVectorNormalisingNoneLikeValues(model,"SOFT_MODEL_NAME")) {
-    model.push_back("None");
-  }
-  for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
-  SelectSoftModel(model[0]);
-  p_hardbase->SetInputPath(InputPath());
-  p_hardbase->SetInputFile(reader.Get("HARD_MODEL_FILE", InputFile()));
-  p_softbase->SetInputPath(InputPath());
-  p_softbase->SetInputFile(reader.Get("SOFT_MODEL_FILE", InputFile()));
-  bool success=true;
-  success=success&&p_hardbase->Initialize();
-  success=success&&p_softbase->Initialize();
-  return success;
-}
-
-void Amisic::SameHardProcess(ATOOLS::Blob *blob)
-{
-  p_hardbase->FillBlob(blob);
-}
-
-void Amisic::SameSoftProcess(ATOOLS::Blob *blob)
-{
-  p_softbase->FillBlob(blob);
-}
-
-bool Amisic::VetoHardProcess(ATOOLS::Blob *blob)
-{
-  return p_hardbase->VetoProcess(blob);
-}
-
-bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
-{
-  if (MI_Base::StopGeneration(MI_Base::HardEvent)) return false;
-  if (!p_hardbase->GenerateProcess()) return false;
-  p_hardbase->UpdateAll(p_hardbase);
-  return p_hardbase->FillBlob(blob);
-}
-
-bool Amisic::GenerateSoftProcess(ATOOLS::Blob *blob)
-{
-  if (MI_Base::StopGeneration(MI_Base::SoftEvent)) return false;
-  if (!p_softbase->GenerateProcess()) return false;
-  p_softbase->UpdateAll(p_softbase);
-  return p_softbase->FillBlob(blob);
-}
-
-bool Amisic::GenerateHardEvent(ATOOLS::Blob_List *blobs)
-{
-  p_hardbase->Reset();
-  while (true) {
-    Blob *newblob = new Blob();
-    if (GenerateHardProcess(newblob)) {
-      newblob->SetType(btp::Hard_Collision);
-      newblob->SetStatus(blob_status::needs_showers &
-			 blob_status::needs_beams &
-			 blob_status::needs_hadronization);
-      newblob->SetId();
-      blobs->push_back(newblob);
-    }
-    else {
-      delete newblob;
-      if (MI_Base::StopGeneration(MI_Base::HardEvent)) return true;
-      msg_Tracking()<<"Amisic::GenerateHardEvent(): "
-		    <<"Cannot create hard underlying event."<<std::endl
-		    <<"   Abort attempt."<<std::endl;
-      return false;
+  if (!InitParameters()) return false;
+  bool shown = false;
+  for (size_t beam=0;beam<2;beam++) {
+    if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
+      msg_Error()<<"Potential error in "<<METHOD<<":\n"
+		 <<"   IR cutoff of MPI model "<<(*mipars)("pt_0")
+		 <<" below minimal scale of PDFs.\n"
+		 <<"   Will freeze PDFs at their minimal scale: "
+		 <<sqrt(isr->PDF(beam)->Q2Min())<<" GeV.\n";
+      shown = true;
     }
   }
+
+  // Calculate hadronic non-diffractive cross sections, to act as normalization for the
+  // multiple scattering probability. 
+  Hadronic_XSec_Calculator xsecs;
+  xsecs();
+
+  // Initialize the parton-level processes - currently only 2->2 scatters and use the
+  // information to construct a verry quick overestimator - this follows closely the
+  // algorithm in the original Sjostrand - van der Zijl publication.
+  // The logic for the overestimator is based on
+  // - t-channel dominance allowing to approximate differential cross sections as
+  //   dsigma ~ dp_T dy f(x_1) f_(x_2) C_1C_2 as(t)^2/(t+t_0)^2
+  //   where C_1/2 are the colour factors of the incoming partons, x_1/2 are the
+  //   Bjorken-x.
+  // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
+  //   where x_1 and x_2 are identical
+  p_processes = new MI_Processes();
+  p_processes->SetSigmaND(xsecs.XSnd());
+  p_processes->Initialize(model,NULL,isr);
+  
+  m_overestimator.Initialize(p_processes);
+  m_overestimator.SetXSnd(xsecs.XSnd());
+  
+  m_singlecollision.Init();
+  m_singlecollision.SetMIProcesses(p_processes);
+  m_singlecollision.SetOverEstimator(&m_overestimator);
+
+  m_impact.SetProcesses(p_processes);
+  m_impact.Initialize(p_processes->XShard()/xsecs.XSnd());
+  if (m_ana) InitAnalysis();
   return true;
 }
 
-bool Amisic::GenerateSoftEvent(ATOOLS::Blob_List *blobs)
-{
-  p_softbase->Reset();
-  while (true) {
-    Blob *newblob = new Blob();
-    if (GenerateSoftProcess(newblob)) {
-      newblob->SetType(btp::Soft_Collision);
-      newblob->SetStatus(blob_status::needs_beams &
-			 blob_status::needs_hadronization);
-      newblob->SetId();
-      blobs->push_back(newblob);
-    }
-    else {
-      delete newblob;
-      if (MI_Base::StopGeneration(MI_Base::SoftEvent)) return true;
-      msg_Tracking()<<"Amisic::GenerateSoftEvent(): "
-		    <<"Cannot create soft underlying event."<<std::endl
-		    <<"   Abort attempt."<<std::endl;
-      return false;
-    }
-  } 
-  return true;
+bool Amisic::InitParameters() {
+  mipars = new MI_Parameters();
+  return mipars->Init();
 }
 
-bool Amisic::GenerateEvent(ATOOLS::Blob_List *blobs)
-{
-  Reset();
-  if (!GenerateHardEvent(blobs)) return false;
-  if (!GenerateSoftEvent(blobs)) return false;
-  return true;
+void Amisic::SetMaxEnergies(const double & E1,const double & E2) {
+  m_residualE1 = E1;
+  m_residualE2 = E2;
+  m_singlecollision.SetResidualX(2.*E1/rpa->gen.Ecms(),2.*E2/rpa->gen.Ecms());
 }
 
-void Amisic::Reset()
-{
-  MI_Base::ResetAll();
+void Amisic::SetMaxScale(const double & scale) {
+  m_pt2 = sqr(scale);
+  m_singlecollision.SetLastPT2(m_pt2);
 }
 
-void Amisic::CleanUp()
-{
-  MI_Base::CleanUp();
+void Amisic::SetB(const double & b) {
+  // Select b and set the enhancement factor
+  m_b    = (b<0.)?m_impact.SelectB(m_pt2):b;
+  m_bfac = Max(0.,m_impact.Enhancement());
+}
+  
+bool Amisic::VetoEvent(const double & scale) {
+  if (scale<0.) return false;
+  return false;
 }
 
-bool Amisic::SelectHardModel(const std::string &hardmodel)
-{ 
-  m_hardmodel=hardmodel; 
-  if (p_hardbase!=NULL) delete p_hardbase;
-  msg_Tracking()<<"Amisic::SelectHardModel("<<hardmodel<<"): ";
-  if (m_hardmodel=="Simple_Chain") {
-    msg_Tracking()<<"Initialize simple hard underlying event model."
-		  <<std::endl;
-    if (m_external) p_hardbase = new Simple_Chain(p_model,p_beam,p_isr);
-    else p_hardbase = new Simple_Chain();
+const double Amisic::ScaleMin() const {
+  return (*mipars)("pt_min");
+}
+
+const double Amisic::ScaleMax() const {
+  return m_pt2;
+}
+
+
+Blob * Amisic::GenerateScatter()
+{
+  Blob * blob = m_singlecollision.NextScatter(m_bfac);
+  if (blob) {
+    m_pt2 = m_singlecollision.LastPT2();
+    if (m_ana) Analyse(false);
+    return blob;
   }
   else {
-    msg_Tracking()<<"Initialize no hard underlying event handler."<<std::endl;
-    p_hardbase = new MI_None(MI_Base::HardEvent);
-    m_hardmodel="None";
+    if (m_ana) Analyse(true);
   }
-  p_hardbase->SetInputPath(InputPath());
-  p_hardbase->SetOutputPath(OutputPath());
-  p_hardbase->SetInputFile(InputFile());
-  return true;
+  return NULL;
 }
 
-bool Amisic::SelectSoftModel(const std::string &softmodel)
-{ 
-  m_softmodel=softmodel; 
-  if (p_softbase!=NULL) delete p_softbase;
-  msg_Tracking()<<"Amisic::SelectSoftModel("<<softmodel<<"): ";
-  if (m_softmodel=="Simple_String") {
-    msg_Tracking()<<"Initialize simple soft underlying event model."
-		  <<std::endl;
-    if (m_external) p_softbase = new Simple_String();
-    else p_softbase = new Simple_String(p_isr);
+Cluster_Amplitude * Amisic::ClusterConfiguration(Blob * blob) {
+  Cluster_Amplitude * ampl = Cluster_Amplitude::New();
+  CreateAmplitudeLegs(ampl,blob);
+  FillAmplitudeSettings(ampl);
+  return ampl;
+}
+
+void Amisic::CreateAmplitudeLegs(Cluster_Amplitude * ampl,Blob * blob) {
+  for (size_t i(0);i<blob->NInP()+blob->NOutP();++i) {
+    size_t     id(1<<ampl->Legs().size());
+    Particle * part(blob->GetParticle(i));
+    ColorID    col(part->GetFlow(1),part->GetFlow(2));
+    if (i<blob->NInP()) {
+      ampl->CreateLeg(-part->Momentum(),part->Flav().Bar(),col.Conj(),id);
+    }
+    else {
+      ampl->CreateLeg(part->Momentum(),part->Flav(),col,id);
+    }
+    ampl->Legs().back()->SetStat(0);
   }
-  else {
-    msg_Tracking()<<"Initialize no soft underlying event handler."<<std::endl;
-    p_softbase = new MI_None(MI_Base::SoftEvent);
-    m_softmodel="None";
+}
+
+void Amisic::FillAmplitudeSettings(Cluster_Amplitude * ampl) {
+  double muf2 = m_singlecollision.muF2(), muq2 = muf2;
+  double mur2 = m_singlecollision.muR2();
+  ampl->SetNIn(2);
+  ampl->SetMuR2(mur2);
+  ampl->SetMuF2(muf2);
+  ampl->SetMuQ2(muq2);
+  ampl->SetKT2(muf2);
+  ampl->SetMu2(mur2);
+  ampl->SetOrderEW(0);
+  ampl->SetOrderQCD(2);
+  ampl->SetMS(p_processes);
+}
+
+int Amisic::ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
+  return p_processes->ShiftMasses(ampl);
+}
+
+
+bool Amisic::VetoScatter(Blob * blob)
+{
+  msg_Out()<<METHOD<<" ont implemented yet.  Will exit.\n";
+  exit(1);
+}
+    
+void Amisic::CleanUp() {}
+void Amisic::Reset() {}
+
+void Amisic::InitAnalysis() {
+  m_nscatters = 0;
+  m_histos[string("N_scatters")] = new Histogram(0,0,20,20);
+  m_histos[string("B")]          = new Histogram(0,0,10,100);
+  m_histos[string("Bfac")]       = new Histogram(0,0,10,100);
+  m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
+  m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
+  m_histos[string("P_T(2)")]     = new Histogram(0,0,100,100);
+  m_histos[string("Y(2)")]       = new Histogram(0,-10,10,10);
+  m_histos[string("Delta_Y(2)")] = new Histogram(0,0,10,10);
+}
+
+void Amisic::FinishAnalysis() {
+  Histogram * histo;
+  string name;
+  for (map<string,Histogram *>::iterator 
+	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
+    histo = hit->second;
+    name  = string("MPI_Analysis/")+hit->first+string(".dat");
+    histo->Finalize();
+    histo->Output(name);
+    delete histo;
   }
-  p_softbase->SetInputPath(InputPath());
-  p_softbase->SetOutputPath(OutputPath());
-  p_softbase->SetInputFile(InputFile());
-  return true;
+  m_histos.clear();
+}
+
+void Amisic::Analyse(const bool & last) {
+  if (!last) {
+    if (m_nscatters==0) {
+      m_histos[string("P_T(1)")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y(1)")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y(1)")]->Insert(dabs(m_singlecollision.Y3()-
+						  m_singlecollision.Y4()));
+    }
+    if (m_nscatters==1) {
+      m_histos[string("P_T(2)")]->Insert(sqrt(m_singlecollision.PT2()));
+      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y3());
+      m_histos[string("Y(2)")]->Insert(m_singlecollision.Y4());
+      m_histos[string("Delta_Y(2)")]->Insert(dabs(m_singlecollision.Y3()-
+						  m_singlecollision.Y4()));
+    }
+  }
+  m_nscatters++;
+  if (last) {
+    m_histos[string("N_scatters")]->Insert(double(m_nscatters)+0.5);
+    m_histos[string("B")]->Insert(m_b);
+    m_histos[string("Bfac")]->Insert(m_bfac);
+    m_nscatters = 0;
+  }
+}
+
+void Amisic::Test() {
+  double Q2start(100);
+  long int n(1000000);
+  m_overestimator.Test(Q2start,n);
+  m_singlecollision.Test(Q2start,n);
+  exit(1);
 }

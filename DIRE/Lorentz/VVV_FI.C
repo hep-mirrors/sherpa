@@ -17,7 +17,7 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double z(s.m_z);
-      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
+      double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/(s.m_Q2/s.m_y));
       double B=-2.0+z*(1.0-z);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=p_sk->Mode()?1.0-z:z;
@@ -30,7 +30,7 @@ namespace DIRE {
 	B2-=2.*(x*x-1.0)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.0*x*(x*x-1.0))/2.0;
       }
-      return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
+      return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B);
     }
 
     double Integral(const Splitting &s) const

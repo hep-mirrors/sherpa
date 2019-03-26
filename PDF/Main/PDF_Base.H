@@ -4,36 +4,43 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
-
-namespace ATOOLS { class Data_Reader; }
+#include "ATOOLS/Org/Settings.H"
 
 namespace PDF {
 
   struct PDF_Arguments {
-    ATOOLS::Flavour m_bunch;
-    ATOOLS::Data_Reader *p_read;
+    ATOOLS::Flavour       m_bunch;
     int m_ibeam;
     std::string m_set;
     int m_member;
+    int m_order, m_scheme;
     PDF_Arguments(const ATOOLS::Flavour &bunch,
-                  ATOOLS::Data_Reader *const read, int ibeam,
-                  std::string set, int member):
-      m_bunch(bunch), p_read(read), m_ibeam(ibeam),
-      m_set(set), m_member(member) {}
-  };// end of struct PDF_Arguments
+                  int ibeam,
+                  std::string set,
+                  int member,
+                  int order=-1,
+                  int scheme=-1):
+      m_bunch(bunch),
+      m_ibeam(ibeam),
+      m_set(set),
+      m_member(member),
+      m_order(order),
+      m_scheme(scheme)
+    {}
+  };
 
   struct PDF_Flavour: public ATOOLS::Flavour {
     double m_mass, m_thres;
     PDF_Flavour(const kf_code &kf=kf_none,const bool anti=false):
       Flavour(kf,anti), m_mass(0.0), m_thres(0.0) {}
-  };// end of struct PDF_Flavour
+  };
 
   struct PDF_AS_Info {
     int m_order,m_nf;
     double m_asmz,m_mz2;
     std::vector<PDF_Flavour> m_flavs;
     inline PDF_AS_Info(): m_order(-1), m_nf(-1), m_asmz(0.0), m_mz2(0.0) {}
-  };// end of struct PDF_AS_Info
+  };
 
   std::ostream &operator<<(std::ostream &ostr,const PDF_AS_Info &asi);
 
@@ -50,44 +57,31 @@ namespace PDF {
     ATOOLS::Flavour_Set m_partons;
     ATOOLS::Flavour     m_bunch;
 
-    std::string m_type;
-
-    std::string m_set;
-    int m_member;
-    int m_lhef_number;
+    std::string m_type, m_set;
+    int m_member, m_lhef_number, m_nf;
 
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
-    int    m_nf;
-
+    bool   m_rescX;
+    
     PDF_AS_Info m_asinfo;
 
-    std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
-
-    void SingleExtract(const ATOOLS::Flavour& flavour,const double& x);
-    void SingleReset();
     virtual void CalculateSpec(const double& x,const double& Q2) = 0;
-
   private:
-
     double m_rq2min, m_rq2max;
 
+    void RegisterDefaults() const;
+
   public:
-
-    // constructor
     PDF_Base();
-
-    // destructor
     virtual ~PDF_Base();
 
-    // member functions
     void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
     virtual double GetXPDF(const kf_code& kf, bool anti) = 0;
     virtual double AlphaSPDF(const double &q2);
-
     inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
-
+    
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF();
 
@@ -101,38 +95,26 @@ namespace PDF {
     
     static void ShowSyntax(const size_t i);
 
-    // inline functions
-    inline double XMin() const  { return m_xmin;  }
-    inline double XMax() const  { return m_xmax;  }
-    inline double Q2Min() const { return m_rq2min; }
-    inline double Q2Max() const { return m_rq2max; }
-    inline int    Nf() const    { return m_nf; }
-
-    inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
+    inline const std::string &Type() const            { return m_type;     }  
+    inline std::string Set() const                    { return m_set; }
     inline const ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
-
-    inline const std::string &Type() const { return m_type;     }  
-    inline double         Exponent() const { return m_exponent; }
-
-    inline PDF_Base *operator->() { return GetBasicPDF(); }
-
-    inline void Extract(const ATOOLS::Flavour& flavour,const double& x)
-    { GetBasicPDF()->SingleExtract(flavour,x); }
-    inline void Reset()
-    { GetBasicPDF()->SingleReset(); }
-
-    inline bool Contains(const ATOOLS::Flavour &a) const
-    { return m_partons.find(a)!=m_partons.end(); }
-
-    inline double RescaleFactor() const { return m_rescale; }
-
+    inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
+    inline bool Contains(const ATOOLS::Flavour & flav) const {
+      return m_partons.find(flav)!=m_partons.end();
+    }
+    inline int Member() const         { return m_member; }
+    inline int LHEFNumber() const     { return m_lhef_number; }
+    inline PDF_Base *operator->()     { return GetBasicPDF(); }
     inline PDF_AS_Info ASInfo() const { return m_asinfo; }
-
-    inline std::string Set() const { return m_set; }
-    inline int Member() const { return m_member; }
-
-    int LHEFNumber() const { return m_lhef_number; }
-
+    inline double Exponent() const    { return m_exponent; }
+    inline double XMin() const        { return m_xmin;  }
+    inline double XMax() const        { return m_xmax;  }
+    inline double Q2Min() const       { return m_rq2min; }
+    inline double Q2Max() const       { return m_rq2max; }
+    inline void SetRescaleFactor(const double & fac) { m_rescale = fac; }
+    inline void ResetRescaleFactor()                 { m_rescale = 1.; }
+    inline void SetRescaling(const bool & resc=true) { m_rescX   = resc; }
+    inline double RescaleFactor() const              { return m_rescale; }
   };
   
   /*!

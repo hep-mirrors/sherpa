@@ -5,6 +5,9 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Poincare.H"
 
+namespace ATOOLS {
+  class Scoped_Settings;
+}
 namespace PDF    { class Remnant_Base; }
 
 namespace SHERPA {
@@ -42,6 +45,12 @@ namespace SHERPA {
 
     PDF::Remnant_Base *p_remnants[2];
 
+    void RegisterDefaults(ATOOLS::Scoped_Settings&);
+
+    void ReadTwoDoubles(ATOOLS::Scoped_Settings&,
+                        const std::string& key,
+                        double* buffer);
+
     double Lambda2(double sp,double sp1,double sp2); 
 
     bool FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle *&connected,
@@ -53,7 +62,7 @@ namespace SHERPA {
   public:
 
     // constructor
-    Primordial_KPerp(std::string _m_path,std::string _m_file);
+    Primordial_KPerp();
     
     // destructor
     ~Primordial_KPerp();

@@ -5,7 +5,7 @@ dir=${db%.db}
 
 if test -d ${dir}; then echo "directory exists."; exit 1; fi
 
-files=$(sqlite3 ${db} "select file from path")
+files=$(sqlite3 ${db} "select distinct file from path")
 
 for i in $files; do
   if test -e ${dir}/${i}; then
@@ -21,6 +21,6 @@ for i in $files; do
   file=${dir}/"${i}"
   mkdir -p $(dirname "$file")
   echo "$file"
-  sqlite3 ${db} "select content from path where file='${i}'" > "${file}"
+  sqlite3 ${db} "select content from path where file='${i}' order by rowid desc limit 1" > "${file}"
 done
 echo "... done."

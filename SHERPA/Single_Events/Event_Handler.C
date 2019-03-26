@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "SHERPA/Main/Filter.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -6,7 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
@@ -27,11 +28,12 @@ Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0),
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
   m_mn(0), m_msum(0.0), m_msumsqr(0.0),
-  p_variations(NULL)
+  p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
-  Default_Reader reader;
-  m_checkweight = reader.Get<int>("CHECK_WEIGHT", 0);
+  Settings& s = Settings::GetMainSettings();
+  m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
+  m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
 }
 
@@ -98,9 +100,8 @@ void Event_Handler::PrintGenericEventStructure()
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<p_variations->EventPhaseType()<<" : ";
-    msg_Out()<<p_variations->GetParametersVector()->size();
-    msg_Out()<<" variations"<<std::endl;
+    msg_Out()<<p_variations->EventPhaseType()<<" : "
+	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
   msg_Out()<<"---------------------------------------------------------\n";
 }
@@ -203,15 +204,29 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
   DEBUG_FUNC("weight="<<weight);
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
-  bool hardps = true;
+  bool hardps = true, filter = p_filter!=NULL;
   do {
-    if ((*pit)->Type()==eph::Analysis) {
+    if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;
       continue;
     }
-
-    msg_Debugging()<<"trying phase: "<<(*pit)->Name();
+    if ((*pit)->Type()==eph::Hadronization && filter) {
+      msg_Debugging()<<"Filter kicks in now: "<<m_blobs.back()->Type()<<".\n";
+      if ((*p_filter)(&m_blobs)) {
+	msg_Debugging()<<METHOD<<": filters accepts event.\n";
+	filter = false;
+      }
+      else {
+	msg_Debugging()<<METHOD<<": filter rejects event.\n";
+	Return_Value::IncNewEvent("Filter");
+	if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+	Reset();
+	return 2;
+      }
+    }
+    //msg_Out()<<"Trying "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
+    //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -231,11 +246,11 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
     case Return_Value::Nothing :
       ++pit;
       break;
-    case Return_Value::Retry_Phase : 
+    case Return_Value::Retry_Phase :
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
-    case Return_Value::Retry_Event : 
+    case Return_Value::Retry_Event :
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
@@ -254,7 +269,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
 		   <<" trials. Request new event.\n";
       }
-    case Return_Value::New_Event : 
+    case Return_Value::New_Event :
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
@@ -268,7 +283,40 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       THROW(fatal_error,"Invalid return value");
     }
   } while (pit!=p_phases->end());
-  msg_Tracking()<<METHOD<<": Event ended normally.\n";
+  msg_Tracking()<<METHOD<<": Event phases ended normally.\n";
+
+  msg_Tracking()<<METHOD<<": Running user hooks now.\n";
+  for (size_t i=0; i<p_phases->size(); ++i) {
+    Event_Phase_Handler* phase=(*p_phases)[i];
+    if (phase->Type()!=eph::Userhook) continue;
+
+    Return_Value::code rv(phase->Treat(&m_blobs, weight));
+    if (rv!=Return_Value::Nothing)
+      msg_Tracking()<<METHOD<<"(): ran '"<<phase->Name()<<"' -> "
+		    <<rv<<std::endl;
+    switch (rv) {
+    case Return_Value::Success :
+      Return_Value::IncCall(phase->Name());
+      msg_Debugging()<<m_blobs;
+      break;
+    case Return_Value::Nothing :
+      break;
+    case Return_Value::New_Event :
+      Return_Value::IncCall(phase->Name());
+      Return_Value::IncNewEvent(phase->Name());
+      if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+      Reset();
+      return 2;
+    case Return_Value::Error :
+      Return_Value::IncCall(phase->Name());
+      Return_Value::IncError(phase->Name());
+      return 3;
+    default:
+      THROW(fatal_error,"Invalid return value");
+    }
+  }
+  msg_Tracking()<<METHOD<<": User hooks ended normally.\n";
+
   return 0;
 }
 
@@ -373,13 +421,10 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
 bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
-
-  Default_Reader reader;
-  int mother_kf(0);
-  if (!reader.Read(mother_kf,"DECAYER", 0)) {
+  if (m_decayer == kf_none) {
     THROW(fatal_error,"Didn't find DECAYER=<PDG_CODE> in parameters.");
   }
-  Flavour mother_flav(mother_kf);
+  Flavour mother_flav(m_decayer);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
 

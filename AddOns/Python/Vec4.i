@@ -1,4 +1,3 @@
-//%module Vec4
 %{
 #include <ATOOLS/Math/MathTools.H>
 #include <ATOOLS/Math/Vec4.H>
@@ -18,36 +17,47 @@ namespace ATOOLS {
   typedef std::vector<Vec4D> Vec4D_Vector;
 
   template<typename Scalar> class Vec4 {
-    Scalar m_x[4];
-    //template <typename Scalar2> friend class Vec4;
+
   public:
-    Vec4() {
-      m_x[0]=m_x[1]=m_x[2]=m_x[3]=Scalar(0.0);
-    }
 
-    inline Vec4(const Scalar& x0, const Scalar& x1,
-                const Scalar& x2, const Scalar& x3) {
-      m_x[0] = x0; m_x[1] = x1; m_x[2] = x2; m_x[3] = x3;
-    }
+    Vec4();
 
-    // This extension is called when Vec4[i] is evaluated
-    // NOTE: a proper typemap might defined if "Scalar" is not
-    // of one of the standard C++ types (double/float/int)
+    Vec4(const Scalar& x0, const Scalar& x1,
+	 const Scalar& x2, const Scalar& x3);
+
+    Scalar Mass() const;
+
     %extend{
-        Scalar __getitem__(unsigned int i){
-	  return (*self)[i];
-        };
+
+      Scalar __getitem__(unsigned int i){
+	return (*self)[i];
+      };
+
+      Scalar __mul__(const Vec4<Scalar>& v){
+	return (*self)*v;
+      };
+
+      Vec4<Scalar> __mul__(const Scalar& s){
+	return (*self)*s;
+      };
+
+      Vec4<Scalar> __rmul__(const Scalar& s){
+	return (*self)*s;
+      };
+
+      Vec4<Scalar> __add__(const Vec4<Scalar>& v){
+	return (*self)+v;
+      };
+
+      Vec4<Scalar> __sub__(const Vec4<Scalar>& v){
+	return (*self)-v;
+      }
+
+      Vec4<Scalar> __neg__(){
+	return -(*self);
+      }
+
     };
-
-    %rename(__sub__) operator-;
-
-    inline Vec4<Scalar> operator-() const {
-      return Vec4<Scalar>(-m_x[0],-m_x[1],-m_x[2],-m_x[3]);
-    }
-
-    double Mass() const { 
-      return sqrt(ATOOLS::Abs<Scalar>(Abs2()));
-    }
 
     %extend {
       std::string __str__() {
@@ -59,8 +69,6 @@ namespace ATOOLS {
 
   };
 
-
-  
 }
 
 %include <std_vector.i>

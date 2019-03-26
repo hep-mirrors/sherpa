@@ -6,8 +6,9 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -31,14 +32,16 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 MINLO_Scale_Setter::MINLO_Scale_Setter
 (const Scale_Setter_Arguments &args):
-  Scale_Setter_Base(args), m_tagset(this), p_ampl(NULL), p_vampl(NULL)
+  Scale_Setter_Base(args), m_tagset(this), p_ampl(NULL), p_vampl(NULL),
+  p_isr{ p_proc->Integrator()->ISR() }
 {
+  RegisterDefaults();
+  Settings& s = Settings::GetMainSettings();
   std::string tag(args.m_scale), core;
   m_nproc=p_proc->Info().Has(nlo_type::real) ||
     p_proc->Info().Has(nlo_type::rsub) ||
     p_proc->Info().Has(nlo_type::loop) ||
     p_proc->Info().Has(nlo_type::vsub);
-  p_isr=p_proc->Integrator()->ISR();
   size_t pos(tag.find('['));
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+1);
@@ -70,43 +73,42 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
-  Data_Reader read(" ",";","#","=");
-  std::vector<std::string> cores;
-  if (read.VectorFromFile(cores,"MINLO_ALLOW_CORE")) {
+  Scoped_Settings metssettings{ s["MINLO"] };
+  m_noutmin = metssettings["NOUT_MIN"].Get<int>();
+  m_cmode = metssettings["CLUSTER_MODE"].Get<int>();
+  m_hqmode = metssettings["HQ_MODE"].Get<int>();
+  m_order = metssettings["FORCE_ORDER"].Get<int>();
+  m_orderrs = metssettings["ORDER_RS"].Get<int>();
+  m_usecomb = metssettings["USE_COMBINABLE"].Get<int>();
+  m_usepdfinfo = metssettings["USE_PDFINFO"].Get<int>();
+  m_nlocpl = metssettings["NLO_COUPLING_MODE"].Get<int>();
+  m_mufmode = metssettings["MUF_VARIATION_MODE"].Get<int>();
+  m_bumode = metssettings["BACKUP_MODE"].Get<int>();
+  m_murmode = metssettings["MUR_MODE"].Get<int>();
+  m_dr = metssettings["DELTA_R"].Get<double>();
+  m_muf2min = metssettings["MUF2_MIN"].Get<double>();
+  if (core == "") {
+    core =
+      s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("VAR{H_TM2/4}");
+  }
+  if (metssettings["ALLOW_CORE"].IsCustomised()) {
+    const auto cores = metssettings["ALLOW_CORE"].GetVector<std::string>();
     msg_Debugging()<<METHOD<<"(): Allow cores ";
     Data_Reader cread(",",";","#","=");
-    cread.SetAddCommandLine(false);
     for (size_t i(0);i<cores.size();++i) {
       cread.SetString(cores[i]);
       std::vector<int> flavs;
       cread.VectorFromString(flavs,"");
       m_cores.resize(m_cores.size()+1);
       for (size_t j(0);j<flavs.size();++j)
-	m_cores.back().push_back(flavs[j]);
+        m_cores.back().push_back(flavs[j]);
       msg_Debugging()<<m_cores.back()<<" ";
-    }  
+    }
     msg_Debugging()<<"\n";
   }
-  if (!read.ReadFromFile(m_noutmin,"MINLO_NOUT_MIN")) m_noutmin=2;
-  if (!read.ReadFromFile(m_cmode,"MINLO_CLUSTER_MODE")) m_cmode=1;
-  if (!read.ReadFromFile(m_hqmode,"MINLO_HQ_MODE")) m_hqmode=1;
-  if (!read.ReadFromFile(m_order,"MINLO_FORCE_ORDER")) m_order=1;
-  if (!read.ReadFromFile(m_orderrs,"MINLO_ORDER_RS")) m_orderrs=1;
-  if (!read.ReadFromFile(m_usecomb,"MINLO_USE_COMBINABLE")) m_usecomb=0;
-  if (!read.ReadFromFile(m_usepdfinfo,"MINLO_USE_PDFINFO")) m_usepdfinfo=1;
-  if (!read.ReadFromFile(m_nlocpl,"MINLO_NLO_COUPLING_MODE")) m_nlocpl=1;
-  if (!read.ReadFromFile(m_mufmode,"MINLO_MUF_VARIATION_MODE")) m_mufmode=0;
-  if (!read.ReadFromFile(m_bumode,"MINLO_BACKUP_MODE")) m_bumode=1;
-  if (!read.ReadFromFile(m_murmode,"MINLO_MUR_MODE")) m_murmode=1;
-  if (!read.ReadFromFile(m_dr,"MINLO_DELTA_R")) m_dr=1.0;
-  if (!read.ReadFromFile(m_muf2min,"MINLO_MUF2_MIN"))
-    m_muf2min=p_isr->PDF(0)->Q2Min();
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="VAR{H_TM2/4}";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
-    m_nfgsplit=Flavour(kf_jet).Size()/2;
-  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
+  m_nfgsplit = s["DIPOLES"]["NF_GSPLIT"].Get<int>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
@@ -119,6 +121,25 @@ MINLO_Scale_Setter::~MINLO_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   delete p_core;
+}
+
+void MINLO_Scale_Setter::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["MINLO"] };
+  s["NOUT_MIN"].SetDefault(2);
+  s["CLUSTER_MODE"].SetDefault(1);
+  s["HQ_MODE"].SetDefault(1);
+  s["FORCE_ORDER"].SetDefault(1);
+  s["ORDER_RS"].SetDefault(1);
+  s["USE_COMBINABLE"].SetDefault(0);
+  s["USE_PDFINFO"].SetDefault(1);
+  s["NLO_COUPLING_MODE"].SetDefault(1);
+  s["MUF_VARIATION_MODE"].SetDefault(0);
+  s["BACKUP_MODE"].SetDefault(1);
+  s["MUR_MODE"].SetDefault(1);
+  s["DELTA_R"].SetDefault(1.0);
+  s["MUF2_MIN"].SetDefault(p_isr->PDF(0)->Q2Min());
+  s.DeclareVectorSettingsWithEmptyDefault({ "ALLOW_CORE" });
 }
 
 bool MINLO_Scale_Setter::UpdateScale(const ATOOLS::Variation_Parameters &var)
@@ -137,11 +158,11 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   m_p=momenta;
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
   if (p_ampl) p_ampl->Delete();
-  m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_vproc=p_caller->Info().Has(nlo_type::loop) || p_caller->Info().Has(nlo_type::vsub);
-  m_f=p_caller->Flavours();
-  for (size_t i(0);i<p_caller->NIn();++i) m_f[i]=m_f[i].Bar();
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
+  m_rproc=p_proc->Caller()->Info().Has(nlo_type::real);
+  m_vproc=p_proc->Caller()->Info().Has(nlo_type::loop) || p_proc->Caller()->Info().Has(nlo_type::vsub);
+  m_f=p_proc->Caller()->Flavours();
+  for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_f[i]=m_f[i].Bar();
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
   Cluster_Amplitude *ampl(p_ampl = Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
   for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
@@ -152,7 +173,7 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   ops[ampl->Legs().size()-(m_nin+m_noutmin)].push_back
     (std::pair<size_t,double>((1<<ampl->Legs().size())-1,0.0));
   if (ampl->Legs().size()==m_nin+m_noutmin) CoreScale(ampl);
-  ampl->SetOrderQCD(p_caller->MaxOrder(0));
+  ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
   while (ampl->Legs().size()>=m_nin+m_noutmin) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     std::set<MCS_Params> &trials(alltrials[ampl->Legs().size()-(m_nin+m_noutmin)]);
@@ -422,7 +443,7 @@ double MINLO_Scale_Setter::SetScales(Cluster_Amplitude *ampl,const size_t &mode)
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   ampl->SetMuF2(m_scale[stp::fac]);
   ampl->SetMuR2(m_scale[stp::ren]);
   ampl->SetMuQ2(m_scale[stp::res]);
@@ -441,7 +462,7 @@ void MINLO_Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_caller->Name()<<"' {\n";
+		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

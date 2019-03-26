@@ -1,7 +1,6 @@
 #include "SHERPA/SoftPhysics/Parametrised_Beam_Remnants.H"
 
 #include "PDF/Remnant/Hadron_Remnant.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -17,13 +16,12 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Parametrised_Beam_Remnants::
-Parametrised_Beam_Remnants(const std::string path,const std::string file,
-			   PDF::ISR_Handler * const isr,
-			   BEAM::Beam_Spectra_Handler *const beam):
-  p_isr(isr), m_path(path), m_file(file)
+Parametrised_Beam_Remnants::Parametrised_Beam_Remnants(
+    PDF::ISR_Handler * const isr,
+    BEAM::Beam_Spectra_Handler *const beam) :
+  p_isr(isr)
 {
-  p_kperp = new Primordial_KPerp(path,file);
+  p_kperp = new Primordial_KPerp();
   for (size_t i=0;i<2;++i) {
     p_beampart[i] = p_isr->GetRemnant(i);
     p_beampart[i]->SetBeam(beam->GetBeam(i));
@@ -45,11 +43,15 @@ FillBeamBlobs(Blob_List *const bloblist,
        bit!=bloblist->end();++bit) {
     if ((*bit)->Has(blob_status::needs_beams) && 
 	(*bit)->Type()==btp::Shower) {
+      //msg_Out()<<"------------------------------------------------\n"
+      //       <<"Found blob ("<<(*bit)->Id()<<"/"<<(*bit)->Type()<<") "
+      //       <<"with incoming particles:\n";
       for (int i(0);i<(*bit)->NInP();++i) {
 	Particle *isr_init((*bit)->InParticle(i));
 	if (isr_init->ProductionBlob()!=NULL) continue;
 	int beam((*bit)->Beam());
 	if (beam<0) beam=isr_init->Beam();
+	//msg_Out()<<(*isr_init)<<": "<<beam<<" vs. "<<(*bit)->Beam()<<"\n";
 	if (isr_init->Flav().Strong() && 
 	    isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
 	  delete p_beamblob[beam]; 
@@ -59,10 +61,10 @@ FillBeamBlobs(Blob_List *const bloblist,
 	else {
 	  (*bit)->AddStatus(blob_status::internal_flag);
 	  if (!p_beampart[beam]->Extract(isr_init)) {
-	    msg_Debugging()<<METHOD<<"(): Cannot extract particle:\n"
-			   <<*isr_init<<"\n  from \n"
-			   <<*p_beamblob[beam]->InParticle(0)
-			   <<"\n  retry event\n"<<*bloblist<<std::endl;
+	    msg_Out()<<METHOD<<"(): Cannot extract particle:\n"
+		     <<*isr_init<<"\n  from:\n"
+		     <<*p_beamblob[beam]->InParticle(0)<<"\n"
+		     <<"   retry event\n"<<(*bloblist)<<"\n";
 	    for (short unsigned int i(0);i<2;++i) 
 	      bloblist->push_front(p_beamblob[i]);
 	    return Return_Value::Retry_Event;
@@ -70,6 +72,7 @@ FillBeamBlobs(Blob_List *const bloblist,
 	}
       }
       (*bit)->UnsetStatus(blob_status::needs_beams);
+      //msg_Out()<<"------------------------------------------------\n";
     }
   }
   for (short unsigned int i=0;i<2;++i) {
@@ -79,27 +82,48 @@ FillBeamBlobs(Blob_List *const bloblist,
     return Return_Value::Success;
   }
   for (short unsigned int i=0;i<2;++i) {
+    msg_Out()<<"=================================================\n"
+	     <<METHOD<<": FillBlob for Particle("<<i<<")\n";
     if (!p_beampart[i]->FillBlob(p_beamblob[i],NULL)) {
       return Return_Value::Retry_Event; 
     }
+    if (!p_isr->GetNewRemnant(i)->FillBlob(p_beamblob[i],NULL)) {
+      msg_Out()<<"Tried alternative filling.  Did not work.\n";
+    }
   }
-  if (p_kperp->On() &&
-      (p_beampart[0]->Type()==PDF::rtp::hadron ||
-       p_beampart[1]->Type()==PDF::rtp::hadron)) {
+  if (p_beampart[0]->Type()==PDF::rtp::hadron || 
+      p_beampart[1]->Type()==PDF::rtp::hadron) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
     for (short unsigned int i=0;i<2;++i) {
-      //msg_Out()<<METHOD<<"("<<i<<"):\n"<<(*p_beamblob[i])<<"\n";
+      //msg_Out()<<METHOD<<"("<<i<<") - filling kT for\n"
+      //	       <<(*p_beamblob[i])<<"\n";
       p_kperp->FillKPerp(p_beamblob[i]);
     }
   }
   
-  for (short unsigned int i=0;i<2;++i) {
-    if (!p_beampart[i]->AdjustKinematics() || 
-	!p_beampart[i]->AdjustColors()) { 
-      //msg_Out()<<(*bloblist);
-      return Return_Value::Retry_Event; 
+  if (rpa->gen.Beam1().IsHadron()^
+      rpa->gen.Beam2().IsHadron()) {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
     }
   }
+  else {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics() ||
+	  !p_beampart[i]->AdjustColors()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
+    }
+  }
+  //msg_Out()<<"============================================================\n"
+  //	   <<METHOD<<":\n"<<(*bloblist)<<"\n"
+  //	   <<"============================================================\n"
+  //	   <<"============================================================\n"
+  //	   <<"============================================================\n";
   if (bloblist->FourMomentumConservation() && bloblist->ColorConservation()) {
     for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {

@@ -1,0 +1,25 @@
+# general setting
+EVENTS: 100000
+ERROR: 0.99
+FRAGMENTATION: Ahadic
+MI_HANDLER: None
+
+# Has to stay until soft photons are fixed
+YFS:
+  MODE: 0
+
+# me generator settings
+ME_GENERATORS: Comix
+EVENT_GENERATION_MODE: Weighted
+SHOWER_GENERATOR: CSS
+
+# collider setup
+BEAMS: [-11, 2212]
+BEAM_ENERGIES: [27.5, 820]
+PDF_SET: [None, Default]
+
+PROCESSES:
+  - Process: -11 93 -> -11 93
+
+SELECTORS:
+  - [Q2, -11, -11, 4, 1e12]

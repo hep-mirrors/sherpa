@@ -1,6 +1,7 @@
 #include "SHERPA/Main/Sherpa.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -28,16 +29,16 @@ int main(int argc,char* argv[])
 #endif
 #endif
 
-  Sherpa Generator;
+  Sherpa* Generator = new Sherpa(argc, argv);
   try {
-    Generator.InitializeTheRun(argc,argv);
+    Generator->InitializeTheRun();
     int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
-      Generator.InitializeTheEventHandler();
+      Generator->InitializeTheEventHandler();
       for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
-        if (Generator.GenerateOneEvent()) ++i;
+        if (Generator->GenerateOneEvent()) ++i;
       }
-      Generator.SummarizeRun();
+      Generator->SummarizeRun();
     }
   }
   catch (const normal_exit& exception) {
@@ -48,6 +49,8 @@ int main(int argc,char* argv[])
     msg_Error() << exception << std::endl;
     exh->Terminate(1);
   }
+
+  delete Generator;
 
 #ifdef USING__MPI
   MPI::Finalize();

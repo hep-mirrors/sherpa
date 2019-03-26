@@ -1,13 +1,13 @@
 #ifndef ATOOLS_Org_My_File_H
 #define ATOOLS_Org_My_File_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 #include <fstream>
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 namespace ATOOLS {
 
@@ -38,12 +38,10 @@ namespace ATOOLS {
 
     std::string m_path, m_file;
 
-    SP(File_Type)   p_file;
-    SP(MyStrStream) p_stream;
+    std::shared_ptr<File_Type>   p_file;
+    std::shared_ptr<MyStrStream> p_stream;
     
     fom::code m_mode;
-
-    static std::string s_sqlopenflag;
 
   public:
 
@@ -73,15 +71,13 @@ namespace ATOOLS {
 
     // static member functions
     static bool OpenDB(std::string file);
-    static bool CloseDB(std::string file);
+    static bool CloseDB(std::string file,int mode=1);
 
     static bool FileInDB(const std::string &name);
-    static bool ExecDB(std::string file,
-		       const std::string &cmd);
     static bool CopyInDB(std::string oldfile, std::string newfile);
 
-    inline static void SetSQLOpenFlag(const std::string &flag)
-    { s_sqlopenflag=flag; }
+    std::string FileContent() const
+    { return p_stream!=NULL?p_stream->str():""; }
 
   };// end of class My_File
 
@@ -93,8 +89,5 @@ namespace ATOOLS {
 
 #define My_In_File ATOOLS::My_File<std::ifstream>
 #define My_Out_File ATOOLS::My_File<std::ofstream>
-
-template <class FileType>
-std::string ATOOLS::My_File<FileType>::s_sqlopenflag="";
 
 #endif

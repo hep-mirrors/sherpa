@@ -8,8 +8,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
@@ -29,8 +29,9 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
   p_xs(xs), p_cur(NULL),
   m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
-  p_psid(new PSId_Map()), p_cid(new CId_Map())
+  p_cid(new CId_Map())
 {
+  RegisterDefaults();
   nin=_nin;
   nout=_nout;
   m_p.resize(1<<(m_n+1));
@@ -39,50 +40,21 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
     ms[i]=sqr(_fl[i].Mass());
   }
   name="CDBG_Channel";
-  Default_Reader reader;
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (reader.Read(m_zmode,"CDXS_ZMODE", 0)) {
-    msg_Info() << METHOD << "(): Set zero treatment mode " << m_zmode << "." << std::endl;
-  }
-  if (reader.Read(m_bmode,"CDXS_BMODE", 1)) {
-    msg_Info() << METHOD << "(): Set boundary mode " << m_bmode << "." << std::endl;
-  }
-  if (reader.Read(m_omode,"CDXS_OMODE", 3)) {
-    msg_Info() << METHOD << "(): Set optimization mode " << m_omode << "." << std::endl;
-  }
-  if (reader.Read(m_vmode,"CDXS_VMODE", 9)) {
-    msg_Info() << METHOD << "(): Set Vegas mode " << m_vmode << "." << std::endl;
-  }
-  if (reader.Read(m_tmode,"CDXS_TMODE", 1)) {
-    msg_Info() << METHOD << "(): Set t-channel mode " << m_tmode << "." << std::endl;
-  }
-  if (reader.Read(m_vsopt,"CDXS_VSOPT", 5)) {
-    msg_Info() << METHOD << "(): Set Vegas opt start " << m_vsopt << "." << std::endl;
-  }
-  if (reader.Read(m_nvints,"CDXS_VINTS", 8)) {
-    msg_Info() << METHOD << "(): Set Vegas intervals " << m_nvints << "." << std::endl;
-  }
-  if (reader.Read(m_texp,"CDXS_TEXP", 0.9)) {
-    msg_Info() << METHOD << "(): Set t-channel exp " << m_texp << "." << std::endl;
-  }
-  if (reader.Read(m_stexp,"CDXS_STEXP", 1.0e-3)) {
-    msg_Info() << METHOD << "(): Set t-channel sub exp " << m_stexp << "." << std::endl;
-  }
-  if (reader.Read(m_sexp,"CDXS_SEXP", 0.75)) {
-    msg_Info() << METHOD << "(): Set s-channel exp " << m_sexp << "." << std::endl;
-  }
-  if (reader.Read(m_srbase,"CDXS_SRBASE", 1.05)) {
-    msg_Info() << METHOD << "(): Set s-channel exp scale " << m_srbase << "." << std::endl;
-  }
-  if (reader.Read(m_aexp,"CDXS_AEXP", 0.9)) {
-    msg_Info() << METHOD << "(): Set aniso s-channel exp " << m_aexp << "." << std::endl;
-  }
-  if (reader.Read(m_thexp,"CDXS_THEXP", 1.5)) {
-    msg_Info() << METHOD << "(): Set threshold exp " << m_thexp << "." << std::endl;
-  }
-  if (reader.Read(m_mfac,"CDXS_MFAC", 1.0)) {
-    msg_Info() << METHOD << "(): Set m_{min} factor " << m_mfac << "." << std::endl;
-  }
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  m_zmode = s["CDXS_ZMODE"].Get<int>();
+  m_bmode = s["CDXS_BMODE"].Get<int>();
+  m_omode = s["CDXS_OMODE"].Get<int>();
+  m_vmode = s["CDXS_VMODE"].Get<int>();
+  m_tmode = s["CDXS_TMODE"].Get<int>();
+  m_vsopt = s["CDXS_VSOPT"].Get<int>();
+  m_nvints = s["CDXS_VINTS"].Get<int>();
+  m_texp = s["CDXS_TEXP"].Get<double>();
+  m_stexp = s["CDXS_STEXP"].Get<double>();
+  m_sexp = s["CDXS_SEXP"].Get<double>();
+  m_srbase = s["CDXS_SRBASE"].Get<double>();
+  m_aexp = s["CDXS_AEXP"].Get<double>();
+  m_thexp = s["CDXS_THEXP"].Get<double>();
+  m_mfac = s["CDXS_MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
@@ -90,7 +62,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   rans=new double[rannum];
 #ifdef USING__Threading
   int helpi;
-  if (reader.Read(helpi,"COMIX_THREADS", 0)) {
+  if (s["THREADS"].Get<int>()) {
     msg_Info() << METHOD << "(): Set number of threads " << helpi << "." << std::endl;
   }
   if (helpi>0) {
@@ -138,31 +110,26 @@ PS_Channel::~PS_Channel()
 #endif
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
-  delete p_psid;
   delete p_cid;
 }
 
-#ifdef USING__Threading
-CDBG_PS_TID *PS_Channel::GetTId() const
+void PS_Channel::RegisterDefaults() const
 {
-  pthread_t tid(pthread_self());
-  for (size_t i(0);i<m_cts.size();++i)
-    if (pthread_equal(tid,m_cts[i]->m_id)) return m_cts[i];
-  return NULL;
-}
-#endif
-
-const std::string &PS_Channel::GetPSId(const size_t &id)
-{
-  PSId_Map *psid(p_psid);
-#ifdef USING__Threading
-  CDBG_PS_TID *tid(GetTId());
-  if (tid) psid=tid->p_psid;
-#endif
-  PSId_Map::const_iterator iit(psid->find(id));
-  if (iit!=psid->end()) return iit->second;
-  (*psid)[id]=PSId(id);
-  return (*psid)[id];
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  s["CDXS_ZMODE"].SetDefault(0);       // zero treatment mode
+  s["CDXS_BMODE"].SetDefault(1);       // boundary mode
+  s["CDXS_OMODE"].SetDefault(3);       // optimisation mode
+  s["CDXS_VMODE"].SetDefault(9);       // vegas mode
+  s["CDXS_TMODE"].SetDefault(1);       // t-channel mode
+  s["CDXS_VSOPT"].SetDefault(5);       // vegas optimisation start
+  s["CDXS_VINTS"].SetDefault(8);       // vegas intervals
+  s["CDXS_TEXP"].SetDefault(0.9);      // t-channel exp
+  s["CDXS_STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
+  s["CDXS_SEXP"].SetDefault(0.75);     // s-channel exp
+  s["CDXS_SRBASE"].SetDefault(1.05);   // s-channel exp scale
+  s["CDXS_AEXP"].SetDefault(0.9);      // aniso s-channel exp
+  s["CDXS_THEXP"].SetDefault(1.5);     // threshold exponent
+  s["CDXS_MFAC"].SetDefault(1.0);      // m_{min} factor
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
@@ -231,7 +198,7 @@ PHASIC::Vegas *PS_Channel::GetPVegas(const PS_Current *cur,const size_t &id)
   Vegas *vgs(NULL);
   IVegas_Map::const_iterator vit(m_pimap.find(id));
   if (vit!=m_pimap.end()) vgs=vit->second;
-  else vgs=m_pimap[id]=GetVegas("P_"+GetPSId(id));
+  else vgs=m_pimap[id]=GetVegas("P_"+ToString(id));
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
@@ -274,7 +241,7 @@ PHASIC::Vegas *PS_Channel::GetTVegas
     if (it!=vit->second.end()) vgs=it->second;
   }
   if (vgs==NULL) vgs=sit->second[id][cur]=
-    GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo()+
+    GetVegas("T_"+ToString(id)+"_"+cur->PSInfo()+
 	     (dip&&dip!=cur->Dip()?"_DS"+dip->PSInfo():""));
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
@@ -290,8 +257,8 @@ bool PS_Channel::Zero(Vertex *const vtx) const
 
 double PS_Channel::SCut(const size_t &id)
 {
-  if (id&3) return p_cuts->Getscut(GetPSId((1<<m_n)-1-id));
-  return p_cuts->Getscut(GetPSId(id));
+  if (id&3) return p_cuts->Getscut((1<<m_n)-1-id);
+  return p_cuts->Getscut(id);
 }
 
 double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
@@ -560,12 +527,12 @@ bool PS_Channel::GeneratePoint
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  t "<<nr<<": ("<<PSId(ja->CId())
-		   <<","<<PSId(m_rid)<<")-"<<PSId(jc->CId())
-		   <<"->("<<PSId(jb->CId())<<","<<PSId(pid)
-		   <<") m_"<<PSId(bid)<<" = "<<sqrt(se)
-		   <<", m_"<<PSId(pid)<<" = "<<sqrt(sp)
-		   <<" -> "<<PSId(cid)<<"\n";
+    msg_Debugging()<<"  t "<<nr<<": {"<<ID(ja->CId())
+		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
+		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
+		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
+		   <<", m_"<<ID(pid)<<" = "<<sqrt(sp)
+		   <<" -> "<<ID(cid)<<"\n";
 #endif
   }
   else {
@@ -585,11 +552,11 @@ bool PS_Channel::GeneratePoint
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  s "<<nr<<": ("<<PSId(cid)
-		   <<")->("<<PSId(aid)<<","<<PSId(bid)
-		   <<") m_"<<PSId(cid)<<" = "<<rts
-		   <<", m_"<<PSId(lid)<<" = "<<sqrt(sl)
-		   <<", m_"<<PSId(rid)<<" = "<<sqrt(sr)<<"\n";
+    msg_Debugging()<<"  s "<<nr<<": {"<<ID(cid)
+		   <<"}->{"<<ID(aid)<<","<<ID(bid)
+		   <<"} m_"<<ID(cid)<<" = "<<rts
+		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
+		   <<", m_"<<ID(rid)<<" = "<<sqrt(sr)<<"\n";
 #endif
   }
   return true;
@@ -678,9 +645,9 @@ bool PS_Channel::GenerateChannel
   if (cur->NIn()==0) return true;
 #ifdef DEBUG__BG
   msg_Indent();
-  msg_Debugging()<<METHOD<<"("<<PSId(cur->CId())
+  msg_Debugging()<<METHOD<<"{"<<ID(cur->CId())
 		 <<","<<cur->J().front().size()
-		 <<"): n = "<<v.size()<<" {\n";
+		 <<"}: n = "<<v.size()<<" {\n";
 #endif
   double sum(0.0);
   Double_Vector psum;
@@ -734,7 +701,7 @@ bool PS_Channel::GenerateChannels()
 {
   PHASIC::Process_Base *cur(p_xs->Process());
   p_gen=cur->Get<Process_Base>()->PSGenerator();
-  if (p_gen==NULL) 
+  if (p_gen == nullptr)
     THROW(fatal_error,"No phasespace generator for "+cur->Name());
   p_gen->SetZMode(m_zmode);
   if (!p_gen->Evaluate()) return false;
@@ -803,12 +770,12 @@ double PS_Channel::GenerateWeight
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    t "<<nr<<": ("<<PSId(ja->CId())
-		   <<","<<PSId(m_rid)<<")-"<<PSId(jc->CId())
-		   <<"->("<<PSId(jb->CId())<<","<<PSId(pid)
-		   <<") m_"<<PSId(bid)<<" = "<<sqrt(se)
-		   <<", m_"<<PSId(pid)<<" = "<<sqrt(sp)
-		   <<" -> m_"<<PSId(aid^m_rid)<<" = "
+    msg_Debugging()<<"    t "<<nr<<": {"<<ID(ja->CId())
+		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
+		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
+		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
+		   <<", m_"<<ID(pid)<<" = "<<sqrt(sp)
+		   <<" -> m_"<<ID(aid^m_rid)<<" = "
 		   <<(m_p[aid]+m_p[m_rid]).Mass()<<"\n";
 #endif
   }
@@ -826,11 +793,11 @@ double PS_Channel::GenerateWeight
     wgt*=SChannelWeight(jc,((PS_Vertex*)v)->Type(),m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    s "<<nr<<": ("<<PSId(cid)
-		   <<")->("<<PSId(aid)<<","<<PSId(bid)
-		   <<") m_"<<PSId(SId(cid))<<" = "<<rts
-		   <<", m_"<<PSId(lid)<<" = "<<sqrt(sl)
-		   <<", m_"<<PSId(rid)<<" = "<<sqrt(sr)<<"\n";
+    msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
+		   <<"}->{"<<ID(aid)<<","<<ID(bid)
+		   <<"} m_"<<ID(SId(cid))<<" = "<<rts
+		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
+		   <<", m_"<<ID(rid)<<" = "<<sqrt(sr)<<"\n";
 #endif
   }
   return wgt;
@@ -871,8 +838,8 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 	if (cid==m_rid) {
 #ifdef DEBUG__BG
 	  std::string did(v->Dip()?"DS"+v->Dip()->PSInfo():"");
-	  msg_Debugging()<<"    kill "<<PSId(aid)<<" "<<PSId(bid)
-			 <<" "<<PSId(cid)<<" "<<did<<"\n";
+	  msg_Debugging()<<"    kill "<<ID(aid)<<" "<<ID(bid)
+			 <<" "<<ID(cid)<<" "<<did<<"\n";
 #endif
 	  v->SetWeight(cw);
 	  wgt+=v->Alpha()/v->Weight();
@@ -913,8 +880,8 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
       PS_Vertex *v((PS_Vertex*)cur->In()[i]);
       if (!Zero(v) && v->Alpha()>0.0) {
 #ifdef DEBUG__BG
-	msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
-		       <<","<<PSId(v->J(1)->CId())
+	msg_Debugging()<<"    V_{"<<ID(v->J(0)->CId())
+		       <<","<<ID(v->J(1)->CId())
 		       <<"}: set w = "<<wgt/v->Weight()<<"\n";
 #endif
 	if (wgt>0.0) v->SetWeight(wgt/v->Weight());
@@ -1016,8 +983,8 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 	-(m_p[cur->CId()]=m_p[cur->In().front()->J(0)->CId()]
 	  +m_p[cur->In().front()->J(1)->CId()]);
 #ifdef DEBUG__BG
-	msg_Debugging()<<"  -p_"<<PSId((1<<m_n)-1-cur->CId())
-		       <<" = p_"<<PSId(cur->CId())
+	msg_Debugging()<<"  -p_"<<ID((1<<m_n)-1-cur->CId())
+		       <<" = p_"<<ID(cur->CId())
 		       <<" = "<<m_p[cur->CId()]<<"\n";
 #endif
     }
@@ -1038,8 +1005,8 @@ void PS_Channel::AddPoint(double value)
 	  PS_Vertex *v((PS_Vertex *)(*p_cur)[n][i]->In()[j]);
 	  if (!Zero(v)) v->AddPoint(value);
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
-			 <<","<<PSId(v->J(1)->CId())<<"}: <w> = "
+	  msg_Debugging()<<"    V_{"<<ID(v->J(0)->CId())
+			 <<","<<ID(v->J(1)->CId())<<"}: <w> = "
 			 <<v->Mean()<<" +- "<<v->Sigma()<<"\n";
 #endif
 	}
@@ -1129,8 +1096,8 @@ void PS_Channel::Optimize()
 	  if (v->Alpha()!=1.0) {
 	    printed=true;
 	    double re(int(v->Sigma()/v->Mean()*10000)/100.0);
-	    msg_Tracking()<<"  V_{"<<std::setw(6)<<PSId(v->J(0)->CId())
-			  <<","<<std::setw(6)<<PSId(v->J(1)->CId())
+	    msg_Tracking()<<"  V_{"<<std::setw(6)<<ID(v->J(0)->CId())
+			  <<","<<std::setw(6)<<ID(v->J(1)->CId())
 			  <<"}: w' = "<<std::setw(15)<<std::right
 			  <<v->Mean()/wmean<<" +- "<<std::setw(6)<<re
 			  <<" %  =>  a = "<<std::setw(15)<<v->OldAlpha()
@@ -1184,8 +1151,8 @@ void PS_Channel::ISRInfo(int &type,double &mass,double &width)
 void PS_Channel::ISRInfo
 (std::vector<int> &ts,std::vector<double> &ms,std::vector<double> &ws) const
 {
-  SP(PS_Generator) ps(p_xs->PSGenerator());
-  if (ps==NULL) {
+  auto ps = p_xs->PSGenerator();
+  if (ps == nullptr) {
     ps=(*p_xs->Process())[0]->Get<Process_Base>()->PSGenerator();
   }
   msg_Debugging()<<METHOD<<"(): Add isr infos {\n";
@@ -1227,9 +1194,6 @@ std::string PS_Channel::ChID()
 
 void PS_Channel::WriteOut(std::string pid)
 { 
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
   {
     Data_Writer writer;
     writer.SetOutputPath(pid);
@@ -1289,7 +1253,6 @@ void PS_Channel::ReadIn(std::string pid)
 {
   {
     Data_Reader reader;
-    reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_PS");
     reader.ReadFromFile(m_zmode,"m_zmode");
@@ -1309,7 +1272,6 @@ void PS_Channel::ReadIn(std::string pid)
   p_gen->SetPrefMasses
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
-  reader.SetAddCommandLine(false);
   reader.SetInputPath(pid);
   reader.SetInputFile("_"+name+"_PV");
   std::vector<std::vector<std::string> > pvds;
@@ -1332,7 +1294,6 @@ void PS_Channel::ReadIn(std::string pid)
   }
   if (m_vmode>0) {
     Data_Reader reader;
-    reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");
     reader.SetVectorType(vtc::vertical);

@@ -53,16 +53,16 @@ namespace SHNNLO {
 		const double *k0sq,const int mode);
 
   double NLODiffWeight(PHASIC::Process_Base *const proc,double &wgt,
-		      const double &mur2,const double &muf2,
+		       const double &mur2,const double &muf2,
 		       const double *k0sq,const int fomode,
-		       const std::string &varid);
+		       const int umode,const std::string &varid);
 
   double NNLODeltaWeight(PHASIC::Process_Base *const proc,
 			 const double &wgt,const int fomode);
   double NNLODiffWeight(PHASIC::Process_Base *const proc,double &wgt,
 			const double &mur2,const double &muf2,
 			const double *k0sq,const int mode,const int fomode,
-			const std::string &varid);
+			const int umode,const std::string &varid);
 
   extern long int s_ntrials;
   extern double   s_disc, s_p1, s_p2, s_z[4];
@@ -70,7 +70,7 @@ namespace SHNNLO {
   double SetWeight(ATOOLS::Cluster_Amplitude *const ampl,
 		   const int mode,double wgt,
 		   const double &w,const double &w1,
-		   const std::string &varid);
+		   const int umode,const std::string &varid);
 
 }
 

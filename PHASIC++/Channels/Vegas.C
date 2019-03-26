@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 
 using namespace ATOOLS;
@@ -20,10 +20,8 @@ int Vegas::s_onext=-1, Vegas::s_on=-1;
 Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 {
   if (s_on<0) {
-    Default_Reader reader;
-    reader.SetInputPath(rpa->GetPath());
-    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_on = reader.GetValue<int>("VEGAS_MODE",2);
+    s_on =
+      Settings::GetMainSettings()["VEGAS_MODE"].SetDefault(2).Get<int>();
   }
   m_on=s_on?1:0;
   if (s_onext>-1) m_on=s_onext;
@@ -352,11 +350,13 @@ void Vegas::AddPoint(double value)
 #else
   ++m_nevt;
   if (value>0.) ++m_cevt;
-  double v2 = value*value;
+  const auto v2 = value*value;
+  const auto v4 = v2*v2;
   for (int i=0;i<m_dim;i++) {
-    p_d[i][p_ia[i]]+=v2;
-    p_di[i][p_ia[i]]+=v2*v2;
-    p_hit[i][p_ia[i]]++;
+    const auto idx = p_ia[i];
+    p_d[i][idx]+=v2;
+    p_di[i][idx]+=v4;
+    p_hit[i][idx]++;
   }
   m_mode=0;
   if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {

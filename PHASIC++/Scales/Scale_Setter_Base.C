@@ -7,6 +7,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Scale_Setter_Base
@@ -20,12 +21,13 @@ using namespace ATOOLS;
 
 Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args):
-  p_proc(args.p_proc), p_caller(p_proc),
+  p_proc(args.p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
   m_nin(args.m_nin), m_nout(args.m_nout),
   m_l1(0), m_l2(0)
 {
+  RegisterDefaults();
   for (size_t i(0);i<stp::size;++i) m_scale[i]=sqr(rpa->gen.Ecms());
   if (p_proc) {
     m_nin=p_proc->NIn();
@@ -45,6 +47,17 @@ Scale_Setter_Base::Scale_Setter_Base
   m_p.resize(m_nin+m_nout);
 }
 
+void Scale_Setter_Base::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["MEPS_NMAX_ALLCONFIGS"].SetDefault(-1);
+  s["MEPS_NLO_NMAX_ALLCONFIGS"].SetDefault(-1);
+  s["MEPS_CLUSTER_MODE"].SetDefault(8|64|128|256);
+  s["MEPS_NLO_COUPLING_MODE"].SetDefault(2);
+  s["MEPS_COLORSET_MODE"].SetDefault(0);
+  s["CORE_SCALE"].SetDefault("Default");
+}
+
 bool Scale_Setter_Base::Initialize()
 {
   return true;
@@ -58,7 +71,6 @@ void Scale_Setter_Base::SetCouplings()
   p_subs=p_proc->GetSubevtList();
   Data_Reader read(" ",",","#",":");
   std::vector<std::vector<std::string> > helpsvv;
-  read.SetAddCommandLine(false);
   read.SetString(m_coupling);
   read.MatrixFromString(helpsvv,"");
   for (size_t i(0);i<helpsvv.size();++i) {
@@ -132,7 +144,7 @@ double Scale_Setter_Base::HTMprime() const
 double Scale_Setter_Base::HTprime() const
 {
   if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
-  double htp((m_p[m_l1]+m_p[m_l2]).MPerp());
+  double htp((m_p[m_l1]+m_p[m_l2]).PPerp());
   for (size_t i(m_nin);i<m_p.size();++i)
     if (i!=m_l1 && i!=m_l2) htp+=m_p[i].PPerp();
   return htp;
@@ -194,11 +206,11 @@ double Scale_Setter_Base::CalculateScale
 	 not match the flavour config of the corresponding subevent
 	 (the former having real emission flavours, the latter born
 	 flavours). Need to locally fix that here. */
-      p_caller=static_cast<Process_Base*>(sub->p_proc);
-      Flavour_Vector tmp = p_caller->Flavours();
-      p_caller->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
+      p_proc->SetCaller(static_cast<Process_Base*>(sub->p_proc));
+      Flavour_Vector tmp = p_proc->Caller()->Flavours();
+      p_proc->Caller()->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
       Calculate(Vec4D_Vector(m_p),mode);
-      p_caller->SetFlavours(tmp);
+      p_proc->Caller()->SetFlavours(tmp);
       
       if (i+1==p_subs->size()) m_escale=m_scale;
       size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));

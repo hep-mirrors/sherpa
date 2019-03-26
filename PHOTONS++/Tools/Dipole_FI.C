@@ -379,3 +379,35 @@ void Dipole_FI::DetermineKappa() {
     break;
   }
 }
+
+void Dipole_FI::DetermineQAndKappa() {
+  // require this function to initialise m_Q and m_kappaC/N in the momentum reconstruction in the
+  // MEs
+  m_Q = Vec4D(0.,0.,0.,0.);
+  Vec4D sumdip = Vec4D(0.,0.,0.,0.);
+  for (unsigned int i=0; i<m_olddipole.size(); i++) {
+    sumdip = sumdip + m_olddipole[i]->Momentum();
+  }
+  // boost into dipole CMS and initial state particle into -z
+  Poincare boost(sumdip);
+  boost.Boost(sumdip);
+  Poincare rotate;
+  for (unsigned int i=0; i<m_olddipole.size(); i++) {
+    Vec4D mom = m_olddipole[i]->Momentum();
+    boost.Boost(mom);
+    if (i==0)  rotate = Poincare(mom/mom.PSpat2(),Vec4D(0.,0.,0.,-1.));
+    rotate.Rotate(mom);
+    m_olddipole[i]->SetMomentum(mom);
+    if (i==0)  m_p = m_olddipole[0]->Momentum();
+    else       m_Q = m_Q + m_olddipole[i]->Momentum();
+  }
+  // also transform neutral particles' momenta into (p+Q)-CMS
+  for (unsigned int i=0; i<m_oldspectator.size(); i++) {
+    Vec4D mom = m_oldspectator[i]->Momentum();
+    boost.Boost(mom);
+    rotate.Rotate(mom);
+    m_oldspectator[i]->SetMomentum(mom);
+    m_QN = m_QN + mom;
+  }
+  DetermineKappa();
+}

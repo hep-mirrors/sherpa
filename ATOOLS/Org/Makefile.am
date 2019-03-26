@@ -23,11 +23,12 @@ libToolsOrg_la_SOURCES        = \
 				My_MPI.C \
 				Exception.C \
 				Terminator_Objects.C \
+				libzippp.cpp \
 				My_File.C \
 				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
-				Default_Reader.C \
+				Yaml_Reader.C \
 				Data_Writer.C \
 				Run_Parameter.C \
 				MyTiming.C \
@@ -38,7 +39,10 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Library_Loader.C \
 				Command_Line_Interface.C \
-				libzippp.cpp \
+				Settings.C \
+				Scoped_Settings.C \
+				Settings_Keys.C \
+				Settings_Writer.C \
 				$(GZIPSTREAMSOURCES) \
 				binreloc.c
 
@@ -47,8 +51,6 @@ localinc_HEADERS         =	\
 			CXXFLAGS.H \
 			Git_Info.H \
 			Return_Value.H \
-			Smart_Pointer.H \
-			Smart_Pointer.C \
 			Shell_Tools.H \
 			STL_Tools.H \
 			RUsage.H \
@@ -57,13 +59,13 @@ localinc_HEADERS         =	\
 			My_MPI.H \
 			Exception.H \
 			Terminator_Objects.H \
+			libzippp.h \
 			My_File.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
-			Read_Write_Base.inl.H \
 			Data_Reader.H \
+			Yaml_Reader.H \
 			Data_Writer.H \
-			Default_Reader.H \
 			My_Limits.H \
 			Run_Parameter.H \
 			Message.H \
@@ -79,16 +81,19 @@ localinc_HEADERS         =	\
 			Command_Line_Interface.H \
 			Command_Line_Options.H \
 			Option_Parser.H \
+			Settings.H \
+			Scoped_Settings.H \
+			Settings_Keys.H \
+			Settings_Writer.H \
 			Enum_Flags.H \
 			Node.H \
 			Node.C \
-			libzippp.h \
 			$(GZIPSTREAMHEADERS) \
 			binreloc.h
 
-libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @SQLITE3_LDFLAGS@ @LIBZIP_LDFLAGS@
+libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @LIBZIP_LDFLAGS@
 
-libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @SQLITE3_CFLAGS@ @LIBZIP_CPPFLAGS@
+libToolsOrg_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@ @LIBZIP_CPPFLAGS@
 
 EXTRA_DIST    = $(GZIPEXTRADIST) CXXFLAGS.H.in
 

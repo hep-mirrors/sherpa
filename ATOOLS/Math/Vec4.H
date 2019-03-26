@@ -109,6 +109,10 @@ namespace ATOOLS {
 
 
     Scalar Abs2() const { return (m_x[0]+m_x[3])*(m_x[0]-m_x[3])-m_x[1]*m_x[1]-m_x[2]*m_x[2]; }      
+    Scalar RelAbs2() const {
+      const auto abs2 = Abs2();
+      return (abs2 == 0) ? 0 : abs2/(m_x[0]*m_x[0]);
+    }
     Scalar Abs() const { return sqrt(Abs2()); }
     double Mass() const {
       return sqrt(ATOOLS::Abs<Scalar>(Abs2()));

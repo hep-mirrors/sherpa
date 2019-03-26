@@ -20,9 +20,9 @@ namespace DIM {
 
     double Value(const Splitting &s) const
     {
-      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
       double B1=-(1.0+s.m_z);
-      return A1*(1.0+p_sk->GF()->K(s))+B1;
+      return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
     }
 
     double Integral(const Splitting &s) const

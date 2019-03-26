@@ -21,7 +21,7 @@ namespace DIM {
 
     double Scale(const Splitting &s) const
     {
-      return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
+      return (m_type==3)?s.m_t/s.m_x:s.m_t;
     }
 
     bool Allowed(const Splitting &s) const

@@ -1,52 +1,51 @@
 examplesdir        = $(pkgdatadir)/Examples
 
 nobase_dist_examples_DATA         =	\
-		API/ME2-Python/Run.dat \
+		API/ME2-Python/Sherpa.yaml \
 		API/ME2-Python/test.py.in \
-		API/ME2-CPP/Run.dat \
+		API/ME2-CPP/Sherpa.yaml \
 		API/ME2-CPP/test.cpp \
 		API/ME2-CPP/Makefile \
-		API/Events/Run.dat \
+		API/Events/Sherpa.yaml \
 		API/Events/test.py.in \
-		API/MPIEvents/Run.dat \
+		API/MPIEvents/Sherpa.yaml \
 		API/MPIEvents/test.py.in \
-                BFactory/BDecay/Run.dat \
-                BFactory/Belle_QCDBackground/Run.dat \
-                BFactory/Belle_Signal/Run.dat \
+                BFactory/BDecay/Sherpa.yaml \
+                BFactory/Belle_QCDBackground/Sherpa.yaml \
+                BFactory/Belle_Signal/Sherpa.yaml \
 		Models/SM_ZPrime/Model.C \
 		Models/SM_ZPrime/Run.dat \
 		Models/SM_ZPrime/Makefile \
-		FixedOrder_NLO/NTuples/Run.B-like.dat \
-		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
-		FixedOrder_NLO/NTuples/Run.R-like.dat \
-		FixedOrder_NLO/NTuples/Reweight.R-like.dat \
-		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
-		V_plus_Jets/LHC_WJets/Run.dat \
+		FixedOrder_NLO/NTuples/Sherpa.B-like.yaml \
+		FixedOrder_NLO/NTuples/Sherpa.Reweight.B-like.yaml \
+		FixedOrder_NLO/NTuples/Sherpa.R-like.yaml \
+		FixedOrder_NLO/NTuples/Sherpa.Reweight.R-like.yaml \
+		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml \
+		V_plus_Jets/LHC_WJets/Sherpa.yaml \
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
 		V_plus_Jets/LHC_WJets/SConstruct \
-		V_plus_Jets/LHC_ZJets/Run.dat \
+		V_plus_Jets/LHC_ZJets/Sherpa.yaml \
 		V_plus_Bs/LHC_Wbb/Wbb_Virtual.f \
 		V_plus_Bs/LHC_Wbb/Wbb_Interface.C \
 		V_plus_Bs/LHC_Wbb/SConstruct \
-		V_plus_Bs/LHC_Wbb/Run.dat \
-		V_plus_Bs/LHC_Wbb/Analysis.dat \
-		V_plus_Bs/LHC_Zbb/Run.dat \
-		VV_plus_Jets/LHC_2l2nuJets/Run.dat \
-		VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Run.dat \
-		VV_plus_Jets/LHC_4lJets/Run.dat \
-		VV_plus_Jets/LHC_4lJets_GluonInitiated/Run.dat \
-		VV_plus_Jets/LHC_WqqZnunuJets/Run.dat \
-		VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Run.dat \
-		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
-		Jets_at_LeptonColliders/LEP_Jets/Run.dat \
-		Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat \
-		Jets_in_DIS/HERA/Run.dat \
-		H_in_AssociatedProduction/LHC_WHJets/Run.dat \
-                H_in_AssociatedProduction/LHC_ZHJets/Run.dat \
-                H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat \
-		H_in_GluonFusion/LHC_HInterference/Run.dat \
-		H_in_GluonFusion/LHC_HJets/Run.dat \
-		H_in_GluonFusion/LHC_HJets_Finite_MTop/Run.dat \
+		V_plus_Bs/LHC_Wbb/Sherpa.yaml \
+		V_plus_Bs/LHC_Zbb/Sherpa.yaml \
+		VV_plus_Jets/LHC_2l2nuJets/Sherpa.yaml \
+		VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.yaml \
+		VV_plus_Jets/LHC_4lJets/Sherpa.yaml \
+		VV_plus_Jets/LHC_4lJets_GluonInitiated/Sherpa.yaml \
+		VV_plus_Jets/LHC_WqqZnunuJets/Sherpa.yaml \
+		VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Sherpa.yaml \
+		Jets_at_HadronColliders/LHC_Jets_MEPS/Sherpa.yaml \
+		Jets_at_LeptonColliders/LEP_Jets/Sherpa.yaml \
+		Jets_at_LeptonColliders/LEP_Jets/Sherpa.NLO.yaml \
+		Jets_in_DIS/HERA/Sherpa.yaml \
+		H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml \
+                H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml \
+                H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml \
+		H_in_GluonFusion/LHC_HInterference/Sherpa.yaml \
+		H_in_GluonFusion/LHC_HJets/Sherpa.yaml \
+		H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml \
 		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
@@ -67,8 +66,8 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
-		Tops_plus_Jets/LHC_Tops/Run.dat \
-		Tops_plus_V/LHC_TTW/Run.dat \
+		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
+		Tops_plus_V/LHC_TTW/Sherpa.yaml \
 		UFO_MSSM/MSSM/__init__.py \
 		UFO_MSSM/MSSM/build_restrict.py \
 		UFO_MSSM/MSSM/coupling_orders.py \

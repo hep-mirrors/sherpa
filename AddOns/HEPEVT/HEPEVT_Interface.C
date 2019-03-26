@@ -8,7 +8,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #ifdef USING__H1_Mode
 #ifndef USING__HERACMN
@@ -83,9 +82,9 @@ typedef std::map<ATOOLS::Particle*,MD_Info> MotherDaughter_Map;
 class HEPEVT_Interface: public SHERPA::Analysis_Interface {
 private:
 
-  std::string m_inpath, m_infile;
-
   int m_rotate;
+
+  void RegisterDefaults() const;
 
   void RotateEvent(ATOOLS::Blob_List *const bl);
 
@@ -101,11 +100,16 @@ private:
 
 public:
 
-  inline HEPEVT_Interface(const std::string &inpath,
-			  const std::string &infile,
-			  const std::string &outpath):
-    Analysis_Interface("HEPEVT"),
-    m_inpath(inpath), m_infile(infile) {}
+  inline HEPEVT_Interface(const std::string &outpath):
+    Analysis_Interface("HEPEVT")
+  {
+    Scoped_Settings s{ Settings::GetMainSettings()["HEPEVT"] };
+    bool should_rotate_events{ false };
+#ifdef USING__H1_Mode
+    should_rotate_events = true;
+#endif
+    s.SetDefault("ROTATE_EVENTS", should_rotate_events);
+  }
 
   bool Init();
   bool Run(ATOOLS::Blob_List *const bl);
@@ -122,9 +126,7 @@ void HEPEVT_Interface::ShowSyntax(const int i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   BEGIN_HEPEVT {\n\n"
-	   <<"     ROTATE_EVENTS 0|1\n";
-  msg_Out()<<"\n   } END_HEPEVT\n\n"
+	   <<"   HEPEVT: { ROTATE_EVENTS: true|false }\n\n";
 	   <<"}"<<std::endl;
 }
 
@@ -306,22 +308,8 @@ void HEPEVT_Interface::RotateEvent(Blob_List *const bl)
 
 bool HEPEVT_Interface::Init()
 {
-  Data_Reader reader(" ",";","//");
-  reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
-  reader.SetInputPath(m_inpath);
-  std::string infile(m_infile);
-  if (infile.find('|')!=std::string::npos)
-    infile=infile.substr(0,infile.find('|'));
-  reader.SetInputFile(infile);
-  reader.AddComment("#");
-  reader.SetFileBegin("BEGIN_HEPEVT");
-  reader.SetFileEnd("END_HEPEVT");
-#ifdef USING__H1_Mode
-  m_rotate=reader.GetValue<int>("ROTATE_EVENTS",1);
-#else
-  m_rotate=reader.GetValue<int>("ROTATE_EVENTS",0);
-#endif
+  Scoped_Settings s{ Settings::GetMainSettings()["HEPEVT"] };
+  m_rotate = s["ROTATE_EVENTS"].Get<int>();
   msg_Info()<<METHOD<<"(): Set up HEPEVT interface."
 	    <<" Rotate = "<<m_rotate<<"."<<std::endl;
 #ifdef USING__HERACMN
@@ -371,8 +359,7 @@ Analysis_Interface *ATOOLS::Getter
 <Analysis_Interface,Analysis_Arguments,HEPEVT_Interface>::
 operator()(const Analysis_Arguments &args) const
 {
-  return new HEPEVT_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath);
+  return new HEPEVT_Interface(args.m_outpath);
 }
 
 void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,

@@ -9,8 +9,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PHASIC;
 using namespace PDF;
@@ -37,9 +37,11 @@ Jet_Finder::Jet_Finder(Process_Base *const proc,const std::string &ycut):
   for (int i=0;i<m_n;++i) p_yccalc->AddTag
     ("p["+ToString(i)+"]",ToString(Vec4D()));
   p_yccalc->Interprete(m_cuttag);
-  p_jc = JetCriterion_Getter::GetObject
-    (rpa->gen.Variable("JET_CRITERION"),
-     JetCriterion_Key(rpa->gen.Variable("JET_CRITERION"),p_proc->Shower()));
+  Settings& s = Settings::GetMainSettings();
+  p_jc = JetCriterion_Getter::GetObject(
+      s["JET_CRITERION"].Get<std::string>(),
+      JetCriterion_Key(s["JET_CRITERION"].Get<std::string>(),
+                       p_proc->Shower()));
   if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 
@@ -178,8 +180,11 @@ DECLARE_ND_GETTER(Jet_Finder,"METS",Selector_Base,Selector_Key,false);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Finder>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
-  Jet_Finder *jf(new Jet_Finder(key.p_proc,key[0][0]));
+  Scoped_Settings s{ key.m_settings };
+  const auto ycut = s["YCUT"].SetDefault("").Get<std::string>();
+  if (ycut == "")
+    THROW(critical_error,"Invalid syntax");
+  auto* jf = new Jet_Finder(key.p_proc, ycut);
   static bool menlots(false);
   if (!menlots && key.p_proc->Info().Has(nlo_type::real)) {
     menlots=true;
@@ -188,9 +193,10 @@ operator()(const Selector_Key &key) const
     rpa->gen.AddCitation(1,"NLO/NLO matrix element merging with truncated showers (MEPS@NLO) is "+
                          std::string("published under \\cite{Hoeche:2012yf} and \\cite{Gehrmann:2012yg}."));
   }
-  if (key.front().size()>1 && key[0][1]=="LO" && 
-      !(key.front().size()>2 && key[0][2]=="CUT")) 
+  if (s["LO"].SetDefault(false).Get<bool>()
+      && !s["CUT"].SetDefault(false).Get<bool>()) {
     jf->SetOn(false);
+  }
   return jf;
 }
 

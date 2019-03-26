@@ -48,6 +48,7 @@ Singlet * Singlet_Former::MakeAnother() {
   Particle * part = FindStart();
   partlist->push_back(new Proto_Particle(*part));
   if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
+  if (part->Beam()>-1)        partlist->back()->SetBeam(true);
   unsigned int col1 = part->GetFlow(1);
   unsigned int col2 = part->GetFlow(2);
   while (col2!=col1) {
@@ -59,6 +60,7 @@ Singlet * Singlet_Former::MakeAnother() {
 	col1 = part->GetFlow(1);
 	partlist->push_back(new Proto_Particle(*part));
 	if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
+	if (part->Beam()>-1)        partlist->back()->SetBeam(true);
 	break;
       }
     }

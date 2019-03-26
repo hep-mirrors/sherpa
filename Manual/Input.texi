@@ -7,64 +7,64 @@ A Sherpa setup is steered by various parameters, associated with the
 different components of event generation.
 
 These have to be specified in a
-run-card which by default is named ``Run.dat'' in the current working directory.
+configuration file which by default is named @code{Sherpa.yaml} in the current
+working directory.
 If you want to use a different setup directory for your Sherpa run, you have to
-specify it on the command line as @samp{-p <dir>} or @samp{PATH=<dir>}.
-To read parameters from a run-card with a different name, you may specify
-@samp{-f <file>} or @samp{RUNDATA=<file>}.
+specify it on the command line as @code{-p <dir>} or @code{'PATH: <dir>'}
+(including the quotes).
+To read parameters from a configuration file with a different name, you may
+specify @code{-f <file>} or @code{'RUNDATA: <file>'}.
 
-Sherpa's parameters are grouped according to the different aspects
-of event generation, e.g. the beam parameters in the group @samp{(beam)} and
-the fragmentation parameters in the group @samp{(fragmentation)}.
-In the run-card this looks like:
+Sherpa's configuration files are writtin in the @uref{yaml.org,,YAML} format.
+Most settings are just written as the settings' name followed by its value,
+like this:
 @verbatim
-  (beam){
-    BEAM_ENERGY_1 = 7000.
-    ...
-  }(beam)
+  EVENTS: 100M
+  BEAMS: 2212
+  BEAM_ENERGIES: 7000
+  ...
 @end verbatim
 
-Each of these groups is described in detail in another chapter of this
+Others use a more nested structure:
+@verbatim
+  HARD_DECAYS:
+    Enabled: true
+    Apply_Branching_Ratios: false
+@end verbatim
+
+where @code{Enabled} and @code{Apply_Branching_Ratios} are sub-settings of the
+top-level @code{HARD_DECAYS} setting, which is denoted by indentation (here two
+additional spaces).
+
+The different settings and their structure are described in detail in another
+chapter of this
 manual, see @ref{Parameters}.
-
-If such a section or file does not exist in the setup directory,
-a Sherpa-wide fallback mechanism is employed, searching the file
-in various locations in the following order (where $SHERPA_DAT_PATH is an
-optionally set environment variable):
-@itemize @bullet
-
-@item
-@samp{$SHERPA_DAT_PATH/<PATH>/}
-
-@item
-@samp{$SHERPA_DAT_PATH/}
-
-@item
-@samp{$prefix/share/SHERPA-MC/<PATH>/}
-
-@item
-@samp{$prefix/share/SHERPA-MC/}
-
-@end itemize
 
 All parameters can be overwritten on the command line, i.e.
 command-line input has the highest priority.
-The syntax is
+Each argument is parsed as a single YAML line. This usually means that you have
+to quote each argument:
 @verbatim
-  <prefix>/bin/Sherpa  KEYWORD1=value1 KEYWORD2=value2 ...
+  <prefix>/bin/Sherpa 'KEYWORD1: value1' 'KEYWORD2: value2' ...
 @end verbatim
 
-To change, e.g., the default number of events, the corresponding
-command line reads
+Because each argument is parsed as YAML, you can also specify nested settings,
+e.g. to disable hard decays (even if it is enabled in the config file) you can
+write:
 @verbatim
-  <prefix>/bin/Sherpa  EVENTS=10000
+  <prefix>/bin/Sherpa 'HARD_DECAYS: {Enabled: false}'
+@end verbatim
+
+Or you can specify the list of matrix-element generators writing:
+@verbatim
+  <prefix>/bin/Sherpa 'ME_GENERATORS: [Comix, Amegic]'
 @end verbatim
 
 All over Sherpa, particles are defined by the particle code proposed by the
 PDG. These codes and the particle properties will be listed during each run with
-@samp{OUTPUT=2} for the elementary particles and @samp{OUTPUT=4} for the hadrons.
+@code{OUTPUT: 2} for the elementary particles and @code{OUTPUT: 4} for the hadrons.
 In both cases, antiparticles are characterized by a minus sign in front of their
-code, e.g. a mu- has code @samp{13}, while a mu+ has @samp{-13}.
+code, e.g. a mu- has code @code{13}, while a mu+ has @code{-13}.
 
 All quantities have to be specified in units of GeV and millimeter. The same
 units apply to all numbers in the event output (momenta, vertex positions).
@@ -156,22 +156,19 @@ The relative polar angle between @var{v1} and @var{v2} in radians.
 Tag replacement in Sherpa is performed through the data
 reading routines, which means that it can be performed for
 virtually all inputs.
-Specifying a tag on the command line using the syntax
-@samp{<Tag>:=<Value>} will replace every occurrence of @samp{<Tag>} in all files
+Specifying a tag on the command line or in the configuration file using the
+syntax @code{TAGS: @{<Tag>: <Value>@}} will replace every occurrence of
+@code{@@(<Tag>)} in all files
 during read-in. An example tag definition could read
 @verbatim
-  <prefix>/bin/Sherpa QCUT:=20 NJET:=3
+  <prefix>/bin/Sherpa 'TAGS: {QCUT: 20, NJET: 3}'
 @end verbatim
 
-and then be used in the (me) and (processes) sections like
+and then be used in the configuration file like:
 @verbatim
-  (me){
-    RESULT_DIRECTORY Result_QCUT;
-  }(me)
-  (processes){
-    Process 93 93 -> 11 -11 93{NJET};
-    Order (*,2);
-    CKKW sqr(QCUT/E_CMS);
-    End process;
-  }(processes)
+  RESULT_DIRECTORY: Result_$(QCUT);
+  PROCESSES:
+    - Process: "93 93 -> 11 -11 93{$(NJET)}"
+      Order: {QCD: Any, EW: 2}
+      CKKW: $(QCUT)
 @end verbatim

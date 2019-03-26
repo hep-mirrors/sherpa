@@ -72,7 +72,7 @@ namespace ATOOLS {
     inline void SetStat(const size_t &st) { m_st=st; }
     inline void SetNMax(const size_t &n)  { m_n=n;   }
     inline void SetK(const size_t &k)     { m_k=k;   }
-      
+
     inline void SetCol(const ColorID &c)   { m_c=c; }
     inline void SetMom(const Vec4D &p)     { m_p=p; }
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }

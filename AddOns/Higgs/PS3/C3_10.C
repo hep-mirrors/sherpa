@@ -1,6 +1,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -41,7 +42,7 @@ void C3_10::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double s34_max = sqr(sqrt(s234_max)-sqrt(ms[2]));
   double s4 = ms[4];
   double s3 = ms[3];
-  double s34_min = cuts->Getscut(std::string("34"));
+  double s34_min = cuts->Getscut((1<<3)|(1<<4));
   Vec4D  p34;
   double s34 = CE.MasslessPropMomenta(.5,s34_min,s34_max,ran[0]);
   double s2 = ms[2];
@@ -57,7 +58,7 @@ void C3_10::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
   double s34_max = sqr(sqrt(s234_max)-sqrt(ms[2]));
-  double s34_min = cuts->Getscut(std::string("34"));
+  double s34_min = cuts->Getscut((1<<3)|(1<<4));
   Vec4D  p34 = p[3]+p[4];
   double s34 = dabs(p34.Abs2());
   wt *= CE.MasslessPropWeight(.5,s34_min,s34_max,s34,rans[0]);
@@ -87,8 +88,9 @@ C3_10::C3_10(int nin,int nout,Flavour* fl,Integration_Info * const info)
   name = std::string("C3_10");
   rannum = 5;
   rans  = new double[rannum];
-  m_amct  = 1.0+ToType<double>(rpa->gen.Variable("AMEGIC_CHANNEL_EPSILON"));
-  m_alpha = ToType<double>(rpa->gen.Variable("AMEGIC_SCHANNEL_ALPHA"));
+  auto& s = Settings::GetMainSettings();
+  m_amct  = 1.0 + s["CHANNEL_EPSILON"].Get<double>();
+  m_alpha = s["SCHANNEL_ALPHA"].Get<double>();
   m_ctmax = 1.;
   m_ctmin = -1.;
   m_kI_3_4.Assign(std::string("I_3_4"),2,0,info);

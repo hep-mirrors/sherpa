@@ -2,8 +2,6 @@
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -23,56 +21,82 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
 
 #include <unistd.h>
+#include <cctype>
 
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-Matrix_Element_Handler::Matrix_Element_Handler
-(const std::string &dir,const std::string &file,
- const std::string &processfile,const std::string &selectorfile):
-  m_gens(dir, file),
-  p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
-  m_path(dir), m_file(file), m_processfile(processfile),
-  m_selectorfile(selectorfile), m_respath("Results"),
-  m_eventmode(0), m_seedmode(0), m_hasnlo(0),
-  m_nloadd(1), m_ewaddmode(0), m_qcdaddmode(0),
-  m_evtinfo(Weight_Info()), p_shower(NULL), p_nlomc(NULL),
-  p_variationweights(NULL),
-  m_sum(0.), m_ovwth(10.), m_weightfactor(1.),
-  m_ranidx(0), m_fosettings(0), m_nlomode(nlo_mode::none),
-  p_ranin(NULL), p_ranout(NULL)
+void Matrix_Element_Handler::RegisterDefaults()
 {
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  m_respath = reader.Get<std::string>("RESULT_DIRECTORY", "Results");
+  Settings& s = Settings::GetMainSettings();
+  s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12);
+  s["MEH_NLOADD"].SetDefault(1);
+  s["MEH_EWADDMODE"].SetDefault(0);
+  s["MEH_QCDADDMODE"].SetDefault(0);
+  s["EVENT_SEED_MODE"].SetDefault(0);
+  s["EVENT_SEED_FILE"].SetDefault(
+                              "ran.stat." + rpa->gen.Variable("RNG_SEED"));
+  s["EVENT_SEED_INCREMENT"].SetDefault(1);
+  s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
+
+  s["COLOUR_SCHEME"]
+    .SetDefault(1)
+    .SetReplacementList(cls::ColorSchemeTags());
+
+  s["HELICITY_SCHEME"]
+    .SetDefault(1)
+    .SetReplacementList(hls::HelicitySchemeTags());
+
+  s["NLO_IMODE"].SetDefault("IKP");
+
+  s["PSI"]["ASYNC"].SetDefault(false);
+}
+
+void Matrix_Element_Handler::RegisterMainProcessDefaults(
+    Scoped_Settings&& procsettings)
+{
+  procsettings["Process"].SetDefault("");
+  procsettings["Cut_Core"].SetDefault(0);
+  procsettings["CKKW"].SetDefault("");
+  procsettings.DeclareVectorSettingsWithEmptyDefault({
+      "Decay", "DecayOS", "No_Decay" });
+}
+
+Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
+  m_gens(),
+  p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(model),
+  m_eventmode(0), m_hasnlo(0),
+  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
+  m_sum(0.0),
+  m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL),
+  m_respath("Results"),
+  m_seedmode(0),
+  m_nloadd(1), m_ewaddmode(0), m_qcdaddmode(0),
+  m_evtinfo(Weight_Info()),
+  m_ovwth(10.), m_weightfactor(1.),
+  m_nlomode(nlo_mode::none)
+{
+  Settings& s = Settings::GetMainSettings();
+  RegisterDefaults();
+  m_respath = s["RESULT_DIRECTORY"].Get<std::string>();
   m_respath=ShortenPathName(m_respath);
-  if (m_respath[0]!='/' && rpa->gen.Variable("PATH_PIECE")!="")
-    m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
-  std::string evtm;
-  evtm = reader.Get<std::string>("EVENT_GENERATION_MODE", "PartiallyUnweighted");
-  if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
-  else if (evtm=="PartiallyUnweighted" || evtm=="P") m_eventmode=2;
-  else m_eventmode=0;
-  //need for LHE-output
-  rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
-  m_ovwth = reader.Get("OVERWEIGHT_THRESHOLD", 1e12);
-  m_seedmode = reader.Get("EVENT_SEED_MODE", 0, "seed mode", METHOD);
-  std::string imode(reader.Get("NLO_IMODE", std::string("IKP"), "I-Term mode", METHOD));
-  rpa->gen.SetVariable("NLO_IMODE",imode);
-  m_nloadd = reader.Get("MEH_NLOADD", 1, "NLO add mode", METHOD);
-  m_ewaddmode = reader.Get("MEH_EWADDMODE", 0, "EW add mode", METHOD);
-  m_qcdaddmode = reader.Get("MEH_QCDADDMODE", 0, "QCD add mode", METHOD);
-  std::string seedfile(reader.Get("EVENT_SEED_FILE",
-        "ran.stat."+rpa->gen.Variable("RANDOM_SEED"),
-        "seed file", METHOD));
+  if (m_respath[0]!='/' && s.GetPath()!="")
+    m_respath=s.GetPath()+"/"+m_respath;
+  m_eventmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
+  m_ovwth = s["OVERWEIGHT_THRESHOLD"].Get<double>();
+  m_seedmode = s["EVENT_SEED_MODE"].Get<int>();
+  m_nloadd = s["MEH_NLOADD"].Get<int>();
+  m_ewaddmode = s["MEH_EWADDMODE"].Get<int>();
+  m_qcdaddmode = s["MEH_QCDADDMODE"].Get<int>();
+  std::string seedfile{ s["EVENT_SEED_FILE"].Get<std::string>() };
 #ifdef USING__GZIP
   seedfile+=".gz";
 #endif
@@ -95,9 +119,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
       (fatal_error,"Cannot initialize random generator status file");
   }
   else if (m_seedmode==3) {
-    ran->SetSeedStorageIncrement(reader.Get("EVENT_SEED_INCREMENT",1));
-    msg_Info()<<METHOD<<"(): Set seed increment to "
-              <<reader.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
+    const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
+    ran->SetSeedStorageIncrement(incr);
   }
 }
 
@@ -118,12 +141,10 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 
 void Matrix_Element_Handler::InitNLOMC()
 {
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
+  Settings& s = Settings::GetMainSettings();
   std::string nlomc((m_nlomode==nlo_mode::mcatnlo)?"MC@NLO":"");
-  nlomc+="_"+reader.Get<std::string>("NLOMC_GENERATOR",p_shower->ShowerGenerator());
-  p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&reader));
+  nlomc += "_" + Settings::GetMainSettings()["NLOMC_GENERATOR"].Get<std::string>();
+  p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr));
 }
 
 #ifdef USING__Threading
@@ -145,13 +166,13 @@ void *Matrix_Element_Handler::TCalculateTotalXSecs(void *arg)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
+  Settings& s = Settings::GetMainSettings();
 #ifdef USING__Threading
-  bool async = Default_Reader().GetValue<bool>("PSI_ASYNC", false);
+  bool async = s["PSI"]["ASYNC"].Get<bool>();
 #endif
-  int storeresults = Default_Reader().GetValue("GENERATE_RESULT_DIRECTORY", 1);
+  bool storeresults = s["GENERATE_RESULT_DIRECTORY"].Get<bool>();
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
-    My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
   }
   bool okay(true);
 #ifndef USING__Threading
@@ -271,7 +292,8 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // calculate weight factor and/or apply unweighting and weight threshold
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
-  double wf(rpa->Picobarn()/sw);
+  double enhance = p_proc->Integrator()->PSHandler()->Enhance();
+  double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
@@ -319,7 +341,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     size_t n(0);
     cpi.m_ii.SetExternal(cfl,n);
     cpi.m_fi.SetExternal(cfl,n);
-    Process_Base::SortFlavours(cpi,0);
+    Process_Base::SortFlavours(cpi,1);
     if (trials.find(cpi)==trials.end()) {
       trials.insert(cpi);
       std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
@@ -440,24 +462,23 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	m_procs.back()->FillProcessMap(pmap);
       }
       if (m_fosettings==0) {
+        Settings& s = Settings::GetMainSettings();
 	m_fosettings=1;
 	if (p_shower->GetShower())
 	  p_shower->GetShower()->SetOn(false);
-	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
-	Read_Write_Base::AddCommandLine("MI_HANDLER None;");
-	Default_Reader reader;
-	reader.SetInputPath(m_path);
-	reader.SetInputFile(m_file);
-	if (reader.Get<int>("BEAM_REMNANTS",-1)==-1)
-	  Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
-	else {
-	  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
-	  Read_Write_Base::AddCommandLine("K_PERP_MEAN_2 0;");
-	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
-	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
+        s["FRAGMENTATION"].OverrideScalar<std::string>("None");
+        s["MI_HANDLER"].OverrideScalar<std::string>("None");
+        if (!s["MI_HANDLER"].IsCustomised()) {
+          s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
+        } else {
+          Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
+          kperp_settings["MEAN"].OverrideScalar<double>(0.0);
+          kperp_settings["SIGMA"].OverrideScalar<double>(0.0);
 	}
-	if (reader.Get<std::string>("ME_QED","")!="On")
-	  Read_Write_Base::AddCommandLine("ME_QED Off;");
+        Scoped_Settings meqedsettings{ s["ME_QED"] };
+        if (!meqedsettings["ENABLED"].IsCustomised()) {
+          meqedsettings["ENABLED"].OverrideScalar<bool>(false);
+        }
       }
     }
     else THROW(fatal_error,"NLO_Mode "+ToString(m_nlomode)+" unknown.");
@@ -465,23 +486,14 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
   return procs;
 }
 
-int Matrix_Element_Handler::InitializeProcesses
-(MODEL::Model_Base *model,
- BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr)
+int Matrix_Element_Handler::InitializeProcesses(
+  BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
 {
-  /*
-    This is the basis for all CKKW and process interplay.
-    Don't even try to think about modifying 
-    either this routine or any of its dependencies !!!
-  */
-  p_beam=beam; p_isr=isr; p_model=model;
-  if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
+  p_beam=beam;
+  p_isr=isr;
+  if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -528,235 +540,176 @@ int Matrix_Element_Handler::InitializeProcesses
 
 void Matrix_Element_Handler::BuildProcesses()
 {
-  Default_Reader reader;
-  reader.SetInputPath(m_path);
-  reader.SetInputFile(m_file);
-  // set color scheme
-  reader.SetTags(cls::ColorSchemeTags());
-  cls::scheme cls((cls::scheme)reader.Get<int>("COLOUR_SCHEME",1));
-  reader.SetTags(std::map<std::string,std::string>());
-  // set helicity scheme
-  reader.SetTags(hls::HelicitySchemeTags());
-  hls::scheme hls((hls::scheme)reader.Get<int>("HELICITY_SCHEME",1));
-  reader.SetTags(std::map<std::string,std::string>());
-  // set kfactor scheme
-  std::string kfactor=reader.Get<std::string>("KFACTOR","None");
-  // set scale scheme
-  std::string scale=reader.Get<std::string>
-    ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
-  std::vector<std::string> helpsv;
-  if (!reader.ReadVector(helpsv,"COUPLINGS"))
-    helpsv.push_back("Alpha_QCD 1");
-  std::string coupling(MakeString(helpsv,0));
+  Settings& s = Settings::GetMainSettings();
+
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
-  std::vector<std::vector<std::string> > procdata;
-  Data_Reader pread(" ",";","%","=");
-  pread.AddComment("#");
-  pread.AddWordSeparator("\t");
-  pread.SetAddCommandLine(false);
-  pread.SetInputPath(m_path);
-  pread.SetInputFile(m_processfile);
-  if (m_gens.size()>0 && !pread.MatrixFromFile(procdata,""))
-    THROW(missing_input,"No data in "+m_path+m_processfile+"'.");
-  for (size_t nf(0);nf<procdata.size();++nf) {
-    std::vector<std::string> &cur(procdata[nf]);
-    if(cur.size()==0) continue;
-    if(cur[0].find("Order(")!=std::string::npos)
-      THROW(fatal_error,
-	    std::string("Syntax error in coupling order specification: '"+cur[0]+"'\n")
-	    +"   Whitespace between 'Order' and brackets is mandatory");
-    if (cur.size()<2) continue;
-    if (cur[0]=="Process") {
-      Process_Info pi;
-      pi.m_scale=scale;
-      pi.m_coupling=coupling;
-      pi.m_kfactor=kfactor;
-      pi.m_cls=cls;
-      pi.m_hls=hls;
-      std::string proc(MakeString(cur,1));
-      size_t pos(proc.find("->"));
-      if (pos==std::string::npos) continue;
-      Processblock_Info pbi;
-      std::string ini(proc.substr(0,pos));
-      std::string fin(proc.substr(pos+2));
-      std::vector<std::string> dectags;
-      for (size_t ng(nf);ng<procdata.size();++ng) {
-	std::vector<std::string> &cur(procdata[ng]);
-	if (cur.size()<2) continue;
-	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
-	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
-	if (cur[0]=="No_Decay")
-	  for (size_t i(1);i<cur.size();++i) {
-	    long int kfc(ToType<long int>(cur[i]));
-	    pi.m_nodecs.push_back(Flavour(std::abs(kfc),kfc<0));
-	  }
-	if (cur[0]=="Order") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vcpl,nf);
-        }
-	if (cur[0]=="Max_Order") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmaxcpl,nf);
-	}
-	if (cur[0]=="Min_Order") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmincpl,nf);
-	}
-	if (cur[0]=="Born_Order") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vborncpl,nf);
-	}
-	if (cur[0]=="Order_EW" || cur[0]=="Order_QCD" ||
-	    cur[0]=="Max_Order_EW" || cur[0]=="Max_Order_QCD") {
-	  msg_Error()<<"\n"<<METHOD<<"(): "<<om::red<<"'"<<cur[0]
-		     <<"' is obsolete. Refer to the manual for"
-		     <<" the new syntax 'Order (<qcd>,<ew>[,...])'."
-		     <<om::reset<<std::endl;
-        }
-	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
-	if (cur[0]=="CKKW") {
-	  if (p_shower==NULL || p_shower->GetShower()==NULL)
-	    THROW(fatal_error,"Invalid shower generator");
-	  pi.m_ckkw=1;
-	  pbi.m_gycut=cur[1];
-	}
-	if (cur[0]=="Scales") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vscale,nf);
-	}
-	if (cur[0]=="Couplings") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vcoupl,nf);
-	}
-	if (cur[0]=="KFactor") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vkfac,nf);
-	}
-	if (cur[0]=="Y_Cut") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vycut,nf);
-	}
-	if (cur[0]=="Selector_File") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vsfile,nf);
-	}
-	if (cur[0]=="Min_N_Quarks") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnminq,nf);
-	}
-	if (cur[0]=="Max_N_Quarks") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnmaxq,nf);
-	}
-	if (cur[0]=="Print_Graphs") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vgpath,nf);
-	}
-	if (cur[0]=="Name_Suffix") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vaddname,nf);
-	}
-	if (cur[0]=="Special") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vspecial,nf);
-	}
-	if (cur[0]=="Enable_MHV") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vamegicmhv,nf);
-	}
-	if (cur[0]=="Min_N_TChannels") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vntchan,nf);
-	}
-	if (cur[0]=="Max_N_TChannels") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmtchan,nf);
-	}
-	if (cur[0]=="Integration_Error") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmaxerr,nf);
-	}
-	if (cur[0]=="Max_Epsilon") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmaxeps,nf);
-	}
-	if (cur[0]=="RS_Enhance_Factor") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vrsefac,nf);
-	}
-	if (cur[0]=="Enhance_Factor") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vefac,nf);
-	}
-	if (cur[0]=="Enhance_Function") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vefunc,nf);
-	}
-	if (cur[0]=="Enhance_Observable") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_veobs,nf);
-	}
-	if (cur[0]=="NLO_Mode") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnlomode,nf);
-	}
-	if (cur[0]=="NLO_Part") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnlopart,nf);
-	}
-	if (cur[0]=="NLO_Order") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnlocpl,nf);
-	}
-	if (cur[0]=="Subdivide_Virtual") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnlosubv,nf);
-	}
-	if (cur[0]=="ME_Generator") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vmegen,nf);
-	}
-	if (cur[0]=="RS_ME_Generator") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vrsmegen,nf);
-	}
-	if (cur[0]=="Loop_Generator") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vloopgen,nf);
-	}
-	if (cur[0]=="Integrator") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vint,nf);
-	}
-	if (cur[0]=="RS_Integrator") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vrsint,nf);
-	}
-	if (cur[0]=="PSI_ItMin") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vitmin,nf);
-        }
-	if (cur[0]=="RS_PSI_ItMin") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vrsitmin,nf);
-        }
-        pi.p_gens=&m_gens;
-	if (cur[0]=="End" && cur[1]=="process") break;
-      }
-      BuildSingleProcessList(pi,pbi,ini,fin,dectags);
-      if (msg_LevelIsDebugging()) {
-        msg_Indentation(4);
-        msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
-        for (unsigned int i=0; i<m_procs.size(); ++i) {
-          msg_Out()<<m_procs[i]->Name();
-          if (m_procs[i]->IsGroup())
-            msg_Out()<<" has subprocesses ...";
-          msg_Out()<<std::endl;
-        }
+  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0)
+    THROW(missing_input, "No process data.");
+
+  RegisterMainProcessDefaults(s["PROCESSES"]);
+
+  // iterate over processes in the settings
+  for (auto& proc : s["PROCESSES"].GetItems()) {
+    Single_Process_List_Args args;
+    ReadFinalStateMultiIndependentProcessSettings(proc, args);
+    ReadFinalStateMultiSpecificProcessSettings(proc, args);
+    BuildSingleProcessList(args);
+    if (msg_LevelIsDebugging()) {
+      msg_Indentation(4);
+      msg_Out()<<m_procs.size()<<" process(es) found ..."<<std::endl;
+      for (unsigned int i=0; i<m_procs.size(); ++i) {
+        msg_Out()<<m_procs[i]->Name();
+        if (m_procs[i]->IsGroup())
+          msg_Out()<<" has subprocesses ...";
+        msg_Out()<<std::endl;
       }
     }
+  }
+}
+
+void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
+  Scoped_Settings proc, Single_Process_List_Args& args)
+{
+  // fill process info
+  Settings& s = Settings::GetMainSettings();
+  args.pi.m_scale = s["SCALES"].Get<std::string>();
+  const auto couplings = s["COUPLINGS"].GetVector<std::string>();
+  args.pi.m_coupling = MakeString(couplings, 0);
+  args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
+  args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
+  args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
+  std::vector<long int> nodecaykfcs{ proc["No_Decay"].GetVector<long int>() };
+  for (const auto& kfc : nodecaykfcs)
+    args.pi.m_nodecs.push_back(Flavour(std::abs(kfc),kfc<0));
+  args.pi.p_gens=&m_gens;
+
+  // fill initial/final state
+  const auto procname = proc["Process"].Get<std::string>();
+  size_t pos(procname.find("->"));
+  if (pos==std::string::npos)
+    THROW(fatal_error, "Process name must be of the form `a b -> x y'.");
+  args.ini = procname.substr(0,pos);
+  args.fin = procname.substr(pos+2);
+
+  // fill decay tags
+  std::vector<std::string> helpsv;
+  helpsv = proc["Decay"].GetVector<std::string>();
+  args.dectags.insert(args.dectags.end(), helpsv.begin(), helpsv.end());
+  helpsv = proc["DecayOS"].GetVector<std::string>();
+  for (const auto& tag : helpsv)
+    args.dectags.push_back("Z" + tag);
+
+  // build process block info
+  args.pbi.m_cutcore = proc["Cut_Core"].Get<int>();
+  args.pbi.m_selectors = proc["Selectors"];
+
+  // make modifications for multi-jet merging
+  std::string ckkw{ proc["CKKW"].Get<std::string>() };
+  if (ckkw != "") {
+    if (p_shower==NULL || p_shower->GetShower()==NULL)
+      THROW(fatal_error,"Invalid shower generator");
+    args.pi.m_ckkw=1;
+    args.pbi.m_gycut=ckkw;
+  }
+}
+
+void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
+  Scoped_Settings proc,
+  Single_Process_List_Args& args,
+  const std::string& rawrange) const
+{
+  // iterate over settings in each process that can be either given for all
+  // final-state multiplicities or only for some final-state multiplicities;
+  // top-level items are applied to all final-state multiplicities (indicated
+  // by the wildcard passed to ReadProcessSettings, whereas items that are
+  // scoped under an integer key (e.g. "3: { ... }") or a continuous integer
+  // range (e.g.  "4-7: { ... }") only apply to the corresponding final-state
+  // multiplicities; ReadProcessSettings will recursively read all top-level
+  // and scoped settings
+
+  // parse final-state multiplicity range
+  // format: either single unsigned int or a pair of ints connected by a '-'
+  auto range = std::make_pair(0, std::numeric_limits<size_t>::max());
+  // the wildcard stands for all multis, for which we leave begin=end=0
+  if (rawrange != "-") {
+    const auto delimiterpos = rawrange.find('-');
+    range.first = std::stoul(rawrange.substr(0, delimiterpos));
+    if (delimiterpos == std::string::npos)
+      range.second = range.first;
+    else
+      range.second = std::stoul(rawrange.substr(delimiterpos + 1));
+  }
+
+  const auto nf = proc.GetIndex();
+  for (auto rawsubkey : proc.GetKeys()) {
+
+    // resolve tags which we allow in final-state multiplicity keys
+    auto subkey = rawsubkey;
+    proc.ReplaceTags(subkey);
+
+    // recurse if a multiplicity specification is encountered
+    if (std::isdigit(subkey[0])) {
+      ReadFinalStateMultiSpecificProcessSettings(proc[rawsubkey], args, subkey);
+      continue;
+    }
+
+    // ignore certain settings that are not to be handled by ExtractMPvalues
+    // below
+    if (subkey == "Selectors"
+        || subkey == "Cut_Core"
+        || subkey == "CKKW"
+        || subkey == "Process")
+      continue;
+
+    // read value (and potentially do some pre-processing for non-scalar
+    // settings)
+    std::string value;
+    if (subkey == "Order"
+        || subkey == "Max_Order"
+        || subkey == "Min_Order"
+        || subkey == "Born_Order"
+        || subkey == "NLO_Order") {
+      // translate back into a single string to use ExtractMPvalues below
+      value = MakeOrderString(proc[rawsubkey]);
+    } else {
+      value = proc[rawsubkey].SetDefault("").Get<std::string>();
+    }
+
+    if (subkey == "Order")                   ExtractMPvalues(value, range, nf, args.pbi.m_vcpl);
+    else if (subkey == "Max_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmaxcpl);
+    else if (subkey == "Min_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmincpl);
+    else if (subkey == "Born_Order")         ExtractMPvalues(value, range, nf, args.pbi.m_vborncpl);
+    else if (subkey == "Scales")             ExtractMPvalues(value, range, nf, args.pbi.m_vscale);
+    else if (subkey == "Couplings")          ExtractMPvalues(value, range, nf, args.pbi.m_vcoupl);
+    else if (subkey == "KFactor")            ExtractMPvalues(value, range, nf, args.pbi.m_vkfac);
+    else if (subkey == "Y_Cut")              ExtractMPvalues(value, range, nf, args.pbi.m_vycut);
+    else if (subkey == "Min_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnminq);
+    else if (subkey == "Max_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnmaxq);
+    else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
+    else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
+    else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
+    else if (subkey == "Enable_MHV")         ExtractMPvalues(value, range, nf, args.pbi.m_vamegicmhv);
+    else if (subkey == "Min_N_TChannels")    ExtractMPvalues(value, range, nf, args.pbi.m_vntchan);
+    else if (subkey == "Max_N_TChannels")    ExtractMPvalues(value, range, nf, args.pbi.m_vmtchan);
+    else if (subkey == "Integration_Error")  ExtractMPvalues(value, range, nf, args.pbi.m_vmaxerr);
+    else if (subkey == "Max_Epsilon")        ExtractMPvalues(value, range, nf, args.pbi.m_vmaxeps);
+    else if (subkey == "RS_Enhance_Factor")  ExtractMPvalues(value, range, nf, args.pbi.m_vrsefac);
+    else if (subkey == "Enhance_Factor")     ExtractMPvalues(value, range, nf, args.pbi.m_vefac);
+    else if (subkey == "Enhance_Function")   ExtractMPvalues(value, range, nf, args.pbi.m_vefunc);
+    else if (subkey == "Enhance_Observable") ExtractMPvalues(value, range, nf, args.pbi.m_veobs);
+    else if (subkey == "NLO_Mode")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlomode);
+    else if (subkey == "NLO_Part")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlopart);
+    else if (subkey == "NLO_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vnlocpl);
+    else if (subkey == "Subdivide_Virtual")  ExtractMPvalues(value, range, nf, args.pbi.m_vnlosubv);
+    else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
+    else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
+    else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
+    else if (subkey == "Integrator")         ExtractMPvalues(value, range, nf, args.pbi.m_vint);
+    else if (subkey == "RS_Integrator")      ExtractMPvalues(value, range, nf, args.pbi.m_vrsint);
+    else if (subkey == "PSI_ItMin")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmin);
+    else if (subkey == "RS_PSI_ItMin")       ExtractMPvalues(value, range, nf, args.pbi.m_vrsitmin);
   }
 }
 
@@ -799,25 +752,23 @@ void Matrix_Element_Handler::BuildDecays
   }
 }
 
-void Matrix_Element_Handler::BuildSingleProcessList
-(Process_Info &pi,Processblock_Info &pbi,
- const std::string &ini,const std::string &fin,
- const std::vector<std::string> &dectags)
+void Matrix_Element_Handler::BuildSingleProcessList(
+  Single_Process_List_Args& args)
 {
   int aoqcd(0), loprocs(0);
   Subprocess_Info AIS, AFS;
-  ExtractFlavours(AIS,ini);
-  ExtractFlavours(AFS,fin);
+  ExtractFlavours(AIS,args.ini);
+  ExtractFlavours(AFS,args.fin);
   std::vector<Process_Base*> procs;
   NLOTypeStringProcessMap_Map *pmap(NULL);
   for (size_t fss(0);fss<AFS.m_ps.size();++fss) {
     Subprocess_Info ACFS;
     ACFS.m_ps.push_back(AFS.m_ps[fss]);
-    BuildDecays(ACFS,dectags);
+    BuildDecays(ACFS,args.dectags);
     for (size_t afsi(0);afsi<ACFS.m_ps.size();++afsi) {
       msg_Debugging()<<METHOD<<"(): Check N_max ("
 		     <<fss<<"): {\n"<<ACFS.m_ps[afsi]<<"}\n";
-      pi.m_fi.GetNMax(ACFS.m_ps[afsi]);
+      args.pi.m_fi.GetNMax(ACFS.m_ps[afsi]);
     }
   }
   for (size_t iss(0);iss<AIS.m_ps.size();++iss) {
@@ -839,7 +790,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
       }
       Subprocess_Info ACFS;
       ACFS.m_ps.push_back(FS);
-      BuildDecays(ACFS,dectags);
+      BuildDecays(ACFS,args.dectags);
       for (size_t afsi(0);afsi<ACFS.m_ps.size();++afsi) {
 	Subprocess_Info &CFS(ACFS.m_ps[afsi]);
 	msg_Debugging()<<METHOD<<"(): Init process ("<<iss<<","
@@ -854,32 +805,23 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (inisum>rpa->gen.Ecms() || finsum>rpa->gen.Ecms()) continue;
 	std::string pnid(CFS.MultiplicityTag()), ds;
 	int di;
-	Process_Info cpi(pi);
+	Process_Info cpi(args.pi);
 	cpi.m_ii=IS;
 	cpi.m_fi=CFS;
-	cpi.m_fi.m_nlotype=pi.m_fi.m_nlotype;
-	cpi.m_fi.m_nlocpl=pi.m_fi.m_nlocpl;
-	cpi.m_fi.SetNMax(pi.m_fi);
-	if (GetMPvalue(pbi.m_vmaxcpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_maxcpl,"");
+	cpi.m_fi.m_nlotype=args.pi.m_fi.m_nlotype;
+	cpi.m_fi.m_nlocpl=args.pi.m_fi.m_nlocpl;
+	cpi.m_fi.SetNMax(args.pi.m_fi);
+	if (GetMPvalue(args.pbi.m_vmaxcpl,nfs,pnid,ds)) {
+	  cpi.m_maxcpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(pbi.m_vmincpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_mincpl,"");
+	if (GetMPvalue(args.pbi.m_vmincpl,nfs,pnid,ds)) {
+	  cpi.m_mincpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(pbi.m_vborncpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_borncpl,"");
+	if (GetMPvalue(args.pbi.m_vborncpl,nfs,pnid,ds)) {
+	  cpi.m_borncpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(pbi.m_vcpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_maxcpl,"");
+	if (GetMPvalue(args.pbi.m_vcpl,nfs,pnid,ds)) {
+	  cpi.m_maxcpl=ToVector<double>(ds);
 	  cpi.m_mincpl=cpi.m_maxcpl;
 	  for (size_t i(0);i<cpi.m_maxcpl.size();++i)
 	    if (cpi.m_maxcpl[i]<0) {
@@ -892,6 +834,15 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  cpi.m_maxcpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
+
+	// If "Born_Order" is specified, we set all max/min orders
+	// here accordingly. This is for the interface to external
+	// amplitudes, where the user has to specify coupling orders
+	// for the born process of all multiplicities explicitly.
+	for(size_t i (0); i<cpi.m_borncpl.size(); i++)
+	  if(cpi.m_borncpl[i])
+	    cpi.m_mincpl[i]=cpi.m_maxcpl[i]=cpi.m_borncpl[i];
+
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
 	double intpart,fracpart;
@@ -918,20 +869,20 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    THROW(inconsistent_option,"Please correct coupling orders");
 	  }
 	}
-	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
-	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
-	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
-	if (GetMPvalue(pbi.m_vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
-	if (GetMPvalue(pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
-	if (GetMPvalue(pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
-	if (GetMPvalue(pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
-	if (GetMPvalue(pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
-	if (GetMPvalue(pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;
-	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
-	if (GetMPvalue(pbi.m_vaddname,nfs,pnid,ds)) cpi.m_addname=ds;
-	if (GetMPvalue(pbi.m_vspecial,nfs,pnid,ds)) cpi.m_special=ds;
-	if (GetMPvalue(pbi.m_vnlomode,nfs,pnid,ds)) {
-	  pi.m_nlomode=cpi.m_nlomode=ToType<nlo_mode::code>(ds);
+	if (GetMPvalue(args.pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
+	if (GetMPvalue(args.pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
+	if (GetMPvalue(args.pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
+        cpi.m_selectors = args.pbi.m_selectors;
+	if (GetMPvalue(args.pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
+	if (GetMPvalue(args.pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
+	if (GetMPvalue(args.pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
+	if (GetMPvalue(args.pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
+	if (GetMPvalue(args.pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;
+	if (GetMPvalue(args.pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
+	if (GetMPvalue(args.pbi.m_vaddname,nfs,pnid,ds)) cpi.m_addname=ds;
+	if (GetMPvalue(args.pbi.m_vspecial,nfs,pnid,ds)) cpi.m_special=ds;
+	if (GetMPvalue(args.pbi.m_vnlomode,nfs,pnid,ds)) {
+	  args.pi.m_nlomode=cpi.m_nlomode=ToType<nlo_mode::code>(ds);
 	  if (cpi.m_nlomode==nlo_mode::unknown)
 	    THROW(fatal_error,"Unknown NLO_Mode "+ds+" {"+pnid+"}");
 	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>("BVIRS");
@@ -940,27 +891,25 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
 			      "same time");
 	}
-	if (GetMPvalue(pbi.m_vnlopart,nfs,pnid,ds)) {
+	if (GetMPvalue(args.pbi.m_vnlopart,nfs,pnid,ds)) {
 	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>(ds);
 	}
-	if (GetMPvalue(pbi.m_vnlocpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_fi.m_nlocpl,"");
+	if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
+          cpi.m_fi.m_nlocpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
-	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
-	if (GetMPvalue(pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
+	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
+	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
+	if (GetMPvalue(args.pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
 	else cpi.m_rsmegenerator=cpi.m_megenerator;
-	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) {
+	if (GetMPvalue(args.pbi.m_vloopgen,nfs,pnid,ds)) {
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator=ds;
 	}
-	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
-	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
+	if (GetMPvalue(args.pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
+	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
-	if (GetMPvalue(pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
-	if (GetMPvalue(pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
+	if (GetMPvalue(args.pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
+	if (GetMPvalue(args.pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	else cpi.m_rsitmin=cpi.m_itmin;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
@@ -970,18 +919,18 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  procs.push_back(proc[i]);
 	  proc[i]->Integrator()->
 	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
-	  if (GetMPvalue(pbi.m_vefac,nfs,pnid,dd))
+	  if (GetMPvalue(args.pbi.m_vefac,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
-	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
+	  if (GetMPvalue(args.pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
 	  else proc[i]->Integrator()->SetMaxEpsilon(1.0e-3);
-	  if (GetMPvalue(pbi.m_vrsefac,nfs,pnid,dd))
+	  if (GetMPvalue(args.pbi.m_vrsefac,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetRSEnhanceFactor(dd);
 	  double maxerr(-1.0);
 	  std::string eobs, efunc;
-	  if (GetMPvalue(pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;
-	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) eobs=ds;
-	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
+	  if (GetMPvalue(args.pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;
+	  if (GetMPvalue(args.pbi.m_veobs,nfs,pnid,ds)) eobs=ds;
+	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
 	}
@@ -991,24 +940,29 @@ void Matrix_Element_Handler::BuildSingleProcessList
   }
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
-    Selector_Key skey(NULL,new Data_Reader(),true);
-    std::string sfile(cpi.m_selectorfile!=""?
-		      cpi.m_selectorfile:m_selectorfile);
-    size_t ftp(sfile.find("*"));
-    if (ftp!=std::string::npos) sfile.replace
-      (ftp,1,m_processfile.substr(0,m_processfile.find('|')));
-    skey.ReadData(m_path,sfile);
-    if (pi.m_ckkw&1) {
-      std::vector<std::string> jfargs(1,pbi.m_gycut);
-      GetMPvalue(pbi.m_vycut,cpi.m_fi.NExternal(),
-		 cpi.m_fi.MultiplicityTag(),jfargs[0]);
+    Selector_Key skey;
+    if (cpi.m_selectors.GetItemsCount() == 0) {
+      skey.m_settings = Settings::GetMainSettings()["SELECTORS"];
+    } else {
+      skey.m_settings = cpi.m_selectors;
+    }
+    if (args.pi.m_ckkw&1) {
+      MyStrStream jfyaml;
+      jfyaml << "{Type: METS";
+      std::string ycut{ args.pbi.m_gycut };
+      GetMPvalue(args.pbi.m_vycut,
+                 cpi.m_fi.NExternal(),
+		 cpi.m_fi.MultiplicityTag(),
+                 ycut);
+      jfyaml << ", YCUT: \"" << ycut << "\"";
       if (i<loprocs) {
-	jfargs.push_back("LO");
-	if (pbi.m_cutcore==true) {
-	  jfargs.push_back("CUT");
+        jfyaml << ", LO: true";
+	if (args.pbi.m_cutcore==true) {
+          jfyaml << ", CUT: true";
 	}
       }
-      skey.SetData("METS",jfargs);
+      jfyaml << "}";
+      skey.AddSelectorYAML(jfyaml.str());
     }
     procs[i]->SetSelector(skey);
     procs[i]->SetScale
@@ -1079,26 +1033,6 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,
 }
 
 namespace SHERPA {
-
-  template <> int Matrix_Element_Handler::ExtractMPvalue
-  (const std::string& str)
-  {
-    return ToType<int>(str);
-  }
-
-  template <> double Matrix_Element_Handler::ExtractMPvalue
-  (const std::string& str)
-  {
-    Algebra_Interpreter inter;
-    inter.AddTag("E_CMS",ToString(rpa->gen.Ecms()));
-    return ToType<double>(inter.Interprete(str));
-  }
-
-  template <> std::string Matrix_Element_Handler::ExtractMPvalue
-  (const std::string& str)
-  {
-    return str;
-  }
 
   template <typename Type>
   void Matrix_Element_Handler::AddMPvalue
@@ -1178,56 +1112,54 @@ namespace SHERPA {
    const int nfs,const std::string &pnid,std::string &rv);
 
   template <typename Type>
-  void Matrix_Element_Handler::ExtractMPvalues(std::string& str,std::map
-			       <std::string,std::pair<int,Type> >& dv,
-			       const int &priority)
+  void Matrix_Element_Handler::ExtractMPvalues(
+    std::string str,
+    std::pair<size_t, size_t> multirange,
+    const int &priority,
+    std::map<std::string,std::pair<int,Type> >& dv) const
   {
-    int position;
-    position = str.find("{");
-    while (position>0 && str[position-1]!=' ' && str[position-1]!='\t')
-      position=str.find('{',position+1);
-    if (position==-1) {
-      dv["-"]=std::pair<int,Type>(priority,ExtractMPvalue<Type>(str));
-      msg_Debugging()<<METHOD<<"(): adding '"<<str<<"'("<<dv["-"].second
+    if (str == "") return;
+    const auto value = ToType<Type>(str);
+    if (multirange.second == std::numeric_limits<size_t>::max()) {
+      dv["-"] = std::pair<int, Type>(priority, value);
+      msg_Debugging()<<METHOD<<"(): adding '"<<value<<"'("<<dv["-"].second
 		     <<") {-}("<<priority<<")\n";
       return;
     }
-    std::string hstr = str.substr(0,position);
-    for (size_t hl=hstr.length();hl && 
-	   (hstr[hl-1]==' ' || hstr[hl-1]=='\t');
-	 hl=hstr.length()) hstr.erase(hl-1);
-    Type value = ExtractMPvalue<Type>(hstr);
-    str = str.substr(position+1,str.length()-position-2);
-    do {
-      position = str.find(",");
-      if (position>-1) {
-	hstr = str.substr(0,position);
-	str = str.substr(position+1);
-      }
-      else hstr=str;
-      if (hstr.length()>0) {
-	dv[hstr]=std::pair<int,Type>(priority,value);
-	msg_Debugging()<<METHOD<<"(): adding '"<<value<<"'("<<dv[hstr].second
-		       <<") {"<<hstr<<"}("<<priority<<")\n";
-      }
-    } while (position>-1);
+    for (auto m = multirange.first; m <= multirange.second; ++m) {
+      dv[ToString(m)] = std::pair<int, Type>(priority, value);
+      msg_Debugging()<<METHOD<<"(): adding '"<<value
+                     <<"'("<<dv[ToString(m)].second
+                     <<") {"<<ToString(m)<<"}("<<priority<<")\n";
+    }
   }
-
-  template void Matrix_Element_Handler::ExtractMPvalues
-  (std::string& str,std::map<std::string,std::pair<int,double> >& dv,
-   const int &priority);
-  template void Matrix_Element_Handler::ExtractMPvalues
-  (std::string& str,std::map<std::string,std::pair<int,std::string> >& dv,
-   const int &priority);
 
 }
 
 std::string Matrix_Element_Handler::MakeString
-(const std::vector<std::string> &in,const size_t &first)
+(const std::vector<std::string> &in,const size_t &first) const
 {
   std::string out(in.size()>first?in[first]:"");
   for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
   return out;
+}
+
+std::string Matrix_Element_Handler::MakeOrderString(Scoped_Settings&& s) const
+{
+  auto orderkeys = s.GetKeys();
+  std::vector<std::string> ordervalues(orderkeys.size(), "-1");
+  for (auto orderkey : orderkeys) {
+    const auto order = s[orderkey]
+      .SetDefault("-1")
+      .SetReplacementList(String_Map{{"Any", "-1"}})
+      .Get<std::string>();
+    const auto orderidx = p_model->IndexOfOrderKey(orderkey);
+    if (orderidx + 1 > ordervalues.size())
+      ordervalues.resize(orderidx + 1, "-1");
+    ordervalues[orderidx] = order;
+  }
+  // translate back into a single string to use ExtractMPvalues below
+  return MakeString(ordervalues, 0);
 }
 
 double Matrix_Element_Handler::GetWeight
@@ -1239,8 +1171,8 @@ double Matrix_Element_Handler::GetWeight
     StringProcess_Map::const_iterator pit
       (m_pmaps[i]->find(type)->second->find(name));
     if(pit==m_pmaps[i]->find(type)->second->end()) continue;
-    SP(Color_Integrator) ci(pit->second->Integrator()->ColorIntegrator());
-    if (ci!=NULL) {
+    auto ci = pit->second->Integrator()->ColorIntegrator();
+    if (ci != nullptr) {
       ci->GeneratePoint();
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));

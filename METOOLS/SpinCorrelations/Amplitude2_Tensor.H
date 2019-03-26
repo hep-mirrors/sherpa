@@ -2,6 +2,7 @@
 #define METOOLS_SpinCorrelations_Amplitude2_Tensor_H
 
 #include <vector>
+#include <memory>
 #include "ATOOLS/Math/MyComplex.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Matrix.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -56,6 +57,7 @@ namespace METOOLS {
                          const std::pair<ATOOLS::Particle*, size_t>& p2);
   };
 
+  using Amplitude2_Tensor_SP = std::shared_ptr<METOOLS::Amplitude2_Tensor>;
 }
 
 

@@ -4,12 +4,12 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 #include <sys/stat.h>
 
@@ -30,7 +30,7 @@ extern "C" {
 
   void ol_getparameter_double(const char* key, double* val);
   void ol_getparameter_int(const char* key, int* val);
-  void ol_setparameter_double(const char* key, double* val);
+  void ol_setparameter_double(const char* key, double val);
   void ol_setparameter_int(const char* key, int val);
   void ol_setparameter_string(const char* key, const char* val);
 
@@ -54,36 +54,55 @@ extern "C" {
 std::string OpenLoops_Interface::s_olprefix = std::string("");
 bool OpenLoops_Interface::s_ignore_model = false;
 bool OpenLoops_Interface::s_exit_on_error = true;
-std::vector<std::string> OpenLoops_Interface::s_evgen_params;
+std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
 
 // private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
 size_t OpenLoops_Interface::s_vmode;
+
+OpenLoops_Interface::OpenLoops_Interface() :
+  ME_Generator_Base("OpenLoops")
+{
+  RegisterDefaults();
+};
 
 OpenLoops_Interface::~OpenLoops_Interface()
 {
   ol_finish();
 }
 
-bool OpenLoops_Interface::Initialize(const string &path,const string &file,
-                                     MODEL::Model_Base *const model,
-                                     BEAM::Beam_Spectra_Handler *const beam,
+void OpenLoops_Interface::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["OL_VERBOSITY"].SetDefault("0");
+  s["OL_VMODE"].SetDefault(0);
+  s["OL_EXIT_ON_ERROR"].SetDefault(true);
+  s["OL_IGNORE_MODEL"].SetDefault(false);
+
+  // find OL installation prefix with several overwrite options
+  s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
+  struct stat st;
+  if(stat(s_olprefix.c_str(), &st) != 0)
+    s_olprefix = OPENLOOPS_PREFIX;
+  s["OL_PREFIX"].SetDefault(s_olprefix);
+  s_olprefix = s["OL_PREFIX"].Get<string>();
+}
+
+bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
+			             BEAM::Beam_Spectra_Handler* const beam,
                                      PDF::ISR_Handler *const isr)
 {
-  // find OL installation prefix with several overwrite options
-  struct stat st;
-  Default_Reader reader;
-  s_ignore_model = reader.Get<int>("OL_IGNORE_MODEL", 0);
-  s_exit_on_error = reader.Get<int>("OL_EXIT_ON_ERROR", 1);
-  if (s_ignore_model) msg_Info()<<METHOD<<"(): OpenLoops will use the "
-                                <<"Standard Model even if you set a "
-                                <<"different model without warning."
-                                <<std::endl;
-  s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
-  if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
-  s_olprefix = reader.Get<string>("OL_PREFIX", s_olprefix);
   msg_Info()<<"Initialising OpenLoops generator from "<<s_olprefix<<endl;
-  s_vmode = reader.Get<int>("OL_VMODE", 0);
+  Settings& s = Settings::GetMainSettings();
+  s_ignore_model = s["OL_IGNORE_MODEL"].Get<bool>();
+  s_exit_on_error = s["OL_EXIT_ON_ERROR"].Get<bool>();
+  if (s_ignore_model) {
+    msg_Info()<<METHOD<<"(): OpenLoops will use the "
+                      <<"Standard Model even if you set a "
+                      <<"different model without warning."
+                      <<std::endl;
+  }
+  s_vmode = s["OL_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
 
   // load library dynamically
@@ -95,7 +114,7 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
   ol_set_init_error_fatal(0);
 
   // set OL verbosity
-  std::string ol_verbosity = reader.Get<std::string>("OL_VERBOSITY", "0");
+  std::string ol_verbosity = s["OL_VERBOSITY"].Get<std::string>();
   SetParameter("verbose",ol_verbosity);
 
   // tell OL about the current model and check whether accepted
@@ -122,13 +141,17 @@ bool OpenLoops_Interface::Initialize(const string &path,const string &file,
 #endif
 
   // set remaining OL parameters specified by user
-  reader.ReadVector(s_evgen_params,"OL_PARAMETERS");
-  for (size_t i=1; i<s_evgen_params.size(); i=i+2)
-    SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
-  vector<string> int_params;
-  reader.ReadVector(int_params,"OL_INTEGRATION_PARAMETERS");
-  for (size_t i=1; i<int_params.size(); i=i+2)
-    SetParameter(int_params[i-1], int_params[i]);
+  for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
+    const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    s_evgen_params[key] = val;
+    SetParameter(key, val);
+  }
+  for (const auto& key : s["OL_INTEGRATION_PARAMETERS"].GetKeys()) {
+    const auto val = s["OL_INTEGRATION_PARAMETERS"][key]
+      .SetDefault("")
+      .Get<std::string>();
+    SetParameter(key, val);
+  }
 
   if (s_vmode==2) SetParameter("ir_on",2);
 
@@ -216,8 +239,8 @@ void OpenLoops_Interface::SetParametersUFO(const MODEL::Model_Base* model)
 
 void OpenLoops_Interface::SwitchMode(const int mode)
 {
-  for (size_t i=1; i<s_evgen_params.size(); i=i+2)
-    SetParameter(s_evgen_params[i-1], s_evgen_params[i]);
+  for (const auto& kv : s_evgen_params)
+    SetParameter(kv.first, kv.second);
 }
 
 int OpenLoops_Interface::RegisterProcess(const ATOOLS::Flavour_Vector& isflavs,
@@ -419,7 +442,7 @@ void HandleParameterStatus(int err, const std::string & key, ValueType value)
 }
 void OpenLoops_Interface::SetParameter(const std::string & key, double value)
 {
-  ol_setparameter_double(key.c_str(), &value);
+  ol_setparameter_double(key.c_str(), value);
   HandleParameterStatus(ol_get_error(), key, value);
 }
 void OpenLoops_Interface::SetParameter(const std::string & key, int value)

@@ -19,6 +19,7 @@ Parton::Parton
   m_id(0), p_in(NULL)
 {
   p_out[1]=p_out[0]=NULL;
+  m_t[0]=m_t[1]=-1.0;
   ++s_cnt;
 }
 
@@ -96,6 +97,8 @@ namespace DIRE {
     if (p.In()||p.Out(0)) hist+=ToString(p.Id());
     if (p.Out(0)) hist+="->"+ToString(p.Out(0)->Id());
     if (p.Out(1)) hist+=","+ToString(p.Out(1)->Id());
+    if (p.T(0)>=0.0||p.T(1)>=0.0)
+      hist+="["+ToString(p.T(0))+","+ToString(p.T(1))+"]";
     for (Parton::Weight_Map::const_iterator 
 	   wit(p.Weights().begin());wit!=p.Weights().end();++wit) {
       const Parton::Weight_Vector &ws(wit->second);

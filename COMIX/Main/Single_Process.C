@@ -14,12 +14,11 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace COMIX;
 using namespace PHASIC;
@@ -31,7 +30,8 @@ COMIX::Single_Process::Single_Process():
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
-  m_itype=ToType<cs_itype::type>(rpa->gen.Variable("NLO_IMODE"));
+  Settings& s = Settings::GetMainSettings();
+  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -60,11 +60,13 @@ COMIX::Single_Process::~Single_Process()
 
 bool COMIX::Single_Process::Initialize
 (std::map<std::string,std::string> *const pmap,
- std::vector<Single_Process*> *const procs)
+ std::vector<Single_Process*> *const procs,
+ const std::vector<int> &blocks,size_t &nproc)
 {
   DEBUG_FUNC("");
   m_p.resize(m_nin+m_nout);
-  if (!COMIX::Process_Base::Initialize(pmap,procs)) return false;
+  if (!COMIX::Process_Base::Initialize
+      (pmap,procs,blocks,nproc)) return false;
   if (p_bg!=NULL) delete p_bg;
   p_bg=NULL;
   if (pmap->find(m_name)!=pmap->end()) {
@@ -73,9 +75,10 @@ bool COMIX::Single_Process::Initialize
   }
   std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (FileExists(mapfile,1)) {
+  m_hasmapfile=FileExists(mapfile,1);
+  My_In_File mapstream(mapfile);
+  if (m_hasmapfile) {
     msg_Tracking()<<METHOD<<"(): Map file '"<<mapfile<<"' found.\n";
-    My_In_File mapstream(mapfile);
     if (mapstream.Open()) {
       std::string cname, mapname;
       *mapstream>>cname>>mapname;
@@ -85,7 +88,24 @@ bool COMIX::Single_Process::Initialize
       if (mapname!=m_name) {
 	msg_Debugging()<<METHOD<<"(): Map '"<<m_name
 		       <<"' onto '"<<mapname<<"'\n";
+	if (Parent()->Name()==Name() && mapname=="x") return false;
+	if (blocks.size()) {
+	  for (size_t i(0);i<procs->size();++i)
+	    if ((*procs)[i]->Name()==mapname) {
+	      msg_Debugging()<<"Keep "<<m_name<<"\n";
+	      return true;
+	    }
+	  return false;
+	}
 	return true;
+      }
+      else {
+	++nproc;
+	if (blocks.size()) {
+	  if (std::find(blocks.begin(),blocks.end(),nproc-1)
+	      ==blocks.end()) return false;
+	  msg_Debugging()<<"Keep "<<nproc<<"\n";
+	}
       }
     }
   }
@@ -131,8 +151,8 @@ bool COMIX::Single_Process::Initialize
       maxcpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
       mincpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
     }
-  if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,&*p_model,
-                       &m_cpls,stype,smode,m_itype,maxcpl,mincpl,
+  if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,mapstream,&*p_model,
+		       &m_cpls,stype,smode,m_itype,maxcpl,mincpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
     m_mincpl.resize(p_bg->MinCpl().size());
     m_maxcpl.resize(p_bg->MaxCpl().size());
@@ -158,7 +178,7 @@ bool COMIX::Single_Process::Initialize
 	  pl.push_back(i);
 	}
       p_bg->DInfo()->SetMassive(massive);
-      p_kpterms = new KP_Terms(this,ATOOLS::sbt::qcd,pl);
+      p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
       p_kpterms->SetIType(m_itype);
       p_kpterms->SetCoupling(&m_cpls);
       m_mewgtinfo.m_type|=
@@ -184,13 +204,7 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetNorm(1.0/(isf*fsf));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
-      Default_Reader reader;
-      reader.SetInputPath(rpa->GetPath());
-      reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-      if (reader.Read(m_checkpoles, "CHECK_POLES", m_checkpoles)) {
-	m_checkpoles=helpi;
-	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
-      }
+      m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);
@@ -202,10 +216,6 @@ bool COMIX::Single_Process::Initialize
     (*pmap)[m_name]=m_name;
     return true;
   }
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
-#endif
-  if (Parent()->Name()==Name()) return false;
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
     +"/Process/Comix/"+Parent()->Name()+".map";
   std::string str, tmp;
@@ -219,9 +229,6 @@ bool COMIX::Single_Process::Initialize
   *out<<str;
   *out<<m_name<<" x\n";
   out.Close();
-#ifdef USING__MPI
-  }
-#endif
   (*pmap)[m_name]="x";
   return false;
 }
@@ -273,7 +280,7 @@ bool COMIX::Single_Process::MapProcess()
 	  std::vector<size_t> pl;
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
-	  p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	  p_kpterms->SetIType(p_map->m_itype);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
 	}
@@ -312,9 +319,7 @@ bool COMIX::Single_Process::MapProcess()
       }
     THROW(fatal_error,"Map process '"+mapname+"' not found");
   }
-  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Comix/"+m_name+".map");
-  if (!FileExists(ampfile,1) && m_allowmap &&
+  if (!m_hasmapfile && m_allowmap &&
       m_pinfo.m_special.find("MapOff")==std::string::npos) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
@@ -326,16 +331,13 @@ bool COMIX::Single_Process::MapProcess()
 	std::vector<size_t> pl;
 	for (size_t j(0);j<m_nin+m_nout;++j)
 	  if (m_flavs[j].Strong()) pl.push_back(j);
-	p_kpterms = new KP_Terms(p_map,ATOOLS::sbt::qcd,pl);
+	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
 	p_kpterms->SetIType(p_map->m_itype);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
       }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
 		    <<mapname<<"'."<<std::endl;
-#ifdef USING__MPI
-      if (MPI::COMM_WORLD.Get_rank()==0) {
-#endif
       std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix/"+m_name+".map");
       if (!FileExists(mapfile,1)) {
@@ -352,9 +354,6 @@ bool COMIX::Single_Process::MapProcess()
 	  *map<<"eof\n";
 	}
       }
-#ifdef USING__MPI
-      }
-#endif
       MapSubEvts(1);
       delete p_bg;
       p_bg=NULL;
@@ -367,7 +366,7 @@ bool COMIX::Single_Process::MapProcess()
     msg_Tracking()<<ComixLogo()<<" initialized '"<<m_name<<"', ";
     p_bg->PrintStatistics(msg->Tracking(),0);
   }
-  p_bg->WriteOutAmpFile(m_name);
+  if (!m_hasmapfile) p_bg->WriteOutAmpFile(m_name);
   p_umprocs->push_back(this);
   return false;
 }
@@ -437,8 +436,9 @@ double COMIX::Single_Process::Partonic
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
-    double kb(sp->p_bg->Born()?sp->KFactor(1):1.0);
-    double kf(m_mewgtinfo.m_K=isb?kb:sp->KFactor());
+    double kb(sp->p_bg->Born()?sp->KFactor(1|2):1.0);
+    double kf(m_mewgtinfo.m_K=isb?kb:
+	      sp->KFactor(sp->p_bg->Born()?0:2));
     m_mewgtinfo.m_B=sp->p_bg->Born()*kb/kf;
     m_dxs+=sp->p_bg->Born()*(kb/kf-1.0);
     m_w*=kf;
@@ -544,13 +544,13 @@ bool COMIX::Single_Process::Tests()
     p_bg->WriteOutGraphs(m_gpath+"/"+ShellName(m_name)+".tex");
   }
   if (p_int->HelicityScheme()==hls::sample) {
-    p_int->SetHelicityIntegrator(new Helicity_Integrator());
+    p_int->SetHelicityIntegrator(std::make_shared<Helicity_Integrator>());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
     Flavour_Vector fl(m_nin+m_nout);
     for (size_t i(0);i<fl.size();++i) fl[i]=m_flavs[i];
     if (!p_int->HelicityIntegrator()->Construct(fl)) return false;
   }
-  p_int->SetColorIntegrator(new Color_Integrator());
+  p_int->SetColorIntegrator(std::make_shared<Color_Integrator>());
   p_bg->SetColorIntegrator(&*p_int->ColorIntegrator());
   Idx_Vector ids(m_nin+m_nout,0);
   Int_Vector acts(m_nin+m_nout,0), types(m_nin+m_nout,0);
@@ -558,7 +558,7 @@ bool COMIX::Single_Process::Tests()
     ids[i]=i;
     acts[i]=m_flavs[i].Strong();
     if (acts[i]) {
-      if (abs(m_flavs[i].StrongCharge())==8) types[i]=0;
+      if (m_flavs[i].StrongCharge()==8) types[i]=0;
       else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
       else types[i]=i<m_nin?-1:1;
     }
@@ -610,10 +610,10 @@ void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)
 {
   if (p_map!=NULL) {
     p_psgen=p_map->p_psgen;
-    if (p_psgen==NULL) p_psgen = new PS_Generator(p_map);
-  }
-  else {
-    p_psgen = new PS_Generator(this);
+    if (p_psgen == nullptr)
+      p_psgen = std::make_shared<PS_Generator>(p_map);
+  } else {
+    p_psgen = std::make_shared<PS_Generator>(this);
   }
 }
 

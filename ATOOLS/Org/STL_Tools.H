@@ -50,6 +50,18 @@ namespace ATOOLS {
 
   };// end of class AutoDelete_Vector
 
+  template <class Iterator>
+  Iterator AllUnique(Iterator first, Iterator last)
+  {
+    while (first != last)
+    {
+      Iterator next(first);
+      last = remove(++next, last, *first);
+      first = next;
+    }
+    return last;
+  }
+
 }
 
 #endif

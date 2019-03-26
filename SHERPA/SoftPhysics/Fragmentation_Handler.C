@@ -1,11 +1,10 @@
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 #include "AHADIC++/Main/Ahadic.H"
 
@@ -15,32 +14,25 @@ using namespace std;
 using namespace AHADIC;
 #include "AHADIC++/Tools/Hadron_Init.H"
 
-Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
-  m_dir(_dir), m_file(_file), m_mode(0)
+Fragmentation_Handler::Fragmentation_Handler(string _shower):
+  m_mode(0)
   ,p_ahadic(NULL)
 #ifdef USING__PYTHIA
   ,p_lund(NULL)
 #endif
 {
-  Default_Reader reader;
-  reader.AddIgnore("[");
-  reader.AddIgnore("]");
-  reader.SetInputPath(m_dir);
-  reader.SetInputFile(m_file);
-  m_fragmentationmodel = reader.GetStringNormalisingNoneLikeValues("FRAGMENTATION", string("Ahadic"));
-  m_shrink=reader.Get<int>("COMPRESS_PARTONIC_DECAYS",1);
-  m_flagpartonics=reader.Get<int>("FLAG_PARTONIC_DECAYS",1);
+  Settings& s = Settings::GetMainSettings();
+  m_fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
+  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
+  m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA
     THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
           string("enabled during compilation (./configure --enable-pythia)."));
 #else
-    m_sfile=reader.GetValue<string>("LUND_FILE",string("Lund.dat"));
-    Hadron_Init init;
-    init.Init();
-    init.OverWriteProperties(reader);
+    Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_lund = new Lund_Interface(m_dir,m_sfile);
+    p_lund = new Lund_Interface();
     m_mode=1;
     exh->AddTerminatorObject(this);
     // hack for particle initialization, because we don't want to replicate
@@ -49,12 +41,9 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
 #endif
   }
   else if (m_fragmentationmodel==string("Ahadic")) {
-    m_sfile=reader.Get<string>("AHADIC_FILE",m_file);
-    Hadron_Init init;
-    init.Init();
-    init.OverWriteProperties(reader);
+    Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile);
+    p_ahadic = new AHADIC::Ahadic(_shower);
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;
@@ -70,13 +59,6 @@ Fragmentation_Handler::~Fragmentation_Handler()
 #endif
   if (p_ahadic!=NULL) { delete p_ahadic; p_ahadic = NULL;   }
   exh->RemoveTerminatorObject(this);
-}
-
-void Fragmentation_Handler::PrepareTerminate() 
-{
-  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
-  if (path=="") return;
-  Copy(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }
 
 Return_Value::code 
@@ -100,16 +82,16 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 #ifdef USING__PYTHIA
   case 1  : 
     success = p_lund->Hadronize(bloblist);
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
+    if (m_shrink && success==Return_Value::Success) Shrink(bloblist);
     return success;
 #endif
   case 2  : 
     success = p_ahadic->Hadronize(bloblist);
     if (success!=Return_Value::Success &&
 	success!=Return_Value::Nothing) {
-      msg_Tracking()<<"Potential problem in "<<METHOD<<":\n"<<(*bloblist)<<"\n";
+      msg_Debugging()<<"Potential problem in "<<METHOD<<": "<<success<<".\n";
     }
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
+    if (m_shrink && success==Return_Value::Success) Shrink(bloblist);
     return success;
   default : 
     msg_Error()<<"ERROR in "<<METHOD<<":\n"
@@ -150,8 +132,8 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 {
   Particle  * part(NULL);
   Blob      * blob(NULL);
-  std::vector<SP(Part_List)> plists;
-  plists.push_back(new Part_List);
+  std::vector<std::shared_ptr<Part_List>> plists;
+  plists.emplace_back(new Part_List);
   for (Blob_List::iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
@@ -160,10 +142,10 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       // such that there is a one-to-one correspondence between
       // fragmentation outcome and hadron decay. This is needed for setting
       // the correct vertex position, and to reject exclusive final states
-      SP(Part_List) plist(plists[0]);
+      auto plist = plists[0];
       Blob* upstream_blob=(*blit)->UpstreamBlob();
       if (upstream_blob && upstream_blob->Type()==btp::Hadron_Decay) {
-        plist=new Part_List;
+        plist = std::make_shared<Part_List>();
         plists.push_back(plist);
       }
       
@@ -213,11 +195,11 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
   Return_Value::code ret(Return_Value::Success);
   for (size_t i=0; i<plists.size(); ++i) {
     if (plists[i]->empty()) continue;
-    SP(Part_List) plist=plists[i];
+    auto plist = plists[i];
     int  col1, col2;
     bool hit1, hit2;
-    Part_List * pli(NULL);
-    vector<SP(Part_List)> partlists; 
+    std::shared_ptr<Part_List> pli;
+    vector<std::shared_ptr<Part_List>> partlists;
     int plsize;
     do {
       plsize=plist->size();
@@ -233,9 +215,9 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	}
 	if (col1!=0 && col2==0) {
 	  hit1 = true;
-	  pli  = new Part_List;
+          pli = std::make_shared<Part_List>();
 	  pli->push_back((*pit));
-	  pit  = plist->erase(pit);
+	  pit = plist->erase(pit);
 	  partlists.push_back(pli);
 	  do {
 	    hit2 = false;
@@ -258,9 +240,9 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	  col2 = (*pit)->GetFlow(2);
 	  if (col1!=0 && col2!=0) {
 	    hit1 = true;
-	    pli  = new Part_List;
+            pli = std::make_shared<Part_List>();
 	    pli->push_back((*pit));
-	    pit  = plist->erase(pit);
+	    pit = plist->erase(pit);
 	    partlists.push_back(pli);
 	    do {
 	      hit2 = false;
@@ -292,11 +274,10 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       blob->SetType(btp::Fragmentation);
       blob->SetStatus(blob_status::needs_hadronization);
       bloblist->push_back(blob);
-      for (vector<SP(Part_List)>::iterator pliter=partlists.begin();
-	   pliter!=partlists.end();pliter++) {
-	while (!(*pliter)->empty()) {
-	  blob->AddToInParticles((*pliter)->front());
-	  (*pliter)->pop_front();
+      for (auto& partlist : partlists) {
+	while (!partlist->empty()) {
+	  blob->AddToInParticles(partlist->front());
+	  partlist->pop_front();
 	}
       }
       

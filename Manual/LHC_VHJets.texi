@@ -22,14 +22,12 @@ accounted for, including those with intermediate taus.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_WHJets/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
 easy scale variations. Tags are replaced throughout the entire run card by
 their defined value, see @ref{Tags}.
@@ -65,14 +63,12 @@ as well.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_ZHJets/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
 easy scale variations. Tags are replaced throughout the entire run card by
 their defined value, see @ref{Tags}.
@@ -104,14 +100,12 @@ calculation.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
 easy scale variations. Tags are replaced throughout the entire run card by
 their defined value, see @ref{Tags}. The central scale is set to the

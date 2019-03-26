@@ -33,9 +33,9 @@ one-loop processes that are needed for the NLO calculation. This information
 is stored in a file, by default called @code{OLE_order.lh}. 
 The external one-loop code (OLE) should confirm these settings/requests
 and write out a file @code{OLE_contract.lh}. Both filenames can be customised 
-using @code{LHOLE_ORDERFILE=<order-file>} and 
-@code{<LHOLE_CONTRACTFILE=<contract-file>}. For their syntax and 
-details see @mycite{Binoth2010xt}.
+using @code{LHOLE_ORDERFILE: <order-file>} and
+@code{<LHOLE_CONTRACTFILE: <contract-file>}. For the syntax of these files and
+more details see @mycite{Binoth2010xt}.
 
 For Sherpa the output/input of the order/contract file is handled
 in @code{LH_OLE_Communicator.[CH]}.
@@ -72,7 +72,7 @@ for different subprocesses and momentum configurations.
 
 The setup (cf. example @ref{LHC_Zbb}):
 @itemize @bullet
-@item The line @code{Loop_Generator LHOLE} tells the code to use
+@item The line @code{Loop_Generator: LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.
 
 @item The switch @code{SHERPA_LDADD} has to be set to the appropriate 
@@ -83,13 +83,14 @@ library name (and path) of the one-loop generator.
 and @code{CDR}.
 
 @item Per default, Sherpa generates phase space points in the lab frame. 
-If @code{LHOLE_BOOST_TO_CMS=1} is set, these phase space points are boosted to 
+If @code{LHOLE_BOOST_TO_CMS: true} is set, these phase space points are boosted
+to
 the centre of mass system before they are passed to the OLE.
 
 @item The original BLHA interface does not allow for run-time parameter 
 passing. While this is discussed for an updated of the accord a workable 
 solution is implemented for the use of GoSam and enabled through 
-@code{LHOLE_OLP=GoSam}. The @code{LHOLE_BOOST_TO_CMS} is also automatically 
+@code{LHOLE_OLP: GoSam}. The @code{LHOLE_BOOST_TO_CMS} is also automatically
 active with this setup. This, of course, can be adapted for other one-loop 
 programs if need be.
 

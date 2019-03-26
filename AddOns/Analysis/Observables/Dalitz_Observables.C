@@ -93,17 +93,19 @@ void Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,co
 }
 
 DECLARE_GETTER(Dalitz_Observable_Base_Getter,"Dalitz",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
 Primitive_Observable_Base *
-Dalitz_Observable_Base_Getter::operator()(const Argument_Matrix &parameters) const
+Dalitz_Observable_Base_Getter::operator()(const Analysis_Key& key) const
 { 
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<8) return NULL;
-  int in(ToType<int>(parameters[0][0]));
-  int out1(ToType<int>(parameters[0][1]));
-  int out2(ToType<int>(parameters[0][2]));
-  int out3(ToType<int>(parameters[0][3]));
+  int in(s.Interprete<int>(parameters[0][0]));
+  int out1(s.Interprete<int>(parameters[0][1]));
+  int out2(s.Interprete<int>(parameters[0][2]));
+  int out3(s.Interprete<int>(parameters[0][3]));
   
   Flavour flin((kf_code)abs(in));
   if (in<0) flin=flin.Bar();
@@ -115,16 +117,17 @@ Dalitz_Observable_Base_Getter::operator()(const Argument_Matrix &parameters) con
   if (out3<0) flout3=flout3.Bar();
   std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
 	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;
-  return new Dalitz(flin,flout1,flout2,flout3,ToType<int>(parameters[0][4]),
-		    ToType<double>(parameters[0][5]),
-		    ToType<double>(parameters[0][6]),
-		    ToType<int>(parameters[0][7])); 
+  return new Dalitz(flin,flout1,flout2,flout3,
+                    s.Interprete<int>(parameters[0][4]),
+		    s.Interprete<double>(parameters[0][5]),
+		    s.Interprete<double>(parameters[0][6]),
+		    s.Interprete<int>(parameters[0][7]));
 }
 
 void Dalitz_Observable_Base_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"inflav outflav1 outflav2 outflav3 bins min max type"; 
+  str<<"[inflav, outflav1, outflav2, outflav3, bins, min, max, type]";
 }
 
 class Scaled_Dalitz: public Dalitz_Observable_Base {
@@ -151,10 +154,10 @@ void Scaled_Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &we
 }
 
 DECLARE_GETTER(Scaled_Dalitz_Observable_Getter,"ScaledDalitz",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Primitive_Observable_Base,Analysis_Key);
 
 Primitive_Observable_Base *
-Scaled_Dalitz_Observable_Getter::operator()(const Argument_Matrix &parameters) const
+Scaled_Dalitz_Observable_Getter::operator()(const Analysis_Key& key) const
 { 
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<8) return NULL;
@@ -182,6 +185,6 @@ Scaled_Dalitz_Observable_Getter::operator()(const Argument_Matrix &parameters) c
 void Scaled_Dalitz_Observable_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"inflav outflav1 outflav2 outflav3 bins min max type"; 
+  str<<"[inflav, outflav1, outflav2, outflav3, bins, min, max, type]";
 }
 
