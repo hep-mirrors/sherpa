@@ -49,8 +49,8 @@
 /* using Rivet */
 #undef USING__RIVET
 
-/* setSumOfWeights function available in Rivet */
-#undef USING__RIVET__SETSOW
+/* setIgnoreBeams function available in Rivet */
+#undef USING__RIVET__IGNOREBEAMS
 
 /* Rivet uses YODA as its histogramming backend */
 #undef USING__RIVET__YODA
