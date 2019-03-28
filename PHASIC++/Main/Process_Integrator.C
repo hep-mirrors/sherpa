@@ -541,11 +541,9 @@ void Process_Integrator::MPISync(const int mode)
     size_t i(0), j(0);
     std::vector<double> sv, mv;
     MPICollect(sv,mv,i);
-    if (MPI::COMM_WORLD.Get_size()) {
-      mpi->MPIComm()->Allreduce
-      	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
-      mpi->MPIComm()->Allreduce
-      	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
+    if (mpi->Size()) {
+      mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
+      mpi->Allreduce(&mv[0],mv.size(),MPI_DOUBLE,MPI_MAX);
     }
     MPIReturn(sv,mv,j);
   }

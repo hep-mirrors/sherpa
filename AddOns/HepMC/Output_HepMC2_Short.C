@@ -45,7 +45,7 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
   m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif

@@ -10,7 +10,7 @@
 int main(int argc,char* argv[])
 {
 #ifdef USING__MPI
-  MPI::Init(argc,argv);
+  MPI_Init(argc,argv);
 #endif
   SHERPA::Sherpa *Generator(new SHERPA::Sherpa(argc, argv));
   // initialize the framework
@@ -54,7 +54,7 @@ int main(int argc,char* argv[])
   }
   delete Generator;
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   return 0;
 }

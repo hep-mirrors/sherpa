@@ -143,8 +143,8 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     size_t i(ToType<size_t>(range.substr(0,spos)));
     size_t e(ToType<size_t>(range.substr(spos+1)));
 #ifdef USING__MPI
-    int size=MPI::COMM_WORLD.Get_size();
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int size=mpi->Size();
+    int rank=mpi->Rank();
     int le=e, nact=size, values[2];
     if (size>1) {
       if (rank==0) {
@@ -157,18 +157,18 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 	  values[0]=i+tag*inc;
 	  values[1]=i+(tag+1)*inc-1;
 	  if (tag==nact-1) values[1]=le;
-	  MPI::COMM_WORLD.Send(&values,2,MPI::INT,tag,tag);
-	  MPI::COMM_WORLD.Recv(&values,2,MPI::INT,MPI::ANY_SOURCE,size+tag);
+	  MPI_COMM_WORLD.Send(&values,2,MPI_INT,tag,tag);
+	  MPI_COMM_WORLD.Recv(&values,2,MPI_INT,MPI_ANY_SOURCE,size+tag);
 	  msg_Info()<<"  Rank "<<tag<<" analyzes "
 		    <<basename<<"["<<values[0]<<"-"<<values[1]<<"].\n";
 	}
 	msg_Info()<<"}\n";
       }
       else {
-	MPI::COMM_WORLD.Recv(&values,2,MPI::INT,0,rank);
+	MPI_COMM_WORLD.Recv(&values,2,MPI_INT,0,rank);
 	i=values[0];
 	e=values[1];
-	MPI::COMM_WORLD.Send(&values,2,MPI::INT,0,size+rank);
+	MPI_COMM_WORLD.Send(&values,2,MPI_INT,0,size+rank);
       }
     }
 #endif

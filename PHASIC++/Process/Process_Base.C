@@ -145,9 +145,8 @@ void Process_Base::MPISync(const int mode)
   size_t i(0), j(0);
   std::vector<double> sv;
   MPICollect(sv,i);
-  if (MPI::COMM_WORLD.Get_size()>1)
-    mpi->MPIComm()->Allreduce
-      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  if (mpi->Size()>1)
+    mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
   MPIReturn(sv,j);
 #endif
 }

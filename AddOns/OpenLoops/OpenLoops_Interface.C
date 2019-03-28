@@ -137,7 +137,7 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   SetParameter("install_path", s_olprefix.c_str());
 
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_size()>1) SetParameter("splash","0");
+    if (mpi->Size()>1) SetParameter("splash","0");
 #endif
 
   // set remaining OL parameters specified by user
