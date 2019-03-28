@@ -62,20 +62,22 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Cluster_Splitter::FixCoefficients() {
+  // here there are significant differences.
   double sum_mass = 0, massfac;
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
     massfac      = 1.;         
     size_t flcnt = 0;
-    if (flav==Flavour(kf_b) || flav==Flavour(kf_b).Bar() ||
-	flav==Flavour(kf_c) || flav==Flavour(kf_c).Bar()) 
-      flcnt = 1;
+    if (p_part[i]->IsLeading() ||
+	     (m_mode==0 && p_part[1-i]->IsLeading())) {
+      flcnt   = 1;
+      massfac = 2.;
+    }
     else if (flav.IsDiQuark())
       flcnt = 2;
     else if (part->IsBeam()) 
       flcnt = 3;
-    massfac = (flcnt==0 && part->IsLeading())?4.:1.;
     m_a[i] = m_alpha[flcnt];
     m_b[i] = m_beta[flcnt];
     m_c[i] = m_gamma[flcnt];
@@ -104,6 +106,65 @@ void Cluster_Splitter::CalculateLimits() {
   }
 }
 
+bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
+  size_t maxcounts=1000;
+  while ((maxcounts--)>0) {
+    if (MakeLongitudinalMomentaZSimple()) {
+      double weight=1.;
+      for (size_t i=0;i<2;i++) {
+	if (m_gamma[i]>1.e-4) {
+	  double DeltaM2 = m_R2[i]-m_minQ2[i];
+	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
+	}
+      }
+      if (weight>=ran->Get()) return true;
+    }
+  }
+  return false;
+}
+
+bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
+  bool mustrecalc = false;
+  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
+  for (size_t i=0;i<2;i++) {
+    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+    //This is a difference w.r.t. master
+    if (m_R2[i]<m_mdec2[i]+m_kt2) {
+      m_R2[i] = m_mdec2[i]+m_kt2;
+      mustrecalc = true;
+    }
+  }
+  // another check: bool allowed = (m_R12>m_minQ_12 && m_R21>m_minQ_22);
+  bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
+  return (ok && (mustrecalc?RecalculateZs():true));
+}
+
+double Cluster_Splitter::
+WeightFunction(const double & z,const double & zmin,const double & zmax,
+	       const unsigned int & cnt) {
+  // identical, just have to check the m_a, m_b, m_c
+  double norm = 1., arg; 
+  if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
+               else norm *= pow(zmin,m_a[cnt]);
+  if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
+               else norm *= pow(1.-zmax,m_b[cnt]);
+  double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
+  if (m_mode==2) {
+    arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    norm *= exp(-arg/zmax); 
+    wt   *= exp(-arg/z);
+  }
+  if (wt>norm) {
+    msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
+	       <<"for wtmax = "<<norm<<" "
+	       <<"[a, b, c = "<<m_a[cnt]<<", "<<m_b[cnt]<<", "<<m_c[cnt]<<"] from \n"
+	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
+	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
+	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n"; 
+    exit(1);
+  }
+  return wt / norm;
+}
 
 bool Cluster_Splitter::RecalculateZs() {
   double e12  = (m_R2[0]+m_kt2)/m_Q2, e21 = (m_R2[1]+m_kt2)/m_Q2;
@@ -116,15 +177,15 @@ bool Cluster_Splitter::RecalculateZs() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
-  size_t trials = 1000;
-  do {
-    for (size_t i=0;i<2;i++) {
-      m_R2[i] = sqr(m_minQ[i] + DeltaM(i));
-      if (m_R2[i]<=m_mdec2[i]) m_R2[i] = Min(m_minQ2[i],m_mdec2[i]);
+  bool mustrecalc = false;
+  for (size_t i=0;i<2;i++) {
+    m_R2[i] = sqr(m_minQ[i] + DeltaM(i));
+    if (m_R2[i]<=m_mdec2[i]) {
+      m_R2[i] = Min(m_minQ2[i],m_mdec2[i]);
+      mustrecalc = true;
     }
-  } while (m_R2[0]+m_R2[1]>m_Q2 && (trials--)>0);
-  //msg_Out()<<METHOD<<": "<<m_Q2<<" --> "<<m_R2[0]<<" + "<<m_R2[1]<<"\n";
-  return (trials>0 && RecalculateZs());
+  }
+  return (m_R2[0]+m_R2[1]<m_Q2 && (mustrecalc?RecalculateZs():true));
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
@@ -160,63 +221,6 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
   return trials>0?deltaM:0.;
 }
 
-
-bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
-  size_t maxcounts=1000;
-  while ((maxcounts--)>0) {
-    if (MakeLongitudinalMomentaZSimple()) {
-      double weight=1.;
-      for (size_t i=0;i<2;i++) {
-	if (m_gamma[i]>1.e-4) {
-	  double DeltaM2 = m_R2[i]-m_minQ2[i];
-	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
-	}
-      }
-      if (weight>=ran->Get()) return true;
-    }
-  }
-  return false;
-}
-
-bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
-  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
-  bool ok = true;
-  for (size_t i=0;i<2;i++) {
-    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    if (m_R2[i]<m_mdec2[i]) {
-      m_R2[i] = m_m2min[i]+m_kt2;
-      ok = false; 
-    }
-  }
-  if (!ok) return RecalculateZs();
-  return true;
-}
-
-double Cluster_Splitter::
-WeightFunction(const double & z,const double & zmin,const double & zmax,
-	       const unsigned int & cnt) {
-  double norm = 1., arg; 
-  if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
-               else norm *= pow(zmin,m_a[cnt]);
-  if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
-               else norm *= pow(1.-zmax,m_b[cnt]);
-  double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
-  if (m_mode==2) {
-    arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
-    norm *= exp(-arg/zmax); 
-    wt   *= exp(-arg/z);
-  }
-  if (wt>norm) {
-    msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
-	       <<"for wtmax = "<<norm<<" "
-	       <<"[a, b, c = "<<m_a[cnt]<<", "<<m_b[cnt]<<", "<<m_c[cnt]<<"] from \n"
-	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
-	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
-	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n"; 
-    exit(1);
-  }
-  return wt / norm;
-}
 
 bool Cluster_Splitter::FillParticlesInLists() {
   for (size_t i=0;i<2;i++) p_cluster_list->push_back(MakeCluster(i));

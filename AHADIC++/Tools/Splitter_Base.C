@@ -73,8 +73,9 @@ void Splitter_Base::FillMasses() {
   m_E     = m_Q/2.;
   m_Emax  = m_Q;
   for (size_t i=0;i<3;i++) {
-    m_Emax -= m_mass[i] = (p_part[i]==0)?0.:p_constituents->Mass(p_part[i]->Flavour());
-    m_m2[i] = sqr(m_mass[i]);
+    m_mass[i] = (p_part[i]==0)?0.:p_constituents->Mass(p_part[i]->Flavour());
+    m_m2[i]   = sqr(m_mass[i]);
+    if (i!=2) m_Emax -= m_mass[i];
   }
 }
 
@@ -128,22 +129,26 @@ void Splitter_Base::DetermineMinimalMasses() {
 		p_constituents->Mass(m_flavs2.second));
   m_mdec[0] = p_doubletransitions->GetLightestMass(m_flavs1);
   m_mdec[1] = p_doubletransitions->GetLightestMass(m_flavs2);
-  for (size_t i=0;i<2;i++) m_minQ[i] = m_msum[i];
   if (!m_flavs1.first.IsGluon() && !m_flavs1.second.IsGluon()) {
     if (!(m_flavs1.first.IsDiQuark() && m_flavs1.second.IsDiQuark())) {
-      m_minQ[0] = Min(m_minQ[0],p_singletransitions->GetLightestMass(m_flavs1));
+      m_minQ[0] = Min(m_mdec[0],
+		      Max(0.,p_singletransitions->GetLightestMass(m_flavs1)));
     }
     else {
-      m_minQ[0] = Min(m_minQ[0],m_mdec[0]);
+      m_minQ[0] = m_mdec[0];
     }
   }
   if (!m_flavs2.first.IsGluon() && !m_flavs2.second.IsGluon()) {
     if (!(m_flavs2.first.IsDiQuark() && m_flavs2.second.IsDiQuark())) {
-      m_minQ[1] = Min(m_minQ[1],p_singletransitions->GetLightestMass(m_flavs2));
+      m_minQ[1] = Min(m_mdec[1],
+		      Max(0.,p_singletransitions->GetLightestMass(m_flavs2)));
     }
     else {
-      m_minQ[1] = Min(m_minQ[1],m_mdec[1]);
+      m_minQ[1] = m_mdec[1];
     }
+  }
+  else {
+    for (size_t i=0;i<2;i++) m_minQ[i] = m_msum[i];
   }
   for (size_t i=0;i<2;i++) {
     m_minQ2[i] = sqr(m_minQ[i]);
@@ -171,6 +176,8 @@ void Splitter_Base::MakeTransverseMomentum() {
 	       <<" min = "<<m_minmass<<".\n";
     abort();
   }
+  m_ktmax = (m_Emax-2.*m_popped_mass)/2.;
+  m_ktfac = 1.;
   bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
   m_kt    = m_ktselector(m_ktmax,m_ktfac);
   m_kt2   = m_kt*m_kt;

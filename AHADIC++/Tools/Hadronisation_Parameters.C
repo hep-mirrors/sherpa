@@ -101,9 +101,9 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["KT_Ordering"] =
     s["AHADIC::KT_ORDER"].SetDefault(0).Get<int>();
   m_switchmap["GluonDecayForm"] =
-    s["GLUON_DECAY_MODE"].SetDefault(0).Get<int>();
+    s["GLUON_DECAY_MODE"].SetDefault(1).Get<int>();
   m_switchmap["ClusterSplittingForm"] =
-    s["CLUSTER_SPLITTING_MODE"].SetDefault(0).Get<int>();
+    s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
   m_switchmap["RemnantSplittingForm"] =
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum

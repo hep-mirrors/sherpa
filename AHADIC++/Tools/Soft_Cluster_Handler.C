@@ -186,8 +186,8 @@ bool Soft_Cluster_Handler::FixKinematics() {
   //m_ktfac*Max(1.,M2/(4.*p_constituents->Mass(m_flavs.first)*
   //		    p_constituents->Mass(m_flavs.second)));
   double pt, pl;
-  bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[0]->IsLeading();
-  if (lead) {
+  bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
+  if (true || lead) {
     pt = m_ktselector(ktmax,1.);
     pl = sqrt(p1*p1-pt*pt);
   }

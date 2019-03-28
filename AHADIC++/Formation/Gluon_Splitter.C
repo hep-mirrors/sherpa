@@ -13,7 +13,7 @@ Gluon_Splitter::~Gluon_Splitter() {
 
 void Gluon_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(true);
-  // Gluon Decay Form
+  // Gluon Decay Form: 1 = default
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
@@ -42,9 +42,10 @@ void Gluon_Splitter::CalculateLimits() {
 bool Gluon_Splitter::CalculateXY() {
   m_z[0] = 1.-(m_popped_mass2+m_kt2)/(m_z[1]*m_Q2);
   double M2 = m_z[0]*(1.-m_z[1])*m_Q2;
+  //This is a new addition w.r.t. original master
   double R2 = M2 - m_kt2;
   if (R2 < m_mdec[0]) {
-    M2     = m_minQ2[0];
+    M2     = m_mdec2[0];
     m_z[0] = M2/((1.-m_z[1])*m_Q2); 
   }
   if (M2/m_m2[0] > 1e6 && M2/m_kt2 > 1e6) {
