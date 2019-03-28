@@ -3,6 +3,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
 
+#include <cassert>
+
 using namespace ATOOLS;
 using namespace PHASIC;
 
