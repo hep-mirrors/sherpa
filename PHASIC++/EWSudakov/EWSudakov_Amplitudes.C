@@ -71,7 +71,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     // to guarantee this we modify the energy and the absolute value of the
     // momenta, but not the directions of the momenta
     const Vec3D out_mom {BaseAmplitude().Leg(permutation[2])->Mom()};
-    const auto normed_out_mom {out_mom / out_mom.Abs()};
+    const Vec3D normed_out_mom {out_mom / out_mom.Abs()};
     const auto m22 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(2)->Flav().Mass()));
     const auto m32 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(3)->Flav().Mass()));
     // calc the fraction of energy that will be assigned to leg 2
