@@ -26,10 +26,9 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
 double Sudakov_KFactor::KFactor(const int mode)
 {
   const auto level = msg->Level();
-  if(m_check) msg->SetLevel(8);
+  if (m_check) msg->SetLevel(8);
   m_weight = m_ews.KFactor(p_proc->Integrator()->Momenta());
-  if(m_check) msg->SetLevel(level);
-  auto kfac = m_weight; PRINT_VAR(kfac);
+  if (m_check) msg->SetLevel(level);
   return m_weight;
 }
 
