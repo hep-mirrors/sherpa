@@ -81,7 +81,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
 #ifdef USING__COLOUR
   case tm::curon:  return str<<"\033[?25h";
   case tm::curoff: return str<<"\033[?25l";
-  case mm::none:   return str;
+  case tm::none:   return str;
 #else
   default: return str;
 #endif
