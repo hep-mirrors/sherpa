@@ -192,6 +192,10 @@ void Process_Integrator::InitWeightHistogram()
     return;
   }
   if (av<.3) av/=10.;
+  /* If av=0, then subprocess at hand does not contribute.
+     In this case, set av to arbitrary value to avoid nans in 
+     following histogram */
+  if (IsZero(av)) av=1.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
   p_whisto = new Histogram(10,av*1.e-4,av*1.e6,s_whbins);
   if (p_proc->IsGroup())
