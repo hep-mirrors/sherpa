@@ -20,6 +20,7 @@ namespace AHADIC {
   private:
     bool    m_test;
     double  m_singletsuppression;
+    double  m_etam, m_etapm, m_cse, m_bse, m_bce, m_hcbe, m_hbbe, m_sbm;
     HadInfo m_info;
     
     std::map<std::string,std::set<ATOOLS::Flavour> > m_multiplets;

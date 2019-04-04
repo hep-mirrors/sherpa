@@ -199,30 +199,39 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["MULTI_WEIGHT_R1_1L0_N_1/2"].SetDefault(0.0).Get<double>();
   m_parametermap[string("Multiplet_Baryon_R0L0S3/2")]   =
     s["MULTI_WEIGHT_R0L0_DELTA_3/2"].SetDefault(0.15).Get<double>();
-  // Individual hadrons
+  // Individual hadrons or groups of hadrons
   m_parametermap[string("eta_modifier")]   =
     s["ETA_MODIFIER"].SetDefault(1.8).Get<double>();
   m_parametermap[string("eta_prime_modifier")]   =
     s["ETA_PRIME_MODIFIER"].SetDefault(2.00).Get<double>();
+  m_parametermap[string("Singlet_Baryon_modifier")]    =
+    s["SINGLETBARYON_MODIFIER"].SetDefault(1.0).Get<double>();
+  m_parametermap[string("CharmBaryon_Enhancement")]    =
+    s["CHARMBARYON_ENHANCEMENT"].SetDefault(0.9).Get<double>();
+  m_parametermap[string("BeautyBaryon_Enhancement")]    = 
+    s["BEAUTYBARYON_ENHANCEMENT"].SetDefault(1.7).Get<double>();
+  m_parametermap[string("CharmStrange_Enhancement")]    = 
+    s["CHARMSTRANGE_ENHANCEMENT"].SetDefault(0.6).Get<double>();
+  m_parametermap[string("BeautyStrange_Enhancement")]    = 
+    s["BEAUTYSTRANGE_ENHANCEMENT"].SetDefault(1.0).Get<double>();
+  m_parametermap[string("BeautyCharm_Enhancement")]    = 
+    s["BEAUTYCHARM_ENHANCEMENT"].SetDefault(3.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadPoppingParameters()
 {
   Settings& s = Settings::GetMainSettings();
-  m_parametermap[string("Strange_fraction")]       =
+  double strange;
+  m_parametermap[string("Strange_fraction")] = strange = 
     s["STRANGE_FRACTION"].SetDefault(0.5).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
     s["BARYON_FRACTION"].SetDefault(m_shower ? 0.21 : 0.19).Get<double>();
-  m_parametermap[string("charm_baryon_modifier")]  =
-    s["CHARM_BARYON_MODIFIER"].SetDefault(25.0).Get<double>();
-  m_parametermap[string("beauty_baryon_modifier")] =
-    s["BEAUTY_BARYON_MODIFIER"].SetDefault(1.00).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    s["P_{QS}/P_{QQ}"].SetDefault(0.25).Get<double>();
+    s["P_QS_by_P_QQ_norm"].SetDefault(0.50*strange).Get<double>();
   m_parametermap[string("P_ss_by_P_qq")]           =
-    s["P_{SS}/P_{QQ}"].SetDefault(0.075).Get<double>();
+    s["P_SS_by_P_QQ_norm"].SetDefault(0.30*sqr(strange)).Get<double>();
   m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_{QQ_1}/P_{QQ_0}"].SetDefault(1.00).Get<double>();
+    s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMassParameters()

@@ -130,7 +130,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
     //This is a difference w.r.t. master
     if (m_R2[i]<m_mdec2[i]+m_kt2) {
-      m_R2[i] = m_mdec2[i]+m_kt2;
+      m_R2[i] = m_mdec2[i]+m_kt2;  //(ran->Get()>0.5?m_mdec2[i]:m_m2min[i])+m_kt2;
       mustrecalc = true;
     }
   }
