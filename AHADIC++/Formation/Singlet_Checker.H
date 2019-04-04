@@ -28,7 +28,7 @@ namespace AHADIC {
     double           m_targetmass;
     Singlet        * p_recoiler;
 
-    long int         m_direct_transitions;
+    long int         m_direct_transitions, m_errors;
     
     bool CheckSinglet();
     bool FusePartonsInLowMassSinglet();

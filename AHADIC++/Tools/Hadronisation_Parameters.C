@@ -101,31 +101,31 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["KT_Ordering"] =
     s["AHADIC::KT_ORDER"].SetDefault(0).Get<int>();
   m_switchmap["GluonDecayForm"] =
-    s["GLUON_DECAY_MODE"].SetDefault(1).Get<int>();
+    s["GLUON_DECAY_MODE"].SetDefault(0).Get<int>();
   m_switchmap["ClusterSplittingForm"] =
     s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
   m_switchmap["RemnantSplittingForm"] =
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["AHADIC::KT_0"].SetDefault(1.0).Get<double>();
+    s["AHADIC::KT_0"].SetDefault(0.75).Get<double>();
   // gluon fragmentation 
   m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(1.25).Get<double>();
+    s["ALPHA_G"].SetDefault(1.00).Get<double>();
   // light quark fragmentation 
   m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(2.5).Get<double>();
+    s["ALPHA_L"].SetDefault(2.50).Get<double>();
   m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.1).Get<double>();
+    s["BETA_L"].SetDefault(0.00).Get<double>();
   m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.50).Get<double>();
+    s["GAMMA_L"].SetDefault(0.75).Get<double>();
   // di-quark fragmentation 
   m_parametermap[string("alphaD")] =
     s["ALPHA_D"].SetDefault(m_shower ? 2.5 : 1.5).Get<double>();
   m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.25).Get<double>();
+    s["BETA_D"].SetDefault(0.00).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.5).Get<double>();
+    s["GAMMA_D"].SetDefault(0.50).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
     s["ALPHA_B"].SetDefault(m_shower ? 2.5 : 1.5).Get<double>();
@@ -135,11 +135,11 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["GAMMA_B"].SetDefault(0.5).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(0.0).Get<double>();
+    s["ALPHA_H"].SetDefault(1.00).Get<double>();
   m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(0.5).Get<double>();
+    s["BETA_H"].SetDefault(1.50).Get<double>();
   m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(m_shower ? 0.45 : 0.35).Get<double>();
+    s["GAMMA_H"].SetDefault(m_shower ? 0.03 : 0.03).Get<double>();
   // Probably irrelevant as long as they are small.
   // We will probably not have to tune them.
   m_parametermap[string("decay_threshold")] =
@@ -156,7 +156,7 @@ void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
 {
   Settings& s = Settings::GetMainSettings();
   m_parametermap[string("mass_exponent")]          =
-    s["MASS_EXPONENT"].SetDefault(-1.0).Get<double>();
+    s["MASS_EXPONENT"].SetDefault(0.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMesonWeights()
@@ -201,21 +201,21 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["MULTI_WEIGHT_R0L0_DELTA_3/2"].SetDefault(0.15).Get<double>();
   // Individual hadrons or groups of hadrons
   m_parametermap[string("eta_modifier")]   =
-    s["ETA_MODIFIER"].SetDefault(1.8).Get<double>();
+    s["ETA_MODIFIER"].SetDefault(3.00).Get<double>();
   m_parametermap[string("eta_prime_modifier")]   =
-    s["ETA_PRIME_MODIFIER"].SetDefault(2.00).Get<double>();
+    s["ETA_PRIME_MODIFIER"].SetDefault(3.00).Get<double>();
   m_parametermap[string("Singlet_Baryon_modifier")]    =
-    s["SINGLETBARYON_MODIFIER"].SetDefault(1.0).Get<double>();
+    s["SINGLETBARYON_MODIFIER"].SetDefault(1.80).Get<double>();
   m_parametermap[string("CharmBaryon_Enhancement")]    =
-    s["CHARMBARYON_ENHANCEMENT"].SetDefault(0.9).Get<double>();
+    s["CHARMBARYON_ENHANCEMENT"].SetDefault(8.00).Get<double>();
   m_parametermap[string("BeautyBaryon_Enhancement")]    = 
-    s["BEAUTYBARYON_ENHANCEMENT"].SetDefault(1.7).Get<double>();
+    s["BEAUTYBARYON_ENHANCEMENT"].SetDefault(0.80).Get<double>();
   m_parametermap[string("CharmStrange_Enhancement")]    = 
-    s["CHARMSTRANGE_ENHANCEMENT"].SetDefault(0.6).Get<double>();
+    s["CHARMSTRANGE_ENHANCEMENT"].SetDefault(2.00).Get<double>();
   m_parametermap[string("BeautyStrange_Enhancement")]    = 
-    s["BEAUTYSTRANGE_ENHANCEMENT"].SetDefault(1.0).Get<double>();
+    s["BEAUTYSTRANGE_ENHANCEMENT"].SetDefault(1.40).Get<double>();
   m_parametermap[string("BeautyCharm_Enhancement")]    = 
-    s["BEAUTYCHARM_ENHANCEMENT"].SetDefault(3.0).Get<double>();
+    s["BEAUTYCHARM_ENHANCEMENT"].SetDefault(1.00).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadPoppingParameters()
@@ -223,13 +223,13 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   Settings& s = Settings::GetMainSettings();
   double strange;
   m_parametermap[string("Strange_fraction")] = strange = 
-    s["STRANGE_FRACTION"].SetDefault(0.5).Get<double>();
+    s["STRANGE_FRACTION"].SetDefault(0.55).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(m_shower ? 0.21 : 0.19).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(m_shower ? 0.17 : 0.17).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    s["P_QS_by_P_QQ_norm"].SetDefault(0.50*strange).Get<double>();
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.50).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    s["P_SS_by_P_QQ_norm"].SetDefault(0.30*sqr(strange)).Get<double>();
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.07).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
     s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
 }
