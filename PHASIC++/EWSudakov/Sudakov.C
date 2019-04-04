@@ -36,6 +36,7 @@ Sudakov::Sudakov(Process_Base* proc):
 {
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
+  m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
 }
 
 double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
@@ -52,32 +53,18 @@ double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
 
 bool Sudakov::IsInHighEnergyLimit()
 {
-  // TODO: generalise beyond 2->2 processes
-
   DEBUG_FUNC("");
-  static const auto threshold = 10.0*m_mw2;
-  const auto s = std::abs(m_ampls.MandelstamS());
-  const auto t = std::abs(m_ampls.MandelstamT());
-  const auto u = std::abs(m_ampls.MandelstamU());
+  static const auto threshold = sqr(m_threshold) * m_mw2;
 
-  msg_Debugging() << "s = " << s << ", t = " << t << ", u = " << u << "\n";
-  DEBUG_VAR(t/s);
-  DEBUG_VAR(u/s);
-
-  if (s < threshold || t < threshold || u < threshold) {
-    msg_Debugging() << "at least one of the kin. invariants does not pass the"
-                    << " threshold\n";
-    return false;
+  const auto& base_ampl = m_ampls.BaseAmplitude();
+  for (size_t i {0}; i < base_ampl.Legs().size(); ++i) {
+    for (size_t j {i + 1}; j <  base_ampl.Legs().size(); ++j) {
+      const auto sij
+        = std::abs((base_ampl.Leg(i)->Mom() + base_ampl.Leg(j)->Mom()).Abs2());
+      if(sij < threshold)
+        return false;
+    }
   }
-
-  const auto LSC = sqr(std::log(s/m_mw2));
-  const auto SSCt = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(t)/s));
-  const auto SSCu = std::abs(2 * std::log(s/m_mw2) * std::log(std::abs(u)/s));
-
-  msg_Debugging() << "log2(s/mW) = " << LSC << "\n";
-  msg_Debugging() << "2*|log(s/mW)*log(t/s)| = " << SSCt << "\n";
-  msg_Debugging() << "2*|log(s/mW)*log(u/s)| = " << SSCu << "\n";
-
   return true;
 }
 
@@ -94,6 +81,9 @@ void Sudakov::FillBaseSpinAmplitudes()
 
 double Sudakov::KFactor()
 {
+  auto den = m_spinampls[0].SumSquare();
+  if (den == 0.0)
+    return 1.0;
   const auto s = std::abs(m_ampls.MandelstamS());
   const auto ls = std::log(s/m_mw2);
 
@@ -113,7 +103,6 @@ double Sudakov::KFactor()
   // calculate K = (\sum_{i} (1 + 2 Re(delta))|M_i|^2) / (\sum_{i} |M_i|^2),
   // where the sum is over the spin configurations
   auto num = 0.0;
-  auto den = m_spinampls[0].SumSquare();
   for (size_t i {0}; i < m_spinampls[0].size(); ++i) {
     static const auto delta_prefactor = m_runaqed.AqedThomson()/4./M_PI;
     auto delta = 0.0;

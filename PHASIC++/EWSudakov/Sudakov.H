@@ -67,6 +67,7 @@ namespace PHASIC {
     const EWGroupConstants m_ewgroupconsts;
 
     const double m_mw2;
+    double m_threshold;
     MODEL::Running_AlphaQED m_runaqed;
     size_t m_check;
     Complex m_born;
