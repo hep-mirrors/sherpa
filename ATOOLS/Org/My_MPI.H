@@ -51,6 +51,17 @@ namespace ATOOLS {
                     m_comm);
     }
 
+    void Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag)
+    {
+      MPI_Recv(buf, count, datatype, source, tag, m_comm, MPI_STATUS_IGNORE);
+    }
+
+    int Send(const void *buf, int count, MPI_Datatype datatype, int dest,
+             int tag)
+    {
+      return MPI_Send(buf, count, datatype, dest, tag, m_comm);
+    }
+
 #endif
 
   private:
