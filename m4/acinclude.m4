@@ -500,6 +500,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
                 CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
+              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root"
               CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
