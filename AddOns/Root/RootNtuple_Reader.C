@@ -157,18 +157,18 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 	  values[0]=i+tag*inc;
 	  values[1]=i+(tag+1)*inc-1;
 	  if (tag==nact-1) values[1]=le;
-	  MPI_COMM_WORLD.Send(&values,2,MPI_INT,tag,tag);
-	  MPI_COMM_WORLD.Recv(&values,2,MPI_INT,MPI_ANY_SOURCE,size+tag);
+	  mpi->Send(&values,2,MPI_INT,tag,tag);
+	  mpi->Recv(&values,2,MPI_INT,MPI_ANY_SOURCE,size+tag);
 	  msg_Info()<<"  Rank "<<tag<<" analyzes "
 		    <<basename<<"["<<values[0]<<"-"<<values[1]<<"].\n";
 	}
 	msg_Info()<<"}\n";
       }
       else {
-	MPI_COMM_WORLD.Recv(&values,2,MPI_INT,0,rank);
+	mpi->Recv(&values,2,MPI_INT,0,rank);
 	i=values[0];
 	e=values[1];
-	MPI_COMM_WORLD.Send(&values,2,MPI_INT,0,size+rank);
+	mpi->Send(&values,2,MPI_INT,0,size+rank);
       }
     }
 #endif

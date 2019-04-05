@@ -416,13 +416,13 @@ void Output_RootNtuple::MPISync()
       m_flavlist.resize(m_fcnt);
       m_momlist.resize(m_fcnt);
       for (int tag=1;tag<size;++tag) {
-	MPI_COMM_WORLD.Recv(&vals,6,MPI_DOUBLE,MPI_ANY_SOURCE,s_offset*size+tag);
+	mpi->Recv(&vals,6,MPI_DOUBLE,MPI_ANY_SOURCE,s_offset*size+tag);
 	std::vector<rntuple_evt2> evts((int)vals[0]);
 	std::vector<int> flavs((int)vals[3]);
 	std::vector<Vec4D> moms((int)vals[3]);
-	MPI_COMM_WORLD.Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI_ANY_SOURCE,(s_offset+1)*size+tag);
-	MPI_COMM_WORLD.Recv(&flavs.front(),(int)vals[3],MPI_INT,MPI_ANY_SOURCE,(s_offset+2)*size+tag);
-	MPI_COMM_WORLD.Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI_ANY_SOURCE,(s_offset+3)*size+tag);
+	mpi->Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI_ANY_SOURCE,(s_offset+1)*size+tag);
+	mpi->Recv(&flavs.front(),(int)vals[3],MPI_INT,MPI_ANY_SOURCE,(s_offset+2)*size+tag);
+	mpi->Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI_ANY_SOURCE,(s_offset+3)*size+tag);
 	m_evtlist.insert(m_evtlist.end(),evts.begin(),evts.end());
 	m_flavlist.insert(m_flavlist.end(),flavs.begin(),flavs.end());
 	m_momlist.insert(m_momlist.end(),moms.begin(),moms.end());
@@ -453,10 +453,10 @@ void Output_RootNtuple::MPISync()
       vals[3]=m_fcnt;
       vals[4]=m_fsq;
       vals[5]=m_sum;
-      MPI_COMM_WORLD.Send(&vals,6,MPI_DOUBLE,0,s_offset*size+rank);
-      MPI_COMM_WORLD.Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
-      MPI_COMM_WORLD.Send(&m_flavlist.front(),(int)vals[3],MPI_INT,0,(s_offset+2)*size+rank);
-      MPI_COMM_WORLD.Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
+      mpi->Send(&vals,6,MPI_DOUBLE,0,s_offset*size+rank);
+      mpi->Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
+      mpi->Send(&m_flavlist.front(),(int)vals[3],MPI_INT,0,(s_offset+2)*size+rank);
+      mpi->Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
       m_cnt2=m_cnt3=m_fcnt=m_evt=0;
       m_sum=m_fsq=0.0;
     }
