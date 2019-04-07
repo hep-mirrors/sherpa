@@ -80,7 +80,7 @@ namespace AMISIC {
     void SetB(const double & b=-1.);
     const double ScaleMin() const;
     const double ScaleMax() const;
-
+    
     inline void SetMassMode(const int & mode) {
       p_processes->SetMassMode(mode);
     }

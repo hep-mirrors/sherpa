@@ -11,8 +11,10 @@ Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_ktorder(false), m_ktfac(1.),
-  m_attempts(100), m_analyse(false)
-{}
+  m_attempts(100)
+{
+  m_analyse = false; //hadpars->Switch("Analysis");
+}
 
 Splitter_Base::~Splitter_Base() {
   Histogram * histo;

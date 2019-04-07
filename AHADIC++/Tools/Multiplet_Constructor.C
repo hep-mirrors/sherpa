@@ -166,9 +166,7 @@ bool Multiplet_Constructor::ConstructWaveFunction()
     m_info.extrawt *= m_etapm;
     break;
   default: break;
-  }
-  msg_Out()<<m_info.flav<<": "<<m_info.multiwt<<" * "<<m_info.extrawt<<"\n";
-  
+  }  
   if (constructed && m_wavefunctions.find(m_info.flav)!=m_wavefunctions.end()) {
     m_wavefunctions[m_info.flav]->SetMultipletWeight(m_info.multiwt);
     m_wavefunctions[m_info.flav]->SetSpin(m_info.spin2);

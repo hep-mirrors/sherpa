@@ -61,6 +61,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 
   m_impact.SetProcesses(p_processes);
   m_impact.Initialize(p_processes->XShard()/xsecs.XSnd());
+
   if (m_ana) InitAnalysis();
   return true;
 }
@@ -99,7 +100,6 @@ const double Amisic::ScaleMin() const {
 const double Amisic::ScaleMax() const {
   return m_pt2;
 }
-
 
 Blob * Amisic::GenerateScatter()
 {

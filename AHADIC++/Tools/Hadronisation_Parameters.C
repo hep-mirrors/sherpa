@@ -36,7 +36,6 @@ void Hadronisation_Parameters::Init(string shower)
 {
   if (shower=="Dire")     m_shower = 0;
   else if (shower=="CSS") m_shower = 1;
-  msg_Out()<<"In Hadronisation_Parameters::Init()"<<endl;
   ReadParameters();
 
   bool test      = false;
@@ -54,11 +53,9 @@ void Hadronisation_Parameters::Init(string shower)
       msg_Out()<<"* "<<pit->first<<" = "<<pit->second<<"\n";
     msg_Out()<<"Resulting wave functions, multiplets, and transitions:\n";
     p_constituents->PrintConstituents();
-    //multipletconstructor.PrintWaveFunctions(true);
     multipletconstructor.PrintMultiplets();
     p_stransitions->Print();
     p_dtransitions->Print(true);
-    //p_dtransitions->Print(false);
     exit(1); // exit after output of parameters
   }
 }
@@ -105,7 +102,7 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["ClusterSplittingForm"] =
     s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
   m_switchmap["RemnantSplittingForm"] =
-    s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
+    s["REMNANT_CLUSTER_MODE"].SetDefault(1).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
     s["AHADIC::KT_0"].SetDefault(0.75).Get<double>();
@@ -125,7 +122,7 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_parametermap[string("betaD")]  =
     s["BETA_D"].SetDefault(0.00).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.50).Get<double>();
+    s["GAMMA_D"].SetDefault(1.00).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
     s["ALPHA_B"].SetDefault(m_shower ? 2.5 : 1.5).Get<double>();
@@ -275,8 +272,8 @@ void Hadronisation_Parameters::ReadMassParameters()
 void Hadronisation_Parameters::ReadGeneralSwitches()
 {
   // General switches for operational modes
-  Settings& s = Settings::GetMainSettings();
-  //m_switchmap["Analysis"] = s["FRAGMENTATION_ANALYSIS"].SetDefault(0).Get<int>();
+  //Settings& s = Settings::GetMainSettings();
+  //m_switchmap["Analysis"] = 0;
 }
 
 

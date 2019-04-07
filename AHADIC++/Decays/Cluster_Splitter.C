@@ -15,7 +15,8 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 
 void Cluster_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(false);
-  m_mode     = hadpars->Switch("ClusterSplittingForm");
+  m_defmode  = hadpars->Switch("ClusterSplittingForm");
+  m_beammode = hadpars->Switch("RemnantSplittingForm");
   m_alpha[0] = hadpars->Get("alphaL");
   m_beta[0]  = hadpars->Get("betaL");
   m_gamma[0] = hadpars->Get("gammaL");
@@ -29,7 +30,7 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_beta[3]  = hadpars->Get("betaB");
   m_gamma[3] = hadpars->Get("gammaB");
   m_kt02     = sqr(hadpars->Get("kT_0"));
-  m_analyse  = true; //hadpars->Switch("Analysis");
+  m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
     m_histograms[string("kt")]      = new Histogram(0,0.,5.,100);
     m_histograms[string("z1")]      = new Histogram(0,0.,1.,100);
@@ -63,6 +64,7 @@ bool Cluster_Splitter::MakeLongitudinalMomenta() {
 
 void Cluster_Splitter::FixCoefficients() {
   // here there are significant differences.
+  m_mode = m_defmode;
   double sum_mass = 0, massfac;
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
@@ -76,8 +78,10 @@ void Cluster_Splitter::FixCoefficients() {
     }
     else if (flav.IsDiQuark())
       flcnt = 2;
-    else if (part->IsBeam()) 
-      flcnt = 3;
+    else if (part->IsBeam()) {
+      flcnt  = 3;
+      m_mode = m_beammode;
+    }
     m_a[i] = m_alpha[flcnt];
     m_b[i] = m_beta[flcnt];
     m_c[i] = m_gamma[flcnt];
@@ -177,15 +181,18 @@ bool Cluster_Splitter::RecalculateZs() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
-  bool mustrecalc = false;
-  for (size_t i=0;i<2;i++) {
-    m_R2[i] = sqr(m_minQ[i] + DeltaM(i));
-    if (m_R2[i]<=m_mdec2[i]) {
-      m_R2[i] = Min(m_minQ2[i],m_mdec2[i]);
-      mustrecalc = true;
+  bool success;
+  long int trials = 1000;
+  do {
+    for (size_t i=0;i<2;i++) {
+      m_R2[i] = sqr(m_minQ[i] + DeltaM(i));
+      if (m_R2[i]<=m_mdec2[i]+m_kt2) {
+	m_R2[i] = m_minQ2[i]+m_kt2; //Min(m_minQ2[i],m_mdec2[i])+m_kt2;
+      }
     }
-  }
-  return (m_R2[0]+m_R2[1]<m_Q2 && (mustrecalc?RecalculateZs():true));
+    success = m_R2[0]+m_R2[1]<m_Q2 && RecalculateZs();
+  } while ((trials--)>0 && !success);
+  return trials>0;
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
@@ -217,7 +224,7 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
     //deltaM = exp(log(mean)+log(sigma)*ran->GetGaussian());
     // simple exponential
     deltaM = -1./sigma*log(1.-ran->Get()*arg);
-  } while ((deltaM<0. || deltaM>deltaMmax) && (trials--)>1000);
+  } while ((deltaM>deltaMmax) && (trials--)>1000);
   return trials>0?deltaM:0.;
 }
 

@@ -10,7 +10,7 @@ namespace SHERPA {
 
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
-    double m_hardveto;
+    double m_hardveto, m_ptmax_fac;
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_defaultptmax;
     double m_weight, m_ntrials;

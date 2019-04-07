@@ -59,6 +59,21 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
 	(*p_singlet->rbegin())->Flavour()==Flavour(kf_c) ||
 	(*p_singlet->rbegin())->Flavour()==Flavour(kf_c).Bar())
       direction = false;
+    /*
+    else {
+      list<Proto_Particle *>::iterator pliter=p_singlet->begin();
+      part1 = (*pliter);
+      pliter++;
+      part2 = (*pliter);
+      double mass1 = (part1->Momentum()+part2->Momentum()).Abs2();
+      list<Proto_Particle *>::reverse_iterator prliter=p_singlet->rbegin();
+      part1 = (*prliter);
+      prliter++;
+      part2 = (*prliter);
+      double mass2 = (part1->Momentum()+part2->Momentum()).Abs2();
+      direction = (mass1>mass2?true:false);
+    }
+    */
     if (direction) {
       list<Proto_Particle *>::iterator pliter=p_singlet->begin();
       part1 = (*pliter);

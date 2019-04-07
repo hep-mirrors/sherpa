@@ -69,9 +69,10 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 
   Return_Value::code success;
   switch (int(ExtractSinglets(bloblist))) {
-    case int(Return_Value::Success) : break;
-    case int(Return_Value::Nothing) : return Return_Value::Nothing;
-    case int(Return_Value::Error)   : return Return_Value::Error;
+    case int(Return_Value::Success)   : break;
+    case int(Return_Value::New_Event) : return Return_Value::New_Event;
+    case int(Return_Value::Nothing)   : return Return_Value::Nothing;
+    case int(Return_Value::Error)     : return Return_Value::Error;
     default :
       msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		 <<"   ExtractSinglets yields unknown return value."<<std::endl
