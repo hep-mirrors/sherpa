@@ -81,7 +81,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
 #ifdef USING__COLOUR
   case tm::curon:  return str<<"\033[?25h";
   case tm::curoff: return str<<"\033[?25l";
-  case mm::none:   return str;
+  case tm::none:   return str;
 #else
   default: return str;
 #endif
@@ -189,7 +189,7 @@ std::ostream &Message::Out()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   return m_output; 
 }
@@ -198,7 +198,7 @@ std::ostream &Message::Error()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level >= 0) return m_output; 
   return m_devnull; 
@@ -208,7 +208,7 @@ std::ostream &Message::Events()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 1) return m_output; 
   return m_devnull;  
@@ -218,7 +218,7 @@ std::ostream &Message::Info()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 2) return m_output; 
   return m_devnull;  
@@ -228,7 +228,7 @@ std::ostream &Message::Tracking()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 4) return m_output; 
   return m_devnull;  
@@ -238,7 +238,7 @@ std::ostream &Message::Debugging()
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 8) return m_output; 
   return m_devnull;  
@@ -248,7 +248,7 @@ std::ostream &Message::IODebugging()
 {
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return m_devnull;
+      mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 32) return m_output;
   return m_devnull;

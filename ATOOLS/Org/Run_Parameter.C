@@ -307,7 +307,7 @@ void Run_Parameter::Init()
   }
 
 #ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank();
+  int rank=mpi->Rank();
   if (s["MPI_SEED_MODE"].Get<int>()==0) {
     msg_Info()<<METHOD<<"(): Seed mode '*'\n";
     for (int i(0);i<4;++i)
@@ -418,7 +418,7 @@ void Run_Parameter::Gen::WriteCitationInfo()
   *f<<"%% You have used the following configuration:\n";
   PrintGitVersion(*f,1,"%% ");
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   std::cout<<std::string(72,'-')<<"\n"
 	   <<om::bold<<"Please cite the publications listed in '"

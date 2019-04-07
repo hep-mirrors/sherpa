@@ -473,7 +473,7 @@ void Histogram::Output(const std::string name)
 void Histogram::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=m_depth*m_nbin+2;
     double *values = new double[cn];
@@ -481,7 +481,7 @@ void Histogram::MPISync()
       for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
     values[cn-2]=m_mfills;
     values[cn-1]=m_mpsfills;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (int j(0);j<m_depth;++j)
       for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=values[j*m_nbin+i];
     m_mfills=values[cn-2];

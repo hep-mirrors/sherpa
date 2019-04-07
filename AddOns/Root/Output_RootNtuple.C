@@ -41,7 +41,7 @@ Output_RootNtuple::Output_RootNtuple
   m_idcnt=0;
   m_avsize=s["ROOTNTUPLE_AVSIZE"].Get<int>();
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (m_exact) m_avsize=Max((size_t)1,m_avsize/size);
 #endif
   m_total=0;
@@ -113,7 +113,7 @@ void Output_RootNtuple::Header()
 {
 #ifdef USING__ROOT
 #ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank();
+  int rank=mpi->Rank();
   if (rank) return;
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
@@ -407,22 +407,22 @@ void Output_RootNtuple::MPISync()
 {
 #ifdef USING__MPI
   static int s_offset=11;
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int rank=mpi->Rank();
     double vals[6];
     if (rank==0) {
       m_evtlist.resize(m_cnt2);
       m_flavlist.resize(m_fcnt);
       m_momlist.resize(m_fcnt);
       for (int tag=1;tag<size;++tag) {
-	MPI::COMM_WORLD.Recv(&vals,6,MPI::DOUBLE,MPI::ANY_SOURCE,s_offset*size+tag);
+	mpi->Recv(&vals,6,MPI_DOUBLE,MPI_ANY_SOURCE,s_offset*size+tag);
 	std::vector<rntuple_evt2> evts((int)vals[0]);
 	std::vector<int> flavs((int)vals[3]);
 	std::vector<Vec4D> moms((int)vals[3]);
-	MPI::COMM_WORLD.Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI::ANY_SOURCE,(s_offset+1)*size+tag);
-	MPI::COMM_WORLD.Recv(&flavs.front(),(int)vals[3],MPI::INT,MPI::ANY_SOURCE,(s_offset+2)*size+tag);
-	MPI::COMM_WORLD.Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI::ANY_SOURCE,(s_offset+3)*size+tag);
+	mpi->Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI_ANY_SOURCE,(s_offset+1)*size+tag);
+	mpi->Recv(&flavs.front(),(int)vals[3],MPI_INT,MPI_ANY_SOURCE,(s_offset+2)*size+tag);
+	mpi->Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI_ANY_SOURCE,(s_offset+3)*size+tag);
 	m_evtlist.insert(m_evtlist.end(),evts.begin(),evts.end());
 	m_flavlist.insert(m_flavlist.end(),flavs.begin(),flavs.end());
 	m_momlist.insert(m_momlist.end(),moms.begin(),moms.end());
@@ -453,10 +453,10 @@ void Output_RootNtuple::MPISync()
       vals[3]=m_fcnt;
       vals[4]=m_fsq;
       vals[5]=m_sum;
-      MPI::COMM_WORLD.Send(&vals,6,MPI::DOUBLE,0,s_offset*size+rank);
-      MPI::COMM_WORLD.Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
-      MPI::COMM_WORLD.Send(&m_flavlist.front(),(int)vals[3],MPI::INT,0,(s_offset+2)*size+rank);
-      MPI::COMM_WORLD.Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
+      mpi->Send(&vals,6,MPI_DOUBLE,0,s_offset*size+rank);
+      mpi->Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
+      mpi->Send(&m_flavlist.front(),(int)vals[3],MPI_INT,0,(s_offset+2)*size+rank);
+      mpi->Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
       m_cnt2=m_cnt3=m_fcnt=m_evt=0;
       m_sum=m_fsq=0.0;
     }

@@ -34,8 +34,8 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 #ifndef USING__MPI
     int exists(!mkdir(path.c_str(),mode));
 #else
-    int exists(MPI::COMM_WORLD.Get_rank()?0:!mkdir(path.c_str(),mode));
-    MPI::COMM_WORLD.Bcast(&exists,1,MPI_INT,0);
+    int exists(mpi->Rank()?0:!mkdir(path.c_str(),mode));
+    mpi->Bcast(&exists,1,MPI_INT,0);
 #endif
     return exists;
   }
@@ -54,8 +54,8 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 #ifndef USING__MPI
     int result(mkdir(piece.c_str(),mode));
 #else
-    int result(MPI::COMM_WORLD.Get_rank()?0:mkdir(piece.c_str(),mode));
-    MPI::COMM_WORLD.Bcast(&result,1,MPI_INT,0);
+    int result(mpi->Rank()?0:mkdir(piece.c_str(),mode));
+    mpi->Bcast(&result,1,MPI_INT,0);
 #endif
     if (result!=0) {
       if (errno==EEXIST) {
@@ -84,8 +84,8 @@ bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
 #ifndef USING__MPI
   int result(chmod(file.c_str(),mode));
 #else
-  int result(MPI::COMM_WORLD.Get_rank()?0:chmod(file.c_str(),mode));
-  MPI::COMM_WORLD.Bcast(&result,1,MPI_INT,0);
+  int result(mpi->Rank()?0:chmod(file.c_str(),mode));
+  mpi->Bcast(&result,1,MPI_INT,0);
 #endif
   if (result!=0) {
 #ifdef DEBUG__Shell_Tools
@@ -103,20 +103,20 @@ bool ATOOLS::Copy(const std::string &oldname,
 {
   int mode(0);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
+  if (mpi->Rank()==0) {
 #endif
     struct stat fst;
     stat(oldname.c_str(),&fst);
     mode=fst.st_mode;
 #ifdef USING__MPI
   }
-  MPI::COMM_WORLD.Bcast(&mode,1,MPI_INT,0);
+  mpi->Bcast(&mode,1,MPI_INT,0);
 #endif
   if ((mode&S_IFMT)==S_IFDIR) {
     if (!MakeDir(newname,mode)) return false;
     int stat=true;
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_rank()==0) {
+    if (mpi->Rank()==0) {
 #endif
       struct dirent **entries;
       int n(scandir(oldname.c_str(),&entries,NULL,NULL));
@@ -130,14 +130,14 @@ bool ATOOLS::Copy(const std::string &oldname,
       if (n>=0) free(entries);
 #ifdef USING__MPI
     }
-    MPI::COMM_WORLD.Bcast(&stat,1,MPI_INT,0);
+    mpi->Bcast(&stat,1,MPI_INT,0);
 #endif
     return stat;
   }
   if (!FileExists(oldname)) return false;
   int stat=false;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
+  if (mpi->Rank()==0) {
 #endif
     std::ifstream oldfile(oldname.c_str());
     std::ofstream newfile(newname.c_str());
@@ -145,7 +145,7 @@ bool ATOOLS::Copy(const std::string &oldname,
     stat=chmod(newname.c_str(),mode)==0;
 #ifdef USING__MPI
   }
-  MPI::COMM_WORLD.Bcast(&stat,1,MPI_INT,0);
+  mpi->Bcast(&stat,1,MPI_INT,0);
 #endif
   return stat;
 }
@@ -189,14 +189,14 @@ bool ATOOLS::FileExists(const std::string &file,const int mode)
   if (mode) return false;
   int exists(false);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
+  if (mpi->Rank()==0) {
 #endif
     struct stat fst;
     if (stat(file.c_str(),&fst)!=-1)
       exists=(fst.st_mode&S_IFMT)==S_IFREG;
 #ifdef USING__MPI
   }
-  MPI::COMM_WORLD.Bcast(&exists,1,MPI_INT,0);
+  mpi->Bcast(&exists,1,MPI_INT,0);
 #endif
   return exists;
 }
@@ -205,14 +205,14 @@ bool ATOOLS::DirectoryExists(const std::string &dir)
 {
   int exists(false);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
+  if (mpi->Rank()==0) {
 #endif
     struct stat fst;
     if (stat(dir.c_str(),&fst)!=-1)
       exists=(fst.st_mode&S_IFMT)==S_IFDIR;
 #ifdef USING__MPI
   }
-  MPI::COMM_WORLD.Bcast(&exists,1,MPI_INT,0);
+  mpi->Bcast(&exists,1,MPI_INT,0);
 #endif
   return exists;
 }
@@ -221,9 +221,9 @@ bool ATOOLS::Remove(const std::string &file,
 		    const bool rec)
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) {
+  if (mpi->Rank()) {
     int success;
-    MPI::COMM_WORLD.Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT,0);
     return success;
   }
 #endif
@@ -231,7 +231,7 @@ bool ATOOLS::Remove(const std::string &file,
   if (stat(file.c_str(),&fst)==-1) {
     int success(false);
 #ifdef USING__MPI
-    MPI::COMM_WORLD.Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT,0);
 #endif
     return success;
   }
@@ -249,13 +249,13 @@ bool ATOOLS::Remove(const std::string &file,
     int success(false);
     if (stat) success=(rmdir(file.c_str())==0);
 #ifdef USING__MPI
-    MPI::COMM_WORLD.Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT,0);
 #endif
     return success;
   }
   int success(unlink(file.c_str())==0);
 #ifdef USING__MPI
-  MPI::COMM_WORLD.Bcast(&success,1,MPI_INT,0);
+  mpi->Bcast(&success,1,MPI_INT,0);
 #endif
   return success;
 }

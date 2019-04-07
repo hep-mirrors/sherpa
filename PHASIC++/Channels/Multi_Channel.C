@@ -97,7 +97,7 @@ void Multi_Channel::Reset()
 void Multi_Channel::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=2*channels.size()+2;
     double *values = new double[cn];
@@ -107,7 +107,7 @@ void Multi_Channel::MPISync()
     }
     values[cn-2]=mn_points;
     values[cn-1]=mn_contrib;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (size_t i=0;i<channels.size();++i) {
       channels[i]->SetMPIVars(values[i],
 			      values[channels.size()+i]);

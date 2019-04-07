@@ -416,18 +416,18 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
 {
   if (m_usedb) mode=1;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+  if (mpi->Size()>1) {
+    int rank=mpi->Rank();
     std::string local, global;
     for (Analysis_List::iterator ait(m_subanalyses.begin());
 	 ait!=m_subanalyses.end();++ait)
       local+="||"+ait->first+"|"+ToString(ait->second->m_mode);
     int sz(local.length());
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sz,1,MPI::INT,MPI::MAX);
+    mpi->Allreduce(&sz,1,MPI_INT,MPI_MAX);
     if (sz) {
       local.resize(sz,' ');
-      global.resize(MPI::COMM_WORLD.Get_size()*sz,' ');
-      mpi->MPIComm()->Allgather(&local[0],sz,MPI::CHAR,&global[0],sz,MPI::CHAR);
+      global.resize(mpi->Size()*sz,' ');
+      mpi->Allgather(&local[0],sz,MPI_CHAR,&global[0],sz,MPI_CHAR);
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
       for (size_t pos(global.find("||"));pos!=std::string::npos;) {
 	global=global.substr(pos+2);
@@ -441,7 +441,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
     }
   }
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
     {
       if (m_usedb) {

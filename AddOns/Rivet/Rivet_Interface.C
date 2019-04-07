@@ -196,13 +196,13 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
+  if (mpi->Rank()==0) {
 #endif
     if (m_outpath.rfind('/')!=std::string::npos)
       MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
 #ifdef USING__MPI
   }
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
   }
 #endif
