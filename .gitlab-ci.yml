@@ -23,8 +23,8 @@ build:
     - autoreconf -i
     - mkdir build
     - cd build
-    - ../configure --prefix="$PWD/install" --with-libzip=install
-    - make -j
+    - ../configure --prefix="$PWD/install" --with-libzip=install --enable-analysis
+    - make -j4
     - make install
   # store what's required to run the tests
   artifacts:
@@ -42,8 +42,8 @@ build-clang-strict:
     - cd build-clang-strict
     # enable strict compilation
     - cxxflags="-Werror"
-    - ../configure CC=clang CXX=clang++ CXXFLAGS="${cxxflags}" --prefix="$PWD/install" --with-libzip=install
-    - make -j
+    - ../configure CC=clang CXX=clang++ CXXFLAGS="${cxxflags}" --prefix="$PWD/install" --with-libzip=install --enable-analysis
+    - make -j4
     - make install
   # store what's required to run the tests
   artifacts:

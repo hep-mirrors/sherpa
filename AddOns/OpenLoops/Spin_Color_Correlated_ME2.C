@@ -63,13 +63,14 @@ PHASIC::Spin_Color_Correlated_ME2 *ATOOLS::Getter
 operator()(const PHASIC::External_ME_Args& args) const
 {
   DEBUG_FUNC(this);
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", -1);
-  OpenLoops_Interface::SetParameter("coupling_qcd_1", -1);
-  OpenLoops_Interface::SetParameter("coupling_ew_0",  -1);
-  OpenLoops_Interface::SetParameter("coupling_ew_1",  -1);
 
-  if (args.m_source != "" && args.m_source != "OpenLoops")
+  if (!args.m_source.empty() && args.m_source != "OpenLoops")
     return NULL;
+
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) args.m_orders[0]);
+  OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
+  OpenLoops_Interface::SetParameter("coupling_ew_0" , (int) args.m_orders[1]);
+  OpenLoops_Interface::SetParameter("coupling_ew_1" , 0);
   
   AmplitudeType types[2] = {Loop2, Tree};
   for (size_t i=0; i<2; ++i) {

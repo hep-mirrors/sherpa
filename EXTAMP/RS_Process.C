@@ -170,8 +170,8 @@ namespace EXTAMP {
   RS_Process::Dipole_Vector RS_Process::ConstructDipoles()
   {
     /* Get subtraction parameters */
-    int subtraction_type = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
     auto& s = ATOOLS::Settings::GetMainSettings();
+    int subtraction_type = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
     double alphamin = s["DIPOLES"]["AMIN"].Get<double>();
     double alphamax = s["DIPOLES"]["ALPHA"].Get<double>();
 

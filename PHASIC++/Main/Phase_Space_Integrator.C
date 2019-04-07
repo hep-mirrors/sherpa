@@ -56,7 +56,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_timeslope = s["TIMESTEP_SLOPE"].Get<double>();
 
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   m_itminbynode=Max(1,Max(1000,(int)m_itmin)/size);
   if (size) {
     int helpi;
@@ -101,13 +101,13 @@ void Phase_Space_Integrator::MPISync()
 {
 #ifdef USING__MPI
   p_psh->MPISync();
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     double values[3];
     values[0]=m_mn;
     values[1]=m_mnstep;
     values[2]=m_mncstep;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
     m_mn=values[0];
     m_mnstep=values[1];
     m_mncstep=values[2];
@@ -178,9 +178,9 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   m_optiter=m_iter;
 #ifdef USING__MPI
-  int size = MPI::COMM_WORLD.Get_size();
+  int size = mpi->Size();
   m_optiter /= size;
-  if (MPI::COMM_WORLD.Get_rank()==0) m_optiter+=m_iter-(m_iter/size)*size;
+  if (mpi->Rank()==0) m_optiter+=m_iter-(m_iter/size)*size;
 #endif
 
   while (m_n<m_nrawmax && m_ncontrib<m_nmax) {

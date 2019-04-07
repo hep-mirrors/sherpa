@@ -53,6 +53,9 @@ Tree_ME2_Base* ATOOLS::Getter<Tree_ME2_Base,
 			      OpenLoops_Born>::
 operator()(const External_ME_Args &args) const
 {
+  if (!args.m_source.empty() && args.m_source != "OpenLoops")
+    return NULL;
+
   OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) args.m_orders[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
   OpenLoops_Interface::SetParameter("coupling_ew_0" , (int) args.m_orders[1]);

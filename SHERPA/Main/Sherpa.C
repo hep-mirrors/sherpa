@@ -73,8 +73,8 @@ Sherpa::~Sherpa()
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
 #ifdef USING__MPI
-  MPI::COMM_WORLD.Barrier();
-#endif  
+  mpi->Barrier();
+#endif
   delete ATOOLS::msg;
   delete ATOOLS::exh;
   delete ATOOLS::mpi;
@@ -89,7 +89,7 @@ bool Sherpa::InitializeTheRun()
   p_inithandler = new Initialization_Handler();
   RegisterDefaults();
 
-  mpi->SetUpSendRecv();
+  mpi->PrintRankInfo();
 
   DrawLogo(s["PRINT_VERSION_INFO"].Get<bool>());
 

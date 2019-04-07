@@ -147,7 +147,7 @@ void Vegas::MPISync()
 {
   if (!m_on) return;
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=3*m_dim*m_nd+2;
     double *values = new double[cn];
@@ -160,7 +160,7 @@ void Vegas::MPISync()
     }
     values[cn-2]=m_mnevt;
     values[cn-1]=m_mcevt;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (int i=0;i<m_dim;i++) {
       for (int j=0;j<m_nd;j++) {
 	p_md[i][j]=values[i*m_nd+j];
@@ -332,7 +332,7 @@ void Vegas::AddPoint(double value)
     p_mhit[i][p_ia[i]]++;
   }
   m_mode=0;
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     if (m_autooptimize>0)
       THROW(fatal_error,"Autooptimize not possible in MPI mode");
   }
