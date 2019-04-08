@@ -224,9 +224,9 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   m_parametermap[string("Baryon_fraction")]        =
     s["BARYON_FRACTION"].SetDefault(m_shower ? 0.17 : 0.17).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.50).Get<double>())*strange;
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.48).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(0.07).Get<double>())*sqr(strange);
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.02).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
     s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
 }
