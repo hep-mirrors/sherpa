@@ -93,10 +93,10 @@ const int Hadronisation_Parameters::Switch(string keyword) const
 
 void Hadronisation_Parameters::ReadSplittingParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   // modes/forms for decays of gluons and clusters
   m_switchmap["KT_Ordering"] =
-    s["AHADIC::KT_ORDER"].SetDefault(0).Get<int>();
+    s["KT_ORDER"].SetDefault(0).Get<int>();
   m_switchmap["GluonDecayForm"] =
     s["GLUON_DECAY_MODE"].SetDefault(0).Get<int>();
   m_switchmap["ClusterSplittingForm"] =
@@ -105,7 +105,7 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["REMNANT_CLUSTER_MODE"].SetDefault(1).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["AHADIC::KT_0"].SetDefault(0.75).Get<double>();
+    s["KT_0"].SetDefault(0.75).Get<double>();
   // gluon fragmentation 
   m_parametermap[string("alphaG")] =
     s["ALPHA_G"].SetDefault(1.00).Get<double>();
@@ -151,14 +151,14 @@ void Hadronisation_Parameters::ReadSplittingParameters()
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("mass_exponent")]          =
     s["MASS_EXPONENT"].SetDefault(0.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMesonWeights()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("Singlet_Suppression")]   = 
     s["SINGLET_MODIFIER"].SetDefault(2.0).Get<double>();
   m_parametermap[string("Mixing_Angle_0+")]    = 
@@ -217,7 +217,7 @@ void Hadronisation_Parameters::ReadMesonWeights()
 
 void Hadronisation_Parameters::ReadPoppingParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
   m_parametermap[string("Strange_fraction")] = strange = 
     s["STRANGE_FRACTION"].SetDefault(0.55).Get<double>();
@@ -233,7 +233,7 @@ void Hadronisation_Parameters::ReadPoppingParameters()
 
 void Hadronisation_Parameters::ReadMassParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("minmass2")] =
     s["MIN_MASS2"].SetDefault(0.10).Get<double>();
   m_parametermap[string("Mass_glue")] =
@@ -272,7 +272,7 @@ void Hadronisation_Parameters::ReadMassParameters()
 void Hadronisation_Parameters::ReadGeneralSwitches()
 {
   // General switches for operational modes
-  //Settings& s = Settings::GetMainSettings();
+  //auto s = Settings::GetMainSettings()["AHADIC"];
   //m_switchmap["Analysis"] = 0;
 }
 

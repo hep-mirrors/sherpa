@@ -121,8 +121,8 @@ double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
   }
   else {
     // ... otherwise use the standard Gaussian rng and veto in case of kt > ktmax
-    do { kt = m_mean[m_beam] + dabs(ran->GetGaussian()) * m_sigma[m_beam]; }
-    while (kt > m_ktmax[m_beam]);
+    do { kt = m_mean[m_beam] + ran->GetGaussian() * m_sigma[m_beam]; }
+    while (kt<0 || kt > m_ktmax[m_beam]);
   }
   return kt;
 }
