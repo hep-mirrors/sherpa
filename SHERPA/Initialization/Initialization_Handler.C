@@ -899,7 +899,6 @@ bool Initialization_Handler::InitializeTheShowers()
     m_showerhandlers[isrtypes[i]] =
       new Shower_Handler(p_model, m_isrhandlers[isrtypes[i]], i);
     m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
-    msg_Out()<<i<<" : "<<m_showerhandlers[isrtypes[i]]<<"\n";
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
