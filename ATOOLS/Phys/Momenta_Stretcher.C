@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include <limits>
 
 using namespace ATOOLS;
 using namespace std;
@@ -243,6 +244,8 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
       cms       += momenta[i];
     }
     double ET  = sqrt(cms.Abs2());
+    if (std::abs(ET)<std::numeric_limits<double>::epsilon())   return false;
+    if (1.-sqr(xmt/ET)<std::numeric_limits<double>::epsilon()) return false;
     double x   = 1./sqrt(1.-sqr(xmt/ET));
     double acc = dabs(rel)*ET;
     
