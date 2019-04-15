@@ -141,7 +141,7 @@ namespace SHERPA {
     void ReadFinalStateMultiSpecificProcessSettings(
       ATOOLS::Scoped_Settings,
       Single_Process_List_Args&,
-      const std::string& range="-") const;
+      std::string range="-") const;
 
     void InitNLOMC();
 
