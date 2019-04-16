@@ -412,14 +412,15 @@ bool Blob::CheckColour(const bool & transient) {
   for (int i=0;i<NInP();i++) {
     part = InParticle(i);
     if ((part->Flav().IsGluon() && 
-	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
+	  part->GetFlow(1)==part->GetFlow(2))) ||
 	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
       if (!transient) {
-	msg_Error()<<"Error in "<<METHOD<<":\n"
-		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	msg_Error()<<"Error in "<<METHOD<<": "
+		   <<"Wrong colour state for particle "<<part->Number()<<"\n";
 	error = true;
       }
     }
@@ -429,14 +430,15 @@ bool Blob::CheckColour(const bool & transient) {
   for (int i=0;i<NOutP();i++) {
     part = OutParticle(i);
     if ((part->Flav().IsGluon() && 
-	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
+	  part->GetFlow(1)==part->GetFlow(2))) ||
 	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
       if (!transient) {
-	msg_Error()<<"Error in "<<METHOD<<":\n"
-		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	msg_Error()<<"Error in "<<METHOD<<": "
+		   <<"Wrong colour state for particle "<<part->Number()<<"\n";
 	error = true;
       }
     }

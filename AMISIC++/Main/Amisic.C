@@ -9,7 +9,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : p_processes(NULL), m_ana(true)
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(true)
 {}
 
 Amisic::~Amisic() {
@@ -48,19 +48,20 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   //   Bjorken-x.
   // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
   //   where x_1 and x_2 are identical
+  m_sigmaND_norm = (*mipars)("SigmaND_Norm");
   p_processes = new MI_Processes();
-  p_processes->SetSigmaND(xsecs.XSnd());
+  p_processes->SetSigmaND(m_sigmaND_norm * xsecs.XSnd());
   p_processes->Initialize(model,NULL,isr);
   
   m_overestimator.Initialize(p_processes);
-  m_overestimator.SetXSnd(xsecs.XSnd());
+  m_overestimator.SetXSnd(m_sigmaND_norm * xsecs.XSnd());
   
   m_singlecollision.Init();
   m_singlecollision.SetMIProcesses(p_processes);
   m_singlecollision.SetOverEstimator(&m_overestimator);
 
   m_impact.SetProcesses(p_processes);
-  m_impact.Initialize(p_processes->XShard()/xsecs.XSnd());
+  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * xsecs.XSnd()));
 
   if (m_ana) InitAnalysis();
   return true;

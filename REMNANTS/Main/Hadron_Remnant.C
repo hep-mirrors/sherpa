@@ -84,6 +84,9 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   m_residualE = p_beam->OutMomentum()[0];
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants();
+  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
+  // to check that they are not singlets ....
+  CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap,copy);
   bool colourconserved = p_beamblob->CheckColour(true);
@@ -93,6 +96,16 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
     return false;
   }
   return true;
+}
+
+bool Hadron_Remnant::CompensateColours() {
+  while (p_colours->Colours(m_beam,0).size()>0 && p_colours->Colours(m_beam,1).size()>0) {
+    Particle * gluon = MakeParticle(Flavour(kf_gluon));
+    int col[2];
+    for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
+    //msg_Out()<<"Add new particle to beam blob ["<<m_beam<<"]:\n"<<(*gluon)<<"\n";
+    m_spectators.push_back(gluon);
+  }
 }
 
 bool Hadron_Remnant::MakeRemnants() {

@@ -157,8 +157,10 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	    part->Info()!='G' && part->Info()!='I') {
 	  if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	    if (part->GetFlow(1)==part->GetFlow(2)) {
-	      msg_Error()<<"Error in "<<METHOD<<":\n"
+	      msg_Error()<<"Error in "<<METHOD<<" for colour = "
+			 <<part->GetFlow(1)<<" [part = "<<part->Number()<<"]:\n"
 			 <<"   Blob with funny colour assignements.\n"
+			 <<(*bloblist)<<"\n"
 			 <<"   Will demand new event and hope for the best.\n";
 	      return Return_Value::New_Event;
 	    }

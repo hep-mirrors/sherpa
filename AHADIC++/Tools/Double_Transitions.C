@@ -145,6 +145,7 @@ Double_Transitions::operator[](const Flavour_Pair & flavs) {
     msg_Error()<<"Error in "<<METHOD<<"["<<m_transitions.size()<<"] for "
 	       <<"["<<flavs.first<<", "<<flavs.second<<"]:\n"
 	       <<"   Illegal flavour combination, will return 0.\n";
+    exit(1);
     return 0;
   }
   return m_transitions.find(flavs)->second;

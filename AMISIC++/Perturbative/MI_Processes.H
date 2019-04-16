@@ -17,7 +17,9 @@ namespace AMISIC {
     MODEL::Running_AlphaQED    * p_alpha;
 
     double      m_muFfac;
-    double      m_ecms, m_S, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_sigmaND;
+    double      m_ecms, m_S, m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2;
+    double      m_xTmin, m_xTmax, m_xTstep;
+    double      m_sigmaND;
     double      m_lastxs, m_integral, m_pt2step;
     std::string m_scale_scheme, m_kfactor_scheme;
     int         m_photons, m_quarkonia;
@@ -25,11 +27,14 @@ namespace AMISIC {
     std::vector<double>             m_intbins;
     std::list<MI_Process_Group * >  m_groups;
 
+    bool m_test;
+    
     bool   InitializeAllProcesses();
     void   SetPDFs(); 
     void   SetAlphaS();
     bool   PrepareSudakovFactor();
     double dSigma(const double & pt2);
+    void   Test();
   public:
     MI_Processes();
     ~MI_Processes();

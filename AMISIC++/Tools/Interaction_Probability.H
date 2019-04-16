@@ -6,10 +6,11 @@
 namespace AMISIC {
   class Interaction_Probability {
     Matter_Overlap * p_mo;
-    double m_prefK, m_bmax, m_integral, m_oexpvalue, m_fc;
+    double m_prefK, m_bmax, m_integral, m_integralB, m_bnorm, m_oexpvalue, m_fc;
     
     bool FixPrefactor(const double & xsecratio);
     void CalculateIntegral();
+    void CalculateBNorm();
     void CalculateOExpValue();
   public:
     Interaction_Probability();
@@ -22,14 +23,17 @@ namespace AMISIC {
     inline const double & Prefactor() const          { return m_prefK; }
     inline const double & Integral() const           { return m_integral; }
     inline const double & OverlapExpectation() const { return m_oexpvalue; }
+    inline const double & Bnorm() const              { return m_bnorm; }
     inline Matter_Overlap * GetOverlap()             { return p_mo; }
   };
 
 
   class IP_Integrand : public ATOOLS::Function_Base {
     Interaction_Probability * p_ip;
+    int m_expo;
   public:
-    IP_Integrand(Interaction_Probability * ip) : p_ip(ip) {}
+    IP_Integrand(Interaction_Probability * ip,const int & expo=1) :
+      p_ip(ip), m_expo(expo) {}
     ~IP_Integrand() {};
     double operator()(double b);
   };

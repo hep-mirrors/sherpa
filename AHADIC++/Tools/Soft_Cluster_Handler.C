@@ -60,6 +60,10 @@ bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
+  if (force &&
+      (*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+    return TreatTwoGluons(cluster);
+  }
   FillFlavours(cluster);
   if (IsEqual(m_mass,p_singletransitions->GetLightestMass(m_flavs),1.e-6)) {
     m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
@@ -125,7 +129,7 @@ bool Soft_Cluster_Handler::TreatSingletCluster() {
     m_hads[i]   = Flavour(kf_photon);
     m_hads[1-i] = Flavour(kf_pi);
   }
-  // below two-pion threshold
+  // above two-pion threshold
   else {
     if (ran->Get()>0.66) {
       m_hads[0] = m_hads[1] = Flavour(kf_pi);
@@ -328,8 +332,6 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
-    //msg_Out()<<"   "<<residual.first<<" + "<<residual.second
-    //	     <<" --> "<<trans->rbegin()->first<<"\n";
   }
   if (kf12==kf21) {
     residual.first = two2; residual.second = one1;

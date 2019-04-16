@@ -14,7 +14,7 @@ using namespace ATOOLS;
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 
 Matter_Overlap::Matter_Overlap() :
-  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI) ///(4.*M_PI*M_PI))
+  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./(2.*M_PI)) ///(4.*M_PI*M_PI))
 {}
 
 Matter_Overlap::~Matter_Overlap() {}
@@ -22,26 +22,31 @@ Matter_Overlap::~Matter_Overlap() {}
 void Matter_Overlap::Initialize() {
   InitializeFormFactors();
   CalculateIntegral();
-  msg_Tracking()<<METHOD<<"(form = "<<m_overlapform<<" --> r = "<<m_radius12<<"), "
-		<<"integral = "<<m_integral<<" norm = "<<(m_norm*m_norm1)<<".\n";
 }
 
 double Matter_Overlap::operator()(double b) {
   // Matter overlap in two forms available, but only Single_Gaussian fully
   // functional at the moment.
   switch (m_overlapform) {
-    case overlap_form::Single_Gaussian:
-      return m_norm * m_norm1 * exp(-b*b/m_radius12);
-    case overlap_form::Double_Gaussian:
-      double b2(b*b);
-      return m_norm * (m_norm1 * exp(-b2/m_radius12) +
-		       m_norm2 * exp(-b2/m_radius22) +
-		       m_norm3 * exp(-b2/m_radius32));
+  case overlap_form::Single_Gaussian:
+    return m_norm * m_norm1 * exp(-b*b/m_radius12);
+  case overlap_form::Double_Gaussian:
+  default:
+    double b2(b*b);
+    return m_norm * (m_norm1 * exp(-b2/m_radius12) +
+		     m_norm2 * exp(-b2/m_radius22) +
+		     m_norm3 * exp(-b2/m_radius32));
   }
+  return 0.;
 }
 
 double Matter_Overlap::SelectB() const {
-  double b, b2, radius;
+  // Algorithm:
+  // 1. select a radius R according to matter content:
+  //    - for single Gaussian, there is no selection to be made
+  //    - for double Gaussian, one of the three radii is picked.
+  // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
+  double b(0), radius;
   switch (m_overlapform) {
     case overlap_form::Single_Gaussian:
       radius = m_radius1;
@@ -54,8 +59,7 @@ double Matter_Overlap::SelectB() const {
       break;
   }
   do {
-    auto b = dabs(ran->GetGaussian())*radius;
-    if (b>m_bmax) b = dabs(ran->GetGaussian())*radius;
+    b = sqrt(-log(Max(1.e-12,ran->Get())))*radius;
   } while (b>m_bmax);
   return b;
 }
@@ -69,16 +73,16 @@ void Matter_Overlap::InitializeFormFactors() {
     case overlap_form::Single_Gaussian:
       m_fraction1 = 1.;
       m_radius1   = (*mipars)("Matter_Radius1");
-      m_radius12  = 2.*sqr(m_radius1);
+      m_radius12  = sqr(m_radius1);
       m_norm1     = 1./m_radius12;
       m_bstep     = m_radius1/100.;
       break;
     case overlap_form::Double_Gaussian:
       m_fraction1 = (*mipars)("Matter_Fraction1");
       m_radius1   = (*mipars)("Matter_Radius1");
-      m_radius12  = 2.*sqr(m_radius1);
+      m_radius12  = sqr(m_radius1);
       m_radius2   = (*mipars)("Matter_Radius2");
-      m_radius22  = 2.*sqr(m_radius2);
+      m_radius22  = sqr(m_radius2);
       m_radius32  = (m_radius12+m_radius22)/2.;
       m_radius3   = sqrt(m_radius32);
       m_norm1     = sqr(m_fraction1)/m_radius12;
@@ -100,6 +104,8 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
+  msg_Debugging()<<METHOD<<" for form = "<<m_overlapform<<": "
+		 <<"Integral(num) = "<<m_integral<<", ana = "<<0.5<<"\n";
 }
 
 double MO_Integrand::operator()(double b) {

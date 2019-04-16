@@ -93,8 +93,6 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       else 
 	p_singlet->pop_back();
     case 0:
-      //msg_Out()<<METHOD<<": Step("<<part1<<", "<<part2<<") yields 0, now "
-      //	       <<p_singlet->size()<<" partons in singlet.\n";
       break;
     case -1:
     default:

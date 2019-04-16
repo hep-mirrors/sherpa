@@ -13,7 +13,8 @@ using namespace std;
 
 
 MI_Processes::MI_Processes() : ME_Generator_Base("Amisic::Processes"),
-			       m_sigmaND(1.), m_integral(0.) {}
+			       m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.),
+			       m_test(false) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
@@ -43,6 +44,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_pt0      = (*mipars)("pt_0");   m_pt02   = m_pt0*m_pt0;
   m_ptmin    = (*mipars)("pt_min"); m_ptmin2 = m_ptmin*m_ptmin;
   m_ecms     = rpa->gen.Ecms();     m_S      = m_ecms*m_ecms;
+  m_ptmax2   = sqr(m_ecms/2.);
   // will have to make this part of an external input scheme
   m_scale_scheme   = "MPI"; 
   m_kfactor_scheme = "MPI";
@@ -57,6 +59,9 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_MCpoints = int((*mipars)("nMC_points"));
   m_intbins.resize(m_nbins);
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);
+  // Try the same integration etc. in xT = 2pT/E
+  m_xTmin    = 2.*m_ptmin/m_ecms;   m_xTmax    = 1.;
+  m_xTstep   = log(m_xTmax/m_xTmin)/double(m_nbins);
   // Mass scheme for the subsequent parton shower.
   m_massmode       = 1;
   SetPSMasses();
@@ -181,18 +186,38 @@ bool MI_Processes::PrepareSudakovFactor() {
   // where pt_nmax^2 = s/4, the maximal pt^2.
   // N.B.: I use left steps, thereby somewhat overestimating the integral, this
   // could be improved by going trapezoid or similar.
-  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), pt2, dpt2;
+  //double xTlast = m_xTmin*exp(m_xTstep*m_nbins), sigmalast = 0.;
+  //double dxT, xT, sigma;
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), sigmalast = 0.;
+  double sigma, pt2, dpt2;
   for (int bin=m_nbins-1;bin>=0;bin--) {
     pt2            = m_ptmin2*exp(m_pt2step*bin);
     dpt2           = pt2last-pt2;
-    m_intbins[bin] = m_integral += dSigma(pt2) * dpt2/m_sigmaND;
+    sigma          = dSigma(pt2);
+    m_intbins[bin] = m_integral += (sigma+sigmalast)/2. * dpt2/m_sigmaND;
+    //msg_Out()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "
+    //	     <<m_intbins[bin]<<" from "<<((sigmalast + sigma)/2./m_sigmaND)
+    //	     <<" * "<<dpt2<<".\n"; 
     pt2last        = pt2;
+    sigmalast      = sigma;
   }
   m_integral *= m_sigmaND;
-  msg_Tracking()<<METHOD<<" calculates integral for Sudakov form factor starting at pt = "
-		<<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n   sigma = "<<m_integral
-		<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb.\n";
+  if (m_test) Test();
   return true;
+}
+
+void MI_Processes::Test() {
+  double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), pt2, dpt2;
+  msg_Out()<<METHOD<<" calculated integral for Sudakov form factor starting at pt = "
+	   <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n"
+	   <<"   sigma = "<<m_integral<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb, "
+	   <<" sigma_norm = "<<m_integral/m_sigmaND<<".\n";
+  double pt = double(int(sqrt(m_ptmin2)));
+  while (pt<100.) {
+    msg_Out()<<" Log[Sud(pt = "<<pt<<")] = "<<SudakovArgument(sqr(pt))<<"\n";
+    pt+=1.;
+  }
+  exit(1);
 }
 
 double MI_Processes::dSigma(const double & pt2) {
@@ -231,6 +256,7 @@ double MI_Processes::dSigma(const double & pt2) {
 
 const double MI_Processes::SudakovArgument(const double & pt2) const {
   // Linear interpolation between the pre-calculated points for the Sudakov form factor
+  if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
   double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_intbins[bin],                val2 = m_intbins[bin+1];

@@ -161,11 +161,10 @@ bool Multiple_Interactions::InitNewEvent() {
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
-    //msg_Out()<<METHOD<<": muF, R = "<<ptfac<<", "<<ptren<<"\n";
-    //if (!IsZero(ptfac-ptren)) m_ptmax = sqrt(sqr(ptfac)/4.+sqr(ptren));
-    //else
-    m_ptmax = m_ptmax_fac*ptfac;
-    p_mihandler->InitialiseMPIs(m_ptmax);
+    //msg_Out()<<METHOD<<": muF, R = "<<ptfac<<", "<<ptren<<" from \n"<<(*p_lastblob)<<"\n";
+    m_ptmax = ptfac/4.;
+    if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
+    p_mihandler->InitialiseMPIs(m_ptmax_fac*m_ptmax);
     m_newevent = false;
     return true;
   }

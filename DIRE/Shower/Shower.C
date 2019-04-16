@@ -100,6 +100,11 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
+      if (v->in[0].Kfcode()==6 || v->in[1].Kfcode()==6 || v->in[2].Kfcode()==6) {
+	msg_Out()<<"Do not include "<<v->in[0]<<" --> "<<v->in[1]<<"+"<<v->in[2]
+		 <<" into shower.\n";
+	continue;
+      }
       if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))
 	  !=sfs.end()) continue;
       msg_Indent();

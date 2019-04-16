@@ -39,9 +39,7 @@ void Colour_Generator::ConnectColours(Blob *const showerblob) {
     Output();
   }
   if (!showerblob->CheckColour(true)) {
-    msg_Out()<<METHOD<<" did not conserved colour in:\n"<<(*showerblob)<<"\n";
-    Output();
-    exit(1);
+    msg_Debugging()<<METHOD<<" did not conserved colour in:\n"<<(*showerblob)<<"\n";
   }
   showerblob->UnsetStatus(blob_status::needs_beams);
   ResetFlags();
@@ -83,11 +81,13 @@ bool Colour_Generator::TChannelColourFlows() {
     donor     = 1-donor;
     spectator = p_remnants[1-donor]->GetSpectator();
   }
+  //msg_Out()<<METHOD<<" (donor = "<<donor<<", tbeam = "<<tbeam<<"):\n"
+  //	   <<(*p_inparts[0])<<"\n"<<(*p_inparts[1])<<"\n";
   if (donor==tbeam) {
     // replace triplet colour in donor (and as anti-triplet in recipient)
     // and push new colour into recipient beam
     ReplaceBoth(donor,0);
-    if (spectator || p_inparts[1-donor]->Flav().IsGluon())
+    if (spectator || p_inparts[1-donor]->Flav().IsGluon()) 
       Replace(1-donor,0,spectator?spectator:p_inparts[1-donor]);
   }
   else {
@@ -566,17 +566,35 @@ void Colour_Generator::Replace(const int & beam,const size_t & index,ATOOLS::Par
   // colour (oldcol) of the respective (beam) particle with it.  Remove oldcol from the conjugate
   // stack, as it does not need to be balanced any more.  Follow the replacement downstream
   // through the blob list.
+  Blob * showerblob = part->DecayBlob();
+  int oldcol = part->GetFlow(index+1);
   int newcol = NextColour(beam,index);
+  std::list<int> vetoed;
+  while (newcol!=-1) {
+    bool veto(newcol==part->GetFlow(2-index));
+    if (!veto && showerblob) {
+      for (size_t j=0;j<showerblob->NOutP();j++) {
+	if (showerblob->OutParticle(j)->GetFlow(2-index)==newcol) { veto = true; break; }
+      }
+      for (size_t j=0;j<showerblob->NInP();j++) {
+	if (showerblob->InParticle(j)->GetFlow(2-index)==newcol)  { veto = true; break; }
+      }
+    }
+    if (veto) {
+      vetoed.push_back(newcol);
+      newcol = NextColour(beam,index);
+    }
+    else break;
+  }
   if (newcol!=-1) {
-    int oldcol = part->GetFlow(index+1);
     part->SetFlow(index+1,newcol);
     m_cols[beam][1-index].remove(oldcol);
-    Blob * showerblob = part->DecayBlob();
     if (showerblob) {
       ReplaceInFS(oldcol,newcol,index,showerblob);
       ReplaceInIS(oldcol,newcol,index,showerblob);
     }
   }
+  if (vetoed.size()>0) m_cols[beam][index].merge(vetoed);
 }
 
 void Colour_Generator::
