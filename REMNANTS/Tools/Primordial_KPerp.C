@@ -66,6 +66,10 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   // harvesting particles from the beam blob of beam "beam" and
   for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
        pmmit!=p_ktmap->end();pmmit++) {
+    if (pmmit->first->Momentum()[0]<0.) {
+      msg_Out()<<(*pmmit->first)<<"\n";
+      exit(1);
+    }
     kt_tot += pmmit->second =
       scale * KT(Min(m_ktmax[m_beam],pmmit->first->Momentum()[0]));
     E_tot  += pmmit->first->Momentum()[0];
