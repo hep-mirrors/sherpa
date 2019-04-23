@@ -174,15 +174,20 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   Particle_Vector daughters = blob->GetOutParticles();
   std::vector<size_t> shuffled(daughters.size());
   for (size_t i=0; i<daughters.size(); ++i) shuffled[i]=i;
+  bool drop=false;
   for (size_t i=0; i<daughters.size(); ++i) {
     if (!daughters[i]->Flav().Stable() &&
 	abs(daughters[i]->Momentum().Abs2()-
-	    sqr(daughters[i]->FinalMass()))>1e-6) {
-      PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
+	    sqr(daughters[i]->FinalMass()))>1e-6) drop=true; 
+    }
+  if (drop)
+  {
+	  PRINT_INFO("Some of initial particles is  not on shell\n")
+	  for (size_t i=0; i<daughters.size(); ++i)
+      PRINT_INFO("Initial particle "<<daughters[i]->Flav()
                  <<"p^2="<<daughters[i]->Momentum().Mass()
                  <<" vs. m^2="<<daughters[i]->FinalMass());
       throw Return_Value::Retry_Event;
-    }
   }
   random_shuffle(shuffled.begin(), shuffled.end(), *ran);
   
