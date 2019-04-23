@@ -257,7 +257,9 @@ void Model_Base::ReadParticleData()
       for (const auto& propertyname : pdata[ptclname].GetKeys()) {
         auto s = pdata[ptclname][propertyname];
         if (propertyname == "Mass") {
-          it->second->m_mass = s.SetDefault(it->second->m_mass).Get<double>();
+          const auto mass = s.SetDefault(it->second->m_mass).Get<double>();
+          it->second->m_mass = mass;
+          it->second->m_hmass = mass;
         } else if (propertyname == "Width") {
           it->second->m_width = s.SetDefault(it->second->m_width).Get<double>();
         } else if (propertyname == "Active") {
