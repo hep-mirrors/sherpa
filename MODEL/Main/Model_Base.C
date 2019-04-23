@@ -200,6 +200,7 @@ void Model_Base::ReadParticleData() {
   for (;dit!=cdm.end();dit++) {
     if (s_kftable.find(dit->first)!=s_kftable.end()) {
       s_kftable[dit->first]->m_mass = dit->second;
+      s_kftable[dit->first]->m_hmass = dit->second;
       msg_Tracking()<<" set mass of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
     }
   }
