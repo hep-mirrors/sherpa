@@ -182,11 +182,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     }
   if (drop)
   {
-	  PRINT_INFO("Some of initial particles is  not on shell\n")
+	  PRINT_INFO("Some of initial particles is  not on shell\n");
 	  for (size_t i=0; i<daughters.size(); ++i)
+	  {
       PRINT_INFO("Initial particle "<<daughters[i]->Flav()
                  <<"p^2="<<daughters[i]->Momentum().Mass()
                  <<" vs. m^2="<<daughters[i]->FinalMass());
+      }
       throw Return_Value::Retry_Event;
   }
   random_shuffle(shuffled.begin(), shuffled.end(), *ran);
