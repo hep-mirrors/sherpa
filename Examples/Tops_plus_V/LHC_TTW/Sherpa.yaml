@@ -19,9 +19,9 @@ EVENT_GENERATION_MODE: Weighted
 HARD_DECAYS:
   Enabled: true
   Channels:
-    "24 -> 2 -1": {Status: 0}
-    "24 -> 4 -3": {Status: 0}
-    "24 -> 16 -15": {Status: 0}
+    24 -> 2 -1: {Status: 0}
+    24 -> 4 -3: {Status: 0}
+    24 -> 16 -15: {Status: 0}
 
 # model parameters
 PARTICLE_DATA:

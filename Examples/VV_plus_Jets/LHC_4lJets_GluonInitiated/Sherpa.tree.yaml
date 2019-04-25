@@ -9,7 +9,7 @@ CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4]+p[5])/4.0}
 ME_GENERATORS: Amegic
 
 PROCESSES:
-- Process: "93 93 -> 90 90 90 90 93{1}"
+- Process: 93 93 -> 90 90 90 90 93{1}
   CKKW: 20
   # settings specific to FS-multiplicities
   2->4:

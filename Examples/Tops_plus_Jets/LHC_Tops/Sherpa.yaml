@@ -13,10 +13,10 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    "24 -> 2 -1": {Status: 0}
-    "24 -> 4 -3": {Status: 0}
-    "-24 -> -2 1": {Status: 0}
-    "-24 -> -4 3": {Status: 0}
+    24 -> 2 -1: {Status: 0}
+    24 -> 4 -3: {Status: 0}
+    -24 -> -2 1: {Status: 0}
+    -24 -> -4 3: {Status: 0}
 
 # particle properties (width of external particles of the MEs must be zero)
 PARTICLE_DATA:
@@ -26,7 +26,7 @@ NLO_SMEAR_THRESHOLD: 1
 NLO_SMEAR_POWER: 2
 
 PROCESSES:
-- Process: "93 93 -> 6 -6 93{3}"
+- Process: 93 93 -> 6 -6 93{3}
   Order: {QCD: Any, EW: 0}
   CKKW: 20
   2->2-3:

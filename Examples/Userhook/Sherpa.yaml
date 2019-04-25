@@ -8,7 +8,7 @@ MI_HANDLER: None
 USERHOOKS: Example
 
 PROCESSES:
-- Process: "93 93 -> 11 -11"
+- Process: 93 93 -> 11 -11
   Order: {QCD: Any, EW: 2}
 
 SELECTORS:

@@ -27,7 +27,7 @@ ALPHAS(MZ): 0.118
 PARTICLE_DATA: {5: {Massive: true}}
 
 PROCESSES:
-- Process: "11 -11 -> 93 93 93{3}"
+- Process: 11 -11 -> 93 93 93{3}
   CKKW: pow(10,-$(YCUT)/2.00)*E_CMS
   Order: {QCD: Any, EW: 2}
   RS_Enhance_Factor: 10
@@ -38,7 +38,7 @@ PROCESSES:
     NLO_QCD_Mode: MC@NLO
     ME_Generator: Amegic
     RS_ME_Generator: Comix
-- Process: "11 -11 -> 5 -5 93{3}"
+- Process: 11 -11 -> 5 -5 93{3}
   CKKW: pow(10,-$(YCUT)/2.00)*E_CMS
   Order: {QCD: Any, EW: 2}
   Loop_Generator: $(LOOPMGEN)
@@ -47,7 +47,7 @@ PROCESSES:
     NLO_QCD_Mode: MC@NLO
     ME_Generator: Amegic
     RS_ME_Generator: Comix
-- Process: "11 -11 -> 5 5 -5 -5 93{1}"
+- Process: 11 -11 -> 5 5 -5 -5 93{1}
   CKKW: pow(10,-$(YCUT)/2.00)*E_CMS
   Order: {QCD: Any, EW: 2}
   Cut_Core: 1

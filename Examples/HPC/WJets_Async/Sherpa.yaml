@@ -15,7 +15,7 @@ PSI_ITMIN_BY_NODE: 10
 PSI_STOPOPT: 5
 PSI_ASYNC: 1
 PROCESSES:
-- Process: "93 93 -> 11 -12 93{$(NJET)}"
+- Process: 93 93 -> 11 -12 93{$(NJET)}
   Order: {QCD: Any, EW: 2}
   CKKW: $(QCUT)
   Loop_Generator: $(LOOPGEN)

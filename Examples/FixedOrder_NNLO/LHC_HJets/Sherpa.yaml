@@ -27,7 +27,7 @@ PDF_SET: MSTW2008nnlo68cl
 ALPHAS: {USE_PDF: 1}
 PROCESSES:
 - {
-  Process: "93 93 -> 25 93{1}",
+  Process: 93 93 -> 25 93{1},
   NLO_QCD_Mode: Fixed_Order,
   Loop_Generator: $(LGEN),
   ME_Generator: Amegic,

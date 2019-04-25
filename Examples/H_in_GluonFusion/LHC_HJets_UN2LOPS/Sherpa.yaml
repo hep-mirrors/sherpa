@@ -30,7 +30,7 @@ RESPECT_MASSIVE_FLAG: 1
 NLO_BVI_MODE: 15
 PROCESSES:
 - {
-  Process: "93 93 -> 25 93{1}",
+  Process: 93 93 -> 25 93{1},
   NLO_QCD_Mode: MC@NLO,
   Loop_Generator: $(LGEN),
   ME_Generator: Amegic,

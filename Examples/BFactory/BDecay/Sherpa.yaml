@@ -1,5 +1,8 @@
+# collider setup
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
 # general settings
-EVENTS: 5M
 EVENT_TYPE: HadronDecay
 
 # specify hadron to be decayed
@@ -8,9 +11,7 @@ DECAYER: 511
 # initialise rest for Sherpa not to complain
 # model parameters
 ME_GENERATORS: Internal
-SCALES: "VAR{sqr(91.2)}"
-# collider setup
-BEAMS:  [11, -11]
-BEAM_ENERGIES: [7., 4.]
+SCALES: VAR{sqr(91.2)}
+
 PROCESSES:
-  - { Process: "11 -11 -> 13 -13" }
+  - { Process: 11 -11 -> 13 -13 }

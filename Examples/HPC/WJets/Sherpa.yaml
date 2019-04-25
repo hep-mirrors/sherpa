@@ -14,7 +14,7 @@ PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
 PSI_IT_BY_NODE: 10
 PSI_STOPOPT: 5
 PROCESSES:
-- Process: "93 93 -> 11 -12 93{$(NJET)}"
+- Process: 93 93 -> 11 -12 93{$(NJET)}
   Order: {QCD: Any, EW: 2}
   CKKW: $(QCUT)
   Loop_Generator: $(LOOPGEN)

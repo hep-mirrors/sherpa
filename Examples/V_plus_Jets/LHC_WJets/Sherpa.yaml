@@ -10,7 +10,7 @@ ME_GENERATORS:
 
 # optional: use a custom jet criterion
 #SHERPA_LDADD: MyJetCriterion
-#JET_CRITERION: "FASTJET[A:antikt,R:0.4,y:5]"
+#JET_CRITERION: FASTJET[A:antikt,R:0.4,y:5]
 
 # exclude tau (15) from (massless) lepton container (90)
 PARTICLE_DATA:
@@ -19,7 +19,7 @@ PARTICLE_DATA:
 
 # pp -> W[lv]+jets
 PROCESSES:
-- Process: "93 93 -> 90 91 93{4}"
+- Process: 93 93 -> 90 91 93{4}
   Order: {QCD: Any, EW: 2}
   CKKW: 20
   # set up MC@NLO final-state multiplicities

@@ -9,7 +9,7 @@ ME_GENERATORS: [Amegic, Internal, OpenLoops]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    "25 -> 22 22": {Status: 2}
+    25 -> 22 22: {Status: 2}
   Apply_Branching_Ratios: false
 
 # model parameters
@@ -22,11 +22,11 @@ KFACTOR: GGH
 OL_IGNORE_MODEL: true
 OL_PARAMETERS:
   preset: 2
-  allowed_libs: "pph2,pphj2,pphjj2"
+  allowed_libs: pph2,pphj2,pphjj2
   psp_tolerance: 1.0e-7
 
 PROCESSES:
-- Process: "93 93 -> 25 93{1}"
+- Process: 93 93 -> 25 93{1}
   Order: {QCD: Any, EW: 0, HEFT: 1}
   CKKW: 30
   Loop_Generator: Internal

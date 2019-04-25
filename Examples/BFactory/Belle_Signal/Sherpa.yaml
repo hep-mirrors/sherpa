@@ -1,5 +1,7 @@
-# general settings
-EVENTS: 5M
+# collider setup
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
 # model parameters
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
@@ -8,16 +10,13 @@ MASSIVE:
   - [5, 1]
 MASSIVE_PS: 3
 ME_GENERATORS: Internal
-SCALES: "VAR{sqr(91.2)}"
-# collider setup
-BEAMS:  [11, -11]
-BEAM_ENERGIES: [7., 4.]
+SCALES: VAR{sqr(91.2)}
 PROCESSES:
   #
   # electron positron -> Y(4S) -> B+ B-
   #
   - {
-    Process: "11 -11 -> 300553[a]",
+    Process: 11 -11 -> 300553[a],
     Decay: "300553[a] -> 521 -521",
     Order: {QCD: Any, EW: 2}
     }
@@ -25,7 +24,7 @@ PROCESSES:
   # electron positron -> Y(4S) -> B0 B0bar
   #
   - {
-    Process: "11 -11 -> 300553[a]",
+    Process: 11 -11 -> 300553[a],
     Decay: "300553[a] -> 511 -511",
     Order: {QCD: Any, EW: 2}
     }

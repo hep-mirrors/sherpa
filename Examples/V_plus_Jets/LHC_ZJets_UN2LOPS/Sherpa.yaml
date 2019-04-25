@@ -23,7 +23,7 @@ NLO_BVI_MODE: 7
 SHOWER_GENERATOR: Dire
 PROCESSES:
 - {
-  Process: "93 93 -> 11 -11 93{1}",
+  Process: 93 93 -> 11 -11 93{1},
   NLO_QCD_Mode: MC@NLO,
   Loop_Generator: $(LGEN),
   ME_Generator: Amegic,

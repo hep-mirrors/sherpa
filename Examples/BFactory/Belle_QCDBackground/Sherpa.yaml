@@ -12,14 +12,14 @@ BEAMS:  [11, -11]
 BEAM_ENERGIES: [7., 4.]
 PROCESSES:
   - {
-    Process: "11 -11 -> 93 93",
+    Process: 11 -11 -> 93 93,
     Order: {QCD: Any, EW: 2}
     }
   - {
-    Process: "11 -11 -> 4 -4",
+    Process: 11 -11 -> 4 -4,
     Order: {QCD: Any, EW: 2}
     }
   - {
-    Process: "11 -11 -> 5 -5",
+    Process: 11 -11 -> 5 -5,
     Order: {QCD: Any, EW: 2}
     }

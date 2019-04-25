@@ -9,7 +9,7 @@ ME_GENERATORS: [Comix, Amegic, Internal, MCFM]
 HARD_DECAYS:
   Enabled: true
   Channels:
-    "25 -> 22 22": {Status: 2}
+    25 -> 22 22: {Status: 2}
   Apply_Branching_Ratios: false
 
 # model parameters
@@ -18,7 +18,7 @@ PARTICLE_DATA:
   25: {Mass: 125, Width: 0}
 
 PROCESSES:
-- Process: "93 93 -> 25 93{2}"
+- Process: 93 93 -> 25 93{2}
   Order: {QCD: Any, EW: 0, HEFT: 1}
   CKKW: 30
   2->1-2: { Loop_Generator: Internal }

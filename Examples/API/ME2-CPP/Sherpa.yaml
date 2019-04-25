@@ -4,7 +4,7 @@ BEAMS: [11, -11]
 BEAM_ENERGIES: 45.6
 PDF_LIBRARY: None
 PROCESSES:
-  - {Process: "11 -11 -> 2 -2 21 21 21 21"}
+  - {Process: 11 -11 -> 2 -2 21 21 21 21}
 NUMBER_OF_POINTS: 4
 MOMENTA:
   - [
