@@ -1,50 +1,33 @@
 # SHERPA run card for t-channel single top-quark production at MC@NLO
 # and N_f = 4
 
-# general setting
-EVENTS: 1M
-
-TAGS: {
-  LOOPGEN: OpenLoops,
-  SCF: 1.,
-  FSF: $(SCF),
-  RSF: $(SCF),
-  QSF: $(SCF),
-  rscl2: "MPerp2(p[3])",
-  fscl2: "MPerp2(p[2])"
-  }
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
 
 # me generator settings
-ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
-EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
 
 # scales
 #   muR = transverse momentum of the bottom
 #   muF = muQ = transverse momentum of the top
-SCALES: VAR{$(FSF)*$(fscl2)}{$(RSF)*$(rscl2)}{$(QSF)*$(fscl2)}
-
-# collider setup
-BEAMS: 2212
-BEAM_ENERGIES: 4000
+SCALES: VAR{MPerp2(p[2])}{MPerp2(p[3])}{MPerp2(p[2])}
 
 # disable hadronic W decays
-HARD_DECAYS: {
-  Enabled: true,
-  Channels: {
-    "24 -> 2 -1": {Status: 0},
-    "24 -> 4 -3": {Status: 0},
-    "-24 -> -2 1": {Status: 0},
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    "24 -> 2 -1": {Status: 0}
+    "24 -> 4 -3": {Status: 0}
+    "-24 -> -2 1": {Status: 0}
     "-24 -> -4 3": {Status: 0}
-    }
-  }
 
 # choose EW Gmu input scheme
 EW_SCHEME: 3
 
-PARTICLE_DATA: {
-  6: {Width: 0},  # required for using top-quark in ME
+PARTICLE_DATA:
+  6: {Width: 0}  # required for using top-quark in ME
   5: {Massive: true, Mass: 4.18}  # mass as in NNPDF30_nlo_as_0118_nf_4
-  }
 
 # configure for N_f = 4
 PDF_LIBRARY: LHAPDFSherpa
@@ -52,12 +35,10 @@ PDF_SET: NNPDF30_nlo_as_0118_nf_4
 ALPHAS: {USE_PDF: 1}
 
 PROCESSES:
-  - {
-    Process: 93 93 -> 6 -5 93,
-    NLO_QCD_Mode: MC@NLO,
-    Order: {QCD: Any, EW: 2},
-    ME_Generator: Amegic,
-    RS_ME_Generator: Comix,
-    Loop_Generator: $(LOOPGEN),
-    Min_N_TChannels: 1  # require t-channel W
-    }
+- Process: 93 93 -> 6 -5 93
+  NLO_QCD_Mode: MC@NLO
+  Order: {QCD: Any, EW: 2}
+  ME_Generator: Amegic
+  RS_ME_Generator: Comix
+  Loop_Generator: OpenLoops
+  Min_N_TChannels: 1  # require t-channel W
