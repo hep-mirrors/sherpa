@@ -9,6 +9,8 @@
 
 namespace SHERPA {
 
+  class Initialization_Handler;
+
   struct Output_Arguments {
     std::string m_outpath, m_outfile;
     Output_Arguments(const std::string outpath,
@@ -16,6 +18,13 @@ namespace SHERPA {
       m_outpath(outpath), m_outfile(outfile)
     {}
   };
+    Initialization_Handler *p_init;
+    Output_Arguments(const std::string outpath,
+		     const std::string outfile,
+		     Initialization_Handler *init):
+      m_outpath(outpath), m_outfile(outfile),
+      p_init(init) {}
+  };// end of struct Output_Arguments
 
   class Event_Handler;
 
