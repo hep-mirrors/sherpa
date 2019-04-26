@@ -1,11 +1,15 @@
-EVENTS: 0
-INIT_ONLY: 2
 BEAMS: [11, -11]
 BEAM_ENERGIES: 45.6
+
+EVENTS: 0
+INIT_ONLY: 2
 PDF_LIBRARY: None
+
 PROCESSES:
-  - {Process: 11 -11 -> 2 -2 21 21 21 21}
+- Process: 11 -11 -> 2 -2 21 21 21 21
+
 NUMBER_OF_POINTS: 4
+
 MOMENTA:
   - [
       [  11,  45.6,   0.0,   0.0,  45.6 ],

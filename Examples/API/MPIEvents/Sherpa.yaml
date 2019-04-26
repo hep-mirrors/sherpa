@@ -1,6 +1,8 @@
-EVENTS: 1000
 BEAMS: [11, -11]
 BEAM_ENERGIES: 45.6
+
+EVENTS: 1000
 PDF_LIBRARY: None
+
 PROCESSES:
-  - {Process: 11 -11 -> 93 93}
+- Process: 11 -11 -> 93 93
