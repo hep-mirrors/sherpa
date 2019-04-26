@@ -27,7 +27,7 @@ OL_PARAMETERS:
 
 PROCESSES:
 - Process: 93 93 -> 25 93{1}
-  Order: {QCD: Any, EW: 0, HEFT: 1}
+  Order: {QCD: 0, EW: 0, HEFT: 1}
   CKKW: 30
   Loop_Generator: Internal
   2->1-2:

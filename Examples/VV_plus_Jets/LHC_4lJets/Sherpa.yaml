@@ -8,7 +8,7 @@ METS: { CLUSTER_MODE: 16 }
 
 PROCESSES:
 - Process: 93 93 -> 90 90 90 90 93{3}
-  Order: {QCD: Any, EW: 4}
+  Order: {QCD: 0, EW: 4}
   CKKW: 30
   2->4-5:
     NLO_QCD_Mode: MC@NLO

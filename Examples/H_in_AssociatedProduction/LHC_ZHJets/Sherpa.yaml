@@ -48,7 +48,7 @@ HARD_DECAYS:
 
 PROCESSES:
 - Process: 901 901 -> 23 25 901{2}
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   CKKW: 30
   2->2-3:
     NLO_QCD_Mode: MC@NLO

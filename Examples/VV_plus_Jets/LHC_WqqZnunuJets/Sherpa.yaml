@@ -25,7 +25,7 @@ PARTICLE_DATA:
 
 PROCESSES:
 - Process: 93 93 -> 24 23 93{3}
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   CKKW: 30
   2->2-3:
     NLO_QCD_Mode: MC@NLO
@@ -35,7 +35,7 @@ PROCESSES:
   2->3-7:
     Integration_Error: 0.05
 - Process: 93 93 -> -24 23 93{3}
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   CKKW: 30
   2->2-3:
     NLO_QCD_Mode: MC@NLO

@@ -20,7 +20,7 @@ PARTICLE_DATA:
 # pp -> W[lv]+jets
 PROCESSES:
 - Process: 93 93 -> 90 91 93{4}
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   CKKW: 20
   # set up MC@NLO final-state multiplicities
   2->2-4:

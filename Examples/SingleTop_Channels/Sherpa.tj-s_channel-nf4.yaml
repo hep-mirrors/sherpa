@@ -41,7 +41,7 @@ PARTICLE_CONTAINERS:
 PROCESSES:
 - Process: 900 900 -> 6 -5
   NLO_QCD_Mode: MC@NLO
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   ME_Generator: Amegic
   RS_ME_Generator: Comix
   Loop_Generator: OpenLoops

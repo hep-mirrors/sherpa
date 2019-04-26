@@ -31,7 +31,7 @@ PARTICLE_DATA: { 6: {Width: 0} }
 PROCESSES:
 - Process: 93 93 -> 6 93
   NLO_QCD_Mode: MC@NLO
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   ME_Generator: Amegic
   RS_ME_Generator: Comix
   Loop_Generator: OpenLoops

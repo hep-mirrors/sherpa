@@ -37,7 +37,7 @@ ALPHAS: {USE_PDF: 1}
 PROCESSES:
 - Process: 93 93 -> 6 -5 93
   NLO_QCD_Mode: MC@NLO
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 1, EW: 2}
   ME_Generator: Amegic
   RS_ME_Generator: Comix
   Loop_Generator: OpenLoops

@@ -19,7 +19,7 @@ HARD_DECAYS:
 
 PROCESSES:
 - Process: 93 93 -> 11 -11 25
-  Order: {QCD: Any, EW: 3}
+  Order: {QCD: 0, EW: 3}
   NLO_QCD_Mode: MC@NLO
   Loop_Generator: OpenLoops
   ME_Generator: Amegic

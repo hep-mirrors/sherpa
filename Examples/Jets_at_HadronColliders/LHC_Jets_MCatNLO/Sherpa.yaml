@@ -9,7 +9,7 @@ PROCESSES:
 - Process: 93 93 -> 93 93
   NLO_QCD_Mode: MC@NLO
   Loop_Generator: OpenLoops
-  Order: {QCD: Any, EW: 0}
+  Order: {QCD: 2, EW: 0}
 
 SELECTORS:
 - Type: FastjetFinder

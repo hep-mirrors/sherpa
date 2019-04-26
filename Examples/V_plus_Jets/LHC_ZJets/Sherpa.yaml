@@ -13,7 +13,7 @@ ME_GENERATORS:
 # pp -> Z[ee]+jets
 PROCESSES:
 - Process: 93 93 -> 11 -11 93{4}
-  Order: {QCD: Any, EW: 2}
+  Order: {QCD: 0, EW: 2}
   CKKW: 20
   # set up NLO+PS final-state multiplicities
   2->2-4:

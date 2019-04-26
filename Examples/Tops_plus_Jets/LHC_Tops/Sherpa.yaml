@@ -27,7 +27,7 @@ NLO_SMEAR_POWER: 2
 
 PROCESSES:
 - Process: 93 93 -> 6 -6 93{3}
-  Order: {QCD: Any, EW: 0}
+  Order: {QCD: 2, EW: 0}
   CKKW: 20
   2->2-3:
     NLO_QCD_Mode: MC@NLO
