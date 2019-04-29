@@ -577,7 +577,7 @@ parton-level event generation with Sherpa. These changes read
 @code{SHOWER_GENERATOR: None}, to switch off parton showering,
 @code{FRAGMENTATION: None}, to do so for the hadronisation effects,
 @code{MI_HANDLER: None}, to switch off multiparton interactions, and
-@code{ME_QED: @{Enabled: false@}}, to switch off resummed QED corrections onto the
+@code{ME_QED: @{ENABLED: false@}}, to switch off resummed QED corrections onto the
 Z -> e- e+ decay. Additionally, the non-perturbative intrinsic transverse 
 momentum may be wished to not be taken into account, therefore set 
 @code{BEAM_REMNANTS: false}.
