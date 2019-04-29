@@ -84,6 +84,11 @@ namespace SHERPA {
     HepMC::GenEvent *p_event;
     std::vector<HepMC::GenEvent*> m_subeventlist;
 
+    bool Sherpa2ShortHepMC(const ATOOLS::Vec4D&,
+                           const ATOOLS::Flavour&,
+                           bool incoming,
+                           HepMC::GenParticle*&);
+
   public :
 
     // constructor
