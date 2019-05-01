@@ -296,7 +296,7 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
     Blob* blob=*blit;
     for (int i=0;i<blob->NInP();i++) {
       if (blob->InParticle(i)->ProductionBlob()==NULL &&
-          blob->OutParticle(i)->Status()!=part_status::documentation) {
+          blob->InParticle(i)->Status()!=part_status::documentation) {
         Particle* parton=blob->InParticle(i);
         HepMC::GenParticle* inpart;
         Sherpa2ShortHepMC(parton->Momentum(), parton->Flav(), true, inpart);
