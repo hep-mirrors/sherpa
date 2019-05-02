@@ -1,25 +1,23 @@
-@node LHC_WJets
-@subsection W+jets production
-
 To change any of the following LHC examples to production at different
 collider energies or beam types, e.g. proton anti-proton at the Tevatron,
-simply change the beam settings to.
+simply change the beam settings accordingly:
+@verbatim
+  BEAMS: [2212, -2212]
+  BEAM_ENERGIES: 980
+@end verbatim
 
+@node LHC_WJets
+@subsection W+jets production
 
 This is an example setup for inclusive W production at hadron colliders. 
 The inclusive process is calculated at next-to-leading order accuracy matched 
 to the parton shower using the MC@@NLO prescription detailed in 
 @mycite{Hoeche2011fd}. The next few higher jet multiplicities, calculated at 
 next-to-leading order as well, are merged into the inclusive sample using 
-the MEPS@@NLO method - an extension of the CKKW method to NLO - as described 
+the MEPS@@NLO method -- an extension of the CKKW method to NLO -- as described 
 in @mycite{Hoeche2012yf} and @mycite{Gehrmann2012yg}. Finally, even higher 
 multiplicities, calculated at leading order, are merged on top of that.
-A few things to note are detailed below the example. The example can be 
-converted into a simple MENLOPS setup by setting @code{LJET: 2}, or an MEPS
-setup by setting @code{LJET: 0}, to study the effect of incorporating
-higher-order matrix elements. The number of additional LO jets can be varied
-through @code{NJET}. Similarly, the merging cut can be changed through
-@code{QCUT}.
+A few more things to note are detailed below the example. 
 
 @example
 @smallformat
@@ -29,30 +27,27 @@ through @code{NJET}. Similarly, the merging cut can be changed through
 
 Things to notice:
 @itemize
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced throughout the entire run card by 
-their defined value, see @ref{Tags}.
-@item All scales, i.e. the squared factorisation, renormalisation and resummation 
-scales are set to the above defined scale factors times the value determined 
-by the METS-clustering algorithm. For the usual scale variation by a factor of
-two one would thus use e.g. @code{FSF: 4.0}.
-@item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
-to be used in the process setup, defining the multiplicity of the MC@@NLO 
-subprocesses, the maximal number of extra jets, and the merging cut.
-@item The @code{LOOPGEN} tag is used to name the provider of the one-loop
-matrix elements for the respective multiplicities. For the simplemost case 
-here Sherpa can provide it internally.
-@item tau leptons are set massive in order to exclude them from the massless 
+@item The multiplicities calculated at NLO accuracy are given by the
+@code{2->2-4} key below the @code{# set up MC@@NLO ...} comment.
+The example can be converted into a simple MENLOPS setup by using @code{2->2}
+instead, or into
+an MEPS setup by using some non-existent multiplicity, e.g. @code{2->0}.
+Thus one can study the effect of incorporating higher-order
+matrix elements.
+@item The number of additional LO jets can be varied
+through changing the integer within the curly braces in the @code{Process}
+definition, which gives the maximum number of additional partons in the
+matrix elements.
+@item @code{OpenLoops} is used here as the provider of the one-loop
+matrix elements for the respective multiplicities.
+@item Tau leptons are set massive in order to exclude them from the massless 
 lepton container (@code{90}).
 @item As both Comix and Amegic are specified as matrix element generators 
 to be used, Amegic has to be specified to be used for all MC@@NLO 
-multiplicities using @code{$(LJET): @{ME_Generator: Amegic@}}. Additionally, we
-specify @code{$(LJET): @{RS_ME_Generator: Comix@}} such that the subtracted
+multiplicities using @code{ME_Generator: Amegic}. Additionally, we
+specify @code{RS_ME_Generator: Comix} such that the subtracted
 real-emission bit of the NLO matrix elements is calculated more efficiently
 with Comix instead of Amegic.
-@item The @code{LOOSE_METS} scale setter, a simplified version of the
-@code{METS} scale setter, is used for the highest multiplicities (if
-@code{NJET} is set to @code{5} or @code{6}) to speed up the calculation.
 @end itemize
 
 The jet criterion used to define the matrix element multiplicity in the
