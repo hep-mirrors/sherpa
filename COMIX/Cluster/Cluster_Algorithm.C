@@ -30,7 +30,7 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   m_ordered=read.GetValue<int>("COMIX_CLUSTER_ORDERED",0);
   m_nocluster=read.GetValue<int>("COMIX_NO_CLUSTER",0);
   m_dipolecheck=read.GetValue<int>("COMIX_CLUSTER_DIPOLE_CHECK",1);
-  m_skip4096=read.GetValue<int>("COMIX_CLUSTER_RS_ORD",0);
+  m_skip4096=read.GetValue<int>("COMIX_CLUSTER_RS_ORDERED",0);
 }
 
 Cluster_Algorithm::~Cluster_Algorithm()
