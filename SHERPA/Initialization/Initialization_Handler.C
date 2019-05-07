@@ -676,7 +676,7 @@ bool Initialization_Handler::InitializeThePDFs()
       deflib="NNPDFSherpa";
       defset[beam]="NNPDF31_nnlo_as_0118_mc";
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e || p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
       deflib="PDFESherpa";
       defset[beam]="PDFe";
     }
