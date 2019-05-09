@@ -46,13 +46,13 @@ bool Single_Process::Initialize()
       return false;
     }
   }
-  
+
   // can't do any BSM
-  if (m_pinfo.m_special!="MPI_Process" && MODEL::s_model->Name()!="SM") {
+  if (/*m_pinfo.m_special!="MPI_Process" && */ MODEL::s_model->Name()!="SM") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }
-
+  
   m_nlotype=m_pinfo.m_fi.NLOType();
 
   if (m_nlotype==nlo_type::loop) {

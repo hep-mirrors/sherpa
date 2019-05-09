@@ -12,6 +12,10 @@
 
 using namespace ATOOLS;
 
+namespace ATOOLS {
+  std::map<btp::code,long unsigned int> Blob_List::s_momfails;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list) 
 {
   s<<"Blob List with "<<list.size()<<" elements {"<<std::endl;
@@ -208,9 +212,9 @@ bool Blob_List::FourMomentumConservation() const
   static double accu(sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
-    msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
-               <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
-               <<"   diff = "<<finsum-inisum<<"."<<std::endl;
+    //msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
+    //         <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
+    //         <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
       Settings& s = Settings::GetMainSettings();
@@ -218,14 +222,15 @@ bool Blob_List::FourMomentumConservation() const
         s["ALLOW_MOMENTUM_NONCONSERVATION"].SetDefault(1).Get<int>();
     }
     if (!allow) Abort();
-    //if (msg_LevelIsDebugging()) {
-    //msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
 	Vec4D sum((*bit)->CheckMomentumConservation());
 	if (sum!=Vec4D()) {
-	  msg_Out()<<METHOD<<"(..): sum = "<<sum
-		   <<" in\n"<<**bit<<std::endl;
+	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum<<"\n";
+	  //<<" in\n"<<**bit<<std::endl;
 	}
+	btp::code btype = (*bit)->Type();
+	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
+	else s_momfails[btype] = s_momfails[btype]+1;
       }
       //}
   }
@@ -460,3 +465,14 @@ Blob_List Blob_List::Copy() const
   }
   return copy;
 }
+
+void Blob_List::PrintMomFailStatistics(std::ostream &str)
+{
+  str<<"Blob_List: Momentum Fail Statistics {\n";
+  for (std::map<btp::code,long unsigned int>::iterator fit=s_momfails.begin();
+       fit!=s_momfails.end();fit++) {
+    str<<"  "<<fit->first<<": "<<fit->second<<" fails\n";
+  }
+  str<<"}\n";
+}
+

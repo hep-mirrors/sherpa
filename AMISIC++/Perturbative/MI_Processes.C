@@ -14,7 +14,7 @@ using namespace std;
 
 MI_Processes::MI_Processes() : ME_Generator_Base("Amisic::Processes"),
 			       m_ptmax2(1.e12), m_sigmaND(1.), m_integral(0.),
-			       m_test(false) {}
+			       m_test(true) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
@@ -58,6 +58,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base *const model,
   m_nbins    = int((*mipars)("nPT_bins"));
   m_MCpoints = int((*mipars)("nMC_points"));
   m_intbins.resize(m_nbins);
+  m_diffbins.resize(m_nbins);
   m_pt2step  = log(m_S/(4.*m_ptmin2))/double(m_nbins);
   // Try the same integration etc. in xT = 2pT/E
   m_xTmin    = 2.*m_ptmin/m_ecms;   m_xTmax    = 1.;
@@ -191,10 +192,11 @@ bool MI_Processes::PrepareSudakovFactor() {
   double pt2last = m_ptmin2*exp(m_pt2step*m_nbins), sigmalast = 0.;
   double sigma, pt2, dpt2;
   for (int bin=m_nbins-1;bin>=0;bin--) {
-    pt2            = m_ptmin2*exp(m_pt2step*bin);
-    dpt2           = pt2last-pt2;
-    sigma          = dSigma(pt2);
-    m_intbins[bin] = m_integral += (sigma+sigmalast)/2. * dpt2/m_sigmaND;
+    pt2             = m_ptmin2*exp(m_pt2step*bin);
+    dpt2            = pt2last-pt2;
+    sigma           = dSigma(pt2);
+    m_diffbins[bin] = sigma; 
+    m_intbins[bin]  = m_integral += sigma * dpt2/m_sigmaND;
     //msg_Out()<<"   Sudakov(pt = "<<sqrt(pt2)<<") = "
     //	     <<m_intbins[bin]<<" from "<<((sigmalast + sigma)/2./m_sigmaND)
     //	     <<" * "<<dpt2<<".\n"; 
@@ -211,13 +213,20 @@ void MI_Processes::Test() {
   msg_Out()<<METHOD<<" calculated integral for Sudakov form factor starting at pt = "
 	   <<sqrt(pt2last)<<" in "<<m_nbins<<" steps,\n"
 	   <<"   sigma = "<<m_integral<<" 1/Gev^2 = "<<(m_integral*rpa->Picobarn()/1.e9)<<" mb, "
-	   <<" sigma_norm = "<<m_integral/m_sigmaND<<".\n";
-  double pt = double(int(sqrt(m_ptmin2)));
-  while (pt<100.) {
-    msg_Out()<<" Log[Sud(pt = "<<pt<<")] = "<<SudakovArgument(sqr(pt))<<"\n";
-    pt+=1.;
+	   <<" sigma/sigmaND = "<<m_integral/m_sigmaND<<".\n";
+  double pt = 5.;
+  while (pt<1000.) {
+    msg_Out()<<" Log[Sud(pt = "<<pt<<")] = "<<SudakovArgument(sqr(pt))
+	     <<"  --> Int_pt2^s dqt2 dsigma/dqt2 (pt = "<<pt<<") = "
+	     <<(SudakovArgument(sqr(pt))*m_sigmaND*rpa->Picobarn())
+	     <<" pb for sigmaND = "<<m_sigmaND<<" 1/GeV^2\n"
+	     <<"   Test interpolation: "<<dSigma(sqr(pt))<<" vs "
+	     <<SudakovDiffArgument(sqr(pt))<<" = "
+	     <<(2.*(dSigma(sqr(pt))-SudakovDiffArgument(sqr(pt)))/
+		(dSigma(sqr(pt))+SudakovDiffArgument(sqr(pt))) * 100)<<"%.\n";
+    pt*=10.;
   }
-  exit(1);
+  //exit(1);
 }
 
 double MI_Processes::dSigma(const double & pt2) {
@@ -239,8 +248,8 @@ double MI_Processes::dSigma(const double & pt2) {
     double y2     = ymax*(-1.+2.*ran->Get());
     double x1     = xt * (exp(y1)  + exp(y2))/2.;
     double x2     = xt * (exp(-y1) + exp(-y2))/2.;
-    if (x1<1.e-6 || x1>1. || x2<1.e-6 || x2>1.) continue;
-    double cost   = sqrt(1.-(xt*xt)/(x1*x2));
+    if (x1<1.e-6 || x1>1. || x2<1.e-6 || x2>1. || xt*xt>x1*x2) continue;
+    double cost   = sqrt(1.-Min(1.,(xt*xt)/(x1*x2)));
     double shat   = x1 * x2 * m_S;
     double that   = -0.5 * shat * (1.-cost);
     double uhat   = -0.5 * shat * (1.+cost);
@@ -250,7 +259,10 @@ double MI_Processes::dSigma(const double & pt2) {
     res2 += dsigma*dsigma;
   }
   double result = res/double(m_MCpoints);
-  //double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
+  double uncert = sqrt((res2/double(m_MCpoints)-sqr(result))/double(m_MCpoints));
+  //msg_Out()<<"dSigma(pt = "<<sqrt(pt2)<<")/dpt^2 = "
+  //	   <<(result*rpa->Picobarn())<<" pb GeV^-2 "
+  //	   <<"+/- "<<(uncert/result*100.)<<"%.\n";
   return result;
 }
 
@@ -260,6 +272,16 @@ const double MI_Processes::SudakovArgument(const double & pt2) const {
   int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
   double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
   double val1 = m_intbins[bin],                val2 = m_intbins[bin+1];
+  double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
+  return val;
+}
+
+const double MI_Processes::SudakovDiffArgument(const double & pt2) const {
+  // Linear interpolation between the pre-calculated points for the Sudakov form factor
+  if (pt2>m_ptmax2 || pt2<m_ptmin2) return 0.;
+  int bin     = int(1./m_pt2step*log(pt2/m_ptmin2));
+  double pt21 = m_ptmin2*exp(m_pt2step*(bin)), pt22 = m_ptmin2*exp(m_pt2step*(bin+1));
+  double val1 = m_diffbins[bin],               val2 = m_diffbins[bin+1];
   double val  = (val1*(pt22-pt2)+val2*(pt2-pt21))/(pt22-pt21);
   return val;
 }
