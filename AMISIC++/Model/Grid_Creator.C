@@ -21,7 +21,8 @@ Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
   p_processes(processes),
   m_xsextension("_xs.dat"),
   m_datatag("[x,w,w2,max,n]"),
-  m_events(0)
+  m_events(0),
+  m_writegrid(true)
 {
   if (p_processes.empty()) {
     THROW(fatal_error,"Process handler is not initialized");
@@ -128,6 +129,7 @@ void Grid_Creator::Clear()
 
 bool Grid_Creator::ReadInGrid()
 {
+  if (!m_writegrid) return false;
   My_In_File::OpenDB(OutputPath());
   double sum=0.0;
   msg_Info()<<METHOD<<"(): Reading grid ";
@@ -240,27 +242,29 @@ bool Grid_Creator::CreateGrid()
 {
   bool success=true;
   int formerlevel=msg->Level();
-  My_Out_File::OpenDB(OutputPath());
+  if (m_writegrid) My_Out_File::OpenDB(OutputPath());
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
   msg->SetLevel(m_outputlevel);
   for (size_t i=0; i<p_processes.size(); ++i) {
-    p_processes[i]->CalculateTotalXSec(OutputPath()+OutputFile(),true);
+    p_processes[i]->CalculateTotalXSec(OutputPath()+OutputFile(),m_writegrid);
   }
   if (!CreateGridInternal()) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 	     <<"Grid creation failed."<<std::endl;
     success=false;
   }
-  My_Out_File::ExecDB(OutputPath(),"begin");
-  if (!WriteOutGrid()) {
-    msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
-		     <<"Sorry, grid cannot be written to '"
-		     <<OutputFile()<<"'"<<std::endl;
-    success=false;
+  if (m_writegrid) {
+    My_Out_File::ExecDB(OutputPath(),"begin");
+    if (!WriteOutGrid()) {
+      msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
+               <<"Sorry, grid cannot be written to '"
+               <<OutputFile()<<"'"<<std::endl;
+      success=false;
+    }
+    My_Out_File::ExecDB(OutputPath(),"commit");
+    My_Out_File::CloseDB(OutputPath());
   }
-  My_Out_File::ExecDB(OutputPath(),"commit");
-  My_Out_File::CloseDB(OutputPath());
   msg->SetLevel(formerlevel);
   msg_Info()<<"\n}"<<std::endl;
   return success;

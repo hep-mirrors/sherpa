@@ -35,6 +35,7 @@ namespace AMISIC {
     std::string m_xsextension, m_datatag, m_criterion;
     
     int m_outputlevel;
+    bool m_writegrid;
 
     long unsigned int m_initevents, m_maxevents, m_events;
     
@@ -137,6 +138,9 @@ namespace AMISIC {
     { m_gridxmin=gridxmin; }
     inline void SetGridXMax(const double gridxmax) 
     { m_gridxmax=gridxmax; }
+
+    inline void SetWriteGrid(const bool writegrid)
+    { m_writegrid=writegrid; }
 
   }; // end of class Grid_Creator
   /*!

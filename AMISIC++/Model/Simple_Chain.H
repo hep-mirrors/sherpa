@@ -42,6 +42,7 @@ namespace AMISIC {
 
     std::string m_xsextension, m_pathextra, m_selectorfile;
     std::string m_resdir, m_ressuffix;
+    bool        m_reswriteout;
 
     std::vector<Semihard_QCD*> p_processes;
     std::vector<FSR_Channel*>  p_fsrinterface;
