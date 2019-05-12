@@ -117,17 +117,9 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
 }
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
-  double kt;
-  if (ktmax<m_mean[m_beam]+m_sigma[m_beam]) {
-    // use hit-or-miss when we are constrained narrowly around the peak ...
-    do { kt = ktmax*ran->Get(); }
-    while (ran->Get() > exp(-sqr((m_mean[m_beam]-kt)/m_sigma[m_beam])));
-  }
-  else {
-    // ... otherwise use the standard Gaussian rng and veto in case of kt > ktmax
-    do { kt = m_mean[m_beam] + ran->GetGaussian() * m_sigma[m_beam]; }
-    while (kt<0 || kt > m_ktmax[m_beam]);
-  }
+//  double kt=m_sigma[m_beam]*sqrt(log(1-ran->Get()*(1-exp(-pow(m_ktmax[m_beam]/m_sigma[m_beam],2)))));
+  double ran1=std::max(0.00001,ran->Get());
+  double kt=m_sigma[m_beam]*sqrt(-log(ran1));
   return kt;
 }
 
