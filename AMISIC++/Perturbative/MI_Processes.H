@@ -24,6 +24,7 @@ namespace AMISIC {
     std::string m_scale_scheme, m_kfactor_scheme;
     int         m_photons, m_quarkonia;
     int         m_nbins, m_MCpoints;
+    std::vector<double>             m_diffbins;
     std::vector<double>             m_intbins;
     std::list<MI_Process_Group * >  m_groups;
 
@@ -35,6 +36,7 @@ namespace AMISIC {
     bool   PrepareSudakovFactor();
     double dSigma(const double & pt2);
     void   Test();
+    const double SudakovDiffArgument(const double & pt2) const;
   public:
     MI_Processes();
     ~MI_Processes();
@@ -64,8 +66,8 @@ namespace AMISIC {
     inline const double &  XShard()    const { return m_integral; }
     inline const size_t    Size()      const { return m_groups.size(); }
     inline const int    &  MassMode()  const { return m_massmode; }
-    inline PDF::PDF_Base * PDF(const size_t beam) { return p_pdf[beam]; }
-    inline MODEL::Running_AlphaS * AlphaS() const { return p_alphaS; }
+    inline PDF::PDF_Base * PDF(const size_t beam)  { return p_pdf[beam]; }
+    inline MODEL::Running_AlphaS * AlphaS() const  { return p_alphaS; }
     inline void SetSigmaND(const double & sigmaND) { m_sigmaND = sigmaND; }
     inline void SetMassMode(const int & mode) {
       if (mode==0) abort();

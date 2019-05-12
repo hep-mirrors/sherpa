@@ -14,7 +14,7 @@ using namespace ATOOLS;
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019.
 
 Matter_Overlap::Matter_Overlap() :
-  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./(2.*M_PI)) ///(4.*M_PI*M_PI))
+  m_bstep(0.), m_bmax(0.), m_integral(0.), m_norm(1./M_PI) ///(4.*M_PI*M_PI))
 {}
 
 Matter_Overlap::~Matter_Overlap() {}
@@ -104,8 +104,8 @@ void Matter_Overlap::CalculateIntegral() {
   } while (dabs(previous/result)>1.e-10);
   m_bmax     = bmin;
   m_integral = result;
-  msg_Debugging()<<METHOD<<" for form = "<<m_overlapform<<": "
-		 <<"Integral(num) = "<<m_integral<<", ana = "<<0.5<<"\n";
+  msg_Out()<<METHOD<<" for form = "<<m_overlapform<<": "
+	   <<"Integral(num) = "<<m_integral<<", ana = "<<(M_PI*m_norm)<<"\n";
 }
 
 double MO_Integrand::operator()(double b) {

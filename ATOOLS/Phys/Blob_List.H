@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include <deque>
+#include <map>
 #include <set>
 #include <iostream>
 
@@ -11,10 +12,10 @@ namespace ATOOLS {
 
   class Blob_List: public std::deque<Blob*> {
   private:
+    static std::map<btp::code, unsigned long int> s_momfails;
 
     class Destructor {
     private:
-
       Blob_List *p_list;
 
       void RegisterDefaults() const;
@@ -86,6 +87,7 @@ namespace ATOOLS {
     double Weight() const;
     void   SetExternalWeight(const double & wt) { m_extweight = wt; }
     double ExternalWeight() const { return m_extweight; }
+    static void PrintMomFailStatistics(std::ostream &str);
   };// end of class Blob_List
   
   std::ostream &operator<<(std::ostream &str,const Blob_List &list);

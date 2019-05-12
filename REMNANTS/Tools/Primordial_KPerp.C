@@ -112,7 +112,7 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
     }
   } while (kt<0. || kt>ktmax);
   // Add angles and construct the vector
-  double cosphi = 2.*ran->Get()-1, sinphi = sqrt(1.-cosphi*cosphi);
+  double cosphi = cos(2.*M_PI*ran->Get()), sinphi = sqrt(1.-cosphi*cosphi);
   return kt * Vec4D(0.,cosphi,sinphi,0.);
 }
 
