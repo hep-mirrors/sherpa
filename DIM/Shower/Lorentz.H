@@ -6,6 +6,7 @@
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "DIM/Tools/Kernel_Key.H"
 #include "DIM/Tools/Splitting.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace DIM {
 
@@ -59,6 +60,8 @@ namespace DIM {
     inline const ATOOLS::Flavour &Flav(const int i) const { return m_fl[i]; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
+    EXTAMP::DipoleCase m_dipole_case;
 
   };// end of class Lorentz
 

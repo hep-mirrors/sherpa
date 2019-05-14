@@ -282,8 +282,16 @@ GetRealEmissionAmplitude(const int mode)
 }
 
 double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
-		       const double &x,const double &y,const double &Q2)
+		       const double &x,const double &y,const double &Q2,
+               const double paipb, const double alpha, const double cos_phi)
 {
+  if(p_mcatnlo->KinFF()->m_dipole_case == EXTAMP::IDa){
+    const double mw2 = sqr(Flavour(24).Mass());
+    const double A = alpha*y*(Q2-mw2)/2.;
+    const double B = paipb*(y*(x-1.-mw2/(Q2-mw2))+1-x);
+    return y*(Q2-mw2)/(2*paipb) * (A+B-2*sqrt(A*B)*cos_phi);
+  }
+
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));

@@ -47,7 +47,8 @@ namespace PDF {
 
     virtual double KT2(const ATOOLS::NLO_subevt &sub,
 		       const double &x,const double &y,
-		       const double &Q2) = 0;
+		       const double &Q2,
+               const double paipb=0., const double alpha=0., const double cos_phi=0.) = 0;
 
     static void ShowSyntax(const int mode);
 

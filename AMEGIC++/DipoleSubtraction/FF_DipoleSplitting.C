@@ -39,7 +39,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   switch(m_dipolecase){
     case IDa:
     case IDb:{
-      m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);   // TODO: just copied from CS
       if (m_dipolecase==IDa){
         if(m_j==5) m_n = mom[0]+mom[1]-mom[5]-mom[6]-mom[3] ; // b emitts
         if(m_j==6) m_n = mom[0]+mom[1]-mom[5]-mom[6]-mom[2] ; // bbar emitts
@@ -79,16 +78,31 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         m_viab = m_pj*m_pIDspec[1] / (m_pi*(m_pj+m_pIDspec[1]));
       }
     
-      m_zi   = (m_pi*m_ptk)/(m_ptij*m_ptk); // TODO: just copied from CS
-      m_zj   = 1.-m_zi;                     // TODO: just copied from CS
-    
-      m_Q2 = (m_pi+m_pj+m_pk).Abs2();                            // TODO: just copied from CS
-      m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2): // TODO: just copied from CS
-        m_Q2*m_yijk*m_zi*m_zj;                                   // TODO: just copied from CS
-  
-      m_pt1   =     m_zi*m_pi-m_zj*m_pj;                         // TODO: just copied from CS
-      m_pt2   =     m_ptij;                                      // TODO: just copied from CS
-    
+      /* calculate kt2 (1st way) */
+      double kt2 = ((m_pj*m_pi)*(m_pk*m_pi)) / (m_pj*m_pk);
+
+      /* calculate kt2 (2nd way) */
+      const ATOOLS::Vec4D pw = m_n - m_pi;
+      m_Q2 = (pw+m_pj+m_pi).Abs2();
+      const double mw2 = sqr(Flavour(24).Mass());
+      const ATOOLS::Vec4D p_wtilde = m_pIDspec[0];
+      const ATOOLS::Vec4D p_minus  = p_wtilde - mw2/(m_Q2-mw2)*m_ptij;
+      const double paipb           = m_ptij*m_pk;
+      const double alpha           = m_pk*p_minus / (m_ptij*p_minus);
+      const ATOOLS::Vec4D p        = m_ptij+p_minus;
+      Poincare bst(p);
+      bst.Boost(m_pi);
+      bst.Boost(m_pk);
+      bst.Boost(m_ptij);
+      Vec3D pk_perp = Vec3D(m_pk) - Vec3D(m_pk)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
+      Vec3D pi_perp = Vec3D(m_pi) - Vec3D(m_pi)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
+      const double cos_phi = pi_perp*pk_perp/(pi_perp.Abs()*pk_perp.Abs());
+      bst.BoostBack(m_pi);
+      bst.BoostBack(m_pk);
+      bst.BoostBack(m_ptij);
+      /* checked that m_kt2 and kt2 agree */
+      m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zain,m_vi_tilde,m_Q2,paipb,alpha,cos_phi):kt2;
+
       switch (m_ftype) {
       case spt::q2qg:
         THROW(fatal_error, "g>qg should not appear, but g>gq");

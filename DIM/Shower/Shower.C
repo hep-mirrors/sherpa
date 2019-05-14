@@ -26,6 +26,16 @@ Shower::Shower():
   p_gamma(NULL)
 {
   p_pdf[1]=p_pdf[0]=NULL;
+
+  Settings& s = Settings::GetMainSettings();
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
+  if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+  else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+  else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+  else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+  else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
+  else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
+  else                               m_dipole_case = EXTAMP::DipoleCase::CS;
 }
 
 Shower::~Shower()

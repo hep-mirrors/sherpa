@@ -3,6 +3,7 @@
 
 #include "MCATNLO/Tools/Parton.H"
 #include "ATOOLS/Math/Vector.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace PHASIC { class Jet_Finder; }
 
@@ -15,7 +16,7 @@ namespace MCATNLO {
     Sudakov *p_sud;
     int m_evolscheme;
   public:
-    Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
+    Kinematics_Base();
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
 			       const ATOOLS::Flavour &,Parton *&) = 0;
@@ -33,6 +34,7 @@ namespace MCATNLO {
     inline void SetSudakov(Sudakov *const sud) { p_sud=sud; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
     inline int EvolScheme() const { return m_evolscheme; }
+    EXTAMP::DipoleCase m_dipole_case;
   };
 
   class Kinematics_FF : public Kinematics_Base {

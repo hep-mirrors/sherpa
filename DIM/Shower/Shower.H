@@ -4,6 +4,7 @@
 #include "DIM/Tools/Parton.H"
 #include "DIM/Shower/Kernel.H"
 #include "DIM/Tools/Amplitude.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace ATOOLS {
   class Variation_Parameters;
@@ -40,6 +41,8 @@ namespace DIM {
 		   const double &jcv):
 	p_ampl(ampl), m_jcv(jcv), m_acc(0) {}
     };// end of struct JetVeto_Args
+
+    EXTAMP::DipoleCase m_dipole_case;
     
     typedef std::map<ATOOLS::Flavour,Kernel_Vector> SKernel_Map;
 

@@ -39,7 +39,8 @@ namespace DIM {
     int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl);
 
     double KT2(const ATOOLS::NLO_subevt &sub,
-	       const double &x,const double &y,const double &Q2);
+	       const double &x,const double &y,const double &Q2,
+           const double paipb=0, const double alpha=0, const double cos_phi=0);
 
     ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude(const int mode=0);
     inline ATOOLS::Cluster_Amplitude *GetBornAmplitude() { return p_rampl; }

@@ -5,10 +5,24 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace PHASIC;
 using namespace ATOOLS;
+
+Kinematics_Base::Kinematics_Base(): m_evolscheme(0), p_ms(NULL)
+{
+  Settings& s = Settings::GetMainSettings();
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
+  if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+  else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+  else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+  else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+  else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
+  else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
+  else                               m_dipole_case = EXTAMP::DipoleCase::CS;
+}
 
 double Kinematics_FF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const double &mi2,const double &mj2,const double &mk2,
