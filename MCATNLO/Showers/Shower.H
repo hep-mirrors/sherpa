@@ -102,6 +102,8 @@ namespace MCATNLO {
 
     inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
     { p_variationweights = varwgts; }
+
+    const Singlet* GetSinglet() const { return p_actual; }
   };
 }
 

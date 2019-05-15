@@ -58,11 +58,11 @@ namespace MCATNLO {
       * Overestimate integrated over [zmin, zmax]
       */
     virtual double OverIntegrated(const double zmin,const double zmax,
-				  const double scale,const double xbj) = 0;
+				  const double scale,const double xbj, const double phimin=0.) = 0;
     /**
       * Overestimate of operator
       */
-    virtual double OverEstimated(const double z,const double y) = 0;
+    virtual double OverEstimated(const double z,const double y,const double phi=0) = 0;
     /**
       * Generate z according to OverEstimated (solve OverIntegrated for new z)
       */

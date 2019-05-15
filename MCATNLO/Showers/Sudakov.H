@@ -15,10 +15,16 @@ namespace MCATNLO {
 
   class Shower;
 
+  struct TrialVariables {
+      double m_Q2, m_alpha, m_paipb;
+  };
+
   class Sudakov : public Splitting_Function_Group {
     double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
+    double m_phimin;  // phimax not included as phimax = 2*pi-phimin 
+    TrialVariables m_trialvariables;
     int m_ewmode, m_scalescheme;
     const ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
@@ -37,7 +43,7 @@ namespace MCATNLO {
     void ProduceT();
     bool Veto(double,double);
     bool Splitting(double,double);
-    bool DefineFFBoundaries(double,double);
+    bool DefineFFBoundaries(double);
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
     bool DefineIIBoundaries(double,double,int);
@@ -46,6 +52,8 @@ namespace MCATNLO {
     double Reweight(ATOOLS::Variation_Parameters *,
                     ATOOLS::Variation_Weights *,
                     const bool &success);
+    void SetTrialVariables(Parton* split, Parton* spect, Parton* kinspect);
+    Parton* SelectKinSpect(Parton* split, Parton* spect);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -60,7 +68,7 @@ namespace MCATNLO {
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
-			  const double=1.,const int=-1);
+			  const double=1.,const int=-1, const double phimin=0.);
 
     inline void GetSplittingParameters(double &,double &,double &,double &);
 

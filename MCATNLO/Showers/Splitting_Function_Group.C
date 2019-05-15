@@ -51,9 +51,9 @@ void Splitting_Function_Group::SelectOne()
 }
 
 double Splitting_Function_Group::OverIntegrated(const double zmin,const double zmax,
-						const double scale,const double xbj) {
+						const double scale,const double xbj,const double phimin) {
   for (size_t i(0);i<m_splittings.size();++i)
-    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj); 
+    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj,phimin);
   return m_lastint;
 }
 
@@ -61,21 +61,26 @@ double Splitting_Function_Group::OverIntegrated(const double zmin,const double z
 double Splitting_Function_Group::operator() (const double z,const double y,
 					     const double eta,const double scale,
 					     const double Q2,const Color_Info &ci,Cluster_Amplitude *const sub) { 
-  return (*p_selected)(z,y,eta,scale,Q2,ci,sub); 
+  return (*p_selected)(z,y,eta,scale,Q2,ci,sub);
 }
 
-double Splitting_Function_Group::Overestimated(const double z,const double y) { 
-  return p_selected->Overestimated(z,y); 
+double Splitting_Function_Group::Overestimated(const double z,const double y, const double phi) {
+  return p_selected->Overestimated(z,y);
 }
 
 double Splitting_Function_Group::RejectionWeight(const double z,const double y,
-						 const double eta,const double scale,const double Q2) { 
-  return p_selected->RejectionWeight(z,y,eta,scale,Q2); 
+						 const double eta,const double scale,const double Q2,
+                         const double phi) {
+  return p_selected->RejectionWeight(z,y,eta,scale,Q2,phi);
 }
 
 double Splitting_Function_Group::Z() { 
-  return p_selected->Z(); 
+  return p_selected->Z();
 }         
+
+double Splitting_Function_Group::Phi(const double &phimin) {
+  return p_selected->Phi(phimin);
+}
 
 void Splitting_Function_Group::ClearSpecs()
 {

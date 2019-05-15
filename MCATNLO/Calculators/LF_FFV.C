@@ -12,8 +12,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -33,8 +33,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -54,8 +54,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -72,8 +72,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -86,8 +86,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -107,8 +107,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -130,8 +130,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -150,8 +150,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -166,8 +166,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -189,8 +189,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -212,8 +212,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -232,8 +232,8 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double);
-    double OverEstimated(const double,const double);
+			  const double,const double, const double phimin=0.);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -278,15 +278,28 @@ double LF_FFV_FF::operator()
 }
 
 double LF_FFV_FF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
+  // checked that no other OverIntegrated is invoked.
   m_zmin = zmin; m_zmax = zmax;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
+  switch(m_dipole_case){
+    case EXTAMP::CS:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
+    case EXTAMP::IDa:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax))*
+             2./tan(phimin/2) / (2.*M_PI);
+  }
 }
 
-double LF_FFV_FF::OverEstimated(const double z,const double y)
+double LF_FFV_FF::OverEstimated(const double z,const double y, const double phi)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
+  // checked that no other OverEstimated is invoked.
+  switch(m_dipole_case){
+    case EXTAMP::CS:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
+    case EXTAMP::IDa:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z)/(1.-cos(phi));
+  }
 }
 
 double LF_FFV_FF::Z()
@@ -331,14 +344,14 @@ double LF_FFV_FI::operator()
 }
 
 double LF_FFV_FI::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_FI::OverEstimated(const double z,const double y)
+double LF_FFV_FI::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -372,14 +385,14 @@ double LF_FFV_IF::operator()
 }
 
 double LF_FFV_IF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.; 
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_IF::OverEstimated(const double z,const double y)
+double LF_FFV_IF::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -399,14 +412,14 @@ double LF_FFV_II::operator()
 }
 
 double LF_FFV_II::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax; 
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.;
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_II::OverEstimated(const double z,const double y)
+double LF_FFV_II::OverEstimated(const double z,const double y, const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -447,13 +460,13 @@ double LF_FVF_FF::operator()
 }
 
 double LF_FVF_FF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))*log(zmax/zmin);
 }
 
-double LF_FVF_FF::OverEstimated(const double z,const double y)
+double LF_FVF_FF::OverEstimated(const double z,const double y, const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z;
 }
@@ -497,14 +510,14 @@ double LF_FVF_FI::operator() (const double z,const double y,
   }
 }
 double LF_FVF_FI::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_FI::OverEstimated(const double z,const double y)
+double LF_FVF_FI::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.0+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -561,7 +574,7 @@ double LF_FVF_IF::operator()
 }
 
 double LF_FVF_IF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
@@ -572,7 +585,7 @@ double LF_FVF_IF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_IF::OverEstimated(const double z,const double y)
+double LF_FVF_IF::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -602,7 +615,7 @@ double LF_FVF_II::operator()
 }
 
 double LF_FVF_II::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
  {
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
@@ -613,7 +626,7 @@ double LF_FVF_II::OverIntegrated
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_II::OverEstimated(const double z,const double y)
+double LF_FVF_II::OverEstimated(const double z,const double y, const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -665,13 +678,13 @@ double LF_VFF_FF::operator()
 }
   
 double LF_VFF_FF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin);
 }
 
-double LF_VFF_FF::OverEstimated(const double z,const double y)
+double LF_VFF_FF::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1));
 }
@@ -733,14 +746,14 @@ double LF_VFF_FI::operator()
 }
 
 double LF_VFF_FI::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_FI::OverEstimated(const double z,const double y)
+double LF_VFF_FI::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* m_Jmax;
 }
@@ -788,7 +801,7 @@ double LF_VFF_IF::operator()
 }
 
 double LF_VFF_IF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
@@ -799,7 +812,7 @@ double LF_VFF_IF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_IF::OverEstimated(const double z,const double y)
+double LF_VFF_IF::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
 }
@@ -829,7 +842,7 @@ double LF_VFF_II::operator()
 }
 
 double LF_VFF_II::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
@@ -840,7 +853,7 @@ double LF_VFF_II::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_II::OverEstimated(const double z,const double y)
+double LF_VFF_II::OverEstimated(const double z,const double y, const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
 }

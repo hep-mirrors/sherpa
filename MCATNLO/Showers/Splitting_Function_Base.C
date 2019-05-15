@@ -139,7 +139,7 @@ double Splitting_Function_Base::AsymmetryFactor
 }
 
 double Splitting_Function_Base::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj)
+(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
 {
   if (m_mth && (m_type==cstp::FF || m_type==cstp::FI)) {
     if (p_lf->FlA().Mass(true)<m_mth &&
@@ -149,7 +149,7 @@ double Splitting_Function_Base::OverIntegrated
   	sqr(p_lf->FlB().Mass(true)+
   	    p_lf->FlC().Mass(true))>scale) return 0.0;
   }
-  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
+  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj,phimin)/m_symf/m_polfac;
   if (!(IsBad(lastint)||lastint<0.0)) {
     m_lastint+=lastint;
     m_lastints.push_back(m_lastint);
@@ -162,9 +162,9 @@ double Splitting_Function_Base::OverIntegrated
   return lastint;
 }
 
-double Splitting_Function_Base::Overestimated(const double z,const double y)
+double Splitting_Function_Base::Overestimated(const double z,const double y, const double phi)
 {
-  return p_lf->OverEstimated(z,y)/m_symf/m_polfac;
+  return p_lf->OverEstimated(z,y,phi)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::Z()
@@ -174,11 +174,11 @@ double Splitting_Function_Base::Z()
         
 double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
- const double _scale,const double Q2) 
+ const double _scale,const double Q2,const double phi)
 {
   double scale(_scale);
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
-  m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
+  m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt>1.0) {
     msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
@@ -241,9 +241,14 @@ void Splitting_Function_Base::ResetLastInt()
   m_lastint=0.0;
 }
 
-double Splitting_Function_Base::Phi(double z) const
+double Splitting_Function_Base::Phi(const double &phimin) const
 {
-  return 2.*M_PI*ATOOLS::ran->Get();
+  switch(p_lf->m_dipole_case){
+    case EXTAMP::CS:
+      return 2.*M_PI*ATOOLS::ran->Get();
+    case EXTAMP::IDa:
+      return 2.*atan(tan(phimin/2.) / (1-2.*ATOOLS::ran->Get()));
+  }
 }
 
 const Flavour & Splitting_Function_Base::GetFlavourA() const

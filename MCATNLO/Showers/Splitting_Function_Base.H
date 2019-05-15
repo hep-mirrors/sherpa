@@ -43,12 +43,12 @@ namespace MCATNLO {
        const Color_Info &ci=Color_Info(),
        ATOOLS::Cluster_Amplitude *const sub=NULL);
     virtual double OverIntegrated(const double,const double,
-				  const double,const double);
-    virtual double Overestimated(const double,const double);
+				  const double,const double, const double phimin=0.);
+    virtual double Overestimated(const double,const double,const double phi=0.);
     virtual double RejectionWeight(const double,const double,
-				   const double,const double,const double);
+				   const double,const double,const double, const double phi=0.);
     virtual double Z();         
-    virtual double Phi(double z) const;
+    virtual double Phi(const double &phimin) const;
 
     virtual const ATOOLS::Flavour & GetFlavourA() const;
     virtual const ATOOLS::Flavour & GetFlavourB() const;

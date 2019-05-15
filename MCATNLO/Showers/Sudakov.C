@@ -229,6 +229,25 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
   }
 }
 
+Parton* Sudakov::SelectKinSpect(Parton *split, Parton *spect){
+  std::list<Parton *>::const_iterator it_w = p_shower->GetSinglet()[0].begin();
+  if      (split->GetFlavour().IsbQuark())    std::advance(it_w, 2); // move to W+
+  else if (split->GetFlavour().IsbbarQuark()) std::advance(it_w, 3); // move to W-
+  else    THROW(fatal_error, "Invalid assigment.");
+  return *it_w;
+}
+
+void Sudakov::SetTrialVariables(Parton *split, Parton *spect, Parton * kinspect){
+  const double mw2              = sqr(Flavour(24).Mass());
+  const ATOOLS::Vec4D pai_tilde = split->Momentum();
+  const ATOOLS::Vec4D pb        = spect->Momentum();
+  const ATOOLS::Vec4D pw_tilde  = kinspect->Momentum();
+  m_trialvariables.m_Q2         = (pai_tilde + pw_tilde)*(pai_tilde + pw_tilde);
+  const ATOOLS::Vec4D p_minus   = pw_tilde-mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+  m_trialvariables.m_paipb      = pai_tilde*pb;
+  m_trialvariables.m_alpha      = pb*p_minus / (pai_tilde*p_minus);
+}
+
 bool Sudakov::Generate(Parton * split) 
 {
   m_weight=1.0;
@@ -249,8 +268,17 @@ bool Sudakov::Generate(Parton * split)
   switch (split->GetType()) {
   case pst::FS: 
     if (spect->GetType()==pst::FS) {
-      Q2    = (split->Momentum()+spect->Momentum()).Abs2();
-      if (!DefineFFBoundaries(Q2,1.)) continue; 
+      switch(p_shower->KinFF()->m_dipole_case){
+        case EXTAMP::CS:
+          m_trialvariables.m_Q2 = (split->Momentum()+spect->Momentum()).Abs2();
+          break;
+        case EXTAMP::IDa:
+          SetTrialVariables(split, spect, SelectKinSpect(split, spect));
+          break;
+        default:
+          THROW(fatal_error, "Unsupported dipole-case for matching.");
+      }
+      if (!DefineFFBoundaries(1.)) continue;
       break;
     }
     if (spect->GetType()==pst::IS) {
@@ -300,9 +328,11 @@ bool Sudakov::Generate(Parton * split)
     ProduceT();
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
+    split->SetKinSpect(SelectKinSpect(split,split->GetSpect()));
     m_flspec = p_spect->GetFlavour();
     p_selected->ColorPoint(split);
     m_z = Z();
+    m_phi = Phi(m_phimin);
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (m_kperp2<k0sq)  return false;
     double Q2 = 0.;
@@ -375,7 +405,6 @@ bool Sudakov::Generate(Parton * split)
       break;
     }
   }
-  m_phi = 2.0*M_PI*ran->Get();
   return success;
 }
 
@@ -508,16 +537,39 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
   return rewfactor;
 }
 
-bool Sudakov::DefineFFBoundaries(double Q2,double x)
+bool Sudakov::DefineFFBoundaries(double x)
 {
+  const double Q2 = m_trialvariables.m_Q2;
+  m_phimin        = 0.;
   if (4.*m_k0sqf>Q2) return false;
   
   m_type=cstp::FF;
-  double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
-  m_zmin   = 0.5*(1.-deltaz);
-  m_zmax   = 0.5*(1.+deltaz);
+  switch(p_shower->KinFF()->m_dipole_case){
+    case EXTAMP::CS:
+      {
+      double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
+      m_zmin   = 0.5*(1.-deltaz);
+      m_zmax   = 0.5*(1.+deltaz);
+      break;
+      }
+    case EXTAMP::IDa:
+      {
+      const double     mw2 = sqr(Flavour(24).Mass());
+      const double Qprime2 = Q2-mw2;
+      const double alpha   = m_trialvariables.m_alpha;
+      const double paipb   = m_trialvariables.m_paipb;
+      m_zmin = 0;
+      m_zmax = (-2*m_k0sqf*paipb*Qprime2 + paipb*pow(Qprime2,2) - alpha*pow(Qprime2,3) +
+                sqrt(alpha*pow(Qprime2,4)*(4*m_k0sqf*paipb +
+                alpha*pow(Qprime2,2))))/(paipb*pow(Qprime2,2));
+      m_phimin = acos(1.-m_k0sqf*sqr(2.*mw2*paipb +
+                 Qprime2*(2.*paipb*(1.-1./*m_zmax*/)+Qprime2*alpha)) /
+                 (2.*paipb*pow(Qprime2,4.)*sqr(1.-0./*m_zmax*/)*alpha));
+      }
+  }
+
   m_scale  = p_split->KtStart();
-  if (OverIntegrated(m_zmin,m_zmax,m_scale,Q2)<0.) {
+  if (OverIntegrated(m_zmin,m_zmax,m_scale,Q2,-1,m_phimin)<0.) {
     msg_Error()<<"Error in Sudakov::DefineFFBoundaries : "<<endl
     	       <<"   Integral for SF's<0 : {"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
     return false;
@@ -595,7 +647,7 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
 
 
 double Sudakov::OverIntegrated(const double zmin,const double zmax,
-			       const double scale,const double xbj,int beam) {
+			       const double scale,const double xbj,int beam, const double phimin) {
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
     if ((*m_splitter)->GetType()==m_type && 
 	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
@@ -616,7 +668,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 	(*m_splitter)->AddSpec(p_spect);
 	(*m_splitter)->SetSpec(p_spect);
 	if (beam!=-1) (*m_splitter)->Lorentz()->SetBeam(beam);
-	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
+	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj,phimin);
 	if (m_lastint>0. && m_lastint <0.) cout<<(*this);    
       }
     }
@@ -659,7 +711,7 @@ bool Sudakov::Splitting(double Q2,double x) {
   default:
     THROW(fatal_error, "Unknown MCATNLO_SCALE_SCHEME");
   }
-  double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2));
+  double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2,m_phi));
   p_selected->Coupling()->SetKFMode(kfmode);
   if (ran->Get()>wt) {
     return false;  
