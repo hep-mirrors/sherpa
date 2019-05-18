@@ -98,7 +98,7 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   return true;
 }
 
-bool Hadron_Remnant::CompensateColours() {
+void Hadron_Remnant::CompensateColours() {
   while (p_colours->Colours(m_beam,0).size()>0 && p_colours->Colours(m_beam,1).size()>0) {
     Particle * gluon = MakeParticle(Flavour(kf_gluon));
     int col[2];

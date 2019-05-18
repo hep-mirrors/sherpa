@@ -24,7 +24,7 @@ namespace REMNANTS {
 
     bool IsValence(ATOOLS::Particle * part);
     void MakeSpectator(ATOOLS::Particle * parton);
-    bool CompensateColours();
+    void CompensateColours();
     bool MakeRemnants();
     void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
     bool ConstructPartner(ATOOLS::Particle * part);
