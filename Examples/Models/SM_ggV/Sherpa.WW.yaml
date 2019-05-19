@@ -1,3 +1,7 @@
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500.
+
 # general settings
 EVENTS: 0
 MI_HANDLER: None
@@ -18,13 +22,7 @@ SCALES: VAR{sqr(80.385)}
 # model parameters
 MODEL: SMGGV
 
-# collider setup
-BEAMS: 2212
-BEAM_ENERGIES: 7000.
-
 PROCESSES:
-  - {
-    Process: 21 21 -> 11 -12 -13 14,
-    Order: {QCD: 2, EW: 4},
-    Print_Graphs: Graphs
-    }
+- Process: 21 21 -> 11 -12 -13 14
+  Order: {QCD: 2, EW: 4}
+  Print_Graphs: Graphs

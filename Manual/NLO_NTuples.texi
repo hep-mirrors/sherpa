@@ -12,7 +12,7 @@ see @ref{Command line}.
 
 When using NTuples, one needs to bear in mind that every calculation
 involving jets in the final state is exclusive in the sense that a lower
-cutoff on the jet transverse momenta must be imposed.
+cut-off on the jet transverse momenta must be imposed.
 It is therefore necessary to check whether the event sample stored in the
 NTuple is sufficiently inclusive before using it. Similar remarks apply
 when photons are present in the NLO calculation or when cuts on
@@ -70,7 +70,7 @@ Launch Sherpa again, using
   Sherpa -f Sherpa.B-like.yaml
 @end verbatim
 Sherpa will then compute the Born, virtual and integrated subtraction contribution
-to the NLO cross section and generate events. These events are analyzed using the 
+to the NLO cross section and generate events. These events are analysed using the 
 Rivet library and stored in a Root NTuple file called @kbd{NTuple_B-like.root}. 
 We will use this NTuple later to compute an NLO uncertainty band.
 
@@ -79,7 +79,7 @@ is computed using
 @verbatim
   Sherpa -f Sherpa.R-like.yaml
 @end verbatim
-Events are generated, analyzed by Rivet and stored in the Root NTuple file
+Events are generated, analysed by Rivet and stored in the Root NTuple file
 @kbd{NTuple_R-like.root}.
 
 The two analyses of events with Born-like and real-emission-like kinematics

@@ -1,13 +1,13 @@
 @node Matrix Element values through Python interface
-@subsection Computing matrix elements for idividual phase space points using the Python Interface
+@subsection Computing matrix elements for individual phase space points using the Python Interface
 Sherpa's Python interface (see @ref{Python Interface}) can be used to
-compute matrix elemtents for individual phase space points.  Access to a
+compute matrix elements for individual phase space points.  Access to a
 designated class ``MEProcess'' is provided by interface to compute
 matrix elements as illustrated in the example script.
 
 Please note that the process in the script must be compatible with the one
-specified in the Sherpa config file in the working directory. A random phase
-space point for the process of interes can be generated as shown in the
+specified in the Sherpa configuration file in the working directory. A random phase
+space point for the process of interest can be generated as shown in the
 example.
 
 If AMEGIC++ is used as the matrix element generator, executing the
@@ -22,7 +22,7 @@ be executed again in order to obtain the matrix element.
 @end example
 
 @node Matrix Element values through C++ interface
-@subsection Computing matrix elements for idividual phase space points using the C++ Interface
+@subsection Computing matrix elements for individual phase space points using the C++ Interface
 @cindex NUMBER_OF_POINTS
 @cindex MOMENTA_DATA_FILE
 
@@ -36,7 +36,7 @@ then run typing (note: the @code{LD_LIBRARY_PATH} must be set to include
 ./test <options>
 @end verbatim
 
-where the usual options for Sherpa are passed. An example config file, giving
+where the usual options for Sherpa are passed. An example configuration file, giving
 both the process and the requested phase space points looks like
 
 @example

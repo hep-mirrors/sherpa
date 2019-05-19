@@ -1,52 +1,29 @@
-# general settings
-EVENTS: 1M
-
-# tags for process setup and scale variations
-TAGS: {
-  QCUT: 30,
-  FSF: 1.0,
-  RSF: 1.0,
-  QSF: 1.0,
-  NJET: 3,
-  LOOPGEN: OpenLoops
-  }
-
-# scales
-SCALES: METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
-
-# me generator settings
-ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
-EVENT_GENERATION_MODE: Weighted
-METS: { CLUSTER_MODE: 16 }
-
 # collider setup
 BEAMS: 2212
 BEAM_ENERGIES: 6500
 
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+METS: { CLUSTER_MODE: 16 }
+
 PROCESSES:
-  - {
-    Process: "93 93 -> 90 90 90 90 93{1}",
-    CKKW: $(QCUT),
-    Order: {QCD: Any, EW: 4},
-    4-5: {
-      NLO_QCD_Mode: MC@NLO,
-      ME_Generator: Amegic,
-      RS_ME_Generator: Comix,
-      Loop_Generator: $(LOOPGEN)
-      },
-    5-8: {
-      Integration_Error: 0.05
-      }
-    }
+- Process: 93 93 -> 90 90 90 90 93{3}
+  Order: {QCD: 0, EW: 4}
+  CKKW: 30
+  2->4-5:
+    NLO_QCD_Mode: MC@NLO
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops
+  2->5-7:
+    Integration_Error: 0.05
 
 SELECTORS:
-  - {
-    Type: VariableSelector,
-    Variable: PT,
-    Flavs: 90,
-    Ranges: [[5.0, E_CMS], [5.0, E_CMS]],
-    Ordering: "[PT_UP]"
-    }
-  - [Mass, 11, -11, 10.0, E_CMS]
-  - [Mass, 13, -13, 10.0, E_CMS]
-  - [Mass, 15, -15, 10.0, E_CMS]
+- Type: VariableSelector
+  Variable: PT
+  Flavs: 90
+  Ranges: [[5.0, E_CMS], [5.0, E_CMS]]
+  Ordering: "[PT_UP]"
+- [Mass, 11, -11, 10.0, E_CMS]
+- [Mass, 13, -13, 10.0, E_CMS]
+- [Mass, 15, -15, 10.0, E_CMS]

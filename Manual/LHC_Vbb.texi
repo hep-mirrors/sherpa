@@ -24,7 +24,7 @@ Things to notice:
   Note that Sherpa must be configured with option @option{--enable-fastjet}, see
   @ref{Jet selectors}. We require two b-jets, indicated by the @option{2} 
   at the end of the @option{FastjetFinder} options.
-@item Four-flavour PDF's are used to comply with the calculational setup.
+@item Four-flavour PDFs are used to comply with the calculational setup.
 @end itemize
 @end ignore
 
@@ -50,5 +50,5 @@ Things to notice:
   Note that Sherpa must be configured with option @option{--enable-fastjet}, see
   @ref{Jet selectors}. We require two b-jets, indicated by @option{Nb: 2}
   at the end of the @option{FastjetFinder} options.
-@item Four-flavour PDF's are used to comply with the calculational setup.
+@item Four-flavour PDF are used to comply with the calculational setup.
 @end itemize

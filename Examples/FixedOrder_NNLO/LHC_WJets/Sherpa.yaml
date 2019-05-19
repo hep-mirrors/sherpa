@@ -1,41 +1,41 @@
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
 EVENTS: 100M
-TAGS: {
-  QTCUT: 1e0,
-  LGEN: BlackHat
-}
 SHERPA_LDADD: NNLOqT
 NNLOqT_FOMODE: 1
-ME_GENERATORS: [Comix, Amegic, $(LGEN)]
+ME_GENERATORS: [Comix, Amegic, BlackHat]
 EVENT_GENERATION_MODE: W
 EVENT_SEED_MODE: 3
-EW_SCHEME: 3
-PARTICLE_DATA: {
-  23: {Mass: 91.1876, Width: 2.4952},
-  24: {Mass: 80.385, Width: 2.085},
-}
-GF: 1.1663787e-5
-BEAMS: 2212
-BEAM_ENERGIES: 3500
-FRAGMENTATION: Off
-MI_HANDLER: None
+
 SCALES: VAR{max(2,Abs2(p[2]+p[3]))}
 PDF_LIBRARY: LHAPDFSherpa
 PDF_SET: MSTW2008nnlo68cl
 ALPHAS: {USE_PDF: 1}
+
+EW_SCHEME: 3
+PARTICLE_DATA:
+  23: {Mass: 91.1876, Width: 2.4952}
+  24: {Mass: 80.385, Width: 2.085}
+GF: 1.1663787e-5
+FRAGMENTATION: Off
+MI_HANDLER: None
+
 PROCESSES:
-- {
-  Process: "93 93 -> 11 -12 93{1}",
-  NLO_QCD_Mode: Fixed_Order,
-  ME_Generator: Amegic,
-  RS_ME_Generator: Comix,
-  PSI_ItMin: 100000,
-  RS_PSI_ItMin: 500000,
-  Special: "MapOff {2}",
-  KFactor: DYNNLO,
+- Process: 93 93 -> 11 -12 93{1}
+  NLO_QCD_Mode: Fixed_Order
+  ME_Generator: Amegic
+  RS_ME_Generator: Comix
+  PSI_ItMin: 100000
+  RS_PSI_ItMin: 500000
+  2->2:
+    Special: MapOff
+  KFactor: DYNNLO
   Order: {QCD: Any, EW: 2}
-  }
+
 SELECTORS:
-  - [NNLOqT, $(QTCUT)]
+- [NNLOqT, 1e0]
+
 RIVET: {
   "-a": [
     Wjets2011,
@@ -46,6 +46,7 @@ RIVET: {
     ATLAS_2010_S8919674
     ]
 }
+
 INTERNAL_ANALYSES:
   - {
     LEVEL: MENLO,

@@ -386,14 +386,19 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         double x2=p_int->ISR()->CalcX(-ampl->Leg(1)->Mom());
 
         // skip PDF ratio if high-x sanity condition not fullfilled
-        if (!IsZero(wn1) && !IsZero(wd1) && !(dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) ) {
+        auto validratio1 = (!IsZero(wn1) && !IsZero(wd1));
+        if (validratio1 && x1 < 1.0)
+          validratio1 = !(dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2));
+        if (validratio1) {
           csi.AddWeight(wn1 / wd1);
         } else {
           msg_Debugging() << "invalid pdf ratio in beam 0," << std::endl;
           msg_Debugging() << "skip weight." << std::endl;
         }
-
-        if (!IsZero(wn2) && !IsZero(wd2) && !(dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) ) {
+        auto validratio2 = (!IsZero(wn2) && !IsZero(wd2));
+        if (validratio2 && x2 < 1.0)
+          validratio2 = !(dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2));
+        if (validratio2) {
           csi.AddWeight(wn2 / wd2);
         } else {
           msg_Debugging() << "invalid pdf ratio in beam 1," << std::endl;

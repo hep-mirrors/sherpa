@@ -1,36 +1,28 @@
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
 EVENTS: 0
 MI_HANDLER: None
-ME_GENERATORS: [Comix, Amegic, $(LOOPGEN)]
-TAGS: {
-  LOOPGEN: Dummy,
-  NJET: 4,
-  QCUT: 20
-}
-OL_PARAMETERS: {
+ME_GENERATORS: [Comix, Amegic, Dummy]
+OL_PARAMETERS:
   preset: 2
-}
-BEAMS: 2212
-BEAM_ENERGIES: 4000
 SCALES: SMETS
 PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
 PSI_ITMIN_BY_NODE: 10
 PSI_STOPOPT: 5
 PSI_ASYNC: 1
+
 PROCESSES:
-- {
-  Process: "93 93 -> 11 -12 93{$(NJET)}",
-  Order: {QCD: Any, EW: 2},
-  CKKW: $(QCUT),
-  Loop_Generator: $(LOOPGEN),
-  2-4: {
-    NLO_QCD_Mode: MC@NLO,
-    ME_Generator: Amegic,
+- Process: 93 93 -> 11 -12 93{4}
+  Order: {QCD: Any, EW: 2}
+  CKKW: 20
+  Loop_Generator: Dummy
+  2->2-4:
+    NLO_QCD_Mode: MC@NLO
+    ME_Generator: Amegic
     RS_ME_Generator: Comix
-    },
-  6-8: {
-    Max_N_Quarks: 4,
+  2->6-8:
+    Max_N_Quarks: 4
     Max_Epsilon: 0.01
-    }
-}
 SELECTORS:
 - [Mass, 90, 91, 2.0, E_CMS]

@@ -619,7 +619,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
 void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
   Scoped_Settings proc,
   Single_Process_List_Args& args,
-  const std::string& rawrange) const
+  std::string rawrange) const
 {
   // iterate over settings in each process that can be either given for all
   // final-state multiplicities or only for some final-state multiplicities;
@@ -630,11 +630,19 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
   // multiplicities; ReadProcessSettings will recursively read all top-level
   // and scoped settings
 
-  // parse final-state multiplicity range
-  // format: either single unsigned int or a pair of ints connected by a '-'
+  // parse final-state multiplicity range, allowed syntaxes are:
+  // - single final-state multiplicity, e.g. "2"
+  // - final-state multiplicity range, e.g. "2-4"
+  // - one of the above, but prefixed with "x->", where x is any integer;
+  //   this can be used to be more explicit, i.e. by writing "2->2-4", but note
+  //   that the number before "->" is completely ignored by the parsing below
+  // finally, the wildcard "-" stands for all multis, for which we leave
+  // begin=0 and end=\infty
   auto range = std::make_pair(0, std::numeric_limits<size_t>::max());
-  // the wildcard stands for all multis, for which we leave begin=end=0
   if (rawrange != "-") {
+    const auto ranglepos = rawrange.find('>');
+    if (ranglepos != std::string::npos)
+      rawrange = rawrange.substr(ranglepos + 1);
     const auto delimiterpos = rawrange.find('-');
     range.first = std::stoul(rawrange.substr(0, delimiterpos));
     if (delimiterpos == std::string::npos)
