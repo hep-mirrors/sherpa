@@ -25,6 +25,7 @@ void Soft_Cluster_Handler::Init() {
   m_open_threshold     = (2.*p_constituents->MinMass()+
 			  hadpars->Get("open_threshold"));
   m_chi                = hadpars->Get("mass_exponent");
+  m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_ktselector.Init(false);
 }
 
@@ -59,7 +60,17 @@ bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
+  if (force &&
+      (*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+    return TreatTwoGluons(cluster);
+  }
   FillFlavours(cluster);
+  if (IsEqual(m_mass,p_singletransitions->GetLightestMass(m_flavs),1.e-6)) {
+    m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
+    Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),false);
+    p_hadrons->push_back(part);
+    return 1;
+  }
   if (!force) {
     switch (CheckOutsideRange()) {
     case -1: return -1;
@@ -83,7 +94,7 @@ int Soft_Cluster_Handler::CheckOutsideRange() {
   // cluster too light for transition and decay --
   // maybe just force off-shell hadron?
   // at the moment this leads to hadronization throwing a new event.
-  if (m_mass<=Min(mass_single,mass_double)) return -1;
+  if (m_mass<=0.999999*Min(mass_single,mass_double)) return -1;
   double mass_dec =
     p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
     p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_light); 
@@ -118,7 +129,7 @@ bool Soft_Cluster_Handler::TreatSingletCluster() {
     m_hads[i]   = Flavour(kf_photon);
     m_hads[1-i] = Flavour(kf_pi);
   }
-  // below two-pion threshold
+  // above two-pion threshold
   else {
     if (ran->Get()>0.66) {
       m_hads[0] = m_hads[1] = Flavour(kf_pi);
@@ -143,19 +154,9 @@ void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
 int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  //if (m_forceddecay && decweight>0.) {
-  //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
-  //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
-  //	     <<"(forced = "<<m_forceddecay<<")\n";
-  //}
   if (decweight>0. && FixKinematics()) return 1;
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();
-  //if (m_forceddecay && radweight>0.) {
-  //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
-  //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
-  //	     <<"(forced = "<<m_forceddecay<<")\n";
-  //}
   if (radweight>0. && FixKinematics()) return 1;
   if (m_flavs.first==m_flavs.second.Bar() && TreatSingletCluster()) return 1;
   return -1;
@@ -183,9 +184,23 @@ bool Soft_Cluster_Handler::FixKinematics() {
       return false;
     }
   }
-  bool   lead = (*p_cluster)[0]->IsLeading() || (*p_cluster)[0]->IsLeading();
-  double pt   = m_ktselector(p1,lead?1.:m_ktfac);
-  double pl    = sqrt(p1*p1-pt*pt);
+  double ktmax = (m_ktorder?
+		  Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),(*p_cluster)[1]->KT2_Max()))):p1);
+  //double ktfac = 1.;
+  //m_ktfac*Max(1.,M2/(4.*p_constituents->Mass(m_flavs.first)*
+  //		    p_constituents->Mass(m_flavs.second)));
+  double pt, pl;
+  bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
+  if (true || lead) {
+    pt = m_ktselector(ktmax,1.);
+    pl = sqrt(p1*p1-pt*pt);
+  }
+  else {
+    double cost = 1.-2.*ran->Get();
+    double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
+    pt = p1*sint;
+    pl = p1*cost;
+  }
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
@@ -317,8 +332,6 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
-    //msg_Out()<<"   "<<residual.first<<" + "<<residual.second
-    //	     <<" --> "<<trans->rbegin()->first<<"\n";
   }
   if (kf12==kf21) {
     residual.first = two2; residual.second = one1;
@@ -388,7 +401,7 @@ PhaseSpace(const double & m2,const double & m3,const bool heavyB) {
   double ps  = sqrt(sqr(m_mass2-m22-m32)-4.*m22*m32)/(8.*M_PI*m_mass2);
   // extra weight to possible steer away from phase space only ... may give
   // preference to higher or lower mass pairs
-  double mwt = pow(m2/m_mass,m_chi) + pow(m3/m_mass,m_chi);
+  double mwt = m_chi<1.e-3?1.:pow(m2/m_mass,m_chi) + pow(m3/m_mass,m_chi);
   return ps * mwt;
 }
 

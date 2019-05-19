@@ -355,6 +355,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
+  msg_Out()<<METHOD<<":\n"<<pi<<"\n";
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));

@@ -69,9 +69,10 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 
   Return_Value::code success;
   switch (int(ExtractSinglets(bloblist))) {
-    case int(Return_Value::Success) : break;
-    case int(Return_Value::Nothing) : return Return_Value::Nothing;
-    case int(Return_Value::Error)   : return Return_Value::Error;
+    case int(Return_Value::Success)   : break;
+    case int(Return_Value::New_Event) : return Return_Value::New_Event;
+    case int(Return_Value::Nothing)   : return Return_Value::Nothing;
+    case int(Return_Value::Error)     : return Return_Value::Error;
     default :
       msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		 <<"   ExtractSinglets yields unknown return value."<<std::endl
@@ -156,8 +157,10 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	    part->Info()!='G' && part->Info()!='I') {
 	  if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	    if (part->GetFlow(1)==part->GetFlow(2)) {
-	      msg_Error()<<"Error in "<<METHOD<<":\n"
+	      msg_Error()<<"Error in "<<METHOD<<" for colour = "
+			 <<part->GetFlow(1)<<" [part = "<<part->Number()<<"]:\n"
 			 <<"   Blob with funny colour assignements.\n"
+			 <<(*bloblist)<<"\n"
 			 <<"   Will demand new event and hope for the best.\n";
 	      return Return_Value::New_Event;
 	    }

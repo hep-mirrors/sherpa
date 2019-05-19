@@ -16,12 +16,13 @@ void Z_Selector::Init(Splitter_Base * splitterbase) {
 
 Z_Selector::~Z_Selector() {}
 
-double Z_Selector::operator()(const double & zmin,const double & zmax) {
+double Z_Selector::operator()(const double & zmin,const double & zmax,
+			      const unsigned int & cnt) {
   if (p_splitterbase==NULL) return zmin+ran->Get()*(zmax-zmin);
   double z(-1.);
   do {
     z = zmin+ran->Get()*(zmax-zmin);
-  } while (p_splitterbase->WeightFunction(z,zmin,zmax)<ran->Get());
+  } while (p_splitterbase->WeightFunction(z,zmin,zmax,cnt)<ran->Get());
   return z;
 }
 

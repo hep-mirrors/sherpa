@@ -23,7 +23,6 @@ Ahadic::Ahadic(string shower) :
 {  
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
-
   m_beamparticles.Init();
   m_softclusters.Init();
   m_singletchecker.Init();
@@ -151,6 +150,7 @@ bool Ahadic::DecayGluons() {
       return false;
     }
   }
+  //msg_Out()<<m_cluster_list<<"\n";
   return true;
 }
 

@@ -21,7 +21,7 @@ namespace AHADIC {
     double       m_mass2, m_mass;
     Flavour_Pair m_flavs;
 
-    bool m_forceddecay;
+    bool m_forceddecay, m_ktorder;
     
     ATOOLS::Vec4D   m_moms[2];
     ATOOLS::Flavour m_hads[2];

@@ -130,7 +130,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
       //if (scale=1.e-3)
-      //msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+      //msg_Error()<<"Warning: "<<METHOD
+      //<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckDIS(beam) && scale>0.);
@@ -194,7 +195,8 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     maxnum--;
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
-      msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+      msg_Error()<<"Warning: "<<METHOD
+		 <<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckHH() && scale>0.);

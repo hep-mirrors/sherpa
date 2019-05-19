@@ -20,9 +20,6 @@ namespace AHADIC {
     static long int s_AHAclusters;
   };
 
-  typedef std::map<std::string,double> StringDoubleMap;
-  typedef StringDoubleMap::iterator    SDiter;
-
   class Hadronisation_Parameters {
   private:
     int                  m_shower;
@@ -31,25 +28,23 @@ namespace AHADIC {
     Single_Transitions * p_stransitions;
     Double_Transitions * p_dtransitions;
     
-    StringDoubleMap      m_parametermap;
-    SDiter               m_piter;
-    bool                 m_ana;
+    std::map<std::string,int>    m_switchmap;
+    std::map<std::string,double> m_parametermap;
     
     void ReadParameters();
     void ReadGeneralSwitches();
     void ReadMassParameters();
     void ReadPoppingParameters();
     void ReadMesonWeights();
-    void ReadGluonSplittingParameters();
-    void ReadClusterDecayParameters();
+    void ReadSplittingParameters();
     void ReadClusterToMesonPSParameters();
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();
 
     void Init(std::string);
-    double Get(std::string keyword);
-    const bool & AnaOn() const { return m_ana; }
+    const double Get(std::string keyword) const;
+    const int    Switch(std::string keyword) const;
 
     Constituents          * GetConstituents()       { return p_constituents; }
     //All_Hadron_Multiplets * GetMultiplets()         { return p_multiplets; }

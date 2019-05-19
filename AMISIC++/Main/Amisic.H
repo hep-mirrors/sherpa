@@ -44,6 +44,7 @@ namespace AMISIC {
   */
   class Amisic: public ATOOLS::File_IO_Base, ATOOLS::Mass_Selector {
   private:
+    double m_sigmaND_norm;
     double m_b, m_bfac, m_residualE1, m_residualE2, m_pt2;
 
     MI_Processes           * p_processes;

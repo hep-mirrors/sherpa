@@ -28,7 +28,8 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
     }
   }
   Settings& s = Settings::GetMainSettings();
-  m_hardveto = s["MPI_PT_MAX"].SetDefault(1e12).Get<double>();
+  m_hardveto  = s["MPI_PT_MAX"].SetDefault(1e12).Get<double>();
+  m_ptmax_fac = s["MPI_PT_Max_Fac"].SetDefault(1.).Get<double>();
   ResetIS();
 }
 
@@ -160,9 +161,10 @@ bool Multiple_Interactions::InitNewEvent() {
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
-    if (!IsZero(ptfac-ptren)) m_ptmax = sqrt(sqr(ptfac)/4.+4.*sqr(ptren));
-    else m_ptmax = ptfac/2.;
-    p_mihandler->InitialiseMPIs(m_ptmax);
+    //msg_Out()<<METHOD<<": muF, R = "<<ptfac<<", "<<ptren<<" from \n"<<(*p_lastblob)<<"\n";
+    m_ptmax = ptfac/4.;
+    if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
+    p_mihandler->InitialiseMPIs(m_ptmax_fac*m_ptmax);
     m_newevent = false;
     return true;
   }
