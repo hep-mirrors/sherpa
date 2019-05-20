@@ -31,7 +31,7 @@ HARD_DECAYS:
     24 -> 12 -11: {Status: 2}
     24 -> 14 -13: {Status: 2}
     24 -> 16 -15: {Status: 2}
-    23 -> 15 -15: {Status: 2},
+    23 -> 15 -15: {Status: 2}
     -24 -> -12 11: {Status: 2}
     -24 -> -14 13: {Status: 2}
     -24 -> -16 15: {Status: 2}
