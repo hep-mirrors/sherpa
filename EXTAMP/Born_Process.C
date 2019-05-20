@@ -11,7 +11,7 @@ namespace EXTAMP {
   {
     PHASIC::External_ME_Args args (pi.m_ii.GetExternal(),
 				   pi.m_fi.GetExternal(),
-				   pi.m_borncpl);
+				   pi.m_maxcpl);
     p_born_me = 
       External_ME_Interface::GetExternalBornME(args);
     p_born_me->SetCouplings(m_cpls);

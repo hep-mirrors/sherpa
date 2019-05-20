@@ -677,7 +677,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order"
         || subkey == "Max_Order"
         || subkey == "Min_Order"
-        || subkey == "Born_Order"
         || subkey == "NLO_Order") {
       // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
@@ -688,7 +687,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order")                   ExtractMPvalues(value, range, nf, args.pbi.m_vcpl);
     else if (subkey == "Max_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmaxcpl);
     else if (subkey == "Min_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmincpl);
-    else if (subkey == "Born_Order")         ExtractMPvalues(value, range, nf, args.pbi.m_vborncpl);
     else if (subkey == "Scales")             ExtractMPvalues(value, range, nf, args.pbi.m_vscale);
     else if (subkey == "Couplings")          ExtractMPvalues(value, range, nf, args.pbi.m_vcoupl);
     else if (subkey == "KFactor")            ExtractMPvalues(value, range, nf, args.pbi.m_vkfac);
@@ -825,9 +823,6 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vmincpl,nfs,pnid,ds)) {
 	  cpi.m_mincpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(args.pbi.m_vborncpl,nfs,pnid,ds)) {
-	  cpi.m_borncpl = ToVector<double>(ds);
-	}
 	if (GetMPvalue(args.pbi.m_vcpl,nfs,pnid,ds)) {
 	  cpi.m_maxcpl=ToVector<double>(ds);
 	  cpi.m_mincpl=cpi.m_maxcpl;
@@ -837,19 +832,12 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	      cpi.m_maxcpl[i]=99;
 	    }
 	}
+	// automatically increase QCD coupling for QCD multijet merging
 	if (cpi.m_ckkw&1) {
 	  cpi.m_mincpl[0]+=aoqcd;
 	  cpi.m_maxcpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
-
-	// If "Born_Order" is specified, we set all max/min orders
-	// here accordingly. This is for the interface to external
-	// amplitudes, where the user has to specify coupling orders
-	// for the born process of all multiplicities explicitly.
-	for(size_t i (0); i<cpi.m_borncpl.size(); i++)
-	  if(cpi.m_borncpl[i])
-	    cpi.m_mincpl[i]=cpi.m_maxcpl[i]=cpi.m_borncpl[i];
 
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));

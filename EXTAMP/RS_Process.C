@@ -19,7 +19,7 @@ namespace EXTAMP {
   RS_Process::RS_Process(const PHASIC::Process_Info& pi) : Process(pi) {
     DEBUG_FUNC(pi);
 
-    std::vector<double> orders = pi.m_borncpl; orders[0] += 1;
+    std::vector<double> orders = pi.m_maxcpl; orders[0] += 1;
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
 				  pi.m_fi.GetExternal(),
 				  orders);
