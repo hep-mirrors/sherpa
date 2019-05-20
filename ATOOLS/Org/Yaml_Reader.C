@@ -19,7 +19,15 @@ Yaml_Reader::Yaml_Reader(const std::string& filename)
 {
   assert(filename != "");
   std::ifstream file(filename);
-  Parse(file);
+  try {
+    Parse(file);
+  } catch (const std::exception& e) {
+    MyStrStream str;
+    str << filename << " appears to contain a syntax ";
+    // append yaml-cpp error wihtout the "yaml-cpp: " prefix
+    str << std::string{e.what()}.substr(10);
+    THROW(fatal_error, str.str());
+  }
 }
 
 void Yaml_Reader::Parse(std::istream& s)

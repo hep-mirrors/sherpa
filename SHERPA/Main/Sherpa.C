@@ -41,9 +41,13 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Terminator_Object_Handler();
   ATOOLS::msg = new Message();
+  // rpa should be constructed before initializing the main settings, since the
+  // latter might throw an exception and rpa would be involved in terminating
+  // the program then; however, do not call its Init method yet, because this
+  // in turn needs the Settings to be initialized
+  ATOOLS::rpa = new Run_Parameter();
   Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran = new Random(1234);
-  ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
   m_trials = 0;
   m_debuginterval = 0;
