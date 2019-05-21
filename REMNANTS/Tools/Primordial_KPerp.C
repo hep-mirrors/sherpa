@@ -111,9 +111,9 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
       exit(1);
     }
   } while (kt<0. || kt>ktmax);
-  // Add angles and construct the vector
-  double cosphi = cos(2.*M_PI*ran->Get()), sinphi = sqrt(1.-cosphi*cosphi);
-  return kt * Vec4D(0.,cosphi,sinphi,0.);
+  // Add angle and construct the vector
+  const auto phi = 2*M_PI*ran->Get();
+  return kt * Vec4D(0., cos(phi), sin(phi), 0.);
 }
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
