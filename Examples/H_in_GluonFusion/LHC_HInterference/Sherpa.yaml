@@ -12,7 +12,7 @@ SCALES: VAR{Abs2(p[2]+p[3])}
 # physics parameters
 PARTICLE_DATA:
   4:  {Yukawa: 1.42}
-  5:  {Yukawa: 4.8}
+  5:  {Yukawa: 4.92}
   15: {Yukawa: 1.777}
 EW_SCHEME: 3
 RUN_MASS_BELOW_POLE: 1

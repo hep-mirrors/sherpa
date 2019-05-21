@@ -44,7 +44,7 @@ void B_K_Semileptonic::Calculate(const Vec4D_Vector& _p, bool m_anti)
   double s     = (_p[p_i[2]]+_p[p_i[3]]).Abs2();
   double shat  = s/sqr(p_masses[0]);
   
-  double m_bpole = 4.8;
+  double m_bpole = Flavour(kf_b).Mass(true);
   double mu = m_bpole;
   double alphas = s_model->ScalarFunction("alpha_S",mu);
   m_mb = m_bpole*(1.-4./3.*alphas/M_PI);
@@ -131,7 +131,7 @@ Complex B_K_Semileptonic::sehgalld(double sHat) {
 Complex B_K_Semileptonic::g(double shat)
 {
   Complex i = Complex(0.0,1.0);
-  double mu = 4.8;
+  double mu = Flavour(kf_b).Mass(true);
   double y = 4.0/shat;  
   return -8.0/9.0*log(p_masses[0]/mu)+8.0/27.0+4.0/9.0*y-2.0/9.0*(2.0+y)
     *sqrt(abs(1.0-y))*(Theta(1.0-y)*(log(abs(
@@ -143,7 +143,7 @@ Complex B_K_Semileptonic::g(double shat)
 Complex B_K_Semileptonic::g0(double shat)
 {
   Complex i = Complex(0.0,1.0);
-  double mu = 4.8;
+  double mu = Flavour(kf_b).Mass(true);
   return 8.0/27.0-4.0/9.0*log(shat*p_masses[0]/mu)+4.0/9.0*i*M_PI;
 }
 
