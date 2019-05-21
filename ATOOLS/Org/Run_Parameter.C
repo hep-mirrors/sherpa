@@ -201,6 +201,7 @@ void Run_Parameter::RegisterDefaults()
 
   s["CITATION_DEPTH"].SetDefault(1);
   s["MPI_SEED_MODE"].SetDefault(0);
+  s["MPI_EVENT_MODE"].SetDefault(0);
 
   s["RLIMIT_BY_CPU"].SetDefault(false);
   s["STACK_TRACE"].SetDefault(1);
@@ -308,6 +309,10 @@ void Run_Parameter::Init()
 
 #ifdef USING__MPI
   int rank=mpi->Rank();
+  int size=mpi->Size();
+  if (s["MPI_EVENT_MODE"].Get<int>()==1) {
+    gen.m_nevents = (gen.m_nevents%size == 0) ? (gen.m_nevents/size) : (gen.m_nevents/size+1);
+  }
   if (s["MPI_SEED_MODE"].Get<int>()==0) {
     msg_Info()<<METHOD<<"(): Seed mode '*'\n";
     for (int i(0);i<4;++i)
