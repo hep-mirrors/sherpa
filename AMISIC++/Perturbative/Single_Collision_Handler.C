@@ -83,6 +83,7 @@ Blob * Single_Collision_Handler::MakeBlob() {
   blob->SetType(btp::Hard_Collision);
   blob->SetStatus(blob_status::needs_showers |
 		  blob_status::needs_beams |
+		  blob_status::needs_reconnections |
 		  blob_status::needs_hadronization);
   blob->SetId();
   blob->AddData("Weight",new Blob_Data<double>(1.0));

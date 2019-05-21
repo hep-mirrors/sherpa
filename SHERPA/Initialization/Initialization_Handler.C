@@ -3,6 +3,7 @@
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
@@ -275,6 +276,7 @@ Initialization_Handler::~Initialization_Handler()
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
@@ -540,6 +542,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
@@ -918,11 +921,18 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
   if (p_beamremnants)  delete p_beamremnants;
-  p_beamremnants = 
-    new Beam_Remnant_Handler(p_beamspectra,
-			     p_remnants,
-			     p_softcollisions);
+  p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
+					    p_remnants,
+					    p_softcollisions);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
+  return 1;
+}
+
+bool Initialization_Handler::InitializeTheColourReconnections() 
+{
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
+  p_reconnections = new Colour_Reconnection_Handler();
+  p_reconnections->Output();
   return 1;
 }
 
