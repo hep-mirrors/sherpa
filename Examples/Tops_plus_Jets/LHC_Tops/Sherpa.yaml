@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 
 # scales
 EXCLUSIVE_CLUSTER_MODE: 1
-CORE_SCALE: VAR{0.25*(sqr(172.5)+0.5*(PPerp2(p[2])+PPerp2(p[3])))}
+CORE_SCALE: TTBar
 
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
@@ -21,9 +21,6 @@ HARD_DECAYS:
 # particle properties (width of external particles of the MEs must be zero)
 PARTICLE_DATA:
   6: {Width: 0}
-
-NLO_SMEAR_THRESHOLD: 1
-NLO_SMEAR_POWER: 2
 
 PROCESSES:
 - Process: 93 93 -> 6 -6 93{3}
