@@ -89,6 +89,11 @@ Lund_Interface::Lund_Interface():
   vector<vector<int> > help;
   pysubs.msel=0;
 
+  // default hadronisation parameters
+  pydat1.parj[21-1]=0.36;
+  pydat1.parj[41-1]=0.3;
+  pydat1.parj[42-1]=0.6;
+
   Settings& s = Settings::GetMainSettings();
   ReadSettings(s, "MSUB", pysubs.msub);
   ReadSettings(s, "CKIN", pysubs.ckin);
