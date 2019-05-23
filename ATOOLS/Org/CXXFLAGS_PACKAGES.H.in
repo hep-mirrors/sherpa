@@ -61,9 +61,6 @@
 /* OpenLoops installation prefix */
 #undef OPENLOOPS_PREFIX
 
-/* Openloops provides separate access to associated contribs */
-#undef USING__OPENLOOPS__ASSOCIATED
-
 /* GoSam installation prefix */
 #undef GOSAM_PREFIX
 
