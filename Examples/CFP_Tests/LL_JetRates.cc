@@ -48,9 +48,13 @@ namespace Rivet {
 	_h_cosphi2->fill(cp2/sqrt(4.*z1z2), weight);
       }
       std::vector<double> dij2 = Cluster(jets, weight);
-      for (size_t i=0;i<min(_h_log10_d.size(),dij2.size());++i)
+      for (size_t i=0;i<min(_h_log10_d.size(),dij2.size());++i) {
 	if (dij2[dij2.size()-1-i])
 	  _h_log10_d[i]->fill(log10(dij2[dij2.size()-1-i]), weight);
+	//if (i==0 && dij2[dij2.size()-1-i]<1.e-4)
+	//cout<<"******* Gotcha *********\n"
+	//  <<"*** diff jetrate_{23} = "<<dij2[dij2.size()-1-i]<<"\n";
+      }
     }
 
     void finalize()

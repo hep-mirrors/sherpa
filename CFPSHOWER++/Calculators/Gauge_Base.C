@@ -16,7 +16,7 @@ Gauge_Base::Gauge_Base(const Kernel_Info & info) :
   m_type(info.Type()),
   p_alphaS(info.GetAlphaS()), p_alpha(info.GetAlpha()),
   m_CF(4./3.), m_CA(3.), m_TR(1./2.), m_zeta3(1.202056903159594),
-  m_charge(1.), m_cplmax(1.),
+  m_charge(1.), 
   m_muR2factor(info.MuR2Factor()), m_asfactor(info.AsFactor()), 
   m_orderA(1), m_orderB(1),
   m_swap(info.Swapped()), 
@@ -37,7 +37,6 @@ Gauge_Base::Gauge_Base(const Kernel_Info & info) :
     break;
   }
   if (p_alphaS) {
-    m_cplmax = (*p_alphaS)(4.);
     m_K1max  = K1(3.);
     m_K2max  = K2(3.);
   }

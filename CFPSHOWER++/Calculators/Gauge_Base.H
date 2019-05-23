@@ -17,7 +17,7 @@ namespace CFPSHOWER {
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
     double m_CF, m_CA, m_TR, m_zeta3;
-    double m_cplmax, m_K1max, m_K2max, m_charge;
+    double m_K1max, m_K2max, m_charge;
     double m_muR2factor, m_asfactor;
     int    m_orderA, m_orderB;
     bool   m_swap;
@@ -36,7 +36,6 @@ namespace CFPSHOWER {
     virtual double operator()(const Splitting & split);
     virtual const double K(const Splitting & split) const;
     virtual const double KMax(const Splitting & split) const;
-    virtual inline const double CplMax() { return m_cplmax; }
     virtual const double Scale(const Splitting & split) const;
     virtual const double OverEstimate(const Splitting & split) const;
     virtual inline const double Charge(const double & scale=0.) const {

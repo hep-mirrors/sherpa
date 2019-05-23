@@ -36,7 +36,7 @@ namespace CFPSHOWER {
       if (p_weight) delete p_weight;
       s_cnt--;
     }
-    bool InitKinematics(const ATOOLS::Mass_Selector * ms);
+    void InitKinematics(const ATOOLS::Mass_Selector * ms);
     
     inline void SetKinScheme(const int & kin)   { m_kinscheme = kin; }
     inline const int & KinScheme() const        { return m_kinscheme; }

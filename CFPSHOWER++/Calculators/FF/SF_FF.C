@@ -16,6 +16,7 @@ double SF_FF::Jacobean(const Splitting & split) const {
 }
 
 bool SF_FF::InitKinematics(Splitting & split) const {
+  if (sqrt(split.sijk())<sqrt(split.mi2())+sqrt(split.mj2())+sqrt(split.mk2())) return false;
   split.SetY(split.T() / (split.Q2() * (1.-split.Z())));
   split.SetX((split.Z()-split.Y()) / (1.-split.Y()));
   return true;

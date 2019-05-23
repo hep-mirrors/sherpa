@@ -89,9 +89,9 @@ bool Shower::Evolve(Configuration * config) {
 	  (*pit)->ClearWeights();
 	}
 	delete p_winner;
-	return false;
       }
     }
+    //msg_Out()<<(*p_config)<<"\n";
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
   //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
@@ -113,14 +113,16 @@ void Shower::AddWeight(const double & t) {
 }
 
 bool Shower::Evolve(Parton * splitter) {
-  // Initialise the integrated splitting kernel, summed over all spectators (at least one
-  // in QCD, and maximally two).  If splittings are kinematically allowed, the sum will be
-  // larger than one and we will generate a test splitting through GenerateTestSplitting().
-  // This test includes splitting parameters t and z, plus corresponding kinematics information
-  // (y, z, as well as all masses involved), from which we also construct the four-momenta of
-  // the decay products and the spectator.  The kinematics will subsequently be fully realised
-  // in PerformSplitting(), by adding the decay products to the configuration, by switching
-  // off the splitter, and by updating the spectator kinematics and the colour connections.
+  // Initialise the integrated splitting kernel, summed over all spectators (at
+  // least one in QCD, and maximally two).  If splittings are kinematically allowed,
+  // the sum will be larger than one and we will generate a test splitting through
+  // GenerateTestSplitting().  This test includes splitting parameters t and z,
+  // plus corresponding kinematics information (y, z, as well as all masses
+  // involved), from which we also construct the four-momenta of the decay products
+  // and the spectator.  The kinematics will subsequently be fully realised
+  // in PerformSplitting(), by adding the decay products to the configuration, by
+  // switching off the splitter, and by updating the spectator kinematics and the
+  // colour connections.
   if (splitter->GetSpectators()->size()<=0) return false;
   bool success = false;
   //msg_Out()<<"#########################################################\n"
@@ -138,7 +140,7 @@ bool Shower::Evolve(Parton * splitter) {
       // 1. the t of the current splitting is larger than the winner to date.
       //    In this case, we delete the winner and replace it with the current trial
       //    splitting (this should become obsolete now).
-      // 2. the t of the current splittiere is below the current winner's t.  Then
+      // 2. the t of the current splitter is below the current winner's t.  Then
       //    we just delete the current splitting.  
       if      (p_winner==NULL)             p_winner = split;
       else if (split->T() > p_winner->T()) { delete p_winner; p_winner = split; }
@@ -168,7 +170,8 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
     // and the flavour of the splitter.  Initialise a container "Splitting" for the
     // information defining the potential splitting.
     kernel_type::code type = GetCode((splitter->Beam()>0),(spectator->Beam()>0));
-    map<Flavour, Kernels *>::iterator kit = m_kernels[int(type)].find(splitter->Flav());
+    map<Flavour, Kernels *>::iterator kit =
+      m_kernels[int(type)].find(splitter->Flav());
     if (kit==m_kernels[int(type)].end()) {
       //msg_Out()<<"  Type not found.  Add 0.\n";
       //return 0.;
@@ -178,7 +181,9 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
       Kernels * kernels = kit->second;
       if (kernels) kernels->CalcIntegrals(split,p_msel);
       sum                 += kernels->Integral();
-      //msg_Out()<<METHOD<<"(type = "<<type<<", int = "<<kernels->Integral()<<") "
+      //msg_Out()<<"#########################################################\n"
+      //       <<"### init integrals(type = "<<type<<", int = "<<kernels->Integral()<<") "
+      //       <<"from t0 = "<<split.T0()<<" "
       //       <<"for \n"<<(*splitter)<<(*spectator);
       m_dipoles[spectator] = kernels; 
     }
@@ -208,7 +213,8 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
     }
   }
   //msg_Out()<<"#########################################################\n"
-  //	   <<"### start evolution with t = "<<t<<", t_0 = "<<t0<<", sum = "<<sum<<".\n";
+  //	   <<"### start evolution with t = "<<t<<", t_0 = "<<t0<<", "
+  //	   <<"sum = "<<sum<<".\n";
   while (t>t0) {
     double random = ran->Get();
     t *= exp(log(random)/sum);
@@ -224,8 +230,8 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
       if (disc<=0 && kernels->SelectOne()) {
 	Splitting * split = new Splitting(splitter,spectator,t,t0);
 	split->SetKinScheme(m_kinscheme);
-	// For a valid evolution parameter t, select a kernel according to the overestimated
-	// integral and attach the kernel to the splitting information
+	// For a valid evolution parameter t, select a kernel according to the
+	// overestimated integral and attach the kernel to the splitting information
 	Kernel * kernel   = kernels->GetSelected();
 	//msg_Out()<<" ### next trial t = "<<sqrt(t)<<", with spectator "
 	//	 <<spectator->Id()<<", Q2 = "<<split->Q2()<<", sum = "<<sum<<", "
@@ -362,8 +368,8 @@ bool Shower::InitializeKernels(MODEL::Model_Base * const model) {
 
 void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
 				   std::set<FlavourTriplet> & kernel_flavours) {
-  // At LO only 3-particle vertices are allowed and we keep track of such configurations
-  // only in the kernel_flavours set.  
+  // At LO only 3-particle vertices are allowed and we keep track of such
+  // configurations only in the kernel_flavours set.  
   if (vertex->NLegs()>3) return;
   FlavourTriplet orig(vertex->in);
   if (kernel_flavours.find(orig)!=kernel_flavours.end()) return;
@@ -371,17 +377,18 @@ void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
   // struct, which carries information about:
   // - the flavours, organized in the FlavourTriplet orig (a vector of flavours with
   //   3 entries),
-  // - their configuration for splitter/spectator in the kernel_type struct (FF, FI, IF,
-  //   and II)
+  // - their configuration for splitter/spectator in the kernel_type struct (FF,
+  //   FI, IF, and II)
   // - the vertex (which may carries more information for non-QCD interactions)
   // - pointers to alphaS and alpha(QED)
   // - whether the interaction is "swapped" (example: q->qg vs. q->gq)
   // - to be implemented: order information, masses of partiles, etc..
-  // Initialised kernels are organised in 4 maps (one for each of the splitter/spectator
-  // configuration), connecting splitting flavours with all possible kernels.  In QCD
-  // this means, for each quark there will be two kernels: q->qg and q->gq, and for
-  // gluons we will have two g->gg splittings (one for the 1/z and one for the 1/(1-z)
-  // pole, captured with "swapped") plus g->q qbar and g->qbar q for six quark flavours.
+  // Initialised kernels are organised in 4 maps (one for each of the
+  // splitter/spectator configuration), connecting splitting flavours with all
+  // possible kernels.  In QCD this means, for each quark there will be two kernels:
+  // q->qg and q->gq, and for gluons we will have two g->gg splittings (one for
+  // the 1/z and one for the 1/(1-z) pole, captured with "swapped") plus g->q qbar
+  // and g->qbar q for six quark flavours.
   Kernel_Info info;
   Kernel * kernel;
   kernel_flavours.insert(orig);

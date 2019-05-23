@@ -28,7 +28,7 @@
   #
   # analysis
   ANALYSIS Rivet
-  ANALYSIS_OUTPUT CFPG2_ggg_fromgqq
+  ANALYSIS_OUTPUT CFPG2_ggg
 }(run)
 
 (processes){
@@ -39,6 +39,6 @@
 
 (analysis){
   BEGIN_RIVET {
-  -a JADE_OPAL_2000_S4300807
+  -a LL_JetRates
   } END_RIVET
 }(analysis)

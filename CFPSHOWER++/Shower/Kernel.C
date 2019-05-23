@@ -42,14 +42,14 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
   // - if this is successful, calculate weights, apply hit-or-miss, attach
   //   acceptance and rejection weights to the splitter-spectator pair
   split.SetKernel(this);
+  split.InitKinematics(msel);
   p_sf->GeneratePoint(split);
-  if (!split.InitKinematics(msel)) {
+  if (!p_sf->InitKinematics(split)) {
     //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", no phase space for "
     //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
     //	     <<"Q^2 = "<<split.Q2()<<").\n";
     return false;
   }
-  p_sf->InitKinematics(split);
   if (!p_gauge->SetColours(split)) return false;
   if (p_sf->Construct(split)==1) {
     if (split.GetWeight()) { delete split.GetWeight(); } 
@@ -58,7 +58,8 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
     //	     <<" * "<<(*p_sf)(split)<<" * "<<p_sf->Jacobean(split)<<"\n";
     if ((*split.GetWeight())()>=ran->Get()) {
       //msg_Out()<<"   * add acceptance weight "
-      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", eta = "<<split.Eta()<<") "
+      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
+      //       <<"eta = "<<split.Eta()<<") "
       //       <<"from "<<(*split.GetWeight())<<" = "
       //       <<split.GetWeight()->Accept()<<"\n";
       split.GetSplitter()->AddWeight(split,true);
@@ -66,16 +67,12 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
     }
     else {
       //msg_Out()<<"   * add rejection weight "
-      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", eta = "<<split.Eta()<<") "
+      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
+      //       <<"eta = "<<split.Eta()<<") "
       //       <<"from "<<(*split.GetWeight())<<" = "
       //       <<split.GetWeight()->Reject()<<"\n";
       split.GetSplitter()->AddWeight(split,false);
     }
-  }
-  else {
-    //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", z = "<<split.Z()<<"), "
-    //	     <<"no kinematics found for "<<p_sf->Name()<<"(swap = "
-    //	     <<m_swapped<<").\n";
   }
   return false;
 }

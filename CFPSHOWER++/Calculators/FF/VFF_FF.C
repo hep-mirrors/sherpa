@@ -68,7 +68,8 @@ operator()(const Parameter_Type & info) const
 {
   if (info.Type()==kernel_type::FF &&
       (info.GetFlavs()[0].IsVector() &&
-       info.GetFlavs()[1].IsFermion() && info.GetFlavs()[1].IsAnti() && 
+       info.GetFlavs()[1].IsFermion() &&
+       info.GetFlavs()[1].IsAnti() && 
        info.GetFlavs()[2].IsFermion())) {
     return new VFF_FF(info);
   }

@@ -37,16 +37,11 @@ Splitting::Splitting(Parton * splitter,Parton * spectator,
   s_cnt++;
 }
 
-bool Splitting::InitKinematics(const ATOOLS::Mass_Selector * ms) {
+void Splitting::InitKinematics(const ATOOLS::Mass_Selector * ms) {
   SetMasses(ms);
-  m_Q2 = m_sijk = (p_splitter->Mom()+p_spectator->Mom()).Abs2();
-  if (m_mi2>100. || m_mj2>100. ||
-      p_kernel->GetSF()->GetFlavs()[1]==Flavour(kf_t) ||
-      p_kernel->GetSF()->GetFlavs()[1]==Flavour(kf_t).Bar()) {}
-  m_Q2  = dabs(m_sijk - m_mi2 - m_mj2 - m_mk2);
-  m_eta = p_splitter->XB(); 
-  //if (m_sijk<sqr(sqrt(m_mi2)+sqrt(m_mj2)+sqrt(m_mk2))) return false;
-  return true;
+  m_sijk = (p_splitter->Mom()+p_spectator->Mom()).Abs2();
+  m_Q2   = dabs(m_sijk - m_mi2 - m_mj2 - m_mk2);
+  m_eta  = p_splitter->XB(); 
 }
 
 void Splitting::SetMasses(const Mass_Selector * ms) {
