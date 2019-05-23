@@ -437,7 +437,7 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
 bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
-    Data_Reader reader(" ",";","//","=");
+    Data_Reader reader(" ",";","//");
     reader.AddWordSeparator("\t");
     reader.SetAddCommandLine(false);
     reader.SetInputPath(m_inpath);
