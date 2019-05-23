@@ -663,9 +663,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              openloops=true;
              if test -d "${OPENLOOPS_PREFIX}"; then
                 AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
-		if nm "${OPENLOOPS_PREFIX}/lib/libopenloops.so" | grep ol_evaluate_associated > /dev/null; then
-		  openloopsass=true;
-		fi
              else
                 AC_MSG_WARN(${OPENLOOPS_PREFIX} is not a valid path.);
              fi;;
@@ -675,9 +672,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$openloops" = "true" ; then
     AC_DEFINE_UNQUOTED([OPENLOOPS_PREFIX], "$OPENLOOPS_PREFIX", [Openloops installation prefix])
-  fi
-  if test "$openloopsass" = "true" ; then
-    AC_DEFINE([USING__OPENLOOPS__ASSOCIATED], "1", [Openloops provides separate access to associated contribs])
   fi
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 
