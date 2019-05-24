@@ -8,10 +8,13 @@
   BEAM_1 11 45.6; BEAM_2 -11 45.6;
   PDF_SET None;
   # shower setup
-  SHOWER_GENERATOR Dire;
   SCALES VAR{Abs2(p[2]+p[3])};
   CSS_FS_AS_FAC 1; CSS_FS_PT2MIN 1;
+  CSS_MAXEM 2;
   PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
+  ANALYSIS Rivet
+  SHOWER_GENERATOR CFP;
+  ANALYSIS_OUTPUT CFP2
 }(run);
 
 (processes){
