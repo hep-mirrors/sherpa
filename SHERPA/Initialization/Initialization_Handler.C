@@ -59,7 +59,8 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
+  p_mehandler(NULL), p_harddecays(NULL),
+  p_beamremnants(NULL), p_reconnections(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
