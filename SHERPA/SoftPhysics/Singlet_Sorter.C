@@ -52,7 +52,7 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
       msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
 		 <<"   Reset list, return Error and hope for the best.\n";
       ResetPartLists();
-      Return_Value::Error;
+      return Return_Value::Error;
     }
     m_partlists.pop_front();
   }
