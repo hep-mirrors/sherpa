@@ -52,7 +52,7 @@ If not specified differently, the directory structure after installation is orga
 
 @table @code
 @item $(prefix)/bin
-Sherpa executeable and scripts
+Sherpa executable and scripts
 
 @item $(prefix)/include
 headers for process library compilation
@@ -405,7 +405,7 @@ regularised to obtain meaningful cross sections. This is achieved by
 specifying @code{CKKW: 30} when defining the process in
 @code{Sherpa.yaml}. Simultaneously, this tag initiates the ME-PS merging
 procedure.
-To eventually obtain fully hadronized events, the @code{FRAGMENTATION}
+To eventually obtain fully hadronised events, the @code{FRAGMENTATION}
 setting
 has been left on it's default value @option{Ahadic} (and therefore been
 omitted from the steering file), which will run Sherpa's cluster hadronisation,
@@ -417,7 +417,7 @@ To run this example set-up, use the
 @example
 @code{<prefix>/bin/Sherpa} 
 @end example
-command as descibed in @ref{Running Sherpa}. Sherpa displays some output 
+command as described in @ref{Running Sherpa}. Sherpa displays some output 
 as it runs. At the start of the run, Sherpa initializes the relevant model, 
 and displays a table of particles, with their @ref{PDG codes} and some 
 properties. It also displays the @ref{Particle containers}, and their 
@@ -566,8 +566,8 @@ For the example, the process definition in @code{PROCESSES} simplifies to
 - Process: 21 1 -> 11 -11 1
   Order: {QCD: Any, EW: 2}
 @end verbatim
-with all other settings in the process block remoted.
-and under the assumption to start afresh, the initialization procedure has
+with all other settings in the process block removed.
+And under the assumption to start afresh, the initialization procedure has
 to be followed as before.
 Picking the same collider environment as in the previous
 example there are only two more changes before the @code{Sherpa.yaml} file
@@ -610,6 +610,7 @@ eg. @ref{LHC_WJets}, @ref{LHC_ZJets} or @ref{TopsJets}.
 
 @subsection Running Sherpa with AMEGIC++
 @anchor{Running Sherpa with AMEGIC++}
+@cindex AMEGIC_LIBRARY_MODE
 
 When Sherpa is run using the matrix element generator
 AMEGIC++, it is necessary to run it twice. During the first run 
@@ -617,9 +618,9 @@ AMEGIC++, it is necessary to run it twice. During the first run
 constructed and translated into helicity amplitudes. Furthermore 
 suitable phase-space mappings are produced. The amplitudes and 
 corresponding integration channels are written to disk as C++ 
-sourcecode, placed in a subdirectory called @code{Process}. The 
+source code, placed in a subdirectory called @code{Process}. The 
 initialization run is started using the standard Sherpa executable, 
-as decribed in @ref{Running Sherpa}. The relevant command is
+as described in @ref{Running Sherpa}. The relevant command is
 
 @example
 @code{<prefix>/bin/Sherpa} 
@@ -644,6 +645,12 @@ you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons install}.
 If scons was detected during the compilation of Sherpa, also makelibs uses 
 @code{scons} per default (can be forced to use @code{autotools} by 
 @kbd{./makelibs -s}.
+
+Another option is @kbd{./makelibs -m}, which creates one library per
+subprocess. This can be useful for very complex processes, in particular if the
+default combined library generation fails due to a limit on the number of
+command line arguments.  Note that this option requires that Sherpa is run with
+@code{AMEGIC_LIBRARY_MODE: 0} (default: 1).
 
 Afterwards Sherpa can be restarted using the same command as
 before. In this run (the generation run) the cross sections of the hard
@@ -705,8 +712,8 @@ event weight to unity using @code{w_norm}. The above equation then reads
 @verbatim
 <O> = w_norm/N_trial * \sum_i^n w_i(\Phi_i)/w_norm O(\Phi_i) .
 @end verbatim
-wherein @code{w_i(\Phi_i)/w_norm = 1}, ie. the sum simply counts 
-how many events pass the observable's selection criteria. If however, 
+wherein @code{w_i(\Phi_i)/w_norm = 1}, i.e. the sum simply counts 
+how many events pass the selection criteria of the observable. If however, 
 @code{PartiallyUnweighted} event weights or @code{Enhance_Factor} or 
 @code{Enhance_Observable} are used, this is no longer the case and the 
 full form needs to be used.
