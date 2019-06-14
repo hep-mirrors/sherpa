@@ -27,7 +27,8 @@ NLO_BVI_MODE: 15
 
 PROCESSES:
 - Process: 93 93 -> 25 93{1}
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   Loop_Generator: Internal
   ME_Generator: Amegic
   PSI_ItMin: 25000
@@ -38,7 +39,8 @@ PROCESSES:
   KFactor: "HNNLO"
   Order: {QCD: Any, EW: 0, HEFT: 1}
 - Process: 93 93 -> 25
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   Loop_Generator: Internal
   ME_Generator: Amegic
   PSI_ItMin: 25000

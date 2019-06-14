@@ -31,4 +31,5 @@ PROCESSES:
   CKKW: 30
   Loop_Generator: Internal
   2->1-2:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}

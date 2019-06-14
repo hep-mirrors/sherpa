@@ -30,7 +30,8 @@ PDF_SET: mstw2008nlo_nf4
 
 PROCESSES:
 - Process: 93 93 -> 23 5 -5
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   ME_Generator: Amegic
   RS_ME_Generator: Comix
   Loop_Generator: LHOLE

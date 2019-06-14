@@ -31,7 +31,8 @@ CSS_FS_PT2MIN: 3
 
 PROCESSES:
 - Process: 93 93 -> 22 22
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   Order: {QCD: Any, EW: 2}
   Enable_MHV: 12
   Loop_Generator: Higgs

@@ -1,10 +1,7 @@
 @node LHC_HTTBar
 @subsection Associated t anti-t H production at the LHC
 
-Note: This example is currently broken. For more information, contact the
-@ref{Authors}.
 
-@ignore
 This set-up illustrates the interface to an external loop matrix element
 generator as well as the possibility of specifying hard decays for 
 particles emerging from the hard interaction. The process generated 
@@ -15,22 +12,28 @@ quarks or leptons.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_TTBar/LHC_TTH_MCatNLO/Run.dat
+@verbatiminclude Examples/H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item The matrix elements are interfaced from @mycite{Reina2001sf},
+@item The virtual matrix elements can be interfaced either from OpenLoops or
+  from @mycite{Reina2001sf},
   @mycite{Reina2001bc}, @mycite{Dawson2002tg}, @mycite{Dawson2003zu}.
-  The shared library necessary for running this setup is built using
-  @uref{http://www.scons.org/,,scons}.
+  In the latter case,
+  the shared library necessary for running this setup is built using
+  @uref{http://www.scons.org/,,scons -f SConstruct-TTH}.
 @item The top quarks are stable in the hard matrix elements.
   They are decayed using the internal decay module, indicated by
-  the settings @option{HARD_DECAYS 1} and @option{STABLE[6] 0; STABLE[24] 0}.
-@item @uref{http://projects.hepforge.org/lhapdf,,LHAPDF} is used 
-  (see @ref{ISR Parameters}) with the parametrization of the strong coupling 
-  taken from LHAPDF itself as indicated by @option{USE_PDF_ALPHAS 1}
-  (see @ref{SM}).
+  the settings in the @option{HARD_DECAYS} and @option{PARTICLE_DATA} blocks.
+@item Widths of top and Higgs are set to 0 for the matrix element calculation.
+  A kinematical Breit-Wigner distribution will be imposed a-posteriori in the
+  decay module.
+@item The Yukawa coupling of the b-quark has been set to a non-zero value to 
+  allow the H->bb decay channel even despite keeping the b-quark massless for a 
+  five-flavour-scheme calculation.
+@item Higgs BRs are not included in the cross section
+  (@option{Apply_Branching_Ratios: false}) as they will be LO only and not
+  include loop-induced decays
 @end itemize
-@end ignore

@@ -19,8 +19,9 @@ RUN_MASS_BELOW_POLE: 1
 
 PROCESSES:
 - Process: 93 93 -> 22 22
-  NLO_QCD_Mode: Fixed_Order
+  NLO_Mode: Fixed_Order
   Order: {QCD: Any, EW: 2}
+  NLO_Order: {QCD: 1, EW: 0}
   Enable_MHV: 12
   Loop_Generator: Higgs
   Integrator: PS2

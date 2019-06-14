@@ -32,7 +32,8 @@ PARTICLE_DATA:
 PROCESSES:
 - Process: 93 93 -> 6 -24
   No_Decay: -6  # remove ttbar diagrams
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   Order: {QCD: 1, EW: 1}
   ME_Generator: Amegic
   RS_ME_Generator: Comix

@@ -35,7 +35,8 @@ PROCESSES:
   2->3: { Loop_Generator: $(LOOPGEN1) }
   2->4: { Loop_Generator: $(LOOPGEN2) }
   2->2-4:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
 - Process: 11 -11 -> 5 -5 93{3}
@@ -44,7 +45,8 @@ PROCESSES:
   Loop_Generator: $(LOOPMGEN)
   RS_Enhance_Factor: 10
   2->2:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
 - Process: 11 -11 -> 5 5 -5 -5 93{1}

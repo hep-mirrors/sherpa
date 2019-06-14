@@ -24,7 +24,8 @@ PROCESSES:
   CKKW: 20
   # set up MC@NLO final-state multiplicities
   2->2-4:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: OpenLoops

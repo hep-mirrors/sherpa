@@ -27,7 +27,8 @@ PROCESSES:
   Order: {QCD: 2, EW: 0}
   CKKW: 20
   2->2-3:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
     Loop_Generator: OpenLoops

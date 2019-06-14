@@ -7,7 +7,8 @@ ME_GENERATORS: [Amegic, OpenLoops]
 
 PROCESSES:
 - Process: 93 93 -> 93 93
-  NLO_QCD_Mode: MC@NLO
+  NLO_Mode: MC@NLO
+  NLO_Order: {QCD: 1, EW: 0}
   Loop_Generator: OpenLoops
   Order: {QCD: 2, EW: 0}
 

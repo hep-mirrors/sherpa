@@ -33,7 +33,8 @@ PROCESSES:
   Max_N_Quarks: 6
   Loop_Generator: $(LGEN)
   2->2-3:
-    NLO_QCD_Mode: MC@NLO
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
     ME_Generator: Amegic
     RS_ME_Generator: Comix
   2->3:
