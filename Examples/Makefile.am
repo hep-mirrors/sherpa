@@ -62,8 +62,8 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/p6new.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Virtual.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
-		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
-		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
+		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct-TTH \
+		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
