@@ -14,9 +14,9 @@ PROCESSES:
 
 SELECTORS:
 - [Mass, 11, -12, 2, E_CMS]
-- Type: FastjetFinder
-  Algorithm: antikt
-  N: 1
-  PTMin: 1.0
-  ETMin: 1.0
-  DR: 0.4
+- FastjetFinder:
+    Algorithm: antikt
+    N: 1
+    PTMin: 1.0
+    ETMin: 1.0
+    DR: 0.4

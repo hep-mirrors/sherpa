@@ -28,9 +28,9 @@ PROCESSES:
   RS_Integrator: PS3
 
 SELECTORS:
-- Type: HiggsFinder
-  PT1: 40
-  PT2: 30
-  Eta: 2.5
-  MassRange: [100, 150]
+- HiggsFinder:
+    PT1: 40
+    PT2: 30
+    Eta: 2.5
+    MassRange: [100, 150]
 - [IsolationCut, 22, 0.4, 2, 0.025]

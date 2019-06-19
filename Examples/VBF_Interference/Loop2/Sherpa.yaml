@@ -36,23 +36,23 @@ PROCESSES:
 
 SELECTORS:
 - [Mass, 22, 22, 115, 135]
-- Type: FastjetSelector
-  Expression: "(PPerp(p[4])>40)&&(DR(p[2],p[4])>0.4)&&(DR(p[3],p[4])>0.4)&&(DR(p[2],p[5])>0.4)&&(DR(p[3],p[5])>0.4)"
-  Algorithm: antikt
-  N: 2
-  PTMin: 25
-  ETMin: 0.0
-  DR: 0.4
-  f: 0.0
-  EtaMax: 4.5
+- FastjetSelector:
+    Expression: "(PPerp(p[4])>40)&&(DR(p[2],p[4])>0.4)&&(DR(p[3],p[4])>0.4)&&(DR(p[2],p[5])>0.4)&&(DR(p[3],p[5])>0.4)"
+    Algorithm: antikt
+    N: 2
+    PTMin: 25
+    ETMin: 0.0
+    DR: 0.4
+    f: 0.0
+    EtaMax: 4.5
 - [Mass, 93, 93, 400, E_CMS]
 - [DeltaEta, 93, 93, 2.8, 1e10]
 - [DeltaR, 22, 22, 0.4, 1e10]
 - [PseudoRapidity, 22, -2.5, 2.5]
 - [PseudoRapidity, 22, -2.5, 2.5]
 - [PT, 22, 30, E_CMS]
-- Type: VariableSelector
-  Variable: PT
-  Flavs: 22
-  Ranges: [[40, E_CMS], [30, E_CMS]]
-  Ordering: "[PT_UP]"
+- VariableSelector:
+    Variable: PT
+    Flavs: 22
+    Ranges: [[40, E_CMS], [30, E_CMS]]
+    Ordering: "[PT_UP]"

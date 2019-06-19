@@ -19,7 +19,7 @@ EVENT_GENERATION_MODE: Weighted
 SHOWER_GENERATOR: CSS
 
 PROCESSES:
-  - Process: -11 93 -> -11 93
+- Process: -11 93 -> -11 93
 
 SELECTORS:
-  - [Q2, -11, -11, 4, 1e12]
+- [Q2, -11, -11, 4, 1e12]

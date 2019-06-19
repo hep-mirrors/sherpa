@@ -139,6 +139,15 @@ String_Vector Settings::GetConfigFiles()
   return {"Sherpa.yaml"};
 }
 
+bool Settings::IsList(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsList(keys))
+      return true;
+  }
+  return false;
+}
+
 size_t Settings::GetItemsCount(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders) {

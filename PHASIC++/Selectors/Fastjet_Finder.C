@@ -189,12 +189,12 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
 }
 
 
-DECLARE_ND_GETTER(Fastjet_Finder,"FastjetFinder",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Fastjet_Finder,"FastjetFinder",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Finder>::
 operator()(const Selector_Key &key) const
 {
-  auto s = key.m_settings;
+  auto s = key.m_settings["FastjetFinder"];
   const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
   const auto n = s["N"].SetDefault(0).Get<size_t>();
   const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
@@ -219,22 +219,20 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"{\n"
-     <<width<<"  Type: FastjetFinder,\n"
-     <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone, (hadron colliders)\n"
-     <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone, (lepton colliders)\n"
-     <<width<<"  N: number of jets,\n"
+{
+  str<<"FastjetFinder:\n"
+     <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone (hadron colliders)\n"
+     <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone (lepton colliders)\n"
+     <<width<<"  N: number of jets\n"
      <<width<<"  # optional settings:\n"
-     <<width<<"  PTMin: minimum jet pT,\n"
-     <<width<<"  ETMin: minimum jet eta,\n"
-     <<width<<"  DR: jet distance parameter,\n"
-     <<width<<"  f: Siscone f parameter, (default: 0.75)\n"
-     <<width<<"  EtaMax: maximum jet eta (default: 100),\n"
-     <<width<<"  YMax: maximum jet rapidity (default: 100),\n"
-     <<width<<"  Nb: number of jets with b quarks,\n"
-     <<width<<"  Nb2: number of jets with non-vanishing b content\n"
-     <<width<<"  }";
+     <<width<<"  PTMin: minimum jet pT\n"
+     <<width<<"  ETMin: minimum jet eta\n"
+     <<width<<"  DR: jet distance parameter\n"
+     <<width<<"  f: Siscone f parameter (default: 0.75)\n"
+     <<width<<"  EtaMax: maximum jet eta (default: 100)\n"
+     <<width<<"  YMax: maximum jet rapidity (default: 100)\n"
+     <<width<<"  Nb: number of jets with b quarks\n"
+     <<width<<"  Nb2: number of jets with non-vanishing b content";
 }
 
 #endif

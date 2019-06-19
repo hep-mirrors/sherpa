@@ -54,6 +54,12 @@ std::vector<std::string> Yaml_Reader::GetKeys(const Settings_Keys& scopekeys)
   return keys;
 }
 
+bool Yaml_Reader::IsList(const Settings_Keys& scopekeys)
+{
+  const auto node = NodeForKeys(scopekeys);
+  return node.IsSequence();
+}
+
 size_t Yaml_Reader::GetItemsCount(const Settings_Keys& scopekeys)
 {
   const auto node = NodeForKeys(scopekeys);

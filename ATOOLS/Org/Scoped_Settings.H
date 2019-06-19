@@ -84,6 +84,7 @@ namespace ATOOLS {
 
     std::string GetPath() { return m_rootsettings->GetPath(); }
 
+    bool IsList() const;
     std::vector<Scoped_Settings> GetItems() const;
     size_t GetItemsCount();
     Scoped_Settings GetItemAtIndex(const size_t&) const;

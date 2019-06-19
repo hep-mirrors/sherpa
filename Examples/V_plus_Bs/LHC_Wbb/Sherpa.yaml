@@ -37,13 +37,13 @@ PROCESSES:
   Order: {QCD: Any, EW: 1}
 
 SELECTORS:
-- Type: FastjetFinder
-  Algorithm: antikt
-  N: 2
-  PTMin: 5.0
-  DR: 0.5
-  EtaMax: 5
-  Nb: 2
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 5.0
+    DR: 0.5
+    EtaMax: 5
+    Nb: 2
 
 INTERNAL_ANALYSES:
   - {

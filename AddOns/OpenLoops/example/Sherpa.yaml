@@ -38,9 +38,9 @@ PROCESSES:
   Loop_Generator: $(LOOPGEN)
 
 SELECTORS:
-- Type: NJetFinder
-  N: 2
-  PTMin: 20.0
-  ETMin: 0.0
-  R: 0.4
-  Exp: -1
+- NJetFinder:
+    N: 2
+    PTMin: 20.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1

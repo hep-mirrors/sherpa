@@ -61,9 +61,9 @@ PROCESSES:
 
 SELECTORS:
 - [PT, 90, 5.0, E_CMS]
-- Type: NJetFinder
-  N: 2
-  PTMin: 15.0
-  ETMin: 0.0
-  R: 0.4
-  Exp: -1
+- NJetFinder:
+    N: 2
+    PTMin: 15.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1

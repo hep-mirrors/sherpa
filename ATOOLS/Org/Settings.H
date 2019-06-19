@@ -206,6 +206,7 @@ namespace ATOOLS {
     void SetReplacementList(const Settings_Keys&,
                             const std::map<std::string, T>& list);
 
+    bool IsList(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
 
     template <typename T>

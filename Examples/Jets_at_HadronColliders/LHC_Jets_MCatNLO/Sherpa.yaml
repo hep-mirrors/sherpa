@@ -13,15 +13,15 @@ PROCESSES:
   Order: {QCD: 2, EW: 0}
 
 SELECTORS:
-- Type: FastjetFinder
-  Algorithm: antikt
-  N: 2
-  PTMin: 10.0
-  ETMin: 0.0
-  DR: 0.4
-- Type: FastjetFinder
-  Algorithm: antikt
-  N: 1
-  PTMin: 20.0
-  ETMin: 0.0
-  DR: 0.4
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 10.0
+    ETMin: 0.0
+    DR: 0.4
+- FastjetFinder:
+    Algorithm: antikt
+    N: 1
+    PTMin: 20.0
+    ETMin: 0.0
+    DR: 0.4

@@ -142,12 +142,12 @@ bool Fastjet_Veto::Trigger(Selector_List &sl)
 }
 
 
-DECLARE_ND_GETTER(Fastjet_Veto,"FastjetVeto",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Fastjet_Veto,"FastjetVeto",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Veto>::
 operator()(const Selector_Key &key) const
 {
-  auto s = key.m_settings;
+  auto s = key.m_settings["FastjetVeto"];
   const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
   const auto n = s["N"].SetDefault(0).Get<size_t>();
   const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
@@ -171,21 +171,20 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Veto>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"{\n"
-     <<width<<"  Type: FastjetVeto,\n"
-     <<width<<"  Algorithm: kt|antikt|cambridge|siscone,\n"
-     <<width<<"  N: number of jets,\n"
+{
+  str<<"FastjetVeto:\n"
+     <<width<<"  Type: FastjetVeto\n"
+     <<width<<"  Algorithm: kt|antikt|cambridge|siscone\n"
+     <<width<<"  N: number of jets\n"
      <<width<<"  # optional settings:\n"
-     <<width<<"  PTMin: minimum jet pT,\n"
-     <<width<<"  ETMin: minimum jet eta,\n"
-     <<width<<"  DR: jet distance parameter,\n"
-     <<width<<"  f: Siscone f parameter,\n"
-     <<width<<"  EtaMax: maximum jet eta,\n"
-     <<width<<"  YMax: maximum jet rapidity,\n"
-     <<width<<"  Nb: number of jets with b quarks,\n"
-     <<width<<"  Nb2: number of jets with non-vanishing b content\n"
-     <<width<<"  }";
+     <<width<<"  PTMin: minimum jet pT\n"
+     <<width<<"  ETMin: minimum jet eta\n"
+     <<width<<"  DR: jet distance parameter\n"
+     <<width<<"  f: Siscone f parameter\n"
+     <<width<<"  EtaMax: maximum jet eta\n"
+     <<width<<"  YMax: maximum jet rapidity\n"
+     <<width<<"  Nb: number of jets with b quarks\n"
+     <<width<<"  Nb2: number of jets with non-vanishing b content";
 }
 
 #endif

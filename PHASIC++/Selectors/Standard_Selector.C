@@ -334,7 +334,7 @@ void PT_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(PT_Selector,"PT",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PT_Selector,"PT",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT_Selector>::
 operator()(const Selector_Key &key) const
@@ -436,7 +436,7 @@ void ET_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(ET_Selector,"ET",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(ET_Selector,"ET",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ET_Selector>::
 operator()(const Selector_Key &key) const
@@ -525,7 +525,7 @@ void Rapidity_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(Rapidity_Selector,"Y",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Rapidity_Selector,"Y",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Rapidity_Selector>::
 operator()(const Selector_Key &key) const
@@ -616,7 +616,7 @@ void PseudoRapidity_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(PseudoRapidity_Selector,"Eta",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PseudoRapidity_Selector,"Eta",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidity_Selector>::
 operator()(const Selector_Key &key) const
@@ -709,7 +709,7 @@ void IMass_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(IMass_Selector,"Mass",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IMass_Selector,"Mass",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IMass_Selector>::
 operator()(const Selector_Key &key) const
@@ -793,7 +793,7 @@ void IQ2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IQ2_Selector>::
 operator()(const Selector_Key &key) const
@@ -878,7 +878,7 @@ void PT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(PT2_Selector,"PT2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PT2_Selector,"PT2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT2_Selector>::
 operator()(const Selector_Key &key) const
@@ -963,7 +963,7 @@ void MT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(MT2_Selector,"MT2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MT2_Selector,"MT2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2_Selector>::
 operator()(const Selector_Key &key) const
@@ -1049,7 +1049,7 @@ void MT2_v2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max
   }
 }
 
-DECLARE_ND_GETTER(MT2_v2_Selector,"MT2_v2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MT2_v2_Selector,"MT2_v2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2_v2_Selector>::
 operator()(const Selector_Key &key) const
@@ -1133,7 +1133,7 @@ void DeltaY_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaY_Selector,"DY",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaY_Selector,"DY",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaY_Selector>::
 operator()(const Selector_Key &key) const
@@ -1217,7 +1217,7 @@ void DeltaEta_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaEta_Selector,"DEta",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaEta_Selector,"DEta",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaEta_Selector>::
 operator()(const Selector_Key &key) const
@@ -1301,7 +1301,7 @@ void DeltaPhi_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaPhi_Selector,"DPhi",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaPhi_Selector,"DPhi",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaPhi_Selector>::
 operator()(const Selector_Key &key) const
@@ -1385,7 +1385,7 @@ void DeltaR_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaR_Selector,"DR",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaR_Selector,"DR",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaR_Selector>::
 operator()(const Selector_Key &key) const
@@ -1469,7 +1469,7 @@ void DeltaRy_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaRy_Selector,"DR(y)",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaRy_Selector,"DR(y)",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaRy_Selector>::
 operator()(const Selector_Key &key) const
@@ -1561,7 +1561,7 @@ void PhiStar_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(PhiStar_Selector,"PhiStar",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PhiStar_Selector,"PhiStar",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PhiStar_Selector>::
 operator()(const Selector_Key &key) const
@@ -1639,7 +1639,7 @@ void Multiplicity_Selector::SetRange(Flavour fl,size_t min,size_t max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(Multiplicity_Selector,"N",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Multiplicity_Selector,"N",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Multiplicity_Selector>::
 operator()(const Selector_Key &key) const
@@ -1721,7 +1721,7 @@ void PTMIS_Selector::SetRange(double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(PTMIS_Selector,"PTmis",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PTMIS_Selector,"PTmis",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PTMIS_Selector>::
 operator()(const Selector_Key &key) const
@@ -1801,7 +1801,7 @@ void ETMIS_Selector::SetRange(double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(ETMIS_Selector,"ETmis",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(ETMIS_Selector,"ETmis",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ETMIS_Selector>::
 operator()(const Selector_Key &key) const
@@ -1934,7 +1934,7 @@ double Isolation_Cut::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
-DECLARE_ND_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Cut>::
 operator()(const Selector_Key &key) const
@@ -2008,7 +2008,7 @@ void NJettiness_Selector::SetRange(size_t N,double min,double max)
   m_njmax=max;
 }
 
-DECLARE_ND_GETTER(NJettiness_Selector,"NJ",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(NJettiness_Selector,"NJ",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJettiness_Selector>::
 operator()(const Selector_Key &key) const

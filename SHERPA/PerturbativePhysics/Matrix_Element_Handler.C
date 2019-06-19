@@ -945,13 +945,13 @@ void Matrix_Element_Handler::BuildSingleProcessList(
     }
     if (args.pi.m_ckkw&1) {
       MyStrStream jfyaml;
-      jfyaml << "{Type: METS";
+      jfyaml << "METS: {";
       std::string ycut{ args.pbi.m_gycut };
       GetMPvalue(args.pbi.m_vycut,
                  cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),
                  ycut);
-      jfyaml << ", YCUT: \"" << ycut << "\"";
+      jfyaml << "YCUT: \"" << ycut << "\"";
       if (i<loprocs) {
         jfyaml << ", LO: true";
 	if (args.pbi.m_cutcore==true) {

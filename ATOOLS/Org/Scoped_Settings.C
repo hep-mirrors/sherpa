@@ -80,6 +80,11 @@ bool Scoped_Settings::IsCustomised()
   return m_rootsettings->IsCustomised(m_scopes);
 }
 
+bool Scoped_Settings::IsList() const
+{
+  return m_rootsettings->IsList(m_scopes);
+}
+
 std::vector<Scoped_Settings> Scoped_Settings::GetItems() const
 {
   std::vector<Scoped_Settings> scoped_settings;

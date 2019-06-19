@@ -42,4 +42,4 @@ PROCESSES:
     Integration_Error: 0.03
 
 SELECTORS:
-  - [Q2, -11, -11, 4, 1e12]
+- [Q2, -11, -11, 4, 1e12]
