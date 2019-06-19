@@ -166,7 +166,7 @@ during read-in. An example tag definition could read
 
 and then be used in the configuration file like:
 @verbatim
-  RESULT_DIRECTORY: Result_$(QCUT);
+  RESULT_DIRECTORY: Result_$(QCUT)
   PROCESSES:
     - Process: "93 93 -> 11 -11 93{$(NJET)}"
       Order: {QCD: Any, EW: 2}
