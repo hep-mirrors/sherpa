@@ -135,6 +135,7 @@ void Matrix_Element_Handler::InitNLOMC()
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
   int storeresults = Data_Reader(" ",";","!","=").GetValue("GENERATE_RESULT_DIRECTORY", 1);
+  if (storeresults<0) return true;
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
