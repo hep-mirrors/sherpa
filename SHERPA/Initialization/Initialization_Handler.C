@@ -538,9 +538,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (rpa->gen.NumberOfEvents()>0) {
   }
   okay = okay && InitializeTheShowers();
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
-  okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheColourReconnections();
