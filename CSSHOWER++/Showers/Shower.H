@@ -27,7 +27,8 @@ namespace CSSHOWER {
     Parton           * m_last[4];
     int                m_kscheme, m_noem, m_recdec;
     bool               m_use_bbw;
-
+    double m_t0,m_t1,m_x;
+    int m_noemission;
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
@@ -93,6 +94,8 @@ namespace CSSHOWER {
 
     inline void SetUsesBBW(bool on) { m_use_bbw = on; }
 
+    bool NoEmissionProbability(Singlet * act,const double x);
+    
   };
 }
 

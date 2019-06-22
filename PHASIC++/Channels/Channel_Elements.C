@@ -1,5 +1,6 @@
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
@@ -611,6 +612,16 @@ double Channel_Elements::GenerateYUniform(const double tau,const Double_Containe
     x_{1, min} = xinfo[0] x_{1, max} = xinfo[1]
     x_{2, min} = xinfo[2] x_{2, max} = xinfo[3]
   */
+  static double x(-1.0);
+  static int noem(0);
+  if(x<0.){
+    ATOOLS::Data_Reader read(" ",";","#","=");
+    x    = read.GetValue<double>("CSS_x",0.0);
+    noem = read.GetValue<int>("CSS_NOEMISSION",0);
+  }
+  if(noem){
+    return log(x/tau);
+  }
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
@@ -657,6 +668,16 @@ const double pre=1.0;
 double Channel_Elements::GenerateYCentral(const double tau,const Double_Container &xinfo,
 				      const Double_Container &yinfo,const double ran,const int mode) const
 {
+  static double x(-1.0);
+  static int noem(0);
+  if(x<0.){
+    ATOOLS::Data_Reader read(" ",";","#","=");
+    x    = read.GetValue<double>("CSS_x",0.0);
+    noem = read.GetValue<int>("CSS_NOEMISSION",0);
+  }
+  if(noem){
+    return log(x/tau);
+  }
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
@@ -700,6 +721,17 @@ double Channel_Elements::GenerateYForward(const double yexponent,const double ta
 				      const Double_Container &xinfo,const Double_Container &yinfo, 
 				      const double ran,const int mode) const
 {
+  static double x(-1.0);
+  static int noem(0);
+  if(x<0.){
+    ATOOLS::Data_Reader read(" ",";","#","=");
+    x    = read.GetValue<double>("CSS_x",0.0);
+    noem = read.GetValue<int>("CSS_NOEMISSION",0);
+  }
+  if(noem){
+    return log(x/tau);
+  }
+  
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
@@ -754,6 +786,16 @@ double Channel_Elements::GenerateYBackward(const double yexponent,const double t
 				       const Double_Container &xinfo,const Double_Container &yinfo, 
 				       const double ran,const int mode) const
 {
+  static double x(-1.0);
+  static int noem(0);
+  if(x<0.){
+    ATOOLS::Data_Reader read(" ",";","#","=");
+    x    = read.GetValue<double>("CSS_x",0.0);
+    noem = read.GetValue<int>("CSS_NOEMISSION",0);
+  }
+  if(noem){
+    return log(x/tau);
+  }
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;

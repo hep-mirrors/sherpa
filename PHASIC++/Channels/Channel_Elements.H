@@ -9,7 +9,6 @@ namespace PHASIC {
 
   class Channel_Elements {
   private:
-    
     Channel_Basics CB;
     void QcdAntenna(ATOOLS::Vec4D* &,int,double, double);
     void BasicAntenna(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D &, double*, double);

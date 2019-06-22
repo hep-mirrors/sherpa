@@ -60,6 +60,12 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
+
+  m_noemission = dataread->GetValue<int>("CSS_NOEMISSION",0);
+  m_t1         = dataread->GetValue<double>("CSS_t1",5.0);
+  m_t0         = dataread->GetValue<double>("CSS_t0",sqr(100.0));
+  m_x          = dataread->GetValue<double>("CSS_x",0.01);
+  
 }
 
 Shower::~Shower()
@@ -79,6 +85,7 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weight=1.0;
+  if(m_noemission) NoEmissionProbability(actual, m_x);
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -91,6 +98,7 @@ double Shower::GetXBj(Parton *const p) const
 int Shower::SetXBj(Parton *const p) const
 {
   double x(GetXBj(p));
+  PRINT_VAR(x);
   if (x>1.0) return -1;
   p->SetXbj(x);
   return 1;
@@ -481,7 +489,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     kt2win = 0.;
     Parton *split=SelectSplitting(kt2win);
     //no shower anymore 
-    if (split==NULL) {
+    if (split==NULL) {//
       msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
@@ -514,7 +522,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       ResetScales(kt2win);
       int fc=0;
-      if (split->Splits()) {
+      if (split->Splits()) {//
 	if ((split->GetType()==pst::IS &&
 	     m_flavA!=split->GetFlavour()) ||
 	    (split->GetType()==pst::FS &&
@@ -801,3 +809,39 @@ void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){
 
 }
 
+bool Shower::NoEmissionProbability(Singlet * act,const double x)
+{
+  p_actual=act;
+
+  double kt2win;
+  
+  double wt(0.), wt2(0.);
+  int nTrialsMax(500000), nTrials(0);
+  PRINT_VAR(*p_actual);
+  for (size_t i{0}; i<nTrialsMax; ++i){
+    p_actual = act;
+    while (true) {
+      // done in PHASIC
+      for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it){
+	if ((*it)->GetType()==pst::IS) SetXBj((*it));
+      }
+      kt2win = 0.;
+      ResetScales(m_t0);
+      Parton *split=SelectSplitting(kt2win);
+      if (split==NULL) {
+	break;
+      }
+      else {
+	int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2,0));
+	if (kstat==1 && kt2win > m_t1)
+	  {
+	    ++nTrials;
+	    break;
+	  }
+      }
+    }
+  }
+  msg_Out() << "mean  : " << nTrials/nTrialsMax << "\n";
+  exit(0);
+  return true;
+}
