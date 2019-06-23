@@ -79,10 +79,9 @@ namespace SHERPA {
 
 // Make the global pointers
 // to RNG and model availeble
-ATOOLS::Random* ran;
-MODEL::Model_Base* s_model;
-
-%inline %{
-  ATOOLS::Random* ATOOLS::ran;
-  MODEL::Model_Base* MODEL::s_model;
-%}
+namespace ATOOLS {
+  extern Random* ran;
+}
+namespace MODEL {
+  Model_Base* s_model;
+}
