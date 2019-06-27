@@ -547,7 +547,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Rivet not enabled); rivet=false ;;
+        no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
         yes) if test -x "`which rivet-config`"; then
                CONDITIONAL_RIVETDIR=`rivet-config --prefix`;
              fi;;
@@ -558,33 +558,29 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
-        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
+        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
         rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
-        AC_MSG_CHECKING(whether the Rivet version uses YODA as its histogramming backend)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],
-        [ rivetyoda=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
+        AC_MSG_CHECKING(for Rivet version)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+          ])
+        ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
-      rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
-      if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetignorebeams=true;
-      fi
     ],
     [ rivet=false ]
   )
-  if test "$rivet" = "true" ; then
-    AC_DEFINE([USING__RIVET], "1", [using Rivet])
-  fi
-  if test "$rivetignorebeams" = "true" ; then
-    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
-  fi
-  if test "$rivetyoda" = "true" ; then
-    AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
-  fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
-  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
+  if test "$rivet2" = "true" ; then
+    AC_DEFINE([USING__RIVET2], "1", [using Rivet2])
+  fi
+  if test "$rivet3" = "true" ; then
+    AC_DEFINE([USING__RIVET3], "1", [using Rivet3])
+  fi
+  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet2" = "true" -o "$rivet3" = "true")
 
   AC_ARG_ENABLE(
     fastjet,
