@@ -68,10 +68,6 @@ bool Shower::Evolve(Configuration * config) {
   // 3. If the evolution of the configuration is over we add a final weight,
   //    consisting of all rejection weights of failed splittings.
   do {
-    //msg_Out()<<"#########################################################\n"
-    //	     <<"#########################################################\n"
-    //	     <<"#########################################################\n"
-    //	     <<METHOD<<" for "<<p_config->T()<<" --> "<<p_config->T0()<<".\n";
     p_winner = NULL;
     for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
       if ((*pit)->On() && !Evolve(*pit)) continue;
@@ -160,7 +156,6 @@ bool Shower::Evolve(Parton * splitter) {
 
 double Shower::InitialiseIntegrals(Parton * splitter) {
   const Parton_List * spectators = splitter->GetSpectators();
-  m_dipoles.clear();
   double sum = 0., integral;
   for (Parton_List::const_iterator spit=spectators->begin();
        spit!=spectators->end();spit++) {
@@ -179,13 +174,7 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
     }
     else {
       Kernels * kernels = kit->second;
-      if (kernels) kernels->CalcIntegrals(split,p_msel);
-      sum                 += kernels->Integral();
-      //msg_Out()<<"#########################################################\n"
-      //       <<"### init integrals(type = "<<type<<", int = "<<kernels->Integral()<<") "
-      //       <<"from t0 = "<<split.T0()<<" "
-      //       <<"for \n"<<(*splitter)<<(*spectator);
-      m_dipoles[spectator] = kernels; 
+      if (kernels) sum += kernels->CalcIntegrals(split,p_msel);
     }
   }
   return sum;
@@ -194,56 +183,41 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
 Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) {
   const Parton_List * spectators = splitter->GetSpectators();
   double t = p_config->T(), t0 = p_config->T0();
-  // if-bracket below: Test that can be deleted once everything is debugged.
-  if (splitter->Flav().IsGluon()) {
-    if (spectators->size()!=2) {
-      msg_Error()<<METHOD<<" throws error: only one spectator for gluon.\n";
-      exit(1);
-    }
-    if (m_nem>0) {
-      Parton * spectator = (*spectators->begin());
-      for (Parton_List::const_iterator spit=spectators->begin();
-	   spit!=spectators->end();spit++) {
-	if (spit==spectators->begin()) continue;
-	if ((*spit)==spectator) {
-	  msg_Error()<<METHOD<<" throws error: identical spectators.\n";
-	  exit(1);
-	}
-      }
-    }
-  }
-  //msg_Out()<<"#########################################################\n"
-  //	   <<"### start evolution with t = "<<t<<", t_0 = "<<t0<<", "
-  //	   <<"sum = "<<sum<<".\n";
   while (t>t0) {
-    double random = ran->Get();
-    t *= exp(log(random)/sum);
+    t *= exp(log(ran->Get())/sum);
     if (t<t0) return NULL;
     double disc = sum * ran->Get();
     Parton * spectator;
     Kernels * kernels;
     for (Parton_List::const_iterator spit=spectators->begin();
 	 spit!=spectators->end();spit++) {
+      // Select the list of applicable kernels depending on the kinematic configuration
+      // and the flavour of the splitter.  Initialise a container "Splitting" for the
+      // information defining the potential splitting.
       spectator = (*spit);
-      kernels   = m_dipoles[spectator];
-      disc     -= kernels->Integral();
-      if (disc<=0 && kernels->SelectOne()) {
-	Splitting * split = new Splitting(splitter,spectator,t,t0);
-	split->SetKinScheme(m_kinscheme);
+      Splitting * split = new Splitting(splitter,spectator,t,t0);
+      split->SetKinScheme(m_kinscheme);
+      kernel_type::code type = GetCode((splitter->Beam()>0),(spectator->Beam()>0));
+      map<Flavour, Kernels *>::iterator kit =
+	m_kernels[int(type)].find(splitter->Flav());
+      if (kit==m_kernels[int(type)].end()) {
+	delete split;
+	continue;
+      }
+      disc     -= kit->second->CalcIntegrals(*split,p_msel);
+      if (disc<=0 && kit->second->SelectOne(*split,p_msel)) {
 	// For a valid evolution parameter t, select a kernel according to the
 	// overestimated integral and attach the kernel to the splitting information
-	Kernel * kernel   = kernels->GetSelected();
-	//msg_Out()<<" ### next trial t = "<<sqrt(t)<<", with spectator "
-	//	 <<spectator->Id()<<", Q2 = "<<split->Q2()<<", sum = "<<sum<<", "
-	//	 <<kernel->GetSF()->Name()<<".\n";
+	Kernel * kernel   = kit->second->GetSelected();
 	// Veto and adding of weights is embedded here.
 	// Generate z, phi, run the veto algorithm, and construct the kinematics.  If
 	// everything works out, the splitting is allowed and we keep it.  Rejected
 	// splittings add to the rejection weight related to the parton.
 	if (kernel->Generate(*split,p_msel,m_weightover)) return split;
-	else delete split;
+	delete split;
 	break;
       }
+      else delete split;
     }
   }
   // Didn't find a meaningful splitting for the parton in all kernels.
@@ -405,8 +379,8 @@ void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
       if (kernel!=0) {
 	if (m_kernels[int(info.Type())].find(info.GetFlavs()[0])==
 	    m_kernels[int(info.Type())].end()) {
-	  //msg_Out()<<"Init new kernel list for type = "<<info.Type()
-	  //	   <<" & flav = "<<info.GetFlavs()[0]<<"\n";
+	  msg_Out()<<"Init new kernel list for type = "<<info.Type()
+	  	   <<" & flav = "<<info.GetFlavs()[0]<<"\n";
 	  m_kernels[int(info.Type())][info.GetFlavs()[0]] = new Kernels();
 	}
 	m_kernels[int(info.Type())][info.GetFlavs()[0]]->push_back(kernel);

@@ -100,7 +100,7 @@ operator()(const Parameter_Type & info) const
       info.GetFlavs()[0].IsFermion() && 
       info.GetFlavs()[1].IsVector() &&
       info.GetFlavs()[2].IsFermion()) {
-    return new FVF_FF(info);
+    //return new FVF_FF(info);
   }
   return NULL;
 }

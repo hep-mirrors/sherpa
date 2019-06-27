@@ -87,11 +87,12 @@ DECLARE_GETTER(VVV_FF,"FF_VVV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,VVV_FF>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
   if (info.Type()==kernel_type::FF &&
       (info.GetFlavs()[0].IsVector() &&
        info.GetFlavs()[1].IsVector() &&
-       info.GetFlavs()[2].IsVector())) return new VVV_FF(info);
+       info.GetFlavs()[2].IsVector())) {
+    return new VVV_FF(info);
+  }
   return NULL;
 }
 

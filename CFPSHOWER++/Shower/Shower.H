@@ -54,7 +54,6 @@ namespace CFPSHOWER {
     Splitting                   * p_winner;
     
     std::map<ATOOLS::Flavour, Kernels *> m_kernels[5];
-    std::map<Parton *,Kernels *>         m_dipoles;
     std::vector<Splitting *>             m_splittings;
 
     double m_weight, m_weightover;
