@@ -46,14 +46,11 @@
 /* using ROOT */
 #undef USING__ROOT
 
-/* using Rivet */
-#undef USING__RIVET
+/* using Rivet2 */
+#undef USING__RIVET2
 
-/* setIgnoreBeams function available in Rivet */
-#undef USING__RIVET__IGNOREBEAMS
-
-/* Rivet uses YODA as its histogramming backend */
-#undef USING__RIVET__YODA
+/* using Rivet3 */
+#undef USING__RIVET3
 
 /* using FASTJET */
 #undef USING__FASTJET
