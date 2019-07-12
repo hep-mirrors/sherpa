@@ -101,6 +101,7 @@ DECLARE_GETTER(FFV_FF,"FF_FFV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FF>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   if (info.Type()==kernel_type::FF &&
       info.GetFlavs()[0].IsFermion() && 
       info.GetFlavs()[1].IsFermion() &&

@@ -42,6 +42,7 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
   // TODO: will have to upgrade this later to capture the effect of on-the-flight
   // variations.
   double weight = (accept?split.GetWeight()->Accept():split.GetWeight()->Reject());
+  //msg_Out()<<METHOD<<"(accept = "<<accept<<") --> "<<weight<<"\n";
   if (weight!=1.0) {
     BranchingWeight wt;
     Parton * spec         = split.GetSpectator();

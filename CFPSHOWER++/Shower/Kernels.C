@@ -27,7 +27,7 @@ bool Kernels::SelectOne(Splitting & split,const Mass_Selector * ms) {
       return true;
     }
   }
-  msg_Out()<<METHOD<<" fails.\n";
+  msg_Out()<<METHOD<<" fails, will exit the run for debugging purposes\n";
   exit(1);
   p_selected = NULL;
   return false;

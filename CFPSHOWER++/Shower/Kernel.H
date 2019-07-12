@@ -48,7 +48,8 @@ namespace CFPSHOWER {
     inline void SetPDF(const size_t beam, PDF::PDF_Base * pdf) { p_pdf[beam]   = pdf; }
     inline void SetPDFMinValue(const double & value)           { m_pdfminvalue = value; }
     inline void SetPDFXMin(const double & xmin)                { m_pdfxmin     = xmin; }
-    
+
+    inline const kernel_type::code      & GetType()  const { return m_type; }
     inline SF_Base                      * GetSF()    const { return p_sf; } 
     inline Gauge_Base                   * GetGauge() const { return p_gauge; }
     inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }

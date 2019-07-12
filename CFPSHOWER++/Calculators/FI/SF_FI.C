@@ -11,21 +11,22 @@ using namespace ATOOLS;
 SF_FI::SF_FI(const Kernel_Info & info) : SF_Base(info) {}
 
 double SF_FI::Jacobean(const Splitting & split) const {
-  double J     = 0.;
-  double eta   = split.GetSpectator()->XB();
-  double ymass = split.Y()* (1.0 + (split.mij2()-split.mi2()-split.mj2())/split.Q2() );
+  double xB    = split.GetSpectator()->XB();
+  double ymass = split.Y()* (1. + (split.mij2()-split.mi2()-split.mj2())/split.Q2() );
+  // added a security instance for the ratio of xB and modified splitting parameter
+  if (xB/ymass > 1.) return 0.;
   // remember: IS particles are "barred"
   const Flavour & flav = split.GetSpectator()->Flav().Bar();
-  size_t beam          = split.GetSpectator()->Beam()-1;
-  double f_old = split.GetKernel()->GetXPDF(eta,split.T(),flav,beam);
-  double f_new = split.GetKernel()->GetXPDF(eta/ymass,split.T(),flav,beam);
-  if (dabs(f_old) > (split.GetKernel()->PDFMinValue() *
-		     log(1.-eta)/log(1.-split.GetKernel()->PDFXMin())) ) {
-    J = (1.-split.Y())/(1.-ymass) * f_new/f_old;
+  // pdf estimates for initial state spectator before and after splitting
+  size_t beam    = split.GetSpectator()->Beam()-1;
+  double pdf_old = split.GetKernel()->GetXPDF(      xB,split.T(),flav,beam);
+  double pdf_new = split.GetKernel()->GetXPDF(xB/ymass,split.T(),flav,beam);
+  // return a non-zero Jacobean only if splitting is kinematically allowed
+  if (dabs(pdf_old) > (split.GetKernel()->PDFMinValue() *
+		       log(1.-xB)/log(1.-split.GetKernel()->PDFXMin())) ) {
+    return (1.-split.Y())/(1.-ymass) * pdf_new/pdf_old;
   }
-  else {
-  }
-  return J;
+  return 0.;
 }
 
 bool SF_FI::InitKinematics(Splitting & split) const {
@@ -35,13 +36,6 @@ bool SF_FI::InitKinematics(Splitting & split) const {
 }
 
 int SF_FI::Construct(Splitting & split) const {
-  //msg_Out()<<" *** "<<METHOD<<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<") "
-  //	   <<"--> y, x ="<<split.Y()<<", "<<split.X()<<" and phi = "<<split.phi()
-  //	   <<" for "<<m_name<<"\n"
-  //	   <<"     masses = "<<split.mi2()<<", "<<split.mj2()<<", "
-  //	   <<split.mij2()<<", "<<split.mk2()<<" "   	   
-  //	   <<"and Q2 from momenta = "
-  //	   <<(split.GetSplitter()->Mom()+split.GetSpectator()->Mom()).Abs2()<<"\n";
   Kin_Args kin_fi(1.-split.Y(),split.X(),split.phi(),1|8);
   if (ConstructFIDipole(split.mi2(),split.mj2(),split.mij2(),split.mk2(),
 			split.GetSplitter()->Mom(),-split.GetSpectator()->Mom(),

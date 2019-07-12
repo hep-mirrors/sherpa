@@ -87,14 +87,17 @@ bool Shower::Evolve(Configuration * config) {
 	delete p_winner;
       }
     }
-    //msg_Out()<<(*p_config)<<"\n";
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
-  //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
-  //	   <<"#########################################################\n"
-  //	   <<"#########################################################\n"
-  //	   <<"#########################################################\n";
-  if (m_weight!=1.) exit(1);
+  // msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
+  // 	   <<"#########################################################\n"
+  // 	   <<"#########################################################\n"
+  // 	   <<"#########################################################\n";
+  if (dabs(m_weight-1.)>1.e-6) {
+    //msg_Out()<<METHOD<<" fails with weight = "<<(dabs(m_weight-1)*1.e6)<<" * 10^-6. "
+    //	     <<"Will continue the run & hope for the best.\n";
+    //exit(1);
+  }
   return true;
 }
 
@@ -121,10 +124,6 @@ bool Shower::Evolve(Parton * splitter) {
   // colour connections.
   if (splitter->GetSpectators()->size()<=0) return false;
   bool success = false;
-  //msg_Out()<<"#########################################################\n"
-  //	   <<"#########################################################\n"
-  //	   <<METHOD<<" for parton ["<<splitter->Id()<<", "<<splitter->Flav()<<"]: "
-  //	   <<splitter->GetSpectators()->size()<<" spectators.\n";
   double sum  = InitialiseIntegrals(splitter);
   if (sum>0.) {
     Splitting * split = GenerateTestSplitting(splitter,sum);
@@ -146,11 +145,6 @@ bool Shower::Evolve(Parton * splitter) {
       if (p_winner) { p_config->SetT0(p_winner->T()); }
     }
   }
-  //msg_Out()<<"### out of "<<METHOD<<"("<<splitter->Id()<<") with "<<success<<": ";
-  //if (success) msg_Out()<<"t = "<<p_winner->T()<<" > "<<p_winner->T0();
-  //msg_Out()<<"\n"
-  //	   <<"#########################################################\n"
-  //	   <<"#########################################################\n";
   return success;
 }
 
@@ -185,6 +179,7 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
   double t = p_config->T(), t0 = p_config->T0();
   while (t>t0) {
     t *= exp(log(ran->Get())/sum);
+    //msg_Out()<<METHOD<<" for t = "<<t<<", sum = "<<sum<<"\n";
     if (t<t0) return NULL;
     double disc = sum * ran->Get();
     Parton * spectator;
@@ -197,6 +192,7 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
       spectator = (*spit);
       Splitting * split = new Splitting(splitter,spectator,t,t0);
       split->SetKinScheme(m_kinscheme);
+      split->SetT1(t);
       kernel_type::code type = GetCode((splitter->Beam()>0),(spectator->Beam()>0));
       map<Flavour, Kernels *>::iterator kit =
 	m_kernels[int(type)].find(splitter->Flav());
@@ -213,7 +209,11 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	// Generate z, phi, run the veto algorithm, and construct the kinematics.  If
 	// everything works out, the splitting is allowed and we keep it.  Rejected
 	// splittings add to the rejection weight related to the parton.
-	if (kernel->Generate(*split,p_msel,m_weightover)) return split;
+	if (kernel->Generate(*split,p_msel,m_weightover)) {
+	  //msg_Out()<<METHOD<<" is successful for "<<split<<"\n";
+	  return split;
+	}
+	//msg_Out()<<METHOD<<" fails for ~"<<split<<"\n";
 	delete split;
 	break;
       }
@@ -284,8 +284,8 @@ void Shower::EstablishSpectators(Parton * splitter) {
 bool Shower::Init(MODEL::Model_Base * const model,
 		  PDF::ISR_Handler * const isr)
 {
-  msg_Out()<<"*********************************************\n"
-	   <<METHOD<<" starts initializing shower algorithms.\n";
+  //msg_Out()<<"*********************************************\n"
+  //	   <<METHOD<<" starts initializing shower algorithms.\n";
   p_as    = (MODEL::Running_AlphaS*)(model->GetScalarFunction("alpha_S"));
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
   return (InitializeParameters() && InitializeKernels(model));
@@ -315,8 +315,8 @@ bool Shower::InitializeParameters() {
 
 bool Shower::InitializeKernels(MODEL::Model_Base * const model) {
   msg_Out()<<"*********************************************\n"
-	   <<METHOD<<" starts collecting splitting kernels.\n"
-	   <<"** available kernels:\n";
+   	   <<METHOD<<" starts collecting splitting kernels.\n"
+   	   <<"** available kernels:\n";
   SF_Getter::PrintGetterInfo(msg->Out(),25);
   GP_Getter::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n";
@@ -358,11 +358,11 @@ void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
   // - whether the interaction is "swapped" (example: q->qg vs. q->gq)
   // - to be implemented: order information, masses of partiles, etc..
   // Initialised kernels are organised in 4 maps (one for each of the
-  // splitter/spectator configuration), connecting splitting flavours with all
-  // possible kernels.  In QCD this means, for each quark there will be two kernels:
-  // q->qg and q->gq, and for gluons we will have two g->gg splittings (one for
-  // the 1/z and one for the 1/(1-z) pole, captured with "swapped") plus g->q qbar
-  // and g->qbar q for six quark flavours.
+  // splitter/spectator configurations), connecting splitting flavours with all
+  // possible kernels.  For final state splittings in QCD this means, for each
+  // quark there will be two kernels: q->qg and q->gq, and for gluons we will
+  // have two g->gg splittings (one for the 1/z and one for the 1/(1-z) pole,
+  // captured with "swapped") plus g->q qbar and g->qbar q for six quark flavours.
   Kernel_Info info;
   Kernel * kernel;
   kernel_flavours.insert(orig);
@@ -379,11 +379,12 @@ void Shower::MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
       if (kernel!=0) {
 	if (m_kernels[int(info.Type())].find(info.GetFlavs()[0])==
 	    m_kernels[int(info.Type())].end()) {
-	  msg_Out()<<"Init new kernel list for type = "<<info.Type()
-	  	   <<" & flav = "<<info.GetFlavs()[0]<<"\n";
+	  //msg_Out()<<"Init new kernel list for type = "<<info.Type()
+	  //	   <<" & flav = "<<info.GetFlavs()[0]<<"\n";
 	  m_kernels[int(info.Type())][info.GetFlavs()[0]] = new Kernels();
 	}
 	m_kernels[int(info.Type())][info.GetFlavs()[0]]->push_back(kernel);
+	//msg_Out()<<"Add kernel to ["<<info.Type()<<"]["<<info.GetFlavs()[0]<<"]\n";
 	for (size_t beam = 0;beam<2;beam++) kernel->SetPDF(beam,p_pdf[beam]);
 	kernel->SetPDFMinValue((*cfp_pars)("PDF_min"));
 	kernel->SetPDFXMin((*cfp_pars)("PDF_min_X"));

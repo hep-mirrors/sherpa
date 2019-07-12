@@ -5,6 +5,8 @@ include ../../../git.make
 
 libCFPCalculatorsIF_la_SOURCES = \
 	SF_IF.C \
+	FFV_IF.C \
+	FVF_IF.C \
 	VVV_IF.C
 
 localinc_HEADERS   = \

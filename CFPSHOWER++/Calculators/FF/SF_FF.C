@@ -10,9 +10,9 @@ using namespace ATOOLS;
 SF_FF::SF_FF(const Kernel_Info & info) : SF_Base(info) {}
 
 double SF_FF::Jacobean(const Splitting & split) const {
-  double J = ( split.Q2() / Lambda(split.sijk(),split.mij2(),split.mk2()) *
-	       split.Q2()*split.Y() / (split.Q2()*split.Y() + split.mi2()+split.mj2()-split.mij2()) );
-  return J;
+  double Q2 = split.Q2(), Q2y = Q2*split.Y();
+  return ( Q2  / Lambda(split.sijk(),split.mij2(),split.mk2()) *
+	   Q2y / (Q2y + split.mi2()+split.mj2()-split.mij2()) );
 }
 
 bool SF_FF::InitKinematics(Splitting & split) const {
@@ -23,13 +23,6 @@ bool SF_FF::InitKinematics(Splitting & split) const {
 }
 
 int SF_FF::Construct(Splitting & split) const {
-  //msg_Out()<<" *** "<<METHOD<<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<") "
-  //	   <<"--> y, x ="<<split.Y()<<", "<<split.X()<<" and phi = "<<split.phi()
-  //	   <<" for "<<m_name<<"\n"
-  //	   <<"     masses = "<<split.mi2()<<", "<<split.mj2()<<", "
-  //	   <<split.mij2()<<", "<<split.mk2()<<" "   	   
-  //	   <<"and Q2 from momenta = "
-  //	   <<(split.GetSplitter()->Mom()+split.GetSpectator()->Mom()).Abs2()<<"\n";
   Kin_Args kin_ff(split.Y(),split.X(),split.phi());
   if (ConstructFFDipole(split.mi2(),split.mj2(),split.mij2(),split.mk2(),
 			split.GetSplitter()->Mom(),split.GetSpectator()->Mom(),

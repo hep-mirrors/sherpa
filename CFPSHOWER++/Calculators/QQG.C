@@ -23,8 +23,13 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double QQG::Scale(const Splitting & split) const {
+  //msg_Out()<<METHOD<<"(type = "<<m_type<<") with {t, z} = {"<<split.T()<<", "<<split.X()<<"} = "
+  //	   <<split.T()/split.X()<<".\n";
   double scale = split.T();
   switch (m_type) {
+  case kernel_type::IF:
+    scale = split.T()/split.X();
+    break;
   case kernel_type::FI:
     scale = split.T()/split.Y();
     break;

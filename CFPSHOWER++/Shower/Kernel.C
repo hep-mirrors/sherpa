@@ -45,32 +45,33 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
   split.InitKinematics(msel);
   p_sf->GeneratePoint(split);
   if (!p_sf->InitKinematics(split)) {
-    //msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", no phase space for "
-    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-    //	     <<"Q^2 = "<<split.Q2()<<").\n";
+    // msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", no phase space for "
+    // 	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+    // 	     <<"Q^2 = "<<split.Q2()<<").\n";
     return false;
   }
   if (!p_gauge->SetColours(split)) return false;
   if (p_sf->Construct(split)==1) {
     if (split.GetWeight()) { delete split.GetWeight(); } 
     split.SetWeight(MakeWeight(split,overfac));
-    //msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))
-    //	     <<" * "<<(*p_sf)(split)<<" * "<<p_sf->Jacobean(split)<<"\n";
+    // msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
+    // 	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
+    // 	     <<"= "<<((*split.GetWeight())())<<"\n";
     if ((*split.GetWeight())()>=ran->Get()) {
-      //msg_Out()<<"   * add acceptance weight "
-      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
-      //       <<"eta = "<<split.Eta()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "
-      //       <<split.GetWeight()->Accept()<<"\n";
+      // msg_Out()<<"   * add acceptance weight "
+      // 	       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
+      // 	       <<"eta = "<<split.Eta()<<") "
+      // 	       <<"from "<<(*split.GetWeight())<<" = "
+      // 	       <<split.GetWeight()->Accept()<<"\n";
       split.GetSplitter()->AddWeight(split,true);
       return true;
     }
     else {
-      //msg_Out()<<"   * add rejection weight "
-      //       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
-      //       <<"eta = "<<split.Eta()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "
-      //       <<split.GetWeight()->Reject()<<"\n";
+      // msg_Out()<<"   * add rejection weight "
+      // 	       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
+      // 	       <<"eta = "<<split.Eta()<<") "
+      // 	       <<"from "<<(*split.GetWeight())<<" = "
+      // 	       <<split.GetWeight()->Reject()<<"\n";
       split.GetSplitter()->AddWeight(split,false);
     }
   }
@@ -85,18 +86,25 @@ double Kernel::GetXPDF(const double & x,const double & Q2,
       Q2<pdf->Q2Min() || Q2>pdf->Q2Max()) return 0.;
   if (Q2<sqr(2.*flav.Mass(true)))         return 0.;
   pdf->Calculate(x,Q2);
-  return pdf->GetXPDF(flav);
+  return pdf->GetXPDF(flav.Bar());
 }
 
 Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
   double weight   = (p_gauge->Charge() * (*p_gauge)(split) *
-		     (*p_sf)(split) *
-		     p_sf->Jacobean(split));
+		     (*p_sf)(split) * p_sf->Jacobean(split));
   double realover = (p_gauge->Charge() * p_gauge->OverEstimate(split) *
 		     p_sf->OverEstimate(split));
   double over     = ( (dabs(weight)<realover) ?
 		      (weight>0.?1.:-1.)*realover : overfac*weight );
-  //msg_Out()<<" *** "<<METHOD<<"("<<weight<<", "<<over<<", "<<realover<<").\n";
+  /*
+  if (weight<1.e-6)
+    msg_Out()<<"GOTCHA: 0 weight for "
+	     <<p_gauge->Charge()<<" * "<<(*p_gauge)(split)<<" * "
+	     <<(*p_sf)(split)<<" * "<<p_sf->Jacobean(split)<<".\n";
+  if (dabs(weight)>realover) msg_Out()<<"GOTCHA!\n";
+  msg_Out()<<" *** "<<METHOD<<"("<<weight<<", over = "<<over<<", "
+	   <<"real over = "<<realover<<") for factor = "<<overfac<<".\n";
+  */
   return new Weight(weight,over,realover);
 }
 
@@ -127,17 +135,19 @@ Kernel * Getter<Kernel,Kernel_Info,Kernel>::operator()(const Parameter_Type & in
   //if (sf)
   //msg_Out()<<"   * try to init new Kernel("<<info.GetFlavs()[0]<<" -> "
   //	     <<info.GetFlavs()[1]<<" "<<info.GetFlavs()[2]<<"): "
-  //	     <<sf->Name()<<" for swap = "<<info.Swapped()<<": ";
+  //	     <<info.SFName()<<" for swap = "<<info.Swapped()<<": ";
   if (!sf || !gp) {
     if (sf) delete sf;
     if (gp) delete gp;
-    //if (sf) msg_Out()<<" failed.\n";
+    //msg_Out()<<" failed.\n";
     return NULL;
   }
-  //  msg_Out()<<" succeeded.\n";
   Kernel * kernel = new Kernel(info);
   kernel->SetSF(sf);
   kernel->SetGauge(gp);
+  //msg_Out()<<"Found "<<kernel->GetFlavs()[0]<<" --> "
+  //	   <<kernel->GetFlavs()[1]<<"+"<<kernel->GetFlavs()[2]
+  //	   <<" ["<<info.SFName()<<"]\n";
   return kernel;
 }
 

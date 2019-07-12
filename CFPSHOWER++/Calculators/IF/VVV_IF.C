@@ -89,6 +89,7 @@ DECLARE_GETTER(VVV_IF,"IF_VVV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,VVV_IF>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   //if (info.Swapped()) return NULL;
   if (info.Type()==kernel_type::IF &&
       (info.GetFlavs()[0].IsVector() &&

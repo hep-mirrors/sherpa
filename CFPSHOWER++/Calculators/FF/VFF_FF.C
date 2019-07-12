@@ -66,6 +66,7 @@ SF_Base *
 ATOOLS::Getter<SF_Base,Kernel_Info,VFF_FF>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   if (info.Type()==kernel_type::FF &&
       (info.GetFlavs()[0].IsVector() &&
        info.GetFlavs()[1].IsFermion() &&

@@ -22,7 +22,7 @@ ostream & CFPSHOWER::operator<<(ostream &s,const Splitting & split) {
 Splitting::Splitting(Parton * splitter,Parton * spectator,
 		     const double  & t, const double  & t0) :
   p_splitter(splitter), p_spectator(spectator), p_kernel(NULL), p_weight(NULL),
-  m_t(t), m_t0(t0), m_Q2(-1.), m_z(-1.), m_phi(-1.), m_sijk(-1.),
+  m_t(t), m_t1(t), m_t0(t0), m_Q2(-1.), m_z(-1.), m_phi(-1.), m_sijk(-1.),
   m_x(-1.), m_y(-1.), m_eta(splitter->XB()),
   m_mij2(0.), m_mi2(0.), m_mj2(0.), m_mk2(0.),
   m_specmom(p_spectator->Mom()), 
@@ -43,6 +43,16 @@ void Splitting::InitKinematics(const ATOOLS::Mass_Selector * ms) {
   m_Q2   = dabs(m_sijk - m_mi2 - m_mj2 - m_mk2);
   m_eta  = p_splitter->XB(); 
 }
+
+void Splitting::UpdateSpectatorMomentum() {
+  p_spectator->SetMom(m_specmom);
+  // update Bjorken-x variables of particles, where appropriate
+  if (p_kernel->GetType()==kernel_type::IF ||
+      p_kernel->GetType()==kernel_type::II) p_splitter->SetXB();
+  if (p_kernel->GetType()==kernel_type::FI ||
+      p_kernel->GetType()==kernel_type::II) p_spectator->SetXB();
+}
+
 
 void Splitting::SetMasses(const Mass_Selector * ms) {
   m_mij2 = sqr(ms->Mass(p_kernel->GetSF()->GetFlavs()[0]));

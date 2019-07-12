@@ -7,6 +7,7 @@ namespace CFPSHOWER {
   class SF_IF : public SF_Base {
   protected:
     virtual double Jacobean(const Splitting & split) const;
+    virtual double PDFEstimate(const Splitting & split) const;
   public:
     SF_IF(const Kernel_Info & info);
     virtual void GeneratePoint(Splitting & split) const {

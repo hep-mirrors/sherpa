@@ -20,7 +20,7 @@ namespace CFPSHOWER {
     Parton         * p_splitter, * p_spectator;
     Kernel         * p_kernel;
     Weight         * p_weight;
-    double           m_t, m_t0, m_Q2, m_z, m_phi, m_sijk, m_x, m_y, m_eta;
+    double           m_t, m_t1, m_t0, m_Q2, m_z, m_phi, m_sijk, m_x, m_y, m_eta;
     double           m_mij2, m_mi2, m_mj2, m_mk2;
     ATOOLS::Vec4D    m_moms[3], m_specmom;
     ATOOLS::Poincare_Sequence m_seq;
@@ -37,6 +37,7 @@ namespace CFPSHOWER {
       s_cnt--;
     }
     void InitKinematics(const ATOOLS::Mass_Selector * ms);
+    void UpdateSpectatorMomentum();
     
     inline void SetKinScheme(const int & kin)   { m_kinscheme = kin; }
     inline const int & KinScheme() const        { return m_kinscheme; }
@@ -47,6 +48,7 @@ namespace CFPSHOWER {
 
     inline void SetT(const double & t)          { m_t = t; }
     inline void SetT0(const double & t0)        { m_t0 = t0; }
+    inline void SetT1(const double & t1)        { m_t1 = t1; }
     inline void SetZ(const double & z=-1.)      {
       if (z>=0.) m_z = z;
       else m_z = ATOOLS::ran->Get();
@@ -75,13 +77,13 @@ namespace CFPSHOWER {
     
     inline void SetSplitter(Parton * parton)               { p_splitter  = parton; }
     inline void SetSpectator(Parton * parton)              { p_spectator = parton; }
-    inline void UpdateSpectatorMomentum()                  { p_spectator->SetMom(m_specmom); }
     inline void SetParton(size_t i,Parton * const parton)  { p_outs[i] = parton; }
     inline void SetSpecMom(const ATOOLS::Vec4D & mom)      { m_specmom = mom; }
     inline void SetMom(size_t i,const ATOOLS::Vec4D & mom) { m_moms[i] = mom; }
     inline void SetCol(size_t i,const Color & col)         { m_cols[i] = col; }
 
     inline const double & T()    const { return m_t; }
+    inline const double & T1()   const { return m_t1; }
     inline const double & T0()   const { return m_t0; }
     inline const double & Z()    const { return m_z; }
     inline const double & X()    const { return m_x; }

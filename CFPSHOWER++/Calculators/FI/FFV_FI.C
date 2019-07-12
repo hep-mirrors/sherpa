@@ -88,10 +88,13 @@ DECLARE_GETTER(FFV_FI,"FI_FFV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FI>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   if (info.Type()==kernel_type::FI &&
       info.GetFlavs()[0].IsFermion() && 
       info.GetFlavs()[1].IsFermion() &&
-      info.GetFlavs()[2].IsVector()) return new FFV_FI(info);
+      info.GetFlavs()[2].IsVector()) {
+    return new FFV_FI(info);
+  }
   return NULL;
 }
 

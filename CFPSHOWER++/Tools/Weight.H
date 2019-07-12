@@ -7,17 +7,21 @@ namespace CFPSHOWER {
   class Parton;
   
   struct Weight {
-    double m_f, m_g, m_h;
+    double m_value, m_estover, m_realover;
   public:
-    inline Weight(const double &f,const double &g,const double &h):
-      m_f(f), m_g(g), m_h(h) {}
-    inline const double operator()() const { return m_f/m_g; }
-    inline const double Accept()     const { return m_g/m_h; }
-    inline const double Reject()     const { return m_g/m_h*(m_h-m_f)/(m_g-m_f); }
+    inline Weight(const double &value,const double &estover,const double &realover):
+      m_value(value), m_estover(estover), m_realover(realover) {}
+    inline const double operator()() const { return m_value/m_estover; }
+    inline const double Accept()     const { return m_estover/m_realover; }
+    inline const double Reject()     const {
+      return m_estover/m_realover*(m_realover-m_value)/(m_estover-m_value);
+    }
   };// end of struct Weight
 
   inline std::ostream &operator<<(std::ostream &s,const Weight &w)
-  { return s<<"W(f="<<w.m_f<<",g="<<w.m_g<<",h="<<w.m_h<<")"; }
+  { return s<<"W(value = "<<w.m_value<<", "
+	    <<"estimated over = "<<w.m_estover<<", "
+	    <<"real over = "<<w.m_realover<<")"; }
 }
 
 #endif
