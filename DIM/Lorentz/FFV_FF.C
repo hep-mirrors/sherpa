@@ -14,6 +14,8 @@ namespace DIM {
     inline FFV_FF(const Kernel_Key &key):
       Lorentz_FF(key) {}
 
+    const double m_K = 0.9;
+
     double Value(const Splitting &s) const
     {
       double z(s.m_z), y(s.m_y);
@@ -35,21 +37,48 @@ namespace DIM {
 
     double Integral(const Splitting &s) const
     {
-      double I=log(1.0+s.m_Q2/s.m_t0);
-      return I*(1.0+p_sk->GF()->KMax(s));
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        {
+        double I=2.*log(1./(1.-s.m_zmax)) / (sqrt(1.-sqr(m_K)));
+        return I*(1.0+p_sk->GF()->KMax(s));
+        }
+      default:
+        {
+        double I=log(1.0+s.m_Q2/s.m_t0);
+        return I*(1.0+p_sk->GF()->KMax(s));
+        }
+      }
     }
 
     double Estimate(const Splitting &s) const
     {
-      double E=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t0/s.m_Q2);
-      return E*(1.0+p_sk->GF()->KMax(s));
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        {
+        double E=2./(1.-s.m_z)/(1.-m_K*cos(s.m_phi));
+        return E*(1.0+p_sk->GF()->KMax(s));
+        }
+      default:
+        {
+        double E=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t0/s.m_Q2);
+        return E*(1.0+p_sk->GF()->KMax(s));
+        }
+      }
     }
 
     bool GeneratePoint(Splitting &s) const
     {
-      s.m_z=1.0-sqrt(s.m_t0/s.m_Q2*(pow(1.0+s.m_Q2/s.m_t0,ran->Get())-1.0));
-      s.m_phi=2.0*M_PI*ran->Get();
-      return true;
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        s.m_z   = 1.-pow(1.-s.m_zmax,ran->Get());
+        s.m_phi = 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
+        return true;
+      default:
+        s.m_z=1.0-sqrt(s.m_t0/s.m_Q2*(pow(1.0+s.m_Q2/s.m_t0,ran->Get())-1.0));
+        s.m_phi=2.0*M_PI*ran->Get();
+        return true;
+      }
     }
 
   };// end of class FFV_FF

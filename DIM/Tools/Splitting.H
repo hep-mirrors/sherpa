@@ -11,9 +11,11 @@ namespace DIM {
 
   struct Splitting {
 
-    Parton *p_c, *p_s, *p_n;
+    Parton *p_c, *p_s, *p_n, *p_kinspec;
     const Kernel *p_sk;
     double m_t, m_z, m_phi;
+    double m_zmax;
+    double m_alpha, m_Qprime2, m_paipb;
     double m_Q2, m_x, m_y;
     double m_mij2, m_mi2, m_mj2, m_mk2;
     double m_eta, m_t0, m_t1;
@@ -36,6 +38,10 @@ namespace DIM {
     { m_h[2]=m_h[1]=m_h[0]=0; }
 
     void SetType();
+
+    void SetKinSpect(const Parton &p);
+
+    void SetKinVar();
 
     bool Allowed() const;
 

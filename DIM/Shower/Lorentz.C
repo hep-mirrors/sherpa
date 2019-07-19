@@ -40,6 +40,8 @@ Lorentz::Lorentz(const Kernel_Key &k,const int type):
   else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
   else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
   else                               m_dipole_case = EXTAMP::DipoleCase::CS;
+
+  m_t_cutoff = s["CSS_FS_PT2MIN"].Get<double>();
 }
 
 Lorentz::~Lorentz()
@@ -106,5 +108,16 @@ bool Lorentz::SetLimits(Splitting &s) const
   s.m_Q2=dabs((s.p_c->Mom()+s.p_s->Mom()).Abs2()
 	      -s.m_mi2-s.m_mj2-s.m_mk2);
   s.m_eta=s.p_c->GetXB();
+
+  if(m_dipole_case==EXTAMP::IDa){
+    const double k02     = m_t_cutoff;
+    const double mw2     = sqr(Flavour(24).Mass());
+    const double paipb   = s.m_paipb;
+    const double Qprime2 = s.m_Qprime2;
+    const double alpha   = s.m_alpha;
+    s.m_zmax   = (-2.*k02*paipb*Qprime2 + paipb*sqr(Qprime2) - alpha*pow(Qprime2,3.) +
+                 sqrt(alpha*pow(Qprime2,4.)*(4.*k02*paipb + alpha*sqr(Qprime2)))) /
+                 (paipb*sqr(Qprime2));
+  }
   return true;
 }

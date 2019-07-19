@@ -22,6 +22,8 @@ namespace DIM {
 
     ATOOLS::Mass_Selector *p_ms;
 
+    double m_t_cutoff;
+
     inline double Lam(const double &a,
 		      const double &b,
 		      const double &c) const
