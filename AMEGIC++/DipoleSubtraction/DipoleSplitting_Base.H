@@ -25,7 +25,8 @@ namespace AMEGIC {
       i_i  = 4,
       f_fm = 5,
       f_im = 6,
-      i_fm = 7
+      i_fm = 7,
+      i_im = 8
     };
   };
 
@@ -48,7 +49,7 @@ namespace AMEGIC {
   protected:
     double m_alpha,m_kt2max,m_amin,m_kappa;
     double m_Q2,m_kt2,m_av,m_a;
-    int m_nf, m_mcmode, m_mcsign;
+    int m_nf, m_mcmode, m_mcsign,m_msub;
     ATOOLS::Vec4D m_pt1,m_pt2;
 
     dpt::dipoltype m_type;

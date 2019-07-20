@@ -616,7 +616,7 @@ double Channel_Elements::GenerateYUniform(const double tau,const Double_Containe
   static int noem(0);
   if(x<0.){
     ATOOLS::Data_Reader read(" ",";","#","=");
-    x    = read.GetValue<double>("CSS_x",0.0);
+    x    = read.GetValue<double>("CSS_x",1.e-9);
     noem = read.GetValue<int>("CSS_NOEMISSION",0);
   }
   if(noem){

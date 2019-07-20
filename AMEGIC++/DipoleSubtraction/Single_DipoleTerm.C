@@ -157,6 +157,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     if (helpd) m_dalpha = helpd;
     break;
   case dpt::i_i:
+  case dpt::i_im:
     helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_II"));
     if (helpd) m_dalpha = helpd;
     break;
@@ -217,13 +218,14 @@ bool Single_DipoleTerm::DetermineType() {
     }
     else {
       if (m_pk>=m_nin) m_dipoletype = dpt::i_fm;
+      else m_dipoletype = dpt::i_im;
     }
   }
 
-  if (massiveini) {
-    msg_Error()<<METHOD<<" Cannot handle massive initial state! Abort."<<endl;
-    abort();
-  }
+  // if (massiveini) {
+  //   msg_Error()<<METHOD<<" Cannot handle massive initial state! Abort."<<endl;
+  //   abort();
+  // }
 
   switch (m_dipoletype) {
   case dpt::f_f:
@@ -262,6 +264,7 @@ bool Single_DipoleTerm::DetermineType() {
   case dpt::i_f:
   case dpt::i_fm:
   case dpt::i_i:
+  case dpt::i_im:
     if (m_fli==Flavour(kf_gluon)) {
       m_flij = m_flj.Bar();
       if (m_flj==m_fli) m_ftype = 4;
@@ -376,6 +379,10 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     break;
   case dpt::i_fm: 
     p_dipole = new IF_MassiveDipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk);
+    break;
+  case dpt::i_im: 
+    p_dipole = new II_MassiveDipoleSplitting(m_ftype,m_nin+m_nout-1,m_pi,m_pj,m_pk,
+					     m_fli.Mass(),m_flj.Mass(),m_flk.Mass());
     break;
   default:
     p_dipole=NULL;

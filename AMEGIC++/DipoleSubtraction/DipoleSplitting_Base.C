@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-
+#include "ATOOLS/Org/Data_Reader.H"
 #include <typeinfo>
 
 using namespace ATOOLS;
@@ -23,10 +23,14 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   p_cpl = NULL;
   m_av=sqrt(-1.0);
   m_a=-1.0;
-  
+  // add addition of b in case of massive 5FS
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
 
+  Data_Reader reader(" ",";","#","=");
+  m_msub=reader.GetValue("MASSIVE_SUBTRACTION",0);
+  if(m_msub==1) m_nf+=1;
+  
   CSC.Init();
   m_g1 = 1.5*CSC.CF;
   m_g2 = 11./6.*CSC.CA-2./3.*CSC.TR*m_nf;
@@ -190,6 +194,11 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     m_mcsign=m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
     return m_mcsign==0;
   }
+  if(m_msub && m_type==8) {
+    // for it to be accepted has to be x>=m_alpha
+    return alpha < m_alpha;
+  }
+
   return alpha>m_alpha || m_kt2>m_kt2max;
 }
 

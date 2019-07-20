@@ -98,7 +98,7 @@ double Shower::GetXBj(Parton *const p) const
 int Shower::SetXBj(Parton *const p) const
 {
   double x(GetXBj(p));
-  PRINT_VAR(x);
+  //PRINT_VAR(x);
   if (x>1.0) return -1;
   p->SetXbj(x);
   return 1;
@@ -120,7 +120,11 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 				 Parton *const pi,Parton *const pj)
 {
   if (split==NULL) return 1;
-  if (mode&2) return !split->JetVeto(&m_sudakov);
+  if (mode&2){
+    if(m_noemission)
+      return 1;
+    return !split->JetVeto(&m_sudakov);
+  }
   if (split->GetLeft()==NULL) return 1;
   if (split->GetRight()==NULL) THROW(fatal_error,"Invalid tree structure");
   DEBUG_FUNC(split);
@@ -816,8 +820,8 @@ bool Shower::NoEmissionProbability(Singlet * act,const double x)
   double kt2win;
   
   double wt(0.), wt2(0.);
-  int nTrialsMax(500000), nTrials(0);
-  PRINT_VAR(*p_actual);
+  int nTrialsMax(1000), nTrials(0);
+  //PRINT_VAR(*p_actual);
   for (size_t i{0}; i<nTrialsMax; ++i){
     p_actual = act;
     while (true) {
@@ -831,17 +835,15 @@ bool Shower::NoEmissionProbability(Singlet * act,const double x)
       if (split==NULL) {
 	break;
       }
-      else {
-	int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2,0));
-	if (kstat==1 && kt2win > m_t1)
-	  {
-	    ++nTrials;
-	    break;
-	  }
-      }
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2,0));
+      if (kstat==1 && kt2win > m_t1)
+	{
+	  ++nTrials;
+	  break;
+	}
     }
   }
-  msg_Out() << "mean  : " << nTrials/nTrialsMax << "\n";
+  msg_Out() << "mean  : " << (double) nTrials/nTrialsMax << "\n";
   exit(0);
   return true;
 }
