@@ -271,49 +271,24 @@ double Sudakov::KT2(const double &vi) const {
 }
 
 double Sudakov::GetVi() const {
-  std::vector<double> vi;
   const double Q2 = m_trialvariables.m_Q2;
   const double paipb = m_trialvariables.m_paipb;
   const double alpha = m_trialvariables.m_alpha;
 
   p_shower->KinFF()->m_calcV.calculate_helpers(Q2,m_kperp2,m_z,paipb,alpha,sqr(cos(m_phi)));
-  const double vi1 = p_shower->KinFF()->m_calcV.GetV1();
-  const double vi2 = p_shower->KinFF()->m_calcV.GetV2();
-  const double vi3 = p_shower->KinFF()->m_calcV.GetV3();
-  const double vi4 = p_shower->KinFF()->m_calcV.GetV4();
 
-//DEBUG_VAR(m_vimax);
-//DEBUG_VAR(vi1);
-//DEBUG_VAR(vi2);
-//DEBUG_VAR(vi3);
-//DEBUG_VAR(vi4);
-//DEBUG_VAR(m_kperp2);
-//DEBUG_VAR(KT2(vi1));
-//DEBUG_VAR(KT2(vi2));
-//DEBUG_VAR(KT2(vi3));
-//DEBUG_VAR(KT2(vi4));
-
-  if(!IsBad(vi1) && (vi1>0. && vi1<m_vimax) && IsEqual(KT2(vi1),m_kperp2,1e-2))
-    vi.push_back(vi1);
-  if(!IsBad(vi2) && (vi2>0. && vi2<m_vimax) && IsEqual(KT2(vi2),m_kperp2,1e-2))
-    vi.push_back(vi2);
-  if(!IsBad(vi3) && (vi3>0. && vi3<m_vimax) && IsEqual(KT2(vi3),m_kperp2,1e-2))
-    vi.push_back(vi3);
-  if(!IsBad(vi4) && (vi4>0. && vi4<m_vimax) && IsEqual(KT2(vi4),m_kperp2,1e-2))
-    vi.push_back(vi4);
-//DEBUG_VAR(m_vi);
-
-  /* select one valid vi randomly */
-  const double n = vi.size();
-  if(n==0) return -1.;
+  /* select any vi randomly */
   const double r = ran->Get();
+  double vi;
 
-  if             (r<=1./n) return vi[0];
-  else if(n>=2 && r<=2./n) return vi[1];
-  else if(n>=3 && r<=3./n) return vi[2];
-  else if(n>=4 && r<=4./n) return vi[3];
+  /* first check */
+  if     (r<=0.25)   vi = p_shower->KinFF()->m_calcV.GetV1();
+  else if(r<=0.50)   vi = p_shower->KinFF()->m_calcV.GetV2();
+  else if(r<=0.75)   vi = p_shower->KinFF()->m_calcV.GetV3();
+  else if(r<=1.00)   vi = p_shower->KinFF()->m_calcV.GetV4();
 
-  THROW(fatal_error, "Upps.\n");
+  if(!IsBad(vi) && (vi>0. && vi<m_vimax) && IsEqual(KT2(vi),m_kperp2,1e-2)) return vi;
+  return -1.;
 }
 
 double Sudakov::GetViab(Parton *split) const {

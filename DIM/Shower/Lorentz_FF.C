@@ -82,7 +82,6 @@ double Lorentz_FF::GetVimax(const Splitting &s) const
 
 double Lorentz_FF::GetVi(const Splitting &s, const double &vimax) const
 {
-  std::vector<double> vi;
   const double mw2     = sqr(Flavour(24).Mass());
   const double Q2      = s.m_Qprime2+mw2;
   const double paipb   = s.m_paipb;
@@ -95,42 +94,18 @@ double Lorentz_FF::GetVi(const Splitting &s, const double &vimax) const
      to avoid calling time-consuming default-constructor */
   MCATNLO::Kinematics_FF ff = m_ff;
   ff.m_calcV.calculate_helpers(Q2,kt2,z,paipb,alpha,cos2phi);
-  const double vi1 = ff.m_calcV.GetV1();
-  const double vi2 = ff.m_calcV.GetV2();
-  const double vi3 = ff.m_calcV.GetV3();
-  const double vi4 = ff.m_calcV.GetV4();
 
-//DEBUG_VAR(m_vimax);
-//DEBUG_VAR(vi1);
-//DEBUG_VAR(vi2);
-//DEBUG_VAR(vi3);
-//DEBUG_VAR(vi4);
-//DEBUG_VAR(m_kperp2);
-//DEBUG_VAR(KT2(vi1));
-//DEBUG_VAR(KT2(vi2));
-//DEBUG_VAR(KT2(vi3));
-//DEBUG_VAR(KT2(vi4));
-  if(!IsBad(vi1) && (vi1>0. && vi1<vimax) && IsEqual(KT2(s,vi1),kt2,1e-2))
-    vi.push_back(vi1);
-  if(!IsBad(vi2) && (vi2>0. && vi2<vimax) && IsEqual(KT2(s,vi2),kt2,1e-2))
-    vi.push_back(vi2);
-  if(!IsBad(vi3) && (vi3>0. && vi3<vimax) && IsEqual(KT2(s,vi3),kt2,1e-2))
-    vi.push_back(vi3);
-  if(!IsBad(vi4) && (vi4>0. && vi4<vimax) && IsEqual(KT2(s,vi4),kt2,1e-2))
-    vi.push_back(vi4);
-//DEBUG_VAR(m_vi);
-
-  /* select one element randomly */
-  const double n = vi.size();
-  if(n==0) return -1;
+  /* select any vi randomly */
   const double r = ran->Get();
+  double vi;
 
-  if(r<=1./n)              return vi[0];
-  else if(n>=2 && r<=2./n) return vi[1];
-  else if(n>=3 && r<=3./n) return vi[2];
-  else if(n>=4 && r<=4./n) return vi[3];
+  if     (r<=0.25)   vi = ff.m_calcV.GetV1();
+  else if(r<=0.50)   vi = ff.m_calcV.GetV2();
+  else if(r<=0.75)   vi = ff.m_calcV.GetV3();
+  else if(r<=1.00)   vi = ff.m_calcV.GetV4();
 
-  THROW(fatal_error, "Upps.\n");
+  if(!IsBad(vi) && (vi>0. && vi<vimax) && IsEqual(KT2(s,vi),kt2,1e-2)) return vi;
+  return -1;
 }
 
 double Lorentz_FF::GetViab(const Splitting &s) const
