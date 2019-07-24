@@ -180,6 +180,7 @@ double Splitting_Function_Base::RejectionWeight
   double scale(_scale);
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
+  // TODO: there are m_lastacceptwgt>1
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt>1.0) {
     msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
