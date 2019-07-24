@@ -81,7 +81,18 @@ int PHASIC::ConstructFFDipole
 (const double &mi2,const double &mj2,const double &mij2,
  const double &mk2,const Vec4D &pij,const Vec4D &pk,Kin_Args &ffp)
 {
-  Vec4D n_perp(0.0,cross(Vec3D(pij),Vec3D(pk)));
+  /* use pi-phi_ib instead of phi_ib, since pw is rotated by phi_ib
+     instead of pi */
+  if(ffp.m_res) ffp.m_phi = M_PI-ffp.m_phi;
+  Vec4D n_perp;
+  if(!ffp.m_res) n_perp = Vec4D(0.0,cross(Vec3D(pij),Vec3D(pk)));
+  else
+    { // pij ^= pwtilde, pk ^= paitilde
+    Vec4D pb=ffp.m_pb, pminus=ffp.m_pminus, paitilde=pk;
+//    n_perp = pb - (pb*pminus)/(paitilde*pminus)*paitilde -
+//                  (pb*paitilde)/(paitilde*pminus)*pminus;
+    n_perp=Vec4D(0.0,Vec3D(pb)-Vec3D(pb)*Vec3D(paitilde)/(Vec3D(paitilde).Sqr())*Vec3D(paitilde));
+    }
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_IODebugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
@@ -89,7 +100,15 @@ int PHASIC::ConstructFFDipole
     zrot.RotateBack(n_perp);
   }
   n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(LT(pij,pk,n_perp));
+  Vec4D l_perp;
+  if(!ffp.m_res) l_perp = LT(pij,pk,n_perp);
+  else
+    {
+    Vec4D pminus=ffp.m_pminus, paitilde=pk;
+//    l_perp = LT(paitilde,pminus,n_perp);
+    l_perp = Vec4D(0.0,cross(Vec3D(paitilde),Vec3D(n_perp)));
+    l_perp = l_perp;
+    }
   l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
   Vec4D Q(pij+pk);
   double Q2(Q.Abs2()), sij(ffp.m_y*(Q2-mk2)+(1.0-ffp.m_y)*(mi2+mj2));

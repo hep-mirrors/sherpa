@@ -9,14 +9,16 @@ namespace PHASIC {
   struct Kin_Args {
     double m_y, m_z, m_phi, m_mk2, m_x;
     ATOOLS::Vec4D m_pi, m_pj, m_pk;
+    ATOOLS::Vec4D m_pminus, m_pb;
     ATOOLS::Poincare_Sequence m_lam;
     int m_mode, m_stat;
     static double s_uxeps;
+    bool m_res;
     inline Kin_Args(const double &y=0.0,const double &z=0.0,
 		    const double &phi=0.0,const int mode=0,
-		    const int stat=-1):
+		    const int stat=-1, const bool res=false):
       m_y(y), m_z(z), m_phi(phi), m_mk2(-1.0), m_x(0.0),
-      m_mode(mode), m_stat(stat) {}
+      m_mode(mode), m_stat(stat), m_res(res) {}
   };// end of struct Kin_Args
 
   struct LN_Pair {

@@ -165,8 +165,12 @@ int Shower::MakeKinematics
  const Flavour &flc,double &jcv)
 {
   DEBUG_FUNC("");
-  Parton *spect(split->GetSpect()), *pj(NULL);
-  Vec4D peo(split->Momentum()), pso(spect->Momentum());
+  Parton *spect(split->GetSpect()), *pj(NULL), *kinspect(NULL);
+  Vec4D peo(split->Momentum()), pso(spect->Momentum()), pko;
+  if(KinFF()->m_dipole_case==EXTAMP::IDa){
+    kinspect = split->GetKinSpect();
+    pko      = kinspect->Momentum();
+  }
   int stype(-1), stat(-1);
   if (split->GetType()==pst::FS) {
     if (spect->GetType()==pst::FS) {
@@ -191,9 +195,11 @@ int Shower::MakeKinematics
   if (stat==-1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
+    if(KinFF()->m_dipole_case==EXTAMP::IDa) kinspect->SetMomentum(pko);
     delete pj;
     return stat;
   }
+DEBUG_VAR(*pj);
   Parton *pi(new Parton((stype&1)?fla:flb,
 			split->Momentum(),split->GetType()));
   pi->SetSing(split->GetSing());
@@ -216,6 +222,7 @@ int Shower::MakeKinematics
     msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
+    if(KinFF()->m_dipole_case==EXTAMP::IDa) kinspect->SetMomentum(pko);
     return ustat;
   }
   split->GetSing()->SplitParton(split,pi,pj);

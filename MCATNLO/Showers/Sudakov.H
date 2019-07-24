@@ -23,7 +23,9 @@ namespace MCATNLO {
     double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    double m_phimin;  // phimax not included as phimax = 2*pi-phimin 
+    double m_phimin;  // phimax not included as phimax = 2*pi-phimin
+    double m_vimax;
+    double m_vi, m_viab;
     TrialVariables m_trialvariables;
     int m_ewmode, m_scalescheme;
     const ATOOLS::Mass_Selector *  p_rms;
@@ -54,6 +56,10 @@ namespace MCATNLO {
                     const bool &success);
     void SetTrialVariables(Parton* split, Parton* spect, Parton* kinspect);
     Parton* SelectKinSpect(Parton* split, Parton* spect);
+    double GetViMax(Parton *split) const;
+    double GetVi() const;
+    double GetViab(Parton *split) const;
+    double KT2(const double &vi) const;
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -70,7 +76,7 @@ namespace MCATNLO {
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1, const double phimin=0.);
 
-    inline void GetSplittingParameters(double &,double &,double &,double &);
+    void GetSplittingParameters(double &,double &,double &,double &) const;
 
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
 
@@ -105,10 +111,6 @@ namespace MCATNLO {
     { m_disallowflav=df; }
   };
   
-  void Sudakov::GetSplittingParameters
-  (double & kt2,double & z,double & y,double & phi) {
-    kt2 = m_kperp2; z = m_z; y = m_y; phi = m_phi;
-  }
 }
 
 #endif

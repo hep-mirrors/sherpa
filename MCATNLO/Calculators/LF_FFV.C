@@ -293,7 +293,8 @@ double LF_FFV_FF::OverIntegrated
     case EXTAMP::CS:
       return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
     case EXTAMP::IDa:
-      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax))*
+      /* multiply with 4 as sum over 4 vi-solutions */
+      return 4.*(4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax))*
              2./tan(phimin/2) / (2.*M_PI);
   }
 }
@@ -442,7 +443,6 @@ double LF_FVF_FF::operator()
 {
   // checked that this is the only call of 'operator', apart from LF_FFV_FF::operator()
   if(m_dipole_case==EXTAMP::IDa){
-    // TODO: take care of following
     // do NOT substitute z with 1-z as correct z (and also v_iab)
     // is calculated in CS_Cluster_Definitions::KT2(...)
     // This is in contrast to CS-case, where i and j are swapped in

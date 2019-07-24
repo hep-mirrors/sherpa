@@ -26,8 +26,12 @@ Kinematics_Base::Kinematics_Base(): m_evolscheme(0), p_ms(NULL)
 
 double Kinematics_FF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const double &mi2,const double &mj2,const double &mk2,
-			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const
+			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
+                             const ATOOLS::Vec4D pa, const ATOOLS::Vec4D pb,
+                             const ATOOLS::Vec4D pi) const
 {
+  if(m_dipole_case==EXTAMP::IDa) return (pa*pi)*(pb*pi)/(pa*pb);
+
   double pipj=(Q2-mi2-mj2-mk2)*y;
   if (m_evolscheme==0 || m_evolscheme==2) {
     double kt2=pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
@@ -68,32 +72,185 @@ double Kinematics_FF::GetY(const double &Q2,const double &_kt2,const double &z,
   return 0.0;
 }
 
+void V_Calculator::calculate_helpers(const double &Q2,const double &k2,const double &z,
+                                     const double &paipb, const double &alpha,
+                                     const double &cos2phi)
+{
+  const double mw2     = sqr(Flavour(24).Mass());
+  const double Qprime2 = Q2-mw2;
+  m_c =  4*k2*mw2*pow(paipb,2) + 4*k2*pow(paipb,2)*Qprime2 - 2*alpha*k2*paipb*pow(Qprime2,2) +
+         pow(paipb,2)*pow(Qprime2,2) - 4*k2*pow(paipb,2)*Qprime2*z -
+         2*pow(paipb,2)*pow(Qprime2,2)*z + pow(paipb,2)*pow(Qprime2,2)*pow(z,2);
+  m_d = -4*pow(mw2,2)*pow(paipb,2) - 8*mw2*pow(paipb,2)*Qprime2 +
+         4*alpha*mw2*paipb*pow(Qprime2,2) -
+         8*alpha*cos2phi*mw2*paipb*pow(Qprime2,2) - 4*pow(paipb,2)*pow(Qprime2,2) +
+         4*alpha*paipb*pow(Qprime2,3) - 8*alpha*cos2phi*paipb*pow(Qprime2,3) -
+         pow(alpha,2)*pow(Qprime2,4) + 8*mw2*pow(paipb,2)*Qprime2*z +
+         8*pow(paipb,2)*pow(Qprime2,2)*z - 4*alpha*paipb*pow(Qprime2,3)*z +
+         8*alpha*cos2phi*paipb*pow(Qprime2,3)*z - 4*pow(paipb,2)*pow(Qprime2,2)*pow(z,2);
+  m_e = -2*mw2*pow(paipb,2)*Qprime2 - 2*pow(paipb,2)*pow(Qprime2,2) +
+         alpha*paipb*pow(Qprime2,3) - 2*alpha*cos2phi*paipb*pow(Qprime2,3) +
+         2*mw2*pow(paipb,2)*Qprime2*z + 4*pow(paipb,2)*pow(Qprime2,2)*z -
+         alpha*paipb*pow(Qprime2,3)*z + 2*alpha*cos2phi*paipb*pow(Qprime2,3)*z -
+         2*pow(paipb,2)*pow(Qprime2,2)*pow(z,2);
+  m_f =  4*pow(mw2,2)*pow(paipb,2) + 8*mw2*pow(paipb,2)*Qprime2 -
+         4*alpha*mw2*paipb*pow(Qprime2,2) + 8*alpha*cos2phi*mw2*paipb*pow(Qprime2,2) +
+         4*pow(paipb,2)*pow(Qprime2,2) - 4*alpha*paipb*pow(Qprime2,3) +
+         8*alpha*cos2phi*paipb*pow(Qprime2,3) + pow(alpha,2)*pow(Qprime2,4) -
+         8*mw2*pow(paipb,2)*Qprime2*z - 8*pow(paipb,2)*pow(Qprime2,2)*z +
+         4*alpha*paipb*pow(Qprime2,3)*z - 8*alpha*cos2phi*paipb*pow(Qprime2,3)*z +
+         4*pow(paipb,2)*pow(Qprime2,2)*pow(z,2);
+  m_g = -(k2*pow(paipb,2)*Qprime2) + k2*pow(paipb,2)*Qprime2*z;
+  m_b = complexsqrt((-4.*m_c)/(3.*m_d) + (4.*pow(m_e,2))/pow(m_f,2) - (4.*m_c)/m_f +
+        (pow(2,0.3333333333333333)*(16.*pow(m_c,2) - 192.*m_e*m_g -
+        192.*m_d*pow(k2,2)*pow(paipb,2)))/(3.*m_d*pow(-128.*pow(m_c,3) +
+        2304.*m_c*m_e*m_g + 6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+        6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2) + complexsqrt(-4.*pow(16.*pow(m_c,2) - 192.*m_e*m_g -
+        192.*m_d*pow(k2,2)*pow(paipb,2),3) + pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g +
+        6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+        6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2),2)),0.3333333333333333)) +
+        pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g + 6912.*m_d*pow(m_g,2) -
+        4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+        6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2) + complexsqrt(-4.*pow(16.*pow(m_c,2) - 192.*m_e*m_g -
+        192.*m_d*pow(k2,2)*pow(paipb,2),3) + pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g +
+        6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+        6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2),2)),0.3333333333333333)/(3.*pow(
+        2,0.3333333333333333)*m_d));
+  m_b1 = (pow(2,0.3333333333333333)*(16.*pow(m_c,2) - 192.*m_e*m_g -
+         192.*m_d*pow(k2,2)*pow(paipb,2)))/(3.*m_d*pow(-128.*pow(m_c,3) +
+         2304.*m_c*m_e*m_g + 6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+         6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2) + complexsqrt(-4.*pow(16.*pow(m_c,2) - 192.*m_e*m_g -
+         192.*m_d*pow(k2,2)*pow(paipb,2),3) + pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g +
+         6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+         6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2),2)),0.3333333333333333));
+  m_b2 = pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g + 6912.*m_d*pow(m_g,2) -
+         4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) - 6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2) +
+         complexsqrt(-4.*pow(16.*pow(m_c,2) - 192.*m_e*m_g -
+         192.*m_d*pow(k2,2)*pow(paipb,2),3) + pow(-128.*pow(m_c,3) + 2304.*m_c*m_e*m_g +
+         6912.*m_d*pow(m_g,2) - 4608.*m_c*m_d*pow(k2,2)*pow(paipb,2) -
+         6912.*pow(m_e,2)*pow(k2,2)*pow(paipb,2),2)),
+         0.3333333333333333)/(3.*pow(2,0.3333333333333333)*m_d);
+}
+
+double V_Calculator::GetV1()
+{
+  const Complex v1 = - m_b/2. - m_e/m_f - 0.5*complexsqrt(4./3*m_c/m_d + 8.*sqr(m_e)/sqr(m_f) -
+                     4.*m_c/m_f -
+                     (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
+                     m_b1 - m_b2);
+  DEBUG_VAR(v1);
+  if(IsZero(v1.imag())) { return v1.real(); }
+  else return -1.0;
+}
+
+double V_Calculator::GetV2()
+{
+  const Complex v2 = - m_b/2. - m_e/m_f + 0.5*complexsqrt(4./3*m_c/m_d + 8.*sqr(m_e)/sqr(m_f) -
+                     4.*m_c/m_f -
+                     (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
+                     m_b1 - m_b2);
+  DEBUG_VAR(v2);
+  if(IsZero(v2.imag())) { return v2.real(); }
+  else return -1.0;
+}
+
+double V_Calculator::GetV3()
+{
+  const Complex v3 =  m_b/2. - m_e/m_f - 0.5*complexsqrt(4./3*m_c/m_d + 8.*sqr(m_e)/sqr(m_f) -
+                      4.*m_c/m_f +
+                      (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
+                      m_b1 - m_b2);
+  if(IsZero(v3.imag())) { return v3.real(); }
+  DEBUG_VAR(v3);
+  else return -1.0;
+}
+
+double V_Calculator::GetV4()
+{
+  const Complex v4 =  m_b/2. - m_e/m_f + 0.5*complexsqrt(4./3*m_c/m_d + 8.*sqr(m_e)/sqr(m_f) -
+                      4.*m_c/m_f +
+                      (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
+                      m_b1 - m_b2);
+  DEBUG_VAR(v4);
+  if(IsZero(v4.imag())) { return v4.real(); }
+  else return -1.0;
+}
+
 int Kinematics_FF::MakeKinematics
 (Parton *const split,const ATOOLS::Flavour &fli,
  const ATOOLS::Flavour &flj,Parton *&pc)
 {
-  Parton * spect = split->GetSpect();
-  Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
+  switch(m_dipole_case){
+    case EXTAMP::CS:
+    {
+      Parton * spect = split->GetSpect();
+      Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
-  double mi2 = p_ms->Mass2(fli), mj2 = p_ms->Mass2(flj);
-  double mij2 = p_ms->Mass2(split->GetFlavour()), mk2 = p_ms->Mass2(spect->GetFlavour());
-  if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
+      double mi2 = p_ms->Mass2(fli), mj2 = p_ms->Mass2(flj);
+      double mij2 = p_ms->Mass2(split->GetFlavour()), mk2 = p_ms->Mass2(spect->GetFlavour());
+      if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
 
-  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
-		split->GetFlavour(),flj,1);
-  Kin_Args ff(y,split->ZTest(),split->Phi());
-  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
+      double y = GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
+                 split->GetFlavour(),flj,1);
+      Kin_Args ff(y,split->ZTest(),split->Phi());
+      if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
       !ValidateDipoleKinematics(mi2, mj2, mk2, ff)) return -1;
 
-  split->SetMomentum(ff.m_pi);
-  spect->SetMomentum(ff.m_pk);
-  if (pc==NULL) {
-    pc = new Parton(flj,ff.m_pj,pst::FS);
-  }
-  else {
-    pc->SetMomentum(ff.m_pj);
-  }
+      split->SetMomentum(ff.m_pi);
+      spect->SetMomentum(ff.m_pk);
+      if (pc==NULL) {
+        pc = new Parton(flj,ff.m_pj,pst::FS);
+      }
+      else {
+        pc->SetMomentum(ff.m_pj);
+      }
+      break;
+    }
+    case EXTAMP::IDa:
+    {
+      Parton * kinspect = split->GetKinSpect();
+      Vec4D paitilde = split->Momentum(), pwtilde = kinspect->Momentum(),
+      pb = split->GetSpect()->Momentum();
 
+      const double mw2      = sqr(Flavour(24).Mass());
+      const double y_wia    = 1.-split->ZTest();
+      const double ztilde_w = 1.-split->YTest(); // YTest() gives vi in ID-case
+
+      Kin_Args ff(y_wia,ztilde_w,split->Phi());
+
+      /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+         momentum */
+      const double Q2 = (paitilde+pwtilde).Abs2();
+            ATOOLS::Vec4D pminus = pwtilde - mw2/(Q2-mw2)*paitilde;
+      const ATOOLS::Vec4D pboost = paitilde+pminus;
+      Poincare bst(pboost);
+      bst.Boost(paitilde);
+      bst.Boost(pwtilde);
+      bst.Boost(pminus);
+      bst.Boost(pb);
+      ff.m_res    = true;
+      ff.m_pb     = pb;
+      ff.m_pminus = pminus;
+      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1;
+      Vec4D pi = ff.m_pj;
+      Vec4D pw = ff.m_pi;
+      Vec4D pa = ff.m_pk;
+      bst.BoostBack(pi);
+      bst.BoostBack(pw);
+      bst.BoostBack(pa);
+
+      split->SetMomentum(pa);
+      kinspect->SetMomentum(pw);
+      // check: on-shellness and momentum conservation of constructed momenta
+      if (pc==NULL) {
+        pc = new Parton(flj,pi,pst::FS);
+      }
+      else {
+        pc->SetMomentum(pi);
+      }
+      break;
+    }
+  }
   return 1;
 }
 

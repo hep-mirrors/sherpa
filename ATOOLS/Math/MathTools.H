@@ -85,6 +85,10 @@ namespace ATOOLS {
     if (d<0) return Complex(0.,sqrt(-d));
     return sqrt(d);
   }
+  inline Complex complexsqrt(const Complex &c)
+  {
+    return sqrt(c);
+  }
 
 #define GAMMA_E 0.5772156649015328606
 

@@ -9,6 +9,8 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Math/Poincare.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -242,10 +244,106 @@ void Sudakov::SetTrialVariables(Parton *split, Parton *spect, Parton * kinspect)
   const ATOOLS::Vec4D pai_tilde = split->Momentum();
   const ATOOLS::Vec4D pb        = spect->Momentum();
   const ATOOLS::Vec4D pw_tilde  = kinspect->Momentum();
-  m_trialvariables.m_Q2         = (pai_tilde + pw_tilde)*(pai_tilde + pw_tilde);
+  m_trialvariables.m_Q2         = (pai_tilde + pw_tilde).Abs2();
   const ATOOLS::Vec4D p_minus   = pw_tilde-mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
   m_trialvariables.m_paipb      = pai_tilde*pb;
   m_trialvariables.m_alpha      = pb*p_minus / (pai_tilde*p_minus);
+}
+
+double Sudakov::GetViMax(Parton *split) const {
+  const Vec4D pai_tilde = split->Momentum();
+  const Vec4D pw_tilde  = split->GetKinSpect()->Momentum();
+  const Vec4D pa        = m_z*pai_tilde;
+  const Vec4D n         = pw_tilde - pa + pai_tilde;
+  return 2.*pa*n/(n*n)*(1.-m_z)/m_z;
+}
+
+double Sudakov::KT2(const double &vi) const {
+  const double mw2     = sqr(Flavour(24).Mass());
+  const double alpha   = m_trialvariables.m_alpha;
+  const double Qprime2 = m_trialvariables.m_Q2-mw2;
+  const double paipb   = m_trialvariables.m_paipb;
+  const double A       = alpha*vi*Qprime2/2.;
+  const double B       = paipb*(vi*(m_z-1.-mw2/Qprime2)+1-m_z);
+  const double cosphi  = cos(m_phi);
+  const double kt2     = vi*Qprime2*(A+B-2.*sqrt(A*B)*cosphi)/(2.*paipb);
+  return kt2;
+}
+
+double Sudakov::GetVi() const {
+  std::vector<double> vi;
+  const double Q2 = m_trialvariables.m_Q2;
+  const double paipb = m_trialvariables.m_paipb;
+  const double alpha = m_trialvariables.m_alpha;
+
+  p_shower->KinFF()->m_calcV.calculate_helpers(Q2,m_kperp2,m_z,paipb,alpha,sqr(cos(m_phi)));
+  const double vi1 = p_shower->KinFF()->m_calcV.GetV1();
+  const double vi2 = p_shower->KinFF()->m_calcV.GetV2();
+  const double vi3 = p_shower->KinFF()->m_calcV.GetV3();
+  const double vi4 = p_shower->KinFF()->m_calcV.GetV4();
+
+//DEBUG_VAR(m_vimax);
+//DEBUG_VAR(vi1);
+//DEBUG_VAR(vi2);
+//DEBUG_VAR(vi3);
+//DEBUG_VAR(vi4);
+//DEBUG_VAR(m_kperp2);
+//DEBUG_VAR(KT2(vi1));
+//DEBUG_VAR(KT2(vi2));
+//DEBUG_VAR(KT2(vi3));
+//DEBUG_VAR(KT2(vi4));
+
+  if(!IsBad(vi1) && (vi1>0. && vi1<m_vimax) && IsEqual(KT2(vi1),m_kperp2,1e-2))
+    vi.push_back(vi1);
+  if(!IsBad(vi2) && (vi2>0. && vi2<m_vimax) && IsEqual(KT2(vi2),m_kperp2,1e-2))
+    vi.push_back(vi2);
+  if(!IsBad(vi3) && (vi3>0. && vi3<m_vimax) && IsEqual(KT2(vi3),m_kperp2,1e-2))
+    vi.push_back(vi3);
+  if(!IsBad(vi4) && (vi4>0. && vi4<m_vimax) && IsEqual(KT2(vi4),m_kperp2,1e-2))
+    vi.push_back(vi4);
+//DEBUG_VAR(m_vi);
+
+  /* select one valid vi randomly */
+  const double n = vi.size();
+  if(n==0) return -1.;
+  const double r = ran->Get();
+
+  if             (r<=1./n) return vi[0];
+  else if(n>=2 && r<=2./n) return vi[1];
+  else if(n>=3 && r<=3./n) return vi[2];
+  else if(n>=4 && r<=4./n) return vi[3];
+
+  THROW(fatal_error, "Upps.\n");
+}
+
+double Sudakov::GetViab(Parton *split) const {
+  Vec4D pai_tilde = split->Momentum();
+  Vec4D pw_tilde  = split->GetKinSpect()->Momentum();
+  Vec4D pb        = split->GetSpect()->Momentum();
+  const double mw2      = sqr(Flavour(24).Mass());
+  const double y_wia    = 1.-m_z;
+  const double ztilde_w = 1-m_vi;
+  PHASIC::Kin_Args ff(y_wia,ztilde_w,m_phi);
+
+  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+     momentum */
+        ATOOLS::Vec4D pminus = pw_tilde - mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+  const ATOOLS::Vec4D pboost = pai_tilde+pminus;
+  Poincare bst(pboost);
+  bst.Boost(pai_tilde);
+  bst.Boost(pw_tilde);
+  bst.Boost(pminus);
+  bst.Boost(pb);
+  ff.m_res    = true;
+  ff.m_pb     = pb;
+  ff.m_pminus = pminus;
+  if (PHASIC::ConstructFFDipole(mw2,0,mw2,0,pw_tilde,pai_tilde,ff)<0) return -1.;
+  Vec4D pi = ff.m_pj;
+  Vec4D pa = ff.m_pk;
+  const double kt2 = (pa*pi)*(pb*pi)/(pa*pb);
+  if(IsEqual(m_kperp2, kt2, 1e-3))
+    return pa*pb / (pi*(pa+pb));
+  return -1.;
 }
 
 bool Sudakov::Generate(Parton * split) 
@@ -341,16 +439,30 @@ bool Sudakov::Generate(Parton * split)
       (split->GetSpect()->GetType()==pst::FS?cstp::IF:cstp::II);
     switch (m_type) {
     case (cstp::FF) : {
-      double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(p_rms->Mass(m_flspec));
-      Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      if (Q2<=mi2+mj2+mk2) return false;
-      m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2,
+      switch(p_shower->KinFF()->m_dipole_case){
+        case EXTAMP::CS:
+        {
+        double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
+        double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
+        double mk2 = sqr(p_rms->Mass(m_flspec));
+        Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
+        if (Q2<=mi2+mj2+mk2) return false;
+        m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2,
 				    (*m_splitter)->GetFlavourA(),
 				    (*m_splitter)->GetFlavourC());
+        if (m_y<0.0 || m_y>1.0) continue;
+        break;
+        }
+        case EXTAMP::IDa:
+        {
+        m_vimax = GetViMax(split);
+        SetTrialVariables(split, split->GetSpect(), split->GetKinSpect());
+        m_vi   = GetVi();        if(m_vi < 0.)   continue;
+        m_viab = GetViab(split); if(m_viab < 0.) continue;
+        break;
+        }
+      }
       m_x   = 0.;
-      if (m_y<0.0 || m_y>1.0) continue;
     }
       break; 
     case (cstp::FI) : {
@@ -711,10 +823,19 @@ bool Sudakov::Splitting(double Q2,double x) {
   default:
     THROW(fatal_error, "Unknown MCATNLO_SCALE_SCHEME");
   }
-  double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2,m_phi));
+  double wt;
+  switch(p_shower->KinFF()->m_dipole_case){
+    case EXTAMP::CS:
+      wt = RejectionWeight(m_z,m_y,x,cplscale,Q2);
+      break;
+    case EXTAMP::IDa:
+      wt = RejectionWeight(m_z,m_viab,x,cplscale,Q2,m_phi);
+      break;
+  }
   p_selected->Coupling()->SetKFMode(kfmode);
+
   if (ran->Get()>wt) {
-    return false;  
+    return false;
   }
   else {
     return true;
@@ -755,4 +876,17 @@ int Sudakov::HasKernel(const ATOOLS::Flavour &fli,
     }
   }
   return cpl;
+}
+
+void Sudakov::GetSplittingParameters
+(double & kt2,double & z,double & y,double & phi) const
+{
+  switch(p_shower->KinFF()->m_dipole_case){
+    case EXTAMP::CS:
+      kt2 = m_kperp2; z = m_z; y = m_y; phi = m_phi;
+      break;
+    case EXTAMP::IDa:
+      kt2 = m_kperp2; z = m_z; y = m_vi; phi = m_phi;
+      break;
+  }
 }

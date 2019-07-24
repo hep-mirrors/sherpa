@@ -50,8 +50,6 @@ namespace MCATNLO {
     double          m_z_test, m_y_test, m_xBj;
     Parton        * p_spect;
     Parton        * p_kinspect;
-    Parton        * p_wID;
-    ATOOLS::Vec4D   m_mom_in;
     Singlet       * p_sing;
     size_t          m_id, m_idx;
     ATOOLS::Poincare_Sequence m_lt;
@@ -95,8 +93,6 @@ namespace MCATNLO {
     inline double                  Phi()         const;
     inline Parton *                GetSpect();
     inline Parton *                GetKinSpect();
-    inline Parton *                GetwID();
-    inline ATOOLS::Vec4D           GetMomIn()    const;
     inline Singlet*                GetSing();
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);
@@ -111,8 +107,6 @@ namespace MCATNLO {
     inline void SetPhi(const double);
     inline void SetSpect(Parton *);
     inline void SetKinSpect(Parton *);
-    inline void SetwID(Parton *);
-    inline void SetMomIn(const ATOOLS::Vec4D);
     inline void SetSing(Singlet *);
     inline void SetFlow(int code_index,int code=0);
     inline void SetMEFlow(int code_index,int code=0);
@@ -132,7 +126,7 @@ namespace MCATNLO {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_xBj(1.),
-    p_spect(NULL), p_kinspect(NULL), p_wID(NULL), p_sing(NULL), m_id(0), m_idx(0)
+    p_spect(NULL), p_kinspect(NULL), p_sing(NULL), m_id(0), m_idx(0)
   { 
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -143,7 +137,7 @@ namespace MCATNLO {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_phi(2.0*M_PI),
     m_z_test(1.), m_y_test(1.), m_xBj(1.),
-    p_spect(NULL), p_kinspect(NULL), p_wID(NULL), p_sing(NULL), m_id(0), m_idx(0)
+    p_spect(NULL), p_kinspect(NULL), p_sing(NULL), m_id(0), m_idx(0)
   {
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -155,7 +149,7 @@ namespace MCATNLO {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_kt_max(0.), m_phi(0.),
     m_z_test(1.), m_y_test(1.), m_xBj(1.),
-    p_spect(NULL), p_kinspect(NULL), p_wID(NULL), p_sing(NULL), m_id(0), m_idx(0)
+    p_spect(NULL), p_kinspect(NULL), p_sing(NULL), m_id(0), m_idx(0)
   {
     if (m_pst==pst::FS) {
       m_flow.SetCode(1,part->GetFlow(1));
@@ -192,8 +186,6 @@ namespace MCATNLO {
   size_t                  Parton::Id()          const { return m_id; }
   Parton *                Parton::GetSpect()          { return p_spect; }
   Parton *                Parton::GetKinSpect()       { return p_kinspect; }
-  ATOOLS::Vec4D           Parton::GetMomIn()    const { return m_mom_in; }
-  Parton *                Parton::GetwID()            { return p_wID; }
   Singlet*                Parton::GetSing()           { return p_sing; }
   void Parton::SetFlavour(const ATOOLS::Flavour & fl) { m_flav      = fl; }
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
@@ -208,14 +200,12 @@ namespace MCATNLO {
 		       const double y,
 		       const double phi)              { m_kt_test  = kt; 
                                                         m_z_test   = z; 
-                                                        m_y_test   = y; 
+                                                        m_y_test   = y; // vi in ID-case
                                                         m_phi      = phi; }
   void Parton::SetXbj(const double x)                 { m_xBj      = x; }
   void Parton::SetPhi(const double phi)               { m_phi      = phi; }
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  
   void Parton::SetKinSpect(Parton * part)             { p_kinspect = part; }
-  void Parton::SetMomIn (const ATOOLS::Vec4D mom_in)  { m_mom_in   = mom_in; }
-  void Parton::SetwID(Parton * part)                  { p_wID      = part; }
   void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  
   void Parton::SetFlow(const int index, const int code) {
     if ((!m_flav.IsDiQuark()) && (!m_flav.Strong())) return;

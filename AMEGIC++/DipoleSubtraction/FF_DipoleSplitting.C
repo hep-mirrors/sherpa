@@ -9,6 +9,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
+#include "MCATNLO/Showers/Kinematics_Base.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -86,7 +88,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
       m_Q2 = (pw+m_pj+m_pi).Abs2();
       const double mw2 = sqr(Flavour(24).Mass());
       const ATOOLS::Vec4D p_wtilde = m_pIDspec[0];
-      const ATOOLS::Vec4D p_minus  = p_wtilde - mw2/(m_Q2-mw2)*m_ptij;
+            ATOOLS::Vec4D p_minus  = p_wtilde - mw2/(m_Q2-mw2)*m_ptij;
       const double paipb           = m_ptij*m_pk;
       const double alpha           = m_pk*p_minus / (m_ptij*p_minus);
       const ATOOLS::Vec4D p        = m_ptij+p_minus;
@@ -96,12 +98,13 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
       bst.Boost(m_ptij);
       Vec3D pk_perp = Vec3D(m_pk) - Vec3D(m_pk)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
       Vec3D pi_perp = Vec3D(m_pi) - Vec3D(m_pi)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
-      const double cos_phi = pi_perp*pk_perp/(pi_perp.Abs()*pk_perp.Abs());
+      const double cos_phi_ib = pi_perp*pk_perp/(pi_perp.Abs()*pk_perp.Abs());
+      DEBUG_VAR(acos(cos_phi_ib));
       bst.BoostBack(m_pi);
       bst.BoostBack(m_pk);
       bst.BoostBack(m_ptij);
       /* checked that m_kt2 and kt2 agree */
-      m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zain,m_vi_tilde,m_Q2,paipb,alpha,cos_phi):kt2;
+      m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zain,m_vi_tilde,m_Q2,paipb,alpha,cos_phi_ib):kt2;
 
       switch (m_ftype) {
       case spt::q2qg:
@@ -116,7 +119,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         m_av  = m_sff;
         //THROW(fatal_error, "g>qq should not appear"); 
         //but does appear in construction, but is discarded right afterwards
-        std::cout << "Must not appear (except in dipole construction)\n";
+        msg_Debugging() << "Must not appear (except in dipole construction)\n";
         break;
         break;
       case spt::g2gg:
