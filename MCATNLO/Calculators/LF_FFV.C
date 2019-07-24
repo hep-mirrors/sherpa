@@ -250,6 +250,13 @@ double LF_FFV_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
+  // checked that this is the only call of 'operator', apart from LF_FVF_FF::operator()
+  // JFF is 1 instead of (1-y) in CS-case, thus omitted
+  if(m_dipole_case==EXTAMP::IDa){
+    double massless =  2.*y/z - (1.+z); // y -> v_iab, z -> z_ain
+    return 2.0 * p_cf->Coupling(scale,0,sub) * massless;
+  }
+
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mi2   = sqr(p_ms->Mass(m_flavs[1]));
   double mui2  = mi2/Q2;
@@ -433,6 +440,17 @@ double LF_FVF_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
+  // checked that this is the only call of 'operator', apart from LF_FFV_FF::operator()
+  if(m_dipole_case==EXTAMP::IDa){
+    // TODO: take care of following
+    // do NOT substitute z with 1-z as correct z (and also v_iab)
+    // is calculated in CS_Cluster_Definitions::KT2(...)
+    // This is in contrast to CS-case, where i and j are swapped in
+    // CS_Cluster_Definitions::KT2(...)
+    double massless =  2.*y/z - (1.+z); // y -> v_iab, z -> z_ain
+    return 2.0 * p_cf->Coupling(scale,0,sub) * massless;
+  }
+
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mj2   = sqr(p_ms->Mass(m_flavs[2]));
   double muj2  = mj2/Q2;
