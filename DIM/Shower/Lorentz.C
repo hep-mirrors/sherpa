@@ -76,8 +76,19 @@ int Lorentz::Update(Splitting &s,const PHASIC::Kin_Args &ff,
 	(ff.m_lam*(*s.p_c->Ampl())[i]->Mom());
   ATOOLS::Vec4D pc(s.p_c->Mom()), ps(s.p_s->Mom());
   s.p_c->SetFlav(m_fl[1]);
-  s.p_c->SetMom(ff.m_pi);
-  s.p_s->SetMom(ff.m_pk);
+  switch(m_dipole_case){
+    case EXTAMP::IDa:
+    {
+      s.p_c->SetMom(ff.m_pk);
+      s.p_kinspec->SetMom(ff.m_pi);
+      break;
+    }
+    default:
+    {
+      s.p_c->SetMom(ff.m_pi);
+      s.p_s->SetMom(ff.m_pk);
+    }
+  }
   Parton *n(NULL);
   if (s.p_n==NULL) {
     s.p_n = n = new Parton(s.p_c->Ampl(),m_fl[2],ff.m_pj);

@@ -18,6 +18,11 @@ namespace DIM {
 
     double Value(const Splitting &s) const
     {
+      if(m_dipole_case==EXTAMP::IDa)
+      {
+        double zain(s.m_z), v_iab(s.m_viab);
+        return (1.0+p_sk->GF()->K(s))*2.*v_iab/zain - (1+zain);
+      }
       double z(s.m_z), y(s.m_y);
       double A1=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B1=-(1.0+z);

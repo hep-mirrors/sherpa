@@ -283,13 +283,16 @@ Splitting Shower::GeneratePoint
 	  if ((*p.Ampl())[i]==&p) continue;
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
-      cur.SetKinSpect(p);
-      if (cur.p_kinspec!=NULL) cur.SetKinVar();
+	  if(m_dipole_case == EXTAMP::IDa){
+	    cur.SetKinSpect(p);
+	    if (cur.p_kinspec!=NULL) cur.SetKinVar();
+	  }
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
 	  if (kit->second[j]->Allowed(cur)) {
 	    double I=kit->second[j]->Integral(cur);
+	    if(m_dipole_case == EXTAMP::IDa) I *= 4; // due to sum over 4 vis
 	    psum[j].push_back(csum+=dabs(I));
 	    splits[j].push_back(i);
 	  }
@@ -309,9 +312,11 @@ Splitting Shower::GeneratePoint
 	for (size_t i(0);i<splits[j].size();++i)
 	  if (psum[j][i]>=disc) {
 	    win.p_s=(*p.Ampl())[splits[j][i]];
-        win.SetKinSpect(p);
-        if (win.p_kinspec==NULL) THROW(fatal_error, "Invalid spectator assignment!");
-        win.SetKinVar();
+	    if(m_dipole_case == EXTAMP::IDa) { 
+	      win.SetKinSpect(p);
+	      if (win.p_kinspec==NULL) THROW(fatal_error, "Invalid spectator assignment!");
+	      win.SetKinVar();
+	    }
 	    win.SetType();
 	    win.m_kfac=m_kfac;
 	    win.m_cpl=m_cpl;

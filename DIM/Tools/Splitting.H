@@ -14,6 +14,7 @@ namespace DIM {
     Parton *p_c, *p_s, *p_n, *p_kinspec;
     const Kernel *p_sk;
     double m_t, m_z, m_phi;
+    double m_vi, m_viab;
     double m_zmax;
     double m_alpha, m_Qprime2, m_paipb;
     double m_Q2, m_x, m_y;

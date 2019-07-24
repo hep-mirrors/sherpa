@@ -16,6 +16,8 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
 {
   m_subtype=1;
   p_mcatnlo = new Shower();
+  if(p_mcatnlo->m_dipole_case == EXTAMP::IDa) m_subtype=2;
+  // TODO: modification of Kt3 due to subtype 2 instead of 0 not right for ID?
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);
   p_mcatnlo->Init(key.p_model,key.p_isr);
