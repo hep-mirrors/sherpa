@@ -17,6 +17,9 @@ namespace ATOOLS {
 
     ClusterAmplitude_PVector();
 
+    Cluster_Amplitude * OneAmpl();
+
+
     ~ClusterAmplitude_PVector();
 
   };// end of class ClusterAmplitude_PVector
@@ -195,6 +198,10 @@ namespace ATOOLS {
 
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl);
+
+  std::ostream &operator<<
+    (std::ostream &ostr,const Cluster_Amplitude * ampl);
+
 
   typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
 

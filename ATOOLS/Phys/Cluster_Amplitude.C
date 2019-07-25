@@ -21,6 +21,25 @@ ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
   }
 }
 
+Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl()
+{
+  // links all amplitudes from this amplitude vector and return the linked, single amplitude
+  if (this->size()==0) return Cluster_Amplitude::New();
+  Cluster_Amplitude * tmp = this->at(0)->CopyAll();
+  for(int i=1; i< this->size(); i++){
+      if (this->at(i)){
+          Cluster_Amplitude * next_prev = this->at(i)->CopyAll();
+          while (next_prev->Prev()) next_prev = next_prev->Prev();
+          tmp->SetNext(next_prev);
+          while (tmp->Next()) tmp = tmp->Next();
+
+        }
+    }
+
+  while (tmp->Prev()) tmp = tmp->Prev();
+  return tmp;
+}
+
 ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
 
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
@@ -601,6 +620,40 @@ namespace ATOOLS {
     }
     for (size_t i(0);i<ampl.Legs().size();++i)
       ostr<<"  "<<*ampl.Legs()[i]<<"\n";
+    return ostr<<"}";
+  }
+
+  std::ostream &operator<<
+    (std::ostream &ostr,const Cluster_Amplitude * ampl)
+  {
+
+    ostr<<ampl->NIn()<<" -> "<<ampl->Legs().size()-ampl->NIn()<<" {\n";
+    ostr<<"  \\mu_r = "<<sqrt(ampl->MuR2())
+        <<", \\mu_f = "<<sqrt(ampl->MuF2())
+        <<", \\mu_q = "<<sqrt(ampl->MuQ2())
+        <<", \\mu = "<<sqrt(ampl->Mu2())<<"\n";
+    ostr<<"  k_T = "<<sqrt(ampl->KT2())<<", z = "<<ampl->Z()
+        <<", phi = "<<ampl->Phi()<<", kin = "<<ampl->Kin()
+        <<", K = "<<ampl->LKF()<<"\n";
+    ostr<<"  oew = "<<ampl->OrderEW()<<", oqcd = "<<ampl->OrderQCD()
+        <<", nlo = "<<ampl->NLO()<<", new = "<<ID(ampl->IdNew())
+        <<", ncl = "<<ampl->NewCol()<<", flag = "<<ampl->Flag()<<"\n";
+    if (ampl->Decays().size()) {
+      std::string ds;
+      for (DecayInfo_Vector::const_iterator cit(ampl->Decays().begin());
+           cit!=ampl->Decays().end();++cit)
+        ds+=ToString(**cit)+" ";
+      ostr<<"  decs = { "<<ds<<"}\n";
+    }
+    if (ampl->ColorMap().size()) {
+      std::string cs;
+      for (CI_Map::const_iterator cit(ampl->ColorMap().begin());
+           cit!=ampl->ColorMap().end();++cit)
+        cs+=ToString(cit->first)+"->"+ToString(cit->second)+" ";
+      ostr<<"  cols = { "<<cs<<"}\n";
+    }
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      ostr<<"  "<<ampl->Legs()[i]<<"\n";
     return ostr<<"}";
   }
 

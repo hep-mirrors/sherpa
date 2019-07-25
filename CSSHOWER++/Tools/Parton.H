@@ -29,6 +29,7 @@ namespace CSSHOWER {
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
     double          m_kt_soft[2];
+    bool            m_fromdec;
     Parton        * p_left, * p_right;
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
@@ -115,6 +116,8 @@ namespace CSSHOWER {
     inline void SetKin(int kin) { m_kin=kin; }
     inline void SetCol(int col) { m_col=col; }
     inline void SetId(size_t);
+    inline void SetFromDec(const bool &val){m_fromdec=val;}
+    inline bool FromDec() const {return m_fromdec;}
     friend std::ostream& operator<<(std::ostream &,const Parton &);
   };
 
@@ -125,7 +128,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0)
+    m_id(0),m_fromdec(false)
   { 
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
@@ -137,7 +140,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0)
+    m_id(0), m_fromdec(false)
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
@@ -150,7 +153,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0)
+    m_id(0), m_fromdec(part->FromDec())
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     if (m_pst==pst::FS) {
