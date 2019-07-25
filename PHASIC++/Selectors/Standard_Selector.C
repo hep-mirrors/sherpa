@@ -885,7 +885,7 @@ operator()(const Selector_Key &key) const
 {
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
-  assert(parameters[0] == "Mass");
+  assert(parameters[0] == "PT2");
   if (parameters.size() != 5)
     THROW(critical_error, "Invalid syntax");
   const auto kf1 = s.Interprete<int>(parameters[1]);
