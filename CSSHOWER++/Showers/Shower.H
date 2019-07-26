@@ -73,6 +73,11 @@ namespace CSSHOWER {
     double VetoWeight(ATOOLS::Variation_Parameters *params,
 		      ATOOLS::Variation_Weights *weights,
 		      JetVeto_Args &a);
+
+    ATOOLS::Cluster_Amplitude *  SingletToAmplitude(const Singlet * sing, ATOOLS::Cluster_Amplitude * ampl);
+    void   PartonToAmplitude(const Parton *  parton, ATOOLS::Cluster_Amplitude *);
+    void   CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl);
+
  public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
     ~Shower();

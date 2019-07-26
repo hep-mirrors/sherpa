@@ -769,8 +769,10 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
+    d1->SetFromDec(true);
     copy->CreateLeg(RecombinedMomentum(daughters[1],photons,stat2),
                     daughters[1]->RefFlav());
+    copy->Legs().back()->SetFromDec(true);
     size_t idnew=1<<(++imax);
     copy->Legs().back()->SetId(idnew);
     copy->Legs().back()->SetStat(stat2);
@@ -847,6 +849,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
+    d1->SetFromDec(true);
     // todo: 1->2 qcd shower with ew fs recoil partner
     // d1->SetK(idmother);// not that simple: w->qq' has color connection in fs
     Decay_Channel* dc(NULL);
@@ -866,6 +869,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     size_t idnew1=1<<(++imax);
     step1->Legs().back()->SetId(idnew1);
     step1->Legs().back()->SetStat(0);
+    step1->Legs().back()->SetFromDec(true);
     Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                   step1->IdLeg(idmother),
                                   step1->Legs().back());
@@ -905,6 +909,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     size_t idnew2=1<<(++imax);
     step2->Legs().back()->SetId(idnew2);
     step2->Legs().back()->SetStat(stat3);
+    step2->Legs().back()->SetFromDec(true);
     Cluster_Amplitude::SetColours(step1->IdLeg(idnew1),
                                   step2->IdLeg(idnew1),
                                   step2->Legs().back());
