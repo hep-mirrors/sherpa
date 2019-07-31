@@ -184,26 +184,26 @@ Select on a given number of jets using FastJet algorithms
 Their respective syntax and defaults are
 @verbatim
 SELECTORS:
-- Type: NJetFinder
-  N: 0
-  PTMin: 0
-  ETMin: 0
-  R: 0.4
-  Exp: 1
-  EtaMax: None
-  YMax: None
-  MassMax: None
-- Type: FastjetFinder
-  Algorithm: kt
-  N: 0
-  PTMin: 0.0
-  ETMin: 0.0
-  DR: 0.4
-  f: 0.75        # Siscone f parameter
-  EtaMax: 100
-  YMax: 100
-  Nb: -1
-  Nb2: -1
+- NJetFinder:
+    N: 0
+    PTMin: 0.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: 1
+    EtaMax: None
+    YMax: None
+    MassMax: 0.0
+- FastjetFinder:
+    Algorithm: kt
+    N: 0
+    PTMin: 0.0
+    ETMin: 0.0
+    DR: 0.4
+    f: 0.75        # Siscone f parameter
+    EtaMax: None
+    YMax: None
+    Nb: -1
+    Nb2: -1
 
 @end verbatim
 
@@ -246,17 +246,17 @@ values of the jets found with Fastjet can be used to calculate more elaborate
 selector criteria. The syntax of this selector is
 
 @verbatim
-- Type: FastjetSelector
-  Expression: <expression>
-  Algorithm: kt
-  N: 0
-  PTMin: 0
-  ETMin: 0
-  DR: 0.4
-  f: 0.75
-  EtaMax: 100
-  YMax: 100
-  BMode: 0
+- FastjetSelector:
+    Expression: <expression>
+    Algorithm: kt
+    N: 0
+    PTMin: 0.0
+    ETMin: 0.0
+    DR: 0.4
+    f: 0.75
+    EtaMax: None
+    YMax: None
+    BMode: 0.0
 @end verbatim
 
 wherein @code{algorithm} can take the values
@@ -267,13 +267,13 @@ values of the jets found and @code{p[i]} are their momenta. For details see
 association with jets
 
 @verbatim
-- Type: FastjetSelector
-  Expression: Mass(p[4]+p[5])>100
-  Algorithm: antikt
-  N: 2
-  PTMin: 40
-  ETMin: 0
-  DR: 0.5
+- FastjetSelector:
+    Expression: Mass(p[4]+p[5])>100
+    Algorithm: antikt
+    N: 2
+    PTMin: 40
+    ETMin: 0
+    DR: 0.5
 @end verbatim
 
 selects all phase space points where two anti-kt jets with at least 40 GeV of
@@ -295,14 +295,14 @@ The universal selector is intended to implement non-standard cuts
 on the matrix element level. Its syntax is
 @verbatim
 SELECTORS:
-- Type: VariableSelector
-  Variable: <variable>
-  Flavs: [<kf1>, ..., <kfn>]
-  Ranges:
-  - [<min1>, <max1>]
-  - ...
-  - [<minn>, <maxn>]
-  Ordering: "[<order1>,...,<orderm>]"
+- VariableSelector:
+    Variable: <variable>
+    Flavs: [<kf1>, ..., <kfn>]
+    Ranges:
+    - [<min1>, <max1>]
+    - ...
+    - [<minn>, <maxn>]
+    Ordering: "[<order1>,...,<orderm>]"
 @end verbatim
 
 The @code{Variable} parameter defines the name
@@ -348,57 +348,57 @@ Examples
 @verbatim
 SELECTORS:
 # two-body transverse mass
-- Type: VariableSelector
-  Variable: mT
-  Flavs: [11, -12]
-  Ranges:
-  - [50, E_CMS]
+- VariableSelector:
+    Variable: mT
+    Flavs: [11, -12]
+    Ranges:
+    - [50, E_CMS]
 
 # cut on the pT of only the hardest lepton in the event
-- Type: VariableSelector
-  Variable: PT
-  Flavs: 90
-  Ranges:
-  - [50, E_CMS]
-  Ordering: "[PT_UP]"
+- VariableSelector:
+    Variable: PT
+    Flavs: 90
+    Ranges:
+    - [50, E_CMS]
+    Ordering: "[PT_UP]"
 
 # using bool operations to restrict eta of the electron to |eta| < 1.1 or
 # 1.5 < |eta| < 2.5
-- Type: VariableSelector
-  Variable: Calc(abs(Eta(p[0]))<1.1||(abs(Eta(p[0]))>1.5&&abs(Eta(p[0]))<2.5))
-  Flavs: 11
-  Ranges:
-  - [1, 1]  # NOTE: this means true for bool operations
+- VariableSelector:
+    Variable: Calc(abs(Eta(p[0]))<1.1||(abs(Eta(p[0]))>1.5&&abs(Eta(p[0]))<2.5))
+    Flavs: 11
+    Ranges:
+    - [1, 1]  # NOTE: this means true for bool operations
 
 # requesting opposite side tag jets in VBF
-- Type: VariableSelector
-  Variable: Calc(Eta(p[0])*Eta(p[1]))
-  Flavs: [93, 93]
-  Ranges:
-  - [-100, 0]
-  Ordering: "[PT_UP,PT_UP]"
+- VariableSelector:
+    Variable: Calc(Eta(p[0])*Eta(p[1]))
+    Flavs: [93, 93]
+    Ranges:
+    - [-100, 0]
+    Ordering: "[PT_UP,PT_UP]"
 
 # restricting electron+photon mass to be outside of [87.0,97.0]
-- Type: VariableSelector
-  Variable: Calc(Mass(p[0]+p[1])<87.0||Mass(p[0]+p[1])>97.0)
-  Flavs: [11, 22]
-  Ranges:
-  - [1, 1]
+- VariableSelector:
+    Variable: Calc(Mass(p[0]+p[1])<87.0||Mass(p[0]+p[1])>97.0)
+    Flavs: [11, 22]
+    Ranges:
+    - [1, 1]
 
 # in @samp{Z[lepton lepton] Z[lepton lepton]}, cut on mass of lepton-pairs
 # produced from Z's
-- Type: VariableSelector
-  Variable: m
-  Flavs: [90, 90]
-  # here we use knowledge about the internal ordering to cut only on the
-  # correct lepton pairs
-  Ranges:
-  - [80, 100]
-  - [0, E_CMS]
-  - [0, E_CMS]
-  - [0, E_CMS]
-  - [0, E_CMS]
-  - [80, 100]
+- VariableSelector:
+    Variable: m
+    Flavs: [90, 90]
+    # here we use knowledge about the internal ordering to cut only on the
+    # correct lepton pairs
+    Ranges:
+    - [80, 100]
+    - [0, E_CMS]
+    - [0, E_CMS]
+    - [0, E_CMS]
+    - [0, E_CMS]
+    - [80, 100]
 @end verbatim
 
 
@@ -411,12 +411,12 @@ samples that, for instance, include several jet finders and that allows
 a specification later. The syntax is
 
 @verbatim
-SELECTORES:
-- Type: MinSelector
-  Subselectors:
-  - <selector 1>
-  - <selector 2>
-  ...
+SELECTORS:
+- MinSelector:
+    Subselectors:
+    - <selector 1>
+    - <selector 2>
+    ...
 @end verbatim
 
 The @ref{Minimum selector} can be used if constructed with other 
