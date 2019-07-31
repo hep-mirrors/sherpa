@@ -164,9 +164,10 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     msg_Debugging()<<"Jet "<<i<<": pT="<<pj.PPerp()<<", |eta|="<<dabs(pj.Eta())
                    <<", |y|="<<dabs(pj.Y())<<std::endl;
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	(m_y==100 || dabs(pj.Y())<m_y)) {
+    if (pj.PPerp() > m_ptmin
+        && pj.EPerp() > m_etmin
+        && dabs(pj.Eta()) < m_eta
+        && dabs(pj.Y()) < m_y) {
       n++;
       if (BTag(jets[i], 1)) nb++;
       if (BTag(jets[i], 2)) nb2++;
@@ -195,19 +196,31 @@ Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Finder>::
 operator()(const Selector_Key &key) const
 {
   auto s = key.m_settings["FastjetFinder"];
-  const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
-  const auto n = s["N"].SetDefault(0).Get<size_t>();
-  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
-  const auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
-  const auto dr = s["DR"].SetDefault(0.4).Get<double>();
-  const auto f = s["f"].SetDefault(0.75).Get<double>();
-  const auto eta = s["EtaMax"].SetDefault(100.0).Get<double>();
-  const auto y = s["YMax"].SetDefault(100.0).Get<double>();
-  const auto nb = s["Nb"].SetDefault(-1).Get<int>();
+
+  // parameter/mode settings
+  const auto algo = s["Algorithm"].SetDefault("")  .Get<std::string>();
+  const auto dr   = s["DR"]       .SetDefault(0.4) .Get<double>();
+  const auto f    = s["f"]        .SetDefault(0.75).Get<double>();
+
+  // min/max settings
+  const auto n
+    = s["N"]     .SetDefault("None").UseZeroReplacements()     .Get<size_t>();
+  const auto ptmin
+    = s["PTMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto etmin
+    = s["ETMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto eta
+    = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto y
+    = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+
+  // b tagging
+  const auto nb  = s["Nb"] .SetDefault(-1).Get<int>();
   const auto nb2 = s["Nb2"].SetDefault(-1).Get<int>();
 #ifndef USING__FASTJET__3
   if (nb>0 || nb2>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
 #endif
+
   Fastjet_Finder *jf(new Fastjet_Finder(key.p_proc,
                                         algo,
                                         ptmin, etmin,
@@ -229,8 +242,8 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<width<<"  ETMin: minimum jet eta\n"
      <<width<<"  DR: jet distance parameter\n"
      <<width<<"  f: Siscone f parameter (default: 0.75)\n"
-     <<width<<"  EtaMax: maximum jet eta (default: 100)\n"
-     <<width<<"  YMax: maximum jet rapidity (default: 100)\n"
+     <<width<<"  EtaMax: maximum jet eta (default: None)\n"
+     <<width<<"  YMax: maximum jet rapidity (default: None)\n"
      <<width<<"  Nb: number of jets with b quarks\n"
      <<width<<"  Nb2: number of jets with non-vanishing b content";
 }

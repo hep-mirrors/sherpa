@@ -278,22 +278,28 @@ Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
 operator()(const Selector_Key &key) const
 {
   auto s = key.m_settings["NJetFinder"];
-  auto exp = s["Exp"].SetDefault(1).Get<int>();
-  auto etamax = s["EtaMax"]
-    .SetDefault(std::numeric_limits<double>::max())
-    .Get<double>();
-  auto ymax = s["YMax"]
-    .SetDefault(std::numeric_limits<double>::max())
-    .Get<double>();
-  auto massmax = s["MassMax"].SetDefault(0.0).Get<double>();
-  auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
-  auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
-  auto type = s["Mode"].SetDefault(2).Get<int>();
-  auto R = s["R"].SetDefault(0.4).Get<double>();
-  auto n = s["N"].SetDefault(0).Get<int>();
+
+  // min/max settings
+  const auto etamax
+    = s["EtaMax"] .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto ymax
+    = s["YMax"]   .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto massmax
+    = s["MassMax"].SetDefault(0.0)   .UseMaxDoubleReplacements().Get<double>();
+  const auto ptmin
+    = s["PTMin"]  .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto etmin
+    = s["ETMin"]  .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto n
+    = s["N"]      .SetDefault("None").UseZeroReplacements()     .Get<int>();
   if (n < 0)
-    THROW(not_implemented,"Negative multiplicities not supported.");
-  msg_Out() << "Create njet finder for " << n << " jets.\n";
+    THROW(not_implemented,"Negative multiplicities are not supported.");
+
+  // parameter/mode settings
+  auto exp  = s["Exp"] .SetDefault(1)  .Get<int>();
+  auto type = s["Mode"].SetDefault(2)  .Get<int>();
+  auto R    = s["R"]   .SetDefault(0.4).Get<double>();
+
   NJet_Finder *jf(new NJet_Finder(key.p_proc,
                                   n, ptmin, etmin, R,
                                   exp,etamax,ymax,massmax,type));
@@ -309,7 +315,9 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<width<<"  ETMin: minimum jet eta\n"
      <<width<<"  R: jet distance parameter\n"
      <<width<<"  # optional settings:\n"
-     <<width<<"  EtaMax: maximum jet eta (default=100)\n"
-     <<width<<"  MassMax: maximum jet mass (default=0)\n"
+     <<width<<"  Exp: exponent for jet distances (default=1)\n"
+     <<width<<"  YMax: maximum jet rapidity (default=None)\n"
+     <<width<<"  EtaMax: maximum jet eta (default=None)\n"
+     <<width<<"  MassMax: maximum jet constituent mass (default=0)\n"
      <<width<<"  Mode: type (default=2)";
 }

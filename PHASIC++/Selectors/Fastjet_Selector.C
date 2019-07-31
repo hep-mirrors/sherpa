@@ -184,7 +184,7 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
     }
   }
   int nj=m_p.size();
-  
+
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
 
@@ -198,9 +198,11 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
     for (size_t i(0);i<jets.size();++i) {
       if (m_bmode==0 || BTag(jets[i], m_bmode)) {
         Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-        if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-            (m_eta==100 || dabs(pj.Eta())<m_eta) &&
-            (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+        if (pj.PPerp() > m_ptmin
+            && pj.EPerp() > m_etmin
+            && dabs(pj.Eta()) < m_eta
+            && dabs(pj.Y()) < m_y)
+          m_p.push_back(pj);
       }
     }
   }
@@ -220,16 +222,26 @@ Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 operator()(const Selector_Key &key) const
 {
   auto s = key.m_settings["FastjetSelector"];
-  const auto expression = s["Expression"].SetDefault("").Get<std::string>();
-  const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
-  const auto n = s["N"].SetDefault(0).Get<size_t>();
-  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
-  const auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
-  const auto dr = s["DR"].SetDefault(0.4).Get<double>();
-  const auto f = s["f"].SetDefault(0.75).Get<double>();
-  const auto eta = s["EtaMax"].SetDefault(100.0).Get<double>();
-  const auto y = s["YMax"].SetDefault(100.0).Get<double>();
-  const auto bmode = s["BMode"].SetDefault(0).Get<int>();
+
+  // parameter/mode settings
+  const auto expression = s["Expression"].SetDefault("")  .Get<std::string>();
+  const auto algo       = s["Algorithm"] .SetDefault("")  .Get<std::string>();
+  const auto dr         = s["DR"]        .SetDefault(0.4) .Get<double>();
+  const auto f          = s["f"]         .SetDefault(0.75).Get<double>();
+  const auto bmode      = s["BMode"]     .SetDefault(0)   .Get<int>();
+
+  // min/max settings
+  const auto n
+    = s["N"]     .SetDefault("None").UseZeroReplacements()     .Get<size_t>();
+  const auto ptmin
+    = s["PTMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto etmin
+    = s["ETMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto eta
+    = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto y
+    = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+
   Fastjet_Selector *jf(
       new Fastjet_Selector(key.p_proc, algo, n, ptmin, etmin, dr,
                            f, eta, y, bmode, expression));
@@ -239,7 +251,7 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"FastjetFinder:\n"
+  str<<"FastjetSelector:\n"
      <<width<<"  Expression: boolean expression\n"
      <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone (hadron colliders)\n"
      <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone (lepton colliders)\n"
