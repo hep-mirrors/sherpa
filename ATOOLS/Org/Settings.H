@@ -130,6 +130,7 @@ namespace ATOOLS {
     std::map<Defaults_Key, std::unordered_set<std::string>> m_otherscalardefaults;
 
     std::map<Defaults_Key, String_Map> m_replacements;
+    std::map<Defaults_Key, String_Vector> m_defaultsynonyms;
 
     String_Map m_tags;
     String_Map m_globaltags;
@@ -206,11 +207,17 @@ namespace ATOOLS {
     void SetReplacementList(const Settings_Keys&,
                             const std::map<std::string, T>& list);
 
+    void SetDefaultSynonyms(const Settings_Keys&,
+                            const String_Vector& synonyms);
+
     bool IsList(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
 
     template <typename T>
     T Convert(const Settings_Keys&, const std::string&);
+
+    bool IsDefaultSynonym(const Settings_Keys&,
+                          const std::string& value);
 
     std::string ApplyReplacements(const Settings_Keys&,
                                   const std::string& value);
@@ -318,7 +325,7 @@ namespace ATOOLS {
       if (value != "")
         break;
     }
-    if (value == "") {
+    if (value == "" || IsDefaultSynonym(settings_keys, value)) {
       value = defaultvalue;
     }
     const auto convertedvalue = Convert<T>(settings_keys, value);

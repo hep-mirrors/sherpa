@@ -41,6 +41,8 @@ namespace ATOOLS {
     template <typename T>
     Scoped_Settings& SetReplacementList(const std::map<std::string, T>& list);
 
+    Scoped_Settings& SetDefaultSynonyms(const String_Vector&);
+
     /// set a common replacement list: [Off, false, 0, no] -> None
     Scoped_Settings& UseNoneReplacements();
 
