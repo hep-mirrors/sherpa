@@ -46,6 +46,12 @@ namespace ATOOLS {
     /// set a common replacement list: [Off, false, 0, no] -> None
     Scoped_Settings& UseNoneReplacements();
 
+    /// set a common replacement list: [None] -> max double
+    Scoped_Settings& UseMaxDoubleReplacements();
+
+    /// set a common replacement list: [None] -> 0
+    Scoped_Settings& UseZeroReplacements();
+
     bool IsCustomised();
 
     void SetInterpreterEnabled(bool b) { m_interpreterenabled = b; }

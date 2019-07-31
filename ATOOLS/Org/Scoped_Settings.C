@@ -81,6 +81,22 @@ Scoped_Settings& Scoped_Settings::UseNoneReplacements()
   return SetReplacementList(nonelist);
 }
 
+Scoped_Settings& Scoped_Settings::UseMaxDoubleReplacements()
+{
+  static std::map<std::string, std::string> nonelist{
+    {"None", ToString<double>(std::numeric_limits<double>::max())}
+  };
+  return SetReplacementList(nonelist);
+}
+
+Scoped_Settings& Scoped_Settings::UseZeroReplacements()
+{
+  static std::map<std::string, std::string> nonelist{
+    {"None", ToString<double>(0)}
+  };
+  return SetReplacementList(nonelist);
+}
+
 bool Scoped_Settings::IsCustomised()
 {
   return m_rootsettings->IsCustomised(m_scopes);
