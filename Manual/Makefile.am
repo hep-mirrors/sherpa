@@ -90,7 +90,6 @@ update-manpage:
 	groff -Tascii -mandoc $(srcdir)/Sherpa.trf > Sherpa.1
 
 completion.index: $(srcdir)/*.texi
-	$(MAKE) $(AM_MAKEFLAGS) Sherpa.info
 	@echo "Creating index for tab completion."
 	@rm -f Sherpa.txt* Sherpa.index
 	-@makeinfo $(AM_MAKEINFOFLAGS) --plaintext -o Sherpa.txt $(srcdir)/Sherpa.texi && \
@@ -98,7 +97,6 @@ completion.index: $(srcdir)/*.texi
 	@rm -f Sherpa.txt*
 
 Sherpa.html: $(srcdir)/*.texi $(srcdir)/*.css
-	$(MAKE) $(AM_MAKEFLAGS) Sherpa.info
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
           texi2html --I $(top_srcdir) --nosec-nav --css-include=$(srcdir)/Sherpa.css $(srcdir)/Sherpa.texi; \
         elif test -x "$$(which makeinfo 2>/dev/null)"; then \

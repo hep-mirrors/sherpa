@@ -21,4 +21,4 @@ install-data-hook:
 	tar xjf $(srcdir)/$(NNPDF3archive) -C $(DESTDIR)$(pkgdatadir)
 
 uninstall-hook:
-	-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF30_nnlo_as_0118_mc
+	-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF31_nnlo_as_0118_mc

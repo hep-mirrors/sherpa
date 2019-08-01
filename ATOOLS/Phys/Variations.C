@@ -880,6 +880,7 @@ namespace ATOOLS {
       case Variations_Type::sudakov:
         return s << "Sudakov";
     }
+    return s;
   }
 
   std::ostream& operator<<(std::ostream& s, const Variation_Weights& weights)
