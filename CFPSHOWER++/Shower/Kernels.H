@@ -7,17 +7,13 @@
 namespace CFPSHOWER {
   class Kernels : public CFPSHOWER::Kernel_Vector {
   private:
-    double              m_sum;
-    Kernel            * p_selected;
+    std::vector<double> m_integrals;
   public:
-    Kernels() : p_selected(NULL) {};
+    Kernels() {}
     ~Kernels();
 
     double CalcIntegrals(Splitting & split,const ATOOLS::Mass_Selector * ms);
-    bool   SelectOne(Splitting & split,const ATOOLS::Mass_Selector * ms);
-
-    inline const double & Integral()    const { return m_sum; }
-    inline Kernel       * GetSelected() const { return p_selected; }
+    inline std::vector<double> & GetIntegrals() { return m_integrals; }
   };
 
   std::ostream & operator<<(std::ostream &s,Kernels & kernels);

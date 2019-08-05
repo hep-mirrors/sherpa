@@ -14,15 +14,23 @@ Kernels::~Kernels() {
 }
 
 double Kernels::CalcIntegrals(Splitting & split,const Mass_Selector * ms) {
-  m_sum = 0.;
-  for (size_t i=0;i<size();i++) m_sum += (*this)[i]->Integral(split,ms);
-  return m_sum;
+  m_integrals.assign(size()+1,0.);
+  for (size_t i=0;i<size();i++) {
+    m_integrals.back() += m_integrals[i] = (*this)[i]->Integral(split,ms);
+  }
+  return m_integrals.back();
 }
 
-bool Kernels::SelectOne(Splitting & split,const Mass_Selector * ms) {
-  double disc = m_sum * ran->Get();
+/*bool Kernels::SelectOne(Splitting & split,const Mass_Selector * ms) {
+  double disc = m_sum * ran->Get(), term;
   for (size_t i=0;i<size();i++) {
-    disc -= (*this)[i]->Integral(split,ms);     if (disc<0.) {
+    disc -= term = (*this)[i]->Integral(split,ms);
+    msg_Out()<<METHOD<<" disc = "<<disc<<" from sum = "<<m_sum<<", "
+	     <<"term = "<<term<<" for "
+	     <<(*this)[i]->GetFlavs()[0]<<" -> "
+	     <<(*this)[i]->GetFlavs()[1]<<" + "
+	     <<(*this)[i]->GetFlavs()[2]<<".\n";
+    if (disc<0.) {
       p_selected = (*this)[i];
       return true;
     }
@@ -32,7 +40,7 @@ bool Kernels::SelectOne(Splitting & split,const Mass_Selector * ms) {
   p_selected = NULL;
   return false;
 }
-
+*/
 
 ostream & CFPSHOWER::operator<<(ostream &s,Kernels & kernels) {
   for (size_t i=0;i<kernels.size();i++) {
