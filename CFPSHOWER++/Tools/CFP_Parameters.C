@@ -18,6 +18,7 @@ bool CFP_Parameters::Init(Default_Reader *const reader)
   m_switches["kfactor"]        = reader->Get<int>("CSS_KFACTOR_SCHEME",1);
   m_switches["couplings"]      = reader->Get<int>("CSS_COUPLING_SCHEME",1);
   m_switches["ME_corrections"] = reader->Get<int>("CSS_ME_CORRECTION",0);
+  m_switches["SF_order"]       = reader->Get<unsigned int>("SF_ORDER",2);
   m_switches["max_emissions"]  = reader->Get<unsigned int>
     ("CSS_MAXEM",100000); //std::numeric_limits<unsigned int>::max());
   m_switches["max_particles"]  = reader->Get<unsigned int>

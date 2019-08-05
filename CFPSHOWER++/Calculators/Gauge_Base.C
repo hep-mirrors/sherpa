@@ -14,12 +14,12 @@ using namespace ATOOLS;
 
 Gauge_Base::Gauge_Base(const Kernel_Info & info) :
   m_type(info.Type()),
+  m_tagsequence(info.TagSequence()),
   p_alphaS(info.GetAlphaS()), p_alpha(info.GetAlpha()),
   m_CF(4./3.), m_CA(3.), m_TR(1./2.), m_zeta3(1.202056903159594),
   m_charge(1.), 
   m_muR2factor(info.MuR2Factor()), m_asfactor(info.AsFactor()), 
   m_orderA(1), m_orderB(1),
-  m_swap(info.Swapped()), 
   m_name("undefined")
 {
   // KFactor: 1 = include A2
@@ -47,11 +47,11 @@ double Gauge_Base::operator()(const Splitting & split) {
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
-  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.T0());
+  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.t0());
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
-  return split.T();
+  return split.t();
 }
 
 const double Gauge_Base::Beta0(const double & NF) const {
@@ -72,7 +72,7 @@ const double Gauge_Base::K(const Splitting & split) const {
 
 const double Gauge_Base::KMax(const Splitting & split) const {
   if (m_orderA<2) return 0.;
-  double alphaS = (*p_alphaS)(split.T0())/(2.*M_PI);
+  double alphaS = (*p_alphaS)(split.t0())/(2.*M_PI);
   if (m_orderA<3) return alphaS * m_K1max;
   return alphaS * m_K1max + sqr(alphaS) * m_K2max;
 }

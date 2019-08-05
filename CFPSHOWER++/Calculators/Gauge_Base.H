@@ -14,13 +14,13 @@ namespace CFPSHOWER {
   class Gauge_Base {
   protected:
     kernel_type::code         m_type;
+    std::vector<size_t>       m_tagsequence;
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
     double m_CF, m_CA, m_TR, m_zeta3;
     double m_K1max, m_K2max, m_charge;
     double m_muR2factor, m_asfactor;
     int    m_orderA, m_orderB;
-    bool   m_swap;
     
     std::string  m_name;
     Color_Vector m_colors;

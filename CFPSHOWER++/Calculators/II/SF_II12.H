@@ -9,10 +9,6 @@ namespace CFPSHOWER {
     virtual double Jacobean(const Splitting & split) const;
   public:
     SF_II12(const Kernel_Info & info);
-    virtual void GeneratePoint(Splitting & split) const {
-      split.Set_zi();
-      split.Set_phi();
-    }
     virtual bool InitKinematics(Splitting & split) const;
     virtual int  Construct(Splitting & split) const;
   };

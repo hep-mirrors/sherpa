@@ -1,22 +1,19 @@
-#include "CFPSHOWER++/Calculators/FI/SF_FI.H"
+#include "CFPSHOWER++/Calculators/FI/SF_FI12.H"
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "ATOOLS/Org/Message.H"
 
-//#include "CFPSHOWER++/Calculators/GQQ.C"
-
 namespace CFPSHOWER {
-  class VFF_FI : public SF_FI {
+  class VFF_FI : public SF_FI12 {
   private:
     double m_jmax;
     
     double B1(const double & z,const double & kappa2) const;
-    double B2(const double & z,const double & kappa2) const;
   public:
     VFF_FI(const Kernel_Info & info);
     double operator()(const Splitting & split) const;
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
-    //void GeneratePoint(Splitting & split) const; // new
+    void   GeneratePoint(Splitting & split) const;
   };
 }
 
@@ -24,44 +21,42 @@ namespace CFPSHOWER {
 using namespace CFPSHOWER;
 using namespace ATOOLS;
 
-VFF_FI::VFF_FI(const Kernel_Info & info) :
-  SF_FI(info), m_jmax(5.) { 
+VFF_FI::VFF_FI(const Kernel_Info & info) : SF_FI12(info), m_jmax(5.) { 
   SetName("V->FF");
 }
 
 double VFF_FI::operator()(const Splitting & split) const {
-  double mij2(split.mij2()), mi2(split.mi2()), mj2(split.mj2()), mk2(split.mk2());
-  double z(split.Z()), y(split.Y()), Q2(split.Q2()), kappa2(split.T()/Q2);
+  double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
+  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
   // TODO: have to add ME correction for DIS
-  double value = 0.;
-  if (m_orderB>0) {
-    if (mk2>1.e-12) {
-      msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
-		 <<"   Will exit the run.\n";
-      exit(1);
-    }
-    value += B1(z,kappa2);
-    if (!(mi2==0. && mj2==0.)) {
-      double mui2(mi2/Q2);
-      value += 2.*y*mui2/((1.-y)+2.*y*mui2);
-    }
+  if (mspect2>1.e-12) {
+    msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
+	       <<"   Will exit the run.\n";
+    exit(1);
   }
-  if (split.Clustered()==0) value *= m_swap?(1.-z):z;
+  double value = B1(z,kappa2);
+  if (!(mi2==0. && mj2==0.)) {
+    double mui2(mi2/Q2);
+    value += 2.*y*mui2/((1.-y)+2.*y*mui2);
+  }
+  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
   return value;
 }
 
 double VFF_FI::Integral(const Splitting & split)     const { return m_jmax; }
+
 double VFF_FI::OverEstimate(const Splitting & split) const { return m_jmax; }
+
+void VFF_FI::GeneratePoint(Splitting & split) const {
+  double z = ran->Get();
+  split.Set_z(0,z);
+  split.Set_z(1,1.-z);
+  split.Set_phi();
+}
 
 double VFF_FI::B1(const double & z,const double & kappa2) const {
   return sqr(z)+sqr(1.-z);
 }
-
-double VFF_FI::B2(const double & z,const double & kappa2) const {
-  double b2 = 0.0;
-  return b2;
-}
-
 
 DECLARE_GETTER(VFF_FI,"FI_VFF",SF_Base,Kernel_Info);
 
@@ -70,10 +65,10 @@ operator()(const Parameter_Type & info) const
 {
   return NULL;
   if (info.Type()==kernel_type::FI &&
-      (info.GetFlavs()[0].IsVector() &&
-       info.GetFlavs()[1].IsFermion() &&
-       info.GetFlavs()[1].IsAnti() && 
-       info.GetFlavs()[2].IsFermion())) {
+      (info.GetSplit().IsVector() &&
+       info.GetFlavs()[0].IsFermion() &&
+       info.GetFlavs()[0].IsAnti() && 
+       info.GetFlavs()[1].IsFermion())) {
     return new VFF_FI(info);
   }
   return NULL;

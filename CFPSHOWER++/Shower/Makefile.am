@@ -6,6 +6,7 @@ include ../../git.make
 libCFPShower_la_SOURCES = \
 	Shower.C \
 	Splitting.C \
+	Kernel_Constructor.C \
 	Kernels.C \
 	Kernel.C \
 	Cluster_Definitions.C \
@@ -14,6 +15,7 @@ libCFPShower_la_SOURCES = \
 localinc_HEADERS   = \
 	Shower.H \
 	Splitting.H \
+	Kernel_Constructor.H \
 	Kernels.H \
 	Kernel.H \
 	Cluster_Definitions.H \

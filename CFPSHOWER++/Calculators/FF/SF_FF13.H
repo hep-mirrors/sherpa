@@ -1,18 +1,15 @@
-#ifndef CFPSHOWER_Calculators_SF_II12_H
-#define CFPSHOWER_Calculators_SF_II12_H
+#ifndef CFPSHOWER_Calculators_SF_FF13_H
+#define CFPSHOWER_Calculators_SF_FF13_H
 
 #include "CFPSHOWER++/Calculators/SF_Base.H"
 
 namespace CFPSHOWER {
-  class SF_II12 : public SF_Base {
+  class SF_FF13 : public SF_Base {
   protected:
     virtual double Jacobean(const Splitting & split) const;
   public:
-    SF_II12(const Kernel_Info & info);
-    virtual void GeneratePoint(Splitting & split) const {
-      split.Set_zi();
-      split.Set_phi();
-    }
+    SF_FF13(const Kernel_Info & info);
+    virtual void GeneratePoint(Splitting & split) const; 
     virtual bool InitKinematics(Splitting & split) const;
     virtual int  Construct(Splitting & split) const;
   };

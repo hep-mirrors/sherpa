@@ -23,15 +23,16 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double QQG::Scale(const Splitting & split) const {
-  //msg_Out()<<METHOD<<"(type = "<<m_type<<") with {t, z} = {"<<split.T()<<", "<<split.X()<<"} = "
-  //	   <<split.T()/split.X()<<".\n";
-  double scale = split.T();
+  //msg_Out()<<METHOD<<"(type = "<<m_type<<") with {t, z} = {"
+  //<<split.t()<<", "<<split.xi()<<"} = "
+  //	   <<split.t()/split.xi()<<".\n";
+  double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.T()/split.X();
+    scale = split.t()/split.x();
     break;
   case kernel_type::FI:
-    scale = split.T()/split.Y();
+    scale = split.t()/split.y();
     break;
   case kernel_type::FF:
   default:
@@ -62,9 +63,9 @@ DECLARE_GETTER(QQG,"QQG",Gauge_Base,Kernel_Info);
 Gauge_Base * ATOOLS::Getter<Gauge_Base,Kernel_Info,QQG>::
 operator()(const Parameter_Type & info) const
 {
-  if (abs(info.GetFlavs()[0].StrongCharge())==3 &&
-      abs(info.GetFlavs()[1].StrongCharge())==3 &&
-      abs(info.GetFlavs()[2].StrongCharge())==8)
+  if (abs(info.GetSplit().StrongCharge())==3 &&
+      abs(info.GetFlavs()[0].StrongCharge())==3 &&
+      abs(info.GetFlavs()[1].StrongCharge())==8)
     return new QQG(info);
   return NULL;
 }

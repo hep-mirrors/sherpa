@@ -1,4 +1,4 @@
-SUBDIRS = FF IF FI II
+SUBDIRS = FF FI IF II
 
 pkglib_LTLIBRARIES = libCFPCalculators.la
 

@@ -20,28 +20,31 @@ ostream & CFPSHOWER::operator<<(ostream &s,const kernel_type::code & type) {
 ostream & CFPSHOWER::operator<<(ostream &s,const Kernel_Info & info) {
   if (info.m_flavs.size()==0) s<<"  Kernel for undefined flavours: ";
   else {
-    s<<"  Kernel for ["<<info.m_flavs[0].Bar()<<" -->";
-    for (size_t i=1;i<info.m_flavs.size();i++) s<<" "<<info.m_flavs[i];
+    s<<"  Kernel for ["<<info.m_split.Bar()<<" -->";
+    for (size_t i=0;i<info.m_flavs.size();i++) s<<" "<<info.m_flavs[i];
     s<<"]: ";
   }
-  s<<info.m_type<<".\n";
+  s<<info.m_type<<" ["<<info.SFName()<<"/"<<info.GPName()<<"], "
+   <<"tag sequence = {";
+  for (size_t i=0;i<info.TagSequence().size();i++)
+    s<<info.m_flavs[info.TagSequence()[i]]<<" ("<<info.TagSequence()[i]<<") ";
+  s<<"}\n";
   return s;
 }
 
-Kernel_Info::Kernel_Info(MODEL::Single_Vertex * vertex,
-			 ATOOLS::Flavour_Vector & flavs,
-			 kernel_type::code type,const bool & swapped) :
+Kernel_Info::Kernel_Info(ATOOLS::Flavour & split,ATOOLS::Flavour_Vector & flavs,
+			 kernel_type::code type,const vector<size_t> & tagsequence) :
   p_alphaS(NULL), p_alpha(NULL),
-  p_vertex(vertex), m_flavs(flavs), m_type(type), m_swapped(swapped) {
-  m_flavs[0]=m_flavs[0].Bar();
+  m_split(split.Bar()), m_flavs(flavs), m_type(type), m_tagsequence(tagsequence) {
   if (m_type==kernel_type::FF || m_type==kernel_type::FI) {
-    if (m_flavs[0].IsFermion() && 
-	m_flavs[1].IsVector() &&
-	m_flavs[2].IsFermion()) 
-      swap(m_flavs[1], m_flavs[2]);
+    if (m_split.IsFermion() && 
+	m_flavs[0].IsVector() &&
+	m_flavs[1].IsFermion()) 
+      swap(m_flavs[0], m_flavs[1]);
   }
   else if (m_type==kernel_type::IF) {
-    if (swapped && m_flavs[0].IsFermion()) {
+    if (m_tagsequence[0]==2) {
+      m_split = m_split.Bar();
       for (size_t i=0;i<m_flavs.size();i++) m_flavs[i] = m_flavs[i].Bar(); 
     }
   }
@@ -59,6 +62,11 @@ const string Kernel_Info::SFName() const {
   default:
     break;
   }
+  switch (m_split.IntSpin()) {
+  case 2: name += "V"; break;
+  case 1: name += "F"; break;
+  case 0: name += "S"; break;
+  }
   for (size_t i=0;i<m_flavs.size();i++) {
     switch (m_flavs[i].IntSpin()) {
     case 2: name += "V"; break;
@@ -71,6 +79,10 @@ const string Kernel_Info::SFName() const {
   
 const string Kernel_Info::GPName() const {
   string name = "";
+  switch (abs(m_split.StrongCharge())) {
+  case 8: name += "G"; break;
+  case 3: name += "Q"; break;
+  }
   for (size_t i=0;i<m_flavs.size();i++) {
     switch (abs(m_flavs[i].StrongCharge())) {
     case 8: name += "G"; break;

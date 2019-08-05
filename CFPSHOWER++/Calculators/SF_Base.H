@@ -7,17 +7,33 @@
 #include "ATOOLS/Org/Getter_Function.H"
 
 namespace CFPSHOWER {
+  struct ffff_mode {
+    enum code {
+      same = 0,
+      diff = 1
+    };
+  };
+  std::ostream &operator<<(std::ostream &s,const ffff_mode::code & mode);
+
+  struct subtract {
+    enum code {
+      none = 0,
+      coll = 1,
+      soft = 2,
+      both = 3
+    };
+  };
+  std::ostream &operator<<(std::ostream &s,const subtract::code & sub);
+  
   class SF_Base {
   protected:
+    static double Nc, CF, CA, TR;
+    ATOOLS::Flavour        m_split;
     ATOOLS::Flavour_Vector m_flavs;
-    double m_CF, m_CA, m_TR, m_zeta3;
-    int    m_orderA, m_orderB;
-    bool   m_swap;
-
-    std::string m_name;
-    
-    virtual double S1(const double & q2) const;
-    virtual double S2(const double & q2) const;
+    std::vector<size_t>    m_tagsequence;
+    std::string            m_name;
+    int                    m_CMW;
+  
     virtual double Lambda(const double & a,const double & b,const double & c) const;
     virtual double Lambda2(const double & a,const double & b,const double & c) const;
   public:
@@ -30,12 +46,12 @@ namespace CFPSHOWER {
     virtual bool   InitKinematics(Splitting & split)     const=0;
     virtual int    Construct(Splitting & split)          const=0;
     
+    virtual inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }
+    virtual inline const std::vector<size_t> & TagSequence() const { return m_tagsequence; }
     virtual inline const std::string & Name()                const { return m_name; }
     virtual inline void SetName(const std::string & name)          { m_name = name; }
-    virtual inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }
-    virtual inline const bool IsSwapped()                    const { return m_swap; }
   };
-
+  
   typedef ATOOLS::Getter_Function<SF_Base,Kernel_Info,std::less<std::string> > SF_Getter;
 }
 

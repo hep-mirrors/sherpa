@@ -12,22 +12,22 @@ using namespace ATOOLS;
 using namespace std;
 
 Kernel::Kernel(const Kernel_Info & info) :
-  m_type(info.Type()), m_swapped(info.Swapped()),
-  m_flavs(info.GetFlavs()), p_msel(NULL)
+  m_type(info.Type()),
+  m_split(info.GetSplit()), m_flavs(info.GetFlavs()),
+  p_msel(NULL)
 {
   for (size_t beam=0;beam<2;beam++) p_pdf[beam] = NULL;
 }
 
 double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
   split.SetKernel(this);
-  //if (!split.InitKinematics(msel)) return 0.;
   split.InitKinematics(msel);
-  double I = (p_gauge->Charge() * p_sf->Integral(split) *
+  double SF = p_sf->Integral(split);
+  double I = (p_gauge->Charge() * SF *
 	      p_gauge->OverEstimate(split));
-  //msg_Out()<<"   * "<<p_sf->Name()<<" ("<<m_swapped<<") "
-  //	   <<"("<<m_flavs[0]<<" -> "<<m_flavs[1]<<" "<<m_flavs[2]<<"): "
-  //	   <<p_gauge->Charge()<<" * "<<p_sf->Integral(split)<<" * "
-  //	   <<p_gauge->OverEstimate(split)<<" = "<<I<<" / (2 pi).\n";
+  //msg_Out()<<METHOD<<"(SF = "<<SF<<" * "
+  //	   <<"gauge = "<<p_gauge->OverEstimate(split)<<" * "
+  //	   <<"charge = "<<p_gauge->Charge()<<")\n";
   return I/(2.*M_PI);
 }
 
@@ -45,36 +45,46 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
   split.InitKinematics(msel);
   p_sf->GeneratePoint(split);
   if (!p_sf->InitKinematics(split)) {
-    // msg_Out()<<"   * rejected (t = "<<sqrt(split.T())<<", no phase space for "
-    // 	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-    // 	     <<"Q^2 = "<<split.Q2()<<").\n";
+    //msg_Out()<<"   * rejected (t = "<<split.t()<<", no phase space for "
+    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+    //	     <<"Q^2 = "<<split.Q2()<<").\n";
     return false;
   }
-  if (!p_gauge->SetColours(split)) return false;
+  if (!p_gauge->SetColours(split)) {
+    //msg_Out()<<"   * no colours for (t = "<<split.t()<<", no phase space for "
+    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+    //	     <<"Q^2 = "<<split.Q2()<<").\n";
+    return false;
+  }
   if (p_sf->Construct(split)==1) {
     if (split.GetWeight()) { delete split.GetWeight(); } 
     split.SetWeight(MakeWeight(split,overfac));
-    // msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
-    // 	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
-    // 	     <<"= "<<((*split.GetWeight())())<<"\n";
+    //msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
+    //	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
+    //	     <<"= "<<((*split.GetWeight())())<<"\n";
     if ((*split.GetWeight())()>=ran->Get()) {
-      // msg_Out()<<"   * add acceptance weight "
-      // 	       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
-      // 	       <<"eta = "<<split.Eta()<<") "
-      // 	       <<"from "<<(*split.GetWeight())<<" = "
-      // 	       <<split.GetWeight()->Accept()<<"\n";
+      //msg_Out()<<"   * add acceptance weight "
+      //       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
+      //       <<"eta = "<<split.eta()<<") "
+      //       <<"from "<<(*split.GetWeight())<<" = "
+      //	       <<split.GetWeight()->Accept()<<"\n";
       split.GetSplitter()->AddWeight(split,true);
       return true;
     }
     else {
-      // msg_Out()<<"   * add rejection weight "
-      // 	       <<"(t = "<<sqrt(split.T())<<", z = "<<split.Z()<<", "
-      // 	       <<"eta = "<<split.Eta()<<") "
-      // 	       <<"from "<<(*split.GetWeight())<<" = "
-      // 	       <<split.GetWeight()->Reject()<<"\n";
+      //msg_Out()<<"   * add rejection weight "
+      //       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
+      //       <<"eta = "<<split.eta()<<") "
+      //       <<"from "<<(*split.GetWeight())<<" = "
+      //       <<split.GetWeight()->Reject()<<"\n";
       split.GetSplitter()->AddWeight(split,false);
+      return false;
     }
   }
+  //msg_Out()<<"   * "<<METHOD<<" no kinematics for (t = "<<split.t()<<", "
+  //	   <<"no phase space for "<<p_sf->Name()
+  //	   <<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+  //	   <<"Q^2 = "<<split.Q2()<<").\n";
   return false;
 }
 
@@ -96,33 +106,30 @@ Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
 		     p_sf->OverEstimate(split));
   double over     = ( (dabs(weight)<realover) ?
 		      (weight>0.?1.:-1.)*realover : overfac*weight );
-  /*
-  if (weight<1.e-6)
-    msg_Out()<<"GOTCHA: 0 weight for "
-	     <<p_gauge->Charge()<<" * "<<(*p_gauge)(split)<<" * "
-	     <<(*p_sf)(split)<<" * "<<p_sf->Jacobean(split)<<".\n";
-  if (dabs(weight)>realover) msg_Out()<<"GOTCHA!\n";
-  msg_Out()<<" *** "<<METHOD<<"("<<weight<<", over = "<<over<<", "
-	   <<"real over = "<<realover<<") for factor = "<<overfac<<".\n";
-  */
   return new Weight(weight,over,realover);
 }
 
 bool Kernel::FillOffsprings(Splitting & split) {
   int beam = split.GetSplitter()->Beam();
-  for (size_t i=1;i<m_flavs.size();i++) {
-    Parton * parton = new Parton(m_flavs[i],split.Mom(i-1));
+  for (size_t i=0;i<m_flavs.size();i++) {
+    Parton * parton = new Parton(m_flavs[i],split.Mom(i));
     if (i==1) parton->SetBeam(beam);
-    parton->SetColor(split.Col(i-1));
-    split.SetParton(i-1,parton);
+    parton->SetColor(split.Col(i));
+    split.SetParton(i,parton);
   }
   return true;
 }
 
 
-
 ostream & CFPSHOWER::operator<<(ostream &s,const Kernel & kernel) {
-  s<<"Kernel["<<(kernel.GetSF()->Name())<<" / "<<(kernel.GetGauge()->Name())<<"].\n";
+  Flavour_Vector flavs = kernel.GetFlavs(); 
+  s<<"Kernel["<<(kernel.GetSF()->Name())<<" / "<<(kernel.GetGauge()->Name())<<"]: "
+   <<kernel.GetSplit()<<" --> ";
+  for (size_t i=0;i<flavs.size();i++) s<<flavs[i]<<" ";
+  s<<" tag sequence = { ";
+  for (size_t i=0;i<kernel.GetSF()->TagSequence().size();i++)
+    s<<kernel.GetSF()->TagSequence()[i]<<" ";
+  s<<"}\n";
   return s;
 }
 
@@ -132,22 +139,23 @@ Kernel * Getter<Kernel,Kernel_Info,Kernel>::operator()(const Parameter_Type & in
 {
   SF_Base    * sf = SF_Getter::GetObject(info.SFName(),info);
   Gauge_Base * gp = GP_Getter::GetObject(info.GPName(),info);
-  //if (sf)
-  //msg_Out()<<"   * try to init new Kernel("<<info.GetFlavs()[0]<<" -> "
-  //	     <<info.GetFlavs()[1]<<" "<<info.GetFlavs()[2]<<"): "
-  //	     <<info.SFName()<<" for swap = "<<info.Swapped()<<": ";
+  if (sf) {
+    msg_Out()<<"   * try to init new Kernel("<<info.GetSplit()<<" -> ";
+    for (size_t i=0;i<info.GetFlavs().size();i++) msg_Out()<<info.GetFlavs()[i]<<" ";
+    msg_Out()<<" ["<<info.SFName()<<"]\n";
+  }
   if (!sf || !gp) {
     if (sf) delete sf;
     if (gp) delete gp;
-    //msg_Out()<<" failed.\n";
+    msg_Out()<<"   * failed.\n";
     return NULL;
   }
   Kernel * kernel = new Kernel(info);
   kernel->SetSF(sf);
   kernel->SetGauge(gp);
-  //msg_Out()<<"Found "<<kernel->GetFlavs()[0]<<" --> "
-  //	   <<kernel->GetFlavs()[1]<<"+"<<kernel->GetFlavs()[2]
-  //	   <<" ["<<info.SFName()<<"]\n";
+  msg_Out()<<"Found "<<kernel->GetSplit()<<" --> ";
+  for (size_t i=0;i<kernel->GetFlavs().size();i++) msg_Out()<<kernel->GetFlavs()[i]<<" ";
+  msg_Out()<<" ["<<info.SFName()<<"]\n";
   return kernel;
 }
 

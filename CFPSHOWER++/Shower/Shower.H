@@ -21,47 +21,26 @@ namespace PDF {
 }
 
 namespace CFPSHOWER {
-  struct FlavourTriplet {
-    std::vector<ATOOLS::Flavour> m_flavs;
-    inline FlavourTriplet() { m_flavs.resize(3); }
-    inline FlavourTriplet(std::vector<ATOOLS::Flavour> & flavs) {
-      m_flavs.resize(3);
-      for (size_t i=0;i<3;i++) m_flavs[i] = flavs[i];
-    }
-    inline bool operator<(const FlavourTriplet &trip) const {
-      for (size_t i=0;i<3;i++) {
-	if (m_flavs[i]<trip.m_flavs[i]) return true;
-      }
-      return false;
-    }
-  };
-
   class Cluster_Definitions;
 
   class Shower {
   private:
-    double   m_t0[2], m_t0min, m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
+    double   m_t0[2], m_t0min;
     int      m_kinscheme, m_kfactor, m_cplscheme, m_MEcorrs;
     long int m_nmax_em, m_nem;
-    
-    MODEL::Model_Base           * p_model;
-    PDF::PDF_Base               * p_pdf[2];
-    MODEL::Running_AlphaS       * p_as;
-    MODEL::Running_AlphaQED     * p_alpha;
+
     Cluster_Definitions         * p_cluster;
     const ATOOLS::Mass_Selector * p_msel;
     Configuration               * p_config;
     Splitting                   * p_winner;
     
-    std::map<ATOOLS::Flavour, Kernels *> m_kernels[5];
-    std::vector<Splitting *>             m_splittings;
-
-    double m_weight, m_weightover;
+    std::map<ATOOLS::Flavour, Kernels *> * p_kernels[5];
+    std::vector<Splitting *>               m_splittings;
+    std::vector<std::vector<double> >      m_integrals;
+    std::vector<Kernels *>                 m_splitkernels;
     
-    bool InitializeParameters();
-    bool InitializeKernels(MODEL::Model_Base * const model);
-    void MakeKernelsFromVertex(MODEL::Single_Vertex * vertex,
-			       std::set<FlavourTriplet> & kernel_flavours);
+    double m_weight, m_weightover;
+        
     bool        Evolve(Parton * splitter);
     double      InitialiseIntegrals(Parton * splitter);
     Splitting * GenerateTestSplitting(Parton * splitter,const double & sum);
@@ -77,9 +56,10 @@ namespace CFPSHOWER {
 
     void Reset(); 
     inline void SetMassSelector(const ATOOLS::Mass_Selector * ms) { p_msel = ms; }
+    inline const ATOOLS::Mass_Selector * GetMassSelector()         const { return p_msel; }
 
-    inline const double &       Weight()                const { return m_weight; }
-    Cluster_Definitions * const GetClusterDefinitions() const { return p_cluster; }
+    inline Cluster_Definitions   * const GetClusterDefinitions()   const { return p_cluster; }
+    inline const double & Weight() const { return m_weight; }
   };
 }
 #endif

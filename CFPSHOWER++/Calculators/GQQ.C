@@ -9,7 +9,7 @@ namespace CFPSHOWER {
     int m_mode;
   public:
     GQQ(const Kernel_Info & info) : Gauge_Base(info) {
-      m_charge = m_TR/2.;
+      m_charge = m_type==kernel_type::IF?m_CF/2.:m_TR/2.;
       SetName("8-3-3");
     }
     
@@ -23,10 +23,13 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GQQ::Scale(const Splitting & split) const {
-  double scale = split.T();
+  double scale = split.t();
   switch (m_type) {
+  case kernel_type::IF:
+    scale = split.t()/split.x();
+    break;
   case kernel_type::FI:
-    scale = split.T()/split.Y();
+    scale = split.t()/split.y();
     break;
   case kernel_type::FF:
   default:
@@ -38,11 +41,11 @@ const double GQQ::Scale(const Splitting & split) const {
 bool GQQ::SetColours(Splitting & split) {
   m_colors.clear();
   Flavour_Vector flavs = split.GetKernel()->GetFlavs();
-  if (!flavs[1].IsAnti() && flavs[2].IsAnti()) {
+  if (!flavs[0].IsAnti() && flavs[1].IsAnti()) {
     m_colors.push_back(Color(split.GetSplitter()->GetColor()[0],0));
     m_colors.push_back(Color(0,split.GetSplitter()->GetColor()[1]));
   }
-  else if (flavs[1].IsAnti() && !flavs[2].IsAnti()) {
+  else if (flavs[0].IsAnti() && !flavs[1].IsAnti()) {
     m_colors.push_back(Color(0,split.GetSplitter()->GetColor()[1]));
     m_colors.push_back(Color(split.GetSplitter()->GetColor()[0],0));
   }
@@ -56,9 +59,9 @@ DECLARE_GETTER(GQQ,"GQQ",Gauge_Base,Kernel_Info);
 Gauge_Base * ATOOLS::Getter<Gauge_Base,Kernel_Info,GQQ>::
 operator()(const Parameter_Type & info) const
 {
-  if (abs(info.GetFlavs()[0].StrongCharge())==8 &&
-      abs(info.GetFlavs()[1].StrongCharge())==3 &&
-      abs(info.GetFlavs()[2].StrongCharge())==3)
+  if (abs(info.GetSplit().StrongCharge())==8 &&
+      abs(info.GetFlavs()[0].StrongCharge())==3 &&
+      abs(info.GetFlavs()[1].StrongCharge())==3)
     return new GQQ(info);
   return NULL;
 }

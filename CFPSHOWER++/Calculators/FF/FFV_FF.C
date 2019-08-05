@@ -1,14 +1,11 @@
-#include "CFPSHOWER++/Calculators/FF/SF_FF.H"
+#include "CFPSHOWER++/Calculators/FF/SF_FF12.H"
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "ATOOLS/Org/Message.H"
 
-//#include "CFPSHOWER++/Calculators/QQG.C"
-
 namespace CFPSHOWER {
-  class FFV_FF : public SF_FF {
+  class FFV_FF : public SF_FF12 {
     double A1(const double & z,const double & kappa2) const;
     double B1(const double & z,const double & kappa2) const;
-    double B2(const double & z,const double & kappa2) const;
   public:
     FFV_FF(const Kernel_Info & info);
     double operator()(const Splitting & split) const;
@@ -18,68 +15,64 @@ namespace CFPSHOWER {
   };
 }
 
-
-
 using namespace CFPSHOWER;
 using namespace ATOOLS;
 
-FFV_FF::FFV_FF(const Kernel_Info & info)  : SF_FF(info) {
-  SetName(m_swap?"F->VF":"F->FV");
+FFV_FF::FFV_FF(const Kernel_Info & info)  : SF_FF12(info) {
+  SetName(m_tagsequence[0]==1?"F->VF":"F->FV");
 }
 
 double FFV_FF::operator()(const Splitting & split) const {
-  double mij2(split.mij2()), mi2(split.mi2()), mj2(split.mj2()), mk2(split.mk2());
-  double z(split.Z()), y(split.Y()), Q2(split.Q2()), kappa2(split.T()/Q2);
+  double mij2(split.m2(0)), mi2(split.m2(1)), mj2(split.m2(2)), mspect2(split.mspect2());
+  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
   // Start with the soft term only, including possible K factors (cusp anomalous
   // dimensions), obtained from the gauge part of the kernel
-  double Kfactor = (1.+split.GetKernel()->GetGauge()->K(split));
-  double value   = A1(z,kappa2) * Kfactor, Beff = 0.;
+  double Kfactor = (m_CMW==1) ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
+  double value   = A1(z,kappa2) * Kfactor;
   // All massless: just add the collinear parts.
-  if (mi2==0 && mj2==0 && mk2==0.) {
-    if (m_orderB>0) value += Beff = B1(z,kappa2);
-  }
-  // Massive splitting - directly return 0 if the splitting is kinematically
-  // not viable 
+  if (mi2==0 && mj2==0 && mspect2==0.) value += B1(z,kappa2);
   else {
-    double sijk(split.sijk());
-    double muij2(mij2/sijk), mui2(mi2/sijk), muk2(mk2/sijk);
-    double vijk  = sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2;
-    double vtijk = Lambda2(1.,muij2,muk2);
-    if (vtijk<0. || vijk<0.) return 0.;
-    double vtkji, vkji;
-    if (muk2>0.) {
-      vtkji = 1.-4*muk2*mui2/sqr(1.-muk2-mui2);
-      vkji  = 1.-4*(Q2*(1.-z)+mk2)*mi2/sqr(Q2*z);
-      if (vtkji<0. || vkji<0.) return 0.;
+    // Massive splitting adjustments
+    // directly return 0 if the splitting is kinematically not viable 
+    double s(split.s());
+    double muij2(mij2/s), mui2(mi2/s), muspect2(mspect2/s);
+    double vijl  = sqr(2.*muspect2+(1.-mui2-muspect2)*(1.-y))-4.*muspect2;
+    double vtijl = Lambda2(1.,muij2,muspect2);
+    if (vtijl<0. || vijl<0.) return 0.;
+    double vtlji, vlji;
+    if (muspect2>0.) {
+      vtlji = 1.-4*muspect2*mui2/sqr(1.-muspect2-mui2);
+      vlji  = 1.-4*(Q2*(1.-z)+mspect2)*mi2/sqr(Q2*z);
+      if (vtlji<0. || vlji<0.) return 0.;
     }
-    vtijk        = sqrt(vtijk)/(1.-muij2-muk2);
-    vijk         = sqrt(vijk)/((1.-muij2-muk2) * (1.-y));
-    double pipj  = Q2*y/2.;
-    value       += Beff = (vtijk/vijk) * (B1(z,kappa2) -
-					  ((1.-z)*mi2)/((1.-z+y)*pipj));
-    if (muk2>0.) {
-      value    -= 2.*sqrt(vtkji/vkji)*mk2/((1.-z)*Q2)*y/((1.-z)+y);
-      Beff     -= 2.*sqrt(vtkji/vkji)*mk2/((1.-z)*Q2)*y/((1.-z)+y);
+    vtijl        = sqrt(vtijl)/(1.-muij2-muspect2);
+    vijl         = sqrt(vijl)/((1.-muij2-muspect2) * (1.-y));
+    value       += (vtijl/vijl) * ( B1(z,kappa2) -
+				    (2.*(1.-z)*mi2)/((1.-z+y)*Q2*y));
+    if (muspect2>0.) {
+      value    -= 2.*sqrt(vtlji/vlji)*mspect2/((1.-z)*Q2) * y/((1.-z)+y);
     }
   }
-  if (split.Clustered()==0) value *= (m_swap)?(1.-z):z;
+  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
   return value;
 }
 
 double FFV_FF::Integral(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
-  return log(1.0+split.Q2()/split.T0()) * Kmax;
+  double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
+  return log(1.0+split.Q2()/split.t0()) * Kmax;
 }
 
 double FFV_FF::OverEstimate(const Splitting & split) const {
-  double Kmax = (1.+split.GetKernel()->GetGauge()->KMax(split));
-  return A1(split.Z(),split.T0()/split.Q2()) * Kmax;
+  double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
+  return A1(split.z(0),split.t0()/split.Q2()) * Kmax;
 }
 
 void FFV_FF::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.T0()/split.Q2();
-  split.SetZ(1.-sqrt(kappa2 * (pow(1.+1./kappa2,ran->Get())-1.) ) );
-  split.Setphi();
+  double kappa2 = split.t0()/split.Q2();
+  double z      = 1.-sqrt(kappa2 * (pow(1.+1./kappa2,ran->Get())-1.) );
+  split.Set_z(0,z);
+  split.Set_z(1,1.-z);
+  split.Set_phi();
 }
 
 double FFV_FF::A1(const double & z,const double & kappa2) const {
@@ -90,22 +83,15 @@ double FFV_FF::B1(const double & z,const double & kappa2) const {
   return -(1.+z);
 }
 
-double FFV_FF::B2(const double & z,const double & kappa2) const {
-  double b2 = 0.0;
-  return b2;
-}
-
-
 DECLARE_GETTER(FFV_FF,"FF_FFV",SF_Base,Kernel_Info);
 
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_FF>::
 operator()(const Parameter_Type & info) const
 {
-  return NULL;
   if (info.Type()==kernel_type::FF &&
-      info.GetFlavs()[0].IsFermion() && 
-      info.GetFlavs()[1].IsFermion() &&
-      info.GetFlavs()[2].IsVector()) {
+      info.GetSplit().IsFermion() && 
+      info.GetFlavs()[0].IsFermion() &&
+      info.GetFlavs()[1].IsVector()) {
     return new FFV_FF(info);
   }
   return NULL;

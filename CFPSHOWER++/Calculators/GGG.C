@@ -19,18 +19,19 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GGG::Scale(const Splitting & split) const {
-  double scale = split.T();
+  double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.T()/split.X();
+    scale = split.t()/split.x();
     break;
   case kernel_type::FI:
-    scale = split.T()/split.Y();
+    scale = split.t()/split.y();
     break;
   case kernel_type::FF:
   default:
     break;
   }
+  msg_Out()<<"   Scale("<<m_type<<") = "<<split.t()<<"/"<<split.x()<<" = "<<scale<<".\n";
   return scale;
 }
 
@@ -57,7 +58,7 @@ bool GGG::SetColours(Splitting & split) {
   if (same0)  swap(m_colors[0],m_colors[1]);
   // if we use the "swapped" splitting function, the roles of soft and
   // hard gluon are interchange - in other words, colours have to swap.
-  if (m_swap) swap(m_colors[0],m_colors[1]);
+  if (m_tagsequence[0]==2) swap(m_colors[0],m_colors[1]);
   // set colours in splitting
   for (size_t i=0;i<2;i++) split.SetCol(i,m_colors[i]);
   return (m_colors.size()==2); 
@@ -68,9 +69,9 @@ DECLARE_GETTER(GGG,"GGG",Gauge_Base,Kernel_Info);
 Gauge_Base * ATOOLS::Getter<Gauge_Base,Kernel_Info,GGG>::
 operator()(const Parameter_Type & info) const
 {
-  if (abs(info.GetFlavs()[0].StrongCharge())==8 &&
-      abs(info.GetFlavs()[1].StrongCharge())==8 &&
-      abs(info.GetFlavs()[2].StrongCharge())==8) return new GGG(info);
+  if (abs(info.GetSplit().StrongCharge())==8 &&
+      abs(info.GetFlavs()[0].StrongCharge())==8 &&
+      abs(info.GetFlavs()[1].StrongCharge())==8) return new GGG(info);
   return NULL;
 }
 

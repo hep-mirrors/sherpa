@@ -30,8 +30,8 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config & ca)
   Splitting split(KT2(*ca.p_ampl,i,j,ca.m_k,ca.m_mo,
 		      ca.m_kin,int(type),(swap?2:0)|(ca.m_mode<<2),ws,mu2));
   bool iss = (i<ca.p_ampl->NIn() || j<ca.p_ampl->NIn());
-  if (split.T()>0.0)
-    return Cluster_Param(this,ws,split.T(),mu2,0,split.KinScheme(),0,
+  if (split.t()>0.0)
+    return Cluster_Param(this,ws,split.t(),mu2,0,split.KinScheme(),0,
 			 (iss?-1.:1.)*split.GetKinematics()->m_pi,
 			 (ca.m_k<ca.p_ampl->NIn()?-1.:1.)*split.GetKinematics()->m_pk,
 			 split.GetKinematics()->m_lam);
@@ -54,7 +54,7 @@ Splitting Cluster_Definitions::KT2(const ATOOLS::Cluster_Amplitude &ampl,
   splitting.SetMom(0,li->Mom());
   splitting.SetMom(1,lj->Mom());
   splitting.SetSpecMom(lk->Mom());
-  splitting.SetEta(out1->XB());
+  splitting.Set_eta(out1->XB());
   splitting.SetKinScheme(kin);
   splitting.SetClustered(1);
   /*

@@ -4,7 +4,7 @@ GITTAG = CFPSHOWER++/Calculators/II
 include ../../../git.make
 
 libCFPCalculatorsII_la_SOURCES = \
-	SF_II.C
+	SF_II12.C
 
 localinc_HEADERS   = \
-	SF_II.H
+	SF_II12.H
