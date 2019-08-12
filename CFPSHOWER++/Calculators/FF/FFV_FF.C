@@ -19,59 +19,54 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 FFV_FF::FFV_FF(const Kernel_Info & info)  : SF_FF12(info) {
-  SetName(m_tagsequence[0]==1?"F->VF":"F->FV");
+  SetName(m_tags[0]==1?"F->VF":"F->FV");
 }
 
 double FFV_FF::operator()(const Splitting & split) const {
-  double mij2(split.m2(0)), mi2(split.m2(1)), mj2(split.m2(2)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), Q2red(split.Q2red()), kappa2(split.t()/Q2red);
   // Start with the soft term only, including possible K factors (cusp anomalous
   // dimensions), obtained from the gauge part of the kernel
   double Kfactor = (m_CMW==1) ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
   double value   = A1(z,kappa2) * Kfactor;
   // All massless: just add the collinear parts.
-  if (mi2==0 && mj2==0 && mspect2==0.) value += B1(z,kappa2);
-  else {
+  if (split.IsMassive()) {
     // Massive splitting adjustments
-    // directly return 0 if the splitting is kinematically not viable 
-    double s(split.s());
-    double muij2(mij2/s), mui2(mi2/s), muspect2(mspect2/s);
-    double vijl  = sqr(2.*muspect2+(1.-mui2-muspect2)*(1.-y))-4.*muspect2;
-    double vtijl = Lambda2(1.,muij2,muspect2);
-    if (vtijl<0. || vijl<0.) return 0.;
-    double vtlji, vlji;
-    if (muspect2>0.) {
-      vtlji = 1.-4*muspect2*mui2/sqr(1.-muspect2-mui2);
-      vlji  = 1.-4*(Q2*(1.-z)+mspect2)*mi2/sqr(Q2*z);
-      if (vtlji<0. || vlji<0.) return 0.;
-    }
-    vtijl        = sqrt(vtijl)/(1.-muij2-muspect2);
-    vijl         = sqrt(vijl)/((1.-muij2-muspect2) * (1.-y));
-    value       += (vtijl/vijl) * ( B1(z,kappa2) -
-				    (2.*(1.-z)*mi2)/((1.-z+y)*Q2*y));
-    if (muspect2>0.) {
-      value    -= 2.*sqrt(vtlji/vlji)*mspect2/((1.-z)*Q2) * y/((1.-z)+y);
+    // directly return 0 if the splitting is kinematically not viable
+    double mi2(split.m2(m_invtags[0])), mj2(split.m2(m_invtags[1]));
+    double mk2(split.mspect2()), mij2 = split.msplit2(), y = split.y();
+    double Q2 = split.Q2(), sij = y*(Q2-mk2)+(1.-y)*(mi2+mj2);
+    double vt2_ij_k = Lambda2(Q2,mij2,mk2), v2_ij_k  = Lambda2(Q2,sij,mk2);
+    if ( sij<mi2+mj2 || Q2<sij+mk2 || vt2_ij_k<0. || v2_ij_k < 0.) return 0.;
+    double vt_ij_k = sqrt(vt2_ij_k)/(Q2-mij2-mk2), v_ij_k = sqrt(v2_ij_k)/(Q2-sij-mk2);
+    // Terms ~y/(1-z+y) come from reshuffling the mass-dependent terms in the eikonal
+    // to ensure correct soft behaviour
+    value += vt_ij_k/v_ij_k * (B1(z,kappa2) +
+			       2.*mi2/(sij-mi2-mj2) * (1.- y/(1.-z+y)) );
+    if (mk2>0.) {
+      double vt_kj_i = Lambda(Q2,mk2,mi2)/(Q2-mk2-mi2);
+      double v_kj_i  = sqrt(1.- 4.*mi2*(Q2*(1.-z)+mk2)/sqr(Q2*z) );
+      value  -= (vt_kj_i/v_kj_i  *
+		 2.*mk2/(Q2*(1.-z)) * y/(1.-z+y));
     }
   }
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  else value += B1(z,kappa2);
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
 double FFV_FF::Integral(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return log(1.0+split.Q2()/split.t0()) * Kmax;
+  return log(1.0+split.Q2red()/split.tcut()) * Kmax;
 }
 
 double FFV_FF::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(0),split.t0()/split.Q2()) * Kmax;
+  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax;
 }
 
 void FFV_FF::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.t0()/split.Q2();
-  double z      = 1.-sqrt(kappa2 * (pow(1.+1./kappa2,ran->Get())-1.) );
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  double kappa2 = split.tcut()/split.Q2red();
+  split.Set_z(1.-sqrt(kappa2 * (pow(1.+1./kappa2,ran->Get())-1.) ));
   split.Set_phi();
 }
 

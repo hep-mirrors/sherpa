@@ -24,17 +24,17 @@ VFF_FF::VFF_FF(const Kernel_Info & info) : SF_FF12(info) {
 }
 
 double VFF_FF::operator()(const Splitting & split) const {
-  double mi2(split.m2(1)), mj2(split.m2(2)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.t()/split.Q2red());
   double value = 0.;
-  if (mi2==0. && mj2==0. && mspect2==0.) value += B1(z,kappa2);
-  else {
-    double mui2(mi2/Q2);
-    double vijl  = sqr(1.-y)-4.*(y+2.*mui2)*(mspect2/Q2);
-    if (vijl<0.) return 0.;
-    value       += (1.-y)/sqrt(vijl) * (B1(z,kappa2)+2.*mui2/(y+2.*mui2));
+  if (split.IsMassive()) {
+    double mi2(split.m2(m_invtags[0])), mk2(split.mspect2());
+    double Q2      = split.Q2(), sij = split.y()*(Q2-mk2);
+    double v2_ij_k = Lambda2(Q2,sij,mk2);
+    if (v2_ij_k<0.) return 0.;
+    value += sqrt(v2_ij_k)/(Q2-sij-mk2) * (B1(z,kappa2) + 2.*mi2/sij);
   }
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  else value += B1(z,kappa2);
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
@@ -44,8 +44,7 @@ double VFF_FF::OverEstimate(const Splitting & split) const { return 1.; }
 
 void VFF_FF::GeneratePoint(Splitting & split) const {
   double z = ran->Get();
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  split.Set_z(z);
   split.Set_phi();
 }
 

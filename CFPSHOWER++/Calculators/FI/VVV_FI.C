@@ -25,38 +25,37 @@ VVV_FI::VVV_FI(const Kernel_Info & info) : SF_FI12(info) {
 }
 
 double VVV_FI::operator()(const Splitting & split) const {
-  double mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.tcut()/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
   double value    = A1(z,kappa2) * Kfactor;
   // All massless: just add the collinear parts.
-  if (mspect2==0.) value += B1(z,kappa2);
-  else {
+  if (split.IsMassive()) {
     msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
 	       <<"   Will exit the run.\n";
     exit(1);
   }
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  else {
+    value += B1(z,kappa2);
+  }
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
 double VVV_FI::Integral(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return log(1.0+split.Q2()/split.t0()) * Kmax;
+  return log(1.0+split.Q2red()/split.tcut()) * Kmax;
 }
 
 double VVV_FI::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(0),split.t0()/split.Q2()) * Kmax;
+  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax;
 }
 
 void VVV_FI::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.t0()/split.Q2();
-  double z      = 1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)); 
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  double kappa2 = split.tcut()/split.Q2red();
+  split.Set_z(1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)));
   split.Set_phi();
 }
 

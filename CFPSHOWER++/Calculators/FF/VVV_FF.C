@@ -27,39 +27,42 @@ VVV_FF::VVV_FF(const Kernel_Info & info) : SF_FF12(info) {
 
 double VVV_FF::operator()(const Splitting & split) const {
   double mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), y(split.y()), kappa2(split.t()/split.Q2red());
   // Start with the soft term only, including possible K factors (cusp anomalous
   // dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
   double value   = A1(z,kappa2) * Kfactor;
-  if (mspect2==0.) value += B1(z,kappa2);
-  else {
+  if (split.IsMassive()) {
     // Massive spectator adjustments
-    // directly return 0 if the splitting is kinematically not viable 
-    double muspect2(mspect2/Q2);
-    double vijl  = sqr(1.-y)-4.*y*muspect2;
-    if (vijl<0.) return 0.;
-    value += (1.-y)*B1(z,kappa2)/sqrt(vijl) - 2.*(muspect2*y)/((1.-z)*(1.-z+y));
+    // directly return 0 if the splitting is kinematically not viable
+    double mk2(split.mspect2()), mij2 = split.msplit2();
+    double Q2      = split.Q2(), sij = y*(Q2-mk2);
+    double v2_ij_k = Lambda2(Q2,sij,mk2);
+    if (v2_ij_k<0.) return 0.;
+    double v_ij_k  = sqrt(v2_ij_k)/(Q2-sij-mk2);
+    // Terms ~(1.-z)/(1-z+y) come from reshuffling the mass-dependent terms in the eikonal
+    // to ensure correct soft behaviour
+    value += B1(z,kappa2)/v_ij_k - 2.*(mk2*y)/((Q2-mk2)*(1.-z)*(1.-z+y));
   }
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  else value += B1(z,kappa2);
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
 double VVV_FF::Integral(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return log(1.0+split.Q2()/split.t0()) * Kmax;
+  return log(1.0+split.Q2()/split.tcut()) * Kmax;
 }
 
 double VVV_FF::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(0),split.t0()/split.Q2()) * Kmax;
+  return A1(split.z(),split.tcut()/split.Q2()) * Kmax;
 }
 
 void VVV_FF::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.t0()/split.Q2();
+  double kappa2 = split.tcut()/split.Q2();
   double z     = 1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)); 
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  split.Set_z(z);
   split.Set_phi();
 }
 

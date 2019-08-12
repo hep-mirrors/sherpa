@@ -28,15 +28,18 @@ VFF_IF::VFF_IF(const Kernel_Info & info) : SF_IF12(info), m_jmax(5.)
 }
 
 double VFF_IF::operator()(const Splitting & split) const {
-  double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.t()/split.Q2red());
   // No LL term, so no A1 term and no HO factor
   // TODO: Add the DIS ME correction
   double value = B1(z,kappa2);
-  if (mi2!=0. || mj2!=0.) {
-    msg_Debugging()<<METHOD<<" without mass corrections yet.\n";
+  if (split.IsMassive()) {
+    double mi2(split.m2(0)), mj2(split.m2(1)), mk2(split.mspect2());
+    if (mi2!=0. || mj2!=0.) {
+      msg_Debugging()<<METHOD<<" without mass corrections yet.\n";
+    }
+    double y = split.y(), pipj = split.Q2red()*(1.-y)/(2.*y);
+    value -= mk2/pipj;
   }
-  if (mspect2>0.) value -= 2.*y*mspect2/(Q2*(1.-y));
   return value;
 }
 
@@ -45,13 +48,11 @@ double VFF_IF::Integral(const Splitting & split) const {
 }
 
 double VFF_IF::OverEstimate(const Splitting & split) const {
-  return 2./split.z(0) * m_jmax * PDFEstimate(split);
+  return 2./split.z() * m_jmax * PDFEstimate(split);
 }
 
 void VFF_IF::GeneratePoint(Splitting & split) const {
-  double z = pow(split.eta(),ran->Get());
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  split.Set_z(pow(split.eta(),ran->Get()));
   split.Set_phi();
 }
 

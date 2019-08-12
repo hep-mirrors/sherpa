@@ -10,26 +10,27 @@ using namespace ATOOLS;
 SF_FF12::SF_FF12(const Kernel_Info & info) : SF_Base(info) {}
 
 double SF_FF12::Jacobean(const Splitting & split) const {
-  double Q2 = split.Q2(), Q2y = Q2*split.y();
-  return ( Q2  / Lambda(split.s(),split.msplit2(),split.mspect2()) *
-	   Q2y / (Q2y + split.m2(0)+split.m2(1)-split.msplit2()) );
+  double Q2red = split.Q2red(), Q2red_y = Q2red * split.y(); 
+  return ( Q2red / Lambda(split.Q2(),split.msplit2(),split.mspect2()) *
+	   1. / (Q2red_y+split.m2(0)+split.m2(1)-split.msplit2())/
+		       Q2red_y );
 }
 
-bool SF_FF12::InitKinematics(Splitting & split) const {
-  if (sqrt(split.s())<sqrt(split.m2(0))+sqrt(split.m2(1))+sqrt(split.mspect2())) return false;
-  split.Set_y(split.t() / (split.Q2() * (1.-split.z(0))));
-  split.Set_x((split.z(0)-split.y()) / (1.-split.y()));
-  return true;
-}
-
-int SF_FF12::Construct(Splitting & split) const {
-  Kin_Args kin_ff(split.y(),split.x(),split.phi());
+bool SF_FF12::Construct(Splitting & split) {
+  if (sqrt(split.Q2()) <
+      sqrt(split.m2(0))+sqrt(split.m2(1))+sqrt(split.mspect2())) return false;
+  m_z = split.z();
+  m_y = split.t()/ (split.Q2red() * (1.-m_z));
+  m_ztilde = (m_z-m_y) / (1.-m_y);
+  Kin_Args kinargs(m_y,m_ztilde,split.phi());
   if (ConstructFFDipole(split.m2(0),split.m2(1),
 			split.msplit2(),split.mspect2(),
 			split.GetSplitter()->Mom(),split.GetSpectator()->Mom(),
-			kin_ff) < 0) return -1;
-  split.SetMom(0, kin_ff.m_pi);
-  split.SetMom(1, kin_ff.m_pj);
-  split.SetSpecMom(kin_ff.m_pk);
-  return 1;
+			kinargs) < 0) return false;
+  split.Set_y(m_y);
+  m_moms.resize(2);
+  m_moms[0] = kinargs.m_pi;
+  m_moms[1] = kinargs.m_pj;
+  m_specmom = kinargs.m_pk;
+  return true;
 }

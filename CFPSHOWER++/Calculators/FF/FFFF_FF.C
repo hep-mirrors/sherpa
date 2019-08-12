@@ -1,5 +1,6 @@
 #include "CFPSHOWER++/Calculators/SF_Base.H"
 #include "CFPSHOWER++/Calculators/FF/SF_FF13.H"
+#include "CFPSHOWER++/Calculators/Functions.H"
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -8,29 +9,22 @@
 namespace CFPSHOWER {
   class FFFF_FF : public SF_FF13 {
     ffff_mode::code m_mode;
-    subtract::code  m_subtract;
     double m_Nc, m_CF, m_CA, m_TR;
     double m_zi, m_zj, m_zk;
     double m_sij, m_sijk, m_tijk, m_tikj;
 
     void SortFlavours();
-    double B2(const Splitting & split) const;
-    double R_qqprime(const Splitting & split) const;
-    double S_qqprime(const Splitting & split) const;
-    double I(const double & zi, const double & zj,
-	     const double & zk, const double & x) const;
-    double i(const double & zi, const double & zj,
-	     const double & zk, const double & x) const;
-    double R_qqbar(const Splitting & split) const;
-    double S_qqbar(const Splitting & split) const;
-
-    inline double Pqq(const double & z) const {
-      return (1.+ATOOLS::sqr(z))/(1.-z);
-    } 
-    inline double Pgq(const double & z) const {
-      return ATOOLS::sqr(z)+ATOOLS::sqr(1.-z);
-    } 
-
+    const double & B2(const Splitting & split) const;
+    inline const double SymmetryFactor(const Splitting & split) const {
+      double z = split.z(), xi = z/split.z2();
+      switch (m_mode) {
+      case ffff_mode::same: return (xi-z)/(1.-z);
+      case ffff_mode::diff:
+      default:
+	break;
+      }
+      return 1.;
+    }
   public:
     FFFF_FF(const Kernel_Info & info);
     double operator()(const Splitting & split) const;
@@ -67,7 +61,7 @@ FFFF_FF::FFFF_FF(const Kernel_Info & info)  : SF_FF13(info) {
     m_mode = ffff_mode::diff;
     SetName("q->qQQ");
   }
-  m_subtract = (m_split.Bar()==m_flavs[m_tagsequence[0]] ?
+  m_subtract = (m_split.Bar()==m_flavs[m_tags[0]] ?
 		(m_mode==ffff_mode::same ?
 		 subtract::both : subtract::soft) : 
 		subtract::coll );
@@ -76,11 +70,11 @@ FFFF_FF::FFFF_FF(const Kernel_Info & info)  : SF_FF13(info) {
 	   <<"for "<<m_split.Bar()<<" -> ";
   for (size_t i=0;i<m_flavs.size();i++) msg_Out()<<m_flavs[i]<<" ";
   msg_Out()<<" { ";
-  for (size_t i=0;i<m_tagsequence.size();i++)
-    msg_Out()<<m_flavs[m_tagsequence[i]]<<" ("<<m_tagsequence[i]<<") ";
+  for (size_t i=0;i<m_tags.size();i++)
+    msg_Out()<<m_flavs[m_tags[i]]<<" ("<<m_tags[i]<<") ";
   msg_Out()<<"}\n"
-	   <<"   compared "<<m_split.Bar()<<" with "<<m_flavs[m_tagsequence[0]]
-	   <<" ("<<m_tagsequence[0]<<")\n"
+	   <<"   compared "<<m_split.Bar()<<" with "<<m_flavs[m_tags[0]]
+	   <<" ("<<m_tags[0]<<")\n"
 	   <<"----------------------------------------------------------\n"
 	   <<"----------------------------------------------------------\n";
 }
@@ -89,97 +83,75 @@ void FFFF_FF::SortFlavours() {
   for (size_t i=0;i<3;i++) {
     if (m_split==m_flavs[i]) {
       std::swap(m_flavs[i], m_flavs[0]);
-      for (size_t j=0; j<m_tagsequence.size();j++) {
-	if      (m_tagsequence[j]==i) m_tagsequence[j]=1;
-	else if (m_tagsequence[j]==1) m_tagsequence[j]=i;
+      for (size_t j=0; j<m_tags.size();j++) {
+	if      (m_tags[j]==i) m_tags[j]=1;
+	else if (m_tags[j]==1) m_tags[j]=i;
       }
       break;
     }
   }
   if (m_flavs[1].IsAnti() && !m_flavs[2].IsAnti()) {
     std::swap(m_flavs[1], m_flavs[2]);
-    for (size_t j=0; j<m_tagsequence.size();j++) {
-      if      (m_tagsequence[j]==1) m_tagsequence[j]=2;
-      else if (m_tagsequence[j]==2) m_tagsequence[j]=1;
+    for (size_t j=0; j<m_tags.size();j++) {
+      if      (m_tags[j]==1) m_tags[j]=2;
+      else if (m_tags[j]==2) m_tags[j]=1;
     }
   }
 }
 
 double FFFF_FF::operator()(const Splitting & split) const {
   double value = B2(split);
+  //value *= -2.*log(z1)/denom;
+  value *= (*split.GetKernel()->GetGauge())(split)/(2.*M_PI);
+  value *= SymmetryFactor(split);
+  return split.z() * value;
 }
 
-double FFFF_FF::B2(const Splitting & split) const {
-}
-
-double FFFF_FF::R_qqprime(const Splitting & split) const {
-  //double R = 1./2. * m_saij/m_sai * ( -sqr(m_taij)/(m_sai*m_saij) +
-  //				    (4.*m_zj + sqr(m_za-m_zi))/(m_za+m_zi) +
-  //				    (m_za + m_zi - m_sai/m_saij) );
-  //return R;
-}
-
-double FFFF_FF::S_qqprime(const Splitting & split) const {
-  // cosphi may be wrong - check notation.
-  //double cosphi_ik_aj = CosPhi(split.Mom(0),split.Mom(1),split.Mom(2),split.Mom(3));
-  //double S = m_saij/m_sai * ( (1.+m_zj)/(1.-m_zj) * (1.-(2.*m_za*m_zi)/sqr(m_za+m_zi)) +
-  //			      4.*m_za*m_zi*m_zj/pow(1.-m_zj,3.) * (1.-2.*sqr(cosphi_ik_aj)));
-  //return S;
-}
-
-double FFFF_FF::R_qqbar(const Splitting & split) const {
-  //double R = ( 1./2. * m_saij/m_sai * (-sqr(m_taij)/(m_sai*m_saij) +
-  //				       4.*m_zj+sqr(m_za+m_zi)/(m_za+m_zi) +
-  //				       (m_za+m_zi - m_sai/m_saij) ) -
-  //	       1./m_Nc * m_saij/m_sai * (2.*m_sij/m_saij +
-  //					 (1.+sqr(m_za))/(1.-m_zi) -
-  //					 2.*m_zi/(1.-m_zj) -
-  //					 ( m_saij/m_saj * m_za/2. *
-  //					   (1.+sqr(m_za))/((1.-m_zi)*(1.-m_zj)) ) ) +
-  //	       1./2. * m_saij/m_saj * (-sqr(m_taji)/(m_saj*m_saij) +
-  //				       4.*m_zi+sqr(m_za+m_zj)/(m_za+m_zj) +
-  //				       (m_za+m_zj - m_saj/m_saij) ) -
-  //	       1./m_Nc * m_saij/m_saj * (2.*m_sij/m_saij +
-  //					 (1.+sqr(m_za))/(1.-m_zj) -
-  //					 2.*m_zj/(1.-m_zi) -
-  //					 ( m_saij/m_sai * m_za/2. *
-  //					   (1.+sqr(m_za))/((1.-m_zj)*(1.-m_zi)) ) ) );
-}
-
-double FFFF_FF::S_qqbar(const Splitting & split) const {
-  //double cosphi_ik_aj = CosPhi(split.Mom(0),split.Mom(1),split.Mom(2),split.Mom(3));
-  //double cosphi_jk_ai = CosPhi(split.Mom(0),split.Mom(1),split.Mom(2),split.Mom(3));
-  //double S = (m_saij/m_sai * ( (1.+m_zj)/(1.-m_zj) * (1.-(2.*m_za*m_zi)/sqr(m_za+m_zi)) +
-  //			       4.*m_za*m_zi*m_zj/pow(1.-m_zj,3.) * (1.-2.*sqr(cosphi_ik_aj))) +
-  //	      m_saij/m_saj * ( (1.+m_zi)/(1.-m_zi) * (1.-(2.*m_za*m_zj)/sqr(m_za+m_zj)) +
-  //			       4.*m_za*m_zj*m_zi/pow(1.-m_zi,3.) * (1.-2.*sqr(cosphi_jk_ai))) );
-  //return S;
-}
-
-double FFFF_FF::I(const double & zi, const double & zj,
-		  const double & zk, const double & x) const {
-  //double P = Pqq(zk);
-  //double I = ( P +
-  //	       (1. - (2.*zi*zj)/sqr(zi+zj)) *
-  //	       (1. - zk + P) * (log(x*zj*zk) - 1.) );
-  //return I;
-}
-
-double FFFF_FF::i(const double & zi, const double & zj,
-		  const double & zk, const double & x) const {
-  //double i   = 2.*( Pqq(zk) * log(x*zk) + (1.-zk) ) * Pgq(zi/(zi+zj)));
-  //return i;
+const double & FFFF_FF::B2(const Splitting & split) const {
+  double term = 0;
+  if (split.IsEndPoint()) {
+    if (IsSubtract(subtract::coll)) {
+      //      double xi   = split.z()/split.z2();
+      //double sijk = split.t()/xi+split.s01()+split.m2(2), denom = 1.-sijk/split.t1();
+      //double z0   = split.z(0)/denom, z1 = (xi-split.z(0))/denom, z2 = 1.-z0-z1;
+      //term = (m_mode==ffff_mode::same ?
+      //      Functions::DeltaI_qqp_F(z0,z1,z2) :
+      //      Functions::DeltaI_qqbar_F(z0,z1,z2)); 
+    }
+  }
+  else {
+  }
 }
 
 double FFFF_FF::Integral(const Splitting & split) const {
-  
+  double invkappa = split.tcut()/split.Q2();
+  double SFInt    = 20./9. * 1./2. * log(1.+invkappa);
+  return SFInt * split.GetKernel()->GetGauge()->OverEstimate(split)/(2.*M_PI); 
 }
 
 double FFFF_FF::OverEstimate(const Splitting & split) const {
-
+  double kappa = split.tcut()/split.Q2();
+  double SFEst = 20./9. * 1./(2.*(split.z()+kappa));
+  return SFEst * split.GetKernel()->GetGauge()->OverEstimate(split)/(2.*M_PI); 
 }
 
 void FFFF_FF::GeneratePoint(Splitting & split) const {
+  double kappa = split.tcut()/split.Q2(), invkappa = 1./kappa;
+  double z     = pow(1.+invkappa, -ran->Get()) * (1.+kappa) - kappa;
+  double z2    = pow(z, ran->Get());
+  bool   endp  = ran->Get()>0.5;
+  if (endp) {
+    double help  = ran->Get();
+    double sai   = help/(1.-help) * (z2/z * split.t() + split.m2(1));
+    split.Set_t2(sai);
+  }
+  else {
+    split.Set_t2(0.);
+  }
+  split.Set_z(z);
+  split.Set_z2(z2);
+  split.Set_phi();
+  split.Set_phi2();
 }
 
 DECLARE_GETTER(FFFF_FF,"FF_FFFF",SF_Base,Kernel_Info);

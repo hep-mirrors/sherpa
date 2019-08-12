@@ -38,9 +38,8 @@ double FVF_IF::OverEstimate(const Splitting & split) const {
 }
 
 void FVF_IF::GeneratePoint(Splitting & split) const {
-  double eta = split.eta(), z = eta+(1.0-eta)*ran->Get();
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  double eta = split.eta();
+  split.Set_z(eta+(1.0-eta)*ran->Get());
   split.Set_phi();
 }
 

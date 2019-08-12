@@ -22,44 +22,44 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 FFV_FI::FFV_FI(const Kernel_Info & info) : SF_FI12(info), m_jmax(5.) {
-  SetName(m_tagsequence[0]==1?"F->VF":"F->FV");
+  SetName(m_tags[0]==1?"F->VF":"F->FV");
 }
 
 double FFV_FI::operator()(const Splitting & split) const {
-  double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.t()/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
   double value   = A1(z,kappa2) * Kfactor;
   // All massless: just add the collinear parts.
   // TODO: Add the B2 parts as soon as the LL shower is validated.
-  if (mspect2>1.e-12) {
+  if (split.mspect2()>1.e-12) {
     msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
 	       <<"   Will exit the run.\n";
     exit(1);
   }
   value += B1(z,kappa2);
-  if (!(mi2==0. && mj2==0.)) value -= (2.*y*mi2)/(Q2*(1.-y));
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  if (split.IsMassive()) {
+    double mi2 = split.m2(0), y = split.y(), pipj = split.Q2red()*(1.-y)/(2.*y);
+    value -= mi2/pipj;
+  }
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
 double FFV_FI::Integral(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return log(1.0+split.Q2()/split.t0()) * Kmax * m_jmax;
+  return log(1.0+split.Q2red()/split.tcut()) * Kmax * m_jmax;
 }
 
 double FFV_FI::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(0),split.t0()/split.Q2()) * Kmax * m_jmax;
+  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax * m_jmax;
 }
 
 void FFV_FI::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.t0()/split.Q2();
-  double z      = 1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)); 
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  double kappa2 = split.tcut()/split.Q2red();
+  split.Set_z(1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)));
   split.Set_phi();
 }
 

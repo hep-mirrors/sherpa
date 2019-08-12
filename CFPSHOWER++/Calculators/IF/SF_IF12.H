@@ -10,8 +10,7 @@ namespace CFPSHOWER {
     virtual double PDFEstimate(const Splitting & split) const;
   public:
     SF_IF12(const Kernel_Info & info);
-    virtual bool InitKinematics(Splitting & split) const;
-    virtual int  Construct(Splitting & split) const;
+    virtual bool Construct(Splitting & split);
   };
 }
 

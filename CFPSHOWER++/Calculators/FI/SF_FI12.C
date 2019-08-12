@@ -29,20 +29,16 @@ double SF_FI12::Jacobean(const Splitting & split) const {
   return 0.;
 }
 
-bool SF_FI12::InitKinematics(Splitting & split) const {
-  split.Set_y(1. - split.t()/(split.Q2()*(1.-split.z(0))));
-  split.Set_x(split.z(0));
-  return true;
-}
-
-int SF_FI12::Construct(Splitting & split) const {
-  Kin_Args kin_fi(1.-split.y(),split.x(),split.phi(),1|8);
+bool SF_FI12::Construct(Splitting & split) {
+  double y = 1. - split.t()/(split.Q2red()*(1.-split.z()));
+  Kin_Args kin_args(1.-y,split.z(),split.phi(),1|8);
   if (ConstructFIDipole(split.m2(0),split.m2(1),
 			split.msplit2(),split.mspect2(),
 			split.GetSplitter()->Mom(),-split.GetSpectator()->Mom(),
-			kin_fi) < 0) return -1;
-  split.SetMom(0, kin_fi.m_pi);
-  split.SetMom(1, kin_fi.m_pj);
-  split.SetSpecMom(-kin_fi.m_pk);
-  return 1;
+			kin_args) < 0) return false;
+  split.Set_y(y);
+  m_moms[0] = kin_args.m_pi;
+  m_moms[1] = kin_args.m_pj;
+  m_specmom = kin_args.m_pk;
+  return true;
 }

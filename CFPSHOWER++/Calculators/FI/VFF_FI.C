@@ -26,20 +26,19 @@ VFF_FI::VFF_FI(const Kernel_Info & info) : SF_FI12(info), m_jmax(5.) {
 }
 
 double VFF_FI::operator()(const Splitting & split) const {
-  double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.tcut()/split.Q2red());
   // TODO: have to add ME correction for DIS
-  if (mspect2>1.e-12) {
+  if (split.mspect2()>1.e-12) {
     msg_Error()<<"Error in "<<METHOD<<": did not expect massive spectator in IS.\n"
 	       <<"   Will exit the run.\n";
     exit(1);
   }
   double value = B1(z,kappa2);
-  if (!(mi2==0. && mj2==0.)) {
-    double mui2(mi2/Q2);
+  if (!split.IsMassive()) {
+    double mui2(split.m2(0)/split.Q2red()), y = split.y();
     value += 2.*y*mui2/((1.-y)+2.*y*mui2);
   }
-  if (split.Clustered()==0) value *= split.z(m_tagsequence[0]);
+  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
   return value;
 }
 
@@ -48,9 +47,7 @@ double VFF_FI::Integral(const Splitting & split)     const { return m_jmax; }
 double VFF_FI::OverEstimate(const Splitting & split) const { return m_jmax; }
 
 void VFF_FI::GeneratePoint(Splitting & split) const {
-  double z = ran->Get();
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  split.Set_z(ran->Get());
   split.Set_phi();
 }
 

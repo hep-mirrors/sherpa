@@ -30,14 +30,13 @@ using namespace ATOOLS;
 // over-estimator: 5 for potential valence quarks, 2 for all others.
 // TODO: may need to monitor this.
 FFV_IF::FFV_IF(const Kernel_Info & info) :
-  SF_IF12(info), m_jmax(info.GetFlavs()[0].Kfcode() < 3 ? 5.:2.)
+  SF_IF12(info), m_jmax(info.GetSplit().Kfcode() < 3 ? 5.:2.)
 {
   SetName("F->FV");
 }
 
 double FFV_IF::operator()(const Splitting & split) const {
-  double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
-  double z(split.z(0)), y(split.y()), Q2(split.Q2()), kappa2(split.t()/Q2);
+  double z(split.z()), kappa2(split.t()/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? 1.+split.GetKernel()->GetGauge()->K(split) : 1.;
@@ -45,28 +44,30 @@ double FFV_IF::operator()(const Splitting & split) const {
   // All massless: just add the collinear parts.
   // TODO: Add the DIS ME correction
   value += B1(z,kappa2);
-  if (mi2!=0. || mj2!=0.) {
-    msg_Debugging()<<METHOD<<" without mass corrections yet.\n";
+  if (split.IsMassive()) {
+    double mi2(split.m2(0)), mj2(split.m2(1)), mspect2(split.mspect2());
+    if (mi2!=0. || mj2!=0.) {
+      msg_Debugging()<<METHOD<<" without mass corrections yet.\n";
+    }
+    double y = split.y(), pipj = split.Q2red()*(1.-y)/(2.*y); 
+    if (mspect2>0.) value -= mspect2/pipj;
   }
-  if (mspect2>0.) value -= 2.*y*mspect2/(Q2*(1.-y));
   return value;
 }
 
 double FFV_IF::Integral(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return log(1.+sqr(1.-split.eta())*split.Q2()/split.t0()) * Kmax * m_jmax;
+  return log(1.+sqr(1.-split.eta())*split.Q2red()/split.tcut()) * Kmax * m_jmax;
 }
 
 double FFV_IF::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(0),split.t0()/split.Q2()) * Kmax * m_jmax;
+  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax * m_jmax;
 }
 
 void FFV_IF::GeneratePoint(Splitting & split) const {
-  double kappa2 = split.t0()/split.Q2();
-  double z      = 1.-sqrt(kappa2 * (pow(1.+sqr(1.-split.eta())/kappa2,ran->Get())-1.)); 
-  split.Set_z(0,z);
-  split.Set_z(1,1.-z);
+  double kappa2 = split.tcut()/split.Q2red();
+  split.Set_z(1.-sqrt(kappa2 * (pow(1.+sqr(1.-split.eta())/kappa2,ran->Get())-1.)));
   split.Set_phi();
 }
 
