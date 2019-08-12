@@ -22,7 +22,7 @@ const double GGG::Scale(const Splitting & split) const {
   double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.t()/split.x();
+    scale = split.t()/split.z();
     break;
   case kernel_type::FI:
     scale = split.t()/split.y();
@@ -31,7 +31,7 @@ const double GGG::Scale(const Splitting & split) const {
   default:
     break;
   }
-  msg_Out()<<"   Scale("<<m_type<<") = "<<split.t()<<"/"<<split.x()<<" = "<<scale<<".\n";
+  msg_Out()<<"   Scale("<<m_type<<") = "<<split.t()<<"/"<<split.z()<<" = "<<scale<<".\n";
   return scale;
 }
 
@@ -60,7 +60,6 @@ bool GGG::SetColours(Splitting & split) {
   // hard gluon are interchange - in other words, colours have to swap.
   if (m_tagsequence[0]==2) swap(m_colors[0],m_colors[1]);
   // set colours in splitting
-  for (size_t i=0;i<2;i++) split.SetCol(i,m_colors[i]);
   return (m_colors.size()==2); 
 }
 

@@ -159,7 +159,7 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
     const Kernels * flavkernels = allkit->second;
     for (Kernel_Vector::const_iterator kit=flavkernels->begin();
 	 kit!=flavkernels->end();kit++) {
-      if ((*kit)->TagSequence()[0]==1) continue;
+      if ((*kit)->Tags(0)==1) continue;
       Flavour_Vector outs = (*kit)->GetFlavs();
       // go over the two outgoing flavours and produce trial final states by keeping one
       // and replacing the other with two outgoing flavours from the already initialised

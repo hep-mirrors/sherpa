@@ -214,7 +214,7 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	    Splitting * split  = new Splitting(splitter,spectator,t,t0);
 	    msg_Out()<<"   selected "<<i<<"th spectator (I = "<<m_integrals[i].back()<<"), "
 		     <<j<<"th kernel.\n";
-	    split->Set_tStart(tstart);
+	    split->Set_tstart(tstart);
 	    split->SetKinScheme(m_kinscheme);
 	    // Veto and adding of weights is embedded here.
 	    // Generate z, phi, run the veto algorithm, and construct the kinematics.

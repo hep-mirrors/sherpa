@@ -26,7 +26,7 @@ const double GQQ::Scale(const Splitting & split) const {
   double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.t()/split.x();
+    scale = split.t()/split.z();
     break;
   case kernel_type::FI:
     scale = split.t()/split.y();
@@ -50,7 +50,6 @@ bool GQQ::SetColours(Splitting & split) {
     m_colors.push_back(Color(split.GetSplitter()->GetColor()[0],0));
   }
   // set colours in splitting
-  for (size_t i=0;i<2;i++) split.SetCol(i,m_colors[i]);
   return (m_colors.size()==2); 
 }
 

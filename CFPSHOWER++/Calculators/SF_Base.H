@@ -27,13 +27,15 @@ namespace CFPSHOWER {
   
   class SF_Base {
   protected:
-    static double Nc, CF, CA, TR;
-    ATOOLS::Flavour        m_split;
-    ATOOLS::Flavour_Vector m_flavs;
-    std::vector<size_t>    m_tagsequence;
-    std::string            m_name;
-    int                    m_CMW;
-  
+    ATOOLS::Flavour            m_split;
+    ATOOLS::Flavour_Vector     m_flavs;
+    std::vector<ATOOLS::Vec4D> m_moms;
+    ATOOLS::Vec4D              m_specmom;
+    std::vector<size_t>        m_tags, m_invtags;
+    std::string                m_name;
+    int                        m_CMW;
+    subtract::code             m_subtract;
+
     virtual double Lambda(const double & a,const double & b,const double & c) const;
     virtual double Lambda2(const double & a,const double & b,const double & c) const;
   public:
@@ -43,13 +45,22 @@ namespace CFPSHOWER {
     virtual double Integral(const Splitting & split)     const=0;
     virtual double OverEstimate(const Splitting & split) const=0;
     virtual void   GeneratePoint(Splitting & split)      const=0;
-    virtual bool   InitKinematics(Splitting & split)     const=0;
-    virtual int    Construct(Splitting & split)          const=0;
+    virtual bool   Construct(Splitting & split)               =0;
     
-    virtual inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }
-    virtual inline const std::vector<size_t> & TagSequence() const { return m_tagsequence; }
-    virtual inline const std::string & Name()                const { return m_name; }
-    virtual inline void SetName(const std::string & name)          { m_name = name; }
+    virtual inline const ATOOLS::Flavour & GetSplit()           const { return m_split; }
+    virtual inline const ATOOLS::Flavour_Vector & GetFlavs()    const { return m_flavs; }
+    virtual inline const std::vector<ATOOLS::Vec4D> & GetMoms() const { return m_moms;  }
+    virtual inline const ATOOLS::Vec4D & SpecMom()              const { return m_specmom; }
+    virtual inline const std::vector<size_t> & Tags()           const { return m_tags; }
+    virtual inline const size_t & Tags(const size_t & pos)      const { return m_tags[pos]; }
+    virtual inline const std::vector<size_t> & InvTags()        const { return m_invtags; }
+    virtual inline const size_t & InvTags(const size_t & pos)   const { return m_invtags[pos]; }
+    virtual inline const std::string & Name()                   const { return m_name; }
+    virtual inline void SetName(const std::string & name)             { m_name = name; }
+
+    virtual inline const bool IsSubtract(subtract::code sub) const {
+      return (int(sub & m_subtract)>0);
+    }
   };
   
   typedef ATOOLS::Getter_Function<SF_Base,Kernel_Info,std::less<std::string> > SF_Getter;

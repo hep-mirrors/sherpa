@@ -47,7 +47,7 @@ double Gauge_Base::operator()(const Splitting & split) {
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
-  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.t0());
+  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.tcut());
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
@@ -72,7 +72,7 @@ const double Gauge_Base::K(const Splitting & split) const {
 
 const double Gauge_Base::KMax(const Splitting & split) const {
   if (m_orderA<2) return 0.;
-  double alphaS = (*p_alphaS)(split.t0())/(2.*M_PI);
+  double alphaS = (*p_alphaS)(split.tcut())/(2.*M_PI);
   if (m_orderA<3) return alphaS * m_K1max;
   return alphaS * m_K1max + sqr(alphaS) * m_K2max;
 }

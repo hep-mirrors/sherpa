@@ -16,6 +16,6 @@ libCFPCalculators_la_SOURCES = \
 
 localinc_HEADERS   = \
 	SF_Base.H \
-	Gauge_Base.H 
-
+	Gauge_Base.H \
+	Functions.H
 

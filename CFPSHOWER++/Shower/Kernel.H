@@ -17,8 +17,6 @@ namespace CFPSHOWER {
   class Kernel {
   private:
     kernel_type::code             m_type;
-    ATOOLS::Flavour               m_split;
-    ATOOLS::Flavour_Vector        m_flavs;
     const ATOOLS::Mass_Selector * p_msel;
     
     SF_Base       * p_sf; 
@@ -52,9 +50,10 @@ namespace CFPSHOWER {
     inline const kernel_type::code      & GetType()  const { return m_type; }
     inline SF_Base                      * GetSF()    const { return p_sf; } 
     inline Gauge_Base                   * GetGauge() const { return p_gauge; }
-    inline const ATOOLS::Flavour        & GetSplit() const { return m_split; }
-    inline const ATOOLS::Flavour_Vector & GetFlavs() const { return m_flavs; }
-    inline const std::vector<size_t> & TagSequence() const { return p_sf->TagSequence(); }
+    inline const ATOOLS::Flavour        & GetSplit() const { return p_sf->GetSplit(); }
+    inline const ATOOLS::Flavour_Vector & GetFlavs() const { return p_sf->GetFlavs(); }
+    inline const std::vector<size_t>    & Tags()     const { return p_sf->Tags(); }
+    inline const size_t & Tags(const size_t & pos)   const { return p_sf->Tags(pos); }
     inline const ATOOLS::Mass_Selector  * GetMSel()  const { return p_msel; }
     inline PDF::PDF_Base * GetPDF(const size_t beam) const { return p_pdf[beam]; }
     inline const double  & PDFMinValue()             const { return m_pdfminvalue; }

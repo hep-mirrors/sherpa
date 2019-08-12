@@ -12,79 +12,47 @@ using namespace ATOOLS;
 using namespace std;
 
 Kernel::Kernel(const Kernel_Info & info) :
-  m_type(info.Type()),
-  m_split(info.GetSplit()), m_flavs(info.GetFlavs()),
-  p_msel(NULL)
+  m_type(info.Type()), p_msel(NULL)
 {
   for (size_t beam=0;beam<2;beam++) p_pdf[beam] = NULL;
 }
 
 double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
   split.SetKernel(this);
-  split.InitKinematics(msel);
+  split.InitSplitting(msel);
   double SF = p_sf->Integral(split);
   double I = (p_gauge->Charge() * SF *
 	      p_gauge->OverEstimate(split));
-  //msg_Out()<<METHOD<<"(SF = "<<SF<<" * "
-  //	   <<"gauge = "<<p_gauge->OverEstimate(split)<<" * "
-  //	   <<"charge = "<<p_gauge->Charge()<<")\n";
   return I/(2.*M_PI);
 }
 
 bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
 		      const double & overfac) {
-  // Sequence of generation of one splitting after kernels is selected:
-  // - attach pointer of kernel to Splitting, init kinematics (setting masses,
-  //   s_ijk and Q^2, making sure splitting is allowed when splitting is massive).
+  // Sequence of generation of one splitting after kernel is selected:
+  // - attach pointer of kernel to Splitting, init invairants for splitting:
+  //   setting Q^2, masses, and Q^2_red
+  //   (make sure splitting is allowed when splitting is massive).
   // - generate a splitting kinematics, essentially the z and phi
-  // - calculate x and y
+  // - calculate kinematic invariants
   // - construct outgoing four-momenta of splitting products and spectator
   // - if this is successful, calculate weights, apply hit-or-miss, attach
   //   acceptance and rejection weights to the splitter-spectator pair
   split.SetKernel(this);
-  split.InitKinematics(msel);
+  split.InitSplitting(msel);
   p_sf->GeneratePoint(split);
-  if (!p_sf->InitKinematics(split)) {
-    //msg_Out()<<"   * rejected (t = "<<split.t()<<", no phase space for "
-    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-    //	     <<"Q^2 = "<<split.Q2()<<").\n";
-    return false;
-  }
-  if (!p_gauge->SetColours(split)) {
-    //msg_Out()<<"   * no colours for (t = "<<split.t()<<", no phase space for "
-    //	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-    //	     <<"Q^2 = "<<split.Q2()<<").\n";
-    return false;
-  }
-  if (p_sf->Construct(split)==1) {
+  if (!p_gauge->SetColours(split))  return false;
+  if (p_sf->Construct(split)) {
     if (split.GetWeight()) { delete split.GetWeight(); } 
     split.SetWeight(MakeWeight(split,overfac));
-    //msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
-    //	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
-    //	     <<"= "<<((*split.GetWeight())())<<"\n";
     if ((*split.GetWeight())()>=ran->Get()) {
-      //msg_Out()<<"   * add acceptance weight "
-      //       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
-      //       <<"eta = "<<split.eta()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "
-      //	       <<split.GetWeight()->Accept()<<"\n";
       split.GetSplitter()->AddWeight(split,true);
       return true;
     }
     else {
-      //msg_Out()<<"   * add rejection weight "
-      //       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
-      //       <<"eta = "<<split.eta()<<") "
-      //       <<"from "<<(*split.GetWeight())<<" = "
-      //       <<split.GetWeight()->Reject()<<"\n";
       split.GetSplitter()->AddWeight(split,false);
       return false;
     }
   }
-  //msg_Out()<<"   * "<<METHOD<<" no kinematics for (t = "<<split.t()<<", "
-  //	   <<"no phase space for "<<p_sf->Name()
-  //	   <<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-  //	   <<"Q^2 = "<<split.Q2()<<").\n";
   return false;
 }
 
@@ -111,10 +79,11 @@ Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
 
 bool Kernel::FillOffsprings(Splitting & split) {
   int beam = split.GetSplitter()->Beam();
-  for (size_t i=0;i<m_flavs.size();i++) {
-    Parton * parton = new Parton(m_flavs[i],split.Mom(i));
-    if (i==1) parton->SetBeam(beam);
-    parton->SetColor(split.Col(i));
+  for (size_t i=0;i<GetFlavs().size();i++) {
+    Parton * parton = new Parton(GetFlavs()[p_sf->Tags()[i]],
+				 p_sf->GetMoms()[i]);
+    if (i==0) parton->SetBeam(beam);
+    parton->SetColor(p_gauge->GetColor(i));
     split.SetParton(i,parton);
   }
   return true;
@@ -127,8 +96,8 @@ ostream & CFPSHOWER::operator<<(ostream &s,const Kernel & kernel) {
    <<kernel.GetSplit()<<" --> ";
   for (size_t i=0;i<flavs.size();i++) s<<flavs[i]<<" ";
   s<<" tag sequence = { ";
-  for (size_t i=0;i<kernel.GetSF()->TagSequence().size();i++)
-    s<<kernel.GetSF()->TagSequence()[i]<<" ";
+  for (size_t i=0;i<kernel.GetSF()->Tags().size();i++)
+    s<<kernel.GetSF()->Tags()[i]<<" ";
   s<<"}\n";
   return s;
 }
@@ -163,3 +132,31 @@ void Getter<Kernel,Kernel_Info,Kernel>::PrintInfo(ostream &str,const size_t widt
 {
   str<<"Splitting Kernel";
 }
+
+
+
+
+
+//msg_Out()<<"   * rejected (t = "<<split.t()<<", no phase space for "
+//	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+//	     <<"Q^2 = "<<split.Q2()<<").\n";
+//msg_Out()<<"   * no colours for (t = "<<split.t()<<", no phase space for "
+//	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+//	     <<"Q^2 = "<<split.Q2()<<").\n";
+//msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
+//	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
+//	     <<"= "<<((*split.GetWeight())())<<"\n";
+//msg_Out()<<"   * add acceptance weight "
+//       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
+//       <<"eta = "<<split.eta()<<") "
+//       <<"from "<<(*split.GetWeight())<<" = "
+//	       <<split.GetWeight()->Accept()<<"\n";
+//msg_Out()<<"   * add rejection weight "
+//       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
+//       <<"eta = "<<split.eta()<<") "
+//       <<"from "<<(*split.GetWeight())<<" = "
+//       <<split.GetWeight()->Reject()<<"\n";
+//msg_Out()<<"   * "<<METHOD<<" no kinematics for (t = "<<split.t()<<", "
+//	   <<"no phase space for "<<p_sf->Name()
+//	   <<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
+//	   <<"Q^2 = "<<split.Q2()<<").\n";
