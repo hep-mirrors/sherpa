@@ -45,6 +45,7 @@ Splitting Cluster_Definitions::KT2(const ATOOLS::Cluster_Amplitude &ampl,
 				   const int kin,const int type,const int mode,
 				   double &ws,double &mu2)
 {
+  /*
   const ATOOLS::Cluster_Leg * li=ampl.Leg(i), * lj=ampl.Leg(j), * lk=ampl.Leg(k);
   Parton * out1(GetParton(li)), * out2(GetParton(lj)), * spec(GetParton(lk));  // c n s
   Splitting splitting;
@@ -57,7 +58,6 @@ Splitting Cluster_Definitions::KT2(const ATOOLS::Cluster_Amplitude &ampl,
   splitting.Set_eta(out1->XB());
   splitting.SetKinScheme(kin);
   splitting.SetClustered(1);
-  /*
   splitting.m_kin=kin>=0?kin:p_shower->KinematicsScheme();
   splitting.m_type=type;
   splitting.m_cpl=p_shower->CouplingScheme();
