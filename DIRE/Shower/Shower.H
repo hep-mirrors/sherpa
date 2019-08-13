@@ -143,6 +143,9 @@ namespace DIRE {
                   size_t varindex,
                   const Reweight_Args& a);
 
+    void AddSplittingToAmplitude(Amplitude &a, Splitting &s);
+
+
   public:
 
     Shower();

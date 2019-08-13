@@ -45,6 +45,8 @@ namespace DIRE {
 
     size_t m_id;
 
+    bool m_fromdec;
+
     Weight_Map m_ws;
 
     static size_t s_cnt;
@@ -101,6 +103,10 @@ namespace DIRE {
     inline const Weight_Map &Weights() const { return m_ws; }
 
     inline void ClearWeights() { m_ws.clear(); }
+
+    inline void SetFromDec(const bool &val){m_fromdec=val;}
+    inline bool FromDec() const {return m_fromdec;}
+
 
   };// end of class Parton
 
