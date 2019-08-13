@@ -16,7 +16,7 @@ Parton::Parton
  const ATOOLS::Flavour &f,const ATOOLS::Vec4D &p,
  const Color &c,const int h):
   p_ampl(ampl), m_f(f), m_p(p), m_c(c), m_h(h), m_b(0),
-  m_id(0), p_in(NULL)
+  m_id(0), p_in(NULL), m_fromdec(false)
 {
   p_out[1]=p_out[0]=NULL;
   m_t[0]=m_t[1]=-1.0;
