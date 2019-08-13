@@ -1,48 +1,25 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
+
 #ifdef USING__FASTJET
 
-#include "ATOOLS/Phys/Particle_List.H"
-#include "ATOOLS/Phys/Fastjet_Helpers.H"
-#include "PHASIC++/Selectors/Selector.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
-#include "fastjet/EECambridgePlugin.hh"
-#include "fastjet/JadePlugin.hh"
-
 namespace PHASIC {
-  class Fastjet_Finder : public Selector_Base {
-    double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_nj, m_nb, m_nb2, m_eekt;
-    fastjet::JetDefinition * p_jdef;
-    fastjet::SISConePlugin * p_siscplug;
-    fastjet::EECambridgePlugin * p_eecamplug;
-    fastjet::JadePlugin * p_jadeplug;
+  class Fastjet_Finder : public Fastjet_Selector_Base {
+    int m_nb, m_nb2;
 
   public:
-    Fastjet_Finder(Process_Base *const proc,std::string algo,
-                   double ptmin, double etmin, double dr, double f,
-                   double eta, double y, int nj, int nb, int nb2);
-
-    ~Fastjet_Finder();
-
-
-    bool   Trigger(ATOOLS::Selector_List &);
-
-    void   BuildCuts(Cut_Data *) {}
+    Fastjet_Finder(Process_Base* const proc, ATOOLS::Scoped_Settings s,
+                   int nb, int nb2);
+    bool Trigger(ATOOLS::Selector_List&);
+    void BuildCuts(Cut_Data*) {}
   };
 }
 
-#include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-
 
 using namespace PHASIC;
 using namespace ATOOLS;
+
 
 /*---------------------------------------------------------------------
 
@@ -50,60 +27,11 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-Fastjet_Finder::Fastjet_Finder(Process_Base *const proc,
-                               std::string algo, double ptmin, double etmin,
-                               double dr, double f, double eta, double y,
-                               int nj, int nb, int nb2) :
-  Selector_Base("FastjetFinder",proc), m_ptmin(ptmin), m_etmin(etmin),
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y),
-  m_nj(nj), m_nb(nb), m_nb2(nb2), m_eekt(0), p_jdef(0),
-  p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
-{
-  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
-
-  fastjet::RecombinationScheme recom(fastjet::E_scheme);
-
-  size_t sep(algo.find('|'));
-  if (sep!=std::string::npos) {
-    std::string reco(algo.substr(sep+1));
-    algo=algo.substr(0,sep);
-    if (reco=="pt") recom=fastjet::pt_scheme;
-    if (reco=="pt2") recom=fastjet::pt2_scheme;
-    if (reco=="Et") recom=fastjet::Et_scheme;
-    if (reco=="Et2") recom=fastjet::Et2_scheme;
-    if (reco=="BIpt") recom=fastjet::BIpt_scheme;
-    if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
-  }
-
-  fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-
-  if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
-  if (algo=="antikt")    ja=fastjet::antikt_algorithm;
-  if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(m_delta_r,m_f);
-  if (ee) {
-    if (algo=="eecambridge") p_eecamplug=new fastjet::EECambridgePlugin(dr);
-    if (algo=="jade") p_jadeplug=new fastjet::JadePlugin();
-  }
-
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else if (p_eecamplug) p_jdef=new fastjet::JetDefinition(p_eecamplug);
-  else if (p_jadeplug) p_jdef=new fastjet::JetDefinition(p_jadeplug);
-  else if (ee) {
-    p_jdef=new fastjet::JetDefinition(fastjet::ee_kt_algorithm);
-    m_eekt=1;
-  }
-  else p_jdef=new fastjet::JetDefinition(ja,m_delta_r,recom);
-
-  m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
-}
-
-
-Fastjet_Finder::~Fastjet_Finder() {
-  delete p_jdef;
-  if (p_siscplug) delete p_siscplug;
-  if (p_eecamplug) delete p_eecamplug;
-  if (p_jadeplug) delete p_jadeplug;
-}
+Fastjet_Finder::Fastjet_Finder(Process_Base* const proc, Scoped_Settings s,
+                               int nb, int nb2):
+  Fastjet_Selector_Base("FastjetFinder", proc, s),
+  m_nb(nb), m_nb2(nb2)
+{}
 
 
 bool Fastjet_Finder::Trigger(Selector_List &sl)
@@ -147,7 +75,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
       input.push_back(MakePseudoJet(sl[i].Flavour(), p[i]));
     }
   }
-  
+
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
@@ -197,54 +125,23 @@ operator()(const Selector_Key &key) const
 {
   auto s = key.m_settings["FastjetFinder"];
 
-  // parameter/mode settings
-  const auto algo = s["Algorithm"].SetDefault("")  .Get<std::string>();
-  const auto dr   = s["DR"]       .SetDefault(0.4) .Get<double>();
-  const auto f    = s["f"]        .SetDefault(0.75).Get<double>();
-
-  // min/max settings
-  const auto n
-    = s["N"]     .SetDefault("None").UseZeroReplacements()     .Get<size_t>();
-  const auto ptmin
-    = s["PTMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
-  const auto etmin
-    = s["ETMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
-  const auto eta
-    = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
-  const auto y
-    = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
-
   // b tagging
   const auto nb  = s["Nb"] .SetDefault(-1).Get<int>();
   const auto nb2 = s["Nb2"].SetDefault(-1).Get<int>();
+
 #ifndef USING__FASTJET__3
   if (nb>0 || nb2>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
 #endif
 
-  Fastjet_Finder *jf(new Fastjet_Finder(key.p_proc,
-                                        algo,
-                                        ptmin, etmin,
-                                        dr, f,
-                                        eta, y,
-                                        n, nb, nb2));
-  return jf;
+  return new Fastjet_Finder(key.p_proc, s, nb, nb2);
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"FastjetFinder:\n"
-     <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone (hadron colliders)\n"
-     <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone (lepton colliders)\n"
-     <<width<<"  N: number of jets\n"
-     <<width<<"  # optional settings:\n"
-     <<width<<"  PTMin: minimum jet pT\n"
-     <<width<<"  ETMin: minimum jet eta\n"
-     <<width<<"  DR: jet distance parameter\n"
-     <<width<<"  f: Siscone f parameter (default: 0.75)\n"
-     <<width<<"  EtaMax: maximum jet eta (default: None)\n"
-     <<width<<"  YMax: maximum jet rapidity (default: None)\n"
-     <<width<<"  Nb: number of jets with b quarks\n"
+  str<<"FastjetFinder:\n";
+  Fastjet_Selector_Base::PrintCommonInfoLines(str, width);
+  str<<width<<"  Nb: number of jets with b quarks\n"
      <<width<<"  Nb2: number of jets with non-vanishing b content";
 }
 
