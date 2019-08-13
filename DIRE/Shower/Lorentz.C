@@ -62,6 +62,9 @@ void Lorentz::SetParams(Splitting &s,const PHASIC::Kin_Args &ff) const
 
 int Lorentz::Update(Splitting &s,const int mode) const
 {
+  //TODO: validate, that this decay treatment is the right thing todo
+ bool fromdec(false);
+ if(s.p_c->FromDec() || s.p_s->FromDec()) fromdec=true;
   if (s.m_lam.size())
     for (size_t i(0);i<s.p_c->Ampl()->size();++i)
       (*s.p_c->Ampl())[i]->SetMom
@@ -74,10 +77,16 @@ int Lorentz::Update(Splitting &s,const int mode) const
     s.p_n = new Parton(s.p_c->Ampl(),m_fl[2],s.m_pj);
     s.p_n->SetId(s.p_n->Counter());
     s.p_c->Ampl()->Add(s.p_n);
+    if (fromdec){
+        s.p_n->SetFromDec(true);
+        s.p_c->SetFromDec(true);
+        s.p_s->SetFromDec(true);
+      }
     if (m_fl.size()>3) {
       s.p_l = new Parton(s.p_c->Ampl(),m_fl[3],s.m_pl);
       s.p_l->SetId(s.p_l->Counter());
       s.p_c->Ampl()->Add(s.p_l);
+      if(fromdec) s.p_l->SetFromDec(true);
     }
   }
   else {

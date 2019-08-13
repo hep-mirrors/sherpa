@@ -179,6 +179,7 @@ Amplitude *Dire::Convert
     Cluster_Leg *cl(campl->Leg(i));
     Parton *p(new Parton(ampl,cl->Flav(),cl->Mom(),
 			 Color(cl->Col().m_i,cl->Col().m_j)));
+    p->SetFromDec(cl->FromDec());
     ampl->push_back(p);
     p->SetId(p->Counter());
     for (int i(0);i<2;++i) p->SetT(i,cl->KT2(i));

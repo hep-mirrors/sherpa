@@ -148,6 +148,9 @@ namespace DIRE {
 		      ATOOLS::Variation_Weights *weights,
 		      JetVeto_Args &a);
 
+    void AddSplittingToAmplitude(Amplitude &a, Splitting &s);
+
+
   public:
 
     Shower();

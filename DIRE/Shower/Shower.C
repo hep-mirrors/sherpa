@@ -317,6 +317,8 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       }
     }
     if (vwa.m_acc==0) return 0;
+    //if no veto, construct combined amplitude
+    AddSplittingToAmplitude(a,s);
     AddWeight(a,s.m_t);
     a.SetJF(NULL);
     if (++nem>=m_maxem) break;
@@ -530,3 +532,28 @@ int Shower::RemnantTest(Parton *const c,const Vec4D &p)
   if (p[0]>pb[0] && !IsEqual(p[0],pb[0],1.0e-6)) return -1;
   return 1;
 }
+
+void Shower::AddSplittingToAmplitude(Amplitude &a, Splitting &s){
+  // get amplitude
+  ATOOLS::Cluster_Amplitude * ampl = a.ClusterAmplitude();
+  // go to first amplitude
+  while (ampl->Prev()) ampl = ampl->Prev();
+  // init prev amplitude
+  ampl = ampl->InitPrev();
+  // add legs by "a" to previous amplitude
+  for(auto part = a.begin(); part!=a.end(); part++){
+    msg_Debugging() << *part << "    "<< **part <<  std::endl;
+    DIRE::Parton dpart = **part;
+    //void Cluster_Amplitude::CreateLeg(const Vec4D &p,const Flavour &fl, const ColorID &col,const size_t &id)
+    ampl->CreateLeg(dpart.Mom(),dpart.Flav(),0,-1);
+    ampl->Leg(ampl->Legs().size()-1)->SetFromDec(dpart.FromDec());
+  }
+  ampl->SetKT2(s.m_t);
+  ampl->SetNIn(ampl->Next()->NIn());
+  msg_Debugging() << "new amplitude after splitting: \n" << *ampl << std::endl;
+  /*TODO:
+  * set decay attributes
+  * invert amplitude and add it to blob list
+  */
+}
+
