@@ -534,26 +534,15 @@ int Shower::RemnantTest(Parton *const c,const Vec4D &p)
 }
 
 void Shower::AddSplittingToAmplitude(Amplitude &a, Splitting &s){
-  // get amplitude
   ATOOLS::Cluster_Amplitude * ampl = a.ClusterAmplitude();
-  // go to first amplitude
   while (ampl->Prev()) ampl = ampl->Prev();
-  // init prev amplitude
   ampl = ampl->InitPrev();
-  // add legs by "a" to previous amplitude
   for(auto part = a.begin(); part!=a.end(); part++){
-    msg_Debugging() << *part << "    "<< **part <<  std::endl;
-    DIRE::Parton dpart = **part;
-    //void Cluster_Amplitude::CreateLeg(const Vec4D &p,const Flavour &fl, const ColorID &col,const size_t &id)
-    ampl->CreateLeg(dpart.Mom(),dpart.Flav(),0,-1);
-    ampl->Leg(ampl->Legs().size()-1)->SetFromDec(dpart.FromDec());
+    ampl->CreateLeg((**part).Mom(),(**part).Flav(),0,-1);
+    ampl->Leg(ampl->Legs().size()-1)->SetFromDec((**part).FromDec());
   }
   ampl->SetKT2(s.m_t);
   ampl->SetNIn(ampl->Next()->NIn());
   msg_Debugging() << "new amplitude after splitting: \n" << *ampl << std::endl;
-  /*TODO:
-  * set decay attributes
-  * invert amplitude and add it to blob list
-  */
 }
 
