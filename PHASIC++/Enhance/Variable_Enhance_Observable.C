@@ -10,6 +10,7 @@ namespace PHASIC {
 
     ATOOLS::Algebra_Interpreter m_calc;
 
+    const ATOOLS::Flavour *p_fl;
     const ATOOLS::Vec4D *p_p;
 
     size_t m_n;
@@ -68,7 +69,9 @@ Variable_Enhance_Observable::Variable_Enhance_Observable
   p_p=&p_proc->Integrator()->Momenta().front();
   for (int i(0);i<m_n;++i)
     m_calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
+  m_calc.AddTag("H_TM2","1.0");
   m_calc.AddTag("H_T2","1.0");
+  m_calc.AddTag("H_Tp2","1.0");
   m_calc.Interprete(arg);
 }
 
@@ -76,6 +79,7 @@ double Variable_Enhance_Observable::operator()
   (const ATOOLS::Vec4D *p,const ATOOLS::Flavour *fl,const size_t n)
 {
   m_n=n;
+  p_fl=fl;
   p_p=p;
   return m_calc.Calculate()->Get<double>();
 }
@@ -93,10 +97,26 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
     term->Set(p_p[term->Id()-100]);
     return term;
   }
+  if (term->Id()==4) {
+    double htm(0.0);
+    for (size_t i(0);i<m_n;++i) htm+=p_p[i].MPerp();
+    term->Set(sqr(htm));
+    return term;
+  }
   if (term->Id()==5) {
     double ht(0.0);
     for (size_t i(0);i<m_n;++i) ht+=p_p[i].PPerp();
     term->Set(sqr(ht));
+    return term;
+  }
+  if (term->Id()==6) {
+    Vec4D pV(0.,0.,0.,0.);
+    double ht(0.0);
+    for (size_t i(0);i<m_n;++i) {
+      if (p_fl[i].IsLepton()) pV+=p_p[i];
+      else                    ht+=p_p[i].PPerp();
+    }
+    term->Set(sqr(pV.MPerp()+ht));
     return term;
   }
   return term;
@@ -104,7 +124,9 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
 
 void Variable_Enhance_Observable::AssignId(Term *term)
 {
-  if (term->Tag()=="H_T2") term->SetId(5);
+  if      (term->Tag()=="H_TM2") term->SetId(4);
+  else if (term->Tag()=="H_T2")  term->SetId(5);
+  else if (term->Tag()=="H_Tp2") term->SetId(6);
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
