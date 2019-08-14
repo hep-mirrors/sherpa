@@ -207,12 +207,14 @@ SELECTORS:
 
 @end verbatim
 
-Note that all parameters except for @code{Type} are optional. If they are not
-specified, their respective default value is used.
+Note that all parameters are optional. If they are not specified, their
+respective default values as indicated in the above snippet is used.  However,
+at the very least the number of jets, @option{N}, should be specified to
+require a non-zero number of jets.
 
 The @option{NJetFinder} allows to select for kinematic configurations with
 at least @option{<N>} jets that satisfy both, the @option{<PTMin>} and the
-@option{<ETMin>} minimum requirements and that are in a PseudoRapidity region
+@option{<ETMin>} minimum requirements and that are in a pseudo-rapidity region
 |eta|<@option{<EtaMax>}. The @option{<Exp>} (exponent) allows to apply a
 kt-algorithm
 (1) or an anti-kt algorithm (-1). As only massless partons are clustered by 
@@ -239,10 +241,10 @@ for the lepton-lepton collider algorithms.
 
 The selector @option{FastjetVeto} allows to use the
 @uref{http://www.fastjet.fr,,FastJet} plugin to apply
-jet veto cuts. The syntax is identical to option @option{FastjetFinder}.
+jet veto cuts. Its syntax is identical to @option{FastjetFinder}.
 
 If @uref{http://www.fastjet.fr,,FastJet} is enabled, the momenta and nodal 
-values of the jets found with Fastjet can be used to calculate more elaborate 
+values of the jets found with FastJet can also be used to calculate more elaborate
 selector criteria. The syntax of this selector is
 
 @verbatim
@@ -256,12 +258,12 @@ selector criteria. The syntax of this selector is
     f: 0.75
     EtaMax: None
     YMax: None
-    BMode: 0.0
+    BMode: 0
 @end verbatim
 
-wherein @code{algorithm} can take the values
+wherein @code{Algorithm} can take the values
 @code{kt,antikt,cambridge,siscone,eecambridge,jade}.
-In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
+In the algebraic @code{<expression>}, @code{MU_n2} (n=2..njet+1) signify the nodal
 values of the jets found and @code{p[i]} are their momenta. For details see
 @ref{Scale setters}. For example, in lepton pair production in 
 association with jets
@@ -286,6 +288,11 @@ counted equally towards b-jets, while for @code{BMode: 2} they are added with a
 relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.
 Note that only @code{<epression>}, @code{<algorithm>}, @code{<n>} and
 @code{<ptmin>} are relevant when using the lepton-lepton collider algorithms.
+
+(*) If FastJet has not been enabled during configuration of your Sherpa
+installation, you can still build a FastJet-based selector plugin by including
+the content of any necessary functions (e.g. from @code{Fastjet_Helpers.@{H,C@}})
+explicitly and linking against FastJet at compile time of the plugin.
 
 @node Universal selector
 @subsection Universal selector
@@ -421,8 +428,3 @@ SELECTORS:
 
 The @ref{Minimum selector} can be used if constructed with other 
 selectors mentioned in this section
-
-(*) If FastJet has not been enabled during configuration of your Sherpa
-installation, you can still build a FastJet-based selector plugin by including
-the content of any necessary functions (e.g. from @code{Fastjet_Helpers.@{H,C@}})
-explicitly and linking against FastJet at compile time of the plugin.
