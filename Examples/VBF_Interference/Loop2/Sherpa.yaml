@@ -19,7 +19,7 @@ PARTICLE_DATA:
   23: {Mass:  91.1876, Width: 2.4952}
   24: {Mass:  80.385,  Width: 2.085}
   25: {Mass: 125,      Width: 0.00407}
-   6: {Mass: 173.5}
+  6:  {Mass: 173.5}
 GF: 1.1665787e-5
 
 SCALES: VAR{sqr(125.)}
