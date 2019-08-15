@@ -26,6 +26,9 @@ void Primordial_KPerp::Initialize() {
   // is zero transverse momentum, only hadrons have a kT distribution of
   // remnants - again, this may have to change or become more
   // sophisticated for photons with hadronic structure.
+  // Note: To play it safe, we have set the maximal intrinsic kperp that we
+  // use for the hard-wired limitation of Gauss and Dipole factor to at
+  // least 1 GeV for each (hadronic) beam.
   auto s = Settings::GetMainSettings()["INTRINSIC_KPERP"];
   auto forms   = s["FORM"]      .SetDefault(m_defform)  .GetTwoVector<string>();
   auto means   = s["MEAN"]      .SetDefault(m_defmean)  .GetTwoVector<double>();
@@ -36,14 +39,13 @@ void Primordial_KPerp::Initialize() {
   auto expos   = s["SCALE_EXPO"].SetDefault(m_scaleexpo).GetTwoVector<double>();
   auto ktexpos = s["CUT_EXPO"]  .SetDefault(m_defeta)   .GetTwoVector<double>();
   for (size_t beam=0;beam<2;beam++) {
-    const auto e = pow(rpa->gen.Ecms()/refEs[beam], expos[beam]);
-    m_form[beam]     = SelectForm(forms[beam]);
-    m_mean[beam]     = means[beam];
-    m_sigma[beam]    = sigmas[beam] * e;
-    m_Q2[beam]       = Q2s[beam] * e;
-    m_ktmax[beam]
-      = Max(1.0, ktmaxs[beam] * pow((rpa->gen.Ecms()/refEs[beam]), expos[beam]));
-    m_eta[beam]      = ktexpos[beam];
+    const auto escale = pow(rpa->gen.Ecms()/refEs[beam], expos[beam]);
+    m_form[beam]      = SelectForm(forms[beam]);
+    m_mean[beam]      = means[beam];
+    m_sigma[beam]     = sigmas[beam] * escale;
+    m_Q2[beam]        = Q2s[beam] * escale;
+    m_ktmax[beam]     = Max(1.0, ktmaxs[beam] * escale);
+    m_eta[beam]       = ktexpos[beam];
   }
   if (m_analysis) InitAnalysis();
 }
@@ -67,7 +69,9 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
        pmmit!=p_ktmap->end();pmmit++) {
     if (pmmit->first->Momentum()[0]<0.) {
-      msg_Out()<<(*pmmit->first)<<"\n";
+      msg_Error()<<"Error in "<<METHOD<<" found particle with negative energy:\n"
+		 <<(*pmmit->first)<<"\n"
+		 <<"Will exit the run, please notify the authors.\n";
       exit(1);
     }
     kt_tot += pmmit->second =
@@ -117,16 +121,21 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
 }
 
 double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
-//  double kt=m_sigma[m_beam]*sqrt(log(1-ran->Get()*(1-exp(-pow(m_ktmax[m_beam]/m_sigma[m_beam],2)))));
-  double ran1=std::max(0.00001,ran->Get());
-  double kt=m_sigma[m_beam]*sqrt(-log(ran1));
+  double kt(0.);
+  if (ktmax>1.e-3) {
+    if (ktmax<0.1 * m_sigma[m_beam]) kt = ktmax*ran->Get();
+    else {
+      do { kt = m_sigma[m_beam]*sqrt(-log(std::max(1.e-5,ran->Get()))); }
+      while (kt>ktmax);
+    }
+  }
   return kt;
 }
 
 double Primordial_KPerp::KT_Gauss_Limited(const double & ktmax) const {
   // Generate normalised Gaussian random numbers
   // with an additional polynomial limitation
-  double ran1, ran2, R, kt;
+  double kt;
   do {
     kt = KT_Gauss(ktmax);
   } while (LimitedWeight(kt)<ran->Get());
@@ -156,10 +165,8 @@ double Primordial_KPerp::DipoleWeight(const double & kt) const {
 }
 
 double Primordial_KPerp::LimitedWeight(const double & kt) const {
-  if (kt < m_ktmax[m_beam])
-    return 1.0 - pow(kt/m_ktmax[m_beam], m_eta[m_beam]);
-  else
-    return 0.0;
+  if (kt > m_ktmax[m_beam]) return 0.0;
+  return 1.0 - pow(kt/m_ktmax[m_beam], m_eta[m_beam]);
 }
 
 void Primordial_KPerp::InitAnalysis() {
