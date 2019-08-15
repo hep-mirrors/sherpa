@@ -59,7 +59,7 @@ void Model_Base::RegisterDefaults() const
   s["1/ALPHAQED(MW)"].SetDefault(132.17);
   s["1/ALPHAQED(0)"].SetDefault(137.03599976);
   s["ALPHAS(MZ)"].SetDefault(0.118);
-  s["ORDER_ALPHAS"].SetDefault(1);
+  s["ORDER_ALPHAS"].SetDefault(2);
   s["THRESHOLD_ALPHAS"].SetDefault(1);
   s["Q2_AS"].SetDefault(1.0);
   s["AS_FORM"].SetDefault("Smooth");
