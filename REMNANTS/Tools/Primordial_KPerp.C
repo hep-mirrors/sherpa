@@ -50,10 +50,12 @@ void Primordial_KPerp::Initialize() {
 
 prim_kperp_form::code Primordial_KPerp::SelectForm(const std::string & form) {
   prim_kperp_form::code pkf = prim_kperp_form::undefined;
-  if      (form=="gauss")          pkf = prim_kperp_form::gauss;
+  if (form=="None" || form=="none")pkf = prim_kperp_form::none;
+  else if (form=="gauss")          pkf = prim_kperp_form::gauss;
   else if (form=="gauss_limited")  pkf = prim_kperp_form::gauss_limited;
   else if (form=="dipole")         pkf = prim_kperp_form::dipole;
   else if (form=="dipole_limited") pkf = prim_kperp_form::dipole_limited;
+  else THROW(not_implemented,"Intrinsic KPerp model not implemented.");
   return pkf;
 }
 
@@ -68,7 +70,7 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
        pmmit!=p_ktmap->end();pmmit++) {
     if (pmmit->first->Momentum()[0]<0.) {
       msg_Out()<<(*pmmit->first)<<"\n";
-      exit(1);
+      THROW(fatal_error,"Negative energies encountered.");
     }
     kt_tot += pmmit->second =
       scale * KT(Min(m_ktmax[m_beam],pmmit->first->Momentum()[0]));
@@ -94,6 +96,9 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
   double kt=0.;
   do {
     switch (m_form[m_beam]) {
+    case prim_kperp_form::none:
+      kt = 0.;
+      break;
     case prim_kperp_form::gauss:
       kt = KT_Gauss(ktmax);
       break;
@@ -107,11 +112,11 @@ Vec4D Primordial_KPerp::KT(const double & ktmax) {
       kt = KT_Dipole_Limited(ktmax);
       break;
     default:
-      msg_Error()<<METHOD<<": kperp form undefined.  Exit the run.\n";
-      exit(1);
+      THROW(fatal_error,"Unknown KPerp form.");
     }
   } while (kt<0. || kt>ktmax);
   // Add angle and construct the vector
+  if (kt==0.) return Vec4D(0.,0.,0.,0.);
   const auto phi = 2*M_PI*ran->Get();
   return kt * Vec4D(0., cos(phi), sin(phi), 0.);
 }
