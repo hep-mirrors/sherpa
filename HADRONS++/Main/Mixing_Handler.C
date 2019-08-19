@@ -36,7 +36,7 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer,
     Particle_Vector sisters = motherblob->GetOutParticles();
     for(Particle_Vector::const_iterator it=sisters.begin(); it!=sisters.end(); it++) {
       Flavour original_flav = decayer->Flav();
-      if (decayer->Info()=='M') original_flav == decayer->Flav().Bar();
+      if(decayer->Info()=='M') original_flav = decayer->Flav().Bar();
       if((*it)!=decayer && original_flav==(*it)->Flav().Bar()) {
         sister = (*it);
         break;
@@ -64,7 +64,7 @@ bool Mixing_Handler::PerformMixing(Particle* decayer) const
   if(m_model("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
     DEBUG_FUNC("Try mixing for "<<*decayer);
     double t = DetermineMixingTime(decayer,true)/rpa->hBar();
-    if(t==0.0) return NULL;
+    if(t==0.0) return false;
     double factor = decayer->Flav().QOverP2();
     if(decayer->Flav().IsAnti()) factor = 1.0/factor;
     double dG = decayer->Flav().DeltaGamma()*t/4.0;
