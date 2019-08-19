@@ -4,6 +4,9 @@ import os
 import yaml
 import argparse
 
+print('WARNING : This is intended as a first step to reduce manual work in the conversion.')
+print('WARNING : The conversion will be incomplete in most cases, so use with care.')
+
 parser = argparse.ArgumentParser(description='translate .dat runcard into new .yaml file')
 parser.add_argument('-f',default='Run.dat',type=str,help='run card filepath',dest='rcpath')
 parser.add_argument('-o',default='Sherpa.yaml',type=str,help='outfile filepath',dest='outpath')
