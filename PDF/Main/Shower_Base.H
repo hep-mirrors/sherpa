@@ -51,6 +51,7 @@ namespace PDF {
 
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
                                const bool & soft=false) = 0;
+    virtual void SetColours(ATOOLS::Cluster_Amplitude *const ampl);
 
     static void ShowSyntax(const int mode);
 
