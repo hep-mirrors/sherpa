@@ -452,7 +452,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
     m_lastb=m_lastbxs*
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
-    if (p_mc!=NULL) {
+    if (p_mc!=NULL && m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
       m_mewgtinfo.m_type|=mewgttype::DADS;
