@@ -260,7 +260,7 @@ double LF_FFV_FF::operator()
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
     if (p_split) {
-      massive -= 2./(1.-z+z*y) - vtijk/vijk * mi2/pipj;
+      massive -= 2./(1.-z+z*y) - vtijk/vijk * ( 2. + mi2/pipj );
       Parton * spect = p_split->p_split->GetSpect();
       Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
       double mij2 = muij2*Q2, mk2 = muk2*Q2;

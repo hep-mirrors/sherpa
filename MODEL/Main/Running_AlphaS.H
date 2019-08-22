@@ -42,8 +42,6 @@ namespace MODEL {
 
     PDF::PDF_Base *p_pdf;
 
-    One_Running_AlphaS *p_sas;
-
     double Beta0(const int);
     double Beta1(const int);
     double Beta2(const int);
@@ -68,12 +66,8 @@ namespace MODEL {
     ~One_Running_AlphaS();
 
     // member functions
-    double operator()(double q2); 
-    double operator[](double q2); 
+    double operator()(double q2);
     double AlphaS(const double q2);
-    void   SelfTest();
-
-    double ShowerCutQ2();
 
     // inline functions
     inline int    Order()                { return m_order;       }
@@ -120,7 +114,6 @@ namespace MODEL {
 
     // proxy member functions
     inline double operator()(double q2)   { return p_active->operator()(q2); }
-    inline double operator[](double q2)   { return p_active->operator[](q2); }
     inline double AlphaS(const double q2) { return p_active->AlphaS(q2); }
     inline int    Order()                 { return p_active->Order(); }
     inline double Beta0(const double q2)  { return p_active->Beta0(q2); }
@@ -132,7 +125,6 @@ namespace MODEL {
     inline std::vector<double> Thresholds(double q12,double q22)
                                           { return p_active->Thresholds(q12,q22); }
     inline double CutQ2()                 { return p_active->CutQ2(); }
-    inline double ShowerCutQ2()           { return p_active->ShowerCutQ2(); }
     inline double BoundedAlphaS(const double &q2) { return p_active->BoundedAlphaS(q2); }
   };
 
@@ -255,10 +247,6 @@ namespace MODEL {
   /*!
     \fn int Running_AlphaS::Nf(const double)
     Returns the number of active flavours at a given scale.
-  */
-  /*!
-    \fn void Running_AlphaS::SelfTest()
-    Prints out the results of a consistency check.
   */
 }
 

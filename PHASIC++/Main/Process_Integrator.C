@@ -382,22 +382,22 @@ void Process_Integrator::SetRSEnhanceFactor(const double &rsfac)
 
 void Process_Integrator::AddPoint(const double value) 
 {
+  double enhance = p_pshandler->Enhance();
 #ifdef USING__MPI
   m_msn++;
-  m_mssum    += value;
-  m_mssumsqr += sqr(value);
+  m_mssum    += value/enhance;
+  m_mssumsqr += sqr(value/enhance);
 #else
   m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += sqr(value);
+  m_ssum    += value/enhance;
+  m_ssumsqr += sqr(value/enhance);
 #endif
-  double cur=value*p_pshandler->Enhance();
-  double max=dabs(cur)/dabs(p_proc->Last())*
+  double max=dabs(value)/dabs(p_proc->Last())*
     ATOOLS::Max(p_proc->LastPlus(),-p_proc->LastMinus());
   if (max>m_max)  m_max  = max;
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
-    if(cur!=0.) p_whisto->Insert(max,1.0/p_pshandler->Enhance()); /*TODO*/
+    if(value!=0.) p_whisto->Insert(max,1.0/enhance); /*TODO*/
     else p_whisto->Insert(1.0,0.0);
   }
   p_proc->AddPoint(value);

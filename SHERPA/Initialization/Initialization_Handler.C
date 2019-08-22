@@ -414,9 +414,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheSoftCollisions();
   }
   okay = okay && InitializeTheShowers();
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
-  okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheHadronDecays();

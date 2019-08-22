@@ -180,6 +180,7 @@ bool Simple_Chain::ReadInData()
   m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR", 0.3142);
   m_resdir = reader->GetValue<std::string>("MI_RESULT_DIRECTORY","");
   m_ressuffix = reader->GetValue<std::string>("MI_RESULT_DIRECTORY_SUFFIX","");
+  m_reswriteout = reader->GetValue<size_t>("MI_GENERATE_RESULTS_DIRECTORY",1);
   GeneratePathName();
   delete reader;
   return true;
@@ -216,6 +217,7 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetGridXMin(min);
   p_gridcreator->SetGridXMax(m_ecms/2.0);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
+  p_gridcreator->SetWriteGrid(m_reswriteout);
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetOutputPath(OutputPath());
   if (!p_gridcreator->InitializeCalculation()) {
@@ -471,13 +473,15 @@ bool Simple_Chain::Initialize()
       THROW(critical_error,"Determination of <\\tilde{O}> failed.");
     }
   }
-  std::ofstream ofile;
-  ofile.open(m_xsec_output.c_str());
-  ofile<<"MPIs in Sherpa, Model = Amisic: \n"
-       <<"   semihard xsec = "<<(m_sigmahard*rpa->Picobarn()/1.e9)<<" mb,\n"
-       <<"   non-diffractive xsec = "<<(m_norm*rpa->Picobarn()/1.e9)<<" mb "
-       <<"with nd factor = "<<m_sigma_nd_fac<<".\n";
-  ofile.close();
+  if (m_reswriteout) {
+    std::ofstream ofile;
+    ofile.open(m_xsec_output.c_str());
+    ofile<<"MPIs in Sherpa, Model = Amisic: \n"
+         <<"   semihard xsec = "<<(m_sigmahard*rpa->Picobarn()/1.e9)<<" mb,\n"
+         <<"   non-diffractive xsec = "<<(m_norm*rpa->Picobarn()/1.e9)<<" mb "
+         <<"with nd factor = "<<m_sigma_nd_fac<<".\n";
+    ofile.close();
+  }
 
   return true;
 }

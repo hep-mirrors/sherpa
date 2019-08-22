@@ -108,11 +108,11 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     int decay(0);
     std::map<int,int> colmap;   
     if (ls && (ls->GetSplit()->Stat()&2)) {
-      double tmax(std::numeric_limits<double>::max());
-      if (ls->GetSplit()->GetFlavour().Strong()) {
+      double tmax(ls->GetSplit()->Momentum().Abs2());
+      if (ls->GetSplit()->GetFlavour().Strong() && m_decscalefac>0.) {
 	if (!ls->GetLeft()->GetFlavour().Strong()) tmax=ls->GetLeft()->Momentum().Abs2();
 	if (!ls->GetRight()->GetFlavour().Strong()) tmax=ls->GetRight()->Momentum().Abs2();
-	tmax*=m_decscalefac;
+	tmax*=std::abs(m_decscalefac);
       }
       msg_Debugging()<<"Decay. Set color connections. q = "<<sqrt(tmax)<<"\n";
       decay=1;

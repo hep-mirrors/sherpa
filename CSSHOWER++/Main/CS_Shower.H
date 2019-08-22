@@ -70,8 +70,6 @@ namespace CSSHOWER {
 		const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		const ATOOLS::Flavour &fj) const;
 
-    void SetColours(ATOOLS::Cluster_Amplitude *const ampl);
-
   public:
 
     // constructor 
@@ -104,6 +102,8 @@ namespace CSSHOWER {
 
     void SetRBOff();
 
+    void SetColours(ATOOLS::Cluster_Amplitude *const ampl);
+    
   };// end of class CS_Shower
 
 }// end of namespace CSSHOWER

@@ -14,6 +14,7 @@ namespace OpenLoops {
     static std::string s_olprefix;
     static bool        s_ignore_model;
     static bool        s_exit_on_error;
+    static bool        s_ass_func;
     static int         s_ass_ew;
 
   public :

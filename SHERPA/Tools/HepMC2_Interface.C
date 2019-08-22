@@ -277,6 +277,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
   evt.set_event_scale(sqrt(m_muq2));
   evt.set_alphaQCD(m_alphas);
   evt.set_alphaQED(m_alpha);
+  evt.set_event_scale(m_mur2); 
   return true;
 }
 
@@ -326,6 +327,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
+  Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
+  if (!mp) event.set_mpi(-1);
   EventInfo evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   // when subevtlist, fill hepmc-subevtlist

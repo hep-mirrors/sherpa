@@ -168,7 +168,7 @@ double LF_VVV1_FF::operator()
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     if (p_split) {
-      massive -= 2./(1.-z+z*y);
+      massive -= 2./(1.-z+z*y) - 2./vijk;
       Parton * spect = p_split->p_split->GetSpect();
       Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
       double mk2 = p2.Abs2();
@@ -221,7 +221,7 @@ double LF_VVV2_FF::operator()
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     if (p_split) {
-      massive -= 2./(1.-z+z*y);
+      massive -= 2./(z+y-z*y) - 2./vijk;
       Parton * spect = p_split->p_split->GetSpect();
       Vec4D p1 = p_split->p_split->Momentum(), p2 = spect->Momentum();
       double mk2 = p2.Abs2();

@@ -27,10 +27,6 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer,
   double time = decayer->Time();
 
   Blob* motherblob = decayer->ProductionBlob();
-  if(motherblob->Type()==btp::Hadron_Mixing) {
-    decayer = motherblob->InParticle(0);
-    motherblob = decayer->ProductionBlob();
-  }
   Particle* sister = NULL;
   if(motherblob->Type()!=btp::Fragmentation ||
      (motherblob->NInP()==2 && motherblob->NOutP()==2 &&
@@ -39,7 +35,9 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer,
     // check if particle was produced coherently
     Particle_Vector sisters = motherblob->GetOutParticles();
     for(Particle_Vector::const_iterator it=sisters.begin(); it!=sisters.end(); it++) {
-      if((*it)!=decayer && decayer->Flav()==(*it)->Flav().Bar()) {
+      Flavour original_flav = decayer->Flav();
+      if(decayer->Info()=='M') original_flav = decayer->Flav().Bar();
+      if((*it)!=decayer && original_flav==(*it)->Flav().Bar()) {
         sister = (*it);
         break;
       }
@@ -58,14 +56,15 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer,
 }
 
 
-ATOOLS::Blob* Mixing_Handler::PerformMixing(Particle* decayer) const
+bool Mixing_Handler::PerformMixing(Particle* decayer) const
 {
   // explicit mixing in event record
   Flavour flav = decayer->Flav();
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
   if(m_model("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
+    DEBUG_FUNC("Try mixing for "<<*decayer);
     double t = DetermineMixingTime(decayer,true)/rpa->hBar();
-    if(t==0.0) return NULL;
+    if(t==0.0) return false;
     double factor = decayer->Flav().QOverP2();
     if(decayer->Flav().IsAnti()) factor = 1.0/factor;
     double dG = decayer->Flav().DeltaGamma()*t/4.0;
@@ -74,29 +73,15 @@ ATOOLS::Blob* Mixing_Handler::PerformMixing(Particle* decayer) const
     double prob_not_mix = sqr(abs(exp(i*dm)*exp(dG)+exp(-i*dm)*exp(-dG)));
     double prob_mix = factor*sqr(abs(exp(i*dm)*exp(dG)-exp(-i*dm)*exp(-dG)));
     if(prob_mix > ran->Get()*(prob_mix+prob_not_mix)) {
-      if(decayer->DecayBlob()) {
-        decayer->DecayBlob()->RemoveOwnedParticles();
-        delete decayer->DecayBlob();
-      }
-      decayer->SetStatus(part_status::decayed);
-      decayer->SetInfo('m');
-      Particle* mixed_part = new Particle(0, decayer->Flav().Bar(),
-                                          decayer->Momentum(), 'M');
-      mixed_part->SetFinalMass(decayer->FinalMass());
-      mixed_part->SetStatus(part_status::active);
-      mixed_part->SetTime(decayer->Time());
-      Blob* mixingblob = new Blob();
-      mixingblob->SetType(btp::Hadron_Mixing);
-      mixingblob->SetId();
-      mixingblob->SetStatus(blob_status::inactive);
-      mixingblob->SetTypeSpec("HADRONS");
-      mixingblob->AddToInParticles(decayer);
-      mixingblob->AddToOutParticles(mixed_part);
-      mixingblob->SetPosition(decayer->ProductionBlob()->Position());
-      return mixingblob;
+      DEBUG_INFO("  --> yes");
+      decayer->SetInfo('M');
+      decayer->SetFlav(decayer->Flav().Bar());
+      DEBUG_VAR(*decayer);
+      return true;
     }
+    else DEBUG_INFO("  --> no");
   }
-  return NULL;
+  return false;
 }
 
 
@@ -108,7 +93,7 @@ Hadron_Decay_Channel* Mixing_Handler::Select(Particle* decayer,
   if(m_model("Interference_"+tag,0.0)!=0.0) {
     double lifetime = DetermineMixingTime(decayer,false);
     bool anti_at_t0 = decayer->Flav().IsAnti();
-    if(decayer->ProductionBlob()->Type()==btp::Hadron_Mixing) anti_at_t0 = !anti_at_t0;
+    if(decayer->Info()=='m') anti_at_t0 = !anti_at_t0;
     if(lifetime!=0.0) {
       Hadron_Decay_Table table(ot);
       double cos_term = cos(flav.DeltaM()/rpa->hBar()*lifetime);

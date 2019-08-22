@@ -38,7 +38,7 @@ namespace ATOOLS { template class SP(Phase_Space_Handler); }
 
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
-  p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
+  p_enhanceobs(NULL), p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
   p_variationweights(NULL),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
@@ -97,6 +97,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels) delete p_isrchannels;
   if (p_beamchannels) delete p_beamchannels;
   if (p_cuts) delete p_cuts;
+  if (p_enhanceobs) delete p_enhanceobs;
   if (p_enhancefunc) delete p_enhancefunc;
   if (p_enhancehisto) delete p_enhancehisto;
   if (p_enhancehisto_current) delete p_enhancehisto_current;
@@ -361,7 +362,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
-  return m_result;
+  m_enhance=EnhanceFactor(p_process->Process());
+  return m_result*m_enhance;
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -542,26 +544,26 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 
 void Phase_Space_Handler::AddPoint(const double value)
 {
-  m_enhance=value?EnhanceFactor(p_process->Process()):1.0;
   p_process->AddPoint(value);
+  double enhance = EnhanceFunction();
   if (value!=0.0) {
-    if (p_beamchannels) p_beamchannels->AddPoint(value*m_enhance);
-    if (p_isrchannels)  p_isrchannels->AddPoint(value*m_enhance);
-    p_fsrchannels->AddPoint(value*m_enhance);
+    if (p_beamchannels) p_beamchannels->AddPoint(value*enhance);
+    if (p_isrchannels)  p_isrchannels->AddPoint(value*enhance);
+    p_fsrchannels->AddPoint(value*enhance);
     if (p_enhancehisto) {
       if (!p_process->Process()->Info().Has(nlo_type::rsub)) {
-	double val((*p_enhancefunc)(&p_lab.front(),
+	double val((*p_enhanceobs)(&p_lab.front(),
 				    &p_flavours.front(),m_nin+m_nout));
-	p_enhancehisto_current->Insert(val,value);
+	p_enhancehisto_current->Insert(val,value/m_enhance);
       }
       else {
 	for (size_t i(0);i<p_process->Process()->Size();++i) {
 	  NLO_subevtlist* nlos=(*p_process->Process())[i]->GetSubevtList();
 	  for (size_t j(0);j<nlos->size();++j) {
 	    if ((*nlos)[j]->m_result==0.0) continue;
-	    double val((*p_enhancefunc)((*nlos)[j]->p_mom,
+	    double val((*p_enhanceobs)((*nlos)[j]->p_mom,
 					(*nlos)[j]->p_fl,(*nlos)[j]->m_n));
-	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result);
+	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result/m_enhance);
 	  }
 	}
       }
@@ -572,8 +574,8 @@ void Phase_Space_Handler::AddPoint(const double value)
 void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
 {
   if (enhanceobs!="1") {
-    if (p_enhancefunc)
-      THROW(fatal_error, "Attempting to overwrite enhance function");
+    if (p_enhanceobs)
+      THROW(fatal_error, "Overwriting ME enhance observable.");
     vector<string> parts;
     stringstream ss(enhanceobs);
     string item;
@@ -582,10 +584,10 @@ void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
     }
     if (parts.size()<3 || parts.size()>4)
       THROW(fatal_error,"Wrong syntax in enhance observable.");
-    p_enhancefunc = Enhance_Observable_Base::Getter_Function::GetObject
+    p_enhanceobs = Enhance_Observable_Base::Getter_Function::GetObject
       (parts[0],Enhance_Arguments(p_process->Process(),parts[0]));
-    if (p_enhancefunc==NULL) {
-      msg_Error()<<METHOD<<"(): Enhance function not found. Try 'VAR{..}'.\n";
+    if (p_enhanceobs==NULL) {
+      msg_Error()<<METHOD<<"(): Enhance observable not found. Try 'VAR{..}'.\n";
       THROW(fatal_error,"Invalid enhance observable");
     }
     double enhancemin=ToType<double>(parts[1]);
@@ -613,24 +615,24 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
       (enhancefunc,Enhance_Arguments(p_process->Process(),enhancefunc));
     if (p_enhancefunc==NULL) {
       msg_Error()<<METHOD<<"(): Enhance function not found. Try 'VAR{..}'.\n";
-      THROW(fatal_error,"Invalid enhance observable");
+      THROW(fatal_error,"Invalid enhance function.");
     }
   }
 }
 
 double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
 {
-  if (p_enhancefunc==NULL) return 1.0;
+  if (p_enhanceobs==NULL) return 1.0;
   double obs=p_enhancehisto?p_enhancehisto->Xmin():0.0;
   if (!proc->Info().Has(nlo_type::rsub)) {
-    obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+    obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   }
   else {
     double nobs(0.0);
     for (size_t i(0);i<proc->Size();++i) {
       NLO_subevtlist* nlos=(*proc)[i]->GetSubevtList();
       if (nlos->back()->m_result==0.0) continue;
-      obs+=log((*p_enhancefunc)(nlos->back()->p_mom,
+      obs+=log((*p_enhanceobs)(nlos->back()->p_mom,
 				nlos->back()->p_fl,nlos->back()->m_n));
       nobs+=1.0;
     }
@@ -646,6 +648,12 @@ double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
   }
   if (m_enhancexs && p_process->TotalXS()>0.0) return 1.0/dsigma/p_process->TotalXS();
   else return 1.0/dsigma;
+}
+
+double Phase_Space_Handler::EnhanceFunction()
+{
+  if (p_enhancefunc==NULL) return 1.0;
+  else return (*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
 }
 
 void Phase_Space_Handler::MPISync()
