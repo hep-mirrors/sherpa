@@ -571,6 +571,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   }
 
   double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
+
   if (!(df>0.)&& !(df<0.)) {
     m_subevt.m_me = m_subevt.m_mewgt = 0.;
     m_subevt.m_trig = false;
@@ -580,6 +581,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   if (m_mcmode && p_dipole->MCSign()<0) df=-df;
 
   m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
+
   if (m_lastxs) m_lastxs*=KFactor();
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);

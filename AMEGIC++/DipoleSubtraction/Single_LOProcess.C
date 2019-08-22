@@ -1106,7 +1106,6 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATO
   if (p_partner!=this) {
     return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
-
   double M2(0.);
   p_int->SetMomenta(labmom);
   p_scale->CalculateScale(labmom,m_cmode);

@@ -108,8 +108,8 @@ void II_DipoleSplitting::CalcDiPolarizations()
 
 void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
 {
-  // m_msub=1;
-  //  if(m_alpha==1.) m_alpha =0.;
+  m_msub=1;
+  // if(m_alpha==1.) m_alpha =0.;
  
   Vec4D pa,pb,k;
   Vec4D Pab;
@@ -117,7 +117,6 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
  
   m_mom.clear();
   for(int i = 0; i <= m_m ; ++i) m_mom.push_back(mom[i]);
- 
   // Translation:
   // i     ---- >    emitter   (a)
   // k     ---- >    spectator (b)
@@ -147,7 +146,7 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
   m_Q2           = Q2;
  
   double num     = sqrt(lambda(Q2,m_ma,m_mb));
- 
+  
   m_ptij         = num*(pa - pb*sab/2./m_mb)/slab +
     pb*(sab*m_xab)/(2.*m_mb);
   m_ptk          = pb;
@@ -175,16 +174,16 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
     m_mom[i]      = m_mom[i] - PPabt*(PPabt*m_mom[i])/(Q2 + Pab*Pabt)
       + 2.*(Pab*m_mom[i])*Pabt/(Q2);
   }
-   
-  m_a     = m_xab;//1.-m_xab;
-  // m_xmin  = 2.*sqrt(m_ma*m_mb)/sab;
+  
+  m_a     = 1.-m_xab;
+  m_xmin  = 2.*sqrt(m_ma*m_mb)/sab;
   
   // msg->SetPrecision(16);
   msg_Debugging() << "alpha:"   << m_alpha
-		  << ", m_xab:" << m_xab
-		  << ", Q2t:"   << m_Q2 - m_ma - m_mb
-		  << ", sab:"   << sab
-		  << ", s:"     << s << std::endl;
+	    << ", m_xab:" << m_xab
+	    << ", Q2t:"   << m_Q2 - m_ma - m_mb
+	    << ", sab:"   << sab
+	    << ", s:"     << s << std::endl;
  
  
   // set the value
@@ -216,7 +215,6 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
 double II_MassiveDipoleSplitting::GetValue()
 {
   double h = 1./(2.*m_pi*m_pj*m_xab);
-  if(m_test) return 1.;
   switch (m_ft) {
   case 1:
   case 2:

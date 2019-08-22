@@ -44,7 +44,7 @@ namespace AMEGIC {
     double GetDPSF()        {return m_xab;}
     double GetXMin()        {return m_xmin;}
     void   CalcDiPolarizations();
-    inline double lambda(double a, double b, double c) {return sqrt(ATOOLS::sqr(a-(b+c))-4.*b*c) ;}
+    inline double lambda(double a, double b, double c) {return ATOOLS::sqr(a-(b+c))-4.*b*c ;}
   };
 }
 #endif
