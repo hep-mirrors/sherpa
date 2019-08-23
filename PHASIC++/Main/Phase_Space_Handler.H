@@ -140,6 +140,7 @@ namespace PHASIC {
 
     void CalculateME(ATOOLS::Variations_Mode);
     void CalculatePS();
+    void CalculateEnhance();
 
     double Weight(ATOOLS::Vec4D_Vector &plab);
 
@@ -194,6 +195,8 @@ namespace PHASIC {
     { m_maxtrials=maxtrials; }
     void SetEnhanceObservable(const std::string &enhanceobs);
     void SetEnhanceFunction(const std::string &enhancefunc);
+    inline void SetEnhance(const double& enhance)
+    { m_enhance=enhance; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }

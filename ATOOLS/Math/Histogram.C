@@ -924,11 +924,11 @@ void Histogram::InsertRange(double start, double end, double value) {
 	m_mvalues[0][i] += value;
       } 
       else if ((low<start)&&(up<=end)) {
-	fac = (start-low)/m_binsize;
+	fac = (up-start)/m_binsize;
 	m_mvalues[0][i] += value *fac;
       }
       else if ((start<=low)&&(end < up)) {
-	fac = (up-end)/m_binsize;
+	fac = (end-low)/m_binsize;
 	m_mvalues[0][i] += value *fac;
       }
       else if ((low<start)&&(end <up)) {
@@ -973,11 +973,11 @@ void Histogram::InsertRange(double start, double end, double value) {
 	m_yvalues[i] += value;
       } 
       else if ((low<start)&&(up<=end)) {
-	fac = (start-low)/m_binsize;
+	fac = (up-start)/m_binsize;
 	m_yvalues[i] += value *fac;
       }
       else if ((start<=low)&&(end < up)) {
-	fac = (up-end)/m_binsize;
+	fac = (end-low)/m_binsize;
 	m_yvalues[i] += value *fac;
       }
       else if ((low<start)&&(end <up)) {
@@ -1011,7 +1011,7 @@ double Histogram::Bin(double coordinate) const
 
     if (coordinate<m_lower) return m_yvalues[0];
     if (coordinate>m_upper) return m_yvalues[m_nbin-1];
-    for (int i=1;i<m_nbin+1;i++) {
+    for (int i=1;i<m_nbin;i++) {
       if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
 	   (coordinate <  m_lower + i*m_binsize) ) 
 	return m_yvalues[i];

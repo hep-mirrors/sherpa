@@ -278,6 +278,11 @@ void Phase_Space_Handler::CalculatePS()
   m_psweight*=p_fsrchannels->Weight();
 }
 
+void Phase_Space_Handler::CalculateEnhance()
+{
+  m_enhance=EnhanceFactor(p_active->Process());
+}
+
 Weights_Map Phase_Space_Handler::Differential(
     Process_Integrator* const process, Variations_Mode varmode, const psm::code mode)
 {
@@ -348,14 +353,16 @@ Weights_Map Phase_Space_Handler::Differential(
     Check4Momentum(p_lab);
     CalculatePS();
     CalculateME(varmode);
+    CalculateEnhance();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
       msg->SetPrecision(15);
       msg_Out()<<p_active->Process()->Name();
       msg_Out()<<"  ME = "<<m_result
-               <<" ,  PS = "<<m_psweight<<"  ->  "
-               <<m_result*m_psweight<<std::endl;
+               <<" ,  PS = "<<m_psweight
+               <<" ,  enh = "<<m_enhance<<"  ->  "
+               <<m_result*m_psweight*m_enhance<<std::endl;
       if (p_active->Process()->GetSubevtList()) {
         NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
         for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -365,7 +372,7 @@ Weights_Map Phase_Space_Handler::Differential(
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
-    double wgtfac(m_psweight*iscount);
+    double wgtfac(m_psweight*m_enhance*iscount);
     m_wgtmap*=wgtfac;
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
@@ -421,8 +428,6 @@ Weights_Map Phase_Space_Handler::Differential(
     }
     m_wgtmap*=0.0;
   }
-  m_enhance=EnhanceFactor(p_process->Process());
-  m_wgtmap*=m_enhance;
   return m_wgtmap;
 }
 
@@ -507,7 +512,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =
-      new Weight_Info(wgtmap, dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
+      new Weight_Info(wgtmap, dxs, m_enhance, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 
@@ -644,20 +649,23 @@ void Phase_Space_Handler::AddPoint(const double _value)
     p_fsrchannels->AddPoint(value*enhance);
     if (p_enhancehisto) {
       if (!p_process->Process()->Info().Has(nlo_type::rsub)) {
-	double val((*p_enhanceobs)(&p_lab.front(),
-				    &p_flavours.front(),m_nin+m_nout));
-	p_enhancehisto_current->Insert(val,value/m_enhance);
+	double obs((*p_enhanceobs)(&p_lab.front(),
+                                   &p_flavours.front(),m_nin+m_nout));
+	p_enhancehisto_current->Insert(obs,value/m_enhance);
       }
       else {
-	for (size_t i(0);i<p_process->Process()->Size();++i) {
-	  NLO_subevtlist* nlos=(*p_process->Process())[i]->GetSubevtList();
-	  for (size_t j(0);j<nlos->size();++j) {
-	    if ((*nlos)[j]->m_result==0.0) continue;
-	    double val((*p_enhanceobs)((*nlos)[j]->p_mom,
-					(*nlos)[j]->p_fl,(*nlos)[j]->m_n));
-	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result/m_enhance);
-	  }
+        // fixed-order RS, fill with RS weight and R kinematics
+        if (p_process->Process()->Info().m_nlomode==1) {
+          double obs((*p_enhanceobs)(&p_lab.front(),
+                                     &p_flavours.front(),m_nin+m_nout));
+          p_enhancehisto_current->Insert(obs,value/m_enhance);
 	}
+        // MC@NLO H/RS, fill with H weight and kinematics
+        else {
+          double obs((*p_enhanceobs)(&p_lab.front(),
+                                     &p_flavours.front(),m_nin+m_nout));
+          p_enhancehisto_current->Insert(obs,value/m_enhance);
+        }
       }
     }
   }
@@ -720,16 +728,14 @@ double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
     obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   }
   else {
-    double nobs(0.0);
-    for (size_t i(0);i<proc->Size();++i) {
-      NLO_subevtlist* nlos=(*proc)[i]->GetSubevtList();
-      if (nlos->back()->m_result==0.0) continue;
-      obs+=log((*p_enhanceobs)(nlos->back()->p_mom,
-				nlos->back()->p_fl,nlos->back()->m_n));
-      nobs+=1.0;
+    // fixed-order RS, read out with R kinematics
+    if (proc->Info().m_nlomode==1) {
+      obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
     }
-    if (nobs) obs=exp(obs/nobs);
-    else obs=1.0;
+    // MC@NLO H, read out with H kinematics
+    else {
+      obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+    }
   }
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
