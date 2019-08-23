@@ -647,6 +647,9 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
       m_xsmap[fl]=me2;
       xit=m_xsmap.find(fl);
     }
+    else {
+      msg_Debugging()<<"Did not find colour setter for\n"<<pi<<std::endl;
+    }
   }
   if (xit!=m_xsmap.end()) {
     bool test(xit->second->SetColours(moms));

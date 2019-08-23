@@ -11,6 +11,7 @@ namespace PHASIC {
 
     double m_lastxs, m_lastbxs, m_lastflux;
     bool   m_zero;
+    size_t m_dadsmode;
     double m_reweightscalecutoff;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting

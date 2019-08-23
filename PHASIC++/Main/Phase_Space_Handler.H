@@ -140,6 +140,7 @@ namespace PHASIC {
 
     void CalculateME();
     void CalculatePS();
+    void CalculateEnhance();
 
     double Weight(ATOOLS::Vec4D_Vector &plab);
 
@@ -194,6 +195,8 @@ namespace PHASIC {
     void SetEnhanceFunction(const std::string &enhancefunc);
     void SetVariationWeights(SHERPA::Variation_Weights *vw)
     { p_variationweights=vw; }
+    inline void SetEnhance(const double& enhance)
+    { m_enhance=enhance; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }
