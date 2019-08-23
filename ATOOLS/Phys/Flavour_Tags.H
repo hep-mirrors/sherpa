@@ -240,7 +240,7 @@
 #define      kf_B_c0_star                 10541
 #define      kf_chi_b0_1P                 10551
 #define      kf_b_1_1235                  10113
-#define      kf_b_1_1235_plus             15413
+#define      kf_b_1_1235_plus             10213
 #define      kf_h_1_1170                  10223
 #define      kf_K_1_1270                  10313
 #define      kf_K_1_1270_plus             10323
