@@ -107,10 +107,7 @@ void II_DipoleSplitting::CalcDiPolarizations()
 }
 
 void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
-{
-  m_msub=1;
-  // if(m_alpha==1.) m_alpha =0.;
- 
+{ 
   Vec4D pa,pb,k;
   Vec4D Pab;
   double Q2;
@@ -146,9 +143,13 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
   m_Q2           = Q2;
  
   double num     = sqrt(lambda(Q2,m_ma,m_mb));
+  // If the spectator mass is 0 the transformation is different
+  if(m_mb)
+    m_ptij         = num*(pa - pb*sab/2./m_mb)/slab +
+      pb*(sab*m_xab)/(2.*m_mb);
+  else
+    m_ptij = m_xijk * pa;
   
-  m_ptij         = num*(pa - pb*sab/2./m_mb)/slab +
-    pb*(sab*m_xab)/(2.*m_mb);
   m_ptk          = pb;
   m_pt1          = k  - vab*pb;
   m_pt2          = m_ptij;
@@ -187,19 +188,22 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
  
  
   // set the value
-  if(m_ft == spt::qg){ // Pqq
-    m_sff = 2./(1.-m_xab) - 1. - m_xab - m_xab*m_ma/(pa*k);
-    m_av  = m_sff;
+  if(m_xab >= m_xmin){
+    if(m_ft == spt::qg){ // Pqq
+      m_sff = 2./(1.-m_xab) - 1. - m_xab - m_xab*m_ma/(pa*k);
+      m_av  = m_sff;
+    }
+    else if(m_ft == spt::gq){ //Pqg
+      m_sff = 1.-2.*m_xijk*(1.-m_xijk) - m_xab*m_ma/(pa*k);
+      m_av  = m_sff;
+    }
+    else
+      THROW(not_implemented,"...Only available for q->qg and g->qq splittings");
   }
-  // else if(m_ft == spt::gq){ //Pqg
-  //   if(m_xab >= m_xmin){
-  // 		m_sff = 1.-2.*m_xijk*(1.-m_xijk) - m_xab*m_ma/(pa*k);
-  // 		m_av  = m_sff;
-  // 	}
-  // 	else{
-  // 		m_sff = m_av = 0.;
-  // 	}
-  // }
+  else{
+    m_sff = m_av = 0.;
+  }
+
   // else if(m_ft == spt::qq){ // Pgq
   //   if(m_xab >= m_xmin){
   //     m_sff = sqr(m_xab)+sqr(1.-m_xab)+m_xab*m_mk/(pa*k);
@@ -208,8 +212,6 @@ void II_MassiveDipoleSplitting::SetMomenta(const Vec4D * mom)
   // else{
   // 	m_sff = m_av = 0.;
   // }
-  else
-    THROW(not_implemented,"...Only available for q->qg and g->qq splittings");
 }
  
 double II_MassiveDipoleSplitting::GetValue()
