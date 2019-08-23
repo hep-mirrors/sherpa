@@ -263,10 +263,8 @@ bool Rivet_Interface::Init()
     Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
     reader.SetUseGlobalTags(false);
     reader.VectorFromFile(m_analyses,"-a");
-    for (size_t i(0);i<m_analyses.size();++i) {
-      if (m_analyses[i]==std::string("MC_XS")) break;
-      if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
-    }
+    if (find(m_analyses.begin(),m_analyses.end(),"MC_XS")==m_analyses.end())
+      m_analyses.push_back(std::string("MC_XS"));
 
     // configure HepMC interface
     bool usehepmcnamedweights(false);
