@@ -27,6 +27,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   m_reweight = dataread->GetValue<int>("CSS_REWEIGHT",0);
+  m_maxreweightfactor = dataread->GetValue<int>("CSS_MAX_REWEIGHT_FACTOR",1e3);
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<size_t> disallowflavs;
   dataread->VectorFromFile(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
@@ -402,12 +403,16 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
     } else {
       rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
     }
-    if (rewfactor < -9.0 || rewfactor > 11.0) {
-      varparams->IncrementOrInitialiseWarningCounter(
-          "MCatNLO vetoed large reweighting factor");
-      continue;
-    }
     overallrewfactor *= rewfactor;
+  }
+
+  // guard against gigantic accumulated reweighting factors
+  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+    msg_Debugging() << "Veto large MC@NLO Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "MCatNLOvetoed large reweighting factor for parton");
+    return 1.0;
   }
 
   return overallrewfactor;

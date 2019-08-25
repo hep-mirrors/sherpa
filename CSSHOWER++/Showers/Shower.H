@@ -35,6 +35,7 @@ namespace CSSHOWER {
     double m_weight;
     bool m_reweight;
     SHERPA::Variation_Weights * p_variationweights;
+    double m_maxreweightfactor;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,

@@ -27,10 +27,11 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
-  m_reweight  = dataread->GetValue<int>("CSS_REWEIGHT",0);
-  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
-  m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
-  m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
+  m_reweight          = dataread->GetValue<int>("CSS_REWEIGHT",0);
+  m_maxreweightfactor = dataread->GetValue<int>("CSS_MAX_REWEIGHT_FACTOR",1e3);
+  m_kscheme           = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
+  m_noem              = dataread->GetValue<int>("CSS_NOEM",0);
+  m_recdec            = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
   if (type) {
     kfmode=dataread->GetValue<int>("MI_CSS_KFACTOR_SCHEME",0);
     k0sqf=dataread->GetValue<double>("MI_CSS_FS_PT2MIN",1.0);
@@ -740,12 +741,16 @@ double Shower::Reweight(SHERPA::Variation_Parameters* varparams,
     } else {
       rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
     }
-    if (rewfactor < -9.0 || rewfactor > 11.0) {
-      varparams->IncrementOrInitialiseWarningCounter(
-          "vetoed large reweighting factor");
-      continue;
-    }
     overallrewfactor *= rewfactor;
+  }
+
+  // guard against gigantic accumulated reweighting factors
+  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+    msg_Debugging() << "Veto large CSS Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "vetoed large reweighting factor for parton");
+    return 1.0;
   }
 
   return overallrewfactor;
