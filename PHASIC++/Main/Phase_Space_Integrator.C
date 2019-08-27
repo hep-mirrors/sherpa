@@ -323,12 +323,10 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   mn=mnstep=mncstep=0;
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
-  optiter = iter = 20000;
+  optiter = iter = Min(itmax,Max(itmin,20000));
 
   long unsigned int n;
-  double value;
-  double max = 0.;
-  double error;
+  double value(0.),max(0.),error(0.);
   
   (psh->FSRIntegrator())->Reset();
 
@@ -346,7 +344,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
       }
       if (psh->Stats().size()==ndecopt) {
 	psh->EndOptimize();
-	optiter = iter = 50000;
+    optiter = iter = 2*iter;
       }
       if ((psh->Process())->TotalResult()==0.) break;
       
