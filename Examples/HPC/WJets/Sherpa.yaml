@@ -3,7 +3,7 @@ BEAM_ENERGIES: 6500
 
 EVENTS: 0
 MI_HANDLER: None
-ME_GENERATORS: [Comix, Amegic, Dummy]
+ME_GENERATORS: [Comix, Amegic]
 OL_PARAMETERS:
   preset: 2
 SCALES: SMETS

@@ -60,8 +60,7 @@ This can be done by one of the following methods:
       specified.
   @enumerate
   @item During integration set the @code{Loop_Generator} to 
-        @code{Dummy} and add @code{Dummy} to your list of
-        @option{ME_GENERATORS}. The grid will
+        @code{Dummy}. The grid will
         then be optimised to the phase space distribution of 
         the sum of the Born matrix element and the finite part 
         of the integrated subtraction term, plus a finite value from
