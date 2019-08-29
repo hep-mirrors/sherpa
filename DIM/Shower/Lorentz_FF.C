@@ -20,6 +20,27 @@ double Lorentz_FF::Jacobian(const Splitting &s) const
   return s.m_Q2/sqrt(Lam(Q2,s.m_mij2,s.m_mk2));
 }
 
+double Lorentz_FF::JacobianResAware(const Splitting &s) const
+{
+  if(m_dipole_case == EXTAMP::CS) return 1.;
+
+  const double alpha   = s.m_alpha;
+  const double paipb   = s.m_paipb;
+  const double Qprime2 = s.m_Qprime2;
+  const double phi     = s.m_phi;
+  const double vi      = s.m_vi;
+  const double z       = s.m_z;
+  const double mw2     = sqr(Flavour(24).Mass());
+  const double A       = alpha*vi*Qprime2/2.;
+  const double B       = paipb*(vi*(z-1-mw2/Qprime2)+1-z);
+  const double kt2 = vi*Qprime2/(2.*paipb)*(A+B-2.*sqrt(A*B)*cos(phi));
+
+  const double jacobian = 1./(kt2/vi + vi*Qprime2/(2.*paipb)*(alpha*Qprime2/2.
+               +paipb*(z-1-mw2/Qprime2)-2.*cos(phi)/(2.*sqrt(A*B))
+               *(alpha*Qprime2/2.*B + A*paipb*(z-1-mw2/Qprime2))));
+  return dabs(jacobian*kt2/vi);
+}
+
 int Lorentz_FF::Construct(Splitting &s,const int mode) const
 {
   Kin_Args ff;

@@ -33,6 +33,8 @@ namespace DIM {
 
     double KT2(const Splitting &s, const double &vi) const;
 
+    double JacobianResAware(const Splitting &s) const;
+
   };// end of class Lorentz_FF
 
 }// end of namepsace DIM

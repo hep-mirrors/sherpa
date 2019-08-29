@@ -42,6 +42,7 @@ namespace DIM {
 
     virtual double Value(const Splitting &s) const = 0;
     virtual double Jacobian(const Splitting &s) const = 0;
+    virtual double JacobianResAware(const Splitting &s) const { return 1.; };
 
     virtual double Estimate(const Splitting &s) const = 0;
     virtual double Integral(const Splitting &s) const = 0;

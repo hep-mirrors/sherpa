@@ -430,6 +430,7 @@ bool Sudakov::Generate(Parton * split)
         }
         case EXTAMP::IDa:
         {
+        Q2 = m_trialvariables.m_Q2;
         m_vimax = GetViMax(split);
         SetTrialVariables(split, split->GetSpect(), split->GetKinSpect());
         m_vi   = GetVi();        if(m_vi < 0.)   continue;
@@ -804,7 +805,8 @@ bool Sudakov::Splitting(double Q2,double x) {
       wt = RejectionWeight(m_z,m_y,x,cplscale,Q2);
       break;
     case EXTAMP::IDa:
-      wt = RejectionWeight(m_z,m_viab,x,cplscale,Q2,m_phi);
+      wt = RejectionWeight(m_z,m_viab,x,cplscale,Q2,m_phi,
+      m_vi,m_trialvariables.m_alpha,m_trialvariables.m_paipb);
       break;
   }
   p_selected->Coupling()->SetKFMode(kfmode);

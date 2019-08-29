@@ -172,14 +172,31 @@ double Splitting_Function_Base::Z()
 {
   return p_lf->Z();
 }
+
+double Splitting_Function_Base::Jacobian(const double &z, const double &vi, const double &phi,
+       const double &alpha, const double &paipb, const double &Q2) const
+{
+  const double mw2 = sqr(Flavour(24).Mass());
+  const double Qprime2 = Q2-mw2;
+  const double A = alpha*vi*Qprime2/2.;
+  const double B = paipb*(vi*(z-1-mw2/Qprime2)+1-z);
+  const double kt2 = vi*Qprime2/(2.*paipb)*(A+B-2.*sqrt(A*B)*cos(phi));
+
+  const double jacobian = 1./(kt2/vi + vi*Qprime2/(2.*paipb)*(alpha*Qprime2/2.
+               +paipb*(z-1-mw2/Qprime2)-2.*cos(phi)/(2.*sqrt(A*B))
+               *(alpha*Qprime2/2.*B + A*paipb*(z-1-mw2/Qprime2))));
+  return dabs(jacobian*kt2/vi);
+}
         
 double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
- const double _scale,const double Q2,const double phi)
+ const double _scale,const double Q2,const double phi, const double vi,
+ const double alpha, const double paipb)
 {
   double scale(_scale);
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
+  if(p_lf->m_dipole_case==EXTAMP::IDa) m_lastacceptwgt *= Jacobian(z,vi,phi,alpha,paipb,Q2);
   // TODO: there are m_lastacceptwgt>1
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt>1.0) {

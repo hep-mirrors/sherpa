@@ -70,8 +70,9 @@ double Splitting_Function_Group::Overestimated(const double z,const double y, co
 
 double Splitting_Function_Group::RejectionWeight(const double z,const double y,
 						 const double eta,const double scale,const double Q2,
-                         const double phi) {
-  return p_selected->RejectionWeight(z,y,eta,scale,Q2,phi);
+                         const double phi, const double vi, const double alpha,
+                         const double paipb) {
+  return p_selected->RejectionWeight(z,y,eta,scale,Q2,phi,vi,alpha,paipb);
 }
 
 double Splitting_Function_Group::Z() { 

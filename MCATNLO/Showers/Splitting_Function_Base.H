@@ -46,9 +46,12 @@ namespace MCATNLO {
 				  const double,const double, const double phimin=0.);
     virtual double Overestimated(const double,const double,const double phi=0.);
     virtual double RejectionWeight(const double,const double,
-				   const double,const double,const double, const double phi=0.);
+				   const double,const double,const double, const double phi=0.,
+                   const double vi=0., const double alpha=0., const double paipb=0.);
     virtual double Z();         
     virtual double Phi(const double &phimin) const;
+    double Jacobian(const double &z, const double &vi, const double &phi,
+           const double &alpha, const double &paipb, const double &Q2) const;
 
     virtual const ATOOLS::Flavour & GetFlavourA() const;
     virtual const ATOOLS::Flavour & GetFlavourB() const;

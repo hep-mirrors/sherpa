@@ -26,7 +26,8 @@ namespace MCATNLO {
     virtual double Overestimated(const double,const double,const double phi=0.);
     virtual double RejectionWeight(const double,const double,
 				   const double eta,const double scale,const double Q2,
-                   const double phi=0.);
+                   const double phi=0., const double vi=0., const double alpha=0.,
+                   const double paipb=0.);
     virtual double Z();
     virtual double Phi(const double &phimin);
     virtual void ResetLastInt();

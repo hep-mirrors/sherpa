@@ -62,7 +62,7 @@ double Kernel::Value(const Splitting &s) const
 MC_Weight Kernel::GetWeight
 (const Splitting &s,const double &o,const MC_Weight *w) const
 {
-  double f(p_gf->Value(s)*p_lf->Value(s)*p_lf->Jacobian(s));
+  double f(p_gf->Value(s)*p_lf->Value(s)*p_lf->Jacobian(s)*p_lf->JacobianResAware(s));
   double h(w?w->m_h:p_gf->Estimate(s)*p_lf->Estimate(s));
   double g(dabs(w?w->m_f:f)<h?(f>=0.0?h:-h):o*f);
   return MC_Weight(f,g,h);
