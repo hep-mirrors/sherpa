@@ -45,7 +45,7 @@ PROCESSES:
     Min_Order: {QCD: Any, EW: Any}
     Max_Order: {QCD: Any, EW: Any}
     NLO_QCD_Mode: Fixed_Order
-    Loop_Generator: DiHiggs
+    Loop_Generator: DiHiggsNLO
     NLO_QCD_Part: BVI
     Integrator: Rambo
 

@@ -113,7 +113,7 @@ PHASIC::Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,
 ::operator()(const PHASIC::Process_Info &pi) const
 {
   /* Require Loop_Generator=DiHiggs in process section */
-  if (pi.m_loopgenerator!="DiHiggs") return NULL;
+  if (pi.m_loopgenerator!="DiHiggsNLO") return NULL;
 
   /* Check NLO type (allow only QCD, not EW)  */
   if (pi.m_fi.m_nlotype!=ATOOLS::nlo_type::loop ||
