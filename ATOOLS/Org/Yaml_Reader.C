@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/Settings_Keys.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_File.H"
 
 #include <cassert>
 
@@ -15,15 +16,16 @@ Yaml_Reader::Yaml_Reader(std::istream& s)
   Parse(s);
 }
 
-Yaml_Reader::Yaml_Reader(const std::string& filename)
+Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
 {
   assert(filename != "");
-  std::ifstream file(filename);
+  My_File<std::ifstream> file {path, filename};
+  file.Open();
   try {
-    Parse(file);
+    Parse(*file);
   } catch (const std::exception& e) {
     MyStrStream str;
-    str << filename << " appears to contain a syntax ";
+    str << path << '/' << filename << " appears to contain a syntax ";
     // append yaml-cpp error wihtout the "yaml-cpp: " prefix
     str << std::string{e.what()}.substr(10);
     THROW(fatal_error, str.str());
