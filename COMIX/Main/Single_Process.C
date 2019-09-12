@@ -202,6 +202,7 @@ bool COMIX::Single_Process::Initialize
       }
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
+      p_loop->SetSubType((sbt::subtype)(stype+1));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
       m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
