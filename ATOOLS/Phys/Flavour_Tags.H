@@ -32,6 +32,9 @@
 #define      kf_Hplusplus                 38
 #define      kf_graviton                  39
 #define      kf_gscalar                   40
+// goldstones
+#define      kf_phiplus                   41
+#define      kf_chi                       42
 // internal
 #define      kf_shgluon                   89
 #define      kf_lepton                    90

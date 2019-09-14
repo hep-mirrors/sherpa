@@ -123,6 +123,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
+	  MODEL/SMGold/Makefile \
 	  MODEL/HEFT/Makefile \
 	  MODEL/SMEHC/Makefile \
 	  MODEL/TauPi/Makefile \
