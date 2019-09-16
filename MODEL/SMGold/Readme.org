@@ -3,7 +3,7 @@
 * $\phi^+ \rightarrow A_\mu \,\phi^-$
   #+CAPTION: EQ75
   #+NAME:   fig:EQ75
-[[/Users/Nappo/work/hep/code/sudakov/sudakov/MODEL/SMGold/ltximg/eq75.png]]
+[[ltximg/eq75.png]]
 
   This is loaded in the model file as [[file:Model.C][Model.C]]:
   #+begin_src cpp
