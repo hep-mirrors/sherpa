@@ -36,6 +36,7 @@ namespace MODEL {
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -232,6 +233,7 @@ void Standard_Model_TauPi::FixEWParameters()
   p_complexconstants->insert(make_pair(string("ccos2_thetaW"),ccos2thetaW));
   p_complexconstants->insert(make_pair(string("csin2_thetaW"),csin2thetaW));
   p_complexconstants->insert(make_pair(string("cvev"), cvev));
+  rpa->gen.SetVariable("EW_SCHEME",ToString(ewscheme));
 }
 
 void Standard_Model_TauPi::FixCKM()
