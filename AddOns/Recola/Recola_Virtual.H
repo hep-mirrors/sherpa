@@ -9,12 +9,11 @@ namespace Recola {
   class Recola_Virtual : public PHASIC::Virtual_ME2_Base {
 
     unsigned int m_recola_id;
+    int m_ewscheme;
+    size_t m_voqcd, m_boqcd;
 
   public:
 
-    int m_eventcount;
-    std::map<int,PHASIC::Process_Info> m_procmap;
-    
     Recola_Virtual(const PHASIC::Process_Info& pi,
                       const ATOOLS::Flavour_Vector& flavs,
                       unsigned int recola_id);
