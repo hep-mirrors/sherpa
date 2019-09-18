@@ -19,6 +19,10 @@ namespace MODEL {
     void InitQCDVertices();
     void InitEWVertices();
     void InitGoldstoneVertices();
+    void GplusQCDFermions();
+    void GplusLeptons();
+    void GplusPhotonsV();
+    void GplusZsV();
     
   public :
 
@@ -701,8 +705,7 @@ void Standard_ModelGS::InitEWVertices()
 
 void Standard_ModelGS::InitGoldstoneVertices()
 {
-  msg_Out() << "Initialising SMGold vertexes... " << std::endl;
-  // TODO: possible sources of problems are factors of two and minus sign
+  // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0));
   Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
   Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
@@ -717,107 +720,15 @@ void Standard_ModelGS::InitGoldstoneVertices()
     // // also for neutrinos					       //
     /////////////////////////////////////////////////////////////////////
     Kabbala cpl(two*I/rt2/vev);
-    //phi± -> ff
-    // for (short int i=1;i<17;i+=2) {
-    //   // may be worth it to specify if fermions are massive or massless
-    //   // in order not to generate empty vertices
-    //   if (i==7) i=11;
-    //   Flavour flav1((kf_code)i);
-    //   if (!flav1.IsOn()) continue;
-    //   for (short int j=2;j<18;j+=2) {
-    //     if (j==8) j=12;
-    //     if ((i<10 && j>10) || (i>10 && j<10)) continue;
-    //     Flavour flav2((kf_code)j);
-    //     if (!flav2.IsOn()) continue;
-    //     std::string ckmstr=(i<10?"CKM_":"L_CKM_")+
-    //       ToString(((i%10)-1)/2)+"_"+ToString((j%10)/2-1);
-    //     Kabbala ckm(ckmstr,ComplexConstant(ckmstr));
-    //     if (std::abs(ckm.Value())==0.0) continue;
-    //     Kabbala ma{ "m_{"+flav1.TexName()+"}", flav1.Mass()};
-    //     Kabbala mb{ "m_{"+flav2.TexName()+"}", flav2.Mass()};
-    // 	PRINT_VAR( flav1.IDName() << " , " << flav2.IDName());
-    // 	PRINT_VAR(ma.Value() << " , " << mb.Value());
-    //     // phi -
-    //     m_v.push_back(Single_Vertex());
-    //     m_v.back().AddParticle(flav1.Bar());
-    //     m_v.back().AddParticle(flav2);
-    //     m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-    //     m_v.back().Color.push_back
-    //       (i>6?Color_Function(cf::None):
-    //        Color_Function(cf::D,1,2));
-    //     m_v.back().Color.push_back
-    //       (i>6?Color_Function(cf::None):
-    //        Color_Function(cf::D,1,2));
-    //     m_v.back().Lorentz.push_back("FFSL");
-    //     m_v.back().Lorentz.push_back("FFSR");
-    // 	m_v.back().cpl.push_back(-cpl*ckm*mb);
-    //     m_v.back().cpl.push_back(cpl*ckm*ma);
-    //     m_v.back().order.push_back(1);
-    //     // phi +
-    //     m_v.push_back(Single_Vertex());
-    //     m_v.back().AddParticle(flav2.Bar());
-    //     m_v.back().AddParticle(flav1);
-    //     m_v.back().AddParticle(Flavour(kf_phiplus));
-    //     m_v.back().Color.push_back
-    //       (i>6?Color_Function(cf::None):
-    //        Color_Function(cf::D,1,2));
-    //     m_v.back().Color.push_back
-    //       (i>6?Color_Function(cf::None):
-    //        Color_Function(cf::D,1,2));
-    //     m_v.back().Lorentz.push_back("FFSL");
-    //     m_v.back().Lorentz.push_back("FFSR");
-    // 	m_v.back().cpl.push_back(cpl*ckm*ma);
-    //     m_v.back().cpl.push_back(-cpl*ckm*mb);
-    //     m_v.back().order.push_back(1);
-    //   }
-    // }
-    // triple boson
-    // phi+ phi- -> gamma (EQ 75)
+    GplusQCDFermions();
     if (Flavour(kf_photon).IsOn()) {
-      // msg_Out() << "phi+ phi- -> gamma " << std::endl;
-      m_v.push_back(Single_Vertex());
-      m_v.back().AddParticle(Flavour(kf_phiplus));
-      m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-      m_v.back().AddParticle(Flavour(kf_photon));
-      m_v.back().Color.push_back(Color_Function(cf::None));
-      m_v.back().Lorentz.push_back("GGV");
-      m_v.back().cpl.push_back(-I*g1);
-      m_v.back().order[1]=1;
-      // // quadruple, A A (EQ 88)
-      // msg_Out() << "phi+ phi- -> gamma gamma " << std::endl;
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle(Flavour(kf_phiplus));
-      // m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-      // m_v.back().AddParticle(Flavour(kf_photon));
-      // m_v.back().AddParticle(Flavour(kf_photon));
-      // m_v.back().cpl.push_back(two*I*g1*g1); // TODO: might be wrong...
-      // m_v.back().Color.push_back(Color_Function(cf::None));
-      // m_v.back().Lorentz.push_back("SSVV");
-      // m_v.back().order.push_back(1);
+      GplusPhotonsV();
     }
     // phi+ phi- -> Z (EQ 76)    
-//     if (Flavour(kf_Z).IsOn()) {
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle(Flavour(kf_phiplus));
-      // m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-      // m_v.back().AddParticle(Flavour(kf_Z));
-      // m_v.back().Color.push_back(Color_Function(cf::None));
-      // m_v.back().Lorentz.push_back("SSV");
-      // m_v.back().cpl.push_back(-I*g1/two*(costW/sintW-sintW/costW)); //(check cpl)
-      // m_v.back().order.push_back(1);
-      // // quadruple  Z Z/ Z A (EQ 88)
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle(Flavour(kf_phiplus));
-      // m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-      // m_v.back().AddParticle(Flavour(kf_Z));
-      // m_v.back().AddParticle(Flavour(kf_Z));
-      // m_v.back().cpl.push_back(I*g1*g1/
-      //   two*(costW/sintW-sintW/costW)*(costW/sintW-sintW/costW));//(check cpl)
-      // m_v.back().Color.push_back(Color_Function(cf::None));
-      // m_v.back().Lorentz.push_back("SSVV");
-      // m_v.back().order.push_back(1);
+    if (Flavour(kf_Z).IsOn()) {
+      GplusZsV();
       // // (EQ 95)
-      // if(Flavour(kf_photon).IsOn()) {
+      if(Flavour(kf_photon).IsOn()) {
       //   m_v.push_back(Single_Vertex());
       //   m_v.back().AddParticle(Flavour(kf_phiplus));
       //   m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
@@ -827,8 +738,8 @@ void Standard_ModelGS::InitGoldstoneVertices()
       //   m_v.back().Color.push_back(Color_Function(cf::None));
       //   m_v.back().Lorentz.push_back("SSVV");
       //   m_v.back().order.push_back(1);
-      // }
-    // }
+       }
+    }
 //     // phi+ phi- -> h0 (EQ 96)     
 //     if (Flavour(kf_h0).IsOn()) {
 //       m_v.push_back(Single_Vertex());
@@ -1085,4 +996,215 @@ void Standard_ModelGS::InitGoldstoneVertices()
   //   m_v.back().cpl.push_back(-three*M*M/vev/vev); // TODO fix coupling
   //   m_v.back().order.push_back(1);
   // } // end Flavour(kf_chi).IsOn()
+}
+
+void Standard_ModelGS::GplusQCDFermions()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW), sqrt2("sqrt2",sqrt(2.0));
+
+  // may be worth it to specify if fermions are massive or massless
+  // in order not to generate empty vertices
+  Flavour Wbos((kf_code)24);
+  Kabbala mw{ "m_{"+Wbos.TexName()+"}", Wbos.Mass()};
+
+  for (short int i=1;i<17;i+=2) {
+    if (i==7) i=11;
+    Flavour flav1((kf_code)i);
+    if (!flav1.IsOn()) continue;
+    for (short int j=2;j<18;j+=2) {
+      if (j==8) j=12;
+      if ((i<10 && j>10) || (i>10 && j<10)) continue;
+      Flavour flav2((kf_code)j);
+      if (!flav2.IsOn()) continue;
+      std::string ckmstr=(i<10?"CKM_":"L_CKM_")+
+	ToString(((i%10)-1)/2)+"_"+ToString((j%10)/2-1);
+      Kabbala ckm(ckmstr,ComplexConstant(ckmstr));
+      if (std::abs(ckm.Value())==0.0) continue;
+      if(flav1.Mass() == 0.0 && flav2.Mass() == 0.0) continue;
+      Kabbala ma{ "m_{"+flav1.TexName()+"}", flav1.Mass()};
+      Kabbala mb{ "m_{"+flav2.TexName()+"}", flav2.Mass()};
+      
+      /////////////////////////////////////
+      // FFS3 (of this model) -> -PL     //
+      // FFS1 (of this model) ->  PR     //
+      /////////////////////////////////////
+      // // phi +
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(flav2.Bar());
+      m_v.back().AddParticle(flav1);
+      m_v.back().AddParticle(Flavour(kf_phiplus));
+      m_v.back().Color.push_back
+	(i>6?Color_Function(cf::None):
+	 Color_Function(cf::D,1,2));
+      m_v.back().Color.push_back
+	(i>6?Color_Function(cf::None):
+	 Color_Function(cf::D,1,2));
+      m_v.back().Lorentz.push_back("FFS3");
+      m_v.back().Lorentz.push_back("FFS1");
+      m_v.back().cpl.push_back(I*g2*ckm*mb/mw/sqrt2);
+      m_v.back().cpl.push_back(-I*g2*ckm*ma/mw/sqrt2);	    
+      m_v.back().order[1] = 1;
+      // // phi - 
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(flav1.Bar());
+      m_v.back().AddParticle(flav2);
+      m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+      m_v.back().Color.push_back
+      	(i>6?Color_Function(cf::None):
+      	 Color_Function(cf::D,1,2));
+      m_v.back().Color.push_back
+      	(i>6?Color_Function(cf::None):
+      	 Color_Function(cf::D,1,2));
+      m_v.back().Lorentz.push_back("FFS3");
+      m_v.back().Lorentz.push_back("FFS1");
+      m_v.back().cpl.push_back(I*g2*ckm*ma/mw/sqrt2);
+      m_v.back().cpl.push_back(-I*g2*ckm*mb/mw/sqrt2);
+      m_v.back().order[1] = 1;
+    }
+  }
+
+
+
+
+      // m_v.push_back(Single_Vertex());
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)15,1) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)16,0) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_118",ComplexConstant(string("GC_118"))) );
+      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
+      // m_v.back().Lorentz.push_back("FFS3");
+      // m_v.back().order.resize(2);
+      // m_v.back().order[0]    = 0;
+      // m_v.back().order[1]    = 1;
+      // m_v.push_back(Single_Vertex());
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)13,1) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)14,0) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_110",ComplexConstant(string("GC_110"))) );
+      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
+      // m_v.back().Lorentz.push_back("FFS3");
+      // m_v.back().order.resize(2);
+      // m_v.back().order[0]    = 0;
+      // m_v.back().order[1]    = 1;
+      // m_v.push_back(Single_Vertex());
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)11,1) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)12,0) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_106",ComplexConstant(string("GC_106"))) );
+      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
+      // m_v.back().Lorentz.push_back("FFS3");
+      // m_v.back().order.resize(2);
+      // m_v.back().order[0]    = 0;
+      // m_v.back().order[1]    = 1;
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)5,1) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)6,0) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_48",ComplexConstant(string("GC_48"))) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_39",ComplexConstant(string("GC_39"))) );
+      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
+      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
+      // m_v.back().Lorentz.push_back("FFS3");
+      // m_v.back().Lorentz.push_back("FFS1");
+      // m_v.back().order.resize(2);
+      // m_v.back().order[0]    = 0;
+      // m_v.back().order[1]    = 1;
+      // m_v.push_back(Single_Vertex());
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)6,1) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)5,0) );
+      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,0) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_30",ComplexConstant(string("GC_30"))) );
+      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_21",ComplexConstant(string("GC_21"))) );
+      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
+      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
+      // m_v.back().Lorentz.push_back("FFS3");
+      // m_v.back().Lorentz.push_back("FFS1");
+      // m_v.back().order.resize(2);
+      // m_v.back().order[0]    = 0;
+      // m_v.back().order[1]    = 1;
+
+
+}
+
+void Standard_ModelGS::GplusLeptons()
+{
+  // couples only to massive fermions
+}
+
+
+void Standard_ModelGS::GplusPhotonsV()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW);
+
+  //////////////////////////////////////////////////////////////////////
+  // phi+ and phi- vertices with either 1			      //
+  // or two photons eqs 75 and 88 https://arxiv.org/pdf/1209.6213.pdf //
+  //////////////////////////////////////////////////////////////////////
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(kf_photon);
+  m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+  m_v.back().AddParticle(Flavour(kf_phiplus));
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("VSS2");
+  m_v.back().Lorentz.push_back("VSS1");
+  m_v.back().cpl.push_back(I*g1);
+  m_v.back().cpl.push_back(-I*g1);
+  m_v.back().order[1]=1;
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(Flavour(kf_photon));
+  m_v.back().AddParticle(Flavour(kf_photon));
+  m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+  m_v.back().AddParticle(Flavour(kf_phiplus));
+  m_v.back().cpl.push_back(two*I*g1*g1);
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]=2;
+}
+
+void Standard_ModelGS::GplusZsV()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW);
+
+  //////////////////////////////////////////////////////////////////////
+  // phi+ and phi- vertices with either 1			      //
+  // or two Zs eqs 76 and 89 https://arxiv.org/pdf/1209.6213.pdf      //
+  //////////////////////////////////////////////////////////////////////
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(Flavour(kf_Z));
+  m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+  m_v.back().AddParticle(Flavour(kf_phiplus));
+  m_v.back().cpl.push_back(I*g2/costW*(sqr(costW) - one/two));
+  m_v.back().cpl.push_back(-I*g2/costW*(sqr(costW) - one/two));
+  m_v.back().Color.push_back(cf::None);
+  m_v.back().Color.push_back(cf::None);
+  m_v.back().Lorentz.push_back("VSS2");
+  m_v.back().Lorentz.push_back("VSS1");
+  m_v.back().order[1]    = 1;
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(Flavour(kf_Z));
+  m_v.back().AddParticle(Flavour(kf_Z));
+  m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+  m_v.back().AddParticle(Flavour(kf_phiplus));
+  m_v.back().cpl.push_back(I*g1*g1/two*sqr(costW/sintW-sintW/costW));
+  m_v.back().Color.push_back(cf::None);
+  m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]    = 2;
 }
