@@ -205,7 +205,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     m_evtinfo=*info;
     delete info;
     double enhance = p_proc->Integrator()->PSHandler()->Enhance();
-    double wf(rpa->Picobarn()/sw/enhance);
+    double wf((p_proc->NIn()==1?1.:rpa->Picobarn())/sw/enhance);
     if (m_eventmode!=0) {
       const double max = p_proc->Integrator()->Max();
       const double disc = max * ran->Get();

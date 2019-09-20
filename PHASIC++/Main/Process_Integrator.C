@@ -229,11 +229,20 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   for (size_t i(0);i<m_vsn.size();++i)
     *from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
   }
-  msg_Tracking()<<"Found result: xs for "<<name<<" : "
-		<<m_totalxs*rpa->Picobarn()<<" pb"
-		<<" +- ( "<<m_totalerr*rpa->Picobarn()<<" pb = "
-		<<m_totalerr/m_totalxs*100.<<" % ) max: "
-		<<m_max*rpa->Picobarn()<<std::endl;
+  if (m_nin==1) {
+      msg_Tracking()<<"Found result: xs for "<<name<<" : "
+            <<m_totalxs<<" GeV"
+            <<" +- ( "<<m_totalerr<<" GeV = "
+            <<m_totalerr/m_totalxs*100.<<" % ) max: "
+            <<m_max<<std::endl;
+  }
+  else {
+      msg_Tracking()<<"Found result: xs for "<<name<<" : "
+            <<m_totalxs*rpa->Picobarn()<<" pb"
+            <<" +- ( "<<m_totalerr*rpa->Picobarn()<<" pb = "
+            <<m_totalerr/m_totalxs*100.<<" % ) max: "
+            <<m_max*rpa->Picobarn()<<std::endl;
+  }
   if (!p_proc->ReadIn(path)) return false;
   bool res(true);
   if (p_proc->IsGroup())

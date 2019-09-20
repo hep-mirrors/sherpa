@@ -456,6 +456,8 @@ void Event_Handler::Finish() {
     (*pit)->Finish(std::string("Results"));
     (*pit)->CleanUp();
   }
+  size_t nin(2);
+  if (p_signal) nin=p_signal->NInP();
   m_blobs.Clear();
   m_sblobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
@@ -472,10 +474,18 @@ void Event_Handler::Finish() {
   double xs(TotalXSMPI()), err(TotalErrMPI());
   std::string res;
   MyStrStream conv;
-  conv<<om::bold<<"Total XS"<<om::reset<<" is "
-      <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
-      <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
-      <<" %"<<om::reset<<" )";
+  if (nin==1) {
+    conv<<om::bold<<"Total Width"<<om::reset<<" is "
+        <<om::blue<<om::bold<<xs<<" GeV"<<om::reset<<" +- ( "
+        <<om::red<<err<<" GeV = "<<((int(err/xs*10000))/100.0)
+        <<" %"<<om::reset<<" )";
+  }
+  else {
+    conv<<om::bold<<"Total XS"<<om::reset<<" is "
+        <<om::blue<<om::bold<<xs<<" pb"<<om::reset<<" +- ( "
+        <<om::red<<err<<" pb = "<<((int(err/xs*10000))/100.0)
+        <<" %"<<om::reset<<" )";
+  }
   getline(conv,res);
   int md(msg->Modifiable()?26:-4);
   msg_Out()<<om::bold<<'+'<<std::string(res.length()-md,'-')<<"+\n";
