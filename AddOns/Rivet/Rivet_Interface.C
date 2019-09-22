@@ -530,6 +530,7 @@ namespace SHERPARIVET {
            m_ignorebeams, m_usehepmcshort,
            m_printsummary,
            m_evtbyevtxs;
+    size_t m_nin;
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
     RivetScaleVariationMap         m_rivet;
@@ -647,7 +648,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   m_splitjetconts(false), m_splitSH(false),
   m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs),
-  m_printsummary(true), m_evtbyevtxs(false),
+  m_printsummary(true), m_evtbyevtxs(false), m_nin(2),
   m_hepmcoutputprecision(15), m_xsoutputprecision(6)
 {
   if (m_outpath[m_outpath.size()-1]=='/')
@@ -951,6 +952,8 @@ bool Rivet_Interface::Init()
 bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 {
   DEBUG_FUNC("");
+  Blob *sp(bl->FindFirst(btp::Signal_Process));
+  if (sp) m_nin=sp->NInP();
   Particle_List pl=bl->ExtractParticles(1);
   for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
     if ((*it)->Momentum().Nan()) {
@@ -1044,12 +1047,15 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       std::string out=m_outpath;
       if (mit->first!="" && mit->first!="nominal") out += "."+mit->first;
       std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
-      std::string output(std::string("**  Total XS")+namestr
+      std::string output(std::string("**  Total ")
+                         +std::string((m_nin==1?"Width":"XS"))+namestr
                          +std::string(" = ( ")
                          +ToString(mit->second->TotalXS(),m_xsoutputprecision)
                          +std::string(" +- ")
                          +ToString(mit->second->TotalErr(),m_xsoutputprecision)
-                         +std::string(" ) pb **"));
+                         +std::string(" ) ")
+                         +std::string((m_nin==1?"GeV":"pb"))
+                         +std::string(" **"));
       std::string astline(output.size(),'*');
       msg_Info()<<astline<<"\n"<<output<<"\n"<<astline<<std::endl;
     }
@@ -1068,12 +1074,15 @@ bool Rivet_Interface::Finish()
     PRINT_FUNC(out+ending);
     if (m_printsummary) {
       std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
-      std::string output(std::string("**  Total XS")+namestr
+      std::string output(std::string("**  Total ")
+                         +std::string((m_nin==1?"Width":"XS"))+namestr
                          +std::string(" = ( ")
                          +ToString(mit->second->TotalXS(),m_xsoutputprecision)
                          +std::string(" +- ")
                          +ToString(mit->second->TotalErr(),m_xsoutputprecision)
-                         +std::string(" ) pb **"));
+                         +std::string(" ) ")
+                         +std::string((m_nin==1?"GeV":"pb"))
+                         +std::string(" **"));
       std::string astline(output.size(),'*');
       msg_Info()<<astline<<"\n"<<output<<"\n"<<astline<<std::endl;
     }

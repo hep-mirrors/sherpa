@@ -209,7 +209,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
-		(p_mehandler->Sum()*rpa->Picobarn()));
+        (p_mehandler->Sum()*(proc->NIn()==1?1.:rpa->Picobarn())));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
   blob->AddData("Enhance",new Blob_Data<double>
                 (proc->Integrator()->EnhanceFactor()));

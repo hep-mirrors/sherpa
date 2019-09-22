@@ -323,12 +323,10 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   mn=mnstep=mncstep=0;
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
-  optiter = iter = 20000;
+  optiter = iter = Min(itmax,Max(itmin,20000));
 
   long unsigned int n;
-  double value;
-  double max = 0.;
-  double error;
+  double value(0.),max(0.),error(0.);
   
   (psh->FSRIntegrator())->Reset();
 
@@ -346,7 +344,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
       }
       if (psh->Stats().size()==ndecopt) {
 	psh->EndOptimize();
-	optiter = iter = 50000;
+    optiter = iter = 2*iter;
       }
       if ((psh->Process())->TotalResult()==0.) break;
       
@@ -356,8 +354,19 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
                 <<(psh->Process())->TotalResult()
                 <<" GeV"<<om::reset<<" +- ( "<<om::red
                 <<(psh->Process())->TotalVar()
-                <<" GeV = "<<error*100<<" %"<<om::reset<<" ) "<<n<<endl;
-      if (error<maxerror) break;
+                <<" GeV = "<<error*100<<" %"<<om::reset<<" ) "
+                <<ncontrib<<" ( "<<n<<" -> "<<(ncstep*1000/nstep)/10.0
+                <<" % )"<<endl;
+      std::vector<double> stats(6);
+      stats[0]=psh->Process()->TotalResult();
+      stats[1]=psh->Process()->TotalVar();
+      stats[2]=error;
+      stats[3]=ncontrib;
+      stats[4]=ncontrib/(double)n;
+      stats[5]=0.;
+      psh->AddStats(stats);
+      psh->Process()->StoreResults(1);
+      if (error<maxerror && psh->Stats().size()>ndecopt) break;
     }
   }
   return (psh->Process())->TotalResult()*rpa->Picobarn();
