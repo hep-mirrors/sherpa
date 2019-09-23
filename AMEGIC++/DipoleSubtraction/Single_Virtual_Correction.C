@@ -869,8 +869,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     }
     else THROW(not_implemented,"Unknown mode");
   }
-  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
-    m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
+  if (p_loopme)
+    for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+      m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
   if (m_checkpoles)
     CheckPoleCancelation(&mom.front());
   if (m_checkfinite) {
@@ -894,7 +895,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_lastb=p_dsij[0][0] * kfactor;
   m_lasti=I            * kfactor;
   m_lastv=lme          * kfactor;
-  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+  if (p_loopme)
+    for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
     m_wass[i] *= kfactor;
   M2+=I+lme;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) &&

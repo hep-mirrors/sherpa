@@ -395,7 +395,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir) 
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   ATOOLS::MakeDir(resdir+OutputPath()); 
 

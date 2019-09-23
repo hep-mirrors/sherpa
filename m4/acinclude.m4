@@ -399,7 +399,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
  AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.x) ROOT support]),
+    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -420,9 +420,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes)  if test -d "$HEPMC3DIR"; then
                 CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
                 CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
@@ -431,19 +431,19 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC3DIR="${enableval}"
                 CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
       esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRootTree.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRootTree.h"; then
         hepmc3writerroottree=true;
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRoot.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRoot.h"; then
         hepmc3writerroot=true;
       fi;
 
@@ -472,7 +472,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Rivet not enabled); rivet=false ;;
+        no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
         yes) if test -x "`which rivet-config`"; then
                CONDITIONAL_RIVETDIR=`rivet-config --prefix`;
              fi;;
@@ -483,31 +483,29 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
-        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
-	"$CONDITIONAL_RIVETDIR/bin/rivet-config" --version | grep -q '^1\.' || rivetyoda=true
+        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
+        rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
+        AC_MSG_CHECKING(for Rivet version)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+          ])
+        ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
-      rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
-      if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetignorebeams=true;
-      fi
     ],
     [ rivet=false ]
   )
-  if test "$rivet" = "true" ; then
-    AC_DEFINE([USING__RIVET], "1", [using Rivet])
-  fi
-  if test "$rivetignorebeams" = "true" ; then
-    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
-  fi
-  if test "$rivetyoda" = "true" ; then
-    AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
-  fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
-  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
-  
+  if test "$rivet2" = "true" ; then
+    AC_DEFINE([USING__RIVET2], "1", [using Rivet2])
+  fi
+  if test "$rivet3" = "true" ; then
+    AC_DEFINE([USING__RIVET3], "1", [using Rivet3])
+  fi
+  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet2" = "true" -o "$rivet3" = "true")
 
   AC_ARG_ENABLE(
     fastjet,
@@ -593,9 +591,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              openloops=true;
              if test -d "${OPENLOOPS_PREFIX}"; then
                 AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
-		if nm "${OPENLOOPS_PREFIX}/lib/libopenloops.${LIB_SUFFIX}" | grep ol_evaluate_associated > /dev/null; then
-		  openloopsass=true;
-		fi
              else
                 AC_MSG_WARN(${OPENLOOPS_PREFIX} is not a valid path.);
              fi;;
@@ -605,9 +600,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$openloops" = "true" ; then
     AC_DEFINE_UNQUOTED([OPENLOOPS_PREFIX], "$OPENLOOPS_PREFIX", [Openloops installation prefix])
-  fi
-  if test "$openloopsass" = "true" ; then
-    AC_DEFINE([USING__OPENLOOPS__ASSOCIATED], "1", [Openloops provides separate access to associated contribs])
   fi
   AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 

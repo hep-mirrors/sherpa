@@ -81,7 +81,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
 #ifdef USING__COLOUR
   case tm::curon:  return str<<"\033[?25h";
   case tm::curoff: return str<<"\033[?25l";
-  case mm::none:   return str;
+  case tm::none:   return str;
 #else
   default: return str;
 #endif
@@ -200,8 +200,7 @@ void Message::SetPrecision(const int precision)
 std::ostream &Message::Out() const 
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+  if (!m_mpimode && mpi->Rank()) return *p_no;
 #endif
   return *p_output; 
 }
@@ -210,7 +209,7 @@ std::ostream &Message::Error() const
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      mpi->Rank()) return *p_no;
 #endif
   if (m_level >= 0) return *p_output; 
   return *p_no; 
@@ -220,7 +219,7 @@ std::ostream &Message::Events() const
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      mpi->Rank()) return *p_no;
 #endif
   if (m_level & 1) return *p_output; 
   return *p_no;  
@@ -230,7 +229,7 @@ std::ostream &Message::Info() const
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      mpi->Rank()) return *p_no;
 #endif
   if (m_level & 2) return *p_output; 
   return *p_no;  
@@ -240,7 +239,7 @@ std::ostream &Message::Tracking() const
 { 
 #ifdef USING__MPI
   if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+      mpi->Rank()) return *p_no;
 #endif
   if (m_level & 4) return *p_output; 
   return *p_no;  
@@ -249,8 +248,7 @@ std::ostream &Message::Tracking() const
 std::ostream &Message::Debugging() const 
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+  if (!m_mpimode && mpi->Rank()) return *p_no;
 #endif
   if (m_level & 8) return *p_output; 
   return *p_no;  
@@ -259,8 +257,7 @@ std::ostream &Message::Debugging() const
 std::ostream &Message::IODebugging() const
 {
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      MPI::COMM_WORLD.Get_rank()) return *p_no;
+  if (!m_mpimode && mpi->Rank()) return *p_no;
 #endif
   if (m_level & 32) return *p_output;
   return *p_no;

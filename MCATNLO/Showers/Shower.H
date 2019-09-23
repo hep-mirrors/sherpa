@@ -35,8 +35,8 @@ namespace MCATNLO {
     double    m_weight;
 
     SHERPA::Variation_Weights * p_variationweights;
-    //! whether to disable the reweighting of the emission
-    bool m_norewem;
+    bool m_reweight;
+    double m_maxreweightfactor;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -58,6 +58,9 @@ namespace MCATNLO {
 	   ATOOLS::Data_Reader *const dataread);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
+    double Reweight(SHERPA::Variation_Parameters*,
+                    SHERPA::Variation_Weights*,
+                    Parton& splitter);
     void SetMS(ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }

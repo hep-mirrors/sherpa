@@ -81,7 +81,11 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   spi.m_megenerator=spi.m_rsmegenerator;
   p_rproc=InitProcess(spi,nlo_type::lo,true);
   spi.m_megenerator=pi.m_megenerator;
-  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
+  Data_Reader read(" ",";","!","=");
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  nlo_type::code bvicode=(nlo_type::code) read.GetValue<int>("PP_BVI_MODE",7);
+  p_bviproc=InitProcess(spi,bvicode,false);
   p_ddproc=InitProcess(spi,nlo_type::rsub,1);
   spi.m_integrator=spi.m_rsintegrator;
   spi.m_megenerator=spi.m_rsmegenerator;
@@ -96,9 +100,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
   if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
@@ -449,6 +450,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
+    rproc->Integrator()->PSHandler()->SetEnhance(bproc->Integrator()->PSHandler()->Enhance());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
@@ -532,6 +534,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);
       const double wgtfac(Swgt * selwgtratio);
+      msg_Debugging()<<"wgt_{NLO CSS} = "<<Swgt<<"\n"
+                     <<"Bsel = "<<Bsel<<" ,  Ssel = "<<Ssel<<"\n"
+                     <<"=> wgtfac = "<<wgtfac<<std::endl;
       winfo->m_weight *= wgtfac;
       *(p_selected->Selected()->GetMEwgtinfo()) *= wgtfac;
       *p_variationweights *= wgtfac;

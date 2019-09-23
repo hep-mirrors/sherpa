@@ -111,6 +111,21 @@ double Scale_Setter_Base::HTM() const
   return htm;
 }
 
+double Scale_Setter_Base::PTM() const
+{
+  //product of transverse masses of all massive particles
+  double ptm(1.0);
+  size_t n(0);
+  for (size_t i(m_nin);i<m_p.size();++i){
+      ATOOLS::Flavour flav =p_proc->Flavours()[i];
+      if (flav.IsMassive()){
+        ptm*=m_p[i].MPerp();
+        n++;
+     }
+    }
+  return pow(ptm,1./n);
+}
+
 double Scale_Setter_Base::HT() const
 {
   double ht(0.0);

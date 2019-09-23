@@ -4,6 +4,7 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -152,6 +153,7 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   CleanUp();
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
+  if (m_psmode) p_shower->SetColours(ampl);
   p_rampl=ampl;
   p_ms=ampl->MS();
   p_next->clear();

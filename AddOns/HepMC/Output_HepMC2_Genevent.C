@@ -40,7 +40,7 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
   p_xs=new HepMC::GenCrossSection();
 #endif
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif

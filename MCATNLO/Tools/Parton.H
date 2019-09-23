@@ -38,6 +38,18 @@ namespace MCATNLO {
 
   std::ostream &operator<<(std::ostream &str,const Color_Info &ci);
 
+  struct Sudakov_Reweighting_Info {
+    bool accepted;
+    double scale;
+    double accwgt;
+    double lastj;
+    double lastcpl;
+    Splitting_Function_Base* sf;
+    double x, y, z;
+    ATOOLS::Flavour flspec;
+  };
+  typedef std::vector<Sudakov_Reweighting_Info> Sudakov_Reweighting_Infos;
+
   class Parton {
   private:
     ATOOLS::Flavour m_flav;
@@ -58,6 +70,8 @@ namespace MCATNLO {
 
     Color_Info m_ci;
 
+    Sudakov_Reweighting_Infos m_sudakovrewinfos;
+
   public:
     inline Parton();
     inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
@@ -67,6 +81,9 @@ namespace MCATNLO {
 
     inline void SetLT(const ATOOLS::Poincare_Sequence &lt) { m_lt=lt; }
     inline const ATOOLS::Poincare_Sequence &LT() const { return m_lt; }
+
+    Sudakov_Reweighting_Infos& SudakovReweightingInfos()
+    { return m_sudakovrewinfos; }
 
     inline ATOOLS::Flavour   const GetFlavour()  const;
     inline ATOOLS::Vec4D     const Momentum()    const;

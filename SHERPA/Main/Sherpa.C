@@ -65,7 +65,7 @@ Sherpa::~Sherpa()
   delete ATOOLS::ran;
 #ifdef USING__MPI
   int dummy=0;
-  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+  mpi->Bcast(&dummy,1,MPI_INT,0);
 #endif  
   delete ATOOLS::msg;
   delete ATOOLS::exh;
@@ -114,7 +114,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
   p_inithandler  = new Initialization_Handler(argc, argv);
 
-  mpi->SetUpSendRecv(p_inithandler->DataReader());
+  mpi->PrintRankInfo();
 
   DrawLogo(p_inithandler->DataReader()->GetValue("PRINT_VERSION_INFO",0));
 

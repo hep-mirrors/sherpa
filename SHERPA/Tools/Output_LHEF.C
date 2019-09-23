@@ -26,7 +26,7 @@ Output_LHEF::Output_LHEF(const Output_Arguments &args):
   int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
   m_bntp=args.p_reader->GetValue<int>("LHEF_BNTP",0);
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1)
+  if (mpi->Size()>1)
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
 #endif
   m_outstream.open((m_basename+m_ext).c_str());

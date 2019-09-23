@@ -39,7 +39,7 @@ void PrintInfo()
 int main(int argc,char **argv)
 {
 #ifdef USING__MPI
-  MPI::Init(argc,argv);
+  MPI_Init(&argc, &argv);
 #endif
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
@@ -225,7 +225,7 @@ int main(int argc,char **argv)
   delete ATOOLS::msg;
   delete ATOOLS::exh;
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   return 0;
 }

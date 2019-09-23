@@ -157,6 +157,8 @@ bool Recola_Interface::Initialize(const string &path,const string &file,
   struct stat st;
   Data_Reader reader(" ",";","#","=");
   s_ignore_model = reader.GetValue<int>("RECOLA_IGNORE_MODEL",0);
+
+  s_exit_on_error = reader.GetValue<int>("RECOLA_EXIT_ON_ERROR",1);
   if (s_ignore_model) msg_Info()<<METHOD<<"(): Recola will use the "
                                 <<"Standard Model even if you set a "
                                 <<"different model without warning."

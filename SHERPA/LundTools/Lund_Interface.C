@@ -93,6 +93,12 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   reader->AddIgnore(")");
   reader->AddIgnore(",");
   pysubs.msel=0;
+
+  // default hadronisation parameters
+  pydat1.parj[21-1]=0.36;
+  pydat1.parj[41-1]=0.3;
+  pydat1.parj[42-1]=0.6;
+
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];

@@ -39,7 +39,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   m_order(order), m_pdf(0),
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
   m_cutq2(0.), m_cutas(1.),
-  p_pdf(aspdf), m_pdfowned(false), p_sas(this)
+  p_pdf(aspdf), m_pdfowned(false)
 {
   p_thresh  = NULL;
 
@@ -191,22 +191,13 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       }
     }
   }
-
-  if (mo==NULL) {
-    double fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-    if (fac!=1.0) {
-      msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
-      msg_Indent();
-      p_sas = new One_Running_AlphaS((*this)(fac*m_m2_MZ),m_m2_MZ,m_order,thmode,p_pdf,this);
-    }
-  }
 }
 
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
   m_cutq2(0.), m_cutas(1.), p_thresh(NULL), p_pdf(pdf),
-  m_pdfowned(false), p_sas(this)
+  m_pdfowned(false)
 { 
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -314,7 +305,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
 One_Running_AlphaS::One_Running_AlphaS(const std::string pdfname, const int member):
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), p_thresh(NULL), p_pdf(NULL), m_pdfowned(false), p_sas(this)
+  m_cutq2(0.), p_thresh(NULL), p_pdf(NULL), m_pdfowned(false)
 {
   InitGenericPDF(pdfname, member);
   //------------------------------------------------------------
@@ -442,7 +433,6 @@ void One_Running_AlphaS::InitGenericPDF(const std::string pdfname, const int mem
 One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
-  if (p_sas && p_sas!=this) delete p_sas;
   if (m_pdfowned) {
     delete p_pdf;
   }
@@ -643,18 +633,6 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 }
 
 
-double One_Running_AlphaS::ShowerCutQ2()
-{
-  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
-  return p_sas->m_cutq2;
-}
-
-double One_Running_AlphaS::operator[](double q2)
-{
-  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
-  return (*p_sas)(q2);
-}
-
 double One_Running_AlphaS::operator()(double q2)
 {
   if (IsBad(q2)) {
@@ -712,33 +690,6 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
   }
   return thrs;
 }
-
-void One_Running_AlphaS::SelfTest() {
-  /*
-  fastfunc ff_as;
-
-  int np=1001;
-
-  double smin=0.025;
-  double smax=500*500;
-
-  double mult=::exp(log(smax/smin)/double(np-2));
-
-  ff_as.reset(np);
-  double as0=operator()(0.);
-  ff_as.insert(0.,as0);
-  double s= smin;
-
-  for (int i=1;i<np;++i) {
-    double as =operator()(s);
-    double rs =sqrt(s);
-    ff_as.insert(rs,as);
-    s*=mult;
-  }
-  ff_as.output(sqrt(smin),sqrt(smax),"alpha_s.test.dat");
-  */
-}
-
 
 Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const int order, const int thmode,

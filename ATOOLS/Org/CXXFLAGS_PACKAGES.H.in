@@ -46,14 +46,11 @@
 /* using ROOT */
 #undef USING__ROOT
 
-/* using Rivet */
-#undef USING__RIVET
+/* using Rivet2 */
+#undef USING__RIVET2
 
-/* setSumOfWeights function available in Rivet */
-#undef USING__RIVET__SETSOW
-
-/* Rivet uses YODA as its histogramming backend */
-#undef USING__RIVET__YODA
+/* using Rivet3 */
+#undef USING__RIVET3
 
 /* using FASTJET */
 #undef USING__FASTJET
@@ -69,9 +66,6 @@
 
 /* OpenLoops installation prefix */
 #undef OPENLOOPS_PREFIX
-
-/* Openloops provides separate access to associated contribs */
-#undef USING__OPENLOOPS__ASSOCIATED
 
 /* Recola installation prefix */
 #undef RECOLA_PREFIX

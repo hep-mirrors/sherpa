@@ -27,6 +27,8 @@ using namespace ATOOLS;
 
 Single_Process::Single_Process() :
   m_lastbxs(0.0), m_lastflux(0.0), m_zero(false),
+  m_dadsmode(
+      Data_Reader(" ",";","!","=").GetValue<size_t>("BVI_DADS_MODE", 1)),
   m_reweightscalecutoff(
       Data_Reader(" ",";","!","=").GetValue<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0))
 {
@@ -452,7 +454,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
     m_lastb=m_lastbxs*
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
-    if (p_mc!=NULL) {
+    if (p_mc!=NULL && m_dadsmode && m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
       m_mewgtinfo.m_type|=mewgttype::DADS;

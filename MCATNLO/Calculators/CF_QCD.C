@@ -33,6 +33,7 @@ namespace MCATNLO {
     std::map<MODEL::One_Running_AlphaS *, double> m_altcplmax;
 
     double m_q, m_rsf, m_k0sq;
+    int m_freezemode;
 
     double B0(const double &nf) const
     {
@@ -42,7 +43,10 @@ namespace MCATNLO {
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key), p_altcpl(NULL), m_altcplmax(), m_k0sq(0.0)
+      SF_Coupling(key),
+      p_altcpl(NULL), m_altcplmax(),
+      m_k0sq(0.0),
+      m_freezemode(0)
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
@@ -95,6 +99,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
   p_altcpl=NULL;
   m_altcplmax.clear(); // buffered values are not valid anymore
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  m_freezemode=ToType<int>(rpa->gen.Variable("CSS_ALPHAS_FREEZE_MODE"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
   m_k0sq=(m_type/10==1)?k0sqf:k0sqi;
   m_cplmax.push_back(CplMax(p_cpl, m_rsf));
@@ -119,12 +124,14 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
 template<class T>
 double CF_QCD::CplMax(T * as, double rsf) const
 {
+  // calculate maximum coupling
   const double minscale = CplFac(m_k0sq)*m_k0sq;
+  double cpl = as->BoundedAlphaS(minscale);
+  // calculate counterterm
   double ct(0.);
-  const double boundedscale(Max(as->ShowerCutQ2(), minscale));
-  if (m_rsf>1.) // only for f>1 cpl gets larger
-    ct=-(*as)[boundedscale]/M_PI*as->Beta0(0.)*log(m_rsf);
-  return (*as)[boundedscale]*(1.-ct)*m_q;
+  if (rsf > 1.)
+    ct = -cpl/M_PI * as->Beta0(0.) * log(rsf);
+  return cpl * (1. - ct) * m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol,
@@ -136,10 +143,19 @@ double CF_QCD::Coupling(const double &scale,const int pol,
   One_Running_AlphaS * const as = (p_altcpl) ? p_altcpl : p_cpl->GetAs();
   const double rsf = (p_altcpl) ? m_altrsf : m_rsf;
 
-  double t(CplFac(scale)*scale);
-  double scl(sub?sub->MuR2():t*rsf);
-  if (scl<rsf*as->ShowerCutQ2()) return m_last = 0.0;
-  double cpl=(*as)(scl);
+  // calculate scale
+  const double t(CplFac(scale)*scale);
+  const double scl(sub?sub->MuR2():t*rsf);
+
+  // calculate coupling
+  double cpl(0.);
+  if (m_freezemode == 0) {
+    if (scl < rsf*as->CutQ2()) return m_last = 0.0;
+    cpl = (*as)(scl);
+  } else {
+    cpl = as->BoundedAlphaS(scl);
+  }
+
   if (sub==NULL && !IsEqual(scl,t)) {
     std::vector<double> ths(as->Thresholds(t,scl));
     if (scl>t) std::reverse(ths.begin(),ths.end());
@@ -161,7 +177,7 @@ double CF_QCD::Coupling(const double &scale,const int pol,
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
 		 <<" * "<<(sub?sqrt(scl):sqrt(scale))<<", \\alpha_s("
-		 <<sqrt(scl)<<") = "<<(*as)[scl]
+		 <<sqrt(scl)<<") = "<<(*as)(scl)
 		 <<", m_q = "<<s_qfac<<" * "<<m_q<<"\n";
 #endif
   return m_last = cpl;

@@ -28,3 +28,6 @@ void Shower_Base::ShowSyntax(const int mode)
   msg_Out()<<"\n}"<<std::endl;
 }
 
+void Shower_Base::SetColours(Cluster_Amplitude *const ampl)
+{
+}

@@ -45,7 +45,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   addtime=0.0;
   lastrss=0;
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size) {
     int helpi;
     if (read.ReadFromFile(helpi,"PSI_ITMIN_BY_NODE")) {
@@ -68,13 +68,13 @@ void Phase_Space_Integrator::MPISync()
 {
 #ifdef USING__MPI
   psh->MPISync();
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     double values[3];
     values[0]=mn;
     values[1]=mnstep;
     values[2]=mncstep;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
     mn=values[0];
     mnstep=values[1];
     mncstep=values[2];
@@ -147,9 +147,9 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   optiter=iter;
 #ifdef USING__MPI
-  int size = MPI::COMM_WORLD.Get_size();
+  int size = mpi->Size();
   optiter /= size;
-  if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
+  if (mpi->Rank()==0) optiter+=iter-(iter/size)*size;
 #endif
   
   for (n=psh->Process()->Points();n<=nmax;) {
@@ -305,9 +305,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       if (ncontrib/iter0==6) {
 	optiter=iter=iter1;
 #ifdef USING__MPI
-	int size = MPI::COMM_WORLD.Get_size();
+	int size = mpi->Size();
 	optiter /= size;
-	if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
+	if (mpi->Rank()==0) optiter+=iter-(iter/size)*size;
 #endif
       }
       bool wannabreak = dabs(error)<maxerror ||

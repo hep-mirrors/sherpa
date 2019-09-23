@@ -135,11 +135,10 @@ option @option{-R}, see @ref{Command line}.
 @node EVENT_SEED_MODE
 @subsection EVENT_SEED_MODE
 The tag @option{EVENT_SEED_MODE} can be used to enforce the same seeds in different
-runs of the generator. When set to 1, seed files are written to disk. These files are
-gzip compressed, if Sherpa was compiled with option @option{--enable-gzip}.
-When set to 2, existing random seed files are read and the seed is set to the
-next available value in the file before each event. When set to 3, Sherpa uses
-an internal bookkeeping mechanism to advance to the next predefined seed.
+runs of the generator. When set to 1, existing random seed files are read and the seed is set to the
+next available value in the file before each event. When set to 2, seed files are written to disk.
+These files are gzip compressed, if Sherpa was compiled with option @option{--enable-gzip}.
+When set to 3, Sherpa uses an internal bookkeeping mechanism to advance to the next predefined seed.
 No seed files are written out or read in.
 
 @node ANALYSIS
@@ -460,9 +459,18 @@ number of trials, cf. @ref{Cross section determination}.
 
 The on-the-fly reweighting works for all event generation modes (weighted or
 (partially) unweighted) and all calculation types (LO, LOPS, NLO, NLOPS,
-MEPS@@LO, MEPS@@NLO and MENLOPS).  However, it does not include the reweighting
-of parton shower emissions per default, which is an experimental feature in
-Sherpa 2.2.0.
+MEPS@@LO, MEPS@@NLO and MENLOPS).
+However, the reweighting of parton shower emissions has to be enabled explicitly,
+using @code{CSS_REWEIGHT=1}.  This should work out of the box for both scale
+and PDF variations.  If numerical issues are encountered, one can try to
+increase @option{CSS_REWEIGHT_SCALE_CUTOFF} (default: 5).
+This disables shower variations for emissions at scales below the value.  An
+improved accuracy for shower variations at very low scales can be achieved by
+using @code{CSS_ALPHAS_FREEZE_MODE=1}, see @ref{CS Shower options}.
+An additional safeguard against rare spuriously large shower variation
+weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
+Any variation weights accumulated during an event and larger than this factor
+will be ignored and reset to 1.
 
 @node MPI parallelization
 @subsection MPI parallelization

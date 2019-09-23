@@ -287,7 +287,7 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
   if (ci==m_nin+m_nout) {
     if (!ConstructProcess(pi)) return false;
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_rank()==0) {
+    if (mpi->Rank()==0) {
 #endif
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name+".map");
@@ -344,13 +344,13 @@ bool Process_Group::ConstructProcesses()
   }
   msg_Debugging()<<"not found"<<std::endl;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   My_In_File::ExecDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   My_In_File::ExecDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");

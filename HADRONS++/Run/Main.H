@@ -113,7 +113,7 @@ void small_sherpa_init(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 #ifdef USING__MPI
-  MPI::Init(argc,argv);
+  MPI_Init(argc,argv);
 #endif
   try {
 #ifdef USING__ROOT
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     terminate();
   }
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   return 0;
 }

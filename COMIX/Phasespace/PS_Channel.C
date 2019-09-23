@@ -899,7 +899,7 @@ void PS_Channel::AddPoint(double value)
 void PS_Channel::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=0;
     for (size_t n(2);n<m_n;++n)
@@ -910,7 +910,7 @@ void PS_Channel::MPISync()
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
 	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(val,cn,MPI_DOUBLE,MPI_SUM);
     for (size_t cv(0), n(2);n<m_n;++n)
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
@@ -1059,7 +1059,7 @@ std::string PS_Channel::ChID()
 void PS_Channel::WriteOut(std::string pid)
 { 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   {
     Data_Writer writer;

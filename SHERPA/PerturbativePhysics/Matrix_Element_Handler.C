@@ -135,6 +135,7 @@ void Matrix_Element_Handler::InitNLOMC()
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
   int storeresults = Data_Reader(" ",";","!","=").GetValue("GENERATE_RESULT_DIRECTORY", 1);
+  if (storeresults<0) return true;
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
@@ -203,7 +204,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (info==NULL) continue;
     m_evtinfo=*info;
     delete info;
-    double wf(rpa->Picobarn()/sw);
+    double enhance = p_proc->Integrator()->PSHandler()->Enhance();
+    double wf(rpa->Picobarn()/sw/enhance);
     if (m_eventmode!=0) {
       const double max = p_proc->Integrator()->Max();
       const double disc = max * ran->Get();
@@ -380,7 +382,7 @@ int Matrix_Element_Handler::InitializeProcesses
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");

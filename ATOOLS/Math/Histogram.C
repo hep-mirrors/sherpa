@@ -360,7 +360,7 @@ void Histogram::Output() {
 void Histogram::Output(const std::string name) 
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  if (mpi->Rank()) return;
 #endif
   if (!m_active) return;
   My_Out_File ofile(name);
@@ -389,7 +389,7 @@ void Histogram::Output(const std::string name)
 void Histogram::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=m_depth*m_nbin+2;
     double *values = new double[cn];
@@ -397,7 +397,7 @@ void Histogram::MPISync()
       for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
     values[cn-2]=m_mfills;
     values[cn-1]=m_mpsfills;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (int j(0);j<m_depth;++j)
       for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=values[j*m_nbin+i];
     m_mfills=values[cn-2];
@@ -779,11 +779,11 @@ void Histogram::InsertRange(double start, double end, double value) {
 	m_mvalues[0][i] += value;
       } 
       else if ((low<start)&&(up<=end)) {
-	fac = (start-low)/m_binsize;
+	fac = (up-start)/m_binsize;
 	m_mvalues[0][i] += value *fac;
       }
       else if ((start<=low)&&(end < up)) {
-	fac = (up-end)/m_binsize;
+	fac = (end-low)/m_binsize;
 	m_mvalues[0][i] += value *fac;
       }
       else if ((low<start)&&(end <up)) {
@@ -829,11 +829,11 @@ void Histogram::InsertRange(double start, double end, double value) {
 	m_yvalues[i] += value;
       } 
       else if ((low<start)&&(up<=end)) {
-	fac = (start-low)/m_binsize;
+	fac = (up-start)/m_binsize;
 	m_yvalues[i] += value *fac;
       }
       else if ((start<=low)&&(end < up)) {
-	fac = (up-end)/m_binsize;
+	fac = (end-low)/m_binsize;
 	m_yvalues[i] += value *fac;
       }
       else if ((low<start)&&(end <up)) {
@@ -869,7 +869,7 @@ double Histogram::Bin(double coordinate) const
 
     if (coordinate<m_lower) return m_yvalues[0];
     if (coordinate>m_upper) return m_yvalues[m_nbin-1];
-    for (int i=1;i<m_nbin+1;i++) {
+    for (int i=1;i<m_nbin;i++) {
       if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
 	   (coordinate <  m_lower + i*m_binsize) ) 
 	return m_yvalues[i];
