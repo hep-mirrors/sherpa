@@ -21,6 +21,7 @@ using namespace std;
 std::string    Recola_Interface::s_recolaprefix = std::string("");
 bool           Recola_Interface::s_ignore_model = false;
 bool           Recola_Interface::s_exit_on_error = true;
+bool           Recola_Interface::s_use_iop_in_ewapprox = false;
 double         Recola_Interface::s_light_fermion_threshold = 0.1;
 size_t         Recola_Interface::s_recolaProcIndex = 0;
 bool           Recola_Interface::s_processesGenerated = false;
@@ -156,12 +157,13 @@ bool Recola_Interface::Initialize(const string &path,const string &file,
   struct stat st;
   Data_Reader reader(" ",";","#","=");
   s_ignore_model = reader.GetValue<int>("RECOLA_IGNORE_MODEL",0);
-
-  s_exit_on_error = reader.GetValue<int>("RECOLA_EXIT_ON_ERROR",1);
   if (s_ignore_model) msg_Info()<<METHOD<<"(): Recola will use the "
                                 <<"Standard Model even if you set a "
                                 <<"different model without warning."
                                 <<std::endl;
+
+  s_exit_on_error = reader.GetValue<size_t>("RECOLA_EXIT_ON_ERROR",1);
+  s_use_iop_in_ewapprox = reader.GetValue<size_t>("RECOLA_USE_I_IN_EWAPPROX",0);
 
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
   s_getPDF_default = reader.GetValue<int>("RECOLA_GETPDF_DEFAULT",0);
