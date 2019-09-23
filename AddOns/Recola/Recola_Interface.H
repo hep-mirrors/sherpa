@@ -26,6 +26,7 @@ namespace Recola {
     static std::string  s_recolaprefix;
     static bool         s_ignore_model;
     static bool         s_exit_on_error;
+    static bool         s_use_iop_in_ewapprox;
     static double       s_light_fermion_threshold;
     static size_t       s_recolaProcIndex;
     static bool         s_processesGenerated;
@@ -71,6 +72,7 @@ namespace Recola {
                                   std::vector<double> &asscontribs);
 
     static bool   ExitOnError()        { return s_exit_on_error; }
+    static bool   UseIopInEWapprox()   { return s_use_iop_in_ewapprox; }
     static double GetDefaultAlphaQCD() { return s_default_alphaqcd; }
     static double GetDefaultScale()    { return s_default_scale; }
     static double GetDefaultFlav()     { return s_default_flav; }
