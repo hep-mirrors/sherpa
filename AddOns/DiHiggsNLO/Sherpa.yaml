@@ -2,6 +2,7 @@
 EVENT_GENERATION_MODE: Weighted
 MI_HANDLER: None
 FRAGMENTATION: None
+BEAM_REMNANTS: false
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis
 PDF_LIBRARY: LHAPDFSherpa
@@ -44,9 +45,9 @@ PROCESSES:
 - "21 21 -> 25 25":
     Min_Order: {QCD: Any, EW: Any}
     Max_Order: {QCD: Any, EW: Any}
-    NLO_QCD_Mode: Fixed_Order
+    NLO_Mode: Fixed_Order
     Loop_Generator: DiHiggsNLO
-    NLO_QCD_Part: BVI
+    NLO_Part: BVI
     Integrator: Rambo
 
 RIVET:
