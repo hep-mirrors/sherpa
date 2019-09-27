@@ -1,11 +1,11 @@
-_Sherpa() 
+_Sherpa()
 {
     local cur prev opts ret
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts="--help --version"
+    opts="$(cat @DATADIR@/options.index)"
 
     if [[ ${cur} == -* ]] ; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
