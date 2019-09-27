@@ -20,11 +20,11 @@ HARD_DECAYS:
   Apply_Branching_Ratios: false
 
 PROCESSES:
-- Process: 93 93 -> 25 6 -6
-  Order: {QCD: 2, EW: 1}
-  NLO_Mode: MC@NLO
-  NLO_Order: {QCD: 1, EW: 0}
-  Loop_Generator: OpenLoops
-  ME_Generator: Amegic
-  RS_ME_Generator: Comix
-  Integration_Error: 0.1
+- 93 93 -> 25 6 -6:
+    Order: {QCD: 2, EW: 1}
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Loop_Generator: OpenLoops
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Integration_Error: 0.1

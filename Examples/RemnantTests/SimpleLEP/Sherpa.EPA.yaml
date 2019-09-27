@@ -19,8 +19,8 @@ ORDER_ALPHAS: 2
 CSS_FS_PT2MIN: 1.00
 
 PROCESSES:
-- Process: 22 22 -> 15 -15
-  Order: {QCD: Any, EW: 2}
+- 22 22 -> 15 -15:
+    Order: {QCD: Any, EW: 2}
 
 SELECTORS:
 - [Mass, 15, -15, 10.0, E_CMS]

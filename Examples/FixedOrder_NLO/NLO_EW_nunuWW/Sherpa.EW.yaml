@@ -16,14 +16,12 @@ PARTICLE_DATA: {
   24: {Width: 0.0}
   }
 PROCESSES:
-  - {
-    Process: 12 -12 -> 24 -24,
-    NLO_EW_Mode: Fixed_Order,
-    NLO_EW_Part: IRS,
-    Integration_Error: 0.001,
-    Order: {QCD: 0},
+- 12 -12 -> 24 -24:
+    NLO_EW_Mode: Fixed_Order
+    NLO_EW_Part: IRS
+    Integration_Error: 0.001
+    Order: {QCD: 0}
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1

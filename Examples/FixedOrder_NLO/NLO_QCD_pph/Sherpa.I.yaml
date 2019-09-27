@@ -14,12 +14,10 @@ TAGS: {
 }
 SCALES: VAR{$(FSF)*sqr(125)}{$(RSF)*sqr(125)}
 PROCESSES:
-- {
-  Process: 93 93 -> 25,
-  NLO_QCD_Mode: Fixed_Order,
-  NLO_QCD_Part: I,
-  Order: {QCD: 2, EW: 1},
-}
+- 93 93 -> 25:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: I
+    Order: {QCD: 2, EW: 1}
 RIVET: {
   -a: [MC_PHOTONPHOTON_JOEY_STABLE, MC_PRINTEVENT],
   USE_HEPMC_SHORT: 1,

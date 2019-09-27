@@ -98,7 +98,7 @@ namespace SHERPA {
     ProcMap_Vector m_pmaps;
 
     void RegisterDefaults();
-    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&&);
+    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&);
 
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
@@ -137,7 +137,7 @@ namespace SHERPA {
 
     void BuildProcesses();
     void ReadFinalStateMultiIndependentProcessSettings(
-      ATOOLS::Scoped_Settings, Single_Process_List_Args&);
+      const std::string& procname, ATOOLS::Scoped_Settings, Single_Process_List_Args&);
     void ReadFinalStateMultiSpecificProcessSettings(
       ATOOLS::Scoped_Settings,
       Single_Process_List_Args&,

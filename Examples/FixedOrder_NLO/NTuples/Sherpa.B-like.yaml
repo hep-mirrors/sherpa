@@ -19,21 +19,21 @@ PARTICLE_DATA:
   15: {Massive: true}
 PROCESSES:
 # The Born piece
-- Process: 93 93 -> 90 91 93
-  NLO_QCD_Mode: Fixed_Order
-  NLO_QCD_Part: B
-  Order: {QCD: Any, EW: 2}
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: B
+    Order: {QCD: Any, EW: 2}
 # The virtual piece
-- Process: 93 93 -> 90 91 93
-  NLO_QCD_Mode: Fixed_Order
-  NLO_QCD_Part: V
-  Loop_Generator: $(LGEN)
-  Order: {QCD: Any, EW: 2}
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: V
+    Loop_Generator: $(LGEN)
+    Order: {QCD: Any, EW: 2}
 # The integrated subtraction piece
-- Process: 93 93 -> 90 91 93
-  NLO_QCD_Mode: Fixed_Order
-  NLO_QCD_Part: I
-  Order: {QCD: Any, EW: 2}
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: I
+    Order: {QCD: Any, EW: 2}
 SELECTORS:
 - FastjetFinder:
     Algorithm: antikt

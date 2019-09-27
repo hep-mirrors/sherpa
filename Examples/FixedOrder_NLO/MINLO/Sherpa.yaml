@@ -5,12 +5,12 @@ EVENT_GENERATION_MODE: W
 CORE_SCALE: VAR{Abs2(p[2]+p[3])+0.25*sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+PPerp(p[2]+p[3]))}
 
 PROCESSES:
-- Process: 93 93 -> 11 -12 93
-  Scales: MINLO
-  KFactor: MINLO
-  ME_Generator: Amegic
-  Loop_Generator: BlackHat
-  Order: {QCD: Any, EW: 2}
+- 93 93 -> 11 -12 93:
+    Scales: MINLO
+    KFactor: MINLO
+    ME_Generator: Amegic
+    Loop_Generator: BlackHat
+    Order: {QCD: Any, EW: 2}
 
 SELECTORS:
 - [Mass, 11, -12, 2, E_CMS]

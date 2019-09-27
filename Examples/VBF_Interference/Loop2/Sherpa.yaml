@@ -29,10 +29,10 @@ INTEGRATOR: VHAAG
 VHAAG: {FIXED_S0: 1}
 
 PROCESSES:
-- Process: 21 21 -> 22 22 21 21
-  Loop_Generator: BlackHat
-  Enable_MHV: 10
-  Order: {QCD: 4, EW: 2, SMEHC: 0}
+- 21 21 -> 22 22 21 21:
+    Loop_Generator: BlackHat
+    Enable_MHV: 10
+    Order: {QCD: 4, EW: 2, SMEHC: 0}
 
 SELECTORS:
 - [Mass, 22, 22, 115, 135]

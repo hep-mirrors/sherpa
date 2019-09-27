@@ -17,12 +17,12 @@ PARTICLE_DATA:
   5: {Active: 0}
   6: {Active: 0}
 PROCESSES:
-- Process: 1 1 -> 1 1 21
-  Integration_Error: 0.00001
-  NLO_EW_Mode: Fixed_Order
-  NLO_EW_Part: RS
-  Order: {QCD: 2, EW: 1}
-  Print_Graphs: Graphs
+- 1 1 -> 1 1 21:
+    Integration_Error: 0.00001
+    NLO_EW_Mode: Fixed_Order
+    NLO_EW_Part: RS
+    Order: {QCD: 2, EW: 1}
+    Print_Graphs: Graphs
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

@@ -404,9 +404,9 @@ matrix-element processes included in the setup are the following: ::
 In the ``PROCESSES`` list of the steering file this translates into
 .. code-block::
 
-   - Process: "93 93 -> 90 90 93{4}"
-     Order: {QCD: Any, EW: 2}
-     CKKW: 30
+   - 93 93 -> 90 90 93{4}:
+       Order: {QCD: Any, EW: 2}
+       CKKW: 30
 
 The physics model for these processes is the Standard Model
 (:option:`SM`) which is the default setting of the parameter ``MODEL``
@@ -585,8 +585,8 @@ For the example, the process definition in ``PROCESSES`` simplifies to
 
 .. code-block::
 
-   - Process: 21 1 -> 11 -11 1
-     Order: {QCD: Any, EW: 2}
+   - 21 1 -> 11 -11 1:
+       Order: {QCD: Any, EW: 2}
 
 with all other settings in the process block removed.  And under the
 assumption to start afresh, the initialization procedure has to be

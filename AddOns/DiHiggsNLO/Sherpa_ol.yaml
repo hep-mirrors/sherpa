@@ -41,13 +41,13 @@ BEAMS: 2212
 BEAM_ENERGIES: 6500
 
 PROCESSES:
-- Process: "21 21 -> 25 25"
-  Min_Order: {QCD: Any, EW: Any}
-  Max_Order: {QCD: Any, EW: Any}
-  NLO_QCD_Mode: Fixed_Order
-  Loop_Generator: OpenLoops
-  NLO_QCD_Part: BVI
-  Integrator: Rambo
+- "21 21 -> 25 25":
+    Min_Order: {QCD: Any, EW: Any}
+    Max_Order: {QCD: Any, EW: Any}
+    NLO_QCD_Mode: Fixed_Order
+    Loop_Generator: OpenLoops
+    NLO_QCD_Part: BVI
+    Integrator: Rambo
 
 RIVET:
   -a: MC_HHJETS

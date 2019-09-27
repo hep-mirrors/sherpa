@@ -23,6 +23,6 @@ SCALES: VAR{sqr(80.385)}
 MODEL: SMGGV
 
 PROCESSES:
-- Process: 21 21 -> 11 -12 -13 14
-  Order: {QCD: 2, EW: 4}
-  Print_Graphs: Graphs
+- 21 21 -> 11 -12 -13 14:
+    Order: {QCD: 2, EW: 4}
+    Print_Graphs: Graphs

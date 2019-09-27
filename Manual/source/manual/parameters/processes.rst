@@ -10,23 +10,22 @@ The process setup takes the following general form
 
    PROCESSES:
    # Process 1:
-   - Process: <process declaration>
-     <parameter>: <value>
-     <multiplities-to-be-applied-to>:
+   - <process declaration>:
        <parameter>: <value>
-       ...
+       <multiplicities-to-be-applied-to>:
+         <parameter>: <value>
+         ...
    # Process 2:
-   - Process: <process declaration>
-     ...
+   - <process declaration>
+       ...
 
 I.e. ``PROCESSES`` followed by a list of process definitions.  Each
-process definition has one mandatory sub-setting, ``Process``, which
-defines the initial- and final-state particles.
-
-In addition, several optional parameters steer the process setup.
-Most of them can be grouped under a multiplicity key, which can either
-be a single integer or a range of integers, e.g. ``2-4: {
-<settings-that-affect-only-multiplicties-2-to-4> }``.
+definition consists of a key-value mapping with a single key. The key
+defines the initial- and final-state particles, and its value gives the
+optional parameters for this process steering its setup.
+Most of these parameters can be grouped under a multiplicity key, which can
+either be a single or a range of multiplicities, e.g. ``2->2-4: {
+<settings-that-affect-only-2->2,2->3 and 2->4 processes> }``.
 
 The following parameters are used to steer the process setup:
 
@@ -39,17 +38,16 @@ The following parameters are used to steer the process setup:
 Process
 =======
 
-This tag starts the setup of a process or a set of processes with
-common properties. It must be followed by the specification of the
+Each process definition starts with the specification of the
 (core) process itself. The initial and final state particles are
 specified by their PDG codes, or by particle containers, see
 :ref:`Particle containers`. Examples are
 
-``Process: 93 93 -> 11 -11``
+``- 93 93 -> 11 -11``
   Sets up a Drell-Yan process group with light quarks
   in the initial state.
 
-``Process: "11 -11 -> 93 93 93@{3@``"}
+``- 11 -11 -> 93 93 93{3}``
   Sets up jet production in e+e- collisions with up to three
   additional jets.
 
@@ -144,7 +142,7 @@ following can be used:
    PARTICLE_CONTAINER:
      98: {Name: B, Flavours: [5, -5]}
    PROCESSES:
-   - Process: "11 -11 -> (93,98) (93,98)"
+   - 11 -11 -> (93,98) (93,98):
      ...
 
 .. _Curly brackets:
@@ -154,7 +152,7 @@ Curly brackets
 
 The curly bracket notation when specifying a process allows up to a
 certain number of jets to be included in the final state. This is
-easily seen from an example, ``Process: "11 -11 -> 93 93 93{3}`` Sets
+easily seen from an example, ``11 -11 -> 93 93 93{3}`` sets
 up jet production in e+e- collisions. The matix element final state
 may be 2, 3, 4 or 5 light partons or gluons.
 
@@ -172,11 +170,11 @@ correlations are preserved.  An example would be
 
 .. code-block:: yaml
 
-   Process: 11 -11 -> 6[a] -6[b]
-   Decay:     6[a] -> 5 24[c]
-   Decay:    -6[b] -> -5 -24[d]
-   Decay:    24[c] -> -13 14
-   Decay:   -24[d] -> 94 94
+   - 11 -11 -> 6[a] -6[b]:
+       Decay:     6[a] -> 5 24[c]
+       Decay:    -6[b] -> -5 -24[d]
+       Decay:    24[c] -> -13 14
+       Decay:   -24[d] -> 94 94
 
 
 .. _DecayOS:
@@ -194,11 +192,11 @@ spin correlations are preserved.  An example would be
 
 .. code-block:: yaml
 
-   Process: 11 -11 -> 6[a] -6[b]
-   DecayOS:   6[a] -> 5 24[c]
-   DecayOS:  -6[b] -> -5 -24[d]
-   DecayOS:  24[c] -> -13 14
-   DecayOS: -24[d] -> 94 94
+   - 11 -11 -> 6[a] -6[b]:
+       DecayOS:   6[a] -> 5 24[c]
+       DecayOS:  -6[b] -> -5 -24[d]
+       DecayOS:  24[c] -> -13 14
+       DecayOS: -24[d] -> 94 94
 
 .. _No_Decay:
 
@@ -213,11 +211,11 @@ example would be
 
 .. code-block:: yaml
 
-   Process: "93 93 -> 6[a] -24[b] 93{1}"
-   Decay:     6[a] -> 5 24[c]
-   DecayOS:  24[c] -> -13 14
-   DecayOS: -24[b] -> 11 -12
-   No_Decay: -6
+   - 93 93 -> 6[a] -24[b] 93{1}:
+       Decay:     6[a] -> 5 24[c]
+       DecayOS:  24[c] -> -13 14
+       DecayOS: -24[b] -> 11 -12
+       No_Decay: -6
 
 .. _proc_Scales:
 
@@ -359,9 +357,9 @@ An example to specify an error target of 2% for
 
 .. code-block:: yaml
 
-   Process: "93 93 -> 93 93 93{2}"
-   3-4:
-     Integration_Error: 0.02
+   - 93 93 -> 93 93 93{2}:
+       2->3-4:
+         Integration_Error: 0.02
 
 .. _Max_Epsilon:
 
@@ -429,9 +427,9 @@ An example would be:
 
 .. code-block:: yaml
 
-   Process: "93 93 -> 11 -11 93{1}"
-   3:
-     Enhance_Observable: VAR{log10(PPerp(p[2]+p[3]))}|1|3
+   - 93 93 -> 11 -11 93{1}:
+       2->3:
+         Enhance_Observable: VAR{log10(PPerp(p[2]+p[3]))}|1|3
 
 Here, the 1-jet process is flattened with respect to the logarithmic
 transverse momentum of the lepton pair in the limits 1.0 (10 GeV) to
