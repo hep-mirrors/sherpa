@@ -19,10 +19,24 @@ namespace MODEL {
     void InitQCDVertices();
     void InitEWVertices();
     void InitGoldstoneVertices();
-    void GplusQCDFermions();
-    void GplusLeptons();
+
+    // util functions for phiplus vertices
+    void GplusFermions();
     void GplusPhotonsV();
     void GplusZsV();
+    void GplusHiggs();
+    void GplusW();
+    void GplusGold();
+
+    // util functions for chi vertices
+    void G0Fermions();
+    void G0PhotonsV();
+    void G0ZsV();
+    void G0Higgs();
+    void G0W();
+    void G0Gold();
+
+
     
   public :
 
@@ -705,300 +719,47 @@ void Standard_ModelGS::InitEWVertices()
 
 void Standard_ModelGS::InitGoldstoneVertices()
 {
-  // g1 -> e, g2-> e/sintW
-  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0));
-  Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
-  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
-  Kabbala sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW")));
-  Kabbala costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW")));
-  Kabbala g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev"));
-  Kabbala M{ "M_H", Flavour(kf_h0).Mass() };
   // phi vertexes
   if (Flavour(kf_phiplus).IsOn()) {
-    /////////////////////////////////////////////////////////////////////
-    // // TODO: fix couplings for fermions, also check that this works //
-    // // also for neutrinos					       //
-    /////////////////////////////////////////////////////////////////////
-    Kabbala cpl(two*I/rt2/vev);
-    GplusQCDFermions();
+    // all fermion vertices
+    GplusFermions();
     if (Flavour(kf_photon).IsOn()) {
+      // all photon vertices
       GplusPhotonsV();
     }
-    // phi+ phi- -> Z (EQ 76)    
     if (Flavour(kf_Z).IsOn()) {
+      // all z vertices + zgamma
       GplusZsV();
-      // // (EQ 95)
-      if(Flavour(kf_photon).IsOn()) {
-      //   m_v.push_back(Single_Vertex());
-      //   m_v.back().AddParticle(Flavour(kf_phiplus));
-      //   m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-      //   m_v.back().AddParticle(Flavour(kf_Z));
-      //   m_v.back().AddParticle(Flavour(kf_photon));
-      //   m_v.back().cpl.push_back(two*I*g1*g1*(costW/sintW-sintW/costW));//(check cpl)
-      //   m_v.back().Color.push_back(Color_Function(cf::None));
-      //   m_v.back().Lorentz.push_back("SSVV");
-      //   m_v.back().order.push_back(1);
-       }
     }
 //     // phi+ phi- -> h0 (EQ 96)     
-//     if (Flavour(kf_h0).IsOn()) {
-//       m_v.push_back(Single_Vertex());
-//       m_v.back().AddParticle(Flavour(kf_phiplus));
-//       m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//       m_v.back().AddParticle(Flavour(kf_h0));
-//       m_v.back().Color.push_back(Color_Function(cf::None));
-//       m_v.back().Lorentz.push_back("SSS");
-//       m_v.back().cpl.push_back(-I*M*M/vev);
-//       m_v.back().order.push_back(1);
-//       // Quadruple phi phi -> h h (EQ 100)
-//       m_v.push_back(Single_Vertex());
-//       m_v.back().AddParticle(Flavour(kf_phiplus));
-//       m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//       m_v.back().AddParticle(Flavour(kf_h0));
-//       m_v.back().AddParticle(Flavour(kf_h0));
-//       m_v.back().Color.push_back(Color_Function(cf::None));
-//       m_v.back().Lorentz.push_back("SSSS");
-//       m_v.back().cpl.push_back(-I*M*M/vev/vev);
-//       m_v.back().order.push_back(1);
-//       // phi h -> W + *
-//       if(Flavour(kf_Wplus).IsOn()){
-//         // (EQ 91)
-//         if(Flavour(kf_Z).IsOn()){
-//           m_v.push_back(Single_Vertex());
-//           m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//           m_v.back().AddParticle(Flavour(kf_h0));
-//           m_v.back().AddParticle(Flavour(kf_Wplus));
-//           m_v.back().AddParticle(Flavour(kf_Z));
-//           m_v.back().Color.push_back(Color_Function(cf::None));
-//           m_v.back().Lorentz.push_back("SSVV");
-//           m_v.back().cpl.push_back(-I*g2*g2*sintW*sintW/costW/two);
-//           m_v.back().order.push_back(1);        
-//         }
-//         // (EQ 93)
-//         if(Flavour(kf_photon).IsOn()){
-//           m_v.push_back(Single_Vertex());
-//           m_v.back().AddParticle(Flavour(kf_phiplus));
-//           m_v.back().AddParticle(Flavour(kf_h0));
-//           m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
-//           m_v.back().AddParticle(Flavour(kf_photon));
-//           m_v.back().Color.push_back(Color_Function(cf::None));
-//           m_v.back().Lorentz.push_back("SSVV");
-//           m_v.back().cpl.push_back(-I*g1*g2/two);
-//           m_v.back().order.push_back(1);        
-//         }        
-//       } // end kf_Wplus
-//     // } // end kf_h0
-// //     // phi± h/chi -> W±  and phi± W± -> A/Z     
-// //     if (Flavour(kf_Wplus).IsOn()) {
-//       if(Flavour(kf_h0).IsOn()) {
-//         // W- (EQ 77)
-//         m_v.push_back(Single_Vertex());
-//         m_v.back().AddParticle(Flavour(kf_h0));
-//         m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//         m_v.back().AddParticle(Flavour(kf_Wplus));
-//         m_v.back().Color.push_back(Color_Function(cf::None));
-//         m_v.back().Lorentz.push_back("SSV");
-//         m_v.back().cpl.push_back(I*g2/two);
-//         m_v.back().order.push_back(1);
-    //} //end kf_h0
-//       if(Flavour(kf_chi).IsOn()){
-//         // W- (EQ 77)
-//         m_v.push_back(Single_Vertex());
-//         m_v.back().AddParticle(Flavour(kf_chi));
-//         m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//         m_v.back().AddParticle(Flavour(kf_Wplus));
-//         m_v.back().Color.push_back(Color_Function(cf::None));
-//         m_v.back().Lorentz.push_back("SSV");
-//         m_v.back().cpl.push_back(-g2/two);
-//         m_v.back().order.push_back(1);
-//       } //end kf_chi
-//       if(Flavour(kf_photon).IsOn()){
-//         // phi- W+ (EQ 80)
-//         m_v.push_back(Single_Vertex());
-//         m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//         m_v.back().AddParticle(Flavour(kf_Wplus));
-//         m_v.back().AddParticle(Flavour(kf_photon));
-//         m_v.back().Color.push_back(Color_Function(cf::None));
-//         m_v.back().Lorentz.push_back("SSV");
-//         m_v.back().cpl.push_back(I*g1*g2*vev/two);
-//         m_v.back().order.push_back(1);
-//       } //end kf_photon
-//       if(Flavour(kf_Z).IsOn()){
-//         // phi- W+ (EQ 81)
-//         m_v.push_back(Single_Vertex());
-//         m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//         m_v.back().AddParticle(Flavour(kf_Wplus));
-//         m_v.back().AddParticle(Flavour(kf_Z));
-//         m_v.back().Color.push_back(Color_Function(cf::None));
-//         m_v.back().Lorentz.push_back("SSV");
-//         m_v.back().cpl.push_back(-I*g1*g2*vev*sintW/costW/two);
-//         m_v.back().order.push_back(1); 
-//       } // end kf_Z
-//       // Quadruple W+ W- (EQ 90)
-//       m_v.push_back(Single_Vertex());
-//       m_v.back().AddParticle(Flavour(kf_phiplus));
-//       m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//       m_v.back().AddParticle(Flavour(kf_Wplus));
-//       m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
-//       m_v.back().Color.push_back(Color_Function(cf::None));
-//       m_v.back().Lorentz.push_back("SSVV");
-//       m_v.back().cpl.push_back(I*g2*g2/two);
-//       m_v.back().order.push_back(1);
-//     // }
-// //     if(Flavour(kf_chi).IsOn()){
-//       // quadruple phi± chi -> W± A/Z
-//       if(Flavour(kf_Wplus).IsOn()){
-//         // (EQ 92)
-//         if(Flavour(kf_Z).IsOn()){
-//           m_v.push_back(Single_Vertex());
-//           m_v.back().AddParticle(Flavour(kf_phiplus));
-//           m_v.back().AddParticle(Flavour(kf_chi));
-//           m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
-//           m_v.back().AddParticle(Flavour(kf_Z));
-//           m_v.back().Color.push_back(Color_Function(cf::None));
-//           m_v.back().Lorentz.push_back("SSVV");
-//           m_v.back().cpl.push_back(-g2*g2*sintW*sintW/costW/two);
-//           m_v.back().order.push_back(1);
-//         } // end kf_Z
-//         // (EQ 94)
-//         if(Flavour(kf_photon).IsOn()){
-//           m_v.push_back(Single_Vertex());
-//           m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//           m_v.back().AddParticle(Flavour(kf_chi));
-//           m_v.back().AddParticle(Flavour(kf_Wplus));
-//           m_v.back().AddParticle(Flavour(kf_photon));
-//           m_v.back().Color.push_back(Color_Function(cf::None));
-//           m_v.back().Lorentz.push_back("SSVV");
-//           m_v.back().cpl.push_back(-I*g1*g2/two);
-//           m_v.back().order.push_back(1);
-//         }
-//       } // end kf_Wplus
-//       // phi+ phi- chi chi (EQ 101)
-//       m_v.push_back(Single_Vertex());
-//       m_v.back().AddParticle(Flavour(kf_phiplus));
-//       m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//       m_v.back().AddParticle(Flavour(kf_chi));
-//       m_v.back().AddParticle(Flavour(kf_chi));
-//       m_v.back().Color.push_back(Color_Function(cf::None));
-//       m_v.back().Lorentz.push_back("SSSS");
-//       m_v.back().cpl.push_back(-I*M*M/vev/vev);
-//       m_v.back().order.push_back(1);
-    // } // end kf_chi
-//     // (EQ 99)
-//     m_v.push_back(Single_Vertex());
-//     m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//     m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
-//     m_v.back().AddParticle(Flavour(kf_phiplus));
-//     m_v.back().AddParticle(Flavour(kf_phiplus));
-//     m_v.back().Color.push_back(Color_Function(cf::None));
-//     m_v.back().Lorentz.push_back("SSSS");
-//     m_v.back().cpl.push_back(I*g2*costW); // TODO fix coupling
-//     m_v.back().order.push_back(1);
+    if (Flavour(kf_h0).IsOn()) {
+      GplusHiggs();
+    } // end kf_h0
+    // phi± h/chi -> W±  and phi± W± -> A/Z     
+    if (Flavour(kf_Wplus).IsOn()) {
+      GplusW();
+    } // end kf_Wplus
+    GplusGold();
   } // end Flavour(kf_phiplus).IsOn()
-  
   // chi vertexes
-  // if (Flavour(kf_chi).IsOn()) {
-  //   // see TODO above!!!
-  //   Kabbala cpl(two/vev);
-  //   // - gamma5 = PL - PR, fermion
-  //   for (short int i=1;i<17;++i) {
-  //     if (i==7) i=11;
-  //     Flavour flav((kf_code)i);
-  //     if (!flav.IsOn()) continue;
-  //     Kabbala Q("Q_{"+flav.TexName()+"}",flav.Charge());
-  //     Kabbala W("T_{"+flav.TexName()+"}",flav.IsoWeak());
-  //     Kabbala mf{ "m_{"+flav.TexName()+"}", flav.Mass()};
-  //     m_v.push_back(Single_Vertex());
-  //     m_v.back().AddParticle(flav.Bar());
-  //     m_v.back().AddParticle(flav);
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().Color.push_back
-  //       (i>6?Color_Function(cf::None):
-  //        Color_Function(cf::D,1,2));
-  //     m_v.back().Color.push_back
-  //       (i>6?Color_Function(cf::None):
-  //        Color_Function(cf::D,1,2));
-  //     m_v.back().Lorentz.push_back("FFSL");
-  //     m_v.back().cpl.push_back(cpl*W*mf);
-  //     m_v.back().Lorentz.push_back("FFSR");
-  //     m_v.back().cpl.push_back(-cpl*W*mf);
-  //     m_v.back().order.push_back(1);
-  //   } // fermion for
-  //   // bosons
-  //   // triple boson
-  //   // chi h0 -> Z      
-  //   if (Flavour(kf_Z).IsOn()) {
-  //     // (EQ 79)
-  //     if(Flavour(kf_h0).IsOn()){
-  //       m_v.push_back(Single_Vertex());
-  //       m_v.back().AddParticle(Flavour(kf_h0));
-  //       m_v.back().AddParticle(Flavour(kf_chi));
-  //       m_v.back().AddParticle(Flavour(kf_Z));
-  //       m_v.back().Color.push_back(Color_Function(cf::None));
-  //       m_v.back().Lorentz.push_back("SSV");
-  //       m_v.back().cpl.push_back(-g2/two/costW);
-  //       m_v.back().order.push_back(1);
-  //     } // end kf_h0
-  //     // (EQ 87)
-  //     m_v.push_back(Single_Vertex());
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_Z));
-  //     m_v.back().AddParticle(Flavour(kf_Z));
-  //     m_v.back().Color.push_back(Color_Function(cf::None));
-  //     m_v.back().Lorentz.push_back("SSVV");
-  //     m_v.back().cpl.push_back(I*g2*g2/costW/costW/two);
-  //     m_v.back().order.push_back(1);
-  //   } // end kf_Z
-  //   // chi chi -> h0      
-  //   if (Flavour(kf_h0).IsOn()) {
-  //     // (EQ 98)
-  //     m_v.push_back(Single_Vertex());
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_h0));
-  //     m_v.back().Color.push_back(Color_Function(cf::None));
-  //     m_v.back().Lorentz.push_back("SSS");
-  //     m_v.back().cpl.push_back(-I*M*M/vev);
-  //     m_v.back().order.push_back(1);
-  //     // Quadruple chi chi -> h h (EQ 103)
-  //     m_v.push_back(Single_Vertex());
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_h0));
-  //     m_v.back().AddParticle(Flavour(kf_h0));
-  //     m_v.back().Color.push_back(Color_Function(cf::None));
-  //     m_v.back().Lorentz.push_back("SSSS");
-  //     m_v.back().cpl.push_back(-I*M*M/vev/vev);
-  //     m_v.back().order.push_back(1);
-  //   } // end kf_h0
-  //   // chi chi -> W± W±       
-  //   if (Flavour(kf_Wplus).IsOn()) {
-  //     // Quadruple W+ W- (EQ 85)
-  //     m_v.push_back(Single_Vertex());
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_chi));
-  //     m_v.back().AddParticle(Flavour(kf_Wplus));
-  //     m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
-  //     m_v.back().Color.push_back(Color_Function(cf::None));
-  //     m_v.back().Lorentz.push_back("SSVV");
-  //     m_v.back().cpl.push_back(I*g2*g2/two);
-  //     m_v.back().order.push_back(1);
-  //   } // end kf_Wplus
-  //   // quadruple chi chi -> chi chi (EQ 104x)
-  //   m_v.push_back(Single_Vertex());
-  //   m_v.back().AddParticle(Flavour(kf_chi));
-  //   m_v.back().AddParticle(Flavour(kf_chi));
-  //   m_v.back().AddParticle(Flavour(kf_chi));
-  //   m_v.back().AddParticle(Flavour(kf_chi));
-  //   m_v.back().Color.push_back(Color_Function(cf::None));
-  //   m_v.back().Lorentz.push_back("SSSS");
-  //   m_v.back().cpl.push_back(-three*M*M/vev/vev); // TODO fix coupling
-  //   m_v.back().order.push_back(1);
-  // } // end Flavour(kf_chi).IsOn()
+  if (Flavour(kf_chi).IsOn()) {
+    G0Fermions();
+    if (Flavour(kf_photon).IsOn()) {
+      G0PhotonsV();
+    }
+    if (Flavour(kf_Z).IsOn()) {
+      G0ZsV();
+    }
+    if (Flavour(kf_h0).IsOn()) {
+      G0Higgs();
+    }
+    if (Flavour(kf_Wplus).IsOn()) {
+      G0W();
+    }    G0Gold();
+  } // end Flavour(kf_chi).IsOn()
 }
 
-void Standard_ModelGS::GplusQCDFermions()
+void Standard_ModelGS::GplusFermions()
 {
   // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
@@ -1007,8 +768,6 @@ void Standard_ModelGS::GplusQCDFermions()
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW), sqrt2("sqrt2",sqrt(2.0));
 
-  // may be worth it to specify if fermions are massive or massless
-  // in order not to generate empty vertices
   Flavour Wbos((kf_code)24);
   Kabbala mw{ "m_{"+Wbos.TexName()+"}", Wbos.Mass()};
 
@@ -1025,13 +784,17 @@ void Standard_ModelGS::GplusQCDFermions()
 	ToString(((i%10)-1)/2)+"_"+ToString((j%10)/2-1);
       Kabbala ckm(ckmstr,ComplexConstant(ckmstr));
       if (std::abs(ckm.Value())==0.0) continue;
-      if(flav1.Mass() == 0.0 && flav2.Mass() == 0.0) continue;
-      Kabbala ma{ "m_{"+flav1.TexName()+"}", flav1.Mass()};
-      Kabbala mb{ "m_{"+flav2.TexName()+"}", flav2.Mass()};
+      if(flav1.Yuk() == 0.0 && flav2.Yuk() == 0.0) continue;
+      double dma=(ScalarNumber("YukawaScheme")==0)?flav1.Yuk():
+	ScalarFunction("m"+flav1.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      double dmb=(ScalarNumber("YukawaScheme")==0)?flav2.Yuk():
+	ScalarFunction("m"+flav2.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      Kabbala ma{ "m_{"+flav1.TexName()+"}", dma};
+      Kabbala mb{ "m_{"+flav2.TexName()+"}", dmb};
       
       /////////////////////////////////////
-      // FFS3 (of this model) -> -PL     //
-      // FFS1 (of this model) ->  PR     //
+      // FFS3  -> -PL                    //
+      // FFS1  ->  PR                    //
       /////////////////////////////////////
       // // phi +
       m_v.push_back(Single_Vertex());
@@ -1068,71 +831,6 @@ void Standard_ModelGS::GplusQCDFermions()
     }
   }
 
-
-
-
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)15,1) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)16,0) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_118",ComplexConstant(string("GC_118"))) );
-      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
-      // m_v.back().Lorentz.push_back("FFS3");
-      // m_v.back().order.resize(2);
-      // m_v.back().order[0]    = 0;
-      // m_v.back().order[1]    = 1;
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)13,1) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)14,0) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_110",ComplexConstant(string("GC_110"))) );
-      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
-      // m_v.back().Lorentz.push_back("FFS3");
-      // m_v.back().order.resize(2);
-      // m_v.back().order[0]    = 0;
-      // m_v.back().order[1]    = 1;
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)11,1) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)12,0) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_106",ComplexConstant(string("GC_106"))) );
-      // m_v.back().Color.push_back(UFO::UFO_CF("None"));
-      // m_v.back().Lorentz.push_back("FFS3");
-      // m_v.back().order.resize(2);
-      // m_v.back().order[0]    = 0;
-      // m_v.back().order[1]    = 1;
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)5,1) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)6,0) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,1) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_48",ComplexConstant(string("GC_48"))) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_39",ComplexConstant(string("GC_39"))) );
-      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
-      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
-      // m_v.back().Lorentz.push_back("FFS3");
-      // m_v.back().Lorentz.push_back("FFS1");
-      // m_v.back().order.resize(2);
-      // m_v.back().order[0]    = 0;
-      // m_v.back().order[1]    = 1;
-      // m_v.push_back(Single_Vertex());
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)6,1) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)5,0) );
-      // m_v.back().AddParticle( ATOOLS::Flavour((kf_code)251,0) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_30",ComplexConstant(string("GC_30"))) );
-      // m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_21",ComplexConstant(string("GC_21"))) );
-      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
-      // m_v.back().Color.push_back(UFO::UFO_CF("Identity_2_1"));
-      // m_v.back().Lorentz.push_back("FFS3");
-      // m_v.back().Lorentz.push_back("FFS1");
-      // m_v.back().order.resize(2);
-      // m_v.back().order[0]    = 0;
-      // m_v.back().order[1]    = 1;
-
-
-}
-
-void Standard_ModelGS::GplusLeptons()
-{
-  // couples only to massive fermions
 }
 
 
@@ -1192,8 +890,8 @@ void Standard_ModelGS::GplusZsV()
   m_v.back().AddParticle(Flavour(kf_phiplus));
   m_v.back().cpl.push_back(I*g2/costW*(sqr(costW) - one/two));
   m_v.back().cpl.push_back(-I*g2/costW*(sqr(costW) - one/two));
-  m_v.back().Color.push_back(cf::None);
-  m_v.back().Color.push_back(cf::None);
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VSS2");
   m_v.back().Lorentz.push_back("VSS1");
   m_v.back().order[1]    = 1;
@@ -1204,7 +902,437 @@ void Standard_ModelGS::GplusZsV()
   m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
   m_v.back().AddParticle(Flavour(kf_phiplus));
   m_v.back().cpl.push_back(I*g1*g1/two*sqr(costW/sintW-sintW/costW));
-  m_v.back().Color.push_back(cf::None);
+  m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]    = 2;
+
+  if(Flavour(kf_photon).IsOn()) {
+    // // (EQ 95)
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(Flavour(kf_Z));
+    m_v.back().AddParticle(Flavour(kf_phiplus).Bar());
+    m_v.back().AddParticle(Flavour(kf_phiplus));
+    m_v.back().cpl.push_back( sqr(g1)*I*(costW/sintW - sintW/costW));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVSS1");
+    m_v.back().order[1]    = 2;
+  }
+  
+}
+
+void Standard_ModelGS::GplusHiggs(){
+  // g1 -> e, g2-> e/sintW
+  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0));
+  Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
+  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
+  Kabbala sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW")));
+  Kabbala costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW")));
+  Kabbala g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev"));
+  Kabbala M{ "M_H", Flavour(kf_h0).Mass() };
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( Flavour(kf_phiplus).Bar() );
+  m_v.back().AddParticle( Flavour(kf_phiplus),0);
+  m_v.back().AddParticle( Flavour(kf_h0),0) ;
+  m_v.back().cpl.push_back(-I*M*M/vev);
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSS1");
+  m_v.back().order[1]    = 1;
+
+  // Quadruple phi phi -> h h (EQ 100)
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(Flavour(kf_phiplus).Bar() );
+  m_v.back().AddParticle(Flavour(kf_phiplus) );
+  m_v.back().AddParticle(Flavour(kf_h0) );
+  m_v.back().AddParticle(Flavour(kf_h0) );
+  m_v.back().cpl.push_back( -I*M*M/vev/vev );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSSS1");
+  m_v.back().order[1]    = 2;
+
+  // phi h -> W + *
+  if(Flavour(kf_Wplus).IsOn()){
+    // (EQ 91)
+    if(Flavour(kf_Z).IsOn()){
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_h0 ));
+      m_v.back().cpl.push_back( -g1*g1/two/costW );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour((kf_h0) ));
+      m_v.back().cpl.push_back( g1*g1/two/costW );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+    }
+    // (EQ 93)
+    if(Flavour(kf_photon).IsOn()){
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+      m_v.back().cpl.push_back( g1*g2/two);
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+      m_v.back().cpl.push_back( -g1*g2/two );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+    }        
+  } // end kf_Wplus
+}
+
+void Standard_ModelGS::GplusW()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW),
+    MZ( "M_H", Flavour(kf_Z).Mass() ),
+    vev("v_{EW}",ComplexConstant("cvev"));
+
+  if(Flavour(kf_h0).IsOn()) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+    m_v.back().cpl.push_back( g2/two );
+    m_v.back().cpl.push_back( -g2/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VSS2");
+    m_v.back().Lorentz.push_back("VSS1");
+    m_v.back().order[1]    = 1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+    m_v.back().cpl.push_back( g2/two );
+    m_v.back().cpl.push_back( -g2/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VSS2");
+    m_v.back().Lorentz.push_back("VSS1");
+    m_v.back().order[1]    = 1;
+
+  } //end kf_h0
+  if(Flavour(kf_chi).IsOn()){
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+    m_v.back().cpl.push_back( I*g2/two );
+    m_v.back().cpl.push_back( - I*g2/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VSS2");
+    m_v.back().Lorentz.push_back("VSS1");
+    m_v.back().order[1]    = 1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus));
+    m_v.back().cpl.push_back( -I*g2/two );
+    m_v.back().cpl.push_back( I*g2/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VSS2");
+    m_v.back().Lorentz.push_back("VSS1");
+    m_v.back().order[1]    = 1;
+  } //end kf_chi
+  if(Flavour(kf_photon).IsOn()){
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+    m_v.back().cpl.push_back( g1*g2*vev/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVS1");
+    m_v.back().order[1]    = 1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus));
+    m_v.back().cpl.push_back( g1*g2*vev/two );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVS1");
+    m_v.back().order[1]    = 1;
+
+  } //end kf_photon
+  if(Flavour(kf_Z).IsOn()){
+    // phi- W+ (EQ 81)
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+    m_v.back().cpl.push_back( -g1*MZ*sintW );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVS1");
+    m_v.back().order[1]    = 1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+    m_v.back().cpl.push_back( g1*MZ*sintW );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVS1");
+    m_v.back().order[1]    = 1;
+  } // end kf_Z
+
+  // Quadruple W+ W- (EQ 90)
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus));
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+  m_v.back().cpl.push_back( I*g2*g2/two );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]    = 2;
+
+  // quadruple phi± chi -> W± A/Z
+  if(Flavour(kf_chi).IsOn()){
+    // (EQ 92)
+    if(Flavour(kf_Z).IsOn()){
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+      m_v.back().cpl.push_back( I*g1*g1/two/costW );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+      m_v.back().cpl.push_back( I*g1*g1/two/costW );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+
+    } // end kf_Z
+    // (EQ 94)
+    if(Flavour(kf_photon).IsOn()){
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+      m_v.back().cpl.push_back( -I*g1*g2/two );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+      m_v.back().cpl.push_back( -I*g1*g2/two );
+      m_v.back().Color.push_back(Color_Function(cf::None));
+      m_v.back().Lorentz.push_back("VVSS1");
+      m_v.back().order[1]    = 2;
+    }
+  }
+}
+
+void Standard_ModelGS::GplusGold()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala two(Kabbala("2",2.0)),
+    I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW),
+    vev("v_{EW}",ComplexConstant("cvev")),
+    MH{ "M_H", Flavour(kf_h0).Mass() };
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+  m_v.back().cpl.push_back( -two*two*I*MH*MH/vev/vev );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSSS1");
+  m_v.back().order[1]    = 2;
+  if(Flavour(kf_chi)){
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
+    m_v.back().cpl.push_back( -two*I*MH*MH/vev/vev );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSSS1");
+    m_v.back().order[1]    = 2;
+  } 
+}
+
+void Standard_ModelGS::G0Fermions()
+{
+  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
+    I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
+    M{ "M_H", Flavour(kf_h0).Mass() };
+
+  std::vector<short int> all_fermions = {1,2,3,4,5,6,11,13,15};
+
+  for(auto i_f: all_fermions){
+    Flavour flavi((kf_code)i_f);
+    double dm=(ScalarNumber("YukawaScheme")==0)?flavi.Yuk():
+      ScalarFunction("m"+flavi.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+    Kabbala m{ "m_{"+flavi.TexName()+"}", dm};
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,1) );
+    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,0) );
+    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)250,0) );
+    m_v.back().cpl.push_back( m/vev );
+    m_v.back().Color.push_back(i_f>6?Color_Function(cf::None):
+			       Color_Function(cf::D,1,2));
+    m_v.back().Lorentz.push_back("FFS2");
+    m_v.back().order[1]    = 1;
+  }
+}
+
+void Standard_ModelGS::G0PhotonsV()
+{
+}
+
+void Standard_ModelGS::G0ZsV()
+{
+  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
+    I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
+    M{ "M_H", Flavour(kf_h0).Mass() };
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().cpl.push_back( I*g2*g2/two/costW/costW );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]    = 2;
+}
+
+void Standard_ModelGS::G0Higgs()
+{
+  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
+    I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
+    MH{ "M_H", Flavour(kf_h0).Mass() };
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+  m_v.back().cpl.push_back(-I*MH*MH/vev );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSS1");
+  m_v.back().order[1]    = 1;
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+  m_v.back().cpl.push_back( -I*MH*MH/vev/vev );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSSS1");
+  m_v.back().order[1]    = 2;
+  
+  if(Flavour(kf_Z).IsOn()){
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+    m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
+    m_v.back().cpl.push_back( g2/two/costW );
+    m_v.back().cpl.push_back( -g2/two/costW );
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VSS2");
+    m_v.back().Lorentz.push_back("VSS1");
+    m_v.back().order[1]    = 1;
+  }
+}
+
+void Standard_ModelGS::G0W()
+{
+  // g1 -> e, g2-> e/sintW
+  Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW);
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().cpl.push_back( g2*g2*I/two );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("VVSS1");
+  m_v.back().order[1]    = 2;
+}
+
+void Standard_ModelGS::G0Gold()
+{
+ Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
+    I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
+    g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
+    sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
+    costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
+    g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
+    MH{ "M_H", Flavour(kf_h0).Mass() };
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+  m_v.back().cpl.push_back( -three*I*MH*MH/vev/vev );
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSSS1");
   m_v.back().order[1]    = 2;
 }
