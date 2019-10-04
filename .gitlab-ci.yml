@@ -66,6 +66,25 @@ build-clang-strict:
       - build-clang-strict/install
       - Examples/CI/
 
+build-manual:
+  stage: build
+  image: registry.gitlab.com/vale9811/sherpa-docker-build
+  script:
+    - autoreconf -i
+    - mkdir -p build
+    - cd Manual
+    - pip3 install -r requirements.txt
+    - cd ../build
+    - ../configure --enable-manual --with-libzip=install
+    - cd Manual
+    - make
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build/Manual
+  only:
+    changes:
+      - Manual/*
 
 #
 # Test
@@ -146,6 +165,8 @@ dist:
 pages:
   image: alpine
   stage: deploy
+  before_script:
+    - git fetch --tags
   script:
     - apk --no-cache add py3-pip python-dev
     - apk --no-cache add make git
@@ -153,7 +174,7 @@ pages:
     - pip3 install -r requirements.txt
     - pip3 install git+https://github.com/vale981/sphinx-versions.git
     - cd ..
-    - sphinx-versioning  build -r ci-cd-tweaking Manual/source/ build/html/
+    - sphinx-versioning  build Manual/source/ build/html/
     - mv build/html public
   artifacts:
     paths:
@@ -161,3 +182,6 @@ pages:
   only:
     changes:
       - Manual/*
+    refs:
+      - master
+      - tags

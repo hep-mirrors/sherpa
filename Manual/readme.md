@@ -25,7 +25,9 @@ The online Version is available under: https://sherpa-team.gitlab.io/sherpa/
  - `sphinxcontrib-bibtex`
  - optional:
    - `makeinfo` to build the info manual
-   - a LaTeX distribution to build the pdf manual
+   - a LaTeX distribution to build the pdf manual; usually a standard
+     texlive installation should do (from texlive directly not the
+     distribution packages)
 
 See also `requirements.txt` for pinned versions of the python packages.
 
@@ -38,6 +40,8 @@ See also `requirements.txt` for pinned versions of the python packages.
    - run `make sherpamanual.info` to build the info manual
    - run `make Sherpa.1` to build the manpage
 
+Note that the manual is always built as if you specified `-j1` to
+prevent race conditions.
 
 ## Caveats
 If you see something like:
@@ -49,7 +53,6 @@ it can be replaced by:
 :ref:`text`
 ```
 if the corresponding label refers to a heading!
-
 
 ## Completion Index
 After building the html docs you can generate bash completion indices
