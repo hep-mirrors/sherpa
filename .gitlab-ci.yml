@@ -165,11 +165,10 @@ dist:
 pages:
   image: alpine
   stage: deploy
-  before_script:
-    - git fetch --tags
   script:
     - apk --no-cache add py3-pip python-dev
     - apk --no-cache add make git
+    - git fetch --tags
     - cd Manual
     - pip3 install -r requirements.txt
     - pip3 install git+https://github.com/vale981/sphinx-versions.git
