@@ -27,65 +27,65 @@ namespace METOOLS {
     CObject *Evaluate(const CObject_Vector &jj)
     {
 
-// if outgoing index is 0
-if (p_v->V()->id.back()==0){
-const CScalar <SType> & j1 = *(jj[0]->Get< CScalar <SType> >());
-const SComplex & j10 = j1[0];
-const CScalar <SType> & j2 = *(jj[1]->Get< CScalar <SType> >());
-const SComplex & j20 = j2[0];
-const CScalar <SType> & j3 = *(jj[2]->Get< CScalar <SType> >());
-const SComplex & j30 = j3[0];
-CScalar<SType>* j0 = NULL;
-j0 = CScalar<SType>::New(j10*j20*j30);
-j0->SetS(j1.S()|j2.S()|j3.S());
-return j0;
+      // if outgoing index is 0
+      if (p_v->V()->id.back()==0){
+	const CScalar <SType> & j1 = *(jj[0]->Get< CScalar <SType> >());
+	const SComplex & j10 = j1[0];
+	const CScalar <SType> & j2 = *(jj[1]->Get< CScalar <SType> >());
+	const SComplex & j20 = j2[0];
+	const CScalar <SType> & j3 = *(jj[2]->Get< CScalar <SType> >());
+	const SComplex & j30 = j3[0];
+	CScalar<SType>* j0 = NULL;
+	j0 = CScalar<SType>::New(j10*j20*j30);
+	j0->SetS(j1.S()|j2.S()|j3.S());
+	return j0;
 
-}
+      }
 
-// if outgoing index is 1
-if (p_v->V()->id.back()==1){
-const CScalar <SType> & j0 = *(jj[2]->Get< CScalar <SType> >());
-const SComplex & j00 = j0[0];
-const CScalar <SType> & j2 = *(jj[0]->Get< CScalar <SType> >());
-const SComplex & j20 = j2[0];
-const CScalar <SType> & j3 = *(jj[1]->Get< CScalar <SType> >());
-const SComplex & j30 = j3[0];
-CScalar<SType>* j1 = NULL;
-j1 = CScalar<SType>::New(j00*j20*j30);
-j1->SetS(j0.S()|j2.S()|j3.S());
-return j1;
+      // if outgoing index is 1
+      if (p_v->V()->id.back()==1){
+	const CScalar <SType> & j0 = *(jj[2]->Get< CScalar <SType> >());
+	const SComplex & j00 = j0[0];
+	const CScalar <SType> & j2 = *(jj[0]->Get< CScalar <SType> >());
+	const SComplex & j20 = j2[0];
+	const CScalar <SType> & j3 = *(jj[1]->Get< CScalar <SType> >());
+	const SComplex & j30 = j3[0];
+	CScalar<SType>* j1 = NULL;
+	j1 = CScalar<SType>::New(j00*j20*j30);
+	j1->SetS(j0.S()|j2.S()|j3.S());
+	return j1;
 
-}
+      }
 
-// if outgoing index is 2
-if (p_v->V()->id.back()==2){
-const CScalar <SType> & j0 = *(jj[1]->Get< CScalar <SType> >());
-const SComplex & j00 = j0[0];
-const CScalar <SType> & j1 = *(jj[2]->Get< CScalar <SType> >());
-const SComplex & j10 = j1[0];
-const CScalar <SType> & j3 = *(jj[0]->Get< CScalar <SType> >());
-const SComplex & j30 = j3[0];
-CScalar<SType>* j2 = NULL;
-j2 = CScalar<SType>::New(j00*j10*j30);
-j2->SetS(j0.S()|j1.S()|j3.S());
-return j2;
+      // if outgoing index is 2
+      if (p_v->V()->id.back()==2){
+	const CScalar <SType> & j0 = *(jj[1]->Get< CScalar <SType> >());
+	const SComplex & j00 = j0[0];
+	const CScalar <SType> & j1 = *(jj[2]->Get< CScalar <SType> >());
+	const SComplex & j10 = j1[0];
+	const CScalar <SType> & j3 = *(jj[0]->Get< CScalar <SType> >());
+	const SComplex & j30 = j3[0];
+	CScalar<SType>* j2 = NULL;
+	j2 = CScalar<SType>::New(j00*j10*j30);
+	j2->SetS(j0.S()|j1.S()|j3.S());
+	return j2;
 
-}
+      }
 
-// if outgoing index is 3
-if (p_v->V()->id.back()==3){
-const CScalar <SType> & j0 = *(jj[0]->Get< CScalar <SType> >());
-const SComplex & j00 = j0[0];
-const CScalar <SType> & j1 = *(jj[1]->Get< CScalar <SType> >());
-const SComplex & j10 = j1[0];
-const CScalar <SType> & j2 = *(jj[2]->Get< CScalar <SType> >());
-const SComplex & j20 = j2[0];
-CScalar<SType>* j3 = NULL;
-j3 = CScalar<SType>::New(j00*j10*j20);
-j3->SetS(j0.S()|j1.S()|j2.S());
-return j3;
+      // if outgoing index is 3
+      if (p_v->V()->id.back()==3){
+	const CScalar <SType> & j0 = *(jj[0]->Get< CScalar <SType> >());
+	const SComplex & j00 = j0[0];
+	const CScalar <SType> & j1 = *(jj[1]->Get< CScalar <SType> >());
+	const SComplex & j10 = j1[0];
+	const CScalar <SType> & j2 = *(jj[2]->Get< CScalar <SType> >());
+	const SComplex & j20 = j2[0];
+	CScalar<SType>* j3 = NULL;
+	j3 = CScalar<SType>::New(j00*j10*j20);
+	j3->SetS(j0.S()|j1.S()|j2.S());
+	return j3;
 
-}
+      }
 
       THROW(fatal_error, "Internal error in Lorentz calculator");
       return NULL;

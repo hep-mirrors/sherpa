@@ -719,10 +719,11 @@ void Standard_ModelGS::InitEWVertices()
 
 void Standard_ModelGS::InitGoldstoneVertices()
 {
+  DEBUG_FUNC(METHOD);
   // phi vertexes
   if (Flavour(kf_phiplus).IsOn()) {
     // all fermion vertices
-    GplusFermions();
+    //   GplusFermions();
     if (Flavour(kf_photon).IsOn()) {
       // all photon vertices
       GplusPhotonsV();
@@ -731,7 +732,7 @@ void Standard_ModelGS::InitGoldstoneVertices()
       // all z vertices + zgamma
       GplusZsV();
     }
-//     // phi+ phi- -> h0 (EQ 96)     
+    // phi+ phi- -> h0 (EQ 96)     
     if (Flavour(kf_h0).IsOn()) {
       GplusHiggs();
     } // end kf_h0
@@ -755,12 +756,14 @@ void Standard_ModelGS::InitGoldstoneVertices()
     }
     if (Flavour(kf_Wplus).IsOn()) {
       G0W();
-    }    G0Gold();
+    }
+    G0Gold();
   } // end Flavour(kf_chi).IsOn()
 }
 
 void Standard_ModelGS::GplusFermions()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -785,10 +788,13 @@ void Standard_ModelGS::GplusFermions()
       Kabbala ckm(ckmstr,ComplexConstant(ckmstr));
       if (std::abs(ckm.Value())==0.0) continue;
       if(flav1.Yuk() == 0.0 && flav2.Yuk() == 0.0) continue;
-      double dma=(ScalarNumber("YukawaScheme")==0)?flav1.Yuk():
-	ScalarFunction("m"+flav1.IDName(),sqr(Flavour(kf_h0).Mass(true)));
-      double dmb=(ScalarNumber("YukawaScheme")==0)?flav2.Yuk():
-	ScalarFunction("m"+flav2.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      double dma= 0.0, dmb = 0.0;
+      if(flav1.Yuk())
+	dma = (ScalarNumber("YukawaScheme")==0)?flav1.Yuk():
+	  ScalarFunction("m"+flav1.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      if(flav2.Yuk())
+	dmb = (ScalarNumber("YukawaScheme")==0)?flav2.Yuk():
+	  ScalarFunction("m"+flav2.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala ma{ "m_{"+flav1.TexName()+"}", dma};
       Kabbala mb{ "m_{"+flav2.TexName()+"}", dmb};
       
@@ -836,6 +842,7 @@ void Standard_ModelGS::GplusFermions()
 
 void Standard_ModelGS::GplusPhotonsV()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -873,6 +880,7 @@ void Standard_ModelGS::GplusPhotonsV()
 
 void Standard_ModelGS::GplusZsV()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -921,7 +929,9 @@ void Standard_ModelGS::GplusZsV()
   
 }
 
-void Standard_ModelGS::GplusHiggs(){
+void Standard_ModelGS::GplusHiggs()
+{
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0));
   Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0));
@@ -1002,6 +1012,7 @@ void Standard_ModelGS::GplusHiggs(){
 
 void Standard_ModelGS::GplusW()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -1166,6 +1177,7 @@ void Standard_ModelGS::GplusW()
 
 void Standard_ModelGS::GplusGold()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala two(Kabbala("2",2.0)),
     I("i",Complex(0.,1.)),
@@ -1200,6 +1212,7 @@ void Standard_ModelGS::GplusGold()
 
 void Standard_ModelGS::G0Fermions()
 {
+  DEBUG_FUNC(METHOD);
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
     I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -1212,27 +1225,31 @@ void Standard_ModelGS::G0Fermions()
 
   for(auto i_f: all_fermions){
     Flavour flavi((kf_code)i_f);
-    double dm=(ScalarNumber("YukawaScheme")==0)?flavi.Yuk():
-      ScalarFunction("m"+flavi.IDName(),sqr(Flavour(kf_h0).Mass(true)));
-    Kabbala m{ "m_{"+flavi.TexName()+"}", dm};
-    m_v.push_back(Single_Vertex());
-    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,1) );
-    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,0) );
-    m_v.back().AddParticle( ATOOLS::Flavour((kf_code)250,0) );
-    m_v.back().cpl.push_back( m/vev );
-    m_v.back().Color.push_back(i_f>6?Color_Function(cf::None):
-			       Color_Function(cf::D,1,2));
-    m_v.back().Lorentz.push_back("FFS2");
-    m_v.back().order[1]    = 1;
+    if(flavi.Yuk()){
+      double dm=(ScalarNumber("YukawaScheme")==0)?flavi.Yuk():
+	ScalarFunction("m"+flavi.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      Kabbala m{ "m_{"+flavi.TexName()+"}", dm};
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,1) );
+      m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,0) );
+      m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
+      m_v.back().cpl.push_back( m/vev );
+      m_v.back().Color.push_back(i_f>6?Color_Function(cf::None):
+				 Color_Function(cf::D,1,2));
+      m_v.back().Lorentz.push_back("FFS2");
+      m_v.back().order[1]    = 1;
+    }
   }
 }
 
 void Standard_ModelGS::G0PhotonsV()
 {
+  DEBUG_FUNC(METHOD);
 }
 
 void Standard_ModelGS::G0ZsV()
 {
+  DEBUG_FUNC(METHOD);
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
     I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -1254,6 +1271,7 @@ void Standard_ModelGS::G0ZsV()
 
 void Standard_ModelGS::G0Higgs()
 {
+  DEBUG_FUNC(METHOD);
   Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
     I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -1298,6 +1316,7 @@ void Standard_ModelGS::G0Higgs()
 
 void Standard_ModelGS::G0W()
 {
+  DEBUG_FUNC(METHOD);
   // g1 -> e, g2-> e/sintW
   Kabbala one(Kabbala("1",1.0)), two(Kabbala("2",2.0)), I("i",Complex(0.,1.)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
@@ -1318,7 +1337,8 @@ void Standard_ModelGS::G0W()
 
 void Standard_ModelGS::G0Gold()
 {
- Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
+  DEBUG_FUNC(METHOD);
+  Kabbala two(Kabbala("2",2.0)), three(Kabbala("3",3.0)),
     I("i",Complex(0.,1.)), rt2("\\sqrt(2)",sqrt(2.0)),
     g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED"))),
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
