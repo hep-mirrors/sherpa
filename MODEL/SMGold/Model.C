@@ -10,10 +10,12 @@ namespace MODEL {
 
     int  m_ckmorder, m_dec_g4;
 
+    // void RegisterDefaults() const override;
+    
     void FixEWParameters();
     void FixCKM();
 
-    void ParticleInit();
+    void ParticleInit() override;
 
     void InitQEDVertices();
     void InitQCDVertices();
@@ -35,15 +37,13 @@ namespace MODEL {
     void G0Higgs();
     void G0W();
     void G0Gold();
-
-
     
   public :
 
     Standard_ModelGS();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
-    void InitVertices();
-
+    bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
+    void InitVertices() override;
+    size_t IndexOfOrderKey(const std::string& key) const override;
   };
 
 }
@@ -816,8 +816,9 @@ void Standard_ModelGS::GplusFermions()
       m_v.back().Lorentz.push_back("FFS3");
       m_v.back().Lorentz.push_back("FFS1");
       m_v.back().cpl.push_back(I*g2*ckm*mb/mw/sqrt2);
-      m_v.back().cpl.push_back(-I*g2*ckm*ma/mw/sqrt2);	    
-      m_v.back().order[1] = 1;
+      m_v.back().cpl.push_back(-I*g2*ckm*ma/mw/sqrt2);
+      m_v.back().order.resize(3);
+      m_v.back().order[2] = 1;
       // // phi - 
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle(flav1.Bar());
@@ -833,7 +834,8 @@ void Standard_ModelGS::GplusFermions()
       m_v.back().Lorentz.push_back("FFS1");
       m_v.back().cpl.push_back(I*g2*ckm*ma/mw/sqrt2);
       m_v.back().cpl.push_back(-I*g2*ckm*mb/mw/sqrt2);
-      m_v.back().order[1] = 1;
+      m_v.back().order.resize(3);
+      m_v.back().order[2] = 1;
     }
   }
 
@@ -865,7 +867,8 @@ void Standard_ModelGS::GplusPhotonsV()
   m_v.back().Lorentz.push_back("VSS1");
   m_v.back().cpl.push_back(I*g1);
   m_v.back().cpl.push_back(-I*g1);
-  m_v.back().order[1]=1;
+  m_v.back().order.resize(3);
+  m_v.back().order[2]=1;
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle(Flavour(kf_photon));
@@ -875,7 +878,7 @@ void Standard_ModelGS::GplusPhotonsV()
   m_v.back().cpl.push_back(two*I*g1*g1);
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
-  m_v.back().order[1]=2;
+  m_v.back().order[2]=2;
 }
 
 void Standard_ModelGS::GplusZsV()
@@ -902,7 +905,7 @@ void Standard_ModelGS::GplusZsV()
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VSS2");
   m_v.back().Lorentz.push_back("VSS1");
-  m_v.back().order[1]    = 1;
+  m_v.back().order[2]    = 1;
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle(Flavour(kf_Z));
@@ -912,7 +915,7 @@ void Standard_ModelGS::GplusZsV()
   m_v.back().cpl.push_back(I*g1*g1/two*sqr(costW/sintW-sintW/costW));
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
 
   if(Flavour(kf_photon).IsOn()) {
     // // (EQ 95)
@@ -924,7 +927,7 @@ void Standard_ModelGS::GplusZsV()
     m_v.back().cpl.push_back( sqr(g1)*I*(costW/sintW - sintW/costW));
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VVSS1");
-    m_v.back().order[1]    = 2;
+    m_v.back().order[2]    = 2;
   }
   
 }
@@ -948,7 +951,7 @@ void Standard_ModelGS::GplusHiggs()
   m_v.back().cpl.push_back(-I*M*M/vev);
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSS1");
-  m_v.back().order[1]    = 1;
+  m_v.back().order[2]    = 1;
 
   // Quadruple phi phi -> h h (EQ 100)
   m_v.push_back(Single_Vertex());
@@ -959,7 +962,7 @@ void Standard_ModelGS::GplusHiggs()
   m_v.back().cpl.push_back( -I*M*M/vev/vev );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
 
   // phi h -> W + *
   if(Flavour(kf_Wplus).IsOn()){
@@ -973,7 +976,7 @@ void Standard_ModelGS::GplusHiggs()
       m_v.back().cpl.push_back( -g1*g1/two/costW );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
 
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
@@ -983,7 +986,7 @@ void Standard_ModelGS::GplusHiggs()
       m_v.back().cpl.push_back( g1*g1/two/costW );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
     }
     // (EQ 93)
     if(Flavour(kf_photon).IsOn()){
@@ -995,7 +998,7 @@ void Standard_ModelGS::GplusHiggs()
       m_v.back().cpl.push_back( g1*g2/two);
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
 
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
@@ -1005,7 +1008,7 @@ void Standard_ModelGS::GplusHiggs()
       m_v.back().cpl.push_back( -g1*g2/two );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
     }        
   } // end kf_Wplus
 }
@@ -1033,7 +1036,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
     m_v.back().Lorentz.push_back("VSS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
@@ -1045,7 +1048,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
     m_v.back().Lorentz.push_back("VSS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
   } //end kf_h0
   if(Flavour(kf_chi).IsOn()){
@@ -1059,7 +1062,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
     m_v.back().Lorentz.push_back("VSS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
@@ -1071,7 +1074,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
     m_v.back().Lorentz.push_back("VSS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
   } //end kf_chi
   if(Flavour(kf_photon).IsOn()){
     m_v.push_back(Single_Vertex());
@@ -1081,7 +1084,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().cpl.push_back( g1*g2*vev/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VVS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
@@ -1090,7 +1093,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().cpl.push_back( g1*g2*vev/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VVS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
   } //end kf_photon
   if(Flavour(kf_Z).IsOn()){
@@ -1102,7 +1105,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().cpl.push_back( -g1*MZ*sintW );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VVS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
 
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
@@ -1111,7 +1114,7 @@ void Standard_ModelGS::GplusW()
     m_v.back().cpl.push_back( g1*MZ*sintW );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VVS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
   } // end kf_Z
 
   // Quadruple W+ W- (EQ 90)
@@ -1123,7 +1126,7 @@ void Standard_ModelGS::GplusW()
   m_v.back().cpl.push_back( I*g2*g2/two );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
 
   // quadruple phi± chi -> W± A/Z
   if(Flavour(kf_chi).IsOn()){
@@ -1137,7 +1140,7 @@ void Standard_ModelGS::GplusW()
       m_v.back().cpl.push_back( I*g1*g1/two/costW );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
 
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
@@ -1147,7 +1150,7 @@ void Standard_ModelGS::GplusW()
       m_v.back().cpl.push_back( I*g1*g1/two/costW );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
 
     } // end kf_Z
     // (EQ 94)
@@ -1160,7 +1163,7 @@ void Standard_ModelGS::GplusW()
       m_v.back().cpl.push_back( -I*g1*g2/two );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
 
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour(kf_photon) );
@@ -1170,7 +1173,7 @@ void Standard_ModelGS::GplusW()
       m_v.back().cpl.push_back( -I*g1*g2/two );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVSS1");
-      m_v.back().order[1]    = 2;
+      m_v.back().order[2]    = 2;
     }
   }
 }
@@ -1196,7 +1199,7 @@ void Standard_ModelGS::GplusGold()
   m_v.back().cpl.push_back( -two*two*I*MH*MH/vev/vev );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
   if(Flavour(kf_chi)){
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
@@ -1206,7 +1209,7 @@ void Standard_ModelGS::GplusGold()
     m_v.back().cpl.push_back( -two*I*MH*MH/vev/vev );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSSS1");
-    m_v.back().order[1]    = 2;
+    m_v.back().order[2]    = 2;
   } 
 }
 
@@ -1237,7 +1240,7 @@ void Standard_ModelGS::G0Fermions()
       m_v.back().Color.push_back(i_f>6?Color_Function(cf::None):
 				 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFS2");
-      m_v.back().order[1]    = 1;
+      m_v.back().order[2]    = 1;
     }
   }
 }
@@ -1266,7 +1269,7 @@ void Standard_ModelGS::G0ZsV()
   m_v.back().cpl.push_back( I*g2*g2/two/costW/costW );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
 }
 
 void Standard_ModelGS::G0Higgs()
@@ -1287,7 +1290,7 @@ void Standard_ModelGS::G0Higgs()
   m_v.back().cpl.push_back(-I*MH*MH/vev );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSS1");
-  m_v.back().order[1]    = 1;
+  m_v.back().order[2]    = 1;
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
@@ -1297,7 +1300,7 @@ void Standard_ModelGS::G0Higgs()
   m_v.back().cpl.push_back( -I*MH*MH/vev/vev );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
   
   if(Flavour(kf_Z).IsOn()){
     m_v.push_back(Single_Vertex());
@@ -1310,7 +1313,7 @@ void Standard_ModelGS::G0Higgs()
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
     m_v.back().Lorentz.push_back("VSS1");
-    m_v.back().order[1]    = 1;
+    m_v.back().order[2]    = 1;
   }
 }
 
@@ -1332,7 +1335,7 @@ void Standard_ModelGS::G0W()
   m_v.back().cpl.push_back( g2*g2*I/two );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
 }
 
 void Standard_ModelGS::G0Gold()
@@ -1354,5 +1357,13 @@ void Standard_ModelGS::G0Gold()
   m_v.back().cpl.push_back( -three*I*MH*MH/vev/vev );
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSSS1");
-  m_v.back().order[1]    = 2;
+  m_v.back().order[2]    = 2;
+}
+
+size_t Standard_ModelGS::IndexOfOrderKey(const std::string& key) const
+{
+  PRINT_VAR(key);
+  if(key == "SMGold")
+    return 2;
+  else return Model_Base::IndexOfOrderKey(key);
 }
