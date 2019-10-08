@@ -58,7 +58,8 @@ namespace PHASIC {
     double KFactor();
 
     /// calculate transformed amplitude value
-    Complex TransformedAmplitudeValue(const Leg_Set&, const std::vector<int>&);
+    Complex TransformedAmplitudeValue(const Leg_Kfcode_Map&,
+                                      const std::vector<int>&);
 
     Process_Base* p_proc;
     const std::set<EWSudakov_Log_Type> m_activecoeffs;
@@ -75,7 +76,7 @@ namespace PHASIC {
     // intermediate results
     mutable Coeff_Map m_coeffs;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
-    mutable std::map<Leg_Set, std::vector<Spin_Amplitudes>> m_transformedspinampls;
+    mutable std::map<Leg_Kfcode_Map, std::vector<Spin_Amplitudes>> m_transformedspinampls;
   };
 }
 

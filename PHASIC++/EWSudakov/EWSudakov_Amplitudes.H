@@ -31,11 +31,13 @@ namespace PHASIC {
 
   /**
    * helper class that generates and stores the amplitudes needed to calculate
-   * EW Sudakov corrections
+   * EW Sudakov corrections, when using methods that accept a spin combination,
+   * it automatically replaces longitudinal vector bosons with the
+   * corresponding Goldstone bosons
    */
   class EWSudakov_Amplitudes {
 
-    using Cluster_Ampl_Key = Leg_Set;
+    using Cluster_Ampl_Key = Leg_Kfcode_Map;
     using Cluster_Amplitude_UPM
       = std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude_UP>;
     using Permutation_Map
@@ -49,8 +51,10 @@ namespace PHASIC {
                          const std::set<EWSudakov_Log_Type>& _activecoeffs);
 
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
-    ATOOLS::Cluster_Amplitude& SU2TransformedAmplitude(const Leg_Set&);
-    std::vector<size_t>& LegPermutation(const Leg_Set&);
+    ATOOLS::Cluster_Amplitude&
+    BaseAmplitude(std::vector<int> spincombination) noexcept;
+    ATOOLS::Cluster_Amplitude& SU2TransformedAmplitude(const Leg_Kfcode_Map&);
+    std::vector<size_t>& LegPermutation(const Leg_Kfcode_Map&);
 
     size_t NumberOfLegs() noexcept { return BaseAmplitude().Legs().size(); }
 
@@ -71,8 +75,8 @@ namespace PHASIC {
         Process_Base*, const std::set<EWSudakov_Log_Type>& activecoeffs) const;
     static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP
-      CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
-                                    const LegIndex_Flavour_Map&);
+    CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
+                                  const Leg_Kfcode_Map_Signed&);
     static Permutation_Map CreatePermutations(
         const Cluster_Amplitude_UPM&);
     static std::vector<size_t> CalculateLegPermutation(
