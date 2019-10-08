@@ -283,7 +283,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        const Leg_Set key{ {k, kcoupling.first}, {l, lcoupling.first} };
+        const Leg_Kfcode_Map key{{k, kcoupling.first}, {l, lcoupling.first}};
         // correct spin index when a longitudinal vector boson is replaced with
         // a scalar using the Goldstone boson equivalence theorem
         std::vector<int> goldstonespincombination;
@@ -412,8 +412,9 @@ Coeff_Value Sudakov::lsPRCoeff(Complex amplvalue,
   return coeff;
 }
 
-Complex Sudakov::TransformedAmplitudeValue(
-    const Leg_Set& legs, const std::vector<int>& spincombination)
+Complex
+Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
+                                   const std::vector<int>& spincombination)
 {
   auto amplit = m_transformedspinampls.find(legs);
   if (amplit == m_transformedspinampls.end()) {

@@ -439,6 +439,16 @@ Flavour Flavour::IsoWeakPartner() const
   return *this;
 }
 
+Flavour Flavour::GoldstoneBosonPartner() const
+{
+  auto code = Kfcode();
+  if (code == kf_Z)
+    code = kf_chi;
+  else if (code == kf_Wplus)
+    code = kf_phiplus;
+  return Flavour(code, m_anti);
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 {
   return os<<fl.IDName();

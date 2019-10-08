@@ -162,6 +162,7 @@ namespace ATOOLS {
 	       ?((p_info->m_kfc%2)?-0.5:0.5):0); return m_anti?-c:c; }
 
     Flavour IsoWeakPartner() const;
+    Flavour GoldstoneBosonPartner() const;
 
     inline int  StrongCharge() const 
     { int c(p_info->m_strong); return m_anti?-c:c; }

@@ -18,9 +18,12 @@ namespace PHASIC {
 
   using Two_Leg_Indizes = std::array<size_t, 2>;
   using Leg_Index_Set = std::set<size_t>;
-  using Leg_Set = std::set<std::pair<size_t, kf_code>>;
-  using LegIndex_Flavour_Map = std::unordered_map<size_t, ATOOLS::Flavour>;
-  using Couplings = std::unordered_map<kf_code, double>;
+  // NOTE: the following map can not be unordered, since it is being used as a
+  // key and therefore needs to support comparison operations
+  using Leg_Kfcode_Map = std::map<size_t, kf_code>;
+  // NOTE: Flavour has a (long int)-conversion operator
+  using Leg_Kfcode_Map_Signed = std::unordered_map<size_t, long int>;
+  using Couplings = std::unordered_map<kf_code, Complex>;
 
   enum class EWSudakov_Log_Type {
     // TODO: add more coeffs (and their implementation)
@@ -33,7 +36,8 @@ namespace PHASIC {
   };
 
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
-  std::ostream& operator<<(std::ostream& os, const Leg_Set&);
+  std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map&);
+  std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map_Signed&);
 
 }
 
