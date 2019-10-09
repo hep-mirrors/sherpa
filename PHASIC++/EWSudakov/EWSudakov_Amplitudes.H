@@ -52,7 +52,7 @@ namespace PHASIC {
 
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
     ATOOLS::Cluster_Amplitude&
-    BaseAmplitude(std::vector<int> spincombination) noexcept;
+    BaseAmplitude(std::vector<int> spincombination);
     ATOOLS::Cluster_Amplitude& SU2TransformedAmplitude(const Leg_Kfcode_Map&);
     std::vector<size_t>& LegPermutation(const Leg_Kfcode_Map&);
 

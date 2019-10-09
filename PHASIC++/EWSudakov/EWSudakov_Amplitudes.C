@@ -26,7 +26,7 @@ Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
 }
 
 Cluster_Amplitude&
-EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination) noexcept
+EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination)
 {
   Leg_Kfcode_Map leg_set;
   for (int i{ 0 }; i < BaseAmplitude().Legs().size(); ++i) {
@@ -150,12 +150,13 @@ EWSudakov_Amplitudes::CreateAmplitudes(
        ++permutation) {
     Leg_Kfcode_Map leg_set;
     Leg_Kfcode_Map_Signed leg_set_signed;
-    for (size_t k{0}; k < nlegs; ++k) {
+    for (size_t k{0}; k < bosonindexes.size(); ++k) {
       if (permutation & (1 << k)) {
-        const auto& flav = baseampl->Leg(k)->Flav();
+        const auto bosonindex = bosonindexes[k];
+        const auto& flav = baseampl->Leg(bosonindex)->Flav();
         const auto flavcode = (long int)flav.GoldstoneBosonPartner();
-        leg_set.emplace(k, std::abs(flavcode));
-        leg_set_signed.emplace(k, flavcode);
+        leg_set.emplace(bosonindex, std::abs(flavcode));
+        leg_set_signed.emplace(bosonindex, flavcode);
       }
     }
     const auto it = ampls.find(leg_set);

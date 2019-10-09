@@ -73,6 +73,28 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
     }
     pi.m_maxcpl=p_proc->Info().m_maxcpl;
     pi.m_mincpl=p_proc->Info().m_mincpl;
+
+    // adapt orders to take Goldstone bosons into account
+    size_t ogold{0};
+    for (size_t i{ampl->NIn()}; i < ampl->Legs().size(); ++i) {
+      const kf_code kf{ampl->Leg(i)->Flav().Kfcode()};
+      if (kf == kf_chi || kf == kf_phiplus) {
+        if (pi.m_maxcpl[1] != 0 && pi.m_maxcpl[1] != 99) {
+          --pi.m_maxcpl[1];
+        }
+        if (pi.m_mincpl[1] != 0 && pi.m_mincpl[1] != 99) {
+          --pi.m_mincpl[1];
+        }
+        ampl->SetOrderEW(ampl->OrderEW() - 1);
+        ++ogold;
+      }
+    }
+    msg_Debugging() << "After adapting EW order ampl=" << *ampl << std::endl;
+    if (ogold != 0) {
+      pi.m_maxcpl.push_back(ogold);
+      pi.m_mincpl.push_back(ogold);
+    }
+
     PHASIC::Process_Base *proc=
       p_proc->Generator()->Generators()->InitializeProcess(pi,false);
     if (proc==NULL) THROW(fatal_error,"Invalid process");
