@@ -42,6 +42,7 @@ Lorentz::Lorentz(const Kernel_Key &k,const int type):
   else                               m_dipole_case = EXTAMP::DipoleCase::CS;
 
   m_t_cutoff = s["CSS_FS_PT2MIN"].Get<double>();
+  m_evol     = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 Lorentz::~Lorentz()
@@ -121,14 +122,23 @@ bool Lorentz::SetLimits(Splitting &s) const
   s.m_eta=s.p_c->GetXB();
 
   if(m_dipole_case==EXTAMP::IDa){
-    const double k02     = m_t_cutoff;
-    const double mw2     = sqr(Flavour(24).Mass());
-    const double paipb   = s.m_paipb;
-    const double Qprime2 = s.m_Qprime2;
-    const double alpha   = s.m_alpha;
-    s.m_zmax   = (-2.*k02*paipb*Qprime2 + paipb*sqr(Qprime2) - alpha*pow(Qprime2,3.) +
-                 sqrt(alpha*pow(Qprime2,4.)*(4.*k02*paipb + alpha*sqr(Qprime2)))) /
-                 (paipb*sqr(Qprime2));
+    if(m_evol==1){
+      const double k02     = m_t_cutoff;
+      const double mw2     = sqr(Flavour(24).Mass());
+      const double paipb   = s.m_paipb;
+      const double Qprime2 = s.m_Qprime2;
+      const double alpha   = s.m_alpha;
+      s.m_zmax   = (-2.*k02*paipb*Qprime2 + paipb*sqr(Qprime2) - alpha*pow(Qprime2,3.) +
+                   sqrt(alpha*pow(Qprime2,4.)*(4.*k02*paipb + alpha*sqr(Qprime2)))) /
+                   (paipb*sqr(Qprime2));
+    }
+    else if(m_evol==2){
+      const double tmin     = m_t_cutoff;
+      const double mw2     = sqr(Flavour(24).Mass());
+      const double Qprime2 = s.m_Qprime2;
+      s.m_zmax   = (1.+tmin/Qprime2)/2 + sqrt(sqr(1.+tmin/Qprime2)/4.
+                   - tmin/Qprime2*(1+mw2/Qprime2));
+    }
   }
   return true;
 }

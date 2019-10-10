@@ -36,6 +36,7 @@ Shower::Shower():
   else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
   else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
   else                               m_dipole_case = EXTAMP::DipoleCase::CS;
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 Shower::~Shower()
@@ -191,6 +192,32 @@ double Shower::VetoWeight(Variation_Parameters *params,
   return 0.0;
 }
 
+double Shower::GetKt2(const Splitting &s) const {
+  Vec4D paitilde        = s.p_c->Mom();
+  Vec4D pb              = s.p_s->Mom();
+  Vec4D pwtilde         = s.p_kinspec->Mom();
+  const double mw2      = sqr(Flavour(24).Mass());
+  const double y_wia    = 1.-s.m_z;
+  const double ztilde_w = 1.-s.m_vi;
+  Kin_Args ff(y_wia,ztilde_w,s.m_phi);
+
+  if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
+    THROW(fatal_error, "Must not happend!")
+
+  Vec4D pi = ff.m_pj;
+  Vec4D pa = ff.m_pk;
+
+  const Vec4D p_aib = pa+pi+pb;
+  Poincare bst_aib(p_aib);
+  bst_aib.Boost(pa);
+  bst_aib.Boost(pb);
+  bst_aib.Boost(pi);
+
+  const double theta = pa.Theta(pi);
+  const double pi_perp = Vec3D(pi).Abs()*sin(theta);
+  return sqr(pi_perp);
+}
+
 int Shower::Evolve(Amplitude &a,unsigned int &nem)
 {
   DEBUG_FUNC(this);
@@ -292,7 +319,6 @@ Splitting Shower::GeneratePoint
 	  cur.m_t1=ct;
 	  if (kit->second[j]->Allowed(cur)) {
 	    double I=kit->second[j]->Integral(cur);
-	    if(m_dipole_case == EXTAMP::IDa) I *= 4; // due to sum over 4 vis
 	    psum[j].push_back(csum+=dabs(I));
 	    splits[j].push_back(i);
 	  }
@@ -329,7 +355,13 @@ Splitting Shower::GeneratePoint
 	      break;
 	    }
 	    if (!kit->second[j]->LF()->Compute(win)) break;
-	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
+        if(m_dipole_case == EXTAMP::IDa){
+          double t_temp = win.m_t;
+          win.m_t = GetKt2(win);
+	      win.m_w=kit->second[j]->GetWeight(win,m_oef);
+          win.m_t = t_temp;
+        }
+        else win.m_w=kit->second[j]->GetWeight(win,m_oef);
 	    win.m_vars=std::vector<double>(p_vars->NumberOfParameters(),1.0);
 	    if (win.m_w.MC()<ran->Get()) {
 	      if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {

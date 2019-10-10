@@ -43,6 +43,7 @@ namespace DIM {
     };// end of struct JetVeto_Args
 
     EXTAMP::DipoleCase m_dipole_case;
+    int m_evol;
     
     typedef std::map<ATOOLS::Flavour,Kernel_Vector> SKernel_Map;
 
@@ -92,6 +93,8 @@ namespace DIM {
     double VetoWeight(ATOOLS::Variation_Parameters *params,
 		      ATOOLS::Variation_Weights *weights,
 		      JetVeto_Args &a);
+
+    double GetKt2(const Splitting &s) const ;
 
   public:
 

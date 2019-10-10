@@ -24,6 +24,8 @@ namespace DIM {
 
     double m_t_cutoff;
 
+    int m_evol;
+
     inline double Lam(const double &a,
 		      const double &b,
 		      const double &c) const

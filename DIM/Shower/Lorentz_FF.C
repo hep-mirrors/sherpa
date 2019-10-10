@@ -23,6 +23,7 @@ double Lorentz_FF::Jacobian(const Splitting &s) const
 double Lorentz_FF::JacobianResAware(const Splitting &s) const
 {
   if(m_dipole_case == EXTAMP::CS) return 1.;
+  if(m_evol == 2)                 return 1.;
 
   const double alpha   = s.m_alpha;
   const double paipb   = s.m_paipb;
@@ -51,24 +52,31 @@ int Lorentz_FF::Construct(Splitting &s,const int mode) const
     ATOOLS::Vec4D paitilde = s.p_c->Mom();
     ATOOLS::Vec4D pb       = s.p_s->Mom();
     ATOOLS::Vec4D pwtilde  = s.p_kinspec->Mom();
-    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-       momenta */
-          ATOOLS::Vec4D pminus = pwtilde - mw2/s.m_Qprime2*paitilde;
-    const ATOOLS::Vec4D pboost = paitilde+pminus;
-    Poincare bst(pboost);
-    bst.Boost(paitilde);
-    bst.Boost(pwtilde);
-    bst.Boost(pminus);
-    bst.Boost(pb);
-    ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
-    ff.m_res    = true;
-    ff.m_pb     = pb;
-    ff.m_pminus = pminus;
-    if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
-      return -1;
-    bst.BoostBack(ff.m_pj); // pi
-    bst.BoostBack(ff.m_pk); // pa
-    bst.BoostBack(ff.m_pi); // pw
+    if(m_evol == 2){
+      ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
+      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
+        return -1;
+    }
+    else if(m_evol == 1){
+      /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+         momenta */
+            ATOOLS::Vec4D pminus = pwtilde - mw2/s.m_Qprime2*paitilde;
+      const ATOOLS::Vec4D pboost = paitilde+pminus;
+      Poincare bst(pboost);
+      bst.Boost(paitilde);
+      bst.Boost(pwtilde);
+      bst.Boost(pminus);
+      bst.Boost(pb);
+      ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
+      ff.m_res    = true;
+      ff.m_pb     = pb;
+      ff.m_pminus = pminus;
+      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
+        return -1;
+      bst.BoostBack(ff.m_pj); // pi
+      bst.BoostBack(ff.m_pk); // pa
+      bst.BoostBack(ff.m_pi); // pw
+    }
     break;
     }
   default:
@@ -103,30 +111,34 @@ double Lorentz_FF::GetVimax(const Splitting &s) const
 
 double Lorentz_FF::GetVi(const Splitting &s, const double &vimax) const
 {
-  const double mw2     = sqr(Flavour(24).Mass());
-  const double Q2      = s.m_Qprime2+mw2;
-  const double paipb   = s.m_paipb;
-  const double alpha   = s.m_alpha;
-  const double kt2     = s.m_t;
-  const double z       = s.m_z;
-  const double cos2phi = sqr(cos(s.m_phi));
+  if(m_evol == 2) return s.m_t/(s.m_z / 2. * s.m_Qprime2);
+  else if (m_evol == 1){
+    const double mw2     = sqr(Flavour(24).Mass());
+    const double Q2      = s.m_Qprime2+mw2;
+    const double paipb   = s.m_paipb;
+    const double alpha   = s.m_alpha;
+    const double kt2     = s.m_t;
+    const double z       = s.m_z;
+    const double cos2phi = sqr(cos(s.m_phi));
 
-  /* Do not set up Kinematics_FF each time the method is called, but do the following
-     to avoid calling time-consuming default-constructor */
-  MCATNLO::Kinematics_FF ff = m_ff;
-  ff.m_calcV.calculate_helpers(Q2,kt2,z,paipb,alpha,cos2phi);
+    /* Do not set up Kinematics_FF each time the method is called, but do the following
+       to avoid calling time-consuming default-constructor */
+    MCATNLO::Kinematics_FF ff = m_ff;
+    ff.m_calcV.calculate_helpers(Q2,kt2,z,paipb,alpha,cos2phi);
 
-  /* select any vi randomly */
-  const double r = ran->Get();
-  double vi;
+    /* select any vi randomly */
+    const double r = ran->Get();
+    double vi;
 
-  if     (r<=0.25)   vi = ff.m_calcV.GetV1();
-  else if(r<=0.50)   vi = ff.m_calcV.GetV2();
-  else if(r<=0.75)   vi = ff.m_calcV.GetV3();
-  else if(r<=1.00)   vi = ff.m_calcV.GetV4();
+    if     (r<=0.25)   vi = ff.m_calcV.GetV1();
+    else if(r<=0.50)   vi = ff.m_calcV.GetV2();
+    else if(r<=0.75)   vi = ff.m_calcV.GetV3();
+    else if(r<=1.00)   vi = ff.m_calcV.GetV4();
 
-  if(!IsBad(vi) && (vi>0. && vi<vimax) && IsEqual(KT2(s,vi),kt2,1e-2)) return vi;
-  return -1;
+    if(!IsBad(vi) && (vi>0. && vi<vimax) && IsEqual(KT2(s,vi),kt2,1e-2)) return vi;
+    return -1;
+  }
+  else THROW(fatal_error, "Invalid evolution scheme for res-aware kinematics!");
 }
 
 double Lorentz_FF::GetViab(const Splitting &s) const
@@ -139,24 +151,32 @@ double Lorentz_FF::GetViab(const Splitting &s) const
   const double ztilde_w        = 1.-s.m_vi;
   Kin_Args ff(y_wia,ztilde_w,s.m_phi);
 
-  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-     momentum */
-        ATOOLS::Vec4D pminus   = pwtilde - mw2/s.m_Qprime2*paitilde;
-  const ATOOLS::Vec4D pboost   = paitilde + pminus;
-  Poincare bst(pboost);
-  bst.Boost(paitilde);
-  bst.Boost(pwtilde);
-  bst.Boost(pminus);
-  bst.Boost(pb);
-  ff.m_res    = true;
-  ff.m_pb     = pb;
-  ff.m_pminus = pminus;
+  if(m_evol == 1){
+    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+       momentum */
+          ATOOLS::Vec4D pminus   = pwtilde - mw2/s.m_Qprime2*paitilde;
+    const ATOOLS::Vec4D pboost   = paitilde + pminus;
+    Poincare bst(pboost);
+    bst.Boost(paitilde);
+    bst.Boost(pwtilde);
+    bst.Boost(pminus);
+    bst.Boost(pb);
+    ff.m_res    = true;
+    ff.m_pb     = pb;
+    ff.m_pminus = pminus;
+  }
   if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1.;
   const ATOOLS::Vec4D pi = ff.m_pj;
   const ATOOLS::Vec4D pa = ff.m_pk;
 
-  const double kt2 = (pa*pi)*(pb*pi)/(pa*pb);
-  if(IsEqual(s.m_t, kt2, 1e-3)) return pa*pb / (pi*(pa+pb));
+  if(m_evol == 1){
+    const double kt2 = (pa*pi)*(pb*pi)/(pa*pb);
+    if(IsEqual(s.m_t, kt2, 1e-3)) return pa*pb / (pi*(pa+pb));
+  }
+  else if(m_evol == 2){
+    const double virtuality = pa*pi;
+    if(IsEqual(s.m_t, virtuality, 1e-3)) return pa*pb / (pi*(pa+pb));
+  }
   return -1.;
 }
 

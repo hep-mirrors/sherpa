@@ -15,6 +15,7 @@ namespace DIM {
       Lorentz_FF(key) {}
 
     const double m_K = 0.9;
+    const double m_F = 4.0;
 
     double Value(const Splitting &s) const
     {
@@ -46,7 +47,14 @@ namespace DIM {
       case EXTAMP::IDa:
         {
         double I=2.*log(1./(1.-s.m_zmax)) / (sqrt(1.-sqr(m_K)));
-        return I*(1.0+p_sk->GF()->KMax(s));
+        if(m_evol == 1){
+          /* multiply by 4 since we sum over 4 vis */
+          return 4.*I*(1.0+p_sk->GF()->KMax(s));
+        }
+        else if(m_evol == 2){
+          return m_F*I*(1.0+p_sk->GF()->KMax(s));
+        }
+        else THROW(fatal_error, "Invalid evolution scheme for res-aware matching!");
         }
       default:
         {
@@ -62,7 +70,8 @@ namespace DIM {
       case EXTAMP::IDa:
         {
         double E=2./(1.-s.m_z)/(1.-m_K*cos(s.m_phi));
-        return E*(1.0+p_sk->GF()->KMax(s));
+        if(m_evol == 1)       return     E*(1.0+p_sk->GF()->KMax(s));
+        else if(m_evol == 2)  return m_F*E*(1.0+p_sk->GF()->KMax(s));
         }
       default:
         {

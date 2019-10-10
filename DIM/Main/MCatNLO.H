@@ -22,6 +22,7 @@ namespace DIM {
     ATOOLS::Cluster_Amplitude *p_rampl;
 
     int m_psmode, m_wcheck;
+    int m_evol;
     double m_maxweight;
 
     Amplitude *Convert(ATOOLS::Cluster_Amplitude *const campl,

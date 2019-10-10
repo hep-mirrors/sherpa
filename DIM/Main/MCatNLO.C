@@ -24,6 +24,7 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   Settings& s = Settings::GetMainSettings();
   m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
   m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 
@@ -169,9 +170,13 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
 {
   if(p_mcatnlo->m_dipole_case == EXTAMP::IDa){
     const double mw2 = sqr(Flavour(24).Mass());
-    const double A = alpha*y*(Q2-mw2)/2.;
-    const double B = paipb*(y*(x-1.-mw2/(Q2-mw2))+1-x);
-    return y*(Q2-mw2)/(2*paipb) * (A+B-2*sqrt(A*B)*cos_phi);
+    if(m_evol==1){
+      const double A = alpha*y*(Q2-mw2)/2.;
+      const double B = paipb*(y*(x-1.-mw2/(Q2-mw2))+1-x);
+      return y*(Q2-mw2)/(2*paipb) * (A+B-2*sqrt(A*B)*cos_phi);
+    }
+    else if(m_evol==2) return y*x/2.*(Q2-mw2);
+    else THROW(fatal_error, "Invalid evolution scheme for res-aware matching!");
   }
 
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
