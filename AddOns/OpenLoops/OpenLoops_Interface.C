@@ -78,10 +78,10 @@ namespace OpenLoops {
     // load library dynamically
     s_loader->AddPath(s_olprefix+"/lib");
     s_loader->AddPath(s_olprefix+"/proclib");
-    if (!s_loader->LoadLibrary("collier")) PRINT_INFO("Ignoring explicit libcollier.so loading.");
-    if (!s_loader->LoadLibrary("cuttools")) PRINT_INFO("Ignoring explicit libcuttools.so loading.");
     if (!s_loader->LoadLibrary("olcommon")) PRINT_INFO("Ignoring explicit libolcommon.so loading.");
+    if (!s_loader->LoadLibrary("collier")) PRINT_INFO("Ignoring explicit libcollier.so loading.");
     if (!s_loader->LoadLibrary("oneloop")) PRINT_INFO("Ignoring explicit liboneloop.so loading.");
+    if (!s_loader->LoadLibrary("cuttools")) PRINT_INFO("Ignoring explicit libcuttools.so loading.");
     if (!s_loader->LoadLibrary("rambo")) PRINT_INFO("Ignoring explicit librambo.so loading.");
     if (!s_loader->LoadLibrary("trred")) PRINT_INFO("Ignoring explicit libtrred.so loading.");
     if (!s_loader->LoadLibrary("openloops")) THROW(fatal_error, "Failed to load libopenloops.");
