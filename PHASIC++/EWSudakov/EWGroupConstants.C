@@ -78,48 +78,49 @@ double EWGroupConstants::NondiagonalCew() const
   return -2.0 * m_cw/m_sw;
 }
 
-double EWGroupConstants::IZ2(const Flavour& flav, int pol) const
+Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 {
   // TODO: just return IZ()^2 here, as soon as it implements the photon/Z
   // constants
   static const auto IZ2LefthandedLepton
     = std::pow(m_cw2 - m_sw2, 2) / (4*m_sw2*m_cw2);
   static const auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
+  const kf_code kf{flav.Kfcode()};
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return m_sw2/m_cw2;
+      return {{kf, m_sw2/m_cw2}};
     } else {
       if (flav.IsUptype())
-        return IZ2Neutrino;
+        return {{kf, IZ2Neutrino}};
       else
-        return IZ2LefthandedLepton;
+        return {{kf, IZ2LefthandedLepton}};
     }
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
-        return 4*m_sw2 / (9*m_cw2);
+        return {{kf, 4*m_sw2 / (9*m_cw2)}};
       else
-        return 1*m_sw2 / (9*m_cw2);
+        return {{kf, 1*m_sw2 / (9*m_cw2)}};
     } else {
       if (flav.IsUptype())
-        return std::pow(3*m_cw2 - m_sw2, 2) / (36*m_sw2*m_cw2);
+        return {{kf, std::pow(3*m_cw2 - m_sw2, 2) / (36*m_sw2*m_cw2)}};
       else
-        return std::pow(3*m_cw2 + m_sw2, 2) / (36*m_sw2*m_cw2);
+        return {{kf, std::pow(3*m_cw2 + m_sw2, 2) / (36*m_sw2*m_cw2)}};
     }
-  } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2)
-      return IZ2LefthandedLepton;
-    else
-      return m_cw2/m_sw2;
+  } else if (kf == kf_phiplus) {
+    return {{kf, IZ2LefthandedLepton}};
+  } else if (kf == kf_chi) {
+    return {{kf, IZ2Neutrino}, {kf_h0, -IZ2Neutrino}};
+  } else if (kf == kf_Wplus) {
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    return {{kf, m_cw2/m_sw2}};
   } else if (flav.IsBoson() && flav.Charge() == 0) {
-    if (pol == 2) {
-      assert(!flav.IsPhoton());
-      return IZ2Neutrino;
-    } else {
-      return 0.0;
-    }
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    return {};
   } else {
     THROW(not_implemented, "Missing implementation");
   }

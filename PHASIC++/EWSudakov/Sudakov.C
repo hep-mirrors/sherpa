@@ -213,7 +213,7 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
     const auto diagonal
       = -m_ewgroupconsts.DiagonalCew(flav, spincombination[i]) / 2.0;
     coeff += diagonal;
-    if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
+    if (flav.IsVector() && flav.Charge() == 0) {
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
       const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
@@ -233,13 +233,49 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
                               std::vector<int> spincombination)
 {
   Coeff_Value coeff{0.0};
-  for (size_t i{ 0 }; i < spincombination.size(); ++i) {
-    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
-    // 1/m_cw2 = (mZ/mW)^2 !!! 
-    const auto contrib
-      = m_ewgroupconsts.IZ2(flav, spincombination[i])
-        * std::log(1.0/m_ewgroupconsts.m_cw2);
-    coeff += contrib;
+  const auto& base_ampl = m_ampls.BaseAmplitude(spincombination);
+  for (size_t i{0}; i < spincombination.size(); ++i) {
+    const Flavour flav{base_ampl.Leg(i)->Flav()};
+    const auto couplings
+      = m_ewgroupconsts.IZ2(flav, spincombination[i]);
+    for (const auto coupling : couplings) {
+      Complex contrib {coupling.second};
+      if (coupling.first != flav.Kfcode()) {
+        // this is a non-diagonal IZ2 term, i.e. we need to consider ME ratios
+        const Leg_Kfcode_Map key{{i, coupling.first}};
+
+        // correct spin index when a longitudinal vector boson is replaced with
+        // a scalar using the Goldstone boson equivalence theorem, also
+        // calculate (i)^n, the prefactor that accounts for ME^(Z_L^n) -> i^n
+        // ME^(chi^n)
+        Complex chi_prefactor{1.0};
+        std::vector<int> goldstonespincombination;
+        for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+          auto lambda = spincombination[i];
+          if (lambda == 2) {
+            lambda = 0;
+            if (flav.Kfcode() == kf_chi) {
+              chi_prefactor *= Complex{0.0, 1.0};
+            }
+          }
+          goldstonespincombination.push_back(lambda);
+        }
+
+        const auto transformed =
+            chi_prefactor *
+            TransformedAmplitudeValue(key, goldstonespincombination);
+        const auto base = amplvalue;
+        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+        const auto amplratio = transformed/base;
+        contrib *= amplratio;
+      } else {
+        // this is a diagonal IZ2 term, i.e. we can short-circuit the lengthy
+        // calculation above
+      }
+      // NOTE: we use 1/m_cw2 = (mZ/mW)^2 for the argument of the logarithm
+      coeff += contrib * std::log(1.0 / m_ewgroupconsts.m_cw2);
+    }
+
   }
   return coeff;
 }
@@ -300,9 +336,6 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         auto amplratio = transformed/base;
         auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
-        const auto amplratio2 = -amplratio;
-        auto contribution2 = 2.0*kcoupling.second*lcoupling.second*amplratio2;
-
         coeff += contribution;
       }
     }

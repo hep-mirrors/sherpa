@@ -167,6 +167,28 @@ EWSudakov_Amplitudes::CreateAmplitudes(
     }
   }
 
+  // create amplitudes needed for Z/h0 interference terms
+  // NOTE: possibly we miss terms we both do some Z->chi and one Z->h0
+  // replacements to have full generality, however for now it works for our test
+  // processes
+  if (activecoeffs.find(EWSudakov_Log_Type::lZ) != activecoeffs.end()) {
+    for (size_t i{ 0 }; i < nlegs; ++i) {
+      const auto flav = baseampl->Leg(i)->Flav();
+      int newkf{ kf_none };
+      if (flav.Kfcode() == kf_h0)
+        newkf = kf_Z;
+      else if (flav.Kfcode() == kf_Z)
+        newkf = kf_h0;
+      if (newkf != kf_none) {
+        auto ampl =
+            std::make_pair(Cluster_Ampl_Key{{i, newkf}},
+                           CreateSU2TransformedAmplitude(
+                               baseampl, {{i, static_cast<long int>(newkf)}}));
+        ampls.insert(std::move(ampl));
+      }
+    }
+  }
+
   // create amplitudes needed for Z/photon interference terms
   if (activecoeffs.find(EWSudakov_Log_Type::Ls) != activecoeffs.end()) {
     for (size_t i{ 0 }; i < nlegs; ++i) {

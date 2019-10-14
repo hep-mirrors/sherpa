@@ -18,7 +18,7 @@ namespace PHASIC {
     double NondiagonalCew() const;
 
     /// calculate the squared coupling to Z
-    double IZ2(const ATOOLS::Flavour&, int pol) const;
+    Couplings IZ2(const ATOOLS::Flavour&, int pol) const;
 
     /// calculate the coupling to Z
     double IZ(const ATOOLS::Flavour&, int pol) const;
