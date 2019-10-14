@@ -58,6 +58,9 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
       return 2/m_sw2;
   } else if (flav.IsBoson() && flav.Charge() == 0) {
     if (pol == 2) {
+      // TODO: as soon as we have switched all the coefficients to use the
+      // Goldstone bosons instead of longitudinal gauge bosons this case should
+      // not be necessary anymore
       assert(!flav.IsPhoton());
       return CewLefthandedLepton;
     } else if (flav.IsPhoton()) {

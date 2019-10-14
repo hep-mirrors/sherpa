@@ -207,8 +207,9 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
                              std::vector<int> spincombination)
 {
   auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
-  for (size_t i{ 0 }; i < spincombination.size(); ++i) {
-    const Flavour flav{m_ampls.BaseAmplitude(spincombination).Leg(i)->Flav()};
+  const auto& base_ampl = m_ampls.BaseAmplitude(spincombination);
+  for (size_t i{0}; i < spincombination.size(); ++i) {
+    const Flavour flav{base_ampl.Leg(i)->Flav()};
     const auto diagonal
       = -m_ewgroupconsts.DiagonalCew(flav, spincombination[i]) / 2.0;
     coeff.first += diagonal;
