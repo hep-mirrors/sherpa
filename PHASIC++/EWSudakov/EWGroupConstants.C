@@ -31,7 +31,7 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
   // 1: - (left-handed or transverse polarisation)
   // 2: 0 (longitudinal polarisation)
   // NOTE: for longitudinal bosons, use the Goldstone equivalence theorem
-  static auto CewLefthandedLepton = (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
+  static const auto CewLefthandedLepton = (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
@@ -82,9 +82,9 @@ double EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 {
   // TODO: just return IZ()^2 here, as soon as it implements the photon/Z
   // constants
-  static auto IZ2LefthandedLepton
+  static const auto IZ2LefthandedLepton
     = std::pow(m_cw2 - m_sw2, 2) / (4*m_sw2*m_cw2);
-  static auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
+  static const auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
@@ -128,7 +128,7 @@ double EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 double EWGroupConstants::IZ(const Flavour& flav, int pol) const
 {
   const auto sign = (flav.IsAnti() ? -1 : 1);
-  static auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+  static const auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
   if (flav.IsScalar())
     THROW(not_implemented,
           "non-diagonal Z coupling terms for scalars not implemented");

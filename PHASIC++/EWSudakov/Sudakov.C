@@ -107,7 +107,7 @@ double Sudakov::KFactor()
     static const auto delta_prefactor = m_runaqed.AqedThomson()/4./M_PI;
     auto delta = 0.0;
     for (const auto& coeffkv : m_coeffs)
-      delta += (coeffkv.second[i].first * logs[coeffkv.first]).real();
+      delta += (coeffkv.second[i] * logs[coeffkv.first]).real();
     num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
   }
 
@@ -206,26 +206,24 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
 Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
                              std::vector<int> spincombination)
 {
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(spincombination);
   for (size_t i{0}; i < spincombination.size(); ++i) {
     const Flavour flav{base_ampl.Leg(i)->Flav()};
     const auto diagonal
       = -m_ewgroupconsts.DiagonalCew(flav, spincombination[i]) / 2.0;
-    coeff.first += diagonal;
-    coeff.second += diagonal;
+    coeff += diagonal;
     if (flav.IsVector() && flav.Charge() == 0 && spincombination[i] != 2) {
-      const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
       // special case of neutral gauge bosons, they mix and hence non-diagonal
       // terms appear, cf. e.g. eq. (6.30)
+      const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
       const auto prefactor = -m_ewgroupconsts.NondiagonalCew() / 2.0;
       const auto transformed
         = TransformedAmplitudeValue({{i, newkf}}, spincombination);
       const auto base = amplvalue;
       assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
       auto amplratio = transformed/base;
-      coeff.first += prefactor * amplratio;
-      coeff.second -= prefactor * amplratio;
+      coeff += prefactor * amplratio;
     }
   }
   return coeff;
@@ -234,15 +232,14 @@ Coeff_Value Sudakov::LsCoeff(Complex amplvalue,
 Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
                               std::vector<int> spincombination)
 {
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
   for (size_t i{ 0 }; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     // 1/m_cw2 = (mZ/mW)^2 !!! 
     const auto contrib
       = m_ewgroupconsts.IZ2(flav, spincombination[i])
         * std::log(1.0/m_ewgroupconsts.m_cw2);
-    coeff.first += contrib;
-    coeff.second += contrib;
+    coeff += contrib;
   }
   return coeff;
 }
@@ -251,7 +248,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
                                        std::vector<int> spincombination,
                                        const Two_Leg_Indizes& indizes)
 {
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
 
   const auto k = indizes[0];
   const auto l = indizes[1];
@@ -265,14 +262,12 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
   // photon
   const auto IAk = -kflav.Charge();
   const auto IAl = -lflav.Charge();
-  coeff.first += 2*IAk*IAl;
-  coeff.second += 2*IAk*IAl;
+  coeff += 2*IAk*IAl;
 
   // Z
   const auto IZk = m_ewgroupconsts.IZ(kflav, spincombination[k]);
   const auto IZl = m_ewgroupconsts.IZ(lflav, spincombination[l]);
-  coeff.first += 2*IZk*IZl;
-  coeff.second += 2*IZk*IZl;
+  coeff += 2*IZk*IZl;
 
   // W
   for (int i{ 0 }; i < 2; ++i) {
@@ -308,8 +303,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
         const auto amplratio2 = -amplratio;
         auto contribution2 = 2.0*kcoupling.second*lcoupling.second*amplratio2;
 
-        coeff.first += contribution;
-        coeff.second += contribution2;
+        coeff += contribution;
       }
     }
   }
@@ -319,39 +313,34 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
                               std::vector<int> spincombination)
 {
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
   for (size_t i {0}; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     if (flav.IsFermion()) {
       const auto contrib
         = 3.0/2.0 * m_ewgroupconsts.DiagonalCew(flav, spincombination[i]);
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
     } else if (flav.Kfcode() == kf_Wplus && spincombination[i] != 2) {
       const auto contrib
         = m_ewgroupconsts.DiagonalBew(flav, spincombination[i]) / 2.0;
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
     } else if (flav.IsVector()
                && flav.Charge() == 0
                && spincombination[i] != 2) {
       const auto contrib
         = m_ewgroupconsts.DiagonalBew(flav, spincombination[i]) / 2.0;
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
       if (flav.Kfcode() == kf_Z) {
         const auto transformed
           = TransformedAmplitudeValue({{i, kf_photon}}, spincombination);
         const auto base = amplvalue;
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         auto amplratio = transformed/base;
-        coeff.first += m_ewgroupconsts.NondiagonalBew() * amplratio;
-        coeff.second -= m_ewgroupconsts.NondiagonalBew() * amplratio;
+        coeff += m_ewgroupconsts.NondiagonalBew() * amplratio;
       }
     } else if (flav.IsVector() && spincombination[i] == 2) {
       const auto contrib = 2.0*m_ewgroupconsts.DiagonalCew(flav, 2);
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
     }
   }
   return coeff;
@@ -360,7 +349,7 @@ Coeff_Value Sudakov::lsCCoeff(Complex amplvalue,
 Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
                                 std::vector<int> spincombination)
 {
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
   for (size_t i {0}; i < spincombination.size(); ++i) {
     const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
     if (flav.Kfcode() == kf_t || flav.Kfcode() == kf_b) {
@@ -371,14 +360,12 @@ Coeff_Value Sudakov::lsYukCoeff(Complex amplvalue,
         contrib
           += sqr(flav.IsoWeakPartner().Mass()/Flavour{kf_Wplus}.Mass());
       contrib *= -1.0/(8.0*m_ewgroupconsts.m_sw2);
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
     } else if (flav.IsVector() && spincombination[i] == 2) {
       const auto contrib
         = - 3.0/(4.0*m_ewgroupconsts.m_sw2)
         * sqr(Flavour{kf_t}.Mass()/Flavour{kf_Wplus}.Mass());
-      coeff.first += contrib;
-      coeff.second += contrib;
+      coeff += contrib;
     }
   }
   return coeff;
@@ -389,27 +376,27 @@ Coeff_Value Sudakov::lsPRCoeff(Complex amplvalue,
 {
   // TODO: implement dynamic calculation, this placeholder just returns the
   // coefficients given in the Denner/Pozzorini reference for ee->mumu
-  auto coeff = std::make_pair(Complex{ 0.0 }, Complex{ 0.0 });
+  Coeff_Value coeff{0.0};
   if (spincombination[0] == 0
       && spincombination[1] == 0
       && spincombination[2] == 0
       && spincombination[3] == 0)
-    coeff.first = coeff.second = 8.80;
+    coeff = 8.80;
   else if (spincombination[0] == 0
       && spincombination[1] == 0
       && spincombination[2] == 1
       && spincombination[3] == 1)
-    coeff.first = coeff.second = 8.80;
+    coeff = 8.80;
   else if (spincombination[0] == 1
       && spincombination[1] == 1
       && spincombination[2] == 0
       && spincombination[3] == 0)
-    coeff.first = coeff.second = 8.80;
+    coeff = 8.80;
   else if (spincombination[0] == 1
       && spincombination[1] == 1
       && spincombination[2] == 1
       && spincombination[3] == 1)
-    coeff.first = coeff.second = -9.03;
+    coeff = -9.03;
   return coeff;
 }
 

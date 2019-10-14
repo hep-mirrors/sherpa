@@ -29,34 +29,26 @@ bool Coefficient_Checker::CheckCoeffs(
   return res;
 }
 
-bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeffpair,
-                                     Complex ref,
+bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeff, Complex ref,
                                      const std::vector<int>& helicities) const
 {
   auto res = true;
-  for (int i{ 0 }; i < 2; ++i) {
-    auto coeff = (i == 0) ? coeffpair.first : coeffpair.second;
-    const auto prec = (std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
-    const auto singlecoeffres
-      = (IsBad(coeff.real())
-         || std::abs(coeff.real() - ref) < prec);
-    if (singlecoeffres) {
-      msg_Debugging() << om::green;
-    } else {
-      msg_Debugging() << om::red;
-    }
-    if (i == 0) {
-      for (const auto& h : helicities)
-        msg_Debugging() << h << " ";
-      msg_Debugging() << " coeff: " << coeff;
-      if (!singlecoeffres)
-        res = false;
-    }
-    if (i == 1) {
-      msg_Debugging() << " alt: " << coeff;
-    }
-    msg_Debugging() << om::reset;
+  const auto prec = (std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
+  const auto singlecoeffres =
+      (IsBad(coeff.real()) || std::abs(coeff.real() - ref) < prec);
+  if (singlecoeffres) {
+    msg_Debugging() << om::green;
+  } else {
+    msg_Debugging() << om::red;
   }
+  for (const auto& h : helicities) {
+    msg_Debugging() << h << " ";
+  }
+  msg_Debugging() << " coeff: " << coeff;
+  if (!singlecoeffres) {
+    res = false;
+  }
+  msg_Debugging() << om::reset;
   msg_Debugging() << "\t vs \t  reference value: " << ref << std::endl;
   return res;
 }

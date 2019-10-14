@@ -11,7 +11,7 @@
 namespace PHASIC {
 
   using Coeff_Map_Key = std::pair<EWSudakov_Log_Type, Leg_Index_Set>;
-  using Coeff_Value = std::pair<Complex, Complex>;
+  using Coeff_Value = Complex;
   using Coeff_Map_Value = std::vector<Coeff_Value>;
   using Coeff_Map = std::map<Coeff_Map_Key, Coeff_Map_Value>;
 
