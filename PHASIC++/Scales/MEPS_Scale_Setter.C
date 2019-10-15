@@ -185,6 +185,8 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     64 - Winner takes it all in R first step
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
+    512 - true Core only for 2 -> 2
+    1024 - skip ME check
   */
   m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
@@ -460,7 +462,11 @@ double MEPS_Scale_Setter::Calculate
 
 bool MEPS_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
 {
-  return ampl->Legs().size()==ampl->NIn()+m_nmin ||
+  if(m_cmode&512){
+      if( ampl->Legs().size()==ampl->NIn()+2)  return true;
+      else return false;
+  }
+  else return ampl->Legs().size()==ampl->NIn()+m_nmin ||
     (ampl->Legs().size()==ampl->NIn()+2 &&
      ampl->Leg(2)->Flav().Mass()==0.0 &&
      ampl->Leg(3)->Flav().Mass()==0.0);
@@ -575,6 +581,7 @@ double MEPS_Scale_Setter::Differential
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
+  if(m_cmode&1024) return 1.;
   Process_Base::SortFlavours(campl);
   std::string pname(Process_Base::GenerateName(campl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname));
