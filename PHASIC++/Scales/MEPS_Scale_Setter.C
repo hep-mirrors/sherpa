@@ -187,6 +187,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     256 - No ordering check if last qcd split
     512 - true Core only for 2 -> 2
     1024 - skip ME check
+    2048 - skip subevent test and require ordered cluster steps for RS
   */
   m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
@@ -238,7 +239,7 @@ bool MEPS_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
-  if (m_rproc && ampl->Prev()->Prev()==NULL) return true;
+  if ((!(m_cmode&2048)) && m_rproc && ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
 	(ampl->OrderQCD()==0 ||
@@ -497,7 +498,7 @@ void MEPS_Scale_Setter::Cluster
 	    Cluster_Leg *lk(ampl->Leg(k));
 	    if (k!=i && k!=j) {
 	      Cluster_Config cc(ampl,i,j,k,cf[f],p_ms,NULL,-1,m_nproc?16:0);
-	      if (frs && !CheckSubEvents(cc)) continue;
+	      if ((!(m_cmode&2048)) && frs && !CheckSubEvents(cc)) continue;
 	      DEBUG_FUNC("Combine "<<ID(li->Id())<<" & "<<ID(lj->Id())
 			 <<" <-> "<<ID(lk->Id())<<" ["<<cc.m_mo<<"], f = "<<f);
 	      if (!ampl->CheckColors(li,lj,lk,cc.m_mo)) {
