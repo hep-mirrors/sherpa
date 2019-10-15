@@ -21,7 +21,7 @@ namespace PHASIC {
     Couplings IZ2(const ATOOLS::Flavour&, int pol) const;
 
     /// calculate the coupling to Z
-    double IZ(const ATOOLS::Flavour&, int pol) const;
+    Couplings IZ(const ATOOLS::Flavour&, int pol) const;
 
     /// calculate the coupling to W plus/minus
     Couplings Ipm(const ATOOLS::Flavour& flav, int pol, bool isplus) const;

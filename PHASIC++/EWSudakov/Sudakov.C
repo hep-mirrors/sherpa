@@ -158,7 +158,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
               (m_ampls.BaseAmplitude().Leg(3)->Flav().Kfcode() == kf_Z
                && spincombination[3] == 2)) {
             msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for ";
-            msg_Error() << "an eeZZ (with Z longitudinal) , for now due to ";
+            msg_Error() << "an eeZZ (with Z longitudinal), for now due to ";
             msg_Error() << "missing implementations\n";
             break;
           }
@@ -241,7 +241,8 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
     for (const auto coupling : couplings) {
       Complex contrib {coupling.second};
       if (coupling.first != flav.Kfcode()) {
-        // this is a non-diagonal IZ2 term, i.e. we need to consider ME ratios
+        // this is a non-diagonal IZ2 term, i.e. we need to take ME ratios into
+        // account
         const Leg_Kfcode_Map key{{i, coupling.first}};
 
         // correct spin index when a longitudinal vector boson is replaced with
@@ -268,9 +269,6 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
         assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
         const auto amplratio = transformed/base;
         contrib *= amplratio;
-      } else {
-        // this is a diagonal IZ2 term, i.e. we can short-circuit the lengthy
-        // calculation above
       }
       // NOTE: we use 1/m_cw2 = (mZ/mW)^2 for the argument of the logarithm
       coeff += contrib * std::log(1.0 / m_ewgroupconsts.m_cw2);
@@ -285,46 +283,56 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
                                        const Two_Leg_Indizes& indizes)
 {
   Coeff_Value coeff{0.0};
-
-  const auto k = indizes[0];
-  const auto l = indizes[1];
-  // NOTE: use antiflavours, because the convention is all-incoming in
-  // Denner/Pozzorini whereas for Cluster Amplitudes it's all-outgoing
-  auto kflav = m_ampls.BaseAmplitude().Leg(k)->Flav().Bar();
-  auto lflav = m_ampls.BaseAmplitude().Leg(l)->Flav().Bar();
+  const auto& base_ampl = m_ampls.BaseAmplitude();
+  std::vector<Flavour> flavs;
+  flavs.reserve(2);
+  for (const auto i : indizes) {
+    // NOTE: use antiflavours, because the convention is all-incoming in
+    // Denner/Pozzorini whereas for Cluster Amplitudes it's all-outgoing
+    flavs.push_back(base_ampl.Leg(i)->Flav().Bar());
+  }
 
   // add contribution for each vector boson connecting the leg pairs
 
-  // photon
-  const auto IAk = -kflav.Charge();
-  const auto IAl = -lflav.Charge();
-  coeff += 2*IAk*IAl;
+  // photon (IA is always diagonal)
+  Coeff_Value coeff_A{1.0};
+  for (const auto& flav : flavs) {
+    coeff_A *= -flav.Charge();
+  }
+  coeff += 2.0 * coeff_A;
 
   // Z
-  const auto IZk = m_ewgroupconsts.IZ(kflav, spincombination[k]);
-  const auto IZl = m_ewgroupconsts.IZ(lflav, spincombination[l]);
-  coeff += 2*IZk*IZl;
+  const auto kcouplings = m_ewgroupconsts.IZ(flavs[0], spincombination[indizes[0]]);
+  const auto lcouplings = m_ewgroupconsts.IZ(flavs[1], spincombination[indizes[1]]);
+  for (const auto kcoupling : kcouplings) {
+    for (const auto lcoupling : lcouplings) {
+      if (kcoupling.first != flavs[0].Kfcode() || lcoupling.first != flavs[1].Kfcode()) {
+        THROW(not_implemented, "non-diagonal SSC IZ terms not yet implemented");
+      }
+      coeff += 2.0 * kcoupling.second * lcoupling.second;
+    }
+  }
 
   // W
   for (int i{ 0 }; i < 2; ++i) {
     const auto kplus = (i == 0);
     const auto kcouplings
-      = m_ewgroupconsts.Ipm(kflav, spincombination[k], kplus);
+      = m_ewgroupconsts.Ipm(flavs[0], spincombination[indizes[0]], kplus);
     const auto lcouplings
-      = m_ewgroupconsts.Ipm(lflav, spincombination[l], !kplus);
+      = m_ewgroupconsts.Ipm(flavs[1], spincombination[indizes[1]], !kplus);
 
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        const Leg_Kfcode_Map key{{k, kcoupling.first}, {l, lcoupling.first}};
+        const Leg_Kfcode_Map key{{indizes[0], kcoupling.first}, {indizes[1], lcoupling.first}};
         // correct spin index when a longitudinal vector boson is replaced with
         // a scalar using the Goldstone boson equivalence theorem
         std::vector<int> goldstonespincombination;
         for (size_t i{ 0 }; i < spincombination.size(); ++i) {
           auto lambda = spincombination[i];
           if (lambda == 2) {
-            if (i == k && kflav.IsVector() && kcoupling.first != kf_Z) {
+            if (i == indizes[0] && flavs[0].IsVector() && kcoupling.first != kf_Z) {
               lambda = 0;
-            } else if (i == l && lflav.IsVector() && lcoupling.first != kf_Z) {
+            } else if (i == indizes[1] && flavs[1].IsVector() && lcoupling.first != kf_Z) {
               lambda = 0;
             }
           }

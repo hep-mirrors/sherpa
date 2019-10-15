@@ -126,10 +126,11 @@ Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
   }
 }
 
-double EWGroupConstants::IZ(const Flavour& flav, int pol) const
+Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
 {
   const auto sign = (flav.IsAnti() ? -1 : 1);
   static const auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
+  const kf_code kf{flav.Kfcode()};
   if (flav.IsScalar())
     THROW(not_implemented,
           "non-diagonal Z coupling terms for scalars not implemented");
@@ -137,24 +138,24 @@ double EWGroupConstants::IZ(const Flavour& flav, int pol) const
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return sign * m_sw/m_cw;
+      return {{kf, sign * m_sw/m_cw}};
     } else {
       if (flav.IsUptype())
-        return sign / (2*m_sw*m_cw);
+        return {{kf, sign / (2*m_sw*m_cw)}};
       else
-        return sign * IZLefthandedLepton;
+        return {{kf, sign * IZLefthandedLepton}};
     }
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
-        return -sign * 2/3.0 * m_sw/m_cw;
+        return {{kf, -sign * 2/3.0 * m_sw/m_cw}};
       else
-        return sign * 1/3.0 * m_sw/m_cw;
+        return {{kf, sign * 1/3.0 * m_sw/m_cw}};
     } else {
       if (flav.IsUptype())
-        return sign * (3*m_cw2 - m_sw2) / (6*m_sw*m_cw);
+        return {{kf, sign * (3*m_cw2 - m_sw2) / (6*m_sw*m_cw)}};
       else
-        return -sign * (3*m_cw2 + m_sw2) / (6*m_sw*m_cw);
+        return {{kf, -sign * (3*m_cw2 + m_sw2) / (6*m_sw*m_cw)}};
     }
   } else if (flav.Kfcode() == kf_Wplus) {
     if (pol == 2) {
@@ -164,9 +165,9 @@ double EWGroupConstants::IZ(const Flavour& flav, int pol) const
       // positron (anti-particle) and the electron (particle) respectively;
       // i.e. the roles of the particle/anti-particle swap wrt the
       // correspondence
-      return -sign * IZLefthandedLepton;
+      return {{kf, -sign * IZLefthandedLepton}};
     } else {
-      return sign * m_cw/m_sw;
+      return {{kf, sign * m_cw/m_sw}};
     }
   } else if (flav.Kfcode() == kf_Z) {
     if (pol == 2) {
@@ -182,10 +183,10 @@ double EWGroupConstants::IZ(const Flavour& flav, int pol) const
       //return {kf_h0, 1.0 / (2.0*m_sw*m_cw)};
 
     } else {
-      return 0.0;  // the Z self-coupling is zero
+      return {};  // the Z self-coupling is zero
     }
   } else if (flav.Kfcode() == kf_photon) {
-    return 0.0;  // the Z does not couple to the photon
+    return {};  // the Z does not couple to the photon
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav;
