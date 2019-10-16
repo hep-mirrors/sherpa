@@ -52,10 +52,14 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
   } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
     return CewLefthandedLepton;
   } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2)
+    if (pol == 2) {
+      // TODO: as soon as we have switched all the coefficients to use the
+      // Goldstone bosons instead of longitudinal gauge bosons this case should
+      // not be necessary anymore
       return CewLefthandedLepton;
-    else
+    } else {
       return 2/m_sw2;
+    }
   } else if (flav.IsBoson() && flav.Charge() == 0) {
     if (pol == 2) {
       // TODO: as soon as we have switched all the coefficients to use the
@@ -141,7 +145,7 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     // i.e. the roles of the particle/anti-particle swap wrt the
     // correspondence
     return {{signed_kf, -sign * IZLefthandedLepton}};
-  } else if (flav.IsScalar()) {
+  } else if (signed_kf == kf_chi) {
     return {{kf_h0, {0.0, -1.0 / (2 * m_cw * m_sw)}}};
   } else if (flav.IsLepton()) {
     if (pol == 0) {
@@ -171,21 +175,9 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     assert(pol != 2);
     return {{signed_kf, sign * m_cw / m_sw}};
   } else if (signed_kf == kf_Z) {
-    if (pol == 2) {
-
-      THROW(not_implemented,
-            "non-diagonal Z coupling terms for longitudinal Z not implemented");
-
-      // TODO: enable the following snippet, which requires to modify the
-      // signature of this function to return `Couplings`
-
-      // we return the coupling to the scalar, this is corrected by multiplying
-      // here with an extra factor of i, cf. (4.26)
-      //return {kf_h0, 1.0 / (2.0*m_sw*m_cw)};
-
-    } else {
-      return {};  // the Z self-coupling is zero
-    }
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    return {};  // the Z self-coupling is zero
   } else if (signed_kf == kf_photon) {
     return {};  // the Z does not couple to the photon
   } else {
@@ -211,35 +203,22 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     else
       return {};
   } else if (std::abs(signed_kf) == kf_phiplus) {
-    if (isplus != flav.IsAnti())
+    if (isplus != flav.IsAnti()) {
       return {};
+    }
     return {
-        // we return the coupling to the pseudoscalar, but tell the recipient
-        // to use the ME with the Z instead of the W which makes use of the
-        // Goldstone equivalence theorem; this is corrected by multiplying here
-        // with an extra factor of (-i), cf. (4.26)
         {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
         {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
-    if (isplus != flav.IsAnti())
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    if (isplus != flav.IsAnti()) {
       return {};
-    if (pol == 2) {
-      return {
-        // we return the coupling to the pseudoscalar, but tell the recipient
-        // to use the ME with the Z instead of the W which makes use of the
-        // Goldstone equivalence theorem; this is corrected by multiplying here
-        // with an extra factor of (-i), cf. (4.26)
-        {kf_Z, -1.0 / (2.0*m_sw)},  // -i * I_\chi^\pm
-        {kf_h0, (isplus ? -1.0 : 1.0) / (2.0*m_sw)}  // I_H^\pm
-      };
-    } else {
-      return {
-        {kf_photon, isplus ? -1.0 : 1.0},
-        {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}
-      };
     }
+    return {{kf_photon, isplus ? -1.0 : 1.0},
+            {kf_Z, (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_chi) {
     return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_Z) {
