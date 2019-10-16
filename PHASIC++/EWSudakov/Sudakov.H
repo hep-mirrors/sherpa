@@ -30,30 +30,26 @@ namespace PHASIC {
     /// calculate coeffs for each m_spinampls entry
     void CalculateSpinAmplitudeCoeffs();
 
+    /// helper method to update values needed for replacing Z_L/W_L -> chi/phi
+    void UpdateGolstoneSpincombinationAndMEPrefactor();
+
     /// calculate LSC L(s) coefficient
-    Coeff_Value LsCoeff(Complex amplvalue,
-                        std::vector<int> spincombination);
+    Coeff_Value LsCoeff();
 
     /// calculate Z contribution to LSC l(s) coefficient
-    Coeff_Value lsZCoeff(Complex amplvalue,
-                         std::vector<int> spincombination);
+    Coeff_Value lsZCoeff();
 
     /// calculate SSC l(s) coefficients
-    Coeff_Value lsLogROverSCoeffs(Complex amplvalue,
-                                  std::vector<int> spincombination,
-                                  const Two_Leg_Indizes& indizes);
+    Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indizes&);
 
     /// calculate l_C(s) coefficients
-    Coeff_Value lsCCoeff(Complex amplvalue,
-                         std::vector<int> spincombination);
+    Coeff_Value lsCCoeff();
 
     /// calculate l_Yuk(s) coefficients
-    Coeff_Value lsYukCoeff(Complex amplvalue,
-                           std::vector<int> spincombination);
+    Coeff_Value lsYukCoeff();
 
     /// calculate l_PR(s) coefficients
-    Coeff_Value lsPRCoeff(Complex amplvalue,
-                          std::vector<int> spincombination);
+    Coeff_Value lsPRCoeff();
 
     double KFactor();
 
@@ -77,6 +73,10 @@ namespace PHASIC {
     mutable Coeff_Map m_coeffs;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
     mutable std::map<Leg_Kfcode_Map, std::vector<Spin_Amplitudes>> m_transformedspinampls;
+    mutable Complex m_current_me_value;
+    mutable std::vector<int> m_current_spincombination;
+    mutable std::vector<int> m_current_goldstone_spincombination;
+    mutable Complex m_current_goldstone_me_prefactor;
   };
 }
 
