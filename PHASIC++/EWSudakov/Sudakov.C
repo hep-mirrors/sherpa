@@ -152,16 +152,6 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
           m_coeffs[{key, {}}][i] = lsZCoeff(value, spincombination);
           break;
         case EWSudakov_Log_Type::lSSC:
-          if ((m_ampls.BaseAmplitude().Leg(2)->Flav().Kfcode() == kf_Z
-               && spincombination[2] == 2)
-              ||
-              (m_ampls.BaseAmplitude().Leg(3)->Flav().Kfcode() == kf_Z
-               && spincombination[3] == 2)) {
-            msg_Error() << "EWSudakov WARNING: omitting SSC coeff calc for ";
-            msg_Error() << "an eeZZ (with Z longitudinal), for now due to ";
-            msg_Error() << "missing implementations\n";
-            break;
-          }
           for (size_t k{ 0 }; k < spincombination.size(); ++k) {
             for (size_t l{ 0 }; l < k; ++l) {
               // s-channel-related loops will have vanishing log coeffs
@@ -240,10 +230,10 @@ Coeff_Value Sudakov::lsZCoeff(Complex amplvalue,
       = m_ewgroupconsts.IZ2(flav, spincombination[i]);
     for (const auto coupling : couplings) {
       Complex contrib {coupling.second};
-      if (coupling.first != flav.Kfcode()) {
+      if (coupling.first != flav) {
         // this is a non-diagonal IZ2 term, i.e. we need to take ME ratios into
         // account
-        const Leg_Kfcode_Map key{{i, coupling.first}};
+        const Leg_Kfcode_Map key{{i, std::abs(coupling.first)}};
 
         // correct spin index when a longitudinal vector boson is replaced with
         // a scalar using the Goldstone boson equivalence theorem, also
@@ -283,7 +273,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
                                        const Two_Leg_Indizes& indizes)
 {
   Coeff_Value coeff{0.0};
-  const auto& base_ampl = m_ampls.BaseAmplitude();
+  const auto& base_ampl = m_ampls.BaseAmplitude(spincombination);
   std::vector<Flavour> flavs;
   flavs.reserve(2);
   for (const auto i : indizes) {
@@ -306,10 +296,36 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
   const auto lcouplings = m_ewgroupconsts.IZ(flavs[1], spincombination[indizes[1]]);
   for (const auto kcoupling : kcouplings) {
     for (const auto lcoupling : lcouplings) {
-      if (kcoupling.first != flavs[0].Kfcode() || lcoupling.first != flavs[1].Kfcode()) {
-        THROW(not_implemented, "non-diagonal SSC IZ terms not yet implemented");
+      if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
+        const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)}, {indizes[1], std::abs(lcoupling.first)}};
+
+        // correct spin index when a longitudinal vector boson is replaced with
+        // a scalar using the Goldstone boson equivalence theorem, also
+        // calculate (i)^n, the prefactor that accounts for ME^(Z_L^n) -> i^n
+        // ME^(chi^n)
+        Complex chi_prefactor{1.0};
+        std::vector<int> goldstonespincombination;
+        for (size_t i{ 0 }; i < spincombination.size(); ++i) {
+          auto lambda = spincombination[i];
+          if (lambda == 2) {
+            lambda = 0;
+            if (base_ampl.Leg(i)->Flav().Kfcode() == kf_chi) {
+              chi_prefactor *= Complex{0.0, 1.0};
+            }
+          }
+          goldstonespincombination.push_back(lambda);
+        }
+
+        const auto transformed
+          = TransformedAmplitudeValue(key, goldstonespincombination);
+        const auto base = amplvalue;
+        assert(base != 0.0);  // guaranteed by CalculateSpinAmplitudeCoeffs
+        auto amplratio = transformed/base;
+        auto contribution = 2.0*kcoupling.second*lcoupling.second*amplratio;
+        coeff += contribution;
+      } else {
+        coeff += 2.0 * kcoupling.second * lcoupling.second;
       }
-      coeff += 2.0 * kcoupling.second * lcoupling.second;
     }
   }
 
@@ -323,21 +339,25 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(Complex amplvalue,
 
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        const Leg_Kfcode_Map key{{indizes[0], kcoupling.first}, {indizes[1], lcoupling.first}};
+        const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)}, {indizes[1], std::abs(lcoupling.first)}};
+
         // correct spin index when a longitudinal vector boson is replaced with
-        // a scalar using the Goldstone boson equivalence theorem
+        // a scalar using the Goldstone boson equivalence theorem, also
+        // calculate (i)^n, the prefactor that accounts for ME^(Z_L^n) -> i^n
+        // ME^(chi^n)
+        Complex chi_prefactor{1.0};
         std::vector<int> goldstonespincombination;
         for (size_t i{ 0 }; i < spincombination.size(); ++i) {
           auto lambda = spincombination[i];
           if (lambda == 2) {
-            if (i == indizes[0] && flavs[0].IsVector() && kcoupling.first != kf_Z) {
-              lambda = 0;
-            } else if (i == indizes[1] && flavs[1].IsVector() && lcoupling.first != kf_Z) {
-              lambda = 0;
+            lambda = 0;
+            if (base_ampl.Leg(i)->Flav().Kfcode() == kf_chi) {
+              chi_prefactor *= Complex{0.0, 1.0};
             }
           }
           goldstonespincombination.push_back(lambda);
         }
+
         const auto transformed
           = TransformedAmplitudeValue(key, goldstonespincombination);
         const auto base = amplvalue;

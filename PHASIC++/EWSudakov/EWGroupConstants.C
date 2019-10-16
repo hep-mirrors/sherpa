@@ -85,38 +85,40 @@ Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
   static const auto IZ2LefthandedLepton
     = std::pow(m_cw2 - m_sw2, 2) / (4*m_sw2*m_cw2);
   static const auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
-  const kf_code kf{flav.Kfcode()};
+  const long int signed_kf{flav};
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return {{kf, m_sw2/m_cw2}};
+      return {{signed_kf, m_sw2 / m_cw2}};
     } else {
       if (flav.IsUptype())
-        return {{kf, IZ2Neutrino}};
+        return {{signed_kf, IZ2Neutrino}};
       else
-        return {{kf, IZ2LefthandedLepton}};
+        return {{signed_kf, IZ2LefthandedLepton}};
     }
   } else if (flav.IsQuark()) {  // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
-        return {{kf, 4*m_sw2 / (9*m_cw2)}};
+        return {{signed_kf, 4 * m_sw2 / (9 * m_cw2)}};
       else
-        return {{kf, 1*m_sw2 / (9*m_cw2)}};
+        return {{signed_kf, 1 * m_sw2 / (9 * m_cw2)}};
     } else {
       if (flav.IsUptype())
-        return {{kf, std::pow(3*m_cw2 - m_sw2, 2) / (36*m_sw2*m_cw2)}};
+        return {
+            {signed_kf, std::pow(3 * m_cw2 - m_sw2, 2) / (36 * m_sw2 * m_cw2)}};
       else
-        return {{kf, std::pow(3*m_cw2 + m_sw2, 2) / (36*m_sw2*m_cw2)}};
+        return {
+            {signed_kf, std::pow(3 * m_cw2 + m_sw2, 2) / (36 * m_sw2 * m_cw2)}};
     }
-  } else if (kf == kf_phiplus) {
-    return {{kf, IZ2LefthandedLepton}};
-  } else if (kf == kf_chi) {
-    return {{kf, IZ2Neutrino}, {kf_h0, -IZ2Neutrino}};
-  } else if (kf == kf_Wplus) {
+  } else if (std::abs(signed_kf) == kf_phiplus) {
+    return {{signed_kf, IZ2LefthandedLepton}};
+  } else if (signed_kf == kf_chi) {
+    return {{signed_kf, IZ2Neutrino}, {kf_h0, -IZ2Neutrino}};
+  } else if (std::abs(signed_kf) == kf_Wplus) {
     // we expect Goldstone bosons instead of long. gauge bosons
     assert(pol != 2);
-    return {{kf, m_cw2/m_sw2}};
+    return {{signed_kf, m_cw2 / m_sw2}};
   } else if (flav.IsBoson() && flav.Charge() == 0) {
     // we expect Goldstone bosons instead of long. gauge bosons
     assert(pol != 2);
@@ -130,46 +132,45 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
 {
   const auto sign = (flav.IsAnti() ? -1 : 1);
   static const auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
-  const kf_code kf{flav.Kfcode()};
-  if (flav.IsScalar())
-    THROW(not_implemented,
-          "non-diagonal Z coupling terms for scalars not implemented");
-  if (flav.IsLepton()) {
+  const long int signed_kf{flav};
+  if (std::abs(signed_kf) == kf_phiplus) {
+    // add an extra minus sign here wrt the corresponding lepton coupling,
+    // because W+ is the particle, whereas W- is the anti-particle, and
+    // they correspond via the Goldstone boson equivalence theorem to the
+    // positron (anti-particle) and the electron (particle) respectively;
+    // i.e. the roles of the particle/anti-particle swap wrt the
+    // correspondence
+    return {{signed_kf, -sign * IZLefthandedLepton}};
+  } else if (flav.IsScalar()) {
+    return {{kf_h0, {0.0, -1.0 / (2 * m_cw * m_sw)}}};
+  } else if (flav.IsLepton()) {
     if (pol == 0) {
       if (flav.IsUptype())
         THROW(fatal_error, "Right-handed neutrino are not supported");
-      return {{kf, sign * m_sw/m_cw}};
+      return {{signed_kf, sign * m_sw / m_cw}};
     } else {
       if (flav.IsUptype())
-        return {{kf, sign / (2*m_sw*m_cw)}};
+        return {{signed_kf, sign / (2 * m_sw * m_cw)}};
       else
-        return {{kf, sign * IZLefthandedLepton}};
+        return {{signed_kf, sign * IZLefthandedLepton}};
     }
-  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
+  } else if (flav.IsQuark()) { // cf. eq. (B.16)
     if (pol == 0) {
       if (flav.IsUptype())
-        return {{kf, -sign * 2/3.0 * m_sw/m_cw}};
+        return {{signed_kf, -sign * 2 / 3.0 * m_sw / m_cw}};
       else
-        return {{kf, sign * 1/3.0 * m_sw/m_cw}};
+        return {{signed_kf, sign * 1 / 3.0 * m_sw / m_cw}};
     } else {
       if (flav.IsUptype())
-        return {{kf, sign * (3*m_cw2 - m_sw2) / (6*m_sw*m_cw)}};
+        return {{signed_kf, sign * (3 * m_cw2 - m_sw2) / (6 * m_sw * m_cw)}};
       else
-        return {{kf, -sign * (3*m_cw2 + m_sw2) / (6*m_sw*m_cw)}};
+        return {{signed_kf, -sign * (3 * m_cw2 + m_sw2) / (6 * m_sw * m_cw)}};
     }
-  } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2) {
-      // add an extra minus sign here wrt the corresponding lepton coupling,
-      // because W+ is the particle, whereas W- is the anti-particle, and
-      // they correspond via the Goldstone boson equivalence theorem to the
-      // positron (anti-particle) and the electron (particle) respectively;
-      // i.e. the roles of the particle/anti-particle swap wrt the
-      // correspondence
-      return {{kf, -sign * IZLefthandedLepton}};
-    } else {
-      return {{kf, sign * m_cw/m_sw}};
-    }
-  } else if (flav.Kfcode() == kf_Z) {
+  } else if (std::abs(signed_kf) == kf_Wplus) {
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    return {{signed_kf, sign * m_cw / m_sw}};
+  } else if (signed_kf == kf_Z) {
     if (pol == 2) {
 
       THROW(not_implemented,
@@ -185,7 +186,7 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     } else {
       return {};  // the Z self-coupling is zero
     }
-  } else if (flav.Kfcode() == kf_photon) {
+  } else if (signed_kf == kf_photon) {
     return {};  // the Z does not couple to the photon
   } else {
     MyStrStream s;
@@ -198,17 +199,29 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
                                 int pol,
                                 bool isplus) const
 {
+  const long int signed_kf{flav};
   if (flav.IsFermion()) {
     if (pol == 0)
       return {};
     const auto isfermionplus = flav.IsUptype();
     if (flav.IsAnti() && (isplus == isfermionplus))
-      return { {flav.IsoWeakPartner().Kfcode(), -1 / (sqrt(2)*m_sw)} };
+      return {{flav.IsoWeakPartner(), -1 / (sqrt(2) * m_sw)}};
     else if (!flav.IsAnti() && (isplus != isfermionplus))
-      return { {flav.IsoWeakPartner().Kfcode(),  1 / (sqrt(2)*m_sw)} };
+      return {{flav.IsoWeakPartner(), 1 / (sqrt(2) * m_sw)}};
     else
       return {};
-  } else if (flav.Kfcode() == kf_Wplus) {
+  } else if (std::abs(signed_kf) == kf_phiplus) {
+    if (isplus != flav.IsAnti())
+      return {};
+    return {
+        // we return the coupling to the pseudoscalar, but tell the recipient
+        // to use the ME with the Z instead of the W which makes use of the
+        // Goldstone equivalence theorem; this is corrected by multiplying here
+        // with an extra factor of (-i), cf. (4.26)
+        {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
+        {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
+    };
+  } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
     if (isplus != flav.IsAnti())
       return {};
@@ -227,18 +240,16 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
         {kf_Z, (isplus ? 1.0 : -1.0) * m_cw/m_sw}
       };
     }
-  } else if (flav.Kfcode() == kf_Z) {
+  } else if (signed_kf == kf_chi) {
+    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
+  } else if (signed_kf == kf_Z) {
     // cf. (B.22), (B.26) and (B.27)
-    if (pol == 2) {
-      // we assume the incoming flavour is the \chi instead of the Z in
-      // accordance with the Goldstone equivalence theorem; we correct this
-      // by multiplying an extra factor of i, cf. (4.26)
-      return { {kf_Wplus, 1.0 / (2.0*m_sw)} };
-    } else {
-      return { {kf_Wplus, (isplus ? 1.0 : -1.0) * m_cw/m_sw} };
-    }
-  } else if (flav.Kfcode() == kf_photon) {
-    return { {kf_Wplus, (isplus ? -1.0 : 1.0)} };
+    // we expect Goldstone bosons instead of long. gauge bosons
+    assert(pol != 2);
+    return {{(isplus ? 1.0 : -1.0) * kf_Wplus,
+             (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
+  } else if (signed_kf == kf_photon) {
+    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav
@@ -249,12 +260,13 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
 
 double EWGroupConstants::DiagonalBew(const ATOOLS::Flavour& flav, int pol) const
 {
+  const kf_code kf{flav.Kfcode()};
   if (pol != 2) {
-    if (flav.Kfcode() == kf_Wplus)
+    if (kf == kf_Wplus)
       return 19.0/(6.0*m_sw2);
-    else if (flav.Kfcode() == kf_photon)
+    else if (kf == kf_photon)
       return -11.0/3.0;
-    else if (flav.Kfcode() == kf_Z)
+    else if (kf == kf_Z)
       return (19.0 - m_sw2*(38.0 + 22.0*m_sw2)) / (6.0*m_sw2*m_cw2);
   }
   MyStrStream s;

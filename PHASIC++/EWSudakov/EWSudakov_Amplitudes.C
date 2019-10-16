@@ -1,8 +1,9 @@
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 
-#include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "PHASIC++/EWSudakov/EWGroupConstants.H"
+#include "PHASIC++/Process/Process_Base.H"
 
 #include <numeric>
 #include <cassert>
@@ -124,14 +125,16 @@ EWSudakov_Amplitudes::CreateAmplitudes(
 {
   Cluster_Amplitude_UPM ampls;
 
+  const EWGroupConstants ewgroupconsts;
+
   // create unmodified amplitude
-  const auto& baseampl
-    = ampls.insert(std::make_pair(s_baseamplkey,
-                                  CreateAmplitude(proc))).first->second;
+  const auto& baseampl =
+      ampls.insert(std::make_pair(s_baseamplkey, CreateAmplitude(proc)))
+          .first->second;
   const auto nlegs = baseampl->Legs().size();
 
-  // create amplitudes where W and Z are replaced with their Goldstone
-  // partners, phi and chi
+  // iterate over permutations of Z -> \chi and W -> phi Goldstone boson
+  // replacements
 
   // store W and Z indizes
   std::vector<size_t> bosonindexes;
@@ -142,121 +145,118 @@ EWSudakov_Amplitudes::CreateAmplitudes(
       bosonindexes.push_back(k);
     }
   }
-  // permute over replacing / not replacing each boson index, leaving out the
-  // "do not replace anything" permutation (i.e. do not start with 1)
-  size_t first_invalid_permutation{
+
+  // permute over replacing / not replacing each boson index
+  const size_t first_invalid_permutation{
       static_cast<size_t>(1 << bosonindexes.size())};
-  for (size_t permutation{1}; permutation != first_invalid_permutation;
+  for (size_t permutation{0}; permutation != first_invalid_permutation;
        ++permutation) {
-    Leg_Kfcode_Map leg_set;
-    Leg_Kfcode_Map_Signed leg_set_signed;
-    for (size_t k{0}; k < bosonindexes.size(); ++k) {
-      if (permutation & (1 << k)) {
-        const auto bosonindex = bosonindexes[k];
-        const auto& flav = baseampl->Leg(bosonindex)->Flav();
-        const auto flavcode = (long int)flav.GoldstoneBosonPartner();
-        leg_set.emplace(bosonindex, std::abs(flavcode));
-        leg_set_signed.emplace(bosonindex, flavcode);
-      }
-    }
-    const auto it = ampls.find(leg_set);
-    if (it == ampls.end()) {
-      auto ampl = std::make_pair(
-          leg_set, CreateSU2TransformedAmplitude(baseampl, leg_set_signed));
-      ampls.insert(std::move(ampl));
-    }
-  }
-
-  // create amplitudes needed for Z/h0 interference terms
-  // NOTE: possibly we miss terms we both do some Z->chi and one Z->h0
-  // replacements to have full generality, however for now it works for our test
-  // processes
-  if (activecoeffs.find(EWSudakov_Log_Type::lZ) != activecoeffs.end()) {
-    for (size_t i{ 0 }; i < nlegs; ++i) {
-      const auto flav = baseampl->Leg(i)->Flav();
-      int newkf{ kf_none };
-      if (flav.Kfcode() == kf_h0)
-        newkf = kf_Z;
-      else if (flav.Kfcode() == kf_Z)
-        newkf = kf_h0;
-      if (newkf != kf_none) {
-        auto ampl =
-            std::make_pair(Cluster_Ampl_Key{{i, newkf}},
-                           CreateSU2TransformedAmplitude(
-                               baseampl, {{i, static_cast<long int>(newkf)}}));
-        ampls.insert(std::move(ampl));
-      }
-    }
-  }
-
-  // create amplitudes needed for Z/photon interference terms
-  if (activecoeffs.find(EWSudakov_Log_Type::Ls) != activecoeffs.end()) {
-    for (size_t i{ 0 }; i < nlegs; ++i) {
-      const auto flav = baseampl->Leg(i)->Flav();
-      int newkf{ kf_none };
-      if (flav.IsPhoton())
-        newkf = kf_Z;
-      else if (flav.Kfcode() == kf_Z)
-        newkf = kf_photon;
-      if (newkf != kf_none) {
-        auto ampl =
-            std::make_pair(Cluster_Ampl_Key{{i, newkf}},
-                           CreateSU2TransformedAmplitude(
-                               baseampl, {{i, static_cast<long int>(newkf)}}));
-        ampls.insert(std::move(ampl));
-      }
-    }
-  }
-
-  // create amplitudes needed for W loops
-  if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
-    for (size_t k{ 0 }; k < nlegs; ++k) {
-      for (size_t l{ 0 }; l < k; ++l) {
-
-        // s-channel-related loops will have vanishing log coeffs
-        if (k == 1 && l == 0)
-          continue;
-        if (nlegs == 4 && k == 3 && l == 2)
-          continue;
-
-        const auto kflav = baseampl->Leg(k)->Flav();
-        const auto lflav = baseampl->Leg(l)->Flav();
-
-        // collect transformed particles
-        Flavour_Vector newkflavs, newlflavs;
-        if (kflav.IsLepton() || kflav.IsQuark()) {
-          newkflavs.push_back(kflav.IsoWeakPartner());
-        } else if (kflav.Kfcode() == kf_Wplus) {
-          newkflavs.push_back(Flavour(kf_Z));  // for any W
-          newkflavs.push_back(Flavour(kf_photon));  // for transverse W
-          newkflavs.push_back(Flavour(kf_h0));  // for longitudinal W
-        } else if (kflav.Kfcode() == kf_Z || kflav.Kfcode() == kf_photon) {
-          newkflavs.push_back(Flavour(kf_Wplus, false));
-          newkflavs.push_back(Flavour(kf_Wplus, true));
+    auto* current_ampl{&baseampl};
+    if (permutation != 0) {
+      Leg_Kfcode_Map leg_set;
+      Leg_Kfcode_Map_Signed leg_set_signed;
+      for (size_t k{0}; k < bosonindexes.size(); ++k) {
+        if (permutation & (1 << k)) {
+          const auto bosonindex = bosonindexes[k];
+          const auto& flav = (*current_ampl)->Leg(bosonindex)->Flav();
+          const auto flavcode = (long int)flav.GoldstoneBosonPartner();
+          leg_set.emplace(bosonindex, std::abs(flavcode));
+          leg_set_signed.emplace(bosonindex, flavcode);
         }
-        if (lflav.IsLepton() || lflav.IsQuark()) {
-          newlflavs.push_back(lflav.IsoWeakPartner());
-        } else if (lflav.Kfcode() == kf_Wplus) {
-          newlflavs.push_back(Flavour(kf_Z));  // for any W
-          newlflavs.push_back(Flavour(kf_photon));  // for transverse W
-          newlflavs.push_back(Flavour(kf_h0));  // for longitudinal W
-        } else if (kflav.Kfcode() == kf_Z || lflav.Kfcode() == kf_photon) {
-          newlflavs.push_back(Flavour(kf_Wplus, false));
-          newlflavs.push_back(Flavour(kf_Wplus, true));
-        }
+      }
+      auto it = ampls.find(leg_set);
+      if (it == ampls.end()) {
+        auto ampl = std::make_pair(
+            leg_set, CreateSU2TransformedAmplitude((*current_ampl), leg_set_signed));
+        it = ampls.insert(std::move(ampl)).first;
+      }
+      current_ampl = &it->second;
+    }
 
-        // create valid amplitudes
-        for (const auto newkflav : newkflavs) {
-          for (const auto newlflav : newlflavs) {
-            if (kflav.IntCharge() + lflav.IntCharge()
-                != newkflav.IntCharge() + newlflav.IntCharge())
-              continue;
-            auto ampl =
-                std::make_pair(Cluster_Ampl_Key{{k, newkflav.Kfcode()},
-                                                {l, newlflav.Kfcode()}},
-                               CreateSU2TransformedAmplitude(
-                                   baseampl, {{k, newkflav}, {l, newlflav}}));
+    // create ampls needed for Z/photon mixing in Ls coefficients (induced by
+    // non-diagonal elements of C^ew)
+    if (activecoeffs.find(EWSudakov_Log_Type::Ls) != activecoeffs.end()) {
+      for (size_t i{0}; i < nlegs; ++i) {
+        const auto flav = (*current_ampl)->Leg(i)->Flav();
+        int newkf{kf_none};
+        if (flav.IsPhoton())
+          newkf = kf_Z;
+        else if (flav.Kfcode() == kf_Z)
+          newkf = kf_photon;
+        if (newkf != kf_none) {
+          auto ampl = std::make_pair(
+              Cluster_Ampl_Key{{i, newkf}},
+              CreateSU2TransformedAmplitude(
+                  (*current_ampl), {{i, static_cast<long int>(newkf)}}));
+          ampls.insert(std::move(ampl));
+        }
+      }
+    }
+
+    // create ampls needed for terms with a single I^Z (either squared or
+    // non-squared, i.e. it does not matter if we use IZ or IZ2 below because
+    // we only need the corresponding flavour replacement)
+    if (activecoeffs.find(EWSudakov_Log_Type::lZ) != activecoeffs.end()) {
+      for (size_t i{0}; i < nlegs; ++i) {
+        const auto flav = (*current_ampl)->Leg(i)->Flav();
+        const auto couplings = ewgroupconsts.IZ2(flav, 0);
+        for (const auto coupling : couplings) {
+          if (coupling.first != flav) {
+            auto ampl = std::make_pair(
+                Cluster_Ampl_Key{{i, std::abs(coupling.first)}},
+                CreateSU2TransformedAmplitude(
+                    (*current_ampl), {{i, coupling.first}}));
             ampls.insert(std::move(ampl));
+          }
+        }
+      }
+    }
+
+    if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
+      for (size_t k{0}; k < nlegs; ++k) {
+        for (size_t l{0}; l < k; ++l) {
+          // s-channel-related loops will have vanishing log coeffs
+          if (k == 1 && l == 0)
+            continue;
+          if (nlegs == 4 && k == 3 && l == 2)
+            continue;
+          const auto kflav = (*current_ampl)->Leg(k)->Flav();
+          const auto lflav = (*current_ampl)->Leg(l)->Flav();
+
+          // I^Z * I^Z terms
+          auto kcouplings = ewgroupconsts.IZ(kflav, 1);
+          auto lcouplings = ewgroupconsts.IZ(lflav, 1);
+            for (const auto kcoupling : kcouplings) {
+              for (const auto lcoupling : lcouplings) {
+                if (kcoupling.first != kflav ||
+                    lcoupling.first != lflav) {
+                  auto ampl = std::make_pair(
+                      Cluster_Ampl_Key{{k, std::abs(kcoupling.first)},
+                                       {l, std::abs(lcoupling.first)}},
+                      CreateSU2TransformedAmplitude(
+                          (*current_ampl), {{k, kcoupling.first}, {l, lcoupling.first}}));
+                  ampls.insert(std::move(ampl));
+                }
+              }
+            }
+
+          // I^\pm * I^\pm terms
+          for (size_t isplus{0}; isplus < 2; ++isplus) {
+            kcouplings = ewgroupconsts.Ipm(kflav, 1, isplus);
+            lcouplings = ewgroupconsts.Ipm(lflav, 1, !isplus);
+            for (const auto kcoupling : kcouplings) {
+              for (const auto lcoupling : lcouplings) {
+                if (kcoupling.first != kflav ||
+                    lcoupling.first != lflav) {
+                  auto ampl = std::make_pair(
+                      Cluster_Ampl_Key{{k, std::abs(kcoupling.first)},
+                                       {l, std::abs(lcoupling.first)}},
+                      CreateSU2TransformedAmplitude(
+                          (*current_ampl), {{k, kcoupling.first}, {l, lcoupling.first}}));
+                  ampls.insert(std::move(ampl));
+                }
+              }
+            }
           }
         }
       }

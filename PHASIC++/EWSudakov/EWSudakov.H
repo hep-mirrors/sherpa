@@ -23,7 +23,7 @@ namespace PHASIC {
   using Leg_Kfcode_Map = std::map<size_t, kf_code>;
   // NOTE: Flavour has a (long int)-conversion operator
   using Leg_Kfcode_Map_Signed = std::unordered_map<size_t, long int>;
-  using Couplings = std::unordered_map<kf_code, Complex>;
+  using Couplings = std::unordered_map<long int, Complex>;
 
   enum class EWSudakov_Log_Type {
     // TODO: add more coeffs (and their implementation)
