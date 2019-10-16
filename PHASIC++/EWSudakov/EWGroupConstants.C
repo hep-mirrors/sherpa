@@ -84,52 +84,11 @@ double EWGroupConstants::NondiagonalCew() const
 
 Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 {
-  // TODO: just return IZ()^2 here, as soon as it implements the photon/Z
-  // constants
-  static const auto IZ2LefthandedLepton
-    = std::pow(m_cw2 - m_sw2, 2) / (4*m_sw2*m_cw2);
-  static const auto IZ2Neutrino = 1 / (4*m_sw2*m_cw2);
-  const long int signed_kf{flav};
-  if (flav.IsLepton()) {  // cf. eq. (B.16)
-    if (pol == 0) {
-      if (flav.IsUptype())
-        THROW(fatal_error, "Right-handed neutrino are not supported");
-      return {{signed_kf, m_sw2 / m_cw2}};
-    } else {
-      if (flav.IsUptype())
-        return {{signed_kf, IZ2Neutrino}};
-      else
-        return {{signed_kf, IZ2LefthandedLepton}};
-    }
-  } else if (flav.IsQuark()) {  // cf. eq. (B.16)
-    if (pol == 0) {
-      if (flav.IsUptype())
-        return {{signed_kf, 4 * m_sw2 / (9 * m_cw2)}};
-      else
-        return {{signed_kf, 1 * m_sw2 / (9 * m_cw2)}};
-    } else {
-      if (flav.IsUptype())
-        return {
-            {signed_kf, std::pow(3 * m_cw2 - m_sw2, 2) / (36 * m_sw2 * m_cw2)}};
-      else
-        return {
-            {signed_kf, std::pow(3 * m_cw2 + m_sw2, 2) / (36 * m_sw2 * m_cw2)}};
-    }
-  } else if (std::abs(signed_kf) == kf_phiplus) {
-    return {{signed_kf, IZ2LefthandedLepton}};
-  } else if (signed_kf == kf_chi) {
-    return {{signed_kf, IZ2Neutrino}, {kf_h0, -IZ2Neutrino}};
-  } else if (std::abs(signed_kf) == kf_Wplus) {
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
-    return {{signed_kf, m_cw2 / m_sw2}};
-  } else if (flav.IsBoson() && flav.Charge() == 0) {
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
-    return {};
-  } else {
-    THROW(not_implemented, "Missing implementation");
+  auto couplings{IZ(flav, pol)};
+  for (auto& coupling : couplings) {
+    coupling.second *= coupling.second;
   }
+  return couplings;
 }
 
 Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
