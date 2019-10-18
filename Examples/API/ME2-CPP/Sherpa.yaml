@@ -6,7 +6,7 @@ INIT_ONLY: 2
 PDF_LIBRARY: None
 
 PROCESSES:
-- Process: 11 -11 -> 2 -2 21 21 21 21
+- 11 -11 -> 2 -2 21 21 21 21: {}
 
 NUMBER_OF_POINTS: 4
 

@@ -82,6 +82,7 @@ std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)
     case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
     case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
   }
+  return s;
 }
 
 std::istream& AMISIC::operator>>(std::istream& s, overlap_form::code& f)
@@ -103,6 +104,7 @@ std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme::code& sc)
     case scale_scheme::PT:           return os << "PT";
     case scale_scheme::PT_with_Raps: return os << "PT modified with rapidities";
   }
+  return os;
 }
 
 std::istream& AMISIC::operator>>(std::istream& is, scale_scheme::code& sc)

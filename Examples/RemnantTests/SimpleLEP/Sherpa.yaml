@@ -16,5 +16,5 @@ ORDER_ALPHAS: 2
 CSS_FS_PT2MIN: 1.00
 
 PROCESSES:
-- Process: 11 -11 -> 93 93
-  Order: {QCD: Any, EW: 2}
+- 11 -11 -> 93 93:
+    Order: {QCD: Any, EW: 2}

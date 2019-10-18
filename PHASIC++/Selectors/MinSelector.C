@@ -70,7 +70,7 @@ void MinSelector::BuildCuts(Cut_Data * cuts)
   return;
 }
 
-DECLARE_ND_GETTER(MinSelector,"MinSelector",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MinSelector,"MinSelector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MinSelector>::
 operator()(const Selector_Key &key) const
@@ -81,10 +81,8 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,MinSelector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   std::string w(width+4,' ');
-  str<<"{\n"
-     <<w<<"  Type: MinSelector,\n"
-     <<w<<"  Subselectors: [...]\n"
-     <<w<<"}";
+  str<<"MinSelector:\n"
+     <<w<<"  Subselectors: [...]";
 }

@@ -139,6 +139,15 @@ String_Vector Settings::GetConfigFiles()
   return {"Sherpa.yaml"};
 }
 
+bool Settings::IsList(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsList(keys))
+      return true;
+  }
+  return false;
+}
+
 size_t Settings::GetItemsCount(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders) {
@@ -245,15 +254,37 @@ void Settings::SetDefault(const Settings_Keys& keys, const char* value)
 std::string Settings::ApplyReplacements(const Settings_Keys& settings_keys,
                                         const std::string& value)
 {
-  std::string result{ value };
   const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
   const auto it = m_replacements.find(keys);
   if (it == m_replacements.end())
-    return result;
+    return value;
   for (const auto& replacement : it->second) {
-    if (result == replacement.first) {
+    if (value == replacement.first) {
       return replacement.second;
     }
   }
-  return result;
+  return value;
+}
+
+void Settings::SetDefaultSynonyms(const Settings_Keys& settings_keys,
+                                  const std::vector<std::string>& synonyms)
+{
+  const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+  const auto it = m_defaultsynonyms.find(keys);
+  if (m_defaultsynonyms.find(keys) != m_defaultsynonyms.end())
+    if (synonyms != it->second)
+      THROW(fatal_error, "A different default synonyms list for "
+          + keys.back() + " has already been set.");
+  m_defaultsynonyms[keys] = synonyms;
+}
+
+bool Settings::IsDefaultSynonym(const Settings_Keys& settings_keys,
+                                const std::string& value)
+{
+  const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
+  const auto it = m_defaultsynonyms.find(keys);
+  if (it == m_defaultsynonyms.end())
+    return false;
+  const auto& v = it->second;
+  return (std::find(v.begin(), v.end(), value) != v.end());
 }

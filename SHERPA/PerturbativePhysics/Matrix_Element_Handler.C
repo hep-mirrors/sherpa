@@ -61,9 +61,8 @@ void Matrix_Element_Handler::RegisterDefaults()
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
-    Scoped_Settings&& procsettings)
+    Scoped_Settings& procsettings)
 {
-  procsettings["Process"].SetDefault("");
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
   procsettings.DeclareVectorSettingsWithEmptyDefault({
@@ -355,7 +354,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
-  msg_Out()<<METHOD<<":\n"<<pi<<"\n";
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
@@ -549,13 +547,20 @@ void Matrix_Element_Handler::BuildProcesses()
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0)
     THROW(missing_input, "No process data.");
 
-  RegisterMainProcessDefaults(s["PROCESSES"]);
-
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
+    const auto keys = proc.GetKeys();
+    if (keys.size() != 1) {
+      THROW(fatal_error, std::string("Each process mapping must have ")
+          + "exactly one key-value pair, where the key gives the process "
+          + "specification (i.e. `a b -> x y ...').");
+    }
+    const std::string& name = keys[0];
+    auto procsettings = proc[name];
+    RegisterMainProcessDefaults(procsettings);
     Single_Process_List_Args args;
-    ReadFinalStateMultiIndependentProcessSettings(proc, args);
-    ReadFinalStateMultiSpecificProcessSettings(proc, args);
+    ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
+    ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
@@ -571,7 +576,7 @@ void Matrix_Element_Handler::BuildProcesses()
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
-  Scoped_Settings proc, Single_Process_List_Args& args)
+  const std::string& procname, Scoped_Settings proc, Single_Process_List_Args& args)
 {
   // fill process info
   Settings& s = Settings::GetMainSettings();
@@ -587,10 +592,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   args.pi.p_gens=&m_gens;
 
   // fill initial/final state
-  const auto procname = proc["Process"].Get<std::string>();
   size_t pos(procname.find("->"));
   if (pos==std::string::npos)
-    THROW(fatal_error, "Process name must be of the form `a b -> x y'.");
+    THROW(fatal_error, "Process name must be of the form `a b -> x y ...'.");
   args.ini = procname.substr(0,pos);
   args.fin = procname.substr(pos+2);
 
@@ -668,8 +672,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
-        || subkey == "CKKW"
-        || subkey == "Process")
+        || subkey == "CKKW")
       continue;
 
     // read value (and potentially do some pre-processing for non-scalar
@@ -945,13 +948,13 @@ void Matrix_Element_Handler::BuildSingleProcessList(
     }
     if (args.pi.m_ckkw&1) {
       MyStrStream jfyaml;
-      jfyaml << "{Type: METS";
+      jfyaml << "METS: {";
       std::string ycut{ args.pbi.m_gycut };
       GetMPvalue(args.pbi.m_vycut,
                  cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),
                  ycut);
-      jfyaml << ", YCUT: \"" << ycut << "\"";
+      jfyaml << "YCUT: \"" << ycut << "\"";
       if (i<loprocs) {
         jfyaml << ", LO: true";
 	if (args.pbi.m_cutcore==true) {

@@ -1,8 +1,7 @@
 EVENTS: 100k
 EVENT_GENERATION_MODE: Weighted
-TAGS: {
+TAGS:
   LGEN: BlackHat
-}
 ME_GENERATORS: [Amegic, $(LGEN)]
 # Analysis (please configure with --enable-rivet & --enable-hepmc2)
 ANALYSIS: Rivet
@@ -23,44 +22,34 @@ SCALES: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
 EW_SCHEME: 0
 WIDTH_SCHEME: Fixed  # sin\theta_w -> 0.23
 DIPOLES: {ALPHA: 0.03}
-PARTICLE_DATA: {
-  13: {Massive: true},
+PARTICLE_DATA:
+  13: {Massive: true}
   15: {Massive: true}
-}
 PROCESSES:
-  - {
-    # The Born piece
-    Process: 93 93 -> 90 91 93,
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: B,
-    Order: {QCD: Any, EW: 2},
-    }
-  - {
-    # The virtual piece
-    Process: 93 93 -> 90 91 93,
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: V,
-    Loop_Generator: $(LGEN),
-    Order: {QCD: Any, EW: 2},
-    }
-  - {
-    # The integrated subtraction piece
-    Process: 93 93 -> 90 91 93,
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: I,
-    Order: {QCD: Any, EW: 2},
-    }
+# The Born piece
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: B
+    Order: {QCD: Any, EW: 2}
+# The virtual piece
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: V
+    Loop_Generator: $(LGEN)
+    Order: {QCD: Any, EW: 2}
+# The integrated subtraction piece
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: I
+    Order: {QCD: Any, EW: 2}
 SELECTORS:
-  - {
-    Type: FastjetFinder,
-    Algorithm: antikt,
-    N: 1,
-    PTMin: 20,
-    ETMin: 0,
+- FastjetFinder:
+    Algorithm: antikt
+    N: 1
+    PTMin: 20
+    ETMin: 0
     DR: 0.4
-    }
-RIVET: {
-  -a: ATLAS_2012_I1083318,
-  USE_HEPMC_SHORT: 1,
+RIVET:
+  -a: ATLAS_2012_I1083318
+  USE_HEPMC_SHORT: 1
   IGNOREBEAMS: 1
-}

@@ -27,9 +27,17 @@ Combined_Selector::~Combined_Selector()
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
   for (auto s : key.GetSelectors()) {
-    auto name = s["Type"].SetDefault("").Get<std::string>();
-    if (name == "") {
+    std::string name;
+    if (s.IsList()) {
       name = s.SetDefault<std::string>({}).GetVector<std::string>()[0];
+    } else {
+      const auto keys = s.GetKeys();
+      if (keys.size() != 1) {
+        THROW(fatal_error, std::string("Each selector mapping must have ")
+            + "exactly one key-value pair, where the key gives the selector "
+            + "type.");
+      }
+      name = keys[0];
     }
     Selector_Key subkey;
     subkey.m_settings = s;

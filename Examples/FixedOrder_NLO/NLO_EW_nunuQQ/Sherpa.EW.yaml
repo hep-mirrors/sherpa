@@ -17,15 +17,13 @@ PARTICLE_DATA: {
   5: {Massive: 1}
   }
 PROCESSES:
-  - {
-    Process: 12 -12 -> 5 -5,
-    NLO_EW_Mode: Fixed_Order,
-    NLO_EW_Part: IRS,
-    Loop_Generator: OpenLoops,
-    Integration_Error: 0.01,
-    Order: {QCD: 0},
+- 12 -12 -> 5 -5:
+    NLO_EW_Mode: Fixed_Order
+    NLO_EW_Part: IRS
+    Loop_Generator: OpenLoops
+    Integration_Error: 0.01
+    Order: {QCD: 0}
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1

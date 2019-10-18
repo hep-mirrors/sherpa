@@ -15,12 +15,12 @@ TAGS:
 SCALES: VAR{$(SCF)*sqr(2000.)}
 
 PROCESSES:
-- Process:      12 -12 -> 6 -6
-  NLO_Mode:     Fixed_Order
-  NLO_Part:     RS
-  NLO_Order:    {QCD: 0, EW: 1}
-  Order:        {QCD: 0, EW: 2}
-  Print_Graphs: Graphs
+- 12 -12 -> 6 -6:
+    NLO_Mode:     Fixed_Order
+    NLO_Part:     RS
+    NLO_Order:    {QCD: 0, EW: 1}
+    Order:        {QCD: 0, EW: 2}
+    Print_Graphs: Graphs
 
 RIVET:
   USE_HEPMC_SHORT: 1

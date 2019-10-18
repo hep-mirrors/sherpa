@@ -37,11 +37,7 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
 
   ResetPartLists();
   if (!HarvestParticles(bloblist)) return Return_Value::New_Event;
-  if (m_partlists.size()==0 || (*m_partlists.begin())->empty()) {
-    //msg_Debugging()<<"ERROR in "<<METHOD<<":\n"
-    //		   <<"   No coloured particle found leaving shower blobs.\n";
-    return Return_Value::Nothing;
-  }
+  if (m_partlists.size()==0 || (*m_partlists.begin())->empty()) return Return_Value::Nothing;
   while (!m_partlists.empty()) {
     p_partlist = m_partlists.front();  
     if (DecomposeIntoSinglets()) {
@@ -60,7 +56,6 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
 }
 
 bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
-  m_partlists.push_back(new Part_List);
   for (Blob_List::iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_reconnections) ||
@@ -70,7 +65,10 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 	p_partlist = new Part_List;
         m_partlists.push_back(p_partlist);
       }
-      else p_partlist = m_partlists.front();
+      else {
+	m_partlists.push_back(new Part_List);
+	p_partlist = m_partlists.front();
+      }
       if (!FillParticleLists(*blit)) return false;
       (*blit)->UnsetStatus(blob_status::needs_reconnections |
 			   blob_status::needs_hadronization);

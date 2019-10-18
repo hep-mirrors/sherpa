@@ -153,8 +153,7 @@ void Decay_Selector::AssignId(Term *term)
 	       (2,term->Tag().length()-3)));
 }
 
-DECLARE_ND_GETTER(Decay_Selector,"Decay",
-		  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Decay_Selector,"Decay",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Decay_Selector>::
 operator()(const Selector_Key &key) const
@@ -165,7 +164,7 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Decay_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"[Decay, kf, min, max]";
 }
 
@@ -260,8 +259,7 @@ void Decay2_Selector::AssignId(Term *term)
   }
 }
 
-DECLARE_ND_GETTER(Decay2_Selector,"Decay2",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Decay2_Selector,"Decay2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Decay2_Selector>::
 operator()(const Selector_Key &key) const
@@ -330,8 +328,7 @@ void DecayMass_Selector::BuildCuts(Cut_Data *cuts)
   }
 }
 
-DECLARE_ND_GETTER(DecayMass_Selector,"DecayMass",
-		  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DecayMass_Selector,"DecayMass",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DecayMass_Selector>::
 operator()(const Selector_Key &key) const
@@ -342,7 +339,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,DecayMass_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"[DecayMass, kf, min, max]";
 }
-

@@ -11,9 +11,9 @@ PARTICLE_DATA:
 MASSIVE_PS: 3
 
 PROCESSES:
-- Process: 11 -11 -> 93 93
-  Order: {QCD: Any, EW: 2}
-- Process: 11 -11 -> 4 -4
-  Order: {QCD: Any, EW: 2}
-- Process: 11 -11 -> 5 -5
-  Order: {QCD: Any, EW: 2}
+- 11 -11 -> 93 93:
+    Order: {QCD: Any, EW: 2}
+- 11 -11 -> 4 -4:
+    Order: {QCD: Any, EW: 2}
+- 11 -11 -> 5 -5:
+    Order: {QCD: Any, EW: 2}

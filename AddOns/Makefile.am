@@ -22,4 +22,4 @@ nobase_dist_pkgdata_DATA = \
 			HEPEVT/HEPEVT_Interface.C \
 			HEPEVT/Makefile
 
-EXTRA_DIST =  Dir2Db  Db2Dir
+EXTRA_DIST =  Dir2Db  Db2Dir dat2yaml.py

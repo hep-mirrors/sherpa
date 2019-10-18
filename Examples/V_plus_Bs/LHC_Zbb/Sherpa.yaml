@@ -29,19 +29,19 @@ PDF_LIBRARY: MSTW08Sherpa
 PDF_SET: mstw2008nlo_nf4
 
 PROCESSES:
-- Process: 93 93 -> 23 5 -5
-  NLO_Mode: MC@NLO
-  NLO_Order: {QCD: 1, EW: 0}
-  ME_Generator: Amegic
-  RS_ME_Generator: Comix
-  Loop_Generator: LHOLE
-  Order: {QCD: Any, EW: 1}
+- 93 93 -> 23 5 -5:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: LHOLE
+    Order: {QCD: Any, EW: 1}
 
 SELECTORS:
-- Type: FastjetFinder
-  Algorithm: antikt
-  N: 2
-  PTMin: 5.0
-  DR: 0.5
-  EtaMax: 5
-  Nb: 2
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 5.0
+    DR: 0.5
+    EtaMax: 5
+    Nb: 2

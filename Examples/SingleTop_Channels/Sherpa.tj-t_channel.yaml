@@ -29,11 +29,11 @@ EW_SCHEME: 3
 PARTICLE_DATA: { 6: {Width: 0} }
 
 PROCESSES:
-- Process: 93 93 -> 6 93
-  NLO_Mode: MC@NLO
-  NLO_Order: {QCD: 1, EW: 0}
-  Order: {QCD: 0, EW: 2}
-  ME_Generator: Amegic
-  RS_ME_Generator: Comix
-  Loop_Generator: OpenLoops
-  Min_N_TChannels: 1  # require t-channel W
+- 93 93 -> 6 93:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 0, EW: 2}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops
+    Min_N_TChannels: 1  # require t-channel W

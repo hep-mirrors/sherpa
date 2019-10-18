@@ -334,7 +334,7 @@
 #define      kf_Xi_c_2574                 4312
 #define      kf_Xi_c_2574_plus            4322
 #define      kf_Omega_c_0                 4332
-#define      kf_Sigma_b_5820_minus        5212
+#define      kf_Sigma_b_5820_minus        5112
 #define      kf_Lambda_b                  5122
 #define      kf_Sigma_b_5820              5212
 #define      kf_Sigma_b_5820_plus         5222
