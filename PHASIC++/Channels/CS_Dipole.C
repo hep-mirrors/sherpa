@@ -10,6 +10,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -45,6 +46,15 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
   if (m_ijt<psh->Process()->NIn()) m_type|=1;
   if (m_kt<psh->Process()->NIn()) m_type|=2;
   Reset();
+  Settings& s = Settings::GetMainSettings();
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
+  if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+  else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+  else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+  else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+  else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
+  else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
+  else                               m_dipole_case = EXTAMP::DipoleCase::CS;
 }
 
 CS_Dipole::~CS_Dipole() 

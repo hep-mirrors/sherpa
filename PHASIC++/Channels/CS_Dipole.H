@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Org/Info_Key.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace PHASIC {
 
@@ -31,6 +32,8 @@ namespace PHASIC {
     std::string m_id;
 
     std::map<size_t,size_t> m_brmap, m_rbmap;
+
+    EXTAMP::DipoleCase m_dipole_case;
 
     size_t m_type, m_ijt, m_kt, m_idx, m_isrmode;
     bool   m_on, m_bmcw;

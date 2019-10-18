@@ -42,7 +42,28 @@ Vec4D_Vector FF_Dipole::GeneratePoint
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"y = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<"\n";
-  if (!m_massive) {
+
+  if(m_dipole_case==EXTAMP::IDa){
+    /* i -> i=gluon,
+ *     j -> a=emitter
+ *     k -> W=kin.spect. */
+    int wt,ait;
+    const double mw2=sqr(Flavour(24).Mass());
+    if     (m_ijt==4)   {wt=2; ait=4;}
+    else if(m_ijt==5)   {wt=3; ait=5;}
+    else                THROW(fatal_error, "Invalid assignment.");
+    double Q2((p[wt]+p[ait]).Abs2());
+    double eps(Q2-mw2);
+    double ymin(0.);
+    double ymax(1.);
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,ymin,ymax,1,rn[0]);
+    double viji(1.);
+    double vijk(1.);
+    double zc(0.5*(eps*m_rn[0])/(mw2+eps*m_rn[0]));
+    double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
+    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
+  }
+  else if (!m_massive) {
     m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,m_amin,1.0,1,rn[0]);
     m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
   }
@@ -68,11 +89,27 @@ Vec4D_Vector FF_Dipole::GeneratePoint
   Vec4D_Vector pp(p.size()+1);
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
   Kin_Args ff(m_rn[0],m_rn[1],m_rn[2]);
-  if (ConstructFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,p[m_ijt],p[m_kt],ff)<0)
-    msg_Error()<<METHOD<<"(): Invalid kinematics."<<std::endl;
-  pp[m_sub.m_i]=ff.m_pi;
-  pp[m_sub.m_j]=ff.m_pj;
-  pp[m_sub.m_k]=ff.m_pk;
+
+  if(m_dipole_case==EXTAMP::IDa){
+    int wt,ait;
+    double mw2=sqr(Flavour(24).Mass());
+    if     (m_ijt==4)   {wt=2; ait=4;}
+    else if(m_ijt==5)   {wt=3; ait=5;}
+    if (ConstructFFDipole(0.,mw2,mw2,0.,p[wt],p[ait],ff)<0)
+      msg_Error()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    int w = wt;
+    pp[w]        =ff.m_pj; // kin spect
+    pp[m_sub.m_i]=ff.m_pi; // gluon
+    pp[m_sub.m_j]=ff.m_pk; // emitter
+    // checked that clustered momenta in AMEGIC agree with BVI-momenta from here
+  }
+  else{
+    if (ConstructFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,p[m_ijt],p[m_kt],ff)<0)
+      msg_Error()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    pp[m_sub.m_i]=ff.m_pi;
+    pp[m_sub.m_j]=ff.m_pj;
+    pp[m_sub.m_k]=ff.m_pk;
+  }
   return pp;
 }
 
@@ -80,14 +117,38 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
 {
   Vec4D_Vector pp(p.size()-1);
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
-  Kin_Args ff(ClusterFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,
-			      p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1));
+  Kin_Args ff;
+
+  if(m_dipole_case==EXTAMP::IDa){
+    double mw2=sqr(Flavour(24).Mass());
+    int a,w;
+    if     (m_sub.m_j==5)   {a=5; w=2;}
+    else if(m_sub.m_j==6)   {a=6; w=3;}
+    else                    THROW(fatal_error, "Invalid assignment.");
+    ff = ClusterFFDipole(0.,mw2,mw2,0.,
+  	     p[m_sub.m_i]/*gluon*/,p[w]/*kin.spect*/,p[a]/*emitter*/,1);
+  }
+  else{
+    ff = ClusterFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,
+  	     p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1);
+  }
   if (ff.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
   m_rn[0]=ff.m_y;
   m_rn[1]=ff.m_z;
   m_rn[2]=ff.m_phi;
-  pp[m_ijt]=ff.m_pi;
-  pp[m_kt]=ff.m_pk;
+
+  if(m_dipole_case==EXTAMP::IDa){
+    int ait, wt;
+    if     (m_sub.m_ijt==4)   {ait=4; wt=2;}
+    else if(m_sub.m_ijt==5)   {ait=5; wt=3;}
+    pp[wt]=ff.m_pi;
+    pp[ait]=ff.m_pk;
+    // checked that BVI-momenta agree with that at the beginning of GeneratePoint
+  }
+  else{
+    pp[m_ijt]=ff.m_pi;
+    pp[m_kt]=ff.m_pk;
+  }
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_bmcw) {
     p_fsmc->GenerateWeight(&pp.front(),cuts);
@@ -101,13 +162,55 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
-  if (m_rn[0]<m_amin) {
-    m_rbweight=m_weight=0.0;
-    return 0.0;
+
+  if(m_dipole_case==EXTAMP::IDa){
+    int a,w;
+    if(m_sub.m_j==5) {a=5; w =2;}
+    if(m_sub.m_j==6) {a=6; w =3;}
+    Vec4D n = p[w] + p[m_sub.m_i];
+    const double vi = p[a]*p[m_sub.m_i] / (p[a]*n);
+    if (vi<m_amin) {
+      m_rbweight=m_weight=0.0;
+      return 0.0;
+    }
   }
-  m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/(16.0*sqr(M_PI))*(1.0-m_rn[0]);
+  else{
+    if (m_rn[0]<m_amin) {
+      m_rbweight=m_weight=0.0;
+      return 0.0;
+    }
+  }
+
+  if(m_dipole_case==EXTAMP::IDa){
+    int ait, wt;
+    if     (m_sub.m_ijt==4)   {ait=4; wt=2;}
+    else if(m_sub.m_ijt==5)   {ait=5; wt=3;}
+    m_weight=(pp[ait]+pp[wt]).Abs2()/(16.0*sqr(M_PI))*(1.0-m_rn[0]);
+  }
+  else
+    m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/(16.0*sqr(M_PI))*(1.0-m_rn[0]);
   m_weight*=pow(m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
-  if (!m_massive) {
+
+  if(m_dipole_case==EXTAMP::IDa){
+    int wt,ait;
+    const double mw2=sqr(Flavour(24).Mass());
+    if     (m_ijt==4)   {wt=2; ait=4;}
+    else if(m_ijt==5)   {wt=3; ait=5;}
+    double Q2((pp[wt]+pp[ait]).Abs2());
+    double eps(Q2-mw2);
+    double ymin(0.);
+    double ymax(1.);
+    double viji(1.);
+    double vijk(1.);
+    double zc(0.5*(eps*m_rn[0])/(mw2+eps*m_rn[0]));
+    double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
+    m_weight*=eps*eps/Q2/sqrt(sqr(Q2-mw2));
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_yexp,ymin,ymax,m_rn[0],1,m_rn[0]);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
+  }
+  else if (!m_massive) {
     m_weight*=Channel_Basics::PeakedWeight
       (0.0,m_yexp,m_amin,1.0,m_rn[0],1,m_rn[0]);
     m_weight*=Channel_Basics::PeakedWeight
