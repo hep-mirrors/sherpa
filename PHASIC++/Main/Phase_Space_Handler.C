@@ -39,6 +39,7 @@ namespace ATOOLS { template class SP(Phase_Space_Handler); }
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhanceobs(NULL), p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
+  m_enhance(1.0),
   p_variationweights(NULL),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
