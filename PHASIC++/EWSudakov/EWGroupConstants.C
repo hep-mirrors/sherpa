@@ -26,11 +26,7 @@ EWGroupConstants::EWGroupConstants():
 
 double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
 {
-  // pol is either chirality or polarisation:
-  // 0: + (right-handed or transverse polarisation)
-  // 1: - (left-handed or transverse polarisation)
-  // 2: 0 (longitudinal polarisation)
-  // NOTE: for longitudinal bosons, use the Goldstone equivalence theorem
+  assert(!(flav.IsVector() && pol == 2));
   static const auto CewLefthandedLepton = (1 + 2*m_cw2) / (4*m_sw2*m_cw2);
   if (flav.IsLepton()) {  // cf. eq. (B.16)
     if (pol == 0) {
@@ -52,22 +48,9 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
   } else if (flav.IsScalar()) {  // cf. eq. (B.18) and (B.16)
     return CewLefthandedLepton;
   } else if (flav.Kfcode() == kf_Wplus) {
-    if (pol == 2) {
-      // TODO: as soon as we have switched all the coefficients to use the
-      // Goldstone bosons instead of longitudinal gauge bosons this case should
-      // not be necessary anymore
-      return CewLefthandedLepton;
-    } else {
-      return 2/m_sw2;
-    }
+    return 2/m_sw2;
   } else if (flav.IsBoson() && flav.Charge() == 0) {
-    if (pol == 2) {
-      // TODO: as soon as we have switched all the coefficients to use the
-      // Goldstone bosons instead of longitudinal gauge bosons this case should
-      // not be necessary anymore
-      assert(!flav.IsPhoton());
-      return CewLefthandedLepton;
-    } else if (flav.IsPhoton()) {
+    if (flav.IsPhoton()) {
       return 2.0;
     } else {
       return 2.0 * m_cw2/m_sw2;
@@ -77,7 +60,7 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
   }
 }
 
-double EWGroupConstants::NondiagonalCew() const
+double EWGroupConstants::NondiagonalCew() const noexcept
 {
   return -2.0 * m_cw/m_sw;
 }
@@ -93,6 +76,7 @@ Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 
 Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
 {
+  assert(!(flav.IsVector() && pol == 2));
   const auto sign = (flav.IsAnti() ? -1 : 1);
   static const auto IZLefthandedLepton = (m_sw2 - m_cw2)/(2*m_cw*m_sw);
   const long int signed_kf{flav};
@@ -130,12 +114,8 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
         return {{signed_kf, -sign * (3 * m_cw2 + m_sw2) / (6 * m_sw * m_cw)}};
     }
   } else if (std::abs(signed_kf) == kf_Wplus) {
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
     return {{signed_kf, sign * m_cw / m_sw}};
   } else if (signed_kf == kf_Z) {
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
     return {};  // the Z self-coupling is zero
   } else if (signed_kf == kf_photon) {
     return {};  // the Z does not couple to the photon
@@ -150,6 +130,7 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
                                 int pol,
                                 bool isplus) const
 {
+  assert(!(flav.IsVector() && pol == 2));
   const long int signed_kf{flav};
   if (flav.IsFermion()) {
     if (pol == 0)
@@ -171,8 +152,6 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
     if (isplus != flav.IsAnti()) {
       return {};
     }
@@ -182,8 +161,6 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_Z) {
     // cf. (B.22), (B.26) and (B.27)
-    // we expect Goldstone bosons instead of long. gauge bosons
-    assert(pol != 2);
     return {{(isplus ? 1.0 : -1.0) * kf_Wplus,
              (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_photon) {
@@ -213,7 +190,7 @@ double EWGroupConstants::DiagonalBew(const ATOOLS::Flavour& flav, int pol) const
   THROW(not_implemented, s.str());
 }
 
-double EWGroupConstants::NondiagonalBew() const
+double EWGroupConstants::NondiagonalBew() const noexcept
 {
   return -(19.0 + 22.0*m_sw2) / (6.0*m_sw*m_cw);
 }

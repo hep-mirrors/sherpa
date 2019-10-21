@@ -226,10 +226,18 @@ Coeff_Value Sudakov::LsCoeff()
         -m_ewgroupconsts.DiagonalCew(flav, m_current_spincombination[i]) / 2.0;
     coeff += diagonal;
     if (flav.IsVector() && flav.Charge() == 0) {
-      // special case of neutral gauge bosons, they mix and hence non-diagonal
-      // terms appear, cf. e.g. eq. (6.30)
+      // special case of neutral transverse gauge bosons, they mix and hence
+      // non-diagonal terms appear, cf. e.g. eq. (6.30);
+      // assume they are are actually transverse, because we have already
+      // replaced longitudinal ones with Goldstone bosons when calling
+      // BaseAmplitude() above
+      assert(m_current_spincombination[i] != 2);
       const kf_code newkf = (flav.Kfcode() == kf_Z) ? kf_photon : kf_Z;
       const auto prefactor = -m_ewgroupconsts.NondiagonalCew() / 2.0;
+      // we can use amplitudes without replacing longitudinal gauge bosons
+      // here, because of (i) eq. (3.4) and (ii) Goldstone boson correction
+      // terms are diagonal (hence we only need to pass the right flavour above
+      // when using DiagonalCew())
       const auto transformed =
           TransformedAmplitudeValue({{i, newkf}}, m_current_spincombination);
       auto amplratio = transformed / m_current_me_value;
@@ -253,9 +261,13 @@ Coeff_Value Sudakov::lsZCoeff()
         // this is a non-diagonal IZ2 term, i.e. we need to take ME ratios into
         // account
         const Leg_Kfcode_Map key{{i, std::abs(coupling.first)}};
-        const auto transformed =
-            m_current_goldstone_me_prefactor *
-            TransformedAmplitudeValue(key, m_current_goldstone_spincombination);
+        auto transformed =
+            TransformedAmplitudeValue(key, m_current_spincombination);
+        if (flav.Kfcode() == kf_chi) {
+          // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we need
+          // to apply a factor of i
+          transformed *= Complex{0.0, 1.0};
+        }
         const auto amplratio = transformed / m_current_me_value;
         contrib *= amplratio;
       }
@@ -298,10 +310,16 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
         const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
                                  {indizes[1], std::abs(lcoupling.first)}};
-        const auto transformed =
-            m_current_goldstone_me_prefactor *
-            TransformedAmplitudeValue(key, m_current_goldstone_spincombination);
-        auto amplratio = transformed / m_current_me_value;
+        auto transformed =
+            TransformedAmplitudeValue(key, m_current_spincombination);
+        for (const auto& flav : flavs) {
+          if (flav.Kfcode() == kf_chi) {
+            // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we
+            // need to apply a factor of i
+            transformed *= Complex{0.0, 1.0};
+          }
+        }
+        const auto amplratio = transformed / m_current_me_value;
         contrib *= amplratio;
       }
       coeff += contrib;
@@ -319,10 +337,16 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       for (const auto lcoupling : lcouplings) {
         const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
                                  {indizes[1], std::abs(lcoupling.first)}};
-        const auto transformed =
-            m_current_goldstone_me_prefactor *
-            TransformedAmplitudeValue(key, m_current_goldstone_spincombination);
-        auto amplratio = transformed / m_current_me_value;
+        auto transformed =
+            TransformedAmplitudeValue(key, m_current_spincombination);
+        for (const auto& flav : flavs) {
+          if (flav.Kfcode() == kf_chi) {
+            // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we
+            // need to apply a factor of i
+            transformed *= Complex{0.0, 1.0};
+          }
+        }
+        const auto amplratio = transformed / m_current_me_value;
         coeff += 2.0*kcoupling.second*lcoupling.second*amplratio;
       }
     }
@@ -333,19 +357,22 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
 Coeff_Value Sudakov::lsCCoeff()
 {
   Coeff_Value coeff{0.0};
-  for (size_t i{0}; i < m_current_spincombination.size(); ++i) {
-    const Flavour flav{ m_ampls.BaseAmplitude().Leg(i)->Flav() };
+  const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
+  const auto nspins{m_current_spincombination.size()};
+  for (size_t i{0}; i < nspins; ++i) {
+    const Flavour flav{ base_ampl.Leg(i)->Flav() };
     if (flav.IsFermion()) {
       const auto contrib =
           3.0 / 2.0 *
           m_ewgroupconsts.DiagonalCew(flav, m_current_spincombination[i]);
       coeff += contrib;
-    } else if (flav.Kfcode() == kf_Wplus && m_current_spincombination[i] != 2) {
+    } else if (flav.Kfcode() == kf_Wplus) {
+      assert(m_current_spincombination[i] != 2);
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;
-    } else if (flav.IsVector() && flav.Charge() == 0 &&
-               m_current_spincombination[i] != 2) {
+    } else if (flav.IsVector() && flav.Charge() == 0) {
+      assert(m_current_spincombination[i] != 2);
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;
@@ -355,8 +382,8 @@ Coeff_Value Sudakov::lsCCoeff()
         auto amplratio = transformed / m_current_me_value;
         coeff += m_ewgroupconsts.NondiagonalBew() * amplratio;
       }
-    } else if (flav.IsVector() && m_current_spincombination[i] == 2) {
-      const auto contrib = 2.0*m_ewgroupconsts.DiagonalCew(flav, 2);
+    } else if (flav.Kfcode() == kf_chi || flav.Kfcode() == kf_phiplus) {
+      const auto contrib = 2.0*m_ewgroupconsts.DiagonalCew(flav, 0);
       coeff += contrib;
     }
   }
@@ -426,11 +453,21 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
   }
   auto& legpermutation = m_ampls.LegPermutation(legs);
   std::vector<int> transformedspincombination;
-  for (const auto& idx : legpermutation)
-    transformedspincombination.push_back(spincombination[idx]);
+  for (const auto& idx : legpermutation) {
+    auto pol = spincombination[idx];
+    if (pol == 2) {
+      auto it = legs.find(idx);
+      if (it != legs.end()) {
+        if (it->second == kf_chi || it->second == kf_phiplus ||
+            it->second == kf_h0) {
+          pol = 0;
+        }
+      }
+    }
+    transformedspincombination.push_back(pol);
+  }
   return amplit->second[0].Get(transformedspincombination);
 }
-
 
 namespace PHASIC {
 
