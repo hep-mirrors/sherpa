@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Strings.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -544,16 +545,19 @@ void Matrix_Element_Handler::BuildProcesses()
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
-  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0)
-    THROW(missing_input, "No process data.");
+  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
+    if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
+  }
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
     const auto keys = proc.GetKeys();
     if (keys.size() != 1) {
-      THROW(fatal_error, std::string("Each process mapping must have ")
-          + "exactly one key-value pair, where the key gives the process "
-          + "specification (i.e. `a b -> x y ...').");
+      if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
     }
     const std::string& name = keys[0];
     auto procsettings = proc[name];
