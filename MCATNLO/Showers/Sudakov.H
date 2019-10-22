@@ -23,7 +23,6 @@ namespace MCATNLO {
     double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    double m_phimin;  // phimax not included as phimax = 2*pi-phimin
     double m_vimax;
     double m_vi, m_viab;
     TrialVariables m_trialvariables;
@@ -43,8 +42,9 @@ namespace MCATNLO {
     std::vector<size_t> m_disallowflav;
     void RegisterDefaults() const;
     void ProduceT();
-    bool Veto(double,double);
-    bool Splitting(double,double);
+    bool Veto(double,double,Parton * split);
+    bool Splitting(double,double,Parton * split);
+    double GetKt2(Parton * split) const;
     bool DefineFFBoundaries(double);
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
@@ -74,7 +74,7 @@ namespace MCATNLO {
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
-			  const double=1.,const int=-1, const double phimin=0.);
+			  const double=1.,const int=-1);
 
     void GetSplittingParameters(double &,double &,double &,double &) const;
 

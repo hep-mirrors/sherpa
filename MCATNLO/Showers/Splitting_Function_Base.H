@@ -31,6 +31,9 @@ namespace MCATNLO {
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
   public:
+    const double m_K = 0.9;
+    const double m_F = 4.0;
+    int m_evol;
 
     Splitting_Function_Base();
     Splitting_Function_Base(const SF_Key &key);
@@ -43,13 +46,13 @@ namespace MCATNLO {
        const Color_Info &ci=Color_Info(),
        ATOOLS::Cluster_Amplitude *const sub=NULL);
     virtual double OverIntegrated(const double,const double,
-				  const double,const double, const double phimin=0.);
+				  const double,const double);
     virtual double Overestimated(const double,const double,const double phi=0.);
     virtual double RejectionWeight(const double,const double,
 				   const double,const double,const double, const double phi=0.,
                    const double vi=0., const double alpha=0., const double paipb=0.);
     virtual double Z();         
-    virtual double Phi(const double &phimin) const;
+    virtual double Phi() const;
     double Jacobian(const double &z, const double &vi, const double &phi,
            const double &alpha, const double &paipb, const double &Q2) const;
 

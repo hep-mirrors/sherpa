@@ -51,9 +51,9 @@ void Splitting_Function_Group::SelectOne()
 }
 
 double Splitting_Function_Group::OverIntegrated(const double zmin,const double zmax,
-						const double scale,const double xbj,const double phimin) {
+						const double scale,const double xbj) {
   for (size_t i(0);i<m_splittings.size();++i)
-    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj,phimin);
+    m_partint[i] = m_lastint += m_splittings[i]->OverIntegrated(zmin,zmax,scale,xbj);
   return m_lastint;
 }
 
@@ -79,8 +79,8 @@ double Splitting_Function_Group::Z() {
   return p_selected->Z();
 }         
 
-double Splitting_Function_Group::Phi(const double &phimin) {
-  return p_selected->Phi(phimin);
+double Splitting_Function_Group::Phi() {
+  return p_selected->Phi();
 }
 
 void Splitting_Function_Group::ClearSpecs()

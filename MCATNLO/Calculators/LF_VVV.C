@@ -10,7 +10,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -25,7 +25,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -44,7 +44,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -63,7 +63,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -82,7 +82,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -103,7 +103,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -122,7 +122,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -143,7 +143,7 @@ namespace MCATNLO {
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
-			  const double,const double,const double phimin=0.);
+			  const double,const double);
     double OverEstimated(const double,const double,const double phi=0.);
     double Z();
     double AsymmetryFactor(const double z,const double y,const double Q2);
@@ -198,7 +198,7 @@ double LF_VVV1_FF::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV1_FF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)/(1.-m_zmax));
@@ -254,7 +254,7 @@ double LF_VVV2_FF::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV2_FF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   return 4.*p_cf->MaxCoupling(0) * log(m_zmax/m_zmin);
@@ -285,7 +285,7 @@ double LF_VVV1_FI::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV1_FI::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
@@ -317,7 +317,7 @@ double LF_VVV2_FI::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV2_FI::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
@@ -361,7 +361,7 @@ double LF_VVV1_IF::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV1_IF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.; 
@@ -415,7 +415,7 @@ double LF_VVV2_IF::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV2_IF::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.; 
@@ -447,7 +447,7 @@ double LF_VVV1_II::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV1_II::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.;
@@ -489,7 +489,7 @@ double LF_VVV2_II::AsymmetryFactor(const double z,const double y,const double Q2
 }
 
 double LF_VVV2_II::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.;

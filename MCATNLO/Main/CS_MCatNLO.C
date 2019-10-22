@@ -287,9 +287,15 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
 {
   if(p_mcatnlo->KinFF()->m_dipole_case == EXTAMP::IDa){
     const double mw2 = sqr(Flavour(24).Mass());
-    const double A = alpha*y*(Q2-mw2)/2.;
-    const double B = paipb*(y*(x-1.-mw2/(Q2-mw2))+1-x);
-    return y*(Q2-mw2)/(2*paipb) * (A+B-2*sqrt(A*B)*cos_phi);
+    if(p_mcatnlo->KinFF()->m_evolscheme == 1){
+      const double A = alpha*y*(Q2-mw2)/2.;
+      const double B = paipb*(y*(x-1.-mw2/(Q2-mw2))+1-x);
+      return y*(Q2-mw2)/(2*paipb) * (A+B-2*sqrt(A*B)*cos_phi);
+    }
+    else if(p_mcatnlo->KinFF()->m_evolscheme == 2){
+      return y*(Q2-mw2)*x/2.;
+    }
+    else THROW(fatal_error,"Invalid evolution scheme for res-aware matching");
   }
 
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));

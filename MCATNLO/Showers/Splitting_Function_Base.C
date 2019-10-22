@@ -48,6 +48,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
        p_lf->FlC().IsPhoton())) m_on=true;
   // exclude all massive partons to split, but also Q->Qg
   Settings& s = Settings::GetMainSettings();
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
   bool massive_splittings =
     s["MCATNLO_MASSIVE_SPLITTINGS"].SetDefault(1).Get<int>();
   if (!massive_splittings &&
@@ -140,7 +141,7 @@ double Splitting_Function_Base::AsymmetryFactor
 }
 
 double Splitting_Function_Base::OverIntegrated
-(const double zmin,const double zmax,const double scale,const double xbj, const double phimin)
+(const double zmin,const double zmax,const double scale,const double xbj)
 {
   if (m_mth && (m_type==cstp::FF || m_type==cstp::FI)) {
     if (p_lf->FlA().Mass(true)<m_mth &&
@@ -150,7 +151,7 @@ double Splitting_Function_Base::OverIntegrated
   	sqr(p_lf->FlB().Mass(true)+
   	    p_lf->FlC().Mass(true))>scale) return 0.0;
   }
-  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj,phimin)/m_symf/m_polfac;
+  double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
   if (!(IsBad(lastint)||lastint<0.0)) {
     m_lastint+=lastint;
     m_lastints.push_back(m_lastint);
@@ -196,7 +197,8 @@ double Splitting_Function_Base::RejectionWeight
   double scale(_scale);
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
-  if(p_lf->m_dipole_case==EXTAMP::IDa) m_lastacceptwgt *= Jacobian(z,vi,phi,alpha,paipb,Q2);
+  if(p_lf->m_dipole_case==EXTAMP::IDa && m_evol==1)
+    m_lastacceptwgt *= Jacobian(z,vi,phi,alpha,paipb,Q2);
   // TODO: there are m_lastacceptwgt>1
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt>1.0) {
@@ -260,13 +262,13 @@ void Splitting_Function_Base::ResetLastInt()
   m_lastint=0.0;
 }
 
-double Splitting_Function_Base::Phi(const double &phimin) const
+double Splitting_Function_Base::Phi() const
 {
   switch(p_lf->m_dipole_case){
     case EXTAMP::CS:
       return 2.*M_PI*ATOOLS::ran->Get();
     case EXTAMP::IDa:
-      return 2.*atan(tan(phimin/2.) / (1-2.*ATOOLS::ran->Get()));
+      return 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
   }
 }
 
