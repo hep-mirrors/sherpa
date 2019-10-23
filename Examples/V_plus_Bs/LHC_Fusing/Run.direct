@@ -1,0 +1,43 @@
+(run){
+  # general setting
+  EVENTS 1M; INTEGRATION_ERROR 0.05;
+
+  # me generator settings
+  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
+  LOOPGEN:=OpenLoops;
+
+  # collider setup
+  BEAM_1 2212; BEAM_ENERGY_1 = 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 = 6500.;
+
+  ### Fusing settings direct component
+  SHERPA_LDADD=SherpaFusing;
+  USERHOOK = Fusing_Direct;
+  FUSING_DIRECT_FACTOR 1.;
+  MASSIVE[5]=1
+
+  # for a consistent fusing, the parameters have to be chosen identical between
+  # direct and fragmentation component
+  MASS[5]=4.75; # consistent with PDF set
+  COMIX_CLUSTER_RS_ORDERED 1;
+  COMIX_CLUSTER_ORDERED 1;
+  CSS_SCALE_SCHEME 2;
+  CSS_EVOLUTION_SCHEME 3;
+  PP_RS_SCALE VAR{H_TM2};
+  PP_HPSMODE=0;
+}(run);
+
+(processes){
+  Process 93 93 -> 11 -11 5 -5;
+  CKKW 100000.0; ## ensures correct Sudakov rejection for Fusing
+  NLO_QCD_Mode MC@NLO;
+  ME_Generator Amegic;
+  RS_ME_Generator Comix;
+  Loop_Generator LOOPGEN;
+  Order (*,2);
+  End process;
+}(processes);
+
+(selector){
+  Mass 11 -11 66 E_CMS
+}(selector);

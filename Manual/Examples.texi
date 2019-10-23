@@ -32,6 +32,7 @@ of the main features of these examples.
 * LHC_ZJets::
 * LHC_Wbb::
 * LHC_Zbb::
+* LHC_Fusing::
 @end menu
 
 @include LHC_WJets.texi

@@ -233,6 +233,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Makefile \
 	  AddOns/Pythia/Makefile \
 	  AddOns/Higgs/Makefile \
+	  AddOns/Fusing/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
 	  AddOns/Recola/Makefile \
