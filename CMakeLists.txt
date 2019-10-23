@@ -739,6 +739,7 @@ install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 
 add_subdirectory(AddOns/Weights)
 add_subdirectory(AddOns/NNLO)
+add_subdirectory(AddOns/Fusing)
 add_subdirectory(AddOns/Higgs)
 if (SHERPA_ENABLE_EWSUD)
   add_subdirectory(AddOns/EWSud)
