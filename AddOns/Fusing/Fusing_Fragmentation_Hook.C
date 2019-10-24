@@ -24,7 +24,6 @@ using namespace ATOOLS;
 using namespace SHERPA;
 
 
-
 class Fusing_Fragmentation_Hook : public Userhook_Base {
 
 private:
@@ -154,8 +153,8 @@ public:
         for (int i=2; i<ampl->Legs().size(); i++){
             ATOOLS::Cluster_Leg *leg = ampl->Legs().at(i);
             if (leg->Flav().IsGluon() && !leg->FromDec()) num_g++;
-            if (abs(leg->Flav().Kfcode())<5 && !leg->FromDec()) num_q++;
-            if (abs(leg->Flav().Kfcode())==6 && !leg->FromDec()) num_tops++;
+            if (leg->Flav().Kfcode()<5 && !leg->FromDec()) num_q++;
+            if (leg->Flav().Kfcode()==6 && !leg->FromDec()) num_tops++;
         }
 
 
