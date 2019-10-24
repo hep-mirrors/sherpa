@@ -278,6 +278,7 @@ void Process_Group::SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
 
 bool Process_Group::ConstructProcess(Process_Info &pi)
 {
+  msg_Out()<<METHOD<<" PHASIC for "<<pi<<"\n";
   if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
   Process_Info cpi(pi);
   SortFlavours(cpi);
@@ -287,15 +288,16 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
   if (!proc) return false;
   proc->SetGenerator(Generator());
   proc->Init(pi,p_int->Beam(),p_int->ISR());
+  msg_Out()<<METHOD<<" before initialize.\n";
   if (!Initialize(proc)) {
-    msg_Debugging()<<METHOD<<"(): Init failed for '"
-		   <<proc->Name()<<"'\n";
+    msg_Out()<<METHOD<<"(): Init failed for '"
+	     <<proc->Name()<<"'\n";
     delete proc;
     m_procmap[name]=NULL;
     return false;
   }
-  msg_Debugging()<<METHOD<<"(): Init ok '"
-		 <<proc->Name()<<"'\n";
+  msg_Out()<<METHOD<<"(): Init ok '"
+	   <<proc->Name()<<"'\n";
   Add(proc);
   return true;
 }
@@ -363,7 +365,7 @@ bool Process_Group::ConstructProcesses()
   }
   msg_Debugging()<<METHOD<<" in PHASIC: checking for '"<<mapfile<<"' ... "<<std::flush;
   if (FileExists(mapfile)) {
-    msg_Debugging()<<"found"<<std::endl;
+    msg_Out()<<"found"<<std::endl;
     My_In_File map(mapfile);
     if (!map.Open()) THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
     long int cfl, cnt;
@@ -387,7 +389,7 @@ bool Process_Group::ConstructProcesses()
     msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";  
     return m_procs.size();
   }
-  msg_Debugging()<<"not found"<<std::endl;
+  msg_Out()<<"not found"<<std::endl;
   bool res(ConstructProcesses(cpi,0));
   if (!res) {
     My_Out_File out(mapfile);

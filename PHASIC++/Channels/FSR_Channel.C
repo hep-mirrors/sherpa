@@ -373,7 +373,11 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
+<<<<<<< HEAD
   if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==999)) {
+=======
+  if (_nin != 2 || !(_nout==1 && fl[2]==Flavour(kf_instanton))) {
+>>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
     msg_Error()<<"Tried to initialize NoChannel for = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
   }

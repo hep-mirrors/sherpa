@@ -175,6 +175,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     Event_Weights meweights(winfo->Get<Event_Weights>());
     blob->AddData("Weights",new Blob_Data<Event_Weights>(meweights*m_weights));
   }
+  msg_Out()<<"**** before prepare shower for "<<(*p_ampl)<<"\n";
   if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
     return Return_Value::New_Event;
   return Return_Value::Success;
@@ -247,6 +248,9 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 
 int Perturbative_Interface::PerformShowers()
 {
+  // see if the event has any weight
+  Blob_Data_Base *winfo((*p_hard)["Weight"]);
+  if (!winfo) THROW(fatal_error,"No weight information in signal blob");
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
   Event_Weights weights = csh->Weights();
@@ -256,7 +260,6 @@ int Perturbative_Interface::PerformShowers()
   // be able to output both ME-only and full variations
   p_hard->AddData("Shower_Weight",new Blob_Data<double>(weights.Nominal()));
   p_hard->AddData("Shower_Weights",new Blob_Data<Event_Weights>(weights));
-
   return stat;
 }
 

@@ -108,6 +108,7 @@ Calculate(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
   double kt2max = (p_proc->HasInternalScale()?
 		   sqr(p_proc->InternalScale()):
 		   FindKT2Max());
+
   ampl->SetMuQ2(Max(1.,kt2max));
   ampl->SetMuF2(Max(1.,kt2max));
   ampl->SetMuR2(Max(1.,kt2max));
@@ -136,7 +137,7 @@ void Democratic_Scale_Setter::SetScale
   msg_Debugging()<<"}\n";
 }
 
-double Democratic_Scale_Setter::FindKT2Max() {
+double Democratic_Scale_Setter::FindKT2Max(ampl) {
   std::vector<std::vector<int> > * cols = p_proc->Colours();
   double kt2max = 0., shat = (m_p[0]+m_p[1]).Abs2();
   double kt2test, kt2, DeltaRij2; 
@@ -160,3 +161,4 @@ double Democratic_Scale_Setter::FindKT2Max() {
   }
   return kt2max;
 }
+

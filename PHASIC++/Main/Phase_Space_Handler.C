@@ -60,7 +60,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   const double minalpha{ s["INT_MINALPHA"].Get<double>() };
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
-  m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
+  m_osmass=(m_nout==1 && p_flavours[m_nin]!=Flavour(kf_instanton)?p_flavours[m_nin].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -349,8 +349,12 @@ Event_Weights Phase_Space_Handler::Differential(
     if (p_massboost) for (int i=0;i<m_nvec;++i) 
       p_massboost->BoostBack(p_lab[i]);
   }
+  msg_Out()<<METHOD<<": "<<p_lab[0]<<" + "<<p_lab[1]<<" for keys = "
+	   <<m_isrspkey[0]<<", "<<m_isrspkey[1]<<", "<<m_isrspkey[2]<<" "
+	   <<m_isrspkey[3]<<", "<<m_isrspkey[4]<<"\n";
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
   CorrectMomenta(p_lab);
+  msg_Out()<<METHOD<<" after correct momenta "<<p_lab[0]<<" + "<<p_lab[1]<<"\n";
   m_result=0.0;
   for (size_t i(0); i < p_lab.size(); ++i)
     if (p_lab[i].Nan())
@@ -438,9 +442,14 @@ Event_Weights Phase_Space_Handler::Differential(
 
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
 {
+<<<<<<< HEAD
   if (m_nin != 2 || (m_nout == 1 && p_flavours[2].Kfcode() == 999))
     return;
   int swap(p_isrhandler->Swap());
+=======
+  if (m_nin!=2 || (m_nout==1 &&
+		   p_flavours[m_nin]==Flavour(kf_instanton))) return;
+>>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
   Vec4D sum;
   size_t imax(0);
   double emax(0.0);
