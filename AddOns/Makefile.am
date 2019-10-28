@@ -4,6 +4,7 @@ SUBDIRS       =	\
 		Analysis \
 		Pythia \
 		Higgs \
+		Fusing \
 		BlackHat \
 		MCFM \
 		LH_OLE \
