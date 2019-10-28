@@ -1,0 +1,72 @@
+# set up beams for LHC run 2
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+HEPMC_USE_NAMED_WEIGHTS: true
+
+## the fusing algorithm is implemented for CS and DIRE
+## SHOWER_GENERATOR: CSS
+
+
+
+# Fusing user Hook
+SHERPA_LDADD:
+ - SherpaFusing
+
+USERHOOKS: Fusing_Direct
+
+# currently hard coded to one, not implemented for YAML yet
+#FUSING_DIRECT_FACTOR: 1.;
+
+
+MEPS_CLUSTER_MODE: 3784 ### based on default, but now fully ordered
+
+MC@NLO:
+   HPSMODE: 0
+#   RS_SCALE: VAR{H_TM2}  ## still buggy: issue #209
+
+# matrix-element calculation
+ME_GENERATORS:
+- Comix
+- Amegic
+- OpenLoops
+
+PDF_LIBRARY: LHAPDFSherpa
+PDF_SET: NNPDF30_nnlo_as_0118
+
+ALPHAS:
+  USE_PDF: 1
+
+PARTICLE_DATA:
+  5:
+    Massive: true
+    Mass: 4.75
+  6:
+    Massive: true
+    Mass: 172.5
+    Width: 0.0 
+  24:
+    Massive: true
+    Mass: 80.385
+  15:
+    Massive: true
+
+
+OL_PARAMETERS: 
+      ew_scheme: 2
+
+
+PROCESSES:
+- 93 93 -> 90 -90 5 -5:
+   Order: {QCD: 2, EW: 2}
+   CKKW: 0.0001
+   # set up NLO+PS final-state multiplicities
+   2->4:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops
+
+SELECTORS:
+- [Mass, 90, -90, 66, E_CMS]
