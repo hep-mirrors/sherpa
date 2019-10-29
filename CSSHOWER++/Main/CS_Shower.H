@@ -51,6 +51,7 @@ namespace CSSHOWER {
     ATOOLS::Mass_Selector *p_ms;
 
     ATOOLS::Cluster_Amplitude *p_rampl;
+    ATOOLS::Cluster_Amplitude *p_combined_amplitude;
 
     void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,const size_t &id,
 		     KT2X_Map &kt2xmap,std::set<size_t> &aset);

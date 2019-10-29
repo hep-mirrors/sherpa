@@ -26,7 +26,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
                      const int type) :
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL)
+  p_shower(NULL), p_cluster(NULL), p_combined_amplitude(NULL)
 {
   Settings& s = Settings::GetMainSettings();
   rpa->gen.AddCitation
@@ -59,6 +59,7 @@ CS_Shower::~CS_Shower()
   CleanUp();
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
+  if (p_combined_amplitude) p_combined_amplitude->Delete();
   delete p_next;
 }
 
@@ -166,8 +167,9 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
       Cluster_Amplitude * tmp = (*sit)->GetAmplitude();
       all_amplitudes.push_back(tmp);
   }
-  Cluster_Amplitude * cl_all = all_amplitudes.OneAmpl();
-  psblob->AddData("AllAmplitudes",new Blob_Data<Cluster_Amplitude*>(cl_all));
+  if (p_combined_amplitude) p_combined_amplitude->Delete();
+  p_combined_amplitude = all_amplitudes.OneAmpl();
+  psblob->AddData("AllAmplitudes",new Blob_Data<Cluster_Amplitude*>(p_combined_amplitude));
   all_amplitudes.clear();
   return true;
 }
