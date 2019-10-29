@@ -130,9 +130,9 @@ namespace EXTRAXS {
     m_lower = dit->second;
     double lx = (m_upper->m_Ehat-E)/(m_upper->m_Ehat-m_lower->m_Ehat);
     double ux = (m_lower->m_Ehat-E)/(m_lower->m_Ehat-m_upper->m_Ehat);
-    m_rho      = (m_upper->m_rho*ux      + m_lower->m_rho*lx);
-    m_Ngluons  = (m_upper->m_Ngluons*ux  + m_lower->m_Ngluons*lx);
-    m_sigmahat = (m_upper->m_sigmahat*ux + m_lower->m_sigmahat*lx);
+    m_rho           = (m_upper->m_rho*ux      + m_lower->m_rho*lx);
+    m_Ngluons       = (m_upper->m_Ngluons*ux  + m_lower->m_Ngluons*lx);
+    m_sigmahat      = (m_upper->m_sigmahat*ux + m_lower->m_sigmahat*lx);
     return true;
   }
 
@@ -162,16 +162,10 @@ namespace EXTRAXS {
   class XS_instanton : public ME2_Base {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
   private:
     Data_Table              m_data;
-<<<<<<< HEAD
     double                  m_Ehatmin, m_Ehatmax, m_norm, m_S, m_Ehat;
     double                  m_Ngluons_factor, m_sigmahat_factor;
     std::string             m_scalechoice, m_Qthreshold;
     double                  m_Ecms, m_threshold, m_mean_Ngluons;
-=======
-    double                  m_Ehatmin, m_Ehatmax;
-    double                  m_Ngluons_factor, m_sigmahat_factor;
-    double                  m_Ecms, m_scale, m_mean_Ngluons;
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
     size_t                  m_nquarks, m_ngluons;
     MODEL::Running_AlphaS * p_alphaS;
     std::vector<double>     m_masses;
@@ -182,10 +176,7 @@ namespace EXTRAXS {
     void   Test();
   public:
     XS_instanton(const External_ME_Args& args);
-<<<<<<< HEAD
     ~XS_instanton() {}
-=======
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     bool   SetColours(const Vec4D_Vector& mom);
     bool   FillFinalState(const std::vector<ATOOLS::Vec4D> & mom);
@@ -196,6 +187,7 @@ XS_instanton::XS_instanton(const External_ME_Args& args)
   : ME2_Base(args),
     m_Ehatmin(Max(1.,m_data.Ehatmin())),
     m_Ehatmax(Min(rpa->gen.Ecms(),m_data.Ehatmax())),
+<<<<<<< HEAD
 <<<<<<< HEAD
     m_S(sqr(rpa->gen.Ecms())),
     m_norm(1./36.),
@@ -220,17 +212,22 @@ XS_instanton::XS_instanton(const External_ME_Args& args)
 		<<"   Ngluons factor = "<<m_Ngluons_factor<<", "
 		<<"sigmahat factor = "<<m_sigmahat_factor<<".\n";
 =======
+=======
+    m_S(sqr(rpa->gen.Ecms())),
+    m_norm(1./36.),
+>>>>>>> seems to work, cross section probably under control
     m_Ngluons_factor(1.), m_sigmahat_factor(1.)
 {
-  p_alphaS   = dynamic_cast<Running_AlphaS *>(s_model->GetScalarFunction("alpha_S"));
+  p_alphaS    = dynamic_cast<Running_AlphaS *>(s_model->GetScalarFunction("alpha_S"));
   Settings& s = Settings::GetMainSettings();
   DEBUG_INFO("now entered EXTRAXS::XS_instanton ...");
-  m_Ngluons_factor  = s["INSTANTON_NGLUONS_MODIFIER"].SetDefault(1.0).Get<double>();
-  m_sigmahat_factor = s["INSTANTON_SIGMAHAT_MODIFIER"].SetDefault(1.0).Get<double>();
-  m_Ehatmin         = Max(s["INSTANTON_MIN_MASS"].SetDefault(m_Ehatmin).Get<double>(),
-			  m_Ehatmin);
-  m_Ehatmax         = Min(s["INSTANTON_MAX_MASS"].SetDefault(m_Ehatmax).Get<double>(),
-			  m_Ehatmax);
+  m_Ngluons_factor   = s["INSTANTON_NGLUONS_MODIFIER"].SetDefault(1.0).Get<double>();
+  m_sigmahat_factor  = s["INSTANTON_SIGMAHAT_MODIFIER"].SetDefault(1.0).Get<double>();
+  m_Ehatmin          = Max(s["INSTANTON_MIN_MASS"].SetDefault(m_Ehatmin).Get<double>(),
+			   m_Ehatmin);
+  m_Ehatmax          = Min(s["INSTANTON_MAX_MASS"].SetDefault(m_Ehatmax).Get<double>(),
+			   m_Ehatmax);
+  m_hasinternalscale = true;
   msg_Info()<<METHOD<<" for instanton production in the energy range "
 	    <<"["<<m_Ehatmin<<", "<<m_Ehatmax<<"]\n"
 	    <<"   Ngluons factor = "<<m_Ngluons_factor<<", "
@@ -241,6 +238,7 @@ XS_instanton::XS_instanton(const External_ME_Args& args)
 
 double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   double shat = momenta[2].Abs2();
+<<<<<<< HEAD
 <<<<<<< HEAD
   m_Ehat = sqrt(shat);
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
@@ -264,10 +262,19 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
     for (size_t i=0;i<m_flavours.size();i++) boost.BoostBack(m_momenta[i]);
 =======
+=======
+  //msg_Out()<<"================================================\n"
+  //	   <<"   *** "<<METHOD<<" for "<<shat<<"\n";
+>>>>>>> seems to work, cross section probably under control
   m_Ecms = sqrt(shat);
   if (m_Ecms<m_Ehatmin || m_Ecms>m_Ehatmax ||
       !m_data.Interpolate(m_Ecms)) return 0.;
-  return m_sigmahat_factor * m_data.Sigmahat();
+  m_internalscale = m_data.Rho();
+  
+  // have to multiply with the norm and the inverse external flux and compensate
+  // for integration region
+  double xsec = m_sigmahat_factor * m_data.Sigmahat() * (2.*shat) * (shat/m_S) * m_norm;
+  return xsec;
 }
 
 bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
@@ -334,10 +341,16 @@ bool XS_instanton::DefineFlavours() {
     flav = flav.Bar();
     if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) m_flavours.push_back(flav);
   }
+<<<<<<< HEAD
   msg_Info()<<"   * added "<<(m_flavours.size()-2)<<" partons to decay: "
 	    <<(m_flavours.size()-m_ngluons-2)<<" = "<<m_nquarks<<" quarks, "
 	    <<m_ngluons<<" gluons.\n";
 >>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
+=======
+  //msg_Info()<<"   * added "<<(m_flavours.size()-2)<<" partons to decay: "
+  //	    <<(m_flavours.size()-m_ngluons-2)<<" = "<<m_nquarks<<" quarks, "
+  //	    <<m_ngluons<<" gluons.\n";
+>>>>>>> seems to work, cross section probably under control
   return true;
 }
 

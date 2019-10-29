@@ -278,7 +278,6 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (proc==NULL) THROW(fatal_error,"No process selected");
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
   p_proc=proc->Selected();
-  msg_Out()<<METHOD<<" for "<<p_proc->Name()<<": "<<info<<"\n";
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
   if (p_proc->Generator()->MassMode()!=0)
@@ -319,6 +318,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+<<<<<<< HEAD
+=======
+  (*p_variationweights)*=wf;
+>>>>>>> seems to work, cross section probably under control
   return true;
 }
 
@@ -572,16 +575,9 @@ void Matrix_Element_Handler::BuildProcesses()
   for (auto& proc : s["PROCESSES"].GetItems()) {
     const auto keys = proc.GetKeys();
     if (keys.size() != 1) {
-<<<<<<< HEAD
       if (!msg_LevelIsTracking()) msg_Info()<<"\n";
       THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
-=======
-      msg_Out()<<"Found "<<keys.size()<<" keys for PROCESSES tag.\n";
-      THROW(fatal_error, std::string("Each process mapping must have ")
-          + "exactly one key-value pair, where the key gives the process "
-	  + "specification (i.e. `a b -> x y ...').");
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
     }
     const std::string& name = keys[0];
     auto procsettings = proc[name];

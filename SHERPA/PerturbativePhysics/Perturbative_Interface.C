@@ -175,7 +175,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     Event_Weights meweights(winfo->Get<Event_Weights>());
     blob->AddData("Weights",new Blob_Data<Event_Weights>(meweights*m_weights));
   }
-  msg_Out()<<"**** before prepare shower for "<<(*p_ampl)<<"\n";
   if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
     return Return_Value::New_Event;
   return Return_Value::Success;

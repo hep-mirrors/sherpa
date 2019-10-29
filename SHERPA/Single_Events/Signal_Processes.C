@@ -71,7 +71,6 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
 
 bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 {
-  msg_Out()<<METHOD<<"\n";
   DEBUG_FUNC(blob->Id());
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
@@ -129,8 +128,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddStatus(blob_status::needs_showers);
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
-  msg_Out()<<"   * filling particles into blob: "
-	   <<proc->NIn()<<" --> "<<proc->NOut()<<" for "<<proc->Name()<<": ampl = "<<ampl<<"\n";
   for (unsigned int i=0;i<proc->NIn();i++) {
     particle = new Particle(0,proc->Flavours()[i],
 			    proc->Integrator()->Momenta()[i]);
@@ -259,7 +256,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddData("ATensor",
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
-  msg_Out()<<"   * filled\n"<<(*blob)<<"\n";
   return success;
 }
 
