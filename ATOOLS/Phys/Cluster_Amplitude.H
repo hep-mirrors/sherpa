@@ -17,7 +17,7 @@ namespace ATOOLS {
 
     ClusterAmplitude_PVector();
 
-    Cluster_Amplitude * OneAmpl();
+    Cluster_Amplitude * OneAmpl(Cluster_Amplitude *ampl);
 
 
     ~ClusterAmplitude_PVector();

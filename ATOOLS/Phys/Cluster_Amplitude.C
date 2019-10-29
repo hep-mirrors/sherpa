@@ -23,11 +23,11 @@ ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
   }
 }
 
-Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl()
+Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl(Cluster_Amplitude *tmp)
 {
   // links all amplitudes from this amplitude vector and return the linked, single amplitude
-  if (this->size()==0) return Cluster_Amplitude::New();
-  Cluster_Amplitude * tmp = this->at(0)->CopyAll();
+  //if (this->size()==0) return Cluster_Amplitude::New();
+  tmp = this->at(0)->CopyAll();
   for(int i=1; i< this->size(); i++){
       if (this->at(i)){
           Cluster_Amplitude * next_prev = this->at(i)->CopyAll();

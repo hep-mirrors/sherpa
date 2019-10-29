@@ -168,7 +168,7 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
       all_amplitudes.push_back(tmp);
   }
   if (p_combined_amplitude) p_combined_amplitude->Delete();
-  p_combined_amplitude = all_amplitudes.OneAmpl();
+  p_combined_amplitude = all_amplitudes.OneAmpl(p_combined_amplitude);
   psblob->AddData("AllAmplitudes",new Blob_Data<Cluster_Amplitude*>(p_combined_amplitude));
   all_amplitudes.clear();
   return true;
