@@ -213,7 +213,7 @@ void Hadron_Init::Init() {
   InitHadron(kf_Sigma_1620,      false,1.62,0.09,0,1,true,1,0,    "Sigma(1620)","\\Sigma(1620)");
   InitHadron(kf_Sigma_1620_plus, false,1.62,0.09,3,1,true,1,0,    "Sigma(1620)+","\\Sigma^{+}(1620)");
   InitHadron(kf_Lambda_1670,     false,1.67,0.06,0,1,true,1,0,    "Lambda(1670)","\\Lambda(1670)");
-  InitHadron(kf_Xi_1750_minus,   false,1.75,0.09,-3,1,true,1,0,   "Xi(1750)","\\Xi^{-}(1750)");
+  InitHadron(kf_Xi_1750_minus,   false,1.75,0.09,-3,1,true,1,0,   "Xi(1750)-","\\Xi^{-}(1750)");
   InitHadron(kf_Xi_1750,         false,1.75,0.09,0,1,true,1,0,    "Xi(1750)","\\Xi(1750)");
   InitHadron(kf_Lambda_1405,     false,1.407,0.05,0,1,true,1,0,   "Lambda(1405)","\\Lambda(1405)");
   InitHadron(102142,             false,2.5954,0.0036,3,1,true,1,0,"Lambda(c)(2595)+","\\Lambda_{c}(2595)^{+}");
