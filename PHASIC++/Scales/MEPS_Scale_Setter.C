@@ -578,11 +578,11 @@ double MEPS_Scale_Setter::Differential
   if (procs==NULL) return 1.0;
   nlo_type::code type=nlo_type::lo;
   if (procs->find(type)==procs->end()) return 0.0;
+  if(m_cmode&1024) return 1.;
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
-  if(m_cmode&1024) return 1.;
   Process_Base::SortFlavours(campl);
   std::string pname(Process_Base::GenerateName(campl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname));
