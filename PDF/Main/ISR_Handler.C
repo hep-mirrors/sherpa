@@ -186,7 +186,8 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
 		       <<" vs. "<<sp<<std::endl;
     return false;
   }
-  Vec4D pa(p_beam[0]->OutMomentum()), pb(p_beam[1]->OutMomentum());
+  Vec4D pa(p_beam[m_swap?1:0]->OutMomentum());
+  Vec4D pb(p_beam[m_swap?0:1]->OutMomentum());
   double papb(pa*pb), sa(pa.Abs2()), sb(pb.Abs2());
   double gam(papb+sqrt(sqr(papb)-sa*sb));
   double aa(sa/gam), ab(sb/gam), bet(1.0/(1.0-aa*ab));
@@ -220,10 +221,6 @@ bool ISR_Handler::MakeISR(const double &sp,const double &y,
   if (PDF(1) && (m_x[1]<PDF(1)->XMin() || m_x[1]>PDF(1)->XMax())) return false;
   p[0]=p_cms[0]=m_x[0]*pp+s1/st/m_x[0]*pm;
   p[1]=p_cms[1]=m_x[1]*pm+s2/st/m_x[1]*pp;
-  if (m_swap) {
-    std::swap<Vec4D>(p[0],p[1]);
-    std::swap<Vec4D>(p_cms[0],p_cms[1]);
-  }
   m_cmsboost=Poincare(p_cms[0]+p_cms[1]);
   m_cmsboost.Boost(p[0]);
   m_cmsboost.Boost(p[1]);

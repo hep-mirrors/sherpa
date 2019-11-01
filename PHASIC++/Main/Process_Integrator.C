@@ -144,6 +144,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
   }
   m_ssum=m_ssumsqr=0.0;
   m_sn=0;
+  if (p_colint!=NULL) p_colint->Optimize();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->OptimizeSubResult(s2);
@@ -250,6 +251,15 @@ void Process_Integrator::ReadInHistogram(std::string dir)
       (*p_proc)[i]->Integrator()->ReadInHistogram(dir);
 }
 
+void Process_Integrator::ReadInIntegrators(std::string dir)
+{
+  std::string filename = dir+"/"+p_proc->ResultsName();
+  if (p_colint!=NULL && FileExists(filename)) p_colint->ReadIn(filename);
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->ReadInIntegrators(dir);
+}
+
 void Process_Integrator::WriteOutXSecs(const std::string &path)
 {
   std::string fname(p_proc->ResultsName());
@@ -276,6 +286,14 @@ void Process_Integrator::WriteOutHistogram(std::string dir)
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutHistogram(dir);
+}
+
+void Process_Integrator::WriteOutIntegrators(std::string dir)
+{
+  if (p_colint!=NULL) p_colint->WriteOut(dir+"/"+p_proc->ResultsName());
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->WriteOutIntegrators(dir);
 }
 
 void Process_Integrator::SetTotal(const int mode)  
@@ -401,6 +419,7 @@ void Process_Integrator::AddPoint(const double value)
     if(value!=0.) p_whisto->Insert(max,1.0/enhance); /*TODO*/
     else p_whisto->Insert(1.0,0.0);
   }
+  if (p_colint!=NULL) p_colint->AddPoint(value);
   p_proc->AddPoint(value);
   if (p_proc->IsGroup()) {
     if (p_proc->Last()==0.0 || value==0.0)
@@ -556,6 +575,7 @@ void Process_Integrator::MPISync(const int mode)
   m_ssumsqr+=m_mssumsqr;
   m_msn=m_mssum=m_mssumsqr=0.0;
 #endif
+  if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -597,6 +617,7 @@ void Process_Integrator::StoreResults(const int mode)
   std::string fname(p_proc->ResultsName());
   WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
+  WriteOutIntegrators(m_resultpath+"/"+p_proc->Generator()->Name()+"/PI_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   My_In_File::CloseDB(m_resultpath+"/",0);
   StoreBackupResults();
@@ -608,6 +629,7 @@ void Process_Integrator::ReadResults()
   std::string fname(p_proc->ResultsName());
   if (!ReadInXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
+  ReadInIntegrators(m_resultpath+"/"+p_proc->Generator()->Name()+"/PI_"+fname);
   p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   SetTotal(0); 
 }

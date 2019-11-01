@@ -12,6 +12,8 @@ libNNPDFSherpa_la_SOURCES      =	\
 localinc_HEADERS      = \
 			NNPDFDriver.h
 
+libNNPDFSherpa_la_LIBADD = @PDFLIBS@ @ATOOLSLIBS@
+
 NNPDF3archive = NNPDF31_nnlo_as_0118_mc.tar.bz2
 
 

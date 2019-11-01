@@ -6,6 +6,8 @@
 #include "AddOns/Python/MEProcess.H"
 %}
 
+%include "std_vector.i"
+
 %catches (const ATOOLS::Exception&) MEProcess::Initialize();
 
 namespace SHERPA{
@@ -18,6 +20,17 @@ namespace ATOOLS{
 namespace PHASIC{
   class Process_Base;
 }
+
+%template(vectord) std::vector<double>;
+
+%include "numpy.i"
+
+%init %{
+import_array();
+%}
+
+%apply (int DIM1, int DIM2, int DIM3, double* IN_ARRAY3) {(int nEvents, int nParts, int index, double* arr)};
+%apply (double* ARGOUT_ARRAY1, int DIM1) {(double* out, int length)};
 
 class MEProcess{
 
@@ -42,7 +55,11 @@ public:
 
   double TestPoint(const double& sqrts);
   double MatrixElement();
+  std::vector<double> MatrixElementVec(int nEvents, int nParts, int index, double* arr);
+  void MatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length);
   double CSMatrixElement();
+  std::vector<double> CSMatrixElementVec(int nEvents, int nParts, int index, double* arr);
+  void CSMatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length);
   double MEProcess::GetFlux();
   inline ATOOLS::Cluster_Amplitude* GetAmp()
   {return m_amp;}

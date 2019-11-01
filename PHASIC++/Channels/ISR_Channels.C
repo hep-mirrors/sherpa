@@ -59,6 +59,7 @@ bool ISR_Channels::MakeChannels()
     for (std::set<double>::const_iterator thit(ths.begin());thit!=ths.end();++thit)
     for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
     ci.type = 2;
+    if (*thit<1.) continue;
     (ci.parameters).push_back(*thit);
     (ci.parameters).push_back(2.);
     if (p_psh->Flavs()[0].IsLepton() || 

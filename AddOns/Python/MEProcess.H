@@ -85,7 +85,11 @@ public:
   double TestPoint(const double& sqrts);
   
   double MatrixElement();
+  std::vector<double> MatrixElementVec(int nEvents, int nParts, int index, double* arr);
+  void MatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length);
   double CSMatrixElement();
+  std::vector<double> CSMatrixElementVec(int nEvents, int nParts, int index, double* arr);
+  void CSMatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length);
 
   // Calculate and retuen 1/F with F=4*sqrt((pa*pb)^2 - ma^2*mb^2)
   double GetFlux();
