@@ -1,5 +1,6 @@
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
@@ -26,15 +27,41 @@ void Channel_Elements::CheckMasses(const double & s1,Vec4D & p1,const double & s
   }
 }
 
-double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
-					  double& ran1,double& ran2,double ctmin,double ctmax)
+double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,
+					  double& ran1,double& ran2,double ctmin,double ctmax,
+					  const Vec4D &_xref)
 {
-  Vec4D p1h,p=p1+p2;
+  Vec4D p1h,p=p1+p2, xref=_xref[0]<0.?-_xref:_xref;
 
-  Channel_Basics::Boost(1,p,p1h,p1);
-  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin);  
-  ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
-  if(p1h[2]<0.) ran2=.5-ran2;
+  p1h=p1;
+  Vec4D pref(p[0],0.,0.,p.PSpat());
+  Poincare Rot(pref,p);
+  Rot.RotateBack(p1h);
+  Vec4D p1ref=p1h;
+  Channel_Basics::Boost(1,pref,p1h,p1ref);
+  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin);
+
+  Vec4D zax(p), n_perp(0.0,cross(Vec3D(zax),Vec3D(xref)));
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+    msg_Debugging()<<"Set fixed n_perp\n";
+    xref=Vec4D(0.,1.,0.,0.);
+    n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+      msg_Debugging()<<"Set fixed n_perp\n";
+      zax=Vec4D(0.,0.,0.,1.);
+      n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    }
+  }
+  n_perp*=1.0/n_perp.PSpat();
+  Vec4D l_perp(0.,cross(Vec3D(n_perp),Vec3D(zax)));
+  l_perp*=1.0/l_perp.PSpat();
+
+  double cp(-l_perp*p1), sp(-n_perp*p1), norm(sqrt(cp*cp+sp*sp));
+  cp/=norm;
+  sp/=norm;
+
+  ran2=asin(sp)/(2.*M_PI);
+  if(cp<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;
 
   double massfactor = Channel_Basics::SqLam(p.Abs2(),p1.Abs2(),p2.Abs2());
@@ -45,31 +72,43 @@ double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
   return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
 }
 
-double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,double ctmin,double ctmax)
-{
-  double massfactor = Channel_Basics::SqLam((p1+p2).Abs2(),p1.Abs2(),p2.Abs2());
-  if (ATOOLS::IsZero(massfactor)) return 0.;  
-  if (!(massfactor>0) && !(massfactor<0)) 
-    msg_Error()<<"Isotropic2Weight produces a nan!"<<endl;
-  
-  return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
-}
-
 void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
 					 Vec4D& p1,Vec4D& p2,
-					 double ran1,double ran2,double ctmin,double ctmax)
+					 double ran1,double ran2,double ctmin,double ctmax,
+					 const Vec4D &_xref)
 {
   double s    = p.Abs2();
   double rs   = sqrt(dabs(s));
-  Vec4D p1h;
-  p1h[0]      = (s+s1-s2)/rs/2.;
+  double e1   = (s+s1-s2)/rs/2.;
   double p1m  = rs*Channel_Basics::SqLam(s,s1,s2)/2.;
   double ct   = ctmin+(ctmax-ctmin)*ran1;
   double st   = sqrt(1.-ct*ct);
   double phi  = 2.*M_PI*ran2;
 
-  p1h = Vec4D(p1h[0],p1m*Vec3D(st*::sin(phi),st*cos(phi),ct));	
-  Channel_Basics::Boost(0,p,p1h,p1);
+  Poincare cms(p);
+  Vec4D xref(_xref[0]<0.0?-_xref:_xref);
+  Vec4D zax(p), n_perp(0.0,cross(Vec3D(zax),Vec3D(xref)));
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+    msg_Debugging()<<"Set fixed n_perp\n";
+    xref=Vec4D(0.,1.,0.,0.);
+    n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+      msg_Debugging()<<"Set fixed n_perp\n";
+      zax=Vec4D(0.,0.,0.,1.);
+      n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    }
+  }
+  n_perp*=1.0/n_perp.PSpat();
+  Vec4D l_perp(0.,cross(Vec3D(n_perp),Vec3D(zax)));
+  l_perp*=1.0/l_perp.PSpat();
+  p1=Vec4D(e1,p1m*ct*Vec3D(zax)/zax.PSpat());
+  p1+=p1m*st*(cos(phi)*l_perp+sin(phi)*n_perp);
+  cms.BoostBack(p1);
+
+  double cp(-l_perp*p1), sp(-n_perp*p1), norm(sqrt(cp*cp+sp*sp));
+  cp/=norm;
+  sp/=norm;
+
   p2  = p+(-1.)*p1;
 
   CheckMasses(s1,p1,s2,p2);
@@ -78,9 +117,10 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
 double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
 					    double& ran1,double& ran2,
 					    double ctexp,
-					    double ctmin,double ctmax)
+					    double ctmin,double ctmax,
+					    const Vec4D &_xref)
 {
-  Vec4D  p      = p1+p2;
+  Vec4D  p      = p1+p2, xref=_xref[0]<0.?-_xref:_xref;
   double s      = p.Abs2();
   double s1     = p1.Abs2();
   double s2     = p2.Abs2();
@@ -104,9 +144,32 @@ double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
   Vec4D p1ref=p1h;
   Channel_Basics::Boost(1,pref,p1h,p1ref);
 
-  ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
-  if(p1h[2]<0.) ran2=.5-ran2;
+  Vec4D zax(p), n_perp(0.0,cross(Vec3D(zax),Vec3D(xref)));
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+    msg_Debugging()<<"Set fixed n_perp\n";
+    xref=Vec4D(0.,1.,0.,0.);
+    n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+      msg_Debugging()<<"Set fixed n_perp\n";
+      zax=Vec4D(0.,0.,0.,1.);
+      n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    }
+  }
+  n_perp*=1.0/n_perp.PSpat();
+  Vec4D l_perp(0.,cross(Vec3D(n_perp),Vec3D(zax)));
+  l_perp*=1.0/l_perp.PSpat();
+
+  double cp(-l_perp*p1), sp(-n_perp*p1), norm(sqrt(cp*cp+sp*sp));
+  cp/=norm;
+  sp/=norm;
+
+  ran2=asin(sp)/(2.*M_PI);
+  if(cp<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;
+
+  // ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
+  // if(p1h[2]<0.) ran2=.5-ran2;
+  // if (ran2<0.) ran2+=1.;
   if (!(wt>0) && !(wt<0)) 
     msg_Error()<<"Anisotropic2Weight produces a nan!"<<endl;
 
@@ -116,29 +179,45 @@ double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
 void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
 					   Vec4D& p1,Vec4D& p2,
 					   double ran1,double ran2,double ctexp,
-					   double ctmin,double ctmax)
+					   double ctmin,double ctmax,
+					   const Vec4D &_xref)
 {
   double s        = p.Abs2();
   double pabs     = sqrt(dabs(s));
-  Vec4D p1h;
-  p1h[0]          = (s+s1-s2)/pabs/2.;
-  double p1mass   = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
+  double e1       = (s+s1-s2)/pabs/2.;
+  double p1m      = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
   double pmass    = sqrt(dabs(p[0]*p[0]-s)); 
-  double a        = p[0]*p1h[0]/pmass/p1mass;
+  double a        = p[0]*e1/pmass/p1m;
   if ((1.>=a) && (a>=0.)) a = 1.0000000001;
   double   ct     = Channel_Basics::PeakedDist(a,ctexp,ctmin,ctmax,1,ran1);
   double st       = sqrt(1.-sqr(ct));
   double phi      = 2.*M_PI*ran2;
-  p1h             = Vec4D(p1h[0],p1mass*Vec3D(st*::sin(phi),st*cos(phi),ct));	
-  Vec4D pref,p1ref;
-  pref            = Vec4D(p[0],0.,0.,pmass);
 
-  Channel_Basics::Boost(0,pref,p1h,p1ref);
-  Poincare Rot(pref/pref.P(),p/p.P());
-  p1              = p1ref;
-  Rot.Rotate(p1);
+  Poincare cms(p);
+  Vec4D xref(_xref[0]<0.0?-_xref:_xref);
+  Vec4D zax(p), n_perp(0.0,cross(Vec3D(zax),Vec3D(xref)));
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+    msg_Debugging()<<"Set fixed n_perp\n";
+    xref=Vec4D(0.,1.,0.,0.);
+    n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
+      msg_Debugging()<<"Set fixed n_perp\n";
+      zax=Vec4D(0.,0.,0.,1.);
+      n_perp=Vec4D(0.0,cross(Vec3D(zax),Vec3D(xref)));
+    }
+  }
+  n_perp*=1.0/n_perp.PSpat();
+  Vec4D l_perp(0.,cross(Vec3D(n_perp),Vec3D(zax)));
+  l_perp*=1.0/l_perp.PSpat();
+  p1=Vec4D(e1,p1m*ct*Vec3D(zax)/zax.PSpat());
+  p1+=p1m*st*(cos(phi)*l_perp+sin(phi)*n_perp);
+  cms.BoostBack(p1);
 
-  p2 = p+(-1.)*p1;  
+  double cp(-l_perp*p1), sp(-n_perp*p1), norm(sqrt(cp*cp+sp*sp));
+  cp/=norm;
+  sp/=norm;
+
+  p2  = p+(-1.)*p1;
 
   CheckMasses(s1,p1,s2,p2);
 }
@@ -513,7 +592,6 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double ct=p1outh[3]/p1outh.PSpat();
   if (ct<ctmin||ct>ctmax) {
     ran1=ran2=-1.;
-    if (IsEqual(ct,ctmin)||IsEqual(ct,ctmax)) return 0.;
     msg_Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
     msg_Error()<<"1: "<<p1in<<endl;
     msg_Error()<<"2: "<<p2in<<endl;

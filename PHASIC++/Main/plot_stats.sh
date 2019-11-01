@@ -4,10 +4,10 @@ test -z "$1" && exit 1;
 
 rdb=$1;
 n=0;
-for i in $(sqlite3 $rdb "Select file from path where file like '%Statistics.dat'"); do
+for i in $(unzip -l $rdb '*Statistics.dat' | grep Statistics | awk '{print $NF}'); do
   (( ++n ));
   mkdir -p $(dirname $i);
-  sqlite3 $rdb "select content from path where file = '"$i"'" > $i;
+  unzip -p $rdb $i > $i;
   if test -z "$plotcmd"; then plotcmd="plot ";
   else plotcmd=$plotcmd", "; fi;
   t=$(echo $i | sed -e 's|.*MC_._.__||g;s|/Statistics.dat||g;s|__QCD.*||g');

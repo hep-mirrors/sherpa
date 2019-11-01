@@ -708,8 +708,8 @@ bool Initialization_Handler::InitializeThePDFs()
 #endif
     }
     void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
-    if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
-    ((PDF_Init_Function)init)();
+    if (init!=NULL) ((PDF_Init_Function)init)();
+    else msg_Error() << "Cannot load PDF library "+*pdflib << std::endl;
   }
 
   // PDF set listing output

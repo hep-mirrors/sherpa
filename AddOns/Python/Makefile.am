@@ -20,7 +20,7 @@ python_LTLIBRARIES = _Sherpa.la
 
 nodist__Sherpa_la_SOURCES = Sherpa_wrap.cxx
 _Sherpa_la_CPPFLAGS= @PYTHON_CPPFLAGS@
-_Sherpa_la_LDFLAGS = -module
+_Sherpa_la_LDFLAGS = -module -shared -flat_namespace -undefined suppress
 _Sherpa_la_LIBADD  = -L@SHERPABUILDDIR@/Main -lSherpaMain -lMEProcess\
 		$(HZTOOLLIBS) $(PGSLIBS) @ATOOLSLIBS@
 

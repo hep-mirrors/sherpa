@@ -406,14 +406,41 @@ double MEProcess::TestPoint(const double& E){
 
 double MEProcess::MatrixElement()
 {
-  if(p_colint!=NULL) p_colint->SetWOn(false);
-  double res(p_proc->Differential(*p_amp,1|4));
-  if(p_colint!=NULL) p_colint->SetWOn(true);
+  // if(p_colint!=NULL) p_colint->SetWOn(false);
+  for(int i = 0; i < p_amp->Legs().size(); ++i) {
+    p_amp->Leg(i)->SetCol(ATOOLS::ColorID(0,0));
+  }
+  double res(p_proc->Differential(*p_amp,1|4|128));
+  // if(p_colint!=NULL) p_colint->SetWOn(true);
   // Cancel out initial state swap factor
   // which can be accessed through
   // PHASIC::Process_Base::ISSymFac()
   res *= p_proc->ISSymFac();
   return res;
+}
+
+std::vector<double> MEProcess::MatrixElementVec(int nParts, int nEvents, int index, double* arr) {
+    std::vector<double> result(nEvents);
+    for(int i = 0; i < nEvents; ++i) {
+        for(int j = 0; j < nParts; ++j) {
+            int n = j*nEvents*4+4*i;
+            SetMomentum(j,arr[n],arr[n+1],arr[n+2],arr[n+3]);
+        }
+        result[i] = MatrixElement();
+    }
+
+    return result;
+}
+
+void MEProcess::MatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length) {
+    out = new double[length];
+    for(int i = 0; i < nEvents; ++i) {
+        for(int j = 0; j < nParts; ++j) {
+            int n = j*nEvents*4+4*i;
+            SetMomentum(j,arr[n],arr[n+1],arr[n+2],arr[n+3]);
+        }
+        out[i] = MatrixElement();
+    }
 }
 
 double MEProcess::CSMatrixElement()
@@ -449,6 +476,32 @@ double MEProcess::CSMatrixElement()
   // PHASIC::Process_Base::ISSymFac()
   r_csme *= p_proc->ISSymFac();
   return r_csme;
+}
+
+std::vector<double> MEProcess::CSMatrixElementVec(int nParts, int nEvents, int index, double* arr) {
+    std::cout << nParts << " " << nEvents << " " << index << std::endl;
+    std::vector<double> result(nEvents);
+    for(int i = 0; i < nEvents; ++i) {
+        for(int j = 0; j < nParts; ++j) {
+            int n = j*nEvents*4+4*i;
+            SetMomentum(j,arr[n],arr[n+1],arr[n+2],arr[n+3]);
+        }
+        result[i] = CSMatrixElement();
+        std::cout << result[i] << std::endl;
+    }
+
+    return result;
+}
+
+void MEProcess::CSMatrixElementVec2(int nEvents, int nParts, int index, double* arr, double* out, int length) {
+    out = new double[length];
+    for(int i = 0; i < nEvents; ++i) {
+        for(int j = 0; j < nParts; ++j) {
+            int n = j*nEvents*4+4*i;
+            SetMomentum(j,arr[n],arr[n+1],arr[n+2],arr[n+3]);
+        }
+        out[i] = CSMatrixElement();
+    }
 }
 
 double MEProcess::GetFlux()

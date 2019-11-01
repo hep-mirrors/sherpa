@@ -398,9 +398,9 @@ void ATOOLS::Random::FastForward(const size_t &n)
   }
 }
 
-double ATOOLS::Random::Get()   
+double ATOOLS::Random::Get(int mode)
 {
-  if (p_external) return p_external->Get();
+  if (p_external && not mode) return p_external->Get();
   // Sherpa internal
   double rng(0.);
   ++m_nsinceinit;

@@ -99,6 +99,8 @@ namespace PHASIC {
     void SetISRThreshold(const double threshold);
     
     void InitWeightHistogram();
+    void ReadInIntegrators(std::string);
+    void WriteOutIntegrators(std::string);
     void ReadInHistogram(std::string);
     void WriteOutHistogram(std::string);
     bool ReadInXSecs(const std::string &path);

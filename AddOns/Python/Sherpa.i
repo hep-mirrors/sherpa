@@ -1,5 +1,9 @@
 %module Sherpa
 
+%{
+#define SWIG_FILE_WITH_INIT
+%}
+
 %include "std_vector.i"
 namespace std {
   %template(vectori) vector<int>;
