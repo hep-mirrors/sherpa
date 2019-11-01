@@ -60,6 +60,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_nr=3*nout-4;
   rannum=m_nr+m_n-2+1;
   rans=new double[rannum];
+  prans=&rans[m_nr-(nout-2)];
 #ifdef USING__Threading
   int helpi;
   if (s["THREADS"].Get<int>()) {
@@ -159,9 +160,6 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
   Vegas *vegas(new Vegas(1,ni,"CDBG_"+tag,0));
   m_vmap[tag] = vegas;
   if (ibi) vegas->InitBinInfo();
-#ifndef CHECK_POINT
-  vegas->SetCheckMode(0);
-#endif
   if (!ibi && (m_vmode&8)) vegas->SetAutoRefine();
   if (!(m_vmode&4)) vegas->SetOutputMode(0);
   if (m_vmap.size()==1)
@@ -459,14 +457,15 @@ void PS_Channel::SChannelMomenta
   }
   double ctmin(-1.0), ctmax(1.0);
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);  
+  size_t id(cur->Out()[0]->J()[(cur->Out()[0]->J()[0]==cur)?1:0]->CId());
   if (type==2) {
-    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],rns[1],m_aexp,ctmin,ctmax);
+    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else if (type==4) {
-    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],m_aexp,ctmin,ctmax);
+    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else {
-    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],ctmin,ctmax);
+    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],ctmin,ctmax,m_p[id]);
   }
 }
 
@@ -475,15 +474,16 @@ double PS_Channel::SChannelWeight
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
+  size_t id(cur->Out()[0]->J()[(cur->Out()[0]->J()[0]==cur)?1:0]->CId());
   double wgt(0.0);
   if (type==2) {
-    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
+    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else if (type==4) {
-    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
+    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else {
-    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax);
+    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax,m_p[id]);
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetSVegas(type,cur));
@@ -505,7 +505,8 @@ double PS_Channel::SChannelWeight
 
 bool PS_Channel::GeneratePoint
 (PS_Current *const ja,PS_Current *const jb,
- PS_Current *const jc,PS_Vertex *const v,size_t &nr)
+ PS_Current *const jc,PS_Vertex *const v,
+ size_t &nr,size_t &pnr)
 {
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
@@ -514,12 +515,12 @@ bool PS_Channel::GeneratePoint
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
       double smin(se), smax(sqr(rtsmax-sqrt(sp)));
-      se=PropMomenta(jb,bid,smin,smax,&rans[nr++]);
+      se=PropMomenta(jb,bid,smin,smax,&prans[pnr++]);
     }
     if (CIdCount(pid)>1) {
       double smin(sp), smax(sqr(rtsmax-sqrt(se)));
       sp=PropMomenta((PS_Current*)jc->SCC(),pid,
-		     smin,smax,&rans[nr++]);
+		     smin,smax,&prans[pnr++]);
     }
     TChannelMomenta(jc,jc->Dip()?jc->Dip():v->Dip(),
 		    bid,(1<<m_n)-1-aid,m_p[aid],m_p[m_rid],
@@ -527,7 +528,7 @@ bool PS_Channel::GeneratePoint
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  t "<<nr<<": {"<<ID(ja->CId())
+    msg_Debugging()<<"  t "<<nr<<","<<pnr<<": {"<<ID(ja->CId())
 		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
 		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
 		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
@@ -540,11 +541,11 @@ bool PS_Channel::GeneratePoint
     double rts(m_p[cid].Mass()), sl(SCut(lid)), sr(SCut(rid));
     if (CIdCount(lid)>1) {
       double smin(sl), smax(sqr(rts-sqrt(sr)));
-      sl=PropMomenta(ja,lid,smin,smax,&rans[nr++]);
+      sl=PropMomenta(ja,lid,smin,smax,&prans[pnr++]);
     }
     if (CIdCount(rid)>1) {
       double smin(sr), smax(sqr(rts-sqrt(sl)));
-      sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
+      sr=PropMomenta(jb,rid,smin,smax,&prans[pnr++]);
     }
     SChannelMomenta(jc,((PS_Vertex*)v)->Type(),
 		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
@@ -552,7 +553,7 @@ bool PS_Channel::GeneratePoint
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  s "<<nr<<": {"<<ID(cid)
+    msg_Debugging()<<"  s "<<nr<<","<<pnr<<": {"<<ID(cid)
 		   <<"}->{"<<ID(aid)<<","<<ID(bid)
 		   <<"} m_"<<ID(cid)<<" = "<<rts
 		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
@@ -563,9 +564,9 @@ bool PS_Channel::GeneratePoint
 }
 
 bool PS_Channel::GeneratePoint
-(const size_t &id,size_t &nr,Vertex_Vector &v)
+(const size_t &id,size_t &nr,size_t &pnr,Vertex_Vector &v)
 {
-  for (size_t i(0);i<v.size() && nr<m_nr;++i) {
+  for (size_t i(0);i<v.size() && nr+pnr<m_nr;++i) {
     if (v[i]==NULL) continue;
     size_t cid(v[i]->JC()->CId());
     size_t aid(v[i]->J(0)->CId()), bid(v[i]->J(1)->CId());
@@ -580,10 +581,10 @@ bool PS_Channel::GeneratePoint
 	std::swap<size_t>(bid,cid);
 	std::swap<PS_Current*>(jb,jc);
       }
-      if (!GeneratePoint(ja,jb,jc,(PS_Vertex*)v[i],nr)) return false;
+      if (!GeneratePoint(ja,jb,jc,(PS_Vertex*)v[i],nr,pnr)) return false;
       v[i]=NULL;
-      if (CIdCount(SId(aid))>1) GeneratePoint(aid,nr,v);
-      if (CIdCount(SId(bid))>1) GeneratePoint(bid,nr,v);
+      if (CIdCount(SId(aid))>1) GeneratePoint(aid,nr,pnr,v);
+      if (CIdCount(SId(bid))>1) GeneratePoint(bid,nr,pnr,v);
       break;
     }
   }
@@ -595,9 +596,9 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
-  size_t nr(0), lid((1<<m_n)-2), rid(m_rid);
+  size_t nr(0), pnr(0), lid((1<<m_n)-2), rid(m_rid);
   for (size_t n(2);n<=m_n-2;++n) {
-    for (size_t i(0);i<v.size() && nr<m_nr;++i) {
+    for (size_t i(0);i<v.size() && nr+pnr<m_nr;++i) {
       if (v[i]==NULL) continue;
 #ifdef DEBUG__BG
       msg_Debugging()<<" "<<lid<<" "<<*v[i]<<"\n";
@@ -622,19 +623,19 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
 	if (cid==rid) {
 	  v[i]=NULL;
 	  if (bid!=3) m_p[bid]=m_p[aid-cid];
-	  if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
+	  if (CIdCount(bid)>1) GeneratePoint(bid,nr,pnr,v);
 	  break;
 	}
-	if (!GeneratePoint(ja,jb,jc,(PS_Vertex*)v[i],nr)) return false;
+	if (!GeneratePoint(ja,jb,jc,(PS_Vertex*)v[i],nr,pnr)) return false;
 	v[i]=NULL;
-	if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
+	if (CIdCount(bid)>1) GeneratePoint(bid,nr,pnr,v);
 	lid=cid;
       }
     }
   }
-  if (nr!=m_nr) THROW(fatal_error,"Internal error");
+  if (nr+pnr!=m_nr) THROW(fatal_error,"Internal error");
 #ifdef DEBUG__BG
-  msg_Debugging()<<"} -> "<<nr<<"\n";
+  msg_Debugging()<<"} -> "<<nr<<" / "<<pnr<<"\n";
 #endif
   return true;
 }
@@ -746,7 +747,8 @@ void PS_Channel::GeneratePoint
 
 double PS_Channel::GenerateWeight
 (PS_Current *const ja,PS_Current *const jb,
- PS_Current *const jc,PS_Vertex *const v,size_t &nr)
+ PS_Current *const jc,PS_Vertex *const v,
+ size_t &nr,size_t &pnr)
 {
   double wgt(1.0);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
@@ -770,7 +772,7 @@ double PS_Channel::GenerateWeight
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    t "<<nr<<": {"<<ID(ja->CId())
+    msg_Debugging()<<"    t "<<nr<<","<<pnr<<": {"<<ID(ja->CId())
 		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
 		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
 		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
@@ -793,7 +795,7 @@ double PS_Channel::GenerateWeight
     wgt*=SChannelWeight(jc,((PS_Vertex*)v)->Type(),m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
+    msg_Debugging()<<"    s "<<nr<<","<<pnr<<": {"<<ID(cid)
 		   <<"}->{"<<ID(aid)<<","<<ID(bid)
 		   <<"} m_"<<ID(SId(cid))<<" = "<<rts
 		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
@@ -814,7 +816,7 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
   for (size_t i(0);i<cur->In().size();++i) {
     PS_Vertex *v((PS_Vertex *)cur->In()[i]);
     if (!Zero(v) && v->Alpha()>0.0) {
-      size_t nr(0);
+      size_t nr(0), pnr(0);
       PS_Current *ja((PS_Current*)v->J(0)), *jb((PS_Current*)v->J(1));
       PS_Current *jc(cur);
       size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
@@ -861,7 +863,7 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 	  std::swap<PS_Current*>(jb,jc);
 	}
       }
-      v->SetWeight(GenerateWeight(ja,jb,jc,v,nr)*cw);
+      v->SetWeight(GenerateWeight(ja,jb,jc,v,nr,pnr)*cw);
       wgt+=v->Alpha()/v->Weight();
       asum+=v->Alpha();
 #ifdef DEBUG__BG
@@ -1012,19 +1014,11 @@ void PS_Channel::AddPoint(double value)
 	}
       }
   if (m_vmode&3) {
-#ifdef CHECK_POINT
     for (int i(m_vgs.size()-1);i>=0;--i) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"  add point "<<m_vgs[i]->Name()<<"\n";
 #endif
       m_vgs[i]->AddPoint(value,&m_rns[i]);
-    }
-#endif
-    for (int i(m_wvgs.size()-1);i>=0;--i) {
-#ifdef DEBUG__BG
-      msg_Debugging()<<"  add point "<<m_wvgs[i]->Name()<<"\n";
-#endif
-      m_wvgs[i]->AddPoint(value,&m_wrns[i]);
     }
   }
 #ifdef DEBUG__BG

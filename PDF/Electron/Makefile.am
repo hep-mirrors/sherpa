@@ -9,3 +9,5 @@ libPDFESherpa_la_SOURCES     =	\
 
 localinc_HEADERS      =	\
 			PDF_Electron.H 
+
+libPDFESherpa_la_LIBADD = @PDFLIBS@ @ATOOLSLIBS@

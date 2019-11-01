@@ -85,7 +85,7 @@ namespace ATOOLS {
     void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
 
     // return uniformly distributed random number in [0,1] using active Generator
-    double Get();   
+    double Get(int mode = 0);
     ptrdiff_t operator() (ptrdiff_t max);
     // produce Gaussian distributed random number using active Generator
     // according to the Marsaglia method

@@ -82,6 +82,7 @@ namespace COMIX {
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
     double m_aexp, m_srbase;
+    double *prans;
 
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
@@ -142,14 +143,16 @@ namespace COMIX {
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
     bool GeneratePoint(PS_Current *const ja,PS_Current *const jb,
-		       PS_Current *const jc,PS_Vertex *const v,size_t &nr);
+		       PS_Current *const jc,PS_Vertex *const v,
+		       size_t &nr,size_t &pnr);
     double GenerateWeight(PS_Current *const ja,PS_Current *const jb,
-			  PS_Current *const jc,PS_Vertex *const v,size_t &nr);
+			  PS_Current *const jc,PS_Vertex *const v,
+			  size_t &nr,size_t &pnr);
     
     bool GenerateWeight(PS_Current *const cur);
     bool GenerateWeight();
 
-    bool GeneratePoint(const size_t &id,size_t &nr,
+    bool GeneratePoint(const size_t &id,size_t &nr,size_t &pnr,
 		       Vertex_Vector &v);
     bool GeneratePoint(Vertex_Vector v);
 
