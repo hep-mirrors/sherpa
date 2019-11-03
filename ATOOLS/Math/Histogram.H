@@ -44,6 +44,7 @@ namespace ATOOLS {
     void Output(const std::string);
     void Finalize();
     void Restore();
+    double GeneratePoint(const double &rn);
     double Average() const;
     double Mean() const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
