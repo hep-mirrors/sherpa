@@ -510,10 +510,21 @@ void Histogram::MPISync()
 #endif
 }
 
-
-
-
-
+double Histogram::GeneratePoint(const double &rn)
+{
+  int i=0;
+  double disc=0., psum=0.;
+  for (i=0;i<m_nbin;i++) disc+=m_yvalues[i];
+  disc*=rn;
+  for (i=0;i<m_nbin;i++) {
+    if (psum+m_yvalues[i]>disc) break;
+    psum+=m_yvalues[i];
+  }
+  if (i==m_nbin) THROW(fatal_error,"internal error");
+  double x=m_lower+(i-1 + (disc-psum)/m_yvalues[i])*m_binsize;
+  if (m_logarithmic>0) x=exp(m_logbase*x);
+  return x;
+}
 
 void Histogram::Insert(double coordinate) {
   if (!m_active) {
