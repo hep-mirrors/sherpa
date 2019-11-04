@@ -612,12 +612,20 @@ determination`.
 
 The on-the-fly reweighting works for all event generation modes
 (weighted or (partially) unweighted) and all calculation types (LO,
-LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).  The on-the-fly
-reweighting includes the parton shower. All shower emissions with a
-transverse momentum larger than ``5 GeV^2`` are reweighted.  Softer
-emissions are excluded for reasons of numerical stability.  This
-threshold can be modified using ``CSS_REWEIGHT_SCALE_CUTOFF``.  To
-include the ME-only variations along with the full variations in the
+LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
+However, the reweighting of parton shower emissions has to be enabled explicitly,
+using :option:`CSS_REWEIGHT: 1`.  This should work out of the box for both scale
+and PDF variations.  If numerical issues are encountered, one can try to
+increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5).
+This disables shower variations for emissions at scales below the value.  An
+improved accuracy for shower variations at very low scales can be achieved by
+using :option:`CSS_ALPHAS_FREEZE_MODE=1`, see :ref:`CS Shower options`.
+An additional safeguard against rare spuriously large shower variation
+weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
+Any variation weights accumulated during an event and larger than this factor
+will be ignored and reset to 1.
+
+To include the ME-only variations along with the full variations in the
 HepMC/Rivet output, you can use ``HEPMC_INCLUDE_ME_ONLY_VARIATIONS:
 true`` and ``RIVET: @{ INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true @``},
 respectively.
