@@ -12,7 +12,7 @@ namespace ATOOLS {
     double     m_lower, m_upper;
     double   * m_yvalues, * m_y2values;
     double   * m_psvalues, * m_ps2values;
-    double  ** m_mvalues;
+    double  ** m_mvalues, * m_ysums;
     double   * m_tmp;
     double     m_fills,m_psfills;
     double     m_mfills,m_mpsfills;
