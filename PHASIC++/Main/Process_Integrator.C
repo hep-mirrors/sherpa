@@ -6,6 +6,7 @@
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -19,7 +20,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-static int s_whbins(100);
+static int s_whbins(1000);
 static int s_genresdir(0);
 
 Process_Integrator::Process_Integrator(Process_Base *const proc):
@@ -52,7 +53,7 @@ bool Process_Integrator::Initialize
   static bool minit(false);
   if (!minit) {
     // weight histo bin number
-    s_whbins = s["IB_WHBINS"].SetDefault(100).Get<int>();
+    s_whbins = s["IB_WHBINS"].SetDefault(1000).Get<int>();
     minit=true;
   }
   return true;
@@ -192,11 +193,7 @@ void Process_Integrator::InitWeightHistogram()
 	       <<" in "<<p_proc->ResultsName()<<std::endl;
     return;
   }
-  if (av<.3) av/=10.;
-  /* If av=0, then subprocess at hand does not contribute.
-     In this case, set av to arbitrary value to avoid nans in 
-     following histogram */
-  if (IsZero(av)) av=1.;
+  if (av==0.0) av=1.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
   p_whisto = new Histogram(10,av*1.e-4,av*1.e6,s_whbins);
   if (p_proc->IsGroup())
@@ -332,6 +329,27 @@ void Process_Integrator::SetTotal(const int mode)
 double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
+  if (epsilon<0.) {
+    int npoints(p_whisto->Fills()/dabs(epsilon)), nsamples(32);
+#ifdef USING__MPI
+    nsamples=std::max(1,nsamples/mpi->Size());
+#endif
+    double nonzero(0.);
+    for (size_t i(0);i<p_whisto->Nbin();++i) nonzero+=p_whisto->Value(i);
+    nonzero*=npoints/p_whisto->Fills();
+    std::vector<double> maxs(nsamples,0.0);
+    for (size_t j(0);j<nsamples;++j)
+      for (size_t i(0);i<nonzero;++i) {
+	double x=p_whisto->GeneratePoint(ran->Get());
+	if (x>maxs[j]) maxs[j]=x;
+      }
+    std::sort(maxs.begin(),maxs.end(),std::less<double>());
+#ifdef USING__MPI
+    mpi->Allreduce(&maxs[maxs.size()/2],1,MPI_DOUBLE,MPI_MAX);
+#endif
+    return maxs[maxs.size()/2];
+  }
+
   double res = dabs(TotalResult());
   double pxs = res*epsilon*p_whisto->Fills();
   double cutxs = 0.;
@@ -351,7 +369,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 void Process_Integrator::SetUpEnhance(const int omode) 
 {
-  if (m_maxeps>0.0 && !p_proc->IsGroup()) {
+  if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
     if (omode)
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
