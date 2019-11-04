@@ -23,7 +23,8 @@ libPhasicSelectors_la_SOURCES = \
                                 Fastjet_Selector_Base.C \
                                 Fastjet_Finder.C \
                                 Fastjet_Selector.C \
-                                Fastjet_Veto.C
+                                Fastjet_Veto.C \
+                                Cone_Finder.C
 
 localinc_HEADERS      = \
                         Cut_Data.H \

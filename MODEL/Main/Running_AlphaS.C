@@ -47,10 +47,14 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   const int pdfas(alphassettings["USE_PDF"].Get<int>());
   const bool overridepdfinfo(s["OVERRIDE_PDF_INFO"].Get<bool>());
 
-  if ((m_as_MZ == 0.0 || m_order == 0.0)
-      && (p_pdf == NULL || overridepdfinfo)) {
-    THROW(fatal_error, "Cannot determine as(MZ) and/or the order of the running of as.");
-  }
+  PRINT_VAR(m_as_MZ);
+  PRINT_VAR(m_order);
+  PRINT_VAR(p_pdf);
+  PRINT_VAR(overridepdfinfo);
+  //if ((m_as_MZ == 0.0 || m_order == 0.0)
+  //    && (p_pdf == NULL || overridepdfinfo)) {
+  //  THROW(fatal_error, "Cannot determine as(MZ) and/or the order of the running of as.");
+  //}
 
   // update flavour masses from PDF if requested
   if (p_pdf && (pdfas&2)) {
