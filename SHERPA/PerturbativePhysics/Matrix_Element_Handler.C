@@ -338,8 +338,9 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
     if(fid[hc]==fls[hc].size()){fid[hc--]=0;++fid[hc];continue;}
     fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
     Flavour_Vector cfl(fl);
-    pi.m_ii.SetExternal(cfl);
-    pi.m_fi.SetExternal(cfl);
+    size_t n{0};
+    pi.m_ii.SetExternal(cfl, n);
+    pi.m_fi.SetExternal(cfl, n);
     Process_Base::SortFlavours(pi,1);
     if (initialized_pi_set.find(pi)==initialized_pi_set.end()) {
       initialized_pi_set.insert(pi);

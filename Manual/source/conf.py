@@ -63,6 +63,7 @@ html_favicon = '_static/images/favicon.ico'
 
 html_theme_options['extra_nav_links'] = {
     'Project Home': 'https://sherpa-team.gitlab.io',
+    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/'
 }
 
 suppress_warnings = ['ref.option']
