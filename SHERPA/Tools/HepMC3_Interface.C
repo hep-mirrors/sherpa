@@ -343,8 +343,15 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         Particle* parton=blob->InParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
-        HepMC::GenParticlePtr inpart = std::make_shared<HepMC::GenParticle>
-	 (momentum,(long int)parton->Flav(),4);
+        long int flav = (long int)parton->Flav();
+        if (flav == kf_lepton) {
+          if (sp->InParticle(0)->Flav().IsLepton())
+            flav = (long int)sp->InParticle(0)->Flav();
+          else
+            flav = (long int)sp->InParticle(1)->Flav();
+        }
+        HepMC::GenParticlePtr inpart =
+            std::make_shared<HepMC::GenParticle>(momentum, flav, 4);
         event.add_particle(inpart);
         vertex->add_particle_in(inpart);
         //We add attributes here->
@@ -423,8 +430,10 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
       subevent->add_vertex(beamvertex);
       HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1], rpa->gen.PBeam(j)[2],
                                 rpa->gen.PBeam(j)[3], rpa->gen.PBeam(j)[0]);
-      beamparticles[j] = std::make_shared<HepMC::GenParticle>(
-          mombeam, (long int)(j ? rpa->gen.Beam2() : rpa->gen.Beam1()), 2);
+      long int flav = (long int)(j ? rpa->gen.Beam2() : rpa->gen.Beam1());
+      if (flav == kf_lepton)
+        flav = (long int)sub->p_fl[j];
+      beamparticles[j] = std::make_shared<HepMC::GenParticle>(mombeam, flav, 4);
       beamvertex->add_particle_in(beamparticles[j]);
       double flip(sub->p_mom[i][0]<0.);
       HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],
