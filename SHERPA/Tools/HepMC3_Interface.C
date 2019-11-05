@@ -417,7 +417,15 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
     // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
+    HepMC::GenParticlePtr beamparticles[2]={NULL,NULL};
     for (size_t j(0);j<2;++j) {
+      HepMC::GenVertexPtr  beamvertex = std::make_shared<HepMC::GenVertex>();
+      subevent->add_vertex(beamvertex);
+      HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1], rpa->gen.PBeam(j)[2],
+                                rpa->gen.PBeam(j)[3], rpa->gen.PBeam(j)[0]);
+      beamparticles[j] = std::make_shared<HepMC::GenParticle>(
+          mombeam, (long int)(j ? rpa->gen.Beam2() : rpa->gen.Beam1()), 2);
+      beamvertex->add_particle_in(beamparticles[j]);
       double flip(sub->p_mom[i][0]<0.);
       HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],
                                  (flip?-1.:1.)*sub->p_mom[j][2],
@@ -426,12 +434,14 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
       HepMC::GenParticlePtr inpart =
         std::make_shared<HepMC::GenParticle>(momentum,(long int)sub->p_fl[j],4);
       subvertex->add_particle_in(inpart);
+      beamvertex->add_particle_out(inpart);
 //We add attributes here->
 //FIXME!     for (int k=1;k<3;k++) {
 //FIXME!    if (inpart->GetFlow(k)>0)outpart->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(inpart->GetFlow(k)));
 //FIXME!     }
 //<-We add attributes here
     }
+    subevent->set_beam_particles(beamparticles[0],beamparticles[1]);
     for (size_t j(2);j<sub->m_n;++j) {
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
