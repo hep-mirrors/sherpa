@@ -84,7 +84,7 @@ build-manual:
       - build/Manual
   only:
     changes:
-      - Manual/*
+      - Manual/**/*
 
 #
 # Test
@@ -180,7 +180,7 @@ pages:
     - public
   only:
     changes:
-      - Manual/*
+      - Manual/**/*
     refs:
       - master
       - tags
