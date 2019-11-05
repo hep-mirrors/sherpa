@@ -223,7 +223,8 @@ namespace ATOOLS {
     std::string ApplyReplacements(const Settings_Keys&,
                                   const std::string& value);
 
-
+    // check if path is absolute, only works on Unix
+    inline bool is_absolute(const std::string &s) {return (s.find("/") ==0);}
   };
 
   template <typename T>

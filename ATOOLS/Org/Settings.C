@@ -36,9 +36,13 @@ Settings::Settings(int argc, char* argv[])
 {
   m_yamlreaders.emplace_back(new Command_Line_Interface{argc, argv});
   const auto files = GetConfigFiles();
-  for (auto it = files.rbegin(); it != files.rend(); ++it)
-    m_yamlreaders.emplace_back(new Yaml_Reader{GetPath() + *it});
-
+  for (auto it = files.rbegin(); it != files.rend(); ++it){
+    std::string path = GetPath();
+    std::string runpath = path + (*it);
+    if(is_absolute((*it)))
+      runpath = (*it);
+    m_yamlreaders.emplace_back(new Yaml_Reader{runpath});
+  }
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
     const auto tags = (*it)->GetKeys(tagkeys);
