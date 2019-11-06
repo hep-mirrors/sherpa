@@ -49,8 +49,7 @@ install-data-local: sherpamanual.info
 endif
 
 
-EXTRA_DIST    = scrape_completion.py \
-	source
+EXTRA_DIST    = source
 
 if Manual_ENABLED
 # Distribute Manual so that building it isn't required
