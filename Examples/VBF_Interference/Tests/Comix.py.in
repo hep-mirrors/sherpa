@@ -19,13 +19,13 @@ COUPLINGS: None\n\
 MODEL: HEFT\n\
 EVENTS: 0\n\
 SHERPA_LDADD:\n\
-  - PhasicProcess\n\
-  - ToolsOrg\n\
-  - ToolsPhys\n\
-  - ToolsMath\n\
-  - ModelMain\n\
-  - METoolsExplicit\n\
-  - METoolsCurrents\n\
+- PhasicProcess\n\
+- ToolsOrg\n\
+- ToolsPhys\n\
+- ToolsMath\n\
+- ModelMain\n\
+- METoolsExplicit\n\
+- METoolsCurrents\n\
 INIT_ONLY: 2\n\
 OUTPUT: 0\n\
 WRITE_REFERENCES_FILE: false\n\
@@ -41,10 +41,9 @@ PARTICLE_DATA: {\n\
   23: {Mass:  91.188000000000002, Width: 2.441404},\n\
   }\n\
 PROCESSES:\n\
-  - {\n\
-    Process: "+str(self.fl[0])+" "+str(self.fl[1])+" -> "+' '.join(str(n) for n in self.fl[2:])+",\n\
-    "+',\n    '.join(n for n in pargs)+",\n\
-    }\n")
+- "+str(self.fl[0])+" "+str(self.fl[1])+" -> "+' '.join(str(n) for n in self.fl[2:])+": \n\
+    "+'\n    '.join(n for n in pargs)+"\n\
+\n")
         card.flush()
 
         sys.argv.append('-f'+os.path.basename(card.name))

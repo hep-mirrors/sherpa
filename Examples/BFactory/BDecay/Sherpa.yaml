@@ -14,4 +14,4 @@ ME_GENERATORS: Internal
 SCALES: VAR{sqr(91.2)}
 
 PROCESSES:
-- Process: 11 -11 -> 13 -13
+- 11 -11 -> 13 -13: {}

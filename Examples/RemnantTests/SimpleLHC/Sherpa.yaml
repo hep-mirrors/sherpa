@@ -21,9 +21,9 @@ EVENT_GENERATION_MODE: Weighted
 SHOWER_GENERATOR: CSS
 
 PROCESSES:
-- Process: 93 93 -> 13 -13
-  Order: {QCD: Any, EW: 2}
-  Integration_Error: 0.05
+- 93 93 -> 13 -13:
+    Order: {QCD: Any, EW: 2}
+    Integration_Error: 0.05
 
 SELECTORS:
 - [Mass, 13, -13, 66, 116.]

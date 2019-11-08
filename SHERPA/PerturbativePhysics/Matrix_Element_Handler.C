@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Strings.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -61,9 +62,8 @@ void Matrix_Element_Handler::RegisterDefaults()
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
-    Scoped_Settings&& procsettings)
+    Scoped_Settings& procsettings)
 {
-  procsettings["Process"].SetDefault("");
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
   procsettings.DeclareVectorSettingsWithEmptyDefault({
@@ -324,12 +324,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   return true;
 }
 
-std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
-(const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
+    Process_Info pi, NLOTypeStringProcessMap_Map*& pmap)
 {
-  Process_Info cpi(pi);
-  std::set<Process_Info> trials;
+  CheckInitialStateOrdering(pi);
   std::vector<Process_Base*> procs;
+  std::set<Process_Info> initialized_pi_set;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
   std::vector<int> fid(fls.size(),0);
   Flavour_Vector fl(fls.size());
@@ -338,13 +338,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     if(fid[hc]==fls[hc].size()){fid[hc--]=0;++fid[hc];continue;}
     fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
     Flavour_Vector cfl(fl);
-    size_t n(0);
-    cpi.m_ii.SetExternal(cfl,n);
-    cpi.m_fi.SetExternal(cfl,n);
-    Process_Base::SortFlavours(cpi,1);
-    if (trials.find(cpi)==trials.end()) {
-      trials.insert(cpi);
-      std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
+    size_t n{0};
+    pi.m_ii.SetExternal(cfl, n);
+    pi.m_fi.SetExternal(cfl, n);
+    Process_Base::SortFlavours(pi,1);
+    if (initialized_pi_set.find(pi)==initialized_pi_set.end()) {
+      initialized_pi_set.insert(pi);
+      std::vector<Process_Base*> cp=InitializeSingleProcess(pi,pmap);
       procs.insert(procs.end(),cp.begin(),cp.end());
     }
     ++fid[hc];
@@ -355,7 +355,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
-  msg_Out()<<METHOD<<":\n"<<pi<<"\n";
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
@@ -487,6 +486,25 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
   return procs;
 }
 
+void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
+{
+  auto cpi = pi;
+  Process_Base::SortFlavours(cpi, 1);
+  if (cpi.m_ii == pi.m_ii) {
+  } else {
+    msg_Error() << ATOOLS::om::red << "\n\nERROR:" << ATOOLS::om::reset
+      << " Wrong ordering of initial-state particles detected.\n"
+      << "Please re-order the initial state in your Process definition(s) "
+      << "like this:\n  ";
+    pi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << " ->  ";
+    cpi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << "\nYou may need to adjust your other beam-specific "
+      << "parameters accordingly.";
+    exit(-1);
+  }
+}
+
 int Matrix_Element_Handler::InitializeProcesses(
   BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
 {
@@ -546,16 +564,26 @@ void Matrix_Element_Handler::BuildProcesses()
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
-  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0)
-    THROW(missing_input, "No process data.");
-
-  RegisterMainProcessDefaults(s["PROCESSES"]);
+  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
+    if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
+  }
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
+    const auto keys = proc.GetKeys();
+    if (keys.size() != 1) {
+      if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
+    }
+    const std::string& name = keys[0];
+    auto procsettings = proc[name];
+    RegisterMainProcessDefaults(procsettings);
     Single_Process_List_Args args;
-    ReadFinalStateMultiIndependentProcessSettings(proc, args);
-    ReadFinalStateMultiSpecificProcessSettings(proc, args);
+    ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
+    ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
@@ -571,7 +599,7 @@ void Matrix_Element_Handler::BuildProcesses()
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
-  Scoped_Settings proc, Single_Process_List_Args& args)
+  const std::string& procname, Scoped_Settings proc, Single_Process_List_Args& args)
 {
   // fill process info
   Settings& s = Settings::GetMainSettings();
@@ -587,10 +615,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   args.pi.p_gens=&m_gens;
 
   // fill initial/final state
-  const auto procname = proc["Process"].Get<std::string>();
   size_t pos(procname.find("->"));
   if (pos==std::string::npos)
-    THROW(fatal_error, "Process name must be of the form `a b -> x y'.");
+    THROW(fatal_error, "Process name must be of the form `a b -> x y ...'.");
   args.ini = procname.substr(0,pos);
   args.fin = procname.substr(pos+2);
 
@@ -668,8 +695,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
-        || subkey == "CKKW"
-        || subkey == "Process")
+        || subkey == "CKKW")
       continue;
 
     // read value (and potentially do some pre-processing for non-scalar

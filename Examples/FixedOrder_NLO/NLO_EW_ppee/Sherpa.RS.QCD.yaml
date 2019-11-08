@@ -13,12 +13,12 @@ TAGS:
   SCF: 1.0
 SCALES: VAR{$(SCF)*sqr(91.2)}
 PROCESSES:
-- Process: 98 98 -> 11 -11,
-  NLO_Mode: Fixed_Order,
-  NLO_Part: RS,
-  NLO_Order: {QCD: 1, EW: 0},
-  Order: {QCD: 0, EW: 2},
-  Print_Graphs: Graphs,
+- 98 98 -> 11 -11:
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 0, EW: 2}
+    Print_Graphs: Graphs
 SELECTORS:
 - [N, -11, 1, 1]
 - [N, 11, 1, 1]

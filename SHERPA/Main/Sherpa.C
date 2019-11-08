@@ -223,7 +223,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
   
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-    //msg_Out()<<"Generate event worked out.\n";
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       std::ofstream eventout(("refevent."+fname).c_str());

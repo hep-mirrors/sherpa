@@ -14,12 +14,12 @@ TAGS:
   SCF: 1.0
 SCALES: VAR{DH_Tp2(Cone,0.1)}
 PROCESSES:
-- Process: 22 22 -> 11 -11 22
-  NLO_Mode: Fixed_Order
-  NLO_Part: RS
-  NLO_Order: {QCD: 0, EW: 1}
-  Order: {QCD: 0, EW: 3}
-  Print_Graphs: Graphs
+- 22 22 -> 11 -11 22:
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    NLO_Order: {QCD: 0, EW: 1}
+    Order: {QCD: 0, EW: 3}
+    Print_Graphs: Graphs
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

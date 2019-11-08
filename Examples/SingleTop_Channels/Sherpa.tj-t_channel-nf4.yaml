@@ -35,11 +35,11 @@ PDF_SET: NNPDF30_nlo_as_0118_nf_4
 ALPHAS: {USE_PDF: 1}
 
 PROCESSES:
-- Process: 93 93 -> 6 -5 93
-  NLO_Mode: MC@NLO
-  NLO_Order: {QCD: 1, EW: 0}
-  Order: {QCD: 1, EW: 2}
-  ME_Generator: Amegic
-  RS_ME_Generator: Comix
-  Loop_Generator: OpenLoops
-  Min_N_TChannels: 1  # require t-channel W
+- 93 93 -> 6 -5 93:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 1, EW: 2}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops
+    Min_N_TChannels: 1  # require t-channel W

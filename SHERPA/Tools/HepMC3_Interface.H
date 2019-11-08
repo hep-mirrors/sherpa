@@ -104,8 +104,11 @@ namespace SHERPA {
     HepMC::GenEvent *p_event;
     std::vector<HepMC::GenEvent*> m_subeventlist;
 
-  public :
+    std::shared_ptr<HepMC::GenParticle> MakeGenParticle(const ATOOLS::Vec4D&,
+                                                        const ATOOLS::Flavour&,
+                                                        bool incoming);
 
+  public:
     // constructor
     HepMC3_Interface();
 

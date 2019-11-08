@@ -388,7 +388,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       AC_MSG_RESULT(no);
       VERSIONING=""; ] 
   )
-  AC_SUBST(VERSIONING)
+  AC_SUBST([VERSIONING])
 
   AC_ARG_ENABLE(
     multithread,
@@ -620,6 +620,48 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_FASTJETINCS)
   AC_SUBST(CONDITIONAL_FASTJETLIBS)
   AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
+
+  AC_ARG_ENABLE([manual],
+    AS_HELP_STRING([--enable-manual], [Enable the manual]),
+      [ AC_MSG_CHECKING(whether the manual dependencies are installed);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Manual not enabled); manual=false ;;
+        yes)  if ! command -v python3 &>/dev/null; then
+                 AC_MSG_ERROR(python3 not installed.);
+              fi;
+
+              if ! command -v sphinx-build &>/dev/null; then
+                  AC_MSG_ERROR(sphinx not installed.);
+              fi;
+
+              if ! command -v makeinfo &>/dev/null; then
+                  AC_MSG_ERROR(makeinfo not installed.);
+              fi;
+
+              if ! command -v pdflatex --version &>/dev/null; then
+                  AC_MSG_ERROR(pdflatex not installed.);
+              fi;
+
+              # Check sphinx version number: > __MA_REQ.x.x
+              __VERSION=$(sphinx-build --version | cut -d ' ' -f 2)
+              __MA_VERS=$(echo $VERSION | cut -d '.' -f 1)
+              __MA_REQ=2
+
+              if !  [[ "$__MA_VERS" -ge "$__MA_REQ" ]] ; then
+                  AC_MSG_ERROR("Sphinx version >= $__MA_REQ.x required. You have version: $__VERSION");
+              fi;
+
+              if ! [ python3 -c  'import sphinxcontrib.bibtex' &>/dev/null ]; then
+                 AC_MSG_ERROR(sphinxcontrib-bibtex not installed.);
+              fi;
+
+              AC_MSG_RESULT([yes]); manual=true;;
+           *) ;;
+      esac
+      ],
+      [ manual=false ])
+
+  AM_CONDITIONAL(Manual_ENABLED, test "$manual" = "true")
 
   AC_ARG_ENABLE(
     blackhat,

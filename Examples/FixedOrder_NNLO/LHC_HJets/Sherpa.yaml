@@ -25,16 +25,16 @@ FRAGMENTATION: Off
 MI_HANDLER: None
 
 PROCESSES:
-- Process: 93 93 -> 25 93{1}
-  NLO_QCD_Mode: Fixed_Order
-  Loop_Generator: Internal
-  ME_Generator: Amegic
-  PSI_ItMin: 100000
-  RS_PSI_ItMin: 500000
-  2->1:
-    Special: MapOff
-  KFactor: HNNLO
-  Order: {QCD: Any, EW: 0, HEFT: 1}
+- 93 93 -> 25 93{1}:
+    NLO_QCD_Mode: Fixed_Order
+    Loop_Generator: Internal
+    ME_Generator: Amegic
+    PSI_ItMin: 100000
+    RS_PSI_ItMin: 500000
+    2->1:
+      Special: MapOff
+    KFactor: HNNLO
+    Order: {QCD: Any, EW: 0, HEFT: 1}
 
 SELECTORS:
 - [NNLOqT, 1e0]

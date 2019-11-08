@@ -85,6 +85,7 @@ localinc_HEADERS         =	\
 			Scoped_Settings.H \
 			Settings_Keys.H \
 			Settings_Writer.H \
+			Strings.H \
 			Enum_Flags.H \
 			Node.H \
 			Node.C \

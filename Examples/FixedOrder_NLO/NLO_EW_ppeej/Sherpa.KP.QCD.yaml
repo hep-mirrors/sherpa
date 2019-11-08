@@ -30,13 +30,13 @@ PARTICLE_DATA:
   24: {Mass: 80.385, Width: 2.04544486478742}
   25: {Mass: 126, Width: 0.00407}
 PROCESSES:
-- Process: 93 93 -> 11 -11 93
-  NLO_Mode: Fixed_Order
-  NLO_Part: I
-  NLO_Order: {QCD: 1, EW: 0}
-  Order: {QCD: 1, EW: 2}
-  Print_Graphs: Graphs
-  Loop_Generator: $(LOOPGEN)
+- 93 93 -> 11 -11 93:
+    NLO_Mode: Fixed_Order
+    NLO_Part: I
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 1, EW: 2}
+    Print_Graphs: Graphs
+    Loop_Generator: $(LOOPGEN)
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

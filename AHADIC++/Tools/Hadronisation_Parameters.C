@@ -1,4 +1,4 @@
-#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+﻿#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -102,41 +102,41 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["ClusterSplittingForm"] =
     s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
   m_switchmap["RemnantSplittingForm"] =
-    s["REMNANT_CLUSTER_MODE"].SetDefault(1).Get<int>();
+    s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
   // generic parameter for non-perturbative transverse momentum
   m_parametermap[string("kT_0")]   =
-    s["KT_0"].SetDefault(0.75).Get<double>();
+    s["KT_0"].SetDefault(1.00).Get<double>();
   // gluon fragmentation
   m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(1.00).Get<double>();
+    s["ALPHA_G"].SetDefault(1.25).Get<double>();
   // light quark fragmentation
   m_parametermap[string("alphaL")] =
     s["ALPHA_L"].SetDefault(2.50).Get<double>();
   m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.00).Get<double>();
+    s["BETA_L"].SetDefault(0.10).Get<double>();
   m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.75).Get<double>();
+    s["GAMMA_L"].SetDefault(0.50).Get<double>();
   // di-quark fragmentation
   m_parametermap[string("alphaD")] =
-    s["ALPHA_D"].SetDefault(m_shower ? 2.5 : 1.5).Get<double>();
+    s["ALPHA_D"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
   m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.00).Get<double>();
+    s["BETA_D"].SetDefault(0.25).Get<double>();
   m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(1.00).Get<double>();
+    s["GAMMA_D"].SetDefault(0.50).Get<double>();
   // beam particle fragmentation
   m_parametermap[string("alphaB")] =
-    s["ALPHA_B"].SetDefault(m_shower ? 2.5 : 1.5).Get<double>();
+    s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
   m_parametermap[string("betaB")]  =
     s["BETA_B"].SetDefault(0.25).Get<double>();
   m_parametermap[string("gammaB")] =
-    s["GAMMA_B"].SetDefault(0.5).Get<double>();
+    s["GAMMA_B"].SetDefault(0.50).Get<double>();
   // heavy quark fragmentation function
   m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(1.00).Get<double>();
+    s["ALPHA_H"].SetDefault(2.50).Get<double>();
   m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(1.50).Get<double>();
+    s["BETA_H"].SetDefault(0.75).Get<double>();
   m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(m_shower ? 0.03 : 0.03).Get<double>();
+    s["GAMMA_H"].SetDefault(m_shower ? 0.10 : 0.10).Get<double>();
   // Probably irrelevant as long as they are small.
   // We will probably not have to tune them.
   m_parametermap[string("decay_threshold")] =
@@ -220,9 +220,9 @@ void Hadronisation_Parameters::ReadPoppingParameters()
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
   m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(0.55).Get<double>();
+    s["STRANGE_FRACTION"].SetDefault(0.50).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(m_shower ? 0.17 : 0.17).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(0.18).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
     (s["P_QS_by_P_QQ_norm"].SetDefault(0.48).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =

@@ -22,15 +22,13 @@ SCALES: VAR{$(SCF)*sqr(91.2)}
 #  5: {Active: false}
 #  }
 PROCESSES:
-  - {
-    Process: 93 93 -> 12 -12,
-    NLO_EW_Mode: Fixed_Order,
-    NLO_EW_Part: IRS,
-    Loop_Generator: OpenLoops,
-    Integration_Error: 0.01,
-    Order: {QCD: 0},
+- 93 93 -> 12 -12:
+    NLO_EW_Mode: Fixed_Order
+    NLO_EW_Part: IRS
+    Loop_Generator: OpenLoops
+    Integration_Error: 0.01
+    Order: {QCD: 0}
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1

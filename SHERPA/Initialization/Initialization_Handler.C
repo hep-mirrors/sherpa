@@ -209,7 +209,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
-  s["CSS_FS_PT2MIN"].SetDefault(2.0);
+  s["CSS_FS_PT2MIN"].SetDefault(1.0);
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(1.0);
@@ -676,7 +676,7 @@ bool Initialization_Handler::InitializeThePDFs()
       deflib="NNPDFSherpa";
       defset[beam]="NNPDF31_nnlo_as_0118_mc";
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e || p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
       deflib="PDFESherpa";
       defset[beam]="PDFe";
     }

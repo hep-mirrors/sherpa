@@ -15,19 +15,15 @@ TAGS: {
 }
 SCALES: VAR{$(FSF)*sqr(125)}{$(RSF)*sqr(125)}
 PROCESSES:
-- {
-  Process: 93 93 -> 25,
-  NLO_QCD_Mode: Fixed_Order,
-  NLO_QCD_Part: B,
-  Order: {QCD: 2, EW: 1},
-}
-- {
-  Process: 93 93 -> 25,
-  NLO_QCD_Mode: Fixed_Order,
-  NLO_QCD_Part: RS,
-  Enhance_Factor: $(RSENH),
-  Order: {QCD: 2, EW: 1},
-}
+- 93 93 -> 25:
+    NLO_QCD_Mode: Fixed_Order,
+    NLO_QCD_Part: B,
+    Order: {QCD: 2, EW: 1},
+- 93 93 -> 25:
+    NLO_QCD_Mode: Fixed_Order,
+    NLO_QCD_Part: RS,
+    Enhance_Factor: $(RSENH),
+    Order: {QCD: 2, EW: 1},
 RIVET: {
   -a: MC_PHOTONPHOTON_JOEY_STABLE,
   USE_HEPMC_SHORT: 1,

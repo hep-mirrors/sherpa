@@ -25,12 +25,12 @@ PARTICLE_DATA:
   24: {Mass: 80.385, Width: 2.04544486478742}
   25: {Mass: 126, Width: 0.00407}
 PROCESSES:
-- Process: 93 93 -> 11 -11 93
-  #NLO_Mode: Fixed_Order
-  #NLO_Part: B
-  #NLO_Order: {QCD: 0, EW: 1}
-  Order: {QCD: 1, EW: 2}
-  Print_Graphs: Graphs
+- 93 93 -> 11 -11 93:
+    #NLO_Mode: Fixed_Order
+    #NLO_Part: B
+    #NLO_Order: {QCD: 0, EW: 1}
+    Order: {QCD: 1, EW: 2}
+    Print_Graphs: Graphs
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

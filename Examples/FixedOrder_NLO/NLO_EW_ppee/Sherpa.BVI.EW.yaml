@@ -16,13 +16,13 @@ PDF_LIBRARY: LHAPDFSherpa
 PDF_SET: NNPDF23_nlo_as_0118_qed
 SCALES: VAR{$(SCF)*sqr(91.2)}
 PROCESSES:
-- Process: 93 93 -> 11 -11
-  NLO_Mode: Fixed_Order
-  NLO_Part: I
-  NLO_Order: {QCD: 0, EW: 1}
-  Order: {QCD: 0, EW: 2}
-  Print_Graphs: Graphs
-  Loop_Generator: $(LOOPGEN)
+- 93 93 -> 11 -11:
+    NLO_Mode: Fixed_Order
+    NLO_Part: I
+    NLO_Order: {QCD: 0, EW: 1}
+    Order: {QCD: 0, EW: 2}
+    Print_Graphs: Graphs
+    Loop_Generator: $(LOOPGEN)
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

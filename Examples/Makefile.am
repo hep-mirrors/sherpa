@@ -20,6 +20,7 @@ nobase_dist_examples_DATA         =	\
 		FixedOrder_NLO/NTuples/Sherpa.Reweight.B-like.yaml \
 		FixedOrder_NLO/NTuples/Sherpa.R-like.yaml \
 		FixedOrder_NLO/NTuples/Sherpa.Reweight.R-like.yaml \
+		FixedOrder_NLO/MINLO/Sherpa.yaml \
 		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml \
 		V_plus_Jets/LHC_WJets/Sherpa.yaml \
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
@@ -78,4 +79,8 @@ nobase_dist_examples_DATA         =	\
 		UFO_MSSM/MSSM/parameters.py \
 		UFO_MSSM/MSSM/particles.py \
 		UFO_MSSM/MSSM/vertices.py \
-		UFO_MSSM/MSSM/write_param_card.py
+		UFO_MSSM/MSSM/write_param_card.py \
+		SingleTop_Channels/Sherpa.tj-t_channel.yaml \
+		SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml \
+		SingleTop_Channels/Sherpa.tj-s_channel.yaml \
+		SingleTop_Channels/Sherpa.tW.yaml

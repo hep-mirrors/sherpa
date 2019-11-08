@@ -16,23 +16,22 @@ SCALES: \"VAR{sqr(91.188)}\"\n\
 MODEL: HEFT\n\
 EVENTS: 0\n\
 SHERPA_LDADD:\n\
-  - PhasicProcess\n\
-  - ToolsOrg\n\
-  - ToolsPhys\n\
-  - ToolsMath\n\
-  - ModelMain\n\
-  - METoolsExplicit\n\
-  - METoolsCurrents\n\
+- PhasicProcess\n\
+- ToolsOrg\n\
+- ToolsPhys\n\
+- ToolsMath\n\
+- ModelMain\n\
+- METoolsExplicit\n\
+- METoolsCurrents\n\
 INIT_ONLY: 2\n\
 PROCESSES:\n\
-  - {\n\
-    Process: "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+",\n\
-    NLO_QCD_Mode: 1,\n\
-    NLO_QCD_Part: V,\n\
-    Loop_Generator: BlackHat,\n\
-    Enable_MHV: 12,\n\
-    Order: \"(3,2,2)\",  # gF+2j signal\n\
-    }\n")
+- "+str(fl[0])+" "+str(fl[1])+" -> "+' '.join(str(n) for n in fl[2:])+":\n\
+    NLO_QCD_Mode: 1\n\
+    NLO_QCD_Part: V\n\
+    Loop_Generator: BlackHat\n\
+    Enable_MHV: 12\n\
+    Order: \"(3,2,2)\"  # gF+2j signal\n\
+\n")
 card.flush()
 
 sys.argv.append('-f '+os.path.basename(card.name))

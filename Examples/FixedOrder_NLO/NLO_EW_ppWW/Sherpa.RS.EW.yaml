@@ -25,15 +25,13 @@ GF: 1.16637e-5
 1/ALPHAQED(default): 132.234216124
 WIDTH_SCHEME: Fixed
 PROCESSES:
-  - {
-    Process: 98 98 -> 24 -24,
-    Integration_Error: 0.00001,
-    NLO_Mode: Fixed_Order,
-    NLO_Part: RS,
-    NLO_Order: {QCD: 0, EW: 1},
-    Order: {QCD: 0, EW: 2},
+- 98 98 -> 24 -24:
+    Integration_Error: 0.00001
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    NLO_Order: {QCD: 0, EW: 1}
+    Order: {QCD: 0, EW: 2}
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1

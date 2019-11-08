@@ -15,10 +15,10 @@ PARTICLE_DATA:
   23: {Width: 0.0}
   24: {Width: 0.0}
 PROCESSES:
-- Process: 93 93 -> 24 93 93
-  Integration_Error: 0.00001
-  Order: {QCD: 0}
-  Print_Graphs: Graphs
+- 93 93 -> 24 93 93:
+    Integration_Error: 0.00001
+    Order: {QCD: 0}
+    Print_Graphs: Graphs
 SELECTORS:
 - DressedParticleSelector:
     DressingAlgorithm: [Cone, 0.1]

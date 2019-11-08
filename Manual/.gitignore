@@ -1,0 +1,8 @@
+Sherpa.1
+doctrees/
+options.index
+sherpamanual.info
+sherpamanual.pdf
+source/__pycache__/
+source/_extensions/__pycache__/
+sherpamanual_html/

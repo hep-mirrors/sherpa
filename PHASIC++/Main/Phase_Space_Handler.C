@@ -420,6 +420,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
 {
   if (m_nin!=2) return;
+  int swap(p_isrhandler->Swap());
   Vec4D sum;
   size_t imax(0);
   double emax(0.0);
@@ -437,7 +438,7 @@ void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p)
   double E0[2]={-p[0][0],-p[1][0]};
   double E1[2]={p2[0]/E0[0],-(Vec3D(p[0])*Vec3D(p[1]))/E0[1]};
   double e1tot=E1[0]+E1[1];
-  double E2[2]={p2[0]*sqr(p_flavours[0].Mass())/(2*pow(E0[0],3)),
+  double E2[2]={p2[0]*sqr(p_flavours[swap].Mass())/(2*pow(E0[0],3)),
 		(p2[0]-sqr(E1[1]))/(2*E0[1])};
   double e2tot=E2[0]+E2[1];
   double eps1=-e0tot/e1tot;
@@ -445,7 +446,7 @@ void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p)
   p[1]=-p[1]+p[0]*eps;
   p[0]=-p[0]-p[0]*eps;
   for (int i(0);i<2;++i) {
-    if (p_flavours[i].Mass()==0.0 && p[i][1]==0.0 && p[i][2]==0.0) 
+    if (p_flavours[(i+swap)%2].Mass()==0.0 && p[i][1]==0.0 && p[i][2]==0.0) 
       p[i][0]=-std::abs(p[i][3]);
     else
       p[i][0]=E0[i]+E1[i]*eps+E2[i]*sqr(eps);

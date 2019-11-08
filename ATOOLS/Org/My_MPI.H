@@ -49,8 +49,8 @@ namespace ATOOLS {
       return size;
     }
 
-    void Bcast(void* buffer, int count, MPI_Datatype type, int root=0) {
-      MPI_Bcast(buffer, count, type, root, m_comm);
+    void Bcast(void* buffer, int count, MPI_Datatype type) {
+      MPI_Bcast(buffer, count, type, 0, m_comm);
     }
 
     void Allreduce(void* buffer, int count, MPI_Datatype type, MPI_Op op) {

@@ -19,19 +19,19 @@ PARTICLE_DATA:
 
 # pp -> W[lv]+jets
 PROCESSES:
-- Process: 93 93 -> 90 91 93{4}
-  Order: {QCD: 0, EW: 2}
-  CKKW: 20
-  # set up MC@NLO final-state multiplicities
-  2->2-4:
-    NLO_Mode: MC@NLO
-    NLO_Order: {QCD: 1, EW: 0}
-    ME_Generator: Amegic
-    RS_ME_Generator: Comix
-    Loop_Generator: OpenLoops
-  # make calculation of higher final-state multiplicities faster
-  2->4-6:
-    Integration_Error: 0.05
+- 93 93 -> 90 91 93{4}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: 20
+    # set up MC@NLO final-state multiplicities
+    2->2-4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+    # make calculation of higher final-state multiplicities faster
+    2->4-6:
+      Integration_Error: 0.05
 
 SELECTORS:
 # Safety cuts to avoid PDF calls with muF < 1 GeV

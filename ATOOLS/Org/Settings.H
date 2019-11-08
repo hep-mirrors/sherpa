@@ -64,8 +64,9 @@ namespace ATOOLS {
    *   }
    *
    * When settings defaults and/or overrides, lists are ignored, i.e. for the
-   * previous example, with mainsettings["PROCESSES"]["NIn"].SetDefault...(2),
-   * each s["NIn"] will have its default set to 2.
+   * previous example, with
+   * mainsettings["PROCESSES"][proc_name]["NIn"].SetDefault...(2), each
+   * s[proc_name]["NIn"] will have its default set to 2.
    */
   class Settings {
 
@@ -222,7 +223,8 @@ namespace ATOOLS {
     std::string ApplyReplacements(const Settings_Keys&,
                                   const std::string& value);
 
-
+    // check if path is absolute, only works on Unix
+    inline bool is_absolute(const std::string &s) {return (s.find("/") ==0);}
   };
 
   template <typename T>

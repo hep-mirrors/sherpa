@@ -442,9 +442,9 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
       break;
     }
   }
+  phi = 2.0*M_PI*ran->Get();
   msg_IODebugging()<<"trial "<<p_spect<<", t = "<<t
 		   <<", y = "<<y<<", z = "<<z<<", phi = "<<phi<<"\n";
-  phi = 2.0*M_PI*ran->Get();
   return success;
 }
 
