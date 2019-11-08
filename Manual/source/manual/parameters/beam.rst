@@ -52,7 +52,7 @@ Beam Spectra
 .. index:: BEAM_SMAX
 
 If desired, you can also specify spectra for beamstrahlung through
-``BEAM_SPECTRA``. The possible values are Possible values are
+``BEAM_SPECTRA``. The possible values are
 
 :option:`Monochromatic`
   The beam energy is unaltered and the beam

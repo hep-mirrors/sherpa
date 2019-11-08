@@ -12,32 +12,35 @@ pkgdata_DATA = \
 man_MANS = Sherpa.1
 doc_DATA = sherpamanual.pdf
 
+ALLDOCFILES = $(shell find $(srcdir)/source/ $(srcdir)/../Examples)
+
 .NOTPARALLEL:
-completion.index options.index: $(srcdir)/source/manpage.rst
+completion.index options.index: $(ALLDOCFILES)
 	@echo "Creating index for tab completion."
 	$(sphinx_build_command) -M completion $(sphinx_SOURCE) . $(sphinx_options)
 	@mv completion/* .
 	@rm -r completion
 
 .NOTPARALLEL:
-Sherpa.1: $(srcdir)/source/manpage.rst $(srcdir)/source/man/**
+Sherpa.1: $(ALLDOCFILES)
 	$(sphinx_build_command) -M man $(sphinx_SOURCE) . $(sphinx_options)
 	@mv man/Sherpa.1 .
 	@rm -r man
 
 .NOTPARALLEL:
-sherpamanual_html: $(srcdir)/source/index.rst $(srcdir)/source/manual/**.rst
+sherpamanual_html: $(ALLDOCFILES)
 	$(sphinx_build_command) -M html $(sphinx_SOURCE) . $(sphinx_options)
+	@rm -rf sherpamanual_html
 	@mv html sherpamanual_html
 
 .NOTPARALLEL:
-sherpamanual.pdf: $(srcdir)/source/index.rst $(srcdir)/source/manual/**.rst
+sherpamanual.pdf: $(ALLDOCFILES)
 	$(sphinx_build_command) -M latexpdf $(sphinx_SOURCE) . $(sphinx_options)
 	@mv latex/sherpamanual.pdf .
 	@rm -r latex
 
 .NOTPARALLEL:
-sherpamanual.info: $(srcdir)/source/**.rst
+sherpamanual.info: $(ALLDOCFILES)
 	$(sphinx_build_command) -M info $(sphinx_SOURCE) . $(sphinx_options)
 	@mv texinfo/sherpamanual.info .
 	@rm -r texinfo
