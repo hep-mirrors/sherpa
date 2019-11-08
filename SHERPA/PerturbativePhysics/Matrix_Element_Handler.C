@@ -496,11 +496,11 @@ void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
       << " Wrong ordering of initial-state particles detected.\n"
       << "Please re-order the initial state in your Process definition(s) "
       << "like this:\n  ";
-    pi.m_ii.PrintFlavours(msg_Error());
-    msg_Error() << " ->  ";
     cpi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << " ->  ";
+    pi.m_fi.PrintFlavours(msg_Error());
     msg_Error() << "\nYou may need to adjust your other beam-specific "
-      << "parameters accordingly.";
+      << "parameters accordingly.\n";
     exit(-1);
   }
 }
