@@ -4,6 +4,8 @@ Standard Model
 --------------
 
 .. index:: 1/ALPHAQED(0)
+.. index:: 1/ALPHAQED(MW)
+.. index:: 1/ALPHAQED(MZ)
 .. index:: SIN2THETAW
 .. index:: VEV
 .. index:: CKM_Lambda
@@ -17,6 +19,7 @@ Standard Model
 .. index:: CKM_Output
 .. index:: ALPHAS(MZ)
 .. index:: ALPHAQED_DEFAULT_SCALE
+.. index:: GMU_CMS_AQED_CONVENTION
 .. index:: ORDER_ALPHAS
 .. index:: ALPHAS_USE_PDF
 .. index:: WIDTH_SCHEME
@@ -27,47 +30,81 @@ Standard Model
 .. index:: PARTICLE_DATA_Stable
 .. index:: PARTICLE_DATA_Yukawa
 
-The SM inputs for the electroweak sector can be given in four
+The SM inputs for the electroweak sector can be given in nine
 different schemes, that correspond to different choices of which SM
 physics parameters are considered fixed and which are derived from the
-given quantities. The input schemes are selected through the
-``EW_SCHEME`` parameter, whose default is :option:`1`. The following
-options are provided:
+given quantities. The electro-weak coupling is by default fixed, unless its
+running has been enabled (cf. :ref:`COUPLINGS`).
+The input schemes are selected through the ``EW_SCHEME`` parameter, whose
+default is :option:`alphamZ`. The following options are provided:
 
-* Case ``0``:
-
-  all EW parameters are explicitly given.  Here the W, Z and Higgs
-  masses are taken as inputs, and the parameters ``1/ALPHAQED(0)``,
-  ``ALPHAQED_DEFAULT_SCALE`` (cf. below), ``SIN2THETAW`` (weak mixing
+:option:`UserDefined`
+  All EW parameters are explicitly given:  Here the W, Z and Higgs
+  masses and widths are taken as inputs, and the parameters 
+  ``1/ALPHAQED(0)``, ``ALPHAQED_DEFAULT_SCALE``, ``SIN2THETAW`` (weak mixing
   angle), ``VEV`` (Higgs field vacuum expectation value) and
   ``LAMBDA`` (Higgs quartic coupling) have to be specified.
-
+  
+  By default, :option:`ALPHAQED_DEFAULT_SCALE: 8315.18` (:math:`=m_Z^2`), which
+  means that the MEs are evaluated with a value of :math:`\alpha=\frac{1}{128.802}`.
+  
   Note that this mode allows to violate the tree-level relations
   between some of the parameters and might thus lead to gauge
   violations in some regions of phase space.
 
-* Case ``1``:
-
-  all EW parameters are calculated from the W, Z and Higgs masses and
+:option:`alpha0`
+  All EW parameters are calculated from the W, Z and Higgs masses 
+  and widths and
   the fine structure constant (taken from ``1/ALPHAQED(0)`` +
   ``ALPHAQED_DEFAULT_SCALE``, cf. below) using tree-level relations.
 
-* Case ``2``:
+  By default, :option:`ALPHAQED_DEFAULT_SCALE: 0.0`, which means that the MEs
+  are evaluated with a value of :math:`\alpha=\frac{1}{137.03599976}`.
+  
+:option:`alphamZ`
+  All EW parameters are calculated from the W, Z and Higgs masses 
+  and widths and the fine structure constant (taken from ``1/ALPHAQED(MZ)``,
+  default :option:`128.802`) using tree-level relations.
 
-  all EW parameters are calculated from the W, Z and Higgs masses and
-  the fine structure constant (taken from ``1/ALPHAQED(MZ)``) using
-  tree-level relations.
-
-* Case ``3``:
-
-  this choice corresponds to the G_mu-scheme. The EW parameters are
+:option:`Gmu`
+  This choice corresponds to the G_mu-scheme. The EW parameters are
   calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
-  boson mass M_H and the Fermi constant ``GF`` using tree-level
+  boson mass M_H, their respective widths, 
+  and the Fermi constant ``GF`` using tree-level
   relations.
 
-* Case ``4``:
+:option:`alphamZsW`
+  All EW parameters are calculated from the Z and Higgs masses and 
+  widths, the fine structure constant (taken from ``1/ALPHAQED(MZ)``,
+  default :option:`128.802`),
+  and the weak mixing angle (``SIN2THETAW``) using
+  tree-level relations. In particular, the W boson mass (and in the 
+  complex mass scheme also its width) is a derived quantity.
 
-  this choice corresponds to the scheme employed in the FeynRules/UFO
+:option:`alphamWsW`
+  All EW parameters are calculated from the W and Higgs masses and 
+  widths, the fine structure constant (taken from ``1/ALPHAQED(MW)``,
+  default :option:`132.17`), 
+  and the weak mixing angle (``SIN2THETAW``) using
+  tree-level relations. In particular, the Z boson mass (and in the 
+  complex mass scheme also its width) is a derived quantity.
+
+:option:`GmumZsW`
+  All EW parameters are calculated from the Z and Higgs masses and 
+  widths, the Fermi constant (``GF``), 
+  and the weak mixing angle (``SIN2THETAW``) using
+  tree-level relations. In particular, the W boson mass (and in the 
+  complex mass scheme also its width) is a derived quantity.
+
+:option:`GmumWsW`
+  All EW parameters are calculated from the W and Higgs masses and 
+  widths, the Fermi constant (``GF``), 
+  and the weak mixing angle (``SIN2THETAW``) using
+  tree-level relations. In particular, the Z boson mass (and in the 
+  complex mass scheme also its width) is a derived quantity.
+
+:option:`FeynRules`
+  This choice corresponds to the scheme employed in the FeynRules/UFO
   setup.  The EW parameters are calculated out of the Z boson mass
   M_Z, the Higgs boson mass M_H, the Fermi constant ``GF`` and the
   fine structure constant (taken from ``1/ALPHAQED(0)`` +
@@ -75,15 +112,10 @@ options are provided:
   relations. Note, the W boson mass is not an input parameter in this
   scheme.
 
-
-The electro-weak coupling is by default not running, unless its
-running has been enabled (cf. :ref:`COUPLINGS`). In EW schemes 0 and
-1, the squared scale at which the fixed EW coupling is to be evaluated
-can be specified by ``ALPHAQED_DEFAULT_SCALE``, which defaults to the
-Z mass squared (note that this scale has to be specified in GeV
-squared).  By default ``1/ALPHAQED(0): 137.03599976`` and
-``ALPHAQED_DEFAULT_SCALE: 8315.18`` (:math:`=mZ^2`), which means that the MEs
-are evaluated with a fixed value of ``alphaQED=1/128.802``.
+All ``Gmu``-derived schemes, where the EW coupling is a derived quantity, 
+possess an ambiguity on how to construct a real EW coupling in the 
+complex mass scheme. Several conventions are implemented and can 
+be accessed through ``GMU_CMS_AQED_CONVENTION``.
 
 To account for quark mixing the CKM matrix elements have to be
 assigned.  For this purpose the Wolfenstein parametrization
@@ -136,7 +168,7 @@ support, it is also possible to use the alphaS evolution provided in
 LHAPDF by specifying ``ALPHAS: @{USE_PDF: 1@``}. The perturbative
 order of the running of the strong coupling can be set via
 ``ORDER_ALPHAS``, where the default :option:`0` corresponds to
-one-loop running and ``1``, ``2``, ``3`` to ``2,3,4``-loops,
+one-loop running and :option:`1`, :option:`2`, :option:`3` to :option:`2,3,4`-loops,
 respectively. If the setup at hand involves PDFs, this parameter is
 set consistent with the information provided by the PDF set.
 
