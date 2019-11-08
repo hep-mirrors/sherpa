@@ -173,7 +173,7 @@ pages:
     - pip3 install -r requirements.txt
     - pip3 install git+https://github.com/vale981/sphinx-versions.git
     - cd ..
-    - sphinx-versioning  build Manual/source/ build/html/
+    - sphinx-versioning  build -w "^master" Manual/source/ build/html -- -b singlehtml
     - mv build/html public
   artifacts:
     paths:
