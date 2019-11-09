@@ -20,7 +20,9 @@ Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
 {
   assert(filename != "");
   My_File<std::ifstream> file {path, filename};
-  file.Open();
+  if (!file.Open()) {
+    THROW(invalid_input, filename + " could not be opened.");
+  }
   try {
     Parse(*file);
   } catch (const std::exception& e) {
