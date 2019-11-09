@@ -37,6 +37,24 @@ namespace MODEL {
     {}
   };// end of struct Model_Arguments
 
+  struct ew_scheme {
+    enum code {
+      UserDefined = 0,
+      alpha0      = 1,
+      alphamZ     = 2,
+      Gmu         = 3,
+      alphamZsW   = 4,
+      alphamWsW   = 5,
+      GmumZsW     = 6,
+      GmumWsW     = 7,
+      FeynRules   = 10,
+      Undefined   = 99
+    };
+  };// end of struct ew_scheme
+
+  std::ostream &operator<<(std::ostream &str,const ew_scheme::code &c);
+  std::istream &operator>>(std::istream &str,ew_scheme::code &c);
+
   class Model_Base {
   public:
 

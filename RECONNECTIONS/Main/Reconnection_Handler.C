@@ -285,7 +285,7 @@ void Reconnection_Handler::SpliceSinglets(Part_List * sing1,Part_List * sing2,
   Part_List help;
   help.splice(help.begin(),*sing1,pit1,sing1->end());
   sing1->splice(sing1->end(),*sing2,pit2,sing2->end());
-  for (Part_Iterator pit=help.begin();pit!=help.end();pit++) sing2->push_back(*pit);
+  sing2->splice(sing2->end(),help);
   // msg_Out()<<"--------- Singlet 2 with "<<sing2->size()<<" particles.\n";
   // for (Part_Iterator pit=sing2->begin();pit!=sing2->end();pit++) {
   //   msg_Out()<<"  "<<(*pit)->Number()<<" ["<<(*pit)->GetFlow(1)<<", "<<(*pit)->GetFlow(2)<<"]\n";

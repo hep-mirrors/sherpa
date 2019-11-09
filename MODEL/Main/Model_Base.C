@@ -27,6 +27,47 @@ namespace MODEL
   Model_Base *s_model;
 }
 
+std::ostream &MODEL::operator<<(std::ostream &str,const ew_scheme::code &c)
+{
+  if      (c==ew_scheme::UserDefined) return str<<"UserDefined";
+  else if (c==ew_scheme::alpha0)      return str<<"alpha0";
+  else if (c==ew_scheme::alphamZ)     return str<<"alphamZ";
+  else if (c==ew_scheme::Gmu)         return str<<"Gmu";
+  else if (c==ew_scheme::alphamZsW)   return str<<"alphamZsW";
+  else if (c==ew_scheme::alphamWsW)   return str<<"alphamWsW";
+  else if (c==ew_scheme::GmumZsW)     return str<<"GmumZsW";
+  else if (c==ew_scheme::GmumWsW)     return str<<"GmumWsW";
+  else if (c==ew_scheme::FeynRules)   return str<<"FeynRules";
+  return str<<"undefined";
+}
+
+std::istream &MODEL::operator>>(std::istream &str,ew_scheme::code &c)
+{
+  std::string tag;
+  str>>tag;
+  c=ew_scheme::Undefined;
+  if      (tag=="UserDefined") c=ew_scheme::UserDefined;
+  else if (tag=="0")           c=ew_scheme::UserDefined;
+  else if (tag=="alpha0")      c=ew_scheme::alpha0;
+  else if (tag=="1")           c=ew_scheme::alpha0;
+  else if (tag=="alphamZ")     c=ew_scheme::alphamZ;
+  else if (tag=="2")           c=ew_scheme::alphamZ;
+  else if (tag=="Gmu")         c=ew_scheme::Gmu;
+  else if (tag=="3")           c=ew_scheme::Gmu;
+  else if (tag=="alphamZsW")   c=ew_scheme::alphamZsW;
+  else if (tag=="4")           c=ew_scheme::alphamZsW;
+  else if (tag=="alphamWsW")   c=ew_scheme::alphamWsW;
+  else if (tag=="5")           c=ew_scheme::alphamWsW;
+  else if (tag=="GmumZsW")     c=ew_scheme::GmumZsW;
+  else if (tag=="6")           c=ew_scheme::GmumZsW;
+  else if (tag=="GmumWsW")     c=ew_scheme::GmumWsW;
+  else if (tag=="7")           c=ew_scheme::GmumWsW;
+  else if (tag=="FeynRules")   c=ew_scheme::FeynRules;
+  else if (tag=="10")          c=ew_scheme::FeynRules;
+  else                         c=ew_scheme::Undefined;
+  return str;
+}
+
 Model_Base::Model_Base(bool _elementary) :
   m_elementary(_elementary),
   p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL),
@@ -77,10 +118,10 @@ void Model_Base::RegisterDefaults() const
   s["CKM"]["Eta"].SetDefault(0.353);
   s["CKM"]["Rho"].SetDefault(0.117);
   s["DECOMPOSE_4G_VERTEX"].SetDefault(1);
-  s["EW_SCHEME"].SetDefault(2);
-  const int ewscheme{ s["EW_SCHEME"].Get<int>() };
+  s["EW_SCHEME"].SetDefault(ew_scheme::alphamZ);
+  const ew_scheme::code ewscheme( s["EW_SCHEME"].Get<ew_scheme::code>() );
   s["EW_REN_SCHEME"].SetDefault(ewscheme);
-  if (ewscheme == 0)
+  if (ewscheme == ew_scheme::UserDefined)
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
   else
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
