@@ -558,6 +558,15 @@ void Simple_Pole_Uniform_V::GenerateWeight(const int mode)
   rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(rans);
   weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  double prop = (1./(ATOOLS::IsZero(1.-m_exponent)?
+		     log(m_spkey[1]/m_spkey[0]):
+		     ((pow(m_spkey[1],1.-m_exponent)-pow(m_spkey[0],1.-m_exponent))/
+		      (1.-m_exponent))));
+  // msg_Out()<<"*** "<<Name()<<"(key[4] = "<<m_spkey[4]<<"): weight(s) = "<<m_spkey.Weight()<<" "
+  // 	   <<"for skey[2] = "<<m_spkey[2]<<", "<<"s' = "<<m_spkey[3]<<"\n"
+  // 	   <<"    from "<<prop<<" * "<<pow(1./m_spkey[3],m_exponent)<<" = "
+  // 	   <<(1./(pow(1./m_spkey[3],m_exponent) * prop))
+  // 	   <<" * "<<m_ykey.Weight()<<" * "<<(1./m_spkey[2])<<"\n";
 }
 
 void Simple_Pole_Uniform_V::AddPoint(double value)
@@ -616,6 +625,7 @@ void Simple_Pole_Forward_V::GenerateWeight(int mode)
   rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(rans);
   weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  //msg_Out()<<"*** "<<Name()<<": s = "<<m_spkey.Weight()<<", y = "<<m_ykey.Weight()<<".\n";
 } 
 
 void Simple_Pole_Forward_V::AddPoint(double value)
@@ -674,6 +684,7 @@ void Simple_Pole_Backward_V::GenerateWeight(int mode)
   rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(rans);
   weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  //msg_Out()<<"*** "<<Name()<<": s = "<<m_spkey.Weight()<<", y = "<<m_ykey.Weight()<<".\n";
 } 
 
 void Simple_Pole_Backward_V::AddPoint(double value)
@@ -731,6 +742,7 @@ void Simple_Pole_Central_V::GenerateWeight(int mode)
   rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(rans);
   weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  //msg_Out()<<"*** "<<Name()<<": s = "<<m_spkey.Weight()<<", y = "<<m_ykey.Weight()<<".\n";
 }
 
 void Simple_Pole_Central_V::AddPoint(double value)

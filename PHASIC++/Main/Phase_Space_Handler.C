@@ -60,12 +60,17 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   const double minalpha{ s["INT_MINALPHA"].Get<double>() };
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
+<<<<<<< HEAD
   m_osmass=(m_nout==1 && p_flavours[m_nin]!=Flavour(kf_instanton)?p_flavours[m_nin].Mass():0.0);
 <<<<<<< HEAD
 =======
   //msg_Out()<<METHOD<<" n_out = "<<m_nout<<", flavour = "<<p_flavours[m_nin]
   //	   <<" --> osmass = "<<m_osmass<<"\n";
 >>>>>>> seems to work, cross section probably under control
+=======
+  m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
+  //m_osmass=(m_nout==1?p_flavours[2].Mass():0.0);
+>>>>>>> instanton process is up and running
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -286,6 +291,10 @@ void Phase_Space_Handler::CalculatePS()
   }
   p_fsrchannels->GenerateWeight(&p_lab.front(),p_cuts);
   m_psweight*=p_fsrchannels->Weight();
+  //msg_Out()<<METHOD<<" for "<<p_lab[0]<<" + "<<p_lab[1]<<":\n"
+  //	   <<"   (isrweight = "<<p_isrchannels->Weight()<<") * "
+  //	   <<"(fsrweight = "<<p_fsrchannels->Weight()<<")"
+  //	   <<" = "<<m_psweight<<"\n";
 }
 
 Event_Weights Phase_Space_Handler::Differential(
@@ -297,6 +306,12 @@ Event_Weights Phase_Space_Handler::Differential(
     return Event_Weights {0, 0.0};
   p_info->ResetAll();
   double iscount=1.0;
+  //msg_Out()<<"------------------------------------------------------------------------\n"
+  //	   <<METHOD<<"\n"
+  //	   <<"   with isrspkeys: "<<m_isrspkey[0]<<", "<<m_isrspkey[1]<<", "
+  //	   <<m_isrspkey[2]<<", "<<m_isrspkey[3]<<", "<<m_isrspkey[4]<<"\n"
+  //	   <<"   with isrykeys:  "<<m_isrykey[0]<<", "<<m_isrykey[1]<<", "<<m_isrykey[2]<<"\n"
+  //	   <<"   isrhandler = "<<p_isrhandler->On()<<"\n";
   if (m_nin>1) {
     if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
@@ -320,11 +335,21 @@ Event_Weights Phase_Space_Handler::Differential(
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
       if (p_isrhandler->On()>0) {
 	if (m_nin==2 && m_nout==1 && p_flavours[2].Kfcode()==999) {
+<<<<<<< HEAD
+=======
+	  //msg_Out()<<"   try to update sprime range: "
+	  //	   <<"["<<p_active->Process()->SPrimeMin()<<", "
+	  //	   <<p_active->Process()->SPrimeMax()<<"]\n";
+>>>>>>> instanton process is up and running
 	  if (p_active->Process()->SPrimeMin()>0.) 
 	    m_isrspkey[0] = p_active->Process()->SPrimeMin();
 	  if (p_active->Process()->SPrimeMax()>0.)
 	    m_isrspkey[1] = p_active->Process()->SPrimeMax();
 	}
+<<<<<<< HEAD
+=======
+	//msg_Out()<<"   generating ISR point.\n";
+>>>>>>> instanton process is up and running
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -362,7 +387,11 @@ Event_Weights Phase_Space_Handler::Differential(
       return Event_Weights {0, 0.0};
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
+<<<<<<< HEAD
     CalculateME(type);
+=======
+    CalculateME();
+>>>>>>> instanton process is up and running
     CalculatePS();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
@@ -443,14 +472,9 @@ Event_Weights Phase_Space_Handler::Differential(
 
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
 {
-<<<<<<< HEAD
-  if (m_nin != 2 || (m_nout == 1 && p_flavours[2].Kfcode() == 999))
+  if (m_nin != 2 || (m_nout == 1 && p_flavours[m_nin]==Flavour(kf_instanton)))
     return;
   int swap(p_isrhandler->Swap());
-=======
-  if (m_nin!=2 || (m_nout==1 &&
-		   p_flavours[m_nin]==Flavour(kf_instanton))) return;
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
   Vec4D sum;
   size_t imax(0);
   double emax(0.0);

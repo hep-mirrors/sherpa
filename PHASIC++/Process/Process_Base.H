@@ -219,7 +219,11 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
+<<<<<<< HEAD
     inline size_t NIn()                                       const { return m_nin;  }
+=======
+    inline size_t NIn()                                       const  { return m_nin;  }
+>>>>>>> instanton process is up and running
     inline virtual size_t NOut()                              const { return m_nout; }
     virtual const ATOOLS::Vec4D_Vector          &Momenta()    const;
     inline virtual const ATOOLS::Flavour_Vector &Flavours()   const { return m_flavs; }
