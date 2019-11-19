@@ -31,15 +31,7 @@ double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,
 					  double& ran1,double& ran2,double ctmin,double ctmax,
 					  const Vec4D &_xref)
 {
-  Vec4D p1h,p=p1+p2, xref=_xref[0]<0.?-_xref:_xref;
-
-  p1h=p1;
-  Vec4D pref(p[0],0.,0.,p.PSpat());
-  Poincare Rot(pref,p);
-  Rot.RotateBack(p1h);
-  Vec4D p1ref=p1h;
-  Channel_Basics::Boost(1,pref,p1h,p1ref);
-  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin);
+  Vec4D p=p1+p2, xref=_xref[0]<0.?-_xref:_xref;
 
   Vec4D zax(p), n_perp(0.0,cross(Vec3D(zax),Vec3D(xref)));
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
@@ -63,6 +55,11 @@ double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,
   ran2=asin(sp)/(2.*M_PI);
   if(cp<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;
+
+  Poincare cms(p);
+  Vec4D p1h(p1);
+  cms.Boost(p1h);
+  ran1 = (Vec3D(p1h)*Vec3D(zax)/(p1h.PSpat()*zax.PSpat())-ctmin)/(ctmax-ctmin);
 
   double massfactor = Channel_Basics::SqLam(p.Abs2(),p1.Abs2(),p2.Abs2());
   if (ATOOLS::IsZero(massfactor)) return 0.;  
