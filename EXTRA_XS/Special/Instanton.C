@@ -217,7 +217,10 @@ double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
       !m_data.Interpolate(m_Ehat)) return 0.;
   m_internalscale = (m_scalechoice==std::string("shat"))?m_Ehat:m_data.Rho();
+<<<<<<< HEAD
   //if (m_internalscale<2.) m_internalscale = 2.;
+=======
+>>>>>>> added two options
   // have to multiply with the norm and the inverse external flux
   double xsec = m_sigmahat_factor * m_data.Sigmahat() * (2.*shat) * m_norm;
   return xsec;
@@ -259,8 +262,6 @@ bool XS_instanton::DefineFlavours() {
   m_ngluons = NumberOfGluons();
   Flavour flav   = Flavour(kf_gluon);
   for (size_t i=0;i<m_ngluons;i++)  m_flavours.push_back(flav);
-<<<<<<< HEAD
-<<<<<<< HEAD
   for (size_t i=1;i<6;i++) {
     flav = Flavour(i);
     if (flav.Mass(true)>m_threshold) continue;
@@ -277,14 +278,9 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
-=======
-  double threshold = m_Ecms; // maybe should replace this with m_scale?  
-=======
-  double threshold = m_Ehat; // maybe should replace this with m_scale?  
->>>>>>> instanton process is up and running
   for (size_t i=1;i<6;i++) {
     flav = Flavour(i);
-    if (flav.Mass(true)>threshold) continue;
+    if (flav.Mass(true)>m_threshold) continue;
     totmass += 2.*flav.Mass(true);
     if (totmass>m_Ehat) break;
     m_nquarks+=2;
@@ -292,19 +288,6 @@ bool XS_instanton::DefineFlavours() {
     flav = flav.Bar();
     if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) m_flavours.push_back(flav);
   }
-<<<<<<< HEAD
-<<<<<<< HEAD
-  msg_Info()<<"   * added "<<(m_flavours.size()-2)<<" partons to decay: "
-	    <<(m_flavours.size()-m_ngluons-2)<<" = "<<m_nquarks<<" quarks, "
-	    <<m_ngluons<<" gluons.\n";
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  //msg_Info()<<"   * added "<<(m_flavours.size()-2)<<" partons to decay: "
-  //	    <<(m_flavours.size()-m_ngluons-2)<<" = "<<m_nquarks<<" quarks, "
-  //	    <<m_ngluons<<" gluons.\n";
->>>>>>> seems to work, cross section probably under control
-=======
->>>>>>> instanton process is up and running
   return true;
 }
 
