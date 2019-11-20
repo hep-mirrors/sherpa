@@ -116,18 +116,10 @@ Calculate(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
   ampl->SetProc(p_proc);
   ampl->SetMS(p_proc->Generator());
   m_scale[stp::ren]=m_scale[stp::fac]=Max(1.,kt2max);
-<<<<<<< HEAD
   msg_Debugging()<<METHOD<<" ("<<p_proc->NIn()<<" --> "<<(m_f.size()-2)<<" process,\n"
 		 <<"   sqrt{kt2max} = "<<sqrt(kt2max)<<" from direct = "
 		 <<sqr(p_proc->InternalScale())<<" ("<<p_proc->HasInternalScale()<<")\n";
   return m_scale[stp::fac];
-=======
-  //msg_Out()<<"   ---> "<<p_proc->NIn()<<" --> "<<(m_f.size()-2)<<" process, "
-  //	   <<"kt2max = "<<kt2max<<" from direct = "
-  //	   <<sqr(p_proc->InternalScale())<<" ("<<p_proc->HasInternalScale()<<")\n";
-  //msg_Out()<<(*ampl)<<"\n";
-  return m_scale[stp::fac]
->>>>>>> return statement added
 }
 
 void Democratic_Scale_Setter::SetScale
