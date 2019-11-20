@@ -116,10 +116,18 @@ Calculate(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
   ampl->SetProc(p_proc);
   ampl->SetMS(p_proc->Generator());
   m_scale[stp::ren]=m_scale[stp::fac]=Max(1.,kt2max);
+<<<<<<< HEAD
   msg_Debugging()<<METHOD<<" ("<<p_proc->NIn()<<" --> "<<(m_f.size()-2)<<" process,\n"
 		 <<"   sqrt{kt2max} = "<<sqrt(kt2max)<<" from direct = "
 		 <<sqr(p_proc->InternalScale())<<" ("<<p_proc->HasInternalScale()<<")\n";
   return m_scale[stp::fac];
+=======
+  //msg_Out()<<"   ---> "<<p_proc->NIn()<<" --> "<<(m_f.size()-2)<<" process, "
+  //	   <<"kt2max = "<<kt2max<<" from direct = "
+  //	   <<sqr(p_proc->InternalScale())<<" ("<<p_proc->HasInternalScale()<<")\n";
+  //msg_Out()<<(*ampl)<<"\n";
+  return m_scale[stp::fac]
+>>>>>>> return statement added
 }
 
 void Democratic_Scale_Setter::SetScale
@@ -154,22 +162,9 @@ double Democratic_Scale_Setter::FindKT2Max() {
 	DeltaRij2 = cosh(m_p[i].Eta()-m_p[j].Eta())-cos(m_p[i].Phi()-m_p[j].Phi());
 	kt2 = Min(m_p[i].MPerp2(),m_p[j].MPerp2())*DeltaRij2;
       }
-<<<<<<< HEAD
-=======
-      /*
-      msg_Out()<<" ("<<i<<" "<<j<<"): kt = "<<sqrt(kt2)<<" from "
-	       <<"Kt's = "<<sqrt(m_p[i].MPerp2())<<" / "<<sqrt(m_p[j].MPerp2())<<" and "
-	       <<"Delta = "<<DeltaRij2<<" = cosh("<<(m_p[i].Eta()-m_p[j].Eta())<<") - "
-	       <<"cos("<<(m_p[i].Phi()-m_p[j].Phi())<<")\n";
-      */
->>>>>>> seems to work, cross section probably under control
       if (kt2<kt2test) kt2test = kt2;
     }
     if (kt2test>kt2max) kt2max = kt2test;
   }
   return kt2max;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> seems to work, cross section probably under control
