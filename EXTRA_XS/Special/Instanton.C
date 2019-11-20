@@ -60,28 +60,6 @@ namespace EXTRAXS {
     
     You can see that the largest cross-section is 14.5 milli barn at 10 GeV 
     (with alpha_s = 0.415 still kind of reasonable) and dropping to 4 pico barns at 40 GeV
-    
-    {{10.6853, 0.989378, 0.415544, 4.58901, 1.45813*10^10}, 
-    {11.3923, 1.03566, 0.40533, 4.67934, 1.05266*10^10}, 
-    {13.3679, 1.16243,  0.38164, 4.90476, 4.51405*10^9}, 
-    {15.6816, 1.3068, 0.360291, 5.12963, 1.85274*10^9}, 
-    {22.9076, 1.76212, 0.315257, 5.43739, 1.76977*10^8}, 
-    {29.6526, 2.11804, 0.292739, 6.02483, 3.55261*10^7}, 
-    {40.769, 2.71793, 0.266897, 6.47057, 3.99487*10^6}}
-    {56.0679, 3.50425, 0.244871, 6.91549, 397757.}, 
-    {61.8378, 3.63752, 0.223469, 7.28038, 113207.}, 
-    {89.628, 4.97933, 0.205845, 7.67006, 3876.77}, 
-    {118.028, 6.212, 0.195011, 8.24762, 333.886}, 
-    {174.399, 8.71997, 0.180449, 8.60356, 8.68739}, 
-    {246.887, 11.7565, 0.169311, 9.04486, 0.348676},
-    {349.853, 15.9024, 0.159366, 9.48648, 0.0140647}, 
-    {496.283, 21.5775, 0.150438, 9.9284, 0.000571738}}
-    {704.764, 29.3652, 0.142384, 10.3706, 0.0000232145}, 
-    {1001.82, 40.0727, 0.135088, 10.8133, 9.29353*10^-7}, 
-    {1425.6, 54.8307, 0.128449, 11.2564, 3.61946*10^-8}, 
-    {2030.63, 75.2085, 0.122387, 11.7001, 1.36042*10^-9}, 
-    {2895.48, 103.41, 0.116831, 12.1441, 4.83086*10^-11}, 
-    {4132.81, 142.511, 0.111723, 12.5887, 1.68134*10^-12}}    
   */
   Data_Table::Data_Table() {
     m_data[10.6853] = new xsec_data(10.6853, 0.989378, 4.58901, 1.45813e10);
@@ -217,10 +195,6 @@ double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   if (m_Ehat<m_Ehatmin || m_Ehat>m_Ehatmax ||
       !m_data.Interpolate(m_Ehat)) return 0.;
   m_internalscale = (m_scalechoice==std::string("shat"))?m_Ehat:m_data.Rho();
-<<<<<<< HEAD
-  //if (m_internalscale<2.) m_internalscale = 2.;
-=======
->>>>>>> added two options
   // have to multiply with the norm and the inverse external flux
   double xsec = m_sigmahat_factor * m_data.Sigmahat() * (2.*shat) * m_norm;
   return xsec;
@@ -286,7 +260,11 @@ bool XS_instanton::DefineFlavours() {
     m_nquarks+=2;
     if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) m_flavours.push_back(flav);
     flav = flav.Bar();
-    if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) m_flavours.push_back(flav);
+    if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) {
+      m_flavours.push_back(flav);
+      m_nquarks++;
+      totmass += flav.Mass(true);
+    }
   }
   return true;
 }
@@ -296,46 +274,21 @@ size_t XS_instanton::NumberOfGluons() {
 }
 
 bool XS_instanton::DistributeMomenta() {
-<<<<<<< HEAD
-<<<<<<< HEAD
   m_momenta.clear();
-=======
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  m_momenta.clear();
->>>>>>> instanton process is up and running
   double totmass = 0., mass;
   for (size_t i=0;i<m_flavours.size();i++) {
     totmass += mass = m_flavours[i].Mass(true);
     m_masses.push_back(mass);
   }
-<<<<<<< HEAD
-<<<<<<< HEAD
   if (totmass>m_Ehat) {
     msg_Error()<<"Error in "<<METHOD<<" not enough energy (Ecms = "<<m_Ehat<<") "
-=======
-  if (totmass>m_Ecms) {
-    msg_Error()<<"Error in "<<METHOD<<" not enough energy (Ecms = "<<m_Ecms<<") "
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  if (totmass>m_Ehat) {
-    msg_Error()<<"Error in "<<METHOD<<" not enough energy (Ecms = "<<m_Ehat<<") "
->>>>>>> instanton process is up and running
 	       <<" in instanton to produce "<<(m_flavours.size()-2)<<" "
 	       <<"partons in its decay,\n"
 	       <<"   total partonic FS mass is "<<mass<<"\n";
     return false;
   }
   Rambo rambo(2,m_masses);
-<<<<<<< HEAD
-<<<<<<< HEAD
   m_momenta = rambo.GeneratePoint(m_Ehat);
-=======
-  m_momenta = rambo.GeneratePoint(m_Ecms);
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  m_momenta = rambo.GeneratePoint(m_Ehat);
->>>>>>> instanton process is up and running
   return true;
 }
 
@@ -346,45 +299,19 @@ bool XS_instanton::MakeColours() {
     for (size_t i=0;i<ncolours;i++) 
       cols[j].push_back(500+i);
   }
-<<<<<<< HEAD
-<<<<<<< HEAD
   for (size_t i=0;i<m_colours.size();i++) m_colours[i].clear(); m_colours.clear();
   m_colours.resize(m_flavours.size());
-=======
-  if (p_colours) { delete p_colours; p_colours = NULL; }
-  p_colours = new int*[m_flavours.size()];
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  for (size_t i=0;i<m_colours.size();i++) m_colours[i].clear(); m_colours.clear();
-  m_colours.resize(m_flavours.size());
->>>>>>> instanton process is up and running
   size_t  pos, col, index;
   Flavour flav;
   for (size_t i=0;i<m_flavours.size()-1;++i) {
     flav = m_flavours[i];
-<<<<<<< HEAD
-<<<<<<< HEAD
     m_colours[i].resize(2);
-=======
-    p_colours[i] = new int[2];
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-    m_colours[i].resize(2);
->>>>>>> instanton process is up and running
     if ((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon()) {
       index = i<2?1:0;
       do {
 	pos = size_t(cols[index].size()*ran->Get());
       } while (pos>=cols[index].size());
-<<<<<<< HEAD
-<<<<<<< HEAD
       m_colours[i][0] = cols[index][pos];
-=======
-      p_colours[i][0] = cols[index][pos];
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-      m_colours[i][0] = cols[index][pos];
->>>>>>> instanton process is up and running
       if (cols[index].size()>1) {
 	for (size_t j=pos;j<cols[index].size()-1;j++) {
 	  cols[index][j] = cols[index][j+1];
@@ -392,33 +319,15 @@ bool XS_instanton::MakeColours() {
       }
       cols[index].pop_back();
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
     else m_colours[i][0] = 0;
-=======
-    else p_colours[i][0] = 0;
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-    else m_colours[i][0] = 0;
->>>>>>> instanton process is up and running
     if ((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon()) {
       index = i<2?0:1;
       do {
 	pos = size_t(cols[index].size()*ran->Get());
 	if (pos>=cols[index].size()) continue;
         col = cols[index][pos];
-<<<<<<< HEAD
-<<<<<<< HEAD
       } while (col==m_colours[i][0]);
       m_colours[i][1] = col;
-=======
-      } while (col==p_colours[i][0]);
-      p_colours[i][1] = col;
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-      } while (col==m_colours[i][0]);
-      m_colours[i][1] = col;
->>>>>>> instanton process is up and running
       if (cols[index].size()>1) {
 	for (size_t j=pos;j<cols[index].size()-1;j++) {
 	  cols[index][j] = cols[index][j+1];
@@ -426,8 +335,6 @@ bool XS_instanton::MakeColours() {
       }
       cols[index].pop_back();
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
     else m_colours[i][1] = 0;
   }
   flav = m_flavours[m_flavours.size()-1];
@@ -436,34 +343,10 @@ bool XS_instanton::MakeColours() {
 				       cols[0].back():0);
   m_colours[m_flavours.size()-1][1] = (((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon())?
 				       cols[1].back():0);  
-  if (m_colours[m_flavours.size()-1][0]==m_colours[m_flavours.size()-1][1]) {
-    size_t help = m_colours[m_flavours.size()-1][1];
-    m_colours[m_flavours.size()-1][1] = m_colours[2][1];
-    m_colours[2][1] = help;
-=======
-    else p_colours[i][1] = 0;
-=======
-    else m_colours[i][1] = 0;
->>>>>>> instanton process is up and running
-  }
-  flav = m_flavours[m_flavours.size()-1];
-  m_colours[m_flavours.size()-1].resize(2);
-  m_colours[m_flavours.size()-1][0] = (((flav.IsQuark() && !flav.IsAnti()) || flav.IsGluon())?
-				       cols[0].back():0);
-  m_colours[m_flavours.size()-1][1] = (((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon())?
-				       cols[1].back():0);  
-<<<<<<< HEAD
   if (p_colours[m_flavours.size()-1][0]==p_colours[m_flavours.size()-1][1]) {
     size_t help = p_colours[m_flavours.size()-1][1];
     p_colours[m_flavours.size()-1][1] = p_colours[2][1];
     p_colours[2][1] = help;
->>>>>>> instanton production added.  will need some minor debugging (prefactor before partonic xsec, scale for pdfs) and crash-testing of event generation
-=======
-  if (m_colours[m_flavours.size()-1][0]==m_colours[m_flavours.size()-1][1]) {
-    size_t help = m_colours[m_flavours.size()-1][1];
-    m_colours[m_flavours.size()-1][1] = m_colours[2][1];
-    m_colours[2][1] = help;
->>>>>>> instanton process is up and running
   }
   return true;
 }
