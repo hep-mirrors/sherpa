@@ -841,13 +841,6 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
   if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
 
-  /* when OL, is used as ME-generator, channels are reversed */
-  if(m_generator[0]=="External" && m_generator[1]=="OpenLoops") p_fsrchannels->ReverseChannels();
-  /* reset seed, to obtain same momenta in AMEGIC & OL */
-  ran->SetSeed(m_seed);
-#ifdef USING__MPI
-  ran->SetSeed(m_seed + MPI::COMM_WORLD.Get_rank());
-#endif
   return true;
 }
 

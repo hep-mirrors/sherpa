@@ -60,7 +60,7 @@ bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
   for (size_t n(0);n<subs->size();++n) {
     p_sub=(*subs)[n];
     m_nout=(m_n=p_sub->m_n)-m_nin;
-    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
+//    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
     Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
     for (size_t i(0);i<m_nin;++i)
       if (mom[i][0]<0.0) mom[i]=-mom[i];

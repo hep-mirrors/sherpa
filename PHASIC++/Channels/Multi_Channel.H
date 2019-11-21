@@ -2,7 +2,6 @@
 #define PHASIC_Channels_Multi_Channel_H
 
 #include "ATOOLS/Org/Info_Key.H"
-#include <algorithm>
 
 namespace PHASIC {
 
@@ -56,7 +55,6 @@ namespace PHASIC {
     virtual void     MPISync();
 
     inline std::vector<Single_Channel*> &Channels() { return channels; }
-    inline void ReverseChannels() { std::reverse(channels.begin(),channels.end());}
 
     /*!
       Endoptimize replaces, after an ordinary optimization step, the set of a-priori weights

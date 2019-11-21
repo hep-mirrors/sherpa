@@ -75,9 +75,9 @@ namespace EXTAMP {
 				const int mode)
   {
     DEBUG_FUNC(this);
-    
-   if (!Selector()->Result())
-     return m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_lastbxs=m_lastxs=0.0;
+
+    if (!Selector()->Result())
+      return m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_lastbxs=m_lastxs=0.0;
 
     double B(0.0),V(0.0),I(0.0),KP(0.0),HP(0.0);
     std::pair<double,double> scaleterms;

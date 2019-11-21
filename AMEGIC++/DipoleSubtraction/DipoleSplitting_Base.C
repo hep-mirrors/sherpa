@@ -140,7 +140,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 	       <<Demangle(typeid(*this).name())
 	       <<"[type="<<m_ftype<<"]"<<std::endl;
   if (m_mcmode==1) {
-    int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
+    int da(/*m_av>0.0 &&*/ (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
         ds(alpha<=m_alpha);
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
 		   <<" -> DA = "<<da<<", DS = "<<ds<<" -> DA-DS = "<<da-ds<<"\n";
@@ -148,7 +148,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     return m_mcsign==0;
   }
   if (m_mcmode==2) {
-    m_mcsign=m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
+    m_mcsign=/*m_av>0.0 &&*/ (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
 		   <<" -> DA = "<<m_mcsign<<"\n";
     return m_mcsign==0;

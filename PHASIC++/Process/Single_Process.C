@@ -1088,5 +1088,6 @@ Cluster_Amplitude *Single_Process::Cluster
   ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
   ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
   ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
+  ampl->SetKT2(ScaleSetter(1)->Scale(stp::res));
   return ampl;
 }

@@ -92,6 +92,26 @@ Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
 	THROW(fatal_error, "Inconsistent flavour mapping");
     }
 
+  /* Cross-check index mapping in ID vector */
+  for(size_t i(0); i<BornFlavours().size(); i++)
+    {
+      const ATOOLS::Flavour& born_flav = BornFlavours()[i];
+
+      /* This is a vector of integers representing the particles that
+	 have been clusteded into the born index i */
+      std::vector<int> id = ATOOLS::ID(IDVector()[i]);
+
+      /* Only check non-clustered flavours to avoid doing the flavour
+	 combination here*/
+      if (id.size()>1) continue;
+
+      /* Now check that the flavour in real configuration has been
+	 properly mapped */
+      const ATOOLS::Flavour& real_flav = Flavours()[id.front()];
+      if(real_flav != born_flav)
+	THROW(fatal_error, "Inconsistent flavour mapping");
+    }
+
   m_moms.resize(Dipole()->Flavours().size());
 }
 
