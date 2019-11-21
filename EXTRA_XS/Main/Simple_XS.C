@@ -93,8 +93,6 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     }
     if (add) Add(newxs,1);
     newxs->SetGenerator(this);
-    msg_Debugging()<<METHOD<<"(): Initialized in if '"
-		   <<newxs->Name()<<"'\n";
     DEBUG_INFO("Initialized '"<<newxs->Name());
     return newxs;
   }
@@ -111,8 +109,6 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     }
     if (add) Add(newxs);
     newxs->SetGenerator(this);
-    msg_Debugging()<<METHOD<<"(): Initialized in else '"
-		   <<newxs->Name()<<"'\n";
     DEBUG_INFO("Initialized '"<<newxs->Name());
     return newxs;
   }

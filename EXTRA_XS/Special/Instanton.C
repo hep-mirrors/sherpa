@@ -101,7 +101,7 @@ namespace EXTRAXS {
   bool Data_Table::Interpolate(const double & E) {
     m_rho = m_sigmahat = m_Ngluons = 0.;
     if (E>m_Ehatmax || E<m_Ehatmin) {
-      msg_Out()<<METHOD<<" yields false for E = "<<E<<".\n";
+      msg_Debugging()<<METHOD<<" yields false for E = "<<E<<".\n";
       return false;
     }
     std::map<double, xsec_data*>::iterator dit;
@@ -201,8 +201,6 @@ double XS_instanton::operator()(const Vec4D_Vector& momenta) {
   //if (m_internalscale<2.) m_internalscale = 2.;
   // have to multiply with the norm and the inverse external flux
   double xsec = m_sigmahat_factor * m_data.Sigmahat() * (2.*shat) * m_norm;
-  //msg_Out()<<METHOD<<" for Ehat = "<<sqrt(shat)<<", mu = "<<m_internalscale
-  //	   <<" --> xsec = "<<(xsec*rpa->Picobarn()/(2.*shat))<<" pb.\n";
   return xsec;
 }
 

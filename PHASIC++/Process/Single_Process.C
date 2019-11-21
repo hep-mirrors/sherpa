@@ -507,7 +507,6 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
       assert(Selector()->CombinedResults().size() == 1);
       m_eventweights *= Selector()->CombinedResults()[0];
     }
-
     // calculate ISR weight
     m_csi = ClusterSequenceInfo(scales->Amplitudes(), scales->Scale(stp::fac));
     m_csi.AddFlux(m_lastflux);

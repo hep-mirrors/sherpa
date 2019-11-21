@@ -287,8 +287,6 @@ void Multi_Channel::AddPoint(double value)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
-  //msg_Out()<<METHOD<<" for "<<nin<<" incoming, "<<channels.size()<<" channels: "
-  //	   <<(channels.size()>0?channels[0]->Name():string("None"))<<"\n";
   if (channels.empty()) return;
   Vec4D_Vector pp(p,&p[nin+nout]);
   if (nin==2) {
@@ -359,7 +357,6 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
 {
-  //msg_Out()<<METHOD<<" for "<<channels.size()<<" channels.\n";
   if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
   for (std::map<std::string,double>::iterator
 	 it(m_erans.begin());it!=m_erans.end();++it) {
@@ -391,8 +388,6 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
 
 void Multi_Channel::GenerateWeight(int mode=0)
 {
-  //msg_Out()<<METHOD<<"("<<mode<<") for "<<channels.size()<<" channels: "
-  //	   <<(channels.size()>0?channels[0]->Name():string("None"))<<"\n";
   if (channels.size()==1) {
     channels[0]->GenerateWeight(mode);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
@@ -410,10 +405,8 @@ void Multi_Channel::GenerateWeight(int mode=0)
       if (channels[i]->Weight()!=0) 
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
-    //msg_Out()<<"   "<<channels[i]->Name()<<": "<<channels[i]->Weight()<<"\n";
   }
   if (m_weight!=0) m_weight=1./m_weight;
-  //msg_Out()<<"   yields weight = "<<m_weight<<"\n";
 }
 
 void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width) 
