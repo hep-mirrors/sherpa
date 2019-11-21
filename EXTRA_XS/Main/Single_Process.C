@@ -195,5 +195,5 @@ const bool Single_Process::HasInternalScale() const {
 }
 
 const double Single_Process::InternalScale() const {
-  return p_born_me2?p_born_me2->InternalScale():false;
+  return p_born_me2?p_born_me2->InternalScale():-1.;
 }
