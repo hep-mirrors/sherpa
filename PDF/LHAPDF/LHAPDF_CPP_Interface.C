@@ -1,9 +1,10 @@
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -52,6 +53,8 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   m_smember=_member;
   m_type="LHA["+m_set+"]";
 
+  Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+
   m_bunch = _bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
@@ -64,11 +67,12 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
     SetAlphaSInfo();
   }
 
+  auto q2lim = s["USE_Q2LIMIT"].SetDefault(1).Get<int>();
   // get x,Q2 ranges from PDF
   m_xmin=p_pdf->xMin();
   m_xmax=p_pdf->xMax();
-  m_q2min=p_pdf->q2Min();
-  m_q2max=p_pdf->q2Max();
+  m_q2min=q2lim?p_pdf->q2Min():0.0;
+  m_q2max=q2lim?p_pdf->q2Max():1.0e37;
   m_nf=m_asinfo.m_nf;
 
   // initialise all book-keep arrays etc.
@@ -114,8 +118,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
 
   m_lhef_number = p_pdf->lhapdfID();
 
-  Data_Reader read(" ",";","#","=");
-  read.VectorFromFile(m_disallowedflavour,"LHAPDF_DISALLOW_FLAVOUR");
+  m_disallowedflavour = s["DISALLOW_FLAVOUR"].GetVector<int>();
   if (m_disallowedflavour.size()) {
     msg_Info()<<METHOD<<"(): Set PDF for the following flavours to zero: ";
     for (size_t i(0);i<m_disallowedflavour.size();++i)
@@ -156,8 +159,8 @@ void LHAPDF_CPP_Interface::SetAlphaSInfo()
   m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
   m_asinfo.m_nf=p_pdf->info().get_entry_as<int>("NumFlavors",-1);
   if (m_asinfo.m_nf<0) {
-    Default_Reader reader;
-    int nf(reader.Get<int>("LHAPDF_NUMBER_OF_FLAVOURS", 5));
+    Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+    const int nf(s["NUMBER_OF_FLAVOURS"].Get<int>());
     msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
     m_asinfo.m_nf=nf;
   }
@@ -289,9 +292,9 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  Default_Reader reader;
-  std::string path;
-  if (reader.Read(path, "LHAPDF_GRID_PATH", path)) LHAPDF::setPaths(path);
+  Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+  if (s["GRID_PATH"].IsCustomised())
+    LHAPDF::setPaths(s["GRID_PATH"].Get<std::string>());
   const std::vector<std::string>& sets(LHAPDF::availablePDFSets());
   msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::paths()<<std::endl;
   msg_Debugging()<<METHOD<<"(): LHAPDF sets: "<<sets<<std::endl;

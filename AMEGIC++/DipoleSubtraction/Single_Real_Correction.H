@@ -43,6 +43,7 @@ namespace AMEGIC {
 
     std::vector<size_t> m_sids;
     std::map<void*,DM_Info> m_dfmap;
+
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
     void SmearCounterEvents(ATOOLS::NLO_subevtlist& subevtlist);
@@ -62,6 +63,7 @@ namespace AMEGIC {
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     bool Combinable(const size_t &idi,const size_t &idj);
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+    void SetCaller(PHASIC::Process_Base *const proc);
 
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);

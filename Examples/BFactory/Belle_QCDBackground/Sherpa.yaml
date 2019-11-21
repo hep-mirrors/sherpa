@@ -1,0 +1,19 @@
+# collider setup
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+PARTICLE_DATA:
+  4: {Massive: 1}
+  5: {Massive: 1}
+MASSIVE_PS: 3
+
+PROCESSES:
+- Process: 11 -11 -> 93 93
+  Order: {QCD: Any, EW: 2}
+- Process: 11 -11 -> 4 -4
+  Order: {QCD: Any, EW: 2}
+- Process: 11 -11 -> 5 -5
+  Order: {QCD: Any, EW: 2}

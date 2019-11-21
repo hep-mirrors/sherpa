@@ -72,30 +72,43 @@ double Kinematics_FF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const
 {
   double pipj=(Q2-mi2-mj2-mk2)*y;
-  if (m_evolscheme==0) {
-    return pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
+    double kt2=pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
+    if (m_evolscheme==0) return kt2;
+    if (m_evolscheme==2) return kt2+mi2+mj2;
   }
-  double kt2=pipj*z*(1.0-z);
-  if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
-  else if (flc.IsFermion()) kt2=pipj;
-  return kt2;
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    double kt2=pipj*z*(1.0-z);
+    if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
+    else if (flc.IsFermion()) kt2=pipj;
+    if (m_evolscheme==1) return kt2;
+    if (m_evolscheme==3) return kt2+mi2+mj2;
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
-double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
+double Kinematics_FF::GetY(const double &Q2,const double &_kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &mk2,
 			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
-  if (m_evolscheme==0) {
+  double kt2=_kt2;
+  if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-mj2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
     return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
   }
-  if (fla.IsFermion()) {
-    if (flc.IsFermion()) return kt2/z/(Q2-mi2-mj2-mk2);
-    return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    if (fla.IsFermion()) {
+      if (flc.IsFermion()) return kt2/z/(Q2-mi2-mj2-mk2);
+      return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
+    }
+    if (flc.IsFermion()) return kt2/(Q2-mi2-mj2-mk2);
+    return kt2/(z*(1.0-z))/(Q2-mi2-mj2-mk2);
   }
-  if (flc.IsFermion()) return kt2/(Q2-mi2-mj2-mk2);
-  return kt2/(z*(1.0-z))/(Q2-mi2-mj2-mk2);
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
 int Kinematics_FF::MakeKinematics
@@ -117,7 +130,8 @@ int Kinematics_FF::MakeKinematics
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
 		split->GetFlavour(),flj,1);
   Kin_Args ff(y,split->ZTest(),split->Phi());
-  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
+  if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
+      !ValidateDipoleKinematics(mi2, mj2, mk2, ff)) return -1;
 
   split->SetMomentum(ff.m_pi);
   if (mi2) SetFixVec(split,ff.m_pi);
@@ -146,30 +160,44 @@ double Kinematics_FI::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const
 {
   double pipj=-(Q2-ma2-mi2-mj2)*(1.0-y)/y;
-  if (m_evolscheme==0) {
-    return pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
+    double kt2=pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
+    if (m_evolscheme==0) return kt2;
+    if (m_evolscheme==2) return kt2+mi2+mj2;
   }
-  double kt2=pipj*z*(1.0-z);
-  if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
-  else if (flc.IsFermion()) kt2=pipj;
-  return kt2;
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    double kt2=pipj*z*(1.0-z);
+    if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
+    else if (flc.IsFermion()) kt2=pipj;
+    if (m_evolscheme==1) return kt2;
+    if (m_evolscheme==3) return kt2+mi2+mj2;
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
+
 }
 
-double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
+double Kinematics_FI::GetY(const double &Q2,const double &_kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &ma2,
 			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
-  if (m_evolscheme==0) {
+  double kt2=_kt2;
+  if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-mj2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
     return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
   }
-  if (fla.IsFermion()) {
-    if (flc.IsFermion()) return 1.0/(1.0-kt2/z/(Q2-ma2-mi2-mj2));
-    return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    if (fla.IsFermion()) {
+      if (flc.IsFermion()) return 1.0/(1.0-kt2/z/(Q2-ma2-mi2-mj2));
+      return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
+    }
+    if (flc.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
+    return 1.0/(1.0-kt2/(z*(1.0-z))/(Q2-ma2-mi2-mj2));
   }
-  if (flc.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
-  return 1.0/(1.0-kt2/(z*(1.0-z))/(Q2-ma2-mi2-mj2));
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
 int Kinematics_FI::MakeKinematics
@@ -191,7 +219,8 @@ int Kinematics_FI::MakeKinematics
   double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
 		split->GetFlavour(),flj,1);
   Kin_Args fi(1.0-y,split->ZTest(),split->Phi(),8);
-  if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
+  if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0 ||
+      !ValidateDipoleKinematics(mi2, mj2, ma2, fi)) return -1;
 
   split->SetMomentum(fi.m_pi);
   if (mi2) SetFixVec(split,fi.m_pi);
@@ -220,25 +249,38 @@ double Kinematics_IF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc) const
 {
   double pipj=(Q2-ma2-mi2-mk2)*y/z;
-  if (m_evolscheme==0) {
-    return -pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
+    double kt2=-pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
+    if (m_evolscheme==0) return kt2;
+    if (m_evolscheme==2) return kt2+mi2+ma2;
   }
-  double kt2=-pipj*(1.0-z);
-  if (flc.IsFermion()) kt2=-pipj;
-  return kt2;
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    double kt2=-pipj*(1.0-z);
+    if (flc.IsFermion()) kt2=-pipj;
+    if (m_evolscheme==1) return kt2;
+    if (m_evolscheme==3) return kt2+mi2+ma2;
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
-double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
+double Kinematics_IF::GetY(const double &Q2,const double &_kt2,const double &z,
 			   const double &ma2,const double &mi2,const double &mk2,
 			   const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2)) return -1.0;
-  if (m_evolscheme==0) {
+  double kt2=_kt2;
+  if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-ma2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
     return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
   }
-  if (flc.IsFermion()) return -z/(Q2-ma2-mi2-mk2)*kt2;
-  return -z/(Q2-ma2-mi2-mk2)*kt2/(1.0-z);
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    if (flc.IsFermion()) return -z/(Q2-ma2-mi2-mk2)*kt2;
+    return -z/(Q2-ma2-mi2-mk2)*kt2/(1.0-z);
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
 int Kinematics_IF::MakeKinematics
@@ -270,7 +312,8 @@ int Kinematics_IF::MakeKinematics
 		split->GetFlavour(),fli,1);
   Kin_Args ifp(y,split->ZTest(),split->Phi(),split->Kin());
   if (dabs(y-split->ZTest())<Kin_Args::s_uxeps) ifp.m_mode=1;
-  if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0) return -1;
+  if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0 ||
+      !ValidateDipoleKinematics(ma2, mi2, ifp.m_mk2>=0.0?ifp.m_mk2:mk2, ifp)) return -1;
 
   split->SetLT(ifp.m_lam);
   ifp.m_lam.Invert();
@@ -297,25 +340,38 @@ double Kinematics_II::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc) const
 {
   double pipj=(Q2-ma2-mi2-mb2)*y/z;
-  if (m_evolscheme==0) {
-    return pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
+    double kt2=pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
+    if (m_evolscheme==0) return kt2;
+    if (m_evolscheme==2) return kt2+mi2+ma2;
   }
-  double kt2=pipj*(1.0-z);
-  if (flc.IsFermion()) kt2=pipj;
-  return kt2;
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    double kt2=pipj*(1.0-z);
+    if (flc.IsFermion()) kt2=pipj;
+    if (m_evolscheme==1) return kt2;
+    if (m_evolscheme==3) return kt2+mi2+ma2;
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
-double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
+double Kinematics_II::GetY(const double &Q2,const double &_kt2,const double &z,
 			   const double &ma2,const double &mi2,const double &mb2,
 			   const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2)) return -1.0;
-  if (m_evolscheme==0) {
+  double kt2=_kt2;
+  if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-ma2;
+  if (m_evolscheme==0 || m_evolscheme==2) {
     return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
   }
-  if (flc.IsFermion()) return z/(Q2-ma2-mb2-mi2)*kt2;
-  return z/(Q2-ma2-mb2-mi2)*kt2/(1.0-z);
+  else if (m_evolscheme==1 || m_evolscheme==3) {
+    if (flc.IsFermion()) return z/(Q2-ma2-mb2-mi2)*kt2;
+    return z/(Q2-ma2-mb2-mi2)*kt2/(1.0-z);
+  }
+  else THROW(fatal_error, "Not implemented");
+  return 0.0;
 }
 
 int Kinematics_II::MakeKinematics
@@ -336,7 +392,8 @@ int Kinematics_II::MakeKinematics
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,
 		split->GetFlavour(),newfl,1);
   Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
-  if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
+  if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0 ||
+      !ValidateDipoleKinematics(ma2, mi2, mb2, ii)) return -1;
 
   split->SetLT(ii.m_lam);
   ii.m_lam.Invert();

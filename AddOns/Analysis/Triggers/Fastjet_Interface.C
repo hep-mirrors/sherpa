@@ -113,53 +113,54 @@ public:
 };
 
 DECLARE_GETTER(Fastjet_Interface,"FastJets",
-	       Analysis_Object,Argument_Matrix);	
+	       Analysis_Object,Analysis_Key);
 
 Analysis_Object *ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Fastjet_Interface>::
-operator()(const Argument_Matrix &parameters) const	
+<Analysis_Object,Analysis_Key,Fastjet_Interface>::
+operator()(const Analysis_Key& key) const
 {
-  if (parameters.size()<1) return NULL;
-  fastjet::JetAlgorithm algo(fastjet::kt_algorithm);
-  fastjet::RecombinationScheme recom(fastjet::E_scheme);
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("FastJets").Get<std::string>();
+  const auto njets = s["NJets"].SetDefault(0).Get<size_t>();
+  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
+  const auto etamax = s["EtaMax"].SetDefault(1000.0).Get<double>();
+
+  fastjet::JetAlgorithm algo;
+  size_t siscone = 0;
+  const auto rawalgorithm = s["Algorithm"].SetDefault("kt").Get<std::string>();
+  if (rawalgorithm=="kt") algo=fastjet::kt_algorithm;
+  else if (rawalgorithm=="cambridge") algo=fastjet::cambridge_algorithm;
+  else if (rawalgorithm=="antikt") algo=fastjet::antikt_algorithm;
+  else if (rawalgorithm=="siscone") siscone=1;
+  else THROW(fatal_error, "Unknown jet algorithm.");
+
+  fastjet::RecombinationScheme recom;
+  const auto rawscheme = s["Scheme"].SetDefault("E").Get<std::string>();
+  if (rawscheme=="E") recom=fastjet::E_scheme;
+  else if (rawscheme=="pt") recom=fastjet::pt_scheme;
+  else if (rawscheme=="pt2") recom=fastjet::pt2_scheme;
+  else if (rawscheme=="Et") recom=fastjet::Et_scheme;
+  else if (rawscheme=="Et2") recom=fastjet::Et2_scheme;
+  else if (rawscheme=="BIpt") recom=fastjet::BIpt_scheme;
+  else if (rawscheme=="BIpt2") recom=fastjet::BIpt2_scheme;
+  else THROW(fatal_error, "Unknown recombination scheme.");
+
+  const auto R = s["R"].SetDefault(0.4).Get<double>();
+  const auto f = s["f"].SetDefault(0.75).Get<double>();
+
   fastjet::Strategy strategy(fastjet::Best);
-  double R=0.4, f=0.75, ptmin=0.0, etamax=1000.;
-  size_t njets=0, siscone=0, btag=0;
-  std::string inlist="FinalState", outlist="FastJets";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="InList") inlist=parameters[i][1];
-    else if (parameters[i][0]=="OutList") outlist=parameters[i][1];
-    else if (parameters[i][0]=="Algorithm") {
-      if (parameters[i][1]=="kt") algo=fastjet::kt_algorithm;
-      if (parameters[i][1]=="cambridge") algo=fastjet::cambridge_algorithm;
-      if (parameters[i][1]=="antikt") algo=fastjet::antikt_algorithm;
-      if (parameters[i][1]=="siscone") siscone=1;
-    }
-    else if (parameters[i][0]=="Scheme") {
-      if (parameters[i][1]=="E") recom=fastjet::E_scheme;
-      if (parameters[i][1]=="pt") recom=fastjet::pt_scheme;
-      if (parameters[i][1]=="pt2") recom=fastjet::pt2_scheme;
-      if (parameters[i][1]=="Et") recom=fastjet::Et_scheme;
-      if (parameters[i][1]=="Et2") recom=fastjet::Et2_scheme;
-      if (parameters[i][1]=="BIpt") recom=fastjet::BIpt_scheme;
-      if (parameters[i][1]=="BIpt2") recom=fastjet::BIpt2_scheme;
-    }
-    else if (parameters[i][0]=="R") R=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="f") f=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Strategy") {
-      if (parameters[i][1]=="N2Plain") strategy=fastjet::N2Plain;
-      if (parameters[i][1]=="N2Tiled") strategy=fastjet::N2Tiled;
-      if (parameters[i][1]=="N2MinHeapTiled") strategy=fastjet::N2MinHeapTiled;
-      if (parameters[i][1]=="NlnN") strategy=fastjet::NlnN;
-      if (parameters[i][1]=="NlnNCam") strategy=fastjet::NlnNCam;
-      if (parameters[i][1]=="Best") strategy=fastjet::Best;
-    }
-    else if (parameters[i][0]=="NJets") njets=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="PTMin") ptmin=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="EtaMax") etamax=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="BTag") btag=ATOOLS::ToType<int>(parameters[i][1]);
-  }
+  const auto rawstrategy = s["Strategy"].SetDefault("Best").Get<std::string>();
+  if (rawstrategy=="Best") strategy=fastjet::Best;
+  else if (rawstrategy=="N2Plain") strategy=fastjet::N2Plain;
+  else if (rawstrategy=="N2Tiled") strategy=fastjet::N2Tiled;
+  else if (rawstrategy=="N2MinHeapTiled") strategy=fastjet::N2MinHeapTiled;
+  else if (rawstrategy=="NlnN") strategy=fastjet::NlnN;
+  else if (rawstrategy=="NlnNCam") strategy=fastjet::NlnNCam;
+  else THROW(fatal_error, "Unknown strategy.");
+
+  const auto btag = s["BTag"].SetDefault(0).Get<size_t>();
+
   if (siscone) {
     fastjet::JetDefinition::Plugin *plug(new fastjet::SISConePlugin(R,f));
     fastjet::JetDefinition jdef(plug);
@@ -167,24 +168,24 @@ operator()(const Argument_Matrix &parameters) const
   }
   fastjet::JetDefinition jdef(algo,R,recom,strategy);
   return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,etamax,btag);
-}									
+}
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Fastjet_Interface>::
+<Analysis_Object,Analysis_Key,Fastjet_Interface>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList    list\n"
-     <<std::setw(width+7)<<" "<<"OutList   list\n"
-     <<std::setw(width+7)<<" "<<"NJets     #jets (default 0 -> inclusive mode)\n"
-     <<std::setw(width+7)<<" "<<"PTMin     ptmin (default 0)\n"
-     <<std::setw(width+7)<<" "<<"EtaMax    etamax (default 1000.)\n"
-     <<std::setw(width+7)<<" "<<"Algorithm algorithm [kt|antikt|cambridge|siscone] (default kt)\n"
-     <<std::setw(width+7)<<" "<<"Scheme    scheme [E|pt|pt2|Et|Et2|BIpt|BIpt2] (default E)\n"
-     <<std::setw(width+7)<<" "<<"R         R (default 0.4)\n"
-     <<std::setw(width+7)<<" "<<"f         f (siscone only, default 0.75)\n"
-     <<std::setw(width+7)<<" "<<"Strategy  strategy [N2Plain|N2Tiled|N2MinHeapTiled|NlnN|NlnNCam|Best] (default Best)\n"
-     <<std::setw(width+7)<<" "<<"BTag      0|1 (default 0 -> no b-tag)\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"NJets: <n>  # (default 0 -> inclusive mode)\n"
+     <<std::setw(width+7)<<" "<<"PTMin: <ptmin>  # (default 0)\n"
+     <<std::setw(width+7)<<" "<<"EtaMax: <etamax>  # (default 1000.)\n"
+     <<std::setw(width+7)<<" "<<"Algorithm: <algo>  # [kt|antikt|cambridge|siscone] (default kt)\n"
+     <<std::setw(width+7)<<" "<<"Scheme: <scheme>  # [E|pt|pt2|Et|Et2|BIpt|BIpt2] (default E)\n"
+     <<std::setw(width+7)<<" "<<"R: <R>  # (default 0.4)\n"
+     <<std::setw(width+7)<<" "<<"f: <f>  # (siscone only, default 0.75)\n"
+     <<std::setw(width+7)<<" "<<"Strategy: <strategy>  # [N2Plain|N2Tiled|N2MinHeapTiled|NlnN|NlnNCam|Best] (default Best)\n"
+     <<std::setw(width+7)<<" "<<"BTag: <tag>  # 0|1 (default 0 -> no b-tag)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 

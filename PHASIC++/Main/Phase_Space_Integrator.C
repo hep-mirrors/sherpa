@@ -5,8 +5,8 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
@@ -24,58 +24,52 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_iter(5000), m_itmin(5000), m_itmax(500000), m_itminbynode(2),
   m_nmin(0), m_nrawmin(0),
   m_n(0), m_nstep(0), m_ncstep(0), m_mn(0), m_mnstep(0), m_mncstep(0),
-  m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(1),
+  m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(true),
   m_starttime(0.), m_lotime(0.), m_addtime(0.), m_lrtime(0.),
   m_maxerror(0.), m_maxabserror(0.),
   m_lastrss(0), p_psh(_psh)
 {
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  reader.SetAllowUnits(true);
+  RegisterDefaults();
+  Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
 
   // total number of points
-  m_nmax = reader.Get("PSI_NMAX", std::numeric_limits<long unsigned int>::max(), "n_{max}", METHOD);
-  m_nmin = reader.Get("PSI_NMIN", 0, "n_{min}", METHOD);
-  m_nrawmax = reader.Get("PSI_NRAWMAX", std::numeric_limits<long unsigned int>::max(), "n_{max,raw}", METHOD);
-  m_nrawmin = reader.Get("PSI_NRAWMIN", 0, "n_{min}", METHOD);
+  m_nmax = s["NMAX"].Get<long unsigned int>();
+  m_nmin = s["NMIN"].Get<long unsigned int>();
+  m_nrawmax = s["NRAWMAX"].Get<long unsigned int>();
+  m_nrawmin = s["NRAWMIN"].Get<long unsigned int>();
 
   // number of points per iteration
-DEBUG_VAR(m_itmin);
-  m_itmin = reader.Get("PSI_ITMIN", p_psh->Process()->Process()->Info().m_itmin, "n_{it,min,raw}", METHOD);
-DEBUG_VAR(m_itmin);
-  m_itmax = reader.Get("PSI_ITMAX", 100 * m_itmin, "n_{it,max}", METHOD);
+  const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
+  m_itmin
+    = s["ITMIN"].GetScalarWithOtherDefault<long unsigned int>(procitmin);
+  m_itmax
+    = s["ITMAX"].GetScalarWithOtherDefault<long unsigned int>(100 * m_itmin);
 
   // number of optimisation steps
-  m_nopt = reader.Get("PSI_NOPT", 25, "n_{opt}", METHOD);
-  m_maxopt = reader.Get("PSI_MAXOPT", 5, "n_{maxopt}", METHOD);
-DEBUG_VAR(m_stopopt);
-  m_stopopt = reader.Get("PSI_STOPOPT", 1000, "n_{stopopt}", METHOD);
-DEBUG_VAR(m_stopopt);
-  m_stopopt = 1000000;
-DEBUG_VAR(m_stopopt);
-  m_ndecopt = reader.Get("PSI_NDECOPT", 10, "n_{opt,dec}", METHOD);
+  m_nopt = s["NOPT"].Get<long unsigned int>();
+  m_maxopt = s["MAXOPT"].Get<long unsigned int>();
+  m_stopopt = s["STOPOPT"].Get<long unsigned int>();
+  m_ndecopt = s["NDECOPT"].Get<long unsigned int>();
 
   // time steps
-  m_timestep = reader.Get("PSI_TIMESTEP_OFFSET", 0.0, "\\Delta t offset", METHOD);
-  m_timeslope = reader.Get("PSI_TIMESTEP_SLOPE", 0.0, "\\Delta t slope", METHOD);
+  m_timestep = s["TIMESTEP_OFFSET"].Get<double>();
+  m_timeslope = s["TIMESTEP_SLOPE"].Get<double>();
 
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   m_itminbynode=Max(1,Max(1000,(int)m_itmin)/size);
   if (size) {
     int helpi;
-    if (reader.Read(helpi,"PSI_ITMIN_BY_NODE", 0)) {
-      m_itmin=(m_itminbynode=helpi)*size;
-      msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<m_itmin<<".\n";
+    if (s["ITMIN_BY_NODE"].IsCustomised()) {
+      m_itminbynode = s["ITMIN_BY_NODE"].Get<long unsigned int>();
+      m_itmin = m_itminbynode * size;
     }
-    if (reader.Read(helpi,"PSI_ITMAX_BY_NODE", 0)) {
-      m_itmax*=helpi*size;
-      msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<m_itmax<<".\n";
+    if (s["ITMAX_BY_NODE"].IsCustomised()) {
+      m_itmax*=s["ITMAX_BY_NODE"].Get<int>()*size;
     }
-    if (reader.Read(helpi,"PSI_IT_BY_NODE", 0)) {
-      m_itmin=m_itmax=(m_itminbynode=helpi)*size;
-      msg_Info()<<METHOD<<"(): Set n_{it} = "<<m_itmin<<".\n";
+    if (s["IT_BY_NODE"].IsCustomised()) {
+      m_itminbynode = s["IT_BY_NODE"].Get<int>();
+      m_itmin=m_itmax=m_itminbynode*size;
     }
   }
 #endif
@@ -85,17 +79,35 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 {
 }
 
+void Phase_Space_Integrator::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
+  s["NMAX"].SetDefault(std::numeric_limits<long unsigned int>::max());  // n_{max}
+  s["NMIN"].SetDefault(0);  // n_{min}
+  s["NRAWMAX"].SetDefault(std::numeric_limits<long unsigned int>::max());  // n_{max,raw}
+  s["NRAWMIN"].SetDefault(0);  // n_{min}
+  s["NOPT"].SetDefault(25);  // n_{opt}
+  s["MAXOPT"].SetDefault(5);  // n_{maxopt}
+  s["STOPOPT"].SetDefault(1000);  // n_{stopopt}
+  s["NDECOPT"].SetDefault(10);  // n_{opt,dec}
+  s["TIMESTEP_OFFSET"].SetDefault(0.0);  // \Delta t offset
+  s["TIMESTEP_SLOPE"].SetDefault(0.0);  // \Delta t slope
+  s["ITMIN_BY_NODE"].SetDefault(0);
+  s["ITMAX_BY_NODE"].SetDefault(0);
+  s["IT_BY_NODE"].SetDefault(0);
+}
+
 void Phase_Space_Integrator::MPISync()
 {
 #ifdef USING__MPI
   p_psh->MPISync();
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     double values[3];
     values[0]=m_mn;
     values[1]=m_mnstep;
     values[2]=m_mncstep;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
     m_mn=values[0];
     m_mnstep=values[1];
     m_mncstep=values[2];
@@ -113,7 +125,7 @@ void Phase_Space_Integrator::MPISync()
 }
 
 double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
-                                         int _fin_opt)
+                                         bool _fin_opt)
 {
   m_mn=m_mnstep=m_mncstep=0;
   m_maxerror=_maxerror;
@@ -166,9 +178,9 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   m_optiter=m_iter;
 #ifdef USING__MPI
-  int size = MPI::COMM_WORLD.Get_size();
+  int size = mpi->Size();
   m_optiter /= size;
-  if (MPI::COMM_WORLD.Get_rank()==0) m_optiter+=m_iter-(m_iter/size)*size;
+  if (mpi->Rank()==0) m_optiter+=m_iter-(m_iter/size)*size;
 #endif
 
   while (m_n<m_nrawmax && m_ncontrib<m_nmax) {
@@ -244,7 +256,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     double timeest=0.;
     timeest = (m_nopt*m_iter+m_maxopt*m_iter)/double(m_ncontrib)*(time-m_starttime);
     if (!fotime) {
-      if (m_fin_opt==1) {
+      if (m_fin_opt) {
         timeest = ATOOLS::Max(timeest,
                               p_psh->Process()->RemainTimeFactor(m_maxerror)*
                               (time-m_lotime)+m_lotime-m_starttime);
@@ -306,7 +318,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       double var(p_psh->Process()->TotalVar());
       bool wannabreak = dabs(error)<m_maxerror ||
                         (var!=0. && dabs(var*rpa->Picobarn())<m_maxabserror);
-      if (m_fin_opt==0 && wannabreak && m_nopt>p_psh->Stats().size())
+      if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
         m_nopt=p_psh->Stats().size();
       if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
 DEBUG_VAR(p_psh->Stats().size());

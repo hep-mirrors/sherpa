@@ -2,7 +2,6 @@
 #include "AMEGIC++/Amplitude/Zfunc_Generator.H"
 #include "AMEGIC++/Main/Point.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -11,8 +10,6 @@ using namespace ATOOLS;
 #define PARAMETER_TYPE AMEGIC::ZFCalc_Key
 #define OBJECT_TYPE AMEGIC::Zfunc_Calc
 #include "ATOOLS/Org/Getter_Function.C"
-
-namespace ATOOLS { template class SP(Zfunc_Calc); }
 
 Zfunc_Calc::~Zfunc_Calc() 
 {

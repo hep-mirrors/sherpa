@@ -1,9 +1,7 @@
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include <unistd.h> 
 
 #include "PDF/Main/PDF_Base.H"
@@ -25,7 +23,7 @@ namespace PDF {
 
   class CT12_Fortran_Interface : public PDF_Base {
   private:
-    int         m_anti;
+    int         m_anti, m_nf;
     double      m_f[11], m_x, m_Q;
     bool        m_calculated[11];
 

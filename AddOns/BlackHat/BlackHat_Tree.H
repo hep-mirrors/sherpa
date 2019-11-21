@@ -22,7 +22,6 @@ namespace BLACKHAT {
     BH::BH_Ampl *p_ampl;
 
     static BH::BH_interface  *s_interface;
-    static MODEL::Model_Base *s_model;
 
     size_t m_oqcd, m_oew, m_mode;
     double m_asfac, m_afac;
@@ -30,6 +29,8 @@ namespace BLACKHAT {
     void WarnForMassiveFlavours(const ATOOLS::Flavour_Vector&) const;
 
   public:
+
+    static MODEL::Model_Base *s_model;
 
     BlackHat_Tree(const PHASIC::External_ME_Args& args,
 		  BH::BH_Ampl *ampl,const int mode);
@@ -43,8 +44,8 @@ namespace BLACKHAT {
      std::vector<std::vector<std::pair<std::string,int> > > &couplings,
      std::vector<std::pair<std::string,int> > cpls,size_t i=0);
 
-    int OrderQCD(const int &id=-1);
-    int OrderEW(const int &id=-1);
+    int OrderQCD(const int &id=-1) const;
+    int OrderEW(const int &id=-1) const;
 
     inline static void SetInterface(BH::BH_interface *const bh) { s_interface=bh; }
     inline static void SetModel(MODEL::Model_Base *const md) { s_model=md; }

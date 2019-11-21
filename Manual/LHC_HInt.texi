@@ -13,7 +13,7 @@ and @mycite{Dixon2013haa}.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HInterference/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HInterference/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -23,17 +23,17 @@ Things to notice:
 @item All scales, i.e. the factorisation, renormalisation and resummation
 scales are set to the invariant mass of the di-photon pair.
 @item Dedicated phase space generators are used by setting 
-@option{Integrator PS2;} and @option{RS_Integrator PS3;}, cf. @ref{Integrator}.
+@option{Integrator: PS2} and @option{RS_Integrator: PS3}, cf. @ref{Integrator}.
 @end itemize
 
 To compute the interference contribution only, as was done in @mycite{Dixon2013haa},
-one can set @option{HIGGS_INTERFERENCE_ONLY 1;} in the @code{(run)@{...@}(run)} section.
+one can set @option{HIGGS_INTERFERENCE_ONLY: 1}.
 By default, all partonic processes are included in this simulation, however, 
 it is sensible to disable quark initial states at the leading order. This is achieved 
-by setting @option{HIGGS_INTERFERENCE_MODE 3;} in the @code{(run)@{...@}(run)} section.
+by setting @option{HIGGS_INTERFERENCE_MODE: 3}.
  
 One can also simulate the production of a spin-2 massive graviton in Sherpa using
-the same input card by setting @option{HIGGS_INTERFERENCE_SPIN 2;} in the 
-@code{(run)@{...@}(run)} section. Only the massive graviton case is implemented, 
+the same input card by setting @option{HIGGS_INTERFERENCE_SPIN: 2}. Only the
+massive graviton case is implemented,
 specifically the scenario where k_q=k_g. NLO corrections are approximated, 
 as the gg->X->yy and qq->X->yy loop amplitudes have not been computed so far.

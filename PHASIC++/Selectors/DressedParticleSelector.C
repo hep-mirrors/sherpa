@@ -1,6 +1,3 @@
-#ifndef PHASIC_Selectors_DressedParticleSelector_h
-#define PHASIC_Selectors_DressedParticleSelector_h
-
 #include "ATOOLS/Phys/Particle_Dresser.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -22,15 +19,12 @@ namespace PHASIC {
   };
 }
 
-#endif
-
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 
 using namespace PHASIC;
@@ -40,27 +34,28 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
   Selector_Base("DressedParticleSelector",key.p_proc), p_dresser(NULL)
 {
   DEBUG_FUNC("");
-  double dR(0.),exp(1.);
-  for (size_t k=0;k<key.size();++k) {
-    if (key[k].size()>2 && key[k][0]=="DressingAlgorithm") {
-      if (p_dresser) THROW(fatal_error,"Too many dressing algorithms.");
-      std::string algo(ToType<std::string>(key[k][1]));
-      dR=ToType<double>(key.p_read->Interpreter()->Interprete(key[k][2]));
-      p_dresser = new Particle_Dresser(algo,dR);
-    }
-    else if (key[k].size()>2 && key[k][0]=="FlavourDependentRadius") {
-      if (!p_dresser) THROW(fatal_error,"No dressing algorithm set yet.");
-      kf_code kf=ToType<kf_code>(key.p_read->Interpreter()->Interprete(key[k][1]));
-      dR=ToType<double>(key.p_read->Interpreter()->Interprete(key[k][2]));
-      p_dresser->SetFlavourDependentCone(kf,dR);
-    }
-    else {
-      if (!p_dresser) THROW(fatal_error,"No dressing algorithm defined.");
-      p_dresser->CompleteConeLists();
-      ReadInSubSelectors(key,k);
-      break;
-    }
+  auto s = key.m_settings;
+  const auto algoparams = s["DressingAlgorithm"]
+    .SetDefault<std::string>({})
+    .GetVector<std::string>();
+  if (algoparams.size() != 2)
+    THROW(fatal_error, "DressingAlgorithm needs two values");
+  const auto algo = algoparams[0];
+  const auto dR = ToType<double>(algoparams[1]);
+  p_dresser = new Particle_Dresser(algo,dR);
+  if (!p_dresser) THROW(fatal_error, "Invalid dressing algorithm");
+  const auto flavradiusparams = s["FlavourDependentRadius"]
+    .SetDefault<std::string>({})
+    .GetVector<std::string>();
+  if (!flavradiusparams.empty()) {
+    if (flavradiusparams.size() != 2)
+      THROW(fatal_error, "FlavourDependentRadius needs two values");
+    const auto kf = ToType<kf_code>(flavradiusparams[0]);
+    const auto fDR = ToType<double>(flavradiusparams[1]);
+    p_dresser->SetFlavourDependentCone(kf, fDR);
   }
+  p_dresser->CompleteConeLists();
+  ReadInSubSelectors(key);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<"Additional Selectors:\n";
     for (size_t i(0);i<m_sels.size();++i)
@@ -112,11 +107,11 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,DressedParticleSelector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"DressedParticleSelector {\n"
-     <<w<<"  DressingAlgorithm <Cone|Recombination> <dR> [<exp>]\n"
-     <<w<<"  [FlavourDependentCone <kf> <dR>]\n"
-     <<w<<"  Selector 1\n"
-     <<w<<"  Selector 2\n"
-     <<w<<"  ...\n"
-     <<w<<"}";
+  str<<"{\n"
+     <<w<<"  Type: DressedParticleSelector,\n"
+     <<w<<"  DressingAlgorithm: [<Cone|Recombination>, <dR>, <exp>]  # exp is optional\n"
+     <<w<<"  # optional settings:\n"
+     <<w<<"  FlavourDependentCone: [<kf>, <dR>]\n"
+     <<w<<"  Subselectors: [ ... ]\n"
+     <<w<<"  }";
 }

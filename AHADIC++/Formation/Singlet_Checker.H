@@ -12,7 +12,9 @@ namespace AHADIC {
   private:
     std::list<Singlet *>                    * p_singlets;
     std::list<std::list<Singlet *>::iterator> m_badones;
-    std::map<Singlet *,ATOOLS::Flavour>       m_transitions;
+
+    using Transition = std::pair<Singlet*, ATOOLS::Flavour>;
+    std::vector<Transition> m_transitions;
     std::list<Proto_Particle *>             * p_hadrons;
     
     Soft_Cluster_Handler * p_softclusters;
@@ -28,21 +30,22 @@ namespace AHADIC {
 
     long int         m_direct_transitions;
     
-    bool      CheckSinglet();
-    bool      FusePartonsInLowMassSinglet();
-    bool      DealWithProblematicSinglets();
-    void      SortProblematicSinglets();
-    bool      FindOtherSingletToTransit();
-    bool      FindRecoilerForTransit();
-    bool      TestRecoiler();
-    bool      TransitProblematicSinglets();
-    bool      TransitProblematicSingletWithRecoiler();
-    bool      BoostRecoilerInNewSystem(const ATOOLS::Vec4D & newmom);
-    void      ForcedDecays();
-    bool      ForcedDecayOfTwoPartonSinglet();
-    bool      ExtractAndCheckFlavours();
-    bool      TwoGluonSingletToHadrons();
-    bool      TwoQuarkSingletToHadrons();
+    bool CheckSinglet();
+    bool FusePartonsInLowMassSinglet();
+    bool DealWithProblematicSinglets();
+    void SortProblematicSinglets();
+    bool FindOtherSingletToTransit();
+    bool FindRecoilerForTransit();
+    bool TestRecoiler();
+    bool TransitProblematicSinglets();
+    bool TransitProblematicSingletWithRecoiler();
+    bool BoostRecoilerInNewSystem(const ATOOLS::Vec4D & newmom);
+    void ForcedDecays();
+    bool ForcedDecayOfTwoPartonSinglet();
+    bool ExtractAndCheckFlavours();
+    bool TwoGluonSingletToHadrons();
+    bool TwoQuarkSingletToHadrons();
+    void AddOrUpdateTransition(Singlet*, ATOOLS::Flavour& hadron);
  public:
     Singlet_Checker(std::list<Singlet *> * p_singlets,
 		    Soft_Cluster_Handler * softclusters);

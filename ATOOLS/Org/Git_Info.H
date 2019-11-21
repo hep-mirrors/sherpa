@@ -13,6 +13,8 @@ namespace ATOOLS {
 
     static std::map<const std::string,const Git_Info*> *s_objects;
 
+    static bool s_check;
+
   public:
 
     Git_Info(const std::string &name,
@@ -28,6 +30,8 @@ namespace ATOOLS {
 
     inline static const std::map<const std::string,const Git_Info*> *
     Infos() { return s_objects; }
+
+    inline static void SetCheck(const bool &check) { s_check=check; }
 
   };// end of class Git_Info
 

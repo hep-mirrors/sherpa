@@ -19,6 +19,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -29,7 +30,7 @@ int Process_Base::s_usefmm(-1);
 
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
-  p_sproc(NULL), p_proc(this),
+  p_sproc(NULL), p_caller(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
@@ -39,7 +40,9 @@ Process_Base::Process_Base():
   p_variationweights(NULL), m_variationweightsowned(false)
 {
   m_last=m_lastb=0.0;
-  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
+  if (s_usefmm<0)
+    s_usefmm =
+      Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
 }
 
 Process_Base::~Process_Base() 
@@ -142,9 +145,8 @@ void Process_Base::MPISync(const int mode)
   size_t i(0), j(0);
   std::vector<double> sv;
   MPICollect(sv,i);
-  if (MPI::COMM_WORLD.Get_size()>1)
-    mpi->MPIComm()->Allreduce
-      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  if (mpi->Size()>1)
+    mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
   MPIReturn(sv,j);
 #endif
 }
@@ -204,7 +206,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     *this->VariationWeights()*=1.0/m_issymfac;
   }
   if (mode&32) {
-    SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
+    auto psh = Parent()->Integrator()->PSHandler();
     res*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
@@ -243,59 +245,6 @@ void Process_Base::UpdateIntegrator
 (Phase_Space_Handler *const psh)
 {
 }
-
-class Order_Flavour {
-  FMMap* p_fmm;
-  int Order_SVFT(const Flavour &a,const Flavour &b) 
-  {
-    if (a.IsScalar() && !b.IsScalar()) return 1;
-    if (a.IsVector() && !b.IsScalar() && 
-	!b.IsVector()) return 1;
-    if (a.IsFermion() && !b.IsFermion() && 
-	!b.IsScalar() && !b.IsVector()) return 1;
-    return 0;
-  }
-  int Order_Multi(const Flavour &a,const Flavour &b)
-  {
-    if ((*p_fmm)[int(a.Kfcode())]==0 || 
-	(*p_fmm)[int(b.Kfcode())]==0) return 0;
-    if ((*p_fmm)[int(a.Kfcode())]>
-	(*p_fmm)[int(b.Kfcode())]) return 1;
-    return 0;
-  }
-  int Order_Photons(const Flavour &a,const Flavour &b)
-  {
-    if (a.Strong() && a.Mass() && b.IsPhoton()) return 1;
-    return 0;
-  }
-
-  int operator()(const Flavour &a,const Flavour &b)
-  {
-    if (a.Priority()>b.Priority()) return 1;
-    if (a.Priority()<b.Priority()) return 0;
-    if (Order_Photons(a,b)) return 1;
-    if (Order_Photons(b,a)) return 0;
-    if (!a.Strong()&&b.Strong()) return 1;
-    if (a.Strong()&&!b.Strong()) return 0;
-    if (a.Mass()>b.Mass()) return 1;
-    if (a.Mass()<b.Mass()) return 0;
-    if (p_fmm) {
-      if (Order_Multi(a,b)) return 1;
-      if (Order_Multi(b,a)) return 0;
-    }
-    if (Order_SVFT(a,b)) return 1;
-    if (Order_SVFT(b,a)) return 0;
-    if (!a.IsAnti()&&b.IsAnti()) return 1;
-    if (a.IsAnti()&&!b.IsAnti()) return 0;
-    return a.Kfcode()<b.Kfcode();
-  }
-public:
-  Order_Flavour(FMMap* fmm): p_fmm(fmm) {}
-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
-  { return (*this)(a.m_fl,b.m_fl); }
-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
-  { return (*this)(a->Flav(),b->Flav()); }
-};// end of class Order_Flavour
 
 class Order_NDecay {
 public:
@@ -379,6 +328,7 @@ void Process_Base::Init(const Process_Info &pi,
       isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
+  m_resname=m_name;
 }
 
 std::string Process_Base::BaseName
@@ -617,7 +567,7 @@ void Process_Base::FillOnshellConditions()
   info.Add(m_pinfo.m_fi);
   for(size_t i=0;i<m_decins.size();i++)
     if (m_decins[i]->m_osd) Selector()->AddOnshellCondition
-      (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
+      (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
@@ -631,6 +581,11 @@ void Process_Base::SetSelector(const Selector_Key &key)
   if (IsMapped()) return;
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
+}
+
+void Process_Base::SetCaller(Process_Base *const proc)
+{
+  p_caller=proc;
 }
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)
@@ -667,7 +622,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
+  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
   p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);

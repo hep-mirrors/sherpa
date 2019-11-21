@@ -8,10 +8,10 @@ namespace MODEL {
 }
 
 namespace DIM {
-  
+
   class Alpha_QCD: public Gauge {
   protected:
-    
+
     MODEL::Running_AlphaS *const &p_cpl;
 
     double m_fac, m_max;
@@ -36,7 +36,10 @@ namespace DIM {
 
     Alpha_QCD(const Kernel_Key &key);
 
+    double TrueScale(const Splitting &s) const;
+
     double Coupling(const Splitting &s) const;
+    double RenCT(const Splitting &s) const;
     double CplMax(const Splitting &s) const;
 
     double K(const Splitting &s) const;

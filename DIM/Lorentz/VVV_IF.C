@@ -25,9 +25,9 @@ namespace DIM {
       double A=0.0, B=0.0;
       if (m_mode) B=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
       else {
-	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
 	B=-2.0+(1.0-s.m_z)/s.m_z;
-	A*=1.0+p_sk->GF()->K(s);
+	A*=1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s);
       }
       if (s.m_mk2==0.0) return A+B;
       B-=s.m_mk2/s.m_Q2*s.m_y/(1.0-s.m_y);
@@ -37,16 +37,16 @@ namespace DIM {
     double AsymmetryFactor(const Splitting &s) const
     {
       double V;
-      if (m_mode) V=2.0*s.m_z*(1.0-s.m_z)+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
+      if (m_mode) V=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
       else {
-	double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
-	double B1=-2.0+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
-	V=A1*(1.0+p_sk->GF()->K(s))+B1;
+	double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
+	double B1=-2.0+(1.0-s.m_z)/s.m_z;
+	V=A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B1;
       }
-      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
-      double B11=-2.0+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
-      double B12=2.0*s.m_z*(1.0-s.m_z)+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
-      return V/(A1*(1.0+p_sk->GF()->K(s))+(B11+B12));
+      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
+      double B11=-2.0+(1.0-s.m_z)/s.m_z;
+      double B12=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
+      return V/(A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+(B11+B12));
     }
 
     double Integral(const Splitting &s) const

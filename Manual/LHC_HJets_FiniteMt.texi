@@ -10,7 +10,7 @@ concerning the mass effects.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets_Finite_MTop/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml
 @end smallformat
 @end example
 

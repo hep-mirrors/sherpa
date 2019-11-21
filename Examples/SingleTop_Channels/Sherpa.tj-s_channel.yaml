@@ -1,0 +1,42 @@
+# SHERPA run card for s-channel single top-quark production at MC@NLO
+# and N_f = 5
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+
+# scales
+# CORESCALE SingleTop:
+#   use Mandelstam \hat{s} for s-channel 2->2 core process
+CORE_SCALE: SingleTop
+
+# disable hadronic W decays
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    24 -> 2 -1: {Status: 0}
+    24 -> 4 -3: {Status: 0}
+    -24 -> -2 1: {Status: 0}
+    -24 -> -4 3: {Status: 0}
+
+# choose EW Gmu input scheme
+EW_SCHEME: 3
+
+# required for using top-quark in ME
+PARTICLE_DATA: { 6: {Width: 0} }
+
+# there is no bottom in the initial-state in s-channel production
+PARTICLE_CONTAINERS:
+  900: {Name: lj, Flavours: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+
+PROCESSES:
+- Process: 900 900 -> 6 93
+  NLO_QCD_Mode: MC@NLO
+  Order: {QCD: 0, EW: 2}
+  ME_Generator: Amegic
+  RS_ME_Generator: Comix
+  Loop_Generator: OpenLoops
+  Max_N_TChannels: 0  # require s-channel W

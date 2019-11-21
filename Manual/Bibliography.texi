@@ -1180,3 +1180,5 @@
 @mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
 @mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
 @mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa, [arXiv:1711.02568]}
+@mybibitem{Ball2014uwa,Ball14,R. D. Ball and others, Parton distributions for the LHC Run II, [arXiv:1410.8849]}
+@mybibitem{Dulat2015mca,Dulat15,S. Dulat and others, New parton distribution functions from a global analysis of quantum chromodynamics, [arXiv:1506.07443]}

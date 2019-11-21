@@ -12,7 +12,6 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -79,7 +78,7 @@ double COMIX::Single_Dipole_Term::Partonic
   m_w*=p_rsint->ColorIntegrator()->GlobalWeight();
   if (p_rsint->HelicityIntegrator()!=NULL) 
     m_w*=p_rsint->HelicityIntegrator()->Weight();
-  m_w*=sp->KFactor();
+  m_w*=sp->KFactor(2);
   return m_lastxs*=m_w;
 }
 

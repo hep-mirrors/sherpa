@@ -19,7 +19,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     *linux*:*:*)
       echo "checking for architecture...  Linux"
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
@@ -33,13 +33,18 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "(will continue in 10 seconds)"
       sleep 10
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
+  if test "x$LDFLAGS" = "x"; then
+    AX_CHECK_LINK_FLAG([-Wl,-fatal_warnings], [LDSTRICTFLAG="-fatal_warnings"], [LDSTRICTFLAG="--fatal-warnings"])
+    AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed], AM_LDFLAGS, [-Wl,$LDSTRICTFLAG])
+  fi
+
   AC_SUBST(AM_LDFLAGS)
   if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
   elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";
@@ -124,8 +129,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AMISICDIR="\${top_srcdir}/AMISIC++"
   AMISICBUILDDIR="\${top_builddir}/AMISIC++"
   AMISICLIBS="\${AMISICBUILDDIR}/Main/libAmisic.la \
-	\${AMISICBUILDDIR}/Tools/libAmisicTools.la \
-	\${AMISICBUILDDIR}/Model/libAmisicModel.la"
+        \${AMISICBUILDDIR}/Tools/libAmisicTools.la \
+        \${AMISICBUILDDIR}/Perturbative/libAmisicPerturbative.la"
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICBUILDDIR)
   AC_SUBST(AMISICLIBS)
@@ -144,6 +149,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
   ATOOLSLIBS="\${ATOOLSBUILDDIR}/Phys/libToolsPhys.la \
 	\${ATOOLSBUILDDIR}/Math/libToolsMath.la \
+	\${ATOOLSBUILDDIR}/YAML/libToolsYaml.la \
 	\${ATOOLSBUILDDIR}/Org/libToolsOrg.la"
   AC_SUBST(ATOOLSDIR)
   AC_SUBST(ATOOLSBUILDDIR)
@@ -261,13 +267,20 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   
   PDFDIR="\${top_srcdir}/PDF"
   PDFBUILDDIR="\${top_builddir}/PDF"
-  PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant"
-  PDFLIBS="\${PDFBUILDDIR}/Main/libPDF.la \
-	\${PDFBUILDDIR}/Remnant/libRemnant.la"
+  PDFINCS="-I\${PDFDIR}/Main"
+  PDFLIBS="\${PDFBUILDDIR}/Main/libPDF.la"
   AC_SUBST(PDFDIR)
   AC_SUBST(PDFBUILDDIR)
   AC_SUBST(PDFLIBS)
   
+  REMNANTSDIR="\${top_srcdir}/REMNANTS"
+  REMNANTSBUILDDIR="\${top_builddir}/REMNANTS"
+  REMNANTSLIBS="\${REMNANTSBUILDDIR}/Tools/libRemnantsTools.la \
+        \${REMNANTSBUILDDIR}/Main/libRemnants.la"
+  AC_SUBST(REMNANTSDIR)
+  AC_SUBST(REMNANTSBUILDDIR)
+  AC_SUBST(REMNANTSLIBS)
+
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
   PHASICLIBS="\${PHASICBUILDDIR}/Main/libPhasicMain.la \
@@ -453,7 +466,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
  AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.x) ROOT support]),
+    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -474,9 +487,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes)  if test -d "$HEPMC3DIR"; then
                 CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
                 CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
@@ -485,19 +498,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC3DIR="${enableval}"
                 CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
+                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root"
+              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
       esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRootTree.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRootTree.h"; then
         hepmc3writerroottree=true;
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRoot.h"; then
+      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRoot.h"; then
         hepmc3writerroot=true;
       fi;
 
@@ -547,7 +561,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       fi;
       rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
       if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetsetsow=true;
+        rivetignorebeams=true;
       fi
     ],
     [ rivet=false ]
@@ -555,8 +569,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$rivet" = "true" ; then
     AC_DEFINE([USING__RIVET], "1", [using Rivet])
   fi
-  if test "$rivetsetsow" = "true" ; then
-    AC_DEFINE([USING__RIVET__SETSOW], "1", [setSumOfWeights function available in Rivet])
+  if test "$rivetignorebeams" = "true" ; then
+    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
   fi
   if test "$rivetyoda" = "true" ; then
     AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])

@@ -4,15 +4,22 @@ GITTAG = AMISIC++/Tools
 include ../../git.make
 
 libAmisicTools_la_SOURCES     = \
-				Git_Info.C \
-				Amisic_Histogram.C \
-				Fixed_Variable_Channel.C \
-				MPI_Scale_Setter.C \
-				MPI_KFactor_Setter.C \
-				Semihard_QCD.C 
+			Git_Info.C \
+			MI_Parameters.C \
+			MPI_Scale_Setter.C \
+			MPI_KFactor_Setter.C \
+			Hadronic_XSec_Calculator.C \
+			Impact_Parameter.C \
+			Matter_Overlap.C \
+			Interaction_Probability.C \
+			Over_Estimator.C 
 
 localinc_HEADERS          = \
-			Amisic_Histogram.H \
-			Fixed_Variable_Channel.H \
+			MI_Parameters.H \
+			MPI_Scale_Setter.H \
 			MPI_KFactor_Setter.H \
-			Semihard_QCD.H 
+			Hadronic_XSec_Calculator.H \
+			Impact_Parameter.H \
+			Matter_Overlap.H \
+			Interaction_Probability.H \
+			Over_Estimator.H

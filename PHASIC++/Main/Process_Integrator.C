@@ -11,8 +11,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -21,11 +20,10 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 static int s_whbins(100);
-namespace ATOOLS { template class SP(Process_Integrator); }
 static int s_genresdir(0);
- 
+
 Process_Integrator::Process_Integrator(Process_Base *const proc):
-  p_proc(proc), p_pshandler(NULL),
+  p_proc(proc),
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
@@ -34,7 +32,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
   m_writeout(false),
-  p_whisto(NULL), p_colint(NULL), p_helint(NULL)
+  p_whisto(NULL)
 {
   m_colorscheme=cls::sum;
   m_helicityscheme=hls::sum;
@@ -44,17 +42,17 @@ bool Process_Integrator::Initialize
 (BEAM::Beam_Spectra_Handler *const beamhandler,
  PDF::ISR_Handler *const isrhandler)
 {
+  Settings& s = Settings::GetMainSettings();
   m_nin=p_proc->NIn();
   m_nout=p_proc->NOut();
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
-  m_swmode=ToType<int>(rpa->gen.Variable("SELECTION_WEIGHT_MODE"));
+  m_swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
   static bool minit(false);
   if (!minit) {
-    Default_Reader reader;
-    s_whbins = reader.Get("IB_WHBINS", 100, "weight histo bin number", METHOD);
-    s_genresdir = reader.Get("GENERATE_RESULT_DIRECTORY", 1);
+    // weight histo bin number
+    s_whbins = s["IB_WHBINS"].SetDefault(100).Get<int>();
     minit=true;
   }
   return true;
@@ -69,7 +67,6 @@ double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
-    if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
@@ -91,7 +88,7 @@ double Process_Integrator::Sigma2() const
 	       <<p_proc->Name()<<"' \\in '"<<p->Process()->Name()
 	       <<"', m_sn = "<<m_sn<<" vs. p->m_sn = "
 	       <<p->m_sn<<"."<<std::endl;
-    if (msg_LevelIsTracking()) exh->GenerateStackTrace(std::cout);
+    if (msg_LevelIsTracking()) DO_STACK_TRACE;
   }
   if (m_sn<2) return 0.0;
   return 1.0/
@@ -188,12 +185,16 @@ void Process_Integrator::InitWeightHistogram()
   }
 
   double av(dabs(TotalResult()));
-  if (!(av>0.)) {
-    msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
-	       <<"Average = "<<av<<" in "<<p_proc->Name()<<std::endl;
+  if (IsBad(av)) {
+    msg_Error()<<METHOD<<"(): Average = "<<av
+	       <<" in "<<p_proc->ResultsName()<<std::endl;
     return;
   }
   if (av<.3) av/=10.;
+  /* If av=0, then subprocess at hand does not contribute.
+     In this case, set av to arbitrary value to avoid nans in 
+     following histogram */
+  if (IsZero(av)) av=1.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
   p_whisto = new Histogram(10,av*1.e-4,av*1.e6,s_whbins);
   if (p_proc->IsGroup())
@@ -203,7 +204,7 @@ void Process_Integrator::InitWeightHistogram()
 
 bool Process_Integrator::ReadInXSecs(const std::string &path)
 {
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   size_t vn;
   std::string name, dummy;
   My_In_File from(path+"/"+fname);
@@ -239,7 +240,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 
 void Process_Integrator::ReadInHistogram(std::string dir)
 {
-  std::string filename = dir+"/"+p_proc->Name();
+  std::string filename = dir+"/"+p_proc->ResultsName();
   if (!FileExists(filename)) return;
   if (p_whisto) delete p_whisto; 
   p_whisto = new Histogram(filename);	
@@ -250,7 +251,7 @@ void Process_Integrator::ReadInHistogram(std::string dir)
 
 void Process_Integrator::WriteOutXSecs(const std::string &path)
 {
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   My_Out_File outfile(path+"/"+fname);
   if (outfile.Open()) m_writeout=1;
   outfile->precision(16);
@@ -270,7 +271,7 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
 
 void Process_Integrator::WriteOutHistogram(std::string dir)
 {
-  if (p_whisto) p_whisto->Output(dir+"/"+p_proc->Name());	
+  if (p_whisto) p_whisto->Output(dir+"/"+p_proc->ResultsName());	
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutHistogram(dir);
@@ -293,14 +294,14 @@ void Process_Integrator::SetTotal(const int mode)
   m_totalerr=totalerr;
   if (mode && m_totalxs!=0.0) {
     if (p_proc->NIn()==1) {
-      msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
+      msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs<<" GeV"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
                 <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
     else {
-      msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
+      msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs*rpa->Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
@@ -334,8 +335,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
   if (m_maxeps>0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
     if (omode)
-      msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
-		<<max/Max()<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
+      msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+                <<dabs(m_totalxs/max)<<" ) "<<std::endl;
     SetMax(max);
   }
   if (p_proc->IsGroup()) {
@@ -347,8 +349,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
     }
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto)
-    msg_Info()<<"  reduce max for "<<p_proc->Name()<<" to "
-	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" ) "<<std::endl;
+    msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+	      <<dabs(m_totalxs/m_max)<<" ) "<<std::endl;
   }
 
 }
@@ -379,22 +382,22 @@ void Process_Integrator::SetRSEnhanceFactor(const double &rsfac)
 
 void Process_Integrator::AddPoint(const double value) 
 {
+  double enhance = p_pshandler->Enhance();
 #ifdef USING__MPI
   m_msn++;
-  m_mssum    += value;
-  m_mssumsqr += sqr(value);
+  m_mssum    += value/enhance;
+  m_mssumsqr += sqr(value/enhance);
 #else
   m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += sqr(value);
+  m_ssum    += value/enhance;
+  m_ssumsqr += sqr(value/enhance);
 #endif
-  double cur=value*p_pshandler->Enhance();
-  double max=dabs(cur)/dabs(p_proc->Last())*
+  double max=dabs(value)/dabs(p_proc->Last())*
     ATOOLS::Max(p_proc->LastPlus(),-p_proc->LastMinus());
   if (max>m_max)  m_max  = max;
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
-    if(cur!=0.) p_whisto->Insert(max,1.0/p_pshandler->Enhance()); /*TODO*/
+    if(value!=0.) p_whisto->Insert(max,1.0/enhance); /*TODO*/
     else p_whisto->Insert(1.0,0.0);
   }
   p_proc->AddPoint(value);
@@ -423,7 +426,7 @@ void Process_Integrator::SetMax(const double max)
     if (!ATOOLS::IsEqual(sum,m_totalxs,1e-11)) {
       msg_Error().precision(12);
       msg_Error()<<METHOD<<"(): Summation does not agree for '"
-		 <<p_proc->Name()<<".\n  sum = "<<sum
+		 <<p_proc->ResultsName()<<".\n  sum = "<<sum
 		 <<" vs. total = "<<m_totalxs<<" ("
 		 <<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
       msg_Error().precision(6);
@@ -494,7 +497,8 @@ void Process_Integrator::ResetMax(int flag)
   }
 } 
 
-void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
+void Process_Integrator::SetPSHandler(
+  const std::shared_ptr<Phase_Space_Handler> &pshandler)
 {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())
@@ -540,11 +544,9 @@ void Process_Integrator::MPISync(const int mode)
     size_t i(0), j(0);
     std::vector<double> sv, mv;
     MPICollect(sv,mv,i);
-    if (MPI::COMM_WORLD.Get_size()) {
-      mpi->MPIComm()->Allreduce
-      	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
-      mpi->MPIComm()->Allreduce
-      	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
+    if (mpi->Size()) {
+      mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
+      mpi->Allreduce(&mv[0],mv.size(),MPI_DOUBLE,MPI_MAX);
     }
     MPIReturn(sv,mv,j);
   }
@@ -579,11 +581,8 @@ void Process_Integrator::SetISRThreshold(const double threshold)
 
 void Process_Integrator::StoreBackupResults()
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
-  if (!FileExists(m_resultpath+".db")) return;
-  if (!Copy(m_resultpath+".db",m_resultpath+".db.bak",true))
+  if (!FileExists(m_resultpath+".zip")) return;
+  if (!Copy(m_resultpath+".zip",m_resultpath+".zip~",true))
     msg_Error()<<METHOD<<"(): Copy error. "
 	       <<strerror(errno)<<"."<<std::endl;
 }
@@ -593,23 +592,19 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_msn) MPISync();
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
-  SetTotal(0); 
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
-  My_In_File::ExecDB(m_resultpath+"/","begin");
-  std::string fname(p_proc->Name());
+  SetTotal(0);
+  std::string fname(p_proc->ResultsName());
   WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
-  My_In_File::ExecDB(m_resultpath+"/","commit");
+  My_In_File::CloseDB(m_resultpath+"/",0);
   StoreBackupResults();
 }
 
 void Process_Integrator::ReadResults()
 {
   if (m_resultpath.length()==0) return;
-  std::string fname(p_proc->Name());
+  std::string fname(p_proc->ResultsName());
   if (!ReadInXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);

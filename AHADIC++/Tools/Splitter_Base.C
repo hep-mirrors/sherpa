@@ -10,8 +10,22 @@ using namespace std;
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_attempts(100)
+  m_ktfac(1.),
+  m_attempts(100), m_analyse(false)
 {}
+
+Splitter_Base::~Splitter_Base() {
+  Histogram * histo;
+  string name;
+  for (map<string,Histogram *>::iterator hit=m_histograms.begin();
+       hit!=m_histograms.end();hit++) {
+    histo = hit->second;
+    name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
+    histo->Output(name);
+    delete histo;
+  }
+  m_histograms.clear();
+}
 
 void Splitter_Base::Init(const bool & isgluon) {
   p_singletransitions = hadpars->GetSingleTransitions();
@@ -116,23 +130,29 @@ void Splitter_Base::PopFlavours() {
 
 void Splitter_Base::DetermineMinimalMasses() {
   if (!m_flavs1.first.IsGluon() && !m_flavs1.second.IsGluon()) {
-    m_minQ_1 = Min(Max(0.,p_singletransitions->GetLightestMass(m_flavs1)),
-		   p_doubletransitions->GetLightestMass(m_flavs1));
+    m_minQ_1 = p_doubletransitions->GetLightestMass(m_flavs1);
+    m_maxQ_1 = p_doubletransitions->GetHeaviestMass(m_flavs1);
+    if (!(m_flavs1.first.IsDiQuark() && m_flavs1.second.IsDiQuark())) 
+      m_minQ_1 = Min(m_minQ_1,
+		     Max(0.,p_singletransitions->GetLightestMass(m_flavs1)));
   }
   else {
     m_minQ_1 = (p_constituents->Mass(m_flavs1.first)+
     		p_constituents->Mass(m_flavs1.second));
   }
   if (!m_flavs2.first.IsGluon() && !m_flavs2.second.IsGluon()) {
-    m_minQ_2 = Min(Max(0.,p_singletransitions->GetLightestMass(m_flavs2)),
-		   p_doubletransitions->GetLightestMass(m_flavs2));
+    m_minQ_2 = p_doubletransitions->GetLightestMass(m_flavs2);
+    m_maxQ_2 = p_doubletransitions->GetHeaviestMass(m_flavs2);
+    if (!(m_flavs2.first.IsDiQuark() && m_flavs2.second.IsDiQuark())) 
+      m_minQ_2 = Min(m_minQ_2,
+		     Max(0.,p_singletransitions->GetLightestMass(m_flavs2)));
   }
   else {
     m_minQ_2 = (p_constituents->Mass(m_flavs2.first)+
     		p_constituents->Mass(m_flavs2.second));
   }
-  m_minQ_12 = sqr(m_minQ_1);
-  m_minQ_22 = sqr(m_minQ_2);
+  m_minQ_12 = sqr(m_minQ_1); m_maxQ_12 = sqr(m_minQ_1);
+  m_minQ_22 = sqr(m_minQ_2); m_maxQ_22 = sqr(m_maxQ_2);
 }
 
 bool Splitter_Base::MakeKinematics() {
@@ -142,13 +162,16 @@ bool Splitter_Base::MakeKinematics() {
 
 void Splitter_Base::MakeTransverseMomentum() {
   m_ktmax        = (m_Emax-2.*m_popped_mass)/2.;
+  // have to make this a parameter for the beam breakup?
+  if (p_part1->IsBeam() || p_part2->IsBeam()) m_ktmax = Min(2.0,m_ktmax);
   if (m_ktmax<0.) {
     msg_Error()<<METHOD<<" yields error ktmax = "<<m_ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
 	       <<" min = "<<m_minmass<<".\n";
     abort();
   }
-  m_kt    = m_ktselector(m_ktmax,sqr(m_Q-m_mass1-m_mass2));
+  bool islead = p_part1->IsLeading() || p_part2->IsLeading();
+  m_kt    = m_ktselector(m_ktmax,islead || p_part2->Flavour().IsGluon()?1.:m_ktfac);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);

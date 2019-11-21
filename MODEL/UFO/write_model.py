@@ -84,6 +84,13 @@ def write_model(model, lorentzes, model_name, model_file_name):
         calls        += v_collection.call_string()
         i            += 1
 
+    # fill the order key getter
+    order_name_map = ""
+    i = 0
+    for order_name in hierarchy:
+        order_name_map +='\n      if (key == "{}") return {};'.format(order_name, i)
+        i += 1
+
     # fill the lorentz name map
     lorentz_map = ""
     for lor in lorentzes:
@@ -94,4 +101,5 @@ def write_model(model, lorentzes, model_name, model_file_name):
     # write out model
     with open(model_file_name, "w") as outfile:
         outfile.write(model_template.substitute(model_name=model_name, particle_init=part_init, param_init=para_init,
-                                                declarations = declarations, calls = calls, fill_lorentz_map=lorentz_map))
+                                                declarations=declarations, calls=calls,
+                                                index_of_order_key=order_name_map, fill_lorentz_map=lorentz_map))

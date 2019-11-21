@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include <limits>
 
 using namespace ATOOLS;
 using namespace std;
@@ -31,10 +32,13 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
       return true; 
     }
     else {
-      msg_Error()<<"==================================================="<<std::endl
-		 <<"Warning in "<<METHOD<<" :"<<std::endl
-		 <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
-		 <<" > "<<energy<<"."<<std::endl;
+      if (m_fails==0) {
+	msg_Error()<<"==================================================="<<std::endl
+		   <<"Warning in "<<METHOD<<" :"<<std::endl
+		   <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
+		   <<" > "<<energy<<"."<<std::endl;
+      }
+      m_fails++;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
       return false; 
     }
@@ -74,14 +78,15 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     }
     delete [] oldens2;
     delete [] ens;
-    msg_Error()<<"==================================================="<<std::endl
-	       <<"Warning in "<<METHOD<<" :                             "<<std::endl
-	       <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)
-	       <<" masses ("<<xmt<<"); return false"<<std::endl
-	       <<"   Masses & momenta:"<<std::endl;
-    for (int i=n0;i<n;i++) msg_Error()<<"  "<<masses[i]<<" : "<<momenta[i]<<std::endl;
-    return false;
-    Abort();
+    if (m_fails==0) {
+      msg_Error()<<"==================================================="<<std::endl
+		 <<"Warning in "<<METHOD<<" :                             "<<std::endl
+		 <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)
+		 <<" masses ("<<xmt<<"); return false"<<std::endl
+		 <<"   Masses & momenta:"<<std::endl;
+      for (int i=n0;i<n;i++) msg_Error()<<"  "<<masses[i]<<" : "<<momenta[i]<<std::endl;
+    }
+    m_fails++;
   }
   return false;
 }
@@ -91,9 +96,7 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
 {
   int n=0;
   if(momenta.size()==masses.size()) n = momenta.size();
-  else {
-    return false;
-  }
+  else return false;
   if ((n-n0)==2) {
     Vec4D cms         = momenta[n0]+momenta[n-1];
     Poincare boost(cms);
@@ -113,10 +116,13 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
       return true;
     }
     else {
-      msg_Error()<<"==================================================="<<std::endl
-		 <<"Warning in "<<METHOD<<" :"<<std::endl
-		 <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
-		 <<" > "<<energy<<"."<<std::endl;
+      if (m_fails==0) {
+	msg_Error()<<"==================================================="<<std::endl
+		   <<"Warning in "<<METHOD<<" :"<<std::endl
+		   <<"   Too little energy: "<<masses[n0]<<" + "<<masses[n-1]
+		   <<" > "<<energy<<"."<<std::endl;
+      }
+      m_fails++;
       for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
       return false;
     }
@@ -156,14 +162,15 @@ bool Momenta_Stretcher::MassThem(const int n0,vector<Vec4D>& momenta,vector<doub
     }
     delete [] oldens2;
     delete [] ens;
-    msg_Error()<<"==================================================="<<std::endl
-	       <<"Warning in "<<METHOD<<" : "<<endl
-	       <<"   Not enough energy ("<<cms<<") for the "
-	       <<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
-	       <<"   Masses & momenta:"<<endl;
-    for (int i=n0;i<n;i++) msg_Error()<<masses[i]<<" : "<<momenta[i]<<std::endl;
-    return false;
-    Abort();
+    if (m_fails==0) {
+      msg_Error()<<"==================================================="<<std::endl
+		 <<"Warning in "<<METHOD<<"(for n = "<<n<<"): "<<endl
+		 <<"   Not enough energy ("<<cms<<") for the "
+		 <<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
+		 <<"   Masses & momenta:"<<endl;
+      for (int i=n0;i<n;i++) msg_Error()<<masses[i]<<" : "<<momenta[i]<<std::endl;
+    }
+    m_fails++;
   }
   return false;
 }
@@ -237,6 +244,8 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
       cms       += momenta[i];
     }
     double ET  = sqrt(cms.Abs2());
+    if (std::abs(ET)<std::numeric_limits<double>::epsilon())   return false;
+    if (1.-sqr(xmt/ET)<std::numeric_limits<double>::epsilon()) return false;
     double x   = 1./sqrt(1.-sqr(xmt/ET));
     double acc = dabs(rel)*ET;
     
@@ -273,19 +282,22 @@ bool Momenta_Stretcher::StretchBlob(Blob* blob)
     masses.push_back(outparts[i]->FinalMass());
     momenta.push_back(outparts[i]->Momentum());
     total+=outparts[i]->Momentum();
-// =======
-//   //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
-//   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
-//     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
-//     momenta.push_back( (*pit)->Momentum() );
-// //     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
-// >>>>>>> .merge-right.r13247
+    // =======
+    //   //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
+    //   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
+    //     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
+    //     momenta.push_back( (*pit)->Momentum() );
+    // //     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
+    // >>>>>>> .merge-right.r13247
   }
   Poincare cms(total);
   for (size_t i=0; i<momenta.size(); ++i) cms.Boost(momenta[i]);
   if(!ZeroThem(0,momenta)) return false;
   if(!MassThem(0,momenta,masses)) {
-    msg_Error()<<"Error in "<<METHOD<<"(Blob *)."<<std::endl;
+    if (m_fails==0) {
+      msg_Error()<<"Error in "<<METHOD<<"(Blob *)."<<std::endl;
+    }
+    m_fails++;
     return false;
   }
   size_t j=0;
@@ -315,7 +327,10 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts, std::ve
   }
   if(!ZeroThem(0,moms)) return false;
   if(! MassThem(0,moms,masses)) {
-    msg_Error()<<"Error in "<<METHOD<<"(const Particle_Vector&, moms)."<<std::endl;
+    if (m_fails==0) {
+      msg_Error()<<"Error in "<<METHOD<<"(const Particle_Vector&, moms)."<<std::endl;
+    }
+    m_fails++;
     return false;
   }
   boost.Invert();
@@ -343,7 +358,10 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts,
   }
   if(!ZeroThem(0,moms)) return false;
   if(!MassThem(0,moms,masses)) {
-    msg_Error()<<"Warning in "<<METHOD<<"(const Particle_Vector&, masses)."<<std::endl;
+    if (m_fails==0) {
+      msg_Error()<<"Warning in "<<METHOD<<"(const Particle_Vector&, masses)."<<std::endl;
+    }
+    m_fails++;
     return false;
   }
   for(size_t i=0; i<moms.size(); i++) {

@@ -40,11 +40,18 @@ void Gluon_Splitter::CalculateLimits() {
 bool Gluon_Splitter::CalculateXY() {
   m_z1 = 1.-(m_popped_mass2+m_kt2)/(m_z2*m_Q2);
   double M2  = m_z1*(1.-m_z2)*m_Q2;
-  double arg = sqr(M2-m_kt2-m_m12)-4*m_m12*m_kt2;
-  if (arg<0.) return false;
-  m_x = ((M2-m_kt2+m_m12)+sqrt(arg))/(2.*M2);
-  m_y = m_kt2/M2/(1.-m_x);  
-  return (m_x<=1. && m_x>=0. && m_y<=1. && m_y>=0.);
+  if (M2/m_m12 > 1e6 && M2/m_kt2 > 1e6) {
+    // Use Taylor expansion to first order in m12/M2 and kt2/M2 to avoid
+    // numerical instability for x, y -> 1.0
+    m_x = 1.0 - m_kt2/M2;
+    m_y = 1.0;
+  } else {
+    double arg = sqr(M2-m_kt2-m_m12)-4*m_m12*m_kt2;
+    if (arg<0.) return false;
+    m_x = ((M2-m_kt2+m_m12)+sqrt(arg))/(2.*M2);
+    m_y = m_kt2/M2/(1.-m_x);
+  }
+  return (!(m_x>1.) && !(m_x<0.) && !(m_y>1.) && !(m_y<0.));
 }
 
 double Gluon_Splitter::
@@ -157,7 +164,9 @@ Cluster * Gluon_Splitter::MakeCluster() {
   // Update momentum of original (anti-)(di-) quark after gluon splitting
   p_part1->SetMomentum(newmom11);
   // Make new particle
-  Proto_Particle * newp12 = new Proto_Particle(m_newflav1,newmom12,'l');
+  Proto_Particle * newp12 = new Proto_Particle(m_newflav1,newmom12,false,
+					       p_part1->IsBeam() || p_part2->IsBeam());
   // Take care of sequence in cluster = triplet + anti-triplet
-  return (m_barrd?new Cluster(newp12,p_part1):new Cluster(p_part1,newp12));
+  Cluster * cluster(m_barrd?new Cluster(newp12,p_part1):new Cluster(p_part1,newp12));
+  return cluster;
 }

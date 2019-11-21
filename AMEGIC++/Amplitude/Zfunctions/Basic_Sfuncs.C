@@ -404,9 +404,9 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     momcount++;
     Momlist.push_back(Mom);
   }
-  
+
   if(Mass==0.0){ 
-    if (GetPolNumber(momindex,mt::p_si,0,1)==-1 && rpa->gen.CutScheme()!=1 ) {
+    if (GetPolNumber(momindex,mt::p_si,0,1)==-1) {
       Mom.arg[0] = momcount;
       Mom.type=mt::p_si;
       momcount++;

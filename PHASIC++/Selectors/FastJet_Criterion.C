@@ -40,7 +40,6 @@ namespace PHASIC {
       jtag=jtag.substr(0,pos);
       Data_Reader read(" ",",","#","=");
       read.AddIgnore(":");
-      read.SetAddCommandLine(false);
       read.SetString(jtag);
       m_y=read.StringValue<double>("Y",100.0);
       double R(read.StringValue<double>("R",0.4));

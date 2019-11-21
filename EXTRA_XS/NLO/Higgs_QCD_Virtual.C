@@ -1,9 +1,9 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define CF 1.33333333333333333
 #define CA 3.
@@ -73,8 +73,8 @@ operator()(const Process_Info &pi) const
         for (size_t i=2; i<fl.size(); ++i) {
           if (fl[i].Strong()) return NULL;
         }
-        Default_Reader reader;
-        int con = reader.Get<int>("HNNLO_KF_MODE", 0);
+        Settings& s = Settings::GetMainSettings();
+        int con = s["HNNLO_KF_MODE"].Get<int>();
         return new Higgs_QCD_Virtual(pi, fl, con);
       }
     }

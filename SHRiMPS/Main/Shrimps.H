@@ -9,7 +9,6 @@
 //#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include <list>
@@ -73,9 +72,8 @@ namespace SHRIMPS {
     void TestCrossSections(const std::string & dirname);
     void TestEventGeneration(const std::string & dirname);
   public:
-    Shrimps(ATOOLS::Data_Reader * dr,
-	    BEAM::Beam_Spectra_Handler *const beam,
-	    PDF::ISR_Handler *const isr);
+    Shrimps(BEAM::Beam_Spectra_Handler *const,
+            PDF::ISR_Handler *const);
     ~Shrimps();
 
     int  GenerateEvent(ATOOLS::Blob_List * blobs);

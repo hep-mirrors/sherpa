@@ -6,6 +6,7 @@
 //#include "SHRiMPS/Cross_Sections/Sigma_DD.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 
 using namespace SHRIMPS;

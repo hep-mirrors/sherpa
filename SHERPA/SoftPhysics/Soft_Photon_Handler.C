@@ -1,8 +1,8 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
+
+#include "ATOOLS/Math/Tensor.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Math/Tensor.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
@@ -17,17 +17,12 @@ using namespace PHASIC;
 using namespace std;
 
 
-Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile,
-                                         Matrix_Element_Handler * meh) :
+Soft_Photon_Handler::Soft_Photon_Handler(Matrix_Element_Handler * meh) :
   m_photonsadded(false), m_name(""),
   p_yfs(NULL), p_clusterer(NULL), p_mehandler(meh)
 {
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(datfile);
-
-  p_yfs       = new PHOTONS::Photons(&reader);
-  p_clusterer = new Resonance_Finder(&reader,meh);
+  p_yfs       = new PHOTONS::Photons();
+  p_clusterer = new Resonance_Finder(meh);
   m_name      = p_yfs->Name();
 }
 
@@ -76,7 +71,12 @@ bool Soft_Photon_Handler::AddRadiation(Particle_Vector& leps, Blob_Vector& blobs
 void Soft_Photon_Handler::BoostDecayBlob(Blob * blob)
 {
   DEBUG_FUNC("");
-  //msg_Out()<<*blob<<std::endl;
+  // check whether p_original exist, only then can we boost
+  if (!((*blob)["p_original"])) {
+    msg_Debugging()<<"no boosting information found, do not boost then"
+                   <<std::endl;
+    return;
+  }
   const Vec4D& P((*blob)["p_original"]->Get<Vec4D>());
   const Vec4D& Pt(blob->InParticle(0)->Momentum());
   const Vec4D e(P-Pt);

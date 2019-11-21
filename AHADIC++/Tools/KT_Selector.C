@@ -18,10 +18,10 @@ void KT_Selector::Init(const bool & isgluon) {
 
 double KT_Selector::operator()(const double & ktmax,const double & M2) {
   double kttest(-1.);
-  m_sig2 = m_sigma2;
+  m_sig2 = M2*m_sigma2;
   do {
     kttest = ktmax*ran->Get();
-  } while (WeightFunction(kttest)<ran->Get());
+  } while (ran->Get() > WeightFunction(kttest)); 
   return kttest;
 }
 

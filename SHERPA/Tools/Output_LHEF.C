@@ -3,10 +3,11 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_File.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/My_MPI.H"
 
@@ -19,23 +20,40 @@ using namespace ATOOLS;
 using namespace std;
 
 Output_LHEF::Output_LHEF(const Output_Arguments &args):
-  Output_Base("LHEF"), m_xs(1.0), m_xserr(1.0), m_max(1.0)
+  Output_Base{ "LHEF" },
+  m_xs(1.0), m_xserr(1.0),
+  m_max(1.0)
 {
+  Settings& s = Settings::GetMainSettings();
+  RegisterDefaults();
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".lhe";
-  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
-  m_bntp=args.p_reader->GetValue<int>("LHEF_BNTP",0);
+  const int precision = s["EVENT_OUTPUT_PRECISION"].Get<int>();
+  m_bntp = s["LHEF_BNTP"].Get<int>();
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1)
+  if (mpi->Size()>1)
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
 #endif
   m_outstream.open((m_basename+m_ext).c_str());
   if (!m_outstream.good())
     THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
   m_outstream.precision(precision);
+}
+
+void Output_LHEF::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+
+  s["LHEF_BNTP"].SetDefault(0);
+  s["LHEF_IDWTUP"].SetDefault(0);
+
+  int PDFSUP1_default{ rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1 };
+  int PDFSUP2_default{ rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1 };
+  s["LHEF_PDF_NUMBER_1"].SetDefault(PDFSUP1_default);
+  s["LHEF_PDF_NUMBER_2"].SetDefault(PDFSUP2_default);
 }
 
 Output_LHEF::~Output_LHEF()
@@ -54,36 +72,28 @@ void Output_LHEF::ChangeFile()
 
 void Output_LHEF::Header()
 {
- 
-  std::string path(rpa->gen.Variable("SHERPA_DAT_PATH")+"/");
-  std::string file(rpa->gen.Variable("RUN_DATA_FILE"));
-  
-  size_t sep = file.find("|");
-  if (sep!=std::string::npos) {
-    file.erase(sep);
-  }
-    
+  Settings& s = Settings::GetMainSettings();
+
+  const auto path = s.GetPath();
+  const auto files = s.GetConfigFiles();
+
   m_outstream<<"<LesHouchesEvents version=\"1.0\">"<<std::endl;
   m_outstream<<"<header>"<<std::endl;
   m_outstream<<"<!-- "<<std::endl; 
   m_outstream<<"# created by SHERPA "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
              <<endl;
-  
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  
-  if (reader.OpenInFile()) {
-    m_outstream<<"# Run data extracted from : "<<file<<std::endl; 
-    m_outstream<<"--> "<<std::endl; 
-    m_outstream<<"<SHRunCard> "<<std::endl; 
-    My_In_File oldfile(path,file);
-    oldfile.Open();
-    m_outstream<<oldfile->rdbuf();
-    m_outstream<<"</SHRunCard> "<<std::endl; 
+  for (const auto& file : files) {
+    My_In_File infile{ path, file };
+    if (infile.Open()) {
+      m_outstream<<"# Run data extracted from : "<<file<<std::endl;
+      m_outstream<<"--> "<<std::endl;
+      m_outstream<<"<SHRunCard> "<<std::endl;
+      m_outstream<<infile->rdbuf();
+      m_outstream<<"</SHRunCard> "<<std::endl;
+    }
   }
   m_outstream<<"</header>"<<std::endl;
-  
+
   m_outstream<<"<init>"<<std::endl;
   //run info to be dumped here
   Flavour Beam1 = rpa->gen.Beam1();
@@ -92,14 +102,14 @@ void Output_LHEF::Header()
   int IDBMUP2 = (long int)Beam2;
   double EBMUP1 = rpa->gen.PBeam(0)[0];
   double EBMUP2 = rpa->gen.PBeam(1)[0];
-  
-  int IDWTUP(reader.Get<int>("LHEF_IDWTUP",0));
+
+  int IDWTUP{ s["LHEF_IDWTUP"].Get<int>() };
   if (IDWTUP==0) IDWTUP=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3; 
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
-  int PDFSUP1 = reader.Get<int>("LHEF_PDF_NUMBER_1",rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1);
-  int PDFSUP2 = reader.Get<int>("LHEF_PDF_NUMBER_2",rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
+  const int PDFSUP1{ s["LHEF_PDF_NUMBER_1"].Get<int>() };
+  const int PDFSUP2{ s["LHEF_PDF_NUMBER_2"].Get<int>() };
 
   m_outstream<<std::setprecision(10);
   m_outstream<<std::setw(6)<<IDBMUP1<<" "

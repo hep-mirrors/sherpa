@@ -39,7 +39,6 @@ namespace PHASIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 
 using namespace PHASIC;
@@ -148,33 +147,45 @@ DECLARE_ND_GETTER(Fastjet_Veto,"FastjetVeto",Selector_Base,Selector_Key,true);
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Veto>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<5) THROW(critical_error,"Invalid syntax");
- 
-  double f(.75);
-  if (key.front().size()>=6) f=ToType<double>(key[0][5]);
-  double eta(100.), y(100.);
-  if (key.front().size()>=7) eta=ToType<double>(key[0][6]);
-  if (key.front().size()>=8) y=ToType<double>(key[0][7]);
-  int nb(-1), nb2(-1);
-  if (key.front().size()>=9) nb=ToType<int>(key[0][8]);
-  if (key.front().size()>=10) nb2=ToType<int>(key[0][9]);
+  auto s = key.m_settings;
+  const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
+  const auto n = s["N"].SetDefault(0).Get<size_t>();
+  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
+  const auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
+  const auto dr = s["DR"].SetDefault(0.4).Get<double>();
+  const auto f = s["f"].SetDefault(0.75).Get<double>();
+  const auto eta = s["EtaMax"].SetDefault(100.0).Get<double>();
+  const auto y = s["YMax"].SetDefault(100.0).Get<double>();
+  const auto nb = s["Nb"].SetDefault(-1).Get<int>();
+  const auto nb2 = s["Nb2"].SetDefault(-1).Get<int>();
 #ifndef USING__FASTJET__3
   if (nb>0 || nb2>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
 #endif
-
-  Fastjet_Veto *jf(new Fastjet_Veto(key.p_proc,key[0][0],
-                                    ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
-                                    ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-                                    ToType<double>(key[0][4]),f,eta,y,
-                                    ToType<int>(key[0][1]),nb,nb2));
+  Fastjet_Veto *jf(new Fastjet_Veto(key.p_proc,algo,
+                                    ptmin,
+                                    etmin,
+                                    dr,f,eta,y,
+                                    n,nb,nb2));
   return jf;
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Veto>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"FastjetVeto algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [nb=-1 [nb2=-1]]]]\n"
-     <<"            algorithm: kt,antikt,cambridge,siscone";
+  str<<"{\n"
+     <<width<<"  Type: FastjetVeto,\n"
+     <<width<<"  Algorithm: kt|antikt|cambridge|siscone,\n"
+     <<width<<"  N: number of jets,\n"
+     <<width<<"  # optional settings:\n"
+     <<width<<"  PTMin: minimum jet pT,\n"
+     <<width<<"  ETMin: minimum jet eta,\n"
+     <<width<<"  DR: jet distance parameter,\n"
+     <<width<<"  f: Siscone f parameter,\n"
+     <<width<<"  EtaMax: maximum jet eta,\n"
+     <<width<<"  YMax: maximum jet rapidity,\n"
+     <<width<<"  Nb: number of jets with b quarks,\n"
+     <<width<<"  Nb2: number of jets with non-vanishing b content\n"
+     <<width<<"  }";
 }
 
 #endif

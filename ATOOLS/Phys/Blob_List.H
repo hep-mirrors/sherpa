@@ -17,6 +17,8 @@ namespace ATOOLS {
 
       Blob_List *p_list;
 
+      void RegisterDefaults() const;
+
     public:
 
       // destructor

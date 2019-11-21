@@ -3,7 +3,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;

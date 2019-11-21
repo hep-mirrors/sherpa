@@ -1,80 +1,61 @@
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 
 Beam_Remnant_Handler::
-Beam_Remnant_Handler(const std::string path,const std::string file,
-		     BEAM::Beam_Spectra_Handler *const beam,
-		     PDF::ISR_Handler *const isr,
+Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
+		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
-  p_parametrised(NULL), 
-  p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
-  p_beam(beam), m_fill(1)
+  p_remnants(remnants), p_beam(beam), m_fill(true)
 {
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  m_fill  = reader.Get("BEAM_REMNANTS", 1, "remnants", METHOD);
-  m_vmode = reader.Get("BRH_VMODE", 0, "check mode", METHOD);
-  if (p_shrimps==NULL) {
-    p_parametrised = new Parametrised_Beam_Remnants(path,file,isr,p_beam);
-    p_parametrised->SetScale(4.0);
-  }
+  Settings& s = Settings::GetMainSettings();
+  m_fill = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
+  m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
+  p_remnants->SetScale2(sqr(4.0));
+  m_name = std::string("On");
 }
 
-Beam_Remnant_Handler::~Beam_Remnant_Handler() 
-{  
-  if (p_parametrised) delete p_parametrised;
+Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
+
+
+Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+{
+  if (!m_fill) return TreatNoFill(bloblist);
+  for (Blob_List::iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==btp::Beam) return Return_Value::Nothing;
+  }
+  Return_Value::code fbc = p_remnants->MakeBeamBlobs(bloblist);
+  if (fbc==Return_Value::New_Event && m_vmode)
+    THROW(fatal_error,"Four Momentum not conserved.");
+  if (fbc!=Return_Value::Success) return fbc;
+  fbc = FillBunchBlobs(bloblist);
+  return fbc;
 }
 
 
 Return_Value::code 
-Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 {
-  if (!m_fill) {
-    bool set(false);
-    for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-      if ((*bit)->Has(blob_status::needs_beams)) {
-	(*bit)->UnsetStatus(blob_status::needs_beams);
-	(*bit)->UnsetStatus(blob_status::internal_flag);
-	set=true;
-      }
-    }
-    if (!set) return Return_Value::Nothing;
-    if (bloblist->FourMomentumConservation())
-      return Return_Value::Success;
-    msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
-    if (m_vmode) THROW(fatal_error,"Four Momentum not conserved.");
-    return Return_Value::New_Event;
-  }
+  bool set(false);
   for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Beam) {
-      return Return_Value::Nothing;
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Has(blob_status::needs_beams)) {
+      (*bit)->UnsetStatus(blob_status::needs_beams);
+      (*bit)->UnsetStatus(blob_status::internal_flag);
+      set=true;
     }
   }
-  for (short unsigned int i=0;i<2;++i) {
-    p_beamblobs[i] = InitBeamBlob(i);
-    if (p_shrimps)      p_shrimps->SetBeamBlob(p_beamblobs[i],i);
-    if (p_parametrised) p_parametrised->SetBeamBlob(p_beamblobs[i],i);
-  }
-  Return_Value::code fbc(Return_Value::Error);
-  if (p_shrimps) {
-    fbc =  p_shrimps->FillBeamBlobs(bloblist);
-  }
-  else if (p_parametrised) {
-    fbc = p_parametrised->FillBeamBlobs(bloblist);
-    if (fbc==Return_Value::New_Event && m_vmode)
-      THROW(fatal_error,"Four Momentum not conserved.");
-  } else {
-    THROW(fatal_error, "No physics model initialised.");
-  }
-  if (fbc!=Return_Value::Success) return fbc;
-  fbc = FillBunchBlobs(bloblist);
-  return fbc;
+  if (!set) return Return_Value::Nothing;
+  if (bloblist->FourMomentumConservation()) return Return_Value::Success;
+  msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
+  if (m_vmode) THROW(fatal_error,"Four Momentum not conserved.");
+  return Return_Value::New_Event;
 }
 
 Return_Value::code Beam_Remnant_Handler::
@@ -96,9 +77,8 @@ FillBunchBlobs(Blob_List *const  bloblist,
       bunch = FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0));
       bloblist->push_front(bunch);
       if (m_beam>2) {
-	msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
-		   <<"   Too many bunch blobs required, "
-		   <<"return 'Error' and hope for the best."<<std::endl;
+	msg_Error()<<"ERROR in "<<METHOD<<": Too many bunch blobs required, "
+		   <<"return 'Error' and hope for the best.\n";
 	return Return_Value::Error;
       }
       flag=true;
@@ -141,30 +121,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
   return blob;
 }
 
-
-ATOOLS::Blob * Beam_Remnant_Handler::InitBeamBlob(const int beam) 
-{
-  ATOOLS::Blob * blob = new Blob();
-  blob->SetType(btp::Beam);
-  blob->SetId();
-  blob->SetBeam(beam);
-  blob->SetStatus(blob_status::needs_beams |
-		  blob_status::needs_softUE |
-		  blob_status::needs_hadronization);
-  Particle * beampart = new Particle(-1,p_beam->GetBeam(beam)->Bunch(),
-				     p_beam->GetBeam(beam)->OutMomentum());
-  beampart->SetNumber(0);
-  beampart->SetBeam(beam);
-  beampart->SetStatus(part_status::decayed);
-  beampart->SetFinalMass();
-  blob->AddToInParticles(beampart);
-  return blob;
-}
-
 void Beam_Remnant_Handler::CleanUp(const size_t & mode)
 {
-  if (p_shrimps) {
-    p_shrimps->CleanUp(mode);
-  }
-  else p_parametrised->CleanUp();
+  p_remnants->Reset();
 }

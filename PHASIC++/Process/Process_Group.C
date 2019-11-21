@@ -6,13 +6,11 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
@@ -57,6 +55,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
 double Process_Group::Differential(const Vec4D_Vector &p)
 {
   m_lastb=m_last=0.0;
+  p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
     m_last+=m_procs[i]->Differential(p);
     m_lastb+=m_procs[i]->LastB();
@@ -164,7 +163,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
 				       const bool create)
 {
   p_int->Reset();
-  SP(Phase_Space_Handler) psh(p_int->PSHandler());
+  auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
       if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
@@ -191,7 +190,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     namestring+=")";
   }
   msg_Info()<<METHOD<<"(): Calculate xs for '"
-            <<m_name<<"' "<<namestring<<std::endl;
+            <<m_resname<<"' "<<namestring<<std::endl;
   double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
@@ -302,9 +301,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
     if (!ConstructProcess(pi)) return false;
-#ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_rank()==0) {
-#endif
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name);
     if (pi.m_megenerator.length()) mapfile+="__"+pi.m_megenerator;
@@ -324,9 +320,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
     for (size_t i(0);i<fl.size();++i) *out<<(long int)fl[i]<<" ";
     *out<<"0\n";
     out.Close();
-#ifdef USING__MPI
-    }
-#endif
     return true;
   }
   bool one(false);
@@ -344,6 +337,25 @@ bool Process_Group::ConstructProcesses()
 		      +"/Process/Sherpa/"+m_name);
   if (cpi.m_megenerator.length()) mapfile+="__"+cpi.m_megenerator;
   mapfile+=".map";
+  size_t bpos(m_pinfo.m_special.find("Group("));
+  if (bpos!=std::string::npos) {
+    m_resname+="__Group(";
+    size_t epos(m_pinfo.m_special.find(")",bpos)), npos(epos);
+    for (bpos+=6;bpos<epos;bpos=npos+1) {
+      npos=std::min(epos,m_pinfo.m_special.find(',',bpos+1));
+      std::string cur(m_pinfo.m_special.substr(bpos,npos-bpos));
+      m_resname+=(m_blocks.size()?",":"")+cur;
+      size_t dpos(cur.find('-'));
+      if (dpos==std::string::npos) m_blocks.push_back(ToType<int>(cur));
+      else {
+	int start(ToType<int>(cur.substr(0,dpos)));
+	int end(ToType<int>(cur.substr(dpos+1)));
+	for (size_t i(start);i<=end;++i) m_blocks.push_back(i);
+      }
+    }
+    m_resname+=")";
+    msg_Debugging()<<"Group "<<m_blocks<<"\n";
+  }
   msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
   if (FileExists(mapfile)) {
     msg_Debugging()<<"found"<<std::endl;
@@ -356,18 +368,16 @@ bool Process_Group::ConstructProcesses()
         SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(std::abs(cfl),cfl<0),cnt);
         *map>>cfl;
       }
-      if (cnt!=m_nin+m_nout || cfl || !ConstructProcess(cpi))
-	THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      int construct(ConstructProcess(cpi));
+      if (m_blocks.empty()) {
+	if (cnt!=m_nin+m_nout || cfl || !construct)
+	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      }
       *map>>cfl;
     }
     return m_procs.size();
   }
   msg_Debugging()<<"not found"<<std::endl;
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
   if (!res) {
     My_Out_File out(mapfile);
@@ -375,11 +385,6 @@ bool Process_Group::ConstructProcesses()
     *out<<"\n";
     out.Close();
   }
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
   return res;
 }
 

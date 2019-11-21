@@ -8,7 +8,7 @@
 
 namespace ATOOLS {
   class Blob;
-  class Data_Reader;
+  class Scoped_Settings;
   class Flavour;
   class Particle;
   typedef std::vector<Blob *> Blob_Vector;
@@ -68,9 +68,7 @@ namespace SHERPA {
     ATOOLS::Vec4D   MomentumSum(const ATOOLS::Particle_Vector&);
 
     public:
-    Resonance_Finder(ATOOLS::Data_Reader* reader,
-                     Matrix_Element_Handler * meh);
-    Resonance_Finder();
+    Resonance_Finder(Matrix_Element_Handler * meh);
     ~Resonance_Finder();
 
     void BuildResonantBlobs(ATOOLS::Particle_Vector&,

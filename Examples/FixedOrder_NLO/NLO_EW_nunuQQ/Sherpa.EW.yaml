@@ -1,0 +1,32 @@
+EVENTS: 500k
+MI_HANDLER: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: [Amegic, OpenLoops]
+#LOOP_ME_INIT: 1
+BEAMS: [12, -12]
+BEAM_ENERGIES: 100.0
+PDF_LIBRARY: None
+TAGS: {
+  SCF: 1.0
+  }
+SCALES: VAR{$(SCF)*sqr(91.2)}
+PARTICLE_DATA: {
+  5: {Massive: 1}
+  }
+PROCESSES:
+  - {
+    Process: 12 -12 -> 5 -5,
+    NLO_EW_Mode: Fixed_Order,
+    NLO_EW_Part: IRS,
+    Loop_Generator: OpenLoops,
+    Integration_Error: 0.01,
+    Order: {QCD: 0},
+    Print_Graphs: Graphs
+    }
+RIVET: {
+  USE_HEPMC_SHORT: 1,
+  IGNOREBEAMS: 1
+  }

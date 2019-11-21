@@ -1,4 +1,8 @@
+GITTAG = AddOns/Analysis/Triggers
+include ../../../git.make
+
 ANATRIGGER_SOURCES    =	\
+			Git_Info.C \
 			Trigger_Base.C \
 			One_Variable_Selector.C \
 			One_Particle_Selector.C \
@@ -15,6 +19,7 @@ ANATRIGGER_SOURCES    =	\
 			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
+			Q2_Selector.C \
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
 			Kt_Algorithm.C \

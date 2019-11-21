@@ -5,15 +5,19 @@
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/SISConePlugin.hh"
+#include "fastjet/EECambridgePlugin.hh"
+#include "fastjet/JadePlugin.hh"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
 
 namespace PHASIC {
   class Fastjet_Selector: public Selector_Base, public ATOOLS::Tag_Replacer {
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_nj, m_bmode;
+    int m_nj, m_bmode, m_eekt;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
+    fastjet::EECambridgePlugin * p_eecamplug;
+    fastjet::JadePlugin * p_jadeplug;
     ATOOLS::Algebra_Interpreter m_calc;
     ATOOLS::Vec4D_Vector m_p;
     std::vector<double> m_mu2;
@@ -45,7 +49,6 @@ namespace PHASIC {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 
 using namespace PHASIC;
@@ -63,16 +66,28 @@ Fastjet_Selector::Fastjet_Selector
  int bmode,std::string expression) :
   Selector_Base("FastjetSelector",proc),
   m_nj(nj), m_ptmin(ptmin), m_etmin(etmin),
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_bmode(bmode),
-  p_jdef(0), p_siscplug(0)
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_bmode(bmode), m_eekt(0), p_jdef(0),
+  p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
 {
+  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
+
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
   if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
   if (algo=="antikt")    ja=fastjet::antikt_algorithm;
   if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(m_delta_r,m_f);
+  if (ee) {
+    if (algo=="eecambridge") p_eecamplug=new fastjet::EECambridgePlugin(dr);
+    if (algo=="jade") p_jadeplug=new fastjet::JadePlugin();
+  }
 
   if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
+  else if (p_eecamplug) p_jdef=new fastjet::JetDefinition(p_eecamplug);
+  else if (p_jadeplug) p_jdef=new fastjet::JetDefinition(p_jadeplug);
+  else if (ee) {
+    p_jdef=new fastjet::JetDefinition(fastjet::ee_kt_algorithm);
+    m_eekt=1;
+  }
   else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
 
   m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
@@ -104,6 +119,8 @@ Fastjet_Selector::Fastjet_Selector
 Fastjet_Selector::~Fastjet_Selector() {
   delete p_jdef;
   if (p_siscplug) delete p_siscplug;
+  if (p_eecamplug) delete p_eecamplug;
+  if (p_jadeplug) delete p_jadeplug;
 }
 
 std::string Fastjet_Selector::ReplaceTags(std::string &expr) const
@@ -160,20 +177,31 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
   for (size_t i(0);i<m_nin;++i) m_p.push_back(sl[i].Momentum());
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<sl.size();++i) {
-    if (ToBeClustered(sl[i].Flavour(), m_bmode))
+    if (ToBeClustered(sl[i].Flavour(), m_bmode)) {
       input.push_back(MakePseudoJet(sl[i].Flavour(),sl[i].Momentum()));
-    else m_p.push_back(sl[i].Momentum());
+    } else {
+      m_p.push_back(sl[i].Momentum());
+    }
   }
   int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
-  for (size_t i(0);i<jets.size();++i) {
-    if (m_bmode==0 || BTag(jets[i], m_bmode)) {
-      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-      if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	  (m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	  (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+
+  if (m_eekt) {
+    for (size_t i(0);i<input.size();++i) {
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) {
+        m_p.emplace_back(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+      }
+    }
+  } else {
+    for (size_t i(0);i<jets.size();++i) {
+      if (m_bmode==0 || BTag(jets[i], m_bmode)) {
+        Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+        if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
+            (m_eta==100 || dabs(pj.Eta())<m_eta) &&
+            (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+      }
     }
   }
   for (size_t i(0);i<input.size();++i)
@@ -191,30 +219,41 @@ DECLARE_ND_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key,
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<6) THROW(critical_error,"Invalid syntax");
- 
-  double f(.75);
-  if (key.front().size()>6) f=ToType<double>(key[0][6]);
-  double eta(100.), y(100.);
-  int bmode(0);
-  if (key.front().size()>7) eta=ToType<double>(key[0][7]);
-  if (key.front().size()>8) y=ToType<double>(key[0][8]);
-  if (key.front().size()>9) bmode=ToType<double>(key[0][9]);
-
-  Fastjet_Selector *jf(new Fastjet_Selector
-                       (key.p_proc,key[0][1],
-                        ToType<size_t>(key[0][2]),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4])),
-			ToType<double>(key[0][5]),f,eta,y,bmode,key[0][0]));
+  auto s = key.m_settings;
+  const auto expression = s["Expression"].SetDefault("").Get<std::string>();
+  const auto algo = s["Algorithm"].SetDefault("").Get<std::string>();
+  const auto n = s["N"].SetDefault(0).Get<size_t>();
+  const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
+  const auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
+  const auto dr = s["DR"].SetDefault(0.4).Get<double>();
+  const auto f = s["f"].SetDefault(0.75).Get<double>();
+  const auto eta = s["EtaMax"].SetDefault(100.0).Get<double>();
+  const auto y = s["YMax"].SetDefault(100.0).Get<double>();
+  const auto bmode = s["BMode"].SetDefault(0).Get<int>();
+  Fastjet_Selector *jf(
+      new Fastjet_Selector(key.p_proc, algo, n, ptmin, etmin, dr,
+                           f, eta, y, bmode, expression));
   return jf;
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [bmode=0]]]]\n" 
-     <<"                algorithm: kt,antikt,cambridge,siscone";
+  str<<"{\n"
+     <<width<<"  Type: FastjetFinder,\n"
+     <<width<<"  Expression: boolean expression,\n"
+     <<width<<"  Algorithm: kt (default)|antikt|cambridge|siscone, (hadron colliders)\n"
+     <<width<<"  Algorithm: eekt (default)|jade|eecambridge|siscone, (lepton colliders)\n"
+     <<width<<"  N: number of jets,\n"
+     <<width<<"  # optional settings:\n"
+     <<width<<"  PTMin: minimum jet pT,\n"
+     <<width<<"  ETMin: minimum jet eta,\n"
+     <<width<<"  DR: jet distance parameter,\n"
+     <<width<<"  f: Siscone f parameter,\n"
+     <<width<<"  EtaMax: maximum jet eta,\n"
+     <<width<<"  YMax: maximum jet rapidity,\n"
+     <<width<<"  BMode: 0|1|2\n"
+     <<width<<"  }";
 }
 
 #endif

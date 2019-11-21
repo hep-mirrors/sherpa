@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <typeinfo>
 
@@ -42,18 +43,19 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   p_cpl(NULL)
 {
   p_nlomc=NULL;
-  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
+  Settings& s = Settings::GetMainSettings();
+  m_subtype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
   m_name=ToString(m_dtype)+"["+ToString(m_ftype)
          +"("+ToString(m_i)+","+ToString(m_j)+")("+ToString(m_k)+")]"
          +"("+ToString(m_stype)+")";
   DEBUG_FUNC(m_name);
 
-  m_amin=ToType<double>(rpa->gen.Variable("DIPOLE_AMIN"));
-  m_kappa=ToType<double>(rpa->gen.Variable("DIPOLE_KAPPA"));
+  m_amin=s["DIPOLES"]["AMIN"].Get<double>();
+  m_kappa=s["DIPOLES"]["KAPPA"].Get<double>();
 
   if (m_stype==sbt::qed) m_collVFF=false;
-  m_collVFF=ToType<int>(rpa->gen.Variable("DIPOLE_COLLINEAR_VFF_SPLITTINGS"));
-  m_Vsubmode=ToType<int>(rpa->gen.Variable("DIPOLE_V_SUBTRACTION_MODE"));
+  m_collVFF=s["DIPOLES"]["COLLINEAR_VFF_SPLITTINGS"].Get<int>();
+  m_Vsubmode=s["DIPOLES"]["V_SUBTRACTION_MODE"].Get<int>();
   if (m_Vsubmode<0 || m_Vsubmode>2) THROW(fatal_error,"Unknown mode.");
   std::string vsm("");
   if      (m_Vsubmode==0) vsm="scalar";
@@ -67,15 +69,12 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   }
 
   m_pfactors.clear(); m_pfactors.push_back(1.);
-  m_k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
+  m_k0sqf = s["CSS_FS_PT2MIN"].Get<double>();
+  m_k0sqi = s["CSS_IS_PT2MIN"].Get<double>();
+  m_es = s["CSS_EVOLUTION_SCHEME"].Get<int>();
   if (m_subtype==1) m_kappa=1.0;
 
-  ATOOLS::Data_Reader read(" ",";","#","=");  // TODO: move to DipoleSplitting_Base
-  read.SetInputPath(ATOOLS::rpa->GetPath());
-  read.SetInputFile(ATOOLS::rpa->gen.Variable("RUN_DATA_FILE"));
-  std::string dipole_string=read.GetValue<std::string>("DIPOLES","");
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
   if      (dipole_string == "CS")   m_dipolecase=DipoleCase::CS;
   else if (dipole_string == "IDa")  m_dipolecase=DipoleCase::IDa;
   else if (dipole_string == "IDb")  m_dipolecase=DipoleCase::IDb;

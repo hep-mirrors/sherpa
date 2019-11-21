@@ -8,29 +8,34 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "SHERPA/Tools/Variations.H"
 
-#include "HepMC/GenEvent.h"
-#include "HepMC/GenVertex.h"
-#include "HepMC/GenParticle.h"
-#include "HepMC/GenCrossSection.h"
-#include "HepMC/Units.h"
+
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenVertex.h"
+#include "HepMC3/GenParticle.h"
+#include "HepMC3/GenCrossSection.h"
+#include "HepMC3/Units.h"
+
 
 using namespace SHERPA;
 using namespace ATOOLS;
 
-EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
-                     bool namedweights, bool extendedweights) :
-  m_usenamedweights(namedweights),
-  m_extendedweights(extendedweights), p_sp(sp),
+EventInfo3::EventInfo3(ATOOLS::Blob * sp, const double &wgt,
+                     bool namedweights,
+                     bool extendedweights,
+                     bool includemeonlyweights) :
+  p_sp(sp),
   m_wgt(wgt),
+  m_usenamedweights(namedweights),
+  m_extendedweights(extendedweights),
+  m_variationtypes(1, ATOOLS::Variations_Type::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
-  m_pswgt(0.), m_pwgt(0.),
+  m_pswgt(0.), m_pwgt(0.),  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
-  m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
+  m_alphas(0.), m_alpha(0.), m_type(ATOOLS::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
   p_variationweights(NULL)
 {
@@ -50,6 +55,11 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
     }
+    ReadIn(db,"UserHook",false);
+    if (db) {
+      m_userhook=true;
+      m_userweight=db->Get<double>();
+    }
     ReadIn(db,"Renormalization_Scale",false);
     if (db) m_mur2=db->Get<double>();
     SetAlphaS();
@@ -66,23 +76,26 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
 
     ReadIn(db,"Variation_Weights",false);
     if (db) {
+      if (includemeonlyweights)
+        m_variationtypes.push_back(ATOOLS::Variations_Type::main);
       p_variationweights=&db->Get<Variation_Weights>();
       if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
         THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
               +std::string("HepMC without using named weights. ")
-              +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
+              +std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
   }
 }
 
-EventInfo::EventInfo(const EventInfo &evtinfo) :
+EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
   m_extendedweights(evtinfo.m_extendedweights),
+  m_variationtypes(evtinfo.m_variationtypes),
   p_sp(evtinfo.p_sp),
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
-  m_mur2(0.), m_muf12(0.), m_muf22(0.),
+  m_mur2(0.), m_muf12(0.), m_muf22(0.),m_muq2(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
@@ -90,28 +103,31 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
 {
 }
 
-void EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
+void EventInfo3::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
 {
   db=(*p_sp)[name];
   if (abort && !db) THROW(fatal_error,name+" information missing.");
 }
 
-bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
+bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
              <<", extended weights: "<<m_extendedweights);
+  std::map<std::string,double> wc;
   if (m_usenamedweights) {
-/*   
+
  // fill standard entries to ensure backwards compatability
     wc["Weight"]=m_wgt;
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
+    if (m_userhook) wc["UserHook"]=m_userweight;
     if (m_extendedweights) {
       wc["PSWeight"]=m_pswgt;
       // additional entries for LO/LOPS reweighting
       // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
       wc["MuR2"]=m_mur2;
+      //Default, but why not in HepMC2 wc["MuQ2"]=m_muq2;
       wc["OQCD"]=m_orders[0];
       wc["OEW"]=m_orders[1];
       if (p_wgtinfo) {
@@ -204,17 +220,33 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       msg_Debugging()<<"#named wgts: "<<numvars<<std::endl;
       for (size_t i(0); i < numvars; ++i) {
         std::string varname(p_variationweights->GetVariationNameAt(i));
-        if (idx==-1) {
-          wc[varname]=p_variationweights->GetVariationWeightAt(i);
-        } else { 
-          wc[varname]=p_variationweights->GetVariationWeightAt(i, idx);
+        typedef std::vector<ATOOLS::Variations_Type>::const_iterator It_type;
+        for (It_type it(m_variationtypes.begin());
+             it != m_variationtypes.end();
+             ++it) {
+          const std::string typevarname(
+              (*it == ATOOLS::Variations_Type::main) ? "ME_ONLY_" + varname : varname);
+          if (idx==-1) {
+            wc[typevarname]=p_variationweights->GetVariationWeightAt(i, *it);
+          } else {
+            wc[typevarname]=p_variationweights->GetVariationWeightAt(
+                i, *it, idx);
+          }
         }
       }
     }
-*/
+  
+  std::vector<std::string> w_names;
+  std::vector<double> w_values;
+  for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)
+  { w_names.push_back(it->first); w_values.push_back(it->second);}
+  evt.run_info()->set_weight_names(w_names);
+  evt.weights()=w_values;
+  
   }
   else {
     // only offer basic event record for unnamed weights
+      evt.weights().clear();
       evt.weights().push_back(m_wgt);
       evt.weights().push_back(m_mewgt);
       evt.weights().push_back(m_wgtnorm);
@@ -238,71 +270,89 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                            q,p_pdfinfo->m_xf1,p_pdfinfo->m_xf2);
     evt.set_pdf_info(pdfinfo);
   }
+   std::shared_ptr<HepMC::Attribute> a_event_scale = std::make_shared<HepMC::DoubleAttribute>(m_mur2);
    std::shared_ptr<HepMC::Attribute> a_alphas = std::make_shared<HepMC::DoubleAttribute>(m_alphas);
    std::shared_ptr<HepMC::Attribute> a_alpha = std::make_shared<HepMC::DoubleAttribute>(m_alpha);
    evt.add_attribute("alphaQCD",a_alphas);
    evt.add_attribute("alphaQED",a_alpha);
+   evt.add_attribute("event_scale",a_event_scale);
   return true;
 }
 
-void EventInfo::SetAlphaS()
+void EventInfo3::SetAlphaS()
 {
   m_alphas=MODEL::s_model->ScalarFunction("alpha_S",m_mur2);
 }
 
-void EventInfo::SetAlpha()
+void EventInfo3::SetAlpha()
 {
   m_alpha=MODEL::s_model->ScalarConstant("alpha_QED");
 }
 
 HepMC3_Interface::HepMC3_Interface() :
-  m_usenamedweights(false), m_extendedweights(false),
-  m_hepmctree(false), p_event(NULL)
+  m_usenamedweights(false),
+  m_extendedweights(false),
+  m_includemeonlyweights(false),
+  m_hepmctree(false),
+  p_event(NULL)
 {
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.AddWordSeparator("\t");
-  //Case with true to be implemented
-  m_usenamedweights=reader.GetValue<int>("HEPMC3_USE_NAMED_WEIGHTS",false);
-  //Case with true to be implemented
-  m_extendedweights=reader.GetValue<int>("HEPMC3_EXTENDED_WEIGHTS",false);
-  // Switch for disconnection of 1,2,3 vertices from PS vertices, always true for HepMC3
-  m_hepmctree=true;
+  Settings& s = Settings::GetMainSettings();
+  m_usenamedweights =
+    s["HEPMC_USE_NAMED_WEIGHTS"].SetDefault(false).Get<bool>();
+  m_extendedweights =
+    s["HEPMC_EXTENDED_WEIGHTS"].SetDefault(false).Get<bool>();
+  m_includemeonlyweights =
+    s["HEPMC_INCLUDE_ME_ONLY_VARIATIONS"].SetDefault(false).Get<bool>();
+  // Switch for disconnection of 1,2,3 vertices from PS vertices
+  m_hepmctree = s["HEPMC_TREE_LIKE"].SetDefault(false).Get<bool>();
 }
 
 HepMC3_Interface::~HepMC3_Interface()
 {
+  if (p_event) p_event->clear();
   delete p_event;
   DeleteGenSubEventList();
 }
 
 
 bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         HepMC::GenEvent& event, double weight)
+                                         HepMC::GenEvent& event)
 {
-  event.use_units(HepMC::Units::GEV,
+  const auto weight(blobs->Weight());
+  event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
+  Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
+  if (!mp) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(-1));
+  
+  EventInfo3 evtinfo(sp,weight,
+                    m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   evtinfo.WriteTo(event);
-  HepMC::GenVertex * vertex=new HepMC::GenVertex();
-  std::vector<HepMC::GenParticle*> beamparticles;
+  HepMC::GenVertexPtr vertex=std::make_shared<HepMC::GenVertex>();
+  std::vector<HepMC::GenParticlePtr> beamparticles, inparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     Blob* blob=*blit;
+    if (m_ignoreblobs.count(blob->Type())) continue;
     for (int i=0;i<blob->NInP();i++) {
-      if (blob->InParticle(i)->ProductionBlob()==NULL &&
-          blob->OutParticle(i)->Status()!=part_status::documentation) {
+      if (blob->InParticle(i)->ProductionBlob()==NULL) {
         Particle* parton=blob->InParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
-        HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),2);
+        HepMC::GenParticlePtr inpart = std::make_shared<HepMC::GenParticle>
+	 (momentum,(long int)parton->Flav(),4);
+        event.add_particle(inpart);
         vertex->add_particle_in(inpart);
+        //We add attributes here->
+         for (int k=1;k<3;k++) {
+         if (blob->InParticle(i)->GetFlow(k)>0)inpart->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(blob->InParticle(i)->GetFlow(k)));
+         }
+         //<-We add attributes here
+         inparticles.push_back(inpart);
         // distinct because SHRIMPS has no bunches for some reason
         if (blob->Type()==btp::Beam || blob->Type()==btp::Bunch) {
           beamparticles.push_back(inpart);
@@ -310,18 +360,41 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
     }
     for (int i=0;i<blob->NOutP();i++) {
-      if (blob->OutParticle(i)->DecayBlob()==NULL &&
-          blob->OutParticle(i)->Status()!=part_status::documentation) {
+      if (blob->OutParticle(i)->DecayBlob()==NULL ||
+	  m_ignoreblobs.count(blob->OutParticle(i)->DecayBlob()->Type())!=0) {
         Particle* parton=blob->OutParticle(i);
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
-        HepMC::GenParticle* outpart = 
-	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),1);
+        HepMC::GenParticlePtr outpart = std::make_shared<HepMC::GenParticle>(momentum,(long int)parton->Flav(),1);
+        event.add_particle(outpart);
+        //We add attributes here->
+        for (int k=1;k<3;k++) {
+        if (blob->OutParticle(i)->GetFlow(k)>0)outpart->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(blob->OutParticle(i)->GetFlow(k)));
+        }
+        //<-We add attributes here 
         vertex->add_particle_out(outpart);
       }
     }
+  
+      if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+      if (sp==(*blit)) event.add_attribute("signal_process_vertex", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+  
   }
   event.add_vertex(vertex);
+  vertex->add_attribute("weight0",std::make_shared<HepMC::DoubleAttribute>(1.0));
+  if (beamparticles.empty() && inparticles.size()==2) {
+    for (size_t j(0);j<2;++j) {
+      HepMC::GenVertexPtr  beamvertex = std::make_shared<HepMC::GenVertex>();
+      event.add_vertex(beamvertex);
+      HepMC::FourVector mombeam(rpa->gen.PBeam(j)[1],rpa->gen.PBeam(j)[2],
+				rpa->gen.PBeam(j)[3],rpa->gen.PBeam(j)[0]);
+      long int flav=(long int)(j?rpa->gen.Beam2():rpa->gen.Beam1());
+      if (flav==kf_lepton) flav=(long int)sp->InParticle(j)->Flav();
+      beamparticles.push_back(std::make_shared<HepMC::GenParticle>(mombeam,flav,4));
+      beamvertex->add_particle_in(beamparticles[j]);
+      beamvertex->add_particle_out(inparticles[j]);
+    }
+  }
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
@@ -329,16 +402,17 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   return true;
 }
 
-bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
+bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo)
 {
   DEBUG_FUNC("subevts: "<<evtinfo.SubEvtList()->size());
   // build GenEvent for all subevts (where only the signal is available)
   // purely partonic, no beam information, may add, if needed
   for (size_t i(0);i<evtinfo.SubEvtList()->size();++i) {
-    EventInfo subevtinfo(evtinfo);
+    EventInfo3 subevtinfo(evtinfo);
     const NLO_subevt * sub((*evtinfo.SubEvtList())[i]);
-    if (sub->m_result==0.) continue;
-    HepMC::GenVertex * subvertex(new HepMC::GenVertex());
+    if (sub->m_result==0. &&
+	!(sub->IsReal() && m_subeventlist.empty())) continue;
+    HepMC::GenVertexPtr subvertex=std::make_shared<HepMC::GenVertex>();
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -346,18 +420,29 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     for (size_t j(0);j<2;++j) {
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
-      HepMC::GenParticle* inpart =
-        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
+      HepMC::GenParticlePtr inpart =
+        std::make_shared<HepMC::GenParticle>(momentum,(long int)sub->p_fl[j],4);
       subvertex->add_particle_in(inpart);
+//We add attributes here->
+//FIXME!     for (int k=1;k<3;k++) {
+//FIXME!    if (inpart->GetFlow(k)>0)outpart->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(inpart->GetFlow(k)));
+//FIXME!     }
+//<-We add attributes here
     }
     for (size_t j(2);j<sub->m_n;++j) {
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
-      HepMC::GenParticle* outpart =
-        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],1);
+      HepMC::GenParticlePtr outpart =
+        std::make_shared<HepMC::GenParticle>(momentum,(long int)sub->p_fl[j],1);
       subvertex->add_particle_out(outpart);
+//We add attributes here->
+//FIXME!     for (int k=1;k<3;k++) {
+//FIXME!    if (outpart->GetFlow(k)>0)outpart->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(outpart->GetFlow(k)));
+//FIXME!     }
+//<-We add attributes here
     }
     subevent->add_vertex(subvertex);
+    subvertex->add_attribute("weight0",std::make_shared<HepMC::DoubleAttribute>(1.0));
     // not enough info in subevents to set PDFInfo properly,
     // so set flavours and x1, x2 from the Signal_Process
     // reset muR, muF, alphaS, alpha
@@ -375,8 +460,7 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 }
 
 
-bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         double weight)
+bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -387,13 +471,13 @@ bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (p_event!=NULL) delete p_event;
   DeleteGenSubEventList();
   p_event = new HepMC::GenEvent();
-  return Sherpa2ShortHepMC(blobs, *p_event, weight);
+  return Sherpa2ShortHepMC(blobs, *p_event);
 }
 
 // HS: Short-hand that takes a blob list, creates a new GenEvent and
 // calls the actual Sherpa2HepMC
 bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-				    double weight)
+				   std::shared_ptr<HepMC::GenRunInfo> run)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -401,64 +485,85 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                <<"   Continue run ... ."<<std::endl;
     return true;
   }
-  if (p_event!=NULL) delete p_event;
+  if (p_event) { p_event->clear(); delete p_event;}
   for (size_t i=0; i<m_subeventlist.size();++i)
-    delete m_subeventlist[i];
+    { m_subeventlist[i]->clear(); delete m_subeventlist[i];}
   m_subeventlist.clear();
-  p_event = new HepMC::GenEvent();
-  return Sherpa2HepMC(blobs, *p_event, weight);
+  p_event = new HepMC::GenEvent(run);
+  return Sherpa2HepMC(blobs, *p_event);
 }
 
 // The actual code --- calls the Blob to GenVertex code
 bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event, double weight)
+                                    HepMC::GenEvent& event)
 {
+  const auto weight(blobs->Weight());
   DEBUG_FUNC("");
-  event.use_units(HepMC::Units::GEV,
+  event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
+  if (!m_hepmctree) event.add_attribute("cycles",std::make_shared<HepMC::IntAttribute>(1));
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
+  Blob *mp(blobs->FindFirst(btp::Hard_Collision));
+  if (!mp) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(-1));
+  
+  
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
+  EventInfo3 evtinfo(sp,weight,
+                    m_usenamedweights,m_extendedweights,m_includemeonlyweights);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
-  HepMC::GenVertex * vertex;
-//  std::vector<HepMC::GenParticle*> beamparticles;
-std::vector<HepMC::GenParticlePtr> beamparticles;  
+  HepMC::GenVertexPtr  vertex,psvertex;
+  std::vector<HepMC::GenParticlePtr> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     // Call the Blob to vertex code, changes vertex pointer above
-    if (Sherpa2HepMC(*(blit),vertex)) {
+    if (Sherpa2HepMCBlobtoGenVertex(*(blit),vertex,event)) {
       event.add_vertex(vertex);
+      for (size_t i(0);i<(*blit)->NInP();++i)
+	if ((*blit)->InParticle(i)->ProductionBlob()==NULL) {
+	  psvertex=vertex;
+	  break;
+	}
+
+      if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+      if (sp==(*blit)) event.add_attribute("signal_process_vertex", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+      
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
           THROW(fatal_error,"Events containing correlated subtraction events"
                 +std::string(" cannot be translated into the full HepMC event")
                 +std::string(" format.\n")
-                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
+                +std::string("   Try 'EVENT_OUTPUT: HepMC_Short' instead."));
         }
         //event.set_signal_process_vertex(vertex);
       }
       // Find beam particles
       else if ((*blit)->Type()==ATOOLS::btp::Beam || 
 	       (*blit)->Type()==ATOOLS::btp::Bunch) {
-        for (HepMC::GenVertex::particles_in_const_iterator 
-	       pit=vertex->particles_in_const_begin();
-             pit!=vertex->particles_in_const_end(); ++pit) {
-          if ((*pit)->production_vertex()==NULL) {
-            beamparticles.push_back(*pit);
+        for (auto pit: vertex->particles_in())
+             {
+          if (pit->production_vertex()==NULL) {
+            beamparticles.push_back(pit);
           }
         }
       }
     }
   } // End Blob_List loop
-  if (beamparticles.size()==2) {
-    event.add_tree( beamparticles );
-  }
+  if (beamparticles.empty()) {
+    Vec4D pbeam[2]={rpa->gen.PBeam(0),rpa->gen.PBeam(1)};
+    HepMC::FourVector pa(pbeam[0][1],pbeam[0][2],pbeam[0][3],pbeam[0][0]);
+    HepMC::FourVector pb(pbeam[1][1],pbeam[1][2],pbeam[1][3],pbeam[1][0]);
+    HepMC::GenParticlePtr inpart[2];
+      inpart[0]=std::make_shared<HepMC::GenParticle>(pa,(long int)rpa->gen.Beam1(),4);
+      inpart[1]=std::make_shared<HepMC::GenParticle>(pb,(long int)rpa->gen.Beam2(),4);
+    event.set_beam_particles(inpart[0],inpart[1]);
+   }
+
 
   // Disconnect ME, MPI and hard decay vertices from PS vertices to get a
   // tree-like record --- manipulates the final GenEvent
@@ -471,46 +576,47 @@ std::vector<HepMC::GenParticlePtr> beamparticles;
                <<"tree enabled (disconnect 1,2,3 vertices)");
     // Iterate over all vertices to find PS vertices
     int vtx_id = -1;
-    for (HepMC::GenEvent::vertex_iterator vit=event.vertices_begin();
-       vit!=event.vertices_end(); ++vit) {
+    for (auto vit:  event.vertices()) {
 
       // Is this a PS Vertex?
-      if ((*vit)->status()==4) {
+      if (vit->status()==4) {
         std::vector<HepMC::GenParticlePtr > remove;
         //// Loop over outgoing particles
-        for (HepMC::GenVertex::particles_out_const_iterator pout
-               =(*vit)->particles_out_const_begin();
-             pout!=(*vit)->particles_out_const_end(); ++pout) {
-            if ( (*pout)->end_vertex() ) {
-              vtx_id = (*pout)->end_vertex()->status(); //
+        for (auto  pout: vit->particles_out()) 
+{
+            if ( pout->end_vertex() ) {
+              vtx_id = pout->end_vertex()->status(); //
               // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
               if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-  remove.push_back((*pout));
+                  remove.push_back(pout);
             }
         }
         // Loop over incoming particles
-        for (HepMC::GenVertex::particles_in_const_iterator pin
-               =(*vit)->particles_in_const_begin();
-             pin!=(*vit)->particles_in_const_end(); ++pin) {
-          vtx_id = (*pin)->production_vertex()->status();
+        for (auto  pin: vit->particles_in())
+ {
+          vtx_id = pin->production_vertex()->status();
           // Disconnect incoming particle from production vertex of type (1,2,3)  
           if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-                  remove.push_back((*pin));
+                  remove.push_back(pin);
         }
         // Iterate over Genparticle pointers to remove from current vertex (*vit)
         for (unsigned int nrem=0;nrem<remove.size();++nrem) {
-            (*vit)->remove_particle_in(remove[nrem]);
-            (*vit)->remove_particle_out(remove[nrem]);
+            vit->remove_particle_in(remove[nrem]);
+            vit->remove_particle_out(remove[nrem]);
         }
       } // Close if statement (vertex status==4)
     } // Close loop over vertices
   }
+
+    if (beamparticles.size()==2) {
+    event.add_tree( beamparticles );
+  }
+  
   return true;
 }
 
 // HS: this converts a Blob to GenVertex
-bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, 
-				    HepMC::GenVertex *& vertex)
+bool HepMC3_Interface::Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob * blob, HepMC::GenVertexPtr & vertex, HepMC::GenEvent& event)
 {
   if (m_ignoreblobs.count(blob->Type())) return false;
   int count = m_blob2genvertex.count(blob);
@@ -521,8 +627,9 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
   else {
     ATOOLS::Vec4D pos = blob->Position();
     HepMC::FourVector position(pos[1],pos[2],pos[3],pos[0]);
-    vertex = new HepMC::GenVertex(position);
-//    vertex->weights().push_back(1.);
+    vertex = std::make_shared<HepMC::GenVertex>(position);
+    event.add_vertex(vertex);
+    vertex->add_attribute("weight0",std::make_shared<HepMC::DoubleAttribute>(1.0));
     if (blob->Type()==btp::Signal_Process)      vertex->set_status(1); // signal
     else if (blob->Type()==btp::Hard_Collision)vertex->set_status(2); // mpi
     else if (blob->Type()==btp::Hard_Decay)    vertex->set_status(3); // hard-decay
@@ -538,16 +645,27 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
   }
 
   bool okay = 1;
-  HepMC::GenParticle * _particle;
+  HepMC::GenParticlePtr  _particle;
   for (int i=0;i<blob->NInP();i++) {
     if (Sherpa2HepMC(blob->InParticle(i),_particle)) {
       vertex->add_particle_in(_particle);
+//We add attributes here->
+    for (int k=1;k<3;k++) {
+    if (blob->InParticle(i)->GetFlow(k)>0)_particle->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(blob->InParticle(i)->GetFlow(k)));
+     }
+//<-We add attributes here     
+
     }
     else okay = 0;
   }
   for (int i=0;i<blob->NOutP();i++) {
     if (Sherpa2HepMC(blob->OutParticle(i),_particle)) {
       vertex->add_particle_out(_particle);
+//We add attributes here->
+    for (int k=1;k<3;k++) {
+    if (blob->OutParticle(i)->GetFlow(k)>0)_particle->add_attribute("flow"+std::to_string((long long int)k),std::make_shared<HepMC::IntAttribute>(blob->OutParticle(i)->GetFlow(k)));
+     }
+//<-We add attributes here 
     }
     else okay = 0;
   }
@@ -578,7 +696,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
 // HS: Sherpa Particle to HepMC::Genparticle --- fills m_particle2genparticle
 // and changes the pointer reference particle ('new')
 bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
-                                    HepMC::GenParticle *& particle)
+                                    HepMC::GenParticlePtr & particle)
 {
   // HS: do nothing if parton has already been converted  
   int count = m_particle2genparticle.count(parton);
@@ -617,20 +735,18 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
     }
   }
   if (parton->Status()==part_status::documentation) status=20;
-  particle = new HepMC::GenParticle(momentum,(long int)parton->Flav(),status);
-  for (int i=1;i<3;i++) {
-   // if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
-  }
+  particle = std::make_shared<HepMC::GenParticle>(momentum,(long int)parton->Flav(),status);
   m_particle2genparticle.insert(std::make_pair(parton,particle));
   return true;
 }
 
-bool HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
+void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
                                        const double &xs, const double &err)
 {
-    std::shared_ptr<HepMC::GenCrossSection> cross_section =std:: make_shared<HepMC::GenCrossSection>();
-    event.add_attribute("GenCrossSection",cross_section);
+    std::shared_ptr<HepMC::GenCrossSection> cross_section =std::make_shared<HepMC::GenCrossSection>();
     cross_section->set_cross_section(xs,err);
+    event.set_cross_section(cross_section);
+
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()

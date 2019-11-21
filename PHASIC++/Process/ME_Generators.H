@@ -17,7 +17,6 @@ namespace PHASIC   {
   class ME_Generators : public std::vector<ME_Generator_Base*> {
   private:
 
-    std::string m_path, m_file;
     MODEL::Model_Base *p_model;
 
     BEAM::Beam_Spectra_Handler *p_beam;
@@ -25,7 +24,7 @@ namespace PHASIC   {
 
   public:
 
-    ME_Generators(const std::string &path,const std::string &file);
+    ME_Generators();
     ~ME_Generators();
 
     bool InitializeGenerators(MODEL::Model_Base *model,

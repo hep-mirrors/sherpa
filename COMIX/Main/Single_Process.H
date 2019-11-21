@@ -15,6 +15,7 @@ namespace COMIX {
 
   class Single_Process: 
     public PHASIC::Single_Process, public Process_Base {
+
   protected:
 
     Amplitude      *p_bg;
@@ -31,7 +32,7 @@ namespace COMIX {
     PSGenerator_Set m_psset;
 
     double m_w, m_dxs, m_x[2];
-    bool   m_checkpoles, m_allowmap;
+    bool   m_checkpoles, m_allowmap, m_hasmapfile;
 
     ATOOLS::cs_itype::type m_itype;
     ATOOLS::NLO_subevtlist m_subs;
@@ -58,7 +59,8 @@ namespace COMIX {
 
     // member functions
     bool Initialize(std::map<std::string,std::string> *const pmap,
-		    std::vector<Single_Process*> *const procs);
+		    std::vector<Single_Process*> *const procs,
+		    const std::vector<int> &blocks,size_t &nproc);
     bool MapProcess();
 
     int PerformTests();

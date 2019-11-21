@@ -17,9 +17,9 @@ class MyParticle:
         return (str(self.kfc)+" "+str(self.E)+" "
                 +str(self.px)+" "+str(self.py)+" "+str(self.pz))
 
-Generator=Sherpa.Sherpa()
+Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:
-    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Generator.InitializeTheRun()
     Generator.InitializeTheEventHandler()
     comm=MPI.COMM_WORLD
     rank=comm.Get_rank()

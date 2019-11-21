@@ -9,7 +9,8 @@
 #include "ATOOLS/Phys/Variations.H"
 
 namespace SHERPA {
-
+  class Filter;
+  
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
 
@@ -22,13 +23,16 @@ namespace SHERPA {
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
     size_t m_lastrss;
+    int m_decayer;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
+    Filter            * p_filter;
 
     const ATOOLS::Variations  * p_variations;
 
+    
     void WriteRNGStatus(const std::string &file,
 			const std::string &message) const;
 
@@ -59,6 +63,8 @@ namespace SHERPA {
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
+    void SetFilter(Filter * filter) { p_filter = filter; }
+    
     void MPISync();
     double TotalXS();
     double TotalVar();

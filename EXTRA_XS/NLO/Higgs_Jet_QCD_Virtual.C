@@ -1,9 +1,9 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -184,8 +184,8 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nlotype&nlo_type::loop) {
     if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
-    Default_Reader reader;
-    int con = reader.Get<int>("HNNLO_KF_MODE", 0);
+    Settings& s = Settings::GetMainSettings();
+    int con = s["HNNLO_KF_MODE"].Get<int>();
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl[0].IsGluon() && fl[1].IsGluon() && 
         pi.m_fi.m_ps.size()==2 && 

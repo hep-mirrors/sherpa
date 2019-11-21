@@ -22,7 +22,7 @@ enum optionIndex {
   RESULT_DIRECTORY,
   SHERPA_CPP_PATH,
   RANDOM_SEED,
-  ME_SIGNAL_GENERATOR,
+  ME_GENERATORS,
   MI_HANDLER,
   EVENT_GENERATION_MODE,
   SHOWER_GENERATOR,
@@ -51,7 +51,7 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "",
     "",
     ATOOLS::Option_Parser::Arg::None,
-    "USAGE: Sherpa [options] [<parameter>=<value>] [<tag>:=<value>]\n\nOptions:"
+    "USAGE: Sherpa [options] ['<parameter>: <value>'] ['TAGS: {<tag>: <value>}']\n\nOptions:"
   },
   {
     HELP,
@@ -126,12 +126,12 @@ const ATOOLS::Option_Parser::Descriptor usage[] = {
     "  --random-seed, -R <seed(s)>  \tSet random <seed(s)>."
   },
   {
-    ME_SIGNAL_GENERATOR,
+    ME_GENERATORS,
     REGULAR,
     "m",
-    "me-signal-generator",
+    "me-generators",
     ATOOLS::Option_Parser::Arg::Required,
-    "  --me-signal-generator, -m <generator>  \tSet matrix element <generator>."
+    "  --me-generators, -m <generator>  \tSet matrix element <generator>."
   },
   {
     MI_HANDLER,
@@ -262,7 +262,7 @@ String_Option_Map create_parameter_index_map() {
     map["RESULT_DIRECTORY"]          = RESULT_DIRECTORY;
     map["SHERPA_CPP_PATH"]           = SHERPA_CPP_PATH;
     map["RANDOM_SEED"]               = RANDOM_SEED;
-    map["ME_SIGNAL_GENERATOR"]       = ME_SIGNAL_GENERATOR;
+    map["ME_GENERATORS"]             = ME_GENERATORS;
     map["MI_HANDLER"]                = MI_HANDLER;
     map["EVENT_GENERATION_MODE"]     = EVENT_GENERATION_MODE;
     map["SHOWER_GENERATOR"]          = SHOWER_GENERATOR;

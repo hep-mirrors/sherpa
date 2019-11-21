@@ -2,6 +2,7 @@
 #define PHASIC_Process_Process_Info_H
 
 #include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
@@ -27,7 +28,9 @@ namespace PHASIC {
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
     std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special;
-    std::string m_selectorfile, m_integrator, m_rsintegrator;
+    std::string m_integrator, m_rsintegrator;
+
+    ATOOLS::Scoped_Settings m_selectors;
 
     ME_Generators* p_gens;
 
@@ -43,7 +46,7 @@ namespace PHASIC {
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99),
       m_nlomode(ATOOLS::nlo_mode::none),
       m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
-      m_selectorfile(""), p_gens(NULL) {}
+      p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(ATOOLS::nlo_type::code nlotype) const;

@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -69,88 +70,77 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Booster,"CMSBoost",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Booster>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Booster>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"RefList list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Flavs   flav1 .. flavN\n"
-     <<std::setw(width+7)<<" "<<"Items   item1 .. itemN\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"RefList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"Flavs: [flav1, .., flavN],\n"
+     <<std::setw(width+7)<<" "<<"Items: [item1, .., itemN]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Booster>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,Booster>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
+  Scoped_Settings s{ key.m_settings };
+
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto reflist = s["RefList"].SetDefault("FinalState").Get<std::string>();
+
+  const auto rawflavs = s["Flavs"].SetDefault<int>({}).GetVector<int>();
   std::vector<Flavour> flavs;
-  std::vector<int> items;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="RefList" && cur.size()>1) reflist=cur[1];
-    else if (cur[0]=="Flavs" && cur.size()>1) {
-      for (size_t i(1);i<cur.size();++i) {
-	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf_code)abs(kf)));
-	if (kf<0) flavs.back()=flavs.back().Bar();
-      }
-    }
-    else if (cur[0]=="Items" && cur.size()>1) {
-      for (size_t i(1);i<cur.size();++i) {
-	items.push_back(ToType<int>(cur[i]));
-      }
-    }
+  for (const auto& rawflav : rawflavs) {
+    flavs.push_back(Flavour((kf_code)abs(rawflav)));
+    if (rawflav<0) flavs.back()=flavs.back().Bar();
   }
+
+  auto items = s["Items"].SetDefault<int>({}).GetVector<int>();
   items.resize(flavs.size(),0);
+
   return new Booster(inlist,reflist,outlist,flavs,items);
 }
 
 DECLARE_GETTER(Rotator,"ZRotate",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Rotator>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Rotator>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"RefList list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Flavs   flav1 .. flavN\n"
-     <<std::setw(width+7)<<" "<<"Items   item1 .. itemN\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"RefList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"Flavs: [flav1, .., flavN],\n"
+     <<std::setw(width+7)<<" "<<"Items: [item1, .., itemN]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Rotator>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,Rotator>::
+operator()(const Analysis_Key &key) const
 {
-  std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
+  Scoped_Settings s{ key.m_settings };
+  s.DeclareVectorSettingsWithEmptyDefault({"Flavs", "Items"});
+
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto reflist = s["RefList"].SetDefault("FinalState").Get<std::string>();
+
+  const auto rawflavs = s["Flavs"].GetVector<int>();
   std::vector<Flavour> flavs;
-  std::vector<int> items;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="RefList" && cur.size()>1) reflist=cur[1];
-    else if (cur[0]=="Flavs" && cur.size()>1) {
-      for (size_t i(1);i<cur.size();++i) {
-	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf_code)abs(kf)));
-	if (kf<0) flavs.back()=flavs.back().Bar();
-      }
-    }
-    else if (cur[0]=="Items" && cur.size()>1) {
-      for (size_t i(1);i<cur.size();++i) {
-	items.push_back(ToType<int>(cur[i]));
-      }
-    }
+  for (const auto& rawflav : rawflavs) {
+    flavs.push_back(Flavour((kf_code)abs(rawflav)));
+    if (rawflav<0) flavs.back()=flavs.back().Bar();
   }
+
+  auto items = s["Items"].GetVector<int>();
   items.resize(flavs.size(),0);
+
   return new Rotator(inlist,reflist,outlist,flavs,items);
 }
 
@@ -269,61 +259,49 @@ Analysis_Object *Rotator::GetCopy() const
 }
 
 DECLARE_GETTER(RBooster,"CMSRBoost",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,RBooster>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,RBooster>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"RefMom  tag\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"RefMom: tag\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,RBooster>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,RBooster>::
+operator()(const Analysis_Key &key) const
 {
-  std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
-  std::vector<Flavour> flavs;
-  std::vector<int> items;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="RefMom" && cur.size()>1) reflist=cur[1];
-  }
-  items.resize(flavs.size(),0);
-  return new RBooster(inlist,reflist,outlist);
+  Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto refmom = s["RefMom"].SetDefault("").Get<std::string>();
+  return new RBooster(inlist,refmom,outlist);
 }
 
 DECLARE_GETTER(RRotator,"ZRRotate",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,RRotator>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,RRotator>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"RefMom  tag\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"RefMom: tag\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,RRotator>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,RRotator>::
+operator()(const Analysis_Key &key) const
 {
-  std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
-  std::vector<Flavour> flavs;
-  std::vector<int> items;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="RefMom" && cur.size()>1) reflist=cur[1];
-  }
-  items.resize(flavs.size(),0);
-  return new RRotator(inlist,reflist,outlist);
+  Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto refmom = s["RefMom"].SetDefault("").Get<std::string>();
+  return new RRotator(inlist,refmom,outlist);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"

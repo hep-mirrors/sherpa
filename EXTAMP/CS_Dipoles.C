@@ -456,7 +456,6 @@ double FF_Dipole::CalcKinDependentPrefac() const
 //  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
 
   switch(DipCase()){
-  case RES:
   case CS: {
     const ATOOLS::Vec4D& pi = m_kin.m_pi;
     const ATOOLS::Vec4D& pj = m_kin.m_pj;
@@ -502,8 +501,6 @@ double FI_Dipole::CalcKinDependentPrefac() const
 
 double IF_Dipole::CalcKinDependentPrefac() const
 {
-  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
-
   const ATOOLS::Vec4D& pi = m_kin.m_pi;
   const ATOOLS::Vec4D& pa = m_kin.m_pa;
   double x;

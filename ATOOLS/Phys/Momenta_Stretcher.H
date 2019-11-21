@@ -8,8 +8,9 @@
 namespace ATOOLS {
   
   class Momenta_Stretcher {
+    long int m_fails;
   public:
-    Momenta_Stretcher() {}
+    Momenta_Stretcher() : m_fails(0) {}
     bool MassThem(const int, const int, Vec4D *, const double *,const double=-1.e-14);
     bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses,const double=-1.e-14);
     bool ZeroThem(const int, const int, Vec4D *,const double=-1.e-14);
@@ -17,6 +18,8 @@ namespace ATOOLS {
     bool StretchBlob(Blob* blob);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
+
+    inline void Reset() { m_fails = 0; }
   };
 }
   ////////////////////////////////////////////////////////////////////////////////////////////////////

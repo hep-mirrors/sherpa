@@ -1,22 +1,22 @@
 #ifndef SHERPA_PerturbativePhysics_MI_Handler_H
 #define SHERPA_PerturbativePhysics_MI_Handler_H
 
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-namespace ATOOLS { class Cluster_Amplitude;    }
-namespace BEAM   { class Beam_Spectra_Handler; }
-namespace PDF    { class ISR_Handler;          }
-namespace PHASIC { class Process_Base;         }
-namespace MODEL  { class Model_Base;           }
-namespace AMISIC { class Amisic;               }
+namespace ATOOLS   { class Cluster_Amplitude;    }
+namespace BEAM     { class Beam_Spectra_Handler; }
+namespace PDF      { class ISR_Handler;          }
+namespace REMNANTS { class Remnant_Handler;      }
+namespace PHASIC   { class Process_Base;         }
+namespace MODEL    { class Model_Base;           }
+namespace AMISIC   { class Amisic;               }
 
 namespace SHERPA {
-
   class Matrix_Element_Handler;
+  class Shower_Handler;
 
-  class MI_Handler: public ATOOLS::Mass_Selector {
+  class MI_Handler {
   public:
     
     enum TypeID { None    =  0,
@@ -24,63 +24,57 @@ namespace SHERPA {
 		  Unknown = 99 };
 
   private:
-    BEAM::Beam_Spectra_Handler *p_beam;
-    PDF::ISR_Handler           *p_isr;
-    AMISIC::Amisic             *p_amisic;
+    PDF::ISR_Handler          * p_isr;
+    REMNANTS::Remnant_Handler * p_remnants;
+    AMISIC::Amisic            * p_amisic;
+    ATOOLS::Cluster_Amplitude * p_ampl;
+    PHASIC::Process_Base      * p_proc;
+    Shower_Handler            * p_shower;
 
-    ATOOLS::Cluster_Amplitude *p_ampl;
-    PHASIC::Process_Base      *p_proc;
-
+    bool        m_stop;
     TypeID      m_type;
     std::string m_name;
 
     double m_ycut; 
-
+    
+    void InitAmisic(MODEL::Model_Base *model);
   public:
-
-    // constructor
-    MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
-	       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr);
-
-    // destructor
+    MI_Handler(MODEL::Model_Base *model, PDF::ISR_Handler *isr);
     ~MI_Handler();
     
-    // getters
-    TypeID      Type();
-    std::string Name();
-
-    std::string MIGenerator();
+    bool InitialiseMPIs(const double & scale);
+    void SetMaxEnergies(const double & E1,const double & E2);
+    void ConnectColours(ATOOLS::Blob * showerblob);
     
-    PDF::ISR_Handler *ISRHandler();
-
-    // member functions
+    ATOOLS::Blob              * GenerateHardProcess();
+    ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
     void Reset();
     void CleanUp();
+    
+    const double ScaleMin() const;
+    const double ScaleMax() const;
+    
+    inline TypeID      Type() const { return m_type; }
+    inline std::string Name() const { return m_name; }
+    inline bool        Done() const { return m_stop; }
+    inline double      YCut() const { return m_ycut; }
+    
+    inline PDF::ISR_Handler          * ISRHandler() const { return p_isr; }
+    inline REMNANTS::Remnant_Handler * Remnants()   const { return p_remnants; }
+    inline PHASIC::Process_Base      * Process()    const { return p_proc; }
+    inline Shower_Handler            * Shower()     const { return p_shower; }
+    
+    
+    inline void SetShowerHandler(Shower_Handler * const sh) { p_shower=sh; }
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler *const rh) {
+      p_remnants = rh;
+    }
 
-    void SetScaleMin(double scalemax,unsigned int i);
-    void SetScaleMax(double scalemin,unsigned int i);
 
-    double ScaleMin(unsigned int i);
-    double ScaleMax(unsigned int i);
-
-    bool GenerateHardProcess(ATOOLS::Blob *blob);
-    bool GenerateSoftProcess(ATOOLS::Blob *blob);
-    bool GenerateEvent(ATOOLS::Blob_List *bloblist);
-
-    bool VetoHardProcess(ATOOLS::Blob *blob);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration();
-
-    double Mass(const ATOOLS::Flavour &fl) const;
-
-    // inline functions
-    inline double YCut() const { return m_ycut; }
-
-    inline PHASIC::Process_Base *Process() const
-    { return p_proc; }
-
-  }; // end of class MI_Handler
-
-} // end of namespace SHERPA
+    bool   VetoScatter(ATOOLS::Blob *blob);
+    void   SetMassMode(const int & massmode);
+    int    ShiftMasses(ATOOLS::Cluster_Amplitude * ampl);
+  }; 
+}
 
 #endif

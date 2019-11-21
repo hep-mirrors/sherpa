@@ -26,34 +26,29 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(MET_Define,"METDefine",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,MET_Define>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,MET_Define>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Flavs   flav1 .. flavN\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"Flavs: [flav1, .., flavN]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,MET_Define>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,MET_Define>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist("FinalState"), outlist("Selected");
+  Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto rawflavs = s["Flavs"].SetDefault<int>({}).GetVector<int>();
   std::vector<Flavour> flavs;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="Flavs" && cur.size()>1) {
-      for (size_t i(1);i<cur.size();++i) {
-	int kf(ToType<int>(cur[i]));
-	flavs.push_back(Flavour((kf_code)abs(kf)));
-	if (kf<0) flavs.back()=flavs.back().Bar();
-      }
-    }
+  for (const auto& rawflav : rawflavs) {
+    flavs.push_back(Flavour((kf_code)abs(rawflav)));
+    if (rawflav<0) flavs.back()=flavs.back().Bar();
   }
   return new MET_Define(inlist,outlist,flavs);
 }

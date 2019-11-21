@@ -16,6 +16,7 @@ libPhasicSelectors_la_SOURCES = \
                                 Isolation_Selector.C \
                                 NJet_Finder.C \
                                 Standard_Selector.C \
+                                DIS_Selector.C \
                                 Decay_Selector.C \
                                 MinSelector.C \
                                 DressedParticleSelector.C \

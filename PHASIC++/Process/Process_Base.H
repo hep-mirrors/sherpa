@@ -53,7 +53,7 @@ namespace PHASIC {
   class Process_Base {
   protected:
 
-    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc, *p_proc;
+    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc, *p_caller;
     Process_Integrator *p_int;
     Combined_Selector  *p_selector;
     Cut_Data           *p_cuts;
@@ -70,7 +70,7 @@ namespace PHASIC {
     KFactor_Setter_Base *p_kfactor;
 
     size_t      m_nin, m_nout, m_mcmode, m_cmode;
-    std::string m_name;
+    std::string m_name, m_resname;
 
     std::vector<double> m_maxcpl, m_mincpl;
 
@@ -169,6 +169,7 @@ namespace PHASIC {
     void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
     ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
     virtual void SetSelector(const Selector_Key &key);
+    virtual void SetCaller(Process_Base *const proc);
 
     virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);
@@ -209,7 +210,8 @@ namespace PHASIC {
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
 
-    inline const std::string &Name() const { return m_name; }
+    inline const std::string &Name() const        { return m_name;    }
+    inline const std::string &ResultsName() const { return m_resname; }
 
     inline void SetMaxOrders(const std::vector<double> &o) { m_maxcpl=o; }
     inline void SetMinOrders(const std::vector<double> &o) { m_mincpl=o; }
@@ -237,7 +239,6 @@ namespace PHASIC {
     inline ATOOLS::ME_Weight_Info *GetMEwgtinfo() { return &m_mewgtinfo; }
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
-
     inline Process_Integrator *Integrator() const { return p_int; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
@@ -264,7 +265,7 @@ namespace PHASIC {
     inline ME_Generator_Base *Generator() const { return p_gen; }
 
     inline Process_Base *MapProc() const  { return p_mapproc; }
-    inline Process_Base *Proc() const     { return p_proc;    }
+    inline Process_Base *Caller() const   { return p_caller;  }
 
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
@@ -280,6 +281,60 @@ namespace PHASIC {
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
 
   };// end of class Process_Base
+
+  class Order_Flavour {
+    FMMap* p_fmm;
+    int Order_SVFT(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b) 
+    {
+      if (a.IsScalar() && !b.IsScalar()) return 1;
+      if (a.IsVector() && !b.IsScalar() && 
+	  !b.IsVector()) return 1;
+      if (a.IsFermion() && !b.IsFermion() && 
+	  !b.IsScalar() && !b.IsVector()) return 1;
+      return 0;
+    }
+    int Order_Multi(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
+    {
+      if ((*p_fmm)[int(a.Kfcode())]==0 || 
+	  (*p_fmm)[int(b.Kfcode())]==0) return 0;
+      if ((*p_fmm)[int(a.Kfcode())]>
+	  (*p_fmm)[int(b.Kfcode())]) return 1;
+      return 0;
+    }
+    int Order_Photons(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
+    {
+      if (a.Strong() && a.Mass() && b.IsPhoton()) return 1;
+      return 0;
+    }
+
+  public:
+    int operator()(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
+    {
+      if (a.Priority()>b.Priority()) return 1;
+      if (a.Priority()<b.Priority()) return 0;
+      if (Order_Photons(a,b)) return 1;
+      if (Order_Photons(b,a)) return 0;
+      if (!a.Strong()&&b.Strong()) return 1;
+      if (a.Strong()&&!b.Strong()) return 0;
+      if (a.Mass()>b.Mass()) return 1;
+      if (a.Mass()<b.Mass()) return 0;
+      if (p_fmm) {
+	if (Order_Multi(a,b)) return 1;
+	if (Order_Multi(b,a)) return 0;
+      }
+      if (Order_SVFT(a,b)) return 1;
+      if (Order_SVFT(b,a)) return 0;
+      if (!a.IsAnti()&&b.IsAnti()) return 1;
+      if (a.IsAnti()&&!b.IsAnti()) return 0;
+      return a.Kfcode()<b.Kfcode();
+    }
+    Order_Flavour(FMMap* fmm): p_fmm(fmm) {}
+    int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
+    { return (*this)(a.m_fl,b.m_fl); }
+    int operator()(const ATOOLS::Cluster_Leg *a,
+		   const ATOOLS::Cluster_Leg *b)
+    { return (*this)(a->Flav(),b->Flav()); }
+  };// end of class Order_Flavour
 
 }// end of namespace ATOOLS
 

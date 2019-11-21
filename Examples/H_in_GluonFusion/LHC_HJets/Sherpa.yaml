@@ -1,0 +1,29 @@
+# collider parameters
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# settings for ME generators
+ME_GENERATORS: [Comix, Amegic, Internal, MCFM]
+
+# settings for hard decays
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    25 -> 22 22: {Status: 2}
+  Apply_Branching_Ratios: false
+
+# model parameters
+MODEL: HEFT
+PARTICLE_DATA:
+  25: {Mass: 125, Width: 0}
+
+PROCESSES:
+- Process: 93 93 -> 25 93{2}
+  Order: {QCD: Any, EW: 0, HEFT: 1}
+  CKKW: 30
+  2->1-2: { Loop_Generator: Internal }
+  2->3:   { Loop_Generator: MCFM }
+  2->1-3:
+    NLO_QCD_Mode: MC@NLO
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix

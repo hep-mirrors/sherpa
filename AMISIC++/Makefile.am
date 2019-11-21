@@ -1,5 +1,5 @@
 SUBDIRS       =	\
 		Tools \
-		Model \
+		Perturbative \
 		Main
 

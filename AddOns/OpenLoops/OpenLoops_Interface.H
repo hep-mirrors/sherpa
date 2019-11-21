@@ -3,7 +3,9 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "METOOLS/Loops/Divergence_Array.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 
 namespace ATOOLS {
@@ -31,14 +33,15 @@ namespace OpenLoops {
     static std::string s_olprefix;
     static bool        s_ignore_model;
     static bool        s_exit_on_error;
-    static std::vector<std::string> s_evgen_params;
+    static std::map<std::string, std::string> s_evgen_params;
+
+    void RegisterDefaults() const;
 
   public :
-    OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}
+    OpenLoops_Interface();
     ~OpenLoops_Interface();
 
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
 

@@ -158,15 +158,15 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
   size_t posa, posb;        // start and end of things b/w brackets
   size_t posmin;            // start of first bracket
 
-  std::string sbr, sdbr;
+  std::string sbr(""), sdbr("");
 
   // extract Delta BR
   posa = entry.find("(");
   posb = entry.find(")");
   posmin = posa;
-  if(posa!=std::string::npos && posb!=std::string::npos)
+  if(posa!=std::string::npos && posb!=std::string::npos && (posa+1)!=posb)
     sdbr = entry.substr(posa+1,posb-posa-1);
-  else sdbr = "-1.0";
+  if (sdbr=="") sdbr = "-1.0";
 
   // extract Origin
   posa = entry.find("[");
@@ -194,7 +194,6 @@ void Tools::ExtractBRInfo( std::string entry, double & br,
 void GeneralModel::AddParameters(const std::string& params)
 {
   Data_Reader reader(" ",";","!");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetMatrixType(mtc::transposed);

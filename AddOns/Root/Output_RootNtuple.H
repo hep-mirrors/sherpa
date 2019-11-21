@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Terminator_Objects.H"
 #ifdef USING__ROOT
 #include "Riostream.h"
 #include "TTree.h"
@@ -64,6 +64,7 @@ namespace SHERPA {
     std::vector<rntuple_evt2> m_evtlist;
     std::vector<int> m_flavlist;    
     std::vector<ATOOLS::Vec4D> m_momlist;
+    void RegisterDefaults() const;
     void StoreEvt();
     void MPISync();
     void AddDecayProducts(ATOOLS::Particle *part,int &np);
@@ -79,6 +80,11 @@ namespace SHERPA {
 
   class Output_ERootNtuple {};
   class Output_EDRootNtuple {};
+
+  class Common_Root_Settings {
+  public:
+    void RegisterDefaults() const;
+  };
 
 }
 

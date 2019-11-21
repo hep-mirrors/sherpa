@@ -147,6 +147,13 @@ def check_model(model_name, model_path):
             non_ct_vertices  = [vtx for vtx in model.all_vertices if vtx not in model.all_CTvertices]
             model.non_ct_couplings = sum([vtx.couplings.values() for vtx in non_ct_vertices], [])
 
+      # For NLO models: filter out lorentz structures 
+      # that ONLY apper in CT vertices as they are somtimes ill-formatted
+      needed_names = []
+      for v in model.all_vertices:
+            needed_names += [l.name for l in v.lorentz]
+      model.all_lorentz = [l for l in model.all_lorentz if l.name in needed_names]
+
       # Sort coupling orders to ensure first order is QCD, second
       # order is QED
       model.all_orders = sort_orders(model.all_orders)
@@ -223,10 +230,10 @@ if __name__ == "__main__":
       progress(check_output(sconsargs))
 
       # write example run card to working dir
-      run_card_path="{0}_Example_Run.dat".format(model_name)
+      run_card_path="Sherpa.{0}_Example.yaml".format(model_name)
       while(os_path.exists(run_card_path)):
             run_card_path="_"+run_card_path
-      progress("Writing example run card '{0}' to working directory".format(run_card_path))
+      progress("Writing example Sherpa config file '{0}' to working directory".format(run_card_path))
       write_run_card(model, model_name, run_card_path)
 
       progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use of Sherpa's BSM features".format(model_name))

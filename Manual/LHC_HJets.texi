@@ -7,39 +7,31 @@ The inclusive process is calculated
 at next-to-leading order accuracy matched to the parton shower using 
 the MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. The next 
 few higher jet multiplicities, calculated at next-to-leading order as well, 
-are merged into the inclusive sample using the MEPS@@NLO method - an 
-extension of the CKKW method to NLO - as described in @mycite{Hoeche2012yf} 
+are merged into the inclusive sample using the MEPS@@NLO method -- an 
+extension of the CKKW method to NLO -- as described in @mycite{Hoeche2012yf} 
 and @mycite{Gehrmann2012yg}. Finally, even higher multiplicities, calculated 
 at leading order, are merged on top of that. A few things to note are 
-detailed below the example. The example can be converted a simple MENLOPS 
-setup by setting @code{LJET:=1}, or an MEPS setup by setting @code{LJET:=0}, 
-to study the effect of incorporating higher-order matrix elements.
+detailed below the example.
+
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions 
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced throughout the entire run card by
-their defined value, see @ref{Tags}.
-@item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
-to be used in the process setup, defining the multiplicity of the MC@@NLO 
-subprocesses, the maximal number of extra jets, and the merging cut.
-@item The @code{LOOPGEN<i>} tag is used to name the providers of the one-loop 
-matrix elements for the respective multiplicities. For the two simplemost cases 
-Sherpa can provide it internally. Additionally, MCFM is interfaced for the
-H+2jet process, cf. @ref{MCFM interface}.
+@item The example can be converted into a simple MENLOPS setup by replacing
+@code{2->1-3} with @code{2->1}, or into an MEPS setup with @code{2->0}, to
+study the effect of incorporating higher-order matrix elements.
+@item Providers of the one-loop matrix elements for the respective
+multiplicities are set using @code{Loop_Generator}. For the two simplest
+cases Sherpa can provide it internally. Additionally, MCFM is interfaced for
+the H+2jet process, cf. @ref{MCFM interface}.
 @item To enable the Higgs to decay to a pair of photons, for example, the 
 hard decays are invoked.
 For details on the hard decay handling and how to enable specific decay modes 
-see @ref{Hard decays}. As in the Higgs case the branching ratios calculated
-by Sherpa at the leading order receive large corrections a modified BR table
-to be read in by Sherpa is provided.
+see @ref{Hard decays}.
 @end itemize
  

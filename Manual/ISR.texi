@@ -18,16 +18,16 @@
 @cindex SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
-initial state radiation (ISR). They may be set in the
-@code{(isr)} section of the run-card, see @ref{Input structure}.
+initial state radiation (ISR).
 
 @table @code
-@item BUNCH_1/BUNCH_2
+@item BUNCHES
 Specify the PDG ID of the first
-(left) and second (right) bunch particle, i.e. the particle after eventual 
-Beamstrahlung specified through the beam parameters, see @ref{Beam Parameters}.
-Per default these are taken to be identical to the parameters 
-@code{BEAM_1}/@code{BEAM_2}, assuming the default beam spectrum is
+(left) and second (right) bunch particle (or both if only one value is
+provided), i.e. the particle after eventual Beamstrahlung specified through the
+beam parameters, see @ref{Beam Parameters}.  Per default these are taken to be
+identical to the values set using @code{BEAMS}, assuming the default beam
+spectrum is
 Monochromatic. In case the Simple Compton or Laser Backscattering spectra are
 enabled the bunch particles would have to be set to 22, the PDG code of the
 photon.
@@ -39,7 +39,7 @@ of mass energy squared of the collision, @emph{not} the
 centre of mass energy after eventual Beamstrahlung.
 @*
 The parameter can be specified using the internal interpreter,
-see @ref{Interpreter}, e.g. as @samp{ISR_SMIN=sqr(20/E_CMS)}.
+see @ref{Interpreter}, e.g. as @code{ISR_SMIN: sqr(20/E_CMS)}.
 @end table
 
 Sherpa provides access to a variety of structure functions.
@@ -47,27 +47,27 @@ They can be configured with the following parameters.
 
 @table @code
 @item PDF_LIBRARY
-Takes a space separated list of PDF interfaces to load. If the two colliding
-beams are of different type, e.g. protons and electrons or photons and
-electrons, it is possible to specify two different PDF libraries using
-@anchor{PDF_LIBRARY_1} @option{PDF_LIBRARY_1} and @anchor{PDF_LIBRARY_2}
-@option{PDF_LIBRARY_2}. 
+This parameter takes the list of PDF interfaces to load.
 The following options are distributed with Sherpa:
 @table @code
 @item LHAPDFSherpa
 Use PDF's from LHAPDF @mycite{Whalley2005nh}. The interface is only
 available if Sherpa has been compiled with support for LHAPDF, see
 @ref{Installation}.
+@item CT14Sherpa
+Built-in library for some PDF sets from the CTEQ collaboration,
+cf. @mycite{Dulat2015mca}. This is the default.
 @item CT12Sherpa
-Built-in library for some PDF sets from the CTEQ collaboration, cf.
-@mycite{Gao2013xoa}.
+Built-in library for some PDF sets from the CTEQ collaboration,
+cf. @mycite{Gao2013xoa}.
 @item CT10Sherpa
-Built-in library for some PDF sets from the CTEQ collaboration, cf.
-@mycite{Lai2010vv}. This is the
-default, if Sherpa has not been compiled with LHAPDF support.
+Built-in library for some PDF sets from the CTEQ collaboration,
+cf. @mycite{Lai2010vv}.
 @item CTEQ6Sherpa
-Built-in library for some PDF sets from the CTEQ collaboration, cf.
-@mycite{Nadolsky2008zw}.
+Built-in library for some PDF sets from the CTEQ collaboration,
+cf. @mycite{Nadolsky2008zw}.
+@item NNPDF30NLO
+Built-in library for PDF sets from the NNPDF group, cf. @mycite{Ball2014uwa}.
 @item MSTW08Sherpa
 Built-in library for PDF sets from the MSTW group, cf. @mycite{Martin2009iq}.
 @item MRST04QEDSherpa
@@ -95,22 +95,24 @@ instructions.
 @item PDF_SET
 Specifies the PDF set for hadronic bunch particles. All sets available in the
 chosen @code{PDF_LIBRARY} can be figured by running Sherpa with the parameter
-@code{SHOW_PDF_SETS=1}, e.g.:
+@code{SHOW_PDF_SETS: 1}, e.g.:
 @verbatim
-  Sherpa PDF_LIBRARY=CTEQ6Sherpa SHOW_PDF_SETS=1
+  Sherpa 'PDF_LIBRARY: CTEQ6Sherpa' 'SHOW_PDF_SETS: 1'
 @end verbatim  
 If the two colliding beams are of different type, e.g. protons and electrons
-or photons and electrons, it is possible to specify two different PDF sets using 
-@anchor{PDF_SET_1} @option{PDF_SET_1} and @anchor{PDF_SET_2} @option{PDF_SET_2}.
-@item PDF_SET_VERSION
+or photons and electrons, it is possible to specify two different PDF sets by
+providing two values: @option{PDF_SET: [pdf1, pdf2]}. @anchor{PDF_SET} The
+special value @code{Default} can be used as a placeholder for letting Sherpa
+choose the appropriate PDF set (or none).
+@item PDF_SET_VERSIONS
 This parameter allows to select a specific version (member) within the chosen
 PDF set. It is possible to specify two different PDF sets using
-@anchor{PDF_SET_VERSION_1} @option{PDF_SET_VERSION_1} and
-@anchor{PDF_SET_VERSION_2} @option{PDF_SET_VERSION_2}.
+@option{PDF_SET_VERSIONS: [version1, version2]}. @anchor{PDF_SET_VERSIONS}
 @comment Specifying a negative value, e.g.
 @comment @verbatim
-@comment   PDF_LIBRARY LHAPDFSherpa;
-@comment   PDF_SET NNPDF12_100.LHgrid; PDF_SET_VERSION -100;
+@comment   PDF_LIBRARY: LHAPDFSherpa
+@comment   PDF_SET: NNPDF12_100.LHgrid
+@comment   PDF_SET_VERSION: -100
 @comment @end verbatim
 @comment results in Sherpa sampling all sets 1..100, which can be used to obtain
 @comment the averaging required when employing PDF's from the NNPDF

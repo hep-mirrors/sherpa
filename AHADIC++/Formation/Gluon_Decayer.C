@@ -2,6 +2,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <cassert>
+
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
@@ -39,6 +41,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       msg_Error()<<"Couldn't deal with 2-parton singlet.\n"<<(*singlet)<<"\n";
       exit(1);
     }
+    delete p_singlet;
     return flag;
   }
   m_origsize=p_singlet->size();
@@ -75,6 +78,8 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
       else 
 	p_singlet->pop_back();
     case 0:
+      //msg_Out()<<METHOD<<": Step("<<part1<<", "<<part2<<") yields 0, now "
+      //	       <<p_singlet->size()<<" partons in singlet.\n";
       break;
     case -1:
     default:
@@ -96,7 +101,7 @@ bool Gluon_Decayer::SplitGluonRing() {
 
 Proto_Particle * Gluon_Decayer::FirstGluon() {
   double minm2(1.e12), m2thres(sqr(2.*m_breaker.MinMass())), m2;
-  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner;
+  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner(p_singlet->end());
   for (list<Proto_Particle *>::iterator ppiter1=p_singlet->begin();
        ppiter1!=p_singlet->end();ppiter1++) {
     Proto_Particle * part1(*ppiter1);
@@ -110,11 +115,13 @@ Proto_Particle * Gluon_Decayer::FirstGluon() {
       winner = ppiter1;
     }
   }
-  return (*winner);
+  return (winner==p_singlet->end()?(*p_singlet->begin()):(*winner));
 }
 
 int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
 			Proto_Particle * part3) {
+  assert(part1 != nullptr);
+  assert(part2 != nullptr);
   Vec4D momsave1(part1->Momentum()), momsave2(part2->Momentum());
   if (CheckMass(part1,part2) && m_splitter(part1,part2,part3)) {
     return 1;
@@ -125,11 +132,17 @@ int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
 }
 
 bool Gluon_Decayer::LastStep() {
-  Proto_Particle * part[3];
-  size_t i(0);
+  // collect particles
+  Proto_Particle* part[3] {nullptr, nullptr, nullptr};
+  {
+    size_t i {0};
+    for (auto& p : *p_singlet) {
+      part[i] = p;
+      ++i;
+    }
+  }
+  // assign roles
   size_t gluon(1),split(0),spect(2);
-  for (list<Proto_Particle *>::iterator pliter=p_singlet->begin();
-       pliter!=p_singlet->end();pliter++) part[i++] = (*pliter);
   if ( (!part[0]->IsLeading() && part[2]->IsLeading()) ||
        (!part[0]->IsLeading() && !part[2]->IsLeading() &&
 	(((part[0]->Momentum()+part[1]->Momentum()).Abs2()-
@@ -138,6 +151,7 @@ bool Gluon_Decayer::LastStep() {
 	  sqr(p_constituents->Mass(part[2]->Flavour())))))) {
     split = 2; spect = 0;
   }
+  // perform step and return result
   int stepres = Step(part[split],part[gluon],part[spect]);
   if (stepres==0) {
     return Trivial(p_singlet->front(),p_singlet->back());

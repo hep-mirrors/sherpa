@@ -1,20 +1,21 @@
 #include "SHERPA/Tools/Output_HepEvt.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
 Output_HepEvt::Output_HepEvt(const Output_Arguments &args):
-  Output_Base("HEPEVT")
+  Output_Base{ "HEPEVT" }
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepevt";
-  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
+  const int precision =
+    Settings::GetMainSettings()["EVENT_OUTPUT_PRECISION"].Get<int>();
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif

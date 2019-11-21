@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace PDF { struct PDF_Base; }
+namespace PDF { class PDF_Base; }
 
 namespace MODEL {
 
@@ -88,6 +88,8 @@ namespace MODEL {
     AlphasMap m_alphas;
     One_Running_AlphaS * p_active;
     PDF::PDF_Base * p_overridingpdf;
+
+    void RegisterDefaults() const;
 
     // construct PDFs that are only used for their AlphaS info and values
     void InitOverridingPDF(const std::string name, const int member);

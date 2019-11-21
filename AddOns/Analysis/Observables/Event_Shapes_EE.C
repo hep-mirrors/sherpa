@@ -9,34 +9,34 @@ using namespace ANALYSIS;
 
 
 DECLARE_GETTER(Event_Shapes_EE,"EEShapes",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Event_Shapes_EE>::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Event_Shapes_EE>::PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+7)<<" "<<"InList: <list>,\n"
+     <<std::setw(width+7)<<" "<<"OutList: <list>,\n"
+     <<std::setw(width+7)<<" "<<"Qual: <qualifier>\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object * ATOOLS::Getter<Analysis_Object,Argument_Matrix,
-				 Event_Shapes_EE>::operator()(const Argument_Matrix &parameters) const
+Analysis_Object * ATOOLS::Getter<Analysis_Object,Analysis_Key,
+				 Event_Shapes_EE>::operator()(const Analysis_Key& key) const
 {
-  std::string inlist="FinalState", outlist="EEShapes";
-  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="Qual" && cur.size()>1) {
-      if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
-	  ATOOLS::rpa->gen.Beam2().IsLepton()) {
-	qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
-      }
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("EEShapes").Get<std::string>();
+  const auto rawqualifier = s["Qual"].SetDefault("").Get<std::string>();
+  Particle_Qualifier_Base_SP qualifier;
+  if (!rawqualifier.empty()) {
+    if (ATOOLS::rpa->gen.Beam1().IsLepton() &&
+        ATOOLS::rpa->gen.Beam2().IsLepton()) {
+      qualifier = Particle_Qualifier_Base_SP {
+        ATOOLS::Particle_Qualifier_Getter::GetObject(rawqualifier, rawqualifier)};
     }
   }
-  if (!qualifier) qualifier=new ATOOLS::Is_Not_Lepton(); 
+  if (!qualifier)
+    qualifier = std::make_shared<ATOOLS::Is_Not_Lepton>();
   return new Event_Shapes_EE(inlist,outlist,qualifier);
 }
 
@@ -76,7 +76,7 @@ template class Blob_Data<Event_Shape_EE_Data>;
 
 Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
 				 const std::string & _outlistname,
-				 SP(Particle_Qualifier_Base) _quali) :
+				 std::shared_ptr<Particle_Qualifier_Base> _quali) :
   Final_Selector(_inlistname,_outlistname,-1,_quali),
   m_startaxes(4), m_maxidentaxes(2), m_accuracy(1.e-4),
   m_key(std::string("EvtShapeData"))

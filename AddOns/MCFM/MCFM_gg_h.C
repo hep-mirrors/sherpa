@@ -1,10 +1,11 @@
+#include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
   // README:
-  // For Higgs production, choose model: MODEL = SM+EHC
+  // For Higgs production, choose model: MODEL = SMEHC
   // It is important for the Higgs production to have all five flavours 
   // in the initial state, but the Yukawa coupling of the b must be
   // switched off:  YUKAWA[5] = 0.
@@ -193,7 +194,7 @@ operator()(const Process_Info &pi) const
 {
   return NULL;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
-  if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
+  if (MODEL::s_model->Name()!=std::string("SMEHC") ||
       Flavour(kf_b).Yuk()>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
   if (!(pi.m_fi.m_nlotype&nlo_type::loop))              return NULL;

@@ -12,12 +12,12 @@
 namespace ANALYSIS {
 
   int HistogramType(const std::string &scale);
-  
+
   class Primitive_Observable_Base: public Analysis_Object {  
   public:
 
-    typedef ATOOLS::Getter_Function<Primitive_Observable_Base,Argument_Matrix> 
-    Observable_Getter_Function;
+    typedef ATOOLS::Getter_Function<Primitive_Observable_Base, Analysis_Key>
+      Observable_Getter_Function;
 
   protected:
 

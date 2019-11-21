@@ -10,6 +10,7 @@ std::ostream& SHERPA::operator<<(std::ostream& ostr, const eph::code ephc) {
   case eph::Analysis:           return ostr<<"Analysis          ";
   case eph::Read_In:            return ostr<<"Read_In           ";
   case eph::Reweighting:        return ostr<<"Reweighting       ";
+  case eph::Userhook:           return ostr<<"Userhook          ";
   default:                      return ostr<<"Unknown           ";
   }
 }

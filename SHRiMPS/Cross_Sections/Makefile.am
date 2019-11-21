@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libShrimpsXsecs.la
 
+GITTAG = SHRiMPS/Cross_Sections
+include ../../git.make
+
 libShrimpsXsecs_la_SOURCES = \
+			Git_Info.C \
 			Cross_Sections.C \
 			Sigma_Base.C \
 			Sigma_Total.C \

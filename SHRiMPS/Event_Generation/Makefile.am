@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libShrimpsEvents.la
 
+GITTAG = SHRiMPS/Events
+include ../../git.make
+
 libShrimpsEvents_la_SOURCES = \
+			Git_Info.C \
 			Event_Generator.C \
 			Inelastic_Event_Generator.C \
 			Parton_Luminosity.C \

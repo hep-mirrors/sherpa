@@ -66,7 +66,7 @@ namespace PHASIC {
       */
     int m_active;
 
-    std::vector<ATOOLS::Flavour> m_flavours;
+    ATOOLS::Flavour_Vector m_flavours;
     std::vector<METOOLS::Spin_Amplitudes*> m_diagrams;
     PHASIC::Multi_Channel* p_channels;
     METOOLS::Amplitude2_Tensor* p_amps;
@@ -91,6 +91,8 @@ namespace PHASIC {
 
     std::string Name() const;
     std::string IDCode() const;
+    static std::string IDCode(const ATOOLS::Flavour& decayer,
+                              const ATOOLS::Flavour_Vector& daughters);
     inline const double& Width() const { return m_width; }
     inline const double& DeltaWidth() const { return m_deltawidth; }
     inline const double& IWidth() const { return m_iwidth; }
@@ -133,6 +135,7 @@ namespace PHASIC {
 
     friend std::ostream &operator<<(std::ostream &os, const Decay_Channel &dt);
 
+    static void SortFlavours(ATOOLS::Flavour_Vector& flavs);
     static bool FlavourSort(const ATOOLS::Flavour &fl1,
                             const ATOOLS::Flavour &fl2);
   };

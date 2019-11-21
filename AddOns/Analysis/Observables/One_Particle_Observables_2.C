@@ -119,35 +119,40 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *
-GetSOneParticleObservable(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<6) return NULL;
-    std::string list(parameters[0].size()>6?parameters[0][6]:"FinalState");
-    int kf=ATOOLS::ToType<int>(parameters[0][0]);
-    ATOOLS::Flavour flav((kf_code)abs(kf));
-    if (kf<0) flav=flav.Bar();
-    return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
-		     HistogramType(parameters[0][5]),
-		     ATOOLS::ToType<double>(parameters[0][2]),
-		     ATOOLS::ToType<double>(parameters[0][3]),
-		     ATOOLS::ToType<int>(parameters[0][4]),list);
-  }
-  return NULL;
-}									
+GetSOneParticleObservable(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(0.0).Get<double>();
+  const auto max = s["Max"].SetDefault(1.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  if (!s["Item"].IsCustomised())
+    THROW(missing_input, "Item must be set.");
+  const auto item = s["Item"].SetDefault(0).Get<size_t>();
+  const auto list = s["List"].SetDefault("FinalState").Get<std::string>();
+  if (!s["Flav"].IsCustomised())
+    THROW(missing_input, "Flav must be set.");
+  const auto rawflav = s["Flav"].SetDefault(0).Get<int>();
+  ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)std::abs(rawflav)) };
+  if (rawflav < 0)
+    flav = flav.Bar();
+
+  return new Class(flav, item,
+                   HistogramType(scale), min, max, bins,
+                   list);
+}
 
 #define DEFINE_ONE_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetSOneParticleObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetSOneParticleObservable<CLASS>(key); }
 
 #define DEFINE_ONE_OBSERVABLE_PRINT_METHOD(NAME)		\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"flav item min max bins Lin|LinErr|Log|LogErr [inlist]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {Flav: kf, Item: 0, Min: 1, Max: 10, Bins: 100, Scale: Lin, List: FinalState}"; }
 
 #define DEFINE_ONE_OBSERVABLE_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_ONE_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   DEFINE_ONE_OBSERVABLE_PRINT_METHOD(CLASS)
 

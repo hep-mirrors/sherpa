@@ -14,6 +14,8 @@
 #define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
+#include <cassert>
+
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
@@ -25,7 +27,7 @@ Primitive_Analysis::Primitive_Analysis
   m_nevt = 0;
   p_partner = this;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : ") + _name;
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
@@ -36,7 +38,7 @@ Primitive_Analysis::Primitive_Analysis(Analysis_Handler *const ana,const int mod
 {
   p_ana=ana;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : noname");
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
@@ -163,9 +165,11 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   if (sp==NULL) {
     msg_Debugging()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
     // if no signal process (i.e. hadrons execs etc.), proceed anyways
-    // do not split jetseeds
+    // but do not split jetseeds or S/H
     if (m_mode&ANALYSIS::splitt_jetseeds)
       m_mode=m_mode^ANALYSIS::splitt_jetseeds;
+    if (m_mode&ANALYSIS::split_sh)
+      m_mode=m_mode^ANALYSIS::split_sh;
   }
   else name = sp->TypeSpec();
 
@@ -313,6 +317,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
 
   if (m_mode&ANALYSIS::split_sh) {
+    assert(sp != nullptr);
     std::string typespec=sp->TypeSpec();
     typespec=typespec.substr(typespec.length()-2, 2);
     std::string type="";
@@ -411,18 +416,18 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
 {
   if (m_usedb) mode=1;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+  if (mpi->Size()>1) {
+    int rank=mpi->Rank();
     std::string local, global;
     for (Analysis_List::iterator ait(m_subanalyses.begin());
 	 ait!=m_subanalyses.end();++ait)
       local+="||"+ait->first+"|"+ToString(ait->second->m_mode);
     int sz(local.length());
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sz,1,MPI::INT,MPI::MAX);
+    mpi->Allreduce(&sz,1,MPI_INT,MPI_MAX);
     if (sz) {
       local.resize(sz,' ');
-      global.resize(MPI::COMM_WORLD.Get_size()*sz,' ');
-      mpi->MPIComm()->Allgather(&local[0],sz,MPI::CHAR,&global[0],sz,MPI::CHAR);
+      global.resize(mpi->Size()*sz,' ');
+      mpi->Allgather(&local[0],sz,MPI_CHAR,&global[0],sz,MPI_CHAR);
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
       for (size_t pos(global.find("||"));pos!=std::string::npos;) {
 	global=global.substr(pos+2);
@@ -436,12 +441,11 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
     }
   }
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
     {
       if (m_usedb) {
 	My_In_File::OpenDB(resdir+OutputPath()+"/");
-	My_In_File::ExecDB(resdir+OutputPath(),"begin");
       }
       if (mode==0) ATOOLS::MakeDir(resdir+OutputPath());
     }
@@ -454,7 +458,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
 	it->second->FinishAnalysis(dir,mode);
       }
       if (m_usedb) {
-	My_In_File::ExecDB(resdir+OutputPath(),"commit");
 	My_In_File::CloseDB(resdir+OutputPath()+"/");
       }
       return;
@@ -464,7 +467,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       m_objects[i]->Output(resdir+OutputPath());
     }
     if (m_usedb) {
-      My_In_File::ExecDB(resdir+OutputPath(),"commit");
       My_In_File::CloseDB(resdir+OutputPath()+"/");
     }
     return;
@@ -483,7 +485,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     }
   }
   if (m_usedb) {
-    My_In_File::ExecDB(resdir+OutputPath(),"commit");
     My_In_File::CloseDB(resdir+OutputPath()+"/");
   }
 }

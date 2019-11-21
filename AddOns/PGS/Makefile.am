@@ -1,6 +1,10 @@
 
+GITTAG = AddOns/PGS
+include ../../git.make
+
 PGS_SOURCES   =	\
 		pgs_finterface.f \
+		Git_Info.C \
 		Output_PGS.C
 
 AM_FFLAGS     =	-fno-automatic

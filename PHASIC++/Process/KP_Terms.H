@@ -34,7 +34,7 @@ namespace PHASIC {
     bool   m_massive, m_cemode, m_negativepdf;
     double m_H, m_P;  // for pseudo-dipoles
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
-    int    m_Vsubmode, m_collVFF, m_facscheme;
+    int    m_Vsubmode, m_facscheme;
     bool   m_sa,m_sb;
     int    m_typea, m_typeb, m_subtype;
 
@@ -42,6 +42,7 @@ namespace PHASIC {
 
     std::vector<xp_coeff> m_xpa, m_xpb;
 
+    void RegisterDefaults() const;
     void SetColourFactors();
     void SetMassive();
 

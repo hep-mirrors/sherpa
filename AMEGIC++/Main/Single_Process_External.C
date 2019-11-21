@@ -10,9 +10,9 @@
 #include "PDF/Main/ISR_Handler.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -29,9 +29,13 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 AMEGIC::Single_Process_External::Single_Process_External():
-  p_me2(NULL), p_partner(this)
+  p_me2(NULL),
+  p_partner(this)
 {
-  m_keep_zero_procs = ToType<size_t>(rpa->gen.Variable("AMEGIC_KEEP_ZERO_PROCS"));
+  Scoped_Settings amegicsettings{
+    Settings::GetMainSettings()["AMEGIC"] };
+  m_keep_zero_procs =
+    amegicsettings["KEEP_ZERO_PROCS"].Get<size_t>();
   m_lastk=1.0;
 }
 
@@ -57,7 +61,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
   m_newlib   = false;
   string ptypename;
   ptypename = "P"+ToString(m_nin)+"_"+ToString(m_nout);
-  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+ptypename);
+  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+ptypename,true);
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
   m_pn=m_flavs.size();
@@ -164,7 +168,7 @@ double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms
 double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
-  return p_me2->Calc(moms)*(m_lastk=KFactor());
+  return p_me2->Calc(moms)*(m_lastk=KFactor(2));
 }
 
 bool AMEGIC::Single_Process_External::Combinable

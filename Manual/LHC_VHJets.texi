@@ -22,28 +22,20 @@ accounted for, including those with intermediate taus.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_WHJets/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
-easy scale variations. Tags are replaced throughout the entire run card by
-their defined value, see @ref{Tags}.
-@item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced
-to be used in the process setup, defining the multiplicity of the MC@@NLO
-subprocesses, the maximal number of extra jets, and the merging cut.
 @item Two custom particle container, cf. @ref{Particle containers}, have
 been declared, facilitating the process declaration.
-@item As the bottom quark is treated masslessly by default, a five flavour
+@item As the bottom quark is treated as being massless by default, a five flavour
 calculation is performed. The particle container ensures that no external
 bottom quarks, however, are considered to resolve the overlap with single
 top and top pair processes.
-@item The @code{LOOPGEN} tag is used to name the provider of the one-loop
-matrix elements. Here, OpenLoops @mycite{Cascioli2011va} is used.
+@item OpenLoops @mycite{Cascioli2011va} is used as the provider of the one-loop
+matrix elements.
 @item To enable the decays of the Higgs, W boson and tau lepton the hard
 decay handler is invoked. For details on the hard decay handling and how
 to enable specific decay modes see @ref{Hard decays}.
@@ -58,35 +50,27 @@ a Z boson and jets, as used in @mycite{Hoeche2014rya}. It uses the
 MEPS@@NLO method to merge pp->ZH and pp->ZHj at next-to-leading order
 accuracy and adds pp->ZHjj at leading order. The Higgs boson is decayed
 to W-pairs. All W and Z bosons are allowed to decay into electrons, muons
-or tau leptons. The taus are then allowed to decay into all possible
+or tau leptons. The tau leptons are then allowed to decay into all possible
 partonic channels, leptonic and hadronic, to allow for all possible
-triplepton signatures, unavoidably producing two and four lepton events
+trilepton signatures, unavoidably producing two and four lepton events
 as well.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_ZHJets/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
-easy scale variations. Tags are replaced throughout the entire run card by
-their defined value, see @ref{Tags}.
-@item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced
-to be used in the process setup, defining the multiplicity of the MC@@NLO
-subprocesses, the maximal number of extra jets, and the merging cut.
 @item A custom particle container, cf. @ref{Particle containers}, has
 been declared, facilitating the process declaration.
-@item As the bottom quark is treated masslessly by default, a five flavour
+@item As the bottom quark is treated as being massless by default, a five flavour
 calculation is performed. The particle container ensures that no external
 bottom quarks, however, are considered to resolve the overlap with single
 top and top pair processes.
-@item The @code{LOOPGEN} tag is used to name the provider of the one-loop
-matrix elements. Here, OpenLoops @mycite{Cascioli2011va} is used.
+@item OpenLoops @mycite{Cascioli2011va} is used as the provider of the one-loop
+matrix elements.
 @item To enable the decays of the Higgs, W and Z bosons and tau lepton the hard
 decay handler is invoked. For details on the hard decay handling and how
 to enable specific decay modes see @ref{Hard decays}.
@@ -104,25 +88,19 @@ calculation.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat
+@verbatiminclude Examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item Any setting with the exception of the process and selector definitions
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for
-easy scale variations. Tags are replaced throughout the entire run card by
-their defined value, see @ref{Tags}. The central scale is set to the
+@item The central scale is set to the
 invariant mass of the Higgs boson and the lepton pair.
 @item As the bottom quark is set to be treated massively, a four flavour
 calculation is performed.
-@item The @code{LOOPGEN} tag is used to name the provider of the one-loop
-matrix elements. Here, OpenLoops @mycite{Cascioli2011va} is used.
+@item OpenLoops @mycite{Cascioli2011va} is used as the provider of the one-loop
+matrix elements.
 @item To enable the decays of the Higgs the hard
 decay handler is invoked. For details on the hard decay handling and how
 to enable specific decay modes see @ref{Hard decays}.
 @end itemize
-
-

@@ -103,6 +103,17 @@ namespace ATOOLS {
 
   typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
 
+  class PMMSort {
+  public:
+    bool operator()(const Particle * a,const Particle * b) const {
+      return (a->Number()>b->Number());
+    }
+    
+  };// end of class String_Sort
+
+  typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D,PMMSort> ParticleMomMap;
+
+
 
   /*! 
     \class Particle

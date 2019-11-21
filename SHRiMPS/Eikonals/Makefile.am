@@ -1,6 +1,10 @@
 pkglib_LTLIBRARIES = libShrimpsEikonals.la
 
+GITTAG = SHRiMPS/Eikonals
+include ../../git.make
+
 libShrimpsEikonals_la_SOURCES = \
+			Git_Info.C \
 			Eikonal_Weights.C \
 			Rapidity_Density.C \
 			Omega_ik.C \

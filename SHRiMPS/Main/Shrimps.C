@@ -14,13 +14,12 @@ using namespace SHRIMPS;
 using namespace std;
 
 
-Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
-		 BEAM::Beam_Spectra_Handler *const beam,
-		 PDF::ISR_Handler *const isr) :  
+Shrimps::Shrimps(BEAM::Beam_Spectra_Handler *const beam,
+		 PDF::ISR_Handler *const isr) :
   p_beamremnants(NULL), p_generator(NULL)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
-  MBpars.Init(dr);
+  MBpars.Init();
   if (MBpars.RunMode()==run_mode::unknown) {
     msg_Error()<<"Error in "<<METHOD<<":\n   unknown runmode.  Will exit.\n";
     exit(0);
@@ -51,8 +50,7 @@ void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
   InitialiseSingleChannelEikonals();
   InitialiseBeamRemnants(beam,isr);
   InitialiseTheEventGenerator();  
-  Hadron_Init hadroninit;
-  hadroninit.Init();
+  Hadron_Init().Init();
 }
 
 void Shrimps::ResetTheFramework() {

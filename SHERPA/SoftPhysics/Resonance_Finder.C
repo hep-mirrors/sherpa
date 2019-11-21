@@ -1,11 +1,11 @@
 #include "SHERPA/SoftPhysics/Resonance_Finder.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Phys/Particle.H"
 
 #include "MODEL/Main/Model_Base.H"
@@ -23,28 +23,27 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace std;
 
-Resonance_Finder::Resonance_Finder(ATOOLS::Data_Reader* reader,
-                                   Matrix_Element_Handler * meh) :
-  m_on(true), m_resdist(1.), m_inclres(false), p_mehandler(meh)
+Resonance_Finder::Resonance_Finder(Matrix_Element_Handler* meh) :
+  p_mehandler(meh)
 {
-  m_on = (reader->GetValue<std::string>("ME_QED_CLUSTERING","On")=="On");
-  m_resdist = reader->GetValue<double>("ME_QED_CLUSTERING_THRESHOLD",10.);
-  m_inclres = reader->GetValue<int>("ME_QED_INCLUDE_RESONANCES",0);
+  Scoped_Settings meqedsettings{
+    Settings::GetMainSettings()["ME_QED"] };
+  m_on = meqedsettings["CLUSTERING_ENABLED"].SetDefault(true).Get<bool>();
+  m_resdist =
+    meqedsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
+  m_inclres =
+    meqedsettings["INCLUDE_RESONANCES"].SetDefault(false).Get<bool>();
+
   InitialiseHelperParticles();
 
   if (!m_on) return;
+
   ScanModelForEWResonances();
   IdentifyEWSubprocesses();
 }
 
-Resonance_Finder::Resonance_Finder() :
-  m_on(false), m_resdist(1.)
-{
-}
-
 Resonance_Finder::~Resonance_Finder()
 {
-
 }
 
 void Resonance_Finder::ScanModelForEWResonances()

@@ -12,6 +12,8 @@ namespace PHASIC {
     std::vector<Process_Base*>          m_procs;
     std::map<std::string,Process_Base*> m_procmap;
 
+    std::vector<int> m_blocks;
+
     Process_Base *GetProcess(const std::string &name);
 
     bool CheckFlavours(const Subprocess_Info &ii,

@@ -2,20 +2,20 @@
 #define PDF_Main_Shower_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 #include <string>
 
 namespace ATOOLS {
-
   class Cluster_Amplitude;
   class Blob_List;
-  class Default_Reader;
   class Variation_Weights; 
-
 }
 
-namespace MODEL { class Model_Base; }
+namespace MODEL    { class Model_Base; }
+
+namespace REMNANTS { class Remnant_Handler; }
 
 namespace PDF {
 
@@ -50,6 +50,8 @@ namespace PDF {
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
                                const bool & soft=false) = 0;
 
+    virtual void SetRemnants(REMNANTS::Remnant_Handler * remnants) {}
+
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }
@@ -62,21 +64,19 @@ namespace PDF {
 
     inline int KTType() const { return m_kttype; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
-
+    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts) {
+      p_variationweights = varwgts;
+    }
   };// end of class Shower_Base
 
   struct Shower_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    ATOOLS::Default_Reader *p_reader;
     int m_type;
     inline Shower_Key(MODEL::Model_Base *const model,
 		      ISR_Handler *const isr,
-		      ATOOLS::Default_Reader *const reader,
 		      const int type):
-      p_model(model), p_isr(isr), p_reader(reader), m_type(type) {}
+      p_model(model), p_isr(isr), m_type(type) {}
   };//end of struct Shower_Key
 
   typedef ATOOLS::Getter_Function

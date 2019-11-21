@@ -21,6 +21,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace PHASIC {
 
@@ -37,7 +38,7 @@ namespace PHASIC {
 
     Tag_Setter m_tagset;
 
-    SP(Color_Integrator) p_ci;
+    std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
     int    m_cmode, m_kfac, m_nmin;
@@ -113,17 +114,17 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  Settings& s = Settings::GetMainSettings();
   static std::string s_core;
   static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
   if (s_cmode<0) {
-    Data_Reader read(" ",";","!","=");
-    s_nmaxall=read.GetValue<int>("MEPS_NMAX_ALLCONFIGS",-1);
-    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",-1);
-    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",8|64|128|256);
-    s_nlocpl=read.GetValue<int>("MEPS_NLO_COUPLING_MODE",2);
-    s_nfgsplit=read.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2);
-    s_csmode=read.GetValue<int>("MEPS_COLORSET_MODE",0);
-    s_core=read.GetValue<std::string>("CORE_SCALE","Default");
+    s_nmaxall=s["MEPS_NMAX_ALLCONFIGS"].Get<int>();
+    s_nmaxnloall=s["MEPS_NLO_NMAX_ALLCONFIGS"].Get<int>();
+    s_cmode=s["MEPS_CLUSTER_MODE"].Get<int>();
+    s_nlocpl=s["MEPS_NLO_COUPLING_MODE"].Get<int>();
+    s_nfgsplit=s["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_csmode=s["MEPS_COLORSET_MODE"].Get<int>();
+    s_core=s["CORE_SCALE"].Get<std::string>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core);
@@ -185,7 +186,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
   */
-  m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -274,7 +275,7 @@ bool MEPS_Scale_Setter::CheckSplitting
 
 bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
-  NLO_subevtlist *subs(p_caller->GetRSSubevtList());
+  NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
     if (cc.m_k==sub->m_k &&
@@ -325,22 +326,22 @@ double MEPS_Scale_Setter::Calculate
 {
   m_p=momenta;
   if (m_nproc || m_cmode&8) p_ci=NULL;
-  else p_ci=p_caller->Integrator()->ColorIntegrator();
-  for (size_t i(0);i<p_caller->NIn();++i) m_p[i]=-m_p[i];
+  else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
+  for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
     m_ampls.back()->Delete();
     m_ampls.pop_back();
   }
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
-  m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_sproc=p_caller->Info().Has(nlo_type::rsub);
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name());
+  m_rproc=p_proc->Caller()->Info().Has(nlo_type::real);
+  m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
-  m_rsproc=m_rproc||(m_sproc&&p_caller->GetRSSubevtList());
-  const Flavour_Vector &fl=p_caller->Flavours();
+  m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   if ((m_cmode&128) && m_sproc && !m_rproc &&
-      p_caller->GetRSSubevtList()) {
+      p_proc->Caller()->GetRSSubevtList()) {
     msg_Debugging()<<"S event, use R configuration\n";
-    Cluster_Amplitude *ampl(p_caller->GetRSSubevtList()->back()->p_ampl);
+    Cluster_Amplitude *ampl(p_proc->Caller()->GetRSSubevtList()->back()->p_ampl);
     if (ampl && ampl->Next()) {
       m_ampls.push_back(ampl->CopyAll());
       m_ampls.back()=m_ampls.back()->Next();
@@ -348,13 +349,13 @@ double MEPS_Scale_Setter::Calculate
     }
     else {
       Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-      ampl->SetNIn(p_caller->NIn());
-      ampl->SetOrderQCD(p_caller->MaxOrder(0));
-      for (size_t i(1);i<p_caller->MaxOrders().size();++i)
-	ampl->SetOrderEW(ampl->OrderEW()+p_caller->MaxOrder(i));
+      ampl->SetNIn(p_proc->Caller()->NIn());
+      ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
+      for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
+	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
       for (size_t i(0);i<m_p.size();++i)
 	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
-      ampl->SetProc(p_caller->Get<Single_Process>());
+      ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
       m_ampls.push_back(ampl);      
     }
@@ -362,12 +363,12 @@ double MEPS_Scale_Setter::Calculate
   }
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  ampl->SetNIn(p_caller->NIn());
-  ampl->SetOrderQCD(p_caller->MaxOrder(0));
-  for (size_t i(1);i<p_caller->MaxOrders().size();++i)
-    ampl->SetOrderEW(ampl->OrderEW()+p_caller->MaxOrder(i));
+  ampl->SetNIn(p_proc->Caller()->NIn());
+  ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
+  for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
+    ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
   ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
-  if (p_ci!=NULL) {
+  if (p_ci != nullptr) {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],
@@ -382,12 +383,12 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   ClusterAmplitude_Vector ampls;
-  p_sproc=p_caller->Get<Single_Process>();
+  p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
-  int mm(p_caller->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc) p_caller->Generator()->ShiftMasses(ampl);
+  int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
+  if (!m_nproc) p_proc->Caller()->Generator()->ShiftMasses(ampl);
   Cluster(ampl,ampls,1);
-  p_caller->Generator()->SetMassMode(mm);
+  p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
     if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()-1);
@@ -431,7 +432,10 @@ double MEPS_Scale_Setter::Calculate
       ampls[i]=NULL;
       if (m_nproc) m_ampls.back()->SetOrderQCD
 		     (m_ampls.back()->OrderQCD()-1);
-      p_cs->SetColors(m_ampls.back()->Last());
+      ClusterAmplitude_Vector ampls(m_ampls);
+      m_ampls.clear();
+      p_cs->SetColors(ampls.back()->Last());
+      m_ampls=ampls;
       if (m_nproc) m_ampls.back()->SetOrderQCD
 		     (m_ampls.back()->OrderQCD()+1);
       msg_Debugging()<<"Selected configuration "<<i<<": {\n";
@@ -471,7 +475,7 @@ void MEPS_Scale_Setter::Cluster
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
   bool strict(!(m_cmode&1 && !rpa->gen.NumberOfTrials()));
-  DEBUG_FUNC("Actual = "<<ampl<<", nmin = "<<m_nmin<<", strict = "<<strict);
+  DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
   if (!CoreCandidate(ampl)) {
@@ -702,7 +706,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
@@ -722,7 +726,7 @@ void MEPS_Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_caller->Name()<<"' {\n";
+		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

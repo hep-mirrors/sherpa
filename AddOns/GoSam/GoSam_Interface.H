@@ -1,6 +1,7 @@
 #ifndef GoSam_Interface_H
 #define GoSam_Interface_H
 
+#include "ATOOLS/Org/Terminator_Objects.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "METOOLS/Loops/Divergence_Array.H"
@@ -16,12 +17,13 @@ namespace GoSam {
     static bool        s_exit_on_error;
     static bool        s_newlibs;
 
+    void RegisterDefaults() const;
+
   public :
     GoSam_Interface();
     ~GoSam_Interface();
 
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
 

@@ -6,7 +6,7 @@
 #include "AddOns/Python/MEProcess.H"
 %}
 
-%catches (ATOOLS::Exception) MEProcess::Initialize();
+%catches (const ATOOLS::Exception&) MEProcess::Initialize();
 
 namespace SHERPA{
   class Sherpa;
@@ -31,6 +31,8 @@ public:
   void AddOutFlav(const int &id, const int &col1, const int &col2);
   double GenerateColorPoint();
   void Initialize();
+
+  std::vector<double> NLOSubContributions();
 
   void SetMomentum(int, double, double, double, double);
   void SetMomenta(ATOOLS::Vec4D_Vector&);

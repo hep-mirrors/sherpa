@@ -1,0 +1,16 @@
+EVENT_TYPE: HadronDecay
+ME_GENERATORS: None
+BEAMS: [11, -11]
+BEAM_ENERGIES: 7000
+PARTICLE_DATA: { 15: { Stable: 0 } }
+
+INTERNAL_ANALYSES:
+  - {
+    LEVEL: Hadrons,
+    PATH_PIECE: Photons/,
+    OBSERVABLES: [
+      { PT: { Flav: 22, List: FinalState, Min: 0, Max: 10, Bins: 200, Scale: LinErr } },
+      { SoftPhotonEnergy: [11, -11, 0, 3.0969, 100, LinErr, FinalState] },
+      { SoftPhotonAngle:  [11, -11, 0, 3.0969, 100, LinErr, FinalState] },
+      ],
+    }

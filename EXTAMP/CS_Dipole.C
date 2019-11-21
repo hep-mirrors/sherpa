@@ -135,7 +135,7 @@ CS_Dipole::CS_Dipole(const Dipole_Info& di)
   /* TODO: pass orders correctly!! */
   PHASIC::External_ME_Args args(ATOOLS::Flavour_Vector(Flavours().begin(),Flavours().begin()+2),
 				ATOOLS::Flavour_Vector(Flavours().begin()+2, Flavours().end()),
-				std::vector<double>());
+				{-1,-1});
   p_corr_me = PHASIC::Spin_Color_Correlated_ME2::GetME2(args);
   if(!p_corr_me) THROW(fatal_error, "Could not find correlated ME for this process.");
 

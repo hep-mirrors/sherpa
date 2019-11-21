@@ -71,7 +71,6 @@ template <class Read_Type>
 Read_Type Data_Reader::Convert(std::string cur) const
 {
   if (cur==nullstring) return Default<Read_Type>();
-  cur=ReplaceTags(cur);
   Read_Type value;
   if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
       typeid(value)==typeid(long) ||
@@ -93,7 +92,7 @@ Read_Type Data_Reader::ReadValue(const std::string &parameter,
   for (size_t i(0);i<FileContent(file).size();++i)
     for (size_t j(0);j<FileContent(file)[i].size();++j) {
       size_t pos(0), length(0);
-      std::string par(ReplaceTags(FileContent(file)[i][j]));
+      std::string par(FileContent(file)[i][j]);
       if (parameter==nullstring ||
 	  (pos=Find(par,parameter,length))!=std::string::npos) {
 	cur=par;
@@ -118,7 +117,7 @@ Data_Reader::ReadVector(const std::string &parameter,const size_t &file)
   for (size_t i(0);i<FileContent(file).size();++i) {
     for (size_t j(0);j<FileContent(file)[i].size();++j) {
       size_t pos(0), length(0);
-      std::string cur(ReplaceTags(FileContent(file)[i][j]));
+      std::string cur(FileContent(file)[i][j]);
       if (parameter==nullstring ||
 	  (pos=Find(cur,parameter,length))!=std::string::npos) {
 	if ((cur=cur.substr(pos+length)).length()==0) {
@@ -155,7 +154,7 @@ Data_Reader::ReadMatrix(const std::string &parameter,const size_t &file)
   for (size_t i(0);i<FileContent(file).size();++i) {
     for (size_t j(0);j<FileContent(file)[i].size();++j) {
       size_t pos(0), length(0);
-      std::string cur(ReplaceTags(FileContent(file)[i][j]));
+      std::string cur(FileContent(file)[i][j]);
       if (parameter==nullstring ||
 	  (pos=Find(cur,parameter,length))!=std::string::npos) {
 	if ((cur=cur.substr(pos+length)).length()==0) {

@@ -15,6 +15,7 @@ libPhasicScales_la_SOURCES    =	\
 				Color_Setter.C \
 				Tag_Setter.C \
 				MEPS_Scale_Setter.C \
+				VBF_Scale_Setter.C \
 				Variable_Scale_Setter.C \
 				Variable_Core_Scale.C \
 				Fastjet_Scale_Setter.C \

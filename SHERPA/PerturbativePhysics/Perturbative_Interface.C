@@ -15,7 +15,7 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 
 #include <cassert>
@@ -24,17 +24,16 @@ using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Perturbative_Interface::Perturbative_Interface
-(Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
+Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh,
+                                               Hard_Decay_Handler*const dec,
+                                               Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), p_localkfactorvarweights(NULL)
 {
-  Data_Reader read;
-  read.SetInputPath(p_me->Path());
-  read.SetInputFile(p_me->File());
-  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
-  m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
-  m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
+  Settings& s = Settings::GetMainSettings();
+  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(1).Get<int>();
+  m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
+  m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
 
 Perturbative_Interface::Perturbative_Interface
@@ -86,13 +85,29 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_shower->CleanUp();
   msg_Indent();
   if (p_mi) {
-    p_ampl=p_mi->ClusterConfiguration();
+    p_ampl=p_mi->ClusterConfiguration(blob);
     if (p_ampl==NULL) return Return_Value::Retry_Event;
     if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
       msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
       return Return_Value::Retry_Event;
     }
-    p_mi->Process()->Generator()->SetMassMode(1);
+    p_mi->SetMassMode(1);
+    int stat(p_mi->ShiftMasses(p_ampl));
+    if (stat<0) {
+      msg_Out()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
+	       <<(*blob)<<"\n";
+      exit(1);
+      return Return_Value::Retry_Event;
+    }
+    if (stat==1) {
+      stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
+      if (stat!=1) {
+	msg_Out()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
+		 <<(*blob)<<"\n";
+	exit(1);
+	return Return_Value::Retry_Event;
+      }
+    }
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;
@@ -155,15 +170,15 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
-      if (m_weight>=ran->Get()) {
-        if (m_weight < 1.0) {
-          if (p_localkfactorvarweights)
-            *p_localkfactorvarweights *= 1.0 / m_weight;
-          m_weight = 1.0;
-        }
-      } else {
+      const auto disc = ran->Get();
+      const auto abswgt = std::abs(m_weight);
+      if (abswgt < disc) {
         return Return_Value::New_Event;
       }
+      m_weight /= Min(1.0, abswgt);
+      // local kfactor varweights not initialized if weight equal to one
+      if (p_localkfactorvarweights && abswgt < 1.)
+        *p_localkfactorvarweights *= 1.0 / abswgt;
     }
     Blob_Data_Base *winfo((*blob)["Weight"]);
     if (!winfo) THROW(fatal_error,"No weight information in signal blob");

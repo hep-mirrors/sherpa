@@ -1,6 +1,3 @@
-#ifndef PHASIC_Selectors_Variable_Selector_H
-#define PHASIC_Selectors_Variable_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
 
 namespace ATOOLS {
@@ -36,8 +33,9 @@ namespace PHASIC {
   public:
 
     // constructor
-    Variable_Selector(Process_Base *const proc,const int &imode,
-                      const std::string &name);
+    Variable_Selector(Process_Base* const proc,
+                      const int& imode,
+                      const std::string& name);
 
     // destructor
     ~Variable_Selector();
@@ -56,8 +54,6 @@ namespace PHASIC {
 
 }// end of namespace PHASIC
 
-#endif
-
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Math/Variable.H"
@@ -72,8 +68,9 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Variable_Selector::Variable_Selector(Process_Base *const proc,const int &imode,
-                                     const std::string &name) :
+Variable_Selector::Variable_Selector(Process_Base* const proc,
+                                     const int& imode,
+                                     const std::string& name) :
   Selector_Base("Variable("+name+")",proc)
 {
   m_imode=imode;
@@ -249,7 +246,8 @@ bool Variable_Selector::Trigger(Selector_List &sl)
   return Trigger(sl,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
-DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);
+DECLARE_ND_GETTER(Variable_Selector,"VariableSelector",
+                  Selector_Base,Selector_Key,true);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
 operator()(const Selector_Key &key) const
@@ -257,42 +255,43 @@ operator()(const Selector_Key &key) const
 #ifdef DEBUG__Variable_Selector
   msg_Debugging()<<"Getter<Variable_Selector>::operator(): {\n";
 #endif
-  if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
-  Data_Reader reader(",",":","!","=");
-  reader.SetString(key[0][0]);
-  std::vector<int> flavs;
-  if (!reader.VectorFromString(flavs,""))
-    THROW(critical_error,"Invalid Syntax in Selector.dat: '"+key[0][0]+"'");
+
+  Scoped_Settings s{ key.m_settings };
+  s.DeclareVectorSettingsWithEmptyDefault({ "Flavs" });
+  s.DeclareMatrixSettingsWithEmptyDefault({ "Ranges" });
+
+  const auto flavs = s["Flavs"].GetVector<int>();
+  if (flavs.empty())
+    THROW(critical_error,"Missing \"Flav\" specification in variable selector");
   Flavour_Vector cflavs(flavs.size());
   for (size_t j(0);j<flavs.size();++j) {
     cflavs[j]=Flavour((kf_code)abs(flavs[j]));
     if (flavs[j]<0) cflavs[j]=cflavs[j].Bar();
   }
-  reader.SetString(key[0][1]);
-  std::vector<std::vector<double> > crits;
-  if (!reader.MatrixFromString(crits,""))
-    THROW(critical_error,"Invalid Syntax in Selector.dat: '"+key[0][1]+"'");
-  std::vector<std::pair<double,double> > bounds;
-  for (size_t j(0);j<crits.size();++j) {
-    if (crits[j].size()<2) 
-      THROW(critical_error,
-	    "Invalid Syntax in Selector.dat: '"+key[0][1]+"'");
-    bounds.push_back(std::pair<double,double>
-		     (crits[j][0],crits[j][1]));
+
+  const auto bounds = s["Ranges"].GetMatrix<double>();
+  if (bounds.empty())
+    THROW(critical_error,"Missing \"Ranges\" specification in variable selector");
+  std::vector<std::pair<double,double> > cbounds;
+  for (const auto single_bounds : bounds) {
+    if (single_bounds.size() != 2)
+      THROW(critical_error,"Ranges need to have two entries.");
+    cbounds.push_back(std::make_pair(single_bounds[0], single_bounds[1]));
   }
-  std::string tag(key.m_key.substr(1));
-  tag.erase(tag.length()-1,1);
-  tag+="|"+(key[0].size()>2?key[0][2]:"");
-  int imode(0);
-  if (key.front().size()>3) imode=ToType<int>(key[0][3]);
-  Variable_Selector *vs(new Variable_Selector(key.p_proc,imode,tag));
-  vs->SetRange(0,key.p_proc->Flavours(),cflavs,bounds);
+
+  auto name = s["Variable"].SetDefault("").Get<std::string>();
+  const auto orderings = s["Ordering"].SetDefault("").Get<std::string>();
+  name += "|" + orderings;
+  const auto imode = s["Mode"].SetDefault(0).Get<int>();
+  Variable_Selector *vs(
+      new Variable_Selector(key.p_proc, imode, name));
+  vs->SetRange(0,key.p_proc->Flavours(),cflavs,cbounds);
   NLO_subevtlist *subs(key.p_proc->GetSubevtList());
   if (subs) {
     for (size_t i(0);i<subs->size()-1;++i) {
       Flavour_Vector fls((*subs)[i]->p_fl,
 			 &(*subs)[i]->p_fl[(*subs)[i]->m_n]);
-      vs->SetRange((*subs)[i]->m_idx+1,fls,cflavs,bounds);
+      vs->SetRange((*subs)[i]->m_idx+1,fls,cflavs,cbounds);
     }
   }
 #ifdef DEBUG__Variable_Selector

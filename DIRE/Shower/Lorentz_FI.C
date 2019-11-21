@@ -34,7 +34,7 @@ double Lorentz_FI::PDFEstimate(const Splitting &s) const
 int Lorentz_FI::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  s.m_y=1.0-s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_y=1.0/(1.0+s.m_t/s.m_Q2/(1.0-s.m_z));
   s.m_x=s.m_z;
   Kin_Args ff(1.0-s.m_y,s.m_x,s.m_phi,1|8);
   if (ConstructFIDipole
@@ -55,7 +55,7 @@ bool Lorentz_FI::Cluster(Splitting &s,const int mode) const
   if (ff.m_stat<0) return false;
   ff.m_y=1.0-ff.m_y;
   SetParams(s,ff);
-  s.m_t=s.m_Q2*(1.0-s.m_y)*(1.0-s.m_x);
+  s.m_t=s.m_Q2*(1.0-s.m_y)/s.m_y*(1.0-s.m_x);
   s.m_z=s.m_x;
   return true;
 }

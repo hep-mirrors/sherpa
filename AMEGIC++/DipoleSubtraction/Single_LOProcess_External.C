@@ -12,7 +12,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <unistd.h>
 
@@ -55,8 +54,8 @@ Single_LOProcess_External::~Single_LOProcess_External()
 
 
 int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
-					vector<Process_Base *> & links,
-					     vector<Process_Base *> & errs,int checkloopmap)
+                                             vector<Process_Base *> & links,
+                                             vector<Process_Base *> & errs)
 {
   DEBUG_FUNC("");
   m_type = 21;

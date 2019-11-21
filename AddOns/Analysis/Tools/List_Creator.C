@@ -31,25 +31,25 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(List_Creator,"CreateList",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Creator>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,List_Creator>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"list";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Creator>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,List_Creator>::
+operator()(const Analysis_Key &key) const
 {
-  std::string outlist("");
-  if (parameters.size()!=1) return NULL;
-  if (parameters[0].size()!=1) return NULL;
-  if (parameters[0][0]!="PrimordialHadrons" &&
-      parameters[0][0]!="IntermediateHadrons" &&
-      parameters[0][0]!="ChargedParticle" &&
-      parameters[0][0]!="UEPartons") return NULL;
-  return new List_Creator(parameters[0][0]);
+  Scoped_Settings s{ key.m_settings };
+  const auto outlist = s.Get<std::string>();
+  if (outlist!="PrimordialHadrons" &&
+      outlist!="IntermediateHadrons" &&
+      outlist!="ChargedParticle" &&
+      outlist!="UEPartons")
+    THROW(fatal_error, "Unknown setting for CreateList.");
+  return new List_Creator(outlist);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"

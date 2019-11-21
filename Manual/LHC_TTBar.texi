@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops/Run.dat
+@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops/Sherpa.yaml
 @end smallformat
 @end example
 
@@ -13,5 +13,6 @@ Things to notice:
 @item We match matrix elements and parton showers using the MC@@NLO technique 
 for massive particles, as described in @mycite{Hoeche2013mua}.
 @item A non-default METS core scale setter is used, cf. @ref{METS scale setting with multiparton core processes}
-@item We enable top decays through the internal decay module using @option{HARD_DECAYS 1}
+@item We enable top decays through the internal decay module using
+@option{HARD_DECAYS:Enabled: true}
 @end itemize

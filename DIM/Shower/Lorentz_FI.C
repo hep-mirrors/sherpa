@@ -43,7 +43,7 @@ int Lorentz_FI::Construct(Splitting &s,const int mode) const
 
 bool Lorentz_FI::Compute(Splitting &s) const
 {
-  s.m_y=1.0-s.m_t/s.m_Q2/(1.0-s.m_z);
+  s.m_y=1.0/(1.0+s.m_t/s.m_Q2/(1.0-s.m_z));
   s.m_x=s.m_z;
   if (s.m_mi2==0.0 && s.m_mj2==0.0)
     return s.m_y>s.p_s->GetXB();

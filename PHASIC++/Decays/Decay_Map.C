@@ -1,5 +1,7 @@
 #include "PHASIC++/Decays/Decay_Map.H"
 
+#include <algorithm>
+
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
@@ -50,20 +52,25 @@ Decay_Table* Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
   return it->second[count];
 }
 
-pair<Decay_Table*, Decay_Channel*> Decay_Map::FindDecayChannel(string idcode,
+pair<Decay_Table*, Decay_Channel*> Decay_Map::FindDecayChannel(string name,
                                                                bool create)
 {
-  stringstream ss(idcode);
-  string item;
-  Flavour_Vector flavs;
-  while (getline(ss, item, ',')) {
-    int kfc(ToType<int>(item));
-    flavs.push_back(Flavour(abs(kfc), kfc<0));
+  // parse "x -> y z ..."
+  if (name.find("->") == string::npos) {
+    THROW(fatal_error, "Name channel \"" + name
+          + "\" malformed, should be e.g. \"x -> z y\"");
   }
+
+  Flavour_Vector flavs;
+  auto pdgcodes = ToVector<int>(name.replace(name.find("->"), 2, " "));
+  transform(pdgcodes.begin(), pdgcodes.end(), back_inserter(flavs),
+            [](int i) -> Flavour { return Flavour(i); });
+
   Decay_Table* dt = FindDecay(flavs[0]);
   if (dt) {
+    Decay_Channel::SortFlavours(flavs);
     for (Decay_Table::iterator it=dt->begin(); it!=dt->end(); ++it) {
-      if ((*it)->IDCode()==idcode) return make_pair(dt, (*it));
+      if ((*it)->Flavs()==flavs) return make_pair(dt, (*it));
     }
     if (create) {
       Decay_Channel* dc = new Decay_Channel(flavs[0], p_ms);

@@ -12,8 +12,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/My_MPI.H"
 
@@ -25,23 +25,11 @@ const size_t s_noptmin(10);
 BBar_Emission_Generator::BBar_Emission_Generator():
   m_opt(5)
 {
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (reader.Read<size_t>(m_omode,"EEG_OMODE", 2)) {
-    msg_Info()<<METHOD<<"(): Set mode "<<m_omode<<"."<<std::endl;
-  }
-  if (reader.Read<size_t>(m_opt,"EEG_OSTEP", 5)) {
-    msg_Info()<<METHOD<<"(): Set steps "<<m_opt<<"."<<std::endl;
-  }
-  if (reader.Read(m_Q2min,"EEG_Q2MIN", 1.0e-6)) {
-    msg_Info()<<METHOD<<"(): Set Q^2_{min} = "<<m_Q2min<<"."<<std::endl;
-  }
-  reader.CloseInFile(0);
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (reader.Read(m_amin,"DIPOLE_AMIN",Max(ATOOLS::Accu(),1.0e-8))) {
-    msg_Info()<<METHOD<<"(): Set \\alpha_{min} = "<<m_amin<<".\n";
-  }
+  auto& s = Settings::GetMainSettings();
+  m_omode = s["EEG"]["OMODE"].SetDefault(2).Get<size_t>();
+  m_opt   = s["EEG"]["OSTEP"].SetDefault(5).Get<size_t>();
+  m_Q2min = s["EEG"]["Q2MIN"].SetDefault(1e-6).Get<double>();
+  m_amin  = s["DIPOLES"]["AMIN"].Get<double>();
 }
 
 BBar_Emission_Generator::~BBar_Emission_Generator() 
@@ -287,9 +275,8 @@ void BBar_Emission_Generator::MPISync()
   std::vector<double> sv;
   for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPICollect(sv,i);
-  if (MPI::COMM_WORLD.Get_size())
-    mpi->MPIComm()->Allreduce
-      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  if (mpi->Size())
+    mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
   for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPIReturn(sv,j);
 #endif
@@ -315,7 +302,6 @@ bool BBar_Emission_Generator::ReadIn(std::string pid)
 {
   pid+="_CS";
   Data_Reader reader;
-  reader.SetAddCommandLine(false);
   reader.SetInputPath(pid);
   reader.SetInputFile("_EEG_PV");
   std::vector<std::vector<std::string> > pvds;

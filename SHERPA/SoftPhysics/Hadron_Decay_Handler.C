@@ -4,8 +4,9 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -21,48 +22,37 @@ using namespace std;
 using namespace HADRONS;
 using namespace METOOLS;
 
-Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
+Hadron_Decay_Handler::Hadron_Decay_Handler() :
   Decay_Handler_Base()
 {
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(fragfile);
-
-  m_qedmode=reader.Get<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
-  double max_propertime = reader.Get<double>("MAX_PROPER_LIFETIME",-1.0);
-  if( max_propertime > 0.0) {
+  Settings& s = Settings::GetMainSettings();
+  RegisterSettings();
+  m_qedmode = s["HADRON_DECAYS_QED_CORRECTIONS"].Get<size_t>();
+  const double maxproperlifetime{ s["MAX_PROPER_LIFETIME"].Get<double>() };
+  if(maxproperlifetime > 0.0) {
     for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
 	kfit!=s_kftable.end();++kfit) {
       Flavour flav(kfit->first);
       if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
-          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf_K)
+          0.197e-12>maxproperlifetime*flav.Width() && flav.Kfcode()!=kf_K)
       {
         flav.SetStable(true);
       }
     }
   }
 
-  string tmp=reader.Get<string>("DECAYPATH",rpa->gen.Variable("SHERPA_SHARE_PATH")+"/");
-  if (tmp[tmp.length()-1]!='/') tmp+="/";
-  string decaydatazip=reader.Get<string>("DECAYDATA",tmp+"Decaydata.zip");
-  msg_Info()<<METHOD<<": Opening Decaydata from "<<decaydatazip<<endl;
-  // @todo this is obsolete, decaydata == decaydatazip after this?!?
-  string decaydata=decaydatazip.replace(decaydatazip.length()-4,4,"/");
-  string decayfile=reader.Get<string>("DECAYFILE",string("HadronDecays.dat"));
-  string decayconstfile=reader.Get<string>("DECAYCONSTFILE",
-                                            string("HadronConstants.dat"));
-  string bdecayfile=reader.Get<string>("B_DECAYFILE",
-					string("Partonic_b/Decays.dat"));
-  string cdecayfile=reader.Get<string>("C_DECAYFILE",
-					string("Partonic_c/Decays.dat"));
-  string aliasfile=reader.Get<string>("HADRONALIASESFILE",
-                                       string("HadronAliases.dat"));
-  string aliasdecayfile=reader.Get<string>("ALIASDECAYFILE",
-                                            string("AliasDecays.dat"));
-  m_mass_smearing=reader.Get<int>("SOFT_MASS_SMEARING",1);
-  m_spincorr=rpa->gen.SoftSC();
-  m_cluster=false;
-  Read_Write_Base::OpenZip(decaydatazip);
+  string decaydatazip = s["DECAYDATA"].Get<std::string>();
+  string decaydata = decaydatazip.replace(decaydatazip.length()-4,4,"/");
+  string decayfile = s["DECAYFILE"].Get<std::string>();
+  string decayconstfile = s["DECAYCONSTFILE"].Get<std::string>();
+  string bdecayfile = s["B_DECAYFILE"].Get<std::string>();
+  string cdecayfile = s["C_DECAYFILE"].Get<std::string>();
+  string aliasfile = s["HADRONALIASESFILE"].Get<std::string>();
+  string aliasdecayfile = s["ALIASDECAYFILE"].Get<std::string>();
+  m_mass_smearing = s["SOFT_MASS_SMEARING"].Get<int>();
+  m_spincorr = rpa->gen.SoftSC();
+  m_cluster = false;
+  My_In_File::OpenDB(decaydatazip);
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->ReadInConstants(decaydata, decayconstfile);
   dmap->ReadInPartonicDecays(Flavour(kf_b),decaydata,bdecayfile);
@@ -73,11 +63,11 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   dmap->Initialise();
   dmap->ReadFixedTables(decaydata, "FixedDecays.dat");
   p_decaymap=dmap;
-  
+
   p_mixinghandler = new Mixing_Handler();
   p_mixinghandler->SetModel(dmap->StartModel());
   dmap->SetMixingHandler(p_mixinghandler);
-  Read_Write_Base::CloseZip(decaydatazip);
+  My_In_File::CloseDB(decaydatazip);
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler()
@@ -85,6 +75,24 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
   Hadron_Decay_Map* dmap=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
   delete dmap; p_decaymap=NULL;
   delete p_mixinghandler; p_mixinghandler=NULL;
+}
+
+void Hadron_Decay_Handler::RegisterSettings()
+{
+  Settings& s = Settings::GetMainSettings();
+  s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1);
+  s["MAX_PROPER_LIFETIME"].SetDefault(-1.0);
+  const auto path = s["DECAYPATH"]
+    .SetDefault(rpa->gen.Variable("SHERPA_SHARE_PATH") + "/")
+    .Get<std::string>();
+  s["DECAYDATA"].SetDefault(path + "Decaydata.zip");
+  s["DECAYFILE"].SetDefault("HadronDecays.dat");
+  s["DECAYCONSTFILE"].SetDefault("HadronConstants.dat");
+  s["B_DECAYFILE"].SetDefault("Partonic_b/Decays.dat");
+  s["C_DECAYFILE"].SetDefault("Partonic_c/Decays.dat");
+  s["HADRONALIASESFILE"].SetDefault("HadronAliases.dat");
+  s["ALIASDECAYFILE"].SetDefault("AliasDecays.dat");
+  s["SOFT_MASS_SMEARING"].SetDefault(1);
 }
 
 void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
@@ -100,9 +108,7 @@ Decay_Matrix* Hadron_Decay_Handler::FillDecayTree(Blob * blob, Spin_Density* s0)
 {
   Blob* mixingblob=p_mixinghandler->PerformMixing(blob->InParticle(0));
   if (mixingblob) {
-    Blob_List::iterator bit;
-    for (bit=p_bloblist->begin();bit!=p_bloblist->end();++bit) 
-      if (*bit==blob) p_bloblist->erase(bit);
+    p_bloblist->Delete(blob);
     p_bloblist->push_back(mixingblob);
     CreateDecayBlob(mixingblob->OutParticle(0));
     return Decay_Handler_Base::FillDecayTree
@@ -145,7 +151,6 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
     throw Return_Value::Retry_Event;
   }
   blob->AddData("dc",new Blob_Data<Decay_Channel*>(table->Select()));
-
   blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum()));
   DEBUG_VAR(inpart->Momentum());
 }
@@ -261,4 +266,3 @@ void Hadron_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
   Vec4D     position = Vec4D( lifetime_boosted*rpa->c(), spatial );
   blob->SetPosition( inpart->XProd() + position ); // in mm
 }
-

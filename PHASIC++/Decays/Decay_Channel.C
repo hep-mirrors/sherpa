@@ -43,35 +43,41 @@ bool Decay_Channel::FlavourSort(const Flavour &fl1,const Flavour &fl2)
   if (kf1>kf2) return true;
   if (kf1<kf2) return false;
   /*
-      anti anti -> true
+      anti anti -> false
       anti part -> false
       part anti -> true
-      anti anti -> true
+      part part -> false
       */
-  return !(fl1.IsAnti()&&!fl2.IsAnti());
+
+  if (!fl1.IsAnti() && fl2.IsAnti()) return true;
+  else return false;
 }
 
+
+void Decay_Channel::SortFlavours(Flavour_Vector& flavs)
+{
+  if (flavs.size()==0) return;
+  // sort
+  Flavour flin=flavs[0];
+  Flavour_Vector flouts(flavs.size()-1);
+  for (size_t i=1; i<flavs.size(); ++i) {
+    flouts[i-1]=flavs[i];
+  }
+  std::sort(flouts.begin(), flouts.end(),Decay_Channel::FlavourSort);
+  flavs.clear();
+  flavs.resize(flouts.size()+1);
+  flavs[0]=flin;
+  for (size_t i=0; i<flouts.size(); ++i) {
+    flavs[i+1]=flouts[i];
+  }
+}
 
 void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout,
 				    const bool & sort)
 {
   m_flavours.push_back(flout);
-  if (!sort) return;
-  // sort
-  Flavour flin=m_flavours[0];
-  Flavour_Vector flouts(m_flavours.size()-1);
-  for (size_t i=1; i<m_flavours.size(); ++i) {
-    flouts[i-1]=m_flavours[i];
-  }
-  std::sort(flouts.begin(), flouts.end(),Decay_Channel::FlavourSort);
-  m_flavours.clear();
-  m_flavours.resize(flouts.size()+1);
-  m_flavours[0]=flin;
-  for (size_t i=0; i<flouts.size(); ++i) {
-    m_flavours[i+1]=flouts[i];
-  }
-
   m_minmass += p_ms->Mass(flout);
+  if (sort) SortFlavours(m_flavours);
 }
 
 void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp) {
@@ -120,9 +126,16 @@ string Decay_Channel::Name() const
 
 string Decay_Channel::IDCode() const
 {
-  string code=ToString((long int)m_flavours[0]);
-  for (size_t i=1; i<m_flavours.size(); ++i) {
-    code+=","+ToString((long int)m_flavours[i]);
+  Flavour_Vector daughters(m_flavours.begin() + 1, m_flavours.end());
+  return Decay_Channel::IDCode(m_flavours[0], daughters);
+}
+
+string Decay_Channel::IDCode(const Flavour& decayer,
+                             const Flavour_Vector& daughters)
+{
+  auto code = ToString((long int)decayer);
+  for (const auto& daughter : daughters) {
+    code += "," + ToString((long int)daughter);
   }
   return code;
 }
@@ -235,9 +248,9 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
     }
     opt++;
 #ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_size()) {
-      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mv,3,MPI::DOUBLE,MPI::SUM);
-      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_max,1,MPI::DOUBLE,MPI::MAX);
+    if (mpi->Size()) {
+      mpi->Allreduce(mv,3,MPI_DOUBLE,MPI_SUM);
+      mpi->Allreduce(&m_max,1,MPI_DOUBLE,MPI_MAX);
     }
 #endif
     n+=mv[0];
@@ -345,7 +358,7 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
   int trials(0);
   do {
     if(trials>10000) {
-      msg_Error()<<METHOD<<"("<<Name()<<"): "
+      msg_Tracking()<<METHOD<<"("<<Name()<<"): "
                  <<"Rejected decay kinematics 10000 times. "
                  <<"This indicates a wrong maximum. "
                  <<"Will accept kinematics."

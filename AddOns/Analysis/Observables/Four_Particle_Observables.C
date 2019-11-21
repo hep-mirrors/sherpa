@@ -8,57 +8,39 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<8) return NULL;
-    std::vector<ATOOLS::Flavour> f(4);
-    for (short unsigned int i=0;i<4;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((kf_code)abs(kf));
-      if (kf<0) f[i]=f[i].Bar();
-    }
-    std::string list=parameters[0].size()>8?parameters[0][8]:finalstate_list;
-    return new Class(f,HistogramType(parameters[0][7]),
-		     ATOOLS::ToType<double>(parameters[0][4]),
-		     ATOOLS::ToType<double>(parameters[0][5]),
-		     ATOOLS::ToType<int>(parameters[0][6]),list);
+Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(0.0).Get<double>();
+  const auto max = s["Max"].SetDefault(1.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  const auto list = s["List"].SetDefault(std::string(finalstate_list)).Get<std::string>();
+  std::vector<ATOOLS::Flavour> flavs;
+  flavs.reserve(4);
+  for (size_t i{ 0 }; i < 4; ++i) {
+    const auto flavkey = "Flav" + ATOOLS::ToString(i + 1);
+    if (!s[flavkey].IsCustomised())
+      THROW(missing_input, "Missing parameter value " + flavkey + ".");
+    const auto kf = s[flavkey].SetDefault(0).GetScalar<int>();
+    flavs.push_back(ATOOLS::Flavour((kf_code)std::abs(kf)));
+    if (kf < 0)
+      flavs.back() = flavs.back().Bar();
   }
-  else if (parameters.size()<8) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::vector<ATOOLS::Flavour> f(4);
-  std::string list=finalstate_list, scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    for (short unsigned int j=0;j<4;++j) {
-      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
-        int kf=ATOOLS::ToType<int>(parameters[i][1]);
-        f[j]=ATOOLS::Flavour((kf_code)abs(kf));
-        if (kf<0) f[j]=f[j].Bar();
-      }
-    }
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(f,HistogramType(scale),min,max,bins,list);
-}									
+  return new Class(flavs,HistogramType(scale),min,max,bins,list);
+}
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetObservable<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"kf1 kf2 kf3 kf4 min max bins Lin|LinErr|Log|LogErr [list]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {Flav1: kf1, Flav2: kf2, Flav3: kf3, Flav4: kf4, Min: 0, Max: 1, Bins: 100, Scale: Lin, List: <list>}"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(CLASS)
 
@@ -288,43 +270,30 @@ Primitive_Observable_Base* Two_Partonpair_Theta::Copy() const {
 // ============================================================================
 
 template <class Class>
-Primitive_Observable_Base *GetObservable2(const Argument_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:finalstate_list;
-    return new Class(HistogramType(parameters[0][3]),
-		     ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),list);
-  }
-  else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::string list=finalstate_list, scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
+Primitive_Observable_Base *GetObservable2(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(0.0).Get<double>();
+  const auto max = s["Max"].SetDefault(1.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  const auto list = s["List"]
+    .SetDefault(std::string(finalstate_list))
+    .Get<std::string>();
   return new Class(HistogramType(scale),min,max,bins,list);
-}									
+}
 
 #define DEFINE_GETTER_METHOD2(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetObservable2<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetObservable2<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD2(NAME)					\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {Min: 0, Max: 1, Bins: 100, Scale: Lin, List: <list>}"; }
 
 #define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_GETTER_METHOD2(CLASS,NAME)					\
   DEFINE_PRINT_METHOD2(CLASS)
 

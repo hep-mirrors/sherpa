@@ -4,6 +4,7 @@
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "NNPDFDriver.h"
 
 // This is all copied from the MSTW code
@@ -17,7 +18,7 @@ namespace PDF {
 
     std::string m_path, m_file;
 
-    int    m_anti;
+    int    m_anti, m_nf;
     int m_lookup[28];
     int m_prefix;
 
@@ -25,6 +26,8 @@ namespace PDF {
     double m_x, m_Q2;
     std::map<int, double> m_xfx;
     std::map<int, bool>   m_calculated;
+
+    void RegisterDefaults() const;
 
   public:
 
@@ -47,7 +50,6 @@ namespace PDF {
 
 #include "NNPDFDriver.h"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -60,15 +62,17 @@ PDF_NNPDF::PDF_NNPDF
  const std::string &set,int member, int prefix):
   m_file(bfile), m_anti(1)
 {
-  Default_Reader reader;
-  m_path = reader.Get<string>("NNPDF_GRID_PATH", rpa->gen.Variable("SHERPA_SHARE_PATH"));
+  Settings& s = Settings::GetMainSettings();
+  m_path = s["NNPDF_GRID_PATH"]
+    .SetDefault(rpa->gen.Variable("SHERPA_SHARE_PATH"))
+    .Get<std::string>();
   m_set=set;
   m_member=member;
   m_prefix=prefix;
   m_lhef_number=prefix+member;
   std::string file(m_file);
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
-  
+
   m_bunch=bunch; // This is the beam
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   m_type=set;
@@ -220,6 +224,13 @@ PDF_Base *NNPDF_Getter::operator()
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
+  else if (args.m_set == "NNPDF31_nnlo_as_0118_mc") {
+    gfile = std::string("NNPDF31_nnlo_as_0118_mc");
+    pdfsetprefix=316200;
+    if (args.m_member>100 || args.m_member <0) {
+      THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
+    }
+  }
   else THROW(not_implemented,"Requested PDF_SET not available.");
   return new PDF_NNPDF(args.m_bunch, gfile, args.m_set, args.m_member, pdfsetprefix);
 }
@@ -227,19 +238,20 @@ PDF_Base *NNPDF_Getter::operator()
 void NNPDF_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"NNPDF fit, see arXiv:1410.8849 [hep-ph]";
+  str<<"NNPDF31 fit, see arXiv:1706.00428 [hep-ph]";
 }
 
-NNPDF_Getter *p_get_nnpdf[2];
+NNPDF_Getter *p_get_nnpdf[3];
 
 
 extern "C" void InitPDFLib()
 {
   p_get_nnpdf[0] = new NNPDF_Getter("NNPDF30NLO");
   p_get_nnpdf[1] = new NNPDF_Getter("NNPDF30NNLO");
+  p_get_nnpdf[2] = new NNPDF_Getter("NNPDF31_nnlo_as_0118_mc");
 }
 
 extern "C" void ExitPDFLib()
 {
-  for (int i(0);i<2;++i) delete p_get_nnpdf[i];
+  for (int i(0);i<3;++i) delete p_get_nnpdf[i];
 }

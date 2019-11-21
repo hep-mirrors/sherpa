@@ -5,9 +5,7 @@ include ../../git.make
 
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Git_Info.C \
-					Primordial_KPerp.C \
 					Beam_Remnant_Handler.C \
-					Parametrised_Beam_Remnants.C \
 				   	Fragmentation_Handler.C \
 				   	Soft_Collision_Handler.C \
 					Hadron_Decay_Handler.C \
@@ -16,9 +14,7 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Resonance_Finder.C
 
 localinc_HEADERS      =	\
-			Primordial_KPerp.H \
 			Beam_Remnant_Handler.H \
-			Parametrised_Beam_Remnants.H \
 		 	Fragmentation_Handler.H \
 			Soft_Collision_Handler.H \
 			Hadron_Decay_Handler.H \

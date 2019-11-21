@@ -15,6 +15,7 @@
 #include "PHOTONS++/Tools/Generate_One_Photon.H"
 #include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 
 #include <iomanip>
 
@@ -225,32 +226,32 @@ void Dress_Blob_Base::DetermineU()
     else {
       i = i - 1E-2;
       double j = 0.;
-      while (c*Func(M2,mC2,mN2,q,1.-i-j) > 0.)    j = j + 1E-4;
+      while ((c*Func(M2,mC2,mN2,q,1.-i-j) > 0.) && (j<=1E-2))    j = j + 1E-4;
       if (abs(Func(M2,mC2,mN2,q,1.-i-j)) < 1E-14)    m_u = 1.-i-j;
       else {
         j = j - 1E-4;
         double k = 0.;
-        while (c*Func(M2,mC2,mN2,q,1.-i-j-k) > 0.)    k = k + 1E-6;
+        while ((c*Func(M2,mC2,mN2,q,1.-i-j-k) > 0.) && (k<=1E-4))    k = k + 1E-6;
         if (abs(Func(M2,mC2,mN2,q,1.-i-j-k)) < 1E-14)    m_u = 1.-i-j-k;
         else {
           k = k - 1E-6;
           double l = 0.;
-          while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l) > 0.)    l = l + 1E-8;
+          while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l) > 0.) && (l<=1E-6))  l = l + 1E-8;
           if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l)) < 1E-14)    m_u = 1.-i-j-k-l;
           else {
             l = l - 1E-8;
             double m = 0.;
-            while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m) > 0.)   m = m + 1E-10;
+            while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m) > 0.) && (m<=1E-8))  m = m + 1E-10;
             if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m)) < 1E-14)    m_u = 1.-i-j-k-l-m;
             else {
               m = m - 1E-10;
               double n = 0.;
-              while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n) > 0.)    n = n + 1E-12;
+              while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n) > 0.) && (n<=1E-10))   n = n + 1E-12;
               if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n)) < 1E-14)    m_u = 1.-i-j-k-l-m-n;
               else {
                 n = n - 1E-12;
                 double o = 0.;
-                while (c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o) > 0.)    o = o + 1E-14;
+                while ((c*Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o) > 0.) && (o<=1E-12))   o = o + 1E-14;
                 if (abs(Func(M2,mC2,mN2,q,1.-i-j-k-l-m-n-o)) < 1E-14)    m_u = 1.-i-j-k-l-m-n-o;
                 else {
                   o = o - 1E-14;

@@ -1,11 +1,11 @@
 #include "AddOns/HepMC/Output_HepMC2_Short.H"
 #include "HepMC/GenEvent.h"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #ifdef USING__HEPMC2__IOGENEVENT
 #include "HepMC/IO_GenEvent.h"
@@ -23,11 +23,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
-  Output_Base("HepMC2S")
+  Output_Base{ "HepMC2S" }
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".hepmc";
-  int precision       = args.p_reader->GetValue<int>("EVENT_OUTPUT_PRECISION",12);
+  const int precision{
+    Settings::GetMainSettings()["EVENT_OUTPUT_PRECISION"].Get<int>() };
 #ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
 #ifdef HEPMC_HAS_CROSS_SECTION
@@ -44,7 +45,7 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
   m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     m_basename+="_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif

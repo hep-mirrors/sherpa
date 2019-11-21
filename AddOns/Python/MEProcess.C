@@ -7,9 +7,9 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -25,19 +25,14 @@
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_nlotype(ATOOLS::nlo_type::lo),
   p_amp(ATOOLS::Cluster_Amplitude::New()),
-  p_gen(a_Generator), p_proc(NULL), p_momentareader(NULL), p_rambo(NULL),
+  p_gen(a_Generator), p_proc(NULL), p_rambo(NULL),
   m_ncolinds(0), m_npsp(0), m_nin(0), m_nout(0), p_colint(NULL)
 {
   m_kpz[0]=m_kpz[1]=0.;
-  p_momentareader = new ATOOLS::Default_Reader();
-  p_momentareader->AddComment("#");
-  p_momentareader->SetInputPath(ATOOLS::rpa->GetPath());
-  p_momentareader->SetInputFile(ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE"));
 }
 
 MEProcess::~MEProcess()
 {
-  if (p_momentareader) { delete p_momentareader; p_momentareader=NULL; }
   if (p_rambo)         { delete p_rambo; p_rambo=NULL; }
   delete p_proc; // brute force invokation of destructor of RS_Process
                  // in order to write yoda files 
@@ -80,7 +75,7 @@ void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
 size_t MEProcess::NumberOfPoints()
 {
   if (m_npsp>0) return m_npsp;
-  m_npsp=p_momentareader->Get<size_t>("NUMBER_OF_POINTS",1);
+  m_npsp=ATOOLS::Settings::GetMainSettings()["MOMENTA"].GetItemsCount();
   return m_npsp;
 }
 
@@ -89,47 +84,43 @@ void MEProcess::ReadProcess(size_t n)
   DEBUG_FUNC("n="<<n);
   p_amp->Delete();
   p_amp=ATOOLS::Cluster_Amplitude::New();
-  std::vector<std::vector<std::string> > momdata;
-  if (!p_momentareader->ReadMatrix(momdata,""))
-    THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
-                        +ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE")+"'.");
-  size_t begin(0),id(0);
-  for (size_t nf(0);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    if (cur.size()==2 && cur[0]=="Point" &&
-        ATOOLS::ToType<int>(cur[1])==n) { begin=nf+1; break; }
-  }
-  for (size_t nf(begin);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    msg_Debugging()<<cur<<std::endl;
+  size_t id{ 0 };
+
+  if (NumberOfPoints() == 0)
+    THROW(missing_input,"Define momenta using the MOMENTA settings.");
+
+  ATOOLS::Settings& main_settings = ATOOLS::Settings::GetMainSettings();
+  ATOOLS::Scoped_Settings s{ main_settings["MOMENTA"].GetItemAtIndex(n - 1) };
+  for (const auto& row : s.GetMatrix<std::string>()) {
+    msg_Debugging()<<row<<std::endl;
     // either "flav mom" or "flav mom col"
-    if (cur.size()==2 && cur[0]=="End" && cur[1]=="point") break;
-    if (cur.size()!=2 && cur.size()!=5 && cur.size()!=7) continue;
-    if (cur[0]=="KP_z_0") {
+    if (row.size()==2 && row[0]=="End" && row[1]=="point") break;
+    if (row.size()!=2 && row.size()!=5 && row.size()!=7) continue;
+    if (row[0]=="KP_z_0") {
       msg_Debugging()<<"Set KP-eta values for Beam 0."<<std::endl;
-      m_kpz[0]=ATOOLS::ToType<double>(cur[1]);
+      m_kpz[0]=ATOOLS::ToType<double>(row[1]);
     }
-    else if (cur[0]=="KP_z_1") {
+    else if (row[0]=="KP_z_1") {
       msg_Debugging()<<"Set KP-eta values for Beam 1."<<std::endl;
-      m_kpz[1]=ATOOLS::ToType<double>(cur[1]);
+      m_kpz[1]=ATOOLS::ToType<double>(row[1]);
     }
-    else if (cur[0]=="NLOType") {
-      m_nlotype=ATOOLS::ToType<ATOOLS::nlo_type::code>(cur[1]);
+    else if (row[0]=="NLOType") {
+      m_nlotype=ATOOLS::ToType<ATOOLS::nlo_type::code>(row[1]);
     }
     else {
-      int kf(ATOOLS::ToType<int>(cur[0]));
-      ATOOLS::Vec4D p(ATOOLS::ToType<double>(cur[1]),
-                      ATOOLS::ToType<double>(cur[2]),
-                      ATOOLS::ToType<double>(cur[3]),
-                      ATOOLS::ToType<double>(cur[4]));
+      int kf(ATOOLS::ToType<int>(row[0]));
+      ATOOLS::Vec4D p(ATOOLS::ToType<double>(row[1]),
+                      ATOOLS::ToType<double>(row[2]),
+                      ATOOLS::ToType<double>(row[3]),
+                      ATOOLS::ToType<double>(row[4]));
       if (kf!=(long int)p_proc->Flavours()[id]){
         std::stringstream err;
         err << "Momenta must be listed flavour-ordered in run card: " << p_proc->Flavours();
         THROW(fatal_error, err.str());
       }
       ATOOLS::ColorID col(0,0);
-      if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
-                                             ATOOLS::ToType<size_t>(cur[6]));
+      if (row.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(row[5]),
+                                             ATOOLS::ToType<size_t>(row[6]));
       SetMomentum(id,p);
       SetColor(id,col);
       id++;
@@ -234,45 +225,6 @@ void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
   m_outpdgs.push_back(id);
   m_flavs.push_back(flav);
   m_nout+=1;
-}
-
-void MEProcess::ReadInProcess()
-{
-  return;
-  DEBUG_FUNC("");
-  std::vector<std::vector<std::string> > momdata;
-  if (!p_momentareader->ReadMatrix(momdata,""))
-    THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
-                        +ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE")+"'.");
-  size_t begin(0),id(0);
-  for (size_t nf(0);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    if (cur.size()==2 && cur[0]=="Point" &&
-        ATOOLS::ToType<int>(cur[1])==1) { begin=nf+1; break; }
-  }
-  for (size_t nf(begin);nf<momdata.size();++nf) {
-    std::vector<std::string> &cur(momdata[nf]);
-    // either "flav mom" or "flav mom col"
-    if (cur.size()==2 && cur[0]=="End" && cur[1]=="point") break;
-    if (cur.size()!=5 && cur.size()!=7) continue;
-    int kf(ATOOLS::ToType<int>(cur[0]));
-    ATOOLS::Vec4D p(ATOOLS::ToType<double>(cur[1]),
-                    ATOOLS::ToType<double>(cur[2]),
-                    ATOOLS::ToType<double>(cur[3]),
-                    ATOOLS::ToType<double>(cur[4]));
-    ATOOLS::ColorID col(0,0);
-    if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
-                                           ATOOLS::ToType<size_t>(cur[6]));
-    int kfamp(p_amp->Leg(id)->Flav().Kfcode());
-    if (id<m_nin) kfamp=-kfamp;
-    if (p_amp->Leg(id)->Flav().IsAnti()) kfamp=-kfamp;
-    if (kf!=kfamp) THROW(fatal_error,"Wrong momentum ordering.");
-    if (id<m_nin) p_amp->Leg(id)->SetMom(-p);
-    else          p_amp->Leg(id)->SetMom(p);
-    if (id<m_nin) p_amp->Leg(id)->SetCol(col.Conj());
-    else          p_amp->Leg(id)->SetCol(col);
-    id++;
-  }
 }
 
 double MEProcess::GenerateColorPoint()
@@ -447,18 +399,10 @@ void MEProcess::SetUpColorStructure()
 }
 
 double MEProcess::TestPoint(const double& E){
-  ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
-  if(m_nin<2)
-    THROW(not_implemented, "Not implemented for 1->n process");
-  double m[2]={m_flavs[0].Mass(),m_flavs[1].Mass()};
-  if (E<m[0]+m[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
-  double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
-  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-m[0]*m[0]));
-  p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
-  p_rambo->GeneratePoint(&p[0],(PHASIC::Cut_Data*)(NULL));
+  ATOOLS::Vec4D_Vector p = p_rambo->GeneratePoint(E);
   SetMomenta(p);
   if(p_colint!=NULL) GenerateColorPoint();
-  p_rambo->GenerateWeight(&p[0],(PHASIC::Cut_Data*)(NULL));
+  p_rambo->GenerateWeight(&p[0]);
   return p_rambo->Weight();
 }
 
@@ -533,3 +477,18 @@ ATOOLS::Flavour MEProcess::GetFlav(size_t i)
   return (i<m_nin?fl.Bar():fl);
 }
 
+std::vector<double> MEProcess::NLOSubContributions()
+  {
+    if (p_proc->IsGroup() && p_proc->Size()>1)
+      THROW(not_implemented, "Not implemented for process groups");
+    
+    PHASIC::Process_Base* proc = 
+      p_proc->IsGroup() ? (*p_proc)[0] : p_proc;
+
+    std::vector<double> ret;
+    if(proc->GetRSSubevtList())
+      for(auto& sub : *(proc->GetRSSubevtList()))
+	ret.push_back(sub->m_result);
+
+    return ret;
+  }

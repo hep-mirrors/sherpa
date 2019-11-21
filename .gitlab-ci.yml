@@ -1,0 +1,80 @@
+image: scientificlinux/sl
+
+before_script:
+  - yum install --assumeyes epel-release  # needed for clang
+  # NOTE: the el7 package for libzip-devel is too outdated and will therefore be installed by Sherpa-config
+  - yum install --assumeyes clang gcc-c++ gcc-gfortran make automake libtool git texinfo wget zlib-devel sqlite-devel
+
+
+
+.build_template: &build
+  stage: build
+  # make this manual job blocking (such that tests will only be started when
+  # the build has been started manually and completed successfully)
+  when: manual
+  # accelerate git-clone by making it shallow
+  variables:
+    GIT_DEPTH: "3"
+
+# default build with gcc
+build:
+  <<: *build
+  script:
+    - autoreconf -i
+    - mkdir build
+    - cd build
+    - ../configure --prefix="$PWD/install" --with-libzip=install --enable-analysis
+    - make -j4
+    - make install
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build/install
+      - Examples/CI/
+
+# build with clang and -Werror
+build-clang-strict:
+  <<: *build
+  script:
+    - autoreconf -i
+    - mkdir build-clang-strict
+    - cd build-clang-strict
+    # enable strict compilation
+    - cxxflags="-Werror"
+    - ../configure CC=clang CXX=clang++ CXXFLAGS="${cxxflags}" --prefix="$PWD/install" --with-libzip=install --enable-analysis
+    - make -j4
+    - make install
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build-clang-strict/install
+      - Examples/CI/
+
+
+
+# define test runs as single jobs; this is less dynamic then just cycling
+# through all sub-directories of Examples/CI, but it makes sure that all test
+# jobs will be run simultaneously; at least we use anchors and map merging to
+# inherit parameters set in .test_template
+
+.test_template: &test
+  stage: test
+  when: manual
+  variables:
+    GIT_STRATEGY: none  # we only need the artifacts from the build
+
+test-LO_Z:
+  <<: *test
+  script:
+    - mkdir test-LO_Z
+    - cd test-LO_Z
+    - ../build/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml
+
+test-clang-strict-LO_Z:
+  <<: *test
+  script:
+    - mkdir test-clang-strict-LO_Z
+    - cd test-clang-strict-LO_Z
+    - ../build-clang-strict/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml

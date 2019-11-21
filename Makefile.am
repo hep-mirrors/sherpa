@@ -14,16 +14,17 @@ SUBDIRS       = \
 		CSSHOWER++ \
 		DIRE \
 		DIM \
+		EXTAMP \
 		AMISIC++ \
 		AHADIC++ \
 		HADRONS++ \
 		PHOTONS++ \
+		REMNANTS \
 		SHRiMPS \
-		EXTAMP \
 		SHERPA \
 		AddOns \
 		Manual \
-		Examples 
+		Examples
 
 EXTRA_DIST = GUIDELINES
 

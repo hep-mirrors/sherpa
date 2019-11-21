@@ -1,0 +1,20 @@
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+PDF_LIBRARY: None
+
+# general setting
+EVENTS: 50k
+
+# Has to stay until soft photons are fixed
+YFS:
+  MODE: 0
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 2
+CSS_FS_PT2MIN: 1.00
+
+PROCESSES:
+- Process: 11 -11 -> 93 93
+  Order: {QCD: Any, EW: 2}

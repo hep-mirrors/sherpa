@@ -1,5 +1,5 @@
 #include "SHRiMPS/Main/Hadron_Init.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace SHRIMPS;

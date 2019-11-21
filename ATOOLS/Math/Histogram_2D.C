@@ -1,8 +1,8 @@
 #include "ATOOLS/Math/Histogram_2D.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
@@ -159,7 +159,7 @@ Histogram_2D::Histogram_2D(const std::string & pID) :
   std::string dummy;
   getline(ifile,dummy);
 
-  Default_Reader reader;
+  Data_Reader reader(" ", ";", "#", "=");
   if (dummy!="") {
     std::vector<std::string> conf;
     reader.SetString(dummy);
