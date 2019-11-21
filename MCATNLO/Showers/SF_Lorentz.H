@@ -5,6 +5,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace ATOOLS {
   class Cluster_Amplitude;
@@ -99,6 +100,8 @@ namespace MCATNLO {
     inline int Col() const { return m_col; }
 
     inline static void SetKappa(const double &kap) { s_kappa=kap; }
+
+    EXTAMP::DipoleCase m_dipole_case;
 
   };
 

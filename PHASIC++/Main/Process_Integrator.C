@@ -67,6 +67,7 @@ double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
+    if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
@@ -191,10 +192,6 @@ void Process_Integrator::InitWeightHistogram()
     return;
   }
   if (av<.3) av/=10.;
-  /* If av=0, then subprocess at hand does not contribute.
-     In this case, set av to arbitrary value to avoid nans in 
-     following histogram */
-  if (IsZero(av)) av=1.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
   p_whisto = new Histogram(10,av*1.e-4,av*1.e6,s_whbins);
   if (p_proc->IsGroup())

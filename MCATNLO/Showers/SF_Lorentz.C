@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace ATOOLS;
@@ -21,6 +22,15 @@ SF_Lorentz::SF_Lorentz(const SF_Key &key):
     m_flavs[1]=key.p_v->in[2];
     m_flavs[2]=key.p_v->in[1];
   }
+  Settings& s = Settings::GetMainSettings();
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
+  if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+  else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+  else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+  else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+  else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
+  else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
+  else                               m_dipole_case = EXTAMP::DipoleCase::CS;
 }
 
 SF_Lorentz::~SF_Lorentz() {}
