@@ -51,6 +51,10 @@ namespace PHASIC {
 
     virtual double Partonic(const ATOOLS::Vec4D_Vector &p,
                             const int mode) = 0;
+    inline virtual const double SPrimeMin() const { return -1.; }
+    inline virtual const double SPrimeMax() const { return -1.; }
+    inline virtual const bool   HasInternalScale() const { return false; }
+    inline virtual const double InternalScale()    const { return -1.; }
 
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
