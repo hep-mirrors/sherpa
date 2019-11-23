@@ -76,8 +76,8 @@ namespace COMIX {
 
     ATOOLS::Vec4D_Vector m_p;
 
-    Double_Vector m_rns, m_wrns;
-    Vegas_Vector  m_vgs, m_wvgs;
+    Double_Vector m_rns;
+    Vegas_Vector  m_vgs;
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
@@ -163,7 +163,7 @@ namespace COMIX {
 
     bool Zero(METOOLS::Vertex *const vtx) const;
 
-    PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
+    PHASIC::Vegas *GetVegas(const std::string &tag,int nd=1);
 
     PHASIC::Vegas *GetPVegas(const PS_Current *cur,const size_t &id);
     PHASIC::Vegas *GetSVegas(const size_t &id,const PS_Current *cur);
