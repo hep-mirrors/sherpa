@@ -8,9 +8,10 @@ OL_PARAMETERS:
   preset: 2
 SCALES: SMETS
 PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
-PSI_ITMIN_BY_NODE: 10
-PSI_STOPOPT: 5
-PSI_ASYNC: 1
+PSI:
+  ITMIN_BY_NODE: 10
+  STOPOPT: 5
+  ASYNC: 1
 
 PROCESSES:
 - 93 93 -> 11 -12 93{4}:
