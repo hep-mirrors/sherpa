@@ -356,6 +356,18 @@ void Histogram::Output() {
 	   <<"Inside the range : "<<result<<std::endl;
 }
 
+double Histogram::LowEdge(int i) const 
+{
+  if (m_logarithmic) return exp(m_logbase*(m_lower+i*m_binsize));  
+  return m_lower+i*m_binsize;
+}
+
+double Histogram::HighEdge(int i) const 
+{
+  if (m_logarithmic) return exp(m_logbase*(m_lower+(i+1)*m_binsize));  
+  return m_lower+(i+1)*m_binsize;
+}
+
 
 void Histogram::Output(const std::string name) 
 {

@@ -45,6 +45,8 @@ namespace ATOOLS {
     void Restore();
     double Average() const;
     double Mean() const;
+    double LowEdge(int i) const;
+    double HighEdge(int i) const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
     void SetBin2(int i, double y2)  { m_y2values[i]=y2; }
     void SetBinPS(int i, double ps)  { m_psvalues[i]=ps; }
