@@ -49,6 +49,8 @@ namespace DIRE {
 
     static size_t s_cnt;
 
+    size_t m_kinspectID = 0;
+
   public:
 
     Parton(Amplitude *const ampl,const ATOOLS::Flavour &f,
@@ -101,6 +103,9 @@ namespace DIRE {
     inline const Weight_Map &Weights() const { return m_ws; }
 
     inline void ClearWeights() { m_ws.clear(); }
+
+    inline size_t SetKinSpectID(size_t kinspectID) { m_kinspectID = kinspectID; }
+    inline size_t GetKinSpectID()                  { return m_kinspectID; }
 
   };// end of class Parton
 

@@ -216,6 +216,15 @@ double Shower::VetoWeight(Variation_Parameters *params,
   return 0.0;
 }
 
+void Shower::SetKinSpects(Amplitude &a)
+{
+  if(a.size()!=6) THROW(fatal_error, "Process not supported in res-aware shower!");
+  for (Amplitude::const_iterator it(a.begin());it!=a.end();++it) {
+    if((**it).Flav().IsbQuark())    (**it).SetKinSpectID(2); // W+ is kin. spect.
+    if((**it).Flav().IsbbarQuark()) (**it).SetKinSpectID(3); // W- is kin. spect.
+  }
+}
+
 int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 {
   DEBUG_FUNC(this);
@@ -238,6 +247,7 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     }
     return 1;
   }
+  /*if ID*/ SetKinSpects(a); // setting designated kin.spect.s of all partons (before emissions)
   for (Splitting s(GeneratePoint(a,a.T(),nem));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t,nem)) {

@@ -133,6 +133,8 @@ namespace DIRE {
 
     void AddWeight(const Amplitude &a,const double &t);
 
+    void SetKinSpects(Amplitude &a);
+
     Splitting GeneratePoint(Parton &p,const double &t,
 			    const int &cm,const unsigned int &nem);
     Splitting GeneratePoint(const Amplitude &a,const double &t,
