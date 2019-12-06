@@ -134,11 +134,19 @@ bool Lorentz::SetLimits(Splitting &s) const
     }
     else if(m_evol==2){
       const double tmin     = m_t_cutoff;
-      const double mw2     = sqr(Flavour(24).Mass());
-      const double Qprime2 = s.m_Qprime2;
-      s.m_zmax   = (1.+tmin/Qprime2)/2 + sqrt(sqr(1.+tmin/Qprime2)/4.
-                   - tmin/Qprime2*(1+mw2/Qprime2));
+      const double mw2      = sqr(Flavour(24).Mass());
+      const double Qprime2  = s.m_Qprime2;
+      const double radicand = sqr(1.+tmin/Qprime2)/4. - tmin/Qprime2*(1+mw2/Qprime2);
+
+      if(radicand >= 0) s.m_zmax = (1.+tmin/Qprime2)/2 + sqrt(radicand);
+      else              s.m_zmax = (1.+tmin/Qprime2)/2;
+
+      /* following line is rarely relevant: only if Qprime2 is extremely small */
+      if(s.m_zmax>1.) s.m_zmax = 1.;        // TODO
     }
+    /* in case zmax is slightly above 1, due to numerics */
+    if(IsEqual(s.m_zmax,1.,1.e-8))           s.m_zmax=1.;
+    if(!(s.m_zmax>0.) || !(s.m_zmax<=1.))    THROW(fatal_error, "zmax wrong");
   }
   return true;
 }

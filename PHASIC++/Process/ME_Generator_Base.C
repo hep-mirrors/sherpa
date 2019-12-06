@@ -175,7 +175,6 @@ void ME_Generator_Base::RegisterDipoleParameters()
   s["LIST"].SetDefault(0);
   s["BORN_FLAVOUR_RESTRICTIONS"].SetDefault("");
   s["ONSHELL_SUBTRACTION_WINDOW"].SetDefault(5.0);
-  s["CASE"].SetDefault("CS");
 }
 
 void ME_Generator_Base::RegisterNLOParameters()

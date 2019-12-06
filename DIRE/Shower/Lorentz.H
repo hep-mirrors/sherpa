@@ -6,6 +6,7 @@
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "DIRE/Tools/Kernel_Key.H"
 #include "DIRE/Tools/Splitting.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace DIRE {
 
@@ -20,6 +21,10 @@ namespace DIRE {
     ATOOLS::Flavour_Vector m_fl;
 
     const ATOOLS::Mass_Selector *p_ms;
+
+    double m_t_cutoff;
+    int m_evol;
+    size_t m_maxem;
 
     inline double Lam(const double &a,
 		      const double &b,
@@ -38,6 +43,7 @@ namespace DIRE {
 
     virtual double Value(const Splitting &s) const = 0;
     virtual double Jacobian(const Splitting &s) const = 0;
+    virtual double JacobianResAware(const Splitting &s) const { return 1.; };
 
     virtual double Estimate(const Splitting &s) const = 0;
     virtual double Integral(const Splitting &s) const = 0;
@@ -56,6 +62,8 @@ namespace DIRE {
     inline const ATOOLS::Flavour_Vector &Flavs() const { return m_fl; }
 
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
+
+    EXTAMP::DipoleCase m_dipole_case;
 
   };// end of class Lorentz
 

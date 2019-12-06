@@ -4,6 +4,7 @@
 #include "DIRE/Tools/Parton.H"
 #include "DIRE/Shower/Kernel.H"
 #include "DIRE/Tools/Amplitude.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace ATOOLS {
   class Variation_Parameters;
@@ -41,6 +42,9 @@ namespace DIRE {
 		   const double &jcv,const size_t &n):
 	p_ampl(ampl), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
     };// end of struct JetVeto_Args
+
+    EXTAMP::DipoleCase m_dipole_case;
+    int m_evol;
     
     typedef std::map<ATOOLS::Flavour,Kernel_Vector> SKernel_Map;
 
@@ -149,6 +153,8 @@ namespace DIRE {
     double VetoWeight(ATOOLS::Variation_Parameters *params,
 		      ATOOLS::Variation_Weights *weights,
 		      JetVeto_Args &a);
+
+    double GetKt2(const Splitting &s) const ;
 
   public:
 

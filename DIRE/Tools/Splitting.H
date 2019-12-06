@@ -13,9 +13,12 @@ namespace DIRE {
 
   struct Splitting {
 
-    Parton *p_c, *p_s, *p_n, *p_l;
+    Parton *p_c, *p_s, *p_n, *p_l, *p_kinspec;
     const Kernel *p_sk;
     double m_t, m_z, m_phi, m_s, m_z2, m_phi2;
+    double m_vi, m_viab;
+    double m_zmax;
+    double m_alpha, m_Qprime2, m_paipb;
     double m_q2, m_Q2, m_x, m_y;
     double m_mij2, m_mi2, m_mj2, m_mk2, m_ml2;
     double m_eta, m_t0, m_t1;
@@ -41,6 +44,9 @@ namespace DIRE {
     { m_h[2]=m_h[1]=m_h[0]=0; }
 
     void SetType();
+
+    void SetKinSpect(const Parton &p);
+    void SetKinVar();
 
     inline void ResetCol() { m_ci.clear(); m_cj.clear(); }
 

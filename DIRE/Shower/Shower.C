@@ -28,6 +28,17 @@ Shower::Shower():
   p_as(NULL), p_vars(NULL)
 {
   p_pdf[1]=p_pdf[0]=NULL;
+
+  Settings& s = Settings::GetMainSettings();
+  std::string dipole_string = s["DIPOLES"]["CASE"].Get<std::string>();
+  if      (dipole_string == "CS")    m_dipole_case = EXTAMP::DipoleCase::CS;
+  else if (dipole_string == "IDa")   m_dipole_case = EXTAMP::DipoleCase::IDa;  // ee > bbWW with mapping a
+  else if (dipole_string == "IDb")   m_dipole_case = EXTAMP::DipoleCase::IDb;  // ee > bbWW with mapping b
+  else if (dipole_string == "IDin")  m_dipole_case = EXTAMP::DipoleCase::IDin; // pp > bbWW
+  else if (dipole_string == "RES")   m_dipole_case = EXTAMP::DipoleCase::RES;  // ee > guu
+  else if (dipole_string == "ID")    m_dipole_case = EXTAMP::DipoleCase::ID;   // ee > guu
+  else                               m_dipole_case = EXTAMP::DipoleCase::CS;
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 Shower::~Shower()
@@ -35,6 +46,32 @@ Shower::~Shower()
   for (Kernel_Vector::const_iterator it(m_cks.begin());
        it!=m_cks.end();++it) delete *it;
   delete p_cluster;
+}
+
+double Shower::GetKt2(const Splitting &s) const {
+  Vec4D paitilde        = s.p_c->Mom();
+  Vec4D pb              = s.p_s->Mom();
+  Vec4D pwtilde         = s.p_kinspec->Mom();
+  const double mw2      = sqr(Flavour(24).Mass());
+  const double y_wia    = 1.-s.m_z;
+  const double ztilde_w = 1.-s.m_vi;
+  Kin_Args ff(y_wia,ztilde_w,s.m_phi);
+
+  if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
+    THROW(fatal_error, "Must not happend!")
+
+  Vec4D pi = ff.m_pj;
+  Vec4D pa = ff.m_pk;
+
+  const Vec4D p_aib = pa+pi+pb;
+  Poincare bst_aib(p_aib);
+  bst_aib.Boost(pa);
+  bst_aib.Boost(pb);
+  bst_aib.Boost(pi);
+
+  const double theta = pa.Theta(pi);
+  const double pi_perp = Vec3D(pi).Abs()*sin(theta);
+  return sqr(pi_perp);
 }
 
 struct FTrip {
@@ -247,7 +284,8 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     }
     return 1;
   }
-  /*if ID*/ SetKinSpects(a); // setting designated kin.spect.s of all partons (before emissions)
+  if(m_dipole_case == EXTAMP::IDa)
+    SetKinSpects(a); // setting designated kin.spect.s of all partons (before emissions)
   for (Splitting s(GeneratePoint(a,a.T(),nem));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t,nem)) {
@@ -396,6 +434,10 @@ Splitting Shower::GeneratePoint
 	  if ((*p.Ampl())[i]==&p) continue;
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
+      if(m_dipole_case == EXTAMP::IDa) {
+        cur.SetKinSpect(p);
+        if (cur.p_kinspec!=NULL) cur.SetKinVar();
+      }
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
@@ -420,6 +462,11 @@ Splitting Shower::GeneratePoint
 	for (size_t i(0);i<m_sums.Size(j);++i)
 	  if (m_sums.Sum(j, i) >= disc) {
 	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
+        if(m_dipole_case == EXTAMP::IDa) {
+          win.SetKinSpect(p);
+          if (win.p_kinspec==NULL) THROW(fatal_error, "Invalid spectator assignment!");
+          win.SetKinVar();
+        }
 	    win.SetType();
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;
@@ -433,7 +480,13 @@ Splitting Shower::GeneratePoint
 	      break;
 	    }
 	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
-	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
+        if(m_dipole_case == EXTAMP::IDa){
+          double t_temp = win.m_t;
+          win.m_t = GetKt2(win);
+          win.m_w=kit->second[j]->GetWeight(win,m_oef);
+          win.m_t = t_temp;
+        }
+	    else win.m_w=kit->second[j]->GetWeight(win,m_oef);
 	    if (p_vars) win.m_vars=std::vector<double>
 	      (p_vars->GetVariations()->GetParametersVector()->size(),1.0);
 	    if (win.m_w.MC()<ran->Get()) {

@@ -1,6 +1,6 @@
 #include "DIRE/Tools/Splitting.H"
 
-#include "DIRE/Tools/Parton.H"
+#include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -11,6 +11,26 @@ void Splitting::SetType()
 {
   m_type=(p_c->Beam()?1:0)|(p_s->Beam()?2:0);
 }
+
+void Splitting::SetKinSpect(const Parton &p)
+{
+// p_s = spectator, p_c = emitter, p_n = emitted
+  if(p_c->GetKinSpectID()==0) p_kinspec = NULL;
+  p_kinspec = (*p.Ampl())[p_c->GetKinSpectID()];
+}
+
+void Splitting::SetKinVar()
+{
+  const double mw2            = sqr(Flavour(24).Mass());
+  const ATOOLS::Vec4D pai     = p_c->Mom();
+  const ATOOLS::Vec4D pb      = p_s->Mom();
+  const ATOOLS::Vec4D pwtilde = p_kinspec->Mom();
+  m_paipb   = pai*pb;
+  m_Qprime2 = 2.*pai*pwtilde;
+  const ATOOLS::Vec4D pminus  = pwtilde - mw2/m_Qprime2*pai;
+  m_alpha   = pb*pminus / (pai*pminus);
+}
+
 
 namespace DIRE {
 

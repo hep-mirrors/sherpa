@@ -24,6 +24,8 @@ namespace DIRE {
     bool   m_wcheck;
     double m_maxweight;
 
+    int m_evol;
+
     void RecoCheck(Amplitude *const a,int swap) const;
 
     Amplitude *Convert(ATOOLS::Cluster_Amplitude *const campl,
@@ -73,6 +75,7 @@ Dire::Dire(const Shower_Key &key):
   p_shower->Init(key.p_model,key.p_isr);
   m_reco = s["CSS_RECO_CHECK"].Get<int>();
   m_wcheck = s["CSS_WEIGHT_CHECK"].Get<int>();
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 Dire::~Dire()

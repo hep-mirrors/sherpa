@@ -12,6 +12,8 @@ namespace DIRE {
   private:
 
     int m_swap;
+    const double m_K = 0.9;
+    const double m_F = 4.0;
 
   public:
 
@@ -20,6 +22,12 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
+      if(m_dipole_case==EXTAMP::IDa)
+      {
+        double zain(s.m_z), v_iab(s.m_viab);
+        /* multiply by 1/2 because of twice setting up the kernel (swap in Shower.C) */
+        return 0.5*((1.0+p_sk->GF()->K(s))*2.*v_iab/zain - (1+zain));
+      }
       double z(s.m_z), y(s.m_y);
       double A=2.0*(1.0-z)/(sqr(1.0-z)+s.m_t/s.m_Q2);
       double B=-(1.0+z);
@@ -67,21 +75,56 @@ namespace DIRE {
 
     double Integral(const Splitting &s) const
     {
-      double I=log(1.0+s.m_Q2/s.m_t0);
-      return I*(1.0+p_sk->GF()->KMax(s));
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        {
+        double I=2.*log(1./(1.-s.m_zmax)) / (sqrt(1.-sqr(m_K)));
+        if(m_evol == 1){
+          /* multiply by 4 since we sum over 4 vis */
+          return 4.*I*(1.0+p_sk->GF()->KMax(s));
+        }
+        else if(m_evol == 2){
+          return m_F*I*(1.0+p_sk->GF()->KMax(s));
+        }
+        else THROW(fatal_error, "Invalid evolution scheme for res-aware matching!");
+        }
+      default:
+        {
+        double I=log(1.0+s.m_Q2/s.m_t0);
+        return I*(1.0+p_sk->GF()->KMax(s));
+        }
+      }
     }
 
     double Estimate(const Splitting &s) const
     {
-      double E=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t0/s.m_Q2);
-      return E*(1.0+p_sk->GF()->KMax(s));
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        {
+        double E=2./(1.-s.m_z)/(1.-m_K*cos(s.m_phi));
+        if(m_evol == 1)       return     E*(1.0+p_sk->GF()->KMax(s));
+        else if(m_evol == 2)  return m_F*E*(1.0+p_sk->GF()->KMax(s));
+        }
+      default:
+        {
+        double E=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t0/s.m_Q2);
+        return E*(1.0+p_sk->GF()->KMax(s));
+        }
+      }
     }
 
     bool GeneratePoint(Splitting &s) const
     {
-      s.m_z=1.0-sqrt(s.m_t0/s.m_Q2*(pow(1.0+s.m_Q2/s.m_t0,ran->Get())-1.0));
-      s.m_phi=2.0*M_PI*ran->Get();
-      return true;
+      switch(m_dipole_case){
+      case EXTAMP::IDa:
+        s.m_z   = 1.-pow(1.-s.m_zmax,ran->Get());
+        s.m_phi = 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
+        return true;
+      default:
+        s.m_z=1.0-sqrt(s.m_t0/s.m_Q2*(pow(1.0+s.m_Q2/s.m_t0,ran->Get())-1.0));
+        s.m_phi=2.0*M_PI*ran->Get();
+        return true;
+      }
     }
 
   };// end of class FFV_FF

@@ -259,6 +259,7 @@ void Initialization_Handler::RegisterDefaults()
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 
   s["DIPOLES"]["KAPPA"].SetDefault(2.0/3.0);
+  s["DIPOLES"]["CASE"].SetDefault("CS");
 
   s["COUPLINGS"].SetDefault("Alpha_QCD 1");
 
