@@ -12,6 +12,17 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
+#ifdef USING__RIVET3
+#include "Rivet/Config/RivetConfig.hh"
+#include "Rivet/AnalysisHandler.hh"
+#include "Rivet/Tools/Logging.hh"
+#ifdef RIVET_ENABLE_HEPMC_3
+#include "SHERPA/Tools/HepMC3_Interface.H"
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenCrossSection.h"
+#define SHERPA__HepMC_Interface SHERPA::HepMC3_Interface
+#define HEPMC_HAS_CROSS_SECTION
+#else
 #include "SHERPA/Tools/HepMC2_Interface.H"
 
 #ifdef USING__HEPMC2
@@ -23,10 +34,8 @@
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
 #endif
-
-#ifdef USING__RIVET3
-#include "Rivet/AnalysisHandler.hh"
-#include "Rivet/Tools/Logging.hh"
+#define SHERPA__HepMC_Interface SHERPA::HepMC2_Interface
+#endif
 
 
 namespace SHERPARIVET {
@@ -46,7 +55,7 @@ namespace SHERPARIVET {
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
     Rivet_Map         m_rivet;
-    SHERPA::HepMC2_Interface       m_hepmc2;
+    SHERPA__HepMC_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
 
@@ -299,8 +308,13 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
   std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
+#ifndef  RIVET_ENABLE_HEPMC_3
   HepMC::GenCrossSection xs;
   xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#else
+  std::shared_ptr<HepMC3::GenCrossSection> xs=std::make_shared<HepMC3::GenCrossSection>();
+  xs->set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#endif
   event.set_cross_section(xs);
   for (size_t i(0);i<subevents.size();++i) {
     subevents[i]->set_cross_section(xs);
@@ -483,6 +497,17 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 
 #ifdef USING__RIVET2
+#include "SHERPA/Tools/HepMC2_Interface.H"
+
+#ifdef USING__HEPMC2
+#include "HepMC/GenEvent.h"
+#include "HepMC/GenCrossSection.h"
+#include "HepMC/WeightContainer.h"
+#endif
+
+#ifdef USING__HEPMC2__DEFS
+#include "HepMC/HepMCDefs.h"
+#endif
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 
