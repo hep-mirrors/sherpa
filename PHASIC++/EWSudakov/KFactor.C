@@ -29,6 +29,11 @@ double Sudakov_KFactor::KFactor(const int mode)
   if (m_check) msg->SetLevel(8);
   m_weight = m_ews.KFactor(p_proc->Integrator()->Momenta());
   if (m_check) msg->SetLevel(level);
+  if (std::abs(m_weight) > 500) {
+    MyStrStream s;
+    s << "K factor is too large: " << m_weight << '\n';
+    THROW(fatal_error, s.str())
+  }
   return m_weight;
 }
 

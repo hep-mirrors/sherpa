@@ -19,6 +19,8 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
+Histogram Sudakov::m_kfachisto(0, -5.0, 5.0, 50);
+
 Sudakov::Sudakov(Process_Base* proc):
   p_proc{ proc },
   m_activecoeffs{
@@ -27,7 +29,7 @@ Sudakov::Sudakov(Process_Base* proc):
     EWSudakov_Log_Type::lSSC,
     EWSudakov_Log_Type::lC,
     EWSudakov_Log_Type::lYuk,
-    EWSudakov_Log_Type::lPR
+    //EWSudakov_Log_Type::lPR
   },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
@@ -37,6 +39,19 @@ Sudakov::Sudakov(Process_Base* proc):
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
+}
+
+Sudakov::~Sudakov()
+{
+  static bool did_output{false};
+  if (!did_output) {
+    Sudakov::m_kfachisto.MPISync();
+    Sudakov::m_kfachisto.Finalize();
+    MyStrStream s;
+    s << "kfacs_" << m_threshold;
+    Sudakov::m_kfachisto.Output(s.str());
+    did_output = true;
+  }
 }
 
 double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
@@ -110,6 +125,8 @@ double Sudakov::KFactor()
       delta += (coeffkv.second[i] * logs[coeffkv.first]).real();
     num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
   }
+
+  Sudakov::m_kfachisto.Insert(num/den);
 
   return num/den;
 }

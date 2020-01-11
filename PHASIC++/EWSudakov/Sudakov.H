@@ -1,6 +1,7 @@
 #ifndef PHASIC__EWSudakov__Sudakov_H
 #define PHASIC__EWSudakov__Sudakov_H
 
+#include "ATOOLS/Math/Histogram.H"
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 #include "PHASIC++/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
@@ -20,6 +21,7 @@ namespace PHASIC {
   class Sudakov {
   public:
     Sudakov(Process_Base*);
+    ~Sudakov();
     double KFactor(const ATOOLS::Vec4D_Vector& mom);
   private:
 
@@ -77,6 +79,9 @@ namespace PHASIC {
     mutable std::vector<int> m_current_spincombination;
     mutable std::vector<int> m_current_goldstone_spincombination;
     mutable Complex m_current_goldstone_me_prefactor;
+
+    // self-monitoring
+    static Histogram m_kfachisto;
   };
 }
 
