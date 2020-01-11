@@ -82,6 +82,7 @@ namespace PHASIC {
 
     // self-monitoring
     static Histogram m_kfachisto;
+    static size_t m_numonshellwarning;
   };
 }
 

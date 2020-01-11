@@ -19,6 +19,14 @@ EWSudakov_Amplitudes::EWSudakov_Amplitudes(
   ampls{ CreateAmplitudes(proc, activecoeffs) },
   permutations{ CreatePermutations(ampls) }
 {
+  for (int n {0}; n < NumberOfLegs(); n++)
+    particles.push_back(new Particle{});
+}
+
+EWSudakov_Amplitudes::~EWSudakov_Amplitudes()
+{
+  for (auto* p : particles)
+    delete p;
 }
 
 Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
@@ -30,7 +38,7 @@ Cluster_Amplitude&
 EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination)
 {
   Leg_Kfcode_Map leg_set;
-  for (int i{ 0 }; i < BaseAmplitude().Legs().size(); ++i) {
+  for (int i {0}; i < NumberOfLegs(); ++i) {
     if (spincombination[i] == 2) {
       const auto flav = BaseAmplitude().Leg(i)->Flav();
       if (flav.Kfcode() == kf_Z || flav.Kfcode() == kf_Wplus) {
@@ -64,27 +72,8 @@ std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(const Leg_Kfcode_Map& 
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC(mom);
-  for (int i{ 0 }; i < BaseAmplitude().Legs().size(); ++i) {
+  for (int i {0}; i < NumberOfLegs(); ++i) {
     BaseAmplitude().Leg(i)->SetMom(i < BaseAmplitude().NIn() ? -mom[i] : mom[i]);
-  }
-  // TODO: generalise the momentum rescaling below to handle 2->n
-  assert(BaseAmplitude().NIn() == 2 && BaseAmplitude().Legs().size() == 4);
-  // TODO: also, reuse existing implementation elsewhere if existing
-  // TODO: drop the implicit assumption that all initial-state particles are
-  // massless (?), e.g. there might be top-quarks in the IS after SU(2)
-  // transforming the amplitude
-  const auto Etot2 = MandelstamS();
-
-  // boost to the rest system if necessary
-  bool should_boost {false};
-  Poincare rest;
-  Vec4D cms = Vec4D {0.0, 0.0, 0.0, 0.0};
-  for (int i {0}; i < 2; i++) {
-    cms += BaseAmplitude().Leg(i)->Mom();
-  }
-  if (Vec3D(cms).Abs() > 1.e-6) {
-    should_boost = true;
-    rest = Poincare(cms);
   }
 
   for (auto& ampl : ampls) {
@@ -92,42 +81,22 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
       continue;
     const auto& permutation = LegPermutation(ampl.first);
 
-    // first modify incoming momenta, then outgoing momenta
-    for (int i {0}; i < 4; i += 2) {
-      // calc momenta such that all particles are on their mass shell;
-      // to guarantee this we modify the energy and the absolute value of the
-      // momenta, but not the directions of the momenta
-      Vec4D mom0 {BaseAmplitude().Leg(permutation[i])->Mom()};
-      if (should_boost) {
-        rest.Boost(mom0);
-      }
-      const Vec3D normed_mom0 {Vec3D {mom0} / Vec3D {mom0}.Abs()};
-      const auto m02 =
-          sqr(ATOOLS::Abs<double>(ampl.second->Leg(i)->Flav().Mass()));
-      const auto m12 =
-          sqr(ATOOLS::Abs<double>(ampl.second->Leg(i + 1)->Flav().Mass()));
-      // calc the fraction of energy that will be assigned to the first leg
-      const auto x = (Etot2 + m02 - m12) / (2 * Etot2);
-      // calc the absolute momentum assigned to the first leg
-      const auto p =
-          sqrt((Etot2 * Etot2 - 2 * Etot2 * (m02 + m12) + sqr(m02 - m12)) /
-               (4 * Etot2));
-
-      mom0 = Vec4D {x * sqrt(Etot2), p * normed_mom0};
-      Vec4D mom1 {(1 - x) * sqrt(Etot2), -p * normed_mom0};
-
-      if (should_boost) {
-        rest.BoostBack(mom0);
-        rest.BoostBack(mom1);
-      }
-
-      if (i == 0) {
-        mom0 = -mom0;
-        mom1 = -mom1;
-      }
-
-      ampl.second->Leg(i)->SetMom(mom0);
-      ampl.second->Leg(i + 1)->SetMom(mom1);
+    Vec4D_Vector new_moms;
+    new_moms.reserve(NumberOfLegs());
+    for (int j {0}; j < NumberOfLegs(); ++j) {
+      Vec4D mom =
+          ((j < 2) ? -1 : 1) * BaseAmplitude().Leg(permutation[j])->Mom();
+      particles[j]->SetFinalMass(ampl.second->Leg(j)->Flav().Mass());
+      new_moms.push_back(mom);
+    }
+    const auto did_stretch = stretcher.StretchMomenta(particles, new_moms);
+    if (!did_stretch) {
+      ampl.second->SetFlag(1 << 4);
+      continue;
+    }
+    for (int j {0}; j < NumberOfLegs(); ++j) {
+      ampl.second->Leg(j)->SetMom(j < BaseAmplitude().NIn() ? -new_moms[j]
+                                                            : new_moms[j]);
     }
   }
 }

@@ -20,6 +20,7 @@ using namespace COMIX;
 using namespace ATOOLS;
 
 Histogram Sudakov::m_kfachisto(0, -5.0, 5.0, 50);
+size_t Sudakov::m_numonshellwarning {0};
 
 Sudakov::Sudakov(Process_Base* proc):
   p_proc{ proc },
@@ -50,6 +51,9 @@ Sudakov::~Sudakov()
     MyStrStream s;
     s << "kfacs_" << m_threshold;
     Sudakov::m_kfachisto.Output(s.str());
+    msg_Error() << "Set " << m_numonshellwarning
+                << " amplitudes to 0.0, because there was not enough energy to "
+                   "fulfil on-shell conditions\n";
     did_output = true;
   }
 }
@@ -464,6 +468,10 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
   auto amplit = m_transformedspinampls.find(legs);
   if (amplit == m_transformedspinampls.end()) {
     auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+    if (transformedampl.Flag() & (1 << 4)) {
+      ++m_numonshellwarning;
+      return 0.0;
+    }
     m_comixinterface.FillSpinAmplitudes(m_transformedspinampls[legs],
                                         transformedampl);
     amplit = m_transformedspinampls.find(legs);

@@ -2,6 +2,7 @@
 #define PHASIC_EWSudakov_EWSudakovAmplitudes_H
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "PHASIC++/EWSudakov/EWSudakov.H"
 
 #include <memory>
@@ -49,6 +50,7 @@ namespace PHASIC {
 
     EWSudakov_Amplitudes(Process_Base*,
                          const std::set<EWSudakov_Log_Type>& _activecoeffs);
+    ~EWSudakov_Amplitudes();
 
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
     ATOOLS::Cluster_Amplitude&
@@ -90,6 +92,12 @@ namespace PHASIC {
 
     /// permutations of legs for each element in ampls
     Permutation_Map permutations;
+
+    /// used to put all momenta on-shell for transformed matrix elements
+    ATOOLS::Momenta_Stretcher stretcher;
+
+    /// this container is only used to accommodate the Momenta_Stretcher API
+    ATOOLS::Particle_Vector particles;
 
   };
 
