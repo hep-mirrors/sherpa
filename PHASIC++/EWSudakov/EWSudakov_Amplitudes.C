@@ -68,59 +68,67 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     BaseAmplitude().Leg(i)->SetMom(i < BaseAmplitude().NIn() ? -mom[i] : mom[i]);
   }
   // TODO: generalise the momentum rescaling below to handle 2->n
-  // TODO: also, reuse existing implementation elsewhere if existing
   assert(BaseAmplitude().NIn() == 2 && BaseAmplitude().Legs().size() == 4);
+  // TODO: also, reuse existing implementation elsewhere if existing
+  // TODO: drop the implicit assumption that all initial-state particles are
+  // massless (?), e.g. there might be top-quarks in the IS after SU(2)
+  // transforming the amplitude
   const auto Etot2 = MandelstamS();
+
+  // boost to the rest system if necessary
+  bool should_boost {false};
+  Poincare rest;
+  Vec4D cms = Vec4D {0.0, 0.0, 0.0, 0.0};
+  for (int i {0}; i < 2; i++) {
+    cms += BaseAmplitude().Leg(i)->Mom();
+  }
+  if (Vec3D(cms).Abs() > 1.e-6) {
+    should_boost = true;
+    rest = Poincare(cms);
+  }
+
   for (auto& ampl : ampls) {
     if (ampl.first == s_baseamplkey)
       continue;
     const auto& permutation = LegPermutation(ampl.first);
 
-    // set incoming momenta
-    // TODO: drop the implicit assumption that all initial-state particles are
-    // massless (?), e.g. there might be top-quarks in the IS after SU(2)
-    // transforming the amplitude
-    for (int i{ 0 }; i < ampl.second->NIn(); ++i) {
-      ampl.second->Leg(i)->SetMom(-mom[permutation[i]]);
+    // first modify incoming momenta, then outgoing momenta
+    for (int i {0}; i < 4; i += 2) {
+      // calc momenta such that all particles are on their mass shell;
+      // to guarantee this we modify the energy and the absolute value of the
+      // momenta, but not the directions of the momenta
+      Vec4D mom0 {BaseAmplitude().Leg(permutation[i])->Mom()};
+      if (should_boost) {
+        rest.Boost(mom0);
+      }
+      const Vec3D normed_mom0 {Vec3D {mom0} / Vec3D {mom0}.Abs()};
+      const auto m02 =
+          sqr(ATOOLS::Abs<double>(ampl.second->Leg(i)->Flav().Mass()));
+      const auto m12 =
+          sqr(ATOOLS::Abs<double>(ampl.second->Leg(i + 1)->Flav().Mass()));
+      // calc the fraction of energy that will be assigned to the first leg
+      const auto x = (Etot2 + m02 - m12) / (2 * Etot2);
+      // calc the absolute momentum assigned to the first leg
+      const auto p =
+          sqrt((Etot2 * Etot2 - 2 * Etot2 * (m02 + m12) + sqr(m02 - m12)) /
+               (4 * Etot2));
+
+      mom0 = Vec4D {x * sqrt(Etot2), p * normed_mom0};
+      Vec4D mom1 {(1 - x) * sqrt(Etot2), -p * normed_mom0};
+
+      if (should_boost) {
+        rest.BoostBack(mom0);
+        rest.BoostBack(mom1);
+      }
+
+      if (i == 0) {
+        mom0 = -mom0;
+        mom1 = -mom1;
+      }
+
+      ampl.second->Leg(i)->SetMom(mom0);
+      ampl.second->Leg(i + 1)->SetMom(mom1);
     }
-
-    // calc outgoing momenta such that all particles are on their mass shell;
-    // to guarantee this we modify the energy and the absolute value of the
-    // momenta, but not the directions of the momenta
-
-    Vec4D out_mom {BaseAmplitude().Leg(permutation[2])->Mom()};
-
-    bool boost{false};
-    Poincare rest;
-    Vec4D cms = Vec4D{0.0, 0.0, 0.0, 0.0};
-    for (int i{0}; i < 2; i++) {
-      cms += BaseAmplitude().Leg(i)->Mom();
-    }
-    if (Vec3D(cms).Abs() > 1.e-6) {
-      boost = true;
-      rest = Poincare(cms);
-      rest.Boost(out_mom);
-    }
-
-    const Vec3D normed_out_mom {Vec3D{out_mom} / Vec3D{out_mom}.Abs()};
-    const auto m22 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(2)->Flav().Mass()));
-    const auto m32 = sqr(ATOOLS::Abs<double>(ampl.second->Leg(3)->Flav().Mass()));
-    // calc the fraction of energy that will be assigned to leg 2
-    const auto x = (Etot2 + m22 - m32) / (2*Etot2);
-    // calc the absolute momentum assigned to leg 2
-    const auto p
-      = sqrt((Etot2*Etot2 - 2*Etot2*(m22 + m32) + sqr(m22 - m32)) / (4*Etot2));
-
-    Vec4D mom2 {    x*sqrt(Etot2),  p*normed_out_mom};
-    Vec4D mom3 {(1-x)*sqrt(Etot2), -p*normed_out_mom};
-
-    if (boost) {
-      rest.BoostBack(mom2);
-      rest.BoostBack(mom3);
-    }
-
-    ampl.second->Leg(2)->SetMom(mom2);
-    ampl.second->Leg(3)->SetMom(mom3);
   }
 }
 
