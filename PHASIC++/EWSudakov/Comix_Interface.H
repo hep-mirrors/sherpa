@@ -20,10 +20,15 @@ public:
 
 private:
   Process_Info CreateProcessInfo(const Cluster_Amplitude_UP&,
-                                 const std::string& graph_path);
+                                 const std::string& graph_path,
+                                 const std::string& suffix="Sudakov");
   void InitializeProcess(const Process_Info&);
   const Process_Base* p_proc;
-  NLOTypeStringProcessMap_Map m_apmap;
+  NLOTypeStringProcessMap_Map m_apmap, m_apmap_he;
+
+  MODEL::Model_Base          * p_model;
+  MODEL::Model_Base          * p_model_he;
+  bool InitializeHighEnergyModel();
 };
 } // namespace PHASIC
 #endif

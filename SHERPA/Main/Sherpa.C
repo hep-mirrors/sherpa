@@ -33,8 +33,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+Initialization_Handler* SHERPA::s_inithandler = nullptr;
+
 Sherpa::Sherpa(int argc, char* argv[]) :
-  p_inithandler(nullptr),
   p_eventhandler(nullptr),
   p_hepmc2(nullptr)
 {
@@ -57,13 +58,13 @@ Sherpa::~Sherpa()
 {
   if (msg_LevelIsInfo()) {
     Return_Value::PrintStatistics(msg->Out());
-    if (p_inithandler->GetVariations()) {
-      p_inithandler->GetVariations()->PrintStatistics(msg->Out());
+    if (s_inithandler->GetVariations()) {
+      s_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
   }
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
-  if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
+  if (s_inithandler)  { delete s_inithandler;  s_inithandler  = nullptr; }
 #ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
 #endif
@@ -86,18 +87,18 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun()
 {
   Settings& s = Settings::GetMainSettings();
-  p_inithandler = new Initialization_Handler();
+  s_inithandler = new Initialization_Handler();
   RegisterDefaults();
 
   mpi->PrintRankInfo();
 
   DrawLogo(s["PRINT_VERSION_INFO"].Get<bool>());
 
-  if (p_inithandler->InitializeTheFramework()) {
+  if (s_inithandler->InitializeTheFramework()) {
     int initonly=s["INIT_ONLY"].Get<int>();
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
     if (initonly==2) return true;
-    if (!p_inithandler->CalculateTheHardProcesses()) return false;
+    if (!s_inithandler->CalculateTheHardProcesses()) return false;
     m_showtrials=s["SHOW_NTRIALS"].Get<bool>();
 
     // read in from status path
@@ -140,48 +141,48 @@ void Sherpa::RegisterDefaults()
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  eventtype::code mode = p_inithandler->Mode();
+  eventtype::code mode = s_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
-  Analysis_Vector *anas(p_inithandler->GetAnalyses());
+  Analysis_Vector *anas(s_inithandler->GetAnalyses());
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
   }
 
   if (mode==eventtype::EventReader) {
-    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader(),
-                                                      p_inithandler->GetVariations()));
-    p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new EvtReadin_Phase(s_inithandler->GetEventReader(),
+                                                      s_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(new Hard_Decays(s_inithandler->GetHardDecayHandler()));
+    p_eventhandler->AddEventPhase(new Beam_Remnants(s_inithandler->GetBeamRemnantHandler()));
   }
   else {
     p_eventhandler->AddEventPhase(
-        new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
-                             p_inithandler->GetVariations()));
-    p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
-                                                    p_inithandler->GetHardDecayHandler(),
-						    p_inithandler->GetHDHandler(),
-						    p_inithandler->GetMIHandler(),
-						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandlers()));
+        new Signal_Processes(s_inithandler->GetMatrixElementHandler(),
+                             s_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(new Hard_Decays(s_inithandler->GetHardDecayHandler()));
+    p_eventhandler->AddEventPhase(new Jet_Evolution(s_inithandler->GetMatrixElementHandler(),
+                                                    s_inithandler->GetHardDecayHandler(),
+						    s_inithandler->GetHDHandler(),
+						    s_inithandler->GetMIHandler(),
+						    s_inithandler->GetSoftCollisionHandler(),
+						    s_inithandler->GetShowerHandlers()));
     p_eventhandler->AddEventPhase(
         new Signal_Process_FS_QED_Correction(
-          p_inithandler->GetMatrixElementHandler(),
-          p_inithandler->GetSoftPhotonHandler()));
+          s_inithandler->GetMatrixElementHandler(),
+          s_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(
-        new Multiple_Interactions(p_inithandler->GetMIHandler()));
-    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
-    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
-    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
-    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
+        new Multiple_Interactions(s_inithandler->GetMIHandler()));
+    p_eventhandler->AddEventPhase(new Minimum_Bias(s_inithandler->GetSoftCollisionHandler()));
+    p_eventhandler->AddEventPhase(new Beam_Remnants(s_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new Hadronization(s_inithandler->GetFragmentationHandler()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(s_inithandler->GetHDHandler()));
 
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
-  if (!p_inithandler->GetOutputs()->empty())
-    p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
-  p_eventhandler->SetVariations(p_inithandler->GetVariations());
-  p_eventhandler->SetFilter(p_inithandler->GetFilter());
+  if (!s_inithandler->GetOutputs()->empty())
+    p_eventhandler->AddEventPhase(new Output_Phase(s_inithandler->GetOutputs(), p_eventhandler));
+  p_eventhandler->SetVariations(s_inithandler->GetVariations());
+  p_eventhandler->SetFilter(s_inithandler->GetFilter());
   p_eventhandler->PrintGenericEventStructure();
 
   ran->EraseLastIncrementedSeed();
@@ -199,13 +200,13 @@ bool Sherpa::GenerateOneEvent(bool reset)
   
   if(m_debuginterval>0 &&
      rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0 &&
-     (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
+     (s_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
       rpa->gen.NumberOfGeneratedEvents()==0)) {
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       ran->WriteOutStatus(("random."+fname).c_str());
   }
   if (m_debugstep>=0) {
-    if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
+    if (s_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     else {
       ran->ReadInStatus("random.0.dat");
@@ -216,7 +217,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
   if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
   
   if (reset) p_eventhandler->Reset();
-  if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
+  if (p_eventhandler->GenerateEvent(s_inithandler->Mode())) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       std::ofstream eventout(("refevent."+fname).c_str());
@@ -361,7 +362,7 @@ const Blob_List &Sherpa::GetBlobList() const
 
 double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl,const int mode) const
 {
-  return p_inithandler->GetMatrixElementHandler()->
+  return s_inithandler->GetMatrixElementHandler()->
     GetWeight(ampl,ATOOLS::nlo_type::lo,mode);
 }
 

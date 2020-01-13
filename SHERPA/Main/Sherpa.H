@@ -19,6 +19,8 @@ namespace SHERPA {
   class Input_Output_Handler;
   class HepMC2_Interface;
 
+  extern Initialization_Handler * s_inithandler;
+
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
@@ -27,7 +29,6 @@ namespace SHERPA {
     bool          m_showtrials;
     bool          m_filter;
 
-    Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
     HepMC2_Interface       * p_hepmc2;
     Filter                 * p_filter;
@@ -63,7 +64,7 @@ namespace SHERPA {
     double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl,const int mode=0) const;
     
     inline Initialization_Handler * GetInitHandler() const 
-    { return p_inithandler; }
+    { return s_inithandler; }
     inline Event_Handler * GetEventHandler() const 
     { return p_eventhandler; }
     
@@ -111,7 +112,7 @@ namespace SHERPA {
     The number of trials per single event. At the moment, m_trials = 100.
   */
   /*!
-    \var Initialization_Handler * Sherpa::p_inithandler
+    \var Initialization_Handler * Sherpa::s_inithandler
     A pointer to the Initialization_Handler that manages the initialization of all parts of the 
     package and triggers any caluclation/evaluation (like, e.g. of matrix elements) that has to 
     be done before the simluation of single events. Eventually, the Initialization_Handler

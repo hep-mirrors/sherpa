@@ -38,6 +38,7 @@ namespace PHASIC   {
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
+    void SetModel(MODEL::Model_Base*);
 
   };
 

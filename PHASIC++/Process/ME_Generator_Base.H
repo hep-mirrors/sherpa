@@ -73,6 +73,8 @@ namespace PHASIC {
 
     inline ME_Generators *Generators() const { return p_gens; }
 
+    virtual void SetModel(MODEL::Model_Base*) {};
+
   };// end of class ME_Generator_Base
 
   struct ME_Generator_Key {
