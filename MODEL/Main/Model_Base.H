@@ -137,6 +137,8 @@ namespace MODEL {
      * therein.
      **/
     virtual size_t IndexOfOrderKey(const std::string&) const;
+
+    virtual void MessWithVertex() {};
   };
 
   extern Model_Base *s_model;

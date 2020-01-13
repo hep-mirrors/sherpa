@@ -44,6 +44,8 @@ namespace MODEL {
     bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
     void InitVertices() override;
     size_t IndexOfOrderKey(const std::string& key) const override;
+
+    void MessWithVertex() override;
   };
 
 }
@@ -108,6 +110,19 @@ Standard_ModelGS::Standard_ModelGS() :
   AddStandardContainers();
   CustomContainerInit();
 }
+
+    void Standard_ModelGS::MessWithVertex() {
+      m_v.clear();
+      m_ov.clear();
+      m_fls.clear();
+      m_vmap.clear();
+      m_vtable.clear();
+      auto csin2thetaW = 0.3;
+      auto ccos2thetaW=1.-csin2thetaW;
+      (*p_complexconstants)["csin2_thetaW"] = csin2thetaW;
+      (*p_complexconstants)["ccos2_thetaW"] = ccos2thetaW;
+      InitializeInteractionModel();
+    }
 
 void Standard_ModelGS::ParticleInit()
 {

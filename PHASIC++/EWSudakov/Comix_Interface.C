@@ -90,6 +90,7 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
     msg_Debugging() << "Initialize HE process for ampl=" << *ampl << std::endl;
     const Process_Info pi = CreateProcessInfo(ampl, graph_path, "Sudakov_HE");
     InitializeProcess(pi);
+    p_model->MessWithVertex();
   }
   p_model = model;
 
@@ -150,7 +151,6 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
 bool Comix_Interface::InitializeHighEnergyModel()
 {
   Settings& s = Settings::GetMainSettings();
-  s["SIN2THETAW"].OverrideScalar(0.3);
   if (p_model_he) delete p_model_he;
   std::string name(s["MODEL"].Get<std::string>());
   p_model_he=Model_Base::Model_Getter_Function::
