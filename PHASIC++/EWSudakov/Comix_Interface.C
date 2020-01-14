@@ -23,10 +23,15 @@ using namespace MODEL;
 
 Comix_Interface::Comix_Interface(Process_Base* proc,
                                  EWSudakov_Amplitudes& ampls)
-    : p_proc{proc}, p_model_he{nullptr}, p_model{nullptr}
+    : p_proc{proc}, m_procname_suffix{"Sudakov"}
 {
-  InitializeHighEnergyModel();
   InitializeProcesses(ampls);
+}
+
+Comix_Interface::Comix_Interface(Process_Base* proc,
+                                 const std::string& procname_suffix)
+    : p_proc {proc}, m_procname_suffix {procname_suffix}
+{
 }
 
 void Comix_Interface::FillSpinAmplitudes(
@@ -44,32 +49,14 @@ void Comix_Interface::FillSpinAmplitudes(
   auto pit = loprocmapit->second->find(pname);
   if (pit->second == NULL)
     THROW(fatal_error, "Process not found");
-  double me2 = pit->second->Differential(*campl, 2 | 4 | 128);
-  PRINT_VAR(me2);
+  pit->second->Differential(*campl, 2 | 4 | 128);
   campl->Delete();
   std::vector<std::vector<Complex>> cols;
   pit->second->FillAmplitudes(spinampls, cols);
-
-  const auto loprocmapit_he = m_apmap_he.find(nlo_type::lo);
-  if (loprocmapit_he == m_apmap_he.end())
-    THROW(fatal_error, "LO entry in process map not found");
-  Cluster_Amplitude* campl_he(ampl.Copy());
-  campl_he->SetMuR2(sqr(rpa->gen.Ecms()));
-  campl_he->SetMuF2(sqr(rpa->gen.Ecms()));
-  campl_he->SetMuQ2(sqr(rpa->gen.Ecms()));
-  pname = Process_Base::GenerateName(campl_he);
-  PRINT_VAR(pname);
-  pit = loprocmapit_he->second->find(pname);
-  if (pit->second == NULL)
-    THROW(fatal_error, "Process not found");
-  me2 = pit->second->Differential(*campl_he, 2 | 4 | 128);
-  PRINT_VAR(me2);
-  campl_he->Delete();
 }
 
 void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 {
-  p_model = s_model;
   DEBUG_FUNC("");
   auto& s = Settings::GetMainSettings();
   const auto graph_path =
@@ -80,30 +67,14 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
     const Process_Info pi = CreateProcessInfo(ampl, graph_path);
     InitializeProcess(pi);
   }
-
-  MODEL::Model_Base* model = s_model;
-  MODEL::s_model = p_model_he;
-
-  p_model = p_model_he;
-  for (auto& kv : ampls) {
-    const auto& ampl = kv.second;
-    msg_Debugging() << "Initialize HE process for ampl=" << *ampl << std::endl;
-    const Process_Info pi = CreateProcessInfo(ampl, graph_path, "Sudakov_HE");
-    InitializeProcess(pi);
-    p_model->MessWithVertex();
-  }
-  p_model = model;
-
-  MODEL::s_model = model;
 }
 
 Process_Info
 Comix_Interface::CreateProcessInfo(const Cluster_Amplitude_UP& ampl,
-                                   const std ::string& graph_path,
-                                   const std::string& suffix)
+                                   const std ::string& graph_path)
 {
   Process_Info pi;
-  pi.m_addname = "__" + suffix;
+  pi.m_addname = "__" + m_procname_suffix;
   pi.m_megenerator = "Comix";
   if (graph_path != "") {
     pi.m_gpath = graph_path;
@@ -134,7 +105,6 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude_UP& ampl,
 
 void Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
-  p_proc->Generator()->Generators()->SetModel(p_model);
   PHASIC::Process_Base* proc =
       p_proc->Generator()->Generators()->InitializeProcess(pi, false);
   if (proc == NULL)
@@ -145,29 +115,5 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
       "Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->Get<COMIX::Process_Base>()->Tests();
-  proc->FillProcessMap((pi.m_addname == "__Sudakov_HE") ? &m_apmap_he : &m_apmap);
+  proc->FillProcessMap(&m_apmap);
 }
-
-bool Comix_Interface::InitializeHighEnergyModel()
-{
-  Settings& s = Settings::GetMainSettings();
-  if (p_model_he) delete p_model_he;
-  std::string name(s["MODEL"].Get<std::string>());
-  p_model_he=Model_Base::Model_Getter_Function::
-    GetObject(name, Model_Arguments(true));
-  //if (p_model_he==NULL) {
-  //  if (!s_loader->LoadLibrary("Sherpa"+name))
-  //    THROW(missing_module,"Cannot load model library Sherpa"+name+".");
-  //  p_model_he=Model_Base::Model_Getter_Function::
-  //    GetObject(name, Model_Arguments(true));
-  //}
-  if (p_model_he==NULL) THROW(not_implemented,"Model not implemented");
-
-  PDF::ISR_Handler_Map isrmap;
-  isrmap[PDF::isr::id::hard_subprocess] = p_proc->Integrator()->ISR();
-  if (!p_model_he->ModelInit(*SHERPA::s_inithandler->GetISRHandlers()))
-    THROW(critical_error,"Model cannot be initialized");
-  p_model_he->InitializeInteractionModel();
-  return 1;
-}
-

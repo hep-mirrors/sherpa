@@ -37,6 +37,12 @@ namespace MODEL {
     {}
   };// end of struct Model_Arguments
 
+  struct EWParameters {
+    // TODO: add whatever is needed to retrieve and set the parameters that are
+    // supposed to be running (we probably need to add a virtual
+    // GetEWParameters function to Model_Base and override it in SMGold ...)
+  };
+
   class Model_Base {
   public:
 
@@ -138,7 +144,7 @@ namespace MODEL {
      **/
     virtual size_t IndexOfOrderKey(const std::string&) const;
 
-    virtual void MessWithVertex() {};
+    virtual void ResetVerticesWithEWParameters(const EWParameters&) {};
   };
 
   extern Model_Base *s_model;

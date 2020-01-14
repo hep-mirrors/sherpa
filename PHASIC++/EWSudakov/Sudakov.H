@@ -2,7 +2,7 @@
 #define PHASIC__EWSudakov__Sudakov_H
 
 #include "ATOOLS/Math/Histogram.H"
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
+#include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
 #include "PHASIC++/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -57,12 +57,19 @@ namespace PHASIC {
 
     /// calculate transformed amplitude value
     Complex TransformedAmplitudeValue(const Leg_Kfcode_Map&,
-                                      const std::vector<int>&);
+                                      const std::vector<int>&,
+                                      const Comix_Interface* interface=nullptr);
 
     Process_Base* p_proc;
     const std::set<EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
+
+    /// the default COMIX interface used for all logs except the PR logs
     const Comix_Interface m_comixinterface;
+
+    /// the COMIX interface for using dynamic EW parameters used for the PR logs
+    HE_Comix_Interface m_comixinterface_he;
+
     const EWGroupConstants m_ewgroupconsts;
 
     const double m_mw2;

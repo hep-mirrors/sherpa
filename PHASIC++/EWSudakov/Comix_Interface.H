@@ -14,21 +14,22 @@ class Comix_Interface {
 
 public:
   Comix_Interface(Process_Base*, EWSudakov_Amplitudes&);
-  void InitializeProcesses(EWSudakov_Amplitudes&);
+  virtual void InitializeProcesses(EWSudakov_Amplitudes&);
   void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                           ATOOLS::Cluster_Amplitude&) const;
 
+protected:
+  Comix_Interface(Process_Base*, const std::string& procname_suffix);
+  virtual void InitializeProcess(const Process_Info&);
+  const Process_Base* p_proc;
+  std::string m_procname_suffix;
+
 private:
   Process_Info CreateProcessInfo(const Cluster_Amplitude_UP&,
-                                 const std::string& graph_path,
-                                 const std::string& suffix="Sudakov");
-  void InitializeProcess(const Process_Info&);
-  const Process_Base* p_proc;
-  NLOTypeStringProcessMap_Map m_apmap, m_apmap_he;
+                                 const std::string& graph_path);
+  NLOTypeStringProcessMap_Map m_apmap;
 
-  MODEL::Model_Base          * p_model;
-  MODEL::Model_Base          * p_model_he;
-  bool InitializeHighEnergyModel();
 };
+
 } // namespace PHASIC
 #endif

@@ -30,10 +30,15 @@ Sudakov::Sudakov(Process_Base* proc):
     EWSudakov_Log_Type::lSSC,
     EWSudakov_Log_Type::lC,
     EWSudakov_Log_Type::lYuk,
-    //EWSudakov_Log_Type::lPR
+    EWSudakov_Log_Type::lPR
   },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
+  // TODO: probably we do not want to set up all (SU(2)-transformed) processes
+  // again for doing the PR logs, so re-consider what ampls we pass here, such
+  // that the HE COMIX interface does not set up processes that we will never
+  // need
+  m_comixinterface_he{ p_proc, m_ampls },
   m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
   m_runaqed{ 1./137.03599976 }
 {
@@ -437,33 +442,21 @@ Coeff_Value Sudakov::lsYukCoeff()
 
 Coeff_Value Sudakov::lsPRCoeff()
 {
-  // TODO: implement dynamic calculation, this placeholder just returns the
-  // coefficients given in the Denner/Pozzorini reference for ee->mumu
+  // TODO: do the running, and pass the correct parameters to the HE interface
+  MODEL::EWParameters p;
+  m_comixinterface_he.ResetWithEWParameters(p);
+  const auto he_me = TransformedAmplitudeValue(
+      {}, m_current_spincombination, &m_comixinterface_he);
+  PRINT_VAR(he_me / m_current_me_value);
+
   Coeff_Value coeff{0.0};
-  if (m_current_spincombination[0] == 0 && m_current_spincombination[1] == 0 &&
-      m_current_spincombination[2] == 0 && m_current_spincombination[3] == 0)
-    coeff = 8.80;
-  else if (m_current_spincombination[0] == 0 &&
-           m_current_spincombination[1] == 0 &&
-           m_current_spincombination[2] == 1 &&
-           m_current_spincombination[3] == 1)
-    coeff = 8.80;
-  else if (m_current_spincombination[0] == 1 &&
-           m_current_spincombination[1] == 1 &&
-           m_current_spincombination[2] == 0 &&
-           m_current_spincombination[3] == 0)
-    coeff = 8.80;
-  else if (m_current_spincombination[0] == 1 &&
-           m_current_spincombination[1] == 1 &&
-           m_current_spincombination[2] == 1 &&
-           m_current_spincombination[3] == 1)
-    coeff = -9.03;
   return coeff;
 }
 
 Complex
 Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
-                                   const std::vector<int>& spincombination)
+                                   const std::vector<int>& spincombination,
+                                   const Comix_Interface* interface)
 {
   auto amplit = m_transformedspinampls.find(legs);
   if (amplit == m_transformedspinampls.end()) {
@@ -472,8 +465,8 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
       ++m_numonshellwarning;
       return 0.0;
     }
-    m_comixinterface.FillSpinAmplitudes(m_transformedspinampls[legs],
-                                        transformedampl);
+    (interface ? *interface : m_comixinterface)
+        .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
     amplit = m_transformedspinampls.find(legs);
   }
   auto& legpermutation = m_ampls.LegPermutation(legs);

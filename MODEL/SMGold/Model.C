@@ -43,9 +43,10 @@ namespace MODEL {
     Standard_ModelGS();
     bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
     void InitVertices() override;
+    void ResetVerticesWithEWParameters(const EWParameters&) override;
+    void ClearInteractionModel();
     size_t IndexOfOrderKey(const std::string& key) const override;
 
-    void MessWithVertex() override;
   };
 
 }
@@ -110,19 +111,6 @@ Standard_ModelGS::Standard_ModelGS() :
   AddStandardContainers();
   CustomContainerInit();
 }
-
-    void Standard_ModelGS::MessWithVertex() {
-      m_v.clear();
-      m_ov.clear();
-      m_fls.clear();
-      m_vmap.clear();
-      m_vtable.clear();
-      auto csin2thetaW = 0.3;
-      auto ccos2thetaW=1.-csin2thetaW;
-      (*p_complexconstants)["csin2_thetaW"] = csin2thetaW;
-      (*p_complexconstants)["ccos2_thetaW"] = ccos2thetaW;
-      InitializeInteractionModel();
-    }
 
 void Standard_ModelGS::ParticleInit()
 {
@@ -1405,6 +1393,29 @@ void Standard_ModelGS::G0Gold()
   m_v.back().Lorentz.push_back("SSSS1");
   m_v.back().order.resize(3);
   m_v.back().order[2]    = 2;
+}
+
+void Standard_ModelGS::ResetVerticesWithEWParameters(const EWParameters& params)
+{
+  ClearInteractionModel();
+
+  // TODO: apply new params
+  // this is just an example
+  auto csin2thetaW = 0.3;
+  auto ccos2thetaW = 1. - csin2thetaW;
+  (*p_complexconstants)["csin2_thetaW"] = csin2thetaW;
+  (*p_complexconstants)["ccos2_thetaW"] = ccos2thetaW;
+
+  InitializeInteractionModel();
+}
+
+void Standard_ModelGS::ClearInteractionModel()
+{
+  m_v.clear();
+  m_ov.clear();
+  m_fls.clear();
+  m_vmap.clear();
+  m_vtable.clear();
 }
 
 size_t Standard_ModelGS::IndexOfOrderKey(const std::string& key) const
