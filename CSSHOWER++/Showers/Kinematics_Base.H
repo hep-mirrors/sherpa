@@ -3,6 +3,7 @@
 
 #include "CSSHOWER++/Tools/Parton.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace PHASIC { class Jet_Finder; }
 
@@ -13,7 +14,7 @@ namespace CSSHOWER {
     const ATOOLS::Mass_Selector *p_ms;
     int m_evolscheme;
   public:
-    Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
+    Kinematics_Base();
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const double &,
 			       const double &,const ATOOLS::Flavour &,
@@ -22,6 +23,19 @@ namespace CSSHOWER {
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }
+    EXTAMP::DipoleCase m_dipole_case;
+  };
+
+  class V_Calculator {
+  public:
+    double m_c, m_d, m_e, m_f, m_g;
+    Complex m_b1, m_b2, m_b;
+    void calculate_helpers(const double &Q2,const double &kt2,const double &z,
+                           const double &paipb, const double &alpha, const double &cos2phi);
+    double GetV1();
+    double GetV2();
+    double GetV3();
+    double GetV4();
   };
 
   class Kinematics_FF : public Kinematics_Base {
@@ -35,9 +49,12 @@ namespace CSSHOWER {
 		const double &s1,const double &s2,const double &s3,
 		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 		const bool force=false) const;
+    V_Calculator m_calcV;
     double GetKT2(const double &Q2,const double &y,const double &z,
 		  const double &mi2,const double &mj2,const double &mk2,
-		  const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const;
+		  const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
+          const ATOOLS::Vec4D pa=ATOOLS::Vec4D(), const ATOOLS::Vec4D pb=ATOOLS::Vec4D(),
+          const ATOOLS::Vec4D pi=ATOOLS::Vec4D() ) const;
   };
   
   class Kinematics_FI : public Kinematics_Base {

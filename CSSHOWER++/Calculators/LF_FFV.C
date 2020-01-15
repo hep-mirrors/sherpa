@@ -13,7 +13,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -34,7 +34,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -55,7 +55,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -73,7 +73,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -87,7 +87,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -108,7 +108,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -131,7 +131,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -151,7 +151,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -167,7 +167,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -190,7 +190,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -213,7 +213,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -233,7 +233,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -250,6 +250,11 @@ double LF_FFV_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
+  if(m_dipole_case==EXTAMP::IDa){
+    double massless =  2.*y/z - (1.+z); // y -> v_iab, z -> z_ain
+    return 2.0 * p_cf->Coupling(scale,0) * massless;
+  }
+
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mi2   = sqr(p_ms->Mass(m_flavs[1]));
   double mui2  = mi2/Q2;
@@ -280,12 +285,34 @@ double LF_FFV_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
+  switch(m_dipole_case){
+    case EXTAMP::CS:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
+    case EXTAMP::IDa:
+      if(p_sf->m_evol == 1){
+        /* multiply with 4 as sum over 4 vi-solutions */
+        return 4.*(4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))
+               * log((1.-zmin)/(1.-zmax)) / sqrt(1.-sqr(p_sf->m_K));
+      }
+      else if(p_sf->m_evol == 2){
+        return p_sf->m_F*(4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))
+               * log((1.-zmin)/(1.-zmax)) / sqrt(1.-sqr(p_sf->m_K));
+      }
+      else THROW(fatal_error, "Invalid evolution scheme for res-aware kinematics!");
+  }
 }
 
-double LF_FFV_FF::OverEstimated(const double z,const double y)
+double LF_FFV_FF::OverEstimated(const double z,const double y,const double phi)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
+  switch(m_dipole_case){
+    case EXTAMP::CS:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
+    case EXTAMP::IDa:
+      if(p_sf->m_evol == 1)
+        return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z)/(1.-p_sf->m_K*cos(phi));
+      else if(p_sf->m_evol == 2)
+        return p_sf->m_F*(4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z)/(1.-p_sf->m_K*cos(phi));
+  }
 }
 
 double LF_FFV_FF::Z()
@@ -337,7 +364,7 @@ double LF_FFV_FI::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_FI::OverEstimated(const double z,const double y)
+double LF_FFV_FI::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -378,7 +405,7 @@ double LF_FFV_IF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_IF::OverEstimated(const double z,const double y)
+double LF_FFV_IF::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -405,7 +432,7 @@ double LF_FFV_II::OverIntegrated
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
-double LF_FFV_II::OverEstimated(const double z,const double y)
+double LF_FFV_II::OverEstimated(const double z,const double y,const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
@@ -419,6 +446,10 @@ double LF_FVF_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
+  if(m_dipole_case==EXTAMP::IDa){
+    THROW(fatal_error, "To implement!");
+  }
+
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mj2   = sqr(p_ms->Mass(m_flavs[2]));
   double muj2  = mj2/Q2;
@@ -452,7 +483,7 @@ double LF_FVF_FF::OverIntegrated
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))*log(zmax/zmin);
 }
 
-double LF_FVF_FF::OverEstimated(const double z,const double y)
+double LF_FVF_FF::OverEstimated(const double z,const double y,const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z;
 }
@@ -503,7 +534,7 @@ double LF_FVF_FI::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_FI::OverEstimated(const double z,const double y)
+double LF_FVF_FI::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.0+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -571,7 +602,7 @@ double LF_FVF_IF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_IF::OverEstimated(const double z,const double y)
+double LF_FVF_IF::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -612,7 +643,7 @@ double LF_FVF_II::OverIntegrated
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* log(zmax/zmin) * m_Jmax;
 }
 
-double LF_FVF_II::OverEstimated(const double z,const double y)
+double LF_FVF_II::OverEstimated(const double z,const double y,const double phi)
 {
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
@@ -670,7 +701,7 @@ double LF_VFF_FF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin);
 }
 
-double LF_VFF_FF::OverEstimated(const double z,const double y)
+double LF_VFF_FF::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1));
 }
@@ -740,7 +771,7 @@ double LF_VFF_FI::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_FI::OverEstimated(const double z,const double y)
+double LF_VFF_FI::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* m_Jmax;
 }
@@ -799,7 +830,7 @@ double LF_VFF_IF::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_IF::OverEstimated(const double z,const double y)
+double LF_VFF_IF::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
 }
@@ -840,7 +871,7 @@ double LF_VFF_II::OverIntegrated
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
-double LF_VFF_II::OverEstimated(const double z,const double y)
+double LF_VFF_II::OverEstimated(const double z,const double y,const double phi)
 {
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
 }

@@ -105,6 +105,8 @@ namespace CSSHOWER {
     inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
       p_remnants = remnants;
     }
+
+    const Singlet* GetSinglet() const { return p_actual; }
   };
 }
 

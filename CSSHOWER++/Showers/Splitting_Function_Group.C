@@ -65,18 +65,24 @@ double Splitting_Function_Group::operator() (const double z,const double y,
   return (*p_selected)(z,y,eta,scale,Q2); 
 }
 
-double Splitting_Function_Group::Overestimated(const double z,const double y) { 
-  return p_selected->Overestimated(z,y); 
+double Splitting_Function_Group::Overestimated(const double z,const double y,const double phi) {
+  return p_selected->Overestimated(z,y,phi);
 }
 
 double Splitting_Function_Group::RejectionWeight(const double z,const double y,
-						 const double eta,const double scale,const double Q2) { 
-  return p_selected->RejectionWeight(z,y,eta,scale,Q2); 
+						 const double eta,const double scale,const double Q2,
+                         const double phi, const double vi, const double alpha,
+                         const double paipb) {
+  return p_selected->RejectionWeight(z,y,eta,scale,Q2,phi,vi,alpha,paipb);
 }
 
 double Splitting_Function_Group::Z() { 
   return p_selected->Z(); 
 }         
+
+double Splitting_Function_Group::Phi() {
+  return p_selected->Phi();
+}
 
 void Splitting_Function_Group::ClearSpecs()
 {

@@ -665,8 +665,14 @@ bool Sudakov::DefineFFBoundaries(double x)
                   alpha*pow(Qprime2,2))))/(paipb*pow(Qprime2,2));
       }
       else if(p_shower->KinFF()->m_evolscheme == 2){
-        m_zmax = (1.+m_k0sqf/Qprime2)/2 + sqrt(sqr(1.+m_k0sqf/Qprime2)/4.
-                 - m_k0sqf/Qprime2*(1+mw2/Qprime2));
+        const double radicand = sqr(1.+m_k0sqf/Qprime2)/4.-m_k0sqf/Qprime2*(1+mw2/Qprime2);
+        if(radicand >= 0.) m_zmax = (1.+m_k0sqf/Qprime2)/2 + sqrt(radicand);
+        else               m_zmax = (1.+m_k0sqf/Qprime2)/2;
+      }
+      if(m_zmax<0. || m_zmax>1.) {
+        std::cout << "Qprime2 = " << Qprime2 << "\n";
+        std::cout << "zmax = " << m_zmax << "\n";
+        THROW(fatal_error, "zmax wrong");
       }
       }
   }

@@ -222,6 +222,111 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
   }
 }
 
+Parton* Sudakov::SelectKinSpect(Parton *split, Parton *spect){
+  std::list<Parton *>::const_iterator it_w = p_shower->GetSinglet()[0].begin();
+  if      (split->GetFlavour().IsbQuark())    std::advance(it_w, 2); // move to W+
+  else if (split->GetFlavour().IsbbarQuark()) std::advance(it_w, 3); // move to W-
+  else    THROW(fatal_error, "Invalid assigment.");
+  return *it_w;
+}
+
+void Sudakov::SetTrialVariables(Parton *split, Parton *spect, Parton * kinspect){
+  const double mw2              = sqr(Flavour(24).Mass());
+  const ATOOLS::Vec4D pai_tilde = split->Momentum();
+  const ATOOLS::Vec4D pb        = spect->Momentum();
+  const ATOOLS::Vec4D pw_tilde  = kinspect->Momentum();
+  m_trialvariables.m_Q2         = (pai_tilde + pw_tilde).Abs2();
+  const ATOOLS::Vec4D p_minus   = pw_tilde-mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+  m_trialvariables.m_paipb      = pai_tilde*pb;
+  m_trialvariables.m_alpha      = pb*p_minus / (pai_tilde*p_minus);
+}
+
+double Sudakov::GetViMax(Parton *split, const double &z) const {
+  const Vec4D pai_tilde = split->Momentum();
+  const Vec4D pw_tilde  = split->GetKinSpect()->Momentum();
+  const Vec4D pa        = z*pai_tilde;
+  const Vec4D n         = pw_tilde - pa + pai_tilde;
+  return 2.*pa*n/(n*n)*(1.-z)/z;
+}
+
+double Sudakov::KT2(const double &vi, const double &z, const double &phi) const {
+  const double mw2     = sqr(Flavour(24).Mass());
+  const double alpha   = m_trialvariables.m_alpha;
+  const double Qprime2 = m_trialvariables.m_Q2-mw2;
+  const double paipb   = m_trialvariables.m_paipb;
+  const double A       = alpha*vi*Qprime2/2.;
+  const double B       = paipb*(vi*(z-1.-mw2/Qprime2)+1-z);
+  const double cosphi  = cos(phi);
+  const double kt2     = vi*Qprime2*(A+B-2.*sqrt(A*B)*cosphi)/(2.*paipb);
+  return kt2;
+}
+
+double Sudakov::GetVi(const double &z, const double &phi, const double &t,
+                      const double &vimax) const {
+  const double Q2    = m_trialvariables.m_Q2;
+  const double mw2   = sqr(Flavour(24).Mass());
+  if(p_shower->KinFF()->m_evolscheme == 2) return t/(z/2.*(Q2-mw2));
+  else if(p_shower->KinFF()->m_evolscheme == 1){
+    const double paipb = m_trialvariables.m_paipb;
+    const double alpha = m_trialvariables.m_alpha;
+
+    p_shower->KinFF()->m_calcV.calculate_helpers(Q2,t,z,paipb,alpha,sqr(cos(phi)));
+
+    /* select any vi randomly */
+    const double r = ran->Get();
+    double vi;
+
+    /* first check */
+    if     (r<=0.25)   vi = p_shower->KinFF()->m_calcV.GetV1();
+    else if(r<=0.50)   vi = p_shower->KinFF()->m_calcV.GetV2();
+    else if(r<=0.75)   vi = p_shower->KinFF()->m_calcV.GetV3();
+    else if(r<=1.00)   vi = p_shower->KinFF()->m_calcV.GetV4();
+
+    if(!IsBad(vi) && (vi>0. && vi<vimax) && IsEqual(KT2(vi,z,phi),t,1e-2)) return vi;
+    return -1.;
+  }
+  else THROW(fatal_error, "Invalid evolution scheme for res-aware kinematics!");
+}
+
+double Sudakov::GetViab(Parton *split, const double &z, const double &phi, const double &t,
+                        const double &vi) const {
+  Vec4D pai_tilde = split->Momentum();
+  Vec4D pw_tilde  = split->GetKinSpect()->Momentum();
+  Vec4D pb        = split->GetSpect()->Momentum();
+  const double mw2      = sqr(Flavour(24).Mass());
+  const double y_wia    = 1.-z; 
+  const double ztilde_w = 1-vi;
+  PHASIC::Kin_Args ff(y_wia,ztilde_w,phi);
+
+  if(p_shower->KinFF()->m_evolscheme == 1){
+    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+       momentum */
+          ATOOLS::Vec4D pminus = pw_tilde - mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+    const ATOOLS::Vec4D pboost = pai_tilde+pminus;
+    Poincare bst(pboost);
+    bst.Boost(pai_tilde);
+    bst.Boost(pw_tilde);
+    bst.Boost(pminus);
+    bst.Boost(pb);
+    ff.m_res    = true;
+    ff.m_pb     = pb;
+    ff.m_pminus = pminus;
+  }
+  if (PHASIC::ConstructFFDipole(mw2,0,mw2,0,pw_tilde,pai_tilde,ff)<0) return -1.;
+  Vec4D pi = ff.m_pj;
+  Vec4D pa = ff.m_pk;
+
+  if(p_shower->KinFF()->m_evolscheme == 1){
+    const double kt2 = (pa*pi)*(pb*pi)/(pa*pb);
+    if(IsEqual(t, kt2, 1e-3)) return pa*pb / (pi*(pa+pb));
+  }
+  else if(p_shower->KinFF()->m_evolscheme == 2){
+    const double virtuality = pa*pi;
+    if(IsEqual(t, virtuality, 1e-3)) return pa*pb / (pi*(pa+pb));
+  }
+  return -1.;
+}
+
 bool Sudakov::Generate(Parton * split) 
 {
   m_weight=1.0;
@@ -306,8 +411,18 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
   switch (split->GetType()) {
   case pst::FS: 
     if (spect->GetType()==pst::FS) {
-      Q2    = (split->Momentum()+spect->Momentum()).Abs2();
-      if (!DefineFFBoundaries(Q2,1.)) return false;
+      switch(p_shower->KinFF()->m_dipole_case){
+        case EXTAMP::CS:
+          m_trialvariables.m_Q2 = (split->Momentum()+spect->Momentum()).Abs2();
+          break;
+        case EXTAMP::IDa:{
+          if(!(split->GetFlavour().IsbQuark() || split->GetFlavour().IsbbarQuark())) return false;
+          SetTrialVariables(split, spect, SelectKinSpect(split, spect));
+          break;}
+        default:
+          THROW(fatal_error, "Unsupported dipole-case for matching.");
+      }
+      if (!DefineFFBoundaries(1.)) return false;
       break;
     }
     if (spect->GetType()==pst::IS) {
@@ -367,8 +482,11 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
     t=ProduceT(t);
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
+    if(p_shower->KinFF()->m_dipole_case==EXTAMP::IDa)
+      split->SetKinSpect(SelectKinSpect(split,split->GetSpect()));
     m_flspec = p_spect->GetFlavour();
     z = Z();
+    phi = Phi();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (t<Max(t0,k0sq))  return false;
     double Q2 = 0.;
@@ -378,16 +496,31 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
     const Mass_Selector *ms(p_selected->Lorentz()->MS());
     switch (m_type) {
     case (cstp::FF) : {
-      double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
-      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
-      double mk2 = sqr(ms->Mass(m_flspec));
-      Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      if (Q2<=mi2+mj2+mk2) return false;
-      y = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
+      switch(p_shower->KinFF()->m_dipole_case){
+        case EXTAMP::CS:
+        {
+        double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+        double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
+        double mk2 = sqr(ms->Mass(m_flspec));
+        Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
+        if (Q2<=mi2+mj2+mk2) return false;
+        y = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
 				    (*m_splitter)->GetFlavourA(),
 				    (*m_splitter)->GetFlavourC());
-      x = 0.;
-      if (y<0.0 || y>1.0) continue;
+        x = 0.;
+        if (y<0.0 || y>1.0) continue;
+        break;
+        }
+        case EXTAMP::IDa:
+        {
+        Q2 = m_trialvariables.m_Q2;
+        const double vimax = GetViMax(split,z);
+        SetTrialVariables(split, split->GetSpect(), split->GetKinSpect());
+        y      = GetVi(z,phi,t,vimax);         if(y < 0.)   continue; // watch out y=^vi
+        m_viab = GetViab(split,z,phi,t,y);     if(m_viab < 0.) continue;
+        break;
+        }
+      }
     }
       break; 
     case (cstp::FI) : {
@@ -432,7 +565,10 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       Abort();
     }
-    const bool veto(Veto(Q2, x,t,y,z));
+    double kt2=0.;
+    if(p_shower->KinFF()->m_dipole_case==EXTAMP::IDa)
+      kt2 = GetKt2(split,z,phi,y);
+    const bool veto(Veto(Q2, x,t,y,z,phi,kt2));
     if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
       p_variationweights->UpdateOrInitialiseWeights(
           &Sudakov::Reweight, *this, veto, Variations_Type::sudakov);
@@ -442,7 +578,6 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
       break;
     }
   }
-  phi = 2.0*M_PI*ran->Get();
   msg_IODebugging()<<"trial "<<p_spect<<", t = "<<t
 		   <<", y = "<<y<<", z = "<<z<<", phi = "<<phi<<"\n";
   return success;
@@ -583,14 +718,45 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
   */
 }
 
-bool Sudakov::DefineFFBoundaries(double Q2,double x)
+bool Sudakov::DefineFFBoundaries(double x)
 {
+  const double Q2 = m_trialvariables.m_Q2;
   if (4.*m_k0sqf>Q2) return false;
   
   m_type=cstp::FF;
-  double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
-  m_zmin   = 0.5*(1.-deltaz);
-  m_zmax   = 0.5*(1.+deltaz);
+  switch(p_shower->KinFF()->m_dipole_case){
+    case EXTAMP::CS:
+      {
+      double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
+      m_zmin   = 0.5*(1.-deltaz);
+      m_zmax   = 0.5*(1.+deltaz);
+      break;
+      }
+    case EXTAMP::IDa:
+      {
+      const double     mw2 = sqr(Flavour(24).Mass());
+      const double Qprime2 = Q2-mw2;
+      m_zmin = 0;
+      if(p_shower->KinFF()->m_evolscheme == 1){
+        const double alpha   = m_trialvariables.m_alpha;
+        const double paipb   = m_trialvariables.m_paipb;
+        m_zmax = (-2*m_k0sqf*paipb*Qprime2 + paipb*pow(Qprime2,2) - alpha*pow(Qprime2,3) +
+                  sqrt(alpha*pow(Qprime2,4)*(4*m_k0sqf*paipb +
+                  alpha*pow(Qprime2,2))))/(paipb*pow(Qprime2,2));
+      }
+      else if(p_shower->KinFF()->m_evolscheme == 2){
+        const double radicand = sqr(1.+m_k0sqf/Qprime2)/4.-m_k0sqf/Qprime2*(1+mw2/Qprime2);
+        if(radicand >= 0.) m_zmax = (1.+m_k0sqf/Qprime2)/2 + sqrt(radicand);
+        else               m_zmax = (1.+m_k0sqf/Qprime2)/2;
+
+      }
+      if(m_zmax<0. || m_zmax>1.) {
+        std::cout << "Qprime2 = " << Qprime2 << "\n";
+        std::cout << "zmax = " << m_zmax << "\n";
+        THROW(fatal_error, "zmax wrong");
+      }
+      }
+  }
   m_scale  = p_split->KtStart();
   double over(OverIntegrated(m_zmin,m_zmax,m_scale,Q2));
   if (over<0. || IsNan(over)) {
@@ -716,13 +882,23 @@ double Sudakov::ProduceT(double t)
   return t * exp(log(ran->Get())*Max(ne,1.0e-3));
 }
 
-bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
-  if (!Splitting(Q2,x,t,y,z))          return false;
+bool Sudakov::Veto(double Q2,double x,double t,double y,double z, double phi, double kt2) {
+  if (!Splitting(Q2,x,t,y,z,phi,kt2))          return false;
   return true;
 }
 
-bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
-  double wt(RejectionWeight(z,y,x,t,Q2));
+bool Sudakov::Splitting(double Q2,double x,double t,double y,double z, double phi, double kt2) {
+  double wt;
+  switch(p_shower->KinFF()->m_dipole_case){
+    case EXTAMP::CS:
+      wt = RejectionWeight(z,y,x,t,Q2);
+      break;
+    case EXTAMP::IDa:
+      wt = RejectionWeight(z,m_viab,x,kt2,Q2,phi,
+      y,m_trialvariables.m_alpha,m_trialvariables.m_paipb);
+      break;
+  }
+
   double efac=p_selected->EFac();
   if (ran->Get()>wt) {
     if (efac!=1.0) {
@@ -736,6 +912,32 @@ bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
     m_weight*=1.0/efac;
   }
   return true;
+}
+
+double Sudakov::GetKt2(Parton * split, const double &z, const double &phi, const double &vi) const {
+  Vec4D pai_tilde = split->Momentum();
+  Vec4D pw_tilde  = split->GetKinSpect()->Momentum();
+  Vec4D pb        = split->GetSpect()->Momentum();
+  const double mw2      = sqr(Flavour(24).Mass());
+  const double y_wia    = 1.-z;
+  const double ztilde_w = 1-vi;
+
+  PHASIC::Kin_Args ff(y_wia,ztilde_w,phi);
+  if (PHASIC::ConstructFFDipole(mw2,0,mw2,0,pw_tilde,pai_tilde,ff)<0)
+    THROW(fatal_error, "Must not happend!")
+
+  Vec4D pi = ff.m_pj;
+  Vec4D pa = ff.m_pk;
+
+  const Vec4D p_aib = pa+pi+pb;
+  Poincare bst_aib(p_aib);
+  bst_aib.Boost(pa);
+  bst_aib.Boost(pb);
+  bst_aib.Boost(pi);
+
+  const double theta = pa.Theta(pi);
+  const double pi_perp = Vec3D(pi).Abs()*sin(theta);
+  return sqr(pi_perp);
 }
 
 const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,

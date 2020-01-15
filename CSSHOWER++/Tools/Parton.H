@@ -31,6 +31,7 @@ namespace CSSHOWER {
     double          m_kt_soft[2];
     Parton        * p_left, * p_right;
     Parton        * p_spect, * p_prev, * p_next;
+    Parton        * p_kinspect;
     Singlet       * p_sing;
     size_t          m_id;
     ATOOLS::Poincare_Sequence m_lt;
@@ -82,6 +83,7 @@ namespace CSSHOWER {
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
     inline Parton *                GetSpect();
+    inline Parton *                GetKinSpect();
     inline Parton *                GetPrev();
     inline Parton *                GetNext();
     inline Singlet*                GetSing();
@@ -106,6 +108,7 @@ namespace CSSHOWER {
     inline void SetLeft(Parton *);
     inline void SetRight(Parton *);
     inline void SetSpect(Parton *);
+    inline void SetKinSpect(Parton *);
     inline void SetPrev(Parton *);
     inline void SetNext(Parton *);
     inline void SetSing(Singlet *);
@@ -124,7 +127,7 @@ namespace CSSHOWER {
     m_pst(pst::none), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_kinspect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
   { 
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
@@ -136,7 +139,7 @@ namespace CSSHOWER {
     m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_kinspect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
@@ -149,7 +152,7 @@ namespace CSSHOWER {
     m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_kinspect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
     m_id(0)
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
@@ -184,6 +187,7 @@ namespace CSSHOWER {
   Parton *                Parton::GetLeft()           { return p_left;  }
   Parton *                Parton::GetRight()          { return p_right; }
   Parton *                Parton::GetSpect()          { return p_spect; }
+  Parton *                Parton::GetKinSpect()       { return p_kinspect; }
   Parton *                Parton::GetPrev()           { return p_prev; }
   Parton *                Parton::GetNext()           { return p_next; }
   Singlet*                Parton::GetSing()           { return p_sing; }
@@ -208,6 +212,7 @@ namespace CSSHOWER {
   void Parton::SetLeft(Parton * part)                 { p_left    = part; }  
   void Parton::SetRight(Parton * part)                { p_right   = part; }  
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  
+  void Parton::SetKinSpect(Parton * part)             { p_kinspect = part; }
   void Parton::SetPrev(Parton * part)                 { p_prev    = part; }  
   void Parton::SetNext(Parton * part)                 { p_next    = part; }  
   void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  

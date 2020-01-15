@@ -4,6 +4,7 @@
 #include "CSSHOWER++/Showers/SF_Key.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "EXTAMP/CS_Dipole.H"
 
 namespace CSSHOWER {
 
@@ -53,7 +54,7 @@ namespace CSSHOWER {
     /**
       * Overestimate of operator
       */
-    virtual double OverEstimated(const double z,const double y) = 0;
+    virtual double OverEstimated(const double z,const double y,const double phi=0) = 0;
     /**
       * Generate z according to OverEstimated (solve OverIntegrated for new z)
       */
@@ -89,6 +90,8 @@ namespace CSSHOWER {
     inline int Col() const { return m_col; }
 
     inline static void SetKappa(const double &kap) { s_kappa=kap; }
+
+    EXTAMP::DipoleCase m_dipole_case;
 
   };
 

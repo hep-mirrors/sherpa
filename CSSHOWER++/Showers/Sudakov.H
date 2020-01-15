@@ -16,10 +16,16 @@ namespace CSSHOWER {
 
   class Shower;
 
+  struct TrialVariables {
+      double m_Q2, m_alpha, m_paipb;
+  };
+
   class Sudakov : public Splitting_Function_Group {
     double m_k0sqi, m_k0sqf, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
+    double m_viab;
     double m_zmin,m_zmax, m_weight;
+    TrialVariables m_trialvariables;
     int m_qcdmode,m_ewmode;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
@@ -34,9 +40,10 @@ namespace CSSHOWER {
     std::pair<double, double> m_pdfmin;
     static bool s_init;
     double ProduceT(double t);
-    bool Veto(double,double,double,double,double);
-    bool Splitting(double,double,double,double,double);
-    bool DefineFFBoundaries(double,double);
+    bool Veto(double,double,double,double,double,double phi, double kt2);
+    bool Splitting(double,double,double,double,double, double phi, double kt2);
+    double GetKt2(Parton * split, const double &z, const double &phi, const double &vi) const;
+    bool DefineFFBoundaries(double);
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
     bool DefineIIBoundaries(double,double,int);
@@ -45,6 +52,13 @@ namespace CSSHOWER {
     double Reweight(ATOOLS::Variation_Parameters *,
                     ATOOLS::Variation_Weights *,
                     const bool &success);
+    void SetTrialVariables(Parton* split, Parton* spect, Parton* kinspect);
+    Parton* SelectKinSpect(Parton* split, Parton* spect);
+    double GetViMax(Parton *split, const double &z) const;
+    double GetVi(const double &z, const double &phi, const double &t, const double &vimax) const;
+    double GetViab(Parton *split, const double &z, const double &phi, const double &t,
+                   const double &vi) const;
+    double KT2(const double &vi, const double &z, const double &phi) const;
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed);
     ~Sudakov();

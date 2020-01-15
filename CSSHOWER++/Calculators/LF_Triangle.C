@@ -13,7 +13,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -31,7 +31,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -45,7 +45,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -63,7 +63,7 @@ namespace CSSHOWER {
 		      const double,const double);
     double OverIntegrated(const double,const double,
 			  const double,const double);
-    double OverEstimated(const double,const double);
+    double OverEstimated(const double,const double, const double phi=0.);
     double Z();
 
   };
@@ -92,7 +92,7 @@ double LF_VVH_FF::OverIntegrated
   return 2.0*p_cf->MaxCoupling(0)*mj2;
 }
 
-double LF_VVH_FF::OverEstimated(const double z,const double y)
+double LF_VVH_FF::OverEstimated(const double z,const double y,const double phi)
 {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   return 2.0*p_cf->MaxCoupling(0)*mj2;
@@ -118,7 +118,7 @@ double LF_VVH_FI::OverIntegrated
   return 2.0*p_cf->MaxCoupling(0)*mj2;
 }
 
-double LF_VVH_FI::OverEstimated(const double z,const double y)
+double LF_VVH_FI::OverEstimated(const double z,const double y,const double phi)
 {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   return 2.0*p_cf->MaxCoupling(0)*mj2;
@@ -144,7 +144,7 @@ double LF_VHV_FF::OverIntegrated
   return 2.0*p_cf->MaxCoupling(0)*mi2;
 }
 
-double LF_VHV_FF::OverEstimated(const double z,const double y)
+double LF_VHV_FF::OverEstimated(const double z,const double y,const double phi)
 {
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   return 2.0*p_cf->MaxCoupling(0)*mi2;
@@ -169,7 +169,7 @@ double LF_VHV_FI::OverIntegrated
   return 2.0*p_cf->MaxCoupling(0)*mi2;
 }
 
-double LF_VHV_FI::OverEstimated(const double z,const double y)
+double LF_VHV_FI::OverEstimated(const double z,const double y,const double phi)
 {
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   return 2.0*p_cf->MaxCoupling(0)*mi2;

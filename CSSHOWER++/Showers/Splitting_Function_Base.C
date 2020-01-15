@@ -7,6 +7,7 @@
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "CSSHOWER++/Showers/Shower.H"
 
 #include <algorithm>
@@ -19,6 +20,8 @@ Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
   m_on(1), m_qcd(-1)
 {
+  Settings& s = Settings::GetMainSettings();
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 void Splitting_Function_Base::SetEFac(Shower *const shower)
@@ -89,6 +92,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
 		 <<", col="<<p_lf->Col();
+  Settings& s = Settings::GetMainSettings();
+  m_evol = s["CSS_EVOLUTION_SCHEME"].Get<int>();
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -164,9 +169,9 @@ double Splitting_Function_Base::EFac() const
   return 1.0;
 }
 
-double Splitting_Function_Base::Overestimated(const double z,const double y)
+double Splitting_Function_Base::Overestimated(const double z,const double y,const double phi)
 {
-  return p_lf->OverEstimated(z,y)/m_symf/m_polfac;
+  return p_lf->OverEstimated(z,y,phi)/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::Z()
@@ -174,13 +179,31 @@ double Splitting_Function_Base::Z()
   return p_lf->Z();
 }
         
+double Splitting_Function_Base::Jacobian(const double &z, const double &vi, const double &phi,
+       const double &alpha, const double &paipb, const double &Q2) const
+{
+  const double mw2 = sqr(Flavour(24).Mass());
+  const double Qprime2 = Q2-mw2;
+  const double A = alpha*vi*Qprime2/2.;
+  const double B = paipb*(vi*(z-1-mw2/Qprime2)+1-z);
+  const double kt2 = vi*Qprime2/(2.*paipb)*(A+B-2.*sqrt(A*B)*cos(phi));
+
+  const double jacobian = 1./(kt2/vi + vi*Qprime2/(2.*paipb)*(alpha*Qprime2/2.
+               +paipb*(z-1-mw2/Qprime2)-2.*cos(phi)/(2.*sqrt(A*B))
+               *(alpha*Qprime2/2.*B + A*paipb*(z-1-mw2/Qprime2))));
+  return dabs(jacobian*kt2/vi);
+}
+
 double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
- const double _scale,const double Q2) 
+ const double _scale,const double Q2,const double phi, const double vi,
+ const double alpha, const double paipb)
 {
   double scale(_scale);
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
-  m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
+  m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
+  if(p_lf->m_dipole_case==EXTAMP::IDa && m_evol==1)
+    m_lastacceptwgt *= Jacobian(z,vi,phi,alpha,paipb,Q2);
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt > 1.0) {
     msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
@@ -247,9 +270,14 @@ void Splitting_Function_Base::ResetLastInt()
   m_lastint=0.0;
 }
 
-double Splitting_Function_Base::Phi(double z) const
+double Splitting_Function_Base::Phi() const
 {
-  return 2.*M_PI*ATOOLS::ran->Get();
+  switch(p_lf->m_dipole_case){
+    case EXTAMP::CS:
+      return 2.*M_PI*ATOOLS::ran->Get();
+    case EXTAMP::IDa:
+      return 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
+  }
 }
 
 const Flavour & Splitting_Function_Base::GetFlavourA() const
