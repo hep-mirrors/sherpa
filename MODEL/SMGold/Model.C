@@ -149,6 +149,7 @@ bool Standard_ModelGS::ModelInit(const PDF::ISR_Handler_Map& isr)
   Settings& s = Settings::GetMainSettings();
   SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
+  SetRunningBosonMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
   OutputCKM();
@@ -569,8 +570,7 @@ void Standard_ModelGS::InitEWVertices()
       if (i==7) i=11;
       Flavour flav((kf_code)i);
       if (!flav.IsOn() || flav.Yuk()==0.0) continue;
-      double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
-	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+      double m=ScalarConstant("m"+flav.IDName());
       Kabbala M;
       if (ScalarNumber("WidthScheme")!=0)
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
@@ -648,7 +648,7 @@ void Standard_ModelGS::InitEWVertices()
   }
   if (Flavour(kf_h0).IsOn()) {
     if (Flavour(kf_Wplus).IsOn()) {
-      Kabbala M("M_W",Flavour(kf_Wplus).Mass()), cpl;
+      Kabbala M("M_W",ScalarConstant("mW+")), cpl;
       if (ScalarNumber("WidthScheme")!=0) {
 	Kabbala G("\\Gamma_W",Flavour(kf_Wplus).Width());
 	M=Kabbala("M_W",sqrt((M*M-I*G*M).Value()));
@@ -672,7 +672,7 @@ void Standard_ModelGS::InitEWVertices()
       m_v.back().order[1]=2;
     }
     if (Flavour(kf_Z).IsOn()) {
-      Kabbala M("M_Z",Flavour(kf_Z).Mass()), cpl;
+      Kabbala M("M_Z",ScalarConstant("mZ")), cpl;
       if (ScalarNumber("WidthScheme")!=0) {
 	Kabbala G("\\Gamma_Z",Flavour(kf_Z).Width());
 	M=Kabbala("M_Z",sqrt((M*M-I*G*M).Value()));
@@ -695,7 +695,7 @@ void Standard_ModelGS::InitEWVertices()
       m_v.back().Lorentz.push_back("VVSS");
       m_v.back().order[1]=2;
     }
-    Kabbala M("M_H",Flavour(kf_h0).Mass()), cpl;
+    Kabbala M("M_H",ScalarConstant("mh0")), cpl;
     if (ScalarNumber("WidthScheme")!=0) {
       Kabbala G("\\Gamma_H",Flavour(kf_h0).Width());
       M=Kabbala("M_H",sqrt((M*M-I*G*M).Value()));
@@ -775,7 +775,7 @@ void Standard_ModelGS::GplusFermions()
     g2(g1/sintW), sqrt2("sqrt2",sqrt(2.0));
 
   Flavour Wbos((kf_code)24);
-  Kabbala mw{ "m_{"+Wbos.TexName()+"}", Wbos.Mass()};
+  Kabbala mw{ "m_{"+Wbos.TexName()+"}", ScalarConstant("mW+")};
 
   for (short int i=1;i<17;i+=2) {
     if (i==7) i=11;
@@ -791,15 +791,9 @@ void Standard_ModelGS::GplusFermions()
       Kabbala ckm(ckmstr,ComplexConstant(ckmstr));
       if (std::abs(ckm.Value())==0.0) continue;
       if(flav1.Yuk() == 0.0 && flav2.Yuk() == 0.0) continue;
-      double dma= 0.0, dmb = 0.0;
-      if(flav1.Yuk())
-	dma = (ScalarNumber("YukawaScheme")==0)?flav1.Yuk():
-	  ScalarFunction("m"+flav1.IDName(),sqr(Flavour(kf_h0).Mass(true)));
-      if(flav2.Yuk())
-	dmb = (ScalarNumber("YukawaScheme")==0)?flav2.Yuk():
-	  ScalarFunction("m"+flav2.IDName(),sqr(Flavour(kf_h0).Mass(true)));
-      Kabbala ma{ "m_{"+flav1.TexName()+"}", dma};
-      Kabbala mb{ "m_{"+flav2.TexName()+"}", dmb};
+
+      Kabbala ma{ "m_{"+flav1.TexName()+"}", ScalarConstant("m"+flav1.IDName())};
+      Kabbala mb{ "m_{"+flav2.TexName()+"}", ScalarConstant("m"+flav2.IDName())};
       
       /////////////////////////////////////
       // FFS3  -> -PL                    //
@@ -949,7 +943,7 @@ void Standard_ModelGS::GplusHiggs()
   Kabbala sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW")));
   Kabbala costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW")));
   Kabbala g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev"));
-  Kabbala M{ "M_H", Flavour(kf_h0).Mass() };
+  Kabbala M{ "M_H", ScalarConstant("mh0") };
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( Flavour(kf_phiplus).Bar() );
@@ -1035,7 +1029,7 @@ void Standard_ModelGS::GplusW()
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW),
-    MZ( "M_H", Flavour(kf_Z).Mass() ),
+    MZ( "M_Z", ScalarConstant("mZ" )),
     vev("v_{EW}",ComplexConstant("cvev"));
 
   if(Flavour(kf_h0).IsOn()) {
@@ -1215,7 +1209,7 @@ void Standard_ModelGS::GplusGold()
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW),
     vev("v_{EW}",ComplexConstant("cvev")),
-    MH{ "M_H", Flavour(kf_h0).Mass() };
+    MH{ "M_H", ScalarConstant("mh0") };
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
@@ -1250,16 +1244,14 @@ void Standard_ModelGS::G0Fermions()
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
-    M{ "M_H", Flavour(kf_h0).Mass() };
+    M{ "M_H", ScalarConstant("mh0")};
 
   std::vector<short int> all_fermions = {1,2,3,4,5,6,11,13,15};
 
   for(auto i_f: all_fermions){
     Flavour flavi((kf_code)i_f);
     if(flavi.Yuk()){
-      double dm=(ScalarNumber("YukawaScheme")==0)?flavi.Yuk():
-	ScalarFunction("m"+flavi.IDName(),sqr(Flavour(kf_h0).Mass(true)));
-      Kabbala m{ "m_{"+flavi.TexName()+"}", dm};
+      Kabbala m{ "m_{"+flavi.TexName()+"}", ScalarConstant("m"+flavi.IDName())};
       m_v.push_back(Single_Vertex());
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,1) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)i_f,0) );
@@ -1288,7 +1280,7 @@ void Standard_ModelGS::G0ZsV()
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
-    M{ "M_H", Flavour(kf_h0).Mass() };
+    M{ "M_H", ScalarConstant("mh0") };
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( ATOOLS::Flavour(kf_Z) );
@@ -1311,7 +1303,7 @@ void Standard_ModelGS::G0Higgs()
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
-    MH{ "M_H", Flavour(kf_h0).Mass() };
+    MH{ "M_H", ScalarConstant("mh0") };
 
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
@@ -1381,8 +1373,7 @@ void Standard_ModelGS::G0Gold()
     sintW("\\sin\\theta_W",sqrt(ComplexConstant("csin2_thetaW"))),
     costW("\\cos\\theta_W",sqrt(ComplexConstant("ccos2_thetaW"))),
     g2(g1/sintW), vev("v_{EW}",ComplexConstant("cvev")),
-    MH{ "M_H", Flavour(kf_h0).Mass() };
-
+    MH{ "M_H", ScalarConstant("mh0") };
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
   m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
@@ -1398,14 +1389,15 @@ void Standard_ModelGS::G0Gold()
 void Standard_ModelGS::ResetVerticesWithEWParameters(const EWParameters& params)
 {
   ClearInteractionModel();
-
-  // TODO: apply new params
-  // this is just an example
-  auto csin2thetaW = 0.3;
-  auto ccos2thetaW = 1. - csin2thetaW;
-  (*p_complexconstants)["csin2_thetaW"] = csin2thetaW;
-  (*p_complexconstants)["ccos2_thetaW"] = ccos2thetaW;
-
+  /// Set parameters to their run value before re-initing the vertices
+  (*p_complexconstants)[(std::string)( "csin2_thetaW")] = params.m_sw2_r;
+  (*p_complexconstants)[(std::string) "ccos2_thetaW"] = params.m_cw2_r;
+  (*p_complexconstants)[(std::string) "cvev"]         = params.m_cvev_r;
+  (*p_constants)[(std::string) ("mZ")]                  = params.m_mz_r;
+  (*p_constants)[(std::string) "mW+"]                 = params.m_mw_r;
+  (*p_constants)[(std::string) "mh0"]                 = params.m_mh0_r;
+  (*p_constants)[(std::string) "mt"]                  = params.m_mt_r;
+  (*p_constants)[(std::string) "alpha_QED"]           = params.m_aew_r;
   InitializeInteractionModel();
 }
 

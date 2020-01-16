@@ -29,13 +29,8 @@ EWSudakov_Amplitudes::~EWSudakov_Amplitudes()
     delete p;
 }
 
-Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
-{
-  return SU2TransformedAmplitude(s_baseamplkey);
-}
-
-Cluster_Amplitude&
-EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination)
+Leg_Kfcode_Map
+EWSudakov_Amplitudes::GetLegMapFromAmpl(std::vector<int> spincombination)
 {
   Leg_Kfcode_Map leg_set;
   for (int i {0}; i < NumberOfLegs(); ++i) {
@@ -46,7 +41,18 @@ EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination)
       }
     }
   }
-  return SU2TransformedAmplitude(leg_set);
+  return leg_set;
+}
+
+Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
+{
+  return SU2TransformedAmplitude(s_baseamplkey);
+}
+
+Cluster_Amplitude&
+EWSudakov_Amplitudes::BaseAmplitude(std::vector<int> spincombination)
+{
+  return SU2TransformedAmplitude(GetLegMapFromAmpl(spincombination));
 }
 
 Cluster_Amplitude& EWSudakov_Amplitudes::SU2TransformedAmplitude(

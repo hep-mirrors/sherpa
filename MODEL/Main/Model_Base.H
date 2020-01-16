@@ -41,6 +41,8 @@ namespace MODEL {
     // TODO: add whatever is needed to retrieve and set the parameters that are
     // supposed to be running (we probably need to add a virtual
     // GetEWParameters function to Model_Base and override it in SMGold ...)
+    double m_sw2_r, m_cw2_r, m_aew_r, m_mw_r, m_mz_r,
+      m_mt_r, m_mh0_r, m_cvev_r;
   };
 
   class Model_Base {
@@ -88,6 +90,7 @@ namespace MODEL {
     void SetAlphaQEDByInput(const std::string& tag);
     void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
     void SetRunningFermionMasses();
+    void SetRunningBosonMasses();
 
     void ReadExplicitCKM(ATOOLS::CMatrix& CKM);
     void OutputCKM();

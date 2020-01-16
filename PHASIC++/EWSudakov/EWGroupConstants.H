@@ -3,9 +3,18 @@
 
 #include "PHASIC++/EWSudakov/EWSudakov.H"
 
+#include "MODEL/Main/Model_Base.H"
+
 namespace PHASIC {
 
   class EWGroupConstants {
+  private:
+    double dcw2cw2(const double t2)     const;
+    double dsw2sw2(const double t2)     const;
+    double dalphaalpha(const double t2) const;
+    double deltaZem()                   const;
+
+    mutable MODEL::EWParameters m_ewpar;
 
   public:
 
@@ -59,8 +68,18 @@ namespace PHASIC {
     /// Returns a non-diagonal beta function coefficient, cf. eqs. (B.42)
     double NondiagonalBew() const noexcept;
 
-    /// sine and cosine (squared) of the Weinberg angle theta_W
-    const double m_sw2, m_cw2, m_sw, m_cw;
+
+    /// Evolve EW parameters according to section 5 of denner-pozzorini.
+    /// Note in particular that only e (alphaEW), cw, sw, ht, hh have to
+    /// be modified.
+    /// The idea is to take eq.(5.6,5.7,5.8) and eq.(5.11) for dcoupling
+    /// and write coupling(t2) = coupling(t02)*(1+dcoupling/coupling)
+    MODEL::EWParameters EvolveEWparameters(const double t2) const;
+
+
+    /// relevant EW-couplings needed and their run version
+    const double m_sw2, m_cw2, m_sw, m_cw, m_aew,
+      m_mw2, m_mw, m_mz, m_mt, m_mh0, m_cvev;
 
   };
 

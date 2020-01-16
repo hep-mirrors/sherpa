@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <cassert>
 
@@ -21,8 +22,59 @@ EWGroupConstants::EWGroupConstants():
   // here, we can use all the constants defined by this class in the language
   // of Denner/Pozzorini.
   m_sw{ -sqrt(m_sw2) },
-  m_cw{ sqrt(m_cw2) }
-{}
+  m_cw{ sqrt(m_cw2) },
+  m_aew{ MODEL::s_model->ScalarConstant("alpha_QED")},
+  m_mw2{sqr(s_kftable[kf_Wplus]->m_mass)},
+  m_mw{s_kftable[kf_Wplus]->m_mass},
+  m_mz{s_kftable[kf_Z]->m_mass},
+  m_mt{s_kftable[kf_t]->m_mass},
+  m_mh0{s_kftable[kf_h0]->m_mass},
+  m_cvev{MODEL::s_model->ComplexConstant("cvev").real()}
+{
+  /// Init running values to their default value
+  m_ewpar.m_sw2_r  = m_sw2;
+  m_ewpar.m_cw2_r  = m_cw2;
+  m_ewpar.m_aew_r  = m_aew;
+  m_ewpar.m_mw_r   = m_mw;
+  m_ewpar.m_mz_r   = m_mz;
+  m_ewpar.m_mt_r   = m_mt;
+  m_ewpar.m_mh0_r  = m_mh0;
+  m_ewpar.m_cvev_r = m_cvev;
+}
+
+double EWGroupConstants::dcw2cw2(const double t2) const
+{
+  // eq. 5.6
+  // at the moment all alpha/4pi are taken out
+  return m_sw/m_cw*NondiagonalBew()*log(t2/m_mw2);
+}
+
+double EWGroupConstants::dsw2sw2(const double t2) const
+{
+  // eq. 5.6 combined with sw2 = 1-cw2
+  // at the moment all alpha/4pi are taken out
+  return -m_cw2/m_sw2*dcw2cw2(t2);
+}
+
+double EWGroupConstants::dalphaalpha(const double t2) const
+{
+  return -DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2) + deltaZem();
+}
+
+double EWGroupConstants::deltaZem() const
+{
+  // quarks + leptons
+  double res = 0.0;
+  for (size_t i=0;i<17; ++i) {
+    if (i==7) i=11;
+    auto fli = Flavour(i);
+    if(!(fli.IsMassive())) continue;
+    double temp = (fli.IsQuark()) ? 3 : 1;
+    temp*=fli.Charge()*log(m_mw2/sqr(fli.Mass()));
+    res+=2./3.*temp;
+  }
+  return res;
+}
 
 double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
 {
@@ -147,8 +199,8 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
       return {};
     }
     return {
-        {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
-        {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
+	    {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
+	    {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
@@ -193,4 +245,12 @@ double EWGroupConstants::DiagonalBew(const ATOOLS::Flavour& flav, int pol) const
 double EWGroupConstants::NondiagonalBew() const noexcept
 {
   return -(19.0 + 22.0*m_sw2) / (6.0*m_sw*m_cw);
+}
+
+MODEL::EWParameters EWGroupConstants::EvolveEWparameters(const double t2) const
+{
+  m_ewpar.m_cw2_r = m_cw2*(1. + dcw2cw2(t2));
+  m_ewpar.m_sw2_r = m_sw2*(1. + dsw2sw2(t2));
+  m_ewpar.m_aew_r = m_aew*(1. + dalphaalpha(t2));
+  return m_ewpar;
 }

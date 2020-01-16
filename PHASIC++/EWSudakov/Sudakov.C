@@ -38,9 +38,7 @@ Sudakov::Sudakov(Process_Base* proc):
   // again for doing the PR logs, so re-consider what ampls we pass here, such
   // that the HE COMIX interface does not set up processes that we will never
   // need
-  m_comixinterface_he{ p_proc, m_ampls },
-  m_mw2{ sqr(s_kftable[kf_Wplus]->m_mass) },
-  m_runaqed{ 1./137.03599976 }
+  m_comixinterface_he{ p_proc, m_ampls }
 {
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
@@ -78,7 +76,7 @@ double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
 bool Sudakov::IsInHighEnergyLimit()
 {
   DEBUG_FUNC("");
-  static const auto threshold = sqr(m_threshold) * m_mw2;
+  static const auto threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
 
   const auto& base_ampl = m_ampls.BaseAmplitude();
   for (size_t i {0}; i < base_ampl.Legs().size(); ++i) {
@@ -109,7 +107,7 @@ double Sudakov::KFactor()
   if (den == 0.0)
     return 1.0;
   const auto s = std::abs(m_ampls.MandelstamS());
-  const auto ls = std::log(s/m_mw2);
+  const auto ls = std::log(s/m_ewgroupconsts.m_mw2);
 
   // pre-calculate the logarithms we need below
   std::map<Coeff_Map_Key, double> logs;
@@ -117,7 +115,7 @@ double Sudakov::KFactor()
   logs[{EWSudakov_Log_Type::lZ, {}}] = ls;
   logs[{EWSudakov_Log_Type::lC, {}}] = ls;
   logs[{EWSudakov_Log_Type::lYuk, {}}] = ls;
-  logs[{EWSudakov_Log_Type::lPR, {}}] = ls;
+  logs[{EWSudakov_Log_Type::lPR, {}}] = 1.;
   for (size_t k {0}; k < m_ampls.NumberOfLegs(); ++k)
     for (size_t l {0}; l < k; ++l)
       logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = ls*std::log(std::abs(
@@ -128,7 +126,7 @@ double Sudakov::KFactor()
   // where the sum is over the spin configurations
   auto num = 0.0;
   for (size_t i {0}; i < m_spinampls[0].size(); ++i) {
-    static const auto delta_prefactor = m_runaqed.AqedThomson()/4./M_PI;
+    static const auto delta_prefactor = m_ewgroupconsts.m_aew/4./M_PI;
     auto delta = 0.0;
     for (const auto& coeffkv : m_coeffs)
       delta += (coeffkv.second[i] * logs[coeffkv.first]).real();
@@ -443,13 +441,26 @@ Coeff_Value Sudakov::lsYukCoeff()
 Coeff_Value Sudakov::lsPRCoeff()
 {
   // TODO: do the running, and pass the correct parameters to the HE interface
-  MODEL::EWParameters p;
-  m_comixinterface_he.ResetWithEWParameters(p);
-  const auto he_me = TransformedAmplitudeValue(
-      {}, m_current_spincombination, &m_comixinterface_he);
-  PRINT_VAR(he_me / m_current_me_value);
+  // MODEL::EWParameters p;
 
-  Coeff_Value coeff{0.0};
+ Coeff_Value coeff{0.0};
+ // denominator 
+
+ const double ewscale(91.19876); // TODO set to an actual high scale
+ 
+ m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(sqr(ewscale)));
+
+ const auto he_me = 
+   TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
+			     m_current_spincombination, &m_comixinterface_he);
+
+
+
+  // const auto he_me = TransformedAmplitudeValue(
+  //     {}, m_current_spincombination, &m_comixinterface_he);
+  // PRINT_VAR(he_me / m_current_me_value);
+
+  coeff = he_me/m_current_me_value;
   return coeff;
 }
 
@@ -486,6 +497,7 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
   }
   return amplit->second[0].Get(transformedspincombination);
 }
+
 
 namespace PHASIC {
 
