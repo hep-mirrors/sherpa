@@ -92,6 +92,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 14.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 22.1;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -9.03;
 
   } else if (procname == "2_2__e-__e+__u__ub") {
 
@@ -123,6 +127,11 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 12.7;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 21.2;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
+    /// this may be - 12.2
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -9.03;
 
   } else if (procname == "2_2__e-__e+__t__tb") {
     // same as 2_2__e-__e+__u__ub except for the lYuk coefficients
@@ -159,6 +168,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 0}] = -10.6;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 1}] = -5.30;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 1}] = -5.30;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -12.2;
 
   } else if (procname == "2_2__e-__e+__d__db") {
 
@@ -190,6 +203,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 11.5;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 21.2;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -16.6;
 
   } else if (procname == "2_2__e-__e+__b__bb") {
     // same as 2_2__e-__e+__d__db except for the lYuk coefficients
@@ -226,6 +243,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 0}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 1}] = -5.30;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 1}] = -5.30;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -16.6;
 
   } else if (procname == "2_2__e-__e+__W+__W-") {
 
@@ -261,6 +282,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 2, 2}] = -31.8;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 2, 2}] = -31.8;
 
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 2, 2}] = 8.80;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 2, 2}] = -14.20;
+
+
   } else if (procname == "2_2__e-__e+__P__P") {
 
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
@@ -287,6 +312,11 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 1}] = 0.20;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 7.36;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 7.36;
+
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 3.67;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 3.67;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = 3.67;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = 3.67;
 
   } else if (procname == "2_2__e-__e+__Z__P") {
 
@@ -317,6 +347,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 28.1;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 28.1;
 
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 15.10;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 15.10;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -17.10;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -17.10;
   } else if (procname == "2_2__e-__e+__Z__Z") {
 
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{0, 0, 0, 1}] = -1.29;
@@ -343,6 +377,11 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 1}] = -22.8;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 48.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 48.9;
+
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 26.60;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 26.60;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -37.9;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -37.9;
 
   } else {
     THROW(not_implemented, "No test for this proc");

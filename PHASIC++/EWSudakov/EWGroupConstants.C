@@ -46,7 +46,7 @@ double EWGroupConstants::dcw2cw2(const double t2) const
 {
   // eq. 5.6
   // at the moment all alpha/4pi are taken out
-  return m_sw/m_cw*NondiagonalBew()*log(t2/m_mw2);
+  return m_sw/m_cw*NondiagonalBew()*log(t2/m_mw2)/4./M_PI;
 }
 
 double EWGroupConstants::dsw2sw2(const double t2) const
@@ -58,22 +58,66 @@ double EWGroupConstants::dsw2sw2(const double t2) const
 
 double EWGroupConstants::dalphaalpha(const double t2) const
 {
-  return -DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2) + deltaZem();
+  // TODO: check factor of 2
+  return -2.*(DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2)/4./M_PI
+	      + deltaZem());
 }
 
 double EWGroupConstants::deltaZem() const
 {
   // quarks + leptons
   double res = 0.0;
-  for (size_t i=0;i<17; ++i) {
+  std::vector<int> flavs{1,2,3,4,5,11,13,15};
+  for (auto& i : flavs) {
     if (i==7) i=11;
     auto fli = Flavour(i);
     if(!(fli.IsMassive())) continue;
     double temp = (fli.IsQuark()) ? 3 : 1;
-    temp*=fli.Charge()*log(m_mw2/sqr(fli.Mass()));
+    temp*=fli.Charge()*log(m_mw2/sqr(fli.Mass()))/4./M_PI;
     res+=2./3.*temp;
   }
   return res;
+}
+
+double EWGroupConstants::dmw2mw2(const double t2) const
+{
+  /// Eq. 5.4
+  /// TODO: re-check this Cewphi (second line)
+  return (-(DiagonalBew(Flavour(kf_Wplus),0)-
+	    4.*DiagonalCew(Flavour(kf_h0),0))
+	  - 3.*sqr(m_mt)/2./m_sw2/m_mw2)*log(t2/m_mw2)/4./M_PI;
+}
+
+double EWGroupConstants::dmz2mz2(const double t2) const
+{
+  /// Eq. 5.4
+  /// TODO: re-check this Cewphi (second line)
+  return (-(DiagonalBew(Flavour(kf_Z),0)-
+	    4.*DiagonalCew(Flavour(kf_h0),0))
+	  - 3.*sqr(m_mt)/2./m_sw2/m_mw2)*log(t2/m_mw2)/4./M_PI;
+}
+
+double EWGroupConstants::dmtmt(const double t2) const
+{
+  /// eq. 5.13
+  auto Qt = Flavour(kf_t).Charge();
+  return (1./4./m_sw2 + 1./8./m_sw2/m_cw2 + 3.*Qt/2./m_cw2
+	  - 3.*sqr(Qt)/m_cw2 + 3.*sqr(m_mt)/8./m_mw2/m_mw2)*log(t2/m_mw2)/4./M_PI;
+}
+
+double EWGroupConstants::dmh02mh02(const double t2) const
+{
+  return (1./m_sw2*(9.*m_mw2/sqr(m_mh0)*(1.+1./2./sqr(m_cw2))
+		    -3./2.*(1.+1./2./m_cw2) +15./4.*m_mw2/sqr(m_mh0))
+	  + 3.*sqr(m_mt)/2./m_sw2/m_mw2*(1. - 6.*sqr(m_mt/m_mh0)))*log(t2/m_mw2)/4./M_PI;
+}
+
+double EWGroupConstants::dvevvev(const double t2) const
+{
+  /// The definition we use for the vev is vev = 2 mw * sw / e.
+  /// dvev/vev = dsw/sw + dmw/mw - de/e
+  ///          = 1/2*(dsw2/sw2 + dmw2/mw2 - dalpha/alpha)
+  return 1/2.*(dsw2sw2(t2) + dmw2mw2(t2) - dalphaalpha(t2));
 }
 
 double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
@@ -249,8 +293,13 @@ double EWGroupConstants::NondiagonalBew() const noexcept
 
 MODEL::EWParameters EWGroupConstants::EvolveEWparameters(const double t2) const
 {
-  m_ewpar.m_cw2_r = m_cw2*(1. + dcw2cw2(t2));
-  m_ewpar.m_sw2_r = m_sw2*(1. + dsw2sw2(t2));
-  m_ewpar.m_aew_r = m_aew*(1. + dalphaalpha(t2));
+  m_ewpar.m_cw2_r  = m_cw2*( 1. + dcw2cw2(t2));
+  m_ewpar.m_sw2_r  = m_sw2*( 1. + dsw2sw2(t2));
+  m_ewpar.m_aew_r  = m_aew*( 1. + dalphaalpha(t2));
+  m_ewpar.m_mw_r   = m_mw*(  1. + dmw2mw2(t2)/2.);
+  m_ewpar.m_mz_r   = m_mz*(  1. + dmz2mz2(t2)/2.);
+  m_ewpar.m_mt_r   = m_mt*(  1. + dmtmt(t2));
+  m_ewpar.m_mh0_r  = m_mh0*( 1. + dmh02mh02(t2));
+  m_ewpar.m_cvev_r = m_cvev*(1. + dvevvev(t2));
   return m_ewpar;
 }

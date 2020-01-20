@@ -440,25 +440,17 @@ Coeff_Value Sudakov::lsYukCoeff()
 
 Coeff_Value Sudakov::lsPRCoeff()
 {
-  // TODO: do the running, and pass the correct parameters to the HE interface
-  // MODEL::EWParameters p;
-
  Coeff_Value coeff{0.0};
- // denominator 
-
- const double ewscale(91.19876); // TODO set to an actual high scale
  
- m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(sqr(ewscale)));
+ /// For the time being we only set this to S. It may however be
+ /// useful to have a "running" and a "fixed" setting for users.
+ const double ewscale2(m_ampls.MandelstamS());
+
+ m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(ewscale2));
 
  const auto he_me = 
    TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
 			     m_current_spincombination, &m_comixinterface_he);
-
-
-
-  // const auto he_me = TransformedAmplitudeValue(
-  //     {}, m_current_spincombination, &m_comixinterface_he);
-  // PRINT_VAR(he_me / m_current_me_value);
 
   coeff = he_me/m_current_me_value;
   return coeff;
@@ -472,6 +464,9 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
   auto amplit = m_transformedspinampls.find(legs);
   if (amplit == m_transformedspinampls.end()) {
     auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+    /// TODO: Make the following a bit prettier. At the moment
+    /// this is simply a flag to catch that the momentum
+    /// stretcher has failed. May want to have a enum
     if (transformedampl.Flag() & (1 << 4)) {
       ++m_numonshellwarning;
       return 0.0;

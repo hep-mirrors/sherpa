@@ -13,7 +13,11 @@ namespace PHASIC {
     double dsw2sw2(const double t2)     const;
     double dalphaalpha(const double t2) const;
     double deltaZem()                   const;
-
+    double dmw2mw2(const double t2)     const;
+    double dmz2mz2(const double t2)     const;
+    double dmtmt(const double t2)       const;
+    double dmh02mh02(const double t2)   const;
+    double dvevvev(const double t2)     const;
     mutable MODEL::EWParameters m_ewpar;
 
   public:
