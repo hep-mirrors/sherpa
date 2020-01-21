@@ -45,7 +45,8 @@ namespace PHASIC {
 
     bool CheckCoeff(const Coeff_Value&,
                     Complex ref,
-                    const std::vector<int>& helicities) const;
+                    const std::vector<int>& helicities,
+		    const EWSudakov_Log_Type ewlt) const;
 
   };
 

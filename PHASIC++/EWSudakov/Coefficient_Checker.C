@@ -22,7 +22,8 @@ bool Coefficient_Checker::CheckCoeffs(
       const auto coeffsit = coeffs.find(key);
       if (coeffsit == coeffs.end())
         THROW(fatal_error, "EW Sudakov coeffs not found");
-      if (!CheckCoeff(coeffsit->second[idx], helrefpair.second, helicities))
+      if (!CheckCoeff(coeffsit->second[idx], helrefpair.second,
+		      helicities, coeffsit->first.first))
         res = false;
     }
   }
@@ -30,12 +31,15 @@ bool Coefficient_Checker::CheckCoeffs(
 }
 
 bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeff, Complex ref,
-                                     const std::vector<int>& helicities) const
+                                     const std::vector<int>& helicities,
+				     const EWSudakov_Log_Type ewlt) const
 {
   auto res = true;
-  const auto prec = (std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
+  auto prec = std::abs(ref.real())*0.1;
+  //(std::abs(ref) < 10.0) ? 1.e-2 : 1.e-1;
+  if (ewlt == EWSudakov_Log_Type::lPR) prec = std::abs(ref.real())*0.3;
   const auto singlecoeffres =
-      (IsBad(coeff.real()) || std::abs(coeff.real() - ref) < prec);
+      (IsBad(coeff.real()) || std::abs(coeff.real() - ref) <= prec);
   if (singlecoeffres) {
     msg_Debugging() << om::green;
   } else {
@@ -130,7 +134,6 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
-    /// this may be - 12.2
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -9.03;
 
   } else if (procname == "2_2__e-__e+__t__tb") {
@@ -171,7 +174,7 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
-    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -12.2;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 1}] = -9.03;
 
   } else if (procname == "2_2__e-__e+__d__db") {
 
@@ -283,7 +286,9 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 2, 2}] = -31.8;
 
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 2, 2}] = 8.80;
-    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 2, 2}] = -14.20;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 2, 2}] = -9.03;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -14.20;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -14.20;
 
 
   } else if (procname == "2_2__e-__e+__P__P") {

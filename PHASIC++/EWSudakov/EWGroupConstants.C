@@ -59,8 +59,8 @@ double EWGroupConstants::dsw2sw2(const double t2) const
 double EWGroupConstants::dalphaalpha(const double t2) const
 {
   // TODO: check factor of 2
-  return -2.*(DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2)/4./M_PI
-	      + deltaZem());
+  return -DiagonalBew(ATOOLS::Flavour(kf_photon),0)*log(t2/m_mw2)/4./M_PI
+	      + 2.*deltaZem();
 }
 
 double EWGroupConstants::deltaZem() const
@@ -293,13 +293,13 @@ double EWGroupConstants::NondiagonalBew() const noexcept
 
 MODEL::EWParameters EWGroupConstants::EvolveEWparameters(const double t2) const
 {
-  m_ewpar.m_cw2_r  = m_cw2*( 1. + dcw2cw2(t2));
-  m_ewpar.m_sw2_r  = m_sw2*( 1. + dsw2sw2(t2));
-  m_ewpar.m_aew_r  = m_aew*( 1. + dalphaalpha(t2));
-  m_ewpar.m_mw_r   = m_mw*(  1. + dmw2mw2(t2)/2.);
-  m_ewpar.m_mz_r   = m_mz*(  1. + dmz2mz2(t2)/2.);
-  m_ewpar.m_mt_r   = m_mt*(  1. + dmtmt(t2));
-  m_ewpar.m_mh0_r  = m_mh0*( 1. + dmh02mh02(t2));
-  m_ewpar.m_cvev_r = m_cvev*(1. + dvevvev(t2));
+  m_ewpar.m_cw2_r  = m_cw2*( 1. + m_aew*dcw2cw2(t2));
+  m_ewpar.m_sw2_r  = m_sw2*( 1. + m_aew*dsw2sw2(t2));
+  m_ewpar.m_aew_r  = m_aew*( 1. + m_aew*dalphaalpha(t2));
+  m_ewpar.m_mw_r   = m_mw*(  1. + m_aew*dmw2mw2(t2)/2.);
+  m_ewpar.m_mz_r   = m_mz*(  1. + m_aew*dmz2mz2(t2)/2.);
+  m_ewpar.m_mt_r   = m_mt*(  1. + m_aew*dmtmt(t2));
+  m_ewpar.m_mh0_r  = m_mh0*( 1. + m_aew*dmh02mh02(t2));
+  m_ewpar.m_cvev_r = m_cvev*(1. + m_aew*dvevvev(t2));
   return m_ewpar;
 }

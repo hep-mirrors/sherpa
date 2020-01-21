@@ -115,7 +115,7 @@ double Sudakov::KFactor()
   logs[{EWSudakov_Log_Type::lZ, {}}] = ls;
   logs[{EWSudakov_Log_Type::lC, {}}] = ls;
   logs[{EWSudakov_Log_Type::lYuk, {}}] = ls;
-  logs[{EWSudakov_Log_Type::lPR, {}}] = 1.;
+  logs[{EWSudakov_Log_Type::lPR, {}}] = ls;
   for (size_t k {0}; k < m_ampls.NumberOfLegs(); ++k)
     for (size_t l {0}; l < k; ++l)
       logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = ls*std::log(std::abs(
@@ -440,19 +440,20 @@ Coeff_Value Sudakov::lsYukCoeff()
 
 Coeff_Value Sudakov::lsPRCoeff()
 {
- Coeff_Value coeff{0.0};
+  Coeff_Value coeff{0.0};
+  // auto deno = TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
+  // 					m_current_spincombination, &m_comixinterface);
+  /// For the time being we only set this to S. It may however be
+  /// useful to have a "running" and a "fixed" setting for users.
+  const double ewscale2(m_ampls.MandelstamS());
  
- /// For the time being we only set this to S. It may however be
- /// useful to have a "running" and a "fixed" setting for users.
- const double ewscale2(m_ampls.MandelstamS());
-
- m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(ewscale2));
-
- const auto he_me = 
-   TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
-			     m_current_spincombination, &m_comixinterface_he);
-
-  coeff = he_me/m_current_me_value;
+  m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(ewscale2));
+ 
+  const auto he_me = 
+    TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
+	 		     m_current_spincombination, &m_comixinterface_he);
+  
+  coeff = (he_me/m_current_me_value - 1.0)*4.*M_PI/log(ewscale2/m_ewgroupconsts.m_mw2)/m_ewgroupconsts.m_aew;
   return coeff;
 }
 
