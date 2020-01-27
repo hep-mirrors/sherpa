@@ -90,7 +90,7 @@ namespace EXTAMP{
           THROW(fatal_error,"Inconsistent order input.");
     }
     std::vector<double> orders = pi.m_maxcpl;
-    if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub ) orders[0] += 1;
+    if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::vsub ) orders[0] -= 1;
 
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
 				  pi.m_fi.GetExternal(),
@@ -121,7 +121,7 @@ namespace EXTAMP{
   {
     ATOOLS::nlo_type::code nlotype=pi.m_fi.m_nlotype;
 
-    if( nlotype==ATOOLS::nlo_type::lo )
+    if( nlotype==ATOOLS::nlo_type::lo || nlotype==ATOOLS::nlo_type::born )
       return new Born_Process(pi);
     
     if ( nlotype&ATOOLS::nlo_type::vsub )
