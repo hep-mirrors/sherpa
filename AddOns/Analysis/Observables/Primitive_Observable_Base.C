@@ -19,8 +19,10 @@ int ANALYSIS::HistogramType(const std::string &scale)
     return ToType<int>(scale); 
   if (scale=="Log") return 10;
   if (scale=="LogErr") return 11;
+  if (scale=="LnErr") return 21;
   if (scale=="LinErr") return 1;
   if (scale=="LogPS") return 12;
+  if (scale=="LnPS") return 22;
   if (scale=="LinPS") return 2;
   if (scale=="LogNLO") return 111;
   if (scale=="LinNLO") return 101;
