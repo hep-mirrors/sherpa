@@ -33,6 +33,7 @@ double Lorentz_FI::PDFEstimate(const Splitting &s) const
 
 int Lorentz_FI::Construct(Splitting &s,const int mode) const
 {
+  msg_Out()<<METHOD<<"(mode = "<<mode<<").\n";
   if (mode&1) return Update(s,mode);
   s.m_y=1.0-s.m_t/s.m_Q2/(1.0-s.m_z);
   s.m_x=s.m_z;

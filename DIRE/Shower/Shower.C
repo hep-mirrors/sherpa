@@ -160,13 +160,18 @@ void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
 
 void Shower::AddWeight(const Amplitude &a,const double &t)
 {
-  double cw(1.0);
+  double cw(1.0), pwt;
   std::vector<double> cv;
+  msg_Out()<<"-------------------------------------------------\n"
+	   <<METHOD<<" ("<<a.size()<<" partons, t = "<<t<<"):\n";
   for (size_t i(0);i<a.size();++i) {
-    cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
+    cw*=pwt=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
+    msg_Out()<<"   "<<a[i]->Flav()<<": "<<pwt<<"\n";
     a[i]->ClearWeights();
   }
   m_weight*=cw;
+  msg_Out()<<"   total = "<<cw<<"\n"
+	   <<"-------------------------------------------------\n";
   if (cv.size()) p_vars->UpdateOrInitialiseWeights
 		   (&Shower::GetWeight,*this,cv,Variations_Type::sudakov);
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
@@ -344,6 +349,7 @@ Splitting Shower::GeneratePoint
 Splitting Shower::GeneratePoint
 (Parton &p,const double &t,const unsigned int &nem)
 {
+  msg_Out()<<"#################################### "<<METHOD<<" for "<<p.Flav()<<"\n";
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
@@ -379,6 +385,7 @@ Splitting Shower::GeneratePoint
       win=Splitting(&p,NULL,ct);
     }
     win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
+    msg_Out()<<METHOD<<" for t = "<<win.m_t<<", sum = "<<(sum/(2.*M_PI))<<".\n";
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
     for (size_t j(0);j<splits.size();++j)
@@ -395,9 +402,9 @@ Splitting Shower::GeneratePoint
 	    win.m_t1=ct;
 	    if (!kit->second[j]->GeneratePoint(win)) {
 	      msg_Error()<<METHOD<<"(): Error generating point!\n";
-	      msg_Debugging()<<win<<"\nQ2 = "<<win.m_Q2
-			     <<", eta = "<<win.m_eta
-			     <<", t0 = "<<win.m_t0<<"\n";
+	      msg_IODebugging()<<win<<"\nQ2 = "<<win.m_Q2
+			       <<", eta = "<<win.m_eta
+			       <<", t0 = "<<win.m_t0<<"\n";
 	      break;
 	    }
 	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
@@ -411,6 +418,7 @@ Splitting Shower::GeneratePoint
 		  (&Shower::Reweight,*this,args,Variations_Type::sudakov);
 	      }
 	      win.p_c->AddWeight(win,0);
+	      msg_Out()<<"  rejected.\n";
 	      msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			       <<" / "<<win.m_w.Reject()<<" -> reject ["
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
@@ -422,6 +430,7 @@ Splitting Shower::GeneratePoint
 		(&Shower::Reweight,*this,args,Variations_Type::sudakov);
 	    }
 	    win.p_c->AddWeight(win,1);
+	    msg_Out()<<"  accepted.\n";
 	    msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			     <<" / "<<win.m_w.Accept()<<" -> select ["
 			     <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";

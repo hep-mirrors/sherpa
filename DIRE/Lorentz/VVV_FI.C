@@ -64,6 +64,7 @@ DECLARE_GETTER(VVV_FI,"FI_VVV",Lorentz,Kernel_Key);
 Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,VVV_FI>::
 operator()(const Parameter_Type &args) const
 {
+  return NULL;
   if (args.m_type!=2) return NULL;
   if (args.m_swap) return NULL;
   if (args.p_v->in[0].IntSpin()==2 &&

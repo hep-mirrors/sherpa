@@ -175,6 +175,7 @@ operator()(const Parameter_Type &args) const
        args.p_v->in[0].IntSpin()==1 &&
        args.p_v->in[2].IntSpin()==1 &&
        args.p_v->in[1].IntSpin()==2)) {
+    return NULL;
     return new FFV_IF(args);
   }
   if ((args.m_mode==0 &&
@@ -185,6 +186,7 @@ operator()(const Parameter_Type &args) const
        args.p_v->in[0].IntSpin()==1 &&
        args.p_v->in[2].IntSpin()==2 &&
        args.p_v->in[1].IntSpin()==1)) {
+    return NULL;
     return new VFF_IF(args);
   }
   if (args.p_v->in[0].IntSpin()==2 &&

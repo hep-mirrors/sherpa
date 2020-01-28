@@ -155,6 +155,7 @@ DECLARE_GETTER(FFV_II,"II_FFV",Lorentz,Kernel_Key);
 Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,FFV_II>::
 operator()(const Parameter_Type &args) const
 {
+  return NULL;
   if (args.m_type!=3) return NULL;
   if (args.m_swap) return NULL;
   if ((args.m_mode==0 &&

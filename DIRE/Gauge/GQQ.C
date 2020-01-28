@@ -27,6 +27,7 @@ namespace DIRE {
 
     double Scale(const Splitting &s) const
     {
+      //msg_Out()<<METHOD<<"(s.m_cpl = "<<s.m_cpl<<", type = "<<m_type<<", mode = "<<m_mode<<"\n";
       if (s.m_cpl) return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
       if (m_type&1) return s.m_Q2*s.m_y/s.m_x;
       if (m_type&2) return s.m_Q2*(1.0-s.m_y)/s.m_y;

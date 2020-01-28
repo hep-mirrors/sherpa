@@ -59,6 +59,8 @@ namespace DIRE {
     double Integral(const Splitting &s) const
     {
       double I=log(1.0+s.m_Q2/s.m_t0);
+      //std::cout<<"FFV Integral(Q2 = "<<s.m_Q2<<", t0 = "<<s.m_t0<<") = "
+      //       <<I*(1.0+p_sk->GF()->KMax(s))*m_jmax<<"\n";
       return I*(1.0+p_sk->GF()->KMax(s))*m_jmax;
     }
 
@@ -92,8 +94,10 @@ namespace DIRE {
     {
       double z(s.m_z);
       double B=1.0-2.0*z*(1.0-z);
-      if (p_sk->PS()->MECorrection()&1)
+      if (p_sk->PS()->MECorrection()&1) {
+	//std::cout<<"Added ME correction.\n";
 	B=B*(1.0-2.*s.m_y*(1.-s.m_y))+4.*s.m_y*s.m_x*(1.-s.m_x);
+      }
       if (s.m_mi2==0.0 && s.m_mj2==0.0) {
 	if (s.m_kfac&2) {
 	  double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=m_swap?1.0-z:z;
@@ -142,6 +146,7 @@ DECLARE_GETTER(FFV_FI,"FI_FFV",Lorentz,Kernel_Key);
 Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,FFV_FI>::
 operator()(const Parameter_Type &args) const
 {
+  return NULL;
   if (args.m_type!=2) return NULL;
   if (args.p_v->in[0].IntSpin()==1 &&
       args.p_v->in[1+args.m_mode].IntSpin()==1 &&

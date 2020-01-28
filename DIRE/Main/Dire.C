@@ -89,6 +89,11 @@ int Dire::PerformShowers()
   for (size_t i(0);i<m_ampls.size();++i) {
     int stat(p_shower->Evolve(*m_ampls[i],m_weight,nem));
     m_weight*=p_shower->GetWeight();
+    msg_Out()<<"############################################################\n"
+    	     <<"############################################################\n"
+    	     <<"############################################################\n"
+      //	     <<METHOD<<" for \n"<<(*m_configs[i]);
+	     <<METHOD<<" yields weight = "<<m_weight<<".\n";
     if (stat!=1) return stat;
   }
   if (m_wcheck && dabs(m_weight)>m_maxweight) {
@@ -151,6 +156,12 @@ bool Dire::ExtractPartons(Blob_List *const bl)
       if ((*pit)->Beam()&&nois) continue;
       if ((*pit)->Out(0)==NULL) ExtractParton(b,*pit);
     }
+  msg_Out()<<"############################################################\n"
+  	   <<(*b)<<"\n"
+  	   <<"finished "<<METHOD<<".\n"
+  	   <<"############################################################\n"
+ 	   <<"############################################################\n";
+
   return true;
 }
 

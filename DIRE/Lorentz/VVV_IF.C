@@ -48,9 +48,13 @@ namespace DIRE {
 
     double Integral(const Splitting &s) const
     {
+      //std::cout<<"Integral(mode = "<<m_mode<<")\n";
       if (m_mode) return log(1.0/s.m_eta)*m_jmax;
       double k2=s.m_t0/s.m_Q2;
       double I=log((k2+sqr(1.0-s.m_eta))/(s.m_eta*k2));
+      //std::cout<<"Integral(VVV): I = "<<I<<" for eta = "<<s.m_eta<<", "
+      //       <<"k2 = "<<s.m_t0<<"/"<<s.m_Q2<<" = "<<k2<<", "
+      //       <<"homax = "<<(1.0+p_sk->GF()->KMax(s))<<", jmax = "<<m_jmax<<".\n";
       return I*(1.0+p_sk->GF()->KMax(s))*m_jmax;
     }
 
@@ -87,6 +91,7 @@ DECLARE_GETTER(VVV_IF,"IF_VVV",Lorentz,Kernel_Key);
 Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,VVV_IF>::
 operator()(const Parameter_Type &args) const
 {
+  return NULL;
   if (args.m_type!=1) return NULL;
   if (args.m_swap) return NULL;
   if (args.p_v->in[0].IntSpin()==2 &&

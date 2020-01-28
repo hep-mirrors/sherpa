@@ -151,6 +151,7 @@ DECLARE_GETTER(FFV_FF,"FF_FFV",Lorentz,Kernel_Key);
 Lorentz *ATOOLS::Getter<Lorentz,Kernel_Key,FFV_FF>::
 operator()(const Parameter_Type &args) const
 {
+  return NULL;
   if (args.m_type!=0) return NULL;
   if (args.p_v->in[0].IntSpin()==1 &&
       args.p_v->in[1+args.m_mode].IntSpin()==1 &&

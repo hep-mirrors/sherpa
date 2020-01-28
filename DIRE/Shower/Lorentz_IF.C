@@ -20,7 +20,19 @@ double Lorentz_IF::Jacobian(const Splitting &s) const
   double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(s.m_eta/s.m_x,s.m_t,m_fl[1],s.p_c->Beam()-1);
   if (dabs(fo)<p_sk->PS()->PDFMin(0)*
-      log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1))) return 0.0; 
+      log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1))) {
+    //msg_Out()<<"***"<<METHOD<<" yields 0 from estimate "
+    //	     <<fo<<" < "<<p_sk->PS()->PDFMin(0)<<" * log(1-"<<s.m_eta<<")/"
+    //	     <<"log(1-"<<p_sk->PS()->PDFMin(1)<<")\n"
+    //	     <<"    t = "<<s.m_t<<", x = "<<s.m_x<<", z = "<<s.m_z<<": pdfratio = "<<fn/fo
+    //	     <<" for "<<m_fl[0]<<" <-- "<<m_fl[1]<<"\n";
+    return 0.0;
+  }
+  // msg_Out()<<"*** "<<METHOD<<" passed first test: "
+  // 	   <<fo<<" > "<<p_sk->PS()->PDFMin(0)<<" * log(1-"<<s.m_eta<<")/"
+  // 	   <<"log(1-"<<p_sk->PS()->PDFMin(1)<<")\n"
+  // 	   <<"    t = "<<s.m_t<<", x = "<<s.m_x<<", z = "<<s.m_z<<": pdfratio = "<<fn/fo
+  // 	   <<" for "<<m_fl[0]<<" <-- "<<m_fl[1]<<"\n";
   return fn/fo;
 }
 
@@ -39,8 +51,11 @@ double Lorentz_IF::PDFEstimate(const Splitting &s) const
   }
   double min=p_sk->PS()->PDFMin(0)*
     log(1.0-s.m_eta)/log(1.0-p_sk->PS()->PDFMin(1));
+  //msg_Out()<<METHOD<<"(eta = "<<s.m_eta<<") pdfmin = "<<min<<", fo = "<<fo<<", "
+  //	   <<", beam = "<<(s.p_c->Beam()-1)<<", scale = "<<sqrt(Min(s.m_t1,s.m_Q2))<<"\n";
   if (dabs(fo)<min) return 0.0;
   if (dabs(fn)<min) fn=fo;
+  msg_Out()<<METHOD<<"("<<m_fl[0]<<" <- "<<m_fl[1]<<" + "<<m_fl[2]<<") = "<<dabs(fn/fo)<<".\n";
   return dabs(fn/fo);
 }
 
@@ -56,16 +71,21 @@ int Lorentz_IF::Construct(Splitting &s,const int mode) const
 	b=(*s.p_c->Ampl())[i];
 	break;
       }
+  //msg_Out()<<"*** "<<METHOD<<"(mode = "<<mode<<", helper = "<<b<<", "
+  //	   <<"kin = "<<s.m_kin<<"): x, y, z = "<<s.m_x<<", "<<s.m_y<<", "<<s.m_z<<"\n";
   Kin_Args ff(s.m_y,s.m_x,s.m_phi,s.m_kin);
   if (ConstructIFDipole
       (s.m_mi2,s.m_mj2,s.m_mij2,s.m_mk2,b?p_ms->Mass2(b->Flav()):0.0,
-       -s.p_c->Mom(),s.p_s->Mom(),b?-b->Mom():Vec4D(),ff)<0)
+       -s.p_c->Mom(),s.p_s->Mom(),b?-b->Mom():Vec4D(),ff)<0) {
+    //msg_Out()<<"    didn't construct dipole.\n";
     return -1;
+  }
   s.m_pi=-ff.m_pi;
   s.m_pj=ff.m_pj;
   s.m_pk=ff.m_pk;
   if (b && p_sk->PS()->RemnantTest(s.p_c,s.m_pi)<0) return -1; 
   s.m_lam=ff.m_lam;
+  //msg_Out()<<"    worked out ok.\n";
   return 1;
 }
 

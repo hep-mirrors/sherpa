@@ -40,6 +40,9 @@ void Parton::AddWeight(const Splitting &s,const int acc)
   if (w==1.0 && s.m_vars.empty()) return;
   Weight_Map::iterator wit=m_ws.insert(make_pair(s.p_s,Weight_Vector())).first;
   Weight c(wit->second.empty()?Weight(s.m_vars.size()):wit->second.back());
+  msg_Out()<<"--- "<<METHOD<<"(flav = "<<m_f<<", t = "<<s.m_t<<"):"<<w<<" --> "<<c.m_w<<"\n"
+	   <<"--- from: "<<s.m_w<<"\n"
+	   <<"------------------------------------------------------------------\n";
   c.m_t=s.m_t;
   c.m_w*=w;
   for (size_t i(0);i<s.m_vars.size();++i) c.m_v[i]*=w*s.m_vars[i];
