@@ -31,6 +31,9 @@ namespace CFPSHOWER {
     MODEL::Running_AlphaQED * p_alpha;
     int    m_kfactor, m_cplscheme;            
     double m_asfactor, m_muR2factor;
+    void AdjustFlavours();
+    void AdjustFlavours12();
+    void AdjustFlavours13(ATOOLS::Flavour_Vector & flavs);
   public:
     Kernel_Info() {}
     Kernel_Info(ATOOLS::Flavour & split,

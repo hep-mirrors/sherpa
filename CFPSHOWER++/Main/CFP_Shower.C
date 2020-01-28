@@ -12,7 +12,7 @@ using namespace std;
 CFP_Shower::CFP_Shower(const Shower_Key &key) :
   Shower_Base("CFP_Shower"), p_massselector(NULL), m_test(false)
 {
-  msg_Out()<<"In "<<METHOD<<" will start initializing the shower.\n";
+  msg_Info()<<"In "<<METHOD<<" will start initializing the shower.\n";
   cfp_pars = new CFP_Parameters();
   if (!cfp_pars->Init(key.p_reader))
     THROW(fatal_error,"Could not initialize CFP parameters.");
@@ -65,29 +65,26 @@ Configuration * CFP_Shower::Convert(Cluster_Amplitude * const ampl,
 int CFP_Shower::PerformShowers() {
   m_weight = 1.;
   for (size_t i=0;i<m_configs.size();i++) {
-    //msg_Out()<<"############################################################\n"
-    //	     <<"############################################################\n"
-    //	     <<"############################################################\n"
+    if (m_shower.Evolve(m_configs[i])) m_weight *= m_shower.Weight();
+    msg_Out()<<"############################################################\n"
+    	     <<"############################################################\n"
+    	     <<"############################################################\n"
     //	     <<METHOD<<" for \n"<<(*m_configs[i]);
-    if (m_shower.Evolve(m_configs[i])) {
-      m_weight *= m_shower.Weight();
-      //msg_Out()<<METHOD<<" yields weight = "<<m_weight<<".\n";
-    }
+	     <<METHOD<<" yields weight = "<<m_weight<<".\n";
   }
   m_shower.Reset();
-  if (m_weight != 1.) {
-    /*
-      msg_Out()<<"############################################################\n"
-      <<"############################################################\n"
-      <<"############################################################\n"
-      <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
-      <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
-      <<"############################################################\n"
-      <<"############################################################\n"
-      <<"############################################################\n";
-      exit(1);
-    */
-  }
+  //if (m_weight != 1.) {
+  //msg_Out()<<"############################################################\n"
+  //	   <<"############################################################\n"
+  //	   <<"############################################################\n"
+  //	   <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
+  //	   <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
+  //	   <<"############################################################\n"
+  //	   <<"############################################################\n"
+  //	   <<"############################################################\n";
+  //exit(1);
+  //*/
+  //}
   return 1;
 }
 
@@ -98,6 +95,8 @@ int CFP_Shower::PerformDecayShowers() {
 bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
   //msg_Out()<<"############################################################\n"
   //	   <<"############################################################\n"
+  //	   <<METHOD<<"\n"
+    //	   <<(*bl)
   //	   <<"############################################################\n";
   Blob * blob(bl->FindLast(btp::Shower));
   if (blob==NULL) THROW(fatal_error,"No Shower blob");
@@ -109,14 +108,14 @@ bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
   blob->SetStatus(blob_status::needs_beams |
 		  blob_status::needs_hadronization);
   bool nois(blob->NOutP()==0);
-  if (nois) msg_Out()<<(*blob)<<"\n";
+  //if (nois) msg_Out()<<(*blob)<<"\n";
   while (!m_configs.empty()) {
     Configuration * config = m_configs.back();
-    //msg_Out()<<"Extract partons from configuration with "
-    //<<config->size()<<" partons.\n";
+    //msg_Out()<<"Extract partons from configuration ("<<m_configs.size()<<") with "
+    //	     <<config->size()<<"("<<Parton::Count()<<") partons.\n";
     while (!config->empty()) {
       Parton * parton = config->back();
-      //msg_Out()<<(*parton)<<"\n";
+      //msg_Out()<<config->size()<<" ("<<Parton::Count()<<") left: "<<(*parton);
       if (!(parton->Beam()>0 && nois) && parton->On()) ExtractParton(blob,parton);
       delete parton;
       config->pop_back();
@@ -124,12 +123,12 @@ bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
     delete config;
     m_configs.pop_back();
   }
-  //msg_Out()<<(*blob)
-  //	   <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
-  //	   <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
-  //	   <<"############################################################\n"
-  //	   <<"############################################################\n"
-  //	   <<"############################################################\n";
+  msg_Out()<<"############################################################\n"
+  	   <<(*blob)<<"\n"
+  	   <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
+  	   <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
+  	   <<"############################################################\n"
+  	   <<"############################################################\n";
   return true;
 }
 

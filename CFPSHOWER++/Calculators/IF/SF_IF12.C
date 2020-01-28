@@ -53,7 +53,7 @@ double SF_IF12::PDFEstimate(const Splitting & split) const
   return dabs(pdf_new/pdf_old);
 }
 
-bool SF_IF12::Construct(Splitting & split) {
+bool SF_IF12::Construct(Splitting & split,const int & mode) {
   double y = split.t() / (split.Q2red() * (1.-split.z()));
   Kin_Args kin_args(y,split.z(),split.phi(),split.KinScheme());
   Parton * helper(NULL);

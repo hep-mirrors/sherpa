@@ -14,7 +14,7 @@ double SF_II12::Jacobean(const Splitting & split) const {
   return J;
 }
 
-bool SF_II12::Construct(Splitting & split) {
+bool SF_II12::Construct(Splitting & split,const int & mode) {
   double z = split.z(), y = split.t() / (split.Q2red() * (1.-z));
   double xtilde = (z-y) / (1.-y);
   Kin_Args kin_args(y,xtilde,split.phi());

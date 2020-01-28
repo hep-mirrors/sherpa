@@ -23,7 +23,7 @@ namespace CFPSHOWER {
   private:
     Shower * p_shower;
     double   m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
-    int      m_kinscheme, m_kfactor, m_cplscheme, m_MEcorrs;
+    int      m_kinscheme, m_kfactor, m_cplscheme, m_MEcorrs, m_SForder;
     
     MODEL::Model_Base           * p_model;
     PDF::PDF_Base               * p_pdf[2];
@@ -32,14 +32,14 @@ namespace CFPSHOWER {
     
     std::map<ATOOLS::Flavour, Kernels *> * p_kernels[5];
     std::vector<std::list<std::vector<size_t> > > m_permutations;
-    
-    bool InitializeKernels(MODEL::Model_Base * const model,
-			   const size_t & order);
+
+    bool InitializeKernels(MODEL::Model_Base * const model);
     void MakeKernelsFromVertices(MODEL::Model_Base * const model);
     void MakeKernelsFromKernels(const kernel_type::code & type);
     void MakeKernels(ATOOLS::Flavour_Vector & flavs,
 		     const kernel_type::code & type);
-    void MakePermutations(const size_t & order);
+    void DeleteAllKernelsWithWrongOrder();
+    void MakePermutations();
     void GeneratePermutation(std::vector<size_t> perm,const size_t & pos,
 			     const size_t & length);
   public:
@@ -49,9 +49,8 @@ namespace CFPSHOWER {
     inline std::map<ATOOLS::Flavour, Kernels *> * operator()(const size_t & i) {
       return p_kernels[i];
     }
-    bool Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr,
-	      const size_t & order);
-    void PrintKernels();
+    bool Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr);
+    void PrintKernels(const bool & full=false);
   };
 }
 #endif

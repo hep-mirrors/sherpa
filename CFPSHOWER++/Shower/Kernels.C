@@ -18,6 +18,7 @@ double Kernels::CalcIntegrals(Splitting & split,const Mass_Selector * ms) {
   for (size_t i=0;i<size();i++) {
     m_integrals.back() += m_integrals[i] = (*this)[i]->Integral(split,ms);
   }
+  //msg_Out()<<METHOD<<" yields total integral = "<<m_integrals.back()<<"\n";
   return m_integrals.back();
 }
 

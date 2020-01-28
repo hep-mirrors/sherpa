@@ -10,11 +10,6 @@
 using namespace CFPSHOWER;
 using namespace ATOOLS;
 
-std::ostream & CFPSHOWER::operator<<(std::ostream &s,const ffff_mode::code & mode) {
-  s<<(mode==ffff_mode::same?"same":"diff");
-  return s;
-}
-
 std::ostream & CFPSHOWER::operator<<(std::ostream &s,const subtract::code & sub) {
   if      (sub==subtract::none) s<<"none";
   else if (sub==subtract::coll) s<<"coll";
@@ -24,14 +19,10 @@ std::ostream & CFPSHOWER::operator<<(std::ostream &s,const subtract::code & sub)
 }
 
 SF_Base::SF_Base(const Kernel_Info & info) :
-  m_split(info.GetSplit()),
-  m_flavs(info.GetFlavs()), m_tags(info.TagSequence()),
+  m_split(info.GetSplit()), m_flavs(info.GetFlavs()), m_tags(info.TagSequence()),
   m_name("generic SF"),
   m_CMW(info.KFactor()), m_subtract(subtract::none)
-{
-  m_invtags.resize(m_tags.size());
-  for (size_t i=0;i<m_tags.size();i++) m_invtags[m_tags[i]] = i;
-}  
+{ }  
 
 double SF_Base::Lambda(const double & a,const double & b,const double & c) const {
   double lambda2 = Lambda2(a,b,c); 

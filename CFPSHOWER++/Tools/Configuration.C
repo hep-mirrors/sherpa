@@ -127,10 +127,7 @@ void Configuration::EstablishHistories(map<Cluster_Leg*,Parton*> & lmap,
 
 
 Configuration::~Configuration() {
-  while (!empty()) {
-    if (front()) delete (front());
-    pop_front();
-  }
+  while (!empty()) { if (front()) delete (front()); pop_front(); }
 }
 
 std::ostream &CFPSHOWER::operator<<(std::ostream & s,const Configuration & config) {

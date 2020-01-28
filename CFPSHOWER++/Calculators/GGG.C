@@ -9,6 +9,7 @@ namespace CFPSHOWER {
     GGG(const Kernel_Info & info) : Gauge_Base(info) {
       m_charge = 3./2.;
       SetName("8-8-8");
+      m_colors.resize(2);
     }
     const double Scale(const Splitting & split) const;
     bool SetColours(Splitting & split);
@@ -31,7 +32,6 @@ const double GGG::Scale(const Splitting & split) const {
   default:
     break;
   }
-  msg_Out()<<"   Scale("<<m_type<<") = "<<split.t()<<"/"<<split.z()<<" = "<<scale<<".\n";
   return scale;
 }
 
@@ -50,17 +50,16 @@ bool GGG::SetColours(Splitting & split) {
   m_colors.clear();
   // starting position: splitter anti-colour = spectator colour:
   // soft gluon inherits anti-colour and hard gluon keeps colour
-  m_colors.push_back(Color(splitter->GetColor()[0],newcol));
-  m_colors.push_back(Color(newcol,splitter->GetColor()[1]));
+  m_colors[0] = Color(splitter->GetColor()[0],newcol);
+  m_colors[1] = Color(newcol,splitter->GetColor()[1]);
   // if splitter colour = spectator anti-colour:
   // soft gluon inherits colour and hard gluon keep anti-colour,
   // this is equivalent to swapping the default.
   if (same0)  swap(m_colors[0],m_colors[1]);
   // if we use the "swapped" splitting function, the roles of soft and
   // hard gluon are interchange - in other words, colours have to swap.
-  if (m_tagsequence[0]==2) swap(m_colors[0],m_colors[1]);
-  // set colours in splitting
-  return (m_colors.size()==2); 
+  if (m_tagsequence[0]==1) swap(m_colors[0],m_colors[1]);
+  return true;
 }
 
 DECLARE_GETTER(GGG,"GGG",Gauge_Base,Kernel_Info);

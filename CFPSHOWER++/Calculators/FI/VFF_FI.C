@@ -10,7 +10,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     VFF_FI(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -25,7 +25,7 @@ VFF_FI::VFF_FI(const Kernel_Info & info) : SF_FI12(info), m_jmax(5.) {
   SetName("V->FF");
 }
 
-double VFF_FI::operator()(const Splitting & split) const {
+double VFF_FI::operator()(const Splitting & split) {
   double z(split.z()), kappa2(split.tcut()/split.Q2red());
   // TODO: have to add ME correction for DIS
   if (split.mspect2()>1.e-12) {

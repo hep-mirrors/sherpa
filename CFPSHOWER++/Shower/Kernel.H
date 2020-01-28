@@ -22,7 +22,7 @@ namespace CFPSHOWER {
     SF_Base       * p_sf; 
     Gauge_Base    * p_gauge;
     PDF::PDF_Base * p_pdf[2];
-    double          m_pdfminvalue, m_pdfxmin;
+    double          m_pdfminvalue, m_pdfxmin, m_enhance;
 
     Weight * MakeWeight(const Splitting & split,const double & overfac=1.);
   public:
@@ -35,6 +35,7 @@ namespace CFPSHOWER {
     double Integral(Splitting & split,const ATOOLS::Mass_Selector * msel);
     bool   Generate(Splitting & split,const ATOOLS::Mass_Selector * msel,
 		    const double & overfac=1.);
+    bool   UpdateKinematics(Splitting & split);
     bool   FillOffsprings(Splitting & split);
 
     double GetXPDF(const double & x,const double & Q2,
@@ -46,6 +47,7 @@ namespace CFPSHOWER {
     inline void SetPDF(const size_t beam, PDF::PDF_Base * pdf) { p_pdf[beam]   = pdf; }
     inline void SetPDFMinValue(const double & value)           { m_pdfminvalue = value; }
     inline void SetPDFXMin(const double & xmin)                { m_pdfxmin     = xmin; }
+    inline void SetEnhanceFactor(const double & enhance)       { m_enhance     = enhance; }
 
     inline const kernel_type::code      & GetType()  const { return m_type; }
     inline SF_Base                      * GetSF()    const { return p_sf; } 
@@ -56,8 +58,9 @@ namespace CFPSHOWER {
     inline const size_t & Tags(const size_t & pos)   const { return p_sf->Tags(pos); }
     inline const ATOOLS::Mass_Selector  * GetMSel()  const { return p_msel; }
     inline PDF::PDF_Base * GetPDF(const size_t beam) const { return p_pdf[beam]; }
-    inline const double  & PDFMinValue()             const { return m_pdfminvalue; }
-    inline const double  & PDFXMin()                 const { return m_pdfxmin; }
+    inline const double & PDFMinValue()              const { return m_pdfminvalue; }
+    inline const double & PDFXMin()                  const { return m_pdfxmin; }
+    inline const double & EnhanceFactor()            const { return m_enhance; }  
   };
   
   std::ostream &operator<<(std::ostream &s,const Kernel & kernel);

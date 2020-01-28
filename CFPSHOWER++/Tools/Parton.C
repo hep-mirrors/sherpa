@@ -53,6 +53,10 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
     brwt.m_t              = split.t();
     brwt.m_weight        *= weight;
     wit->second.push_back(brwt);
+    msg_Out()<<"--- "<<METHOD<<"(flav = "<<m_flav<<", t = "<<split.t()<<"): "
+	     <<weight<<" --> "<<brwt.m_weight<<"\n"
+	     <<"--- from: "<<(*split.GetWeight())<<"\n"
+	     <<"------------------------------------------------------------------\n";
   }
 }
 
@@ -83,7 +87,7 @@ ostream & CFPSHOWER::operator<<(ostream & s,Parton & part) {
   s<<"Parton("<<part.Id()<<", beam = "<<part.Beam()<<"): "
    <<"["<<part.Flav()<<", mom = "<<part.Mom()<<", ";
   if (part.Beam()>0) s<<"xB = "<<part.XB()<<", ";
-  s<<"col = "<<part.GetColor()<<"] --> ";
+  s<<"col = "<<part.GetColor()<<"] <--> ";
   for (Parton_List::const_iterator pit=part.GetSpectators()->begin();
        pit!=part.GetSpectators()->end(); pit++) s<<(*pit)->Id()<<" ";
   s<<"\n";

@@ -8,7 +8,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     FFV_FF(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -19,10 +19,10 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 FFV_FF::FFV_FF(const Kernel_Info & info)  : SF_FF12(info) {
-  SetName(m_tags[0]==1?"F->VF":"F->FV");
+  SetName("F->FV");
 }
 
-double FFV_FF::operator()(const Splitting & split) const {
+double FFV_FF::operator()(const Splitting & split) {
   double z(split.z()), Q2red(split.Q2red()), kappa2(split.t()/Q2red);
   // Start with the soft term only, including possible K factors (cusp anomalous
   // dimensions), obtained from the gauge part of the kernel
@@ -32,10 +32,10 @@ double FFV_FF::operator()(const Splitting & split) const {
   if (split.IsMassive()) {
     // Massive splitting adjustments
     // directly return 0 if the splitting is kinematically not viable
-    double mi2(split.m2(m_invtags[0])), mj2(split.m2(m_invtags[1]));
-    double mk2(split.mspect2()), mij2 = split.msplit2(), y = split.y();
-    double Q2 = split.Q2(), sij = y*(Q2-mk2)+(1.-y)*(mi2+mj2);
-    double vt2_ij_k = Lambda2(Q2,mij2,mk2), v2_ij_k  = Lambda2(Q2,sij,mk2);
+    double mi2(split.m2(0)), mj2(split.m2(1));
+    double mk2(split.mspect2()), mij2(split.msplit2()), y(split.y());
+    double Q2(split.Q2()), sij(y*(Q2-mk2)+(1.-y)*(mi2+mj2)); // = Q2red + (mi2+mj2)
+    double vt2_ij_k(Lambda2(Q2,mij2,mk2)), v2_ij_k(Lambda2(Q2,sij,mk2));
     if ( sij<mi2+mj2 || Q2<sij+mk2 || vt2_ij_k<0. || v2_ij_k < 0.) return 0.;
     double vt_ij_k = sqrt(vt2_ij_k)/(Q2-mij2-mk2), v_ij_k = sqrt(v2_ij_k)/(Q2-sij-mk2);
     // Terms ~y/(1-z+y) come from reshuffling the mass-dependent terms in the eikonal

@@ -12,7 +12,8 @@ libCFPCalculators_la_SOURCES = \
 	QQG.C \
 	QGQ.C \
 	GQQ.C \
-	GGG.C
+	GGG.C \
+	QQQQ.C
 
 localinc_HEADERS   = \
 	SF_Base.H \

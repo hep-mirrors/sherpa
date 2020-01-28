@@ -47,6 +47,7 @@ double Gauge_Base::operator()(const Splitting & split) {
 }
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
+  if (p_alphaS) return (*p_alphaS)(m_muR2factor*1.);
   if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.tcut());
 }
 
@@ -60,6 +61,10 @@ const double Gauge_Base::Beta0(const double & NF) const {
 
 const double Gauge_Base::Beta1(const double & NF) const {
   return 17./6.*sqr(m_CA) - (5./3.*m_CA+m_CF)*m_TR*NF;
+}
+
+const double Gauge_Base::NF(const Splitting & split) const {
+  return NF(Scale(split));
 }
 
 const double Gauge_Base::NF(const double & q2) const {

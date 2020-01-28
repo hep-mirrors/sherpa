@@ -8,7 +8,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     VFF_FF(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -23,11 +23,11 @@ VFF_FF::VFF_FF(const Kernel_Info & info) : SF_FF12(info) {
   SetName("V->FF");
 }
 
-double VFF_FF::operator()(const Splitting & split) const {
+double VFF_FF::operator()(const Splitting & split) {
   double z(split.z()), kappa2(split.t()/split.Q2red());
   double value = 0.;
   if (split.IsMassive()) {
-    double mi2(split.m2(m_invtags[0])), mk2(split.mspect2());
+    double mi2(split.m2(0)), mk2(split.mspect2());
     double Q2      = split.Q2(), sij = split.y()*(Q2-mk2);
     double v2_ij_k = Lambda2(Q2,sij,mk2);
     if (v2_ij_k<0.) return 0.;

@@ -9,7 +9,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     FVF_IF(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -24,7 +24,7 @@ FVF_IF::FVF_IF(const Kernel_Info & info) : SF_IF12(info), m_jmax(1.) {
   SetName("V->FF");
 }
 
-double FVF_IF::operator()(const Splitting & split) const {
+double FVF_IF::operator()(const Splitting & split) {
   // still have to fill this in.
   return 0.;
 }

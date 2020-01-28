@@ -7,28 +7,26 @@ using namespace CFPSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-SF_FF12::SF_FF12(const Kernel_Info & info) : SF_Base(info) {}
+SF_FF12::SF_FF12(const Kernel_Info & info) : SF_Base(info) {
+  m_moms.resize(2);
+}
 
 double SF_FF12::Jacobean(const Splitting & split) const {
   double Q2red = split.Q2red(), Q2red_y = Q2red * split.y(); 
   return ( Q2red / Lambda(split.Q2(),split.msplit2(),split.mspect2()) *
-	   1. / (Q2red_y+split.m2(0)+split.m2(1)-split.msplit2())/
-		       Q2red_y );
+	   Q2red_y /(Q2red_y+split.m2(0)+split.m2(1)-split.msplit2()) );
 }
 
-bool SF_FF12::Construct(Splitting & split) {
+bool SF_FF12::Construct(Splitting & split,const int & mode) {
   if (sqrt(split.Q2()) <
       sqrt(split.m2(0))+sqrt(split.m2(1))+sqrt(split.mspect2())) return false;
-  m_z = split.z();
-  m_y = split.t()/ (split.Q2red() * (1.-m_z));
-  m_ztilde = (m_z-m_y) / (1.-m_y);
-  Kin_Args kinargs(m_y,m_ztilde,split.phi());
+  double z = split.z(), y = split.t()/(split.Q2red()*(1.-z)), ztilde = (z-y)/(1.-y);
+  Kin_Args kinargs(y,ztilde,split.phi());
   if (ConstructFFDipole(split.m2(0),split.m2(1),
 			split.msplit2(),split.mspect2(),
 			split.GetSplitter()->Mom(),split.GetSpectator()->Mom(),
 			kinargs) < 0) return false;
-  split.Set_y(m_y);
-  m_moms.resize(2);
+  split.Set_y(y);
   m_moms[0] = kinargs.m_pi;
   m_moms[1] = kinargs.m_pj;
   m_specmom = kinargs.m_pk;

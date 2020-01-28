@@ -10,7 +10,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     VFF_IF(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -27,7 +27,7 @@ VFF_IF::VFF_IF(const Kernel_Info & info) : SF_IF12(info), m_jmax(5.)
   SetName("F->VF");
 }
 
-double VFF_IF::operator()(const Splitting & split) const {
+double VFF_IF::operator()(const Splitting & split) {
   double z(split.z()), kappa2(split.t()/split.Q2red());
   // No LL term, so no A1 term and no HO factor
   // TODO: Add the DIS ME correction

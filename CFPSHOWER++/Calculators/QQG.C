@@ -10,6 +10,7 @@ namespace CFPSHOWER {
   public:
     QQG(const Kernel_Info & info) : Gauge_Base(info) {
       m_charge = m_CF;
+      m_colors.resize(2);
       SetName("3-3-8");
     }
     inline const double Charge(const double & scale) const { return m_charge; }    
@@ -39,19 +40,17 @@ const double QQG::Scale(const Splitting & split) const {
 }
 
 bool QQG::SetColours(Splitting & split) {
-  m_colors.clear();
   unsigned int newcol  = Flow::Counter();
   Flavour_Vector flavs = split.GetKernel()->GetFlavs();
   if (!flavs[0].IsAnti()) {
-    m_colors.push_back(Color(newcol,0));
-    m_colors.push_back(Color(split.GetSplitter()->GetColor()[0],newcol));
+    m_colors[0] = Color(newcol,0);
+    m_colors[1] = Color(split.GetSplitter()->GetColor()[0],newcol);
   }
   else if (flavs[0].IsAnti()) {
-    m_colors.push_back(Color(0,newcol));
-    m_colors.push_back(Color(newcol,split.GetSplitter()->GetColor()[1]));
+    m_colors[0] = Color(0,newcol);
+    m_colors[1] = Color(newcol,split.GetSplitter()->GetColor()[1]);
   }
-  // set colours in splitting
-  return (m_colors.size()==2); 
+  return true;
 }
 
 DECLARE_GETTER(QQG,"QQG",Gauge_Base,Kernel_Info);

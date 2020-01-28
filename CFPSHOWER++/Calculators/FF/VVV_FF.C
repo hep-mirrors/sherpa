@@ -10,7 +10,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     VVV_FF(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -25,7 +25,7 @@ VVV_FF::VVV_FF(const Kernel_Info & info) : SF_FF12(info) {
   SetName("V->VV");
 }
 
-double VVV_FF::operator()(const Splitting & split) const {
+double VVV_FF::operator()(const Splitting & split) {
   double mspect2(split.mspect2());
   double z(split.z()), y(split.y()), kappa2(split.t()/split.Q2red());
   // Start with the soft term only, including possible K factors (cusp anomalous
@@ -35,7 +35,7 @@ double VVV_FF::operator()(const Splitting & split) const {
   if (split.IsMassive()) {
     // Massive spectator adjustments
     // directly return 0 if the splitting is kinematically not viable
-    double mk2(split.mspect2()), mij2 = split.msplit2();
+    double mk2     = split.mspect2();
     double Q2      = split.Q2(), sij = y*(Q2-mk2);
     double v2_ij_k = Lambda2(Q2,sij,mk2);
     if (v2_ij_k<0.) return 0.;
@@ -79,11 +79,7 @@ DECLARE_GETTER(VVV_FF,"FF_VVV",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,VVV_FF>::
 operator()(const Parameter_Type & info) const
 {
-  msg_Out()<<METHOD<<" for "<<info<<"   * check: "
-	   <<"[type = "<<info.Type()<<"] and "
-	   <<info.GetSplit().IsVector()
-	   <<info.GetFlavs()[0].IsVector()
-	   <<info.GetFlavs()[1].IsVector()<<"\n"; 
+  //return NULL;
   if (info.Type()==kernel_type::FF &&
       (info.GetSplit().IsVector() &&
        info.GetFlavs()[0].IsVector() &&

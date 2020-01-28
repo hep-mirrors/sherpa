@@ -9,7 +9,7 @@ namespace CFPSHOWER {
     virtual double Jacobean(const Splitting & split) const;
   public:
     SF_FI12(const Kernel_Info & info);
-    virtual bool Construct(Splitting & split);
+    virtual bool Construct(Splitting & split,const int & mode=0);
   };
 }
 

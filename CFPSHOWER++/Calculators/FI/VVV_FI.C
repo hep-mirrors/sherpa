@@ -9,7 +9,7 @@ namespace CFPSHOWER {
     double B1(const double & z,const double & kappa2) const;
   public:
     VVV_FI(const Kernel_Info & info);
-    double operator()(const Splitting & split) const;
+    double operator()(const Splitting & split);
     double Integral(const Splitting & split) const;
     double OverEstimate(const Splitting & split) const;
     void   GeneratePoint(Splitting & split) const;
@@ -24,7 +24,7 @@ VVV_FI::VVV_FI(const Kernel_Info & info) : SF_FI12(info) {
   SetName("V->VV");
 }
 
-double VVV_FI::operator()(const Splitting & split) const {
+double VVV_FI::operator()(const Splitting & split) {
   double z(split.z()), kappa2(split.tcut()/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel

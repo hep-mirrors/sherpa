@@ -38,10 +38,7 @@ Shower::~Shower()
 }
 
 void Shower::Reset() {
-  while (!m_splittings.empty()) {
-    delete m_splittings.back();
-    m_splittings.pop_back();
-  }
+  while (!m_splittings.empty()) { delete m_splittings.back(); m_splittings.pop_back(); }
 }
 
 bool Shower::Evolve(Configuration * config) {
@@ -68,7 +65,8 @@ bool Shower::Evolve(Configuration * config) {
   do {
     p_winner = NULL;
     size_t i=0;
-    for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
+    for (Parton_List::reverse_iterator pit=p_config->rbegin();
+	 pit!=p_config->rend();pit++) {
       if ((*pit)->On() && !Evolve(*pit)) continue;
     }
     if (p_winner) {
@@ -88,25 +86,30 @@ bool Shower::Evolve(Configuration * config) {
     }
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
-  msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
-   	   <<"#########################################################\n"
-   	   <<"#########################################################\n"
-   	   <<"#########################################################\n";
-  if (dabs(m_weight-1.)>1.e-6) {
+  //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
+  // 	   <<"#########################################################\n"
+  //	   <<"#########################################################\n"
+  //	   <<"#########################################################\n";
+  //if (dabs(m_weight-1.)>1.e-6) {
     //msg_Out()<<METHOD<<" fails with weight = "<<(dabs(m_weight-1)*1.e6)<<" * 10^-6. "
     //	     <<"Will continue the run & hope for the best.\n";
     //exit(1);
-  }
+  //}
   return true;
 }
 
 void Shower::AddWeight(const double & t) {
   double stepweight = 1., partweight;
+  msg_Out()<<"-------------------------------------------------\n"
+	   <<METHOD<<" ("<<p_config->size()<<" partons, t = "<<t<<"):\n";
   for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
     Parton * part = (*pit);
     stepweight *= partweight = part->GetWeight(t);
+    msg_Out()<<"   "<<part->Flav()<<": "<<partweight<<"\n";
     part->ClearWeights();
   }
+  msg_Out()<<"   total = "<<stepweight<<"\n"
+	   <<"-------------------------------------------------\n";
   m_weight *= stepweight;
 }
 
@@ -121,11 +124,14 @@ bool Shower::Evolve(Parton * splitter) {
   // in PerformSplitting(), by adding the decay products to the configuration, by
   // switching off the splitter, and by updating the spectator kinematics and the
   // colour connections.
+  
+  msg_Out()<<METHOD<<" for splitter = "<<splitter->Flav()<<" ##########################\n";
   if (splitter->GetSpectators()->size()<=0) return false;
   bool success = false;
   double sum  = InitialiseIntegrals(splitter);
   if (sum>0.) {
     Splitting * split = GenerateTestSplitting(splitter,sum);
+    //msg_Out()<<METHOD<<" yields: "<<split<<".\n";
     if (split) {
       success = true;
       // we found a splitting - if we have not found a possible splitting yet,
@@ -136,9 +142,9 @@ bool Shower::Evolve(Parton * splitter) {
       //    splitting (this should become obsolete now).
       // 2. the t of the current splitter is below the current winner's t.  Then
       //    we just delete the current splitting.  
-      if      (p_winner==NULL)             p_winner = split;
+      if      (p_winner==NULL)               p_winner = split;
       else if (split->t() > p_winner->t()) { delete p_winner; p_winner = split; }
-      else                                 delete split;
+      else                                   delete split;
       // If we have a winning splitter, all contenders must have a larger t, so
       // the winning t is the lower limit t0 of this run.
       if (p_winner) { p_config->SetT0(p_winner->t()); }
@@ -212,8 +218,6 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	    Parton * spectator = (*spit);
 	    Kernel * kernel    = (*m_splitkernels[i])[j];
 	    Splitting * split  = new Splitting(splitter,spectator,t,t0);
-	    msg_Out()<<"   selected "<<i<<"th spectator (I = "<<m_integrals[i].back()<<"), "
-		     <<j<<"th kernel.\n";
 	    split->Set_tstart(tstart);
 	    split->SetKinScheme(m_kinscheme);
 	    // Veto and adding of weights is embedded here.
@@ -223,10 +227,8 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	    // Rejected splittings add to the overall rejection weight related to
 	    // the splitter parton.
 	    if (kernel->Generate(*split,p_msel,m_weightover)) {
-	      msg_Out()<<METHOD<<"*** is successful for "<<split<<"\n";
 	      return split;
 	    }
-	    msg_Out()<<METHOD<<"*** fails for "<<split<<"\n";
 	    delete split;
 	    active = false;
 	    break;
@@ -241,6 +243,13 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 }
 
 bool Shower::PerformSplitting() {
+  if (p_winner->IsEndPoint()) {
+    if (!p_winner->GetKernel()->UpdateKinematics(*p_winner)) {
+      msg_Error()<<METHOD<<" failed to update to endpoint kinematics for:\n"<<(*p_winner)
+		 <<"   Return false and hope for the best.\n";
+      return false;
+    }
+  }
   if (!p_winner->GetKernel()->FillOffsprings((*p_winner))) {
     msg_Error()<<METHOD<<" failed to set colours for splitting:\n"<<(*p_winner)
 	       <<"   Return false and hope for the best.\n";
@@ -257,19 +266,27 @@ void Shower::EstablishSpectators(Parton * splitter) {
   for (size_t i=0;i<3;i++) {
     Parton * offspring = p_winner->GetParton(i);
     if (offspring==NULL) continue;
-    //msg_Out()<<" *** establish connections for "<<offspring->Id()<<"\n";   
     for (size_t col=0;col<2;col++) { cols[col] = offspring->GetColor()[col]; }
+    //msg_Out()<<" *** establish connections for "<<offspring->Id()<<" ["<<i<<"]: "
+    //	     <<"{"<<cols[0]<<" "<<cols[1]<<"}\n";   
     for (size_t j=i+1;j<3;j++) {
       Parton * compare = p_winner->GetParton(j);
       if (compare==NULL) continue;
       for (size_t col=0;col<2;col++) {
 	if (cols[col]!=0 && cols[col]==compare->GetColor()[1-col]) {
+	  //msg_Out()<<" *** compare with parton "<<compare->Id()<<" ["<<j<<"]: "
+	  //	   <<compare->GetColor()[1-col]<<" for col = "<<col<<"\n";
 	  if (!offspring->FindSpectator(compare)) {
+	    //msg_Out()<<" *** add "<<compare->Id()<<" ["<<compare<<"] to offspring spectators.\n";
 	    offspring->AddSpectator(compare);
+	    //}
+	    //if (!compare->FindSpectator(offspring)) {
+	    //msg_Out()<<" *** add "<<offspring->Id()
+	    //<<" ["<<offspring<<"] to compare spectators.\n";
 	    compare->AddSpectator(offspring);
-	    //msg_Out()<<"   * add pairing with offspring "<<compare->Id()
-	    //	     <<" for col["<<col<<"] = "<<cols[col]<<"\n";
 	  }
+	  //msg_Out()<<"   * add pairing with offspring "<<compare->Id()
+	  //	   <<" for col["<<col<<"] = "<<cols[col]<<"\n";
 	}
       }
     }
@@ -296,7 +313,6 @@ void Shower::EstablishSpectators(Parton * splitter) {
   splitter->SwitchOff();
 }
 
-
 bool Shower::Init(MODEL::Model_Base * const model,
 		  PDF::ISR_Handler * const isr)
 {
@@ -310,12 +326,13 @@ bool Shower::Init(MODEL::Model_Base * const model,
   m_t0min       = Min(m_t0[0], m_t0[1]);
   m_kinscheme   = (*cfp_pars)["kinematics"];
   m_nmax_em     = (*cfp_pars)["max_emissions"];
-  size_t order  = Min(3,Max(2,(*cfp_pars)["SF_order"]));
   m_weightover  = 3.;
 
   Kernel_Constructor kernelconstructor(this);
-  kernelconstructor.Init(model,isr,order);
+  kernelconstructor.Init(model,isr);
   for (size_t i=0;i<5;i++) p_kernels[i] = kernelconstructor(i);
+  //msg_Out()<<"Will exit in "<<METHOD<<"\n";
+  //exit(1);
   return true;
 }
 

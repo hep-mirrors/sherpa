@@ -41,6 +41,7 @@ namespace CFPSHOWER {
     virtual inline const double Charge(const double & scale=0.) const {
       return m_charge;
     }
+    virtual const double NF(const Splitting & split) const;
     
     virtual const std::string & Name()       const { return m_name; }
     virtual void SetName(const std::string & name) { m_name = name; }

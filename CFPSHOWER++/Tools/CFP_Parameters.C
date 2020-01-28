@@ -18,7 +18,7 @@ bool CFP_Parameters::Init(Default_Reader *const reader)
   m_switches["kfactor"]        = reader->Get<int>("CSS_KFACTOR_SCHEME",1);
   m_switches["couplings"]      = reader->Get<int>("CSS_COUPLING_SCHEME",1);
   m_switches["ME_corrections"] = reader->Get<int>("CSS_ME_CORRECTION",0);
-  m_switches["SF_order"]       = reader->Get<unsigned int>("SF_ORDER",2);
+  m_switches["SF_order"]       = reader->Get<unsigned int>("CSS_SF_ORDER",2);
   m_switches["max_emissions"]  = reader->Get<unsigned int>
     ("CSS_MAXEM",100000); //std::numeric_limits<unsigned int>::max());
   m_switches["max_particles"]  = reader->Get<unsigned int>
@@ -26,6 +26,7 @@ bool CFP_Parameters::Init(Default_Reader *const reader)
   m_parameters["recalc_fac"]   = reader->Get<double>("CSS_RECALC_FACTOR",4.0);
   m_parameters["PDF_min"]      = reader->Get<double>("CSS_PDF_MIN",1.0e-4);
   m_parameters["PDF_min_X"]    = reader->Get<double>("CSS_PDF_MIN_X",1.0e-2);
+  m_parameters["NLO_enhance"]  = reader->Get<double>("CSS_TC_ENHANCE",1.0);
   m_parameters["pt2min(FS)"]   = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   m_parameters["pt2min(IS)"]   = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_parameters["k_alpha(FS)"]  = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
@@ -34,7 +35,6 @@ bool CFP_Parameters::Init(Default_Reader *const reader)
   m_parameters["k_muF"]        = ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   /*
   m_rcf=reader->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_tcef=reader->Get<double>("CSS_TC_ENHANCE",1.0);
   m_maxrewem=reader->Get<unsigned int>
     ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
   m_rewtmin=reader->Get<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0);

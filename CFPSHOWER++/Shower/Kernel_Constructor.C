@@ -20,8 +20,8 @@ Kernel_Constructor::Kernel_Constructor(Shower * shower): p_shower(shower) {}
 
 Kernel_Constructor::~Kernel_Constructor() { }
 
-bool Kernel_Constructor::Init(MODEL::Model_Base * const model,
-			      PDF::ISR_Handler * const isr,const size_t & order)
+bool Kernel_Constructor::
+Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr)
 {
   // Shower parameters and switches are pulled from the map in the CFP_Parameter
   // - parton shower cutoffs for FS and IS showering
@@ -36,14 +36,14 @@ bool Kernel_Constructor::Init(MODEL::Model_Base * const model,
   m_kfactor     = (*cfp_pars)["kfactor"];
   m_cplscheme   = (*cfp_pars)["couplings"];
   m_MEcorrs     = (*cfp_pars)["ME_corrections"];
+  m_SForder     = (*cfp_pars)["SF_order"];
   p_as    = (MODEL::Running_AlphaS*)(model->GetScalarFunction("alpha_S"));
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
-  MakePermutations(order);
-  InitializeKernels(model,order);
+  MakePermutations();
+  InitializeKernels(model);
 }
 
-bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model,
-					   const size_t & order) {
+bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model) {
   msg_Out()<<"***************************************************************\n"
    	   <<METHOD<<" starts collecting splitting kernels.\n"
    	   <<"** available kernels:\n";
@@ -61,21 +61,25 @@ bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model,
   for (size_t i=0;i<5;i++) p_kernels[i] = new map<Flavour, Kernels *>;
  
   MakeKernelsFromVertices(model);
-  if (order>2) {
+  if (msg_LevelIsDebugging()) PrintKernels();
+  
+  if (abs(m_SForder)>1) {
     msg_Out()<<"*********************************************************\n"
-	     <<"Now start collating 1->2 kernels into 1->3 kernels.\n"
-	     <<"*********************************************************\n";
+    	     <<"Now start collating 1->2 kernels into 1->3 kernels.\n"
+    	     <<"*********************************************************\n";
     for (size_t type=1;type<2;type++) MakeKernelsFromKernels(kernel_type::code(type));
+    if (m_SForder<0) DeleteAllKernelsWithWrongOrder();
   }
-  PrintKernels();
+  PrintKernels(true);
   return true;
 }
 
 void Kernel_Constructor::MakeKernelsFromVertices(MODEL::Model_Base * const model) {
-  set<vector<Flavour> > vetoed;
+  set<vector<Flavour> > constructed;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator vlit=vtab->begin();
        vlit!=vtab->end();++vlit) {
+    msg_Debugging()<<"**** vertices for "<<vlit->first<<"\n";
     if (!vlit->first.IsQuark() && !vlit->first.IsGluon()) continue;
     for (Vertex_List::const_iterator vit=vlit->second.begin();
 	 vit!=vlit->second.end();++vit) {
@@ -83,8 +87,8 @@ void Kernel_Constructor::MakeKernelsFromVertices(MODEL::Model_Base * const model
       // At LO only 3-particle vertices are allowed and we keep track of such
       // configurations only in the kernel_flavours set.  
       if (vertex->NLegs()>3) continue;
-      if (vetoed.find(vertex->in)!=vetoed.end()) return;
-      vetoed.insert(vertex->in);
+      if (constructed.find(vertex->in)!=constructed.end()) return;
+      constructed.insert(vertex->in);
       for (size_t type=1;type<2;type++) MakeKernels(vertex->in,kernel_type::code(type));
     }
   }
@@ -100,17 +104,19 @@ void Kernel_Constructor::MakeKernels(Flavour_Vector & flavs,const kernel_type::c
   // - to be implemented: order information, masses of particles, etc..
   // Initialised kernels are organised in 4 maps (one for each of the splitter/spectator
   // configurations), connecting splitting flavours with all possible kernels.
-  Flavour split = flavs[0];
-  Flavour_Vector newflavs;
+  Flavour split = flavs[0].Bar();
+  Flavour_Vector newflavs; 
   for (size_t i=1;i<flavs.size();i++) newflavs.push_back(flavs[i]); 
-  size_t order  = newflavs.size()-2;
-  //if (newflavs.size()>2) {
-  msg_Out()<<METHOD<<"["<<type<<", order = "<<(order+1)<<"] for "<<split.Bar()<<" -> ";
-  for (size_t i=0;i<newflavs.size();i++) msg_Out()<<newflavs[i]<<" ";
-  msg_Out()<<" with "<<m_permutations[order].size()<<" permutations.\n";
-  //}
-  for (list<vector<size_t> >::iterator lit=m_permutations[order].begin();
-       lit!=m_permutations[order].end();lit++) {
+  size_t order  = newflavs.size()-1;
+  /*
+    if (flavs.size()>3) {
+    msg_Out()<<"  * "<<METHOD<<"["<<type<<", order = "<<order<<"] for "<<split<<" -> ";
+    for (size_t i=0;i<newflavs.size();i++) msg_Out()<<newflavs[i]<<" ";
+    msg_Out()<<" with "<<m_permutations[order-1].size()<<" permutations.\n";
+    }
+  */
+  for (list<vector<size_t> >::iterator lit=m_permutations[order-1].begin();
+       lit!=m_permutations[order-1].end();lit++) {
     Kernel_Info info(split,newflavs,kernel_type::code(type),(*lit));
     info.SetAlphaS(p_as);
     info.SetKFactor(m_kfactor);
@@ -118,29 +124,36 @@ void Kernel_Constructor::MakeKernels(Flavour_Vector & flavs,const kernel_type::c
     info.SetAsFactor(((type==kernel_type::FF || type==kernel_type::FI) ?
 		      m_asfactor[0] : m_asfactor[1]));
     info.SetMuR2Factor(m_muR2factor);
-    msg_Out()<<"   * looking for "<<info;
+    //if (flavs.size()>3) msg_Out()<<"     * looking for kernel for "<<info;
     Kernel * kernel = Kernel_Getter::GetObject("Kernel",info);
-    //if (newflavs.size()>2)
-    if (kernel!=0) {
-      if (p_kernels[int(info.Type())]->find(info.GetSplit())==
-	  p_kernels[int(info.Type())]->end()) {
-	msg_Out()<<"Init new kernel list for type = "<<info.Type()
-		 <<" & flav = "<<info.GetSplit()<<": "<<info;
-	(*p_kernels[int(info.Type())])[info.GetSplit()] = new Kernels();
-      }
-      (*p_kernels[int(info.Type())])[info.GetSplit()]->push_back(kernel);
-      msg_Out()<<"Add kernel to ["<<info.Type()<<"]["<<info.GetSplit()<<"]: "<<info;
-      for (size_t beam = 0;beam<2;beam++) kernel->SetPDF(beam,p_pdf[beam]);
-      kernel->SetPDFMinValue((*cfp_pars)("PDF_min"));
-      kernel->SetPDFXMin((*cfp_pars)("PDF_min_X"));
-      kernel->SetMSel(p_shower->GetMassSelector());
+    if (kernel==0) continue;
+    if (p_kernels[int(info.Type())]->find(info.GetSplit())==
+	p_kernels[int(info.Type())]->end()) {
+      /*
+	if (flavs.size()>3) {
+        msg_Out()<<"     * Init new kernel list for type = "<<info.Type()
+	<<" & flav = "<<info.GetSplit()<<": "<<info;
+	}
+      */
+      (*p_kernels[int(info.Type())])[info.GetSplit()] = new Kernels();
     }
+    (*p_kernels[int(info.Type())])[info.GetSplit()]->push_back(kernel);
+    /*
+      if (newflavs.size()>2) {
+      msg_Out()<<"     * Add kernel to ["<<info.Type()<<"]["<<info.GetSplit()<<"]: "
+      <<info;
+    }
+    */
+    for (size_t beam = 0;beam<2;beam++) kernel->SetPDF(beam,p_pdf[beam]);
+    kernel->SetPDFMinValue((*cfp_pars)("PDF_min"));
+    kernel->SetPDFXMin((*cfp_pars)("PDF_min_X"));
+    kernel->SetMSel(p_shower->GetMassSelector());
+    kernel->SetEnhanceFactor(order==1?1.:(*cfp_pars)("NLO_enhance"));
   }
 }
 
-
 void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) {
-  msg_Out()<<METHOD<<"["<<type<<"]:\n";
+  //msg_Out()<<METHOD<<"["<<type<<"]:\n";
   if (type==kernel_type::IF || type==kernel_type::II) {
     msg_Out()<<METHOD<<" for initial state kernels.  Will have to think about this.\n";
     exit(1);
@@ -152,68 +165,117 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
   map<Flavour,Kernels *> * ffkernels  = p_kernels[int(kernel_type::FF)];
   // initiate a look-up table of "vetoed" flavour combination, to make sure we have every
   // combination of four flavours only once
-  set<multiset<Flavour> > vetoed;
+  set<multiset<Flavour> > additions;
   for (map<Flavour,Kernels *>::iterator allkit=allkernels->begin();
        allkit!=allkernels->end();allkit++) {
     const Flavour & splitter    = allkit->first;
     const Kernels * flavkernels = allkit->second;
+    //msg_Out()<<"*** Iterate over "<<flavkernels->size()<<" "
+    //	     <<"kernels for splitter = "<<splitter<<".\n";
+    size_t kpos = 0;
     for (Kernel_Vector::const_iterator kit=flavkernels->begin();
 	 kit!=flavkernels->end();kit++) {
+      kpos++;
       if ((*kit)->Tags(0)==1) continue;
       Flavour_Vector outs = (*kit)->GetFlavs();
       // go over the two outgoing flavours and produce trial final states by keeping one
       // and replacing the other with two outgoing flavours from the already initialised
       // 1->2 ffkernels.
       for (size_t j=0;j<2;j++) {
+	//msg_Out()<<"  * replace flavour "<<j<<" in "<<splitter
+	//	 <<" --> "<<outs[0]<<" + "<<outs[1]<<"\n";
 	if (ffkernels->find(outs[j])==ffkernels->end()) continue;
 	Kernel_Vector * replkernels = (*ffkernels)[outs[j]];
 	for (size_t k=0;k<replkernels->size();k++) {
 	  Kernel * rkernel = (*replkernels)[k];
+	  // only use 1->2 kernels in the construction
+	  if (rkernel->GetFlavs().size()>2) continue;
 	  // produce a trial final state:
 	  // insert the flavour that is not going to be replaced and the outgoing flavours of
 	  // the already existing ffkernel with the other flavour as incoming flavour
 	  multiset<Flavour> trial;
-	  trial.insert(outs[2-j]);
-	  for (size_t f=0;f<rkernel->GetFlavs().size();f++) trial.insert(rkernel->GetFlavs()[f]);
-	  // check if we already have this combination
-	  if (vetoed.find(trial)==vetoed.end()) {
-	    // new combination - insert into table of vetoed combinations
-	    vetoed.insert(trial);
-	    Flavour_Vector flavs;
-	    flavs.push_back(splitter);
-	    for (multiset<Flavour>::iterator fit=trial.begin();fit!=trial.end();fit++)
-	      flavs.push_back(*fit);
-	    MakeKernels(flavs,type);
+	  trial.insert(outs[1-j]);
+	  for (size_t f=0;f<rkernel->GetFlavs().size();f++)
+	    trial.insert(rkernel->GetFlavs()[f]);
+	  // check if we already have this combination and if new insert into table of
+	  // combinations to be added
+	  if (additions.find(trial)==additions.end()) {
+	    /*
+	      msg_Out()<<"    * add "<<splitter<<" -> "<<outs[1-j]<<" ";
+	      for (size_t f=0;f<rkernel->GetFlavs().size();f++)
+	      msg_Out()<<rkernel->GetFlavs()[f]<<" ";
+	      msg_Out()<<"\n";
+	    */
+	    additions.insert(trial);
 	  }
 	}
       }
     }
+    set<multiset<Flavour> >::iterator sit=additions.begin();
+    while (!additions.empty()) {
+      Flavour_Vector flavs;
+      // Have to bar splitter due to structure of vertices entering MakeKernels.
+      // This will be barred again in that method.
+      flavs.push_back(splitter.Bar());
+      for (multiset<Flavour>::iterator fit=sit->begin();fit!=sit->end();fit++)
+	flavs.push_back(*fit);
+      MakeKernels(flavs,type);
+      sit = additions.erase(sit);
+    }
   }
 }
 
-void Kernel_Constructor::MakePermutations(const size_t & order) {
+void Kernel_Constructor::DeleteAllKernelsWithWrongOrder() {
+  size_t critFS = abs(m_SForder)+1;
+  for (size_t i=1;i<5;i++) {
+    if (p_kernels[i]->size()==0) continue;
+    //msg_Out()<<"--------------------------------------------------\n"
+    //	     <<"--- Delete Kernels for type = "<<i<<" with "
+    //	     <<critFS<<" outgoing particles:\n";
+    for (map<Flavour,Kernels *>::iterator ksit=p_kernels[i]->begin();
+	 ksit!=p_kernels[i]->end();ksit++) {
+      //msg_Out()<<"--- flavour = "<<ksit->first<<"\n";
+      Kernel_Vector * kernels = ksit->second;
+      Kernel_Vector::iterator kit = kernels->begin();
+      while (kit!=kernels->end()) {
+	if ((*kit)->GetFlavs().size()!=critFS) {
+	  //msg_Out()<<"  * delete : "<<(**kit);
+	  delete (*kit);
+	  kit = kernels->erase(kit);
+	}
+	else {
+	  //msg_Out()<<"  * keep   : "<<(**kit);
+	  kit++;
+	}
+      }
+    }
+    //msg_Out()<<"--------------------------------------------------\n";
+  }
+}
+
+void Kernel_Constructor::MakePermutations() {
   size_t now = 2, pos;
-  m_permutations.resize(order-1);
-  while (now<=order) {
+  m_permutations.resize(abs(m_SForder));
+  while (now<=abs(m_SForder)+1) {
     vector<size_t> perm;
     for (size_t i=0;i<now;i++) perm.push_back(i);
     pos = now;
     GeneratePermutation(perm,pos,now);
     now++;
   }
-  //if (msg_LevelIsDebugging()) {
-  for (size_t i=0;i<m_permutations.size();i++) {
-    msg_Out()<<"####### Permutations for "<<(i+2)<<" partons ##############\n";
-    size_t j=1;
-    msg_Out()<<"        found "<<m_permutations[i].size()<<" entries:\n";
-    for (list<vector<size_t> >::iterator lit=m_permutations[i].begin();
-	 lit!=m_permutations[i].end();lit++) {
-      msg_Out()<<" "<<(j++)<<"th permutation = {";
-      for (size_t k=0;k<lit->size();k++) msg_Out()<<" "<<(*lit)[k];
-      msg_Out()<<" }\n";
+  if (msg_LevelIsDebugging()) {
+    for (size_t i=0;i<m_permutations.size();i++) {
+      msg_Out()<<"####### Permutations for "<<(i+2)<<" partons ##############\n";
+      size_t j=1;
+      msg_Out()<<"        found "<<m_permutations[i].size()<<" entries:\n";
+      for (list<vector<size_t> >::iterator lit=m_permutations[i].begin();
+	   lit!=m_permutations[i].end();lit++) {
+	msg_Out()<<" "<<(j++)<<"th permutation = {";
+	for (size_t k=0;k<lit->size();k++) msg_Out()<<" "<<(*lit)[k];
+	msg_Out()<<" }\n";
+      }
     }
   }
-  //}
 }
 
 void Kernel_Constructor::
@@ -232,17 +294,18 @@ GeneratePermutation(std::vector<size_t> perm,const size_t & pos,const size_t & l
   }
 }
 
-void Kernel_Constructor::PrintKernels() {
+void Kernel_Constructor::PrintKernels(const bool & full) {
   for (size_t i=1;i<5;i++) {
-    if (p_kernels[i]->size()==0) continue;
     msg_Out()<<"--------------------------------------------------\n"
-	     <<"--- Kernels for type = "<<i<<":\n";
+	     <<"--- Kernels for type = "<<i<<": ";
+    if (!full) { msg_Out()<<p_kernels[i]->size()<<" kernels.\n"; continue; }
+    if (p_kernels[i]->size()==0) { msg_Out()<<"empty.\n"; continue;}
     for (map<Flavour,Kernels *>::iterator ksit=p_kernels[i]->begin();
 	 ksit!=p_kernels[i]->end();ksit++) {
       msg_Out()<<"--- flavour = "<<ksit->first<<"\n";
       for (Kernel_Vector::iterator kit=ksit->second->begin();
 	   kit!=ksit->second->end();kit++) {
-	msg_Out()<<(**kit);
+	msg_Out()<<"    * "<<(*kit)<<": "<<(**kit);
       }
     }
     msg_Out()<<"--------------------------------------------------\n";
