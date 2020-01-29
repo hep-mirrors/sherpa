@@ -17,7 +17,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      //if (m_fl[1].Kfcode()>p_sk->GF()->Nf(s)) return 0.0; 
+      if (m_fl[1].Kfcode()>p_sk->GF()->Nf(s)) return 0.0; 
       double TR(0.5), B2(0.0);
       double s123(s.m_t*s.m_z2/s.m_z+s.m_s+s.m_mj2), y123(s123/s.m_q2);
       double z1(s.m_z/(1.0-y123)), z2(s.m_z/s.m_z2/(1.0-y123)-z1), z3(1.0-z1-z2);
@@ -30,13 +30,13 @@ namespace DIRE {
 	S  = TR*s123/s12*(1.0+z3*z3)/(1.0-z3)*(1-2.0*z1*z2/sqr(z1+z2));
 	S += TR*s123/s12*4.0*z1*z2*z3/(1.0-z3)/sqr(z1+z2)*(1.0-2.0*sqr(cp13));
 	B2 = R-S;
-	msg_Out()<<METHOD<<"(diff): s123 = "<<s123<<", y123 = "<<y123<<", "
-		 <<"z1 = "<<z1<<", z2 = "<<z2<<", z3 = "<<z3<<",\n"
-		 <<"      t = "<<s.m_t<<", sai = "<<s.m_s<<", "
-		 <<"saj = "<<s13<<", sij = "<<s23<<", t123 = "<<t123<<", "
-		 <<"cp13 = "<<cp13<<", "
-		 <<"PS = "<<(2.0*log(1.0/z1)/(1.0-s.m_s/s123))<<"\n"
-		 <<"      R = "<<R<<", S = "<<S<<"\n";
+	// msg_Out()<<METHOD<<"(diff): s123 = "<<s123<<", y123 = "<<y123<<", "
+	// 	 <<"z1 = "<<z1<<", z2 = "<<z2<<", z3 = "<<z3<<",\n"
+	// 	 <<"      t = "<<s.m_t<<", sai = "<<s.m_s<<", "
+	// 	 <<"saj = "<<s13<<", sij = "<<s23<<", t123 = "<<t123<<", "
+	// 	 <<"cp13 = "<<cp13<<", "
+	// 	 <<"PS = "<<(2.0*log(1.0/z1)/(1.0-s.m_s/s123))<<"\n"
+	// 	 <<"      R = "<<R<<", S = "<<S<<"\n";
 	if (false && m_fl[1]==m_fl[0].Bar()) {
 	  //msg_Out()<<"  same flavours!\n";
 	  double t132((2.0*(z1*s23-z3*s12)+(z1-z3)*s13)/(z1+z3));
@@ -61,12 +61,12 @@ namespace DIRE {
       }
       // summation and phase-space weight
       B2*=2.0*log(1.0/z1)/(1.0-s.m_s/s123);
-      msg_Out()<<METHOD<<", B2 * PS = "<<B2<<", "
-	       <<"as = "<<(p_sk->GF()->Coupling(s)/(2.0*M_PI));
+      // msg_Out()<<METHOD<<", B2 * PS = "<<B2<<", "
+      // 	       <<"as = "<<(p_sk->GF()->Coupling(s)/(2.0*M_PI));
       B2*=p_sk->GF()->Coupling(s)/(2.0*M_PI);
       // desymmetrization
-      if (false && m_fl[1]==m_fl[0].Bar()) B2*=(s.m_z/s.m_z2-s.m_z)/(1.0-s.m_z);
-      msg_Out()<<" --> "<<s.m_z<<"*"<<B2<<"\n";
+      if (m_fl[1]==m_fl[0].Bar()) B2*=(s.m_z/s.m_z2-s.m_z)/(1.0-s.m_z);
+      // msg_Out()<<" --> "<<s.m_z<<"*"<<B2<<"\n";
       return s.m_z*B2;
     }
 
@@ -91,7 +91,7 @@ namespace DIRE {
       double v(ran->Get());
       s.m_s=v/(1.0-v)*(s.m_t*s.m_z2/s.m_z+s.m_mj2);
       s.m_phi2=2.0*M_PI*ran->Get();
-      s.m_mode=0;//ran->Get()>0.5;
+      s.m_mode=1;//ran->Get()>0.5;
       return true;
     }
 

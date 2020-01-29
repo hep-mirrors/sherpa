@@ -100,16 +100,16 @@ bool Shower::Evolve(Configuration * config) {
 
 void Shower::AddWeight(const double & t) {
   double stepweight = 1., partweight;
-  msg_Out()<<"-------------------------------------------------\n"
-	   <<METHOD<<" ("<<p_config->size()<<" partons, t = "<<t<<"):\n";
+  // msg_Out()<<"-------------------------------------------------\n"
+  // 	   <<METHOD<<" ("<<p_config->size()<<" partons, t = "<<t<<"):\n";
   for (Parton_List::iterator pit=p_config->begin();pit!=p_config->end();pit++) {
     Parton * part = (*pit);
     stepweight *= partweight = part->GetWeight(t);
-    msg_Out()<<"   "<<part->Flav()<<": "<<partweight<<"\n";
+    //msg_Out()<<"   "<<part->Flav()<<": "<<partweight<<"\n";
     part->ClearWeights();
   }
-  msg_Out()<<"   total = "<<stepweight<<"\n"
-	   <<"-------------------------------------------------\n";
+  // msg_Out()<<"   total = "<<stepweight<<"\n"
+  // 	   <<"-------------------------------------------------\n";
   m_weight *= stepweight;
 }
 
@@ -125,7 +125,7 @@ bool Shower::Evolve(Parton * splitter) {
   // switching off the splitter, and by updating the spectator kinematics and the
   // colour connections.
   
-  msg_Out()<<METHOD<<" for splitter = "<<splitter->Flav()<<" ##########################\n";
+  //msg_Out()<<METHOD<<" for splitter = "<<splitter->Flav()<<" ##########################\n";
   if (splitter->GetSpectators()->size()<=0) return false;
   bool success = false;
   double sum  = InitialiseIntegrals(splitter);
@@ -196,10 +196,10 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
 Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) {
   const Parton_List * spectators = splitter->GetSpectators();
   double t = p_config->T(), tstart = t, t0 = p_config->T0();
-  msg_Out()<<METHOD<<" starts for t = "<<t<<", sum = "<<sum<<"\n";
+  //msg_Out()<<METHOD<<" starts for t = "<<t<<", sum = "<<sum<<"\n";
   while (t>t0) {
     t *= exp(log(ran->Get())/sum);
-    msg_Out()<<METHOD<<" for t = "<<t<<", sum = "<<sum<<"\n";
+    //msg_Out()<<METHOD<<" for t = "<<t<<", sum = "<<sum<<"\n";
     if (t<t0) return NULL;
     double disc = sum * ran->Get(), specsum;
     size_t i = 0;

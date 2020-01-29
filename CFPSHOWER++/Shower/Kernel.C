@@ -22,12 +22,12 @@ double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
   split.InitSplitting(msel);
   double I = (p_gauge->Charge() * p_sf->Integral(split) *
 	      p_gauge->OverEstimate(split));
-  //msg_Out()<<"   *** "<<METHOD<<"("<<GetSplit()<<" -->";
-  //for (size_t i=0;i<GetFlavs().size();i++)
-  //msg_Out()<<" "<<GetFlavs()[Tags()[i]]<<" ["<<Tags()[i]<<"]";
-  //msg_Out()<<"): SF = "<<p_sf->Integral(split)<<" * gauge = "
-  //	   <<(p_gauge->Charge() * p_gauge->OverEstimate(split))<<" = "<<I<<" for "
-  //	   <<"Q2/t0 = "<<split.Q2()<<"/"<<split.tcut()<<".\n";
+  // msg_Out()<<"   *** "<<METHOD<<"("<<GetSplit()<<" -->";
+  // for (size_t i=0;i<GetFlavs().size();i++)
+  //   msg_Out()<<" "<<GetFlavs()[Tags()[i]]<<" ["<<Tags()[i]<<"]";
+  // msg_Out()<<"): SF( = "<<p_sf->Integral(split)<<") * gauge( = "
+  // 	   <<(p_gauge->Charge() * p_gauge->OverEstimate(split))<<") = "<<I<<" for "
+  // 	   <<"Q2/t0 = "<<split.Q2()<<"/"<<split.tcut()<<" (enhance = "<<m_enhance<<").\n";
   return m_enhance * I/(2.*M_PI);
 }
 
@@ -54,13 +54,13 @@ bool Kernel::Generate(Splitting & split,const Mass_Selector * msel,
     split.SetWeight(MakeWeight(split,overfac));
     if ((*split.GetWeight())()>=ran->Get()) {
       split.GetSplitter()->AddWeight(split,true);
-      msg_Out()<<"   *** "<<METHOD
-	       <<" success with weight = "<<(*split.GetWeight())()<<", too small.\n";
+      // msg_Out()<<"   *** "<<METHOD
+      // 	       <<" success with weight = "<<(*split.GetWeight())()<<", too small.\n";
       return true;
     }
     else {
-      msg_Out()<<"   *** "<<METHOD
-	       <<" rejected with weight = "<<(*split.GetWeight())()<<", too small.\n";
+      // msg_Out()<<"   *** "<<METHOD
+      // 	       <<" rejected with weight = "<<(*split.GetWeight())()<<", too small.\n";
       split.GetSplitter()->AddWeight(split,false);
       return false;
     }
@@ -95,11 +95,11 @@ Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
     if (weight>=0.) over = realover;
     else            over = -realover;
   }
-  msg_Out()<<METHOD<<": "<<(p_gauge->Charge() * (*p_gauge)(split))<<"(Col) * "
-  	   <<SF<<"(SF, z = "<<split.z()<<") * "
-  	   <<p_sf->Jacobean(split)<<"(J) / "
-  	   <<"over = "<<p_sf->OverEstimate(split)
-  	   <<" -> "<<weight<<"/"<<over<<".\n";
+  // msg_Out()<<METHOD<<": "<<(p_gauge->Charge() * (*p_gauge)(split))<<"(Col) * "
+  // 	   <<SF<<"(SF, z = "<<split.z()<<") * "
+  // 	   <<p_sf->Jacobean(split)<<"(J) / "
+  // 	   <<"over = "<<p_sf->OverEstimate(split)
+  // 	   <<" -> "<<weight<<"/"<<over<<".\n";
   return new Weight(weight,over,m_enhance*realover);
 }
 
@@ -153,31 +153,3 @@ void Getter<Kernel,Kernel_Info,Kernel>::PrintInfo(ostream &str,const size_t widt
 {
   str<<"Splitting Kernel";
 }
-
-
-
-
-
-//msg_Out()<<"   * rejected (t = "<<split.t()<<", no phase space for "
-//	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-//	     <<"Q^2 = "<<split.Q2()<<").\n";
-//msg_Out()<<"   * no colours for (t = "<<split.t()<<", no phase space for "
-//	     <<p_sf->Name()<<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-//	     <<"Q^2 = "<<split.Q2()<<").\n";
-//msg_Out()<<"   * weight = "<<(p_gauge->Charge()*(*p_gauge)(split))<<"(Col)"
-//	     <<" * "<<(*p_sf)(split)<<"(SF) * "<<p_sf->Jacobean(split)<<"(J) "
-//	     <<"= "<<((*split.GetWeight())())<<"\n";
-//msg_Out()<<"   * add acceptance weight "
-//       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
-//       <<"eta = "<<split.eta()<<") "
-//       <<"from "<<(*split.GetWeight())<<" = "
-//	       <<split.GetWeight()->Accept()<<"\n";
-//msg_Out()<<"   * add rejection weight "
-//       <<"(t = "<<split.t()<<", zi = "<<split.zi()<<", "
-//       <<"eta = "<<split.eta()<<") "
-//       <<"from "<<(*split.GetWeight())<<" = "
-//       <<split.GetWeight()->Reject()<<"\n";
-//msg_Out()<<"   * "<<METHOD<<" no kinematics for (t = "<<split.t()<<", "
-//	   <<"no phase space for "<<p_sf->Name()
-//	   <<"(F = "<<m_flavs[1]<<", swap = "<<m_swapped<<", "
-//	   <<"Q^2 = "<<split.Q2()<<").\n";

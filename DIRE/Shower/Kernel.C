@@ -79,9 +79,9 @@ Weight Kernel::GetWeight
   double f(p_gf->Value(s)*lf*jac);
   double h(w?w->m_h:p_gf->Estimate(s)*p_lf->Estimate(s));
   double g(dabs(w?w->m_f:f)<h?(f>=0.0?h:-h):o*f);
-  msg_Out()<<METHOD<<"("<<p_gf->Value(s)<<"(Col) * "
-  	   <<lf<<"(SF, z = "<<s.m_z<<") * "
-  	   <<jac<<"(J) / over = "<<p_lf->Estimate(s)<<" -> "<<f<<"/"<<g<<".\n";
+  // msg_Out()<<METHOD<<"("<<p_gf->Value(s)<<"(Col) * "
+  // 	   <<lf<<"(SF, z = "<<s.m_z<<") * "
+  // 	   <<jac<<"(J) / over = "<<p_lf->Estimate(s)<<" -> "<<f<<"/"<<g<<".\n";
   return Weight(f,g,m_ef*h);
 }
 
@@ -96,12 +96,12 @@ bool Kernel::GeneratePoint(Splitting &s) const
 double Kernel::Integral(Splitting &s) const
 {
   if (!p_lf->SetLimits(s)) return false;
-  //msg_Out()<<METHOD<<"("<<p_lf->Flav(0)<<" ->";
-  //for (size_t i=1;i<p_lf->Flavs().size();i++) msg_Out()<<" "<<p_lf->Flav(i);
-  //msg_Out()<<"): SF = "<<p_lf->Integral(s)<<" * "
-  //	   <<"gauge = "<<p_gf->Estimate(s)<<" * ef = "<<m_ef<<") = "
-  //	   <<m_ef*p_lf->Integral(s)*p_gf->Estimate(s)
-  //	   <<" for Q2/t0 = "<<s.m_Q2<<"/"<<s.m_t0<<".\n";
+  // msg_Out()<<METHOD<<"("<<p_lf->Flav(0)<<" ->";
+  // for (size_t i=1;i<p_lf->Flavs().size();i++) msg_Out()<<" "<<p_lf->Flav(i);
+  // msg_Out()<<"): SF( = "<<p_lf->Integral(s)<<") * "
+  // 	   <<"gauge( = "<<p_gf->Estimate(s)<<") = "
+  // 	   <<(p_lf->Integral(s)*p_gf->Estimate(s))
+  // 	   <<" for Q2/t0 = "<<s.m_Q2<<"/"<<s.m_t0<<" (ef = "<<m_ef<<").\n";
   return m_ef*p_lf->Integral(s)*p_gf->Estimate(s);
 }
 

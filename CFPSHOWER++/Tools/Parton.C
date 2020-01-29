@@ -53,10 +53,10 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
     brwt.m_t              = split.t();
     brwt.m_weight        *= weight;
     wit->second.push_back(brwt);
-    msg_Out()<<"--- "<<METHOD<<"(flav = "<<m_flav<<", t = "<<split.t()<<"): "
-	     <<weight<<" --> "<<brwt.m_weight<<"\n"
-	     <<"--- from: "<<(*split.GetWeight())<<"\n"
-	     <<"------------------------------------------------------------------\n";
+    // msg_Out()<<"--- "<<METHOD<<"(flav = "<<m_flav<<", t = "<<split.t()<<"): "
+    // 	     <<weight<<" --> "<<brwt.m_weight<<"\n"
+    // 	     <<"--- from: "<<(*split.GetWeight())<<"\n"
+    // 	     <<"------------------------------------------------------------------\n";
   }
 }
 

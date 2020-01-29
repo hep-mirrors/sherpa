@@ -57,8 +57,8 @@ bool QQQQ::SetColours(Splitting & split) {
     m_colors[1] = Color(newcol,0);
     m_colors[2] = Color(0,oldcol);
   }
-  Flavour splitter     = split.GetKernel()->GetSplit();
-  Flavour_Vector flavs = split.GetKernel()->GetFlavs();
+  //Flavour splitter     = split.GetKernel()->GetSplit();
+  //Flavour_Vector flavs = split.GetKernel()->GetFlavs();
   //msg_Out()<<"   *** "<<METHOD
   //	   <<"("<<splitter<<" -> "
   //	   <<flavs[0]<<" ("<<m_colors[0]<<") "
