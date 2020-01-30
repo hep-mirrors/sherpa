@@ -194,6 +194,7 @@ Recola_Virtual::Recola_Virtual(const Process_Info& pi,
   m_boqcd(pi.m_maxcpl[0]-(pi.m_fi.m_nloqcdtype==nlo_type::loop)),
   p_iop(Recola_Interface::UseIopInEWapprox()?new Ioperator(flavs,true):NULL)
 {
+  m_providespoles=false;
   m_fixedIRscale=true;
 
   m_IRscale=Recola_Interface::IRScale();

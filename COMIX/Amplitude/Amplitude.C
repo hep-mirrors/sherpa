@@ -56,6 +56,7 @@ Amplitude::Amplitude():
   p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
   p_dinfo->SetDRMode(0);
   m_sccmur=GetParameter<int>("USR_WGT_MODE");
+  m_murcoeffvirt=GetParameter<int>("NLO_MUR_COEFFICIENT_FROM_VIRTUAL");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
 }
@@ -1451,14 +1452,21 @@ bool Amplitude::EvaluateAll()
 		     <<(e1p/e1l-1.0)<<".\n";
       }
       csum+=cw*asf*p_loop->ME_Finite();
-      if (m_sccmur) {
-	double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2);
-	m_cmur[0]+=cw*asf*(p_loop->ME_E1()+m_maxcpl[0]/2*b0);
-	m_cmur[1]+=cw*asf*p_loop->ME_E2();
+      if (m_murcoeffvirt && p_loop->ProvidesPoles()) {
+        if (m_sccmur) {
+          double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2.);
+          m_cmur[0]+=cw*asf*(p_loop->ME_E1()+m_maxcpl[0]/2.*b0);
+          m_cmur[1]+=cw*asf*p_loop->ME_E2();
+        }
+        else {
+          m_cmur[0]+=cw*asf*p_loop->ScaleDependenceCoefficient(1);
+          m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
+        }
       }
       else {
-	m_cmur[0]+=cw*asf*p_loop->ScaleDependenceCoefficient(1);
-	m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
+        double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2.);
+        m_cmur[0]=cw*asf*m_maxcpl[0]/2.*b0;
+        m_cmur[1]=0.;
       }
     }
     if ((p_dinfo->Mode()&18) && !(p_dinfo->Mode()&4)) m_born=m_res=0.0;

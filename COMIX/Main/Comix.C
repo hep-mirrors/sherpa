@@ -209,6 +209,8 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
   rpa->gen.SetVariable("USR_WGT_MODE",
 		       ToString(read.GetValue("USR_WGT_MODE",1)));
+  rpa->gen.SetVariable("NLO_MUR_COEFFICIENT_FROM_VIRTUAL",
+		       ToString(read.GetValue("NLO_MUR_COEFFICIENT_FROM_VIRTUAL",1)));
   rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
 		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
   rpa->gen.SetVariable("NLO_SMEAR_POWER",

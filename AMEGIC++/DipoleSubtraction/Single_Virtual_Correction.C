@@ -104,6 +104,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_force_init=reader.GetValue("LOOP_ME_INIT",0);
   m_checkloopmap=reader.GetValue("CHECK_LOOP_MAP",0);
   m_sccmur=reader.GetValue("USR_WGT_MODE",1);
+  m_murcoeffvirt=reader.GetValue<int>("NLO_MUR_COEFFICIENT_FROM_VIRTUAL",1);
   m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
   m_imode=reader.GetValue<int>("NLO_IMODE",7);
 
@@ -507,39 +508,62 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       (m_bvimode&4)) {
     msg_Debugging()<<p_loopme->Mode()<<std::endl;
     msg_Debugging()<<p_kpterms<<" "<<p_dipole<<std::endl;
+    // virtual me2 is supposed to return local nlo kfactor to born
     if (p_loopme->Mode()==0) {
       lme = m_lastb*p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
-      if (m_sccmur) {
-        double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[0]);
-        double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[1]);
-        m_cmur[0]+=e1+(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
-        m_cmur[1]+=e2;
+      if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+        if (m_sccmur) {
+          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[0]);
+          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[1]);
+          m_cmur[0]+=e1+(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+          m_cmur[1]+=e2;
+        }
+        else {
+          m_cmur[0]+=m_lastb*p_partner->KPTerms()->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(1);
+          m_cmur[1]+=m_lastb*p_partner->KPTerms()->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
-        m_cmur[0]+=m_lastb*p_partner->KPTerms()->Coupling()*
-          p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=m_lastb*p_partner->KPTerms()->Coupling()*
-          p_loopme->ScaleDependenceCoefficient(2);
+        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[1]=0.;
       }
     }
+    // virtual me2 is returning full Re(M_B M_V^*)
     else if (p_loopme->Mode()==1) {
       lme = p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
-      if (m_sccmur) {
-        double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->p_kpterms->Coupling():-m_cmur[0]);
-        double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->p_kpterms->Coupling():-m_cmur[1]);
-        m_cmur[0]+=e1+(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->KPTerms()->Coupling();
-        m_cmur[1]+=e2;
+      if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+        if (m_sccmur) {
+          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->p_kpterms->Coupling():-m_cmur[0]);
+          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->p_kpterms->Coupling():-m_cmur[1]);
+          m_cmur[0]+=e1+(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->KPTerms()->Coupling();
+          m_cmur[1]+=e2;
+        }
+        else {
+          m_cmur[0]+=p_partner->KPTerms()->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(1);
+          m_cmur[1]+=p_partner->KPTerms()->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
-        m_cmur[0]+=p_partner->KPTerms()->Coupling()*
-          p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=p_partner->KPTerms()->Coupling()*
-          p_loopme->ScaleDependenceCoefficient(2);
+        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[1]=0.;
       }
     }
+    // loop ME already contains I
     else if (p_loopme->Mode()==2) {
       // loop ME already contains I
       lme = m_lastb*p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[1]=0.;
+    }
+    // loop ME already contains I and is returning full Re(M_B M_V^*)+I
+    else if (p_loopme->Mode()==3) {
+      lme = p_kpterms->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[1]=0.;
     }
     else THROW(not_implemented,"Unknown mode");
   }
@@ -809,7 +833,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   double I=0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) &&
       (m_bvimode&2)) I=Calc_I(&mom.front());
-  m_x0=1.,m_x1=1.;
+  m_x0=1.;m_x1=1.;
   double eta0=1.,eta1=1.;
   double w=1.;
   if (m_flavs[0].Strong()) {
@@ -831,41 +855,63 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
       (m_bvimode&2)) Calc_KP(&mom.front(),m_x0,m_x1,eta0,eta1,w);
 
   double lme = 0.;
-  // virtual me2 is supposed to return local nlo kfactor to born
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) &&
       (m_bvimode&4)) {
+    // virtual me2 is supposed to return local nlo kfactor to born
     if (p_loopme->Mode()==0) {
       lme = p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_Finite();
-      if (m_sccmur) {
-      m_cmur[0]+=(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2())*
-	p_dsij[0][0]*p_kpterms->Coupling();
-      m_cmur[1]+=p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling();
+      if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+        if (m_sccmur) {
+          m_cmur[0]+=(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2())*
+                      p_dsij[0][0]*p_kpterms->Coupling();
+          m_cmur[1]+=p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling();
+        }
+        else {
+          m_cmur[0]+=p_dsij[0][0]*p_kpterms->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(1);
+          m_cmur[1]+=p_dsij[0][0]*p_kpterms->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
-      m_cmur[0]+=p_dsij[0][0]*p_kpterms->Coupling()*
-	p_loopme->ScaleDependenceCoefficient(1);
-      m_cmur[1]+=p_dsij[0][0]*p_kpterms->Coupling()*
-	p_loopme->ScaleDependenceCoefficient(2);
+        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[1]=0.;
       }
     }
+    // virtual me2 is returning full Re(M_B M_V^*)
     else if (p_loopme->Mode()==1) {
       lme = p_kpterms->Coupling()*p_loopme->ME_Finite();
-      if (m_sccmur) {
-      m_cmur[0]+=p_kpterms->Coupling()*
-	(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2());
-      m_cmur[1]+=p_kpterms->Coupling()*p_loopme->ME_E2();
+      if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+        if (m_sccmur) {
+          m_cmur[0]+=(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0])*
+                      p_kpterms->Coupling();
+          m_cmur[1]+=p_loopme->ME_E2()*p_kpterms->Coupling();
+        }
+        else {
+          m_cmur[0]+=p_kpterms->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(1);
+          m_cmur[1]+=p_kpterms->Coupling()*
+                      p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
-      m_cmur[0]+=p_kpterms->Coupling()*
-	p_loopme->ScaleDependenceCoefficient(1);
-      m_cmur[1]+=p_kpterms->Coupling()*
-	p_loopme->ScaleDependenceCoefficient(2);
+        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[1]=0.;
       }
     }
+    // loop ME already contains I,
     else if (p_loopme->Mode()==2) {
-      // loop ME already contains I
-      I=0;
+      I=0.;
       lme = p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[1]=0.;
+    }
+    // loop ME already contains I and is returning full Re(M_B M_V^*)+I
+    else if (p_loopme->Mode()==3) {
+      I=0.;
+      lme = p_kpterms->Coupling()*p_loopme->ME_Finite();
+      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[1]=0.;
     }
     else THROW(not_implemented,"Unknown mode");
   }

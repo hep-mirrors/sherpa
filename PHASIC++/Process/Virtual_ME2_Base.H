@@ -17,7 +17,7 @@ namespace PHASIC {
     double m_mur2;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
-    bool m_fixedIRscale;
+    bool m_providespoles, m_fixedIRscale;
     double m_IRscale, m_UVscale;
     std::vector<double> m_asscontribs;
 
@@ -32,17 +32,18 @@ namespace PHASIC {
     virtual double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     virtual double ScaleDependenceCoefficient(const int i);
 
-    inline double ME_Finite() { return m_res.GetFinite(); }
-    inline double ME_E1() { return m_res.GetIR(); }
-    inline double ME_E2() { return m_res.GetIR2(); }
-    inline double ME_Born() { return m_born; }
+    inline double ME_Finite() const { return m_res.GetFinite(); }
+    inline double ME_E1() const { return m_res.GetIR(); }
+    inline double ME_E2() const { return m_res.GetIR2(); }
+    inline double ME_Born() const { return m_born; }
 
-    inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
-    inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
+    inline size_t ME_AssContribs_Size() const { return m_asscontribs.size(); }
+    inline double ME_AssContribs(size_t i) const { return m_asscontribs[i]; }
 
-    inline bool fixedIRscale() { return m_fixedIRscale; }
-    inline double IRscale() { return m_IRscale; }
-    inline double UVscale() { return m_UVscale; }
+    inline bool ProvidesPoles() const { return m_providespoles; }
+    inline bool fixedIRscale() const  { return m_fixedIRscale; }
+    inline double IRscale() const { return m_IRscale; }
+    inline double UVscale() const { return m_UVscale; }
     
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
     inline void SetNorm(const double& norm) { m_norm=norm; }
