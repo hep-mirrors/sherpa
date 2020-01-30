@@ -51,10 +51,10 @@ namespace PHASIC {
     EWSudakov_Amplitudes(Process_Base*,
                          const std::set<EWSudakov_Log_Type>& _activecoeffs);
     ~EWSudakov_Amplitudes();
-    Leg_Kfcode_Map GetLegMapFromAmpl(std::vector<int> spincombination);
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
     ATOOLS::Cluster_Amplitude&
     BaseAmplitude(std::vector<int> spincombination);
+    Leg_Kfcode_Map GoldstoneBosonReplacements(std::vector<int> spincombination);
     ATOOLS::Cluster_Amplitude& SU2TransformedAmplitude(const Leg_Kfcode_Map&);
     std::vector<size_t>& LegPermutation(const Leg_Kfcode_Map&);
 
