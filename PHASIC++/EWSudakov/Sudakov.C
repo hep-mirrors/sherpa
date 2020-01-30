@@ -440,9 +440,11 @@ Coeff_Value Sudakov::lsYukCoeff()
 
 Coeff_Value Sudakov::lsPRCoeff()
 {
-  Coeff_Value coeff{0.0};
-  // auto deno = TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
-  // 					m_current_spincombination, &m_comixinterface);
+  Coeff_Value coeff {0.0};
+  auto deno = TransformedAmplitudeValue(
+      m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
+      m_current_spincombination,
+      &m_comixinterface);
   /// For the time being we only set this to S. It may however be
   /// useful to have a "running" and a "fixed" setting for users.
   const double ewscale2(m_ampls.MandelstamS());
@@ -450,10 +452,10 @@ Coeff_Value Sudakov::lsPRCoeff()
   m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(ewscale2));
  
   const auto he_me = 
-    TransformedAmplitudeValue(m_ampls.GetLegMapFromAmpl(m_current_spincombination),
+    TransformedAmplitudeValue(m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
 	 		     m_current_spincombination, &m_comixinterface_he);
   
-  coeff = (he_me/m_current_me_value - 1.0)*4.*M_PI/log(ewscale2/m_ewgroupconsts.m_mw2)/m_ewgroupconsts.m_aew;
+  coeff = (he_me/deno - 1.0)*4.*M_PI/log(ewscale2/m_ewgroupconsts.m_mw2)/m_ewgroupconsts.m_aew;
   return coeff;
 }
 
@@ -462,9 +464,11 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
                                    const std::vector<int>& spincombination,
                                    const Comix_Interface* interface)
 {
-  auto amplit = m_transformedspinampls.find(legs);
-  if (amplit == m_transformedspinampls.end()) {
+  //auto amplit = m_transformedspinampls.find(legs);
+  //m_transformedspinampls.erase(legs);
+  //if (amplit == m_transformedspinampls.end()) {
     auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+    PRINT_VAR(transformedampl);
     /// TODO: Make the following a bit prettier. At the moment
     /// this is simply a flag to catch that the momentum
     /// stretcher has failed. May want to have a enum
@@ -474,8 +478,8 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
     }
     (interface ? *interface : m_comixinterface)
         .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
-    amplit = m_transformedspinampls.find(legs);
-  }
+    auto amplit = m_transformedspinampls.find(legs);
+  //}
   auto& legpermutation = m_ampls.LegPermutation(legs);
   std::vector<int> transformedspincombination;
   for (const auto& idx : legpermutation) {
