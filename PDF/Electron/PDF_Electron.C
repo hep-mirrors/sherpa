@@ -109,7 +109,7 @@ DECLARE_PDF_GETTER(PDFE_Getter);
 PDF_Base *PDFE_Getter::operator()
   (const Parameter_Type &args) const
 {
-  if (args.m_bunch.Kfcode()!=kf_e) return NULL;
+  if (args.m_bunch.Kfcode()!=kf_e && args.m_bunch.Kfcode()!=kf_mu) return NULL;
   return new PDF_Electron(args.m_bunch,args.m_scheme,args.m_order);
 }
 

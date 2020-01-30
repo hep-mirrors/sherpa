@@ -3,25 +3,27 @@ BEAM_ENERGIES: 6500
 
 EVENTS: 0
 MI_HANDLER: None
-ME_GENERATORS: [Comix, Amegic, Dummy]
+ME_GENERATORS: [Comix, Amegic]
 OL_PARAMETERS:
   preset: 2
 SCALES: SMETS
 PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
-PSI_IT_BY_NODE: 10
-PSI_STOPOPT: 5
+PSI:
+  IT_BY_NODE: 10
+  STOPOPT: 5
 
 PROCESSES:
-- Process: 93 93 -> 11 -12 93{4}
-  Order: {QCD: Any, EW: 2}
-  CKKW: 20
-  Loop_Generator: Dummy
-  2->2-4:
-    NLO_QCD_Mode: MC@NLO
-    ME_Generator: Amegic
-    RS_ME_Generator: Comix
-  2->6-8:
-    Max_N_Quarks: 4
-    Max_Epsilon: 0.01
+- 93 93 -> 11 -12 93{4}:
+    Order: {QCD: Any, EW: 2}
+    CKKW: 20
+    Loop_Generator: Dummy
+    2->2-4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+    2->6-8:
+      Max_N_Quarks: 4
+      Max_Epsilon: 0.01
 SELECTORS:
 - [Mass, 90, 91, 2.0, E_CMS]

@@ -20,6 +20,7 @@ nobase_dist_examples_DATA         =	\
 		FixedOrder_NLO/NTuples/Sherpa.Reweight.B-like.yaml \
 		FixedOrder_NLO/NTuples/Sherpa.R-like.yaml \
 		FixedOrder_NLO/NTuples/Sherpa.Reweight.R-like.yaml \
+		FixedOrder_NLO/MINLO/Sherpa.yaml \
 		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml \
 		V_plus_Jets/LHC_WJets/Sherpa.yaml \
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
@@ -62,8 +63,8 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/p6new.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Virtual.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
-		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
-		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
+		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct-TTH \
+		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
@@ -78,4 +79,8 @@ nobase_dist_examples_DATA         =	\
 		UFO_MSSM/MSSM/parameters.py \
 		UFO_MSSM/MSSM/particles.py \
 		UFO_MSSM/MSSM/vertices.py \
-		UFO_MSSM/MSSM/write_param_card.py
+		UFO_MSSM/MSSM/write_param_card.py \
+		SingleTop_Channels/Sherpa.tj-t_channel.yaml \
+		SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml \
+		SingleTop_Channels/Sherpa.tj-s_channel.yaml \
+		SingleTop_Channels/Sherpa.tW.yaml

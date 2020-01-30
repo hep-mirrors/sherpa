@@ -38,6 +38,23 @@ MI_Process_Group::~MI_Process_Group() {
   m_me2s.clear();
 }
 
+double MI_Process_Group::
+operator()(const double & shat,const double & that,const double & uhat) {
+  PreCalculate(shat,that,uhat);
+  double tot  = 0., xs;
+  for (list<MI_Process * >::iterator mit=m_processes.begin();
+       mit!=m_processes.end();mit++) {
+    tot += xs = ( p_pdf[0]->GetXPDF((*mit)->Flav(0)) *
+		  p_pdf[1]->GetXPDF((*mit)->Flav(1)) ) * (**mit)();
+  }
+  //msg_Out()<<"Add dSigma("<<Name()<<", scale = "<<sqrt(m_scale)<<") = "
+  //	   <<m_pref/sqr(shat)<<" * "<<Coupling(Scale(m_scale))<<" * "<<SoftCorrection(m_scale)<<" * "<<xs
+  //	   <<" --> tot = "
+  //	   <<(m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale)) * tot<<"\n";
+  return m_lastxs =
+    m_pref/sqr(shat) * Coupling(Scale(m_scale)) * SoftCorrection(m_scale) * tot;
+}
+
 double MI_Process_Group::PreCalculate(const double & shat,const double & that,
 				      const double & uhat) {
   // Calculating the squared MEs depending on the Mandelstam variables.
@@ -119,17 +136,8 @@ MI_GG_Processes::MI_GG_Processes() :
   }
 }
 
-double MI_GG_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  Flavour gluon(kf_gluon);
-  double pdf  = p_pdf[0]->GetXPDF(gluon)*p_pdf[1]->GetXPDF(gluon);
-  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
-  double tot  = 0.;
-  for (list<MI_Process * >::iterator mit=m_processes.begin();
-       mit!=m_processes.end();mit++) tot += (**mit)();
-  return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
+double MI_GG_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
 }
 
 MI_Process * MI_GG_Processes::SelectProcess() {
@@ -161,63 +169,52 @@ MI_QQB_Processes::MI_QQB_Processes():
     *q1q1bar2q2q2bar(new q1q1bar_q2q2bar());
   m_me2s.push_back(qqbar2qqbar);
   m_me2s.push_back(qqbar2gg);
-  // a bit tricky - want to get nf-1 copies of light qqbar -> q'q'bar
-  for (size_t i=2;i<6;i++) {
-    if (Flavour(i).Mass()>0.) continue;  
-    m_me2s.push_back(q1q1bar2q2q2bar);
-  }
+  m_me2s.push_back(q1q1bar2q2q2bar);
 
   vector<Flavour> flavs;
   flavs.resize(4);
-  for (size_t i=1;i<6;i++) {
+  for (size_t i=2;i<3;i++) {
     if (Flavour(i).Mass()>0.) continue;
+    // q qbar -> q qbar
     flavs[0] = flavs[2] = Flavour(i);
     flavs[1] = flavs[3] = flavs[0].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2qqbar);
-    flavs[2] = flavs[3] = Flavour(kf_gluon);
-    m_processes.push_back(new MI_Process(flavs));
-    m_processes.back()->SetME2(qqbar2gg);
-    flavs[1] = flavs[3] = Flavour(i);
-    flavs[0] = flavs[2] = flavs[0].Bar();
+    // qbar q -> qbar q
+    for (size_t j=0;j<4;j++) flavs[j] = flavs[j].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2qqbar);
+    // q qbar -> gg
     flavs[2] = flavs[3] = Flavour(kf_gluon);
+    flavs[0] = Flavour(i);
+    flavs[1] = flavs[0].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2gg);
-    for (size_t j=1;j<6;j++) {
+    // qbar q -> g g
+    for (size_t j=0;j<2;j++) flavs[j] = flavs[j].Bar();
+    m_processes.push_back(new MI_Process(flavs));
+    m_processes.back()->SetME2(qqbar2gg);
+    // now loop over all flavours, where i and j are idfferent
+    for (size_t j=1;j<2;j++) {
       if (i==j || Flavour(j).Mass()>0.) continue;
+      // q1 q1bar -> q2 q2bar
       flavs[0] = Flavour(i);
       flavs[1] = flavs[0].Bar();
       flavs[2] = Flavour(j);
       flavs[3] = flavs[2].Bar();
       m_processes.push_back(new MI_Process(flavs));
       m_processes.back()->SetME2(q1q1bar2q2q2bar);
-      flavs[0] = Flavour(i).Bar();
-      flavs[1] = flavs[0].Bar();
-      flavs[2] = Flavour(j).Bar();
-      flavs[3] = flavs[2].Bar();
+      // q1bar q1 -> q2bar q2
+      for (size_t k=0;k<4;k++) flavs[k] = flavs[k].Bar();
       m_processes.push_back(new MI_Process(flavs));
       m_processes.back()->SetME2(q1q1bar2q2q2bar);
     }
   }
 }
 
-double MI_QQB_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double tot  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
-  double pdf  = 0;
-  for (size_t i=1;i<6;i++) {
-    Flavour flav = Flavour(i);
-    if (flav.Mass()>0.) continue;
-    pdf += p_pdf[0]->GetXPDF(flav)*p_pdf[1]->GetXPDF(flav.Bar());
-    pdf += p_pdf[0]->GetXPDF(flav.Bar())*p_pdf[1]->GetXPDF(flav);
-  }
-  return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
+double MI_QQB_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // qq and qbar qbar initiated processes
@@ -241,19 +238,8 @@ MI_QQ_Processes::MI_QQ_Processes():
   }
 }
 
-double MI_QQ_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double tot  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
-  double pdf  = 0;
-  for (size_t i=1;i<6;i++) {
-    Flavour flav = Flavour(i);
-    if (flav.Mass()>0.) continue;
-    pdf += p_pdf[0]->GetXPDF(flav)*p_pdf[1]->GetXPDF(flav);
-    pdf += p_pdf[0]->GetXPDF(flav.Bar())*p_pdf[1]->GetXPDF(flav.Bar());
-  }
-  return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
+double MI_QQ_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
 }
 
 MI_Process * MI_QQ_Processes::SelectProcess() {
@@ -305,6 +291,11 @@ MI_QG_Processes::MI_QG_Processes():
   }
 }
 
+double MI_QG_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+}
+
+/*
 double MI_QG_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
@@ -322,6 +313,7 @@ operator()(const double & shat,const double & that,const double & uhat) {
   }
   return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
 }
+*/
 
 MI_Process * MI_QG_Processes::SelectProcess() {
   double pdf = 0.;
@@ -375,7 +367,11 @@ MI_Q1Q2_Processes::MI_Q1Q2_Processes():
   }
 }
 
-double MI_Q1Q2_Processes::
+double MI_Q1Q2_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alphaS)(m_muR_fac*Scale(m_scale)));
+}
+
+/*double MI_Q1Q2_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double tot  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
@@ -400,6 +396,7 @@ operator()(const double & shat,const double & that,const double & uhat) {
   }
   return m_lastxs = pref*pdf*cpl*tot*SoftCorrection(m_scale);
 }
+*/
 
 MI_Process * MI_Q1Q2_Processes::SelectProcess() {
   double pdf = 0.;
@@ -451,7 +448,12 @@ MI_QG_QGamma_Processes::MI_QG_QGamma_Processes() :
   }
 }
   
-double MI_QG_QGamma_Processes::
+double MI_QG_QGamma_Processes::Coupling(const double & scale) const {
+  return ( (*p_alphaS)(m_muR_fac*Scale(m_scale)) *
+	   (*p_alpha)(Scale(m_scale)) );
+}
+
+/*double MI_QG_QGamma_Processes::
 operator()(const double & shat,const double & that,const double & uhat) {
   double me2  = PreCalculate(shat,that,uhat);
   double pref = m_pref/sqr(shat);
@@ -469,6 +471,7 @@ operator()(const double & shat,const double & that,const double & uhat) {
   }
   return m_lastxs = pref*pdf*cpl*me2*SoftCorrection(m_scale);
 }
+*/
 
 MI_Process * MI_QG_QGamma_Processes::SelectProcess() {
   double pdf = 0.;
@@ -515,20 +518,8 @@ MI_QQ_GGamma_Processes::MI_QQ_GGamma_Processes() :
   }
 }
 
-double MI_QQ_GGamma_Processes::
-operator()(const double & shat,const double & that,const double & uhat) {
-  double me2  = PreCalculate(shat,that,uhat);
-  double pref = m_pref/sqr(shat);
-  double cpl  = (*p_alphaS)(m_muR_fac*Scale(m_scale)) * (*p_alpha)(Scale(m_scale));
-  double pdf  = 0;
-  for (size_t i=1;i<6;i++) {
-    Flavour quark = Flavour(i);
-    if (quark.Mass()>1.e-6) continue;
-    double  eq2  = sqr(quark.Charge());
-    pdf += (p_pdf[0]->GetXPDF(quark)*p_pdf[1]->GetXPDF(quark.Bar()) +
-	    p_pdf[0]->GetXPDF(quark.Bar())*p_pdf[1]->GetXPDF(quark)) * eq2;
-  }
-  return m_lastxs = pref*pdf*cpl*me2*SoftCorrection(m_scale);
+double MI_QQ_GGamma_Processes::Coupling(const double & scale) const {
+  return sqr((*p_alpha)(Scale(m_scale)));
 }
 
 MI_Process * MI_QQ_GGamma_Processes::SelectProcess() {

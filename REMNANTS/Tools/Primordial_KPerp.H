@@ -9,11 +9,12 @@
 namespace REMNANTS {
   struct prim_kperp_form {
     enum code {
-      undefined      = 0,
+      none           = 0,
       gauss          = 1,
       gauss_limited  = 2,
       dipole         = 3,
       dipole_limited = 4,
+      undefined      = 99
     };
   };
   

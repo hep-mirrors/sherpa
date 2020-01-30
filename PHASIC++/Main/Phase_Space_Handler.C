@@ -62,7 +62,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   const double minalpha{ s["INT_MINALPHA"].Get<double>() };
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
-  m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
+  m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -328,7 +328,13 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (p_isrhandler->On()>0) { 
+      if (p_isrhandler->On()>0) {
+	if (m_nin==2 && m_nout==1 && p_flavours[2].Kfcode()==999) {
+	  if (p_active->Process()->SPrimeMin()>0.) 
+	    m_isrspkey[0] = p_active->Process()->SPrimeMin();
+	  if (p_active->Process()->SPrimeMax()>0.)
+	    m_isrspkey[1] = p_active->Process()->SPrimeMax();
+	}
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -337,8 +343,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 		   p_active->Process()->Flavours()[1],ran->Get())?2.0:1.0;
     if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
-			     p_lab,process->Process()->
-			     Selected()->Flavours())) {
+			       p_lab,process->Process()->
+			       Selected()->Flavours())) {
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
       p_fsrchannels->NoGenerate();
@@ -364,8 +370,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   for (size_t i(0);i<p_lab.size();++i) if (p_lab[i].Nan()) return 0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
-    CalculatePS();
     CalculateME();
+    CalculatePS();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
@@ -436,7 +442,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
 {
-  if (m_nin!=2) return;
+  if (m_nin != 2 || (m_nout == 1 && p_flavours[2].Kfcode() == 999))
+    return;
+  int swap(p_isrhandler->Swap());
   Vec4D sum;
   size_t imax(0);
   double emax(0.0);
@@ -454,7 +462,7 @@ void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p)
   double E0[2]={-p[0][0],-p[1][0]};
   double E1[2]={p2[0]/E0[0],-(Vec3D(p[0])*Vec3D(p[1]))/E0[1]};
   double e1tot=E1[0]+E1[1];
-  double E2[2]={p2[0]*sqr(p_flavours[0].Mass())/(2*pow(E0[0],3)),
+  double E2[2]={p2[0]*sqr(p_flavours[swap].Mass())/(2*pow(E0[0],3)),
 		(p2[0]-sqr(E1[1]))/(2*E0[1])};
   double e2tot=E2[0]+E2[1];
   double eps1=-e0tot/e1tot;
@@ -462,7 +470,7 @@ void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p)
   p[1]=-p[1]+p[0]*eps;
   p[0]=-p[0]-p[0]*eps;
   for (int i(0);i<2;++i) {
-    if (p_flavours[i].Mass()==0.0 && p[i][1]==0.0 && p[i][2]==0.0) 
+    if (p_flavours[(i+swap)%2].Mass()==0.0 && p[i][1]==0.0 && p[i][2]==0.0) 
       p[i][0]=-std::abs(p[i][3]);
     else
       p[i][0]=E0[i]+E1[i]*eps+E2[i]*sqr(eps);
@@ -607,10 +615,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     Flavour_Vector fl_f(info->m_fi.GetExternal());
     Flavour_Vector fl_tot(fl_i);
     fl_tot.insert(fl_tot.end(),fl_f.begin(),fl_f.end());
-    //
     Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front(),ms);
     TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
-    //
     delete TestCh;
   }
 }
@@ -696,6 +702,7 @@ void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
 
     p_enhancehisto = new Histogram(1,enhancemin,enhancemax,nbins,"enhancehisto");
     p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
+    p_enhancehisto->MPISync();
     p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
     p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
                                            p_enhancehisto->Xmin(),
@@ -772,6 +779,7 @@ void Phase_Space_Handler::Optimize()
   p_fsrchannels->Optimize(m_error);
   p_process->ResetMax(2);
   if (p_enhancehisto) {
+    p_enhancehisto_current->MPISync();
     for (int i(0);i<p_enhancehisto_current->Nbin()+2;++i)
       p_enhancehisto_current->SetBin(i,dabs(p_enhancehisto_current->Bin(i)));
     p_enhancehisto_current->Scale(1.0/p_enhancehisto_current->Integral());
@@ -836,11 +844,16 @@ bool Phase_Space_Handler::CreateIntegrators()
       if (!p_isrchannels->Initialize()) return false;
     }
   }
-  msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
-  if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
-  if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
-
+  if (msg_LevelIsTracking()) {
+    msg_Out()<<"Initialized Phase_Space_Integrator {\n\t";
+    if (p_beamchannels)
+      msg_Out()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+    if (p_isrchannels)
+      msg_Out()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+    if (p_fsrchannels)
+      msg_Out()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<";\n";
+    msg_Out()<<"}\n";
+  }
   return true;
 }
 

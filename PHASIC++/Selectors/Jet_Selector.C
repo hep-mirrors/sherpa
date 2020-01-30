@@ -64,7 +64,7 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_outjetkf(kf_none), p_jdef(NULL), p_siscplug(NULL)
 {
   DEBUG_FUNC("");
-  Scoped_Settings s{ key.m_settings };
+  auto s = key.m_settings["Jet_Selector"];
   s.DeclareVectorSettingsWithEmptyDefault({ "Input_Particles" });
 
   // input ptcls and output ID
@@ -295,8 +295,7 @@ void Jet_Selector::BuildCuts(Cut_Data * cuts)
   for (size_t i(0);i<m_sels.size();++i) m_sels[i]->BuildCuts(cuts);
 }
 
-DECLARE_ND_GETTER(Jet_Selector,"Jet_Selector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Jet_Selector,"Jet_Selector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
                               Jet_Selector>::operator()
@@ -309,21 +308,19 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"{\n"
-     <<w<<"  Type: Jet_Selector,\n"
-     <<w<<"  Input_Particles: [\"<kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\", ...],\n"
+  str<<"Jet_Selector:\n"
+     <<w<<"  Input_Particles: [\"<kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\", ...]\n"
      <<w<<"  Jet_Algorithm: {\n"
      <<w<<"    Type: <algorithm>, PT: <ptmin>, R: <dR>,\n"
      <<w<<"    # optional parameters:\n"
      <<w<<"    ETA: <etamax>, Y: <ymax>\n"
      <<w<<"    }\n"
-     <<w<<"  Indentify_As: [<kf>, \"[E/ET/PT><emin>[rel/abs]]\"],\n"
+     <<w<<"  Indentify_As: [<kf>, \"[E/ET/PT><emin>[rel/abs]]\"]\n"
      <<w<<"  NMin: <nmin>\n"
      <<w<<"  # optional parameters:\n"
-     <<w<<"  NMax: <nmax>,\n"
-     <<w<<"  Output_ID: <kf>,\n"
-     <<w<<"  Subselectors: [...]\n"
-     <<w<<"}";
+     <<w<<"  NMax: <nmax>\n"
+     <<w<<"  Output_ID: <kf>\n"
+     <<w<<"  Subselectors: [...]";
 }
 
 #else
@@ -347,8 +344,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_ND_GETTER(Jet_Selector,"Jet_Selector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Jet_Selector,"Jet_Selector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
                               Jet_Selector>::operator()
@@ -363,9 +359,8 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"Jet_Selector {\n"
-     <<w<<"  To use this selector Sherpa must be compiled with FastJet support.\n"
-     <<w<<"}";
+  str<<"Jet_Selector:\n"
+     <<w<<"  # NOTE: to use this selector Sherpa must be compiled with FastJet support";
 }
 
 #endif

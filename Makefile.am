@@ -20,6 +20,7 @@ SUBDIRS       = \
 		HADRONS++ \
 		PHOTONS++ \
 		REMNANTS \
+		RECONNECTIONS \
 		SHRiMPS \
 		SHERPA \
 		AddOns \

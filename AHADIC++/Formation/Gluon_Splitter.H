@@ -3,11 +3,12 @@
 
 #include "AHADIC++/Tools/Splitter_Base.H"
 
+
 namespace AHADIC {
   class Gluon_Splitter : public Splitter_Base {
   private:
-    double m_alpha, m_beta, m_gamma;
-    double m_arg, m_x, m_y;
+    int    m_mode;
+    double m_alpha, m_arg, m_x, m_y;
     
     long int  m_kin_fails{ 0 };
     
@@ -27,7 +28,8 @@ namespace AHADIC {
 
     void   Init(const bool & isgluon=true);
     double WeightFunction(const double & z,
-			  const double & zmin=0.,const double & zmax=1.);
+			  const double & zmin=0.,const double & zmax=1.,
+			  const unsigned int & cnt=0);
   };
 }
 

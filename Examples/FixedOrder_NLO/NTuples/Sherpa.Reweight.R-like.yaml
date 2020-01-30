@@ -21,30 +21,24 @@ EW_SCHEME: 0
 WIDTH_SCHEME: Fixed  # sin\theta_w -> 0.23
 DIPOLES: {ALPHA: 0.03}
 FINISH_OPTIMIZATION: false
-PARTICLE_DATA: {
-  13: {Massive: true},
+PARTICLE_DATA:
+  13: {Massive: true}
   15: {Massive: true}
-}
 PROCESSES:
-  - {
-    # The subtracted real emission piece
-    Process: 93 93 -> 90 91 93,
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: RS,
-    Integration_Error: 0.0275,
-    Order: {QCD: Any, EW: 2},
-    }
+# The subtracted real emission piece
+- 93 93 -> 90 91 93:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: RS
+    Integration_Error: 0.0275
+    Order: {QCD: Any, EW: 2}
 SELECTORS:
-  - {
-    Type: FastjetFinder,
-    Algorithm: antikt,
-    N: 1,
-    PTMin: 20,
-    ETMin: 0,
+- FastjetFinder:
+    Algorithm: antikt
+    N: 1
+    PTMin: 20
+    ETMin: 0
     DR: 0.4
-    }
-RIVET: {
-  -a: ATLAS_2012_I1083318,
-  USE_HEPMC_SHORT: 1,
+RIVET:
+  -a: ATLAS_2012_I1083318
+  USE_HEPMC_SHORT: 1
   IGNOREBEAMS: 1
-}

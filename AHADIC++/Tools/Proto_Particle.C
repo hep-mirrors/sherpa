@@ -9,14 +9,14 @@ std::set<Proto_Particle *> Proto_Particle::s_protos =
   std::set<Proto_Particle *>();
 
 Proto_Particle::Proto_Particle(const Proto_Particle & proto) :
-  m_flav(proto.m_flav), m_momentum(proto.m_momentum),
+  m_flav(proto.m_flav), m_momentum(proto.m_momentum), m_kt2max(proto.KT2_Max()),
   m_isleading(proto.m_isleading), m_isbeam(proto.m_isbeam)
 {
   s_protos.insert(this);
 }
 
 Proto_Particle::Proto_Particle(const ATOOLS::Particle & part) :
-  m_flav(part.Flav()), m_momentum(part.Momentum()),
+  m_flav(part.Flav()), m_momentum(part.Momentum()), m_kt2max(sqr(m_momentum[0])),
   m_isleading(false), m_isbeam(part.Info()=='B')
 {
   s_protos.insert(this);

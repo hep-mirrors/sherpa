@@ -51,7 +51,7 @@ namespace SHERPA {
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
         m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
-	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vborncpl, m_vaddname, m_vspecial;
+	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
       ATOOLS::Scoped_Settings m_selectors;
@@ -98,7 +98,7 @@ namespace SHERPA {
     ProcMap_Vector m_pmaps;
 
     void RegisterDefaults();
-    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&&);
+    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&);
 
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
@@ -130,14 +130,15 @@ namespace SHERPA {
                          const int &priority,
                          std::map<std::string,std::pair<int,Type> >&) const;
 
-    std::vector<PHASIC::Process_Base*> InitializeProcess
-    (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    std::vector<PHASIC::Process_Base*> InitializeProcess(
+        PHASIC::Process_Info, PHASIC::NLOTypeStringProcessMap_Map*&);
     std::vector<PHASIC::Process_Base*> InitializeSingleProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    void CheckInitialStateOrdering(const PHASIC::Process_Info&);
 
     void BuildProcesses();
     void ReadFinalStateMultiIndependentProcessSettings(
-      ATOOLS::Scoped_Settings, Single_Process_List_Args&);
+      const std::string& procname, ATOOLS::Scoped_Settings, Single_Process_List_Args&);
     void ReadFinalStateMultiSpecificProcessSettings(
       ATOOLS::Scoped_Settings,
       Single_Process_List_Args&,

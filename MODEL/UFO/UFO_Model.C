@@ -51,7 +51,7 @@ namespace UFO{
     SetSMMass(kf_u,0.005);
     SetSMMass(kf_s,0.2);
     SetSMMass(kf_c,1.42);
-    SetSMMass(kf_b,4.8);
+    SetSMMass(kf_b,4.92);
     SetSMMass(kf_t,173.21);
     SetSMMass(kf_e,0.000511);
     SetSMMass(kf_mu,.105);

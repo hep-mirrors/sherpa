@@ -20,15 +20,17 @@ libPhasicSelectors_la_SOURCES = \
                                 Decay_Selector.C \
                                 MinSelector.C \
                                 DressedParticleSelector.C \
+                                Fastjet_Selector_Base.C \
                                 Fastjet_Finder.C \
                                 Fastjet_Selector.C \
-				Fastjet_Veto.C
+                                Fastjet_Veto.C
 
 localinc_HEADERS      = \
                         Cut_Data.H \
                         Selector.H \
                         Combined_Selector.H \
-                        Jet_Finder.H
+                        Jet_Finder.H \
+                        Fastjet_Selector_Base.H
 
 libPhasicSelectors_la_LIBADD = \
                 @CONDITIONAL_FASTJETLIBS@

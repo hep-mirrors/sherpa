@@ -38,7 +38,7 @@ void Selector_Key::AddSelectorYAML(const std::string& yaml)
 {
   if (m_yaml.empty())
     m_yaml = "SELECTORS:";
-  m_yaml += "\n  - " + yaml;
+  m_yaml += "\n- " + yaml;
 }
 
 Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):

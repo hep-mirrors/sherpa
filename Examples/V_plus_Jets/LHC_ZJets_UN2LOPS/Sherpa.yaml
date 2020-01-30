@@ -23,16 +23,17 @@ NLO_BVI_MODE: 7
 SHOWER_GENERATOR: Dire
 
 PROCESSES:
-- Process: 93 93 -> 11 -11 93{1}
-  NLO_QCD_Mode: MC@NLO
-  Loop_Generator: BlackHat
-  ME_Generator: Amegic
-  PSI_ItMin: 25000
-  RS_PSI_ItMin: 100000
-  2->2:
-    Special: MapOff
-  KFactor: DYNNLO
-  Order: {QCD: Any, EW: 2}
+- 93 93 -> 11 -11 93{1}:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Loop_Generator: BlackHat
+    ME_Generator: Amegic
+    PSI_ItMin: 25000
+    RS_PSI_ItMin: 100000
+    2->2:
+      Special: MapOff
+    KFactor: DYNNLO
+    Order: {QCD: Any, EW: 2}
 
 SELECTORS:
 - [Mass, 90, 90, 60, 120]

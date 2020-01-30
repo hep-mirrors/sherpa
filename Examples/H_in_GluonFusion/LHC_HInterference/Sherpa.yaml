@@ -12,24 +12,25 @@ SCALES: VAR{Abs2(p[2]+p[3])}
 # physics parameters
 PARTICLE_DATA:
   4:  {Yukawa: 1.42}
-  5:  {Yukawa: 4.8}
+  5:  {Yukawa: 4.92}
   15: {Yukawa: 1.777}
 EW_SCHEME: 3
 RUN_MASS_BELOW_POLE: 1
 
 PROCESSES:
-- Process: 93 93 -> 22 22
-  NLO_QCD_Mode: Fixed_Order
-  Order: {QCD: Any, EW: 2}
-  Enable_MHV: 12
-  Loop_Generator: Higgs
-  Integrator: PS2
-  RS_Integrator: PS3
+- 93 93 -> 22 22:
+    NLO_Mode: Fixed_Order
+    Order: {QCD: Any, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
+    Enable_MHV: 12
+    Loop_Generator: Higgs
+    Integrator: PS2
+    RS_Integrator: PS3
 
 SELECTORS:
-- Type: HiggsFinder
-  PT1: 40
-  PT2: 30
-  Eta: 2.5
-  MassRange: [100, 150]
+- HiggsFinder:
+    PT1: 40
+    PT2: 30
+    Eta: 2.5
+    MassRange: [100, 150]
 - [IsolationCut, 22, 0.4, 2, 0.025]

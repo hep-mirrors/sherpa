@@ -527,8 +527,10 @@ Singlet *CS_Shower::TranslateAmplitude
 	}
     }
     if ((flow[0] && (*sit)->GetLeft()==NULL) ||
-	(flow[1] && (*sit)->GetRight()==NULL))
+	(flow[1] && (*sit)->GetRight()==NULL)) {
+      msg_Out()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
       THROW(fatal_error,"Missing colour partner");
+    }
   }
   for (size_t i(0);i<ampl->Legs().size();++i)
     if (ampl->Leg(i)->K()) {

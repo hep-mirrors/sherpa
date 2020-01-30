@@ -106,12 +106,12 @@ bool Higgs_Selector::Trigger(Vec4D &py1,Vec4D &py2,Vec4D &pj)
 }
 
 
-DECLARE_ND_GETTER(Higgs_Selector,"HiggsFinder",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Higgs_Selector,"HiggsFinder",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Higgs_Selector>::
 operator()(const Selector_Key &key) const
 {
-  auto s = key.m_settings;
+  auto s = key.m_settings["HiggsFinder"];
   const auto pt1 = s["PT1"].SetDefault(0.0).Get<double>();
   const auto pt2 = s["PT2"].SetDefault(0.0).Get<double>();
   const auto eta = s["Eta"].SetDefault(0.0).Get<double>();
@@ -133,6 +133,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Higgs_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"{Type: HiggsFinder, PT1: pt1, PT2: pt2, Eta: eta, MassRange: [mmin, mmax], DR: dR, EpsPT: pt}";
+{
+  str<<"HiggsFinder: {PT1: pt1, PT2: pt2, Eta: eta, MassRange: [mmin, mmax], DR: dR, EpsPT: pt}";
 }

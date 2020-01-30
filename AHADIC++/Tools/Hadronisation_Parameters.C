@@ -1,4 +1,4 @@
-#include "AHADIC++/Tools/Hadronisation_Parameters.H"
+﻿#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -14,7 +14,6 @@ using namespace std;
 
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
-
 
 Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
 
@@ -37,7 +36,6 @@ void Hadronisation_Parameters::Init(string shower)
 {
   if (shower=="Dire")     m_shower = 0;
   else if (shower=="CSS") m_shower = 1;
-  msg_Out()<<"In Hadronisation_Parameters::Init()"<<endl;
   ReadParameters();
 
   bool test      = false;
@@ -55,11 +53,9 @@ void Hadronisation_Parameters::Init(string shower)
       msg_Out()<<"* "<<pit->first<<" = "<<pit->second<<"\n";
     msg_Out()<<"Resulting wave functions, multiplets, and transitions:\n";
     p_constituents->PrintConstituents();
-    //multipletconstructor.PrintWaveFunctions(true);
     multipletconstructor.PrintMultiplets();
     p_stransitions->Print();
     p_dtransitions->Print(true);
-    //p_dtransitions->Print(false);
     exit(1); // exit after output of parameters
   }
 }
@@ -71,71 +67,78 @@ void Hadronisation_Parameters::ReadParameters()
   ReadMassParameters();
   ReadPoppingParameters();
   ReadMesonWeights();
-  ReadGluonSplittingParameters();
-  ReadClusterDecayParameters();
+  ReadSplittingParameters();
   ReadClusterToMesonPSParameters();
 }
 
-double Hadronisation_Parameters::Get(string keyword) 
+const double Hadronisation_Parameters::Get(string keyword) const
 {
-  m_piter = m_parametermap.find(keyword);
-  if (m_piter!=m_parametermap.end()) return m_piter->second;
+  map<string,double>::const_iterator piter = m_parametermap.find(keyword);
+  if (piter!=m_parametermap.end()) return piter->second;
   msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
 		<<"in "<<m_parametermap.size()<<".\n"
 		<<"   Keyword not found. Return 0 and hope for the best.\n";
   return 0.;
 }
 
-void Hadronisation_Parameters::ReadGluonSplittingParameters()
+const int Hadronisation_Parameters::Switch(string keyword) const
 {
-  Settings& s = Settings::GetMainSettings();
-  m_parametermap[string("kt_o")]   =
-    s["KT_O"].SetDefault(1.0).Get<double>();
-  // gluon fragmentation function
-  m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(1.25).Get<double>();
-  m_parametermap[string("betaG")]  =
-    s["BETA_G"].SetDefault(1.25).Get<double>();
-  // light quark fragmentation function
-  m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(2.5).Get<double>();
-  m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.1).Get<double>();
-  m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.50).Get<double>();
-  // di-quark fragmentation functions
-  m_parametermap[string("alphaD")] = s["ALPHA_D"]
-    .SetDefault(m_shower ? 2.5 : 1.5)
-    .Get<double>();
-  m_parametermap[string("betaD")]  = s["BETA_D"]
-    .SetDefault(0.25)
-    .Get<double>();
-  m_parametermap[string("gammaD")] = s["GAMMA_D"]
-    .SetDefault(0.5)
-    .Get<double>();
-  m_parametermap[string("alphaB")] = s["ALPHA_B"]
-    .SetDefault(m_shower ? 2.5 : 1.5)
-    .Get<double>();
-  m_parametermap[string("betaB")]  = s["BETA_B"]
-    .SetDefault(0.25)
-    .Get<double>();
-  m_parametermap[string("gammaB")] = s["GAMMA_B"]
-    .SetDefault(0.5)
-    .Get<double>();
-  // heavy quark fragmentation function
-  m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(0.0).Get<double>();
-  m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(0.5).Get<double>();
-  m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(m_shower ? 0.45 : 0.35).Get<double>();
+  map<string,int>::const_iterator siter = m_switchmap.find(keyword);
+  if (siter!=m_switchmap.end()) return siter->second;
+  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
+		<<"in "<<m_switchmap.size()<<".\n"
+		<<"   Keyword not found. Return 0 and hope for the best.\n";
+  return 0;
 }
 
-void Hadronisation_Parameters::ReadClusterDecayParameters()
+void Hadronisation_Parameters::ReadSplittingParameters()
 {
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  // modes/forms for decays of gluons and clusters
+  m_switchmap["KT_Ordering"] =
+    s["KT_ORDER"].SetDefault(0).Get<int>();
+  m_switchmap["GluonDecayForm"] =
+    s["GLUON_DECAY_MODE"].SetDefault(0).Get<int>();
+  m_switchmap["ClusterSplittingForm"] =
+    s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
+  m_switchmap["RemnantSplittingForm"] =
+    s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
+  // generic parameter for non-perturbative transverse momentum
+  m_parametermap[string("kT_0")]   =
+    s["KT_0"].SetDefault(1.00).Get<double>();
+  // gluon fragmentation
+  m_parametermap[string("alphaG")] =
+    s["ALPHA_G"].SetDefault(1.25).Get<double>();
+  // light quark fragmentation
+  m_parametermap[string("alphaL")] =
+    s["ALPHA_L"].SetDefault(2.50).Get<double>();
+  m_parametermap[string("betaL")]  =
+    s["BETA_L"].SetDefault(0.10).Get<double>();
+  m_parametermap[string("gammaL")] =
+    s["GAMMA_L"].SetDefault(0.50).Get<double>();
+  // di-quark fragmentation
+  m_parametermap[string("alphaD")] =
+    s["ALPHA_D"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+  m_parametermap[string("betaD")]  =
+    s["BETA_D"].SetDefault(0.25).Get<double>();
+  m_parametermap[string("gammaD")] =
+    s["GAMMA_D"].SetDefault(0.50).Get<double>();
+  // beam particle fragmentation
+  m_parametermap[string("alphaB")] =
+    s["ALPHA_B"].SetDefault(m_shower ? 2.50 : 2.50).Get<double>();
+  m_parametermap[string("betaB")]  =
+    s["BETA_B"].SetDefault(0.25).Get<double>();
+  m_parametermap[string("gammaB")] =
+    s["GAMMA_B"].SetDefault(0.50).Get<double>();
+  // heavy quark fragmentation function
+  m_parametermap[string("alphaH")] =
+    s["ALPHA_H"].SetDefault(2.50).Get<double>();
+  m_parametermap[string("betaH")]  =
+    s["BETA_H"].SetDefault(0.75).Get<double>();
+  m_parametermap[string("gammaH")] =
+    s["GAMMA_H"].SetDefault(m_shower ? 0.10 : 0.10).Get<double>();
   // Probably irrelevant as long as they are small.
   // We will probably not have to tune them.
-  Settings& s = Settings::GetMainSettings();
   m_parametermap[string("decay_threshold")] =
     s["DECAY_THRESHOLD"].SetDefault(0.0).Get<double>();
   m_parametermap[string("piphoton_threshold")] =
@@ -148,14 +151,14 @@ void Hadronisation_Parameters::ReadClusterDecayParameters()
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("mass_exponent")]          =
-    s["MASS_EXPONENT"].SetDefault(-1.0).Get<double>();
+    s["MASS_EXPONENT"].SetDefault(0.0).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMesonWeights()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("Singlet_Suppression")]   = 
     s["SINGLET_MODIFIER"].SetDefault(2.0).Get<double>();
   m_parametermap[string("Mixing_Angle_0+")]    = 
@@ -193,35 +196,44 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["MULTI_WEIGHT_R1_1L0_N_1/2"].SetDefault(0.0).Get<double>();
   m_parametermap[string("Multiplet_Baryon_R0L0S3/2")]   =
     s["MULTI_WEIGHT_R0L0_DELTA_3/2"].SetDefault(0.15).Get<double>();
-  // Individual hadrons
+  // Individual hadrons or groups of hadrons
   m_parametermap[string("eta_modifier")]   =
-    s["ETA_MODIFIER"].SetDefault(1.8).Get<double>();
+    s["ETA_MODIFIER"].SetDefault(3.00).Get<double>();
   m_parametermap[string("eta_prime_modifier")]   =
-    s["ETA_PRIME_MODIFIER"].SetDefault(2.00).Get<double>();
+    s["ETA_PRIME_MODIFIER"].SetDefault(3.00).Get<double>();
+  m_parametermap[string("Singlet_Baryon_modifier")]    =
+    s["SINGLETBARYON_MODIFIER"].SetDefault(1.80).Get<double>();
+  m_parametermap[string("CharmBaryon_Enhancement")]    =
+    s["CHARMBARYON_ENHANCEMENT"].SetDefault(8.00).Get<double>();
+  m_parametermap[string("BeautyBaryon_Enhancement")]    =
+    s["BEAUTYBARYON_ENHANCEMENT"].SetDefault(0.80).Get<double>();
+  m_parametermap[string("CharmStrange_Enhancement")]    =
+    s["CHARMSTRANGE_ENHANCEMENT"].SetDefault(2.00).Get<double>();
+  m_parametermap[string("BeautyStrange_Enhancement")]    =
+    s["BEAUTYSTRANGE_ENHANCEMENT"].SetDefault(1.40).Get<double>();
+  m_parametermap[string("BeautyCharm_Enhancement")]    =
+    s["BEAUTYCHARM_ENHANCEMENT"].SetDefault(1.00).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadPoppingParameters()
 {
-  Settings& s = Settings::GetMainSettings();
-  m_parametermap[string("Strange_fraction")]       =
-    s["STRANGE_FRACTION"].SetDefault(0.5).Get<double>();
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  double strange;
+  m_parametermap[string("Strange_fraction")] = strange =
+    s["STRANGE_FRACTION"].SetDefault(0.50).Get<double>();
   m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(m_shower ? 0.21 : 0.19).Get<double>();
-  m_parametermap[string("charm_baryon_modifier")]  =
-    s["CHARM_BARYON_MODIFIER"].SetDefault(25.0).Get<double>();
-  m_parametermap[string("beauty_baryon_modifier")] =
-    s["BEAUTY_BARYON_MODIFIER"].SetDefault(1.00).Get<double>();
+    s["BARYON_FRACTION"].SetDefault(0.18).Get<double>();
   m_parametermap[string("P_qs_by_P_qq")]           =
-    s["P_{QS}/P_{QQ}"].SetDefault(0.25).Get<double>();
+    (s["P_QS_by_P_QQ_norm"].SetDefault(0.48).Get<double>())*strange;
   m_parametermap[string("P_ss_by_P_qq")]           =
-    s["P_{SS}/P_{QQ}"].SetDefault(0.075).Get<double>();
+    (s["P_SS_by_P_QQ_norm"].SetDefault(0.02).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_{QQ_1}/P_{QQ_0}"].SetDefault(1.00).Get<double>();
+    s["P_QQ1_by_P_QQ0"].SetDefault(1.00).Get<double>();
 }
 
 void Hadronisation_Parameters::ReadMassParameters()
 {
-  Settings& s = Settings::GetMainSettings();
+  auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("minmass2")] =
     s["MIN_MASS2"].SetDefault(0.10).Get<double>();
   m_parametermap[string("Mass_glue")] =
@@ -260,8 +272,8 @@ void Hadronisation_Parameters::ReadMassParameters()
 void Hadronisation_Parameters::ReadGeneralSwitches()
 {
   // General switches for operational modes
-  Settings& s = Settings::GetMainSettings();
-  m_ana = (s["FRAGMENTATION_ANALYSIS"].SetDefault(0).Get<int>() == 1);
+  //auto s = Settings::GetMainSettings()["AHADIC"];
+  //m_switchmap["Analysis"] = 0;
 }
 
 

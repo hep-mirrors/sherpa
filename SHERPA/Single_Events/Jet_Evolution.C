@@ -238,6 +238,9 @@ bool Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
   noshowerblob->SetStatus(blob_status::needs_beams|blob_status::needs_hadronization);
+  if (blob->Type()!=btp::Hadron_Decay) {
+    noshowerblob->AddStatus(blob_status::needs_reconnections);
+  }
   noshowerblob->SetId();
   noshowerblob->SetTypeSpec("No_Shower");
   bloblist->push_back(noshowerblob);
@@ -256,7 +259,12 @@ AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
   Blob * showerblob = (!interface->Shower()->On()?
 		       CreateMockShowerBlobs(blob,bloblist):
 		       bloblist->FindLast(btp::Shower));
-  if (showerblob!=NULL) return p_remnants->ExtractShowerInitiators(showerblob);
+  if (showerblob!=NULL) {
+    if (blob->Type()!=btp::Hadron_Decay) {
+      showerblob->AddStatus(blob_status::needs_reconnections);
+    }
+    return p_remnants->ExtractShowerInitiators(showerblob);
+  }
   return true;
 }
 
@@ -284,6 +292,9 @@ CreateMockShowerBlobs(Blob * const meblob,Blob_List * const bloblist) {
     Blob * FSRblob = new Blob();
     FSRblob->SetType(btp::Shower);
     FSRblob->SetStatus(blob_status::needs_hadronization);
+    if (meblob->Type()!=btp::Hadron_Decay) {
+      FSRblob->AddStatus(blob_status::needs_reconnections);
+    }
     Particle * part = new Particle(*meblob->OutParticle(i));
     if (meblob->OutParticle(i)->DecayBlob()) {
       Blob * dec  = meblob->OutParticle(i)->DecayBlob();

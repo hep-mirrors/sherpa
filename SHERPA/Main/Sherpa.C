@@ -41,9 +41,13 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Terminator_Object_Handler();
   ATOOLS::msg = new Message();
+  // rpa should be constructed before initializing the main settings, since the
+  // latter might throw an exception and rpa would be involved in terminating
+  // the program then; however, do not call its Init method yet, because this
+  // in turn needs the Settings to be initialized
+  ATOOLS::rpa = new Run_Parameter();
   Settings::InitializeMainSettings(argc, argv);
   ATOOLS::ran = new Random(1234);
-  ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
   m_trials = 0;
   m_debuginterval = 0;
@@ -60,6 +64,7 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
+    Blob_List::PrintMomFailStatistics(msg->Out());
   }
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
@@ -172,7 +177,8 @@ bool Sherpa::InitializeTheEventHandler()
         new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
-    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
+    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
+						    p_inithandler->GetFragmentationHandler()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
 
   }

@@ -333,8 +333,8 @@ double Isolation_Selector::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
-DECLARE_ND_GETTER(Isolation_Selector,"Isolation_Selector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Isolation_Selector,"Isolation_Selector",
+               Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
                               Isolation_Selector>::operator()
@@ -347,10 +347,9 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"{\n"
-     <<w<<"  Type: Isolation_Selector,\n"
-     <<w<<"  Isolation_Particles: <kf1>,\n"
-     <<w<<"  Rejection_Particles [<kf1>, <kf2>, ...],\n"
+  str<<"Isolation_Selector:\n"
+     <<w<<"  Isolation_Particles: <kf1>\n"
+     <<w<<"  Rejection_Particles [<kf1>, <kf2>, ...]\n"
      <<w<<"  Isolation_Parameters: {\n"
      <<w<<"    R: <dR>,\n"
      <<w<<"    EMAX: <Emax>,\n"
@@ -360,13 +359,11 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<w<<"    ETA: <etamax>,\n"
      <<w<<"    Y: <ymax>\n"
      <<w<<"    }\n"
-     <<w<<"  NMin: <nmin>,\n"
+     <<w<<"  NMin: <nmin>\n"
      <<w<<"  # optional parameters:\n"
-     <<w<<"  NMax: <nmax>,\n"
-     <<w<<"  Output_ID: <kf>,\n"
-     <<w<<"  Remove_Isolated: true|false,\n"
-     <<w<<"  Remove_Nonisolated: true|false,\n"
-     <<w<<"  Subselectors: [...]\n"
-     <<w<<"  }";
+     <<w<<"  NMax: <nmax>\n"
+     <<w<<"  Output_ID: <kf>\n"
+     <<w<<"  Remove_Isolated: true|false\n"
+     <<w<<"  Remove_Nonisolated: true|false\n"
+     <<w<<"  Subselectors: [...]";
 }
-

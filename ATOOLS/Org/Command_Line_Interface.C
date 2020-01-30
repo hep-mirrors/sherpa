@@ -131,8 +131,36 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
     }
 
     // convert ":" into ": ", as this allows to specify tags on the command
-    // line without spaces (and hence potentially without quotation marks)
-    nonOption = StringReplace(nonOption, ":", ": ");
+    // line without spaces (and hence potentially without quotation marks);
+    // if necessary, add curly braces, if several scopes are used, e.g.
+    // "A:B: {C: D}" -> "A: {B: {C: D}}"
+    size_t num_scopes = 0;
+    size_t last_colonpos = std::string::npos;
+    for (size_t colonpos = nonOption.find(':');
+         colonpos != std::string::npos;
+         colonpos = nonOption.find(':', colonpos+1)) {
+      if (colonpos == nonOption.size() - 1)
+        // ignore ':' on the
+        break;
+      if (nonOption[colonpos+1] == ':'
+          || nonOption[colonpos+1] == ' '
+          || nonOption[colonpos+1] == '['
+          || nonOption[colonpos+1] == '{') {
+        ++colonpos;
+        continue;
+      }
+      if (num_scopes > 0) {
+        // retro-actively insert an opening curly brace
+        nonOption.replace(last_colonpos, 2, ": {");
+        ++colonpos;
+      }
+      nonOption.replace(colonpos, 1, ": ");
+      ++num_scopes;
+      last_colonpos = colonpos;
+      ++colonpos;
+    }
+    if (num_scopes > 1)
+      nonOption.append(num_scopes - 1, '}');
 
     m_yamlstream << nonOption << '\n';
   }

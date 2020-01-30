@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 
 # scales
 EXCLUSIVE_CLUSTER_MODE: 1
-CORE_SCALE: VAR{0.25*(sqr(172.5)+0.5*(PPerp2(p[2])+PPerp2(p[3])))}
+CORE_SCALE: TTBar
 
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
@@ -22,18 +22,16 @@ HARD_DECAYS:
 PARTICLE_DATA:
   6: {Width: 0}
 
-NLO_SMEAR_THRESHOLD: 1
-NLO_SMEAR_POWER: 2
-
 PROCESSES:
-- Process: 93 93 -> 6 -6 93{3}
-  Order: {QCD: 2, EW: 0}
-  CKKW: 20
-  2->2-3:
-    NLO_QCD_Mode: MC@NLO
-    ME_Generator: Amegic
-    RS_ME_Generator: Comix
-    Loop_Generator: OpenLoops
-  2->5-8:
-    Max_N_Quarks: 6
-    Integration_Error: 0.05
+- 93 93 -> 6 -6 93{3}:
+    Order: {QCD: 2, EW: 0}
+    CKKW: 20
+    2->2-3:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+    2->5-8:
+      Max_N_Quarks: 6
+      Integration_Error: 0.05

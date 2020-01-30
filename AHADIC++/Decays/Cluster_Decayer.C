@@ -20,7 +20,6 @@ void Cluster_Decayer::Init() { m_splitter.Init(); }
 void Cluster_Decayer::Reset() {}
 
 bool Cluster_Decayer::operator()() {
-  //if (!p_cluster_list->empty()) msg_Out()<<METHOD<<"\n"<<(*p_cluster_list)<<"\n\n";
   while (!p_cluster_list->empty()) {
     if (!Treat(p_cluster_list->front())) {
       return false;
@@ -39,7 +38,8 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)
-    msg_Error()<<METHOD<<"("<<mustdecay<<") throws error for:\n"<<(*cluster)<<"\n";
+    msg_Error()<<METHOD<<"("<<mustdecay<<") throws error for: "<<cluster<<"\n"
+	       <<(*cluster)<<"\n";
     cluster->Clear();
     delete cluster;
     return false;

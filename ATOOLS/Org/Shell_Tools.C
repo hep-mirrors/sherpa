@@ -35,7 +35,7 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
     int exists(!mkdir(path.c_str(),mode));
 #else
     int exists(mpi->Rank()?0:!mkdir(path.c_str(),mode));
-    mpi->Bcast(&exists,1,MPI_INT,0);
+    mpi->Bcast(&exists,1,MPI_INT);
 #endif
     return exists;
   }
@@ -55,7 +55,7 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
     int result(mkdir(piece.c_str(),mode));
 #else
     int result(mpi->Rank()?0:mkdir(piece.c_str(),mode));
-    mpi->Bcast(&result,1,MPI_INT,0);
+    mpi->Bcast(&result,1,MPI_INT);
 #endif
     if (result!=0) {
       if (errno==EEXIST) {
@@ -85,7 +85,7 @@ bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
   int result(chmod(file.c_str(),mode));
 #else
   int result(mpi->Rank()?0:chmod(file.c_str(),mode));
-  mpi->Bcast(&result,1,MPI_INT,0);
+  mpi->Bcast(&result,1,MPI_INT);
 #endif
   if (result!=0) {
 #ifdef DEBUG__Shell_Tools
@@ -110,7 +110,7 @@ bool ATOOLS::Copy(const std::string &oldname,
     mode=fst.st_mode;
 #ifdef USING__MPI
   }
-  mpi->Bcast(&mode,1,MPI_INT,0);
+  mpi->Bcast(&mode,1,MPI_INT);
 #endif
   if ((mode&S_IFMT)==S_IFDIR) {
     if (!MakeDir(newname,mode)) return false;
@@ -130,7 +130,7 @@ bool ATOOLS::Copy(const std::string &oldname,
       if (n>=0) free(entries);
 #ifdef USING__MPI
     }
-    mpi->Bcast(&stat,1,MPI_INT,0);
+    mpi->Bcast(&stat,1,MPI_INT);
 #endif
     return stat;
   }
@@ -145,7 +145,7 @@ bool ATOOLS::Copy(const std::string &oldname,
     stat=chmod(newname.c_str(),mode)==0;
 #ifdef USING__MPI
   }
-  mpi->Bcast(&stat,1,MPI_INT,0);
+  mpi->Bcast(&stat,1,MPI_INT);
 #endif
   return stat;
 }
@@ -196,7 +196,7 @@ bool ATOOLS::FileExists(const std::string &file,const int mode)
       exists=(fst.st_mode&S_IFMT)==S_IFREG;
 #ifdef USING__MPI
   }
-  mpi->Bcast(&exists,1,MPI_INT,0);
+  mpi->Bcast(&exists,1,MPI_INT);
 #endif
   return exists;
 }
@@ -212,7 +212,7 @@ bool ATOOLS::DirectoryExists(const std::string &dir)
       exists=(fst.st_mode&S_IFMT)==S_IFDIR;
 #ifdef USING__MPI
   }
-  mpi->Bcast(&exists,1,MPI_INT,0);
+  mpi->Bcast(&exists,1,MPI_INT);
 #endif
   return exists;
 }
@@ -223,7 +223,7 @@ bool ATOOLS::Remove(const std::string &file,
 #ifdef USING__MPI
   if (mpi->Rank()) {
     int success;
-    mpi->Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT);
     return success;
   }
 #endif
@@ -231,7 +231,7 @@ bool ATOOLS::Remove(const std::string &file,
   if (stat(file.c_str(),&fst)==-1) {
     int success(false);
 #ifdef USING__MPI
-    mpi->Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT);
 #endif
     return success;
   }
@@ -249,13 +249,13 @@ bool ATOOLS::Remove(const std::string &file,
     int success(false);
     if (stat) success=(rmdir(file.c_str())==0);
 #ifdef USING__MPI
-    mpi->Bcast(&success,1,MPI_INT,0);
+    mpi->Bcast(&success,1,MPI_INT);
 #endif
     return success;
   }
   int success(unlink(file.c_str())==0);
 #ifdef USING__MPI
-  mpi->Bcast(&success,1,MPI_INT,0);
+  mpi->Bcast(&success,1,MPI_INT);
 #endif
   return success;
 }

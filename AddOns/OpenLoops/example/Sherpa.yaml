@@ -30,17 +30,17 @@ AMEGIC:
   CHECK_BORN: 0
 
 PROCESSES:
-- Process: "2 -2 -> 21 21"
-  NLO_Mode: Fixed_Order
-  Order: {QCD: Any, EW: 0}
-  NLO_QCD_Part: VI
-  Enable_MHV: 0
-  Loop_Generator: $(LOOPGEN)
+- "2 -2 -> 21 21":
+    NLO_Mode: Fixed_Order
+    Order: {QCD: Any, EW: 0}
+    NLO_QCD_Part: VI
+    Enable_MHV: 0
+    Loop_Generator: $(LOOPGEN)
 
 SELECTORS:
-- Type: NJetFinder
-  N: 2
-  PTMin: 20.0
-  ETMin: 0.0
-  R: 0.4
-  Exp: -1
+- NJetFinder:
+    N: 2
+    PTMin: 20.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1

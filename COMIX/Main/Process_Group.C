@@ -112,6 +112,5 @@ void COMIX::Process_Group::ConstructPSVertices(PS_Generator *ps)
 bool COMIX::Process_Group::FillIntegrator(Phase_Space_Handler *const psh)
 {
   bool res(COMIX::Process_Base::FillIntegrator(psh));
-  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->FillIntegrator(psh);
   return res;
 }

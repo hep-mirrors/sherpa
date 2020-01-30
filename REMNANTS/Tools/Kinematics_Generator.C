@@ -60,7 +60,8 @@ Blob * Kinematics_Generator::MakeSoftBlob() {
   // reshuffling due to construction of transverse momenta
   p_softblob = new Blob();
   p_softblob->SetType(btp::Soft_Collision);
-  p_softblob->SetStatus(blob_status::needs_hadronization);
+  p_softblob->SetStatus(blob_status::needs_reconnections |
+			blob_status::needs_hadronization);
   p_softblob->SetId();
   return p_softblob;
 }
@@ -130,7 +131,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t & beam) {
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
       //if (scale=1.e-3)
-      //msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+      //msg_Error()<<"Warning: "<<METHOD
+      //<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckDIS(beam) && scale>0.);
@@ -194,7 +196,8 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     maxnum--;
     if (maxnum==0)   {
       maxnum = 100; scale *= 0.1;
-      msg_Error()<<"Warning: "<<METHOD<<" reduces overall prescale for kt to scale = "<<scale<<"\n";
+      msg_Error()<<"Warning: "<<METHOD
+		 <<" reduces overall prescale for kt to scale = "<<scale<<"\n";
     }
     if (scale<1.e-3) scale = 0.;
   } while (!CheckHH() && scale>0.);

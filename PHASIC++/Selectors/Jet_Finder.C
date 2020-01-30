@@ -176,11 +176,11 @@ void Jet_Finder::AssignId(Term *term)
 }
 
 DECLARE_ND_GETTER(Jet_Finder,"METS",Selector_Base,Selector_Key,false);
-  
+
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Finder>::
 operator()(const Selector_Key &key) const
 {
-  Scoped_Settings s{ key.m_settings };
+  auto s = key.m_settings["METS"];
   const auto ycut = s["YCUT"].SetDefault("").Get<std::string>();
   if (ycut == "")
     THROW(critical_error,"Invalid syntax");
@@ -202,7 +202,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"METS jet finder"; 
 }
-

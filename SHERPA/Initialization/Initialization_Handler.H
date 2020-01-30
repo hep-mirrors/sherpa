@@ -28,6 +28,7 @@ namespace SHERPA {
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
+  class Colour_Reconnection_Handler;
   class Fragmentation_Handler;
   class Decay_Handler_Base;
   class MI_Handler;
@@ -49,24 +50,25 @@ namespace SHERPA {
     eventtype::code m_mode;
     bool            m_savestatus;
 
-    MODEL::Model_Base          * p_model;
-    BEAM::Beam_Spectra_Handler * p_beamspectra;
-    PDF::ISR_Handler_Map         m_isrhandlers;
-    REMNANTS::Remnant_Handler  * p_remnants;
-    Matrix_Element_Handler     * p_mehandler;
-    Hard_Decay_Handler         * p_harddecays;
-    Shower_Handler_Map           m_showerhandlers;
-    Beam_Remnant_Handler       * p_beamremnants;
-    Fragmentation_Handler      * p_fragmentation;
-    Soft_Collision_Handler     * p_softcollisions;
-    Decay_Handler_Base         * p_hdhandler;
-    MI_Handler                 * p_mihandler; 
-    Soft_Photon_Handler        * p_softphotons;
-    Event_Reader_Base          * p_evtreader;
-    Analysis_Vector              m_analyses;
-    Output_Vector                m_outputs;
-    ATOOLS::Variations         * p_variations;
-    Filter                     * p_filter;
+    MODEL::Model_Base           * p_model;
+    BEAM::Beam_Spectra_Handler  * p_beamspectra;
+    PDF::ISR_Handler_Map          m_isrhandlers;
+    REMNANTS::Remnant_Handler   * p_remnants;
+    Matrix_Element_Handler      * p_mehandler;
+    Hard_Decay_Handler          * p_harddecays;
+    Shower_Handler_Map            m_showerhandlers;
+    Beam_Remnant_Handler        * p_beamremnants;
+    Colour_Reconnection_Handler * p_reconnections;
+    Fragmentation_Handler       * p_fragmentation;
+    Soft_Collision_Handler      * p_softcollisions;
+    Decay_Handler_Base          * p_hdhandler;
+    MI_Handler                  * p_mihandler; 
+    Soft_Photon_Handler         * p_softphotons;
+    Event_Reader_Base           * p_evtreader;
+    Analysis_Vector               m_analyses;
+    Output_Vector                 m_outputs;
+    ATOOLS::Variations          * p_variations;
+    Filter                      * p_filter;
     
     void ShowParameterSyntax();
     void CheckVersion();
@@ -84,6 +86,7 @@ namespace SHERPA {
     bool InitializeTheHardDecays();
     bool InitializeTheShowers();
     bool InitializeTheBeamRemnants();
+    bool InitializeTheColourReconnections();
     bool InitializeTheFragmentation();
     bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
@@ -116,6 +119,7 @@ namespace SHERPA {
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
+    Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
     Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }

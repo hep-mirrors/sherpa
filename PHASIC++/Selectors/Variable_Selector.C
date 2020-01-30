@@ -246,8 +246,7 @@ bool Variable_Selector::Trigger(Selector_List &sl)
   return Trigger(sl,p_sub?(p_sub->IsReal()?0:p_sub->m_idx+1):0);
 }
 
-DECLARE_ND_GETTER(Variable_Selector,"VariableSelector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Variable_Selector,"VariableSelector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
 operator()(const Selector_Key &key) const
@@ -256,7 +255,7 @@ operator()(const Selector_Key &key) const
   msg_Debugging()<<"Getter<Variable_Selector>::operator(): {\n";
 #endif
 
-  Scoped_Settings s{ key.m_settings };
+  auto s = key.m_settings["VariableSelector"];
   s.DeclareVectorSettingsWithEmptyDefault({ "Flavs" });
   s.DeclareMatrixSettingsWithEmptyDefault({ "Ranges" });
 
@@ -302,6 +301,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"variable selector"; 
+{
+  str<<"variable selector";
 }

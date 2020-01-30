@@ -6,8 +6,7 @@ case $1 in
   --prefix)
     echo @prefix@;;
   --libs)
-    hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
-    echo -L@LIBDIR@ -lSherpaMain $hepmc2libs;;
+    echo -L@LIBDIR@ -lSherpaMain @CONDITIONAL_HEPMC2LIBS@ @CONDITIONAL_HEPMC3LIBS@ @CONDITIONAL_RIVETLDADD@ @CONDITIONAL_FASTJETLIBS@ @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@;;
   --python-libs)
     echo @PYLIBDIR@;;
   --load-mpi4py)
@@ -19,10 +18,9 @@ case $1 in
   --datadir)
     echo @DATADIR@;;
   --ldflags)
-    hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
-    echo -L@LIBDIR@ -lSherpaMain $hepmc2libs @AM_LDFLAGS@;;
+    echo -L@LIBDIR@ -lSherpaMain @CONDITIONAL_HEPMC2LIBS@ @CONDITIONAL_HEPMC3LIBS@ @CONDITIONAL_RIVETLDADD@ @CONDITIONAL_FASTJETLIBS@ @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@;;
   --cppflags)
-    echo -I@INCLUDEDIR@;;
+    echo -I@INCLUDEDIR@ @CONDITIONAL_HEPMC2INCS@ @CONDITIONAL_HEPMC3INCS@ @CONDITIONAL_RIVETCPPFLAGS@ @CONDITIONAL_FASTJETINCS@ @CONDITIONAL_ROOTFLAGS@ @CONDITIONAL_LHAPDFINCS@;;
   --cxx)
     echo @CXX@;;
   --fc)

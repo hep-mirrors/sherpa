@@ -141,7 +141,7 @@ double DIS_Selector::R2(const Vec4D &p1, const Vec4D &p2) const
   return 2.0*(1.0-p1.CosTheta(p2));
 }
 
-DECLARE_ND_GETTER(DIS_Selector,"DISNNLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DIS_Selector,"DISNNLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DIS_Selector>::
 operator()(const Selector_Key &key) const
@@ -151,6 +151,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,DIS_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"NNLO selector";
 }

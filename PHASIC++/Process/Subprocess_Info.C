@@ -383,3 +383,11 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   ostr<<"\n";
 }
 
+void Subprocess_Info::PrintFlavours(std::ostream &ostr) const
+{
+  if (m_ps.size()>0) {
+    for (size_t i(0);i<m_ps.size();++i) m_ps[i].PrintFlavours(ostr);
+  } else {
+    ostr<<(long int)m_fl<<" "<<m_mpl;
+  }
+}

@@ -65,6 +65,7 @@ namespace PHASIC {
     void BuildDecayInfos(size_t nin=2);
 
     void Print(std::ostream &ostr,const size_t &ni=0) const;
+    void PrintFlavours(std::ostream &ostr) const;
 
     void SetNMax(const Subprocess_Info &ref);
     void GetNMax(const Subprocess_Info &ref);

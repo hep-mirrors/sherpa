@@ -30,8 +30,8 @@ int main(int argc,char* argv[])
 #endif
 #endif
 
-  Sherpa* Generator = new Sherpa(argc, argv);
   try {
+    Sherpa* Generator = new Sherpa(argc, argv);
     Generator->InitializeTheRun();
     int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
@@ -41,6 +41,7 @@ int main(int argc,char* argv[])
       }
       Generator->SummarizeRun();
     }
+    delete Generator;
   }
   catch (const normal_exit& exception) {
     msg_Error() << exception << std::endl;
@@ -50,8 +51,10 @@ int main(int argc,char* argv[])
     msg_Error() << exception << std::endl;
     exh->Terminate(1);
   }
-
-  delete Generator;
+  catch (const std::exception& exception) {
+    msg_Error() << exception.what() << std::endl;
+    exh->Terminate(1);
+  }
 
 #ifdef USING__MPI
   MPI_Finalize();

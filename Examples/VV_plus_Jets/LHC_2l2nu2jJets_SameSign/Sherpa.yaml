@@ -22,48 +22,48 @@ PSI: { ITMIN: 25000 }
 INTEGRATION_ERROR: 0.05
 
 PROCESSES:
-- Process: 93 93 -> 11 11 -12 -12 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> 13 13 -14 -14 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> 15 15 -16 -16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> 11 13 -12 -14 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> 11 15 -12 -16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> 13 15 -14 -16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -11 -11 12 12 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -13 -13 14 14 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -15 -15 16 16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -11 -13 12 14 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -11 -15 12 16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
-- Process: 93 93 -> -13 -15 14 16 93 93 93{$(NJET)}
-  Order: {QCD: Any, EW: 6}
-  CKKW: $(QCUT)
+- 93 93 -> 11 11 -12 -12 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 13 13 -14 -14 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 15 15 -16 -16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 11 13 -12 -14 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 11 15 -12 -16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 13 15 -14 -16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -11 -11 12 12 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -13 -13 14 14 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -15 -15 16 16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -11 -13 12 14 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -11 -15 12 16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -13 -15 14 16 93 93 93{$(NJET)}:
+    Order: {QCD: Any, EW: 6}
+    CKKW: $(QCUT)
 
 SELECTORS:
 - [PT, 90, 5.0, E_CMS]
-- Type: NJetFinder
-  N: 2
-  PTMin: 15.0
-  ETMin: 0.0
-  R: 0.4
-  Exp: -1
+- NJetFinder:
+    N: 2
+    PTMin: 15.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1

@@ -272,27 +272,34 @@ double NJet_Finder::DCos12(const Vec4D & p1,const Vec4D & p2) const
   //  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-DECLARE_ND_GETTER(NJet_Finder,"NJetFinder",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(NJet_Finder,"NJetFinder",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
 operator()(const Selector_Key &key) const
 {
-  Scoped_Settings s{ key.m_settings };
-  auto exp = s["Exp"].SetDefault(1).Get<int>();
-  auto etamax = s["EtaMax"]
-    .SetDefault(std::numeric_limits<double>::max())
-    .Get<double>();
-  auto ymax = s["YMax"]
-    .SetDefault(std::numeric_limits<double>::max())
-    .Get<double>();
-  auto massmax = s["MassMax"].SetDefault(0.0).Get<double>();
-  auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
-  auto etmin = s["ETMin"].SetDefault(0.0).Get<double>();
-  auto type = s["Mode"].SetDefault(2).Get<int>();
-  auto R = s["R"].SetDefault(0.4).Get<double>();
-  auto n = s["N"].SetDefault(0).Get<int>();
+  auto s = key.m_settings["NJetFinder"];
+
+  // min/max settings
+  const auto etamax
+    = s["EtaMax"] .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto ymax
+    = s["YMax"]   .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+  const auto massmax
+    = s["MassMax"].SetDefault(0.0)   .UseMaxDoubleReplacements().Get<double>();
+  const auto ptmin
+    = s["PTMin"]  .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto etmin
+    = s["ETMin"]  .SetDefault("None").UseZeroReplacements()     .Get<double>();
+  const auto n
+    = s["N"]      .SetDefault("None").UseZeroReplacements()     .Get<int>();
   if (n < 0)
-    THROW(not_implemented,"Negative multiplicities not supported.");
+    THROW(not_implemented,"Negative multiplicities are not supported.");
+
+  // parameter/mode settings
+  auto exp  = s["Exp"] .SetDefault(1)  .Get<int>();
+  auto type = s["Mode"].SetDefault(2)  .Get<int>();
+  auto R    = s["R"]   .SetDefault(0.4).Get<double>();
+
   NJet_Finder *jf(new NJet_Finder(key.p_proc,
                                   n, ptmin, etmin, R,
                                   exp,etamax,ymax,massmax,type));
@@ -301,16 +308,16 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"{\n"
-     <<width<<"  Type: NJetFinder,\n"
-     <<width<<"  N: number of jets,\n"
-     <<width<<"  PTMin: minimum jet pT,\n"
-     <<width<<"  ETMin: minimum jet eta,\n"
-     <<width<<"  R: jet distance parameter,\n"
+{
+  str<<"NJetFinder:\n"
+     <<width<<"  N: number of jets\n"
+     <<width<<"  PTMin: minimum jet pT\n"
+     <<width<<"  ETMin: minimum jet eta\n"
+     <<width<<"  R: jet distance parameter\n"
      <<width<<"  # optional settings:\n"
-     <<width<<"  EtaMax: maximum jet eta, default=100\n"
-     <<width<<"  MassMax: maximum jet mass, default=0\n"
-     <<width<<"  Mode: type, default=2\n"
-     <<width<<"  }";
+     <<width<<"  Exp: exponent for jet distances (default=1)\n"
+     <<width<<"  YMax: maximum jet rapidity (default=None)\n"
+     <<width<<"  EtaMax: maximum jet eta (default=None)\n"
+     <<width<<"  MassMax: maximum jet constituent mass (default=0)\n"
+     <<width<<"  Mode: type (default=2)";
 }

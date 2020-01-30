@@ -30,10 +30,11 @@ PARTICLE_DATA:
   24: {Width: 0}
 
 PROCESSES:
-- Process: 93 93 -> 6 -24
-  No_Decay: -6  # remove ttbar diagrams
-  NLO_QCD_Mode: MC@NLO
-  Order: {QCD: 1, EW: 1}
-  ME_Generator: Amegic
-  RS_ME_Generator: Comix
-  Loop_Generator: OpenLoops
+- 93 93 -> 6 -24:
+    No_Decay: -6  # remove ttbar diagrams
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 1, EW: 1}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops

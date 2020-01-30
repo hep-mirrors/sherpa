@@ -112,6 +112,7 @@ namespace ATOOLS {
   };// end of class String_Sort
 
   typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D,PMMSort> ParticleMomMap;
+  typedef std::set<Particle *,PMMSort>       ParticleSet;
 
 
 

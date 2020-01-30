@@ -376,10 +376,12 @@ double Blob::CheckChargeConservation() const {
   double Qout=0.0;
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
+    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qin += (*part)->Flav().Charge();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
+    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qout += (*part)->Flav().Charge();
   }
   return Qout - Qin;
@@ -412,14 +414,15 @@ bool Blob::CheckColour(const bool & transient) {
   for (int i=0;i<NInP();i++) {
     part = InParticle(i);
     if ((part->Flav().IsGluon() && 
-	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
+	  part->GetFlow(1)==part->GetFlow(2))) ||
 	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
       if (!transient) {
-	msg_Error()<<"Error in "<<METHOD<<":\n"
-		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	msg_Error()<<"Error in "<<METHOD<<": "
+		   <<"Wrong colour state for particle "<<part->Number()<<"\n";
 	error = true;
       }
     }
@@ -429,14 +432,15 @@ bool Blob::CheckColour(const bool & transient) {
   for (int i=0;i<NOutP();i++) {
     part = OutParticle(i);
     if ((part->Flav().IsGluon() && 
-	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0 ||
+	  part->GetFlow(1)==part->GetFlow(2))) ||
 	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
 	 part->GetFlow(2)==0) ||
 	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
 	 part->GetFlow(1)==0)) {
       if (!transient) {
-	msg_Error()<<"Error in "<<METHOD<<":\n"
-		   <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+	msg_Error()<<"Error in "<<METHOD<<": "
+		   <<"Wrong colour state for particle "<<part->Number()<<"\n";
 	error = true;
       }
     }

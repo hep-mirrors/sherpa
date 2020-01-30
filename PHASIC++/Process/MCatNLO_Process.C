@@ -87,21 +87,13 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     spi.m_maxcpl[i]+=spi.m_fi.m_nlocpl[i];
     spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
   }
-  spi.m_megenerator=spi.m_rsmegenerator;
 
-  // Real emission process is initialized with nlo_type::lo. ME
-  // generators hence cannot infer that the coupling orders need to be
-  // increased relative to born coupling order. Therefore do that
-  // explicityly here:
   Process_Info rpi(spi);
-  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
-    rpi.m_borncpl[1]+=1;
-  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
-    rpi.m_borncpl[0]+=1;
+  rpi.m_megenerator=rpi.m_rsmegenerator;
   p_rproc=InitProcess(rpi,nlo_type::lo,true);
 
-  spi.m_megenerator=pi.m_megenerator;
-  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
+  nlo_type::code bvicode = (nlo_type::code) s["PP_BVI_MODE"].Get<int>();
+  p_bviproc=InitProcess(spi, bvicode, false);
   p_ddproc=InitProcess(spi,nlo_type::rsub,1);
   spi.m_integrator=spi.m_rsintegrator;
   spi.m_megenerator=spi.m_rsmegenerator;
@@ -158,6 +150,7 @@ void MCatNLO_Process::RegisterDefaults() const
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
   s["RS_SCALE"].SetDefault("");  // RS scale
+  s["PP_BVI_MODE"].SetDefault(7);  // BVI mode
 }
 
 Process_Base* MCatNLO_Process::InitProcess

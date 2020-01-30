@@ -64,6 +64,12 @@ void Scoped_Settings::DeclareMatrixSettingsWithEmptyDefault(
   m_rootsettings->DeclareMatrixSettingsWithEmptyDefault(keys, m_scopes);
 }
 
+Scoped_Settings& Scoped_Settings::SetDefaultSynonyms(const String_Vector& list)
+{
+  m_rootsettings->SetDefaultSynonyms(m_scopes, list);
+  return *this;
+}
+
 Scoped_Settings& Scoped_Settings::UseNoneReplacements()
 {
   static std::map<std::string, std::string> nonelist{
@@ -75,9 +81,30 @@ Scoped_Settings& Scoped_Settings::UseNoneReplacements()
   return SetReplacementList(nonelist);
 }
 
+Scoped_Settings& Scoped_Settings::UseMaxDoubleReplacements()
+{
+  static std::map<std::string, std::string> nonelist{
+    {"None", ToString<double>(std::numeric_limits<double>::max())}
+  };
+  return SetReplacementList(nonelist);
+}
+
+Scoped_Settings& Scoped_Settings::UseZeroReplacements()
+{
+  static std::map<std::string, std::string> nonelist{
+    {"None", ToString<double>(0)}
+  };
+  return SetReplacementList(nonelist);
+}
+
 bool Scoped_Settings::IsCustomised()
 {
   return m_rootsettings->IsCustomised(m_scopes);
+}
+
+bool Scoped_Settings::IsList() const
+{
+  return m_rootsettings->IsList(m_scopes);
 }
 
 std::vector<Scoped_Settings> Scoped_Settings::GetItems() const

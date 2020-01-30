@@ -527,24 +527,24 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
-  if (m_sudakov.Generate(split)) {
-    m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-    split->SetWeight(m_sudakov.Weight());
-    if (kt2>kt2win) {
-      kt2win  = kt2;
-      m_flavA = m_sudakov.GetFlavourA();
-      m_flavB = m_sudakov.GetFlavourB();
-      m_flavC = m_sudakov.GetFlavourC();
-      m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-      split->SetCol(m_sudakov.GetCol());
-      split->SetTest(kt2,z,y,phi);
-      return true;
+    if (m_sudakov.Generate(split)) {
+      m_sudakov.GetSplittingParameters(kt2,z,y,phi);
+      split->SetWeight(m_sudakov.Weight());
+      if (kt2>kt2win) {
+	kt2win  = kt2;
+	m_flavA = m_sudakov.GetFlavourA();
+	m_flavB = m_sudakov.GetFlavourB();
+	m_flavC = m_sudakov.GetFlavourC();
+	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+	split->SetCol(m_sudakov.GetCol());
+	split->SetTest(kt2,z,y,phi);
+	return true;
+      }
     }
-  }
-  else {
-    split->SetWeight(m_sudakov.Weight());
-  }
-  return false;
+    else {
+      split->SetWeight(m_sudakov.Weight());
+    }
+    return false;
   }
   return false;
 }

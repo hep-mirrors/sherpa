@@ -22,7 +22,7 @@ using namespace ATOOLS;
 using PHASIC::Process_Info;
 
 Single_Process::Single_Process() :
-  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo)
+  p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo), m_localFS(false)
 {
 }
 
@@ -46,9 +46,9 @@ bool Single_Process::Initialize()
       return false;
     }
   }
-  
+
   // can't do any BSM
-  if (m_pinfo.m_special!="MPI_Process" && MODEL::s_model->Name()!="SM") {
+  if (/*m_pinfo.m_special!="MPI_Process" && */ MODEL::s_model->Name()!="SM") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }
@@ -78,6 +78,8 @@ bool Single_Process::Initialize()
       m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
       m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
       p_born_me2->FillCombinations(m_ccombs,m_cfls);
+      m_sprimemin = p_born_me2->SPrimeMin()>0.?p_born_me2->SPrimeMin():-1.;
+      m_sprimemax = p_born_me2->SPrimeMax()>0.?p_born_me2->SPrimeMax():-1.;
       return true;
     }
     else {
@@ -98,7 +100,10 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
   if (m_nlotype==nlo_type::lo && !Selector()->Result())
     return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   
+  if (!p_born_me2->FillFinalState(momenta)) return 0.;
+  m_localFS = true;
   p_scale->CalculateScale(momenta);
+  m_localFS = false;
   if (p_born_me2) {
     m_mewgtinfo.m_B=m_lastbxs=m_lastxs=(*p_born_me2)(momenta)*KFactor();
   }
@@ -116,6 +121,10 @@ bool EXTRAXS::Single_Process::FillIntegrator
 {
   PHASIC::Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
+  if (m_nin==2 && m_nout==1 && m_flavs[2]==Flavour(kf_instanton)) {
+    mc->Add(new PHASIC::NoChannel(m_nin,m_nout,(Flavour*)&Flavours().front()));
+    return false;
+  }
   size_t sintt(7);
   if (GetME()) sintt=GetME()->SIntType();
   if (sintt&1)
@@ -150,8 +159,7 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-const Flavour_Vector &Single_Process::
-CombinedFlavour(const size_t &idij)
+const Flavour_Vector &Single_Process::CombinedFlavour(const size_t &idij)
 {
   if (m_cfls.size()) {
     std::map<size_t,ATOOLS::Flavour_Vector>::const_iterator fit(m_cfls.find(idij));
@@ -161,4 +169,32 @@ CombinedFlavour(const size_t &idij)
   if (GetME()) return GetME()->CombinedFlavour(idij);
   static Flavour_Vector fls(1,kf_none);
   return fls;
+}
+
+bool Single_Process::FillFinalState(const ATOOLS::Vec4D_Vector &p) {
+  return true;
+}
+
+size_t Single_Process::NOut() const {
+  return m_localFS?p_born_me2->NOut():m_nout;
+}
+
+const ATOOLS::Flavour_Vector & Single_Process::Flavours() const {
+  return m_localFS?p_born_me2->Flavours():m_flavs;
+}
+
+const ATOOLS::Vec4D_Vector & Single_Process::Momenta() const {
+  return m_localFS?p_born_me2->Momenta():p_int->Momenta();
+}
+
+std::vector<std::vector<int> > * Single_Process::Colours() const {
+  return m_localFS?(&p_born_me2->Colours()):NULL;
+}
+
+const bool Single_Process::HasInternalScale() const {
+  return p_born_me2?p_born_me2->HasInternalScale():false;
+}
+
+const double Single_Process::InternalScale() const {
+  return p_born_me2?p_born_me2->InternalScale():-1.;
 }

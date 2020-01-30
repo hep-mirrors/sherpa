@@ -14,7 +14,7 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
   p_remnants(remnants), p_beam(beam), m_fill(true)
 {
   Settings& s = Settings::GetMainSettings();
-  m_fill = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
+  m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
   m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
   p_remnants->SetScale2(sqr(4.0));
   m_name = std::string("On");
@@ -94,6 +94,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle)
   blob->SetBeam(beam);
   blob->SetId();
   blob->SetStatus(blob_status::needs_beams &
+		  blob_status::needs_reconnections &
 		  blob_status::needs_softUE &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);

@@ -25,7 +25,8 @@ namespace EXTAMP {
     /* Load loop ME */
     PHASIC::Process_Info loop_pi(pi);
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::loop;
-    loop_pi.m_borncpl[0] = pi.m_borncpl[0] + 1;
+    loop_pi.m_maxcpl[0] = pi.m_maxcpl[0] + 1;
+    loop_pi.m_mincpl[0] = pi.m_mincpl[0] + 1;
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
     if (!p_loop_me)
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
@@ -33,7 +34,7 @@ namespace EXTAMP {
     /* Load color-correlated ME. TODO: orders */
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
 				  pi.m_fi.GetExternal(),
-				  pi.m_borncpl);
+				  pi.m_maxcpl);
     p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);
     if (!p_corr_me)
       THROW(not_implemented, "Couldn't find color-correlated ME for this process.");
@@ -253,7 +254,7 @@ namespace EXTAMP {
        second item: second derivative of all terms with respect to logf */
     std::pair<double,double> terms =  std::make_pair(0.0,0.0);
 
-    double born_order = Info().m_borncpl[0];
+    double born_order = Info().m_maxcpl[0];
     switch(p_loop_me->Mode())
       {
       case 0:

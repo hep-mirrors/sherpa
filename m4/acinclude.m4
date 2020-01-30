@@ -181,7 +181,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${EXTRAXSBUILDDIR}/Two2Two/libExtraXS2_2.la \
 	\${EXTRAXSBUILDDIR}/One2Two/libExtraXS1_2.la \
 	\${EXTRAXSBUILDDIR}/One2Three/libExtraXS1_3.la \
-	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la"
+	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la \
+	\${EXTRAXSBUILDDIR}/Special/libExtraXSSpecial.la"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSLIBS)
@@ -280,6 +281,13 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(REMNANTSDIR)
   AC_SUBST(REMNANTSBUILDDIR)
   AC_SUBST(REMNANTSLIBS)
+
+  RECONNECTIONSDIR="\${top_srcdir}/RECONNECTIONS"
+  RECONNECTIONSBUILDDIR="\${top_builddir}/RECONNECTIONS"
+  RECONNECTIONSLIBS="\${RECONNECTIONSBUILDDIR}/Main/libReconnections.la"
+  AC_SUBST(RECONNECTIONSDIR)
+  AC_SUBST(RECONNECTIONSBUILDDIR)
+  AC_SUBST(RECONNECTIONSLIBS)
 
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
@@ -381,7 +389,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       AC_MSG_RESULT(no);
       VERSIONING=""; ] 
   )
-  AC_SUBST(VERSIONING)
+  AC_SUBST([VERSIONING])
 
   AC_ARG_ENABLE(
     multithread,
@@ -540,7 +548,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Rivet not enabled); rivet=false ;;
+        no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
         yes) if test -x "`which rivet-config`"; then
                CONDITIONAL_RIVETDIR=`rivet-config --prefix`;
              fi;;
@@ -551,33 +559,29 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
-        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
+        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
         rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
-        AC_MSG_CHECKING(whether the Rivet version uses YODA as its histogramming backend)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],
-        [ rivetyoda=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
+        AC_MSG_CHECKING(for Rivet version)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+          ])
+        ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
-      rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
-      if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetignorebeams=true;
-      fi
     ],
     [ rivet=false ]
   )
-  if test "$rivet" = "true" ; then
-    AC_DEFINE([USING__RIVET], "1", [using Rivet])
-  fi
-  if test "$rivetignorebeams" = "true" ; then
-    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
-  fi
-  if test "$rivetyoda" = "true" ; then
-    AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
-  fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
-  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
+  if test "$rivet2" = "true" ; then
+    AC_DEFINE([USING__RIVET2], "1", [using Rivet2])
+  fi
+  if test "$rivet3" = "true" ; then
+    AC_DEFINE([USING__RIVET3], "1", [using Rivet3])
+  fi
+  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet2" = "true" -o "$rivet3" = "true")
 
   AC_ARG_ENABLE(
     fastjet,
@@ -617,6 +621,48 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_FASTJETINCS)
   AC_SUBST(CONDITIONAL_FASTJETLIBS)
   AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
+
+  AC_ARG_ENABLE([manual],
+    AS_HELP_STRING([--enable-manual], [Enable the manual]),
+      [ AC_MSG_CHECKING(whether the manual dependencies are installed);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Manual not enabled); manual=false ;;
+        yes)  if ! command -v python3 &>/dev/null; then
+                 AC_MSG_ERROR(python3 not installed.);
+              fi;
+
+              if ! command -v sphinx-build &>/dev/null; then
+                  AC_MSG_ERROR(sphinx not installed.);
+              fi;
+
+              if ! command -v makeinfo &>/dev/null; then
+                  AC_MSG_ERROR(makeinfo not installed.);
+              fi;
+
+              if ! command -v pdflatex --version &>/dev/null; then
+                  AC_MSG_ERROR(pdflatex not installed.);
+              fi;
+
+              # Check sphinx version number: > __MA_REQ.x.x
+              __VERSION=$(sphinx-build --version | cut -d ' ' -f 2)
+              __MA_VERS=$(echo $VERSION | cut -d '.' -f 1)
+              __MA_REQ=2
+
+              if !  [[ "$__MA_VERS" -ge "$__MA_REQ" ]] ; then
+                  AC_MSG_ERROR("Sphinx version >= $__MA_REQ.x required. You have version: $__VERSION");
+              fi;
+
+              if ! [ python3 -c  'import sphinxcontrib.bibtex' &>/dev/null ]; then
+                 AC_MSG_ERROR(sphinxcontrib-bibtex not installed.);
+              fi;
+
+              AC_MSG_RESULT([yes]); manual=true;;
+           *) ;;
+      esac
+      ],
+      [ manual=false ])
+
+  AM_CONDITIONAL(Manual_ENABLED, test "$manual" = "true")
 
   AC_ARG_ENABLE(
     blackhat,

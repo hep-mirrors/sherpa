@@ -49,7 +49,9 @@ void Cluster::Reset() {
   }
 }
 
-std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
+namespace AHADIC {
+
+  std::ostream& operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"Cluster ["<<cluster.m_parts.first->Flavour()<<", "
      <<cluster.m_parts.second->Flavour()<<"] "
      <<"("<<cluster.m_momentum<<", "
@@ -58,7 +60,7 @@ std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   return str;
 }
 
-std::ostream & AHADIC::operator<<(std::ostream & s, const Cluster_List & cl) {
+std::ostream & operator<<(std::ostream & s, const Cluster_List & cl) {
   Vec4D totmom(0.,0.,0.,0.);
   for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) 
     totmom += (*cit)->Momentum();
@@ -69,3 +71,4 @@ std::ostream & AHADIC::operator<<(std::ostream & s, const Cluster_List & cl) {
   return s;
 }
 
+}

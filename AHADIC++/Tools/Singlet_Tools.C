@@ -60,17 +60,16 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
 
 void Singlet::StripSingletOfGluons() {
   list<Proto_Particle *>::iterator pit=begin();
-  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "
-  //	   <<(*pit)->Flavour()<<"\n";
+  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "<<(*pit)->Flavour()<<"\n";
   Vec4D mom = Vec4D(0.,0.,0.,0.);
   pit++;
   do {
-    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "
-    //	     <<(*pit)->Flavour()<<", ";
+    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "<<(*pit)->Flavour()<<", ";
     mom += (*pit)->Momentum();
+    delete (*pit);
     pit  = erase(pit);
     //msg_Out()<<size()<<" particles left in singlet.\n";
-  } while ((*pit)!=(*rbegin()));
+  } while ((*pit)!=(*rbegin()) && size()>2);
   (*begin())->SetMomentum((*begin())->Momentum()+0.5*mom);
   (*rbegin())->SetMomentum((*rbegin())->Momentum()+0.5*mom);
 }
@@ -87,7 +86,7 @@ void Singlet::Erase(Proto_Particle * ref) {
 }
 
 double Singlet::Mass2() const {
-  return Momentum().Abs2();
+  return Max(0.,Momentum().Abs2());
 }
 
 Vec4D Singlet::Momentum() const {

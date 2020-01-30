@@ -18,14 +18,12 @@ PARTICLE_DATA: {
   6: {Mass: 175},
   }
 PROCESSES:
-  - {
-    Process: 1 -1 -> 6 -6,
-    NLO_QCD_Mode: Fixed_Order,
-    NLO_QCD_Part: I,
-    Order: {EW: 0},
-    Integration_Error: 0.001,
+- 1 -1 -> 6 -6:
+    NLO_QCD_Mode: Fixed_Order
+    NLO_QCD_Part: I
+    Order: {EW: 0}
+    Integration_Error: 0.001
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1
