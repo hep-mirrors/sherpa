@@ -1014,7 +1014,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     return p_partner->operator()(mom,mode)*m_sfactor;
   }
 
-  double B(0.),V(0.),I(0.);
+  double B(0.),V(0.),I(0.),HP(0.);
   m_cmur[0]=m_cmur[1]=0.;
 
   Vec4D_Vector _mom(mom);
@@ -1047,6 +1047,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
       (m_bvimode&2)) {
     m_lastki=kfactorb;
     I=Calc_I(mom)*m_lastki;
+  if(m_dipolecase==IDa  || 
+     m_dipolecase==IDb  ||
+     m_dipolecase==IDin   ) HP = HPTerms(mom,p_kpterms_qcd,m_dsijqcd)*m_lastki;
     Calc_KP(mom);
   }
 
@@ -1060,17 +1063,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   if (m_checkfinite) CheckFinite(I,V);
   if (m_checkborn)   CheckBorn();
 
+
   m_lastbxs=B;
   m_lastv=V;
-  m_lasti=I;
-  double M2(B+V+I);
-
-  m_lasthp = 0;
-  if(m_dipolecase==IDa  || 
-     m_dipolecase==IDb  ||
-     m_dipolecase==IDin   ) m_lasthp = HPTerms(mom,p_kpterms_qcd,m_dsijqcd);
-    M2 += m_lasthp;
-
+  m_lasti=I+HP;
+  double M2(B+V+I+HP);
 
   if (IsBad(M2) || msg_LevelIsDebugging()) {
     size_t precision(msg->Out().precision());
