@@ -465,7 +465,7 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
                                    const Comix_Interface* interface)
 {
   //auto amplit = m_transformedspinampls.find(legs);
-  //m_transformedspinampls.erase(legs);
+  m_transformedspinampls.erase(legs);
   //if (amplit == m_transformedspinampls.end()) {
     auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
     PRINT_VAR(transformedampl);
