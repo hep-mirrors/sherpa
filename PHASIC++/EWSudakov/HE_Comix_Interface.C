@@ -21,9 +21,11 @@ using namespace COMIX;
 using namespace ATOOLS;
 using namespace MODEL;
 
+std::unique_ptr<MODEL::Model_Base> HE_Comix_Interface::p_model_he {nullptr};
+
 HE_Comix_Interface::HE_Comix_Interface(Process_Base* proc,
                                        EWSudakov_Amplitudes& ampls)
-    : Comix_Interface {proc, "Sudakov_HE"}, p_model {nullptr}
+    : Comix_Interface {proc, "Sudakov_HE"}
 {
   InitializeHighEnergyModel();
   InitializeProcesses(ampls);
@@ -50,6 +52,12 @@ void HE_Comix_Interface::ResetWithEWParameters(const MODEL::EWParameters& p)
 
 bool HE_Comix_Interface::InitializeHighEnergyModel()
 {
+  static bool did_initialize {false};
+  if (did_initialize) {
+    return true;
+  } else {
+    did_initialize = true;
+  }
   // TODO: probably we want to suppress this output at some point, since most
   // (all?) of it is just duplicating the "normal" model init output
   msg_Out() << '\n';
@@ -81,5 +89,5 @@ bool HE_Comix_Interface::InitializeHighEnergyModel()
   if (!p_model_he->ModelInit(*SHERPA::s_inithandler->GetISRHandlers()))
     THROW(critical_error, "Model cannot be initialized");
   p_model_he->InitializeInteractionModel();
-  return 1;
+  return true;
 }

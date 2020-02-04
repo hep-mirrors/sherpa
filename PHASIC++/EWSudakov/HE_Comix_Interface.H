@@ -15,8 +15,10 @@ public:
 private:
   void InitializeProcess(const Process_Info&) override;
   bool InitializeHighEnergyModel();
-  MODEL::Model_Base* p_model;
-  std::unique_ptr<MODEL::Model_Base> p_model_he;
+
+  /// we only want a single model for all interfaces (each process has its own
+  /// Sudakov K factor and HE Comix interface), hence we make it static
+  static std::unique_ptr<MODEL::Model_Base> p_model_he;
 };
 
 } // namespace PHASIC

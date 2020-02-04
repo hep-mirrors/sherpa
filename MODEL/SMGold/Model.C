@@ -114,6 +114,12 @@ Standard_ModelGS::Standard_ModelGS() :
 
 void Standard_ModelGS::ParticleInit()
 {
+  // TODO: port this to all other models, or make sure in some other (not
+  // model-specific) way, that the creation of more than one model leads to a
+  // lot of memory leaks
+  if (s_kftable.find(kf_none) != s_kftable.end()) {
+    return;
+  }
   s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle", "no_particle", 1,1);
   //add SM particles
   //kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname

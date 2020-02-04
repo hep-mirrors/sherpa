@@ -468,7 +468,6 @@ Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
   m_transformedspinampls.erase(legs);
   //if (amplit == m_transformedspinampls.end()) {
     auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
-    PRINT_VAR(transformedampl);
     /// TODO: Make the following a bit prettier. At the moment
     /// this is simply a flag to catch that the momentum
     /// stretcher has failed. May want to have a enum
