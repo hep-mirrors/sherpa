@@ -521,7 +521,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     std::string libname(m_evtform);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
-      THROW(missing_module,"Cannot load output library Sherpa"+libname+"Input.");
+      THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
 				 p_model, m_isrhandlers[isr::hard_process]));
