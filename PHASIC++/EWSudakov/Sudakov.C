@@ -60,7 +60,6 @@ Sudakov::Sudakov(Process_Base* proc):
   PRINT_INFO("Active EW_Sudakov coefficients : ");
   for(auto& key: m_activecoeffs)
     msg_Out()<<om::red << "\t" << key << om::reset << "\n";
-  exit(0);
 }
 
 Sudakov::~Sudakov()
