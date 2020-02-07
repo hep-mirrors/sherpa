@@ -61,7 +61,8 @@ namespace PHASIC {
                                       const Comix_Interface* interface=nullptr);
 
     Process_Base* p_proc;
-    const std::set<EWSudakov_Log_Type> m_activecoeffs;
+    // const std::set<EWSudakov_Log_Type> m_activecoeffs;
+    std::set<EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
 
     /// the default COMIX interface used for all logs except the PR logs

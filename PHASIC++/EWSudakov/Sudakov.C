@@ -43,6 +43,24 @@ Sudakov::Sudakov(Process_Base* proc):
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
+
+  /// TODO: post-init change of initialised coefficients:
+  /// all will be computed, but only selected will be used.
+  /// obviously this is NOT the most efficient solution...
+  std::vector<std::string> def_logs = {};
+					 
+  auto log_list =
+  s["EWSUDAKOV_COEFF_REMOVED_LIST"].SetDefault(def_logs).GetVector<std::string>();
+
+  for(auto& ll: log_list){
+    m_activecoeffs.erase(convert(ll));
+  }
+
+  msg_Out() << "\n ";
+  PRINT_INFO("Active EW_Sudakov coefficients : ");
+  for(auto& key: m_activecoeffs)
+    msg_Out()<<om::red << "\t" << key << om::reset << "\n";
+  exit(0);
 }
 
 Sudakov::~Sudakov()
