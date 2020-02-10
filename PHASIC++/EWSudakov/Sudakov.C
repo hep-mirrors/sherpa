@@ -19,10 +19,10 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-Histogram Sudakov::m_kfachisto(0, -5.0, 5.0, 50);
-size_t Sudakov::m_numonshellwarning {0};
+Histogram Sudakov1::m_kfachisto(0, -5.0, 5.0, 50);
+size_t Sudakov1::m_numonshellwarning {0};
 
-Sudakov::Sudakov(Process_Base* proc):
+Sudakov1::Sudakov1(Process_Base* proc):
   p_proc{ proc },
   m_activecoeffs{
     EWSudakov_Log_Type::Ls,
@@ -62,15 +62,15 @@ Sudakov::Sudakov(Process_Base* proc):
     msg_Out()<<om::red << "\t" << key << om::reset << "\n";
 }
 
-Sudakov::~Sudakov()
+Sudakov1::~Sudakov1()
 {
   static bool did_output{false};
   if (!did_output) {
-    Sudakov::m_kfachisto.MPISync();
-    Sudakov::m_kfachisto.Finalize();
+    Sudakov1::m_kfachisto.MPISync();
+    Sudakov1::m_kfachisto.Finalize();
     MyStrStream s;
     s << "kfacs_" << m_threshold;
-    Sudakov::m_kfachisto.Output(s.str());
+    Sudakov1::m_kfachisto.Output(s.str());
     msg_Error() << "Set " << m_numonshellwarning
                 << " amplitudes to 0.0, because there was not enough energy to "
                    "fulfil on-shell conditions\n";
@@ -78,7 +78,7 @@ Sudakov::~Sudakov()
   }
 }
 
-double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
+double Sudakov1::KFactor(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
@@ -90,7 +90,7 @@ double Sudakov::KFactor(const ATOOLS::Vec4D_Vector& mom)
   return KFactor();
 }
 
-bool Sudakov::IsInHighEnergyLimit()
+bool Sudakov1::IsInHighEnergyLimit()
 {
   DEBUG_FUNC("");
   static const auto threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
@@ -107,18 +107,18 @@ bool Sudakov::IsInHighEnergyLimit()
   return true;
 }
 
-void Sudakov::ClearSpinAmplitudes()
+void Sudakov1::ClearSpinAmplitudes()
 {
   m_spinampls.clear();
   m_transformedspinampls.clear();
 }
 
-void Sudakov::FillBaseSpinAmplitudes()
+void Sudakov1::FillBaseSpinAmplitudes()
 {
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
 }
 
-double Sudakov::KFactor()
+double Sudakov1::KFactor()
 {
   auto den = m_spinampls[0].SumSquare();
   if (den == 0.0)
@@ -150,13 +150,13 @@ double Sudakov::KFactor()
     num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
   }
 
-  Sudakov::m_kfachisto.Insert(num/den);
+  Sudakov1::m_kfachisto.Insert(num/den);
 
   return num/den;
 }
 
 
-void Sudakov::CalculateSpinAmplitudeCoeffs()
+void Sudakov1::CalculateSpinAmplitudeCoeffs()
 {
   const auto& ampls = m_spinampls[0];
   const auto nspinampls = ampls.size();
@@ -243,7 +243,7 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
   }
 }
 
-void Sudakov::UpdateGolstoneSpincombinationAndMEPrefactor()
+void Sudakov1::UpdateGolstoneSpincombinationAndMEPrefactor()
 {
   // correct spin index when a longitudinal vector boson is replaced with a
   // scalar using the Goldstone boson equivalence theorem, also calculate
@@ -265,7 +265,7 @@ void Sudakov::UpdateGolstoneSpincombinationAndMEPrefactor()
   }
 }
 
-Coeff_Value Sudakov::LsCoeff()
+Coeff_Value Sudakov1::LsCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -296,7 +296,7 @@ Coeff_Value Sudakov::LsCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov::lsZCoeff()
+Coeff_Value Sudakov1::lsZCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -327,7 +327,7 @@ Coeff_Value Sudakov::lsZCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
+Coeff_Value Sudakov1::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -403,7 +403,7 @@ Coeff_Value Sudakov::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   return coeff;
 }
 
-Coeff_Value Sudakov::lsCCoeff()
+Coeff_Value Sudakov1::lsCCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -439,7 +439,7 @@ Coeff_Value Sudakov::lsCCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov::lsYukCoeff()
+Coeff_Value Sudakov1::lsYukCoeff()
 {
   Coeff_Value coeff{0.0};
   for (size_t i{0}; i < m_current_spincombination.size(); ++i) {
@@ -463,7 +463,7 @@ Coeff_Value Sudakov::lsYukCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov::lsPRCoeff()
+Coeff_Value Sudakov1::lsPRCoeff()
 {
   const auto deno = TransformedAmplitudeValue(
       m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
@@ -480,24 +480,24 @@ Coeff_Value Sudakov::lsPRCoeff()
 }
 
 Complex
-Sudakov::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
+Sudakov1::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
                                    const std::vector<int>& spincombination,
                                    const Comix_Interface* interface)
 {
   //auto amplit = m_transformedspinampls.find(legs);
   m_transformedspinampls.erase(legs);
   //if (amplit == m_transformedspinampls.end()) {
-    auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
-    /// TODO: Make the following a bit prettier. At the moment
-    /// this is simply a flag to catch that the momentum
-    /// stretcher has failed. May want to have a enum
-    if (transformedampl.Flag() & (1 << 4)) {
-      ++m_numonshellwarning;
-      return 0.0;
-    }
-    (interface ? *interface : m_comixinterface)
-        .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
-    auto amplit = m_transformedspinampls.find(legs);
+  auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+  /// TODO: Make the following a bit prettier. At the moment
+  /// this is simply a flag to catch that the momentum
+  /// stretcher has failed. May want to have a enum
+  if (transformedampl.Flag() & (1 << 4)) {
+    ++m_numonshellwarning;
+    return 0.0;
+  }
+  (interface ? *interface : m_comixinterface)
+    .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
+  auto amplit = m_transformedspinampls.find(legs);
   //}
   auto& legpermutation = m_ampls.LegPermutation(legs);
   std::vector<int> transformedspincombination;
