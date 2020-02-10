@@ -169,9 +169,17 @@ void Sudakov::CalculateSpinAmplitudeCoeffs()
       case EWSudakov_Log_Type::lZ:
       case EWSudakov_Log_Type::lC:
       case EWSudakov_Log_Type::lYuk:
-      case EWSudakov_Log_Type::lPR:
         m_coeffs[{key, {}}].resize(nspinampls);
         break;
+      case EWSudakov_Log_Type::lPR: {
+        // NOTE: For the time being we only set this to S. It may however be
+        // useful to have a "running" and a "fixed" setting for users.
+        m_ewscale2 = m_ampls.MandelstamS();
+        m_comixinterface_he.ResetWithEWParameters(
+            m_ewgroupconsts.EvolveEWparameters(m_ewscale2));
+        m_coeffs[{key, {}}].resize(nspinampls);
+        break;
+      }
       case EWSudakov_Log_Type::lSSC:
         for (size_t k{ 0 }; k < nspins; ++k)
           for (size_t l{ 0 }; l < k; ++l)
@@ -457,22 +465,17 @@ Coeff_Value Sudakov::lsYukCoeff()
 
 Coeff_Value Sudakov::lsPRCoeff()
 {
-  Coeff_Value coeff {0.0};
-  auto deno = TransformedAmplitudeValue(
+  const auto deno = TransformedAmplitudeValue(
       m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
       m_current_spincombination,
       &m_comixinterface);
-  /// For the time being we only set this to S. It may however be
-  /// useful to have a "running" and a "fixed" setting for users.
-  const double ewscale2(m_ampls.MandelstamS());
- 
-  m_comixinterface_he.ResetWithEWParameters(m_ewgroupconsts.EvolveEWparameters(ewscale2));
- 
-  const auto he_me = 
-    TransformedAmplitudeValue(m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
-	 		     m_current_spincombination, &m_comixinterface_he);
-  
-  coeff = (he_me/deno - 1.0)*4.*M_PI/log(ewscale2/m_ewgroupconsts.m_mw2)/m_ewgroupconsts.m_aew;
+  const auto he_me = TransformedAmplitudeValue(
+      m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
+      m_current_spincombination,
+      &m_comixinterface_he);
+  Coeff_Value coeff = (he_me / deno - 1.0) * 4. * M_PI /
+                      log(m_ewscale2 / m_ewgroupconsts.m_mw2) /
+                      m_ewgroupconsts.m_aew;
   return coeff;
 }
 
