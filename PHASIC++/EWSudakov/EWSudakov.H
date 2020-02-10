@@ -35,7 +35,7 @@ namespace PHASIC {
     lPR,      ///< parameter renormalisation corrections \propto \log(s/m_mW2)
   };
 
-  EWSudakov_Log_Type convert(const std::string& log);
+  EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string&);
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map&);
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map_Signed&);

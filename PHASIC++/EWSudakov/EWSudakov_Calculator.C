@@ -1,4 +1,4 @@
-#include "PHASIC++/EWSudakov/Sudakov.H"
+#include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
 
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 #include "PHASIC++/EWSudakov/Coefficient_Checker.H"
@@ -19,10 +19,10 @@ using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 
-Histogram Sudakov1::m_kfachisto(0, -5.0, 5.0, 50);
-size_t Sudakov1::m_numonshellwarning {0};
+Histogram EWSudakov_Calculator::m_kfachisto(0, -5.0, 5.0, 50);
+size_t EWSudakov_Calculator::m_numonshellwarning {0};
 
-Sudakov1::Sudakov1(Process_Base* proc):
+EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   p_proc{ proc },
   m_activecoeffs{
     EWSudakov_Log_Type::Ls,
@@ -43,34 +43,27 @@ Sudakov1::Sudakov1(Process_Base* proc):
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
-
-  /// TODO: post-init change of initialised coefficients:
-  /// all will be computed, but only selected will be used.
-  /// obviously this is NOT the most efficient solution...
-  std::vector<std::string> def_logs = {};
-					 
-  auto log_list =
-  s["EWSUDAKOV_COEFF_REMOVED_LIST"].SetDefault(def_logs).GetVector<std::string>();
-
-  for(auto& ll: log_list){
-    m_activecoeffs.erase(convert(ll));
+  s.DeclareVectorSettingsWithEmptyDefault({"EWSUDAKOV_COEFF_REMOVED_LIST"});
+  const auto disabled_log_list =
+      s["EWSUDAKOV_COEFF_REMOVED_LIST"].GetVector<std::string>();
+  for (const auto& l : disabled_log_list) {
+    m_activecoeffs.erase(EWSudakovLogTypeFromString(l));
   }
-
   msg_Out() << "\n ";
   PRINT_INFO("Active EW_Sudakov coefficients : ");
-  for(auto& key: m_activecoeffs)
-    msg_Out()<<om::red << "\t" << key << om::reset << "\n";
+  for (const auto& key : m_activecoeffs)
+    msg_Out() << om::red << "\t" << key << om::reset << "\n";
 }
 
-Sudakov1::~Sudakov1()
+EWSudakov_Calculator::~EWSudakov_Calculator()
 {
   static bool did_output{false};
   if (!did_output) {
-    Sudakov1::m_kfachisto.MPISync();
-    Sudakov1::m_kfachisto.Finalize();
+    EWSudakov_Calculator::m_kfachisto.MPISync();
+    EWSudakov_Calculator::m_kfachisto.Finalize();
     MyStrStream s;
     s << "kfacs_" << m_threshold;
-    Sudakov1::m_kfachisto.Output(s.str());
+    EWSudakov_Calculator::m_kfachisto.Output(s.str());
     msg_Error() << "Set " << m_numonshellwarning
                 << " amplitudes to 0.0, because there was not enough energy to "
                    "fulfil on-shell conditions\n";
@@ -78,7 +71,7 @@ Sudakov1::~Sudakov1()
   }
 }
 
-double Sudakov1::KFactor(const ATOOLS::Vec4D_Vector& mom)
+double EWSudakov_Calculator::KFactor(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
@@ -90,7 +83,7 @@ double Sudakov1::KFactor(const ATOOLS::Vec4D_Vector& mom)
   return KFactor();
 }
 
-bool Sudakov1::IsInHighEnergyLimit()
+bool EWSudakov_Calculator::IsInHighEnergyLimit()
 {
   DEBUG_FUNC("");
   static const auto threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
@@ -107,18 +100,18 @@ bool Sudakov1::IsInHighEnergyLimit()
   return true;
 }
 
-void Sudakov1::ClearSpinAmplitudes()
+void EWSudakov_Calculator::ClearSpinAmplitudes()
 {
   m_spinampls.clear();
   m_transformedspinampls.clear();
 }
 
-void Sudakov1::FillBaseSpinAmplitudes()
+void EWSudakov_Calculator::FillBaseSpinAmplitudes()
 {
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
 }
 
-double Sudakov1::KFactor()
+double EWSudakov_Calculator::KFactor()
 {
   auto den = m_spinampls[0].SumSquare();
   if (den == 0.0)
@@ -150,13 +143,13 @@ double Sudakov1::KFactor()
     num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
   }
 
-  Sudakov1::m_kfachisto.Insert(num/den);
+  EWSudakov_Calculator::m_kfachisto.Insert(num/den);
 
   return num/den;
 }
 
 
-void Sudakov1::CalculateSpinAmplitudeCoeffs()
+void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
 {
   const auto& ampls = m_spinampls[0];
   const auto nspinampls = ampls.size();
@@ -243,7 +236,7 @@ void Sudakov1::CalculateSpinAmplitudeCoeffs()
   }
 }
 
-void Sudakov1::UpdateGolstoneSpincombinationAndMEPrefactor()
+void EWSudakov_Calculator::UpdateGolstoneSpincombinationAndMEPrefactor()
 {
   // correct spin index when a longitudinal vector boson is replaced with a
   // scalar using the Goldstone boson equivalence theorem, also calculate
@@ -265,7 +258,7 @@ void Sudakov1::UpdateGolstoneSpincombinationAndMEPrefactor()
   }
 }
 
-Coeff_Value Sudakov1::LsCoeff()
+Coeff_Value EWSudakov_Calculator::LsCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -296,7 +289,7 @@ Coeff_Value Sudakov1::LsCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov1::lsZCoeff()
+Coeff_Value EWSudakov_Calculator::lsZCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -327,7 +320,8 @@ Coeff_Value Sudakov1::lsZCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov1::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
+Coeff_Value
+EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -403,7 +397,7 @@ Coeff_Value Sudakov1::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   return coeff;
 }
 
-Coeff_Value Sudakov1::lsCCoeff()
+Coeff_Value EWSudakov_Calculator::lsCCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
@@ -439,7 +433,7 @@ Coeff_Value Sudakov1::lsCCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov1::lsYukCoeff()
+Coeff_Value EWSudakov_Calculator::lsYukCoeff()
 {
   Coeff_Value coeff{0.0};
   for (size_t i{0}; i < m_current_spincombination.size(); ++i) {
@@ -463,7 +457,7 @@ Coeff_Value Sudakov1::lsYukCoeff()
   return coeff;
 }
 
-Coeff_Value Sudakov1::lsPRCoeff()
+Coeff_Value EWSudakov_Calculator::lsPRCoeff()
 {
   const auto deno = TransformedAmplitudeValue(
       m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
@@ -479,11 +473,13 @@ Coeff_Value Sudakov1::lsPRCoeff()
   return coeff;
 }
 
-Complex
-Sudakov1::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
-                                   const std::vector<int>& spincombination,
-                                   const Comix_Interface* interface)
+Complex EWSudakov_Calculator::TransformedAmplitudeValue(
+    const Leg_Kfcode_Map& legs,
+    const std::vector<int>& spincombination,
+    const Comix_Interface* interface)
 {
+  // TODO: Re-instate caching mechanism that works well with calculating
+  // ordinary and HE matrix elements (for the PR logs)
   //auto amplit = m_transformedspinampls.find(legs);
   m_transformedspinampls.erase(legs);
   //if (amplit == m_transformedspinampls.end()) {
@@ -496,7 +492,7 @@ Sudakov1::TransformedAmplitudeValue(const Leg_Kfcode_Map& legs,
     return 0.0;
   }
   (interface ? *interface : m_comixinterface)
-    .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
+      .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
   auto amplit = m_transformedspinampls.find(legs);
   //}
   auto& legpermutation = m_ampls.LegPermutation(legs);

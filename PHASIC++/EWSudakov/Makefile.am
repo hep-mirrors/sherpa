@@ -12,7 +12,7 @@ libPhasicEWSudakov_la_SOURCES = \
 	EWSudakov_Amplitudes.C \
 	Git_Info.C \
 	KFactor.C \
-	Sudakov.C
+	EWSudakov_Calculator.C
 localinc_HEADERS = \
 	Coefficient_Checker.H \
 	Comix_Interface.H \
@@ -21,4 +21,4 @@ localinc_HEADERS = \
 	EWSudakov.H \
 	EWSudakov_Amplitudes.H \
 	KFactor.H \
-	Sudakov.H
+	EWSudakov_Calculator.H

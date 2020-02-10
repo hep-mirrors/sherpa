@@ -2,8 +2,8 @@
 #define PHASIC_EWSudakov_CoefficientChecker_H
 
 #include "METOOLS/Main/Spin_Structure.H"
-#include "PHASIC++/EWSudakov/Sudakov.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
+#include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
 
 #include <string>
 #include <map>
