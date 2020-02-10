@@ -294,6 +294,9 @@ void Model_Base::ReadParticleData()
 
 void Model_Base::AddStandardContainers()
 {
+  if (s_kftable.find(kf_jet) != s_kftable.end()) {
+    return;
+  }
   // kf,mass,width,icharge,strong,spin,majo,on,stable,massive,
   //   idname,antiidname,texname,antitexname,dummy,group
   s_kftable[kf_jet] = new
