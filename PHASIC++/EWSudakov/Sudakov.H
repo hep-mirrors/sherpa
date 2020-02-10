@@ -86,6 +86,7 @@ namespace PHASIC {
     mutable std::vector<int> m_current_spincombination;
     mutable std::vector<int> m_current_goldstone_spincombination;
     mutable Complex m_current_goldstone_me_prefactor;
+    mutable double m_ewscale2;
 
     // self-monitoring
     static Histogram m_kfachisto;
