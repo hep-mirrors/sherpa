@@ -19,14 +19,10 @@ EWSudakov_Amplitudes::EWSudakov_Amplitudes(
   ampls{ CreateAmplitudes(proc, activecoeffs) },
   permutations{ CreatePermutations(ampls) }
 {
-  for (int n {0}; n < NumberOfLegs(); n++)
-    particles.push_back(new Particle{});
 }
 
 EWSudakov_Amplitudes::~EWSudakov_Amplitudes()
 {
-  for (auto* p : particles)
-    delete p;
 }
 
 Cluster_Amplitude& EWSudakov_Amplitudes::BaseAmplitude() noexcept
@@ -82,6 +78,10 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     BaseAmplitude().Leg(i)->SetMom(i < BaseAmplitude().NIn() ? -mom[i] : mom[i]);
   }
 
+  particles.reserve(NumberOfLegs());
+  for (int n {0}; n < NumberOfLegs(); n++)
+    particles.push_back(new Particle{});
+
   for (auto& ampl : ampls) {
     if (ampl.first == s_baseamplkey)
       continue;
@@ -105,6 +105,10 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
                                                             : new_moms[j]);
     }
   }
+
+  for (auto* p : particles)
+    delete p;
+  particles.clear();
 }
 
 double EWSudakov_Amplitudes::MandelstamS()
