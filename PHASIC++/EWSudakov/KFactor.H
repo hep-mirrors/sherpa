@@ -8,7 +8,7 @@
 namespace PHASIC {
   class Sudakov_KFactor: public KFactor_Setter_Base {
   private:
-    Sudakov m_ews;
+    Sudakov1 m_ews;
     size_t m_check;
   public:
     Sudakov_KFactor(const KFactor_Setter_Arguments &args);

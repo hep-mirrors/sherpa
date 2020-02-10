@@ -60,8 +60,6 @@ bool HE_Comix_Interface::InitializeHighEnergyModel()
   }
   // TODO: probably we want to suppress this output at some point, since most
   // (all?) of it is just duplicating the "normal" model init output
-  msg_Out() << '\n';
-  PRINT_FUNC("");
   // create model
   Settings& s = Settings::GetMainSettings();
   std::string name(s["MODEL"].Get<std::string>());

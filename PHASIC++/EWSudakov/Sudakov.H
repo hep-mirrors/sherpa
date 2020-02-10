@@ -1,5 +1,5 @@
-#ifndef PHASIC__EWSudakov__Sudakov_H
-#define PHASIC__EWSudakov__Sudakov_H
+#ifndef PHASIC__EWSudakov__Sudakov1_H
+#define PHASIC__EWSudakov__Sudakov1_H
 
 #include "ATOOLS/Math/Histogram.H"
 #include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
@@ -18,10 +18,10 @@ namespace PHASIC {
 
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key&);
 
-  class Sudakov {
+  class Sudakov1 {
   public:
-    Sudakov(Process_Base*);
-    ~Sudakov();
+    Sudakov1(Process_Base*);
+    ~Sudakov1();
     double KFactor(const ATOOLS::Vec4D_Vector& mom);
   private:
 
@@ -61,7 +61,8 @@ namespace PHASIC {
                                       const Comix_Interface* interface=nullptr);
 
     Process_Base* p_proc;
-    const std::set<EWSudakov_Log_Type> m_activecoeffs;
+    // const std::set<EWSudakov_Log_Type> m_activecoeffs;
+    std::set<EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
 
     /// the default COMIX interface used for all logs except the PR logs
