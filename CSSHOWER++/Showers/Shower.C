@@ -73,7 +73,19 @@ Shower::Shower(PDF::ISR_Handler * isr,
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
+
+  /// Additional inputs for IS-Shower testing
+  auto s_is_shower_data = s.GetMainSettings()["CSS_NO_EMISSION_IS_SHOWER"];
+  /// Whether or not to compute no emission probability
+  m_noemission          = s_is_shower_data["ON"].SetDefault(0).Get<int>();
+  /// Set low scale
+  m_t1                  = s_is_shower_data["t1"].SetDefault(0.0).Get<double>();
+  /// Set starting scale
+  m_t0                  = s_is_shower_data["t0"].SetDefault(sqr(100.0)).Get<double>();
+  /// Set fixed x
+  m_x                   = s_is_shower_data["x"].SetDefault(0.01).Get<double>();
 }
+ 
 
 Shower::~Shower()
 {
@@ -92,6 +104,7 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weight=1.0;
+  if(m_noemission) return NoEmissionProbability(actual, m_x);
   if (nem < m_maxrewem) {
     m_sudakov.SetVariationWeights(p_variationweights);
   } else {
@@ -509,7 +522,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       if (nem >= maxem) return true;
     }
   }
-  return true;
+ return true;
 }
 
 Parton *Shower::SelectSplitting(double & kt2win) {
@@ -556,4 +569,40 @@ void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
   m_kinFI.SetMS(ms);
   m_kinIF.SetMS(ms);
   m_kinII.SetMS(ms);
+}
+
+bool Shower::NoEmissionProbability(Singlet * act,const double x)
+{
+  p_actual=act;
+
+  double kt2win;
+
+  double wt(0.), wt2(0.);
+  int nTrialsMax(1000), nTrials(0);
+  //PRINT_VAR(*p_actual);
+  for (size_t i{0}; i<nTrialsMax; ++i){
+    p_actual = act;
+    while (true) {
+      // done in PHASIC
+      for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it){
+	if ((*it)->GetType()==pst::IS) SetXBj((*it));
+      }
+      kt2win = 0.;
+      ResetScales(m_t0);
+      Parton *split=SelectSplitting(kt2win);
+      if (split==NULL) {
+	break;
+      }
+      double jcv(0.0);
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,jcv,2));
+      if (kstat==1 && kt2win > m_t1)
+	{
+	  ++nTrials;
+	  break;
+	}
+    }
+  }
+  msg_Out() << "mean  : " << (double) nTrials/nTrialsMax << "\n";
+  //  exit(0);
+  return true;
 }

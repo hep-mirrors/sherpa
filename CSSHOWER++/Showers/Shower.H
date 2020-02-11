@@ -39,6 +39,8 @@ namespace CSSHOWER {
     REMNANTS::Remnant_Handler * p_remnants;
     Parton           * m_last[4];
     int                m_kscheme, m_maxpart, m_use_bbw, m_recdec;
+    int                m_noemission;
+    double             m_t1,m_t0,m_x;
 
     ATOOLS::Cluster_Leg *p_old[2];
 
@@ -81,6 +83,10 @@ namespace CSSHOWER {
 				Parton *const pi,Parton *const pj);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
+
+    bool NoEmissionProbability(Singlet * act,const double x);
+
+    
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
 
