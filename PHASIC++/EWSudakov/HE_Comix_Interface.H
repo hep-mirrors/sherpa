@@ -8,8 +8,8 @@ namespace PHASIC {
 class HE_Comix_Interface : public Comix_Interface {
 
 public:
-  HE_Comix_Interface(Process_Base*, EWSudakov_Amplitudes&);
-  void InitializeProcesses(EWSudakov_Amplitudes&) override;
+  HE_Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
+  void InitializeProcesses(const Cluster_Amplitude_PM&) override;
   void ResetWithEWParameters(const MODEL::EWParameters&);
 
 private:

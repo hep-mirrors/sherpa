@@ -30,6 +30,13 @@ namespace PHASIC {
 
   class Process_Base;
 
+  using Cluster_Ampl_Key = Leg_Kfcode_Map;
+  using Cluster_Amplitude_UPM =
+      std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude_UP>;
+  using Cluster_Amplitude_PM =
+      std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude*>;
+  using Permutation_Map = std::map<Cluster_Ampl_Key, std::vector<size_t>>;
+
   /**
    * helper class that generates and stores the amplitudes needed to calculate
    * EW Sudakov corrections, when using methods that accept a spin combination,
@@ -37,12 +44,6 @@ namespace PHASIC {
    * corresponding Goldstone bosons
    */
   class EWSudakov_Amplitudes {
-
-    using Cluster_Ampl_Key = Leg_Kfcode_Map;
-    using Cluster_Amplitude_UPM
-      = std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude_UP>;
-    using Permutation_Map
-      = std::map<Cluster_Ampl_Key, std::vector<size_t>>;
 
     static const Cluster_Ampl_Key s_baseamplkey;
 
@@ -65,10 +66,11 @@ namespace PHASIC {
     double MandelstamT();
     double MandelstamU();
 
-    Cluster_Amplitude_UPM::iterator begin() { return ampls.begin(); }
-    Cluster_Amplitude_UPM::iterator end() { return ampls.end(); }
-    Cluster_Amplitude_UPM::const_iterator cbegin() { return ampls.cbegin(); }
-    Cluster_Amplitude_UPM::const_iterator cend() { return ampls.cend(); }
+    const Cluster_Amplitude_PM& All() const { return all_ampls; }
+    const Cluster_Amplitude_PM& GoldstoneOnly() const
+    {
+      return goldstone_only_ampls;
+    }
 
   private:
 
@@ -84,8 +86,9 @@ namespace PHASIC {
     static std::vector<size_t> CalculateLegPermutation(
         const ATOOLS::Cluster_Amplitude_UP& ampl);
 
-    /// amplitudes for the Z/photon interference
+    /// all amplitudes that might be needed for EW Sudakov corrections
     Cluster_Amplitude_UPM ampls;
+    Cluster_Amplitude_PM all_ampls, goldstone_only_ampls;
 
     /// give permutation of flavours between an ampl and its transformed version
     std::vector<size_t> NewOrdering(const ATOOLS::Cluster_Amplitude_UP&) const;

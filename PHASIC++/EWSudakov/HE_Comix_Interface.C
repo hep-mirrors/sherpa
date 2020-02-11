@@ -24,14 +24,14 @@ using namespace MODEL;
 std::unique_ptr<MODEL::Model_Base> HE_Comix_Interface::p_model_he {nullptr};
 
 HE_Comix_Interface::HE_Comix_Interface(Process_Base* proc,
-                                       EWSudakov_Amplitudes& ampls)
+                                       const EWSudakov_Amplitudes& ampls)
     : Comix_Interface {proc, "Sudakov_HE"}
 {
   InitializeHighEnergyModel();
-  InitializeProcesses(ampls);
+  InitializeProcesses(ampls.GoldstoneOnly());
 }
 
-void HE_Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
+void HE_Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
 {
   Model_Base* model = s_model;
   s_model = p_model_he.get();

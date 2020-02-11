@@ -2,7 +2,6 @@
 
 #include "ATOOLS/Phys/Color.H"
 #include "COMIX/Main/Single_Process.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -22,10 +21,10 @@ using namespace ATOOLS;
 using namespace MODEL;
 
 Comix_Interface::Comix_Interface(Process_Base* proc,
-                                 EWSudakov_Amplitudes& ampls)
+                                 const EWSudakov_Amplitudes& ampls)
     : p_proc{proc}, m_procname_suffix{"Sudakov"}
 {
-  InitializeProcesses(ampls);
+  InitializeProcesses(ampls.All());
 }
 
 Comix_Interface::Comix_Interface(Process_Base* proc,
@@ -47,21 +46,23 @@ void Comix_Interface::FillSpinAmplitudes(
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
   std::string pname(Process_Base::GenerateName(campl));
   auto pit = loprocmapit->second->find(pname);
-  if (pit->second == NULL)
+  if (pit->second == NULL) {
+    msg_Error() << "Looking for amplitude:" << ampl << " ...\n";
     THROW(fatal_error, "Process not found");
+  }
   pit->second->Differential(*campl, 2 | 4 | 128);
   campl->Delete();
   std::vector<std::vector<Complex>> cols;
   pit->second->FillAmplitudes(spinampls, cols);
 }
 
-void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
+void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
 {
   DEBUG_FUNC("");
   auto& s = Settings::GetMainSettings();
   const auto graph_path =
       s["PRINT_EWSUDAKOV_GRAPHS"].SetDefault("").Get<std::string>();
-  for (auto& kv : ampls) {
+  for (const auto& kv : ampls) {
     const auto& ampl = kv.second;
     msg_Debugging() << "Initialize process for ampl=" << *ampl << std::endl;
     const Process_Info pi = CreateProcessInfo(ampl, graph_path);
@@ -70,7 +71,7 @@ void Comix_Interface::InitializeProcesses(EWSudakov_Amplitudes& ampls)
 }
 
 Process_Info
-Comix_Interface::CreateProcessInfo(const Cluster_Amplitude_UP& ampl,
+Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
                                    const std ::string& graph_path)
 {
   Process_Info pi;

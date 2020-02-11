@@ -13,8 +13,8 @@ class EWSudakov_Amplitudes;
 class Comix_Interface {
 
 public:
-  Comix_Interface(Process_Base*, EWSudakov_Amplitudes&);
-  virtual void InitializeProcesses(EWSudakov_Amplitudes&);
+  Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
+  virtual void InitializeProcesses(const Cluster_Amplitude_PM&);
   void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                           ATOOLS::Cluster_Amplitude&) const;
 
@@ -25,7 +25,7 @@ protected:
   std::string m_procname_suffix;
 
 private:
-  Process_Info CreateProcessInfo(const Cluster_Amplitude_UP&,
+  Process_Info CreateProcessInfo(const Cluster_Amplitude*,
                                  const std::string& graph_path);
   NLOTypeStringProcessMap_Map m_apmap;
 

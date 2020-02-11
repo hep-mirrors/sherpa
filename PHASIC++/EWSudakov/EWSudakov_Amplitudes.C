@@ -11,7 +11,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-const EWSudakov_Amplitudes::Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
+const Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
 = Leg_Kfcode_Map{};
 
 EWSudakov_Amplitudes::EWSudakov_Amplitudes(
@@ -19,6 +19,21 @@ EWSudakov_Amplitudes::EWSudakov_Amplitudes(
   ampls{ CreateAmplitudes(proc, activecoeffs) },
   permutations{ CreatePermutations(ampls) }
 {
+  // fill helper maps that are used to expose specific sets of amplitudes
+  for (const auto& kv : ampls) {
+    all_ampls[kv.first] = kv.second.get();
+    bool is_goldstone_only {true};
+    for (const auto& leg_kfcode_pair : kv.first) {
+      if (!(leg_kfcode_pair.second == kf_phiplus ||
+          leg_kfcode_pair.second == kf_chi)) {
+        is_goldstone_only = false;
+        break;
+      }
+    }
+    if (is_goldstone_only) {
+      goldstone_only_ampls[kv.first] = kv.second.get();
+    }
+  }
 }
 
 EWSudakov_Amplitudes::~EWSudakov_Amplitudes()
@@ -129,10 +144,8 @@ double EWSudakov_Amplitudes::MandelstamU()
   return (ampl.Leg(0)->Mom() - ampl.Leg(3)->Mom()).Abs2();
 }
 
-EWSudakov_Amplitudes::Cluster_Amplitude_UPM
-EWSudakov_Amplitudes::CreateAmplitudes(
-    Process_Base* proc,
-    const std::set<EWSudakov_Log_Type>& activecoeffs) const
+Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
+    Process_Base* proc, const std::set<EWSudakov_Log_Type>& activecoeffs) const
 {
   Cluster_Amplitude_UPM ampls;
 
@@ -303,7 +316,7 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSU2TransformedAmplitude(
   return campl;
 }
 
-EWSudakov_Amplitudes::Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
+Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
     const Cluster_Amplitude_UPM& ampls)
 {
   Permutation_Map permutations;
