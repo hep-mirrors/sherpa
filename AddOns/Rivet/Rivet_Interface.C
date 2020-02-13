@@ -11,7 +11,9 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
+
 #ifdef USING__RIVET3
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
@@ -24,7 +26,6 @@
 #define HEPMC_HAS_CROSS_SECTION
 #else
 #include "SHERPA/Tools/HepMC2_Interface.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 #ifdef USING__HEPMC2
 #include "HepMC/GenEvent.h"
