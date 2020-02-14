@@ -662,7 +662,7 @@ double Single_Process::ReweightWithoutSubevents(
     const double Bnew(m_mewgtinfo.m_B * bornalphasfac);
 
     // associated Born-type
-    double Bassnew(0.0);
+    double Bassnew(0.0), Deltaassnew(1.0);
     {
       // if Born is at power as^N, then
       // entries of m_wass at power as^(N-i),
@@ -675,7 +675,10 @@ double Single_Process::ReweightWithoutSubevents(
       size_t oqcd(info.m_orderqcd-needslowerorderqcd);
       for (size_t i(0);i<m_mewgtinfo.m_wass.size();++i) {
         if (m_mewgtinfo.m_wass[i] && varparams->m_asscontrib&(1<<i)) {
-          Bassnew += m_mewgtinfo.m_wass[i] * bornassalphasfac;
+          if (i==0 && varparams->m_multiassew)
+            Deltaassnew *= 1.+(m_mewgtinfo.m_wass[i] * bornassalphasfac)/Bnew;
+          else
+            Bassnew += m_mewgtinfo.m_wass[i] * bornassalphasfac;
         }
         if ((oqcd-i)==0) break;
         bornassalphasfac /= alphasratios.back();
@@ -717,7 +720,7 @@ double Single_Process::ReweightWithoutSubevents(
       }
     }
 
-    return BVIKPnew + DADSnew; 
+    return (BVIKPnew + DADSnew) * Deltaassnew;
   }
 }
 

@@ -402,6 +402,9 @@ must be given during installation to enable this feature.
 
 @node Scale and PDF variations
 @subsection Scale and PDF variations
+@cindex SCALE_VARIATIONS
+@cindex PDF_VARIATIONS
+@cindex ASSOCIATED_CONTRIBUTIONS_VARIATIONS
 Sherpa can compute alternative event weights for different scale and 
 PDF choices on-the-fly, resulting in alternative weights for the generated 
 event. The can be evoked with the following syntax
@@ -444,7 +447,8 @@ However, this is currently only supported for @code{HepMC_GenEvent} and
 The alternative event weights follow the Les Houches naming convention 
 for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}. 
 In case associated NLO EW and sub-leading order contributions are used, 
-this convention is extended to @code{MUR<fac>_MUF<fac>_PDF<id>_ASS<contrib>}.
+this convention is extended to @code{MUR<fac>_MUF<fac>_PDF<id>_ASS<contrib>} 
+for an additive combination and @code{MUR<fac>_MUF<fac>_PDF<id>_MULTIASS<contrib>} for a multiplicative one.
 
 When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate 
 instances of Rivet, one for each alternative event weight in addition to 
@@ -457,6 +461,10 @@ to the nominal one. Any histograming therefore has to account for this
 and recompute the total cross section as the sum of weights devided by the 
 number of trials, cf. @ref{Cross section determination}.
 
+@cindex CSS_REWEIGHT
+@cindex CSS_REWEIGHT_SCALE_CUTOFF
+@cindex CSS_MAX_REWEIGHT_FACTOR
+@cindex CSS_ALPHAS_FREEZE_MODE
 The on-the-fly reweighting works for all event generation modes (weighted or
 (partially) unweighted) and all calculation types (LO, LOPS, NLO, NLOPS,
 MEPS@@LO, MEPS@@NLO and MENLOPS).
