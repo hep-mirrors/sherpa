@@ -75,6 +75,7 @@ namespace SHERPA {
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2fac, m_showermuF2fac;
     PHASIC::asscontrib::type m_asscontrib;
+    const bool m_multiassew;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;
@@ -86,13 +87,14 @@ namespace SHERPA {
     Variation_Parameters(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
                          PHASIC::asscontrib::type asscontrib,
+                         bool multiassew,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::One_Running_AlphaS *alphas,
                          bool deletepdfsandalphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
       m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
-      m_asscontrib(asscontrib),
+      m_asscontrib(asscontrib), m_multiassew(multiassew),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfsandalphas(deletepdfsandalphas),
       m_name(GenerateName())

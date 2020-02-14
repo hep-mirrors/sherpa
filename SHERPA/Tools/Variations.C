@@ -155,15 +155,19 @@ std::vector<std::string> Variations::VariationArguments(Data_Reader * const read
 {
   std::vector<std::string> varargs, pdfvarargs, assargs;
   varargs = VariationArguments(reader, "SCALE_VARIATIONS");
-  // the PDF_VARIATIONS has a more specific syntax that must be transformed to
+  // the PDF_VARIATIONS have a more specific syntax that must be transformed to
   // the more general syntax of SCALE_VARIATIONS
   pdfvarargs = VariationArguments(reader, "PDF_VARIATIONS");
   for (size_t i(0); i < pdfvarargs.size(); ++i) {
     varargs.push_back("1.,1.," + pdfvarargs[i]);
   }
+  // the ASSOCIATED_CONTRIBUTIONS_VARIATIONS have a more specific syntax 
+  // that must be transformed to the more general syntax of SCALE_VARIATIONS
+  // create an entry for standard additive and multiplicative combination
   assargs = VariationArguments(reader, "ASSOCIATED_CONTRIBUTIONS_VARIATIONS");
   for (size_t i(0); i < assargs.size(); ++i) {
     varargs.push_back("1.,1.,default,ASS_" + assargs[i]);
+    varargs.push_back("1.,1.,default,MULTIASS_" + assargs[i]);
   }
   if (msg_LevelIsDebugging())
     for (size_t i(0);i<varargs.size();++i)
@@ -216,6 +220,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
 
   // associated contribs
   PHASIC::asscontrib::type asscontrib(PHASIC::asscontrib::none);
+  bool multiassew(false);
 
   bool ownedpdfsandalphas(false);
   if (stringparams.size() > 2) {
@@ -268,6 +273,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
     if (stringparams.size() > 3) {
       std::string assparam(stringparams[3].substr(stringparams[3].find("ASS_")));
       asscontrib=ToType<PHASIC::asscontrib::type>(assparam);
+      multiassew=(stringparams[3].find("MULTIASS_")!=std::string::npos);
     }
   } else {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
@@ -278,7 +284,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
     Variation_Parameters *params =
       new Variation_Parameters(muR2fac, muF2fac,
                                showermuR2fac, showermuF2fac,
-                               asscontrib,
+                               asscontrib,multiassew,
                                pdfasit->m_pdfs[0],
                                pdfasit->m_pdfs[1],
                                pdfasit->p_alphas,
@@ -377,7 +383,10 @@ std::string Variation_Parameters::GenerateName() const
   }
   // append non-trivial added associated contribs
   if (m_asscontrib != PHASIC::asscontrib::none) {
-    name += divider + GenerateNamePart("ASS", m_asscontrib);
+    if (m_multiassew)
+      name += divider + GenerateNamePart("MULTIASS", m_asscontrib);
+    else
+      name += divider + GenerateNamePart("ASS", m_asscontrib);
   }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
