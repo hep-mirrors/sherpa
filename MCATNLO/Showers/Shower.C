@@ -17,8 +17,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
-  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr),
-  p_variationweights(NULL)
+  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   Settings& s = Settings::GetMainSettings();
   const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
@@ -121,9 +120,8 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetMEFlow(1,newpB->GetMEFlow(1));
   split->SetMEFlow(2,newpB->GetMEFlow(2));
   if (rd==1) rd=p_gamma->Reject()?-1:1;
-  DEBUG_VAR(p_gamma->Weight());
-  m_weight*=p_gamma->Weight();
-  if (p_variationweights) *p_variationweights*=p_gamma->Weight();
+  const double gamma_weight {p_gamma->Weight()};
+  m_weights *= gamma_weight;
   if (rd==1 && split->KtTest()>split->KtMax())
     jcv=split->GetSing()->JetVeto(&m_sudakov);
   split->SetFlavour(m_flav);
@@ -222,35 +220,9 @@ int Shower::MakeKinematics
   return 1;
 }
 
-double Shower::VetoWeight(Variation_Parameters *params,
-			  Variation_Weights *weights,
-			  JetVeto_Args &args)
-{
-  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
-  int stat(args.m_jcv>=0.0);
-  Singlet *sing(args.p_sing);
-  Jet_Finder *jf(sing->JF());
-  if (stat && jf) {
-    double fac(weights?params->m_Qcutfac:1.0);
-    if (jf) {
-      stat=args.m_jcv<sqr(jf->Qcut()*fac);
-      msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
-		     <<jf->Qcut()<<" * "<<fac
-		     <<" = "<<jf->Qcut()*fac<<"\n";
-    }
-  }
-  if (stat==1) {
-    msg_Debugging()<<"} no jet veto\n";
-    args.m_acc=1;
-    return 1.0;
-  }
-  msg_Debugging()<<"} jet veto\n";
-  return 0.0;
-}
-
 bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 {
-  m_weight=1.0;
+  m_weights = Event_Weights {1.0};
   p_actual=act;
   Parton * split;
   Vec4D mom;
@@ -258,9 +230,9 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
   if (nem>=maxem) return true;
 
   if (m_norewem) {
-    m_sudakov.SetVariationWeights(NULL);
+    m_sudakov.SetEventWeights(NULL);
   } else {
-    m_sudakov.SetVariationWeights(p_variationweights);
+    m_sudakov.SetEventWeights(&m_weights);
   }
 
   while (true) {
@@ -282,18 +254,35 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,jcv));
       msg_Debugging()<<"stat = "<<kstat<<"\n";
       if (kstat<0) continue;
-      JetVeto_Args vwa(p_actual,kstat?jcv:-1.0,
-		       p_variationweights?
-		       p_variationweights->NumberOfParameters()+1:1);
-      m_weight*=VetoWeight(NULL,NULL,vwa);
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Shower::VetoWeight,*this,vwa);
-      if (vwa.m_acc==0) return false;
+      jcv = kstat ? jcv : -1.0;
+      const bool is_jcv_positive {jcv >= 0.0};
+      bool all_vetoed {true};
+      m_weights.ApplyAll(
+          [this, jcv, is_jcv_positive, &all_vetoed](double varweight,
+                       size_t varindex,
+                       Variation_Parameters* varparams) -> double {
+            msg_Debugging()<<"Applying veto weight to "<<varweight<<" {\n";
+            bool stat {is_jcv_positive};
+            if (stat && p_actual->JF()) {
+              double fac(varparams ? varparams->m_Qcutfac : 1.0);
+              stat = jcv < sqr(p_actual->JF()->Qcut() * fac);
+              msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs "
+                              << p_actual->JF()->Qcut() << " * " << fac << " = "
+                              << p_actual->JF()->Qcut() * fac << "\n";
+            }
+            if (stat == 1) {
+              msg_Debugging() << "} no jet veto\n";
+              all_vetoed = false;
+              return varweight;
+            }
+            msg_Debugging() << "} jet veto\n";
+            return 0.0;
+          });
+      if (all_vetoed)
+        return false;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (++nem>=maxem) return true;
     }
-    //cout<<"-----------------------------------------------------------"<<endl<<(*p_actual);
   }
   return true;
 }

@@ -433,9 +433,14 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
       Abort();
     }
     const bool veto(Veto(Q2, x,t,y,z));
-    if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(
-          &Sudakov::Reweight, *this, veto, Variations_Type::sudakov);
+    const Reweight_Info info {veto, x, y, z};
+    if (p_weights && (m_reweightpdfs || m_reweightalphas)) {
+      p_weights->Apply(
+          [this, &info](double varweight,
+                        size_t varindex,
+                        Variation_Parameters& varparams) -> double {
+            return varweight * Reweight(varparams, info);
+          });
     }
     if (veto) {
       success = true;
@@ -449,41 +454,23 @@ bool Sudakov::Generate(Parton *split,Parton *spect,double t0,double &t,double &y
 }
 
 
-double Sudakov::Reweight(Variation_Parameters * varparams,
-                         Variation_Weights * varweights,
-                         const bool &success)
+double Sudakov::Reweight(Variation_Parameters& varparams,
+                         const Reweight_Info& info)
 {
-  // TODO: Stefan Hoeche commented out the implementation of this function,
-  // this needs to be resolved. I (eno) have added the following return
-  // statement, to have a meaningful return value in the meantime.
-  return 1.0;
-  /*
+  if (Selected()->LastScale() < m_reweightscalecutoff) {
+    return 1.0;
+  }
+
   // retrieve and validate acceptance weight of the last emission
   const double accwgt(Selected()->LastAcceptanceWeight());
-  std::string error;
-  bool abort(false);
-  if (accwgt > 1.0) {
-    error = "CSS emission acceptance weight exceeds one";
-    abort = true;
-  } else if (accwgt < 0.0) {
-    error = "CSS emission acceptance weight is below zero";
-    abort = true;
-  } else if (accwgt == 0.0) {
-    // This can be due to a Jacobian being 0 (mostly), or by delta in a massive
-    // case dropping below 0. In the latter case, last values for JXX/Coupling
-    // might not be valid. In any case, the (1 - rejwgt) factor for rejections
-    // will lead to weight factor of 1. Because the target parameters of the
-    // reweighting might have a non-zero accwgt, this is a problem. However,
-    // because accwgt is so often zero, we do not emit a warning.
-    abort = true;
-  } else if (Selected()->LastScale() < m_reweightscalecutoff) {
-    error = "CSS emission scale is below the reweighting scale cut-off";
-    abort = true;
-  }
-  if (error != "") {
-    p_variationweights->IncrementOrInitialiseWarningCounter(error);
-  }
-  if (abort) {
+  if (accwgt > 1.0 || accwgt <= 0.0) {
+    // equality with 0.0 can be due to a Jacobian being 0 (mostly), or by delta
+    // in a massive case dropping below 0. In the latter case, last values for
+    // JXX/Coupling might not be valid. In any case, the (1 - rejwgt) factor
+    // for rejections will lead to weight factor of 1. Because the target
+    // parameters of the reweighting might have a non-zero accwgt, this is a
+    // problem. However, because accwgt is so often zero, we do not emit a
+    // warning.
     return 1.0;
   }
 
@@ -507,7 +494,7 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
       // insert new PDF
       const int beam(Selected()->Lorentz()->GetBeam());
       PDF::PDF_Base * swappedpdf = p_pdf[beam];
-      p_pdf[beam] = (beam == 0) ? varparams->p_pdf1 : varparams->p_pdf2;
+      p_pdf[beam] = (beam == 0) ? varparams.p_pdf1 : varparams.p_pdf2;
 
       // calculate new J
       const double lastJ(Selected()->Lorentz()->LastJ());
@@ -515,15 +502,15 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
       switch (m_type) {
         case cstp::II:
           newJ = Selected()->Lorentz()->JII(
-              z, y, m_x, varparams->m_showermuF2fac * lastscale);
+              info.m_z, info.m_y, info.m_x, varparams.m_showermuF2fac * lastscale);
           break;
         case cstp::IF:
           newJ = Selected()->Lorentz()->JIF(
-              z, y, m_x, varparams->m_showermuF2fac * lastscale);
+              info.m_z, info.m_y, info.m_x, varparams.m_showermuF2fac * lastscale);
           break;
         case cstp::FI:
           newJ = Selected()->Lorentz()->JFI(
-              y, m_x, varparams->m_showermuF2fac * lastscale);
+              info.m_y, info.m_x, varparams.m_showermuF2fac * lastscale);
           break;
         case cstp::FF:
         case cstp::none:
@@ -536,7 +523,7 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
 
       // validate
       if (newJ == 0.0) {
-        varparams->IncrementOrInitialiseWarningCounter(
+        varparams.IncrementOrInitialiseWarningCounter(
             "CSS target PDF ratio is zero, nominal is not");
         return 1.0;
       } else {
@@ -551,7 +538,7 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
     if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
       const double lastcpl(Selected()->Coupling()->Last());
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, varparams->m_showermuR2fac);
+          varparams.p_alphas, varparams.m_showermuR2fac);
       double newcpl(Selected()->Coupling()->Coupling(lastscale, 0));
       Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
       Selected()->Coupling()->SetLast(lastcpl); // reset last coupling
@@ -561,26 +548,25 @@ double Sudakov::Reweight(Variation_Parameters * varparams,
   }
 
   // calculate and apply overall factor
-  if (success) {
+  if (info.success) {
     // accepted emission
     rewfactor = accrewfactor;
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
-    varparams->FillReweightingFactorsHisto("accept", rewfactor);
+    varparams.FillReweightingFactorsHisto("accept", rewfactor);
 #endif
   } else {
     // rejected emission
     rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
-    varparams->FillReweightingFactorsHisto("reject", rewfactor);
+    varparams.FillReweightingFactorsHisto("reject", rewfactor);
 #endif
   }
   if (rewfactor < -9.0 || rewfactor > 11.0) {
-    varparams->IncrementOrInitialiseWarningCounter(
+    varparams.IncrementOrInitialiseWarningCounter(
         "CSS large reweighting factor veto");
     return 1.0;
   }
   return rewfactor;
-  */
 }
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)

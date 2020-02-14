@@ -36,8 +36,7 @@ EventInfo3::EventInfo3(ATOOLS::Blob * sp, const double &wgt,
   m_pswgt(0.), m_pwgt(0.),  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(ATOOLS::nlo_type::lo),
-  p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
-  p_variationweights(NULL)
+  p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL)
 {
   if (p_sp) {
     DEBUG_FUNC(*p_sp);
@@ -74,16 +73,29 @@ EventInfo3::EventInfo3(ATOOLS::Blob * sp, const double &wgt,
     if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
     if (p_subevtlist) m_type=p_subevtlist->Type();
 
-    ReadIn(db,"Variation_Weights",false);
+    if (includemeonlyweights)
+      m_variationtypes.push_back(ATOOLS::Variations_Type::main);
+
+    ReadIn(db, "Weights", false);
     if (db) {
-      if (includemeonlyweights)
-        m_variationtypes.push_back(ATOOLS::Variations_Type::main);
-      p_variationweights=&db->Get<Variation_Weights>();
-      if (p_variationweights->GetNumberOfVariations()!=0 && !m_usenamedweights)
-        THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
-              +std::string("HepMC without using named weights. ")
-              +std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
+      m_weights = db->Get<Event_Weights>();
+      if (m_weights.ContainsVariations() && !m_usenamedweights)
+        THROW(fatal_error,
+              "Scale and/or PDF variations cannot be written to " +
+                  std::string("HepMC without using named weights. ") +
+                  std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
+
+    ReadIn(db, "Shower_Weights", false);
+    m_showerweights = Event_Weights {};
+    if (db) {
+      m_showerweights *= db->Get<Event_Weights>();
+    }
+    ReadIn(db, "MC@NLO_Shower_Weights", false);
+    if (db) {
+      m_showerweights *= db->Get<Event_Weights>();
+    }
+
   }
 }
 
@@ -99,7 +111,8 @@ EventInfo3::EventInfo3(const EventInfo3 &evtinfo) :
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
-  p_variationweights(evtinfo.p_variationweights)
+  m_weights(evtinfo.m_weights),
+  m_showerweights(evtinfo.m_showerweights)
 {
 }
 
@@ -215,27 +228,31 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
       if (p_subevtlist) wc["Reweight_Type"]=64;
     }
     // fill weight variations into weight container
-    if (p_variationweights) {
-      size_t numvars = p_variationweights->GetNumberOfVariations();
-      msg_Debugging()<<"#named wgts: "<<numvars<<std::endl;
+    if (m_weights.ContainsVariations()) {
+      size_t numvars = s_variations->Size();
+      msg_Debugging() << "#named wgts: " << numvars << std::endl;
       for (size_t i(0); i < numvars; ++i) {
-        std::string varname(p_variationweights->GetVariationNameAt(i));
+        std::string varname(s_variations->Parameters(i).m_name);
         typedef std::vector<ATOOLS::Variations_Type>::const_iterator It_type;
-        for (It_type it(m_variationtypes.begin());
-             it != m_variationtypes.end();
+        for (It_type it(m_variationtypes.begin()); it != m_variationtypes.end();
              ++it) {
-          const std::string typevarname(
-              (*it == ATOOLS::Variations_Type::main) ? "ME_ONLY_" + varname : varname);
-          if (idx==-1) {
-            wc[typevarname]=p_variationweights->GetVariationWeightAt(i, *it);
+          const std::string typevarname((*it == ATOOLS::Variations_Type::main)
+                                            ? "ME_ONLY_" + varname
+                                            : varname);
+          double weight {0.0};
+          if (idx == -1) {
+            weight = m_weights.Variation(i);
           } else {
-            wc[typevarname]=p_variationweights->GetVariationWeightAt(
-                i, *it, idx);
+            weight = (*p_subevtlist)[idx]->m_results.Variation(i);
           }
+          if (*it == ATOOLS::Variations_Type::all) {
+            weight *= m_showerweights.Variation(i);
+          }
+          wc[typevarname] = weight;
         }
       }
     }
-  
+
   std::vector<std::string> w_names;
   std::vector<double> w_values;
   for (std::map<std::string,double>::iterator it=wc.begin(); it!=wc.end();++it)

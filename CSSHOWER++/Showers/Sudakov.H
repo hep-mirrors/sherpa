@@ -6,6 +6,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Group.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Phys/Variations.H"
 
 
@@ -28,7 +29,7 @@ namespace CSSHOWER {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
-    ATOOLS::Variation_Weights *p_variationweights;
+    ATOOLS::Event_Weights *p_weights;
     bool m_reweightalphas, m_reweightpdfs;
     double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
@@ -42,9 +43,11 @@ namespace CSSHOWER {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-    double Reweight(ATOOLS::Variation_Parameters *,
-                    ATOOLS::Variation_Weights *,
-                    const bool &success);
+    struct Reweight_Info {
+      bool success;
+      double m_x, m_y, m_z;
+    };
+    double Reweight(ATOOLS::Variation_Parameters&, const Reweight_Info &);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed);
     ~Sudakov();
@@ -89,8 +92,8 @@ namespace CSSHOWER {
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
+    inline void SetEventWeights(ATOOLS::Event_Weights * wgts)
+    { p_weights = wgts; }
   };
   
   void Sudakov::GetSplittingParameters

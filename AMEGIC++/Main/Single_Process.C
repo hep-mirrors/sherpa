@@ -754,8 +754,8 @@ void AMEGIC::Single_Process::Minimize()
   m_ntchanmin = p_partner->NTchanMin();
 }
 
-double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 
-{ 
+double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms, int mode)
+{
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   if (!(IsMapped() && LookUp())) {

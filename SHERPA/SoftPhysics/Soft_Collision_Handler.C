@@ -58,9 +58,8 @@ void Soft_Collision_Handler::PrepareTerminate()
 {
 }
 
-ATOOLS::Return_Value::code 
-Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
-						 double & weight)
+ATOOLS::Return_Value::code
+Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
 {
   PROFILE_HERE;
   int outcome;
@@ -69,7 +68,6 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
     //msg_Out()<<"#################################"<<std::endl
     //	     <<METHOD<<"("<<blobs->size()<<")"<<std::endl;
     outcome = p_shrimps->GenerateEvent(blobs);
-    weight = blobs->Weight();
     //msg_Out()<<(*blobs)<<"\n";
     //msg_Out()<<"####################### yields "<<outcome<<"."<<std::endl
     //	     <<"#################################"<<std::endl<<std::endl;

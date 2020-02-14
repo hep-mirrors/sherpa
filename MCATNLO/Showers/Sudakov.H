@@ -6,7 +6,7 @@
 #include "MCATNLO/Showers/Splitting_Function_Group.H"
 #include "MCATNLO/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 
 namespace MCATNLO {
   typedef std::map<ATOOLS::Flavour,Splitting_Function_Base*> SF_E_Map;
@@ -28,7 +28,7 @@ namespace MCATNLO {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
-    ATOOLS::Variation_Weights *p_variationweights;
+    ATOOLS::Event_Weights *p_weights;
     bool m_reweightalphas, m_reweightpdfs;
     double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
@@ -43,9 +43,7 @@ namespace MCATNLO {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-    double Reweight(ATOOLS::Variation_Parameters *,
-                    ATOOLS::Variation_Weights *,
-                    const bool &success);
+    double Reweight(ATOOLS::Variation_Parameters&, bool success);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -90,8 +88,8 @@ namespace MCATNLO {
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
+    inline void SetEventWeights(ATOOLS::Event_Weights * wgts)
+    { p_weights = wgts; }
 
     inline void SetDisallowFlavour(const std::vector<size_t>& df)
     { m_disallowflav=df; }

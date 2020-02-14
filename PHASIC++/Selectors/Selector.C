@@ -45,7 +45,7 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_name(name), m_on(false), m_isnlo(false),
   m_sel_log(new Selector_Log(m_name)), p_proc(proc),
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
-  m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
+  m_n(m_nin+m_nout), m_pass(1), m_results {{0, 1.0}}, p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
   m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
 {
@@ -114,6 +114,11 @@ void Selector_Base::ReadInSubSelectors(const Selector_Key &key)
     if (sel!=NULL) m_sels.push_back(sel);
     else THROW(fatal_error, "Did not find selector \""+type+"\".");
   }
+}
+
+const std::vector<ATOOLS::Event_Weights>& Selector_Base::Results() const
+{
+  return m_results;
 }
 
 void Selector_Base::ShowSyntax(const int mode)

@@ -193,7 +193,9 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
       kill(getpid(),SIGINT);
     }
 
-    if (AddPoint(p_psh->Differential())) break;
+    if (AddPoint(double(p_psh->Differential(Weight_Type::nominal)))) {
+      break;
+    }
   }
 
   return p_psh->Process()->TotalResult() * rpa->Picobarn();
@@ -338,7 +340,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   p_psh->FSRIntegrator()->Reset();
 
   for (long unsigned int n=1;n<=m_nrawmax;n++) {
-    double value = p_psh->Differential();
+    double value = double(p_psh->Differential(Weight_Type::nominal));
     p_psh->AddPoint(value);
 
     if (!(n%m_iter)) {

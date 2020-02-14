@@ -293,7 +293,7 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
   s_hztool=this;
   if (m_nevt<=m_xsnevt) {
     Blob *sp(bl->FindFirst(btp::Signal_Process));
-    double cxs((*sp)["Weight"]->Get<double>());
+    double cxs((*sp)["Weights"]->Get<Event_Weights>().Nominal());
     m_nsum+=(*sp)["Trials"]->Get<double>();
     m_xssum+=cxs;
     int nch=0;
@@ -326,9 +326,9 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
   if (!bl->FourMomentumConservation())
     msg_Error()<<METHOD<<"(): Four momentum not conserved."<<std::endl;
   Blob *sp(bl->FindFirst(btp::Signal_Process));
-  Blob_Data_Base *xs((*sp)["Weight"]);
+  Blob_Data_Base *xs((*sp)["Weights"]);
   if (xs==NULL) THROW(fatal_error,"No weight information");
-  double wgt(xs->Get<double>());
+  double wgt(xs->Get<Event_Weights>().Nominal());
   Convert(bl);
   hzevnt(wgt);
   Check(bl);

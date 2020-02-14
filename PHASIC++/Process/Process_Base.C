@@ -38,8 +38,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL),
-  p_variationweights(NULL), m_variationweightsowned(false)
+  p_apmap(NULL)
 {
   m_last=m_lastb=0.0;
   if (s_usefmm<0)
@@ -51,7 +50,6 @@ Process_Base::~Process_Base()
 {
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
-  if (m_variationweightsowned && p_variationweights) delete p_variationweights;
   delete p_selector;
   delete p_int;
 }
@@ -169,7 +167,9 @@ void Process_Base::SetUseBIWeight(bool on)
   m_use_biweight=on;
 }
 
-double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
+Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
+                                         Weight_Type type,
+                                         int mode)
 {
   DEBUG_FUNC(this<<" -> "<<m_name<<", mode = "<<mode);
   msg_Debugging()<<ampl<<"\n";
@@ -178,8 +178,8 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   if (mode&64) {
-    if (mode&1) return 1.0;
-    return Trigger(p);
+    if (mode&1) return Event_Weights {1, 1.0};
+    return Event_Weights {1, static_cast<double>(Trigger(p))};
   }
   bool selon(Selector()->On());
   if (mode&1) SetSelectorOn(false);
@@ -198,23 +198,21 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
-  double res(this->Differential(p)/m_issymfac);
+  Event_Weights wgts {this->Differential(p, type)};
+  wgts /= m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
   if (subs) {
     (*subs)*=1.0/m_issymfac;
     (*subs).MultMEwgt(1.0/m_issymfac);
   }
-  if (this->VariationWeights()) {
-    *this->VariationWeights()*=1.0/m_issymfac;
-  }
   if (mode&32) {
     auto psh = Parent()->Integrator()->PSHandler();
-    res*=psh->Weight(p);
+    wgts*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
-  return res;
+  return wgts;
 }
 
 bool Process_Base::IsGroup() const
@@ -543,25 +541,6 @@ void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
   p_nlomc=mc; 
 }
 
-void Process_Base::SetVariationWeights(ATOOLS::Variation_Weights *const vw)
-{
-  if (m_variationweightsowned) {
-    delete p_variationweights;
-    m_variationweightsowned = false;
-  }
-  p_variationweights=vw;
-  if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
-  if (IsMapped()) p_mapproc->SetVariationWeights(vw);
-}
-
-void Process_Base::SetOwnedVariationWeights(ATOOLS::Variation_Weights *vw)
-{
-  SetVariationWeights(vw);
-  if (vw) {
-    m_variationweightsowned = true;
-  }
-}
-
 void Process_Base::FillOnshellConditions()
 {
   if (!Selector()) return;
@@ -625,7 +604,6 @@ void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
   p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
-  p_int->PSHandler()->SetVariationWeights(p_variationweights);
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
 } 

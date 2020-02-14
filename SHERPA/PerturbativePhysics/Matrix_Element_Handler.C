@@ -74,7 +74,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_gens(),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(model),
   m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
+  p_shower(NULL), p_nlomc(NULL),
   m_sum(0.0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL),
   m_respath("Results"),
@@ -276,10 +276,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // try to generate an event for the selected process
   if (proc==NULL) THROW(fatal_error,"No process selected");
-  p_variationweights->Reset();
-  proc->SetVariationWeights(p_variationweights);
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
-  proc->SetVariationWeights(NULL);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -297,7 +294,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.m_weight);
+    const auto abswgt = std::abs(m_evtinfo.Weight());
     if (abswgt < disc) {
       return false;
     }
@@ -315,13 +312,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
 
   // trial event is accepted, apply weight factor
-  m_evtinfo.m_weight*=wf;
+  m_evtinfo.m_weights*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  (*p_variationweights)*=wf;
   return true;
 }
 
@@ -1201,7 +1197,7 @@ double Matrix_Element_Handler::GetWeight
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
       if (mode&1) ci->SetWOn(false);
-      double res(pit->second->Differential(ampl));
+      double res(pit->second->Differential(ampl,Weight_Type::nominal));
       ci->SetWOn(true);
       return res;
     }

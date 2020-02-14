@@ -564,7 +564,8 @@ double VBF_Scale_Setter::Differential
   }
   int kfon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
-  double meps=pit->second->Differential(*campl,64);
+  double meps = static_cast<double>(
+      pit->second->Differential(*campl, Weight_Type::nominal, 64));
   pit->second->KFactorSetter(true)->SetOn(kfon);
   msg_Debugging()<<"ME = "<<meps<<"\n";
   campl->Delete();

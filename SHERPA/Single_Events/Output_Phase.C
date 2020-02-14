@@ -34,7 +34,7 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,
   }
 }
 
-Return_Value::code Output_Phase::Treat(Blob_List* bloblist, double& weight) 
+Return_Value::code Output_Phase::Treat(Blob_List* bloblist)
 {
   if (!bloblist->empty())
     for (Output_Vector::iterator it=p_outputs->begin(); it!=p_outputs->end(); ++it) {

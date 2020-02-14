@@ -562,7 +562,8 @@ double DIS_Scale::Differential
   }
   int kfon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
-  double meps=pit->second->Differential(*campl,2|4|128|mode);
+  double meps = static_cast<double>(pit->second->Differential(
+      *campl, Weight_Type::nominal, 2 | 4 | 128 | mode));
   pit->second->KFactorSetter(true)->SetOn(kfon);
   msg_Debugging()<<"ME = "<<meps<<"\n";
   campl->Delete();

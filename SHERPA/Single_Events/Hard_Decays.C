@@ -18,7 +18,7 @@ Hard_Decays::~Hard_Decays()
 {
 }
 
-Return_Value::code Hard_Decays::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
 {
   if(bloblist->empty()) return Return_Value::Nothing;
 

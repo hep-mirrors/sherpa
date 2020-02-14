@@ -1272,8 +1272,10 @@ bool Single_LOProcess::IsValid()
 
   ----------------------------------------------------------------------------*/
 
-double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms,
-                                  const int mode) { return 0.; }
+double Single_LOProcess::Partonic(const Vec4D_Vector& _moms, int mode)
+{
+  return 0.0;
+}
 
 double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
 				    const ATOOLS::Vec4D *mom,

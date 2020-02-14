@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include <string>
@@ -10,7 +11,6 @@
 namespace ATOOLS {
 
   class Cluster_Amplitude;
-  class Variation_Weights; 
   struct RB_Data;
 
 }
@@ -31,11 +31,11 @@ namespace PDF {
 
     Shower_Base *p_shower;
 
-    double m_kt2min[2], m_weight;
+    double m_kt2min[2];
+
+    ATOOLS::Event_Weights m_weights;
 
     int m_subtype;
-
-    ATOOLS::Variation_Weights * p_variationweights;
 
   public:
 
@@ -55,14 +55,11 @@ namespace PDF {
 
     inline double KT2Min(const int mode) const { return m_kt2min[mode]; }
 
-    inline double Weight() const { return m_weight; }
+    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
 
     inline int SubtractionType() const { return m_subtype; }
-
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
 
   };// end of class NLOMC_Base
 

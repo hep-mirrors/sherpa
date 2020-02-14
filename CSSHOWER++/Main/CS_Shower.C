@@ -65,8 +65,7 @@ CS_Shower::~CS_Shower()
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
-  p_shower->SetVariationWeights(p_variationweights);
-  m_weight=1.0;
+  m_weights=Event_Weights{};
   Singlet *ls(NULL);
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
@@ -106,7 +105,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
-    m_weight*=p_shower->Weight();
+    m_weights*=p_shower->Weights();
     m_allsinglets=*p_next;
     if (colmap.size()) {
       msg_Debugging()<<"Decay. Reset color connections.\n";

@@ -34,9 +34,10 @@ namespace COMIX {
     ~Single_Dipole_Term();
 
     // member functions
-    double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
-    double Differential(const ATOOLS::Cluster_Amplitude &ampl,
-			int mode=0);
+    double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
+    ATOOLS::Event_Weights Differential(const ATOOLS::Cluster_Amplitude& ampl,
+                                       ATOOLS::Weight_Type type=ATOOLS::Weight_Type::nominal,
+                                       int mode=0);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

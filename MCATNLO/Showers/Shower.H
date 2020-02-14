@@ -3,6 +3,7 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "MCATNLO/Showers/Sudakov.H"
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Showers/Kinematics_Base.H"
@@ -10,7 +11,6 @@
 namespace ATOOLS {
 
   class Cluster_Leg;
-  class Variation_Weights;
 
 }
 
@@ -18,16 +18,6 @@ namespace MCATNLO {
 
   class CS_Gamma;
 
-  struct JetVeto_Args {
-    Singlet *p_sing;
-    double m_jcv;
-    int m_acc, m_nlo;
-    std::vector<int> m_skip;
-    JetVeto_Args(Singlet *const sing,
-		 const double &jcv,const size_t &n):
-      p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
-  };// end of struct JetVeto_Args
-    
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -44,10 +34,9 @@ namespace MCATNLO {
     ATOOLS::Cluster_Leg *p_old[2];
 
     CS_Gamma *p_gamma;
-    double    m_weight;
+    ATOOLS::Event_Weights m_weights;
 
-    ATOOLS::Variation_Weights * p_variationweights;
-    //! whether to disable the reweighting of the emission
+    /// whether to disable the reweighting of the emission
     bool m_norewem;
 
     void   ResetScales(Parton *const split);
@@ -65,10 +54,8 @@ namespace MCATNLO {
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv);
-    double VetoWeight(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      JetVeto_Args &a);
- public:
+
+  public:
     Shower(PDF::ISR_Handler *,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
@@ -94,14 +81,11 @@ namespace MCATNLO {
 
     inline CS_Gamma *Gamma() const { return p_gamma; }
 
-    inline double Weight() const { return m_weight; }
+    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 
     inline PDF::ISR_Handler *ISR() { return p_isr; }
-
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
   };
 }
 

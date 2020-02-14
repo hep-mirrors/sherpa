@@ -77,8 +77,7 @@ namespace EXTAMP {
   }
   
 
-  double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
-				const int mode)
+  double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
   {
     DEBUG_FUNC(this);
     

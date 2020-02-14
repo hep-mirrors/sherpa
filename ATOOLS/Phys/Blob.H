@@ -97,13 +97,11 @@ namespace ATOOLS {
     static long unsigned int s_currentnumber;
     Vec4D                   m_position;
     int                     m_id;
-    double                  m_weight;
     blob_status::code       m_status;
     int                     m_beam;
     bool                    m_hasboost;
     btp::code               m_type;
     std::string             m_typespec;
-    std::vector<double>     m_weightcontainer;
     String_BlobDataBase_Map m_datacontainer;
     Particle_Vector         m_inparticles, m_outparticles;
     Vec4D                   m_cms_vec;
@@ -165,15 +163,6 @@ namespace ATOOLS {
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
     void        SetBeam(int _beam)                { m_beam     = _beam; }
-    void        SetWeight(double _weight)         { 
-      m_weightcontainer.clear();
-      m_weightcontainer.push_back(_weight);
-      m_weight   = _weight; 
-    }
-    void     AddPartialWeight(double _weight)  { 
-      m_weightcontainer.push_back(_weight);
-      m_weight *= _weight;
-    }
     Blob_Data_Base * operator[](const std::string name) 
     {
       String_BlobDataBase_Map::const_iterator cit=m_datacontainer.find(name);
@@ -191,8 +180,6 @@ namespace ATOOLS {
     int      NInP()                      const { return m_inparticles.size(); }
     int      NOutP()                     const { return m_outparticles.size(); }
  
-    const double& Weight()               const { return m_weight; }
-    std::vector<double> WeightContainer()      { return m_weightcontainer; } 
     Vec4D CheckMomentumConservation() const;
     double CheckChargeConservation() const;
     std::string ShortProcessName();

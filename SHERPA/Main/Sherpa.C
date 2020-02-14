@@ -153,15 +153,13 @@ bool Sherpa::InitializeTheEventHandler()
   }
 
   if (mode==eventtype::EventReader) {
-    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader(),
-                                                      p_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
     p_eventhandler->AddEventPhase(
-        new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
-                             p_inithandler->GetVariations()));
+        new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
@@ -186,7 +184,6 @@ bool Sherpa::InitializeTheEventHandler()
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   if (!p_inithandler->GetOutputs()->empty())
     p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
-  p_eventhandler->SetVariations(p_inithandler->GetVariations());
   p_eventhandler->SetFilter(p_inithandler->GetFilter());
   p_eventhandler->PrintGenericEventStructure();
 

@@ -13,7 +13,7 @@ namespace SHERPA {
   public :
     Beam_Remnants(Beam_Remnant_Handler *);
     ~Beam_Remnants();
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };
@@ -49,7 +49,7 @@ namespace SHERPA {
     Nothing to be done in the destructor so far.
   */
   /*!
-    \fn bool Beam_Remnants::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Beam_Remnants::Treat(ATOOLS::Blob_List*)
     This method basically passes the blob list to the method Hadronize of the fragmentation handler.
   */
   /*!

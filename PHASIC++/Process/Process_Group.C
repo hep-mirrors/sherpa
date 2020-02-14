@@ -52,18 +52,21 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
   return NULL;
 }
 
-double Process_Group::Differential(const Vec4D_Vector &p)
+ATOOLS::Event_Weights Process_Group::Differential(const Vec4D_Vector &p,
+                                                  Weight_Type type)
 {
   m_lastb=m_last=0.0;
+  m_eventweights=0.0;
   p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
-    m_last+=m_procs[i]->Differential(p);
+    m_eventweights+=m_procs[i]->Differential(p, type);
+    m_last+=m_procs[i]->Last();
     m_lastb+=m_procs[i]->LastB();
   }
   if (IsNan(m_last))
     msg_Error()<<METHOD<<"(): "<<om::red
 		<<"Cross section is 'nan'."<<om::reset<<std::endl;
-  return m_last;
+  return m_eventweights;
 }
 
 bool Process_Group::InitScale()
@@ -414,13 +417,6 @@ void Process_Group::SetNLOMC(PDF::NLOMC_Base *const mc)
   Process_Base::SetNLOMC(mc);
   for (size_t i(0);i<m_procs.size();++i) 
     m_procs[i]->SetNLOMC(mc);
-}
-
-void Process_Group::SetVariationWeights(Variation_Weights *const vw)
-{
-  Process_Base::SetVariationWeights(vw);
-  for (size_t i(0);i<m_procs.size();++i)
-    m_procs[i]->SetVariationWeights(vw);
 }
 
 void Process_Group::SetSelector(const Selector_Key &key)

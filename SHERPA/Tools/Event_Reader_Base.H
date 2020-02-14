@@ -31,8 +31,6 @@ namespace SHERPA {
   protected:
     std::string        m_path, m_file;
 
-    double             m_weight;
-
     ATOOLS::Variations * p_variations;
 
   public:
@@ -41,7 +39,6 @@ namespace SHERPA {
     virtual ~Event_Reader_Base();
     virtual bool FillBlobs(ATOOLS::Blob_List *)=0;
 
-    double      Weight()  { return m_weight; }
     std::string GetPath() { return m_path; }
 
     void        SetVariations(ATOOLS::Variations * v) { p_variations = v; }

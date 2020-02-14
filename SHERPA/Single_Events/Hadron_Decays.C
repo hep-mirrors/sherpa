@@ -20,7 +20,7 @@ Hadron_Decays::~Hadron_Decays()
 {
 }
 
-Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight) 
+Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
 {
   DEBUG_FUNC("bloblist->size()="<<bloblist->size());
   if(bloblist->empty()) return Return_Value::Nothing;

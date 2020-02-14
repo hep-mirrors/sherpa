@@ -523,7 +523,7 @@ void Single_Virtual_Correction::Minimize()
 
 
 double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
-                                           const int mode)
+                                           int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
@@ -1360,12 +1360,6 @@ bool Single_Virtual_Correction::AllowAsSpecInPFF(const size_t& i,
     return false;
   }
   return false;
-}
-
-void Single_Virtual_Correction::SetVariationWeights(Variation_Weights *const vw)
-{
-  Process_Base::SetVariationWeights(vw);
-  p_LO_process->SetVariationWeights(vw);
 }
 
 void Single_Virtual_Correction::SetCaller(PHASIC::Process_Base *const proc)

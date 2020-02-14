@@ -90,18 +90,19 @@ namespace PHASIC {
 
     /*!
      * @param wmode int Mode (not used)
-     * @return additional S-Event weight (weight from MC@NLO shower or zero)
+     * @return additional S-Event weights (i.e. weights from the MC@NLO
+     * shower), or zero
      *
      * This method generates one S-event
      */
-    double OneSEvent(const int wmode);
+    ATOOLS::Event_Weights OneSEvent(const int wmode);
     /*!
      * @param wmode int Mode (not used)
      * @return additional H-Event weight (one or zero)
      *
      * This method generates one H-event
      */
-    double OneHEvent(const int wmode);
+    ATOOLS::Event_Weights OneHEvent(const int wmode);
 
     /*!
      * @param bvi  double Differential XS for BVI
@@ -120,27 +121,12 @@ namespace PHASIC {
                         double random,
                         const ATOOLS::Cluster_Amplitude *ampl=NULL);
 
-    struct KFactorReweightingInfo {
-      double m_random;
-      std::shared_ptr<ATOOLS::Variation_Weights> m_rsvarweights;
-      std::shared_ptr<ATOOLS::Variation_Weights> m_bvivarweights;
-      std::shared_ptr<ATOOLS::Variation_Weights> m_bvarweights;
-    };
-
-    double ReweightLocalKFactor(ATOOLS::Variation_Parameters *,
-                                ATOOLS::Variation_Weights *,
-                                KFactorReweightingInfo &);
-
     struct HEventVeto_Args {
       Jet_Finder *p_jf;
       double m_jcv;
       HEventVeto_Args(Jet_Finder *const jf,const double &jcv):
 	p_jf(jf), m_jcv(jcv) {}
     };
-
-    double HEventVetoWeight(ATOOLS::Variation_Parameters *params,
-			    ATOOLS::Variation_Weights *weights,
-			    HEventVeto_Args &args);
 
   public:
 
@@ -205,12 +191,15 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     /*!
-     * @param p Vec4D_Vector Four momenta
+     * @param Vec4D_Vector Four momenta
+     * @param Weight_Type Specifies which weights to calculate (all,
+     * nominal-only, ...)
      * @return Returns weight of given momentum configuration
      *
      * Inherited from Process_Base, calculates the weight of given configuration
      */
-    double Differential(const ATOOLS::Vec4D_Vector &p);
+    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector &,
+                                       ATOOLS::Weight_Type);
 
     /*!
      * @param resultpath string Path where to store the results
@@ -264,14 +253,13 @@ namespace PHASIC {
     void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
-    void SetVariationWeights(ATOOLS::Variation_Weights *const);
     /*!
      * @param ampl Cluster_Amplitude Cluster amplitude
      * @return Local KFactor
      *
      * This method calculates the local Kfactor for MENLOPS for given config
      */
-    double LocalKFactor(const ATOOLS::Cluster_Amplitude &ampl);
+    ATOOLS::Event_Weights LocalKFactor(const ATOOLS::Cluster_Amplitude &ampl);
 
     /*!
      * @return Cluster amplitude p_ampl

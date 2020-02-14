@@ -45,6 +45,10 @@ namespace PHASIC {
 
     inline void SetResult(const int res) { m_res=res; }
 
+    /// same as Result, but with results for all parameter variaitons (e.g.
+    /// when varying the QCUT scale)
+    std::vector<ATOOLS::Event_Weights> CombinedResults() const;
+
   };
 
 }

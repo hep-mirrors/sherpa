@@ -70,10 +70,6 @@ namespace ATOOLS {
    */
   class Settings {
 
-    // TODO: add missing implementations
-    // TODO: put things like EVENT_INPUT in string constant, remember we did
-    // a similar thing for the CLI, can we reuse/unify this?
-
     friend Scoped_Settings;
     friend Settings_Writer;
 

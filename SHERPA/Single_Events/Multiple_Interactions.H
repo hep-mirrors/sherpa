@@ -36,7 +36,7 @@ namespace SHERPA {
     Multiple_Interactions(MI_Handler *);
     ~Multiple_Interactions();
 
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };

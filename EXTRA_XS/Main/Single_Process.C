@@ -93,8 +93,7 @@ bool Single_Process::Initialize()
   }
 }
 
-double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
-				const int mode) 
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result())

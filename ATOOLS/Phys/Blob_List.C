@@ -398,18 +398,52 @@ void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
   while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }
 
-double Blob_List::Weight() const
+Event_Weights Blob_List::Weights() const
 {
-  double weight(1.0);
-  bool noweight(true);
-  for (const_iterator it(begin());it!=end();++it) {
-    Blob_Data_Base *bd((**it)["Weight"]);
-    if (bd) {
-      weight*=bd->Get<double>();
-      noweight=false;
+  Event_Weights weights {0, 1.0};
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["Weights"]};
+    if (db) {
+      weights *= db->Get<Event_Weights>();
+      no_weight = false;
+      db = (*blob)["Shower_Weights"];
+      if (db) {
+        weights *= db->Get<Event_Weights>();
+      }
+      db = (*blob)["MC@NLO_Shower_Weights"];
+      if (db) {
+        weights *= db->Get<Event_Weights>();
+      }
     }
   }
-  return noweight?m_extweight:weight;
+  if (no_weight) {
+    return Event_Weights {0, m_extweight};
+  } else {
+    return weights;
+  }
+}
+
+double Blob_List::Weight() const
+{
+  double nominal_weight {1.0};
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["Weights"]};
+    if (db) {
+      nominal_weight *= db->Get<Event_Weights>().Nominal();
+      no_weight = false;
+      db = (*blob)["Shower_Weights"];
+      if (db) {
+        nominal_weight *= db->Get<Event_Weights>().Nominal();
+      }
+      db = (*blob)["MC@NLO_Shower_Weights"];
+      if (db) {
+        nominal_weight *= db->Get<Event_Weights>().Nominal();
+      }
+    }
+  }
+  return no_weight ? m_extweight : nominal_weight;
 }
 
 Blob_List Blob_List::Copy() const

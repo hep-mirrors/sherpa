@@ -64,28 +64,25 @@ namespace SHERPA {
     {
       Blob_Data_Base *sd((*blobs->FindFirst(btp::Signal_Process))["NLO_subeventlist"]);
       NLO_subevtlist *subs=sd?sd->Get<NLO_subevtlist*>():NULL;
-      Blob_Data_Base *data((*blobs->FindFirst(btp::Signal_Process))["Variation_Weights"]);
-      if (data==NULL) THROW(fatal_error,"Variation weights not found.");
-      ATOOLS::Variation_Weights *variationweights=&data->Get<Variation_Weights>();
-      if (variationweights==NULL) THROW(fatal_error,"Variation weights not found.");
-      size_t numvars = variationweights->GetNumberOfVariations();
+      size_t numvars = s_variations->Size();
       if (subs==NULL) {
+        const auto weights = blobs->Weights();
 	m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	for (size_t i(0);i<numvars;++i)
-	  m_outstream<<variationweights->GetVariationNameAt(i)<<" "
-		     <<variationweights->GetVariationWeightAt(i)<<" ";
-      }
-      else
+	for (size_t i(0);i<numvars;++i) {
+          m_outstream << s_variations->GetVariationNameAt(i) << " "
+                      << weights.Variation(i) << " ";
+        }
+      } else {
 	for (size_t j(0);j<subs->size();++j) {
-	  m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	  for (size_t i(0);i<numvars;++i)
-	    m_outstream
-              <<variationweights->GetVariationNameAt(i)
-              <<" "
-              <<variationweights->GetVariationWeightAt(i,Variations_Type::all,j)
-              <<" ";
+          const auto weights = (*subs)[j]->m_results;
+          m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
+	  for (size_t i(0);i<numvars;++i) {
+            m_outstream << s_variations->GetVariationNameAt(i) << " "
+                        << weights.Variation(i) << " ";
+          }
 	  m_outstream<<"\n";
 	}
+      }
       m_outstream<<"\n";
     }
 

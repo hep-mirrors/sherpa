@@ -58,7 +58,7 @@ Jet_Evolution::~Jet_Evolution()
 }
 
 
-Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
 {
   if (bloblist->empty()) {
     msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
@@ -107,7 +107,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	switch (AttachShowers(meblob,bloblist,piIter->second)) {
 	case Return_Value::Success:
 	  found = hit = true;
-	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
 	case Return_Value::Retry_Event: return Return_Value::Retry_Event;

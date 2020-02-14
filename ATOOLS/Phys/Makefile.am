@@ -30,7 +30,8 @@ libToolsPhys_la_SOURCES       =	\
 				Fastjet_Helpers.C \
 				Momenta_Stretcher.C \
 				Weight_Info.C \
-				Variations.C
+				Variations.C \
+				Event_Weights.C
 
 localinc_HEADERS      =	\
 			Ordering.H \
@@ -58,7 +59,8 @@ localinc_HEADERS      =	\
 			Fastjet_Helpers.H \
 			Momenta_Stretcher.H \
 			Weight_Info.H \
-			Variations.H
+			Variations.H \
+			Event_Weights.H
 
 libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
 

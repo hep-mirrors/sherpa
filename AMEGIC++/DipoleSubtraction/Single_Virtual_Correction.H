@@ -74,7 +74,6 @@ namespace AMEGIC {
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
-    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
 
     void SetSelector(const PHASIC::Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
@@ -133,7 +132,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,

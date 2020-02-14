@@ -34,9 +34,8 @@ namespace SHERPA {
                            PDF::ISR_Handler*);
     ~Soft_Collision_Handler();
 
-    ATOOLS::Return_Value::code 
-    GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
-			     double & weight);
+    ATOOLS::Return_Value::code
+    GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs);
     void CleanUp();
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const bl);
     

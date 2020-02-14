@@ -17,7 +17,7 @@ namespace SHERPA {
     Hadronization(Colour_Reconnection_Handler *,
 		  Fragmentation_Handler *);
     ~Hadronization();
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };
@@ -53,7 +53,7 @@ namespace SHERPA {
     Nothing to be done in the destructor so far.
   */
   /*!
-    \fn bool Hadronization::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Hadronization::Treat(ATOOLS::Blob_List*)
     This method basically passes the blob list to the method Hadronize of the fragmentation handler.
   */
   /*!

@@ -32,7 +32,7 @@ namespace EXTRAXS {
     bool Initialize();
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
-    double Partonic(const ATOOLS::Vec4D_Vector& momenta,const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector& momenta,int mode);
 
     bool Combinable(const size_t &idi, const size_t &idj);
 

@@ -40,8 +40,7 @@ namespace EXTAMP {
     /* Inherited from PHASIC::Single_Process. Calls CalcKinematics and
        Calc, then returns the result. This is used in by Sherpa's
        MC@NLO implementation for calculating DA and DA-DS */
-    double Partonic(const ATOOLS::Vec4D_Vector &p,
-		    const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector &p, int mode);
 
     /* A sign implementing DA and DA-DS as defined in arXiv:1111.1200 */
     int MCModeSign(ATOOLS::NLO_subevt* const evt) const;

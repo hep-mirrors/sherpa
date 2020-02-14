@@ -4,7 +4,6 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "REMNANTS/Main/Remnant_Base.H"
-#include "ATOOLS/Phys/Variations.H"
 
 namespace ATOOLS { class Scoped_Settings; }
 
@@ -16,7 +15,6 @@ namespace SHERPA {
 
     Matrix_Element_Handler    *p_mehandler;
     ATOOLS::Variations        *p_variations;
-    ATOOLS::Variation_Weights  m_variationweights;
     REMNANTS::Remnant_Base    *p_remnants[2];
 
     double m_overweight;
@@ -27,10 +25,9 @@ namespace SHERPA {
 
   public:
 
-    Signal_Processes(Matrix_Element_Handler*,
-                     ATOOLS::Variations*);
+    Signal_Processes(Matrix_Element_Handler*);
 
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void CleanUp(const size_t & mode=0);
     void Finish(const std::string &);
 

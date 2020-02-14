@@ -168,7 +168,7 @@ namespace AMEGIC {
                              const std::vector<double>&,
                              const std::vector<double>&);
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector&,const int);
+    double         Partonic(const ATOOLS::Vec4D_Vector&,int mode);
     virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
 			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
