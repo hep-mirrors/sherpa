@@ -329,14 +329,22 @@ std::string Vertex::VLabel() const
     std::string id(GetName(*m_cc.front())+"_"+GetName(*m_lc.front(),1));
     for (size_t pos;(pos=id.find("_"))!=std::string::npos && 
 	   id[pos-1]!='\\';id.replace(pos,1,"\\_"));
-    label+=std::string(label.length()>0?"\\\\":"")+
-      "\\scriptstyle\\green T="+id+"("+m_j[0]->Flav().TexName();
-    for (size_t i(1);i<m_j.size();++i) label+=","+m_j[i]->Flav().TexName();
-    label+=")";
+    if (s_vlmode&16) {
+      label+=std::string(label.length()>0?"\\\\":"")+
+	"\\scriptstyle\\green O="+id+"("+m_j[0]->Flav().TexName();
+      for (size_t i(1);i<m_j.size();++i) label+=","+m_j[i]->Flav().TexName();
+      label+=")";
+    }
   }
   if (s_vlmode&4)
     label+=std::string(label.length()>0?"\\\\":"")+
-      "\\scriptstyle\\red C="+CVLabel();
+      "\\scriptstyle\\red L="+CVLabel();
+  if (s_vlmode&8) {
+    label+=std::string(label.length()>0?"\\\\":"")+
+      "\\scriptstyle\\green C={"+p_v->cpl.front().String();
+    for (size_t i(1);i<p_v->cpl.size();++i) label+=","+p_v->cpl[i].String();
+    label+="}";
+  }
   for (size_t pos(label.find(','));
        pos!=std::string::npos;pos=label.find(',',pos+2))
     label.replace(pos,1,",,");
