@@ -60,6 +60,8 @@ bool COMIX::Single_Process::Initialize
 (std::map<std::string,std::string> *const pmap,
  std::vector<Single_Process*> *const procs)
 {
+  DEBUG_FUNC("");
+  DEBUG_VAR(m_pinfo);
   m_p.resize(m_nin+m_nout);
   if (!COMIX::Process_Base::Initialize(pmap,procs)) return false;
   if (p_bg!=NULL) delete p_bg;
@@ -109,10 +111,14 @@ bool COMIX::Single_Process::Initialize
   }
   std::vector<int> mincpl(m_pinfo.m_mincpl.size());
   std::vector<int> maxcpl(m_pinfo.m_maxcpl.size());
+  std::vector<int> minacpl(m_pinfo.m_minacpl.size());
+  std::vector<int> maxacpl(m_pinfo.m_maxacpl.size());
   for (size_t i(0);i<mincpl.size();++i) mincpl[i]=m_pinfo.m_mincpl[i]*2;
   for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
+  for (size_t i(0);i<minacpl.size();++i) minacpl[i]=m_pinfo.m_minacpl[i];
+  for (size_t i(0);i<maxacpl.size();++i) maxacpl[i]=m_pinfo.m_maxacpl[i];
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
-		       &m_cpls,smode,maxcpl,mincpl,
+		       &m_cpls,smode,maxcpl,mincpl,maxacpl,minacpl,
 		       m_pinfo.m_ntchanmin,m_pinfo.m_ntchanmax,m_name)) {
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());

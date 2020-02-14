@@ -49,7 +49,8 @@ namespace SHERPA {
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
 	m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
 	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vint,
-	m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vaddname;
+	m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl,
+	m_vacpl, m_vmaxacpl, m_vminacpl, m_vaddname;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
         m_vntchanmin, m_vntchanmax, m_vitmin, m_vrsitmin;
 
@@ -91,6 +92,9 @@ namespace SHERPA {
 
     ProcMap_Vector m_pmaps;
 
+    void LimitCouplings
+    (MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
+     std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode);
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
     void BuildSingleProcessList

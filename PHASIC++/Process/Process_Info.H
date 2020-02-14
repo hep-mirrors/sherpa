@@ -17,7 +17,7 @@ namespace PHASIC {
     cls::scheme m_cls;
     hls::scheme m_hls;
 
-    std::vector<double> m_maxcpl, m_mincpl;
+    std::vector<double> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
 
     size_t m_nminq, m_nmaxq, m_ckkw, m_nmax, m_itmin, m_rsitmin;
     size_t m_nlomode, m_amegicmhv, m_ntchanmin, m_ntchanmax;
@@ -38,8 +38,9 @@ namespace PHASIC {
     inline Process_Info(const Subprocess_Info &ii=Subprocess_Info(),
 			const Subprocess_Info &fi=Subprocess_Info()):
       m_ii(ii), m_fi(fi), m_cls(cls::sum), m_hls(hls::sum),
-      m_maxcpl(2,99), m_mincpl(2,0), m_nminq(0), m_nmaxq(99),
-      m_ckkw(0), m_nmax(0), m_itmin(5000), m_rsitmin(5000),
+      m_maxcpl(2,99), m_mincpl(2,0), m_maxacpl(2,99), m_minacpl(2,0),
+      m_nminq(0), m_nmaxq(99), m_ckkw(0),
+      m_nmax(0), m_itmin(5000), m_rsitmin(5000),
       m_nlomode(0), m_amegicmhv(1), m_ntchanmin(0), m_ntchanmax(99),
       m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
       m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) {}

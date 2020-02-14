@@ -497,6 +497,18 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmincpl,nf);
 	}
+	if (cur[0]=="Amplitude_Order") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vacpl,nf);
+        }
+	if (cur[0]=="Max_Amplitude_Order") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vmaxacpl,nf);
+	}
+	if (cur[0]=="Min_Amplitude_Order") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vminacpl,nf);
+	}
 	if (cur[0]=="Order_EW") {
           THROW(fatal_error,
                 std::string("You are using the obsolete setting:\n")
@@ -702,6 +714,29 @@ void Matrix_Element_Handler::BuildDecays
   }
 }
 
+void Matrix_Element_Handler::LimitCouplings
+(MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
+ std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode)
+{
+  std::string ds;
+  if (!GetMPvalue(pbi,nfs,pnid,ds)) return;
+  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
+  Data_Reader read(",",";",")","(");
+  read.SetString(ds);
+  std::vector<double> cpl;
+  read.VectorFromString(cpl,"");
+  if (mode&1) {
+    if (cpl.size()>mincpl.size()) mincpl.resize(cpl.size(),0);
+    for (size_t i(0);i<mincpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]>mincpl[i]) mincpl[i]=cpl[i];
+  }
+  if (mode&2) {
+    if (cpl.size()>maxcpl.size()) maxcpl.resize(cpl.size(),99);
+    for (size_t i(0);i<maxcpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]<maxcpl[i]) maxcpl[i]=cpl[i];
+  }
+}
+
 void Matrix_Element_Handler::BuildSingleProcessList
 (Process_Info &pi,Processblock_Info &pbi,
  const std::string &ini,const std::string &fin,
@@ -762,28 +797,12 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
 	cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
-	if (GetMPvalue(pbi.m_vmaxcpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_maxcpl,"");
-	}
-	if (GetMPvalue(pbi.m_vmincpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_mincpl,"");
-	}
-	if (GetMPvalue(pbi.m_vcpl,nfs,pnid,ds)) {
-	  Data_Reader read(",",";",")","(");
-	  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
-	  read.SetString(ds);
-	  read.VectorFromString(cpi.m_maxcpl,"");
-	  cpi.m_mincpl=cpi.m_maxcpl;
-	  for (size_t i(0);i<cpi.m_maxcpl.size();++i)
-	    if (cpi.m_maxcpl[i]<0) {
-	      cpi.m_mincpl[i]=0;
-	      cpi.m_maxcpl[i]=99;
-	    }
-	}
+	LimitCouplings(pbi.m_vmincpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,1);
+	LimitCouplings(pbi.m_vmaxcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,2);
+	LimitCouplings(pbi.m_vcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,3);
+	LimitCouplings(pbi.m_vminacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,1);
+	LimitCouplings(pbi.m_vmaxacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,2);
+	LimitCouplings(pbi.m_vacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,3);
 	size_t maxsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
 	for (size_t i(0);i<maxsize;++i)
 	  if (cpi.m_mincpl[i]>cpi.m_maxcpl[i]) {

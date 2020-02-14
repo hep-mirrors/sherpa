@@ -10,7 +10,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
   ostr<<"("<<&info<<"){\n";
   {
     ostr<<"  cls = "<<info.m_cls<<", hls = "<<info.m_hls<<"\n";
-    ostr<<"  maxcpl = "<<info.m_maxcpl<<", mincpl = "<<info.m_mincpl<<"\n";
+    ostr<<"  mincpl = "<<info.m_mincpl<<"/"<<info.m_minacpl
+	<<", maxcpl = "<<info.m_maxcpl<<"/"<<info.m_maxacpl<<"\n";
     ostr<<"  ckkw = "<<info.m_ckkw
 	<<", nlo = "<<info.m_nlomode<<", mhv = "<<info.m_amegicmhv<<"\n";
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
