@@ -490,6 +490,23 @@ only Sherpa-native option is ``Internal`` with a few hard coded loop
 matrix elements. Other loop matrix elements are provided by external
 libraries.
 
+.. _Associated_Contributions:
+
+Associated_Contributions
+========================
+
+Set a process specific list of associated contributions to be computed.
+Valid values are ``EW`` (approximate EW corrections),
+``LO1`` (first subleading leading-order correction),
+``LO2`` (second subleading leading-order correction),
+``LO3`` (third subleading leading-order correction).
+They can be combined, eg. @code{[EW, LO1, LO2, LO3]}.
+Please note, the associated contributions will not be
+added to the nominal event weight but instead are available to
+be included in the on-the-fly calculation of alternative event
+weights, cf. :ref:`Associated contributions variations`.
+
+
 .. _Integrator:
 
 Integrator
