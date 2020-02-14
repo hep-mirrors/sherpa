@@ -169,7 +169,7 @@ bool Pythia_HepEvt_Translator::ReconstructSignalBlob()
   p_signal->SetId();
   p_signal->SetStatus(blob_status::inactive);
   p_signal->ClearAllData();
-  p_signal->AddData("ME_Weight",new Blob_Data<double>(1.));
+  p_signal->AddData("MEWeight",new Blob_Data<double>(1.));
   p_signal->SetType(btp::Signal_Process);
   p_blobs->push_back(p_signal);
 
