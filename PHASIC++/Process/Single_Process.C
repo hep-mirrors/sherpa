@@ -763,7 +763,7 @@ double Single_Process::ReweightWithoutSubevents(
             // when the dipole's Partonic returns 0, the variation weights will be
             // empty, therefore check before retrieval
             ATOOLS::Variation_Weights *dipvarweights(cp->VariationWeights());
-            if (dipvarweights->GetNumberOfVariations() > 0) {
+            if (dipvarweights && dipvarweights->GetNumberOfVariations() > 0) {
               size_t paramindex = varweights->CurrentParametersIndex();
               DADSnew -= dipvarweights->GetVariationWeightAt(paramindex);
             }
