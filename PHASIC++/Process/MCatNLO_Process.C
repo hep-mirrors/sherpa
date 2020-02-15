@@ -166,12 +166,6 @@ Process_Base* MCatNLO_Process::InitProcess
     else THROW(fatal_error, "Internal error.");
   }
   Process_Base* proc = m_gens.InitializeProcess(cpi,false);
-  if (!proc)
-    {
-      std::stringstream msg;
-      msg << "Unable to initialize process:\n" << cpi;
-      THROW(fatal_error,  msg.str());
-    }
   return proc;
 }
 
