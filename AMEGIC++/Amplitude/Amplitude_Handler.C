@@ -1114,7 +1114,6 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
       max = ATOOLS::Max(max,abs(mcm));
     }
   }
-  if (abs(M)<max*ATOOLS::Accu()*1.e-2) return Complex(0.,0.);
   return M;
 }
 
