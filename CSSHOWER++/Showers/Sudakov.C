@@ -748,13 +748,12 @@ bool Sudakov::DefineFFBoundaries(double x)
         const double radicand = sqr(1.+m_k0sqf/Qprime2)/4.-m_k0sqf/Qprime2*(1+mw2/Qprime2);
         if(radicand >= 0.) m_zmax = (1.+m_k0sqf/Qprime2)/2 + sqrt(radicand);
         else               m_zmax = (1.+m_k0sqf/Qprime2)/2;
-
+        /* following line is rarely relevant: only if Qprime2 is extremely small */
+        if(m_zmax>1.) m_zmax = 0.99999;        // TODO
       }
-      if(m_zmax<0. || m_zmax>1.) {
-        std::cout << "Qprime2 = " << Qprime2 << "\n";
-        std::cout << "zmax = " << m_zmax << "\n";
-        THROW(fatal_error, "zmax wrong");
-      }
+      /* in case zmax is slightly above 1, due to numerics */
+      if(m_zmax>1. && IsEqual(m_zmax,1.,1.e-8))           m_zmax=0.99999;
+      if(!(m_zmax>0.) || !(m_zmax<=1.))    THROW(fatal_error, "zmax wrong");
       }
   }
   m_scale  = p_split->KtStart();

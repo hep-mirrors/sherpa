@@ -157,10 +157,10 @@ bool Lorentz::SetLimits(Splitting &s) const
       else              s.m_zmax = (1.+tmin/Qprime2)/2;
 
       /* following line is rarely relevant: only if Qprime2 is extremely small */
-      if(s.m_zmax>1.) s.m_zmax = 1.;        // TODO
+      if(s.m_zmax>1.) s.m_zmax = 0.99999;        // TODO
     }
     /* in case zmax is slightly above 1, due to numerics */
-    if(IsEqual(s.m_zmax,1.,1.e-8))           s.m_zmax=1.;
+    if(s.m_zmax>1. && IsEqual(s.m_zmax,1.,1.e-8))           s.m_zmax=0.99999;
     if(!(s.m_zmax>0.) || !(s.m_zmax<=1.))    THROW(fatal_error, "zmax wrong");
   }
   return true;
