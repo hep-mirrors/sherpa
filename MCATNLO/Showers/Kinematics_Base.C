@@ -220,35 +220,26 @@ int Kinematics_FF::MakeKinematics
 
       Kin_Args ff(y_wia,ztilde_w,split->Phi());
 
-      Vec4D pi,pw,pa;
-      if(m_evolscheme == 2){
-        if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1;
-        pi = ff.m_pj;
-        pw = ff.m_pi;
-        pa = ff.m_pk;
-      }
-      else if(m_evolscheme == 1){
-        /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-           momentum */
-        const double Q2 = (paitilde+pwtilde).Abs2();
-              ATOOLS::Vec4D pminus = pwtilde - mw2/(Q2-mw2)*paitilde;
-        const ATOOLS::Vec4D pboost = paitilde+pminus;
-        Poincare bst(pboost);
-        bst.Boost(paitilde);
-        bst.Boost(pwtilde);
-        bst.Boost(pminus);
-        bst.Boost(pb);
-        ff.m_res    = true;
-        ff.m_pb     = pb;
-        ff.m_pminus = pminus;
-        if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1;
-        pi = ff.m_pj;
-        pw = ff.m_pi;
-        pa = ff.m_pk;
-        bst.BoostBack(pi);
-        bst.BoostBack(pw);
-        bst.BoostBack(pa);
-      }
+      /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+         momentum */
+      const double Q2 = (paitilde+pwtilde).Abs2();
+            ATOOLS::Vec4D pminus = pwtilde - mw2/(Q2-mw2)*paitilde;
+      const ATOOLS::Vec4D pboost = paitilde+pminus;
+      Poincare bst(pboost);
+      bst.Boost(paitilde);
+      bst.Boost(pwtilde);
+      bst.Boost(pminus);
+      bst.Boost(pb);
+      ff.m_res    = true;
+      ff.m_pb     = pb;
+      ff.m_pminus = pminus;
+      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1;
+      Vec4D pi = ff.m_pj;
+      Vec4D pw = ff.m_pi;
+      Vec4D pa = ff.m_pk;
+      bst.BoostBack(pi);
+      bst.BoostBack(pw);
+      bst.BoostBack(pa);
 
       split->SetMomentum(pa);
       kinspect->SetMomentum(pw);

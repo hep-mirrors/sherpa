@@ -298,20 +298,19 @@ double Sudakov::GetViab(Parton *split, const double &z, const double &phi, const
   const double ztilde_w = 1-vi;
   PHASIC::Kin_Args ff(y_wia,ztilde_w,phi);
 
-  if(p_shower->KinFF()->m_evolscheme == 1){
-    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-       momentum */
-          ATOOLS::Vec4D pminus = pw_tilde - mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
-    const ATOOLS::Vec4D pboost = pai_tilde+pminus;
-    Poincare bst(pboost);
-    bst.Boost(pai_tilde);
-    bst.Boost(pw_tilde);
-    bst.Boost(pminus);
-    bst.Boost(pb);
-    ff.m_res    = true;
-    ff.m_pb     = pb;
-    ff.m_pminus = pminus;
-  }
+  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+     momentum */
+        ATOOLS::Vec4D pminus = pw_tilde - mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+  const ATOOLS::Vec4D pboost = pai_tilde+pminus;
+  Poincare bst(pboost);
+  bst.Boost(pai_tilde);
+  bst.Boost(pw_tilde);
+  bst.Boost(pminus);
+  bst.Boost(pb);
+  ff.m_res    = true;
+  ff.m_pb     = pb;
+  ff.m_pminus = pminus;
+
   if (PHASIC::ConstructFFDipole(mw2,0,mw2,0,pw_tilde,pai_tilde,ff)<0) return -1.;
   Vec4D pi = ff.m_pj;
   Vec4D pa = ff.m_pk;
@@ -920,8 +919,21 @@ double Sudakov::GetKt2(Parton * split, const double &z, const double &phi, const
   const double mw2      = sqr(Flavour(24).Mass());
   const double y_wia    = 1.-z;
   const double ztilde_w = 1-vi;
-
   PHASIC::Kin_Args ff(y_wia,ztilde_w,phi);
+
+  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+     momentum */
+        ATOOLS::Vec4D pminus = pw_tilde - mw2/(m_trialvariables.m_Q2-mw2)*pai_tilde;
+  const ATOOLS::Vec4D pboost = pai_tilde+pminus;
+  Poincare bst(pboost);
+  bst.Boost(pai_tilde);
+  bst.Boost(pw_tilde);
+  bst.Boost(pminus);
+  bst.Boost(pb);
+  ff.m_res    = true;
+  ff.m_pb     = pb;
+  ff.m_pminus = pminus;
+
   if (PHASIC::ConstructFFDipole(mw2,0,mw2,0,pw_tilde,pai_tilde,ff)<0)
     THROW(fatal_error, "Must not happend!")
 
@@ -931,7 +943,6 @@ double Sudakov::GetKt2(Parton * split, const double &z, const double &phi, const
   const Vec4D p_aib = pa+pi+pb;
   Poincare bst_aib(p_aib);
   bst_aib.Boost(pa);
-  bst_aib.Boost(pb);
   bst_aib.Boost(pi);
 
   const double theta = pa.Theta(pi);
