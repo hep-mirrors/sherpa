@@ -79,20 +79,19 @@ double Lorentz_FF::GetViab(const Splitting &s) const
   const double ztilde_w        = 1.-s.m_vi;
   Kin_Args ff(y_wia,ztilde_w,s.m_phi);
 
-  if(m_evol == 1){
-    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-       momentum */
-          ATOOLS::Vec4D pminus   = pwtilde - mw2/s.m_Qprime2*paitilde;
-    const ATOOLS::Vec4D pboost   = paitilde + pminus;
-    Poincare bst(pboost);
-    bst.Boost(paitilde);
-    bst.Boost(pwtilde);
-    bst.Boost(pminus);
-    bst.Boost(pb);
-    ff.m_res    = true;
-    ff.m_pb     = pb;
-    ff.m_pminus = pminus;
-  }
+  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+     momentum */
+        ATOOLS::Vec4D pminus   = pwtilde - mw2/s.m_Qprime2*paitilde;
+  const ATOOLS::Vec4D pboost   = paitilde + pminus;
+  Poincare bst(pboost);
+  bst.Boost(paitilde);
+  bst.Boost(pwtilde);
+  bst.Boost(pminus);
+  bst.Boost(pb);
+  ff.m_res    = true;
+  ff.m_pb     = pb;
+  ff.m_pminus = pminus;
+
   if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0) return -1.;
   const ATOOLS::Vec4D pi = ff.m_pj;
   const ATOOLS::Vec4D pa = ff.m_pk;
@@ -155,31 +154,25 @@ int Lorentz_FF::Construct(Splitting &s,const int mode) const
     ATOOLS::Vec4D paitilde = s.p_c->Mom();
     ATOOLS::Vec4D pb       = s.p_s->Mom();
     ATOOLS::Vec4D pwtilde  = s.p_kinspec->Mom();
-    if(m_evol == 2){
-      ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
-      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
-        return -1;
-    }
-    else if(m_evol == 1){
-      /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
-         momenta */
-            ATOOLS::Vec4D pminus = pwtilde - mw2/s.m_Qprime2*paitilde;
-      const ATOOLS::Vec4D pboost = paitilde+pminus;
-      Poincare bst(pboost);
-      bst.Boost(paitilde);
-      bst.Boost(pwtilde);
-      bst.Boost(pminus);
-      bst.Boost(pb);
-      ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
-      ff.m_res    = true;
-      ff.m_pb     = pb;
-      ff.m_pminus = pminus;
-      if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
-        return -1;
-      bst.BoostBack(ff.m_pj); // pi
-      bst.BoostBack(ff.m_pk); // pa
-      bst.BoostBack(ff.m_pi); // pw
-    }
+
+    /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+       momenta */
+          ATOOLS::Vec4D pminus = pwtilde - mw2/s.m_Qprime2*paitilde;
+    const ATOOLS::Vec4D pboost = paitilde+pminus;
+    Poincare bst(pboost);
+    bst.Boost(paitilde);
+    bst.Boost(pwtilde);
+    bst.Boost(pminus);
+    bst.Boost(pb);
+    ff = Kin_Args(1.-s.m_z,1.-s.m_vi,s.m_phi);
+    ff.m_res    = true;
+    ff.m_pb     = pb;
+    ff.m_pminus = pminus;
+    if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
+      return -1;
+    bst.BoostBack(ff.m_pj); // pi
+    bst.BoostBack(ff.m_pk); // pa
+    bst.BoostBack(ff.m_pi); // pw
     break;
     }
   default:

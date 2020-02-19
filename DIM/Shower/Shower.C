@@ -201,6 +201,18 @@ double Shower::GetKt2(const Splitting &s) const {
   const double ztilde_w = 1.-s.m_vi;
   Kin_Args ff(y_wia,ztilde_w,s.m_phi);
 
+  /* boost into pai+p_ rest-frame in order to be able to use phi_ib and construct additional
+     momenta */
+        ATOOLS::Vec4D pminus = pwtilde - mw2/s.m_Qprime2*paitilde;
+  const ATOOLS::Vec4D pboost = paitilde+pminus;
+  Poincare bst(pboost);
+  bst.Boost(paitilde);
+  bst.Boost(pwtilde);
+  bst.Boost(pminus);
+  bst.Boost(pb);
+  ff.m_res    = true;
+  ff.m_pb     = pb;
+  ff.m_pminus = pminus;
   if (ConstructFFDipole(mw2,0.,mw2,0.,pwtilde,paitilde,ff)<0)
     THROW(fatal_error, "Must not happend!")
 
@@ -210,7 +222,6 @@ double Shower::GetKt2(const Splitting &s) const {
   const Vec4D p_aib = pa+pi+pb;
   Poincare bst_aib(p_aib);
   bst_aib.Boost(pa);
-  bst_aib.Boost(pb);
   bst_aib.Boost(pi);
 
   const double theta = pa.Theta(pi);
