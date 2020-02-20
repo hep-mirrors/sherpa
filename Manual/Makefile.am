@@ -33,6 +33,9 @@ Sherpa_TEXINFOS = \
 	LHC_HJets_FiniteMt.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \
+	LHC_TJ_tch.texi \
+	LHC_TJ_sch.texi \
+	LHC_TW.texi \
 	LHC_TTBar.texi \
 	LHC_TTH.texi \
 	LHC_TTW.texi \
