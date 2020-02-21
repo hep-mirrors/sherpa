@@ -62,6 +62,10 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
+		SingleTop_Channels/Run.tj-t_channel.dat \
+		SingleTop_Channels/Run.tj-t_channel-nf4.dat \
+		SingleTop_Channels/Run.tj-s_channel.dat \
+		SingleTop_Channels/Run.tW.dat \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Run.dat \
