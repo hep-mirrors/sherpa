@@ -65,6 +65,10 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct-TTH \
 		H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml \
+		SingleTop_Channels/Sherpa.tj-t_channel.yaml \
+		SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml \
+		SingleTop_Channels/Sherpa.tj-s_channel.yaml \
+		SingleTop_Channels/Sherpa.tW.yaml \
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
