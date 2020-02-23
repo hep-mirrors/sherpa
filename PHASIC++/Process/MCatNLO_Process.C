@@ -249,7 +249,7 @@ ATOOLS::Event_Weights MCatNLO_Process::Differential(const Vec4D_Vector &p,
   return m_last;
 }
 
-Event_Weights MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
+Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
 {
   DEBUG_FUNC(Name());
 
@@ -317,47 +317,61 @@ Event_Weights MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
                      double varweight,
                      size_t varindex,
                      Variation_Parameters* varparams) -> double {
-    return varweight * LocalKFactor(bvi[varindex],
-                                    b[varindex],
-                                    rs[varindex],
-                                    r[varindex],
-                                    random,
-                                    &ampl);
+    const LocalKFactorInfo info = CalculateLocalKFactorInfo(
+        bvi[varindex], b[varindex], rs[varindex], r[varindex]);
+    if (info.s == 0.0 && info.h == 0.0)
+      return 0.0;
+    // select S or H and return corresponding K factor; update cluster
+    // amplitudes if this is the nominal calculation (i.e. varparams == nullptr)
+    const double selectionwgt {dabs(info.s) / (dabs(info.s) + dabs(info.h))};
+    if (selectionwgt > random) {
+      const double kfac {info.s / selectionwgt};
+      msg_Debugging() << "S selected ( w = " << kfac << " )\n";
+      if (!varparams && m_kfacmode / 10) {
+        for (Cluster_Amplitude* campl(ampl.Next()); campl;
+             campl = campl->Next()) {
+          campl->SetLKF(bvi[varindex] / b[varindex]);
+          campl->SetNLO(2);
+        }
+      }
+      return kfac;
+    } else {
+      const double kfac {info.h / (1.0 - selectionwgt)};
+      msg_Debugging() << "H selected ( w = " << kfac << " )\n";
+      if (!varparams && m_kfacmode / 10)
+        ampl.SetNLO(m_hpsmode);
+      return kfac;
+    }
   });
+
   return kfacs;
 }
 
-double MCatNLO_Process::LocalKFactor(double bvi, double b,
-                                     double rs, double r,
-                                     double random,
-                                     const ATOOLS::Cluster_Amplitude *ampl)
+MCatNLO_Process::LocalKFactorInfo MCatNLO_Process::CalculateLocalKFactorInfo(
+    double bvi, double b, double rs, double r)
 {
-  double s(0.), h(0.), bvib(b?bvi/b:0.0), rsr(r?rs/r:0.);
-  if      (m_kfacmode%10==0) { s=bvib*(1.0-rsr); h=rsr; }
-  else if (m_kfacmode%10==1) { s=bvib*(1.0-rsr); h=0; }
-  else if (m_kfacmode%10==2) { s=0;              h=rsr; }
-  else if (m_kfacmode%10==3) { s=bvib;           h=0.; }
-  else if (m_kfacmode%10==4) { s=bvib+rs/b;      h=0.; }
-  else THROW(fatal_error,"Unknown Kfactor mode.");
-  msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
-		 <<" -> S = "<<s<<", H = "<<h<<"\n";
-  if (s==0.0 && h==0.0) return 0.0;
-  double sw(dabs(s)/(dabs(s)+dabs(h)));
-  if (sw>random) {
-    msg_Debugging()<<"S selected ( w = "<<s/sw<<" )\n";
-    if (m_kfacmode/10 && ampl) {
-      for (Cluster_Amplitude *campl(ampl->Next());
-          campl;campl=campl->Next()) {
-        campl->SetLKF(bvi/b);
-        campl->SetNLO(2);
-      }
-    }
-    return s/sw;
-  }
-  msg_Debugging()<<"H selected ( w = "<<h/(1.0-sw)<<" )\n";
-  if (m_kfacmode/10 && ampl)
-    ((Cluster_Amplitude*)ampl)->SetNLO(m_hpsmode);
-  return h/(1.0-sw);
+  LocalKFactorInfo info;
+  const double bvib(b ? bvi / b : 0.0), rsr(r ? rs / r : 0.0);
+  if (m_kfacmode % 10 == 0) {
+    info.s = bvib * (1.0 - rsr);
+    info.h = rsr;
+  } else if (m_kfacmode % 10 == 1) {
+    info.s = bvib * (1.0 - rsr);
+    info.h = 0;
+  } else if (m_kfacmode % 10 == 2) {
+    info.s = 0;
+    info.h = rsr;
+  } else if (m_kfacmode % 10 == 3) {
+    info.s = bvib;
+    info.h = 0.;
+  } else if (m_kfacmode % 10 == 4) {
+    info.s = bvib + rs / b;
+    info.h = 0.;
+  } else
+    THROW(fatal_error, "Unknown Kfactor mode.");
+  msg_Debugging() << "BVI = " << bvi << ", B = " << b << " -> S = " << info.s
+                  << ", H = " << info.h << "\n";
+  return info;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
