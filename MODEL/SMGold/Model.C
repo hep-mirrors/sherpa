@@ -1396,14 +1396,14 @@ void Standard_ModelGS::ResetVerticesWithEWParameters(const EWParameters& params)
 {
   ClearInteractionModel();
   /// Set parameters to their run value before re-initing the vertices
-  (*p_complexconstants)[(std::string)( "csin2_thetaW")] = params.m_sw2_r;
-  (*p_complexconstants)[(std::string) "ccos2_thetaW"] = params.m_cw2_r;
-  (*p_complexconstants)[(std::string) "cvev"]         = params.m_cvev_r;
-  (*p_constants)[(std::string) ("mZ")]                  = params.m_mz_r;
-  (*p_constants)[(std::string) "mW+"]                 = params.m_mw_r;
-  (*p_constants)[(std::string) "mh0"]                 = params.m_mh0_r;
-  (*p_constants)[(std::string) "mt"]                  = params.m_mt_r;
-  (*p_constants)[(std::string) "alpha_QED"]           = params.m_aew_r;
+  (*p_complexconstants)[std::string("csin2_thetaW")] = params.m_sw2_r;
+  (*p_complexconstants)[std::string("ccos2_thetaW")] = params.m_cw2_r;
+  (*p_complexconstants)[std::string("cvev")]         = params.m_cvev_r;
+  (*p_constants)[std::string("mZ")]                  = params.m_mz_r;
+  (*p_constants)[std::string("mW+")]                 = params.m_mw_r;
+  (*p_constants)[std::string("mh0")]                 = params.m_mh0_r;
+  (*p_constants)[std::string("mt")]                  = params.m_mt_r;
+  (*p_constants)[std::string("alpha_QED")]           = params.m_aew_r;
   InitializeInteractionModel();
 }
 
