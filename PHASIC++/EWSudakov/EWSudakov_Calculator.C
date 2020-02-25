@@ -463,6 +463,8 @@ Coeff_Value EWSudakov_Calculator::lsPRCoeff()
       m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
       m_current_spincombination,
       &m_comixinterface);
+  if (deno == 0.0)
+    return 0.0;
   const auto he_me = TransformedAmplitudeValue(
       m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
       m_current_spincombination,
