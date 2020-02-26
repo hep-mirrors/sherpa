@@ -30,16 +30,17 @@ double Sudakov_KFactor::KFactor(const int mode)
   m_weight = m_calc.KFactor(p_proc->Integrator()->Momenta());
   if (m_check) msg->SetLevel(level);
   if (std::abs(m_weight) > 500) {
-    MyStrStream s;
-    s << "K factor is too large: " << m_weight << '\n';
-    //THROW(fatal_error, s.str())
+    msg_Info() << "WARNING: K factor is really large: " << m_weight << '\n';
   }
+  // for now, use the m_ewsudakovkfacdelta of the ME wgt info to propagate the
+  // weight information on a coeff type-to-type basis
+  m_weight = 1.0;
   return m_weight;
 }
 
 double Sudakov_KFactor::KFactor(const ATOOLS::NLO_subevt &evt)
 {
-  return m_weight=1.;
+  return m_weight = 1.0;
 }
 
 DECLARE_GETTER(Sudakov_KFactor,"EWSudakov",

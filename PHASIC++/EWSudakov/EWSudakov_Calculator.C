@@ -74,6 +74,9 @@ EWSudakov_Calculator::~EWSudakov_Calculator()
 double EWSudakov_Calculator::KFactor(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
+  p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta.clear();
+  for (const auto& c : m_activecoeffs)
+    p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[c] = 0.0;
   m_ampls.UpdateMomenta(mom);
   if (!IsInHighEnergyLimit())
     return 1.0;
@@ -132,20 +135,39 @@ double EWSudakov_Calculator::KFactor()
           (m_ampls.BaseAmplitude().Leg(k)->Mom()
            + m_ampls.BaseAmplitude().Leg(l)->Mom()).Abs2())/s);
 
-  // calculate K = (\sum_{i} (1 + 2 Re(delta))|M_i|^2) / (\sum_{i} |M_i|^2),
-  // where the sum is over the spin configurations
-  auto num = 0.0;
-  for (size_t i {0}; i < m_spinampls[0].size(); ++i) {
-    static const auto delta_prefactor = m_ewgroupconsts.m_aew/4./M_PI;
-    auto delta = 0.0;
-    for (const auto& coeffkv : m_coeffs)
-      delta += (coeffkv.second[i] * logs[coeffkv.first]).real();
-    num += (1.0 + 2.0*delta_prefactor*delta) * norm(m_spinampls[0][i]);
+  // calculate
+  //   K = (\sum_{i} (1 + 2 Re(\sum_{c} delta_i^c))|M_i|^2)/(\sum_{i} |M_i|^2),
+  // where the sum is over the spin configurations; here, we re-write this eq.
+  // as
+  //   K = 1 + \sum_{c} (2 \sum{i} Re(delta_i^c) |M_i|^2)/(\sum_{i} |M_i|^2)
+  //     = 1 + \sum_{c} delta^c
+  // which is more convenient since we want to store the c-dependent
+  // contributions delta^c with i integrated over (note that c stands for the
+  // coeff type).
+  auto kfac = 1.0;
+  const auto delta_prefactor = m_ewgroupconsts.m_aew/4./M_PI;
+  for (const auto& coeffkv : m_coeffs) {
+    auto delta_c_num = 0.0;
+    for (size_t i {0}; i < m_spinampls[0].size(); ++i) {
+      const auto me2 = norm(m_spinampls[0][i]);
+      delta_c_num += (coeffkv.second[i] * logs[coeffkv.first]).real() * me2;
+    }
+    const auto delta_c = 2 * delta_prefactor * delta_c_num / den;
+    p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[coeffkv.first.first] += delta_c;
+    kfac += delta_c;
   }
-
-  EWSudakov_Calculator::m_kfachisto.Insert(num/den);
-
-  return num/den;
+  if (p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[EWSudakov_Log_Type::lPR] ==
+      0.0) {
+    for (const auto& kv : p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta) {
+      if (kv.second != 0.0) {
+        msg_Out() << "WARNING: lPR is zero, but other contribs are non-zero.\n"
+                  << *p_proc->GetMEwgtinfo() << '\n';
+        break;
+      }
+    }
+  }
+  EWSudakov_Calculator::m_kfachisto.Insert(kfac);
+  return kfac;
 }
 
 

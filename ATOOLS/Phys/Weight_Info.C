@@ -95,5 +95,11 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
   for (size_t i(0);i<mwi.m_rdainfos.size();++i)
     s<<mwi.m_rdainfos[i]<<std::endl;
   s<<mwi.m_clusseqinfo<<std::endl;
+  if (!mwi.m_ewsudakovkfacdelta.empty()) {
+    s << "EW Sudakov contributions:";
+    for (const auto& d : mwi.m_ewsudakovkfacdelta)
+      s << ' ' << d.first << "=" << d.second;
+    s << std::endl;
+  }
   return s;
 }

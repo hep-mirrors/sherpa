@@ -2,6 +2,7 @@
 #define ATOOLS_Phys_Weight_Info_H
 
 #include "ATOOLS/Math/MathTools.H"
+#include "PHASIC++/EWSudakov/EWSudakov.H"
 #include <ostream>
 #include <vector>
 
@@ -180,6 +181,7 @@ namespace ATOOLS {
     Cluster_Sequence_Info m_clusseqinfo;
     std::vector<DADS_Info> m_dadsinfos;
     std::vector<RDA_Info> m_rdainfos;
+    std::map<PHASIC::EWSudakov_Log_Type, double> m_ewsudakovkfacdelta;
     ME_Weight_Info():
       m_type(mewgttype::none), m_relqcdcpl(0),
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_K(0.0),

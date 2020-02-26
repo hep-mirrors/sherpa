@@ -211,6 +211,13 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
           }
         }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
+        // fill EW Sudakov K factor contributions into weight container
+        // TODO: port to HepMC3 interface
+        for (const auto& kv : p_wgtinfo->m_ewsudakovkfacdelta) {
+          MyStrStream s;
+          s << "EWSud_" << kv.first;
+          wc[s.str()] = kv.second;
+        }
       }
       if (p_subevtlist) {
         wc["Reweight_RS"]=m_pwgt;
