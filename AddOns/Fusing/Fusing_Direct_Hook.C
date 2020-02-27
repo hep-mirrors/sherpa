@@ -44,11 +44,11 @@ public:
     p_bl = blobs;
     String_BlobDataBase_Map  bdmap = p_bl->FindFirst(btp::Signal_Process)->GetData();
 
-    auto search_mewinfo = bdmap.find("MEWeightInfo");
+    String_BlobDataBase_Map::iterator search_mewinfo = bdmap.find("MEWeightInfo");
     if (search_mewinfo==bdmap.end()) {
         THROW(fatal_error,"No MEWeightinfo found in singnal blob!");
       }
-    auto search_weight = bdmap.find("Weight");
+    String_BlobDataBase_Map::iterator search_weight = bdmap.find("Weight");
     if (search_weight==bdmap.end()) {
         THROW(fatal_error,"No Weight found in singnal blob!");
       }
@@ -112,7 +112,7 @@ public:
 
 
 	// TODO: calculate counter-terms based on the muR variations. not done yet, since numerical impact is small.
-    auto search_varweights = bdmap.find("Variation_Weights");
+    String_BlobDataBase_Map::iterator search_varweights = bdmap.find("Variation_Weights");
     if (search_varweights==bdmap.end()) {
             THROW(fatal_error,"No VarWeight found in singnal blob!");
         }
