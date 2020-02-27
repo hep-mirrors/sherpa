@@ -319,7 +319,7 @@ HepMC3_Interface::~HepMC3_Interface()
 bool HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                                          HepMC::GenEvent& event)
 {
-  const auto weight(blobs->Weight());
+  const double weight(blobs->Weight());
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
@@ -514,7 +514,7 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                                     HepMC::GenEvent& event)
 {
-  const auto weight(blobs->Weight());
+  const double weight(blobs->Weight());
   DEBUG_FUNC("");
   event.set_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
@@ -562,10 +562,10 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
       // Find beam particles
       else if ((*blit)->Type()==ATOOLS::btp::Beam || 
 	       (*blit)->Type()==ATOOLS::btp::Bunch) {
-        for (auto pit: vertex->particles_in())
-             {
-          if (pit->production_vertex()==NULL) {
-            beamparticles.push_back(pit);
+        for (std::vector<HepMC::GenParticlePtr>::const_iterator pit=vertex->particles_in().begin();
+             pit!=vertex->particles_in().end(); pit++) {
+          if ((*pit)->production_vertex()==NULL) {
+            beamparticles.push_back((*pit));
           }
         }
       }
@@ -593,28 +593,30 @@ bool HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                <<"tree enabled (disconnect 1,2,3 vertices)");
     // Iterate over all vertices to find PS vertices
     int vtx_id = -1;
-    for (auto vit:  event.vertices()) {
+    for (std::vector<HepMC::GenVertexPtr>::const_iterator viit=event.vertices().begin();
+         viit!=event.vertices().end(); viit++) {
+      HepMC::GenVertexPtr vit=(*viit);
 
       // Is this a PS Vertex?
       if (vit->status()==4) {
         std::vector<HepMC::GenParticlePtr > remove;
         //// Loop over outgoing particles
-        for (auto  pout: vit->particles_out()) 
-{
-            if ( pout->end_vertex() ) {
-              vtx_id = pout->end_vertex()->status(); //
+        for (std::vector<HepMC::GenParticlePtr>::const_iterator pout=vit->particles_in().begin();
+             pout!=vit->particles_in().end(); pout++) {
+            if ( (*pout)->end_vertex() ) {
+              vtx_id = (*pout)->end_vertex()->status(); //
               // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
               if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-                  remove.push_back(pout);
+                  remove.push_back((*pout));
             }
         }
         // Loop over incoming particles
-        for (auto  pin: vit->particles_in())
- {
-          vtx_id = pin->production_vertex()->status();
+        for (std::vector<HepMC::GenParticlePtr>::const_iterator pin=vit->particles_in().begin();
+             pin!=vit->particles_in().end(); pin++) {
+          vtx_id = (*pin)->production_vertex()->status();
           // Disconnect incoming particle from production vertex of type (1,2,3)  
           if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-                  remove.push_back(pin);
+                  remove.push_back((*pin));
         }
         // Iterate over Genparticle pointers to remove from current vertex (*vit)
         for (unsigned int nrem=0;nrem<remove.size();++nrem) {

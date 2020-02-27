@@ -367,12 +367,12 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 bool Rivet_Interface::Finish()
 {
   PRINT_FUNC(m_outpath+".yoda");
-  for (auto& it : m_rivet) {
+  for (Rivet_Map::iterator it=m_rivet.begin(); it!=m_rivet.end(); it++) {
     std::string out = m_outpath;
-    if (it.first.first!="") out+="."+it.first.first;
-    if (it.first.second!=0) out+=".j"+ToString(it.first.second);
-    it.second->finalize();
-    it.second->writeData(out+".yoda");
+    if (it->first.first!="") out+="."+it->first.first;
+    if (it->first.second!=0) out+=".j"+ToString(it->first.second);
+    it->second->finalize();
+    it->second->writeData(out+".yoda");
   }
   m_finished=true;
   return true;

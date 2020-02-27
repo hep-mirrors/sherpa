@@ -69,7 +69,7 @@ public:
 
        ATOOLS::String_BlobDataBase_Map  bdmap = p_bl->FindFirst(ATOOLS::btp::Shower)->GetData();
 
-       auto search = bdmap.find("AllAmplitudes");
+       String_BlobDataBase_Map::iterator search = bdmap.find("AllAmplitudes");
        if (search==bdmap.end()) {
            THROW(fatal_error,"No matching amplitude found in blob. This algorithm works only with rel-2-2-7 or later!");
          }
@@ -110,7 +110,7 @@ public:
       //retval=true:  keep Event
 
       String_BlobDataBase_Map  bdmap = p_bl->FindFirst(btp::Signal_Process)->GetData();
-      auto search_weight = bdmap.find("Weight");
+      String_BlobDataBase_Map::iterator search_weight = bdmap.find("Weight");
       if (search_weight==bdmap.end()) {
               THROW(fatal_error,"No Weight found in singnal blob!");
           }
