@@ -35,13 +35,14 @@ void HE_Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
 {
   Model_Base* model = s_model;
   s_model = p_model_he.get();
+  p_proc->Generator()->Generators()->SetModel(p_model_he.get());
   Comix_Interface::InitializeProcesses(ampls);
   s_model = model;
+  p_proc->Generator()->Generators()->SetModel(s_model);
 }
 
 void HE_Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
-  p_proc->Generator()->Generators()->SetModel(p_model_he.get());
   Comix_Interface::InitializeProcess(pi);
 }
 
