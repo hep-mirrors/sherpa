@@ -82,6 +82,7 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   }
 
   // set external particles
+  // TODO: do we need the parton -> jet transformation?
   for (size_t i{0}; i < ampl->NIn(); ++i) {
     Flavour fl(ampl->Leg(i)->Flav().Bar());
     if (Flavour(kf_jet).Includes(fl))
@@ -117,6 +118,6 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
       MODEL::s_model, "VAR{" + ToString(sqr(rpa->gen.Ecms())) + "}",
       "Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
-  proc->Get<COMIX::Process_Base>()->Tests();
+  //proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&m_apmap);
 }
