@@ -24,8 +24,6 @@ namespace ATOOLS {
 
     std::string m_tag;
 
-    Algebra_Interpreter *p_interpreter;
-
   public:
 
     // constructor
@@ -35,13 +33,11 @@ namespace ATOOLS {
     virtual ~Function();
 
     // member functions
-    virtual Term *Evaluate(const std::vector<Term*> &args) const;
+    virtual Term *Evaluate(Algebra_Interpreter *const interpreter,
+			   const std::vector<Term*> &args) const;
 
     // inline functions
     inline const std::string &Tag() const { return m_tag; }
-
-    inline void SetInterpreter(Algebra_Interpreter *const interpreter)
-    { p_interpreter=interpreter; }
 
   };// end of class Function
 
@@ -64,12 +60,13 @@ namespace ATOOLS {
     // destructor
     ~Operator();
 
-    virtual size_t FindTag(const std::string &expr,const bool fwd,
+    virtual size_t FindTag(Algebra_Interpreter *const interpreter,
+			   const std::string &expr,const bool fwd,
 			   size_t cpos=std::string::npos) const;
 
     // inline functions
     inline const size_t &Priority() const { return m_priority; }
-    inline bool    Binary() const   { return m_binary;   }
+    inline bool          Binary() const   { return m_binary;   }
 
   };// end of class Operator
 
@@ -125,7 +122,11 @@ namespace ATOOLS {
   private:
 
     Function_Map m_functions, m_leafs;
-    Operator_Map m_operators;
+
+    static Function_Map s_functions;
+    static Operator_Map s_operators;
+
+    static int s_count;
 
     Interpreter_Map m_interpreters;
 
@@ -158,7 +159,7 @@ namespace ATOOLS {
 
     Term *Calculate();
 
-    void AddFunction(Function *const f);
+    void AddFunction(Function *const f,const int mode=0);
     void AddOperator(Operator *const b);
 
     void AddLeaf(Function *const f);
@@ -176,8 +177,9 @@ namespace ATOOLS {
     inline void SetTagReplacer(Tag_Replacer *const replacer) 
     { p_replacer=replacer; }
 
-    inline const Function_Map &Functions() const { return m_functions; }
-    inline const Operator_Map &Operators() const { return m_operators; }
+    inline const Function_Map &Functions() const { return s_functions; }
+    inline const Operator_Map &Operators() const { return s_operators; }
+    inline const Function_Map &Locals() const    { return m_functions; }
 
     inline Tag_Replacer * TagReplacer() const { return p_replacer; }
 
@@ -191,7 +193,8 @@ namespace ATOOLS {
   namespace ATOOLS { class NAME: public Function {                      \
   public:								\
     NAME();								\
-    Term *Evaluate(const std::vector<Term*> &args) const;		\
+    Term *Evaluate(Algebra_Interpreter *const interpreter,		\
+		   const std::vector<Term*> &args) const;		\
   }; }									\
   NAME::NAME(): Function(TAG) {}
 
@@ -199,7 +202,8 @@ namespace ATOOLS {
   namespace ATOOLS { class NAME: public Operator {			\
   public:								\
     NAME();								\
-    Term *Evaluate(const std::vector<Term*> &args) const;		\
+    Term *Evaluate(Algebra_Interpreter *const interpreter,		\
+		   const std::vector<Term*> &args) const;		\
   }; }									\
   NAME::NAME(): Operator(TAG,PRIORITY,false) {}
 
@@ -207,7 +211,8 @@ namespace ATOOLS {
   namespace ATOOLS { class NAME: public Operator {			\
   public:								\
     NAME();								\
-    Term *Evaluate(const std::vector<Term*> &args) const;		\
+    Term *Evaluate(Algebra_Interpreter *const interpreter,		\
+		   const std::vector<Term*> &args) const;		\
   }; }									\
   NAME::NAME(): Operator(TAG,PRIORITY,true) {}
 
@@ -215,8 +220,10 @@ namespace ATOOLS {
   namespace ATOOLS { class NAME: public Operator {			\
   public:								\
     NAME();								\
-    Term *Evaluate(const std::vector<Term*> &args) const;		\
-    size_t FindTag(const std::string &expr,				\
+    Term *Evaluate(Algebra_Interpreter *const interpreter,		\
+		   const std::vector<Term*> &args) const;		\
+    size_t FindTag(Algebra_Interpreter *const interpreter,		\
+		   const std::string &expr,				\
 		   const bool fwd,size_t cpos) const;			\
   }; }									\
   NAME::NAME(): Operator(TAG,PRIORITY,TYPE) {}
