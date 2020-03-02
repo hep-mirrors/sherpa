@@ -186,6 +186,8 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     return {{signed_kf, -sign * IZLefthandedLepton}};
   } else if (signed_kf == kf_chi) {
     return {{kf_h0, {0.0, -1.0 / (2 * m_cw * m_sw)}}};
+  } else if (signed_kf == kf_h0) { //TODO double check this with ENO
+    return {{kf_chi, {0.0, 1.0 / (2 * m_cw * m_sw)}}};
   } else if (flav.IsLepton()) {
     if (pol == 0) {
       if (flav.IsUptype())
@@ -261,7 +263,10 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
              (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_photon) {
     return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
-  } else {
+  } else if (signed_kf == kf_h0){
+    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}}};
+  }
+  else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav
       << " (pol: " << pol << ')';

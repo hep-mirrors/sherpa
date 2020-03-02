@@ -108,8 +108,10 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
   PHASIC::Process_Base* proc =
       p_proc->Generator()->Generators()->InitializeProcess(pi, false);
-  if (proc == NULL)
+  if (proc == NULL){
+    msg_Error() << "Invalid process: " << pi << std::endl;
     THROW(fatal_error, "Invalid process");
+  }
   proc->SetSelector(Selector_Key{});
   proc->SetScale(Scale_Setter_Arguments(
       MODEL::s_model, "VAR{" + ToString(sqr(rpa->gen.Ecms())) + "}",
