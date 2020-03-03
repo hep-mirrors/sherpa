@@ -564,10 +564,9 @@ double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
 }
 
 void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
-                                          METOOLS::Amplitude2_Tensor* amps,
-                                          const Particle_Vector& origparts)
+                                          METOOLS::Amplitude2_Tensor* amps)
 {
-  Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
+  Decay_Handler_Base::TreatInitialBlob(blob, amps);
 
   double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
   DEBUG_VAR(brfactor);

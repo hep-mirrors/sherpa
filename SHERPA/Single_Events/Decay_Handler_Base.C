@@ -28,7 +28,7 @@ using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
   p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
-  m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
+  m_qedmode(0), m_spincorr(false), m_cluster(true),
   m_mass_smearing(1)
 {
 }
@@ -164,12 +164,10 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
 }
 
 void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
-                                          METOOLS::Amplitude2_Tensor* amps,
-                                          const Particle_Vector& origparts)
+                                          METOOLS::Amplitude2_Tensor* amps)
 {
   DEBUG_FUNC("");
   DEBUG_VAR(*blob);
-  m_decaychainend=false;
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
   std::vector<size_t> shuffled(daughters.size());
@@ -211,30 +209,30 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   for (size_t ii(0); ii<daughters.size(); ++ii) {
     size_t i=shuffled[ii];
     DEBUG_INFO("treating "<<*daughters[i]);
-    m_decaychainend=false;
     if (m_spincorr) {
-      if (amps && origparts[i]) {
+      if (amps && amps->Contains(daughters[i]->OriginalPart())) {
         DEBUG_VAR(*amps);
         Decay_Matrix* D(NULL);
         if (!Decays(daughters[i]->Flav()) || !daughters[i]->DecayBlob() ||
             daughters[i]->DecayBlob()->NOutP()>0) {
-          D=new Decay_Matrix(origparts[i]); // delta
+          D=new Decay_Matrix(daughters[i]->OriginalPart()); // delta
         }
         else {
-          DEBUG_INFO("treating: "<<origparts[i]->Flav());
-          Spin_Density sigma(origparts[i],amps);
+          DEBUG_INFO("treating: "<<daughters[i]->OriginalPart()->Flav());
+          Spin_Density sigma(daughters[i]->OriginalPart(),amps);
           sigma.SetParticle(daughters[i]);
           DEBUG_VAR(sigma);
           D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
-          D->SetParticle(origparts[i]);
+          D->SetParticle(daughters[i]->OriginalPart());
         }
-        if (amps->Contains(origparts[i])) {
-          DEBUG_INFO("contracting with D["<<D->Particle()<<"]");
+        if (amps->Contains(daughters[i]->OriginalPart())) {
+          DEBUG_INFO("contracting with D["<<D->Particle()->Flav()<<"]");
           amps->Contract(D);
         }
         delete D;
       }
       else {
+        DEBUG_INFO("Did not find "<<daughters[i]->OriginalPart()->Flav()<<" in amps");
         Spin_Density sigma(daughters[i]);
         if (Decays(daughters[i]->Flav())) {
           Decay_Matrix* D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
@@ -247,7 +245,6 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
         FillDecayTree(daughters[i]->DecayBlob(), NULL);
       }
     }
-    m_decaychainend=true;
   }
   if (p_softphotons && m_qedmode==2)
     AttachExtraQEDRecursively(blob);

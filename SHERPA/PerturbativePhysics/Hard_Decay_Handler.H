@@ -81,8 +81,7 @@ namespace SHERPA {
 
     void CreateDecayBlob(ATOOLS::Particle* inpart);
     void TreatInitialBlob(ATOOLS::Blob* blob,
-                          METOOLS::Amplitude2_Tensor* amps,
-                          const ATOOLS::Particle_Vector& origparts);
+                          METOOLS::Amplitude2_Tensor* amps);
 
     bool DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
                                  ATOOLS::Blob* initial_blob);

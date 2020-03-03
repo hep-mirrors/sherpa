@@ -36,8 +36,7 @@ namespace SHERPA {
     void CreateDecayBlob(ATOOLS::Particle* part);
     
     void TreatInitialBlob(ATOOLS::Blob* blob,
-                          METOOLS::Amplitude2_Tensor* amps,
-                          const ATOOLS::Particle_Vector& origparts);
+                          METOOLS::Amplitude2_Tensor* amps);
     METOOLS::Amplitude2_Tensor*
     FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
     METOOLS::Decay_Matrix*
