@@ -39,31 +39,14 @@ Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
             METOOLS::Amplitude2_Tensor* amps(NULL);
             Blob_Data_Base* data = (*signal)["ATensor"];
             if (data) amps=data->Get<METOOLS::Amplitude2_Tensor*>();
-            Particle_Vector origparts;
-            Particle_Vector outparts=blob->GetOutParticles();
-            Particle_Vector signalparts=signal->GetOutParticles();
-            for (size_t i=0; i<outparts.size(); ++i) {
-              bool found(false);
-              for (size_t j=0; j<signalparts.size(); ++j) {
-                if (outparts[i]->OriginalPart()==signalparts[j]) {
-                  origparts.push_back(signalparts[j]);
-                  DEBUG_INFO("Found original: "<<*signalparts[j]);
-                  found=true;
-                  break;
-                }
-              }
-              if (!found) {
-                DEBUG_INFO("Found no original particle.");
-                origparts.push_back(NULL);
-              }
-            }
-            p_dechandler->TreatInitialBlob(blob, amps, origparts);
+            DEBUG_VAR(*amps);
+            p_dechandler->TreatInitialBlob(blob, amps);
           }
           else {
             p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
           }
         }
-        else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+        else p_dechandler->TreatInitialBlob(blob, NULL);
       } catch (Return_Value::code ret) {
         msg_Tracking()<<METHOD<<" Something went wrong for event: "<<*bloblist
 		      <<endl<<" Will retry event."<<endl;

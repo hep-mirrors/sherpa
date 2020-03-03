@@ -36,11 +36,10 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
             METOOLS::Amplitude2_Tensor* amps(NULL);
             Blob_Data_Base* data = (*signal)["ATensor"];
             if (data) amps=data->Get<METOOLS::Amplitude2_Tensor*>();
-            Particle_Vector outparts=blob->GetOutParticles();
-            p_dechandler->TreatInitialBlob(blob, amps, outparts);
+            p_dechandler->TreatInitialBlob(blob, amps);
           }
         }
-        else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+        else p_dechandler->TreatInitialBlob(blob, NULL);
       } catch (Return_Value::code ret) {
         return ret;
       }

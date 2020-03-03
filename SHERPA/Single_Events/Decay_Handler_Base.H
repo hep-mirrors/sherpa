@@ -33,7 +33,7 @@ namespace SHERPA {
     PHASIC::Decay_Map* p_decaymap;
     ATOOLS::Blob_List* p_bloblist;
     ATOOLS::Cluster_Amplitude* p_ampl;
-    bool m_spincorr, m_decaychainend, m_cluster;
+    bool m_spincorr, m_cluster;
     int m_mass_smearing;
     size_t m_qedmode;
   public:
@@ -44,8 +44,7 @@ namespace SHERPA {
 
     // have to reimplement for hadrons, lund:
     virtual void TreatInitialBlob(ATOOLS::Blob* blob,
-                                  METOOLS::Amplitude2_Tensor* amps,
-                                  const ATOOLS::Particle_Vector& origparts);
+                                  METOOLS::Amplitude2_Tensor* amps);
     // have to reimplement for lund:
     virtual bool DiceMass(ATOOLS::Particle* part, double max);
     virtual METOOLS::Amplitude2_Tensor*
