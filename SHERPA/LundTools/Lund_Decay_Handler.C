@@ -19,12 +19,10 @@ using namespace std;
 using namespace METOOLS;
 
 Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund) :
-  Decay_Handler_Base(), p_lund(lund)
+  Decay_Handler(), p_lund(lund)
 {
 #ifdef USING__PYTHIA
   Settings& s = Settings::GetMainSettings();
-  m_qedmode =
-    s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1).Get<size_t>();
   const double maxproperlifetime{
     s["MAX_PROPER_LIFETIME"].SetDefault(-1.0).Get<double>() };
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
@@ -40,13 +38,12 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund) :
       if (p_lund->IsAllowedDecay(flav.Kfcode()) ||
           flav.Kfcode()==kf_K_L||flav.Kfcode()==kf_K_S||flav.Kfcode()==kf_K) {
         p_lund->AdjustProperties(flav);
+        flav.SetDecayHandler(this);
       }
     }
   }
 
-  m_mass_smearing=false;
   p_lund->SwitchOffMassSmearing();
-  m_spincorr=false;
 
   p_decaymap=NULL;
 #else
@@ -74,13 +71,12 @@ Lund_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
   return NULL;
 }
 
-void Lund_Decay_Handler::CreateDecayBlob(Particle* inpart)
+void Lund_Decay_Handler::CreateDecayBlob(Blob_List* bloblist, Particle* inpart)
 {
   DEBUG_FUNC(inpart->RefFlav());
   if(inpart->DecayBlob()) Abort();
-  if(!Decays(inpart->Flav())) return;
   if(inpart->Time()==0.0) inpart->SetTime();
-  Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);
+  Blob* blob = bloblist->AddBlob(btp::Hadron_Decay);
   blob->AddToInParticles(inpart);
   SetPosition(blob);
   blob->SetTypeSpec("Lund");
@@ -113,12 +109,8 @@ void Lund_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
   blob->SetPosition( inpart->XProd() + position ); // in mm
 }
 
-bool Lund_Decay_Handler::CanDecay(const ATOOLS::Flavour& flav)
+bool Lund_Decay_Handler::DiceMass(ATOOLS::Particle* p, double max)
 {
-#ifdef USING__PYTHIA
-  return p_lund->IsAllowedDecay(flav.Kfcode());
-#else
-  return false;
-#endif
+  p->SetFinalMass(p->RefFlav().HadMass());
+  return true;
 }
-
