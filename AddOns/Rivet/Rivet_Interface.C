@@ -277,7 +277,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     }
     else if (cur.find("EWSud_")==0) {
       const auto& contrib = wc[cur];
-      if (m_splitewsudakovcontribs)
+      if (m_splitewsudakovcontribs && contrib != 0.0)
         wgtmap[cur]=contrib;
       ewsudakovkfac+=contrib;
     }
@@ -310,7 +310,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     }
     else if (cur.find("EWSud_")==0) {
       const auto& contrib = wgt;
-      if (m_splitewsudakovcontribs)
+      if (m_splitewsudakovcontribs && contrib != 0.0)
         wgtmap[cur]=contrib;
       ewsudakovkfac+=contrib;
     }
