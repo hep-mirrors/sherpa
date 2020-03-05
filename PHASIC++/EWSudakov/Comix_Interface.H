@@ -27,7 +27,9 @@ protected:
 private:
   Process_Info CreateProcessInfo(const Cluster_Amplitude*,
                                  const std::string& graph_path);
+  void AdaptDifferentialMode();
   NLOTypeStringProcessMap_Map m_apmap;
+  int m_differentialmode;
 
 };
 

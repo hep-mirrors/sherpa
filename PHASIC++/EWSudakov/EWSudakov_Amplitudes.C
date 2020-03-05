@@ -126,6 +126,15 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
   particles.clear();
 }
 
+void EWSudakov_Amplitudes::UpdateColors(const Int_Vector& I, const Int_Vector& J)
+{
+  for (auto& ampl : ampls) {
+    for (int j {0}; j < NumberOfLegs(); ++j) {
+      ampl.second->Leg(j)->SetCol(ColorID(I[j], J[j]));
+    }
+  }
+}
+
 double EWSudakov_Amplitudes::MandelstamS()
 {
   const auto& ampl = BaseAmplitude();

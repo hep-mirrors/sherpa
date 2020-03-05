@@ -80,6 +80,13 @@ double EWSudakov_Calculator::KFactor(const ATOOLS::Vec4D_Vector& mom)
   m_ampls.UpdateMomenta(mom);
   if (!IsInHighEnergyLimit())
     return 1.0;
+  if (p_proc->Integrator()->ColorScheme() == cls::sample) {
+    Int_Vector I = p_proc->Integrator()->ColorIntegrator()->I();
+    Int_Vector J = p_proc->Integrator()->ColorIntegrator()->J();
+    assert(I.size() == J.size());
+    assert(I.size() == m_ampls.NumberOfLegs());
+    m_ampls.UpdateColors(I, J);
+  }
   ClearSpinAmplitudes();
   FillBaseSpinAmplitudes();
   CalculateSpinAmplitudeCoeffs();

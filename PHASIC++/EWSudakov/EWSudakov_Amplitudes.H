@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "PHASIC++/EWSudakov/EWSudakov.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 
 #include <memory>
 #include <map>
@@ -62,6 +63,7 @@ namespace PHASIC {
     size_t NumberOfLegs() noexcept { return BaseAmplitude().Legs().size(); }
 
     void UpdateMomenta(const ATOOLS::Vec4D_Vector& mom);
+    void UpdateColors(const Int_Vector& I, const Int_Vector& J);
     double MandelstamS();
     double MandelstamT();
     double MandelstamU();

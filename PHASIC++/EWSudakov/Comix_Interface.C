@@ -22,15 +22,19 @@ using namespace MODEL;
 
 Comix_Interface::Comix_Interface(Process_Base* proc,
                                  const EWSudakov_Amplitudes& ampls)
-    : p_proc{proc}, m_procname_suffix{"Sudakov"}
+    : p_proc {proc}, m_procname_suffix {"Sudakov"}, m_differentialmode {2 | 4}
 {
+  AdaptDifferentialMode();
   InitializeProcesses(ampls.All());
 }
 
 Comix_Interface::Comix_Interface(Process_Base* proc,
                                  const std::string& procname_suffix)
-    : p_proc {proc}, m_procname_suffix {procname_suffix}
+    : p_proc {proc},
+      m_procname_suffix {procname_suffix},
+      m_differentialmode {2 | 4}
 {
+  AdaptDifferentialMode();
 }
 
 void Comix_Interface::FillSpinAmplitudes(
@@ -50,7 +54,7 @@ void Comix_Interface::FillSpinAmplitudes(
     msg_Error() << "Looking for amplitude:" << ampl << " ...\n";
     THROW(fatal_error, "Process not found");
   }
-  pit->second->Differential(*campl, 2 | 4 | 128);
+  pit->second->Differential(*campl, m_differentialmode);
   campl->Delete();
   std::vector<std::vector<Complex>> cols;
   pit->second->FillAmplitudes(spinampls, cols);
@@ -120,4 +124,14 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   //proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&m_apmap);
+}
+
+void Comix_Interface::AdaptDifferentialMode()
+{
+  if (p_proc->Integrator()->ColorScheme() == cls::sum) {
+    // for some reason, this is needed when summing colours; if colour are
+    // sampled, however, we can't have this because it then triggers the
+    // generation of a new random colour point each time we call Differential()
+    m_differentialmode |= 128;
+  }
 }
