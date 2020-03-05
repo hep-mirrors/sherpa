@@ -246,7 +246,7 @@ ATOOLS::Event_Weights MCatNLO_Process::Differential(const Vec4D_Vector &p,
                                                     Weight_Type type)
 {
   THROW(fatal_error,"Invalid function call");
-  return m_eventweights;
+  return m_last;
 }
 
 Event_Weights MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
