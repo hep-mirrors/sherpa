@@ -21,7 +21,8 @@ Particle_Info::Particle_Info(const Particle_Info &info):
   m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
   m_formfactor(0), m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
   m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_antiname(info.m_antiname),
-  m_texname(info.m_texname), m_antitexname(info.m_antitexname)
+  m_texname(info.m_texname), m_antitexname(info.m_antitexname),
+  p_decayhandler(info.p_decayhandler)
 {
   m_content.resize(info.m_content.size());
   for (size_t i(0);i<info.m_content.size();++i) 
@@ -41,7 +42,7 @@ Particle_Info::Particle_Info
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0), 
   m_isgroup(isgroup), m_idname(idname), m_antiname(antiname),
-  m_texname(texname), m_antitexname(antitexname)  
+  m_texname(texname), m_antitexname(antitexname), p_decayhandler(NULL)
 {
   m_content.push_back(new Flavour(*this));
 }
@@ -55,7 +56,7 @@ Particle_Info::Particle_Info
   m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), 
   m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
-  m_idname(idname), m_texname(texname)
+  m_idname(idname), m_texname(texname), p_decayhandler(NULL)
 {
   m_antiname=m_idname+"b";
   m_antitexname="\\overline{"+m_antiname+"}";
@@ -70,7 +71,7 @@ Particle_Info::Particle_Info
   m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(0), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
-  m_idname(idname), m_antiname(antiname)
+  m_idname(idname), m_antiname(antiname), p_decayhandler(NULL)
 {
   m_antiname=m_idname+"b";
   m_antitexname="\\overline{"+m_antiname+"}";

@@ -163,6 +163,11 @@ Amplitude2_Tensor::~Amplitude2_Tensor()
   }
 }
 
+void Amplitude2_Tensor::ContractDiagonal(const Particle* p) {
+  Decay_Matrix D(p); //diagonal matrix
+  Contract(&D);
+}
+
 void Amplitude2_Tensor::Contract(const Amplitude2_Matrix* D) {
   const Particle* part=D->Particle();
   DEBUG_FUNC(*part);

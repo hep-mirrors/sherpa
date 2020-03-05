@@ -13,6 +13,10 @@
 #include <iostream>
 #include <map>
 
+namespace PHASIC {
+  class Decay_Handler;
+}
+
 namespace ATOOLS {
 
   class Flavour;
@@ -32,6 +36,7 @@ namespace ATOOLS {
     std::string m_idname, m_antiname, m_texname, m_antitexname;
 
     PFlavour_Vector m_content;
+    PHASIC::Decay_Handler* p_decayhandler;
 
   public:
 
@@ -41,7 +46,7 @@ namespace ATOOLS {
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
-      m_massive(0), m_hadron(0), m_isgroup(0) {}
+      m_massive(0), m_hadron(0), m_isgroup(0), p_decayhandler(NULL) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
       const int icharge,const int strong,
@@ -112,6 +117,8 @@ namespace ATOOLS {
     double GenerateLifeTime() const;
     double RelBWMass(const double& min, const double& max,
                      double peak=-1.0, double width=-1.0) const;
+    PHASIC::Decay_Handler* DecayHandler() const { return p_info->p_decayhandler; }
+    void SetDecayHandler(PHASIC::Decay_Handler* dm) { p_info->p_decayhandler = dm; }
 
 
 

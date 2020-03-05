@@ -59,7 +59,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler() :
   dmap->ReadFixedTables(decaydata, "FixedDecays.dat");
   p_decaymap=dmap;
 
-  int decay_tau_hard=dr.GetValue<int>("DECAY_TAU_HARD",0);
+  int decay_tau_hard=s["DECAY_TAU_HARD"].Get<int>();
   for (Decay_Map::iterator it=p_decaymap->begin(); it!=p_decaymap->end(); ++it) {
     Flavour flav(it->first);
     if (flav.Kfcode()==kf_tau && decay_tau_hard) continue;
@@ -95,6 +95,7 @@ void Hadron_Decay_Handler::RegisterSettings()
   s["HADRONALIASESFILE"].SetDefault("HadronAliases.dat");
   s["ALIASDECAYFILE"].SetDefault("AliasDecays.dat");
   s["SOFT_MASS_SMEARING"].SetDefault(1);
+  s["DECAY_TAU_HARD"].SetDefault(0);
 }
 
 bool Hadron_Decay_Handler::VetoDecayAndPrepForNew(ATOOLS::Blob* blob)

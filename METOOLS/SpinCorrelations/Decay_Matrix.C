@@ -4,7 +4,7 @@
 using namespace METOOLS;
 using namespace ATOOLS;
 
-Decay_Matrix::Decay_Matrix(ATOOLS::Particle* p) :
+Decay_Matrix::Decay_Matrix(const ATOOLS::Particle* p) :
   Amplitude2_Matrix(p)
 {
   // create diagonal normalised matrix
@@ -12,7 +12,7 @@ Decay_Matrix::Decay_Matrix(ATOOLS::Particle* p) :
   for (size_t i(0); i<m_nhel; ++i) (*this)[(m_nhel+1)*i]=OneOverN;
 }
 
-Decay_Matrix::Decay_Matrix(ATOOLS::Particle* p, Amplitude2_Tensor* amps) :
+Decay_Matrix::Decay_Matrix(const ATOOLS::Particle* p, Amplitude2_Tensor* amps) :
   Amplitude2_Matrix(p)
 {
   DEBUG_FUNC(p->RefFlav());

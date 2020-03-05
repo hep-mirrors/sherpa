@@ -23,7 +23,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _shower):
 {
   Settings& s = Settings::GetMainSettings();
   m_fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
-  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
+  m_shrink = 1; // TODO new decay cascade cannot deal with unshrinked blobs anymore!
   m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA

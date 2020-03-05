@@ -26,11 +26,10 @@ namespace ATOOLS {
 namespace SHERPA {
 
   class Matrix_Element_Handler;
-  class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
   class Colour_Reconnection_Handler;
   class Fragmentation_Handler;
-  class Decay_Handler_Base;
+  class Decay_Handler;
   class MI_Handler;
   class Soft_Photon_Handler;
   class Lund_Interface;
@@ -55,13 +54,12 @@ namespace SHERPA {
     PDF::ISR_Handler            * p_isrhandler;
     REMNANTS::Remnant_Handler   * p_remnants;
     Matrix_Element_Handler      * p_mehandler;
-    Hard_Decay_Handler          * p_harddecays;
+    std::vector<PHASIC::Decay_Handler*> m_decayhandlers;
     Shower_Handler              * p_showerhandler;
     Beam_Remnant_Handler        * p_beamremnants;
     Colour_Reconnection_Handler * p_reconnections;
     Fragmentation_Handler       * p_fragmentation;
     Soft_Collision_Handler      * p_softcollisions;
-    Decay_Handler_Base          * p_hdhandler;
     MI_Handler                  * p_mihandler; 
     Soft_Photon_Handler         * p_softphotons;
     Event_Reader_Base           * p_evtreader;
@@ -109,13 +107,12 @@ namespace SHERPA {
     bool CalculateTheHardProcesses();
 
     Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
-    Decay_Handler_Base           * GetHDHandler()                   { return p_hdhandler; }
+    std::vector<PHASIC::Decay_Handler*> & GetDecayHandlers()        { return m_decayhandlers; }
     PDF::ISR_Handler             * GetISRHandler()                  { return p_isrhandler;      }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     Output_Vector                * GetOutputs()                     { return &m_outputs;        }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
-    Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     REMNANTS::Remnant_Handler    * GetRemnantHandler()        const { return p_remnants; }
