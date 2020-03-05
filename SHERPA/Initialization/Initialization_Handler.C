@@ -5,11 +5,10 @@
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
-#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
-#include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "SHERPA/LundTools/Lund_Decay_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Main/Filter.H"
@@ -28,7 +27,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
-#include "SHERPA/Single_Events/Hadron_Decays.H"
+#include "HADRONS++/Main/Hadron_Decay_Handler.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Selector.H"
@@ -59,10 +58,10 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_mehandler(NULL), p_harddecays(NULL),
+  p_mehandler(NULL),
   p_showerhandler(NULL), p_isrhandler(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
-  p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
+  p_fragmentation(NULL), p_softcollisions(NULL),
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
 {
@@ -276,8 +275,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
-  if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  if (p_hdhandler)     { delete p_hdhandler;     p_hdhandler     = NULL; }
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
   if (p_softcollisions){ delete p_softcollisions;p_softcollisions= NULL; } 
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
@@ -293,6 +290,10 @@ Initialization_Handler::~Initialization_Handler()
   while (m_outputs.size()>0) {
     delete m_outputs.back();
     m_outputs.pop_back();
+  }
+  while (m_decayhandlers.size()>0) {
+    delete m_decayhandlers.back();
+    m_decayhandlers.pop_back();
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
@@ -803,11 +804,7 @@ bool Initialization_Handler::InitializeTheHardDecays()
 {
   if (!Settings::GetMainSettings()["HARD_DECAYS"]["Enabled"].Get<bool>())
     return true;
-  if (p_harddecays) {
-    delete p_harddecays;
-    p_harddecays = NULL;
-  }
-  p_harddecays = new Hard_Decay_Handler();
+  m_decayhandlers.push_back(new Hard_Decay_Handler());
   return true;
 }
 
@@ -887,10 +884,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     return true;
   std::string decmodel{ s["DECAYMODEL"].Get<std::string>() };
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
+  // TODO make dynamic with gettering
   if (decmodel=="None") return true;
   else if (decmodel==std::string("Hadrons")) {
-    Hadron_Decay_Handler* hd=new Hadron_Decay_Handler();
-    p_hdhandler=hd;
+    m_decayhandlers.push_back(new HADRONS::Hadron_Decay_Handler());
   }
   else if ((decmodel==string("Lund")) ) {
 #ifdef USING__PYTHIA
@@ -899,8 +896,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       lund = new Lund_Interface();
     }
     else lund = p_fragmentation->GetLundInterface();
-    Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund);
-    p_hdhandler=hd;
+    m_decayhandlers.push_back(new Lund_Decay_Handler(lund));
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
           "Use the configure option --enable-pythia to enable it.");
@@ -918,8 +914,6 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
 {
   if (p_softphotons) { delete p_softphotons; p_softphotons = NULL; }
   p_softphotons = new Soft_Photon_Handler(p_mehandler);
-  if (p_harddecays) p_harddecays->SetSoftPhotonHandler(p_softphotons);
-  if (p_hdhandler)  p_hdhandler->SetSoftPhotonHandler(p_softphotons);
   msg_Info()<<"Initialized the Soft_Photon_Handler."<<endl;
   return true;
 }

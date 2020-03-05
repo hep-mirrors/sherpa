@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 #include "ATOOLS/Phys/Flavour.H"
-#include "SHERPA/Single_Events/Decay_Handler_Base.H"
+#include "ATOOLS/Phys/Particle.H"
+#include "PHASIC++/Decays/Decay_Handler.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 
 namespace MODEL {
@@ -20,26 +21,23 @@ namespace ATOOLS {
 
 namespace PHASIC {
   class Decay_Channel;
+  class Decay_Table;
 }
 
 namespace SHERPA {
 
-  typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> ParticlePair;
-  typedef std::vector<ParticlePair> ParticlePair_Vector;
-
-  class Hard_Decay_Handler : public Decay_Handler_Base {
+  class Hard_Decay_Handler : public PHASIC::Decay_Handler {
     std::string              m_resultdir, m_offshell;
     std::set<std::string>    m_disabled_channels;
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     std::map<std::string, double> m_external_widths;
     int                      m_store_results;
-    bool                     m_decay_tau, m_set_widths,
+    bool                     m_set_widths,
                              m_br_weights, m_usemass;
     double                   m_min_prop_width;
     ATOOLS::Flavour_Set      m_decmass;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > >
                              m_read;
-    PDF::Cluster_Definitions_Base *p_clus;
     ATOOLS::NLO_subevtlist *p_newsublist;
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
@@ -52,21 +50,6 @@ namespace SHERPA {
     std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);
     bool ProperVertex(MODEL::Single_Vertex* sv);
     
-    void AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
-                            ATOOLS::Blob* blob,
-                            size_t& imax,
-                            size_t idmother);
-    void AddPhotonsClustering(ATOOLS::Cluster_Amplitude*& ampl,
-                              const ATOOLS::Particle_Vector daughters,
-                              ParticlePair_Vector& photons,
-                              size_t& imax,
-                              const std::vector<size_t>& ids);
-    void AssignPhotons(const ATOOLS::Particle_Vector& daughters,
-                       ParticlePair_Vector& photons);
-    ATOOLS::Vec4D RecombinedMomentum(const ATOOLS::Particle * daughter,
-                                     const ParticlePair_Vector& photons,
-                                     size_t& stat);
-
     void ReadDecayTable(ATOOLS::Flavour decayer);
     void WriteDecayTables();
     bool CalculateWidth(PHASIC::Decay_Channel* dc);
@@ -79,17 +62,11 @@ namespace SHERPA {
     Hard_Decay_Handler();
     ~Hard_Decay_Handler();
 
-    void CreateDecayBlob(ATOOLS::Particle* inpart);
-    void TreatInitialBlob(ATOOLS::Blob* blob,
-                          METOOLS::Amplitude2_Tensor* amps);
-
-    bool DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
-                                 ATOOLS::Blob* initial_blob);
+    void CreateDecayBlob(ATOOLS::Blob_List* bloblist, ATOOLS::Particle* inpart);
+    void AfterTreatInitialBlob(ATOOLS::Blob* blob);
 
     double Mass(const ATOOLS::Flavour &fl) const;
-    bool Decays(const ATOOLS::Flavour& flav);
-
-    inline void SetCluster(PDF::Cluster_Definitions_Base *clus) { p_clus=clus; }
+    inline std::string Name() { return "HardDecays"; }
   };
 }
 

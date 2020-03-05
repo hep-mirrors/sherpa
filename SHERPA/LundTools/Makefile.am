@@ -2,8 +2,9 @@ pkglib_LTLIBRARIES       =	libLundTools.la
 
 PYTHIASOURCES = pythia-6.4.18.f \
 		pyplst.f \
-		Lund_Interface.C
-PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H
+		Lund_Interface.C \
+		Lund_Decay_Handler.C
+PYTHIAHEADERS = Lund_Wrapper.H Lund_Interface.H Lund_Decay_Handler.H
 
 MD5_EXCLUDE   =	pythia-6.4.18.f
 

@@ -1,4 +1,4 @@
-#include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
+#include "SHERPA/LundTools/Lund_Decay_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"

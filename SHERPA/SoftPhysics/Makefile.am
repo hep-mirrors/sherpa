@@ -9,8 +9,6 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Colour_Reconnection_Handler.C \
 				   	Fragmentation_Handler.C \
 				   	Soft_Collision_Handler.C \
-					Hadron_Decay_Handler.C \
-					Lund_Decay_Handler.C \
 					Soft_Photon_Handler.C \
 					Singlet_Sorter.C \
 					Resonance_Finder.C
@@ -20,8 +18,6 @@ localinc_HEADERS      =	\
 			Colour_Reconnection_Handler.H \
 		 	Fragmentation_Handler.H \
 			Soft_Collision_Handler.H \
-			Hadron_Decay_Handler.H \
-                        Lund_Decay_Handler.H \
 			Soft_Photon_Handler.H \
 			Singlet_Sorter.H \
 			Resonance_Finder.H

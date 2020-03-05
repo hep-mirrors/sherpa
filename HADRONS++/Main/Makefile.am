@@ -5,6 +5,7 @@ include ../../git.make
 
 libHadronsMain_la_SOURCES = \
 		Git_Info.C \
+		Hadron_Decay_Handler.C \
 		Hadron_Decay_Map.C \
 		Hadron_Decay_Table.C \
 		Hadron_Decay_Channel.C \
@@ -12,6 +13,7 @@ libHadronsMain_la_SOURCES = \
 		Tools.C
 
 localinc_HEADERS   = \
+		Hadron_Decay_Handler.H \
 		Hadron_Decay_Map.H \
 		Hadron_Decay_Table.H \
 		Hadron_Decay_Channel.H \
