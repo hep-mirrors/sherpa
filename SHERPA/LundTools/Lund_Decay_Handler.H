@@ -8,7 +8,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "SHERPA/Single_Events/Decay_Handler_Base.H"
+#include "PHASIC++/Decays/Decay_Handler.H"
 
 
 namespace ATOOLS {
@@ -18,18 +18,18 @@ namespace ATOOLS {
 
 namespace SHERPA {
 
-class Lund_Interface;
+  class Lund_Interface;
 
-class Lund_Decay_Handler : public Decay_Handler_Base {
+  class Lund_Decay_Handler : public PHASIC::Decay_Handler {
 
-  SHERPA::Lund_Interface* p_lund;
+    SHERPA::Lund_Interface* p_lund;
 
   public :
     Lund_Decay_Handler(SHERPA::Lund_Interface*);
     ~Lund_Decay_Handler();
 
-    void CreateDecayBlob(ATOOLS::Particle* part);
-
+    void CreateDecayBlob(ATOOLS::Blob_List* bloblist, ATOOLS::Particle* part);
+    
     METOOLS::Amplitude2_Tensor*
     FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
 
@@ -38,6 +38,8 @@ class Lund_Decay_Handler : public Decay_Handler_Base {
     bool CanDecay(const ATOOLS::Flavour& flav);
 
     inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }
+    bool DiceMass(ATOOLS::Particle* part, double max);
+    inline std::string Name() { return "LundDecays"; }
   };
 
 }
