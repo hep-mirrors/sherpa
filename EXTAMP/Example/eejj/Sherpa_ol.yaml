@@ -1,0 +1,32 @@
+EVENTS: 1M
+ERROR: 0.1
+RANDOM_SEED: 0
+
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+MI_HANDLER: None
+
+ME_GENERATORS:
+- External
+- OpenLoops
+
+SCALES: VAR{sqr(91.2)}
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 1000.
+
+PROCESSES:
+- 11 -11 -> 93 93:
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 0,EW: 2}
+    Integrator: Rambo
+
+SELECTORS:
+- NJetFinder:
+    N: 2
+    PTMin: 700.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1
