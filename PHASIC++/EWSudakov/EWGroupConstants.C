@@ -215,8 +215,8 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
     return {{signed_kf, sign * m_cw / m_sw}};
   } else if (signed_kf == kf_Z) {
     return {};  // the Z self-coupling is zero
-  } else if (signed_kf == kf_photon) {
-    return {};  // the Z does not couple to the photon
+  } else if (signed_kf == kf_photon || signed_kf == kf_gluon) {
+    return {};  // the Z does not couple to the photon or to the gluon
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav;
@@ -265,8 +265,9 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
   } else if (signed_kf == kf_h0){
     return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}}};
-  }
-  else {
+  } else if (signed_kf == kf_gluon) {
+    return {};
+  } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav
       << " (pol: " << pol << ')';

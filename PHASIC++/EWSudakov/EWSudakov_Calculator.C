@@ -289,7 +289,7 @@ Coeff_Value EWSudakov_Calculator::LsCoeff()
     const auto diagonal =
         -m_ewgroupconsts.DiagonalCew(flav, m_current_spincombination[i]) / 2.0;
     coeff += diagonal;
-    if (flav.IsVector() && flav.Charge() == 0) {
+    if (flav.Kfcode() == kf_photon || flav.Kfcode() == kf_Z) {
       // special case of neutral transverse gauge bosons, they mix and hence
       // non-diagonal terms appear, cf. e.g. eq. (6.30);
       // assume they are are actually transverse, because we have already
@@ -436,7 +436,7 @@ Coeff_Value EWSudakov_Calculator::lsCCoeff()
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;
-    } else if (flav.IsVector() && flav.Charge() == 0) {
+    } else if (flav.Kfcode() == kf_photon || flav.Kfcode() == kf_Z) {
       assert(m_current_spincombination[i] != 2);
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
