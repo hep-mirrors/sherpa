@@ -402,7 +402,8 @@ double COMIX::Single_Process::SetZero()
     const NLO_subevtlist &rsubs(p_map?m_subs:p_bg->SubEvts());
     for (size_t i(0);i<rsubs.size();++i) rsubs[i]->Reset();
   }
-  return m_w=m_dxs=m_lastxs=m_last=0.0;
+  m_eventweights=0.0;
+  return m_w=m_dxs=m_lastxs=0.0;
 }
 
 double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)

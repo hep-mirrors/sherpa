@@ -501,6 +501,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
   Partonic(p);
 
+  double nominal {0.0};
+
   if (GetSubevtList() == nullptr) {
 
     if (type == Weight_Type::all) {
@@ -513,11 +515,11 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
     m_csi.AddFlux(m_lastflux);
 
     // update results
-    m_last = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
+    nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
       double prefac {m_csi.m_pdfwgt * m_csi.m_flux};
-      m_last *= prefac;
+      nominal *= prefac;
       m_lastb *= prefac;
     }
 
@@ -621,7 +623,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
         sub->m_xf2 = p_int->ISR()->XF2(0);
 
         // update result
-        m_last += (sub->m_trig & 1) ? sub->m_result : 0.0;
+        nominal += (sub->m_trig & 1) ? sub->m_result : 0.0;
       }
     }
 
@@ -635,7 +637,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
   UpdateMEWeightInfo(scales);
 
   // perform on-the-fly reweighting
-  m_eventweights *= m_last;
+  m_eventweights *= nominal;
   if (type != Weight_Type::nominal && m_eventweights.ContainsVariations()) {
     if (GetSubevtList() == nullptr) {
       ReweightBVI(type, scales->Amplitudes());
@@ -643,7 +645,6 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
       ReweightRS(type, scales->Amplitudes());
     }
   }
-  m_last -= m_dadseventweights.Nominal();
   m_eventweights -= m_dadseventweights;
 
   // propagate (potentially) re-clustered momenta
@@ -660,7 +661,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
 void Single_Process::ResetResultsForDifferential(Weight_Type type)
 {
-  m_lastb=m_last=m_lastflux=0.0;
+  m_lastb=m_lastflux=0.0;
   m_mewgtinfo.Reset();
   if (type == Weight_Type::all) {
     m_dadseventweights = m_eventweights = Event_Weights {};
@@ -718,7 +719,7 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
 void Single_Process::ReweightBVI(Weight_Type type,
                                  ClusterAmplitude_Vector& ampls)
 {
-  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
+  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_eventweights.Nominal()};
   m_eventweights.Apply(
       [this, &ampls, &info](double varweight,
                             size_t varindex,
@@ -794,7 +795,7 @@ void Single_Process::ReweightBVI(Weight_Type type,
 void Single_Process::ReweightRS(Weight_Type type,
                                 ClusterAmplitude_Vector& ampls)
 {
-  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
+  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_eventweights.Nominal()};
   auto last_subevt_idx = GetSubevtList()->size() - 1;
   m_eventweights.Apply([this, &info, &last_subevt_idx](
                            double varweight,
