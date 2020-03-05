@@ -184,7 +184,7 @@ namespace EXTAMP{
 	   because convention for PHASIC::Process_Info is different */
 	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
 
-	std::vector<double> orders = cpi.m_maxcpl, orders[0]-=1;
+	std::vector<double> orders = cpi.m_maxcpl; orders[0]-=1;
 	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
 	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
 				      cpi.m_fi.GetExternal(),
