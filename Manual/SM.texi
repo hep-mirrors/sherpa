@@ -53,6 +53,23 @@ parameter, whose default is @option{1}. The following options are provided:
     this choice corresponds to the G_mu-scheme. The EW parameters are 
     calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
     boson mass M_H and the Fermi constant @code{GF} using tree-level relations.
+  @item  Case @code{20}:
+  
+    this scheme uses @code{1/ALPHAQED(0)}, M_Z, and @code{SIN2THETAW} as inputs
+    and calculates the dependent quantities from them. In particular, M_W will
+    be derived from tree-level relations and not match the PDG value.
+  @item  Case @code{21}:
+  
+    this scheme uses @code{GF}, M_Z, and @code{SIN2THETAW} as inputs
+    and calculates the dependent quantities from them. In particular, M_W will
+    be derived from tree-level relations and not match the PDG value.
+  @item  Case @code{22}:
+  
+    this scheme uses @code{1/ALPHAQED(MZ)} (default: 128.802), M_Z, and
+    @code{SIN2THETAW} (default: 0.23113) as inputs and calculates the dependent
+    quantities from them. In particular, M_W will be derived from tree-level
+    relations and not match the PDG value. Schemes 21 and 22 are most suitable
+    for processes involving Z bosons.
   @end itemize
 
 The electro-weak coupling is by default not running. If its running has been
