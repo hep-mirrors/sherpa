@@ -212,6 +212,70 @@ void Standard_Model::FixEWParameters()
     }
     break;
   }
+  case 20: {
+    // alpha(0), Z mass and width, sin(theta)
+    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",0.0));
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23113);
+    ccos2thetaW=1.-csin2thetaW;
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    cvev=2.*MZ*sqrt(ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+    if (widthscheme=="CMS") {
+      // now also the W width is defined by the tree-level relations
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=2.*sqrt(muZ2*ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+      break;
+    }
+    break;
+  }
+  case 21: {
+    // Gmu, Z mass and width, sin(theta)
+    double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23113);
+    ccos2thetaW=1.-csin2thetaW;
+    cvev=1./(pow(2.,0.25)*sqrt(GF));
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
+    if (widthscheme=="CMS") {
+      // now also the W width is defined by the tree-level relations
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=2.*sqrt(muZ2*ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+      break;
+    }
+    break;
+  }
+  case 22: {
+    // alpha(mZ), Z mass and width, sin(theta)
+    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(MZ)",128.802));
+    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23113);
+    ccos2thetaW=1.-csin2thetaW;
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    cvev=2.*MZ*sqrt(ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+    if (widthscheme=="CMS") {
+      // now also the W width is defined by the tree-level relations
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=2.*sqrt(muZ2*ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
+      break;
+    }
+    break;
+  }
   default:
     THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
     break;
@@ -220,6 +284,10 @@ void Standard_Model::FixEWParameters()
   p_complexconstants->insert(make_pair(string("csin2_thetaW"),csin2thetaW));
   p_complexconstants->insert(make_pair(string("cvev"), cvev));
   rpa->gen.SetVariable("EW_SCHEME",ToString(ewscheme));
+  PRINT_FUNC("EW_SCHEME="<<ewscheme);
+  PRINT_VAR(1./aqed->Default());
+  PRINT_VAR(csin2thetaW);
+  PRINT_VAR(cvev);
 }
 
 void Standard_Model::FixCKM()
