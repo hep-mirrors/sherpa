@@ -28,7 +28,7 @@ COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
-  m_checkpoles(false), m_allowmap(true)
+  m_checkpoles(false), m_allowmap(false)
 {
   Settings& s = Settings::GetMainSettings();
   m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
