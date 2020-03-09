@@ -14,13 +14,13 @@ class Comix_Interface {
 
 public:
   Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
-  virtual void InitializeProcesses(const Cluster_Amplitude_PM&);
   void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                           const ATOOLS::Cluster_Amplitude&) const;
 
 protected:
   Comix_Interface(Process_Base*, const std::string& procname_suffix);
-  virtual void InitializeProcess(const Process_Info&);
+  void InitializeProcesses(const Cluster_Amplitude_PM&);
+  void InitializeProcess(const Process_Info&);
   const Process_Base* p_proc;
   std::string m_procname_suffix;
 

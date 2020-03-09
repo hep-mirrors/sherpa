@@ -9,11 +9,10 @@ class HE_Comix_Interface : public Comix_Interface {
 
 public:
   HE_Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
-  void InitializeProcesses(const Cluster_Amplitude_PM&) override;
   void ResetWithEWParameters(const MODEL::EWParameters&);
 
 protected:
-  void InitializeProcess(const Process_Info&) override;
+  void InitializeProcesses(const Cluster_Amplitude_PM&);
 
 private:
   bool InitializeHighEnergyModel();

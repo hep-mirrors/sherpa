@@ -31,11 +31,6 @@ void HE_Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
   p_proc->Generator()->Generators()->SetModel(s_model);
 }
 
-void HE_Comix_Interface::InitializeProcess(const Process_Info& pi)
-{
-  Comix_Interface::InitializeProcess(pi);
-}
-
 void HE_Comix_Interface::ResetWithEWParameters(const MODEL::EWParameters& p)
 {
   p_model_he->ResetVerticesWithEWParameters(p);
