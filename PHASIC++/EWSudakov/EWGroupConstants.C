@@ -145,12 +145,12 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
     return CewLefthandedLepton;
   } else if (flav.Kfcode() == kf_Wplus) {
     return 2/m_sw2;
-  } else if (flav.IsBoson() && flav.Charge() == 0) {
-    if (flav.IsPhoton()) {
-      return 2.0;
-    } else {
-      return 2.0 * m_cw2/m_sw2;
-    }
+  } else if (flav.Kfcode() == kf_photon) {
+    return 2.0;
+  } else if (flav.Kfcode() == kf_Z) {
+    return 2.0 * m_cw2 / m_sw2;
+  } else if (flav.Kfcode() == kf_gluon) {
+    return 0.0;
   } else {
     THROW(not_implemented, "Missing implementation");
   }
