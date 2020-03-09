@@ -77,14 +77,11 @@ public:
 
         }
 
-    PHASIC::Process_Vector procs = p_sherpa->GetInitHandler()->GetMatrixElementHandler()->AllProcesses();
-    if (procs.size()!=1)
-        THROW(fatal_error,"Too many procs!");
-    PHASIC::MCatNLO_Process  * mcproc = dynamic_cast<PHASIC::MCatNLO_Process* >(procs.at(0));
+    PHASIC::MCatNLO_Process * mcproc = dynamic_cast<PHASIC::MCatNLO_Process* >
+      (p_sherpa->GetInitHandler()->GetMatrixElementHandler()->Process()->Parent());
     if (mcproc==NULL){
-            THROW(fatal_error,"no MC@MLO process found! For use with separate LO-Process, use K-Factor!");
-
-        }
+      THROW(fatal_error,"no MC@NLO process found! For use with separate LO-Process, use K-Factor!");
+    }
     Cluster_Amplitude * ampl = mcproc->GetAmplitude();
     double muf2 = ampl->KT2();
 
