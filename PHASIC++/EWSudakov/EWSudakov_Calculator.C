@@ -1,17 +1,7 @@
 #include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
 
-#include "PHASIC++/EWSudakov/Comix_Interface.H"
-#include "PHASIC++/EWSudakov/Coefficient_Checker.H"
-#include "PHASIC++/Process/ME_Generator_Base.H"
-#include "PHASIC++/Process/ME_Generators.H"
+#include "Coefficient_Checker.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "COMIX/Main/Single_Process.H"
-
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 #include <cassert>
 
@@ -162,16 +152,6 @@ double EWSudakov_Calculator::KFactor()
     const auto delta_c = 2 * delta_prefactor * delta_c_num / den;
     p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[coeffkv.first.first] += delta_c;
     kfac += delta_c;
-  }
-  if (p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[EWSudakov_Log_Type::lPR] ==
-      0.0) {
-    for (const auto& kv : p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta) {
-      if (kv.second != 0.0) {
-        msg_Out() << "WARNING: lPR is zero, but other contribs are non-zero.\n"
-                  << *p_proc->GetMEwgtinfo() << '\n';
-        break;
-      }
-    }
   }
   EWSudakov_Calculator::m_kfachisto.Insert(kfac);
   return kfac;
@@ -510,7 +490,9 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
     const Comix_Interface* interface)
 {
   // TODO: Re-instate caching mechanism that works well with calculating
-  // ordinary and HE matrix elements (for the PR logs)
+  // ordinary and HE matrix elements (for the PR logs), possibly moving the
+  // caching into the COMIX interfaces, such that each one can keep track of
+  // its own amplitude cache
   //auto amplit = m_transformedspinampls.find(legs);
   m_transformedspinampls.erase(legs);
   //if (amplit == m_transformedspinampls.end()) {
@@ -524,7 +506,8 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
   }
   (interface ? *interface : m_comixinterface)
       .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
-  auto amplit = m_transformedspinampls.find(legs);
+  if (m_transformedspinampls[legs].empty())
+    return 0.0;
   //}
   auto& legpermutation = m_ampls.LegPermutation(legs);
   std::vector<int> transformedspincombination;
@@ -541,7 +524,8 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
     }
     transformedspincombination.push_back(pol);
   }
-  return amplit->second[0].Get(transformedspincombination);
+  assert(m_transformedspinampls[legs].size() == 1);
+  return m_transformedspinampls[legs][0].Get(transformedspincombination);
 }
 
 

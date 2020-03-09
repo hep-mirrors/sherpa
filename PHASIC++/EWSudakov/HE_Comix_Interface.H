@@ -12,13 +12,17 @@ public:
   void InitializeProcesses(const Cluster_Amplitude_PM&) override;
   void ResetWithEWParameters(const MODEL::EWParameters&);
 
-private:
+protected:
   void InitializeProcess(const Process_Info&) override;
-  bool InitializeHighEnergyModel();
 
+private:
+  bool InitializeHighEnergyModel();
+  virtual NLOTypeStringProcessMap_Map& ProcessMap() override;
+  virtual const NLOTypeStringProcessMap_Map& ProcessMap() const override;
   /// we only want a single model for all interfaces (each process has its own
   /// Sudakov K factor and HE Comix interface), hence we make it static
   static std::unique_ptr<MODEL::Model_Base> p_model_he;
+  static NLOTypeStringProcessMap_Map s_apmap_he;
 };
 
 } // namespace PHASIC

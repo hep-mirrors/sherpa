@@ -25,6 +25,16 @@ namespace ATOOLS {
     return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
       ampl->Copy(), delAmpl };
   }
+  Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude* ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
+      ampl->Copy(), delAmpl };
+  }
+  Cluster_Amplitude_UP CopyClusterAmpl(const Cluster_Amplitude& ampl)
+  {
+    return std::unique_ptr<Cluster_Amplitude, decltype(delAmpl)>{
+      ampl.Copy(), delAmpl };
+  }
 }
 
 namespace PHASIC {

@@ -1,30 +1,22 @@
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 
-#include "ATOOLS/Phys/Color.H"
-#include "COMIX/Main/Single_Process.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Shell_Tools.H"
-
-#include "SHERPA/Main/Sherpa.H"
-#include "SHERPA/Initialization/Initialization_Handler.H"
+#include "Run_Parameter.H"
 
 using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 using namespace MODEL;
 
+NLOTypeStringProcessMap_Map Comix_Interface::s_apmap;
+
 Comix_Interface::Comix_Interface(Process_Base* proc,
                                  const EWSudakov_Amplitudes& ampls)
     : p_proc {proc}, m_procname_suffix {"Sudakov"}, m_differentialmode {2 | 4}
 {
-  AdaptDifferentialMode();
+  AdaptToProcessColorScheme();
   InitializeProcesses(ampls.All());
 }
 
@@ -34,30 +26,40 @@ Comix_Interface::Comix_Interface(Process_Base* proc,
       m_procname_suffix {procname_suffix},
       m_differentialmode {2 | 4}
 {
-  AdaptDifferentialMode();
+  AdaptToProcessColorScheme();
 }
 
 void Comix_Interface::FillSpinAmplitudes(
     std::vector<Spin_Amplitudes>& spinampls,
-    ATOOLS::Cluster_Amplitude& ampl) const
+    const ATOOLS::Cluster_Amplitude& ampl) const
 {
-  const auto loprocmapit = m_apmap.find(nlo_type::lo);
-  if (loprocmapit == m_apmap.end())
-    THROW(fatal_error, "LO entry in process map not found");
-  Cluster_Amplitude* campl(ampl.Copy());
+  Cluster_Amplitude_UP campl {CopyClusterAmpl(ampl)};
+  // TODO: can't we set these scales to the values used for the original
+  // calculation (pre-Kfactor)? Is there any reason we set them to Ecms? Does
+  // it matter?
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
   campl->SetMuQ2(sqr(rpa->gen.Ecms()));
-  std::string pname(Process_Base::GenerateName(campl));
-  auto pit = loprocmapit->second->find(pname);
-  if (pit->second == NULL) {
-    msg_Error() << "Looking for amplitude:" << ampl << " ...\n";
-    THROW(fatal_error, "Process not found");
-  }
-  pit->second->Differential(*campl, m_differentialmode);
-  campl->Delete();
+  Process_Base* proc = GetProcess(*campl);
+  if (proc == nullptr)
+    return;
+  proc->Differential(*campl, m_differentialmode);
   std::vector<std::vector<Complex>> cols;
-  pit->second->FillAmplitudes(spinampls, cols);
+  proc->FillAmplitudes(spinampls, cols);
+}
+
+PHASIC::Process_Base*
+Comix_Interface::GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const
+{
+  const auto loprocmapit = ProcessMap().find(nlo_type::lo);
+  if (loprocmapit == ProcessMap().end())
+    return nullptr;
+  std::string pname {Process_Base::GenerateName(&ampl)};
+  auto pit = loprocmapit->second->find(pname);
+  if (pit == loprocmapit->second->end()) {
+    return nullptr;
+  }
+  return pit->second;
 }
 
 void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
@@ -68,7 +70,10 @@ void Comix_Interface::InitializeProcesses(const Cluster_Amplitude_PM& ampls)
       s["PRINT_EWSUDAKOV_GRAPHS"].SetDefault("").Get<std::string>();
   for (const auto& kv : ampls) {
     const auto& ampl = kv.second;
-    msg_Debugging() << "Initialize process for ampl=" << *ampl << std::endl;
+    PHASIC::Process_Base* proc = GetProcess(*ampl);
+    if (proc != nullptr)
+      // ignore processes that have already been initialized
+      continue;
     const Process_Info pi = CreateProcessInfo(ampl, graph_path);
     InitializeProcess(pi);
   }
@@ -111,11 +116,11 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
 
 void Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
-  PHASIC::Process_Base* proc =
-      p_proc->Generator()->Generators()->InitializeProcess(pi, false);
-  if (proc == NULL){
-    msg_Error() << "Invalid process: " << pi << std::endl;
-    THROW(fatal_error, "Invalid process");
+  auto proc = p_proc->Generator()->Generators()->InitializeProcess(pi, false);
+  if (proc == NULL) {
+    msg_Error() << "WARNING: Comix_Interface::InitializeProcess can not"
+                << "initialize process for process info: " << pi << '\n';
+    return;
   }
   proc->SetSelector(Selector_Key{});
   proc->SetScale(Scale_Setter_Arguments(
@@ -123,10 +128,10 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
       "Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   //proc->Get<COMIX::Process_Base>()->Tests();
-  proc->FillProcessMap(&m_apmap);
+  proc->FillProcessMap(&ProcessMap());
 }
 
-void Comix_Interface::AdaptDifferentialMode()
+void Comix_Interface::AdaptToProcessColorScheme()
 {
   if (p_proc->Integrator()->ColorScheme() == cls::sum) {
     // for some reason, this is needed when summing colours; if colour are

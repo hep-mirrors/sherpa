@@ -16,7 +16,7 @@ public:
   Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
   virtual void InitializeProcesses(const Cluster_Amplitude_PM&);
   void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
-                          ATOOLS::Cluster_Amplitude&) const;
+                          const ATOOLS::Cluster_Amplitude&) const;
 
 protected:
   Comix_Interface(Process_Base*, const std::string& procname_suffix);
@@ -27,10 +27,16 @@ protected:
 private:
   Process_Info CreateProcessInfo(const Cluster_Amplitude*,
                                  const std::string& graph_path);
-  void AdaptDifferentialMode();
-  NLOTypeStringProcessMap_Map m_apmap;
-  int m_differentialmode;
+  Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
+  virtual NLOTypeStringProcessMap_Map& ProcessMap() { return s_apmap; }
+  virtual const NLOTypeStringProcessMap_Map& ProcessMap() const
+  {
+    return s_apmap;
+  }
+  void AdaptToProcessColorScheme();
 
+  int m_differentialmode;
+  static NLOTypeStringProcessMap_Map s_apmap;
 };
 
 } // namespace PHASIC

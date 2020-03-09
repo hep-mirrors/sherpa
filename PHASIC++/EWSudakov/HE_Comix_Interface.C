@@ -1,20 +1,9 @@
 #include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
 
-#include "ATOOLS/Phys/Color.H"
-#include "COMIX/Main/Single_Process.H"
-#include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Shell_Tools.H"
-
-#include "SHERPA/Main/Sherpa.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
+#include "SHERPA/Main/Sherpa.H"
 
 using namespace PHASIC;
 using namespace COMIX;
@@ -22,6 +11,7 @@ using namespace ATOOLS;
 using namespace MODEL;
 
 std::unique_ptr<MODEL::Model_Base> HE_Comix_Interface::p_model_he {nullptr};
+NLOTypeStringProcessMap_Map HE_Comix_Interface::s_apmap_he;
 
 HE_Comix_Interface::HE_Comix_Interface(Process_Base* proc,
                                        const EWSudakov_Amplitudes& ampls)
@@ -93,4 +83,14 @@ bool HE_Comix_Interface::InitializeHighEnergyModel()
     THROW(critical_error, "Model cannot be initialized");
   p_model_he->InitializeInteractionModel();
   return true;
+}
+
+NLOTypeStringProcessMap_Map& HE_Comix_Interface::ProcessMap()
+{
+  return s_apmap_he;
+}
+
+const NLOTypeStringProcessMap_Map& HE_Comix_Interface::ProcessMap() const
+{
+  return s_apmap_he;
 }
