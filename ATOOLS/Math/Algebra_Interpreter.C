@@ -725,7 +725,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
   if (--s_count>0) return;
   while (!s_functions.empty()) {
     delete s_functions.begin()->second;
-    s_functions.erase(m_functions.begin());
+    s_functions.erase(s_functions.begin());
   }
   while (!s_operators.empty()) {
     delete s_operators.begin()->second;
