@@ -620,7 +620,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 Algebra_Interpreter::Function_Map Algebra_Interpreter::s_functions;
 Algebra_Interpreter::Operator_Map Algebra_Interpreter::s_operators;
 
-int Algebra_Interpreter::s_count(0);
+Algebra_Interpreter::Global_Functions Algebra_Interpreter::s_global;
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   p_replacer(this), p_root(NULL)
@@ -633,10 +633,13 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   if (!standard) return;
   m_tags["M_PI"]=ToString(M_PI);
   m_tags["M_E"]=ToString(exp(1.0));
-  if (++s_count>1) return;
-  AddFunction(new Real(),1);
-  AddFunction(new Imag(),1);
-  AddFunction(new Conj(),1);
+}
+
+Algebra_Interpreter::Global_Functions::Global_Functions()
+{
+  AddFunction(new Real());
+  AddFunction(new Imag());
+  AddFunction(new Conj());
   AddOperator(new Binary_Plus());
   AddOperator(new Binary_Minus());
   AddOperator(new Binary_Times());
@@ -657,50 +660,62 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddOperator(new Bitwise_Or());
   AddOperator(new Unary_Minus());
   AddOperator(new Unary_Not());
-  AddFunction(new Power(),1);
-  AddFunction(new ThetaFunc(),1);
-  AddFunction(new Logarithm(),1);
-  AddFunction(new Logarithm10(),1);
-  AddFunction(new Exponential(),1);
-  AddFunction(new Absolute_Value(),1);
-  AddFunction(new Prefix(),1);
-  AddFunction(new Square(),1);
-  AddFunction(new Square_Root(),1);
-  AddFunction(new Sine(),1);
-  AddFunction(new Cosine(),1);
-  AddFunction(new Tangent(),1);
-  AddFunction(new Sineh(),1);
-  AddFunction(new Cosineh(),1);
-  AddFunction(new Tangenth(),1);
-  AddFunction(new Arc_Sine(),1);
-  AddFunction(new Arc_Cosine(),1);
-  AddFunction(new Arc_Tangent(),1);
-  AddFunction(new Minimum(),1);
-  AddFunction(new Maximum(),1);
-  AddFunction(new Vec4D_Vec4D(),1);
-  AddFunction(new Vec4D_Comp(),1);
-  AddFunction(new Vec4D_Perp(),1);
-  AddFunction(new Vec4D_Plus(),1);
-  AddFunction(new Vec4D_Minus(),1);
-  AddFunction(new Vec4D_PPlus(),1);
-  AddFunction(new Vec4D_PMinus(),1);
-  AddFunction(new Vec4D_Abs2(),1);
-  AddFunction(new Vec4D_Mass(),1);
-  AddFunction(new Vec4D_PSpat(),1);
-  AddFunction(new Vec4D_PPerp(),1);
-  AddFunction(new Vec4D_PPerp2(),1);
-  AddFunction(new Vec4D_MPerp(),1);
-  AddFunction(new Vec4D_MPerp2(),1);
-  AddFunction(new Vec4D_Theta(),1);
-  AddFunction(new Vec4D_Eta(),1);
-  AddFunction(new Vec4D_Y(),1);
-  AddFunction(new Vec4D_Phi(),1);
-  AddFunction(new Vec4D_PPerpR(),1);
-  AddFunction(new Vec4D_ThetaR(),1);
-  AddFunction(new Vec4D_DEta(),1);
-  AddFunction(new Vec4D_DY(),1);
-  AddFunction(new Vec4D_DPhi(),1);
-  AddFunction(new Vec4D_DR(),1);
+  AddFunction(new Power());
+  AddFunction(new ThetaFunc());
+  AddFunction(new Logarithm());
+  AddFunction(new Logarithm10());
+  AddFunction(new Exponential());
+  AddFunction(new Absolute_Value());
+  AddFunction(new Prefix());
+  AddFunction(new Square());
+  AddFunction(new Square_Root());
+  AddFunction(new Sine());
+  AddFunction(new Cosine());
+  AddFunction(new Tangent());
+  AddFunction(new Sineh());
+  AddFunction(new Cosineh());
+  AddFunction(new Tangenth());
+  AddFunction(new Arc_Sine());
+  AddFunction(new Arc_Cosine());
+  AddFunction(new Arc_Tangent());
+  AddFunction(new Minimum());
+  AddFunction(new Maximum());
+  AddFunction(new Vec4D_Vec4D());
+  AddFunction(new Vec4D_Comp());
+  AddFunction(new Vec4D_Perp());
+  AddFunction(new Vec4D_Plus());
+  AddFunction(new Vec4D_Minus());
+  AddFunction(new Vec4D_PPlus());
+  AddFunction(new Vec4D_PMinus());
+  AddFunction(new Vec4D_Abs2());
+  AddFunction(new Vec4D_Mass());
+  AddFunction(new Vec4D_PSpat());
+  AddFunction(new Vec4D_PPerp());
+  AddFunction(new Vec4D_PPerp2());
+  AddFunction(new Vec4D_MPerp());
+  AddFunction(new Vec4D_MPerp2());
+  AddFunction(new Vec4D_Theta());
+  AddFunction(new Vec4D_Eta());
+  AddFunction(new Vec4D_Y());
+  AddFunction(new Vec4D_Phi());
+  AddFunction(new Vec4D_PPerpR());
+  AddFunction(new Vec4D_ThetaR());
+  AddFunction(new Vec4D_DEta());
+  AddFunction(new Vec4D_DY());
+  AddFunction(new Vec4D_DPhi());
+  AddFunction(new Vec4D_DR());
+}
+
+Algebra_Interpreter::Global_Functions::~Global_Functions()
+{
+  while (!s_functions.empty()) {
+    delete s_functions.begin()->second;
+    s_functions.erase(s_functions.begin());
+  }
+  while (!s_operators.empty()) {
+    delete s_operators.begin()->second;
+    s_operators.erase(s_operators.begin());
+  }
 }
 
 Algebra_Interpreter::~Algebra_Interpreter()
@@ -721,15 +736,6 @@ Algebra_Interpreter::~Algebra_Interpreter()
   while (m_interpreters.size()>0) {
     delete m_interpreters.begin()->second;
     m_interpreters.erase(m_interpreters.begin());
-  }
-  if (--s_count>0) return;
-  while (!s_functions.empty()) {
-    delete s_functions.begin()->second;
-    s_functions.erase(s_functions.begin());
-  }
-  while (!s_operators.empty()) {
-    delete s_operators.begin()->second;
-    s_operators.erase(s_operators.begin());
   }
 }
 
@@ -799,15 +805,9 @@ Term *Algebra_Interpreter::Iterate
   return (*node)[0]->Evaluate(this,args);
 }
 
-void Algebra_Interpreter::AddFunction(Function *const f,const int mode)
+void Algebra_Interpreter::AddFunction(Function *const f)
 {
-  if (mode) s_functions.insert(Function_Pair(f->Tag(),f));
-  else m_functions.insert(Function_Pair(f->Tag(),f));
-}
-
-void Algebra_Interpreter::AddOperator(Operator *const b)
-{ 
-  s_operators.insert(Operator_Pair(b->Priority(),b));
+  m_functions.insert(Function_Pair(f->Tag(),f));
 }
 
 void Algebra_Interpreter::AddLeaf(Function *const f)

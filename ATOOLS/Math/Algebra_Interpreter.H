@@ -126,7 +126,16 @@ namespace ATOOLS {
     static Function_Map s_functions;
     static Operator_Map s_operators;
 
-    static int s_count;
+    struct Global_Functions {
+      Global_Functions();
+      ~Global_Functions();
+      inline void AddFunction(Function *const f)
+      { s_functions.insert(Function_Pair(f->Tag(),f)); }
+      inline void AddOperator(Operator *const b)
+      { s_operators.insert(Operator_Pair(b->Priority(),b)); }
+    };// end of struct Global_Functions
+
+    static Global_Functions s_global;
 
     Interpreter_Map m_interpreters;
 
@@ -159,8 +168,7 @@ namespace ATOOLS {
 
     Term *Calculate();
 
-    void AddFunction(Function *const f,const int mode=0);
-    void AddOperator(Operator *const b);
+    void AddFunction(Function *const f);
 
     void AddLeaf(Function *const f);
     void AddTerm(Term *const t);
