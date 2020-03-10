@@ -77,8 +77,7 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    ATOOLS::Event_Weights m_last;
-    double m_lastb;
+    ATOOLS::Event_Weights m_last, m_lastb;
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
@@ -265,7 +264,7 @@ namespace PHASIC {
                                 std::vector<std::vector<Complex> >& cols);
 
     inline double Last() const { return m_last.Nominal(); }
-    inline double LastB() const { return m_lastb; }
+    inline double LastB() const { return m_lastb.Nominal(); }
 
     inline bool LookUp() const { return m_lookup; }
 

@@ -661,14 +661,15 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
 void Single_Process::ResetResultsForDifferential(Weight_Type type)
 {
-  m_lastb = m_lastflux = 0.0;
+  m_lastflux = 0.0;
   m_mewgtinfo.Reset();
   if (type == Weight_Type::all) {
-    m_dadseventweights = m_last = Event_Weights {};
+    m_dadseventweights = m_last = m_lastb = Event_Weights {};
   } else {
-    m_dadseventweights = m_last = Event_Weights {0, 1.0};
+    m_dadseventweights = m_last = m_lastb = Event_Weights {0, 1.0};
   }
   m_dadseventweights = 0.0;
+  m_lastb = 0.0;
 }
 
 void Single_Process::UpdateIntegratorMomenta(const Vec4D_Vector& p)
@@ -720,11 +721,15 @@ void Single_Process::ReweightBVI(Weight_Type type,
                                  ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
+  // NOTE: we iterate over m_last's variations (via its Apply function), but we
+  // also update m_lastb inside the loop, to avoid code duplication; also note
+  // that m_lastb should not be all-zero if m_lastbxs is zero
   m_last.Apply([this, &ampls, &info](
                    double varweight,
                    size_t varindex,
                    Variation_Parameters& varparams) -> double {
     if (varweight == 0.0) {
+      m_lastb.Variation(varindex) = 0.0;
       return 0.0;
     }
     double K {1.0};
@@ -734,7 +739,9 @@ void Single_Process::ReweightBVI(Weight_Type type,
     if (m_mewgtinfo.m_type == mewgttype::none ||
         m_mewgtinfo.m_type == mewgttype::METS) {
 
-      return K * ReweightBornLike(varparams, info);
+      const auto res = ReweightBornLike(varparams, info);
+      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? res : 0.0;
+      return K * res;
 
     } else {
 
@@ -742,7 +749,8 @@ void Single_Process::ReweightBVI(Weight_Type type,
       const Cluster_Sequence_Info csi {ClusterSequenceInfo(
           varparams, info, muR2new / info.m_muR2, &m_mewgtinfo.m_clusseqinfo)};
 
-      double BVIKPnew {0.0};
+      double res {0.0};
+      double resb {0.0};
 
       if (csi.m_pdfwgt != 0.0) {
 
@@ -779,11 +787,12 @@ void Single_Process::ReweightBVI(Weight_Type type,
         }
 
         // Calculate final reweighted BVIKP result
-        BVIKPnew =
-            (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) * csi.m_pdfwgt;
+        resb = Bnew * csi.m_pdfwgt;
+        res = (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) * csi.m_pdfwgt;
       }
 
-      return BVIKPnew;
+      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? resb : 0.0;
+      return res;
     }
   });
 }
