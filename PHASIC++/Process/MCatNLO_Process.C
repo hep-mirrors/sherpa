@@ -159,9 +159,9 @@ Process_Base* MCatNLO_Process::InitProcess
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
   if (real) {
-    if (pi.m_fi.m_nlocpl[1]==0. && pi.m_fi.m_nlocpl[0]==1.)
+    if (pi.m_fi.m_nlocpl[0]==1.)
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-    else if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+    else if (pi.m_fi.m_nlocpl.size()>1 && pi.m_fi.m_nlocpl[1]==1.)
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
     else THROW(fatal_error, "Internal error.");
   }
