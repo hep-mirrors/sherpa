@@ -15,7 +15,6 @@
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Phys/Event_Weights.H"
-#include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
 using namespace METOOLS;
@@ -44,7 +43,6 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
 {
   Blob *blob(bloblist->FindFirst(btp::Signal_Process));
   if (blob && blob->Has(blob_status::needs_signal)) {
-    MODEL::as->SetActiveAs(PDF::isr::hard_process);
     while (true) {
       if (m_overweight>0.0) {
         if (m_overweight<ran->Get()) {

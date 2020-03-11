@@ -10,6 +10,7 @@
 #include "PHASIC++/Process/Color_Correlated_ME2.H"
 #include "PHASIC++/Process/KP_Terms.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PDF/Main/ISR_Handler.H"
 
 #include <assert.h>
 

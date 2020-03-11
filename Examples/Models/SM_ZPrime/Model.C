@@ -25,7 +25,7 @@ namespace MODEL {
   public :
 
     Standard_Model_Zprime();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit(PDF::PDF_Base* pdf);
     void InitVertices();
 
   };
@@ -37,7 +37,6 @@ namespace MODEL {
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "MODEL/Main/Single_Vertex.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -133,13 +132,13 @@ void Standard_Model_Zprime::ParticleZprimeInit()
   s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
 }
 
-bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool Standard_Model_Zprime::ModelInit(PDF::PDF_Base* pdf)
 {
   FixZprimeParameters();
   FixEWParameters();
   FixCKM();
   Settings& s = Settings::GetMainSettings();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(pdf, s["ALPHAS(MZ)"].Get<double>());
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());

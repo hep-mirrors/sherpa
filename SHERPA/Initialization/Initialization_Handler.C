@@ -59,7 +59,7 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_mehandler(NULL), p_harddecays(NULL),
+  p_mehandler(NULL), p_harddecays(NULL), p_showerhandler(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
@@ -130,7 +130,6 @@ void Initialization_Handler::RegisterDefaults()
   s["STATUS_PATH"].SetDefault("");
   s["PATH"].SetDefault("");
   s["SAVE_STATUS"].SetDefault("");
-  s["MI_PDF_LIBRARY"].SetDefault("");
 
   s.DeclareVectorSettingsWithEmptyDefault({
       "EVENT_OUTPUT",
@@ -248,12 +247,6 @@ void Initialization_Handler::RegisterDefaults()
   s["NLO_CSS_PSMODE"].SetDefault(0);
   s["NLO_CSS_WEIGHT_CHECK"].SetDefault(0);
   s["NLO_CSS_MAXEM"].SetDefault(1);
-  s["MI_CSS_KFACTOR_SCHEME"].SetDefault(0);
-  s["MI_CSS_IS_PT2MIN"].SetDefault(4.0);
-  s["MI_CSS_FS_PT2MIN"].SetDefault(1.0);
-  s["MI_CSS_IS_AS_FAC"].SetDefault(0.66);
-  s["MI_CSS_FS_AS_FAC"].SetDefault(0.66);
-  s["MI_CSS_KIN_SCHEME"].SetDefault(1);
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 
@@ -276,6 +269,7 @@ Initialization_Handler::~Initialization_Handler()
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
@@ -300,10 +294,6 @@ Initialization_Handler::~Initialization_Handler()
   while (m_isrhandlers.size()>0) {
     delete m_isrhandlers.begin()->second;
     m_isrhandlers.erase(m_isrhandlers.begin());
-  }
-  while (m_showerhandlers.size()>0) {
-    delete m_showerhandlers.begin()->second;
-    m_showerhandlers.erase(m_showerhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
@@ -483,7 +473,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   std::string stag(rpa->gen.Variable("RNG_SEED"));
   while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
   s.AddTag("RNG_SEED", stag);
-  okay = okay && InitializeTheModel();
 
   if (m_mode==eventtype::StandardPerturbative) {
     std::string eventtype{ s["EVENT_TYPE"].Get<std::string>() };
@@ -501,10 +490,17 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
   }
+  
+  okay = okay && InitializeTheModel();
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
   okay = okay && InitializeTheRemnants();
-  if (!p_model->ModelInit(m_isrhandlers))
+  PDF::PDF_Base *pdf(NULL);
+  ISR_Handler* isr = m_isrhandlers[isr::hard_process];
+  if (isr->PDF(0)) pdf=isr->PDF(0);
+  if ((pdf==NULL||pdf->ASInfo().m_order<0) && isr->PDF(1))
+    pdf=isr->PDF(1);
+  if (!p_model->ModelInit(pdf))
     THROW(critical_error,"Model cannot be initialized");
   okay = okay && p_beamspectra->Init();
   p_model->InitializeInteractionModel();
@@ -688,10 +684,6 @@ bool Initialization_Handler::InitializeThePDFs()
       s["PDF_LIBRARY"].GetVector<std::string>() };
     if (pdflibs.size()==0) m_pdflibs.insert(deflib);
     for (size_t i(0);i<pdflibs.size();++i) m_pdflibs.insert(pdflibs[i]);
-    std::string mpilib{ s["MI_PDF_LIBRARY"].Get<std::string>() };
-    if (mpilib != "") {
-      m_pdflibs.insert(mpilib);
-    }
   }
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
@@ -769,37 +761,6 @@ bool Initialization_Handler::InitializeThePDFs()
         version = versions[Min(j, (int)versions.size() - 1)];
       }
 
-      // override PDF set and version for hard subprocesses (multiple
-      // interactions)
-      bool specializedformi(false);
-      if (id==isr::hard_subprocess) {
-
-        std::vector<std::string> mpisets{
-          s["MPI_PDF_SET"].GetVector<std::string>() };
-        if (mpisets.size() > 2) {
-          THROW(fatal_error, "You can not specify more than two MPI PDF sets.");
-        } else if (mpisets.size() == 0) {
-        } else {
-          set = mpisets[Min(j, (int)mpisets.size() - 1)];
-          // If using a special MI PDF set, then do not use normal PDF set
-          // version
-          version = 0;
-          specializedformi = true;
-        }
-
-        // read PDF set versions
-        std::vector<int> mpiversions{
-          s["MPI_PDF_SET_VERSIONS"].GetVector<int>() };
-        if (mpiversions.size() > 2) {
-          THROW(fatal_error, "You can not specify more than two MPI PDF set versions.");
-        } else if (mpiversions.size() == 0) {
-        } else {
-          version = mpiversions[Min(j, (int)mpiversions.size() - 1)];
-          specializedformi = true;
-        }
-
-      }
-
       // read further configuration
       int order{ -1 };
       int scheme{ -1 };
@@ -819,9 +780,6 @@ bool Initialization_Handler::InitializeThePDFs()
       if (pdfbase && i==0) {
 	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
 		  <<m_bunch_particles[j]<<")."<<std::endl;
-      } else if (pdfbase && specializedformi) {
-	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
-		  <<m_bunch_particles[j]<<") for multiple interactions."<<std::endl;
       }
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
       else {
@@ -869,7 +827,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 {
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(p_model);
-  p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
+  p_mehandler->SetShowerHandler(p_showerhandler);
   p_mehandler->SetRemnantHandler(p_remnants);
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
                                               m_isrhandlers[isr::hard_process]);
@@ -880,12 +838,10 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
-  as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(p_model,
 			       m_isrhandlers[isr::hard_subprocess]);
-  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_subprocess]);
+  p_mihandler->SetShowerHandler(p_showerhandler);
   p_mihandler->SetRemnantHandler(p_remnants);
-  as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
   return true;
@@ -893,18 +849,9 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 
 bool Initialization_Handler::InitializeTheShowers()
 {
-  std::vector<isr::id> isrtypes;
-  isrtypes.push_back(isr::hard_process);
-  isrtypes.push_back(isr::hard_subprocess);
-  for (size_t i=0; i<isrtypes.size(); ++i) {
-    as->SetActiveAs(isrtypes[i]);
-    Shower_Handler_Map::iterator it=m_showerhandlers.find(isrtypes[i]);
-    if (it!=m_showerhandlers.end()) delete it->second;
-    m_showerhandlers[isrtypes[i]] =
-      new Shower_Handler(p_model, m_isrhandlers[isrtypes[i]], i);
-    m_showerhandlers[isrtypes[i]]->SetRemnants(p_remnants);
-  }
-  as->SetActiveAs(isr::hard_process);
+  if (p_showerhandler) delete p_showerhandler;
+  p_showerhandler = new Shower_Handler(p_model,
+                                       m_isrhandlers[isr::hard_process]);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
@@ -940,10 +887,8 @@ bool Initialization_Handler::InitializeTheColourReconnections()
 bool Initialization_Handler::InitializeTheFragmentation() 
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
-  as->SetActiveAs(isr::hard_subprocess);
-  const auto shower = m_showerhandlers[isr::hard_process]->ShowerGenerator();
+  const auto shower = p_showerhandler->ShowerGenerator();
   p_fragmentation = new Fragmentation_Handler(shower);
-  as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
 }
@@ -957,21 +902,17 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="None") return true;
   else if (decmodel==std::string("Hadrons")) {
-    as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler();
-    as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
   }
   else if ((decmodel==string("Lund")) ) {
 #ifdef USING__PYTHIA
-    as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
     if (p_fragmentation->GetLundInterface()==NULL) {
       lund = new Lund_Interface();
     }
     else lund = p_fragmentation->GetLundInterface();
     Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund);
-    as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
@@ -1055,7 +996,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
-  as->SetActiveAs(isr::hard_process);
   int ok = p_mehandler->CalculateTotalXSecs();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.\n"

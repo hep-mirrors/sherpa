@@ -195,13 +195,13 @@ void Model_Base::SetAlphaQEDByInput(const std::string& tag)
 }
 
 // To be called in ModelInit, alphaS argument is alphaS input at MZ
-void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS)
+void Model_Base::SetAlphaQCD(PDF::PDF_Base* pdf, const double& alphaS)
 {
   Settings& s = Settings::GetMainSettings();
   int    order_alphaS   = s["ORDER_ALPHAS"].Get<int>();
   int    th_alphaS      = s["THRESHOLD_ALPHAS"].Get<int>();
   double MZ2            = sqr(Flavour(kf_Z).Mass());
-  as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
+  as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,pdf);
   p_constants->insert(make_pair(string("alpha_S"),alphaS));
   p_functions->insert(make_pair(string("alpha_S"),as));
   double Q2aS = s["Q2_AS"].Get<int>();

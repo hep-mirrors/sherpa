@@ -12,18 +12,17 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Shower_Handler::Shower_Handler(MODEL::Model_Base *const model,
-                               PDF::ISR_Handler *const isr,
-                               const int isrtype):
+                               PDF::ISR_Handler *const isr):
   p_shower(NULL), p_isr(isr)
 {
   Settings& s = Settings::GetMainSettings();
   m_name = s["SHOWER_GENERATOR"].Get<std::string>();
   p_shower = PDF::Shower_Getter::GetObject
-    (m_name,PDF::Shower_Key(model,p_isr,isrtype));
+    (m_name,PDF::Shower_Key(model,p_isr));
   if (p_shower==NULL && m_name!="None" &&
       s_loader->LoadLibrary("Sherpa"+m_name)) {
     p_shower = PDF::Shower_Getter::GetObject
-      (m_name,PDF::Shower_Key(model,p_isr,isrtype));
+      (m_name,PDF::Shower_Key(model,p_isr));
   }
   if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
 }
@@ -31,7 +30,7 @@ Shower_Handler::Shower_Handler(MODEL::Model_Base *const model,
 
 Shower_Handler::~Shower_Handler() 
 {
-  if (p_shower) delete p_shower;
+  if (p_shower) delete p_shower; p_shower=NULL;
 }
 
 void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist) 

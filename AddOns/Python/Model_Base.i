@@ -1,7 +1,7 @@
 %{
 #include "ATOOLS/Math/MyComplex.H"
 #include "MODEL/Main/Model_Base.H"
-#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/PDF_Base.H"
 
 using namespace MODEL;
 %}
@@ -21,7 +21,7 @@ namespace MODEL {
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();
-    virtual bool ModelInit(const PDF::ISR_Handler_Map& isr) = 0;
+    virtual bool ModelInit(PDF::PDF_Base* pdf) = 0;
 
     std::string Name();
 

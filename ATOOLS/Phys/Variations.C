@@ -597,8 +597,8 @@ std::string Variation_Parameters::GenerateName() const
       pdfid = p_pdf1->LHEFNumber();
     } else if (p_pdf2 != NULL) {
       pdfid = p_pdf2->LHEFNumber();
-    } else if (p_alphas->GetAs()->PDF() != NULL) {
-      pdfid = p_alphas->GetAs()->PDF()->LHEFNumber();
+    } else if (p_alphas->PDF() != NULL) {
+      pdfid = p_alphas->PDF()->LHEFNumber();
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
@@ -614,7 +614,7 @@ std::string Variation_Parameters::GenerateName() const
   }
   // append non-trival AlphaS(MZ) variation (which is not related to a change
   // in the PDF set)
-  if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
+  if (p_alphas != MODEL::as && p_alphas->PDF() != p_pdf1) {
     name += divider + GenerateNamePart("ASMZ", p_alphas->AsMZ());
   }
   // append non-trivial shower scale factors

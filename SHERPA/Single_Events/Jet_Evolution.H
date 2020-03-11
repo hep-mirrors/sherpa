@@ -39,7 +39,7 @@ namespace SHERPA {
 
     Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
                   Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
-                  const Shower_Handler_Map &);
+                  Shower_Handler*);
 
     ~Jet_Evolution();
 
