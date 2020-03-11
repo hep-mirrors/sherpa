@@ -58,7 +58,7 @@ double METOOLS::IPab(const Flavour &a,const Flavour &b,const double &x)
 
 double METOOLS::AlphaSCounterTerm(const double& muR2,const double& muR2ref,
                                   const double& as,
-                                  MODEL::One_Running_AlphaS * oras,
+                                  MODEL::Running_AlphaS * oras,
                                   const size_t oqcd)
 {
   DEBUG_FUNC(muR2<<" -> "<<muR2ref);

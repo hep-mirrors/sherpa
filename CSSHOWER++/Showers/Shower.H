@@ -59,7 +59,7 @@ namespace CSSHOWER {
 		       double &jcv,int mode);
 
   public:
-    Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
+    Shower(PDF::ISR_Handler *,const int qcd,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,double &jcv,

@@ -8,7 +8,7 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
-#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/PDF_Base.H"
 #include <map>
 
 namespace MODEL {
@@ -98,7 +98,7 @@ namespace MODEL {
     void SetAlphaQED(const double& aqed_def);
     void SetAlphaQEDByScale(const double& scale2);
     void SetAlphaQEDByInput(const std::string& tag);
-    void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
+    void SetAlphaQCD(PDF::PDF_Base* pdf, const double& alphaS);
     void SetRunningFermionMasses();
 
     void ReadExplicitCKM(ATOOLS::CMatrix& CKM);
@@ -108,7 +108,7 @@ namespace MODEL {
     Model_Base(bool);
     virtual ~Model_Base();
 
-    virtual bool ModelInit(const PDF::ISR_Handler_Map& isr) = 0;
+    virtual bool ModelInit(PDF::PDF_Base* pdf) = 0;
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();

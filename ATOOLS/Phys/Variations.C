@@ -606,8 +606,8 @@ std::string Variation_Parameters::GenerateName() const
       pdfid = p_pdf1->LHEFNumber();
     } else if (p_pdf2 != NULL) {
       pdfid = p_pdf2->LHEFNumber();
-    } else if (p_alphas->GetAs()->PDF() != NULL) {
-      pdfid = p_alphas->GetAs()->PDF()->LHEFNumber();
+    } else if (p_alphas->PDF() != NULL) {
+      pdfid = p_alphas->PDF()->LHEFNumber();
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }

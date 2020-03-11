@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Function_Base.H"
-#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/PDF_Base.H"
 
 #include <vector>
 
@@ -24,7 +24,8 @@ namespace MODEL {
   // cf. T. van Ritbergen, J. Vermaseren, S. Larin PLB 400 (1997) 379
   // up to factor 4^(i+1)
 
-  class One_Running_AlphaS {
+  class Running_AlphaS : public ATOOLS::Function_Base {
+
   protected:
 
     int         m_order,m_pdf;
@@ -35,6 +36,7 @@ namespace MODEL {
 
     AsDataSet     * p_thresh;
     PDF::PDF_Base * p_pdf;
+    PDF::PDF_Base * p_overridingpdf;
 
     double Beta0(const int);
     double Beta1(const int);
@@ -47,48 +49,6 @@ namespace MODEL {
     void   ContinueAlphaS(int &);
     void   PrintSummary();
 
-  public:
-
-    One_Running_AlphaS(PDF::PDF_Base *const pdf,
-                       const double as_MZ = 0.0,const double m2_MZ = 0.0,
-                       const int order = 0, const int thmode = 1);
-
-    ~One_Running_AlphaS();
-
-    inline int    Order()                { return m_order;       }
-    inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
-    inline double Beta1(const double q2) { return Beta1(Nf(q2)); }
-    inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
-    inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
-    inline double AsMZ()                 { return m_as_MZ;       }
-    inline PDF::PDF_Base * PDF()         { return p_pdf;         }
-
-    inline double CA() const { return m_CA; }
-    inline double CF() const { return m_CF; }
-    inline double TR() const { return m_TR; }
-
-    int    Nf(const double q2);
-    std::vector<double> Thresholds(double q12,double q22);
-
-    inline double CutQ2()                { return m_cutq2;       }
-
-    inline double BoundedAlphaS(const double &q2)
-    { return (*this)(std::max(q2, CutQ2())); }
-
-    double operator()(double q2);
-    double AlphaS(const double q2);
-  };
-
-
-  class Running_AlphaS : public ATOOLS::Function_Base {
-
-  protected:
-
-    typedef std::map<PDF::isr::id, One_Running_AlphaS*> AlphasMap;
-    AlphasMap m_alphas;
-    One_Running_AlphaS * p_active;
-    PDF::PDF_Base * p_overridingpdf;
-
     void RegisterDefaults() const;
 
     // construct PDFs that are only used for their AlphaS info and values
@@ -96,48 +56,46 @@ namespace MODEL {
 
   public:
 
-    //! construct a wrapper over One_Running_AlphaS instances, one for each ISR handlers
+    //! constructor
     Running_AlphaS(const double as_MZ,const double m2_MZ,
                    const int order, const int thmode,
-                   const PDF::ISR_Handler_Map& isr);
+                   PDF::PDF_Base* pdf);
 
     /*!
-     * Construct a wrapper for a single One_Running_AlphaS instance, corresponding to the PDF.
+     * Construct a wrapper for a Running_AlphaS instance, corresponding to the PDF.
      *
      * This is used for reweighting purposes.
      */
     Running_AlphaS(const std::string pdfname, const int member = 0,
                    const double as_MZ = 0.0,const double m2_MZ = 0.0,
                    const int order = 0, const int thmode = 1);
-    Running_AlphaS(PDF::PDF_Base *const pdf,
+    Running_AlphaS(PDF::PDF_Base* pdf,
                    const double as_MZ = 0.0,const double m2_MZ = 0.0,
                    const int order = 0, const int thmode = 1);
 
     ~Running_AlphaS();
 
-    // member functions
-    void SetActiveAs(PDF::isr::id id);
-    One_Running_AlphaS * GetAs() { return p_active; }
-    One_Running_AlphaS * GetAs(PDF::isr::id id);
+    void InitAlphaS(PDF::PDF_Base* pdf,
+                    const double as_MZ, const double m2_MZ,
+                    const int order, const int thmode);
 
     // proxy member functions
-    inline double operator()(double q2)   { return p_active->operator()(q2); }
-    inline double AlphaS(const double q2) { return p_active->AlphaS(q2); }
-    inline int    Order()                 { return p_active->Order(); }
-    inline double Beta0(const double q2)  { return p_active->Beta0(q2); }
-    inline double Beta1(const double q2)  { return p_active->Beta1(q2); }
-    inline double Beta2(const double q2)  { return p_active->Beta2(q2); }
-    inline double Beta3(const double q2)  { return p_active->Beta3(q2); }
-    inline double AsMZ()                  { return p_active->AsMZ(); }
-    inline double CA() const              { return p_active->CA(); }
-    inline double CF() const              { return p_active->CF(); }
-    inline double TR() const              { return p_active->TR(); }
-    inline int    Nf(const double q2)     { return p_active->Nf(q2); }
-    inline std::vector<double> Thresholds(double q12,double q22)
-                                          { return p_active->Thresholds(q12,q22); }
-    inline double CutQ2()                 { return p_active->CutQ2(); }
-    inline double BoundedAlphaS(const double &q2)
-                                          { return p_active->BoundedAlphaS(q2); }
+    double operator()(double q2);
+    double AlphaS(const double q2);
+    int    Order();
+    double Beta0(const double q2);
+    double Beta1(const double q2);
+    double Beta2(const double q2);
+    double Beta3(const double q2);
+    inline double AsMZ() { return m_as_MZ; }
+    double CA() const;
+    double CF() const;
+    double TR() const;
+    int    Nf(const double q2);
+    std::vector<double> Thresholds(double q12,double q22);
+    double CutQ2();
+    double BoundedAlphaS(const double &q2);
+    inline PDF::PDF_Base * PDF()         { return p_overridingpdf?p_overridingpdf:p_pdf; }
   };
 
   extern Running_AlphaS * as;

@@ -72,16 +72,7 @@ void small_sherpa_init(int argc, char *argv[])
   s_loader->LoadLibrary("SherpaSM");
   MODEL::s_model=MODEL::Model_Base::Model_Getter_Function::
     GetObject("SM",MODEL::Model_Arguments(true));
-  PDF::ISR_Base ** isrbases = new PDF::ISR_Base*[2];
-  isrbases[0] = new PDF::Intact(Flavour(kf_e));
-  isrbases[1] = new PDF::Intact(Flavour(kf_e).Bar());
-  PDF::ISR_Handler_Map isrhandlers;
-  isrhandlers[PDF::isr::hard_process] = new PDF::ISR_Handler(isrbases);
-  isrhandlers[PDF::isr::hard_process]->SetBeam(new BEAM::Monochromatic(Flavour(kf_e),7000.,0.0,1),0);
-  isrhandlers[PDF::isr::hard_process]->SetBeam(new BEAM::Monochromatic(Flavour(kf_e).Bar(),7000.,0.0,-1),1);
-  double bunch_splimits[2] = {1e-10, 1.};
-  isrhandlers[PDF::isr::hard_process]->Init(bunch_splimits);
-  MODEL::s_model->ModelInit(isrhandlers);
+  MODEL::s_model->ModelInit(NULL);
 
   AHADIC::Hadron_Init().Init();
   ATOOLS::OutputHadrons(std::cout);

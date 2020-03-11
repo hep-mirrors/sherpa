@@ -12,7 +12,7 @@ namespace PDF {
 }
 
 namespace MODEL {
-  class One_Running_AlphaS;
+  class Running_AlphaS;
 }
 
 namespace METOOLS {
@@ -26,7 +26,7 @@ namespace METOOLS {
 
   double AlphaSCounterTerm(const double& muR2,const double& muR2ref,
                            const double& as,
-                           MODEL::One_Running_AlphaS * oras,
+                           MODEL::Running_AlphaS * oras,
                            const size_t oqcd);
   double CollinearCounterTerms(const ATOOLS::Flavour &fl,const double &x,
                                const double &z,const double& as,

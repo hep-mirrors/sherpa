@@ -172,7 +172,6 @@ bool Multiple_Interactions::InitNewEvent() {
 }
   
 void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
-  MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
     double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->Energy();
     p_mihandler->ISRHandler()->SetRescaleFactor(x_resc,i);

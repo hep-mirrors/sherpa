@@ -18,8 +18,7 @@ namespace SHERPA {
   public:
     //constructor
     Shower_Handler(MODEL::Model_Base *const,
-                   PDF::ISR_Handler *const,
-                   const int isrtype);
+                   PDF::ISR_Handler *const);
 
     // destructor
     ~Shower_Handler();

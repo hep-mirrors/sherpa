@@ -67,11 +67,9 @@ namespace PDF {
   struct Shower_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    int m_type;
     inline Shower_Key(MODEL::Model_Base *const model,
-		      ISR_Handler *const isr,
-		      const int type):
-      p_model(model), p_isr(isr), m_type(type) {}
+		      ISR_Handler *const isr):
+      p_model(model), p_isr(isr) {}
   };//end of struct Shower_Key
 
   typedef ATOOLS::Getter_Function

@@ -16,7 +16,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
+Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed)
     : p_actual(NULL), m_sudakov(isr, qcd, qed), p_isr(isr)
 {
   Settings& s = Settings::GetMainSettings();
@@ -35,14 +35,6 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_kscheme   = s["CSS_KIN_SCHEME"].Get<int>();
   m_recdec    = s["CSS_RECO_DECAYS"].Get<int>();
   m_maxpart   = s["CSS_MAXPART"].Get<int>();
-  if (type) {
-    kfmode=s["MI_CSS_KFACTOR_SCHEME"].Get<int>();
-    k0sqf=s["MI_CSS_FS_PT2MIN"].Get<double>();
-    k0sqi=s["MI_CSS_IS_PT2MIN"].Get<double>();
-    fs_as_fac=s["MI_CSS_FS_AS_FAC"].Get<double>();
-    is_as_fac=s["MI_CSS_IS_AS_FAC"].Get<double>();
-    m_kscheme = s["MI_CSS_KIN_SCHEME"].Get<int>();
-  }
   std::vector<std::vector<std::string> > helpsvv{
     s["CSS_ENHANCE"].GetMatrix<std::string>() };
   m_efac.clear();

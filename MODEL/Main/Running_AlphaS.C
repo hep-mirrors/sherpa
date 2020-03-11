@@ -20,6 +20,13 @@ using namespace PDF;
 using namespace std;
 
 namespace MODEL {
+  int Running_AlphaS::Order() { return m_order; }
+  double Running_AlphaS::TR() const { return m_TR; }
+  double Running_AlphaS::CA() const { return m_CA; }
+  double Running_AlphaS::CF() const { return m_CF; }
+  double Running_AlphaS::CutQ2() { return m_cutq2; }
+  double Running_AlphaS::Beta0(const double q2) { return Beta0(Nf(q2)); }
+  double Running_AlphaS::BoundedAlphaS(const double &q2) { return (*this)(std::max(q2, CutQ2())); }
 
   std::ostream &operator<<(std::ostream &str,AsDataSet &set)
   {
@@ -32,13 +39,70 @@ namespace MODEL {
 
 }
 
-One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
-                                       const double as_MZ, const double m2_MZ,
-                                       const int order, const int thmode) :
-  m_order(order), m_pdf(0), m_nthresholds(0), m_mzset(0),
-  m_CF(4./3.), m_CA(3.), m_TR(0.5),
-  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_cutq2(0.0), p_pdf(pdf)
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+                               const int order, const int thmode,
+                               PDF_Base* pdf):
+  p_overridingpdf(NULL)
 {
+  RegisterDefaults();
+  m_defval = as_MZ;
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  // Read possible override
+  Scoped_Settings alphassettings{
+    Settings::GetMainSettings()["ALPHAS"] };
+  if (alphassettings["USE_PDF"].Get<int>()&4) {
+    std::string name(alphassettings["PDF_SET"].Get<std::string>());
+    int member = alphassettings["PDF_SET_MEMBER"].Get<int>();
+    InitOverridingPDF(name, member);
+  }
+
+  if (p_overridingpdf != NULL) {
+    InitAlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode);
+  } else {
+    InitAlphaS(pdf, as_MZ, m2_MZ, order, thmode);
+  }
+}
+
+Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
+                               const double as_MZ, const double m2_MZ,
+                               const int order, const int thmode):
+  p_overridingpdf(NULL)
+{
+  RegisterDefaults();
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  InitOverridingPDF(pdfname, member);
+  InitAlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode);
+  m_defval = AsMZ();
+}
+
+Running_AlphaS::Running_AlphaS(PDF::PDF_Base* pdf,
+                               const double as_MZ, const double m2_MZ,
+                               const int order, const int thmode):
+  p_overridingpdf(NULL)
+{
+  RegisterDefaults();
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  InitAlphaS(pdf, as_MZ, m2_MZ, order, thmode);
+  m_defval = AsMZ();
+}
+
+void Running_AlphaS::InitAlphaS(PDF::PDF_Base* pdf,
+                                const double as_MZ, const double m2_MZ,
+                                const int order, const int thmode)
+{
+  m_order=order;
+  m_pdf=0;
+  m_nthresholds=0;
+  m_mzset=0;
+  m_CF=4./3.; m_CA=3.; m_TR=0.5;
+  m_as_MZ=as_MZ;
+  m_m2_MZ=m2_MZ;
+  m_cutq2=0.0;
+  p_pdf=pdf;
+
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings alphassettings{ s["ALPHAS"] };
   if (m_m2_MZ==0.) m_m2_MZ = Flavour(kf_Z).Mass();
@@ -157,24 +221,56 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   }
 }
 
-One_Running_AlphaS::~One_Running_AlphaS()
+
+void Running_AlphaS::RegisterDefaults() const
 {
-  if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
+  Scoped_Settings s{ Settings::GetMainSettings()["ALPHAS"] };
+  s["FREEZE_VALUE"].SetDefault(1.0);
+  s["USE_PDF"].SetDefault(0);
+  s["PDF_SET"].SetDefault("CT10nlo");
+  s["PDF_SET_VERSION"].SetDefault(0);
+  const int member{ s["PDF_SET_VERSION"].Get<int>() };
+  s["PDF_SET_MEMBER"].SetDefault(member);
 }
 
-double One_Running_AlphaS::Beta0(const int nf) {
+void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
+{
+  if (p_overridingpdf != NULL) {
+    delete p_overridingpdf;
+    p_overridingpdf = NULL;
+  }
+  // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
+  if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
+    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
+  }
+  PDF::PDF_Arguments args(Flavour(kf_p_plus), 0, name, member);
+  PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
+  pdf->SetBounds();
+  p_overridingpdf = pdf;
+}
+
+Running_AlphaS::~Running_AlphaS()
+{
+  if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
+  if (p_overridingpdf != NULL) {
+    delete p_overridingpdf;
+    p_overridingpdf = NULL;
+  }
+}
+
+double Running_AlphaS::Beta0(const int nf) {
   return 1./4. * (11. - (2./3.)*nf);
 }
 
-double One_Running_AlphaS::Beta1(const int nf) {
+double Running_AlphaS::Beta1(const int nf) {
   return 1./16. * (102. - (38./3.)*nf);
 }
 
-double One_Running_AlphaS::Beta2(const int nf) {
+double Running_AlphaS::Beta2(const int nf) {
   return 1./64. * (2857./2. - (5033./18.)*nf + (325./54.)*nf*nf);
 }
 
-double One_Running_AlphaS::Beta3(const int nf) {
+double Running_AlphaS::Beta3(const int nf) {
   double zeta3 = 1.2020569031595942854;
   return 1./256. * ( (149753./6. + 3564.*zeta3) +
 		     (-1078361./162. -6508./27.*zeta3)*nf +
@@ -182,7 +278,7 @@ double One_Running_AlphaS::Beta3(const int nf) {
 		     (1093/729)*nf*nf*nf);
 }
 
-double One_Running_AlphaS::Lambda2(const int nr) {
+double Running_AlphaS::Lambda2(const int nr) {
   double as  = p_thresh[nr].as_low; 
   double mu2 = p_thresh[nr].low_scale;
   if (as==0.) {
@@ -229,7 +325,7 @@ double One_Running_AlphaS::Lambda2(const int nr) {
   return lambda2;
 }
 
-double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
+double Running_AlphaS::AlphaSLam(const double Q2,const int nr)
 {
   // using shorter names
   double & beta0   = p_thresh[nr].beta0;
@@ -259,7 +355,7 @@ double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
   return M_PI*a;
 }
 
-double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
+double Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
 			       const double mu2,const int nl) {
   double zeta2g = 1.;
 
@@ -289,7 +385,7 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
   return zeta2g;
 }
 
-double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
+double Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
 				  const double mu2,const int nl) {
   // might be simplified considerably when using mu2==mass2
   double zeta2g  = 1.;
@@ -321,7 +417,7 @@ double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
 
 
 
-void One_Running_AlphaS::ContinueAlphaS(int & nr) {
+void Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
@@ -357,7 +453,7 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 }
 
 
-double One_Running_AlphaS::operator()(double q2)
+double Running_AlphaS::operator()(double q2)
 {
   if (!(q2>0.)) {
     msg_Error()<<METHOD<<"(): unphysical scale Q2 = "<<q2<<" GeV^2. Return 0."
@@ -387,11 +483,11 @@ double One_Running_AlphaS::operator()(double q2)
   return as;
 }  
 
-double  One_Running_AlphaS::AlphaS(const double q2){
+double  Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);
 }
 
-int One_Running_AlphaS::Nf(const double q2)
+int Running_AlphaS::Nf(const double q2)
 {
   for (int i=0;i<=m_nthresholds;++i) {
     if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
@@ -400,7 +496,7 @@ int One_Running_AlphaS::Nf(const double q2)
   return m_nthresholds;
 }
 
-std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
+std::vector<double> Running_AlphaS::Thresholds(double q12,double q22)
 {
   if (q12>q22) std::swap(q12,q22);
   std::vector<double> thrs;
@@ -415,7 +511,7 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
   return thrs;
 }
 
-void One_Running_AlphaS::PrintSummary()
+void Running_AlphaS::PrintSummary()
 {
   if (p_pdf) {
     msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n";
@@ -431,125 +527,3 @@ void One_Running_AlphaS::PrintSummary()
 }
 
 
-Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
-                               const int order, const int thmode,
-                               const PDF::ISR_Handler_Map &isr):
-  p_overridingpdf(NULL)
-{
-  RegisterDefaults();
-  m_defval = as_MZ;
-  m_type = "Running Coupling";
-  m_name = "Alpha_QCD";
-  // Read possible override
-  Scoped_Settings alphassettings{
-    Settings::GetMainSettings()["ALPHAS"] };
-  if (alphassettings["USE_PDF"].Get<int>()&4) {
-    std::string name(alphassettings["PDF_SET"].Get<std::string>());
-    int member = alphassettings["PDF_SET_MEMBER"].Get<int>();
-    InitOverridingPDF(name, member);
-  }
-
-  // Initialise One_Running_AlphaS instances
-  for (ISR_Handler_Map::const_iterator it=isr.begin(); it!=isr.end(); ++it) {
-    if (m_alphas.find(it->first)!=m_alphas.end())
-      THROW(fatal_error, "Internal error.");
-    if (p_overridingpdf != NULL) {
-      m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
-    } else {
-      PDF::PDF_Base *pdf(NULL);
-      if (it->second->PDF(0)) pdf=it->second->PDF(0);
-      if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
-        pdf=it->second->PDF(1);
-      m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
-    }
-  }
-  SetActiveAs(PDF::isr::hard_process);
-}
-
-Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
-                               const double as_MZ, const double m2_MZ,
-                               const int order, const int thmode):
-  p_overridingpdf(NULL)
-{
-  RegisterDefaults();
-  m_type = "Running Coupling";
-  m_name = "Alpha_QCD";
-  InitOverridingPDF(pdfname, member);
-  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
-  SetActiveAs(PDF::isr::none);
-  m_defval = AsMZ();
-}
-
-Running_AlphaS::Running_AlphaS(PDF::PDF_Base *const pdf,
-                               const double as_MZ, const double m2_MZ,
-                               const int order, const int thmode):
-  p_overridingpdf(NULL)
-{
-  RegisterDefaults();
-  m_type = "Running Coupling";
-  m_name = "Alpha_QCD";
-  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
-  SetActiveAs(PDF::isr::none);
-  m_defval = AsMZ();
-}
-
-void Running_AlphaS::RegisterDefaults() const
-{
-  Scoped_Settings s{ Settings::GetMainSettings()["ALPHAS"] };
-  s["FREEZE_VALUE"].SetDefault(1.0);
-  s["USE_PDF"].SetDefault(0);
-  s["PDF_SET"].SetDefault("CT10nlo");
-  s["PDF_SET_VERSION"].SetDefault(0);
-  const int member{ s["PDF_SET_VERSION"].Get<int>() };
-  s["PDF_SET_MEMBER"].SetDefault(member);
-}
-
-void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
-{
-  if (p_overridingpdf != NULL) {
-    delete p_overridingpdf;
-    p_overridingpdf = NULL;
-  }
-  // alphaS should be the same for all hadrons, so we can use a proton (as good as any)
-  if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
-    s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
-  }
-  PDF::PDF_Arguments args(Flavour(kf_p_plus), 0, name, member);
-  PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
-  pdf->SetBounds();
-  p_overridingpdf = pdf;
-}
-
-Running_AlphaS::~Running_AlphaS()
-{
-  for (AlphasMap::iterator it=m_alphas.begin(); it!=m_alphas.end(); ++it) {
-    delete it->second;
-  }
-  m_alphas.clear();
-  if (p_overridingpdf != NULL) {
-    delete p_overridingpdf;
-    p_overridingpdf = NULL;
-  }
-}
-
-void Running_AlphaS::SetActiveAs(PDF::isr::id id)
-{
-  AlphasMap::iterator it=m_alphas.find(id);
-  if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
-  }
-  else {
-    p_active=it->second;
-  }
-}
-
-One_Running_AlphaS * Running_AlphaS::GetAs(PDF::isr::id id)
-{
-  AlphasMap::iterator it=m_alphas.find(id);
-  if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
-  }
-  else {
-    return it->second;
-  }
-}

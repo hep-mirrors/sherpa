@@ -19,30 +19,27 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
                              Decay_Handler_Base *_hdhandler,
 			     MI_Handler *_mihandler,
 			     Soft_Collision_Handler *_schandler,
-                             const Shower_Handler_Map& showers)
+                             Shower_Handler* showerhandler)
 {
-  Shower_Handler_Map::const_iterator shIter=showers.find(isr::hard_process);
-  m_name      = string("Jet_Evolution:")+shIter->second->ShowerGenerator();
+  m_name      = string("Jet_Evolution:")+showerhandler->ShowerGenerator();
   m_type      = eph::Perturbative;
 
   Perturbative_Interface * interface;
-  shIter=showers.find(isr::hard_process);
   interface = new Perturbative_Interface(_mehandler,
                                          _dechandler,
-					 shIter->second);
+					 showerhandler);
   if (interface!=NULL) m_interfaces.insert(make_pair("SignalMEs",interface));
 
-  shIter=showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler, shIter->second);
+  interface = new Perturbative_Interface(_hdhandler, showerhandler);
   if (interface!=NULL) 
     m_interfaces.insert(make_pair("HadronDecays",interface));
 
   if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler, shIter->second);
+    interface = new Perturbative_Interface(_mihandler, showerhandler);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
   }
   if (_schandler) {
-    interface = new Perturbative_Interface(_schandler, shIter->second);
+    interface = new Perturbative_Interface(_schandler, showerhandler);
     if (interface!=NULL) 
       m_interfaces.insert(make_pair("SoftCollisions",interface));
   }
@@ -79,17 +76,14 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
 	switch (int(meblob->Type())) {
 	  case (int(btp::Signal_Process)) :
             tag = string("SignalMEs");
-            MODEL::as->SetActiveAs(PDF::isr::hard_process);
 	    break;
 	  case (int(btp::Hard_Collision)) : 
 	    tag = string("MPIs"); 
 	    if (meblob->TypeSpec()=="MinBias") 
 	      tag = string("SoftCollisions"); 
-            MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
 	    break;
 	  case (int(btp::Hadron_Decay))   : 
 	    tag = string("HadronDecays"); 
-            MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
 	    break;
 	  default:
 	    msg_Error()<<"ERROR in "<<METHOD<<": "

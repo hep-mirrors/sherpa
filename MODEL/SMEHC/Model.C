@@ -26,7 +26,7 @@ namespace MODEL {
   public :
 
     SMEHC();
-    bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
+    bool ModelInit(PDF::PDF_Base* pdf) override;
     void InitVertices() override;
     size_t IndexOfOrderKey(const std::string&) const override;
 
@@ -135,12 +135,12 @@ void SMEHC::ParticleInit()
   ReadParticleData();
 }
 
-bool SMEHC::ModelInit(const PDF::ISR_Handler_Map& isr)
+bool SMEHC::ModelInit(PDF::PDF_Base* pdf)
 {
   Settings& s = Settings::GetMainSettings();
   FixEWParameters();  
   FixCKM();
-  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  SetAlphaQCD(pdf, s["ALPHAS(MZ)"].Get<double>());
   RegisterDefaults();
   FixEFT();
   SetRunningFermionMasses();

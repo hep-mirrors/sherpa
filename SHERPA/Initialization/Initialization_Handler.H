@@ -56,7 +56,7 @@ namespace SHERPA {
     REMNANTS::Remnant_Handler   * p_remnants;
     Matrix_Element_Handler      * p_mehandler;
     Hard_Decay_Handler          * p_harddecays;
-    Shower_Handler_Map            m_showerhandlers;
+    Shower_Handler*               p_showerhandler;
     Beam_Remnant_Handler        * p_beamremnants;
     Colour_Reconnection_Handler * p_reconnections;
     Fragmentation_Handler       * p_fragmentation;
@@ -117,7 +117,7 @@ namespace SHERPA {
     PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
-    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
+    Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }

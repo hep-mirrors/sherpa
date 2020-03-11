@@ -1,6 +1,7 @@
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
