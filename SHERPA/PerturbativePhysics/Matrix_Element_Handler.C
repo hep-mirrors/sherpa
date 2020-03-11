@@ -939,6 +939,7 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	}
 	if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
           cpi.m_fi.m_nlocpl = ToVector<double>(ds);
+	  if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
 	}
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
