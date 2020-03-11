@@ -45,7 +45,7 @@ namespace SHERPA {
 
   class Dummy_Process: public PHASIC::Process_Base {
   public:
-    void SetScale(const Scale_Setter_Arguments &args)
+    void SetScale(const Scale_Setter_Arguments& args) override
     {
       Scale_Setter_Arguments cargs(args);
       cargs.p_proc=this;
@@ -53,7 +53,7 @@ namespace SHERPA {
 	GetObject(cargs.m_scale,cargs);
       if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
     }
-    void SetKFactor(const KFactor_Setter_Arguments &args)
+    void SetKFactor(const KFactor_Setter_Arguments& args) override
     {
       KFactor_Setter_Arguments cargs(args);
       cargs.p_proc=this;
@@ -62,16 +62,26 @@ namespace SHERPA {
 	GetObject(cargs.m_kfac,cargs);
       if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
     }
-    size_t Size() const { return 0; }
-    Process_Base *operator[](const size_t &i) { return NULL; }
+    size_t Size() const override { return 0; }
+    Process_Base* operator[](const size_t& i) override { return NULL; }
 
-    Weight_Info *OneEvent(const int wmode,const int mode=0) { return NULL; }
+    Weight_Info* OneEvent(const int wmode, const int mode = 0) override
+    {
+      return NULL;
+    }
 
-    double Differential(const ATOOLS::Vec4D_Vector &p) { return 0.0; }
+    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector&,
+                                       ATOOLS::Weight_Type) override
+    {
+      return 0.0;
+    }
     double Differential2() { return 0.0; }
-    bool CalculateTotalXSec(const std::string &resultpath,
-			    const bool create=false) { return false; }
-    void SetLookUp(const bool lookup) {}
+    bool CalculateTotalXSec(const std::string& resultpath,
+                            const bool create = false) override
+    {
+      return false;
+    }
+    void SetLookUp(const bool lookup) override {}
   };
 
   struct RootNTupleReader_Variables {
@@ -443,23 +453,27 @@ double RootNtuple_Reader::CalculateWeight
 double RootNtuple_Reader::Reweight(Variation_Parameters& varparams,
                                    const Weight_Calculation_Args& args)
 {
-  DEBUG_FUNC("R = "<<sqrt(varparams->m_muR2fac)<<", F = "<<sqrt(varparams->m_muF2fac));
+  DEBUG_FUNC("R = " << sqrt(varparams.m_muR2fac)
+                    << ", F = " << sqrt(varparams.m_muF2fac));
   // temporarily replace PDFs
   PDF::PDF_Base *nominalpdf1 = p_isr->PDF(0);
   PDF::PDF_Base *nominalpdf2 = p_isr->PDF(1);
-  p_isr->SetPDF(varparams->p_pdf1, 0);
-  p_isr->SetPDF(varparams->p_pdf2, 1);
+  p_isr->SetPDF(varparams.p_pdf1, 0);
+  p_isr->SetPDF(varparams.p_pdf2, 1);
 
-  Weight_Calculation_Args varargs(args.m_mur2 * varparams->m_muR2fac,
-				  args.m_muf2 * varparams->m_muF2fac,
-				  args.m_mode, args.p_scale,args.p_kfac,
-				  args.m_K, varparams->m_muR2fac);
-  if (args.p_scale && args.p_scale->UpdateScale(*varparams)) {
+  Weight_Calculation_Args varargs(args.m_mur2 * varparams.m_muR2fac,
+                                  args.m_muf2 * varparams.m_muF2fac,
+                                  args.m_mode,
+                                  args.p_scale,
+                                  args.p_kfac,
+                                  args.m_K,
+                                  varparams.m_muR2fac);
+  if (args.p_scale && args.p_scale->UpdateScale(varparams)) {
     varargs.m_mur2=args.p_scale->Scale(stp::ren);
     varargs.m_muf2=args.p_scale->Scale(stp::fac);
   }
-  double weight(CalculateWeight(varargs, varparams->p_alphas->GetAs()));
-  if (args.p_kfac && args.p_kfac->UpdateKFactor(*varparams))
+  double weight(CalculateWeight(varargs, varparams.p_alphas->GetAs()));
+  if (args.p_kfac && args.p_kfac->UpdateKFactor(varparams))
     weight*=args.p_kfac->LastKFactor()/args.m_K;
 
   // reset PDFs
@@ -557,9 +571,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       weight*=K/p_vars->m_kfac;
       m_nlos.back()->m_results = Event_Weights {weight};
       m_nlos.back()->m_results.Apply(
-          [this, &args](double varweight,
-                        size_t varindex,
-                        Variation_Parameters& varparams) -> double {
+          [this, &args, K](double varweight,
+                           size_t varindex,
+                           Variation_Parameters& varparams) -> double {
             return Reweight(varparams, args) * K / p_vars->m_kfac;
           });
 #ifdef DEBUG__MINLO
@@ -618,7 +632,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   for (const auto* sub : m_nlos) {
     weights += sub->m_results;
   }
-  signalblob->SetWeight(weights.Nominal());
   signalblob->AddData("Weights",new Blob_Data<Event_Weights>(weights));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      ((vars.m_nuwgt?vars.m_mewgt:vars.m_mewgt2)/
