@@ -52,11 +52,11 @@ namespace SHERPA {
 
     MODEL::Model_Base           * p_model;
     BEAM::Beam_Spectra_Handler  * p_beamspectra;
-    PDF::ISR_Handler_Map          m_isrhandlers;
+    PDF::ISR_Handler            * p_isrhandler;
     REMNANTS::Remnant_Handler   * p_remnants;
     Matrix_Element_Handler      * p_mehandler;
     Hard_Decay_Handler          * p_harddecays;
-    Shower_Handler*               p_showerhandler;
+    Shower_Handler              * p_showerhandler;
     Beam_Remnant_Handler        * p_beamremnants;
     Colour_Reconnection_Handler * p_reconnections;
     Fragmentation_Handler       * p_fragmentation;
@@ -109,12 +109,11 @@ namespace SHERPA {
     bool CalculateTheHardProcesses();
 
     Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
-    Decay_Handler_Base           * GetHDHandler() { return p_hdhandler; }
-    inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
+    Decay_Handler_Base           * GetHDHandler()                   { return p_hdhandler; }
+    PDF::ISR_Handler             * GetISRHandler()                  { return p_isrhandler;      }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     Output_Vector                * GetOutputs()                     { return &m_outputs;        }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
-    PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;  }

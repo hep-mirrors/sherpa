@@ -48,10 +48,13 @@ bool Hadron_Remnant::IsValence(Particle * part) {
     if (flav==(*flit)) {
       Vec4D   mom  = part->Momentum();
       m_x = mom[0]/m_residualE;
+      double origrescalefac=p_pdf->RescaleFactor();
+      p_pdf->SetRescaleFactor(1.0);
       p_pdf->Calculate(m_x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
       m_valence = (val/tot > ran->Get());
+      p_pdf->SetRescaleFactor(origrescalefac);
       if (m_valence) p_valence = part;
       return m_valence;
     }

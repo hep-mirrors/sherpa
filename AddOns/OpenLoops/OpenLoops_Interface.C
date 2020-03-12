@@ -4,6 +4,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"

@@ -320,7 +320,7 @@ double Sherpa::TotalErr()
 std::string Sherpa::PDFInfo()
 {
   std::string pdf="Unknown";
-  PDF::ISR_Handler* isr=GetInitHandler()->GetISRHandler(PDF::isr::hard_process);
+  PDF::ISR_Handler* isr=GetInitHandler()->GetISRHandler();
   if (isr) {
     if (isr->PDF(0)) {
       pdf=isr->PDF(0)->Type();
