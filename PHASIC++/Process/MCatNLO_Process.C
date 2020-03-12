@@ -331,7 +331,7 @@ double MCatNLO_Process::LocalKFactor(double bvi, double b,
   else if (m_kfacmode%10==1) { s=bvib*(1.0-rsr); h=0; }
   else if (m_kfacmode%10==2) { s=0;              h=rsr; }
   else if (m_kfacmode%10==3) { s=bvib;           h=0.; }
-  else if (m_kfacmode%10==4) { s=bvib+rs/b;      h=0.; }
+  else if (m_kfacmode%10==4) { s=bvib+(b?rs/b:0.);h=0.; }
   else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
