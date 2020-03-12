@@ -59,7 +59,8 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_mehandler(NULL), p_harddecays(NULL), p_showerhandler(NULL),
+  p_mehandler(NULL), p_harddecays(NULL),
+  p_showerhandler(NULL), p_isrhandler(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
@@ -270,6 +271,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
+  if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
@@ -290,10 +292,6 @@ Initialization_Handler::~Initialization_Handler()
   while (m_outputs.size()>0) {
     delete m_outputs.back();
     m_outputs.pop_back();
-  }
-  while (m_isrhandlers.size()>0) {
-    delete m_isrhandlers.begin()->second;
-    m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
@@ -496,10 +494,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeThePDFs();
   okay = okay && InitializeTheRemnants();
   PDF::PDF_Base *pdf(NULL);
-  ISR_Handler* isr = m_isrhandlers[isr::hard_process];
-  if (isr->PDF(0)) pdf=isr->PDF(0);
-  if ((pdf==NULL||pdf->ASInfo().m_order<0) && isr->PDF(1))
-    pdf=isr->PDF(1);
+  if (p_isrhandler->PDF(0)) pdf=p_isrhandler->PDF(0);
+  if ((pdf==NULL||pdf->ASInfo().m_order<0) && p_isrhandler->PDF(1))
+    pdf=p_isrhandler->PDF(1);
   if (!p_model->ModelInit(pdf))
     THROW(critical_error,"Model cannot be initialized");
   okay = okay && p_beamspectra->Init();
@@ -519,7 +516,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
-				 p_model, m_isrhandlers[isr::hard_process]));
+				 p_model, p_isrhandler));
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
@@ -565,9 +562,9 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   double smax=sqr(rpa->gen.Ecms());
   smin = Max(smin,p_beamspectra->SprimeMin());
   smax = Min(smax,p_beamspectra->SprimeMax());
-  if (m_isrhandlers[isr::hard_process]->On()) {
-    smin = Max(smin,m_isrhandlers[isr::hard_process]->SprimeMin());
-    smax = Min(smax,m_isrhandlers[isr::hard_process]->SprimeMax());
+  if (p_isrhandler->On()) {
+    smin = Max(smin,p_isrhandler->SprimeMin());
+    smax = Min(smax,p_isrhandler->SprimeMax());
   }
   if (p_beamspectra->On()) {
     p_beamspectra->SetSprimeMin(smin);
@@ -578,15 +575,12 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     // if ISR & beam -> apply mcut on ISR only
     // if beam only  -> apply mcut on Beam
     smax = Min(smax,mcut2);
-    for (size_t i=1;i<3;++i) {
-      isr::id id=(isr::id)i;
-      if (m_isrhandlers[id]->On()) {
-	m_isrhandlers[id]->SetFixedSprimeMax(smax);
-	m_isrhandlers[id]->SetFixedSprimeMin(smin);
-      } 
-      else if (p_beamspectra->On()) {
-	p_beamspectra->SetSprimeMax(smax);
-      }
+    if (p_isrhandler->On()) {
+      p_isrhandler->SetFixedSprimeMax(smax);
+      p_isrhandler->SetFixedSprimeMin(smin);
+    } 
+    else if (p_beamspectra->On()) {
+      p_beamspectra->SetSprimeMax(smax);
     }
   }
 
@@ -594,9 +588,9 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     msg_Error()<<"Error in Initialization of the Sherpa framework : "<<endl
 	       <<"    Detected a mismatch of flavours from beams to bunches : "<<endl
 	       <<"    "<<p_beamspectra->GetBeam(0)<<" -> "
-	       <<m_isrhandlers[isr::hard_process]->Flav(0)<<" and "
+	       <<p_isrhandler->Flav(0)<<" and "
 	       <<p_beamspectra->GetBeam(1)<<" -> "
-	       <<m_isrhandlers[isr::hard_process]->Flav(1)<<endl;
+	       <<p_isrhandler->Flav(1)<<endl;
     return 0;
   }
 
@@ -713,101 +707,94 @@ bool Initialization_Handler::InitializeThePDFs()
   }
 
   // Initialisation of PDF sets
-  for (size_t i=0;i<2;++i) {
-    isr::id id=(isr::id)(i+1);
-    if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
-      delete m_isrhandlers[id]; 
-    PDF_Base * pdfbase;
-    ISR_Base ** isrbases = new ISR_Base*[2];
-    double m_bunch_splimits[2];
-    for (int j=0;j<2;++j) {
-      std::string indextag("_" + ToString(j + 1));
+  if (p_isrhandler) { delete p_isrhandler; p_isrhandler=NULL; }
+  PDF_Base * pdfbase;
+  ISR_Base ** isrbases = new ISR_Base*[2];
+  double m_bunch_splimits[2];
+  for (int j=0;j<2;++j) {
+    // read bunch flavour
+    int defaultflav(p_beamspectra->GetBeam(j)->Bunch());
+    int flav{ 0 };
+    std::vector<int> bunches{ s["BUNCHES"].GetVector<int>() };
+    if (bunches.size() > 2) {
+      THROW(fatal_error, "You can not specify more than two bunches.");
+    } else if (bunches.size() == 0) {
+      flav = defaultflav;
+    } else {
+      flav = bunches[Min(j, (int)bunches.size() - 1)];
+    }
+    m_bunch_particles[j] = Flavour((kf_code)abs(flav));
+    if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
 
-      // read bunch flavour
-      int defaultflav(p_beamspectra->GetBeam(j)->Bunch());
-      int flav{ 0 };
-      std::vector<int> bunches{ s["BUNCHES"].GetVector<int>() };
-      if (bunches.size() > 2) {
-        THROW(fatal_error, "You can not specify more than two bunches.");
-      } else if (bunches.size() == 0) {
-        flav = defaultflav;
-      } else {
-        flav = bunches[Min(j, (int)bunches.size() - 1)];
-      }
-      m_bunch_particles[j] = Flavour((kf_code)abs(flav));
-      if (flav<0) m_bunch_particles[j] = m_bunch_particles[j].Bar();
-
-      // read PDF set
-      std::string set;
-      std::vector<std::string> sets{ s["PDF_SET"].GetVector<std::string>() };
-      if (sets.size() > 2) {
-        THROW(fatal_error, "You can not specify more than two PDF sets.");
-      } else if (sets.size() == 0) {
+    // read PDF set
+    std::string set;
+    std::vector<std::string> sets{ s["PDF_SET"].GetVector<std::string>() };
+    if (sets.size() > 2) {
+      THROW(fatal_error, "You can not specify more than two PDF sets.");
+    } else if (sets.size() == 0) {
+      set = defset[j];
+    } else {
+      set = sets[Min(j, (int)sets.size() - 1)];
+      if (set == "Default")
         set = defset[j];
-      } else {
-        set = sets[Min(j, (int)sets.size() - 1)];
-        if (set == "Default")
-          set = defset[j];
-      }
-
-      // read PDF set versions
-      int version(0);
-      std::vector<int> versions{ s["PDF_SET_VERSIONS"].GetVector<int>() };
-      if (versions.size() > 2) {
-        THROW(fatal_error, "You can not specify more than two PDF set versions.");
-      } else if (versions.size() == 0) {
-        version = 0;
-      } else {
-        version = versions[Min(j, (int)versions.size() - 1)];
-      }
-
-      // read further configuration
-      int order{ -1 };
-      int scheme{ -1 };
-      if (set == "PDFe") {
-        order = s["ISR_E_ORDER"].Get<int>();
-        scheme = s["ISR_E_SCHEME"].Get<int>();
-      }
-
-      // Load PDF
-      pdfbase = PDF_Base::PDF_Getter_Function::GetObject(
-          set,
-          PDF_Arguments(m_bunch_particles[j], j, set, version, order, scheme));
-      if (i==0) rpa->gen.SetPDF(j,pdfbase);
-      if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
-	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
-              +" libraries for "+ToString(m_bunch_particles[j])+" bunch.");
-      if (pdfbase && i==0) {
-	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
-		  <<m_bunch_particles[j]<<")."<<std::endl;
-      }
-      if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
-      else {
-	pdfbase->SetBounds();
-	isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
-      }
-      ATOOLS::rpa->gen.SetBunch(m_bunch_particles[j],j);
     }
-    m_bunch_splimits[0] = s["ISR_SMIN"].Get<double>();
-    m_bunch_splimits[1] = s["ISR_SMAX"].Get<double>();
-    m_isrhandlers[id] = new ISR_Handler(isrbases);
-    m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
-    m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
-    m_isrhandlers[id]->Init(m_bunch_splimits);
-    if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
-      msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
-		 <<"   Inconsistent ISR & Beam:"<<endl
-		 <<"   Abort program."<<endl;
-      Abort();
+
+    // read PDF set versions
+    int version(0);
+    std::vector<int> versions{ s["PDF_SET_VERSIONS"].GetVector<int>() };
+    if (versions.size() > 2) {
+      THROW(fatal_error, "You can not specify more than two PDF set versions.");
+    } else if (versions.size() == 0) {
+      version = 0;
+    } else {
+      version = versions[Min(j, (int)versions.size() - 1)];
     }
+
+    // read further configuration
+    int order{ -1 };
+    int scheme{ -1 };
+    if (set == "PDFe") {
+      order = s["ISR_E_ORDER"].Get<int>();
+      scheme = s["ISR_E_SCHEME"].Get<int>();
+    }
+
+    // Load PDF
+    pdfbase = PDF_Base::PDF_Getter_Function::GetObject(
+                                                       set,
+                                                       PDF_Arguments(m_bunch_particles[j], j, set, version, order, scheme));
+    rpa->gen.SetPDF(j,pdfbase);
+    if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
+      THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
+            +" libraries for "+ToString(m_bunch_particles[j])+" bunch.");
+    if (pdfbase) {
+      msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
+                <<m_bunch_particles[j]<<")."<<std::endl;
+    }
+    if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
+    else {
+      pdfbase->SetBounds();
+      isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
+    }
+    ATOOLS::rpa->gen.SetBunch(m_bunch_particles[j],j);
+  }
+  m_bunch_splimits[0] = s["ISR_SMIN"].Get<double>();
+  m_bunch_splimits[1] = s["ISR_SMAX"].Get<double>();
+  p_isrhandler = new ISR_Handler(isrbases);
+  p_isrhandler->SetBeam(p_beamspectra->GetBeam(0),0);
+  p_isrhandler->SetBeam(p_beamspectra->GetBeam(1),1);
+  p_isrhandler->Init(m_bunch_splimits);
+  if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
+    msg_Error()<<"Error in Environment::InitializeThePDFs()"<<endl
+               <<"   Inconsistent ISR & Beam:"<<endl
+               <<"   Abort program."<<endl;
+    Abort();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheRemnants() {
-  isr::id id=isr::hard_process;
-  p_remnants = new Remnant_Handler(m_isrhandlers[id],p_beamspectra);
+  p_remnants = new Remnant_Handler(p_isrhandler,p_beamspectra);
   return true;
 }
 
@@ -830,7 +817,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   p_mehandler->SetShowerHandler(p_showerhandler);
   p_mehandler->SetRemnantHandler(p_remnants);
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
-                                              m_isrhandlers[isr::hard_process]);
+                                              p_isrhandler);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return ret==1;
@@ -838,8 +825,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
-  p_mihandler = new MI_Handler(p_model,
-			       m_isrhandlers[isr::hard_subprocess]);
+  p_mihandler = new MI_Handler(p_model, p_isrhandler);
   p_mihandler->SetShowerHandler(p_showerhandler);
   p_mihandler->SetRemnantHandler(p_remnants);
   if (p_mihandler->Type()!=0)
@@ -851,7 +837,7 @@ bool Initialization_Handler::InitializeTheShowers()
 {
   if (p_showerhandler) delete p_showerhandler;
   p_showerhandler = new Shower_Handler(p_model,
-                                       m_isrhandlers[isr::hard_process]);
+                                       p_isrhandler);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
@@ -861,7 +847,7 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
 {
   if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
   p_softcollisions = new Soft_Collision_Handler(p_beamspectra,
-                                                m_isrhandlers[isr::hard_process]);
+                                                p_isrhandler);
   msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
   return 1;
 }

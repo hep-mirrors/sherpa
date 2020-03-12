@@ -20,7 +20,6 @@ namespace PDF {
   };
 
   class ISR_Handler;
-  typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
 
   class ISR_Handler {
