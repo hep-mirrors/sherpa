@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 
 #include <map> 
 
@@ -74,14 +75,14 @@ namespace SHERPA {
 
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
-    int         m_nloadd, m_ewaddmode, m_qcdaddmode;
+    int         m_nloadd, m_ewaddmode, m_qcdaddmode, m_bbarmode;
 
     ATOOLS::Weight_Info m_evtinfo;
 
     Shower_Handler    *p_shower;
     PDF::NLOMC_Base   *p_nlomc;
 
-    double m_sum, m_ovwth, m_weightfactor;
+    double m_sum, m_ovwth, m_weightfactor, m_globalkfac, m_maxkfac;
     size_t m_ranidx, m_fosettings;
     ATOOLS::nlo_mode::code m_nlomode;
 
@@ -163,6 +164,7 @@ namespace SHERPA {
 
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();
+    ATOOLS::Event_Weights LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
     // inline functions
     inline PHASIC::Process_Base *Process() const { return p_proc; }

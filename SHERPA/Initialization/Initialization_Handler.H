@@ -118,6 +118,7 @@ namespace SHERPA {
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
+    REMNANTS::Remnant_Handler    * GetRemnantHandler()        const { return p_remnants; }
     Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
     Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }

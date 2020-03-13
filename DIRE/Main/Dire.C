@@ -29,18 +29,13 @@ namespace DIRE {
     Amplitude *Convert(ATOOLS::Cluster_Amplitude *const campl,
 		       std::map<ATOOLS::Cluster_Leg*,Parton*> &lmap);
 
-    void ExtractParton(ATOOLS::Blob *const bl,Parton *const p);
-
   public:
 
     Dire(const PDF::Shower_Key &key);
 
     ~Dire();
 
-    int  PerformShowers();
-    int  PerformDecayShowers();
-
-    bool ExtractPartons(ATOOLS::Blob_List *const bl);
+    int  PerformShowers(ATOOLS::Cluster_Amplitude *const ampl);
     void CleanUp();
 
     PDF::Cluster_Definitions_Base *GetClusterDefinitions();
@@ -81,13 +76,15 @@ Dire::~Dire()
   delete p_shower;
 }
 
-int Dire::PerformShowers()
+int Dire::PerformShowers(ATOOLS::Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
+  PrepareShower(ampl);
   m_weights = Event_Weights {};
   unsigned int nem=0;
   for (size_t i(0);i<m_ampls.size();++i) {
     int stat {p_shower->Evolve(*m_ampls[i], nem)};
+    ampl->CopyFrom(m_ampls[i]->GetAmplitude()); // TODO Stefan: only copies last amplitude? More elegant way to pass ampl into Shower?
     m_weights *= p_shower->GetWeights();
     if (stat!=1) return stat;
   }
@@ -105,54 +102,6 @@ int Dire::PerformShowers()
     outstream.close();
   }
   return 1;
-}
-
-int Dire::PerformDecayShowers()
-{
-  DEBUG_FUNC(this);
-  return PerformShowers();
-}
-
-void Dire::ExtractParton(Blob *const bl,Parton *const p)
-{
-  Particle *sp=p->Beam()?
-    new Particle(-1,p->Flav().Bar(),-p->Mom(),'I'):
-    new Particle(-1,p->Flav(),p->Mom(),'F');
-  sp->SetNumber(0);
-  sp->SetFinalMass(p_ms->Mass(p->Flav()));
-  if (p->Beam()==0) {
-    sp->SetFlow(1,p->Col().m_i);
-    sp->SetFlow(2,p->Col().m_j);
-    bl->AddToOutParticles(sp);
-  }
-  else {
-    sp->SetFlow(1,p->Col().m_j);
-    sp->SetFlow(2,p->Col().m_i);
-    sp->SetBeam(p->Beam()-1);
-    bl->AddToInParticles(sp);
-  } 
-}
-
-bool Dire::ExtractPartons(Blob_List *const bl)
-{
-  Blob *b(bl->FindLast(btp::Shower));
-  if (b==NULL) THROW(fatal_error,"No Shower blob");
-  b->SetTypeSpec("DIRE");
-  for (int i=0;i<b->NInP();++i) 
-    b->InParticle(i)->SetStatus(part_status::decayed);
-  for (int i=0;i<b->NOutP();++i) 
-    b->OutParticle(i)->SetStatus(part_status::decayed);
-  b->SetStatus(blob_status::needs_beams |
-	       blob_status::needs_hadronization);
-  bool nois(b->NOutP()==0);
-  for (Amplitude_Vector::const_iterator
-	 it(m_ampls.begin());it!=m_ampls.end();++it)
-    for (Amplitude::const_iterator
-	   pit((*it)->begin());pit!=(*it)->end();++pit) {
-      if ((*pit)->Beam()&&nois) continue;
-      if ((*pit)->Out(0)==NULL) ExtractParton(b,*pit);
-    }
-  return true;
 }
 
 void Dire::CleanUp()

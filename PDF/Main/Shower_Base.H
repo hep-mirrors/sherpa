@@ -10,7 +10,7 @@
 
 namespace ATOOLS {
   class Cluster_Amplitude;
-  class Blob_List;
+  class Blob;
 }
 
 namespace MODEL    { class Model_Base; }
@@ -37,10 +37,7 @@ namespace PDF {
 
     virtual ~Shower_Base();
 
-    virtual int  PerformShowers() = 0;
-    virtual int  PerformDecayShowers() = 0;
-
-    virtual bool ExtractPartons(ATOOLS::Blob_List *const bl) = 0;
+    virtual int  PerformShowers(ATOOLS::Cluster_Amplitude *const ampl) = 0;
     virtual void CleanUp()=0;
 
     virtual Cluster_Definitions_Base *GetClusterDefinitions() = 0;

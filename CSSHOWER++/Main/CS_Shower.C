@@ -129,38 +129,20 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
   return 1;
 }
 
-int CS_Shower::PerformShowers() 
+int CS_Shower::PerformShowers(Cluster_Amplitude *const ampl)
 {
-  return PerformShowers(m_maxem,m_nem);
-}
+  /// TODO Stefan
+  //return PerformShowers(m_maxem,m_nem);
 
-int CS_Shower::PerformDecayShowers() {
-  if (!p_shower) return 1;
+  /* this has to also implement the previous PerformDecayShowers():
   size_t nem(0);
   for (All_Singlets::const_iterator 
 	 asit(m_allsinglets.begin());asit!=m_allsinglets.end();++asit) {
     if (!p_shower->EvolveShower(*asit,m_maxem,nem)) return 0;
   }
   return 1;
-}
-
-bool CS_Shower::ExtractPartons(Blob_List *const blist) {
-  
-  Blob * psblob(blist->FindLast(btp::Shower));
-  if (psblob==NULL) THROW(fatal_error,"No Shower blob");
-  psblob->SetTypeSpec("CSSHOWER++1.0");
-  for (int i=0;i<psblob->NInP();++i)
-    psblob->InParticle(i)->SetStatus(part_status::decayed);
-  for (int i=0;i<psblob->NOutP();++i)
-    psblob->OutParticle(i)->SetStatus(part_status::decayed);
-  
-  psblob->SetStatus(blob_status::needs_beams |
-		    blob_status::needs_hadronization);
-  
-  for (All_Singlets::const_iterator 
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
-      (*sit)->ExtractPartons(psblob,p_ms);
-  return true;
+  */
+  return 1;
 }
 
 void CS_Shower::CleanUp()

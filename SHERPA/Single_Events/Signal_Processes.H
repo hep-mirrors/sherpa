@@ -14,14 +14,14 @@ namespace SHERPA {
   private:
 
     Matrix_Element_Handler    *p_mehandler;
-    ATOOLS::Variations        *p_variations;
     REMNANTS::Remnant_Base    *p_remnants[2];
 
     double m_overweight;
     int m_cmode;
     bool m_setcolors, m_adddocumentation;
 
-    bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
+    bool FillBlob(ATOOLS::Blob_List* bl, ATOOLS::Blob* blob);
+    bool PrepareShowerBlob(ATOOLS::Blob_List* bl, ATOOLS::Blob* signalblob);
 
   public:
 
