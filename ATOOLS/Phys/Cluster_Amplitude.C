@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flow.H"
+#include "ATOOLS/Phys/Blob.H"
 
 using namespace ATOOLS;
 
@@ -604,4 +605,12 @@ namespace ATOOLS {
     return ostr<<"}";
   }
 
+  template <> Blob_Data<Cluster_Amplitude*>::~Blob_Data()
+  {
+    Cluster_Amplitude *campl(m_data);
+    while (campl->Prev()) campl=campl->Prev();
+    campl->Delete();
+  }
+  template class Blob_Data<Cluster_Amplitude*>;
+  template Cluster_Amplitude*&Blob_Data_Base::Get<Cluster_Amplitude*>();
 }

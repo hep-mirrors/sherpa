@@ -83,8 +83,7 @@ namespace CSSHOWER {
     ~CS_Shower();
 
     //member functions
-    int  PerformShowers();
-    int  PerformDecayShowers();
+    int  PerformShowers(ATOOLS::Cluster_Amplitude *const ampl);
 
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);
 

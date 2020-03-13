@@ -27,6 +27,7 @@ namespace ATOOLS {
     double operator[](size_t i) const { return weights[i]; }
     double& operator[](size_t i) { return weights[i]; }
     bool ContainsVariations() const { return containsvariations; }
+    bool Size() const { return weights.size(); }
 
     // explicit conversion, throws if more than one weight is stored
     explicit operator double() const;

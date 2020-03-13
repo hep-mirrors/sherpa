@@ -1,7 +1,6 @@
 #ifndef SHERPA_PerturbativePhysics_Shower_Handler_H
 #define SHERPA_PerturbativePhysics_Shower_Handler_H
 
-#include "ATOOLS/Phys/Blob_List.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 
@@ -25,8 +24,6 @@ namespace SHERPA {
 
     // member functions
     void  SetRemnants(REMNANTS::Remnant_Handler*);
-    void  FillBlobs(ATOOLS::Blob_List *const bl);
-    void  FillDecayBlobs(ATOOLS::Blob_List *const bl);
     void  CleanUp();
 
     // inline functions

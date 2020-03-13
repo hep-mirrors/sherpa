@@ -161,12 +161,8 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(
         new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
-                                                    p_inithandler->GetHardDecayHandler(),
-						    p_inithandler->GetHDHandler(),
-						    p_inithandler->GetMIHandler(),
-						    p_inithandler->GetSoftCollisionHandler(),
-						    p_inithandler->GetShowerHandler()));
+    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetShowerHandler(),
+                                                    p_inithandler->GetRemnantHandler()));
     p_eventhandler->AddEventPhase(
         new Signal_Process_FS_QED_Correction(
           p_inithandler->GetMatrixElementHandler(),

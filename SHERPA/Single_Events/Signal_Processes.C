@@ -3,6 +3,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
@@ -15,6 +16,7 @@
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 
 using namespace SHERPA;
 using namespace METOOLS;
@@ -23,7 +25,7 @@ using namespace PHASIC;
 using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
-    : p_mehandler(mehandler), m_overweight(0.0)
+  : p_mehandler(mehandler), m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -51,15 +53,13 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           continue;
         }
         double overweight(m_overweight-1.0);
-        if (!FillBlob(bloblist,blob))
-          THROW(fatal_error,"Internal error");
+        if (!FillBlob(bloblist,blob)) THROW(fatal_error,"Internal error");
         (*blob)["Trials"]->Set(0.0);
         m_overweight=Max(overweight,0.0);
         return Return_Value::Success; 
       }
-      if (p_mehandler->GenerateOneEvent() &&
-          FillBlob(bloblist,blob)) {
-        return Return_Value::Success; 
+      if (p_mehandler->GenerateOneEvent() && FillBlob(bloblist,blob)) {
+        return Return_Value::Success;
       }
       else return Return_Value::New_Event;
     }
@@ -67,13 +67,12 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
   return Return_Value::Nothing;
 }
 
-bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
+bool Signal_Processes::FillBlob(Blob_List* bloblist,Blob* blob)
 {
   DEBUG_FUNC(blob->Id());
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(proc->Parent()->Name());
-  Cluster_Amplitude *ampl(NULL);
   if (p_mehandler->HasNLO()==3 &&
       proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
@@ -107,12 +106,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       else {
         blob->SetTypeSpec(proc->Parent()->Name()+"+H");
       }
-      if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
-  }
-  else {
-    if (m_setcolors) ampl=proc->Get<Single_Process>()->
-		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
@@ -122,8 +116,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   bool success(true);
   Particle *particle(NULL);
   blob->SetStatus(blob_status::needs_harddecays);
-  if (proc->Info().m_nlomode!=nlo_mode::fixedorder)
-    blob->AddStatus(blob_status::needs_showers);
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {
@@ -133,14 +125,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
-    if (ampl) {
-      particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
-      particle->SetFlow(2,ampl->Leg(i)->Col().m_i);
-    }
     if (p_remnants[i]!=NULL) {
       if (proc->NIn()>1) {
 	p_remnants[i]->Reset();
-      if (!p_remnants[i]->TestExtract(particle)) success=false;
+        if (!p_remnants[i]->TestExtract(particle)) success=false; // TODO return directly here?
       }
     }
     else THROW(fatal_error,"No remnant found.");
@@ -154,26 +142,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetStatus(part_status::active);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
-    if (ampl) {
-      particle->SetFlow(1,ampl->Leg(i)->Col().m_i);
-      particle->SetFlow(2,ampl->Leg(i)->Col().m_j);
-    }
   }
-  if (ampl && p_mehandler->HasNLO()==3 &&
-      proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
-    if (ampl->NLO()&4) {
-      blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
-      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->MuQ2()));
-    }
-    else if (ampl->Next()) {
-      DEBUG_VAR(*ampl->Next());
-      blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(ampl->KT2()));
-      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>
-                    (ampl->Next()->Next()?ampl->Next()->KT2():ampl->MuQ2()));
-    }
-    blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
-  }
-  if (ampl) ampl->Delete();
   ATOOLS::Weight_Info winfo(p_mehandler->WeightInfo());
   double weightfactor(1.0);
   if (p_mehandler->EventGenerationMode() == 1) {
@@ -254,7 +223,93 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddData("ATensor",
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
+  if (success && !PrepareShowerBlob(bloblist,blob)) {
+    PRINT_INFO("Construction of shower input failed. New event.");
+    success = false;
+  }
   return success;
+}
+
+
+bool Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
+{
+  DEBUG_FUNC(bloblist->size());
+  Single_Process* proc = p_mehandler->Process()->Get<Single_Process>();
+
+  Cluster_Amplitude *ampl(NULL);
+  if (m_setcolors || p_mehandler->Process()->Info().m_nlomode!=nlo_mode::fixedorder) {
+    MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
+    if (mcatnloproc) ampl=mcatnloproc->GetAmplitude();
+    else ampl=proc->Cluster(proc->Integrator()->Momenta(), m_cmode);
+    if (ampl==NULL) return false;
+    if (ampl->Leg(0)->Mom()[3]*ampl->Leg(1)->Mom()[3]>0.0) return false;
+  }
+
+  if (m_setcolors) {
+    for (size_t i=0; i<signalblob->NInP(); ++i) {
+      signalblob->InParticle(i)->SetFlow(1,ampl->Leg(i)->Col().m_j);
+      signalblob->InParticle(i)->SetFlow(2,ampl->Leg(i)->Col().m_i);
+    }
+    for (size_t i=0; i<signalblob->NOutP(); ++i) {
+      signalblob->OutParticle(i)->SetFlow(1,ampl->Leg(i)->Col().m_i);
+      signalblob->OutParticle(i)->SetFlow(2,ampl->Leg(i)->Col().m_j);
+    }
+    if (p_mehandler->HasNLO()==3 &&
+        proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
+      if (ampl->NLO()&4) {
+        signalblob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
+        signalblob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->MuQ2()));
+      }
+      else if (ampl->Next()) {
+        DEBUG_VAR(*ampl->Next());
+        signalblob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(ampl->KT2()));
+        signalblob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>
+                            (ampl->Next()->Next()?ampl->Next()->KT2():ampl->MuQ2()));
+      }
+      signalblob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
+    }
+  }
+
+  if (p_mehandler->Process()->Info().m_nlomode==nlo_mode::fixedorder) return true;
+
+  Blob* showerblob = bloblist->AddBlob(btp::Shower);
+  showerblob->AddStatus(blob_status::needs_showers);
+  for (int i(0);i<signalblob->NInP();++i)
+    showerblob->AddToOutParticles(signalblob->InParticle(i));
+  for (int i(0);i<signalblob->NOutP();++i)
+    showerblob->AddToInParticles(signalblob->OutParticle(i));
+
+  if (proc->Info().m_ckkw&1 && p_mehandler->HasNLO() &&
+      proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
+    Event_Weights K = p_mehandler->LocalKFactor(ampl);
+    /* TODO: do we really want to unweight the localkfac?!?
+    if (p_me->EventGenerationMode()!=0) {
+      const auto disc = ran->Get();
+      const auto abswgt = std::abs(K.Nominal());
+      if (abswgt < disc) {
+        return Return_Value::New_Event;
+      }
+      K /= Min(1.0, abswgt);
+    }
+    */
+    /// The following is ugly, but will be improved through #225
+    Blob_Data_Base* winfo((*signalblob)["Weights"]);
+    if (!winfo) THROW(fatal_error,"No weights information in signal blob");
+    Event_Weights meweights(winfo->Get<Event_Weights>());
+    signalblob->AddData("Weights",new Blob_Data<Event_Weights>(meweights*K));
+  }
+  size_t cmax(0);
+  for (size_t i(0);i<ampl->Legs().size();++i)
+    cmax=Max(cmax,(size_t)ampl->Leg(i)->Col().m_i);
+  while (Flow::Counter()<cmax);
+  proc->Parent()->SetRBMap(ampl);
+
+  while (ampl->Prev()) ampl=ampl->Prev();
+  showerblob->AddData("ClusterAmplitude",new Blob_Data<Cluster_Amplitude*>(ampl));
+
+  DEBUG_VAR(*showerblob);
+  
+  return true;
 }
 
 void Signal_Processes::CleanUp(const size_t & mode) 

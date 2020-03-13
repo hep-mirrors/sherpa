@@ -155,9 +155,19 @@ bool Multiple_Interactions::InitNewEvent() {
   if (!m_newevent) return true;
   p_lastblob = p_bloblist->FindFirst(btp::Signal_Process);
   if (p_lastblob->Has(blob_status::needs_signal)) return false;
-  Blob_Data_Base * ptinfo=(*p_lastblob)["MI_Scale"];
-  if (ptinfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
-  m_ptmax=ptinfo->Get<double>();
+
+  msg_Debugging()<<METHOD<<"(): Setting scale for MI {\n";
+  Blob* firstshowerblob = p_bloblist->FindFirst(btp::Shower);
+  Blob_Data_Base * bdb = (*firstshowerblob)["ClusterAmplitude"];
+  if (bdb) {
+    Cluster_Amplitude *ampl = bdb->Get<Cluster_Amplitude*>();
+    while (ampl->Next()) ampl=ampl->Next();
+    msg_Debugging()<<*ampl<<"\n";
+    m_ptmax=sqrt(ampl->MuQ2());
+    msg_Debugging()<<"} -> p_T = "<<m_ptmax<<"\n";
+  }
+  else THROW(fatal_error, "Shower amplitude not found for scale");
+  
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());

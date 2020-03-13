@@ -2,50 +2,35 @@
 #define SHERPA_Single_Events_Jet_Evolution_H
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
-#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
-#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
-#include "SHERPA/PerturbativePhysics/Perturbative_Interface.H"
-#include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
-#include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
 
 namespace REMNANTS { class Remnant_Handler; }
+namespace PDF { class Shower_Base; }
 
 namespace SHERPA {
-
-  class Hard_Decay_Handler;
 
   class Jet_Evolution: public Event_Phase_Handler {
   private :
     REMNANTS::Remnant_Handler * p_remnants;
-    PertInterfaceMap            m_interfaces;
+    Shower_Handler* p_showerhandler;
 
-    ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
-					     Perturbative_Interface *);
+    void DefineInitialConditions(const ATOOLS::Blob_List* bloblist);
+    void PerformShowers(ATOOLS::Blob *);
+    void ExtractPartons(const ATOOLS::Cluster_Amplitude * ampl, ATOOLS::Blob* blob);
 
     void Reset();
-    void Update(ATOOLS::Blob *,const size_t,
-                Perturbative_Interface *interface);
-    bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *,
-                                 Perturbative_Interface *interface);
-    bool AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
-    bool AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
-				     Perturbative_Interface *);
-    ATOOLS::Blob * CreateMockShowerBlobs(ATOOLS::Blob * const meblob,
-					 ATOOLS::Blob_List * const bloblist);
 
   public :
 
-    Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
-                  Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
-                  Shower_Handler*);
+    Jet_Evolution(Shower_Handler* shower, REMNANTS::Remnant_Handler * remnants);
 
     ~Jet_Evolution();
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
+    PDF::Shower_Base*          GetShower() { return p_showerhandler->GetShower(); }
 
   };// end of class Jet_Evolution
 

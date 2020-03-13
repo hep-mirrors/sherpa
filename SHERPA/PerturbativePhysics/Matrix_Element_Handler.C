@@ -19,6 +19,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
@@ -59,6 +60,9 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["NLO_IMODE"].SetDefault("IKP");
 
   s["PSI"]["ASYNC"].SetDefault(false);
+  s["GLOBAL_KFAC"].SetDefault(-1.0);
+  s["METS_BBAR_MODE"].SetDefault(1);
+  s["MENLOPS_MAX_KFAC"].SetDefault(10.0);
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
@@ -96,6 +100,9 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_nloadd = s["MEH_NLOADD"].Get<int>();
   m_ewaddmode = s["MEH_EWADDMODE"].Get<int>();
   m_qcdaddmode = s["MEH_QCDADDMODE"].Get<int>();
+  m_globalkfac = s["GLOBAL_KFAC"].Get<double>();
+  m_maxkfac = s["MENLOPS_MAX_KFAC"].Get<double>();
+  m_bbarmode = s["METS_BBAR_MODE"].Get<int>();
   std::string seedfile{ s["EVENT_SEED_FILE"].Get<std::string>() };
 #ifdef USING__GZIP
   seedfile+=".gz";
@@ -1225,3 +1232,29 @@ double Matrix_Element_Handler::GetWeight
   return 0.0;
 }
 
+Event_Weights Matrix_Element_Handler::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
+{
+  if (!(m_bbarmode&1)) return Event_Weights();
+  DEBUG_FUNC(ampl->Legs().size());
+  Process_Base::SortFlavours(ampl);
+  while (ampl->Next()!=NULL) {
+    ampl=ampl->Next();
+    Process_Base::SortFlavours(ampl);
+    if (m_bbarmode&2) {
+      if (ampl->Next()) continue;
+      Single_Process *proc(ampl->Proc<Single_Process>());
+      if (ampl->Legs().size()-ampl->NIn()>
+	  proc->Info().m_fi.NMinExternal()) break;
+    }
+    for (int i=m_procs.size()-1; i>=0; --i) {
+      MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(m_procs[i]);
+      if (mcnloproc) {
+	Event_Weights K {mcnloproc->LocalKFactor(*ampl)};
+	if (K.Nominal()==0.0 || dabs(K.Nominal())>m_maxkfac) continue;
+        else return K;
+      }
+    }
+  }
+  // no process found along ampl
+  return Event_Weights();
+}
