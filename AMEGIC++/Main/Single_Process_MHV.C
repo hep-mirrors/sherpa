@@ -307,8 +307,8 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_mincpl = p_partner->MinOrders();
 }
 
-double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int mode) 
-{ 
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms, int mode)
+{
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {

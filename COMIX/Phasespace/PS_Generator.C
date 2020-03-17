@@ -292,7 +292,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		    mtype|=((PS_Vertex*)rin[k])->Type();
 		    vf=true;
 		  }
-		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) continue;
+		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) {
+		  vkey->Delete();
+		   continue;
+		}
 		v3.insert(*vkey);
 		PS_Vertex *vtx(new PS_Vertex(*dummy));
 		vtx->AddJ(vkey->m_j);
@@ -342,7 +345,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	      jj[0]=ait->second;
 	      jj[1]=bit->second;
 	      Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
-	      if (v3.find(*vkey)!=v3.end()) continue;
+	      if (v3.find(*vkey)!=v3.end()) {
+	        vkey->Delete();
+	        continue;
+	      }
 	      v3.insert(*vkey);
 	      PS_Vertex *vtx(new PS_Vertex(*dummy));
 	      vtx->AddJ(vkey->m_j);

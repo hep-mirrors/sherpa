@@ -2,12 +2,12 @@
 #define SHERPA_PerturbativePhysics_Perturbative_Interface_H
 
 #include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Org/Return_Value.H"
 
 namespace ATOOLS {
 
   class Cluster_Amplitude;
-  class Variation_Weights;
 
 }
 
@@ -36,10 +36,9 @@ namespace SHERPA {
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    double m_weight, m_globalkfac, m_maxkfac;
+    ATOOLS::Event_Weights m_weights;
+    double m_globalkfac, m_maxkfac;
     int    m_bbarmode;
-
-    ATOOLS::Variation_Weights *p_localkfactorvarweights;
 
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
@@ -65,9 +64,9 @@ namespace SHERPA {
     int  PerformDecayShowers();
 
     void CleanUp();
-    
-    inline double Weight() const { return m_weight; }
-    
+
+    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+
     inline Matrix_Element_Handler    * MEHandler() const { return p_me; }
     inline ATOOLS::Cluster_Amplitude * Amplitude() const { return p_ampl; }
     inline Shower_Handler            * Shower() { return p_shower; }

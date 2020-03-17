@@ -571,8 +571,6 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 
   double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
   DEBUG_VAR(brfactor);
-  Blob_Data_Base * bdbweight((*blob)["Weight"]);
-  if (bdbweight) bdbweight->Set<double>(brfactor*bdbweight->Get<double>());
   Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);
   if (bdbmeweight) {
     // msg_Out()<<METHOD<<"(ME = "<<bdbmeweight->Get<double>()<<", "
@@ -587,8 +585,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
   if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
 
-  Blob_Data_Base * varweights((*blob)["Variation_Weights"]);
-  if (varweights) varweights->Get<Variation_Weights>()*=brfactor;
+  Blob_Data_Base * weights((*blob)["Weights"]);
+  if (weights) weights->Get<Event_Weights>()*=brfactor;
 
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
@@ -675,6 +673,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     DEBUG_INFO("New subevts:");
     for (size_t i=0;i<p_newsublist->size();++i) {
       (*p_newsublist)[i]->m_result*=brfactor;
+      (*p_newsublist)[i]->m_results*=brfactor;
       (*p_newsublist)[i]->m_me*=brfactor;
       (*p_newsublist)[i]->m_mewgt*=brfactor;
       DEBUG_VAR(*(*p_newsublist)[i]);

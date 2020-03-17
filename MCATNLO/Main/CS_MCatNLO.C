@@ -63,12 +63,12 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
   DEBUG_FUNC("");
   for (double qfac(1.0);;qfac*=10.0) {
   m_nem=0;
-  m_weight=1.0;
+  m_weights=Event_Weights{};
   CleanUp();
   PrepareMCatNLO(ampl);
   int stat(PerformMCatNLO(m_maxem,m_nem,qfac));
-  if (dabs(m_weight)>m_maxweight) {
-    msg_Info()<<METHOD<<"(): Weight is "<<m_weight
+  if (dabs(m_weights.Nominal())>m_maxweight) {
+    msg_Info()<<METHOD<<"(): Weight is "<<m_weights.Nominal()
 	      <<". Retry with charge factor "<<qfac*10.0<<".\n";
     continue;
   }
@@ -129,7 +129,6 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
 	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0*qfac);
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
-  p_mcatnlo->SetVariationWeights(p_variationweights);
   p_gamma->SetOn(1);
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
@@ -137,9 +136,9 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_mcatnlo->EvolveShower(*sit,maxem,nem)) return 0;
-    m_weight*=p_mcatnlo->Weight();
+    m_weights*=p_mcatnlo->Weights();
     msg_Debugging()<<"after mc@nlo step with "<<nem-pem
-		   <<" emission(s), w = "<<m_weight<<"\n";
+		   <<" emission(s), w = "<<m_weights.Nominal()<<"\n";
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }

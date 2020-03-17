@@ -49,8 +49,8 @@ namespace ATOOLS {
       return size;
     }
 
-    void Bcast(void* buffer, int count, MPI_Datatype type, int root=0) {
-      MPI_Bcast(buffer, count, type, root, m_comm);
+    void Bcast(void* buffer, int count, MPI_Datatype type) {
+      MPI_Bcast(buffer, count, type, 0, m_comm);
     }
 
     void Allreduce(void* buffer, int count, MPI_Datatype type, MPI_Op op) {
@@ -61,6 +61,17 @@ namespace ATOOLS {
                          void *recvbuf, int recvcount, MPI_Datatype recvtype) {
       MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype,
                     m_comm);
+    }
+
+    void Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag)
+    {
+      MPI_Recv(buf, count, datatype, source, tag, m_comm, MPI_STATUS_IGNORE);
+    }
+
+    int Send(const void *buf, int count, MPI_Datatype datatype, int dest,
+             int tag)
+    {
+      return MPI_Send(buf, count, datatype, dest, tag, m_comm);
     }
 
 #endif

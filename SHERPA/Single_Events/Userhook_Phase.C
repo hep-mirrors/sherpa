@@ -54,11 +54,11 @@ void Userhook_Phase::InitializeHooks(Sherpa* sherpa)
 
 }
 
-Return_Value::code Userhook_Phase::Treat(Blob_List *bloblist, double &weight) 
+Return_Value::code Userhook_Phase::Treat(Blob_List* bloblist)
 {
   int success(0), newevent(0);
   for (Userhook_Vector::iterator it=m_userhooks.begin(); it!=m_userhooks.end(); ++it) {
-    switch ((*it)->Run(bloblist, weight)) {
+    switch ((*it)->Run(bloblist)) {
     case Return_Value::Nothing :
       break;
     case Return_Value::Success :

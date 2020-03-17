@@ -27,9 +27,17 @@ Combined_Selector::~Combined_Selector()
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
   for (auto s : key.GetSelectors()) {
-    auto name = s["Type"].SetDefault("").Get<std::string>();
-    if (name == "") {
+    std::string name;
+    if (s.IsList()) {
       name = s.SetDefault<std::string>({}).GetVector<std::string>()[0];
+    } else {
+      const auto keys = s.GetKeys();
+      if (keys.size() != 1) {
+        THROW(fatal_error, std::string("Each selector mapping must have ")
+            + "exactly one key-value pair, where the key gives the selector "
+            + "type.");
+      }
+      name = keys[0];
     }
     Selector_Key subkey;
     subkey.m_settings = s;
@@ -131,3 +139,27 @@ void Combined_Selector::ListSelectors() const
     msg_Info()<<m_sels[i]->Name()<<std::endl;
 }
 
+std::vector<Event_Weights> Combined_Selector::CombinedResults() const
+{
+  std::vector<Event_Weights> res = {{0, 1.0}};
+  for (auto& sel : m_sels) {
+    std::vector<Event_Weights> other = sel->Results();
+    if (other.size() == 1) {
+      for (auto& weights : res) {
+        weights *= other[0];
+      }
+    } else if (res.size() == 1) {
+      Event_Weights currentweights = res[0];
+      res = other;
+      for (auto& weights : res) {
+        weights *= currentweights;
+      }
+    } else {
+      assert(res.size() == other.size());
+      for (int i {0}; i < res.size(); ++i) {
+        res[i] *= other[i];
+      }
+    }
+  }
+  return res;
+}

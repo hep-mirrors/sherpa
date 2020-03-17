@@ -42,7 +42,7 @@ bool QT_Selector::Trigger(Selector_List &sl)
   return 1-m_sel_log->Hit(1-trig);
 }
 
-DECLARE_ND_GETTER(QT_Selector,"NNLOqT",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(QT_Selector,"NNLOqT",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,QT_Selector>::
 operator()(const Selector_Key &key) const
@@ -53,6 +53,6 @@ operator()(const Selector_Key &key) const
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,QT_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"NNLO selector";
 }

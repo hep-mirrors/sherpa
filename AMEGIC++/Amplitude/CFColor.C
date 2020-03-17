@@ -562,38 +562,12 @@ CFColor::CFColor(int N, Single_Amplitude* first, ATOOLS::Flavour * fl,
       c1++;
     }
   }
-  
+
   if (pID!=noname && pID[0]!='N') Output(pID);
-
-  // check if Matrix can be reduce even further!
-  int idcc=0;
-  
-  int * idid = new int[ncount];
- 
-  for (int i=0; i<ncount; ++i) 
-    idid[i]=-1;
-  for (int i=0; i<ncount; ++i) {
-    if (idid[i]==-1) { idid[i]=idcc; ++idcc; }
-    for (int j=i+1; j<ncount; ++j) {
-      int hit=1;
-      Complex factor=(*CFC)[i][0]/(*CFC)[j][0];
-      for (int k=0; k<ncount; ++k) {
-	if ((*CFC)[i][k]!=factor*(*CFC)[j][k]) {
-	  hit=0;
-	  break;
-	}
-      }
-      if (hit) {
-	idid[j] =idid[i];
-      }
-    }
-  }
-
-  delete [] idid;
 
   //make m's on again
   m1 = first;
-  while (m1) {   
+  while (m1) {
     m1->on = 1;
     m1 = m1->Next;
   }

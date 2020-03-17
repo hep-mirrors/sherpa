@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(SHERPA MC, 3.0.0, sherpa@projects.hepforge.org, SHERPA-MC)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
-AM_INIT_AUTOMAKE(tar-ustar)
+AM_INIT_AUTOMAKE(tar-ustar -Wno-portability)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -148,6 +148,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
+	  EXTRA_XS/Special/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
@@ -205,6 +206,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           REMNANTS/Main/Makefile \
           REMNANTS/Tools/Makefile \
 	  REMNANTS/Makefile \
+	  RECONNECTIONS/Main/Makefile \
+	  RECONNECTIONS/Makefile \
  	  SHRiMPS/Makefile \
 	  SHRiMPS/Main/Makefile \
 	  SHRiMPS/Event_Generation/Makefile \

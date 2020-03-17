@@ -12,7 +12,8 @@ namespace AHADIC {
     ~Z_Selector();
     void Init(Splitter_Base * splitterbase=0);
 
-    double operator()(const double & zmin=1.e-6,const double & zmax=0.999999);
+    double operator()(const double & zmin=1.e-6,const double & zmax=0.999999,
+		      const unsigned int & cnt=0);
   };
 }
 

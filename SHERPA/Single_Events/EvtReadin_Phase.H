@@ -13,8 +13,8 @@ namespace SHERPA {
     std::string            m_path;
     bool                   m_read;
   public:
-    EvtReadin_Phase(Event_Reader_Base *, ATOOLS::Variations *);
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    EvtReadin_Phase(Event_Reader_Base*);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };

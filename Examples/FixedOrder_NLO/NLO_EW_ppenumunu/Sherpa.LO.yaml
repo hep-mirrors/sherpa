@@ -14,12 +14,10 @@ TAGS: {
 SCALES: VAR{$(SCF)*sqr(91.2)}
 GENERATE_RESULT_DIRECTORY: false
 PROCESSES:
-  - {
-    Process: 93 93 -> 11 -12 -13 14,
-    Integration_Error: 0.00001,
-    Order: {QCD: 0},
+- 93 93 -> 11 -12 -13 14:
+    Integration_Error: 0.00001
+    Order: {QCD: 0}
     Print_Graphs: Graphs
-    }
 RIVET: {
   USE_HEPMC_SHORT: 1,
   IGNOREBEAMS: 1

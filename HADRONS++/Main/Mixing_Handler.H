@@ -46,7 +46,7 @@ namespace HADRONS {
      * 
      * @return true if mixing happened, false if not.
      */
-    ATOOLS::Blob* PerformMixing(ATOOLS::Particle* decayer) const;
+    bool PerformMixing(ATOOLS::Particle* decayer) const;
 
     /** 
      * Sets the CP asymmetries for a certain particle's decay table taking

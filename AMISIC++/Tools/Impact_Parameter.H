@@ -2,6 +2,9 @@
 #define AMISIC_Tools_Impact_Parameter_H
 
 #include "AMISIC++/Tools/Interaction_Probability.H"
+#include "ATOOLS/Math/Histogram.H"
+#include <map>
+#include <string>
 
 namespace AMISIC {
   class MI_Processes;
@@ -11,13 +14,19 @@ namespace AMISIC {
     Matter_Overlap          * p_mo;
     MI_Processes            * p_procs;
     double m_fc, m_oexp, m_enhancement;
-    double m_b, m_bmax;
-    bool   m_test;
-    
+    double m_b, m_bmax, m_bnorm;
+    bool   m_test, m_ana;
+    std::map<std::string,ATOOLS::Histogram *> m_histos;
+
+    void InitAnalysis();
+    void BAnalyse(const double & pt2,const double & b);
+    void Analyse(const double & pt2,const double & sudakov,
+		 const double & softpart, const double & hardpart);
+    void FinishAnalysis();
     void Test();
   public:
     Impact_Parameter();
-    ~Impact_Parameter() { delete p_pint; }
+    ~Impact_Parameter();
 
     void   Initialize(const double & xsecratio);
     double SelectB(const double & pt2);

@@ -14,8 +14,7 @@ namespace SHERPA {
       Hadronization       =    2,
       Analysis            =   10,
       Userhook            =   20,
-      Read_In             =   90,
-      Reweighting         =  100
+      Read_In             =   90
     };
   };// end of struct eph
   std::ostream& operator<<(std::ostream&,const eph::code);
@@ -28,7 +27,7 @@ namespace SHERPA {
     Event_Phase_Handler();
     Event_Phase_Handler(std::string);
     virtual ~Event_Phase_Handler();
-    virtual ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &)=0;
+    virtual ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*)=0;
     virtual void                       CleanUp(const size_t & mode=0)=0;
     virtual void                       Finish(const std::string &)=0;
 
@@ -48,7 +47,7 @@ namespace SHERPA {
 
     This is the - mainly abstract - base class for all event phases. Apart from the name and type and 
     methods to access these characteristics, and apart from constructors and destructors, this class 
-    contains two central methods, namely Treat(ATOOLS::Blob_List *, double &) and CleanUp(). The 
+    contains two central methods, namely Treat(ATOOLS::Blob_List *) and CleanUp(). The
     former is the one through which the concrete event phases interact during the event generation. 
     This happens by modifying individual blobs of the list or adding or removing blobs from the list. 
     The latter method is used to reset the event phase handlers between two events.
@@ -67,7 +66,7 @@ namespace SHERPA {
     Here, the type and name are set - by default - to "Unspecified" and "No Name", respectively.
   */
   /*!
-    \fn virtual bool Event_Phase_Handler::Treat(ATOOLS::Blob_List *, double &)
+    \fn virtual bool Event_Phase_Handler::Treat(ATOOLS::Blob_List*)
     Virtual method to be filled by the specific Event_Phase_Handler. this method basically defines
     the role, any of these handlers plays in the event generation process. 
   */

@@ -8,7 +8,7 @@ Kabbala& Kabbala::operator+=(const Kabbala& k) {
   double a = abs(rishbon);
   double b = abs(k.Value());
   double max = ATOOLS::Max(a,b);
-  if (ATOOLS::IsZero(b/max)) {
+  if (max==0 || ATOOLS::IsZero(b/max)) {
     return *this;
   }
   if (ATOOLS::IsZero(a/max)) {
@@ -33,7 +33,7 @@ Kabbala& Kabbala::operator-=(const Kabbala& k) {
   double a = abs(rishbon);
   double b = abs(k.Value());
   double max = ATOOLS::Max(a,b);
-  if (ATOOLS::IsZero(b/max)) {
+  if (max==0 || ATOOLS::IsZero(b/max)) {
     return *this;
   }
   if (ATOOLS::IsZero(a/max)) {

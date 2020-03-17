@@ -36,7 +36,7 @@ Analysis_Phase::Analysis_Phase(Analysis_Vector *const analyses):
   }
 }
 
-Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight) 
+Return_Value::code Analysis_Phase::Treat(Blob_List* bloblist)
 {
   if (!bloblist->empty())
     for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it) {

@@ -34,7 +34,7 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
   Selector_Base("DressedParticleSelector",key.p_proc), p_dresser(NULL)
 {
   DEBUG_FUNC("");
-  auto s = key.m_settings;
+  auto s = key.m_settings["DressedParticleSelector"];
   const auto algoparams = s["DressingAlgorithm"]
     .SetDefault<std::string>({})
     .GetVector<std::string>();
@@ -92,8 +92,8 @@ void DressedParticleSelector::BuildCuts(Cut_Data * cuts)
   for (size_t i(0);i<m_sels.size();++i) m_sels[i]->BuildCuts(cuts);
 }
 
-DECLARE_ND_GETTER(DressedParticleSelector,"DressedParticleSelector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DressedParticleSelector, "DressedParticleSelector",
+               Selector_Base, Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
                               DressedParticleSelector>::operator()
@@ -107,11 +107,9 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,DressedParticleSelector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"{\n"
-     <<w<<"  Type: DressedParticleSelector,\n"
+  str<<"DressedParticleSelector:\n"
      <<w<<"  DressingAlgorithm: [<Cone|Recombination>, <dR>, <exp>]  # exp is optional\n"
      <<w<<"  # optional settings:\n"
      <<w<<"  FlavourDependentCone: [<kf>, <dR>]\n"
-     <<w<<"  Subselectors: [ ... ]\n"
-     <<w<<"  }";
+     <<w<<"  Subselectors: [ ... ]";
 }

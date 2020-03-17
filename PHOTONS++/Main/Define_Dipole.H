@@ -12,7 +12,7 @@ namespace PHOTONS {
     private:
       bool                    m_success;
       bool                    m_photonsadded;
-      ATOOLS::Blob *          p_blob;
+      ATOOLS::Blob*           p_blob;
       ATOOLS::Particle_Vector m_chargedinparticles;
       ATOOLS::Particle_Vector m_neutralinparticles;
       ATOOLS::Particle_Vector m_chargedoutparticles;
@@ -22,7 +22,7 @@ namespace PHOTONS {
       Dipole_Type::code       m_dtype;
 
     public:
-      Define_Dipole(ATOOLS::Blob *);
+      Define_Dipole(ATOOLS::Blob*);
       ~Define_Dipole();
 
       void AddRadiation();
@@ -58,7 +58,7 @@ namespace PHOTONS {
   */
 
   /*!
-    \var Blob * Define_Dipole::p_blob
+    \var Blob* Define_Dipole::p_blob
     \brief pointer to blob passed from Photons class
   */
 
@@ -100,7 +100,7 @@ namespace PHOTONS {
   // Description of member methods of Define_Dipole
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn Define_Dipole::Define_Dipole(Blob *)
+    \fn Define_Dipole::Define_Dipole(Blob*)
     \brief initialises the main parameters for the treatment of the blob
 
     In particular:

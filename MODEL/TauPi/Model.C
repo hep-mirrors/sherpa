@@ -99,7 +99,7 @@ void Standard_Model_TauPi::ParticleInit()
   s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
   s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
   s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
-  s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
+  s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
   s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,2.0,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
   s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
   s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
@@ -156,14 +156,15 @@ void Standard_Model_TauPi::FixEWParameters()
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
   string widthscheme = s["WIDTH_SCHEME"].Get<string>();
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme = s["EW_SCHEME"].Get<int>();
-  int ewrenscheme = s["EW_REN_SCHEME"].Get<int>();
+  ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
+  ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
   std::string ewschemename(""),ewrenschemename("");
+  PRINT_VAR(ewscheme);
   switch (ewscheme) {
-  case 0:
+  case ew_scheme::UserDefined:
     // all SM parameters given explicitly
     ewschemename="user-defined, input: all parameters";
     SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
@@ -171,7 +172,7 @@ void Standard_Model_TauPi::FixEWParameters()
     ccos2thetaW=1.-csin2thetaW;
     cvev = s["VEV"].Get<double>();
     break;
-  case 1: {
+  case ew_scheme::alpha0: {
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     ewschemename="alpha(0) scheme, input: 1/\\alphaQED(0), m_W, m_Z, m_h, widths";
     SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
@@ -186,7 +187,7 @@ void Standard_Model_TauPi::FixEWParameters()
     }
     break;
   }
-  case 2: {
+  case ew_scheme::alphamZ: {
     // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
     ewschemename="alpha(m_Z) scheme, input: 1/\\alphaQED(m_Z), m_W, m_Z, m_h, widths";
     SetAlphaQEDByInput("1/ALPHAQED(MZ)");
@@ -201,7 +202,7 @@ void Standard_Model_TauPi::FixEWParameters()
     }
     break;
   }
-  case 3: {
+  case ew_scheme::Gmu: {
     // Gmu scheme
     ewschemename="Gmu scheme, input: GF, m_W, m_Z, m_h, widths";
     double GF = s["GF"].Get<double>();
@@ -233,19 +234,21 @@ void Standard_Model_TauPi::FixEWParameters()
       default:
         THROW(not_implemented,"\\alpha_QED convention not implemented.");
       }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     }
     break;
   }
-  case 4: {
-    // DY scheme
-    ewschemename="DY scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
+  case ew_scheme::alphamZsW: {
+    // alpha(mZ)-mZ-sin(theta) scheme
+    ewschemename="alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
     SetAlphaQEDByInput("1/ALPHAQED(MZ)");
     csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MW=MZ*sqrt(ccos2thetaW.real());
     Flavour(kf_Wplus).SetMass(MW);
     cvev=2.*MZ*sqrt(ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
-
     if (widthscheme=="CMS") {
       // now also the W width is defined by the tree-level relations
       Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
@@ -259,16 +262,15 @@ void Standard_Model_TauPi::FixEWParameters()
     }
     break;
   }
-  case 5: {
-    // CDY scheme
-    ewschemename="CDY scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
+  case ew_scheme::alphamWsW: {
+    // alpha(mW)-mW-sin(theta) scheme
+    ewschemename="alpha(mW)-mW-sin(theta_W) scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
     SetAlphaQEDByInput("1/ALPHAQED(MW)");
     csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MZ=MW/sqrt(ccos2thetaW.real());
     Flavour(kf_Z).SetMass(MZ);
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
-
     if (widthscheme=="CMS") {
       // now also the W width is defined by the tree-level relations
       Complex muW2(MW*(MW-I*GW)), muZ2(0.,0.);
@@ -282,7 +284,99 @@ void Standard_Model_TauPi::FixEWParameters()
     }
     break;
   }
-  case 10: {
+  case ew_scheme::GmumZsW: {
+    // Gmu-mZ-sin(theta) scheme
+    ewschemename="Gmu-mZ-sin(theta_W) scheme, input: GF, sin^2(theta_W), m_Z, m_h, widths";
+    double GF = s["GF"].Get<double>();
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
+    ccos2thetaW=1.-csin2thetaW;
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    cvev=1./(pow(2.,0.25)*sqrt(GF));
+    if (widthscheme=="CMS") {
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=1./(pow(2.,0.25)*sqrt(GF));
+      const size_t aqedconv{ s["GMU_CMS_AQED_CONVENTION"].Get<size_t>() };
+      switch (aqedconv) {
+      case 0:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muZ2*csin2thetaW*(1.-csin2thetaW)));
+        break;
+      case 1:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2*csin2thetaW*(1.-csin2thetaW)));
+        break;
+      case 2:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2*(1.-csin2thetaW))*std::real(csin2thetaW));
+        break;
+      case 3 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*(1.-csin2thetaW.real())*std::abs(csin2thetaW));
+        break;
+      case 4 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*(1.-csin2thetaW.real())*csin2thetaW.real());
+        break;
+      case 5:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2)*std::real(1.-csin2thetaW)*std::real(csin2thetaW));
+        break;
+      case 6 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*std::abs((1.-csin2thetaW)*csin2thetaW));
+        break;
+      default:
+        THROW(not_implemented,"\\alpha_QED convention not implemented.");
+      }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*csin2thetaW.real()*(1.-csin2thetaW.real()));
+    }
+    break;
+  }
+  case ew_scheme::GmumWsW: {
+    // Gmu-mW-sin(theta) scheme
+    ewschemename="Gmu-mW-sin(theta_W) scheme, input: GF, sin^2(theta_W), m_W, m_h, widths";
+    double GF = s["GF"].Get<double>();
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
+    ccos2thetaW=1.-csin2thetaW;
+    MZ=MW/sqrt(ccos2thetaW.real());
+    Flavour(kf_Z).SetMass(MZ);
+    cvev=1./(pow(2.,0.25)*sqrt(GF));
+    if (widthscheme=="CMS") {
+      Complex muW2(MW*(MW-I*GW)), muZ2(0.,0.);
+      muZ2=muW2/ccos2thetaW;
+      MZ=sqrt(muZ2.real());
+      GZ=-muZ2.imag()/MZ;
+      Flavour(kf_Z).SetMass(MZ);
+      Flavour(kf_Z).SetWidth(GZ);
+      cvev=1./(pow(2.,0.25)*sqrt(GF));
+      const size_t aqedconv{ s["GMU_CMS_AQED_CONVENTION"].Get<size_t>() };
+      switch (aqedconv) {
+      case 0:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muW2)*csin2thetaW.real());
+        break;
+      case 1:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2)*csin2thetaW.real());
+        break;
+      case 2:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2)*csin2thetaW.real());
+        break;
+      case 3 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*csin2thetaW.real());
+        break;
+      case 4 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*csin2thetaW.real());
+        break;
+      default:
+        THROW(not_implemented,"\\alpha_QED convention not implemented.");
+      }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
+    }
+    break;
+  }
+  case ew_scheme::FeynRules: {
     // FeynRules scheme, inputs: alphaQED, GF, M_Z, M_H
     ewschemename="FeynRules scheme, input: 1/\\alphaQED(0), GF, m_Z, m_h, widths";
     SetAlphaQED(1./s["1/ALPHAQED(0)"].Get<double>());
@@ -319,9 +413,9 @@ void Standard_Model_TauPi::FixEWParameters()
     ewrenschemename="alpha(Gmu)";
     break;
   default:
-    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to 3."
+    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to Gmu."
               <<std::endl;
-    ewrenscheme=3;
+    ewrenscheme=ew_scheme::Gmu;
     ewrenschemename="alpha(Gmu)";
     break;
   }
@@ -336,7 +430,7 @@ void Standard_Model_TauPi::FixEWParameters()
                                        +ToString(abs(csin2thetaW.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"                vev              = "<<cvev.real()
+  msg_Info()<<"                vev             = "<<cvev.real()
             <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
                                        +ToString(abs(cvev.imag()),
                                                  msg->Precision())+" i"

@@ -1,57 +1,35 @@
-# general settings and tags
-EVENTS: 5M
-ERROR: 0.1
-TAGS: {
-  FSF: 1.0,
-  RSF: 1.0,
-  QSF: 1.0,
-  NJET: 1,
-  QCUT: 30
-}
-SCALES: STRICT_METS{$(FSF)*MU_F2}{$(RSF)*MU_R2}{$(QSF)*MU_Q2}
-
-# settings for ME generators
-EVENT_GENERATION_MODE: Weighted
-ME_GENERATORS:
-- Amegic
-- Internal
-- OpenLoops
-
-# settings for hard decays
-HARD_DECAYS: {
-  Enabled: true,
-  Channels: {
-    "25 -> 22 22": {Status: 2}
-  },
-  Apply_Branching_Ratios: false
-}
-
-# model parameters
-MODEL: HEFT
-PARTICLE_DATA: {
-  25: {Mass: 125, Width: 0}
-}
-
 # collider parameters
 BEAMS: 2212
 BEAM_ENERGIES: 6500
 
+# settings for ME generators
+ME_GENERATORS: [Amegic, Internal, OpenLoops]
+
+# settings for hard decays
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    25 -> 22 22: {Status: 2}
+  Apply_Branching_Ratios: false
+
+# model parameters
+MODEL: HEFT
+PARTICLE_DATA:
+  25: {Mass: 125, Width: 0}
+
 # finite top mass effects
 KFACTOR: GGH
 OL_IGNORE_MODEL: true
-OL_PARAMETERS: {
-  preset: 2,
-  allowed_libs: "pph2,pphj2,pphjj2",
+OL_PARAMETERS:
+  preset: 2
+  allowed_libs: pph2,pphj2,pphjj2
   psp_tolerance: 1.0e-7
-}
 
 PROCESSES:
-- {
-  Process: "93 93 -> 25 93{$(NJET)}",
-  Order: {QCD: Any, EW: 0, HEFT: 1},
-  CKKW: $(QCUT),
-  Loop_Generator: Internal,
-  1-2: {
-    NLO_QCD_Mode: MC@NLO
-    }
-}
+- 93 93 -> 25 93{1}:
+    Order: {QCD: 0, EW: 0, HEFT: 1}
+    CKKW: 30
+    Loop_Generator: Internal
+    2->1-2:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}

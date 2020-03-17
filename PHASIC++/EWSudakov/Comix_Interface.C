@@ -3,7 +3,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-#include "Run_Parameter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
 using namespace COMIX;
@@ -43,7 +43,7 @@ void Comix_Interface::FillSpinAmplitudes(
   Process_Base* proc = GetProcess(*campl);
   if (proc == nullptr)
     return;
-  proc->Differential(*campl, m_differentialmode);
+  proc->Differential(*campl, Weight_Type::nominal, m_differentialmode);
   std::vector<std::vector<Complex>> cols;
   proc->FillAmplitudes(spinampls, cols);
 }

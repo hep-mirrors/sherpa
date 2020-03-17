@@ -11,13 +11,21 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-#include "SHERPA/Single_Events/Event_Handler.H"
-#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
 
-#ifdef USING__RIVET
+#ifdef USING__RIVET3
+#include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
+#ifdef RIVET_ENABLE_HEPMC_3
+#include "SHERPA/Tools/HepMC3_Interface.H"
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenCrossSection.h"
+#define SHERPA__HepMC_Interface SHERPA::HepMC3_Interface
+#define HEPMC_HAS_CROSS_SECTION
+#else
+#include "SHERPA/Tools/HepMC2_Interface.H"
 
 #ifdef USING__HEPMC2
 #include "HepMC/GenEvent.h"
@@ -28,7 +36,488 @@
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
 #endif
+#define SHERPA__HepMC_Interface SHERPA::HepMC2_Interface
+#endif
 
+
+namespace SHERPARIVET {
+  typedef std::pair<std::string, int> RivetMapKey;
+  typedef std::map<RivetMapKey, Rivet::AnalysisHandler*> Rivet_Map;
+
+  class Rivet_Interface: public SHERPA::Analysis_Interface {
+  private:
+
+    std::string m_outpath, m_tag;
+    std::vector<std::string> m_analyses;
+
+    size_t m_nevt;
+    bool   m_finished;
+    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs,
+      m_ignorebeams, m_usehepmcshort, m_skipweights;
+    size_t m_hepmcoutputprecision, m_xsoutputprecision;
+
+    Rivet_Map         m_rivet;
+    SHERPA__HepMC_Interface       m_hepmc2;
+    std::vector<ATOOLS::btp::code> m_ignoreblobs;
+    std::map<std::string,size_t>   m_weightidxmap;
+
+    void RegisterDefaults() const;
+
+    Rivet::AnalysisHandler* GetRivet(std::string proc,
+                                     int jetcont);
+    std::string             GetCoreProc(const std::string& proc);
+
+  public:
+    Rivet_Interface(const std::string &outpath,
+                    const std::vector<ATOOLS::btp::code> &ignoreblobs,
+                    const std::string &tag);
+    ~Rivet_Interface();
+
+    bool Init();
+    bool Run(ATOOLS::Blob_List *const bl);
+    bool Finish();
+
+    void ShowSyntax(const int i);
+  };
+
+  class RivetShower_Interface: public Rivet_Interface {};
+  class RivetME_Interface: public Rivet_Interface {};
+}
+
+
+using namespace SHERPARIVET;
+using namespace SHERPA;
+using namespace ATOOLS;
+using namespace Rivet;
+
+
+Rivet_Interface::Rivet_Interface(const std::string &outpath,
+                                 const std::vector<btp::code> &ignoreblobs,
+                                 const std::string& tag) :
+  Analysis_Interface("Rivet"),
+  m_outpath(outpath), m_tag(tag),
+  m_nevt(0), m_finished(false),
+  m_splitjetconts(false), m_splitSH(false),
+  m_splitcoreprocs(false),
+  m_ignoreblobs(ignoreblobs),
+  m_hepmcoutputprecision(15), m_xsoutputprecision(6)
+{
+  RegisterDefaults();
+  if (m_outpath[m_outpath.size()-1]=='/')
+    m_outpath=m_outpath.substr(0,m_outpath.size()-1);
+#ifdef USING__MPI
+  if (mpi->Rank()==0) {
+#endif
+    if (m_outpath.rfind('/')!=std::string::npos)
+      MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
+#ifdef USING__MPI
+  }
+  if (mpi->Size()>1) {
+    m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
+  }
+#endif
+}
+
+Rivet_Interface::~Rivet_Interface()
+{
+  if (!m_finished) Finish();
+  for (Rivet_Map::iterator it(m_rivet.begin());
+       it!=m_rivet.end();++it) {
+    delete it->second;
+  }
+  m_rivet.clear();
+}
+
+void Rivet_Interface::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
+  s["JETCONTS"].SetDefault(0);
+  s["SPLITSH"].SetDefault(0);
+  s["SPLITCOREPROCS"].SetDefault(0);
+  s["USE_HEPMC_SHORT"].SetDefault(0);
+  s["USE_HEPMC_NAMED_WEIGHTS"].SetDefault(true);
+#ifndef HEPMC_HAS_NAMED_WEIGHTS
+  s["USE_HEPMC_NAMED_WEIGHTS"].OverrideScalar(false);
+#endif
+  s["USE_HEPMC_EXTENDED_WEIGHTS"].SetDefault(false);
+  s["USE_HEPMC_TREE_LIKE"].SetDefault(false);
+  s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].SetDefault(false);
+  s["PRINT_SUMMARY"].SetDefault(1);
+  s["EVENTBYEVENTXS"].SetDefault(0);
+  s["IGNOREBEAMS"].SetDefault(0);
+  s["SKIPWEIGHTS"].SetDefault(1);
+  s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
+  s["XS_OUTPUT_PRECISION"].SetDefault(6);
+  s["-l"].SetDefault(20);
+  s.DeclareVectorSettingsWithEmptyDefault({ "-a" });
+}
+
+AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
+                                           int jetcont)
+{
+  DEBUG_FUNC(proc<<" "<<jetcont);
+  RivetMapKey key = std::make_pair(proc, jetcont);
+  Rivet_Map::iterator it=m_rivet.find(key);
+  if (it!=m_rivet.end()) {
+    msg_Debugging()<<"found "<<key.first<<" "<<key.second<<std::endl;
+    return it->second;
+  }
+  else {
+    msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
+    AnalysisHandler* rivet(new AnalysisHandler());
+    rivet->setIgnoreBeams(m_ignorebeams);
+    rivet->skipMultiWeights(m_skipweights);
+    rivet->addAnalyses(m_analyses);
+    m_rivet.insert(std::make_pair(key, rivet));
+    return rivet;
+  }
+}
+
+std::string Rivet_Interface::GetCoreProc(const std::string& proc)
+{
+  DEBUG_FUNC(proc);
+  size_t idx=5;
+  std::vector<ATOOLS::Flavour> flavs;
+  while (idx<proc.size()) {
+    std::string fl(1, proc[idx]);
+    if (fl=="_") {
+      ++idx;
+      continue;
+    }
+    for (++idx; idx<proc.size(); ++idx) {
+      if (proc[idx]=='_') break;
+      fl+=proc[idx];
+    }
+    bool bar(false);
+    if (fl.length()>1) {
+      if (fl[fl.length()-1]=='b') {
+        fl.erase(fl.length()-1,1);
+        bar=true;
+      }
+      else if ((fl[0]=='W' || fl[0]=='H')) {
+        if (fl[fl.length()-1]=='-') {
+          fl[fl.length()-1]='+';
+          bar=true;
+        }
+      }
+      else if (fl[fl.length()-1]=='+') {
+        fl[fl.length()-1]='-';
+        bar=true;
+      }
+    }
+    Flavour flav(s_kftable.KFFromIDName(fl));
+    if (bar) flav=flav.Bar();
+    flavs.push_back(flav);
+  }
+
+  std::vector<Flavour> nojetflavs;
+  for (size_t i=2; i<flavs.size(); ++i) {
+    if (!Flavour(kf_jet).Includes(flavs[i])) nojetflavs.push_back(flavs[i]);
+  }
+
+  std::vector<Flavour> noewjetflavs;
+  for (size_t i=0; i<nojetflavs.size(); ++i) {
+    if (!Flavour(kf_ewjet).Includes(nojetflavs[i])) noewjetflavs.push_back(nojetflavs[i]);
+  }
+
+  std::vector<Flavour> finalflavs;
+  // start with initial state
+  for (size_t i=0; i<2; ++i) {
+    if (Flavour(kf_jet).Includes(flavs[i]))
+      finalflavs.push_back(Flavour(kf_jet));
+    else if (Flavour(kf_ewjet).Includes(flavs[i]))
+      finalflavs.push_back(Flavour(kf_ewjet));
+    else
+      finalflavs.push_back(flavs[i]);
+  }
+  // add all non-jet and non-ewjet particles
+  for (size_t i=0; i<noewjetflavs.size(); ++i) {
+    finalflavs.push_back(noewjetflavs[i]);
+  }
+  // add all ewjet particles
+  for (size_t i=0; i<nojetflavs.size()-noewjetflavs.size(); ++i) {
+    if (finalflavs.size()>3) break;
+    finalflavs.push_back(Flavour(kf_ewjet));
+  }
+  // add all jet particles
+  for (size_t i=0; i<flavs.size()-2-nojetflavs.size(); ++i) {
+    if (finalflavs.size()>3) break;
+    finalflavs.push_back(Flavour(kf_jet));
+  }
+
+  std::string ret;
+  for (size_t i=0; i<finalflavs.size(); ++i) {
+    ret+=finalflavs[i].IDName();
+    ret+="__";
+  }
+  while (ret[ret.length()-1]=='_') {
+    ret.erase(ret.length()-1, 1);
+  }
+
+  DEBUG_VAR(ret);
+  return ret;
+}
+
+bool Rivet_Interface::Init()
+{
+  if (m_nevt==0) {
+    Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
+    m_splitjetconts = s["JETCONTS"].Get<int>();
+    m_splitSH = s["SPLITSH"].Get<int>();
+    m_splitcoreprocs = s["SPLITCOREPROCS"].Get<int>();
+    m_usehepmcshort = s["USE_HEPMC_SHORT"].Get<int>();
+    if (m_usehepmcshort && m_tag!="RIVET" && m_tag!="RIVETSHOWER") {
+      THROW(fatal_error, "Internal error.");
+    }
+    m_ignorebeams = s["IGNOREBEAMS"].Get<int>();
+    m_skipweights = s["SKIPWEIGHTS"].Get<int>();
+
+    m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
+    m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
+    Log::setLevel("Rivet", s["-l"].Get<int>());
+    m_analyses = s["-a"].GetVector<std::string>();
+    if (find(m_analyses.begin(),m_analyses.end(),"MC_XS")==m_analyses.end())
+      m_analyses.push_back(std::string("MC_XS"));
+
+    // configure HepMC interface
+    for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
+      m_hepmc2.Ignore(m_ignoreblobs[i]);
+    }
+    m_hepmc2.SetHepMCNamedWeights(
+        s["USE_HEPMC_NAMED_WEIGHTS"].Get<bool>());
+    m_hepmc2.SetHepMCExtendedWeights(
+        s["USE_HEPMC_EXTENDED_WEIGHTS"].Get<bool>());
+    m_hepmc2.SetHepMCTreeLike(
+        s["USE_HEPMC_TREE_LIKE"].Get<bool>());
+    m_hepmc2.SetHepMCIncludeMEOnlyVariations(
+        s["INCLUDE_HEPMC_ME_ONLY_VARIATIONS"].Get<bool>());
+  }
+  return true;
+}
+
+bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
+{
+  DEBUG_FUNC("");
+  Particle_List pl=bl->ExtractParticles(1);
+  for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
+    if ((*it)->Momentum().Nan()) {
+      msg_Error()<<METHOD<<" encountered NaN in momentum. Ignoring event:"
+                 <<std::endl<<*bl<<std::endl;
+      return true;
+    }
+  }
+
+  HepMC::GenEvent event;
+  if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
+  else                  m_hepmc2.Sherpa2HepMC(bl, event);
+  std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
+#ifdef HEPMC_HAS_CROSS_SECTION
+  // leave this, although will be overwritten later
+#ifndef  RIVET_ENABLE_HEPMC_3
+  HepMC::GenCrossSection xs;
+  xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#else
+  std::shared_ptr<HepMC3::GenCrossSection> xs=std::make_shared<HepMC3::GenCrossSection>();
+  xs->set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#endif
+  event.set_cross_section(xs);
+  for (size_t i(0);i<subevents.size();++i) {
+    subevents[i]->set_cross_section(xs);
+  }
+#endif
+
+  if (subevents.size()) {
+    for (size_t i(0);i<subevents.size();++i) {
+      GetRivet("",0)->analyze(*subevents[i]);
+    }
+    m_hepmc2.DeleteGenSubEventList();
+  }
+  else {
+    GetRivet("",0)->analyze(event);
+    Blob *sp(bl->FindFirst(btp::Signal_Process));
+    size_t parts=0;
+    if (sp) {
+      std::string multi(sp?sp->TypeSpec():"");
+      if (multi[3]=='_') multi=multi.substr(2,1);
+      else multi=multi.substr(2,2);
+      parts=ToType<size_t>(multi);
+    }
+    if (m_splitjetconts && sp) {
+      GetRivet("",parts)->analyze(event);
+    }
+    if (m_splitcoreprocs && sp) {
+      GetRivet(GetCoreProc(sp->TypeSpec()),0)->analyze(event);
+      if (m_splitjetconts) {
+        GetRivet(GetCoreProc(sp->TypeSpec()),parts)->analyze(event);
+      }
+    }
+    if (m_splitSH && sp) {
+      std::string typespec=sp->TypeSpec();
+      typespec=typespec.substr(typespec.length()-2, 2);
+      std::string type="";
+      if (typespec=="+S") type="S";
+      else if (typespec=="+H") type="H";
+      
+      if (type!="") {
+        GetRivet(type,0)->analyze(event);
+        if (m_splitjetconts) {
+          GetRivet(type,parts)->analyze(event);
+        }
+      }
+    }
+  }
+
+  ++m_nevt;
+  return true;
+}
+
+bool Rivet_Interface::Finish()
+{
+  PRINT_FUNC(m_outpath+".yoda");
+  for (auto& it : m_rivet) {
+    std::string out = m_outpath;
+    if (it.first.first!="") out+="."+it.first.first;
+    if (it.first.second!=0) out+=".j"+ToString(it.first.second);
+    it.second->finalize();
+    it.second->writeData(out+".yoda");
+  }
+  m_finished=true;
+  return true;
+}
+
+void Rivet_Interface::ShowSyntax(const int i)
+{
+  if (!msg_LevelIsInfo() || i==0) return;
+  msg_Out()<<METHOD<<"(): {\n\n"
+    <<"   RIVET: {\n\n"
+    <<"     -a: [<ana_1>, <ana_2>]  # analyses to run\n"
+    <<"     # optional parameters:\n"
+    <<"     JETCONTS: <0|1>      # perform additional separate analyses for \n"
+    <<"                          # each matrix element multiplicity\n"
+    <<"     SPLITCOREPROCS: <0|1> # perform additional separate analyses for \n"
+    <<"                          # each different core process\n"
+    <<"     SPLITSH: <0|1>       # perform additional separate analyses for \n"
+    <<"                          # S-MC@NLO S- and H- events\n"
+    <<"     IGNOREBEAMS: <0|1>   # tell Rivet to ignore beam information\n"
+    <<"     SKIPWEIGHTS: <0|1>   # tell Rivet to skip multi-weight information\n"
+    <<"     USE_HEPMC_SHORT: <0|1> # use shortened HepMC event format\n"
+    <<"     USE_HEPMC_NAMED_WEIGHTS: <true|false> # use named HepMC weights,\n"
+    <<"                          # mandatory for scale variations\n"
+    <<"}"<<std::endl;
+}
+
+DECLARE_GETTER(Rivet_Interface,"Rivet",
+	       Analysis_Interface,Analysis_Arguments);
+
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,Rivet_Interface>::
+operator()(const Analysis_Arguments &args) const
+{
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
+  return new Rivet_Interface(outpath,
+                             ignoreblobs,
+                             "RIVET");
+}
+
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,Rivet_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Rivet interface";
+}
+
+
+DECLARE_GETTER(RivetShower_Interface,"RivetShower",
+	       Analysis_Interface,Analysis_Arguments);
+
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,RivetShower_Interface>::
+operator()(const Analysis_Arguments &args) const
+{
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
+  ignoreblobs.push_back(btp::Fragmentation);
+  ignoreblobs.push_back(btp::Hadron_Decay);
+  ignoreblobs.push_back(btp::Hadron_Mixing);
+  return new Rivet_Interface(outpath + ".SL",
+                             ignoreblobs,
+                             "RIVETSHOWER");
+}
+
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetShower_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Rivet interface on top of shower level events.";
+}
+
+
+DECLARE_GETTER(RivetME_Interface,"RivetME",
+	       Analysis_Interface,Analysis_Arguments);
+
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,RivetME_Interface>::
+operator()(const Analysis_Arguments &args) const
+{
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Unspecified);
+  ignoreblobs.push_back(btp::Fragmentation);
+  ignoreblobs.push_back(btp::Hadron_Decay);
+  ignoreblobs.push_back(btp::Hadron_Mixing);
+  ignoreblobs.push_back(btp::Shower);
+  ignoreblobs.push_back(btp::Hadron_To_Parton);
+  ignoreblobs.push_back(btp::Hard_Collision);
+  ignoreblobs.push_back(btp::QED_Radiation);
+  ignoreblobs.push_back(btp::Soft_Collision);
+  return new Rivet_Interface(outpath + ".ME",
+                             ignoreblobs,
+                             "RIVETME");
+}
+
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetME_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Rivet interface on top of ME level events.";
+}
+
+#endif
+// end of Rivet_Interface for Rivet3
+
+
+
+
+
+
+
+
+
+
+
+#ifdef USING__RIVET2
+#include "SHERPA/Tools/HepMC2_Interface.H"
+
+#ifdef USING__HEPMC2
+#include "HepMC/GenEvent.h"
+#include "HepMC/GenCrossSection.h"
+#include "HepMC/WeightContainer.h"
+#endif
+
+#ifdef USING__HEPMC2__DEFS
+#include "HepMC/HepMCDefs.h"
+#endif
+#include "Rivet/AnalysisHandler.hh"
+#include "Rivet/Tools/Logging.hh"
 
 namespace SHERPARIVET {
   typedef std::pair<std::string, int> RivetMapKey;
@@ -385,9 +874,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(Rivet_Map& rm, std::string proc,
   else {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     AnalysisHandler* rivet(new AnalysisHandler());
-#ifdef USING__RIVET__IGNOREBEAMS
     rivet->setIgnoreBeams(m_ignorebeams);
-#endif
     rivet->addAnalyses(m_analyses);
     rm.insert(std::make_pair(key, rivet));
     msg_Debugging()<<"now "<<rm.size()<<" in "
@@ -634,11 +1121,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 bool Rivet_Interface::Finish()
 {
   std::string ending("");
-#ifdef USING__RIVET__YODA
   ending=".yoda";
-#else
-  ending=".aida";
-#endif
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
     std::string out=m_outpath;

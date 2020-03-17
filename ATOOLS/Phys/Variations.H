@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -21,8 +20,10 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace ATOOLS {
 
+  class Variations;
   class Variation_Parameters;
-  class Variation_Weights;
+
+  extern Variations* s_variations;
 
   struct ScaleFactorExpansions {
     enum code {
@@ -44,9 +45,13 @@ namespace ATOOLS {
     ~Variations();
     typedef std::vector<Variation_Parameters *> Parameters_Vector;
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
-
-    //! Return the event phase type (even if the reweighting is not technically an event phase)
-    const SHERPA::eph::code EventPhaseType() const { return SHERPA::eph::Reweighting; }
+    // TODO: return a const object
+    Variation_Parameters& Parameters(size_t i) { return *m_parameters_vector[i]; }
+    std::string
+        GetVariationNameAt(Variations::Parameters_Vector::size_type) const;
+    size_t Size() { return m_parameters_vector.size(); }
+    template <typename Handler>
+    void ForEach(Handler h);
 
     // register and print warnings
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
@@ -86,8 +91,15 @@ namespace ATOOLS {
     bool m_reweightsplittingpdfsscales;
   };
 
-  std::ostream& operator<<(std::ostream&, const Variations&);
+  template <typename Handler> void Variations::ForEach(Handler h)
+  {
+    const auto size = Size();
+    for (int i {0}; i < size; ++i) {
+      h(i, Parameters(i));
+    }
+  }
 
+  std::ostream& operator<<(std::ostream&, const Variations&);
 
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
   class ReweightingFactorHistogram {
@@ -197,140 +209,6 @@ namespace ATOOLS {
   };
 
   std::ostream& operator<<(std::ostream&, const Variations_Type&);
-
-
-  //! Wrap the actual event weight variations and apply reweighting functions to it
-  class Variation_Weights {
-  public:
-
-    Variation_Weights(Variations * v):
-      p_variations(v),
-      m_reweighting(false)
-    {}
-
-    void Reset();
-
-    /*!
-     * Multiply each weight with the result of the passed reweighting function
-     *
-     * The reweighting function is evaluated once for each parameter variation.
-     */
-    template <class Reweighter, class Data>
-    void UpdateOrInitialiseWeights(
-        double (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-        Reweighter & reweighter,
-        Data & data,
-        Variations_Type t=Variations_Type::main)
-    {
-      if (!AreWeightsInitialised(t)) {
-        InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
-      }
-      const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
-      m_reweighting = true;
-      for (m_currentparametersindex = 0;
-           m_currentparametersindex < paramsvec->size();
-           ++m_currentparametersindex ) {
-        double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_weights[t][m_currentparametersindex] *= weight;
-      }
-      m_reweighting = false;
-    }
-
-    /*!
-     * Initialise weights with the result of the passed reweighting function
-     *
-     * The reweighting function is evaluated once for each parameter variation.
-     * This function is supposed to return a vector weights to account for
-     * possible subevent weights.
-     */
-    template <class Reweighter, class Data>
-    void InitialiseWeights(
-        Subevent_Weights_Vector (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-        Reweighter & reweighter,
-        Data & data,
-        Variations_Type t=Variations_Type::main)
-    {
-      int initialized(AreWeightsInitialised(t));
-      const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
-      const size_t size(paramsvec->size());
-      m_weights[t].reserve(size);
-      m_reweighting = true;
-      for (m_currentparametersindex = 0;
-           m_currentparametersindex < size;
-           ++m_currentparametersindex ) {
-	Subevent_Weights_Vector weightvector((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-	if (!initialized) m_weights[t].push_back(weightvector);
-	else m_weights[t][m_currentparametersindex] += weightvector;
-      }
-      m_reweighting = false;
-    }
-
-    //! Multiply *all* weights with a common factor
-    Variation_Weights & operator*=(const double &);
-
-    //! Multiply weights with weights from another set of variation weights
-    Variation_Weights & operator*=(const Variation_Weights &);
-
-    //! Add weights from another set of variation weights
-    Variation_Weights & operator+=(const Variation_Weights &);
-
-    //! Sum up the subevent-specific weights
-    void CombineSubeventWeights();
-
-    //! Get variation name at a given index
-    std::string GetVariationNameAt(Variations::Parameters_Vector::size_type) const;
-
-    /*!
-     * Get a variation weight at a given index and a given subevent index
-     *
-     * If the subevent index is -1 (default), the sum of all subevent weights
-     * will be returned. For events without subevents, this is equivalent to
-     * just returning the first (and only) weight.
-     */
-    double GetVariationWeightAt(Variations::Parameters_Vector::size_type,
-                                Variations_Type t=Variations_Type::all,
-                                int subevtidx=-1) const;
-
-    // Obtain informations about the parameter variations
-    size_t GetNumberOfVariations() const;
-    size_t GetNumberOfSubevents() const;
-    Variations * GetVariations() const { return p_variations; }
-    Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
-
-    size_t NumberOfParameters() const
-    { return p_variations->GetParametersVector()->size(); }
-
-    void IncrementOrInitialiseWarningCounter(const std::string name)
-    { p_variations->IncrementOrInitialiseWarningCounter(name); }
-
-private:
-    Variations * p_variations;
-    //! a vector of (sub)event weights for each set of parameters
-    std::map<Variations_Type, std::vector<Subevent_Weights_Vector>>
-      m_weights;
-    /*!
-     * index of the parameters for the current reweighting
-     *
-     * This is only valid from within a callback to a reweighting function.
-     * This can for example be helpful when some additional variation weights
-     * are used during the reweighting (e.g. for subprocesses).
-     */
-    Variations::Parameters_Vector::size_type m_currentparametersindex;
-    //! whether this instance is currently in a reweighting loop
-    bool m_reweighting;
-
-    // the non-member function operator<< will have access to private members
-    friend std::ostream & operator<<(std::ostream &, const Variation_Weights &);
-
-    void InitialiseWeights(const Subevent_Weights_Vector & subweights);
-    void InitialiseWeights(const Subevent_Weights_Vector & subweights,
-                           const Variations_Type t=Variations_Type::main);
-
-    bool AreWeightsInitialised(
-        const Variations_Type t=Variations_Type::main) const;
-  };
-
-  std::ostream & operator<<(std::ostream &, const Variation_Weights &);
 
 };
 

@@ -1,52 +1,47 @@
-# aliases
-TAGS: { LGEN: LHOLE }
+BEAMS: 2212
+BEAM_ENERGIES: 6500
 
 # general settings
 EVENTS: 1M
 
 # me generator settings
-ME_GENERATORS: [Comix, Amegic, $(LGEN)]
+ME_GENERATORS: [Comix, Amegic, LHOLE]
 
-HARD_DECAYS: {
-  Enabled: true,
-  Mass_Smearing: 0,
-  Channels: {
-    "23 -> 11 -11": {Status: 2},
-    "23 -> 13 -13": {Status: 2},
-    }
-  }
-PARTICLE_DATA: {
-   5: {
-     Massive: true,
-     Mass: 4.75  # consistent with MSTW 2008 nf 4 set
-     },
-  23: {Width: 0, Stable: 0},
-}
+HARD_DECAYS:
+  Enabled: true
+  Mass_Smearing: 0
+  Channels:
+    23 -> 11 -11: {Status: 2}
+    23 -> 13 -13: {Status: 2}
+
+PARTICLE_DATA:
+  5:
+    Massive: true
+    Mass: 4.75  # consistent with MSTW 2008 nf 4 set
+  23:
+    Width: 0
+    Stable: 0
+
 MI_HANDLER: None
 FRAGMENTATION: None
-BEAMS: 2212
-BEAM_ENERGIES: 7000
 SCALES: VAR{H_T2+sqr(91.188)}
 PDF_LIBRARY: MSTW08Sherpa
 PDF_SET: mstw2008nlo_nf4
 
 PROCESSES:
-  - {
-    Process: 93 93 -> 23 5 -5,
-    NLO_QCD_Mode: MC@NLO,
-    ME_Generator: Amegic,
-    RS_ME_Generator: Comix,
-    Loop_Generator: $(LGEN),
-    Order: {QCD: Any, EW: 1},
-    }
+- 93 93 -> 23 5 -5:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: LHOLE
+    Order: {QCD: Any, EW: 1}
 
 SELECTORS:
-  - {
-    Type: FastjetFinder,
-    Algorithm: antikt,
-    N: 2,
-    PTMin: 5.0,
-    DR: 0.5,
-    EtaMax: 5,
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 5.0
+    DR: 0.5
+    EtaMax: 5
     Nb: 2
-    }

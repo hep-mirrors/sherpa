@@ -10,7 +10,7 @@ using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
-Define_Dipole::Define_Dipole(Blob * blob) :
+Define_Dipole::Define_Dipole(Blob* blob) :
 m_success(true), m_photonsadded(false) {
   DEBUG_FUNC("");
   p_blob = blob;
@@ -60,7 +60,7 @@ Define_Dipole::~Define_Dipole() {
 }
 
 void Define_Dipole::AddRadiation() {
-  Dress_Blob_Base * dipole(NULL);
+  Dress_Blob_Base* dipole {nullptr};
   if (m_dtype == Dipole_Type::ff) {
     dipole = new Dipole_FF(m_pvv);
   }

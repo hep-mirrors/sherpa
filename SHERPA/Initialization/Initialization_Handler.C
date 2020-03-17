@@ -3,6 +3,7 @@
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
+#include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
@@ -58,7 +59,8 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative), 
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
+  p_mehandler(NULL), p_harddecays(NULL),
+  p_beamremnants(NULL), p_reconnections(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
@@ -207,7 +209,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
-  s["CSS_FS_PT2MIN"].SetDefault(2.0);
+  s["CSS_FS_PT2MIN"].SetDefault(1.0);
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(1.0);
@@ -275,6 +277,7 @@ Initialization_Handler::~Initialization_Handler()
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
@@ -518,7 +521,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     std::string libname(m_evtform);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
-      THROW(missing_module,"Cannot load output library Sherpa"+libname+"Input.");
+      THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
 				 p_model, m_isrhandlers[isr::hard_process]));
@@ -535,11 +538,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (rpa->gen.NumberOfEvents()>0) {
   }
   okay = okay && InitializeTheShowers();
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
-  okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheHadronDecays();
@@ -669,10 +673,11 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="CT14Sherpa";
-      defset[beam]="ct14nn";
+      deflib="NNPDFSherpa";
+      defset[beam]="NNPDF31_nnlo_as_0118_mc";
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e ||
+	     p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
       deflib="PDFESherpa";
       defset[beam]="PDFe";
     }
@@ -918,11 +923,18 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
   if (p_beamremnants)  delete p_beamremnants;
-  p_beamremnants = 
-    new Beam_Remnant_Handler(p_beamspectra,
-			     p_remnants,
-			     p_softcollisions);
+  p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
+					    p_remnants,
+					    p_softcollisions);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
+  return 1;
+}
+
+bool Initialization_Handler::InitializeTheColourReconnections() 
+{
+  if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
+  p_reconnections = new Colour_Reconnection_Handler();
+  p_reconnections->Output();
   return 1;
 }
 
@@ -998,8 +1010,8 @@ bool Initialization_Handler::InitializeTheAnalyses()
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
-      if (!s_loader->LoadLibrary("SherpaHepMCOutput")) 
-        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2).");
+      if (!s_loader->LoadLibrary("SherpaHepMCOutput")&& !s_loader->LoadLibrary("SherpaHepMC3Output")) 
+        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2 or --enable-hepmc3).");
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
     }
@@ -1024,6 +1036,7 @@ bool Initialization_Handler::InitializeTheReweighting()
   }
   Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations();
+  s_variations = p_variations;
   msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;
 }

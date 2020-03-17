@@ -42,6 +42,8 @@ void MI_Parameters::ReadParameters()
     = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
+  m_parameters[string("SigmaND_Norm")]
+    = s["SIGMA_ND_NORM"].SetDefault(0.4).Get<double>();
   m_parameters[string("Matter_Fraction1")]
     = s["MATTER_FRACTION1"].SetDefault(0.5).Get<double>();
   m_parameters[string("Matter_Radius1")]
@@ -49,7 +51,7 @@ void MI_Parameters::ReadParameters()
   m_parameters[string("Matter_Radius2")]
     = s["MATTER_RADIUS2"].SetDefault(1.0).Get<double>();
   m_overlapform = s["MATTER_FORM"]
-	  .SetDefault(overlap_form::Double_Gaussian)
+	  .SetDefault(overlap_form::Single_Gaussian)
 	  .Get<overlap_form::code>();
   m_parameters[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<int>();
@@ -80,6 +82,7 @@ std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)
     case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
     case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
   }
+  return s;
 }
 
 std::istream& AMISIC::operator>>(std::istream& s, overlap_form::code& f)
@@ -101,6 +104,7 @@ std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme::code& sc)
     case scale_scheme::PT:           return os << "PT";
     case scale_scheme::PT_with_Raps: return os << "PT modified with rapidities";
   }
+  return os;
 }
 
 std::istream& AMISIC::operator>>(std::istream& is, scale_scheme::code& sc)

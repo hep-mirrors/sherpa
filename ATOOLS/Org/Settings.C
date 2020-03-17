@@ -3,6 +3,8 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings_Writer.H"
 #include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/Strings.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace ATOOLS;
 
@@ -36,9 +38,14 @@ Settings::Settings(int argc, char* argv[])
 {
   m_yamlreaders.emplace_back(new Command_Line_Interface{argc, argv});
   const auto files = GetConfigFiles();
-  for (auto it = files.rbegin(); it != files.rend(); ++it)
-    m_yamlreaders.emplace_back(new Yaml_Reader{GetPath() + *it});
-
+  if (files.empty()) {
+    msg_Out() << Strings::NoConfigFilesWarning;
+  } else {
+    for (auto it = files.rbegin(); it != files.rend(); ++it) {
+      const std::string path {is_absolute(*it) ? "" : GetPath()};
+      m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
+    }
+  }
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
     const auto tags = (*it)->GetKeys(tagkeys);
@@ -136,7 +143,20 @@ String_Vector Settings::GetConfigFiles()
     if (!filenames.empty())
       return filenames;
   }
-  return {"Sherpa.yaml"};
+  if (FileExists(GetPath() + "Sherpa.yaml")) {
+    return {"Sherpa.yaml"};
+  } else {
+    return {};
+  }
+}
+
+bool Settings::IsList(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsList(keys))
+      return true;
+  }
+  return false;
 }
 
 size_t Settings::GetItemsCount(const Settings_Keys& keys)
@@ -245,15 +265,37 @@ void Settings::SetDefault(const Settings_Keys& keys, const char* value)
 std::string Settings::ApplyReplacements(const Settings_Keys& settings_keys,
                                         const std::string& value)
 {
-  std::string result{ value };
   const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
   const auto it = m_replacements.find(keys);
   if (it == m_replacements.end())
-    return result;
+    return value;
   for (const auto& replacement : it->second) {
-    if (result == replacement.first) {
+    if (value == replacement.first) {
       return replacement.second;
     }
   }
-  return result;
+  return value;
+}
+
+void Settings::SetDefaultSynonyms(const Settings_Keys& settings_keys,
+                                  const std::vector<std::string>& synonyms)
+{
+  const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+  const auto it = m_defaultsynonyms.find(keys);
+  if (m_defaultsynonyms.find(keys) != m_defaultsynonyms.end())
+    if (synonyms != it->second)
+      THROW(fatal_error, "A different default synonyms list for "
+          + keys.back() + " has already been set.");
+  m_defaultsynonyms[keys] = synonyms;
+}
+
+bool Settings::IsDefaultSynonym(const Settings_Keys& settings_keys,
+                                const std::string& value)
+{
+  const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
+  const auto it = m_defaultsynonyms.find(keys);
+  if (it == m_defaultsynonyms.end())
+    return false;
+  const auto& v = it->second;
+  return (std::find(v.begin(), v.end(), value) != v.end());
 }

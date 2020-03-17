@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 from mpi4py import MPI
 import sys
-sys.path.append('/u/th/silvan/work/unlops/lib/python2.7/site-packages')
 import Sherpa
 sys.argv.append('INIT_ONLY=2')
 

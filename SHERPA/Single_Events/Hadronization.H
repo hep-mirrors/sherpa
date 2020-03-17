@@ -2,16 +2,22 @@
 #define SHERPA_Single_Events_Hadronization_H
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
+#include "SHERPA/SoftPhysics/Singlet_Sorter.H"
 
 namespace SHERPA {
   class Hadronization : public Event_Phase_Handler {
   private :
-    Fragmentation_Handler * p_fragmentationhandler;
+    bool m_on;
+    Colour_Reconnection_Handler * p_reconnectionhandler;
+    Fragmentation_Handler       * p_fragmentationhandler;
+    Singlet_Sorter                m_singlets;
   public :
-    Hadronization(Fragmentation_Handler *);
+    Hadronization(Colour_Reconnection_Handler *,
+		  Fragmentation_Handler *);
     ~Hadronization();
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };
@@ -47,7 +53,7 @@ namespace SHERPA {
     Nothing to be done in the destructor so far.
   */
   /*!
-    \fn bool Hadronization::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Hadronization::Treat(ATOOLS::Blob_List*)
     This method basically passes the blob list to the method Hadronize of the fragmentation handler.
   */
   /*!

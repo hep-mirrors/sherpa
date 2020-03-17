@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/RUsage.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/Strings.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -61,9 +62,8 @@ void Matrix_Element_Handler::RegisterDefaults()
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
-    Scoped_Settings&& procsettings)
+    Scoped_Settings& procsettings)
 {
-  procsettings["Process"].SetDefault("");
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
   procsettings.DeclareVectorSettingsWithEmptyDefault({
@@ -74,7 +74,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_gens(),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(model),
   m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
+  p_shower(NULL), p_nlomc(NULL),
   m_sum(0.0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL),
   m_respath("Results"),
@@ -276,10 +276,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // try to generate an event for the selected process
   if (proc==NULL) THROW(fatal_error,"No process selected");
-  p_variationweights->Reset();
-  proc->SetVariationWeights(p_variationweights);
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
-  proc->SetVariationWeights(NULL);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -297,9 +294,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.m_weight);
-    if (abswgt < disc)
+    const auto abswgt = std::abs(m_evtinfo.Weight());
+    if (abswgt < disc) {
       return false;
+    }
     if (abswgt > max * m_ovwth) {
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
@@ -314,22 +312,21 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
 
   // trial event is accepted, apply weight factor
-  m_evtinfo.m_weight*=wf;
+  m_evtinfo.m_weights*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  (*p_variationweights)*=wf;
   return true;
 }
 
-std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
-(const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
+    Process_Info pi, NLOTypeStringProcessMap_Map*& pmap)
 {
-  Process_Info cpi(pi);
-  std::set<Process_Info> trials;
+  CheckInitialStateOrdering(pi);
   std::vector<Process_Base*> procs;
+  std::set<Process_Info> initialized_pi_set;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
   std::vector<int> fid(fls.size(),0);
   Flavour_Vector fl(fls.size());
@@ -338,13 +335,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     if(fid[hc]==fls[hc].size()){fid[hc--]=0;++fid[hc];continue;}
     fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
     Flavour_Vector cfl(fl);
-    size_t n(0);
-    cpi.m_ii.SetExternal(cfl,n);
-    cpi.m_fi.SetExternal(cfl,n);
-    Process_Base::SortFlavours(cpi,1);
-    if (trials.find(cpi)==trials.end()) {
-      trials.insert(cpi);
-      std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
+    size_t n{0};
+    pi.m_ii.SetExternal(cfl, n);
+    pi.m_fi.SetExternal(cfl, n);
+    Process_Base::SortFlavours(pi,1);
+    if (initialized_pi_set.find(pi)==initialized_pi_set.end()) {
+      initialized_pi_set.insert(pi);
+      std::vector<Process_Base*> cp=InitializeSingleProcess(pi,pmap);
       procs.insert(procs.end(),cp.begin(),cp.end());
     }
     ++fid[hc];
@@ -486,6 +483,25 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
   return procs;
 }
 
+void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
+{
+  auto cpi = pi;
+  Process_Base::SortFlavours(cpi, 1);
+  if (cpi.m_ii == pi.m_ii) {
+  } else {
+    msg_Error() << ATOOLS::om::red << "\n\nERROR:" << ATOOLS::om::reset
+      << " Wrong ordering of initial-state particles detected.\n"
+      << "Please re-order the initial state in your Process definition(s) "
+      << "like this:\n  ";
+    cpi.m_ii.PrintFlavours(msg_Error());
+    msg_Error() << " ->  ";
+    pi.m_fi.PrintFlavours(msg_Error());
+    msg_Error() << "\nYou may need to adjust your other beam-specific "
+      << "parameters accordingly.\n";
+    exit(-1);
+  }
+}
+
 int Matrix_Element_Handler::InitializeProcesses(
   BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
 {
@@ -545,16 +561,26 @@ void Matrix_Element_Handler::BuildProcesses()
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
-  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0)
-    THROW(missing_input, "No process data.");
-
-  RegisterMainProcessDefaults(s["PROCESSES"]);
+  if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
+    if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(missing_input, std::string{"Missing PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
+  }
 
   // iterate over processes in the settings
   for (auto& proc : s["PROCESSES"].GetItems()) {
+    const auto keys = proc.GetKeys();
+    if (keys.size() != 1) {
+      if (!msg_LevelIsTracking()) msg_Info()<<"\n";
+      THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
+                               Strings::ProcessesSyntaxExamples);
+    }
+    const std::string& name = keys[0];
+    auto procsettings = proc[name];
+    RegisterMainProcessDefaults(procsettings);
     Single_Process_List_Args args;
-    ReadFinalStateMultiIndependentProcessSettings(proc, args);
-    ReadFinalStateMultiSpecificProcessSettings(proc, args);
+    ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
+    ReadFinalStateMultiSpecificProcessSettings(procsettings, args);
     BuildSingleProcessList(args);
     if (msg_LevelIsDebugging()) {
       msg_Indentation(4);
@@ -570,7 +596,7 @@ void Matrix_Element_Handler::BuildProcesses()
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
-  Scoped_Settings proc, Single_Process_List_Args& args)
+  const std::string& procname, Scoped_Settings proc, Single_Process_List_Args& args)
 {
   // fill process info
   Settings& s = Settings::GetMainSettings();
@@ -586,10 +612,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   args.pi.p_gens=&m_gens;
 
   // fill initial/final state
-  const auto procname = proc["Process"].Get<std::string>();
   size_t pos(procname.find("->"));
   if (pos==std::string::npos)
-    THROW(fatal_error, "Process name must be of the form `a b -> x y'.");
+    THROW(fatal_error, "Process name must be of the form `a b -> x y ...'.");
   args.ini = procname.substr(0,pos);
   args.fin = procname.substr(pos+2);
 
@@ -618,7 +643,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
 void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
   Scoped_Settings proc,
   Single_Process_List_Args& args,
-  const std::string& rawrange) const
+  std::string rawrange) const
 {
   // iterate over settings in each process that can be either given for all
   // final-state multiplicities or only for some final-state multiplicities;
@@ -629,11 +654,19 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
   // multiplicities; ReadProcessSettings will recursively read all top-level
   // and scoped settings
 
-  // parse final-state multiplicity range
-  // format: either single unsigned int or a pair of ints connected by a '-'
+  // parse final-state multiplicity range, allowed syntaxes are:
+  // - single final-state multiplicity, e.g. "2"
+  // - final-state multiplicity range, e.g. "2-4"
+  // - one of the above, but prefixed with "x->", where x is any integer;
+  //   this can be used to be more explicit, i.e. by writing "2->2-4", but note
+  //   that the number before "->" is completely ignored by the parsing below
+  // finally, the wildcard "-" stands for all multis, for which we leave
+  // begin=0 and end=\infty
   auto range = std::make_pair(0, std::numeric_limits<size_t>::max());
-  // the wildcard stands for all multis, for which we leave begin=end=0
   if (rawrange != "-") {
+    const auto ranglepos = rawrange.find('>');
+    if (ranglepos != std::string::npos)
+      rawrange = rawrange.substr(ranglepos + 1);
     const auto delimiterpos = rawrange.find('-');
     range.first = std::stoul(rawrange.substr(0, delimiterpos));
     if (delimiterpos == std::string::npos)
@@ -659,8 +692,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
-        || subkey == "CKKW"
-        || subkey == "Process")
+        || subkey == "CKKW")
       continue;
 
     // read value (and potentially do some pre-processing for non-scalar
@@ -669,7 +701,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order"
         || subkey == "Max_Order"
         || subkey == "Min_Order"
-        || subkey == "Born_Order"
         || subkey == "NLO_Order") {
       // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
@@ -680,7 +711,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order")                   ExtractMPvalues(value, range, nf, args.pbi.m_vcpl);
     else if (subkey == "Max_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmaxcpl);
     else if (subkey == "Min_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmincpl);
-    else if (subkey == "Born_Order")         ExtractMPvalues(value, range, nf, args.pbi.m_vborncpl);
     else if (subkey == "Scales")             ExtractMPvalues(value, range, nf, args.pbi.m_vscale);
     else if (subkey == "Couplings")          ExtractMPvalues(value, range, nf, args.pbi.m_vcoupl);
     else if (subkey == "KFactor")            ExtractMPvalues(value, range, nf, args.pbi.m_vkfac);
@@ -817,9 +847,6 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vmincpl,nfs,pnid,ds)) {
 	  cpi.m_mincpl = ToVector<double>(ds);
 	}
-	if (GetMPvalue(args.pbi.m_vborncpl,nfs,pnid,ds)) {
-	  cpi.m_borncpl = ToVector<double>(ds);
-	}
 	if (GetMPvalue(args.pbi.m_vcpl,nfs,pnid,ds)) {
 	  cpi.m_maxcpl=ToVector<double>(ds);
 	  cpi.m_mincpl=cpi.m_maxcpl;
@@ -829,19 +856,12 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	      cpi.m_maxcpl[i]=99;
 	    }
 	}
+	// automatically increase QCD coupling for QCD multijet merging
 	if (cpi.m_ckkw&1) {
 	  cpi.m_mincpl[0]+=aoqcd;
 	  cpi.m_maxcpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
-
-	// If "Born_Order" is specified, we set all max/min orders
-	// here accordingly. This is for the interface to external
-	// amplitudes, where the user has to specify coupling orders
-	// for the born process of all multiplicities explicitly.
-	for(size_t i (0); i<cpi.m_borncpl.size(); i++)
-	  if(cpi.m_borncpl[i])
-	    cpi.m_mincpl[i]=cpi.m_maxcpl[i]=cpi.m_borncpl[i];
 
 	// test whether cpls are halfinteger, fill in open spots for same size
 	size_t minsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
@@ -948,13 +968,13 @@ void Matrix_Element_Handler::BuildSingleProcessList(
     }
     if (args.pi.m_ckkw&1) {
       MyStrStream jfyaml;
-      jfyaml << "{Type: METS";
+      jfyaml << "METS: {";
       std::string ycut{ args.pbi.m_gycut };
       GetMPvalue(args.pbi.m_vycut,
                  cpi.m_fi.NExternal(),
 		 cpi.m_fi.MultiplicityTag(),
                  ycut);
-      jfyaml << ", YCUT: \"" << ycut << "\"";
+      jfyaml << "YCUT: \"" << ycut << "\"";
       if (i<loprocs) {
         jfyaml << ", LO: true";
 	if (args.pbi.m_cutcore==true) {
@@ -1177,7 +1197,7 @@ double Matrix_Element_Handler::GetWeight
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
       if (mode&1) ci->SetWOn(false);
-      double res(pit->second->Differential(ampl));
+      double res(pit->second->Differential(ampl,Weight_Type::nominal));
       ci->SetWOn(true);
       return res;
     }

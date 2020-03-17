@@ -8,6 +8,10 @@
 #include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Phys/Variations.H"
 
+namespace ATOOLS {
+  class Event_Weights;
+}
+
 namespace SHERPA {
   class Filter;
   
@@ -41,9 +45,9 @@ namespace SHERPA {
     bool GenerateHadronDecayEvent(eventtype::code & mode);
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
-    bool AnalyseEvent(double & weight);
-    bool WeightIsGood(const double& weight);
-    int  IterateEventPhases(eventtype::code & mode,double & weight);
+    bool AnalyseEvent();
+    bool WeightsAreGood(const ATOOLS::Event_Weights&);
+    int  IterateEventPhases(eventtype::code & mode);
 
   public:
 

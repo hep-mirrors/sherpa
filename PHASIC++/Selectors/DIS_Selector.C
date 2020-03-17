@@ -84,7 +84,7 @@ void IINEL_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(IINEL_Selector,"INEL",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IINEL_Selector,"INEL",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IINEL_Selector>::
 operator()(const Selector_Key &key) const
@@ -107,7 +107,7 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,IINEL_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"INEL selector";
+  str<<"[INEL, kf1, kf2, min, max]";
 }
 
 /*--------------------------------------------------------------------
@@ -149,7 +149,7 @@ void IPZIN_Selector::SetRange(Flavour flav,double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(IPZIN_Selector,"PZIN",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IPZIN_Selector,"PZIN",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IPZIN_Selector>::
 operator()(const Selector_Key &key) const
@@ -170,5 +170,5 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,IPZIN_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"PZIN selector";
+  str<<"[PZIN, kf, min, max]";
 }

@@ -14,7 +14,6 @@ namespace ATOOLS {
   class Cluster_Leg;
   class Cluster_Amplitude; 
   class Histogram;
-  class Variation_Weights;
   struct Decay_Info;
   typedef std::vector<Decay_Info* > DecayInfo_Vector;
   struct Weight_Info;
@@ -62,8 +61,7 @@ namespace PHASIC {
     PDF::Shower_Base   *p_shower;
     PDF::NLOMC_Base    *p_nlomc;
 
-    ATOOLS::Variation_Weights *p_variationweights;
-    bool m_variationweightsowned;
+    ATOOLS::Event_Weights m_eventweights;
     BBar_Multi_Channel *p_mc;
 
     Scale_Setter_Base   *p_scale;
@@ -83,6 +81,8 @@ namespace PHASIC {
     double m_last, m_lastb, m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
+    bool   m_hasinternalscale;
+    double m_internalscale;
     MODEL::Coupling_Map m_cpls;
 
     NLOTypeStringProcessMap_Map *p_apmap;
@@ -133,9 +133,26 @@ namespace PHASIC {
 
     virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
 
-    virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
-                                int mode=0);
+    /*!
+     * Calculate the nominal differential
+     *
+     * Use the Weight_Type argument to steer if only the nominal, or the
+     * nominal plus all on-the-fly variations are calculated and returned.
+     *
+     * The nominal differential can be retrieved using Last, the Born part of
+     * it via LastB, and the full event weights (i.e. the return value) via
+     * EventWeights.  The ME weight information can be retrieved using
+     * GetMEwgtinfo.
+     *
+     * Subclasses implementing this virtual function must make sure to set
+     * update the corresponding member variables.
+     */
+    virtual ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector&,
+                                               ATOOLS::Weight_Type) = 0;
+
+    virtual ATOOLS::Event_Weights Differential(const ATOOLS::Cluster_Amplitude&,
+                                               ATOOLS::Weight_Type type=ATOOLS::Weight_Type::nominal,
+                                               int mode=0);
 
     virtual bool GeneratePoint();
     virtual void AddPoint(const double &value);
@@ -165,9 +182,7 @@ namespace PHASIC {
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
-    virtual void SetVariationWeights(ATOOLS::Variation_Weights *const);
-    void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
-    ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
+    const ATOOLS::Event_Weights& EventWeights() const { return m_eventweights; }
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetCaller(Process_Base *const proc);
 
@@ -204,11 +219,12 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
-    inline size_t NIn() const  { return m_nin;  }
-    inline size_t NOut() const { return m_nout; }
-
-    inline const ATOOLS::Flavour_Vector &Flavours() const { return m_flavs; }
-    inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs) { m_flavs = flavs; }
+    inline size_t NIn()                                       const  { return m_nin;  }
+    inline virtual size_t NOut()                              const { return m_nout; }
+    virtual const ATOOLS::Vec4D_Vector          &Momenta()    const;
+    inline virtual const ATOOLS::Flavour_Vector &Flavours()   const { return m_flavs; }
+    inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs)    { m_flavs = flavs; }
+    inline virtual std::vector<std::vector<int> > * Colours() const { return NULL; }
 
     inline const std::string &Name() const        { return m_name;    }
     inline const std::string &ResultsName() const { return m_resname; }
@@ -240,6 +256,9 @@ namespace PHASIC {
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
+    
+    inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
+    inline virtual const double InternalScale()    const { return m_internalscale; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
@@ -270,7 +289,8 @@ namespace PHASIC {
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
     { return p_mapproc?p_mapproc->p_selector:p_selector; }
-
+    inline virtual const double SPrimeMin() const { return -1.; }
+    inline virtual const double SPrimeMax() const { return -1.; }
     template <class PType> inline PType *Get() 
     { return dynamic_cast<PType*>(this); }
     template <class PType> inline const PType *Get() const 
@@ -279,7 +299,7 @@ namespace PHASIC {
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
-
+    virtual bool FillFinalState(const ATOOLS::Vec4D_Vector &p) { return true; }
   };// end of class Process_Base
 
   class Order_Flavour {

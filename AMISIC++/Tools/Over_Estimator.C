@@ -75,7 +75,8 @@ double Over_Estimator::ApproxME(const double & pt2) {
   double scale = pt2+m_pt02;
   double est   = M_PI/2.*sqr((*p_alphaS)(m_muR_fac * scale/4.)) / sqr(scale);
   for (size_t i=0;i<2;i++) {
-    p_pdf[i]->Calculate(m_xt,Max(pt2,p_pdf[i]->Q2Min()));
+    double Q2     = m_muF_fac*Max(pt2,p_pdf[i]->Q2Min());
+    p_pdf[i]->Calculate(m_xt,Q2);
     double pdfsum = 0.;
     for (Flavour_Set::const_iterator fl=p_pdf[i]->Partons().begin();
 	 fl!=p_pdf[i]->Partons().end();fl++) {
@@ -103,6 +104,9 @@ double Over_Estimator::operator()(const double & pt2) {
 }
 
 double Over_Estimator::TrialPT2(const double & Q2) {
+  // Produce an overestimated q2 by solving for q2
+  // random * exp[-int_{pt02}^{Q2} dpt2 prefb/(pt2+pt02/4)^2] =
+  //          exp[-int_{q2}^{Q2}   dpt2 prefb/(pt2+pt02/4)^2]
   double Q2tilde = Q2+m_pt02/4.;
   double prefb   = m_pref*m_bfac/m_xsnd;
   double pt2     = prefb*Q2tilde/(prefb-Q2tilde*log(ran->Get())) - m_pt02/4.;

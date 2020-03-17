@@ -80,7 +80,9 @@ void OpenLoops_Interface::RegisterDefaults() const
   s["OL_IGNORE_MODEL"].SetDefault(false);
 
   // find OL installation prefix with several overwrite options
+  char *var=NULL;
   s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
+  s_olprefix = string(((var=getenv("OL_PREFIX"))==NULL ? s_olprefix : var));
   struct stat st;
   if(stat(s_olprefix.c_str(), &st) != 0)
     s_olprefix = OPENLOOPS_PREFIX;
@@ -108,6 +110,12 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // load library dynamically
   s_loader->AddPath(s_olprefix+"/lib");
   s_loader->AddPath(s_olprefix+"/proclib");
+  if (!s_loader->LoadLibrary("olcommon")) PRINT_INFO("Ignoring explicit libolcommon.so loading.");
+  if (!s_loader->LoadLibrary("collier")) PRINT_INFO("Ignoring explicit libcollier.so loading.");
+  if (!s_loader->LoadLibrary("oneloop")) PRINT_INFO("Ignoring explicit liboneloop.so loading.");
+  if (!s_loader->LoadLibrary("cuttools")) PRINT_INFO("Ignoring explicit libcuttools.so loading.");
+  if (!s_loader->LoadLibrary("rambo")) PRINT_INFO("Ignoring explicit librambo.so loading.");
+  if (!s_loader->LoadLibrary("trred")) PRINT_INFO("Ignoring explicit libtrred.so loading.");
   if (!s_loader->LoadLibrary("openloops"))
     THROW(fatal_error, "Failed to load libopenloops.");
 

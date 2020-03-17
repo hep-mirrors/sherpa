@@ -16,11 +16,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,
-               const int qcd, const int qed,
-               int type) :
-  p_actual(NULL), m_sudakov(isr,qcd,qed), p_isr(isr),
-  p_variationweights(NULL)
+Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
+    : p_actual(NULL), m_sudakov(isr, qcd, qed), p_isr(isr)
 {
   Settings& s = Settings::GetMainSettings();
   const int evol{ s["CSS_EVOLUTION_SCHEME"].Get<int>() };
@@ -91,11 +88,11 @@ double Shower::EFac(const std::string &sfk) const
 
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
-  m_weight=1.0;
+  m_weights = Event_Weights {1.0};
   if (nem < m_maxrewem) {
-    m_sudakov.SetVariationWeights(p_variationweights);
+    m_sudakov.SetEventWeights(&m_weights);
   } else {
-    m_sudakov.SetVariationWeights(NULL);
+    m_sudakov.SetEventWeights(NULL);
   }
   return EvolveSinglet(actual,maxem,nem);
 }
@@ -286,53 +283,12 @@ int Shower::MakeKinematics
     spect->SetFixSpec(psf);
     return ustat;
   }
-  m_weight*=split->Weight();
-  if (p_variationweights) *p_variationweights*=split->Weight();
-  msg_Debugging()<<"sw = "<<split->Weight()
-		 <<", w = "<<m_weight<<"\n";
+  const double split_weight {split->Weight()};
+  m_weights *= split_weight;
+  msg_Debugging() << "sw = " << split_weight << ", w = " << m_weights.Nominal()
+                  << "\n";
   split->GetSing()->SplitParton(split,pi,pj);
   return 1;
-}
-
-double Shower::GetWeight(Variation_Parameters *params,
-			 Variation_Weights *weights,
-			 std::vector<double> &v)
-{
-  return v[weights->CurrentParametersIndex()];
-}
-
-double Shower::VetoWeight(Variation_Parameters *params,
-			  Variation_Weights *weights,
-			  JetVeto_Args &args)
-{
-  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
-  int stat(args.m_jcv>=0.0);
-  Singlet *sing(args.p_sing);
-  Jet_Finder *jf(sing->JF());
-  if (stat && jf) {
-    double fac(weights?params->m_Qcutfac:1.0);
-    if (jf) {
-      stat=args.m_jcv<sqr(jf->Qcut()*fac);
-      msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
-		     <<jf->Qcut()<<" * "<<fac
-		     <<" = "<<jf->Qcut()*fac<<"\n";
-    }
-  }
-  if (stat==1) {
-    msg_Debugging()<<"} no jet veto\n";
-    args.m_acc=1;
-    return 1.0;
-  }
-  if (sing->NLO()&2) {
-    msg_Debugging()<<"  skip emission\n";
-    if (weights==NULL) args.m_skip.back()=1;
-    else args.m_skip[weights->CurrentParametersIndex()]=1;
-    args.m_acc=1;
-    msg_Debugging()<<"} no jet veto\n";
-    return 1.0;
-  }
-  msg_Debugging()<<"} jet veto\n";
-  return 0.0;
 }
 
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
@@ -382,10 +338,11 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       ResetScales(p_actual->KtNext());
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
            ++it) {
-        if ((*it)->Weight()!=1.0)
-          msg_Debugging()<<"Add wt for "<<(**it)<<": "<<(*it)->Weight()<<"\n";
-        m_weight*=(*it)->Weight();
-	if (p_variationweights) *p_variationweights*=(*it)->Weight();
+        const double singlet_weight {(*it)->Weight()};
+        if (singlet_weight != 1.0)
+          msg_Debugging() << "Add wt for " << (**it) << ": " << singlet_weight
+                          << "\n";
+        m_weights *= singlet_weight;
       }
       if (p_actual->NLO()&32) {
 	p_actual->Reduce();
@@ -440,19 +397,45 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	ResetScales(p_actual->KtNext());
 	continue;
       }
-      JetVeto_Args vwa(p_actual,kstat?jcv:-1.0,
-		       p_variationweights?
-		       p_variationweights->NumberOfParameters()+1:1);
-      m_weight*=VetoWeight(NULL,NULL,vwa);
-      if (p_variationweights)
-	p_variationweights->UpdateOrInitialiseWeights
-	  (&Shower::VetoWeight,*this,vwa);
+      jcv = kstat ? jcv : -1.0;
+      const bool is_jcv_positive {jcv >= 0.0};
+      bool all_vetoed {true};
+      std::vector<bool> skips (s_variations->Size() + 1, false);
+      int nskips {0};
+      m_weights.ApplyAll(
+          [this, jcv, is_jcv_positive, &all_vetoed, &skips, &nskips](
+              double varweight,
+              size_t varindex,
+              Variation_Parameters* varparams) -> double {
+            msg_Debugging()
+                << "Applying veto weight to " << varweight << " {\n";
+            bool stat {is_jcv_positive};
+            if (stat && p_actual->JF()) {
+              double fac(varparams ? varparams->m_Qcutfac : 1.0);
+              stat = jcv < sqr(p_actual->JF()->Qcut() * fac);
+              msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs "
+                              << p_actual->JF()->Qcut() << " * " << fac << " = "
+                              << p_actual->JF()->Qcut() * fac << "\n";
+            }
+            if (stat == 1) {
+              msg_Debugging() << "} no jet veto\n";
+              all_vetoed = false;
+              return varweight;
+            }
+            if (p_actual->NLO() & 2) {
+              msg_Debugging() << "  skip emission\n";
+              skips[varindex] = true;
+              ++nskips;
+              all_vetoed = false;
+              msg_Debugging() << "} no jet veto\n";
+              return varweight;
+            }
+            msg_Debugging() << "} jet veto\n";
+            return 0.0;
+          });
       if (p_actual->NLO()&2) {
-	int nskip(0);
-	for (size_t i(0);i<vwa.m_skip.size();++i)
-	  nskip+=vwa.m_skip[i];
-	double wskip(nskip/double(vwa.m_skip.size()));
-	if (ran->Get()<=wskip) {
+        const double wskip {nskips / double(skips.size())};
+        if (ran->Get()<=wskip) {
 	  double lkf(p_actual->LKF());
 	  Singlet *sing(p_actual);
 	  sing->SetLKF(1.0);
@@ -462,28 +445,20 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    sing->SetLKF(1.0);
 	    sing->SetNLO(sing->NLO()&~2);
 	  }
-	  m_weight*=vwa.m_skip.back()?1.0/lkf/wskip:0.0;
-	  std::vector<double> swa(vwa.m_skip.size()-1,0.0);
-	  for (size_t i(0);i<swa.size();++i)
-	    if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
-	  msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
-          if (p_variationweights)
-            p_variationweights->UpdateOrInitialiseWeights(
-                &Shower::GetWeight, *this, swa);
-	  continue;
-	}
+          const double fac {1.0 / lkf / wskip};
+          m_weights *= fac;
+          m_weights *= skips;
+          continue;
+        }
 	else {
-	  m_weight*=vwa.m_skip.back()?0.0:1.0/(1.0-wskip);
-	  std::vector<double> swa(vwa.m_skip.size()-1,0.0);
-	  for (size_t i(0);i<swa.size();++i)
-	    if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
-	  msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
-          if (p_variationweights)
-            p_variationweights->UpdateOrInitialiseWeights(
-                &Shower::GetWeight, *this, swa);
-	}
+          const double fac {1.0 / (1.0 - wskip)};
+          m_weights *= fac;
+          skips.flip();
+          m_weights *= skips;
+        }
       }
-      if (vwa.m_acc==0) return false;
+      if (all_vetoed)
+        return false;
       Singlet *sing(p_actual);
       sing->SetJF(NULL);
       while (sing->GetLeft()) {
@@ -494,17 +469,16 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         for (Singlet::const_iterator it=p_actual->begin();
              it!=p_actual->end();++it) {
           if ((*it)->Weight()!=1.0) {
-            msg_Debugging()<<"Add wt for "<<(**it)<<": "
-                           <<(*it)->Weight(m_last[0]->KtStart())<<"\n";
-            m_weight*=(*it)->Weight(m_last[0]->KtStart());
-	    if (p_variationweights)
-	      *p_variationweights*=(*it)->Weight(m_last[0]->KtStart());
+            const double singlet_weight {(*it)->Weight(m_last[0]->KtStart())};
+            msg_Debugging()
+                << "Add wt for " << (**it) << ": " << singlet_weight << "\n";
+            m_weights *= singlet_weight;
             (*it)->Weights().clear();
           }
         }
       }
       ++nem;
-      if (nem >= m_maxrewem) m_sudakov.SetVariationWeights(NULL);
+      if (nem >= m_maxrewem) m_sudakov.SetEventWeights(NULL);
       if (p_actual->NME()+nem>m_maxpart) return true;
       if (nem >= maxem) return true;
     }
@@ -527,24 +501,24 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
-  if (m_sudakov.Generate(split)) {
-    m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-    split->SetWeight(m_sudakov.Weight());
-    if (kt2>kt2win) {
-      kt2win  = kt2;
-      m_flavA = m_sudakov.GetFlavourA();
-      m_flavB = m_sudakov.GetFlavourB();
-      m_flavC = m_sudakov.GetFlavourC();
-      m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-      split->SetCol(m_sudakov.GetCol());
-      split->SetTest(kt2,z,y,phi);
-      return true;
+    if (m_sudakov.Generate(split)) {
+      m_sudakov.GetSplittingParameters(kt2,z,y,phi);
+      split->SetWeight(m_sudakov.Weight());
+      if (kt2>kt2win) {
+	kt2win  = kt2;
+	m_flavA = m_sudakov.GetFlavourA();
+	m_flavB = m_sudakov.GetFlavourB();
+	m_flavC = m_sudakov.GetFlavourC();
+	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+	split->SetCol(m_sudakov.GetCol());
+	split->SetTest(kt2,z,y,phi);
+	return true;
+      }
     }
-  }
-  else {
-    split->SetWeight(m_sudakov.Weight());
-  }
-  return false;
+    else {
+      split->SetWeight(m_sudakov.Weight());
+    }
+    return false;
   }
   return false;
 }

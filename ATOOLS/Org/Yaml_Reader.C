@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/Settings_Keys.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_File.H"
 
 #include <cassert>
 
@@ -15,11 +16,22 @@ Yaml_Reader::Yaml_Reader(std::istream& s)
   Parse(s);
 }
 
-Yaml_Reader::Yaml_Reader(const std::string& filename)
+Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
 {
   assert(filename != "");
-  std::ifstream file(filename);
-  Parse(file);
+  My_File<std::ifstream> file {path, filename};
+  if (!file.Open()) {
+    THROW(invalid_input, filename + " could not be opened.");
+  }
+  try {
+    Parse(*file);
+  } catch (const std::exception& e) {
+    MyStrStream str;
+    str << path << '/' << filename << " appears to contain a syntax ";
+    // append yaml-cpp error wihtout the "yaml-cpp: " prefix
+    str << std::string{e.what()}.substr(10);
+    THROW(fatal_error, str.str());
+  }
 }
 
 void Yaml_Reader::Parse(std::istream& s)
@@ -44,6 +56,12 @@ std::vector<std::string> Yaml_Reader::GetKeys(const Settings_Keys& scopekeys)
     keys.push_back(subnode.first.as<std::string>());
   }
   return keys;
+}
+
+bool Yaml_Reader::IsList(const Settings_Keys& scopekeys)
+{
+  const auto node = NodeForKeys(scopekeys);
+  return node.IsSequence();
 }
 
 size_t Yaml_Reader::GetItemsCount(const Settings_Keys& scopekeys)

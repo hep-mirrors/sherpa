@@ -64,14 +64,11 @@ namespace ATOOLS {
    *   }
    *
    * When settings defaults and/or overrides, lists are ignored, i.e. for the
-   * previous example, with mainsettings["PROCESSES"]["NIn"].SetDefault...(2),
-   * each s["NIn"] will have its default set to 2.
+   * previous example, with
+   * mainsettings["PROCESSES"][proc_name]["NIn"].SetDefault...(2), each
+   * s[proc_name]["NIn"] will have its default set to 2.
    */
   class Settings {
-
-    // TODO: add missing implementations
-    // TODO: put things like EVENT_INPUT in string constant, remember we did
-    // a similar thing for the CLI, can we reuse/unify this?
 
     friend Scoped_Settings;
     friend Settings_Writer;
@@ -130,6 +127,7 @@ namespace ATOOLS {
     std::map<Defaults_Key, std::unordered_set<std::string>> m_otherscalardefaults;
 
     std::map<Defaults_Key, String_Map> m_replacements;
+    std::map<Defaults_Key, String_Vector> m_defaultsynonyms;
 
     String_Map m_tags;
     String_Map m_globaltags;
@@ -206,15 +204,23 @@ namespace ATOOLS {
     void SetReplacementList(const Settings_Keys&,
                             const std::map<std::string, T>& list);
 
+    void SetDefaultSynonyms(const Settings_Keys&,
+                            const String_Vector& synonyms);
+
+    bool IsList(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
 
     template <typename T>
     T Convert(const Settings_Keys&, const std::string&);
 
+    bool IsDefaultSynonym(const Settings_Keys&,
+                          const std::string& value);
+
     std::string ApplyReplacements(const Settings_Keys&,
                                   const std::string& value);
 
-
+    // check if path is absolute, only works on Unix
+    inline bool is_absolute(const std::string &s) {return (s.find("/") ==0);}
   };
 
   template <typename T>
@@ -317,7 +323,7 @@ namespace ATOOLS {
       if (value != "")
         break;
     }
-    if (value == "") {
+    if (value == "" || IsDefaultSynonym(settings_keys, value)) {
       value = defaultvalue;
     }
     const auto convertedvalue = Convert<T>(settings_keys, value);

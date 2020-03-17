@@ -41,8 +41,16 @@ namespace ATOOLS {
     template <typename T>
     Scoped_Settings& SetReplacementList(const std::map<std::string, T>& list);
 
+    Scoped_Settings& SetDefaultSynonyms(const String_Vector&);
+
     /// set a common replacement list: [Off, false, 0, no] -> None
     Scoped_Settings& UseNoneReplacements();
+
+    /// set a common replacement list: [None] -> max double
+    Scoped_Settings& UseMaxDoubleReplacements();
+
+    /// set a common replacement list: [None] -> 0
+    Scoped_Settings& UseZeroReplacements();
 
     bool IsCustomised();
 
@@ -84,6 +92,7 @@ namespace ATOOLS {
 
     std::string GetPath() { return m_rootsettings->GetPath(); }
 
+    bool IsList() const;
     std::vector<Scoped_Settings> GetItems() const;
     size_t GetItemsCount();
     Scoped_Settings GetItemAtIndex(const size_t&) const;

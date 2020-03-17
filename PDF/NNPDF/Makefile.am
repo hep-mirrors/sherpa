@@ -12,7 +12,7 @@ libNNPDFSherpa_la_SOURCES      =	\
 localinc_HEADERS      = \
 			NNPDFDriver.h
 
-NNPDF3archive = nnpdf30.tar.bz2
+NNPDF3archive = NNPDF31_nnlo_as_0118_mc.tar.bz2
 
 
 nobase_dist_pkgdata_DATA         =	$(NNPDF3archive)
@@ -21,5 +21,4 @@ install-data-hook:
 	tar xjf $(srcdir)/$(NNPDF3archive) -C $(DESTDIR)$(pkgdatadir)
 
 uninstall-hook:
-	-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF30_nnlo_as_0118
-	-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF30_nlo_as_0118
+	-rm -rf $(DESTDIR)/$(pkgdatadir)/NNPDF31_nnlo_as_0118_mc

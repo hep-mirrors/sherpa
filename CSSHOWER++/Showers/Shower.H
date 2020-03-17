@@ -4,27 +4,16 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
 
 namespace ATOOLS {
   class Cluster_Leg;
-  class Variation_Weights;
-  class Variation_Parameters;
 }
 
 namespace CSSHOWER {
-
-  struct JetVeto_Args {
-    Singlet *p_sing;
-    double m_jcv;
-    int m_acc, m_nlo;
-    std::vector<int> m_skip;
-    JetVeto_Args(Singlet *const sing,
-		 const double &jcv,const size_t &n):
-      p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
-  };// end of struct JetVeto_Args
 
   class Shower {
   private:
@@ -44,10 +33,11 @@ namespace CSSHOWER {
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
-    double m_weight, m_lastcpl;
+    ATOOLS::Event_Weights m_weights;
 
-    ATOOLS::Variation_Weights * p_variationweights;
-    //! the maximum number of rew'd emissions
+    double m_lastcpl;
+
+    /// the maximum number of reweighted emissions
     unsigned int m_maxrewem;
 
     void   ResetScales(const double &kt2);
@@ -67,13 +57,8 @@ namespace CSSHOWER {
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv,int mode);
-    double GetWeight(ATOOLS::Variation_Parameters *params,
-		     ATOOLS::Variation_Weights *weights,
-		     std::vector<double> &v);
-    double VetoWeight(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      JetVeto_Args &a);
- public:
+
+  public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
@@ -94,14 +79,12 @@ namespace CSSHOWER {
     inline Kinematics_IF *KinIF() { return &m_kinIF; }
     inline Kinematics_II *KinII() { return &m_kinII; }
 
-    inline double Weight() const { return m_weight; }
+    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
 
     inline int KinScheme() const { return m_kscheme; }
 
     inline PDF::ISR_Handler *ISR() { return p_isr; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
     inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
       p_remnants = remnants;
     }

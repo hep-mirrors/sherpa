@@ -54,12 +54,14 @@ Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
   Singlet_Tools(),
   p_singlets(singlets), p_softclusters(softclusters),
   p_hadrons(softclusters->GetHadrons()),
-  m_direct_transitions(0)
+  m_direct_transitions(0), m_errors(0)
 {}
 
 Singlet_Checker::~Singlet_Checker() {
   msg_Tracking()<<METHOD<<" with "<<m_direct_transitions
 		<<" direct enforced transitions in total.\n";
+  if (m_errors>0)
+    msg_Error()<<METHOD<<" with "<<m_errors<<" errors in total.\n";
 }
 
 void Singlet_Checker::Init() {
@@ -90,8 +92,9 @@ bool Singlet_Checker::operator()() {
       // more than two partons - fusing partons may help in retry.
       // if fusing does not work we will re-try the event
       else if (!FusePartonsInLowMassSinglet()) {
-	msg_Error()<<METHOD<<" throws error - fusing didn't work out.\n"
-		   <<(*p_singlet)<<"\n";
+	m_errors++;
+	msg_Tracking()<<METHOD<<" throws error - fusing didn't work out.\n"
+		      <<(*p_singlet)<<"\n";
 	return false;
       }
     }
@@ -101,11 +104,12 @@ bool Singlet_Checker::operator()() {
   // invoking the rescue system, if neccessary.
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throws error - no rescue possible.\n";
+      m_errors++;
+      msg_Tracking()<<METHOD<<" throws error - no rescue possible.\n";
       if (msg_LevelIsTracking()) {
 	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
 	     bit!=m_badones.end();bit++) {
-	  msg_Error()<<(***bit)<<"\n";
+	  msg_Tracking()<<(***bit)<<"\n";
 	}
       }
       return false;
@@ -119,10 +123,10 @@ bool Singlet_Checker::CheckSinglet() {
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
     if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   negative energy or mass^2 particle in singlet:\n"
-		 <<(*p_singlet)<<"n";
-      //return false;
+      msg_Tracking()<<"Error in "<<METHOD<<":\n"
+		    <<"   negative energy or mass^2 particle in singlet:\n"
+		    <<(*p_singlet)<<"n";
+      m_errors++;
     }
   }
   list<Proto_Particle *>::iterator plit1(p_singlet->begin()), plit2(plit1);
@@ -172,7 +176,8 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
   SortProblematicSinglets();
   if (m_transitions.size()>1) {
     if (!TransitProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throws error for more than one transition.\n";
+      msg_Tracking()<<METHOD<<" throws error for more than one transition.\n";
+      m_errors++;
       return false;
     }
   }
@@ -181,14 +186,16 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // to sort them out - two birds with one stone.
     if (FindOtherSingletToTransit()) {
       if (!TransitProblematicSinglets()) {
-	msg_Error()<<METHOD<<" throws error for one transition (1).\n";
+	msg_Tracking()<<METHOD<<" throws error for one transition (1).\n";
+	m_errors++;
 	return false;
       }
     }
     // if this does not work, we'll try to find a "regular" singlet ....
     else if (FindRecoilerForTransit()) {
       if (!TransitProblematicSingletWithRecoiler()) {
-	msg_Error()<<METHOD<<" throws error for one transition (2).\n";
+	msg_Tracking()<<METHOD<<" throws error for one transition (2).\n";
+	m_errors++;
 	return false;
       }
     }
@@ -258,7 +265,8 @@ bool Singlet_Checker::FindOtherSingletToTransit() {
     m_badones.erase(hit);
     return true;
   }
-  msg_Error()<<METHOD<<" throws error: no partner found.\n";
+  msg_Tracking()<<METHOD<<" throws error: no partner found.\n";
+  m_errors++;
   return false;
 }
 
@@ -422,9 +430,10 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
     if (m_splitter(p_part1,p_part2)) {
       Cluster * cluster = new Cluster(p_part1,p_part2);
       if ((!p_softclusters->Treat(cluster,true))==1) {
-	msg_Error()<<"Error in "<<METHOD<<": transformed two gluons into\n"
-		   <<(*cluster)
-		   <<"but did not decay further.  Insert into cluster list.\n";
+	msg_Tracking()<<"Error in "<<METHOD<<": transformed two gluons into\n"
+		      <<(*cluster)
+		      <<"but did not decay further.  Insert into cluster list.\n";
+	m_errors++;
       }
       else delete cluster;
       return true;
@@ -436,8 +445,9 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
     delete cluster;
     return true;
   }
-  msg_Error()<<"Error in "<<METHOD<<": could not decay two-gluon cluster\n"
-	     <<(*cluster);
+  msg_Tracking()<<"Error in "<<METHOD<<": could not decay two-gluon cluster\n"
+		<<(*cluster);
+  m_errors++;
   return false;
 }
 

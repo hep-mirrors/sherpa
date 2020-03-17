@@ -8,7 +8,6 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
@@ -51,7 +50,7 @@ namespace SHERPA {
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
         m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
-	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vborncpl, m_vaddname, m_vspecial;
+	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
       ATOOLS::Scoped_Settings m_selectors;
@@ -80,7 +79,6 @@ namespace SHERPA {
     ATOOLS::Weight_Info m_evtinfo;
 
     Shower_Handler    *p_shower;
-    ATOOLS::Variation_Weights *p_variationweights;
     PDF::NLOMC_Base   *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
@@ -98,7 +96,7 @@ namespace SHERPA {
     ProcMap_Vector m_pmaps;
 
     void RegisterDefaults();
-    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&&);
+    void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&);
 
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
@@ -130,18 +128,19 @@ namespace SHERPA {
                          const int &priority,
                          std::map<std::string,std::pair<int,Type> >&) const;
 
-    std::vector<PHASIC::Process_Base*> InitializeProcess
-    (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    std::vector<PHASIC::Process_Base*> InitializeProcess(
+        PHASIC::Process_Info, PHASIC::NLOTypeStringProcessMap_Map*&);
     std::vector<PHASIC::Process_Base*> InitializeSingleProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    void CheckInitialStateOrdering(const PHASIC::Process_Info&);
 
     void BuildProcesses();
     void ReadFinalStateMultiIndependentProcessSettings(
-      ATOOLS::Scoped_Settings, Single_Process_List_Args&);
+      const std::string& procname, ATOOLS::Scoped_Settings, Single_Process_List_Args&);
     void ReadFinalStateMultiSpecificProcessSettings(
       ATOOLS::Scoped_Settings,
       Single_Process_List_Args&,
-      const std::string& range="-") const;
+      std::string range="-") const;
 
     void InitNLOMC();
 
@@ -181,9 +180,6 @@ namespace SHERPA {
     }
     inline void SetShowerHandler(Shower_Handler *const sh) {
       p_shower=sh;
-    }
-    inline void SetVariationWeights(ATOOLS::Variation_Weights *const vw) {
-      p_variationweights=vw;
     }
     inline BEAM::Beam_Spectra_Handler *GetBeam() const  { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const   { return p_isr;  }

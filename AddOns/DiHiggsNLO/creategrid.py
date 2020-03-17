@@ -194,7 +194,7 @@ class Grid:
 
     def printgrid(self):
         for k, d in self.data.iteritems():
-            print k, d, d.n
+            print(k, d, d.n)
 
     def addPoint(self, data):
         if (type(data[-1]) is float or type(data[-1]) is np.float64):

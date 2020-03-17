@@ -14,10 +14,10 @@ Minimum_Bias::Minimum_Bias(Soft_Collision_Handler * schandler) :
 
 Minimum_Bias::~Minimum_Bias() {}
 
-ATOOLS::Return_Value::code 
-Minimum_Bias::Treat(ATOOLS::Blob_List * blobs, double & weight) {
+ATOOLS::Return_Value::code Minimum_Bias::Treat(ATOOLS::Blob_List* blobs)
+{
   //msg_Out()<<METHOD<<":\n"<<blobs<<" with "<<p_schandler<<"\n";
-  return p_schandler->GenerateMinimumBiasEvent(blobs,weight);
+  return p_schandler->GenerateMinimumBiasEvent(blobs);
 }
 
 void Minimum_Bias::CleanUp(const size_t & mode) {

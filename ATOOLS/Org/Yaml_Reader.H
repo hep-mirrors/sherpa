@@ -17,9 +17,10 @@ namespace ATOOLS {
     // constructors
     Yaml_Reader();
     Yaml_Reader(std::istream&);
-    Yaml_Reader(const std::string& filename);
+    Yaml_Reader(const std::string& path, const std::string& filename);
 
     std::vector<std::string> GetKeys(const Settings_Keys& scopekeys);
+    bool IsList(const Settings_Keys& scopekeys);
     size_t GetItemsCount(const Settings_Keys& scopekeys);
 
     bool IsParameterCustomised(const Settings_Keys& scopekeys);

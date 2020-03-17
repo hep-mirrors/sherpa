@@ -203,6 +203,7 @@ bool COMIX::Single_Process::Initialize
       }
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
+      p_loop->SetSubType((sbt::subtype)(stype+1));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
       m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
@@ -385,12 +386,14 @@ bool COMIX::Single_Process::GeneratePoint()
   return true;
 }
 
-double COMIX::Single_Process::Differential
-(const Cluster_Amplitude &ampl,int mode) 
+Event_Weights COMIX::Single_Process::Differential(
+    const Cluster_Amplitude &ampl,
+    Weight_Type type,
+    int mode)
 {
   m_zero=false;
   if ((mode&128)==0) p_int->ColorIntegrator()->SetPoint(&ampl);
-  return PHASIC::Process_Base::Differential(ampl,mode);
+  return PHASIC::Process_Base::Differential(ampl,type,mode);
 }
 
 double COMIX::Single_Process::SetZero()
@@ -402,8 +405,7 @@ double COMIX::Single_Process::SetZero()
   return m_w=m_dxs=m_lastxs=m_last=0.0;
 }
 
-double COMIX::Single_Process::Partonic
-(const Vec4D_Vector &p,const int mode) 
+double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1) {
