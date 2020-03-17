@@ -163,7 +163,7 @@ double EWGroupConstants::NondiagonalCew() const noexcept
 
 Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 {
-  auto couplings{IZ(flav, pol)};
+  auto couplings = IZ(flav, pol);
   for (auto& coupling : couplings) {
     coupling.second *= coupling.second;
   }
