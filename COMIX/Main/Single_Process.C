@@ -28,10 +28,11 @@ COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
-  m_checkpoles(false), m_allowmap(false)
+  m_checkpoles(false), m_allowmap(true)
 {
   Settings& s = Settings::GetMainSettings();
-  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_itype     = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_allowmap  = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
 }
 
 COMIX::Single_Process::~Single_Process()
