@@ -126,6 +126,9 @@ void Settings_Writer::WriteSettings(Settings& s)
   makefile << "Settings_Report.html: Settings_Report.md\n"
            << "\tpandoc -s -o Settings_Report.html -c Style.css"
            << " Settings_Report.md\n\n"
+	   << "Settings_Report.org: Settings_Report.md\n"
+           << "\tpandoc -f markdown -t org -c Style.css -o Settings_Report.org"
+           << " Settings_Report.md\n\n"
            << "clean:\n"
            << "\trm -f Settings_Report.html\n\n"
            << ".PHONY: clean";
