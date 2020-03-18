@@ -215,15 +215,9 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   
   if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
     for (size_t i=0;i<m_flavours.size();i++) boost.BoostBack(m_momenta[i]);
-    //Vec4D check = mom[2];
     for (size_t i=0;i<m_flavours.size();i++) {
       boost.BoostBack(m_momenta[i]);
-      //if (i>=2) check -= m_momenta[i];
-      //msg_Out()<<"   * "<<i<<": "<<m_flavours[i]<<" "
-      //	       <<"["<<p_colours[i][0]<<" "<<p_colours[i][1]<<"] "
-      //       <<m_momenta[i]<<"\n";
     }
-    //msg_Out()<<"   *** 4 mom: "<<mom[2]<<" --> "<<check<<".\n";
   }
   return true;
 }
@@ -347,10 +341,10 @@ bool XS_instanton::MakeColours() {
 				       cols[0].back():0);
   m_colours[m_flavours.size()-1][1] = (((flav.IsQuark() && flav.IsAnti()) || flav.IsGluon())?
 				       cols[1].back():0);  
-  if (p_colours[m_flavours.size()-1][0]==p_colours[m_flavours.size()-1][1]) {
-    size_t help = p_colours[m_flavours.size()-1][1];
-    p_colours[m_flavours.size()-1][1] = p_colours[2][1];
-    p_colours[2][1] = help;
+  if (m_colours[m_flavours.size()-1][0]==m_colours[m_flavours.size()-1][1]) {
+    size_t help = m_colours[m_flavours.size()-1][1];
+    m_colours[m_flavours.size()-1][1] = m_colours[2][1];
+    m_colours[2][1] = help;
   }
   return true;
 }
