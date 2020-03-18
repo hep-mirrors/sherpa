@@ -1,79 +1,76 @@
 #ifndef BEAM_Main_Beam_Spectra_Handler_H
 #define BEAM_Main_Beam_Spectra_Handler_H
 
-#include "BEAM/Main/Beam_Base.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Info_Key.H"
+#include "BEAM/Main/Beam_Parameters.H"
+#include "BEAM/Main/Kinematics_Base.H"
+#include "BEAM/Main/Weight_Base.H"
 
 namespace BEAM {
   class Beam_Spectra_Handler {
-  protected:
-    Beam_Base          ** p_BeamBase;
-    ATOOLS::Poincare      m_CMSBoost;
-    ATOOLS::Poincare      m_LABBoost;
-
-    bool                  m_asymmetric;
-    int                   m_mode, m_polarisation; 
-    double                m_mass12, m_mass22, m_x1, m_x2;
-    double                m_exponent[2];
-    double                m_splimits[3],m_ylimits[2];
-    ATOOLS::Vec4D         m_fiXVECs[2];
-    std::string           m_name,m_type;
-    ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
   private:
-    void RegisterDefaults();
-    void RegisterLaserDefaults(const int& lasermode);
-    void RegisterSpectrumReaderDefaults();
-    void RegisterLaserEnergyAndPolarizationDefaults();
-    bool InitKinematics();
-    bool SpecifySpectra();
-    bool InitializeLaserBackscattering(int);
-    bool InitializeSpectrumReader(int);
-    bool InitializeMonochromatic(int);
-    bool InitializeEPA(int);
-    void InitializeFlav(kf_code);
+    Beam_Base        * p_BeamBase[2];
+    Kinematics_Base  * p_kinematics;
+    Weight_Base      * p_weight;
+    Beam_Parameters    m_parameters;
+    beammode::code     m_beammode;
+    collidermode::code m_collidermode;
+    bool               m_on;
+
+    int                   m_mode, m_polarisation;
+    std::string           m_name,m_type;
+    
+    bool InitTheBeams();
+    bool InitTheKinematics();
+    bool InitTheWeight();
   public:
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
     
-    bool   Init();
+    inline const bool             On()           const { return m_on; }
+    inline const beammode::code & Mode()         const { return m_beammode; }
+    inline Beam_Base            * GetBeam(const int i) { return p_BeamBase[i]; }
+    
+    inline const double Upper1() { return p_BeamBase[0]->Xmax(); }
+    inline const double Upper2() { return p_BeamBase[1]->Xmax(); }
+    inline const double Peak()   { return p_BeamBase[0]->Peak()*p_BeamBase[1]->Peak(); }
+    
+    inline bool MakeBeams(ATOOLS::Vec4D * moms) { return (*p_kinematics)(moms); }
+    inline void AssignKeys(ATOOLS::Integration_Info *const info) {
+      p_kinematics->AssignKeys(info);
+      p_weight->AssignKeys(info);
+    }
+    inline void SetLimits() { p_kinematics->SetLimits(); }
+    inline void BoostInCMS(ATOOLS::Vec4D *p,const size_t & n) {
+      p_kinematics->BoostInCMS(p,n);
+    }
+    inline void BoostInLab(ATOOLS::Vec4D *p,const size_t & n) {
+      p_kinematics->BoostInCMS(p,n);
+    }
+    
+    inline void SetSprimeMin(const double & smin) { p_kinematics->SetSprimeMin(smin); }
+    inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMin(smax); }
+    inline const double SprimeMin() const { return p_kinematics->SprimeMin(); }
+    inline const double SprimeMax() const { return p_kinematics->SprimeMax(); }
+    inline const double Sprime()          { return p_kinematics->Sprime(); }
+    inline const double Y()               { return p_kinematics->Y(); }
+    inline const double Exponent(const size_t & i) const {
+      return p_kinematics->Exponent(i);
+    }
+    inline bool     CalculateWeight(const double & scale) {
+      return p_weight->Calculate(scale);
+    }
+    inline const double Weight(ATOOLS::Flavour * flin=NULL) const {
+      return (*p_weight)(flin);
+    }
+
     void   Output();
+    
+    // possible deprecated methods
+    int             Polarisation()        { return m_polarisation; }
+    double Weight(int * pol_types, double * dofs);
+    double DM_Weight(double s);
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
-    bool   MakeBeams(ATOOLS::Vec4D *);
-    bool   CalculateWeight(double);
-    double Weight(ATOOLS::Flavour * flin = NULL);
-    double Weight(int * pol_types, double * dofs);
-
-    void   BoostInCMS(ATOOLS::Vec4D *,int);
-    void   BoostInLab(ATOOLS::Vec4D *,int);
-
-    void   AssignKeys(ATOOLS::Integration_Info *const info);
-    void   SetLimits();
-
-    void   SetName(std::string _name)     { m_name         = _name; }
-    void   SetSprimeMin(double _spl);
-    void   SetSprimeMax(double _spl);
-    void   SetYMin(double _yl)            { m_ylimits[0]   = _yl; }
-    void   SetYMax(double _yl)            { m_ylimits[1]   = _yl; }
-    std::string     Name()                { return m_name; }
-    std::string     Type()                { return m_type; }
-    double        * SprimeRange()         { return m_splimits; }
-    double        * YRange()              { return m_ylimits; }
-    double          SprimeMin()           { return m_splimits[0]; }
-    double          SprimeMax()           { return m_splimits[1]; }
-    double          YMin()                { return m_ylimits[0]; }
-    double          YMax()                { return m_ylimits[1]; }
-    double          Upper1()              { return p_BeamBase[0]->Xmax(); }
-    double          Upper2()              { return p_BeamBase[1]->Xmax(); }
-    double          Peak()                { return p_BeamBase[0]->Peak() *
-					           p_BeamBase[1]->Peak(); }
-    double          Exponent(const int i) { return m_exponent[i]; }
-    int             On()                  { return m_mode; }
-    int             Polarisation()        { return m_polarisation; }
-    Beam_Base *     GetBeam(const int i)  { return p_BeamBase[i]; }
-    
   };
 
   /*!
@@ -81,7 +78,7 @@ namespace BEAM {
     The namespace BEAM houses all classes that are employed to generate
     beam spectra. In the framework of both the SHERPA package and of the
     program AMEGIC the following nomenclature is assumed :
-    - There are incoming beams at a certain energy, the nominal energy of the 
+    - There are incoming beams at a certain energy, the nominal energy of the
       beam in the collider,
     - these beams then result in bunches of interacting particles which have
       an energy distribution, and, maybe, a \f$k_\perp\f$ distribution of
@@ -100,22 +97,22 @@ namespace BEAM {
     \brief Contains the Beam_Spectra_Handler
   */
   /*!
-    \class Beam_Spectra_Handler 
+    \class Beam_Spectra_Handler
     \brief Handler of all Beam related issues.
-    This class manages the set-up of the incoming (bunch-)particles from the beams according to 
+    This class manages the set-up of the incoming (bunch-)particles from the beams according to
     the strategy defined through the global Settings instance. Before coming
     into full effect during integration or event generation, this handler
     initalises a suitable Beam treatment (Beam_Bases) for both
-    beams and uses them to generate corresponding weights, i.e. energy distributions. At the moment, 
-    all outgonig bunch particles are still collinear to the incoming beams, but this is going 
+    beams and uses them to generate corresponding weights, i.e. energy distributions. At the moment,
+    all outgonig bunch particles are still collinear to the incoming beams, but this is going
     to change in the (near) future.
     \todo Allow for non-collinear bunches
-  */  
+  */
   /*!
     \var Beam_Base ** Beam_Spectra_Handler::p_BeamBase
-    Pointers to the two beam bases, one for each beam. They are initialized (through the method 
-    SpecifiySpectra) and owned by the Beam_Spectra_Handler which in turn has to delete them after 
-    the run. At the moment two types are supported, namely 
+    Pointers to the two beam bases, one for each beam. They are initialized (through the method
+    SpecifiySpectra) and owned by the Beam_Spectra_Handler which in turn has to delete them after
+    the run. At the moment two types are supported, namely
     - monochromatic beams
     - photon beams stemming from electron through Laser backscattering.
     More types will be implemented soon, exmples include
@@ -137,7 +134,7 @@ namespace BEAM {
   /*!
     \var bool Beam_Spectra_Handler::m_asymmetric
     This flag indicates wether the incoming beams are in an asymmetric situation, i.e.
-    if the boost from the c.m. system of the incoming beams to their lab system is 
+    if the boost from the c.m. system of the incoming beams to their lab system is
     mandatory.
   */
   /*!
@@ -158,7 +155,7 @@ namespace BEAM {
     \endverbatim
     and
     \verbatim
-    m_exponent[1] = 0.98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent()) 
+    m_exponent[1] = 0.98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent())
     \endverbatim
     is given by characteristic exponents of the BeamBases.
   */
@@ -166,12 +163,12 @@ namespace BEAM {
     \var double Beam_Spectra_Handler::m_splimits[3]
     \f$s'\f$-limits and characteristics:
     m_splimits[0,1] = \f$s'_{\rm min, max}\f$
-    and 
+    and
     m_splimits[2] = \f$s_{\rm beams}\f$.
-  */ 
+  */
   /*!
     \var Beam_Spectra_Handler::m_ylimits[2]
-    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact 
+    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact
     this range should be calculated from the range of the BeamBases.
     \todo Rapidity range from BeamBases.
   */
@@ -185,12 +182,12 @@ namespace BEAM {
   */
   /*!
     \var double Beam_Spectra_Handler::m_x1
-    The energy fractions \f$x_{1}\f$ the outgoing bunch 1 have w.r.t. the corresponding 
+    The energy fractions \f$x_{1}\f$ the outgoing bunch 1 have w.r.t. the corresponding
     incoming beams.
   */
   /*!
     \var double Beam_Spectra_Handler::m_x2
-    The energy fractions \f$x_{2}\f$ the outgoing bunch 2 have w.r.t. the corresponding 
+    The energy fractions \f$x_{2}\f$ the outgoing bunch 2 have w.r.t. the corresponding
     incoming beams.
   */
   /*!
@@ -218,8 +215,8 @@ namespace BEAM {
   */
   /*!
     \fn bool Beam_Spectra_Handler::SpecifySpectra();
-    SpecifySpectra reads in the specific spectra of the beams and the corresponding generator 
-    and initializes the spectra through appropriate InitializeXXX methods. At the moment, two 
+    SpecifySpectra reads in the specific spectra of the beams and the corresponding generator
+    and initializes the spectra through appropriate InitializeXXX methods. At the moment, two
     such methods are available, namely InitializeLaserBackscattering(int)
     and InitializeMonochromatic(int). For every new spectrum, such
     a method has to be provided as well and SpecifySpectra has to be modified accordingly.
@@ -229,7 +226,7 @@ namespace BEAM {
   /*!
     \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(int)
     Characteristic parameters for laser back scattering are read in and the spectrum is
-    instantiated through a call to 
+    instantiated through a call to
     Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
                                                const double,const double,const int,
 					       const int,const int,bool &)
@@ -237,7 +234,7 @@ namespace BEAM {
   /*!
     \fn bool Beam_Spectra_Handler::InitializeMonochromatic(int);
     Characteristic parameters for monochromatic beams are read in and the spectrum is
-    instantiated through a call to 
+    instantiated through a call to
     Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
   */
   /*!
@@ -245,7 +242,7 @@ namespace BEAM {
     Here the two lab momenta of the BeamBases are combined to determnie the c.m. energy of
     the process in their c.m. frame. Furthermore, the two corresponding c.m. momenta of the
     incoming beams are constructed and it is decided whether additional boosts to the lab frame
-    are mandatory. Also, the characteristic exponents are filled. 
+    are mandatory. Also, the characteristic exponents are filled.
   */
   /*!
     \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
@@ -254,7 +251,7 @@ namespace BEAM {
   */
   /*!
     \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *)
-    This checks whether the flavours match the bunches of the two BeamBases. If this is the case, 
+    This checks whether the flavours match the bunches of the two BeamBases. If this is the case,
     true is returned.
   */
   /*!
@@ -276,10 +273,10 @@ namespace BEAM {
     c.m. system (in) of the incoming beams are determined with help of the other argument, the
     rapidity \f$y\f$ according to
     \f[
-    \hat E^{(in)}_{1,2} = \exp\left(\pm y\right) 
+    \hat E^{(in)}_{1,2} = \exp\left(\pm y\right)
     \f]
     and the boost linking the two frames, CMBoost is initialized. This boost is then used
-    to bring the c.m. vectors into the correct frame, i.e. the c.m. frame 
+    to bring the c.m. vectors into the correct frame, i.e. the c.m. frame
     of the beams, i.e.
      \f[
      p^{(out)}_{1,2} \Longrightarrow p^{(in)}_{1,2}\,.
@@ -287,8 +284,8 @@ namespace BEAM {
   */
   /*!
     \fn bool Beam_Spectra_Handler::CalculateWeight(double)
-    This method calculates the two beam densities, i.e their weights, according to the spectra 
-    depending on the relative energy fractions and - eventually - on a scale, which is passed as an 
+    This method calculates the two beam densities, i.e their weights, according to the spectra
+    depending on the relative energy fractions and - eventually - on a scale, which is passed as an
     argument. The weight calculation proceeds via calls to the specific methods
     Beam_Base::CalculateWeight(double,double),
     where the energy fractions and the scale are passed as arguments.
@@ -298,14 +295,11 @@ namespace BEAM {
     The weight corresponding to CalculateWeight(double), basically the product of the two
     individual weights. This clearly depends on the flavours of the bunch particles here
     and might therefore allow to have, e.g., a spectrum of the outgoing electrons in
-    laser backscattering. Such an option, however, has not been implemented yet. 
+    laser backscattering. Such an option, however, has not been implemented yet.
   */
 }
 
 
 
- 
+
 #endif
-
-
-
