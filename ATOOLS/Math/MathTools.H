@@ -3,20 +3,20 @@
 /*  Declarations for discrete functions  */
 
 #ifdef __GNUC__
-// GNU C++ Compiler       
-#include <cmath>        
+// GNU C++ Compiler
+#include <cmath>
 #include <cstdlib>
 
 /*
   if __GNUC__ == 3 && __GNUC_MINOR__ == 0.
   if defined __GNUC__ && defined __cplusplus && __GNUC_MINOR__ >= 8
-  if !defined __GNUC__ || __GNUC__ < 2 || __GNUC_MINOR__ < 7 
+  if !defined __GNUC__ || __GNUC__ < 2 || __GNUC_MINOR__ < 7
   #define GCC_VERSION (__GNUC__ * 10000 \
   + __GNUC_MINOR__ * 100 \
   + __GNUC_PATCHLEVEL__)
   ...
-  Test for GCC > 3.2.0 
-  #if GCC_VERSION > 30200 
+  Test for GCC > 3.2.0
+  #if GCC_VERSION > 30200
 */
 
 #endif
@@ -25,7 +25,7 @@
 #if defined(__sgi) && !defined(__GNUC__)
 // SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. Abs() exp()
 #include <iostream>
-#include <math.h> 
+#include <math.h>
 #endif
 
 
@@ -33,14 +33,14 @@
 
 namespace ATOOLS {
 
-  template <class Type> const Type &Min(const Type &a,const Type &b) 
+  template <class Type> const Type &Min(const Type &a,const Type &b)
   { return a<b?a:b; }
-  template <class Type> const Type &Max(const Type &a,const Type &b) 
+  template <class Type> const Type &Max(const Type &a,const Type &b)
   { return a>b?a:b; }
 
-  template <class Type> Type &Min(Type &a,Type &b) 
+  template <class Type> Type &Min(Type &a,Type &b)
   { return a<b?a:b; }
-  template <class Type> Type &Max(Type &a,Type &b) 
+  template <class Type> Type &Max(Type &a,Type &b)
   { return a>b?a:b; }
 
   inline double Accu() {return 1.e-12;}
@@ -51,35 +51,35 @@ namespace ATOOLS {
 
   inline double Theta(const double &a) { return a<0.0?0.0:1.0; }
 
-  inline int    iabs(const int& a)    { return a<0?-a:a;   } 
-  inline double dabs(const double& a) { return a<0.0?-a:a; } 
+  inline int    iabs(const int& a)    { return a<0?-a:a;   }
+  inline double dabs(const double& a) { return a<0.0?-a:a; }
 
   template <typename Scalar>
-  inline Scalar sqr(const Scalar &x)   { return x*x; } 
-  template <typename Scalar> inline std::complex<Scalar> 
-  csqr(const std::complex<Scalar> &x) { return x*x; } 
+  inline Scalar sqr(const Scalar &x)   { return x*x; }
+  template <typename Scalar> inline std::complex<Scalar>
+  csqr(const std::complex<Scalar> &x) { return x*x; }
 
 
-  inline int IsZero(const double &a,const double &crit) 
+  inline int IsZero(const double &a,const double &crit)
   { return dabs(a)<crit?1:0; }
-  inline int IsZero(const Complex &a,const double &crit) 
+  inline int IsZero(const Complex &a,const double &crit)
   { return std::abs(a)<crit?1:0; }
 
-  inline int IsEqual(const double &a,const double &b) 
+  inline int IsEqual(const double &a,const double &b)
   {
     if (a==0. && b==0.) return 1;
     return (dabs(a-b)/(dabs(a)+dabs(b))<Accu()) ? 1 : 0;
   }
-  inline int IsEqual(const double &a,const double &b,const double &crit) 
+  inline int IsEqual(const double &a,const double &b,const double &crit)
   {
     if (a==0. && b==0.) return 1;
     return (dabs(a-b)/(dabs(a)+dabs(b))<crit) ? 1 : 0;
   }
-  inline int IsEqual(const Complex &a,const Complex &b) 
+  inline int IsEqual(const Complex &a,const Complex &b)
   {
     if (a==Complex(0.,0.) && b==Complex(0.,0.)) return 1;
     return (std::abs(a-b)/(std::abs(a)+std::abs(b))<Accu()) ? 1 : 0;
-  } 
+  }
   inline Complex csqrt(const double &d)
   {
     if (d<0) return Complex(0.,sqrt(-d));
@@ -99,16 +99,21 @@ namespace ATOOLS {
 
   double ExpIntegral(int n, double x);
 
+  double evaluate_polynomial (double x);
+  long double cyl_bessel_0 (long double x);
+  long double cyl_bessel_1 (long double x);
+  long double cyl_bessel_2 (long double x);
+
   template<typename Scalar> inline bool IsNan(const Scalar& x);
   template<typename Scalar> inline bool IsBad(const Scalar& x);
   template<typename Scalar> inline bool IsZero(const Scalar& x);
   template<typename Scalar> inline Scalar Abs(const Scalar& x);
   template<typename Scalar> inline Scalar Abs(const std::complex<Scalar>& x);
 
-  template<> inline bool IsNan<double>(const double& x) { 
+  template<> inline bool IsNan<double>(const double& x) {
     return std::isnan(x)||std::isnan(-x);
   }
-  template<> inline bool IsBad<double>(const double& x) { 
+  template<> inline bool IsBad<double>(const double& x) {
     return IsNan(x)||std::isinf(x)||std::isinf(-x);
   }
   template<> inline bool IsZero<double>(const double& x) {
@@ -118,10 +123,10 @@ namespace ATOOLS {
     return x>0.0?x:-x;
   }
 
-  template<> inline bool IsNan<long double>(const long double& x) { 
+  template<> inline bool IsNan<long double>(const long double& x) {
     return std::isnan(x)||std::isnan(-x);
   }
-  template<> inline bool IsBad<long double>(const long double& x) { 
+  template<> inline bool IsBad<long double>(const long double& x) {
     return IsNan(x)||std::isinf(x)||std::isinf(-x);
   }
   template<> inline bool IsZero<long double>(const long double& x) {
@@ -134,9 +139,9 @@ namespace ATOOLS {
 
   template<> inline bool IsNan<Complex>(const Complex& x) {
     return (std::isnan(real(x)) || std::isnan(imag(x)) ||
-	    std::isnan(-real(x)) || std::isnan(-imag(x))); 
+	    std::isnan(-real(x)) || std::isnan(-imag(x)));
   }
-  template<> inline bool IsBad<Complex>(const Complex& x) { 
+  template<> inline bool IsBad<Complex>(const Complex& x) {
     return IsNan(x)||std::isinf(real(x))||std::isinf(imag(x))
       ||std::isinf(-real(x))||std::isinf(-imag(x));
   }
@@ -150,10 +155,10 @@ namespace ATOOLS {
   template<> inline bool IsNan<std::complex<long double> >
   (const std::complex<long double>& x) {
     return (std::isnan(real(x)) || std::isnan(imag(x)) ||
-	    std::isnan(-real(x)) || std::isnan(-imag(x))); 
+	    std::isnan(-real(x)) || std::isnan(-imag(x)));
   }
   template<> inline bool IsBad<std::complex<long double> >
-  (const std::complex<long double>& x) { 
+  (const std::complex<long double>& x) {
     return IsNan(x)||std::isinf(real(x))||std::isinf(imag(x))
       ||std::isinf(-real(x))||std::isinf(-imag(x));
   }
@@ -183,7 +188,7 @@ namespace ATOOLS {
   DECLARE_PROMOTE(double,int,double);
   DECLARE_PROMOTE(int,Complex,Complex);
   DECLARE_PROMOTE(Complex,int,Complex);
-  
+
   DECLARE_PROMOTE(double,double,double);
   DECLARE_PROMOTE(Complex,Complex,Complex);
 
@@ -195,7 +200,7 @@ namespace ATOOLS {
   DECLARE_PROMOTE(long double,int,long double);
   DECLARE_PROMOTE(int,std::complex<long double>,std::complex<long double>);
   DECLARE_PROMOTE(std::complex<long double>,int,std::complex<long double>);
-  
+
   DECLARE_PROMOTE(long double,long double,long double);
   DECLARE_PROMOTE(std::complex<long double>,std::complex<long double>,
 		  std::complex<long double>);
@@ -209,65 +214,65 @@ namespace ATOOLS {
 
   /*!
     \fn inline Type Min(Type a, Type b)
-    \brief returns the minimum of two numbers  
+    \brief returns the minimum of two numbers
   */
 
   /*!
-    \fn inline Type Max(Type a, Type b) 
+    \fn inline Type Max(Type a, Type b)
     \brief returns the maximum of two numbers
   */
 
-  /*! 
+  /*!
     \fn  inline int         Sign(const int& a) {return (a<0) ? -1 : 1;}
     \brief returns the sign of the argument
   */
 
-  /*! 
-    \fn  inline int         iabs(const int& a) {return a>0 ? a : -a;} 
+  /*!
+    \fn  inline int         iabs(const int& a) {return a>0 ? a : -a;}
     \brief returns the absolute value of the argument
   */
 
-  /*! 
-    \fn  inline double      dabs(const double& a) {return a>0 ? a : -a;} 
+  /*!
+    \fn  inline double      dabs(const double& a) {return a>0 ? a : -a;}
     \brief returns the absolute value of the argument
   */
 
-  /*! 
-    \fn  inline double      sqr(double x) {return x*x;} 
-    \brief returns the argument squared 
+  /*!
+    \fn  inline double      sqr(double x) {return x*x;}
+    \brief returns the argument squared
   */
 
-  /*! 
+  /*!
     \fn  inline double      Accu() {return 1.e-12;};
     \brief returns a (platform dependent) precission, default is \f$1^{-12}\f$
   */
 
-  /*! 
-    \fn  inline int IsZero(const double a) 
+  /*!
+    \fn  inline int IsZero(const double a)
     \brief returns \em true if argument is smaller than Accu()
   */
 
-  /*! 
+  /*!
     \fn  inline int IsZero(const Complex& a)
     \brief  returns \em true if argument is smaller than Accu()
   */
 
-  /*! 
+  /*!
     \fn  inline int IsEqual(const double a,const double b)
     \brief  returns \em true if arguments are equal (compared to Accu())
   */
 
-  /*! 
+  /*!
     \fn  inline int IsEqual(const Complex& a,const Complex& b)
     \brief  returns \em true if arguments are equal (compared to Accu())
   */
 
-  /*! 
+  /*!
     \fn  inline Complex csqrt(const double d)
     \brief returns the complex root of a (possibly negative) float or double variable
   */
 
-  /*! 
+  /*!
     \fn  inline Complex csqr(Complex x)
     \brief returns the argument squared
   */
