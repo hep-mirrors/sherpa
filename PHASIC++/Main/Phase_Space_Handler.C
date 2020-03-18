@@ -36,8 +36,8 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
   p_integrator(NULL), 
-  m_psvariationweights(false), 
-  p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
+  p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()),
+  p_flavours(proc->Process()->Flavours()),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin+m_nout),
   m_dmode(1), m_initialized(0),
   m_sintegrator(0), m_killedpoints(0),
@@ -96,8 +96,10 @@ double Phase_Space_Handler::Integrate()
   return res;
 }
 
-double Phase_Space_Handler::Differential(Process_Integrator *const process,
-					 const psmode::code mode) 
+Event_Weights Phase_Space_Handler::
+Differential(Process_Integrator *const process,
+	     ATOOLS::Weight_Type weighttype,
+	     const psmode::code mode) 
 {
   //msg_Out()<<"-------------------------------------------------------------\n"
   //	   <<"-------------------------------------------------------------\n"
@@ -110,19 +112,24 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_result = 0.0;
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
-      !m_pspoint(process,m_cmode))                          return m_result;
+      !m_pspoint(process,m_cmode))
+    return Event_Weights{0, 0.0};
   //msg_Out()<<" ### "<<p_lab[0]<<" + "<<p_lab[1]<<"\n"
   //	   <<"  -> "<<p_lab[2]<<" + "<<p_lab[3]<<".\n";
-  for (size_t i(0);i<p_lab.size();++i) if (p_lab[i].Nan())  return m_result;
+  for (size_t i(0);i<p_lab.size();++i) {
+    if (p_lab[i].Nan()) return Event_Weights{0, 0.0};
+  }
   if (process->Process()->Trigger(p_lab)) {
-    if (!p_active->Process()->Selector()->Pass())           return m_result;
-    m_result  = (m_meweight = CalculateME());
+    if (!p_active->Process()->Selector()->Pass())
+      return Event_Weights{0, 0.0}; 
+    m_result  = (m_meweight = CalculateME(weighttype));
     m_result *= (m_psweight = CalculatePS());
     m_result *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
   }
+  else ManageWeights(0.0);
   if (!CheckStability()) { m_result = 0.; return 0.; }
   m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
   return m_result*m_enhance;
@@ -147,9 +154,11 @@ void Phase_Space_Handler::PrintIntermediate() {
 }
 
 void Phase_Space_Handler::ManageWeights(const double & factor) {
-  if (m_psvariationweights && m_psvariation()) *m_psvariation() *= factor;
-  ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  if (wgtinfo) { (*wgtinfo) *= factor; }
+  m_eventweights *= factor;
+  if (factor!=0.0) {
+    ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
+    if (wgtinfo) { (*wgtinfo) *= factor; }
+  }
   NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
   if (nlos) { (*nlos) *= factor; (*nlos).MultMEwgt(factor); }
 }
@@ -188,12 +197,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
-  double value=Differential(cur,(psmode::code)mode);
-  bool zero(value==0.0);
-  if (zero && m_psvariationweights)
-    for (size_t i(0);i<m_psvariation()->GetNumberOfVariations();++i)
-      if (m_psvariation()->GetVariationWeightAt(i)) zero=false;
-  if (zero || IsBad(value)) return NULL;
+  auto values = Differential(cur, Weight_Type::all, (psmode::code)mode);
+  bool zero(values == 0.0);
+  if (zero || IsBad(values.Nominal()))
+    return NULL;
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
@@ -206,7 +213,10 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   xf2=p_isrhandler->XF2(0);
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
-  return new Weight_Info(value,dxs,1.0,fl1,fl2,x1,x2,xf1,xf2,mu12,mu22);
+  auto res = new Weight_Info(
+      values.Nominal(), dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
+  res->m_weights = m_eventweights;
+  return res;
 }
 
 
@@ -312,7 +322,7 @@ void Phase_Space_Handler::CheckSinglePoint()
     }
     Process_Base *proc(p_active->Process());
     proc->Trigger(p_lab);
-    CalculateME();
+    CalculateME(Weight_Type::nominal);
     msg->SetPrecision(16);
     msg_Out()<<"// "<<proc->Name()<<"\n";
     for (size_t i(0);i<p_lab.size();++i)

@@ -498,9 +498,8 @@ void Process_Integrator::ResetMax(int flag)
   }
 } 
 
-void Process_Integrator::SetPSHandler(
-  const std::shared_ptr<Phase_Space_Handler> &pshandler)
-{
+void Process_Integrator::SetPSHandler(Phase_Space_Handler * pshandler) {
+  //  const std::shared_ptr<Phase_Space_Handler> &pshandler) {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)

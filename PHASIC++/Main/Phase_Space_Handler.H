@@ -7,6 +7,7 @@
 #include "PHASIC++/Main/Phase_Space_Variation_Weights.H"
 
 #include "PHASIC++/Selectors/Cut_Data.H"
+#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -50,12 +51,11 @@ namespace PHASIC {
     Phase_Space_Integrator      * p_integrator;  
     Phase_Space_Point             m_pspoint;
     Phase_Space_Enhance           m_psenhance;
-    Phase_Space_Variation_Weights m_psvariation;
     
+    ATOOLS::Event_Weights         m_eventweights;
     static ATOOLS::Integration_Info * p_info;
 
     int  m_dmode;
-    bool m_psvariationweights;
 
     double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight, m_result;
     
@@ -98,8 +98,13 @@ namespace PHASIC {
     inline void InitCuts()       { m_pspoint.InitCuts(p_process); }
     
     double Integrate();
-    inline double Differential() { return Differential(p_process); }
-    inline double CalculateME()  { return p_active->Process()->Differential(p_lab); }
+    inline ATOOLS::Event_Weights Differential(ATOOLS::Weight_Type weighttype) {
+      return Differential(p_process,weighttype);
+    }
+    inline double CalculateME(ATOOLS::Weight_Type weighttype)  {
+      m_eventweights = p_active->Process()->Differential(p_lab, weighttype);
+      m_result=p_active->Process()->Last();
+    }
     inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
     inline double Weight(ATOOLS::Vec4D_Vector &moms) {
       m_pspoint.SetMomenta(&moms.front());
@@ -107,8 +112,9 @@ namespace PHASIC {
     }
 
 
-    double Differential(Process_Integrator *const process,
-			const psmode::code mode=psmode::normal_call);
+    ATOOLS::Event_Weights Differential(Process_Integrator *const process,
+				       ATOOLS::Weight_Type weighttype,
+				       const psmode::code mode=psmode::normal_call);
 
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
@@ -156,10 +162,6 @@ namespace PHASIC {
     inline void SetOSMass(const double &osmass)                    { m_pspoint.SetOSMass(osmass); }
     inline void SetError(const double error)                       { m_error=error; }
     inline void SetAbsError(const double error)                    { m_abserror=error; }
-    inline void SetVariationWeights(ATOOLS::Variation_Weights *vw) {
-      m_psvariationweights = true;
-      m_psvariation.SetVariationWeights(vw);
-    }
 
     inline void SetBeamIntegrator(Multi_Channel * channels) { m_pspoint.SetBeamIntegrator(channels); }
     inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }

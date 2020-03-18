@@ -603,7 +603,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
+  p_int->SetPSHandler(new Phase_Space_Handler(p_int, maxerr));
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
 } 

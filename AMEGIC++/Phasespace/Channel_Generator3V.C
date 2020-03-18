@@ -218,7 +218,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
+  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   acount = 0;
   newchannel = 0;
@@ -237,9 +237,9 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 
   Step0(1,m_topos[echflag],rannum,chf);
   ClearDeclarations();
-  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
+  chf<<"  double vw = p_vegas->GenerateWeight(p_rans);"<<endl;
   chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
-  chf<<endl<<"  weight = wt;"<<endl; 
+  chf<<endl<<"  m_weight = wt;"<<endl; 
   chf<<"}"<<endl<<endl;
     
   //Constructor
@@ -247,9 +247,9 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
 	<<"  Settings& s = Settings::GetMainSettings();"<<endl
-	<<"  name = std::string(\""<<name<<"\");"<<endl
-	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl
+	<<"  m_name = std::string(\""<<name<<"\");"<<endl
+	<<"  m_rannum = "<<rannumber<<";"<<endl
+	<<"  p_rans  = new double[m_rannum];"<<endl
 	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
@@ -262,7 +262,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
   }
-  chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf	<<"  p_vegas = new Vegas(m_rannum,100,m_name);"<<endl;
   chf	<<"}"<<endl<<endl;
 
   //Destructor
@@ -455,8 +455,8 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
       if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-      sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
-      sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
+      sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
+      sf<<"  p_rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
     }
     if (p->left->m==0)  pin1.push_back(Order(LinkedMasses(p->right)));
     if (p->right->m==0) pin0.push_back(Order(LinkedMasses(p->left)));
@@ -527,8 +527,8 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
 	    sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
 	    sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momr<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
 	    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	    sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	    sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	    sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	    sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  }
 	}
       else {
@@ -544,8 +544,8 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
   	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
   	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<moml<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
   	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
-	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
-	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  sf<<"  p_rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  p_rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
 	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
 	}
       }
@@ -749,12 +749,12 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     if (maxpole>0.) {
       if (p->zwf==0) {
 	sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+	  <<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
       }
     }
     else {
       sf<<"  wt *= CE.ThresholdWeight(m_thexp,"<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
-	<<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
+	<<"s"<<mummy<<"_max,s"<<mummy<<",p_rans["<<rannum<<"]);"<<endl;
     }
     rannum++;
   }

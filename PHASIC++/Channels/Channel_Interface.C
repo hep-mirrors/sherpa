@@ -12,15 +12,13 @@ Channel_Interface::Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,A
 		       <<"Cannot handle "<<nin<<" -> "<<nout<<" processes. Abort."<<std::endl;
     exit(169);
   }
-  nin  = nin; nout = nout;
-  ms = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(flavour[i].Mass());
-  rannum = 3;
-  rans = new double[rannum];
+  m_rannum = 3;
+  delete p_rans;
+  p_rans = new double[m_rannum];
   s = smax = pt2max = ATOOLS::sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.;
   E = 0.5*sqrt(s);
-  name = "Channel Interface";
+  m_name = "Channel Interface";
   mass = width = 0.; 
   type = 0;
   if (res!=ATOOLS::Flavour(kf_none)) {
