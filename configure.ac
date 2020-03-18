@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(SHERPA MC, 3.0.0, sherpa@projects.hepforge.org, SHERPA-MC)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
-AM_INIT_AUTOMAKE(tar-ustar -Wno-portability)
+AM_INIT_AUTOMAKE(tar-ustar)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -108,6 +108,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           METOOLS/Loops/Makefile \
           METOOLS/Makefile \
 	  BEAM/Main/Makefile \
+	  BEAM/Spectra/Makefile \
 	  BEAM/Makefile \
 	  PDF/Main/Makefile \
 	  PDF/Electron/Makefile \
@@ -124,6 +125,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/SM/Makefile \
 	  MODEL/HEFT/Makefile \
+	  MODEL/SMDM/Makefile \
 	  MODEL/SMEHC/Makefile \
 	  MODEL/TauPi/Makefile \
 	  MODEL/UFO/Makefile \
@@ -146,7 +148,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
-	  EXTRA_XS/Special/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
