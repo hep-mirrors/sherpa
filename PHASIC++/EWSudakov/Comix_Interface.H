@@ -14,6 +14,15 @@ class Comix_Interface {
 
 public:
   Comix_Interface(Process_Base*, const EWSudakov_Amplitudes&);
+
+  /// does not assume that a flavour-sorted Cluster Amplitude is passed,
+  /// spin amplitudes for all spins are cached, and can be reset using
+  /// ResetSpinAmplitudeCache
+  Complex GetSpinAmplitude(ATOOLS::Cluster_Amplitude&,
+                           const std::vector<int>& spins) const;
+  void ResetSpinAmplitudeCache() const { m_spinampls.clear(); }
+
+  /// assumes that a flavour-sorted Cluster Amplitude is passed
   void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
                           const ATOOLS::Cluster_Amplitude&) const;
 
@@ -34,9 +43,21 @@ private:
     return s_apmap;
   }
   void AdaptToProcessColorScheme();
+  void SetScales(ATOOLS::Cluster_Amplitude&) const;
 
   int m_differentialmode;
   static NLOTypeStringProcessMap_Map s_apmap;
+
+  /// caches for spin amplitudes and for permutations and permutation signs due
+  /// to re-ordering fermions in the final state
+  template<class T>
+  using AmplMap = std::map<const ATOOLS::Cluster_Amplitude*, T>;
+  mutable AmplMap<std::vector<Spin_Amplitudes>> m_spinampls;
+  mutable AmplMap<std::vector<size_t>> m_permutations;
+  mutable AmplMap<double> m_permutation_signs;
+
+  static double CalcPermutationSign(std::vector<size_t> perm,
+                                    const Cluster_Amplitude&);
 };
 
 } // namespace PHASIC

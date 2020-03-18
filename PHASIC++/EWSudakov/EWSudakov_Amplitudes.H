@@ -46,7 +46,6 @@ namespace PHASIC {
       std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude_UP>;
   using Cluster_Amplitude_PM =
       std::map<Cluster_Ampl_Key, ATOOLS::Cluster_Amplitude*>;
-  using Permutation_Map = std::map<Cluster_Ampl_Key, std::vector<size_t>>;
 
   /**
    * helper class that generates and stores the amplitudes needed to calculate
@@ -68,7 +67,6 @@ namespace PHASIC {
     BaseAmplitude(std::vector<int> spincombination);
     Leg_Kfcode_Map GoldstoneBosonReplacements(std::vector<int> spincombination);
     ATOOLS::Cluster_Amplitude& SU2TransformedAmplitude(const Leg_Kfcode_Map&);
-    std::vector<size_t>& LegPermutation(const Leg_Kfcode_Map&);
 
     size_t NumberOfLegs() noexcept { return BaseAmplitude().Legs().size(); }
 
@@ -93,20 +91,10 @@ namespace PHASIC {
     static ATOOLS::Cluster_Amplitude_UP
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
                                   const Leg_Kfcode_Map_Signed&);
-    static Permutation_Map CreatePermutations(
-        const Cluster_Amplitude_UPM&);
-    static std::vector<size_t> CalculateLegPermutation(
-        const ATOOLS::Cluster_Amplitude_UP& ampl);
 
     /// all amplitudes that might be needed for EW Sudakov corrections
     Cluster_Amplitude_UPM ampls;
     Cluster_Amplitude_PM all_ampls, goldstone_only_ampls;
-
-    /// give permutation of flavours between an ampl and its transformed version
-    std::vector<size_t> NewOrdering(const ATOOLS::Cluster_Amplitude_UP&) const;
-
-    /// permutations of legs for each element in ampls
-    Permutation_Map permutations;
 
     /// used to put all momenta on-shell for transformed matrix elements
     ATOOLS::Momenta_Stretcher stretcher;

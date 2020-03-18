@@ -15,9 +15,8 @@ const Cluster_Ampl_Key EWSudakov_Amplitudes::s_baseamplkey
 = Leg_Kfcode_Map{};
 
 EWSudakov_Amplitudes::EWSudakov_Amplitudes(
-    Process_Base* proc, const std::set<EWSudakov_Log_Type>& activecoeffs):
-  ampls{ CreateAmplitudes(proc, activecoeffs) },
-  permutations{ CreatePermutations(ampls) }
+    Process_Base* proc, const std::set<EWSudakov_Log_Type>& activecoeffs)
+    : ampls {CreateAmplitudes(proc, activecoeffs)}
 {
   // fill helper maps that are used to expose specific sets of amplitudes
   for (const auto& kv : ampls) {
@@ -78,14 +77,6 @@ Cluster_Amplitude& EWSudakov_Amplitudes::SU2TransformedAmplitude(
   return *(it->second);
 }
 
-std::vector<size_t>& EWSudakov_Amplitudes::LegPermutation(const Leg_Kfcode_Map& legs)
-{
-  const auto it = permutations.find(legs);
-  if (it == permutations.end())
-    THROW(fatal_error, "Permutation not found");
-  return it->second;
-}
-
 void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC(mom);
@@ -100,13 +91,12 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
   for (auto& ampl : ampls) {
     if (ampl.first == s_baseamplkey)
       continue;
-    const auto& permutation = LegPermutation(ampl.first);
 
     Vec4D_Vector new_moms;
     new_moms.reserve(NumberOfLegs());
     for (int j {0}; j < NumberOfLegs(); ++j) {
       Vec4D mom =
-          ((j < 2) ? -1 : 1) * BaseAmplitude().Leg(permutation[j])->Mom();
+          ((j < 2) ? -1 : 1) * BaseAmplitude().Leg(j)->Mom();
       particles[j]->SetFinalMass(ampl.second->Leg(j)->Flav().Mass());
       new_moms.push_back(mom);
     }
@@ -295,8 +285,6 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
       }
     }
   }
-  //for (auto& kv : ampls)
-  //  Process_Base::SortFlavours(kv.second.get());
   return ampls;
 }
 
@@ -323,35 +311,4 @@ Cluster_Amplitude_UP EWSudakov_Amplitudes::CreateSU2TransformedAmplitude(
     campl->Leg(kv.first)->SetFlav(kv.second);
   }
   return campl;
-}
-
-Permutation_Map EWSudakov_Amplitudes::CreatePermutations(
-    const Cluster_Amplitude_UPM& ampls)
-{
-  Permutation_Map permutations;
-  for (const auto& kv : ampls) {
-    std::vector<size_t> permutation;
-    if (kv.first.empty()) {
-      permutation.resize(kv.second->Legs().size());
-      std::iota(std::begin(permutation), std::end(permutation), 0);
-    } else {
-      permutation = CalculateLegPermutation(kv.second);
-    }
-    permutations.insert(std::make_pair(kv.first, permutation));
-  }
-  return permutations;
-}
-
-std::vector<size_t> EWSudakov_Amplitudes::CalculateLegPermutation(
-    const Cluster_Amplitude_UP& ampl)
-{
-  // TODO: This assumes that the base amplitude is ordered 0, 1, 2, ...
-  std::vector<size_t> v;
-  for (const auto* leg : ampl->Legs()) {
-    if (IdCount(leg->Id()) > 1)
-      // TODO: handle multi-ID legs
-      THROW(not_implemented, "Clustering not supported yet.");
-    v.push_back(ID(leg->Id()).front());
-  }
-  return v;
 }

@@ -72,16 +72,12 @@ namespace PHASIC {
 
     const EWGroupConstants m_ewgroupconsts;
 
-    // const double m_mw2;
     double m_threshold;
-    //    MODEL::Running_AlphaQED m_runaqed;
     size_t m_check;
-    Complex m_born;
 
     // intermediate results
     mutable Coeff_Map m_coeffs;
     mutable std::vector<Spin_Amplitudes> m_spinampls;
-    mutable std::map<Leg_Kfcode_Map, std::vector<Spin_Amplitudes>> m_transformedspinampls;
     mutable Complex m_current_me_value;
     mutable std::vector<int> m_current_spincombination;
     mutable std::vector<int> m_current_goldstone_spincombination;

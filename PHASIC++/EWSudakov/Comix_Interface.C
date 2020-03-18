@@ -29,17 +29,60 @@ Comix_Interface::Comix_Interface(Process_Base* proc,
   AdaptToProcessColorScheme();
 }
 
-void Comix_Interface::FillSpinAmplitudes(
-    std::vector<Spin_Amplitudes>& spinampls,
-    const ATOOLS::Cluster_Amplitude& ampl) const
+Complex Comix_Interface::GetSpinAmplitude(ATOOLS::Cluster_Amplitude& ampl,
+                                          const std::vector<int>& spins) const
 {
   Cluster_Amplitude_UP campl {CopyClusterAmpl(ampl)};
-  // TODO: can't we set these scales to the values used for the original
-  // calculation (pre-Kfactor)? Is there any reason we set them to Ecms? Does
-  // it matter?
-  campl->SetMuR2(sqr(rpa->gen.Ecms()));
-  campl->SetMuF2(sqr(rpa->gen.Ecms()));
-  campl->SetMuQ2(sqr(rpa->gen.Ecms()));
+
+  // during process set-up, flavours (in the proc info) are implicitly sorted,
+  // hence we also need to sort them here, where we step out of the EWSudakov
+  // module (in which we don't order flavours, to have a simpler book-keeping
+  Process_Base::SortFlavours(campl.get());
+
+  auto ait = m_spinampls.find(&ampl);
+  if (ait == m_spinampls.end()) {
+    FillSpinAmplitudes(m_spinampls[&ampl], *campl);
+    ait = m_spinampls.find(&ampl);
+  }
+  if (ait->second.empty())
+    return 0.0;
+  assert(ait->second.size() == 1);
+
+  auto pit = m_permutations.find(&ampl);
+  if (pit == m_permutations.end()) {
+    // calculate leg permutation (in particular by calling SortFlavours above)
+    for (const auto* leg : campl->Legs()) {
+      if (IdCount(leg->Id()) > 1)
+        // TODO: handle multi-ID legs
+        THROW(not_implemented, "Clustering not supported yet.");
+      m_permutations[&ampl].push_back(ID(leg->Id()).front());
+    }
+    pit = m_permutations.find(&ampl);
+  }
+
+  // apply the permutation to the spin combination
+  std::vector<int> permutatedspins;
+  for (const auto& idx : pit->second) {
+    permutatedspins.push_back(spins[idx]);
+  }
+
+  auto sit = m_permutation_signs.find(&ampl);
+  if (sit == m_permutation_signs.end()) {
+    // calculate the sign of the permutation
+    auto sign = Comix_Interface::CalcPermutationSign(pit->second, ampl);
+    m_permutation_signs[&ampl] = sign;
+    sit = m_permutation_signs.find(&ampl);
+  }
+
+  // retrieve correct ME entry
+  return sit->second * ait->second[0].Get(permutatedspins);
+}
+
+void Comix_Interface::FillSpinAmplitudes(std::vector<Spin_Amplitudes>& spinampls,
+                                         const ATOOLS::Cluster_Amplitude& ampl) const
+{
+  Cluster_Amplitude_UP campl {CopyClusterAmpl(ampl)};
+  SetScales(*campl);
   Process_Base* proc = GetProcess(*campl);
   if (proc == nullptr)
     return;
@@ -139,4 +182,68 @@ void Comix_Interface::AdaptToProcessColorScheme()
     // generation of a new random colour point each time we call Differential()
     m_differentialmode |= 128;
   }
+}
+
+void Comix_Interface::SetScales(ATOOLS::Cluster_Amplitude& ampl) const
+{
+  // TODO: can't we set these scales to the values used for the original
+  // calculation (pre-Kfactor)? Is there any reason we set them to Ecms? Does
+  // it matter?
+  const auto scale2 = sqr(rpa->gen.Ecms());
+  ampl.SetMuR2(scale2);
+  ampl.SetMuF2(scale2);
+  ampl.SetMuQ2(scale2);
+}
+
+double Comix_Interface::CalcPermutationSign(std::vector<size_t> perm,
+    const Cluster_Amplitude& ampl)
+{
+  // extract permutation of final-state fermions only
+  static const size_t boson_idx = std::numeric_limits<size_t>::max();
+  perm.erase(perm.begin(), perm.begin()+ampl.NIn());
+  for (auto i {ampl.NIn()}; i < ampl.Legs().size(); ++i) {
+    if (ampl.Leg(i)->Flav().IsBoson()) {
+      auto idx = ID(ampl.Leg(i)->Id()).front();
+      for (auto it = perm.begin(); it != perm.end(); ++it) {
+        if (*it == idx) {
+          *it = boson_idx;
+        } else if (*it > idx && *it != boson_idx) {
+          --(*it);
+        }
+      }
+    }
+  }
+  for (auto& p : perm) {
+    if (p != boson_idx)
+      p -= ampl.NIn();
+  }
+  for (auto it = perm.begin(); it != perm.end(); ) {
+    if (*it == boson_idx)
+      it = perm.erase(it);
+    else
+      ++it;
+  }
+
+  // calculate number of even-length cycles
+  std::vector<bool> checklist(perm.size(), false);
+  size_t number_of_even_cycles {0};
+  for (int i {0}; i < perm.size(); ++i) {
+    if (checklist[i])
+      continue;
+    checklist[i] = true;
+    auto j = i;
+    int cycle_length = 1;
+    while (!checklist[perm[j]]) {
+      j = perm[j];
+      cycle_length++;
+    }
+    if (cycle_length % 2 == 0)
+      ++number_of_even_cycles;
+  }
+
+  // return sign of the fermion permutation
+  if (number_of_even_cycles % 2 == 1)
+    return -1.0;
+  else
+    return 1.0;
 }

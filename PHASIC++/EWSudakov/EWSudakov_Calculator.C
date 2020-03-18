@@ -103,7 +103,8 @@ bool EWSudakov_Calculator::IsInHighEnergyLimit()
 void EWSudakov_Calculator::ClearSpinAmplitudes()
 {
   m_spinampls.clear();
-  m_transformedspinampls.clear();
+  m_comixinterface.ResetSpinAmplitudeCache();
+  m_comixinterface_he.ResetSpinAmplitudeCache();
 }
 
 void EWSudakov_Calculator::FillBaseSpinAmplitudes()
@@ -489,13 +490,6 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
     const std::vector<int>& spincombination,
     const Comix_Interface* interface)
 {
-  // TODO: Re-instate caching mechanism that works well with calculating
-  // ordinary and HE matrix elements (for the PR logs), possibly moving the
-  // caching into the COMIX interfaces, such that each one can keep track of
-  // its own amplitude cache
-  //auto amplit = m_transformedspinampls.find(legs);
-  m_transformedspinampls.erase(legs);
-  //if (amplit == m_transformedspinampls.end()) {
   auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
   /// TODO: Make the following a bit prettier. At the moment
   /// this is simply a flag to catch that the momentum
@@ -504,17 +498,14 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
     ++m_numonshellwarning;
     return 0.0;
   }
-  (interface ? *interface : m_comixinterface)
-      .FillSpinAmplitudes(m_transformedspinampls[legs], transformedampl);
-  if (m_transformedspinampls[legs].empty())
-    return 0.0;
-  //}
-  auto& legpermutation = m_ampls.LegPermutation(legs);
-  std::vector<int> transformedspincombination;
-  for (const auto& idx : legpermutation) {
-    auto pol = spincombination[idx];
+
+  // correct for Goldstone boson replacements
+  std::vector<int> guildedspincombination;
+  size_t i {0};
+  for (int i {0}; i < spincombination.size(); ++i) {
+    auto pol = spincombination[i];
     if (pol == 2) {
-      auto it = legs.find(idx);
+      auto it = legs.find(i);
       if (it != legs.end()) {
         if (it->second == kf_chi || it->second == kf_phiplus ||
             it->second == kf_h0) {
@@ -522,10 +513,11 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
         }
       }
     }
-    transformedspincombination.push_back(pol);
+    guildedspincombination.push_back(pol);
   }
-  assert(m_transformedspinampls[legs].size() == 1);
-  return m_transformedspinampls[legs][0].Get(transformedspincombination);
+
+  return (interface ? *interface : m_comixinterface)
+      .GetSpinAmplitude(transformedampl, guildedspincombination);
 }
 
 

@@ -302,7 +302,7 @@ void Process_Base::Init(const Process_Info &pi,
   m_nout=m_pinfo.m_fi.NExternal();
   m_flavs.resize(m_nin+m_nout);
   if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
-    //if (!(mode&1)) SortFlavours(m_pinfo);
+    if (!(mode&1)) SortFlavours(m_pinfo);
     std::vector<Flavour> fl;
     m_pinfo.m_ii.GetExternal(fl);
     m_pinfo.m_fi.GetExternal(fl);
