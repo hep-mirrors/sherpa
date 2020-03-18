@@ -71,18 +71,16 @@ namespace PHASIC {
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);     
 
-    void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
-    void    GenerateWeight(int mode);
+    virtual void GeneratePoint(int mode=0);
+    virtual void GenerateWeight(int mode=0);
 
-    virtual void    ISRInfo(int,int &,double &,double &);
-    virtual void    ISRInfo(std::vector<int> &ts,
-			    std::vector<double> &ms,std::vector<double> &ws) const;
+    virtual void ISRInfo(int,int &,double &,double &);
+    virtual void ISRInfo(std::vector<int> &ts,
+			 std::vector<double> &ms,std::vector<double> &ws) const;
 
     inline  Single_Channel *operator[](size_t i) { return channels[i]; }
 
     virtual void    Print();
-    void    SetRange(double * sprimerange,double * yrange); 
-    void    GetRange(); 
     virtual void    WriteOut(std::string);
     virtual bool    ReadIn(std::string);
 

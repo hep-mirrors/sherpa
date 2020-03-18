@@ -33,8 +33,8 @@ namespace PHASIC {
 
     int GenerateChannels()
     {
-      return p_proc->FillIntegrator
-	(&*p_proc->Integrator()->PSHandler());
+      std::cout<<"GenerateChannels for ("<<p_proc<<", "<<p_proc->Integrator()<<")\n";
+      return p_proc->FillIntegrator(&*p_proc->Integrator()->PSHandler());
     }
 
   };// end of class Default_Channel_Generator

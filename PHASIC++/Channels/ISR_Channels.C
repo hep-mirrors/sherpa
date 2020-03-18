@@ -1,10 +1,14 @@
 #include "PHASIC++/Channels/ISR_Channels.H"
-
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
+#include "PHASIC++/Channels/ISR_Channel_Base.H"
+#include "PHASIC++/Channels/Simple_Pole_Channels.H"
+#include "PHASIC++/Channels/Resonance_Channels.H"
+#include "PHASIC++/Channels/Threshold_Channels.H"
+#include "PHASIC++/Channels/Leading_Log_Channels.H"
+#include "PHASIC++/Channels/LBS_Compton_Peak_Channels.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "PHASIC++/Channels/ISR_Vegas.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -17,8 +21,7 @@ bool ISR_Channels::MakeChannels()
   int    type;
   double mass,width;
   std::set<double> ths;
-  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong() &&
-      p_psh->Cuts()->Smin()>1.0) {
+  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
     ths.insert(sqrt(p_psh->Cuts()->Smin()));
   }
   Multi_Channel *fsr(p_psh->FSRIntegrator());
@@ -27,7 +30,7 @@ bool ISR_Channels::MakeChannels()
   for (size_t i(0);i<fsr->Number();++i) fsr->ISRInfo(i,ts[i],ms[i],ws[i]);
   fsr->ISRInfo(ts,ms,ws);
   for (size_t i=0;i<ts.size();i++) {
-    type=abs(ts[i]);
+    type=abs(ts[i]); 
     if (ts[i]==-1) {
       p_psh->SetOSMass(ms[i]);
       onshellresonance=true;
@@ -42,31 +45,31 @@ bool ISR_Channels::MakeChannels()
       continue;
     }
     for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
-    ci.type = type;
-    (ci.parameters).push_back(mass);
-    if (type==1) (ci.parameters).push_back(width);
-    if (type==2) (ci.parameters).push_back(2.);
-    if (p_psh->Flavs()[0].IsLepton() || 
-	p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
-    else (ci.parameters).push_back(yexp);
-    bool add=true;
-    for (size_t j=0;j<m_isrparams.size();j++) if (m_isrparams[j]==ci) add=false; 
-    if (add) m_isrparams.push_back(ci);
-    ci.parameters.clear();
+      ci.type = type;
+      (ci.parameters).push_back(mass);
+      if (type==1) (ci.parameters).push_back(width);
+      if (type==2) (ci.parameters).push_back(2.);
+      if (p_psh->Flavs()[0].IsLepton() || 
+	  p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
+      else (ci.parameters).push_back(yexp);
+      bool add=true;
+      for (size_t j=0;j<m_isrparams.size();j++) if (m_isrparams[j]==ci) add=false; 
+      if (add) m_isrparams.push_back(ci);
+      ci.parameters.clear();
     }
   }
   if (ths.size()) {
     for (std::set<double>::const_iterator thit(ths.begin());thit!=ths.end();++thit)
-    for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
-    ci.type = 2;
-    (ci.parameters).push_back(*thit);
-    (ci.parameters).push_back(2.);
-    if (p_psh->Flavs()[0].IsLepton() || 
-	p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
-    else (ci.parameters).push_back(yexp);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
-    }
+      for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
+	ci.type = 2;
+	(ci.parameters).push_back(*thit);
+	(ci.parameters).push_back(2.);
+	if (p_psh->Flavs()[0].IsLepton() || 
+	    p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
+	else (ci.parameters).push_back(yexp);
+	m_isrparams.push_back(ci);
+	ci.parameters.clear();
+      }
   }
   if (onshellresonance) return CreateChannels();
   
@@ -127,83 +130,83 @@ bool ISR_Channels::CreateChannels()
     case 0:
       if (isr==3 && !ep) {
 	if (m_isrparams[i].parameters[1]==0.0) {
- 	Add(new Simple_Pole_Uniform_V
-	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo()));
-	Add(new Simple_Pole_Central_V
-	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
+	  Add(new Simple_Pole_Uniform
+	      (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo()));
+	  Add(new Simple_Pole_Central
+	      (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
 	}
 	else {
-	Add(new Simple_Pole_Forward_V
-	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
-	Add(new Simple_Pole_Backward_V
-	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	  Add(new Simple_Pole_Forward
+	      (m_isrparams[i].parameters[0],
+	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	  Add(new Simple_Pole_Backward
+	      (m_isrparams[i].parameters[0],
+	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
 	}
       }
       else if (isr==3 && ep) {
-	Add(new Simple_Pole_Forward_V
+	Add(new Simple_Pole_Forward
 	    (m_isrparams[i].parameters[0],
 	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
       }
       else {
-	Add(new Simple_Pole_Central_V
+	Add(new Simple_Pole_Central
 	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
       }
       break;
     case 1:
       if (isr==3 && !ep) {
 	if (m_isrparams[i].parameters[2]==0.0) {
-	Add(new Resonance_Uniform_V
-	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	  Add(new Resonance_Uniform
+	      (m_isrparams[i].parameters[0],
+	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
 	}
 	else {
-	Add(new Resonance_Forward_V
-	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
-	Add(new Resonance_Backward_V
-	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	  Add(new Resonance_Forward
+	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
+	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	  Add(new Resonance_Backward
+	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
+	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
 	}
       }
       else if (isr==3 && ep) {
-	Add(new Resonance_Forward_V
+	Add(new Resonance_Forward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
 	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
       }
       else {
-	Add(new Resonance_Central_V
+	Add(new Resonance_Central
 	    (m_isrparams[i].parameters[0],
 	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
       }
       break;
     case 2:
       if (m_isrparams[i].parameters[2]==0.0) {
-      Add(new Threshold_Central_V
-	  (m_isrparams[i].parameters[0],
-	   m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
+	Add(new Threshold_Central
+	    (m_isrparams[i].parameters[0],
+	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
       }
       else {
-      if (isr==3) {
-	Add(new Threshold_Forward_V
-	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
-	Add(new Threshold_Backward_V
-	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
-      }
+	if (isr==3) {
+	  Add(new Threshold_Forward
+	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
+	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	  Add(new Threshold_Backward
+	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
+	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	}
       }
       break;
     case 3:
-      Add(new Leading_Log_Central_V
+      Add(new Leading_Log_Central
 	  (m_isrparams[i].parameters[0],
 	   m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
       if (isr==3) {
-	Add(new Leading_Log_Forward_V
+	Add(new Leading_Log_Forward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
 	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
-	Add(new Leading_Log_Backward_V
+	Add(new Leading_Log_Backward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
 	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
       }
@@ -211,9 +214,4 @@ bool ISR_Channels::CreateChannels()
     }
   }
   return 1;
-}
-
-bool ISR_Channels::Initialize()
-{
-  return MakeChannels();
 }

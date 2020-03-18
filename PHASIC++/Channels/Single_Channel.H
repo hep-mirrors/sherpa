@@ -12,29 +12,20 @@ namespace PHASIC {
 
   class Single_Channel {
   protected:
-
-    std::string      name;
-
-    double   weight;
-    double   res1, res2;
-    double   mres1, mres2;
-    double   alpha, alpha_save;
-
-    int     nin, nout;
-    double *ms;
-    double  sprimerange[3], yrange[2], p_ylimits[2], m_weight;
-    double  m_Q, sprime, y, y0, ymin, ymax, Eprime, E1, E2;
-
-    int      rannum;
-    double  *rans;
-
+    size_t   m_nin, m_nout;
+    double * p_ms;
+    size_t   m_rannum;
+    double * p_rans;
+    double   m_res1, m_res2, m_mres1, m_mres2;
+    double   m_alpha, m_alpha_save, m_weight;
+    std::string m_name;
   public:
 
     // constructor
     Single_Channel();
     Single_Channel(Single_Channel *);
-    Single_Channel(int,int,const ATOOLS::Flavour *);
-    Single_Channel(int,int,const ATOOLS::Flavour *,ATOOLS::Integration_Info * const) {};
+    Single_Channel(size_t,size_t,const ATOOLS::Flavour *);
+    Single_Channel(size_t,size_t,const ATOOLS::Flavour *,ATOOLS::Integration_Info * const) {};
 
     // destructor
     virtual ~Single_Channel();
@@ -49,66 +40,63 @@ namespace PHASIC {
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
     virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
 
-    virtual void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-			       const double *rans,const int mode=0);
+    virtual void GeneratePoint(const double * rns,const int mode=0);
     virtual void GenerateWeight(const int mode=0);
 
     virtual void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
     virtual void CalculateLimits();
 
-    virtual void SetRange(double * _sprimerange,double * _yrange);
-    virtual void GetRange(); 
-    virtual void ISRInfo(int &,double &,double &); 
+    virtual inline const size_t &      Nin() const       { return m_nin; }
+    virtual inline const size_t &      Nout() const      { return m_nout; }
+    virtual inline const size_t &      Dimension() const { return m_rannum; }
+    virtual inline const size_t        NChannels() const { return 1; } 
+    virtual inline const std::string & Name() const      { return m_name; }
+    virtual inline const double &      Res1() const      { return m_res1; }
+    virtual inline const double &      Res2() const      { return m_res2; }
+    virtual inline const double &      MRes1() const     { return m_mres1; }
+    virtual inline const double &      MRes2() const     { return m_mres2; }
+    virtual inline const double &      Weight() const    { return m_weight; }
+    virtual inline const double &      Alpha() const     { return m_alpha; }
+    virtual inline const double &      AlphaSave() const { return m_alpha_save; }
+    virtual inline const int           OType() const     { return 0; }
+    const std::string ChID() const;
+    
+    
+    virtual inline void SetRes1(double _r)          { m_res1       = _r; }
+    virtual inline void SetRes2(double _r)          { m_res2       = _r; }
+    inline void AddMPIVars(const double &r1,const double &r2) { m_mres1+=r1; m_mres2+=r2; }
+    inline void SetMPIVars(const double &r1,const double &r2) { m_mres1=r1;  m_mres2=r2;  }
+    virtual inline void SetName(std::string _name)  { m_name       = _name; }
+    virtual inline void SetWeight(double _weight)   { m_weight     = _weight; }
+    virtual inline void SetAlpha(double _alpha)     { m_alpha      = _alpha; }
+    virtual inline void SetAlphaSave(double _alpha) { m_alpha_save = _alpha; }
+    
+    virtual inline void Optimize()              {}
+    virtual inline void EndOptimize()           {}
+    virtual inline void WriteOut(std::string)   {}
+    virtual inline void ReadIn(std::string)     {}
+    virtual inline bool OptimizationFinished()  { return false; }
+        
+    virtual void ISRInfo(int & type,double & mass,double & width) {
+      type = 0; mass = width = 0.0;
+    }
     virtual void ISRInfo(std::vector<int> &ts,
-			 std::vector<double> &ms,std::vector<double> &ws) const;
+			 std::vector<double> &ms,std::vector<double> &ws) const {}
     virtual int  ChNumber(); 
     virtual void SetChNumber(int);
 
-    virtual std::string      Name();     
-    virtual std::string      ChID();
-    virtual size_t           Dimension() const;
 
-    virtual size_t NChannels() const; 
-
-    virtual int Nin();    
-    virtual int Nout();  
-
-    virtual double Res1();  
-    virtual double Res2();  
-    virtual double Weight();
-    virtual double Alpha(); 
-    virtual double AlphaSave();
-
-    virtual void SetRes1(double r);         
-    virtual void SetRes2(double r);         
-    virtual void SetName(std::string name); 
-    virtual void SetWeight(double weight);  
-    virtual void SetAlpha(double alpha);    
-    virtual void SetAlphaSave(double alpha);
-
-    virtual int  OType();
-
-    virtual void Optimize();
-    virtual void EndOptimize();
-    virtual bool OptimizationFinished()  { return false; }
-    virtual void WriteOut(std::string);
-    virtual void ReadIn(std::string);
 
     virtual void MPISync();
 
-    void CopyMPIValues();
+    inline virtual void CopyMPIValues() {
+      m_res1 += m_mres1;
+      m_res2 += m_mres2;
+      m_mres1 = m_mres2 = 0.0;
+    }
+  };
 
-    inline void AddMPIVars(const double &r1,
-			   const double &r2)
-    { mres1+=r1; mres2+=r2; }
-    inline void SetMPIVars(const double &r1,
-			   const double &r2)
-    { mres1=r1; mres2=r2; }
-
-    inline double MRes1() { return mres1; }
-    inline double MRes2() { return mres2; }
-
-  };// end of class Single_Channel
+  // end of class Single_Channel
 
   /*! 
     \enum chr::type

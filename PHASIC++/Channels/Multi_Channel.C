@@ -355,7 +355,7 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
   }  
 }
 
-void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
+void Multi_Channel::GeneratePoint(int mode) 
 {
   if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
   for (std::map<std::string,double>::iterator
@@ -366,17 +366,17 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
   for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
   double disc=ran->Get();
   double sum=0.;
+  for (size_t i=0;i<2;++i) rans[i]=ran->Get();
   for (size_t n=0;n<channels.size();++n) {
     sum+=channels[n]->Alpha();
     if (sum>disc) {
-      for (size_t i=0;i<2;++i) rans[i]=ran->Get();
-      channels[n]->GeneratePoint(spkey,ykey,rans,mode);
+      channels[n]->GeneratePoint(rans,mode);
       m_lastdice = n;
       return;
     }
   }  
   if (IsEqual(sum,disc)) {
-    channels.back()->GeneratePoint(spkey,ykey,rans,mode);
+    channels.back()->GeneratePoint(rans,mode);
     m_lastdice = channels.size()-1;
     return;
   }
@@ -386,7 +386,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
   Abort();
 }
 
-void Multi_Channel::GenerateWeight(int mode=0)
+void Multi_Channel::GenerateWeight(int mode)
 {
   if (channels.size()==1) {
     channels[0]->GenerateWeight(mode);
@@ -497,16 +497,6 @@ bool Multi_Channel::ReadIn(std::string pID) {
 std::string Multi_Channel::ChID(int n)
 {
   return channels[n]->ChID();
-}
-
-void Multi_Channel::SetRange(double *_sprimerange,double *_yrange) 
-{
-  for (size_t i=0;i<channels.size();++i) channels[i]->SetRange(_sprimerange,_yrange);
-}
-
-void Multi_Channel::GetRange() 
-{
-  for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
 }
 
 bool Multi_Channel::Initialize()

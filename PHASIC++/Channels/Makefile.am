@@ -19,7 +19,12 @@ libPhasicChannels_la_SOURCES  =	\
 				VHAAG_res.C \
 				VHAAG_Threshold.C \
 				Decay_Dalitz.C \
-				Vegas.C ISR_Vegas.C \
+				Vegas.C \
+				Simple_Pole_Channels.C \
+				Resonance_Channels.C \
+				Leading_Log_Channels.C \
+				LBS_Compton_Peak_Channels.C \
+				Threshold_Channels.C \
 				Channel_Interface.C \
 				Multi_Channel.C \
 				ISR_Channels.C \
@@ -45,7 +50,13 @@ localinc_HEADERS      =	\
 			VHAAG_ND.H \
 			VHAAG_res.H \
 			Decay_Dalitz.H \
-			Vegas.H ISR_Vegas.H \
+			Vegas.H \
+			ISR_Channel_Base.H \
+			Simple_Pole_Channels.H \
+			Resonance_Channels.H \
+			Leading_Log_Channels.H \
+			LBS_Compton_Peak_Channels.H \
+			Threshold_Channels.H \
 			Multi_Channel.H \
 			ISR_Channels.H \
 			Beam_Channels.H \
