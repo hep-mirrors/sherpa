@@ -1,0 +1,61 @@
+#include "PHASIC++/Main/Channel_Creator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Channels/Beam_Channels.H"
+#include "PHASIC++/Channels/ISR_Channels.H"
+#include "PHASIC++/Channels/FSR_Channels.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+
+using namespace PHASIC;
+using namespace ATOOLS;
+
+Channel_Creator::Channel_Creator(Phase_Space_Handler * psh) :
+  p_psh(psh) {}
+
+Channel_Creator::~Channel_Creator() {}
+
+bool Channel_Creator::operator()() 
+{
+  msg_Tracking()<<"Initializing channels for phase space integration (\n\t";
+  Settings& s = Settings::GetMainSettings();
+  const double minalpha = s["INT_MINALPHA"].Get<double>(); 
+  if (!CreateFSRIntegrator(minalpha))  THROW(fatal_error,"Could not create FSR channels");
+  if (!CreateBeamIntegrator(minalpha)) THROW(fatal_error,"Could not create beam channels");
+  if (!CreateISRIntegrator(minalpha))  THROW(fatal_error,"Could not create ISR channels");
+  msg_Tracking()<<")\n";
+  return true;
+}
+
+bool Channel_Creator::CreateBeamIntegrator(const double & minalpha) {
+  if (p_psh->Process()->NIn()!=2) return true;
+  BEAM::Beam_Spectra_Handler * beamhandler = p_psh->GetBeamSpectra();
+  if (!beamhandler || !beamhandler->On()) return true;
+  Beam_Channels * beamchannels =
+    new Beam_Channels(p_psh,"beam_"+p_psh->Process()->Process()->Name());
+  beamchannels->SetMinAlpha(minalpha);
+  p_psh->SetBeamIntegrator(beamchannels);
+  return beamchannels->Initialize();
+}
+
+bool Channel_Creator::CreateISRIntegrator(const double & minalpha) {
+  if (p_psh->Process()->NIn()!=2) return true;
+  PDF::ISR_Handler * isrhandler = p_psh->GetISRHandler();
+  if (!isrhandler || !isrhandler->On()) return true;
+  ISR_Channels * isrchannels =
+    new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
+  isrchannels->SetMinAlpha(minalpha);
+  p_psh->SetISRIntegrator(isrchannels);
+  return isrchannels->Initialize();
+}
+
+bool Channel_Creator::CreateFSRIntegrator(const double & minalpha) {
+  msg_Out()<<METHOD<<"("<<p_psh<<")\n";
+  FSR_Channels * fsrchannels =
+    new FSR_Channels(p_psh,"fsr_"+p_psh->Process()->Process()->Name());
+  fsrchannels->SetMinAlpha(minalpha);
+  p_psh->SetFSRIntegrator(fsrchannels);
+  return fsrchannels->Initialize();
+}
+
