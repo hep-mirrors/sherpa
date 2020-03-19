@@ -102,13 +102,20 @@ void Selector_Base::Output() {
 
 void Selector_Base::ReadInSubSelectors(const Selector_Key &key)
 {
-  for (auto s : key.m_settings["Subselectors"].GetItems()) {
+  for (auto s : key.m_settings[m_name]["Subselectors"].GetItems()) {
     Selector_Key subkey;
     subkey.m_settings = s;
     subkey.p_proc = key.p_proc;
-    auto type = s["Type"].SetDefault("").Get<std::string>();
-    if (type == "") {
+    std::string type;
+    if (s.IsList()) {
       type = s.SetDefault<std::string>({}).GetVector<std::string>()[0];
+    } else {
+      if (s.GetKeys().size() != 1)
+        THROW(fatal_error,
+              "Mapping-like selector settings must consist of exactly one"
+              " key-value pair, where the key is the name of the selector,"
+              " and the value is another mapping for the selector settings.");
+      type = s.GetKeys().front();
     }
     auto* sel = Selector_Getter::GetObject(type, subkey);
     if (sel!=NULL) m_sels.push_back(sel);
