@@ -28,7 +28,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler():
   if (!m_parameters.SpecifyMode() || !m_parameters.SpecifySpectra())
     THROW(fatal_error, "Bad parameters in BEAM_SPECTRA_HANDLER.");
   m_beammode = m_parameters.GetMode();
-  // initialise the beams, kinematics & weights 
+  // initialise the beams, kinematics & weights
   if (!InitTheBeams() || !InitTheKinematics() || !InitTheWeight())
     THROW(fatal_error, "Bad spectra in BEAM_SPECTRA_HANDLER.");
   m_on = p_kinematics->On();
@@ -177,8 +177,3 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
   }
   return fit;
 }
-
-
-
-
-
