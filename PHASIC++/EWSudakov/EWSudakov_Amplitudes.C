@@ -174,7 +174,7 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
       static_cast<size_t>(1 << bosonindexes.size())};
   for (size_t permutation{0}; permutation != first_invalid_permutation;
        ++permutation) {
-    auto* current_ampl{&baseampl};
+    auto* current_ampl = &baseampl;
     if (permutation != 0) {
       Leg_Kfcode_Map leg_set;
       Leg_Kfcode_Map_Signed leg_set_signed;
