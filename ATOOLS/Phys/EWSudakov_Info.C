@@ -4,7 +4,7 @@
 
 using namespace ATOOLS;
 
-EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string& logt)
+EWSudakov_Log_Type ATOOLS::EWSudakovLogTypeFromString(const std::string& logt)
 {
   if (logt == "Ls")
     return EWSudakov_Log_Type::Ls;
@@ -23,7 +23,7 @@ EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string& logt)
           "Can not convert " + logt + " to EW Sudakov log type.");
 }
 
-std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
+std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
 {
   switch (t) {
     case EWSudakov_Log_Type::Ls:
