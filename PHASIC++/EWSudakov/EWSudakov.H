@@ -1,6 +1,7 @@
 #ifndef PHASIC_EWSudakov_EWSudakov_H
 #define PHASIC_EWSudakov_EWSudakov_H
 
+#include "ATOOLS/Phys/EWSudakov_Info.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 #include <array>
@@ -25,18 +26,6 @@ namespace PHASIC {
   using Leg_Kfcode_Map_Signed = std::unordered_map<size_t, long int>;
   using Couplings = std::unordered_map<long int, Complex>;
 
-  enum class EWSudakov_Log_Type {
-    // TODO: add more coeffs (and their implementation)
-    Ls,       ///< correction \propto \log(s/m_mW2)^2
-    lZ,       ///< correction \propto \log(s/m_mW2)
-    lSSC,     ///< correction \propto \log(s/m_mW2) \log(|r_kl|/s)
-    lC,       ///< collinear non-Yukawa corrections \propto \log(s/m_mW2)
-    lYuk,     ///< collinear Yukawa corrections \propto \log(s/m_mW2)
-    lPR,      ///< parameter renormalisation corrections \propto \log(s/m_mW2)
-  };
-
-  EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string&);
-  std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map&);
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map_Signed&);
 

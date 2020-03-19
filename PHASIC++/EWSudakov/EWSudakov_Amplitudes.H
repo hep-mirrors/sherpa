@@ -58,9 +58,9 @@ namespace PHASIC {
     static const Cluster_Ampl_Key s_baseamplkey;
 
   public:
-
-    EWSudakov_Amplitudes(Process_Base*,
-                         const std::set<EWSudakov_Log_Type>& _activecoeffs);
+    EWSudakov_Amplitudes(
+        Process_Base*,
+        const std::set<ATOOLS::EWSudakov_Log_Type>& _activecoeffs);
     ~EWSudakov_Amplitudes();
     ATOOLS::Cluster_Amplitude& BaseAmplitude() noexcept;
     ATOOLS::Cluster_Amplitude&
@@ -86,7 +86,8 @@ namespace PHASIC {
 
     // helper methods for the construction
     Cluster_Amplitude_UPM CreateAmplitudes(
-        Process_Base*, const std::set<EWSudakov_Log_Type>& activecoeffs) const;
+        Process_Base*,
+        const std::set<ATOOLS::EWSudakov_Log_Type>& activecoeffs) const;
     static ATOOLS::Cluster_Amplitude_UP CreateAmplitude(Process_Base*);
     static ATOOLS::Cluster_Amplitude_UP
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,

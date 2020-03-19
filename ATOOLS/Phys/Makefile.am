@@ -31,7 +31,8 @@ libToolsPhys_la_SOURCES       =	\
 				Momenta_Stretcher.C \
 				Weight_Info.C \
 				Variations.C \
-				Event_Weights.C
+				Event_Weights.C \
+				EWSudakov_Info.C
 
 localinc_HEADERS      =	\
 			Ordering.H \
@@ -60,7 +61,8 @@ localinc_HEADERS      =	\
 			Momenta_Stretcher.H \
 			Weight_Info.H \
 			Variations.H \
-			Event_Weights.H
+			Event_Weights.H \
+			EWSudakov_Info.H
 
 libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
 
