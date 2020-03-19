@@ -201,7 +201,7 @@ double Comix_Interface::CalcPermutationSign(std::vector<size_t> perm,
   // extract permutation of final-state fermions only
   static const size_t boson_idx = std::numeric_limits<size_t>::max();
   perm.erase(perm.begin(), perm.begin()+ampl.NIn());
-  for (auto i {ampl.NIn()}; i < ampl.Legs().size(); ++i) {
+  for (auto i = ampl.NIn(); i < ampl.Legs().size(); ++i) {
     if (ampl.Leg(i)->Flav().IsBoson()) {
       auto idx = ID(ampl.Leg(i)->Id()).front();
       for (auto it = perm.begin(); it != perm.end(); ++it) {
