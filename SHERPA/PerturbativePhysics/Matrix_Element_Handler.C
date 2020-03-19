@@ -318,10 +318,6 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-<<<<<<< HEAD
-=======
-  (*p_variationweights)*=wf;
->>>>>>> seems to work, cross section probably under control
   return true;
 }
 

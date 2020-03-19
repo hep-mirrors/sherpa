@@ -171,7 +171,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
       m_weights /= Min(1.0, abswgt);
     }
     Blob_Data_Base* winfo((*blob)["Weights"]);
-    if (!winfo) THROW(fatal_error,"No weights information in signal blob");
+    //if (!winfo) THROW(fatal_error,"No weights information in signal blob");
     Event_Weights meweights(winfo->Get<Event_Weights>());
     blob->AddData("Weights",new Blob_Data<Event_Weights>(meweights*m_weights));
   }
@@ -248,8 +248,8 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 int Perturbative_Interface::PerformShowers()
 {
   // see if the event has any weight
-  Blob_Data_Base *winfo((*p_hard)["Weight"]);
-  if (!winfo) THROW(fatal_error,"No weight information in signal blob");
+  //Blob_Data_Base *winfo((*p_hard)["Weight"]);
+  //if (!winfo) THROW(fatal_error,"No weight information in signal blob");
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
   Event_Weights weights = csh->Weights();
