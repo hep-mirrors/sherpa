@@ -214,9 +214,9 @@ Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const
   } else if (std::abs(signed_kf) == kf_Wplus) {
     return {{signed_kf, sign * m_cw / m_sw}};
   } else if (signed_kf == kf_Z) {
-    return {};  // the Z self-coupling is zero
+    return Couplings{};  // the Z self-coupling is zero
   } else if (signed_kf == kf_photon || signed_kf == kf_gluon) {
-    return {};  // the Z does not couple to the photon or to the gluon
+    return Couplings{};  // the Z does not couple to the photon or to the gluon
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav;
@@ -232,17 +232,17 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
   const long int signed_kf{flav};
   if (flav.IsFermion()) {
     if (pol == 0)
-      return {};
+      return Couplings{};
     const auto isfermionplus = flav.IsUptype();
     if (flav.IsAnti() && (isplus == isfermionplus))
       return {{flav.IsoWeakPartner(), -1 / (sqrt(2) * m_sw)}};
     else if (!flav.IsAnti() && (isplus != isfermionplus))
       return {{flav.IsoWeakPartner(), 1 / (sqrt(2) * m_sw)}};
     else
-      return {};
+      return Couplings{};
   } else if (std::abs(signed_kf) == kf_phiplus) {
     if (isplus != flav.IsAnti()) {
-      return {};
+      return Couplings{};
     }
     return {
 	    {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
@@ -251,7 +251,7 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
   } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
     if (isplus != flav.IsAnti()) {
-      return {};
+      return Couplings{};
     }
     return {{kf_photon, isplus ? -1.0 : 1.0},
             {kf_Z, (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
@@ -266,7 +266,7 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
   } else if (signed_kf == kf_h0){
     return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_gluon) {
-    return {};
+    return Couplings{};
   } else {
     MyStrStream s;
     s << "Missing implementation for flavour: " << flav

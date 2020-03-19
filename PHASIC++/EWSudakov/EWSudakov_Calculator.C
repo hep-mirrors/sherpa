@@ -253,7 +253,7 @@ void EWSudakov_Calculator::UpdateGolstoneSpincombinationAndMEPrefactor()
   // (i)^n, the prefactor that accounts for ME^(Z_L^n) -> i^n ME^(chi^n)
   const auto& base_ampl = m_ampls.BaseAmplitude();
   m_current_goldstone_spincombination.clear();
-  const auto nspins{m_current_spincombination.size()};
+  const auto nspins = m_current_spincombination.size();
   m_current_goldstone_spincombination.reserve(nspins);
   m_current_goldstone_me_prefactor = 1.0;
   for (size_t i{0}; i < nspins; ++i) {
@@ -359,7 +359,7 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       m_ewgroupconsts.IZ(flavs[1], m_current_spincombination[indizes[1]]);
   for (const auto kcoupling : kcouplings) {
     for (const auto lcoupling : lcouplings) {
-      auto contrib{2.0 * kcoupling.second * lcoupling.second};
+      auto contrib = 2.0 * kcoupling.second * lcoupling.second;
       if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
         const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
                                  {indizes[1], std::abs(lcoupling.first)}};
@@ -411,7 +411,7 @@ Coeff_Value EWSudakov_Calculator::lsCCoeff()
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
-  const auto nspins{m_current_spincombination.size()};
+  const auto nspins = m_current_spincombination.size();
   for (size_t i{0}; i < nspins; ++i) {
     const Flavour flav{ base_ampl.Leg(i)->Flav() };
     if (flav.IsFermion()) {
