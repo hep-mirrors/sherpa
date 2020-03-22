@@ -212,14 +212,20 @@ bool XS_instanton::FillFinalState(const std::vector<Vec4D> & mom) {
   m_threshold     = (m_Qthreshold==std::string("shat"))?m_Ehat:m_data.Rho();
   m_mean_Ngluons  = m_data.Ngluons();
   Poincare boost(mom[2]);
-  
+  Vec4D totsum(0.,0.,0.,0.);
   if (DefineFlavours() && DistributeMomenta() && MakeColours()) {
-    for (size_t i=0;i<m_flavours.size();i++) boost.BoostBack(m_momenta[i]);
-    for (size_t i=0;i<m_flavours.size();i++) {
-      boost.BoostBack(m_momenta[i]);
-    }
+    //for (size_t i=2;i<m_flavours.size();i++) {
+    //  boost.BoostBack(m_momenta[i]);
+    //  totsum += m_momenta[i];
+    //  msg_Out()<<" --> "<<m_flavours[i]<<" ("<<m_colours[i][0]<<", "<<m_colours[i][1]<<"): "
+    //	       <<m_momenta[i]<<".\n";
+    //  boost.Boost(m_momenta[i]);
+    //}
+    //msg_Out()<<"Compare momenta: "<<mom[2]<<" vs, "<<totsum<<",\n"
+    //	     <<"   sizes: "<<mom.size()<<": "<<m_momenta.size()<<".\n";
+    return true;
   }
-  return true;
+  return false;
 }
 
 bool XS_instanton::DefineFlavours() {
@@ -250,25 +256,11 @@ bool XS_instanton::DefineFlavours() {
       totmass += flav.Mass(true);
     }
   }
-  for (size_t i=1;i<6;i++) {
-    flav = Flavour(i);
-    if (flav.Mass(true)>m_threshold) continue;
-    totmass += 2.*flav.Mass(true);
-    if (totmass>m_Ehat) break;
-    m_nquarks+=2;
-    if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) m_flavours.push_back(flav);
-    flav = flav.Bar();
-    if (flav.Bar()!=m_flavs[0] && flav.Bar()!=m_flavs[1]) {
-      m_flavours.push_back(flav);
-      m_nquarks++;
-      totmass += flav.Mass(true);
-    }
-  }
-  return true;
+  //msg_Out()<<"       *** results in "<<m_nquarks<<" quarks and "<<m_ngluons<<" gluons.\n";
 }
 
 size_t XS_instanton::NumberOfGluons() {
-  return ran->Poissonian(m_Ngluons_factor * m_mean_Ngluons);
+  return size_t(ran->Poissonian(m_Ngluons_factor * m_mean_Ngluons));
 }
 
 bool XS_instanton::DistributeMomenta() {

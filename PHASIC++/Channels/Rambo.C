@@ -123,8 +123,9 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   }
 
   weight = 1.;
-  //if (massflag)
-  MassivePoint(p,ET); // The boost is numerically not very precise, MassivePoint is always called for momentum conservation
+  // Because the boost is numerically not very precise,
+  // MassivePoint is always called for momentum conservation
+  MassivePoint(p,ET);
 }
 
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {
