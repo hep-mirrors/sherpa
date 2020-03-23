@@ -257,6 +257,7 @@ bool XS_instanton::DefineFlavours() {
     }
   }
   //msg_Out()<<"       *** results in "<<m_nquarks<<" quarks and "<<m_ngluons<<" gluons.\n";
+  return (m_nquarks>=6);
 }
 
 size_t XS_instanton::NumberOfGluons() {
