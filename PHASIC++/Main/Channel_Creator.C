@@ -42,16 +42,16 @@ bool Channel_Creator::CreateBeamIntegrator(const double & minalpha) {
 bool Channel_Creator::CreateISRIntegrator(const double & minalpha) {
   if (p_psh->Process()->NIn()!=2) return true;
   PDF::ISR_Handler * isrhandler = p_psh->GetISRHandler();
-  if (!isrhandler || !isrhandler->On()) return true;
+  if (!isrhandler || isrhandler->On()==0) return true;
   ISR_Channels * isrchannels =
     new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
   isrchannels->SetMinAlpha(minalpha);
+  isrchannels->Initialize();
   p_psh->SetISRIntegrator(isrchannels);
   return isrchannels->Initialize();
 }
 
 bool Channel_Creator::CreateFSRIntegrator(const double & minalpha) {
-  msg_Out()<<METHOD<<"("<<p_psh<<")\n";
   FSR_Channels * fsrchannels =
     new FSR_Channels(p_psh,"fsr_"+p_psh->Process()->Process()->Name());
   fsrchannels->SetMinAlpha(minalpha);

@@ -239,7 +239,7 @@ void Beam_Parameters::RegisterDefaultBeams() {
   // with i=1,2 as alternatives for BEAMS, BEAM_SPECTRA, and BEAM_ENERGIES. We
   // do not advertise this in the manual, it's only to make conversion of run
   // cards less error-prone.
-  const auto defmode  = string("Monochromatic"); 
+  const auto defmode  = string("Collider"); 
   const auto beammode = m_settings["BEAM_MODE"].SetDefault(defmode).Get<string>();
   const auto defbeam = 0;
   const auto beam1 = m_settings["BEAM_1"].SetDefault(defbeam).Get<int>();
@@ -258,7 +258,7 @@ void Beam_Parameters::RegisterDefaultBeams() {
   const auto energy2 = m_settings["BEAM_ENERGY_2"].SetDefault(defenergy).Get<double>();
   m_settings["BEAM_ENERGIES"].SetDefault({energy1, energy2});
 
-  m_settings["BEAM_POLARIZATIONS"].SetDefault(0.0);
+  m_settings["BEAM_POLARIZATIONS"].SetDefault({0.0, 0.0});
   m_settings["BEAM_SMIN"].SetDefault(1e-10);
   m_settings["BEAM_SMAX"].SetDefault(1.0);
 }
@@ -288,7 +288,7 @@ void Beam_Parameters::RegisterSpectrumReaderDefaults() {
 
 bool Beam_Parameters::SpecifyMode() {
   bool okay(true);
-  string mode = m_settings["BEAM_MODE"].Get<string>(); 
+  string mode = m_settings["BEAM_MODE"].Get<string>();
   if      (mode==string("Relic_Density"))
     m_beammode = beammode::relic_density; 
   else if (mode==string("Collider"))

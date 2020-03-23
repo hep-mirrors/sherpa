@@ -103,7 +103,7 @@ namespace PHASIC {
     }
     inline double CalculateME(ATOOLS::Weight_Type weighttype)  {
       m_eventweights = p_active->Process()->Differential(p_lab, weighttype);
-      m_result=p_active->Process()->Last();
+      return m_result=p_active->Process()->Last();
     }
     inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
     inline double Weight(ATOOLS::Vec4D_Vector &moms) {

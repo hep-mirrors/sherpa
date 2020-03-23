@@ -79,8 +79,7 @@ namespace PDF {
     bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
     ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
 
-    void AssignKeys(std::map<std::string,ATOOLS::Info_Key *> & keymap,
-		    ATOOLS::Integration_Info *const info);
+    void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
     void Reset();
     void Reset(const size_t i) const; 
@@ -146,6 +145,8 @@ namespace PDF {
       return beam<2?p_remnants[beam]:NULL;
     }
     inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
+
+    void Output();
   };// end of class ISR_Handler
   
   /*!

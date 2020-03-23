@@ -131,27 +131,27 @@ bool ISR_Channels::CreateChannels()
       if (isr==3 && !ep) {
 	if (m_isrparams[i].parameters[1]==0.0) {
 	  Add(new Simple_Pole_Uniform
-	      (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo()));
+	      (m_isrparams[i].parameters[0],m_keyid,p_psh->GetInfo()));
 	  Add(new Simple_Pole_Central
-	      (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
+	      (m_isrparams[i].parameters[0],m_keyid,p_psh->GetInfo(),isr));
 	}
 	else {
 	  Add(new Simple_Pole_Forward
 	      (m_isrparams[i].parameters[0],
-	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
 	  Add(new Simple_Pole_Backward
 	      (m_isrparams[i].parameters[0],
-	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
 	}
       }
       else if (isr==3 && ep) {
 	Add(new Simple_Pole_Forward
 	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	     m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
       }
       else {
 	Add(new Simple_Pole_Central
-	    (m_isrparams[i].parameters[0]," isr",p_psh->GetInfo(),isr));
+	    (m_isrparams[i].parameters[0],m_keyid,p_psh->GetInfo(),isr));
       }
       break;
     case 1:
@@ -159,57 +159,62 @@ bool ISR_Channels::CreateChannels()
 	if (m_isrparams[i].parameters[2]==0.0) {
 	  Add(new Resonance_Uniform
 	      (m_isrparams[i].parameters[0],
-	       m_isrparams[i].parameters[1]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
 	}
 	else {
 	  Add(new Resonance_Forward
 	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
 	  Add(new Resonance_Backward
 	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
 	}
       }
       else if (isr==3 && ep) {
 	Add(new Resonance_Forward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	     m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
       }
       else {
 	Add(new Resonance_Central
 	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
+	     m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo(),isr));
       }
       break;
     case 2:
       if (m_isrparams[i].parameters[2]==0.0) {
 	Add(new Threshold_Central
 	    (m_isrparams[i].parameters[0],
-	     m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
+	     m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo(),isr));
       }
       else {
 	if (isr==3) {
 	  Add(new Threshold_Forward
 	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
 	  Add(new Threshold_Backward
 	      (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	       m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	       m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
 	}
       }
       break;
     case 3:
+      Add(new Leading_Log_Uniform
+	  (m_isrparams[i].parameters[0],
+	   m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
+      /*
       Add(new Leading_Log_Central
 	  (m_isrparams[i].parameters[0],
-	   m_isrparams[i].parameters[1]," isr",p_psh->GetInfo(),isr));
+	   m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo(),isr));
       if (isr==3) {
 	Add(new Leading_Log_Forward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	     m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
 	Add(new Leading_Log_Backward
 	    (m_isrparams[i].parameters[0],m_isrparams[i].parameters[1],
-	     m_isrparams[i].parameters[2]," isr",p_psh->GetInfo()));
+	     m_isrparams[i].parameters[2],m_keyid,p_psh->GetInfo()));
       }
+      */
       break;
     }
   }

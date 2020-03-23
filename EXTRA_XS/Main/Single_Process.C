@@ -99,7 +99,9 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
   if (m_nlotype==nlo_type::lo && !Selector()->Result())
     return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   
-  if (!p_born_me2->FillFinalState(momenta)) return 0.;
+  if (!p_born_me2->FillFinalState(momenta)) {
+    return 0.;
+  }
   m_localFS = true;
   p_scale->CalculateScale(momenta);
   m_localFS = false;
@@ -132,7 +134,7 @@ bool EXTRAXS::Single_Process::FillIntegrator
     mc->Add(new PHASIC::T1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
   if (sintt&4)
     mc->Add(new PHASIC::U1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
-  return false;
+  return (mc->NChannels()>0);
 }
 
 bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
@@ -174,6 +176,7 @@ bool Single_Process::FillFinalState(const ATOOLS::Vec4D_Vector &p) {
   return true;
 }
 
+/*
 size_t Single_Process::NOut() const {
   return m_localFS?p_born_me2->NOut():m_nout;
 }
@@ -185,6 +188,7 @@ const ATOOLS::Flavour_Vector & Single_Process::Flavours() const {
 const ATOOLS::Vec4D_Vector & Single_Process::Momenta() const {
   return m_localFS?p_born_me2->Momenta():p_int->Momenta();
 }
+*/
 
 std::vector<std::vector<int> > * Single_Process::Colours() const {
   return m_localFS?(&p_born_me2->Colours()):NULL;

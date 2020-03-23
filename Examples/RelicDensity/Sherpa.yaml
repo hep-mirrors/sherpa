@@ -1,0 +1,26 @@
+# collider setup
+BEAMS: [52, 52]
+BEAM_ENERGIES: 65 
+BEAM_SPECTRA: [DM_beam,DM_beam]
+BEAM_MODE: Relic_Density
+DM_beam_weighted: 1
+DM_TEMPERATURE: 1
+DM_RELATIVISTIC: 1
+PDF_SET: [None, None]
+MODEL: SMDM
+EVENTS: 0
+
+PARTICLE_DATA:
+  52:
+    Mass: 10
+
+# me generator settings
+ME_GENERATORS:
+- Internal
+
+PROCESSES:
+# DM DM -> mu- mu+
+- 52 52 -> 13 -13:  
+    # 2 vertices so 2nd order is leading
+    Order: {QCD: 0, EW: 2}
+    Integration_Error: 0.01

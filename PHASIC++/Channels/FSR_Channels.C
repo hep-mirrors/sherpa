@@ -29,9 +29,7 @@ bool FSR_Channels::Initialize()
   nout=process_integrator->NOut();
   
   int sintegrator=0;
-  msg_Out()<<METHOD<<"("<<nin<<" --> "<<nout<<")\n";
   for (size_t i(0);i<inttypes.size();++i) {
-    msg_Out()<<METHOD<<"("<<nin<<" --> "<<nout<<"), type = "<<i<<", ";
     Channel_Generator * cg =
       Channel_Generator::Getter_Function::GetObject
       (inttypes[i],Channel_Generator_Key(inttypes[i],process_integrator->Process(),this));
@@ -47,7 +45,6 @@ bool FSR_Channels::Initialize()
 	      +inttypes[i]+"' not found.");
       }
     }
-    msg_Out()<<" trying to generate channels.\n";
     sintegrator|=cg->GenerateChannels();
     delete cg;
   }

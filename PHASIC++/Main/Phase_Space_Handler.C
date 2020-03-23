@@ -96,17 +96,11 @@ double Phase_Space_Handler::Integrate()
   return res;
 }
 
-Event_Weights Phase_Space_Handler::
-Differential(Process_Integrator *const process,
-	     ATOOLS::Weight_Type weighttype,
-	     const psmode::code mode) 
+Event_Weights
+Phase_Space_Handler::Differential(Process_Integrator *const process,
+				  ATOOLS::Weight_Type weighttype,
+				  const psmode::code mode) 
 {
-  //msg_Out()<<"-------------------------------------------------------------\n"
-  //	   <<"-------------------------------------------------------------\n"
-  //	   <<"-------------------------------------------------------------\n"
-  //	   <<METHOD<<" for ISR reset mode = "<<(mode&psmode::no_lim_isr)<<", "
-  //	   <<(mode&psmode::no_gen_isr)<<", "
-  //	   <<"beam handler on = "<<p_beamhandler->On()<<"\n";
   m_cmode  = mode;
   p_active = process;
   m_result = 0.0;
@@ -114,14 +108,12 @@ Differential(Process_Integrator *const process,
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
     return Event_Weights{0, 0.0};
-  //msg_Out()<<" ### "<<p_lab[0]<<" + "<<p_lab[1]<<"\n"
-  //	   <<"  -> "<<p_lab[2]<<" + "<<p_lab[3]<<".\n";
   for (size_t i(0);i<p_lab.size();++i) {
     if (p_lab[i].Nan()) return Event_Weights{0, 0.0};
   }
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
-      return Event_Weights{0, 0.0}; 
+      return Event_Weights{0, 0.0};
     m_result  = (m_meweight = CalculateME(weighttype));
     m_result *= (m_psweight = CalculatePS());
     m_result *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
@@ -129,7 +121,9 @@ Differential(Process_Integrator *const process,
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
   }
-  else ManageWeights(0.0);
+  else {
+    ManageWeights(0.0);
+  }
   if (!CheckStability()) { m_result = 0.; return 0.; }
   m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
   return m_result*m_enhance;
@@ -304,7 +298,6 @@ void Phase_Space_Handler::InitParameters(const double & error) {
   
 void Phase_Space_Handler::CheckSinglePoint()
 {
-  msg_Out()<<METHOD<<"\n";
   Settings& s = Settings::GetMainSettings();
   const std::string file{ s["PS_PT_FILE"].Get<std::string>() };
   if (file!="") {

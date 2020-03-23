@@ -54,15 +54,17 @@ bool Beam_Spectra_Handler::InitTheBeams() {
 
 bool Beam_Spectra_Handler::InitTheKinematics()
 {
-  msg_Out()<<METHOD<<" for "<<m_beammode<<"\n";
   switch (m_beammode) {
   case beammode::relic_density:
+    m_type       = string("Relic Density");
     p_kinematics = new RelicDensity_Kinematics(p_BeamBase);
     break;
   case beammode::collider:
+    m_type       = string("Collider Setup");
     p_kinematics = new Collider_Kinematics(p_BeamBase);
     break;
   case beammode::DM_annihilation:
+    m_type       = string("DM Annihilation");
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
   case beammode::unknown:
@@ -92,10 +94,11 @@ bool Beam_Spectra_Handler::InitTheWeight()
 }
 
 void Beam_Spectra_Handler::Output() {
-  msg_Info()<<"Beam_Spectra_Handler : "<<endl
-	   <<"   type = "<<m_type<<endl
-	   <<"   for    "<<p_BeamBase[0]->Beam()<<"  ("<<p_BeamBase[0]->InMomentum()<<")"<<endl
-	   <<"   and    "<<p_BeamBase[1]->Beam()<<"  ("<<p_BeamBase[1]->InMomentum()<<")"<<endl;
+  msg_Info()<<"Beam_Spectra_Handler: type = "<<m_type<<endl
+	   <<"    for "<<p_BeamBase[0]->Beam()
+	    <<" (on = "<<p_BeamBase[0]->On()<<", p = "<<p_BeamBase[0]->InMomentum()<<")"<<endl
+	   <<"    and "<<p_BeamBase[1]->Beam()
+	    <<" (on = "<<p_BeamBase[0]->On()<<", p = "<<p_BeamBase[1]->InMomentum()<<")."<<endl;
 }
 
 /* ----------------------------------------------------------------

@@ -9,8 +9,8 @@ ISR_Base::ISR_Base(PDF_Base *pdf):
   m_on((bool)pdf)
 {
   if (pdf!=NULL) {
-    m_exponent=p_pdf->Exponent(); 
-    m_xmax=p_pdf->XMax();
+    m_exponent = p_pdf->Exponent(); 
+    m_xmax     = p_pdf->XMax();
   }
 }
 

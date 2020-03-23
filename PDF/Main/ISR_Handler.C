@@ -54,6 +54,14 @@ ISR_Handler::~ISR_Handler()
   }
 }
 
+void ISR_Handler::Output() {
+  msg_Out()<<"ISR_Handler: type = "<<m_type<<"\n"
+	   <<"    for "<<p_isrbase[0]->Flavour()
+	   <<" (internal structure = "<<p_isrbase[0]->On()<<")\n"
+	   <<"    and "<<p_isrbase[1]->Flavour()
+	   <<" (internal structure = "<<p_isrbase[1]->On()<<")\n";
+}
+
 void ISR_Handler::Init(double *splimits) 
 {
   double s=(p_beam[0]->OutMomentum()+
@@ -236,19 +244,10 @@ void ISR_Handler::Reset()
   m_splimits[1]=m_fixed_smax*Upper1()*Upper2();
 }
 
-void ISR_Handler::AssignKeys(map<std::string,Info_Key *> & keymap,
-			     Integration_Info *const info) {
-  m_sprimekey.Assign("ISR::sprime",5,0,info);
+void ISR_Handler::AssignKeys(Integration_Info *const info) {
+  m_sprimekey.Assign("ISR::s'",5,0,info);
   m_ykey.Assign("ISR::y",3,0,info);
   m_xkey.Assign("ISR::x",4,0,info);
-  if (keymap.find("ISR::sprime")!=keymap.end() ||
-      keymap.find("ISR::y")!=keymap.end() ||
-      keymap.find("ISR::x")!=keymap.end()) {
-    THROW(fatal_error, "ISR integrationn maps already filled.");
-  }
-  keymap["ISR::sprime"] = &m_sprimekey;
-  keymap["ISR::y"]      = &m_ykey;
-  keymap["ISR::x"]      = &m_xkey;
   SetLimits();
 }
 

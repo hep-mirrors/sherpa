@@ -842,6 +842,7 @@ bool Initialization_Handler::InitializeThePDFs()
 		 <<"   Abort program."<<endl;
       Abort();
     }
+    m_isrhandlers[id]->Output();
   }
   msg_Info() << "Initialized the ISR." << endl;
   return 1;

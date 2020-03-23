@@ -8,8 +8,8 @@ namespace BEAM {
   private:
     collidermode::code m_mode;
 
-    ATOOLS::Vec4D    m_Pcms, m_fixp_cms[2];
-    double           m_S, m_Ecms, m_E1, m_E2;
+    ATOOLS::Vec4D    m_fixp_cms[2];
+    double           m_Ecms, m_E1, m_E2;
     double           m_ymin, m_ymax, m_xmin, m_xmax;
     bool             m_asymmetric;
     ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;

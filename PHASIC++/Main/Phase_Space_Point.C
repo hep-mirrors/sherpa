@@ -42,16 +42,15 @@ void Phase_Space_Point::Init(Phase_Space_Handler * psh) {
     if (i<m_nin) m_masses2[i] = sqr(m_masses[i]);
   }
   m_osmass = (m_nout==1?m_masses[m_nin]:0.0);
-  if (p_beamchannels) {
-    m_beamspkey.Assign(std::string("BEAM::s'"),5,0,p_pshandler->GetInfo());
-    m_beamykey.Assign(std::string("BEAM::y"),3,0,p_pshandler->GetInfo());
-    p_beamhandler->AssignKeys(p_pshandler->GetInfo());
-  }
-  if (p_isrchannels) {
-    m_isrspkey.Assign(std::string("ISR::s'"),5,0,p_pshandler->GetInfo());
-    m_isrykey.Assign(std::string("ISR::y"),3,0,p_pshandler->GetInfo());
-  }
+  m_beamspkey.Assign(std::string("BEAM::s'"),5,0,p_pshandler->GetInfo());
+  m_beamykey.Assign(std::string("BEAM::y"),3,0,p_pshandler->GetInfo());
+  p_beamhandler->AssignKeys(p_pshandler->GetInfo());
+  m_isrspkey.Assign(std::string("ISR::s'"),5,0,p_pshandler->GetInfo());
+  m_isrykey.Assign(std::string("ISR::y"),3,0,p_pshandler->GetInfo());
+  p_isrhandler->AssignKeys(p_pshandler->GetInfo());
   InitFixedIncomings();
+  //msg_Out()<<"***** "<<METHOD<<" in info = "<<p_pshandler->GetInfo()<<", "
+  //	   <<"key = "<<&m_isrspkey.Doubles()<<".\n";
 }
 
 void Phase_Space_Point::InitFixedIncomings() {
@@ -114,12 +113,10 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   if (p_beamhandler->On() && p_beamchannels!=NULL) {
     p_beamhandler->SetLimits();
     p_beamchannels->GeneratePoint();
-    if (p_beamhandler->MakeBeams(p_moms)) {
-      m_sprime = p_beamhandler->Sprime();
-      m_y      = p_beamhandler->Y();
-    }
-    else return false;
+    if (!p_beamhandler->MakeBeams(p_moms)) return false;
   }
+  m_sprime = p_beamhandler->Sprime();
+  m_y      = p_beamhandler->Y();
   return true;
 }
 
@@ -127,6 +124,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
   // active ISR handling necessary - generate a point:
   // -- s' and rapidity y for collider mode,
   if (p_isrhandler->On() && p_isrchannels!=NULL && m_mode!=psmode::no_gen_isr) {
+    p_isrhandler->Reset();
     if (!(m_mode&psmode::no_lim_isr)) {
       p_isrhandler->SetSprimeMax(m_sprime *
 				 p_isrhandler->Upper1()*
@@ -135,6 +133,10 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     p_isrhandler->SetPole(m_sprime);
     p_isrhandler->SetLimits();
     p_isrchannels->GeneratePoint();
+    //msg_Out()<<METHOD<<" yields "
+    //	     <<"s' = "<<m_isrspkey[3]<<" in "
+    //	     <<"["<<m_isrspkey[0]<<", "<<m_isrspkey[1]<<", "<<m_isrspkey[2]<<"], "
+    //	     <<"y = "<<m_isrykey[2]<<" in ["<<m_isrykey[0]<<", "<<m_isrykey[1]<<"].\n";
     m_sprime = m_osmass?m_isrspkey[4]:m_isrspkey[3];
     m_y     += m_isrykey[2];
     // this will go into the part where we calcilate the ME

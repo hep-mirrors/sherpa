@@ -46,7 +46,8 @@ namespace BEAM {
     inline void BoostInLab(ATOOLS::Vec4D *p,const size_t & n) {
       p_kinematics->BoostInCMS(p,n);
     }
-    
+
+    inline void SetType(const std::string & type) { m_type = type; }
     inline void SetSprimeMin(const double & smin) { p_kinematics->SetSprimeMin(smin); }
     inline void SetSprimeMax(const double & smax) { p_kinematics->SetSprimeMin(smax); }
     inline const double SprimeMin() const { return p_kinematics->SprimeMin(); }
@@ -56,7 +57,7 @@ namespace BEAM {
     inline const double Exponent(const size_t & i) const {
       return p_kinematics->Exponent(i);
     }
-    inline bool     CalculateWeight(const double & scale) {
+    inline bool CalculateWeight(const double & scale) {
       return p_weight->Calculate(scale);
     }
     inline const double Weight(ATOOLS::Flavour * flin=NULL) const {

@@ -499,7 +499,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
-  Partonic(p);
+  m_lastxs = Partonic(p);
 
   if (GetSubevtList() == nullptr) {
 
@@ -513,7 +513,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
     m_csi.AddFlux(m_lastflux);
 
     // update results
-    m_last = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
+    m_last  = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
       double prefac {m_csi.m_pdfwgt * m_csi.m_flux};
@@ -564,9 +564,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
         }
       }
     }
-
-  } else {
-
+  }
+  else {
     const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {

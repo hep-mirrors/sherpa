@@ -219,10 +219,10 @@ namespace PHASIC {
     // inline functions
     inline void SetParent(Process_Base *const proc) { p_parent=proc; }
 
-    inline size_t NIn()                                       const  { return m_nin;  }
-    inline virtual size_t NOut()                              const { return m_nout; }
-    virtual const ATOOLS::Vec4D_Vector          &Momenta()    const;
-    inline virtual const ATOOLS::Flavour_Vector &Flavours()   const { return m_flavs; }
+    inline size_t NIn()                                const { return m_nin;  }
+    inline virtual size_t NOut()                       const { return m_nout; }
+    const ATOOLS::Vec4D_Vector          & Momenta()    const;
+    inline const ATOOLS::Flavour_Vector & Flavours()   const { return m_flavs; }
     inline void SetFlavours(const ATOOLS::Flavour_Vector& flavs)    { m_flavs = flavs; }
     inline virtual std::vector<std::vector<int> > * Colours() const { return NULL; }
 

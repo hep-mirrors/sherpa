@@ -33,8 +33,6 @@ void Collider_Kinematics::InitSystem() {
   // cms system from beam momenta - this is for potentially asymmetric collisions.
   m_E1   = p_beams[0]->Energy();
   m_E2   = p_beams[1]->Energy();
-  m_Pcms = p_beams[0]->InMomentum()+p_beams[1]->InMomentum();
-  m_S    = m_Pcms.Abs2();
   m_Ecms = sqrt(m_S);
 
   rpa->gen.SetEcms(m_Ecms);
@@ -116,6 +114,13 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
   m_ykey.Assign(m_keyid+string("y"),3,0,info);
   m_xkey.Assign(m_keyid+string("x"),6,0,info);
+  m_sprimekey[0] = Max(m_smin, m_sminPS);
+  m_sprimekey[1] = m_sprimekey[2] = m_smax;
+  m_sprimekey[2] = m_S;
+  m_sprimekey[3] = m_S;
+  m_ykey[0]      = m_ymin;
+  m_ykey[1]      = m_ymax;
+  m_ykey[2]      = 0.;
 }
 
 void Collider_Kinematics::SetLimits() {

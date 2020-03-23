@@ -24,8 +24,8 @@ Beam_Channels::Beam_Channels(Phase_Space_Handler *const psh,
 
 bool Beam_Channels::Initialize()
 {
-  //msg_Out()<<METHOD<<" for mode = "<<m_beammode<<" "
-  //	   <<"and "<<m_beamparams.size()<<" parameters.\n";
+  msg_Out()<<METHOD<<" for mode = "<<m_beammode<<" "
+  	   <<"and "<<m_beamparams.size()<<" parameters.\n";
   return MakeChannels();
 }
 
