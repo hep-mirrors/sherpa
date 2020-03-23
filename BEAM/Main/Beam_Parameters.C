@@ -157,8 +157,8 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
 Beam_Base * Beam_Parameters::InitializeEPA(int num)
 {
   Flavour beam_particle     = GetFlavour("BEAMS",num);
-  if (!beam_particle.Kfcode()==kf_p_plus &&
-      !beam_particle.Kfcode()==kf_e &&
+  if (beam_particle.Kfcode()!=kf_p_plus &&
+      beam_particle.Kfcode()!=kf_e &&
       !beam_particle.IsIon()) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
                <<"   Tried to initialize EPA for "<<beam_particle<<".\n"
