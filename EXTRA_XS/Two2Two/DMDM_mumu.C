@@ -1,12 +1,9 @@
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
-
 #include "EXTRA_XS/Main/ME2_Base.H"
 
 #define PropID(i,j) ((1<<i)|(1<<j))
@@ -21,7 +18,7 @@ namespace EXTRAXS {
   class DMDM_mumu : public ME2_Base {
     /* Describing the annihilation of fermionic dark matter with its antiparticle 
        through a Z to produce a muon-antimuon pair. 
-*/
+    */
   private:
   public:
     DMDM_mumu(const External_ME_Args& args);
@@ -33,28 +30,21 @@ namespace EXTRAXS {
 DMDM_mumu::DMDM_mumu(const External_ME_Args& args) :
   ME2_Base(args)
 {
-  msg_Out()<<METHOD<<"\n";
   m_sintt=1; //what should this be? initialised to 0, but most processes use 1
   for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_oew = 2; m_oqcd = 0;
   m_cfls[12].push_back(kf_photon);
   m_cfls[12].push_back(kf_Z);
-  msg_Out()<<METHOD<<" has constructed ME.\n";
 }
 
 double DMDM_mumu::operator()(const Vec4D_Vector& mom)
 {
   double s=(mom[0]+mom[1]).Abs2();
-  //cout << "Centre-of-mass energy squared s = " << s << endl; //debugging
-  //double t=(mom[0]-mom[2+m_r]).Abs2();
-  //double u=(mom[0]-mom[3-m_r]).Abs2();
-
-  //if (s<2*muon_mass) return 0.;
 
   // how to set these in the model from here/runcard?
   double V(-0.1), A(0.1);
-  double Vtil = sqrt(4*M_PI/128) * (-0.5 + 2*0.23)/ (2*sqrt(0.23)*0.88); //lepton vector coupling constant
-  double Atil = sqrt(4*M_PI/128) *0.5 / (2*0.23*0.88); //lepton axial c.c.
+  double Vtil = sqrt(4*M_PI/128.) * (-0.5 + 2*0.23)/ (2*sqrt(0.23)*0.88); //lepton vector coupling constant
+  double Atil = sqrt(4*M_PI/128.) *0.5 / (2*0.23*0.88); //lepton axial c.c.
 
   double M = ATOOLS::Flavour(kf_Z).Mass();
   double gamma = ATOOLS::Flavour(kf_Z).Width();
