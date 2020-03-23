@@ -73,6 +73,7 @@ namespace PHASIC {
     const EWGroupConstants m_ewgroupconsts;
 
     double m_threshold;
+    bool m_checkinvariantratios;
     size_t m_check;
 
     // intermediate results

@@ -33,6 +33,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
+  m_checkinvariantratios = s["EWSUDAKOV_CHECKINVARIANTRATIOS"].SetDefault(false).Get<bool>();
   s.DeclareVectorSettingsWithEmptyDefault({"EWSUDAKOV_COEFF_REMOVED_LIST"});
   const auto disabled_log_list =
       s["EWSUDAKOV_COEFF_REMOVED_LIST"].GetVector<std::string>();
@@ -88,13 +89,19 @@ bool EWSudakov_Calculator::IsInHighEnergyLimit()
   DEBUG_FUNC("");
   static const auto threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
 
+  const auto s = std::abs(m_ampls.MandelstamS());
+
   const auto& base_ampl = m_ampls.BaseAmplitude();
   for (size_t i {0}; i < base_ampl.Legs().size(); ++i) {
     for (size_t j {i + 1}; j <  base_ampl.Legs().size(); ++j) {
       const auto sij
         = std::abs((base_ampl.Leg(i)->Mom() + base_ampl.Leg(j)->Mom()).Abs2());
-      if(sij < threshold)
+      if(sij < threshold) {
         return false;
+      }
+      if (m_checkinvariantratios && sij*sij < s * m_ewgroupconsts.m_mw2) {
+        return false;
+      }
     }
   }
   return true;
