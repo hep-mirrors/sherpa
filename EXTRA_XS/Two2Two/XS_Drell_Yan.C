@@ -71,13 +71,15 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
   for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
-  if (m_flavs[0].IsLepton() && m_flavs[1].IsLepton()) {
+  if (m_flavs[0].IsLepton() && m_flavs[1].IsLepton() &&
+      m_flavs[2].IsQuark() && m_flavs[3].IsQuark()) {
     barred = m_flavs[2].IsAnti();
     m_colours[2][barred] = m_colours[3][1-barred] = 500;
     colfac = 3.;
   }
 
-  if (m_flavs[0].IsQuark() && m_flavs[1].IsQuark())  {
+  if (m_flavs[0].IsQuark() && m_flavs[1].IsQuark() &&
+      m_flavs[2].IsLepton() && m_flavs[3].IsLepton())  {
     barred = m_flavs[0].IsAnti();
     m_colours[0][barred] = m_colours[1][1-barred] = 500;
     colfac  = 1./3.;
