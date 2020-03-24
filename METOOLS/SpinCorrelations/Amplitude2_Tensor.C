@@ -2,7 +2,7 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace METOOLS;
@@ -340,7 +340,6 @@ bool Amplitude2_Tensor::SortCrit(const pair<Particle*, size_t>& p1,
 
 namespace ATOOLS {
 
-  template <> Blob_Data<Amplitude2_Tensor_SP>::~Blob_Data() {}
   template class Blob_Data<Amplitude2_Tensor_SP>;
   template Amplitude2_Tensor_SP& Blob_Data_Base::Get<Amplitude2_Tensor_SP>();
 

@@ -20,6 +20,7 @@ libToolsPhys_la_SOURCES       =	\
 				Cluster_Leg.C \
 				Cluster_Amplitude.C \
 				Blob.C \
+				Blob_Data.C \
 				Blob_List.C \
 				Parton_Finder.C \
 				Color_Tester.C \
@@ -51,6 +52,7 @@ localinc_HEADERS      =	\
 			Cluster_Amplitude.H \
 			Flow.H \
 			Blob.H \
+			Blob_Data.H \
 			Blob_List.H \
 			Parton_Finder.H \
 			Color_Tester.H \

@@ -1,6 +1,6 @@
 #include "ATOOLS/Phys/Weight_Info.H"
 
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 
 using namespace ATOOLS;
 
@@ -9,13 +9,8 @@ template PDF_Info &Blob_Data_Base::Get<PDF_Info>();
 template ME_Weight_Info &Blob_Data_Base::Get<ME_Weight_Info>();
 
 namespace ATOOLS {
-  template <> Blob_Data<Weight_Info>::~Blob_Data() {}
   template class Blob_Data<Weight_Info>;
-
-  template <> Blob_Data<PDF_Info>::~Blob_Data() {}
   template class Blob_Data<PDF_Info>;
-
-  template <> Blob_Data<ME_Weight_Info*>::~Blob_Data() {}
   template class Blob_Data<ME_Weight_Info*>;
 }
 

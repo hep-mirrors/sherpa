@@ -4,7 +4,8 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Color.H"
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -382,7 +383,6 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
 }
 
 namespace ATOOLS {
-  template <> Blob_Data<PHASIC::Decay_Channel*>::~Blob_Data() {}
   template class Blob_Data<PHASIC::Decay_Channel*>;
   template PHASIC::Decay_Channel*&Blob_Data_Base::Get<PHASIC::Decay_Channel*>();
 }

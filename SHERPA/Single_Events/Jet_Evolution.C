@@ -115,7 +115,7 @@ void Jet_Evolution::PerformShowers(Blob * blob)
 void Jet_Evolution::ExtractPartons(const Cluster_Amplitude* ampl, Blob* blob)
 {
   DEBUG_FUNC(*blob);
-  while (ampl->Next()) ampl=ampl->Next();
+  while (ampl->Prev()) ampl=ampl->Prev();
   DEBUG_VAR(*ampl);
   for (size_t i=0;i<2;++i) { /// TODO generalise to n -> m
     Particle* part=

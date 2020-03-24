@@ -223,26 +223,31 @@ bool Signal_Processes::FillBlob(Blob_List* bloblist,Blob* blob)
     blob->AddData("ATensor",
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
-  if (success && !PrepareShowerBlob(bloblist,blob)) {
-    PRINT_INFO("Construction of shower input failed. New event.");
+  int prepshower(PrepareShowerBlob(bloblist,blob));
+  if (success && prepshower!=1) {
+    if (prepshower==0) PRINT_INFO("Construction of shower input failed. New event.");
     success = false;
   }
   return success;
 }
 
 
-bool Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
+int Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
 {
   DEBUG_FUNC(bloblist->size());
   Single_Process* proc = p_mehandler->Process()->Get<Single_Process>();
 
   Cluster_Amplitude *ampl(NULL);
-  if (m_setcolors || p_mehandler->Process()->Info().m_nlomode!=nlo_mode::fixedorder) {
+  int shower(p_mehandler->Process()->Info().m_nlomode!=nlo_mode::fixedorder);
+  if (m_setcolors || shower) {
     MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
     if (mcatnloproc) ampl=mcatnloproc->GetAmplitude();
     else ampl=proc->Cluster(proc->Integrator()->Momenta(), m_cmode);
-    if (ampl==NULL) return false;
-    if (ampl->Leg(0)->Mom()[3]*ampl->Leg(1)->Mom()[3]>0.0) return false;
+    if (ampl==NULL) return 0;
+    if (shower && ampl->Leg(0)->Mom()[3]*ampl->Leg(1)->Mom()[3]>0.0) {
+      ampl->Delete();
+      return -1;
+    }
   }
 
   if (m_setcolors) {
@@ -270,7 +275,10 @@ bool Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
     }
   }
 
-  if (p_mehandler->Process()->Info().m_nlomode==nlo_mode::fixedorder) return true;
+  if (p_mehandler->Process()->Info().m_nlomode==nlo_mode::fixedorder) {
+    if (ampl) ampl->Delete();
+    return 1;
+  }
 
   Blob* showerblob = bloblist->AddBlob(btp::Shower);
   showerblob->AddStatus(blob_status::needs_showers);
@@ -306,14 +314,17 @@ bool Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
 
   while (ampl->Prev()) ampl=ampl->Prev();
   showerblob->AddData("ClusterAmplitude",new Blob_Data<Cluster_Amplitude*>(ampl));
+  p_mehandler->Process()->Generator()->SetMassMode(1);
 
   DEBUG_VAR(*showerblob);
   
-  return true;
+  return 1;
 }
 
 void Signal_Processes::CleanUp(const size_t & mode) 
 { 
+  if (p_mehandler->Process())
+    p_mehandler->Process()->Generator()->SetMassMode(0);
   if (m_overweight>0.0) return;
 }
 

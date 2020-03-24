@@ -1,6 +1,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
@@ -161,7 +162,6 @@ namespace ATOOLS
 }
 
 namespace ATOOLS {
-  template <> Blob_Data<NLO_subevtlist*>::~Blob_Data() {}
   template class Blob_Data<NLO_subevtlist*>;
 }
 
