@@ -42,6 +42,8 @@ bool Collider_Weight::Calculate(const double & scale) {
   case collidermode::both_spectral:
     return (p_beams[0]->CalculateWeight(m_xkey[2],scale) &&
 	    p_beams[0]->CalculateWeight(m_xkey[5],scale));
+  case collidermode::unknown:
+    THROW(fatal_error,"Unknown collider mode, impossible to calculate weight.");
   }
   return false;
 }
