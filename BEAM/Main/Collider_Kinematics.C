@@ -73,6 +73,8 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D * moms) {
   case collidermode::spectral_2:
   case collidermode::both_spectral:
     return MakeCollinearBeams(moms);
+  case collidermode::unknown:
+    THROW(fatal_error,"Unknown collider mode, impossible to build kinematics.");
   }
   return false;
 }
