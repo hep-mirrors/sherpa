@@ -7,6 +7,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Phase_Space_Point::Phase_Space_Point() :
+  p_pshandler(NULL), p_beamhandler(NULL), p_isrhandler(NULL),
+  p_moms(NULL), p_cuts(NULL),
   p_beamchannels(NULL), p_isrchannels(NULL), p_fsrchannels(NULL),
   m_Ecms(ATOOLS::rpa->gen.Ecms()),
   p_fixedISboost(NULL),

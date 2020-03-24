@@ -49,7 +49,6 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   
   p_lab.resize(m_nvec);
 
-  
   if (CreateIntegrators()) {
     m_pspoint.Init(this);
     m_psenhance.Init(this);
@@ -101,9 +100,9 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
 				  ATOOLS::Weight_Type weighttype,
 				  const psmode::code mode) 
 {
-  m_cmode  = mode;
-  p_active = process;
-  m_result = 0.0;
+  m_cmode        = mode;
+  p_active       = process;
+  m_eventweights = Event_Weights{0, 0.0};
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
@@ -114,9 +113,10 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
       return Event_Weights{0, 0.0};
-    m_result  = (m_meweight = CalculateME(weighttype));
-    m_result *= (m_psweight = CalculatePS());
-    m_result *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+    m_psweight         = CalculatePS();
+    m_eventweights     = CalculateME(weighttype);
+    m_meweight         = m_eventweights.Nominal();
+    m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
@@ -124,9 +124,9 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   else {
     ManageWeights(0.0);
   }
-  if (!CheckStability()) { m_result = 0.; return 0.; }
+  if (!CheckStability()) { m_eventweights = 0.; return 0.; }
   m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
-  return m_result*m_enhance;
+  return m_eventweights*m_enhance;
 }
 
 
@@ -135,8 +135,8 @@ void Phase_Space_Handler::PrintIntermediate() {
   msg->SetPrecision(15);
   msg_Out()<<"==========================================================\n"
 	   <<p_active->Process()->Name()
-	   <<"  ME = "<<m_result<<" ,  PS = "<<m_psweight<<"  ->  "
-	   <<m_result*m_psweight<<std::endl;
+	   <<"  ME = "<<m_eventweights<<" ,  PS = "<<m_psweight<<"  ->  "
+	   <<m_eventweights*m_psweight<<std::endl;
   if (p_active->Process()->GetSubevtList()) {
     NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
     for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -160,11 +160,11 @@ void Phase_Space_Handler::ManageWeights(const double & factor) {
 bool Phase_Space_Handler::CheckStability() {
   // meaningful result - no problems down the line
   if (p_active->TotalXS() &&
-      dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
+      dabs(m_eventweights.Nominal()/p_active->TotalXS())>dabs(m_thkill)) {
     if (m_thkill<0.0) {
       msg_Info()<<METHOD<<"(): Skip point in '"<<p_active->Process()->Name()<<"', "
-		<<"weight = "<<m_result*rpa->Picobarn()<<", thkill = "<<m_thkill<<",\n"
-		<<"   totalxs = "<<p_active->TotalXS()<<", result = "<<m_result<<".\n";
+		<<"weight = "<<m_eventweights.Nominal()*rpa->Picobarn()<<", thkill = "<<m_thkill<<",\n"
+		<<"   totalxs = "<<p_active->TotalXS()<<", result = "<<m_eventweights.Nominal()<<".\n";
       return false;
     }
     // outputb tricky phase space point for further analysis, if necessary
@@ -174,7 +174,7 @@ bool Phase_Space_Handler::CheckStability() {
 		     std::ios_base::app);
     sf.precision(16);
     sf<<"(P"<<m_killedpoints<<"){ # w = "
-      <<m_result<<", ME = "<<m_result/m_psweight<<", PS = "<<m_psweight<<"\n";
+      <<m_eventweights<<", ME = "<<m_eventweights.Nominal()/m_psweight<<", PS = "<<m_psweight<<"\n";
     for (size_t i(0);i<p_lab.size();++i) sf<<"  p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
     sf<<"}(P"<<m_killedpoints<<");\n";
     ++m_killedpoints;

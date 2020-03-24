@@ -13,4 +13,4 @@ PROCESSES:
     Integration_Error: 0.01
 
 SELECTORS:
-- [Mass, 13, -13, 5., E_CMS]
+- [Mass, 13, -13, 5., 91.2]

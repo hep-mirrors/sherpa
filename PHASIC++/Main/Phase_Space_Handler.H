@@ -57,7 +57,7 @@ namespace PHASIC {
 
     int  m_dmode;
 
-    double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight, m_result;
+    double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight;
     
     psmode::code m_cmode;
     double    m_thkill, m_error, m_abserror;
@@ -101,9 +101,8 @@ namespace PHASIC {
     inline ATOOLS::Event_Weights Differential(ATOOLS::Weight_Type weighttype) {
       return Differential(p_process,weighttype);
     }
-    inline double CalculateME(ATOOLS::Weight_Type weighttype)  {
-      m_eventweights = p_active->Process()->Differential(p_lab, weighttype);
-      return m_result=p_active->Process()->Last();
+    inline ATOOLS::Event_Weights CalculateME(ATOOLS::Weight_Type weighttype)  {
+      return p_active->Process()->Differential(p_lab, weighttype);
     }
     inline double CalculatePS()  { return m_pspoint.CalculateWeight(); }
     inline double Weight(ATOOLS::Vec4D_Vector &moms) {
