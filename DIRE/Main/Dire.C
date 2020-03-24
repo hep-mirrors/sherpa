@@ -84,7 +84,8 @@ int Dire::PerformShowers(ATOOLS::Cluster_Amplitude *const ampl)
   unsigned int nem=0;
   for (size_t i(0);i<m_ampls.size();++i) {
     int stat {p_shower->Evolve(*m_ampls[i], nem)};
-    ampl->CopyFrom(m_ampls[i]->GetAmplitude()); // TODO Stefan: only copies last amplitude? More elegant way to pass ampl into Shower?
+    Cluster_Amplitude *nampl(m_ampls[i]->GetAmplitude());
+    nampl->SetNext(ampl);
     m_weights *= p_shower->GetWeights();
     if (stat!=1) return stat;
   }

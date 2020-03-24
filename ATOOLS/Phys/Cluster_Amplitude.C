@@ -611,6 +611,12 @@ namespace ATOOLS {
     while (campl->Prev()) campl=campl->Prev();
     campl->Delete();
   }
+  template <> Blob_Data_Base* Blob_Data<Cluster_Amplitude*>::ClonePtr()
+  {
+    return new Blob_Data(m_data->CopyAll());
+  }
+
   template class Blob_Data<Cluster_Amplitude*>;
   template Cluster_Amplitude*&Blob_Data_Base::Get<Cluster_Amplitude*>();
+
 }

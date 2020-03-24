@@ -1,5 +1,5 @@
 #include "ATOOLS/Phys/Event_Weights.H"
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 
 using namespace ATOOLS;
 
@@ -99,7 +99,6 @@ namespace ATOOLS {
     return out;
   }
 
-  template <> Blob_Data<Event_Weights>::~Blob_Data() {}
   template class Blob_Data<Event_Weights>;
   template Event_Weights& Blob_Data_Base::Get<Event_Weights>();
 

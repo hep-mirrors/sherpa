@@ -1,4 +1,5 @@
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
@@ -591,12 +592,6 @@ Blob_Data_Base::~Blob_Data_Base()
 {
   --s_number;
 }
-
-template <class Type>
-Blob_Data<Type>::~Blob_Data() 
-{
-}
-
 
 template int &Blob_Data_Base::Get<int>();
 template size_t &Blob_Data_Base::Get<size_t>();

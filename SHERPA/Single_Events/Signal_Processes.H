@@ -21,7 +21,7 @@ namespace SHERPA {
     bool m_setcolors, m_adddocumentation;
 
     bool FillBlob(ATOOLS::Blob_List* bl, ATOOLS::Blob* blob);
-    bool PrepareShowerBlob(ATOOLS::Blob_List* bl, ATOOLS::Blob* signalblob);
+    int PrepareShowerBlob(ATOOLS::Blob_List* bl, ATOOLS::Blob* signalblob);
 
   public:
 

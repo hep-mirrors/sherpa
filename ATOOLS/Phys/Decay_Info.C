@@ -1,6 +1,6 @@
 #include "ATOOLS/Phys/Decay_Info.H"
 
-#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Blob_Data.C"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include <iomanip>
@@ -32,8 +32,6 @@ namespace ATOOLS {
     for (size_t i(1);i<ds.size();++i) s<<','<<ID(ds[i]->m_id);
     return s<<"}";
   }
-
-  template <> Blob_Data<DecayInfo_Vector>::~Blob_Data() {}
 
   template class Blob_Data<DecayInfo_Vector>;
 
