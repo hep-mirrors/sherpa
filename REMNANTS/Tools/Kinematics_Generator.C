@@ -480,8 +480,8 @@ bool Kinematics_Generator::BoostConnectedBlob(ATOOLS::Blob * blob,size_t & catch
     // only boost blobs that are NOT signal hard processes or hard collisions -
     // i.e. leave the fully perturbative, unshowered parton level untouched.
     btp::code dtype = decblob==NULL?btp::Unspecified:decblob->Type();
-    if (btype!=btp::Signal_Process && btype!=btp::Hard_Decay && btype!=btp::Hard_Collision &&
-	dtype!=btp::Signal_Process && dtype!=btp::Hard_Decay && dtype!=btp::Hard_Collision) {
+    if (btype!=btp::Signal_Process && btype!=btp::Hard_Decay && btype!=btp::Hadron_Decay && btype!=btp::Hard_Collision &&
+	dtype!=btp::Signal_Process && dtype!=btp::Hard_Decay && dtype!=btp::Hadron_Decay && dtype!=btp::Hard_Collision) {
       Vec4D mom = part->Momentum();
       m_oldcmsboost.Boost(mom);
       m_newcmsboost.BoostBack(mom);
