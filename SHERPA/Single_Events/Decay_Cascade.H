@@ -9,6 +9,7 @@ namespace ATOOLS {
   template<typename Scalar>
   class Lorentz_Ten2;
   typedef Lorentz_Ten2<double>  Lorentz_Ten2D;
+  class Cluster_Amplitude;
 }
 
 namespace PHASIC {
@@ -31,6 +32,9 @@ namespace SHERPA {
     SHERPA::Soft_Photon_Handler* p_softphotons;
     int m_mass_smearing, m_qedmode, m_spincorr;
     ATOOLS::Blob_List* p_bloblist;
+
+    void AddDecayFinalState(ATOOLS::Blob* showerblob, ATOOLS::Particle* part);
+
     
   public :
     Decay_Cascade(const std::vector<PHASIC::Decay_Handler*>& decayhandlers,
@@ -43,8 +47,9 @@ namespace SHERPA {
     void SetMasses(ATOOLS::Blob* blob, bool usefinalmass);
     void BoostAndStretch(ATOOLS::Blob* blob, const ATOOLS::Vec4D& labmom);
 
-    virtual void TreatInitialBlob(ATOOLS::Blob* blob,
-                                  METOOLS::Amplitude2_Tensor* amps);
+    void TreatInitialBlob(ATOOLS::Blob* blob,
+                          METOOLS::Amplitude2_Tensor* amps);
+    ATOOLS::Blob* PrepareShowerBlob(ATOOLS::Blob* initialblob);
 
     METOOLS::Decay_Matrix* FillDecayTree(ATOOLS::Blob * blob, METOOLS::Spin_Density* s0);
     
