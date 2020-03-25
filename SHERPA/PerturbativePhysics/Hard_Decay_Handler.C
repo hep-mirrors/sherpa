@@ -505,7 +505,6 @@ void Hard_Decay_Handler::CreateDecayBlob(Blob_List* bloblist, ATOOLS::Particle* 
   DEBUG_FUNC(inpart->Flav());
   if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
   Blob* blob = bloblist->AddBlob(btp::Hard_Decay);
-  blob->SetStatus(blob_status::needs_showers);
   blob->AddStatus(blob_status::needs_extraQED);
   blob->AddToInParticles(inpart);
   blob->SetTypeSpec("Sherpa");

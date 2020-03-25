@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Tensor.H"
 #include "ATOOLS/Org/Return_Value.H"
@@ -11,6 +12,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 
 #include "PHASIC++/Decays/Decay_Handler.H"
+#include "PHASIC++/Decays/Decay_Clustering.H"
 
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
@@ -50,17 +52,30 @@ Decay_Cascade::~Decay_Cascade()
 {
 }
 
+bool NeedsDecays(Blob* blob) {
+  if (blob->Has(blob_status::needs_harddecays) || blob->Has(blob_status::needs_hadrondecays)) {
+    for (auto part: blob->GetOutParticles()) {
+      if (!part->Flav().IsStable()) {
+        if (part->Flav().DecayHandler()==NULL) {
+          PRINT_INFO("Error: Particle "<<part->Flav()<<" has no decay handler.");
+          throw Return_Value::New_Event;
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 Return_Value::code Decay_Cascade::Treat(Blob_List * bloblist)
 {
   if(bloblist->empty()) return Return_Value::Nothing;
-
-  // TODO: How do we deal with massless taus that now come directly from the ME into hadron decays, instead of going through shower+had first?
 
   bool didit(false);
   p_bloblist=bloblist;
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
-    if (blob->Has(blob_status::needs_harddecays) || blob->Has(blob_status::needs_hadrondecays)) {
+    if (NeedsDecays(blob)) {
       DEBUG_FUNC("Treating blob "<<blob->Id());
       didit = true;
       try {
@@ -109,7 +124,9 @@ void Decay_Cascade::TreatInitialBlob(ATOOLS::Blob* blob,
       return;
     }
   }
-  
+
+  Blob* showerblob = PrepareShowerBlob(blob);
+
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
   std::vector<size_t> shuffled(daughters.size());
@@ -184,6 +201,13 @@ void Decay_Cascade::TreatInitialBlob(ATOOLS::Blob* blob,
   for (std::vector<PHASIC::Decay_Handler*>::const_iterator it=m_decayhandlers.begin();
        it!=m_decayhandlers.end(); ++it) {
     (*it)->AfterTreatInitialBlob(blob);
+  }
+
+  if (showerblob) {
+    Decay_Clustering clustering;
+    clustering.DefineInitialShowerConditions(blob, showerblob);
+    for (auto p: blob->GetOutParticles()) AddDecayFinalState(showerblob, p);
+    DEBUG_VAR(*showerblob);
   }
 }
 
@@ -269,11 +293,51 @@ Decay_Matrix* Decay_Cascade::FillDecayTree(Blob * blob, Spin_Density* s0)
   DEBUG_INFO("finished daughters of "<<inpart->RefFlav()<<" "
              <<inpart->Number());
   if (amps) DEBUG_VAR(*amps);
+
   return amps?new Decay_Matrix(inpart,amps):NULL;
 }
 
 
 
+
+
+
+Blob* Decay_Cascade::PrepareShowerBlob(Blob* initialblob)
+{
+  DEBUG_FUNC(initialblob->Id());
+  // remove unstable particles from shower blob,
+  // since they'll be replaced by decay products
+  Blob* showerblob(NULL);
+  for (auto outpart: initialblob->GetOutParticles()) {
+    if (!outpart->Flav().Stable()) {
+      if (!showerblob) showerblob=outpart->DecayBlob();
+      else if (showerblob!=outpart->DecayBlob()) {
+        THROW(fatal_error, "Decay input blob: outgoing particles diverge.");
+      }
+      showerblob->RemoveInParticle(outpart);
+    }
+  }
+
+  if (!showerblob) {
+    DEBUG_INFO("no shower blob found");
+    // TODO: treat partonic hadron decays
+  }
+  return showerblob;
+}
+
+
+
+void Decay_Cascade::AddDecayFinalState(Blob* showerblob, Particle* part)
+{
+  if (part->DecayBlob()) {
+    for (auto daughter: part->DecayBlob()->GetOutParticles()) {
+      AddDecayFinalState(showerblob, daughter);
+    }
+  }
+  else {
+    showerblob->AddToInParticles(part);
+  }
+}
 
 
 
