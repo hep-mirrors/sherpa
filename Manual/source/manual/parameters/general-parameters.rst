@@ -617,9 +617,7 @@ However, the reweighting of parton shower emissions has to be enabled explicitly
 using :option:`CSS_REWEIGHT: true`.  This should work out of the box for both scale
 and PDF variations.  If numerical issues are encountered, one can try to
 increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 0).
-This disables shower variations for emissions at scales below the value.  An
-improved accuracy for shower variations at very low scales can be achieved by
-using :option:`CSS_ALPHAS_FREEZE_MODE=1`, see :ref:`CS Shower options`.
+This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
 weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
