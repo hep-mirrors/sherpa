@@ -35,9 +35,7 @@ namespace MCATNLO {
 
     CS_Gamma *p_gamma;
     ATOOLS::Event_Weights m_weights;
-
-    /// whether to disable the reweighting of the emission
-    bool m_norewem;
+    bool m_reweight;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -59,6 +57,7 @@ namespace MCATNLO {
     Shower(PDF::ISR_Handler *,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
+    double Reweight(ATOOLS::Variation_Parameters*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }

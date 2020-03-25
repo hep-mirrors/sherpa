@@ -28,8 +28,7 @@ namespace MCATNLO {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
-    ATOOLS::Event_Weights *p_weights;
-    bool m_reweightalphas, m_reweightpdfs;
+    bool m_keeprewinfo;
     double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
     std::vector<size_t> m_disallowflav;
@@ -43,7 +42,6 @@ namespace MCATNLO {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-    double Reweight(ATOOLS::Variation_Parameters&, bool success);
   public:
     Sudakov(PDF::ISR_Handler *isr,const int qed);
     ~Sudakov();
@@ -52,8 +50,7 @@ namespace MCATNLO {
     void SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
-    void SetReweightAlphaS(bool v) { m_reweightalphas = v; }
-    void SetReweightPDFs(bool v) { m_reweightpdfs = v; }
+    void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
@@ -87,9 +84,6 @@ namespace MCATNLO {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
-
-    inline void SetEventWeights(ATOOLS::Event_Weights * wgts)
-    { p_weights = wgts; }
 
     inline void SetDisallowFlavour(const std::vector<size_t>& df)
     { m_disallowflav=df; }

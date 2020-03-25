@@ -80,8 +80,8 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
   m_maxem=s["CSS_MAXEM"].Get<size_t>();
   m_maxpart=s["CSS_MAXPART"].Get<int>();
-  m_maxrewem=s["REWEIGHT_MAXEM"].Get<unsigned int>();
-  m_rewtmin=s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<unsigned int>();
+  m_reweight=s["CSS_REWEIGHT"].Get<bool>();
+  m_rewtmin=s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>();
   m_oef=s["CSS_OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
@@ -409,7 +409,7 @@ Splitting Shower::GeneratePoint
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
             win.m_vars = std::vector<double>(s_variations->Size(), 1.0);
             if (win.m_w.MC() < ran->Get()) {
-              if (nem < m_maxrewem && win.m_t > m_rewtmin) {
+              if (m_reweight && win.m_t > m_rewtmin) {
                 const Reweight_Args args(&win, 0);
                 s_variations->ForEach(
                     [this, &args](size_t varindex,
@@ -423,7 +423,7 @@ Splitting Shower::GeneratePoint
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
             }
-            if (nem < m_maxrewem && win.m_t > m_rewtmin) {
+            if (m_reweight && win.m_t > m_rewtmin) {
               const Reweight_Args args(&win, 1);
               s_variations->ForEach(
                   [this, &args](size_t varindex,
