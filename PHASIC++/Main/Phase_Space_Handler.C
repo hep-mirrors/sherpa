@@ -39,7 +39,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()),
   p_flavours(proc->Process()->Flavours()),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin+m_nout),
-  m_dmode(1), m_initialized(0),
+  m_initialized(false),
   m_sintegrator(0), m_killedpoints(0),
   m_printpspoint(false)
 {
@@ -53,6 +53,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
     m_pspoint.Init(this);
     m_psenhance.Init(this);
   }
+  else THROW(fatal_error,"Cretion of integrators failed.")
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -62,17 +63,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
 
 bool Phase_Space_Handler::CreateIntegrators() {
   Channel_Creator channelcreator(this);
-  if (!channelcreator()) THROW(fatal_error,"Creation of integration channels failed.");
-  return true;
-}
-  
-bool Phase_Space_Handler::InitIncoming() 
-{
-  return m_pspoint.MakeIncoming();
-  //if (m_nin>1) {
-  //  m_smin=ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin());
-  //}
-  //m_initialized=1;
+  return channelcreator();
 }
 
 double Phase_Space_Handler::Integrate() 
@@ -83,16 +74,10 @@ double Phase_Space_Handler::Integrate()
        p_process->TotalError()<m_abserror)) 
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
-  if (!InitIncoming()) return 0;
-  /*
-    Phase_Space_Point() -> Print()
-  */
-  m_dmode=0;
-  double res(0.0);
-  if (m_nin==2) res=p_integrator->Calculate(m_error,m_abserror,m_fin_opt);
-  if (m_nin==1) res=p_integrator->CalculateDecay(m_error);
-  m_dmode=1;
-  return res;
+  if (!InitIncoming()) return 0.;
+  if (m_nin==1) return p_integrator->CalculateDecay(m_error);
+  if (m_nin==2) return p_integrator->Calculate(m_error,m_abserror,m_fin_opt);
+  return 0.;
 }
 
 Event_Weights
@@ -100,6 +85,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
 				  ATOOLS::Weight_Type weighttype,
 				  const psmode::code mode) 
 {
+  //msg_Out()<<"-----------------------------------------\n";
   m_cmode        = mode;
   p_active       = process;
   m_eventweights = Event_Weights{0, 0.0};
@@ -110,23 +96,32 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   for (size_t i(0);i<p_lab.size();++i) {
     if (p_lab[i].Nan()) return Event_Weights{0, 0.0};
   }
+  //msg_Out()<<METHOD<<"\n"
+  //	   <<"    "<<p_lab[0]<<" "<<p_lab[1]<<"\n"
+  //	   <<" -> "<<p_lab[2]<<" "<<p_lab[3]<<"\n";
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
       return Event_Weights{0, 0.0};
-    m_psweight         = CalculatePS();
-    m_eventweights     = CalculateME(weighttype);
-    m_meweight         = m_eventweights.Nominal();
-    m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor();
-    p_lab              = process->Momenta();
+    m_eventweights  = CalculateME(weighttype);
+    m_meweight      = m_eventweights.Nominal();
+    m_eventweights *= (m_psweight = CalculatePS());
+    m_eventweights *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
+    p_lab           = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
+    //msg_Out()<<METHOD<<": (ME*PS) = "<<m_meweight<<" * "<<m_psweight<<".\n";
   }
   else {
+    //msg_Out()<<"---> didn't trigger, return 0.\n";
     ManageWeights(0.0);
   }
-  if (!CheckStability()) { m_eventweights = 0.; return 0.; }
-  m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
-  return m_eventweights*m_enhance;
+  if (!CheckStability()) { m_eventweights *= 0.; }
+  else {
+    //msg_Out()<<" --> return "<<m_eventweights<<" * "<<m_enhance<<".\n";;
+    m_eventweights *= (m_enhance = m_psenhance.Factor(p_process->Process(),
+						      p_process->TotalXS()));
+  }
+  return m_eventweights;
 }
 
 
@@ -148,7 +143,6 @@ void Phase_Space_Handler::PrintIntermediate() {
 }
 
 void Phase_Space_Handler::ManageWeights(const double & factor) {
-  m_eventweights *= factor;
   if (factor!=0.0) {
     ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
     if (wgtinfo) { (*wgtinfo) *= factor; }
@@ -213,17 +207,14 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   return res;
 }
 
-
-
-
-
 void Phase_Space_Handler::AddPoint(const double _value)
 {
   p_process->AddPoint(_value);
   double value(_value);
-  if (p_process->TotalXS()==0.0) value=_value?1.0:0.0;
+  if (p_process->TotalXS()==0.0) value=(_value?1.0:0.0);
   if (value!=0.0) {
     double enhancexs = m_psenhance();
+    //msg_Out()<<METHOD<<" adds "<<value<<" * "<<enhancexs<<" for "<<p_process->TotalXS()<<".\n";
     m_pspoint.AddPoint(value*enhancexs);
     m_psenhance.AddPoint(value*enhancexs,p_process->Process());
   }
@@ -250,21 +241,6 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   std::vector<std::vector<double> > stats;
   if (reader.MatrixFromFile(stats,"")) m_stats=stats;
   return okay;
-}
-
-bool Phase_Space_Handler::UpdateIntegrators()
-{
-  if (!m_sintegrator || m_nout==1) return false;
-  double error=Process()->TotalVar()/Process()->TotalResult();
-  msg_Info()<<om::blue
-	    <<Process()->TotalResult()*rpa->Picobarn()
-	    <<" pb"<<om::reset<<" +- ( "<<om::red
-	    <<Process()->TotalVar()*rpa->Picobarn()
-	    <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
-	    <<FSRIntegrator()->ValidN()<<" ( "
-	    <<(FSRIntegrator()->ValidN()*1000/FSRIntegrator()->N())/10.0<<" % ) "<<std::endl;
-  p_process->Process()->UpdateIntegrator(this);
-  return true;
 }
 
 void Phase_Space_Handler::RegisterDefaults() const

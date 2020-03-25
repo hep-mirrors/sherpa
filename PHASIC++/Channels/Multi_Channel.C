@@ -293,12 +293,12 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
     Poincare cms(pp[0]+pp[1]);
     for (int i(0);i<nin+nout;++i) cms.Boost(pp[i]);
   }
+  m_weight = 0.;
   if (channels.size()==1) {
     channels[0]->GenerateWeight(&pp.front(),cuts);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
     return;
   }
-  m_weight = 0.;
   for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(&pp.front(),cuts);

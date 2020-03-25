@@ -2,6 +2,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -10,9 +11,9 @@ Phase_Space_Point::Phase_Space_Point() :
   p_pshandler(NULL), p_beamhandler(NULL), p_isrhandler(NULL),
   p_moms(NULL), p_cuts(NULL),
   p_beamchannels(NULL), p_isrchannels(NULL), p_fsrchannels(NULL),
-  m_Ecms(ATOOLS::rpa->gen.Ecms()),
+  m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.), 
   p_fixedISboost(NULL),
-  m_weight(0.)
+  m_weight(0.), m_ISsymmetryfactor(1.)
 {}
 
 Phase_Space_Point::~Phase_Space_Point() {
@@ -51,8 +52,14 @@ void Phase_Space_Point::Init(Phase_Space_Handler * psh) {
   m_isrykey.Assign(std::string("ISR::y"),3,0,p_pshandler->GetInfo());
   p_isrhandler->AssignKeys(p_pshandler->GetInfo());
   InitFixedIncomings();
-  //msg_Out()<<"***** "<<METHOD<<" in info = "<<p_pshandler->GetInfo()<<", "
-  //	   <<"key = "<<&m_isrspkey.Doubles()<<".\n";
+  msg_Tracking()<<"================================================\n"
+		<<METHOD<<" for "
+		<<(p_beamchannels?p_beamchannels->NChannels():0)<<" beam channels, "
+		<<(p_isrchannels?p_isrchannels->NChannels():0)<<" ISR channels, "
+		<<(p_fsrchannels?p_fsrchannels->NChannels():0)<<" FSR channels:\n";
+  if (p_beamchannels) p_beamchannels->Print();
+  if (p_isrchannels)  p_isrchannels->Print();
+  if (p_fsrchannels)  p_fsrchannels->Print();
 }
 
 void Phase_Space_Point::InitFixedIncomings() {
@@ -86,6 +93,7 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process)
   process->Process()->InitCuts(p_cuts);
   process->Process()->FillOnshellConditions();
   process->Process()->BuildCuts(p_cuts);
+  if (m_nin>1) m_smin=ATOOLS::Max(sqr(process->ISRThreshold()),p_cuts->Smin());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,8 +108,21 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
   // start with beam kinematics: s' and y taken from the external beams
   // (m_sprime = m_fixedsprime and m_y = m_fixedy)
   Reset(mode);
-  if (!DefineBeamKinematics())        return false;
-  if (!DefineISRKinematics(process))  return false;
+  if (m_nin==2) {
+    if (!DefineBeamKinematics())        return false;
+    if (!DefineISRKinematics(process))  {
+      if (p_beamchannels) p_beamchannels->NoGenerate();    
+      if (p_isrchannels)  p_isrchannels->NoGenerate();    
+      p_fsrchannels->NoGenerate();
+      return false;
+    }
+    else {
+      if (p_isrchannels) {
+	Poincare * isrboost = p_isrhandler->GetCMSBoost();
+	for (size_t i=0;i<2;i++) isrboost->BoostBack(p_moms[i]);
+      }
+    }
+  }
   if (!DefineFSRKinematics())         return false;
   CorrectMomenta();
   return true;
@@ -128,29 +149,29 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
   if (p_isrhandler->On() && p_isrchannels!=NULL && m_mode!=psmode::no_gen_isr) {
     p_isrhandler->Reset();
     if (!(m_mode&psmode::no_lim_isr)) {
+      p_isrhandler->Reset();
       p_isrhandler->SetSprimeMax(m_sprime *
 				 p_isrhandler->Upper1()*
 				 p_isrhandler->Upper2());
+      p_isrhandler->SetSprimeMin(m_smin);
     }
     p_isrhandler->SetPole(m_sprime);
-    p_isrhandler->SetLimits();
-    p_isrchannels->GeneratePoint();
-    //msg_Out()<<METHOD<<" yields "
-    //	     <<"s' = "<<m_isrspkey[3]<<" in "
-    //	     <<"["<<m_isrspkey[0]<<", "<<m_isrspkey[1]<<", "<<m_isrspkey[2]<<"], "
-    //	     <<"y = "<<m_isrykey[2]<<" in ["<<m_isrykey[0]<<", "<<m_isrykey[1]<<"].\n";
+    if (!(m_mode&psmode::no_gen_isr)) {
+      p_isrhandler->SetLimits();
+      p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
+      p_isrchannels->GeneratePoint();
+    }
     m_sprime = m_osmass?m_isrspkey[4]:m_isrspkey[3];
     m_y     += m_isrykey[2];
-    // this will go into the part where we calcilate the ME
     m_ISsymmetryfactor =
       p_isrhandler->GenerateSwap(p_pshandler->Active()->Process()->Flavours()[0],
 				 p_pshandler->Active()->Process()->Flavours()[1])?2.0:1.0;
   }
-  return p_isrhandler->MakeISR(m_sprime,m_y,
-			       p_moms,process->Process()->Selected()->Flavours());
+  return p_isrhandler->MakeISR(m_sprime,m_y,p_moms,process->Process()->Selected()->Flavours());
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
+  ran->Get();
   p_pshandler->Cuts()->Update(m_sprime,m_y);
   p_fsrchannels->GeneratePoint(p_moms,p_pshandler->Cuts());
   return true;

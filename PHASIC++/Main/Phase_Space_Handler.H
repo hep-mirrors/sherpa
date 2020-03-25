@@ -55,8 +55,6 @@ namespace PHASIC {
     ATOOLS::Event_Weights         m_eventweights;
     static ATOOLS::Integration_Info * p_info;
 
-    int  m_dmode;
-
     double m_enhance, m_ISsymmetryfactor, m_psweight, m_meweight;
     
     psmode::code m_cmode;
@@ -89,18 +87,22 @@ namespace PHASIC {
     //destructor
     ~Phase_Space_Handler();
 
-    // member functions
-    void WriteOut(const std::string &path);
-    bool ReadIn(const std::string &path,const size_t exclude=0);
-    bool InitIncoming();
-    bool CreateIntegrators(); 
-    bool UpdateIntegrators();
-    inline void InitCuts()       { m_pspoint.InitCuts(p_process); }
+    bool CreateIntegrators();
+    inline void InitCuts() { m_pspoint.InitCuts(p_process); }
+    inline bool InitIncoming() {
+      m_initialized = true;
+      return m_pspoint.MakeIncoming();
+    }
     
     double Integrate();
+    ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
     inline ATOOLS::Event_Weights Differential(ATOOLS::Weight_Type weighttype) {
       return Differential(p_process,weighttype);
     }
+    ATOOLS::Event_Weights Differential(Process_Integrator *const process,
+				       ATOOLS::Weight_Type weighttype,
+				       const psmode::code mode=psmode::normal_call);
+
     inline ATOOLS::Event_Weights CalculateME(ATOOLS::Weight_Type weighttype)  {
       return p_active->Process()->Differential(p_lab, weighttype);
     }
@@ -110,15 +112,9 @@ namespace PHASIC {
       return m_pspoint.CalculateWeight();
     }
 
-
-    ATOOLS::Event_Weights Differential(Process_Integrator *const process,
-				       ATOOLS::Weight_Type weighttype,
-				       const psmode::code mode=psmode::normal_call);
-
-    ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
-
     void   AddPoint(const double xs);
     double EnhanceFunction();
+
     
     static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info,
                           const ATOOLS::Mass_Selector* ms,const int mode=0);
@@ -135,14 +131,10 @@ namespace PHASIC {
     inline static void DeleteInfo() {
       if (p_info) { delete p_info; p_info=NULL; }
     }
-
-    inline void SetEnhanceObservable(const std::string &enhanceobs) {
-      m_psenhance.SetObservable(enhanceobs,p_process->Process());
-    }
-    inline void SetEnhanceFunction(const std::string &enhancefunc) {
-      m_psenhance.SetFunction(enhancefunc,p_process->Process());
-    }
     
+    void   WriteOut(const std::string &path);
+    bool   ReadIn(const std::string &path,const size_t exclude=0);
+
     inline void MPISync() {
       m_pspoint.MPISync();
       p_process->MPISync();
@@ -155,12 +147,15 @@ namespace PHASIC {
     inline void EndOptimize() {
       m_pspoint.EndOptimize(m_error);
     }
-
-
-    
-    inline void SetOSMass(const double &osmass)                    { m_pspoint.SetOSMass(osmass); }
-    inline void SetError(const double error)                       { m_error=error; }
-    inline void SetAbsError(const double error)                    { m_abserror=error; }
+    inline void SetEnhanceObservable(const std::string &enhanceobs) {
+      m_psenhance.SetObservable(enhanceobs,p_process->Process());
+    }
+    inline void SetEnhanceFunction(const std::string &enhancefunc) {
+      m_psenhance.SetFunction(enhancefunc,p_process->Process());
+    }    
+    inline void SetOSMass(const double &osmass) { m_pspoint.SetOSMass(osmass); }
+    inline void SetError(const double error)    { m_error=error; }
+    inline void SetAbsError(const double error) { m_abserror=error; }
 
     inline void SetBeamIntegrator(Multi_Channel * channels) { m_pspoint.SetBeamIntegrator(channels); }
     inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }
