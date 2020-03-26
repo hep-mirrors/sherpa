@@ -7,9 +7,11 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -67,9 +69,55 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
     }
     bloblist->push_back(p_lastblob);
     if (m_ptmax > m_hardveto) return Return_Value::New_Event;
+    Return_Value::code ret=PrepareShowerBlob(bloblist,p_lastblob);
+    if (ret!=Return_Value::Success) {
+      return ret;
+    }
     return Return_Value::Success;
   }
   return Return_Value::Nothing;
+}
+
+Return_Value::code Multiple_Interactions::PrepareShowerBlob(Blob_List* bloblist, Blob* miblob)
+{
+  DEBUG_FUNC(bloblist->size());
+  Cluster_Amplitude *ampl(NULL);
+  ampl=p_mihandler->ClusterConfiguration(miblob);
+  if (ampl==NULL) return Return_Value::Retry_Event;
+  if (ampl->Leg(0)->Mom()[3]*ampl->Leg(1)->Mom()[3]>0.0) {
+    msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
+    return Return_Value::Retry_Event;
+  }
+  // TODO Stefan: so far in PI we were setting m_pi->SetMassMode(1) and then
+  // in CleanUp p_mi->Process()->Generator()->SetMassMode(0)
+  // are those two equivalent?
+  //p_mihandler->Process()->Generator()->SetMassMode(1); // crashes
+  p_mihandler->SetMassMode(1);
+  int stat(p_mihandler->ShiftMasses(ampl));
+  if (stat<0) {
+    PRINT_INFO("MI Mass shift failed. Reject event: "<<(*miblob));
+    return Return_Value::Retry_Event;
+  }
+  if (stat==1) {
+    stat=p_mihandler->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(ampl);
+    if (stat!=1) {
+      PRINT_INFO("MI Reclustering failed. Reject event: "<<(*miblob));
+      return Return_Value::Retry_Event;
+    }
+  }
+
+  Blob* showerblob = bloblist->AddBlob(btp::Shower);
+  showerblob->AddStatus(blob_status::needs_showers);
+  for (int i(0);i<miblob->NInP();++i)
+    showerblob->AddToOutParticles(miblob->InParticle(i));
+  for (int i(0);i<miblob->NOutP();++i)
+    showerblob->AddToInParticles(miblob->OutParticle(i));
+
+  while (ampl->Prev()) ampl=ampl->Prev();
+  showerblob->AddData("ClusterAmplitude",new Blob_Data<Cluster_Amplitude*>(ampl));
+
+  DEBUG_VAR(*showerblob);
+  return Return_Value::Success;
 }
 
 bool Multiple_Interactions::CheckBlobList() 
@@ -167,7 +215,6 @@ bool Multiple_Interactions::InitNewEvent() {
     msg_Debugging()<<"} -> p_T = "<<m_ptmax<<"\n";
   }
   else THROW(fatal_error, "Shower amplitude not found for scale");
-  
   if (m_ptmax!=std::numeric_limits<double>::max()) {
     double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
     double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
@@ -198,6 +245,9 @@ void Multiple_Interactions::Finish(const std::string &resultpath) {}
 void Multiple_Interactions::CleanUp(const size_t & mode) 
 {
   p_mihandler->CleanUp();
+  if (p_mihandler->Process() && p_mihandler->Process()->Generator())
+    p_mihandler->Process()->Generator()->SetMassMode(0);
+  //p_mihandler->SetMassMode(0); // crashes
   ResetIS();
   m_vetoed   = false;
   m_newevent = true;
