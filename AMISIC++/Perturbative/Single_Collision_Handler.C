@@ -81,8 +81,7 @@ bool Single_Collision_Handler::SelectPT2(const double & pt2) {
 Blob * Single_Collision_Handler::MakeBlob() {
   Blob * blob = new Blob();
   blob->SetType(btp::Hard_Collision);
-  blob->SetStatus(blob_status::needs_showers |
-		  blob_status::needs_beams |
+  blob->SetStatus(blob_status::needs_beams |
 		  blob_status::needs_reconnections |
 		  blob_status::needs_hadronization);
   blob->SetId();

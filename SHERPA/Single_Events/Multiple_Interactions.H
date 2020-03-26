@@ -31,6 +31,8 @@ namespace SHERPA {
     bool ExtractISInfo(ATOOLS::Blob * blob);
     void SwitchPerturbativeInputsToMIs();
     bool MIKinematics();
+    ATOOLS::Return_Value::code PrepareShowerBlob(ATOOLS::Blob_List* bl,
+                                                 ATOOLS::Blob* miblob);
 
   public:
     Multiple_Interactions(MI_Handler *);
