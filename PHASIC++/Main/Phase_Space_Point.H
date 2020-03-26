@@ -44,7 +44,7 @@ namespace PHASIC {
     psmode::code        m_mode;    
     size_t              m_nin, m_nout, m_nvec;
     ATOOLS::Poincare  * p_fixedISboost;
-    double              m_Ecms, m_Eprime, m_sprime, m_y, m_fixedsprime, m_fixedy;
+    double              m_Ecms, m_Eprime, m_smin, m_sprime, m_y, m_fixedsprime, m_fixedy;
     std::vector<double> m_masses;
     double              m_osmass, m_masses2[2];
     ATOOLS::Vec4D       m_ISmoms[2];
@@ -101,7 +101,7 @@ namespace PHASIC {
     }
     inline void Optimize(const double & error) {
       if (p_beamchannels) p_beamchannels->Optimize(error);
-      if (p_isrchannels) p_isrchannels->Optimize(error);
+      if (p_isrchannels)  p_isrchannels->Optimize(error);
       p_fsrchannels->Optimize(error);
     }
     inline void EndOptimize(const double & error) {

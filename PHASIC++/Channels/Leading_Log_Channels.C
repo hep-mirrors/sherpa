@@ -26,24 +26,24 @@ Leading_Log_Uniform::Leading_Log_Uniform(const double beta,const double factor,
   m_xkey.Assign(cinfo+std::string("::x"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
-  p_rans  = new double[2];
+  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  m_rannum = 2;
+  p_vegas  = new Vegas(2,100,m_name,0);
+  p_rans   = new double[2];
 }
 
 void Leading_Log_Uniform::GeneratePoint(const double *rns,const int mode)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
-  double pole=m_spkey[2];
+  double pole = m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
-  m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
+  m_spkey[3]  = CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-
-  m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],mode);
+  m_ykey[2]   = CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				    p_rans[1],mode);
 }
 
 void Leading_Log_Uniform::GenerateWeight(const int mode)
@@ -69,8 +69,8 @@ void Leading_Log_Uniform::GenerateWeight(const int mode)
   }
   p_rans[0] = m_sgridkey[0];
   p_rans[1] = m_ygridkey[0];
-  double pw= p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  double pw = p_vegas->GenerateWeight(p_rans);
+  m_weight  = pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

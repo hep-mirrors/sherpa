@@ -15,15 +15,17 @@ RelicDensity_Weight::RelicDensity_Weight(Kinematics_Base * kinematics) :
     m_m[i]        = p_kinematics->m(i);
     m_m2[i]       = p_kinematics->m2(i);
     m_BesselK2[i] = cyl_bessel_2(m_m[i]/m_temperature);
-    m_w[i]        = m_relativistic? 1./m_m2[i] : 1./(8.*m_m[i]+15.*m_temperature); 
+    m_w[i]        = m_relativistic? 1./m_m2[i] : 1./(8.*m_m[i]+15.*m_temperature);
   }
   m_norm = (m_w[0]*m_w[1]);
   if (m_relativistic) {
     m_norm /= (8.*m_temperature*m_BesselK2[0]*m_BesselK2[1]);
   }
   else {
-    m_norm /= (sqrt(2.*M_PI*pow(m_temperature,3.)*sqrt(m_m[0]*m_m[1]))); 
+    m_norm *= sqrt(2/(M_PI*pow(m_temperature,3.)*(m_m[0]+m_m[1])));
+    for (size_t i=0;i<2;i++) { m_norm *= (8*m_m[i] + 15*m_temperature); }
   }
+  msg_Out() << "Normalisation=" << m_norm << "\n"; //debugging
 }
 
 RelicDensity_Weight::~RelicDensity_Weight() {}
@@ -31,22 +33,21 @@ RelicDensity_Weight::~RelicDensity_Weight() {}
 void RelicDensity_Weight::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+std::string("s'"),5,0,info);
 }
-    
-bool RelicDensity_Weight::Calculate(const double & scale) {
-  double s = m_sprimekey[3];
+
+bool RelicDensity_Weight::Calculate(const double & s) {
   if (s <= sqr(m_m[0]+m_m[1])) {
     m_weight = 0.;
     return true;
   }
-  double lambda = (s-(m_m2[0]+m_m2[1]))*(s-(m_m2[0]-m_m2[1]));
+  double lambda = (s-sqr(m_m[0]+m_m[1]))*(s-sqr(m_m[0]-m_m[1]));
   double E      = sqrt(s);
   m_weight      = m_norm*lambda;
   if (m_relativistic) {
-    m_weight *= E*cyl_bessel_1(E/m_temperature);
+    m_weight *= cyl_bessel_1(E/m_temperature) / E;
   }
   else {
-    m_weight *= (pow(s,-3./4.)*(1.+3.*m_temperature/(8.*E))*
-		 exp((E-m_m[0]-m_m[1])/m_temperature) );
+    long double arg = (E-m_m[0]-m_m[1])/m_temperature;
+    m_weight *= pow(s,-3./4.)*(1.+3.*m_temperature/(8.*E))*expl(-arg);
   }
   return true;
 }

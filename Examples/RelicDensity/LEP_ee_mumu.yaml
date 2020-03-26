@@ -1,16 +1,19 @@
 BEAMS: [11, -11]
 BEAM_ENERGIES: [45.6, 45.6]
+#PDF_LIBRARY:
+#- None
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
+#VEGAS_MODE: 0
 
 ME_GENERATORS:
 - Internal
 
 PROCESSES:
-- 11 -11 -> 13 -13:
+- 11 -11 -> 1 -1:
     Order: {QCD: 0, EW: 2}
     Integration_Error: 0.01
 
 SELECTORS:
-- [Mass, 13, -13, 5., 91.2]
+- [Mass, 1, -1, 5., 1.e6]

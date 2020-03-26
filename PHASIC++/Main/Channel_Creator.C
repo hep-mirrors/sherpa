@@ -46,7 +46,6 @@ bool Channel_Creator::CreateISRIntegrator(const double & minalpha) {
   ISR_Channels * isrchannels =
     new ISR_Channels(p_psh,"isr_"+p_psh->Process()->Process()->Name());
   isrchannels->SetMinAlpha(minalpha);
-  isrchannels->Initialize();
   p_psh->SetISRIntegrator(isrchannels);
   return isrchannels->Initialize();
 }

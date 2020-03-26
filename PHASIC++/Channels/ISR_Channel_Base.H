@@ -23,7 +23,7 @@ namespace PHASIC {
     
     inline const std::string & ChID() const { return m_name; }
     inline void MPISync()                   { p_vegas->MPISync(); }
-    inline void Optimize()                  { p_vegas->EndOptimize(); }
+    inline void Optimize()                  { p_vegas->Optimize(); }
     inline void EndOptimize()               { p_vegas->EndOptimize(); }
     inline void WriteOut(std::string pId)   { p_vegas->WriteOut(pId); }
     inline void ReadIn(std::string pId)     { p_vegas->ReadIn(pId); }
