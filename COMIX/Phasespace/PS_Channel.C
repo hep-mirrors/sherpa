@@ -75,9 +75,9 @@ void PS_Channel::RegisterDefaults() const
   s["CDXS_ZMODE"].SetDefault(0);       // zero treatment mode
   s["CDXS_BMODE"].SetDefault(1);       // boundary mode
   s["CDXS_OMODE"].SetDefault(3);       // optimisation mode
-  s["CDXS_VMODE"].SetDefault(9);       // vegas mode
+  s["CDXS_VMODE"].SetDefault(1);       // vegas mode
   s["CDXS_TMODE"].SetDefault(1);       // t-channel mode
-  s["CDXS_VSOPT"].SetDefault(5);       // vegas optimisation start
+  s["CDXS_VSOPT"].SetDefault(1);       // vegas optimisation start
   s["CDXS_VINTS"].SetDefault(8);       // vegas intervals
   s["CDXS_TEXP"].SetDefault(0.9);      // t-channel exp
   s["CDXS_STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
