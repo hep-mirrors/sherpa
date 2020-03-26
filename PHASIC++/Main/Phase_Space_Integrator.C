@@ -17,62 +17,50 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-long unsigned int Phase_Space_Integrator::m_nmax(std::numeric_limits<long unsigned int>::max());
 long unsigned int Phase_Space_Integrator::m_nrawmax(std::numeric_limits<long unsigned int>::max());
 
 Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
-  m_iter(5000), m_itmin(5000), m_itmax(500000), m_itminbynode(2),
-  m_nmin(0), m_nrawmin(0),
+  m_iter(1000), m_itmin(1000),
   m_n(0), m_nstep(0), m_ncstep(0), m_mn(0), m_mnstep(0), m_mncstep(0),
   m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(true),
   m_starttime(0.), m_lotime(0.), m_addtime(0.), m_lrtime(0.),
-  m_maxerror(0.), m_maxabserror(0.),
-  m_lastrss(0), p_psh(_psh)
+  m_maxerror(0.), m_maxabserror(0.), m_lastrss(0), p_psh(_psh)
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
-
   // total number of points
-  m_nmax = s["NMAX"].Get<long unsigned int>();
-  m_nmin = s["NMIN"].Get<long unsigned int>();
   m_nrawmax = s["NRAWMAX"].Get<long unsigned int>();
-  m_nrawmin = s["NRAWMIN"].Get<long unsigned int>();
-
+  // number of optimisation steps
+  m_npower = s["NPOWER"].Get<double>();
+  m_nopt = s["NOPT"].GetScalarWithOtherDefault
+    <long unsigned int>(m_npower?7:25);
+  m_maxopt = s["MAXOPT"].GetScalarWithOtherDefault
+    <long unsigned int>(m_npower?3:5);
+  m_stopopt = s["STOPOPT"].Get<long unsigned int>();
   // number of points per iteration
   const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
-  m_itmin
-    = s["ITMIN"].GetScalarWithOtherDefault<long unsigned int>(procitmin);
-  m_itmax
-    = s["ITMAX"].GetScalarWithOtherDefault<long unsigned int>(100 * m_itmin);
-
-  // number of optimisation steps
-  m_nopt = s["NOPT"].Get<long unsigned int>();
-  m_maxopt = s["MAXOPT"].Get<long unsigned int>();
-  m_stopopt = s["STOPOPT"].Get<long unsigned int>();
-  m_ndecopt = s["NDECOPT"].Get<long unsigned int>();
-
+  m_itmin = s["ITMIN"].GetScalarWithOtherDefault
+    <long unsigned int>((m_npower?1:5)*procitmin);
   // time steps
   m_timestep = s["TIMESTEP_OFFSET"].Get<double>();
   m_timeslope = s["TIMESTEP_SLOPE"].Get<double>();
-
 #ifdef USING__MPI
   int size=mpi->Size();
-  m_itminbynode=Max(1,Max(1000,(int)m_itmin)/size);
+  long unsigned int itminbynode=Max(1,(int)m_itmin/size);
   if (size) {
     int helpi;
-    if (s["ITMIN_BY_NODE"].IsCustomised()) {
-      m_itminbynode = s["ITMIN_BY_NODE"].Get<long unsigned int>();
-      m_itmin = m_itminbynode * size;
-    }
-    if (s["ITMAX_BY_NODE"].IsCustomised()) {
-      m_itmax*=s["ITMAX_BY_NODE"].Get<int>()*size;
-    }
-    if (s["IT_BY_NODE"].IsCustomised()) {
-      m_itminbynode = s["IT_BY_NODE"].Get<int>();
-      m_itmin=m_itmax=m_itminbynode*size;
-    }
+    if (s["ITMIN_BY_NODE"].IsCustomised())
+      itminbynode = s["ITMIN_BY_NODE"].Get<long unsigned int>();
+    m_itmin = itminbynode * size;
   }
 #endif
+  m_nexpected = m_itmin;
+  for (size_t i(1);i<m_nopt;++i) m_nexpected+=m_itmin*pow(2.,i*m_npower);
+  m_nexpected+=m_maxopt*m_itmin*pow(2.,m_nopt*m_npower);
+  msg_Info()<<"Integration parameters: n_{min} = "<<m_itmin
+	    <<", N_{opt} "<<m_nopt<<", N_{max} = "<<m_maxopt;
+  if (m_npower) msg_Info()<<", exponent = "<<m_npower;
+  msg_Info()<<std::endl;
 }
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
@@ -82,18 +70,12 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 void Phase_Space_Integrator::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
-  s["NMAX"].SetDefault(std::numeric_limits<long unsigned int>::max());  // n_{max}
-  s["NMIN"].SetDefault(0);  // n_{min}
   s["NRAWMAX"].SetDefault(std::numeric_limits<long unsigned int>::max());  // n_{max,raw}
-  s["NRAWMIN"].SetDefault(0);  // n_{min}
-  s["NOPT"].SetDefault(25);  // n_{opt}
-  s["MAXOPT"].SetDefault(5);  // n_{maxopt}
-  s["STOPOPT"].SetDefault(1000);  // n_{stopopt}
-  s["NDECOPT"].SetDefault(10);  // n_{opt,dec}
+  s["NPOWER"].SetDefault(1.);
+  s["STOPOPT"].SetDefault(0);  // n_{stopopt}
   s["TIMESTEP_OFFSET"].SetDefault(0.0);  // \Delta t offset
   s["TIMESTEP_SLOPE"].SetDefault(0.0);  // \Delta t slope
   s["ITMIN_BY_NODE"].SetDefault(0);
-  s["ITMAX_BY_NODE"].SetDefault(0);
   s["IT_BY_NODE"].SetDefault(0);
 }
 
@@ -134,31 +116,24 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   msg_Info()<<"Starting the calculation at "
             <<rpa->gen.Timer().StrFTime("%H:%M:%S")
             <<". Lean back and enjoy ... ."<<endl;
-  if (m_maxerror >= 1.) { m_nrawmin=0; m_nmin=0; m_nrawmax=1; m_nmax=1; }
-
-  long unsigned int numberofchannels = 1;
 
   msg_Tracking()<<"Integrators : "<<p_psh->BeamIntegrator()<<" / "
                 <<p_psh->ISRIntegrator()<<" / "<<p_psh->FSRIntegrator()<<endl;
 
    if ((p_psh->BeamIntegrator())) {
      (p_psh->BeamIntegrator())->Reset();
-     numberofchannels = p_psh->BeamIntegrator()->NChannels();
      msg_Tracking()<<"   Found "<<p_psh->BeamIntegrator()->NChannels()
                    <<" Beam Integrators."<<endl;
    }
    if ((p_psh->ISRIntegrator())) {
      (p_psh->ISRIntegrator())->Reset();
-     numberofchannels += p_psh->ISRIntegrator()->NChannels();
      msg_Tracking()<<"   Found "<<p_psh->ISRIntegrator()->NChannels()
                    <<" ISR Integrators."<<endl;
    }
 
   p_psh->FSRIntegrator()->Reset();
-  numberofchannels += p_psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<p_psh->FSRIntegrator()->NChannels()
                 <<" FSR integrators."<<endl;
-  m_iter = Min(m_itmax,Max(m_itmin,Max(p_psh->Process()->ItMin(),20*numberofchannels)));
 
   m_ncontrib = p_psh->FSRIntegrator()->ValidN();
 
@@ -176,14 +151,13 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   m_nstep = m_ncstep = 0;
 
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
-  m_optiter=m_iter;
+  m_iter = m_itmin;
 #ifdef USING__MPI
   int size = mpi->Size();
-  m_optiter /= size;
-  if (mpi->Rank()==0) m_optiter+=m_iter-(m_iter/size)*size;
+  m_iter /= size;
 #endif
 
-  while (m_n<m_nrawmax && m_ncontrib<m_nmax) {
+  while (m_n<m_nrawmax) {
     if (!rpa->gen.CheckTime()) {
       msg_Error()<<ATOOLS::om::bold
 			 <<"\nPhase_Space_Integrator::Calculate(): "
@@ -229,7 +203,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   if (m_timeslope<0.0) targettime*=p_psh->Process()->Process()->Size();
   if (m_timestep>0.0) deltat = ATOOLS::rpa->gen.Timer().RealTime()-m_stepstart;
   if ((m_timestep==0.0 && m_ncontrib!=m_nlo && m_ncontrib>0 &&
-       ((m_ncontrib%m_optiter)==0)) ||
+       ((m_ncontrib%m_iter)==0)) ||
       (m_timestep>0.0 && deltat>=targettime)) {
     MPISync();
     bool optimized=false;
@@ -242,6 +216,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
         m_lotime = ATOOLS::rpa->gen.Timer().RealTime();
       fotime    = true;
       optimized = true;
+      m_iter*=pow(2.,m_npower);
     }
     else if (p_psh->Stats().size()==m_nopt) {
       p_psh->Process()->ResetMax(0);
@@ -251,10 +226,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       p_psh->Process()->EndOptimize();
       m_lotime = ATOOLS::rpa->gen.Timer().RealTime();
     }
-
     double time = ATOOLS::rpa->gen.Timer().RealTime();
     double timeest=0.;
-    timeest = (m_nopt*m_iter+m_maxopt*m_iter)/double(m_ncontrib)*(time-m_starttime);
+    timeest = m_nexpected/double(m_ncontrib)*(time-m_starttime);
     if (!fotime) {
       if (m_fin_opt) {
         timeest = ATOOLS::Max(timeest,
@@ -314,15 +288,13 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     p_psh->AddStats(stats);
     p_psh->Process()->StoreResults(1);
     m_stepstart=ATOOLS::rpa->gen.Timer().RealTime();
-    if (m_n>=m_nrawmin && m_ncontrib>=m_nmin) {
-      double var(p_psh->Process()->TotalVar());
-      bool wannabreak = dabs(error)<m_maxerror ||
-                        (var!=0. && dabs(var*rpa->Picobarn())<m_maxabserror);
-      if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
-        m_nopt=p_psh->Stats().size();
-      if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
-      if (p_psh->Stats().size()>=m_nopt+m_stopopt) return true;
-    }
+    double var(p_psh->Process()->TotalVar());
+    bool wannabreak = dabs(error)<m_maxerror ||
+      (var!=0. && dabs(var*rpa->Picobarn())<m_maxabserror);
+    if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
+      m_nopt=p_psh->Stats().size();
+    if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
+    if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
   }
   return false;
 }
@@ -333,7 +305,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."
             <<endl;
 
-  m_optiter = m_iter = 20000;
+  m_iter = 20000;
 
   p_psh->FSRIntegrator()->Reset();
 
@@ -343,13 +315,13 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
 
     if (!(n%m_iter)) {
       MPISync();
-      if (p_psh->Stats().size()<=m_ndecopt) {
+      if (p_psh->Stats().size()<=m_nopt) {
         p_psh->Optimize();
         p_psh->Process()->OptimizeResult();
       }
-      if (p_psh->Stats().size()==m_ndecopt) {
+      if (p_psh->Stats().size()==m_nopt) {
         p_psh->EndOptimize();
-        m_optiter = m_iter = 50000;
+        m_iter = 50000;
       }
       if (p_psh->Process()->TotalResult()==0.) break;
 
