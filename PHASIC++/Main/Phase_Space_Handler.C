@@ -51,14 +51,13 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_fin_opt = s["FINISH_OPTIMIZATION"].Get<bool>();
   m_enhancexs = s["ENHANCE_XS"].Get<int>();
   m_printpspoint = s["PRINT_PS_POINTS"].Get<int>();
+  m_enhance = 1.0;
   if (error>0.) {
     m_error   = error;
   }
   m_killedpoints=0;
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
-  const double minalpha{ s["INT_MINALPHA"].Get<double>() };
-  p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
   if (m_nin==2) {
@@ -66,12 +65,10 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
     if (p_beamhandler) {
       if (p_beamhandler->On()>0) {
         p_beamchannels = new Beam_Channels(this,"beam_"+proc->Process()->Name());
-        p_beamchannels->SetMinAlpha(minalpha);
       }
     }
     if (p_isrhandler && p_isrhandler->On()>0) {
       p_isrchannels = new ISR_Channels(this,"isr_"+proc->Process()->Name());
-      p_isrchannels->SetMinAlpha(minalpha);
     }
   }
   if (m_nin==2) {

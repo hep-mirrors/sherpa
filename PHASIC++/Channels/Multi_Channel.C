@@ -14,12 +14,10 @@ using namespace std;
 
 Multi_Channel::Multi_Channel(string _name) : 
   name(StringReplace(_name, " ", "")),
-  s1(NULL), m_readin(false),
-  m_minalpha(0.0), m_weight(1.0),
+  s1(NULL), m_readin(false), m_weight(1.0),
   n_points(0), n_contrib(0),
   mn_points(0), mn_contrib(0),
   m_lastdice(-1),
-  m_optcnt(0),
   m_otype(0)
 { }
 
@@ -149,9 +147,6 @@ void Multi_Channel::Optimize(double error)
       if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
       if (channels.size()>1) {
         channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-        if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) {
-          channels[i]->SetAlpha(m_minalpha);
-        }
       }
     }
   }
@@ -164,24 +159,7 @@ void Multi_Channel::Optimize(double error)
   }
 
   // optimise individual channels ...
-  if((m_optcnt>4 && m_optcnt<20) || channels.size()==1) {
-    for (i=0;i<channels.size();i++) {
-      if (channels[i]->Alpha()>0.01) {
-        channels[i]->Optimize();
-      }
-    }
-  }
-
-  // ... or end optimising them
-  if (m_optcnt==20 && channels.size()>1){
-    for (i=0;i<channels.size();i++) {
-      if (channels[i]->Alpha()>0.) {
-        channels[i]->EndOptimize();
-      }
-    }
-    // in this case, make sure the current alpha values are saved below
-    s1xmin = 1.e32;
-  }
+  for (i=0;i<channels.size();i++) channels[i]->Optimize();
 
   // save current alpha values if we have improved
   if (s1x<s1xmin) {
@@ -205,9 +183,6 @@ void Multi_Channel::Optimize(double error)
   msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
  		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-----------------------------------------------"<<endl;
-
-  // update number of optimisations
-  m_optcnt++;
 }
 
 void Multi_Channel::EndOptimize(double error)
@@ -217,9 +192,6 @@ void Multi_Channel::EndOptimize(double error)
   // use last best set of alpha values and set small ones to minalpha
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) {
-      channels[i]->SetAlpha(m_minalpha);
-    }
   }
 
   // normalise alpha values to a partition of unity
@@ -230,9 +202,7 @@ void Multi_Channel::EndOptimize(double error)
   }
 
   // tell channels to end optimising
-  for (i=0;i<channels.size();i++) {
-    if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
-  }
+  for (i=0;i<channels.size();i++) channels[i]->EndOptimize();
 
   msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
@@ -436,8 +406,7 @@ void Multi_Channel::WriteOut(std::string pID)
   My_Out_File ofile(pID);
   ofile.Open();
   ofile->precision(12);
-  *ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
-       <<s1xmin<<" "<<m_optcnt<<endl;
+  *ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "<<s1xmin<<endl;
 //        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
 //        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
@@ -465,9 +434,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
     return 0;
   }
   m_readin=true;
-  //   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult
-  // >>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
-  *ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
+  *ifile>>n_points>>n_contrib>>s1xmin;
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {

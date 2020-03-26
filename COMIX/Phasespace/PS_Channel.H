@@ -6,10 +6,6 @@
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifdef USING__Threading 
-#include <pthread.h> 
-#endif 
-
 namespace PHASIC { class Color_Integrator; }
 
 namespace COMIX {
@@ -18,41 +14,23 @@ namespace COMIX {
   class PS_Current;
   class PS_Vertex;
 
+  typedef std::vector<Double_Vector> Double_Matrix;
+
   typedef std::vector<PHASIC::Vegas*>          Vegas_Vector;
   typedef std::map<std::string,PHASIC::Vegas*> Vegas_Map;
 
   typedef std::map<const Current*,PHASIC::Vegas*> CVegas_Map;
+  typedef std::map<const Vertex*,PHASIC::Vegas*>  VVegas_Map;
   typedef std::map<size_t,PHASIC::Vegas*>         IVegas_Map;
   typedef std::map<size_t,CVegas_Map>             ICVegas_Map;
+  typedef std::map<size_t,VVegas_Map>             IVVegas_Map;
 
   typedef std::map<ATOOLS::NLO_subevt*,CVegas_Map>  SCVegas_Map;
   typedef std::map<ATOOLS::NLO_subevt*,ICVegas_Map> SICVegas_Map;
 
-  typedef std::map<size_t,size_t> PSId_Map;
-
   typedef std::map<size_t,std::vector<int> > CId_Map;
 
   typedef std::map<size_t,const METOOLS::Current*> STCC_Map;
-
-#ifdef USING__Threading
-  class PS_Channel;
-
-  struct CDBG_PS_TID {
-    pthread_t m_id;
-    PS_Channel *p_psc;
-    size_t m_s, m_n, m_b, m_e, m_i;
-    pthread_mutex_t m_s_mtx, m_t_mtx;
-    pthread_cond_t m_s_cnd, m_t_cnd;
-    PSId_Map *p_psid;
-    CId_Map *p_cid;
-    CDBG_PS_TID(PS_Channel *const psc): 
-      p_psc(psc), m_s(2), m_b(0), m_e(0),
-      p_psid(new PSId_Map()), p_cid(new CId_Map()) {}
-    ~CDBG_PS_TID() { delete p_psid; delete p_cid; }
-  };// end of struct CDBG_PS_TID
-
-  typedef std::vector<CDBG_PS_TID*> CDBG_PS_TID_Vector; 
-#endif
 
   class PS_Channel: public PHASIC::Single_Channel {
   private:
@@ -69,15 +47,15 @@ namespace COMIX {
 
     SCVegas_Map  m_pcmap;
     IVegas_Map   m_pimap;
-    ICVegas_Map  m_sicmap;
+    IVVegas_Map  m_sicmap;
     SICVegas_Map m_ticmap;
 
     PHASIC::Cut_Data *p_cuts;
 
     ATOOLS::Vec4D_Vector m_p;
 
-    Double_Vector m_rns, m_wrns;
-    Vegas_Vector  m_vgs, m_wvgs;
+    Double_Matrix m_rns;
+    Vegas_Vector  m_vgs;
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
@@ -90,15 +68,6 @@ namespace COMIX {
 
     CId_Map  *p_cid;
     
-#ifdef USING__Threading 
-    CDBG_PS_TID_Vector m_cts;
-    pthread_mutex_t    m_vgs_mtx, m_wvgs_mtx;
-
-    static void *TGenerateWeight(void *arg);
-
-    CDBG_PS_TID *GetTId() const;
-#endif 
-
     const std::vector<int> &GetCId(const size_t &id);
 
     inline size_t CIdCount(const size_t &id) { return GetCId(id).size(); }
@@ -134,11 +103,11 @@ namespace COMIX {
 
     void SChannelBounds(const size_t &id,const size_t &lid,
 			double &ctmin,double &ctmax);
-    void SChannelMomenta(PS_Current *cur,const int type,
+    void SChannelMomenta(PS_Current *cur,PS_Vertex *v,
 			 const ATOOLS::Vec4D &pa,ATOOLS::Vec4D &p1,
 			 ATOOLS::Vec4D &p2,const double &s1,
 			 const double &s2,const double *rns);
-    double SChannelWeight(PS_Current *cur,const int type,
+    double SChannelWeight(PS_Current *cur,PS_Vertex *v,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
     bool GeneratePoint(PS_Current *const ja,PS_Current *const jb,
@@ -149,21 +118,19 @@ namespace COMIX {
     bool GenerateWeight(PS_Current *const cur);
     bool GenerateWeight();
 
-    bool GeneratePoint(const size_t &id,size_t &nr,
-		       Vertex_Vector &v);
+    bool GeneratePoint(const size_t &id,size_t &nr,Vertex_Vector &v);
     bool GeneratePoint(Vertex_Vector v);
 
-    bool GenerateChannel(Current *const cur,
-			 Vertex_Vector &v);
+    bool GenerateChannel(Current *const cur,Vertex_Vector &v);
     bool GenerateChannel(Vertex_Vector &v);
     bool GenerateChannels();
 
     bool Zero(METOOLS::Vertex *const vtx) const;
 
-    PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
+    PHASIC::Vegas *GetVegas(const std::string &tag,int nd=1);
 
     PHASIC::Vegas *GetPVegas(const PS_Current *cur,const size_t &id);
-    PHASIC::Vegas *GetSVegas(const size_t &id,const PS_Current *cur);
+    PHASIC::Vegas *GetSVegas(const PS_Vertex *v);
     PHASIC::Vegas *GetTVegas(const size_t &id,const PS_Current *cur,
 			     ATOOLS::NLO_subevt *const dip);
 

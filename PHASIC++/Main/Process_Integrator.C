@@ -6,12 +6,14 @@
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include <algorithm>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -144,6 +146,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
   }
   m_ssum=m_ssumsqr=0.0;
   m_sn=0;
+  if (p_colint!=NULL) p_colint->Optimize();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->OptimizeSubResult(s2);
@@ -191,7 +194,6 @@ void Process_Integrator::InitWeightHistogram()
 	       <<" in "<<p_proc->ResultsName()<<std::endl;
     return;
   }
-  if (av<.3) av/=10.;
   /* If av=0, then subprocess at hand does not contribute.
      In this case, set av to arbitrary value to avoid nans in 
      following histogram */
@@ -231,6 +233,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 		<<m_totalerr/m_totalxs*100.<<" % ) max: "
 		<<m_max*rpa->Picobarn()<<std::endl;
   if (!p_proc->ReadIn(path)) return false;
+  if (p_colint!=NULL) p_colint->ReadIn(path+"/"+fname+"_Color");
   bool res(true);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -265,6 +268,7 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
     *outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
 	   <<m_vsn[i]<<" "<<-1<<"\n";
   p_proc->WriteOut(path);
+  if (p_colint!=NULL) p_colint->WriteOut(path+"/"+fname+"_Color");
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutXSecs(path);
@@ -314,6 +318,28 @@ void Process_Integrator::SetTotal(const int mode)
 double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
+  if (epsilon<=-1.) {
+    int frac(int(-epsilon)%100), nsamples(-epsilon/100);
+    int npoints(p_whisto->Fills()/frac);
+#ifdef USING__MPI
+    nsamples=std::max(1,nsamples/mpi->Size());
+#endif
+    double nonzero(0.);
+    for (size_t i(0);i<p_whisto->Nbin();++i) nonzero+=p_whisto->Value(i);
+    nonzero*=npoints/p_whisto->Fills();
+    std::vector<double> maxs(nsamples,0.0);
+    for (size_t j(0);j<nsamples;++j)
+      for (size_t i(0);i<nonzero;++i) {
+	double x=p_whisto->GeneratePoint(ran->Get());
+	if (x>maxs[j]) maxs[j]=x;
+      }
+    std::sort(maxs.begin(),maxs.end(),std::less<double>());
+#ifdef USING__MPI
+    mpi->Allreduce(&maxs[maxs.size()/2],1,MPI_DOUBLE,MPI_MAX);
+#endif
+    return maxs[maxs.size()/2];
+  }
+
   double res = dabs(TotalResult());
   double pxs = res*epsilon*p_whisto->Fills();
   double cutxs = 0.;
@@ -333,7 +359,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 void Process_Integrator::SetUpEnhance(const int omode) 
 {
-  if (m_maxeps>0.0 && !p_proc->IsGroup()) {
+  if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
     if (omode)
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
@@ -401,6 +427,7 @@ void Process_Integrator::AddPoint(const double value)
     if(value!=0.) p_whisto->Insert(max,1.0/enhance); /*TODO*/
     else p_whisto->Insert(1.0,0.0);
   }
+  if (p_colint!=NULL) p_colint->AddPoint(value);
   p_proc->AddPoint(value);
   if (p_proc->IsGroup()) {
     if (p_proc->Last()==0.0 || value==0.0)
@@ -556,6 +583,7 @@ void Process_Integrator::MPISync(const int mode)
   m_ssumsqr+=m_mssumsqr;
   m_msn=m_mssum=m_mssumsqr=0.0;
 #endif
+  if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
