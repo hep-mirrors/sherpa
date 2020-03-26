@@ -15,9 +15,22 @@ namespace PHASIC {
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };
-  
+
+  class Simple_Pole_DM_Annihilation: public ISR_Channel_Base {
+  protected:
+    double m_exponent, m_xpar, m_cospar;
+    bool   m_zchannel;
+    ATOOLS::Info_Key m_spkey, m_sgridkey, m_xkey, m_xgridkey, m_cosxikey, m_cosgridkey;
+  public:
+    Simple_Pole_DM_Annihilation(const double exponent, const double xpar,
+          const double cospar, const std::string cinfo,
+			    ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans,const int mode=0);
+    void GenerateWeight(const int mode=0);
+  };
+
   ////////////////////////////////////////////////////////////////////////
-  
+
   class Simple_Pole_Uniform: public ISR_Channel_Base {
   protected:
     double m_exponent;
@@ -30,7 +43,7 @@ namespace PHASIC {
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };
-  
+
   ////////////////////////////////////////////////////////////////////////
 
   class Simple_Pole_Forward: public ISR_Channel_Base {
