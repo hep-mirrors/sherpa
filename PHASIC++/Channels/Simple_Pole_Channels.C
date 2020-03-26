@@ -102,7 +102,7 @@ void Simple_Pole_DM_Annihilation::GenerateWeight(const int mode)
 
   p_rans[0] = m_sgridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()/m_spkey[2];
+  m_weight  = pw*m_spkey.Weight()/m_spkey[2];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +122,8 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string
   m_xkey.Assign(cinfo+std::string("::x"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
+  m_kp1key.Assign("k_perp_1",4,1,info);
+  m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum=2;
   p_vegas = new Vegas(2,100,m_name,0);
