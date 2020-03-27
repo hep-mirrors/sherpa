@@ -52,12 +52,13 @@ void Simple_Pole_RelicDensity::GenerateWeight(const int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_DM_Annihilation::
-Simple_Pole_DM_Annihilation(const double exponent, const double xpar, const double cospar,
+Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const double mass2,
 				const std::string cinfo,ATOOLS::Integration_Info *info):
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
-	msg_Out() << "Integration info: " << *info << "\n"; //debugging
+	m_m[0] = mass1;
+	m_m[1] = mass2;
 
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_DM_Annihilation";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
@@ -68,25 +69,27 @@ Simple_Pole_DM_Annihilation(const double exponent, const double xpar, const doub
 	m_xgridkey.Assign(m_xkey.Info(),1,0,info);
 	m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
-  m_rannum   = 3;
+  m_rannum   = 1;
   p_vegas    = new Vegas(m_rannum,100,m_name,0);
   p_rans     = new double[m_rannum];
 }
 
 void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns,const int mode)
 {
-	msg_Out() << "Got to " << METHOD << "\n"; //debugging
-	msg_Out() << "rns=" << *rns << "\n";
+	// msg_Out() << "Got to " << METHOD << "\n"; //debugging
+	// msg_Out() << "rns=" << *rns << "\n";
+	// msg_Out()<<"spkey=["<<m_spkey[0]<<","<<m_spkey[1]<<","<<m_spkey[2]<<","<<m_spkey[2]<<"]\n";
   double *ran = p_vegas->GeneratePoint(rns);
-	msg_Out() << "p_vegas->GeneratePoint() ran successfully \n"; //debugging
+	// msg_Out() << "p_vegas->GeneratePoint() ran successfully \n"; //debugging
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
-	msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
+	// msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
 
-	m_xkey[2]=CE.GenerateDMRapidityUniform(m_spkey.Doubles(),m_xkey.Doubles(),p_rans[1],mode);
-	msg_Out() << "x=" << m_xkey[2] << "\n";
-	m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[2],mode);
-	msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
+	// for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
+	m_xkey[2]=CE.GenerateDMRapidityUniform(m_m,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],mode);
+	// msg_Out() << "x=" << m_xkey[2] << "\n";
+	m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[0],mode);
+	// msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
 }
 
 void Simple_Pole_DM_Annihilation::GenerateWeight(const int mode)

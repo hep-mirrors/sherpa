@@ -53,14 +53,16 @@ bool Beam_Channels::MakeChannels()
   else {
 		if (m_beammode==beammode::DM_annihilation) {
 			// This is where things need doing
+			double mass1 = p_psh->GetBeamSpectra()->GetBeam(0)->Beam().Mass();
+			double mass2 = p_psh->GetBeamSpectra()->GetBeam(1)->Beam().Mass();
 			ci.type = 0;
-			(ci.parameters).push_back(.5);
+			(ci.parameters).push_back(3.);
 			m_beamparams.push_back(ci);
       ci.parameters.clear();
-			(ci.parameters).push_back(0.99);
+			(ci.parameters).push_back(mass1);
 			m_beamparams.push_back(ci);
       ci.parameters.clear();
-			(ci.parameters).push_back(2.);
+			(ci.parameters).push_back(mass2);
 			m_beamparams.push_back(ci);
 			ci.parameters.clear();
 		}
@@ -162,6 +164,7 @@ void Beam_Channels::AddSimplePole(const size_t & chno,const int & beam) {
     return;
   }
 	else if (m_beammode==beammode::DM_annihilation) {
+		// p_psh->GetBeamSpectra()->
 		Add(new Simple_Pole_DM_Annihilation(m_beamparams[chno].parameters[0],
 						m_beamparams[chno].parameters[1],m_beamparams[chno].parameters[2],
 						m_keyid,p_psh->GetInfo()));

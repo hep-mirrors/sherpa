@@ -606,11 +606,14 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 }
 
 ///////////////////////////////////////////////////////////////////////////
-double Channel_Elements::GenerateDMRapidityUniform(const Double_Container &spinfo,
-              const Double_Container &xinfo, const double ran, const int mode)
+double Channel_Elements::GenerateDMRapidityUniform(const double masses[], const Double_Container &spinfo,
+              Double_Container &xinfo, const double ran, const int mode)
 {
-  double xmin = xinfo[0];
-  double xmax = xinfo[1];
+  double s = spinfo[2];
+  double xmin = xinfo[0] = (masses[0]>masses[1]) ? 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2.*s)
+                                                 : 0.5 - (sqr(masses[0])-sqr(masses[1]))/(2*s);
+  double xmax = xinfo[1] = 1 - xinfo[0];
+  // msg_Out()<<xmin<<","<<xmax<<"\n";
 
   double x=xmin+(xmax-xmin)*ran;
 
@@ -630,7 +633,7 @@ double Channel_Elements::GenerateDMRapidityUniform(const Double_Container &spinf
 }
 
 
-double Channel_Elements::GenerateDMAngleUniform(const double ran, const int mode)
+double Channel_Elements::GenerateDMAngleUniform(const double ran, const int mode) const
 {
   double cosxi_min = -1.;
   double cosxi_max = 1.;
