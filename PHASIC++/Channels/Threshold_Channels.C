@@ -11,7 +11,7 @@ using namespace std;
 
 Threshold_Uniform::
 Threshold_Uniform(const double mass,const double sexp,const std::string cinfo,
-		  ATOOLS::Integration_Info *info):
+		  ATOOLS::Integration_Info *info,const int mode):
   ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp)
 {
@@ -26,9 +26,9 @@ Threshold_Uniform(const double mass,const double sexp,const std::string cinfo,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
-  p_rans  = new double[2];
+  m_rannum = (mode==3)?2:1;
+  p_vegas  = new Vegas(m_rannum,100,m_name,0);
+  p_rans   = new double[2];
 }
 
 void Threshold_Uniform::GeneratePoint(const double *rns,const int mode)

@@ -14,7 +14,7 @@ namespace PHASIC {
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Threshold_Uniform(const double mass,const double sexp,
-			const std::string cinfo,ATOOLS::Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info,const int mode=0);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     inline void   SetMass(const double mass) { m_mass=mass; }

@@ -18,13 +18,12 @@ namespace PHASIC {
 
   class Simple_Pole_DM_Annihilation: public ISR_Channel_Base {
   protected:
-    double m_exponent;
-    double m_m[2];
+    double m_exponent, m_mass[2];
     bool   m_zchannel;
     ATOOLS::Info_Key m_spkey, m_sgridkey, m_xkey, m_xgridkey, m_cosxikey, m_cosgridkey;
   public:
-    Simple_Pole_DM_Annihilation(const double exponent, const double xpar,
-          const double cospar, const std::string cinfo,
+    Simple_Pole_DM_Annihilation(const double exponent, const double mass1,
+          const double mass2, const std::string cinfo,
 			    ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
@@ -40,7 +39,7 @@ namespace PHASIC {
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Simple_Pole_Uniform(const double exponent,const std::string cinfo,
-			ATOOLS::Integration_Info *info);
+			ATOOLS::Integration_Info *info,const int mode=0);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };

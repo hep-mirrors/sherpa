@@ -8,10 +8,28 @@ namespace PHASIC {
   class Cut_Data;
   class Single_Channel;
 
+  struct channel_type {
+    enum code {
+      simple     = 0,
+      resonance  = 1,
+      threshold  = 2,
+      leadinglog = 3,
+      laserback  = 4,
+      unknown    = 99
+    };
+  };
+    
   struct Channel_Info {
-    int                  type;
+    channel_type::code   type;
     std::vector <double> parameters;
 
+    Channel_Info(const channel_type::code & ctype=channel_type::unknown) :
+      type(ctype) {}
+    Channel_Info(const channel_type::code & ctype,const double & p0) :
+      type(ctype) { parameters.push_back(p0); }
+    Channel_Info(const channel_type::code & ctype,const double & p0,const double & p1) :
+      type(ctype) { parameters.push_back(p0); parameters.push_back(p1); }
+    
     bool operator==(const Channel_Info & ci) {
       if (type != ci.type)                           return 0;
       if (parameters.size() != ci.parameters.size()) return 0;

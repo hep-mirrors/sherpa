@@ -178,6 +178,7 @@ namespace PHASIC {
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);
     virtual void UpdateIntegrator(Phase_Space_Handler *const psh);
+    virtual ATOOLS::Flavour_Vector * Resonances() { return NULL; }
 
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);

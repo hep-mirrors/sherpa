@@ -16,10 +16,16 @@ using namespace ATOOLS;
 using namespace std;
 
 Beam_Channels::Beam_Channels(Phase_Space_Handler *const psh,
-		     const std::string &name) :
-  Multi_Channel(name), p_psh(psh), m_keyid("BEAM") {
-  BEAM::Beam_Spectra_Handler * beamspectra = p_psh->GetBeamSpectra();
-  m_beammode = beamspectra?beamspectra->Mode():BEAM::beammode::unknown;
+			     const std::string &name) :
+  Multi_Channel(name), p_psh(psh), m_keyid("BEAM"),
+  p_beamspectra(p_psh->GetBeamSpectra())
+{
+  m_beammode = p_beamspectra?p_beamspectra->BeamMode():BEAM::beammode::unknown;
+  for (size_t i=0;i<2;i++)
+    m_beamtype[i] = (p_beamspectra?
+		     p_beamspectra->GetBeam(i)->Type():
+		     BEAM::beamspectrum::unknown);
+  for (double yexp=-.999;yexp<=1.0;yexp+=.999) m_yexponents.insert(yexp);
 }
 
 bool Beam_Channels::Initialize()
@@ -32,198 +38,259 @@ bool Beam_Channels::Initialize()
 bool Beam_Channels::MakeChannels()
 {
   if (m_beamparams.size()>0) return CreateChannels();
-  Channel_Info ci;
-  // default : Beamstrahlung
-  if ((p_psh->Flavs()[0].IsLepton()) && (p_psh->Flavs()[1].IsLepton())) {
-    ci.type = 0;
-    (ci.parameters).push_back(0.5);
-    (ci.parameters).push_back(p_psh->Process()->Beam()->Exponent(1));
-    m_beamparams.push_back(ci);
-    ci.parameters.clear();
-  }
-  else if ((p_psh->Flavs()[0].IsPhoton()) || (p_psh->Flavs()[1].IsPhoton())) {
-    // Laser Backscattering spectrum
-    ci.type = 3;
-    (ci.parameters).push_back(p_psh->Process()->Beam()->Peak());
-    (ci.parameters).push_back(p_psh->Process()->Beam()->Exponent(1));
-    (ci.parameters).push_back(0.7);
-    m_beamparams.push_back(ci);
-    ci.parameters.clear();
-  }
-  else {
-		if (m_beammode==beammode::DM_annihilation) {
-			// This is where things need doing
-			double mass1 = p_psh->GetBeamSpectra()->GetBeam(0)->Beam().Mass();
-			double mass2 = p_psh->GetBeamSpectra()->GetBeam(1)->Beam().Mass();
-			ci.type = 0;
-			(ci.parameters).push_back(3.);
-			m_beamparams.push_back(ci);
-      ci.parameters.clear();
-			(ci.parameters).push_back(mass1);
-			m_beamparams.push_back(ci);
-      ci.parameters.clear();
-			(ci.parameters).push_back(mass2);
-			m_beamparams.push_back(ci);
-			ci.parameters.clear();
-		}
-		if (m_beammode==beammode::relic_density) {
-      ci.type = 0;
-      (ci.parameters).push_back(.5);
-      m_beamparams.push_back(ci);
-      ci.parameters.clear();
-      ci.type = 0;
-      (ci.parameters).push_back(2.);
-      m_beamparams.push_back(ci);
-      ci.parameters.clear();
+  switch (m_beammode) {
+  case beammode::relic_density:
+    m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
+    m_beamparams.push_back(Channel_Info(channel_type::simple,2.0));
+    CheckForStructuresFromME();
+    break;
+  case beammode::DM_annihilation:
+    m_beamparams.push_back(Channel_Info(channel_type::simple,3);
+    CheckForStructuresFromME();
+    break;
+  case beammode::collider:
+    if (!DefineColliderChannels()) {
+      msg_Error()<<"Error in "<<METHOD<<" for collider set-up:\n"
+		 <<"   Don't know how to deal with combination of beamspectra: "
+		 <<m_beamtype[0]<<" + "<<m_beamtype[1]<<".\n"
+		 <<"   Will not initialize integration over spectra.\n";
     }
+    break;
+  case beammode::unknown:
+  default:
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+	       <<"   Unknown beam type.\n"
+	       <<"   Will not initialize integration over spectra.\n";
+    return false;
   }
-  int    type;
-  double mass,width;
-  double thmin=0.,thmax=0.;
-  msg_Out()<<"  trying to obtain resonacen information from FSR:\n";
-  for (size_t i=0;i<p_psh->FSRIntegrator()->Number();i++) {
-    type=0;
-    mass=width=0.;
-    msg_Out()<<"   --> trying "<<i<<": ";
-    if (p_psh->Process()) {
-      p_psh->FSRIntegrator()->ISRInfo(i,type,mass,width);
-      msg_Out()<<type<<", mass = "<<mass<<", width = "<<width<<"\n";
-    }
-    else msg_Out()<<"no process.\n";
-    if (type==0 || type==3 ||
-	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
-	(type==2 && ATOOLS::IsZero(mass))) continue;
-    if (type==2) {
-      if (thmax==0.) { thmax=mass; thmin=mass; }
-      thmin = ATOOLS::Min(thmin,mass);
-      thmax = ATOOLS::Max(thmax,mass);
+  return true;
+}
+
+bool Beam_Channels::DefineColliderChannels() {
+  // default collider setup - no spectra
+  if (m_beamtype[0]==beamspectrum::monochromatic &&
+      m_beamtype[1]==beamspectrum::monochromatic) return true;
+  // one or two laser backscattering spectra with monochromatic beams
+  if ((m_beamtype[0]==beamspectrum::monochromatic &&
+       (m_beamtype[1]==beamspectrum::laser_backscattering ||
+	m_beamtype[1]==beamspectrum::simple_Compton)) ||
+      ((m_beamtype[0]==beamspectrum::laser_backscattering ||
+	m_beamtype[0]==beamspectrum::simple_Compton) &&
+       m_beamtype[1]==beamspectrum::monochromatic) ||
+      ((m_beamtype[0]==beamspectrum::laser_backscattering ||
+	m_beamtype[0]==beamspectrum::simple_Compton) &&
+       (m_beamtype[1]==beamspectrum::laser_backscattering ||
+	m_beamtype[1]==beamspectrum::simple_Compton))) {
+    m_beamparams.push_back(Channel_Info(channel_type::laserback,
+					p_beamspectra->Peak(),1.));
+    CheckForStructuresFromME();
+    return true;
+  }
+  // one or two EPA spectra with monochromatic beams
+  // currently our EPA is completely collinear, with real photons:
+  // - todo: add proper EPA, with virtual photons and a physical deflection angle of
+  //         the emitters.
+  if ((m_beamtype[0]==beamspectrum::monochromatic &&
+       m_beamtype[1]==beamspectrum::EPA) ||
+      (m_beamtype[0]==beamspectrum::EPA &&
+       m_beamtype[1]==beamspectrum::monochromatic) ||
+      (m_beamtype[0]==beamspectrum::EPA &&
+       m_beamtype[1]==beamspectrum::EPA)) {
+    double exponent = (int(m_beamtype[0]==beamspectrum::EPA)+
+		       int(m_beamtype[1]==beamspectrum::EPA))*0.75;
+    m_beamparams.push_back(Channel_Info(channel_type::simple,exponent));
+    CheckForStructuresFromME();
+    return true;
+  }
+  if (m_beamtype[0]==beamspectrum::spectrum_reader ||
+      m_beamtype[1]==beamspectrum::spectrum_reader) {
+    msg_Error()<<"Warning in "<<METHOD<<":\n"
+	       <<"   Beam spectra from spectrum reader - "
+	       <<"will have to find a way to parse relevant information.\n"
+	       <<"   Will pretend  a simple pole is good enough.\n";
+    m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
+    return true;
+  }
+}
+
+void Beam_Channels::CheckForStructuresFromME() {
+  if (!p_psh->Process()) {
+    msg_Error()<<"Warning in "<<METHOD<<":\n"
+	       <<"   Phase space handler has no process information.\n"
+	       <<"   This looks like a potential bug, will exit.\n";
+    THROW(fatal_error,"No process information in phase space handler.")
+  }
+  size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
+  std::vector<int>    types(nfsrchannels,0);
+  std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
+  bool onshellresonance;
+  
+  for (size_t i=0;i<nfsrchannels;i++) {
+    p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
+    channel_type::code type = channel_type::code(abs(types[i]));
+    msg_Out()<<METHOD<<" for FSR channel("<<i<<", "<<types[i]<<"): "
+	     <<"type = "<<type<<", mass = "<<masses[i]<<", width = "<<widths[i]<<"\n";
+    switch (type) {
+    case channel_type::simple:
+    case channel_type::leadinglog:
+    case channel_type::laserback:
       continue;
-    }
-    ci.type = type;
-    (ci.parameters).push_back(mass);
-    if (type==1) (ci.parameters).push_back(width);
-    if (type==2) (ci.parameters).push_back(1.5);
-    if ((p_psh->Flavs()[0].IsLepton()) || (p_psh->Flavs()[1].IsLepton()))
-      (ci.parameters).push_back(1.);
-    else (ci.parameters).push_back(.5);
-    bool add=true;
-    for (size_t j=0;j<m_beamparams.size();j++) if (m_beamparams[j]==ci) add=false;
-    if (add) m_beamparams.push_back(ci);
-    ci.parameters.clear();
-  }
-  if (thmax>0.) {
-    ci.type = 2;
-    (ci.parameters).push_back(thmax);
-    (ci.parameters).push_back(1.5);
-    if ((p_psh->Flavs()[0].IsLepton()) || (p_psh->Flavs()[1].IsLepton()))
-      (ci.parameters).push_back(1.);
-    else (ci.parameters).push_back(.5);
-    m_beamparams.push_back(ci);
-    if (thmin<thmax) {
-      (ci.parameters)[0]=thmin;
-      m_beamparams.push_back(ci);
-      ci.parameters.clear();
+    case channel_type::threshold:
+      if (ATOOLS::IsZero(masses[i])) continue;
+      m_beamparams.push_back(Channel_Info(type,masses[i],2.));
+      break;
+    case channel_type::resonance:
+      if (ATOOLS::IsZero(masses[i])) continue;
+      if (types[i]==-1) {
+	p_psh->SetOSMass(masses[i]);
+	onshellresonance = true;
+      }
+      m_beamparams.push_back(Channel_Info(type,masses[i],widths[i]));
+      break;
     }
   }
-  return CreateChannels();
 }
 
 bool Beam_Channels::CreateChannels()
 {
-  //msg_Out()<<METHOD<<" for "<<m_beamparams.size()<<" parameters, "
-  //	   <<"beam = "<<p_psh->Process()->Beam()->On()<<" and info = "<<p_psh->GetInfo()<<"\n";
   if (m_beamparams.size() < 1) return 0;
-  int beam = p_psh->Process()->Beam()->On();
+  int beams = int(p_beamspectra->ColliderMode());
   for (size_t i=0;i<m_beamparams.size();i++) {
     switch (m_beamparams[i].type) {
-    case 0:
-      AddSimplePole(i,beam);
+    case channel_type::simple:
+      AddSimplePole(i,beams);
       break;
-    case 1:
-      AddResonance(i,beam);
+    case channel_type::resonance:
+      AddResonance(i,beams);
       break;
-    case 2:
-      AddThreshold(i,beam);
+    case channel_type::threshold:
+      AddThreshold(i,beams);
       break;
-    case 3:
-      AddLaserBackscattering(i,beam);
+    case channel_type::laserback:
+      AddLaserBackscattering(i,beams);
       break;
+    case channel_type::leadinglog:
+    case channel_type::unknown:
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   tried to construct channel for unknown type.\n"
+		 <<"   Will ignore this channel and hope for the best.\n";
     }
   }
   //msg_Out()<<METHOD<<" created "<<channels.size()<<" channels:\n";
-  //for (size_t i=0;i<channels.size();i++)
+  //for (size_t i=0;i<channels.size();i++) 
   //  msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<"\n";
   //msg_Out()<<"----------------------------------------------\n";
   return 1;
 }
 
-void Beam_Channels::AddSimplePole(const size_t & chno,const int & beam) {
+void Beam_Channels::AddSimplePole(const size_t & chno,const int & beams) {
   if (m_beammode==beammode::relic_density) {
     Add(new Simple_Pole_RelicDensity(m_beamparams[chno].parameters[0],
 				     m_keyid,p_psh->GetInfo()));
     return;
   }
-	else if (m_beammode==beammode::DM_annihilation) {
-		// p_psh->GetBeamSpectra()->
-		Add(new Simple_Pole_DM_Annihilation(m_beamparams[chno].parameters[0],
-						m_beamparams[chno].parameters[1],m_beamparams[chno].parameters[2],
-						m_keyid,p_psh->GetInfo()));
+  else if (m_beammode==beammode::DM_annihilation) {
+    double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
+    double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
+    Add(new Simple_Pole_DM_Annihilation(m_beamparams[chno].parameters[0],
+					mass1,mass2,m_keyid,p_psh->GetInfo()));
     return;
-	}
-  Add(new Simple_Pole_Central(m_beamparams[chno].parameters[0],
-			      m_keyid,p_psh->GetInfo(),beam));
-  if (beam!=3) return;
-  Add(new Simple_Pole_Forward(m_beamparams[chno].parameters[0],
-			      m_beamparams[chno].parameters[1],
-			      m_keyid,p_psh->GetInfo()));
-  Add(new Simple_Pole_Backward(m_beamparams[chno].parameters[0],
-			       m_beamparams[chno].parameters[1],
-			       m_keyid,p_psh->GetInfo()));
+  }
+  for (set<double>::iterator yit=m_yexponents.begin();
+       yit!=m_yexponents.end();yit++) {
+    if (dabs(*yit)<1.e-3) {
+      Add(new Simple_Pole_Uniform(m_beamparams[chno].parameters[0],
+				  m_keyid,p_psh->GetInfo(),beams));
+      Add(new Simple_Pole_Central(m_beamparams[chno].parameters[0],
+				  m_keyid,p_psh->GetInfo(),beams));
+    }
+    else if (beams==3) {
+      Add(new Simple_Pole_Forward(m_beamparams[chno].parameters[0],(*yit),
+				  m_keyid,p_psh->GetInfo()));
+      Add(new Simple_Pole_Backward(m_beamparams[chno].parameters[0],(*yit),
+				   m_keyid,p_psh->GetInfo()));
+    }
+  }
 }
 
 
-void Beam_Channels::AddResonance(const size_t & chno,const int & beam) {
+void Beam_Channels::AddResonance(const size_t & chno,const int & beams) {
   if (m_beammode==beammode::relic_density) {
     Add(new Resonance_RelicDensity(m_beamparams[chno].parameters[0],
 				   m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo()));
     return;
   }
-  Add(new Resonance_Central(m_beamparams[chno].parameters[0],
-			    m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beam));
-  if (beam!=3) return;
-  Add(new Resonance_Uniform(m_beamparams[chno].parameters[0],
-			    m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo()));
-  Add(new Resonance_Forward(m_beamparams[chno].parameters[0],
-			    m_beamparams[chno].parameters[1],
-			    m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
-  Add(new Resonance_Backward(m_beamparams[chno].parameters[0],
-			     m_beamparams[chno].parameters[1],
-			     m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
+  /*
+  else if (m_beammode==beammode::DM_annihilation) {
+    double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
+    double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
+    Add(new Resonance_DM_Annihilation(m_beamparams[chno].parameters[0],
+					mass1,mass2,m_keyid,p_psh->GetInfo()));
+    return;
+  }
+  */
+  for (set<double>::iterator yit=m_yexponents.begin();
+       yit!=m_yexponents.end();yit++) {
+    if (dabs(*yit)<1.e-3) {
+      Add(new Resonance_Uniform(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],
+				m_keyid,p_psh->GetInfo(),beams));
+      Add(new Resonance_Central(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],
+				m_keyid,p_psh->GetInfo(),beams));
+    }
+    else if (beams==3) {
+      Add(new Resonance_Forward(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],
+				(*yit),m_keyid,p_psh->GetInfo()));
+      Add(new Resonance_Backward(m_beamparams[chno].parameters[0],
+				 m_beamparams[chno].parameters[1],
+				 (*yit),m_keyid,p_psh->GetInfo()));
+    }
+  }
 }
-
-void Beam_Channels::AddThreshold(const size_t & chno,const int & beam) {
+  
+void Beam_Channels::AddThreshold(const size_t & chno,const int & beams) {
   if (m_beammode==beammode::relic_density) return;
-  Add(new Threshold_Central(m_beamparams[chno].parameters[0],
-			    m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beam));
-  if (beam!=3) return;
-  Add(new Threshold_Forward(m_beamparams[chno].parameters[0],
-			    m_beamparams[chno].parameters[1],
-			    m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
-  Add(new Threshold_Backward(m_beamparams[chno].parameters[0],
-			     m_beamparams[chno].parameters[1],
-			     m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
+  for (set<double>::iterator yit=m_yexponents.begin();
+       yit!=m_yexponents.end();yit++) {
+    if (dabs(*yit)<1.e-3) {
+      Add(new Threshold_Uniform(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beams));
+      Add(new Threshold_Central(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beams));
+    }
+    else if (beams==3) {
+      Add(new Threshold_Forward(m_beamparams[chno].parameters[0],
+				m_beamparams[chno].parameters[1],
+				(*yit),m_keyid,p_psh->GetInfo()));
+      Add(new Threshold_Backward(m_beamparams[chno].parameters[0],
+				 m_beamparams[chno].parameters[1],
+				 (*yit),m_keyid,p_psh->GetInfo()));
+    }
+  }
 }
 
-void Beam_Channels::AddLaserBackscattering(const size_t & chno,const int & beam) {
-  if (m_beammode==beammode::relic_density || m_beammode==beammode::DM_annihilation) return;
-  if (!p_psh->Flavs()[0].IsPhoton() && !p_psh->Flavs()[1].IsPhoton()) return;
-  Add(new LBS_Compton_Peak_Central(m_beamparams[chno].parameters[1],
-				   m_beamparams[chno].parameters[0],m_keyid,p_psh->GetInfo(),beam));
-  if (beam!=3) return;
-  Add(new LBS_Compton_Peak_Forward(m_beamparams[chno].parameters[1],
-				   m_beamparams[chno].parameters[0],
-				   m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
-  Add(new LBS_Compton_Peak_Backward(m_beamparams[chno].parameters[1],
-				    m_beamparams[chno].parameters[0],
-				    m_beamparams[chno].parameters[2],m_keyid,p_psh->GetInfo()));
+void Beam_Channels::AddLaserBackscattering(const size_t & chno,const int & beams) {
+  if (m_beammode==beammode::relic_density) return;
+  for (set<double>::iterator yit=m_yexponents.begin();
+       yit!=m_yexponents.end();yit++) {
+    if (dabs(*yit)<1.e-3) {
+      Add(new LBS_Compton_Peak_Uniform(m_beamparams[chno].parameters[1],
+				       m_beamparams[chno].parameters[0],
+				       m_keyid,p_psh->GetInfo(),beams));
+      Add(new LBS_Compton_Peak_Central(m_beamparams[chno].parameters[1],
+				       m_beamparams[chno].parameters[0],
+				       m_keyid,p_psh->GetInfo(),beams));
+    }
+    else if (beams==3) {
+      Add(new LBS_Compton_Peak_Forward(m_beamparams[chno].parameters[1],
+				       m_beamparams[chno].parameters[0],
+				       (*yit),m_keyid,p_psh->GetInfo()));
+      Add(new LBS_Compton_Peak_Backward(m_beamparams[chno].parameters[1],
+					m_beamparams[chno].parameters[0],
+				        (*yit),m_keyid,p_psh->GetInfo()));
+    }
+  }
 }
+

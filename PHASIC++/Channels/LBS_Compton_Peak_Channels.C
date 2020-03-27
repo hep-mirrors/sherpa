@@ -15,7 +15,8 @@ using namespace std;
 
 LBS_Compton_Peak_Uniform::
 LBS_Compton_Peak_Uniform(const double exponent,const double pole,
-			 const std::string cinfo,ATOOLS::Integration_Info *info):
+			 const std::string cinfo,ATOOLS::Integration_Info *info,
+			 const int mode):
   ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole)
@@ -30,12 +31,12 @@ LBS_Compton_Peak_Uniform(const double exponent,const double pole,
   m_xkey.Assign(cinfo+std::string("::x"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
-  p_rans  = new double[2];
+  m_rannum = (mode==3)?2:1;
+  p_vegas  = new Vegas(2,100,m_name,0);
+  p_rans   = new double[2];
 }
 
 void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns,const int mode)

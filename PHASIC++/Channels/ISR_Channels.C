@@ -18,37 +18,37 @@ bool ISR_Channels::MakeChannels()
   if (m_isrparams.size()>0) return CreateChannels();
   bool onshellresonance=false;
   Channel_Info ci;
-  int    type;
+  channel_type::code type;
   double mass,width;
   std::set<double> ths;
   if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
     ths.insert(sqrt(p_psh->Cuts()->Smin()));
   }
   Multi_Channel *fsr(p_psh->FSRIntegrator());
-  std::vector<int> ts(fsr->Number(),0);
+  std::vector<int>    ts(fsr->Number(),0);
   std::vector<double> ms(fsr->Number(),0.0), ws(fsr->Number(),0.0);
   for (size_t i(0);i<fsr->Number();++i) fsr->ISRInfo(i,ts[i],ms[i],ws[i]);
   fsr->ISRInfo(ts,ms,ws);
   for (size_t i=0;i<ts.size();i++) {
-    type=abs(ts[i]); 
+    type = channel_type::code(abs(ts[i])); 
     if (ts[i]==-1) {
       p_psh->SetOSMass(ms[i]);
       onshellresonance=true;
     }
     mass=ms[i];
     width=ws[i];
-    if (type==0 || type==3 ||
-	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
-	(type==2 && ATOOLS::IsZero(mass))) continue;
-    if (type==2) {
+    if (type==channel_type::simple || type==channel_type::leadinglog ||
+	(type==channel_type::resonance && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
+	(type==channel_type::threshold && ATOOLS::IsZero(mass))) continue;
+    if (type==channel_type::threshold) {
       ths.insert(mass);
       continue;
     }
     for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
       ci.type = type;
       (ci.parameters).push_back(mass);
-      if (type==1) (ci.parameters).push_back(width);
-      if (type==2) (ci.parameters).push_back(2.);
+      if (type==channel_type::resonance) (ci.parameters).push_back(width);
+      if (type==channel_type::threshold) (ci.parameters).push_back(2.);
       if (p_psh->Flavs()[0].IsLepton() || 
 	  p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
       else (ci.parameters).push_back(yexp);
@@ -61,7 +61,7 @@ bool ISR_Channels::MakeChannels()
   if (ths.size()) {
     for (std::set<double>::const_iterator thit(ths.begin());thit!=ths.end();++thit)
       for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
-	ci.type = 2;
+	ci.type = channel_type::threshold;
 	(ci.parameters).push_back(*thit);
 	(ci.parameters).push_back(2.);
 	if (p_psh->Flavs()[0].IsLepton() || 
@@ -77,7 +77,7 @@ bool ISR_Channels::MakeChannels()
     if ((p_psh->Flavs()[0].IsLepton() && p_psh->Flavs()[1].Strong()) ||
 	(p_psh->Flavs()[1].IsLepton() && p_psh->Flavs()[0].Strong())) {
       //The DIS case
-      ci.type = 0; 
+      ci.type = channel_type::simple; 
       (ci.parameters).push_back(1.);
       (ci.parameters).push_back(1.);
       m_isrparams.push_back(ci);
@@ -95,9 +95,8 @@ bool ISR_Channels::MakeChannels()
       //     (ci.parameters).push_back(1.);
       //     m_isrparams.push_back(ci);
       //     ci.parameters.clear();
-      ci.type = 3;
-      (ci.parameters).push_back
-	(p_psh->Process()->ISR()->Exponent(1));
+      ci.type = channel_type::leadinglog;
+      (ci.parameters).push_back(p_psh->Process()->ISR()->Exponent(1));
       (ci.parameters).push_back(1.00000001);
       (ci.parameters).push_back(1.);
       m_isrparams.push_back(ci);
@@ -108,7 +107,7 @@ bool ISR_Channels::MakeChannels()
     // default : 1/s'
     for (double sexp=0.5;sexp<=1.5;sexp+=0.5) {
       for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
-	ci.type = 0;
+	ci.type = channel_type::simple;
 	(ci.parameters).push_back(sexp);
 	(ci.parameters).push_back(yexp);
 	m_isrparams.push_back(ci);
@@ -127,7 +126,7 @@ bool ISR_Channels::CreateChannels()
     (p_psh->Flavs()[1].IsLepton() && p_psh->Flavs()[0].Strong());
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
-    case 0:
+    case channel_type::simple:
       if (isr==3 && !ep) {
 	if (m_isrparams[i].parameters[1]==0.0) {
 	  Add(new Simple_Pole_Uniform
@@ -154,7 +153,7 @@ bool ISR_Channels::CreateChannels()
 	    (m_isrparams[i].parameters[0],m_keyid,p_psh->GetInfo(),isr));
       }
       break;
-    case 1:
+    case channel_type::resonance:
       if (isr==3 && !ep) {
 	if (m_isrparams[i].parameters[2]==0.0) {
 	  Add(new Resonance_Uniform
@@ -181,7 +180,7 @@ bool ISR_Channels::CreateChannels()
 	     m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo(),isr));
       }
       break;
-    case 2:
+    case channel_type::threshold:
       if (m_isrparams[i].parameters[2]==0.0) {
 	Add(new Threshold_Central
 	    (m_isrparams[i].parameters[0],
@@ -198,7 +197,7 @@ bool ISR_Channels::CreateChannels()
 	}
       }
       break;
-    case 3:
+    case channel_type::leadinglog:
       Add(new Leading_Log_Uniform
 	  (m_isrparams[i].parameters[0],
 	   m_isrparams[i].parameters[1],m_keyid,p_psh->GetInfo()));
@@ -216,6 +215,11 @@ bool ISR_Channels::CreateChannels()
       }
       */
       break;
+    case channel_type::laserback:
+    case channel_type::unknown:
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   tried to construct channel for unknown type.\n"
+		 <<"   Will ignore this channel and hope for the best.\n";
     }
   }
   return 1;

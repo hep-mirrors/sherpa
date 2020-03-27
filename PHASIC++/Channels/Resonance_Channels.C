@@ -57,7 +57,8 @@ void Resonance_RelicDensity::GenerateWeight(const int mode)
 
 Resonance_Uniform::
 Resonance_Uniform(const double mass,const double width,
-		  const std::string cinfo,ATOOLS::Integration_Info *info):
+		  const std::string cinfo,ATOOLS::Integration_Info *info,
+		  const int mode) :
   ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width)
@@ -73,9 +74,9 @@ Resonance_Uniform(const double mass,const double width,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
-  p_rans  = new double[2];
+  m_rannum = (mode==3)?2:1;
+  p_vegas  = new Vegas(m_rannum,100,m_name,0);
+  p_rans   = new double[2];
 }
 
 void Resonance_Uniform::GeneratePoint(const double *rns,const int mode)

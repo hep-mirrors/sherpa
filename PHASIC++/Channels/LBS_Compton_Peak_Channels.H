@@ -13,7 +13,8 @@ namespace PHASIC {
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     LBS_Compton_Peak_Uniform(const double exponent,const double pole,
-			     const std::string cinfo,ATOOLS::Integration_Info *info);
+			     const std::string cinfo,ATOOLS::Integration_Info *info,
+			     const int mode=0);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };

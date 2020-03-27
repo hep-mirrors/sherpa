@@ -102,27 +102,15 @@ Process_Base *Process_Base::Parent()
   return this; 
 }
 
-bool Process_Base::GeneratePoint()
-{
-  return true;
-}
+bool Process_Base::GeneratePoint() { return true; }
 
-void Process_Base::AddPoint(const double &value)
-{
-}
+void Process_Base::AddPoint(const double &value) {}
 
-bool Process_Base::ReadIn(const std::string &pid)
-{
-  return true;
-}
+bool Process_Base::ReadIn(const std::string &pid) { return true; }
 
-void Process_Base::WriteOut(const std::string &pid)
-{
-}
+void Process_Base::WriteOut(const std::string &pid) { }
 
-void Process_Base::EndOptimize()
-{
-}
+void Process_Base::EndOptimize() {}
 
 void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
 {
@@ -157,15 +145,9 @@ void Process_Base::SetFixedScale(const std::vector<double> &s)
   if (p_scale!=NULL) p_scale->SetFixedScale(s);
 }
 
-void Process_Base::SetSelectorOn(const bool on)
-{
-  Selector()->SetOn(on);
-}
+void Process_Base::SetSelectorOn(const bool on) { Selector()->SetOn(on); }
 
-void Process_Base::SetUseBIWeight(bool on)
-{
-  m_use_biweight=on;
-}
+void Process_Base::SetUseBIWeight(bool on) { m_use_biweight=on; }
 
 Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
                                          Weight_Type type,
@@ -215,21 +197,10 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   return wgts;
 }
 
-bool Process_Base::IsGroup() const
-{
-  return false;
-}
-
-int Process_Base::PerformTests()
-{
-  return 1;
-}
-
-bool Process_Base::FillIntegrator
-(Phase_Space_Handler *const psh)
-{
-  return false;
-}
+bool Process_Base::IsGroup() const { return false; }
+int  Process_Base::PerformTests()  { return 1; }
+bool Process_Base::FillIntegrator(Phase_Space_Handler *const psh) { return false; }
+void Process_Base::UpdateIntegrator(Phase_Space_Handler *const psh) {}
 
 bool Process_Base::InitIntegrator
 (Phase_Space_Handler *const psh)
@@ -241,10 +212,6 @@ bool Process_Base::InitIntegrator
   return true;
 }
 
-void Process_Base::UpdateIntegrator
-(Phase_Space_Handler *const psh)
-{
-}
 
 class Order_NDecay {
 public:

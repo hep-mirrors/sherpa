@@ -9,19 +9,24 @@ namespace PHASIC {
 
   class Beam_Channels: public Multi_Channel {
   private:
-    BEAM::beammode::code m_beammode;
-    channelinfos         m_beamparams;
-
+    Phase_Space_Handler        * p_psh;
+    std::string                  m_keyid;
+    BEAM::Beam_Spectra_Handler * p_beamspectra;
+    BEAM::beammode::code         m_beammode;
+    BEAM::beamspectrum::code     m_beamtype[2];
+    channelinfos                 m_beamparams;
+    std::set<double>             m_yexponents;
     
-    Phase_Space_Handler *p_psh;
-    std::string          m_keyid;
     
     bool MakeChannels();
+    bool DefineColliderChannels();
+    void CheckForStructuresFromME();
     bool CreateChannels();
-    void AddSimplePole(const size_t & beamno,const int & beam);
-    void AddResonance(const size_t & beamno,const int & beam);
-    void AddThreshold(const size_t & beamno,const int & beam);
-    void AddLaserBackscattering(const size_t & beamno,const int & beam);    
+    
+    void AddSimplePole(const size_t & beamno,const int & beams);
+    void AddResonance(const size_t & beamno,const int & beams);
+    void AddThreshold(const size_t & beamno,const int & beams);
+    void AddLaserBackscattering(const size_t & beamno,const int & beams);    
   public:
     Beam_Channels(Phase_Space_Handler *const psh,const std::string &name);
     ~Beam_Channels() {}

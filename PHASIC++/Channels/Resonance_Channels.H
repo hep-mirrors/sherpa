@@ -27,7 +27,8 @@ namespace PHASIC {
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Resonance_Uniform(const double mass,const double width,
-			const std::string cinfo,ATOOLS::Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info,
+		      const int mode=0);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };
@@ -72,7 +73,7 @@ namespace PHASIC {
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Resonance_Central(const double mass,const double width,
-			const std::string cinfo,ATOOLS::Integration_Info *info,const int mode=0);
+		      const std::string cinfo,ATOOLS::Integration_Info *info,const int mode=0);
     void GeneratePoint(const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
   };

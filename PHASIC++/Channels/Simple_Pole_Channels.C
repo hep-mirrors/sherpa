@@ -53,21 +53,19 @@ void Simple_Pole_RelicDensity::GenerateWeight(const int mode)
 
 Simple_Pole_DM_Annihilation::
 Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const double mass2,
-				const std::string cinfo,ATOOLS::Integration_Info *info):
-  ISR_Channel_Base(info),
-  m_exponent(exponent)
+			    const std::string cinfo,ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),m_exponent(exponent)
 {
-	m_m[0] = mass1;
-	m_m[1] = mass2;
-
+  m_m[0] = mass1;
+  m_m[1] = mass2;
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_DM_Annihilation";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_spkey.Assign(cinfo+std::string("::s'"),5,0,info);
-	m_xkey.Assign(cinfo+std::string("::x'"),3,0,info);
-	m_cosxikey.Assign(cinfo+std::string("::cosXi'"),3,0,info);
+  m_xkey.Assign(cinfo+std::string("::x'"),3,0,info);
+  m_cosxikey.Assign(cinfo+std::string("::cosXi'"),3,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
-	m_xgridkey.Assign(m_xkey.Info(),1,0,info);
-	m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
+  m_xgridkey.Assign(m_xkey.Info(),1,0,info);
+  m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum   = 1;
   p_vegas    = new Vegas(m_rannum,100,m_name,0);
@@ -113,7 +111,7 @@ void Simple_Pole_DM_Annihilation::GenerateWeight(const int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string cinfo,
-					 ATOOLS::Integration_Info *info):
+					 ATOOLS::Integration_Info *info,const int mode):
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
@@ -128,9 +126,9 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  m_rannum=2;
-  p_vegas = new Vegas(2,100,m_name,0);
-  p_rans  = new double[2];
+  m_rannum = (mode==3)?2:1;
+  p_vegas  = new Vegas(m_rannum,100,m_name,0);
+  p_rans   = new double[2];
 }
 
 void Simple_Pole_Uniform::GeneratePoint(const double *rns,const int mode)
@@ -296,8 +294,8 @@ Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string
   m_xkey.Assign(cinfo+std::string("::x"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-	m_kp1key.Assign("k_perp_1",4,1,info);
-	m_kp2key.Assign("k_perp_2",4,1,info);
+  m_kp1key.Assign("k_perp_1",4,1,info);
+  m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_rannum=1;
   if (mode==3) m_rannum=2;
@@ -332,6 +330,6 @@ void Simple_Pole_Central::GenerateWeight(int mode)
   }
   p_rans[0] = m_sgridkey[0];
   p_rans[1] = m_ygridkey[0];
-  double pw= p_vegas->GenerateWeight(p_rans);
+  double pw = p_vegas->GenerateWeight(p_rans);
   m_weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
