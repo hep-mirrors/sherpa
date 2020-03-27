@@ -88,10 +88,6 @@ Return_Value::code Multiple_Interactions::PrepareShowerBlob(Blob_List* bloblist,
     msg_Tracking()<<METHOD<<"(): Invalid beams. Retry event."<<std::endl;
     return Return_Value::Retry_Event;
   }
-  // TODO Stefan: so far in PI we were setting m_pi->SetMassMode(1) and then
-  // in CleanUp p_mi->Process()->Generator()->SetMassMode(0)
-  // are those two equivalent?
-  //p_mihandler->Process()->Generator()->SetMassMode(1); // crashes
   p_mihandler->SetMassMode(1);
   int stat(p_mihandler->ShiftMasses(ampl));
   if (stat<0) {
@@ -245,9 +241,6 @@ void Multiple_Interactions::Finish(const std::string &resultpath) {}
 void Multiple_Interactions::CleanUp(const size_t & mode) 
 {
   p_mihandler->CleanUp();
-  if (p_mihandler->Process() && p_mihandler->Process()->Generator())
-    p_mihandler->Process()->Generator()->SetMassMode(0);
-  //p_mihandler->SetMassMode(0); // crashes
   ResetIS();
   m_vetoed   = false;
   m_newevent = true;
