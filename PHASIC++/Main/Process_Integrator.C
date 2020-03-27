@@ -319,8 +319,8 @@ double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
   if (epsilon<=-1.) {
-    int frac(int(-epsilon)%100), nsamples(-epsilon/100);
-    int npoints(p_whisto->Fills()/frac);
+    int nsamples(-epsilon), npoints(p_whisto->Fills());
+    npoints*=-(epsilon-int(epsilon));
 #ifdef USING__MPI
     nsamples=std::max(1,nsamples/mpi->Size());
 #endif
@@ -361,7 +361,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
 {
   if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
-    if (omode)
+    if (omode || msg->LevelIsTracking())
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
                 <<dabs(m_totalxs/max)<<" ) "<<std::endl;
