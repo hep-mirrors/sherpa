@@ -14,8 +14,10 @@ namespace SHERPA {
   private :
     REMNANTS::Remnant_Handler * p_remnants;
     Shower_Handler* p_showerhandler;
+    ATOOLS::Blob* p_on_signalblob; // TODO hack
 
-    void DefineInitialConditions(const ATOOLS::Blob_List* bloblist);
+    void DefineInitialConditions(const ATOOLS::Blob_List* bloblist,
+                                 ATOOLS::Blob* showerblob);
     void PerformShowers(ATOOLS::Blob *);
     void ExtractPartons(const ATOOLS::Cluster_Amplitude * ampl, ATOOLS::Blob* blob);
 

@@ -15,7 +15,7 @@ using namespace std;
 
 Jet_Evolution::Jet_Evolution(Shower_Handler* showerhandler,
                              REMNANTS::Remnant_Handler* remnants) :
-  p_showerhandler(showerhandler), p_remnants(remnants)
+  p_showerhandler(showerhandler), p_remnants(remnants), p_on_signalblob(NULL)
 {
   m_name      = string("Jet_Evolution:")+showerhandler->ShowerGenerator();
   m_type      = eph::Perturbative;
@@ -35,13 +35,16 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
     if (blob->Has(blob_status::needs_showers)) {
       hit=true;
       try {
-        DefineInitialConditions(bloblist);
+        DefineInitialConditions(bloblist, blob);
         PerformShowers(blob);
         Event_Weights weights = GetShower()->Weights();
         if (weights.Nominal()!=1.0 || weights.Size()>1) {
-          Blob * spblob = bloblist->FindLast(btp::Signal_Process);
-          Blob_Data_Base * bdb((*spblob)["Shower_Weights"]);
-          if (!bdb) spblob->AddData("Shower_Weights",new Blob_Data<Event_Weights>(weights));
+          // TODO proper shower weight storage, see #225
+          // MPI shower weights should not go into SP blob(?)
+          Blob* weightblob=blob;
+          if (p_on_signalblob) weightblob = p_on_signalblob;
+          Blob_Data_Base * bdb((*weightblob)["Shower_Weights"]);
+          if (!bdb) weightblob->AddData("Shower_Weights",new Blob_Data<Event_Weights>(weights));
           else {
             bdb->Get<Event_Weights>()*=weights;
           }
@@ -117,22 +120,26 @@ void Jet_Evolution::ExtractPartons(const Cluster_Amplitude* ampl, Blob* blob)
   DEBUG_FUNC(*blob);
   while (ampl->Prev()) ampl=ampl->Prev();
   DEBUG_VAR(*ampl);
-  for (size_t i=0;i<2;++i) { /// TODO generalise to n -> m
+  int beam_order[2] = {0,1};
+  if (p_on_signalblob && p_on_signalblob->InParticle(0)->Momentum()[3]<0.0) {
+    beam_order[0]=1; // TODO hack for Differential2
+    beam_order[1]=0;
+  }
+  for (size_t i=0;i<ampl->NIn();++i) {
     Particle* part=
       new Particle(-1, ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom());
     part->SetNumber();
-    part->SetFinalMass(part->Flav().Mass(1)); /// TODO need p_ms?
+    part->SetFinalMass(ampl->MS()->Mass(part->Flav()));
     blob->AddToInParticles(part);
     part->SetFlow(1,ampl->Leg(i)->Col().m_j);
     part->SetFlow(2,ampl->Leg(i)->Col().m_i);
-    if (part->Momentum()[3]>0.0) part->SetBeam(0); /// TODO propagate from shower properly!
-    else part->SetBeam(1);
+    part->SetBeam(beam_order[i]);
   }
-  for (size_t i=2;i<ampl->Legs().size();++i) {
+  for (size_t i=ampl->NIn();i<ampl->Legs().size();++i) {
     Particle* part=
       new Particle(-1, ampl->Leg(i)->Flav(), ampl->Leg(i)->Mom());
     part->SetNumber();
-    part->SetFinalMass(part->Flav().Mass(1));
+    part->SetFinalMass(ampl->MS()->Mass(part->Flav()));
     part->SetFlow(1,ampl->Leg(i)->Col().m_i);
     part->SetFlow(2,ampl->Leg(i)->Col().m_j);
     blob->AddToOutParticles(part);
@@ -167,10 +174,23 @@ void Jet_Evolution::Reset()
   p_showerhandler->GetISRHandler()->Reset(1);
 }
 
-void Jet_Evolution::DefineInitialConditions(const Blob_List* bloblist)
+void Jet_Evolution::DefineInitialConditions(const Blob_List* bloblist, Blob* showerblob)
 {
   DEBUG_FUNC(bloblist->size());
   Reset();
+
+  // TODO hack to keep compatibility with master
+  // Any p_on_signalblob special casing should be implemented through Cluster_Amplitude
+  p_on_signalblob=NULL;
+  for (auto part: showerblob->GetInParticles()) {
+    Blob* upstreamblob=part->ProductionBlob();
+    if (upstreamblob->Type()==btp::Signal_Process ||
+        upstreamblob->Type()==btp::Hard_Decay) {
+      p_on_signalblob = bloblist->FindFirst(btp::Signal_Process);
+    }
+  }
+
+  // because of ISRHandler->Reset all shower blobs have to be extracted again
   for (auto blob: *bloblist) {
     if (blob->Type()==btp::Shower) {
       for (size_t beam=0; beam<2; ++beam) {
@@ -179,8 +199,9 @@ void Jet_Evolution::DefineInitialConditions(const Blob_List* bloblist)
           Particle *cur=blob->InParticle(i);
           if (!cur->Flav().Strong() || cur->ProductionBlob()) continue;
           if (cbeam==beam) {
-            DEBUG_INFO(*cur<<", beam = "<<beam);
-            p_remnants->Extract(cur,beam);
+            // TODO disabled to mimick master
+            //DEBUG_INFO(*cur<<", beam = "<<beam);
+            //p_remnants->Extract(cur,beam);
             continue;
           }
           ++cbeam;
