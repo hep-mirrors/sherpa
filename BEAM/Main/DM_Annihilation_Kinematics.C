@@ -14,7 +14,7 @@ DM_Annihilation_Kinematics::~DM_Annihilation_Kinematics() {}
 void DM_Annihilation_Kinematics::InitIntegration() {
   Beam_Parameters parameters;
   double Emin = m_m[0]+m_m[1];   // Equal to mass energy
-  double Emax = Emin + parameters("DM_ANNIHILATION_EMAX");
+  double Emax = Emin + parameters("RELIC_DENSITY_EMAX");
   m_smin = sqr(Emin);
   m_smax = sqr(Emax);
   m_S    = sqr(Emin);
