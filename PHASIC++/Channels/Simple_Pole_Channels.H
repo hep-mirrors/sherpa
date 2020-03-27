@@ -18,7 +18,8 @@ namespace PHASIC {
 
   class Simple_Pole_DM_Annihilation: public ISR_Channel_Base {
   protected:
-    double m_exponent, m_xpar, m_cospar;
+    double m_exponent;
+    double m_m[2];
     bool   m_zchannel;
     ATOOLS::Info_Key m_spkey, m_sgridkey, m_xkey, m_xgridkey, m_cosxikey, m_cosgridkey;
   public:

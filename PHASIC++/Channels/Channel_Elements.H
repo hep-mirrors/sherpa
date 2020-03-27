@@ -9,7 +9,7 @@ namespace PHASIC {
 
   class Channel_Elements {
   private:
-    
+
     Channel_Basics CB;
     void QcdAntenna(ATOOLS::Vec4D* &,int,double, double);
     void BasicAntenna(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D &, double*, double);
@@ -66,6 +66,9 @@ namespace PHASIC {
     double ThresholdWeight(double,double,double,double,double);
     double ThresholdWeight(double,double,double,double,double,double&);
 
+    double GenerateDMRapidityUniform(const double masses[], const ATOOLS::Double_Container &spinfo,
+      ATOOLS::Double_Container &xinfo, const double ran, const int mode);
+    double GenerateDMAngleUniform(const double ran, const int mode) const;
     double GenerateYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
@@ -89,13 +92,13 @@ namespace PHASIC {
 
   };// end of class Channel_Elements
 
-  extern Channel_Elements CE;                                                  
+  extern Channel_Elements CE;
 
   /*!
     Weights and momenta for isotropic two-body decays.
     The idea for the gbeneration of the momenta is to boost the
     decaying vector into its rest frame, select the orientation of
-    the two decay products with given masses 4-pi isotropically and 
+    the two decay products with given masses 4-pi isotropically and
     to boost back. The weight is just a constant.
   */
 
@@ -104,7 +107,7 @@ namespace PHASIC {
     in splittings involving one outgoing massless vector boson.
     The idea here is to use a peaked distribution for the polar angle
     of one decay product (not the "vector boson") along the original direction
-    of the decaying particle. 
+    of the decaying particle.
   */
 
   /*!
@@ -112,26 +115,26 @@ namespace PHASIC {
     the forward direction in order to minimize the mass of the propagator.
   */
 
-  /*! 
+  /*!
      Decay p -> q + p1, q is space-like with energy Eq given from outside
-     cos(pq) is constrained by ctmin and ctmax. 
+     cos(pq) is constrained by ctmin and ctmax.
   */
 
   /*!
-    Scale and weight for a massless propagator. It is distributed 
+    Scale and weight for a massless propagator. It is distributed
     according to a simple pole structure peaking at 0 (or the minimal
     scale that is kinematically allowed).
   */
 
   /*!
-    Scale and weight for a massive propagator. It is distributed 
+    Scale and weight for a massive propagator. It is distributed
     according to a physical Breit-Wigner distribution with given
     mass and width.
   */
 
   /*!
-    Scale and weight for a typical electron initial state radiation 
-    event. It is distributed according to a simple pole structure peaking 
+    Scale and weight for a typical electron initial state radiation
+    event. It is distributed according to a simple pole structure peaking
     at the maximal scale that is kinematically allowed.
   */
 
