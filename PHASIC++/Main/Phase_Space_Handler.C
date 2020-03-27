@@ -370,8 +370,8 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   for (size_t i(0);i<p_lab.size();++i) if (p_lab[i].Nan()) return 0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
-    CalculateME();
     CalculatePS();
+    CalculateME();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());

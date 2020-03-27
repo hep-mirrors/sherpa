@@ -87,7 +87,7 @@ double Single_Process::NfSchemeConversionTerms() const
 {
   if (m_nfconvscheme==0) return 0.;
   DEBUG_FUNC("scheme="<<m_nfconvscheme<<", nlo-type="<<m_pinfo.m_nlomode);
-  if (m_nfconvscheme==1 && !(m_pinfo.m_nlomode&nlo_type::vsub)) return 0.;
+  if (m_nfconvscheme==1 && !(m_pinfo.Has(nlo_type::vsub))) return 0.;
   // determine nf of PDF, if no PDF take from alphaS
   // nfl from number of light quarks
   int nfa(p_int->ISR()->PDF(0)?p_int->ISR()->PDF(0)->ASInfo().m_nf:-1);
@@ -521,7 +521,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
     m_lastb=m_lastbxs*
       (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
-    if (p_mc!=NULL && m_dsweight && m_pinfo.m_nlomode&nlo_type::vsub) {
+    if (p_mc!=NULL && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS for MC@NLO, one PS point, many dipoles
       msg_Debugging()<<"Calculating DADS terms"<<std::endl;
       m_mewgtinfo.m_type|=mewgttype::DADS;
