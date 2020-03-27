@@ -118,8 +118,7 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
   return m_lastxs;
 }
 
-bool EXTRAXS::Single_Process::FillIntegrator
-(PHASIC::Phase_Space_Handler *const psh)
+bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
   PHASIC::Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
@@ -127,14 +126,11 @@ bool EXTRAXS::Single_Process::FillIntegrator
     mc->Add(new PHASIC::NoChannel(m_nin,m_nout,(Flavour*)&Flavours().front()));
     return false;
   }
-  size_t sintt(7);
-  if (GetME()) sintt=GetME()->SIntType();
-  if (sintt&1)
-    mc->Add(new PHASIC::S1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
-  if (sintt&2)
-    mc->Add(new PHASIC::T1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
-  if (sintt&4)
-    mc->Add(new PHASIC::U1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
+  
+  size_t sintt = GetME()?GetME()->SIntType():7;
+  if (sintt&1) mc->Add(new PHASIC::S1Channel(m_nin,m_nout,(Flavour*)(&m_flavs.front())));
+  if (sintt&2) mc->Add(new PHASIC::T1Channel(m_nin,m_nout,(Flavour*)(&m_flavs.front())));
+  if (sintt&4) mc->Add(new PHASIC::U1Channel(m_nin,m_nout,(Flavour*)(&m_flavs.front())));
   return (mc->NChannels()>0);
 }
 
@@ -161,7 +157,13 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-const Flavour_Vector &Single_Process::CombinedFlavour(const size_t &idij)
+ATOOLS::Flavour_Vector * Single_Process::Resonances() {
+  msg_Out()<<METHOD<<".\n";
+  Flavour_Vector resonances = p_born_me2->CombinedFlavour(3);
+  return (resonances.empty()?NULL:&resonances);
+}
+
+const Flavour_Vector & Single_Process::CombinedFlavour(const size_t &idij)
 {
   if (m_cfls.size()) {
     std::map<size_t,ATOOLS::Flavour_Vector>::const_iterator fit(m_cfls.find(idij));

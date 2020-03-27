@@ -26,9 +26,10 @@ namespace BEAM {
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
     
-    inline const bool             On()           const { return m_on; }
-    inline const beammode::code & Mode()         const { return m_beammode; }
-    inline Beam_Base            * GetBeam(const int i) { return p_BeamBase[i]; }
+    inline const bool                 On()           const { return m_on; }
+    inline const beammode::code     & BeamMode()     const { return m_beammode; }
+    inline const collidermode::code & ColliderMode() const { return m_collidermode; }
+    inline Beam_Base                * GetBeam(const int i) { return p_BeamBase[i]; }
     
     inline const double Upper1() { return p_BeamBase[0]->Xmax(); }
     inline const double Upper2() { return p_BeamBase[1]->Xmax(); }

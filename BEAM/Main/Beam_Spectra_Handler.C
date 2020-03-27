@@ -21,7 +21,8 @@ using namespace std;
 Beam_Spectra_Handler::Beam_Spectra_Handler():
   p_kinematics(NULL), p_weight(NULL),
   m_beammode(beammode::collider),
-  m_mode(0), m_polarisation(0)
+  m_collidermode(collidermode::monochromatic),
+  m_polarisation(0)
 {
   for (size_t i=0;i<2;i++) p_BeamBase[i] = NULL;
   // simple check for remotely sensible beam parameters
@@ -41,11 +42,19 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
 }
 
 bool Beam_Spectra_Handler::InitTheBeams() {
+  size_t mode = 0;
   for (short int i=0;i<2;i++) {
     p_BeamBase[i] = m_parameters.InitSpectrum(i);
     if (p_BeamBase[i]==NULL) return false;
     if (p_BeamBase[i]->On()) m_mode += i+1;
     if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
+  }
+  switch (mode) {
+  case 1: m_collidermode = collidermode::spectral_1; break;
+  case 2: m_collidermode = collidermode::spectral_2; break;
+  case 3: m_collidermode = collidermode::both_spectral; break;
+  case 0:
+  default: break;
   }
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());

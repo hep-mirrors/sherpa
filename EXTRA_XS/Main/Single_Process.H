@@ -16,7 +16,7 @@ namespace EXTRAXS {
     ATOOLS::nlo_type::code                  m_nlotype;
     std::set<std::pair<size_t,size_t> >     m_ccombs;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
-
+    
     bool m_localFS;
   protected:
     double m_sprimemin, m_sprimemax;
@@ -38,7 +38,9 @@ namespace EXTRAXS {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
+    ATOOLS::Flavour_Vector * Resonances();
 
+    
     // inline functions
     inline ME2_Base *GetME() const { return p_born_me2; }
     //size_t NOut() const;

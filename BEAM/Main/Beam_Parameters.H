@@ -36,9 +36,9 @@ namespace BEAM {
   struct collidermode {
     enum code {
       monochromatic = 0,
-      spectral_1    = 11,
-      spectral_2    = 12,
-      both_spectral = 20,
+      spectral_1    = 1,
+      spectral_2    = 2,
+      both_spectral = 3,
       unknown       = 99
     };
   };
@@ -76,12 +76,12 @@ namespace BEAM {
     Beam_Base * InitSpectrum(const size_t & num);
 
     const ATOOLS::Flavour GetFlavour(const std::string & tag,const size_t & pos=-1);
-    const std::string String(const std::string & tag,const int & pos=-1) const;
-    const double operator()(const std::string & tag,const int & pos=-1) const;
-    const int  Switch(const std::string & tag,const int & pos=-1) const;
-    const bool On(const std::string & tag) const;
+    const std::string     String(const std::string & tag,const int & pos=-1) const;
+    const double          operator()(const std::string & tag,const int & pos=-1) const;
+    const int             Switch(const std::string & tag,const int & pos=-1) const;
+    const bool            On(const std::string & tag) const;
     
-    const inline beammode::code GetMode() const { return m_beammode; }
+    const inline beammode::code     GetMode() const { return m_beammode; }
     const inline beamspectrum::code GetSpectrum(const size_t & pos) const {
       if (pos==0 || pos==1) return m_beamspec[pos];
       return beamspectrum::unknown; 
