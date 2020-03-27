@@ -72,8 +72,7 @@ double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,
   ran1 = (Vec3D(p1h)*Vec3D(zax)/(p1h.PSpat()*zax.PSpat())-ctmin)/(ctmax-ctmin);
 
   double massfactor = Channel_Basics::SqLam(p.Abs2(),p1.Abs2(),p2.Abs2());
-  if (ATOOLS::IsZero(massfactor)) return 0.;  
-  if (!(massfactor>0) && !(massfactor<0)) 
+  if (IsNan(massfactor))
     msg_Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
   return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
@@ -600,8 +599,6 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double s2in      = p2in.Abs2();
   double s1out     = p1out.Abs2();
   double s2out     = p2out.Abs2();
-  if (s1out<1.e-8) s1out=0.;
-  if (s2out<1.e-8) s2out=0.;
   Vec4D p1inh,p1outh;
   p1inh[0]         = (s+s1in-s2in)/2./sabs;
   double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 

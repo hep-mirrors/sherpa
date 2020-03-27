@@ -435,8 +435,7 @@ Event_Weights Phase_Space_Handler::Differential(
 
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
 {
-  if (m_nin != 2 || (m_nout == 1 && p_flavours[2].Kfcode() == 999))
-    return;
+  if (m_nin!=2 || m_nout==1) return;
   int swap(p_isrhandler->Swap());
   Vec4D sum;
   size_t imax(0);
