@@ -41,20 +41,20 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   }
   name="CDBG_Channel";
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  m_zmode = s["CDXS_ZMODE"].Get<int>();
-  m_bmode = s["CDXS_BMODE"].Get<int>();
-  m_omode = s["CDXS_OMODE"].Get<int>();
-  m_vmode = s["CDXS_VMODE"].Get<int>();
-  m_tmode = s["CDXS_TMODE"].Get<int>();
-  m_vsopt = s["CDXS_VSOPT"].Get<int>();
-  m_nvints = s["CDXS_VINTS"].Get<int>();
-  m_texp = s["CDXS_TEXP"].Get<double>();
-  m_stexp = s["CDXS_STEXP"].Get<double>();
-  m_sexp = s["CDXS_SEXP"].Get<double>();
-  m_srbase = s["CDXS_SRBASE"].Get<double>();
-  m_aexp = s["CDXS_AEXP"].Get<double>();
-  m_thexp = s["CDXS_THEXP"].Get<double>();
-  m_mfac = s["CDXS_MFAC"].Get<double>();
+  m_zmode = s["ZMODE"].Get<int>();
+  m_bmode = s["BMODE"].Get<int>();
+  m_omode = s["OMODE"].Get<int>();
+  m_vmode = s["VMODE"].Get<int>();
+  m_tmode = s["TMODE"].Get<int>();
+  m_vsopt = s["VSOPT"].Get<int>();
+  m_nvints = s["VINTS"].Get<int>();
+  m_texp = s["TEXP"].Get<double>();
+  m_stexp = s["STEXP"].Get<double>();
+  m_sexp = s["SEXP"].Get<double>();
+  m_srbase = s["SRBASE"].Get<double>();
+  m_aexp = s["AEXP"].Get<double>();
+  m_thexp = s["THEXP"].Get<double>();
+  m_mfac = s["MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
@@ -72,20 +72,20 @@ PS_Channel::~PS_Channel()
 void PS_Channel::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  s["CDXS_ZMODE"].SetDefault(0);       // zero treatment mode
-  s["CDXS_BMODE"].SetDefault(1);       // boundary mode
-  s["CDXS_OMODE"].SetDefault(3);       // optimisation mode
-  s["CDXS_VMODE"].SetDefault(1);       // vegas mode
-  s["CDXS_TMODE"].SetDefault(1);       // t-channel mode
-  s["CDXS_VSOPT"].SetDefault(1);       // vegas optimisation start
-  s["CDXS_VINTS"].SetDefault(8);       // vegas intervals
-  s["CDXS_TEXP"].SetDefault(0.9);      // t-channel exp
-  s["CDXS_STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
-  s["CDXS_SEXP"].SetDefault(0.75);     // s-channel exp
-  s["CDXS_SRBASE"].SetDefault(1.05);   // s-channel exp scale
-  s["CDXS_AEXP"].SetDefault(0.9);      // aniso s-channel exp
-  s["CDXS_THEXP"].SetDefault(1.5);     // threshold exponent
-  s["CDXS_MFAC"].SetDefault(1.0);      // m_{min} factor
+  s["ZMODE"].SetDefault(0);       // zero treatment mode
+  s["BMODE"].SetDefault(1);       // boundary mode
+  s["OMODE"].SetDefault(3);       // optimisation mode
+  s["VMODE"].SetDefault(1);       // vegas mode
+  s["TMODE"].SetDefault(1);       // t-channel mode
+  s["VSOPT"].SetDefault(1);       // vegas optimisation start
+  s["VINTS"].SetDefault(8);       // vegas intervals
+  s["TEXP"].SetDefault(0.9);      // t-channel exp
+  s["STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
+  s["SEXP"].SetDefault(0.75);     // s-channel exp
+  s["SRBASE"].SetDefault(1.05);   // s-channel exp scale
+  s["AEXP"].SetDefault(0.9);      // aniso s-channel exp
+  s["THEXP"].SetDefault(1.5);     // threshold exponent
+  s["MFAC"].SetDefault(1.0);      // m_{min} factor
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
