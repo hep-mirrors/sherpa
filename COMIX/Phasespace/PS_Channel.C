@@ -453,7 +453,7 @@ bool PS_Channel::GeneratePoint
     nr+=2;
     m_p[cid]=m_p[aid]-m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  t "<<nr<<": ("<<ID(ja->CId())
+    msg_Debugging()<<"  t "<<nr<<": {"<<ID(ja->CId())
 		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
 		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
 		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
@@ -478,7 +478,7 @@ bool PS_Channel::GeneratePoint
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  s "<<nr<<": ("<<ID(cid)
+    msg_Debugging()<<"  s "<<nr<<": {"<<ID(cid)
 		   <<"}->{"<<ID(aid)<<","<<ID(bid)
 		   <<"} m_"<<ID(cid)<<" = "<<rts
 		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
@@ -679,7 +679,7 @@ double PS_Channel::GenerateWeight
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
     aid=(1<<m_n)-1-aid;
-    m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
+    if (IdCount(pid)>1) m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
@@ -696,7 +696,7 @@ double PS_Channel::GenerateWeight
 			m_p[bid],m_p[pid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    t "<<nr<<": ("<<ID(ja->CId())
+    msg_Debugging()<<"    t "<<nr<<": {"<<ID(ja->CId())
 		   <<","<<ID(m_rid)<<"}-"<<ID(jc->CId())
 		   <<"->{"<<ID(jb->CId())<<","<<ID(pid)
 		   <<"} m_"<<ID(bid)<<" = "<<sqrt(se)
@@ -719,7 +719,7 @@ double PS_Channel::GenerateWeight
     wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    s "<<nr<<": ("<<ID(cid)
+    msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
 		   <<"}->{"<<ID(aid)<<","<<ID(bid)
 		   <<"} m_"<<ID(SId(cid))<<" = "<<rts
 		   <<", m_"<<ID(lid)<<" = "<<sqrt(sl)
