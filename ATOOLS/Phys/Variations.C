@@ -20,10 +20,24 @@ namespace ATOOLS {
 
   Variations* s_variations;
 
-  struct ScaleFactor_Pair: public std::pair<double, double> {
-    double m_qcutfac;
-    ScaleFactor_Pair(const double &a,const double &b,const double &c):
-      std::pair<double, double>(a,b), m_qcutfac(c) {}
+  // utitilies for parsing variations
+  struct ScaleFactor_Pair : public std::pair<double, double> {
+    ScaleFactor_Pair(const double& a, const double& b)
+        : std::pair<double, double>(a, b)
+    {
+    }
+  };
+  struct ExpandableVariation {
+    ExpandableVariation(std::string raw_var)
+    {
+      if (raw_var.back() == '*') {
+        raw_var = raw_var.substr(0, raw_var.size() - 1);
+        expand = true;
+      }
+      var = raw_var;
+    }
+    std::string var;
+    bool expand {false};
   };
 }
 
@@ -31,33 +45,12 @@ using namespace ATOOLS;
 
 bool Variations::NeedsLHAPDF6Interface()
 {
-  // go through all parameters and return true if any non-double points to a
-  // request for a PDF set/member
-  std::vector<std::string> args = VariationArguments();
-  if (args.empty()) {
-    return false;
-  }
-  for (std::vector<std::string>::const_iterator paramsit(args.begin());
-      paramsit != args.end(); ++paramsit) {
-    std::vector<std::string> params(VariationArgumentParameters(*paramsit));
-    for (std::vector<std::string>::const_iterator it(params.begin());
-        it != params.end(); ++it) {
-      if ((*it).empty()) continue;
-      std::string stringparam(*it);
-      // remove openening/closing brackets
-      if (*stringparam.begin() == '[') {
-        stringparam.erase(stringparam.begin(), stringparam.begin() + 1);
-      }
-      if (*(stringparam.end() - 1) == ']') {
-        stringparam.erase(stringparam.end() - 1, stringparam.end());
-      }
-      // check if we can parse as a double
-      double testdouble(1.0);
-      MyStrStream ss(stringparam);
-      ss >> testdouble;
-      if (ss.fail()) {
-        return true;
-      }
+  // go through all parameters and return true if any PDF variation is
+  // requested
+  Settings& s = Settings::GetMainSettings();
+  for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
+    if (single_variation_settings["PDF"].IsCustomised()) {
+      return true;
     }
   }
   return false;
@@ -131,7 +124,7 @@ void Variations::ReadDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   m_includecentralvaluevariation =
-    s["VARIATIONS_INCLUDE_CV"].SetDefault(true).Get<bool>();
+    s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
   m_reweightsplittingalphasscales =
     s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(false).Get<bool>();
   m_reweightsplittingpdfsscales =
@@ -197,106 +190,82 @@ void Variations::PrintStatistics(std::ostream &str)
 
 void Variations::InitialiseParametersVector()
 {
-  std::vector<std::string> args = VariationArguments();
-  for (std::vector<std::string>::const_iterator it(args.begin());
-      it != args.end(); ++it) {
-    std::vector<std::string> params(VariationArgumentParameters(*it));
-    AddParameters(params);
-  }
-}
-
-
-std::vector<std::string> Variations::VariationArguments()
-{
   Settings& s = Settings::GetMainSettings();
-  auto args = s["VARIATIONS"].GetVector<std::string>();
-  args.erase(std::remove(args.begin(), args.end(), "None"), args.end());
-  return args;
-}
-
-
-std::vector<std::string> Variations::VariationArgumentParameters(std::string arg)
-{
-  return ToVector<std::string>(arg, ',');
-}
-
-
-void Variations::AddParameters(std::vector<std::string> stringparams)
-{
-  // up to 2 scale factor arguments and up to 1 PDF argument
-  std::vector<std::string> scalestringparams;
-  std::vector<std::string> pdfstringparams;
-
-  ScaleFactorExpansions::code scalefactorexpansions(ScaleFactorExpansions::None);
-  bool expandpdf(false);
-
-  for (std::vector<std::string>::const_iterator it(stringparams.begin());
-      it != stringparams.end(); it++) {
-
-    if ((*it).empty()) continue;
-
-    std::string stringparam(*it);
-
-    // check and remove openening/closing brackets
-    bool bracketopened(false);
-    bool bracketclosed(false);
-    if (*stringparam.begin() == '[') {
-      bracketopened = true;
-      stringparam.erase(stringparam.begin(), stringparam.begin() + 1);
-    }
-    if (*(stringparam.end() - 1) == ']') {
-      bracketclosed = true;
-      stringparam.erase(stringparam.end() - 1, stringparam.end());
-    }
-
-    // check if it's a scale factor or a PDF set/member and record the
-    // consequence in terms of bracket expansion
-    double sf(1.0);
-    MyStrStream ss(stringparam);
-    ss >> sf;
-    if (ss.fail()) {
-      // PDF set/member
-      if (pdfstringparams.size() > 0) {
-        THROW(not_implemented,
-              "Only one PDF argument per variation is supported.");
-      }
-      if (bracketopened ^ bracketclosed) {
-        THROW(fatal_error, "Unmatched bracket in PDF argument.");
-      }
-      expandpdf = bracketopened;
-      pdfstringparams.push_back(stringparam);
-    } else {
-      // scale factor
-      if (pdfstringparams.size() > 1) {
-        THROW(not_implemented,
-              "Only two scale factor arguments per variation are supported.");
-      }
-      if (bracketopened && bracketclosed) {
-        if (scalestringparams.empty()) {
-          scalefactorexpansions |= ScaleFactorExpansions::First;
-        } else {
-          scalefactorexpansions |= ScaleFactorExpansions::Second;
-        }
-      } else if (!bracketopened && bracketclosed) {
-        scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
-      }
-      if ((bracketopened || bracketclosed) && sf == 1.0) {
-        THROW(inconsistent_option,
-              "When brackets are used to expand a scale factor, it must not be 1.0.");
-      }
-      scalestringparams.push_back(stringparam);
-    }
+  for (auto single_variation_settings : s["VARIATIONS"].GetItems()) {
+    AddParameters(single_variation_settings);
   }
 
-  // translate PDF string parameter into actual AlphaS and PDF objects
-  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
-  if (!pdfstringparams.empty()) {
-    Settings& s = Settings::GetMainSettings();
-    if (s["OVERRIDE_PDF_INFO"].Get<bool>()) {
-      THROW(fatal_error,
-            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS variations.");
+  // erase all trivial variations
+  if (!m_includecentralvaluevariation) {
+    m_parameters_vector.erase(std::remove_if(m_parameters_vector.begin(),
+                                             m_parameters_vector.end(),
+                                             [](const Variation_Parameters* v) {
+                                               return v->IsTrivial();
+                                             }),
+                              m_parameters_vector.end());
+  }
+}
+
+void Variations::AddParameters(Scoped_Settings& s)
+{
+  // parse scale factors and QCUT factors, and check whether they are requested
+  // to be expanded to x -> [x, 1/x] via an appended asterisk
+  std::vector<std::string> scalestringparams;
+  ScaleFactorExpansions::code scalefactorexpansions(ScaleFactorExpansions::None);
+  if (s["ScaleFactors"].IsMap()) {
+    auto mufac = s["ScaleFactors"]["Mu"].SetDefault("None").Get<std::string>();
+    if (mufac != "None") {
+      ExpandableVariation var {mufac};
+      if (var.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
+      scalestringparams = {var.var, var.var};
+    } else {
+      // "Mu" not given, or left explicitly at its default value; try the
+      // individual scale factors MuF and MuR instead
+      auto muffac = s["ScaleFactors"]["MuF"].SetDefault("1.0").Get<std::string>();
+      ExpandableVariation mufvar {muffac};
+      if (mufvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuF;
+      auto murfac = s["ScaleFactors"]["MuR"].SetDefault("1.0").Get<std::string>();
+      ExpandableVariation murvar {murfac};
+      if (murvar.expand)
+        scalefactorexpansions |= ScaleFactorExpansions::MuR;
+      scalestringparams = {mufvar.var, murvar.var};
     }
-    pdfsandalphasvector = PDFsAndAlphaSVector(pdfstringparams[0], expandpdf);
+    auto qcutfac = s["ScaleFactors"]["QCUT"].SetDefault("1.0").Get<std::string>();
+    ExpandableVariation var {qcutfac};
+    if (var.expand)
+      scalefactorexpansions |= ScaleFactorExpansions::QCUT;
+    scalestringparams.push_back(var.var);
+  } else {
+    // just a scalar is given for s["ScaleFactors"], interprete it though it
+    // was given as s["ScaleFactors"]["Mu"]
+    auto mufac = s["ScaleFactors"].SetDefault("1.0").Get<std::string>();
+    ExpandableVariation var {mufac};
+    if (var.expand)
+      scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
+    scalestringparams = {var.var, var.var, "1.0"};
+  }
+
+  // parse PDF set, and check whether it is requested to be expanded to all its
+  // members via an appended asterisk
+  std::vector<Variations::PDFs_And_AlphaS> pdfsandalphasvector;
+  auto pdf = s["PDF"].SetDefault("None").Get<std::string>();
+  if (pdf != "None") {
+    if (Settings::GetMainSettings()["OVERRIDE_PDF_INFO"].Get<bool>()) {
+      THROW(fatal_error,
+            "`OVERRIDE_PDF_INFO: true` is incompatible with doing PDF/AlphaS "
+            "variations.");
+    }
+    // translate PDF string parameter into actual AlphaS and PDF objects
+    ExpandableVariation var {pdf};
+    pdfsandalphasvector = PDFsAndAlphaSVector(var.var, var.expand);
+  }
+
+  // parse AlphaS(MZ) variations and append them
+  auto alphasmz = s["AlphaS(MZ)"].SetDefault(-1.0).Get<double>();
+  if (alphasmz != -1.0) {
+    pdfsandalphasvector.push_back(PDFs_And_AlphaS(alphasmz));
   }
 
   AddParameterExpandingScaleFactors(scalestringparams,
@@ -310,76 +279,73 @@ void Variations::AddParameterExpandingScaleFactors(
 {
   bool scalevariationrequested(!scalestringparams.empty());
 
-  // read input scale factors
-  double muR2fac(1.0);
-  double muF2fac(1.0);
-  double Qcutfac(1.0);
-  if (scalevariationrequested) {
-    if (scalestringparams.size() == 1) {
-      muR2fac = muF2fac = ToType<double>(scalestringparams[0]);
-    } else {
-      muR2fac = ToType<double>(scalestringparams[0]);
-      muF2fac = ToType<double>(scalestringparams[1]);
-    }
-    if (scalestringparams.size()>2)
-      Qcutfac = ToType<double>(scalestringparams[2]);
+  const double muF2fac {ToType<double>(scalestringparams[0])};
+  const double muR2fac {ToType<double>(scalestringparams[1])};
+  const double qcutfac {ToType<double>(scalestringparams[2])};
+
+  // translate muF2fac and muR2fac into scale-factor pairs, expanding if
+  // necessary
+
+  std::vector<ScaleFactor_Pair> scalefactorpairs;
+  if (expansions & ScaleFactorExpansions::SevenPoint) {
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0 / muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0 / muF2fac));
+  } else if (expansions & ScaleFactorExpansions::MuR &&
+             !(expansions & ScaleFactorExpansions::MuF)) {
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, muF2fac));
+  } else if (expansions & ScaleFactorExpansions::MuF &&
+             !(expansions & ScaleFactorExpansions::MuR)) {
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0 / muF2fac));
+  } else if (expansions & ScaleFactorExpansions::MuF &&
+             expansions & ScaleFactorExpansions::MuR) {
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0 / muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0 / muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, muF2fac));
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0 / muF2fac));
+  } else {
+    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
   }
 
-  // expand scale factors
-  std::vector<ScaleFactor_Pair > scalefactorpairs;
-  ScaleFactor_Pair defaultscalefactorpair(1.0, 1.0,1.0);
-
-  if (!scalevariationrequested || expansions == ScaleFactorExpansions::None) {
-    defaultscalefactorpair = ScaleFactor_Pair(muR2fac, muF2fac,Qcutfac);
-    scalefactorpairs.push_back(defaultscalefactorpair);
-  } else if (expansions & ScaleFactorExpansions::SevenPoint) {
-    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, 1.0,1.0));
-    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, muF2fac,1.0));
-    scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac,1.0));
-    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0,1.0));
-    scalefactorpairs.push_back(ScaleFactor_Pair(1.0, 1.0 / muF2fac,1.0));
-    scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, 1.0 / muF2fac,1.0));
+  std::vector<double> qcutfacs;
+  if (expansions & ScaleFactorExpansions::QCUT) {
+    qcutfacs.push_back(qcutfac);
+    qcutfacs.push_back(1.0);
+    qcutfacs.push_back(1.0 / qcutfac);
   } else {
-    if (expansions & ScaleFactorExpansions::First) {
-      const double defaultmuF2fac = (expansions & ScaleFactorExpansions::Second) ? 1.0 : muF2fac;
-      defaultscalefactorpair.second = defaultmuF2fac;
-      scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, defaultmuF2fac,1.0));
-      scalefactorpairs.push_back(ScaleFactor_Pair(1.0 / muR2fac, defaultmuF2fac,1.0));
-    }
-    if (expansions & ScaleFactorExpansions::Second) {
-      const double defaultmuR2fac = (expansions & ScaleFactorExpansions::First) ? 1.0 : muR2fac;
-      defaultscalefactorpair.first = defaultmuR2fac;
-      scalefactorpairs.push_back(ScaleFactor_Pair(defaultmuR2fac, muF2fac,1.0));
-      scalefactorpairs.push_back(ScaleFactor_Pair(defaultmuR2fac, 1.0 / muF2fac,1.0));
-    }
+    qcutfacs.push_back(qcutfac);
   }
 
   // if there is no explicit PDF requested, we use the nominal one
-  bool ownedpdfsandalphas(true);
   if (pdfsandalphasvector.empty()) {
-    ownedpdfsandalphas = false;
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
   }
 
+  // now add all possible combinations to our list of parameters
   for (std::vector<PDFs_And_AlphaS>::const_iterator pdfasit(pdfsandalphasvector.begin());
         pdfasit != pdfsandalphasvector.end(); pdfasit++) {
-
-    bool assignedownershipofpdfsandalphas(!ownedpdfsandalphas);
-
-    if (pdfasit != pdfsandalphasvector.begin()
-        || (m_includecentralvaluevariation && expansions != ScaleFactorExpansions::None)) {
-      AddParameters(defaultscalefactorpair.first, defaultscalefactorpair.second,
-		    defaultscalefactorpair.m_qcutfac, pdfasit,
-                    !assignedownershipofpdfsandalphas);
-      assignedownershipofpdfsandalphas = true;
-    }
-
-    if (pdfasit == pdfsandalphasvector.begin()) {
-      for (std::vector<ScaleFactor_Pair >::const_iterator scalefactorpairit(scalefactorpairs.begin());
-          scalefactorpairit != scalefactorpairs.end(); scalefactorpairit++) {
-        AddParameters(scalefactorpairit->first, scalefactorpairit->second,
-		      scalefactorpairit->m_qcutfac, pdfasit,
-                      !assignedownershipofpdfsandalphas);
+    bool assignedownershipofpdfsandalphas {false};
+    for (const auto sfpair : scalefactorpairs) {
+      for (const auto qcutfac : qcutfacs) {
+        AddParameters(sfpair.first,
+                      sfpair.second,
+                      qcutfac,
+                      pdfasit,
+                      !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletepdf,
+                      !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletealphas);
         assignedownershipofpdfsandalphas = true;
       }
     }
@@ -389,7 +355,8 @@ void Variations::AddParameterExpandingScaleFactors(
 
 void Variations::AddParameters(double muR2fac, double muF2fac, double Qcutfac,
                                std::vector<PDFs_And_AlphaS>::const_iterator pdfsandalphas,
-                               bool deletepdfsandalphas)
+                               bool deletepdf,
+                               bool deletealphas)
 {
   const double showermuR2fac = (m_reweightsplittingalphasscales) ? muR2fac : 1.0;
   const double showermuF2fac = (m_reweightsplittingpdfsscales) ? muF2fac : 1.0;
@@ -398,7 +365,7 @@ void Variations::AddParameters(double muR2fac, double muF2fac, double Qcutfac,
 	muR2fac, muF2fac, showermuR2fac, showermuF2fac, Qcutfac,
         pdfsandalphas->m_pdfs[0], pdfsandalphas->m_pdfs[1],
         pdfsandalphas->p_alphas,
-        deletepdfsandalphas);
+        deletepdf, deletealphas);
   m_parameters_vector.push_back(params);
 }
 
@@ -466,6 +433,25 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS():
 }
 
 
+Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(double alphasmz)
+{
+  // Workaround für C++03 (vector constructor is confused when fed
+  // with NULL as the initial value for a pointer)
+  // cf. https://gcc.gnu.org/ml/gcc-help/2013-02/msg00026.html
+  PDF::PDF_Base *nullPtr = NULL;
+  m_pdfs = std::vector<PDF::PDF_Base *>(2, nullPtr);
+  m_pdfs[0] = rpa->gen.PDF(0);
+  m_pdfs[1] = rpa->gen.PDF(1);
+
+  Settings& s = Settings::GetMainSettings();
+  int order_alphaS = s["ORDER_ALPHAS"].Get<int>();
+  int th_alphaS = s["THRESHOLD_ALPHAS"].Get<int>();
+  double MZ2 = sqr(Flavour(kf_Z).Mass());
+  p_alphas = new MODEL::Running_AlphaS(alphasmz, MZ2, order_alphaS, th_alphaS);
+  m_shoulddeletealphas = true;
+}
+
+
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
     std::string pdfname, int pdfmember)
 {
@@ -495,6 +481,9 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
   if (p_alphas == NULL) {
     THROW(fatal_error, "AlphaS for " + pdfname + " could not be initialised.");
   }
+
+  m_shoulddeletealphas = true;
+  m_shoulddeletepdf = true;
 }
 
 
@@ -584,9 +573,11 @@ void ReweightingFactorHistogram::Write(std::string filenameaffix)
 
 Variation_Parameters::~Variation_Parameters()
 {
-  if (m_deletepdfsandalphas) {
+  if (m_deletepdfs) {
     if (p_pdf1) { delete p_pdf1; }
     if (p_pdf2) { delete p_pdf2; }
+  }
+  if (m_deletealphas) {
     if (p_alphas) { delete p_alphas; }
   }
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
@@ -621,12 +612,17 @@ std::string Variation_Parameters::GenerateName() const
            + GenerateNamePart("PDF", p_pdf1->LHEFNumber()) + divider
            + GenerateNamePart("PDF", p_pdf2->LHEFNumber());
   }
+  // append non-trival AlphaS(MZ) variation (which is not related to a change
+  // in the PDF set)
+  if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
+    name += divider + GenerateNamePart("ASMZ", p_alphas->AsMZ());
+  }
   // append non-trivial shower scale factors
   if (m_showermuR2fac != 1.0 || m_showermuF2fac != 1.0) {
     name += divider + GenerateNamePart("PSMUR", sqrt(m_showermuR2fac));
     name += divider + GenerateNamePart("PSMUF", sqrt(m_showermuF2fac));
   }
-  // append non-trivial shower scale factors
+  // append non-trivial QCUT factor
   if (m_Qcutfac != 1.0) {
     name += divider + GenerateNamePart("QCUT",m_Qcutfac);
   }
@@ -685,6 +681,19 @@ Subevent_Weights_Vector::operator+=(const Subevent_Weights_Vector &other)
   return *this;
 }
 
+bool Variation_Parameters::IsTrivial() const
+{
+  if (m_muR2fac != 1.0
+      || m_muF2fac != 1.0
+      || m_Qcutfac != 1.0
+      || p_pdf1 != rpa->gen.PDF(0)
+      || p_pdf2 != rpa->gen.PDF(1)
+      || p_alphas != MODEL::as
+     )
+    return false;
+
+  return true;
+}
 
 namespace ATOOLS {
 
@@ -694,7 +703,8 @@ namespace ATOOLS {
     s << "Named variations:" << std::endl;
     for (Variations::Parameters_Vector::const_iterator it(paramsvec->begin());
          it != paramsvec->end(); ++it) {
-      s << (*it)->m_name << " (" << (*it)->m_deletepdfsandalphas << ")" << std::endl;
+      s << (*it)->m_name << " (" << (*it)->m_deletepdfs << ","
+        << (*it)->m_deletealphas << ")" << std::endl;
     }
     return s;
   }

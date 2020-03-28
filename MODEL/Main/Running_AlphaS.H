@@ -112,6 +112,8 @@ namespace MODEL {
     Running_AlphaS(PDF::PDF_Base *const pdf,
                    const double as_MZ = 0.0,const double m2_MZ = 0.0,
                    const int order = 0, const int thmode = 1);
+    Running_AlphaS(const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                   const int order = 0, const int thmode = 1);
 
     ~Running_AlphaS();
 
