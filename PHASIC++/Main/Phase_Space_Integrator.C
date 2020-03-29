@@ -231,17 +231,6 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     double time = ATOOLS::rpa->gen.Timer().RealTime();
     double timeest=0.;
     timeest = m_nexpected/double(m_ncontrib)*(time-m_starttime);
-    if (!fotime) {
-      if (m_fin_opt) {
-        timeest = ATOOLS::Max(timeest,
-                              p_psh->Process()->RemainTimeFactor(m_maxerror)*
-                              (time-m_lotime)+m_lotime-m_starttime);
-      }
-      else {
-        timeest = p_psh->Process()->RemainTimeFactor(m_maxerror)*
-                  (time-m_lotime)+m_lotime-m_starttime;
-      }
-    }
     double error=dabs(p_psh->Process()->TotalVar()/
                       p_psh->Process()->TotalResult());
     if (m_maxabserror>0.0) {
