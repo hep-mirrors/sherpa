@@ -65,6 +65,10 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
 					 vector<Process_Base *> & links,
 					 vector<Process_Base *> & errs)
 {
+  nlo_type::code type(m_pinfo.m_fi.m_nlotype);
+  m_pinfo.m_fi.m_nlotype=nlo_type::lo;
+  m_name = GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
+  m_pinfo.m_fi.m_nlotype=type;
   Init();
   model->p_model->GetCouplings(m_cpls);
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;

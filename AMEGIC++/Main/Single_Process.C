@@ -122,6 +122,10 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 					  vector<Process_Base *> & errs)
 {
   DEBUG_FUNC("");
+  nlo_type::code type(m_pinfo.m_fi.m_nlotype);
+  m_pinfo.m_fi.m_nlotype=nlo_type::lo;
+  m_name = GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
+  m_pinfo.m_fi.m_nlotype=type;
   Init();
   msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
   model->p_model->GetCouplings(m_cpls);
