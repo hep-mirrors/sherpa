@@ -220,7 +220,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
   s["CSS_REWEIGHT"].SetDefault(false);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
-  s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(0.0);
+  s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
   s["CSS_KIN_SCHEME"].SetDefault(1);
   s["NLO_CSS_KIN_SCHEME"].SetDefault(1);
   s["CSS_OEF"].SetDefault(3.0);
