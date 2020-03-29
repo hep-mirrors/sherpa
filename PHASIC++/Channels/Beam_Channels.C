@@ -45,7 +45,7 @@ bool Beam_Channels::MakeChannels()
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
-    m_beamparams.push_back(Channel_Info(channel_type::simple,3);
+    m_beamparams.push_back(Channel_Info(channel_type::simple,3));
     CheckForStructuresFromME();
     break;
   case beammode::collider:
@@ -124,7 +124,7 @@ void Beam_Channels::CheckForStructuresFromME() {
   std::vector<int>    types(nfsrchannels,0);
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
   bool onshellresonance;
-  
+
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
     channel_type::code type = channel_type::code(abs(types[i]));
@@ -177,7 +177,7 @@ bool Beam_Channels::CreateChannels()
     }
   }
   //msg_Out()<<METHOD<<" created "<<channels.size()<<" channels:\n";
-  //for (size_t i=0;i<channels.size();i++) 
+  //for (size_t i=0;i<channels.size();i++)
   //  msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<"\n";
   //msg_Out()<<"----------------------------------------------\n";
   return 1;
@@ -249,7 +249,7 @@ void Beam_Channels::AddResonance(const size_t & chno,const int & beams) {
     }
   }
 }
-  
+
 void Beam_Channels::AddThreshold(const size_t & chno,const int & beams) {
   if (m_beammode==beammode::relic_density) return;
   for (set<double>::iterator yit=m_yexponents.begin();
@@ -293,4 +293,3 @@ void Beam_Channels::AddLaserBackscattering(const size_t & chno,const int & beams
     }
   }
 }
-

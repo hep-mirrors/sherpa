@@ -56,8 +56,8 @@ Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const dou
 			    const std::string cinfo,ATOOLS::Integration_Info *info):
   ISR_Channel_Base(info),m_exponent(exponent)
 {
-  m_m[0] = mass1;
-  m_m[1] = mass2;
+  m_mass[0] = mass1;
+  m_mass[1] = mass2;
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_DM_Annihilation";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_spkey.Assign(cinfo+std::string("::s'"),5,0,info);
@@ -84,7 +84,7 @@ void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns,const int mode
 	// msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
 
 	// for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
-	m_xkey[2]=CE.GenerateDMRapidityUniform(m_m,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],mode);
+	m_xkey[2]=CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],mode);
 	// msg_Out() << "x=" << m_xkey[2] << "\n";
 	m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[0],mode);
 	// msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
