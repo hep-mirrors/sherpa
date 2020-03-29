@@ -29,6 +29,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   const double is_as_fac{ s["CSS_IS_AS_FAC"].Get<double>() };
   const double mth{ s["CSS_MASS_THRESHOLD"].Get<double>() };
   m_reweight = s["CSS_REWEIGHT"].Get<bool>();
+  m_maxreweightfactor = s["CSS_MAX_REWEIGHT_FACTOR"].Get<double>();
   m_kscheme = s["NLO_CSS_KIN_SCHEME"].Get<int>();
   std::vector<size_t> disallowflavs{
     s["NLO_CSS_DISALLOW_FLAVOUR"].GetVector<size_t>() };
@@ -438,12 +439,16 @@ double Shower::Reweight(Variation_Parameters* varparams,
     } else {
       rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
     }
-    if (rewfactor < -9.0 || rewfactor > 11.0) {
-      varparams->IncrementOrInitialiseWarningCounter(
-          "MCatNLO vetoed large reweighting factor");
-      continue;
-    }
     overallrewfactor *= rewfactor;
+  }
+
+  // guard against gigantic accumulated reweighting factors
+  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+    msg_Debugging() << "Veto large MC@NLO Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "MCatNLOvetoed large reweighting factor for parton");
+    return 1.0;
   }
 
   return overallrewfactor;

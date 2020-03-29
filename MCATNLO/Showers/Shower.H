@@ -36,6 +36,7 @@ namespace MCATNLO {
     CS_Gamma *p_gamma;
     ATOOLS::Event_Weights m_weights;
     bool m_reweight;
+    double m_maxreweightfactor;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
