@@ -33,6 +33,7 @@ namespace SHERPA {
     int m_mass_smearing, m_qedmode, m_spincorr;
     ATOOLS::Blob_List* p_bloblist;
 
+    void UpdateShowerBlob(ATOOLS::Blob* initialblob);
     void AddDecayFinalState(ATOOLS::Blob* showerblob, ATOOLS::Particle* part);
 
     
@@ -49,7 +50,6 @@ namespace SHERPA {
 
     void TreatInitialBlob(ATOOLS::Blob* blob,
                           METOOLS::Amplitude2_Tensor* amps);
-    ATOOLS::Blob* PrepareShowerBlob(ATOOLS::Blob* initialblob);
 
     METOOLS::Decay_Matrix* FillDecayTree(ATOOLS::Blob * blob, METOOLS::Spin_Density* s0);
     

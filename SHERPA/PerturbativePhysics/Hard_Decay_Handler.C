@@ -549,8 +549,10 @@ double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
   return brfactor;
 }
 
-void Hard_Decay_Handler::AfterTreatInitialBlob(ATOOLS::Blob* blob)
+void Hard_Decay_Handler::AfterTreatInitialBlob(Blob* blob, Blob_List* bloblist)
 {
+  if (blob->Type()!=btp::Signal_Process) return;
+
   double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
   DEBUG_VAR(brfactor);
   Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);

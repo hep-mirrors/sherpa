@@ -303,11 +303,9 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   Complex sumijlambda_AiAj(0.0,0.0);
 
   if (sigma) {
-    for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
     if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
     p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
-    DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
   else {

@@ -317,7 +317,7 @@ int Signal_Processes::PrepareShowerBlob(Blob_List* bloblist, Blob* signalblob)
   p_mehandler->Process()->Generator()->SetMassMode(1);
 
   DEBUG_VAR(*showerblob);
-  
+  signalblob->AddData("ShowerBlob",new Blob_Data<Blob*>(showerblob));
   return 1;
 }
 

@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
@@ -100,8 +101,6 @@ void Hadron_Decay_Handler::RegisterSettings()
 
 bool Hadron_Decay_Handler::VetoDecayAndPrepForNew(ATOOLS::Blob* blob)
 {
-  if (blob->Has(blob_status::needs_showers)) return false;
-
   if (blob->Type()==btp::Hadron_Decay && (*blob)["Partonic"]!=NULL) {
     if (RejectExclusiveChannelsFromFragmentation(blob)) {
       return true;
@@ -109,6 +108,12 @@ bool Hadron_Decay_Handler::VetoDecayAndPrepForNew(ATOOLS::Blob* blob)
   }
   return false;
 }
+
+void Hadron_Decay_Handler::AfterTreatInitialBlob(Blob* initialblob, Blob_List* bloblist)
+{
+  MakeShowerBlobsForPartonicDecays(initialblob, bloblist);
+}
+
 
 void Hadron_Decay_Handler::BeforeFillDecayTree(Blob * blob)
 {
@@ -232,3 +237,33 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* decblo
   }
 }
 
+void Hadron_Decay_Handler::MakeShowerBlobsForPartonicDecays(Blob* initialblob, Blob_List* bloblist)
+{
+  DEBUG_FUNC(bloblist->size());
+  for (auto initialblob: *bloblist) {
+    if (initialblob->Type()!=btp::Hadron_Decay) continue;
+    bool partonic=false;
+    for (auto part: initialblob->GetOutParticles())
+      if (part->Flav().IsQCD() && part->DecayBlob()==NULL) partonic=true;
+    if (!partonic) continue;
+    DEBUG_INFO("found partonic decay: "<<*initialblob);
+    Blob* showerblob = bloblist->AddBlob(btp::Shower);
+    showerblob->AddStatus(blob_status::needs_showers);
+
+    Cluster_Amplitude* ampl = Cluster_Amplitude::New();
+    ampl->SetMS(this);
+    for (int i(0);i<initialblob->NOutP();++i) {
+      Particle *p(initialblob->OutParticle(i));
+      if (p->GetFlow(1)==0 && p->GetFlow(2)==0) continue;
+      showerblob->AddToInParticles(p);
+      ColorID col(p->GetFlow(1),p->GetFlow(2));
+      ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+ampl->NIn()));
+    }
+    double mu2=initialblob->InParticle(0)->Momentum().Abs2();
+    ampl->SetMuF2(mu2);
+    ampl->SetKT2(mu2);
+    ampl->SetMuQ2(mu2);
+    showerblob->AddData("ClusterAmplitude",new Blob_Data<Cluster_Amplitude*>(ampl));
+    DEBUG_VAR(*showerblob);
+  }
+}

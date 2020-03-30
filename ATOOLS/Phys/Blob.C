@@ -681,3 +681,8 @@ Blob* Blob::DownstreamBlob() const
   }
   return downstream;
 }
+
+namespace ATOOLS {
+  template class Blob_Data<Blob*>;
+  template Blob*&Blob_Data_Base::Get<Blob*>();
+}

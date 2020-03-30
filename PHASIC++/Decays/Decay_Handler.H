@@ -47,7 +47,7 @@ namespace PHASIC {
     virtual void CreateDecayBlob(ATOOLS::Blob_List* bloblist, ATOOLS::Particle* inpart) = 0;
     virtual METOOLS::Amplitude2_Tensor* FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
     virtual bool VetoDecayAndPrepForNew(ATOOLS::Blob* blob) { return false; }
-    virtual void AfterTreatInitialBlob(ATOOLS::Blob* blob) {}
+    virtual void AfterTreatInitialBlob(ATOOLS::Blob* blob, ATOOLS::Blob_List* bloblist) {}
     virtual void BeforeFillDecayTree(ATOOLS::Blob * blob) {}
 
     virtual double DecayWidth(const ATOOLS::Flavour& flav);

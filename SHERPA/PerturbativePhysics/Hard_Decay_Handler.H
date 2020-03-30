@@ -63,7 +63,7 @@ namespace SHERPA {
     ~Hard_Decay_Handler();
 
     void CreateDecayBlob(ATOOLS::Blob_List* bloblist, ATOOLS::Particle* inpart);
-    void AfterTreatInitialBlob(ATOOLS::Blob* blob);
+    void AfterTreatInitialBlob(ATOOLS::Blob* blob, ATOOLS::Blob_List* bloblist);
 
     double Mass(const ATOOLS::Flavour &fl) const;
     inline std::string Name() { return "HardDecays"; }
