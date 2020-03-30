@@ -79,25 +79,20 @@ Return_Value::code Decay_Cascade::Treat(Blob_List * bloblist)
       DEBUG_FUNC("Treating blob "<<blob->Id());
       didit = true;
       try {
+        METOOLS::Amplitude2_Tensor* amps(NULL);
         if (m_spincorr) {
           Blob* signal=bloblist->FindFirst(btp::Signal_Process);
           if (signal) {
-            METOOLS::Amplitude2_Tensor* amps(NULL);
             Blob_Data_Base* data = (*signal)["ATensor"];
             if (data) amps=data->Get<METOOLS::Amplitude2_Tensor*>();
-            TreatInitialBlob(blob, amps);
           }
         }
-        else TreatInitialBlob(blob, NULL);
+        TreatInitialBlob(blob, amps);
       } catch (Return_Value::code ret) {
         return ret;
       }
       blob->UnsetStatus(blob_status::needs_harddecays);
       blob->UnsetStatus(blob_status::needs_hadrondecays);
-      if (!bloblist->FourMomentumConservation()) {
-	msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
-	return Return_Value::New_Event;
-      }
     }
   }
   return (didit ? Return_Value::Success : Return_Value::Nothing);
@@ -110,7 +105,7 @@ void Decay_Cascade::TreatInitialBlob(ATOOLS::Blob* blob,
   DEBUG_FUNC("");
   DEBUG_VAR(*blob);
 
-  // TODO move into generic BeforeTreatInitialBlob method of Decay_Handlers?
+  // TODO more elegant handling (send back to Event_Handler after removing blobs?)
   if (blob->NInP()==1 && blob->InParticle(0)->Flav().DecayHandler()) {
     // option to veto/re-do an existing decay blob, e.g. to reject exclusive
     // hadron decay channels from fragmentation
@@ -118,14 +113,11 @@ void Decay_Cascade::TreatInitialBlob(ATOOLS::Blob* blob,
       Spin_Density* sigma=new Spin_Density(blob->InParticle(0));
       FillDecayTree(blob, sigma);
       delete sigma;
-      // TODO is the following necessary? and can we combine the above and the standard?
-      if (p_softphotons && m_qedmode==2)
-        AttachExtraQEDRecursively(blob);
+      if (p_softphotons && m_qedmode==2) AttachExtraQEDRecursively(blob);
+      for (auto dh: m_decayhandlers) dh->AfterTreatInitialBlob(blob, p_bloblist);
       return;
     }
   }
-
-  Blob* showerblob = PrepareShowerBlob(blob);
 
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
@@ -195,20 +187,11 @@ void Decay_Cascade::TreatInitialBlob(ATOOLS::Blob* blob,
       }
     }
   }
-  if (p_softphotons && m_qedmode==2)
-    AttachExtraQEDRecursively(blob);
+  if (p_softphotons && m_qedmode==2) AttachExtraQEDRecursively(blob);
 
-  for (std::vector<PHASIC::Decay_Handler*>::const_iterator it=m_decayhandlers.begin();
-       it!=m_decayhandlers.end(); ++it) {
-    (*it)->AfterTreatInitialBlob(blob);
-  }
+  for (auto dh: m_decayhandlers) dh->AfterTreatInitialBlob(blob, p_bloblist);
 
-  if (showerblob) {
-    Decay_Clustering clustering;
-    clustering.DefineInitialShowerConditions(blob, showerblob);
-    for (auto p: blob->GetOutParticles()) AddDecayFinalState(showerblob, p);
-    DEBUG_VAR(*showerblob);
-  }
+  UpdateShowerBlob(blob);
 }
 
 
@@ -237,10 +220,30 @@ Decay_Matrix* Decay_Cascade::FillDecayTree(Blob * blob, Spin_Density* s0)
   inpart->SetStatus(part_status::decayed);
   if (inpart->Info()!='M') inpart->SetInfo('D');
 
+  // Special case: interrupt decay cascade at partonic hadron decay
+  if (blob->Type()==btp::Hadron_Decay) {
+    bool partonic=false;
+    for (auto p: blob->GetOutParticles()) if (p->Flav().IsQCD()) partonic=true;
+    if (partonic) {
+      DEBUG_INFO("Interrupt decay cascade at partonic hadron decay.");
+
+      // TODO this just reconstructs what is done in master, but could be made more elegant?
+      Particle_Vector daughters = blob->GetOutParticles();
+      random_shuffle(daughters.begin(), daughters.end(), *ran);
+      SetMasses(blob, true);
+      BoostAndStretch(blob, labmom);
+      if (p_softphotons) AttachExtraQED(blob);
+
+      for (auto p: blob->GetOutParticles()) {
+        if (amps) amps->ContractDiagonal(p);
+      }
+      return amps?new Decay_Matrix(inpart,amps):NULL;
+    }
+  }
+
   Particle_Vector daughters = blob->GetOutParticles();
   random_shuffle(daughters.begin(), daughters.end(), *ran);
   for (size_t i(0); i<daughters.size();++i) {
-    if (blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers)) continue;
     if (daughters[i]->Flav().IsStable()) continue;
     daughters[i]->Flav().DecayHandler()->CreateDecayBlob(p_bloblist, daughters[i]);
   }
@@ -255,15 +258,7 @@ Decay_Matrix* Decay_Cascade::FillDecayTree(Blob * blob, Spin_Density* s0)
     // have to ignore photons from soft photon handler
     if (daughters[i]->Info()=='S') continue;
     DEBUG_VAR(daughters[i]->Flav());
-  if (amps) DEBUG_VAR(*amps);
-
-    if (blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers)) {
-      // for partonic hadron decays we stop here for fragmentation, and also
-      // interrupt the spin correlation chain by contracting the partons
-      DEBUG_INFO("Ignoring partonic daughters (for now).");
-      if (amps) amps->ContractDiagonal(daughters[i]);
-      continue;
-    }
+    if (amps) DEBUG_VAR(*amps);
 
     if (daughters[i]->Flav().IsStable()) {
       DEBUG_INFO("is stable");
@@ -302,27 +297,23 @@ Decay_Matrix* Decay_Cascade::FillDecayTree(Blob * blob, Spin_Density* s0)
 
 
 
-Blob* Decay_Cascade::PrepareShowerBlob(Blob* initialblob)
+void Decay_Cascade::UpdateShowerBlob(Blob* initialblob)
 {
   DEBUG_FUNC(initialblob->Id());
-  // remove unstable particles from shower blob,
-  // since they'll be replaced by decay products
-  Blob* showerblob(NULL);
+  Blob_Data_Base * bdb((*initialblob)["ShowerBlob"]);
+  if (!bdb) return;
+  Blob* showerblob=bdb->Get<Blob*>();
   for (auto outpart: initialblob->GetOutParticles()) {
+    if (outpart->Flav().IsStable() && outpart->DecayBlob() != showerblob) {
+      THROW(fatal_error, "Inconsistent decay input blob.");
+    }
     if (!outpart->Flav().Stable()) {
-      if (!showerblob) showerblob=outpart->DecayBlob();
-      else if (showerblob!=outpart->DecayBlob()) {
-        THROW(fatal_error, "Decay input blob: outgoing particles diverge.");
-      }
-      showerblob->RemoveInParticle(outpart);
+      AddDecayFinalState(showerblob, outpart);
     }
   }
-
-  if (!showerblob) {
-    DEBUG_INFO("no shower blob found");
-    // TODO: treat partonic hadron decays
-  }
-  return showerblob;
+  Decay_Clustering clustering;
+  clustering.DefineInitialShowerConditions(initialblob, showerblob);
+  DEBUG_VAR(*showerblob);
 }
 
 
@@ -330,6 +321,7 @@ Blob* Decay_Cascade::PrepareShowerBlob(Blob* initialblob)
 void Decay_Cascade::AddDecayFinalState(Blob* showerblob, Particle* part)
 {
   if (part->DecayBlob()) {
+    showerblob->RemoveInParticle(part, false);
     for (auto daughter: part->DecayBlob()->GetOutParticles()) {
       AddDecayFinalState(showerblob, daughter);
     }
@@ -374,9 +366,7 @@ void Decay_Cascade::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
     success=true;
     double max = max_mass;
     for(PVIt it=daughters.begin();it!=daughters.end();++it) {
-      DEBUG_VAR(*it);
       if(m_mass_smearing==2 && (*it)->Flav().IsStable()) continue;
-      //      if ((*it)->DecayBlob() && (*it)->DecayBlob()->NOutP()>0) continue; TODO: shouldn't happen?
       if ((*it)->DecayBlob()) {
         if (!(*it)->Flav().DecayHandler()->DiceMass(*it,max)) {
           success=false; ++cnt;
@@ -388,7 +378,6 @@ void Decay_Cascade::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
         }
       }
       else {
-        DEBUG_VAR((*it)->Flav().Mass(1));
         double polemass=blob->Type()==btp::Hadron_Decay?(*it)->Flav().HadMass():(*it)->Flav().Mass(1); // TODO ugly special casing
         double mass = (*it)->RefFlav().RelBWMass(0.0, max, polemass);
         (*it)->SetFinalMass(mass);

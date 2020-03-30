@@ -348,7 +348,6 @@ bool Hadron_Decay_Channel::SetColorFlow(ATOOLS::Blob* blob)
     else if(blob->OutParticle(i)->Flav().IsGluon()) n_g++;
   }
   if(n_q>0 || n_g>0) {
-    blob->SetStatus(blob_status::needs_showers);
     Particle_Vector outparts=blob->GetOutParticles();
     if(m_diagrams.size()>0) {
       // try if the matrix element knows how to set the color flow

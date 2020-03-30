@@ -153,10 +153,10 @@ bool Dire::PrepareShower
     m_ampls.push_back(ampl);
     if (campl->NLO()&8) {
       if (campl->Next() && 
-	  (campl->NIn()+campl->Leg(2)->NMax()-1>
+	  (campl->NIn()+campl->Leg(campl->NIn())->NMax()-1>
 	   campl->Legs().size())) campl->SetNLO(campl->NLO()&~8);
     }
-    if (campl->NIn()+campl->Leg(2)->NMax()==
+    if (campl->NIn()+campl->Leg(campl->NIn())->NMax()==
 	campl->Legs().size()) ampl->SetJF(NULL);
     Cluster_Amplitude *lampl(campl->Next());
     if (lampl) {

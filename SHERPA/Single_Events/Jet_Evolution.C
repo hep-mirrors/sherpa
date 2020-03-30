@@ -55,10 +55,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
       }
       CleanUp();
     }
-    if (!bloblist->FourMomentumConservation()) {
-      msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
-      return Return_Value::New_Event;
-    }
   }
 
   if (hit) return Return_Value::Success;
@@ -127,7 +123,7 @@ void Jet_Evolution::ExtractPartons(const Cluster_Amplitude* ampl, Blob* blob)
   }
   for (size_t i=0;i<ampl->NIn();++i) {
     Particle* part=
-      new Particle(-1, ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom());
+      new Particle(-1, ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom(),'I');
     part->SetNumber();
     part->SetFinalMass(ampl->MS()->Mass(part->Flav()));
     blob->AddToInParticles(part);
@@ -137,7 +133,7 @@ void Jet_Evolution::ExtractPartons(const Cluster_Amplitude* ampl, Blob* blob)
   }
   for (size_t i=ampl->NIn();i<ampl->Legs().size();++i) {
     Particle* part=
-      new Particle(-1, ampl->Leg(i)->Flav(), ampl->Leg(i)->Mom());
+      new Particle(-1, ampl->Leg(i)->Flav(), ampl->Leg(i)->Mom(), 'F');
     part->SetNumber();
     part->SetFinalMass(ampl->MS()->Mass(part->Flav()));
     part->SetFlow(1,ampl->Leg(i)->Col().m_i);

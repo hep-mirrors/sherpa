@@ -26,6 +26,8 @@ namespace HADRONS {
     long int bs_cs_semilep_rej, bs_ccss_rej, bs_ccds_rej, bs_cuds_rej;
 
     bool RejectExclusiveChannelsFromFragmentation(ATOOLS::Blob*);
+    void MakeShowerBlobsForPartonicDecays(ATOOLS::Blob* initialblob, ATOOLS::Blob_List* bloblist);
+
     void SetPosition(ATOOLS::Blob* blob);
 
     void RegisterSettings();
@@ -35,6 +37,7 @@ namespace HADRONS {
 
     void CreateDecayBlob(ATOOLS::Blob_List* bloblist, ATOOLS::Particle* part);
     bool VetoDecayAndPrepForNew(ATOOLS::Blob* blob);
+    void AfterTreatInitialBlob(ATOOLS::Blob* blob, ATOOLS::Blob_List* bloblist);
     void BeforeFillDecayTree(ATOOLS::Blob * blob);
     METOOLS::Amplitude2_Tensor* FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
 
