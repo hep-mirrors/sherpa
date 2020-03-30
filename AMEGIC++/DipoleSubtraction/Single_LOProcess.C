@@ -1521,7 +1521,7 @@ std::string  AMEGIC::Single_LOProcess::CreateLibName()
     bpos=name.find("__EW(");
     if (bpos==std::string::npos) THROW(fatal_error,"Unknown dipole.");
   }
-  name.erase(bpos,name.length()-bpos+1);
+  name.replace(bpos,name.length()-bpos+1,"__NLO");
   // need to add emitter for spin-correlated libs: only for gluon and photon
   if (m_emit>=0)
 //    if (m_flavs[m_emit].IsGluon() || m_flavs[m_emit].IsPhoton())

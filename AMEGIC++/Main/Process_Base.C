@@ -301,12 +301,14 @@ std::string  AMEGIC::Process_Base::CreateLibName()
   size_t bpos(name.find("__QCD("));
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+    if (epos!=std::string::npos)
+      name.replace(bpos,epos-bpos+1,"__NLO");
   }
   bpos=name.find("__EW(");
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+    if (epos!=std::string::npos)
+      name.replace(bpos,epos-bpos+1,"__NLO");
   }
   return ShellName(name);
 }
