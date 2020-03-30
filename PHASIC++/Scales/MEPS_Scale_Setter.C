@@ -41,7 +41,7 @@ namespace PHASIC {
     std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
-    int    m_cmode, m_kfac, m_nmin;
+    int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
     static int s_nfgsplit, s_nlocpl;
@@ -114,17 +114,18 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
-  Settings& s = Settings::GetMainSettings();
   static std::string s_core;
-  static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
+  static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
-    s_nmaxall=s["MEPS_NMAX_ALLCONFIGS"].Get<int>();
-    s_nmaxnloall=s["MEPS_NLO_NMAX_ALLCONFIGS"].Get<int>();
-    s_cmode=s["MEPS_CLUSTER_MODE"].Get<int>();
-    s_nlocpl=s["MEPS_NLO_COUPLING_MODE"].Get<int>();
-    s_nfgsplit=s["DIPOLES"]["NF_GSPLIT"].Get<int>();
-    s_csmode=s["MEPS_COLORSET_MODE"].Get<int>();
-    s_core=s["CORE_SCALE"].Get<std::string>();
+    Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
+    s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
+    s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|128|256);
+    s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
+    s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
+    s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
+    s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core);
@@ -186,7 +187,6 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
   */
-  m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -196,7 +196,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
-  p_qdc = new Cluster_Definitions(m_kfac,m_nproc,p_proc->Shower()->KTType());
+  p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
 }
 
 MEPS_Scale_Setter::~MEPS_Scale_Setter()
@@ -636,6 +636,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
+	ampl->SetNLO(1);
 	continue;
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());

@@ -246,6 +246,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             MODEL::Running_AlphaS * as,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
+  DEBUG_FUNC(Name());
   if (p_int->ISR()) {
     // add external PDF weight (before clustering)
     double pdfext(p_int->ISR()->PDFWeight(0,
@@ -287,6 +288,11 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 
         // skip decays (they are not even added to the splittings)
         msg_IODebugging()<<*ampl<<"\n";
+	if (ampl->NLO()&1) {
+          msg_Debugging()<<"Skip. NLO clustering "<<
+            ID(ampl->Next()->Splitter()->Id())<<"\n";
+          continue;
+	}
 	if (ampl->Next() && ampl->Next()->Splitter()->Stat() == 3) {
           msg_Debugging()<<"Skip. Decay "<<
             ID(ampl->Next()->Splitter()->Id())<<"\n";
