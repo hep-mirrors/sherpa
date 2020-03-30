@@ -33,8 +33,12 @@ DMDM_mumu::DMDM_mumu(const External_ME_Args& args) :
   m_sintt=1; //what should this be? initialised to 0, but most processes use 1
   for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_oew = 2; m_oqcd = 0;
-  m_cfls[12].push_back(kf_photon);
-  m_cfls[12].push_back(kf_Z);
+  m_cfls[3] = new Flavour_Vector;
+  m_cfls[3]->push_back(kf_photon);
+  m_cfls[3]->push_back(kf_Z);
+  m_cfls[12] = new Flavour_Vector;
+  m_cfls[12]->push_back(kf_photon);
+  m_cfls[12]->push_back(kf_Z);
 }
 
 double DMDM_mumu::operator()(const Vec4D_Vector& mom)

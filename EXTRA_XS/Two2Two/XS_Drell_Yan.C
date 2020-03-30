@@ -86,9 +86,9 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
     kswitch = 1;
   }
 
-  Flavour_Vector flavs;
-  flavs.push_back(kf_photon);
-  flavs.push_back(kf_Z);
+  Flavour_Vector * flavs = new Flavour_Vector;
+  flavs->push_back(kf_photon);
+  flavs->push_back(kf_Z);
   m_cfls[3] = flavs;
 }
 

@@ -15,6 +15,7 @@ using namespace ATOOLS;
 
 bool ISR_Channels::MakeChannels()
 {
+  msg_Out()<<METHOD<<" with "<<p_psh->GetISRHandler()->On()<<".\n";
   if (m_isrparams.size()>0) return CreateChannels();
   bool onshellresonance=false;
   Channel_Info ci;

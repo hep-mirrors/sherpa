@@ -15,7 +15,7 @@ namespace EXTRAXS {
     bool   m_hasinternalscale;
 
     double m_internalscale;
-    std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
+    std::map<size_t,ATOOLS::Flavour_Vector *> m_cfls;
 
     std::vector<ATOOLS::Flavour> m_flavours;
     std::vector<ATOOLS::Vec4D>   m_momenta;
@@ -42,7 +42,7 @@ namespace EXTRAXS {
 
     inline std::vector<std::vector<int> > & Colours() { return m_colours; }
     inline size_t SIntType() const { return m_sintt; }
-    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij) { return m_cfls[idij]; }
+    ATOOLS::Flavour_Vector * CombinedFlavour(const size_t &idij) { return m_cfls[idij]; }
 
     inline const bool HasInternalScale() const { return m_hasinternalscale; }
     inline const double InternalScale()  const { return m_internalscale; }

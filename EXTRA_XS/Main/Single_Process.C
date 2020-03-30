@@ -157,10 +157,10 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-ATOOLS::Flavour_Vector * Single_Process::Resonances() {
+Flavour_Vector * Single_Process::Resonances() {
   msg_Out()<<METHOD<<".\n";
-  Flavour_Vector resonances = p_born_me2->CombinedFlavour(3);
-  return (resonances.empty()?NULL:&resonances);
+  Flavour_Vector * resonances = p_born_me2->CombinedFlavour(3);
+  return (resonances->empty()?NULL:resonances);
 }
 
 const Flavour_Vector & Single_Process::CombinedFlavour(const size_t &idij)
@@ -170,7 +170,7 @@ const Flavour_Vector & Single_Process::CombinedFlavour(const size_t &idij)
     if (fit==m_cfls.end()) THROW(fatal_error,"Invalid request");
     return fit->second;
   }
-  if (GetME()) return GetME()->CombinedFlavour(idij);
+  if (GetME()) return *GetME()->CombinedFlavour(idij);
   static Flavour_Vector fls(1,kf_none);
   return fls;
 }

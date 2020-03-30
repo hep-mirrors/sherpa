@@ -30,8 +30,8 @@ Beam_Channels::Beam_Channels(Phase_Space_Handler *const psh,
 
 bool Beam_Channels::Initialize()
 {
-  msg_Out()<<METHOD<<" for mode = "<<m_beammode<<" "
-  	   <<"and "<<m_beamparams.size()<<" parameters.\n";
+  //msg_Out()<<METHOD<<" for mode = "<<m_beammode<<" "
+  //	   <<"and "<<m_beamparams.size()<<" parameters.\n";
   return MakeChannels();
 }
 
@@ -63,7 +63,7 @@ bool Beam_Channels::MakeChannels()
 	       <<"   Will not initialize integration over spectra.\n";
     return false;
   }
-  return true;
+  return CreateChannels();
 }
 
 bool Beam_Channels::DefineColliderChannels() {
@@ -123,13 +123,10 @@ void Beam_Channels::CheckForStructuresFromME() {
   size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
   std::vector<int>    types(nfsrchannels,0);
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
-  bool onshellresonance;
-
+  bool onshellresonance(false), fromFSR(false);  
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
     channel_type::code type = channel_type::code(abs(types[i]));
-    msg_Out()<<METHOD<<" for FSR channel("<<i<<", "<<types[i]<<"): "
-	     <<"type = "<<type<<", mass = "<<masses[i]<<", width = "<<widths[i]<<"\n";
     switch (type) {
     case channel_type::simple:
     case channel_type::leadinglog:
@@ -137,6 +134,7 @@ void Beam_Channels::CheckForStructuresFromME() {
       continue;
     case channel_type::threshold:
       if (ATOOLS::IsZero(masses[i])) continue;
+      fromFSR = true;
       m_beamparams.push_back(Channel_Info(type,masses[i],2.));
       break;
     case channel_type::resonance:
@@ -145,8 +143,20 @@ void Beam_Channels::CheckForStructuresFromME() {
 	p_psh->SetOSMass(masses[i]);
 	onshellresonance = true;
       }
+      fromFSR = true;
       m_beamparams.push_back(Channel_Info(type,masses[i],widths[i]));
       break;
+    }
+  }
+  if (fromFSR) return;
+  Flavour_Vector * resonances = p_psh->Process()->Process()->Resonances();
+  if (resonances && !resonances->empty()) {
+    for (size_t i=0;i<resonances->size();i++) {
+      Flavour flav = (*resonances)[i];
+      double mass = flav.Mass();
+      if (ATOOLS::IsZero(mass)) continue;
+      m_beamparams.push_back(Channel_Info(channel_type::resonance,
+					  mass,flav.Width()));
     }
   }
 }
