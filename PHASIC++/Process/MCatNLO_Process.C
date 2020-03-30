@@ -146,7 +146,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 void MCatNLO_Process::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
-  s["HPSMODE"].SetDefault(8);  // H event shower mode
+  s["HPSMODE"].SetDefault(0);  // H event shower mode
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
   s["RS_SCALE"].SetDefault("");  // RS scale
