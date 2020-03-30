@@ -109,6 +109,7 @@ void Phase_Space_Integrator::MPISync()
 double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
                                          bool _fin_opt)
 {
+  if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
   m_mn=m_mnstep=m_mncstep=0;
   m_maxerror=_maxerror;
   m_maxabserror=_maxabserror;
@@ -152,6 +153,12 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
 
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   m_iter = m_itmin;
+  if (p_psh->Stats().size()) {
+    m_iter=p_psh->Stats().back()[4];
+    if (p_psh->Stats().size()>1)
+      m_iter-=p_psh->Stats()[p_psh->Stats().size()-2][4];
+    m_iter*=pow(2.,m_npower);
+  }
 #ifdef USING__MPI
   int size = mpi->Size();
   m_iter /= size;
