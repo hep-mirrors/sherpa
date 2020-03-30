@@ -181,9 +181,7 @@ void Phase_Space_Handler::CheckSinglePoint()
 double Phase_Space_Handler::Integrate() 
 {
   CheckSinglePoint();
-  if (p_process->Points()>0 &&
-      (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
-       p_process->TotalError()<m_abserror)) 
+  if (p_process->Points()>0)
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator(this);
   if (!InitIncoming()) return 0;
