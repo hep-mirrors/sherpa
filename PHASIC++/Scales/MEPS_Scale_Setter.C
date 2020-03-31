@@ -186,6 +186,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     64 - Winner takes it all in R first step
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
+    512 - No ordering check if first RS split
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
@@ -236,7 +237,8 @@ bool MEPS_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
-  if (m_rproc && ampl->Prev()->Prev()==NULL) return true;
+  if ((m_cmode&512) && m_rproc &&
+      ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
 	(ampl->OrderQCD()==0 ||
