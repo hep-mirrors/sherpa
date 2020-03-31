@@ -568,13 +568,7 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		       const ATOOLS::Flavour &fj) const
 {
-  Vec4D npi(pi), npj(pj);
-  if (npi[0]<0.0) npi=-pi-pj;
-  if (npj[0]<0.0) npj=-pj-pi;
-  double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
-  double Cij(pipk/(pipj+pjpk));
-  double Cji(pjpk/(pipj+pipk));
-  return 2.0*dabs(pi*pj)/(Cij+Cji);
+  return 2.0*Min((pi*pj)*(pj*pk)/(pi*pk),(pj*pi)*(pi*pk)/(pj*pk));
 }
 
 double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
@@ -675,7 +669,7 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     bampl->Delete();
     return res;
   }
-  msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+  msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
   return JetVeto(ampl,0);
 }
 

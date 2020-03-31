@@ -38,12 +38,7 @@ namespace DIRE {
     double Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 		const Flavour &fi,const Flavour &fj) const
     {
-      Vec4D npi(pi), npj(pj);
-      if (npi[0]<0.0) npi=-pi-pj;
-      if (npj[0]<0.0) npj=-pj-pi;
-      double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
-      double Cij(pipk/(pipj+pjpk)), Cji(pjpk/(pipj+pipk));
-      return 2.0*dabs(pi*pj)/(Cij+Cji);
+      return 2.0*Min((pi*pj)*(pj*pk)/(pi*pk),(pj*pi)*(pi*pk)/(pj*pk));
     }
 
     double Value(Cluster_Amplitude *ampl,int mode)
@@ -143,7 +138,7 @@ namespace DIRE {
 	bampl->Delete();
 	return res;
       }
-      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+      msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
       return Value(ampl,0);
     }
 
