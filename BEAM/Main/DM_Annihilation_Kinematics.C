@@ -29,7 +29,7 @@ void DM_Annihilation_Kinematics::InitIntegration() {
 void DM_Annihilation_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
   m_xkey.Assign(m_keyid+string("x"),3,0,info);
-  m_cosxikey.Assign(m_keyid+string("cos(xi)"),3,0,info);
+  m_cosxikey.Assign(m_keyid+string("cosXi"),3,0,info);
   /////////////////////////////////////////////////////////////////////
   SetLimits();
 }
@@ -59,11 +59,12 @@ bool DM_Annihilation_Kinematics::operator()(Vec4D * p) {
   double E2 = Eprime-E1;
   double p1 = sqrt(sqr(E1)-m_m2[0]);
   double p2 = sqrt(sqr(E2)-m_m2[1]);
-  double sinxi = sqrt(1-sqr(m_cosxi));  // take out semicolon for deliberate syntax error, debugging
+  double sinxi = sqrt(1-sqr(m_cosxikey[2]));
+  // msg_Out()<<m_cosxikey[2]<<"\n"; //debugging
 
   p[0] = Vec4D(E1,0.,0.,p1);
-  p[1] = Vec4D(E2,p2*sinxi,0,p2*m_cosxi);
-  //msg_Out()<<METHOD<<" --> "<<p[0]<<" & "<<p[1]<<"\n";
+  p[1] = Vec4D(E2,p2*sinxi,0,p2*m_cosxikey[2]);
+  // msg_Out()<<METHOD<<" --> "<<p[0]<<" & "<<p[1]<<"\n";
 
   p_beams[0]->SetX(m_x[0]);
   p_beams[1]->SetX(m_x[1]);
