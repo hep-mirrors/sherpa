@@ -123,7 +123,7 @@ void Beam_Channels::CheckForStructuresFromME() {
   size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
   std::vector<int>    types(nfsrchannels,0);
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
-  bool onshellresonance(false), fromFSR(false);  
+  bool onshellresonance(false), fromFSR(false);
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
     channel_type::code type = channel_type::code(abs(types[i]));
@@ -209,6 +209,7 @@ void Beam_Channels::AddSimplePole(const size_t & chno,const int & beams) {
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {
+			msg_Out()<<"Shouldn't get here\n"; //debugging
       Add(new Simple_Pole_Uniform(m_beamparams[chno].parameters[0],
 				  m_keyid,p_psh->GetInfo(),beams));
       Add(new Simple_Pole_Central(m_beamparams[chno].parameters[0],
@@ -230,15 +231,13 @@ void Beam_Channels::AddResonance(const size_t & chno,const int & beams) {
 				   m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo()));
     return;
   }
-  /*
   else if (m_beammode==beammode::DM_annihilation) {
     double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
     double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
     Add(new Resonance_DM_Annihilation(m_beamparams[chno].parameters[0],
-					mass1,mass2,m_keyid,p_psh->GetInfo()));
+					m_beamparams[chno].parameters[1],mass1,mass2,m_keyid,p_psh->GetInfo()));
     return;
   }
-  */
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {
