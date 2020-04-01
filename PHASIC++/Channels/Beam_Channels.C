@@ -107,8 +107,8 @@ bool Beam_Channels::DefineColliderChannels() {
 	       <<"will have to find a way to parse relevant information.\n"
 	       <<"   Will pretend  a simple pole is good enough.\n";
     m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
-    return true;
   }
+  return true;  
 }
 
 void Beam_Channels::CheckForStructuresFromME() {
