@@ -56,7 +56,7 @@ void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Uniform::GenerateWeight()
+void LBS_Compton_Peak_Uniform::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -136,7 +136,7 @@ void LBS_Compton_Peak_Forward::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Forward::GenerateWeight()
+void LBS_Compton_Peak_Forward::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -216,7 +216,7 @@ void LBS_Compton_Peak_Backward::GeneratePoint(const double *rns)
 				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Backward::GenerateWeight()
+void LBS_Compton_Peak_Backward::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -294,7 +294,7 @@ void LBS_Compton_Peak_Central::GeneratePoint(const double *rns)
 				p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Central::GenerateWeight()
+void LBS_Compton_Peak_Central::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {

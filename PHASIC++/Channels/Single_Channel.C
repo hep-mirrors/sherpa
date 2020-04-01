@@ -79,7 +79,7 @@ void Single_Channel::GeneratePoint(const double * rns)
 	     <<"Virtual Method called !"<<std::endl; 
 }
 
-void Single_Channel::GenerateWeight() 
+void Single_Channel::GenerateWeight(const int & mode) 
 {
   msg_Error()<<"Single_Channel::GenerateWeight(): "
 	     <<"Virtual Method called !"<<std::endl; 

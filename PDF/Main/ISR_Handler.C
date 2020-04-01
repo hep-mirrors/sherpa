@@ -22,6 +22,42 @@ double Lambda2(double sp,double sp1,double sp2)
   return (sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
 }
 
+  struct isrmode {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      lepton_hadron  = 2,
+      hadron_lepton  = 3,
+      lepton_lepton  = 4,
+      unknown        = 99
+    };
+  };
+
+std::ostream& PDF::operator<<(std::ostream& s,const PDF::isrmode::code mode) {
+  switch (mode) {
+  case isrmode::none:
+    s<<"none";
+    break;
+  case isrmode::hadron_hadron:
+    s<<"hadron_hadron";
+    break;
+  case isrmode::hadron_lepton:
+    s<<"hadron_lepton";
+    break;
+  case isrmode::lepton_hadron:
+    s<<"lepton_hadron";
+    break;
+  case isrmode::lepton_lepton:
+    s<<"lepton_lepton";
+    break;
+  case isrmode::unknown:
+  default:
+    s<<"unknown";
+    break;
+  }
+  return s;
+}
+
 ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   m_rmode(0), m_swap(0),

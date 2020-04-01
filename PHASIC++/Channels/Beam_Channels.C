@@ -243,7 +243,7 @@ void Beam_Channels::AddResonance(const size_t & chno,const size_t & mode) {
   else if (m_beammode==beammode::DM_annihilation) {
     double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
     double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-    Add(new Resonance_DM_Annihilation(mass,width,,mass1,mass2,m_keyid,p_psh->GetInfo()));
+    Add(new Resonance_DM_Annihilation(mass,width,mass1,mass2,m_keyid,p_psh->GetInfo()));
     return;
   }
   for (set<double>::iterator yit=m_yexponents.begin();

@@ -48,7 +48,7 @@ void Leading_Log_Uniform::GeneratePoint(const double *rns)
 				    p_rans[1],m_mode);
 }
 
-void Leading_Log_Uniform::GenerateWeight()
+void Leading_Log_Uniform::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -119,7 +119,7 @@ void Leading_Log_Forward::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Forward::GenerateWeight()
+void Leading_Log_Forward::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -186,7 +186,7 @@ void Leading_Log_Backward::GeneratePoint(const double *rns)
 				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Backward::GenerateWeight()
+void Leading_Log_Backward::GenerateWeight(const int & mode)
 {
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
     if (m_spkey[3]<m_spkey[0] || m_spkey[3]>m_spkey[1]) return;
@@ -255,7 +255,7 @@ void Leading_Log_Central::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Central::GenerateWeight()
+void Leading_Log_Central::GenerateWeight(const int & mode)
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {

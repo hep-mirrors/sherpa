@@ -41,7 +41,7 @@ void Threshold_Uniform::GeneratePoint(const double *rns)
 				p_rans[1],m_mode);
 }
 
-void Threshold_Uniform::GenerateWeight()
+void Threshold_Uniform::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -102,7 +102,7 @@ void Threshold_Forward::GeneratePoint(const double *rns)
 			     m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Forward::GenerateWeight()
+void Threshold_Forward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -164,7 +164,7 @@ void Threshold_Backward::GeneratePoint(const double *rns)
 			      m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Backward::GenerateWeight()
+void Threshold_Backward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -223,7 +223,7 @@ void Threshold_Central::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Central::GenerateWeight()
+void Threshold_Central::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {

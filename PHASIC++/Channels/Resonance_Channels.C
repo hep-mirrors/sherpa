@@ -37,7 +37,7 @@ void Resonance_RelicDensity::GeneratePoint(const double *rns)
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
 }
 
-void Resonance_RelicDensity::GenerateWeight()
+void Resonance_RelicDensity::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -79,17 +79,17 @@ Resonance_DM_Annihilation(const double mass,const double width,const double mass
   p_rans  = new double[m_rannum];
 }
 
-void Resonance_DM_Annihilation::GeneratePoint(const double *rns,const int mode)
+void Resonance_DM_Annihilation::GeneratePoint(const double *rns)
 {
   double * ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
 
-	m_xkey[2]=CE.GenerateDMRapidityUniform(m_masses,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],mode);
-	m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[0],mode);
+  m_xkey[2]=CE.GenerateDMRapidityUniform(m_masses,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],3);
+  m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[0],3);
 }
 
-void Resonance_DM_Annihilation::GenerateWeight(const int mode)
+void Resonance_DM_Annihilation::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -142,7 +142,7 @@ void Resonance_Uniform::GeneratePoint(const double *rns)
 				p_rans[1],m_mode);
 }
 
-void Resonance_Uniform::GenerateWeight()
+void Resonance_Uniform::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -206,7 +206,7 @@ void Resonance_Forward::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Forward::GenerateWeight()
+void Resonance_Forward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -270,7 +270,7 @@ void Resonance_Backward::GeneratePoint(const double *rns)
 				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Backward::GenerateWeight()
+void Resonance_Backward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -331,7 +331,7 @@ void Resonance_Central::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Central::GenerateWeight()
+void Resonance_Central::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {

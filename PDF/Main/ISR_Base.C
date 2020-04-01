@@ -17,3 +17,22 @@ ISR_Base::~ISR_Base()
 {
   if (p_pdf!=NULL) delete p_pdf;
 }
+
+std::ostream& PDF::operator<<(std::ostream& s,const PDF::isrtype::code type) {
+  switch (type) {
+  case isrtype::intact:
+    s<<"intact";
+    break;
+  case isrtype::lepton:
+    s<<"lepton";
+    break;
+  case isrtype::hadron:
+    s<<"hadron";
+    break;
+  case isrtype::unknown:
+  default:
+    s<<"unknown";
+    break;
+  }
+  return s;
+}

@@ -18,7 +18,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
     inline void   SetMass(const double mass) { m_mass=mass; }
     inline double Mass() const { return m_mass; }
   };
@@ -38,7 +38,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
     inline void   SetMass(const double mass) { m_mass=mass; }
     inline const double Mass()         const { return m_mass; }
   };
@@ -58,7 +58,7 @@ namespace PHASIC {
 		       const std::string cinfo,ATOOLS::Integration_Info *info,
 		       const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
     inline void   SetMass(const double mass) { m_mass=mass; }
     inline const double Mass()         const { return m_mass; }
   };
@@ -77,7 +77,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
     inline void   SetMass(const double mass) { m_mass=mass; }
     inline const double Mass()         const { return m_mass; }
   };

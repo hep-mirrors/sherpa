@@ -14,8 +14,9 @@ namespace PHASIC {
     Resonance_RelicDensity(const double mass,const double width,
 			     const std::string cinfo,ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
-    
+    void GenerateWeight(const int & mode=0);
+  };
+  
   ////////////////////////////////////////////////////////////////////////
 
   class Resonance_DM_Annihilation: public ISR_Channel_Base {
@@ -29,7 +30,7 @@ namespace PHASIC {
 			      const double mass1,const double mass2,
 			      const std::string cinfo,ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 
   ////////////////////////////////////////////////////////////////////////
@@ -46,7 +47,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 
   ////////////////////////////////////////////////////////////////////////
@@ -63,7 +64,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
   
   ////////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ namespace PHASIC {
 		      const std::string cinfo,ATOOLS::Integration_Info *info,
 		      const size_t mode);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 
   ////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ namespace PHASIC {
 		       const std::string cinfo,ATOOLS::Integration_Info *info,
 		       const size_t mode);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 
 }

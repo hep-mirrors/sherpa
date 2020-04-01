@@ -17,7 +17,7 @@ namespace PHASIC {
 			const std::string cinfo,ATOOLS::Integration_Info *info,
 			const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
   
   class Leading_Log_Forward: public ISR_Channel_Base {
@@ -32,7 +32,7 @@ namespace PHASIC {
 			const std::string cinfo,ATOOLS::Integration_Info *info,
 			const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
   
   class Leading_Log_Backward: public ISR_Channel_Base {
@@ -47,7 +47,7 @@ namespace PHASIC {
 			 const std::string cinfo,ATOOLS::Integration_Info *info,
 			 const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 
   class Leading_Log_Central: public ISR_Channel_Base {
@@ -62,7 +62,7 @@ namespace PHASIC {
 			const std::string cinfo,ATOOLS::Integration_Info *info,
 			const size_t mode=0);
     void GeneratePoint(const double *rans);
-    void GenerateWeight();
+    void GenerateWeight(const int & mode=0);
   };
 }
 #endif

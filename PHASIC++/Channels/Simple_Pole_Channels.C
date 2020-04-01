@@ -32,7 +32,7 @@ void Simple_Pole_RelicDensity::GeneratePoint(const double *rns)
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
 }
 
-void Simple_Pole_RelicDensity::GenerateWeight()
+void Simple_Pole_RelicDensity::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -91,7 +91,7 @@ void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns)
   // msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
 }
 
-void Simple_Pole_DM_Annihilation::GenerateWeight()
+void Simple_Pole_DM_Annihilation::GenerateWeight(const int & mode)
 {
   // this needs looking at
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
@@ -144,7 +144,7 @@ void Simple_Pole_Uniform::GeneratePoint(const double *rns)
 				p_rans[1],m_mode);
 }
 
-void Simple_Pole_Uniform::GenerateWeight()
+void Simple_Pole_Uniform::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -205,7 +205,7 @@ void Simple_Pole_Forward::GeneratePoint(const double *rns)
 				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Simple_Pole_Forward::GenerateWeight()
+void Simple_Pole_Forward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -266,7 +266,7 @@ void Simple_Pole_Backward::GeneratePoint(const double *rns)
 				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Simple_Pole_Backward::GenerateWeight()
+void Simple_Pole_Backward::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -326,7 +326,7 @@ void Simple_Pole_Central::GeneratePoint(const double *rns)
 				m_mode);
 }
 
-void Simple_Pole_Central::GenerateWeight()
+void Simple_Pole_Central::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
