@@ -15,6 +15,21 @@ namespace PHASIC {
 			     const std::string cinfo,ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans);
     void GenerateWeight();
+    
+  ////////////////////////////////////////////////////////////////////////
+
+  class Resonance_DM_Annihilation: public ISR_Channel_Base {
+  protected:
+    double m_mass, m_width;
+    double m_masses[2];
+    bool   m_zchannel;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_cosxikey, m_sgridkey, m_xgridkey, m_cosgridkey;
+  public:
+    Resonance_DM_Annihilation(const double mass,const double width,
+			      const double mass1,const double mass2,
+			      const std::string cinfo,ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight();
   };
 
   ////////////////////////////////////////////////////////////////////////

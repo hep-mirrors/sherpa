@@ -121,7 +121,7 @@ void Beam_Channels::CheckForStructuresFromME() {
   size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
   std::vector<int>    types(nfsrchannels,0);
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
-  bool onshellresonance(false), fromFSR(false);  
+  bool onshellresonance(false), fromFSR(false);
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
     channel_type::code type = channel_type::code(abs(types[i]));
@@ -240,15 +240,12 @@ void Beam_Channels::AddResonance(const size_t & chno,const size_t & mode) {
 				   width,m_keyid,p_psh->GetInfo()));
     return;
   }
-  /*
-    else if (m_beammode==beammode::DM_annihilation) {
+  else if (m_beammode==beammode::DM_annihilation) {
     double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
     double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-    Add(new Resonance_DM_Annihilation(mass,
-    mass1,mass2,m_keyid,p_psh->GetInfo()));
+    Add(new Resonance_DM_Annihilation(mass,width,,mass1,mass2,m_keyid,p_psh->GetInfo()));
     return;
-    }
-  */
+  }
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {

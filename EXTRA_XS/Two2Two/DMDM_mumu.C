@@ -16,22 +16,31 @@ using namespace std;
 
 namespace EXTRAXS {
   class DMDM_mumu : public ME2_Base {
-    /* Describing the annihilation of fermionic dark matter with its antiparticle 
-       through a Z to produce a muon-antimuon pair. 
+    /* Describing the annihilation of fermionic dark matter with its antiparticle
+       through a Z to produce a muon-antimuon pair.
     */
   private:
+    double V,A;
+    double Vtil,Atil;
+    double sintW,costW;
+
   public:
     DMDM_mumu(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
-    bool SetColours(const Vec4D_Vector& mom);
   };
 }
 
 DMDM_mumu::DMDM_mumu(const External_ME_Args& args) :
   ME2_Base(args)
 {
+  Settings& settings = Settings::GetMainSettings();
+
+  V = settings["DM_Z_v"].Get<double>();
+  A = settings["DM_Z_a"].Get<double>();
+  sintW = std::abs(sqrt(MODEL::s_model->ComplexConstant("csin2_thetaW")));
+  costW = sqrt(1-sqr(sintW));
+
   m_sintt=1; //what should this be? initialised to 0, but most processes use 1
-  for (short int i=0;i<4;i++) m_colours[i][0] = m_colours[i][1] = 0;
   m_oew = 2; m_oqcd = 0;
   m_cfls[3] = new Flavour_Vector;
   m_cfls[3]->push_back(kf_photon);
@@ -45,21 +54,18 @@ double DMDM_mumu::operator()(const Vec4D_Vector& mom)
 {
   double s=(mom[0]+mom[1]).Abs2();
 
-  // how to set these in the model from here/runcard?
-  double V(-0.1), A(0.1);
-  double Vtil = sqrt(4*M_PI/128.) * (-0.5 + 2*0.23)/ (2*sqrt(0.23)*0.88); //lepton vector coupling constant
-  double Atil = sqrt(4*M_PI/128.) *0.5 / (2*0.23*0.88); //lepton axial c.c.
+  double alpha = MODEL::s_model->ScalarConstant("alpha_QED");
+  Vtil = sqrt(4*M_PI*alpha)/(2*costW) * (-0.5 + 2*sqr(sintW)); //lepton vector coupling constant. alpha=g^2/4pi
+  Atil = -sqrt(4*M_PI*alpha)/(4*costW); //lepton axial c.c.
 
   double M = ATOOLS::Flavour(kf_Z).Mass();
   double gamma = ATOOLS::Flavour(kf_Z).Width();
   double m_DM = m_flavs[0].Mass();
 
-  // // positive definite definition
-  // double cos_theta = (s/4 - mom_dot)/sqrt(s*s/16 - s*sqr(m_DM)/4);
   double mom_dot = 0;
   for (short int i = 1; i < 4; i++) mom_dot += mom[0][i]*mom[2][i]; // just spatial parts
 
-  double cos_theta = mom_dot/(Vec3<double>(mom[0]).Abs()*Vec3<double>(mom[2]).Abs()); // just spatial parts 
+  double cos_theta = mom_dot/(Vec3<double>(mom[0]).Abs()*Vec3<double>(mom[2]).Abs()); // just spatial parts
   // positive definite definition
   if (cos_theta < 0) cos_theta = -cos_theta;
   if (cos_theta > 1.) {
@@ -71,17 +77,9 @@ double DMDM_mumu::operator()(const Vec4D_Vector& mom)
   double part2 = 2*V*A*Vtil*Atil * s* sqrt(s*s/4 - s*sqr(m_DM)) * cos_theta;
   double part3 = (V*V-A*A)*(Vtil*Vtil+Atil*Atil)*s*sqr(m_DM);
 
-  // cout << 1/(16*M_PI * 2*s*sqrt(1-4*sqr(m_DM)/s)) * factor1*((V*V+A*A)*(Vtil*Vtil+Atil*Atil)*(sqr(s)/3-sqr(m_DM)*s/3) + 2*part3) << endl; //debugging
-
-  //cout << factor1*(part1+part2+part3)/m_symfac << endl; //debugging
+  // cout << "Vtil="<<Vtil<<",Atil="<<Atil<<endl;
+  // cout << factor1*(part1+part2+part3)/m_symfac << endl; //debugging
   return factor1*(part1+part2+part3)/m_symfac;
-  // return 2*pow(4*M_PI,4)*factor1*(part1+part2+part3)/m_symfac; //test
-}
-
-
-bool DMDM_mumu::SetColours(const Vec4D_Vector& mom)
-{
-  return true;
 }
 
 DECLARE_TREEME2_GETTER(DMDM_mumu,"DMDM_mumu")

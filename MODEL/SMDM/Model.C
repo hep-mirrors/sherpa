@@ -101,8 +101,8 @@ SMDM::SMDM() :
 void SMDM::AddDMDefaults() const
 {
   Settings& s = Settings::GetMainSettings();
-  s["DM_Z_v"].SetDefault(0.0); //vector coupling to Z
-  s["DM_Z_a"].SetDefault(0.0); //axial vector coupling to Z
+  s["DM_Z_v"].SetDefault(-0.1); //vector coupling to Z
+  s["DM_Z_a"].SetDefault(0.1); //axial vector coupling to Z
   s["DM_Z'_v"].SetDefault(0.0); // ditto to new vector mediator
   s["DM_Z'_a"].SetDefault(0.0);
   s["DM_S_s"].SetDefault(0.0); // scalar coupling to new scalar mediator
