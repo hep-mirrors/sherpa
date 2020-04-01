@@ -142,6 +142,9 @@ bool ISR_Channels::CreateChannels()
     case channel_type::threshold:
       AddResonance(i,collmode);
       break;
+    case channel_type::leadinglog:
+      AddLeadingLog(i,collmode);
+      break;
     case channel_type::laserback:
     case channel_type::unknown:
       msg_Error()<<"Error in "<<METHOD<<":\n"
