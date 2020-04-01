@@ -3,9 +3,8 @@
 using namespace PDF;
 
 ISR_Base::ISR_Base(PDF_Base *pdf):
-  p_pdf(pdf),
-  m_exponent(0.),
-  m_xmax(1.),
+  p_pdf(pdf), m_type(isrtype::unknown),
+  m_exponent(0.), m_xmax(1.),
   m_on((bool)pdf)
 {
   if (pdf!=NULL) {

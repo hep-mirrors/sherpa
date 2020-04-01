@@ -355,7 +355,7 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
   }  
 }
 
-void Multi_Channel::GeneratePoint(int mode) 
+void Multi_Channel::GeneratePoint(int mode)
 {
   if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
   for (std::map<std::string,double>::iterator
@@ -370,13 +370,13 @@ void Multi_Channel::GeneratePoint(int mode)
   for (size_t n=0;n<channels.size();++n) {
     sum+=channels[n]->Alpha();
     if (sum>disc) {
-      channels[n]->GeneratePoint(rans,mode);
+      channels[n]->GeneratePoint(rans);
       m_lastdice = n;
       return;
     }
   }  
   if (IsEqual(sum,disc)) {
-    channels.back()->GeneratePoint(rans,mode);
+    channels.back()->GeneratePoint(rans);
     m_lastdice = channels.size()-1;
     return;
   }
@@ -389,14 +389,14 @@ void Multi_Channel::GeneratePoint(int mode)
 void Multi_Channel::GenerateWeight(int mode)
 {
   if (channels.size()==1) {
-    channels[0]->GenerateWeight(mode);
+    channels[0]->GenerateWeight();
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
     return;
   }
   m_weight = 0.;
   for (size_t i=0;i<channels.size();++i) {
     if (channels[i]->Alpha()>0.) {
-      channels[i]->GenerateWeight(mode);
+      channels[i]->GenerateWeight();
       if (!(channels[i]->Weight()>0)&&
 	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
 	msg_Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name

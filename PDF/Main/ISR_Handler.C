@@ -42,6 +42,21 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     m_x[i]   = 1.;
     m_mu2[i] = m_xf1[i] = m_xf2[i] = 0.;
   }
+  FixType();
+}
+
+void ISR_Handler::FixType() {
+  m_type = isrmode::unknown;
+  isrtype::code type[2];
+  for (size_t i=0;i<2;i++) type[i] = p_isrbase[i]->Type();
+  if (type[0]==isrtype::hadron && type[1]==isrtype::hadron)   m_type = isrmode::hadron_hadron; 
+  if ((type[0]==isrtype::lepton || type[0]==isrtype::intact) &&
+      type[1]==isrtype::hadron)                               m_type = isrmode::lepton_hadron;
+  if ((type[1]==isrtype::lepton || type[1]==isrtype::intact) &&
+      type[0]==isrtype::hadron)                               m_type = isrmode::hadron_lepton;
+  if ((type[0]==isrtype::lepton || type[0]==isrtype::intact) &&
+      (type[1]==isrtype::lepton || type[1]==isrtype::intact)) m_type = isrmode::lepton_lepton;
+  if (type[0]==isrtype::intact && type[1]==isrtype::intact)   m_type = isrmode::none;
 }
 
 ISR_Handler::~ISR_Handler() 
@@ -68,7 +83,6 @@ void ISR_Handler::Init(double *splimits)
 	    p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa->gen.SetEcms(sqrt(s));
 
-  m_type = p_isrbase[0]->Type()+std::string("*")+p_isrbase[1]->Type();
   m_splimits[0] = s*splimits[0];
   m_splimits[1] = ATOOLS::Min(s*splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;

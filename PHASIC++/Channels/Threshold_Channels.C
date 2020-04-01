@@ -11,9 +11,9 @@ using namespace std;
 
 Threshold_Uniform::
 Threshold_Uniform(const double mass,const double sexp,const std::string cinfo,
-		  ATOOLS::Integration_Info *info,const int mode):
+		  ATOOLS::Integration_Info *info,const size_t mode):
   ISR_Channel_Base(info),
-  m_mass(mass), m_sexp(sexp)
+  m_mass(mass), m_sexp(sexp), m_mode(mode)
 {
   m_name="Threshold_"+ATOOLS::ToString(mass)+"_Uniform";
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
@@ -26,22 +26,22 @@ Threshold_Uniform(const double mass,const double sexp,const std::string cinfo,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum = (mode==3)?2:1;
+  m_rannum = 2;
   p_vegas  = new Vegas(m_rannum,100,m_name,0);
   p_rans   = new double[2];
 }
 
-void Threshold_Uniform::GeneratePoint(const double *rns,const int mode)
+void Threshold_Uniform::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				p_rans[1],mode);
+				p_rans[1],m_mode);
 }
 
-void Threshold_Uniform::GenerateWeight(const int mode)
+void Threshold_Uniform::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -55,7 +55,7 @@ void Threshold_Uniform::GenerateWeight(const int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -70,10 +70,11 @@ void Threshold_Uniform::GenerateWeight(const int mode)
 
 Threshold_Forward::
 Threshold_Forward(const double mass,const double sexp,const double yexponent,
-		  const std::string cinfo,ATOOLS::Integration_Info *info):
+		  const std::string cinfo,ATOOLS::Integration_Info *info,
+		  size_t mode):
   ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent), m_mode(mode)
 {
   m_name="Threshold_"+ATOOLS::ToString(mass)+"_Forward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
@@ -91,17 +92,17 @@ Threshold_Forward(const double mass,const double sexp,const double yexponent,
   p_rans  = new double[2];
 }
 
-void Threshold_Forward::GeneratePoint(const double *rns,const int mode)
+void Threshold_Forward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-			     m_ykey.Doubles(),p_rans[1],mode);
+			     m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Forward::GenerateWeight(int mode)
+void Threshold_Forward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -115,7 +116,7 @@ void Threshold_Forward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),m_ygridkey[0],mode);
+				m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -131,10 +132,11 @@ void Threshold_Forward::GenerateWeight(int mode)
 
 Threshold_Backward::
 Threshold_Backward(const double mass,const double sexp,const double yexponent,
-		   const std::string cinfo,ATOOLS::Integration_Info *info):
+		   const std::string cinfo,ATOOLS::Integration_Info *info,
+		   const size_t mode):
   ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent), m_mode(mode)
 {
   m_name="Threshold_"+ATOOLS::ToString(mass)+"_Backward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
@@ -152,17 +154,17 @@ Threshold_Backward(const double mass,const double sexp,const double yexponent,
   p_rans  = new double[2];
 }
 
-void Threshold_Backward::GeneratePoint(const double *rns,int mode)
+void Threshold_Backward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-			      m_ykey.Doubles(),p_rans[1],mode);
+			      m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Backward::GenerateWeight(int mode)
+void Threshold_Backward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -176,7 +178,7 @@ void Threshold_Backward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
+				 m_ykey.Doubles(),m_ygridkey[0],m_mode);
      }
   }
   p_rans[0] = m_sgridkey[0];
@@ -191,9 +193,9 @@ void Threshold_Backward::GenerateWeight(int mode)
 
 Threshold_Central::
 Threshold_Central(const double mass,const double sexp,const std::string cinfo,
-		  ATOOLS::Integration_Info *info,int mode):
+		  ATOOLS::Integration_Info *info,const size_t mode):
   ISR_Channel_Base(info),
-  m_mass(mass), m_sexp(sexp)
+  m_mass(mass), m_sexp(sexp), m_mode(mode)
 {
   m_name="Threshold_"+ATOOLS::ToString(mass)+"_Central";
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
@@ -206,24 +208,22 @@ Threshold_Central(const double mass,const double sexp,const std::string cinfo,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=1;
-  if (mode==3) m_rannum=2;
+  m_rannum=2;
   p_vegas = new Vegas(m_rannum,100,m_name,0);
   p_rans  = new double[2];
 }
 
-void Threshold_Central::GeneratePoint(const double *rns,int mode)
+void Threshold_Central::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  p_rans[0]=ran[0];
-  if (mode==3) p_rans[1]=ran[1];
+  for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Threshold_Central::GenerateWeight(int mode)
+void Threshold_Central::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -237,7 +237,7 @@ void Threshold_Central::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];

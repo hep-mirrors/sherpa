@@ -20,6 +20,19 @@ namespace PDF {
     };
   };
 
+  struct isrmode {
+    enum code {
+      none           = 0,
+      hadron_hadron  = 1,
+      lepton_hadron  = 2,
+      hadron_lepton  = 3,
+      lepton_lepton  = 4,
+      unknown        = 99
+    };
+  };
+  std::ostream& operator<<(std::ostream&,const isrmode::code mode);
+
+  
   class ISR_Handler;
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
@@ -27,10 +40,10 @@ namespace PDF {
   class ISR_Handler {
 
   protected:
-
     ISR_Base **p_isrbase;
 
-    std::string m_name, m_type;
+    std::string   m_name;
+    isrmode::code m_type;
 
     int m_mode, m_rmode, m_swap; 
 
@@ -49,6 +62,7 @@ namespace PDF {
 
     double m_xf1[2], m_xf2[2];
 
+    void FixType();
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
@@ -86,8 +100,8 @@ namespace PDF {
 
     ATOOLS::Blob_Data_Base* Info(const int frame) const;
 
-    inline void SetSprimeMin(const double spmin)      { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
-    inline void SetSprimeMax(const double spmax)      { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
+    inline void SetSprimeMin(const double spmin) { m_splimits[0]=ATOOLS::Max(m_fixed_smin,spmin); }
+    inline void SetSprimeMax(const double spmax) { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
     inline void SetFixedSprimeMin(const double spmin) { m_fixed_smin = m_splimits[0] = spmin; }
     inline void SetFixedSprimeMax(const double spmax) { m_fixed_smax = m_splimits[1] = spmax; }
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
@@ -95,10 +109,11 @@ namespace PDF {
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
     inline void SetName(const std::string name) { m_name = name;        }
     inline std::string Name() const             { return m_name; }
-    inline std::string Type() const             { return m_type; }
-    inline int On() const                       { return m_mode;    }
-    inline double *SprimeRange()                { return m_splimits;    }
-    inline double *YRange()                     { return m_ylimits;     }
+    inline const isrtype::code Type(const int & i=-1) const { return p_isrbase[i]->Type(); }
+    inline const isrmode::code & Mode() const   { return m_type; } 
+    inline int    On() const                    { return m_mode;    }
+    inline double * SprimeRange()               { return m_splimits;    }
+    inline double * YRange()                    { return m_ylimits;     }
     inline double  Exponent(const int i) const  { return m_exponent[i]; }
     inline double SprimeMin() const             { return m_splimits[0]; }
     inline double SprimeMax() const             { return m_splimits[1]; }
@@ -109,8 +124,8 @@ namespace PDF {
     inline double Upper2() const                { return p_isrbase[1]->XMax(); }
     inline double X1() const                    { return m_x[0]; }
     inline double X2() const                    { return m_x[1]; }
-    inline double  MuF2(int beam) const         { return m_mu2[beam]; }
-    inline void SetMuF2(double mu2, int beam)   { m_mu2[beam]=mu2; }
+    inline double MuF2(int beam) const          { return m_mu2[beam]; }
+    inline void   SetMuF2(double mu2, int beam) { m_mu2[beam]=mu2; }
     inline double XF1(int beam) const           { return m_xf1[beam]; }
     inline double XF2(int beam) const           { return m_xf2[beam]; }
 

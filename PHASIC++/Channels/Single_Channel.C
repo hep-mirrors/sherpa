@@ -73,15 +73,15 @@ void Single_Channel::GenerateWeight(ATOOLS::Vec4D *p,Cut_Data *cuts)
 	     <<"Virtual Method called !"<<std::endl; 
 }
 
-void Single_Channel::GeneratePoint(const double * rns,const int mode) 
+void Single_Channel::GeneratePoint(const double * rns)
 {
-  msg_Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
+  msg_Error()<<"Single_Channel::GeneratePoint(): "
 	     <<"Virtual Method called !"<<std::endl; 
 }
 
-void Single_Channel::GenerateWeight(const int mode) 
+void Single_Channel::GenerateWeight() 
 {
-  msg_Error()<<"Single_Channel::GenerateWeight("<<mode<<"): "
+  msg_Error()<<"Single_Channel::GenerateWeight(): "
 	     <<"Virtual Method called !"<<std::endl; 
 }
 

@@ -30,8 +30,6 @@ Beam_Channels::Beam_Channels(Phase_Space_Handler *const psh,
 
 bool Beam_Channels::Initialize()
 {
-  //msg_Out()<<METHOD<<" for mode = "<<m_beammode<<" "
-  //	   <<"and "<<m_beamparams.size()<<" parameters.\n";
   return MakeChannels();
 }
 
@@ -82,7 +80,7 @@ bool Beam_Channels::DefineColliderChannels() {
        (m_beamtype[1]==beamspectrum::laser_backscattering ||
 	m_beamtype[1]==beamspectrum::simple_Compton))) {
     m_beamparams.push_back(Channel_Info(channel_type::laserback,
-					p_beamspectra->Peak(),1.));
+					1.,p_beamspectra->Peak()));
     CheckForStructuresFromME();
     return true;
   }
@@ -128,10 +126,6 @@ void Beam_Channels::CheckForStructuresFromME() {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
     channel_type::code type = channel_type::code(abs(types[i]));
     switch (type) {
-    case channel_type::simple:
-    case channel_type::leadinglog:
-    case channel_type::laserback:
-      continue;
     case channel_type::threshold:
       if (ATOOLS::IsZero(masses[i])) continue;
       fromFSR = true;
@@ -145,6 +139,11 @@ void Beam_Channels::CheckForStructuresFromME() {
       }
       fromFSR = true;
       m_beamparams.push_back(Channel_Info(type,masses[i],widths[i]));
+      break;
+    case channel_type::simple:
+    case channel_type::leadinglog:
+    case channel_type::laserback:
+    default:
       break;
     }
   }
@@ -164,20 +163,35 @@ void Beam_Channels::CheckForStructuresFromME() {
 bool Beam_Channels::CreateChannels()
 {
   if (m_beamparams.size() < 1) return 0;
-  int beams = int(p_beamspectra->ColliderMode());
+  size_t mode = 0;
+  if (p_beamspectra->BeamMode()==BEAM::beammode::collider) {
+    switch (p_beamspectra->ColliderMode()) {
+    case BEAM::collidermode::spectral_1:
+      mode = 1;
+      break;
+    case BEAM::collidermode::spectral_2:
+      mode = 2;
+      break;
+    case BEAM::collidermode::both_spectral:
+      mode = 3;
+      break;
+    default:
+      break;
+    }
+  }
   for (size_t i=0;i<m_beamparams.size();i++) {
     switch (m_beamparams[i].type) {
     case channel_type::simple:
-      AddSimplePole(i,beams);
+      AddSimplePole(i,mode);
       break;
     case channel_type::resonance:
-      AddResonance(i,beams);
+      AddResonance(i,mode);
       break;
     case channel_type::threshold:
-      AddThreshold(i,beams);
+      AddThreshold(i,mode);
       break;
     case channel_type::laserback:
-      AddLaserBackscattering(i,beams);
+      AddLaserBackscattering(i,mode);
       break;
     case channel_type::leadinglog:
     case channel_type::unknown:
@@ -190,116 +204,94 @@ bool Beam_Channels::CreateChannels()
   //for (size_t i=0;i<channels.size();i++)
   //  msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<"\n";
   //msg_Out()<<"----------------------------------------------\n";
-  return 1;
+  return true;
 }
 
-void Beam_Channels::AddSimplePole(const size_t & chno,const int & beams) {
+void Beam_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
+  double spex = m_beamparams[chno].parameters[0];
   if (m_beammode==beammode::relic_density) {
-    Add(new Simple_Pole_RelicDensity(m_beamparams[chno].parameters[0],
-				     m_keyid,p_psh->GetInfo()));
-    return;
+    Add(new Simple_Pole_RelicDensity(spex,m_keyid,p_psh->GetInfo()));
   }
   else if (m_beammode==beammode::DM_annihilation) {
     double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
     double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-    Add(new Simple_Pole_DM_Annihilation(m_beamparams[chno].parameters[0],
-					mass1,mass2,m_keyid,p_psh->GetInfo()));
-    return;
+    Add(new Simple_Pole_DM_Annihilation(spex,mass1,mass2,m_keyid,p_psh->GetInfo()));
   }
-  for (set<double>::iterator yit=m_yexponents.begin();
-       yit!=m_yexponents.end();yit++) {
-    if (dabs(*yit)<1.e-3) {
-      Add(new Simple_Pole_Uniform(m_beamparams[chno].parameters[0],
-				  m_keyid,p_psh->GetInfo(),beams));
-      Add(new Simple_Pole_Central(m_beamparams[chno].parameters[0],
-				  m_keyid,p_psh->GetInfo(),beams));
-    }
-    else if (beams==3) {
-      Add(new Simple_Pole_Forward(m_beamparams[chno].parameters[0],(*yit),
-				  m_keyid,p_psh->GetInfo()));
-      Add(new Simple_Pole_Backward(m_beamparams[chno].parameters[0],(*yit),
-				   m_keyid,p_psh->GetInfo()));
+  else {
+    for (set<double>::iterator yit=m_yexponents.begin();
+	 yit!=m_yexponents.end();yit++) {
+      if (dabs(*yit)<1.e-3) {
+	Add(new Simple_Pole_Uniform(spex,m_keyid,p_psh->GetInfo(),mode));
+	Add(new Simple_Pole_Central(spex,m_keyid,p_psh->GetInfo(),mode));
+      }
+      else if (mode==3) {
+	Add(new Simple_Pole_Forward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
+	Add(new Simple_Pole_Backward(spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
+      }
     }
   }
 }
 
-
-void Beam_Channels::AddResonance(const size_t & chno,const int & beams) {
+void Beam_Channels::AddResonance(const size_t & chno,const size_t & mode) {
+  double mass  = m_beamparams[chno].parameters[0];
+  double width = m_beamparams[chno].parameters[1];
   if (m_beammode==beammode::relic_density) {
-    Add(new Resonance_RelicDensity(m_beamparams[chno].parameters[0],
-				   m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo()));
+    Add(new Resonance_RelicDensity(mass,
+				   width,m_keyid,p_psh->GetInfo()));
     return;
   }
   /*
-  else if (m_beammode==beammode::DM_annihilation) {
+    else if (m_beammode==beammode::DM_annihilation) {
     double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
     double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-    Add(new Resonance_DM_Annihilation(m_beamparams[chno].parameters[0],
-					mass1,mass2,m_keyid,p_psh->GetInfo()));
+    Add(new Resonance_DM_Annihilation(mass,
+    mass1,mass2,m_keyid,p_psh->GetInfo()));
     return;
-  }
+    }
   */
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {
-      Add(new Resonance_Uniform(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],
-				m_keyid,p_psh->GetInfo(),beams));
-      Add(new Resonance_Central(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],
-				m_keyid,p_psh->GetInfo(),beams));
+      Add(new Resonance_Uniform(mass,width,m_keyid,p_psh->GetInfo(),mode));
+      Add(new Resonance_Central(mass,width,m_keyid,p_psh->GetInfo(),mode));
     }
-    else if (beams==3) {
-      Add(new Resonance_Forward(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],
-				(*yit),m_keyid,p_psh->GetInfo()));
-      Add(new Resonance_Backward(m_beamparams[chno].parameters[0],
-				 m_beamparams[chno].parameters[1],
-				 (*yit),m_keyid,p_psh->GetInfo()));
+    else if (mode==3) {
+      Add(new Resonance_Forward(mass,width,(*yit),m_keyid,p_psh->GetInfo(),mode));
+      Add(new Resonance_Backward(mass,width,(*yit),m_keyid,p_psh->GetInfo(),mode));
     }
   }
 }
 
-void Beam_Channels::AddThreshold(const size_t & chno,const int & beams) {
+void Beam_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
+  double mass = m_beamparams[chno].parameters[0];
+  double spex = m_beamparams[chno].parameters[1];
   if (m_beammode==beammode::relic_density) return;
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {
-      Add(new Threshold_Uniform(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beams));
-      Add(new Threshold_Central(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],m_keyid,p_psh->GetInfo(),beams));
+      Add(new Threshold_Uniform(mass,spex,m_keyid,p_psh->GetInfo(),mode));
+      Add(new Threshold_Central(mass,spex,m_keyid,p_psh->GetInfo(),mode));
     }
-    else if (beams==3) {
-      Add(new Threshold_Forward(m_beamparams[chno].parameters[0],
-				m_beamparams[chno].parameters[1],
-				(*yit),m_keyid,p_psh->GetInfo()));
-      Add(new Threshold_Backward(m_beamparams[chno].parameters[0],
-				 m_beamparams[chno].parameters[1],
-				 (*yit),m_keyid,p_psh->GetInfo()));
+    else if (mode==3) {
+      Add(new Threshold_Forward(mass,spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
+      Add(new Threshold_Backward(mass,spex,(*yit),m_keyid,p_psh->GetInfo(),mode));
     }
   }
 }
-
-void Beam_Channels::AddLaserBackscattering(const size_t & chno,const int & beams) {
+ 
+void Beam_Channels::AddLaserBackscattering(const size_t & chno,const size_t & mode) {
+  double exponent = m_beamparams[chno].parameters[0];
+  double pole     = m_beamparams[chno].parameters[1];
   if (m_beammode==beammode::relic_density) return;
   for (set<double>::iterator yit=m_yexponents.begin();
        yit!=m_yexponents.end();yit++) {
     if (dabs(*yit)<1.e-3) {
-      Add(new LBS_Compton_Peak_Uniform(m_beamparams[chno].parameters[1],
-				       m_beamparams[chno].parameters[0],
-				       m_keyid,p_psh->GetInfo(),beams));
-      Add(new LBS_Compton_Peak_Central(m_beamparams[chno].parameters[1],
-				       m_beamparams[chno].parameters[0],
-				       m_keyid,p_psh->GetInfo(),beams));
+      Add(new LBS_Compton_Peak_Uniform(exponent,pole,m_keyid,p_psh->GetInfo(),mode));
+      Add(new LBS_Compton_Peak_Central(exponent,pole,m_keyid,p_psh->GetInfo(),mode));
     }
-    else if (beams==3) {
-      Add(new LBS_Compton_Peak_Forward(m_beamparams[chno].parameters[1],
-				       m_beamparams[chno].parameters[0],
-				       (*yit),m_keyid,p_psh->GetInfo()));
-      Add(new LBS_Compton_Peak_Backward(m_beamparams[chno].parameters[1],
-					m_beamparams[chno].parameters[0],
-				        (*yit),m_keyid,p_psh->GetInfo()));
+    else if (mode==3) {
+      Add(new LBS_Compton_Peak_Forward(exponent,pole,(*yit),m_keyid,p_psh->GetInfo(),mode));
+      Add(new LBS_Compton_Peak_Backward(exponent,pole,(*yit),m_keyid,p_psh->GetInfo(),mode));
     }
   }
 }

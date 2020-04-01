@@ -30,14 +30,14 @@ Resonance_RelicDensity(const double mass,const double width,
   p_rans    = new double[m_rannum];
 }
 
-void Resonance_RelicDensity::GeneratePoint(const double *rns,const int mode)
+void Resonance_RelicDensity::GeneratePoint(const double *rns)
 {
   double * ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
 }
 
-void Resonance_RelicDensity::GenerateWeight(const int mode)
+void Resonance_RelicDensity::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -58,10 +58,11 @@ void Resonance_RelicDensity::GenerateWeight(const int mode)
 Resonance_Uniform::
 Resonance_Uniform(const double mass,const double width,
 		  const std::string cinfo,ATOOLS::Integration_Info *info,
-		  const int mode) :
+		  const size_t mode) :
   ISR_Channel_Base(info),
   m_mass(mass),
-  m_width(width)
+  m_width(width),
+  m_mode(mode)
 {
   m_name="Resonance_"+ATOOLS::ToString(mass)+"_Uniform";
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
@@ -74,21 +75,22 @@ Resonance_Uniform(const double mass,const double width,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum = (mode==3)?2:1;
+  m_rannum = 2;
   p_vegas  = new Vegas(m_rannum,100,m_name,0);
   p_rans   = new double[2];
 }
 
-void Resonance_Uniform::GeneratePoint(const double *rns,const int mode)
+void Resonance_Uniform::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-  m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				p_rans[1],m_mode);
 }
 
-void Resonance_Uniform::GenerateWeight(const int mode)
+void Resonance_Uniform::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -102,7 +104,7 @@ void Resonance_Uniform::GenerateWeight(const int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -118,11 +120,13 @@ void Resonance_Uniform::GenerateWeight(const int mode)
 
 Resonance_Forward::
 Resonance_Forward(const double mass,const double width,const double yexponent,
-		  const std::string cinfo,ATOOLS::Integration_Info *info):
+		  const std::string cinfo,ATOOLS::Integration_Info *info,
+		  const size_t mode):
   ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)
 {
   m_name="Resonance_"+ATOOLS::ToString(mass)+"_Forward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
@@ -140,17 +144,17 @@ Resonance_Forward(const double mass,const double width,const double yexponent,
   p_rans  = new double[2];
 }
 
-void Resonance_Forward::GeneratePoint(const double *rns,const int mode)
+void Resonance_Forward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Forward::GenerateWeight(int mode)
+void Resonance_Forward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -164,7 +168,7 @@ void Resonance_Forward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),m_ygridkey[0],mode);
+				m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -180,11 +184,13 @@ void Resonance_Forward::GenerateWeight(int mode)
 
 Resonance_Backward::
 Resonance_Backward(const double mass,const double width,const double yexponent,
-		   const std::string cinfo,ATOOLS::Integration_Info *info):
+		   const std::string cinfo,ATOOLS::Integration_Info *info,
+		   const size_t mode):
   ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)
 {
   m_name="Resonance_"+ATOOLS::ToString(mass)+"_Backward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
@@ -202,17 +208,17 @@ Resonance_Backward(const double mass,const double width,const double yexponent,
   p_rans  = new double[2];
 }
 
-void Resonance_Backward::GeneratePoint(const double *rns,int mode)
+void Resonance_Backward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),p_rans[1],mode);
+				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Backward::GenerateWeight(int mode)
+void Resonance_Backward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -226,7 +232,7 @@ void Resonance_Backward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
+				 m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -242,8 +248,9 @@ void Resonance_Backward::GenerateWeight(int mode)
 
 Resonance_Central::
 Resonance_Central(const double mass,const double width,
-		  const std::string cinfo,ATOOLS::Integration_Info *info,int mode):
-  ISR_Channel_Base(info), m_mass(mass), m_width(width)
+		  const std::string cinfo,ATOOLS::Integration_Info *info,
+		  const size_t mode):
+  ISR_Channel_Base(info), m_mass(mass), m_width(width), m_mode(mode)
 {
   m_name="Resonance_"+ATOOLS::ToString(mass)+"_Central";
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
@@ -256,24 +263,22 @@ Resonance_Central(const double mass,const double width,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=1;
-  if (mode==3) m_rannum=2;
+  m_rannum=2;
   p_vegas = new Vegas(m_rannum,100,m_name,0);
   p_rans  = new double[2];
 }
 
-void Resonance_Central::GeneratePoint(const double *rns,int mode)
+void Resonance_Central::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  p_rans[0]=ran[0];
-  if (mode==3) p_rans[1]=ran[1];
+  for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Resonance_Central::GenerateWeight(int mode)
+void Resonance_Central::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -287,7 +292,7 @@ void Resonance_Central::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];

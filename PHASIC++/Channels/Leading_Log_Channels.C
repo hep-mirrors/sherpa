@@ -13,10 +13,12 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 Leading_Log_Uniform::Leading_Log_Uniform(const double beta,const double factor,
-					 const std::string cinfo,ATOOLS::Integration_Info *info):
+					 const std::string cinfo,ATOOLS::Integration_Info *info,
+					 const size_t mode):
   ISR_Channel_Base(info),
   m_beta(beta),
-  m_factor(factor)
+  m_factor(factor),
+  m_mode(mode)
 {
   m_name=std::string("Leading_Log_Uniform_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
@@ -34,7 +36,7 @@ Leading_Log_Uniform::Leading_Log_Uniform(const double beta,const double factor,
   p_rans   = new double[2];
 }
 
-void Leading_Log_Uniform::GeneratePoint(const double *rns,const int mode)
+void Leading_Log_Uniform::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -43,10 +45,10 @@ void Leading_Log_Uniform::GeneratePoint(const double *rns,const int mode)
   m_spkey[3]  = CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]   = CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				    p_rans[1],mode);
+				    p_rans[1],m_mode);
 }
 
-void Leading_Log_Uniform::GenerateWeight(const int mode)
+void Leading_Log_Uniform::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -64,7 +66,7 @@ void Leading_Log_Uniform::GenerateWeight(const int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -81,11 +83,13 @@ void Leading_Log_Uniform::GenerateWeight(const int mode)
 
 Leading_Log_Forward::
 Leading_Log_Forward(const double beta,const double factor,const double yexponent,
-		    const std::string cinfo,ATOOLS::Integration_Info *info):
+		    const std::string cinfo,ATOOLS::Integration_Info *info,
+		    const size_t mode):
   ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)
 {
   m_name=std::string("Leading_Log_Forward_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
@@ -103,7 +107,7 @@ Leading_Log_Forward(const double beta,const double factor,const double yexponent
   p_rans  = new double[2];
 }
 
-void Leading_Log_Forward::GeneratePoint(const double *rns,const int mode)
+void Leading_Log_Forward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -112,10 +116,10 @@ void Leading_Log_Forward::GeneratePoint(const double *rns,const int mode)
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Forward::GenerateWeight(int mode)
+void Leading_Log_Forward::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -133,7 +137,7 @@ void Leading_Log_Forward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),m_ygridkey[0],mode);
+				m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -146,11 +150,13 @@ void Leading_Log_Forward::GenerateWeight(int mode)
 
 Leading_Log_Backward::
 Leading_Log_Backward(const double beta,const double factor,const double yexponent,
-		     const std::string cinfo,ATOOLS::Integration_Info *info):
+		     const std::string cinfo,ATOOLS::Integration_Info *info,
+		     const size_t mode):
   ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)
 {
   m_name=std::string("Leading_Log_Backward_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
@@ -168,7 +174,7 @@ Leading_Log_Backward(const double beta,const double factor,const double yexponen
   p_rans  = new double[2];
 }
 
-void Leading_Log_Backward::GeneratePoint(const double *rns,int mode)
+void Leading_Log_Backward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -177,10 +183,10 @@ void Leading_Log_Backward::GeneratePoint(const double *rns,int mode)
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),p_rans[1],mode);
+				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Backward::GenerateWeight(int mode)
+void Leading_Log_Backward::GenerateWeight()
 {
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
     if (m_spkey[3]<m_spkey[0] || m_spkey[3]>m_spkey[1]) return;
@@ -197,7 +203,7 @@ void Leading_Log_Backward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
+				 m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -214,10 +220,12 @@ void Leading_Log_Backward::GenerateWeight(int mode)
 
 Leading_Log_Central::
 Leading_Log_Central(const double beta,const double factor,
-		    const std::string cinfo,ATOOLS::Integration_Info *info,int mode):
+		    const std::string cinfo,ATOOLS::Integration_Info *info,
+		    const size_t mode):
   ISR_Channel_Base(info),
   m_beta(beta),
-  m_factor(factor)
+  m_factor(factor),
+  m_mode(mode)
 {
   m_name=std::string("Leading_Log_Central_")+ATOOLS::ToString((int)(100.*beta+0.01));
   m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
@@ -230,26 +238,24 @@ Leading_Log_Central(const double beta,const double factor,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=1;
-  if (mode==3) m_rannum=2;
+  m_rannum=2;
   p_vegas = new Vegas(m_rannum,100,m_name,0);
   p_rans  = new double[2];
 }
 
-void Leading_Log_Central::GeneratePoint(const double *rns,int mode)
+void Leading_Log_Central::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  p_rans[0]=ran[0];
-  if (mode==3) p_rans[1]=ran[1];
+  for(int i=0;i<2;i++) p_rans[i]=ran[i];
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Leading_Log_Central::GenerateWeight(int mode)
+void Leading_Log_Central::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -267,7 +273,7 @@ void Leading_Log_Central::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];

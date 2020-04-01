@@ -660,7 +660,8 @@ double Channel_Elements::GenerateDMAngleUniform(const double ran, const int mode
 // treated from here
 
 double Channel_Elements::GenerateYUniform(const double tau,const Double_Container &xinfo,
-				      const Double_Container &yinfo,const double ran,const int mode) const
+					  const Double_Container &yinfo,const double ran,
+					  const int mode) const
 {
   /*!
     The boundaries for y are

@@ -9,52 +9,60 @@ namespace PHASIC {
   protected:
     double m_beta, m_factor;
     bool   m_zchannel;
+    size_t m_mode;
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Leading_Log_Uniform(const double beta,const double factor,
-			  const std::string cinfo,ATOOLS::Integration_Info *info);
-    void GeneratePoint(const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
+			const std::string cinfo,ATOOLS::Integration_Info *info,
+			const size_t mode=0);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight();
   };
-
+  
   class Leading_Log_Forward: public ISR_Channel_Base {
   protected :
     double m_beta, m_factor, m_yexponent;
     bool   m_zchannel;
+    size_t m_mode;
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public :
     Leading_Log_Forward(const double beta,const double factor,const double yexponent,
-			  const std::string cinfo,ATOOLS::Integration_Info *info);
-    void GeneratePoint(const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
+			const std::string cinfo,ATOOLS::Integration_Info *info,
+			const size_t mode=0);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight();
   };
-
+  
   class Leading_Log_Backward: public ISR_Channel_Base {
   protected :
     double m_beta, m_factor, m_yexponent;
     bool   m_zchannel;
+    size_t m_mode;
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public :
     Leading_Log_Backward(const double beta,const double factor,const double yexponent,
-			   const std::string cinfo,ATOOLS::Integration_Info *info);
-    void GeneratePoint(const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
+			 const std::string cinfo,ATOOLS::Integration_Info *info,
+			 const size_t mode=0);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight();
   };
 
   class Leading_Log_Central: public ISR_Channel_Base {
   protected:
     double m_beta, m_factor;
     bool   m_zchannel;
+    size_t m_mode;
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
     ATOOLS::Info_Key m_kp1key, m_kp2key;
   public:
     Leading_Log_Central(const double beta,const double factor,
-			const std::string cinfo,ATOOLS::Integration_Info *info,const int mode=0);
-    void GeneratePoint(const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
+			const std::string cinfo,ATOOLS::Integration_Info *info,
+			const size_t mode=0);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight();
   };
 }
 #endif

@@ -27,8 +27,12 @@ namespace PHASIC {
       type(ctype) {}
     Channel_Info(const channel_type::code & ctype,const double & p0) :
       type(ctype) { parameters.push_back(p0); }
-    Channel_Info(const channel_type::code & ctype,const double & p0,const double & p1) :
-      type(ctype) { parameters.push_back(p0); parameters.push_back(p1); }
+    Channel_Info(const channel_type::code & ctype,const double & p0,
+		 const double & p1) : type(ctype)
+    { parameters.push_back(p0); parameters.push_back(p1); }
+    Channel_Info(const channel_type::code & ctype,const double & p0,
+		 const double & p1,const double & p2) : type(ctype) 
+    { parameters.push_back(p0); parameters.push_back(p1); parameters.push_back(p2); }
     
     bool operator==(const Channel_Info & ci) {
       if (type != ci.type)                           return 0;

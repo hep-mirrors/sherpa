@@ -16,10 +16,10 @@ using namespace std;
 LBS_Compton_Peak_Uniform::
 LBS_Compton_Peak_Uniform(const double exponent,const double pole,
 			 const std::string cinfo,ATOOLS::Integration_Info *info,
-			 const int mode):
+			 const size_t mode):
   ISR_Channel_Base(info),
   m_exponent(exponent),
-  m_pole(pole)
+  m_pole(pole), m_mode(mode)
 {
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
@@ -34,12 +34,12 @@ LBS_Compton_Peak_Uniform(const double exponent,const double pole,
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum = (mode==3)?2:1;
+  m_rannum = 2;
   p_vegas  = new Vegas(2,100,m_name,0);
   p_rans   = new double[2];
 }
 
-void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns,const int mode)
+void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -53,10 +53,10 @@ void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns,const int mode)
   }
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
+void LBS_Compton_Peak_Uniform::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -76,7 +76,7 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -94,11 +94,12 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
 LBS_Compton_Peak_Forward::
 LBS_Compton_Peak_Forward(const double exponent,const double pole,
 			 const double yexponent,
-			 const std::string cinfo,ATOOLS::Integration_Info *info):
+			 const std::string cinfo,ATOOLS::Integration_Info *info,
+			 const size_t mode):
   ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent), m_mode(mode)
 {
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
@@ -118,7 +119,7 @@ LBS_Compton_Peak_Forward(const double exponent,const double pole,
   p_rans  = new double[2];
 }
 
-void LBS_Compton_Peak_Forward::GeneratePoint(const double *rns,const int mode)
+void LBS_Compton_Peak_Forward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -132,10 +133,10 @@ void LBS_Compton_Peak_Forward::GeneratePoint(const double *rns,const int mode)
   }
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
+void LBS_Compton_Peak_Forward::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -155,7 +156,7 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),m_ygridkey[0],mode);
+				m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -173,11 +174,12 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
 LBS_Compton_Peak_Backward::
 LBS_Compton_Peak_Backward(const double exponent,const double pole,
 			  const double yexponent,
-			  const std::string cinfo,ATOOLS::Integration_Info *info):
+			  const std::string cinfo,ATOOLS::Integration_Info *info,
+			  const size_t mode):
   ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent), m_mode(mode)
 {
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
@@ -197,7 +199,7 @@ LBS_Compton_Peak_Backward(const double exponent,const double pole,
   p_rans  = new double[2];
 }
 
-void LBS_Compton_Peak_Backward::GeneratePoint(const double *rns,int mode)
+void LBS_Compton_Peak_Backward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
@@ -211,10 +213,10 @@ void LBS_Compton_Peak_Backward::GeneratePoint(const double *rns,int mode)
   }
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),p_rans[1],mode);
+				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
+void LBS_Compton_Peak_Backward::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -234,7 +236,7 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
+				 m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -251,10 +253,11 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
 
 LBS_Compton_Peak_Central::
 LBS_Compton_Peak_Central(const double exponent,const double pole,
-			 const std::string cinfo,ATOOLS::Integration_Info *info,int mode):
+			 const std::string cinfo,ATOOLS::Integration_Info *info,
+			 const size_t mode):
   ISR_Channel_Base(info),
   m_exponent(exponent),
-  m_pole(pole)
+  m_pole(pole), m_mode(mode)
 {
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
@@ -269,17 +272,15 @@ LBS_Compton_Peak_Central(const double exponent,const double pole,
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
-  m_rannum=1;
-  if (mode==3) m_rannum=2;
+  m_rannum=2;
   p_vegas = new Vegas(m_rannum,100,m_name,0);
   p_rans  = new double[2];
 }
 
-void LBS_Compton_Peak_Central::GeneratePoint(const double *rns,int mode)
+void LBS_Compton_Peak_Central::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  p_rans[0]=ran[0];
-  if (mode==3) p_rans[1]=ran[1];
+  for(int i=0;i<2;i++) p_rans[i]=ran[i];
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],p_rans[0]);
   if (m_spkey[0]<m_spkey[2]*m_pole && m_spkey[2]*m_pole<m_spkey[1]) {
     m_spkey[3]=help-m_spkey[1]+m_spkey[2]*m_pole;
@@ -289,10 +290,11 @@ void LBS_Compton_Peak_Central::GeneratePoint(const double *rns,int mode)
     m_spkey[3]=help;
   }
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-  m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				p_rans[1],m_mode);
 }
 
-void LBS_Compton_Peak_Central::GenerateWeight(int mode)
+void LBS_Compton_Peak_Central::GenerateWeight()
 {
   m_weight=0.;
   if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -312,7 +314,7 @@ void LBS_Compton_Peak_Central::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
-				m_ygridkey[0],mode);
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];

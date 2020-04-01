@@ -5,14 +5,23 @@
 
 namespace PDF {
 
+  struct isrtype {
+    enum code {
+      intact  = 0,
+      lepton  = 1,
+      hadron  = 2,
+      unknown = 99
+    };
+  };
+  std::ostream& operator<<(std::ostream&,const isrtype::code type);
+  
   class ISR_Base { 
   protected:
-
     PDF_Base *p_pdf;
-
-    std::string     m_type;
+    //std::string     m_type;
     ATOOLS::Flavour m_bunch;
-
+    isrtype::code   m_type;
+    
     double m_weight, m_exponent, m_xmax;
     bool   m_on;
 
@@ -22,7 +31,7 @@ namespace PDF {
 
     bool On() const   { return m_on;   }
 
-    inline const std::string     Type() const    { return m_type;  }
+    inline const isrtype::code   Type()    const { return m_type;  }
     inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
     inline double Exponent() const               { return m_exponent; }
     inline double XMax() const                   { return m_xmax;     } 

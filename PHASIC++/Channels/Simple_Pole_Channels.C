@@ -25,14 +25,14 @@ Simple_Pole_RelicDensity(const double exponent,const std::string cinfo,
   p_rans     = new double[m_rannum];
 }
 
-void Simple_Pole_RelicDensity::GeneratePoint(const double *rns,const int mode)
+void Simple_Pole_RelicDensity::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
 }
 
-void Simple_Pole_RelicDensity::GenerateWeight(const int mode)
+void Simple_Pole_RelicDensity::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
@@ -67,32 +67,33 @@ Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const dou
   m_xgridkey.Assign(m_xkey.Info(),1,0,info);
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
   m_zchannel = m_spkey.Name().find("z-channel")!=std::string::npos;
-  m_rannum   = 1;
+  m_rannum   = 2;
   p_vegas    = new Vegas(m_rannum,100,m_name,0);
   p_rans     = new double[m_rannum];
 }
 
-void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns,const int mode)
+void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns)
 {
-	// msg_Out() << "Got to " << METHOD << "\n"; //debugging
-	// msg_Out() << "rns=" << *rns << "\n";
-	// msg_Out()<<"spkey=["<<m_spkey[0]<<","<<m_spkey[1]<<","<<m_spkey[2]<<","<<m_spkey[2]<<"]\n";
+  // msg_Out() << "Got to " << METHOD << "\n"; //debugging
+  // msg_Out() << "rns=" << *rns << "\n";
+  // msg_Out()<<"spkey=["<<m_spkey[0]<<","<<m_spkey[1]<<","<<m_spkey[2]<<","<<m_spkey[2]<<"]\n";
   double *ran = p_vegas->GeneratePoint(rns);
-	// msg_Out() << "p_vegas->GeneratePoint() ran successfully \n"; //debugging
+  // msg_Out() << "p_vegas->GeneratePoint() ran successfully \n"; //debugging
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
-	// msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
-
-	// for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
-	m_xkey[2]=CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),p_rans[0],mode);
-	// msg_Out() << "x=" << m_xkey[2] << "\n";
-	m_cosxikey[2]=CE.GenerateDMAngleUniform(p_rans[0],mode);
-	// msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
+  // msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
+  
+  // for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
+  m_xkey[2] = CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),
+					   p_rans[0],3);
+  // msg_Out() << "x=" << m_xkey[2] << "\n";
+  m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[0],3);
+  // msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
 }
 
-void Simple_Pole_DM_Annihilation::GenerateWeight(const int mode)
+void Simple_Pole_DM_Annihilation::GenerateWeight()
 {
-	// this needs looking at
+  // this needs looking at
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
@@ -111,9 +112,11 @@ void Simple_Pole_DM_Annihilation::GenerateWeight(const int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string cinfo,
-					 ATOOLS::Integration_Info *info,const int mode):
+					 ATOOLS::Integration_Info *info,
+					 const size_t mode):
   ISR_Channel_Base(info),
-  m_exponent(exponent)
+  m_exponent(exponent),
+  m_mode(mode)
 {
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_Uniform";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
@@ -126,25 +129,27 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  m_rannum = (mode==3)?2:1;
-  p_vegas  = new Vegas(m_rannum,100,m_name,0);
+  m_rannum = 2;
+  p_vegas  = new Vegas(2,100,m_name,0);
   p_rans   = new double[2];
 }
 
-void Simple_Pole_Uniform::GeneratePoint(const double *rns,const int mode)
+void Simple_Pole_Uniform::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-  m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],mode);
+  m_ykey[2]=CE.GenerateYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				p_rans[1],m_mode);
 }
 
-void Simple_Pole_Uniform::GenerateWeight(const int mode)
+void Simple_Pole_Uniform::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
+					m_sgridkey[0]);
     }
   }
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
@@ -152,7 +157,8 @@ void Simple_Pole_Uniform::GenerateWeight(const int mode)
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-      m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -166,10 +172,12 @@ void Simple_Pole_Uniform::GenerateWeight(const int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,const double yexponent,
-					 const std::string cinfo,ATOOLS::Integration_Info *info):
+					 const std::string cinfo,ATOOLS::Integration_Info *info,
+					 const size_t mode):
   ISR_Channel_Base(info),
   m_sexponent(sexponent),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)
 {
   m_name="Simple_Pole_"+ATOOLS::ToString(sexponent)+"_Forward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
@@ -187,21 +195,22 @@ Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,const double yex
   p_rans  = new double[2];
 }
 
-void Simple_Pole_Forward::GeneratePoint(const double *rns,const int mode)
+void Simple_Pole_Forward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),p_rans[1],mode);
+				m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Simple_Pole_Forward::GenerateWeight(int mode)
+void Simple_Pole_Forward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+      m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],
+					m_sgridkey[0]);
     }
   }
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
@@ -210,7 +219,7 @@ void Simple_Pole_Forward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYForward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				m_ykey.Doubles(),m_ygridkey[0],mode);
+				m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -224,10 +233,12 @@ void Simple_Pole_Forward::GenerateWeight(int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double yexponent,
-					   const std::string cinfo,ATOOLS::Integration_Info *info):
+					   const std::string cinfo,ATOOLS::Integration_Info *info,
+					   const size_t mode) :
   ISR_Channel_Base(info),
   m_sexponent(sexponent),
-  m_yexponent(yexponent)
+  m_yexponent(yexponent),
+  m_mode(mode)							   
 {
   m_name="Simple_Pole_"+ATOOLS::ToString(sexponent)+"_Backward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
@@ -245,21 +256,22 @@ Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double y
   p_rans  = new double[2];
 }
 
-void Simple_Pole_Backward::GeneratePoint(const double *rns,int mode)
+void Simple_Pole_Backward::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
   m_ykey[2]=CE.GenerateYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),p_rans[1],mode);
+				 m_ykey.Doubles(),p_rans[1],m_mode);
 }
 
-void Simple_Pole_Backward::GenerateWeight(int mode)
+void Simple_Pole_Backward::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+      m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],
+					m_sgridkey[0]);
     }
   }
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
@@ -268,7 +280,7 @@ void Simple_Pole_Backward::GenerateWeight(int mode)
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
       m_ykey<<CE.WeightYBackward(m_yexponent,sred/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
+				 m_ykey.Doubles(),m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];
@@ -282,9 +294,11 @@ void Simple_Pole_Backward::GenerateWeight(int mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string cinfo,
-					 ATOOLS::Integration_Info *info,int mode):
+					 ATOOLS::Integration_Info *info,
+					 const size_t mode):
   ISR_Channel_Base(info),
-  m_exponent(exponent)
+  m_exponent(exponent),
+  m_mode(mode)
 {
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_Central";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
@@ -297,27 +311,27 @@ Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string
   m_kp1key.Assign("k_perp_1",4,1,info);
   m_kp2key.Assign("k_perp_2",4,1,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  m_rannum=1;
-  if (mode==3) m_rannum=2;
+  m_rannum=2;
   p_vegas = new Vegas(m_rannum,100,m_name,0);
   p_rans  = new double[2];
 }
 
-void Simple_Pole_Central::GeneratePoint(const double *rns,int mode)
+void Simple_Pole_Central::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  p_rans[0]=ran[0];
-  if (mode==3) p_rans[1]=ran[1];
+  for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
   double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-  m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],mode);
+  m_ykey[2]=CE.GenerateYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),p_rans[1],
+				m_mode);
 }
 
-void Simple_Pole_Central::GenerateWeight(int mode)
+void Simple_Pole_Central::GenerateWeight()
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
+					m_sgridkey[0]);
     }
   }
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
@@ -325,7 +339,8 @@ void Simple_Pole_Central::GenerateWeight(int mode)
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       double sred = SelectS(m_spkey[3],m_spkey[4])-(m_kp1key(0)+m_kp2key(0)).Abs2();
-      m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral(sred/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),
+				m_ygridkey[0],m_mode);
     }
   }
   p_rans[0] = m_sgridkey[0];

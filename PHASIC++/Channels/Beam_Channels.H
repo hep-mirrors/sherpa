@@ -22,11 +22,10 @@ namespace PHASIC {
     bool DefineColliderChannels();
     void CheckForStructuresFromME();
     bool CreateChannels();
-    
-    void AddSimplePole(const size_t & beamno,const int & beams);
-    void AddResonance(const size_t & beamno,const int & beams);
-    void AddThreshold(const size_t & beamno,const int & beams);
-    void AddLaserBackscattering(const size_t & beamno,const int & beams);    
+    void AddSimplePole(const size_t & chno,const size_t & mode);
+    void AddResonance(const size_t & chno,const size_t & mode);
+    void AddThreshold(const size_t & chno,const size_t & mode);
+    void AddLaserBackscattering(const size_t & chno,const size_t & mode);    
   public:
     Beam_Channels(Phase_Space_Handler *const psh,const std::string &name);
     ~Beam_Channels() {}
