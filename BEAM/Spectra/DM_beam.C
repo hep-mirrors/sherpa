@@ -39,6 +39,7 @@ bool DM_beam::CalculateWeight(double x,double s)
   // event generation mode
   double E = x*s;
   m_weight = exp(-E/m_temperature);
+  return true;
 }
 
 void DM_beam::selfTest(std::string filename) {}
