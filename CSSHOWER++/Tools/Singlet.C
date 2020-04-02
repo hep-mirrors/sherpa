@@ -150,7 +150,7 @@ void Singlet::ExtractPartons
 	for (size_t i=0; i<blob->NInP(); ++i) {
 	  if (blob->InParticle(i)->ProductionBlob() &&
 	      blob->InParticle(i)->ProductionBlob()->Type()!=btp::Beam) {
-	    if ((*plit)->Id()==(1<<j)) {
+	    if ((*plit)->FromDec()==0 && (*plit)->Id()==(1<<j)) {
 	      part->SetOriginalPart(blob->InParticle(i));
 	    }
 	    ++j;
