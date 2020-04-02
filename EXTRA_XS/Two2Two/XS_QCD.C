@@ -720,18 +720,18 @@ XS_q1g_q1g::XS_q1g_q1g(const External_ME_Args& args):
   m_cfls[PropID(2,3)] = new Flavour_Vector;
   m_cfls[PropID(0,1)]->push_back(fl[m_iniq].Bar());
   m_cfls[PropID(2,3)]->push_back(fl[m_finq]);
-  if (m_cfls[PropID(1-m_iniq,m_finq)]==0)
-    m_cfls[PropID(1-m_iniq,m_finq)] = new Flavour_Vector;
-  m_cfls[PropID(1-m_iniq,m_finq)]->push_back(fl[m_finq]);
-  if (m_cfls[PropID(5-m_iniq,m_finq)]==0)
-    m_cfls[PropID(5-m_iniq,m_finq)] = new Flavour_Vector;
-  m_cfls[PropID(5-m_iniq,m_finq)]->push_back(fl[m_finq]);
-  if (m_cfls[PropID(m_iniq,5-m_finq)]==0)
-    m_cfls[PropID(m_iniq,5-m_finq)] = new Flavour_Vector;
-  m_cfls[PropID(m_iniq,5-m_finq)]->push_back(fl[m_iniq].Bar());
-  if (m_cfls[PropID(m_iniq,1-m_finq)]==0)
-    m_cfls[PropID(m_iniq,1-m_finq)] = new Flavour_Vector;
-  m_cfls[PropID(m_iniq,1-m_iniq)]->push_back(fl[m_iniq].Bar());
+  if (m_cfls[PropID((1-m_iniq),m_finq)]==0)
+    m_cfls[PropID((1-m_iniq),m_finq)] = new Flavour_Vector;
+  m_cfls[PropID((1-m_iniq),m_finq)]->push_back(fl[m_finq]);
+  if (m_cfls[PropID((5-m_iniq),m_finq)]==0)
+    m_cfls[PropID((5-m_iniq),m_finq)] = new Flavour_Vector;
+  m_cfls[PropID((5-m_iniq),m_finq)]->push_back(fl[m_finq]);
+  if (m_cfls[PropID(m_iniq,(5-m_finq))]==0)
+    m_cfls[PropID(m_iniq,(5-m_finq))] = new Flavour_Vector;
+  m_cfls[PropID(m_iniq,(5-m_finq))]->push_back(fl[m_iniq].Bar());
+  if (m_cfls[PropID(m_iniq,(1-m_finq))]==0)
+    m_cfls[PropID(m_iniq,(1-m_finq))] = new Flavour_Vector;
+  m_cfls[PropID(m_iniq,(1-m_iniq))]->push_back(fl[m_iniq].Bar());
 }
 
 double XS_q1g_q1g::operator()(const Vec4D_Vector& mom) 
@@ -769,9 +769,9 @@ bool XS_q1g_q1g::SetColours(const Vec4D_Vector& mom)
       0----+====3, if fl[0].IsQuark()
 
     */
-    m_colours[5-m_finq][m_a] = m_colours[m_iniq][m_a];
-    m_colours[5-m_finq][m_p] = m_colours[1-m_iniq][m_p] = Flow::Counter();
-    m_colours[1-m_iniq][m_a] = m_colours[m_finq][m_a];
+    m_colours[(5-m_finq)][m_a] = m_colours[m_iniq][m_a];
+    m_colours[(5-m_finq)][m_p] = m_colours[(1-m_iniq)][m_p] = Flow::Counter();
+    m_colours[(1-m_iniq)][m_a] = m_colours[m_finq][m_a];
     if (dabs(t)>dabs(u)) {
       msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
     }
@@ -789,9 +789,9 @@ bool XS_q1g_q1g::SetColours(const Vec4D_Vector& mom)
       1//      \\3
 
     */
-    m_colours[5-m_finq][m_p] = m_colours[m_finq][m_a];
-    m_colours[1-m_iniq][m_a] = m_colours[5-m_finq][m_a] = Flow::Counter();
-    m_colours[1-m_iniq][m_p] = m_colours[m_iniq][m_a];
+    m_colours[(5-m_finq)][m_p] = m_colours[m_finq][m_a];
+    m_colours[(1-m_iniq)][m_a] = m_colours[(5-m_finq)][m_a] = Flow::Counter();
+    m_colours[(1-m_iniq)][m_p] = m_colours[m_iniq][m_a];
     if (dabs(t)>s) {
       msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
     }
