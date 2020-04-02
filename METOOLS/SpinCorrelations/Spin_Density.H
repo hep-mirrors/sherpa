@@ -18,7 +18,10 @@ namespace METOOLS {
     Spin_Density(ATOOLS::Particle* p, const Amplitude2_Tensor* amps);
     Spin_Density(ATOOLS::Particle* p, const Spin_Density* s,
                  const Amplitude2_Tensor* amps);
+    Spin_Density(const Spin_Density& s);
     ~Spin_Density();
+
+    Spin_Density* CopyAll();
   };
 
 }

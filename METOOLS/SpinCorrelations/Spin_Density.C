@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/Blob.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -32,7 +33,34 @@ Spin_Density::Spin_Density(ATOOLS::Particle* p, const Spin_Density* sigma0,
   Normalise();
 }
 
+Spin_Density::Spin_Density(const Spin_Density& s) : Amplitude2_Matrix(s)
+{
+}
+
 
 Spin_Density::~Spin_Density()
 {
+}
+
+typedef std::map<Particle*, Spin_Density*> SpinDensityMap;
+namespace ATOOLS {
+  template <> Blob_Data<SpinDensityMap*>::~Blob_Data()
+  {
+    for (SpinDensityMap::iterator it=m_data->begin(); it!=m_data->end(); it++) {
+      delete it->second;
+    }
+    delete m_data; m_data=NULL;
+  }
+
+  template <> Blob_Data_Base* Blob_Data<SpinDensityMap*>::ClonePtr()
+  {
+    SpinDensityMap* newdata = new SpinDensityMap();
+    for (SpinDensityMap::iterator it = m_data->begin(); it!=m_data->end(); ++it) {
+      newdata->insert(make_pair(it->first, new Spin_Density(*it->second)));
+    }
+    return new Blob_Data(newdata);
+  }
+
+  template class Blob_Data<SpinDensityMap*>;
+  template SpinDensityMap*&Blob_Data_Base::Get<SpinDensityMap*>();
 }
