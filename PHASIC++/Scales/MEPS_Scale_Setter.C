@@ -120,7 +120,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|128|256);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|256);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
@@ -616,7 +616,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    double as(1.0), sas(0.0), mas(1.0), oqcd(0.0);
+    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -649,7 +649,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
 	mur2*=pow(m_rsf*scale[idx],coqcd);
 	as*=pow(cas,coqcd);
-	sas+=cas*coqcd;
+	mmur2=Max(mmur2,m_rsf*scale[idx]);
 	mas=Min(mas,cas);
 	oqcd+=coqcd;
       }
@@ -663,35 +663,37 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     m_scale[stp::res]=ampl->MuQ2();
     double mu2(Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2()));
     double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
+    mmur2=Max(mmur2,m_rsf*mu2);
     mas=Min(mas,cas);
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
+      mur2*=pow(m_rsf*mu2,coqcd);
       as*=pow(cas,coqcd);
-      sas+=cas*coqcd;
       oqcd+=coqcd;
     }
     if (oqcd==0) mur2=m_rsf*ampl->Mu2();
     else {
-      sas/=oqcd;
+      mur2=pow(mur2,1.0/oqcd);
+      as=pow(as,1.0/oqcd);
       if (m_nproc) {
-	if (s_nlocpl==1) {
-	  msg_Debugging()<<"  as_{NLO} = "<<sas<<"\n";
-	  as=pow(as*sas,1.0/(oqcd+1.0));
-	}
-	else if (s_nlocpl==2) {
+	if (s_nlocpl&2) {
 	  msg_Debugging()<<"  as_{NLO} = "<<mas<<"\n";
-	  as=pow(as*mas,1.0/(oqcd+1.0));
+	  mur2=pow(pow(mur2,oqcd)*mmur2,1.0/(oqcd+1.0));
+	  as=pow(pow(as,oqcd)*mas,1.0/(oqcd+1.0));
 	}
       }
-      else {
-	as=pow(as,1.0/oqcd);
+      if (s_nlocpl&1) {
+	double smur2(mur2);
+	mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
+				 m_rsf*1.01*sqr(rpa->gen.Ecms()));
+	if (!IsEqual(smur2,mur2))
+	  msg_Debugging()<<"\\mu_R = "<<sqrt(smur2)<<" -> "<<sqrt(mur2)
+			 <<", rel. dev. "<<2.*(smur2-mur2)/(smur2+mur2)<<"\n";
+	if (!IsEqual((*MODEL::as)(mur2),as))
+	  msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl;
       }
-      mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
-			       m_rsf*1.01*sqr(rpa->gen.Ecms()));
-      if (!IsEqual((*MODEL::as)(mur2),as))
-	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }
