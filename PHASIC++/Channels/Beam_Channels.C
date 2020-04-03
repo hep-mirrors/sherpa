@@ -148,10 +148,12 @@ void Beam_Channels::CheckForStructuresFromME() {
     }
   }
   if (fromFSR) return;
-  Flavour_Vector * resonances = p_psh->Process()->Process()->Resonances();
-  if (resonances && !resonances->empty()) {
-    for (size_t i=0;i<resonances->size();i++) {
-      Flavour flav = (*resonances)[i];
+  Flavour_Vector resonances;
+  msg_Out()<<METHOD<<" for "<<fromFSR<<": "<<resonances<<"\n";
+  if (p_psh->Process()->Process()->FillResonances(resonances) &&
+      !resonances.empty()) {
+    for (size_t i=0;i<resonances.size();i++) {
+      Flavour flav = resonances[i];
       double mass = flav.Mass();
       if (ATOOLS::IsZero(mass)) continue;
       m_beamparams.push_back(Channel_Info(channel_type::resonance,

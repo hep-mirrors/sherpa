@@ -813,28 +813,26 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
 }
 
 double Channel_Elements::GenerateYBackward(const double yexponent,const double tau,
-				       const Double_Container &xinfo,const Double_Container &yinfo,
-				       const double ran,const int mode) const
+					   const Double_Container &xinfo,const Double_Container &yinfo,
+					   const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
-  double y=-Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
+  ymin = ATOOLS::Max(yinfo[0],ymin);
+  ymax = ATOOLS::Min(yinfo[1],ymax);
+  double y = -Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
-    std::cout.precision(14);
-    msg_Error()<<"Channel_Elements::GenerateYBackward("<<tau<<","<<xinfo<<","
-		       <<yinfo<<"): ";
-    std::cout.precision(14);
-msg_Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
-		   <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+    msg_Error()<<"Channel_Elements::GenerateYBackward("<<logtau<<","<<xinfo<<","
+	       <<yinfo<<"): ymin, ymax vs. y : "
+	       <<ymin<<" "<<ymax<<" vs. "<<y
+	       <<" ("<<(ymin>y)<<", "<<(ymax<y)<<")\n";
     if (ATOOLS::IsEqual(y, ymin))
-       { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
-	 y = ymin; }
+      { msg_Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+	y = ymin; }
     if (ATOOLS::IsEqual(y, ymax))
       { msg_Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
 	 y = ymax; }

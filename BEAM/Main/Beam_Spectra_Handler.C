@@ -58,6 +58,8 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   }
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
+  rpa->gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
+  rpa->gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
   return true;
 }
 

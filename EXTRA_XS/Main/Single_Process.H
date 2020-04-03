@@ -38,7 +38,7 @@ namespace EXTRAXS {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     bool FillFinalState(const ATOOLS::Vec4D_Vector &p);
-    ATOOLS::Flavour_Vector * Resonances();
+    bool FillResonances(ATOOLS::Flavour_Vector & flavs);
 
     
     // inline functions

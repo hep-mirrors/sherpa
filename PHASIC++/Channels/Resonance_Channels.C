@@ -322,7 +322,6 @@ Resonance_Central(const double mass,const double width,
 
 void Resonance_Central::GeneratePoint(const double *rns)
 {
-	msg_Out()<<"GenerateYCentral called from " <<METHOD<<"\n"; //debugging
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) p_rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],p_rans[0]);

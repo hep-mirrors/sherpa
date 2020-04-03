@@ -84,7 +84,7 @@ void Multi_Channel::Reset()
     n_contrib  = 0;
     mn_points = mn_contrib = 0;
   }
-  msg_Tracking()<<"Channels for "<<name<<endl
+  msg_Tracking()<<"Channels for "<<name<<" ("<<this<<")\n"
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
   for(size_t i=0;i<channels.size();i++) {
     if (!m_readin) channels[i]->Reset(1./channels.size());
@@ -357,7 +357,6 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 
 void Multi_Channel::GeneratePoint(int mode)
 {
-  // msg_Out()<<"m_erans.size="<<m_erans.size()<<"\n"; //debugging
   if (m_erans.size()) msg_Debugging()<<METHOD<<"(): Generating variables\n";
   for (std::map<std::string,double>::iterator
 	 it(m_erans.begin());it!=m_erans.end();++it) {
@@ -368,10 +367,8 @@ void Multi_Channel::GeneratePoint(int mode)
   double disc=ran->Get();
   double sum=0.;
   for (size_t i=0;i<2;++i) rans[i]=ran->Get();
-  // msg_Out()<<"no. of channels = "<<channels.size()<<"\n"; //debugging
   for (size_t n=0;n<channels.size();++n) {
-    sum+=channels[n]->Alpha();
-    // msg_Out()<<"sum of alpha_"<<n<<" = "<<sum<<"\n"; //debugging
+    sum += channels[n]->Alpha();
     if (sum>disc) {
       channels[n]->GeneratePoint(rans);
       m_lastdice = n;
@@ -383,7 +380,7 @@ void Multi_Channel::GeneratePoint(int mode)
     m_lastdice = channels.size()-1;
     return;
   }
-  msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
+  msg_Error()<<"Multi_Channel::GeneratePoint("<<name<<"): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
   Abort();

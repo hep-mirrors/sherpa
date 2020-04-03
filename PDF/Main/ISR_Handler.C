@@ -115,8 +115,7 @@ void ISR_Handler::Output() {
 
 void ISR_Handler::Init(double *splimits) 
 {
-  double s=(p_beam[0]->OutMomentum()+
-	    p_beam[1]->OutMomentum()).Abs2();
+  double s = (p_beam[0]->OutMomentum()+p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa->gen.SetEcms(sqrt(s));
 
   m_splimits[0] = s*splimits[0];
@@ -307,19 +306,21 @@ void ISR_Handler::SetLimits()
     m_sprimekey[i] = m_splimits[i];
     if (i<2) m_ykey[i]=m_ylimits[i];
   }
-  m_xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
-    log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus()));
-  m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
-    log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus()));
-  double e1=p_beam[0]->OutMomentum()[0];
-  m_xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
-		      (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
-  double e2=p_beam[1]->OutMomentum()[0];
-  m_xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
-		      (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
-  m_sprimekey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
-  m_xkey[1]=log(m_xkey[1]);
-  m_xkey[3]=log(m_xkey[3]);
+  m_xkey[0] = ((m_mass2[0]==0.0)?
+	       -0.5*std::numeric_limits<double>::max():
+	       log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus())));
+  m_xkey[2] = ((m_mass2[1]==0.0)?
+	       -0.5*std::numeric_limits<double>::max():
+	       log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus())));
+  double e1 = p_beam[0]->OutMomentum()[0];
+  m_xkey[1] = ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+			  (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
+  double e2 = p_beam[1]->OutMomentum()[0];
+  m_xkey[3] = ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
+			  (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
+  m_sprimekey[1] = m_splimits[1] = Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
+  m_xkey[1] = log(m_xkey[1]);
+  m_xkey[3] = log(m_xkey[3]);
 }
 
 double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,

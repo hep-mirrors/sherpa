@@ -57,9 +57,9 @@ void Phase_Space_Point::Init(Phase_Space_Handler * psh) {
 		<<(p_beamchannels?p_beamchannels->NChannels():0)<<" beam channels, "
 		<<(p_isrchannels?p_isrchannels->NChannels():0)<<" ISR channels, "
 		<<(p_fsrchannels?p_fsrchannels->NChannels():0)<<" FSR channels:\n";
-  if (p_beamchannels) p_beamchannels->Print();
-  if (p_isrchannels)  p_isrchannels->Print();
-  if (p_fsrchannels)  p_fsrchannels->Print();
+  if (p_beamchannels) { p_beamchannels->Reset(); p_beamchannels->Print(); }
+  if (p_isrchannels)  { p_isrchannels->Reset();  p_isrchannels->Print(); }
+  if (p_fsrchannels)  { p_fsrchannels->Reset();  p_fsrchannels->Print(); }
 }
 
 void Phase_Space_Point::InitFixedIncomings() {
@@ -94,6 +94,7 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process)
   process->Process()->FillOnshellConditions();
   process->Process()->BuildCuts(p_cuts);
   if (m_nin>1) m_smin=ATOOLS::Max(sqr(process->ISRThreshold()),p_cuts->Smin());
+  msg_Out()<<METHOD<<" for cuts = "<<p_cuts<<", smin = "<<m_smin<<"\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

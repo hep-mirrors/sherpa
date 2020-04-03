@@ -208,24 +208,31 @@ const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t &
 const std::string Beam_Parameters::String(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<string>();
   vector<string> params{ m_settings[tag].GetVector<string>() };
-  if (pos>1 || pos>params.size()-1) 
-    THROW(fatal_error, "Parameter number mismatch.");
+  if (pos>1 || pos>params.size()-1) {
+    string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
+    THROW(fatal_error, message);
+  }
   return (pos==0)?params.front():params.back();      
 }
 
 const double Beam_Parameters::operator()(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<double>();
   vector<double> params{ m_settings[tag].GetVector<double>() };
-  if (pos>1 || pos>params.size()-1) 
-    THROW(fatal_error, "Parameter number mismatch.");
+  if (!(tag=="BEAM_ENERGIES" || tag=="BEAM_POLARIZATIONS") &&
+      (pos>1 || pos>params.size()-1)) {
+    string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
+    THROW(fatal_error, message);
+  }
   return (pos==0)?params.front():params.back();      
 }
 
 const int Beam_Parameters::Switch(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<int>();
   vector<int> params{ m_settings[tag].GetVector<int>() };
-  if (pos>1 || pos>params.size()-1) 
-    THROW(fatal_error, "Parameter number mismatch.");
+  if (pos>1 || pos>params.size()-1)  {
+    string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
+    THROW(fatal_error, message);
+  }
   return (pos==0)?params.front():params.back();      
 }
 

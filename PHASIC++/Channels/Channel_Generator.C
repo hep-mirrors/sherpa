@@ -33,6 +33,7 @@ namespace PHASIC {
 
     int GenerateChannels()
     {
+      msg_Out()<<METHOD<<".\n";
       return p_proc->FillIntegrator(&*p_proc->Integrator()->PSHandler());
     }
 

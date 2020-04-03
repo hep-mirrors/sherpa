@@ -15,7 +15,7 @@ using namespace ATOOLS;
 
 ISR_Channels::ISR_Channels(Phase_Space_Handler *const psh,
 			     const std::string &name) :
-  Multi_Channel(name), p_psh(psh), m_keyid("BEAM"),
+  Multi_Channel(name), p_psh(psh), m_keyid("ISR"),
   p_isrhandler(p_psh->GetISRHandler()),
   m_isrmode(p_isrhandler->Mode())
 {
@@ -59,8 +59,6 @@ bool ISR_Channels::MakeChannels()
   return CreateChannels();
 }
 
-
-
 void ISR_Channels::CheckForStructuresFromME() {
   if (!p_psh->Process()) {
     msg_Error()<<"Warning in "<<METHOD<<":\n"
@@ -73,7 +71,7 @@ void ISR_Channels::CheckForStructuresFromME() {
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
   std::set<double>    thresholds;
   if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
-    thresholds.insert(sqrt(p_psh->Cuts()->Smin()));
+    if (p_psh->Cuts()!=NULL) thresholds.insert(sqrt(p_psh->Cuts()->Smin()));
   }
   bool onshellresonance(false), fromFSR(false);  
   for (size_t i=0;i<nfsrchannels;i++) {
@@ -108,10 +106,12 @@ void ISR_Channels::CheckForStructuresFromME() {
     }
   }
   if (fromFSR) return;
-  Flavour_Vector * resonances = p_psh->Process()->Process()->Resonances();
-  if (resonances && !resonances->empty()) {
-    for (size_t i=0;i<resonances->size();i++) {
-      Flavour flav = (*resonances)[i];
+  Flavour_Vector resonances;
+  msg_Out()<<METHOD<<" for "<<fromFSR<<": "<<resonances<<"\n";
+  if (p_psh->Process()->Process()->FillResonances(resonances) &&
+      !resonances.empty()) {
+    for (size_t i=0;i<resonances.size();i++) {
+      Flavour flav = resonances[i];
       double mass = flav.Mass();
       if (ATOOLS::IsZero(mass)) continue;
       for (std::set<double>::iterator yit=m_yexponents.begin();
@@ -162,10 +162,12 @@ void ISR_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
 		  m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (dabs(yexp)<1.e-3) {
       Add(new Simple_Pole_Uniform(spexp,m_keyid,p_psh->GetInfo(),mode));
-	Add(new Simple_Pole_Central(spexp,m_keyid,p_psh->GetInfo(),mode));
+      Add(new Simple_Pole_Central(spexp,m_keyid,p_psh->GetInfo(),mode));
     }
-    Add(new Simple_Pole_Forward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
-    Add(new Simple_Pole_Backward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
+    else {
+      Add(new Simple_Pole_Forward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
+      Add(new Simple_Pole_Backward(spexp,yexp,m_keyid,p_psh->GetInfo(),mode));
+    }
   }
   else if (mode==3 && m_isrmode==PDF::isrmode::lepton_hadron) {
     Add(new Simple_Pole_Uniform(spexp,m_keyid,p_psh->GetInfo(),mode));

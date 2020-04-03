@@ -29,7 +29,7 @@ ME2_Base::ME2_Base(const External_ME_Args& args) :
 ME2_Base::~ME2_Base() {
   for (std::map<size_t,Flavour_Vector *>::iterator flit=m_cfls.begin();
        flit!=m_cfls.end();flit++)
-    delete flit->second;
+    if (flit->second) delete flit->second;
   m_cfls.clear();
 }
 

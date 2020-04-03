@@ -16,6 +16,7 @@ namespace EXTRAXS {
     PHASIC::Process_Base *GetProcess(const PHASIC::Process_Info &pi) const;
     bool Initialize(PHASIC::Process_Base *const proc);
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+    bool FillResonances(ATOOLS::Flavour_Vector & flavs);
   };
 
 }// end of namespace EXTRAXS

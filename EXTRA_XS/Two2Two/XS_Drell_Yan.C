@@ -86,10 +86,12 @@ XS_ee_ffbar::XS_ee_ffbar(const External_ME_Args& args)
     kswitch = 1;
   }
 
-  Flavour_Vector * flavs = new Flavour_Vector;
-  flavs->push_back(kf_photon);
-  flavs->push_back(kf_Z);
-  m_cfls[3] = flavs;
+  for (size_t i=3;i<13;i+=9) {
+    Flavour_Vector * flavs = new Flavour_Vector;
+    flavs->push_back(kf_photon);
+    flavs->push_back(kf_Z);
+    m_cfls[i]  = flavs;
+  }
 }
 
 double XS_ee_ffbar::operator()(const ATOOLS::Vec4D_Vector& momenta) {
@@ -124,13 +126,16 @@ operator()(const External_ME_Args& args) const
 
   const Flavour_Vector fl=args.Flavours();
   if (fl.size()!=4) return NULL;
-  if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() && fl[0].IsQuark() && 
-       fl[1]==fl[0].Bar()) ||   
-      (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
-       fl[3]==fl[2].Bar()) ||
+  if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
+       fl[0].IsQuark() && fl[1]==fl[0].Bar()) ||   
+      (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
+       fl[2].IsQuark() && fl[3]==fl[2].Bar()) ||
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsLepton() && 
        fl[3]==fl[2].Bar() && abs(int(fl[2].Kfcode())-int(fl[0].Kfcode()))>1)) {
-    if (args.m_orders[0]==0 && args.m_orders[1]==2) {
+    if ((args.m_orders[0]==0 || args.m_orders[0]==99) && args.m_orders[1]==2) {
+      msg_Out()<<METHOD<<": "<<fl.size()<<" "
+	       <<"("<<fl[0]<<" + "<<fl[1]<<" --> "<<fl[2]<<" + "<<fl[3]<<"), "
+	       <<"orders = {"<<args.m_orders[0]<<", "<<args.m_orders[1]<<"}.\n";
       return new XS_ee_ffbar(args);
     }
   }

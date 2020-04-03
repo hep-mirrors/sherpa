@@ -120,6 +120,7 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
 
 bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
 {
+  msg_Out()<<METHOD<<".\n";
   PHASIC::Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
   if (m_nin==2 && m_nout==1 && m_flavs[2]==Flavour(kf_instanton)) {
@@ -157,10 +158,17 @@ bool Single_Process::Combinable(const size_t &idi,const size_t &idj)
   }
 }
 
-Flavour_Vector * Single_Process::Resonances() {
-  msg_Out()<<METHOD<<".\n";
+bool Single_Process::FillResonances(ATOOLS::Flavour_Vector & flavs) {
   Flavour_Vector * resonances = p_born_me2->CombinedFlavour(3);
-  return (resonances->empty()?NULL:resonances);
+  if (resonances->empty()) return false;
+  for (size_t i=0;i<resonances->size();i++) {
+    bool found = false;
+    for (size_t j=0;j<flavs.size();j++) {
+      if ((*resonances)[i]==flavs[j]) { found = true; break; }
+    }
+    if (!found) flavs.push_back((*resonances)[i]);
+  }
+  return true;
 }
 
 const Flavour_Vector & Single_Process::CombinedFlavour(const size_t &idij)

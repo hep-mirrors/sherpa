@@ -86,7 +86,6 @@ DECLARE_TREEME2_GETTER(DMDM_mumu,"DMDM_mumu")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,External_ME_Args,DMDM_mumu>::
 operator()(const External_ME_Args &args) const
 {
-  msg_Out()<<METHOD<<".\n";
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (MODEL::s_model->Name()!="SMDM") return NULL;
 
