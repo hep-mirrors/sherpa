@@ -106,11 +106,12 @@ ISR_Handler::~ISR_Handler()
 }
 
 void ISR_Handler::Output() {
-  msg_Out()<<"ISR_Handler: type = "<<m_type<<"\n"
-	   <<"    for "<<p_isrbase[0]->Flavour()
-	   <<" (internal structure = "<<p_isrbase[0]->On()<<")\n"
-	   <<"    and "<<p_isrbase[1]->Flavour()
-	   <<" (internal structure = "<<p_isrbase[1]->On()<<")\n";
+  if (msg_LevelIsTracking() || msg_LevelIsInfo()) 
+    msg_Out()<<"ISR_Handler: type = "<<m_type<<"\n"
+	     <<"    for "<<p_isrbase[0]->Flavour()
+	     <<" (internal structure = "<<p_isrbase[0]->On()<<")\n"
+	     <<"    and "<<p_isrbase[1]->Flavour()
+	     <<" (internal structure = "<<p_isrbase[1]->On()<<")\n";
 }
 
 void ISR_Handler::Init(double *splimits) 
