@@ -48,7 +48,6 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
   }
   Flavour_Vector fl; fl.resize(4);
-  Process_Base::SortFlavours(campl, 1);
   fl[0]=campl->Leg(0)->Flav();
   fl[1]=campl->Leg(1)->Flav();
   fl[2]=campl->Leg(2)->Flav();
