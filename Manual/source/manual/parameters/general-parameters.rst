@@ -540,13 +540,13 @@ generated event. This can be evoked with the following syntax:
 
    VARIATIONS:
    - ScaleFactors:
-       MuR: <muR-fac-1>
-       MuF: <muF-fac-1>
+       MuR2: <muR2-fac-1>
+       MuF2: <muF2-fac-1>
        QCUT: <qcut-fac-1>
      PDF: <PDF-1>
    - ScaleFactors:
-       MuR: <muR-fac-2>
-       MuF: <muF-fac-2>
+       MuR2: <muR2-fac-2>
+       MuF2: <muF2-fac-2>
        QCUT: <qcut-fac-2>
      PDF: <PDF-2>
    ...
@@ -555,14 +555,14 @@ The key word ``VARIATIONS`` takes a list of variations.  Each variation is
 specified by a set of scale factors, and a PDF choice (or AlphaS(MZ) choice,
 see below).
 
-Scale factors can be given for the renormalisation and factorisation scale, and
-for the merging scale ``QCUT``. All scale factors can be omitted (they default
-to 1.0). Please note that scales and scale factors are, as always in Sherpa,
-given in their quadratic form. Thus, a variation of factor 4.0 of the squared
-scale [GeV^2] means a variation of factor 2 on the scale itself [GeV].
-Instead of ``MuR`` and ``MuF``, one can also use the keyword ``Mu``.
-In this case, the value is applied to both the renormalisation and the
-factorisation scale.
+Scale factors can be given for the renormalisation, factorisation and for the
+merging scale.  The corresponding keys are ``MuR2``, ``MuF2`` and ``QCUT``,
+respectively. The factors for the renormalisation and factorisation scales
+must be given in their quadratic form, i.e. ``MuR2: 4.0`` applies a scale
+factor of 2.0 to the renormalisation scale. All scale factors can be omitted
+(they default to 1.0). Instead of ``MuR2`` and ``MuF2``, one can also use the
+keyword ``Mu2``. In this case, the given factor is applied to both the
+renormalisation and the factorisation scale.
 
 For the ``PDF`` specification, any set present in any of the PDF library
 interfaces loaded through ``PDF_LIBRARY`` can be used. If no PDF set is given
@@ -577,41 +577,43 @@ a pure AlphaS variation by giving its value at the Z mass scale: ``AlphaS(MZ):
 It can be painful to write every variation explicitly, e.g. for 7-point scale
 factor variations or if one want variations for all members of a PDF set.
 Therefore an asterisk can be appended to some values, which results in an
-expansion.  For PDF sets, this means that the variation is repeated for each
+*expansion*.  For PDF sets, this means that the variation is repeated for each
 member of that set.  For scale factors, ``4.0*`` is expanded to itself, unity,
 and its inverse: ``1.0/4.0, 1.0, 4.0``.  A special meaning is reserved for
-specifying ``Mu: 4.0*``, which expands to a 7-point scale variation:
+specifying ``Mu2: 4.0*``, which expands to a 7-point scale variation:
 
 .. code-block:: yaml
 
    VARIATIONS:
      - ScaleFactors:
-         Mu: 4.0*
+         Mu2: 4.0*
 
-   # is equivalent to
+is therefore equivalent to
+
+.. code-block:: yaml
 
    VARIATIONS:
      - ScaleFactors:
-         MuF: 0.25
-         MuR: 0.25
+         MuF2: 0.25
+         MuR2: 0.25
      - ScaleFactors:
-         MuF: 1.0
-         MuR: 0.25
+         MuF2: 1.0
+         MuR2: 0.25
      - ScaleFactors:
-         MuF: 0.25
-         MuR: 1.0
+         MuF2: 0.25
+         MuR2: 1.0
      - ScaleFactors:
-         MuF: 1.0
-         MuR: 1.0
+         MuF2: 1.0
+         MuR2: 1.0
      - ScaleFactors:
-         MuF: 4.0
-         MuR: 1.0
+         MuF2: 4.0
+         MuR2: 1.0
      - ScaleFactors:
-         MuF: 1.0
-         MuR: 4.0
+         MuF2: 1.0
+         MuR2: 4.0
      - ScaleFactors:
-         MuF: 4.0
-         MuR: 4.0
+         MuF2: 4.0
+         MuR2: 4.0
 
 As another example, a complete variation using the PDF4LHC convention would
 read
@@ -620,7 +622,7 @@ read
 
    VARIATIONS:
      - ScaleFactors:
-         Mu: 4.0*
+         Mu2: 4.0*
      - PDF: CT10nlo*
      - PDF: MMHT2014nlo68cl*
      - PDF: NNPDF30_nlo_as_0118*

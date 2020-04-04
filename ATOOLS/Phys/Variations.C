@@ -213,20 +213,20 @@ void Variations::AddParameters(Scoped_Settings& s)
   std::vector<std::string> scalestringparams;
   ScaleFactorExpansions::code scalefactorexpansions(ScaleFactorExpansions::None);
   if (s["ScaleFactors"].IsMap()) {
-    auto mufac = s["ScaleFactors"]["Mu"].SetDefault("None").Get<std::string>();
+    auto mufac = s["ScaleFactors"]["Mu2"].SetDefault("None").Get<std::string>();
     if (mufac != "None") {
       ExpandableVariation var {mufac};
       if (var.expand)
         scalefactorexpansions |= ScaleFactorExpansions::SevenPoint;
       scalestringparams = {var.var, var.var};
     } else {
-      // "Mu" not given, or left explicitly at its default value; try the
-      // individual scale factors MuF and MuR instead
-      auto muffac = s["ScaleFactors"]["MuF"].SetDefault("1.0").Get<std::string>();
+      // "Mu2" not given, or left explicitly at its default value; try the
+      // individual scale factors MuF2 and MuR2 instead
+      auto muffac = s["ScaleFactors"]["MuF2"].SetDefault("1.0").Get<std::string>();
       ExpandableVariation mufvar {muffac};
       if (mufvar.expand)
         scalefactorexpansions |= ScaleFactorExpansions::MuF;
-      auto murfac = s["ScaleFactors"]["MuR"].SetDefault("1.0").Get<std::string>();
+      auto murfac = s["ScaleFactors"]["MuR2"].SetDefault("1.0").Get<std::string>();
       ExpandableVariation murvar {murfac};
       if (murvar.expand)
         scalefactorexpansions |= ScaleFactorExpansions::MuR;
@@ -239,7 +239,7 @@ void Variations::AddParameters(Scoped_Settings& s)
     scalestringparams.push_back(var.var);
   } else {
     // just a scalar is given for s["ScaleFactors"], interprete it though it
-    // was given as s["ScaleFactors"]["Mu"]
+    // was given as s["ScaleFactors"]["Mu2"]
     auto mufac = s["ScaleFactors"].SetDefault("1.0").Get<std::string>();
     ExpandableVariation var {mufac};
     if (var.expand)
