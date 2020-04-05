@@ -120,7 +120,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|256);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|256|1024);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
@@ -187,6 +187,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
     512 - No ordering check if first RS split
+    1024 - No differential for core
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
@@ -212,7 +213,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
 int MEPS_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
-  if (mode==1 || m_cmode&4 || (m_cmode&32 && m_rsproc)) {
+  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_rsproc)) {
     int imax(-1);
     double max(0.0);
     for (size_t i(0);i<ccs.size();++i)
@@ -280,7 +281,7 @@ bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
-    if (cc.m_k==sub->m_k &&
+    if (cc.m_k==sub->m_k && cc.m_mo==sub->p_fl[sub->m_ijt] &&
 	((cc.m_i==sub->m_i && cc.m_j==sub->m_j) ||
 	 (cc.m_i==sub->m_j && cc.m_j==sub->m_i))) return true;
   }
@@ -327,7 +328,7 @@ double MEPS_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode) 
 {
   m_p=momenta;
-  if (m_nproc || m_cmode&8) p_ci=NULL;
+  if (m_nproc || (m_cmode&8)) p_ci=NULL;
   else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
@@ -424,7 +425,7 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   msg_Debugging()<<"}\n";
-  bool usemax(m_cmode&4 || (m_cmode&32 && m_rsproc));
+  bool usemax((m_cmode&4) || ((m_cmode&32) && m_rsproc));
   double disc(sum*ran->Get());
   sum=0.0;
   for (size_t i(0);i<ampls.size();++i) {
@@ -476,7 +477,7 @@ void MEPS_Scale_Setter::Cluster
   ampl->SetMS(p_proc->Generator());
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
-  bool strict(!(m_cmode&1 && !rpa->gen.NumberOfTrials()));
+  bool strict(!((m_cmode&1) && !rpa->gen.NumberOfTrials()));
   DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
@@ -567,6 +568,7 @@ bool MEPS_Scale_Setter::ClusterStep
 double MEPS_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
+  if (m_cmode&1024) return 1.0;
   if (ampl->Prev()==NULL) return 1.0;
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
