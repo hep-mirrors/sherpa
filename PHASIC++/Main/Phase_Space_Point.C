@@ -94,7 +94,6 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process)
   process->Process()->FillOnshellConditions();
   process->Process()->BuildCuts(p_cuts);
   if (m_nin>1) m_smin=ATOOLS::Max(sqr(process->ISRThreshold()),p_cuts->Smin());
-  msg_Out()<<METHOD<<" for cuts = "<<p_cuts<<", smin = "<<m_smin<<"\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

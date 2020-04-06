@@ -57,5 +57,5 @@ bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 				(Flavour*)&p_proc->Flavours().front(),this));
   InitPSGenerator(0);
   p_fsmc->Add(ch);
-  return false;
+  return true;
 }      
