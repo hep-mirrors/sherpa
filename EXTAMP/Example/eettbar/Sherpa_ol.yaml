@@ -1,0 +1,37 @@
+EVENTS: 1M
+ERROR: 0.1
+RANDOM_SEED: 0
+
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+MI_HANDLER: None
+
+ME_GENERATORS:
+- External
+- OpenLoops
+
+SHERPA_LDADD: Proc_fsrchannels6
+
+SCALES: VAR{sqr(91.2)}
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 1000.
+
+PROCESSES:
+- 11 -11 -> -11 12 13 -14 5 -5:
+    Order: {QCD: 0, EW: 6}
+    Integrator: fsrchannels6
+
+SELECTORS:
+- NJetFinder:
+    N: 2
+    PTMin: 100.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1
+- [Mass, -11, 12, 60, 100]
+- [Mass, 13, -14, 60, 100]
+- [PT, -11, 10, E_CMS]
+- [PT, 12, 10, E_CMS]
+- [PT, 13, 10, E_CMS]
+- [PT, -14, 10, E_CMS]
