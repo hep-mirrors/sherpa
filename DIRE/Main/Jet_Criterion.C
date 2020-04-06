@@ -40,16 +40,6 @@ namespace DIRE {
     {
       double kt21(2.0*(pi*pj)*(pj*pk)/(pi*pk));
       double kt22(2.0*(pj*pi)*(pi*pk)/(pj*pk));
-      if (kt21>pi*pk) {
-	Vec4D p(pi+pk), n(-p);
-	n[0]=p[0]=p.PSpat();
-	kt21=2.0*(p*pj)*(pj*n)/(p*n);
-      }
-      if (kt22>pj*pk) {
-	Vec4D p(pj+pk), n(-p);
-	n[0]=p[0]=p.PSpat();
-	kt22=2.0*(p*pi)*(pi*n)/(p*n);
-      }
       if (pi[0]<0.0) return kt21;
       if (pj[0]<0.0) return kt22;
       return Min(kt21,kt22);
