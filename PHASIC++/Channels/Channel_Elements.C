@@ -239,6 +239,45 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
   return s;
 }
 
+double Channel_Elements::ExponentialMomenta(double sexp,double smin,double smax,
+        double masses[],double ran)
+{
+  double sMod = Channel_Basics::ExponentialDist(sexp,smin-sqr(masses[0]+masses[1]),
+        smax-sqr(masses[0]+masses[1]),ran);
+  double s = sMod + sqr(masses[0]+masses[1]); 
+  if (!(s>0) && !(s<0) && s!=0) {
+    cout.precision(12);
+    cout<<"ExpMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
+    msg_Error()<<"ExponentialMomenta produced a nan !"<<endl;
+  }
+  // msg_Out()<<"s="<<s<<","; //debugging
+  return s;
+}
+double Channel_Elements::ExponentialWeight(double sexp,double smin,double smax,
+					    double masses[],const double s,double &ran)
+{
+  if (s<smin||s>smax||smin==smax) {
+    ran=-1.;
+    return 0.;
+  }
+  double wt = 0;
+  double cbwt = Channel_Basics::ExponentialWeight(sexp,smin-sqr(masses[0]+masses[1]),
+        smax-sqr(masses[0]+masses[1]));
+  if (ATOOLS::IsZero(cbwt)) {
+    wt = sexp*exp(-sexp*(s-smin)); // assumes upper limit is infinity
+  }
+  else {
+    wt = exp(-sexp*s) / cbwt;
+  }
+  if (!(wt>0) && !(wt<0) && wt!=0) {
+    msg_Error()<<"ExponentialWeight produces a nan: "<<wt<<endl
+			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
+			  <<"   sexp = "<<sexp<<endl;
+  }
+  msg_Out()<<"weight="<<wt<<"\n"; //debugging
+  return wt;
+}
+
 double Channel_Elements::AntennaWeight(double amin,double amax,
 				       const double a,double &ran)
 {
@@ -610,8 +649,8 @@ double Channel_Elements::GenerateDMRapidityUniform(const double masses[], const 
               Double_Container &xinfo, const double ran, const int mode)
 {
   double s = spinfo[2];
-  double xmin = xinfo[0] = (masses[0]>masses[1]) ? 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2.*s)
-                                                 : 0.5 - (sqr(masses[0])-sqr(masses[1]))/(2*s);
+  double xmin = xinfo[0] = (masses[0]>masses[1]) ? 0.5 - (sqr(masses[0])-sqr(masses[1]))/(2.*s)
+                                                 : 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2*s);
   double xmax = xinfo[1] = 1 - xinfo[0];
   // msg_Out()<<xmin<<","<<xmax<<"\n";
 

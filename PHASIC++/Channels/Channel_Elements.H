@@ -46,6 +46,9 @@ namespace PHASIC {
     double MasslessPropWeight(double,double,double,double,double&);
     double MasslessPropMomenta(double,double,double,double);
 
+    double ExponentialMomenta(double,double,double,double[],double);
+    double ExponentialWeight(double,double,double,double[],double,double&);
+
     double AntennaWeight(double amin,double amax,const double a,double &ran);
     double AntennaMomenta(double amin,double amax,double ran);
 
