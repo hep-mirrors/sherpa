@@ -184,7 +184,6 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* decblo
   if (decblob->Type()!=btp::Hadron_Decay || (*decblob)["Partonic"]==NULL)
     return false;
 
-  DEBUG_FUNC(decblob->InParticle(0)->Flav());
   Return_Value::IncCall(METHOD);
         
   bool anti=false;
@@ -239,14 +238,13 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* decblo
 
 void Hadron_Decay_Handler::MakeShowerBlobsForPartonicDecays(Blob* initialblob, Blob_List* bloblist)
 {
-  DEBUG_FUNC(bloblist->size());
   for (auto initialblob: *bloblist) {
     if (initialblob->Type()!=btp::Hadron_Decay) continue;
     bool partonic=false;
     for (auto part: initialblob->GetOutParticles())
       if (part->Flav().IsQCD() && part->DecayBlob()==NULL) partonic=true;
     if (!partonic) continue;
-    DEBUG_INFO("found partonic decay: "<<*initialblob);
+    DEBUG_FUNC(initialblob->Id());
     Blob* showerblob = bloblist->AddBlob(btp::Shower);
     showerblob->AddStatus(blob_status::needs_showers);
 

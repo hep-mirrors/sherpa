@@ -39,7 +39,7 @@ void Decay_Clustering::DefineInitialShowerConditions(Blob* initialblob, Blob* sh
   }
   size_t imax=ampl->Legs().size()-1;
   for (int i=0; i<initialblob->NOutP(); ++i) {
-    if (initialblob->OutParticle(i)->DecayBlob()) {
+    if (!initialblob->OutParticle(i)->Flav().IsStable()) {
       AddDecayClustering(ampl, initialblob->OutParticle(i)->DecayBlob(),
                          imax, 1<<(initialblob->NInP()+i));
     }
@@ -140,9 +140,9 @@ void Decay_Clustering::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     ids.push_back(idnew);
     while (photons.size())
       AddPhotonsClustering(copy, daughters, photons, imax, ids);
-    if (daughters[0]->DecayBlob())
+    if (!daughters[0]->Flav().IsStable())
       AddDecayClustering(copy, daughters[0]->DecayBlob(), imax, idmother);
-    if (daughters[1]->DecayBlob())
+    if (!daughters[1]->Flav().IsStable())
       AddDecayClustering(copy, daughters[1]->DecayBlob(), imax, idnew);
     ampl=copy;
   }

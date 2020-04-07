@@ -170,20 +170,15 @@ void Amplitude2_Tensor::ContractDiagonal(const Particle* p) {
 
 void Amplitude2_Tensor::Contract(const Amplitude2_Matrix* D) {
   const Particle* part=D->Particle();
-  DEBUG_FUNC(*part);
-  DEBUG_VAR(Trace());
   if (part==p_part) {
     if (p_next) {
-      DEBUG_INFO("found. summing hels.");
       (*p_next)[0]->Multiply((*D)[0]);
       for (size_t i=1; i<p_next->size(); ++i)
         (*p_next)[0]->Add((*p_next)[i], (*D)[i]);
 
-      DEBUG_INFO("deleting all but remaining.");
       for (size_t i=1; i<p_next->size(); ++i) delete (*p_next)[i];
       Amplitude2_Tensor* tmp=(*p_next)[0];
 
-      DEBUG_INFO("setting the remaining as this.");
       p_part=tmp->p_part;
       tmp->p_part=NULL;
       m_value=tmp->m_value;
@@ -203,16 +198,13 @@ void Amplitude2_Tensor::Contract(const Amplitude2_Matrix* D) {
     else THROW(fatal_error, "Particle not found");
   }
   else {
-    DEBUG_INFO("not here. looking further down the tree.");
     if (p_next) {
       for (size_t i(0);i<p_next->size();++i) {
         (*p_next)[i]->Contract(D);
       }
-      DEBUG_INFO("finished");
     }
     else THROW(fatal_error, "Particle not found");
   }
-  DEBUG_VAR(Trace());
 }      
 
 Amplitude2_Matrix Amplitude2_Tensor::ReduceToMatrix(const Particle* left) const

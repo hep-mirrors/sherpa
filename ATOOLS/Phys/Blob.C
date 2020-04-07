@@ -291,8 +291,7 @@ void Blob::DeleteInParticle(Particle * _part) {
       else {
 	msg_Out()<<"WARNING in "<<METHOD<<" ("<<Id()<<"):"<<std::endl
 		 <<"   particle not owned by the Blob asked to delete it"
-		 <<std::endl
-		 <<"   "<<(*_part)<<std::endl;
+		 <<std::endl;
       }
       m_inparticles.erase(part);
       return ;
