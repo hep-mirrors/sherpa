@@ -281,7 +281,9 @@ bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
-    if (cc.m_k==sub->m_k && cc.m_mo==sub->p_fl[sub->m_ijt] &&
+    Flavour mofl(sub->p_fl[sub->m_ijt]);
+    if (sub->m_ijt<p_proc->NIn()) mofl=mofl.Bar();
+    if (cc.m_k==sub->m_k && cc.m_mo==mofl &&
 	((cc.m_i==sub->m_i && cc.m_j==sub->m_j) ||
 	 (cc.m_i==sub->m_j && cc.m_j==sub->m_i))) return true;
   }
