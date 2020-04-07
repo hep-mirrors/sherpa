@@ -11,7 +11,7 @@ namespace PHASIC {
     ATOOLS::Info_Key m_spkey, m_sgridkey;
   public:
     Simple_Pole_RelicDensity(const double exponent,const std::string cinfo,
-			     ATOOLS::Integration_Info *info);
+            ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans);
       void GenerateWeight(const int & mode=0);
   };

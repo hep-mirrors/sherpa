@@ -9,6 +9,7 @@
 #include "PHASIC++/Channels/Threshold_Channels.H"
 #include "PHASIC++/Channels/Leading_Log_Channels.H"
 #include "PHASIC++/Channels/LBS_Compton_Peak_Channels.H"
+#include "PHASIC++/Channels/Exponential_Channels.H"
 
 using namespace PHASIC;
 using namespace BEAM;
@@ -38,8 +39,8 @@ bool Beam_Channels::MakeChannels()
   if (m_beamparams.size()>0) return CreateChannels();
   switch (m_beammode) {
   case beammode::relic_density:
-    m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
-    m_beamparams.push_back(Channel_Info(channel_type::simple,2.0));
+    // m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
+    m_beamparams.push_back(Channel_Info(channel_type::exponential,0.1));
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
@@ -108,7 +109,7 @@ bool Beam_Channels::DefineColliderChannels() {
 	       <<"   Will pretend  a simple pole is good enough.\n";
     m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
   }
-  return true;  
+  return true;
 }
 
 void Beam_Channels::CheckForStructuresFromME() {
@@ -195,6 +196,14 @@ bool Beam_Channels::CreateChannels()
     case channel_type::laserback:
       AddLaserBackscattering(i,mode);
       break;
+		case channel_type::exponential:
+			if (m_beammode==beammode::relic_density) {
+				double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
+		    double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
+				Add(new Exponential_RelicDensity(m_beamparams[i].parameters[0],mass1,mass2,
+							m_keyid,p_psh->GetInfo()));
+			}
+			break;
     case channel_type::leadinglog:
     case channel_type::unknown:
       msg_Error()<<"Error in "<<METHOD<<":\n"
@@ -277,7 +286,7 @@ void Beam_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
     }
   }
 }
- 
+
 void Beam_Channels::AddLaserBackscattering(const size_t & chno,const size_t & mode) {
   double exponent = m_beamparams[chno].parameters[0];
   double pole     = m_beamparams[chno].parameters[1];

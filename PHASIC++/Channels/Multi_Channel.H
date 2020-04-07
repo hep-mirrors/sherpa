@@ -15,10 +15,11 @@ namespace PHASIC {
       threshold  = 2,
       leadinglog = 3,
       laserback  = 4,
+      exponential= 5,
       unknown    = 99
     };
   };
-    
+
   struct Channel_Info {
     channel_type::code   type;
     std::vector <double> parameters;
@@ -31,9 +32,9 @@ namespace PHASIC {
 		 const double & p1) : type(ctype)
     { parameters.push_back(p0); parameters.push_back(p1); }
     Channel_Info(const channel_type::code & ctype,const double & p0,
-		 const double & p1,const double & p2) : type(ctype) 
+		 const double & p1,const double & p2) : type(ctype)
     { parameters.push_back(p0); parameters.push_back(p1); parameters.push_back(p2); }
-    
+
     bool operator==(const Channel_Info & ci) {
       if (type != ci.type)                           return 0;
       if (parameters.size() != ci.parameters.size()) return 0;
@@ -68,10 +69,10 @@ namespace PHASIC {
 
     virtual bool Initialize();
 
-    void             Add(Single_Channel *);  
-    virtual void     DropAllChannels(const bool del=true);    
-    void             DropChannel(int);     
-    Single_Channel * Channel(int); 
+    void             Add(Single_Channel *);
+    virtual void     DropAllChannels(const bool del=true);
+    void             DropChannel(int);
+    Single_Channel * Channel(int);
     virtual void     Reset();
     virtual void     Optimize(double);
     virtual void     MPISync();
@@ -91,7 +92,7 @@ namespace PHASIC {
 
     virtual void AddPoint(double);
     virtual void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *);
-    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);     
+    virtual void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
 
     void GeneratePoint(int mode=0);
     void GenerateWeight(int mode=0);
@@ -111,7 +112,7 @@ namespace PHASIC {
     size_t NChannels() const;
 
     virtual size_t              Number()    { return channels.size(); }
-    inline long unsigned int    N()         { return n_points; }    
+    inline long unsigned int    N()         { return n_points; }
     inline long unsigned int    ValidN()    { return n_contrib; }
     inline long unsigned int    ValidMN()   { return mn_contrib; }
     inline int                  Nin()       { return nin; }
@@ -136,19 +137,19 @@ namespace PHASIC {
   /*!
     This is the Multi_Channel, AMEGICs preferred integration
     tool. The idea is to have a vector of Single_Channels
-    that are repeatedly called according to their a priori 
+    that are repeatedly called according to their a priori
     weights (alpha in the channels). These weights are optimized
     during integration such that the overall variance is minimized.
   */
   /*!
     Some basic ingredients for all channels :
     numbers of legs and their flavours (not needed for isr)
-    and the name of the channel. This name might be given explicitly 
-    (for instance for ISR_Channels) or it may be constructed from amplitudes 
+    and the name of the channel. This name might be given explicitly
+    (for instance for ISR_Channels) or it may be constructed from amplitudes
     in the Phase_Space/Channel_Generator.
   */
   /*!
-    Stuff for the immediate integration 
+    Stuff for the immediate integration
   */
   /*!
     Managing the multichannel, adding and dropping channels as well as
@@ -158,11 +159,11 @@ namespace PHASIC {
     Reset does a complete reset of the multi-channel. All a-priori weights are reset
     to uniform probabilities, the individual channels are reset, and the actual weights
     of all channels are set to 0. Furthermore, the result and the result2 within
-    the multi-channel are set to 0, the minimal spread so far is set to some 
-    arbitrary high value. If not existing so far, spread-vectors are initialized.      
+    the multi-channel are set to 0, the minimal spread so far is set to some
+    arbitrary high value. If not existing so far, spread-vectors are initialized.
   */
   /*!
-    Here the counters within an iterations are reset to 0. 
+    Here the counters within an iterations are reset to 0.
     I doubt whether we need this.
   */
   /*!

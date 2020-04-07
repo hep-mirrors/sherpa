@@ -33,8 +33,9 @@ libPhasicChannels_la_SOURCES  =	\
 				FSR_Channels.C \
 				BBar_Multi_Channel.C \
 				CS_Dipole.C \
-                                CS_Dipoles.C \
-                                BBar_Emission_Generator.C
+        CS_Dipoles.C \
+        BBar_Emission_Generator.C \
+				Exponential_Channels.C
 
 localinc_HEADERS      =	\
 			CSS_Kinematics.H \
@@ -65,4 +66,5 @@ localinc_HEADERS      =	\
 			BBar_Multi_Channel.H \
 			CS_Dipole.H \
 			CS_Dipoles.H \
-			BBar_Emission_Generator.H
+			BBar_Emission_Generator.H \
+			Exponential_Channels.H 

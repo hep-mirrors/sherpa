@@ -10,8 +10,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Simple_Pole_RelicDensity::
-Simple_Pole_RelicDensity(const double exponent,const std::string cinfo,
-			 ATOOLS::Integration_Info *info):
+Simple_Pole_RelicDensity(const double exponent, const std::string cinfo,
+				ATOOLS::Integration_Info *info):
   ISR_Channel_Base(info),
   m_exponent(exponent)
 {
@@ -23,21 +23,22 @@ Simple_Pole_RelicDensity(const double exponent,const std::string cinfo,
   m_rannum   = 1;
   p_vegas    = new Vegas(m_rannum,100,m_name,0);
   p_rans     = new double[m_rannum];
+	msg_Out()<<"exponent="<<m_exponent<<"\n"; //debugging
 }
 
 void Simple_Pole_RelicDensity::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
-  m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
+	m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
 }
 
 void Simple_Pole_RelicDensity::GenerateWeight(const int & mode)
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
-					m_sgridkey[0]);
+			m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],
+							m_sgridkey[0]);
     }
   }
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
@@ -82,7 +83,7 @@ void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns)
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
   // msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
-  
+
   // for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
   m_xkey[2] = CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),
 					   p_rans[0],3);
@@ -238,7 +239,7 @@ Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double y
   ISR_Channel_Base(info),
   m_sexponent(sexponent),
   m_yexponent(yexponent),
-  m_mode(mode)							   
+  m_mode(mode)
 {
   m_name="Simple_Pole_"+ATOOLS::ToString(sexponent)+"_Backward_"+ATOOLS::ToString(yexponent);
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
