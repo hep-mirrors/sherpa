@@ -659,7 +659,6 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
       else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05),
 				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*SQRT_05)));
     }
-    if(ATOOLS::IsZero(_eta[i]))etachk=0;
     if ((int)i<nmom) {
       if (i==0) _mu[0]  = sqrt(dabs(Momlist[i].mom.Abs2()))/_eta[0];
       else _mu[i]  = Momlist[i].mass/_eta[i];
@@ -1043,8 +1042,6 @@ std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j)
 	S.second -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,-m1->mom_img[2])/A;
       }
     }
-    if (IsZero(S.first))  S.first  = Complex(0.,0.);
-    if (IsZero(S.second)) S.second = Complex(0.,0.);
     return S;
 }
 

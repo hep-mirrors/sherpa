@@ -302,13 +302,21 @@ std::string  AMEGIC::Process_Base::CreateLibName()
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
     if (epos!=std::string::npos)
-      name.replace(bpos,epos-bpos+1,"__NLO");
+      name.replace(bpos,epos-bpos+1,"");
   }
   bpos=name.find("__EW(");
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
     if (epos!=std::string::npos)
-      name.replace(bpos,epos-bpos+1,"__NLO");
+      name.replace(bpos,epos-bpos+1,"");
   }
-  return ShellName(name);
+  name=ShellName(name+"__O");
+  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i)
+    name+=ToString(m_pinfo.m_mincpl[i])+"_";
+  name+="_";
+  for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
+    name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+  name.erase(name.length()-1,1);
+  msg_Debugging()<<"-> "<<name<<std::endl;
+  return name;
 }
