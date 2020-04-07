@@ -568,11 +568,17 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		       const ATOOLS::Flavour &fj) const
 {
-  double kt21(2.0*(pi*pj)*(pj*pk)/(pi*pk));
-  double kt22(2.0*(pj*pi)*(pi*pk)/(pj*pk));
-  if (pi[0]<0.0) return kt21;
-  if (pj[0]<0.0) return kt22;
-  return Min(kt21,kt22);
+  // arXiv:2002.11114 [hep-ph]
+  const double beta(0.5);
+  double t1(2.0*(pi*pj)*(pj*pk)/(pi*pk));
+  double t2(2.0*(pj*pi)*(pi*pk)/(pj*pk));
+  double xi1(dabs((pi*pj)/(pk*pj)));
+  double xi2(dabs((pj*pi)/(pk*pi)));
+  t1*=pow(Max(xi1,1.0/xi1),-beta/2.0);
+  t2*=pow(Max(xi2,1.0/xi2),-beta/2.0);
+  if (pi[0]<0.0) return dabs(t1);
+  if (pj[0]<0.0) return dabs(t2);
+  return Min(t1,t2);
 }
 
 double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
