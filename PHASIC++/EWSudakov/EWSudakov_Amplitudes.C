@@ -81,7 +81,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC(mom);
   for (int i {0}; i < NumberOfLegs(); ++i) {
-    BaseAmplitude().Leg(i)->SetMom(i < BaseAmplitude().NIn() ? -mom[i] : mom[i]);
+    BaseAmplitude().SetMom(i, mom[i]);
   }
 
   particles.reserve(NumberOfLegs());
@@ -95,8 +95,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     Vec4D_Vector new_moms;
     new_moms.reserve(NumberOfLegs());
     for (int j {0}; j < NumberOfLegs(); ++j) {
-      Vec4D mom =
-          ((j < 2) ? -1 : 1) * BaseAmplitude().Leg(j)->Mom();
+      Vec4D mom = BaseAmplitude().Mom(j);
       particles[j]->SetFinalMass(ampl.second->Leg(j)->Flav().Mass());
       new_moms.push_back(mom);
     }
@@ -106,8 +105,7 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
       continue;
     }
     for (int j {0}; j < NumberOfLegs(); ++j) {
-      ampl.second->Leg(j)->SetMom(j < BaseAmplitude().NIn() ? -new_moms[j]
-                                                            : new_moms[j]);
+      ampl.second->SetMom(j, new_moms[j]);
     }
   }
 
@@ -128,19 +126,19 @@ void EWSudakov_Amplitudes::UpdateColors(const Int_Vector& I, const Int_Vector& J
 double EWSudakov_Amplitudes::MandelstamS()
 {
   const auto& ampl = BaseAmplitude();
-  return (ampl.Leg(0)->Mom() + ampl.Leg(1)->Mom()).Abs2();
+  return (ampl.Mom(0) + ampl.Mom(1)).Abs2();
 }
 
 double EWSudakov_Amplitudes::MandelstamT()
 {
   const auto& ampl = BaseAmplitude();
-  return (ampl.Leg(0)->Mom() - ampl.Leg(2)->Mom()).Abs2();
+  return (ampl.Mom(0) - ampl.Mom(2)).Abs2();
 }
 
 double EWSudakov_Amplitudes::MandelstamU()
 {
   const auto& ampl = BaseAmplitude();
-  return (ampl.Leg(0)->Mom() - ampl.Leg(3)->Mom()).Abs2();
+  return (ampl.Mom(0) - ampl.Mom(3)).Abs2();
 }
 
 Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(

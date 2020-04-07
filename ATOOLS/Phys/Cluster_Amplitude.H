@@ -111,6 +111,15 @@ namespace ATOOLS {
 
     inline Cluster_Leg *Leg(const size_t &i) const { return m_legs[i]; }
 
+    Vec4D Mom(size_t i) const
+    {
+      return (i < NIn() ? -1.0 : 1.0) * Leg(i)->Mom();
+    }
+    void SetMom(const size_t& i, const Vec4D& p) const
+    {
+      Leg(i)->SetMom(i < NIn() ? -p : p);
+    }
+
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }
 

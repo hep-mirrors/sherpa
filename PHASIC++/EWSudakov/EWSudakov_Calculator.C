@@ -95,7 +95,7 @@ bool EWSudakov_Calculator::IsInHighEnergyLimit()
   for (size_t i {0}; i < base_ampl.Legs().size(); ++i) {
     for (size_t j {i + 1}; j <  base_ampl.Legs().size(); ++j) {
       const auto sij
-        = std::abs((base_ampl.Leg(i)->Mom() + base_ampl.Leg(j)->Mom()).Abs2());
+        = std::abs((base_ampl.Mom(i) + base_ampl.Mom(j)).Abs2());
       if(sij < threshold) {
         return false;
       }
@@ -134,11 +134,14 @@ double EWSudakov_Calculator::KFactor()
   logs[{EWSudakov_Log_Type::lC, {}}] = ls;
   logs[{EWSudakov_Log_Type::lYuk, {}}] = ls;
   logs[{EWSudakov_Log_Type::lPR, {}}] = ls;
-  for (size_t k {0}; k < m_ampls.NumberOfLegs(); ++k)
-    for (size_t l {0}; l < k; ++l)
-      logs[{EWSudakov_Log_Type::lSSC, {k, l}}] = ls*std::log(std::abs(
-          (m_ampls.BaseAmplitude().Leg(k)->Mom()
-           + m_ampls.BaseAmplitude().Leg(l)->Mom()).Abs2())/s);
+  const auto& base_ampl = m_ampls.BaseAmplitude();
+  for (size_t k {0}; k < m_ampls.NumberOfLegs(); ++k) {
+    for (size_t l {0}; l < k; ++l) {
+      logs[{EWSudakov_Log_Type::lSSC, {k, l}}] =
+          ls * std::log(std::abs((base_ampl.Mom(k) +
+                                  base_ampl.Mom(l)).Abs2()) / s);
+    }
+  }
 
   // calculate
   //   K = (\sum_{i} (1 + 2 Re(\sum_{c} delta_i^c))|M_i|^2)/(\sum_{i} |M_i|^2),
