@@ -260,9 +260,9 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
   } else if (signed_kf == kf_Z) {
     // cf. (B.22), (B.26) and (B.27)
     return {{(isplus ? 1.0 : -1.0) * kf_Wplus,
-             (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
+             (isplus ? -1.0 : 1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_photon) {
-    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
+    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? 1.0 : -1.0)}};
   } else if (signed_kf == kf_h0){
     return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_gluon) {
