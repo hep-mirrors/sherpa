@@ -42,7 +42,7 @@ namespace HADRONS {
     METOOLS::Amplitude2_Tensor* FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
 
     inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }
-    inline std::string Name() { return "HadronDecays"; }
+    inline std::string Name() { return "HADRONS++"; }
   };
 
 }

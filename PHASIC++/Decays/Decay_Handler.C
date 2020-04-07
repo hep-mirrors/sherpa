@@ -109,6 +109,7 @@ bool Decay_Handler::DiceMass(ATOOLS::Particle* p, double max)
     Decay_Channel* dc = data->Get<Decay_Channel*>();
     if (!dc) THROW(fatal_error,"Missing decay channel for "
                                +decayblob->ShortProcessName()+".");
+    if (dc->NOut()==1 && p->FinalMass()<max) return true;
     double width = p_decaymap->FindDecay(p->Flav())->TotalWidth();
     double mass=dc->GenerateMass(max, width);
     if (mass>0.0) p->SetFinalMass(mass);

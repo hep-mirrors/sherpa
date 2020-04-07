@@ -503,7 +503,6 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 void Hard_Decay_Handler::CreateDecayBlob(Blob_List* bloblist, ATOOLS::Particle* inpart)
 {
   DEBUG_FUNC(inpart->Flav());
-  if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
   Blob* blob = bloblist->AddBlob(btp::Hard_Decay);
   blob->AddStatus(blob_status::needs_extraQED);
   blob->AddToInParticles(inpart);

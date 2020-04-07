@@ -45,7 +45,7 @@ namespace SHERPA {
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
 
-    void SetMasses(ATOOLS::Blob* blob, bool usefinalmass);
+    bool SetMasses(ATOOLS::Blob* blob, bool usefinalmass);
     void BoostAndStretch(ATOOLS::Blob* blob, const ATOOLS::Vec4D& labmom);
 
     void TreatInitialBlob(ATOOLS::Blob* blob,
