@@ -145,8 +145,10 @@ bool ISR_Channels::CreateChannels()
     case channel_type::leadinglog:
       AddLeadingLog(i,collmode);
       break;
+    case channel_type::exponential:
     case channel_type::laserback:
     case channel_type::unknown:
+    default:
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   tried to construct channel for unknown type.\n"
 		 <<"   Will ignore this channel and hope for the best.\n";

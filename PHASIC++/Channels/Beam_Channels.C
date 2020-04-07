@@ -196,25 +196,22 @@ bool Beam_Channels::CreateChannels()
     case channel_type::laserback:
       AddLaserBackscattering(i,mode);
       break;
-		case channel_type::exponential:
-			if (m_beammode==beammode::relic_density) {
-				double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
-		    double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-				Add(new Exponential_RelicDensity(m_beamparams[i].parameters[0],mass1,mass2,
-							m_keyid,p_psh->GetInfo()));
-			}
-			break;
+    case channel_type::exponential:
+      if (m_beammode==beammode::relic_density) {
+	double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
+	double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
+	Add(new Exponential_RelicDensity(m_beamparams[i].parameters[0],mass1,mass2,
+					 m_keyid,p_psh->GetInfo()));
+      }
+      break;
     case channel_type::leadinglog:
     case channel_type::unknown:
+    default:
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   tried to construct channel for unknown type.\n"
 		 <<"   Will ignore this channel and hope for the best.\n";
     }
   }
-  //msg_Out()<<METHOD<<" created "<<channels.size()<<" channels:\n";
-  //for (size_t i=0;i<channels.size();i++)
-  //  msg_Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<"\n";
-  //msg_Out()<<"----------------------------------------------\n";
   return true;
 }
 
