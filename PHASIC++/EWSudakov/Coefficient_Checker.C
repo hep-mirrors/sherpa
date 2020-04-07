@@ -96,6 +96,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 14.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 22.1;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
@@ -131,6 +135,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 12.7;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 21.2;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
@@ -206,6 +214,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 11.5;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 1}] = 21.2;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 0}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 1}] = 8.80;
@@ -271,11 +283,19 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
     // LT u-ch
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -9.83;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -9.83;
 
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 2, 2}] = 18.6;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 2, 2}] = 25.7;
@@ -284,6 +304,8 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
 
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 2, 2}] = -31.8;
     coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 2, 2}] = -31.8;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 2, 2}] = 8.80;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 2, 2}] = -9.03;
@@ -307,16 +329,29 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * u_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 0}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 0}] = 0.20;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 1}] = 0.20;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 7.36;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 7.36;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 3.67;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 3.67;
@@ -341,16 +376,29 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * u_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * (-1.81*t_over_s + u_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (-1.81*u_over_s + t_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * t_over_s;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (-1.81*u_over_s + t_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 0}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 0}] = -11.3;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 1}] = -11.3;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 28.1;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 28.1;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 15.10;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 15.10;
@@ -372,16 +420,29 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 0}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 0}] = -22.8;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 1}] = -22.8;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 48.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 48.9;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{0, 0, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
 
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 1, 0}] = 26.60;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 26.60;
