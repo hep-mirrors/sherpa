@@ -146,6 +146,7 @@ namespace DIRE {
 	}
 	double res=Value(bampl,0);
 	bampl->Delete();
+	if (res==std::numeric_limits<double>::max()) continue;
 	return res;
       }
       msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;

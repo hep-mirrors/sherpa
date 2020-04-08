@@ -677,6 +677,7 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     }
     double res=JetVeto(bampl,0);
     bampl->Delete();
+    if (res==std::numeric_limits<double>::max()) continue;
     return res;
   }
   msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
