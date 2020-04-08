@@ -583,45 +583,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet2" = "true" -o "$rivet3" = "true")
 
-  AC_ARG_ENABLE(
-    fastjet,
-    AC_HELP_STRING([--enable-fastjet=/path/to/fastjet], [Enable FASTJET.]),
-    [ AC_MSG_CHECKING(for FASTJET installation directory);
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(FASTJET not enabled); fastjet=false ;;
-        yes)  if test -d "$FASTJETDIR"; then
-                CONDITIONAL_FASTJETDIR="$FASTJETDIR"
-                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
-                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
-                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
-              else
-                AC_MSG_ERROR(\$FASTJETDIR is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_FASTJETDIR="${enableval}"
-                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
-                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
-                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
-      esac
-      ],
-    [ fastjet=false ]
-  )
-  if test "$fastjet" = "true" ; then
-    AC_DEFINE([USING__FASTJET], "1", [Using FASTJET])
-  fi
-  if test "$(echo $CONDITIONAL_FASTJETVERSION | cut -d . -f 1)" = "3"; then
-    AC_DEFINE([USING__FASTJET__3], "1", [Using FASTJET 3])
-  fi
-  AC_SUBST(CONDITIONAL_FASTJETDIR)
-  AC_SUBST(CONDITIONAL_FASTJETINCS)
-  AC_SUBST(CONDITIONAL_FASTJETLIBS)
-  AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
-
   AC_ARG_ENABLE([manual],
     AS_HELP_STRING([--enable-manual], [Enable the manual]),
       [ AC_MSG_CHECKING(whether the manual dependencies are installed);

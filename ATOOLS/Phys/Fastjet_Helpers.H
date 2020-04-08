@@ -2,8 +2,7 @@
 #define ATOOLS_Phys_Fastjet_Helpers_H
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-#include "fastjet/PseudoJet.hh"
+#include "ATOOLS/Phys/fjcore.hh"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 
@@ -20,10 +19,10 @@ namespace ATOOLS {
   bool ToBeClustered(const ATOOLS::Flavour& flav,
                      const ATOOLS::Vec4D& mom,
                      const ATOOLS::Jet_Inputs& jetinputs);
-  fastjet::PseudoJet MakePseudoJet(const Flavour& flav, const Vec4D& mom);
+  fjcore::PseudoJet MakePseudoJet(const Flavour& flav, const Vec4D& mom);
 
-  bool BTag(const fastjet::PseudoJet& jet, int bmode);
-  Flavour FlavourTag(const fastjet::PseudoJet& jet,
+  bool BTag(const fjcore::PseudoJet& jet, int bmode);
+  Flavour FlavourTag(const fjcore::PseudoJet& jet,
                      const Jet_Identifications& jetids,
                      const kf_code& notagkf);
 
@@ -87,5 +86,4 @@ namespace ATOOLS {
 
 }
 
-#endif
 #endif
