@@ -48,7 +48,7 @@ void Resonance_RelicDensity::GenerateWeight(const int & mode)
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
   p_rans[0] = m_sgridkey[0];
   double pw= p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()/m_spkey[2];
+  m_weight=pw*m_spkey.Weight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ void Resonance_DM_Annihilation::GenerateWeight(const int & mode)
   if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
   p_rans[0] = m_sgridkey[0];
   double pw= p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()/m_spkey[2];
+  m_weight=pw*m_spkey.Weight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

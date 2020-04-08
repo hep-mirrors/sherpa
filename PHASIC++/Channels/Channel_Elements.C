@@ -242,9 +242,8 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
 double Channel_Elements::ExponentialMomenta(double sexp,double smin,double smax,
         double masses[],double ran)
 {
-  double sMod = Channel_Basics::ExponentialDist(sexp,smin-sqr(masses[0]+masses[1]),
-        smax-sqr(masses[0]+masses[1]),ran);
-  double s = sMod + sqr(masses[0]+masses[1]);
+  double sMod = Channel_Basics::ExponentialDist(sexp,0,smax-smin,ran);
+  double s = sMod + smin;
   if (!(s>0) && !(s<0) && s!=0) {
     cout.precision(12);
     cout<<"ExpMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
@@ -259,22 +258,16 @@ double Channel_Elements::ExponentialWeight(double sexp,double smin,double smax,
     ran=-1.;
     return 0.;
   }
-  double wt = 0;
-  double cbwt = Channel_Basics::ExponentialWeight(sexp,smin-sqr(masses[0]+masses[1]),
-        smax-sqr(masses[0]+masses[1]));
-  // msg_Out()<<"cbwt="<<cbwt<<"\n"; //debugging
-  if (ATOOLS::IsZero(cbwt)) {
-    wt = sexp*exp(sexp*(s-smin)); // assumes upper limit is infinity
-  }
-  else {
-    wt = exp(sexp*(s-smin)) / cbwt;
-  }
-  if (!(wt>0) && !(wt<0) && wt!=0) {
-    msg_Error()<<"ExponentialWeight produces a nan: "<<wt<<endl
+  double wt_inv = 0;
+  double cbwt = Channel_Basics::ExponentialWeight(sexp,0,smax-smin); // total integral I
+  wt_inv = cbwt / exp(-sexp*(s-smin)); // weight = P(s)/I, this is inverse
+
+  if (!(wt_inv>0) && !(wt_inv<0) && wt_inv!=0) {
+    msg_Error()<<"ExponentialWeight produces a nan: "<<wt_inv<<endl
 			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 			  <<"   sexp = "<<sexp<<endl;
   }
-  return wt;
+  return wt_inv;
 }
 
 double Channel_Elements::AntennaWeight(double amin,double amax,

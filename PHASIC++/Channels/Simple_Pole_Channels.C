@@ -45,7 +45,7 @@ void Simple_Pole_RelicDensity::GenerateWeight(const int & mode)
 
   p_rans[0] = m_sgridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()/m_spkey[2];
+  m_weight=pw*m_spkey.Weight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ void Simple_Pole_DM_Annihilation::GenerateWeight(const int & mode)
 
   p_rans[0] = m_sgridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
-  m_weight  = pw*m_spkey.Weight()/m_spkey[2];
+  m_weight  = pw*m_spkey.Weight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
