@@ -1,5 +1,4 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
 
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
@@ -14,9 +13,6 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
 
 namespace PHASIC {
 
@@ -27,8 +23,7 @@ namespace PHASIC {
 
     Tag_Setter m_tagset;
 
-    fastjet::JetDefinition *p_jdef;
-    fastjet::SISConePlugin *p_siscplug;
+    fjcore::JetDefinition *p_jdef;
 
     double m_ptmin, m_etmin, m_eta, m_y;
 
@@ -80,7 +75,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 Fastjet_Scale_Setter::Fastjet_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this),
-  p_jdef(NULL), p_siscplug(NULL)
+  p_jdef(NULL)
 {
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
@@ -96,9 +91,6 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   read.SetString(jtag);
   m_mode=read.StringValue<int>("M",1);
   m_bmode=read.StringValue<int>("B",0);
-#ifndef USING__FASTJET__3
-  if (m_bmode>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
-#endif
   m_ptmin=read.StringValue<double>("PT",0.0);
   m_etmin=read.StringValue<double>("ET",0.0);
   m_eta=read.StringValue<double>("Eta",100.0);
@@ -106,20 +98,18 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   double R(read.StringValue<double>("R",0.4));
   double f(read.StringValue<double>("f",0.75));
   std::string algo(read.StringValue<std::string>("A","antikt"));
-  fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-  if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
-  if (algo=="antikt") ja=fastjet::antikt_algorithm;
-  if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(R,f);
+  fjcore::JetAlgorithm ja(fjcore::kt_algorithm);
+  if (algo=="cambridge") ja=fjcore::cambridge_algorithm;
+  if (algo=="antikt") ja=fjcore::antikt_algorithm;
   std::string reco(read.StringValue<std::string>("C","E"));
-  fastjet::RecombinationScheme recom(fastjet::E_scheme);
-  if (reco=="pt") recom=fastjet::pt_scheme;
-  if (reco=="pt2") recom=fastjet::pt2_scheme;
-  if (reco=="Et") recom=fastjet::Et_scheme;
-  if (reco=="Et2") recom=fastjet::Et2_scheme;
-  if (reco=="BIpt") recom=fastjet::BIpt_scheme;
-  if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else p_jdef=new fastjet::JetDefinition(ja,R,recom);
+  fjcore::RecombinationScheme recom(fjcore::E_scheme);
+  if (reco=="pt") recom=fjcore::pt_scheme;
+  if (reco=="pt2") recom=fjcore::pt2_scheme;
+  if (reco=="Et") recom=fjcore::Et_scheme;
+  if (reco=="Et2") recom=fjcore::Et2_scheme;
+  if (reco=="BIpt") recom=fjcore::BIpt_scheme;
+  if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
+  p_jdef=new fjcore::JetDefinition(ja,R,recom);
   m_f=p_proc->Flavours();
   m_p.resize(p_proc->NIn()+p_proc->NOut());
   std::string tag(args.m_scale);
@@ -154,7 +144,6 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
 Fastjet_Scale_Setter::~Fastjet_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
-  if (p_siscplug) delete p_siscplug;
   delete p_jdef;
 }
 
@@ -196,15 +185,15 @@ double Fastjet_Scale_Setter::Calculate
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];
-  std::vector<fastjet::PseudoJet> input;
+  std::vector<fjcore::PseudoJet> input;
   for (size_t i(p_proc->NIn());i<momenta.size();++i)
     if (!ToBeClustered(m_f[i], m_bmode)) m_p.push_back(momenta[i]);
     else {
       input.push_back(MakePseudoJet(m_f[i], momenta[i]));
     }
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  std::vector<fastjet::PseudoJet>
-    jets(fastjet::sorted_by_pt(cs.inclusive_jets()));
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  std::vector<fjcore::PseudoJet>
+    jets(fjcore::sorted_by_pt(cs.inclusive_jets()));
   for (size_t i(0);i<jets.size();++i) {
     if (m_bmode==0 || BTag(jets[i], m_bmode)) {
       Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
@@ -267,4 +256,3 @@ void Fastjet_Scale_Setter::SetScale
   msg_Debugging()<<"}\n";
 }
 
-#endif

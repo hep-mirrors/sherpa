@@ -1,17 +1,11 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-
 #include "PDF/Main/Jet_Criterion.H"
 
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "ATOOLS/Phys/Fastjet_Helpers.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
 
-using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
@@ -20,14 +14,13 @@ namespace PHASIC {
   class FastJet_Jet_Criterion: public Jet_Criterion {
   private:
 
-    fastjet::JetDefinition * p_jdef;
-    fastjet::SISConePlugin * p_siscplug;
+    fjcore::JetDefinition * p_jdef;
 
     double m_y;
 
   public:
 
-    FastJet_Jet_Criterion(const std::string &args): p_siscplug(NULL)
+    FastJet_Jet_Criterion(const std::string &args)
     {
       std::string jtag(args);
       size_t pos(jtag.find("FASTJET["));
@@ -45,46 +38,43 @@ namespace PHASIC {
       double R(read.StringValue<double>("R",0.4));
       double f(read.StringValue<double>("f",0.75));
       std::string algo(read.StringValue<std::string>("A","antikt"));
-      fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-      if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
-      if (algo=="antikt") ja=fastjet::antikt_algorithm;
-      if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(R,f);
+      fjcore::JetAlgorithm ja(fjcore::kt_algorithm);
+      if (algo=="cambridge") ja=fjcore::cambridge_algorithm;
+      if (algo=="antikt") ja=fjcore::antikt_algorithm;
       std::string reco(read.StringValue<std::string>("C","E"));
-      fastjet::RecombinationScheme recom(fastjet::E_scheme);
-      if (reco=="pt") recom=fastjet::pt_scheme;
-      if (reco=="pt2") recom=fastjet::pt2_scheme;
-      if (reco=="Et") recom=fastjet::Et_scheme;
-      if (reco=="Et2") recom=fastjet::Et2_scheme;
-      if (reco=="BIpt") recom=fastjet::BIpt_scheme;
-      if (reco=="BIpt2") recom=fastjet::BIpt2_scheme;
-      if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-      else p_jdef=new fastjet::JetDefinition(ja,R,recom);
+      fjcore::RecombinationScheme recom(fjcore::E_scheme);
+      if (reco=="pt") recom=fjcore::pt_scheme;
+      if (reco=="pt2") recom=fjcore::pt2_scheme;
+      if (reco=="Et") recom=fjcore::Et_scheme;
+      if (reco=="Et2") recom=fjcore::Et2_scheme;
+      if (reco=="BIpt") recom=fjcore::BIpt_scheme;
+      if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
+      p_jdef=new fjcore::JetDefinition(ja,R,recom);
     }
 
     ~FastJet_Jet_Criterion()
     {
-      if (p_siscplug) delete p_siscplug;
       delete p_jdef;
     }
 
     double Value(Cluster_Amplitude *ampl,int mode)
     {
       int nj=ampl->NIn();
-      std::vector<fastjet::PseudoJet> input,jets;
+      std::vector<fjcore::PseudoJet> input,jets;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
 	Vec4D p(ampl->Leg(i)->Mom());
 	if (Flavour(kf_jet).Includes(ampl->Leg(i)->Flav()))
-	  input.push_back(fastjet::PseudoJet(p[1],p[2],p[3],p[0])); 
+	  input.push_back(fjcore::PseudoJet(p[1],p[2],p[3],p[0])); 
 	else ++nj;
       }
       double pt2(sqr(ampl->JF<Jet_Finder>()->Qcut()));
-      fastjet::ClusterSequence cs(input,*p_jdef);
-      jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+      fjcore::ClusterSequence cs(input,*p_jdef);
+      jets=fjcore::sorted_by_pt(cs.inclusive_jets());
       for (size_t i(0);i<jets.size();++i) {
 	Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
 	if (pj.PPerp2()>pt2 && (m_y==100 || dabs(pj.Y())<m_y)) ++nj;
       }
-      return nj+mode>=ampl->Legs().size();
+      return nj+mode>=ampl->Legs().size()?2.0*pt2:0.0;
     }
 
   };// end of class FastJet_Jet_Criterion
@@ -103,5 +93,3 @@ void ATOOLS::Getter
 <Jet_Criterion,JetCriterion_Key,FastJet_Jet_Criterion>::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"The FastJet jet criterion"; }
-
-#endif

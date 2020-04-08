@@ -1,7 +1,5 @@
 #include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
-#ifdef USING__FASTJET
-
 namespace PHASIC {
   class Fastjet_Selector: public Fastjet_Selector_Base, public ATOOLS::Tag_Replacer {
     int m_bmode;
@@ -112,7 +110,7 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
 
   m_p.clear();
   for (size_t i(0);i<m_nin;++i) m_p.push_back(sl[i].Momentum());
-  std::vector<fastjet::PseudoJet> input,jets;
+  std::vector<fjcore::PseudoJet> input,jets;
   for (size_t i(m_nin);i<sl.size();++i) {
     if (ToBeClustered(sl[i].Flavour(), m_bmode)) {
       input.push_back(MakePseudoJet(sl[i].Flavour(),sl[i].Momentum()));
@@ -122,8 +120,8 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
   }
   int nj=m_p.size();
 
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  jets=fjcore::sorted_by_pt(cs.inclusive_jets());
 
   if (m_eekt) {
     for (size_t i(0);i<input.size();++i) {
@@ -163,10 +161,6 @@ operator()(const Selector_Key &key) const
   const auto expression = s["Expression"].SetDefault("")  .Get<std::string>();
   const auto bmode      = s["BMode"]     .SetDefault(0)   .Get<int>();
 
-#ifndef USING__FASTJET__3
-  if (m_bmode>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
-#endif
-
   return new Fastjet_Selector(key.p_proc, s, bmode, expression);
 }
 
@@ -178,5 +172,3 @@ PrintInfo(std::ostream &str,const size_t width) const
   Fastjet_Selector_Base::PrintCommonInfoLines(str, width);
   str<<width<<"  BMode: 0|1|2";
 }
-
-#endif

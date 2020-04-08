@@ -41,7 +41,3 @@ localinc_HEADERS      =	\
 			MINLO_Scale_Setter.H \
 			Color_Setter.H \
 			Tag_Setter.H
-
-libPhasicScales_la_LIBADD     =	@CONDITIONAL_FASTJETLIBS@
-
-libPhasicScales_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@

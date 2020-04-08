@@ -2,8 +2,7 @@ bin_PROGRAMS  =	Sherpa@VERSIONING@
 
 Sherpa@VERSIONING@_SOURCES        =	Main.C 
 
-Sherpa@VERSIONING@_LDADD  =	@SHERPABUILDDIR@/Main/libSherpaMain.la @ATOOLSLIBS@ \
-                @CONDITIONAL_FASTJETLIBS@
+Sherpa@VERSIONING@_LDADD  =	@SHERPABUILDDIR@/Main/libSherpaMain.la @ATOOLSLIBS@
 
 bin_SCRIPTS = Sherpa@VERSIONING@-config
 dist_pkgdata_SCRIPTS 	= \

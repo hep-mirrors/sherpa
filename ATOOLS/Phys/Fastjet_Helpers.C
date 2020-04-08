@@ -3,8 +3,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
-#ifdef USING__FASTJET
-
 namespace ATOOLS {
 
   bool ToBeClustered(const ATOOLS::Flavour& flav, int bmode)
@@ -27,21 +25,20 @@ namespace ATOOLS {
     return false;
   }
 
-  fastjet::PseudoJet MakePseudoJet(const ATOOLS::Flavour& flav,
+  fjcore::PseudoJet MakePseudoJet(const ATOOLS::Flavour& flav,
                                    const Vec4D& mom)
   {
-    fastjet::PseudoJet ret(mom[1],mom[2],mom[3],mom[0]);
+    fjcore::PseudoJet ret(mom[1],mom[2],mom[3],mom[0]);
     ret.set_user_index((long int)flav);
     return ret;
   }
 
-  bool BTag(const fastjet::PseudoJet& jet, int bmode)
+  bool BTag(const fjcore::PseudoJet& jet, int bmode)
   {
     if (bmode==0) return false;
 
-#ifdef USING__FASTJET__3
     int nb=0;
-    std::vector<fastjet::PseudoJet> cons = jet.constituents();
+    std::vector<fjcore::PseudoJet> cons = jet.constituents();
     for (size_t i=0; i<cons.size(); ++i) {
       if (cons[i].user_index()==5) ++nb;
       if (cons[i].user_index()==-5) {
@@ -50,18 +47,14 @@ namespace ATOOLS {
       }
     }
     return (nb!=0);
-#else
-    return false;
-#endif
   }
 
-  Flavour FlavourTag(const fastjet::PseudoJet& jet,
+  Flavour FlavourTag(const fjcore::PseudoJet& jet,
                      const Jet_Identifications& jetids,
                      const kf_code& notagkf)
   {
-#ifdef USING__FASTJET__3
     DEBUG_FUNC(jet.constituents().size()<<" constituents");
-    std::vector<fastjet::PseudoJet> cons = jet.constituents();
+    std::vector<fjcore::PseudoJet> cons = jet.constituents();
     if (msg_LevelIsDebugging()) {
       for (size_t i(0);i<cons.size();++i)
         msg_Out()<<cons[i].user_index()<<": "
@@ -115,10 +108,6 @@ namespace ATOOLS {
     }
     msg_Debugging()<<"not identified"<<std::endl;
     return Flavour(notagkf);
-#else
-    THROW(fatal_error,"Need FastJet 3 for flavour tagging.");
-    return Flavour(kf_none);
-#endif
   }
 
 
@@ -162,4 +151,3 @@ Jet_Identification::Jet_Identification(const ATOOLS::Flavour& flid,
   DEBUG_FUNC("");
 }
 
-#endif
