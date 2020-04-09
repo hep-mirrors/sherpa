@@ -42,14 +42,14 @@ bool Beam_Channels::MakeChannels()
 		{
 			Settings& settings = Settings::GetMainSettings();
 			double temperature = settings["DM_TEMPERATURE"].Get<double>();
-			double sexp = 2.; // (1./temperature < 10.) ? 1./temperature : 10.;
+			double sexp = (1./temperature < 10.) ? 1./temperature : 10.;
 	    m_beamparams.push_back(Channel_Info(channel_type::simple,sexp));
 	    // m_beamparams.push_back(Channel_Info(channel_type::exponential,1.));
 		}
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
-    m_beamparams.push_back(Channel_Info(channel_type::simple,3));
+    m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
     CheckForStructuresFromME();
     break;
   case beammode::collider:

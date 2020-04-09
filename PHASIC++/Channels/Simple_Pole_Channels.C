@@ -75,21 +75,14 @@ Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const dou
 
 void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns)
 {
-  // msg_Out() << "Got to " << METHOD << "\n"; //debugging
-  // msg_Out() << "rns=" << *rns << "\n";
-  // msg_Out()<<"spkey=["<<m_spkey[0]<<","<<m_spkey[1]<<","<<m_spkey[2]<<","<<m_spkey[2]<<"]\n";
   double *ran = p_vegas->GeneratePoint(rns);
-  // msg_Out() << "p_vegas->GeneratePoint() ran successfully \n"; //debugging
   for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
-  // msg_Out() << "sp=" << m_spkey[3] << "\n"; //debugging
 
   // for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
   m_xkey[2] = CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),
 					   p_rans[0],3);
-  // msg_Out() << "x=" << m_xkey[2] << "\n";
   m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[0],3);
-  // msg_Out() << "cosXi=" << m_cosxikey[2] << "\n";
 }
 
 void Simple_Pole_DM_Annihilation::GenerateWeight(const int & mode)
@@ -105,7 +98,7 @@ void Simple_Pole_DM_Annihilation::GenerateWeight(const int & mode)
 
   p_rans[0] = m_sgridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
-  m_weight  = pw*m_spkey.Weight();
+  m_weight  = pw*m_spkey.Weight()/m_spkey[3];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
