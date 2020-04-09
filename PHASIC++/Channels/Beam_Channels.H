@@ -16,8 +16,8 @@ namespace PHASIC {
     BEAM::beamspectrum::code     m_beamtype[2];
     channelinfos                 m_beamparams;
     std::set<double>             m_yexponents;
-    
-    
+
+
     bool MakeChannels();
     bool DefineColliderChannels();
     void CheckForStructuresFromME();
@@ -25,12 +25,13 @@ namespace PHASIC {
     void AddSimplePole(const size_t & chno,const size_t & mode);
     void AddResonance(const size_t & chno,const size_t & mode);
     void AddThreshold(const size_t & chno,const size_t & mode);
-    void AddLaserBackscattering(const size_t & chno,const size_t & mode);    
+    void AddLaserBackscattering(const size_t & chno,const size_t & mode);
+    void AddExponential(const size_t & chno,const size_t & mode); 
   public:
     Beam_Channels(Phase_Space_Handler *const psh,const std::string &name);
     ~Beam_Channels() {}
     bool Initialize();
-    inline channelinfos &Parameters()  { return m_beamparams;  } 
+    inline channelinfos &Parameters()  { return m_beamparams;  }
   };// end of class Beam_Channels
 
 }//end of namespace PHASIC
