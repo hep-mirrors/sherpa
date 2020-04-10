@@ -311,11 +311,16 @@ std::string  AMEGIC::Process_Base::CreateLibName()
       name.replace(bpos,epos-bpos+1,"");
   }
   name=ShellName(name+"__O");
-  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i)
+  int sep(0);
+  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i) {
     name+=ToString(m_pinfo.m_mincpl[i])+"_";
-  name+="_";
-  for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
-    name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+    if (m_pinfo.m_mincpl[i]!=m_pinfo.m_maxcpl[i]) sep=1;
+  }
+  if (sep) {
+    name+="_";
+    for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
+      name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+  }
   name.erase(name.length()-1,1);
   msg_Debugging()<<"-> "<<name<<std::endl;
   return name;

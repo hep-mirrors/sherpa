@@ -1523,11 +1523,16 @@ std::string  AMEGIC::Single_LOProcess::CreateLibName()
   }
   name.replace(bpos,name.length()-bpos+1,"__O");
   name=ShellName(name);
-  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i)
+  int sep(0);
+  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i) {
     name+=ToString(m_pinfo.m_mincpl[i])+"_";
-  name+="_";
-  for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
-    name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+    if (m_pinfo.m_mincpl[i]!=m_pinfo.m_maxcpl[i]) sep=1;
+  }
+  if (sep) {
+    name+="_";
+    for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
+      name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+  }
   name.erase(name.length()-1,1);
   msg_Debugging()<<"-> "<<name<<std::endl;
   if (m_emit>=0) name+="__E"+ToString(m_emit);
