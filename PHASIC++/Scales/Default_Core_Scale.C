@@ -68,8 +68,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=campl->Leg(2)->Mom().PPerp2();
-      muq2=Max(muq2,campl->Leg(3)->Mom().Abs2());
+      muq2=muf2=mur2=Max(campl->Leg(3)->Mom().Abs2(),
+			 campl->Leg(2)->Mom().PPerp2());
       if (fl[3].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.); 
@@ -77,8 +77,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=campl->Leg(3)->Mom().PPerp2();
-      muq2=Max(muq2,campl->Leg(2)->Mom().Abs2());
+      muq2=muf2=mur2=Max(campl->Leg(2)->Mom().Abs2(),
+			 campl->Leg(3)->Mom().PPerp2());
       if (fl[2].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.); 
