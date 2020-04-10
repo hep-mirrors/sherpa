@@ -31,6 +31,10 @@ Decay_Handler_Base::Decay_Handler_Base() :
   m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
   m_mass_smearing(1)
 {
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.AddComment("#");
+  m_specialtauspincorr=dr.GetValue<size_t>("SPECIAL_TAU_SPIN_CORRELATIONS",0);
 }
 
 Decay_Handler_Base::~Decay_Handler_Base()
@@ -163,6 +167,68 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
   DEBUG_VAR(blob->MomentumConserved());
 }
 
+Blob* FindSPBlob(Blob* startblob)
+{
+  if (startblob->Type()==btp::Signal_Process) {
+    return startblob;
+  }
+
+  for (size_t i=0; i<startblob->NInP(); ++i) {
+    if (startblob->InParticle(i)->ProductionBlob()) {
+      Blob* blob = FindSPBlob(startblob->InParticle(i)->ProductionBlob());
+      if (blob) return blob;
+    }
+  }
+  return NULL;
+}
+
+
+typedef map<Particle*, Spin_Density*> SpinDensityMap;
+bool Decay_Handler_Base::DoSpecialDecayTauSC(Particle* part)
+{
+  DEBUG_FUNC(*part);
+  if (!m_specialtauspincorr) return false;
+  Blob* blob=part->ProductionBlob();
+  if (blob==NULL || blob->Type()!=btp::Fragmentation) return false;
+  DEBUG_INFO("Found fragmentation blob");
+  for (size_t i=0; i<blob->NOutP(); ++i)
+    if (blob->OutParticle(i)->Flav().Kfcode()!=kf_tau)
+      return false;
+  DEBUG_INFO("Found at least one tau");
+
+  Blob* signal=FindSPBlob(blob);
+  if (!signal) {
+    PRINT_INFO("Signal blob not found.");
+    return false;
+  }
+  Blob_Data_Base* data = (*signal)["Tau_SpinDensity"];
+  SpinDensityMap* tau_spindensity = data ? data->Get<SpinDensityMap*>() : NULL;
+  if (!tau_spindensity) return false;
+
+  double bestDeltaR=1000.0; Spin_Density* sigma_tau=NULL;
+  for (SpinDensityMap::iterator it=tau_spindensity->begin(); it!=tau_spindensity->end(); ++it) {
+    Particle* testpart = it->first;
+    if (testpart->Flav()==part->Flav()) {
+      double newDeltaR=part->Momentum().DR(testpart->Momentum());
+      if (newDeltaR<bestDeltaR) {
+        bestDeltaR=newDeltaR;
+        sigma_tau=it->second;
+      }
+    }
+  }
+  if (sigma_tau==NULL) {
+    PRINT_INFO("Tau Spin_Density not found");
+  }
+  else {
+    DEBUG_VAR(*sigma_tau);
+    sigma_tau->SetParticle(part);
+    Decay_Matrix* D=FillDecayTree(part->DecayBlob(), sigma_tau);
+    delete D;
+    return true;
+  }
+  return false;
+}
+
 void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
                                           METOOLS::Amplitude2_Tensor* amps,
                                           const Particle_Vector& origparts)
@@ -237,8 +303,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       else {
         Spin_Density sigma(daughters[i]);
         if (Decays(daughters[i]->Flav())) {
-          Decay_Matrix* D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
-          delete D;
+          if (DoSpecialDecayTauSC(daughters[i])) {
+            DEBUG_INFO("did special tau spin correlation treatment");
+          }
+          else {
+            Decay_Matrix* D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
+            delete D;
+          }
         }
       }
     }
@@ -306,7 +377,25 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
         (blob->Type()==btp::Hadron_Decay &&
          blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
-      if (m_spincorr) {
+      if (m_specialtauspincorr && daughters[i]->Flav().Kfcode()==kf_tau &&
+          !daughters[i]->Flav().IsStable() &&
+          rpa->gen.SoftSC()) {
+        DEBUG_INFO("  keeping tau spin information for hadronic tau decays.");
+        SpinDensityMap* tau_spindensity;
+        Blob* spblob(FindSPBlob(blob));
+        if (!spblob) THROW(fatal_error, "Internal Error 1");
+        Blob_Data_Base * bdb((*spblob)["Tau_SpinDensity"]);
+        if (!bdb) {
+          tau_spindensity = new SpinDensityMap;
+          spblob->AddData("Tau_SpinDensity",new Blob_Data<SpinDensityMap*>(tau_spindensity));
+        }
+        else {
+          tau_spindensity = bdb->Get<SpinDensityMap*>();
+        }
+        (*tau_spindensity)[daughters[i]] = new Spin_Density(daughters[i],amps);
+        DEBUG_VAR(*(*tau_spindensity)[daughters[i]]);
+      }
+      else if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
         amps->Contract(D);
         delete D;

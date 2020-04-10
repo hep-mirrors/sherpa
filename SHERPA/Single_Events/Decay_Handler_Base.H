@@ -36,6 +36,8 @@ namespace SHERPA {
     bool m_spincorr, m_decaychainend, m_cluster;
     int m_mass_smearing;
     size_t m_qedmode;
+    bool m_specialtauspincorr;
+    bool DoSpecialDecayTauSC(ATOOLS::Particle* part);
   public:
     Decay_Handler_Base();
     ~Decay_Handler_Base();
