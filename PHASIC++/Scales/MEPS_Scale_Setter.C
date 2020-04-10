@@ -120,7 +120,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|1024);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
@@ -182,7 +182,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     4 - Winner takes it all
     8 - Ignore color
     16 - Do not include incomplete paths
-    32 - Winner takes it all in RS
+    32 - Winner takes it all at NLO
     64 - Winner takes it all in R first step
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
@@ -213,7 +213,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
 int MEPS_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
-  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_rsproc)) {
+  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
     int imax(-1);
     double max(0.0);
     for (size_t i(0);i<ccs.size();++i)
@@ -427,7 +427,7 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   msg_Debugging()<<"}\n";
-  bool usemax((m_cmode&4) || ((m_cmode&32) && m_rsproc));
+  bool usemax((m_cmode&4) || ((m_cmode&32) && m_nproc));
   double disc(sum*ran->Get());
   sum=0.0;
   for (size_t i(0);i<ampls.size();++i) {
