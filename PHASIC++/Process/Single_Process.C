@@ -429,17 +429,17 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	msg_Debugging()<<"* [  "
 		       <<"PDF(fla="<<f1
 		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
-		       <<", ta="<<currentQ2<<") * "
+		       <<", Qa="<<sqrt(currentQ2)<<") * "
 		       <<"PDF(flb="<<f2
 		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
-		       <<", tb="<<currentQ2<<") -> "<<wn1*wn2<<"\n"
+		       <<", Qb="<<sqrt(currentQ2)<<") -> "<<wn1*wn2<<"\n"
 		       <<"   / "
 		       <<"PDF(fla="<<f1
 		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
-		       <<", ta="<<lastQ2<<") * "
+		       <<", Qa="<<sqrt(lastQ2)<<") * "
 		       <<"PDF(flb="<<f2
 		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
-		       <<", tb="<<lastQ2<<") -> "<<wd1*wd2
+		       <<", Qb="<<sqrt(lastQ2)<<") -> "<<wd1*wd2
 		       <<" ] = "<<wn1*wn2/wd1/wd2<<std::endl;
 
         // add collinear counterterm
@@ -559,8 +559,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
             DADS_Info dads {-dadsmewgt,
                             x[0],
                             x[1],
-                            proc->Flavours()[0],
-                            proc->Flavours()[1]};
+                            (long unsigned int)(proc->Flavours()[0]),
+                            (long unsigned int)(proc->Flavours()[1])};
             m_mewgtinfo.m_dadsinfos.push_back(dads);
 
             // NOTE: here we reset the adjustments we have done above
@@ -598,8 +598,11 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
         sub->m_results = 0.0;
       } else {
         // calculate ISR weight
-        ClusterAmplitude_Vector ampls(sub->p_real->p_ampl ? 1 : 0,
-                                      sub->p_real->p_ampl);
+	ClusterAmplitude_Vector ampls;
+	if (sub->p_ampl) {
+	  if (sub->p_real->p_ampl) ampls.push_back(sub->p_real->p_ampl);
+	  else ampls.push_back(sub->p_ampl);
+	}
         if (!ampls.empty()) {
           ampls.front()->SetProc(sub->p_proc);
         }
