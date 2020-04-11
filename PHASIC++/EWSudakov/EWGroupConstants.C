@@ -245,7 +245,7 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
       return Couplings{};
     }
     return {
-	    {kf_chi, {0, -1.0 / (2.0 * m_sw)}},           // I_\chi^\pm
+	    {kf_Z, {1.0 / (2.0 * m_sw), 0.0}},           // I_\chi^\pm
 	    {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
