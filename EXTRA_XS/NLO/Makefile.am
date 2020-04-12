@@ -4,8 +4,10 @@ GITTAG = EXTRA_XS/NLO
 include ../../git.make
 
 libExtraXSNLO_la_SOURCES      =	Git_Info.C \
+				Logarithms.C \
                                 Dummy_QCD_Virtual.C \
                                 DY_QCD_Virtual.C \
+                                DY_Jet_QCD_Virtual.C \
                                 Higgs_QCD_Virtual.C \
                                 Higgs_Jet_QCD_Virtual.C \
                                 DIS1jet_QCD_Virtual.C \
