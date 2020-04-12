@@ -938,13 +938,13 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   if (!m_checkthreshold || !ATOOLS::IsEqual(doublepole,p2,m_checkthreshold)) {
     msg_Out()<<"Double poles: "
              <<"Sherpa = "<<doublepole<<" vs. OLP = "<<p2
-             <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
+             <<"\n              rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkthreshold || !ATOOLS::IsEqual(singlepole,p1,m_checkthreshold)) {
     msg_Out()<<"Single poles: "
              <<"Sherpa = "<<singlepole<<" vs. OLP = "<<p1
-             <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
+	     <<"\n              rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
   msg->SetPrecision(precision);
@@ -1027,8 +1027,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
                        <<" ,  m_dsijew[0][0] = "
                        <<(m_dsijew.size()?m_dsijew[0][0]:0.)
                        <<"\n  B = "<<B<<" ,  V = "<<V
-                       <<" ,  I = "<<I
-                       <<"\n  \\delta = "<<(V+I)/B
+	               <<" ,  I = "<<I<<"\n  V+I = "<<V+I
+                       <<" ,  \\delta = "<<(V+I)/B
                        <<"\n  K(B) = "<<kfactorb
                        <<" ,  K(VI) = "<<kfactorvi
                        <<"\n  norm = "<<m_Norm<<std::endl;
