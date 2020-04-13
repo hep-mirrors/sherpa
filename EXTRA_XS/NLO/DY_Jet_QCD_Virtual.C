@@ -155,31 +155,33 @@ namespace EXTRAXS {
   class QQGW_QCD_Virtual: public Virtual_ME2_Base,
 			  public VJ_Amplitude {
   private:
-    double m_nf, m_gw, m_mw, m_ww;
+    double m_nf, m_mw, m_ww;
+    Complex m_gw;
   public:
     QQGW_QCD_Virtual(const Process_Info &pi,const Flavour_Vector &flavs):
       Virtual_ME2_Base(pi, flavs), m_nf(Flavour(kf_jet).Size()/2.0)
     {
       m_drmode=1;
       msg_Info()<<"QQWG"<<flavs<<"\n";
-      double gf(1.0/sqrt(2.0)/std::abs(sqr(s_model->ComplexConstant("cvev"))));
       m_mw=Flavour(kf_Wplus).Mass();
       m_ww=Flavour(kf_Wplus).Width();
-      m_gw=sqrt(8.0*sqr(m_mw)*gf/sqrt(2.0));
+      double g1(sqrt(4.*M_PI*s_model->ScalarConstant("alpha_QED")));
+      m_gw=g1/sqrt(s_model->ComplexConstant("csin2_thetaW"));
       m_nf=(Flavour(kf_jet).Size()-1)/2;
     }
     double Eps_Scheme_Factor(const Vec4D_Vector& mom)
     {
       return 4.*M_PI;
     }
-    void Compute(const Vec4D_Vector &p)
+    void Compute(const Vec4D_Vector &p,const double &norm)
     {
       PreCompute(p);
       m_res=Virt5(1,2,3,4,5,m_mur2,m_born);
       double prop=sqr(s(3,4))/(sqr(s(3,4)-sqr(m_mw))+sqr(m_mw*m_ww));
-      double fac=2.0*4.0/3.0*3.0*sqr(m_gw*m_gw)*4.0*M_PI*AlphaQCD()*prop;
-      m_res*=fac;
-      m_born*=fac;
+      double fac=2.0*4.0/3.0*3.0*4.0*M_PI*AlphaQCD()*prop;
+      fac*=std::abs(sqr(m_gw*m_gw));
+      m_res*=fac/norm;
+      m_born*=fac/norm;
       DivArrD subuv;
       subuv.IR()=3.0*(11.0-2.0/3.0*m_nf)/6.0*m_born;
       subuv.Finite()=-3.0/6.0*m_born;
@@ -211,7 +213,7 @@ namespace EXTRAXS {
       p[2]=momenta[2+m_flipl];
       p[3]=momenta[3-m_flipl];
       p[4]=momenta[4];
-      Compute(p);
+      Compute(p,4.0*9.0);
     }
   };// end of class QQWG_QCD_Virtual
 
@@ -235,7 +237,7 @@ namespace EXTRAXS {
       p[2]=momenta[2+m_flipl];
       p[3]=momenta[3-m_flipl];
       p[4]=-momenta[0];
-      Compute(p);
+      Compute(p,4.0*24.0);
     }
   };// end of class GQWQ_QCD_Virtual
 
@@ -267,11 +269,12 @@ namespace EXTRAXS {
     {
       return 4.*M_PI;
     }
-    void Compute(const Vec4D_Vector &p)
+    void Compute(const Vec4D_Vector &p,const double &norm)
     {
       PreCompute(p);
       Complex prop=s(3,4)/Complex(s(3,4)-sqr(m_mz),m_mz*m_wz);
       double fac=8.0*4.0/3.0*3.0*sqr(m_g1*m_g1)*4.0*M_PI*AlphaQCD();
+      fac/=norm;
       double BLL, BLR, BRL, BRR;
       DivArrD LL=fac*Virt5(1,2,3,4,5,m_mur2,BLL);
       DivArrD LR=fac*Virt5(1,2,4,3,5,m_mur2,BLR);
@@ -318,7 +321,7 @@ namespace EXTRAXS {
       p[2]=momenta[2+m_flipl];
       p[3]=momenta[3-m_flipl];
       p[4]=momenta[4];
-      Compute(p);
+      Compute(p,4.0*9.0);
     }
   };// end of class QQZG_QCD_Virtual
 
@@ -345,7 +348,7 @@ namespace EXTRAXS {
       p[2]=momenta[2+m_flipl];
       p[3]=momenta[3-m_flipl];
       p[4]=-momenta[0];
-      Compute(p);
+      Compute(p,4.0*24.0);
     }
   };// end of class GQZQ_QCD_Virtual
 
