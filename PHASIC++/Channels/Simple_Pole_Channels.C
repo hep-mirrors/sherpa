@@ -62,8 +62,8 @@ Simple_Pole_DM_Annihilation(const double exponent, const double mass1, const dou
   m_name="Simple_Pole_"+ATOOLS::ToString(exponent)+"_DM_Annihilation";
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_spkey.Assign(cinfo+std::string("::s'"),5,0,info);
-  m_xkey.Assign(cinfo+std::string("::x'"),3,0,info);
-  m_cosxikey.Assign(cinfo+std::string("::cosXi'"),3,0,info);
+  m_xkey.Assign(cinfo+std::string("::x"),3,0,info);
+  m_cosxikey.Assign(cinfo+std::string("::cosXi"),3,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_xgridkey.Assign(m_xkey.Info(),1,0,info);
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);

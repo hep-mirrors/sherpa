@@ -68,8 +68,8 @@ Resonance_DM_Annihilation(const double mass,const double width,const double mass
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(mass));
   m_spkey.Assign(cinfo+std::string("::s'"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
-	m_xkey.Assign(cinfo+std::string("::x'"),3,0,info);
-  m_cosxikey.Assign(cinfo+std::string("::cosXi'"),3,0,info);
+	m_xkey.Assign(cinfo+std::string("::x"),3,0,info);
+  m_cosxikey.Assign(cinfo+std::string("::cosXi"),3,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_xgridkey.Assign(m_xkey.Info(),1,0,info);
   m_cosgridkey.Assign(m_cosxikey.Info(),1,0,info);
