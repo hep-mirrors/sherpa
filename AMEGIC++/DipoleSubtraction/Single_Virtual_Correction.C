@@ -885,7 +885,7 @@ void Single_Virtual_Correction::CheckBorn()
     msg->SetPrecision(16);
     msg_Out()<<"Born:         "
              <<"Sherpa = "<<sb<<" vs. OLP = "<<olpb
-             <<", rel. diff.: "<<(sb-olpb)/(sb+olpb)
+             <<"\n              rel. diff.: "<<(sb-olpb)/(sb+olpb)
              <<", ratio: "<<sb/olpb<<std::endl;
     msg->SetPrecision(precision);
   }
