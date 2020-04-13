@@ -62,23 +62,13 @@ double DMDM_mumu::operator()(const Vec4D_Vector& mom)
   double gamma = ATOOLS::Flavour(kf_Z).Width();
   double m_DM = m_flavs[0].Mass();
 
-  double mom_dot = 0;
-  for (short int i = 1; i < 4; i++) mom_dot += mom[0][i]*mom[2][i]; // just spatial parts
-
-  double cos_theta = mom_dot/(Vec3<double>(mom[0]).Abs()*Vec3<double>(mom[2]).Abs()); // just spatial parts
-  // positive definite definition
-  if (cos_theta < 0) cos_theta = -cos_theta;
-  if (cos_theta > 1.) {
-    msg_Error() << "Cosine greater than 1!" << endl;
-  }
-
   double factor1 = 4/(sqr(s-M*M) + M*M*sqr(gamma));
-  double part1 = (V*V+A*A)*(Vtil*Vtil+Atil*Atil)*(s*s/8 + s/2 * (s/4 - sqr(m_DM)) * sqr(cos_theta));
-  double part2 = 2*V*A*Vtil*Atil * s* sqrt(s*s/4 - s*sqr(m_DM)) * cos_theta;
-  double part3 = (V*V-A*A)*(Vtil*Vtil+Atil*Atil)*s*sqr(m_DM);
+  double part1 = (V*V+A*A)*(Vtil*Vtil+Atil*Atil) * ((mom[0]*mom[2])*(mom[1]*mom[3])
+                  + (mom[0]*mom[3])*(mom[1]*mom[2]));
+  double part2 = -4*V*A*Vtil*Atil * ((mom[0]*mom[2])*(mom[1]*mom[3])
+                  - (mom[0]*mom[3])*(mom[1]*mom[2]));
+  double part3 = 2*(V*V-A*A)*(Vtil*Vtil+Atil*Atil)*sqr(m_DM) * (mom[2]*mom[3]);
 
-  // cout << "Vtil="<<Vtil<<",Atil="<<Atil<<endl;
-  // cout << factor1*(part1+part2+part3)/m_symfac << endl; //debugging
   return factor1*(part1+part2+part3)/m_symfac;
 }
 
