@@ -92,41 +92,48 @@ namespace EXTRAXS {
       return (Vcc+Vsc)*A5lom+Fcc+Fsc;
     }
 
-    DivArrC A53(const int j1,const int j2,const int j3,
+    Complex A53(const int j1,const int j2,const int j3,
 		const int j4, const int j5,
 		const double &musq,const double &mt)
     {
-      DivArrC Fax;
-      Fax.Finite()=-zb(j5,j3)*zb(j3,j1)*za(j2,j4)
+      Complex Fax=-zb(j5,j3)*zb(j3,j1)*za(j2,j4)
 	*(L1(-s(j1,j2),-s(j4,j5))/sqr(s(j4,j5))
-	  -1.0/(12.0*s(j4,j5)*sqr(mt)));
+	  -1.0/(12.0*s(j4,j5)*sqr(mt))/*
+	  (1.+(2.*s(j1,j2)+s(j4,j5))/15./sqr(mt)
+	   +(2.*s(j1,j2)*s(j4,j5)+3.*sqr(s(j1,j2))
+	   +sqr(s(j4,j5)))/140./pow(mt,4))*/);
       Fax*=Complex(0.,-1.);
       return Fax;
     }
 
     void A5NLO(const int j1,const int j2,const int j3,
-	       const int j4, const int j5,const double &musq,
-	       Complex &A5LOm,METOOLS::DivArrC &A5NLOm)
+	       const int j4, const int j5,
+	       const double &musq,const double &mt,
+	       Complex &A5LOm,METOOLS::DivArrC &A5NLOm,Complex &A5ax)
     {
       A5LOm=-sqr(za(j1,j4))/(za(j2,j5)*za(j5,j1)*za(j4,j3));
       A5LOm*=Complex(0.,-1.);
       A5NLOm=A51(j2,j5,j1,j4,j3,musq)+A52(j2,j1,j5,j4,j3,musq)/9.0;
+      if (mt) A5ax=A53(j2,j1,j5,j4,j3,musq,mt)/3.0;
+      else A5ax=0.0;
     }
 
     DivArrD Virt5(const int j1,const int j2,const int j3,
 		  const int j4, const int j5,
-		  const double &musq,double &born)
+		  const double &musq,const double &mt,
+		  double &born,Complex &Vax)
     {
-      Complex A5LOm, A5LOp;
+      Complex A5LOm, A5LOp, A5axm, A5axp;
       METOOLS::DivArrC A5NLOm, A5NLOp;
       m_swap=1;
-      A5NLO(j1,j2,j3,j4,j5,musq,A5LOm,A5NLOm);
+      A5NLO(j1,j2,j3,j4,j5,musq,mt,A5LOm,A5NLOm,A5axm);
       m_swap=0;
-      A5NLO(j2,j1,j4,j3,j5,musq,A5LOp,A5NLOp);
+      A5NLO(j2,j1,j4,j3,j5,musq,mt,A5LOp,A5NLOp,A5axp);
       METOOLS::DivArrD res;
       res.IR2()=(std::conj(A5LOp)*A5NLOp.IR2()+std::conj(A5LOm)*A5NLOm.IR2()).real();
       res.IR()=(std::conj(A5LOp)*A5NLOp.IR()+std::conj(A5LOm)*A5NLOm.IR()).real();
       res.Finite()=(std::conj(A5LOp)*A5NLOp.Finite()+std::conj(A5LOm)*A5NLOm.Finite()).real();
+      Vax=3.0*(std::conj(A5LOp)*A5axp+std::conj(A5LOm)*A5axm).real();
       born=(std::conj(A5LOp)*A5LOp+std::conj(A5LOm)*A5LOm).real();
       return 3.0*res;
     }
@@ -156,7 +163,7 @@ namespace EXTRAXS {
 			  public VJ_Amplitude {
   private:
     double m_nf, m_mw, m_ww;
-    Complex m_gw;
+    Complex m_gw, m_vax;
   public:
     QQGW_QCD_Virtual(const Process_Info &pi,const Flavour_Vector &flavs):
       Virtual_ME2_Base(pi, flavs), m_nf(Flavour(kf_jet).Size()/2.0)
@@ -176,7 +183,7 @@ namespace EXTRAXS {
     void Compute(const Vec4D_Vector &p,const double &norm)
     {
       PreCompute(p);
-      m_res=Virt5(1,2,3,4,5,m_mur2,m_born);
+      m_res=Virt5(1,2,3,4,5,m_mur2,0.0,m_born,m_vax);
       double prop=sqr(s(3,4))/(sqr(s(3,4)-sqr(m_mw))+sqr(m_mw*m_ww));
       double fac=2.0*4.0/3.0*3.0*4.0*M_PI*AlphaQCD()*prop;
       fac*=std::abs(sqr(m_gw*m_gw));
@@ -244,7 +251,7 @@ namespace EXTRAXS {
   class QQGZ_QCD_Virtual: public Virtual_ME2_Base,
 			  public VJ_Amplitude {
   private:
-    double m_nf, m_g1, m_mz, m_wz, m_ql, m_qq;
+    double m_nf, m_g1, m_mt, m_mz, m_wz, m_ql, m_qq;
     Complex m_ll, m_rl, m_lq, m_rq;
   public:
     QQGZ_QCD_Virtual(const Process_Info &pi,const Flavour_Vector &flavs):
@@ -252,6 +259,7 @@ namespace EXTRAXS {
     void Init(const Flavour &qfl,const Flavour &lfl)
     {
       m_drmode=1;
+      m_mt=Flavour(kf_t).Mass();
       m_mz=Flavour(kf_Z).Mass();
       m_wz=Flavour(kf_Z).Width();
       m_g1=sqrt(4.0*M_PI*s_model->ScalarConstant("alpha_QED"));
@@ -276,18 +284,28 @@ namespace EXTRAXS {
       double fac=8.0*4.0/3.0*3.0*sqr(m_g1*m_g1)*4.0*M_PI*AlphaQCD();
       fac/=norm;
       double BLL, BLR, BRL, BRR;
-      DivArrD LL=fac*Virt5(1,2,3,4,5,m_mur2,BLL);
-      DivArrD LR=fac*Virt5(1,2,4,3,5,m_mur2,BLR);
-      DivArrD RL=fac*Virt5(2,1,3,4,5,m_mur2,BRL);
-      DivArrD RR=fac*Virt5(2,1,4,3,5,m_mur2,BRR);
-      m_res=sqr(std::abs(m_qq*m_ql+m_lq*m_ll*prop))*LL
-	+sqr(std::abs(m_qq*m_ql+m_lq*m_rl*prop))*LR
-	+sqr(std::abs(m_qq*m_ql+m_rq*m_ll*prop))*RL
-	+sqr(std::abs(m_qq*m_ql+m_rq*m_rl*prop))*RR;
-      m_born=sqr(std::abs(m_qq*m_ql+m_lq*m_ll*prop))*BLL
-	+sqr(std::abs(m_qq*m_ql+m_lq*m_rl*prop))*BLR
-	+sqr(std::abs(m_qq*m_ql+m_rq*m_ll*prop))*BRL
-	+sqr(std::abs(m_qq*m_ql+m_rq*m_rl*prop))*BRR;
+      Complex VaxLL, VaxRL, VaxLR, VaxRR;
+      DivArrD LL=Virt5(1,2,3,4,5,m_mur2,m_mt,BLL,VaxLL);
+      DivArrD LR=Virt5(1,2,4,3,5,m_mur2,m_mt,BLR,VaxLR);
+      DivArrD RL=Virt5(2,1,3,4,5,m_mur2,m_mt,BRL,VaxRL);
+      DivArrD RR=Virt5(2,1,4,3,5,m_mur2,m_mt,BRR,VaxRR);
+      Complex cLL(m_qq*m_ql+m_lq*m_ll*prop);
+      Complex cLR(m_qq*m_ql+m_lq*m_rl*prop);
+      Complex cRL(m_qq*m_ql+m_rq*m_ll*prop);
+      Complex cRR(m_qq*m_ql+m_rq*m_rl*prop);
+      m_res=fac*(sqr(std::abs(cLL))*LL
+		 +sqr(std::abs(cLR))*LR
+		 +sqr(std::abs(cRL))*RL
+		 +sqr(std::abs(cRR))*RR);
+      Complex caxL(std::conj((m_rq-m_lq)*m_ll*prop));
+      Complex caxR(std::conj((m_rq-m_lq)*m_rl*prop));
+      m_res.Finite()+=fac*
+	(caxL*(cLL*VaxLL+cRL*VaxRL)+
+	 caxR*(cLR*VaxLR+cRR*VaxRR)).real();
+      m_born=sqr(std::abs(cLL))*BLL
+	+sqr(std::abs(cLR))*BLR
+	+sqr(std::abs(cRL))*BRL
+	+sqr(std::abs(cRR))*BRR;
       m_born*=fac;
       DivArrD subuv;
       subuv.IR()=3.0*(11.0-2.0/3.0*m_nf)/6.0*m_born;
