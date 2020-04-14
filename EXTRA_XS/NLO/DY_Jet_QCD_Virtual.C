@@ -250,7 +250,8 @@ namespace EXTRAXS {
 
   class QQGZ_QCD_Virtual: public Virtual_ME2_Base,
 			  public VJ_Amplitude {
-  private:
+  protected:
+    int m_useax;
     double m_nf, m_g1, m_mt, m_mz, m_wz, m_ql, m_qq;
     Complex m_ll, m_rl, m_lq, m_rq;
   public:
@@ -259,6 +260,9 @@ namespace EXTRAXS {
     void Init(const Flavour &qfl,const Flavour &lfl)
     {
       m_drmode=1;
+      Settings &s(Settings::GetMainSettings());
+      m_useax=s["EXTRAXS"]["ZJ_AXIAL_PARTS"].
+	GetScalarWithOtherDefault<int>(0);
       m_mt=Flavour(kf_t).Mass();
       m_mz=Flavour(kf_Z).Mass();
       m_wz=Flavour(kf_Z).Width();
@@ -297,16 +301,17 @@ namespace EXTRAXS {
 		 +sqr(std::abs(cLR))*LR
 		 +sqr(std::abs(cRL))*RL
 		 +sqr(std::abs(cRR))*RR);
+      m_born=fac*(sqr(std::abs(cLL))*BLL
+		  +sqr(std::abs(cLR))*BLR
+		  +sqr(std::abs(cRL))*BRL
+		  +sqr(std::abs(cRR))*BRR);
       Complex caxL(std::conj((m_rq-m_lq)*m_ll*prop));
       Complex caxR(std::conj((m_rq-m_lq)*m_rl*prop));
-      m_res.Finite()+=fac*
-	(caxL*(cLL*VaxLL+cRL*VaxRL)+
-	 caxR*(cLR*VaxLR+cRR*VaxRR)).real();
-      m_born=sqr(std::abs(cLL))*BLL
-	+sqr(std::abs(cLR))*BLR
-	+sqr(std::abs(cRL))*BRL
-	+sqr(std::abs(cRR))*BRR;
-      m_born*=fac;
+      if (m_useax) {
+	m_res.Finite()+=fac*
+	  (caxL*(cLL*VaxLL+cRL*VaxRL)+
+	   caxR*(cLR*VaxLR+cRR*VaxRR)).real();
+      }
       DivArrD subuv;
       subuv.IR()=3.0*(11.0-2.0/3.0*m_nf)/6.0*m_born;
       subuv.Finite()=-3.0/6.0*m_born;
@@ -326,10 +331,10 @@ namespace EXTRAXS {
 		     const Flavour_Vector &flavs):
       QQGZ_QCD_Virtual(pi,flavs)
     {
-      msg_Info()<<"QQZG"<<flavs<<"\n";
       m_flipq=flavs[0].IsAnti();
       m_flipl=flavs[2].IsAnti();
       Init(flavs[m_flipq?1:0],flavs[m_flipl?3:2]);
+      msg_Info()<<"QQZG"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector &momenta)
     {
@@ -353,10 +358,10 @@ namespace EXTRAXS {
 		     const Flavour_Vector &flavs):
       QQGZ_QCD_Virtual(pi,flavs)
     {
-      msg_Info()<<"GQZQ"<<flavs<<"\n";
       m_flipq=flavs[1].IsAnti();
       m_flipl=flavs[2].IsAnti();
       Init(m_flipq?flavs[1].Bar():m_flavs[1],flavs[m_flipl?3:2]);
+      msg_Info()<<"GQZQ"<<m_useax<<flavs<<"\n";
     }
     void Calc(const Vec4D_Vector& momenta)
     {
