@@ -133,7 +133,7 @@ namespace EXTRAXS {
       res.IR2()=(std::conj(A5LOp)*A5NLOp.IR2()+std::conj(A5LOm)*A5NLOm.IR2()).real();
       res.IR()=(std::conj(A5LOp)*A5NLOp.IR()+std::conj(A5LOm)*A5NLOm.IR()).real();
       res.Finite()=(std::conj(A5LOp)*A5NLOp.Finite()+std::conj(A5LOm)*A5NLOm.Finite()).real();
-      Vax=3.0*(std::conj(A5LOp)*A5axp+std::conj(A5LOm)*A5axm).real();
+      Vax=3.0*(std::conj(A5LOp)*A5axp+std::conj(A5LOm)*A5axm);
       born=(std::conj(A5LOp)*A5LOp+std::conj(A5LOm)*A5LOm).real();
       return 3.0*res;
     }
