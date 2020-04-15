@@ -40,6 +40,11 @@ class c_variable(object):
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    def __rdiv__(self, lhs):
+        if self.is_zero():
+            raise ufo_exception("Division by zero")
+        return lhs*c_variable("1./("+self._string+")", 1./self._prefac)
+
     def __add__(self, other):
         
         if isinstance(other, c_variable):

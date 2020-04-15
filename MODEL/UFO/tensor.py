@@ -112,12 +112,15 @@ class tensor(object):
             return ret
 
     def __add__(self, rhs):
+        if isinstance(rhs, (int, complex, float)):
+            return self + tensor([rhs], None)
+
         # so far, support/define
         # only sum of identical type
         # i.e. demand equality of key_dim_dict()
         if (cmp(self.key_dim_dict(), rhs.key_dim_dict())!=0):
             raise ufo_exception("Inconsistent tensor addition")
-        
+
         # get a deepcopy so we don't need
         # to build a return value from scratch
         ret = deepcopy(self)
@@ -140,8 +143,14 @@ class tensor(object):
         self = self+rhs
         return self
 
+    def __radd__(self, lhs):
+        return self + lhs
+
     def __sub__(self, rhs):
         return (self + tensor([-1], None)*rhs)
+
+    def __rsub__(self, lhs):
+        return lhs + tensor([-1], None)*self
 
     def __mul__(self, rhs):
         
@@ -166,19 +175,44 @@ class tensor(object):
             return self.__mul__(1/rhs)
         if isinstance(rhs, float) or isinstance(rhs, complex):
             return self.__mul__(1.0/rhs)
-        else:
-            raise ufo_exception("Tensor division for this type not supported")
+        if isinstance(rhs, tensor) and rhs._elementary:
+            return self.__mul__(1.0/rhs)
+        raise ufo_exception("Tensor division for this type not supported")
+
+    def __rdiv__(self, lhs):
+        inverted_self = deepcopy(self)
+        inverted_self.in_place_elementary_invert()
+        return lhs*inverted_self
 
     def __neg__(self):
         return tensor([-1], None)*self
 
     def __pow__(self, exp):
         assert(isinstance(exp, int))
-        assert(exp>0)
-        ret = deepcopy(self)
+
+        if exp == 0:
+            if not self._elementary:
+                raise ufo_exception("Tensor division for this type not supported")
+            return tensor([1.], None)
+
+        base = deepcopy(self)
+        if exp < 0:
+            base.in_place_elementary_invert()
+            exp = -exp
+        ret = base
+
         for i in range(exp-1):
-            ret *= self
+            ret *= base
+
         return ret
+
+    def in_place_elementary_invert(self):
+        if not self._elementary:
+            raise ValueError("Can only call this method on elementary tensors")
+        if isinstance(self._array[0], str):
+            self._array[0] = "1./(" + self._array[0] + ")"
+        else:
+            self._array[0] = 1./self._array[0]
 
     def check(self):
         # elementary tensors don't have tensors as members of _array
