@@ -31,8 +31,8 @@ class s_parameter():
     def lha_block(self):
         return self.ufo_parameter.lhablock
             
-    def cpp_value(self):
-        return py_to_cpp(str(self.ufo_parameter.value))
+    def cpp_value(self, parameter_map=None):
+        return py_to_cpp(str(self.ufo_parameter.value), parameter_map)
 
     def raw_value(self):
         return self.ufo_parameter.value

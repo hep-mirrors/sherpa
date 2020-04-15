@@ -137,14 +137,14 @@ if __name__ == "__main__":
 
       # Write model source code
       progress("Generating model source code")
-      write_model(model, model_name, model_out_path)
+      parameter_map = write_model(model, model_name, model_out_path)
       
       # Write lorentz calculator source code
       optimize = not args.noopt
       for lor in lorentzes:
             if not lor.has_ghosts():
                   progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
-                  lor.write(out_dir,optimize)
+                  lor.write(out_dir,optimize,parameter_map)
 
       # Generate and write SConstruct file
       lib_name = 'Sherpa{0}'.format(model_name)
