@@ -200,6 +200,54 @@ namespace EXTRAXS {
     }
   };// end of class QQGW_QCD_Virtual
 
+  class GWQQ_QCD_Virtual: public QQGW_QCD_Virtual {
+  private:
+    bool m_flipq, m_flipl;
+  public:
+    GWQQ_QCD_Virtual(const Process_Info &pi,
+		     const Flavour_Vector &flavs):
+      QQGW_QCD_Virtual(pi,flavs)
+    {
+      m_flipq=!flavs[3].IsAnti();
+      m_flipl=flavs[0].IsAnti();
+      msg_Info()<<"GWQQ"<<flavs<<"\n";
+    }
+    void Calc(const Vec4D_Vector &momenta)
+    {
+      Vec4D_Vector p(5);
+      p[0]=momenta[3+m_flipq];
+      p[1]=momenta[4-m_flipq];
+      p[2]=m_flipl?-momenta[0]:momenta[2];
+      p[3]=m_flipl?momenta[2]:-momenta[0];
+      p[4]=-momenta[1];
+      Compute(p,4.0*8.0);
+    }
+  };// end of class GWQQ_QCD_Virtual
+
+  class QWGQ_QCD_Virtual: public QQGW_QCD_Virtual {
+  private:
+    bool m_flipq, m_flipl;
+  public:
+    QWGQ_QCD_Virtual(const Process_Info &pi,
+		     const Flavour_Vector &flavs):
+      QQGW_QCD_Virtual(pi,flavs)
+    {
+      m_flipq=flavs[1].IsAnti();
+      m_flipl=!flavs[0].IsAnti();
+      msg_Info()<<"QWGQ"<<flavs<<"\n";
+    }
+    void Calc(const Vec4D_Vector &momenta)
+    {
+      Vec4D_Vector p(5);
+      p[0]=m_flipq?momenta[4]:-momenta[1];
+      p[1]=m_flipq?-momenta[1]:momenta[4];
+      p[2]=m_flipl?momenta[2]:-momenta[0];
+      p[3]=m_flipl?-momenta[0]:momenta[2];
+      p[4]=momenta[3];
+      Compute(p,4.0*3.0);
+    }
+  };// end of class QWGQ_QCD_Virtual
+
   class QQWG_QCD_Virtual: public QQGW_QCD_Virtual {
   private:
     bool m_flipq, m_flipl;
@@ -323,6 +371,83 @@ namespace EXTRAXS {
     }
   };// end of class QQGZ_QCD_Virtual
 
+  class ZGQQ_QCD_Virtual: public QQGZ_QCD_Virtual {
+  private:
+    bool m_flipq, m_flipl;
+  public:
+    ZGQQ_QCD_Virtual(const Process_Info &pi,
+		     const Flavour_Vector &flavs):
+      QQGZ_QCD_Virtual(pi,flavs)
+    {
+      m_flipq=!flavs[3].IsAnti();
+      m_flipl=!flavs[0].IsAnti();
+      Init(flavs[m_flipq?3:4],flavs[m_flipl?0:1]);
+      msg_Info()<<"ZGQQ"<<m_useax<<flavs<<"\n";
+    }
+    void Calc(const Vec4D_Vector &momenta)
+    {
+      Vec4D_Vector p(5);
+      p[0]=momenta[3+m_flipq];
+      p[1]=momenta[4-m_flipq];
+      p[2]=-momenta[0+m_flipl];
+      p[3]=-momenta[1-m_flipl];
+      p[4]=momenta[2];
+      Compute(p,4.0);
+    }
+  };// end of class ZGQQ_QCD_Virtual
+
+  class GZQQ_QCD_Virtual: public QQGZ_QCD_Virtual {
+  private:
+    bool m_flipq, m_flipl;
+  public:
+    GZQQ_QCD_Virtual(const Process_Info &pi,
+		     const Flavour_Vector &flavs):
+      QQGZ_QCD_Virtual(pi,flavs)
+    {
+      m_flipq=!flavs[3].IsAnti();
+      m_flipl=flavs[0].IsAnti();
+      Init(m_flipq?flavs[3]:flavs[3].Bar(),
+	   m_flipl?flavs[0].Bar():flavs[0]);
+      msg_Info()<<"GZQQ"<<m_useax<<flavs<<"\n";
+    }
+    void Calc(const Vec4D_Vector &momenta)
+    {
+      Vec4D_Vector p(5);
+      p[0]=momenta[3+m_flipq];
+      p[1]=momenta[4-m_flipq];
+      p[2]=m_flipl?-momenta[0]:momenta[2];
+      p[3]=m_flipl?momenta[2]:-momenta[0];
+      p[4]=-momenta[1];
+      Compute(p,4.0*8.0);
+    }
+  };// end of class GZQQ_QCD_Virtual
+
+  class QZGQ_QCD_Virtual: public QQGZ_QCD_Virtual {
+  private:
+    bool m_flipq, m_flipl;
+  public:
+    QZGQ_QCD_Virtual(const Process_Info &pi,
+		     const Flavour_Vector &flavs):
+      QQGZ_QCD_Virtual(pi,flavs)
+    {
+      m_flipq=flavs[1].IsAnti();
+      m_flipl=!flavs[0].IsAnti();
+      Init(m_flipq?flavs[1].Bar():flavs[1],
+	   m_flipl?flavs[0]:flavs[0].Bar());
+      msg_Info()<<"QZGQ"<<m_useax<<flavs<<"\n";
+    }
+    void Calc(const Vec4D_Vector &momenta)
+    {
+      Vec4D_Vector p(5);
+      p[0]=m_flipq?momenta[4]:-momenta[1];
+      p[1]=m_flipq?-momenta[1]:momenta[4];
+      p[2]=m_flipl?momenta[2]:-momenta[0];
+      p[3]=m_flipl?-momenta[0]:momenta[2];
+      p[4]=momenta[3];
+      Compute(p,4.0*3.0);
+    }
+  };// end of class QZGQ_QCD_Virtual
+
   class QQZG_QCD_Virtual: public QQGZ_QCD_Virtual {
   private:
     bool m_flipq, m_flipl;
@@ -394,14 +519,25 @@ operator()(const Process_Info &pi) const
     Flavour_Vector fl=pi.ExtractFlavours();
     for (size_t i(0);i<fl.size();++i)
       if (fl[i].Mass()) return NULL;
-    if (!(fl[2].IsLepton() && fl[3].IsNeutrino() &&
-	  fl[3].LeptonFamily()==fl[2].LeptonFamily())) return NULL;
-    if (fl[4].IsGluon() && fl[0].IsQuark() &&
-	fl[1].QuarkFamily()==fl[0].QuarkFamily())
-      return new QQWG_QCD_Virtual(pi,fl);
-    if (fl[0].IsGluon() && fl[1].IsQuark() &&
-	fl[4].QuarkFamily()==fl[1].QuarkFamily())
-      return new GQWQ_QCD_Virtual(pi,fl);
+    if (((fl[0].IsLepton() && fl[2].IsNeutrino()) ||
+	 (fl[2].IsLepton() && fl[0].IsNeutrino())) &&
+	fl[2].LeptonFamily()==fl[0].LeptonFamily()) {
+      if (fl[1].IsGluon() && fl[3].IsQuark() &&
+	  fl[3].QuarkFamily()==fl[4].QuarkFamily())
+	return new GWQQ_QCD_Virtual(pi,fl);
+      if (fl[3].IsGluon() && fl[1].IsQuark() &&
+	  fl[4].QuarkFamily()==fl[1].QuarkFamily())
+	return new QWGQ_QCD_Virtual(pi,fl);
+    }
+    if ((fl[2].IsLepton() && fl[3].IsNeutrino() &&
+	 fl[3].LeptonFamily()==fl[2].LeptonFamily())) {
+      if (fl[4].IsGluon() && fl[0].IsQuark() &&
+	  fl[1].QuarkFamily()==fl[0].QuarkFamily())
+	return new QQWG_QCD_Virtual(pi,fl);
+      if (fl[0].IsGluon() && fl[1].IsQuark() &&
+	  fl[4].QuarkFamily()==fl[1].QuarkFamily())
+	return new GQWQ_QCD_Virtual(pi,fl);
+    }
   }
   return NULL;
 }
@@ -421,12 +557,25 @@ operator()(const Process_Info &pi) const
     Flavour_Vector fl=pi.ExtractFlavours();
     for (size_t i(0);i<fl.size();++i)
       if (fl[i].Mass()) return NULL;
-    if (!(fl[2].IsLepton() && fl[3]==fl[2].Bar()) &&
-	!(fl[2].IsNeutrino() && fl[3]==fl[2].Bar())) return NULL;
-    if (fl[4].IsGluon() && fl[0].IsQuark() && fl[1]==fl[0].Bar())
-      return new QQZG_QCD_Virtual(pi,fl);
-    if (fl[0].IsGluon() && fl[1].IsQuark() && fl[4]==fl[1])
-      return new GQZQ_QCD_Virtual(pi,fl);
+    if ((fl[0].IsLepton() && fl[1]==fl[0].Bar()) ||
+	(fl[0].IsNeutrino() && fl[1]==fl[0].Bar())) {
+      if (fl[2].IsGluon() && fl[3].IsQuark() && fl[4]==fl[3].Bar())
+	return new ZGQQ_QCD_Virtual(pi,fl);
+    }
+    if ((fl[0].IsLepton() && fl[2]==fl[0]) ||
+	(fl[0].IsNeutrino() && fl[2]==fl[0])) {
+      if (fl[1].IsGluon() && fl[3].IsQuark() && fl[4]==fl[3].Bar())
+	return new GZQQ_QCD_Virtual(pi,fl);
+      if (fl[3].IsGluon() && fl[1].IsQuark() && fl[4]==fl[1])
+	return new QZGQ_QCD_Virtual(pi,fl);
+    }
+    if ((fl[2].IsLepton() && fl[3]==fl[2].Bar()) ||
+	(fl[2].IsNeutrino() && fl[3]==fl[2].Bar())) {
+      if (fl[4].IsGluon() && fl[0].IsQuark() && fl[1]==fl[0].Bar())
+	return new QQZG_QCD_Virtual(pi,fl);
+      if (fl[0].IsGluon() && fl[1].IsQuark() && fl[4]==fl[1])
+	return new GQZQ_QCD_Virtual(pi,fl);
+    }
   }
   return NULL;
 }
