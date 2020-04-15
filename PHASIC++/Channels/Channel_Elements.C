@@ -259,8 +259,8 @@ double Channel_Elements::ExponentialWeight(double sexp,double smin,double smax,
     return 0.;
   }
   double wt_inv = 0;
-  double cbwt = Channel_Basics::ExponentialWeight(sexp,0,smax-smin); // total integral I
-  wt_inv = cbwt / exp(-sexp*(s-smin)); // weight = P(s)/I, this is inverse
+  double cbwt = Channel_Basics::ExponentialWeight(sexp,0,smax-smin); // 1/integral
+  wt_inv = 1 / (exp(-sexp*(s-smin)) * cbwt); // weight = P(s)/I, this is inverse
 
   if (!(wt_inv>0) && !(wt_inv<0) && wt_inv!=0) {
     msg_Error()<<"ExponentialWeight produces a nan: "<<wt_inv<<endl
@@ -638,15 +638,24 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 
 ///////////////////////////////////////////////////////////////////////////
 double Channel_Elements::GenerateDMRapidityUniform(const double masses[], const Double_Container &spinfo,
-              Double_Container &xinfo, const double ran, const int mode)
+              Double_Container &xinfo, const double cosXi, const double ran, const int mode)
 {
-  double s = spinfo[2];
-  double xmin = xinfo[0] = (masses[0]>masses[1]) ? 0.5 - (sqr(masses[0])-sqr(masses[1]))/(2.*s)
-                                                 : 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2*s);
-  double xmax = xinfo[1] = 1 - xinfo[0];
-  // msg_Out()<<xmin<<","<<xmax<<"\n";
+  double s = spinfo[3];
+  double xmin, xmax, x;
 
-  double x=xmin+(xmax-xmin)*ran;
+  if (ATOOLS::IsEqual(cosXi,-1)) {
+    xmin = xinfo[0] = 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2.*s);
+    xmax = xinfo[1] = xinfo[0];
+    x = xinfo[0];
+    return x;
+  }
+  else {
+    double test = ATOOLS::Max(masses[0]/sqrt(s),masses[1]/sqrt(s));
+    xmin = xinfo[0] = ATOOLS::Max(0.5 - 0.5*std::abs(cosXi), test);
+    xmax = xinfo[1] = ATOOLS::Max(1 - xinfo[0], test);
+
+    x=xmin+(xmax-xmin)*ran;
+  }
 
   if (ATOOLS::IsZero(x)) x=0.;
   if (x<xmin || x>xmax){

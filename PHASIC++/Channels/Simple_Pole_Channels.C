@@ -80,9 +80,9 @@ void Simple_Pole_DM_Annihilation::GeneratePoint(const double *rns)
   m_spkey[3] = CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],p_rans[0]);
 
   // for now, all p_rans[0]. Change to [1] and [2] when m_rannum fixed
+	m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[1],3);
   m_xkey[2] = CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),
-					   p_rans[0],3);
-  m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[0],3);
+					   m_cosxikey[2], p_rans[0], 3);
 }
 
 void Simple_Pole_DM_Annihilation::GenerateWeight(const int & mode)
