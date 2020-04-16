@@ -1,4 +1,5 @@
 #include "BEAM/Main/DM_Annihilation_Kinematics.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace BEAM;
 using namespace ATOOLS;
@@ -49,6 +50,7 @@ void DM_Annihilation_Kinematics::SetLimits() {
 }
 
 bool DM_Annihilation_Kinematics::operator()(Vec4D * p) {
+
   m_S = m_sprimekey[2] = m_sprimekey[3];
   double Eprime = sqrt(m_S);
   if ( m_S<m_sprimekey[0] || m_S>m_sprimekey[1] ||
@@ -65,11 +67,19 @@ bool DM_Annihilation_Kinematics::operator()(Vec4D * p) {
 
   p[0] = Vec4D(E1,0.,0.,p1);
   p[1] = Vec4D(E2,p2*sinxi,0.,p2*m_cosxi);
-  // msg_Out()<<"cos(xi)="<<m_cosxikey[2]<<"\n"; //debugging
 
-  // msg_Out()<<METHOD<<" --> "<<p[0]<<" & "<<p[1]<<"\n";
+  m_CMSBoost = Poincare(p[0]+p[1]);
 
-  p_beams[0]->SetX(x);
-  p_beams[1]->SetX(1-x);
+  // initial state momenta
+  BoostInCMS(p,2);
+
+  // cms frame. No bunches so in/out momenta the same
+  p_beams[0]->SetInMomentum(p[0]);
+  p_beams[1]->SetInMomentum(p[1]);
+  p_beams[0]->SetOutMomentum(p[0]);
+  p_beams[1]->SetOutMomentum(p[1]);
+
+  rpa->gen.SetEcms(Eprime);
+  
   return true;
 }

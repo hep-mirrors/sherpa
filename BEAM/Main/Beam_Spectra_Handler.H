@@ -18,23 +18,23 @@ namespace BEAM {
 
     int                   m_mode, m_polarisation;
     std::string           m_name,m_type;
-    
+
     bool InitTheBeams();
     bool InitTheKinematics();
     bool InitTheWeight();
   public:
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
-    
+
     inline const bool                 On()           const { return m_on; }
     inline const beammode::code     & BeamMode()     const { return m_beammode; }
     inline const collidermode::code & ColliderMode() const { return m_collidermode; }
     inline Beam_Base                * GetBeam(const int i) { return p_BeamBase[i]; }
-    
+
     inline const double Upper1() { return p_BeamBase[0]->Xmax(); }
     inline const double Upper2() { return p_BeamBase[1]->Xmax(); }
     inline const double Peak()   { return p_BeamBase[0]->Peak()*p_BeamBase[1]->Peak(); }
-    
+
     inline bool MakeBeams(ATOOLS::Vec4D * moms) { return (*p_kinematics)(moms); }
     inline void AssignKeys(ATOOLS::Integration_Info *const info) {
       p_kinematics->AssignKeys(info);
@@ -45,7 +45,7 @@ namespace BEAM {
       p_kinematics->BoostInCMS(p,n);
     }
     inline void BoostInLab(ATOOLS::Vec4D *p,const size_t & n) {
-      p_kinematics->BoostInCMS(p,n);
+      p_kinematics->BoostInLab(p,n);
     }
 
     inline void SetType(const std::string & type) { m_type = type; }
@@ -66,7 +66,7 @@ namespace BEAM {
     }
 
     void   Output();
-    
+
     // possible deprecated methods
     int             Polarisation()        { return m_polarisation; }
     double Weight(int * pol_types, double * dofs);
