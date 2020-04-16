@@ -276,8 +276,6 @@ bool Rivet_Interface::Init()
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
     Log::setLevel("Rivet", s["-l"].Get<int>());
     m_analyses = s["-a"].GetVector<std::string>();
-    if (find(m_analyses.begin(),m_analyses.end(),"MC_XS")==m_analyses.end())
-      m_analyses.push_back(std::string("MC_XS"));
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
