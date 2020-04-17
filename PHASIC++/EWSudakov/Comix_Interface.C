@@ -37,7 +37,7 @@ Complex Comix_Interface::GetSpinAmplitude(ATOOLS::Cluster_Amplitude& ampl,
   // during process set-up, flavours (in the proc info) are implicitly sorted,
   // hence we also need to sort them here, where we step out of the EWSudakov
   // module (in which we don't order flavours, to have a simpler book-keeping
-  Process_Base::SortFlavours(campl.get());
+  //Process_Base::SortFlavours(campl.get());
 
   auto ait = m_spinampls.find(&ampl);
   if (ait == m_spinampls.end()) {
@@ -198,6 +198,8 @@ void Comix_Interface::SetScales(ATOOLS::Cluster_Amplitude& ampl) const
 double Comix_Interface::CalcPermutationSign(std::vector<size_t> perm,
     const Cluster_Amplitude& ampl)
 {
+  return 1.0;
+
   // extract permutation of final-state fermions only
   static const size_t boson_idx = std::numeric_limits<size_t>::max();
   perm.erase(perm.begin(), perm.begin()+ampl.NIn());
