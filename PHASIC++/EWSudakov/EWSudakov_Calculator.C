@@ -409,6 +409,24 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
             transformed *= Complex{0.0, 1.0};
           }
         }
+
+        // TODO: replace this hack with a correct and general implementation
+        if (m_current_spincombination[2] == 2) {
+          Complex prefactor {-1.0};
+          for (int n {0}; n < 4; ++n) {
+            if (n == indizes[0])
+              continue;
+            if (n == indizes[1])
+              continue;
+            auto flav = base_ampl.Leg(n)->Flav();
+            if (flav.Kfcode() == kf_phiplus && flav.IsAnti()) {
+              prefactor *= -1.0;
+            }
+          }
+          transformed *= prefactor;
+        }
+
+
         const auto amplratio = transformed / m_current_me_value;
         coeff += 2.0*kcoupling.second*lcoupling.second*amplratio;
       }
