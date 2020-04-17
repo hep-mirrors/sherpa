@@ -119,6 +119,10 @@ namespace ATOOLS {
     {
       Leg(i)->SetMom(i < NIn() ? -p : p);
     }
+    Flavour Flav(size_t i) const
+    {
+      return (i < NIn() ? Leg(i)->Flav().Bar() : Leg(i)->Flav());
+    }
 
     inline Cluster_Amplitude *Prev() const { return p_prev; }
     inline Cluster_Amplitude *Next() const { return p_next; }

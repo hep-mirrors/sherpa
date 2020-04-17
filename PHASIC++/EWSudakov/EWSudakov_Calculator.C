@@ -262,19 +262,19 @@ void EWSudakov_Calculator::UpdateGolstoneSpincombinationAndMEPrefactor()
   // scalar using the Goldstone boson equivalence theorem, also calculate
   // (i)^n, the prefactor that accounts for ME^(Z_L^n) -> i^n ME^(chi^n)
   const auto& base_ampl = m_ampls.BaseAmplitude();
-  m_current_goldstone_spincombination.clear();
   const auto nspins = m_current_spincombination.size();
-  m_current_goldstone_spincombination.reserve(nspins);
   m_current_goldstone_me_prefactor = 1.0;
   for (size_t i{0}; i < nspins; ++i) {
     auto lambda = m_current_spincombination[i];
     if (lambda == 2) {
       lambda = 0;
-      if (base_ampl.Leg(i)->Flav().Kfcode() == kf_Z) {
+      if (base_ampl.Flav(i).Kfcode() == kf_Z) {
         m_current_goldstone_me_prefactor *= Complex{0.0, 1.0};
+      } else if (base_ampl.Flav(i).Kfcode() == kf_Wplus &&
+                 base_ampl.Flav(i).IsAnti()) {
+        m_current_goldstone_me_prefactor *= Complex {-1.0};
       }
     }
-    m_current_goldstone_spincombination.push_back(lambda);
   }
 }
 
@@ -301,8 +301,9 @@ Coeff_Value EWSudakov_Calculator::LsCoeff()
       // terms are diagonal (hence we only need to pass the right flavour above
       // when using DiagonalCew())
       const auto transformed =
+          m_current_goldstone_me_prefactor *
           TransformedAmplitudeValue({{i, newkf}}, m_current_spincombination);
-      auto amplratio = transformed / m_current_me_value;
+      const auto amplratio = transformed / m_current_me_value;
       coeff += prefactor * amplratio;
     }
   }
@@ -323,13 +324,9 @@ Coeff_Value EWSudakov_Calculator::lsZCoeff()
         // this is a non-diagonal IZ2 term, i.e. we need to take ME ratios into
         // account
         const Leg_Kfcode_Map key{{i, std::abs(coupling.first)}};
-        auto transformed =
+        const auto transformed =
+            m_current_goldstone_me_prefactor *
             TransformedAmplitudeValue(key, m_current_spincombination);
-        if (flav.Kfcode() == kf_chi) {
-          // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we need
-          // to apply a factor of i
-          transformed *= Complex{0.0, 1.0};
-        }
         const auto amplratio = transformed / m_current_me_value;
         contrib *= amplratio;
       }
@@ -373,15 +370,9 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
         const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
                                  {indizes[1], std::abs(lcoupling.first)}};
-        auto transformed =
+        const auto transformed =
+            m_current_goldstone_me_prefactor *
             TransformedAmplitudeValue(key, m_current_spincombination);
-        for (const auto& flav : flavs) {
-          if (flav.Kfcode() == kf_chi) {
-            // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we
-            // need to apply a factor of i
-            transformed *= Complex{0.0, 1.0};
-          }
-        }
         const auto amplratio = transformed / m_current_me_value;
         contrib *= amplratio;
       }
@@ -400,15 +391,9 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
       for (const auto lcoupling : lcouplings) {
         const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
                                  {indizes[1], std::abs(lcoupling.first)}};
-        auto transformed =
+        const auto transformed =
+            m_current_goldstone_me_prefactor *
             TransformedAmplitudeValue(key, m_current_spincombination);
-        for (const auto& flav : flavs) {
-          if (flav.Kfcode() == kf_chi) {
-            // we used the Goldstone theorem (3.4) for Z^L -> chi, hence we
-            // need to apply a factor of i
-            transformed *= Complex{0.0, 1.0};
-          }
-        }
 
         // TODO: replace this hack with a correct and general implementation
         if (m_current_spincombination[2] == 2) {
@@ -458,9 +443,11 @@ Coeff_Value EWSudakov_Calculator::lsCCoeff()
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;
       if (flav.Kfcode() == kf_Z) {
-        const auto transformed = TransformedAmplitudeValue(
-            {{i, kf_photon}}, m_current_spincombination);
-        auto amplratio = transformed / m_current_me_value;
+        const auto transformed =
+            m_current_goldstone_me_prefactor *
+            TransformedAmplitudeValue({{i, kf_photon}},
+                                      m_current_spincombination);
+        const auto amplratio = transformed / m_current_me_value;
         coeff += m_ewgroupconsts.NondiagonalBew() * amplratio;
       }
     } else if (flav.Kfcode() == kf_chi || flav.Kfcode() == kf_phiplus) {
@@ -498,15 +485,11 @@ Coeff_Value EWSudakov_Calculator::lsYukCoeff()
 Coeff_Value EWSudakov_Calculator::lsPRCoeff()
 {
   const auto deno = TransformedAmplitudeValue(
-      m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
-      m_current_spincombination,
-      &m_comixinterface);
+      {}, m_current_spincombination, &m_comixinterface);
   if (deno == 0.0)
     return 0.0;
   const auto he_me = TransformedAmplitudeValue(
-      m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
-      m_current_spincombination,
-      &m_comixinterface_he);
+      {}, m_current_spincombination, &m_comixinterface_he);
   Coeff_Value coeff = (he_me / deno - 1.0) * 4. * M_PI /
                       log(m_ewscale2 / m_ewgroupconsts.m_mw2) /
                       m_ewgroupconsts.m_aew;
@@ -518,7 +501,10 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
     const std::vector<int>& spincombination,
     const Comix_Interface* interface)
 {
-  auto& transformedampl = m_ampls.SU2TransformedAmplitude(legs);
+  auto clegs = legs;
+  auto tmp = m_ampls.GoldstoneBosonReplacements(spincombination);
+  clegs.insert(std::begin(tmp), std::end(tmp));
+  auto& transformedampl = m_ampls.SU2TransformedAmplitude(clegs);
   /// TODO: Make the following a bit prettier. At the moment
   /// this is simply a flag to catch that the momentum
   /// stretcher has failed. May want to have a enum
@@ -533,8 +519,8 @@ Complex EWSudakov_Calculator::TransformedAmplitudeValue(
   for (int i {0}; i < spincombination.size(); ++i) {
     auto pol = spincombination[i];
     if (pol == 2) {
-      auto it = legs.find(i);
-      if (it != legs.end()) {
+      auto it = clegs.find(i);
+      if (it != clegs.end()) {
         if (it->second == kf_chi || it->second == kf_phiplus ||
             it->second == kf_h0) {
           pol = 0;
