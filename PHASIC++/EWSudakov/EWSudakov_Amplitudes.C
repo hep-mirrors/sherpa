@@ -173,22 +173,22 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
   for (size_t permutation{0}; permutation != first_invalid_permutation;
        ++permutation) {
     auto* current_ampl = &baseampl;
+    Leg_Kfcode_Map goldstone_leg_set;
     if (permutation != 0) {
-      Leg_Kfcode_Map leg_set;
-      Leg_Kfcode_Map_Signed leg_set_signed;
+      Leg_Kfcode_Map_Signed goldstone_leg_set_signed;
       for (size_t k{0}; k < bosonindexes.size(); ++k) {
         if (permutation & (1 << k)) {
           const auto bosonindex = bosonindexes[k];
           const auto& flav = (*current_ampl)->Leg(bosonindex)->Flav();
           const auto flavcode = (long int)flav.GoldstoneBosonPartner();
-          leg_set.emplace(bosonindex, std::abs(flavcode));
-          leg_set_signed.emplace(bosonindex, flavcode);
+          goldstone_leg_set.emplace(bosonindex, std::abs(flavcode));
+          goldstone_leg_set_signed.emplace(bosonindex, flavcode);
         }
       }
-      auto it = ampls.find(leg_set);
+      auto it = ampls.find(goldstone_leg_set);
       if (it == ampls.end()) {
         auto ampl = std::make_pair(
-            leg_set, CreateSU2TransformedAmplitude((*current_ampl), leg_set_signed));
+            goldstone_leg_set, CreateSU2TransformedAmplitude((*current_ampl), goldstone_leg_set_signed));
         it = ampls.insert(std::move(ampl)).first;
       }
       current_ampl = &it->second;
@@ -205,8 +205,11 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
         else if (flav.Kfcode() == kf_Z)
           newkf = kf_photon;
         if (newkf != kf_none) {
+          auto leg_set = Cluster_Ampl_Key {{i, newkf}};
+          leg_set.insert(std::begin(goldstone_leg_set),
+                         std::end(goldstone_leg_set));
           auto ampl = std::make_pair(
-              Cluster_Ampl_Key{{i, newkf}},
+              leg_set,
               CreateSU2TransformedAmplitude(
                   (*current_ampl), {{i, static_cast<long int>(newkf)}}));
           ampls.insert(std::move(ampl));
@@ -223,8 +226,11 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
         const auto couplings = ewgroupconsts.IZ2(flav, 0);
         for (const auto coupling : couplings) {
           if (coupling.first != flav) {
+            auto leg_set = Cluster_Ampl_Key {{i, std::abs(coupling.first)}};
+            leg_set.insert(std::begin(goldstone_leg_set),
+                           std::end(goldstone_leg_set));
             auto ampl = std::make_pair(
-                Cluster_Ampl_Key{{i, std::abs(coupling.first)}},
+                leg_set,
                 CreateSU2TransformedAmplitude(
                     (*current_ampl), {{i, coupling.first}}));
             ampls.insert(std::move(ampl));
@@ -251,11 +257,16 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
               for (const auto lcoupling : lcouplings) {
                 if (kcoupling.first != kflav ||
                     lcoupling.first != lflav) {
+                  auto leg_set =
+                      Cluster_Ampl_Key {{k, std::abs(kcoupling.first)},
+                                        {l, std::abs(lcoupling.first)}};
+                  leg_set.insert(std::begin(goldstone_leg_set),
+                                 std::end(goldstone_leg_set));
                   auto ampl = std::make_pair(
-                      Cluster_Ampl_Key{{k, std::abs(kcoupling.first)},
-                                       {l, std::abs(lcoupling.first)}},
+                      leg_set,
                       CreateSU2TransformedAmplitude(
-                          (*current_ampl), {{k, kcoupling.first}, {l, lcoupling.first}}));
+                          (*current_ampl),
+                          {{k, kcoupling.first}, {l, lcoupling.first}}));
                   ampls.insert(std::move(ampl));
                 }
               }
@@ -269,11 +280,16 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
               for (const auto lcoupling : lcouplings) {
                 if (kcoupling.first != kflav ||
                     lcoupling.first != lflav) {
+                  auto leg_set =
+                      Cluster_Ampl_Key {{k, std::abs(kcoupling.first)},
+                                        {l, std::abs(lcoupling.first)}};
+                  leg_set.insert(std::begin(goldstone_leg_set),
+                                 std::end(goldstone_leg_set));
                   auto ampl = std::make_pair(
-                      Cluster_Ampl_Key{{k, std::abs(kcoupling.first)},
-                                       {l, std::abs(lcoupling.first)}},
+                      leg_set,
                       CreateSU2TransformedAmplitude(
-                          (*current_ampl), {{k, kcoupling.first}, {l, lcoupling.first}}));
+                          (*current_ampl),
+                          {{k, kcoupling.first}, {l, lcoupling.first}}));
                   ampls.insert(std::move(ampl));
                 }
               }
