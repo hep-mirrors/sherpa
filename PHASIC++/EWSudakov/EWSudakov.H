@@ -29,6 +29,8 @@ namespace PHASIC {
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map&);
   std::ostream& operator<<(std::ostream& os, const Leg_Kfcode_Map_Signed&);
 
+  Leg_Kfcode_Map ConvertToPhysicalPhase(Leg_Kfcode_Map legs);
+
 }
 
 #endif

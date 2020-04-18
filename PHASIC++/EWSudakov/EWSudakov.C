@@ -24,4 +24,14 @@ namespace PHASIC {
     return os << '}';
   }
 
+  Leg_Kfcode_Map ConvertToPhysicalPhase(Leg_Kfcode_Map legs) {
+    for (auto& kv : legs) {
+      if (kv.second == kf_phiplus)
+        kv.second = kf_Wplus;
+      else if (kv.second == kf_chi)
+        kv.second = kf_Z;
+    }
+    return legs;
+  }
+
 }
