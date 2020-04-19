@@ -88,6 +88,7 @@ void MEProcess::ReadProcess(size_t n)
     THROW(missing_input,"Define momenta using the MOMENTA settings.");
 
   ATOOLS::Settings& main_settings = ATOOLS::Settings::GetMainSettings();
+  main_settings.DeclareMatrixSettingsWithEmptyDefault({ "MOMENTA" });
   ATOOLS::Scoped_Settings s{ main_settings["MOMENTA"].GetItemAtIndex(n - 1) };
   for (const auto& row : s.GetMatrix<std::string>()) {
     msg_Debugging()<<row<<std::endl;

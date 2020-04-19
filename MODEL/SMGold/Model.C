@@ -1134,8 +1134,8 @@ void Standard_ModelGS::GplusW()
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
-    m_v.back().cpl.push_back( g2/two );
-    m_v.back().cpl.push_back( -g2/two );
+    m_v.back().cpl.push_back( I*g2/two );
+    m_v.back().cpl.push_back( -I*g2/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
@@ -1147,8 +1147,8 @@ void Standard_ModelGS::GplusW()
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus) );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_h0) );
-    m_v.back().cpl.push_back( g2/two );
-    m_v.back().cpl.push_back( -g2/two );
+    m_v.back().cpl.push_back( I*g2/two );
+    m_v.back().cpl.push_back( -I*g2/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
@@ -1162,8 +1162,8 @@ void Standard_ModelGS::GplusW()
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus) );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus).Bar() );
-    m_v.back().cpl.push_back( I*g2/two );
-    m_v.back().cpl.push_back( - I*g2/two );
+    m_v.back().cpl.push_back( -g2/two );
+    m_v.back().cpl.push_back( g2/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
@@ -1175,8 +1175,8 @@ void Standard_ModelGS::GplusW()
     m_v.back().AddParticle( ATOOLS::Flavour(kf_Wplus).Bar() );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_chi) );
     m_v.back().AddParticle( ATOOLS::Flavour(kf_phiplus));
-    m_v.back().cpl.push_back( -I*g2/two );
-    m_v.back().cpl.push_back( I*g2/two );
+    m_v.back().cpl.push_back( g2/two );
+    m_v.back().cpl.push_back( -g2/two );
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("VSS2");
