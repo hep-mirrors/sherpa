@@ -114,8 +114,13 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 Cluster_Amplitude *Default_Core_Scale::Cluster
 (Cluster_Amplitude *const ampl) const
 {
+  struct Combination { size_t i, j; Flavour fl;
+    inline Combination(const size_t &_i=0,const size_t &_j=0,
+		       const Flavour &_fl=kf_none):
+      i(_i), j(_j), fl(_fl) {} };// end of struct
   if (ampl->Legs().size()==ampl->NIn()+2) return ampl;
   Single_Process *proc(ampl->Proc<Single_Process>());
+  std::map<double,Combination,std::less<double> > tij;
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     for (size_t j(i+1);j<ampl->Legs().size();++j) {
@@ -123,30 +128,42 @@ Cluster_Amplitude *Default_Core_Scale::Cluster
       if (proc->Combinable(li->Id(),lj->Id())) {
 	Flavour_Vector fls(proc->CombinedFlavour(li->Id()|lj->Id()));
 	for (size_t k(0);k<fls.size();++k) {
-	  bool dec(false);
-	  for (size_t l(0);l<ampl->Decays().size();++l)
-	    if (ampl->Decays()[l]->m_id==(li->Id()|lj->Id())) {
-	      dec=true;
-	      break;
-	    }
-	  if ((!li->Flav().Strong() && !lj->Flav().Strong() &&
-	       !fls[k].Strong()) || dec) {
-	    msg_Debugging()<<"combine "<<ID(li->Id())<<"&"<<ID(lj->Id())
-			   <<"->"<<fls[k]<<" ("<<dec<<")\n";
-	    li->SetFlav(fls[k]);
-	    li->SetMom(li->Mom()+lj->Mom());
-	    li->SetId(li->Id()|lj->Id());
-	    lj->Delete();
-	    for (ClusterLeg_Vector::iterator lit(ampl->Legs().begin());
-		 lit!=ampl->Legs().end();++lit)
-	      if (*lit==lj) {
-		ampl->Legs().erase(lit);
-		break;
-	      }
-	    return Cluster(ampl);
-	  }
+	  double t((li->Mom()+lj->Mom()).Abs2());
+	  double p(sqr(t-sqr(fls[k].Mass()))+
+		   sqr(fls[k].Mass()*fls[k].Width()));
+	  msg_Debugging()<<"check "<<ID(li->Id())<<"&"<<ID(lj->Id())
+			 <<"["<<fls[k]<<"] -> m = "<<sqrt(dabs(t))
+			 <<", 1/p = "<<sqrt(p)<<"\n"; 
+	  tij[p]=Combination(i,j,fls[k]);
 	}
       }
+    }
+  }
+  for (std::map<double,Combination,std::less<double> >::
+	 const_iterator it(tij.begin());it!=tij.end();++it) {
+    Cluster_Leg *li(ampl->Leg(it->second.i));
+    Cluster_Leg *lj(ampl->Leg(it->second.j));
+    bool dec(false);
+    for (size_t l(0);l<ampl->Decays().size();++l)
+      if (ampl->Decays()[l]->m_id==(li->Id()|lj->Id())) {
+	dec=true;
+	break;
+      }
+    if ((!li->Flav().Strong() && !lj->Flav().Strong() &&
+	 !it->second.fl.Strong()) || dec) {
+      msg_Debugging()<<"combine "<<ID(li->Id())<<"&"<<ID(lj->Id())
+		     <<"->"<<it->second.fl<<" ("<<dec<<")\n";
+      li->SetFlav(it->second.fl);
+      li->SetMom(li->Mom()+lj->Mom());
+      li->SetId(li->Id()|lj->Id());
+      lj->Delete();
+      for (ClusterLeg_Vector::iterator lit(ampl->Legs().begin());
+	   lit!=ampl->Legs().end();++lit)
+	if (*lit==lj) {
+	  ampl->Legs().erase(lit);
+	  break;
+	}
+      return Cluster(ampl);
     }
   }
   return ampl;
