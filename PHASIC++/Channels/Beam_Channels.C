@@ -40,16 +40,19 @@ bool Beam_Channels::MakeChannels()
   switch (m_beammode) {
   case beammode::relic_density:
 		{
-			Settings& settings = Settings::GetMainSettings();
-			double temperature = settings["DM_TEMPERATURE"].Get<double>();
-			double sexp = (1./temperature < 10.) ? 1./temperature : 10.;
-	    m_beamparams.push_back(Channel_Info(channel_type::simple,sexp));
-	    // m_beamparams.push_back(Channel_Info(channel_type::exponential,1.));
+	    m_beamparams.push_back(Channel_Info(channel_type::simple,10.));
+			m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
 		}
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
-    m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+		{
+			Settings& settings = Settings::GetMainSettings();
+			double temperature = settings["DM_TEMPERATURE"].Get<double>();
+			double sexp = 1./(2*pow(temperature,2));
+	    m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+			m_beamparams.push_back(Channel_Info(channel_type::exponential,sexp));
+		}
     CheckForStructuresFromME();
     break;
   case beammode::collider:
@@ -311,7 +314,7 @@ void Beam_Channels::AddExponential(const size_t & chno,const size_t & mode) {
   }
   else if (m_beammode==beammode::DM_annihilation) {
 		// todo: change this
-    Add(new Simple_Pole_DM_Annihilation(spex,mass1,mass2,m_keyid,p_psh->GetInfo()));
+    Add(new Exponential_DM_Annihilation(spex,mass1,mass2,m_keyid,p_psh->GetInfo()));
   }
   else return;
 }

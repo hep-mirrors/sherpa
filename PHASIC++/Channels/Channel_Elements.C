@@ -652,7 +652,7 @@ double Channel_Elements::GenerateDMRapidityUniform(const double masses[], const 
   else {
     double test = ATOOLS::Max(masses[0]/sqrt(s),masses[1]/sqrt(s));
     xmin = xinfo[0] = ATOOLS::Max(0.5 - 0.5*std::abs(cosXi), test);
-    xmax = xinfo[1] = ATOOLS::Max(1 - xinfo[0], test);
+    xmax = xinfo[1] = ATOOLS::Min(1 - xinfo[0], 1-test);
 
     x=xmin+(xmax-xmin)*ran;
   }
@@ -692,6 +692,7 @@ double Channel_Elements::GenerateDMAngleUniform(const double ran, const int mode
 	 cosxi = cosxi_max; }
   }
   return cosxi;
+  // return -1; // TESTING
 }
 
 
