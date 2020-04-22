@@ -2,12 +2,12 @@
 
 {% if mode == "singlehtml" %}
 <ul>
-    <li><a href="{{ pathto('', true) }}../">Multi Page Version</a></li>
+    <li><a href="{{ vpathto('master')}}/../../../master">Multi Page Version</a></li>
 </ul>
 {% endif %}
 
 {% if mode == "html" %}
 <ul>
-    <li><a href="{{ pathto('', true) }}_single/">Single Page Version</a></li>
+    <li><a href="{{ vpathto('master') }}/../../_single/master">Single Page Version</a></li>
 </ul>
 {% endif %}
