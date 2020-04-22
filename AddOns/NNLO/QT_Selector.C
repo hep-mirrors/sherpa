@@ -17,7 +17,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 QT_Selector::QT_Selector(const Selector_Key &key):
-  Selector_Base("NNLOqT_Selector"), p_proc(key.p_proc)
+  Selector_Base("NNLOqT_Selector",key.p_proc)
 {
   int nnj=0;
   for (size_t i(m_nin);i<m_nin+m_nout;++i)
