@@ -71,7 +71,7 @@ public:
 
 
     //apply only to S-Events
-    if ( me_w_info->m_type ==(ATOOLS::mewgttype::code::METS |ATOOLS::mewgttype::code::H)  ){
+    if ( me_w_info->m_type ==(ATOOLS::mewgttype::METS |ATOOLS::mewgttype::H)  ){
             msg_Debugging() << "H-Event, skip alpha_s correction." << std::endl;
             return Return_Value::Nothing;
 
