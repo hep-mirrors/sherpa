@@ -149,7 +149,7 @@ void Rivet_Interface::RegisterDefaults() const
   s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
   s["XS_OUTPUT_PRECISION"].SetDefault(6);
   s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "-a" });
+  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
@@ -275,7 +275,7 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
     Log::setLevel("Rivet", s["-l"].Get<int>());
-    m_analyses = s["-a"].GetVector<std::string>();
+    m_analyses = s["ANALYSES"].GetVector<std::string>();
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
@@ -388,7 +388,7 @@ void Rivet_Interface::ShowSyntax(const int i)
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
     <<"   RIVET: {\n\n"
-    <<"     -a: [<ana_1>, <ana_2>]  # analyses to run\n"
+    <<"     ANALYSES: [<ana_1>, <ana_2>]  # analyses to run\n"
     <<"     # optional parameters:\n"
     <<"     JETCONTS: <0|1>      # perform additional separate analyses for \n"
     <<"                          # each matrix element multiplicity\n"
@@ -726,7 +726,7 @@ void Rivet_Interface::RegisterDefaults() const
   s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
   s["XS_OUTPUT_PRECISION"].SetDefault(6);
   s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "-a" });
+  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 void Rivet_Interface::ExtractVariations
@@ -962,7 +962,7 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
     Log::setLevel("Rivet", s["-l"].Get<int>());
-    m_analyses = s["-a"].GetVector<std::string>();
+    m_analyses = s["ANALYSES"].GetVector<std::string>();
     for (size_t i(0);i<m_analyses.size();++i) {
       if (m_analyses[i]==std::string("MC_XS")) break;
       if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
@@ -1134,7 +1134,7 @@ void Rivet_Interface::ShowSyntax(const int i)
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
     <<"   RIVET: {\n\n"
-    <<"     -a: [<ana_1>, <ana_2>]  # analyses to run\n"
+    <<"     ANALYSES: [<ana_1>, <ana_2>]  # analyses to run\n"
     <<"     # optional parameters:\n"
     <<"     JETCONTS: <0|1>      # perform additional separate analyses for \n"
     <<"                          # each matrix element multiplicity\n"
