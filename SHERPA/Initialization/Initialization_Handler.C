@@ -24,6 +24,7 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
@@ -118,9 +119,6 @@ void Initialization_Handler::RegisterDefaults()
   s["N_COLOR"].SetDefault(3.0);
 
   std::string frag{ s["FRAGMENTATION"].Get<std::string>() };
-  s["DECAYMODEL"]
-    .SetDefault((frag == "Lund") ? "Lund" : "Hadrons")
-    .UseNoneReplacements();
 
   s["SOFT_SPIN_CORRELATIONS"].SetDefault(0);
   auto hdenabled = s["HARD_DECAYS"]["Enabled"].Get<bool>();
@@ -880,33 +878,44 @@ bool Initialization_Handler::InitializeTheFragmentation()
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
   Settings& s = Settings::GetMainSettings();
-  if (s["FRAGMENTATION"].Get<std::string>() == "None")
-    return true;
-  std::string decmodel{ s["DECAYMODEL"].Get<std::string>() };
-  msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
+
+  string fragmodel = s["FRAGMENTATION"].Get<std::string>();
+  string defdm = "Hadrons";
+  if (fragmodel == "None") defdm = "None";
+  if (fragmodel == "Lund") defdm = "Lund";
+  
   // TODO make dynamic with gettering
-  if (decmodel=="None") return true;
-  else if (decmodel==std::string("Hadrons")) {
-    m_decayhandlers.push_back(new HADRONS::Hadron_Decay_Handler());
-  }
-  else if ((decmodel==string("Lund")) ) {
-#ifdef USING__PYTHIA
-    Lund_Interface * lund(NULL);
-    if (p_fragmentation->GetLundInterface()==NULL) {
-      lund = new Lund_Interface();
+  for (auto decmodel: s["DECAYMODEL"].SetDefault({defdm}).UseNoneReplacements().GetVector<string>()) {
+    if (decmodel=="None") continue;
+    else if (decmodel==std::string("Hadrons")) {
+      m_decayhandlers.push_back(new HADRONS::Hadron_Decay_Handler());
     }
-    else lund = p_fragmentation->GetLundInterface();
-    m_decayhandlers.push_back(new Lund_Decay_Handler(lund));
+    else if ((decmodel==string("Lund")) ) {
+#ifdef USING__PYTHIA
+      Lund_Interface * lund(NULL);
+      if (p_fragmentation->GetLundInterface()==NULL) {
+        lund = new Lund_Interface();
+      }
+      else lund = p_fragmentation->GetLundInterface();
+      m_decayhandlers.push_back(new Lund_Decay_Handler(lund));
 #else
-    THROW(fatal_error, string("Pythia not enabled during compilation. ")+
-          "Use the configure option --enable-pythia to enable it.");
+      THROW(fatal_error, string("Pythia not enabled during compilation. ")+
+            "Use the configure option --enable-pythia to enable it.");
 #endif
+    }
+    else {
+      THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");
+    }
   }
-  else {
-    THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");
+
+  for(auto kf: s_kftable) {
+    Flavour flav(kf.first);
+    if (flav.IsHadron() && !flav.IsStable() && flav.DecayHandler()==NULL) {
+      PRINT_INFO("Warning: "<<flav<<" unstable but w/o decay handler. Will keep stable.");
+      flav.SetStable(true);
+    }
   }
-  msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "
-            <<decmodel<<endl;
+  msg_Info()<<"Initialized the Hadron_Decay_Handler(s)"<<endl;
   return true;
 }
 
