@@ -64,6 +64,12 @@ bool Yaml_Reader::IsList(const Settings_Keys& scopekeys)
   return node.IsSequence();
 }
 
+bool Yaml_Reader::IsMap(const Settings_Keys& scopekeys)
+{
+  const auto node = NodeForKeys(scopekeys);
+  return node.IsMap();
+}
+
 size_t Yaml_Reader::GetItemsCount(const Settings_Keys& scopekeys)
 {
   const auto node = NodeForKeys(scopekeys);

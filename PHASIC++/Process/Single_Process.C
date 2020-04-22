@@ -137,8 +137,8 @@ double Single_Process::NfSchemeConversionTerms() const
   }
   // scheme dependent return value
   msg_Debugging()<<"B = "<<m_lastbxs<<" ,  C_nf = "<<res<<std::endl
-                 <<" => "<<(m_nfconvscheme==2?0.:m_last)+m_lastbxs*res<<std::endl;
-  return (m_nfconvscheme==2?-m_last:0.)+m_lastbxs*res;
+                 <<" => "<<(m_nfconvscheme==2?0.:m_lastxs)+m_lastbxs*res<<std::endl;
+  return (m_nfconvscheme==2?-m_lastxs:0.)+m_lastbxs*res;
 }
 
 double Single_Process::CollinearCounterTerms
@@ -494,8 +494,8 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
   CalculateFlux(p);
 
   if (m_zero) {
-    m_eventweights = 0.0;
-    return m_eventweights;
+    m_last = 0.0;
+    return m_last;
   }
 
   if (IsMapped()) {
@@ -507,11 +507,13 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
   Partonic(p);
 
+  double nominal {0.0};
+
   if (GetSubevtList() == nullptr) {
 
     if (type == Weight_Type::all) {
       assert(Selector()->CombinedResults().size() == 1);
-      m_eventweights *= Selector()->CombinedResults()[0];
+      m_last *= Selector()->CombinedResults()[0];
     }
 
     // calculate ISR weight
@@ -519,11 +521,11 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
     m_csi.AddFlux(m_lastflux);
 
     // update results
-    m_last = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
+    nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
       double prefac {m_csi.m_pdfwgt * m_csi.m_flux};
-      m_last *= prefac;
+      nominal *= prefac;
       m_lastb *= prefac;
     }
 
@@ -630,7 +632,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
         sub->m_xf2 = p_int->ISR()->XF2(0);
 
         // update result
-        m_last += (sub->m_trig & 1) ? sub->m_result : 0.0;
+        nominal += (sub->m_trig & 1) ? sub->m_result : 0.0;
       }
     }
 
@@ -644,16 +646,15 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
   UpdateMEWeightInfo(scales);
 
   // perform on-the-fly reweighting
-  m_eventweights *= m_last;
-  if (type != Weight_Type::nominal && m_eventweights.ContainsVariations()) {
+  m_last *= nominal;
+  if (type != Weight_Type::nominal && m_last.ContainsVariations()) {
     if (GetSubevtList() == nullptr) {
-      RefactoredReweightBVI(type, scales->Amplitudes());
+      ReweightBVI(type, scales->Amplitudes());
     } else {
-      RefactoredReweightRS(type, scales->Amplitudes());
+      ReweightRS(type, scales->Amplitudes());
     }
   }
-  m_last -= m_dadseventweights.Nominal();
-  m_eventweights -= m_dadseventweights;
+  m_last -= m_dadseventweights;
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -664,19 +665,20 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
-  return m_eventweights;
+  return m_last;
 }
 
 void Single_Process::ResetResultsForDifferential(Weight_Type type)
 {
-  m_lastb=m_last=m_lastflux=0.0;
+  m_lastflux = 0.0;
   m_mewgtinfo.Reset();
   if (type == Weight_Type::all) {
-    m_dadseventweights = m_eventweights = Event_Weights {};
+    m_dadseventweights = m_last = m_lastb = Event_Weights {};
   } else {
-    m_dadseventweights = m_eventweights = Event_Weights {0, 1.0};
+    m_dadseventweights = m_last = m_lastb = Event_Weights {0, 1.0};
   }
   m_dadseventweights = 0.0;
+  m_lastb = 0.0;
 }
 
 void Single_Process::UpdateIntegratorMomenta(const Vec4D_Vector& p)
@@ -724,91 +726,95 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
   m_lastflux /= m_issymfac;
 }
 
-void Single_Process::RefactoredReweightBVI(Weight_Type type,
-                                           ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightBVI(Weight_Type type,
+                                 ClusterAmplitude_Vector& ampls)
 {
-  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
-  m_eventweights.Apply(
-      [this, &ampls, &info](double varweight,
-                            size_t varindex,
-                            Variation_Parameters& varparams) -> double {
-        if (varweight == 0.0) {
-          return 0.0;
+  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
+  // NOTE: we iterate over m_last's variations (via its Apply function), but we
+  // also update m_lastb inside the loop, to avoid code duplication; also note
+  // that m_lastb should not be all-zero if m_lastbxs is zero
+  m_last.Apply([this, &ampls, &info](
+                   double varweight,
+                   size_t varindex,
+                   Variation_Parameters& varparams) -> double {
+    if (varweight == 0.0) {
+      m_lastb.Variation(varindex) = 0.0;
+      return 0.0;
+    }
+    double K {1.0};
+    if (!m_mewgtinfo.m_bkw.empty()) {
+      K = m_mewgtinfo.m_bkw[varindex];
+    }
+    if (m_mewgtinfo.m_type == mewgttype::none ||
+        m_mewgtinfo.m_type == mewgttype::METS) {
+
+      const auto res = ReweightBornLike(varparams, info);
+      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? res : 0.0;
+      return K * res;
+
+    } else {
+
+      const double muR2new {MuR2(varparams, info)};
+      const Cluster_Sequence_Info csi {ClusterSequenceInfo(
+          varparams, info, muR2new / info.m_muR2, &m_mewgtinfo.m_clusseqinfo)};
+
+      double res {0.0};
+      double resb {0.0};
+
+      if (csi.m_pdfwgt != 0.0) {
+
+        // calculate AlphaS factors (for Born and non-Born contributions)
+        const double alphasratio {
+            AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas)};
+        const double alphasfac {pow(alphasratio, info.m_orderqcd)};
+        double bornalphasfac {1.0};
+        if (alphasfac != 1.0) {
+          // for the Born contribution within BVIKP, we need to evaluate at
+          // the lower order
+          const bool needslowerorderqcd {m_mewgtinfo.m_type & mewgttype::VI ||
+                                         m_mewgtinfo.m_type & mewgttype::KP};
+          bornalphasfac =
+              needslowerorderqcd ? alphasfac / alphasratio : alphasfac;
         }
-        double K {1.0};
-        if (!m_mewgtinfo.m_bkw.empty()) {
-          K = m_mewgtinfo.m_bkw[varindex];
+
+        // B term
+        const double Bnew {m_mewgtinfo.m_B * bornalphasfac};
+
+        // VI term
+        const double logR {log(muR2new / info.m_muR2)};
+        const double VInew {(m_mewgtinfo.m_VI + m_mewgtinfo.m_wren[0] * logR +
+                             m_mewgtinfo.m_wren[1] * 0.5 * ATOOLS::sqr(logR)) *
+                            alphasfac};
+
+        // KP terms
+        const double KPnew {KPTerms(&varparams) * alphasfac};
+
+        // Calculate K1
+        double K1 {1.0};
+        if (m_mewgtinfo.m_bkw.size() > s_variations->Size()) {
+          K1 = m_mewgtinfo.m_bkw[s_variations->Size() + varindex];
         }
-        if (m_mewgtinfo.m_type == mewgttype::none ||
-            m_mewgtinfo.m_type == mewgttype::METS) {
 
-          return K * ReweightBornLike(varparams, info);
+        // Calculate final reweighted BVIKP result
+        resb = Bnew * csi.m_pdfwgt;
+        res = (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) * csi.m_pdfwgt;
+      }
 
-        } else {
-
-          const double muR2new {MuR2(varparams, info)};
-          const Cluster_Sequence_Info csi {
-              ClusterSequenceInfo(varparams, info, muR2new / info.m_muR2,
-                                  &m_mewgtinfo.m_clusseqinfo)};
-
-          double BVIKPnew {0.0};
-
-          if (csi.m_pdfwgt != 0.0) {
-
-            // calculate AlphaS factors (for Born and non-Born contributions)
-            const double alphasratio {
-              AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas)};
-            const double alphasfac {pow(alphasratio, info.m_orderqcd)};
-            double bornalphasfac {1.0};
-            if (alphasfac != 1.0) {
-              // for the Born contribution within BVIKP, we need to evaluate at
-              // the lower order
-              const bool needslowerorderqcd {
-                  m_mewgtinfo.m_type & mewgttype::VI ||
-                  m_mewgtinfo.m_type & mewgttype::KP};
-              bornalphasfac =
-                  needslowerorderqcd ? alphasfac / alphasratio : alphasfac;
-            }
-
-            // B term
-            const double Bnew {m_mewgtinfo.m_B * bornalphasfac};
-
-            // VI term
-            const double logR {log(muR2new / info.m_muR2)};
-            const double VInew {
-                (m_mewgtinfo.m_VI + m_mewgtinfo.m_wren[0] * logR +
-                 m_mewgtinfo.m_wren[1] * 0.5 * ATOOLS::sqr(logR)) *
-                alphasfac};
-
-            // KP terms
-            const double KPnew {KPTerms(&varparams) * alphasfac};
-
-            // Calculate K1
-            double K1 {1.0};
-            if (m_mewgtinfo.m_bkw.size() > s_variations->Size()) {
-              K1 = m_mewgtinfo
-                       .m_bkw[s_variations->Size() + varindex];
-            }
-
-            // Calculate final reweighted BVIKP result
-            BVIKPnew = (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) *
-                       csi.m_pdfwgt;
-          }
-
-          return BVIKPnew;
-        }
-      });
+      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? resb : 0.0;
+      return res;
+    }
+  });
 }
 
-void Single_Process::RefactoredReweightRS(Weight_Type type,
-                                          ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightRS(Weight_Type type,
+                                ClusterAmplitude_Vector& ampls)
 {
-  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last};
+  BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
   auto last_subevt_idx = GetSubevtList()->size() - 1;
-  m_eventweights.Apply([this, &info, &last_subevt_idx](
-                           double varweight,
-                           size_t varindex,
-                           Variation_Parameters& varparams) -> double {
+  m_last.Apply([this, &info, &last_subevt_idx](
+                   double varweight,
+                   size_t varindex,
+                   Variation_Parameters& varparams) -> double {
     double K {1.0};
     if (!m_mewgtinfo.m_bkw.empty()) {
       K = m_mewgtinfo.m_bkw[varindex];

@@ -61,7 +61,6 @@ namespace PHASIC {
     PDF::Shower_Base   *p_shower;
     PDF::NLOMC_Base    *p_nlomc;
 
-    ATOOLS::Event_Weights m_eventweights;
     BBar_Multi_Channel *p_mc;
 
     Scale_Setter_Base   *p_scale;
@@ -78,7 +77,8 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    double m_last, m_lastb, m_symfac, m_issymfac;
+    ATOOLS::Event_Weights m_last, m_lastb;
+    double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
     bool   m_hasinternalscale;
@@ -182,7 +182,7 @@ namespace PHASIC {
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
-    const ATOOLS::Event_Weights& EventWeights() const { return m_eventweights; }
+    const ATOOLS::Event_Weights& EventWeights() const { return m_last; }
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetCaller(Process_Base *const proc);
 
@@ -263,8 +263,8 @@ namespace PHASIC {
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 
-    inline double Last() const { return m_last; }
-    inline double LastB() const { return m_lastb; }
+    inline double Last() const { return m_last.Nominal(); }
+    inline double LastB() const { return m_lastb.Nominal(); }
 
     inline bool LookUp() const { return m_lookup; }
 

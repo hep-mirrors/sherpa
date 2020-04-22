@@ -117,6 +117,7 @@ namespace DIRE {
     Cluster_Definitions *p_cluster;
 
     ATOOLS::Event_Weights m_weights;
+    bool m_reweight;
 
     Kernel_Vector m_cks;
     SKernel_Map   m_sks;
@@ -127,7 +128,7 @@ namespace DIRE {
 
     int m_kin, m_kfac, m_cpl, m_mec;
 
-    unsigned int m_maxem, m_maxpart, m_maxrewem;
+    unsigned int m_maxem, m_maxpart;
 
     void AddKernel(Kernel *const k);
 

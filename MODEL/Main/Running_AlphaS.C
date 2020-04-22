@@ -493,6 +493,18 @@ Running_AlphaS::Running_AlphaS(PDF::PDF_Base *const pdf,
   m_defval = AsMZ();
 }
 
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+                   const int order, const int thmode):
+  p_overridingpdf(NULL)
+{
+  RegisterDefaults();
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(NULL, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::none);
+  m_defval = AsMZ();
+}
+
 void Running_AlphaS::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["ALPHAS"] };

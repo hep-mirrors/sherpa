@@ -104,22 +104,22 @@ namespace PHASIC {
      */
     ATOOLS::Event_Weights OneHEvent(const int wmode);
 
+    struct LocalKFactorInfo {
+      double s {0.0};
+      double h {0.0};
+    };
     /*!
      * @param bvi  double Differential XS for BVI
      * @param b    double Differential XS for B
      * @param rs   double Differential XS for RS
-     * @param r    double Differential XS for R 
-     * @param ran  double Random number used to select S/H
-     * @param ampl Cluster_Amplitude Amplitude which should be updated with the
-     *             local K factor when S is selected
-     * @return
+     * @param r    double Differential XS for R
+     * @return S and H values corresponding to m_kfacmode
      *
-     * This method calculates the local Kfactor for MENLOPS for given
-     * differential XS values
+     * This method calculates S and H values needed to calculate the local
+     * Kfactor for MENLOPS for given differential XS values
      */
-    double LocalKFactor(double bvi, double b, double rs, double r,
-                        double random,
-                        const ATOOLS::Cluster_Amplitude *ampl=NULL);
+    LocalKFactorInfo
+    CalculateLocalKFactorInfo(double bvi, double b, double rs, double r);
 
     struct HEventVeto_Args {
       Jet_Finder *p_jf;
@@ -254,12 +254,12 @@ namespace PHASIC {
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     /*!
-     * @param ampl Cluster_Amplitude Cluster amplitude
+     * @param ampl Cluster_Amplitude Cluster amplitude (might be updated)
      * @return Local KFactor
      *
      * This method calculates the local Kfactor for MENLOPS for given config
      */
-    ATOOLS::Event_Weights LocalKFactor(const ATOOLS::Cluster_Amplitude &ampl);
+    ATOOLS::Event_Weights LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
 
     /*!
      * @return Cluster amplitude p_ampl

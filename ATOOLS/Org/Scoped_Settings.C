@@ -107,6 +107,11 @@ bool Scoped_Settings::IsList() const
   return m_rootsettings->IsList(m_scopes);
 }
 
+bool Scoped_Settings::IsMap() const
+{
+  return m_rootsettings->IsMap(m_scopes);
+}
+
 std::vector<Scoped_Settings> Scoped_Settings::GetItems() const
 {
   std::vector<Scoped_Settings> scoped_settings;
