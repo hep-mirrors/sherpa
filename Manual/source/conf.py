@@ -36,11 +36,12 @@ with open('../../configure.ac', 'r') as f:
 # ones.
 extensions = [
     'sphinxcontrib.bibtex',
+    'sphinx_multiversion',
     'gen_bash_completion'
 ]
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = []
+templates_path = ["_templates"]
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -63,11 +64,16 @@ html_favicon = '_static/images/favicon.ico'
 
 html_theme_options['extra_nav_links'] = {
     'Project Home': 'https://sherpa-team.gitlab.io',
-    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/'
+    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
 }
+
+html_sidebars['**'] += ['versioning.html', 'singlemulti.html']
 
 suppress_warnings = ['ref.option']
 
 man_pages = [
     ('manpage', 'Sherpa', 'a Monte Carlo event generator for the Simulation of High-Energy Reactions of Particles ', 'Sherpa Team', 1)
 ]
+
+# Configure sphinx-multiversion
+smv_branch_whitelist = r'^master$'  # only master
