@@ -171,7 +171,6 @@ pages:
     - git fetch --tags
     - cd Manual
     - pip3 install -r requirements.txt
-    - pip3 install sphinx-multiversion
     - cd ..
     - sphinx-multiversion build  Manual/source/ build/html -- -A mode=html
     - sphinx-multiversion build  Manual/source/ build/html/_single -- -b singlehtml -A mode=singlehtml
@@ -183,5 +182,5 @@ pages:
     changes:
       - Manual/**/*
     refs:
-      - master
+      - branches
       - tags
