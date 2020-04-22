@@ -1,13 +1,14 @@
 {# THIS IS VERY SPECIFIC #}
 
-{% if mode == "singlehtml" %}
+{% if mode %}
+<h3>Other Formats</h3>
 <ul>
+    {% if mode == "singlehtml" %}
     <li><a href="{{ vpathto('master')}}/../../../master">Multi Page Version</a></li>
-</ul>
-{% endif %}
+    {% endif %}
 
-{% if mode == "html" %}
-<ul>
+    {% if mode == "html" %}
     <li><a href="{{ vpathto('master') }}/../../_single/master">Single Page Version</a></li>
+    {% endif %}
 </ul>
 {% endif %}
