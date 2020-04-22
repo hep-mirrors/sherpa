@@ -617,6 +617,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                  AC_MSG_ERROR(sphinxcontrib-bibtex not installed.);
               fi;
 
+              if ! [ python3 -c  'import sphinxcontrib.bibtex' &>/dev/null ]; then
+                 AC_MSG_ERROR(sphinxcontrib-bibtex not installed.);
+              fi;
+
               AC_MSG_RESULT([yes]); manual=true;;
            *) ;;
       esac
