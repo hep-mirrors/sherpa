@@ -172,7 +172,7 @@ pages:
     - git checkout master
     - pip3 install -r requirements.txt
     - cd ..
-    - sphinx-multiversion Manual/source/ build/html -- -A mode=html
+    - sphinx-multiversion Manual/source/ build/html/_multi -- -A mode=html
     - sphinx-multiversion Manual/source/ build/html/_single -- -b singlehtml -A mode=singlehtml
     - mv build/html public
   artifacts:

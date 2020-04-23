@@ -1,14 +1,21 @@
 {# THIS IS VERY SPECIFIC #}
 
-{% if mode and versions %}
+{% if mode %}
+<script>
+ function switchVersion(current, next) {
+     history.pushState("", document.title, window.location.pathname);
+
+     const to_index = "{{ pathto('index') }}";
+     window.location.href = window.location.href.replace("_" + current, "_" + next)
+                          + (to_index.indexOf("..") > -1 ? "/../" + to_index : "");
+ }
+</script>
 <h3>Other Formats</h3>
 <ul>
     {% if mode == "singlehtml" %}
-    <li><a href="{{ vpathto('master')}}/../../../master">Multi Page Version</a></li>
-    {% endif %}
-
-    {% if mode == "html" %}
-    <li><a href="{{ vpathto('master') }}/../../_single/master">Single Page Version</a></li>
+    <li><a href="javascript:switchVersion('single', 'multi')">Multi Page Version</a></li>
+    {% elif mode == "html" %}
+    <li><a href="javascript:switchVersion('multi', 'single')">Single Page Version</a></li>
     {% endif %}
 </ul>
 {% endif %}
