@@ -67,7 +67,11 @@ html_theme_options['extra_nav_links'] = {
     'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
 }
 
-html_sidebars['**'] += ['singlemulti.html', 'versioning.html']
+
+extra_sidebars = ['singlemulti.html', 'versioning.html']
+for extra in extra_sidebars:
+    if extra not in html_sidebars['**']:
+       html_sidebars['**'].append(extra)
 
 suppress_warnings = ['ref.option']
 
@@ -77,3 +81,4 @@ man_pages = [
 
 # Configure sphinx-multiversion
 smv_branch_whitelist = r'^.*$'  # only master
+smv_tag_whitelist = None
