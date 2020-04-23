@@ -169,12 +169,15 @@ pages:
     - apk --no-cache add py3-pip python-dev
     - apk --no-cache add make git
     - cd Manual
-    - git checkout master
     - pip3 install -r requirements.txt
     - cd ..
     - sphinx-multiversion Manual/source/ build/html/_multi -- -A mode=html
     - sphinx-multiversion Manual/source/ build/html/_single -- -b singlehtml -A mode=singlehtml
     - mv build/html public
+
+  variables:
+    GIT_STRATEGY: clone
+    GIT_CHECKOUT: "true"
   artifacts:
     paths:
     - public
