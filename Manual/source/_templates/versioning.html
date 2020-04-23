@@ -13,7 +13,9 @@
 <h3>{{ _('Branches') }}</h3>
 <ul>
     {%- for item in versions.branches %}
+    {%- if item.name != "master" %}
     <li><a href="{{ item.url }}">{{ item.name }}</a></li>
+    {%- endif %}
     {%- endfor %}
 </ul>
 {% endif %}
