@@ -81,4 +81,3 @@ man_pages = [
 
 # Configure sphinx-multiversion
 smv_branch_whitelist = r'^.*$'  # only master
-smv_tag_whitelist = None
