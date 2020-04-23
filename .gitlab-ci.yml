@@ -170,7 +170,8 @@ pages:
     - apk --no-cache add make git
     - cd Manual
     - git pull
-    - 'git checkout $(if [ ! -z "$CI_COMMIT_BRANCH" ]; then echo $CI_COMMIT_BRANCH; else echo "master"; fi)'
+    - git checkout master  # we only build with master config, because
+                           # this will get uploaded globaly
     - pip3 install -r requirements.txt
     - cd ..
     - sphinx-multiversion Manual/source/ build/html/_multi -- -A mode=html
