@@ -1,15 +1,9 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-
 #include "AddOns/Analysis/Triggers/Trigger_Base.H"
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 #include "AddOns/Analysis/Triggers/Kt_Algorithm.H"
+#include "ATOOLS/Phys/Fastjet_Helpers.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/JetDefinition.hh"
-#include "fastjet/SISConePlugin.hh"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -17,9 +11,7 @@ using namespace ATOOLS;
 class Fastjet_Interface: public Trigger_Base {
 private:
 
-  fastjet::JetDefinition m_jdef;
-
-  fastjet::JetDefinition::Plugin *p_plug;
+  fjcore::JetDefinition m_jdef;
 
   size_t m_njets, m_btag;
   double m_ptmin, m_etamax;
@@ -29,16 +21,15 @@ public:
   // constructor
   Fastjet_Interface(const std::string &inlist,
 		    const std::string &outlist,
-		    const fastjet::JetDefinition &jdef,
- 		    fastjet::JetDefinition::Plugin *const plug,
+		    const fjcore::JetDefinition &jdef,
+		    fjcore::JetDefinition::Plugin *const plug,
 		    const size_t &njets,const double &ptmin,
 		    const double &etamax,const size_t btag):
-    Trigger_Base(inlist,outlist), m_jdef(jdef), p_plug(plug),
+    Trigger_Base(inlist,outlist), m_jdef(jdef),
     m_njets(njets), m_btag(btag), m_ptmin(ptmin), m_etamax(etamax) {}
 
   ~Fastjet_Interface()
   {
-    if (p_plug) delete p_plug;
   }
 
   // member functions
@@ -65,24 +56,24 @@ public:
 		ATOOLS::Particle_List &outlist,
 		double value,double ncount)
   {
-    std::vector<fastjet::PseudoJet> input(plist.size()), jets;
+    std::vector<fjcore::PseudoJet> input(plist.size()), jets;
     for (size_t i(0);i<input.size();++i) {
       Vec4D p(plist[i]->Momentum());
-      input[i]=fastjet::PseudoJet(p[1],p[2],p[3],p[0]);
+      input[i]=fjcore::PseudoJet(p[1],p[2],p[3],p[0]);
       input[i].set_user_index(BTag(plist[i]));
     }
-    fastjet::ClusterSequence cs(input,m_jdef);
+    fjcore::ClusterSequence cs(input,m_jdef);
     if (m_njets>0) {
-      jets=fastjet::sorted_by_pt(cs.exclusive_jets((int)m_njets));
+      jets=fjcore::sorted_by_pt(cs.exclusive_jets((int)m_njets));
     }
     else {
-      jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+      jets=fjcore::sorted_by_pt(cs.inclusive_jets());
     }
     std::vector<double> *ktdrs(new std::vector<double>());
     for (size_t i(input.size());i>0;--i) {
-      if      (m_jdef.jet_algorithm()==fastjet::kt_algorithm)
+      if      (m_jdef.jet_algorithm()==fjcore::kt_algorithm)
         ktdrs->push_back(cs.exclusive_dmerge(i-1));
-      else if (m_jdef.jet_algorithm()==fastjet::antikt_algorithm)
+      else if (m_jdef.jet_algorithm()==fjcore::antikt_algorithm)
         ktdrs->insert(ktdrs->begin(),1./cs.exclusive_dmerge(i-1));
     }
     std::string key("KtJetrates(1)"+m_outlist);
@@ -90,18 +81,14 @@ public:
     for (size_t i(0);i<jets.size();++i) {
       kf_code flav(kf_jet);
       if (m_btag) {
-#ifdef USING__FASTJET__3
 	int nb(0);
-	const std::vector<fastjet::PseudoJet>
+	const std::vector<fjcore::PseudoJet>
 	  &cons(jets[i].constituents());
 	for (size_t j=0;j<cons.size();++j) {
 	  if (cons[j].user_index()==5) ++nb;
 	  if (cons[j].user_index()==-5) --nb;
 	}
 	if (nb!=0) flav=kf_bjet;
-#else
-	THROW(fatal_error,"FastJet >= v3 required for b tags");
-#endif
       }
       Vec4D jetmom(jets[i][3],jets[i][0],jets[i][1],jets[i][2]);
       if (jetmom.PPerp()>m_ptmin && abs(jetmom.Eta())<m_etamax)
@@ -126,47 +113,40 @@ operator()(const Analysis_Key& key) const
   const auto ptmin = s["PTMin"].SetDefault(0.0).Get<double>();
   const auto etamax = s["EtaMax"].SetDefault(1000.0).Get<double>();
 
-  fastjet::JetAlgorithm algo;
-  size_t siscone = 0;
+  fjcore::JetAlgorithm algo;
   const auto rawalgorithm = s["Algorithm"].SetDefault("kt").Get<std::string>();
-  if (rawalgorithm=="kt") algo=fastjet::kt_algorithm;
-  else if (rawalgorithm=="cambridge") algo=fastjet::cambridge_algorithm;
-  else if (rawalgorithm=="antikt") algo=fastjet::antikt_algorithm;
-  else if (rawalgorithm=="siscone") siscone=1;
+  if (rawalgorithm=="kt") algo=fjcore::kt_algorithm;
+  else if (rawalgorithm=="cambridge") algo=fjcore::cambridge_algorithm;
+  else if (rawalgorithm=="antikt") algo=fjcore::antikt_algorithm;
   else THROW(fatal_error, "Unknown jet algorithm.");
 
-  fastjet::RecombinationScheme recom;
+  fjcore::RecombinationScheme recom;
   const auto rawscheme = s["Scheme"].SetDefault("E").Get<std::string>();
-  if (rawscheme=="E") recom=fastjet::E_scheme;
-  else if (rawscheme=="pt") recom=fastjet::pt_scheme;
-  else if (rawscheme=="pt2") recom=fastjet::pt2_scheme;
-  else if (rawscheme=="Et") recom=fastjet::Et_scheme;
-  else if (rawscheme=="Et2") recom=fastjet::Et2_scheme;
-  else if (rawscheme=="BIpt") recom=fastjet::BIpt_scheme;
-  else if (rawscheme=="BIpt2") recom=fastjet::BIpt2_scheme;
+  if (rawscheme=="E") recom=fjcore::E_scheme;
+  else if (rawscheme=="pt") recom=fjcore::pt_scheme;
+  else if (rawscheme=="pt2") recom=fjcore::pt2_scheme;
+  else if (rawscheme=="Et") recom=fjcore::Et_scheme;
+  else if (rawscheme=="Et2") recom=fjcore::Et2_scheme;
+  else if (rawscheme=="BIpt") recom=fjcore::BIpt_scheme;
+  else if (rawscheme=="BIpt2") recom=fjcore::BIpt2_scheme;
   else THROW(fatal_error, "Unknown recombination scheme.");
 
   const auto R = s["R"].SetDefault(0.4).Get<double>();
   const auto f = s["f"].SetDefault(0.75).Get<double>();
 
-  fastjet::Strategy strategy(fastjet::Best);
+  fjcore::Strategy strategy(fjcore::Best);
   const auto rawstrategy = s["Strategy"].SetDefault("Best").Get<std::string>();
-  if (rawstrategy=="Best") strategy=fastjet::Best;
-  else if (rawstrategy=="N2Plain") strategy=fastjet::N2Plain;
-  else if (rawstrategy=="N2Tiled") strategy=fastjet::N2Tiled;
-  else if (rawstrategy=="N2MinHeapTiled") strategy=fastjet::N2MinHeapTiled;
-  else if (rawstrategy=="NlnN") strategy=fastjet::NlnN;
-  else if (rawstrategy=="NlnNCam") strategy=fastjet::NlnNCam;
+  if (rawstrategy=="Best") strategy=fjcore::Best;
+  else if (rawstrategy=="N2Plain") strategy=fjcore::N2Plain;
+  else if (rawstrategy=="N2Tiled") strategy=fjcore::N2Tiled;
+  else if (rawstrategy=="N2MinHeapTiled") strategy=fjcore::N2MinHeapTiled;
+  else if (rawstrategy=="NlnN") strategy=fjcore::NlnN;
+  else if (rawstrategy=="NlnNCam") strategy=fjcore::NlnNCam;
   else THROW(fatal_error, "Unknown strategy.");
 
   const auto btag = s["BTag"].SetDefault(0).Get<size_t>();
 
-  if (siscone) {
-    fastjet::JetDefinition::Plugin *plug(new fastjet::SISConePlugin(R,f));
-    fastjet::JetDefinition jdef(plug);
-    return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,etamax,btag);
-  }
-  fastjet::JetDefinition jdef(algo,R,recom,strategy);
+  fjcore::JetDefinition jdef(algo,R,recom,strategy);
   return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,etamax,btag);
 }
 
@@ -188,5 +168,3 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"BTag: <tag>  # 0|1 (default 0 -> no b-tag)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
-
-#endif

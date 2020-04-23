@@ -7,71 +7,56 @@ unsigned int Flow::s_qcd_counter=600;
 namespace ATOOLS {
 std::ostream& operator<<(std::ostream &ostr,const Flow &flow)
 {
-  ostr<<"[";
-  for (std::map<unsigned int,unsigned int>::const_iterator 
-	 fit=flow.m_code.begin();fit!=flow.m_code.end();++fit) 
-    ostr<<"("<<fit->first<<"="<<fit->second<<")";
-  return ostr<<"]";
+  ostr << "[";
+  for (int i = 0; i < 2; i++)
+    ostr << "(" << i+1 << "=" << flow.m_codes[i] << ")";
+  return ostr << "]";
 }
 }
 
-Flow::Flow(Particle *owner): 
-  p_owner(owner) 
-{ 
-  for (short unsigned int i=1;i<3;++i) m_code[i]=0;
+Flow::Flow()
+{
+  for (int i = 0; i < 2; i++)
+    m_codes[i] = 0;
 }
 
-Flow::Flow(const Flow &flow): 
-  p_owner(flow.p_owner) 
-{ 
-  for (unsigned int i=1;i<3;++i) m_code[i]=flow.m_code.find(i)->second;
+Flow::Flow(const Flow &flow)
+{
+  for (int i = 0; i < 2; i++)
+    m_codes[i] = flow.m_codes[i];
 }
 
 Flow::~Flow() {}
 
 void Flow::SetCode(const unsigned int index,const int code) 
 {
-  if (code==-1) m_code[index]=++s_qcd_counter; 
-  else m_code[index]=(unsigned int)code;
+  if (code == -1)
+    m_codes[index-1] = ++s_qcd_counter;
+  else
+    m_codes[index-1] = code;
 }
 
 void Flow::SetCode(const Flow &flow)
 {
-  m_code=flow.m_code;
+  for (int i = 0; i < 2; i++)
+    m_codes[i] = flow.m_codes[i];
 }
 
 unsigned int Flow::Code(const unsigned int index) const
 {
-  std::map<unsigned int,unsigned int>::const_iterator cit=m_code.find(index);
-  if (cit!=m_code.end()) return cit->second;
-  return 0;
+  return m_codes[index-1];
 }
 
 int Flow::Index(const unsigned int code) const
 {
-  for (std::map<unsigned int,unsigned int>::const_iterator 
-	 cit=m_code.begin();cit!=m_code.end();++cit) {
-    if (cit->second==code) return cit->first;
-  }
+  for (int i = 0; i < 2; i++)
+    if (m_codes[i] == code)
+      return i+1;
   return -1;
 }
 
 void Flow::SwapColourIndices() {
-  unsigned int help(m_code[1]);
-  m_code[1] = m_code[2];
-  m_code[2] = help;
+  unsigned int help(m_codes[0]);
+  m_codes[0] = m_codes[1];
+  m_codes[1] = help;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

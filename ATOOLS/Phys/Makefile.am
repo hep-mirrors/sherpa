@@ -6,6 +6,7 @@ pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
 				Git_Info.C \
+				fjcore.cc \
 				Flavour.C \
 				Ordering.C \
 				Particle.C \
@@ -34,6 +35,7 @@ libToolsPhys_la_SOURCES       =	\
 				Event_Weights.C
 
 localinc_HEADERS      =	\
+			fjcore.hh \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
@@ -62,6 +64,4 @@ localinc_HEADERS      =	\
 			Variations.H \
 			Event_Weights.H
 
-libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
-
-libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@ @CONDITIONAL_LHAPDFINCS@
+libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

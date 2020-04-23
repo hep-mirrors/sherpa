@@ -199,7 +199,7 @@ void Initialization_Handler::RegisterDefaults()
   // shower settings (shower classes are rarely singletons, so we either
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
-  s["SHOWER_GENERATOR"].SetDefault("Dire").UseNoneReplacements();
+  s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
