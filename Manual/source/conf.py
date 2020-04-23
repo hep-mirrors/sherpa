@@ -67,7 +67,8 @@ html_theme_options['extra_nav_links'] = {
     'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
 }
 
-
+# for some reason this gets evaluated multiple times, so we have to
+# make sure that we do not double apend
 extra_sidebars = ['singlemulti.html', 'versioning.html']
 for extra in extra_sidebars:
     if extra not in html_sidebars['**']:
