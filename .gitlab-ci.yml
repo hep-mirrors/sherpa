@@ -169,6 +169,7 @@ pages:
     - apk --no-cache add py3-pip python-dev
     - apk --no-cache add make git
     - cd Manual
+    - git pull
     - 'git checkout $(if [ ! -z "$CI_COMMIT_BRANCH" ]; then echo $CI_COMMIT_BRANCH; else echo "master"; fi)'
     - pip3 install -r requirements.txt
     - cd ..
