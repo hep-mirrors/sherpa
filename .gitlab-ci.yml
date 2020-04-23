@@ -168,8 +168,8 @@ pages:
   script:
     - apk --no-cache add py3-pip python-dev
     - apk --no-cache add make git
-    - git fetch --tags
     - cd Manual
+    - git checkout master
     - pip3 install -r requirements.txt
     - cd ..
     - sphinx-multiversion Manual/source/ build/html -- -A mode=html
