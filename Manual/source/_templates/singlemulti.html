@@ -5,7 +5,9 @@
 <ul>
     {% if mode == "singlehtml" %}
     <li><a href="index.html">Multi Page</a></li>
+    <li>Single Page</li>
     {% elif mode == "html" %}
+    <li>Multi Page</li>
     <li><a href="{{ pathto('index_single.html', 1) }}">Single Page</a></li>
     {% endif %}
     {% if pdf %}
