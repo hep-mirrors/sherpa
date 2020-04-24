@@ -1,22 +1,15 @@
 {# THIS IS VERY SPECIFIC (and a bit ugly) #}
 
-{% if mode %}
-<script>
- function switchVersion(current, next) {
-     history.pushState("", document.title, window.location.pathname);
-
-     const to_index = "{{ pathto('index') }}";
-     window.location.href = window.location.href.replace("_" + current, "_" + next)
-                          + (to_index.indexOf("..") > -1 ? "/../" + to_index : "");
- }
-</script>
-
+{% if mode or pdf %}
 <h3>Other Formats</h3>
 <ul>
     {% if mode == "singlehtml" %}
-    <li><a href="javascript:switchVersion('single', 'multi')">Multi Page Version</a></li>
+    <li><a href="index.html">Multi Page</a></li>
     {% elif mode == "html" %}
-    <li><a href="javascript:switchVersion('multi', 'single')">Single Page Version</a></li>
+    <li><a href="{{ pathto('index_single.html', 1) }}">Single Page</a></li>
+    {% endif %}
+    {% if pdf %}
+    <li><a href="{{ pathto(pdf, 1) }}">PDF</a></li>
     {% endif %}
 </ul>
 {% endif %}

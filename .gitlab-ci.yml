@@ -78,6 +78,7 @@ build-manual:
     - ../configure --enable-manual --with-libzip=install
     - cd Manual
     - make
+    - make sherpamanual_html
   artifacts:
     expire_in: 2 days
     paths:
@@ -163,20 +164,16 @@ dist:
 
 # Build Manual
 pages:
-  image: alpine
+  image: registry.gitlab.com/vale9811/sherpa-docker-build
   stage: deploy
   script:
-    - apk --no-cache add py3-pip python-dev
-    - apk --no-cache add make git
     - cd Manual
     - git fetch
     - git checkout master  # we only build with master config, because
                            # this will get uploaded globaly
     - pip3 install -r requirements.txt
-    - cd ..
-    - sphinx-multiversion Manual/source/ build/html/_multi -- -A mode=html
-    - sphinx-multiversion Manual/source/ build/html/_single -- -b singlehtml -A mode=singlehtml
-    - mv build/html public
+    - bash .build_versioned.sh
+    - mv build/_multi public
   artifacts:
     paths:
     - public
@@ -184,5 +181,5 @@ pages:
     changes:
       - Manual/**/*
     refs:
-      - master
+      - branches
       - tags
