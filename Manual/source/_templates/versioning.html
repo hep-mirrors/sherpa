@@ -1,14 +1,17 @@
 {% if versions %}
 <h3>Versions</h3>
 <ul>
-    <li>{{ current_version.name }}</li>
     {%- for item in versions.branches %}
     {%- if item.name != current_version.name %}
     <li><a href="{{ item.url }}">{{ item.name }}</a></li>
+    {%- else %}
+    <li>{{ current_version.name }}</li>
     {%- endif %}
     {%- endfor %}
     {%- for item in versions.tags and item.name != current_version.name %}
     <li><a href="{{ item.url }}">{{ item.name }}</a></li>
+    {%- else %}
+    <li>{{ current_version.name }}</li>
     {%- endfor %}
 </ul>
 {% endif %}
