@@ -247,7 +247,8 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
       m_ampls.MandelstamS(),
       m_ampls.MandelstamT(),
       m_ampls.MandelstamU() };
-    if (checker.CheckCoeffs(m_coeffs, m_spinampls[0], mandelstam)) {
+    if (checker.CheckCoeffs(
+            m_coeffs, m_spinampls[0], mandelstam, m_ewgroupconsts)) {
       THROW(normal_exit, "Finish after checking EW Sudakov coefficients.");
     } else {
       THROW(fatal_error, "EWSudakov coeffs for this process are not equal to"

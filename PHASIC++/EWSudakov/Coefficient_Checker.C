@@ -6,10 +6,11 @@ using namespace ATOOLS;
 bool Coefficient_Checker::CheckCoeffs(
     const Coeff_Map& coeffs,
     const METOOLS::Spin_Amplitudes& spinampls,
-    const Mandelstam_Variables& mandelstam)
+    const Mandelstam_Variables& mandelstam,
+    const EWGroupConstants& groupconstants)
 {
   auto res = true;
-  const auto& refs = ReferenceCoeffs(mandelstam);
+  const auto& refs = ReferenceCoeffs(mandelstam, groupconstants);
   for (const auto& refkv : refs) {
     const auto& type = refkv.first.first;
     if (activecoeffs.find(type) == activecoeffs.end())
@@ -58,10 +59,12 @@ bool Coefficient_Checker::CheckCoeff(const Coeff_Value& coeff, Complex ref,
 }
 
 std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap>
-Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
+Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
+                                     const EWGroupConstants& groupconstants)
 {
   std::map<Coeff_Map_Key, Coefficient_Checker::HelicityCoeffMap> coeffs;
 
+  // auxiliary quantities needed to calculate some of the coeffs below
   const double u_over_t = mandelstam.u/mandelstam.t;
   const double u_over_s = mandelstam.u/mandelstam.s;
   const double t_over_s = mandelstam.t/mandelstam.s;
@@ -370,7 +373,8 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
 
     // NOTE: 0<->1 and 2<->3 wrt to the Denner/Pozzorini reference, due to a
-    // different process ordering
+    // different process ordering; i.e. t-ch and u-ch assignment does not
+    // change, but {3, 1} here refers to {2, 0} in Denner/Pozzorini and so on
     // LT t-ch;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * (-1.81*t_over_s + u_over_s);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * u_over_s;
@@ -448,6 +452,60 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam)
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{0, 0, 0, 1}] = 26.60;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -37.9;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -37.9;
+
+  } else if (procname == "2_2__u__db__Z__W+") {
+
+    // auxiliary quantities needed for the u db -> Z W+ coefficients
+    const double F_plus  = 1.0/t_over_s + 1.0/u_over_s;
+    const double F_minus = 1.0/t_over_s - 1.0/u_over_s;
+    const double sw2 = groupconstants.m_sw2;
+    const double cw2 = groupconstants.m_cw2;
+    // NOTE: we can not do the sinW sign flip here, because the coeffs are
+    // evaluated within Denner/Pozzorini's conventions, so we need to be
+    // consistent
+    const double sw = std::abs(groupconstants.m_sw);
+    const double cw = groupconstants.m_cw;
+    const double YqL = 1.0/3.0;
+    const double HZ = (cw2 * F_minus - sw2 * YqL * F_plus) / (2 * sw * cw);
+    const double HA = - (F_minus + YqL * F_plus)/2.0;
+    const double GZ_plus = cw2 * F_plus / (cw2 * F_minus - sw2 * YqL * F_plus);
+    const double GZ_minus = cw2 * F_minus / (cw2 * F_minus - sw2 * YqL * F_plus);
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 2, 2}] = -7.07;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -7.86 - 4.47 * GZ_minus;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -7.86 - 4.47 * GZ_minus;
+
+    // t-ch;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = -4.47 - 4.91 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = -4.47 - 4.04 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = -4.47 - 4.91 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = -4.47 - 4.04 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] = -4.47 + 0.43;  // NOTE: A,Z contrib is -2.02
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] = -4.47 + 0.43;  // NOTE: A,Z contrib is -2.02
+
+    // u-ch;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 + 4.90 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 + 4.05 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 + 4.90 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 + 4.05 * GZ_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -4.47 - 0.43;  // NOTE: A,Z contrib is -2.46
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -4.47 - 0.43;  // NOTE: A,Z contrib is -2.46
+
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 2, 2}] = 0.92;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.32;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.32;
+
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 2, 2}] = 24.88;
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 21.77 - 9.57 * HA/HZ;
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 21.77 - 9.57 * HA/HZ;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 2, 2}] = -31.83;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
+
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 2, 2}] = -14.16;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -11.60 + 9.57 * HA/HZ;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -11.60 + 9.57 * HA/HZ;
 
   } else {
     THROW(not_implemented, "No test for this proc");

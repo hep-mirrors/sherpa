@@ -32,13 +32,14 @@ namespace PHASIC {
     // check coefficients against a ref value when available
     bool CheckCoeffs(const Coeff_Map& coeffs,
                      const METOOLS::Spin_Amplitudes&,
-                     const Mandelstam_Variables&);
+                     const Mandelstam_Variables&,
+                     const EWGroupConstants&);
 
   private:
 
     using HelicityCoeffMap = std::map<std::vector<int>, double>;
-    std::map<Coeff_Map_Key, HelicityCoeffMap> ReferenceCoeffs(
-      const Mandelstam_Variables&);
+    std::map<Coeff_Map_Key, HelicityCoeffMap>
+    ReferenceCoeffs(const Mandelstam_Variables&, const EWGroupConstants&);
 
     const std::string procname;
     const std::set<EWSudakov_Log_Type> activecoeffs;
