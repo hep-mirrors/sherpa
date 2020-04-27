@@ -34,7 +34,6 @@ namespace MODEL{
       {
 	m_name = string("SMGold");
 	ParticleInit();
-	ParamInit();
 	RegisterDefaults();
 	// Massive and Stable flags
 	// are set consistently with
@@ -87,6 +86,7 @@ namespace MODEL{
       ATOOLS::OutputParticles(msg->Info());
       ATOOLS::OutputContainers(msg->Info());
       OutputCKM();
+      ParamInit();
       for (MODEL::ScalarNumbersMap::iterator it=p_numbers->begin();
 	   it!=p_numbers->end();++it) DEBUG_INFO(it->first+" = "<<it->second);
       for (MODEL::ScalarConstantsMap::iterator it=p_constants->begin();
