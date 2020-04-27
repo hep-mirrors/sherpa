@@ -217,28 +217,6 @@ Cluster_Amplitude_UPM EWSudakov_Amplitudes::CreateAmplitudes(
       }
     }
 
-    // create ampls needed for terms with a single I^Z (either squared or
-    // non-squared, i.e. it does not matter if we use IZ or IZ2 below because
-    // we only need the corresponding flavour replacement)
-    if (activecoeffs.find(EWSudakov_Log_Type::lZ) != activecoeffs.end()) {
-      for (size_t i{0}; i < nlegs; ++i) {
-        const auto flav = (*current_ampl)->Leg(i)->Flav();
-        const auto couplings = ewgroupconsts.IZ2(flav, 0);
-        for (const auto coupling : couplings) {
-          if (coupling.first != flav) {
-            auto leg_set = Cluster_Ampl_Key {{i, std::abs(coupling.first)}};
-            leg_set.insert(std::begin(goldstone_leg_set),
-                           std::end(goldstone_leg_set));
-            auto ampl = std::make_pair(
-                leg_set,
-                CreateSU2TransformedAmplitude(
-                    (*current_ampl), {{i, coupling.first}}));
-            ampls.insert(std::move(ampl));
-          }
-        }
-      }
-    }
-
     if (activecoeffs.find(EWSudakov_Log_Type::lSSC) != activecoeffs.end()) {
       for (size_t k{0}; k < nlegs; ++k) {
         for (size_t l{0}; l < k; ++l) {

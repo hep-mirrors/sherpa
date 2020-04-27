@@ -161,13 +161,17 @@ double EWGroupConstants::NondiagonalCew() const noexcept
   return -2.0 * m_cw/m_sw;
 }
 
-Couplings EWGroupConstants::IZ2(const Flavour& flav, int pol) const
+Complex EWGroupConstants::IZ2(const Flavour& flav, int pol) const
 {
+  if (flav.Kfcode() == kf_chi || flav.Kfcode() == kf_h0)
+    // special case of the non-diagonal Z-chi-H coupling, for which we have to
+    // return I^Z_\chi,H * I^Z_H*\chi
+    return 1.0 / (4 * m_cw2 * m_sw2);
   auto couplings = IZ(flav, pol);
-  for (auto& coupling : couplings) {
-    coupling.second *= coupling.second;
-  }
-  return couplings;
+  if (couplings.empty())
+    return 0.0;
+  assert(couplings.size() == 1);
+  return std::norm(couplings.begin()->second);
 }
 
 Couplings EWGroupConstants::IZ(const Flavour& flav, int pol) const

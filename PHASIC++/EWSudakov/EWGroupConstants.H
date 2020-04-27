@@ -45,8 +45,8 @@ namespace PHASIC {
     /// effective electroweak Casimir operator, cf. eq. (B.25).
     double NondiagonalCew() const noexcept;
 
-    /// Returns IZ() with the coupling values squared.
-    Couplings IZ2(const ATOOLS::Flavour&, int pol) const;
+    /// Returns the value of the operator IZ2(), which is always diagonal
+    Complex IZ2(const ATOOLS::Flavour&, int pol) const;
 
     /// Returns the couplings with the Z boson, cf. eq. (B.7).
     ///

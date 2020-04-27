@@ -318,25 +318,10 @@ Coeff_Value EWSudakov_Calculator::lsZCoeff()
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
   for (size_t i{0}; i < m_current_spincombination.size(); ++i) {
-    const Flavour flav{base_ampl.Leg(i)->Flav()};
-    const auto couplings =
-        m_ewgroupconsts.IZ2(flav, m_current_spincombination[i]);
-    for (const auto coupling : couplings) {
-      Complex contrib {coupling.second};
-      if (coupling.first != flav) {
-        // this is a non-diagonal IZ2 term, i.e. we need to take ME ratios into
-        // account
-        const Leg_Kfcode_Map key{{i, std::abs(coupling.first)}};
-        const auto transformed =
-            m_current_goldstone_me_prefactor / GBETTranslationFactor(key) *
-            TransformedAmplitudeValue(ConvertToPhysicalPhase(key),
-                                      m_current_spincombination);
-        const auto amplratio = transformed / m_current_me_value;
-        contrib *= amplratio;
-      }
-      // NOTE: we use 1/m_cw2 = (mZ/mW)^2 for the argument of the logarithm
-      coeff += contrib * std::log(1.0 / m_ewgroupconsts.m_cw2);
-    }
+    const Flavour flav{base_ampl.Leg(i)->Flav().Bar()};
+    const auto IZ2 = m_ewgroupconsts.IZ2(flav, m_current_spincombination[i]);
+    // NOTE: we use 1/m_cw2 = (mZ/mW)^2 for the argument of the logarithm
+    coeff += IZ2 * std::log(1.0 / m_ewgroupconsts.m_cw2);
   }
   return coeff;
 }
