@@ -82,7 +82,7 @@ namespace PHASIC {
 
 
     /// relevant EW-couplings needed and their run version
-    const double m_sw2, m_cw2, m_sw, m_cw, m_aew,
+    const double m_sw2, m_cw2, m_sw, m_sw_denner_pozzorini, m_cw, m_aew,
       m_mw2, m_mw, m_mz, m_mt, m_mh0, m_cvev;
 
   };

@@ -460,10 +460,10 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     const double F_minus = 1.0/t_over_s - 1.0/u_over_s;
     const double sw2 = groupconstants.m_sw2;
     const double cw2 = groupconstants.m_cw2;
-    // NOTE: we can not do the sinW sign flip here, because the coeffs are
+    // NOTE: we do not use the sign-flipped sinW here, because the coeffs are
     // evaluated within Denner/Pozzorini's conventions, so we need to be
     // consistent
-    const double sw = std::abs(groupconstants.m_sw);
+    const double sw = groupconstants.m_sw;
     const double cw = groupconstants.m_cw;
     const double YqL = 1.0/3.0;
     const double HZ = (cw2 * F_minus - sw2 * YqL * F_plus) / (2 * sw * cw);

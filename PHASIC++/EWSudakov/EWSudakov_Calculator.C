@@ -345,7 +345,7 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
   // photon (IA is always diagonal)
   Coeff_Value coeff_A{1.0};
   for (const auto& flav : flavs) {
-    coeff_A *= -flav.Charge();
+    coeff_A *= flav.Charge();
   }
   coeff += 2.0 * coeff_A;
 
@@ -358,13 +358,17 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
     for (const auto lcoupling : lcouplings) {
       auto contrib = 2.0 * kcoupling.second * lcoupling.second;
       if (kcoupling.first != flavs[0] || lcoupling.first != flavs[1]) {
-        const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
-                                 {indizes[1], std::abs(lcoupling.first)}};
+        Leg_Kfcode_Map key {{indizes[0], std::abs(kcoupling.first)},
+                            {indizes[1], std::abs(lcoupling.first)}};
+        const auto goldstone_legs = m_ampls.GoldstoneBosonReplacements(m_current_spincombination);
+        key.insert(goldstone_legs.begin(), goldstone_legs.end());
         const auto transformed =
-            m_current_goldstone_me_prefactor / GBETTranslationFactor(key) *
-            TransformedAmplitudeValue(ConvertToPhysicalPhase(key),
-                                      m_current_spincombination);
-        const auto amplratio = transformed / m_current_me_value;
+            TransformedAmplitudeValue(key, m_current_spincombination);
+        const auto deno = TransformedAmplitudeValue(
+            m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
+            m_current_spincombination,
+            &m_comixinterface);
+        const auto amplratio = transformed / deno;
         contrib *= amplratio;
       }
       coeff += contrib;
@@ -380,13 +384,17 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
         flavs[1], m_current_spincombination[indizes[1]], !kplus);
     for (const auto kcoupling : kcouplings) {
       for (const auto lcoupling : lcouplings) {
-        const Leg_Kfcode_Map key{{indizes[0], std::abs(kcoupling.first)},
-                                 {indizes[1], std::abs(lcoupling.first)}};
+        Leg_Kfcode_Map key {{indizes[0], std::abs(kcoupling.first)},
+                            {indizes[1], std::abs(lcoupling.first)}};
+        const auto goldstone_legs = m_ampls.GoldstoneBosonReplacements(m_current_spincombination);
+        key.insert(goldstone_legs.begin(), goldstone_legs.end());
         const auto transformed =
-            m_current_goldstone_me_prefactor / GBETTranslationFactor(key) *
-            TransformedAmplitudeValue(ConvertToPhysicalPhase(key),
-                                      m_current_spincombination);
-        const auto amplratio = transformed / m_current_me_value;
+            TransformedAmplitudeValue(key, m_current_spincombination);
+        const auto deno = TransformedAmplitudeValue(
+            m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
+            m_current_spincombination,
+            &m_comixinterface);
+        const auto amplratio = transformed / deno;
         coeff += 2.0*kcoupling.second*lcoupling.second*amplratio;
       }
     }

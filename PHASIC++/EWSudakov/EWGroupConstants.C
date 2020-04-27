@@ -19,9 +19,14 @@ EWGroupConstants::EWGroupConstants():
   // Denner, Joos: Gauge Theories of the Strong and Electroweak Interaction, 3.
   // neubearb. Aufl., Stuttgart 2001], eq. (4.2.4).  For more information, see
   // https://gitlab.com/ebothmann/sherpa/issues/3. By having this minus sign
-  // here, we can use all the constants defined by this class in the language
-  // of Denner/Pozzorini.
-  m_sw{ -sqrt(m_sw2) },
+  // here, we can define constants directly in the language of DP when
+  // appropriate.  Note that we use the unsigned version of \sin\theta_W in
+  // particular for the couplings, because they are multiplied with ME ratios
+  // by the EW Sudakov calculator, and those ME ratios are calculated by
+  // Sherpa, such that an extra minus sign in the couplings would not properly
+  // cancel against those ME ratios.
+  m_sw{ sqrt(m_sw2) },
+  m_sw_denner_pozzorini{ -sqrt(m_sw2) },
   m_cw{ sqrt(m_cw2) },
   m_aew{ MODEL::s_model->ScalarConstant("alpha_QED")},
   m_mw2{sqr(s_kftable[kf_Wplus]->m_mass)},
@@ -46,7 +51,7 @@ double EWGroupConstants::dcw2cw2(const double t2) const
 {
   // eq. 5.6
   // at the moment all alpha/4pi are taken out
-  return m_sw/m_cw*NondiagonalBew()*log(t2/m_mw2)/4./M_PI;
+  return m_sw_denner_pozzorini/m_cw*NondiagonalBew()*log(t2/m_mw2)/4./M_PI;
 }
 
 double EWGroupConstants::dsw2sw2(const double t2) const
@@ -158,7 +163,7 @@ double EWGroupConstants::DiagonalCew(const Flavour& flav, int pol) const
 
 double EWGroupConstants::NondiagonalCew() const noexcept
 {
-  return -2.0 * m_cw/m_sw;
+  return -2.0 * m_cw/m_sw_denner_pozzorini;
 }
 
 Complex EWGroupConstants::IZ2(const Flavour& flav, int pol) const
@@ -249,26 +254,26 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
       return Couplings{};
     }
     return {
-	    {kf_chi, {0.0, -1.0 / (2.0 * m_sw)}},         // I_\chi^\pm
-	    {kf_h0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)} // I_H^\pm
+	    {kf_chi, (isplus ? 1.0 : -1.0) / (2.0 * m_sw)}, // I_\chi^\pm
+	    {kf_h0, {0.0, -1.0 / (2.0 * m_sw)}}             // I_H^\pm
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
     // cf. (B.22), (B.26) and (B.27)
     if (isplus != flav.IsAnti()) {
       return Couplings{};
     }
-    return {{kf_photon, isplus ? -1.0 : 1.0},
+    return {{kf_photon, isplus ? 1.0 : -1.0},
             {kf_Z, (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_chi) {
-    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
+    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}};
   } else if (signed_kf == kf_Z) {
     // cf. (B.22), (B.26) and (B.27)
     return {{(isplus ? 1.0 : -1.0) * kf_Wplus,
              (isplus ? -1.0 : 1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_photon) {
-    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? 1.0 : -1.0)}};
+    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
   } else if (signed_kf == kf_h0){
-    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}}};
+    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_gluon) {
     return Couplings{};
   } else {
@@ -298,7 +303,7 @@ double EWGroupConstants::DiagonalBew(const ATOOLS::Flavour& flav, int pol) const
 
 double EWGroupConstants::NondiagonalBew() const noexcept
 {
-  return -(19.0 + 22.0*m_sw2) / (6.0*m_sw*m_cw);
+  return -(19.0 + 22.0*m_sw2) / (6.0*m_sw_denner_pozzorini*m_cw);
 }
 
 MODEL::EWParameters EWGroupConstants::EvolveEWparameters(const double t2) const
