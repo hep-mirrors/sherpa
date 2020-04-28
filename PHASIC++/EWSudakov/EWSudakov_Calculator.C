@@ -408,7 +408,7 @@ Coeff_Value EWSudakov_Calculator::lsCCoeff()
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);
   const auto nspins = m_current_spincombination.size();
   for (size_t i{0}; i < nspins; ++i) {
-    const Flavour flav{ base_ampl.Leg(i)->Flav() };
+    const Flavour flav{ base_ampl.Leg(i)->Flav().Bar() };
     if (flav.IsFermion()) {
       const auto contrib =
           3.0 / 2.0 *
