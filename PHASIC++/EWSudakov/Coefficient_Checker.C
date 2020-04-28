@@ -507,6 +507,50 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -11.60 + 9.57 * HA/HZ;
     coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -11.60 + 9.57 * HA/HZ;
 
+  } else if (procname == "2_2__u__db__W+__P") {
+
+    // NOTE: compared to Pozzorini's thesis, the initial-state quarks are
+    // flipped, i.e. t- und u-channel are swapped
+
+    // auxiliary quantities needed for the u db -> Z W+ coefficients
+    const double F_plus  = 1.0/u_over_s + 1.0/t_over_s;
+    const double F_minus = 1.0/u_over_s - 1.0/t_over_s;
+    const double sw2 = groupconstants.m_sw2;
+    const double cw2 = groupconstants.m_cw2;
+    // NOTE: we do not use the sign-flipped sinW here, because the coeffs are
+    // evaluated within Denner/Pozzorini's conventions, so we need to be
+    // consistent
+    const double sw = groupconstants.m_sw;
+    const double cw = groupconstants.m_cw;
+    const double YqL = 1.0/3.0;
+    const double GA_plus =  F_plus  / (F_minus + YqL * F_plus);
+    const double GA_minus = F_minus / (F_minus + YqL * F_plus);
+
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -7.86 - 4.47 * GA_minus;
+    coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -7.86 - 4.47 * GA_minus;
+
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -3.81 - 0.67 - 5.96 * GA_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -3.81 - 0.67 - 5.96 * GA_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 * (GA_plus + GA_minus);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 * (GA_plus + GA_minus);
+
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = -3.14 - 1.33 + 2.98 * GA_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = -3.14 - 1.33 + 2.98 * GA_plus;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47 * (GA_plus - GA_minus);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47 * (GA_plus - GA_minus);
+
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.32;
+    coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.32;
+
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 1}] = 15.42;
+    coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 1, 0}] = 15.42;
+
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 0, 1}] = 0.0;
+    coeffs[{EWSudakov_Log_Type::lYuk, {}}][{1, 1, 1, 0}] = 0.0;
+
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 0, 1}] = -5.25;
+    coeffs[{EWSudakov_Log_Type::lPR, {}}][{1, 1, 1, 0}] = -5.25;
+
   } else {
     THROW(not_implemented, "No test for this proc");
   }
