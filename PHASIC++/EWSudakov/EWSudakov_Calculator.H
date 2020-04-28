@@ -32,9 +32,8 @@ namespace PHASIC {
     /// calculate coeffs for each m_spinampls entry
     void CalculateSpinAmplitudeCoeffs();
 
-    /// helper methods to update values needed for replacing Z_L/W_L -> chi/phi
-    void UpdateGolstoneSpincombinationAndMEPrefactor();
-    Complex GBETTranslationFactor(Leg_Kfcode_Map legs = {});
+    /// calculate the conversion factor for the GBET (deprecated, see impl.)
+    Complex GBETConversionFactor(Leg_Kfcode_Map legs = {});
 
     /// calculate LSC L(s) coefficient
     Coeff_Value LsCoeff();

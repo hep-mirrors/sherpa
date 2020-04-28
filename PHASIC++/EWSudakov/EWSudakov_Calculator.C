@@ -206,7 +206,6 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
       continue;
     }
     m_current_spincombination = ampls.GetSpinCombination(i);
-    UpdateGolstoneSpincombinationAndMEPrefactor();
     for (const auto& key : m_activecoeffs) {
       switch (key) {
         case EWSudakov_Log_Type::Ls:
@@ -257,16 +256,21 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
   }
 }
 
-void EWSudakov_Calculator::UpdateGolstoneSpincombinationAndMEPrefactor()
-{
-  m_current_goldstone_me_prefactor = GBETTranslationFactor();
-}
-
-Complex EWSudakov_Calculator::GBETTranslationFactor(Leg_Kfcode_Map legs)
+Complex EWSudakov_Calculator::GBETConversionFactor(Leg_Kfcode_Map legs)
 {
   // calculate the Goldstone boson equivalence theorem factor for going from
   // the physical phase to the Goldstone phase, for the current amplitude after
   // applying any leg changes encoded in `legs`
+
+  // the factors are taken from arXiv:hep-ph/0201077 (Pozzorini's thesis),
+  // I (EB) was not able to use it to calculate ME ratios in the physical phase
+  // for the longitudinal Goldstone bosons in the various calculator functions
+  // as e.g. lsLogROverSCoeffs. Even when combined with the conversion factors
+  // given below (and various variants of that), the ME ratios times the
+  // conversion factors were not equal to the ME ratios in the Goldstone phase,
+  // which seem to give the correct result in all test cases; I leave the
+  // implementation for future reference, but throw to prevent usage
+  THROW(fatal_error, "Called GBETConversionFactor(), which is likely wrong.");
 
   // add longitudinal boson -> Goldstone boson replacements and get the ampl
   auto tmp = m_ampls.GoldstoneBosonReplacements(m_current_spincombination);
@@ -278,10 +282,10 @@ Complex EWSudakov_Calculator::GBETTranslationFactor(Leg_Kfcode_Map legs)
   const auto nspins = m_current_spincombination.size();
   Complex factor = 1.0;
   for (size_t i{0}; i < nspins; ++i) {
-    if (ampl.Flav(i).Kfcode() == kf_chi) {
+    if (ampl.Leg(i)->Flav().Kfcode() == kf_chi) {
       factor *= Complex{0.0, 1.0};
-    } else if (ampl.Flav(i).Kfcode() == kf_phiplus && ampl.Flav(i).IsAnti()) {
-      factor *= Complex {-1.0};
+    } else if (ampl.Leg(i)->Flav().Kfcode() == kf_phiplus && ampl.Leg(i)->Flav().Bar().IsAnti()) {
+      factor *= Complex {-1.0, 0.0};
     }
   }
   return factor;
