@@ -458,7 +458,7 @@ namespace MODEL{
       double sw2 = ComplexConstant("csin2_thetaW").real();
       DEBUG_VAR(sw2);
       double cw2 = ComplexConstant("ccos2_thetaW").real();;
-      double cw  = sqrt(cw);
+      double cw  = sqrt(cw2);
       DEBUG_VAR(cw);
       double sw = (sqrt(sw2));
       DEBUG_VAR(sw);
