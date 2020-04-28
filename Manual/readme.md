@@ -31,7 +31,6 @@ The online Version is available under: https://sherpa-team.gitlab.io/sherpa/
 
 See also `requirements.txt` for pinned versions of the python packages.
 
-
 ## Building the Docs
  - run `configure` with `--enable-manual`
  - run `make` in the Manual directory to build all targets

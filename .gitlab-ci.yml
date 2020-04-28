@@ -173,8 +173,8 @@ pages:
                            # this will get uploaded globaly
     - pip3 install -r requirements.txt
     - pip3 install sphinx-multiversion
-    - bash .build_versioned.sh
-    - mv build/_multi public
+    - bash .build_versioned.sh build
+    - mv build/_multi ../public
   artifacts:
     paths:
     - public
