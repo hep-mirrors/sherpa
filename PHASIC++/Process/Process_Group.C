@@ -280,7 +280,7 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
 {
   if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
   Process_Info cpi(pi);
-  //SortFlavours(cpi);
+  SortFlavours(cpi);
   std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
   if (m_procmap.find(name)!=m_procmap.end()) return false;
   Process_Base *proc(GetProcess(cpi));
