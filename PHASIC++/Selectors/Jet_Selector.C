@@ -56,20 +56,23 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
 {
   DEBUG_FUNC("");
   auto s = key.m_settings["Jet_Selector"];
-  s.DeclareVectorSettingsWithEmptyDefault({ "Input_Particles" });
 
   // input ptcls and output ID
-  const auto inputptcls = s["Input_Particles"].GetVector<std::string>();
-  if (!inputptcls.empty()) {
-    if (inputptcls[1]=="all") {
-      THROW(not_implemented,"Keyword 'all' not implemented yet.");
+  for (auto inputsettings : s["Input_Particles"].GetItems()) {
+    auto kfsetting = inputsettings.IsList() ? inputsettings.GetItemAtIndex(0)
+                                            : inputsettings;
+    const auto kfc = kfsetting.SetDefault(kf_none).Get<long int>();
+    if (kfc == kf_none) {
+      THROW(fatal_error,
+            "Invalid or missing particle ID for Input_Particles"
+            " option given within the Jet_Selector settings.");
     }
-    else {
-      int kfc(ToType<long int>(inputptcls[0]));
-      Flavour fl(abs(kfc),kfc<0);
-      m_jetinput.push_back(Jet_Input(fl));
-      for (size_t i(1);i<inputptcls.size();++i) {
-        std::string ds(inputptcls[i]);
+    m_jetinput.push_back(Jet_Input(Flavour {kfc}));
+    if (inputsettings.IsList()) {
+      const auto num_ptcl_specific_settings = inputsettings.GetItemsCount();
+      for (size_t i {1}; i < num_ptcl_specific_settings; ++i) {
+        auto ds =
+            inputsettings.GetItemAtIndex(i).SetDefault("").Get<std::string>();
         if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
         std::string var(ds,0,ds.find(':'));
         std::string val(ds,ds.find(':')+1);
