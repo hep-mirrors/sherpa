@@ -81,6 +81,9 @@ namespace COMIX {
 
     inline void SetCTS(void *const cts) { p_cts=cts; }
 
+    inline void SetISMC(PHASIC::Multi_Channel *ismc) { p_ismc=ismc; }
+    inline void SetFSMC(PHASIC::Multi_Channel *fsmc) { p_fsmc=fsmc; }
+
   };// end of class Process_Base
 
   std::string ComixLogo();

@@ -31,12 +31,11 @@ namespace SHRIMPS {
     Ladder_Particle() :
       p_part(NULL), m_flav(ATOOLS::Flavour(kf_none)), 
       m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), m_pos(ATOOLS::Vec4D(0.,0.,0.,0.)),
-      m_flow(ATOOLS::Flow(NULL)),m_marked(false),m_beam(false),m_IS(false)
+      m_marked(false),m_beam(false),m_IS(false)
     {}
 
     Ladder_Particle(const Ladder_Particle & part) :
       p_part(NULL), m_flav(part.m_flav), m_mom(part.m_mom), m_pos(part.m_pos),
-      m_flow(ATOOLS::Flow(NULL)),
       m_marked(part.m_marked),m_beam(part.m_beam),m_IS(part.m_IS)
     {}
 
@@ -46,7 +45,7 @@ namespace SHRIMPS {
 		    const ATOOLS::Vec4D & mom=ATOOLS::Vec4D(0.,0.,0.,0.),
 		    const ATOOLS::Vec4D & pos=ATOOLS::Vec4D(0.,0.,0.,0.)) :
       p_part(NULL), m_flav(flav), m_mom(mom), m_pos(pos),
-      m_flow(ATOOLS::Flow(NULL)),m_marked(false),m_beam(false),m_IS(false)
+      m_marked(false),m_beam(false),m_IS(false)
     {}
 
     ~Ladder_Particle() { }

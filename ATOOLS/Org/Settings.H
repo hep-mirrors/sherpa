@@ -208,6 +208,7 @@ namespace ATOOLS {
                             const String_Vector& synonyms);
 
     bool IsList(const Settings_Keys&);
+    bool IsMap(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
 
     template <typename T>

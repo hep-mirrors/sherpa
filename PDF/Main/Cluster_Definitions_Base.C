@@ -34,10 +34,10 @@ std::ostream &PDF::operator<<(std::ostream &str,const Cluster_Param &cp)
 
 bool Cluster_Config::PureQCD() const
 {
-  return m_mo.Strong() &&
-    p_ampl->Leg(m_i)->Flav().Strong() &&
-    p_ampl->Leg(m_j)->Flav().Strong() &&
-    p_ampl->Leg(m_k)->Flav().Strong();
+  return m_mo.StrongCharge() &&
+    p_ampl->Leg(m_i)->Flav().StrongCharge() &&
+    p_ampl->Leg(m_j)->Flav().StrongCharge() &&
+    p_ampl->Leg(m_k)->Flav().StrongCharge();
 }
 
 Cluster_Definitions_Base::Cluster_Definitions_Base()

@@ -158,10 +158,8 @@ namespace PHASIC {
     void UpdateSubeventMomenta(ATOOLS::NLO_subevt&);
     void CalculateFlux(const ATOOLS::Vec4D_Vector&);
     void UpdateMEWeightInfo(Scale_Setter_Base*);
-    void RefactoredReweightBVI(ATOOLS::Weight_Type,
-                               ATOOLS::ClusterAmplitude_Vector&);
-    void RefactoredReweightRS(ATOOLS::Weight_Type,
-                              ATOOLS::ClusterAmplitude_Vector&);
+    void ReweightBVI(ATOOLS::Weight_Type, ATOOLS::ClusterAmplitude_Vector&);
+    void ReweightRS(ATOOLS::Weight_Type, ATOOLS::ClusterAmplitude_Vector&);
 
   };// end of class Single_Process
 

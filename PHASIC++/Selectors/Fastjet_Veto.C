@@ -1,7 +1,5 @@
 #include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
-#ifdef USING__FASTJET
-
 namespace PHASIC {
   class Fastjet_Veto : public Fastjet_Selector_Base {
     int m_nb, m_nb2;
@@ -37,15 +35,15 @@ Fastjet_Veto::Fastjet_Veto(Process_Base* const proc, Scoped_Settings s,
 bool Fastjet_Veto::Trigger(Selector_List &sl)
 {
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
-  std::vector<fastjet::PseudoJet> input,jets;
+  std::vector<fjcore::PseudoJet> input,jets;
   for (size_t i(m_nin);i<sl.size();++i) {
     if (ToBeClustered(sl[i].Flavour(), (m_nb>0 || m_nb2>0))) {
       input.push_back(MakePseudoJet(sl[i].Flavour(), sl[i].Momentum()));
     }
   }
 
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  jets=fjcore::sorted_by_pt(cs.inclusive_jets());
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
 
   if (m_eekt) {
@@ -96,10 +94,6 @@ operator()(const Selector_Key &key) const
   const auto nb  = s["Nb"] .SetDefault(-1).Get<int>();
   const auto nb2 = s["Nb2"].SetDefault(-1).Get<int>();
 
-#ifndef USING__FASTJET__3
-  if (nb>0 || nb2>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
-#endif
-
   return new Fastjet_Veto(key.p_proc,s,nb,nb2);
 }
 
@@ -111,5 +105,3 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<width<<"  Nb: number of jets with b quarks\n"
      <<width<<"  Nb2: number of jets with non-vanishing b content";
 }
-
-#endif

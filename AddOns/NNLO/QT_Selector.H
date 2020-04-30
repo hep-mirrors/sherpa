@@ -7,7 +7,6 @@
 namespace SHNNLO {
 
   class QT_Selector : public PHASIC::Selector_Base {
-    PHASIC::Process_Base *p_proc;
     double m_qtmin, m_cqtmin;
     int m_type;
   public:

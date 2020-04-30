@@ -31,7 +31,7 @@ namespace ATOOLS {
     char              m_info;   
     Flavour           m_fl;         
     Vec4D             m_momentum; 
-    Flow            * p_flow;
+    Flow              m_flow;
     Blob            * p_startblob, * p_endblob;
     Particle        * p_originalpart;
     double            m_dec_time, m_finalmass;
@@ -61,7 +61,6 @@ namespace ATOOLS {
     double            Time() const ;
     Flavour           Flav() const ;
     const Flavour   & RefFlav() const;
-    Flow            * GetFlow() const ;
     unsigned int      GetFlow( unsigned int ) const ;
     int               Number() const;
     int               Beam() const;
@@ -75,7 +74,6 @@ namespace ATOOLS {
     void   SetTime(const double);
     void   SetTime();
     void   SetFlav(const Flavour &);
-    void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int number=0);
     void   SetBeam(const int);

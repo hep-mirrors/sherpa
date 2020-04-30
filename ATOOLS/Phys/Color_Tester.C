@@ -13,6 +13,6 @@ void Color_Tester::Turn()
 
 bool Color_Tester::Test(const Particle *parton) const
 {
-  if (parton->GetFlow()->Code(m_color.first)==m_color.second) return true;
+  if (parton->GetFlow(m_color.first)==m_color.second) return true;
   return false;
 }

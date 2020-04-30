@@ -199,7 +199,7 @@ void Initialization_Handler::RegisterDefaults()
   // shower settings (shower classes are rarely singletons, so we either
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
-  s["SHOWER_GENERATOR"].SetDefault("Dire").UseNoneReplacements();
+  s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
@@ -218,9 +218,8 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT_ALPHAS"].SetDefault(1);
-  s["CSS_REWEIGHT_PDFS"].SetDefault(1);
-  s["REWEIGHT_MAXEM"].SetDefault(std::numeric_limits<unsigned int>::max());
+  s["CSS_REWEIGHT"].SetDefault(false);
+  s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
   s["CSS_KIN_SCHEME"].SetDefault(1);

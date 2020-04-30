@@ -159,6 +159,15 @@ bool Settings::IsList(const Settings_Keys& keys)
   return false;
 }
 
+bool Settings::IsMap(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsMap(keys))
+      return true;
+  }
+  return false;
+}
+
 size_t Settings::GetItemsCount(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders) {

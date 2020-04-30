@@ -158,7 +158,10 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(MODEL::Running_AlphaS *cpl, double
 double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 {
   double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
-  return as->BoundedAlphaS(minscale) * m_q;
+  double ct(0.);
+  if (rsf > 1.) // only for f>1 cpl gets larger
+    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol,

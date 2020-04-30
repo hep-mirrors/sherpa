@@ -1,6 +1,3 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -13,11 +10,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Selector.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
-#include "fastjet/EECambridgePlugin.hh"
-#include "fastjet/JadePlugin.hh"
 
 namespace PHASIC {
   class Jet_Selector : public Selector_Base {
@@ -29,8 +21,7 @@ namespace PHASIC {
     ATOOLS::Jet_Inputs          m_jetinput;
     ATOOLS::Jet_Identifications m_jetids;
 
-    fastjet::JetDefinition * p_jdef;
-    fastjet::SISConePlugin * p_siscplug;
+    fjcore::JetDefinition * p_jdef;
 
     public:
     Jet_Selector(const Selector_Key &key);
@@ -61,24 +52,27 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_ymin(-std::numeric_limits<double>::max()),
   m_ymax(std::numeric_limits<double>::max()),
   m_nmin(0), m_nmax(std::numeric_limits<size_t>::max()),
-  m_outjetkf(kf_none), p_jdef(NULL), p_siscplug(NULL)
+  m_outjetkf(kf_none), p_jdef(NULL)
 {
   DEBUG_FUNC("");
   auto s = key.m_settings["Jet_Selector"];
-  s.DeclareVectorSettingsWithEmptyDefault({ "Input_Particles" });
 
   // input ptcls and output ID
-  const auto inputptcls = s["Input_Particles"].GetVector<std::string>();
-  if (!inputptcls.empty()) {
-    if (inputptcls[1]=="all") {
-      THROW(not_implemented,"Keyword 'all' not implemented yet.");
+  for (auto inputsettings : s["Input_Particles"].GetItems()) {
+    auto kfsetting = inputsettings.IsList() ? inputsettings.GetItemAtIndex(0)
+                                            : inputsettings;
+    const auto kfc = kfsetting.SetDefault(kf_none).Get<long int>();
+    if (kfc == kf_none) {
+      THROW(fatal_error,
+            "Invalid or missing particle ID for Input_Particles"
+            " option given within the Jet_Selector settings.");
     }
-    else {
-      int kfc(ToType<long int>(inputptcls[0]));
-      Flavour fl(abs(kfc),kfc<0);
-      m_jetinput.push_back(Jet_Input(fl));
-      for (size_t i(1);i<inputptcls.size();++i) {
-        std::string ds(inputptcls[i]);
+    m_jetinput.push_back(Jet_Input(Flavour {kfc}));
+    if (inputsettings.IsList()) {
+      const auto num_ptcl_specific_settings = inputsettings.GetItemsCount();
+      for (size_t i {1}; i < num_ptcl_specific_settings; ++i) {
+        auto ds =
+            inputsettings.GetItemAtIndex(i).SetDefault("").Get<std::string>();
         if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
         std::string var(ds,0,ds.find(':'));
         std::string val(ds,ds.find(':')+1);
@@ -166,15 +160,13 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   }
 
   // init jet algo
-  fastjet::JetAlgorithm ja;
-  if (m_algo=="kt")             ja=fastjet::kt_algorithm;
-  else if (m_algo=="cambridge") ja=fastjet::cambridge_algorithm;
-  else if (m_algo=="antikt")    ja=fastjet::antikt_algorithm;
-  else if (m_algo=="siscone")   p_siscplug=new fastjet::SISConePlugin(m_R,m_f);
+  fjcore::JetAlgorithm ja;
+  if (m_algo=="kt")             ja=fjcore::kt_algorithm;
+  else if (m_algo=="cambridge") ja=fjcore::cambridge_algorithm;
+  else if (m_algo=="antikt")    ja=fjcore::antikt_algorithm;
   else THROW(not_implemented,"Unknown algorithm.");
 
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else            p_jdef=new fastjet::JetDefinition(ja,m_R);
+  p_jdef=new fjcore::JetDefinition(ja,m_R);
 }
 
 
@@ -197,7 +189,7 @@ bool Jet_Selector::Trigger(Selector_List &sl)
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
   Vec4D_Vector moms(sl.size(),Vec4D(0.,0.,0.,0.));
   for (size_t i(0);i<m_nin;++i) moms[i]=sl[i].Momentum();
-  std::vector<fastjet::PseudoJet> input,jets;
+  std::vector<fjcore::PseudoJet> input,jets;
   // book-keep where jet input was taken from
   std::vector<size_t> jetinputidx;
   for (size_t i(m_nin);i<n;++i) if (sl[i].Momentum()!=moms[i]) {
@@ -214,8 +206,8 @@ bool Jet_Selector::Trigger(Selector_List &sl)
                <<","<<input[i].py()<<","<<input[i].pz()<<")"<<std::endl;
   }
 
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  jets=fjcore::sorted_by_pt(cs.inclusive_jets());
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
 
   size_t njets(0);
@@ -322,45 +314,3 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<w<<"  Output_ID: <kf>\n"
      <<w<<"  Subselectors: [...]";
 }
-
-#else
-
-#include "PHASIC++/Selectors/Selector.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-
-namespace PHASIC {
-  class Jet_Selector : public Selector_Base {
-  public:
-    Jet_Selector(const Selector_Key &key) :
-      Selector_Base("Jet_Selector",key.p_proc) {}
-
-    bool   Trigger(ATOOLS::Selector_List &) { return true; }
-    void   BuildCuts(Cut_Data *) {}
-  };
-}
-
-using namespace PHASIC;
-using namespace ATOOLS;
-
-DECLARE_GETTER(Jet_Selector,"Jet_Selector",Selector_Base,Selector_Key);
-
-Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
-                              Jet_Selector>::operator()
-(const Selector_Key &key) const
-{
-  THROW(fatal_error, "To use the Jet_Selector Sherpa must be linked "+
-                     std::string("to FastJet during compilation."));
-  return new Jet_Selector(key);
-}
-
-void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  std::string w(width+4,' ');
-  str<<"Jet_Selector:\n"
-     <<w<<"  # NOTE: to use this selector Sherpa must be compiled with FastJet support";
-}
-
-#endif

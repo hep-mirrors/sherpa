@@ -532,94 +532,146 @@ this feature.
 Scale and PDF variations
 ========================
 
-Sherpa can compute alternative event weights for different scale and
-PDF choices on-the-fly, resulting in alternative weights for the generated
-event. The can be evoked with the following syntax
+Sherpa can compute alternative event weights for different scale, PDF and
+AlphaS(MZ) choices on-the-fly, resulting in alternative weights for the
+generated event. This can be evoked with the following syntax:
 
 .. code-block:: yaml
 
    VARIATIONS:
-   - "<muR-fac-1>,<muF-fac-1>,<PDF-1>"
-   - "<muR-fac-2>,<muF-fac-2>,<PDF-2>"
+   - ScaleFactors:
+       MuR2: <muR2-fac-1>
+       MuF2: <muF2-fac-1>
+       QCUT: <qcut-fac-1>
+     PDF: <PDF-1>
+   - ScaleFactors:
+       MuR2: <muR2-fac-2>
+       MuF2: <muF2-fac-2>
+       QCUT: <qcut-fac-2>
+     PDF: <PDF-2>
    ...
 
-The key word ``VARIATIONS`` takes a list of
-variation factors for the nominal renormalisation and factorisation scale
-and an associated PDF set. If the scale factors are omitted, they default to 1.
-Any set present in any of the PDF library interfaces
-loaded through ``PDF_LIBRARY`` can be used. If no PDF set is given it
-defaults to the nominal one. Specific PDF members can be
-specified by appending the PDF set name with ``/<member-id>``.  Enclosing
-the pdf set with square brackets will expand to variations over all members of
-that set. This only works with LHAPDF6 sets or the internal default sets.
-Please note that scales are, as always in Sherpa, given in their quadratic
-form.  Thus, a variation of factor 4 of the squared scale [GeV^2] means a
-variation of factor 2 on the scale itself [GeV].
-Scales also support square bracket expansion, e.g. ``[4]`` expands to
-``1/4, 1, 4``. Enclosing both scale tags with square brackets expands to the
-7-point scale variation:
+The key word ``VARIATIONS`` takes a list of variations.  Each variation is
+specified by a set of scale factors, and a PDF choice (or AlphaS(MZ) choice,
+see below).
+
+Scale factors can be given for the renormalisation, factorisation and for the
+merging scale.  The corresponding keys are ``MuR2``, ``MuF2`` and ``QCUT``,
+respectively. The factors for the renormalisation and factorisation scales
+must be given in their quadratic form, i.e. ``MuR2: 4.0`` applies a scale
+factor of 2.0 to the renormalisation scale. All scale factors can be omitted
+(they default to 1.0). Instead of ``MuR2`` and ``MuF2``, one can also use the
+keyword ``Mu2``. In this case, the given factor is applied to both the
+renormalisation and the factorisation scale.
+
+For the ``PDF`` specification, any set present in any of the PDF library
+interfaces loaded through ``PDF_LIBRARY`` can be used. If no PDF set is given
+it defaults to the nominal one. Specific PDF members can be specified by
+appending the PDF set name with ``/<member-id>``.
+
+Instead of using ``PDF: <PDF>`` (which consistently also varies the strong
+coupling if the PDF has a different specification of it!), one can also specify
+a pure AlphaS variation by giving its value at the Z mass scale: ``AlphaS(MZ):
+<alphas(mz)-value>``. This can be useful e.g. for leptonic productions.
+
+It can be painful to write every variation explicitly, e.g. for 7-point scale
+factor variations or if one want variations for all members of a PDF set.
+Therefore an asterisk can be appended to some values, which results in an
+*expansion*.  For PDF sets, this means that the variation is repeated for each
+member of that set.  For scale factors, ``4.0*`` is expanded to itself, unity,
+and its inverse: ``1.0/4.0, 1.0, 4.0``.  A special meaning is reserved for
+specifying ``Mu2: 4.0*``, which expands to a 7-point scale variation:
 
 .. code-block:: yaml
 
    VARIATIONS:
-     - "[4,4]"
+     - ScaleFactors:
+         Mu2: 4.0*
 
-   # is equivalent to
-   VARIATIONS:
-     - 0.25,0.25
-     - 1,0.25
-     - 0.25,1
-     - 1,1
-     - 4,1
-     - 1,4
-     - 4,4
-
-Thus, a complete variation using the PDF4LHC convention would read
+is therefore equivalent to
 
 .. code-block:: yaml
 
    VARIATIONS:
-     - "[4,4]"
-     - "[CT10nlo]"
-     - "[MMHT2014nlo68cl]"
-     - "[NNPDF30_nlo_as_0118]"
+     - ScaleFactors:
+         MuF2: 0.25
+         MuR2: 0.25
+     - ScaleFactors:
+         MuF2: 1.0
+         MuR2: 0.25
+     - ScaleFactors:
+         MuF2: 0.25
+         MuR2: 1.0
+     - ScaleFactors:
+         MuF2: 1.0
+         MuR2: 1.0
+     - ScaleFactors:
+         MuF2: 4.0
+         MuR2: 1.0
+     - ScaleFactors:
+         MuF2: 1.0
+         MuR2: 4.0
+     - ScaleFactors:
+         MuF2: 4.0
+         MuR2: 4.0
 
-Please note, this syntax will create :math:`7+53+51+101=212`
-additional weights for each event.
+As another example, a complete variation using the PDF4LHC convention would
+read
 
-Note that the square bracket expansion includes trivial scale
-variations and the central PDF set. This can be disabled with
+.. code-block:: yaml
+
+   VARIATIONS:
+     - ScaleFactors:
+         Mu2: 4.0*
+     - PDF: CT10nlo*
+     - PDF: MMHT2014nlo68cl*
+     - PDF: NNPDF30_nlo_as_0118*
+
+Please note, this syntax will create :math:`7+53+51+101=212` additional weights
+for each event. Even though reweighting is used to reduce the amount of
+additional calculation as far as possible, this can still necessitate a
+considerable amount of additional CPU hours, in particular when parton-shower
+reweighting is enabled (see below).
+
+Note that asterisk expansions include trivial scale variations and the central
+PDF set. Depending on the other specifications in a variation, this could result
+in a completely trivial variation. Per default, these are omitted during the
+calculation, since the nominal calculation is anyway included in the Sherpa
+output. Trivial variations can be explicitly allowed using
 ``VARIATIONS_INCLUDE_CV: false``.
 
 The additional event weights can then be written into the event
 output.  However, this is currently only supported for
 ``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
 ``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weights
-follow the Les Houches naming convention for such variations, ie. they
+follow the Les Houches naming convention for such variations, i.e. they
 are named ``MUR<fac>_MUF<fac>_PDF<id>``.  When using Sherpa's
 interface to Rivet, :ref:`Rivet analyses`, separate instances of
 Rivet, one for each alternative event weight in addition to the
 nominal one, are instantiated leading to one set of histograms each.
 They are again named using the ``MUR<fac>_MUF<fac>_PDF<id>``
 convention.
+Extending this convention, for pure strong coupling variations, an additional
+tag ``ASMZ<val>`` is appended. Another set of tags is appended if shower scale
+variations are enabled, then giving ``PSMUR<fac>_PSMUF<fac>``.
 
 The user must also be aware that, of course, the cross section of the
 event sample, changes when using an alternative event weight as
-compared to the nominal one. Any histograming therefore has to account
+compared to the nominal one. Any histogramming therefore has to account
 for this and recompute the total cross section as the sum of weights
-devided by the number of trials, cf. :ref:`Cross section
+divided by the number of trials, cf. :ref:`Cross section
 determination`.
 
 The on-the-fly reweighting works for all event generation modes
 (weighted or (partially) unweighted) and all calculation types (LO,
 LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO and MENLOPS).
 However, the reweighting of parton shower emissions has to be enabled explicitly,
-using :option:`CSS_REWEIGHT: 1`.  This should work out of the box for both scale
-and PDF variations.  If numerical issues are encountered, one can try to
-increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5).
-This disables shower variations for emissions at scales below the value.  An
-improved accuracy for shower variations at very low scales can be achieved by
-using :option:`CSS_ALPHAS_FREEZE_MODE=1`, see :ref:`CS Shower options`.
+using :option:`CSS_REWEIGHT: true`.  This should work out of the box for all
+types of variations. However, parton-shower reweighting (even though formally
+exact), tends to be numerically less stable than the reweighting of the hard
+process. If numerical issues are encountered, one can try to
+increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
+This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
 weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
@@ -627,7 +679,7 @@ will be ignored and reset to 1.
 
 To include the ME-only variations along with the full variations in the
 HepMC/Rivet output, you can use ``HEPMC_INCLUDE_ME_ONLY_VARIATIONS:
-true`` and ``RIVET: @{ INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true @``},
+true`` and ``RIVET: { INCLUDE_HEPMC_ME_ONLY_VARIATIONS: true }``,
 respectively.
 
 .. _MPI parallelization:

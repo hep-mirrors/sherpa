@@ -29,9 +29,9 @@ std::vector<ATOOLS::Scoped_Settings> Selector_Key::GetSelectors() const
   Scoped_Settings addselsettings{ m_yaml };
   auto selectors = addselsettings["SELECTORS"].GetItems();
   auto userdefinedselectors = m_settings.GetItems();
-  std::copy(userdefinedselectors.begin(), userdefinedselectors.end(),
-            std::back_inserter(selectors));
-  return selectors;
+  std::copy(selectors.begin(), selectors.end(),
+            std::back_inserter(userdefinedselectors));
+  return userdefinedselectors;
 }
 
 void Selector_Key::AddSelectorYAML(const std::string& yaml)
@@ -60,7 +60,6 @@ bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
   for (size_t n(0);n<subs->size();++n) {
     p_sub=(*subs)[n];
     m_nout=(m_n=p_sub->m_n)-m_nin;
-    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
     Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
     for (size_t i(0);i<m_nin;++i)
       if (mom[i][0]<0.0) mom[i]=-mom[i];

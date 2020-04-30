@@ -32,6 +32,8 @@ Color_Setter::~Color_Setter()
   for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
        xsit!=m_xsmap.end();++xsit) delete xsit->second;
   for (size_t i(0);i<m_procs.size();++i) delete m_procs[i];
+  for (auto m: m_pmap) if (m.second) delete m.second;
+  m_pmap.clear();
 }
 
 bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
@@ -186,7 +188,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
   if (pit!=pm->end() && pit->second && pit->second->
       Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
   if (p_xs==NULL) {
-    pm=m_pmap[nlo_type::lo];
+    if (pit!=pm->end()) return false;
     {
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");

@@ -58,13 +58,13 @@ To use the interface, you need to enable it using the
 
    ANALYSIS: Rivet
    RIVET:
-     -a:
+     ANALYSES:
        - D0_2008_S7662670
        - CDF_2007_S7057202
        - D0_2004_S5992206
        - CDF_2008_S7828950
 
-The ``-a`` list specifies which Rivet analyses to run and the
+The ``ANALYSES`` list specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal ``ANALYSIS_OUTPUT``
 switch.
 

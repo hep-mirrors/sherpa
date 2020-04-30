@@ -108,7 +108,6 @@ CS Shower options
 .. index:: CSS_MASS_THRESHOLD
 .. index:: CSS_EVOLUTION_SCHEME
 .. index:: CSS_SCALE_SCHEME
-.. index:: CSS_ALPHAS_FREEZE_MODE
 
 By default, only QCD splitting functions are enabled in the CS shower.
 If you also want to allow for photon splittings, you can enable them
@@ -131,11 +130,3 @@ ordering parameter and 1 corresponds to invariant mass. Additionally,
 the CS shower allows to disable splittings at scales below the
 on-shell mass of heavy quarks. The upper limit for the corresponding
 heavy quark mass is set using :option:`CSS_MASS_THRESHOLD`.
-
-The cut-off behaviour of the strong coupling for scales at which its value
-would formally exceed one can be set using :option:`CSS_ALPHAS_FREEZE_MODE`.
-Setting it to 0 (which is the default) means that the strong coupling evaluates
-to zero at such scales (hard cut-off). Setting it to 1 lets it evaluate to one
-instead (freeze-in). A freeze-in behaviour is preferable when reweighting
-shower emissions, but it has not been used in the default Sherpa tune, and
-should therefore not be used when comparing particle-level predictions to data.

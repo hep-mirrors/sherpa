@@ -31,9 +31,3 @@ localinc_HEADERS      = \
                         Combined_Selector.H \
                         Jet_Finder.H \
                         Fastjet_Selector_Base.H
-
-libPhasicSelectors_la_LIBADD = \
-                @CONDITIONAL_FASTJETLIBS@
-
-libPhasicSelectors_la_CPPFLAGS = $(AM_CPPFLAGS) \
-                @CONDITIONAL_FASTJETINCS@
