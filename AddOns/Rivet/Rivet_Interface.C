@@ -21,20 +21,18 @@
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 #define SHERPA__HepMC_Interface SHERPA::HepMC3_Interface
+#define HEPMCNS HepMC3
 #define HEPMC_HAS_CROSS_SECTION
 #else
 #include "SHERPA/Tools/HepMC2_Interface.H"
-
-#ifdef USING__HEPMC2
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenCrossSection.h"
 #include "HepMC/WeightContainer.h"
-#endif
-
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
 #endif
 #define SHERPA__HepMC_Interface SHERPA::HepMC2_Interface
+#define HEPMCNS HepMC
 #endif
 
 
@@ -300,10 +298,10 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
-  HepMC::GenEvent event;
+  HEPMCNS::GenEvent event;
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
-  std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
+  std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
 #ifndef  RIVET_ENABLE_HEPMC_3
@@ -496,13 +494,9 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 #ifdef USING__RIVET2
 #include "SHERPA/Tools/HepMC2_Interface.H"
-
-#ifdef USING__HEPMC2
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenCrossSection.h"
 #include "HepMC/WeightContainer.h"
-#endif
-
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
 #endif

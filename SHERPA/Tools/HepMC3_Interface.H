@@ -39,9 +39,6 @@ using GenParticlePtr = std::shared_ptr<GenParticle>;
 
 }
 
-namespace HepMC = HepMC3;
-
-
 namespace ATOOLS {
   class Blob_List;
   class Particle;
@@ -79,7 +76,7 @@ namespace SHERPA {
               bool includemeonlyweights);
     EventInfo3(const EventInfo3 &evtinfo);
     ~EventInfo3() {}
-    bool WriteTo(HepMC::GenEvent &evt, const int& idx=-1);
+    bool WriteTo(HepMC3::GenEvent &evt, const int& idx=-1);
     inline const ATOOLS::NLO_subevtlist * SubEvtList() { return p_subevtlist; }
     inline void SetWeight(const double &wgt)          { m_wgt=wgt; }
     inline void SetMEWeight(const double &mewgt)      { m_mewgt=mewgt; }
@@ -96,17 +93,17 @@ namespace SHERPA {
     bool m_usenamedweights, m_extendedweights, m_includemeonlyweights;
     bool m_hepmctree;
 
-    std::map<ATOOLS::Blob*,HepMC::GenVertexPtr > m_blob2genvertex;
-    std::map<ATOOLS::Particle*,HepMC::GenParticlePtr> m_particle2genparticle;
+    std::map<ATOOLS::Blob*,HepMC3::GenVertexPtr > m_blob2genvertex;
+    std::map<ATOOLS::Particle*,HepMC3::GenParticlePtr> m_particle2genparticle;
     std::set<ATOOLS::btp::code> m_ignoreblobs;
 
-    HepMC::GenEvent *p_event;
-    std::vector<HepMC::GenEvent*> m_subeventlist;
+    HepMC3::GenEvent *p_event;
+    std::vector<HepMC3::GenEvent*> m_subeventlist;
 
     bool Sherpa2ShortHepMC(const ATOOLS::Vec4D&,
                            const ATOOLS::Flavour&,
                            bool incoming,
-                           HepMC::GenParticle*&);
+                           HepMC3::GenParticle*&);
 
   public :
 
@@ -117,26 +114,26 @@ namespace SHERPA {
     ~HepMC3_Interface();
 
     // member functions
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC::GenEvent& event);
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC::GenRunInfo> run= std::shared_ptr<HepMC::GenRunInfo>());
-    bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC::GenVertexPtr &, HepMC::GenEvent& event ); 
-    bool Sherpa2HepMC(ATOOLS::Particle *, HepMC::GenParticlePtr &);
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                       std::shared_ptr<HepMC3::GenRunInfo> run= std::shared_ptr<HepMC3::GenRunInfo>());
+    bool Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob *,     HepMC3::GenVertexPtr &, HepMC3::GenEvent& event ); 
+    bool Sherpa2HepMC(ATOOLS::Particle *, HepMC3::GenParticlePtr &);
 
-    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, HepMC::GenEvent& event);
+    bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, HepMC3::GenEvent& event);
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs);
     bool SubEvtList2ShortHepMC(EventInfo3 &evtinfo);
 
-    void AddCrossSection(HepMC::GenEvent& event,
+    void AddCrossSection(HepMC3::GenEvent& event,
                          const double& xs, const double& err);
 
     // inline functions
-    inline HepMC::GenEvent* GenEvent() { return p_event; }
+    inline HepMC3::GenEvent* GenEvent() { return p_event; }
     // For RivetInterface to enable ME/shower only analysis of fully hadronised event
     inline void Ignore(ATOOLS::btp::code type) { m_ignoreblobs.insert(type); }
 
-    inline HepMC::GenEvent* GenSubEvent(size_t i)
+    inline HepMC3::GenEvent* GenSubEvent(size_t i)
     { if (i<m_subeventlist.size()) return m_subeventlist[i]; return NULL; }
-    inline std::vector<HepMC::GenEvent*> GenSubEventList()
+    inline std::vector<HepMC3::GenEvent*> GenSubEventList()
     { return m_subeventlist; }
 
     inline void SetHepMCNamedWeights(bool x)   { m_usenamedweights=x; }
