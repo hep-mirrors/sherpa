@@ -506,7 +506,7 @@ void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
     }
     else if (flav==kf_n) {
       s_kftable[flav]=
-        new Particle_Info(kf_n,0.939566,7.424e-28,0,0,1,1,"n","n");
+        new Particle_Info(kf_n,0.939566,7.424e-28,0,1,1,1,"n","n");
       initialize_diquarks=true;
     }
     else if (flav==kf_e) {
