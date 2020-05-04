@@ -137,14 +137,10 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   // TODO: do we need the parton -> jet transformation?
   for (size_t i{0}; i < ampl->NIn(); ++i) {
     Flavour fl(ampl->Leg(i)->Flav().Bar());
-    if (Flavour(kf_jet).Includes(fl))
-      fl = Flavour(kf_jet);
     pi.m_ii.m_ps.push_back(Subprocess_Info(fl, "", ""));
   }
   for (size_t i{ampl->NIn()}; i < ampl->Legs().size(); ++i) {
     Flavour fl{ampl->Leg(i)->Flav()};
-    if (Flavour(kf_jet).Includes(fl))
-      fl = Flavour(kf_jet);
     pi.m_fi.m_ps.push_back(Subprocess_Info(fl, "", ""));
   }
 
