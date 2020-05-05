@@ -65,24 +65,20 @@ namespace PHASIC {
   private:
 
     std::vector<Representation*> m_ids, m_decids;
-    std::vector<std::vector<double> > m_mc, m_sum, m_msum;
-    std::vector<size_t> m_specs;
 
     Idx_Matrix m_orders;
     Idx_Vector m_lastids, m_lastperm, m_nexti;
 
     Double_Vector m_weights, m_cweights, m_alpha;
 
-    size_t m_pairs, m_lastconf, m_alphamode, m_csmode, m_omode;
+    size_t m_pairs, m_lastconf, m_alphamode, m_csmode;
     bool   m_check, m_on, m_otfcc, m_fincc, m_valid, m_nogen, m_won;
 
     double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight;
-    double m_sn, m_msn;
 
     double Factorial(const double &n) const;
 
-    std::pair<int,double> GenerateIndex
-    (const std::vector<int> &idx,const int i);
+    size_t GenerateIndex();
 
     bool GenerateColours();
     int  Generate();
@@ -129,13 +125,6 @@ namespace PHASIC {
     Int_Vector I() const;
     Int_Vector J() const;
 
-    void MPISync(const int mode=0);
-    void AddPoint(const double &weight);
-    void Optimize();
-
-    void ReadIn(const std::string &path);
-    void WriteOut(const std::string &path);
-
     bool SetConfiguration(const size_t &id);
 
     void SetAlpha(const Double_Vector &alpha);
@@ -147,7 +136,6 @@ namespace PHASIC {
 		     const Int_Vector &types,const Int_Vector &acts);
 
     // inline functions
-    inline void SetOMode(const bool omode)     { m_omode=omode;     }
     inline void SetNoGen(const bool nogen)     { m_nogen=nogen;     }
     inline void SetCheck(const bool check)     { m_check=check;     }
     inline void SetOTFCC(const bool otf)       { m_otfcc=otf;       }
@@ -155,7 +143,6 @@ namespace PHASIC {
     inline void SetOn(const bool on)           { m_on=on;           }
     inline void SetAlphaMode(const size_t am)  { m_alphamode=am;    }
 
-    inline bool OMode() const   { return m_omode;   }
     inline bool NoGen() const   { return m_nogen;   }
     inline bool Check() const   { return m_check;   }
     inline bool OTFCC() const   { return m_otfcc;   }

@@ -9,8 +9,11 @@ namespace PHASIC {
 
   class Phase_Space_Integrator {
   private:
-    static long unsigned int m_nrawmax;
-    long unsigned int m_nopt, m_iter, m_itmin, m_nexpected;
+    long unsigned int m_iter, m_itmin, m_itmax, m_itminbynode;
+    long unsigned int m_nmin, m_nrawmin;
+    static long unsigned int m_nmax, m_nrawmax;
+
+    long unsigned int m_nopt, m_ndecopt, m_optiter;
 
     long unsigned int m_n, m_nstep, m_ncstep;
     long unsigned int m_mn, m_mnstep, m_mncstep;
@@ -19,7 +22,7 @@ namespace PHASIC {
     bool m_fin_opt;
 
     double m_starttime, m_lotime, m_addtime, m_lrtime;
-    double m_maxerror, m_maxabserror, m_npower;
+    double m_maxerror, m_maxabserror;
 
     size_t m_lastrss;
 
@@ -39,6 +42,11 @@ namespace PHASIC {
     double CalculateDecay(double);
 
     void MPISync();
+
+    //! Simple access methods.
+    static long int MaxPoints();
+    static long int MaxRawPoints();
+    static void     SetMaxPoints(long int _nmax);
 
     bool AddPoint(const double value);
 

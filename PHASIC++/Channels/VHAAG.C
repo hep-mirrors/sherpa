@@ -780,7 +780,8 @@ namespace PHASIC {
 	Permutation pp(m_nin+m_nout-1);
 	for (int j=0;j<pp.MaxNumber();j++) {
 	  int* pm = pp.Get(j);
-	  p_mc->Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
+	  if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
+	    p_mc->Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
 	  if (!firsthaag) firsthaag=hlp;
 	}
       }

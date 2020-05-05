@@ -86,7 +86,7 @@ namespace PHASIC {
     long int m_maxtrials, m_killedpoints;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
-    double m_result, m_error, m_abserror, m_enhance, m_osmass;
+    double m_result, m_error, m_abserror, m_enhance=1.0, m_osmass;
     ATOOLS::Event_Weights m_eventweights;
 
     std::vector<std::vector<double> > m_stats;

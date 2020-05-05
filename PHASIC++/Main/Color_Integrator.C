@@ -7,9 +7,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include <iomanip>
 #include <limits>
 
@@ -62,13 +59,11 @@ Representation::Representation(const size_t &id,
 }
 
 Color_Integrator::Color_Integrator():
-  m_lastconf(0), m_alphamode(0), m_omode(1),
+  m_lastconf(0), m_alphamode(0), 
   m_check(false), m_on(true), 
   m_otfcc(false), m_fincc(true), m_nogen(true), m_won(true),
-  m_n(0), m_nv(0), m_over(0.0), m_sn(0.0), m_msn(0.0)
+  m_n(0), m_nv(0), m_over(0.0)
 {
-  Settings& s = Settings::GetMainSettings();
-  m_omode=s["CI_OMODE"].SetDefault(1).GetScalar<int>();
 }
 
 Color_Integrator::~Color_Integrator()
@@ -96,22 +91,10 @@ bool Color_Integrator::ConstructRepresentations
   int fermions(0);
   for (size_t i(0);i<ids.size();++i) {
     m_ids[i] = new Representation(ids[i],types[i],acts[i]);
-    if (types[i]>=0 && acts[i]>0) {
-      m_weight*=3.0;
-      m_mc.push_back(std::vector<double>());
-      m_sum.push_back(std::vector<double>());
-    }
+    if (types[i]>=0 && acts[i]>0) m_weight*=3.0;
     if (types[i]>0) m_pairs+=1;
     fermions+=types[i];
   }
-  for (size_t i(0);i<m_mc.size();++i) {
-    m_mc[i].resize(m_mc.size()-i,1.0);
-    m_sum[i].resize(m_mc.size()-i,0.0);
-  }
-  m_specs.resize(m_mc.size());
-#ifdef USING__MPI
-  m_msum=m_sum;
-#endif
   if (fermions!=0) THROW(fatal_error,"Invalid number of fermions.");
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): Weight = "<<m_weight<<"\n";
@@ -120,102 +103,12 @@ bool Color_Integrator::ConstructRepresentations
   return true;
 }
 
-void Color_Integrator::MPISync(const int mode)
+size_t Color_Integrator::GenerateIndex()
 {
-#ifdef USING__MPI
-  if (mode==0) {
-    if (mpi->Size()) {
-      for (size_t i(0);i<m_msum.size();++i)
-	mpi->Allreduce(&m_msum[i][0],m_msum[i].size(),MPI_DOUBLE,MPI_SUM);
-      mpi->Allreduce(&m_msn,1,MPI_DOUBLE,MPI_SUM);
-    }
-  }
-  m_sn+=m_msn;
-  m_msn=0.0;
-  for (size_t i(0);i<m_msum.size();++i) 
-    for (size_t j(0);j<m_msum[i].size();++j) {
-      m_sum[i][j]+=m_msum[i][j];
-      m_msum[i][j]=0.0;
-    }
-#endif
-}
-
-void Color_Integrator::AddPoint(const double &weight)
-{
-  DEBUG_FUNC(weight);
-  msg_Debugging()<<"specs = "<<m_specs<<"\n";
-#ifdef USING__MPI
-  for (size_t i(0);i<m_msum.size();++i)
-    m_msum[i][m_specs[i]]+=std::abs(weight);
-  ++m_msn;
-#else
-  for (size_t i(0);i<m_sum.size();++i)
-    m_sum[i][m_specs[i]]+=std::abs(weight);
-  ++m_sn;
-#endif
-}
-
-void Color_Integrator::Optimize()
-{
-  if (m_omode==0) return;
-  DEBUG_FUNC(this);
-  for (size_t i(0);i<m_mc.size();++i)
-    for (size_t j(0);j<m_mc[i].size();++j) {
-      msg_Debugging()<<"("<<i<<","<<j<<") = "<<m_mc[i][j]
-		     <<" -> "<<m_sum[i][j]/m_sn<<"\n";
-      m_mc[i][j]=m_sum[i][j]/m_sn;
-    }
-}
-
-void Color_Integrator::ReadIn(const std::string &path)
-{
-  My_In_File infile(path);
-  infile.Open();
-  infile->precision(16);
-  int size;
-  *infile>>size;
-  if (size!=m_mc.size()) THROW(fatal_error,"Inconsistent dimension in "+path);
-  for (size_t i(0);i<m_mc.size();++i) {
-    *infile>>size;
-    if (size!=m_mc[i].size()) THROW(fatal_error,"Inconsistent dimension in "+path);
-    for (size_t j(0);j<m_mc[i].size();++j) *infile>>m_mc[i][j];
-  }
-  std::string dummy;
-  *infile>>dummy;
-  if (dummy!="eof") THROW(fatal_error,"Corrupted input file "+path);
-}
-
-void Color_Integrator::WriteOut(const std::string &path)
-{
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
-  My_Out_File outfile(path);
-  outfile.Open();
-  outfile->precision(16);
-  *outfile<<m_mc.size()<<"\n";
-  for (size_t i(0);i<m_mc.size();++i) {
-    *outfile<<m_mc[i].size();
-    for (size_t j(0);j<m_mc[i].size();++j)
-      *outfile<<" "<<m_mc[i][j];
-    *outfile<<"\n";
-  }
-  *outfile<<"eof\n";
-}
-
-std::pair<int,double> Color_Integrator::GenerateIndex
-(const std::vector<int> &idx,const int i)
-{
-  double n[3]={1.,1.,1.};
-  for (size_t j(0);j<i;++j) ++n[idx[j]-1];
-  for (size_t j(0);j<3;++j) n[j]=1./n[j];
-  double sum(0.), disc((n[0]+n[1]+n[2])*ran->Get());
-  for (int j(0);j<3;++j)
-    if ((sum+=n[j])>=disc) {
-      return std::pair<int,double>
-	(j+1,(n[0]+n[1]+n[2])/n[j]/3.);
-    }
-  return std::pair<int,double>(-1,0.);
+  double rn(3.0*ran->Get());
+  for (double disc(1.0);disc<=3.0;++disc)
+    if (disc>=rn) return (size_t)disc;
+  return std::string::npos;
 }
 
 bool Color_Integrator::GenerateColours()
@@ -230,38 +123,17 @@ bool Color_Integrator::GenerateColours()
       if (m_ids[i]->Type()>=0) iids.push_back(i);
       if (m_ids[i]->Type()<=0) jids.push_back(i);
     }
-  // set colours
-  m_weight=1.0;
-  std::vector<int> idx(iids.size());
-  for (size_t i(0);i<idx.size();++i) {
-    std::pair<int,double> res(GenerateIndex(idx,i));
-    idx[i]=res.first;
-    m_weight*=res.second;
-  }
   size_t nr(0), ng(0), nb(0);
   for (size_t i(0);i<iids.size();++i) {
     // select partner
-    size_t j(0);
-    if (jids.size()>1) {
-      double sum(0.0);
-      std::vector<double> psum(jids.size());
-      for (size_t k(0);k<jids.size();++k)
-	psum[k]=sum+=m_mc[i][k];
-      sum=ran->Get()*psum.back();
-      for (size_t k(0);k<jids.size();++k)
-	if (psum[k]>sum) {
-	  m_weight/=m_mc[i][k];
-	  m_weight*=psum.back()/psum.size();
-	  m_specs[i]=k;
-	  j=k;
-	  break;
-	}
-    }
-    m_ids[iids[i]]->SetI(idx[i]);
-    m_ids[jids[j]]->SetJ(idx[i]);
-    if (idx[i]==1) ++nr;
-    else if (idx[i]==2) ++ng;
-    else if (idx[i]==3) ++nb;
+    size_t j(Min(jids.size()-1,(size_t)(ran->Get()*jids.size())));
+    // set colours
+    size_t idx(GenerateIndex());
+    m_ids[iids[i]]->SetI(idx);
+    m_ids[jids[j]]->SetJ(idx);
+    if (idx==1) ++nr;
+    else if (idx==2) ++ng;
+    else if (idx==3) ++nb;
     else THROW(fatal_error,"Internal error");
     // remove partner from list
     for (Idx_Vector::iterator jit(jids.begin());
@@ -270,7 +142,7 @@ bool Color_Integrator::GenerateColours()
 	break;
       }
   }
-  m_weight*=pow(3.0,iids.size())*Factorial(iids.size())/
+  m_weight=pow(3.0,iids.size())*Factorial(iids.size())/
     (Factorial(nr)*Factorial(ng)*Factorial(nb));
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): w = "<<m_weight<<"\n";

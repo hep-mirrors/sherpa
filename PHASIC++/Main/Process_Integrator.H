@@ -69,6 +69,7 @@ namespace PHASIC {
     double TotalSigma2() const;
     double TotalResult() const;
     double TotalVar() const;
+    double RemainTimeFactor(double maxerr); 
 
   public:
 

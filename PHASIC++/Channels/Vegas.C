@@ -43,7 +43,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   p_x   = new double[m_dim];
   p_bm=p_cx=NULL;
   p_cb=NULL;
-  if (true) {
+  if (m_on!=0) {
     p_xi = new double*[m_dim];
     p_bestxi = new double*[m_dim];
     p_d  = new double*[m_dim];
@@ -104,7 +104,7 @@ Vegas::~Vegas()
     delete[] p_cx;
     delete[] p_cb;
   }
-  if (false) return;
+  if (m_on==0) return;
   for(int i=0;i<m_dim;i++) {
     delete[] p_xi[i];
     delete[] p_bestxi[i];
@@ -296,9 +296,9 @@ void Vegas::AddPoint(double value,double *xy)
 { if (m_on==0) return;
   if (m_mode==1 && m_cmode&1){
     for (int i=0;i<m_dim;i++) {
-      if (!IsEqual(p_x[i],xy[i],1.e-6)) {
-	msg_Info()<<"Mapping error in Vegas for "<<m_name<<endl;
-	for (int j=0;j<m_dim;j++) msg_Info()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
+      if (dabs(p_x[i]-xy[i])>1.e-4) {
+	msg_Tracking()<<"Mapping error in Vegas for "<<m_name<<endl;
+	for (int j=0;j<m_dim;j++) msg_Tracking()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
 //    	Abort();
 	i=m_dim;
       }

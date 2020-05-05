@@ -19,19 +19,16 @@ namespace PHASIC {
 		     const double & s2,ATOOLS::Vec4D & p2) const;
   public:
 
-    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0,
-			    const ATOOLS::Vec4D &x=ATOOLS::Vec4D(1.,1.,0.,0.));
+    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double=-1.0,double=1.0);
+    double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
-			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0,
-			   const ATOOLS::Vec4D &x=ATOOLS::Vec4D(1.,1.,0.,0.));
+			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0);
 
     double Anisotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,
-			      double&,double&,double,double=-1.0,double=1.0,
-			      const ATOOLS::Vec4D &x=ATOOLS::Vec4D(1.,1.,0.,0.));
+			      double&,double&,double,double=-1.0,double=1.0);
     void Anisotropic2Momenta(ATOOLS::Vec4D,double,double,
 			     ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,
-			     double,double=-1.0,double=1.0,
-			     const ATOOLS::Vec4D &x=ATOOLS::Vec4D(1.,1.,0.,0.));
+			     double,double=-1.0,double=1.0);
 
     double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,

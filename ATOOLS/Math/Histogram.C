@@ -31,7 +31,6 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
   m_yvalues(0),m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_psfills(0), 
   m_finished(false), m_initialized(false), m_fuzzyexp(-1), m_name(name)
 {
-  m_ysums=NULL;
   m_ps2values=NULL;
   m_mcb = 0.;
   if (m_type>1000) {
@@ -111,7 +110,6 @@ void Histogram::CopyFrom(const Histogram *histo)
   if (m_yvalues) delete [] m_yvalues;
   if (m_y2values) delete [] m_y2values;
   if (m_psvalues) delete [] m_psvalues;
-  if (m_ysums) delete [] m_ysums;
   if (m_tmp) delete [] m_tmp;
 
   m_lower   = histo->m_lower;
@@ -152,18 +150,11 @@ void Histogram::CopyFrom(const Histogram *histo)
       m_tmp[i]=0.;
     }
   }
-  if (histo->m_ysums==NULL) m_ysums=NULL;
-  else {
-    m_ysums = new double[m_nbin];
-    for (int i=0;i<m_nbin;i++)
-      m_ysums[i]=histo->m_ysums[i];
-  }
   MPIInit();
 }
 
 Histogram::Histogram(const std::string & pID,const int mode,std::string content)
   :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
-  m_ysums=NULL;
   m_finished=true;
 
   std::stringstream ifile;
@@ -313,7 +304,6 @@ Histogram::~Histogram() {
   if (m_tmp!=0) { 
     delete [] m_tmp; m_tmp = 0; 
   }
-  if (m_ysums!=0) delete [] m_ysums;
 #ifdef USING__MPI
   for (int j(0);j<m_depth;++j) delete [] m_mvalues[j];
   delete [] m_mvalues;
@@ -520,29 +510,10 @@ void Histogram::MPISync()
 #endif
 }
 
-double Histogram::GeneratePoint(const double &rn)
-{
-  if (m_ysums==NULL) {
-    m_ysums = new double[m_nbin];
-    double sum=0.;
-    for (int i=0;i<m_nbin;i++)
-      m_ysums[i]=sum+=m_yvalues[i];
-  }
-  double disc=rn*m_ysums[m_nbin-1];
-  int l(0), r(m_nbin-1), c((l+r)/2);
-  double a(m_ysums[c]);
-  while (r-l>1) {
-    if (disc<a) r=c;
-    else l=c;
-    c=(l+r)/2;
-    a=m_ysums[c];
-  }
-  double x(0.);
-  if (disc<m_ysums[l]) x=m_lower+(l-1+disc/m_yvalues[l])*m_binsize;
-  else x=m_lower+(r-1+(disc-m_ysums[l])/m_yvalues[r])*m_binsize;
-  if (m_logarithmic>0) x=exp(m_logbase*x);
-  return x;
-}
+
+
+
+
 
 void Histogram::Insert(double coordinate) {
   if (!m_active) {

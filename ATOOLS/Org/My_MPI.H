@@ -74,14 +74,6 @@ namespace ATOOLS {
       return MPI_Send(buf, count, datatype, dest, tag, m_comm);
     }
 
-    void Gather(void *sendbuf, int sendcount, MPI_Datatype sendtype,
-		void *recvbuf, int recvcount, MPI_Datatype recvtype,
-		int root)
-    {
-      MPI_Gather(sendbuf, sendcount, sendtype,
-		 recvbuf, recvcount, recvtype, root, m_comm);
-    }
-
 #endif
 
   private:
