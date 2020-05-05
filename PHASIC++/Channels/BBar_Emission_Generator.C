@@ -271,12 +271,13 @@ void BBar_Emission_Generator::EndOptimize()
 void BBar_Emission_Generator::MPISync()
 {
 #ifdef USING__MPI
+  size_t i(0), j(0);
   std::vector<double> sv;
-  for (size_t i(0), j(0);i<m_dipoles.size();++i)
-    m_dipoles[i]->MPICollect(sv,j);
+  for (size_t i(0);i<m_dipoles.size();++i)
+    m_dipoles[i]->MPICollect(sv,i);
   if (mpi->Size())
     mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
-  for (size_t i(0), j(0);i<m_dipoles.size();++i)
+  for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPIReturn(sv,j);
 #endif
   for (size_t i(0);i<m_dipoles.size();++i)

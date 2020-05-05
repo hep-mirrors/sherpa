@@ -701,9 +701,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order"
         || subkey == "Max_Order"
         || subkey == "Min_Order"
-        || subkey == "Amplitude_Order"
-        || subkey == "Max_Amplitude_Order"
-        || subkey == "Min_Amplitude_Order"
         || subkey == "NLO_Order") {
       // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
@@ -714,9 +711,6 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order")                   ExtractMPvalues(value, range, nf, args.pbi.m_vcpl);
     else if (subkey == "Max_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmaxcpl);
     else if (subkey == "Min_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmincpl);
-    else if (subkey == "Amplitude_Order")    ExtractMPvalues(value, range, nf, args.pbi.m_vacpl);
-    else if (subkey == "Max_Amplitude_Order") ExtractMPvalues(value, range, nf, args.pbi.m_vmaxacpl);
-    else if (subkey == "Min_Amplitude_Order") ExtractMPvalues(value, range, nf, args.pbi.m_vminacpl);
     else if (subkey == "Scales")             ExtractMPvalues(value, range, nf, args.pbi.m_vscale);
     else if (subkey == "Couplings")          ExtractMPvalues(value, range, nf, args.pbi.m_vcoupl);
     else if (subkey == "KFactor")            ExtractMPvalues(value, range, nf, args.pbi.m_vkfac);
@@ -788,26 +782,6 @@ void Matrix_Element_Handler::BuildDecays
   }
 }
 
-void Matrix_Element_Handler::LimitCouplings
-(MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
- std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode)
-{
-  std::string ds;
-  if (!GetMPvalue(pbi,nfs,pnid,ds)) return;
-  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
-  std::vector<double> cpl(ToVector<double>(ds));
-  if (mode&1) {
-    if (cpl.size()>mincpl.size()) mincpl.resize(cpl.size(),0);
-    for (size_t i(0);i<mincpl.size();++i)
-      if (cpl[i]>=0 && cpl[i]>mincpl[i]) mincpl[i]=cpl[i];
-  }
-  if (mode&2) {
-    if (cpl.size()>maxcpl.size()) maxcpl.resize(cpl.size(),99);
-    for (size_t i(0);i<maxcpl.size();++i)
-      if (cpl[i]>=0 && cpl[i]<maxcpl[i]) maxcpl[i]=cpl[i];
-  }
-}
-
 void Matrix_Element_Handler::BuildSingleProcessList(
   Single_Process_List_Args& args)
 {
@@ -867,18 +841,25 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	cpi.m_fi.m_nlotype=args.pi.m_fi.m_nlotype;
 	cpi.m_fi.m_nlocpl=args.pi.m_fi.m_nlocpl;
 	cpi.m_fi.SetNMax(args.pi.m_fi);
-	LimitCouplings(args.pbi.m_vmincpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,1);
-	LimitCouplings(args.pbi.m_vmaxcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,2);
-	LimitCouplings(args.pbi.m_vcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,3);
-	LimitCouplings(args.pbi.m_vminacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,1);
-	LimitCouplings(args.pbi.m_vmaxacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,2);
-	LimitCouplings(args.pbi.m_vacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,3);
+	if (GetMPvalue(args.pbi.m_vmaxcpl,nfs,pnid,ds)) {
+	  cpi.m_maxcpl = ToVector<double>(ds);
+	}
+	if (GetMPvalue(args.pbi.m_vmincpl,nfs,pnid,ds)) {
+	  cpi.m_mincpl = ToVector<double>(ds);
+	}
+	if (GetMPvalue(args.pbi.m_vcpl,nfs,pnid,ds)) {
+	  cpi.m_maxcpl=ToVector<double>(ds);
+	  cpi.m_mincpl=cpi.m_maxcpl;
+	  for (size_t i(0);i<cpi.m_maxcpl.size();++i)
+	    if (cpi.m_maxcpl[i]<0) {
+	      cpi.m_mincpl[i]=0;
+	      cpi.m_maxcpl[i]=99;
+	    }
+	}
 	// automatically increase QCD coupling for QCD multijet merging
 	if (cpi.m_ckkw&1) {
 	  cpi.m_mincpl[0]+=aoqcd;
 	  cpi.m_maxcpl[0]+=aoqcd;
-	  cpi.m_minacpl[0]+=aoqcd;
-	  cpi.m_maxacpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
 
@@ -935,7 +916,6 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	}
 	if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
           cpi.m_fi.m_nlocpl = ToVector<double>(ds);
-	  if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
 	}
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;

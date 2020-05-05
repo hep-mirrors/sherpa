@@ -29,9 +29,9 @@ std::vector<ATOOLS::Scoped_Settings> Selector_Key::GetSelectors() const
   Scoped_Settings addselsettings{ m_yaml };
   auto selectors = addselsettings["SELECTORS"].GetItems();
   auto userdefinedselectors = m_settings.GetItems();
-  std::copy(selectors.begin(), selectors.end(),
-            std::back_inserter(userdefinedselectors));
-  return userdefinedselectors;
+  std::copy(userdefinedselectors.begin(), userdefinedselectors.end(),
+            std::back_inserter(selectors));
+  return selectors;
 }
 
 void Selector_Key::AddSelectorYAML(const std::string& yaml)

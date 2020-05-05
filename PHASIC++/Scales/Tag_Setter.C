@@ -87,8 +87,7 @@ namespace PHASIC {
     inline H_TY2(Scale_Setter_Base *const setter):
       Function("H_TY2"), p_setter(setter) {}
 
-    Term *Evaluate(Algebra_Interpreter *const interpreter,
-		   const std::vector<Term*> &args) const
+    Term *Evaluate(const std::vector<Term*> &args) const
     {
       double htyfac(args[0]->Get<double>()), htyexp(args[1]->Get<double>());
       Vec4D psum(0.,0.,0.,0.);
@@ -99,7 +98,7 @@ namespace PHASIC {
       for (size_t i(p_setter->NIn());i<p.size();++i) 
         hty+=p[i].PPerp()*exp(htyfac*pow(std::abs(p[i].Y()-yboost),htyexp));
       Term *res(Term::New(sqr(hty)));
-      interpreter->AddTerm(res);
+      p_interpreter->AddTerm(res);
       return res;
     }
 
@@ -189,8 +188,7 @@ namespace PHASIC {
       return p;
     }
 
-    Term *Evaluate(Algebra_Interpreter *const interpreter,
-		   const std::vector<Term*> &args) const
+    Term *Evaluate(const std::vector<Term*> &args) const
     {
       DEBUG_FUNC(p_setter->Process()->Name()<<" "<<m_l1<<" "<<m_l2);
       if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
@@ -236,7 +234,7 @@ namespace PHASIC {
       for (size_t i(p_setter->Process()->NIn());i<p.size();++i)
         if (i!=m_l1 && i!=m_l2) htp+=p[i].PPerp();
       Term *res(Term::New(sqr(htp)));
-      interpreter->AddTerm(res);
+      p_interpreter->AddTerm(res);
       return res;
     }
 
@@ -323,8 +321,7 @@ namespace PHASIC {
       return p;
     }
 
-    Term *Evaluate(Algebra_Interpreter *const interpreter,
-		   const std::vector<Term*> &args) const
+    Term *Evaluate(const std::vector<Term*> &args) const
     {
       DEBUG_FUNC(p_setter->Process()->Name());
       if (m_leptons.size()==0)
@@ -372,7 +369,7 @@ namespace PHASIC {
       for (size_t i(0);i<m_neutrinos.size();++i) ptmis += p[m_neutrinos[i]];
       msg_Debugging()<<"H_{T,ln} = "<<htp+ptmis.PPerp()<<std::endl;
       Term *res(Term::New(sqr(htp+ptmis.PPerp())));
-      interpreter->AddTerm(res);
+      p_interpreter->AddTerm(res);
       return res;
     }
 
@@ -460,8 +457,7 @@ namespace PHASIC {
       return p;
     }
 
-    Term *Evaluate(Algebra_Interpreter *const interpreter,
-		   const std::vector<Term*> &args) const
+    Term *Evaluate(const std::vector<Term*> &args) const
     {
       DEBUG_FUNC(p_setter->Process()->Name()<<" "<<m_l1<<" "<<m_l2);
       if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
@@ -504,7 +500,7 @@ namespace PHASIC {
                      <<p[i]<<std::endl;
       }
       Term *res(Term::New((p[m_l1]+p[m_l2]).MPerp2()));
-      interpreter->AddTerm(res);
+      p_interpreter->AddTerm(res);
       return res;
     }
 

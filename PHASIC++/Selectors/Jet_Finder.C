@@ -64,7 +64,7 @@ bool Jet_Finder::Trigger(Selector_List &sl)
   msg_Debugging()<<METHOD<<"("<<this<<"): '"<<p_proc->Name()
 		 <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-  const double jcv=p_jc->Value(p_ampl,p_proc->Info().Has(nlo_type::real));
+  const double jcv=p_jc->Value(p_ampl);
   bool triggered {false};
   m_results[0].ApplyAll(
       [this, jcv, &triggered](double varweight,

@@ -4,6 +4,7 @@
 namespace SHNNLO {
 
   class DIS_Selector : public PHASIC::Selector_Base {
+    PHASIC::Process_Base *p_proc;
     double m_qtmin, m_q2;
     int m_type;
     double R2(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2) const;
@@ -30,7 +31,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 DIS_Selector::DIS_Selector(const Selector_Key &key):
-  Selector_Base("DISNNLO_Selector",key.p_proc)
+  Selector_Base("DISNNLO_Selector"), p_proc(key.p_proc)
 {
   m_nin=key.p_proc->NIn();
   m_nout=key.p_proc->NOut();

@@ -188,7 +188,7 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
   if (pit!=pm->end() && pit->second && pit->second->
       Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
   if (p_xs==NULL) {
-    if (pit!=pm->end()) return false;
+    pm=m_pmap[nlo_type::lo];
     {
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");

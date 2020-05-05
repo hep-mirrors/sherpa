@@ -352,8 +352,8 @@ Event_Weights Phase_Space_Handler::Differential(
       return Event_Weights {0, 0.0};
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
-    CalculatePS();
     CalculateME(type);
+    CalculatePS();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());

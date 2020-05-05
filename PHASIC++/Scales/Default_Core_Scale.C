@@ -48,6 +48,7 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
   }
   Flavour_Vector fl; fl.resize(4);
+  Process_Base::SortFlavours(campl, 1);
   fl[0]=campl->Leg(0)->Flav();
   fl[1]=campl->Leg(1)->Flav();
   fl[2]=campl->Leg(2)->Flav();
@@ -68,8 +69,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=Max(campl->Leg(3)->Mom().Abs2(),
-			 campl->Leg(2)->Mom().PPerp2());
+      muq2=muf2=mur2=campl->Leg(2)->Mom().PPerp2();
+      muq2=Max(muq2,campl->Leg(3)->Mom().Abs2());
       if (fl[3].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.); 
@@ -77,8 +78,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=Max(campl->Leg(2)->Mom().Abs2(),
-			 campl->Leg(3)->Mom().PPerp2());
+      muq2=muf2=mur2=campl->Leg(3)->Mom().PPerp2();
+      muq2=Max(muq2,campl->Leg(2)->Mom().Abs2());
       if (fl[2].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.); 
@@ -114,13 +115,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 Cluster_Amplitude *Default_Core_Scale::Cluster
 (Cluster_Amplitude *const ampl) const
 {
-  struct Combination { size_t i, j; Flavour fl;
-    inline Combination(const size_t &_i=0,const size_t &_j=0,
-		       const Flavour &_fl=kf_none):
-      i(_i), j(_j), fl(_fl) {} };// end of struct
   if (ampl->Legs().size()==ampl->NIn()+2) return ampl;
   Single_Process *proc(ampl->Proc<Single_Process>());
-  std::map<double,Combination,std::less<double> > tij;
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     for (size_t j(i+1);j<ampl->Legs().size();++j) {
@@ -128,42 +124,30 @@ Cluster_Amplitude *Default_Core_Scale::Cluster
       if (proc->Combinable(li->Id(),lj->Id())) {
 	Flavour_Vector fls(proc->CombinedFlavour(li->Id()|lj->Id()));
 	for (size_t k(0);k<fls.size();++k) {
-	  double t((li->Mom()+lj->Mom()).Abs2());
-	  double p(sqr(t-sqr(fls[k].Mass()))+
-		   sqr(fls[k].Mass()*fls[k].Width()));
-	  msg_Debugging()<<"check "<<ID(li->Id())<<"&"<<ID(lj->Id())
-			 <<"["<<fls[k]<<"] -> m = "<<sqrt(dabs(t))
-			 <<", 1/p = "<<sqrt(p)<<"\n"; 
-	  tij[p]=Combination(i,j,fls[k]);
+	  bool dec(false);
+	  for (size_t l(0);l<ampl->Decays().size();++l)
+	    if (ampl->Decays()[l]->m_id==(li->Id()|lj->Id())) {
+	      dec=true;
+	      break;
+	    }
+	  if ((!li->Flav().Strong() && !lj->Flav().Strong() &&
+	       !fls[k].Strong()) || dec) {
+	    msg_Debugging()<<"combine "<<ID(li->Id())<<"&"<<ID(lj->Id())
+			   <<"->"<<fls[k]<<" ("<<dec<<")\n";
+	    li->SetFlav(fls[k]);
+	    li->SetMom(li->Mom()+lj->Mom());
+	    li->SetId(li->Id()|lj->Id());
+	    lj->Delete();
+	    for (ClusterLeg_Vector::iterator lit(ampl->Legs().begin());
+		 lit!=ampl->Legs().end();++lit)
+	      if (*lit==lj) {
+		ampl->Legs().erase(lit);
+		break;
+	      }
+	    return Cluster(ampl);
+	  }
 	}
       }
-    }
-  }
-  for (std::map<double,Combination,std::less<double> >::
-	 const_iterator it(tij.begin());it!=tij.end();++it) {
-    Cluster_Leg *li(ampl->Leg(it->second.i));
-    Cluster_Leg *lj(ampl->Leg(it->second.j));
-    bool dec(false);
-    for (size_t l(0);l<ampl->Decays().size();++l)
-      if (ampl->Decays()[l]->m_id==(li->Id()|lj->Id())) {
-	dec=true;
-	break;
-      }
-    if ((!li->Flav().Strong() && !lj->Flav().Strong() &&
-	 !it->second.fl.Strong()) || dec) {
-      msg_Debugging()<<"combine "<<ID(li->Id())<<"&"<<ID(lj->Id())
-		     <<"->"<<it->second.fl<<" ("<<dec<<")\n";
-      li->SetFlav(it->second.fl);
-      li->SetMom(li->Mom()+lj->Mom());
-      li->SetId(li->Id()|lj->Id());
-      lj->Delete();
-      for (ClusterLeg_Vector::iterator lit(ampl->Legs().begin());
-	   lit!=ampl->Legs().end();++lit)
-	if (*lit==lj) {
-	  ampl->Legs().erase(lit);
-	  break;
-	}
-      return Cluster(ampl);
     }
   }
   return ampl;

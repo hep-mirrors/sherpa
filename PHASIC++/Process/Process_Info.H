@@ -19,7 +19,7 @@ namespace PHASIC {
     cls::scheme m_cls;
     hls::scheme m_hls;
 
-    std::vector<double> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
+    std::vector<double> m_maxcpl, m_mincpl;
 
     size_t m_nminq, m_nmaxq, m_ckkw, m_itmin, m_rsitmin;
     size_t m_amegicmhv, m_ntchan, m_mtchan;

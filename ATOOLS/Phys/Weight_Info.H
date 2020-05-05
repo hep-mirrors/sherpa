@@ -138,10 +138,10 @@ namespace ATOOLS {
   struct DADS_Info {
   public:
     double   m_wgt, m_x1, m_x2;
-    long unsigned int m_fl1, m_fl2;
+    int      m_fl1, m_fl2;
     DADS_Info(const double &wgt,
               const double &x1,const double &x2,
-              const long unsigned int &fl1, const long unsigned int &fl2):
+              const int &fl1, const int &fl2):
     m_wgt(wgt), m_x1(x1), m_x2(x2), m_fl1(fl1), m_fl2(fl2) {}
   };
 

@@ -209,6 +209,19 @@ int AMEGIC::Single_Process_MHV::Tests()
     }
   }
 
+  //shorten helicities
+  int switchhit = 0;
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
+#ifdef FuckUp_Helicity_Mapping
+      p_hel->SwitchOff(i);
+      switchhit++;
+#endif
+    }
+  }
+  msg_Tracking()<<"AMEGIC::Single_Process_MHV::Tests for "<<m_name<<std::endl
+		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
+
   M2g    *= p_MHVamp->ParticlesNorm();
   m_iresult  = M2g;
   p_BS->StartPrecalc();

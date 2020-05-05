@@ -17,7 +17,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 QT_Selector::QT_Selector(const Selector_Key &key):
-  Selector_Base("NNLOqT_Selector",key.p_proc)
+  Selector_Base("NNLOqT_Selector"), p_proc(key.p_proc)
 {
   int nnj=0;
   for (size_t i(m_nin);i<m_nin+m_nout;++i)
@@ -35,7 +35,7 @@ bool QT_Selector::Trigger(Selector_List &sl)
 {
   Vec4D q;
   for (size_t i(m_nin);i<sl.size();++i)
-    if (Flavour(kf_jet).Includes(sl[i].Flavour())) q+=sl[i].Momentum();
+    if (Flavour(kf_jet).Includes(p_fl[i])) q+=sl[i].Momentum();
   double qt=q.PPerp();
   m_cqtmin=m_qtmin>0.0?m_qtmin:-m_qtmin*(sl[0].Momentum()+sl[1].Momentum()-q).Mass();
   bool trig=(m_type==0 && qt<m_cqtmin) || (m_type==1 && qt>m_cqtmin);

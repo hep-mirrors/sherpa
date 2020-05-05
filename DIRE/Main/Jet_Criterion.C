@@ -38,17 +38,12 @@ namespace DIRE {
     double Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 		const Flavour &fi,const Flavour &fj) const
     {
-      // arXiv:2002.11114 [hep-ph]
-      const double beta(0.5);
-      double t1(2.0*(pi*pj)*(pj*pk)/(pi*pk));
-      double t2(2.0*(pj*pi)*(pi*pk)/(pj*pk));
-      double xi1(dabs((pi*pj)/(pk*pj)));
-      double xi2(dabs((pj*pi)/(pk*pi)));
-      t1*=pow(Max(xi1,1.0/xi1),-beta/2.0);
-      t2*=pow(Max(xi2,1.0/xi2),-beta/2.0);
-      if (pi[0]<0.0) return dabs(t1);
-      if (pj[0]<0.0) return dabs(t2);
-      return Min(t1,t2);
+      Vec4D npi(pi), npj(pj);
+      if (npi[0]<0.0) npi=-pi-pj;
+      if (npj[0]<0.0) npj=-pj-pi;
+      double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
+      double Cij(pipk/(pipj+pjpk)), Cji(pjpk/(pipj+pipk));
+      return 2.0*dabs(pi*pj)/(Cij+Cji);
     }
 
     double Value(Cluster_Amplitude *ampl,int mode)
@@ -146,10 +141,9 @@ namespace DIRE {
 	}
 	double res=Value(bampl,0);
 	bampl->Delete();
-	if (res==std::numeric_limits<double>::max()) continue;
 	return res;
       }
-      msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
       return Value(ampl,0);
     }
 

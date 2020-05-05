@@ -191,6 +191,7 @@ void Analysis_Handler::CleanUp()
 
 bool Analysis_Handler::WriteOut()
 {
+  if (rpa->gen.BatchMode()&1) m_write=false;
   if (!m_write) return true;
 #ifdef USING__MPI
   if (mpi->Rank()==0)

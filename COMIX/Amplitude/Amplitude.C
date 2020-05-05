@@ -34,9 +34,9 @@ GetParameter(const std::string &name)
 
 Amplitude::Amplitude():
   p_model(NULL), m_nin(0), m_nout(0), m_dec(0), m_n(0), m_wfmode(0), m_ngpl(3),
-  m_maxcpl(2,99), m_mincpl(2,0), m_maxacpl(2,99), m_minacpl(2,0),
-  m_minntc(0), m_maxntc(99), m_pmode('D'), p_dinfo(new Dipole_Info()),
-  p_colint(NULL), p_helint(NULL), m_trig(true), p_loop(NULL)
+  m_maxcpl(2,99), m_mincpl(2,0), m_minntc(0), m_maxntc(99),
+  m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
+  m_trig(true), p_loop(NULL)
 {
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings comixsettings{ s["COMIX"] };
@@ -359,14 +359,12 @@ Vertex *Amplitude::AddCurrent
   bool valid(true);
   for (size_t i(0);i<Min(order.size(),m_maxcpl.size());++i)
     if (order[i]>m_maxcpl[i]) valid=false;
-  for (size_t i(0);i<Min(order.size(),m_maxacpl.size());++i)
-    if (order[i]>m_maxacpl[i]) valid=false;
   if (!v->Active() || !valid ||
       (n==m_n-1 && (ntc<m_minntc || ntc>m_maxntc))) {
 #ifdef DEBUG__BG
     msg_Debugging()<<"delete vertex "<<vkey.ID()<<"-"<<vkey.Type()
 		   <<v->Order()<<")->{"<<vkey.p_c->Flav()<<"} => "
-		   <<order<<" vs. max = "<<m_maxcpl<<"/"<<m_maxacpl
+		   <<order<<" vs. max = "<<m_maxcpl
 		   <<", act = "<<v->Active()<<", n t-ch = "
 		   <<ntc<<" vs "<<m_minntc<<"/"<<m_maxntc<<"\n";
 #endif
@@ -677,8 +675,7 @@ void Amplitude::Prune()
 #ifdef DEBUG__BG
 	msg_Debugging()<<"delete current "<<**cit<<", "<<(*cit)->Dangling()
 		       <<", O"<<(*cit)->Order()<<" vs. O_{min}"
-		       <<m_mincpl<<"/"<<m_minacpl<<" .. O_{max}"
-		       <<m_maxcpl<<"/"<<m_maxacpl
+		       <<m_mincpl<<" .. O_{max}"<<m_maxcpl
 		       <<", n t-ch = "<<(*cit)->NTChannel()<<" vs. "
 		       <<m_minntc<<"/"<<m_maxntc<<"\n";
 #endif
@@ -752,12 +749,10 @@ bool Amplitude::Initialize
  MODEL::Model_Base *const model,MODEL::Coupling_Map *const cpls,
  const int stype,const int smode,const cs_itype::type itype,
  const std::vector<int> &maxcpl, const std::vector<int> &mincpl,
- const std::vector<int> &maxacpl, const std::vector<int> &minacpl,
  const size_t &minntc,const size_t &maxntc,const std::string &name)
 {
   DEBUG_FUNC(flavs<<", stype="<<(sbt::subtype)(stype+1)<<", smode="<<smode
-             <<", itype="<<itype<<", cpls="<<mincpl<<"/"<<minacpl
-	     <<".."<<maxcpl<<"/"<<maxacpl);
+             <<", itype="<<itype<<", cpls="<<maxcpl<<".."<<mincpl);
   CleanUp();
   m_nin=nin;
   m_nout=nout;
@@ -766,8 +761,6 @@ bool Amplitude::Initialize
   m_maxntc=maxntc;
   m_maxcpl=maxcpl;
   m_mincpl=mincpl;
-  m_maxacpl=maxacpl;
-  m_minacpl=minacpl;
   p_dinfo->SetType(stype);
   p_dinfo->SetMode(smode);
   p_dinfo->SetIType(itype);
@@ -1632,23 +1625,10 @@ bool Amplitude::ConstructChirs()
 bool Amplitude::CheckOrders()
 {
   std::vector<int> maxcpl(2,0), mincpl(2,99);
-  std::vector<int> maxacpl(2,0), minacpl(2,99);
   msg_Debugging()<<m_cur.back().size()<<std::endl;
   for (size_t i(0);i<m_cur.back().size();++i) {
-    bool any(true);
+    bool any(false);
     const std::vector<int> &icpls(m_cur.back()[i]->Order());
-    if (m_maxacpl.size()<icpls.size()) m_maxacpl.resize(icpls.size(),99);
-    if (m_minacpl.size()<icpls.size()) m_minacpl.resize(icpls.size(),0);
-    for (size_t k(0);k<icpls.size();++k)
-      if (icpls[k]<m_minacpl[k] || icpls[k]>m_maxacpl[k]) any=false;
-    if (any) {
-      any=false;
-      if (maxacpl.size()<icpls.size()) maxacpl.resize(icpls.size(),0);
-      if (minacpl.size()<icpls.size()) minacpl.resize(icpls.size(),99);
-      for (size_t k(0);k<icpls.size();++k) {
-	maxacpl[k]=Max(maxacpl[k],icpls[k]);
-	minacpl[k]=Min(minacpl[k],icpls[k]);
-      }
     for (size_t j(0);j<m_cur.back().size();++j) {
       const std::vector<int> &jcpls(m_cur.back()[j]->Order());
       if (m_cur.back()[i]->Sub()!=
@@ -1676,7 +1656,6 @@ bool Amplitude::CheckOrders()
 	any=true;
       }
     }
-    }
     if (!any) {
 #ifdef DEBUG__BG
       msg_Debugging()<<"delete obsolete current: "<<m_cur.back()[i]<<"\n";
@@ -1697,8 +1676,6 @@ bool Amplitude::CheckOrders()
   if (!valid) return false;
   m_maxcpl=maxcpl;
   m_mincpl=mincpl;
-  m_maxacpl=maxacpl;
-  m_minacpl=minacpl;
   if (m_cur.back().empty()) return false;
   Prune();
   return true;

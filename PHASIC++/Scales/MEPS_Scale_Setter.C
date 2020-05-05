@@ -41,7 +41,7 @@ namespace PHASIC {
     std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
-    int    m_cmode, m_nmin;
+    int    m_cmode, m_kfac, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
     static int s_nfgsplit, s_nlocpl;
@@ -114,18 +114,17 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  Settings& s = Settings::GetMainSettings();
   static std::string s_core;
-  static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
+  static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
   if (s_cmode<0) {
-    Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
-    s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256);
-    s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
-    s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
-    s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
-    s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
-    s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
+    s_nmaxall=s["MEPS_NMAX_ALLCONFIGS"].Get<int>();
+    s_nmaxnloall=s["MEPS_NLO_NMAX_ALLCONFIGS"].Get<int>();
+    s_cmode=s["MEPS_CLUSTER_MODE"].Get<int>();
+    s_nlocpl=s["MEPS_NLO_COUPLING_MODE"].Get<int>();
+    s_nfgsplit=s["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_csmode=s["MEPS_COLORSET_MODE"].Get<int>();
+    s_core=s["CORE_SCALE"].Get<std::string>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core);
@@ -182,13 +181,12 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     4 - Winner takes it all
     8 - Ignore color
     16 - Do not include incomplete paths
-    32 - Winner takes it all at NLO
+    32 - Winner takes it all in RS
     64 - Winner takes it all in R first step
     128 - Use R configuration in all RS
     256 - No ordering check if last qcd split
-    512 - No ordering check if first RS split
-    1024 - No differential for core
   */
+  m_kfac = s["CSS_KFACTOR_SCHEME"].Get<int>();
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -198,7 +196,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
-  p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
+  p_qdc = new Cluster_Definitions(m_kfac,m_nproc,p_proc->Shower()->KTType());
 }
 
 MEPS_Scale_Setter::~MEPS_Scale_Setter()
@@ -213,7 +211,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
 int MEPS_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
-  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
+  if (mode==1 || m_cmode&4 || (m_cmode&32 && m_rsproc)) {
     int imax(-1);
     double max(0.0);
     for (size_t i(0);i<ccs.size();++i)
@@ -238,8 +236,7 @@ bool MEPS_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
-  if ((m_cmode&512) && m_rproc &&
-      ampl->Prev()->Prev()==NULL) return true;
+  if (m_rproc && ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
 	(ampl->OrderQCD()==0 ||
@@ -281,9 +278,7 @@ bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
-    Flavour mofl(sub->p_fl[sub->m_ijt]);
-    if (sub->m_ijt<p_proc->NIn()) mofl=mofl.Bar();
-    if (cc.m_k==sub->m_k && cc.m_mo==mofl &&
+    if (cc.m_k==sub->m_k &&
 	((cc.m_i==sub->m_i && cc.m_j==sub->m_j) ||
 	 (cc.m_i==sub->m_j && cc.m_j==sub->m_i))) return true;
   }
@@ -330,7 +325,7 @@ double MEPS_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode) 
 {
   m_p=momenta;
-  if (m_nproc || (m_cmode&8)) p_ci=NULL;
+  if (m_nproc || m_cmode&8) p_ci=NULL;
   else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
@@ -427,7 +422,7 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   msg_Debugging()<<"}\n";
-  bool usemax((m_cmode&4) || ((m_cmode&32) && m_nproc));
+  bool usemax(m_cmode&4 || (m_cmode&32 && m_rsproc));
   double disc(sum*ran->Get());
   sum=0.0;
   for (size_t i(0);i<ampls.size();++i) {
@@ -479,7 +474,7 @@ void MEPS_Scale_Setter::Cluster
   ampl->SetMS(p_proc->Generator());
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
-  bool strict(!((m_cmode&1) && !rpa->gen.NumberOfTrials()));
+  bool strict(!(m_cmode&1 && !rpa->gen.NumberOfTrials()));
   DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
@@ -570,7 +565,6 @@ bool MEPS_Scale_Setter::ClusterStep
 double MEPS_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
-  if (m_cmode&1024) return 1.0;
   if (ampl->Prev()==NULL) return 1.0;
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
@@ -620,7 +614,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0);
+    double as(1.0), sas(0.0), mas(1.0), oqcd(0.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -642,7 +636,6 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
-	ampl->SetNLO(1);
 	continue;
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -653,7 +646,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
 	mur2*=pow(m_rsf*scale[idx],coqcd);
 	as*=pow(cas,coqcd);
-	mmur2=Max(mmur2,m_rsf*scale[idx]);
+	sas+=cas*coqcd;
 	mas=Min(mas,cas);
 	oqcd+=coqcd;
       }
@@ -667,37 +660,35 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     m_scale[stp::res]=ampl->MuQ2();
     double mu2(Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2()));
     double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
-    mmur2=Max(mmur2,m_rsf*mu2);
     mas=Min(mas,cas);
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-      mur2*=pow(m_rsf*mu2,coqcd);
       as*=pow(cas,coqcd);
+      sas+=cas*coqcd;
       oqcd+=coqcd;
     }
     if (oqcd==0) mur2=m_rsf*ampl->Mu2();
     else {
-      mur2=pow(mur2,1.0/oqcd);
-      as=pow(as,1.0/oqcd);
+      sas/=oqcd;
       if (m_nproc) {
-	if (s_nlocpl&2) {
+	if (s_nlocpl==1) {
+	  msg_Debugging()<<"  as_{NLO} = "<<sas<<"\n";
+	  as=pow(as*sas,1.0/(oqcd+1.0));
+	}
+	else if (s_nlocpl==2) {
 	  msg_Debugging()<<"  as_{NLO} = "<<mas<<"\n";
-	  mur2=pow(pow(mur2,oqcd)*mmur2,1.0/(oqcd+1.0));
-	  as=pow(pow(as,oqcd)*mas,1.0/(oqcd+1.0));
+	  as=pow(as*mas,1.0/(oqcd+1.0));
 	}
       }
-      if (s_nlocpl&1) {
-	double smur2(mur2);
-	mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
-				 m_rsf*1.01*sqr(rpa->gen.Ecms()));
-	if (!IsEqual(smur2,mur2))
-	  msg_Debugging()<<"\\mu_R = "<<sqrt(smur2)<<" -> "<<sqrt(mur2)
-			 <<", rel. dev. "<<2.*(smur2-mur2)/(smur2+mur2)<<"\n";
-	if (!IsEqual((*MODEL::as)(mur2),as))
-	  msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl;
+      else {
+	as=pow(as,1.0/oqcd);
       }
+      mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
+			       m_rsf*1.01*sqr(rpa->gen.Ecms()));
+      if (!IsEqual((*MODEL::as)(mur2),as))
+	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }

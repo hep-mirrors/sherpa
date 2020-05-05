@@ -360,6 +360,7 @@ Complex Amplitude_Group::Zvalue(int ihel,int* signlist) {
     M+=mcm;
     max = ATOOLS::Max(max,abs(mcm));
   }
+  if (abs(M)<max*ATOOLS::Accu()*1.e-2) return Complex(0.,0.);
   return M;
 }
 

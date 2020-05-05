@@ -34,6 +34,10 @@ namespace PHASIC {
     typedef ATOOLS::Getter_Function
     <Scale_Setter_Base,Scale_Setter_Arguments> Scale_Getter_Function;
 
+  private:
+
+    void RegisterDefaults() const;
+
   protected:
 
     Process_Base *p_proc;

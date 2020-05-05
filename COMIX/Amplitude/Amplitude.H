@@ -98,7 +98,7 @@ namespace COMIX {
     size_t m_minntc, m_maxntc;
     char   m_pmode;
 
-    std::vector<int> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
+    std::vector<int> m_maxcpl, m_mincpl;
 
     std::vector<Spin_Structure<DComplex> > m_ress, m_cress;
     std::vector<std::pair<size_t,size_t> > m_on, m_son;
@@ -197,8 +197,6 @@ namespace COMIX {
 		    const ATOOLS::cs_itype::type itype,
 		    const std::vector<int> &maxcpl,
 		    const std::vector<int> &mincpl,
-		    const std::vector<int> &maxacpl,
-		    const std::vector<int> &minacpl,
 		    const size_t &minntc,const size_t &maxntc,
 		    const std::string &name);
 
