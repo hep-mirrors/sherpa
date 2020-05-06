@@ -769,12 +769,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)  if test -d "${enableval}"; then
               if test -f "${enableval}/lib/libhztool.so"; then
                 CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib -lhztool";
-	        CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
                 CONDITIONAL_HZTOOLDIR="${enableval}";
                 hztool=true;
                 AC_MSG_RESULT(${enableval});
               else
-                AC_MSG_ERROR(Did not find '${enableval}/libhztool.so'.); 
+              if test -f "${enableval}/lib64/libhztool.so"; then
+                CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib64 -lhztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLDIR="${enableval}";
+                hztool=true;
+                AC_MSG_RESULT(${enableval});
+               else
+                AC_MSG_ERROR(Did not find '${enableval}/lib/libhztool.so and ${enableval}/lib64/libhztool.so'.); 
+              fi;
               fi;
             else
               AC_MSG_ERROR(Did not find hztool directory '${enableval}'.);
