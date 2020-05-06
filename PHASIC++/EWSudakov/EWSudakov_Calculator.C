@@ -372,7 +372,9 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
             m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
             m_current_spincombination,
             &m_comixinterface);
-        const auto amplratio = transformed / deno;
+        // NOTE: deno can be zero due to a process not being found, e.g.
+        // g dbar -> Z dbar ~> g dbar -> \chi dbar, but YUKAWA set to zero
+        const auto amplratio = (deno == 0.0) ? 0.0 : transformed / deno;
         contrib *= amplratio;
       }
       coeff += contrib;
@@ -398,7 +400,8 @@ EWSudakov_Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
             m_ampls.GoldstoneBosonReplacements(m_current_spincombination),
             m_current_spincombination,
             &m_comixinterface);
-        const auto amplratio = transformed / deno;
+        // NOTE: deno can be zero, cf. comment above for Z loop terms
+        const auto amplratio = (deno == 0.0) ? 0.0 : transformed / deno;
         coeff += 2.0*kcoupling.second*lcoupling.second*amplratio;
       }
     }
