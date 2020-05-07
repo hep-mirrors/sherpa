@@ -647,6 +647,7 @@ double Single_Process::ReweightWithoutSubevents(
     double bornalphasfac(1.0);
     const bool needslowerorderqcd(nometstype & mewgttype::VI ||
                                   nometstype & mewgttype::KP);
+    double alphassinglepower(1.0);
     if (alphasfac != 1.0) {
       // for the Born contribution within BVIKP, we need to evaluate at the lower order
       // divide out one of the core AlphaS ratios
@@ -654,7 +655,8 @@ double Single_Process::ReweightWithoutSubevents(
       // sequence has to be divided out, is most certainly wrong and this will
       // lead to an error in MEPS@NLO/MENLOPS runs, where we reweight the
       // AlphaS argument for individual splittings
-      bornalphasfac = needslowerorderqcd ? alphasfac / alphasratios.back() :
+      alphassinglepower = alphasratios.back();
+      bornalphasfac = needslowerorderqcd ? alphasfac / alphassinglepower :
                                            alphasfac;
     }
 
@@ -681,7 +683,7 @@ double Single_Process::ReweightWithoutSubevents(
             Bassnew += m_mewgtinfo.m_wass[i] * bornassalphasfac;
         }
         if ((oqcd-i)==0) break;
-        bornassalphasfac /= alphasratios.back();
+        bornassalphasfac /= alphassinglepower;
       }
     }
 
