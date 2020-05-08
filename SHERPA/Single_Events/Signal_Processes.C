@@ -86,7 +86,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         if (m_adddocumentation) {
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
-          Process_Base* bproc = mcatnloproc->BProc()->Selected();
+          Process_Base* bproc = mcatnloproc->BVIProc()->Selected();
           Blob* docblob = bloblist->AddBlob(btp::Unspecified);
           for (unsigned int i=0;i<bproc->NIn();i++) {
             Particle* particle = new Particle(0,bproc->Flavours()[i],

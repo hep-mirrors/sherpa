@@ -292,7 +292,7 @@ namespace PHASIC {
      * This method returns whether last generated event was S-Event or not
      */
     bool WasSEvent() const { return m_wassevent; }
-    Process_Base* BProc() { return p_bproc; }
+    Process_Base* BVIProc() { return p_bviproc; }
 
 #ifdef USING__Threading
     void AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*));
