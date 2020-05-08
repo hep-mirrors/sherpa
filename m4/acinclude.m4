@@ -427,7 +427,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
                 CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/root/lib -R${enableval}/root/lib -L${enableval}/root/lib64 -R${enableval}/root/lib64 -lHepMC3rootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
@@ -438,7 +438,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
                 CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/root/lib -R${enableval}/root/lib -L${enableval}/root/lib64 -R${enableval}/root/lib64 -lHepMC3rootIO"
+              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root -lHepMC3rootIO"
               fi
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
