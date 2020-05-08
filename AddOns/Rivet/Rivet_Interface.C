@@ -261,12 +261,10 @@ bool Rivet_Interface::Init()
     Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
     reader.SetUseGlobalTags(false);
     reader.VectorFromFile(m_analyses,"-a");
-    if (find(m_analyses.begin(),m_analyses.end(),"MC_XS")==m_analyses.end())
-      m_analyses.push_back(std::string("MC_XS"));
 
     // configure HepMC interface
     bool usehepmcnamedweights(false);
-#ifdef HEPMC_HAS_NAMED_WEIGHTS
+#if defined(HEPMC_HAS_NAMED_WEIGHTS) || defined(RIVET_ENABLE_HEPMC_3)
     usehepmcnamedweights=reader.GetValue<int>("USE_HEPMC_NAMED_WEIGHTS",1);
 #endif
     bool usehepmcfullweightinfo(
@@ -298,7 +296,12 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
-  HEPMCNS::GenEvent event;
+#ifndef  RIVET_ENABLE_HEPMC_3
+  HepMC::GenEvent event;
+#else
+  std::shared_ptr<HepMC3::GenRunInfo> run_info = std::make_shared<HepMC3::GenRunInfo>();
+  HepMC3::GenEvent event(run_info);
+#endif
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
   std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
