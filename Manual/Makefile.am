@@ -86,9 +86,11 @@ dist_html_DATA = \
 ## we can't use relative paths there because that breaks out-of-source builds
 AM_MAKEINFOFLAGS = -I $(top_srcdir)
 
+.NOTPARALLEL:
 update-manpage:
 	groff -Tascii -mandoc $(srcdir)/Sherpa.trf > Sherpa.1
 
+.NOTPARALLEL:
 completion.index: $(srcdir)/*.texi
 	$(MAKE) $(AM_MAKEFLAGS) Sherpa.info
 	@echo "Creating index for tab completion."
@@ -97,6 +99,7 @@ completion.index: $(srcdir)/*.texi
         awk 'BEGIN{ m=0; }{ if (match($$0,"Appendix B Index")>0) { m=m+1; getline; getline; getline;} if (m==2) { print $$0 } }' Sherpa.txt | cut -d ":" -f 1 > completion.index || touch completion.index
 	@rm -f Sherpa.txt*
 
+.NOTPARALLEL:
 Sherpa.html: $(srcdir)/*.texi $(srcdir)/*.css
 	$(MAKE) $(AM_MAKEFLAGS) Sherpa.info
 	if test -x "$$(which texi2html 2>/dev/null)"; then \
