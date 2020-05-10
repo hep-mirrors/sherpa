@@ -166,6 +166,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 {
   std::shared_ptr<Color_Integrator> colint(p_xs->Integrator()->ColorIntegrator());
+  colint->SetPoint(ampl);
   colint->GenerateOrders();
   const Idx_Matrix &orders(colint->Orders());
   std::vector<double> psum(orders.size());
