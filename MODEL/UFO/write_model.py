@@ -17,34 +17,34 @@ def write_model(model, model_name, model_file_name):
 
     # external parameter initialization
     for param in external_parameters:
-        statement = "    double "+param.name()+" = p_dataread->GetEntry<double>(\""+str(param.lha_block())+"\", "
+        statement = "      double "+param.name()+" = p_dataread->GetEntry<double>(\""+str(param.lha_block())+"\", "
         if len(param.lha_indices()) == 1:
             statement += str(param.lha_indices()[0])
         if len(param.lha_indices()) == 2:
             statement += str(param.lha_indices()[0])+", "+str(param.lha_indices()[1])
-        statement+=");\n"
-        statement+='    p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
+        statement+=", 0.);\n"
+        statement+='      p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
         para_init += "\n"+statement
         parameter_map[param.name()] = "(MODEL::s_model->ScalarConstant(std::string(\"{0}\")))".format(param.name())
 
     # internal parameter initialization and calculation
     for param in internal_parameters:
         if param.is_complex():
-            statement = "    Complex "+param.name()+" = "+param.cpp_value()+";"
+            statement = "      Complex "+param.name()+" = "+param.cpp_value()+";"
         else:
-            statement = "    double "+param.name()+" = ToDouble("+param.cpp_value()+");"
+            statement = "      double "+param.name()+" = ToDouble("+param.cpp_value()+");"
         para_init += "\n"+statement
-        para_init += "\n    DEBUG_VAR({0});".format(param.name())
+        para_init += "\n      DEBUG_VAR({0});".format(param.name())
         parameter_map[param.name()] = param.cpp_value(parameter_map)
 
     # fill particle list
-    for s_part in [ s_particle(p) for p in model.all_particles ]:
+    for s_part in [ s_particle(p) for p in sorted(model.all_particles, key=lambda x: x.pdg_code) ]:
         kfcode = s_part.kf_code()
         # don't explicitly need to add antiparticles
         if kfcode < 0: 
             continue
         massive = 0 if (s_part.ufo_particle.mass is model.parameters.ZERO) else 1
-        part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+ 
+        part_init += ("\n      ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+ 
                       str(s_part.kf_code())+", "+                                 # kf_code
                       str(1000.0)+", "+                                           # mass
                       str(0.0)+", "+                                              # width
@@ -62,15 +62,15 @@ def write_model(model, model_name, model_file_name):
 
         wstring = s_part.width().name() if s_part.width().is_external() else s_part.width().cpp_value()
         mstring = s_part.mass().name()  if s_part.mass().is_external()  else s_part.mass().cpp_value()
-        para_init += "\n    ATOOLS::Flavour({0}).SetWidth(ToDouble({1}));".format(kfcode,wstring)
-        para_init += "\n    ATOOLS::Flavour({0}).SetMass(ToDouble({1}));".format(kfcode,mstring)
-        para_init += "\n    ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
+        para_init += "\n      ATOOLS::Flavour({0}).SetWidth(ToDouble({1}));".format(kfcode,wstring)
+        para_init += "\n      ATOOLS::Flavour({0}).SetMass(ToDouble({1}));".format(kfcode,mstring)
+        para_init += "\n      ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
 
     # coupling initialization and calculation
     for coup in model.non_ct_couplings:
         s_coup = s_coupling(coup)
-        para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
-        para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
+        para_init += "\n      p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
+        para_init += "\n      DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
 
     hierarchy     = [order.name for order in model.all_orders]
     declarations  = ""

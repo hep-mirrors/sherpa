@@ -113,6 +113,10 @@ operator()(const SFC_Filler_Key &key) const
       if (!((v->in[0].IsPhoton() && (v->in[1].IsFermion()||v->in[1].IsScalar()) && v->in[1].Charge()) ||
 	    (v->in[1].IsPhoton() && (v->in[2].IsFermion()||v->in[2].IsScalar()) && v->in[2].Charge()) ||
 	    (v->in[2].IsPhoton() && (v->in[0].IsFermion()||v->in[0].IsScalar()) && v->in[0].Charge()))) continue;
+      if (v->order[0]!=0 || v->order[1]!=1) continue;
+      size_t i(2);
+      for (;i<v->order.size();++i) if (v->order[i]!=0) break;
+      if (i<v->order.size()) continue;
       msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
       std::string atag("{"+v->in[0].Bar().IDName()+"}");
       std::string btag("{"+v->in[1].IDName()+"}");

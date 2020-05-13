@@ -5,9 +5,6 @@
   # me generator setup
   ME_SIGNAL_GENERATOR Comix;
   SCALES VAR{Abs2(p[0]+p[1])};
-  
-  # model setup
-  MODEL ${model_name};
 
   # uncomment to disable underlying event simulation:
   # MI_HANDLER None;
@@ -17,6 +14,19 @@
 
   # uncomment to disable shower:
   # SHOWER_GENERATOR None;
+
+  # model setup
+  MODEL ${model_name};
+
+  # set quarks and leptons massless in ME
+  MASSIVE[1]  0;
+  MASSIVE[2]  0;
+  MASSIVE[3]  0;
+  MASSIVE[4]  0;
+  MASSIVE[5]  0;
+  MASSIVE[11] 0;
+  MASSIVE[13] 0;
+  MASSIVE[15] 0;
 
   # LHC beam setup:
   BEAM_1 2212; BEAM_ENERGY_1 6500;

@@ -47,44 +47,54 @@ UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
 
 template<class Read_Type> Read_Type 
 UFO_Param_Reader::GetEntry(const string& block,
-			   const unsigned int& n,
-			   const unsigned int& m)
+                           const unsigned int& n,
+                           const unsigned int& m,
+                           const Read_Type& def,
+                           const bool& err)
 {
   vector< vector<string> >::const_iterator line = FindBlock(block);
   for(++line; line!=m_lines.end(); ++line){
     if (line->empty()) continue;
-    if (IgnoreCaseCompare((*line)[0],"block")) return NotFound<Read_Type>(block,n,m);
+    if (IgnoreCaseCompare((*line)[0],"block"))
+      return NotFound<Read_Type>(block,n,m,def,err);
     if (line->size() < 3) continue;
     if (ToType<int>((*line)[0])==n && ToType<int>((*line)[1])==m)
       return ToType<Read_Type>((*line)[2]);
   }
-  return NotFound<Read_Type>(block,n,m);
+  return NotFound<Read_Type>(block,n,m,def,err);
 }
 
 template<class Read_Type> Read_Type 
-UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n)
+UFO_Param_Reader::GetEntry(const string& block,
+                           const unsigned int& n,
+                           const Read_Type& def,
+                           const bool& err)
 {
   // widths in UFO param cards are handled differently for some reason
-  if (IgnoreCaseCompare(block, "decay")) return GetWidth<Read_Type>(n);
+  if (IgnoreCaseCompare(block, "decay")) return GetWidth<Read_Type>(n,def,err);
   vector< vector<string> >::const_iterator line = FindBlock(block);
   for(++line; line!=m_lines.end(); ++line){
     if (line->empty()) continue;
-    if (IgnoreCaseCompare((*line)[0],"block")) return NotFound<Read_Type>(block,n);
+    if (IgnoreCaseCompare((*line)[0],"block"))
+      return NotFound<Read_Type>(block,n,def,err);
     if (line->size() < 2) continue;
-    if (ToType<int>((*line)[0]) == n) return ToType<Read_Type>((*line)[1]);
+    if (ToType<int>((*line)[0]) == n)
+      return ToType<Read_Type>((*line)[1]);
   }
-  return NotFound<Read_Type>(block, n);
+  return NotFound<Read_Type>(block,n,def,err);
 }
 
 template<class Read_Type> Read_Type
-UFO_Param_Reader::GetWidth(const unsigned int& n)
+UFO_Param_Reader::GetWidth(const unsigned int& n,
+                           const Read_Type& def,
+                           const bool& err)
 {
   for(vector< vector<string> >::const_iterator line = m_lines.begin(); line != m_lines.end(); ++line){
     if (line->size() < 3) continue;
     if (IgnoreCaseCompare((*line)[0],"decay") && ToType<int>((*line)[1]) == n )
       return ToType<Read_Type>((*line)[2]);
   }
-  return NotFound<Read_Type>(string("decay"),n);
+  return NotFound<Read_Type>(string("decay"),n,def,err);
 }
 
 vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const string& block){
@@ -107,29 +117,69 @@ bool UFO_Param_Reader::IgnoreCaseCompare(const std::string& a, const std::string
 }
 
 template<class Read_Type> Read_Type
-UFO_Param_Reader::NotFound(const string &block, const unsigned int& n, const unsigned int& m)
+UFO_Param_Reader::NotFound(const string &block,
+                           const unsigned int& n, const unsigned int& m,
+                           const Read_Type& def, const bool& err)
 {
   stringstream message;
   message << ("Entry [") << n << "," << m << "] " << "in block " << block << " not found.";
-  THROW(fatal_error, message.str().c_str() );
+  if (err) { THROW(fatal_error, message.str().c_str() ); }
+  else
+    msg_Error()<<METHOD<<"() {\n"
+               <<"  "<<message.str().c_str()<<"\n"
+               <<"  reverting to default value of "<<def
+               <<", if this parameter is relevant for your calculation, \n"
+               <<"  make sure it is implemented in your UFO model.\n"
+               <<"}"<<std::endl;
   // avoid compiler warnings concerning missing return statement
-  return Read_Type();
+  return def;
 }
 
 template<class Read_Type> Read_Type
-UFO_Param_Reader::NotFound(const string &block, const unsigned int& n)
+UFO_Param_Reader::NotFound(const string &block, const unsigned int& n,
+                           const Read_Type& def, const bool& err)
 {
   stringstream message;
   message << ("Entry [") << n << "] " << "in block " << block << " not found.";
-  THROW(fatal_error, message.str().c_str() );
+  if (err) { THROW(fatal_error, message.str().c_str() ); }
+  else
+    msg_Error()<<METHOD<<"() {\n"
+               <<"  "<<message.str().c_str()<<"\n"
+               <<"  reverting to default value of "<<def
+               <<", if this parameter is relevant for your calculation, \n"
+               <<"  make sure it is implemented in your UFO model.\n"
+               <<"}"<<std::endl;
   // avoid compiler warnings concerning missing return statement
-  return Read_Type();
+  return def;
 }
 
 namespace UFO
 {
-  template double UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n, const unsigned int& m);
-  template double UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n);
-  template int UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n, const unsigned int& m);
-  template int UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n);
+template Complex UFO_Param_Reader::GetEntry(const string& block,
+                                           const unsigned int& n,
+                                           const unsigned int& m,
+                                           const Complex& def,
+                                           const bool& err);
+template Complex UFO_Param_Reader::GetEntry(const string& block,
+                                           const unsigned int& n,
+                                           const Complex& def,
+                                           const bool& err);
+template double UFO_Param_Reader::GetEntry(const string& block,
+                                           const unsigned int& n,
+                                           const unsigned int& m,
+                                           const double& def,
+                                           const bool& err);
+template double UFO_Param_Reader::GetEntry(const string& block,
+                                           const unsigned int& n,
+                                           const double& def,
+                                           const bool& err);
+  template int UFO_Param_Reader::GetEntry(const string& block,
+                                          const unsigned int& n,
+                                          const unsigned int& m,
+                                          const int& def,
+                                          const bool& err);
+  template int UFO_Param_Reader::GetEntry(const string& block,
+                                          const unsigned int& n,
+                                          const int& def,
+                                          const bool& err);
 }

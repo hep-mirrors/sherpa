@@ -38,6 +38,9 @@ def parse_args():
       arg_parser.add_argument("--noopt",
                               action="store_true",
                               help = "Disable optimization of Lorentz calculators")
+      arg_parser.add_argument("--nocompile",
+                              action="store_true",
+                              help = "Do not compile generated UFO model")
 
       return arg_parser.parse_args()
 
@@ -157,11 +160,12 @@ if __name__ == "__main__":
                                                                  lorentzflags = args.lorentzflags))
 
       # compile and install
-      progress("Compiling sources using scons")
-      sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
-      if (args.ncore>1):
-            sconsargs.append('-j{0}'.format(args.ncore))
-      progress(check_output(sconsargs))
+      if not args.nocompile:
+          progress("Compiling sources using scons")
+          sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
+          if (args.ncore>1):
+              sconsargs.append('-j{0}'.format(args.ncore))
+          progress(check_output(sconsargs))
 
       # write example run card to working dir
       run_card_path="{0}_Example_Run.dat".format(model_name)

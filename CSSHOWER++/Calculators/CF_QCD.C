@@ -267,6 +267,10 @@ operator()(const SFC_Filler_Key &key) const
       if (v->NLegs()>3) continue;
       if (v->Color.front().Type()!=cf::T &&
 	  v->Color.front().Type()!=cf::F) continue;
+      if (v->order[0]!=1 || v->order[1]!=0) continue;
+      size_t i(2);
+      for (;i<v->order.size();++i) if (v->order[i]!=0) break;
+      if (i<v->order.size()) continue;
       msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
       std::string atag("{"+v->in[0].Bar().IDName()+"}");
       std::string btag("{"+v->in[1].IDName()+"}");
