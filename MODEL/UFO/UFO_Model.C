@@ -1,8 +1,12 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+<<<<<<< HEAD
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+=======
+#include "ATOOLS/Phys/Flavour.H"
+>>>>>>> 4273e2575 (Implement csin2_thetaW for SMEFTsim)
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -47,6 +51,7 @@ namespace UFO{
   }
 
   void UFO_Model::SetSMMasses(){
+    // this part hopes the UFO model has the SM with the same kfcodes included
     SetSMMass(kf_d,0.01);
     SetSMMass(kf_u,0.005);
     SetSMMass(kf_s,0.2);
@@ -83,12 +88,53 @@ namespace UFO{
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QCD coupling
-    SetAlphaQCD(*p_isrhandlermap,p_dataread->GetEntry<double>("SMINPUTS",3));
+    msg_Info()<<METHOD<<"(): Trying to read in \\alpha_s(m_Z) as parameter "
+              <<"3 in SMINPUTS block."<<std::endl;
+    SetAlphaQCD(*p_isrhandlermap,p_dataread->GetEntry<double>("SMINPUTS",3,0.118,false));
+
 
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QED coupling
-    SetAlphaQED(1./p_dataread->GetEntry<double>("SMINPUTS",1));
-    
+    // warning is printed to user to check value if consistent with UFO model
+    msg_Info()<<METHOD<<"(): Trying to read in \\alpha_QED as parameter "
+              <<"1 in SMINPUTS block."<<std::endl;
+    SetAlphaQED(p_dataread->GetEntry<double>("SMINPUTS",1,1./137.03599976,false));
+
+    // set default value for sin(theta), cos(theta), vev if not available 
+    // because the parameter is needed for the parton shower and beyond; 
+    // it will be incorrect for most EFT parameter points, but 
+    // as UFO does not have a canonical name for it, this is the 
+    // best we can do
+    // warning is printed to user to check value if consistent with UFO model
+    // only fill if the W and Z are defined by the model with the usual kfcodes
+    if (ATOOLS::s_kftable.find(kf_Wplus)!=ATOOLS::s_kftable.end() &&
+        ATOOLS::s_kftable.find(kf_Z)!=ATOOLS::s_kftable.end()) {
+      Complex I(0.,1.);
+      double MW(ATOOLS::Flavour(kf_Wplus).Mass()),  MZ(ATOOLS::Flavour(kf_Z).Mass());
+      double GW(ATOOLS::Flavour(kf_Wplus).Width()), GZ(ATOOLS::Flavour(kf_Z).Width());
+      Complex muW2(MW*(MW-(cms?I*GW:0.))), muZ2(MZ*(MZ-(cms?I*GZ:0.)));
+      Complex ccos2thetaW=muW2/muZ2;
+      Complex csin2thetaW=1.-ccos2thetaW;
+      Complex cvev=2.*sqrt(muW2*csin2thetaW/(4.*M_PI*MODEL::aqed->Default()));
+      if (p_complexconstants->find("ccos2_thetaW")==p_complexconstants->end()) {
+        msg_Info()<<METHOD<<"(): Trying to read in cos(\\theta_W) as parameter "
+                  <<"10 in SMINPUTS block."<<std::endl;
+        ccos2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",10,ccos2thetaW,false);
+        p_complexconstants->insert(make_pair(std::string("ccos2_thetaW"),ccos2thetaW));
+      }
+      if (p_complexconstants->find("csin2_thetaW")==p_complexconstants->end()) {
+        msg_Info()<<METHOD<<"(): Trying to read in sin(\\theta_W) as parameter "
+                  <<"11 in SMINPUTS block."<<std::endl;
+        csin2thetaW=p_dataread->GetEntry<Complex>("SMINPUTS",11,csin2thetaW,false);
+        p_complexconstants->insert(make_pair(std::string("csin2_thetaW"),csin2thetaW));
+      }
+      if (p_complexconstants->find("cvev")==p_complexconstants->end()) {
+        msg_Info()<<METHOD<<"(): Trying to read in vev as parameter "
+                  <<"12 in SMINPUTS block."<<std::endl;
+        cvev=p_dataread->GetEntry<Complex>("SMINPUTS",12,cvev,false);
+        p_complexconstants->insert(make_pair(std::string("cvev"), cvev));
+      }
+    }
     return true;
   }
 
