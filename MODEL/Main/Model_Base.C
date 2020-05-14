@@ -70,6 +70,7 @@ std::istream &MODEL::operator>>(std::istream &str,ew_scheme::code &c)
 
 Model_Base::Model_Base(bool _elementary) :
   m_elementary(_elementary),
+  m_hasnegativecouplingorders(false),
   p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL),
   p_functions(NULL)
 {
@@ -482,6 +483,7 @@ void Model_Base::InitializeInteractionModel()
     if (vit->cpl.empty()) vit=m_v.erase(vit);
     else ++vit;
   }
+  CheckForNegativeCouplingOrders();
   m_ov=m_v;
   RotateVertices();
   InitMEInfo();
@@ -578,4 +580,18 @@ size_t Model_Base::IndexOfOrderKey(const std::string& key) const
   if (key == "EW")
     return 1;
   THROW(fatal_error, "Unknown Orders key '" + key + "'.");
+}
+
+void Model_Base::CheckForNegativeCouplingOrders()
+{
+  for (std::vector<MODEL::Single_Vertex>::const_iterator vit(m_v.begin());
+       vit!=m_v.end();++vit) {
+    for (std::vector<int>::const_iterator oit(vit->order.begin());
+         oit!=vit->order.end();++oit) {
+      if (*oit<0) {
+        m_hasnegativecouplingorders=true;
+        return;
+      }
+    }
+  }
 }

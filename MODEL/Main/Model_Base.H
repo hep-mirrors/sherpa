@@ -70,6 +70,7 @@ namespace MODEL {
 
     std::string               m_name;
     bool                      m_elementary;
+    bool                      m_hasnegativecouplingorders;
 
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
@@ -171,6 +172,10 @@ namespace MODEL {
     virtual void ResetVerticesWithEWParameters(const EWParameters&) {};
 
     const PDF::ISR_Handler_Map& ISRHandlerMap() const { return *p_isrhandlermap; }
+
+    void CheckForNegativeCouplingOrders();
+    inline bool HasNegativeCouplingOrders() const 
+    { return m_hasnegativecouplingorders; }
   };
 
   extern Model_Base *s_model;
