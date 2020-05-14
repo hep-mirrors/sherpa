@@ -52,6 +52,7 @@ namespace MODEL {
     std::string               m_dir,m_file;
     std::string               m_name;
     bool                      m_elementary;
+    bool                      m_hasnegativecouplingorders;
 
     ATOOLS::Data_Reader     * p_dataread;
     ScalarNumbersMap        * p_numbers;
@@ -124,6 +125,9 @@ namespace MODEL {
     inline VMIterator_Pair GetVertex(const std::string &key) const
     { return m_vmap.equal_range(key); }
 
+    void CheckForNegativeCouplingOrders();
+    inline bool HasNegativeCouplingOrders() const 
+    { return m_hasnegativecouplingorders; }
   };
 
   extern Model_Base *s_model;
