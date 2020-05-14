@@ -1817,15 +1817,44 @@ void Amplitude::WriteOutGraph
       }
     str<<"  \\parbox{"<<(5*m_n+20)<<"mm}{\\begin{center}\n  Graph "<<++ng;
     if (nf>0) str<<", $\\sum \\rm F$="<<fp<<" ("<<(fp%2==0?'+':'-')<<")";
+
     str<<"\\\\[6mm]\n  \\begin{fmfgraph*}("<<(10*m_n)<<","<<(10*m_n)<<")\n";
     str<<"    \\fmfsurround{"<<graph->front()<<"}\n";
+
+    std::vector<int> cpls(0,0);
     for (size_t j(0);j<m_n;++j) 
       str<<"    \\fmfv{decor.size=0ex,label=$J_{"
 	 <<j<<"}$}{j_"<<(1<<j)<<"}\n";
     for (size_t j(1);j<graph->size();++j)
-      if ((*graph)[j].find("%%")==std::string::npos) 
+      if ((*graph)[j].find("%%")==std::string::npos)
 	str<<(*graph)[j]<<"\n";
-    str<<"  \\end{fmfgraph*}\\end{center}\\vspace*{5mm}}";
+      else
+        if ((*graph)[j].find("mathcal{O}")!=std::string::npos) {
+          std::string cl((*graph)[j]);
+          size_t bpos(cl.find("(")),epos(cl.find(")"));
+          if (bpos!=std::string::npos && epos!=std::string::npos) {
+            cl=cl.substr(bpos+1,epos-bpos-1);
+            size_t nc(0);
+            while (((bpos=cl.find("^{"))!=std::string::npos)) {
+              cl=cl.substr(bpos+2);
+              epos=cl.find("}");
+              std::string cplstr(cl.substr(0,epos));
+              cl=cl.substr(epos+1);
+              int cpl(ToType<int>(cplstr));
+              if (cpls.size()<nc+1) cpls.push_back(0);
+              cpls[nc]+=cpl;
+              ++nc;
+            }
+          }
+        }
+    str<<"  \\end{fmfgraph*}\\\\[4mm]";
+
+    // add orders to caption
+    str<<"$\\mathcal{O}(g_s^"<<cpls[0]<<"\\,e^"<<cpls[1];
+    for (size_t i(2);i<cpls.size();++i)
+      str<<"\\,g_\\text{BSM"<<(i-1)<<"}^"<<cpls[i];
+    str<<")$\\end{center}\\vspace*{1mm}}";
+
     if (ng>0 && ng%m_ngpl==0) str<<" \\\\\n\n";
     else str<<" &\n\n";
   }

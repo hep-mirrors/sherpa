@@ -64,6 +64,7 @@ namespace METOOLS {
 
     std::string VId() const;
     std::string VLabel() const;
+    std::string VOrder() const;
 
     void CollectGraphs(Graph_Node *graph) const;
 

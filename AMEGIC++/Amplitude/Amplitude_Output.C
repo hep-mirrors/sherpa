@@ -107,6 +107,10 @@ int Amplitude_Output::InclInComming(Point * mo) {
 }
 
 void Amplitude_Output::WriteOut(Point * start) {
+  // count orders
+  std::vector<int> cpls;
+  start->FindOrder(cpls);
+
   // make working copy
   if (ampl==0) ampl=new Point[12*2 + 1];  //  up to 10 outgoing particles
   int count_all=0;
@@ -144,6 +148,16 @@ void Amplitude_Output::WriteOut(Point * start) {
     str<<maincounter++;
   str>>captions[counter%3];
   captions[counter%3]=std::string(" Graph ")+captions[counter%3];
+
+  // add orders to caption
+  captions[counter%3]+=std::string(" $\\mathcal{O}(g_s^{")+ToString(cpls[0])
+                       +std::string("}\\,e^{")+ToString(cpls[1])
+                       +std::string("}");
+  for (size_t i(2);i<cpls.size();++i)
+    captions[counter%3]+=std::string("\\,g_\\text{BSM")+ToString(i-1)
+                         +std::string("}^{")+ToString(cpls[i])
+                         +std::string("}");
+  captions[counter%3]+=std::string(")$");
 
   s<<" % Graph "<<++counter<<endl;
   s<<"\\begin{fmfgraph*}(40,40) "<<endl;

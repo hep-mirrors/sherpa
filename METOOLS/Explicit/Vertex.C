@@ -323,7 +323,13 @@ std::string Vertex::CVLabel() const
 std::string Vertex::VLabel() const
 {
   std::string label;
-  if (s_vlmode&1) label+="\\scriptstyle\\blue F="+ToString(m_fperm);
+  if (s_vlmode&32) {
+    label+=std::string(label.length()>0?"\\\\":"")+VOrder();
+  }
+  if (s_vlmode&1) {
+    label+=std::string(label.length()>0?"\\\\":"")+
+           "\\scriptstyle\\blue F="+ToString(m_fperm);
+  }
   if (s_vlmode&2) {
     if (m_cc.empty() || m_lc.empty()) THROW(fatal_error,"Invalid call");
     std::string id(GetName(*m_cc.front())+"_"+GetName(*m_lc.front(),1));
@@ -354,6 +360,7 @@ std::string Vertex::VLabel() const
 void Vertex::CollectGraphs(Graph_Node *graph) const
 {
   graph->push_back("    \\fmfv{"+VLabel()+"}{"+VId()+"}");
+  graph->push_back("    %% "+VOrder());
   graph->push_back("    %% "+VId());
   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
 }
@@ -366,6 +373,18 @@ const std::vector<int> &Vertex::Order() const
 int Vertex::Order(const size_t &id) const
 {
   return p_v->order[id];
+}
+
+std::string Vertex::VOrder() const
+{
+  std::string label("");
+  label+=std::string("\\mathcal{O}(g_s^{")+ToString(Order(0))
+         +std::string("}\\;e^{")+ToString(Order(1))+std::string("}");
+  for (size_t i(2);i<Order().size();++i)
+    label+=std::string("\\;g_\\text{BSM")+ToString(i-1)
+           +std::string("}^{")+ToString(Order(i))+std::string("}");
+  label+=std::string(")");
+  return label;
 }
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
