@@ -376,7 +376,8 @@ Vertex *Amplitude::AddCurrent
     if (order[i]>m_maxcpl[i]) valid=false;
   for (size_t i(0);i<Min(order.size(),m_maxacpl.size());++i)
     if (order[i]>m_maxacpl[i]) valid=false;
-  if (!v->Active() || !valid ||
+  if (!v->Active() || 
+      (!p_model->HasNegativeCouplingOrders() && !valid) ||
       (n==m_n-1 && (ntc<m_minntc || ntc>m_maxntc))) {
 #ifdef DEBUG__BG
     msg_Debugging()<<"delete vertex "<<vkey.ID()<<"-"<<vkey.Type()
