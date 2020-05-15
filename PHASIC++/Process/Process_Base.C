@@ -198,7 +198,14 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
-  if (mode&128) while (!this->GeneratePoint()); 
+  if (mode&128) {
+    while (!this->GeneratePoint());
+  }
+  else {
+    std::shared_ptr<Color_Integrator> ci=
+      Integrator()->ColorIntegrator();
+    if (ci!=nullptr) ci->SetPoint(&ampl);
+  }
   Event_Weights wgts {this->Differential(p, type)};
   wgts /= m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());

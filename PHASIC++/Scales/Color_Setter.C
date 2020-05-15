@@ -192,7 +192,7 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
 	cl->SetCol(ColorID(0,0));
       }
     }
-    msg_Debugging()<<"odering "<<orders[i]<<"\n";
+    msg_Debugging()<<"ordering "<<orders[i]<<"\n";
     msg_Debugging()<<*ampl<<"\n";
     csum += psum[i] = dabs(static_cast<double>(
         p_xs->Differential(*ampl, Weight_Type::nominal, 1 | 4)));

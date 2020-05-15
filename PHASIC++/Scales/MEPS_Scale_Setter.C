@@ -384,6 +384,8 @@ double MEPS_Scale_Setter::Calculate
   else {
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
+      int cr(ampl->Leg(i)->Flav().StrongCharge());
+      ampl->Leg(i)->SetCol(ColorID((cr==3||cr==8)?1:0,(cr==-3||cr==8)?1:0));
       ampl->Leg(i)->SetNMax(nmax);
     }
   }
