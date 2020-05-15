@@ -40,6 +40,34 @@ namespace EXTRAXS {
     }
   };// end of class DY_QCD_Virtual
 
+  class Singlet_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
+  public:
+    Singlet_QCD_Virtual(const Process_Info &pi,const Flavour_Vector &flavs):
+      Virtual_ME2_Base(pi,flavs)
+    {
+    }
+    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
+    {
+      return 4.*M_PI;
+    }
+    void Calc(const ATOOLS::Vec4D_Vector&p)
+    {
+      m_res=METOOLS::DivArrD(0.);
+      for (size_t i(0);i<p_plist->size();++i) {
+	for (size_t j(i+1);j<p_plist->size();++j) {
+	  size_t i1((*p_plist)[i]), i2((*p_plist)[j]);
+	  Vec4D p1(i1<2?-p[i1]:p[i1]);
+	  Vec4D p2(i2<2?-p[i2]:p[i2]);
+	  Complex l12=LnRat(m_mur2,-(p1+p2).Abs2());
+	  m_res.IR2()-=-2.*(*p_dsij)[i][j];
+	  m_res.IR()-=(-3.-2.*l12).real()*(*p_dsij)[i][j];
+	  m_res.Finite()-=(-8.-3.*l12-sqr(l12)).real()*(*p_dsij)[i][j];
+	}
+      }
+      m_res*=1./(*p_dsij)[0][0];
+    }
+  };// end of class Singlet_QCD_Virtual
+
 }
 
 using namespace EXTRAXS;
@@ -53,8 +81,13 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nlotype==nlo_type::loop) {
     if (pi.m_mincpl[0]!=1. || pi.m_maxcpl[0]!=1.) return NULL;
-    if (pi.m_mincpl[1]!=2. || pi.m_maxcpl[1]!=2.) return NULL;
     if (pi.m_fi.m_nlocpl[0]!=1. || pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_mincpl[1]!=2. || pi.m_maxcpl[1]!=2.) {
+      Flavour_Vector fl=pi.ExtractFlavours();
+      for (size_t i(0);i<fl.size();++i)
+	if (fl[i].Strong() && !fl[i].IsQuark()) return NULL;
+      return new Singlet_QCD_Virtual(pi,fl);
+    }
     if (pi.m_fi.m_ps.size()!=2) return NULL;
     Flavour_Vector fl=pi.ExtractFlavours();
     for (size_t i(0);i<fl.size();++i)

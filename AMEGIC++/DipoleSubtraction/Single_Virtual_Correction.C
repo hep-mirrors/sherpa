@@ -618,6 +618,8 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
   double res(0.);
   if (!p_loopme) THROW(fatal_error,"No loop ME set.");
   p_loopme->SetRenScale(p_scale->Scale(stp::ren,1));
+  p_loopme->SetPList(&p_LO_process->PartonListQCD());
+  p_loopme->SetDSij(&m_dsijqcd);
   p_loopme->Calc(mom);
   double cplfac(1.), bornorderqcd(0), beta0qcd(0.);
   // assume alpha_qed fixed for now
