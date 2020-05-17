@@ -3,6 +3,7 @@
 
 #include "AMEGIC++/Main/Process_Tags.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "ATOOLS/Math/Vector.H"
 
 
 namespace AMEGIC {
@@ -17,6 +18,8 @@ namespace AMEGIC {
     virtual ~Amegic_Base();
     virtual bool NewLibs() = 0;
     virtual void Minimize() = 0;
+    void PrepareTestMoms(ATOOLS::Vec4D *const moms,
+			 const size_t &nin,const size_t &nout) const;
 
     inline void SetNTchanmin(const size_t &ntch) { m_ntchanmin=ntch; }
 

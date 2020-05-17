@@ -535,9 +535,11 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   SetLOMomenta(p_testmoms,cms);
   p_dipole->CalcDiPolarizations();
 
+  PrepareTestMoms(p_LO_mom,m_nin,m_nout-1);
   int status=p_LO_process->InitAmplitude(model,top,links,errs,
                                          p_dipole->GetDiPolarizations(),
                                          p_dipole->GetFactors());
+  SetLOMomenta(p_testmoms,cms);
   if (status<=0) { 
     m_valid=false;
     return status;
