@@ -309,7 +309,9 @@ bool AMEGIC::Single_Real_Correction::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
   if (p_partner!=this) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (m_pinfo.m_nlomode==nlo_mode::powheg) return true;
   return p_tree_process->FillIntegrator(psh);
 }

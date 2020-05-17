@@ -212,7 +212,9 @@ bool AMEGIC::Process_Group::FillIntegrator
     m_procs[i]->Get<AMEGIC::Process_Base>()->RequestVariables(psh);
   Multi_Channel *mc(psh->FSRIntegrator());
   if (mc==NULL) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_channellibnames->empty()) return true;
   for (std::list<std::string>::iterator it(p_channellibnames->begin());
        it!=p_channellibnames->end();++it) {
