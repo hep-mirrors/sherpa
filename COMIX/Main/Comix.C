@@ -198,8 +198,6 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
     }
   }
 #endif
-  My_In_File::OpenDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   return true;
 }
 
@@ -238,15 +236,11 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     if (!newxs->Get<PHASIC::Process_Group>()->ConstructProcesses()) {
-      My_In_File::CloseDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
-    My_In_File::CloseDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
     msg_Tracking()<<"Initialized '"<<newxs->Name()<<"'\n";
   }
   else {
@@ -259,8 +253,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     if (!newxs->Get<Single_Process>()->Initialize
 	(&pmap,&m_umprocs.back(),m_blocks,m_nproc)) {
-      My_In_File::CloseDB
-	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
@@ -268,8 +260,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
     if (!newxs->Get<Single_Process>()->MapProcess())
       if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
-    My_In_File::CloseDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   }
   if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);
@@ -278,8 +268,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 
 int Comix::PerformTests()
 {
-  My_In_File::CloseDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   if (!Tests()) return 0;
   for (size_t i=0;i<m_rsprocs.size();++i)
     if (!m_rsprocs[i]->Get<COMIX::Process_Base>()->Tests()) return false;

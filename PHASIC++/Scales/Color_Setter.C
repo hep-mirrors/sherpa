@@ -47,8 +47,6 @@ Process_Base *Color_Setter::GetProcess(Cluster_Amplitude *const ampl)
 
 bool Color_Setter::Initialize(Cluster_Amplitude *const ampl)
 {
-  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
-  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   Process_Info pi;
   pi.m_megenerator="Comix";
   for (size_t i(0);i<ampl->NIn();++i) {
@@ -63,13 +61,6 @@ bool Color_Setter::Initialize(Cluster_Amplitude *const ampl)
   }
   PHASIC::Process_Base *proc=ampl->Proc<Process_Base>()->
     Generator()->Generators()->InitializeProcess(pi,false);
-  if (proc==NULL) {
-    My_In_File::CloseDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
-    My_In_File::CloseDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
-    return false;
-  }
   m_procs.push_back(proc);
   proc->SetSelector(Selector_Key{});
   proc->SetScale
@@ -78,10 +69,6 @@ bool Color_Setter::Initialize(Cluster_Amplitude *const ampl)
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&m_pmap);
-  My_In_File::CloseDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
-  My_In_File::CloseDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   return true;
 }
 

@@ -451,9 +451,7 @@ bool AMEGIC::Single_Virtual_Correction::FillIntegrator
 {
   if (p_partner!=this) return true;
   if (p_LO_process!=p_LO_process->Partner()) return 1;
-  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
-  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   RequestVariables(psh);
   return Process_Base::FillIntegrator(psh);
 }

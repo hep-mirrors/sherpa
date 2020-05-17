@@ -187,9 +187,6 @@ void Color_Integrator::ReadIn(const std::string &path)
 
 void Color_Integrator::WriteOut(const std::string &path)
 {
-#ifdef USING__MPI
-  if (mpi->Rank()) return;
-#endif
   My_Out_File outfile(path);
   outfile.Open();
   outfile->precision(16);

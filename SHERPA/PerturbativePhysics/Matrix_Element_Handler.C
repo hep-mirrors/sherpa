@@ -510,9 +510,14 @@ int Matrix_Element_Handler::InitializeProcesses(
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   BuildProcesses();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
@@ -541,8 +546,12 @@ int Matrix_Element_Handler::InitializeProcesses(
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   for (size_t i=0; i<m_procs.size(); ++i) m_procs[i]->InitScale();
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+  for (size_t i(0);i<m_gens.size();++i)
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_gens[i]->Name()+"/");
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
