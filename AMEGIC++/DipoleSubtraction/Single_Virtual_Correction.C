@@ -51,6 +51,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_finite(0.0), m_singlepole(0.0), m_doublepole(0.0),
   p_fsmc{ NULL }
 {
+  m_calcv=1;
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings amegicsettings{ s["AMEGIC"] };
   p_fsmc=NULL;
@@ -563,7 +564,9 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
     }
     else {
       p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
+      p_partner->SetCalcV(0);
       m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
+      p_partner->SetCalcV(1);
     }
     m_lastbxs = p_partner->m_lastbxs*m_sfactor;
     m_lastb=p_partner->m_lastb*m_sfactor;
@@ -614,6 +617,7 @@ double Single_Virtual_Correction::Calc_B()
 
 double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
 {
+  if (m_calcv==0) return 0.0;
   DEBUG_FUNC(p_loopme);
   double res(0.);
   if (!p_loopme) THROW(fatal_error,"No loop ME set.");
@@ -907,6 +911,7 @@ void Single_Virtual_Correction::CheckFinite(const double & I, const double & L)
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector mom)
 {
+  if (m_calcv==0) return;
   DEBUG_FUNC(Name());
   if (!p_loopme) {
     msg_Info()<<"Didn't initialise virtual ME. Ignoring pole check."<<std::endl;
