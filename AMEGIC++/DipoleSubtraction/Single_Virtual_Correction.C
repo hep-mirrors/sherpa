@@ -564,7 +564,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
     }
     else {
       p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
-      p_partner->SetCalcV(0);
+      if (!m_loopmapped) p_partner->SetCalcV(0);
       m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
       p_partner->SetCalcV(1);
     }
@@ -692,6 +692,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       cms=Poincare(_mom[0]+_mom[1]);
       for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
     }
+    m_dsijqcd=p_partner->m_dsijqcd;
     return Calc_V(_mom);
   }
   return 0.;
