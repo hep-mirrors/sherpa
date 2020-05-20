@@ -20,7 +20,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/types.h>
+#ifdef ARCH_DARWIN
 #include <sys/sysctl.h>
+#endif
 #include <limits>
 
 namespace ATOOLS {
