@@ -38,7 +38,7 @@ namespace PHASIC {
 
     std::shared_ptr<Color_Integrator> p_ci;
 
-    double m_rsf, m_fsf;
+    double m_rsf, m_fsf, m_qsf;
     int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
@@ -194,6 +194,9 @@ VBF_Scale_Setter::VBF_Scale_Setter
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
+  m_qsf=ToType<double>(rpa->gen.Variable("RESUMMATION_SCALE_FACTOR"));
+  if (m_qsf!=1.0)
+    msg_Debugging()<<METHOD<<"(): Resummation scale factor "<<sqrt(m_qsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
   p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
 }
@@ -614,7 +617,7 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
   m_ampls=ampls;
   if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
   msg_Debugging()<<"Setting PS scales by dipole {\n";
-  double htp(0.0);
+  double sum(1.0), n(0.0);
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     if (li->Flav().StrongCharge()==3 ||
@@ -638,22 +641,24 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
 		       <<" vs "<<sqrt(li->KT2(mij?0:1))
 		       <<", match = "<<mij<<" / "<<mji<<"\n";
 	if (mij) {
-	  li->SetKT2(0,Min(sij,li->KT2(0)));
-	  lj->SetKT2(1,Min(sij,lj->KT2(1)));
+	  li->SetKT2(0,Min(m_qsf*sij,li->KT2(0)));
+	  lj->SetKT2(1,Min(m_qsf*sij,lj->KT2(1)));
 	}
 	if (mji) {
-	  li->SetKT2(1,Min(sij,li->KT2(1)));
-	  lj->SetKT2(0,Min(sij,lj->KT2(0)));
+	  li->SetKT2(1,Min(m_qsf*sij,li->KT2(1)));
+	  lj->SetKT2(0,Min(m_qsf*sij,lj->KT2(0)));
 	}
-	htp+=sij;
+	sum*=sij;
+	n+=1.0;
       }
     }
   }
-  msg_Debugging()<<"}\n"<<*ampl<<"\n";
-  ampl->SetKT2(htp/4.0);
-  ampl->SetMu2(htp/4.0);
+  double avg(pow(sum,1.0/n));
+  msg_Debugging()<<"} -> \\mu_Q = "<<sqrt(avg)<<"\n"<<*ampl<<"\n";
+  ampl->SetKT2(m_qsf*avg);
+  ampl->SetMu2(m_qsf*avg);
   for (Cluster_Amplitude *campl(ampl);
-       campl;campl=campl->Prev()) campl->SetMuQ2(htp/4.0);
+       campl;campl=campl->Prev()) campl->SetMuQ2(m_qsf*avg);
 }
 
 double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
