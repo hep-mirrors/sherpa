@@ -176,6 +176,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SCALE_FACTOR"].SetDefault(1.0);
   s["FACTORIZATION_SCALE_FACTOR"].SetDefault(1.0);
   s["RENORMALIZATION_SCALE_FACTOR"].SetDefault(1.0);
+  s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
   s["OVERRIDE_PDF_INFO"].SetDefault(false);
@@ -1074,11 +1075,14 @@ void Initialization_Handler::SetGlobalVariables()
   double sf(s["SCALE_FACTOR"].Get<double>());
   double fsf(sf*s["FACTORIZATION_SCALE_FACTOR"].Get<double>());
   double rsf(sf*s["RENORMALIZATION_SCALE_FACTOR"].Get<double>());
+  double qsf(sf*s["RESUMMATION_SCALE_FACTOR"].Get<double>());
   rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", ToString(fsf));
   rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", ToString(rsf));
+  rpa->gen.SetVariable("RESUMMATION_SCALE_FACTOR", ToString(qsf));
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
-		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n"
+		 <<"  res scale: "<<rpa->gen.Variable("RESUMMATION_SCALE_FACTOR")<<"\n}\n";
 
   // TODO: remove from rpa?
   double virtfrac = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
