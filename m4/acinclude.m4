@@ -491,38 +491,32 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-hepmc3=/path/to/hepmc], [Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(HepMC3 not enabled); hepmc3=false ;;
-        yes)  if test -d "$HEPMC3DIR"; then
-                CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
-                CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
+        no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
+        yes) if test -x "`which HepMC3-config`"; then
+               CONDITIONAL_HEPMC3DIR=`HepMC3-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_HEPMC3DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
+              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
+              CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
+              CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
+                      CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO)";
+                      CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO)";              
+                      SAVE_CXXFLAGS="${CXXFLAGS}"
+                      CXXFLAGS="${CXXFLAGS} $CONDITIONAL_HEPMC3INCS"
+                      AC_LANG_PUSH([C++])
+                      AC_CHECK_HEADERS([HepMC3/WriterRootTree.h],[hepmc3writerroottree=true;] , [hepmc3writerroottree=false;])
+                      AC_CHECK_HEADERS([HepMC3/WriterRoot.h],[hepmc3writerroot=true;] , [hepmc3writerroot=false;])
+                      AC_LANG_POP([C++])
+                      CXXFLAGS="${SAVE_CXXFLAGS}"
               fi
-              else
-                AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_HEPMC3DIR="${enableval}"
-                CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
-              if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root"
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMC3rootIO"
-              fi
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-      esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRootTree.h"; then
-        hepmc3writerroottree=true;
+      else
+              AC_MSG_ERROR(Unable to use HepMC3 from specified path.);
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRoot.h"; then
-        hepmc3writerroot=true;
-      fi;
-
       ],
     [ hepmc3=false ]
   )
@@ -841,12 +835,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)  if test -d "${enableval}"; then
               if test -f "${enableval}/lib/libhztool.so"; then
                 CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib -lhztool";
-	        CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
                 CONDITIONAL_HZTOOLDIR="${enableval}";
                 hztool=true;
                 AC_MSG_RESULT(${enableval});
               else
-                AC_MSG_ERROR(Did not find '${enableval}/libhztool.so'.); 
+              if test -f "${enableval}/lib64/libhztool.so"; then
+                CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib64 -lhztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLDIR="${enableval}";
+                hztool=true;
+                AC_MSG_RESULT(${enableval});
+               else
+                AC_MSG_ERROR(Did not find '${enableval}/lib/libhztool.so and ${enableval}/lib64/libhztool.so'.); 
+              fi;
               fi;
             else
               AC_MSG_ERROR(Did not find hztool directory '${enableval}'.);
