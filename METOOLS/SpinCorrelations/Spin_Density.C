@@ -42,7 +42,7 @@ Spin_Density::~Spin_Density()
 {
 }
 
-typedef std::map<Particle*, Spin_Density*> SpinDensityMap;
+typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, Spin_Density*> > SpinDensityMap;
 namespace ATOOLS {
   template <> Blob_Data<SpinDensityMap*>::~Blob_Data()
   {
@@ -56,7 +56,8 @@ namespace ATOOLS {
   {
     SpinDensityMap* newdata = new SpinDensityMap();
     for (SpinDensityMap::iterator it = m_data->begin(); it!=m_data->end(); ++it) {
-      newdata->insert(make_pair(it->first, new Spin_Density(*it->second)));
+      std::pair<ATOOLS::Flavour,ATOOLS::Vec4D> first = std::make_pair(it->first.first, it->first.second);
+      newdata->push_back(make_pair(first, new Spin_Density(*it->second)));
     }
     return new Blob_Data(newdata);
   }

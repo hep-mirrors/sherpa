@@ -55,7 +55,7 @@ Complex Amplitude2_Matrix::operator*(const Amplitude2_Matrix& sigma) const
 namespace METOOLS {
   std::ostream& operator<<(std::ostream& ostr, const Amplitude2_Matrix& m) {
     ostr<<"   Matrix with "<<m.m_nhel<<" spin combinations for "
-        <<m.Particle()->RefFlav()<<":"<<std::endl;
+        <<(m.Particle()?m.Particle()->RefFlav():Flavour(kf_none))<<":"<<std::endl;
     for(size_t i=0;i<m.m_nhel;i++) {
       for(size_t j=0;j<m.m_nhel;j++) {
         ostr<<m(i,j)<<", ";

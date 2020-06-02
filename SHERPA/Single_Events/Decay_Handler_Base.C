@@ -183,7 +183,7 @@ Blob* FindSPBlob(Blob* startblob)
 }
 
 
-typedef map<Particle*, Spin_Density*> SpinDensityMap;
+typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, Spin_Density*> > SpinDensityMap;
 bool Decay_Handler_Base::DoSpecialDecayTauSC(Particle* part)
 {
   DEBUG_FUNC(*part);
@@ -207,9 +207,8 @@ bool Decay_Handler_Base::DoSpecialDecayTauSC(Particle* part)
 
   double bestDeltaR=1000.0; Spin_Density* sigma_tau=NULL;
   for (SpinDensityMap::iterator it=tau_spindensity->begin(); it!=tau_spindensity->end(); ++it) {
-    Particle* testpart = it->first;
-    if (testpart->Flav()==part->Flav()) {
-      double newDeltaR=part->Momentum().DR(testpart->Momentum());
+    if (it->first.first==part->Flav()) {
+      double newDeltaR=part->Momentum().DR(it->first.second);
       if (newDeltaR<bestDeltaR) {
         bestDeltaR=newDeltaR;
         sigma_tau=it->second;
@@ -382,7 +381,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
          blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
       if (m_specialtauspincorr && daughters[i]->Flav().Kfcode()==kf_tau &&
-          !daughters[i]->Flav().IsStable() &&
+          !daughters[i]->Flav().IsStable() && blob->Type()==btp::Hard_Decay &&
           rpa->gen.SoftSC()) {
         DEBUG_INFO("  keeping tau spin information for hadronic tau decays.");
         SpinDensityMap* tau_spindensity;
@@ -396,8 +395,10 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
         else {
           tau_spindensity = bdb->Get<SpinDensityMap*>();
         }
-        (*tau_spindensity)[daughters[i]] = new Spin_Density(daughters[i],amps);
-        DEBUG_VAR(*(*tau_spindensity)[daughters[i]]);
+        tau_spindensity->push_back(make_pair(make_pair(daughters[i]->Flav(), daughters[i]->Momentum()),
+                                             new Spin_Density(daughters[i],amps)));
+        DEBUG_VAR(*(tau_spindensity->back().second));
+        tau_spindensity->back().second->SetParticle(NULL);
       }
       else if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
