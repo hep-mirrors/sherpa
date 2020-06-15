@@ -1,6 +1,7 @@
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>
+#include <iostream>
 
 using namespace CFPSHOWER;
 using namespace std;
@@ -12,6 +13,16 @@ ostream & CFPSHOWER::operator<<(ostream &s,const kernel_type::code & type) {
   case 3: s<<"IF";break;
   case 4: s<<"II";break;
   case 0:
+  default: s<<"unknown";break;
+  }
+  return s;
+}
+
+ostream & CFPSHOWER::operator<<(ostream &s,const log_type::code & type) {
+  switch (int(type)) {
+  case 1: s<<"soft";break;
+  case 2: s<<"coll";break;
+  case 0: s<<"none";break;
   default: s<<"unknown";break;
   }
   return s;
@@ -32,9 +43,14 @@ ostream & CFPSHOWER::operator<<(ostream &s,const Kernel_Info & info) {
 }
 
 Kernel_Info::Kernel_Info(ATOOLS::Flavour & split,ATOOLS::Flavour_Vector & flavs,
-			 kernel_type::code type,const vector<size_t> & tagsequence) :
+			 const vector<size_t> & tagsequence,
+			 log_type::code logtype, kernel_type::code type) :
+  m_split(split), m_flavs(flavs), m_tagsequence(tagsequence),
+  m_logtype(logtype), m_type(type),
   p_alphaS(NULL), p_alpha(NULL),
-  m_split(split), m_flavs(flavs), m_type(type), m_tagsequence(tagsequence) {
+  m_kfactor(0), m_softcorr(0), m_endpoint(0),
+  m_asfactor(1.), m_muR2factor(1.)
+{
   AdjustFlavours();
 }
 
@@ -83,13 +99,35 @@ void Kernel_Info::AdjustFlavours12() {
   }
 }
 
+const string Kernel_Info::KinName() const {
+  string name = "Kinematics_";
+  switch (m_type) {
+  case kernel_type::FF: name += "FF"; break;
+  case kernel_type::FI: name += "FI"; break;
+  case kernel_type::IF: name += "IF"; break;
+  case kernel_type::II: name += "II"; break;
+  case kernel_type::none: 
+  default:
+    break;
+  }
+  name += to_string(m_flavs.size());
+  switch (m_logtype) {
+  case log_type::coll: name += "_Coll"; break;
+  case log_type::soft: name += "_Soft"; break;
+  case kernel_type::none: 
+  default:
+    break;
+  }
+  return name;
+}
+  
 const string Kernel_Info::SFName() const {
   string name = "";
   switch (m_type) {
-  case kernel_type::FF:   name += "FF_"; break;
-  case kernel_type::FI:   name += "FI_"; break;
-  case kernel_type::IF:   name += "IF_"; break;
-  case kernel_type::II:   name += "II_"; break;
+  case kernel_type::FF: name += "FF_"; break;
+  case kernel_type::FI: name += "FI_"; break;
+  case kernel_type::IF: name += "IF_"; break;
+  case kernel_type::II: name += "II_"; break;
   case kernel_type::none: 
   default:
     break;
@@ -105,6 +143,13 @@ const string Kernel_Info::SFName() const {
     case 1: name += "F"; break;
     case 0: name += "S"; break;
     }
+  }
+  switch (m_logtype) {
+  case log_type::coll: name += "_Coll"; break;
+  case log_type::soft: name += "_Soft"; break;
+  case kernel_type::none: 
+  default:
+    break;
   }
   return name;
 }

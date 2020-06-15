@@ -1,5 +1,5 @@
 #include "CFPSHOWER++/Tools/Parton.H"
-#include "CFPSHOWER++/Shower/Splitting.H"
+#include "CFPSHOWER++/Tools/Splitting.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -21,6 +21,7 @@ Parton::Parton(const Flavour & flav,const Vec4D & mom,
   if (id>0) m_id = id;
   else m_id = s_cid;
   m_offsprings.resize(2);
+  for (size_t i=0;i<3;i++) p_softpartners[i] = NULL;
 }
 
 Parton::~Parton() {
@@ -42,7 +43,6 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
   // TODO: will have to upgrade this later to capture the effect of on-the-flight
   // variations.
   double weight = (accept?split.GetWeight()->Accept():split.GetWeight()->Reject());
-  //msg_Out()<<METHOD<<"(accept = "<<accept<<") --> "<<weight<<"\n";
   if (weight!=1.0) {
     BranchingWeight wt;
     Parton * spec         = split.GetSpectator();
@@ -50,13 +50,9 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
     BranchingWeight brwt  = (wit->second.empty() ?
 			     BranchingWeight(0.,1.) :
 			     wit->second.back());
-    brwt.m_t              = split.t();
+    brwt.m_t              = split.t(0);
     brwt.m_weight        *= weight;
     wit->second.push_back(brwt);
-    // msg_Out()<<"--- "<<METHOD<<"(flav = "<<m_flav<<", t = "<<split.t()<<"): "
-    // 	     <<weight<<" --> "<<brwt.m_weight<<"\n"
-    // 	     <<"--- from: "<<(*split.GetWeight())<<"\n"
-    // 	     <<"------------------------------------------------------------------\n";
   }
 }
 

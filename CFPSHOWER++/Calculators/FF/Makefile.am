@@ -4,13 +4,14 @@ GITTAG = CFPSHOWER++/Calculators/FF
 include ../../../git.make
 
 libCFPCalculatorsFF_la_SOURCES = \
-	SF_FF12.C \
-	SF_FF13.C \
-	FFV_FF.C \
-	VFF_FF.C \
-	VVV_FF.C \
-	FFFF_FF.C	
+	Kinematics_FF2_Soft.C \
+	Kinematics_FF2_Coll.C \
+	FFV_Soft.C \
+	FFV_Coll.C \
+	VVV_Soft.C \
+	VVV_Coll.C \
+	VFF_Coll.C 	
 
 localinc_HEADERS   = \
-	SF_FF12.H \
-	SF_FF13.H
+	Kinematics_FF2_Soft.H \
+	Kinematics_FF2_Coll.H

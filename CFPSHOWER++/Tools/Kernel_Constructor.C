@@ -1,4 +1,4 @@
-#include "CFPSHOWER++/Shower/Kernel_Constructor.H"
+#include "CFPSHOWER++/Tools/Kernel_Constructor.H"
 #include "CFPSHOWER++/Shower/Shower.H"
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "CFPSHOWER++/Calculators/SF_Base.H"
@@ -34,6 +34,8 @@ Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr)
   m_muF2factor  = (*cfp_pars)("k_muF");
   m_kinscheme   = (*cfp_pars)["kinematics"];
   m_kfactor     = (*cfp_pars)["kfactor"];
+  m_softcorr    = (*cfp_pars)["softcorrections"];
+  m_endpoint    = (*cfp_pars)["endpoint"];
   m_cplscheme   = (*cfp_pars)["couplings"];
   m_MEcorrs     = (*cfp_pars)["ME_corrections"];
   m_SForder     = (*cfp_pars)["SF_order"];
@@ -44,12 +46,14 @@ Init(MODEL::Model_Base * const model,PDF::ISR_Handler * const isr)
 }
 
 bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model) {
-  msg_Out()<<"***************************************************************\n"
-   	   <<METHOD<<" starts collecting splitting kernels.\n"
-   	   <<"** available kernels:\n";
-  SF_Getter::PrintGetterInfo(msg->Out(),25);
-  GP_Getter::PrintGetterInfo(msg->Out(),25);
-  msg_Out()<<"\n";
+  if (msg_LevelIsDebugging()) {
+    msg_Out()<<"***************************************************************\n"
+	     <<METHOD<<" starts collecting splitting kernels.\n"
+	     <<"** available kernels:\n";
+    SF_Getter::PrintGetterInfo(msg->Out(),25);
+    GP_Getter::PrintGetterInfo(msg->Out(),25);
+    msg_Out()<<"\n";
+  }
   // Going through vertex tables and translating 3-particle vertices into splitting
   // kernels.  The kernels consist of a splitting function and a gauge part, where
   // the latter handles the colour configuration and all aspects realted to the
@@ -70,7 +74,7 @@ bool Kernel_Constructor::InitializeKernels(MODEL::Model_Base * const model) {
     for (size_t type=1;type<2;type++) MakeKernelsFromKernels(kernel_type::code(type));
     if (m_SForder<0) DeleteAllKernelsWithWrongOrder();
   }
-  PrintKernels(true);
+  if (msg_LevelIsDebugging()) PrintKernels(true);
   return true;
 }
 
@@ -89,12 +93,20 @@ void Kernel_Constructor::MakeKernelsFromVertices(MODEL::Model_Base * const model
       if (vertex->NLegs()>3) continue;
       if (constructed.find(vertex->in)!=constructed.end()) return;
       constructed.insert(vertex->in);
-      for (size_t type=1;type<2;type++) MakeKernels(vertex->in,kernel_type::code(type));
+      for (size_t type=1;type<2;type++) {
+	for (size_t logtype=1;logtype<3;logtype++) {
+	  //msg_Out()<<METHOD<<" for "
+	  //	   <<kernel_type::code(type)<<", "<<log_type::code(logtype)<<"\n";
+	  MakeKernels(vertex->in,log_type::code(logtype),kernel_type::code(type));
+	}
+      }
     }
   }
 }
 
-void Kernel_Constructor::MakeKernels(Flavour_Vector & flavs,const kernel_type::code & type) {
+void Kernel_Constructor::
+MakeKernels(Flavour_Vector & flavs,
+	    const log_type::code & logtype,const kernel_type::code & type) {
   // The kernels are initialised with the information stored in the Kernel_Info
   // struct, which carries information about:
   // - the flavours, 
@@ -108,18 +120,19 @@ void Kernel_Constructor::MakeKernels(Flavour_Vector & flavs,const kernel_type::c
   Flavour_Vector newflavs; 
   for (size_t i=1;i<flavs.size();i++) newflavs.push_back(flavs[i]); 
   size_t order  = newflavs.size()-1;
-  /*
-    if (flavs.size()>3) {
-    msg_Out()<<"  * "<<METHOD<<"["<<type<<", order = "<<order<<"] for "<<split<<" -> ";
+  if (flavs.size()>3) {
+    msg_Out()<<"  * "<<METHOD<<"["<<type<<", "<<logtype<<", order = "<<order<<"] for "
+	     <<split<<" -> ";
     for (size_t i=0;i<newflavs.size();i++) msg_Out()<<newflavs[i]<<" ";
     msg_Out()<<" with "<<m_permutations[order-1].size()<<" permutations.\n";
-    }
-  */
+  }
   for (list<vector<size_t> >::iterator lit=m_permutations[order-1].begin();
        lit!=m_permutations[order-1].end();lit++) {
-    Kernel_Info info(split,newflavs,kernel_type::code(type),(*lit));
+    Kernel_Info info(split,newflavs,(*lit),log_type::code(logtype),kernel_type::code(type));
     info.SetAlphaS(p_as);
     info.SetKFactor(m_kfactor);
+    info.SetSoftCorrection(m_softcorr);
+    info.SetEndpoint(m_endpoint);
     info.SetCplScheme(m_cplscheme);
     info.SetAsFactor(((type==kernel_type::FF || type==kernel_type::FI) ?
 		      m_asfactor[0] : m_asfactor[1]));
@@ -176,7 +189,9 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
     for (Kernel_Vector::const_iterator kit=flavkernels->begin();
 	 kit!=flavkernels->end();kit++) {
       kpos++;
-      if ((*kit)->Tags(0)==1) continue;
+      // if all kernels come in up to two variants, some may not have a soft part, but all will
+      // have a collinear part - so we can ignore the soft kernels.
+      if ((*kit)->Tags(0)==1 || (*kit)->LogType()==log_type::soft) continue;
       Flavour_Vector outs = (*kit)->GetFlavs();
       // go over the two outgoing flavours and produce trial final states by keeping one
       // and replacing the other with two outgoing flavours from the already initialised
@@ -219,7 +234,8 @@ void Kernel_Constructor::MakeKernelsFromKernels(const kernel_type::code & type) 
       flavs.push_back(splitter.Bar());
       for (multiset<Flavour>::iterator fit=sit->begin();fit!=sit->end();fit++)
 	flavs.push_back(*fit);
-      MakeKernels(flavs,type);
+      for (size_t logtype=1;logtype<3;logtype++)
+	MakeKernels(flavs,log_type::code(logtype),type);
       sit = additions.erase(sit);
     }
   }

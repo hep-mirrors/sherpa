@@ -1,4 +1,4 @@
-SUBDIRS = FF FI IF II
+SUBDIRS = FF 
 
 pkglib_LTLIBRARIES = libCFPCalculators.la
 
@@ -9,6 +9,7 @@ libCFPCalculators_la_SOURCES = \
 	Git_Info.C \
 	SF_Base.C \
 	Gauge_Base.C \
+	Kinematics_Base.C \
 	QQG.C \
 	QGQ.C \
 	GQQ.C \
@@ -18,5 +19,6 @@ libCFPCalculators_la_SOURCES = \
 localinc_HEADERS   = \
 	SF_Base.H \
 	Gauge_Base.H \
+	Kinematics_Base.H \
 	Functions.H
 

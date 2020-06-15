@@ -7,8 +7,10 @@ libCFPTools_la_SOURCES = \
 	Git_Info.C \
 	Color.C \
 	Parton.C \
-	Configuration.c  \
+	Configuration.C  \
 	CFP_Parameters.C \
+	Splitting.C \
+	Kernel_Constructor.C \
 	Kernel_Info.C
 
 localinc_HEADERS   = \
@@ -16,6 +18,7 @@ localinc_HEADERS   = \
 	Parton.H  \
 	Configuration.H  \
 	CFP_Parameters.H \
+	Kernel_Constructor.H \
 	Kernel_Info.H \
 	Weight.H
 

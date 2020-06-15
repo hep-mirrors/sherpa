@@ -8,7 +8,7 @@
 namespace CFPSHOWER {
   class FFFF_FF : public SF_FF13 {
   protected:
-    double m_za, m_xa, m_xia, m_za_tilde, m_zi_tilde, m_zj_tilde;
+    double m_z1, m_z2, m_xia, m_za_tilde, m_zi_tilde, m_zj_tilde;
     double m_t, m_sai, m_saj, m_sij, m_Q2, m_saij, m_norm, m_cosphi_aj, m_cosphi_ai;
     inline virtual const double B2(const Splitting & split);
     inline virtual const double R() const { return 0.; } 
@@ -53,8 +53,7 @@ namespace CFPSHOWER {
       return Functions::DeltaIqqbarF(m_za_tilde,m_zi_tilde,m_zj_tilde);
     }
     inline const double SymmetryFactor(const Splitting & split) const {
-      return 1.;
-      double z = split.z(), xi = z/split.z2();
+      double z = split.z(0), xi = z/split.z(1);
       return (xi-z)/(1.-z);
     }
   public:
@@ -112,15 +111,15 @@ double FFFF_FF::operator()(const Splitting & split) {
   //	   <<"as = "<<((*split.GetKernel()->GetGauge())(split)/(2.*M_PI))
   //	   <<" --> "<<split.z()<<"*"<<value<<" "
   //	   <<"(sym = "<<SymmetryFactor(split)<<")\n";
-  return split.z() * value;
+  return split.ztilde(0) * value;
 }
 
 const double FFFF_FF::B2(const Splitting & split) {
-  //if (m_flavs[m_tags[0]].Kfcode()>split.GetKernel()->GetGauge()->NF(split)) return 0.;
-  m_za = split.z(); m_xa = split.z2(); m_xia = m_za/m_xa;
-  m_t  = split.t(); m_sai = split.t2(); m_Q2 = split.Q2(); m_saij = m_t/m_xia+m_sai;
+  if (m_flavs[m_tags[0]].Kfcode()>split.GetKernel()->GetGauge()->NF(split)) return 0.;
+  m_z1 = split.z(0); m_z2 = split.z(1); m_xia = m_z1/m_z2;
+  m_t  = split.t(0); m_sai = split.sai(); m_Q2 = split.Q2(); m_saij = m_t/m_xia+m_sai;
   m_norm     = m_Q2/(m_Q2-m_saij);
-  m_za_tilde = m_norm*m_za; m_zi_tilde = m_norm*(m_xia-m_za);
+  m_za_tilde = m_norm*m_z1; m_zi_tilde = m_norm*(m_xia-m_z1);
   m_zj_tilde = 1.-m_za_tilde-m_zi_tilde;
   double PSweight = -2.*log(m_za_tilde)/(1.-m_sai/m_saij);
   if (split.IsEndPoint()) return PSweight*I();
@@ -128,50 +127,46 @@ const double FFFF_FF::B2(const Splitting & split) {
   m_sij = (m_moms[m_tags[1]]+m_moms[m_tags[2]]).Abs2();
   m_cosphi_ai = CosPhi(m_moms[m_tags[0]],m_moms[m_tags[1]],m_moms[m_tags[2]],m_specmom);
   m_cosphi_aj = CosPhi(m_moms[m_tags[0]],m_moms[m_tags[2]],m_moms[m_tags[1]],m_specmom);
-  msg_Out()<<METHOD<<"("<<m_name<<", diff): saij = "<<m_saij<<", yaij = "<<(m_saij/m_Q2)<<", "
-  	   <<"z1 = "<<m_za_tilde<<", z2 = "<<m_zi_tilde<<", z3 = "<<m_zj_tilde<<",\n"
-  	   <<"     t = "<<split.t()<<", sai = "<<m_sai<<", "
-  	   <<"saj = "<<m_saj<<", sij = "<<m_sij<<", "
-  	   <<"cp13 = "<<m_cosphi_aj<<", cp12 = "<<m_cosphi_ai<<", "
-  	   <<"PS = "<<PSweight<<", \n"
-  	   <<"     R = "<<R()<<", S = "<<S()<<".\n";
+  // msg_Out()<<METHOD<<"("<<m_name<<", diff): saij = "<<m_saij<<", yaij = "<<(m_saij/m_Q2)<<", "
+  // 	   <<"z1 = "<<m_za_tilde<<", z2 = "<<m_zi_tilde<<", z3 = "<<m_zj_tilde<<",\n"
+  // 	   <<"     t = "<<split.t()<<", sai = "<<m_sai<<", "
+  // 	   <<"saj = "<<m_saj<<", sij = "<<m_sij<<", "
+  // 	   <<"cp13 = "<<m_cosphi_aj<<", cp12 = "<<m_cosphi_ai<<", "
+  // 	   <<"PS = "<<PSweight<<", \n"
+  // 	   <<"     R = "<<R()<<", S = "<<S()<<".\n";
   return PSweight*(R()-S());
 }
 
 double FFFF_FF::Integral(const Splitting & split) const {
   double invkappa = split.Q2()/split.tcut();
-  double SFInt    = 20./9. * 1./2. * log(1.+invkappa);
-  //msg_Out()<<METHOD<<" = 20/9*1/2*log(1+"<<split.tcut()<<"/"<<split.Q2()<<") * "
-  //	   <<split.GetKernel()->GetGauge()->OverEstimate(split)<<"/(2pi) = "
-  //	   <<(SFInt * split.GetKernel()->GetGauge()->OverEstimate(split)/(2.*M_PI))<<"\n";
+  double SFInt    = 20./9. * log(1.+invkappa);
   return SFInt * split.GetKernel()->GetGauge()->OverEstimate(split)/(2.*M_PI); 
 }
 
 double FFFF_FF::OverEstimate(const Splitting & split) const {
   double kappa = split.tcut()/split.Q2();
-  double SFEst = 20./9. * 1./2. * 1./(split.z()+kappa);
+  double SFEst = 20./9. * 1./(split.z(0)+kappa);
   return SFEst * split.GetKernel()->GetGauge()->OverEstimate(split)/(2.*M_PI); 
 }
 
 void FFFF_FF::GeneratePoint(Splitting & split) const {
   double kappa = split.tcut()/split.Q2();
-  double z     = pow((1.+kappa)/kappa, -ran->Get()) * (1.+kappa) - kappa;
-  double phi   = 2.*M_PI*ran->Get();
-  double z2    = pow(z, ran->Get());
-  double sai   = 0;
+  double z1    = pow((1.+kappa)/kappa, -ran->Get()) * (1.+kappa) - kappa;
+  double phi1  = 2.*M_PI*ran->Get();
+  double z2    = pow(z1, ran->Get());
   double help  = ran->Get();
-  sai = help/(1.-help) * (z2/z * split.t() + split.m2(0));
+  double sai   = help/(1.-help) * (z2/z1 * split.t(0) + split.m2(0));
   double phi2  = 2.*M_PI*ran->Get();
-  bool   endp  = false; //ran->Get()<0.5;
+  bool   endp  = true; //ran->Get()<0.5;
   if (endp) {
     split.SetEndPoint(true);
     //split.SetMode(splitting_mode::coll);
   }
-  split.Set_z(z);
-  split.Set_t2(sai);
-  split.Set_z2(z2);
-  split.Set_phi(phi);
-  split.Set_phi2(phi2);
+  split.Set_z(0,z1);
+  split.Set_sai(sai);
+  split.Set_z(1,z2);
+  split.Set_phi(0,phi1);
+  split.Set_phi(1,phi2);
 }
 
 DECLARE_GETTER(FFFF_FF,"FF_FFFF",SF_Base,Kernel_Info);
@@ -179,6 +174,7 @@ DECLARE_GETTER(FFFF_FF,"FF_FFFF",SF_Base,Kernel_Info);
 SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFFF_FF>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   Flavour split = info.GetSplit();
   if (info.Type()!=kernel_type::FF || info.GetFlavs().size()!=3 ||
       !split.IsFermion())  return NULL;

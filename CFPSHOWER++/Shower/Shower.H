@@ -46,6 +46,7 @@ namespace CFPSHOWER {
     Splitting * GenerateTestSplitting(Parton * splitter,const double & sum);
     bool        PerformSplitting();
     void        EstablishSpectators(Parton * parton);
+    void        EstablishSoftPartners();
     void        AddWeight(const double & t);
   public:
     Shower();

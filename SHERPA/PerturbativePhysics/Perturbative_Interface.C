@@ -95,17 +95,17 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_mi->SetMassMode(1);
     int stat(p_mi->ShiftMasses(p_ampl));
     if (stat<0) {
-      msg_Out()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
-	       <<(*blob)<<"\n";
-      exit(1);
+      msg_Error()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
+		 <<(*blob)<<"\n";
+      //exit(1);
       return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Out()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
-		 <<(*blob)<<"\n";
-	exit(1);
+	msg_Error()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
+		   <<(*blob)<<"\n";
+	//exit(1);
 	return Return_Value::Retry_Event;
       }
     }

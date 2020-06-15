@@ -39,8 +39,8 @@ double FVF_IF::OverEstimate(const Splitting & split) const {
 
 void FVF_IF::GeneratePoint(Splitting & split) const {
   double eta = split.eta();
-  split.Set_z(eta+(1.0-eta)*ran->Get());
-  split.Set_phi();
+  split.Set_z(0,eta+(1.0-eta)*ran->Get());
+  split.Set_phi(0);
 }
 
 double FVF_IF::B1(const double & z,const double & kappa2) const {

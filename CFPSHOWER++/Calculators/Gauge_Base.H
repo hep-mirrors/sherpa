@@ -1,7 +1,7 @@
 #ifndef CFPSHOWER_Calculators_Gauge_Base_H
 #define CFPSHOWER_Calculators_Gauge_Base_H
 
-#include "CFPSHOWER++/Shower/Splitting.H"
+#include "CFPSHOWER++/Tools/Splitting.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "CFPSHOWER++/Tools/Color.H"
 #include "ATOOLS/Org/Getter_Function.H"
@@ -24,7 +24,7 @@ namespace CFPSHOWER {
     
     std::string  m_name;
     Color_Vector m_colors;
-    
+
     virtual const double Beta0(const double & NF) const;
     virtual const double Beta1(const double & NF) const;
     virtual const double NF(const double & q2) const;
@@ -34,6 +34,7 @@ namespace CFPSHOWER {
   public:
     Gauge_Base(const Kernel_Info & info);
     virtual double operator()(const Splitting & split);
+    virtual const double SoftEndpoint(const Splitting & split);
     virtual const double K(const Splitting & split) const;
     virtual const double KMax(const Splitting & split) const;
     virtual const double Scale(const Splitting & split) const;
@@ -46,6 +47,7 @@ namespace CFPSHOWER {
     virtual const std::string & Name()       const { return m_name; }
     virtual void SetName(const std::string & name) { m_name = name; }
     virtual const Color & GetColor(size_t i) const { return m_colors[i]; }
+
     
     virtual bool SetColours(Splitting & split)=0;
   };

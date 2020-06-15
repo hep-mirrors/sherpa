@@ -205,9 +205,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   CFPLIBS="\${CFPBUILDDIR}/Main/libCFPMain.la \
 	\${CFPBUILDDIR}/Calculators/libCFPCalculators.la \
 	\${CFPBUILDDIR}/Calculators/FF/libCFPCalculatorsFF.la \
-	\${CFPBUILDDIR}/Calculators/FI/libCFPCalculatorsFI.la \
-	\${CFPBUILDDIR}/Calculators/IF/libCFPCalculatorsIF.la \
-	\${CFPBUILDDIR}/Calculators/II/libCFPCalculatorsII.la \
 	\${CFPBUILDDIR}/Shower/libCFPShower.la \
 	\${CFPBUILDDIR}/Tools/libCFPTools.la"
   AC_SUBST(CFPDIR)

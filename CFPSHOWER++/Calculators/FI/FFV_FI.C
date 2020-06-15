@@ -26,7 +26,7 @@ FFV_FI::FFV_FI(const Kernel_Info & info) : SF_FI12(info), m_jmax(5.) {
 }
 
 double FFV_FI::operator()(const Splitting & split) {
-  double z(split.z()), kappa2(split.t()/split.Q2red());
+  double z(split.z(0)), kappa2(split.t(0)/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
@@ -43,7 +43,7 @@ double FFV_FI::operator()(const Splitting & split) {
     double mi2 = split.m2(0), y = split.y(), pipj = split.Q2red()*(1.-y)/(2.*y);
     value -= mi2/pipj;
   }
-  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
+  if (split.Clustered()==0) value *= split.ztilde(m_tags[0]);
   return value;
 }
 
@@ -54,13 +54,14 @@ double FFV_FI::Integral(const Splitting & split) const {
 
 double FFV_FI::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax * m_jmax;
+  return A1(split.z(0),split.tcut()/split.Q2red()) * Kmax * m_jmax;
 }
 
 void FFV_FI::GeneratePoint(Splitting & split) const {
   double kappa2 = split.tcut()/split.Q2red();
-  split.Set_z(1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)));
-  split.Set_phi();
+  double z      = 1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.));
+  split.Set_z(0,z);
+  split.Set_phi(0);
 }
 
 double FFV_FI::A1(const double & z,const double & kappa2) const {

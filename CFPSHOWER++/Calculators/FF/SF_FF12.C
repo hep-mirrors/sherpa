@@ -1,4 +1,5 @@
 #include "CFPSHOWER++/Calculators/FF/SF_FF12.H"
+#include "CFPSHOWER++/Calculators/FF/Kinematics_FF2.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
@@ -7,28 +8,28 @@ using namespace CFPSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-SF_FF12::SF_FF12(const Kernel_Info & info) : SF_Base(info) {
+SF_FF12::SF_FF12(const Kernel_Info & info) :
+  SF_Base(info) {
+  switch (m_logtype) {
+  case log_type::soft:
+    p_kinematics = new Kinematics_FF2_soft();
+    break;
+  case log_type::coll:
+    p_kinematics = new Kinematics_FF2_coll();
+    break;
+  default:
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+	       <<"   No suitable type found to define kinematics mapping.\n"
+	       <<"   Will exit the run.\n";
+    exit(0);
+  }
   m_moms.resize(2);
 }
 
 double SF_FF12::Jacobean(const Splitting & split) const {
-  double Q2red = split.Q2red(), Q2red_y = Q2red * split.y(); 
-  return ( Q2red / Lambda(split.Q2(),split.msplit2(),split.mspect2()) *
-	   Q2red_y /(Q2red_y+split.m2(0)+split.m2(1)-split.msplit2()) );
+  return p_kinematics->Weight();
 }
 
-bool SF_FF12::Construct(Splitting & split,const int & mode) {
-  if (sqrt(split.Q2()) <
-      sqrt(split.m2(0))+sqrt(split.m2(1))+sqrt(split.mspect2())) return false;
-  double z = split.z(), y = split.t()/(split.Q2red()*(1.-z)), ztilde = (z-y)/(1.-y);
-  Kin_Args kinargs(y,ztilde,split.phi());
-  if (ConstructFFDipole(split.m2(0),split.m2(1),
-			split.msplit2(),split.mspect2(),
-			split.GetSplitter()->Mom(),split.GetSpectator()->Mom(),
-			kinargs) < 0) return false;
-  split.Set_y(y);
-  m_moms[0] = kinargs.m_pi;
-  m_moms[1] = kinargs.m_pj;
-  m_specmom = kinargs.m_pk;
-  return true;
+bool SF_FF12::Construct(Splitting * split,Configuration * config,const int & mode) {
+  return (*p_kinematics)(split,config,mode);
 }

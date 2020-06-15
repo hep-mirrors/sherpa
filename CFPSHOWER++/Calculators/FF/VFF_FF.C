@@ -1,9 +1,9 @@
-#include "CFPSHOWER++/Calculators/FF/SF_FF12.H"
+#include "CFPSHOWER++/Calculators/SF_Base.H"
 #include "CFPSHOWER++/Shower/Kernel.H"
 #include "ATOOLS/Org/Message.H"
 
 namespace CFPSHOWER {
-  class VFF_FF : public SF_FF12 {
+  class VFF_FF : public SF_Base {
   private:
     double B1(const double & z,const double & kappa2) const;
   public:
@@ -19,12 +19,12 @@ namespace CFPSHOWER {
 using namespace CFPSHOWER;
 using namespace ATOOLS;
 
-VFF_FF::VFF_FF(const Kernel_Info & info) : SF_FF12(info) {
+VFF_FF::VFF_FF(const Kernel_Info & info) : SF_Base(info) {
   SetName("V->FF");
 }
 
 double VFF_FF::operator()(const Splitting & split) {
-  double z(split.z()), kappa2(split.t()/split.Q2red());
+  double z(split.z(0)), kappa2(split.t(0)/split.Q2red());
   double value = 0.;
   if (split.IsMassive()) {
     double mi2(split.m2(0)), mk2(split.mspect2());
@@ -34,7 +34,7 @@ double VFF_FF::operator()(const Splitting & split) {
     value += sqrt(v2_ij_k)/(Q2-sij-mk2) * (B1(z,kappa2) + 2.*mi2/sij);
   }
   else value += B1(z,kappa2);
-  if (split.Clustered()==0) value *= (m_tags[0]==0) ? z : 1-z;
+  if (split.Clustered()==0) value *= split.ztilde(m_tags[0]);
   return value;
 }
 
@@ -44,8 +44,8 @@ double VFF_FF::OverEstimate(const Splitting & split) const { return 1.; }
 
 void VFF_FF::GeneratePoint(Splitting & split) const {
   double z = ran->Get();
-  split.Set_z(z);
-  split.Set_phi();
+  split.Set_z(0, z);
+  split.Set_phi(0);
 }
 
 double VFF_FF::B1(const double & z,const double & kappa2) const {
@@ -58,6 +58,7 @@ SF_Base *
 ATOOLS::Getter<SF_Base,Kernel_Info,VFF_FF>::
 operator()(const Parameter_Type & info) const
 {
+  return NULL;
   if (info.Type()==kernel_type::FF &&
       (info.GetSplit().IsVector() &&
        info.GetFlavs()[0].IsFermion() &&

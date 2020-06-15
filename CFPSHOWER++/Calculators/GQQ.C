@@ -24,19 +24,18 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GQQ::Scale(const Splitting & split) const {
-  double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.t()/split.z();
+    return split.t(0)/split.z(0);
     break;
   case kernel_type::FI:
-    scale = split.t()/split.y();
+    return split.t(0)/split.y();
     break;
   case kernel_type::FF:
   default:
     break;
   }
-  return scale;
+  return split.t(0);
 }
 
 bool GQQ::SetColours(Splitting & split) {

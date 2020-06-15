@@ -488,6 +488,7 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t & tbeam) {
   //if (aspec) msg_Out()<<(*aspec)<<"\n";
   //Output();
   if (replacecol) return true;
+  msg_Error()<<METHOD<<" triggers exit.\n";
   exit(1);
   return true;
 }

@@ -52,7 +52,7 @@ const double Gauge_Base::OverEstimate(const Splitting & split) const {
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
-  return split.t();
+  return split.t(0);
 }
 
 const double Gauge_Base::Beta0(const double & NF) const {
@@ -101,3 +101,12 @@ const double Gauge_Base::K2(const double & NF) const {
 	  +m_CF*m_TR*NF * (-55./3.+16.*m_zeta3)-16./27.*sqr(m_TR*NF))/4.;
 }
 
+const double Gauge_Base::SoftEndpoint(const Splitting & split) {
+  return 0.;
+  Vec4D  pi = split.Momentum(0);
+  Vec4D  pj = split.Momentum(1);
+  Vec4D  pk = split.SpectatorMomentum();
+  double kt2 = 2.*(pi*pj)*(pk*pj)/(pi*pk);
+  double mu2 = m_muR2factor * Scale(split);
+  return (*this)(split)/(2.*M_PI) * Beta0(NF(split)) * log(mu2/kt2);
+}

@@ -7,6 +7,15 @@
 
 
 namespace CFPSHOWER {
+  struct log_type {
+    enum code {
+      soft = 1,
+      coll = 2,
+      none = 0
+    };
+  };
+  std::ostream &operator<<(std::ostream &s,const log_type::code & type);
+
   struct kernel_type {
     enum code {
       FF   = 1,
@@ -25,11 +34,12 @@ namespace CFPSHOWER {
   class Kernel_Info {
     ATOOLS::Flavour           m_split;
     ATOOLS::Flavour_Vector    m_flavs;
-    kernel_type::code         m_type;
     std::vector<size_t>       m_tagsequence;
+    log_type::code            m_logtype;
+    kernel_type::code         m_type;
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
-    int    m_kfactor, m_cplscheme;            
+    int    m_kfactor, m_softcorr, m_endpoint, m_cplscheme;            
     double m_asfactor, m_muR2factor;
     void AdjustFlavours();
     void AdjustFlavours12();
@@ -38,30 +48,37 @@ namespace CFPSHOWER {
     Kernel_Info() {}
     Kernel_Info(ATOOLS::Flavour & split,
 		ATOOLS::Flavour_Vector & flavs,
-		kernel_type::code type,
-		const std::vector<size_t> & tagsequence);
+		const std::vector<size_t> & tagsequence,
+		log_type::code logtype,
+		kernel_type::code type);
 
     
-    inline void SetAlphaS(MODEL::Running_AlphaS * alphaS)    { p_alphaS = alphaS; }
-    inline void SetAlphaQED(MODEL::Running_AlphaQED * alpha) { p_alpha  = alpha; }
-    inline void SetKFactor(const int & kfactor)              { m_kfactor = kfactor; }
-    inline void SetCplScheme(const int & cplscheme)          { m_cplscheme = cplscheme; }
-    inline void SetAsFactor(const double & asfactor)         { m_asfactor = asfactor; }
+    inline void SetAlphaS(MODEL::Running_AlphaS * alphaS)    { p_alphaS     = alphaS; }
+    inline void SetAlphaQED(MODEL::Running_AlphaQED * alpha) { p_alpha      = alpha; }
+    inline void SetKFactor(const int & kfactor)              { m_kfactor    = kfactor; }
+    inline void SetSoftCorrection(const int & softcorr)      { m_softcorr   = softcorr; }
+    inline void SetEndpoint(const int & endpoint)            { m_endpoint   = endpoint; }
+    inline void SetCplScheme(const int & cplscheme)          { m_cplscheme  = cplscheme; }
+    inline void SetAsFactor(const double & asfactor)         { m_asfactor   = asfactor; }
     inline void SetMuR2Factor(const double & muR2factor)     { m_muR2factor = muR2factor; }
 
-    inline const ATOOLS::Flavour          GetSplit()    const { return m_split; }
-    inline const ATOOLS::Flavour_Vector & GetFlavs()    const { return m_flavs; }
-    inline const kernel_type::code        Type()        const { return m_type; } 
-    inline const std::vector<size_t>    & TagSequence() const { return m_tagsequence; }
-    inline MODEL::Running_AlphaS        * GetAlphaS()   const { return p_alphaS; }
-    inline MODEL::Running_AlphaQED      * GetAlpha()    const { return p_alpha; }
-    inline const int                    & KFactor()     const { return m_kfactor; }
-    inline const int                    & CplScheme()   const { return m_cplscheme; }
-    inline const double                 & AsFactor()    const { return m_asfactor; }
-    inline const double                 & MuR2Factor()  const { return m_muR2factor; }
+    inline const ATOOLS::Flavour          GetSplit()       const { return m_split; }
+    inline const ATOOLS::Flavour_Vector & GetFlavs()       const { return m_flavs; }
+    inline const log_type::code           LogType()        const { return m_logtype; } 
+    inline const kernel_type::code        Type()           const { return m_type; } 
+    inline const std::vector<size_t>    & TagSequence()    const { return m_tagsequence; }
+    inline MODEL::Running_AlphaS        * GetAlphaS()      const { return p_alphaS; }
+    inline MODEL::Running_AlphaQED      * GetAlpha()       const { return p_alpha; }
+    inline const int                    & KFactor()        const { return m_kfactor; }
+    inline const int                    & Endpoint()       const { return m_endpoint; }
+    inline const int                    & SoftCorrection() const { return m_softcorr; }
+    inline const int                    & CplScheme()      const { return m_cplscheme; }
+    inline const double                 & AsFactor()       const { return m_asfactor; }
+    inline const double                 & MuR2Factor()     const { return m_muR2factor; }
 
-    const std::string       SFName() const;
-    const std::string       GPName() const;
+    const std::string SFName() const;
+    const std::string GPName() const;
+    const std::string KinName() const;
 
     friend std::ostream &operator<<(std::ostream &s,const Kernel_Info & info);
   };// end of struct Splitting

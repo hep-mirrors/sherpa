@@ -1,5 +1,5 @@
-#ifndef CFPShower_Shower_Kernel_Constructor_H
-#define CFPShower_Shower_Kernel_Constructor_H
+#ifndef CFPShower_Tools_Kernel_Constructor_H
+#define CFPShower_Tools_Kernel_Constructor_H
 
 #include "CFPSHOWER++/Shower/Kernels.H"
 
@@ -23,7 +23,8 @@ namespace CFPSHOWER {
   private:
     Shower * p_shower;
     double   m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
-    int      m_kinscheme, m_kfactor, m_cplscheme, m_MEcorrs, m_SForder;
+    int      m_kinscheme, m_cplscheme, m_MEcorrs, m_SForder;
+    int      m_kfactor, m_softcorr, m_endpoint;
     
     MODEL::Model_Base           * p_model;
     PDF::PDF_Base               * p_pdf[2];
@@ -37,6 +38,7 @@ namespace CFPSHOWER {
     void MakeKernelsFromVertices(MODEL::Model_Base * const model);
     void MakeKernelsFromKernels(const kernel_type::code & type);
     void MakeKernels(ATOOLS::Flavour_Vector & flavs,
+		     const log_type::code & logtype,
 		     const kernel_type::code & type);
     void DeleteAllKernelsWithWrongOrder();
     void MakePermutations();

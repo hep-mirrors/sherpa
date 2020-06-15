@@ -6,10 +6,9 @@
 namespace CFPSHOWER {
   class SF_FF12 : public SF_Base {
   protected:
-    virtual double Jacobean(const Splitting & split) const;
+    virtual double SoftCorrelation(const Splitting * split) const { return 0.; }; 
   public:
     SF_FF12(const Kernel_Info & info);
-    virtual bool Construct(Splitting & split,const int & mode=0);
   };
 }
 

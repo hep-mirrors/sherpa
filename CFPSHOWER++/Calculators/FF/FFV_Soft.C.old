@@ -1,0 +1,125 @@
+#include "CFPSHOWER++/Calculators/FF/SF_FF12.H"
+#include "CFPSHOWER++/Shower/Kernel.H"
+#include "ATOOLS/Org/Message.H"
+
+namespace CFPSHOWER {
+  class FFV_Soft : public SF_FF12 {
+    double A1(const double & z,const double & kappa2) const;
+    double SoftCorrelation(const Splitting & split) const;
+  public:
+    FFV_Soft(const Kernel_Info & info);
+    double operator()(const Splitting & split);
+    double Integral(const Splitting & split) const;
+    double OverEstimate(const Splitting & split) const;
+    void   GeneratePoint(Splitting & split) const;
+  };
+}
+
+using namespace CFPSHOWER;
+using namespace ATOOLS;
+
+FFV_Soft::FFV_Soft(const Kernel_Info & info)  : SF_FF12(info) {
+  SetName("F->FV(soft)");
+  msg_Out()<<METHOD<<".\n";
+}
+
+double FFV_Soft::operator()(const Splitting & split) {
+  double z(split.z(0)), kappa2(split.t(0)/split.Q2red());
+  // Start with the soft term only, including possible K factors (cusp anomalous
+  // dimensions), obtained from the gauge part of the kernel
+  double Kfactor = (m_CMW==1) ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
+  double value   = A1(z,kappa2) * Kfactor, soft=0., endp = 0.;
+  if (m_tags[0]==0) {
+    // soft corrections
+    // explicit correlation for "tagged" quark only if soft partners are set correctly
+    if (m_softcorr>0 && split.GetSplitter()->SoftPartner(0)==split.GetSpectator() &&
+	split.GetSplitter()->SoftPartner(2)!=NULL)
+      value += soft = SoftCorrelation(split);
+    // end-point contribution
+    if (m_endpoint>0)
+      value += endp = A1(z,kappa2) * split.GetKernel()->GetGauge()->SoftEndpoint(split);
+  }
+  if (split.Clustered()==0) value *= split.ztilde(m_tags[0]);
+  /*
+  msg_Out()<<METHOD<<" for t = "<<split.t(0)<<", z = "<<split.z(0)<<", "
+  	   <<"y = "<<split.y()<<", ztilde = "<<split.ztilde(0)<<"\n"
+  	   <<"*** "<<split
+  	   <<"*** value = "<<value<<" from A = "<<A1(z,kappa2)<<", "
+  	   <<"soft correction = "<<soft<<", endpoint = "<<endp<<".\n";
+  */
+  return value;
+}
+
+double FFV_Soft::Integral(const Splitting & split) const {
+  double Kmax = (m_CMW==1) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
+  return log(1.0+split.Q2red()/split.tcut()) * Kmax;
+}
+
+double FFV_Soft::OverEstimate(const Splitting & split) const {
+  double Kmax   = (m_CMW==1) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
+  double kappa2 = split.tcut()/split.Q2red(), z = split.z(0); 
+  // 1/z compensates for the extra factor z in the numerator of A1 
+  return A1(z,kappa2)/z * Kmax;
+}
+
+void FFV_Soft::GeneratePoint(Splitting & split) const {
+  double kappa2 = split.tcut()/split.Q2red();
+  double z      = 1.-sqrt(kappa2 * (pow(1.+1./kappa2,ran->Get())-1.)); 
+  split.Set_z(0,z);
+  split.Set_phi(0);
+}
+
+double FFV_Soft::A1(const double & z,const double & kappa2) const {
+  // This is 2*z/(1-z) after adding the IR regulator
+  return 2.*(1.-z)*z/(ATOOLS::sqr(1.-z)+kappa2);
+}
+
+double FFV_Soft::SoftCorrelation(const Splitting & split) const {
+  Vec4D pi = m_moms[0], p1 = m_moms[1], p2 = m_specmom;
+  Vec4D pj = split.GetSplitter()->SoftPartner(2)->Mom();
+  double sij = 2.*pi*pj, si1 = 2.*pi*p1, si2 = 2.*pi*p2;
+  double sj1 = 2.*pj*p1, sj2 = 2.*pj*p2, s12 = 2.*p1*p2;
+  // Equations (49) and (54) in 1805.03752
+  double w_ij_12    = 1.-sij*s12/((si1+si2)*(sj1+sj2));
+  double wbar_ij_12 = ((si1+si2)*(sj1+sj2)-sij*s12)/(si1*sj1+si2*sj2);
+  // sub-leading-colour terms (~si2) of Equations (57) and (58) in 1805.03752
+  // the extra term subtracts the soft limit of the splitting function,
+  // (essentially a subtraction of the LO A-term in the soft limit).
+  double value = 2.*si2/(si1+si2) *
+    ( (w_ij_12+wbar_ij_12)/2. * (s_CA/(2.*s_CF)-1. + 1.) - 1.);
+  // sub-leading colour terms (~sij) of Equation (57) in 1805.03752
+  // they are only invoked if the relative transverse momentum is large enough
+  // and therefore the eikonal and alphaS are safe
+  double kt2_1ij = (si1*sj1)/(sij+si1+sj1); 
+  if (kt2_1ij>split.tcut()) {
+    Splitting dummy(NULL,NULL,kt2_1ij,split.tcut());
+    double as_ratio = ((*split.GetKernel()->GetGauge())(dummy)/
+		       (*split.GetKernel()->GetGauge())(split));
+    value += -2.*sij/(si1+sj1) * as_ratio * (w_ij_12+wbar_ij_12)/2. * (s_CA/(2.*s_CF)-1.);
+  }
+  return value;
+}
+
+
+DECLARE_GETTER(FFV_Soft,"FF_FFV_Soft",SF_Base,Kernel_Info);
+
+SF_Base * ATOOLS::Getter<SF_Base,Kernel_Info,FFV_Soft>::
+operator()(const Parameter_Type & info) const
+{
+  if (info.Type()==kernel_type::FF &&
+      info.LogType()==log_type::soft &&
+      info.GetSplit().IsFermion() && 
+      info.GetFlavs()[0].IsFermion() &&
+      info.GetFlavs()[1].IsVector()) {
+    return new FFV_Soft(info);
+  }
+  return NULL;
+}
+
+void ATOOLS::Getter<SF_Base,Kernel_Info,FFV_Soft>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"FFV soft splitting Function (FF)";
+}
+
+

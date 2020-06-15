@@ -20,19 +20,16 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 const double GGG::Scale(const Splitting & split) const {
-  double scale = split.t();
   switch (m_type) {
   case kernel_type::IF:
-    scale = split.t()/split.z();
-    break;
+    return split.t(0)/split.z(0);
   case kernel_type::FI:
-    scale = split.t()/split.y();
-    break;
+    return split.t(0)/split.y();
   case kernel_type::FF:
   default:
     break;
   }
-  return scale;
+  return split.t(0);
 }
 
 bool GGG::SetColours(Splitting & split) {
@@ -47,7 +44,6 @@ bool GGG::SetColours(Splitting & split) {
     if (ran->Get()>0.5) same0 = false; else same1 = false;
   }
   unsigned int newcol = Flow::Counter();
-  m_colors.clear();
   // starting position: splitter anti-colour = spectator colour:
   // soft gluon inherits anti-colour and hard gluon keeps colour
   m_colors[0] = Color(splitter->GetColor()[0],newcol);

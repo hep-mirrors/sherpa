@@ -20,11 +20,13 @@ std::ostream & CFPSHOWER::operator<<(std::ostream &s,const subtract::code & sub)
 
 SF_Base::SF_Base(const Kernel_Info & info) :
   m_split(info.GetSplit()), m_flavs(info.GetFlavs()), m_tags(info.TagSequence()),
+  m_logtype(info.LogType()), m_type(info.Type()),
   m_name("generic SF"),
-  m_CMW(info.KFactor()), m_subtract(subtract::none)
+  m_CMW(info.KFactor()), m_softcorr(info.SoftCorrection()), m_endpoint(info.Endpoint()),
+  m_subtract(subtract::none)
 { }  
 
-double SF_Base::Lambda(const double & a,const double & b,const double & c) const {
+double SF_Base::Lambda(const double & a,const double & b,const double & c) {
   double lambda2 = Lambda2(a,b,c); 
   if (lambda2<0.) {
     msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<b<<", "<<c<<") yields nan.\n"
@@ -34,7 +36,6 @@ double SF_Base::Lambda(const double & a,const double & b,const double & c) const
   return sqrt(lambda2);
 }
 
-double SF_Base::Lambda2(const double & a,const double & b,const double & c) const {
+double SF_Base::Lambda2(const double & a,const double & b,const double & c) {
   return sqr(a-b-c)-4.*b*c;
 }
-

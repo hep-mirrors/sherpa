@@ -12,11 +12,11 @@ SF_IF12::SF_IF12(const Kernel_Info & info) : SF_Base(info) {}
 
 double SF_IF12::Jacobean(const Splitting & split) const {
   double eta_old = split.eta();
-  double eta_new = split.eta()/split.z();
+  double eta_new = split.eta()/split.z(0);
   size_t beam    = split.GetSplitter()->Beam()-1;
   const Flavour & flav = m_flavs[m_tags[0]];
-  double pdf_old = split.GetKernel()->GetXPDF(eta_old,split.t(),m_split,beam);
-  double pdf_new = split.GetKernel()->GetXPDF(eta_new,split.t(),   flav,beam);
+  double pdf_old = split.GetKernel()->GetXPDF(eta_old,split.t(0),m_split,beam);
+  double pdf_new = split.GetKernel()->GetXPDF(eta_new,split.t(0),   flav,beam);
   if (dabs(pdf_old) < (split.GetKernel()->PDFMinValue() *
 		       log(1.-eta_old)/log(1.-split.GetKernel()->PDFXMin())) ) {
     return 0.;
@@ -54,8 +54,8 @@ double SF_IF12::PDFEstimate(const Splitting & split) const
 }
 
 bool SF_IF12::Construct(Splitting & split,const int & mode) {
-  double y = split.t() / (split.Q2red() * (1.-split.z()));
-  Kin_Args kin_args(y,split.z(),split.phi(),split.KinScheme());
+  double y = split.t(0) / (split.Q2red() * (1.-split.z(0)));
+  Kin_Args kin_args(y,split.z(0),split.phi(0),split.KinScheme());
   Parton * helper(NULL);
   /* 
      TODO: Have to implement different kin scheme.
@@ -78,7 +78,11 @@ bool SF_IF12::Construct(Splitting & split,const int & mode) {
   // remember: pi is incoming particle, with flavour fl[1], resulting from splitting
   //           pj is emitted particle, with flavour fl[2]
   //           pk is spectator
+  // Will have to update ztilde here!
+  double ztilde = split.z(0);
   split.Set_y(y);
+  split.Set_ztilde(0,ztilde);
+  split.Set_ztilde(1,1.-ztilde);
   m_moms[0] = -kin_args.m_pi;
   m_moms[1] =  kin_args.m_pj;
   m_specmom =  kin_args.m_pk;

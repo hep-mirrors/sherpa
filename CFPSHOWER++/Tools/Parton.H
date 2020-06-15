@@ -31,7 +31,7 @@ namespace CFPSHOWER {
     double          m_xB;
     bool            m_on;
 
-    Parton *              p_in;
+    Parton *              p_in, * p_softpartners[3];
     std::vector<Parton *> m_offsprings;
     std::list<Parton *>   m_spectators;
     PWV_Map               m_specweights;
@@ -48,6 +48,9 @@ namespace CFPSHOWER {
     inline const double          & XB()                  const { return m_xB; }  
     inline Parton                * Out(const size_t & i) const { return m_offsprings[i]; }
     inline Color                 & GetColor()                  { return m_color; }
+    inline const Parton          * SoftPartner(const size_t & pos) const {
+      return p_softpartners[pos];
+    }
     inline const PWV_Map         & GetWeights()                { return m_specweights; }
     inline const std::list<Parton *>   * GetSpectators() const { return &m_spectators; }
     inline const std::vector<Parton *> * GetOffsprings() const { return &m_offsprings; }
@@ -58,6 +61,9 @@ namespace CFPSHOWER {
     inline void AddSpectator(Parton * parton)     { m_spectators.push_back(parton); }
     inline void RemoveSpectator(Parton * parton)  { m_spectators.remove(parton); }
     inline void AddOffspring(Parton * offspring)  { m_offsprings.push_back(offspring); }
+    inline void SetSoftPartner(const size_t & pos,Parton * partner) {
+      p_softpartners[pos] = partner;
+    }
     inline void SetMom(const ATOOLS::Vec4D &mom)  { m_mom=mom; }
     inline void SetFlav(const ATOOLS::Flavour &f) { m_flav=f; }
     inline void SetBeam(const int & beam)         { m_beam=beam; }

@@ -28,7 +28,7 @@ VFF_IF::VFF_IF(const Kernel_Info & info) : SF_IF12(info), m_jmax(5.)
 }
 
 double VFF_IF::operator()(const Splitting & split) {
-  double z(split.z()), kappa2(split.t()/split.Q2red());
+  double z(split.z(0)), kappa2(split.t(0)/split.Q2red());
   // No LL term, so no A1 term and no HO factor
   // TODO: Add the DIS ME correction
   double value = B1(z,kappa2);
@@ -48,12 +48,13 @@ double VFF_IF::Integral(const Splitting & split) const {
 }
 
 double VFF_IF::OverEstimate(const Splitting & split) const {
-  return 2./split.z() * m_jmax * PDFEstimate(split);
+  return 2./split.z(0) * m_jmax * PDFEstimate(split);
 }
 
 void VFF_IF::GeneratePoint(Splitting & split) const {
-  split.Set_z(pow(split.eta(),ran->Get()));
-  split.Set_phi();
+  double z = pow(split.eta(),ran->Get());
+  split.Set_z(0, z);
+  split.Set_phi(0);
 }
 
 double VFF_IF::B1(const double & z,const double & kappa2) const {

@@ -1,4 +1,4 @@
-#include "CFPSHOWER++/Shower/Splitting.H"
+#include "CFPSHOWER++/Tools/Splitting.H"
 #include "CFPSHOWER++/Tools/Configuration.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "ATOOLS/Org/Message.H"

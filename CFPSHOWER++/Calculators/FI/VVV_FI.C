@@ -25,7 +25,7 @@ VVV_FI::VVV_FI(const Kernel_Info & info) : SF_FI12(info) {
 }
 
 double VVV_FI::operator()(const Splitting & split) {
-  double z(split.z()), kappa2(split.tcut()/split.Q2red());
+  double z(split.z(0)), kappa2(split.tcut()/split.Q2red());
   // Start with the soft term only, including possible K factors
   // (cusp anomalous dimensions), obtained from the gauge part of the kernel
   double Kfactor = m_CMW==1 ? (1.+split.GetKernel()->GetGauge()->K(split)) : 1.;
@@ -50,13 +50,13 @@ double VVV_FI::Integral(const Splitting & split) const {
 
 double VVV_FI::OverEstimate(const Splitting & split) const {
   double Kmax = (m_CMW==1.) ? (1.+split.GetKernel()->GetGauge()->KMax(split)) : 1.;
-  return A1(split.z(),split.tcut()/split.Q2red()) * Kmax;
+  return A1(split.z(0),split.tcut()/split.Q2red()) * Kmax;
 }
 
 void VVV_FI::GeneratePoint(Splitting & split) const {
   double kappa2 = split.tcut()/split.Q2red();
   split.Set_z(1.-sqrt(kappa2 * (pow((1.+1./kappa2),ran->Get())-1.)));
-  split.Set_phi();
+  split.Set_phi(0);
 }
 
 double VVV_FI::A1(const double & z,const double & kappa2) const {
