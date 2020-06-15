@@ -236,6 +236,7 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
   m_sudakov.SetKeepReweightingInfo(m_reweight);
 
   while (true) {
+    m_last[0]=m_last[1]=m_last[2]=NULL;
     double kt2win = 0.;
     split = SelectSplitting(kt2win);
     //no shower anymore 
