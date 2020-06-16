@@ -85,7 +85,7 @@ namespace PHASIC {
     int  m_nin, m_nout, m_nvec, m_dmode, m_enhancexs;
     bool m_initialized, m_sintegrator, m_fin_opt;
 
-    long int m_maxtrials, m_killedpoints;
+    long int m_killedpoints;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
     double m_result, m_error, m_abserror, m_enhanceweight, m_osmass;
@@ -168,7 +168,6 @@ namespace PHASIC {
     inline Cut_Data* Cuts() const { return p_cuts; }
 
     inline double   Error() const     { return m_error;     }
-    inline long int MaxTrials() const { return m_maxtrials; }
 
     inline void SetFSRIntegrator(Multi_Channel *const fsr)
     { p_fsrchannels=fsr;  }
@@ -194,8 +193,6 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetAbsError(const double error) 
     { m_abserror=error; }
-    inline void SetMaxTrials(const long int maxtrials)
-    { m_maxtrials=maxtrials; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }
