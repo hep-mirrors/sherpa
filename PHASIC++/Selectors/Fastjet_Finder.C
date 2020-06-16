@@ -8,7 +8,7 @@ namespace PHASIC {
     Fastjet_Finder(Process_Base* const proc, ATOOLS::Scoped_Settings s,
                    int nb, int nb2);
     bool Trigger(ATOOLS::Selector_List&);
-    void BuildCuts(Cut_Data*) {}
+    void BuildCuts(Cut_Data*);
   };
 }
 
@@ -31,6 +31,58 @@ Fastjet_Finder::Fastjet_Finder(Process_Base* const proc, Scoped_Settings s,
   m_nb(nb), m_nb2(nb2)
 {}
 
+void Fastjet_Finder::BuildCuts(Cut_Data *cuts)
+{
+  if (m_isnlo) return;
+  if (m_nj==m_nout) { // number of jets equals number of outgoing particles
+    double sumM2=0.;
+    for (int i=m_nin;i<m_n;i++) {
+      sumM2+=sqr(p_fl[i].SelMass());
+    }
+
+    for (int i=m_nin;i<m_n;i++) {
+      // PT cut
+      cuts->energymin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())),
+                               cuts->energymin[i]);
+      double Emax2 = sqr((m_smax+2.*sqr(p_fl[i].SelMass())-sumM2)
+                       /(2.*sqrt(m_smax)));
+      double cosmax = Min(cuts->cosmax[0][i],
+                          sqrt(1.-sqr(m_ptmin)/(Emax2-sqr(p_fl[i].SelMass()))));
+      cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
+      cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
+      cuts->etmin[i] = Max(sqrt(sqr(m_ptmin)+sqr(p_fl[i].SelMass())
+                           *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
+
+      // ET cut
+      cuts->energymin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())),
+                               cuts->energymin[i]);
+      cosmax = Min(cuts->cosmax[0][i],
+                          sqrt(1.-sqr(m_etmin)/(Emax2-sqr(p_fl[i].SelMass()))));
+      cuts->cosmax[0][i] = cuts->cosmax[1][i] = cosmax;
+      cuts->cosmax[i][0] = cuts->cosmax[i][1] = cosmax;
+      cuts->etmin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())
+                           *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
+
+      // Eta cut
+      cuts->cosmin[1][i] = cuts->cosmin[i][1]
+        = Max(cuts->cosmin[1][i],tanh(-m_eta));
+      cuts->cosmin[0][i] = cuts->cosmin[i][0]
+        = Max(cuts->cosmin[0][i],tanh(-m_eta));
+      cuts->cosmax[0][i] = cuts->cosmax[i][0]
+        = Min(cuts->cosmax[0][i],tanh(m_eta));
+      cuts->cosmax[1][i] = cuts->cosmax[i][1]
+        = Min(cuts->cosmax[1][i],tanh(m_eta));
+
+      // Y cut
+      cuts->cosmax[0][i] = cuts->cosmax[i][0] =
+        Min(cuts->cosmax[0][i],tanh(m_y)/sqrt(1.-sqr(p_fl[i].SelMass())
+                                                 /sqr(cuts->energymin[i])));
+      cuts->cosmax[1][i] = cuts->cosmax[i][1] =
+        Min(cuts->cosmax[1][i],tanh(m_y)/sqrt(1.-sqr(p_fl[i].SelMass())
+                                                  /sqr(cuts->energymin[i])));
+    }
+  }
+}
 
 bool Fastjet_Finder::Trigger(Selector_List &sl)
 {
