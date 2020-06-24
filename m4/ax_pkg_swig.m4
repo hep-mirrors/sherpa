@@ -24,7 +24,7 @@
 #
 #   In configure.in, use as:
 #
-#     AX_PKG_SWIG(1.3.17, [], [ AC_MSG_ERROR([SWIG is required to build..]) ])
+#     AX_PKG_SWIG(2.0.12, [], [ AC_MSG_ERROR([SWIG is required to build..]) ])
 #     AX_SWIG_ENABLE_CXX
 #     AX_SWIG_MULTI_MODULE_SUPPORT
 #     AX_SWIG_PYTHON
