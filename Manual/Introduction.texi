@@ -11,8 +11,8 @@ of the program are outlined. The various options and parameters
 specifying the program are compiled, and their meanings are 
 explained. This document does not aim at giving a
 complete description of the physics content of @Sherpa{}.
-To this end, the authors refer the reader to the original publication, 
-@mycite{Gleisberg2008ta}.
+To this end, the authors refer the reader to the original publications, 
+@mycite{Gleisberg2008ta} and @mycite{Bothmann:2019yzt}.
 
 
 @menu
