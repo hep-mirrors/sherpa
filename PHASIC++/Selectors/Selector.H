@@ -69,7 +69,7 @@ namespace PHASIC {
 
     size_t m_nin, m_nout, m_n;
     int m_pass;
-    std::vector<ATOOLS::Event_Weights> m_results;
+    std::vector<ATOOLS::Weights_Map> m_results;
 
     ATOOLS::Flavour *p_fl;
     ATOOLS::NLO_subevt *p_sub;
@@ -108,7 +108,7 @@ namespace PHASIC {
 
     /// after Trigger(), this can be used to retrieve variations of the result
     /// (e.g. when varying the QCUT scale)
-    const std::vector<ATOOLS::Event_Weights>& Results() const;
+    const std::vector<ATOOLS::Weights_Map>& Results() const;
 
   };// end of class Selector_Base
 

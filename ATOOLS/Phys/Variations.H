@@ -21,8 +21,23 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace ATOOLS {
 
+  //! Constants to denote various variation sources
+  enum class Variations_Source {
+    all,     //!< use for total weight retrieval, i.e. the product of the below
+    main,    //!< use for everything that is not one of the below
+    sudakov  //!< use for weight factors from the reweighting of the Sudakov
+             //!< Veto Algorithm, i.e. the reweighting of parton shower
+             //!< emissions
+  };
+  std::ostream& operator<<(std::ostream&, const Variations_Source&);
+
+  enum class Variations_Type { qcd, qcut, custom };
+  enum class Variations_Mode { all, nominal_only };
+  std::ostream& operator<<(std::ostream&, const Variations_Type&);
+
   class Variations;
-  class Variation_Parameters;
+  class QCD_Variation_Params;
+  class Qcut_Variation_Params;
 
   extern Variations* s_variations;
 
@@ -43,15 +58,30 @@ namespace ATOOLS {
     static bool NeedsLHAPDF6Interface();
     static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
-    Variations();
+    Variations(Variations_Mode mode=Variations_Mode::all);
     ~Variations();
-    typedef std::vector<Variation_Parameters *> Parameters_Vector;
+
+    void EnableVariations() { m_enabled = true; }
+    void DisableVariations() { m_enabled = false; }
+
+    std::vector<Variations_Type> ManagedVariationTypes() const
+    {
+      return {Variations_Type::qcd, Variations_Type::qcut};
+    }
+
+    typedef std::vector<QCD_Variation_Params *> Parameters_Vector;
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
-    // TODO: return a const object
-    Variation_Parameters& Parameters(size_t i) { return *m_parameters_vector[i]; }
+    QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
+    Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
     std::string
-        GetVariationNameAt(Variations::Parameters_Vector::size_type) const;
-    size_t Size() { return m_parameters_vector.size(); }
+        GetVariationNameAt(Variations::Parameters_Vector::size_type, Variations_Type type=Variations_Type::qcd) const;
+    size_t Size(Variations_Type t=Variations_Type::qcd) const;
+    bool HasVariations() const {
+      for (const auto t : ManagedVariationTypes())
+        if (Size(t) > 0)
+          return true;
+      return false;
+    }
     template <typename Handler>
     void ForEach(Handler h);
 
@@ -78,10 +108,12 @@ namespace ATOOLS {
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
-    void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
+    void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
     std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
 
+    bool m_enabled;
     Parameters_Vector m_parameters_vector;
+    std::vector<Qcut_Variation_Params> m_qcut_parameters_vector;
 
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
@@ -125,29 +157,45 @@ namespace ATOOLS {
   };
 #endif
 
+  struct QCD_Variation_Params_Base {
+    virtual bool IsTrivial() const = 0;
+    std::string m_name;
+    //! Return part of a name based on a tag name and the associated value
+    template <typename U>
+    std::string GenerateNamePart(std::string tag, U value) const;
+  };
+
+  struct Qcut_Variation_Params : public QCD_Variation_Params_Base {
+    Qcut_Variation_Params(double scale_factor) : m_scale_factor{scale_factor} {
+      m_name = GenerateName();
+    }
+    bool IsTrivial() const override { return (m_scale_factor == 1.0); }
+    double m_scale_factor;
+    std::string GenerateName() const;
+  };
 
   /*!
    * Hold a set of input parameters and factors for a single input parameter variation
    *
    * Used as an argument to a reweighting function.
    */
-  struct Variation_Parameters {
-    Variation_Parameters(double muR2fac, double muF2fac,
+  struct QCD_Variation_Params : public QCD_Variation_Params_Base {
+    QCD_Variation_Params(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
-			 double Qcutfac,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
                          bool deletepdfs,
                          bool deletealphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
-      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac), m_Qcutfac(Qcutfac),
+      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
       m_deletepdfs(deletepdfs),
-      m_deletealphas(deletealphas),
-      m_name(GenerateName())
-    {};
-    ~Variation_Parameters();
+      m_deletealphas(deletealphas)
+    {
+      m_name = GenerateName();
+    };
+    ~QCD_Variation_Params();
 
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
 
@@ -155,10 +203,10 @@ namespace ATOOLS {
     void FillReweightingFactorsHisto(std::string name, double value) { m_rewfachisto.Fill(name, value); }
 #endif
 
-    bool IsTrivial() const;
+    bool IsTrivial() const override;
 
     const double m_muR2fac, m_muF2fac;
-    const double m_showermuR2fac, m_showermuF2fac, m_Qcutfac;
+    const double m_showermuR2fac, m_showermuF2fac;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;
@@ -166,14 +214,10 @@ namespace ATOOLS {
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
     const bool m_deletepdfs;
     const bool m_deletealphas;
-    const std::string m_name;
 
   private:
     //! Return a name based on the scale and PDF variations
     std::string GenerateName() const;
-    //! Return part of a name based on a tag name and the associated value
-    template <typename U>
-    std::string GenerateNamePart(std::string tag, U value) const;
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
     friend class Variations;
@@ -181,42 +225,6 @@ namespace ATOOLS {
     ReweightingFactorHistogram m_rewfachisto;
 #endif
   };
-
-
-  //! Convenience wrapper for storing and passing subevent weights corresponding to one variation
-  class Subevent_Weights_Vector : public std::vector<double> {
-  public:
-    // inherit useful vector constructors
-    //! Construct an empty weight vector
-    Subevent_Weights_Vector();
-    //! Construct a weight vector of size times 1.0 (i.e. we do not use the standard default 0.0!)
-    Subevent_Weights_Vector(size_type count, const double& value = 1.0);
-    //! Multiply all weights with a common factor
-    Subevent_Weights_Vector & operator*=(const double&);
-    /*!
-     * Multiply all subevent weights one by one with those of another vec
-     *
-     * The other subevent weights must either be of equal size or they have to
-     * contain only one entry. In the latter case, this single entry is used as
-     * a common factor for all subevent weights.
-     */
-    Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
-    Subevent_Weights_Vector & operator+=(const Subevent_Weights_Vector &);
-  };
-
-  std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
-
-
-  //! Types to denote different variation sources
-  enum class Variations_Type {
-    all,     //!< use for weight retrieval, to get the product of the below
-    main,    //!< use for everything that is not one of the below
-    sudakov  //!< use for weight factors from the reweighting of the Sudakov
-             //!< Veto Algorithm, i.e. the reweighting of parton shower
-             //!< emissions
-  };
-
-  std::ostream& operator<<(std::ostream&, const Variations_Type&);
 
 };
 

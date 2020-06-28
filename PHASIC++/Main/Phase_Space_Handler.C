@@ -161,7 +161,7 @@ void Phase_Space_Handler::CheckSinglePoint()
     }
     Process_Base *proc(p_active->Process());
     proc->Trigger(p_lab);
-    CalculateME(Weight_Type::nominal);
+    CalculateME(Variations_Mode::nominal_only);
     msg->SetPrecision(16);
     msg_Out()<<"// "<<proc->Name()<<"\n";
     for (size_t i(0);i<p_lab.size();++i)
@@ -240,14 +240,14 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
   return 0;
 }
 
-Event_Weights Phase_Space_Handler::Differential(Weight_Type type)
+Weights_Map Phase_Space_Handler::Differential(Variations_Mode varmode)
 {
-  return Differential(p_process, type);
+  return Differential(p_process, varmode);
 }
 
-void Phase_Space_Handler::CalculateME(Weight_Type type)
+void Phase_Space_Handler::CalculateME(Variations_Mode varmode)
 {
-  m_eventweights = p_active->Process()->Differential(p_lab, type);
+  m_wgtmap = p_active->Process()->Differential(p_lab, varmode);
   m_result=p_active->Process()->Last();
 }
 
@@ -278,13 +278,13 @@ void Phase_Space_Handler::CalculatePS()
   m_psweight*=p_fsrchannels->Weight();
 }
 
-Event_Weights Phase_Space_Handler::Differential(
-    Process_Integrator* const process, Weight_Type type, const psm::code mode)
+Weights_Map Phase_Space_Handler::Differential(
+    Process_Integrator* const process, Variations_Mode varmode, const psm::code mode)
 {
   m_cmode=mode;
   p_active=process;
   if (!process->Process()->GeneratePoint())
-    return Event_Weights {0, 0.0};
+    return 0.0;
   p_info->ResetAll();
   double iscount=1.0;
   if (m_nin>1) {
@@ -295,7 +295,7 @@ Event_Weights Phase_Space_Handler::Differential(
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,
 				    p_beamhandler->On());
       if (!p_beamhandler->MakeBeams(&p_lab.front()))
-        return Event_Weights {0, 0.0};
+        return 0.0;
       if (!(mode&psm::no_lim_isr)) 
 	p_isrhandler->SetSprimeMax(m_beamspkey[3]*
 				   p_isrhandler->Upper1()*
@@ -328,7 +328,7 @@ Event_Weights Phase_Space_Handler::Differential(
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
       p_fsrchannels->NoGenerate();
-      return Event_Weights {0, 0.0};
+      return 0.0;
     }
     if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {
       if (p_isrhandler->On()==0) m_isrspkey[3]=m_beamspkey[3];
@@ -349,11 +349,11 @@ Event_Weights Phase_Space_Handler::Differential(
   m_result=0.0;
   for (size_t i(0); i < p_lab.size(); ++i)
     if (p_lab[i].Nan())
-      return Event_Weights {0, 0.0};
+      return 0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
     CalculatePS();
-    CalculateME(type);
+    CalculateME(varmode);
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
@@ -372,11 +372,11 @@ Event_Weights Phase_Space_Handler::Differential(
       msg->SetPrecision(precision);
     }
     double wgtfac(m_psweight*iscount);
-    m_eventweights*=wgtfac;
+    m_wgtmap["ME"]*=wgtfac;
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
       for (auto* sub : *nlos) {
-        sub->m_results *= wgtfac;
+        sub->m_results["ME"] *= wgtfac;
       }
     }
     if (!p_active->Process()->Selector()->Pass()) wgtfac=0.0;
@@ -394,14 +394,14 @@ Event_Weights Phase_Space_Handler::Differential(
   } else {
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) (*nlos) *= 0.0;
-    m_eventweights *= 0.0;
+    m_wgtmap["ME"] *= 0.0;
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
     if (m_thkill<0.0) {
       msg_Info()<<METHOD<<"(): Skip point in '"<<p_active->Process()->Name()
 		<<"', w = "<<m_result*rpa->Picobarn()<<".\n";
-      return Event_Weights {0, 0.0};
+      return 0.0;
     }
     ATOOLS::MakeDir("stability");
     std::ofstream sf(("stability/"+p_active->Process()->Name()+
@@ -425,10 +425,11 @@ Event_Weights Phase_Space_Handler::Differential(
       (*nlos)*=0.0;
       (*nlos).MultMEwgt(0.0);
     }
-    m_eventweights*=0.0;
+    m_wgtmap["ME"]*=0.0;
   }
   m_enhance=EnhanceFactor(p_process->Process());
-  return m_eventweights*m_enhance;
+  m_wgtmap["ME"]*=m_enhance;
+  return m_wgtmap;
 }
 
 void Phase_Space_Handler::CorrectMomenta(ATOOLS::Vec4D_Vector &p) 
@@ -496,9 +497,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
-  auto values = Differential(cur, Weight_Type::all, (psm::code)mode);
-  bool zero(values == 0.0);
-  if (zero || IsBad(values.Nominal()))
+  auto wgtmap = Differential(cur, Variations_Mode::all, (psm::code)mode);
+  if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
     return NULL;
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
@@ -512,9 +512,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   xf2=p_isrhandler->XF2(0);
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
-  auto res = new Weight_Info(
-      values.Nominal(), dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
-  res->m_weights = m_eventweights;
+  auto res =
+      new Weight_Info(wgtmap, dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 

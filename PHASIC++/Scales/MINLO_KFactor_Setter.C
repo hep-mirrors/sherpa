@@ -60,7 +60,7 @@ namespace PHASIC {
 
     double KFactor(const int mode);
 
-    bool UpdateKFactor(const ATOOLS::Variation_Parameters &var);
+    bool UpdateKFactor(const ATOOLS::QCD_Variation_Params &var);
 
   };// end of class MINLO_KFactor_Setter
 
@@ -135,7 +135,7 @@ void MINLO_KFactor_Setter::RegisterDefaults() const
   s["SELF_TEST_ECM"].SetDefault(91.2);
 }
 
-bool MINLO_KFactor_Setter::UpdateKFactor(const Variation_Parameters &var)
+bool MINLO_KFactor_Setter::UpdateKFactor(const QCD_Variation_Params &var)
 {
   DEBUG_FUNC("K = "<<m_sudweight<<" * ( 1 + "<<m_weight/m_sudweight-1.0<<" )");
   if (p_minlo->Q02(0)==m_lastq02[0] &&

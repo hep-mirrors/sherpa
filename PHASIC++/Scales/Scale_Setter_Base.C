@@ -226,7 +226,7 @@ double Scale_Setter_Base::CalculateScale
   return m_scale[stp::fac];
 }
 
-bool Scale_Setter_Base::UpdateScale(const Variation_Parameters &var)
+bool Scale_Setter_Base::UpdateScale(const QCD_Variation_Params &var)
 {
   return false;
 }

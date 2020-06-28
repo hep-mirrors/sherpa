@@ -6,7 +6,7 @@
 #include "MCATNLO/Showers/Splitting_Function_Group.H"
 #include "MCATNLO/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace MCATNLO {
   typedef std::map<ATOOLS::Flavour,Splitting_Function_Base*> SF_E_Map;

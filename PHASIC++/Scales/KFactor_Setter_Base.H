@@ -38,7 +38,7 @@ namespace PHASIC {
     // compute KFactor according to kinematics and flavours of NLO subevent
     virtual double KFactor(const ATOOLS::NLO_subevt& evt);
 
-    virtual bool UpdateKFactor(const ATOOLS::Variation_Parameters &var);
+    virtual bool UpdateKFactor(const ATOOLS::QCD_Variation_Params &var);
 
     inline Process_Base *Process() const { return p_proc; }
 

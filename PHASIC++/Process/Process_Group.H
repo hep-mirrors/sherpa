@@ -43,7 +43,8 @@ namespace PHASIC {
 
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
-    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector &p, ATOOLS::Weight_Type);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector& p,
+                                     ATOOLS::Variations_Mode);
 
     bool InitScale();
 

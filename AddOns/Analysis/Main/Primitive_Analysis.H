@@ -51,10 +51,12 @@ namespace ANALYSIS {
   class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
 
-    int                    m_mode, m_varid, m_nvar;
-    bool                   m_usedb;
-    long                   m_nevt;
-    std::string            m_name, m_maxjettag;
+    int                     m_mode, m_varid;
+    bool                    m_hasvar;
+    ATOOLS::Variations_Type m_vartype;  //!< undefined iff `m_varid == 0`
+    bool                    m_usedb;
+    long                    m_nevt;
+    std::string             m_name, m_maxjettag;
 
     Object_List            m_objects;
     PL_Container           m_pls, m_slp;
@@ -133,8 +135,10 @@ namespace ANALYSIS {
     inline ATOOLS::NLO_subevt *Real() const { return p_real; }
 
     inline void SetVarId(const int &id) { m_varid=id; }
-
     inline const int &VarId() const { return m_varid; }
+
+    inline void SetVarType(const ATOOLS::Variations_Type &type) { m_vartype=type; }
+    inline const ATOOLS::Variations_Type &VarType() const { return m_vartype; }
 
     inline void SetUseDB(const bool &usedb) { m_usedb=usedb; }
 

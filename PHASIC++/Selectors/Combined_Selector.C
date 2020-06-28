@@ -139,17 +139,17 @@ void Combined_Selector::ListSelectors() const
     msg_Info()<<m_sels[i]->Name()<<std::endl;
 }
 
-std::vector<Event_Weights> Combined_Selector::CombinedResults() const
+std::vector<Weights_Map> Combined_Selector::CombinedResults() const
 {
-  std::vector<Event_Weights> res = {{0, 1.0}};
+  std::vector<Weights_Map> res = {Weights_Map{}};
   for (auto& sel : m_sels) {
-    std::vector<Event_Weights> other = sel->Results();
+    std::vector<Weights_Map> other = sel->Results();
     if (other.size() == 1) {
       for (auto& weights : res) {
         weights *= other[0];
       }
     } else if (res.size() == 1) {
-      Event_Weights currentweights = res[0];
+      Weights_Map currentweights = res[0];
       res = other;
       for (auto& weights : res) {
         weights *= currentweights;

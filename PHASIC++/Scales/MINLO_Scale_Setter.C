@@ -142,7 +142,7 @@ void MINLO_Scale_Setter::RegisterDefaults() const
   s.DeclareVectorSettingsWithEmptyDefault({ "ALLOW_CORE" });
 }
 
-bool MINLO_Scale_Setter::UpdateScale(const ATOOLS::Variation_Parameters &var)
+bool MINLO_Scale_Setter::UpdateScale(const ATOOLS::QCD_Variation_Params &var)
 {
   DEBUG_FUNC("ren scale fac = "<<var.m_muR2fac);
   m_rsf*=var.m_muR2fac;

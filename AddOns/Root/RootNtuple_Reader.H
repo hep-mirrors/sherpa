@@ -12,7 +12,7 @@
 #include <vector>
 #include <string.h>
 
-namespace ATOOLS { class Variation_Parameters; }
+namespace ATOOLS { class QCD_Variation_Params; }
 
 namespace PDF { class ISR_Handler; }
 
@@ -69,7 +69,7 @@ namespace SHERPA {
     };
 
     double CalculateWeight(const Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *);
-    double Reweight(ATOOLS::Variation_Parameters&,
+    double Reweight(const ATOOLS::QCD_Variation_Params&,
                     const Weight_Calculation_Args&);
 
   public:

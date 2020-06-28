@@ -70,8 +70,8 @@ namespace SHERPA {
       return NULL;
     }
 
-    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector&,
-                                       ATOOLS::Weight_Type) override
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode) override
     {
       return 0.0;
     }
@@ -450,7 +450,7 @@ double RootNtuple_Reader::CalculateWeight
 #endif
 }
 
-double RootNtuple_Reader::Reweight(Variation_Parameters& varparams,
+double RootNtuple_Reader::Reweight(const QCD_Variation_Params& varparams,
                                    const Weight_Calculation_Args& args)
 {
   DEBUG_FUNC("R = " << sqrt(varparams.m_muR2fac)
@@ -569,13 +569,14 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K,1.);
       double weight=CalculateWeight(args, MODEL::as->GetAs());
       weight*=K/p_vars->m_kfac;
-      m_nlos.back()->m_results = Event_Weights {weight};
-      m_nlos.back()->m_results.Apply(
+      m_nlos.back()->m_results["ME"] = weight;
+      ATOOLS::Reweight(
+          m_nlos.back()->m_results["ME"],
           [this, &args, K](double varweight,
-                           size_t varindex,
-                           Variation_Parameters& varparams) -> double {
+                           const QCD_Variation_Params& varparams) -> double {
             return Reweight(varparams, args) * K / p_vars->m_kfac;
           });
+
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   total weight "<<weight/p_vars->m_wgt2<<"\n";
 #endif
@@ -628,11 +629,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-vars.m_oqcd);
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->AddStatus(blob_status::needs_harddecays);
-  Event_Weights weights {0.0};
+  Weights_Map wgtmap {0.0};
   for (const auto* sub : m_nlos) {
-    weights += sub->m_results;
+    wgtmap += sub->m_results;
   }
-  signalblob->AddData("Weights",new Blob_Data<Event_Weights>(weights));
+  signalblob->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      ((vars.m_nuwgt?vars.m_mewgt:vars.m_mewgt2)/
 		       (vars.m_pswgt?vars.m_pswgt:1.0)));

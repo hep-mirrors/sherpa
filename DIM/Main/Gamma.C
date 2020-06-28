@@ -44,7 +44,7 @@ Weight_Value Gamma::Differential
   bool kon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
   meps.m_b = meps.m_me = static_cast<double>(
-      pit->second->Differential(*ampl, Weight_Type::nominal, 1 | 2 | 4));
+      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4));
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();

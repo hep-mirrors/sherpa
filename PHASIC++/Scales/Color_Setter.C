@@ -84,7 +84,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
     if (!sing) {
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
-      double csum(p_xs->Differential(*ampl,Weight_Type::nominal,1|4));
+      double csum(p_xs->Differential(*ampl,Variations_Mode::nominal_only,1|4));
       msg_Debugging()<<"sc: csum = "<<csum<<"\n";
       if (csum!=0.0) {
 	CI_Map &cmap(ampl->ColorMap());
@@ -145,7 +145,7 @@ bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
     msg_Debugging()<<"odering "<<orders[i]<<"\n";
     msg_Debugging()<<*ampl<<"\n";
     csum += psum[i] = dabs(static_cast<double>(
-        p_xs->Differential(*ampl, Weight_Type::nominal, 1 | 4)));
+        p_xs->Differential(*ampl, Variations_Mode::nominal_only, 1 | 4)));
     msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
   }
   if (csum==0.0) return false;
