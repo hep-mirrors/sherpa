@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 #include <string>
@@ -28,7 +28,7 @@ namespace PDF {
     Cluster_Definitions_Base * p_cluster;
     
     std::string m_name;
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
     int m_on, m_kttype;
 
   public:
@@ -54,7 +54,7 @@ namespace PDF {
 
     inline const std::string &Name() const { return m_name; }
 
-    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+    inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
 
     inline int On() { return m_on; }
 

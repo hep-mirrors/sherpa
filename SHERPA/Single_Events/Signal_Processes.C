@@ -14,7 +14,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -184,15 +184,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       m_overweight = 0.0;
     } else {
       weightfactor = 1.0 / (m_overweight + 1.0);
-      winfo.m_weights *= weightfactor;
+      winfo.m_weightsmap["ME"] *= weightfactor;
       NLO_subevtlist* nlos=proc->GetSubevtList();
       if (nlos) (*nlos) *= weightfactor;
     }
   }
 
-  blob->AddData("Weights",new Blob_Data<Event_Weights>(winfo.m_weights));
-  blob->AddData("MC@NLO_Shower_Weights",
-                new Blob_Data<Event_Weights>(winfo.m_mcatnloshowerweights));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));

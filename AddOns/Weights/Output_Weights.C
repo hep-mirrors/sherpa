@@ -58,9 +58,12 @@ namespace SHERPA {
     void Header()
     {
       m_outstream << "# EventNumber Nominal";
-      size_t numvars = s_variations->Size();
-      for (size_t i(0);i<numvars;++i) {
-        m_outstream << ' ' << s_variations->GetVariationNameAt(i);
+      static std::array<Variations_Type, 2> types = {Variations_Type::qcd, Variations_Type::qcut};
+      for (const auto type : types) {
+        size_t numqcdvars = s_variations->Size(type);
+        for (size_t i(0);i<numqcdvars;++i) {
+          m_outstream << ' ' << s_variations->GetVariationNameAt(i, type);
+        }
       }
       m_outstream << '\n';
     }
@@ -74,24 +77,38 @@ namespace SHERPA {
     {
       Blob_Data_Base *sd((*blobs->FindFirst(btp::Signal_Process))["NLO_subeventlist"]);
       NLO_subevtlist *subs=sd?sd->Get<NLO_subevtlist*>():NULL;
-      size_t numvars = s_variations->Size();
       if (subs==NULL) {
-        const auto weights = blobs->Weights();
-	m_outstream<<rpa->gen.NumberOfGeneratedEvents();
-	for (size_t i(0);i<numvars+1;++i) {
-          m_outstream << " " << weights[i];
-        }
+        Output(blobs->WeightsMap());
+        m_outstream<<"\n";
       } else {
 	for (size_t j(0);j<subs->size();++j) {
-          const auto weights = (*subs)[j]->m_results;
-          m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	  for (size_t i(0);i<numvars+1;++i) {
-            m_outstream << " " << weights[i];
-          }
-	  m_outstream<<"\n";
+          Output((*subs)[j]->m_results);
+          m_outstream<<"\n";
 	}
       }
-      m_outstream<<"\n";
+    }
+
+    void Output(const Weights_Map& wgtmap)
+    {
+      static std::array<Variations_Type, 2> types = {
+          Variations_Type::qcd, Variations_Type::qcut};
+      const auto nom = wgtmap.Nominal();
+      m_outstream<<rpa->gen.NumberOfGeneratedEvents();
+      if (IsZero(nom))
+        m_outstream<<' '<<0.0;
+      else
+        m_outstream<<' '<<nom;
+      for (const auto type : types) {
+        size_t numvars = s_variations->Size(type);
+        auto wgts = wgtmap.Combine(type);
+        const auto relfac = wgtmap.NominalIgnoringVariationType(type);
+        for (size_t i(0);i<numvars;++i) {
+          if (IsZero(wgts.var(i) * relfac))
+            m_outstream << " " << 0.0;
+          else
+            m_outstream << " " << wgts.var(i) * relfac;
+        }
+      }
     }
 
     void ChangeFile()

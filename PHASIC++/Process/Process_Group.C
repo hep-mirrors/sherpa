@@ -52,14 +52,14 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
   return NULL;
 }
 
-ATOOLS::Event_Weights Process_Group::Differential(const Vec4D_Vector &p,
-                                                  Weight_Type type)
+ATOOLS::Weights_Map Process_Group::Differential(const Vec4D_Vector &p,
+                                                Variations_Mode varmode)
 {
-  m_lastb = 0.0;
-  m_last = 0.0;
+  m_last = Weights_Map {0.0};
+  m_lastb = Weights_Map {0.0};
   p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
-    m_last += m_procs[i]->Differential(p, type);
+    m_last += m_procs[i]->Differential(p, varmode);
     m_lastb += m_procs[i]->LastB();
   }
   if (IsNan(m_last.Nominal()))

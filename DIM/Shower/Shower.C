@@ -141,22 +141,25 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
     cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
-  m_weights.Nominal() *= cw;
+  m_weightsmap["MC@NLO_PS"].Nominal() *= cw;
   if (cv.size()) {
-    m_weights.Apply([&cv](double varweight,
-                          size_t varindex,
-                          Variation_Parameters& varparams) -> double {
-      return varweight * cv[varindex];
-    });
+    ATOOLS::Reweight(m_weightsmap["MC@NLO_PS"],
+                     [&cv](double varweight,
+                           size_t varindex,
+                           QCD_Variation_Params& varparams) -> double {
+                       return varweight * cv[varindex];
+                     });
   }
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weights.Nominal()<<"), v = "<<cv<<"\n";
+		 <<" ("<<m_weightsmap["MC@NLO_PS"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
 int Shower::Evolve(Amplitude &a,unsigned int &nem)
 {
   DEBUG_FUNC(this);
-  m_weights = Event_Weights {};
+  m_weightsmap.Clear();
+  m_weightsmap["MC@NLO_PS"] = MakeWeights(Variations_Type::qcd);
+  m_weightsmap["MC@NLO_QCUT"] = MakeWeights(Variations_Type::qcut);
   msg_Debugging()<<a<<"\n";
   if (nem>=m_maxem) return 1;
   double t(a.T());
@@ -172,7 +175,7 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
     msg_Debugging()<<"stat = "<<stat<<"\n";
     if (p_gamma) {
       int veto(p_gamma->Reject());
-      m_weights *= p_gamma->Weight();
+      m_weightsmap["MC@NLO_PS"] *= p_gamma->Weight();
       if (veto) {
 	a.Remove(m_s.p_n);
 	m_s.p_c->SetFlav(m_s.p_sk->LF()->Flav(0));
@@ -181,35 +184,40 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
       }
     }
     double jcv {stat ? 0.0 : -1.0};
-    bool all_vetoed {true};
-
     Jet_Finder *jf=m_s.p_c->Ampl()->JF<Jet_Finder>();
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
       jcv = jf->JC()->Value(ampl);
       ampl->Delete();
     }
-    m_weights.ApplyAll([this, jcv, ampl, &all_vetoed](
-                           double varweight,
-                           size_t varindex,
-                           Variation_Parameters* varparams) -> double {
-      msg_Debugging()<<"Applying veto weight to "<<varweight<<" {\n";
-      int stat(jcv >= 0.0);
-      Jet_Finder* jf(ampl->JF<Jet_Finder>());
-      if (stat && jf) {
-        double fac(varparams ? varparams->m_Qcutfac : 1.0);
-        stat = jcv < sqr(jf->Qcut() * fac);
-        msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs " << jf->Qcut()
-                        << " * " << fac << " = " << jf->Qcut() * fac << "\n";
-      }
-      if (stat == 1) {
-        msg_Debugging() << "} no jet veto\n";
-        all_vetoed = false;
-        return varweight;
-      }
-      msg_Debugging() << "} jet veto\n";
-      return 0.0;
-    });
+    const bool is_jcv_positive {jcv >= 0.0};
+    bool all_vetoed {true};
+    ATOOLS::ReweightAll(
+        m_weightsmap["MC@NLO_QCUT"],
+        [this, jcv, is_jcv_positive, ampl, &all_vetoed](
+            double varweight,
+            size_t varindex,
+            Qcut_Variation_Params* qcutparams) -> double {
+          msg_Debugging() << "Applying veto weight to " << varweight << " {\n";
+          bool stat {is_jcv_positive};
+          Jet_Finder* jf(ampl->JF<Jet_Finder>());
+          if (stat && jf) {
+            const double fac {
+                qcutparams == nullptr ? 1.0 : qcutparams->m_scale_factor};
+            stat = jcv < sqr(jf->Qcut() * fac);
+            msg_Debugging()
+                << "  jcv = " << sqrt(jcv) << " vs " << jf->Qcut() << " * "
+                << fac << " = " << jf->Qcut() * fac << "\n";
+          }
+          if (stat) {
+            msg_Debugging() << "} no jet veto\n";
+            all_vetoed = false;
+            return varweight;
+          } else {
+            msg_Debugging() << "} jet veto\n";
+            return 0.0;
+          }
+        });
     if (all_vetoed)
       return 0;
     AddWeight(a,m_s.m_t);
@@ -303,7 +311,7 @@ Splitting Shower::GeneratePoint
                 const Reweight_Args args(&win, 0);
                 s_variations->ForEach(
                     [this, &args](size_t varindex,
-                                  Variation_Parameters& varparams) -> void {
+                                  QCD_Variation_Params& varparams) -> void {
                       Reweight(&varparams, varindex, args);
                     });
               }
@@ -317,7 +325,7 @@ Splitting Shower::GeneratePoint
               const Reweight_Args args(&win, 1);
               s_variations->ForEach(
                   [this, &args](size_t varindex,
-                                Variation_Parameters& varparams) -> void {
+                                QCD_Variation_Params& varparams) -> void {
                     Reweight(&varparams, varindex, args);
                   });
             }
@@ -333,7 +341,7 @@ Splitting Shower::GeneratePoint
   return win;
 }
 
-void Shower::Reweight(Variation_Parameters* params,
+void Shower::Reweight(QCD_Variation_Params* params,
                       size_t varindex,
                       const Reweight_Args& a)
 {

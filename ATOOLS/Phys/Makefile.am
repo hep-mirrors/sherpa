@@ -32,7 +32,7 @@ libToolsPhys_la_SOURCES       =	\
 				Momenta_Stretcher.C \
 				Weight_Info.C \
 				Variations.C \
-				Event_Weights.C
+				Weights.C
 
 localinc_HEADERS      =	\
 			fjcore.hh \
@@ -62,6 +62,6 @@ localinc_HEADERS      =	\
 			Momenta_Stretcher.H \
 			Weight_Info.H \
 			Variations.H \
-			Event_Weights.H
+			Weights.H
 
 libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

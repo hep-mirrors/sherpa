@@ -55,7 +55,7 @@ Jet_Finder::~Jet_Finder()
 bool Jet_Finder::Trigger(Selector_List &sl)
 {
   m_pass=true;
-  m_results = {{1.0}};
+  m_results = {Weights_Map{}};
   p_ampl->SetProc(p_proc);
   for (size_t i(0);i<sl.size();++i)
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-sl[i].Momentum():sl[i].Momentum());
@@ -66,18 +66,18 @@ bool Jet_Finder::Trigger(Selector_List &sl)
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   const double jcv=p_jc->Value(p_ampl,p_proc->Info().Has(nlo_type::real));
   bool triggered {false};
-  m_results[0].ApplyAll(
-      [this, jcv, &triggered](double varweight,
-                              size_t varindex,
-                              Variation_Parameters* varparams) -> double {
-        const bool pass =
-            jcv > sqr(m_qcut * (varparams ? varparams->m_Qcutfac : 1.0));
-        if (!varparams)
-          m_pass = pass;
-        if (pass)
-          triggered = true;
-        return pass;
-      });
+  m_results[0]["QCUT"] = MakeWeights(Variations_Type::qcut);
+  for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
+       ++i) {
+    const double fac{
+        i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
+    const bool pass = jcv > sqr(m_qcut * fac);
+    if (i == 0)
+      m_pass = pass;
+    if (pass)
+      triggered = true;
+    m_results[0]["QCUT"][i] = pass;
+  }
   msg_Debugging()<<"} -> "<<m_pass<<"\n";
   return 1-m_sel_log->Hit(!triggered);
 }
@@ -91,7 +91,7 @@ bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
   if (!m_on) return true;
   m_pass=0;
   std::vector<int> any_variation_passes(subs->size(), 0);
-  m_results = std::vector<Event_Weights>(subs->size(), {0.0});
+  m_results = std::vector<Weights_Map>(subs->size(), Weights_Map {1.0});
   for (size_t n(0);n<subs->size();++n) {
     int nominal_passes {0};
     msg_Debugging()<<METHOD<<"("<<n<<"): '"<<p_proc->Name()
@@ -118,23 +118,22 @@ bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
       }
       p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
       const double jcv = p_jc->Value(p_ampl, idij ? 0 : 1);
-      m_results[n].ApplyAll(
-          [this, &any_variation_passes, &nominal_passes, &n, subs, jcv](
-              double varweight,
-              size_t varindex,
-              Variation_Parameters* varparams) -> double {
-            const auto pass =
-                jcv > sqr(m_qcut * (varparams ? varparams->m_Qcutfac : 1.0));
-            if (!varparams) {
-              (*subs)[n]->m_trig = pass;
-              if (pass)
-                nominal_passes = m_pass = pass;
-            }
-            if (pass) {
-              any_variation_passes[n] = 1;
-            }
-            return pass;
-          });
+      m_results[n]["QCUT"] = MakeWeights(Variations_Type::qcut);
+      for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
+           ++i) {
+        const double fac {
+            i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
+        const auto pass = jcv > sqr(m_qcut * fac);
+        if (i == 0) {
+          (*subs)[n]->m_trig = pass;
+          if (pass)
+            nominal_passes = m_pass = pass;
+        }
+        if (pass) {
+          any_variation_passes[n] = 1;
+        }
+        m_results[n]["QCUT"][i] = pass;
+      }
     }
     msg_Debugging()<<"} -> "<<nominal_passes<<"\n";
   }

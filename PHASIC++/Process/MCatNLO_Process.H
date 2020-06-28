@@ -95,14 +95,14 @@ namespace PHASIC {
      *
      * This method generates one S-event
      */
-    ATOOLS::Event_Weights OneSEvent(const int wmode);
+    ATOOLS::Weights_Map OneSEvent(const int wmode);
     /*!
      * @param wmode int Mode (not used)
      * @return additional H-Event weight (one or zero)
      *
      * This method generates one H-event
      */
-    ATOOLS::Event_Weights OneHEvent(const int wmode);
+    ATOOLS::Weights_Map OneHEvent(const int wmode);
 
     struct LocalKFactorInfo {
       double s {0.0};
@@ -192,14 +192,14 @@ namespace PHASIC {
 
     /*!
      * @param Vec4D_Vector Four momenta
-     * @param Weight_Type Specifies which weights to calculate (all,
+     * @param Variations_Mode Specifies which weights to calculate (all,
      * nominal-only, ...)
      * @return Returns weight of given momentum configuration
      *
      * Inherited from Process_Base, calculates the weight of given configuration
      */
-    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector &,
-                                       ATOOLS::Weight_Type);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector &,
+                                     ATOOLS::Variations_Mode);
 
     /*!
      * @param resultpath string Path where to store the results
@@ -259,7 +259,7 @@ namespace PHASIC {
      *
      * This method calculates the local Kfactor for MENLOPS for given config
      */
-    ATOOLS::Event_Weights LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
+    ATOOLS::Weights LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
 
     /*!
      * @return Cluster amplitude p_ampl
