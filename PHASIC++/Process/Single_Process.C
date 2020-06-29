@@ -673,28 +673,31 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
           orderqcd--;
         }
         for (const auto& asscontrib : m_asscontrib) {
-          double Bassnew {0.0}, Deltaassnew {1.0};
+          double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
           for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
             // m_wass[0] is EW Sudakov-type correction
             // m_wass[1] is the subleading Born
             // m_wass[2] is the subsubleading Born, etc
             if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
-              if (i==0)
-                Deltaassnew *= 1.+(m_mewgtinfo.m_wass[i])/m_mewgtinfo.m_B;
+              if (i==0) {
+                const double relfac {m_mewgtinfo.m_wass[i]/m_mewgtinfo.m_B};
+                Deltaassnew *= 1.0 + relfac;
+                Deltaassnewexp *= exp(relfac);
+              }
               Bassnew += m_mewgtinfo.m_wass[i];
             }
             if ((orderqcd - i) == 0)
               break;
           }
+          const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) +
+            m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
           const std::string key = ToString<asscontrib::type>(asscontrib);
           m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
-              (m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-               m_mewgtinfo.m_KP + Bassnew) *
-              m_csi.m_pdfwgt / m_last["ME"].Nominal();
+              (BVIKP + Bassnew) * m_csi.m_pdfwgt / m_last["ME"].Nominal();
           m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
-              (m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-               m_mewgtinfo.m_KP) * Deltaassnew *
-              m_csi.m_pdfwgt / m_last["ME"].Nominal();
+              BVIKP * Deltaassnew * m_csi.m_pdfwgt / m_last["ME"].Nominal();
+          m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
+              BVIKP * Deltaassnewexp * m_csi.m_pdfwgt / m_last["ME"].Nominal();
         }
       }
 
