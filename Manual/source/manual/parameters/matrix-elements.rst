@@ -582,8 +582,8 @@ versions prior to 1.2.2. Currently available options are
   .. code-block:: yaml
 
      SCALES:    VAR{...}{PPerp2(p[3])}
-       COUPLINGS: "Alpha_QCD 1"
-       KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
+     COUPLINGS: "Alpha_QCD 1"
+     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
 
   As can be seen from this example, scales are referred to as :kbd:`MU_<i>2`,
   where :kbd:`<i>` is replaced with the appropriate number.
