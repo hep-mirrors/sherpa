@@ -278,6 +278,7 @@
 @mybibitem{Bauer2008qj,Bau08a, C. W. Bauer and F. J. Tackmann and J. Thaler,GenEvA (II): a phase space generator from a reweighted parton shower,JHEP,12,(2008),011,[arXiv:0801.4028],arXiv:0801.4028}
 @mybibitem{Bauer2009km,Bau09, C. W. Bauer and B. O. Lange,Scale setting and resummation of logarithms in ppto V+jets,,,,,arXiv:0905.4739,arXiv:0905.4739}
 @mybibitem{Baur1988qt,Bau88, U. Baur and D. Zeppenfeld,Probing the WWgamma vertex at future hadron colliders,Nucl. Phys.,B308,(1988),127,,F+J+Nucl. Phys.%2CB308%2C127}
+@mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
 @mybibitem{Becher2009cu,Bec09, T. Becher and M. Neubert,Infrared singularities of scattering amplitudes in perturbative QCD,Phys. Rev. Lett.,102,(2009),162001,[arXiv:0901.0722],arXiv:0901.0722}
 @mybibitem{Becher2009qa,Bec09a, T. Becher and M. Neubert,On the structure of infrared singularities of gauge-theory amplitudes,JHEP,06,(2009),081,[arXiv:0903.1126],arXiv:0903.1126}
 @mybibitem{Becher2009th,Bec09b, T. Becher and M. D. Schwartz,Direct photon production with effective field theory,JHEP,02,(2010),040,[arXiv:0911.0681],arXiv:0911.0681}
@@ -351,6 +352,7 @@
 @mybibitem{Boos2004kh,Boo04, E. Boos and others,CompHEP 4.4 - automatic computations from Lagrangians to events,Nucl. Instrum. Meth.,A534,(2004),250-259,[hep-ph/0403113],hep-ph/0403113}
 @mybibitem{Borozan2002fk,Bor02, I. Borozan and M. H. Seymour,An eikonal model for multiparticle production in hadron-hadron interactions,JHEP,09,(2002),015,[hep-ph/0207283],hep-ph/0207283}
 @mybibitem{Bossard2000jh,Bos00, G. Bossard and others,Cosmic ray air shower characteristics in the framework of the parton-based Gribov-Regge model NEXUS,Phys. Rev.,D63,(2001),054030,[hep-ph/0009119],hep-ph/0009119}
+@mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa,Eur. Phys. J.,C 78,(2018),220,[arXiv:1711.02568],arXiv:1711.02568}
 @mybibitem{Bothmann2019yzt,Both19,E. Bothmann et al., Event Generation with Sherpa 2.2, SciPost Phys.,7,(2019),034,[arXiv:1905.09127],arXiv:1905.09127}
 @mybibitem{Botje2011sn,Bot11, M. Botje and J. Butterworth and A. Cooper-Sarkar and A.  de Roeck and J. Feltesse and others,The PDF4LHC Working Group Interim Recommendations,,,,,arXiv:1101.0538,arXiv:1101.0538}
 @mybibitem{Botella1985gb,Bot85, F. J. Botella and L. L. Chau,Anticipating the Higher Generations of Quarks from Rephasing Invariance of the Mixing Matrix,Phys. Lett.,B168,(1986),97,,F+J+Phys. Lett.%2CB168%2C97}
@@ -394,6 +396,7 @@
 @mybibitem{Buckley2011ms,Buc11, A. Buckley and others,General-purpose event generators for LHC physics,Phys. Rept.,504,(2011),145-233,[arXiv:1101.2599],arXiv:1101.2599}
 @mybibitem{Budnev1974de,Bud74, V. M. Budnev and I. F. Ginzburg and G. V. Meledin and V. G. Serbo,The two photon particle production mechanism. Physical problems. Applications. Equivalent photon approximation,Phys. Rept.,15,(1974),181-281,,F+J+Phys. Rept.%2C15%2C181}
 @mybibitem{Buescher2005re,Bue05, V. Buescher and K. Jakobs,Higgs boson searches at hadron colliders,Int. J. Mod. Phys.,A20,(2005),2523-2602,[hep-ph/0504099],hep-ph/0504099}
+@mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
 @mybibitem{Buskulic1992ji,Bus92, D. Buskulic and others,Measurement of prompt photon production in hadronic Z decays,Z. Phys.,C57,(1993),17-36,,F+J+Z. Phys.%2CC57%2C17}
 @mybibitem{Buskulic1995au,Bus95, D. Buskulic and others,First measurement of the quark-to-photon fragmentation function,Z. Phys.,C69,(1996),365-378,,F+J+Z. Phys.%2CC69%2C365}
 @mybibitem{Butterworth2005aq,But05, J. M. Butterworth and M. Wing,High energy photoproduction,Rept. Prog. Phys.,68,(2005),2773-2828,[hep-ex/0509018],hep-ex/0509018}
@@ -756,6 +759,7 @@
 @mybibitem{Gustafson2012hg,Gus12, G. Gustafson,The Relation between the Good-Walker and Triple-Regge Formalisms for Diffractive Excitation,,,,,arXiv:1206.1733,arXiv:1206.1733}
 @mybibitem{Gustafson1986db,Gus86, G. Gustafson,Dual description of a confined colour field,Phys. Lett.,B175,(1986),453,,F+J+Phys. Lett.%2CB175%2C453}
 @mybibitem{Gustafson1987rq,Gus87, G. Gustafson and U. Pettersson,Dipole formulation of QCD cascades,Nucl. Phys.,B306,(1988),746,,F+J+Nucl. Phys.%2CB306%2C746}
+@mybibitem{Gutschow2018tuk,Gut18,C. Gutschow and J. M. Lindert and M. Schonherr, Multi-jet merged top-pair production including electroweak corrections, Eur. Phys. J., C78,(2018),317, [arXiv:1803.00950]}
 @mybibitem{Guzzi2011sv,Guz11, M. Guzzi and P. Nadolsky and E. Berger and H. L. Lai and F. Olness and C. P. Yuan,CT10 parton distributions and other developments in the global QCD analysis,,,,,arXiv:1101.0561,arXiv:1101.0561}
 @mybibitem{H12009wg,H1200,T. H and Z. U. Collaborations,Events with an isolated lepton and missing transverse momentum and measurement of boldmath W production at HERA,JHEP,03,(2010),035,[arXiv:0911.0858],arXiv:0911.0858}
 @mybibitem{H12009wt,H1200a,T. H and Z. U. Collaborations,Combined measurement and QCD analysis of the Inclusive e^pmp scattering cross sections at HERA,JHEP,01,(2009),109,[arXiv:0911.0884],arXiv:0911.0884}
@@ -1177,8 +1181,4 @@
 @mybibitem{Yoh1978id,Yoh78, J. K. Yoh and others,Study of Scaling in Hadronic Production of dimuons,Phys. Rev. Lett.,41,(1978),684,,F+J+Phys. Rev. Lett.%2C41%2C684}
 @mybibitem{Zarnecki2002qr,Zar02, A. F. Zarnecki,CompAZ: Parametrization of the luminosity spectra for the photon collider,Acta Phys. Polon.,B34,(2003),2741-2758,[hep-ex/0207021],hep-ex/0207021}
 @mybibitem{ktclus,a, M. H. Seymour,,,,,,,}
-@mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
-@mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
-@mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa,Eur. Phys. J.,C 78,(2018),220,[arXiv:1711.02568],arXiv:1711.02568}
 @mybibitem{Kallweit2015dum,Kal15, S. Kallweit and J. M. Lindert and P. Maierhofer and S. Pozzorini and M. Schonherr, NLO QCD+EW predictions for V + jets including off-shell vector-boson decays and multijet merging, JHEP, 1604, (2016), 021, [arXiv:1511.08692]}
-@mybibitem{Gutschow2018tuk,Gut18,C. Gutschow and J. M. Lindert and M. Schonherr, Multi-jet merged top-pair production including electroweak corrections, Eur. Phys. J., C78,(2018),317, [arXiv:1803.00950]}
