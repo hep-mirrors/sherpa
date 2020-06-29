@@ -351,7 +351,7 @@
 @mybibitem{Boos2004kh,Boo04, E. Boos and others,CompHEP 4.4 - automatic computations from Lagrangians to events,Nucl. Instrum. Meth.,A534,(2004),250-259,[hep-ph/0403113],hep-ph/0403113}
 @mybibitem{Borozan2002fk,Bor02, I. Borozan and M. H. Seymour,An eikonal model for multiparticle production in hadron-hadron interactions,JHEP,09,(2002),015,[hep-ph/0207283],hep-ph/0207283}
 @mybibitem{Bossard2000jh,Bos00, G. Bossard and others,Cosmic ray air shower characteristics in the framework of the parton-based Gribov-Regge model NEXUS,Phys. Rev.,D63,(2001),054030,[hep-ph/0009119],hep-ph/0009119}
-@mybibitem{Bothmann:2019yzt,Both19,E. Bothmann et al., Event Generation with Sherpa 2.2, SciPost Phys. 7 (2019) no.3, 034 [arXiv:1905.09127]}
+@mybibitem{Bothmann2019yzt,Both19,E. Bothmann et al., Event Generation with Sherpa 2.2, SciPost Phys.,7,(2019),034,[arXiv:1905.09127],arXiv:1905.09127}
 @mybibitem{Botje2011sn,Bot11, M. Botje and J. Butterworth and A. Cooper-Sarkar and A.  de Roeck and J. Feltesse and others,The PDF4LHC Working Group Interim Recommendations,,,,,arXiv:1101.0538,arXiv:1101.0538}
 @mybibitem{Botella1985gb,Bot85, F. J. Botella and L. L. Chau,Anticipating the Higher Generations of Quarks from Rephasing Invariance of the Mixing Matrix,Phys. Lett.,B168,(1986),97,,F+J+Phys. Lett.%2CB168%2C97}
 @mybibitem{Botts1989kf,Bot89, J. Botts and G. F. Sterman,Hard Elastic Scattering in QCD: Leading Behavior,Nucl.Phys.,B325,(1989),62,,F+J+Nucl.Phys.%2CB325%2C62}
@@ -1179,6 +1179,6 @@
 @mybibitem{ktclus,a, M. H. Seymour,,,,,,,}
 @mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
 @mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
-@mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa, [arXiv:1711.02568]}
+@mybibitem{Bothmann2017jfv,Both17,E. Bothmann and M. Schonherr and F. Krauss, Single top-quark production with Sherpa,Eur. Phys. J.,C 78,(2018),220,[arXiv:1711.02568],arXiv:1711.02568}
 @mybibitem{Kallweit2015dum,Kal15, S. Kallweit and J. M. Lindert and P. Maierhofer and S. Pozzorini and M. Schonherr, NLO QCD+EW predictions for V + jets including off-shell vector-boson decays and multijet merging, JHEP, 1604, (2016), 021, [arXiv:1511.08692]}
 @mybibitem{Gutschow2018tuk,Gut18,C. Gutschow and J. M. Lindert and M. Schonherr, Multi-jet merged top-pair production including electroweak corrections, Eur. Phys. J., C78,(2018),317, [arXiv:1803.00950]}
