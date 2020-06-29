@@ -677,8 +677,10 @@ double Single_Process::ReweightWithoutSubevents(
       size_t oqcd(info.m_orderqcd-needslowerorderqcd);
       for (size_t i(0);i<m_mewgtinfo.m_wass.size();++i) {
         if (m_mewgtinfo.m_wass[i] && varparams->m_asscontrib&(1<<i)) {
-          if (i==0 && varparams->m_multiassew)
+          if (i==0 && varparams->m_multiassew==1)
             Deltaassnew *= 1.+(m_mewgtinfo.m_wass[i] * bornassalphasfac)/Bnew;
+          else if (i==0 && varparams->m_multiassew==2)
+            Deltaassnew *= exp((m_mewgtinfo.m_wass[i] * bornassalphasfac)/Bnew);
           else
             Bassnew += m_mewgtinfo.m_wass[i] * bornassalphasfac;
         }

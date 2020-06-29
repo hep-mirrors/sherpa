@@ -168,6 +168,7 @@ std::vector<std::string> Variations::VariationArguments(Data_Reader * const read
   for (size_t i(0); i < assargs.size(); ++i) {
     varargs.push_back("1.,1.,default,ASS_" + assargs[i]);
     varargs.push_back("1.,1.,default,MULTIASS_" + assargs[i]);
+    varargs.push_back("1.,1.,default,EXPASS_" + assargs[i]);
   }
   if (msg_LevelIsDebugging())
     for (size_t i(0);i<varargs.size();++i)
@@ -273,7 +274,10 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
     if (stringparams.size() > 3) {
       std::string assparam(stringparams[3].substr(stringparams[3].find("ASS_")));
       asscontrib=ToType<PHASIC::asscontrib::type>(assparam);
-      multiassew=(stringparams[3].find("MULTIASS_")!=std::string::npos);
+      if (stringparams[3].find("MULTIASS_")!=std::string::npos)
+        multiassew=1;
+      if (stringparams[3].find("EXPASS_")!=std::string::npos)
+        multiassew=2;
     }
   } else {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
@@ -383,8 +387,10 @@ std::string Variation_Parameters::GenerateName() const
   }
   // append non-trivial added associated contribs
   if (m_asscontrib != PHASIC::asscontrib::none) {
-    if (m_multiassew)
+    if (m_multiassew==1)
       name += divider + GenerateNamePart("MULTIASS", m_asscontrib);
+    else if (m_multiassew==2)
+      name += divider + GenerateNamePart("EXPASS", m_asscontrib);
     else
       name += divider + GenerateNamePart("ASS", m_asscontrib);
   }
