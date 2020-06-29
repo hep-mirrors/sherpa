@@ -12,7 +12,7 @@ specifying the program are compiled, and their meanings are
 explained. This document does not aim at giving a
 complete description of the physics content of @Sherpa{}.
 To this end, the authors refer the reader to the original publications, 
-@mycite{Gleisberg2008ta} and @mycite{Bothmann:2019yzt}.
+@mycite{Gleisberg2008ta} and @mycite{Bothmann2019yzt}.
 
 
 @menu
