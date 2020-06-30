@@ -242,10 +242,10 @@ Sherpa. This is illustrated by discussing and referring to the
 parameter settings that come in the example steering file
 ``./Examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml``,
 cf. :ref:`LHC_ZJets`.  This is a simple configuration created to show
-the basics of how to operate Sherpa. @strong{It should be stressed
+the basics of how to operate Sherpa. **It should be stressed
 that this steering file relies on many of Sherpa's default settings,
 and, as such, you should understand those settings before using it to
-look at physics.} For more information on the settings and parameters
+look at physics.** For more information on the settings and parameters
 in Sherpa, see :ref:`Parameters`, and for more examples see the
 :ref:`Examples` section.
 

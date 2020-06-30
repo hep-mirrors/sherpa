@@ -89,10 +89,10 @@ In the same way, the bottom decay mode of the Higgs could be forced using:
 
    "25 -> 5 -5":  { Status: 2 }
 
-Note that the ordering of the decay products in :option:`<idcode>` is
+Note that the ordering of the decay products in :option:`<channel id>` is
 important and has to be identical to the ordering in the decay table
 printed to screen.  It is also possible to request multiple forced
-decay channels (@option{Status: 2}) for the same particle, all other
+decay channels (:option:`Status: 2`) for the same particle, all other
 channels will then automatically be disabled.
 
 .. _Width:
