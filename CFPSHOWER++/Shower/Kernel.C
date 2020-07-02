@@ -19,16 +19,18 @@ Kernel::Kernel(const Kernel_Info & info) :
 
 double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
   split.SetKernel(this);
-  split.InitSplitting(msel);
-  if (split.InitLimits()) {
+  if (split.InitLimits() && p_sf->Init(split,msel)) {
     double I = (p_gauge->Charge() * p_sf->Integral(split) *
 		p_gauge->OverEstimate(split));
-    /*msg_Out()<<"   * "<<"("<<GetSplit()<<" -->";
+    /*
+    msg_Out()<<"   * "<<"("<<GetSplit()<<" -->";
     for (size_t i=0;i<GetFlavs().size();i++)
       msg_Out()<<" "<<GetFlavs()[Tags()[i]]<<" ["<<Tags()[i]<<"]";
-      msg_Out()<<"): SF( = "<<p_sf->Integral(split)<<") * gauge( = "
-      <<(p_gauge->Charge() * p_gauge->OverEstimate(split))<<") = "<<I<<" for "
-      <<"Q2/t0 = "<<split.Q2()<<"/"<<split.tcut()<<" (enhance = "<<m_enhance<<").\n";
+    msg_Out()<<"): SF( = "<<p_sf->Integral(split)<<")["<<split.Zmin()<<", "<<split.Zmax()<<"] * "
+	     <<"gauge( = "<<p_gauge->Charge()<<" * "<<p_gauge->OverEstimate(split)<<" = "
+	     <<(p_gauge->Charge()*p_gauge->OverEstimate(split))<<") "
+	     <<"= "<<I<<"  --> "<<(I/(2.*M_PI))<<" for "
+	     <<"Q2/t0 = "<<split.Q2()<<"/"<<split.Tcut()<<" (enhance = "<<m_enhance<<").\n";
     */
     return m_enhance * I/(2.*M_PI);
   }
@@ -38,7 +40,7 @@ double Kernel::Integral(Splitting & split,const Mass_Selector * msel) {
 bool Kernel::Generate(Splitting & split,Configuration & config,
 		      const Mass_Selector * msel,const double & overfac) {
   // Sequence of generation of one splitting after kernel is selected:
-  // - attach pointer of kernel to Splitting, init invairants for splitting:
+  // - attach pointer of kernel to Splitting, init invariants for splitting:
   //   setting Q^2, masses, and Q^2_red
   //   (make sure splitting is allowed when splitting is massive).
   // - generate a splitting kinematics, essentially the z and phi
@@ -47,11 +49,11 @@ bool Kernel::Generate(Splitting & split,Configuration & config,
   // - if this is successful, calculate weights, apply hit-or-miss, attach
   //   acceptance and rejection weights to the splitter-spectator pair
   split.SetKernel(this);
-  split.InitSplitting(msel);
-  if (split.InitLimits()) {
+  if (split.InitLimits() && p_sf->Init(split,msel)) {
     p_sf->GeneratePoint(split);
-    if (p_gauge->SetColours(split)  && (*p_kinematics)(split,config)) {
-      p_kinematics->CalculateWeight(split);
+    if (p_sf->Construct(split,config) && p_gauge->SetColours(split)) {
+      p_sf->CalculateInvariants(split);
+      p_sf->CalculateJacobean(split);
       split.SetWeight(MakeWeight(split,overfac));
       if ((*split.GetWeight())()>=ran->Get()) {
 	split.GetSplitter()->AddWeight(split,true);
@@ -64,7 +66,7 @@ bool Kernel::Generate(Splitting & split,Configuration & config,
 }
 
 bool Kernel::UpdateSystem(Splitting & split,Configuration & config) {
-  return p_kinematics->UpdateSystem(split,config);
+  return p_sf->UpdateSystem(split,config);
 }
 
 double Kernel::GetXPDF(const double & x,const double & Q2,
@@ -81,7 +83,7 @@ double Kernel::GetXPDF(const double & x,const double & Q2,
 Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
   double SF       = (*p_sf)(split);
   double weight   = (p_gauge->Charge() * (*p_gauge)(split) *
-		     SF * p_kinematics->Weight());
+		     SF * p_sf->Jacobean());
   double realover = (p_gauge->Charge() * p_gauge->OverEstimate(split) *
 		     p_sf->OverEstimate(split));
   double over     = overfac * weight;
@@ -89,18 +91,17 @@ Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
     if (weight>=0.) over = realover;
     else            over = -realover;
   }
-  // msg_Out()<<METHOD<<": "<<(p_gauge->Charge() * (*p_gauge)(split))<<"(Col) * "
-  // 	   <<SF<<"(SF, z = "<<split.z()<<") * "
-  // 	   <<p_sf->Jacobean(split)<<"(J) / "
-  // 	   <<"over = "<<p_sf->OverEstimate(split)
-  // 	   <<" -> "<<weight<<"/"<<over<<".\n";
+  /*  msg_Out()<<METHOD<<": "<<(p_gauge->Charge() * (*p_gauge)(split))<<"(Col) * "
+  	   <<SF<<"(SF, z = "<<split.Z()<<") * "
+  	   <<p_sf->Jacobean()<<"(J) = "<<weight<<"/"<<realover<<".\n";
+  */
   return new Weight(weight,over,m_enhance*realover);
 }
 
 bool Kernel::FillOffsprings(Splitting & split) {
   int beam = split.GetSplitter()->Beam();
   for (size_t i=0;i<GetFlavs().size();i++) {
-    Parton * parton = new Parton(GetFlavs()[i],split.Momentum(i));
+    Parton * parton = new Parton(GetFlavs()[i],p_sf->Mom(i));
     if (i==0) parton->SetBeam(beam);
     parton->SetColor(p_gauge->GetColor(i));
     split.SetParton(i,parton);
@@ -111,8 +112,7 @@ bool Kernel::FillOffsprings(Splitting & split) {
 
 ostream & CFPSHOWER::operator<<(ostream &s,const Kernel & kernel) {
   Flavour_Vector flavs = kernel.GetFlavs(); 
-  s<<"Kernel["<<kernel.GetSF()->Name()<<" / "<<kernel.GetGauge()->Name()<<" / "
-   <<kernel.GetKinematics()->Name()<<"]: "
+  s<<"Kernel["<<kernel.GetSF()->Name()<<" / "<<kernel.GetGauge()->Name()<<"]: "
    <<kernel.GetSplit()<<" --> ";
   for (size_t i=0;i<flavs.size();i++) s<<flavs[i]<<" ";
   s<<" tag sequence = { ";
@@ -127,17 +127,14 @@ Kernel * Getter<Kernel,Kernel_Info,Kernel>::operator()(const Parameter_Type & in
 {
   SF_Base    * sf       = SF_Getter::GetObject(info.SFName(),info);
   Gauge_Base * gauge    = GP_Getter::GetObject(info.GPName(),info);
-  Kinematics_Base * kin = Kinematics_Getter::GetObject(info.KinName(),info);
-  if (!sf || !gauge || !kin) {
+  if (!sf || !gauge) {
     if (sf)    delete sf;
     if (gauge) delete gauge;
-    if (kin)   delete kin;
     return NULL;
   }
   Kernel * kernel = new Kernel(info);
   kernel->SetSF(sf);
   kernel->SetGauge(gauge);
-  kernel->SetKinematics(kin);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<"***** Found "<<kernel->GetSplit()<<" --> ";
     for (size_t i=0;i<kernel->GetFlavs().size();i++)

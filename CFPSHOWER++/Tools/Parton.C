@@ -50,7 +50,7 @@ void Parton::AddWeight(const Splitting & split,const bool & accept) {
     BranchingWeight brwt  = (wit->second.empty() ?
 			     BranchingWeight(0.,1.) :
 			     wit->second.back());
-    brwt.m_t              = split.t(0);
+    brwt.m_t              = split.T();
     brwt.m_weight        *= weight;
     wit->second.push_back(brwt);
   }

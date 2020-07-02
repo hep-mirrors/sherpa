@@ -42,6 +42,15 @@ void Shower::Reset() {
 }
 
 bool Shower::Evolve(Configuration * config) {
+  /*
+  msg_Out()<<"\n\n\n"<<METHOD<<"\n"
+	   <<"####################################################################"
+	   <<"#########################\n"
+	   <<"####################################################################"
+	   <<"#########################\n"
+	   <<"####################################################################"
+	   <<"#########################\n";
+  */
   p_config = config;
   // Initialisation - will have to be shifted to a new method (or some Reset()).
   m_weight = 1.; m_nem = 0;
@@ -65,13 +74,16 @@ bool Shower::Evolve(Configuration * config) {
   do {
     p_winner = NULL;
     size_t i=0;
+    //    msg_Out()<<"----------------------------------------------------\n"
+    //	     <<METHOD<<": next evolution step starting at "<<config->T()
+    //	     <<" --> "<<config->T0()<<"\n";
     for (Parton_List::reverse_iterator pit=p_config->rbegin();
 	 pit!=p_config->rend();pit++) {
       if ((*pit)->On() && !Evolve(*pit)) continue;
     }
     if (p_winner) {
-      AddWeight(p_winner->t(0));
-      p_config->SetT(p_winner->t(0));
+      AddWeight(p_winner->T());
+      p_config->SetT(p_winner->T());
       p_config->SetT0(m_t0min);
       if (PerformSplitting()) {
 	m_splittings.push_back(p_winner);
@@ -86,13 +98,18 @@ bool Shower::Evolve(Configuration * config) {
     }
   } while (p_winner && m_nem<m_nmax_em);
   AddWeight(p_config->T0());
-  //msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
-  // 	   <<"#########################################################\n"
-  //	   <<"#########################################################\n"
-  //	   <<"#########################################################\n";
+  /*
+  msg_Out()<<METHOD<<" finished, weight = "<<m_weight<<", "<<m_nem<<" emissions.\n"
+  	   <<"####################################################################"
+  	   <<"#########################\n"
+  	   <<"####################################################################"
+  	   <<"#########################\n"
+  	   <<"####################################################################"
+  	   <<"#########################\n\n\n";
+  */
   //if (dabs(m_weight-1.)>1.e-6) {
-    //msg_Out()<<METHOD<<" fails with weight = "<<(dabs(m_weight-1)*1.e6)<<" * 10^-6. "
-    //	     <<"Will continue the run & hope for the best.\n";
+  //msg_Out()<<METHOD<<" fails with weight = "<<(dabs(m_weight-1)*1.e6)<<" * 10^-6. "
+   //	     <<"Will continue the run & hope for the best.\n";
     //exit(1);
   //}
   return true;
@@ -109,6 +126,8 @@ void Shower::AddWeight(const double & t) {
 }
 
 bool Shower::Evolve(Parton * splitter) {
+  //msg_Out()<<"---------------------------------------------------------\n"
+  //	   <<METHOD<<" for "<<splitter->Flav()<<"\n";
   // Initialise the integrated splitting kernel, summed over all spectators (at
   // least one in QCD, and maximally two).  If splittings are kinematically allowed,
   // the sum will be larger than one and we will generate a test splitting through
@@ -125,7 +144,6 @@ bool Shower::Evolve(Parton * splitter) {
   double sum  = InitialiseIntegrals(splitter);
   if (sum>0.) {
     Splitting * split = GenerateTestSplitting(splitter,sum);
-    //msg_Out()<<METHOD<<" yields: "<<split<<".\n";
     if (split) {
       success = true;
       // we found a splitting - if we have not found a possible splitting yet,
@@ -136,14 +154,18 @@ bool Shower::Evolve(Parton * splitter) {
       //    splitting (this should become obsolete now).
       // 2. the t of the current splitter is below the current winner's t.  Then
       //    we just delete the current splitting.  
-      if (p_winner==NULL) p_winner = split;
-      else if (split->t(0) > p_winner->t(0)) {
+      if (p_winner==NULL) {
+	//msg_Out()<<"   --> success for t = "<<split->T()<<"\n";
+	p_winner = split;
+      }
+      else if (split->T() > p_winner->T()) {
+	//msg_Out()<<"   --> success for t = "<<split->T()<<"\n";
 	delete p_winner; p_winner = split;
       }
       else delete split;
       // If we have a winning splitter, all contenders must have a larger t, so
       // the winning t is the lower limit t0 of the next round of attempts.
-      if (p_winner) { p_config->SetT0(p_winner->t(0)); }
+      if (p_winner) { p_config->SetT0(p_winner->T()); }
     }
   }
   return success;
@@ -192,6 +214,11 @@ double Shower::InitialiseIntegrals(Parton * splitter) {
 Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) {
   const Parton_List * spectators = splitter->GetSpectators();
   double t = p_config->T(), tstart = t, t0 = p_config->T0();
+  /*
+  msg_Out()<<METHOD<<"(t = "<<t<<", t0 = "<<t0<<") "
+  	   <<"for "<<splitter->Flav()<<", sum = "<<sum<<", "
+  	   <<spectators->size()<<" spectators.\n";
+  */
   while (t>t0) {
     t *= exp(log(ran->Get())/sum);
     if (t<t0) return NULL;
@@ -212,7 +239,7 @@ Splitting * Shower::GenerateTestSplitting(Parton * splitter,const double & sum) 
 	    Parton * spectator = (*spit);
 	    Kernel * kernel    = (*m_splitkernels[i])[j];
 	    Splitting * split  = new Splitting(splitter,spectator,t,t0);
-	    split->Set_tstart(tstart);
+	    split->SetTstart(tstart);
 	    split->SetKinScheme(m_kinscheme);
 	    // Veto and adding of weights is embedded here.
 	    // Generate z, phi, run the veto algorithm, and construct the kinematics.
@@ -253,7 +280,7 @@ bool Shower::PerformSplitting() {
 }
 
 void Shower::EstablishSoftPartners() {
-  if (p_winner->NPartons()>2) return;
+  if (p_winner->GetKernel()->GetSF()->size()>2) return;
   Parton * offspring[2], * spectator = p_winner->GetSpectator();
   bool establishsoftpartners = false;
   for (size_t i=0;i<2;i++) {

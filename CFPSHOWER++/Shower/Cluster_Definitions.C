@@ -30,11 +30,11 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config & ca)
   Splitting split(KT2(*ca.p_ampl,i,j,ca.m_k,ca.m_mo,
 		      ca.m_kin,int(type),(swap?2:0)|(ca.m_mode<<2),ws,mu2));
   bool iss = (i<ca.p_ampl->NIn() || j<ca.p_ampl->NIn());
-  if (split.t(0)>0.0)
-    return Cluster_Param(this,ws,split.t(0),mu2,0,split.KinScheme(),0,
-			 (iss?-1.:1.)*split.GetKinematics()->m_pi,
-			 (ca.m_k<ca.p_ampl->NIn()?-1.:1.)*split.GetKinematics()->m_pk,
-			 split.GetKinematics()->m_lam);
+  if (split.T()>0.0)
+    return Cluster_Param(this,ws,split.T(),mu2,0,split.KinScheme(),0,
+			 (iss?-1.:1.)*split.GetKinArguments()->m_pi,
+			 (ca.m_k<ca.p_ampl->NIn()?-1.:1.)*split.GetKinArguments()->m_pk,
+			 split.GetKinArguments()->m_lam);
   if (ca.PureQCD()) return Cluster_Param(this,0.0,0.0,0.0,0);
   return Cluster_Param(this,0.0);
 }
@@ -58,7 +58,7 @@ Splitting Cluster_Definitions::KT2(const ATOOLS::Cluster_Amplitude &ampl,
   splitting.Set_eta(out1->XB());
   splitting.SetKinScheme(kin);
   splitting.SetClustered(1);
-  splitting.m_kin=kin>=0?kin:p_shower->KinematicsScheme();
+  splitting.m_kin=kin>=0?kin:p_shower->KinScheme();
   splitting.m_type=type;
   splitting.m_cpl=p_shower->CouplingScheme();
   splitting.m_kfac=(mode&(16<<2))?0:p_shower->KFactorScheme();

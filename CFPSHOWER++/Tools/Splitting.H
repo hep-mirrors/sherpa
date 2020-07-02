@@ -14,6 +14,8 @@ namespace ATOOLS {
   
 namespace CFPSHOWER {
   class Kernel;
+  class SF_Base;
+  class Splitting;
 
   struct splitting_mode {
     enum code {
@@ -24,38 +26,81 @@ namespace CFPSHOWER {
   };
   std::ostream &operator<<(std::ostream &s,const splitting_mode::code & mode);
 
-  
   class Splitting {
     static size_t s_cnt;
     Parton * p_splitter, * p_spectator;
     Kernel * p_kernel;
-    splitting_mode::code m_mode;
 
-    double   m_msplit2, m_mspect2;
-    double   m_Q2, m_Q2red, m_eta;
     double   m_tstart, m_tcut, m_zmin, m_zmax;
-    double   m_t[2], m_z[2], m_ztilde[3], m_phi[2], m_y;
-    bool     m_ismassive, m_isend;
-    
-    Weight      * p_weight;
-    size_t        m_nflavs;
-    Parton      * m_outs[3];
-    double        m_m2s[3];
-    ATOOLS::Vec4D m_moms[3], m_specmom; 
-    int           m_kinscheme, m_clustered;
+    double   m_t[2], m_z[2], m_phi[2], m_y, m_xB;
+    double   m_s, m_Q2;
 
+    int      m_kinscheme;
+    bool     m_isendpoint, m_isclustered;
+    Weight * p_weight;
+    Parton * p_outs[3];
+    
     ATOOLS::Poincare_Sequence m_seq;
     PHASIC::Kin_Args          m_kinargs;
   public:
     Splitting(Parton * splitter=NULL,Parton * spectator=NULL,
 	      const double  & t=0., const double  & tcut=0.);
     ~Splitting();
-    void InitSplitting(const ATOOLS::Mass_Selector * ms);
+    void Init(const ATOOLS::Mass_Selector * ms);
     bool InitLimits();
     
-    inline void SetSplitter(Parton * parton)       { p_splitter  = parton; }
-    inline void SetSpectator(Parton * parton)      { p_spectator = parton; }
-    inline void SetKernel(Kernel * kernel)         { p_kernel    = kernel; }
+    inline void SetKernel(Kernel * kernel)       { p_kernel    = kernel; }
+    inline void SetSplitter(Parton * parton)     { p_splitter  = parton; }
+    inline void SetSpectator(Parton * parton)    { p_spectator = parton; }
+    inline void SetKinScheme(const int & scheme) { m_kinscheme = scheme; }
+    inline void SetWeight(Weight * weight) {
+      if (p_weight!=NULL) delete p_weight;
+      p_weight  = weight;
+    }
+    inline void SetParton(const size_t & pos,Parton * parton) {
+      if (pos<3) p_outs[pos] = parton;
+    }
+    inline const bool & IsEndPoint()              const { return m_isendpoint; }
+    inline const bool & IsClustered()             const { return m_isclustered; }
+    inline const int  & KinScheme()               const { return m_kinscheme; } 
+    inline Kernel * GetKernel()                   const { return p_kernel; }
+    inline Parton * GetSplitter()                 const { return p_splitter; }
+    inline Parton * GetSpectator()                const { return p_spectator; }
+    inline Parton * GetParton(const size_t & pos) const { return p_outs[pos]; }
+    inline Weight * GetWeight()                   const { return p_weight; }
+    inline PHASIC::Kin_Args     * const GetKinArguments() { return &m_kinargs; }
+    
+    
+    inline void SetT(const size_t & pos, const double & t) {
+      //if (pos==0) m_tstart = t;
+      m_t[pos] = t;
+    }
+    inline void SetZ(const size_t & pos=0, const double & z=-1.) {
+      m_z[pos] = z>=0.? z : ATOOLS::ran->Get();
+    }
+    inline void SetPhi(const size_t & pos=0, const double & phi=-1.) {
+      m_phi[pos] = phi>=0. ? phi : 2.*M_PI*ATOOLS::ran->Get();
+    }
+    inline void SetTstart(const double & tstart) { m_tstart = tstart; }
+    inline void SetTcut(const double & tcut)     { m_tcut   = tcut; }
+    inline void SetY(const double & y)           { m_y      = y; }
+    inline void SetZmin(const double & zmin)     { m_zmax   = zmin; }
+    inline void SetZmax(const double & zmax)     { m_zmin   = zmax; }
+    inline const double & T(const size_t & pos=0)   const { return m_t[pos]; }
+    inline const double & Z(const size_t & pos=0)   const { return m_z[pos]; }
+    inline const double & Phi(const size_t & pos=0) const { return m_phi[pos]; }
+    inline const double & Tstart()                  const { return m_tstart; }
+    inline const double & Tcut()                    const { return m_tcut; }
+    inline const double & Zmin()                    const { return m_zmin; }
+    inline const double & Zmax()                    const { return m_zmax; }
+    inline const double & Y()                       const { return m_y; }
+    inline const double & XB()                      const { return m_xB; }
+    inline const double & Q2()                      const { return m_Q2; }
+    
+    
+
+    
+    /*
     inline void SetMode(splitting_mode::code mode) { m_mode   = mode; }
     inline void Set_eta(const double & eta)        { m_eta    = eta; }
     inline void Set_tstart(const double & tstart)  { m_tstart = tstart; }
@@ -72,10 +117,6 @@ namespace CFPSHOWER {
     inline void Set_y(const double & y)           { m_y      = y; }
     inline void SetEndPoint(const double & isend) { m_isend  = isend; }
     
-    inline void SetWeight(Weight * weight)  {
-      if (p_weight!=NULL) delete p_weight;
-      p_weight  = weight;
-    }
     inline void SetParton(size_t i,Parton * const parton)        { m_outs[i] = parton; }
     inline void SetMomentum(size_t i,ATOOLS::Vec4D const & mom)  { m_moms[i] = mom; }
     inline void SetSpectatorMomentum(ATOOLS::Vec4D const & mom)  { m_specmom = mom; }
@@ -107,7 +148,6 @@ namespace CFPSHOWER {
     inline const double & sai()                      const { return m_t[1]; }
     inline const bool   & IsEndPoint()               const { return m_isend; }
 
-    inline Weight              * GetWeight()         const { return p_weight; }
     inline const size_t          NPartons()          const { return m_nflavs; }
     inline Parton              * GetParton(size_t i) const { return m_outs[i]; }
     inline const ATOOLS::Vec4D & Momentum(size_t i)  const { return m_moms[i]; }
@@ -116,11 +156,11 @@ namespace CFPSHOWER {
     inline const int           & Clustered()         const { return m_clustered; }
     inline const ATOOLS::Poincare_Sequence & GetSequence()   const { return m_seq; }   
     inline const PHASIC::Kin_Args          * GetKinematics() const { return &m_kinargs; }
-    
+    */    
     inline static size_t Count() { return s_cnt; }
   };
 
-  std::ostream &operator<<(std::ostream &s,const Splitting & split);
+  std::ostream &operator<<(std::ostream &s,Splitting & split);
 }// end of namespace CFPSHOWER
 
 #endif

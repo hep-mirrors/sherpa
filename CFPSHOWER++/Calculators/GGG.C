@@ -22,14 +22,14 @@ using namespace ATOOLS;
 const double GGG::Scale(const Splitting & split) const {
   switch (m_type) {
   case kernel_type::IF:
-    return split.t(0)/split.z(0);
+    return split.T()/split.Z();
   case kernel_type::FI:
-    return split.t(0)/split.y();
+    return split.T()/split.Y();
   case kernel_type::FF:
   default:
     break;
   }
-  return split.t(0);
+  return split.T();
 }
 
 bool GGG::SetColours(Splitting & split) {

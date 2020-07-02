@@ -3,7 +3,6 @@
 
 #include "CFPSHOWER++/Calculators/SF_Base.H"
 #include "CFPSHOWER++/Calculators/Gauge_Base.H"
-#include "CFPSHOWER++/Calculators/Kinematics_Base.H"
 #include "CFPSHOWER++/Tools/Kernel_Info.H"
 #include "CFPSHOWER++/Tools/Configuration.H"
 #include "CFPSHOWER++/Tools/Splitting.H"
@@ -22,7 +21,6 @@ namespace CFPSHOWER {
     
     SF_Base         * p_sf; 
     Gauge_Base      * p_gauge;
-    Kinematics_Base * p_kinematics;
     PDF::PDF_Base   * p_pdf[2];
     double            m_pdfminvalue, m_pdfxmin, m_enhance;
 
@@ -45,7 +43,6 @@ namespace CFPSHOWER {
     
     inline void SetSF(SF_Base * sf)                            { p_sf          = sf; }
     inline void SetGauge(Gauge_Base * gaugepart)               { p_gauge       = gaugepart; }
-    inline void SetKinematics(Kinematics_Base * kinpart)       { p_kinematics  = kinpart; }
     inline void SetMSel(const ATOOLS::Mass_Selector * ms)      { p_msel        = ms; }
     inline void SetPDF(const size_t beam, PDF::PDF_Base * pdf) { p_pdf[beam]   = pdf; }
     inline void SetPDFMinValue(const double & value)           { m_pdfminvalue = value; }
@@ -53,7 +50,6 @@ namespace CFPSHOWER {
     inline void SetEnhanceFactor(const double & enhance)       { m_enhance     = enhance; }
 
     inline SF_Base                      * GetSF()         const { return p_sf; }
-    inline Kinematics_Base              * GetKinematics() const { return p_kinematics; }
     inline const kernel_type::code      & Type()          const { return p_sf->Type(); }
     inline const log_type::code         & LogType()       const { return p_sf->LogType(); }
     inline Gauge_Base                   * GetGauge()      const { return p_gauge; }

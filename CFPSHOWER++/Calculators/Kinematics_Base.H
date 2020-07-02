@@ -14,12 +14,8 @@ namespace CFPSHOWER {
     log_type::code    m_logtype;
     kernel_type::code m_type;
     std::string       m_name;
-    double          m_Q2, m_Q;
-    double          m_weight;
-    ATOOLS::Vec4D   m_psplit, m_pspect, m_pboth, m_pnew;
-    
-    std::vector<ATOOLS::Vec4D> m_moms;
-    
+    double            m_weight;
+        
     virtual void Init(const Splitting & split);
 
     static ATOOLS::Vec4D SumMomenta(const Configuration & config); 

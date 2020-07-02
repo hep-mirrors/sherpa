@@ -48,11 +48,11 @@ double Gauge_Base::operator()(const Splitting & split) {
 
 const double Gauge_Base::OverEstimate(const Splitting & split) const {
   if (p_alphaS) return (*p_alphaS)(m_muR2factor*1.);
-  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.tcut());
+  if (p_alphaS) return (*p_alphaS)(m_muR2factor*split.Tcut());
 }
 
 const double Gauge_Base::Scale(const Splitting & split) const {
-  return split.t(0);
+  return split.T();
 }
 
 const double Gauge_Base::Beta0(const double & NF) const {
@@ -77,7 +77,7 @@ const double Gauge_Base::K(const Splitting & split) const {
 
 const double Gauge_Base::KMax(const Splitting & split) const {
   if (m_orderA<2) return 0.;
-  double alphaS = (*p_alphaS)(split.tcut())/(2.*M_PI);
+  double alphaS = (*p_alphaS)(split.Tcut())/(2.*M_PI);
   if (m_orderA<3) return alphaS * m_K1max;
   return alphaS * m_K1max + sqr(alphaS) * m_K2max;
 }
@@ -103,10 +103,12 @@ const double Gauge_Base::K2(const double & NF) const {
 
 const double Gauge_Base::SoftEndpoint(const Splitting & split) {
   return 0.;
+  /*
   Vec4D  pi = split.Momentum(0);
   Vec4D  pj = split.Momentum(1);
   Vec4D  pk = split.SpectatorMomentum();
   double kt2 = 2.*(pi*pj)*(pk*pj)/(pi*pk);
   double mu2 = m_muR2factor * Scale(split);
   return (*this)(split)/(2.*M_PI) * Beta0(NF(split)) * log(mu2/kt2);
+  */
 }

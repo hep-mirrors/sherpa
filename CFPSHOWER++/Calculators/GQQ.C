@@ -26,16 +26,17 @@ using namespace ATOOLS;
 const double GQQ::Scale(const Splitting & split) const {
   switch (m_type) {
   case kernel_type::IF:
-    return split.t(0)/split.z(0);
+    return split.T()/split.Z();
     break;
   case kernel_type::FI:
-    return split.t(0)/split.y();
+    return split.T()/split.Y();
     break;
   case kernel_type::FF:
   default:
     break;
   }
-  return split.t(0);
+  return split.T();
+  //return split.Q2()*split.Y();
 }
 
 bool GQQ::SetColours(Splitting & split) {

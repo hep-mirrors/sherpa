@@ -27,7 +27,7 @@ QQQQ::QQQQ(const Kernel_Info & info) :
 }
 
 const double QQQQ::Scale(const Splitting & split) const {
-  double scale = split.t(0);
+  double scale = split.T();
   switch (m_type) {
   case kernel_type::IF:
     break;
