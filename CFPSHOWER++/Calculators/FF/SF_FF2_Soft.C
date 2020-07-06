@@ -24,18 +24,11 @@ void SF_FF2_Soft::CalculateInvariants(Splitting & split) {
   m_Q2 = 0.;
   for (size_t i=0;i<2;i++) {
     m_pp[i][i] = i<2 ? m_m2[i] : m_mspect2;
-    //msg_Out()<<"i = "<<i<<": ";
     for (size_t j=i+1;j<3;j++) {
       m_Q2 += m_pp[i][j] = m_pp[j][i] = m_moms[i]*m_moms[j];
     }
   }
   for (size_t i=0;i<2;i++) m_z[i] = m_pp[i][2]/(m_pp[0][2]+m_pp[1][2]);
-  if (dabs(1.-m_z[0]/split.Z())>1.e-6 ||
-      dabs(1.-(m_pp[0][1]/m_Q2)/m_y)>1.e-6 ||
-      dabs(1.-(1.-m_z[0])/m_z[1])>1.e-6) {
-    msg_Out()<<"Gotcha in "<<METHOD<<": z = "<<m_z[0]<<" vs. "<<split.Z()<<" "
-	     <<"and y = "<<m_pp[0][1]/m_Q2<<" vs. "<<m_y<<"\n";
-  }
   m_y = m_pp[0][1]/m_Q2;
 }
 
@@ -58,14 +51,12 @@ bool SF_FF2_Soft::KinCheck(Splitting & split, Configuration & config) {
 
 bool SF_FF2_Soft::ConstructSystem(Splitting & split, Configuration & config) {
   if (!KinCheck(split,config)) return false;
-  //msg_Out()<<METHOD<<"(z = "<<split.Z()<<", y = "<<m_y<<", phi = "<<split.Phi()<<"):\n";
   PHASIC::Kin_Args kinargs(m_y,split.Z(),split.Phi());
   if (PHASIC::ConstructFFDipole(m_m2[0], m_m2[1], m_msplit2,m_mspect2,
 				m_psplit,m_pspect,kinargs) < 0) return false;
   m_moms[0] = kinargs.m_pi;
   m_moms[1] = kinargs.m_pj;
   m_moms[2] = kinargs.m_pk;
-  //msg_Out()<<m_moms[0]<<" / "<<m_moms[1]<<"\n";
   return true;
 }
 
