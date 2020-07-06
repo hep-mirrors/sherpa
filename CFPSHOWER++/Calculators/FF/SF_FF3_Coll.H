@@ -10,6 +10,10 @@ namespace CFPSHOWER {
     bool   ConstructSystem(Splitting & split);
     bool   KinCheck(Splitting & split);
   public:
+    SF_FF3_Coll(const Kernel_Info & info) : SF_Base(info) {
+      m_logtype = log_type::coll;
+      m_type    = kernel_type::FF;
+    }
     bool Construct(Splitting & split,Configuration & config);
     bool UpdateSystem(Splitting & split,Configuration & config);
     void CalculateWeight(Splitting & split);

@@ -7,7 +7,7 @@ using namespace CFPSHOWER;
 using namespace ATOOLS;
 
 bool SF_FF3_Coll::operator()(Splitting & split,Configuration & config) {
-  Init(split);
+  if (!KinCheck(split)) return false;
   return ConstructSystem(split);
 }
 
@@ -33,7 +33,7 @@ bool SF_FF3_Coll::ConstructSystem(Splitting & split) {
   if (sqrt(split.Q2())<mtot+sqrt(split.mspect2())) {
     return false;
   }
-  double Q2     = split.Q2(), z1 = split.z(0), z2 = split.z(1), xi = z1/z2;
+  double saijk  = split.Q2(), z1 = split.z(0), z2 = split.z(1), xi = z1/z2;
   double sai    = (mode&1 && split.IsEndPoint())? 0.: split.sai(); 
   double maij2  = split.msplit2(), mk2 = split.mspect2(), mj2 = split.m2(m_tags[2]);
   double Q2red  = Q2 - maij2 - mk2;

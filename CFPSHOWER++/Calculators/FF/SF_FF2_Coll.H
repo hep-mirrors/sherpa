@@ -12,7 +12,7 @@ namespace CFPSHOWER {
     bool   KinCheck(Splitting & split);
   public:
     SF_FF2_Coll(const Kernel_Info & info) : SF_Base(info) {
-      m_logtype = log_type::soft;
+      m_logtype = log_type::coll;
       m_type    = kernel_type::FF;
     }
     bool Construct(Splitting & split,Configuration & config);
