@@ -174,7 +174,7 @@ namespace ATOOLS {
     mewgttype::code m_type;
     int m_relqcdcpl;
     double m_B, m_VI, m_KP, m_K;
-    std::vector<double> m_wren,m_wfac,m_bkw;
+    std::vector<double> m_wren,m_wfac,m_wass,m_bkw;
     double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
     int m_fl1, m_fl2, m_swap;
     size_t m_oqcd, m_oew;
@@ -184,7 +184,7 @@ namespace ATOOLS {
     ME_Weight_Info():
       m_type(mewgttype::none), m_relqcdcpl(0),
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_K(0.0),
-      m_wren(2,0.0), m_wfac(32,0.0),
+      m_wren(2,0.0), m_wfac(32,0.0), m_wass(4,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
       m_mur2(0.0), m_muf2(0.0), m_fl1(0), m_fl2(0),
       m_swap(0), m_oqcd(0), m_oew(0), m_clusseqinfo() {}

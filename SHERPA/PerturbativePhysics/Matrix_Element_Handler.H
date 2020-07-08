@@ -49,8 +49,8 @@ namespace SHERPA {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
         m_vnlomode, m_vnlopart, m_vnlocpl,
-	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
-	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
+	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_vint,
+        m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
 	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;

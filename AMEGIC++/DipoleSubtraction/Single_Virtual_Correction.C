@@ -35,6 +35,7 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 Single_Virtual_Correction::Single_Virtual_Correction() :
+  m_cmur(2,0.), m_wass(4,0.),
   m_stype(sbt::none),
   m_itype(cs_itype::none), m_iresult(0.0),
   p_psgen(NULL), p_partner(this), p_LO_process(NULL),
@@ -72,8 +73,6 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_pspfsrecscheme = s["DIPOLES"]["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
   m_pspissplscheme = s["DIPOLES"]["PFF_IS_SPLIT_SCHEME"].Get<size_t>();
   m_pspfssplscheme = s["DIPOLES"]["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
-  m_cmur[0]=0.;
-  m_cmur[1]=0.;
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
@@ -569,6 +568,8 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms);
     m_lasti=p_partner->m_lasti*m_sfactor;
+    for (size_t i(0);i<m_wass.size();++i)
+      m_wass[i]=p_partner->m_wass[i]*m_sfactor;
     if (!m_loopmapped) {
       if (m_checkpoles)  {
         m_finite     = p_partner->Finite()*m_sfactor;
@@ -586,6 +587,8 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
 
   m_mewgtinfo.m_B = m_lastbxs/m_sfactor;
   m_mewgtinfo.m_VI = (m_lastv+m_lasti)/m_sfactor;
+  for (size_t i=0;i<m_mewgtinfo.m_wass.size();++i)
+    m_mewgtinfo.m_wass[i]=m_wass[i]/m_sfactor;
   p_partner->FillMEwgts(m_mewgtinfo);
   m_mewgtinfo*=m_Norm*m_sfactor;
   m_mewgtinfo.m_K = p_partner->LastK();
@@ -1001,6 +1004,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     V=Calc_V(mom)*m_lastki;
   }
 
+  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+    m_wass[i]=m_dsijqcd[0][0]*p_kpterms_qcd->Coupling()*p_loopme->ME_AssContribs(i);
+
   if (m_checkpoles)  CheckPoleCancelation(mom);
   if (m_checkfinite) CheckFinite(I,V);
   if (m_checkborn)   CheckBorn();
@@ -1008,6 +1014,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_lastbxs=B;
   m_lastv=V;
   m_lasti=I;
+  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+    m_wass[i] *= m_lastk;
   double M2(B+V+I);
 
 

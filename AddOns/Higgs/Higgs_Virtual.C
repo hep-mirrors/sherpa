@@ -200,6 +200,11 @@ operator()(const Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Higgs") return NULL;
   if (pi.m_fi.m_nlotype==nlo_type::loop) {
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"Higgs_Virtual(): Error: cannot provide requested "
+        <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     Settings& s = Settings::GetMainSettings();
     int io = s["HIGGS_INTERFERENCE_ONLY"].Get<int>();

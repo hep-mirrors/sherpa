@@ -20,6 +20,7 @@ namespace PHASIC {
 
     ATOOLS::nlo_type::code m_nlotype;
     std::vector<double> m_nlocpl;
+    ATOOLS::asscontrib::type m_asscontribs;
 
     void GetExternal(std::vector<ATOOLS::Flavour> &fl) const;
     void SetExternal(const std::vector<ATOOLS::Flavour> &fl,size_t &n);

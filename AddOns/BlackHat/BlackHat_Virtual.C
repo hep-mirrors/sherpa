@@ -103,6 +103,11 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="BlackHat" &&
       pi.m_loopgenerator!="WhiteHat") return NULL;
   if (pi.m_fi.m_nlotype&nlo_type::loop) {
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"BlackHat_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     if (pi.m_fi.m_sv=="FullColor")
       BlackHat_Virtual::Interface()->set("COLOR_MODE",std::string("full_color"));

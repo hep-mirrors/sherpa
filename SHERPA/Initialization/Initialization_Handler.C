@@ -675,16 +675,17 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int beam(0);beam<=1;++beam) {
     std::string deflib("None");
     if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
-      deflib="NNPDFSherpa";
-      defset[beam]="NNPDF31_nnlo_as_0118_mc";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e || p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
-      deflib="PDFESherpa";
-      defset[beam]="PDFe";
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e ||
+	     p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_e);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_e);
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton()) {
-      deflib="GRVSherpa";
-      defset[beam]="GRV";
+      deflib=PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
+      defset[beam]=PDF::pdfdefs->DefaultPDFSet(kf_photon);
     }
     std::vector<std::string> pdflibs{
       s["PDF_LIBRARY"].GetVector<std::string>() };
