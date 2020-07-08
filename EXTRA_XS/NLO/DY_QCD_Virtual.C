@@ -56,6 +56,11 @@ operator()(const Process_Info &pi) const
     if (pi.m_mincpl[1]!=2. || pi.m_maxcpl[1]!=2.) return NULL;
     if (pi.m_fi.m_nlocpl[0]!=1. || pi.m_fi.m_nlocpl[1]!=0.) return NULL;
     if (pi.m_fi.m_ps.size()!=2) return NULL;
+    if (pi.m_fi.m_asscontribs!=asscontrib::none) {
+      msg_Error()<<"DY_QCD_Virtual(): Error: cannot provide requested "
+                 <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
+      return NULL;
+    }
     Flavour_Vector fl=pi.ExtractFlavours();
     for (size_t i(0);i<fl.size();++i)
       if (fl[i].IsMassive()) return NULL;

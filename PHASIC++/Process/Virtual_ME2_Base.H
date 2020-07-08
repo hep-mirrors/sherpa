@@ -21,6 +21,7 @@ namespace PHASIC {
     double m_mur2, m_accu;
     int m_mode, m_drmode, m_colmode;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
+    std::vector<double> m_asscontribs;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -45,6 +46,9 @@ namespace PHASIC {
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
+
+    inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
+    inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
 
     inline void SetSubType(const ATOOLS::sbt::subtype& st) { m_stype=st; }
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }

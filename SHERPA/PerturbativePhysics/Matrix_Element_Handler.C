@@ -745,6 +745,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "NLO_Part")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlopart);
     else if (subkey == "NLO_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vnlocpl);
     else if (subkey == "Subdivide_Virtual")  ExtractMPvalues(value, range, nf, args.pbi.m_vnlosubv);
+    else if (subkey == "Associated_Contributions") ExtractMPvalues(value, range, nf, args.pbi.m_vasscontribs);
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
@@ -948,6 +949,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
           }
         }
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
+	if (GetMPvalue(args.pbi.m_vasscontribs,nfs,pnid,ds))
+          cpi.m_fi.m_asscontribs=ToType<asscontrib::type>(ds);
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(args.pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
 	else cpi.m_rsmegenerator=cpi.m_megenerator;
