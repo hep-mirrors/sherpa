@@ -1,6 +1,7 @@
 #ifndef SHERPA_Main_Sherpa_H
 #define SHERPA_Main_Sherpa_H
 
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "SHERPA/Main/Filter.H"
 
@@ -9,15 +10,20 @@ namespace ATOOLS {
   class Cluster_Amplitude;
 }
 
-namespace HepMC{
-  class GenEvent;
-}
+#ifdef USING__HEPMC2
+namespace HepMC{ class GenEvent; }
+namespace SHERPA { class HepMC2_Interface; }
+#endif
+
+#ifdef USING__HEPMC3
+namespace HepMC3{ class GenEvent; }
+namespace SHERPA { class HepMC3_Interface; }
+#endif
 
 namespace SHERPA {
   class Initialization_Handler;
   class Event_Handler;
   class Input_Output_Handler;
-  class HepMC2_Interface;
 
   extern Initialization_Handler * s_inithandler;
 
@@ -30,7 +36,12 @@ namespace SHERPA {
     bool          m_filter;
 
     Event_Handler          * p_eventhandler;
+#ifdef USING__HEPMC2
     HepMC2_Interface       * p_hepmc2;
+#endif
+#ifdef USING__HEPMC3
+    HepMC3_Interface       * p_hepmc3;
+#endif
     Filter                 * p_filter;
 
     void RegisterDefaults();
@@ -47,8 +58,12 @@ namespace SHERPA {
     bool InitializeTheEventHandler();
 
     bool GenerateOneEvent(bool reset=true);
-
+#ifdef USING__HEPMC2
     void FillHepMCEvent(HepMC::GenEvent&);
+#endif
+#ifdef USING__HEPMC3
+    void FillHepMCEvent(HepMC3::GenEvent&);
+#endif
 
     double TotalXS();
     double TotalErr();

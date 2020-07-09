@@ -23,13 +23,12 @@ If this does not help, contact the Sherpa team (see the
 Sherpa Team section of the website
 `sherpa.hepforge.org <http://sherpa.hepforge.org>`_), providing
 all information on your setup. Please include
-@enumerate
-@item A complete tarred and gzipped set of the :option:`Sherpa.yaml` config file
-leading to the crash. Use the status recovery directory
-``Status__<date of crash>`` produced before the program abort.
-@item The command line (including possible parameters) you used to start Sherpa.
-@item The installation log file, if available.
-@end enumerate
+
+#. A complete tarred and gzipped set of the :option:`Sherpa.yaml` config file
+   leading to the crash. Use the status recovery directory
+   ``Status__<date of crash>`` produced before the program abort.
+#. The command line (including possible parameters) you used to start Sherpa.
+#. The installation log file, if available.
 
 
 .. _Authors:

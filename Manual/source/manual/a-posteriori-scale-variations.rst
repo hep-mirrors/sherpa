@@ -21,7 +21,7 @@ on the actual calculation) available in two formats:
 A posteriori scale and PDF variations using the HepMC GenEvent Output
 *********************************************************************
 
-Events generated in a LO, LOPS, NLO, NLOPS, MEPS@@LO, MEPS@@NLO or
+Events generated in a LO, LOPS, NLO, NLOPS, MEPS\@LO, MEPS\@NLO or
 MENLOPS calculation can be written out in the HepMC format including
 all infomation to carry out arbitrary scale variations a
 posteriori. For this feature HepMC of at least version 2.06 is

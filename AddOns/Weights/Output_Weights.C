@@ -55,6 +55,16 @@ namespace SHERPA {
       m_outstream.precision(precision);
     }
 
+    void Header()
+    {
+      m_outstream << "# EventNumber Nominal";
+      size_t numvars = s_variations->Size();
+      for (size_t i(0);i<numvars;++i) {
+        m_outstream << ' ' << s_variations->GetVariationNameAt(i);
+      }
+      m_outstream << '\n';
+    }
+
     ~Output_Weights()
     {
       m_outstream.close();
@@ -67,18 +77,16 @@ namespace SHERPA {
       size_t numvars = s_variations->Size();
       if (subs==NULL) {
         const auto weights = blobs->Weights();
-	m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	for (size_t i(0);i<numvars;++i) {
-          m_outstream << s_variations->GetVariationNameAt(i) << " "
-                      << weights.Variation(i) << " ";
+	m_outstream<<rpa->gen.NumberOfGeneratedEvents();
+	for (size_t i(0);i<numvars+1;++i) {
+          m_outstream << " " << weights[i];
         }
       } else {
 	for (size_t j(0);j<subs->size();++j) {
           const auto weights = (*subs)[j]->m_results;
           m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	  for (size_t i(0);i<numvars;++i) {
-            m_outstream << s_variations->GetVariationNameAt(i) << " "
-                        << weights.Variation(i) << " ";
+	  for (size_t i(0);i<numvars+1;++i) {
+            m_outstream << " " << weights[i];
           }
 	  m_outstream<<"\n";
 	}

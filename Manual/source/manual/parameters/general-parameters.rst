@@ -673,7 +673,7 @@ process. If numerical issues are encountered, one can try to
 increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
 This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
-weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
+weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 

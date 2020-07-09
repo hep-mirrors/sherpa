@@ -415,10 +415,8 @@ choices or easily implement a user defined scale.
   ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
   the respecitve algorithm's angular distance parameter.
 
-  @comment
-
 :option:`TAU_B2`
-  @comment Square of the beam thrust.
+  Square of the beam thrust.
 
 :option:`MU_F2, MU_R2, MU_Q2`
   Tags holding the values of the factorisation, renormalisation scale and
@@ -579,11 +577,11 @@ versions prior to 1.2.2. Currently available options are
   and one power at the transverse momentum squared of the gluon.
   Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
 
-  .. code-block::
+  .. code-block:: yaml
 
      SCALES:    VAR{...}{PPerp2(p[3])}
-       COUPLINGS: "Alpha_QCD 1"
-       KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
+     COUPLINGS: "Alpha_QCD 1"
+     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
 
   As can be seen from this example, scales are referred to as :kbd:`MU_<i>2`,
   where :kbd:`<i>` is replaced with the appropriate number.

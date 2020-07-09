@@ -22,6 +22,7 @@
 
 using namespace SHERPA;
 using namespace ATOOLS;
+namespace HepMC = HepMC3;
 
 EventInfo3::EventInfo3(ATOOLS::Blob * sp, const double &wgt,
                      bool namedweights,

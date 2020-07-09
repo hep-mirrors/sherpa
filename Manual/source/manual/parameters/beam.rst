@@ -90,7 +90,7 @@ If desired, you can also specify spectra for beamstrahlung through
 The ``BEAM_SMIN`` and ``BEAM_SMAX`` parameters may be used to specify
 the minimum/maximum fraction of cms energy squared after
 Beamstrahlung. The reference value is the total centre of mass energy
-squared of the collision, @emph{not} the centre of mass energy after
+squared of the collision, *not* the centre of mass energy after
 eventual Beamstrahlung.
 
 The parameter can be specified using the internal interpreter, see

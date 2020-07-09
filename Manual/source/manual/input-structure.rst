@@ -179,7 +179,7 @@ Tag replacement in Sherpa is performed through the data reading
 routines, which means that it can be performed for virtually all
 inputs.  Specifying a tag on the command line or in the configuration
 file using the syntax ``TAGS: {<Tag>: <Value>}`` will replace every
-occurrence of ``@(<Tag>)`` in all files during read-in. An example
+occurrence of ``<Tag>`` in all files during read-in. An example
 tag definition could read
 
 .. code-block:: shell-session

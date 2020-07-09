@@ -21,7 +21,7 @@ namespace HADRONS {
   class Hadron_Decay_Table : public PHASIC::Decay_Table {
     /// Pointer to the mixing handler. Needed for rate asymmetries.
     Mixing_Handler* p_mixinghandler;
-    
+    double m_flavwidth;
     void ScaleToWidth();
 
   public:

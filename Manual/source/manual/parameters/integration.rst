@@ -28,8 +28,8 @@ INTEGRATOR
 Specifies the integrator. The possible integrator types depend on the
 matrix element generator. In general users should rely on the default
 value and otherwise seek the help of the authors, see :ref:`Authors`.
-Within AMEGIC++ the options @option{AMEGIC: {INTEGRATOR: <type>,
-RS_INTEGRATOR: <type>}} can be used to steer the behaviour of the
+Within AMEGIC++ the options ``AMEGIC: {INTEGRATOR: <type>,
+RS_INTEGRATOR: <type>}`` can be used to steer the behaviour of the
 default integrator.
 
 * :option:`4`: building up the channels is achieved through respecting

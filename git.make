@@ -15,7 +15,7 @@ Git_Info.C: Git_Info.C.in
 	  if test -n "$$(cd $(srcdir); git status -s --untracked-files=no .)"; then \
 	    rev=$$rev"-dirty"; \
 	  fi; \
-	  url=$$(git rev-parse --abbrev-ref HEAD); \
+	  url=$$(cd $(top_srcdir); git rev-parse --abbrev-ref HEAD); \
 	  echo '#include "ATOOLS/Org/Git_Info.H"' > $@.tmp; \
 	  echo 'static ATOOLS::Git_Info initializer' >> $@.tmp; \
 	  echo '("$(GITTAG)","'$$url'","'$$rev'","X");' >> $@.tmp; \
