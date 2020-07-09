@@ -112,6 +112,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
   m_fomode   = s["FOMODE"].Get<int>();
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
+  if (m_pinfo.m_ckkw&1) m_hpsmode=0;
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -146,7 +147,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 void MCatNLO_Process::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
-  s["HPSMODE"].SetDefault(8);  // H event shower mode
+  s["HPSMODE"].SetDefault(4);  // H event shower mode
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
   s["RS_SCALE"].SetDefault("");  // RS scale
@@ -166,12 +167,6 @@ Process_Base* MCatNLO_Process::InitProcess
     else THROW(fatal_error, "Internal error.");
   }
   Process_Base* proc = m_gens.InitializeProcess(cpi,false);
-  if (!proc)
-    {
-      std::stringstream msg;
-      msg << "Unable to initialize process:\n" << cpi;
-      THROW(fatal_error,  msg.str());
-    }
   return proc;
 }
 
@@ -365,7 +360,7 @@ MCatNLO_Process::LocalKFactorInfo MCatNLO_Process::CalculateLocalKFactorInfo(
     info.s = bvib;
     info.h = 0.;
   } else if (m_kfacmode % 10 == 4) {
-    info.s = bvib + rs / b;
+    info.s = bvib + (b?rs/b:0.);
     info.h = 0.;
   } else
     THROW(fatal_error, "Unknown Kfactor mode.");

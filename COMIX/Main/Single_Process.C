@@ -65,6 +65,7 @@ bool COMIX::Single_Process::Initialize
  const std::vector<int> &blocks,size_t &nproc)
 {
   DEBUG_FUNC("");
+  DEBUG_VAR(m_pinfo);
   m_p.resize(m_nin+m_nout);
   if (!COMIX::Process_Base::Initialize
       (pmap,procs,blocks,nproc)) return false;
@@ -145,15 +146,22 @@ bool COMIX::Single_Process::Initialize
   msg_Debugging()<<"Subtraction Mode: "<<smode<<std::endl;
   std::vector<int> mincpl(m_pinfo.m_mincpl.size());
   std::vector<int> maxcpl(m_pinfo.m_maxcpl.size());
+  std::vector<int> minacpl(m_pinfo.m_minacpl.size());
+  std::vector<int> maxacpl(m_pinfo.m_maxacpl.size());
   for (size_t i(0);i<mincpl.size();++i) mincpl[i]=m_pinfo.m_mincpl[i]*2;
   for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
+  for (size_t i(0);i<minacpl.size();++i) minacpl[i]=m_pinfo.m_minacpl[i];
+  for (size_t i(0);i<maxacpl.size();++i) maxacpl[i]=m_pinfo.m_maxacpl[i];
   if (smode&18)
     for (int i(0);i<2;++i) {
       maxcpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
       mincpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
+      maxacpl[i]-=m_pinfo.m_fi.m_nlocpl[i];
+      minacpl[i]-=m_pinfo.m_fi.m_nlocpl[i];
     }
-  if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,mapstream,&*p_model,
-		       &m_cpls,stype,smode,m_itype,maxcpl,mincpl,
+  if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,mapstream,
+		       &*p_model,&m_cpls,stype,smode,m_itype,
+		       maxcpl,mincpl,maxacpl,minacpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
     m_mincpl.resize(p_bg->MinCpl().size());
     m_maxcpl.resize(p_bg->MaxCpl().size());
