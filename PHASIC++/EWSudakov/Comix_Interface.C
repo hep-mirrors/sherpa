@@ -86,7 +86,7 @@ void Comix_Interface::FillSpinAmplitudes(std::vector<Spin_Amplitudes>& spinampls
   Process_Base* proc = GetProcess(*campl);
   if (proc == nullptr)
     return;
-  proc->Differential(*campl, Weight_Type::nominal, m_differentialmode);
+  proc->Differential(*campl, Variations_Mode::nominal_only, m_differentialmode);
   std::vector<std::vector<Complex>> cols;
   proc->FillAmplitudes(spinampls, cols);
 }

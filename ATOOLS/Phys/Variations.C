@@ -74,8 +74,12 @@ void Variations::CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *bea
   }
 }
 
-Variations::Variations()
+Variations::Variations(Variations_Mode mode)
 {
+  m_enabled = true;
+  if (mode == Variations_Mode::nominal_only)
+    return;
+
   ReadDefaults();
 #if defined USING__LHAPDF && defined USING__LHAPDF6
   int lhapdfverbosity(0);
@@ -91,7 +95,7 @@ Variations::Variations()
 
   InitialiseParametersVector();
 
-  if (!m_parameters_vector.empty()) {
+  if (!m_parameters_vector.empty() || !m_qcut_parameters_vector.empty()) {
     rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
   }
 
@@ -114,11 +118,31 @@ Variations::~Variations()
 
 
 std::string
-Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i) const
+Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i, Variations_Type t) const
 {
-  return m_parameters_vector.at(i)->m_name;
+  switch (t) {
+  case Variations_Type::qcd:
+    return m_parameters_vector.at(i)->m_name;
+  case Variations_Type::qcut:
+    return m_qcut_parameters_vector.at(i).m_name;
+  case Variations_Type::custom:
+    THROW(fatal_error, "Variations does not manage custom variations.");
+  }
 }
 
+size_t Variations::Size(Variations_Type t) const
+{
+  if (!m_enabled)
+    return 0;
+  switch (t) {
+  case Variations_Type::qcd:
+    return m_parameters_vector.size();
+  case Variations_Type::qcut:
+    return m_qcut_parameters_vector.size();
+  case Variations_Type::custom:
+    THROW(fatal_error, "Variations does not manage custom variations.");
+  }
+}
 
 void Variations::ReadDefaults()
 {
@@ -199,10 +223,16 @@ void Variations::InitialiseParametersVector()
   if (!m_includecentralvaluevariation) {
     m_parameters_vector.erase(std::remove_if(m_parameters_vector.begin(),
                                              m_parameters_vector.end(),
-                                             [](const Variation_Parameters* v) {
+                                             [](const QCD_Variation_Params* v) {
                                                return v->IsTrivial();
                                              }),
                               m_parameters_vector.end());
+    m_qcut_parameters_vector.erase(std::remove_if(m_qcut_parameters_vector.begin(),
+                                             m_qcut_parameters_vector.end(),
+                                             [](const Qcut_Variation_Params& v) {
+                                               return v.IsTrivial();
+                                             }),
+                              m_qcut_parameters_vector.end());
   }
 }
 
@@ -283,6 +313,22 @@ void Variations::AddParameterExpandingScaleFactors(
   const double muR2fac {ToType<double>(scalestringparams[1])};
   const double qcutfac {ToType<double>(scalestringparams[2])};
 
+  if (qcutfac != 1.0) {
+    if (muF2fac != 1.0 || muR2fac != 1.0 || !pdfsandalphasvector.empty()) {
+      THROW(not_implemented,
+            "Simultaneous variations of QCUT and QCD"
+            " parameters (muF2, muR2, PDFs/AlphaS(mZ)) are not supported.")
+    }
+    m_qcut_parameters_vector.push_back({qcutfac});
+    if (expansions & ScaleFactorExpansions::QCUT) {
+      m_qcut_parameters_vector.push_back({1.0});
+      m_qcut_parameters_vector.push_back({1.0 / qcutfac});
+    } else {
+      m_qcut_parameters_vector.push_back({qcutfac});
+    }
+    return;
+  }
+
   // translate muF2fac and muR2fac into scale-factor pairs, expanding if
   // necessary
 
@@ -320,15 +366,6 @@ void Variations::AddParameterExpandingScaleFactors(
     scalefactorpairs.push_back(ScaleFactor_Pair(muR2fac, muF2fac));
   }
 
-  std::vector<double> qcutfacs;
-  if (expansions & ScaleFactorExpansions::QCUT) {
-    qcutfacs.push_back(qcutfac);
-    qcutfacs.push_back(1.0);
-    qcutfacs.push_back(1.0 / qcutfac);
-  } else {
-    qcutfacs.push_back(qcutfac);
-  }
-
   // if there is no explicit PDF requested, we use the nominal one
   if (pdfsandalphasvector.empty()) {
     pdfsandalphasvector.push_back(PDFs_And_AlphaS());
@@ -339,36 +376,33 @@ void Variations::AddParameterExpandingScaleFactors(
         pdfasit != pdfsandalphasvector.end(); pdfasit++) {
     bool assignedownershipofpdfsandalphas {false};
     for (const auto sfpair : scalefactorpairs) {
-      for (const auto qcutfac : qcutfacs) {
-        AddParameters(sfpair.first,
-                      sfpair.second,
-                      qcutfac,
-                      pdfasit,
-                      !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletepdf,
-                      !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletealphas);
-        assignedownershipofpdfsandalphas = true;
-      }
+      AddParameters(
+          sfpair.first,
+          sfpair.second,
+          pdfasit,
+          !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletepdf,
+          !assignedownershipofpdfsandalphas && pdfasit->m_shoulddeletealphas);
+      assignedownershipofpdfsandalphas = true;
     }
   }
 }
 
 
-void Variations::AddParameters(double muR2fac, double muF2fac, double Qcutfac,
+void Variations::AddParameters(double muR2fac, double muF2fac,
                                std::vector<PDFs_And_AlphaS>::const_iterator pdfsandalphas,
                                bool deletepdf,
                                bool deletealphas)
 {
   const double showermuR2fac = (m_reweightsplittingalphasscales) ? muR2fac : 1.0;
   const double showermuF2fac = (m_reweightsplittingpdfsscales) ? muF2fac : 1.0;
-  Variation_Parameters *params =
-    new Variation_Parameters(
-	muR2fac, muF2fac, showermuR2fac, showermuF2fac, Qcutfac,
+  QCD_Variation_Params *params =
+    new QCD_Variation_Params(
+	muR2fac, muF2fac, showermuR2fac, showermuF2fac,
         pdfsandalphas->m_pdfs[0], pdfsandalphas->m_pdfs[1],
         pdfsandalphas->p_alphas,
         deletepdf, deletealphas);
   m_parameters_vector.push_back(params);
 }
-
 
 std::vector<Variations::PDFs_And_AlphaS> Variations::PDFsAndAlphaSVector(
     std::string pdfstringparam,
@@ -571,7 +605,7 @@ void ReweightingFactorHistogram::Write(std::string filenameaffix)
 #endif
 
 
-Variation_Parameters::~Variation_Parameters()
+QCD_Variation_Params::~QCD_Variation_Params()
 {
   if (m_deletepdfs) {
     if (p_pdf1) { delete p_pdf1; }
@@ -586,9 +620,9 @@ Variation_Parameters::~Variation_Parameters()
 }
 
 
-std::string Variation_Parameters::GenerateName() const
+std::string QCD_Variation_Params::GenerateName() const
 {
-  const std::string divider("_");
+  static const std::string divider("_");
   std::string name;
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
     // there is only one relevant PDF ID
@@ -622,80 +656,43 @@ std::string Variation_Parameters::GenerateName() const
     name += divider + GenerateNamePart("PSMUR", sqrt(m_showermuR2fac));
     name += divider + GenerateNamePart("PSMUF", sqrt(m_showermuF2fac));
   }
-  // append non-trivial QCUT factor
-  if (m_Qcutfac != 1.0) {
-    name += divider + GenerateNamePart("QCUT",m_Qcutfac);
-  }
   return name;
 }
 
 
 template <typename U>
-std::string Variation_Parameters::GenerateNamePart(std::string tag, U value) const
+std::string QCD_Variation_Params_Base::GenerateNamePart(std::string tag, U value) const
 {
   return tag + ToString(value);
 }
 
-
-Subevent_Weights_Vector::Subevent_Weights_Vector():
-  std::vector<double>()
-{}
-
-
-Subevent_Weights_Vector::Subevent_Weights_Vector(size_type count, const double& value):
-  std::vector<double>(count, value)
-{};
-
-
-Subevent_Weights_Vector &
-Subevent_Weights_Vector::operator*=(const double &scalefactor)
-{
-  for (iterator it(begin()); it != end(); ++it) {
-    *it *= scalefactor;
-  }
-  return *this;
-}
-
-Subevent_Weights_Vector &
-Subevent_Weights_Vector::operator*=(const Subevent_Weights_Vector &other)
-{
-  if (size() == other.size()) {
-    for (size_t i(0); i < size(); ++i) {
-      (*this)[i] *= other[i];
-    }
-  } else if (other.size() == 1) {
-    *this *= other[0];
-  }
-  return *this;
-}
-
-Subevent_Weights_Vector &
-Subevent_Weights_Vector::operator+=(const Subevent_Weights_Vector &other)
-{
-  if (size() != other.size()) {
-    THROW(fatal_error, "Can not add subevent weights of different size.");
-  }
-  for (size_t i(0); i < size(); i++) {
-    (*this)[i] *= other[i];
-  }
-  return *this;
-}
-
-bool Variation_Parameters::IsTrivial() const
+bool QCD_Variation_Params::IsTrivial() const
 {
   if (m_muR2fac != 1.0
       || m_muF2fac != 1.0
-      || m_Qcutfac != 1.0
       || p_pdf1 != rpa->gen.PDF(0)
       || p_pdf2 != rpa->gen.PDF(1)
       || p_alphas != MODEL::as
      )
     return false;
-
   return true;
 }
 
+std::string Qcut_Variation_Params::GenerateName() const
+{
+  return GenerateNamePart("QCUT", m_scale_factor);
+}
+
 namespace ATOOLS {
+
+  std::ostream& operator<<(std::ostream& o, const Variations_Type& t)
+  {
+    switch (t) {
+      case Variations_Type::qcd:    return o << "QCD";
+      case Variations_Type::qcut:   return o << "Qcut";
+      case Variations_Type::custom: return o << "Custom";
+    }
+  }
 
   std::ostream& operator<<(std::ostream& s, const Variations& v)
   {
@@ -709,30 +706,14 @@ namespace ATOOLS {
     return s;
   }
 
-  std::ostream& operator<<(std::ostream& s, const Subevent_Weights_Vector& v)
-  {
-    if (v.size() == 1) {
-      s << v[0];
-    } else {
-      s << "(";
-      for (size_t j{ 0 }; j < v.size(); ++j) {
-        if (j != 0)
-          s << ", ";
-        s << v[j];
-      }
-      s << ")";
-    }
-    return s;
-  }
-
-  std::ostream& operator<<(std::ostream& s, const Variations_Type &c)
+  std::ostream& operator<<(std::ostream& s, const Variations_Source &c)
    {
     switch (c) {
-      case Variations_Type::all:
+      case Variations_Source::all:
         return s << "All";
-      case Variations_Type::main:
+      case Variations_Source::main:
         return s << "Main";
-      case Variations_Type::sudakov:
+      case Variations_Source::sudakov:
         return s << "Sudakov";
     }
     return s;

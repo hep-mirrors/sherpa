@@ -38,9 +38,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL),
-  m_last {0, 0.0},
-  m_lastb {0, 0.0}
+  p_apmap(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -168,9 +166,9 @@ void Process_Base::SetUseBIWeight(bool on)
   m_use_biweight=on;
 }
 
-Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
-                                         Weight_Type type,
-                                         int mode)
+Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
+                                       Variations_Mode varmode,
+                                       int mode)
 {
   DEBUG_FUNC(this<<" -> "<<m_name<<", mode = "<<mode);
   msg_Debugging()<<ampl<<"\n";
@@ -179,8 +177,8 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   if (mode&64) {
-    if (mode&1) return Event_Weights {1, 1.0};
-    return Event_Weights {1, static_cast<double>(Trigger(p))};
+    if (mode&1) return {1.0};
+    return {static_cast<double>(Trigger(p))};
   }
   bool selon(Selector()->On());
   if (mode&1) SetSelectorOn(false);
@@ -199,8 +197,8 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
-  Event_Weights wgts {this->Differential(p, type)};
-  wgts /= m_issymfac;
+  auto wgtmap = this->Differential(p, varmode);
+  wgtmap["ME"] /= m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
   if (subs) {
     (*subs)*=1.0/m_issymfac;
@@ -208,12 +206,12 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&32) {
     auto psh = Parent()->Integrator()->PSHandler();
-    wgts*=psh->Weight(p);
+    wgtmap["ME"] *= psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
-  return wgts;
+  return wgtmap;
 }
 
 bool Process_Base::IsGroup() const

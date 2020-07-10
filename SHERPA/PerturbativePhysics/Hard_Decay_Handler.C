@@ -585,8 +585,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
   if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
 
-  Blob_Data_Base * weights((*blob)["Weights"]);
-  if (weights) weights->Get<Event_Weights>()*=brfactor;
+  Blob_Data_Base * wgtmap_bdb((*blob)["WeightsMap"]);
+  if (wgtmap_bdb) wgtmap_bdb->Get<Weights_Map>()["BR"]=brfactor;
 
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);

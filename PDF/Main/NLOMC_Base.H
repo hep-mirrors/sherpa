@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include <string>
@@ -33,7 +33,7 @@ namespace PDF {
 
     double m_kt2min[2];
 
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
 
     int m_subtype;
 
@@ -55,7 +55,7 @@ namespace PDF {
 
     inline double KT2Min(const int mode) const { return m_kt2min[mode]; }
 
-    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+    inline const ATOOLS::Weights_Map& WeightsMap() const { return m_weightsmap; }
 
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
 

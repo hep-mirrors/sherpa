@@ -9,7 +9,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
@@ -162,7 +162,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetId();
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
-  p_signal->AddData("Weights",new Blob_Data<Event_Weights>(Event_Weights {}));
+  p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
   m_blobs.push_back(p_signal);
 }
 
@@ -182,7 +182,7 @@ bool Event_Handler::AnalyseEvent() {
         return false;
       case Return_Value::New_Event :
         trials=(*p_signal)["Trials"]->Get<double>();
-        cxs=(*p_signal)["Weights"]->Get<Event_Weights>().Nominal();
+        cxs=(*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
         m_n      -= trials;
         m_addn    = trials;
         m_sum    -= cxs;
@@ -364,23 +364,15 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   double trials((*p_signal)["Trials"]->Get<double>());
   p_signal->AddData("Trials",new Blob_Data<double>(trials+m_addn));
 
-  Event_Weights weights((*p_signal)["Weights"]->Get<Event_Weights>());
-  auto db = (*p_signal)["Shower_Weights"];
-  if (db) {
-    weights *= db->Get<Event_Weights>();
-  }
-  db = (*p_signal)["MC@NLO_Shower_Weights"];
-  if (db) {
-    weights *= db->Get<Event_Weights>();
-  }
+  Weights_Map wgtmap((*p_signal)["WeightsMap"]->Get<Weights_Map>());
 
-  if (!WeightsAreGood(weights)) {
-    PRINT_INFO("Invalid weight w="<<weights.Nominal()<<". Rejecting event.");
+  if (!WeightsAreGood(wgtmap)) {
+    PRINT_INFO("Invalid weight w="<<wgtmap.Nominal()<<". Rejecting event.");
     return false;
   }
   m_n      += trials+m_addn;
-  m_sum    += weights.Nominal();
-  m_sumsqr += sqr(weights.Nominal());
+  m_sum    += wgtmap.Nominal();
+  m_sumsqr += sqr(wgtmap.Nominal());
   m_addn    = 0.0;
 
   return AnalyseEvent();
@@ -418,7 +410,7 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     }
   } while (run);
 
-  double xs((*p_signal)["Weights"]->Get<Event_Weights>().Nominal());
+  double xs((*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal());
   m_n++;
   m_sum    += xs;
   m_sumsqr += sqr(xs);
@@ -605,9 +597,9 @@ void Event_Handler::WriteRNGStatus
   outstream.close();
 }
 
-bool Event_Handler::WeightsAreGood(const Event_Weights& weights)
+bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
 {
-  const auto weight = weights.Nominal();
+  const auto weight = wgtmap.Nominal();
   if (IsBad(weight)) return false;
 
   if (m_checkweight && fabs(weight)>m_maxweight) {
@@ -617,20 +609,23 @@ bool Event_Handler::WeightsAreGood(const Event_Weights& weights)
 		   " trial "+ToString(rpa->gen.NumberOfTrials()-1));
   }
   if (m_checkweight & 8) {
-    const auto num_variations = s_variations->Size();
-    for (auto i = 0; i < num_variations; ++i) {
-      const auto varweight = weights.Variation(i);
-      const std::string& name = s_variations->Parameters(i).m_name;
-      if (m_maxweights.find(name) == m_maxweights.end()) {
-        m_maxweights[name] = 0.0;
-      }
-      if (fabs(varweight) > m_maxweights[name]) {
-        m_maxweights[name] = fabs(varweight);
-        WriteRNGStatus("maxweight." + name,
-                       "# Wrote status for weight=" + ToString(varweight) +
-                           " in event " +
-                           ToString(rpa->gen.NumberOfGeneratedEvents() + 1) +
-                           " trial " + ToString(rpa->gen.NumberOfTrials() - 1));
+    for (auto type : s_variations->ManagedVariationTypes()) {
+      auto weights = wgtmap.Combine(type);
+      const auto num_variations = s_variations->Size(type);
+      for (auto i = 0; i < num_variations; ++i) {
+        const auto varweight = weights.var(i);
+        const std::string& name = s_variations->Parameters(i).m_name;
+        if (m_maxweights.find(name) == m_maxweights.end()) {
+          m_maxweights[name] = 0.0;
+        }
+        if (fabs(varweight) > m_maxweights[name]) {
+          m_maxweights[name] = fabs(varweight);
+          WriteRNGStatus("maxweight." + name,
+              "# Wrote status for weight=" + ToString(varweight) +
+              " in event " +
+              ToString(rpa->gen.NumberOfGeneratedEvents() + 1) +
+              " trial " + ToString(rpa->gen.NumberOfTrials() - 1));
+        }
       }
     }
   }

@@ -35,9 +35,9 @@ namespace COMIX {
 
     // member functions
     double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
-    ATOOLS::Event_Weights Differential(const ATOOLS::Cluster_Amplitude& ampl,
-                                       ATOOLS::Weight_Type type=ATOOLS::Weight_Type::nominal,
-                                       int mode=0);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude& ampl,
+                                     ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
+                                     int mode=0);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

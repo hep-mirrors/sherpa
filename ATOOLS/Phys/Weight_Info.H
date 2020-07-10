@@ -2,7 +2,7 @@
 #define ATOOLS_Phys_Weight_Info_H
 
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/EWSudakov_Info.H"
 #include <ostream>
 #include <vector>
@@ -32,27 +32,25 @@ namespace ATOOLS {
 
   struct Weight_Info {
     double m_dxs, m_ntrial;
-    Event_Weights m_weights, m_mcatnloshowerweights;
+    Weights_Map m_weightsmap;
     PDF_Info m_pdf;
-    Weight_Info(const double &weight=0.0,
+    Weight_Info(const Weights_Map &weightsmap={0.0},
                 const double &dxs=0.0,const double &ntrial=0.0,
                 const int &fl1=0, const int &fl2=0,
                 const double &x1=0.,const double &x2=0.,
                 const double &xf1=0.0,const double &xf2=0.0,
                 const double &muf12=0.0,const double &muf22=0.0):
-      m_weights {weight}, m_mcatnloshowerweights {0, 1.0},
+      m_weightsmap {weightsmap},
       m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
-    Weight_Info &operator*=(const double &c)
-    { m_weights*=c; m_dxs*=c; return *this; }
-    double Weight() const
-    { return m_weights.Nominal() * m_mcatnloshowerweights.Nominal(); }
+    //Weight_Info &operator*=(const double &c)
+    //{ m_weightsmap["ME"]*=c; m_dxs*=c; return *this; }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Weight_Info & wi)
   {
-    return s << " w = " << wi.m_weights.Nominal() << ", dxs = " << wi.m_dxs
+    return s << " w = " << wi.m_weightsmap.Nominal() << ", dxs = " << wi.m_dxs
              << "\n";
   }
 

@@ -6,7 +6,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Group.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Phys/Event_Weights.H"
 #include "ATOOLS/Phys/Variations.H"
 
 

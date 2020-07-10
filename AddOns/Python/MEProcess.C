@@ -408,7 +408,7 @@ double MEProcess::TestPoint(const double& E){
 double MEProcess::MatrixElement()
 {
   if(p_colint!=NULL) p_colint->SetWOn(false);
-  double res(p_proc->Differential(*p_amp, ATOOLS::Weight_Type::nominal, 1|4));
+  double res(p_proc->Differential(*p_amp, ATOOLS::Variations_Mode::nominal_only, 1|4));
   if(p_colint!=NULL) p_colint->SetWOn(true);
   // Cancel out initial state swap factor
   // which can be accessed through

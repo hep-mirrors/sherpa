@@ -253,7 +253,7 @@ void Output_RootNtuple::Output(Blob_List* blobs)
     if (m_evtlist.size()<=m_cnt2)
       m_evtlist.resize(m_evtlist.size()+m_avsize);
     m_evtlist[m_cnt2].weight =
-        (*signal)["Weights"]->Get<Event_Weights>().Nominal();
+        (*signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
     m_evtlist[m_cnt2].ncount=ncount;
     m_sum+=m_evtlist[m_cnt2].weight;
     m_csum+=m_evtlist[m_cnt2].weight;

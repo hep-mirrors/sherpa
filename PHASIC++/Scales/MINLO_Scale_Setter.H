@@ -75,7 +75,7 @@ namespace PHASIC {
 
     double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
 
-    bool UpdateScale(const ATOOLS::Variation_Parameters &var);
+    bool UpdateScale(const ATOOLS::QCD_Variation_Params &var);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);

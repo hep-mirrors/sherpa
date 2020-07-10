@@ -28,7 +28,7 @@ namespace PHASIC {
       H_KFactor(args) {}
 
     double KFactor(const int mode = 0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HNNLO_KFactor
 
@@ -39,7 +39,7 @@ namespace PHASIC {
       H_KFactor(args) {}
 
     double KFactor(const int mode = 0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HHF1_KFactor
 
@@ -50,7 +50,7 @@ namespace PHASIC {
       H_KFactor(args) {}
 
     double KFactor(const int mode = 0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HHF2_KFactor
 
@@ -61,7 +61,7 @@ namespace PHASIC {
       H_KFactor(args) {}
 
     double KFactor(const int mode = 0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HNLO_KFactor
 
@@ -72,7 +72,7 @@ namespace PHASIC {
       H_KFactor(args) {}
 
     double KFactor(const int mode = 0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HF1_KFactor
 
@@ -147,7 +147,7 @@ double HNNLO_KFactor::KFactor(const int mode)
     size_t oldsize(bkw.size());
     s_variations->ForEach(
         [this, &lmode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, lmode);
         });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
@@ -159,7 +159,7 @@ double HNNLO_KFactor::KFactor(const int mode)
 }
 
 // NNLO K factor
-double HNNLO_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double HNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=MODEL::as;
@@ -276,7 +276,7 @@ double HHF1_KFactor::KFactor(const int mode)
     size_t oldsize(bkw.size());
     s_variations->ForEach(
         [this, &lmode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, lmode);
         });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
@@ -289,7 +289,7 @@ double HHF1_KFactor::KFactor(const int mode)
 
 // for applying Higgs effective coupling in MC@NLO style
 // provide 2*hf1tt to multiple a standalone Higgs NLO
-double HHF1_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double HHF1_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=MODEL::as;
@@ -337,7 +337,7 @@ double HHF2_KFactor::KFactor(const int mode)
     size_t oldsize(bkw.size());
     s_variations->ForEach(
         [this, &lmode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, lmode);
         });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
@@ -350,7 +350,7 @@ double HHF2_KFactor::KFactor(const int mode)
 
 // for applying Higgs effective coupling in MC@NLO style
 // provide hf1tt^2+2*hf2tt to multiple a standalone Higgs LO
-double HHF2_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double HHF2_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=MODEL::as;
@@ -392,7 +392,7 @@ double HNLO_KFactor::KFactor(const int mode)
     bkw.clear();
     s_variations->ForEach(
         [this, &mode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, mode);
         });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
@@ -403,7 +403,7 @@ double HNLO_KFactor::KFactor(const int mode)
 }
 
 // NLO K factor
-double HNLO_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double HNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=MODEL::as;
@@ -486,7 +486,7 @@ double HF1_KFactor::KFactor(const int mode)
     bkw.clear();
     s_variations->ForEach(
         [this, &mode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, mode);
         });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
@@ -496,7 +496,7 @@ double HF1_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double HF1_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double HF1_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=MODEL::as;

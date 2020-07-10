@@ -32,7 +32,7 @@ namespace PHASIC {
 
     DIS_KFactor(const KFactor_Setter_Arguments &args);
 
-    double KFactor(ATOOLS::Variation_Parameters* params,
+    double KFactor(ATOOLS::QCD_Variation_Params* params,
                    const int mode,
                    const int order);
 
@@ -45,7 +45,7 @@ namespace PHASIC {
       DIS_KFactor(args) {}
 
     double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class DISNNLO_KFactor
 
@@ -56,7 +56,7 @@ namespace PHASIC {
       DIS_KFactor(args) {}
 
     double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters* params, const int& mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class DISNLO_KFactor
 
@@ -149,7 +149,7 @@ double DISNNLO_KFactor::KFactor(const int mode)
     bkw.clear();
     s_variations->ForEach(
         [this, &lmode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, lmode);
         });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
@@ -176,7 +176,7 @@ double DISNNLO_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double DISNNLO_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double DISNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=s_as;
@@ -216,7 +216,7 @@ double DISNLO_KFactor::KFactor(const int mode)
     bkw.clear();
     s_variations->ForEach(
         [this, &lmode](size_t varindex,
-                       Variation_Parameters& varparams) -> void {
+                       QCD_Variation_Params& varparams) -> void {
           KFactor(&varparams, lmode);
         });
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
@@ -238,7 +238,7 @@ double DISNLO_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double DISNLO_KFactor::KFactor(Variation_Parameters* params, const int& mode)
+double DISNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
   if (params==NULL) {
     s_as=s_as;
@@ -261,7 +261,7 @@ double DISNLO_KFactor::KFactor(Variation_Parameters* params, const int& mode)
   return DIS_KFactor::KFactor(params, mode, 0);
 }
 
-double DIS_KFactor::KFactor(Variation_Parameters* params,
+double DIS_KFactor::KFactor(QCD_Variation_Params* params,
                             const int mode,
                             const int order)
 {

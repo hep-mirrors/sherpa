@@ -174,7 +174,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
       kill(getpid(),SIGINT);
     }
 
-    if (AddPoint(double(p_psh->Differential(Weight_Type::nominal)))) {
+    if (AddPoint(double(p_psh->Differential(Variations_Mode::nominal_only)))) {
       break;
     }
   }
@@ -308,7 +308,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   p_psh->FSRIntegrator()->Reset();
 
   for (long unsigned int n=1;n<=m_nrawmax;n++) {
-    double value = double(p_psh->Differential(Weight_Type::nominal));
+    double value = double(p_psh->Differential(Variations_Mode::nominal_only));
     p_psh->AddPoint(value);
 
     if (!(n%m_iter)) {
