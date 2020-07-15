@@ -52,6 +52,18 @@ Single_Process::Single_Process():
       msg_Info()<<"NLO n_f scheme conversion terms computed only."<<std::endl;
     printed=true;
   }
+
+  // parse settings for associated contributions variations
+  std::vector<std::vector<asscontrib::type>> asscontribvars =
+      s["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"]
+          .SetDefault<asscontrib::type>({})
+          .GetMatrix<asscontrib::type>();
+  for (const auto& asscontribvarparams : asscontribvars) {
+    m_asscontrib.push_back(asscontrib::none);
+    for (const auto& asscontribvarparam : asscontribvarparams) {
+      m_asscontrib.back() |= asscontribvarparam;
+    }
+  }
 }
 
 Single_Process::~Single_Process()
@@ -647,9 +659,39 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   // perform on-the-fly reweighting
   m_last *= nominal;
-  if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
+  if (varmode != Variations_Mode::nominal_only) {
     if (GetSubevtList() == nullptr) {
+
+      // QCD variations
       ReweightBVI(scales->Amplitudes());
+
+      // associated contribution variations
+      {
+        auto orderqcd = m_mewgtinfo.m_oqcd;
+        if (m_mewgtinfo.m_type & mewgttype::VI ||
+            m_mewgtinfo.m_type & mewgttype::KP) {
+          orderqcd--;
+        }
+        for (const auto& asscontrib : m_asscontrib) {
+          double Bassnew {0.0};
+          for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
+            // m_wass[0] is EW Sudakov-type correction
+            // m_wass[1] is the subleading Born
+            // m_wass[2] is the subsubleading Born, etc
+            if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
+              Bassnew += m_mewgtinfo.m_wass[i];
+            }
+            if ((orderqcd - i) == 0)
+              break;
+          }
+          const std::string key = ToString<asscontrib::type>(asscontrib);
+          m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
+              (m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
+               m_mewgtinfo.m_KP + Bassnew) *
+              m_csi.m_pdfwgt / m_last["ME"].Nominal();
+        }
+      }
+
     } else {
       ReweightRS(scales->Amplitudes());
     }
@@ -733,9 +775,9 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
 void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
-  // NOTE: we iterate over m_last's variations (via its Apply function), but we
-  // also update m_lastb inside the loop, to avoid code duplication; also note
-  // that m_lastb should not be all-zero if m_lastbxs is zero
+  // NOTE: we iterate over m_last's variations, but we also update m_lastb
+  // inside the loop, to avoid code duplication; also note that m_lastb should
+  // not be all-zero if m_lastbxs is zero
   Reweight(m_last["ME"], [this, &ampls, &info](
                    double varweight,
                    size_t varindex,
