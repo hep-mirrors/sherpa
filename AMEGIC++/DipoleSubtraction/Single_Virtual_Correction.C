@@ -469,8 +469,9 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms);
     m_lasti=p_partner->m_lasti*m_sfactor;
-    for (size_t i(0);i<m_wass.size();++i)
-      m_wass[i]=p_partner->m_wass[i]*m_sfactor;
+    if (!m_loopmapped)
+      for (size_t i(0);i<m_wass.size();++i)
+        m_wass[i]=p_partner->m_wass[i]*m_sfactor;
   }
 
   m_mewgtinfo.m_B = m_lastbxs/m_sfactor;
@@ -567,6 +568,8 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
     }
     else THROW(not_implemented,"Unknown mode");
   }
+  for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
+    m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
   if (m_checkpoles)
     CheckPoleCancelation(&mom.front());
   if (m_checkborn &&
@@ -915,9 +918,6 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     }
     else THROW(not_implemented,"Unknown mode");
   }
-  if (p_loopme)
-    for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
-      m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
   if (m_checkpoles)
     CheckPoleCancelation(&mom.front());
   if (m_checkfinite) {
