@@ -52,7 +52,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
   m_abserror = s["ABS_ERROR"].Get<double>();
   m_fin_opt = s["FINISH_OPTIMIZATION"].Get<bool>();
   m_enhancexs = s["ENHANCE_XS"].Get<int>();
-  m_printpspoint = s["PRINT_PS_POINTS"].Get<int>();
+  m_printpspoint = s["PRINT_PS_POINTS"].Get<bool>();
   SetEnhanceObservable(eobs);
   SetEnhanceFunction(efunc);
 
