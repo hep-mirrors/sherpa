@@ -229,10 +229,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       Weights_Map& wgtmap =
           (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
 
+      // QCD variations
       for (const auto& source : m_variationsources) {
-
         for (const auto type : s_variations->ManagedVariationTypes()) {
-
           // calculate contributions
           Weights weights = Weights {type};
           double relfac {1.0};
@@ -254,7 +253,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
             relfac *= wgtmap.BaseWeight();
           }
-
           // do remaining combination and output resulting weights
           size_t num_vars = weights.Size() - 1;
           for (size_t i(0); i < num_vars; ++i) {
@@ -267,6 +265,16 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             msg_Debugging() << typevarname << " (" << typevarname
                             << "): " << weights.Variation(i) * relfac << '\n';
           }
+        }
+      }
+
+      // associated contributions variations
+      const auto it = wgtmap.find("ASSOCIATED_CONTRIBUTIONS");
+      if (it != wgtmap.end()) {
+        const auto asscontribs = it->second;
+        const auto num_asscontribvars = asscontribs.Size() - 1;
+        for (size_t i(0); i < num_asscontribvars; ++i) {
+          wc["ASS" + asscontribs.Name(i + 1)] = asscontribs[i + 1] * wgtmap.Nominal();
         }
       }
     }

@@ -66,8 +66,8 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
 {
   procsettings["Cut_Core"].SetDefault(0);
   procsettings["CKKW"].SetDefault("");
-  procsettings.DeclareVectorSettingsWithEmptyDefault({
-      "Decay", "DecayOS", "No_Decay" });
+  procsettings.DeclareVectorSettingsWithEmptyDefault(
+      {"Decay", "DecayOS", "No_Decay"});
 }
 
 Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
@@ -605,7 +605,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   Settings& s = Settings::GetMainSettings();
   args.pi.m_scale = s["SCALES"].Get<std::string>();
   const auto couplings = s["COUPLINGS"].GetVector<std::string>();
-  args.pi.m_coupling = MakeString(couplings, 0);
+  args.pi.m_coupling = MakeString(couplings);
   args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
   args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
   args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
@@ -711,8 +711,10 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
         || subkey == "Max_Amplitude_Order"
         || subkey == "Min_Amplitude_Order"
         || subkey == "NLO_Order") {
-      // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
+    } else if (subkey == "Associated_Contributions") {
+      value = MakeString(
+          proc[rawsubkey].SetDefault<std::string>({}).GetVector<std::string>());
     } else {
       value = proc[rawsubkey].SetDefault("").Get<std::string>();
     }
@@ -1190,10 +1192,10 @@ namespace SHERPA {
 }
 
 std::string Matrix_Element_Handler::MakeString
-(const std::vector<std::string> &in,const size_t &first) const
+(const std::vector<std::string> &in) const
 {
-  std::string out(in.size()>first?in[first]:"");
-  for (size_t i(first+1);i<in.size();++i) out+=" "+in[i];
+  std::string out(in.size()>0?in[0]:"");
+  for (size_t i(1);i<in.size();++i) out+=" "+in[i];
   return out;
 }
 
@@ -1211,8 +1213,7 @@ std::string Matrix_Element_Handler::MakeOrderString(Scoped_Settings&& s) const
       ordervalues.resize(orderidx + 1, "-1");
     ordervalues[orderidx] = order;
   }
-  // translate back into a single string to use ExtractMPvalues below
-  return MakeString(ordervalues, 0);
+  return MakeString(ordervalues);
 }
 
 double Matrix_Element_Handler::GetWeight
