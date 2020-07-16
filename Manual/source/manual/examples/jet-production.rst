@@ -48,7 +48,7 @@ Things to notice:
 * The external generator OpenLoops provides the one-loop matrix
   elements.
 
-* The ``NLO_QCD_Mode`` is set to ``MC@NLO``.
+* The ``NLO_Mode`` is set to ``MC@NLO``.
 
 .. _LHC_Jets_MEPS:
 
