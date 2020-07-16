@@ -509,15 +509,15 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) &&
       (m_bvimode&4)) {
     msg_Debugging()<<p_loopme->Mode()<<std::endl;
-    msg_Debugging()<<p_kpterms<<" "<<p_dipole<<std::endl;
+    msg_Debugging()<<p_partner->KPTerms()<<" "<<p_partner->Dipole()<<std::endl;
     // virtual me2 is supposed to return local nlo kfactor to born
     if (p_loopme->Mode()==0) {
       lme = m_lastb*p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
       if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
         if (m_sccmur) {
-          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[0]);
-          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling():-m_cmur[1]);
-          m_cmur[0]+=e1+(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling():-m_cmur[0]);
+          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling():-m_cmur[1]);
+          m_cmur[0]+=e1+(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling();
           m_cmur[1]+=e2;
         }
         else {
@@ -528,7 +528,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
         }
       }
       else {
-        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[0]=(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling();
         m_cmur[1]=0.;
       }
     }
@@ -537,8 +537,8 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       lme = p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
       if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
         if (m_sccmur) {
-          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->p_kpterms->Coupling():-m_cmur[0]);
-          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->p_kpterms->Coupling():-m_cmur[1]);
+          double e1(!IsBad(p_loopme->ME_E1())?p_loopme->ME_E1()*p_partner->p_partner->KPTerms()->Coupling():-m_cmur[0]);
+          double e2(!IsBad(p_loopme->ME_E2())?p_loopme->ME_E2()*p_partner->p_partner->KPTerms()->Coupling():-m_cmur[1]);
           m_cmur[0]+=e1+(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->KPTerms()->Coupling();
           m_cmur[1]+=e2;
         }
@@ -550,7 +550,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
         }
       }
       else {
-        m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+        m_cmur[0]=(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling();
         m_cmur[1]=0.;
       }
     }
@@ -558,19 +558,19 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
     else if (p_loopme->Mode()==2) {
       // loop ME already contains I
       lme = m_lastb*p_partner->KPTerms()->Coupling()*p_loopme->ME_Finite();
-      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[0]=(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling();
       m_cmur[1]=0.;
     }
     // loop ME already contains I and is returning full Re(M_B M_V^*)+I
     else if (p_loopme->Mode()==3) {
       lme = p_kpterms->Coupling()*p_loopme->ME_Finite();
-      m_cmur[0]=(MaxOrder(0)-1)*p_dipole->G2()*p_dsij[0][0]*p_kpterms->Coupling();
+      m_cmur[0]=(MaxOrder(0)-1)*p_partner->Dipole()->G2()*p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling();
       m_cmur[1]=0.;
     }
     else THROW(not_implemented,"Unknown mode");
   }
   for (size_t i(0);i<p_loopme->ME_AssContribs_Size();++i)
-    m_wass[i]=p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_AssContribs(i);
+    m_wass[i]=p_partner->DSij(0,0)*p_partner->KPTerms()->Coupling()*p_loopme->ME_AssContribs(i);
   if (m_checkpoles)
     CheckPoleCancelation(&mom.front());
   if (m_checkborn &&

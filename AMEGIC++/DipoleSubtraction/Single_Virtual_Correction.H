@@ -141,8 +141,9 @@ namespace AMEGIC {
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
 
-    inline const PHASIC::KP_Terms*         KPTerms() { return p_kpterms; }
-    inline const DipoleSplitting_Base*     Dipole()  { return p_dipole; }
+    inline const PHASIC::KP_Terms*         KPTerms() const { return p_kpterms; }
+    inline const DipoleSplitting_Base*     Dipole()  const { return p_dipole; }
+    inline const double&                   DSij(size_t i,size_t j) const { return p_dsij[i][j]; }
 
   protected:
     double         Calc_Imassive(const ATOOLS::Vec4D *mom);
