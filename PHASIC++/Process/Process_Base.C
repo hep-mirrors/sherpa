@@ -198,7 +198,7 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
   auto wgtmap = this->Differential(p, varmode);
-  wgtmap["ME"] /= m_issymfac;
+  wgtmap/=m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
   if (subs) {
     (*subs)*=1.0/m_issymfac;
@@ -206,7 +206,7 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&32) {
     auto psh = Parent()->Integrator()->PSHandler();
-    wgtmap["ME"] *= psh->Weight(p);
+    wgtmap*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());

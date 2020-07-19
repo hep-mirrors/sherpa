@@ -450,8 +450,8 @@ double RootNtuple_Reader::CalculateWeight
 #endif
 }
 
-double RootNtuple_Reader::Reweight(const QCD_Variation_Params& varparams,
-                                   const Weight_Calculation_Args& args)
+double RootNtuple_Reader::CalculateWeight(const Weight_Calculation_Args& args,
+                                          const QCD_Variation_Params& varparams)
 {
   DEBUG_FUNC("R = " << sqrt(varparams.m_muR2fac)
                     << ", F = " << sqrt(varparams.m_muF2fac));
@@ -569,12 +569,13 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K,1.);
       double weight=CalculateWeight(args, MODEL::as->GetAs());
       weight*=K/p_vars->m_kfac;
-      m_nlos.back()->m_results["ME"] = weight;
+      m_nlos.back()->m_results = weight;
       ATOOLS::Reweight(
           m_nlos.back()->m_results["ME"],
           [this, &args, K](double varweight,
                            const QCD_Variation_Params& varparams) -> double {
-            return Reweight(varparams, args) * K / p_vars->m_kfac;
+            varweight = CalculateWeight(args, varparams);
+            return varweight / weight * K / p_vars->m_kfac;
           });
 
 #ifdef DEBUG__MINLO

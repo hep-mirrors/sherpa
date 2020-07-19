@@ -238,6 +238,7 @@ void Weights_Map::Clear()
 {
   clear();
   base_weight = 1.0;
+  nominals_prefactor = 1.0;
 }
 
 bool Weights_Map::HasVariations() const
@@ -250,13 +251,16 @@ bool Weights_Map::HasVariations() const
 
 bool Weights_Map::IsZero() const
 {
-  if (base_weight == 0.0)
+  if (base_weight == 0.0) {
     return true;
-  if (empty())
+  }
+  if (empty()) {
     return false; // empty is interpreted as a unity weight, i.e. 1.0
+  }
   for (const auto& kv : *this) {
-    if (kv.second.IsZero())
+    if (kv.second.IsZero()) {
       return true;
+    }
   }
   return false;
 }
@@ -267,7 +271,7 @@ double Weights_Map::Nominal() const
   for (const auto& kv : *this) {
     w *= kv.second.Nominal();
   }
-  return w;
+  return nominals_prefactor * w;
 }
 
 double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
@@ -280,6 +284,28 @@ double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
   return w;
 }
 
+Weights Weights_Map::RelativeValues(const std::string& k) const
+{
+  const auto it = this->find(k);
+  if (it != this->end()) {
+    auto ret = it->second;
+    ret[0] *= nominals_prefactor;
+    return ret;
+  }
+  return 1.0;
+}
+
+Weights Weights_Map::AbsoluteValues(const std::string& k) const
+{
+  const auto it = this->find(k);
+  if (it != this->end()) {
+    auto ret = it->second;
+    ret[0] *= nominals_prefactor;
+    return ret * base_weight;
+  }
+  return base_weight;
+}
+
 Weights Weights_Map::Combine(Variations_Type type) const
 {
   auto w = Weights {type};
@@ -287,12 +313,26 @@ Weights Weights_Map::Combine(Variations_Type type) const
     if (kv.second.type == type)
       w *= kv.second;
   }
+  w[0] *= nominals_prefactor;
   return w;
+}
+
+Weights_Map ATOOLS::operator*(Weights_Map lhs, double rhs)
+{
+  lhs *= rhs;
+  return lhs;
+}
+
+Weights_Map ATOOLS::operator/(Weights_Map lhs, double rhs)
+{
+  lhs /= rhs;
+  return lhs;
 }
 
 Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
 {
   base_weight *= rhs.base_weight;
+  nominals_prefactor *= rhs.nominals_prefactor;
   for (const auto& kv : rhs) {
     auto it = find(kv.first);
     if (it != end()) {
@@ -310,6 +350,7 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 {
   if (empty() && rhs.empty()) {
     base_weight += rhs.base_weight;
+    nominals_prefactor *= rhs.nominals_prefactor;
     return *this;
   }
   if (rhs.IsZero()) {
@@ -320,60 +361,19 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
     return *this;
   }
 
-  // we treat the "ME" entries as absolute values, and everything else as
-  // relative (pre)factors to those; therefore we can only add weight maps
-  // that both have "ME" entries
-  assert(this->find("ME") != this->end() && rhs.find("ME") != rhs.end());
+  // transform both sides into absolute storage instead of the default relative
+  // storage
+  MakeAbsolute();
+  auto rhs_abs = rhs;
+  rhs_abs.MakeAbsolute();
 
-  // make sure that lhs has all keys that are present in rhs, with default 1.0
-  for (const auto& kv : rhs) {
-    auto ret = this->insert(kv);
-    if (ret.second)
-      ret.first->second = 1.0;
+  // now addition is trivial
+  for (auto& kv : rhs_abs) {
+    (*this)[kv.first] += kv.second;
   }
 
-  // auxiliary construct in order to be able to iterate over {lhs, rhs} below
-  std::array<const Weights_Map*, 2> operands = {this, &rhs};
-
-  // now do the relative addition of lhs and rhs (ignoring "ME")
-  for (auto& kv : *this) {
-    if (kv.first == "ME")
-      continue;
-    const bool correlated_with_me_vars = (kv.second.type == (*this)["ME"].type);
-    const auto num_weights = kv.second.weights.size();
-    for (int i {0}; i < num_weights; ++i) {
-      const int me_idx {correlated_with_me_vars ? i : 0};
-      double numerator = 0.0, denominator = 0.0;
-      for (auto op : operands) {
-        const auto wgts_it = op->find(kv.first); // rhs might not have an entry
-        const Weights& meweights = op->find("ME")->second;
-        double w = 1.0;
-        if (wgts_it != op->end()) {
-          w = (wgts_it->second)[i];
-        }
-        const auto me = op->base_weight * meweights[me_idx];
-        numerator += me * w;
-        denominator += me;
-      }
-      kv.second[i] = numerator / denominator;
-    }
-  }
-
-  // now add the "ME" entries
-  (*this)["ME"] *= base_weight;
-  base_weight = 1.0;
-  (*this)["ME"] += rhs.base_weight * rhs.find("ME")->second;
-
-  // finally, re-scale relative contributions to 1
-  for (auto& kv : *this) {
-    if (kv.first == "ME")
-      continue;
-    const auto relfac = kv.second.Nominal();
-    if (relfac != 0.0) {
-      kv.second /= relfac;
-      (*this)["ME"].Nominal() *= relfac;
-    }
-  }
+  // transform back to relative storage
+  MakeRelative();
 
   return *this;
 }
@@ -385,11 +385,92 @@ Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
   return operator+=(negative_rhs);
 }
 
+void Weights_Map::MakeRelative()
+{
+  // find any non-zero entry for normalisation, first check nominal entries
+  double norm = 0.0;
+  for (const auto& kv : *this) {
+    norm = kv.second.Nominal();
+    if (norm != 0.0) {
+      break;
+    }
+  }
+  if (norm == 0.0) {
+    // all nominals are zero, we will reset them to 1.0 below and instead
+    // account for the zero in the overall nominals prefactor
+    nominals_prefactor = 0.0;
+    for (const auto& kv : *this) {
+      size_t num_vars = kv.second.Size() - 1;
+      for (size_t i {0}; i < num_vars; ++i) {
+        if (kv.second[i + 1] != 0.0) {
+          // found a variation that is non-zero, we can use this as our new
+          // overall normalisation factor
+          norm = kv.second[i + 1];
+          break;
+        }
+      }
+    }
+  } else {
+    nominals_prefactor = 1.0;
+  }
+  if (norm == 0.0) {
+    THROW(not_implemented, "Missing implementation for all-zero case.");
+  }
+
+  // apply normalisation
+  for (auto& kv : *this) {
+    kv.second /= norm;
+  }
+  base_weight = norm;
+
+  // if all nominals are zero, we reset them here to 1.0, the zero gets stored
+  // in the overall prefactor; this allows us to have non-zero variations even
+  // when all nominals are actually zero (because those nominals get multiplied
+  // as a prefactor to the variation)
+  if (nominals_prefactor == 0.0) {
+    for (auto& kv : *this) {
+      kv.second.Nominal() = 1.0;
+    }
+  }
+}
+
+void Weights_Map::MakeAbsolute()
+{
+  // store all nominals
+  std::map<std::string, double> nominals;
+  for (const auto& kv : *this) {
+    nominals[kv.first] = kv.second.Nominal();
+  }
+
+  // apply nominals of each Weights entry to all other Weights entries
+  for (const auto& key_nom : nominals) {
+    for (auto& kv : *this) {
+      if (kv.first != key_nom.first) {
+        kv.second *= key_nom.second;
+      }
+    }
+  }
+
+  // apply base_weight to all entries
+  for (auto& kv : *this) {
+    kv.second *= base_weight;
+  }
+  base_weight = 1.0;
+
+  // apply nominals_prefactor to all nominals
+  for (auto& kv : *this) {
+    kv.second.Nominal() *= nominals_prefactor;
+  }
+  nominals_prefactor = 1.0;
+}
+
 std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 {
-  out << w.base_weight << ":\n";
-  for (const auto& e : w)
+  out << w.base_weight << " (nominals prefactor = " << w.nominals_prefactor
+      << "):\n";
+  for (const auto& e : w) {
     out << e.first << "\n" << e.second << '\n';
+  }
   return out;
 }
 

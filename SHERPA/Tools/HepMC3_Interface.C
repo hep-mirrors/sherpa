@@ -249,6 +249,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
                 relfac *= v.second.Nominal();
               }
             }
+            relfac *= wgtmap.BaseWeight();
           }
 
           // do remaining combination and output resulting weights
