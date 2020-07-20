@@ -70,7 +70,7 @@ namespace PHASIC {
     double ThresholdWeight(double,double,double,double,double,double&);
 
     double GenerateDMRapidityUniform(const double masses[], const ATOOLS::Double_Container &spinfo,
-      ATOOLS::Double_Container &xinfo, const double ran, const int mode);
+      ATOOLS::Double_Container &xinfo, const double cosxi, const double ran, const int mode);
     double GenerateDMAngleUniform(const double ran, const int mode) const;
     double GenerateYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			const ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;

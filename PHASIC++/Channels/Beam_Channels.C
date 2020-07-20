@@ -39,12 +39,20 @@ bool Beam_Channels::MakeChannels()
   if (m_beamparams.size()>0) return CreateChannels();
   switch (m_beammode) {
   case beammode::relic_density:
-    // m_beamparams.push_back(Channel_Info(channel_type::simple,0.5));
-    m_beamparams.push_back(Channel_Info(channel_type::exponential,0.1));
+		{
+	    m_beamparams.push_back(Channel_Info(channel_type::simple,10.));
+			m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+		}
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
-    m_beamparams.push_back(Channel_Info(channel_type::simple,3));
+		{
+			Settings& settings = Settings::GetMainSettings();
+			double temperature = settings["DM_TEMPERATURE"].Get<double>();
+			double sexp = 1./(2*pow(temperature,2));
+	    m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+			m_beamparams.push_back(Channel_Info(channel_type::exponential,sexp));
+		}
     CheckForStructuresFromME();
     break;
   case beammode::collider:
@@ -144,6 +152,7 @@ void Beam_Channels::CheckForStructuresFromME() {
     case channel_type::simple:
     case channel_type::leadinglog:
     case channel_type::laserback:
+		case channel_type::exponential:
     default:
       break;
     }
@@ -197,12 +206,7 @@ bool Beam_Channels::CreateChannels()
       AddLaserBackscattering(i,mode);
       break;
     case channel_type::exponential:
-      if (m_beammode==beammode::relic_density) {
-	double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
-	double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
-	Add(new Exponential_RelicDensity(m_beamparams[i].parameters[0],mass1,mass2,
-					 m_keyid,p_psh->GetInfo()));
-      }
+			AddExponential(i,mode);
       break;
     case channel_type::leadinglog:
     case channel_type::unknown:
@@ -299,4 +303,18 @@ void Beam_Channels::AddLaserBackscattering(const size_t & chno,const size_t & mo
       Add(new LBS_Compton_Peak_Backward(exponent,pole,(*yit),m_keyid,p_psh->GetInfo(),mode));
     }
   }
+}
+
+void Beam_Channels::AddExponential(const size_t & chno,const size_t & mode) {
+  double spex = m_beamparams[chno].parameters[0];
+	double mass1 = p_beamspectra->GetBeam(0)->Beam().Mass();
+	double mass2 = p_beamspectra->GetBeam(1)->Beam().Mass();
+  if (m_beammode==beammode::relic_density) {
+		Add(new Exponential_RelicDensity(spex,mass1,mass2,m_keyid,p_psh->GetInfo()));
+  }
+  else if (m_beammode==beammode::DM_annihilation) {
+		// todo: change this
+    Add(new Exponential_DM_Annihilation(spex,mass1,mass2,m_keyid,p_psh->GetInfo()));
+  }
+  else return;
 }

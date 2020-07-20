@@ -242,9 +242,8 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
 double Channel_Elements::ExponentialMomenta(double sexp,double smin,double smax,
         double masses[],double ran)
 {
-  double sMod = Channel_Basics::ExponentialDist(sexp,smin-sqr(masses[0]+masses[1]),
-        smax-sqr(masses[0]+masses[1]),ran);
-  double s = sMod + sqr(masses[0]+masses[1]);
+  double sMod = Channel_Basics::ExponentialDist(sexp,0,smax-smin,ran);
+  double s = sMod + smin;
   if (!(s>0) && !(s<0) && s!=0) {
     cout.precision(12);
     cout<<"ExpMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
@@ -259,22 +258,16 @@ double Channel_Elements::ExponentialWeight(double sexp,double smin,double smax,
     ran=-1.;
     return 0.;
   }
-  double wt = 0;
-  double cbwt = Channel_Basics::ExponentialWeight(sexp,smin-sqr(masses[0]+masses[1]),
-        smax-sqr(masses[0]+masses[1]));
-  // msg_Out()<<"cbwt="<<cbwt<<"\n"; //debugging
-  if (ATOOLS::IsZero(cbwt)) {
-    wt = sexp*exp(sexp*(s-smin)); // assumes upper limit is infinity
-  }
-  else {
-    wt = exp(sexp*(s-smin)) / cbwt;
-  }
-  if (!(wt>0) && !(wt<0) && wt!=0) {
-    msg_Error()<<"ExponentialWeight produces a nan: "<<wt<<endl
+  double wt_inv = 0;
+  double cbwt = Channel_Basics::ExponentialWeight(sexp,0,smax-smin); // 1/integral
+  wt_inv = 1 / (exp(-sexp*(s-smin)) * cbwt); // weight = P(s)/I, this is inverse
+
+  if (!(wt_inv>0) && !(wt_inv<0) && wt_inv!=0) {
+    msg_Error()<<"ExponentialWeight produces a nan: "<<wt_inv<<endl
 			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 			  <<"   sexp = "<<sexp<<endl;
   }
-  return wt;
+  return wt_inv;
 }
 
 double Channel_Elements::AntennaWeight(double amin,double amax,
@@ -645,15 +638,24 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 
 ///////////////////////////////////////////////////////////////////////////
 double Channel_Elements::GenerateDMRapidityUniform(const double masses[], const Double_Container &spinfo,
-              Double_Container &xinfo, const double ran, const int mode)
+              Double_Container &xinfo, const double cosXi, const double ran, const int mode)
 {
-  double s = spinfo[2];
-  double xmin = xinfo[0] = (masses[0]>masses[1]) ? 0.5 - (sqr(masses[0])-sqr(masses[1]))/(2.*s)
-                                                 : 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2*s);
-  double xmax = xinfo[1] = 1 - xinfo[0];
-  // msg_Out()<<xmin<<","<<xmax<<"\n";
+  double s = spinfo[3];
+  double xmin, xmax, x;
 
-  double x=xmin+(xmax-xmin)*ran;
+  if (ATOOLS::IsEqual(cosXi,-1)) {
+    xmin = xinfo[0] = 0.5 + (sqr(masses[0])-sqr(masses[1]))/(2.*s);
+    xmax = xinfo[1] = xinfo[0];
+    x = xinfo[0];
+    return x;
+  }
+  else {
+    double test = ATOOLS::Max(masses[0]/sqrt(s),masses[1]/sqrt(s));
+    xmin = xinfo[0] = ATOOLS::Max(0.5 - 0.5*std::abs(cosXi), test);
+    xmax = xinfo[1] = ATOOLS::Min(1 - xinfo[0], 1-test);
+
+    x=xmin+(xmax-xmin)*ran;
+  }
 
   if (ATOOLS::IsZero(x)) x=0.;
   if (x<xmin || x>xmax){
@@ -690,6 +692,7 @@ double Channel_Elements::GenerateDMAngleUniform(const double ran, const int mode
 	 cosxi = cosxi_max; }
   }
   return cosxi;
+  // return -1; // TESTING
 }
 
 

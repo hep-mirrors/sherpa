@@ -37,10 +37,14 @@ DM_beam::DM_beam(const Flavour beam,const double & temperature,
 bool DM_beam::CalculateWeight(double x,double s)
 {
   // event generation mode
-  double E = x*s;
-  m_weight = exp(-E/m_temperature);
+  double E = x*sqrt(s);
+  if (E < m_mass) {
+    m_weight = 0;
+    return true;
+  }
+  double p = sqrt(sqr(E) - sqr(m_mass));
+  m_weight = E*p * exp(-(E-m_mass)/m_temperature);
   return true;
 }
 
 void DM_beam::selfTest(std::string filename) {}
-

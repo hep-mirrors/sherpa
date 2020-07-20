@@ -33,9 +33,9 @@ namespace BEAM {
 
     virtual inline const ATOOLS::Vec4D & OutMomentum() const { return m_vecout; }
     virtual inline const ATOOLS::Vec4D & InMomentum()  const { return m_lab; }
-    
+
     virtual inline const double & Energy()       const { return m_energy; }
-    virtual inline const double & Polarisation() const { return m_polarisation; } 
+    virtual inline const double & Polarisation() const { return m_polarisation; }
     virtual inline double Weight(ATOOLS::Flavour fl=kf_none) { return m_weight; }
     virtual inline double Exponent()      const { return 0.; }
     virtual inline double X()             const { return m_x; }
@@ -46,6 +46,8 @@ namespace BEAM {
     virtual inline bool On()             const { return 0; }
     virtual inline bool PolarisationOn() const { return (m_polarisation!=0.); }
 
+    virtual inline void SetInMomentum(const ATOOLS::Vec4D &in) { m_lab = in; }
+    virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecout = out; }
 
     inline void SetX(const double &x) { m_x=x; }
   };

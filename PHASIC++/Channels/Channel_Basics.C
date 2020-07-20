@@ -162,7 +162,7 @@ double Channel_Basics::ExponentialDist(double ca,double cxm,double cxp,double ra
 double Channel_Basics::ExponentialWeight(double ca,double cxm,double cxp)
 {
   double wt = 0;
-  if (!IsZero(ca))  wt = (exp(-ca*cxm) - exp(-ca*cxp))/ca;
+  if (!IsZero(ca))  wt = ca/(exp(-ca*cxm) - exp(-ca*cxp)); // 1/integral 
   else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
   return wt;
 }
