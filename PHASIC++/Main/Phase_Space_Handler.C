@@ -85,7 +85,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
 				  ATOOLS::Weight_Type weighttype,
 				  const psmode::code mode) 
 {
-  //msg_Out()<<"-----------------------------------------\n";
   m_cmode        = mode;
   p_active       = process;
   m_eventweights = Event_Weights{0, 0.0};
@@ -96,9 +95,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   for (size_t i(0);i<p_lab.size();++i) {
     if (p_lab[i].Nan()) return Event_Weights{0, 0.0};
   }
-  //msg_Out()<<METHOD<<"\n"
-  //	   <<"    "<<p_lab[0]<<" "<<p_lab[1]<<"\n"
-  //	   <<" -> "<<p_lab[2]<<" "<<p_lab[3]<<"\n";
+  // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass())
       return Event_Weights{0, 0.0};
@@ -109,18 +106,14 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     p_lab           = process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
     ManageWeights(m_psweight*m_ISsymmetryfactor);
-    //msg_Out()<<METHOD<<": (ME*PS) = "<<m_meweight<<" * "<<m_psweight<<".\n";
   }
-  else {
-    //msg_Out()<<"---> didn't trigger, return 0.\n";
-    ManageWeights(0.0);
-  }
-  if (!CheckStability()) { m_eventweights *= 0.; }
-  else {
-    //msg_Out()<<" --> return "<<m_eventweights<<" * "<<m_enhance<<".\n";;
+  // trigger failed, return 0.
+  else ManageWeights(0.0);
+  // stability checks may lead to event weight set to 0 in case of failure
+  if (CheckStability()) 
     m_eventweights *= (m_enhance = m_psenhance.Factor(p_process->Process(),
 						      p_process->TotalXS()));
-  }
+  else m_eventweights *= 0.; 
   return m_eventweights;
 }
 
@@ -214,7 +207,6 @@ void Phase_Space_Handler::AddPoint(const double _value)
   if (p_process->TotalXS()==0.0) value=(_value?1.0:0.0);
   if (value!=0.0) {
     double enhancexs = m_psenhance();
-    //msg_Out()<<METHOD<<" adds "<<value<<" * "<<enhancexs<<" for "<<p_process->TotalXS()<<".\n";
     m_pspoint.AddPoint(value*enhancexs);
     m_psenhance.AddPoint(value*enhancexs,p_process->Process());
   }
@@ -233,14 +225,16 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
   msg_Info()<<"Read in channels from directory : "<<pID<<std::endl;
-  m_psenhance.ReadIn(pID);
-  bool okay = true;
-  Data_Reader reader;
-  reader.SetInputPath(pID+"/");
-  reader.SetInputFile("Statistics.dat");
-  std::vector<std::vector<double> > stats;
-  if (reader.MatrixFromFile(stats,"")) m_stats=stats;
-  return okay;
+  if (m_pspoint.ReadIn(pID,exclude)) {
+    m_psenhance.ReadIn(pID);
+    Data_Reader reader;
+    reader.SetInputPath(pID+"/");
+    reader.SetInputFile("Statistics.dat");
+    std::vector<std::vector<double> > stats;
+    if (reader.MatrixFromFile(stats,"")) m_stats=stats;
+    return true;
+  }
+  return false;
 }
 
 void Phase_Space_Handler::RegisterDefaults() const
