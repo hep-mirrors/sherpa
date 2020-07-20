@@ -94,11 +94,10 @@ namespace ATOOLS {
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
       p_real(NULL), p_proc(NULL), m_n(n), m_idx(0), m_oqcd(0), m_oew(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_K(0.0),
-      m_results {1.0},
+      m_results {0.0},
       m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0), m_alpha(0.0), m_kt2(0.0),
       m_mu2(2*stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false)
     {
-      m_results["ME"] = 0.0;
     }
 
     ~NLO_subevt();
@@ -111,14 +110,14 @@ namespace ATOOLS {
     std::string PSInfo() const;
 
     inline void Mult(const double &scal)
-    { m_result*=scal; m_results["ME"]*=scal; m_me*=scal; m_mewgt*=scal; }
+    { m_result*=scal; m_results*=scal; m_me*=scal; m_mewgt*=scal; }
     inline void MultME(const double &scal) { m_me*=scal; m_mewgt*=scal; }
     inline void MultMEwgt(const double &scal) { m_mewgt*=scal; }
 
     inline bool IsReal() const { return m_i==m_j; }
 
     inline NLO_subevt &operator*=(const double &scal)
-    { m_result*=scal; m_results["ME"]*=scal; return *this; }
+    { m_result*=scal; m_results*=scal; return *this; }
 
     template <class Type> inline Type *Proc() const 
     { return static_cast<Type*>(p_proc); }
@@ -127,7 +126,7 @@ namespace ATOOLS {
     {
       m_result = m_me = m_mewgt = m_K = 0.0;
       m_results.Clear();
-      m_results["ME"] = 0.0;
+      m_results = 0.0;
       if (mode)
         m_trig = false;
     }

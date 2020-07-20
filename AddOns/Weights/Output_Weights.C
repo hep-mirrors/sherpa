@@ -103,10 +103,10 @@ namespace SHERPA {
         auto wgts = wgtmap.Combine(type);
         const auto relfac = wgtmap.NominalIgnoringVariationType(type);
         for (size_t i(0);i<numvars;++i) {
-          if (IsZero(wgts.var(i) * relfac))
+          if (IsZero(wgts.Variation(i) * relfac))
             m_outstream << " " << 0.0;
           else
-            m_outstream << " " << wgts.var(i) * relfac;
+            m_outstream << " " << wgts.Variation(i) * relfac;
         }
       }
     }

@@ -673,7 +673,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     DEBUG_INFO("New subevts:");
     for (size_t i=0;i<p_newsublist->size();++i) {
       (*p_newsublist)[i]->m_result*=brfactor;
-      (*p_newsublist)[i]->m_results*=brfactor;
+      (*p_newsublist)[i]->m_results["BR"]*=brfactor;
       (*p_newsublist)[i]->m_me*=brfactor;
       (*p_newsublist)[i]->m_mewgt*=brfactor;
       DEBUG_VAR(*(*p_newsublist)[i]);

@@ -372,11 +372,11 @@ Weights_Map Phase_Space_Handler::Differential(
       msg->SetPrecision(precision);
     }
     double wgtfac(m_psweight*iscount);
-    m_wgtmap["ME"]*=wgtfac;
+    m_wgtmap*=wgtfac;
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
       for (auto* sub : *nlos) {
-        sub->m_results *= wgtfac;
+        sub->m_results*=wgtfac;
       }
     }
     if (!p_active->Process()->Selector()->Pass()) wgtfac=0.0;
@@ -394,7 +394,7 @@ Weights_Map Phase_Space_Handler::Differential(
   } else {
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) (*nlos) *= 0.0;
-    m_wgtmap["ME"] *= 0.0;
+    m_wgtmap*=0.0;
   }
   if (p_active->TotalXS() &&
       dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
@@ -425,10 +425,10 @@ Weights_Map Phase_Space_Handler::Differential(
       (*nlos)*=0.0;
       (*nlos).MultMEwgt(0.0);
     }
-    m_wgtmap["ME"]*=0.0;
+    m_wgtmap*=0.0;
   }
   m_enhance=EnhanceFactor(p_process->Process());
-  m_wgtmap["ME"]*=m_enhance;
+  m_wgtmap*=m_enhance;
   return m_wgtmap;
 }
 

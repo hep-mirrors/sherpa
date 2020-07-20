@@ -66,7 +66,7 @@ bool Jet_Finder::Trigger(Selector_List &sl)
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   const double jcv=p_jc->Value(p_ampl,p_proc->Info().Has(nlo_type::real));
   bool triggered {false};
-  m_results[0]["QCUT"] = MakeWeights(Variations_Type::qcut);
+  m_results[0]["QCUT"] = Weights {Variations_Type::qcut};
   for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
        ++i) {
     const double fac{
@@ -118,7 +118,7 @@ bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
       }
       p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
       const double jcv = p_jc->Value(p_ampl, idij ? 0 : 1);
-      m_results[n]["QCUT"] = MakeWeights(Variations_Type::qcut);
+      m_results[n]["QCUT"] = Weights {Variations_Type::qcut};
       for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
            ++i) {
         const double fac {

@@ -55,7 +55,7 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
   m_result=0.0;
   m_results.Clear();
-  m_results["ME"] = 0.0;
+  m_results = 0.0;
   if (p_ampl) {
     p_ampl->Delete();
     p_ampl=NULL;
@@ -109,7 +109,7 @@ NLO_subevtlist &NLO_subevtlist::operator*=(const double scal)
 {
   for (const_iterator it=begin();it!=end();it++) {
     (*it)->m_result*=scal;
-    (*it)->m_results["ME"]*=scal;
+    (*it)->m_results*=scal;
   }
   return *this;
 }

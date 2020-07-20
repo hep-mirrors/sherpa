@@ -27,16 +27,16 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
 {
   switch (t) {
     case EWSudakov_Log_Type::Ls:
-      return os << "L(s)";
+      return os << "LSC";
     case EWSudakov_Log_Type::lZ:
-      return os << "l_Z";
+      return os << "Z";
     case EWSudakov_Log_Type::lSSC:
-      return os << "l_s";
+      return os << "SSC";
     case EWSudakov_Log_Type::lC:
-      return os << "l_C";
+      return os << "C";
     case EWSudakov_Log_Type::lYuk:
-      return os << "l_Yuk";
+      return os << "Yuk";
     case EWSudakov_Log_Type::lPR:
-      return os << "l_PR";
+      return os << "PR";
   }
 }

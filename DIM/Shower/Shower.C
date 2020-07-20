@@ -158,8 +158,8 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = MakeWeights(Variations_Type::qcd);
-  m_weightsmap["MC@NLO_QCUT"] = MakeWeights(Variations_Type::qcut);
+  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
   if (nem>=m_maxem) return 1;
   double t(a.T());

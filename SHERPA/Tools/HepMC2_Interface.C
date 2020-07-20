@@ -241,11 +241,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         for (const auto type : s_variations->ManagedVariationTypes()) {
 
           // calculate contributions
-          Weights weights = MakeWeights(type);
-          double nom {1.0};
+          Weights weights = Weights {type};
           double relfac {1.0};
           if (source == ATOOLS::Variations_Source::all) {
-            nom = wgtmap.Nominal();
             weights *= wgtmap.Combine(type);
             relfac = wgtmap.NominalIgnoringVariationType(type);
           } else {
@@ -255,13 +253,13 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             for (const auto& v : wgtmap) {
               if (shower_keys.find(v.first) != shower_keys.end())
                 continue;
-              nom *= v.second.Nominal();
               if (v.second.Type() == type) {
                 weights *= v.second;
               } else {
                 relfac *= v.second.Nominal();
               }
             }
+            relfac *= wgtmap.BaseWeight();
           }
 
           // do remaining combination and output resulting weights
@@ -272,9 +270,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                 (source == ATOOLS::Variations_Source::main)
                     ? "ME_ONLY_" + varname
                     : varname};
-            wc[typevarname] = weights.var(i) * relfac;
+            wc[typevarname] = weights.Variation(i) * relfac;
             msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.var(i) * relfac << '\n';
+                            << "): " << weights.Variation(i) * relfac << '\n';
           }
         }
       }

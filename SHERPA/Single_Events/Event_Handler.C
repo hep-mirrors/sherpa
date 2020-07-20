@@ -613,7 +613,7 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
       auto weights = wgtmap.Combine(type);
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
-        const auto varweight = weights.var(i);
+        const auto varweight = weights.Variation(i);
         const std::string& name = s_variations->Parameters(i).m_name;
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;

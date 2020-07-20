@@ -203,7 +203,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     for (int i=procs.size()-1; i>=0; --i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
-        auto K = ATOOLS::MakeWeights(Variations_Type::qcd);
+        auto K = ATOOLS::Weights {Variations_Type::qcd};
         K = mcnloproc->LocalKFactor(*ampl);
 	if (K.Nominal()==0.0 || dabs(K.Nominal())>m_maxkfac) continue;
         m_weightsmap["Sudakov"] *= K;

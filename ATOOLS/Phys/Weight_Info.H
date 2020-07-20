@@ -40,11 +40,9 @@ namespace ATOOLS {
                 const double &x1=0.,const double &x2=0.,
                 const double &xf1=0.0,const double &xf2=0.0,
                 const double &muf12=0.0,const double &muf22=0.0):
-      m_weightsmap {weightsmap},
+      m_weightsmap(weightsmap),
       m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
-    //Weight_Info &operator*=(const double &c)
-    //{ m_weightsmap["ME"]*=c; m_dxs*=c; return *this; }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,

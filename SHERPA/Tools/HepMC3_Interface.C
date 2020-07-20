@@ -228,7 +228,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
         for (const auto type : s_variations->ManagedVariationTypes()) {
 
           // calculate contributions
-          Weights weights = MakeWeights(type);
+          Weights weights = Weights {type};
           double nom {1.0};
           double relfac {1.0};
           if (source == ATOOLS::Variations_Source::all) {
@@ -249,6 +249,7 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
                 relfac *= v.second.Nominal();
               }
             }
+            relfac *= wgtmap.BaseWeight();
           }
 
           // do remaining combination and output resulting weights
@@ -259,9 +260,9 @@ bool EventInfo3::WriteTo(HepMC::GenEvent &evt, const int& idx)
                 (source == ATOOLS::Variations_Source::main)
                     ? "ME_ONLY_" + varname
                     : varname};
-            wc[typevarname] = weights.var(i) * relfac;
+            wc[typevarname] = weights.Variation(i) * relfac;
             msg_Debugging() << typevarname << " (" << typevarname
-                            << "): " << weights.var(i) * relfac << '\n';
+                            << "): " << weights.Variation(i) * relfac << '\n';
           }
         }
       }

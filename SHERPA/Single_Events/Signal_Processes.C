@@ -184,7 +184,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       m_overweight = 0.0;
     } else {
       weightfactor = 1.0 / (m_overweight + 1.0);
-      winfo.m_weightsmap["ME"] *= weightfactor;
+      winfo.m_weightsmap *= weightfactor;
       NLO_subevtlist* nlos=proc->GetSubevtList();
       if (nlos) (*nlos) *= weightfactor;
     }

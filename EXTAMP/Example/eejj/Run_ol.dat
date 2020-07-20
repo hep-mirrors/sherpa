@@ -19,8 +19,8 @@
 
 (processes){
   Process -11 11 -> 93 93
-  NLO_QCD_Mode Fixed_Order;
-  NLO_QCD_Part RS;
+  NLO_Mode Fixed_Order;
+  NLO_Part RS;
   Integrator Rambo;
   Min_Order (-1,-1);
   Max_Order (-1,-1);

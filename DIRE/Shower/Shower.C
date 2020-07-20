@@ -185,8 +185,8 @@ int Shower::Evolve(Amplitude& a, unsigned int& nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = MakeWeights(Variations_Type::qcd);
-  m_weightsmap["PS_QCUT"] = MakeWeights(Variations_Type::qcut);
+  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
   Cluster_Amplitude *ampl(a.ClusterAmplitude());
   if (ampl->NLO()&128) {
