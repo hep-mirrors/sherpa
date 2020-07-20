@@ -39,20 +39,20 @@ bool Beam_Channels::MakeChannels()
   if (m_beamparams.size()>0) return CreateChannels();
   switch (m_beammode) {
   case beammode::relic_density:
-		{
-	    m_beamparams.push_back(Channel_Info(channel_type::simple,10.));
-			m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
-		}
+    {
+      m_beamparams.push_back(Channel_Info(channel_type::simple,10.));
+      m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+    }
     CheckForStructuresFromME();
     break;
   case beammode::DM_annihilation:
-		{
-			Settings& settings = Settings::GetMainSettings();
-			double temperature = settings["DM_TEMPERATURE"].Get<double>();
-			double sexp = 1./(2*pow(temperature,2));
-	    m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
-			m_beamparams.push_back(Channel_Info(channel_type::exponential,sexp));
-		}
+    {
+      Settings& settings = Settings::GetMainSettings();
+      double temperature = settings["DM_TEMPERATURE"].Get<double>();
+      double sexp = 1./(2*pow(temperature,2));
+      m_beamparams.push_back(Channel_Info(channel_type::simple,1.));
+      m_beamparams.push_back(Channel_Info(channel_type::exponential,sexp));
+    }
     CheckForStructuresFromME();
     break;
   case beammode::collider:
@@ -127,12 +127,19 @@ void Beam_Channels::CheckForStructuresFromME() {
 	       <<"   This looks like a potential bug, will exit.\n";
     THROW(fatal_error,"No process information in phase space handler.")
   }
+  std::set<double>    thresholds;
+  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
+    if (p_psh->Cuts()!=NULL) thresholds.insert(sqrt(p_psh->Cuts()->Smin()));
+  }
   size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
   std::vector<int>    types(nfsrchannels,0);
   std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
-  bool onshellresonance(false), fromFSR(false);
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
+  }
+  p_psh->FSRIntegrator()->ISRInfo(types,masses,widths);
+  bool onshellresonance(false), fromFSR(false);  
+  for (size_t i=0;i<types.size();i++) {    
     channel_type::code type = channel_type::code(abs(types[i]));
     switch (type) {
     case channel_type::threshold:

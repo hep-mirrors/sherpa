@@ -66,16 +66,19 @@ void ISR_Channels::CheckForStructuresFromME() {
 	       <<"   This looks like a potential bug, will exit.\n";
     THROW(fatal_error,"No process information in phase space handler.")
   }
-  size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
-  std::vector<int>    types(nfsrchannels,0);
-  std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
   std::set<double>    thresholds;
   if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
     if (p_psh->Cuts()!=NULL) thresholds.insert(sqrt(p_psh->Cuts()->Smin()));
   }
-  bool onshellresonance(false), fromFSR(false);  
+  size_t nfsrchannels = p_psh->FSRIntegrator()->Number();
+  std::vector<int>    types(nfsrchannels,0);
+  std::vector<double> masses(nfsrchannels,0.0), widths(nfsrchannels,0.0);
   for (size_t i=0;i<nfsrchannels;i++) {
     p_psh->FSRIntegrator()->ISRInfo(i,types[i],masses[i],widths[i]);
+  }
+  p_psh->FSRIntegrator()->ISRInfo(types,masses,widths);
+  bool onshellresonance(false), fromFSR(false);  
+  for (size_t i=0;i<types.size();i++) {
     channel_type::code type = channel_type::code(abs(types[i]));
     switch (type) {
     case channel_type::threshold:
