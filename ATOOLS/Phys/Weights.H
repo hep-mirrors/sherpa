@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <valarray>
+#include <functional>
 
 namespace ATOOLS {
 
