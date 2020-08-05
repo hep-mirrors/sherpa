@@ -657,54 +657,23 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform on-the-fly reweighting
+  // perform QCD reweighting of BVI or RS events
   m_last *= nominal;
-  if (varmode != Variations_Mode::nominal_only) {
+  if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
-
-      // QCD variations
       ReweightBVI(scales->Amplitudes());
-
-      // associated contribution variations
-      {
-        auto orderqcd = m_mewgtinfo.m_oqcd;
-        if (m_mewgtinfo.m_type & mewgttype::VI ||
-            m_mewgtinfo.m_type & mewgttype::KP) {
-          orderqcd--;
-        }
-        for (const auto& asscontrib : m_asscontrib) {
-          double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
-          for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
-            // m_wass[0] is EW Sudakov-type correction
-            // m_wass[1] is the subleading Born
-            // m_wass[2] is the subsubleading Born, etc
-            if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
-              if (i==0) {
-                const double relfac {m_mewgtinfo.m_wass[i]/m_mewgtinfo.m_B};
-                Deltaassnew *= 1.0 + relfac;
-                Deltaassnewexp *= exp(relfac);
-              }
-              Bassnew += m_mewgtinfo.m_wass[i];
-            }
-            if ((orderqcd - i) == 0)
-              break;
-          }
-          const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) +
-            m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
-          const std::string key = ToString<asscontrib::type>(asscontrib);
-          m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
-              (BVIKP + Bassnew) * m_csi.m_pdfwgt / m_last["ME"].Nominal();
-          m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
-              BVIKP * Deltaassnew * m_csi.m_pdfwgt / m_last["ME"].Nominal();
-          m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
-              BVIKP * Deltaassnewexp * m_csi.m_pdfwgt / m_last["ME"].Nominal();
-        }
-      }
-
     } else {
       ReweightRS(scales->Amplitudes());
     }
   }
+
+  // calculate associated contributions variations for BVI events
+  if (varmode != Variations_Mode::nominal_only) {
+    if (GetSubevtList() == nullptr) {
+      CalculateAssociatedContributionVariations();
+    }
+  }
+
   m_last -= m_dadswgtmap;
 
   // propagate (potentially) re-clustered momenta
@@ -897,6 +866,52 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
   for (int i {0}; i <= last_subevt_idx; ++i) {
     auto sub = (*GetSubevtList())[i];
     m_last += sub->m_results;
+  }
+}
+
+void Single_Process::CalculateAssociatedContributionVariations()
+{
+  if (m_asscontrib.empty())
+    return;
+
+  auto orderqcd = m_mewgtinfo.m_oqcd;
+  if (m_mewgtinfo.m_type & mewgttype::VI ||
+      m_mewgtinfo.m_type & mewgttype::KP) {
+    orderqcd--;
+  }
+  const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
+    m_mewgtinfo.m_KP};
+  const double DADS {m_dadswgtmap["ME"].Nominal() / m_csi.m_pdfwgt};
+  const double norm {m_csi.m_pdfwgt / m_last["ME"].Nominal()};
+
+  for (const auto& asscontrib : m_asscontrib) {
+
+    // collect terms
+    double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
+    for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
+      // m_wass[0] is EW Sudakov-type correction
+      // m_wass[1] is the subleading Born
+      // m_wass[2] is the subsubleading Born, etc
+      if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
+        if (i == 0) {
+          const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
+          Deltaassnew *= 1.0 + relfac;
+          Deltaassnewexp *= exp(relfac);
+        }
+        Bassnew += m_mewgtinfo.m_wass[i];
+      }
+      if ((orderqcd - i) == 0)
+        break;
+    }
+
+    // store variations
+    const std::string key = ToString<asscontrib::type>(asscontrib);
+    m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
+      (BVIKP - DADS + Bassnew) * norm;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
+        (BVIKP - DADS) * Deltaassnew * norm;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
+        (BVIKP - DADS) * Deltaassnewexp * norm;
   }
 }
 
