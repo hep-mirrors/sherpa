@@ -143,6 +143,9 @@ namespace SHERPA {
     inline void SetHepMCIncludeMEOnlyVariations(bool x)
     { m_includemeonlyweights=x; }
 
+    // For RivetInterface to check if a weight container key could be a variation weight name
+    bool StartsLikeVariationName(const std::string&);
+
     void DeleteGenSubEventList();
 
   };// end of class HepMC3_Interface
