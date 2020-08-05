@@ -810,7 +810,8 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
 
 bool HepMC3_Interface::StartsLikeVariationName(const std::string& s)
 {
-  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0);
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0) ||
+          s.find("ASS") == 0);
 }
 
 void HepMC3_Interface::DeleteGenSubEventList()
