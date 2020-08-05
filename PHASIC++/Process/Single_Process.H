@@ -156,6 +156,7 @@ namespace PHASIC {
     void UpdateMEWeightInfo(Scale_Setter_Base*);
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
+    void CalculateAssociatedContributionVariations();
 
   };// end of class Single_Process
 
