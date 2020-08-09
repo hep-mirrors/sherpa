@@ -52,6 +52,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   if (CreateIntegrators()) {
     m_pspoint.Init(this);
     m_psenhance.Init(this);
+    m_enhance = m_psenhance.Factor(p_process->Process(),p_process->TotalXS());
   }
   else THROW(fatal_error,"Cretion of integrators failed.")
 }

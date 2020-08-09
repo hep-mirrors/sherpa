@@ -169,7 +169,7 @@ namespace PHASIC {
     inline ATOOLS::Vec4D_Vector &                Momenta()       { return p_lab; }
     inline ATOOLS::Flavour_Vector &                Flavs()       { return p_flavours; }
     inline Cut_Data                               * Cuts()       { return m_pspoint.Cuts(); }
-    inline Process_Integrator *            Process() const { return p_process; }
+    inline Process_Integrator *                  Process() const { return p_process; }
     inline Process_Integrator *            Active()  const { return p_active;  }
     inline const double &                 PSWeight() const { return m_psweight; }
     inline const double &                  Enhance() const { return m_enhance;  }
