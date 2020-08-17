@@ -3,6 +3,10 @@
 
 #include "PHASIC++/EWSudakov/Comix_Interface.H"
 
+namespace MODEL {
+  class EWParameters;
+}
+
 namespace PHASIC {
 
 class HE_Comix_Interface : public Comix_Interface {

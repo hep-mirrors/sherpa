@@ -3,12 +3,15 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "PHASIC++/EWSudakov/KFactor.H"
 
 namespace PHASIC {
 
   class Single_Process: public Process_Base {
 
   protected:
+
+    std::unique_ptr<Sudakov_KFactor> p_ewsudakov_kfactor;
 
     double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
     ATOOLS::Weights_Map m_dadswgtmap;
@@ -49,6 +52,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args) override;
     void SetKFactor(const KFactor_Setter_Arguments &args) override;
+    void SetEWSudakovKFactor(const KFactor_Setter_Arguments &args) override;
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
                                        const size_t &mode=0);

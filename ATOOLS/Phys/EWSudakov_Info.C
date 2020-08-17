@@ -6,17 +6,17 @@ using namespace ATOOLS;
 
 EWSudakov_Log_Type ATOOLS::EWSudakovLogTypeFromString(const std::string& logt)
 {
-  if (logt == "Ls")
+  if (logt == "LSC")
     return EWSudakov_Log_Type::Ls;
-  else if (logt == "lZ")
+  else if (logt == "Z")
     return EWSudakov_Log_Type::lZ;
-  else if (logt == "lSSC")
+  else if (logt == "SSC")
     return EWSudakov_Log_Type::lSSC;
-  else if (logt == "lC")
+  else if (logt == "C")
     return EWSudakov_Log_Type::lC;
-  else if (logt == "lYuk")
+  else if (logt == "Yuk")
     return EWSudakov_Log_Type::lYuk;
-  else if (logt == "lPR")
+  else if (logt == "PR")
     return EWSudakov_Log_Type::lPR;
   else
     THROW(fatal_error,
@@ -39,4 +39,23 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
     case EWSudakov_Log_Type::lPR:
       return os << "PR";
   }
+}
+
+EWSudakov_Log_Corrections_Map::EWSudakov_Log_Corrections_Map()
+{
+  (*this)[EWSudakov_Log_Type::Ls] = 0.0;
+  (*this)[EWSudakov_Log_Type::lZ] = 0.0;
+  (*this)[EWSudakov_Log_Type::lSSC] = 0.0;
+  (*this)[EWSudakov_Log_Type::lC] = 0.0;
+  (*this)[EWSudakov_Log_Type::lYuk] = 0.0;
+  (*this)[EWSudakov_Log_Type::lPR] = 0.0;
+}
+
+double EWSudakov_Log_Corrections_Map::KFactor() const
+{
+  double kfac = 1.0;
+  for (const auto &kv : *this) {
+    kfac += kv.second;
+  }
+  return kfac;
 }

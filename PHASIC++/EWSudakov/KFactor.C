@@ -27,7 +27,8 @@ double Sudakov_KFactor::KFactor(const int mode)
 {
   const auto level = msg->Level();
   if (m_check) msg->SetLevel(8);
-  m_weight = m_calc.KFactor(p_proc->Integrator()->Momenta());
+  m_corrections_map = m_calc.CorrectionsMap(p_proc->Integrator()->Momenta());
+  m_weight = m_corrections_map.KFactor();
   if (m_check) msg->SetLevel(level);
   if (std::abs(m_weight) > 500) {
     msg_Info() << "WARNING: K factor is really large: " << m_weight << '\n';

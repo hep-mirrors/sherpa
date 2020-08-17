@@ -2,11 +2,11 @@
 #define ATOOLS_Phys_EWSudakov_Info_H
 
 #include <iostream>
+#include <map>
 
 namespace ATOOLS {
 
   enum class EWSudakov_Log_Type {
-    // TODO: add more coeffs (and their implementation)
     Ls,       ///< correction \propto \log(s/m_mW2)^2
     lZ,       ///< correction \propto \log(s/m_mW2)
     lSSC,     ///< correction \propto \log(s/m_mW2) \log(|r_kl|/s)
@@ -18,7 +18,12 @@ namespace ATOOLS {
   EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string&);
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
 
+  class EWSudakov_Log_Corrections_Map
+      : public std::map<EWSudakov_Log_Type, double> {
+  public:
+    EWSudakov_Log_Corrections_Map();
+    double KFactor() const;
+  };
 }
 
 #endif
-

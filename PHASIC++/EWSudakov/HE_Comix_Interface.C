@@ -1,14 +1,14 @@
 #include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
 
+#include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
 #include "SHERPA/Main/Sherpa.H"
 
-using namespace PHASIC;
-using namespace COMIX;
 using namespace ATOOLS;
 using namespace MODEL;
+using namespace PHASIC;
 
 std::unique_ptr<MODEL::Model_Base> HE_Comix_Interface::p_model_he {nullptr};
 NLOTypeStringProcessMap_Map HE_Comix_Interface::s_apmap_he;

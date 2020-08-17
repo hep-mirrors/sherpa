@@ -1,7 +1,6 @@
 #ifndef PHASIC_EWSudakov_CoefficientChecker_H
 #define PHASIC_EWSudakov_CoefficientChecker_H
 
-#include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
 
@@ -23,10 +22,10 @@ namespace PHASIC {
 
   public:
 
-    Coefficient_Checker(const std::string& _procname,
-                        const std::set<EWSudakov_Log_Type>& _activecoeffs):
-      procname{ _procname },
-      activecoeffs{ _activecoeffs }
+    Coefficient_Checker(
+        const std::string& _procname,
+        const std::set<ATOOLS::EWSudakov_Log_Type>& _activecoeffs)
+        : procname {_procname}, activecoeffs {_activecoeffs}
     { }
 
     // check coefficients against a ref value when available
@@ -42,12 +41,12 @@ namespace PHASIC {
     ReferenceCoeffs(const Mandelstam_Variables&, const EWGroupConstants&);
 
     const std::string procname;
-    const std::set<EWSudakov_Log_Type> activecoeffs;
+    const std::set<ATOOLS::EWSudakov_Log_Type> activecoeffs;
 
     bool CheckCoeff(const Coeff_Value&,
                     Complex ref,
                     const std::vector<int>& helicities,
-		    const EWSudakov_Log_Type ewlt) const;
+		    const ATOOLS::EWSudakov_Log_Type ewlt) const;
 
   };
 

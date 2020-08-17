@@ -1012,6 +1012,18 @@ void Matrix_Element_Handler::BuildSingleProcessList(
       (Scale_Setter_Arguments(p_model,cpi.m_scale,cpi.m_coupling));
     procs[i]->SetKFactor
       (KFactor_Setter_Arguments(cpi.m_kfactor));
+
+    // the EWSudakov corrections can either be applied ordinarly as a K factor
+    // using "KFACTOR", or left un-applied and only calculated as optional
+    // event weight variations, split into individual contributions, using
+    // "EWSUDAKOV_VARIATIONS"
+    if (Settings::GetMainSettings()["EWSUDAKOV_VARIATIONS"]
+            .SetDefault(false)
+            .Get<bool>()) {
+      KFactor_Setter_Arguments ewsudkfacargs {""};
+      ewsudkfacargs.p_proc = procs[i];
+      procs[i]->SetEWSudakovKFactor(ewsudkfacargs);
+    }
   }
 }
 

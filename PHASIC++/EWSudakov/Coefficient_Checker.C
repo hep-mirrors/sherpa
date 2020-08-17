@@ -1,11 +1,13 @@
 #include "PHASIC++/EWSudakov/Coefficient_Checker.H"
+#include "METOOLS/Main/Spin_Structure.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace METOOLS;
 
 bool Coefficient_Checker::CheckCoeffs(
     const Coeff_Map& coeffs,
-    const METOOLS::Spin_Amplitudes& spinampls,
+    const Spin_Amplitudes& spinampls,
     const Mandelstam_Variables& mandelstam,
     const EWGroupConstants& groupconstants)
 {

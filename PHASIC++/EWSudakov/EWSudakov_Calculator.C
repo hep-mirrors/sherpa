@@ -6,7 +6,6 @@
 #include <cassert>
 
 using namespace PHASIC;
-using namespace COMIX;
 using namespace ATOOLS;
 
 Histogram EWSudakov_Calculator::m_kfachisto(0, -5.0, 5.0, 50);
@@ -24,10 +23,6 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   },
   m_ampls{ p_proc, m_activecoeffs },
   m_comixinterface{ p_proc, m_ampls },
-  // TODO: probably we do not want to set up all (SU(2)-transformed) processes
-  // again for doing the PR logs, so re-consider what ampls we pass here, such
-  // that the HE COMIX interface does not set up processes that we will never
-  // need
   m_comixinterface_he{ p_proc, m_ampls }
 {
   auto& s = Settings::GetMainSettings();
@@ -62,15 +57,14 @@ EWSudakov_Calculator::~EWSudakov_Calculator()
   }
 }
 
-double EWSudakov_Calculator::KFactor(const ATOOLS::Vec4D_Vector& mom)
+EWSudakov_Log_Corrections_Map
+EWSudakov_Calculator::CorrectionsMap(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
-  p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta.clear();
-  for (const auto& c : m_activecoeffs)
-    p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[c] = 0.0;
   m_ampls.UpdateMomenta(mom);
-  if (!IsInHighEnergyLimit())
-    return 1.0;
+  if (!IsInHighEnergyLimit()) {
+    return {};
+  }
   if (p_proc->Integrator()->ColorScheme() == cls::sample) {
     Int_Vector I = p_proc->Integrator()->ColorIntegrator()->I();
     Int_Vector J = p_proc->Integrator()->ColorIntegrator()->J();
@@ -81,7 +75,7 @@ double EWSudakov_Calculator::KFactor(const ATOOLS::Vec4D_Vector& mom)
   ClearSpinAmplitudes();
   FillBaseSpinAmplitudes();
   CalculateSpinAmplitudeCoeffs();
-  return KFactor();
+  return CorrectionsMap();
 }
 
 bool EWSudakov_Calculator::IsInHighEnergyLimit()
@@ -119,11 +113,12 @@ void EWSudakov_Calculator::FillBaseSpinAmplitudes()
   m_comixinterface.FillSpinAmplitudes(m_spinampls, m_ampls.BaseAmplitude());
 }
 
-double EWSudakov_Calculator::KFactor()
+EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
 {
   auto den = m_spinampls[0].SumSquare();
-  if (den == 0.0)
-    return 1.0;
+  if (den == 0.0) {
+    return {};
+  }
   const auto s = std::abs(m_ampls.MandelstamS());
   const auto ls = std::log(s/m_ewgroupconsts.m_mw2);
 
@@ -153,6 +148,7 @@ double EWSudakov_Calculator::KFactor()
   // contributions delta^c with i integrated over (note that c stands for the
   // coeff type).
   auto kfac = 1.0;
+  EWSudakov_Log_Corrections_Map kfacs;
   const auto delta_prefactor = m_ewgroupconsts.m_aew/4./M_PI;
   for (const auto& coeffkv : m_coeffs) {
     auto delta_c_num = 0.0;
@@ -161,11 +157,11 @@ double EWSudakov_Calculator::KFactor()
       delta_c_num += (coeffkv.second[i] * logs[coeffkv.first]).real() * me2;
     }
     const auto delta_c = 2 * delta_prefactor * delta_c_num / den;
-    p_proc->GetMEwgtinfo()->m_ewsudakovkfacdelta[coeffkv.first.first] += delta_c;
+    kfacs[coeffkv.first.first] += delta_c;
     kfac += delta_c;
   }
   EWSudakov_Calculator::m_kfachisto.Insert(kfac);
-  return kfac;
+  return kfacs;
 }
 
 

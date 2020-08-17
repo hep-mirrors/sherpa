@@ -1,10 +1,13 @@
 #ifndef PHASIC__EWSudakov__Comix_Interface_H
 #define PHASIC__EWSudakov__Comix_Interface_H
 
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "COMIX/Main/Single_Process.H"
+#include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
 #include "PHASIC++/Process/Process_Base.H"
+
+namespace ATOOLS {
+class Cluster_Amplitude;
+}
 
 namespace PHASIC {
 
@@ -23,7 +26,7 @@ public:
   void ResetSpinAmplitudeCache() const { m_spinampls.clear(); }
 
   /// assumes that a flavour-sorted Cluster Amplitude is passed
-  void FillSpinAmplitudes(std::vector<Spin_Amplitudes>&,
+  void FillSpinAmplitudes(std::vector<METOOLS::Spin_Amplitudes>&,
                           const ATOOLS::Cluster_Amplitude&) const;
 
 protected:
@@ -34,7 +37,7 @@ protected:
   std::string m_procname_suffix;
 
 private:
-  Process_Info CreateProcessInfo(const Cluster_Amplitude*,
+  Process_Info CreateProcessInfo(const ATOOLS::Cluster_Amplitude*,
                                  const std::string& graph_path);
   Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude& ampl) const;
   virtual NLOTypeStringProcessMap_Map& ProcessMap() { return s_apmap; }
@@ -52,12 +55,12 @@ private:
   /// to re-ordering fermions in the final state
   template<class T>
   using AmplMap = std::map<const ATOOLS::Cluster_Amplitude*, T>;
-  mutable AmplMap<std::vector<Spin_Amplitudes>> m_spinampls;
+  mutable AmplMap<std::vector<METOOLS::Spin_Amplitudes>> m_spinampls;
   mutable AmplMap<std::vector<size_t>> m_permutations;
   mutable AmplMap<double> m_permutation_signs;
 
   static double CalcPermutationSign(std::vector<size_t> perm,
-                                    const Cluster_Amplitude&);
+                                    const ATOOLS::Cluster_Amplitude&);
 };
 
 } // namespace PHASIC

@@ -212,13 +212,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
           }
         }
         wc["Reweight_Type"]=p_wgtinfo->m_type;
-        // fill EW Sudakov K factor contributions into weight container
-        // TODO: port to HepMC3 interface
-        for (const auto& kv : p_wgtinfo->m_ewsudakovkfacdelta) {
-          MyStrStream s;
-          s << "EWSud_" << kv.first;
-          wc[s.str()] = kv.second;
-        }
       }
       if (p_subevtlist) {
         wc["Reweight_RS"]=m_pwgt;
@@ -274,6 +267,15 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             msg_Debugging() << typevarname << " (" << typevarname
                             << "): " << weights.Variation(i) * relfac << '\n';
           }
+        }
+      }
+
+      // TODO: port to HepMC3 interface
+      const auto ewsudit = wgtmap.find("EWSudakov");
+      if (ewsudit != wgtmap.end()) {
+        const auto size = ewsudit->second.Size();
+        for (int i {1}; i < size; ++i) {
+          wc["EWSud_" + ewsudit->second.Name(i)] = ewsudit->second[i];
         }
       }
     }

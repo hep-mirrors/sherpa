@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
+#include "PHASIC++/EWSudakov/KFactor.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
@@ -23,6 +24,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 
 #include <algorithm>
+#include <memory>
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -574,6 +576,14 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       }
     }
 
+    // calculate and store EWSudakov corrections
+    if (p_ewsudakov_kfactor) {
+      const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
+      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
+        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+      }
+    }
+
   } else {
 
     const auto triggers = Selector()->CombinedResults();
@@ -644,7 +654,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   UpdateMEWeightInfo(scales);
 
-  // perform on-the-fly reweighting
+  // perform on-the-fly QCD reweighting
   m_last *= nominal;
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
@@ -1064,6 +1074,13 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
     GetObject(m_pinfo.m_kfactor=cargs.m_kfac,cargs);
   if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
+}
+
+void Single_Process::SetEWSudakovKFactor(const KFactor_Setter_Arguments &args)
+{
+  KFactor_Setter_Arguments cargs(args);
+  cargs.p_proc=this;
+  p_ewsudakov_kfactor.reset(new Sudakov_KFactor {cargs});
 }
 
 void Single_Process::SetLookUp(const bool lookup)

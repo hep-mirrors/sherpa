@@ -2,6 +2,7 @@
 #define PHASIC__EWSudakov__Calculator_H
 
 #include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Phys/EWSudakov_Info.H"
 #include "PHASIC++/EWSudakov/HE_Comix_Interface.H"
 #include "PHASIC++/EWSudakov/EWGroupConstants.H"
 #include "PHASIC++/EWSudakov/EWSudakov_Amplitudes.H"
@@ -11,7 +12,7 @@
 
 namespace PHASIC {
 
-  using Coeff_Map_Key = std::pair<EWSudakov_Log_Type, Leg_Index_Set>;
+  using Coeff_Map_Key = std::pair<ATOOLS::EWSudakov_Log_Type, Leg_Index_Set>;
   using Coeff_Value = Complex;
   using Coeff_Map_Value = std::vector<Coeff_Value>;
   using Coeff_Map = std::map<Coeff_Map_Key, Coeff_Map_Value>;
@@ -19,10 +20,14 @@ namespace PHASIC {
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key&);
 
   class EWSudakov_Calculator {
+
   public:
+
     EWSudakov_Calculator(Process_Base*);
     ~EWSudakov_Calculator();
-    double KFactor(const ATOOLS::Vec4D_Vector& mom);
+    ATOOLS::EWSudakov_Log_Corrections_Map
+    CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
+
   private:
 
     bool IsInHighEnergyLimit();
@@ -53,7 +58,7 @@ namespace PHASIC {
     /// calculate l_PR(s) coefficients
     Coeff_Value lsPRCoeff();
 
-    double KFactor();
+    ATOOLS::EWSudakov_Log_Corrections_Map CorrectionsMap();
 
     /// calculate transformed amplitude value
     Complex TransformedAmplitudeValue(const Leg_Kfcode_Map&,
@@ -61,7 +66,7 @@ namespace PHASIC {
                                       const Comix_Interface* interface=nullptr);
 
     Process_Base* p_proc;
-    std::set<EWSudakov_Log_Type> m_activecoeffs;
+    std::set<ATOOLS::EWSudakov_Log_Type> m_activecoeffs;
     EWSudakov_Amplitudes m_ampls;
 
     /// the default COMIX interface used for all logs except the PR logs
@@ -78,14 +83,14 @@ namespace PHASIC {
 
     // intermediate results
     mutable Coeff_Map m_coeffs;
-    mutable std::vector<Spin_Amplitudes> m_spinampls;
+    mutable std::vector<METOOLS::Spin_Amplitudes> m_spinampls;
     mutable Complex m_current_me_value;
     mutable std::vector<int> m_current_spincombination;
     mutable Complex m_current_goldstone_me_prefactor;
     mutable double m_ewscale2;
 
     // self-monitoring
-    static Histogram m_kfachisto;
+    static ATOOLS::Histogram m_kfachisto;
     static size_t m_numonshellwarning;
   };
 }

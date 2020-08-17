@@ -4,11 +4,13 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "COMIX/Main/Single_Process.H"
 
 using namespace PHASIC;
 using namespace COMIX;
 using namespace ATOOLS;
 using namespace MODEL;
+using namespace METOOLS;
 
 NLOTypeStringProcessMap_Map Comix_Interface::s_apmap;
 

@@ -50,6 +50,7 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetEWSudakovKFactor(const KFactor_Setter_Arguments &args);
 
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);
