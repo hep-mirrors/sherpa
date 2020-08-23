@@ -33,9 +33,6 @@ double Sudakov_KFactor::KFactor(const int mode)
   if (std::abs(m_weight) > 500) {
     msg_Info() << "WARNING: K factor is really large: " << m_weight << '\n';
   }
-  // for now, use the m_ewsudakovkfacdelta of the ME wgt info to propagate the
-  // weight information on a coeff type-to-type basis
-  m_weight = 1.0;
   return m_weight;
 }
 
