@@ -13,8 +13,7 @@ bool Coefficient_Checker::CheckCoeffs(
 {
   std::ofstream logfile;
   if (!logfilename.empty())
-    logfile =
-        std::ofstream {logfilename, std::fstream::out | std::fstream::app};
+    logfile.open(logfilename, std::fstream::out | std::fstream::app);
   auto res = true;
   const auto& refs = ReferenceCoeffs(mandelstam, groupconstants);
   for (const auto& refkv : refs) {
