@@ -149,8 +149,12 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   // copy coupling orders and allow for any SMGold coupling order
   pi.m_maxcpl = p_proc->Info().m_maxcpl;
   pi.m_mincpl = p_proc->Info().m_mincpl;
+  pi.m_maxacpl = p_proc->Info().m_maxacpl;
+  pi.m_minacpl = p_proc->Info().m_minacpl;
   pi.m_maxcpl.push_back(99);
   pi.m_mincpl.push_back(0);
+  pi.m_maxacpl.push_back(99);
+  pi.m_minacpl.push_back(0);
 
   return pi;
 }
