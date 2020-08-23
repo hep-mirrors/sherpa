@@ -27,6 +27,8 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
 {
   auto& s = Settings::GetMainSettings();
   m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
+  m_checklogfile =
+      s["CHECK_EWSUDAKOV_LOG_FILE"].SetDefault("").Get<std::string>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
   m_checkinvariantratios = s["EWSUDAKOV_CHECKINVARIANTRATIOS"].SetDefault(false).Get<bool>();
   s.DeclareVectorSettingsWithEmptyDefault({"EWSUDAKOV_COEFF_REMOVED_LIST"});
@@ -238,6 +240,7 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
   }
   if (m_check) {
     Coefficient_Checker checker(p_proc->Name(), m_activecoeffs);
+    checker.SetLogFileName(m_checklogfile);
     Mandelstam_Variables mandelstam {
       m_ampls.MandelstamS(),
       m_ampls.MandelstamT(),

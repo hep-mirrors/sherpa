@@ -80,6 +80,7 @@ namespace PHASIC {
     double m_threshold;
     bool m_checkinvariantratios;
     size_t m_check;
+    std::string m_checklogfile;
 
     // intermediate results
     mutable Coeff_Map m_coeffs;

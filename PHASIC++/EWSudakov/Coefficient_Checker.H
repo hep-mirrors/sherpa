@@ -28,6 +28,10 @@ namespace PHASIC {
         : procname {_procname}, activecoeffs {_activecoeffs}
     { }
 
+    // set a log file name for writing out checked results and references for
+    // later analysis
+    void SetLogFileName(const std::string& f) { logfilename = f; }
+
     // check coefficients against a ref value when available
     bool CheckCoeffs(const Coeff_Map& coeffs,
                      const METOOLS::Spin_Amplitudes&,
@@ -42,6 +46,8 @@ namespace PHASIC {
 
     const std::string procname;
     const std::set<ATOOLS::EWSudakov_Log_Type> activecoeffs;
+
+    std::string logfilename;
 
     bool CheckCoeff(const Coeff_Value&,
                     Complex ref,

@@ -11,6 +11,10 @@ bool Coefficient_Checker::CheckCoeffs(
     const Mandelstam_Variables& mandelstam,
     const EWGroupConstants& groupconstants)
 {
+  std::ofstream logfile;
+  if (!logfilename.empty())
+    logfile =
+        std::ofstream {logfilename, std::fstream::out | std::fstream::app};
   auto res = true;
   const auto& refs = ReferenceCoeffs(mandelstam, groupconstants);
   for (const auto& refkv : refs) {
@@ -28,6 +32,15 @@ bool Coefficient_Checker::CheckCoeffs(
       if (!CheckCoeff(coeffsit->second[idx], helrefpair.second,
 		      helicities, coeffsit->first.first))
         res = false;
+      if (logfile.is_open()) {
+        logfile << key << '\t';
+        for (const auto& h : helicities) {
+          logfile << h;
+        }
+        logfile << '\t' << mandelstam.s << '\t' << mandelstam.t << '\t'
+                << mandelstam.u << '\t' << coeffsit->second[idx] << '\t'
+                << helrefpair.second << '\n';
+      }
     }
   }
   return res;
