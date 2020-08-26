@@ -667,14 +667,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
+  m_last -= m_dadswgtmap;
+
   // calculate associated contributions variations for BVI events
   if (varmode != Variations_Mode::nominal_only) {
-    if (GetSubevtList() == nullptr) {
-      CalculateAssociatedContributionVariations();
-    }
+    CalculateAssociatedContributionVariations();
   }
-
-  m_last -= m_dadswgtmap;
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -874,44 +872,58 @@ void Single_Process::CalculateAssociatedContributionVariations()
   if (m_asscontrib.empty())
     return;
 
-  auto orderqcd = m_mewgtinfo.m_oqcd;
-  if (m_mewgtinfo.m_type & mewgttype::VI ||
-      m_mewgtinfo.m_type & mewgttype::KP) {
-    orderqcd--;
-  }
-  const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-    m_mewgtinfo.m_KP};
-  const double DADS {m_dadswgtmap["ME"].Nominal() / m_csi.m_pdfwgt};
   const double norm {m_csi.m_pdfwgt / m_last["ME"].Nominal()};
 
-  for (const auto& asscontrib : m_asscontrib) {
+  if (GetSubevtList() == nullptr && !IsBad(norm)) {
 
-    // collect terms
-    double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
-    for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
-      // m_wass[0] is EW Sudakov-type correction
-      // m_wass[1] is the subleading Born
-      // m_wass[2] is the subsubleading Born, etc
-      if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
-        if (i == 0) {
-          const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
-          Deltaassnew *= 1.0 + relfac;
-          Deltaassnewexp *= exp(relfac);
+    auto orderqcd = m_mewgtinfo.m_oqcd;
+    if (m_mewgtinfo.m_type & mewgttype::VI ||
+        m_mewgtinfo.m_type & mewgttype::KP) {
+      orderqcd--;
+    }
+    const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
+      m_mewgtinfo.m_KP};
+    const double DADS {m_dadswgtmap["ME"].Nominal() / m_csi.m_pdfwgt};
+
+    for (const auto& asscontrib : m_asscontrib) {
+
+      // collect terms
+      double Bassnew {0.0}, Deltaassnew {1.0}, Deltaassnewexp {1.0};
+      for (size_t i(0); i < m_mewgtinfo.m_wass.size(); ++i) {
+        // m_wass[0] is EW Sudakov-type correction
+        // m_wass[1] is the subleading Born
+        // m_wass[2] is the subsubleading Born, etc
+        if (m_mewgtinfo.m_wass[i] && asscontrib & (1 << i)) {
+          if (i == 0) {
+            const double relfac {m_mewgtinfo.m_wass[i] / m_mewgtinfo.m_B};
+            Deltaassnew *= 1.0 + relfac;
+            Deltaassnewexp *= exp(relfac);
+          }
+          Bassnew += m_mewgtinfo.m_wass[i];
         }
-        Bassnew += m_mewgtinfo.m_wass[i];
+        if ((orderqcd - i) == 0)
+          break;
       }
-      if ((orderqcd - i) == 0)
-        break;
+
+      // store variations
+      const std::string key = ToString<asscontrib::type>(asscontrib);
+      m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
+        (BVIKP - DADS + Bassnew) * norm;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
+          (BVIKP - DADS) * Deltaassnew * norm;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
+          (BVIKP - DADS) * Deltaassnewexp * norm;
     }
 
-    // store variations
-    const std::string key = ToString<asscontrib::type>(asscontrib);
-    m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
-      (BVIKP - DADS + Bassnew) * norm;
-    m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
-        (BVIKP - DADS) * Deltaassnew * norm;
-    m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
-        (BVIKP - DADS) * Deltaassnewexp * norm;
+  } else {
+
+    for (const auto& asscontrib : m_asscontrib) {
+      const std::string key = ToString<asscontrib::type>(asscontrib);
+      m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = 1.0;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = 1.0;
+    }
+
   }
 }
 
