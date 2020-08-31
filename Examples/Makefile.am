@@ -68,6 +68,7 @@ nobase_dist_examples_DATA         =	\
 		Soft_QCD/Run.Xsecs.dat \
 		Soft_QCD/LHC_MinBias/Run.7TeV.dat \
 		Tops_plus_Jets/LHC_Tops/Sherpa.yaml \
+		Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml \
 		Tops_plus_V/LHC_TTW/Sherpa.yaml \
 		UFO_MSSM/MSSM/__init__.py \
 		UFO_MSSM/MSSM/build_restrict.py \
