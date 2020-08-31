@@ -310,6 +310,7 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   campl->Delete();
 
   // eventually calculate local K factor
+  msg_Debugging() << "Calc'ing LocalKFactor weights.\n";
   const double random(ran->Get());
   Weights kfacs;
   ReweightAll(kfacs,
@@ -317,6 +318,13 @@ Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
         double varweight,
         size_t varindex,
         QCD_Variation_Params* varparams) -> double {
+    if (msg_LevelIsDebugging()) {
+      if (varparams) {
+        msg_Debugging() << varparams->m_name << '\n';
+      } else {
+        msg_Debugging() << "nominal\n";
+      }
+    }
     const LocalKFactorInfo info = CalculateLocalKFactorInfo(
         bvi[varindex], b[varindex], rs[varindex], r[varindex]);
     if (info.s == 0.0 && info.h == 0.0)
