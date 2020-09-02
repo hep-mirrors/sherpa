@@ -56,20 +56,22 @@ Vertex::Vertex(MODEL::Model_Base * _model)
     // the FFV L/R structure
     if (v->Lorentz.size()==1) {
       if (v->Lorentz.front()=="FFVL") {
-	av->cpl.back()=Kabbala("0",Complex(0.,0.));
-	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
+    	av->cpl.back()=Kabbala("0",Complex(0.,0.));
+    	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
       }
       if (v->Lorentz.front()=="FFVR") {
-	av->cpl.front()=Kabbala("0",Complex(0.,0.));
-	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
+    	av->cpl.front()=Kabbala("0",Complex(0.,0.));
+    	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
       }
     }
     if (v->Lorentz.size()==2) {
-      if (v->Lorentz.front()=="FFVL" && v->Lorentz.back()=="FFVR") {
-	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
-	av->Color.pop_back();
+      if ((v->Lorentz.front()=="FFVL" && v->Lorentz.back()=="FFVR")
+	  || (v->Lorentz.back()=="FFVL" && v->Lorentz.front()=="FFVR")) {
+    	av->Lorentz.push_back(MODEL::LF_Getter::GetObject("FFV",MODEL::LF_Key()));
+    	av->Color.pop_back();
       }
     }
+    
     bool error(false);
     if (av->Lorentz.empty()) {
       for (size_t j(0);j<v->Lorentz.size();++j) {
