@@ -1,0 +1,15 @@
+BEAMS: [11, -11]
+PARTICLE_DATA:
+  23:
+    Mass: 91.1876
+    Width: 0.0
+  24:
+    Mass: 80.35
+  6:
+    Mass: 175
+
+  11:
+    Yukawa: 0.000511
+
+PROCESSES:
+- 11 -11 -> 13 -13: {}

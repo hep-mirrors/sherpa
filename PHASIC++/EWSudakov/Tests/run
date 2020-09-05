@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+sherpa="$PWD/../../../SHERPA/Run/Sherpa"
+
+# interprete AM_LOG_FLAGS (i.e. all args to this script except for the last
+# one, which is the TEST) passed as arguments to this script as Sherpa command
+# line args
+sherpa_args=()
+while (( "$#" > 1 )); do
+  sherpa_args+=("$1")
+  shift
+done
+
+# the only remaining arg is the TEST itself
+setup_conf_path="$1"
+setup_conf="${setup_conf_path##*/}"
+setup_name="${setup_conf%.yaml}"
+
+test_dir="${1%/*}"
+base_conf_path="${test_dir}/Base.yaml"
+
+# create/clean and enter a working directory
+rm -rf "$setup_name"
+mkdir -p "$setup_name"
+cd "$setup_name"
+
+"$sherpa" "${sherpa_args[@]}" "RUNDATA: [$base_conf_path, $setup_conf_path]"

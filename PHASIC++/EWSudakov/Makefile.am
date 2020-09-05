@@ -1,3 +1,5 @@
+SUBDIRS = Tests
+
 pkglib_LTLIBRARIES    =	libPhasicEWSudakov.la
 
 GITTAG = PHASIC++/EWSudakov

@@ -1,0 +1,25 @@
+BEAMS: [2, -1]
+PDF_SET: None
+PARTICLE_DATA:
+  23:
+    Mass: 91.1876
+    Width: 0.0
+  42:
+    Mass: 91.1876
+    Width: 0.0
+  24:
+    Mass: 80.35
+    Width: 0.0
+  41:
+    Mass: 80.35
+    Width: 0.0
+  6:
+    Mass: 175
+  11:
+    Yukawa: 0.000511
+
+PROCESSES:
+- 2 -1 -> 22 24: {}
+
+SELECTORS:
+- [PT, 22, 30.0, E_CMS]

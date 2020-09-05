@@ -143,6 +143,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PHASIC++/Scales/Makefile \
 	  PHASIC++/Enhance/Makefile \
 	  PHASIC++/EWSudakov/Makefile \
+	  PHASIC++/EWSudakov/Tests/Makefile \
 	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Makefile \
 	  EXTRA_XS/Main/Makefile \

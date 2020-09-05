@@ -50,6 +50,7 @@ Makefile.in
 /missing
 /py-compile
 /stamp-h1
+/test-driver
 
 
 # make targets and intermediate files
