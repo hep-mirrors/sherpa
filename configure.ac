@@ -144,6 +144,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PHASIC++/Enhance/Makefile \
 	  PHASIC++/EWSudakov/Makefile \
 	  PHASIC++/EWSudakov/Tests/Makefile \
+	  PHASIC++/EWSudakov/Tests/run.sh \
 	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Makefile \
 	  EXTRA_XS/Main/Makefile \

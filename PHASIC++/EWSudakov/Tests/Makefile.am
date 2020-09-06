@@ -7,7 +7,7 @@ TEST_PROCS = eePP eeWW eeZP eeZZ eebb eedd eemumu eett eeuu duWZ duWP
 
 # define tests and the script used to run each test (via Automake)
 TESTS = $(TEST_PROCS:=.yaml)
-LOG_COMPILER = $(srcdir)/run
+LOG_COMPILER = bash run.sh
 
 # the run script runs each test in a directory named after the process;
 # Automake doesn't know about this output, so add it manually to `make clean`

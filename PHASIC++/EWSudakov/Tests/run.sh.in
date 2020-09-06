@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 sherpa="$PWD/../../../SHERPA/Run/Sherpa"
 
 # interprete AM_LOG_FLAGS (i.e. all args to this script except for the last
@@ -23,5 +21,14 @@ base_conf_path="${test_dir}/Base.yaml"
 rm -rf "$setup_name"
 mkdir -p "$setup_name"
 cd "$setup_name"
+
+# Libraries that are not linked to the Sherpa binary will not be found (or
+# worse: an outdated one is found, e.g. in the install directory, such that
+# `make check` would work properly only after `make install`, which is not
+# as it should be!) when calling Sherpa, so we should link them here such
+# that Library_Loader uses them, since # it's first looking for libraries in
+# the run directory, before searching in the install path or in
+# (DY)LD_LIBRARY_PATH. In our case, we only need the SMGold model.
+ln -s "$PWD/../../../../MODEL/SMGold/.libs/libSherpaSMGold@LIB_SUFFIX@" .
 
 "$sherpa" "${sherpa_args[@]}" "RUNDATA: [$base_conf_path, $setup_conf_path]"

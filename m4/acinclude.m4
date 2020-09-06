@@ -13,8 +13,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-dynamic -flat_namespace"
       fi
       SEDCOMMAND="sed -i.bak -E"
+      LIB_SUFFIX=".dylib"
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
-      AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
     *linux*:*:*)
       echo "checking for architecture...  Linux"
@@ -22,8 +22,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
+      LIB_SUFFIX=".so"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
-      AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
     *)
       echo "checking for architecture...  unknown"
@@ -36,8 +36,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
         AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
+      LIB_SUFFIX=".so"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
-      AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
   if test "x$LDFLAGS" = "x"; then
@@ -45,6 +45,8 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed], AM_LDFLAGS, [-Wl,$LDSTRICTFLAG])
   fi
 
+  AC_DEFINE_UNQUOTED([LIB_SUFFIX], ["$LIB_SUFFIX"], [shared library suffix])
+  AC_SUBST(LIB_SUFFIX)
   AC_SUBST(AM_LDFLAGS)
   if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
   elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";
