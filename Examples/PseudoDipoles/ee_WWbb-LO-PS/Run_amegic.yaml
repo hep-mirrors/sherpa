@@ -1,0 +1,67 @@
+TAGS:
+  NumberEvents: 1M
+  MassTop: 173.21
+  TAG_SEED: 123456
+  FILE_NAME_SUFFIX: test
+  FILE_NAME: "rivet_output-$(FILE_NAME_SUFFIX)"
+
+EVENTS: $(NumberEvents)
+ERROR: 0.1
+#PSI:
+#  ITMAX: 10000
+RANDOM_SEED: $(TAG_SEED)
+MI_HANDLER: None
+FRAGMENTATION: Off
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: 
+  - Amegic
+ME_QED:                 # turn off QED radiation
+  ENABLED: false
+PDF_SET: None
+
+SCALES: VAR{sqr($(MassTop))}
+SHOWER_GENERATOR: Dire
+CSS_KFACTOR_SCHEME: 0   # to compare MCATNLO with DIM
+CSS_MAXEM: 1            # maximal number of emission by shower
+DIPOLES:
+  CASE: IDa
+CSS_EVOLUTION_SCHEME: 1 # 1: inv. eikonal, 2: virtuality as evol.var.
+#CSS_FS_PT2MIN: 0.1
+
+PARTICLE_DATA:
+  15:
+    Massive: 1
+  24:
+    Width: 0
+  5:
+    Mass: 0
+
+BEAM_1: 11
+BEAM_ENERGY_1: $(MassTop)*2
+BEAM_2: -11
+BEAM_ENERGY_2: $(MassTop)*2
+
+OUTPUT: 2
+FUNCTION_OUTPUT:
+#  Shower::Evolve: 8
+PRETTY_PRINT: Off
+
+
+PROCESSES:
+-  11 -11 -> 24 -24 5 -5:
+    Order: {QCD: 0, EW: 4}
+    ME_Generator: Amegic
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
+RIVET: 
+    {
+    "-a": [ee_wwbb_analysis, myLL_JetRates],
+    SPLITSH: 1
+    }
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: kt
+    N: 2
+    PTMin: 5.0 # translates into dmax=sqr(PTMin) in ee_kt_algorithm

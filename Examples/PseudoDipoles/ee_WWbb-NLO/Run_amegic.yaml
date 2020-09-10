@@ -1,0 +1,63 @@
+TAGS:
+  NumberEvents: 1M
+  MassTop: 173.21
+  TAG_SEED: 123456
+  FILE_NAME_SUFFIX: test
+  FILE_NAME: "rivet_output-$(FILE_NAME_SUFFIX)"
+
+EVENTS: $(NumberEvents)
+ERROR: 0.0001
+PSI:
+  ITMAX: 1000
+RANDOM_SEED: $(TAG_SEED)
+MI_HANDLER: None
+FRAGMENTATION: Off
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: 
+  - Amegic
+ME_QED:                 # turn off QED radiation
+  ENABLED: false
+PDF_SET: None
+BEAM_REMNANTS: false
+SHOWER_GENERATOR: None
+
+SCALES: VAR{sqr($(MassTop))}
+DIPOLES:
+  CASE: IDa # or CS for standard Catani-Seymour dipoles
+
+PARTICLE_DATA:
+  15:
+    Massive: 1
+  24:
+    Width: 0
+  5:
+    Mass: 0
+
+BEAM_1: 11
+BEAM_ENERGY_1: $(MassTop)*2
+BEAM_2: -11
+BEAM_ENERGY_2: $(MassTop)*2
+
+PROCESSES:
+-  11 -11 -> 24 -24 5 -5:
+    Order: {QCD: 0, EW: 4}
+    NLO_Order: {QCD: 1, EW: 0}
+    NLO_Mode: Fixed_Order
+    ME_Generator: Amegic
+    RS_ME_Generator: Amegic
+    Loop_Generator: OpenLoops
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
+RIVET: 
+    {
+    "-a": [ee_wwbb_analysis, myLL_JetRates],
+    USE_HEPMC_SHORT: 1,  # only for fixed order
+    SPLITSH: 1
+    }
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: kt
+    N: 2
+    PTMin: 5.0 # translates into dmax=sqr(PTMin) in ee_kt_algorithm

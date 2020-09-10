@@ -1,0 +1,76 @@
+TAGS:
+  NumberEvents: 1M
+  MassTop: 173.21
+  TAG_SEED: 123456
+  FILE_NAME_SUFFIX: test
+  FILE_NAME: "rivet_output-$(FILE_NAME_SUFFIX)"
+
+EVENTS: $(NumberEvents)
+ERROR: 0.1
+#PSI:
+#  ITMAX: 10000
+RANDOM_SEED: $(TAG_SEED)
+MI_HANDLER: None
+FRAGMENTATION: Off
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: 
+  - Amegic
+ME_QED:                 # turn off QED radiation
+  ENABLED: false
+PDF_SET: None
+BEAM_REMNANTS: false
+
+SCALES: VAR{sqr($(MassTop))}{sqr($(MassTop))}{{sqr($(MassTop))}
+SHOWER_GENERATOR: Dire
+#MC@NLO:
+#  PP_BVI_MODE: 1        # replace BVI with B
+#NLO_CSS_PSMODE: 1       # disable reweighting due to colour correlation
+CSS_KFACTOR_SCHEME: 0   # to compare MCATNLO with DIM
+CSS_MAXEM: 0            # turn off shower emissions
+DIPOLES:
+  CASE: IDa
+CSS_EVOLUTION_SCHEME: 1 # 1: inv. eikonal, 2: virtuality as evol.var.
+#CSS_FS_PT2MIN: 0.1
+
+PARTICLE_DATA:
+  15:
+    Massive: 1
+  24:
+    Width: 0
+  5:
+    Mass: 0
+
+BEAM_1: 11
+BEAM_ENERGY_1: $(MassTop)*2
+BEAM_2: -11
+BEAM_ENERGY_2: $(MassTop)*2
+
+OUTPUT: 2
+FUNCTION_OUTPUT:
+#  Single_Process::Differential: 8
+PRETTY_PRINT: Off
+
+
+PROCESSES:
+-  11 -11 -> 24 -24 5 -5:
+    Order: {QCD: 0, EW: 4}
+    NLO_Order: {QCD: 1, EW: 0}
+    NLO_Mode: MC@NLO
+    ME_Generator: Amegic
+    RS_ME_Generator: Amegic
+#    RS_Enhance_Factor: 0
+    Loop_Generator: OpenLoops
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
+RIVET: 
+    {
+    "-a": [ee_wwbb_analysis, myLL_JetRates],
+    SPLITSH: 1
+    }
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: kt
+    N: 2
+    PTMin: 5.0 # translates into dmax=sqr(PTMin) in ee_kt_algorithm
