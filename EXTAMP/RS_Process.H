@@ -32,8 +32,7 @@ namespace EXTAMP {
     
     ~RS_Process();
 
-    double Partonic(const ATOOLS::Vec4D_Vector &p,
-		    const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector &p, int mode);
 
     /* Inherited virtual from PHASIC::Process_Base. Returns NULL by
        default and needs to be overwritten in such a way as to return

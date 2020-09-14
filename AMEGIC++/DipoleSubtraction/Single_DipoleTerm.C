@@ -637,7 +637,7 @@ bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
+double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms, int mode)
 {
   p_int->SetMomenta(_moms);
   Poincare cms;
@@ -820,13 +820,6 @@ size_t Single_DipoleTerm::SetClusterMode(const size_t cmode)
   size_t ccmode(p_LO_process->SetClusterMode(cmode));
   m_cmode=cmode;
   return ccmode;
-}
-
-void Single_DipoleTerm::SetVariationWeights(Variation_Weights *const vw)
-{
-  Process_Base::SetVariationWeights(vw);
-  if (!p_LO_process->IsMapped()) p_LO_process->SetVariationWeights(vw);
-  p_LO_process->Partner()->SetVariationWeights(vw);
 }
 
 ATOOLS::Flavour Single_DipoleTerm::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const

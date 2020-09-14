@@ -55,6 +55,7 @@ Jet_Finder::~Jet_Finder()
 bool Jet_Finder::Trigger(Selector_List &sl)
 {
   m_pass=true;
+  m_results = {Weights_Map{}};
   p_ampl->SetProc(p_proc);
   for (size_t i(0);i<sl.size();++i)
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-sl[i].Momentum():sl[i].Momentum());
@@ -63,29 +64,22 @@ bool Jet_Finder::Trigger(Selector_List &sl)
   msg_Debugging()<<METHOD<<"("<<this<<"): '"<<p_proc->Name()
 		 <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-  double jcv=p_jc->Value(p_ampl);
-  bool res=m_pass=jcv>sqr(m_qcut);
-  msg_Debugging()<<"} -> "<<res<<"\n";
-  if (p_proc->VariationWeights()) {
-    Reweight_Args args(jcv,0);
-    p_proc->VariationWeights()->UpdateOrInitialiseWeights
-      (&Jet_Finder::Reweight,*this,args);
-    if (args.m_acc) res=1;
+  const double jcv=p_jc->Value(p_ampl,p_proc->Info().Has(nlo_type::real));
+  bool triggered {false};
+  m_results[0]["QCUT"] = Weights {Variations_Type::qcut};
+  for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
+       ++i) {
+    const double fac{
+        i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
+    const bool pass = jcv > sqr(m_qcut * fac);
+    if (i == 0)
+      m_pass = pass;
+    if (pass)
+      triggered = true;
+    m_results[0]["QCUT"][i] = pass;
   }
-  return 1-m_sel_log->Hit(!res);
-}
-
-double Jet_Finder::Reweight(Variation_Parameters *params,
-			    Variation_Weights *weights,
-			    Reweight_Args &args)
-{
-  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
-		 <<"' Q_cut = "<<m_qcut*params->m_Qcutfac<<"\n";
-  bool res=args.m_jcv>sqr(m_qcut*params->m_Qcutfac);
-  msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<"\n";
-  msg_Debugging()<<"} -> "<<res<<"\n";
-  if (res) args.m_acc=1;
-  return res?1.0:0.0;
+  msg_Debugging()<<"} -> "<<m_pass<<"\n";
+  return 1-m_sel_log->Hit(!triggered);
 }
 
 bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
@@ -95,10 +89,11 @@ bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
 			   -subs->back()->p_mom[i]:subs->back()->p_mom[i]);
   m_qcut=p_yccalc->Calculate()->Get<double>();
   if (!m_on) return true;
-  int res(0);
   m_pass=0;
-  ReweightSubevt_Args args(subs->size());
+  std::vector<int> any_variation_passes(subs->size(), 0);
+  m_results = std::vector<Weights_Map>(subs->size(), Weights_Map {1.0});
   for (size_t n(0);n<subs->size();++n) {
+    int nominal_passes {0};
     msg_Debugging()<<METHOD<<"("<<n<<"): '"<<p_proc->Name()
 		   <<"' Q_cut = "<<m_qcut<<(m_on?" {":", off")<<"\n";
     {
@@ -122,35 +117,33 @@ bool Jet_Finder::RSTrigger(NLO_subevtlist *const subs)
 			     (1<<(*subs)[n]->m_k):0);
       }
       p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-      args.m_jcv[n]=p_jc->Value(p_ampl,idij?0:1);
-      (*subs)[n]->m_trig=args.m_acc[n]=args.m_jcv[n]>sqr(m_qcut);
-      if (args.m_acc[n]) res=m_pass=1;
+      const double jcv = p_jc->Value(p_ampl, idij ? 0 : 1);
+      m_results[n]["QCUT"] = Weights {Variations_Type::qcut};
+      for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
+           ++i) {
+        const double fac {
+            i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
+        const auto pass = jcv > sqr(m_qcut * fac);
+        if (i == 0) {
+          (*subs)[n]->m_trig = pass;
+          if (pass)
+            nominal_passes = m_pass = pass;
+        }
+        if (pass) {
+          any_variation_passes[n] = 1;
+        }
+        m_results[n]["QCUT"][i] = pass;
+      }
     }
-    msg_Debugging()<<"} -> "<<args.m_acc[n]<<"\n";
+    msg_Debugging()<<"} -> "<<nominal_passes<<"\n";
   }
-  if (p_proc->VariationWeights()) {
-    p_proc->VariationWeights()->InitialiseWeights
-      (&Jet_Finder::ReweightSubevents,*this,args);
-    for (size_t n(0);n<subs->size();++n)
-      res|=(*subs)[n]->m_trig|=(args.m_acc[n]?2:0);
-  }
-  return 1-m_sel_log->Hit(!res);
-}
 
-Subevent_Weights_Vector Jet_Finder::ReweightSubevents
-(Variation_Parameters *params,Variation_Weights *weights,
- ReweightSubevt_Args &args)
-{
-  Subevent_Weights_Vector wgts(args.m_jcv.size());
-  for (size_t i(0);i<args.m_jcv.size();++i) {
-    msg_Debugging()<<METHOD<<"(): '"<<p_proc->Name()
-		   <<"' Q_cut = "<<m_qcut*params->m_Qcutfac<<"\n";
-    wgts[i]=args.m_jcv[i]>sqr(m_qcut*params->m_Qcutfac);
-    msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv[i])<<"\n";
-    msg_Debugging()<<"} -> "<<wgts[i]<<"\n";
-    if (wgts[i]) args.m_acc[i]=1;
+  int result = m_pass;
+  for (size_t n(0); n < subs->size(); ++n) {
+    result |= (*subs)[n]->m_trig |= (any_variation_passes[n] ? 2 : 0);
   }
-  return wgts;
+
+  return 1-m_sel_log->Hit(!result);
 }
 
 void Jet_Finder::BuildCuts(Cut_Data *cuts) 

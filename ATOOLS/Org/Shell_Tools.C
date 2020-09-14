@@ -169,7 +169,7 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
   }
   size_t pos=std::string::npos;
   std::vector<std::string> entries;
-  if (entry[entry.length()-1]!=':') entry+=":";
+  if (entry.length()>0 && entry[entry.length()-1]!=':') entry+=":";
   while ((pos=entry.find(":"))!=std::string::npos) {
     if (pos>0) entries.push_back(entry.substr(0,pos));
     entry=entry.substr(pos+1);

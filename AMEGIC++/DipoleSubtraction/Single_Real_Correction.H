@@ -118,7 +118,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
@@ -126,7 +126,6 @@ namespace AMEGIC {
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
-    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
 
     int            NumberOfDiagrams();

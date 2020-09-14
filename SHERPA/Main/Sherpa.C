@@ -16,6 +16,7 @@
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC2_Interface.H"
+#include "SHERPA/Tools/HepMC3_Interface.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -35,8 +36,13 @@ using namespace std;
 
 Sherpa::Sherpa(int argc, char* argv[]) :
   p_inithandler(nullptr),
-  p_eventhandler(nullptr),
-  p_hepmc2(nullptr)
+  p_eventhandler(nullptr)
+#ifdef USING__HEPMC2
+  , p_hepmc2(nullptr)
+#endif
+#ifdef USING__HEPMC3
+  , p_hepmc3(nullptr)
+#endif
 {
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Terminator_Object_Handler();
@@ -71,6 +77,9 @@ Sherpa::~Sherpa()
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
 #ifdef USING__HEPMC2
   if (p_hepmc2)       { delete p_hepmc2;       p_hepmc2       = nullptr; }
+#endif
+#ifdef USING__HEPMC3
+  if (p_hepmc3)       { delete p_hepmc3;       p_hepmc3       = NULL; }
 #endif
   Settings::FinalizeMainSettings();
   exh->RemoveTerminatorObject(this);
@@ -153,15 +162,13 @@ bool Sherpa::InitializeTheEventHandler()
   }
 
   if (mode==eventtype::EventReader) {
-    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader(),
-                                                      p_inithandler->GetVariations()));
+    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
   }
   else {
     p_eventhandler->AddEventPhase(
-        new Signal_Processes(p_inithandler->GetMatrixElementHandler(),
-                             p_inithandler->GetVariations()));
+        new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
@@ -186,7 +193,6 @@ bool Sherpa::InitializeTheEventHandler()
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   if (!p_inithandler->GetOutputs()->empty())
     p_eventhandler->AddEventPhase(new Output_Phase(p_inithandler->GetOutputs(), p_eventhandler));
-  p_eventhandler->SetVariations(p_inithandler->GetVariations());
   p_eventhandler->SetFilter(p_inithandler->GetFilter());
   p_eventhandler->PrintGenericEventStructure();
 
@@ -297,18 +303,25 @@ bool Sherpa::GenerateOneEvent(bool reset)
   return 0;
 }
 
+#ifdef USING__HEPMC2
 void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
 {
-#ifdef USING__HEPMC2
-  if (!p_hepmc2)
-    p_hepmc2 = new SHERPA::HepMC2_Interface();
+  if (!p_hepmc2) p_hepmc2 = new SHERPA::HepMC2_Interface();
   ATOOLS::Blob_List* blobs = GetEventHandler()->GetBlobs();
   p_hepmc2->Sherpa2HepMC(blobs, event);
   p_hepmc2->AddCrossSection(event, TotalXS(), TotalErr());
-#else
-  THROW(missing_module, "HepMC is not linked.");
-#endif
 }
+#endif
+
+#ifdef USING__HEPMC3
+void Sherpa::FillHepMCEvent(HepMC3::GenEvent& event)
+{
+  if (p_hepmc3==NULL) p_hepmc3 = new SHERPA::HepMC3_Interface();
+  ATOOLS::Blob_List* blobs=GetEventHandler()->GetBlobs();
+  p_hepmc3->Sherpa2HepMC(blobs, event);
+  p_hepmc3->AddCrossSection(event, TotalXS(), TotalErr());
+}
+#endif
 
 double Sherpa::TotalXS()
 {

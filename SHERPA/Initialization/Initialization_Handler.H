@@ -93,7 +93,7 @@ namespace SHERPA {
     bool InitializeTheSoftPhotons();
     bool InitializeTheFilter();
     bool InitializeTheAnalyses();
-    bool InitializeTheReweighting();
+    bool InitializeTheReweighting(ATOOLS::Variations_Mode);
 
     void RegisterDefaults();
     bool CheckBeamISRConsistency();

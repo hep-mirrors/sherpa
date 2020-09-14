@@ -20,7 +20,9 @@ Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
 {
   assert(filename != "");
   My_File<std::ifstream> file {path, filename};
-  file.Open();
+  if (!file.Open()) {
+    THROW(invalid_input, filename + " could not be opened.");
+  }
   try {
     Parse(*file);
   } catch (const std::exception& e) {
@@ -60,6 +62,12 @@ bool Yaml_Reader::IsList(const Settings_Keys& scopekeys)
 {
   const auto node = NodeForKeys(scopekeys);
   return node.IsSequence();
+}
+
+bool Yaml_Reader::IsMap(const Settings_Keys& scopekeys)
+{
+  const auto node = NodeForKeys(scopekeys);
+  return node.IsMap();
 }
 
 size_t Yaml_Reader::GetItemsCount(const Settings_Keys& scopekeys)

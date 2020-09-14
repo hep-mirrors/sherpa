@@ -10,6 +10,7 @@
 namespace CSSHOWER {
 
   class Singlet;
+  class Splitting_Function_Base;
 
   struct pst {
     enum code {
@@ -18,6 +19,18 @@ namespace CSSHOWER {
       none = 0
     };
   };
+
+  struct Sudakov_Reweighting_Info {
+    bool accepted;
+    double scale;
+    double accwgt;
+    double lastj;
+    double lastcpl;
+    Splitting_Function_Base* sf;
+    double x, y, z;
+    ATOOLS::Flavour flspec;
+  };
+  typedef std::vector<Sudakov_Reweighting_Info> Sudakov_Reweighting_Infos;
 
   class Parton {
   private:
@@ -37,6 +50,7 @@ namespace CSSHOWER {
     ATOOLS::Poincare_Sequence m_lt;
 
     std::vector<std::pair<double,double> > m_weights;
+    Sudakov_Reweighting_Infos m_sudakovrewinfos;
 
   public:
     inline Parton();
@@ -55,6 +69,7 @@ namespace CSSHOWER {
     inline const ATOOLS::Poincare_Sequence &LT() const { return m_lt; }
 
     inline std::vector<std::pair<double,double> > &Weights() { return m_weights; }
+    Sudakov_Reweighting_Infos& SudakovReweightingInfos() { return m_sudakovrewinfos; }
 
     double Weight(const double &scale);
 

@@ -2,6 +2,7 @@
 #define ATOOLS_Phys_Blob_List_H
 
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include <deque>
 #include <map>
@@ -84,9 +85,11 @@ namespace ATOOLS {
 
     Blob_List Copy() const;
 
+    ATOOLS::Weights_Map WeightsMap() const;
     double Weight() const;
-    void   SetExternalWeight(const double & wt) { m_extweight = wt; }
+    void SetExternalWeight(const double& wt) { m_extweight = wt; }
     double ExternalWeight() const { return m_extweight; }
+
     static void PrintMomFailStatistics(std::ostream &str);
   };// end of class Blob_List
   

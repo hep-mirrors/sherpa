@@ -22,8 +22,7 @@ namespace EXTAMP {
     
     ~BVI_Process();
 
-    double Partonic(const ATOOLS::Vec4D_Vector &p,
-		    const int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector &p, int mode);
 
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 

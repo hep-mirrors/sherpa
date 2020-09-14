@@ -3,6 +3,8 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings_Writer.H"
 #include "ATOOLS/Org/Data_Writer.H"
+#include "ATOOLS/Org/Strings.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace ATOOLS;
 
@@ -36,9 +38,13 @@ Settings::Settings(int argc, char* argv[])
 {
   m_yamlreaders.emplace_back(new Command_Line_Interface{argc, argv});
   const auto files = GetConfigFiles();
-  for (auto it = files.rbegin(); it != files.rend(); ++it) {
-    const std::string path {is_absolute(*it) ? "" : GetPath()};
-    m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
+  if (files.empty()) {
+    msg_Out() << Strings::NoConfigFilesWarning;
+  } else {
+    for (auto it = files.rbegin(); it != files.rend(); ++it) {
+      const std::string path {is_absolute(*it) ? "" : GetPath()};
+      m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
+    }
   }
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
@@ -137,13 +143,26 @@ String_Vector Settings::GetConfigFiles()
     if (!filenames.empty())
       return filenames;
   }
-  return {"Sherpa.yaml"};
+  if (FileExists(GetPath() + "Sherpa.yaml")) {
+    return {"Sherpa.yaml"};
+  } else {
+    return {};
+  }
 }
 
 bool Settings::IsList(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders) {
     if (reader->IsList(keys))
+      return true;
+  }
+  return false;
+}
+
+bool Settings::IsMap(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsMap(keys))
       return true;
   }
   return false;

@@ -406,7 +406,8 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
   ReMapFlavs(sub,0);
 }
 
-double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
+double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
+                                        int mode)
 {
   DEBUG_FUNC("mode="<<mode);
   if (mode==1) return m_lastxs;
@@ -580,15 +581,11 @@ void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
   }
 }
 
-void Single_Real_Correction::SetVariationWeights(Variation_Weights *const vw)
-{
-  Process_Base::SetVariationWeights(vw);
-  p_tree_process->SetVariationWeights(vw);
-}
- 
 void Single_Real_Correction::SetKFactor(const KFactor_Setter_Arguments &args)
 {
-  p_tree_process->SetKFactor(args);
+  if (!m_no_tree) {
+    p_tree_process->SetKFactor(args);
+  }
   for (size_t i(0);i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetKFactor(args);
   }

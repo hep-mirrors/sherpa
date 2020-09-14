@@ -21,7 +21,7 @@ namespace SHERPA {
 
     // member functions
     void InitializeHooks(Sherpa* sherpa);
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void Finish(const std::string &);
     void CleanUp(const size_t & mode=0);
 

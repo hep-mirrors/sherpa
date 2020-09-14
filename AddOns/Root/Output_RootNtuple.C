@@ -247,12 +247,13 @@ void Output_RootNtuple::Output(Blob_List* blobs)
   ME_Weight_Info* wgtinfo(NULL);
   if (seinfo) wgtinfo=seinfo->Get<ME_Weight_Info*>();
   seinfo=(*signal)["NLO_subeventlist"];
-  std::string type((*signal)["NLOQCDType"]->Get<std::string>());
+  std::string type((*signal)["NLOType"]->Get<std::string>());
   
   if (!seinfo) { // BVI type events
     if (m_evtlist.size()<=m_cnt2)
       m_evtlist.resize(m_evtlist.size()+m_avsize);
-    m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
+    m_evtlist[m_cnt2].weight =
+        (*signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
     m_evtlist[m_cnt2].ncount=ncount;
     m_sum+=m_evtlist[m_cnt2].weight;
     m_csum+=m_evtlist[m_cnt2].weight;

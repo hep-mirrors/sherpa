@@ -21,6 +21,7 @@ namespace ATOOLS {
 
     std::vector<std::string> GetKeys(const Settings_Keys& scopekeys);
     bool IsList(const Settings_Keys& scopekeys);
+    bool IsMap(const Settings_Keys& scopekeys);
     size_t GetItemsCount(const Settings_Keys& scopekeys);
 
     bool IsParameterCustomised(const Settings_Keys& scopekeys);

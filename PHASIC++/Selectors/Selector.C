@@ -29,9 +29,9 @@ std::vector<ATOOLS::Scoped_Settings> Selector_Key::GetSelectors() const
   Scoped_Settings addselsettings{ m_yaml };
   auto selectors = addselsettings["SELECTORS"].GetItems();
   auto userdefinedselectors = m_settings.GetItems();
-  std::copy(userdefinedselectors.begin(), userdefinedselectors.end(),
-            std::back_inserter(selectors));
-  return selectors;
+  std::copy(selectors.begin(), selectors.end(),
+            std::back_inserter(userdefinedselectors));
+  return userdefinedselectors;
 }
 
 void Selector_Key::AddSelectorYAML(const std::string& yaml)
@@ -47,7 +47,8 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
   m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
-  m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
+  m_smin(0.), m_smax(sqr(rpa->gen.Ecms())),
+  m_results{Weights_Map{1.0}}
 {
   if (p_proc && p_proc->Info().Has(nlo_type::real|nlo_type::rsub))
     m_isnlo=true;
@@ -60,7 +61,6 @@ bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
   for (size_t n(0);n<subs->size();++n) {
     p_sub=(*subs)[n];
     m_nout=(m_n=p_sub->m_n)-m_nin;
-//    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
     Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
     for (size_t i(0);i<m_nin;++i)
       if (mom[i][0]<0.0) mom[i]=-mom[i];
@@ -102,18 +102,30 @@ void Selector_Base::Output() {
 
 void Selector_Base::ReadInSubSelectors(const Selector_Key &key)
 {
-  for (auto s : key.m_settings["Subselectors"].GetItems()) {
+  for (auto s : key.m_settings[m_name]["Subselectors"].GetItems()) {
     Selector_Key subkey;
     subkey.m_settings = s;
     subkey.p_proc = key.p_proc;
-    auto type = s["Type"].SetDefault("").Get<std::string>();
-    if (type == "") {
+    std::string type;
+    if (s.IsList()) {
       type = s.SetDefault<std::string>({}).GetVector<std::string>()[0];
+    } else {
+      if (s.GetKeys().size() != 1)
+        THROW(fatal_error,
+              "Mapping-like selector settings must consist of exactly one"
+              " key-value pair, where the key is the name of the selector,"
+              " and the value is another mapping for the selector settings.");
+      type = s.GetKeys().front();
     }
     auto* sel = Selector_Getter::GetObject(type, subkey);
     if (sel!=NULL) m_sels.push_back(sel);
     else THROW(fatal_error, "Did not find selector \""+type+"\".");
   }
+}
+
+const std::vector<ATOOLS::Weights_Map>& Selector_Base::Results() const
+{
+  return m_results;
 }
 
 void Selector_Base::ShowSyntax(const int mode)

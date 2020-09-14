@@ -37,23 +37,25 @@ MCatNLO::~MCatNLO()
 int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
-  p_mcatnlo->SetVariations(p_variationweights);
-  m_weight=1.0;
+  m_weightsmap.Clear();
+  m_weightsmap["MC@NLO_PS"] = 1.0;
+  m_weightsmap["MC@NLO_QCUT"] = 1.0;
   CleanUp();
   PrepareShower(ampl);
   if (p_rampl->NLO()&4) return 1;
   unsigned int nem=0;
   int stat(p_mcatnlo->Evolve(*m_ampls.back(),nem));
-  m_weight*=p_mcatnlo->GetWeight();
-  if (m_wcheck && dabs(m_weight)>m_maxweight) {
-    m_maxweight=dabs(m_weight);
+  m_weightsmap["MC@NLO_PS"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_PS");
+  m_weightsmap["MC@NLO_QCUT"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_QCUT");
+  if (m_wcheck && dabs(m_weightsmap.Nominal())>m_maxweight) {
+    m_maxweight=dabs(m_weightsmap.Nominal());
     std::string rname="direnlo.random.dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
     std::ofstream outstream(rname.c_str(),std::fstream::app);
     outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<m_weight<<" in event "
+    outstream<<"# Wrote status for weight="<<m_weightsmap.Nominal()<<" in event "
 	     <<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
     outstream.close();
   }

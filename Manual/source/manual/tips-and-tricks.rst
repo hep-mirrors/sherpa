@@ -58,13 +58,13 @@ To use the interface, you need to enable it using the
 
    ANALYSIS: Rivet
    RIVET:
-     -a:
+     ANALYSES:
        - D0_2008_S7662670
        - CDF_2007_S7057202
        - D0_2004_S5992206
        - CDF_2008_S7828950
 
-The ``-a`` list specifies which Rivet analyses to run and the
+The ``ANALYSES`` list specifies which Rivet analyses to run and the
 histogram output file can be changed with the normal ``ANALYSIS_OUTPUT``
 switch.
 
@@ -296,7 +296,7 @@ This can be done by one of the following methods:
 
 #. Employ a dummy virtual (requires no computing time, returns a
    finite value as its result) to optimise the grid. This only works
-   if ``V`` is not the only ``NLO_QCD_Part`` specified.
+   if ``V`` is not the only ``NLO_Part`` specified.
 
    #. During integration set the ``Loop_Generator`` to ``Dummy``. The
       grid will then be optimised to the phase space distribution of
@@ -315,15 +315,19 @@ This can be done by one of the following methods:
 #. Suppress the evaluation of the virtual and/or the integrated
    subtraction terms. This only works if Amegic is used as the matrix
    element generator for the ``BVI`` pieces and ``V`` is not the only
-   ``NLO_QCD_Part`` specified.
+   ``NLO_Part`` specified.
 
 
    #. During integration add ``AMEGIC: { NLO_BVI_MODE: <num> }`` to
-        your configuration. ``<num>`` takes the following values:
-        ``1``-``B``, ``2``-``I``, and ``4``-``V``. The values are
-        additive, i.e.  ``3``-``BI``. @b{Note:} The cross section
-        displayed during integration will match the parts selected by
-        ``NLO_BVI_MODE``.
+      your configuration. ``<num>`` takes the following values:
+      ``1``-``B``, ``2``-``I``, and ``4``-``V``. The values are
+      additive, i.e.  ``3``-``BI``.
+
+
+      .. note::
+
+         The cross section displayed during integration will match the parts
+         selected by ``NLO_BVI_MODE``.
 
    #. During event generation remove the switch again and the events
       will carry the correct weight.

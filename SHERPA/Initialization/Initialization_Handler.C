@@ -199,7 +199,7 @@ void Initialization_Handler::RegisterDefaults()
   // shower settings (shower classes are rarely singletons, so we either
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
-  s["SHOWER_GENERATOR"].SetDefault("Dire").UseNoneReplacements();
+  s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
@@ -218,9 +218,8 @@ void Initialization_Handler::RegisterDefaults()
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   s["CSS_RECO_CHECK"].SetDefault(0);
   s["CSS_MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
-  s["CSS_REWEIGHT_ALPHAS"].SetDefault(1);
-  s["CSS_REWEIGHT_PDFS"].SetDefault(1);
-  s["REWEIGHT_MAXEM"].SetDefault(std::numeric_limits<unsigned int>::max());
+  s["CSS_REWEIGHT"].SetDefault(false);
+  s["CSS_MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   s["REWEIGHT_MCATNLO_EM"].SetDefault(1);
   s["CSS_REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
   s["CSS_KIN_SCHEME"].SetDefault(1);
@@ -522,7 +521,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     std::string libname(m_evtform);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
-      THROW(missing_module,"Cannot load output library Sherpa"+libname+"Input.");
+      THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
 				 p_model, m_isrhandlers[isr::hard_process]));
@@ -532,7 +531,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
-    InitializeTheReweighting();
+    InitializeTheReweighting(Variations_Mode::all);
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
@@ -551,8 +550,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
-    okay = okay && InitializeTheReweighting();
     okay = okay && InitializeTheFilter();
+    okay = okay && InitializeTheReweighting(Variations_Mode::all);
+  } else {
+    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
   return okay;
 }
@@ -1011,8 +1012,8 @@ bool Initialization_Handler::InitializeTheAnalyses()
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
-      if (!s_loader->LoadLibrary("SherpaHepMCOutput")) 
-        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2).");
+      if (!s_loader->LoadLibrary("SherpaHepMCOutput")&& !s_loader->LoadLibrary("SherpaHepMC3Output")) 
+        THROW(missing_module,"Cannot load HepMC library (--enable-hepmc2 or --enable-hepmc3).");
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
     }
@@ -1030,14 +1031,17 @@ bool Initialization_Handler::InitializeTheAnalyses()
   return true;
 }
 
-bool Initialization_Handler::InitializeTheReweighting()
+bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
 {
   if (p_variations) {
     delete p_variations;
   }
-  Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
-  p_variations = new Variations();
-  msg_Info()<<"Initialized the Reweighting."<<endl;
+  if (mode != Variations_Mode::nominal_only)
+    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
+  p_variations = new Variations(mode);
+  s_variations = p_variations;
+  if (mode != Variations_Mode::nominal_only)
+    msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;
 }
 
@@ -1057,7 +1061,9 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
   as->SetActiveAs(isr::hard_process);
+  p_variations->DisableVariations();
   int ok = p_mehandler->CalculateTotalXSecs();
+  p_variations->EnableVariations();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.\n"
 		<<"====================================================================\n";

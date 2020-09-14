@@ -87,24 +87,24 @@ Dire::~Dire()
 int Dire::PerformShowers()
 {
   DEBUG_FUNC(this);
-  p_shower->SetVariations(p_variationweights);
-  m_weight=1.0;
+  m_weightsmap.Clear();
   unsigned int nem=0;
   for (size_t i(0);i<m_ampls.size();++i) {
-    int stat(p_shower->Evolve(*m_ampls[i],m_weight,nem));
-    m_weight*=p_shower->GetWeight();
+    int stat {p_shower->Evolve(*m_ampls[i], nem)};
+    m_weightsmap *= p_shower->GetWeightsMap();
     if (stat!=1) return stat;
   }
-  if (m_wcheck && dabs(m_weight)>m_maxweight) {
-    m_maxweight=dabs(m_weight);
+  const double weight {m_weightsmap.Nominal()};
+  if (m_wcheck && dabs(weight) > m_maxweight) {
+    m_maxweight = dabs(weight);
     std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
     std::ofstream outstream(rname.c_str(),std::fstream::app);
     outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<m_weight<<" in event "
-	     <<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
+    outstream << "# Wrote status for weight=" << weight << " in event "
+              << rpa->gen.NumberOfGeneratedEvents() + 1 << std::endl;
     outstream.close();
   }
   return 1;
@@ -113,7 +113,6 @@ int Dire::PerformShowers()
 int Dire::PerformDecayShowers()
 {
   DEBUG_FUNC(this);
-  p_shower->SetVariations(NULL);
   return PerformShowers();
 }
 

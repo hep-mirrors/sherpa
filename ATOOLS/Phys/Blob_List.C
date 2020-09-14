@@ -306,8 +306,8 @@ bool Blob_List::ColorConservation() const
   std::map<int,Particle*> flows;
   for (Particle_List::const_iterator pit=outgoing.begin();
        pit!=outgoing.end();++pit) {
-    int real=(*pit)->GetFlow()->Code(1);
-    int anti=-(*pit)->GetFlow()->Code(2);
+    int real=(*pit)->GetFlow(1);
+    int anti=-(*pit)->GetFlow(2);
     if (real!=0) {
       if (anti!=0 && real==-anti) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
@@ -398,18 +398,36 @@ void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
   while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }
 
-double Blob_List::Weight() const
+Weights_Map Blob_List::WeightsMap() const
 {
-  double weight(1.0);
-  bool noweight(true);
-  for (const_iterator it(begin());it!=end();++it) {
-    Blob_Data_Base *bd((**it)["Weight"]);
-    if (bd) {
-      weight*=bd->Get<double>();
-      noweight=false;
+  Weights_Map wgtmap;
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["WeightsMap"]};
+    if (db) {
+      wgtmap *= db->Get<Weights_Map>();
+      no_weight = false;
     }
   }
-  return noweight?m_extweight:weight;
+  if (no_weight) {
+    return Weights_Map {m_extweight};
+  } else {
+    return wgtmap;
+  }
+}
+
+double Blob_List::Weight() const
+{
+  double nominal_weight {1.0};
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["WeightsMap"]};
+    if (db) {
+      nominal_weight *= db->Get<Weights_Map>().Nominal();
+      no_weight = false;
+    }
+  }
+  return no_weight ? m_extweight : nominal_weight;
 }
 
 Blob_List Blob_List::Copy() const

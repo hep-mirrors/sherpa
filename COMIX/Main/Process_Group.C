@@ -4,6 +4,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -79,7 +80,7 @@ bool COMIX::Process_Group::MapProcess()
 bool COMIX::Process_Group::GeneratePoint()
 {
   bool zero=true;
-  m_last=0.0;
+  m_last["ME"]=0.0;
   for (size_t i(0);i<m_procs.size();++i)
     if (m_procs[i]->GeneratePoint()) zero=false;
   return !zero;
@@ -112,5 +113,13 @@ void COMIX::Process_Group::ConstructPSVertices(PS_Generator *ps)
 bool COMIX::Process_Group::FillIntegrator(Phase_Space_Handler *const psh)
 {
   bool res(COMIX::Process_Base::FillIntegrator(psh));
+  for (size_t i(0);i<m_procs.size();++i) {
+    m_procs[i]->Get<COMIX::Process_Base>()->SetISMC(p_ismc);
+    m_procs[i]->Get<COMIX::Process_Base>()->SetFSMC(p_fsmc);
+  }
+  if ((m_pinfo.m_fi.NLOType()&nlo_type::vsub) && p_ismc) {
+    p_ismc->AddERan("z_1");
+    p_ismc->AddERan("z_2");
+  }
   return res;
 }

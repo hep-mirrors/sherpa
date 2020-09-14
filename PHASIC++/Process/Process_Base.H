@@ -14,7 +14,6 @@ namespace ATOOLS {
   class Cluster_Leg;
   class Cluster_Amplitude; 
   class Histogram;
-  class Variation_Weights;
   struct Decay_Info;
   typedef std::vector<Decay_Info* > DecayInfo_Vector;
   struct Weight_Info;
@@ -62,8 +61,6 @@ namespace PHASIC {
     PDF::Shower_Base   *p_shower;
     PDF::NLOMC_Base    *p_nlomc;
 
-    ATOOLS::Variation_Weights *p_variationweights;
-    bool m_variationweightsowned;
     BBar_Multi_Channel *p_mc;
 
     Scale_Setter_Base   *p_scale;
@@ -80,7 +77,8 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    double m_last, m_lastb, m_symfac, m_issymfac;
+    ATOOLS::Weights_Map m_last, m_lastb;
+    double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
     bool   m_hasinternalscale;
@@ -135,9 +133,26 @@ namespace PHASIC {
 
     virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
 
-    virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
-    virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
-                                int mode=0);
+    /*!
+     * Calculate the nominal differential
+     *
+     * Use the Variations_Mode argument to steer if only the nominal, or the
+     * nominal plus all on-the-fly variations are calculated and returned.
+     *
+     * The nominal differential can be retrieved using Last, the Born part of
+     * it via LastB, and the full event weights (i.e. the return value) via
+     * EventWeights.  The ME weight information can be retrieved using
+     * GetMEwgtinfo.
+     *
+     * Subclasses implementing this virtual function must make sure to set
+     * update the corresponding member variables.
+     */
+    virtual ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                             ATOOLS::Variations_Mode) = 0;
+
+    virtual ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude&,
+                                             ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::nominal_only,
+                                             int mode=0);
 
     virtual bool GeneratePoint();
     virtual void AddPoint(const double &value);
@@ -167,9 +182,7 @@ namespace PHASIC {
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetNLOMC(PDF::NLOMC_Base *const mc);
-    virtual void SetVariationWeights(ATOOLS::Variation_Weights *const);
-    void SetOwnedVariationWeights(ATOOLS::Variation_Weights *);
-    ATOOLS::Variation_Weights *VariationWeights() const { return p_variationweights; }
+    const ATOOLS::Weights_Map& WeightsMap() const { return m_last; }
     virtual void SetSelector(const Selector_Key &key);
     virtual void SetCaller(Process_Base *const proc);
 
@@ -250,8 +263,8 @@ namespace PHASIC {
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 
-    inline double Last() const { return m_last; }
-    inline double LastB() const { return m_lastb; }
+    inline double Last() const { return m_last.Nominal(); }
+    inline double LastB() const { return m_lastb.Nominal(); }
 
     inline bool LookUp() const { return m_lookup; }
 

@@ -1,6 +1,9 @@
+from itertools import chain
 from copy import deepcopy
 from tensor import tensor
 from templates import lorentz_calc_template
+from sym_var import sym_var
+from sympy import Symbol
 from code_snippets import *
 from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,is_ffv,is_vvv
 from ufo_exception import ufo_exception
@@ -21,6 +24,7 @@ class s_lorentz(object):
         self._key_spin_dict     = dict()
         self._key_tens_dict     = dict()
         self._ferm_partner_dict = dict()
+        self._form_factors      = dict()
         for key,spin in enumerate(self.ufo_lorentz.spins):
             self._key_spin_dict[key] = spin
             self._key_tens_dict[key] = get_in_current_tens(key,spin)  if not self.has_ghosts() else None
@@ -42,13 +46,19 @@ class s_lorentz(object):
         self._ferm_keys  = [key for key,spin in self._key_spin_dict.iteritems() if spin==2]
         self._n_ferms    = len(self._ferm_keys)
 
+        # extract form factors
+        self._form_factors = {ff.name: ff.value for ff in getattr(ufo_lorentz, "formfactors", {})}
+
     def n_ext(self):
         return len(self.ufo_lorentz.spins)
 
-    def write(self, path, ferm_optimize=False):
+    def write(self, path, ferm_optimize=False, parameter_map=None):
+        if parameter_map is None:
+            parameter_map = {}
         with open(path+"/"+self.c_name(), "w") as outfile:
             outfile.write(lorentz_calc_template.substitute(vertex_name = self.calc_class_name(),
-                                                           implementation = self.get_all_implementations(ferm_optimize)))
+                                                           implementation = self.get_all_implementations(ferm_optimize,
+                                                                                                         parameter_map)))
 
     # map to old hard-wired calculators if possible
     def mapped_name(self):
@@ -57,10 +67,12 @@ class s_lorentz(object):
         # is_ffv cannot differentiate between ffv and
         # similar structures with arbitrary scalars
         # attached, so check here for correct spin structure
-        if (sorted(self.ufo_lorentz.spins) == sorted([2,2,3])) and is_ffv(self.get_cpl_tensor()):
+        # currents with form factors are never usual FFV, so get_cpl_tensor has empty form_factor arg
+        if (sorted(self.ufo_lorentz.spins) == sorted([2,2,3])) and is_ffv(self.get_cpl_tensor({})):
             self._mapped_name = "FFV"
         # similarly, is_vvv can't tell if we have scalars attached
-        elif (self.ufo_lorentz.spins == [3,3,3]) and is_vvv(self.get_cpl_tensor()):
+        # currents with form factors are never usual VVV, so get_cpl_tensor has empty form_factor arg
+        elif (self.ufo_lorentz.spins == [3,3,3]) and is_vvv(self.get_cpl_tensor({})):
             self._mapped_name = "VVV"
         else:
             self._mapped_name =None
@@ -86,19 +98,29 @@ class s_lorentz(object):
 
     # Get a tensor representation of the lorentz coupling structure.
     # If possible, pull from cache since creating it is expensive
-    def get_cpl_tensor(self):
+    def get_cpl_tensor(self, form_factor_map):
         if not self.ufo_lorentz.structure in s_lorentz.tensor_cache:
-            s_lorentz.tensor_cache[self.ufo_lorentz.structure] = eval(self.ufo_lorentz.structure)
+            s_lorentz.tensor_cache[self.ufo_lorentz.structure] = eval(self.ufo_lorentz.structure, globals(),
+                                                                      form_factor_map)
         return s_lorentz.tensor_cache[self.ufo_lorentz.structure]
 
-    def get_all_implementations(self,ferm_optimize):
+    def form_factors_implementations(self, parameter_map):
+        evaluated_form_factors = {}
+        wrapped_parameter_map = {k: tensor([sym_var(Symbol(v, complex=True))], None) for k, v in parameter_map.items()}
+        for k, v in self._form_factors.items():
+            evaluated_form_factors[k] = eval(v, globals(), wrapped_parameter_map)
+        return evaluated_form_factors
+
+    def get_all_implementations(self, ferm_optimize, parameter_map):
+        form_factor_map = self.form_factors_implementations(parameter_map)
+
         imp = ""
         # for each key i, create one calculator
         # corresponding to key i outgoing
         for i in range(self.n_ext()):
             imp += "\n// if outgoing index is {0}\n".format(i)
             imp += "if (p_v->V()->id.back()=={0}){{\n".format(i)
-            imp += self.get_implementation(i,ferm_optimize)
+            imp += self.get_implementation(i,ferm_optimize,form_factor_map)
             imp += "\n}\n"
         return imp
 
@@ -157,9 +179,13 @@ class s_lorentz(object):
     # are external momenta required for writing out
     # lorentz coupling structure: determine from UFO string
     def needs_external_momenta(self):
-        return "P(" in self.ufo_lorentz.structure
+        structures = chain([self.ufo_lorentz.structure], self._form_factors.values())
+        for expr in structures:
+            if "P(" in expr:
+                return True
+        return False
 
-    def get_implementation(self, out_key, ferm_optimize):
+    def get_implementation(self, out_key, ferm_optimize, form_factor_map):
         ferm_opt = (len(self._ferm_keys) > 0) if ferm_optimize else False
         assert((not self.has_ghosts()))
 
@@ -184,6 +210,12 @@ class s_lorentz(object):
 
         # declare the return value, i.e. outgoing current
         imp += get_out_current_declaration(out_spin, out_key)
+
+        # decalare form factors
+        form_factor_symbols = {}
+        for ff_name, ff_implementation in form_factor_map.items():
+            imp += get_form_factor_declaration(ff_name, ff_implementation)
+            form_factor_symbols[ff_name] = tensor([sym_var(Symbol(ff_name, complex=True))], None)
 
         # optimized version for massless spinors:
         # can ask Comix via the 'C_Spinor::On()' 
@@ -210,7 +242,7 @@ class s_lorentz(object):
 
             # tensor representing coupling struct
             # to be contracted with ext. wavefct.
-            cpl  =  deepcopy(self.get_cpl_tensor())
+            cpl  =  deepcopy(self.get_cpl_tensor(form_factor_symbols))
 
             # contract incoming wavefct's with the cpl tensor
             for key in in_keys:

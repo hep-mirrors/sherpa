@@ -41,73 +41,29 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   }
   name="CDBG_Channel";
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  m_zmode = s["CDXS_ZMODE"].Get<int>();
-  m_bmode = s["CDXS_BMODE"].Get<int>();
-  m_omode = s["CDXS_OMODE"].Get<int>();
-  m_vmode = s["CDXS_VMODE"].Get<int>();
-  m_tmode = s["CDXS_TMODE"].Get<int>();
-  m_vsopt = s["CDXS_VSOPT"].Get<int>();
-  m_nvints = s["CDXS_VINTS"].Get<int>();
-  m_texp = s["CDXS_TEXP"].Get<double>();
-  m_stexp = s["CDXS_STEXP"].Get<double>();
-  m_sexp = s["CDXS_SEXP"].Get<double>();
-  m_srbase = s["CDXS_SRBASE"].Get<double>();
-  m_aexp = s["CDXS_AEXP"].Get<double>();
-  m_thexp = s["CDXS_THEXP"].Get<double>();
-  m_mfac = s["CDXS_MFAC"].Get<double>();
+  m_zmode = s["ZMODE"].Get<int>();
+  m_bmode = s["BMODE"].Get<int>();
+  m_omode = s["OMODE"].Get<int>();
+  m_vmode = s["VMODE"].Get<int>();
+  m_tmode = s["TMODE"].Get<int>();
+  m_vsopt = s["VSOPT"].Get<int>();
+  m_nvints = s["VINTS"].Get<int>();
+  m_texp = s["TEXP"].Get<double>();
+  m_stexp = s["STEXP"].Get<double>();
+  m_sexp = s["SEXP"].Get<double>();
+  m_srbase = s["SRBASE"].Get<double>();
+  m_aexp = s["AEXP"].Get<double>();
+  m_thexp = s["THEXP"].Get<double>();
+  m_mfac = s["MFAC"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*nout-4;
   rannum=m_nr+m_n-2+1;
   rans=new double[rannum];
-#ifdef USING__Threading
-  int helpi;
-  if (s["THREADS"].Get<int>()) {
-    msg_Info() << METHOD << "(): Set number of threads " << helpi << "." << std::endl;
-  }
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_PS_TID *tid(new CDBG_PS_TID(this));
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&TGenerateWeight,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-  pthread_mutex_init(&m_vgs_mtx,NULL);
-  pthread_mutex_init(&m_wvgs_mtx,NULL);
-#endif
 }
 
 PS_Channel::~PS_Channel()
 {
-#ifdef USING__Threading
-  pthread_mutex_destroy(&m_wvgs_mtx);
-  pthread_mutex_destroy(&m_vgs_mtx);
-  for (size_t i(0);i<m_cts.size();++i) {
-    CDBG_PS_TID *tid(m_cts[i]);
-    tid->m_s=0;
-    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    int tec(0);
-    if ((tec=pthread_join(tid->m_id,NULL)))
-      THROW(fatal_error,"Cannot join thread"+ToString(i));
-    pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_mutex_destroy(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_s_mtx);
-    pthread_cond_destroy(&tid->m_t_cnd);
-    pthread_cond_destroy(&tid->m_s_cnd);
-    delete tid;
-  }
-#endif
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
   delete p_cid;
@@ -116,29 +72,25 @@ PS_Channel::~PS_Channel()
 void PS_Channel::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  s["CDXS_ZMODE"].SetDefault(0);       // zero treatment mode
-  s["CDXS_BMODE"].SetDefault(1);       // boundary mode
-  s["CDXS_OMODE"].SetDefault(3);       // optimisation mode
-  s["CDXS_VMODE"].SetDefault(9);       // vegas mode
-  s["CDXS_TMODE"].SetDefault(1);       // t-channel mode
-  s["CDXS_VSOPT"].SetDefault(5);       // vegas optimisation start
-  s["CDXS_VINTS"].SetDefault(8);       // vegas intervals
-  s["CDXS_TEXP"].SetDefault(0.9);      // t-channel exp
-  s["CDXS_STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
-  s["CDXS_SEXP"].SetDefault(0.75);     // s-channel exp
-  s["CDXS_SRBASE"].SetDefault(1.05);   // s-channel exp scale
-  s["CDXS_AEXP"].SetDefault(0.9);      // aniso s-channel exp
-  s["CDXS_THEXP"].SetDefault(1.5);     // threshold exponent
-  s["CDXS_MFAC"].SetDefault(1.0);      // m_{min} factor
+  s["ZMODE"].SetDefault(0);       // zero treatment mode
+  s["BMODE"].SetDefault(1);       // boundary mode
+  s["OMODE"].SetDefault(3);       // optimisation mode
+  s["VMODE"].SetDefault(1);       // vegas mode
+  s["TMODE"].SetDefault(1);       // t-channel mode
+  s["VSOPT"].SetDefault(1);       // vegas optimisation start
+  s["VINTS"].SetDefault(8);       // vegas intervals
+  s["TEXP"].SetDefault(0.9);      // t-channel exp
+  s["STEXP"].SetDefault(1.0e-3);  // t-channel sub exp
+  s["SEXP"].SetDefault(0.75);     // s-channel exp
+  s["SRBASE"].SetDefault(1.05);   // s-channel exp scale
+  s["AEXP"].SetDefault(0.9);      // aniso s-channel exp
+  s["THEXP"].SetDefault(1.5);     // threshold exponent
+  s["MFAC"].SetDefault(1.0);      // m_{min} factor
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
 {
   CId_Map *cid(p_cid);
-#ifdef USING__Threading
-  CDBG_PS_TID *tid(GetTId());
-  if (tid) cid=tid->p_cid;
-#endif
   CId_Map::const_iterator iit(cid->find(id));
   if (iit!=cid->end()) return iit->second;
   (*cid)[id]=ID(id);
@@ -150,26 +102,20 @@ size_t PS_Channel::SId(const size_t &id) const
   return (id&3)==3?(1<<m_n)-1-id:id;
 }
 
-Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
+Vegas *PS_Channel::GetVegas(const std::string &tag,int nd)
 {
   Vegas_Map::iterator vit(m_vmap.find(tag));
   if (vit!=m_vmap.end()) return vit->second;
-  bool ibi(ni>0);
-  if (!ibi) ni=m_nvints;
-  Vegas *vegas(new Vegas(1,ni,"CDBG_"+tag,0));
+  Vegas *vegas(new Vegas(nd,m_nvints,"CDBG_"+tag));
   m_vmap[tag] = vegas;
-  if (ibi) vegas->InitBinInfo();
-#ifndef CHECK_POINT
-  vegas->SetCheckMode(0);
-#endif
-  if (!ibi && (m_vmode&8)) vegas->SetAutoRefine();
+  if (m_vmode&8) vegas->SetAutoRefine();
   if (!(m_vmode&4)) vegas->SetOutputMode(0);
   if (m_vmap.size()==1)
     msg_Tracking()<<"  Init internal Vegas map ( "
 		  <<m_nvints<<" bins )."<<std::endl;
   if (m_vmode&4)
     msg_Tracking()<<"  Init Vegas "<<std::setw(3)<<std::right
-		  <<m_vmap.size()<<" ( "<<ni<<" bins ) '"
+		  <<m_vmap.size()<<" ( "<<nd<<" dims ) '"
 		  <<std::setw(35)<<std::left<<tag<<std::right<<"'\n";
   return vegas;
 }
@@ -177,9 +123,6 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
 PHASIC::Vegas *PS_Channel::GetPVegas(const PS_Current *cur,const size_t &id)
 {
   if (cur!=NULL) {
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_vgs_mtx);
-#endif
     Vegas *vgs(NULL);
     SCVegas_Map::iterator sit(m_pcmap.find(cur->Dip()));
     if (sit==m_pcmap.end())
@@ -187,50 +130,32 @@ PHASIC::Vegas *PS_Channel::GetPVegas(const PS_Current *cur,const size_t &id)
     CVegas_Map::const_iterator vit(sit->second.find(cur));
     if (vit!=sit->second.end()) vgs=vit->second;
     else vgs=sit->second[cur]=GetVegas("P_"+cur->PSInfo());
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_vgs_mtx);
-#endif
     return vgs;
   }
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
   IVegas_Map::const_iterator vit(m_pimap.find(id));
   if (vit!=m_pimap.end()) vgs=vit->second;
   else vgs=m_pimap[id]=GetVegas("P_"+ToString(id));
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
   return vgs;
 }
 
-PHASIC::Vegas *PS_Channel::GetSVegas
-(const size_t &type,const PS_Current *cur)
+PHASIC::Vegas *PS_Channel::GetSVegas(const PS_Vertex *v)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
-  ICVegas_Map::const_iterator vit(m_sicmap.find(type));
+  IVVegas_Map::const_iterator vit(m_sicmap.find(v->Type()));
   if (vit!=m_sicmap.end()) {
-    CVegas_Map::const_iterator it(vit->second.find(cur));
+    VVegas_Map::const_iterator it(vit->second.find(v));
     if (it!=vit->second.end()) vgs=it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[type][cur]=
-    GetVegas("S_"+ToString(type)+"_"+cur->PSInfo());
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
+  if (vgs==NULL) vgs=m_sicmap[v->Type()][v]=
+    GetVegas("S_"+ToString(v->Type())+"_"+
+	     v->J(0)->PSInfo()+"_"+v->J(1)->PSInfo(),2);
   return vgs;
 }
 
 PHASIC::Vegas *PS_Channel::GetTVegas
 (const size_t &id,const PS_Current *cur,NLO_subevt *const dip)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
   SICVegas_Map::iterator sit(m_ticmap.find(dip));
   if (sit==m_ticmap.end())
@@ -242,10 +167,7 @@ PHASIC::Vegas *PS_Channel::GetTVegas
   }
   if (vgs==NULL) vgs=sit->second[id][cur]=
     GetVegas("T_"+ToString(id)+"_"+cur->PSInfo()+
-	     (dip&&dip!=cur->Dip()?"_DS"+dip->PSInfo():""));
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
+	     (dip&&dip!=cur->Dip()?"_DS"+dip->PSInfo():""),2);
   return vgs;
 }
 
@@ -271,7 +193,7 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
   if (m_vmode&1) {
     m_vgs.push_back(GetPVegas(cur,id));
     cr=m_vgs.back()->GeneratePoint(rn);
-    m_rns.push_back(cr[0]);
+    m_rns.push_back(Double_Vector(1,cr[0]));
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
 #endif
@@ -308,17 +230,9 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetPVegas(cur,id));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
-    m_wvgs.push_back(cvgs);
-    m_wrns.push_back(rn);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
     wgt/=cvgs->GenerateWeight(&rn);
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
+    msg_Debugging()<<"    generate weight "<<cvgs->Name()<<"\n";
 #endif
   }
   return 1.0/wgt;
@@ -389,8 +303,8 @@ void PS_Channel::TChannelMomenta
   const double *cr(rns);
   if (m_vmode&1) {
     m_vgs.push_back(GetTVegas(id,cur,dip));
+    m_rns.push_back(Double_Vector(0));
     cr=m_vgs.back()->GeneratePoint(rns);
-    m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
 #endif
@@ -399,7 +313,7 @@ void PS_Channel::TChannelMomenta
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   CE.TChannelMomenta(pa,pb,p1,p2,s1,s2,cur->Mass(),
 		     dip?m_stexp:m_texp,ctmax,ctmin,
-		     1.0,0,cr[0],rns[1]);
+		     1.0,0,cr[0],cr[1]);
 }
 
 double PS_Channel::TChannelWeight
@@ -413,17 +327,16 @@ double PS_Channel::TChannelWeight
 			       1.0,0,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur,dip));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
-    m_wvgs.push_back(cvgs);
-    m_wrns.push_back(rns[0]);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
+    size_t id(0);
+    for (;id<m_vgs.size();++id)
+      if (m_vgs[id]==cvgs) break;
+    if (id<m_vgs.size()) {
+      m_rns[id].push_back(rns[0]);
+      m_rns[id].push_back(rns[1]);
+    }
     wgt/=cvgs->GenerateWeight(rns);
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
+    msg_Debugging()<<"    generate weight "<<cvgs->Name()<<"\n";
 #endif
   }
   return 1.0/wgt;
@@ -445,59 +358,72 @@ void PS_Channel::SChannelBounds
 }
 
 void PS_Channel::SChannelMomenta
-(PS_Current *cur,const int type,const Vec4D &pa,Vec4D &p1,Vec4D &p2,
+(PS_Current *cur,PS_Vertex *v,const Vec4D &pa,Vec4D &p1,Vec4D &p2,
  const double &s1,const double &s2,const double *rns)
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetSVegas(type,cur));
+    m_vgs.push_back(GetSVegas(v));
+    m_rns.push_back(Double_Vector(0));
     cr=m_vgs.back()->GeneratePoint(rns);
-    m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
 #endif
   }
   double ctmin(-1.0), ctmax(1.0);
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);  
-  if (type==2) {
-    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],rns[1],m_aexp,ctmin,ctmax);
+  const Vertex_Vector &vs(cur->Out());
+  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
+  for (size_t i(1);i<vs.size();++i)
+    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
+      id=0;
+      break;
+    }
+  if (v->Type()==2) {
+    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
-  else if (type==4) {
-    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],m_aexp,ctmin,ctmax);
+  else if (v->Type()==4) {
+    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else {
-    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],ctmin,ctmax);
+    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],cr[1],ctmin,ctmax,m_p[id]);
   }
 }
 
 double PS_Channel::SChannelWeight
-(PS_Current *cur,const int type,Vec4D &p1,Vec4D &p2)
+(PS_Current *cur,PS_Vertex *v,Vec4D &p1,Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
   SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
+  const Vertex_Vector &vs(cur->Out());
+  size_t id(vs[0]->J()[(vs[0]->J()[0]==cur)?1:0]->CId());
+  for (size_t i(1);i<vs.size();++i)
+    if (id!=vs[i]->J()[(vs[i]->J()[0]==cur)?1:0]->CId()) {
+      id=0;
+      break;
+    }
   double wgt(0.0);
-  if (type==2) {
-    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
+  if (v->Type()==2) {
+    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
-  else if (type==4) {
-    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
+  else if (v->Type()==4) {
+    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax,m_p[id]);
   }
   else {
-    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax);
+    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax,m_p[id]);
   }
   if (m_vmode&3) {
-    Vegas *cvgs(GetSVegas(type,cur));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
-    m_wvgs.push_back(cvgs);
-    m_wrns.push_back(rns[0]);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
+    Vegas *cvgs(GetSVegas(v));
+    size_t id(0);
+    for (;id<m_vgs.size();++id)
+      if (m_vgs[id]==cvgs) break;
+    if (id<m_vgs.size()) {
+      m_rns[id].push_back(rns[0]);
+      m_rns[id].push_back(rns[1]);
+    }
     wgt/=cvgs->GenerateWeight(rns);
 #ifdef DEBUG__BG
-    msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
+    msg_Debugging()<<"    generate weight "<<cvgs->Name()<<"\n";
 #endif
   }
   return 1.0/wgt;
@@ -546,7 +472,7 @@ bool PS_Channel::GeneratePoint
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
     }
-    SChannelMomenta(jc,((PS_Vertex*)v)->Type(),
+    SChannelMomenta(jc,(PS_Vertex*)v,
 		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
     nr+=2;
     m_p[(1<<m_n)-1-aid]=m_p[aid];
@@ -724,6 +650,7 @@ void PS_Channel::GeneratePoint
 #endif
   p_cuts=cuts;
   p_gen->SetPrefMasses(p_cuts);
+  m_p[0]=Vec4D(0.,1.,1.,0.);
   m_p[(1<<m_n)-1-3]=m_p[3]=
     (m_p[(1<<m_n)-1-1]=m_p[1]=p[0])+
     (m_p[(1<<m_n)-1-2]=m_p[2]=p[1]);
@@ -732,8 +659,6 @@ void PS_Channel::GeneratePoint
   if (!GenerateChannel(v)) return;
   m_vgs.clear();
   m_rns.clear();
-  m_wvgs.clear();
-  m_wrns.clear();
   if (!GeneratePoint(v)) return;
   Vec4D sum(-p[0]-p[1]);
   for (size_t i(2);i<m_n;++i) sum+=p[i]=m_p[1<<i];
@@ -749,11 +674,12 @@ double PS_Channel::GenerateWeight
  PS_Current *const jc,PS_Vertex *const v,size_t &nr)
 {
   double wgt(1.0);
+  m_p[0]=Vec4D(0.,1.,1.,0.);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
     size_t pid(aid-(m_rid+bid));
     aid=(1<<m_n)-1-aid;
-    m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
+    if (IdCount(pid)>1) m_p[pid]=-m_p[aid]-m_p[m_rid]-m_p[bid];
     double se(SCut(bid)), sp(SCut(pid));
     double rtsmax((m_p[aid]+m_p[m_rid]).Mass());
     if (CIdCount(bid)>1) {
@@ -790,7 +716,7 @@ double PS_Channel::GenerateWeight
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
-    wgt*=SChannelWeight(jc,((PS_Vertex*)v)->Type(),m_p[lid],m_p[rid]);
+    wgt*=SChannelWeight(jc,(PS_Vertex*)v,m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    s "<<nr<<": {"<<ID(cid)
@@ -896,64 +822,14 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
   return true;
 }
 
-#ifdef USING__Threading
-void *PS_Channel::TGenerateWeight(void *arg)
-{
-  CDBG_PS_TID *tid((CDBG_PS_TID*)arg);
-  while (true) {
-    // wait for channel to signal
-    pthread_mutex_lock(&tid->m_s_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_cond_signal(&tid->m_s_cnd);
-    if (tid->m_s==0) return NULL;
-    // worker routine
-    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-      if (!tid->p_psc->GenerateWeight
-	  ((PS_Current*)(*tid->p_psc->p_cur)
-	   [tid->m_n][tid->m_i]))
-	THROW(fatal_error,"Generate weight failed");
-    // signal channel to continue
-    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
-  }
-  return NULL;
-}
-#endif
-
 bool PS_Channel::GenerateWeight()
 {
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   for (size_t n(2);n<m_n;++n) {
-#ifndef USING__Threading
     for (size_t i(0);i<(*p_cur)[n].size();++i) 
       if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
-#else
-    if (m_cts.empty()) {
-      for (size_t i(0);i<(*p_cur)[n].size();++i) 
-	if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
-    }
-    else {
-      // start calculator threads
-      size_t d((*p_cur)[n].size()/m_cts.size());
-      if ((*p_cur)[n].size()%m_cts.size()>0) ++d;
-      for (size_t j(0), i(0);j<m_cts.size()&&i<(*p_cur)[n].size();++j) {
-	CDBG_PS_TID *tid(m_cts[j]);
-	tid->m_n=n;
-	tid->m_b=i;
-	tid->m_e=Min(i+=d,(*p_cur)[n].size());
-	pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-      }
-      // suspend calculator threads
-      for (size_t j(0), i(0);j<m_cts.size()&&i<(*p_cur)[n].size();++j) {
-	i+=d;
-	CDBG_PS_TID *tid(m_cts[j]);
-	pthread_mutex_lock(&tid->m_t_mtx);
-	pthread_mutex_unlock(&tid->m_t_mtx);
-	pthread_cond_signal(&tid->m_t_cnd);
-      }
-    }
-#endif
   }
   weight=(*(*p_cur)[m_n-1].back()->J().front().
 	  Get<PS_Info>()->front())[0]/
@@ -988,6 +864,7 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
 		       <<" = "<<m_p[cur->CId()]<<"\n";
 #endif
     }
+  for (size_t i(0);i<m_n;++i) m_p[1<<i]=i<2?-p[i]:p[i];
   if (!GenerateWeight())
     THROW(fatal_error,"Internal error");
 }
@@ -1012,19 +889,11 @@ void PS_Channel::AddPoint(double value)
 	}
       }
   if (m_vmode&3) {
-#ifdef CHECK_POINT
-    for (int i(m_vgs.size()-1);i>=0;--i) {
+    for (int i(0);i<m_vgs.size();++i) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"  add point "<<m_vgs[i]->Name()<<"\n";
+      msg_Debugging()<<"  add point "<<m_vgs[i]->Name()<<" "<<m_rns[i]<<"\n";
 #endif
-      m_vgs[i]->AddPoint(value,&m_rns[i]);
-    }
-#endif
-    for (int i(m_wvgs.size()-1);i>=0;--i) {
-#ifdef DEBUG__BG
-      msg_Debugging()<<"  add point "<<m_wvgs[i]->Name()<<"\n";
-#endif
-      m_wvgs[i]->AddPoint(value,&m_wrns[i]);
+      m_vgs[i]->AddPoint(value,&m_rns[i][0]);
     }
   }
 #ifdef DEBUG__BG
@@ -1212,18 +1081,18 @@ void PS_Channel::WriteOut(std::string pid)
     writer.WriteToFile(m_nopt,"m_nopt");
   }
   if (m_vmode>0) {
-    std::vector<std::string> vids;
+    std::vector<std::vector<std::string> > vids;
     for (Vegas_Map::const_iterator vit(m_vmap.begin());
 	 vit!=m_vmap.end();++vit) {
       msg_Debugging()<<"write out vegas '"<<vit->first<<"'\n";
       vit->second->WriteOut(pid);
-      vids.push_back(vit->first);
+      vids.push_back(std::vector<std::string>(2,vit->first));
+      vids.back()[1]=ToString(vit->second->GetNDims());
     }
     Data_Writer writer;
     writer.SetOutputPath(pid);
     writer.SetOutputFile("_"+name+"_VI");
-    writer.SetVectorType(vtc::vertical);
-    writer.VectorToFile(vids);
+    writer.MatrixToFile(vids);
   }
   p_cur = (Current_Matrix*)
     (&p_xs->Process()->Get<Process_Base>()->PSGenerator()->Graphs());
@@ -1296,20 +1165,12 @@ void PS_Channel::ReadIn(std::string pid)
     Data_Reader reader;
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");
-    reader.SetVectorType(vtc::vertical);
-    std::vector<std::string> vids;
-    if (reader.VectorFromFile(vids)) {
+    std::vector<std::vector<std::string> > vids;
+    if (reader.MatrixFromFile(vids)) {
       for (size_t i(0);i<vids.size();++i) {
-	msg_Debugging()<<"read in vegas '"<<vids[i]<<"'\n";
+	msg_Debugging()<<"read in vegas '"<<vids[i][0]<<"'\n";
 	Vegas *vegas(NULL);
-	if (vids[i].find("C_")!=0) {
-	  vegas=GetVegas(vids[i]);
-	}
-	else {
-	  size_t pos(vids[i].rfind('_'));
-	  vegas=GetVegas(vids[i],ToType<int>
-			 (vids[i].substr(pos+1)));
-	}
+	vegas=GetVegas(vids[i][0],ToType<int>(vids[i][1]));
 	vegas->ReadIn(pid);
       }
     }

@@ -68,10 +68,11 @@ namespace COMIX {
     void ConstructPSVertices(PS_Generator *ps);
 
     Amplitude *GetAmplitude() const;
-    
-    double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
-    double Differential(const ATOOLS::Cluster_Amplitude &ampl,
-			int mode=0);
+
+    double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude& ampl,
+                                     ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
+                                     int mode=0);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

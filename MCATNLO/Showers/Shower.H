@@ -3,6 +3,7 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/STL_Tools.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "MCATNLO/Showers/Sudakov.H"
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Showers/Kinematics_Base.H"
@@ -10,7 +11,6 @@
 namespace ATOOLS {
 
   class Cluster_Leg;
-  class Variation_Weights;
 
 }
 
@@ -18,16 +18,6 @@ namespace MCATNLO {
 
   class CS_Gamma;
 
-  struct JetVeto_Args {
-    Singlet *p_sing;
-    double m_jcv;
-    int m_acc, m_nlo;
-    std::vector<int> m_skip;
-    JetVeto_Args(Singlet *const sing,
-		 const double &jcv,const size_t &n):
-      p_sing(sing), m_jcv(jcv), m_acc(0), m_skip(n,0) {}
-  };// end of struct JetVeto_Args
-    
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -44,11 +34,9 @@ namespace MCATNLO {
     ATOOLS::Cluster_Leg *p_old[2];
 
     CS_Gamma *p_gamma;
-    double    m_weight;
-
-    ATOOLS::Variation_Weights * p_variationweights;
-    //! whether to disable the reweighting of the emission
-    bool m_norewem;
+    ATOOLS::Weights_Map m_weightsmap;
+    bool m_reweight;
+    double m_maxreweightfactor;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -65,13 +53,12 @@ namespace MCATNLO {
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv);
-    double VetoWeight(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      JetVeto_Args &a);
- public:
+
+  public:
     Shower(PDF::ISR_Handler *,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
+    double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
@@ -94,14 +81,11 @@ namespace MCATNLO {
 
     inline CS_Gamma *Gamma() const { return p_gamma; }
 
-    inline double Weight() const { return m_weight; }
+    inline const ATOOLS::Weights_Map& WeightsMap() const { return m_weightsmap; }
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 
     inline PDF::ISR_Handler *ISR() { return p_isr; }
-
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
 
     const Singlet* GetSinglet() const { return p_actual; }
   };

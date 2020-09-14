@@ -74,7 +74,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_gens(),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(model),
   m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), p_variationweights(NULL),
+  p_shower(NULL), p_nlomc(NULL),
   m_sum(0.0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL),
   m_respath("Results"),
@@ -276,10 +276,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // try to generate an event for the selected process
   if (proc==NULL) THROW(fatal_error,"No process selected");
-  p_variationweights->Reset();
-  proc->SetVariationWeights(p_variationweights);
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
-  proc->SetVariationWeights(NULL);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -297,7 +294,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.m_weight);
+    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
       return false;
     }
@@ -315,13 +312,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
 
   // trial event is accepted, apply weight factor
-  m_evtinfo.m_weight*=wf;
+  m_evtinfo.m_weightsmap*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  (*p_variationweights)*=wf;
   return true;
 }
 
@@ -696,6 +692,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
+        || subkey == "Decay"
+        || subkey == "DecayOS"
+        || subkey == "No_Decay"
         || subkey == "CKKW")
       continue;
 
@@ -705,6 +704,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order"
         || subkey == "Max_Order"
         || subkey == "Min_Order"
+        || subkey == "Amplitude_Order"
+        || subkey == "Max_Amplitude_Order"
+        || subkey == "Min_Amplitude_Order"
         || subkey == "NLO_Order") {
       // translate back into a single string to use ExtractMPvalues below
       value = MakeOrderString(proc[rawsubkey]);
@@ -715,6 +717,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     if (subkey == "Order")                   ExtractMPvalues(value, range, nf, args.pbi.m_vcpl);
     else if (subkey == "Max_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmaxcpl);
     else if (subkey == "Min_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vmincpl);
+    else if (subkey == "Amplitude_Order")    ExtractMPvalues(value, range, nf, args.pbi.m_vacpl);
+    else if (subkey == "Max_Amplitude_Order") ExtractMPvalues(value, range, nf, args.pbi.m_vmaxacpl);
+    else if (subkey == "Min_Amplitude_Order") ExtractMPvalues(value, range, nf, args.pbi.m_vminacpl);
     else if (subkey == "Scales")             ExtractMPvalues(value, range, nf, args.pbi.m_vscale);
     else if (subkey == "Couplings")          ExtractMPvalues(value, range, nf, args.pbi.m_vcoupl);
     else if (subkey == "KFactor")            ExtractMPvalues(value, range, nf, args.pbi.m_vkfac);
@@ -786,6 +791,26 @@ void Matrix_Element_Handler::BuildDecays
   }
 }
 
+void Matrix_Element_Handler::LimitCouplings
+(MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
+ std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode)
+{
+  std::string ds;
+  if (!GetMPvalue(pbi,nfs,pnid,ds)) return;
+  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
+  std::vector<double> cpl(ToVector<double>(ds));
+  if (mode&1) {
+    if (cpl.size()>mincpl.size()) mincpl.resize(cpl.size(),0);
+    for (size_t i(0);i<mincpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]>mincpl[i]) mincpl[i]=cpl[i];
+  }
+  if (mode&2) {
+    if (cpl.size()>maxcpl.size()) maxcpl.resize(cpl.size(),99);
+    for (size_t i(0);i<maxcpl.size();++i)
+      if (cpl[i]>=0 && cpl[i]<maxcpl[i]) maxcpl[i]=cpl[i];
+  }
+}
+
 void Matrix_Element_Handler::BuildSingleProcessList(
   Single_Process_List_Args& args)
 {
@@ -845,25 +870,18 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	cpi.m_fi.m_nlotype=args.pi.m_fi.m_nlotype;
 	cpi.m_fi.m_nlocpl=args.pi.m_fi.m_nlocpl;
 	cpi.m_fi.SetNMax(args.pi.m_fi);
-	if (GetMPvalue(args.pbi.m_vmaxcpl,nfs,pnid,ds)) {
-	  cpi.m_maxcpl = ToVector<double>(ds);
-	}
-	if (GetMPvalue(args.pbi.m_vmincpl,nfs,pnid,ds)) {
-	  cpi.m_mincpl = ToVector<double>(ds);
-	}
-	if (GetMPvalue(args.pbi.m_vcpl,nfs,pnid,ds)) {
-	  cpi.m_maxcpl=ToVector<double>(ds);
-	  cpi.m_mincpl=cpi.m_maxcpl;
-	  for (size_t i(0);i<cpi.m_maxcpl.size();++i)
-	    if (cpi.m_maxcpl[i]<0) {
-	      cpi.m_mincpl[i]=0;
-	      cpi.m_maxcpl[i]=99;
-	    }
-	}
+	LimitCouplings(args.pbi.m_vmincpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,1);
+	LimitCouplings(args.pbi.m_vmaxcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,2);
+	LimitCouplings(args.pbi.m_vcpl,nfs,pnid,cpi.m_mincpl,cpi.m_maxcpl,3);
+	LimitCouplings(args.pbi.m_vminacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,1);
+	LimitCouplings(args.pbi.m_vmaxacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,2);
+	LimitCouplings(args.pbi.m_vacpl,nfs,pnid,cpi.m_minacpl,cpi.m_maxacpl,3);
 	// automatically increase QCD coupling for QCD multijet merging
 	if (cpi.m_ckkw&1) {
 	  cpi.m_mincpl[0]+=aoqcd;
 	  cpi.m_maxcpl[0]+=aoqcd;
+	  cpi.m_minacpl[0]+=aoqcd;
+	  cpi.m_maxacpl[0]+=aoqcd;
 	  ++aoqcd;
 	}
 
@@ -920,6 +938,7 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	}
 	if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
           cpi.m_fi.m_nlocpl = ToVector<double>(ds);
+	  if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
 	}
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
@@ -1201,7 +1220,7 @@ double Matrix_Element_Handler::GetWeight
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
       if (mode&1) ci->SetWOn(false);
-      double res(pit->second->Differential(ampl));
+      double res(pit->second->Differential(ampl,Variations_Mode::nominal_only));
       ci->SetWOn(true);
       return res;
     }

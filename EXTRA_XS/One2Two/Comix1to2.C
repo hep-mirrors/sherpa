@@ -100,6 +100,7 @@ Comix1to2::~Comix1to2()
   }
   delete m_fcur;
   delete m_antifcur;
+  if (p_ci) delete p_ci;
 }
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {

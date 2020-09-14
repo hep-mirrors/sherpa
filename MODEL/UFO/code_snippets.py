@@ -52,7 +52,10 @@ def get_out_mom_declaration(out_key, key_index_dict):
     for i in range(4):
         ret += "const double& p{0}{1} = p{0}[{2}];\n".format(out_key, i, vect_gauge_dict[i])
     return ret
-            
+
+def get_form_factor_declaration(ff_name, ff_implementation):
+    return "std::complex<double> {0} = {1};\n".format(ff_name, ff_implementation)
+
 def get_out_current_declaration(out_spin, out_key):
     if (out_spin == 1):
         return "CScalar<SType>* j{0} = NULL;\n".format(out_key)

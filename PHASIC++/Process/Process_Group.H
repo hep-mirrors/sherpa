@@ -43,7 +43,8 @@ namespace PHASIC {
 
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
-    double Differential(const ATOOLS::Vec4D_Vector &p);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector& p,
+                                     ATOOLS::Variations_Mode);
 
     bool InitScale();
 
@@ -65,7 +66,6 @@ namespace PHASIC {
     void SetGenerator(ME_Generator_Base *const gen);
     void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
-    void SetVariationWeights(ATOOLS::Variation_Weights *const);
     void SetSelector(const Selector_Key &key);
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

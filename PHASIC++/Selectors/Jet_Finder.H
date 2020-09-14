@@ -4,7 +4,6 @@
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
 namespace PDF { class Jet_Criterion; }
@@ -13,13 +12,6 @@ namespace PHASIC {
 
   class Jet_Finder: public Selector_Base,
 		    public ATOOLS::Tag_Replacer {
-
-    struct Reweight_Args {
-      double m_jcv;
-      int m_acc;
-      Reweight_Args(const double &jcv,const int acc):
-	m_jcv(jcv), m_acc(acc) {}
-    };// end of struct Reweight_Args
 
     struct ReweightSubevt_Args {
       std::vector<double> m_jcv;
@@ -35,14 +27,6 @@ namespace PHASIC {
     ATOOLS::Algebra_Interpreter *p_yccalc;
     ATOOLS::Cluster_Amplitude *p_ampl;
     ATOOLS::Flavour GetFlavour(std::string fl);
-
-    double Reweight(ATOOLS::Variation_Parameters *params,
-		    ATOOLS::Variation_Weights *weights,
-		    Reweight_Args &args);
-    ATOOLS::Subevent_Weights_Vector
-    ReweightSubevents(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      ReweightSubevt_Args &args);
 
   protected:
     PDF::Jet_Criterion *p_jc;

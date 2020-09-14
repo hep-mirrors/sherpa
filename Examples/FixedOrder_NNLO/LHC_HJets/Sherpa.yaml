@@ -26,7 +26,7 @@ MI_HANDLER: None
 
 PROCESSES:
 - 93 93 -> 25 93{1}:
-    NLO_QCD_Mode: Fixed_Order
+    NLO_Mode: Fixed_Order
     Loop_Generator: Internal
     ME_Generator: Amegic
     PSI_ItMin: 100000

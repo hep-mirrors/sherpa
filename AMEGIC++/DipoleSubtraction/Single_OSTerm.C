@@ -376,7 +376,10 @@ void Single_OSTerm::Minimize()
 }
 
 
-double Single_OSTerm::Partonic(const Vec4D_Vector &_moms,const int mode) { return 0.; }
+double Single_OSTerm::Partonic(const Vec4D_Vector &_moms, int mode)
+{
+  return 0.;
+}
 
 double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {

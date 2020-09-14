@@ -39,9 +39,6 @@ extensions = [
     'gen_bash_completion'
 ]
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = []
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
@@ -63,7 +60,7 @@ html_favicon = '_static/images/favicon.ico'
 
 html_theme_options['extra_nav_links'] = {
     'Project Home': 'https://sherpa-team.gitlab.io',
-    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/'
+    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
 }
 
 suppress_warnings = ['ref.option']

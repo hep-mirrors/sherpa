@@ -50,7 +50,7 @@ namespace SHERPA {
      * - Return_Value::New_Event if the event is to be discarded (and NTrials increased)
      * - Return_Value::Error if an error happened
      */
-    virtual ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs, double &weight) = 0;
+    virtual ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) = 0;
 
     /**
      * Optional function which runs at the end of the run.

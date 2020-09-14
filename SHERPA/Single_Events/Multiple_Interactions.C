@@ -35,7 +35,7 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
 
 Multiple_Interactions::~Multiple_Interactions() { }
 
-Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist,double &weight)
+Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
   m_result   = Return_Value::Nothing; 
   if (p_mihandler->Type()==MI_Handler::None || p_mihandler->Done()) return m_result;

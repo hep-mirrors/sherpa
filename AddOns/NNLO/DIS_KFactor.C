@@ -32,9 +32,9 @@ namespace PHASIC {
 
     DIS_KFactor(const KFactor_Setter_Arguments &args);
 
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int mode,const int order);
+    double KFactor(ATOOLS::QCD_Variation_Params* params,
+                   const int mode,
+                   const int order);
 
   };// end of class DIS_KFactor
 
@@ -45,9 +45,7 @@ namespace PHASIC {
       DIS_KFactor(args) {}
 
     double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class DISNNLO_KFactor
 
@@ -58,9 +56,7 @@ namespace PHASIC {
       DIS_KFactor(args) {}
 
     double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class DISNLO_KFactor
 
@@ -146,13 +142,16 @@ double DISNNLO_KFactor::KFactor(const int mode)
     s_z[2]=p_fsmc->ERan("zeta_1''");
     s_z[3]=p_fsmc->ERan("zeta_2''");
   }
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
-    vw.UpdateOrInitialiseWeights(&DISNNLO_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
     msg_Debugging()<<"Weight variations: "<<bkw<<"\n";
@@ -177,11 +176,9 @@ double DISNNLO_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double DISNNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode)
+double DISNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=s_as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(1);
   }
@@ -191,15 +188,15 @@ double DISNNLO_KFactor::KFactor
   }
   if (p_proc->NOut()>2) {
     Scale_Setter_Base *sc(p_proc->ScaleSetter());
-    double mur2(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0));
-    double muf2(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0));
+    double mur2(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0));
+    double muf2(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0));
     double weight(1.0);
     weight=NNLODiffWeight(p_proc,weight,mur2,muf2,m_k0sq,
-			  mode,m_fomode,1,weights?params->m_name:"");
-    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+			  mode,m_fomode,1,params?params->m_name:"");
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
-  return DIS_KFactor::KFactor(params,weights,mode,1);
+  return DIS_KFactor::KFactor(params, mode, 1);
 }
 
 double DISNLO_KFactor::KFactor(const int mode) 
@@ -212,13 +209,16 @@ double DISNLO_KFactor::KFactor(const int mode)
     s_z[2]=p_fsmc->ERan("zeta_1''");
     s_z[3]=p_fsmc->ERan("zeta_2''");
   }
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
-    p_proc->VariationWeights()->UpdateOrInitialiseWeights
-      (&DISNLO_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
     msg_Debugging()<<"Weight variations: "<<bkw<<"\n";
   }
@@ -238,11 +238,9 @@ double DISNLO_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double DISNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double DISNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=s_as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(1);
   }
@@ -251,21 +249,21 @@ double DISNLO_KFactor::KFactor
     s_pdf=params->p_pdf2;
   }
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>2) {
     double weight(1.0);
     weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,1,
-			 weights?params->m_name:"");
-    if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+			 params?params->m_name:"");
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
-  return DIS_KFactor::KFactor(params,weights,mode,0);
+  return DIS_KFactor::KFactor(params, mode, 0);
 }
 
-double DIS_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int mode,const int order) 
+double DIS_KFactor::KFactor(QCD_Variation_Params* params,
+                            const int mode,
+                            const int order)
 {
   DEBUG_FUNC(p_proc->Name());
   const Vec4D_Vector &moms(p_proc->Integrator()->Momenta());
@@ -288,9 +286,9 @@ double DIS_KFactor::KFactor
   // static double beta0 = 11./3.*CA-4./3.*TF*nf;
   
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
-  double mu2(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0));
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0)));
+  double mu2(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0));
   Cluster_Amplitude *ampl(NULL);
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl) ampl->SetNLO(4);
@@ -323,8 +321,8 @@ double DIS_KFactor::KFactor
   }
   double weight=nom/denom;
   if (IsBad(weight)) weight=1.0;
-  if (weights) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
-  return weights?1.0:weight;
+  if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+  return params?1.0:weight;
 }
 
 DECLARE_GETTER(DISNNLO_KFactor,"DISNNLO",

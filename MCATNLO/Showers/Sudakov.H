@@ -6,7 +6,7 @@
 #include "MCATNLO/Showers/Splitting_Function_Group.H"
 #include "MCATNLO/Tools/Parton.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace MCATNLO {
   typedef std::map<ATOOLS::Flavour,Splitting_Function_Base*> SF_E_Map;
@@ -35,8 +35,7 @@ namespace MCATNLO {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
-    ATOOLS::Variation_Weights *p_variationweights;
-    bool m_reweightalphas, m_reweightpdfs;
+    bool m_keeprewinfo;
     double m_reweightscalecutoff;
     std::pair<double, double> m_pdfmin;
     std::vector<size_t> m_disallowflav;
@@ -51,9 +50,6 @@ namespace MCATNLO {
     bool DefineIIBoundaries(double,double,int);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
-    double Reweight(ATOOLS::Variation_Parameters *,
-                    ATOOLS::Variation_Weights *,
-                    const bool &success);
     void SetTrialVariables(Parton* split, Parton* spect, Parton* kinspect);
     Parton* SelectKinSpect(Parton* split, Parton* spect);
     double GetViMax(Parton *split) const;
@@ -68,8 +64,7 @@ namespace MCATNLO {
     void SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
-    void SetReweightAlphaS(bool v) { m_reweightalphas = v; }
-    void SetReweightPDFs(bool v) { m_reweightpdfs = v; }
+    void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
@@ -103,9 +98,6 @@ namespace MCATNLO {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
-
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts)
-    { p_variationweights = varwgts; }
 
     inline void SetDisallowFlavour(const std::vector<size_t>& df)
     { m_disallowflav=df; }

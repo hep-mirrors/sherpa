@@ -79,13 +79,12 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction()
 
 }
 
-Return_Value::code Signal_Process_FS_QED_Correction::Treat
-(Blob_List * bloblist, double & weight)
+Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
 {
   if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat"
-	       <<"("<<bloblist<<","<<weight<<"): "<<endl
+	       <<"("<<bloblist<<"): "<<endl
                <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
                <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
@@ -152,7 +151,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   // but necessary for YFS)
   if (!PutOnMassShell(mfslep)) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("
-	       <<bloblist<<","<<weight<<"): \n"
+	       <<bloblist<<"): \n"
                <<"  Leptons could not be put on their mass shell.\n"
                <<"  Trying new event.\n"
                <<"  The event contained a ";
@@ -173,7 +172,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   Blob_Vector blobs;
   if (!p_sphotons->AddRadiation(mfslep,blobs)) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist
-               <<","<<weight<<"): "<<endl
+               <<"): "<<endl
                <<"  Higher order QED corrections failed."<<endl
                <<"  Retrying event."<<endl;
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)

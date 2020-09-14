@@ -529,7 +529,7 @@ void Single_Virtual_Correction::Minimize()
 
 
 double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
-                                           const int mode)
+                                           int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
@@ -631,7 +631,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
   if (m_stype&sbt::qcd) {
     cplfac=p_partner->KPTermsQCD()->Coupling();
     beta0qcd=p_partner->KernelQCD()->Beta0QCD();
-    bornorderqcd=MaxOrder(0)/2.-1.;
+    bornorderqcd=MaxOrder(0)-1.;
   }
   else {
     // if no QCD subtraction exist, no QCD counterterm
@@ -707,8 +707,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D_Vector &mom)
                                p_kernel_qcd,p_kpterms_qcd,mom,m_dsijqcd);
   if (m_stype&sbt::qed) Calc_I(sbt::qed,p_LO_process->PartonListQED(),
                                p_kernel_ew,p_kpterms_ew,mom,m_dsijew);
-  m_cmur[0]=-m_Norm*m_singlepole;
-  m_cmur[1]=-m_Norm*m_doublepole;
+  m_cmur[0]=m_singlepole;
+  m_cmur[1]=m_doublepole;
   msg_Debugging()<<"I_fin = "<<m_Norm*m_finite<<std::endl;
   msg_Debugging()<<"I_e1  = "<<m_Norm*m_singlepole<<std::endl;
   msg_Debugging()<<"I_e2  = "<<m_Norm*m_doublepole<<std::endl;
@@ -940,7 +940,7 @@ void Single_Virtual_Correction::CheckBorn()
     msg->SetPrecision(16);
     msg_Out()<<"Born:         "
              <<"Sherpa = "<<sb<<" vs. OLP = "<<olpb
-             <<", rel. diff.: "<<(sb-olpb)/(sb+olpb)
+             <<"\n              rel. diff.: "<<(sb-olpb)/(sb+olpb)
              <<", ratio: "<<sb/olpb<<std::endl;
     msg->SetPrecision(precision);
   }
@@ -993,13 +993,13 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   if (!m_checkthreshold || !ATOOLS::IsEqual(doublepole,p2,m_checkthreshold)) {
     msg_Out()<<"Double poles: "
              <<"Sherpa = "<<doublepole<<" vs. OLP = "<<p2
-             <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
+             <<"\n              rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkthreshold || !ATOOLS::IsEqual(singlepole,p1,m_checkthreshold)) {
     msg_Out()<<"Single poles: "
              <<"Sherpa = "<<singlepole<<" vs. OLP = "<<p1
-             <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
+	     <<"\n              rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
   msg->SetPrecision(precision);
@@ -1085,8 +1085,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
                        <<" ,  m_dsijew[0][0] = "
                        <<(m_dsijew.size()?m_dsijew[0][0]:0.)
                        <<"\n  B = "<<B<<" ,  V = "<<V
-                       <<" ,  I = "<<I
-                       <<"\n  \\delta = "<<(V+I)/B
+	               <<" ,  I = "<<I<<"\n  V+I = "<<V+I
+                       <<" ,  \\delta = "<<(V+I)/B
                        <<"\n  K(B) = "<<kfactorb
                        <<" ,  K(VI) = "<<kfactorvi
                        <<"\n  norm = "<<m_Norm<<std::endl;
@@ -1418,12 +1418,6 @@ bool Single_Virtual_Correction::AllowAsSpecInPFF(const size_t& i,
     return false;
   }
   return false;
-}
-
-void Single_Virtual_Correction::SetVariationWeights(Variation_Weights *const vw)
-{
-  Process_Base::SetVariationWeights(vw);
-  p_LO_process->SetVariationWeights(vw);
 }
 
 void Single_Virtual_Correction::SetCaller(PHASIC::Process_Base *const proc)

@@ -11,8 +11,10 @@ namespace PHASIC {
   protected:
 
     double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
+    ATOOLS::Weights_Map m_dadswgtmap;
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
+    ATOOLS::Cluster_Sequence_Info m_csi;
 
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
@@ -22,10 +24,10 @@ namespace PHASIC {
     Single_Process();
     virtual ~Single_Process();
 
-    size_t Size() const;
-    Process_Base *operator[](const size_t &i);
+    size_t Size() const override;
+    Process_Base *operator[](const size_t &i) override;
 
-    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) override;
 
     double KFactor(const int mode=0) const;
 
@@ -37,24 +39,33 @@ namespace PHASIC {
      const double &mur2fac=1.0,
      MODEL::Running_AlphaS * as=NULL) const;
 
+#if 0
     double Differential(const ATOOLS::Vec4D_Vector &p);
+#endif
 
     bool CalculateTotalXSec(const std::string &resultpath,
-                            const bool create);
-    void SetLookUp(const bool lookup);
+                            const bool create) override;
+    void SetLookUp(const bool lookup) override;
 
-    void SetScale(const Scale_Setter_Arguments &args);
-    void SetKFactor(const KFactor_Setter_Arguments &args);
+    void SetScale(const Scale_Setter_Arguments &args) override;
+    void SetKFactor(const KFactor_Setter_Arguments &args) override;
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
                                        const size_t &mode=0);
 
-    virtual double Partonic(const ATOOLS::Vec4D_Vector &p,
-                            const int mode) = 0;
-    inline virtual const double SPrimeMin() const { return -1.; }
-    inline virtual const double SPrimeMax() const { return -1.; }
-    inline virtual const bool   HasInternalScale() const { return false; }
-    inline virtual const double InternalScale()    const { return -1.; }
+    /*!
+     * Calculate the partonic cross section
+     *
+     * This updates m_last, m_lastb, m_lastxs and corresponding fields of
+     * m_mewgtinfo. These information can be retrieved using Last, LastB,
+     * LastXS and GetMEwgtinfo.
+    */
+    virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
+
+    inline virtual const double SPrimeMin() const override { return -1.; }
+    inline virtual const double SPrimeMax() const override { return -1.; }
+    inline virtual const bool HasInternalScale() const override { return false; }
+    inline virtual const double InternalScale() const override { return -1.; }
 
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
@@ -93,6 +104,21 @@ namespace PHASIC {
 
     // Reweighting utilities and functions
     struct BornLikeReweightingInfo {
+      BornLikeReweightingInfo() {}
+      BornLikeReweightingInfo(const ATOOLS::ME_Weight_Info& mewgtinfo,
+                              const ATOOLS::ClusterAmplitude_Vector& ampls,
+                              double fallbackresult):
+        m_wgt {mewgtinfo.m_B + mewgtinfo.m_VI + mewgtinfo.m_KP},
+        m_orderqcd {mewgtinfo.m_oqcd},
+        m_fl1 {mewgtinfo.m_fl1},
+        m_fl2 {mewgtinfo.m_fl2},
+        m_x1 {mewgtinfo.m_x1},
+        m_x2 {mewgtinfo.m_x2},
+        m_muF2 {mewgtinfo.m_muf2},
+        m_muR2 {mewgtinfo.m_mur2},
+        m_ampls {ampls},
+        m_fallbackresult {fallbackresult}
+      {}
       double m_wgt;
       size_t m_orderqcd;
       int m_fl1, m_fl2;
@@ -101,40 +127,40 @@ namespace PHASIC {
       ATOOLS::ClusterAmplitude_Vector m_ampls;
       double m_fallbackresult;
     };
-    double SetZero(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,double &dummy);
-    //! Reweighting events with subevents (i.e. RS)
-    ATOOLS::Subevent_Weights_Vector ReweightSubevents(
-        ATOOLS::Variation_Parameters *,
-        ATOOLS::Variation_Weights *,
-        const long &additionaldata);
-    //! Reweighting events without subevents (i.e. *except* RS)
-    double ReweightWithoutSubevents(ATOOLS::Variation_Parameters *,
-                                    ATOOLS::Variation_Weights *,
-                                    ATOOLS::ClusterAmplitude_Vector &);
     //! Return (wgt * \alpha_S * csi.pdfwgt)
-    double ReweightBornLike(ATOOLS::Variation_Parameters *,
-                            BornLikeReweightingInfo &);
-    //! Return (pdf1, pdf2)
-    std::pair<double, double> GetPairOfPDFValuesOrOne(
-        ATOOLS::Variation_Parameters *,
-        Single_Process::BornLikeReweightingInfo &) const;
+    double ReweightBornLike(ATOOLS::QCD_Variation_Params&,
+                            BornLikeReweightingInfo&);
     //! Generate cluster sequence info for variation parameters
-    ATOOLS::Cluster_Sequence_Info ClusterSequenceInfo(
-        ATOOLS::Variation_Parameters * varparams,
-        BornLikeReweightingInfo & info,
-        const double &mur2fac,
-        const ATOOLS::Cluster_Sequence_Info * const nominalcsi);
+    ATOOLS::Cluster_Sequence_Info
+    ClusterSequenceInfo(ATOOLS::QCD_Variation_Params& varparams,
+                        BornLikeReweightingInfo& info,
+                        const double& mur2fac,
+                        const ATOOLS::Cluster_Sequence_Info* const nominalcsi);
     //! Generate KP terms weight for variation parameters
-    double KPTerms(ATOOLS::Variation_Parameters *);
+    double KPTerms(const ATOOLS::QCD_Variation_Params *);
     virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
 			   PDF::PDF_Base *pdfb, double scalefac2=0.);
     //! Calculate MuR for variation parameters
-    double MuR2(ATOOLS::Variation_Parameters *,
-                Single_Process::BornLikeReweightingInfo &) const;
+    double MuR2(const ATOOLS::QCD_Variation_Params&,
+                Single_Process::BornLikeReweightingInfo&) const;
     //! Calculate AlphaS ratio (*asnew)(mur2new) / MODEL::as(mur2old)
     double AlphaSRatio(double mur2old, double mur2new,
                        MODEL::Running_AlphaS * asnew);
+
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode) override;
+
+    // the following are helper methods for the implementation of Differential
+    void ResetResultsForDifferential(ATOOLS::Variations_Mode);
+    void InitMEWeightInfo();
+    void UpdateIntegratorMomenta(const ATOOLS::Vec4D_Vector&);
+    void UpdateIntegratorMomenta(ATOOLS::ClusterAmplitude_Vector&);
+    void UpdateSubeventMomenta(ATOOLS::NLO_subevt&);
+    void CalculateFlux(const ATOOLS::Vec4D_Vector&);
+    void UpdateMEWeightInfo(Scale_Setter_Base*);
+    void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
+    void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
+
   };// end of class Single_Process
 
 }// end of namespace PHASIC

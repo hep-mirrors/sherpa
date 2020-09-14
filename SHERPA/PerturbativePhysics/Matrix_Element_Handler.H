@@ -8,7 +8,6 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Weight_Info.H"
@@ -51,7 +50,8 @@ namespace SHERPA {
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
         m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
-	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vaddname, m_vspecial;
+	m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
+	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
       ATOOLS::Scoped_Settings m_selectors;
@@ -80,7 +80,6 @@ namespace SHERPA {
     ATOOLS::Weight_Info m_evtinfo;
 
     Shower_Handler    *p_shower;
-    ATOOLS::Variation_Weights *p_variationweights;
     PDF::NLOMC_Base   *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
@@ -100,6 +99,9 @@ namespace SHERPA {
     void RegisterDefaults();
     void RegisterMainProcessDefaults(ATOOLS::Scoped_Settings&);
 
+    void LimitCouplings
+    (MPSV_Map &pbi,const size_t &nfs,const std::string &pnid,
+     std::vector<double> &mincpl,std::vector<double> &maxcpl,const int mode);
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
 
@@ -182,9 +184,6 @@ namespace SHERPA {
     }
     inline void SetShowerHandler(Shower_Handler *const sh) {
       p_shower=sh;
-    }
-    inline void SetVariationWeights(ATOOLS::Variation_Weights *const vw) {
-      p_variationweights=vw;
     }
     inline BEAM::Beam_Spectra_Handler *GetBeam() const  { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const   { return p_isr;  }

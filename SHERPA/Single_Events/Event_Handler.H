@@ -41,9 +41,9 @@ namespace SHERPA {
     bool GenerateHadronDecayEvent(eventtype::code & mode);
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
-    bool AnalyseEvent(double & weight);
-    bool WeightIsGood(const double& weight);
-    int  IterateEventPhases(eventtype::code & mode,double & weight);
+    bool AnalyseEvent();
+    bool WeightsAreGood(const ATOOLS::Weights_Map&);
+    int  IterateEventPhases(eventtype::code & mode);
 
   public:
 

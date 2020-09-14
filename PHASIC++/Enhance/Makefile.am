@@ -12,7 +12,3 @@ libPhasicEnhance_la_SOURCES   =	\
 
 localinc_HEADERS      =	\
 			Enhance_Observable_Base.H
-
-libPhasicEnhance_la_LIBADD    =	@CONDITIONAL_FASTJETLIBS@
-
-libPhasicEnhance_la_CPPFLAGS  =	$(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@

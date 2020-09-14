@@ -30,10 +30,10 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   m_thmass(0.0), m_chmass(0.0)
 {
   Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
-  m_itmin = s["CDXS_ITMIN"].SetDefault(5000).Get<size_t>();
-  m_itmax = s["CDXS_ITMAX"].SetDefault(50000).Get<size_t>();
-  m_ecmode = s["CDXS_ECMODE"].SetDefault(2).Get<size_t>();
-  m_chmass = s["CDXS_PS_CHTH"].SetDefault(0.01).Get<double>();
+  m_itmin = s["ITMIN"].SetDefault(1000).Get<size_t>();
+  m_itmax = s["ITMAX"].SetDefault(1000000).Get<size_t>();
+  m_ecmode = s["ECMODE"].SetDefault(2).Get<size_t>();
+  m_chmass = s["PS_CHTH"].SetDefault(0.01).Get<double>();
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSC();
@@ -292,7 +292,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		    mtype|=((PS_Vertex*)rin[k])->Type();
 		    vf=true;
 		  }
-		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) continue;
+		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) {
+		  vkey->Delete();
+		   continue;
+		}
 		v3.insert(*vkey);
 		PS_Vertex *vtx(new PS_Vertex(*dummy));
 		vtx->AddJ(vkey->m_j);
@@ -342,7 +345,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	      jj[0]=ait->second;
 	      jj[1]=bit->second;
 	      Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
-	      if (v3.find(*vkey)!=v3.end()) continue;
+	      if (v3.find(*vkey)!=v3.end()) {
+	        vkey->Delete();
+	        continue;
+	      }
 	      v3.insert(*vkey);
 	      PS_Vertex *vtx(new PS_Vertex(*dummy));
 	      vtx->AddJ(vkey->m_j);

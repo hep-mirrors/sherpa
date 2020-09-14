@@ -17,10 +17,10 @@ Hadronization::Hadronization(Colour_Reconnection_Handler * reconnections,
 
 Hadronization::~Hadronization() {}
 
-Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Hadronization::Treat(ATOOLS::Blob_List* bloblist)
 {
   if (bloblist->empty()) {
-    msg_Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
+    msg_Error()<<"Hadronization::Treat("<<bloblist<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;

@@ -37,7 +37,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 S1Channel::~S1Channel()
@@ -128,7 +128,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 T1Channel::~T1Channel()
@@ -224,7 +224,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 U1Channel::~U1Channel()
@@ -327,7 +327,8 @@ void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
 }
 
 void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
+  double d1, d2,
+  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],d1,d2,-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
 }
 
 void Decay2Channel::ISRInfo(int & _type,double & _mass,double & _width) {

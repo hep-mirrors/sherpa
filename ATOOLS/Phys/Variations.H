@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Enum_Flags.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #define ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS 0
 
@@ -21,15 +21,33 @@ namespace BEAM { class Beam_Spectra_Handler; }
 
 namespace ATOOLS {
 
-  class Variation_Parameters;
-  class Variation_Weights;
+  //! Constants to denote various variation sources
+  enum class Variations_Source {
+    all,     //!< use for total weight retrieval, i.e. the product of the below
+    main,    //!< use for everything that is not one of the below
+    sudakov  //!< use for weight factors from the reweighting of the Sudakov
+             //!< Veto Algorithm, i.e. the reweighting of parton shower
+             //!< emissions
+  };
+  std::ostream& operator<<(std::ostream&, const Variations_Source&);
+
+  enum class Variations_Type { qcd, qcut, custom };
+  enum class Variations_Mode { all, nominal_only };
+  std::ostream& operator<<(std::ostream&, const Variations_Type&);
+
+  class Variations;
+  class QCD_Variation_Params;
+  class Qcut_Variation_Params;
+
+  extern Variations* s_variations;
 
   struct ScaleFactorExpansions {
     enum code {
       None            = 0,
-      First           = 1,
-      Second          = 1<<1,
-      SevenPoint      = 1<<2  // vary independently, but exclude (up,down) and (down,up) variations
+      MuF             = 1,
+      MuR             = 1<<1,
+      SevenPoint      = 1<<2,  // vary independently, but exclude (up,down) and (down,up) variations
+      QCUT            = 1<<3
     };
   };
   DEFINE_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
@@ -40,13 +58,32 @@ namespace ATOOLS {
     static bool NeedsLHAPDF6Interface();
     static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
-    Variations();
+    Variations(Variations_Mode mode=Variations_Mode::all);
     ~Variations();
-    typedef std::vector<Variation_Parameters *> Parameters_Vector;
-    const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
 
-    //! Return the event phase type (even if the reweighting is not technically an event phase)
-    const SHERPA::eph::code EventPhaseType() const { return SHERPA::eph::Reweighting; }
+    void EnableVariations() { m_enabled = true; }
+    void DisableVariations() { m_enabled = false; }
+
+    std::vector<Variations_Type> ManagedVariationTypes() const
+    {
+      return {Variations_Type::qcd, Variations_Type::qcut};
+    }
+
+    typedef std::vector<QCD_Variation_Params *> Parameters_Vector;
+    const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
+    QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
+    Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
+    std::string
+        GetVariationNameAt(Variations::Parameters_Vector::size_type, Variations_Type type=Variations_Type::qcd) const;
+    size_t Size(Variations_Type t=Variations_Type::qcd) const;
+    bool HasVariations() const {
+      for (const auto t : ManagedVariationTypes())
+        if (Size(t) > 0)
+          return true;
+      return false;
+    }
+    template <typename Handler>
+    void ForEach(Handler h);
 
     // register and print warnings
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
@@ -58,22 +95,25 @@ namespace ATOOLS {
     void LoadLHAPDFInterfaceIfNecessary();
 #endif
     void InitialiseParametersVector();
-    static std::vector<std::string> VariationArguments();
-    static std::vector<std::string> VariationArgumentParameters(std::string);
-    void AddParameters(std::vector<std::string>);
+    void AddParameters(Scoped_Settings&);
     struct PDFs_And_AlphaS {
       PDFs_And_AlphaS();
+      PDFs_And_AlphaS(double alphasmz);
       PDFs_And_AlphaS(std::string pdfname, int pdfmember);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::Running_AlphaS *p_alphas;
+      bool m_shoulddeletepdf {false};
+      bool m_shoulddeletealphas {false};
     };
     void AddParameterExpandingScaleFactors(std::vector<std::string> scalestringparams,
                                            ScaleFactorExpansions::code,
                                            std::vector<Variations::PDFs_And_AlphaS>);
-    void AddParameters(double, double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfsandalphas);
+    void AddParameters(double, double, std::vector<PDFs_And_AlphaS>::const_iterator, bool deletepdfs, bool deletealphas);
     std::vector<PDFs_And_AlphaS> PDFsAndAlphaSVector(std::string pdfstringparam, bool expandpdf);
 
+    bool m_enabled;
     Parameters_Vector m_parameters_vector;
+    std::vector<Qcut_Variation_Params> m_qcut_parameters_vector;
 
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
@@ -86,8 +126,15 @@ namespace ATOOLS {
     bool m_reweightsplittingpdfsscales;
   };
 
-  std::ostream& operator<<(std::ostream&, const Variations&);
+  template <typename Handler> void Variations::ForEach(Handler h)
+  {
+    const auto size = Size();
+    for (int i {0}; i < size; ++i) {
+      h(i, Parameters(i));
+    }
+  }
 
+  std::ostream& operator<<(std::ostream&, const Variations&);
 
 #if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
   class ReweightingFactorHistogram {
@@ -110,27 +157,45 @@ namespace ATOOLS {
   };
 #endif
 
+  struct QCD_Variation_Params_Base {
+    virtual bool IsTrivial() const = 0;
+    std::string m_name;
+    //! Return part of a name based on a tag name and the associated value
+    template <typename U>
+    std::string GenerateNamePart(std::string tag, U value) const;
+  };
+
+  struct Qcut_Variation_Params : public QCD_Variation_Params_Base {
+    Qcut_Variation_Params(double scale_factor) : m_scale_factor{scale_factor} {
+      m_name = GenerateName();
+    }
+    bool IsTrivial() const override { return (m_scale_factor == 1.0); }
+    double m_scale_factor;
+    std::string GenerateName() const;
+  };
 
   /*!
    * Hold a set of input parameters and factors for a single input parameter variation
    *
    * Used as an argument to a reweighting function.
    */
-  struct Variation_Parameters {
-    Variation_Parameters(double muR2fac, double muF2fac,
+  struct QCD_Variation_Params : public QCD_Variation_Params_Base {
+    QCD_Variation_Params(double muR2fac, double muF2fac,
                          double showermuR2fac, double showermuF2fac,
-			 double Qcutfac,
                          PDF::PDF_Base *pdf1,
                          PDF::PDF_Base *pdf2,
                          MODEL::Running_AlphaS *alphas,
-                         bool deletepdfsandalphas):
+                         bool deletepdfs,
+                         bool deletealphas):
       m_muR2fac(muR2fac), m_muF2fac(muF2fac),
-      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac), m_Qcutfac(Qcutfac),
+      m_showermuR2fac(showermuR2fac), m_showermuF2fac(showermuF2fac),
       p_pdf1(pdf1), p_pdf2(pdf2), p_alphas(alphas),
-      m_deletepdfsandalphas(deletepdfsandalphas),
-      m_name(GenerateName())
-    {};
-    ~Variation_Parameters();
+      m_deletepdfs(deletepdfs),
+      m_deletealphas(deletealphas)
+    {
+      m_name = GenerateName();
+    };
+    ~QCD_Variation_Params();
 
     void IncrementOrInitialiseWarningCounter(const std::string name) { m_warnings[name]++; }
 
@@ -138,22 +203,21 @@ namespace ATOOLS {
     void FillReweightingFactorsHisto(std::string name, double value) { m_rewfachisto.Fill(name, value); }
 #endif
 
+    bool IsTrivial() const override;
+
     const double m_muR2fac, m_muF2fac;
-    const double m_showermuR2fac, m_showermuF2fac, m_Qcutfac;
+    const double m_showermuR2fac, m_showermuF2fac;
     //! Pointers to the beam PDFs, which can be NULL for (semi-)leptonic events
     PDF::PDF_Base * const p_pdf1;
     PDF::PDF_Base * const p_pdf2;
     MODEL::Running_AlphaS * const p_alphas;
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
-    const bool m_deletepdfsandalphas;
-    const std::string m_name;
+    const bool m_deletepdfs;
+    const bool m_deletealphas;
 
   private:
     //! Return a name based on the scale and PDF variations
     std::string GenerateName() const;
-    //! Return part of a name based on a tag name and the associated value
-    template <typename U>
-    std::string GenerateNamePart(std::string tag, U value) const;
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
     friend class Variations;
@@ -161,176 +225,6 @@ namespace ATOOLS {
     ReweightingFactorHistogram m_rewfachisto;
 #endif
   };
-
-
-  //! Convenience wrapper for storing and passing subevent weights corresponding to one variation
-  class Subevent_Weights_Vector : public std::vector<double> {
-  public:
-    // inherit useful vector constructors
-    //! Construct an empty weight vector
-    Subevent_Weights_Vector();
-    //! Construct a weight vector of size times 1.0 (i.e. we do not use the standard default 0.0!)
-    Subevent_Weights_Vector(size_type count, const double& value = 1.0);
-    //! Multiply all weights with a common factor
-    Subevent_Weights_Vector & operator*=(const double&);
-    /*!
-     * Multiply all subevent weights one by one with those of another vec
-     *
-     * The other subevent weights must either be of equal size or they have to
-     * contain only one entry. In the latter case, this single entry is used as
-     * a common factor for all subevent weights.
-     */
-    Subevent_Weights_Vector & operator*=(const Subevent_Weights_Vector&);
-    Subevent_Weights_Vector & operator+=(const Subevent_Weights_Vector &);
-  };
-
-  std::ostream& operator<<(std::ostream&, const Subevent_Weights_Vector&);
-
-
-  //! Types to denote different variation sources
-  enum class Variations_Type {
-    all,     //!< use for weight retrieval, to get the product of the below
-    main,    //!< use for everything that is not one of the below
-    sudakov  //!< use for weight factors from the reweighting of the Sudakov
-             //!< Veto Algorithm, i.e. the reweighting of parton shower
-             //!< emissions
-  };
-
-  std::ostream& operator<<(std::ostream&, const Variations_Type&);
-
-
-  //! Wrap the actual event weight variations and apply reweighting functions to it
-  class Variation_Weights {
-  public:
-
-    Variation_Weights(Variations * v):
-      p_variations(v),
-      m_reweighting(false)
-    {}
-
-    void Reset();
-
-    /*!
-     * Multiply each weight with the result of the passed reweighting function
-     *
-     * The reweighting function is evaluated once for each parameter variation.
-     */
-    template <class Reweighter, class Data>
-    void UpdateOrInitialiseWeights(
-        double (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-        Reweighter & reweighter,
-        Data & data,
-        Variations_Type t=Variations_Type::main)
-    {
-      if (!AreWeightsInitialised(t)) {
-        InitialiseWeights(Subevent_Weights_Vector(1, 1.0), t);
-      }
-      const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
-      m_reweighting = true;
-      for (m_currentparametersindex = 0;
-           m_currentparametersindex < paramsvec->size();
-           ++m_currentparametersindex ) {
-        double weight((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-        m_weights[t][m_currentparametersindex] *= weight;
-      }
-      m_reweighting = false;
-    }
-
-    /*!
-     * Initialise weights with the result of the passed reweighting function
-     *
-     * The reweighting function is evaluated once for each parameter variation.
-     * This function is supposed to return a vector weights to account for
-     * possible subevent weights.
-     */
-    template <class Reweighter, class Data>
-    void InitialiseWeights(
-        Subevent_Weights_Vector (Reweighter::*reweightfct)(Variation_Parameters *, Variation_Weights *, Data &),
-        Reweighter & reweighter,
-        Data & data,
-        Variations_Type t=Variations_Type::main)
-    {
-      int initialized(AreWeightsInitialised(t));
-      const Variations::Parameters_Vector * const paramsvec(p_variations->GetParametersVector());
-      const size_t size(paramsvec->size());
-      m_weights[t].reserve(size);
-      m_reweighting = true;
-      for (m_currentparametersindex = 0;
-           m_currentparametersindex < size;
-           ++m_currentparametersindex ) {
-	Subevent_Weights_Vector weightvector((reweighter.*reweightfct)((*paramsvec)[m_currentparametersindex], this, data));
-	if (!initialized) m_weights[t].push_back(weightvector);
-	else m_weights[t][m_currentparametersindex] += weightvector;
-      }
-      m_reweighting = false;
-    }
-
-    //! Multiply *all* weights with a common factor
-    Variation_Weights & operator*=(const double &);
-
-    //! Multiply weights with weights from another set of variation weights
-    Variation_Weights & operator*=(const Variation_Weights &);
-
-    //! Add weights from another set of variation weights
-    Variation_Weights & operator+=(const Variation_Weights &);
-
-    //! Sum up the subevent-specific weights
-    void CombineSubeventWeights();
-
-    //! Get variation name at a given index
-    std::string GetVariationNameAt(Variations::Parameters_Vector::size_type) const;
-
-    /*!
-     * Get a variation weight at a given index and a given subevent index
-     *
-     * If the subevent index is -1 (default), the sum of all subevent weights
-     * will be returned. For events without subevents, this is equivalent to
-     * just returning the first (and only) weight.
-     */
-    double GetVariationWeightAt(Variations::Parameters_Vector::size_type,
-                                Variations_Type t=Variations_Type::all,
-                                int subevtidx=-1) const;
-
-    // Obtain informations about the parameter variations
-    size_t GetNumberOfVariations() const;
-    size_t GetNumberOfSubevents() const;
-    Variations * GetVariations() const { return p_variations; }
-    Variations::Parameters_Vector::size_type CurrentParametersIndex() const;
-
-    size_t NumberOfParameters() const
-    { return p_variations->GetParametersVector()->size(); }
-
-    void IncrementOrInitialiseWarningCounter(const std::string name)
-    { p_variations->IncrementOrInitialiseWarningCounter(name); }
-
-private:
-    Variations * p_variations;
-    //! a vector of (sub)event weights for each set of parameters
-    std::map<Variations_Type, std::vector<Subevent_Weights_Vector>>
-      m_weights;
-    /*!
-     * index of the parameters for the current reweighting
-     *
-     * This is only valid from within a callback to a reweighting function.
-     * This can for example be helpful when some additional variation weights
-     * are used during the reweighting (e.g. for subprocesses).
-     */
-    Variations::Parameters_Vector::size_type m_currentparametersindex;
-    //! whether this instance is currently in a reweighting loop
-    bool m_reweighting;
-
-    // the non-member function operator<< will have access to private members
-    friend std::ostream & operator<<(std::ostream &, const Variation_Weights &);
-
-    void InitialiseWeights(const Subevent_Weights_Vector & subweights);
-    void InitialiseWeights(const Subevent_Weights_Vector & subweights,
-                           const Variations_Type t=Variations_Type::main);
-
-    bool AreWeightsInitialised(
-        const Variations_Type t=Variations_Type::main) const;
-  };
-
-  std::ostream & operator<<(std::ostream &, const Variation_Weights &);
 
 };
 

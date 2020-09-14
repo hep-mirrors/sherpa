@@ -58,7 +58,7 @@ Jet_Evolution::~Jet_Evolution()
 }
 
 
-Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
 {
   if (bloblist->empty()) {
     msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
@@ -107,7 +107,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	switch (AttachShowers(meblob,bloblist,piIter->second)) {
 	case Return_Value::Success:
 	  found = hit = true;
-	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
 	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
@@ -153,7 +152,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     return Return_Value::Nothing;
   }
   int shower(0);
-  Return_Value::code stat(interface->DefineInitialConditions(blob));
+  Return_Value::code stat(interface->DefineInitialConditions(blob,bloblist));
   if (stat==Return_Value::New_Event ||
       stat==Return_Value::Retry_Event) {
     interface->CleanUp();
@@ -254,7 +253,7 @@ AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
 {
   if (blob->NInP()==1 && 
       blob->Type()!=btp::Hadron_Decay) blob->InParticle(0)->SetInfo('h');
-  interface->FillBlobs(bloblist);
+  interface->FillBlobs();
   blob->UnsetStatus(blob_status::needs_showers);
   Blob * showerblob = (!interface->Shower()->On()?
 		       CreateMockShowerBlobs(blob,bloblist):

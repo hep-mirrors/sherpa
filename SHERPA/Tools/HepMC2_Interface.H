@@ -28,7 +28,6 @@ namespace ATOOLS {
   class ME_Weight_Info;
   class NLO_subevtlist;
   class PDF_Info;
-  class Variation_Weights;
 }
 
 namespace SHERPA {
@@ -37,7 +36,7 @@ namespace SHERPA {
   private:
     ATOOLS::Blob * p_sp;
     bool m_usenamedweights, m_extendedweights;
-    std::vector<ATOOLS::Variations_Type> m_variationtypes;
+    std::vector<ATOOLS::Variations_Source> m_variationsources;
     std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22;
@@ -48,7 +47,7 @@ namespace SHERPA {
     ATOOLS::ME_Weight_Info * p_wgtinfo;
     ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
-    ATOOLS::Variation_Weights * p_variationweights;
+    ATOOLS::Weights_Map m_wgtmap;
 
     void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
@@ -127,6 +126,9 @@ namespace SHERPA {
     inline bool HepMCTreeLike()                { return m_hepmctree; }
     inline void SetHepMCIncludeMEOnlyVariations(bool x)
     { m_includemeonlyweights=x; }
+
+    // For RivetInterface to check if a weight container key could be a variation weight name
+    bool StartsLikeVariationName(const std::string&);
 
     void DeleteGenSubEventList();
 

@@ -11,23 +11,32 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-#include "SHERPA/Single_Events/Event_Handler.H"
-#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "ATOOLS/Phys/KF_Table.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
 
-#ifdef USING__HEPMC2
+#ifdef USING__RIVET3
+#include "Rivet/Config/RivetConfig.hh"
+#include "Rivet/AnalysisHandler.hh"
+#include "Rivet/Tools/Logging.hh"
+#ifdef RIVET_ENABLE_HEPMC_3
+#include "SHERPA/Tools/HepMC3_Interface.H"
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenCrossSection.h"
+#define SHERPA__HepMC_Interface SHERPA::HepMC3_Interface
+#define HEPMCNS HepMC3
+#define HEPMC_HAS_CROSS_SECTION
+#else
+#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenCrossSection.h"
 #include "HepMC/WeightContainer.h"
-#endif
 
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
 #endif
-
-#ifdef USING__RIVET3
-#include "Rivet/AnalysisHandler.hh"
-#include "Rivet/Tools/Logging.hh"
+#define SHERPA__HepMC_Interface SHERPA::HepMC2_Interface
+#define HEPMCNS HepMC
+#endif
 
 
 namespace SHERPARIVET {
@@ -47,7 +56,7 @@ namespace SHERPARIVET {
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
     Rivet_Map         m_rivet;
-    SHERPA::HepMC2_Interface       m_hepmc2;
+    SHERPA__HepMC_Interface       m_hepmc2;
     std::vector<ATOOLS::btp::code> m_ignoreblobs;
     std::map<std::string,size_t>   m_weightidxmap;
 
@@ -139,7 +148,7 @@ void Rivet_Interface::RegisterDefaults() const
   s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
   s["XS_OUTPUT_PRECISION"].SetDefault(6);
   s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "-a" });
+  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
@@ -265,9 +274,7 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
     Log::setLevel("Rivet", s["-l"].Get<int>());
-    m_analyses = s["-a"].GetVector<std::string>();
-    if (find(m_analyses.begin(),m_analyses.end(),"MC_XS")==m_analyses.end())
-      m_analyses.push_back(std::string("MC_XS"));
+    m_analyses = s["ANALYSES"].GetVector<std::string>();
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
@@ -297,14 +304,24 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
   }
 
+#ifndef  RIVET_ENABLE_HEPMC_3
   HepMC::GenEvent event;
+#else
+  std::shared_ptr<HepMC3::GenRunInfo> run_info = std::make_shared<HepMC3::GenRunInfo>();
+  HepMC3::GenEvent event(run_info);
+#endif
   if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event);
   else                  m_hepmc2.Sherpa2HepMC(bl, event);
-  std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
+  std::vector<HEPMCNS::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   // leave this, although will be overwritten later
+#ifndef  RIVET_ENABLE_HEPMC_3
   HepMC::GenCrossSection xs;
   xs.set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#else
+  std::shared_ptr<HepMC3::GenCrossSection> xs=std::make_shared<HepMC3::GenCrossSection>();
+  xs->set_cross_section(p_eventhandler->TotalXS(), p_eventhandler->TotalErr());
+#endif
   event.set_cross_section(xs);
   for (size_t i(0);i<subevents.size();++i) {
     subevents[i]->set_cross_section(xs);
@@ -375,7 +392,7 @@ void Rivet_Interface::ShowSyntax(const int i)
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
     <<"   RIVET: {\n\n"
-    <<"     -a: [<ana_1>, <ana_2>]  # analyses to run\n"
+    <<"     ANALYSES: [<ana_1>, <ana_2>]  # analyses to run\n"
     <<"     # optional parameters:\n"
     <<"     JETCONTS: <0|1>      # perform additional separate analyses for \n"
     <<"                          # each matrix element multiplicity\n"
@@ -490,6 +507,13 @@ PrintInfo(std::ostream &str,const size_t width) const
 
 
 #ifdef USING__RIVET2
+#include "SHERPA/Tools/HepMC2_Interface.H"
+#include "HepMC/GenEvent.h"
+#include "HepMC/GenCrossSection.h"
+#include "HepMC/WeightContainer.h"
+#ifdef USING__HEPMC2__DEFS
+#include "HepMC/HepMCDefs.h"
+#endif
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 
@@ -702,7 +726,7 @@ void Rivet_Interface::RegisterDefaults() const
   s["HEPMC_OUTPUT_PRECISION"].SetDefault(15);
   s["XS_OUTPUT_PRECISION"].SetDefault(6);
   s["-l"].SetDefault(20);
-  s.DeclareVectorSettingsWithEmptyDefault({ "-a" });
+  s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
 }
 
 void Rivet_Interface::ExtractVariations
@@ -730,17 +754,16 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   msg_Debugging()<<keys<<std::endl;
   for (size_t i(0);i<keys.size();++i) {
     std::string cur(keys[i]);
-    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
-                             cur.find("MUF")!=std::string::npos &&
-                             cur.find("PDF")!=std::string::npos) {
-      wgtmap[cur]=wc[cur];
+    // use a heuristic to detect variation weight names
+    if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
+      wgtmap[cur] = wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
     else if (cur=="Reweight_Type" && wc[cur]&64) xstype=1;
   }
 #else
-  // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
+  // lookup all evt-wgts with a variation weight name
   // at the moment the only way to do that is to filter the printout
   // accuracy limited to print out accu of 6 digits, must suffice
   MyStrStream str;
@@ -757,9 +780,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     // name is between leading bracket and ","
     wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
     cur=cur.substr(1,cur.find(",")-1);
-    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
-                             cur.find("MUF")!=std::string::npos &&
-                             cur.find("PDF")!=std::string::npos) {
+    if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur]=wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
@@ -938,7 +959,7 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].Get<int>();
     Log::setLevel("Rivet", s["-l"].Get<int>());
-    m_analyses = s["-a"].GetVector<std::string>();
+    m_analyses = s["ANALYSES"].GetVector<std::string>();
     for (size_t i(0);i<m_analyses.size();++i) {
       if (m_analyses[i]==std::string("MC_XS")) break;
       if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
@@ -1110,7 +1131,7 @@ void Rivet_Interface::ShowSyntax(const int i)
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
     <<"   RIVET: {\n\n"
-    <<"     -a: [<ana_1>, <ana_2>]  # analyses to run\n"
+    <<"     ANALYSES: [<ana_1>, <ana_2>]  # analyses to run\n"
     <<"     # optional parameters:\n"
     <<"     JETCONTS: <0|1>      # perform additional separate analyses for \n"
     <<"                          # each matrix element multiplicity\n"

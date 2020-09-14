@@ -27,7 +27,7 @@ namespace PHASIC {
     void Rebin(double rc, double * xi);
     void AddPoint(double);
   public:
-    Vegas(int dim,int ndx,const std::string &,int=1);
+    Vegas(int dim,int ndx,const std::string &);
     ~Vegas();
     double* GeneratePoint(const double * _ran);
     double GenerateWeight(const double *) const;
@@ -70,6 +70,7 @@ namespace PHASIC {
     inline std::string Name() const { return m_name; }
 
     inline int GetNBins() const { return m_nd; }
+    inline int GetNDims() const { return m_dim; }
 
     inline int    *GetPointBins() const     { return p_cb; }
     inline double *GetPointBinsMean() const { return p_cx; }

@@ -43,7 +43,7 @@ namespace SHERPA {
 
     ~Jet_Evolution();
 
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
 
@@ -103,7 +103,7 @@ namespace SHERPA {
     Deletes the Perturbative_Interface.
   */
   /*!
-    \fn bool Jet_Evolution::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Jet_Evolution::Treat(ATOOLS::Blob_List*)
     In this method all blobs with status equal to one and of type "Signal Process :" are dealt with by
     the follwonig steps:
     \todo Andreas, we have to fill this.

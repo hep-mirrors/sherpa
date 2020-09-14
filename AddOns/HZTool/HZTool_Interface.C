@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
@@ -257,7 +258,7 @@ bool HZTool_Interface::Init()
       m_check = s["EVT_CHECK"].Get<int>();
       msg_Info()<<"Using "<<m_xsnevt
 		<<" events to estimate cross section."<<std::endl;
-      auto heliv = s["HZ_FLAGS"].GetVector<std::string>();
+      auto helpiv = s["HZ_FLAGS"].GetVector<int>();
       if (helpiv.size()==3)
 	for (size_t i(1);i<=3;++i) m_flags[i]=helpiv[i-1];
       else for (size_t i(1);i<=3;++i) m_flags[i]=i;
@@ -292,7 +293,7 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
   s_hztool=this;
   if (m_nevt<=m_xsnevt) {
     Blob *sp(bl->FindFirst(btp::Signal_Process));
-    double cxs((*sp)["Weight"]->Get<double>());
+    double cxs((*sp)["WeightsMap"]->Get<Weights_Map>().Nominal());
     m_nsum+=(*sp)["Trials"]->Get<double>();
     m_xssum+=cxs;
     int nch=0;
@@ -325,9 +326,9 @@ bool HZTool_Interface::Run(ATOOLS::Blob_List *const bl)
   if (!bl->FourMomentumConservation())
     msg_Error()<<METHOD<<"(): Four momentum not conserved."<<std::endl;
   Blob *sp(bl->FindFirst(btp::Signal_Process));
-  Blob_Data_Base *xs((*sp)["Weight"]);
+  Blob_Data_Base *xs((*sp)["WeightsMap"]);
   if (xs==NULL) THROW(fatal_error,"No weight information");
-  double wgt(xs->Get<double>());
+  double wgt(xs->Get<Weights_Map>().Nominal());
   Convert(bl);
   hzevnt(wgt);
   Check(bl);

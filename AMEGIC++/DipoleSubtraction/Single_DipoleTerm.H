@@ -58,7 +58,6 @@ namespace AMEGIC {
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
     size_t SetMCMode(const size_t mcmode);
     size_t SetClusterMode(const size_t cmode);
-    void SetVariationWeights(ATOOLS::Variation_Weights *const vw);
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     void SetCaller(PHASIC::Process_Base *const proc);
 
@@ -142,7 +141,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
     int            Type() { return 15; }
