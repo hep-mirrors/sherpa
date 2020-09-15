@@ -463,7 +463,6 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
     else  THROW(fatal_error, "Invalid assignment in Born-kinematics");
     p_LO_labmom[sp_kin[0]] = p_LO_mom[sp_kin[0]] = p_dipole->GetpIDspec()[0];
     p_LO_labmom[sp_kin[1]] = p_LO_mom[sp_kin[1]] = p_dipole->GetpIDspec()[1];
-    //p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getpk(); // already set by GetpIDspec()[1] !!!
     break;
     }
   case CS:
@@ -472,10 +471,6 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,
     break;
   }
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
-//for(int i=0;i<=5;i++){
-//DEBUG_VAR(i);
-//DEBUG_VAR(p_LO_mom[i]);
-//}
 
   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);

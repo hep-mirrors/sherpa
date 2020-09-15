@@ -68,12 +68,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
         Kin_Args ff;
         double kt2=0.;
         switch(p_shower->KinFF()->m_dipole_case){
-          case EXTAMP::CS:
-            ff  = ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0));
-            if (ff.m_stat!=1) return cs;
-            kt2 = p_shower->KinFF()->GetKT2(Q2,ff.m_y,ff.m_z,mi2,mj2,mk2,mo,j->Flav());
-            cs  = CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin);
-            break;
           case EXTAMP::IDa:
           {
             // i=emitted, j=emitter, k=spectator
@@ -105,6 +99,13 @@ CS_Parameters CS_Cluster_Definitions::KT2
             cs=CS_Parameters(kt2,zain,viab,ff.m_phi,1.0,Q2,0,kin);
             break;
           }
+          case EXTAMP::CS:
+          default:
+            ff  = ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0));
+            if (ff.m_stat!=1) return cs;
+            kt2 = p_shower->KinFF()->GetKT2(Q2,ff.m_y,ff.m_z,mi2,mj2,mk2,mo,j->Flav());
+            cs  = CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin);
+            break;
         }
       }
       else {
@@ -240,7 +241,39 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
  const int kin,const int kmode)
 {
   switch(p_shower->KinFF()->m_dipole_case){
-    case EXTAMP::CS:{
+    case EXTAMP::IDa:{
+      Vec4D_Vector after(ampl.Legs().size()-1);
+      const int a=j; // emitting (anti)quark
+                i=i; // gluon
+            int w;   // kinematic spectator W
+      if(ampl.Leg(j)->Flav().IsbQuark()) { w=2; }
+      else if(ampl.Leg(j)->Flav().IsbbarQuark()) { w=3; }
+      else THROW(fatal_error, "Invalid clustering");
+
+      double mw2=p_ms->Mass2(ampl.Leg(w)->Flav());
+      Vec4D pa(ampl.Leg(a)->Mom());
+      Vec4D pi(ampl.Leg(i)->Mom());
+      Vec4D pw(ampl.Leg(w)->Mom());
+      DEBUG_VAR(pa); // pa
+      DEBUG_VAR(pi); // pi
+      DEBUG_VAR(pw); // pw
+
+      Kin_Args lt=ClusterFFDipole(mw2,0.,mw2,0.,pw,pi,pa,2|(kin?4:0));
+      DEBUG_VAR(lt.m_pi);
+      DEBUG_VAR(lt.m_pk);
+      if (lt.m_stat<0) return Vec4D_Vector();
+      for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
+        if (m==(size_t)a)      continue;
+        if (m==(size_t)w)      after[l]=lt.m_pi;
+        else if (m==(size_t)i) after[l]=lt.m_pk;
+        else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
+        DEBUG_VAR(after[l]);
+        ++l;
+      }
+      return after;
+    }
+    case EXTAMP::CS:
+    default: {
       /* i=emitted, j=emitter, k=spectator */
       p_ms=ms;
       if (i>j) std::swap<int>(i,j);
@@ -285,37 +318,6 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
         if (m==(size_t)i) after[l]=i>1?lt.m_pi:-lt.m_pi;
         else if (m==(size_t)k && sk) after[l]=k>1?lt.m_pk:-lt.m_pk;
         else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
-        ++l;
-      }
-      return after;
-    }
-    case EXTAMP::IDa:{
-      Vec4D_Vector after(ampl.Legs().size()-1);
-      const int a=j; // emitting (anti)quark
-                i=i; // gluon
-            int w;   // kinematic spectator W
-      if(ampl.Leg(j)->Flav().IsbQuark()) { w=2; }
-      else if(ampl.Leg(j)->Flav().IsbbarQuark()) { w=3; }
-      else THROW(fatal_error, "Invalid clustering");
-
-      double mw2=p_ms->Mass2(ampl.Leg(w)->Flav());
-      Vec4D pa(ampl.Leg(a)->Mom());
-      Vec4D pi(ampl.Leg(i)->Mom());
-      Vec4D pw(ampl.Leg(w)->Mom());
-      DEBUG_VAR(pa); // pa
-      DEBUG_VAR(pi); // pi
-      DEBUG_VAR(pw); // pw
-
-      Kin_Args lt=ClusterFFDipole(mw2,0.,mw2,0.,pw,pi,pa,2|(kin?4:0));
-      DEBUG_VAR(lt.m_pi);
-      DEBUG_VAR(lt.m_pk);
-      if (lt.m_stat<0) return Vec4D_Vector();
-      for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
-        if (m==(size_t)a)      continue;
-        if (m==(size_t)w)      after[l]=lt.m_pi;
-        else if (m==(size_t)i) after[l]=lt.m_pk;
-        else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
-        DEBUG_VAR(after[l]);
         ++l;
       }
       return after;

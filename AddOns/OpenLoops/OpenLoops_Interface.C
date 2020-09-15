@@ -189,7 +189,8 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   }
   rpa->gen.AddCitation(1,cite.str());
 
-  /* set parameters to yield same phase-space points as in AMEGIC integration */
+  /* set parameters to obtain same phase-space points as in AMEGIC integration */
+  /* (this is step is necessary, but not sufficient - see commit cc14cfae7 ) */
   double helpd;
   helpd = s["AMEGIC_SCHANNEL_ALPHA"].SetDefault(0.75).Get<double>();
   rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(helpd));

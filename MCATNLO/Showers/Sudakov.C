@@ -428,7 +428,17 @@ bool Sudakov::Generate(Parton * split)
     switch (m_type) {
     case (cstp::FF) : {
       switch(p_shower->KinFF()->m_dipole_case){
+        case EXTAMP::IDa:
+        {
+        Q2 = m_trialvariables.m_Q2;
+        m_vimax = GetViMax(split);
+        SetTrialVariables(split, split->GetSpect(), split->GetKinSpect());
+        m_vi   = GetVi();        if(m_vi < 0.)   continue;
+        m_viab = GetViab(split); if(m_viab < 0.) continue;
+        break;
+        }
         case EXTAMP::CS:
+        default:
         {
         double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourB())));
         double mj2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
@@ -439,15 +449,6 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourA(),
 				    (*m_splitter)->GetFlavourC());
         if (m_y<0.0 || m_y>1.0) continue;
-        break;
-        }
-        case EXTAMP::IDa:
-        {
-        Q2 = m_trialvariables.m_Q2;
-        m_vimax = GetViMax(split);
-        SetTrialVariables(split, split->GetSpect(), split->GetKinSpect());
-        m_vi   = GetVi();        if(m_vi < 0.)   continue;
-        m_viab = GetViab(split); if(m_viab < 0.) continue;
         break;
         }
       }
@@ -530,13 +531,6 @@ bool Sudakov::DefineFFBoundaries(double x)
   
   m_type=cstp::FF;
   switch(p_shower->KinFF()->m_dipole_case){
-    case EXTAMP::CS:
-      {
-      double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
-      m_zmin   = 0.5*(1.-deltaz);
-      m_zmax   = 0.5*(1.+deltaz);
-      break;
-      }
     case EXTAMP::IDa:
       {
       const double     mw2 = sqr(Flavour(24).Mass());
@@ -559,6 +553,14 @@ bool Sudakov::DefineFFBoundaries(double x)
       /* in case zmax is slightly above 1, due to numerics */
       if(m_zmax>1. && IsEqual(m_zmax,1.,1.e-8))           m_zmax=0.99999;
       if(!(m_zmax>0.) || !(m_zmax<=1.))    THROW(fatal_error, "zmax wrong");
+      }
+    case EXTAMP::CS:
+    default:
+      {
+      double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
+      m_zmin   = 0.5*(1.-deltaz);
+      m_zmax   = 0.5*(1.+deltaz);
+      break;
       }
   }
 
@@ -707,13 +709,14 @@ bool Sudakov::Splitting(double Q2,double x, Parton * split) {
   }
   double wt;
   switch(p_shower->KinFF()->m_dipole_case){
-    case EXTAMP::CS:
-      wt = RejectionWeight(m_z,m_y,x,cplscale,Q2);
-      break;
     case EXTAMP::IDa:
       cplscale = GetKt2(split);
       wt = RejectionWeight(m_z,m_viab,x,cplscale,Q2,m_phi,
       m_vi,m_trialvariables.m_alpha,m_trialvariables.m_paipb);
+      break;
+    case EXTAMP::CS:
+    default:
+      wt = RejectionWeight(m_z,m_y,x,cplscale,Q2);
       break;
   }
   p_selected->Coupling()->SetKFMode(kfmode);
@@ -804,11 +807,12 @@ void Sudakov::GetSplittingParameters
 (double & kt2,double & z,double & y,double & phi) const
 {
   switch(p_shower->KinFF()->m_dipole_case){
-    case EXTAMP::CS:
-      kt2 = m_kperp2; z = m_z; y = m_y; phi = m_phi;
-      break;
     case EXTAMP::IDa:
       kt2 = m_kperp2; z = m_z; y = m_vi; phi = m_phi;
+      break;
+    case EXTAMP::CS:
+    default:
+      kt2 = m_kperp2; z = m_z; y = m_y; phi = m_phi;
       break;
   }
 }

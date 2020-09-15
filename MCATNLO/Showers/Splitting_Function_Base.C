@@ -199,7 +199,6 @@ double Splitting_Function_Base::RejectionWeight
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y,phi);
   if(p_lf->m_dipole_case==EXTAMP::IDa && m_evol==1)
     m_lastacceptwgt *= Jacobian(z,vi,phi,alpha,paipb,Q2);
-  // TODO: there are m_lastacceptwgt>1
 #ifdef CHECK_rejection_weight
   if (m_lastacceptwgt>1.0) {
     msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
@@ -265,10 +264,11 @@ void Splitting_Function_Base::ResetLastInt()
 double Splitting_Function_Base::Phi() const
 {
   switch(p_lf->m_dipole_case){
-    case EXTAMP::CS:
-      return 2.*M_PI*ATOOLS::ran->Get();
     case EXTAMP::IDa:
       return 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
+    case EXTAMP::CS:
+    default:
+      return 2.*M_PI*ATOOLS::ran->Get();
   }
 }
 

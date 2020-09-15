@@ -238,9 +238,6 @@ namespace EXTAMP {
 
   double BVI_Process::Calc_HP(const ATOOLS::Vec4D_Vector& p)
   {
-//for(auto i: PartonIndices()){
-//  DEBUG_VAR(m_flavs[i]);  
-//}
     double cpl = p_corr_me->AlphaQCD()/(2.0*M_PI);
     return p_kpterms->CalculateHP(p,cpl,PartonIndices(),p_corr_me,m_dipole_case,m_flavs); 
     // pass p_corr_me and do not use m_dsij from p_kpterms as indices of m_dsij are

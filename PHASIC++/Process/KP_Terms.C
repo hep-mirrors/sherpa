@@ -649,6 +649,8 @@ double KP_Terms::CalculateHP
           case EXTAMP::DipoleCase::IDb:
             n = mom[0]+mom[1]-pai-mom[2];
             nz = mom[0]+mom[1]-pa-mom[2];
+          default:
+            break;
           }
         }
         else if(ai==5){                               // bbar emitts
@@ -660,6 +662,8 @@ double KP_Terms::CalculateHP
           case EXTAMP::DipoleCase::IDb:
             n = mom[0]+mom[1]-pai-mom[3];
             nz = mom[0]+mom[1]-pa-mom[3]; 
+          default:
+            break;
           }
         }
         double Mab = corr_me->GetValue(ai,b);  // = <..|TbTai|..> = <..|TaiTb|..>
@@ -710,6 +714,8 @@ double KP_Terms::CalculateHP
         m_H    += H_temp;
       }
     }
+  default:
+    return 0.;
   }
   return cpl*m_H;
 }

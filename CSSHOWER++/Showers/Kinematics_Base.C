@@ -229,8 +229,8 @@ double V_Calculator::GetV3()
                       4.*m_c/m_f +
                       (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
                       m_b1 - m_b2);
-  if(IsZero(v3.imag())) { return v3.real(); }
   DEBUG_VAR(v3);
+  if(IsZero(v3.imag())) { return v3.real(); }
   else return -1.0;
 }
 
@@ -326,7 +326,6 @@ int Kinematics_FF::MakeKinematics
 
       split->SetMomentum(pa);
       kinspect->SetMomentum(pw);
-      // check: on-shellness and momentum conservation of constructed momenta
       if (pc==NULL) {
         pc = new Parton(flj,pi,pst::FS);
       }
@@ -335,6 +334,7 @@ int Kinematics_FF::MakeKinematics
       }
       break;
     }
+    default: break;
   }
   return 1;
 }

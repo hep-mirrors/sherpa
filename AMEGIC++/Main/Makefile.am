@@ -22,9 +22,3 @@ localinc_HEADERS   = \
 
 dist_pkgdata_SCRIPTS  =	makelibs
 dist_bin_SCRIPTS = make2scons
-
-if RIVET_SUPPORT
-libAmegic_la_LIBADD   =	@CONDITIONAL_RIVETLDADD@
-
-libAmegic_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_RIVETCPPFLAGS@
-endif

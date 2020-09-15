@@ -56,6 +56,7 @@ namespace CSSHOWER {
                    const double vi=0., const double alpha=0., const double paipb=0.);
     virtual double Z();         
     virtual double Phi() const;
+    /* Jacobian between vi and evolution variable in res-aware shower */
     double Jacobian(const double &z, const double &vi, const double &phi,
            const double &alpha, const double &paipb, const double &Q2) const;
 

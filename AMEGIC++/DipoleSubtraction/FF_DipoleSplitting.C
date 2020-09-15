@@ -100,7 +100,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         Vec3D pk_perp = Vec3D(m_pk) - Vec3D(m_pk)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
         Vec3D pi_perp = Vec3D(m_pi) - Vec3D(m_pi)*Vec3D(m_ptij)/Vec3D(m_ptij).Sqr()*Vec3D(m_ptij);
         const double cos_phi_ib = pi_perp*pk_perp/(pi_perp.Abs()*pk_perp.Abs());
-        DEBUG_VAR(acos(cos_phi_ib));
         bst.BoostBack(m_pi);
         bst.BoostBack(m_pk);
         bst.BoostBack(m_ptij);
@@ -148,7 +147,8 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
       if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
       break;
     }
-    case CS:{ 
+    case CS:
+    default: {
       m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
       m_a = m_yijk;
     
@@ -213,37 +213,31 @@ double FF_DipoleSplitting::GetValue()
 
 void FF_DipoleSplitting::CalcDiPolarizations()
 {
-  switch (m_dipolecase){
-  case CS: 
-  case IDa: 
-  case IDb: 
-  case IDin: 
-    double zi(m_zi), zj(m_zj);
-    if (m_subtype==1) {
-      zi=1.0-(1.0-zi)*(1.0-m_yijk);
-      zj=1.0-(1.0-zj)*(1.0-m_yijk);
-    }
-    switch (m_ftype) {
-    case spt::q2qg:
-    case spt::q2gq:
-      return;
-    case spt::g2qq:
-      CalcVectors(m_pt1,m_pt2,m_sff/(2.*(zi*(1.-zi)+zj*(1.-zj))));
-      break;
-    case spt::g2gg:
-      CalcVectors(m_pt1,m_pt2,-m_sff/(zi*(1.-zi)+zj*(1.-zj)));
-      break;
-    case spt::none:
-      THROW(fatal_error, "Splitting type not set.");
-    case spt::s2sg:
-    case spt::s2gs:
-    case spt::G2Gg:
-    case spt::G2gG:
-    case spt::V2Vg:
-    case spt::V2gV:
-      THROW(fatal_error, "DipoleSplitting can not handle splitting type "
-          + ToString(m_ftype) + ".");
-    }
+  double zi(m_zi), zj(m_zj);
+  if (m_subtype==1) {
+    zi=1.0-(1.0-zi)*(1.0-m_yijk);
+    zj=1.0-(1.0-zj)*(1.0-m_yijk);
+  }
+  switch (m_ftype) {
+  case spt::q2qg:
+  case spt::q2gq:
+    return;
+  case spt::g2qq:
+    CalcVectors(m_pt1,m_pt2,m_sff/(2.*(zi*(1.-zi)+zj*(1.-zj))));
+    break;
+  case spt::g2gg:
+    CalcVectors(m_pt1,m_pt2,-m_sff/(zi*(1.-zi)+zj*(1.-zj)));
+    break;
+  case spt::none:
+    THROW(fatal_error, "Splitting type not set.");
+  case spt::s2sg:
+  case spt::s2gs:
+  case spt::G2Gg:
+  case spt::G2gG:
+  case spt::V2Vg:
+  case spt::V2gV:
+    THROW(fatal_error, "DipoleSplitting can not handle splitting type "
+        + ToString(m_ftype) + ".");
   }
 }
 

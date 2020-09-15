@@ -170,8 +170,8 @@ double V_Calculator::GetV3()
                       4.*m_c/m_f +
                       (-64.*pow(m_e,3.)/pow(m_f,3.) + 64.*m_c*m_e/sqr(m_f) - 128.*m_g/m_f)/(4.*m_b) -
                       m_b1 - m_b2);
-  if(IsZero(v3.imag())) { return v3.real(); }
   DEBUG_VAR(v3);
+  if(IsZero(v3.imag())) { return v3.real(); }
   else return -1.0;
 }
 
@@ -191,31 +191,6 @@ int Kinematics_FF::MakeKinematics
  const ATOOLS::Flavour &flj,Parton *&pc)
 {
   switch(m_dipole_case){
-    case EXTAMP::CS:
-    {
-      Parton * spect = split->GetSpect();
-      Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
-
-      double mi2 = p_ms->Mass2(fli), mj2 = p_ms->Mass2(flj);
-      double mij2 = p_ms->Mass2(split->GetFlavour()), mk2 = p_ms->Mass2(spect->GetFlavour());
-      if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
-
-      double y = GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
-                 split->GetFlavour(),flj,1);
-      Kin_Args ff(y,split->ZTest(),split->Phi());
-      if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
-      !ValidateDipoleKinematics(mi2, mj2, mk2, ff)) return -1;
-
-      split->SetMomentum(ff.m_pi);
-      spect->SetMomentum(ff.m_pk);
-      if (pc==NULL) {
-        pc = new Parton(flj,ff.m_pj,pst::FS);
-      }
-      else {
-        pc->SetMomentum(ff.m_pj);
-      }
-      break;
-    }
     case EXTAMP::IDa:
     {
       Parton * kinspect = split->GetKinSpect();
@@ -257,6 +232,32 @@ int Kinematics_FF::MakeKinematics
       }
       else {
         pc->SetMomentum(pi);
+      }
+      break;
+    }
+    case EXTAMP::CS:
+    default:
+    {
+      Parton * spect = split->GetSpect();
+      Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
+
+      double mi2 = p_ms->Mass2(fli), mj2 = p_ms->Mass2(flj);
+      double mij2 = p_ms->Mass2(split->GetFlavour()), mk2 = p_ms->Mass2(spect->GetFlavour());
+      if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
+
+      double y = GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
+                 split->GetFlavour(),flj,1);
+      Kin_Args ff(y,split->ZTest(),split->Phi());
+      if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0 ||
+      !ValidateDipoleKinematics(mi2, mj2, mk2, ff)) return -1;
+
+      split->SetMomentum(ff.m_pi);
+      spect->SetMomentum(ff.m_pk);
+      if (pc==NULL) {
+        pc = new Parton(flj,ff.m_pj,pst::FS);
+      }
+      else {
+        pc->SetMomentum(ff.m_pj);
       }
       break;
     }

@@ -2,8 +2,6 @@
 #define EXTAMP_RS_Process_H
 
 #include "EXTAMP/Process.H"
-#include "YODA/Histo1D.h"
-#include <fstream>   // for python-plot with pseudo-dipoles
 #include <iostream>
 
 namespace PHASIC {
@@ -117,10 +115,6 @@ namespace EXTAMP {
 			       const double& alpha_0,
 			       const double& power);
     double m_alpha_0, m_smear_power;
-
-    YODA::Histo1D         m_hist_dipole_y46, m_hist_mreal_y46;
-//    YODA::Histo1D         m_hist_alpha_min;
-    std::ofstream m_myfile;
   };
 
 }

@@ -60,6 +60,8 @@ void FF_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
         if      (emitter==5) n = p[0]+p[1]-pa-p[2];
         else if (emitter==6) n = p[0]+p[1]-pa-p[3];
         else    THROW(fatal_error, "Invalid emitter.");
+        break;
+      default: break;
     }
 
     m_kin.m_vitilde   = pa*pi/(pa*n);
@@ -86,6 +88,7 @@ void FF_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
         if      (emitter==5) kj = {3,6};
         else if (emitter==6) kj = {2,5};
         break;
+      default: break;
     }
     for(auto j: kj){
       m_kin.m_born_mom[j] = p[j]-2.0*p[j]*(Ka+Katilde)/(Ka+Katilde).Abs2()*(Ka+Katilde)
@@ -415,9 +418,6 @@ void II_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
 {
   /* Implementation of hep-ph/9605323v3 (5.137) - (5.140) */
 
-  switch(DipCase()){
-  case CS:
-  case IDin: {
     const ATOOLS::Vec4D& pa = p[Emitter()];
     const ATOOLS::Vec4D& pi = p[Emitted()];
     const ATOOLS::Vec4D& pb = p[K()];
@@ -442,9 +442,6 @@ void II_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
     m_kin.m_born_mom[Emitter()] = m_kin.m_pai_tilde;
     m_kin.m_born_mom[K()]       = m_kin.m_pb_tilde;
     m_kin.m_born_mom.erase(m_kin.m_born_mom.begin()+Emitted());
-    break;
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -456,7 +453,8 @@ double FF_Dipole::CalcKinDependentPrefac() const
 //  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
 
   switch(DipCase()){
-  case CS: {
+  case CS:
+  case RES: {
     const ATOOLS::Vec4D& pi = m_kin.m_pi;
     const ATOOLS::Vec4D& pj = m_kin.m_pj;
   
@@ -495,8 +493,10 @@ double FI_Dipole::CalcKinDependentPrefac() const
  
     return -1.0/(2.0*pi*pa);
     }
+  default:
+    THROW(fatal_error, "Internal Error.");
+    return 0.;
   }
-  THROW(fatal_error, "Internal Error.");
 }
 
 double IF_Dipole::CalcKinDependentPrefac() const
@@ -570,6 +570,7 @@ double FF_Dipole::CalcA() const
       return 2.*m_kin.m_viab/m_kin.m_zain - (1+m_kin.m_zain);
     default:
       THROW(fatal_error, "Cannot treat other splitting than q>qg with pseudo-dipoles.");
+      return 0.;
     }
   case ID:
     switch(FlavType()){
@@ -577,6 +578,9 @@ double FF_Dipole::CalcA() const
       return 2.*m_kin.m_viab/m_kin.m_zain - (1+m_kin.m_zain);
     case FlavourType::gtogg:
       return m_kin.m_viab/m_kin.m_zain -1. +(1-m_kin.m_zain)/m_kin.m_zain;
+    default:
+      THROW(fatal_error, "Cannot treat other splitting than q>qg with pseudo-dipoles.");
+      return 0.;
     }
   case RES:{
     using namespace ATOOLS;
@@ -621,7 +625,6 @@ double FF_Dipole::CalcA() const
             + ((ptij*ptl+ptl*pk)*yijl + ptij*pk)/
               (ptij*ptl*yijl+ptl*pk*yijl*zjl+ptij*pk*(1.-zjl) -
               sqrt(4*dabs(ptij*pk)*(ptl*pk)*yijl*zjl*(1.-zjl))*cos_phi) - 2.;
-      break;
       }
     }
   }
@@ -661,9 +664,10 @@ double FI_Dipole::CalcA() const
     default:
       THROW(fatal_error, "Cannot treat other splitting than q>qg with pseudo-dipoles.");
     }
+  default:
+    THROW(fatal_error, "Internal error");
+    return 0.;
   }
-  
-  THROW(fatal_error, "Internal error");
 }
 
 double IF_Dipole::CalcA() const
@@ -705,10 +709,13 @@ double IF_Dipole::CalcA() const
         return xain;
       if(FlavType()==FlavourType::gtogg)
         return viab-1.0+xain*(1.0-xain);
-      break;
     }
+    default:
+      THROW(fatal_error, "Internal error");
+      return 0.;
   }
   THROW(fatal_error, "Internal error");
+  return 0.;
 }
 
 double II_Dipole::CalcA() const
@@ -762,8 +769,9 @@ ATOOLS::Vec4D FI_Dipole::CalcPtilde() const
   case CS: 
     /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.40), (5.41)  */
     return m_kin.m_zi*m_kin.m_pi - m_kin.m_zj*m_kin.m_pj;
-  case IDin:
+  default:
     THROW(fatal_error,"Must not occur");
+    return ATOOLS::Vec4D(0.,0.,0.,0.);
   }
 }
   
@@ -776,6 +784,9 @@ ATOOLS::Vec4D IF_Dipole::CalcPtilde() const
   case IDin:
     /* \mu-\nu tensor structure in hep-ph/9605323v3 eq. (5.167), (5.168)  */
     return m_kin.m_n*m_kin.m_pa/(m_kin.m_pa*m_kin.m_pi)*m_kin.m_pi-m_kin.m_n;
+  default:
+    THROW(fatal_error,"Must not occur");
+    return ATOOLS::Vec4D(0.,0.,0.,0.);
   }
 }
 

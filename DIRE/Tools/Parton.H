@@ -104,7 +104,7 @@ namespace DIRE {
 
     inline void ClearWeights() { m_ws.clear(); }
 
-    inline size_t SetKinSpectID(size_t kinspectID) { m_kinspectID = kinspectID; }
+    inline void   SetKinSpectID(size_t kinspectID) { m_kinspectID = kinspectID; }
     inline size_t GetKinSpectID()                  { return m_kinspectID; }
 
   };// end of class Parton

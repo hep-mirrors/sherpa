@@ -797,7 +797,7 @@ double Single_Virtual_Correction::HPTerms(const ATOOLS::Vec4D_Vector &p,
   // e-__e+__W+__W-__b__bb
   // 0   1   2   3   4  5 
 
-  // b has emitted
+  // b has emitted:
   double H_temp = 0.;
   double z = ATOOLS::ran->Get();
   ATOOLS::Vec4D pai = p[4];
@@ -819,7 +819,7 @@ double Single_Virtual_Correction::HPTerms(const ATOOLS::Vec4D_Vector &p,
            + (1+z)*log(nz.Abs2()*(pai*pb) / (2*z*pow(pai*nz,2))) )
            *dsij[0][1];
 
-  // bbar has emitted
+  // bbar has emitted:
   std::swap(pai,pb);
   if(m_dipolecase==IDa){ 
     n  = p[3];

@@ -157,21 +157,19 @@ int CS_Gamma::SingleWeight
 #endif
   Color_Info ci(li->Col(),lj->Col(),lk->Col(),0);
   switch(p_shower->KinFF()->m_dipole_case){
-    case EXTAMP::CS:
-      meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ci,ampl)*
-      cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ampl);
-      break;
     case EXTAMP::IDa:
     {
       ATOOLS::Vec4D pa = lj->Mom(); // checked: agree with constructed momenta
       ATOOLS::Vec4D pi = li->Mom(); // from Kinematics_FF::MakeKinematics()
       meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ci,ampl)* // cs.m_z=zain, cs.m_y=viab
       (8.0*M_PI)/(2.*pa*pi);
-      // TODO: splitting function does not agree with splitting function
-      // in Splitting_Function_Base::RejectionWeight(), solely due to different alpha_s
-      // because ampl -which is given here- influences evaluation of alpha_s
       break;
     }
+    case EXTAMP::CS:
+    default:
+      meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ci,ampl)*
+      cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ampl);
+      break;
   }
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight

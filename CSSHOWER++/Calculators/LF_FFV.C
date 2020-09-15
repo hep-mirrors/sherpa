@@ -286,8 +286,6 @@ double LF_FFV_FF::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   switch(m_dipole_case){
-    case EXTAMP::CS:
-      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
     case EXTAMP::IDa:
       if(p_sf->m_evol == 1){
         /* multiply with 4 as sum over 4 vi-solutions */
@@ -299,19 +297,23 @@ double LF_FFV_FF::OverIntegrated
                * log((1.-zmin)/(1.-zmax)) / sqrt(1.-sqr(p_sf->m_K));
       }
       else THROW(fatal_error, "Invalid evolution scheme for res-aware kinematics!");
+    case EXTAMP::CS:
+    default:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
   }
 }
 
 double LF_FFV_FF::OverEstimated(const double z,const double y,const double phi)
 {
   switch(m_dipole_case){
-    case EXTAMP::CS:
-      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
     case EXTAMP::IDa:
       if(p_sf->m_evol == 1)
         return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z)/(1.-p_sf->m_K*cos(phi));
       else if(p_sf->m_evol == 2)
         return p_sf->m_F*(4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z)/(1.-p_sf->m_K*cos(phi));
+    case EXTAMP::CS:
+    default:
+      return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z);
   }
 }
 

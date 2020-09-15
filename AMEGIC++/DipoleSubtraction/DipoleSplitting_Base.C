@@ -83,6 +83,7 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   switch(m_dipolecase){
     case IDa: m_pIDspec.resize(1); break; // # of kinematic spectators
     case IDb: m_pIDspec.resize(2); break; // # of kinematic spectators
+    default: break;
   }
 }
 
@@ -140,6 +141,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 	       <<Demangle(typeid(*this).name())
 	       <<"[type="<<m_ftype<<"]"<<std::endl;
   if (m_mcmode==1) {
+    // discard m_av>0 check, to improve integration in resonance-aware matching
     int da(/*m_av>0.0 &&*/ (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
         ds(alpha<=m_alpha);
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
@@ -148,6 +150,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     return m_mcsign==0;
   }
   if (m_mcmode==2) {
+    // discard m_av>0 check, to improve integration in resonance-aware matching
     m_mcsign=/*m_av>0.0 &&*/ (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
 		   <<" -> DA = "<<m_mcsign<<"\n";

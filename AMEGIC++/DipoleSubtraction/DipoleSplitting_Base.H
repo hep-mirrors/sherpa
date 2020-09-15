@@ -66,7 +66,7 @@ std::ostream& operator<<(std::ostream& str, const DipoleCase& dc);
     inline std::vector<ATOOLS::Vec4D>* GetMomenta() { return &m_mom; }
     inline ATOOLS::Vec4D Getptij()                  { return m_ptij; }
     inline ATOOLS::Vec4D Getptk()                   { return m_ptk; }
-    ATOOLS::Vec4D Getpk()                           { return m_pk; }      // TODO: for ID-dipoles?
+    ATOOLS::Vec4D Getpk()                           { return m_pk; }
     std::vector<ATOOLS::Vec4D> GetpIDspec()         { return m_pIDspec; } // for ID-dipoles
 
     inline void SetMCMode(const int mcmode)         { m_mcmode=mcmode; }

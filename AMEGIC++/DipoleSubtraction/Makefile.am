@@ -31,11 +31,3 @@ localinc_HEADERS   = \
 		     Single_OSTerm.H \
 		     Single_Virtual_Correction.H \
 		     Single_Real_Correction.H 
-
-
-if RIVET_SUPPORT
-libDipoleSubtraction_la_LIBADD   =	@CONDITIONAL_RIVETLDADD@
-
-libDipoleSubtraction_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_RIVETCPPFLAGS@
-endif
-

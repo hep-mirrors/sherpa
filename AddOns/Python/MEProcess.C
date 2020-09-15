@@ -34,8 +34,6 @@ MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
 MEProcess::~MEProcess()
 {
   if (p_rambo)         { delete p_rambo; p_rambo=NULL; }
-  delete p_proc; // brute force invokation of destructor of RS_Process
-                 // in order to write yoda files 
 }
 
 std::string MEProcess::Name() const

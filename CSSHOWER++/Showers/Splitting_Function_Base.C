@@ -273,10 +273,11 @@ void Splitting_Function_Base::ResetLastInt()
 double Splitting_Function_Base::Phi() const
 {
   switch(p_lf->m_dipole_case){
-    case EXTAMP::CS:
-      return 2.*M_PI*ATOOLS::ran->Get();
     case EXTAMP::IDa:
       return 2.*atan(sqrt(1.-sqr(m_K))/(1+m_K)*tan(M_PI*ran->Get()));
+    case EXTAMP::CS:
+    default:
+      return 2.*M_PI*ATOOLS::ran->Get();
   }
 }
 
