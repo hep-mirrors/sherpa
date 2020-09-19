@@ -43,6 +43,8 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   PRINT_INFO("Active EW_Sudakov coefficients : ");
   for (const auto& key : m_activecoeffs)
     msg_Out() << om::red << "\t" << key << om::reset << "\n";
+  m_c_coeff_ignores_vector_bosons =
+      s["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
 }
 
 EWSudakov_Calculator::~EWSudakov_Calculator()
@@ -439,11 +441,13 @@ Coeff_Value EWSudakov_Calculator::lsCCoeff()
       coeff += contrib;
     } else if (flav.Kfcode() == kf_Wplus) {
       assert(m_current_spincombination[i] != 2);
+      if (m_c_coeff_ignores_vector_bosons) continue;
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;
     } else if (flav.Kfcode() == kf_photon || flav.Kfcode() == kf_Z) {
       assert(m_current_spincombination[i] != 2);
+      if (m_c_coeff_ignores_vector_bosons) continue;
       const auto contrib =
           m_ewgroupconsts.DiagonalBew(flav, m_current_spincombination[i]) / 2.0;
       coeff += contrib;

@@ -67,6 +67,7 @@ namespace PHASIC {
 
     Process_Base* p_proc;
     std::set<ATOOLS::EWSudakov_Log_Type> m_activecoeffs;
+    bool m_c_coeff_ignores_vector_bosons;
     EWSudakov_Amplitudes m_ampls;
 
     /// the default COMIX interface used for all logs except the PR logs
