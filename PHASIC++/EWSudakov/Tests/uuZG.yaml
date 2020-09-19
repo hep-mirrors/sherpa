@@ -1,0 +1,28 @@
+#CHECK_EWSUDAKOV_LOG_FILE: kfacs.dat
+EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS: true
+EWSUDAKOV_COEFF_REMOVED_LIST: [Z, PR]
+CHECK_EWSUDAKOV_KFACTOR: true
+CHECK_EWSUDAKOV: false
+
+BEAMS: [2, -2]
+PDF_SET: None
+PARTICLE_DATA:
+  23:
+    Mass: 91.1876
+    Width: 0.0
+  42:
+    Mass: 91.1876
+    Width: 0.0
+  24:
+    Mass: 80.35
+    Width: 0.0
+  41:
+    Mass: 80.35
+    Width: 0.0
+  6:
+    Mass: 175
+  11:
+    Yukawa: 0.000511
+
+PROCESSES:
+- 2 -2 -> 23 21: {}

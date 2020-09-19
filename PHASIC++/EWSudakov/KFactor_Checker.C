@@ -28,7 +28,7 @@ bool KFactor_Checker::CheckKFactor(
 bool KFactor_Checker::CheckKFactor(double kfac, double ref) const
 {
   auto prec = 0.01;
-  const auto res = (IsBad(kfac) || kfac - ref <= prec);
+  const auto res = (IsBad(kfac) || std::abs(kfac - ref) <= prec);
   if (res) {
     msg_Debugging() << om::green;
   } else {
@@ -45,6 +45,7 @@ double KFactor_Checker::ReferenceKFactor(const Mandelstam_Variables& mandelstam,
 {
   double ref {1.0};
   if (procname == "2_2__u__ub__Z__G") {
+    // equation adapted from hep-ph/0408308
     Flavour uflav {kf_u};
     const auto ls = std::log(mandelstam.s/groupconstants.m_mw2);
     const auto lt = std::log(std::abs(mandelstam.t)/mandelstam.s);
@@ -62,6 +63,7 @@ double KFactor_Checker::ReferenceKFactor(const Mandelstam_Variables& mandelstam,
     }
     ref = 1.0 + (groupconstants.m_aew / (2.0 * M_PI) * (A_1 / A_0)).real();
   } else if (procname == "2_2__d__ub__W-__G") {
+    // equation adapted from arXiv:0708.0476
     Flavour uflav {kf_u};
     const auto ls = std::log(mandelstam.s/groupconstants.m_mw2);
     const auto lt = std::log(std::abs(mandelstam.t)/mandelstam.s);
@@ -74,6 +76,8 @@ double KFactor_Checker::ReferenceKFactor(const Mandelstam_Variables& mandelstam,
       (sqr(ls) + 2 * (lu + lt) * ls);
     ref = 1.0 + (groupconstants.m_aew / (2.0 * M_PI) * A_1).real();
   } else if (procname == "2_2__u__ub__P__G") {
+    // equation adapted from hep-ph/0508253 (with the replacement Cew - Qq2 ->
+    // Cew such that also photon corrections are taken into account)
     Flavour uflav {kf_u};
     const auto ls = std::log(mandelstam.s/groupconstants.m_mw2);
     const auto lt = std::log(std::abs(mandelstam.t)/mandelstam.s);

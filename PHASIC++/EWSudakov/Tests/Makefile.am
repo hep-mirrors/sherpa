@@ -3,7 +3,7 @@
 # the Sherpa setup to run for the test; note that a special file `Base.yaml`
 # exists which will also be read in by Sherpa, in order to provide
 # configuration options common to all tests
-TEST_PROCS = eePP eeWW eeZP eeZZ eebb eedd eemumu eett eeuu duWZ duWP
+TEST_PROCS = eePP eeWW eeZP eeZZ eebb eedd eemumu eett eeuu duWZ duWP uuPG udWG uuZG
 
 # define tests and the script used to run each test (via Automake)
 TESTS = $(TEST_PROCS:=.yaml)
