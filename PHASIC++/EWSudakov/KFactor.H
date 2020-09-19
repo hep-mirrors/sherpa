@@ -8,7 +8,6 @@ namespace PHASIC {
   class Sudakov_KFactor: public KFactor_Setter_Base {
   private:
     EWSudakov_Calculator m_calc;
-    size_t m_check;
     ATOOLS::EWSudakov_Log_Corrections_Map m_corrections_map;
   public:
     Sudakov_KFactor(const KFactor_Setter_Arguments &args);

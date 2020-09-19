@@ -24,6 +24,16 @@ namespace ATOOLS {
     EWSudakov_Log_Corrections_Map();
     double KFactor() const;
   };
+
+  struct Mandelstam_Variables {
+    Mandelstam_Variables(double _s, double _t, double _u):
+      s {_s}, t {_t}, u {_u}
+    {};
+    double s {0.0};
+    double t {0.0};
+    double u {0.0};
+  };
+
 }
 
 #endif

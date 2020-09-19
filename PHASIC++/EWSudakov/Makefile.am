@@ -7,6 +7,7 @@ include ../../git.make
 
 libPhasicEWSudakov_la_SOURCES = \
 	Coefficient_Checker.C \
+	KFactor_Checker.C \
 	Comix_Interface.C \
 	HE_Comix_Interface.C \
 	EWGroupConstants.C \
@@ -17,6 +18,7 @@ libPhasicEWSudakov_la_SOURCES = \
 	EWSudakov_Calculator.C
 localinc_HEADERS = \
 	Coefficient_Checker.H \
+	KFactor_Checker.H \
 	Comix_Interface.H \
 	HE_Comix_Interface.H \
 	EWGroupConstants.H \

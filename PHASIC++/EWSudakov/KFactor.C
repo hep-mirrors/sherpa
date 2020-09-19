@@ -20,16 +20,13 @@ Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   m_calc{ p_proc }
 {
   auto& s = Settings::GetMainSettings();
-  m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
 }
 
 double Sudakov_KFactor::KFactor(const int mode)
 {
   const auto level = msg->Level();
-  if (m_check) msg->SetLevel(8);
   m_corrections_map = m_calc.CorrectionsMap(p_proc->Integrator()->Momenta());
   m_weight = m_corrections_map.KFactor();
-  if (m_check) msg->SetLevel(level);
   if (std::abs(m_weight) > 500) {
     msg_Info() << "WARNING: K factor is really large: " << m_weight << '\n';
   }

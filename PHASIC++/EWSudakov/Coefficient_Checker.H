@@ -9,15 +9,6 @@
 
 namespace PHASIC {
 
-  struct Mandelstam_Variables {
-    Mandelstam_Variables(double _s, double _t, double _u):
-      s {_s}, t {_t}, u {_u}
-    {};
-    double s {0.0};
-    double t {0.0};
-    double u {0.0};
-  };
-
   class Coefficient_Checker {
 
   public:
@@ -35,14 +26,14 @@ namespace PHASIC {
     // check coefficients against a ref value when available
     bool CheckCoeffs(const Coeff_Map& coeffs,
                      const METOOLS::Spin_Amplitudes&,
-                     const Mandelstam_Variables&,
+                     const ATOOLS::Mandelstam_Variables&,
                      const EWGroupConstants&);
 
   private:
 
     using HelicityCoeffMap = std::map<std::vector<int>, double>;
     std::map<Coeff_Map_Key, HelicityCoeffMap>
-    ReferenceCoeffs(const Mandelstam_Variables&, const EWGroupConstants&);
+    ReferenceCoeffs(const ATOOLS::Mandelstam_Variables&, const EWGroupConstants&);
 
     const std::string procname;
     const std::set<ATOOLS::EWSudakov_Log_Type> activecoeffs;

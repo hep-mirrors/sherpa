@@ -1,6 +1,7 @@
 #include "PHASIC++/EWSudakov/EWSudakov_Calculator.H"
 
 #include "Coefficient_Checker.H"
+#include "KFactor_Checker.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
 #include <cassert>
@@ -26,7 +27,8 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   m_comixinterface_he{ p_proc, m_ampls }
 {
   auto& s = Settings::GetMainSettings();
-  m_check = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
+  m_checkcoeff = s["CHECK_EWSUDAKOV"].SetDefault(false).Get<bool>();
+  m_checkkfac = s["CHECK_EWSUDAKOV_KFACTOR"].SetDefault(false).Get<bool>();
   m_checklogfile =
       s["CHECK_EWSUDAKOV_LOG_FILE"].SetDefault("").Get<std::string>();
   m_threshold = s["EWSUDAKOV_THRESHOLD"].SetDefault(5.0).Get<double>();
@@ -163,6 +165,21 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
     kfac += delta_c;
   }
   EWSudakov_Calculator::m_kfachisto.Insert(kfac);
+  if (m_checkkfac) {
+    KFactor_Checker checker(p_proc->Name());
+    checker.SetLogFileName(m_checklogfile);
+    Mandelstam_Variables mandelstam {
+      m_ampls.MandelstamS(),
+      m_ampls.MandelstamT(),
+      m_ampls.MandelstamU() };
+    if (checker.CheckKFactor(
+            kfacs.KFactor(), mandelstam, m_ewgroupconsts)) {
+      THROW(normal_exit, "Finish after checking EW Sudakov K factor.");
+    } else {
+      THROW(fatal_error, "EWSudakov K factor for this process is not equal to"
+                         " the results in hep-ph/0408308.");
+    }
+  }
   return kfacs;
 }
 
@@ -238,7 +255,7 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
       }
     }
   }
-  if (m_check) {
+  if (m_checkcoeff) {
     Coefficient_Checker checker(p_proc->Name(), m_activecoeffs);
     checker.SetLogFileName(m_checklogfile);
     Mandelstam_Variables mandelstam {

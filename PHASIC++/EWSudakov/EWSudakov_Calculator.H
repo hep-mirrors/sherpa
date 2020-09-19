@@ -79,7 +79,7 @@ namespace PHASIC {
 
     double m_threshold;
     bool m_checkinvariantratios;
-    size_t m_check;
+    bool m_checkcoeff, m_checkkfac;
     std::string m_checklogfile;
 
     // intermediate results
