@@ -377,19 +377,38 @@ particle final state processes are enhanced by a factor of 20.
 
 @node Enhance_Function
 @subsection Enhance_Function
-Sets a process specific enhance function.
 
-@emph{This feature can only be used when generating weighted events.}
+Specifies a phase-space dependent biasing of parton-level events (before
+showering). The given parton-level observable defines a multiplicative
+enhancement on top of the normal matrix element shape. Example:
 
-For multijet processes, the parameter can be specified
-per final state multiplicity. An example would be
 @verbatim
 Process 93 93 -> 11 -11 93{1}
-Enhance_Function VAR{PPerp2(p[4])} {3}
+Enhance_Function: VAR{PPerp2(p[2]+p[3])/400} {3}
 @end verbatim
 
-Here, the 1-jet process is enhanced with the
-transverse momentum squared of the jet.
+In this example, Z+1-jet events with @code{p_\perp(Z)=20 GeV} and Z+0-jet
+events will come with no enhancement, while other Z+1-jet events will be
+enhanced with @code{(p_\perp(Z)/20)^2}.
+Note: if you would define the enhancement function without the normalisation
+to @code{1/20^2}, the Z+1-jet would come with a significant overall enhancement
+compared to the unenhanced Z+0-jet process, which would have a strong impact
+on the statistical uncertainty in the Z+0-jet region.
+
+Optionally, a range can be specified over which the multiplicative biasing
+should be applied. The matching at the range boundaries will be smooth, i.e.
+the effective enhancement is frozen to its value at the boundaries. Example:
+
+@verbatim
+Process 93 93 -> 11 -11 93{1}
+Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}|1.0|100.0 {3}
+@end verbatim
+
+This implements again an enhancement with @code{(p_\perp(Z)/20)^2} but only
+in the range of 20-200 GeV. As you can see, you have to take into account
+the normalisation also in the range specification.
+
+This feature can be used for weighted and unweighted event generation.
 
 Note that the convergence of the Monte Carlo integration can be worse
 if enhance functions are employed and therefore the integration can take
@@ -406,37 +425,26 @@ function and the final state multiplicity, can be an intricate task.
 @node Enhance_Observable
 @subsection Enhance_Observable
 
-Allows for the specification of a ME-level observable in which the event
-generation should be flattened. Of course, this induces an appropriate weight
-for each event. This option is available for both weighted and unweighted event
-generation, but for the latter as mentioned above the weight stemming from the
-enhancement is introduced.
-For multijet processes, the parameter can be specified
-per final state multiplicity.
-
-An example would be
+Specifies a phase-space dependent biasing of parton-level events (before
+showering) to make them statistically flat in the given observable (and range).
+An example would be:
 @verbatim
 Process 93 93 -> 11 -11 93{1}
 Enhance_Observable VAR{log10(PPerp(p[2]+p[3]))}|1|3 {3}
 @end verbatim
 
-Here, the 1-jet process is flattened with respect to the logarithmic transverse
-momentum of the lepton pair in the limits 1.0 (10 GeV) to 3.0 (1 TeV).
-For the calculation of the observable one can use any function available in
-the algebra interpreter (see @ref{Interpreter}).
+Here, the 1-jet process is flattened with respect to the logarithmic
+transverse momentum of the lepton pair in the limits 1.0 (10 GeV) to
+3.0 (1 TeV).  For the calculation of the observable one can use any
+function available in the algebra interpreter (see @ref{Interpreter}).
 
-Note that the convergence of the Monte Carlo integration can be worse
-if enhance observables are employed and therefore the integration can take
-significantly longer. The reason is that the default phase space 
-mapping, which is constructed according to diagrammatic information from
-hard matrix elements, is not suited for event generation including
-enhancement. It must first be adapted, which, depending on the enhance 
-function and the final state multiplicity, can be an intricate task. 
+The matching at the range boundaries will be smooth, i.e. the effective
+enhancement is frozen to its value at the boundaries.
 
-@emph{If Sherpa cannot achieve an integration error target due to the use
- of enhance functions, it might be appropriate to locally redefine this
- error target}, see @ref{Integration_Error}.
-
+This can have unwanted side effects for the statistical uncertainty when used
+in a multi-jet merged sample, because the flattening is applied in each
+multiplicity separately, and also affects the relative selection weights of
+each sub-sample (e.g. 2-jet vs. 3-jet).
 
 @node NLO_QCD_Mode
 @subsection NLO_QCD_Mode

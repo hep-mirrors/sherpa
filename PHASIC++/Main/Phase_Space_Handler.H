@@ -65,6 +65,7 @@ namespace PHASIC {
     Cut_Data               *p_cuts;  
 
     Enhance_Observable_Base *p_enhanceobs, *p_enhancefunc;
+    double m_enhancefunc_min, m_enhancefunc_max;
 
     ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
 
@@ -135,8 +136,6 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
     void AddPoint(const double xs);
-
-    double EnhanceFunction();
 
     void CalculateME();
     void CalculatePS();
