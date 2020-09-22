@@ -53,8 +53,13 @@ Read_Type Data_Reader::Convert(std::string cur) const
   if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
       typeid(value)==typeid(long) ||
       typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
-    if (!AllowNans()) 
-      if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF") cur="1";
+    if (!AllowNans()){
+      if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF"){
+	cur="1";
+      } else if (cur=="-nan" || cur=="-inf" || cur=="-NAN" || cur=="-INF") {
+	cur="-1";
+      }
+    }
     if (AllowUnits()) cur=ReplaceUnits(cur);
     if (Interprete()) cur=Interpreter()->Interprete(StripEscapes(cur));
   }
