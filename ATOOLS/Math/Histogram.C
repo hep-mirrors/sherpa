@@ -102,7 +102,8 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
 }
 
 Histogram::Histogram(const Histogram * histo)
-: m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0) {
+  : m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0) {
+  m_ysums=NULL;
   CopyFrom(histo);
 }
 

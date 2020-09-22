@@ -61,9 +61,11 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
-    Enhance_Observable_Base *p_enhanceobs, *p_enhancefunc;
-
+    Enhance_Observable_Base* p_enhanceobs;
     ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
+
+    Enhance_Observable_Base* p_enhancefunc;
+    double m_enhancefunc_min, m_enhancefunc_max;
 
     static ATOOLS::Integration_Info *p_info;
 
@@ -86,7 +88,7 @@ namespace PHASIC {
     long int m_maxtrials, m_killedpoints;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
-    double m_result, m_error, m_abserror, m_enhance, m_osmass;
+    double m_result, m_error, m_abserror, m_enhanceweight, m_osmass;
     ATOOLS::Weights_Map m_wgtmap;
 
     std::vector<std::vector<double> > m_stats;
@@ -96,8 +98,8 @@ namespace PHASIC {
     bool m_printpspoint;
 
     void RegisterDefaults() const;
-
-    double EnhanceFactor(Process_Base *const proc);
+    void SetEnhanceObservable(const std::string &enhanceobs);
+    void SetEnhanceFunction(const std::string &enhancefunc);
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     void CorrectMomenta(ATOOLS::Vec4D_Vector &p);
@@ -113,7 +115,8 @@ namespace PHASIC {
   public:
 
     //constructor
-    Phase_Space_Handler(Process_Integrator *,double error=-1.);
+    Phase_Space_Handler(Process_Integrator *,double error,
+                        const std::string eobs,const std::string efunc);
 
     //destructor
     ~Phase_Space_Handler();
@@ -135,8 +138,6 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
     void AddPoint(const double xs);
-
-    double EnhanceFunction();
 
     void CalculateME(ATOOLS::Variations_Mode);
     void CalculatePS();
@@ -183,7 +184,9 @@ namespace PHASIC {
     inline Process_Integrator* Active() const  { return p_active;  }
 
     inline double PSWeight() const { return m_psweight; }
-    inline double Enhance() const  { return m_enhance;  }
+    inline double EnhanceWeight() const  { return m_enhanceweight;  }
+    inline void SetEnhanceWeight(const double& enhanceweight)
+    { m_enhanceweight = enhanceweight; }
 
     inline double AbsError() const { return m_abserror; }
 
@@ -193,10 +196,6 @@ namespace PHASIC {
     { m_abserror=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
-    void SetEnhanceObservable(const std::string &enhanceobs);
-    void SetEnhanceFunction(const std::string &enhancefunc);
-    inline void SetEnhance(const double& enhance)
-    { m_enhance=enhance; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }
