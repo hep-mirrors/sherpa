@@ -575,8 +575,12 @@ void Matrix_Element_Handler::BuildProcesses()
       THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
     }
-    const std::string& name = keys[0];
-    auto procsettings = proc[name];
+    auto procsettings = proc[keys[0]];
+    std::string name = keys[0];
+    // tags are not automatically resolved in setting keys, hence let's do this
+    // manually, to allow for tags within process specifications as e.g.
+    // "93 93 -> 11 -11 93{$(NJET)}"
+    proc.ReplaceTags(name);
     RegisterMainProcessDefaults(procsettings);
     Single_Process_List_Args args;
     ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
