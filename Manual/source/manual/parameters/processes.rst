@@ -461,6 +461,9 @@ NLO_Mode
 This setting specifies whether and in which mode an NLO calculation
 should be performed. Possible values are:
 
+``None``
+  perform a leading-order calculation (this is the default)
+
 ``Fixed_Order``
   perform a fixed-order next-to-leading order calculation
 
@@ -468,10 +471,11 @@ should be performed. Possible values are:
   perform an MC\@NLO-type matching of a fixed-order next-to-leading order
   calculation to the resummation of the parton shower
 
-The usual multiplicity identifier apply to this switch as well.  Note
-that this setting implies ``NLO_Part: BVIRS`` for the relevant
-multiplicities. This can be overridden by setting ``NLO_Part``
-explicitly in case of fixed-order calculations.
+The usual multiplicity identifier applies to this switch as well.
+Note that using a value other than ``None`` implies ``NLO_Part: BVIRS`` for
+the relevant multiplicities.
+For fixed-order NLO calculations (``NLO_Mode: Fixed_Order``), this can be
+overridden by setting ``NLO_Part`` explicitly, see :ref:`NLO_Part`.
 
 Note that Sherpa includes only a very limited selection of one-loop
 corrections. For processes not included external codes can be
@@ -483,7 +487,8 @@ NLO_Part
 ========
 
 In case of fixed-order NLO calculations this switch specifies which
-pieces of a NLO calculation are computed. Possible choices are
+pieces of a NLO calculation are computed, also see :ref:`NLO_Mode`.
+Possible choices are
 
 ``B``
   born term
