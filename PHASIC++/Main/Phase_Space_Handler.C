@@ -559,25 +559,8 @@ void Phase_Space_Handler::AddPoint(const double value)
     if (p_isrchannels)  p_isrchannels->AddPoint(value*enhance);
     p_fsrchannels->AddPoint(value*enhance);
     if (p_enhancehisto) {
-      if (!p_process->Process()->Info().Has(nlo_type::rsub)) {
-	double obs((*p_enhanceobs)(&p_lab.front(),
-                                   &p_flavours.front(),m_nin+m_nout));
-	p_enhancehisto_current->Insert(obs,value/m_enhance);
-      }
-      else {
-        // fixed-order RS, fill with RS weight and R kinematics
-        if (p_process->Process()->Info().m_nlomode==1) {
-          double obs((*p_enhanceobs)(&p_lab.front(),
-                                     &p_flavours.front(),m_nin+m_nout));
-          p_enhancehisto_current->Insert(obs,value/m_enhance);
-	}
-        // MC@NLO H/RS, fill with H weight and kinematics
-        else {
-          double obs((*p_enhanceobs)(&p_lab.front(),
-                                     &p_flavours.front(),m_nin+m_nout));
-          p_enhancehisto_current->Insert(obs,value/m_enhance);
-        }
-      }
+      double obs((*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout));
+      p_enhancehisto_current->Insert(obs,value/m_enhance);
     }
   }
 }
@@ -634,20 +617,7 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
 double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
 {
   if (p_enhanceobs==NULL) return 1.0;
-  double obs=p_enhancehisto?p_enhancehisto->Xmin():0.0;
-  if (!proc->Info().Has(nlo_type::rsub)) {
-    obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
-  }
-  else {
-    // fixed-order RS, read out with R kinematics
-    if (proc->Info().m_nlomode==1) {
-      obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
-    }
-    // MC@NLO H, read out with H kinematics
-    else {
-      obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
-    }
-  }
+  double obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
   if (obs<=p_enhancehisto->Xmin()) obs=p_enhancehisto->Xmin()+1e-12;
