@@ -1,0 +1,3 @@
+to use the EXTAMP-framework: 
+ - run first "Sherpa -f Run_amegic.yaml" and "./makelibs -j4" to build the libraries
+ - then run "Sherpa -f Run_ol.yaml"

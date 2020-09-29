@@ -1,0 +1,59 @@
+TAGS:
+  MassTop: 173.21
+
+# Monte-Carlo
+EVENTS: 0
+ERROR: 0.001
+PSI:
+  ITMIN: 100000
+EVENT_GENERATION_MODE: Weighted
+MI_HANDLER: None
+FRAGMENTATION: Off
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+NUM_ACCURACY: 1e-7 # to avoid error in AMEGIC GaugeTest
+
+# matrix-element calculation
+ME_GENERATORS:
+  - Amegic
+
+SCALES: VAR{sqr($(MassTop))}
+
+PARTICLE_DATA:
+  15:
+    Massive: 1
+  24:
+    Width: 0
+  5:
+    Mass: 0
+  23:
+    Active: 0 # to avoid issue #30 (gitlab)
+
+# technical parameters
+DIPOLES:
+  CASE: IDin
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+PROCESSES:
+- 93 93 -> 24 -24 93 93:
+    Order: {QCD: 2, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
+    NLO_Mode: Fixed_Order
+    Loop_Generator: OpenLoops
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 25
+    ETMin: 0
+    DR: 0.4
+    f: 0.75
+    EtaMax: 100
+    YMax: 100
+    Nb: 2
+    Nb2: -1 # default
+    

@@ -1,0 +1,59 @@
+TAGS:
+  MassTop: 173.21
+
+EVENTS: 0
+ERROR: 0.0001
+PSI:
+  ITMIN: 100000
+MI_HANDLER: None
+FRAGMENTATION: Off
+ME_GENERATORS: 
+- External
+- OpenLoops
+OL_PARAMETERS:
+  check_collection: 0
+  allowed_libs: "eevvjj"
+ME_QED:                 # turn off QED radiation
+  ENABLED: false
+PDF_SET: None
+BEAM_REMNANTS: false
+SHOWER_GENERATOR: None
+
+SCALES: VAR{sqr($(MassTop))}
+DIPOLES:
+  CASE: IDa
+
+PARTICLE_DATA:
+  15:
+    Massive: 1
+  24:
+    Width: 0
+  5:
+    Mass: 0
+
+BEAM_1: 11
+BEAM_ENERGY_1: $(MassTop)*2
+BEAM_2: -11
+BEAM_ENERGY_2: $(MassTop)*2
+
+#OUTPUT: 2
+FUNCTION_OUTPUT:
+  FF_Dipole::CalcKinematics: 8
+
+
+PROCESSES:
+-  11 -11 -> 24 -24 5 -5:
+    Order: {QCD: 0, EW: 4}
+    NLO_Order: {QCD: 1, EW: 0}
+    Min_Order: {QCD: -1, EW: -1}
+    Max_Order: {QCD: -1, EW: -1}
+    NLO_Mode: Fixed_Order
+    Loop_Generator: OpenLoops
+    Integrator: fsrchannels4
+    RS_Integrator: fsrchannels5
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: kt
+    N: 2
+    PTMin: 5.0 # translates into dmax=sqr(PTMin) in ee_kt_algorithm
