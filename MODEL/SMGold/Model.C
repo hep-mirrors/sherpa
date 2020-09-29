@@ -1530,7 +1530,7 @@ namespace MODEL{
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)24,1) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)24,0) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)23,0) );
-      m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_37",m_local_complex_constants["GC_37"]) );
+      m_v.back().cpl.push_back( - ATOOLS::Kabbala("GC_37",m_local_complex_constants["GC_37"]) );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVV");
       m_v.back().order.resize(3);
@@ -1669,7 +1669,7 @@ namespace MODEL{
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)22,0) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)24,1) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)24,0) );
-      m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_3",m_local_complex_constants["GC_3"]) );
+      m_v.back().cpl.push_back( - ATOOLS::Kabbala("GC_3",m_local_complex_constants["GC_3"]) );
       m_v.back().Color.push_back(Color_Function(cf::None));
       m_v.back().Lorentz.push_back("VVV");
       m_v.back().order.resize(3);
@@ -1846,7 +1846,7 @@ namespace MODEL{
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)21,0) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)21,0) );
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)21,0) );
-      m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_13",m_local_complex_constants["GC_13"]) );
+      m_v.back().cpl.push_back( - ATOOLS::Kabbala("GC_13",m_local_complex_constants["GC_13"]) );
       m_v.back().Color.push_back(Color_Function(cf::F,1,2,3));
       m_v.back().Lorentz.push_back("VVV");
       m_v.back().order.resize(3);
