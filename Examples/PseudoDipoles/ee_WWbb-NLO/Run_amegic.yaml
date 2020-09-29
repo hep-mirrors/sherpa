@@ -47,14 +47,15 @@ PROCESSES:
     RS_ME_Generator: Amegic
     Loop_Generator: OpenLoops
 
-ANALYSIS: Rivet
-ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
-RIVET: 
-    {
-    "-a": [ee_wwbb_analysis, myLL_JetRates],
-    USE_HEPMC_SHORT: 1,  # only for fixed order
-    SPLITSH: 1
-    }
+# the following analyses cause problems, when using MPI
+#ANALYSIS: Rivet
+#ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
+#RIVET: 
+#    {
+#    "-a": [ee_wwbb_analysis, myLL_JetRates],
+#    USE_HEPMC_SHORT: 1,  # only for fixed order
+#    SPLITSH: 1
+#    }
 
 SELECTORS:
 - FastjetFinder:

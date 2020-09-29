@@ -52,13 +52,14 @@ PROCESSES:
     Order: {QCD: 0, EW: 4}
     ME_Generator: Amegic
 
-ANALYSIS: Rivet
-ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
-RIVET: 
-    {
-    "-a": [ee_wwbb_analysis, myLL_JetRates],
-    SPLITSH: 1
-    }
+# the following analyses cause problems, when using MPI
+#ANALYSIS: Rivet
+#ANALYSIS_OUTPUT: $(FILE_NAME)/$(NumberEvents)_$(TAG_SEED)
+#RIVET: 
+#    {
+#    "-a": [ee_wwbb_analysis, myLL_JetRates],
+#    SPLITSH: 1
+#    }
 
 SELECTORS:
 - FastjetFinder:
