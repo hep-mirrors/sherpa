@@ -42,7 +42,6 @@ Spin_Density::~Spin_Density()
 {
 }
 
-typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, Spin_Density*> > SpinDensityMap;
 namespace ATOOLS {
   template <> Blob_Data<SpinDensityMap*>::~Blob_Data()
   {

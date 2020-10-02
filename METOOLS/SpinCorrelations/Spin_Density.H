@@ -3,6 +3,9 @@
 
 #include <vector>
 #include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Vector.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Matrix.H"
 
 namespace ATOOLS {
@@ -26,5 +29,11 @@ namespace METOOLS {
 
 }
 
+typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, METOOLS::Spin_Density*> > SpinDensityMap;
+namespace ATOOLS {
+  template <> Blob_Data<SpinDensityMap*>::~Blob_Data();
+
+  template <> Blob_Data_Base* Blob_Data<SpinDensityMap*>::ClonePtr();
+}
 
 #endif
