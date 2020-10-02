@@ -11,4 +11,6 @@ PARTICLE_DATA:
     Yukawa: 0.000511
 
 PROCESSES:
-- 11 -11 -> 5 -5: {}
+- 11 -11 -> 5 -5:
+    Order: { SMGold: 0 }
+    Amplitude_Order: { SMGold: 0 }

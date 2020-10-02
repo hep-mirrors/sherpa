@@ -151,10 +151,10 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   pi.m_mincpl = p_proc->Info().m_mincpl;
   pi.m_maxacpl = p_proc->Info().m_maxacpl;
   pi.m_minacpl = p_proc->Info().m_minacpl;
-  pi.m_maxcpl.push_back(99);
-  pi.m_mincpl.push_back(0);
-  pi.m_maxacpl.push_back(99);
-  pi.m_minacpl.push_back(0);
+  pi.m_maxcpl[2] = 99;
+  pi.m_mincpl[2] = 0;
+  pi.m_maxacpl[2] = 99;
+  pi.m_minacpl[2] = 0;
 
   return pi;
 }
