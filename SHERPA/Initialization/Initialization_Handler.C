@@ -203,9 +203,9 @@ void Initialization_Handler::RegisterDefaults()
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
-  s["CSS_EVOLUTION_SCHEME"].SetDefault(1);
+  s["CSS_EVOLUTION_SCHEME"].SetDefault(30);
   s["CSS_KFACTOR_SCHEME"].SetDefault(9);
-  s["CSS_SCALE_SCHEME"].SetDefault(0);
+  s["CSS_SCALE_SCHEME"].SetDefault(20);
   s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
