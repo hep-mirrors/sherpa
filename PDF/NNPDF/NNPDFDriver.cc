@@ -95,6 +95,7 @@ NNPDFDriver::NNPDFDriver(string const& gridfilename, int const& rep):
 NNPDFDriver::~NNPDFDriver()
 {  
   for (size_t s = 0; s < fPDFGrid.size(); s++)
+    {
     for (int imem = 0; imem <= fMem; imem++)
       {
 	for (int i = 0; i < fNFL; i++)
@@ -105,6 +106,8 @@ NNPDFDriver::~NNPDFDriver()
 	  }
 	if (fPDFGrid[s][imem]) delete[] fPDFGrid[s][imem];
       }
+      if (fPDFGrid[s]) delete[] fPDFGrid[s];
+    }
   fPDFGrid.clear();
 
   if (fXGrid) delete[] fXGrid;
