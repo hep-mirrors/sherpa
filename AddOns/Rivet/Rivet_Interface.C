@@ -376,6 +376,10 @@ bool Rivet_Interface::Finish()
     std::string out = m_outpath;
     if (it.first.first!="") out+="."+it.first.first;
     if (it.first.second!=0) out+=".j"+ToString(it.first.second);
+    const double wgtfrac = it.second->sumW()/GetRivet("",0)->sumW();
+    const double totalxs = it.second->nominalCrossSection();
+    const double thisxs  = totalxs*wgtfrac;
+    it.second->setCrossSection(thisxs, 0.0, true);
     it.second->finalize();
     it.second->writeData(out+".yoda");
   }
