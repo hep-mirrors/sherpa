@@ -104,13 +104,9 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   RegisterDefaults();
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
+  if (m_outpath.rfind('/')!=std::string::npos)
+    MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
 #ifdef USING__MPI
-  if (mpi->Rank()==0) {
-#endif
-    if (m_outpath.rfind('/')!=std::string::npos)
-      MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
-#ifdef USING__MPI
-  }
   if (mpi->Size()>1) {
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
   }
@@ -683,13 +679,9 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   RegisterDefaults();
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
+  if (m_outpath.rfind('/')!=std::string::npos)
+    MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
 #ifdef USING__MPI
-  if (mpi->Rank()==0) {
-#endif
-    if (m_outpath.rfind('/')!=std::string::npos)
-      MakeDir(m_outpath.substr(0,m_outpath.rfind('/')));
-#ifdef USING__MPI
-  }
   if (mpi->Size()>1) {
     m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
   }
