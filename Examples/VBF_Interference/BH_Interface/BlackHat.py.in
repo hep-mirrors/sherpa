@@ -34,7 +34,7 @@ PROCESSES:\n\
 \n")
 card.flush()
 
-sys.argv.append('-f '+os.path.basename(card.name))
+sys.argv.append(' '+os.path.basename(card.name))
 
 Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:

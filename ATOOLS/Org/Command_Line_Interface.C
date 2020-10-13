@@ -61,6 +61,12 @@ void Command_Line_Interface::Parse(int argc, char* argv[])
   success = (ParseNoneOptions(parser) && success);
   success = (ParseOptions(options)    && success);
 
+  if (options[CMDLINE_DEBUG]) {
+    msg_Out() << "Translated command line input into YAML:\n"
+              << m_yamlstream.str() << '\n';
+    exit(0);
+  }
+
   if (!success) {
     PrintUsageAndExit();
   }
@@ -107,10 +113,23 @@ bool Command_Line_Interface::ParseOptions(
 
 bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
 {
+  std::vector<std::string> filenames;
   String_Map legacysyntaxtags;
   auto didfinddyamltags = false;
   for (int i = 0; i < parser.nonOptionsCount(); ++i) {
-    auto nonOption = StringTrim(parser.nonOption(i));
+
+    std::string nonOption {parser.nonOption(i)};
+
+    const auto equalpos = nonOption.find('=');
+    const auto colonpos = nonOption.find(':');
+    if (equalpos == std::string::npos && colonpos == std::string::npos) {
+      // we treat noneOptions that do not contain a ':' or a '=' as config
+      // filenames
+      filenames.push_back(nonOption);
+      continue;
+    }
+
+    nonOption = StringTrim(nonOption);
 
     // find legacy-syntax tag specifications
     const auto pos = nonOption.find(":=");
@@ -124,8 +143,6 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
     }
 
     // convert legacy-delimiter '=' into yaml-delimiter ':'
-    const auto equalpos = nonOption.find('=');
-    const auto colonpos = nonOption.find(':');
     if (equalpos != std::string::npos && colonpos == std::string::npos) {
       nonOption[equalpos] = ':';
     }
@@ -184,6 +201,19 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
       m_yamlstream << tag.first << ": " << tag.second;
     }
     m_yamlstream << "}\n";
+  }
+
+  if (!filenames.empty()) {
+    m_yamlstream << "RUNDATA: [";
+    bool first = true;
+    for (const auto& filename : filenames) {
+      if (first)
+        first = false;
+      else
+        m_yamlstream << ", ";
+      m_yamlstream << '"' << filename << '"';
+    }
+    m_yamlstream << "]\n";
   }
 
   return true;
