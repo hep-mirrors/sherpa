@@ -1884,7 +1884,7 @@ namespace MODEL{
       m_v.back().AddParticle( ATOOLS::Flavour((kf_code)25,0) );
       m_v.back().cpl.push_back( ATOOLS::Kabbala("GC_60",m_local_complex_constants["GC_60"]) );
       m_v.back().Color.push_back(Color_Function(cf::None));
-      m_v.back().Lorentz.push_back("SSS1");
+      m_v.back().Lorentz.push_back("SSS");
       m_v.back().order.resize(3);
       m_v.back().order[0]    = 0;
       m_v.back().order[1]    = 1;
