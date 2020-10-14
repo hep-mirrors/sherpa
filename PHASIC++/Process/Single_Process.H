@@ -62,11 +62,6 @@ namespace PHASIC {
     */
     virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
 
-    inline virtual const double SPrimeMin() const override { return -1.; }
-    inline virtual const double SPrimeMax() const override { return -1.; }
-    inline virtual const bool HasInternalScale() const override { return false; }
-    inline virtual const double InternalScale() const override { return -1.; }
-
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
     virtual const ATOOLS::Flavour_Vector &

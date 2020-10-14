@@ -25,12 +25,10 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   m_rmode(0), m_swap(0),
   m_info_lab(8),
-  m_info_cms(8),
-  m_freezePDFforLowQ(false)
+  m_info_cms(8)
 {
-  Settings& s = Settings::GetMainSettings();
-  m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
   if (s_nozeropdf<0) {
+    Settings& s = Settings::GetMainSettings();
     s_nozeropdf = s["NO_ZERO_PDF"].SetDefault(0).Get<int>();
   }
   m_mu2[0]=m_mu2[1]=0.0;
@@ -312,10 +310,6 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     msg_Error()<<"Bad PDF input: x1="<<x1<<", x2="<<x2
                <<", Q12="<<Q12<<", Q22="<<Q22<<std::endl;
     return 0.;
-  }
-  if (m_freezePDFforLowQ) {
-    if (Q12<PDF(0)->Q2Min()) Q12 = 1.001*PDF(0)->Q2Min();
-    if (Q22<PDF(1)->Q2Min()) Q22 = 1.001*PDF(1)->Q2Min();
   }
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
 		   <<p1.PPlus()<<" / "<<p_beam[0]->

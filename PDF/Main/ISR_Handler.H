@@ -47,7 +47,6 @@ namespace PDF {
 
     double m_xf1[2], m_xf2[2];
 
-    bool m_freezePDFforLowQ;
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
