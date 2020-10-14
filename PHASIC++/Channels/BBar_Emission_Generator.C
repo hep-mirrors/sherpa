@@ -47,6 +47,7 @@ bool BBar_Emission_Generator::AddDipole
     (dip->GetSubEvt()->p_fl,
      &dip->GetSubEvt()->p_fl[dip->GetSubEvt()->m_n]);
   Process_Base *bproc(NULL);
+  msg_Out()<<sproc->Name()<<std::endl<<cfl<<std::endl;
   for (size_t i(0);i<bviproc->Size();++i) {
     if ((*bviproc)[i]->Flavours()==cfl) {
       if (bproc) THROW(fatal_error,"Doubled Born process");
@@ -79,6 +80,7 @@ bool BBar_Emission_Generator::InitDipoles
     NLO_subevtlist *subs((*sproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
+      if (sub->m_stype==sbt::qed) continue;
       if (sub->m_i<m_nin) {
         if (sub->m_k<m_nin) AddDipole(bviproc,new II_Dipole(sub,psh));
         else AddDipole(bviproc,new IF_Dipole(sub,psh));

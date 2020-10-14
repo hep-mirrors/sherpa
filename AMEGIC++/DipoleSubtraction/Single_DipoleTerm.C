@@ -180,6 +180,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   Process_Info cpi(p_LO_process->Info());
   m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
+  m_subevt.m_stype = m_stype;
 
   p_LO_process->SetSubEvt(&m_subevt);
 
