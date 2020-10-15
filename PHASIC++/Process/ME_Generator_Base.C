@@ -173,7 +173,7 @@ void ME_Generator_Base::RegisterDipoleParameters()
   s["PFF_FS_RECOIL_SCHEME"].SetDefault(0);
   s["IS_CLUSTER_TO_LEPTONS"].SetDefault(0);
   s["LIST"].SetDefault(0);
-  s["BORN_FLAVOUR_RESTRICTIONS"].SetDefault("");
+  s.DeclareVectorSettingsWithEmptyDefault({ "BORN_FLAVOUR_RESTRICTIONS" });
   s["ONSHELL_SUBTRACTION_WINDOW"].SetDefault(5.0);
 }
 
