@@ -47,7 +47,6 @@ bool BBar_Emission_Generator::AddDipole
     (dip->GetSubEvt()->p_fl,
      &dip->GetSubEvt()->p_fl[dip->GetSubEvt()->m_n]);
   Process_Base *bproc(NULL);
-  msg_Out()<<sproc->Name()<<std::endl<<cfl<<std::endl;
   for (size_t i(0);i<bviproc->Size();++i) {
     if ((*bviproc)[i]->Flavours()==cfl) {
       if (bproc) THROW(fatal_error,"Doubled Born process");
