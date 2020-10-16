@@ -77,13 +77,13 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
   m_removeiso(false), m_removenoniso(false)
 {
   DEBUG_FUNC("");
-  Scoped_Settings s{ key.m_settings };
+  auto s = key.m_settings["Isolation_Selector"];
 
-  auto kfc = s["Isolation_Particles"].SetDefault(kf_none).Get<long int>();
+  auto kfc = s["Isolation_Particle"].SetDefault(kf_none).Get<long int>();
   m_iflav = Flavour(abs(kfc), kfc<0);
 
   auto kfcs = s["Rejection_Particles"]
-    .SetDefault<long int>({})
+    .SetDefault(std::vector<long int>())
     .GetVector<long int>();
   for (const auto rejkfc : kfcs)
     if (rejkfc != kf_none)
@@ -173,10 +173,10 @@ bool Isolation_Selector::Trigger(Selector_List &sl)
     size_t idx((*vf)[k]);
     if ((m_ptmin==0. || sl[idx].Momentum().PPerp()>m_ptmin) &&
         (m_etmin==0. || sl[idx].Momentum().MPerp()>m_etmin) &&
-        (m_etamin<-100000. || sl[idx].Momentum().Eta()>m_etamin) &&
-        (m_etamax>100000. || sl[idx].Momentum().Eta()<m_etamax) &&
-        (m_ymin<-100000. || sl[idx].Momentum().Y()>m_ymin) &&
-        (m_ymax>100000. || sl[idx].Momentum().Y()<m_ymax)) {
+        (m_etamin==-std::numeric_limits<double>::max() || sl[idx].Momentum().Eta()>m_etamin) &&
+        (m_etamax==std::numeric_limits<double>::max() || sl[idx].Momentum().Eta()<m_etamax) &&
+        (m_ymin==-std::numeric_limits<double>::max() || sl[idx].Momentum().Y()>m_ymin) &&
+        (m_ymax==std::numeric_limits<double>::max() || sl[idx].Momentum().Y()<m_ymax)) {
       bool iso(true);
       double egamma(sl[idx].Momentum().MPerp());
       std::vector<edr> edrlist;
@@ -278,23 +278,23 @@ void Isolation_Selector::BuildCuts(Cut_Data * cuts)
         cuts->etmin[i] = Max(sqrt(sqr(m_etmin)+sqr(p_fl[i].SelMass())
                              *(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
       }
-      if (m_ymax<100000.) {
+      if (m_ymax<std::numeric_limits<double>::max()) {
         cuts->cosmax[0][i] = cuts->cosmax[i][0] =
           Min(cuts->cosmax[0][i],tanh(m_ymax)/sqrt(1.-sqr(p_fl[i].SelMass())
                                                    /sqr(cuts->energymin[i])));
       }
-      if (m_ymin>-100000.) {
+      if (m_ymin>-std::numeric_limits<double>::max()) {
         cuts->cosmax[1][i] = cuts->cosmax[i][1] =
           Min(cuts->cosmax[1][i],tanh(-m_ymin)/sqrt(1.-sqr(p_fl[i].SelMass())
                                                     /sqr(cuts->energymin[i])));
       }
-      if (m_etamax<100000.) {
+      if (m_etamax<std::numeric_limits<double>::max()) {
         cuts->cosmin[1][i] = cuts->cosmin[i][1]
           = Max(cuts->cosmin[1][i],tanh(-m_etamax));
         cuts->cosmax[0][i] = cuts->cosmax[i][0]
           = Min(cuts->cosmax[0][i],tanh(m_etamax));
       }
-      if (m_etamin>-100000.) {
+      if (m_etamin>-std::numeric_limits<double>::max()) {
         cuts->cosmin[0][i] = cuts->cosmin[i][0]
           = Max(cuts->cosmin[0][i],tanh(m_etamin));
         cuts->cosmax[1][i] = cuts->cosmax[i][1]
@@ -348,7 +348,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
   str<<"Isolation_Selector:\n"
-     <<w<<"  Isolation_Particles: <kf1>\n"
+     <<w<<"  Isolation_Particle: <kf1>\n"
      <<w<<"  Rejection_Particles [<kf1>, <kf2>, ...]\n"
      <<w<<"  Isolation_Parameters: {\n"
      <<w<<"    R: <dR>,\n"
