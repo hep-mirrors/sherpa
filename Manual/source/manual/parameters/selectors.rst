@@ -316,6 +316,42 @@ b and anti-b is not tagged.  Note that only ``<epression>``,
 ``<algorithm>``, ``<n>`` and ``<ptmin>`` are relevant when using the
 lepton-lepton collider algorithms.
 
+.. _Isolation selector:
+
+Isolation selector
+==================
+
+Instead of the simple ``IsolationCut`` (:ref:`Inclusive selectors`), you may
+also use the more flexible ``Isolation_Selector`` to require photons (or other
+particles) with a smooth cone isolation and additionally apply further criteria
+to them. Example:
+
+.. code-block:: yaml
+
+   SELECTORS:
+   - Isolation_Selector:
+       Isolation_Particle: 22
+       Rejection_Particles: [93]
+       Isolation_Parameters:
+         R: 0.1
+         EMAX: 0.1
+         EXP: 2
+         PT: 0.
+         Y: 2.7
+       NMin: 2
+       Remove_Nonisolated: true
+       Subselectors:
+       - VariableSelector:
+           Variable: PT
+           Flavs: [22]
+           Ranges:
+           - [20, E_CMS]
+           - [18, E_CMS]
+           Ordering: [PT_UP]
+       - [DR, 22, 22, 0.2, 10000.0 ]
+       #for integration efficiency: m_yy >= sqrt(2 pTmin1 pTmin2 (1-cos dR))
+       - [Mass, 22, 22, 3.7, E_CMS]
+
 .. _Universal selector:
 
 Universal selector
@@ -336,7 +372,7 @@ the matrix element level. Its syntax is
        - [<min1>, <max1>]
        - ...
        - [<minn>, <maxn>]
-       Ordering: "[<order1>,...,<orderm>]"
+       Ordering: [<order1>, ..., <orderm>]
 
 The ``Variable`` parameter defines the name of the variable to cut
 on. The keywords for available predefined can be figured by running
@@ -392,7 +428,7 @@ Examples
        Flavs: 90
        Ranges:
        - [50, E_CMS]
-       Ordering: "[PT_UP]"
+       Ordering: [PT_UP]
 
    # using bool operations to restrict eta of the electron to |eta| < 1.1 or
    # 1.5 < |eta| < 2.5
@@ -408,7 +444,7 @@ Examples
        Flavs: [93, 93]
        Ranges:
        - [-100, 0]
-       Ordering: "[PT_UP,PT_UP]"
+       Ordering: [PT_UP, PT_UP]
 
    # restricting electron+photon mass to be outside of [87.0,97.0]
    - VariableSelector:

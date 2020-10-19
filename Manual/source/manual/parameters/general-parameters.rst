@@ -706,14 +706,14 @@ parallelization first. Therefore, first run
 
 .. code-block:: shell-session
 
-   $ Sherpa -f <run-card> INIT_ONLY=1
+   $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
 parallized integration, e.g.
 
 .. code-block:: shell-session
 
-   $ mpirun -n <n> Sherpa -f <run-card> -e 0
+   $ mpirun -n <n> Sherpa -e 0 <Sherpa.yaml>
 
 After the integration has finished, you can submit individual jobs to generate
 event samples (with a different random seed for each job).  Upon completion,

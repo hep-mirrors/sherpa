@@ -49,17 +49,8 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
 
-  std::vector<int> flavrest;
-  const auto frstr
-    = s["DIPOLES"]["BORN_FLAVOUR_RESTRICTIONS"].Get<std::string>();
-  if (frstr!="") {
-    std::size_t pos=0, found;
-    while ((found=frstr.find_first_of(' ',pos))!=std::string::npos) {
-      flavrest.push_back(ToType<int>(frstr.substr(pos,found-pos)));
-      pos=found+1;
-    }
-    PRINT_INFO("to be debugged:" <<flavrest);
-  }
+  const std::vector<int> flavrest =
+      s["DIPOLES"]["BORN_FLAVOUR_RESTRICTIONS"].GetVector<int>();
   if (flavrest.size()%2)
     THROW(fatal_error,"Syntax error in DIPOLES:BORN_FLAVOUR_RESTRICTIONS.");
   for (size_t i(0);i<flavrest.size();i+=2)

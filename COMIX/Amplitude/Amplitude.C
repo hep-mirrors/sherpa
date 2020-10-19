@@ -842,6 +842,7 @@ void Amplitude::ConstructNLOEvents()
     for (size_t j(m_nin);j<m_nin+m_nout-1;++j)
       cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
     sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
+    sub->m_stype=(sbt::subtype)(p_dinfo->Type()+1);
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
   }
@@ -866,6 +867,7 @@ void Amplitude::ConstructNLOEvents()
     cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
   PHASIC::Process_Base::SortFlavours(cpi);
   sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
+  sub->m_stype=sbt::none;
   sub->m_i=sub->m_j=sub->m_k=0;
   sub->m_oqcd=m_maxcpl[0]/2;
   sub->m_oew=m_maxcpl[1]/2;

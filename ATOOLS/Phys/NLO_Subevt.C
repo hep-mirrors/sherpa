@@ -140,6 +140,7 @@ namespace ATOOLS
     return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
 	       <<", idx "<<sevt.m_idx
 	       <<", orders ("<<sevt.m_oqcd<<","<<sevt.m_oew<<")"
+               <<", stype = "<<sevt.m_stype
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
