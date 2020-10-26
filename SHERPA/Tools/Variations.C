@@ -221,7 +221,7 @@ void Variations::AddParameters(std::vector<std::string> stringparams,
 
   // associated contribs
   PHASIC::asscontrib::type asscontrib(PHASIC::asscontrib::none);
-  bool multiassew(false);
+  size_t multiassew(false);
 
   bool ownedpdfsandalphas(false);
   if (stringparams.size() > 2) {
