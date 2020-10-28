@@ -274,6 +274,14 @@ double Weights_Map::Nominal() const
   return nominals_prefactor * w;
 }
 
+double Weights_Map::Nominal(const std::string& k) const
+{
+  const auto res = find(k);
+  if (res == this->end())
+    THROW(fatal_error, "Weights map does not have an entry for `" + k + "`.");
+  return base_weight * res->second.Nominal();
+}
+
 double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
 {
   double w {base_weight};

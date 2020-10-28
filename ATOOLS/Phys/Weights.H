@@ -130,9 +130,10 @@ namespace ATOOLS {
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
-    // calculate nominal values, either including all entries or excluding
-    // those that have a certain variation type
+    // calculate nominal values, either including all entries, for a single
+    // entry `k`, or excluding those that have a certain variation type
     double Nominal() const;
+    double Nominal(const std::string& k) const;
     double NominalIgnoringVariationType(Variations_Type) const;
 
     // return Weights entries for a given name, either as-is ("Relative"), or
