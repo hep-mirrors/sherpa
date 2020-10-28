@@ -869,6 +869,13 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
 
 void Single_Process::CalculateAssociatedContributionVariations()
 {
+  for (const auto& asscontrib : m_asscontrib) {
+    const std::string key = ToString<asscontrib::type>(asscontrib);
+    m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = 1.0;
+    m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = 1.0;
+  }
+
   if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
     return;
 
@@ -913,15 +920,6 @@ void Single_Process::CalculateAssociatedContributionVariations()
           (BVIKP - DADS) * Deltaassnew * norm;
       m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
           (BVIKP - DADS) * Deltaassnewexp * norm;
-    }
-
-  } else {
-
-    for (const auto& asscontrib : m_asscontrib) {
-      const std::string key = ToString<asscontrib::type>(asscontrib);
-      m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
-      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = 1.0;
-      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = 1.0;
     }
 
   }
