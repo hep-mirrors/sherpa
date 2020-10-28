@@ -869,7 +869,7 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
 
 void Single_Process::CalculateAssociatedContributionVariations()
 {
-  if (m_asscontrib.empty())
+  if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
     return;
 
   const double norm {m_csi.m_pdfwgt / m_last["ME"].Nominal()};
