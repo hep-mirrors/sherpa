@@ -872,7 +872,7 @@ void Single_Process::CalculateAssociatedContributionVariations()
   if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
     return;
 
-  const double norm {m_csi.m_pdfwgt / m_last["ME"].Nominal()};
+  const double norm {m_csi.m_pdfwgt / m_last.Nominal("ME")};
 
   if (GetSubevtList() == nullptr && !IsBad(norm)) {
 
@@ -883,7 +883,7 @@ void Single_Process::CalculateAssociatedContributionVariations()
     }
     const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
       m_mewgtinfo.m_KP};
-    const double DADS {m_dadswgtmap["ME"].Nominal() / m_csi.m_pdfwgt};
+    const double DADS {m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt};
 
     for (const auto& asscontrib : m_asscontrib) {
 
