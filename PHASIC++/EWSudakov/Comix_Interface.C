@@ -156,6 +156,12 @@ Comix_Interface::CreateProcessInfo(const Cluster_Amplitude* ampl,
   pi.m_maxacpl[2] = 99;
   pi.m_minacpl[2] = 0;
 
+  // subtract 1 from the QCD order if we are dealing with V and/or I events
+  if (p_proc->Info().Has(nlo_type::loop) || p_proc->Info().Has(nlo_type::vsub)) {
+    pi.m_mincpl[0] -= 1;
+    pi.m_maxcpl[0] -= 1;
+  }
+
   return pi;
 }
 
@@ -163,8 +169,8 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
 {
   auto proc = p_proc->Generator()->Generators()->InitializeProcess(pi, false);
   if (proc == NULL) {
-    msg_Error() << "WARNING: Comix_Interface::InitializeProcess can not"
-                << "initialize process for process info: " << pi << '\n';
+    msg_Debugging() << "WARNING: Comix_Interface::InitializeProcess can not"
+                    << "initialize process for process info: " << pi << '\n';
     return;
   }
   proc->SetSelector(Selector_Key{});
@@ -174,6 +180,8 @@ void Comix_Interface::InitializeProcess(const Process_Info& pi)
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   //proc->Get<COMIX::Process_Base>()->Tests();
   proc->FillProcessMap(&ProcessMap());
+  msg_Debugging() << "Comix_Interface::InitializeProcess initialized "
+                  << proc->Name() << '\n';
 }
 
 void Comix_Interface::AdaptToProcessColorScheme()

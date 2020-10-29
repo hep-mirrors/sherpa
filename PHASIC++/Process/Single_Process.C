@@ -576,14 +576,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       }
     }
 
-    // calculate and store EWSudakov corrections
-    if (p_ewsudakov_kfactor) {
-      const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
-      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
-        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
-      }
-    }
-
   } else {
 
     const auto triggers = Selector()->CombinedResults();
@@ -664,6 +656,16 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
   m_last -= m_dadswgtmap;
+
+  // calculate and store EWSudakov corrections
+  // TODO: this ignores variations from subevents and DADS
+  // contributions, we may want to add those
+  if (p_ewsudakov_kfactor) {
+    const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
+    for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
+      m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+    }
+  }
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
