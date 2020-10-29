@@ -869,6 +869,9 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
 
 void Single_Process::CalculateAssociatedContributionVariations()
 {
+  // we need to at least set them to 1.0, if there is no genuine contribution,
+  // since it's always expected by the output handlers, that all variation
+  // weights are filled consistently across events
   for (const auto& asscontrib : m_asscontrib) {
     const std::string key = ToString<asscontrib::type>(asscontrib);
     m_last["ASSOCIATED_CONTRIBUTIONS"][key] = 1.0;
