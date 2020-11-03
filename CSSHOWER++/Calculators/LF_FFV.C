@@ -1,7 +1,5 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-// #define USING_DIS_MEC 
-
 namespace CSSHOWER {
   
   class LF_FFV_FF: public SF_Lorentz {
@@ -295,11 +293,8 @@ double LF_FFV_FF::Z()
 
 double LF_FFV_FI::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.;
   return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
 }
 
 double LF_FFV_FI::CDISMax()
@@ -349,11 +344,8 @@ double LF_FFV_FI::Z()
 
 double LF_FFV_IF::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
 }
 
 double LF_FFV_IF::CDISMax()
@@ -392,7 +384,9 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) )
+  double MEcorrection(1.0);
+  if (p_sf->MECorrectionType()==1) MEcorrection = (1. + 2.*y*y - 2.*y*(1. - z) + z*z)/(1. + z*z);
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) ) * MEcorrection
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale);
 }
@@ -464,11 +458,8 @@ double LF_FVF_FF::Z()
 
 double LF_FVF_FI::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
 }
 
 double LF_FVF_FI::CDISMax()
@@ -515,11 +506,8 @@ double LF_FVF_FI::Z()
 
 double LF_FVF_IF::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
 }
 
 double LF_FVF_IF::CDISMax()
@@ -691,20 +679,14 @@ double LF_VFF_FF::Z() {
 
 double LF_VFF_FI::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return 4.*y*z*(1.-z);
-#else
-  return 0.0;
-#endif
 }
 
 double LF_VFF_FI::CDISMax()
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return 0.5;
-#else
-  return 0.0;
-#endif
 }
 
 double LF_VFF_FI::Scale
@@ -769,20 +751,14 @@ double LF_VFF_FI::Z()
 
 double LF_VFF_IF::CDIS(const double z,const double y)
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return 4.*y*z*(1.-z);
-#else
-  return 0.0;
-#endif
 }
 
 double LF_VFF_IF::CDISMax()
 {
-#ifdef USING_DIS_MEC 
+  if (p_sf->MECorrectionType()!=2) return 0.0;
   return 0.5;
-#else
-  return 0.0;
-#endif
 }
 
 double LF_VFF_IF::Scale
@@ -855,7 +831,9 @@ double LF_VFF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z))
+  double MEcorrection(1.0);
+  if (p_sf->MECorrectionType()==1) MEcorrection = (1.+(1.-2.*y*(1.-y)-y*y-z*z)/(1.-2.*z*(1.-z)));
+  double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z)) * MEcorrection
     + p_cf->Coupling(scale,1) * 0.5;
   return value * JII(z,y,eta,scale);
 }
@@ -868,7 +846,7 @@ double LF_VFF_II::OverIntegrated
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
-  m_Jmax = 5.*fresh/old;
+  m_Jmax = 5.*fresh/old*3.;
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 

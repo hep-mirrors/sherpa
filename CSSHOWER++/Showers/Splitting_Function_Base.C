@@ -15,6 +15,8 @@ using namespace CSSHOWER;
 using namespace MODEL;
 using namespace ATOOLS;
 
+int Splitting_Function_Base::s_mecorrectiontype(0);
+
 Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
   m_on(1), m_qcd(-1)

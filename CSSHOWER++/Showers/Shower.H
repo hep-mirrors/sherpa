@@ -48,6 +48,7 @@ namespace CSSHOWER {
     double GetXBj(Parton *const p) const;
     int    SetXBj(Parton *const p) const;
     Parton *SelectSplitting(double &);
+    void   EnableMECorrection(Singlet *actual);
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);
     bool   PerformSplitting();
     bool   TrialEmission(double &,Parton *);

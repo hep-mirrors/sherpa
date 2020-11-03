@@ -32,6 +32,12 @@ namespace CSSHOWER {
     std::vector<Parton*> m_specs;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
+    static int s_mecorrectiontype;
+    /*
+      0 - no MEC (default)
+      1 - Drell-Yan
+      2 - DIS
+    */
   public:
 
     Splitting_Function_Base();
@@ -105,6 +111,10 @@ namespace CSSHOWER {
     inline void SetScaleScheme(const int &scs) { m_scs=scs; }
 
     inline int ScaleScheme() const { return m_scs; }
+
+    inline static void SetMECorrectionType(int type) { s_mecorrectiontype = type; }
+
+    inline static int MECorrectionType() { return s_mecorrectiontype; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

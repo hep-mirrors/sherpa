@@ -292,8 +292,33 @@ int Shower::MakeKinematics
   return 1;
 }
 
+void Shower::EnableMECorrection(Singlet *actual)
+{
+  if (actual->size()!=4) return;
+  Flavour_Vector flavs;
+  for (Singlet::const_iterator it(actual->begin());it!=actual->end();++it)
+    flavs.push_back((*it)->GetFlavour());
+  if (flavs[2].IsLepton() && flavs[3].IsLepton() &&
+      flavs[0].IsQuark() &&	flavs[1].IsQuark()) {
+    msg_Debugging()<<"Enabling ME correction for Drell-Yan\n";
+    Splitting_Function_Base::SetMECorrectionType(1);
+  }
+  if ((flavs[0].IsLepton() && flavs[2].IsLepton() &&
+       flavs[1].IsQuark() && flavs[3].IsQuark()) ||
+      (flavs[1].IsLepton() && flavs[2].IsLepton() &&
+       flavs[0].IsQuark() && flavs[3].IsQuark()) ||
+      (flavs[0].IsLepton() && flavs[3].IsLepton() &&
+       flavs[1].IsQuark() && flavs[2].IsQuark()) ||
+      (flavs[1].IsLepton() && flavs[3].IsLepton() &&
+       flavs[0].IsQuark() && flavs[2].IsQuark())) {
+    msg_Debugging()<<"Enabling ME correction for DIS\n";
+    Splitting_Function_Base::SetMECorrectionType(2);
+  }
+}
+
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
+  EnableMECorrection(act);
   p_actual=act;
   Vec4D mom;
   double kt2win;
@@ -502,6 +527,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
+      Splitting_Function_Base::SetMECorrectionType(0);
       if (p_actual->NME()+nem>m_maxpart) return true;
       if (nem >= maxem) return true;
     }
