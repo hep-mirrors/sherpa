@@ -34,6 +34,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_kscheme           = s["CSS_KIN_SCHEME"].Get<int>();
   m_recdec            = s["CSS_RECO_DECAYS"].Get<int>();
   m_maxpart           = s["CSS_MAXPART"].Get<int>();
+  m_mecorrections     = s["CSS_MECORRECTIONS"].SetDefault(true).Get<bool>();
   if (type) {
     kfmode=s["MI_CSS_KFACTOR_SCHEME"].Get<int>();
     k0sqf=s["MI_CSS_FS_PT2MIN"].Get<double>();
@@ -294,7 +295,7 @@ int Shower::MakeKinematics
 
 void Shower::EnableMECorrection(Singlet *actual)
 {
-  if (actual->size()!=4) return;
+  if (actual->size()!=4 || m_mecorrections==false) return;
   Flavour_Vector flavs;
   for (Singlet::const_iterator it(actual->begin());it!=actual->end();++it)
     flavs.push_back((*it)->GetFlavour());

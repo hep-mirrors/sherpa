@@ -28,6 +28,7 @@ namespace CSSHOWER {
     REMNANTS::Remnant_Handler * p_remnants;
     Parton           * m_last[4];
     int                m_kscheme, m_maxpart, m_use_bbw, m_recdec;
+    bool               m_mecorrections;
 
     ATOOLS::Cluster_Leg *p_old[2];
 
