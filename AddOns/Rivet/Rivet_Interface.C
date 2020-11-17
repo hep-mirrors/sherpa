@@ -16,6 +16,7 @@
 #include "Rivet/Config/RivetConfig.hh"
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
+#include "YODA/Config/BuildConfig.h"
 #ifdef RIVET_ENABLE_HEPMC_3
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "HepMC3/GenEvent.h"
@@ -367,13 +368,17 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 
 bool Rivet_Interface::Finish()
 {
-  PRINT_FUNC(m_outpath+".yoda");
+  PRINT_FUNC(m_outpath);
   for (Rivet_Map::iterator it=m_rivet.begin(); it!=m_rivet.end(); it++) {
     std::string out = m_outpath;
     if (it->first.first!="") out+="."+it->first.first;
     if (it->first.second!=0) out+=".j"+ToString(it->first.second);
     it->second->finalize();
+#ifdef HAVE_LIBZ
+    it->second->writeData(out+".yoda.gz");
+#else
     it->second->writeData(out+".yoda");
+#endif
   }
   m_finished=true;
   return true;
