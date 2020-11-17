@@ -512,7 +512,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   mu12=p_isrhandler->MuF2(0);
   mu22=p_isrhandler->MuF2(1);
   auto res =
-      new Weight_Info(wgtmap, dxs, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
+      new Weight_Info(wgtmap, dxs, 1.0, fl1, fl2, x1, x2, xf1, xf2, mu12, mu22);
   return res;
 }
 
