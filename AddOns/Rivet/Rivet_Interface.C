@@ -49,7 +49,7 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs,
+    bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs,
       m_ignorebeams, m_usehepmcshort, m_skipweights;
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
@@ -96,7 +96,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   Analysis_Interface("Rivet"),
   m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
-  m_splitjetconts(false), m_splitSH(false),
+  m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false),
   m_ignoreblobs(ignoreblobs),
   m_hepmcoutputprecision(15), m_xsoutputprecision(6)
@@ -247,6 +247,7 @@ bool Rivet_Interface::Init()
 
     m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
     m_splitSH=reader.GetValue<int>("SPLITSH", 0);
+    m_splitpm=reader.GetValue<int>("SPLITPM", 0);
     m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
     m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
     if (m_usehepmcshort && m_tag!="RIVET") {
@@ -359,6 +360,9 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
           GetRivet(type,parts)->analyze(event);
         }
       }
+    }
+    if (m_splitpm) {
+      GetRivet(event.weights()[0]<0?"M":"P",0)->analyze(event);
     }
   }
 
@@ -551,7 +555,8 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_splitvariations,
+    bool   m_splitjetconts, m_splitSH, m_splitpm,
+           m_splitcoreprocs, m_splitvariations,
            m_ignorebeams, m_usehepmcshort,
            m_printsummary,
            m_evtbyevtxs;
@@ -670,7 +675,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   Analysis_Interface("Rivet"),
   m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
-  m_splitjetconts(false), m_splitSH(false),
+  m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
   m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs),
   m_printsummary(true), m_evtbyevtxs(false), m_nin(2),
@@ -930,6 +935,7 @@ bool Rivet_Interface::Init()
 
     m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
     m_splitSH=reader.GetValue<int>("SPLITSH", 0);
+    m_splitpm=reader.GetValue<int>("SPLITPM", 0);
     m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
     m_splitvariations=reader.GetValue<int>("SPLITVARIATIONS", 1);
     m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
@@ -1052,6 +1058,9 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
             GetRivet(rivetmap,type,parts)->analyze(event);
           }
         }
+      }
+      if (m_splitpm) {
+        GetRivet(rivetmap,event.weights()[0]<0?"M":"P",0)->analyze(event);
       }
     }
   }
