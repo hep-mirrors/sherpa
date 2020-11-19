@@ -214,6 +214,7 @@ void Initialization_Handler::RegisterDefaults()
   s["CSS_IS_PT2MIN"].SetDefault(2.0);
   s["CSS_FS_AS_FAC"].SetDefault(1.0);
   s["CSS_IS_AS_FAC"].SetDefault(1.0);
+  s["CSS_PDF_FAC"].SetDefault(1.0);
   s["CSS_SCALE_FACTOR"].SetDefault(1.);
   s["CSS_MASS_THRESHOLD"].SetDefault(0.0);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);

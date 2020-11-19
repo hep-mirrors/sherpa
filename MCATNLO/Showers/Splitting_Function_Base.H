@@ -17,14 +17,13 @@ namespace MCATNLO {
   class Shower;
 
   class Splitting_Function_Base {
-  private:
-    void RegisterDefaults() const;
   protected:
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_mth;
+    double m_facscalefactor;
     int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
     std::vector<double> m_lastints;
@@ -106,6 +105,8 @@ namespace MCATNLO {
     inline void SetScaleScheme(const int &scs) { m_scs=scs; }
 
     inline int ScaleScheme() const { return m_scs; }
+
+    inline void SetFacScaleFactor(const double fac) { m_facscalefactor=fac; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

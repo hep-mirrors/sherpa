@@ -145,6 +145,7 @@ void Sudakov::Add(Splitting_Function_Base * split)
     return;
   }
   if (split->On()) {
+    split->SetFacScaleFactor(m_facscalefactor);
     Splitting_Function_Group::Add(split);
     msg_Debugging()<<" -> add\n";
   }
