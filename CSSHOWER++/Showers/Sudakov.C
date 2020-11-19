@@ -265,7 +265,7 @@ bool Sudakov::Generate(Parton * split)
 	slist.push_back(*pit);
     }
   }
-  double t0(m_k0sqf), t, y, z, phi;
+  double t0(Min(m_k0sqi,m_k0sqf)), t, y, z, phi;
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
