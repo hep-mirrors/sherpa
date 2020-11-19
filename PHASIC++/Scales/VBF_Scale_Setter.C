@@ -648,8 +648,8 @@ void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
 	  li->SetKT2(1,Min(m_qsf*sij,li->KT2(1)));
 	  lj->SetKT2(0,Min(m_qsf*sij,lj->KT2(0)));
 	}
-	sum*=sij;
-	n+=1.0;
+	sum=Max(sum,sij);
+	n=1.0;
       }
     }
   }
