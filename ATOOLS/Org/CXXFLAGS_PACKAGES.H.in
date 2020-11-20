@@ -1,3 +1,6 @@
+#ifndef CXXFLAGS_PACKAGES_H
+#define CXXFLAGS_PACKAGES_H
+
 /* Using HEPMC3 */
 #undef USING__HEPMC3
 
@@ -69,3 +72,5 @@
 
 /* using Delphes */
 #undef USING__DELPHES
+
+#endif

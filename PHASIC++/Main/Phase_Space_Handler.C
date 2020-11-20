@@ -33,9 +33,12 @@ using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
-Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
+Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
+                                         const std::string eobs,const std::string efunc): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
-  p_enhanceobs(NULL), p_enhancefunc(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
+  p_enhanceobs(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL), m_enhanceweight(1.0),
+  p_enhancefunc(NULL),
+  m_enhancefunc_min(numeric_limits<double>::lowest()), m_enhancefunc_max(numeric_limits<double>::max()),
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
@@ -51,7 +54,9 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_fin_opt = s["FINISH_OPTIMIZATION"].Get<bool>();
   m_enhancexs = s["ENHANCE_XS"].Get<int>();
   m_printpspoint = s["PRINT_PS_POINTS"].Get<int>();
-  m_enhance = 1.0;
+  SetEnhanceObservable(eobs);
+  SetEnhanceFunction(efunc);
+
   if (error>0.) {
     m_error   = error;
   }
@@ -59,7 +64,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
-  m_osmass=(m_nout==1 && p_flavours[2].Kfcode()!=999?p_flavours[2].Mass():0.0);
+  m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -308,13 +313,7 @@ Weights_Map Phase_Space_Handler::Differential(
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
 			      m_isrxkey.Doubles());
       p_isrhandler->SetMasses(process->Process()->Selected()->Flavours());
-      if (p_isrhandler->On()>0) {
-	if (m_nin==2 && m_nout==1 && p_flavours[2].Kfcode()==999) {
-	  if (p_active->Process()->SPrimeMin()>0.) 
-	    m_isrspkey[0] = p_active->Process()->SPrimeMin();
-	  if (p_active->Process()->SPrimeMax()>0.)
-	    m_isrspkey[1] = p_active->Process()->SPrimeMax();
-	}
+      if (p_isrhandler->On()>0) { 
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
@@ -323,8 +322,8 @@ Weights_Map Phase_Space_Handler::Differential(
 		   p_active->Process()->Flavours()[1],ran->Get())?2.0:1.0;
     if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
-			       p_lab,process->Process()->
-			       Selected()->Flavours())) {
+			     p_lab,process->Process()->
+			     Selected()->Flavours())) {
       if (p_beamchannels) p_beamchannels->NoGenerate();    
       if (p_isrchannels)  p_isrchannels->NoGenerate();    
       p_fsrchannels->NoGenerate();
@@ -354,14 +353,16 @@ Weights_Map Phase_Space_Handler::Differential(
     Check4Momentum(p_lab);
     CalculatePS();
     CalculateME(varmode);
+    CalculateEnhance();
     p_lab=process->Momenta();
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
       msg->SetPrecision(15);
       msg_Out()<<p_active->Process()->Name();
       msg_Out()<<"  ME = "<<m_result
-               <<" ,  PS = "<<m_psweight<<"  ->  "
-               <<m_result*m_psweight<<std::endl;
+               <<" ,  PS = "<<m_psweight
+               <<" ,  enh = "<<m_enhanceweight<<"  ->  "
+               <<m_result*m_psweight*m_enhanceweight<<std::endl;
       if (p_active->Process()->GetSubevtList()) {
         NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
         for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i])<<"\n";
@@ -371,7 +372,7 @@ Weights_Map Phase_Space_Handler::Differential(
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
-    double wgtfac(m_psweight*iscount);
+    double wgtfac(m_psweight*m_enhanceweight*iscount);
     m_wgtmap*=wgtfac;
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
@@ -427,8 +428,6 @@ Weights_Map Phase_Space_Handler::Differential(
     }
     m_wgtmap*=0.0;
   }
-  m_enhance=EnhanceFactor(p_process->Process());
-  m_wgtmap*=m_enhance;
   return m_wgtmap;
 }
 
@@ -605,8 +604,10 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     Flavour_Vector fl_f(info->m_fi.GetExternal());
     Flavour_Vector fl_tot(fl_i);
     fl_tot.insert(fl_tot.end(),fl_f.begin(),fl_f.end());
+    //
     Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front(),ms);
     TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
+    //
     delete TestCh;
   }
 }
@@ -640,117 +641,83 @@ void Phase_Space_Handler::AddPoint(const double _value)
 {
   p_process->AddPoint(_value);
   double value(_value);
-  double enhance = EnhanceFunction();
   if (p_process->TotalXS()==0.0) value=_value?1.0:0.0;
   if (value!=0.0) {
-    if (p_beamchannels) p_beamchannels->AddPoint(value*enhance);
-    if (p_isrchannels)  p_isrchannels->AddPoint(value*enhance);
-    p_fsrchannels->AddPoint(value*enhance);
+    if (p_beamchannels) p_beamchannels->AddPoint(value);
+    if (p_isrchannels)  p_isrchannels->AddPoint(value);
+    p_fsrchannels->AddPoint(value);
     if (p_enhancehisto) {
-      if (!p_process->Process()->Info().Has(nlo_type::rsub)) {
-	double val((*p_enhanceobs)(&p_lab.front(),
-				    &p_flavours.front(),m_nin+m_nout));
-	p_enhancehisto_current->Insert(val,value/m_enhance);
-      }
-      else {
-	for (size_t i(0);i<p_process->Process()->Size();++i) {
-	  NLO_subevtlist* nlos=(*p_process->Process())[i]->GetSubevtList();
-	  for (size_t j(0);j<nlos->size();++j) {
-	    if ((*nlos)[j]->m_result==0.0) continue;
-	    double val((*p_enhanceobs)((*nlos)[j]->p_mom,
-					(*nlos)[j]->p_fl,(*nlos)[j]->m_n));
-	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result/m_enhance);
-	  }
-	}
-      }
+      double obs((*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout));
+      p_enhancehisto_current->Insert(obs,value/m_enhanceweight);
     }
   }
 }
 
 void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
 {
-  if (enhanceobs!="1") {
-    if (p_enhanceobs)
-      THROW(fatal_error, "Overwriting ME enhance observable.");
-    vector<string> parts;
-    stringstream ss(enhanceobs);
-    string item;
-    while(std::getline(ss, item, '|')) {
-      parts.push_back(item);
-    }
-    if (parts.size()<3 || parts.size()>4)
-      THROW(fatal_error,"Wrong syntax in enhance observable.");
-    p_enhanceobs = Enhance_Observable_Base::Getter_Function::GetObject
-      (parts[0],Enhance_Arguments(p_process->Process(),parts[0]));
-    if (p_enhanceobs==NULL) {
-      msg_Error()<<METHOD<<"(): Enhance observable not found. Try 'VAR{..}'.\n";
-      THROW(fatal_error,"Invalid enhance observable");
-    }
-    double enhancemin=ToType<double>(parts[1]);
-    double enhancemax=ToType<double>(parts[2]);
-    double nbins=parts.size()>3?ToType<size_t>(parts[3]):100;
-
-    p_enhancehisto = new Histogram(1,enhancemin,enhancemax,nbins,"enhancehisto");
-    p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
-    p_enhancehisto->MPISync();
-    p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
-    p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
-                                           p_enhancehisto->Xmin(),
-                                           p_enhancehisto->Xmax(),
-                                           p_enhancehisto->Nbin(),
-                                           "enhancehisto_current");
+  if (enhanceobs=="" || enhanceobs=="1") return;
+  if (p_enhanceobs) THROW(fatal_error, "Overwriting ME enhance observable.");
+  vector<string> parts; stringstream ss(enhanceobs); string item;
+  while(std::getline(ss, item, '|')) parts.push_back(item);
+  if (parts.size()<3) THROW(fatal_error,"Wrong syntax in enhance observable.");
+  p_enhanceobs = Enhance_Observable_Base::Getter_Function::GetObject
+    (parts[0],Enhance_Arguments(p_process->Process(),parts[0]));
+  if (p_enhanceobs==NULL) {
+    msg_Error()<<METHOD<<"(): Enhance observable not found. Try 'VAR{...}'.\n";
+    THROW(fatal_error,"Invalid enhance observable");
   }
+  double enhancemin=ToType<double>(parts[1]);
+  double enhancemax=ToType<double>(parts[2]);
+  double nbins=parts.size()>3?ToType<size_t>(parts[3]):100;
+  p_enhancehisto = new Histogram(1,enhancemin,enhancemax,nbins,"enhancehisto");
+  p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
+  p_enhancehisto->MPISync();
+  p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
+  p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
+                                         p_enhancehisto->Xmin(),
+                                         p_enhancehisto->Xmax(),
+                                         p_enhancehisto->Nbin(),
+                                         "enhancehisto_current");
 }
 
 void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
 {
-  if (enhancefunc!="1") {
-    if (p_enhancefunc)
-      THROW(fatal_error,"Attempting to overwrite enhance function");
-    p_enhancefunc = Enhance_Observable_Base::Getter_Function::GetObject
-      (enhancefunc,Enhance_Arguments(p_process->Process(),enhancefunc));
-    if (p_enhancefunc==NULL) {
-      msg_Error()<<METHOD<<"(): Enhance function not found. Try 'VAR{..}'.\n";
-      THROW(fatal_error,"Invalid enhance function.");
-    }
+  if (enhancefunc=="" || enhancefunc=="1") return;
+  if (p_enhancefunc) THROW(fatal_error, "Overwriting ME enhance function.");
+  vector<string> parts; stringstream ss(enhancefunc); string item;
+  while(std::getline(ss, item, '|')) parts.push_back(item);
+  if (parts.size()<1) THROW(fatal_error,"Wrong syntax in enhance function.");
+  p_enhancefunc = Enhance_Observable_Base::Getter_Function::GetObject
+    (parts[0],Enhance_Arguments(p_process->Process(),parts[0]));
+  if (p_enhancefunc==NULL) {
+    msg_Error()<<METHOD<<"(): Enhance function not found. Try 'VAR{...}'.\n";
+    THROW(fatal_error,"Invalid enhance function");
+  }
+  if (parts.size()>2) {
+    m_enhancefunc_min=ToType<double>(parts[1]);
+    m_enhancefunc_max=ToType<double>(parts[2]);
   }
 }
 
-double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
+void Phase_Space_Handler::CalculateEnhance()
 {
-  if (p_enhanceobs==NULL) return 1.0;
-  double obs=p_enhancehisto?p_enhancehisto->Xmin():0.0;
-  if (!proc->Info().Has(nlo_type::rsub)) {
-    obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+  m_enhanceweight=1.0;
+  if (p_enhanceobs) {
+    double obs=(*p_enhanceobs)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+    if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-30;
+    if (obs<=p_enhancehisto->Xmin()) obs=p_enhancehisto->Xmin()+1e-30;
+    double dsigma=p_enhancehisto->Bin(obs);
+    if (dsigma>0.0) m_enhanceweight *= 1.0/dsigma;
   }
-  else {
-    double nobs(0.0);
-    for (size_t i(0);i<proc->Size();++i) {
-      NLO_subevtlist* nlos=(*proc)[i]->GetSubevtList();
-      if (nlos->back()->m_result==0.0) continue;
-      obs+=log((*p_enhanceobs)(nlos->back()->p_mom,
-				nlos->back()->p_fl,nlos->back()->m_n));
-      nobs+=1.0;
-    }
-    if (nobs) obs=exp(obs/nobs);
-    else obs=1.0;
-  }
-  if (p_enhancehisto==NULL) return obs;
-  if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
-  if (obs<=p_enhancehisto->Xmin()) obs=p_enhancehisto->Xmin()+1e-12;
-  double dsigma=p_enhancehisto->Bin(obs);
-  if (dsigma<=0.0) {
-    PRINT_INFO("Warning: Tried enhancement with dsigma/dobs("<<obs<<")="<<dsigma<<".");
-    dsigma=1.0;
-  }
-  if (m_enhancexs && p_process->TotalXS()>0.0) return 1.0/dsigma/p_process->TotalXS();
-  else return 1.0/dsigma;
-}
 
-double Phase_Space_Handler::EnhanceFunction()
-{
-  if (p_enhancefunc==NULL) return 1.0;
-  else return (*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+  if (p_enhancefunc) {
+    double obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+    if (obs<m_enhancefunc_min) obs=m_enhancefunc_min;
+    if (obs>m_enhancefunc_max) obs=m_enhancefunc_max;
+    m_enhanceweight *= obs;
+  }
+
+  if (m_enhancexs && p_process->TotalXS()>0.0) m_enhanceweight /= p_process->TotalXS();
 }
 
 void Phase_Space_Handler::MPISync()
@@ -834,16 +801,10 @@ bool Phase_Space_Handler::CreateIntegrators()
       if (!p_isrchannels->Initialize()) return false;
     }
   }
-  if (msg_LevelIsTracking()) {
-    msg_Out()<<"Initialized Phase_Space_Integrator {\n\t";
-    if (p_beamchannels)
-      msg_Out()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
-    if (p_isrchannels)
-      msg_Out()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-    if (p_fsrchannels)
-      msg_Out()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<";\n";
-    msg_Out()<<"}\n";
-  }
+  msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
+  if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+  if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
   return true;
 }
 

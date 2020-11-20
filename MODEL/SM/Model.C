@@ -114,7 +114,6 @@ void Standard_Model::ParticleInit()
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
-  s_kftable[kf_instanton] = new Particle_Info(kf_instanton,0.0,0.0,0,8,0,-1,1,0,0,"Instanton","Instanton","Instanton","Instanton");
   ReadParticleData();
 }
 

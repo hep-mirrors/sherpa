@@ -289,15 +289,14 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // calculate weight factor and/or apply unweighting and weight threshold
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
-  double enhance = p_proc->Integrator()->PSHandler()->Enhance();
+  double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
-    if (abswgt < disc) {
+    if (abswgt < disc)
       return false;
-    }
     if (abswgt > max * m_ovwth) {
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()

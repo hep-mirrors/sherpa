@@ -27,7 +27,7 @@ bool ISR_Channels::MakeChannels()
   for (size_t i(0);i<fsr->Number();++i) fsr->ISRInfo(i,ts[i],ms[i],ws[i]);
   fsr->ISRInfo(ts,ms,ws);
   for (size_t i=0;i<ts.size();i++) {
-    type=abs(ts[i]);
+    type=abs(ts[i]); 
     if (ts[i]==-1) {
       p_psh->SetOSMass(ms[i]);
       onshellresonance=true;

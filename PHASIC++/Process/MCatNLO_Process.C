@@ -499,6 +499,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
+    rproc->Integrator()->PSHandler()->SetEnhanceWeight(bproc->Integrator()->PSHandler()->EnhanceWeight());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     rproc->Integrator()->SetMomenta(*ampl);
     rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
