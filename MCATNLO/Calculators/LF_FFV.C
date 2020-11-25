@@ -1,7 +1,5 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 
-// #define USING_DIS_MEC 
-
 namespace MCATNLO {
   
   class LF_FFV_FF: public SF_Lorentz {
@@ -23,9 +21,6 @@ namespace MCATNLO {
 
     double m_Jmax;
 
-    double CDIS(const double z,const double y);
-    double CDISMax();
-
   public:
 
     inline LF_FFV_FI(const SF_Key &key): SF_Lorentz(key) {}
@@ -43,9 +38,6 @@ namespace MCATNLO {
   protected:
 
     double m_Jmax;
-
-    double CDIS(const double z,const double y);
-    double CDISMax();
 
   public:
 
@@ -97,9 +89,6 @@ namespace MCATNLO {
 
     double m_Jmax;
 
-    double CDIS(const double z,const double y);
-    double CDISMax();
-
   public:
 
     inline LF_FVF_FI(const SF_Key &key): SF_Lorentz(key) {}
@@ -117,9 +106,6 @@ namespace MCATNLO {
   protected:
 
     double m_Jmax;
-
-    double CDIS(const double z,const double y);
-    double CDISMax();
 
   public:
 
@@ -177,9 +163,6 @@ namespace MCATNLO {
 
     double m_Jmax;
 
-    double CDIS(const double z,const double y);
-    double CDISMax();
-
   public:
 
     inline LF_VFF_FI(const SF_Key &key): SF_Lorentz(key) {}
@@ -199,9 +182,6 @@ namespace MCATNLO {
   protected:
 
     double m_Jmax;
-
-    double CDIS(const double z,const double y);
-    double CDISMax();
 
   public:
 
@@ -294,27 +274,13 @@ double LF_FFV_FF::Z()
   return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
-double LF_FFV_FI::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC 
-  return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
-}
-
-double LF_FFV_FI::CDISMax()
-{
-  return 0.;
-}
-
 double LF_FFV_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {  
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
-  double massless = ( 2./(1.-z+y) - 1.-z + CDIS(z,y) );
+  double massless = ( 2./(1.-z+y) - 1.-z );
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
@@ -335,12 +301,12 @@ double LF_FFV_FI::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
 double LF_FFV_FI::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
 
 double LF_FFV_FI::Z()
@@ -348,25 +314,11 @@ double LF_FFV_FI::Z()
   return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
-double LF_FFV_IF::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC 
-  return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
-}
-
-double LF_FFV_IF::CDISMax()
-{
-  return 0.;
-}
-
 double LF_FFV_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( 2./(1.-z+y) - (1.+z) + CDIS(z,y) )
+  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( 2./(1.-z+y) - (1.+z) )
     + p_cf->Coupling(scale,1,sub) * 0.5 * ( 1. - z );
   return value * JIF(z,y,eta,scale,sub);
 }
@@ -376,12 +328,12 @@ double LF_FFV_IF::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.; 
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
 double LF_FFV_IF::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
 
 double LF_FFV_IF::Z()
@@ -463,25 +415,11 @@ double LF_FVF_FF::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
-double LF_FVF_FI::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC 
-  return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
-}
-
-double LF_FVF_FI::CDISMax()
-{
-  return 0.;
-}
-
 double LF_FVF_FI::operator() (const double z,const double y,
 			    const double eta, const double scale,const double Q2,Cluster_Amplitude *const sub) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = (2./(z+y) - 2.+z + CDIS(1.-z,y));
+  double massless = (2./(z+y) - 2.+z);
   if (mj2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
@@ -501,31 +439,17 @@ double LF_FVF_FI::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
 double LF_FVF_FI::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(2.0+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
 
 double LF_FVF_FI::Z()
 {
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
-}
-
-double LF_FVF_IF::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC 
-  return y*(1.+3.*z*(1.-y));
-#else
-  return 0.0;
-#endif
-}
-
-double LF_FVF_IF::CDISMax()
-{
-  return 0.;
 }
 
 double LF_FVF_IF::Scale
@@ -544,7 +468,7 @@ double LF_FVF_IF::operator()
 {
   double mk2  = sqr(p_ms->Mass(m_flspec));
   double muk2 = mk2*z/(Q2+mk2); 
-  double massless = ( 2./z - 2. +z + CDIS(1.-z,y));
+  double massless = ( 2./z - 2. +z );
   if (muk2==0.) {
     //the massless case
     double longpol = 0.5 * z;
@@ -569,12 +493,12 @@ double LF_FVF_IF::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old;
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
 double LF_FVF_IF::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/z * m_Jmax;
 }
 
 double LF_FVF_IF::Z()
@@ -680,24 +604,6 @@ double LF_VFF_FF::Z() {
   return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
-double LF_VFF_FI::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC_VFF
-  return 4.*y*z*(1.-z);
-#else
-  return 0.0;
-#endif
-}
-
-double LF_VFF_FI::CDISMax()
-{
-#ifdef USING_DIS_MEC_VFF
-  return 0.5;
-#else
-  return 0.0;
-#endif
-}
-
 double LF_VFF_FI::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
@@ -713,7 +619,7 @@ double LF_VFF_FI::operator()
 {
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
-  double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
+  double massless = 1.-2.*z*(1.-z);
   double longpol = 0.5;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
@@ -737,35 +643,17 @@ double LF_VFF_FI::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=5.;
-  return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;
 }
 
 double LF_VFF_FI::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* m_Jmax;
 }
 
 double LF_VFF_FI::Z()
 {
   return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
-}
-
-double LF_VFF_IF::CDIS(const double z,const double y)
-{
-#ifdef USING_DIS_MEC_VFF
-  return 4.*y*z*(1.-z);
-#else
-  return 0.0;
-#endif
-}
-
-double LF_VFF_IF::CDISMax()
-{
-#ifdef USING_DIS_MEC_VFF
-  return 0.5;
-#else
-  return 0.0;
-#endif
 }
 
 double LF_VFF_IF::Scale
@@ -782,7 +670,7 @@ double LF_VFF_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( (1.-2.*z*(1.-z))*(1.0-0.5/z*CDIS(y,z)) + CDIS(z,y) )
+  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( 1.-2.*z*(1.-z) )
     + p_cf->Coupling(scale,1,sub) * 0.5;
   return value * JIF(z,y,eta,scale,sub);
 }
@@ -796,12 +684,12 @@ double LF_VFF_IF::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old; 
-  return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
 double LF_VFF_IF::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
+  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * m_Jmax;
 }
 
 double LF_VFF_IF::Z()
