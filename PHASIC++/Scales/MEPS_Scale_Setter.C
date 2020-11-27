@@ -532,7 +532,7 @@ void MEPS_Scale_Setter::Cluster
     int imax(Select(ccs,on,1));
     if (imax<0) return;
     ccs[imax].second.m_op=1.0;
-    ClusterStep(ampl,ampls,ccs[imax],0);
+    if (ClusterStep(ampl,ampls,ccs[imax],0)) return;
   }
   else if (m_cmode&2) {
     for (size_t i(0);i<ccs.size();++i)
@@ -578,7 +578,11 @@ double MEPS_Scale_Setter::Differential
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
   if (procs==NULL) return 1.0;
   nlo_type::code type=nlo_type::lo;
-  if (procs->find(type)==procs->end()) return 0.0;
+  if (procs->find(type)==procs->end()) {
+    if (m_rproc && ampl->Prev() &&
+	ampl->Prev()->Prev()==NULL) return 1.0;
+    return 0.0;
+  }
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
