@@ -660,7 +660,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // calculate and store EWSudakov corrections
   // TODO: this ignores variations from subevents and DADS
   // contributions, we may want to add those
-  if (p_ewsudakov_kfactor) {
+  if (varmode != Variations_Mode::nominal_only && p_ewsudakov_kfactor) {
     const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
     for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
       m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
