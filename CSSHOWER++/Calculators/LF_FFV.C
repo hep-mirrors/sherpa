@@ -279,7 +279,7 @@ double LF_FFV_FI::operator()
 {  
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
-  double massless = ( 2./(1.-z+y) - 1.-z );
+  double massless = ( 2.*z/(1.-z+y) + 1.-z );
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
@@ -317,7 +317,7 @@ double LF_FFV_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z+y) - (1.+z) )
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2.*z/(1.-z+y) + (1.-z) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JIF(z,y,eta,scale);
 }
@@ -344,7 +344,7 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) )
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2.*(z+y)/(1.-z) + (1.-z-y) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale);
 }
@@ -418,7 +418,7 @@ double LF_FVF_FI::operator() (const double z,const double y,
 			    const double eta, const double scale,const double Q2) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = (2./(z+y) - 2.+z );
+  double massless = (2.*(1.-z)/(z+y) + z);
   if (mj2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
@@ -519,7 +519,7 @@ double LF_FVF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(z+y) - 2. +z )
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2.*(1.-z-y)/(z+y) + (z+y) )
     + p_cf->Coupling(scale,1) * 0.5 * z;
   return value * JII(z,y,eta,scale);
 }
@@ -711,7 +711,7 @@ double LF_VFF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z))
+  double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*(z+y)*(1.-z-y))
     + p_cf->Coupling(scale,1) * 0.5;
   return value * JII(z,y,eta,scale);
 }
