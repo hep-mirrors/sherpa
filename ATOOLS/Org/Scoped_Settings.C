@@ -102,6 +102,11 @@ bool Scoped_Settings::IsCustomised()
   return m_rootsettings->IsCustomised(m_scopes);
 }
 
+bool Scoped_Settings::IsScalar() const
+{
+  return m_rootsettings->IsScalar(m_scopes);
+}
+
 bool Scoped_Settings::IsList() const
 {
   return m_rootsettings->IsList(m_scopes);

@@ -207,6 +207,7 @@ namespace ATOOLS {
     void SetDefaultSynonyms(const Settings_Keys&,
                             const String_Vector& synonyms);
 
+    bool IsScalar(const Settings_Keys&);
     bool IsList(const Settings_Keys&);
     bool IsMap(const Settings_Keys&);
     size_t GetItemsCount(const Settings_Keys&);
