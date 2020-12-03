@@ -406,7 +406,7 @@ void Process_Integrator::AddPoint(const double value)
   if (max>m_max)  m_max  = max;
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
-    if(value!=0.) p_whisto->Insert(max,1.0/enhance); /*TODO*/
+    if(value!=0.) p_whisto->Insert(max);
     else p_whisto->Insert(1.0,0.0);
   }
   p_proc->AddPoint(value);
