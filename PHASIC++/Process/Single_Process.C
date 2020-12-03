@@ -37,6 +37,7 @@ Single_Process::Single_Process():
   Settings& s = Settings::GetMainSettings();
   m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
   m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
+  m_ewsudakov_rs = s["EWSUDAKOV_RS"].SetDefault(true).Get<bool>();
 
   std::string ncs{ s["NLO_NF_CONVERSION_TERMS"]
     .SetDefault("None")
@@ -661,9 +662,16 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // TODO: this ignores variations from subevents and DADS
   // contributions, we may want to add those
   if (varmode != Variations_Mode::nominal_only && p_ewsudakov_kfactor) {
-    const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
-    for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
-      m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+    if (GetSubevtList() == nullptr || m_ewsudakov_rs) {
+      const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
+      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
+        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+      }
+    } else {
+      static EWSudakov_Log_Corrections_Map trivial_map;
+      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
+        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+      }
     }
   }
 
