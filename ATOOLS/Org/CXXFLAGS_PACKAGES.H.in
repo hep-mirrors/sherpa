@@ -67,6 +67,9 @@
 /* GoSam installation prefix */
 #undef GOSAM_PREFIX
 
+/* Recola installation prefix */
+#undef RECOLA_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM
 
