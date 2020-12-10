@@ -9,6 +9,7 @@ SUBDIRS       =	\
 		LH_OLE \
 		HZTool \
 		OpenLoops \
+		Recola\
 		GoSam \
 		PGS \
 		Delphes \
