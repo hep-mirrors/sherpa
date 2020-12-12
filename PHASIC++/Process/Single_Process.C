@@ -667,12 +667,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
-  m_last -= m_dadswgtmap;
-
   // calculate associated contributions variations for BVI events
   if (varmode != Variations_Mode::nominal_only) {
     CalculateAssociatedContributionVariations();
   }
+
+  m_last -= m_dadswgtmap;
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
