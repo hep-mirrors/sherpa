@@ -61,7 +61,7 @@ namespace PHASIC {
   class METS_Scale_Setter: public Scale_Setter_Base {
   private:
 
-    Core_Scale_Setter *p_core;
+    Core_Scale_Setter *p_core, *p_uoscale;
 
     std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
@@ -80,6 +80,7 @@ namespace PHASIC {
     static double s_eps, s_kt2max;
 
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
+    PDF::CParam UnorderedScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
@@ -250,6 +251,12 @@ METS_Scale_Setter::METS_Scale_Setter
   if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
+  std::string uoscaledef;
+  if (!read.ReadFromFile(uoscaledef,"UNORDERED_SCALE")) p_uoscale=NULL;
+  else {
+    p_uoscale=Core_Scale_Getter::GetObject(uoscaledef,Core_Scale_Arguments(p_proc,uoscaledef));
+    msg_Debugging()<<METHOD<<"(): Custom scale for unordered configurations '"+uoscaledef+"'\n";
+  }
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
     m_nfgsplit=Flavour(kf_jet).Size()/2;
   else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
@@ -265,6 +272,7 @@ METS_Scale_Setter::~METS_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
+  if (p_uoscale) delete p_uoscale;
   delete p_core;
 }
 
@@ -630,6 +638,14 @@ PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
   return kt2;
 }
 
+PDF::CParam METS_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
+{
+  if (p_uoscale==NULL) return PDF::CParam(0.);
+  ampl->SetProc(p_proc);
+  PDF::CParam kt2(p_uoscale->Calculate(ampl));
+  return kt2;
+}
+
 double METS_Scale_Setter::SetScales
 (const double &muf2,Cluster_Amplitude *ampl,const size_t &mode)
 {
@@ -638,10 +654,11 @@ double METS_Scale_Setter::SetScales
   m_scale[stp::size+stp::res]=m_scale[stp::res]=muf2;
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
+    double muuo2(UnorderedScale(ampl).m_kt2);
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    double as(1.0), oqcd(0.0), mum2(1.0);
+    double as(1.0), oqcd(0.0), mum2(1.0), mup2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -665,10 +682,27 @@ double METS_Scale_Setter::SetScales
       if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
+	mup2=Max(mup2,scale[idx]);
 	continue;
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
+      if (ampl->Next()->Splitter()->Flav().Strong() ||
+	  ampl->IdLeg(ampl->IdNew())->Flav().Strong()) {
+	if (coqcd==0.) msg_Debugging()<<"  scale from EW clustering "
+				      <<ID(ampl->Next()->Splitter()->Id())
+				      <<" -> "<<ID(ampl->IdNew())<<" <-> "
+				      <<ID(ampl->Next()->Splitter()->K())<<"\n";
+	mup2=Max(mup2,scale[idx]);
+      }
       if (coqcd>0.0) {
+	if (idx>0 && scale[idx]<mup2) {
+	  msg_Debugging()<<"  unordered history, redefine k_{T,"
+			 <<idx<<"} = "<<sqrt(scale[idx])
+			 <<" -> k_{T,"<<idx<<"} = "
+			 <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	  if (p_uoscale) scale[idx]=muuo2;
+	  else scale[idx]=mup2;
+	}
 	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
 		       <<sqrt(m_rsf)<<" * "<<sqrt(m_csf)<<" * "
@@ -689,6 +723,13 @@ double METS_Scale_Setter::SetScales
     m_scale[stp::res]=ampl->MuQ2();
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
+      if (mu2<mup2) {
+	msg_Debugging()<<"  unordered history, redefine k_{T,0} = "
+		       <<sqrt(mu2)<<" -> k_{T,0} = "
+		       <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	if (p_uoscale) mu2=muuo2;
+	else mu2=mup2;
+      }
       mum2=Min(mum2,mu2);
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
