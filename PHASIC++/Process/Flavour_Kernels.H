@@ -6,7 +6,7 @@ namespace PHASIC {
   class Flavour_Kernels {
   protected:
 
-    int m_nf;
+    int m_nf, m_subtype;
 
     double m_NC, m_CA, m_CF, m_TR, m_g1, m_g2;
     double m_alpha, m_loga;

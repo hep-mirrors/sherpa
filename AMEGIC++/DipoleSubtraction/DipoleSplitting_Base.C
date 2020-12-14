@@ -23,6 +23,7 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   p_cpl = NULL;
   m_av=sqrt(-1.0);
   m_a=-1.0;
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;

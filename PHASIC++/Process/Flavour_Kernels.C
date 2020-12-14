@@ -2,6 +2,8 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace PHASIC;
@@ -10,6 +12,7 @@ using namespace ATOOLS;
 Flavour_Kernels::Flavour_Kernels()
 {
   m_nf = Flavour(kf_quark).Size()/2;
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
   SetNC(3.0);
 }
 
@@ -153,12 +156,14 @@ double Flavour_Kernels::Kt3(int type,double x)
     return -(1.+x)*(log(1.-x)-m_loga)+at+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
+    if (m_subtype==2) ax+=2.*log(x)/x;
     return m_CF/m_CA*((1.+sqr(1.-x))/x*(log(1.-x)-m_loga)+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
     return m_TR/m_CF*((x*x+sqr(1.-x))*(log(1.-x)-m_loga)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
+    if (m_subtype==2) ax+=log(x)/x;
     return 2.*((1.-x)/x-1.+x*(1.-x))*(log(1.-x)-m_loga)+at+2.*ax;
   }
   return 0.;

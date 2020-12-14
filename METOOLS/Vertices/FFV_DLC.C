@@ -179,11 +179,13 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
   else {
     double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
+    double tc((1.0-x)/x);
+    if (p_v->Info()->SubType()==2) tc+=1.0/(x+vi)-1.0/x;
     A=x;
-    B=-4.0*(1.0-x)/x;
+    B=-4.0*tc;
     q=pi-vi*pk;
     t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA(A+2.0*(1.0-x)/x);
+    p_v->Kin()->SetA(A+2.0*tc);
   }
   p_v->Kin()->CheckKT2Min(); 
   double At(A-B/2.0);

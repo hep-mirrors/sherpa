@@ -21,6 +21,7 @@ template class ATOOLS::Getter_Function
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "MCATNLO/Showers/Shower.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -41,6 +42,7 @@ SF_Lorentz::SF_Lorentz(const SF_Key &key):
     m_flavs[1]=key.p_v->in[2];
     m_flavs[2]=key.p_v->in[1];
   }
+  m_subtype=ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
 }
 
 SF_Lorentz::~SF_Lorentz() {}

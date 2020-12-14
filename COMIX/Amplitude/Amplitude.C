@@ -55,6 +55,8 @@ Amplitude::Amplitude():
   p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
   p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
   p_dinfo->SetDRMode(0);
+  int subtype(ToType<int>(rpa->gen.Variable("NLO_SUBTRACTION_SCHEME")));
+  p_dinfo->SetSubType(subtype);
   m_sccmur=GetParameter<int>("USR_WGT_MODE");
   m_murcoeffvirt=GetParameter<int>("NLO_MUR_COEFFICIENT_FROM_VIRTUAL");
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");

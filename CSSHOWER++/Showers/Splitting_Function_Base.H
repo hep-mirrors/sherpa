@@ -68,7 +68,7 @@ namespace CSSHOWER {
     Splitting_Function_Base *p_sf;
 
     double m_zmin, m_zmax;
-    int m_beam, m_col;
+    int m_beam, m_col, m_subtype;
 
     double m_lastJ;
 

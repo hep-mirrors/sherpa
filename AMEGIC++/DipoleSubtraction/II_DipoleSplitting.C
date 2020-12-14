@@ -62,10 +62,12 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   case 3:
     m_sff = m_xijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
+    if (m_subtype==2) m_av += 2.0*(1.0/(m_xijk+m_vi)-1.0/m_xijk);
     break;
   case 4:
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
+    if (m_subtype==2) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
   }
   if (m_kt2<m_k0sqi) m_av=1.0;
 }
@@ -91,15 +93,17 @@ double II_DipoleSplitting::GetValue()
 
 void II_DipoleSplitting::CalcDiPolarizations()
 {
+  double tc((1.-m_xijk)/m_xijk);
+  if (m_subtype==2) tc+=1.0/(m_xijk+m_vi)-1.0/m_xijk;
   switch (m_ft) {
   case 1:
   case 2:
     return;
   case 3:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/4.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/4.);
     break;
   case 4:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_xijk/(1.-m_xijk)/2.);
+    CalcVectors(m_pt1,m_pt2,-m_sff/tc/2.);
     break;
   }
 }
