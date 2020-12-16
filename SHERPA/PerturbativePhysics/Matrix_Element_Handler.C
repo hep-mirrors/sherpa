@@ -379,6 +379,9 @@ int Matrix_Element_Handler::InitializeProcesses
   */
   p_beam=beam; p_isr=isr; p_model=model;
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
+  Default_Reader reader;
+  int initonly=reader.Get<int>("INIT_ONLY",0);
+  if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
 #ifdef USING__MPI
