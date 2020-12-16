@@ -508,6 +508,9 @@ int Matrix_Element_Handler::InitializeProcesses(
   p_beam=beam;
   p_isr=isr;
   if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  Settings& s = Settings::GetMainSettings();
+  int initonly=s["INIT_ONLY"].Get<size_t>();
+  if (initonly&4) return 1;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
