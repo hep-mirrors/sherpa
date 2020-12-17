@@ -80,6 +80,7 @@ as massless.
 @cindex CSS_EVOLUTION_SCHEME
 @cindex CSS_SCALE_SCHEME
 @cindex CSS_ALPHAS_FREEZE_MODE
+@cindex NLO_SUBTRACTION_SCHEME
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -132,3 +133,11 @@ to zero at such scales (hard cut-off). Setting it to 1 lets it evaluate to one
 instead (freeze-in). A freeze-in behaviour is preferable when reweighting
 shower emissions, but it has not been used in the default Sherpa tune, and
 should therefore not be used when comparing particle-level predictions to data.
+
+In order to improve the behavior of the parton shower in processes with large
+higher-order contributions from t-channel gluon exchange, the splitting kernels
+can be modified using @option{NLO_SUBTRACTION_SCHEME}. The default option
+is 0, corresponding to the standard Catani-Seymour kernels, while option 2
+replaces the 1/x terms in initial-initial dipole operators by 1/(x+v).
+This change is made consistently in both the parton shower, the NLO
+fixed-order and NLO matched calculation.
