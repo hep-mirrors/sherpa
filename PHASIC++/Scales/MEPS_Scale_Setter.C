@@ -44,7 +44,7 @@ namespace PHASIC {
     int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
-    static int s_nfgsplit, s_nlocpl;
+    static int s_nfgsplit, s_allowuo, s_nlocpl;
 
     int Select(const PDF::ClusterInfo_Vector &ccs,
 	       const Int_Vector &on,const int mode=0) const;
@@ -110,6 +110,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 int MEPS_Scale_Setter::s_nfgsplit(-1);
+int MEPS_Scale_Setter::s_allowuo(0);
 int MEPS_Scale_Setter::s_nlocpl(-1);
 
 MEPS_Scale_Setter::MEPS_Scale_Setter
@@ -126,6 +127,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
+    s_allowuo=s["ALLOW_SCALE_UNORDERING"].GetScalarWithOtherDefault<int>(0);
     s_uoscale=s["UNORDERED_SCALE"].GetScalarWithOtherDefault<std::string>("None");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
@@ -666,7 +668,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  }
       }
       if (skip) continue;
-      mup2=Max(mup2,scale[idx]);
+      if (!s_allowuo) mup2=Max(mup2,scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
 	ampl->SetNLO(1);
