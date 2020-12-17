@@ -73,7 +73,7 @@ namespace PHASIC {
 
     size_t m_cnt, m_rej, m_mode, m_cmode, m_cmodebvi, m_cmoders;
     double m_lfrac, m_aqed, m_wthres, m_rsf, m_csf;
-    int    m_rproc, m_sproc, m_vproc, m_nproc, m_nfgsplit;
+    int    m_rproc, m_sproc, m_vproc, m_nproc, m_nfgsplit, m_allowuo;
 
     ATOOLS::DecayInfo_Vector m_decids;
 
@@ -251,6 +251,7 @@ METS_Scale_Setter::METS_Scale_Setter
   if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
+  m_allowuo=read.GetValue<int>("ALLOW_SCALE_UNORDERING",0);
   std::string uoscaledef;
   if (!read.ReadFromFile(uoscaledef,"UNORDERED_SCALE")) p_uoscale=NULL;
   else {
@@ -682,7 +683,7 @@ double METS_Scale_Setter::SetScales
       if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
-	mup2=Max(mup2,scale[idx]);
+	if (!m_allowuo) mup2=Max(mup2,scale[idx]);
 	continue;
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -692,7 +693,7 @@ double METS_Scale_Setter::SetScales
 				      <<ID(ampl->Next()->Splitter()->Id())
 				      <<" -> "<<ID(ampl->IdNew())<<" <-> "
 				      <<ID(ampl->Next()->Splitter()->K())<<"\n";
-	mup2=Max(mup2,scale[idx]);
+	if (!m_allowuo) mup2=Max(mup2,scale[idx]);
       }
       if (coqcd>0.0) {
 	if (idx>0 && scale[idx]<mup2) {
