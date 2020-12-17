@@ -533,6 +533,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 	return SetScales((m_p[0]+m_p[1]).Abs2(),NULL,mode);
       }
       ampl=ampl->Prev();
+      ampl->SetIdNew(0);
       ampl->DeleteNext();
       trials.clear();
       continue;
@@ -567,12 +568,14 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
     }
     ampl->SetKT2(ckw.m_kt2);
     ampl->SetMu2(ckw.m_mu2>0.0?ckw.m_mu2:ckw.m_kt2);
+    ampl->SetIdNew(ampl->Leg(jw)->Id());
     ampl=ampl->InitNext();
     ampl->CopyFrom(ampl->Prev());
     if (!Combine(*ampl,iw,jw,kw,ckw) ||
 	ampl->OrderQCD()<ckw.m_oqcd) {
       msg_Debugging()<<"combine failed\n";
       ampl=ampl->Prev();
+      ampl->SetIdNew(0);
       ampl->DeleteNext();
       continue;
     }
@@ -597,6 +600,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(2)->Id()) &&
 	  !proc->Combinable(ampl->Leg(0)->Id(),ampl->Leg(3)->Id())) {
 	ampl=ampl->Prev();
+	ampl->SetIdNew(0);
 	ampl->DeleteNext();
 	continue;
       }
@@ -613,6 +617,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		       <<ID(pops.front().first)<<"\n";
 	if (ords[ampl->Legs().size()-4] && !(m_cmode&16)) {
 	  ampl=ampl->Prev();
+	  ampl->SetIdNew(0);
 	  ampl->DeleteNext();
 	  continue;
 	}
