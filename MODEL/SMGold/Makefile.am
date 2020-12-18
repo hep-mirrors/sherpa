@@ -13,3 +13,5 @@ libSherpaSMGold_la_SOURCES = \
 	VVVV2.C \
 	VVVV3.C \
 	VVVV4.C
+
+libSherpaSMGold_la_LIBADD = @METOOLSLIBS@
