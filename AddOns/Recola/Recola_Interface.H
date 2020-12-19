@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "METOOLS/Loops/Divergence_Array.H"
+#include "ATOOLS/Phys/NLO_Types.H"
 
 #include "recola.h"
 
@@ -33,6 +34,7 @@ namespace Recola {
     
     
     static std::map<size_t, bool> s_interference;
+    static std::map<size_t,ATOOLS::asscontrib::type> s_asscontribs;
     static size_t       s_doint;
     
     void RegisterDefaults() const;
@@ -45,8 +47,8 @@ namespace Recola {
 
 
     bool Initialize(MODEL::Model_Base *const model,
-		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr);
+            BEAM::Beam_Spectra_Handler *const beam,
+            PDF::ISR_Handler *const isr);
 
     static std::string process2Recola(const ATOOLS::Flavour_Vector& fl);
     static std::string process2Recola(const PHASIC::Process_Info &pi)
@@ -61,15 +63,16 @@ namespace Recola {
    
     // TODO: Clean up
     static size_t RegisterProcess(const PHASIC::Process_Info& pi,
-			       int amptype);
+                   int amptype);
     static void   GenerateProcesses(const double& alpha, const double& alphas,
                                     const double& muIR, const double& muUV,
                                     const double& muR2);
 
     static int RegisterBorn(const PHASIC::External_ME_Args& args,
-			       const int& amptype);
+                   const int& amptype);
 
-    static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt);
+    static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt, 
+                             std::vector<double> &asscontribs);
     static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres);
 
     static bool   ExitOnError()              { return s_exit_on_error; }
