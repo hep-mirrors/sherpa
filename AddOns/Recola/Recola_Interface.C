@@ -41,6 +41,7 @@ namespace Recola {
 
   
   std::map<size_t,PHASIC::Process_Info> Recola_Interface::s_procmap;
+  std::map<size_t,ATOOLS::asscontrib::type> Recola_Interface::s_asscontribs;
   std::map<size_t, bool> Recola_Interface::s_interference;
   size_t Recola_Interface::s_doint = 1;
 
@@ -174,8 +175,8 @@ namespace Recola {
 
 
   bool Recola_Interface::Initialize(MODEL::Model_Base *const model,
-				    BEAM::Beam_Spectra_Handler *const beam,
-				    PDF::ISR_Handler *const isr)
+            BEAM::Beam_Spectra_Handler *const beam,
+            PDF::ISR_Handler *const isr)
   {
     msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
     Settings& s = Settings::GetMainSettings();
@@ -304,7 +305,7 @@ namespace Recola {
   }
 
   int Recola_Interface::RegisterBorn(const External_ME_Args& args,
-				     const int& amptype)
+             const int& amptype)
   {
     /* Assign index to process */
     increaseProcIndex(); const int& procIndex(getProcIndex());
@@ -326,7 +327,7 @@ namespace Recola {
   }
       
   size_t Recola_Interface::RegisterProcess(const Process_Info& pi,
-					int amptype)
+          int amptype)
   {
     DEBUG_FUNC("");
     increaseProcIndex();
@@ -335,70 +336,112 @@ namespace Recola {
     msg_Debugging()<<"ProcIndex = " <<procIndex <<"\n"; 
     msg_Debugging()<<"process string = "<<process2Recola(pi)<<"\n";
     s_procmap[procIndex]=pi;
+
     /*if (!pi.m_nlomode && amptype!=12) {
       msg_Debugging() << "no NLO mode detected!\n";
       return 0;
     }*/
+
     // set procIndex to map with flavours
+    // define process in Recola, at this stage always 'NLO'
     define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
-    unselect_all_gs_powers_BornAmpl_rcl(procIndex);
-    unselect_all_gs_powers_LoopAmpl_rcl(procIndex);
+    
+    //unselect_all_gs_powers_BornAmpl_rcl(procIndex);
+    //unselect_all_gs_powers_LoopAmpl_rcl(procIndex);
+    
     s_interference[procIndex]=false;
     Settings& s = Settings::GetMainSettings();
-    s_doint=s["RECOLA_INTERFERENCE"].Get<int>();
+    //s_doint=s["RECOLA_INTERFERENCE"].Get<int>();
     // set collier caching level
     int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
     if (cc>=0) split_collier_cache_rcl(procIndex,cc);
 
+    // find out whether we need multiple orders or not
+    s_asscontribs[procIndex]=pi.m_fi.m_asscontribs;
+    // if we only need specific orders, set them
+    if (s_asscontribs[procIndex]==asscontrib::none) {
+      // unset all powers of the amplitude
+      unselect_all_gs_powers_BornAmpl_rcl(procIndex);
+      unselect_all_gs_powers_LoopAmpl_rcl(procIndex);
+      if(pi.m_fi.m_nlotype==nlo_type::loop){
+        // now set the requested powers for the amplitude
+        if (pi.m_fi.m_nlocpl[0]==1) {
+          double borngspower=pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
+          double loopgspower=pi.m_maxcpl[0]+pi.m_fi.m_nlocpl[0];
+          msg_Debugging()<<"QCD Tree gs-power = "<<borngspower<<std::endl
+                         <<"    Loop gs-power = "<<loopgspower<<std::endl;
+          select_gs_power_BornAmpl_rcl(procIndex,borngspower);
+          select_gs_power_LoopAmpl_rcl(procIndex,loopgspower);
+        }
+        if (pi.m_fi.m_nlocpl[1]==1) {
+          msg_Debugging()<<"EW Tree gs-power = "<<pi.m_maxcpl[0]<<std::endl
+                         <<"   Loop gs-power = "<<pi.m_maxcpl[0]<<std::endl;
+          select_gs_power_BornAmpl_rcl(procIndex,pi.m_maxcpl[0]);
+          select_gs_power_LoopAmpl_rcl(procIndex,pi.m_maxcpl[0]);
+        }
+      }
+      else {
+        msg_Debugging()<<"Born gs-power = "<<pi.m_maxcpl[0]<<std::endl;
+        select_gs_power_LoopAmpl_rcl(procIndex,pi.m_maxcpl[0]);
+      }
+    }
+    else {std::cout<<"initialized with every power\n";
+      msg_Debugging()<<"Initialise Tree and Loop with all gs-powers"<<std::endl;
+    }
+    msg_Debugging()<<"procIndex "<<procIndex<<" returned\n";
+    return procIndex;
+
+
+    /*
     // Do interference
     int quarkcount(0), gluoncount(0);
     int tempQCD(pi.m_maxcpl[0]), tempEW(pi.m_maxcpl[1]);
     if(pi.m_fi.m_nlotype==nlo_type::loop){
       if (s_doint){
-	    Flavour_Vector inflavs(pi.m_ii.GetExternal());
-	    Flavour_Vector outflavs(pi.m_fi.GetExternal());
-	      for (int i=0; i<inflavs.size(); i++){
-	        if (inflavs[i].IsQuark()) quarkcount++;
-	        else if (inflavs[i].IsGluon()) gluoncount++;
-	      }
+      Flavour_Vector inflavs(pi.m_ii.GetExternal());
+      Flavour_Vector outflavs(pi.m_fi.GetExternal());
+        for (int i=0; i<inflavs.size(); i++){
+          if (inflavs[i].IsQuark()) quarkcount++;
+          else if (inflavs[i].IsGluon()) gluoncount++;
+        }
 
-	    for (int i=0; i<outflavs.size(); i++){
-	      if (outflavs[i].IsQuark()) quarkcount++;
-	      else if (outflavs[i].IsGluon()) gluoncount++;
-	    }
-	    tempQCD-=gluoncount;
-	    if ((pi.m_fi.m_nlocpl[1]==1) && (quarkcount>=4) && (pi.m_maxcpl[0]>=2)){
-	      s_interference[procIndex]=true;
-	    }
-	    if ((pi.m_fi.m_nlocpl[0]==1) && (quarkcount>=4) && (pi.m_maxcpl[1]>=2)){	  
-	      s_interference[procIndex]=true;
-	      tempQCD-=1;
-	    }
-	    tempEW=quarkcount-2-tempQCD;
+      for (int i=0; i<outflavs.size(); i++){
+        if (outflavs[i].IsQuark()) quarkcount++;
+        else if (outflavs[i].IsGluon()) gluoncount++;
+      }
+      tempQCD-=gluoncount;
+      if ((pi.m_fi.m_nlocpl[1]==1) && (quarkcount>=4) && (pi.m_maxcpl[0]>=2)){
+        s_interference[procIndex]=true;
+      }
+      if ((pi.m_fi.m_nlocpl[0]==1) && (quarkcount>=4) && (pi.m_maxcpl[1]>=2)){    
+        s_interference[procIndex]=true;
+        tempQCD-=1;
+      }
+      tempEW=quarkcount-2-tempQCD;
       }
 
       if (s_interference[procIndex]){
-	    int maxBqcd, minBqcd;
-	
-	    if ((tempQCD+2*pi.m_fi.m_nlocpl[0])>tempEW)
-	      maxBqcd=pi.m_maxcpl[0]+tempEW-pi.m_fi.m_nlocpl[0];
-	    else
-	      maxBqcd=pi.m_maxcpl[0]+tempQCD+pi.m_fi.m_nlocpl[0];
-	    if ((tempEW+2*pi.m_fi.m_nlocpl[1])>tempQCD)
-	      minBqcd=pi.m_maxcpl[0]-tempQCD-pi.m_fi.m_nlocpl[0];
-	    else
-	      minBqcd=pi.m_maxcpl[0]-tempEW-pi.m_fi.m_nlocpl[0]-2*pi.m_fi.m_nlocpl[1];
+      int maxBqcd, minBqcd;
+  
+      if ((tempQCD+2*pi.m_fi.m_nlocpl[0])>tempEW)
+        maxBqcd=pi.m_maxcpl[0]+tempEW-pi.m_fi.m_nlocpl[0];
+      else
+        maxBqcd=pi.m_maxcpl[0]+tempQCD+pi.m_fi.m_nlocpl[0];
+      if ((tempEW+2*pi.m_fi.m_nlocpl[1])>tempQCD)
+        minBqcd=pi.m_maxcpl[0]-tempQCD-pi.m_fi.m_nlocpl[0];
+      else
+        minBqcd=pi.m_maxcpl[0]-tempEW-pi.m_fi.m_nlocpl[0]-2*pi.m_fi.m_nlocpl[1];
 
-	    while (quarkcount>=2 && maxBqcd>=minBqcd){
-	      select_gs_power_LoopAmpl_rcl(procIndex,2.*pi.m_maxcpl[0]-maxBqcd);
-	      select_gs_power_BornAmpl_rcl(procIndex,maxBqcd);
-	      quarkcount-=2;
-	      maxBqcd-=2;
-	    }
+      while (quarkcount>=2 && maxBqcd>=minBqcd){
+        select_gs_power_LoopAmpl_rcl(procIndex,2.*pi.m_maxcpl[0]-maxBqcd);
+        select_gs_power_BornAmpl_rcl(procIndex,maxBqcd);
+        quarkcount-=2;
+        maxBqcd-=2;
+      }
       }
         else{
-	      select_gs_power_BornAmpl_rcl(procIndex,pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
-	      select_gs_power_LoopAmpl_rcl(procIndex,pi.m_maxcpl[0]+pi.m_fi.m_nlocpl[0]);
+        select_gs_power_BornAmpl_rcl(procIndex,pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
+        select_gs_power_LoopAmpl_rcl(procIndex,pi.m_maxcpl[0]+pi.m_fi.m_nlocpl[0]);
       }
     }
     else if (amptype==12) {
@@ -406,6 +449,7 @@ namespace Recola {
     }
     msg_Debugging()<<"procIndex "<<procIndex<<" returned\n";  
     return procIndex;
+    */
   }
   
 
@@ -415,7 +459,7 @@ namespace Recola {
   {
     DEBUG_FUNC("");
     
-    
+    std::cout<<"GENERATING PROCESS\n";
     Settings& s = Settings::GetMainSettings();
     ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
     ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
@@ -448,7 +492,6 @@ namespace Recola {
     size_t fflav(Recola_Interface::GetFixedFlav());
     double alpha_mat;
     int default_flavscheme(fflav);
-    std::cout<<default_flavscheme<<std::endl;
     if (default_flavscheme==16) default_flavscheme=-1;
     if (fflav>0 && fflav<10) nlight=fflav;
     else {
@@ -478,7 +521,6 @@ namespace Recola {
     }
     double default_alphaQCD=Recola_Interface::GetDefaultAlphaQCD();
     double default_scale=Recola_Interface::GetDefaultScale();
-    std::cout<<nlight<<std::endl;
     set_alphas_rcl(default_alphaQCD,sqrt(default_scale),nlight);
     msg_Debugging()<<"use \\alpha_s="<<alphas<<" at \\mu_R="<<sqrt(muR2)
                    <<std::endl;
@@ -489,7 +531,8 @@ namespace Recola {
     msg_Out()<<"Process generation in Recola completed..." << endl;
   }
 
-  void Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt)
+  void Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt,
+                                      std::vector<double> &asscontribs)
   {
     vector<double> pp(4*momenta.size());
 
@@ -498,7 +541,7 @@ namespace Recola {
     
     for (int i=0; i<NN; i++){
       for (int mu=0; mu<4; mu++){
-	    fpp[i][mu] = momenta[i][mu];
+      fpp[i][mu] = momenta[i][mu];
       }
     }
 
@@ -510,15 +553,55 @@ namespace Recola {
     
     PHASIC::Process_Info pi(s_procmap[id]);
     
+    /*
     // TODO: had to change get_squared_amplitude_rcl to
     // get_squared_amplitude_r1_rcl, is this correct?
     if (s_interference[id]){
       get_squared_amplitude_rcl(id,pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0],"LO",fA2[0]);
       get_squared_amplitude_rcl(id,pi.m_maxcpl[0],"NLO",fA2[1]);
     }
+    */
+
+    double boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
+    double voqcd = pi.m_maxcpl[0];
  
+
+    msg_Debugging()<<"Getting Born ..."<<std::endl;
+    get_squared_amplitude_rcl(id,boqcd,"LO",fA2[0]);
+    msg_Debugging()<<"... B="<<fA2[0]<<std::endl;
+    msg_Debugging()<<"Getting V ..."<<std::endl;
+    get_squared_amplitude_rcl(id,voqcd,"NLO",fA2[1]);
+    msg_Debugging()<<"... V="<<fA2[1]<<std::endl;
     bornres = fA2[0];
     virt.Finite()=fA2[1];
+
+
+   if (s_asscontribs[id]) {
+      if (s_asscontribs[id]&asscontrib::EW) {
+        if (!asscontribs.size()>0) THROW(fatal_error,"Inconsistent state.");
+        msg_Debugging()<<"Getting V_EW ..."<<std::endl;
+        get_squared_amplitude_rcl(id,boqcd,"NLO",asscontribs[0]);
+        msg_Debugging()<<"... V_EW="<<asscontribs[0]<<std::endl;
+      }
+      if (s_asscontribs[id]&asscontrib::LO1) {
+        if (!asscontribs.size()>1) THROW(fatal_error,"Inconsistent state.");
+        msg_Debugging()<<"Getting BsubLO1 ..."<<std::endl;
+        if (boqcd>=1) get_squared_amplitude_rcl(id,boqcd-1,"LO",asscontribs[1]);
+        msg_Debugging()<<"... BsubLO1="<<asscontribs[1]<<std::endl;
+      }
+      if (s_asscontribs[id]&asscontrib::LO2) {
+        if (!asscontribs.size()>2) THROW(fatal_error,"Inconsistent state.");
+        msg_Debugging()<<"Getting BsubLO2 ..."<<std::endl;
+        if (boqcd>=2) get_squared_amplitude_rcl(id,boqcd-2,"LO",asscontribs[2]);
+        msg_Debugging()<<"... BsubLO2="<<asscontribs[2]<<std::endl;
+      }
+      if (s_asscontribs[id]&asscontrib::LO3) {
+        if (!asscontribs.size()>3) THROW(fatal_error,"Inconsistent state.");
+        msg_Debugging()<<"Getting BsubLO3 ..."<<std::endl;
+        if (boqcd>=3) get_squared_amplitude_rcl(id,boqcd-3,"LO",asscontribs[3]);
+        msg_Debugging()<<"... BsubLO3="<<asscontribs[3]<<std::endl;
+      }
+    }
 
     if (s_compute_poles) {
       double fE12[2]={0.};
@@ -544,7 +627,7 @@ namespace Recola {
     
     for (int i=0; i<NN; i++){
       for (int mu=0; mu<4; mu++){
-	fpp[i][mu] = momenta[i][mu];
+  fpp[i][mu] = momenta[i][mu];
       }
     }
     double fA2[2]={0.0};

@@ -16,20 +16,38 @@ using namespace std;
 namespace Recola {
 
   Recola_Virtual::Recola_Virtual(const Process_Info& pi,
-				 const Flavour_Vector& flavs,
-				 unsigned int recola_id) :
+         const Flavour_Vector& flavs,
+         unsigned int recola_id) :
     Virtual_ME2_Base(pi, flavs), m_recola_id(recola_id),
     m_modebackup(m_mode), m_ismapped(false)
   {
-    //set_mu_ir_rcl(m_mur);
-    //set_mu_uv_rcl(m_mur);
     m_procmap[m_recola_id]=pi;
-    //m_providespoles=false;
-    //m_fixedIRscale=true;
     Settings& s = Settings::GetMainSettings();
     m_IRscale=s["RECOLA_IR_SCALE"].Get<double>();
     m_UVscale=s["RECOLA_UV_SCALE"].Get<double>();
     m_modebackup=m_mode=Recola_Interface::s_vmode;
+    m_voqcd = pi.m_maxcpl[0];
+    m_boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
+
+    // init associated contribs
+    size_t n(0);
+    if (pi.m_fi.m_asscontribs&asscontrib::EW) {
+      ++n;
+      if (pi.m_fi.m_asscontribs&asscontrib::LO1) {
+        ++n;
+        if (pi.m_fi.m_asscontribs&asscontrib::LO2) {
+          ++n;
+          if (pi.m_fi.m_asscontribs&asscontrib::LO3) {
+            ++n;
+          }
+        }
+      }
+    }
+    m_asscontribs.resize(n);  
+
+    if (m_asscontribs.size()>0 && m_voqcd!=m_boqcd+1)
+      THROW(fatal_error,"Associated contribs only implemented for NLO QCD.");
+
   }
   
   void Recola_Virtual::Calc(const Vec4D_Vector& momenta) {
@@ -39,6 +57,10 @@ namespace Recola {
         Recola_Interface::GenerateProcesses(AlphaQED(),AlphaQCD(),
                                             m_IRscale,m_UVscale,m_mur2);
     }
+
+    m_res*=0.; m_born=0.;
+    for (size_t i(0);i<m_asscontribs.size();++i) m_asscontribs[i]=0.;
+
     MyTiming* timing;
     if (msg_LevelIsDebugging()) {
       timing = new MyTiming();
@@ -49,12 +71,12 @@ namespace Recola {
     int flav=Recola_Interface::GetDefaultFlav();
     set_alphas_rcl(aqcd,sqrt(m_mur2),flav);
 
-    Recola_Interface::EvaluateLoop(m_recola_id, momenta, m_born, m_res);
+    Recola_Interface::EvaluateLoop(m_recola_id, momenta, m_born, m_res, m_asscontribs);
 
     if (msg_LevelIsDebugging()) {
       timing->Stop();
       PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
-		 <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+     <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
     }
  
     
@@ -75,6 +97,11 @@ namespace Recola {
     m_res.Finite()/=factor;
     m_res.IR()/=factor;
     m_res.IR2()/=factor;
+
+    for (size_t i(0);i<m_asscontribs.size();++i) m_asscontribs[i]/=factor;
+    msg_Debugging()<<"V/B="<<m_res.Finite()<<std::endl;
+    for (size_t i(0);i<m_asscontribs.size();++i)
+    msg_Debugging()<<"ASS/B="<<m_asscontribs[i]<<std::endl;
 
    }
 
