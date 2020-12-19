@@ -149,7 +149,9 @@ namespace SHERPA {
     inline PHASIC::Process_Base *Process() const { return p_proc; }
 
     inline PHASIC::Process_Vector AllProcesses() const { return m_procs; }
-    
+
+    inline PHASIC::ME_Generators Generators() const { return m_gens; }
+
     inline ProcMap_Vector ProcMaps() const { return m_pmaps;}
 
     inline int EventGenerationMode() const { return m_eventmode; }
