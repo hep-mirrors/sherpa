@@ -14,6 +14,7 @@ namespace Recola {
     int m_modebackup;
     double m_IRscale;
     double m_UVscale;
+    size_t m_voqcd, m_boqcd;
 
   public:
  
