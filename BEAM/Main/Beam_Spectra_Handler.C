@@ -170,11 +170,10 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Reader * dataread,int n
 }
 
 bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int num) {
-  char help[20];
-  sprintf(help,"%i",num+1);
-  std::string number = string(help); 
+  std::string number = ToString(num+1);
   std::vector<double> beam;
-  if (!dataread->VectorFromFile(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  reader->ReadVector(beam,"BEAM_"+number);
+  if (beam.size()<2) beam.resize(2,0.0);
   int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
