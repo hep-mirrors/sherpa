@@ -172,7 +172,7 @@ namespace SHERPA {
 
     inline PHASIC::Process_Vector AllProcesses() const { return m_procs; }
 
-    inline const PHASIC::ME_Generators *Generators() const { return &m_gens; }
+    inline PHASIC::ME_Generators *Generators() { return &m_gens; }
 
     inline ProcMap_Vector ProcMaps() const { return m_pmaps;}
 
