@@ -27,7 +27,8 @@ namespace PHASIC {
     ~EWSudakov_Calculator();
     ATOOLS::EWSudakov_Log_Corrections_Map
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
-    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const;
+    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
+    { return m_activelogtypes; }
 
   private:
 
