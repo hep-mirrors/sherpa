@@ -21,7 +21,6 @@ namespace ATOOLS {
   class EWSudakov_Log_Corrections_Map
       : public std::map<EWSudakov_Log_Type, double> {
   public:
-    EWSudakov_Log_Corrections_Map();
     double KFactor() const;
   };
 

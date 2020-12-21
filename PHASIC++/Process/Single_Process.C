@@ -668,9 +668,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
         m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
       }
     } else {
-      static EWSudakov_Log_Corrections_Map trivial_map;
-      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
-        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+      for (const auto& t : p_ewsudakov_kfactor->ActiveLogTypes()) {
+        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = 0.0;
       }
     }
   }

@@ -14,7 +14,7 @@ size_t EWSudakov_Calculator::m_numonshellwarning {0};
 
 EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   p_proc{ proc },
-  m_activecoeffs{
+  m_activelogtypes{
     EWSudakov_Log_Type::Ls,
     EWSudakov_Log_Type::lZ,
     EWSudakov_Log_Type::lSSC,
@@ -22,7 +22,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
     EWSudakov_Log_Type::lYuk,
     EWSudakov_Log_Type::lPR
   },
-  m_ampls{ p_proc, m_activecoeffs },
+  m_ampls{ p_proc, m_activelogtypes },
   m_comixinterface{ p_proc, m_ampls },
   m_comixinterface_he{ p_proc, m_ampls }
 {
@@ -37,11 +37,11 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   const auto disabled_log_list =
       s["EWSUDAKOV_COEFF_REMOVED_LIST"].GetVector<std::string>();
   for (const auto& l : disabled_log_list) {
-    m_activecoeffs.erase(EWSudakovLogTypeFromString(l));
+    m_activelogtypes.erase(EWSudakovLogTypeFromString(l));
   }
   msg_Out() << "\n ";
   PRINT_INFO("Active EW_Sudakov coefficients : ");
-  for (const auto& key : m_activecoeffs)
+  for (const auto& key : m_activelogtypes)
     msg_Out() << om::red << "\t" << key << om::reset << "\n";
   m_c_coeff_ignores_vector_bosons =
       s["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
@@ -193,7 +193,7 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
   const auto nspins = ampls.GetSpinCombination(0).size();
   assert(nspins == m_ampls.NumberOfLegs());
   m_coeffs.clear();
-  for (const auto& key : m_activecoeffs) {
+  for (const auto& key : m_activelogtypes) {
     switch (key) {
       case EWSudakov_Log_Type::Ls:
       case EWSudakov_Log_Type::lZ:
@@ -223,7 +223,7 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
       continue;
     }
     m_current_spincombination = ampls.GetSpinCombination(i);
-    for (const auto& key : m_activecoeffs) {
+    for (const auto& key : m_activelogtypes) {
       switch (key) {
         case EWSudakov_Log_Type::Ls:
           m_coeffs[{key, {}}][i] = LsCoeff();
@@ -258,7 +258,7 @@ void EWSudakov_Calculator::CalculateSpinAmplitudeCoeffs()
     }
   }
   if (m_checkcoeff) {
-    Coefficient_Checker checker(p_proc->Name(), m_activecoeffs);
+    Coefficient_Checker checker(p_proc->Name(), m_activelogtypes);
     checker.SetLogFileName(m_checklogfile);
     Mandelstam_Variables mandelstam {
       m_ampls.MandelstamS(),

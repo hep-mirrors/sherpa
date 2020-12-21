@@ -27,6 +27,7 @@ namespace PHASIC {
     ~EWSudakov_Calculator();
     ATOOLS::EWSudakov_Log_Corrections_Map
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
+    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const;
 
   private:
 
@@ -66,7 +67,7 @@ namespace PHASIC {
                                       const Comix_Interface* interface=nullptr);
 
     Process_Base* p_proc;
-    std::set<ATOOLS::EWSudakov_Log_Type> m_activecoeffs;
+    std::set<ATOOLS::EWSudakov_Log_Type> m_activelogtypes;
     bool m_c_coeff_ignores_vector_bosons;
     EWSudakov_Amplitudes m_ampls;
 

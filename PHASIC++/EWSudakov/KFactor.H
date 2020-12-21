@@ -15,6 +15,8 @@ namespace PHASIC {
     double KFactor(const ATOOLS::NLO_subevt &evt);
     const ATOOLS::EWSudakov_Log_Corrections_Map& CorrectionsMap() const
     { return m_corrections_map; }
+    const std::set<ATOOLS::EWSudakov_Log_Type>& ActiveLogTypes() const
+    { return m_calc.ActiveLogTypes(); }
   };
 }
 

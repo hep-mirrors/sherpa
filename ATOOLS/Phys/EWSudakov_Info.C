@@ -41,16 +41,6 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const EWSudakov_Log_Type& t)
   }
 }
 
-EWSudakov_Log_Corrections_Map::EWSudakov_Log_Corrections_Map()
-{
-  (*this)[EWSudakov_Log_Type::Ls] = 0.0;
-  (*this)[EWSudakov_Log_Type::lZ] = 0.0;
-  (*this)[EWSudakov_Log_Type::lSSC] = 0.0;
-  (*this)[EWSudakov_Log_Type::lC] = 0.0;
-  (*this)[EWSudakov_Log_Type::lYuk] = 0.0;
-  (*this)[EWSudakov_Log_Type::lPR] = 0.0;
-}
-
 double EWSudakov_Log_Corrections_Map::KFactor() const
 {
   double kfac = 1.0;
