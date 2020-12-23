@@ -740,8 +740,10 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     if (cur.length()==0) continue;
     // weight is between "," and trailing bracket
     // name is between leading bracket and ","
-    wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
-    cur=cur.substr(1,cur.find(",")-1);
+    const auto wgtstart = cur.find(",") + 1;
+    const auto wgtend = cur.find(")") - 1;
+    wgt = ToType<double>(cur.substr(wgtstart, wgtend - wgtstart + 1));
+    cur = cur.substr(1, wgtstart - 2);
     if (m_splitvariations && m_hepmc2.StartsLikeVariationName(cur)) {
       wgtmap[cur]=wgt;
     }
