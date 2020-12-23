@@ -104,6 +104,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
+  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
