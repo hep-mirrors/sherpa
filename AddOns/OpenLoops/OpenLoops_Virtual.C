@@ -1,6 +1,7 @@
 #include "OpenLoops_Virtual.H"
 
 #include "AddOns/OpenLoops/OpenLoops_Interface.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -102,12 +103,14 @@ operator()(const Process_Info &pi) const
   DEBUG_VAR(pi.m_fi.m_nlocpl[0]);
   DEBUG_VAR(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
   DEBUG_VAR(pi.m_fi.m_nlocpl[1]);
+  int addmaxew=0;
+  if (MODEL::s_model->Name()=="HEFT") addmaxew+=pi.m_maxcpl[2];
   OpenLoops_Interface::SetParameter
     ("coupling_qcd_0", (int) pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
   OpenLoops_Interface::SetParameter
     ("coupling_qcd_1", (int) pi.m_fi.m_nlocpl[0]);
   OpenLoops_Interface::SetParameter
-    ("coupling_ew_0", (int) pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
+    ("coupling_ew_0", (int) addmaxew+pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nlocpl[1]);
 
