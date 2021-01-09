@@ -16,7 +16,7 @@ PARTICLE_DATA:
      Mass: 4.75  # consistent with MSTW 2008 nf 4 set
   24: {Width: 0, Stable: 0}
 
-SCALES: VAR{H_T2+sqr(80.419)}
+CORE_SCALE: VAR{H_T2+sqr(80.419)}
 PDF_LIBRARY: MSTW08Sherpa
 PDF_SET: mstw2008nlo_nf4
 

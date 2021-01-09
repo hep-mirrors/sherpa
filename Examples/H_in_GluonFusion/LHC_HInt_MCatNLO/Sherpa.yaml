@@ -11,7 +11,7 @@ AMEGIC:
   KEEP_ZERO_PROCS: 1
   ALLOW_MAPPING: 0
 ME_GENERATORS: [Amegic, Higgs]
-SCALES: VAR{Abs2(p[2]+p[3])}
+CORE_SCALE: VAR{Abs2(p[2]+p[3])}
 
 # physics parameters
 PARTICLE_DATA:

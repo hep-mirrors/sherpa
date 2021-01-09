@@ -10,7 +10,7 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 
 # scales
 # mu = transverse momentum of the top
-SCALES: VAR{MPerp2(p[3])}{MPerp2(p[3])}{MPerp2(p[3])}
+CORE_SCALE: VAR{MPerp2(p[3])}{MPerp2(p[3])}{MPerp2(p[3])}
 
 # disable hadronic W decays
 HARD_DECAYS:
