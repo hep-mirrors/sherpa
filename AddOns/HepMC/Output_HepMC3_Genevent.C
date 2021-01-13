@@ -13,10 +13,8 @@
 #include "HepMC3/WriterAscii.h"
 #include "HepMC3/WriterAsciiHepMC2.h"
 #include "HepMC3/WriterHEPEVT.h"
-#ifdef USING__HEPMC3__WRITERROOTTREE
+#ifdef USING__HEPMC3__ROOT
 #include "HepMC3/WriterRootTree.h"
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
 #include "HepMC3/WriterRoot.h"
 #endif
 
@@ -57,17 +55,17 @@ switch (m_iotype)
     }
     break;
     case 3:
-#ifdef USING__HEPMC3__WRITERROOT
+#ifdef USING__HEPMC3__ROOT
         p_writer=new HepMC::WriterRoot(m_basename);
 #else
-        THROW(fatal_error,"Asked for Root output, but Sherpa was compiled without Root output support.");
+        THROW(fatal_error,"Asked for Root output, but Sherpa/HepMC3 was compiled without Root output support.");
 #endif
         break;
     case 4:
-#ifdef USING__HEPMC3__WRITERROOTTREE
+#ifdef USING__HEPMC3__ROOT
         p_writer=new HepMC::WriterRootTree(m_basename);
 #else
-        THROW(fatal_error,"Asked for RootTree output, but Sherpa was compiled without RootTree output support.");
+        THROW(fatal_error,"Asked for RootTree output, but Sherpa/HepMC3 was compiled without RootTree output support.");
 #endif
         break;
     default:

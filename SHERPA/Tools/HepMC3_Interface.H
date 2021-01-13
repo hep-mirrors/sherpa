@@ -24,16 +24,6 @@ namespace HepMC3 {
   class GenRunInfo;
   class GenParticle;
   class GenCrossSection;
-  class Writer;
-  class WriterAscii;
-  class WriterAsciiHepMC2;
-  class WriterHEPEVT;
-#ifdef USING__HEPMC3__WRITERROOTTREE
-  class WriterRootTree;
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
-  class WriterRoot;
-#endif
 
 using GenVertexPtr = std::shared_ptr<GenVertex>;
 using GenParticlePtr = std::shared_ptr<GenParticle>;
