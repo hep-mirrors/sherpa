@@ -1,11 +1,8 @@
 /* Using HEPMC3 */
 #undef USING__HEPMC3
 
-/* Using HEPMC3 WRITERROOTTREE */
-#undef  USING__HEPMC3__WRITERROOTTREE
-
-/* Using HEPMC3  WRITERROOT */
-#undef  USING__HEPMC3__WRITERROOT
+/* HepMC3 with ROOT support */
+#undef  USING__HEPMC3__ROOT
 
 /* Using HEPMC2 */
 #undef USING__HEPMC2

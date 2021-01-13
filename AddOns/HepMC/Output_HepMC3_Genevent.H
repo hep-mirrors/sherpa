@@ -16,10 +16,8 @@ namespace HepMC3 {
   class WriterAscii;
   class WriterAsciiHepMC2;
   class WriterHEPEVT;
-#ifdef USING__HEPMC3__WRITERROOTTREE
+#ifdef USING__HEPMC3__ROOT
   class WriterRootTree;
-#endif
-#ifdef USING__HEPMC3__WRITERROOT
   class WriterRoot;
 #endif
 }

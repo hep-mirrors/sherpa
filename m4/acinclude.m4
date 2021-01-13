@@ -351,6 +351,51 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(USING__Analysis, test "$analysis" = "true" )
 
   AC_ARG_ENABLE(
+    root,
+    AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
+    [ AC_MSG_CHECKING(for ROOT installation directory)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
+        yes) if test -d "$ROOTSYS"; then
+               CONDITIONAL_ROOTDIR=$ROOTSYS
+               CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
+               CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
+               CONDITIONAL_ROOTFLAGS="$($ROOTSYS/bin/root-config --cflags)"
+             elif test -x "`which root-config`"; then
+               CONDITIONAL_ROOTDIR=`root-config --prefix`;
+               CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
+               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
+               CONDITIONAL_ROOTFLAGS=`root-config --cflags`;
+                if ! test -d "$CONDITIONAL_ROOTDIR"; then
+                  AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
+                fi
+             else
+               AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+        *)   if test -d "${enableval}"; then
+               CONDITIONAL_ROOTDIR="${enableval}"
+               CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
+               CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
+               CONDITIONAL_ROOTFLAGS="$(${enableval}/bin/root-config --cflags)";
+             else
+               AC_MSG_ERROR(${enableval} is not a valid path.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+      esac ],
+    [ root=false ]
+  )
+  if test "$root" = "true" ; then
+    AC_DEFINE([USING__ROOT], "1", [using ROOT])
+    fi
+  AC_SUBST(CONDITIONAL_ROOTDIR)
+  AC_SUBST(CONDITIONAL_ROOTINCS)
+  AC_SUBST(CONDITIONAL_ROOTLIBS)
+  AC_SUBST(CONDITIONAL_ROOTFLAGS)
+  AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
+  
+
+  AC_ARG_ENABLE(
     hepmc2,
     AC_HELP_STRING([--enable-hepmc2=/path/to/hepmc], [Enable HepMC (version 2.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC2 installation directory);
@@ -402,7 +447,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HEPMC2LIBS)
   AM_CONDITIONAL(HEPMC2_SUPPORT, test "$hepmc2" = "true")
 
- AC_ARG_ENABLE(
+  AC_ARG_ENABLE(
     hepmc3root,
     AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
     [ 
@@ -412,7 +457,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     
           esac
     ],
-    [ hepmc3root=true ]
+    [ hepmc3root=${root} ]
   )
 
 
@@ -421,50 +466,36 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-hepmc3=/path/to/hepmc], [Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(HepMC3 not enabled); hepmc3=false ;;
-        yes)  if test -d "$HEPMC3DIR"; then
-                CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
-                CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC3";
-              if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root -lHepMC3rootIO"
-              fi
-              else
-                AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_HEPMC3DIR="${enableval}"
-                CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC3";
-              if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -L${enableval}/lib/root -R${enableval}/lib/root -L${enableval}/lib64/root -R${enableval}/lib64/root -lHepMC3rootIO"
-              fi
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-      esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRootTree.h"; then
-        hepmc3writerroottree=true;
+        no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
+        yes) if test -x "`which HepMC3-config`"; then
+               CONDITIONAL_HEPMC3DIR=`HepMC3-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_HEPMC3DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
+        AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
+        CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
+        CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
+        if test "$hepmc3root" = "true" ; then
+          CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO) ${CONDITIONAL_ROOTINCS}";
+          CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO) ${CONDITIONAL_ROOTLIBS}";
+          if ! test -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRoot.h" -a -f "$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --includedir)/HepMC3/WriterRootTree.h"; then
+             AC_MSG_ERROR(HepMC3 installation does not contain ROOT support.);
+          fi;
+        fi;
+      else
+        AC_MSG_ERROR(Unable to use HepMC3 from specified path);
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC3/WriterRoot.h"; then
-        hepmc3writerroot=true;
-      fi;
-
-      ],
+    ],
     [ hepmc3=false ]
   )
-    if test "$hepmc3" = "true" ; then
+  if test "$hepmc3" = "true" ; then
     AC_DEFINE([USING__HEPMC3], "1", [Using HEPMC3])
-    fi
+  fi
   if test "$hepmc3root" = "true" ; then
-    if test "$hepmc3writerroot" = "true"; then
-      AC_DEFINE([USING__HEPMC3__WRITERROOT], "1", [WriterRoot.h available])
-    fi
-    if test "$hepmc3writerroottree" = "true"; then
-      AC_DEFINE([USING__HEPMC3__WRITERROOTTREE], "1", [WriterRootTree.h available])
-    fi
+    AC_DEFINE([USING__HEPMC3__ROOT], "1", [HepMC3 with ROOT support])
   fi
   AC_SUBST(CONDITIONAL_HEPMC3DIR)
   AC_SUBST(CONDITIONAL_HEPMC3INCS)
@@ -674,51 +705,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for LHOLE); AC_MSG_RESULT(no); lhole=false ]
   )
   AM_CONDITIONAL(USING__LHOLE, test "$lhole" = "true" )
-
-  AC_ARG_ENABLE(
-    root,
-    AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
-    [ AC_MSG_CHECKING(for ROOT installation directory)
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
-        yes) if test -d "$ROOTSYS"; then
-               CONDITIONAL_ROOTDIR=$ROOTSYS
-               CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
-               CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
-               CONDITIONAL_ROOTFLAGS="$($ROOTSYS/bin/root-config --cflags)"
-             elif test -x "`which root-config`"; then
-               CONDITIONAL_ROOTDIR=`root-config --prefix`;
-               CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
-               CONDITIONAL_ROOTFLAGS=`root-config --cflags`;
-                if ! test -d "$CONDITIONAL_ROOTDIR"; then
-                  AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
-                fi
-             else
-               AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
-             fi;
-             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
-        *)   if test -d "${enableval}"; then
-               CONDITIONAL_ROOTDIR="${enableval}"
-               CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
-               CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
-               CONDITIONAL_ROOTFLAGS="$(${enableval}/bin/root-config --cflags)";
-             else
-               AC_MSG_ERROR(${enableval} is not a valid path.);
-             fi;
-             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
-      esac ],
-    [ root=false ]
-  )
-  if test "$root" = "true" ; then
-    AC_DEFINE([USING__ROOT], "1", [using ROOT])
-    fi
-  AC_SUBST(CONDITIONAL_ROOTDIR)
-  AC_SUBST(CONDITIONAL_ROOTINCS)
-  AC_SUBST(CONDITIONAL_ROOTLIBS)
-  AC_SUBST(CONDITIONAL_ROOTFLAGS)
-  AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
-  
 
   lhapdfversion=5
   AC_ARG_ENABLE(
