@@ -186,15 +186,13 @@ Blob* FindSPBlob(Blob* startblob)
 typedef std::vector<std::pair<std::pair<ATOOLS::Flavour,ATOOLS::Vec4D>, Spin_Density*> > SpinDensityMap;
 bool Decay_Handler_Base::DoSpecialDecayTauSC(Particle* part)
 {
-  DEBUG_FUNC(*part);
   if (!m_specialtauspincorr) return false;
   Blob* blob=part->ProductionBlob();
   if (blob==NULL || blob->Type()!=btp::Fragmentation) return false;
-  DEBUG_INFO("Found fragmentation blob");
   for (size_t i=0; i<blob->NOutP(); ++i)
     if (blob->OutParticle(i)->Flav().Kfcode()!=kf_tau)
       return false;
-  DEBUG_INFO("Found at least one tau");
+  DEBUG_FUNC(*part);
 
   Blob* signal=FindSPBlob(blob);
   if (!signal) {
@@ -293,7 +291,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
           D=FillDecayTree(daughters[i]->DecayBlob(), &sigma);
           D->SetParticle(origparts[i]);
         }
-        if (amps->Contains(origparts[i])) {
+        if (amps->Contains(origparts[i]) && (origparts[i]->Flav().Kfcode()!=kf_tau || Flavour(kf_tau).IsStable())) {
           DEBUG_INFO("contracting with D["<<D->Particle()<<"]");
           amps->Contract(D);
         }
