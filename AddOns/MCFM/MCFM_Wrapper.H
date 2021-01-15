@@ -129,6 +129,7 @@ extern "C" {
       xdelk_g,xdelk_z;
   } anomcoup_;  
 
+#pragma omp threadprivate(nflav_, masses_, epinv_, qcdcouple_, zprods_, epinv2_, zerowidth_, breit_)  
 }
 
 #endif

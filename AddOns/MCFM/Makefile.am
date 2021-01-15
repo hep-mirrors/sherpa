@@ -13,7 +13,7 @@ libSherpaMCFM_la_SOURCES      =	$(MCFM_SOURCES)
 
 libSherpaMCFM_la_LIBADD       =	@CONDITIONAL_MCFMLIBS@
 
-libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS)
+libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS)  -fopenmp
 
 MCFM_EXTRA_DIST = $(MCFM_ADDS)
 else
