@@ -317,6 +317,18 @@ The scale setter options which are currently available are
 
   leads to an identical scale definition.
 
+  Unordered cluster histories are by default not allowed. Instead, if during
+  clustering a new smaller scale is encountered, the previous maximal scale
+  will be used, or alternatively a user-defined scale specified, e.g.
+  
+  .. code-block:: yaml
+
+     MEPS:
+       UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}
+
+  If instead you want to allow unordered histories you can also enable them with
+  ``ALLOW_SCALE_UNORDERING: 1``.
+
   Clusterings onto 2->n (n>2) configurations is possible, see
   :ref:`METS scale setting with multiparton core processes`.
 
