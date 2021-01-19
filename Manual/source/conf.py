@@ -26,7 +26,7 @@ project = 'Sherpa Manual'
 release = '[GIT]' # will be read from `configure.ac`
 
 with open('../../configure.ac', 'r') as f:
-    release = re.search(r'AC_INIT\(SHERPA MC, ((?:[0-9]\.?)+)',
+    release = re.search(r'AC_INIT\(\[SHERPA MC\],\[((?:[0-9]\.?)+)',
                         f.read()).group(1)
 
 # -- General configuration ---------------------------------------------------

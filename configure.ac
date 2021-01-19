@@ -1,10 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 3.0.0, sherpa@projects.hepforge.org, SHERPA-MC)
+AC_INIT([SHERPA MC],[3.0.0],[sherpa@projects.hepforge.org],[SHERPA-MC])
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
 AM_INIT_AUTOMAKE(tar-ustar -Wno-portability)
-AM_DISABLE_STATIC
+AC_DISABLE_STATIC([])
 AC_PREFIX_DEFAULT(${PWD})
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -27,7 +27,7 @@ AC_SUBST(F77)
 AC_SUBST(AM_FFLAGS)
 
 AC_ARG_ENABLE(mpi,
-  AC_HELP_STRING([--enable-mpi], [Enable MPI]),
+  AS_HELP_STRING([--enable-mpi],[Enable MPI]),
   [ AC_MSG_CHECKING(for MPI)
     case "${enableval}" in
       no)  AC_MSG_RESULT(no); mpi=false ;;
@@ -49,7 +49,7 @@ dnl Now that CXX is set we require C++11
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 
 AC_ARG_ENABLE(ufo,
-  AC_HELP_STRING([--enable-ufo], [Enable UFO support]),
+  AS_HELP_STRING([--enable-ufo],[Enable UFO support]),
   [ AC_MSG_CHECKING(for UFO support)
     case "${enableval}" in
       no) AC_MSG_RESULT(no); ufo=false ;;
@@ -62,7 +62,7 @@ fi
 AM_CONDITIONAL(ENABLE_UFO, [test x$ufo == xtrue])
 
 AC_ARG_ENABLE(dihiggs,
-  AC_HELP_STRING([--enable-dihiggs], [Enable di-Higgs virtual AddOn]),
+  AS_HELP_STRING([--enable-dihiggs],[Enable di-Higgs virtual AddOn]),
   [ AC_MSG_CHECKING(Di-Higgs AddOn)
     case "${enableval}" in
       no) AC_MSG_RESULT(no); dihiggs=false ;;
@@ -79,9 +79,8 @@ AX_CHECK_COMPILE_FLAG(
   [-Werror -Wl,--no-as-needed],
   [CXX="$CXX -Wl,--no-as-needed"])
 
-AM_PROG_LIBTOOL
-dnl Checks for header files.
-AC_HEADER_STDC
+LT_INIT
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
@@ -91,7 +90,7 @@ AC_CHECK_FUNCS(mkdir)
 SHERPA_SETUP_CONFIGURE_OPTIONS
 SHERPA_SETUP_VARIABLES
 
-AC_OUTPUT(ATOOLS/Math/Makefile \
+AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
 	  ATOOLS/YAML/Makefile \
@@ -254,7 +253,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/DiHiggsNLO/Makefile \
 	  AddOns/Makefile \
-	  Makefile )
+	  Makefile ])
+AC_OUTPUT
 
 if test "x$VERSIONING" != "x"; then
   mv "SHERPA/Run/Sherpa-config" "SHERPA/Run/Sherpa$VERSIONING-config"
