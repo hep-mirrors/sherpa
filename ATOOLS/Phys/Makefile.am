@@ -6,6 +6,7 @@ pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
 				Git_Info.C \
+				Fragmentation_Base.C \
 				fjcore.cc \
 				Flavour.C \
 				Ordering.C \
@@ -36,6 +37,7 @@ libToolsPhys_la_SOURCES       =	\
 
 localinc_HEADERS      =	\
 			fjcore.hh \
+			Fragmentation_Base.H \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \

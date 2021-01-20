@@ -2,6 +2,7 @@
 #define SHERPA_LundTools_Lund_Interface_H
 
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include <list>
@@ -19,7 +20,8 @@ namespace SHERPA {
 
   class Lund_Interface :
       public ATOOLS::Terminator_Object,
-      public ATOOLS::Mass_Selector {
+      public ATOOLS::Mass_Selector,
+      public ATOOLS::Fragmentation_Base {
   private:
     static size_t s_errors, s_maxerrors;
 
@@ -68,7 +70,7 @@ namespace SHERPA {
     void PrepareTerminate();
   public:
 
-    Lund_Interface();
+    Lund_Interface(std::string shower="");
     ~Lund_Interface();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

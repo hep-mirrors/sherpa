@@ -21,6 +21,7 @@
 
 namespace ATOOLS {
   class Variations;
+  class Fragmentation_Base;
 }
 
 namespace SHERPA {
@@ -29,7 +30,6 @@ namespace SHERPA {
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
   class Colour_Reconnection_Handler;
-  class Fragmentation_Handler;
   class Decay_Handler_Base;
   class MI_Handler;
   class Soft_Photon_Handler;
@@ -59,7 +59,7 @@ namespace SHERPA {
     Shower_Handler_Map            m_showerhandlers;
     Beam_Remnant_Handler        * p_beamremnants;
     Colour_Reconnection_Handler * p_reconnections;
-    Fragmentation_Handler       * p_fragmentation;
+    ATOOLS::Fragmentation_Base  * p_fragmentation;
     Soft_Collision_Handler      * p_softcollisions;
     Decay_Handler_Base          * p_hdhandler;
     MI_Handler                  * p_mihandler; 
@@ -120,7 +120,7 @@ namespace SHERPA {
     const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
-    Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
+    ATOOLS::Fragmentation_Base   * GetFragmentation()         const { return p_fragmentation;   }
     Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
