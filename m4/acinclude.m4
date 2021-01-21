@@ -1009,6 +1009,37 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(PYTHIA_SUPPORT, test "$pythia" = "true")
 
   AC_ARG_ENABLE(
+    pythia8,
+    AS_HELP_STRING([--enable-pythia8=/path/to/pythia8], [Enable Pythia8 support and specify where it is installed.]),
+    [ AC_MSG_CHECKING(for Pythia8 installation directory);
+      pythia8=true;
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(Pythia8 not enabled); pythia8=false;;
+        yes) if test -x "`which pythia8-config`"; then
+               CONDITIONAL_PYTHIA8DIR=`pythia8-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_PYTHIA8DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_PYTHIA8DIR/bin/pythia8-config"; then
+        CONDITIONAL_PYTHIA8LDADD="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --ldflags)";
+        CONDITIONAL_PYTHIA8CPPFLAGS="$($CONDITIONAL_PYTHIA8DIR/bin/pythia8-config --cxxflags)";
+        AC_MSG_RESULT([${CONDITIONAL_PYTHIA8DIR}]);
+      else
+        AC_MSG_ERROR(Unable to use Pythia8 from specified path.);
+      fi;
+    ],
+    [ pythia8=false ]
+  )
+  AC_SUBST(CONDITIONAL_PYTHIA8LDADD)
+  AC_SUBST(CONDITIONAL_PYTHIA8CPPFLAGS)
+  AM_CONDITIONAL(PYTHIA8_SUPPORT, test "$pythia8" = "true")
+  if test "$pythia8" = "true" ; then
+    AC_DEFINE([USING__PYTHIA8], "1", [Pythia8 interface enabled])
+  fi
+
+  AC_ARG_ENABLE(
     hepevtsize,
     AS_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE],[HEPEVT common block size @<:@default=10000@:>@]),
     [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
