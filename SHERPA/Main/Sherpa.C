@@ -81,7 +81,9 @@ Sherpa::~Sherpa()
 #ifdef USING__HEPMC3
   if (p_hepmc3)       { delete p_hepmc3;       p_hepmc3       = NULL; }
 #endif
-  Settings::FinalizeMainSettings();
+  Settings& s = Settings::GetMainSettings();
+  if (s["CHECK_SETTINGS"].SetDefault(true).Get<bool>())
+    Settings::FinalizeMainSettings();
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
