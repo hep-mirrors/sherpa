@@ -212,7 +212,7 @@ namespace CSSHOWER {
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
-    int m_on, m_qcd, m_scs;
+    int m_on, m_qcd, m_scs, m_mufscheme;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;

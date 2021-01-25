@@ -151,6 +151,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(8)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
 		 <<", col="<<p_lf->Col();
+  m_mufscheme=read.GetValue<double>("CSS_FACSCALE_SCHEME",1);
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -290,7 +291,8 @@ double Splitting_Function_Base::GetXPDF
   }
   if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
   if (IsNan(scale) || IsNan(x)) return 0.0;
-  double Q2(scale*p_cf->CplFac(scale));
+  double Q2(scale);
+  if (m_mufscheme) Q2*=p_cf->CplFac(scale);
   if (Q2<p_lf->MS()->Mass2(a) || x<p_pdf[beam]->XMin() ||
       x>p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor() ||
       Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())

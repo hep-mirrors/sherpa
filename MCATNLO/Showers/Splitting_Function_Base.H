@@ -222,7 +222,7 @@ namespace MCATNLO {
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_mth;
-    int m_on, m_qcd, m_scs;
+    int m_on, m_qcd, m_scs, m_mufscheme;
     std::vector<Parton*> m_specs;
     std::vector<double> m_lastints;
     Parton *p_spec;
