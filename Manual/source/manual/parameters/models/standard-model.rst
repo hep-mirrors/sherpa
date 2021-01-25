@@ -40,67 +40,67 @@ default is :option:`alphamZ`. The following options are provided:
 
 :option:`UserDefined`
   All EW parameters are explicitly given:  Here the W, Z and Higgs
-  masses and widths are taken as inputs, and the parameters 
+  masses and widths are taken as inputs, and the parameters
   ``1/ALPHAQED(0)``, ``ALPHAQED_DEFAULT_SCALE``, ``SIN2THETAW`` (weak mixing
   angle), ``VEV`` (Higgs field vacuum expectation value) and
   ``LAMBDA`` (Higgs quartic coupling) have to be specified.
-  
+
   By default, :option:`ALPHAQED_DEFAULT_SCALE: 8315.18` (:math:`=m_Z^2`), which
   means that the MEs are evaluated with a value of :math:`\alpha=\frac{1}{128.802}`.
-  
+
   Note that this mode allows to violate the tree-level relations
   between some of the parameters and might thus lead to gauge
   violations in some regions of phase space.
 
 :option:`alpha0`
-  All EW parameters are calculated from the W, Z and Higgs masses 
+  All EW parameters are calculated from the W, Z and Higgs masses
   and widths and
   the fine structure constant (taken from ``1/ALPHAQED(0)`` +
   ``ALPHAQED_DEFAULT_SCALE``, cf. below) using tree-level relations.
 
   By default, :option:`ALPHAQED_DEFAULT_SCALE: 0.0`, which means that the MEs
   are evaluated with a value of :math:`\alpha=\frac{1}{137.03599976}`.
-  
+
 :option:`alphamZ`
-  All EW parameters are calculated from the W, Z and Higgs masses 
+  All EW parameters are calculated from the W, Z and Higgs masses
   and widths and the fine structure constant (taken from ``1/ALPHAQED(MZ)``,
   default :option:`128.802`) using tree-level relations.
 
 :option:`Gmu`
   This choice corresponds to the G_mu-scheme. The EW parameters are
   calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
-  boson mass M_H, their respective widths, 
+  boson mass M_H, their respective widths,
   and the Fermi constant ``GF`` using tree-level
   relations.
 
 :option:`alphamZsW`
-  All EW parameters are calculated from the Z and Higgs masses and 
+  All EW parameters are calculated from the Z and Higgs masses and
   widths, the fine structure constant (taken from ``1/ALPHAQED(MZ)``,
   default :option:`128.802`),
   and the weak mixing angle (``SIN2THETAW``) using
-  tree-level relations. In particular, the W boson mass (and in the 
+  tree-level relations. In particular, the W boson mass (and in the
   complex mass scheme also its width) is a derived quantity.
 
 :option:`alphamWsW`
-  All EW parameters are calculated from the W and Higgs masses and 
+  All EW parameters are calculated from the W and Higgs masses and
   widths, the fine structure constant (taken from ``1/ALPHAQED(MW)``,
-  default :option:`132.17`), 
+  default :option:`132.17`),
   and the weak mixing angle (``SIN2THETAW``) using
-  tree-level relations. In particular, the Z boson mass (and in the 
+  tree-level relations. In particular, the Z boson mass (and in the
   complex mass scheme also its width) is a derived quantity.
 
 :option:`GmumZsW`
-  All EW parameters are calculated from the Z and Higgs masses and 
-  widths, the Fermi constant (``GF``), 
+  All EW parameters are calculated from the Z and Higgs masses and
+  widths, the Fermi constant (``GF``),
   and the weak mixing angle (``SIN2THETAW``) using
-  tree-level relations. In particular, the W boson mass (and in the 
+  tree-level relations. In particular, the W boson mass (and in the
   complex mass scheme also its width) is a derived quantity.
 
 :option:`GmumWsW`
-  All EW parameters are calculated from the W and Higgs masses and 
-  widths, the Fermi constant (``GF``), 
+  All EW parameters are calculated from the W and Higgs masses and
+  widths, the Fermi constant (``GF``),
   and the weak mixing angle (``SIN2THETAW``) using
-  tree-level relations. In particular, the Z boson mass (and in the 
+  tree-level relations. In particular, the Z boson mass (and in the
   complex mass scheme also its width) is a derived quantity.
 
 :option:`FeynRules`
@@ -112,9 +112,9 @@ default is :option:`alphamZ`. The following options are provided:
   relations. Note, the W boson mass is not an input parameter in this
   scheme.
 
-All ``Gmu``-derived schemes, where the EW coupling is a derived quantity, 
-possess an ambiguity on how to construct a real EW coupling in the 
-complex mass scheme. Several conventions are implemented and can 
+All ``Gmu``-derived schemes, where the EW coupling is a derived quantity,
+possess an ambiguity on how to construct a real EW coupling in the
+complex mass scheme. Several conventions are implemented and can
 be accessed through ``GMU_CMS_AQED_CONVENTION``.
 
 To account for quark mixing the CKM matrix elements have to be
@@ -155,7 +155,7 @@ The CKM matrix elements V_ij can also be read in using
 
 Complex values can be given by providing two values: ``<V_ij> -> [Re,
 Im]``.  Values not explicitly given are taken from the afore computed
-Wolfenstein parametrisation. Setting ``CKM: @{Output: true@``} enables
+Wolfenstein parametrisation. Setting ``CKM: {Output: true}`` enables
 an output of the CKM matrix.
 
 The remaining parameter to fully specify the Standard Model is the
@@ -165,7 +165,7 @@ hand involves hadron collisions and thus PDFs, the value of the strong
 coupling constant is automatically set consistent with the PDF fit and
 can not be changed by the user. If Sherpa is compiled with LHAPDF
 support, it is also possible to use the alphaS evolution provided in
-LHAPDF by specifying ``ALPHAS: @{USE_PDF: 1@``}. The perturbative
+LHAPDF by specifying ``ALPHAS: {USE_PDF: 1}``. The perturbative
 order of the running of the strong coupling can be set via
 ``ORDER_ALPHAS``, where the default :option:`0` corresponds to
 one-loop running and :option:`1`, :option:`2`, :option:`3` to :option:`2,3,4`-loops,

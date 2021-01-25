@@ -45,9 +45,10 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_name(name), m_on(false), m_isnlo(false),
   m_sel_log(new Selector_Log(m_name)), p_proc(proc),
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
-  m_n(m_nin+m_nout), m_pass(1), m_results {{0, 1.0}}, p_sub(NULL),
+  m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
-  m_smin(0.), m_smax(sqr(rpa->gen.Ecms()))
+  m_smin(0.), m_smax(sqr(rpa->gen.Ecms())),
+  m_results{Weights_Map{1.0}}
 {
   if (p_proc && p_proc->Info().Has(nlo_type::real|nlo_type::rsub))
     m_isnlo=true;
@@ -60,7 +61,6 @@ bool Selector_Base::RSTrigger(NLO_subevtlist *const subs)
   for (size_t n(0);n<subs->size();++n) {
     p_sub=(*subs)[n];
     m_nout=(m_n=p_sub->m_n)-m_nin;
-    for (size_t i(0);i<m_n;++i) p_fl[i]=p_sub->p_fl[i];
     Vec4D_Vector mom(p_sub->p_mom,&p_sub->p_mom[m_n]);
     for (size_t i(0);i<m_nin;++i)
       if (mom[i][0]<0.0) mom[i]=-mom[i];
@@ -123,7 +123,7 @@ void Selector_Base::ReadInSubSelectors(const Selector_Key &key)
   }
 }
 
-const std::vector<ATOOLS::Event_Weights>& Selector_Base::Results() const
+const std::vector<ATOOLS::Weights_Map>& Selector_Base::Results() const
 {
   return m_results;
 }

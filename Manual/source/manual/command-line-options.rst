@@ -8,11 +8,14 @@ The available command line options for Sherpa.
 
 .. option:: --run-data, -f <file>
 
-   Read settings from input file ``<file>``
+   Read settings from input file ``<file>``, see :REF:`RUNDATA`.
+   This is deprecated, use positional arguments to specify input files
+   instead, see :REF:`RUNDATA`.
 
 .. option:: --path, -p <path>
 
-   Read input file from path ``<path>``.
+   Read input file from path ``<path>``, see
+   :REF:`PATH`.
 
 .. option:: --sherpa-lib-path, -L <path>
 

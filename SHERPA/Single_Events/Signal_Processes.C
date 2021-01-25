@@ -14,7 +14,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -86,7 +86,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         if (m_adddocumentation) {
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
-          Process_Base* bproc = mcatnloproc->BProc()->Selected();
+          Process_Base* bproc = mcatnloproc->BVIProc()->Selected();
           Blob* docblob = bloblist->AddBlob(btp::Unspecified);
           for (unsigned int i=0;i<bproc->NIn();i++) {
             Particle* particle = new Particle(0,bproc->Flavours()[i],
@@ -117,7 +117,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
+  for (size_t i=0;i<proc->NIn();i++) 
+    cms += proc->Integrator()->Momenta()[i];
   blob->SetCMS(cms);
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
@@ -149,7 +150,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   for (unsigned int i=proc->NIn();
        i<proc->NIn()+proc->NOut();i++) {
-    particle = new Particle(0,proc->Flavours()[i],proc->Momenta()[i]);
+    particle = new Particle(0,proc->Flavours()[i],
+			    proc->Integrator()->Momenta()[i]);
     particle->SetNumber(0);
     for (size_t j(0);j<decs.size();++j)
       if (decs[j]->m_id&(1<<i)) particle->SetMEId(1<<i);
@@ -184,15 +186,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       m_overweight = 0.0;
     } else {
       weightfactor = 1.0 / (m_overweight + 1.0);
-      winfo.m_weights *= weightfactor;
+      winfo.m_weightsmap *= weightfactor;
       NLO_subevtlist* nlos=proc->GetSubevtList();
       if (nlos) (*nlos) *= weightfactor;
     }
   }
 
-  blob->AddData("Weights",new Blob_Data<Event_Weights>(winfo.m_weights));
-  blob->AddData("MC@NLO_Shower_Weights",
-                new Blob_Data<Event_Weights>(winfo.m_mcatnloshowerweights));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));

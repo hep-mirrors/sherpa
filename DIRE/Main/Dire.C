@@ -84,14 +84,14 @@ Dire::~Dire()
 int Dire::PerformShowers()
 {
   DEBUG_FUNC(this);
-  m_weights = Event_Weights {};
+  m_weightsmap.Clear();
   unsigned int nem=0;
   for (size_t i(0);i<m_ampls.size();++i) {
     int stat {p_shower->Evolve(*m_ampls[i], nem)};
-    m_weights *= p_shower->GetWeights();
+    m_weightsmap *= p_shower->GetWeightsMap();
     if (stat!=1) return stat;
   }
-  const double weight {m_weights.Nominal()};
+  const double weight {m_weightsmap.Nominal()};
   if (m_wcheck && dabs(weight) > m_maxweight) {
     m_maxweight = dabs(weight);
     std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";

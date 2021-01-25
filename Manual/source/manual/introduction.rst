@@ -14,8 +14,8 @@ in broad terms, and the installation and running of the program are
 outlined. The various options and parameters specifying the program
 are compiled, and their meanings are explained. This document does not
 aim at giving a complete description of the physics content of Sherpa.
-To this end, the authors refer the reader to the original publication,
-:cite:`Gleisberg2008ta`.
+To this end, the authors refer the reader to the original publications,
+:cite:`Gleisberg2008ta` and :cite:`Bothmann:2019yzt`.
 
 
 .. contents::
@@ -30,7 +30,7 @@ Introduction to Sherpa
 
 
 
-`Sherpa <http://projects.hepforge.org/sherpa/>`_ :cite:`Gleisberg2008ta` is a Monte Carlo event generator that provides
+`Sherpa <http://projects.hepforge.org/sherpa/>`_ :cite:`Bothmann:2019yzt` is a Monte Carlo event generator that provides
 complete hadronic final states in simulations of high-energy particle
 collisions. The produced events may be passed into detector
 simulations used by the various experiments.  The entire code has been
@@ -101,7 +101,7 @@ are encouraged to cite them accordingly.
 
 The `MCnet Guidelines
 <http://www.montecarlonet.org/index.php?p=Publications/Guidelines>`_
-apply to Sherpa. You are kindly asked to cite :cite:`Gleisberg2008ta`
+apply to Sherpa. You are kindly asked to cite :cite:`Bothmann:2019yzt`
 if you have used the program in your work.
 
 The Sherpa authors strongly recommend the study of the manuals and

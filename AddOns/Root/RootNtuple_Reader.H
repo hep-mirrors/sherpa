@@ -12,7 +12,7 @@
 #include <vector>
 #include <string.h>
 
-namespace ATOOLS { class Variation_Parameters; }
+namespace ATOOLS { class QCD_Variation_Params; }
 
 namespace PDF { class ISR_Handler; }
 
@@ -68,9 +68,10 @@ namespace SHERPA {
       int m_mode;
     };
 
-    double CalculateWeight(const Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *);
-    double Reweight(ATOOLS::Variation_Parameters&,
-                    const Weight_Calculation_Args&);
+    double CalculateWeight(const Weight_Calculation_Args& args,
+                           MODEL::One_Running_AlphaS*);
+    double CalculateWeight(const Weight_Calculation_Args& args,
+                           const ATOOLS::QCD_Variation_Params&);
 
   public:
     RootNtuple_Reader(const Input_Arguments &args,int exact=0,int ftype=0);

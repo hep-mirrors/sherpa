@@ -39,7 +39,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_wgt(wgt),
   m_usenamedweights(namedweights),
   m_extendedweights(extendedweights),
-  m_variationtypes(1, ATOOLS::Variations_Type::all),
+  m_variationsources(1, ATOOLS::Variations_Source::all),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),  m_userhook(false), m_userweight(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
@@ -82,35 +82,24 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     if (p_subevtlist) m_type=p_subevtlist->Type();
 
     if (includemeonlyweights)
-      m_variationtypes.push_back(ATOOLS::Variations_Type::main);
+      m_variationsources.push_back(ATOOLS::Variations_Source::main);
 
-    ReadIn(db, "Weights", false);
+    ReadIn(db, "WeightsMap", false);
     if (db) {
-      m_weights = db->Get<Event_Weights>();
-      if (m_weights.ContainsVariations() && !m_usenamedweights)
+      m_wgtmap = db->Get<Weights_Map>();
+      if (m_wgtmap.HasVariations() && !m_usenamedweights)
         THROW(fatal_error,
-              "Scale and/or PDF variations cannot be written to " +
+              "Scale, AlphaS and/or PDF variations cannot be written to " +
                   std::string("HepMC without using named weights. ") +
                   std::string("Try HEPMC_USE_NAMED_WEIGHTS: true"));
     }
-
-    ReadIn(db, "Shower_Weights", false);
-    m_showerweights = Event_Weights {};
-    if (db) {
-      m_showerweights *= db->Get<Event_Weights>();
-    }
-    ReadIn(db, "MC@NLO_Shower_Weights", false);
-    if (db) {
-      m_showerweights *= db->Get<Event_Weights>();
-    }
-
   }
 }
 
 EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
   m_extendedweights(evtinfo.m_extendedweights),
-  m_variationtypes(evtinfo.m_variationtypes),
+  m_variationsources(evtinfo.m_variationsources),
   p_sp(evtinfo.p_sp),
   m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
@@ -120,8 +109,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_userhook(false), m_userweight(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
   p_subevtlist(evtinfo.p_subevtlist),
-  m_weights(evtinfo.m_weights),
-  m_showerweights(evtinfo.m_showerweights)
+  m_wgtmap(evtinfo.m_wgtmap)
 {
 }
 
@@ -236,27 +224,50 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       if (p_subevtlist) wc["Reweight_Type"]=64;
     }
     // fill weight variations into weight container
-    if (m_weights.ContainsVariations()) {
-      size_t numvars = s_variations->Size();
-      msg_Debugging() << "#named wgts: " << numvars << std::endl;
-      for (size_t i(0); i < numvars; ++i) {
-        std::string varname(s_variations->Parameters(i).m_name);
-        typedef std::vector<ATOOLS::Variations_Type>::const_iterator It_type;
-        for (It_type it(m_variationtypes.begin()); it != m_variationtypes.end();
-             ++it) {
-          const std::string typevarname((*it == ATOOLS::Variations_Type::main)
-                                            ? "ME_ONLY_" + varname
-                                            : varname);
-          double weight {0.0};
-          if (idx == -1) {
-            weight = m_weights.Variation(i);
+    if (m_wgtmap.HasVariations()) {
+
+      // output subevent weights instead if this is a subevent
+      Weights_Map& wgtmap =
+          (idx == -1) ? m_wgtmap : (*p_subevtlist)[idx]->m_results;
+
+      for (const auto& source : m_variationsources) {
+
+        for (const auto type : s_variations->ManagedVariationTypes()) {
+
+          // calculate contributions
+          Weights weights = Weights {type};
+          double relfac {1.0};
+          if (source == ATOOLS::Variations_Source::all) {
+            weights *= wgtmap.Combine(type);
+            relfac = wgtmap.NominalIgnoringVariationType(type);
           } else {
-            weight = (*p_subevtlist)[idx]->m_results.Variation(i);
+            // calculate nominal, relfac and weights ignoring shower weights
+            std::unordered_set<std::string> shower_keys {
+                "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
+            for (const auto& v : wgtmap) {
+              if (shower_keys.find(v.first) != shower_keys.end())
+                continue;
+              if (v.second.Type() == type) {
+                weights *= v.second;
+              } else {
+                relfac *= v.second.Nominal();
+              }
+            }
+            relfac *= wgtmap.BaseWeight();
           }
-          if (*it == ATOOLS::Variations_Type::all) {
-            weight *= m_showerweights.Variation(i);
+
+          // do remaining combination and output resulting weights
+          size_t num_vars = weights.Size() - 1;
+          for (size_t i(0); i < num_vars; ++i) {
+            const std::string varname {weights.Name(i + 1)};
+            const std::string typevarname {
+                (source == ATOOLS::Variations_Source::main)
+                    ? "ME_ONLY_" + varname
+                    : varname};
+            wc[typevarname] = weights.Variation(i) * relfac;
+            msg_Debugging() << typevarname << " (" << typevarname
+                            << "): " << weights.Variation(i) * relfac << '\n';
           }
-          wc[typevarname] = weight;
         }
       }
     }
@@ -755,6 +766,11 @@ void HepMC2_Interface::AddCrossSection(HepMC::GenEvent& event,
 #else
   msg_Info()<<METHOD<<"(): Cannot add XS info to GenEvent."<<std::endl;
 #endif
+}
+
+bool HepMC2_Interface::StartsLikeVariationName(const std::string& s)
+{
+  return (s.find("MUR") == 0 || s.find("ME_ONLY") == 0 || s.find("QCUT") == 0);
 }
 
 void HepMC2_Interface::DeleteGenSubEventList()

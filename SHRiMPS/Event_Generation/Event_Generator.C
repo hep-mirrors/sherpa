@@ -37,8 +37,7 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   if (blobs->size()==1) {
-    ATOOLS::Event_Weights weights {0, m_xsec};
-    (*blobs)[0]->AddData("Weights",new ATOOLS::Blob_Data<ATOOLS::Event_Weights>(weights));
+    (*blobs)[0]->AddData("WeightsMap",new ATOOLS::Blob_Data<ATOOLS::Weights_Map>(m_xsec));
     (*blobs)[0]->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(1.));
     (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1));
   }

@@ -33,7 +33,7 @@ based on event properties.  The corresponding syntax is
 
 Parameters that accept numbers can also be given in a form that is
 understood by the internal algebra interpreter, see
-:ref:`Interpreter`.  The selectors act on @emph{all} particles in the
+:ref:`Interpreter`.  The selectors act on *all* particles in the
 event.  Their respective keywords are
 
 :option:`[N, <kf>, <min value>, <max value>]`
@@ -77,7 +77,7 @@ The corresponding  syntax is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on @emph{all} possible particles with the given flavour. Their
+act on *all* possible particles with the given flavour. Their
 respective keywords are
 
 :option:`PT`
@@ -114,7 +114,7 @@ based on two particle kinematics.  The corresponding is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on @emph{all} possible particles with the given flavour. Their
+act on *all* possible particles with the given flavour. Their
 respective keywords are
 
 :option:`Mass`
@@ -249,7 +249,7 @@ up to the specified values. This is useful e.g. in calculations with massive
 b-quarks which shall nonetheless satisfy jet criteria.
 
 The second option :option:`FastjetFinder` allows to use the `FastJet
-<http://www.fastjet.fr>`_ plugin if enabled during configuration(*).
+<http://www.fastjet.fr>`_ plugin, through fjcore.
 It takes the following arguments: ``<Algorithm>`` can take the values
 ``kt,antikt,cambridge,siscone,eecambridge,jade``, ``<N>`` is the
 minimum number of jets to be found, ``<PTMin>`` and ``<ETMin>`` are
@@ -268,7 +268,7 @@ The selector :option:`FastjetVeto` allows to use the `FastJet
 <http://www.fastjet.fr>`_ plugin to apply jet veto cuts. Its syntax is
 identical to :option:`FastjetFinder`.
 
-If `FastJet <http://www.fastjet.fr>`_ is enabled, the momenta and
+The momenta and
 nodal values of the jets found with FastJet can also be used to
 calculate more elaborate selector criteria. The syntax of this
 selector is
@@ -316,11 +316,41 @@ b and anti-b is not tagged.  Note that only ``<epression>``,
 ``<algorithm>``, ``<n>`` and ``<ptmin>`` are relevant when using the
 lepton-lepton collider algorithms.
 
-(*) If FastJet has not been enabled during configuration of your
-Sherpa installation, you can still build a FastJet-based selector
-plugin by including the content of any necessary functions (e.g. from
-``Fastjet_Helpers.{H,C``}) explicitly and linking against FastJet at
-compile time of the plugin.
+.. _Isolation selector:
+
+Isolation selector
+==================
+
+Instead of the simple ``IsolationCut`` (:ref:`Inclusive selectors`), you may
+also use the more flexible ``Isolation_Selector`` to require photons (or other
+particles) with a smooth cone isolation and additionally apply further criteria
+to them. Example:
+
+.. code-block:: yaml
+
+   SELECTORS:
+   - Isolation_Selector:
+       Isolation_Particle: 22
+       Rejection_Particles: [93]
+       Isolation_Parameters:
+         R: 0.1
+         EMAX: 0.1
+         EXP: 2
+         PT: 0.
+         Y: 2.7
+       NMin: 2
+       Remove_Nonisolated: true
+       Subselectors:
+       - VariableSelector:
+           Variable: PT
+           Flavs: [22]
+           Ranges:
+           - [20, E_CMS]
+           - [18, E_CMS]
+           Ordering: [PT_UP]
+       - [DR, 22, 22, 0.2, 10000.0 ]
+       #for integration efficiency: m_yy >= sqrt(2 pTmin1 pTmin2 (1-cos dR))
+       - [Mass, 22, 22, 3.7, E_CMS]
 
 .. _Universal selector:
 
@@ -342,7 +372,7 @@ the matrix element level. Its syntax is
        - [<min1>, <max1>]
        - ...
        - [<minn>, <maxn>]
-       Ordering: "[<order1>,...,<orderm>]"
+       Ordering: [<order1>, ..., <orderm>]
 
 The ``Variable`` parameter defines the name of the variable to cut
 on. The keywords for available predefined can be figured by running
@@ -398,7 +428,7 @@ Examples
        Flavs: 90
        Ranges:
        - [50, E_CMS]
-       Ordering: "[PT_UP]"
+       Ordering: [PT_UP]
 
    # using bool operations to restrict eta of the electron to |eta| < 1.1 or
    # 1.5 < |eta| < 2.5
@@ -414,7 +444,7 @@ Examples
        Flavs: [93, 93]
        Ranges:
        - [-100, 0]
-       Ordering: "[PT_UP,PT_UP]"
+       Ordering: [PT_UP, PT_UP]
 
    # restricting electron+photon mass to be outside of [87.0,97.0]
    - VariableSelector:
@@ -460,11 +490,3 @@ that allows a specification later. The syntax is
 
 The :ref:`Minimum selector` can be used if constructed with other
 selectors mentioned in this section
-
-.. note::
-
-   If FastJet has not been enabled during configuration of your Sherpa
-   installation, you can still build a FastJet-based selector plugin
-   by including the content of any necessary functions (e.g. from
-   ``Fastjet_Helpers.{H,C}``) explicitly and linking against FastJet
-   at compile time of the plugin.

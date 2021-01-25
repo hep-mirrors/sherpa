@@ -36,11 +36,7 @@ Process_Base::Process_Base():
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true),
-  m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL),
-  m_last {0, 0.0},
-  m_lastb {0, 0.0}
+  m_lookup(false), m_use_biweight(true), p_apmap(NULL)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -168,9 +164,9 @@ void Process_Base::SetUseBIWeight(bool on)
   m_use_biweight=on;
 }
 
-Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
-                                         Weight_Type type,
-                                         int mode)
+Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
+                                       Variations_Mode varmode,
+                                       int mode)
 {
   DEBUG_FUNC(this<<" -> "<<m_name<<", mode = "<<mode);
   msg_Debugging()<<ampl<<"\n";
@@ -179,8 +175,8 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   if (mode&64) {
-    if (mode&1) return Event_Weights {1, 1.0};
-    return Event_Weights {1, static_cast<double>(Trigger(p))};
+    if (mode&1) return {1.0};
+    return {static_cast<double>(Trigger(p))};
   }
   bool selon(Selector()->On());
   if (mode&1) SetSelectorOn(false);
@@ -198,16 +194,14 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
-  if (mode&128) {
-    while (!this->GeneratePoint());
-  }
+  if (mode&128) while (!this->GeneratePoint()); 
   else {
     std::shared_ptr<Color_Integrator> ci=
       Integrator()->ColorIntegrator();
     if (ci!=nullptr) ci->SetPoint(&ampl);
   }
-  Event_Weights wgts {this->Differential(p, type)};
-  wgts /= m_issymfac;
+  auto wgtmap = this->Differential(p, varmode);
+  wgtmap/=m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
   if (subs) {
     (*subs)*=1.0/m_issymfac;
@@ -215,12 +209,12 @@ Event_Weights Process_Base::Differential(const Cluster_Amplitude &ampl,
   }
   if (mode&32) {
     auto psh = Parent()->Integrator()->PSHandler();
-    wgts*=psh->Weight(p);
+    wgtmap*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
-  return wgts;
+  return wgtmap;
 }
 
 bool Process_Base::IsGroup() const
@@ -611,9 +605,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
-  if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
-  if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
+  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr, eobs, efunc));
 } 
 
 double Process_Base::LastPlus()
@@ -785,9 +777,4 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
-}
-
-
-const ATOOLS::Vec4D_Vector & Process_Base::Momenta() const {
-  return p_int->Momenta();
 }

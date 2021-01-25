@@ -26,6 +26,8 @@ EWVirtKFactor_Setter::EWVirtKFactor_Setter
 EWVirtKFactor_Setter::~EWVirtKFactor_Setter()
 {
   if (p_ewloop) { delete p_ewloop; p_ewloop=NULL; }
+  for (const auto& kv : m_cpls)
+    delete kv.second;
 }
 
 double EWVirtKFactor_Setter::KFactor(const int mode)

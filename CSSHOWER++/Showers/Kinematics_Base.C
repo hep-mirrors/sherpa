@@ -72,17 +72,23 @@ double Kinematics_FF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const
 {
   double pipj=(Q2-mi2-mj2-mk2)*y;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     double kt2=pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
     if (m_evolscheme==0) return kt2;
     if (m_evolscheme==2) return kt2+mi2+mj2;
+    // like scheme 2, but only applied to gluon splitters
+    if (m_evolscheme==20)
+      return fla.IsGluon()?(kt2+mi2+mj2):kt2;
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     double kt2=pipj*z*(1.0-z);
     if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
     else if (flc.IsFermion()) kt2=pipj;
     if (m_evolscheme==1) return kt2;
     if (m_evolscheme==3) return kt2+mi2+mj2;
+        // like scheme 3, but only applied to gluon splitters
+    if (m_evolscheme==30)
+      return fla.IsGluon()?(kt2+mi2+mj2):kt2;
   }
   else THROW(fatal_error, "Not implemented");
   return 0.0;
@@ -95,11 +101,14 @@ double Kinematics_FF::GetY(const double &Q2,const double &_kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
   double kt2=_kt2;
-  if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-mj2;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==2  || m_evolscheme==3)  kt2=kt2-mi2-mj2;
+  if (m_evolscheme==20 || m_evolscheme==30)
+    kt2=(fla.IsGluon())?(kt2-mi2-mj2):kt2;
+
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     if (fla.IsFermion()) {
       if (flc.IsFermion()) return kt2/z/(Q2-mi2-mj2-mk2);
       return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
@@ -160,17 +169,21 @@ double Kinematics_FI::GetKT2(const double &Q2,const double &y,const double &z,
 			     const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc) const
 {
   double pipj=-(Q2-ma2-mi2-mj2)*(1.0-y)/y;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     double kt2=pipj*z*(1.0-z)-sqr(1.0-z)*mi2-sqr(z)*mj2;
     if (m_evolscheme==0) return kt2;
     if (m_evolscheme==2) return kt2+mi2+mj2;
+    if (m_evolscheme==20)
+      return fla.IsGluon()?(kt2+mi2+mj2):kt2;
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     double kt2=pipj*z*(1.0-z);
     if (fla.IsFermion()) kt2=pipj*(flc.IsVector()?(1.0-z):z);
     else if (flc.IsFermion()) kt2=pipj;
     if (m_evolscheme==1) return kt2;
     if (m_evolscheme==3) return kt2+mi2+mj2;
+    if (m_evolscheme==30)
+      return fla.IsGluon()?(kt2+mi2+mj2):kt2;
   }
   else THROW(fatal_error, "Not implemented");
   return 0.0;
@@ -185,10 +198,13 @@ double Kinematics_FI::GetY(const double &Q2,const double &_kt2,const double &z,
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
   double kt2=_kt2;
   if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-mj2;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==20 || m_evolscheme==30)
+    kt2=(fla.IsGluon())?(kt2-mi2-mj2):kt2;
+
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     if (fla.IsFermion()) {
       if (flc.IsFermion()) return 1.0/(1.0-kt2/z/(Q2-ma2-mi2-mj2));
       return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
@@ -248,17 +264,25 @@ double Kinematics_IF::GetKT2(const double &Q2,const double &y,const double &z,
 			     const double &ma2,const double &mi2,const double &mk2,
 			     const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc) const
 {
+  /// for is splitting we pass only the flavour of the parton
+  /// that enters the ME (b) and the final state one (c).
+  /// in a g -> q q~ splitting fl(b) = - fl(c)!
   double pipj=(Q2-ma2-mi2-mk2)*y/z;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  const bool isgluonsplitting((flb.Kfcode() == flc.Kfcode())) ;
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     double kt2=-pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
     if (m_evolscheme==0) return kt2;
     if (m_evolscheme==2) return kt2+mi2+ma2;
+    if (m_evolscheme==20)
+      return (isgluonsplitting) ? (kt2+mi2+ma2):kt2 ;
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     double kt2=-pipj*(1.0-z);
     if (flc.IsFermion()) kt2=-pipj;
     if (m_evolscheme==1) return kt2;
     if (m_evolscheme==3) return kt2+mi2+ma2;
+    if (m_evolscheme==30)
+      return (isgluonsplitting) ? (kt2+mi2+ma2):kt2 ;
   }
   else THROW(fatal_error, "Not implemented");
   return 0.0;
@@ -271,11 +295,14 @@ double Kinematics_IF::GetY(const double &Q2,const double &_kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2)) return -1.0;
   double kt2=_kt2;
+  const bool isgluonsplitting((flb.Kfcode() == flc.Kfcode())) ;
   if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-ma2;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==20 || m_evolscheme==30)
+    kt2=(isgluonsplitting)?(kt2-mi2-ma2):kt2;
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     if (flc.IsFermion()) return -z/(Q2-ma2-mi2-mk2)*kt2;
     return -z/(Q2-ma2-mi2-mk2)*kt2/(1.0-z);
   }
@@ -339,17 +366,25 @@ double Kinematics_II::GetKT2(const double &Q2,const double &y,const double &z,
 			     const double &ma2,const double &mi2,const double &mb2,
 			     const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc) const
 {
+  /// for is splitting we pass only the flavour of the parton
+  /// that enters the ME (b) and the final state one (c).
+  /// in a g -> q q~ splitting fl(b) = - fl(c)!
   double pipj=(Q2-ma2-mi2-mb2)*y/z;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  const bool isgluonsplitting((flb.Kfcode() == flc.Kfcode())) ;
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     double kt2=pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
     if (m_evolscheme==0) return kt2;
     if (m_evolscheme==2) return kt2+mi2+ma2;
+    if (m_evolscheme==20)
+      return (isgluonsplitting) ? (kt2+mi2+ma2):kt2 ;
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     double kt2=pipj*(1.0-z);
     if (flc.IsFermion()) kt2=pipj;
     if (m_evolscheme==1) return kt2;
     if (m_evolscheme==3) return kt2+mi2+ma2;
+    if (m_evolscheme==30)
+      return (isgluonsplitting) ? (kt2+mi2+ma2):kt2 ;
   }
   else THROW(fatal_error, "Not implemented");
   return 0.0;
@@ -362,11 +397,15 @@ double Kinematics_II::GetY(const double &Q2,const double &_kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2)) return -1.0;
   double kt2=_kt2;
+  const bool isgluonsplitting((flb.Kfcode() == flc.Kfcode()));
   if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-ma2;
-  if (m_evolscheme==0 || m_evolscheme==2) {
+  if (m_evolscheme==20 || m_evolscheme==30)
+    kt2=(isgluonsplitting)?(kt2-mi2-ma2):kt2;
+
+  if (m_evolscheme==0 || m_evolscheme==2 || m_evolscheme == 20) {
     return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
   }
-  else if (m_evolscheme==1 || m_evolscheme==3) {
+  else if (m_evolscheme==1 || m_evolscheme==3 || m_evolscheme == 30) {
     if (flc.IsFermion()) return z/(Q2-ma2-mb2-mi2)*kt2;
     return z/(Q2-ma2-mb2-mi2)*kt2/(1.0-z);
   }

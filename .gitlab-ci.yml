@@ -78,13 +78,16 @@ build-manual:
     - ../configure --enable-manual --with-libzip=install
     - cd Manual
     - make
+    - make sherpamanual_html
   artifacts:
     expire_in: 2 days
     paths:
       - build/Manual
-  only:
-    changes:
-      - Manual/**/*
+  rules:
+    - changes:
+        - Manual/**/*
+      when: always
+    - when: never
 
 #
 # Test
@@ -109,7 +112,7 @@ test-LO_Z:
   script:
     - mkdir test-LO_Z
     - cd test-LO_Z
-    - ../build/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml
+    - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 test-clang-strict-LO_Z:
   <<: *test
@@ -118,7 +121,7 @@ test-clang-strict-LO_Z:
   script:
     - mkdir test-clang-strict-LO_Z
     - cd test-clang-strict-LO_Z
-    - ../build-clang-strict/install/bin/Sherpa -f ../Examples/CI/LO_Z/Sherpa.yaml
+    - ../build-clang-strict/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
 #
 # Deploy
@@ -130,8 +133,10 @@ trigger_pages:
   stage: deploy
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
-  only:
-    - tags
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: always
+    - when: never
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   dependencies:
@@ -139,9 +144,10 @@ trigger_pages:
 # build the dist-tarball
 dist:
   stage: deploy
-  only:
-    - tags
-
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: always
+    - when: never
   image: registry.gitlab.com/vale9811/sherpa-docker-build
   script:
     - autoreconf -i
@@ -163,24 +169,24 @@ dist:
 
 # Build Manual
 pages:
-  image: alpine
+  image: registry.gitlab.com/vale9811/sherpa-docker-build
   stage: deploy
   script:
-    - apk --no-cache add py3-pip python-dev
-    - apk --no-cache add make git
-    - git fetch --tags
     - cd Manual
+    - git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
+    - git fetch --all
+    - git checkout master  # we only build with master config, because
+                           # this will get uploaded globaly
+    - git pull
     - pip3 install -r requirements.txt
-    - pip3 install git+https://github.com/vale981/sphinx-versions.git
-    - cd ..
-    - sphinx-versioning  build -w "^master" Manual/source/ build/html -- -b singlehtml
-    - mv build/html public
+    - pip3 install sphinx-multiversion
+    - bash .build_versioned.sh build
+    - mv build/_multi ../public
   artifacts:
     paths:
     - public
-  only:
-    changes:
-      - Manual/**/*
-    refs:
-      - master
-      - tags
+  rules:
+    - changes:
+        - Manual/**/*
+      when: always
+    - when: never

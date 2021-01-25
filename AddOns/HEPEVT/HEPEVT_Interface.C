@@ -325,12 +325,12 @@ bool HEPEVT_Interface::Run(ATOOLS::Blob_List *const bl)
   if (!bl->FourMomentumConservation())
     msg_Error()<<METHOD<<"(): Four momentum not conserved."<<std::endl;
   Blob *sp(bl->FindFirst(btp::Signal_Process));
-  Blob_Data_Base *xs((*sp)["Weights"]);
+  Blob_Data_Base *xs((*sp)["WeightsMap"]);
   if (xs==NULL) THROW(fatal_error,"No weight information");
   MotherDaughter_Map mdmap;
   Convert(bl,mdmap);
 #ifdef USING__HERACMN
-  heracmn.wtx=xs->Get<Event_Weights>().Nominal();
+  heracmn.wtx=xs->Get<Weights_Map>().Nominal();
 #endif
 #ifdef USING__HZTOOL
   hzfilhep_();

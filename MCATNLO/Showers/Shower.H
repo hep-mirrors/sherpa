@@ -3,7 +3,7 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/STL_Tools.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "MCATNLO/Showers/Sudakov.H"
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Showers/Kinematics_Base.H"
@@ -34,7 +34,7 @@ namespace MCATNLO {
     ATOOLS::Cluster_Leg *p_old[2];
 
     CS_Gamma *p_gamma;
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
     bool m_reweight;
     double m_maxreweightfactor;
 
@@ -58,7 +58,7 @@ namespace MCATNLO {
     Shower(PDF::ISR_Handler *,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
-    double Reweight(ATOOLS::Variation_Parameters*, Parton& splitter);
+    double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
@@ -81,7 +81,7 @@ namespace MCATNLO {
 
     inline CS_Gamma *Gamma() const { return p_gamma; }
 
-    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+    inline const ATOOLS::Weights_Map& WeightsMap() const { return m_weightsmap; }
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 

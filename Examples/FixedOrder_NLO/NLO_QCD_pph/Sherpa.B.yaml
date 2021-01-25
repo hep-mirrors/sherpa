@@ -15,8 +15,8 @@ TAGS: {
 SCALES: VAR{$(FSF)*sqr(125)}{$(RSF)*sqr(125)}
 PROCESSES:
 - 93 93 -> 25:
-    NLO_QCD_Mode: Fixed_Order
-    NLO_QCD_Part: B
+    NLO_Mode: Fixed_Order
+    NLO_Part: B
     Order: {QCD: 1, EW: 2}
 RIVET: {
   -a: MC_PHOTONPHOTON_JOEY_STABLE,

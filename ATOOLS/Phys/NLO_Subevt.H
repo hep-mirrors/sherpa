@@ -76,11 +76,12 @@ namespace ATOOLS {
 
     size_t m_n, m_idx, m_oqcd, m_oew;
     double m_result, m_me, m_mewgt, m_K;
-    ATOOLS::Event_Weights m_results;
+    ATOOLS::Weights_Map m_results;
     double m_x1, m_x2, m_xf1, m_xf2, m_alpha, m_kt2;
     std::vector<double> m_mu2;
 
     std::string m_pname;
+    sbt::subtype m_stype;
 
     Cluster_Amplitude *p_ampl;
 
@@ -96,7 +97,10 @@ namespace ATOOLS {
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_K(0.0),
       m_results {0.0},
       m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0), m_alpha(0.0), m_kt2(0.0),
-      m_mu2(2*stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
+      m_mu2(2*stp::size,0.0), m_pname(""), m_stype(sbt::none), 
+      p_ampl(NULL), m_delete(false), m_trig(false)
+    {
+    }
 
     ~NLO_subevt();
 
@@ -106,6 +110,9 @@ namespace ATOOLS {
 
     std::string IDString(const int mode=0) const;
     std::string PSInfo() const;
+
+    inline void SetSType(sbt::subtype st) { m_stype=st; }
+    inline sbt::subtype SType() const { return m_stype; }
 
     inline void Mult(const double &scal)
     { m_result*=scal; m_results*=scal; m_me*=scal; m_mewgt*=scal; }
@@ -123,7 +130,8 @@ namespace ATOOLS {
     inline void Reset(const int mode = 1)
     {
       m_result = m_me = m_mewgt = m_K = 0.0;
-      m_results = Event_Weights {0.0};
+      m_results.Clear();
+      m_results = 0.0;
       if (mode)
         m_trig = false;
     }

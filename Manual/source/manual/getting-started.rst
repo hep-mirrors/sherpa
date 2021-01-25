@@ -242,10 +242,10 @@ Sherpa. This is illustrated by discussing and referring to the
 parameter settings that come in the example steering file
 ``./Examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml``,
 cf. :ref:`LHC_ZJets`.  This is a simple configuration created to show
-the basics of how to operate Sherpa. @strong{It should be stressed
+the basics of how to operate Sherpa. **It should be stressed
 that this steering file relies on many of Sherpa's default settings,
 and, as such, you should understand those settings before using it to
-look at physics.} For more information on the settings and parameters
+look at physics.** For more information on the settings and parameters
 in Sherpa, see :ref:`Parameters`, and for more examples see the
 :ref:`Examples` section.
 
@@ -328,7 +328,7 @@ The name of the output directory can be customised via
 `Results directory`_
 
 
-.. code-block::
+.. code-block:: shell-session
 
    <prefix>/bin/Sherpa -r <result>/
 
@@ -336,7 +336,7 @@ or with ``RESULT_DIRECTORY: <result>/`` in the steering file, see
 :ref:`RESULT_DIRECTORY`. The storage of the integration results can be
 prevented by either using
 
-.. code-block::
+.. code-block:: shell-session
 
    <prefix>/bin/Sherpa -g
 
@@ -402,7 +402,7 @@ matrix-element processes included in the setup are the following: ::
 
 
 In the ``PROCESSES`` list of the steering file this translates into
-.. code-block::
+.. code-block:: yaml
 
    - 93 93 -> 90 90 93{4}:
        Order: {QCD: Any, EW: 2}
@@ -583,7 +583,7 @@ the results plus integration errors written to the screen.
 
 For the example, the process definition in ``PROCESSES`` simplifies to
 
-.. code-block::
+.. code-block:: yaml
 
    - 21 1 -> 11 -11 1:
        Order: {QCD: Any, EW: 2}

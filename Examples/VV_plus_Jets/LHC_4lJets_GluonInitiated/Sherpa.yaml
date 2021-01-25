@@ -9,7 +9,7 @@ CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4]+p[5])/4.0}
 ME_GENERATORS: [Amegic, OpenLoops]
 AMEGIC: { ALLOW_MAPPING: 0 }
 # the following phase space libraries have to be generated with the
-# corresponding qq->llll setup (RUNDATA=Sherpa.tree.yaml) first;
+# corresponding qq->llll setup (Sherpa.tree.yaml) first;
 # they will appear in Process/Amegic/lib/libProc_fsrchannels*.so
 SHERPA_LDADD: [Proc_fsrchannels4, Proc_fsrchannels5]
 

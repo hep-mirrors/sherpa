@@ -4,7 +4,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Org/STL_Tools.H"
-#include "ATOOLS/Phys/Event_Weights.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Kinematics_Base.H"
@@ -33,7 +33,8 @@ namespace CSSHOWER {
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
-    ATOOLS::Event_Weights m_weights;
+    ATOOLS::Weights_Map m_weightsmap;
+
     bool m_reweight;
     double m_maxreweightfactor;
 
@@ -63,7 +64,7 @@ namespace CSSHOWER {
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,double &jcv,
 				Parton *const pi,Parton *const pj);
-    double Reweight(ATOOLS::Variation_Parameters*, Parton& splitter);
+    double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
@@ -79,7 +80,7 @@ namespace CSSHOWER {
     inline Kinematics_IF *KinIF() { return &m_kinIF; }
     inline Kinematics_II *KinII() { return &m_kinII; }
 
-    inline ATOOLS::Event_Weights Weights() const { return m_weights; }
+    inline const ATOOLS::Weights_Map& WeightsMap() const { return m_weightsmap; }
 
     inline int KinScheme() const { return m_kscheme; }
 

@@ -11,7 +11,7 @@ namespace PHASIC {
   protected:
 
     double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
-    ATOOLS::Event_Weights m_dadseventweights;
+    ATOOLS::Weights_Map m_dadswgtmap;
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
     ATOOLS::Cluster_Sequence_Info m_csi;
@@ -61,11 +61,6 @@ namespace PHASIC {
      * LastXS and GetMEwgtinfo.
     */
     virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
-
-    inline virtual const double SPrimeMin() const override { return -1.; }
-    inline virtual const double SPrimeMax() const override { return -1.; }
-    inline virtual const bool HasInternalScale() const override { return false; }
-    inline virtual const double InternalScale() const override { return -1.; }
 
     virtual bool Combinable(const size_t &idi,
                             const size_t &idj);
@@ -128,38 +123,38 @@ namespace PHASIC {
       double m_fallbackresult;
     };
     //! Return (wgt * \alpha_S * csi.pdfwgt)
-    double ReweightBornLike(ATOOLS::Variation_Parameters&,
+    double ReweightBornLike(ATOOLS::QCD_Variation_Params&,
                             BornLikeReweightingInfo&);
     //! Generate cluster sequence info for variation parameters
     ATOOLS::Cluster_Sequence_Info
-    ClusterSequenceInfo(ATOOLS::Variation_Parameters& varparams,
+    ClusterSequenceInfo(ATOOLS::QCD_Variation_Params& varparams,
                         BornLikeReweightingInfo& info,
                         const double& mur2fac,
                         const ATOOLS::Cluster_Sequence_Info* const nominalcsi);
     //! Generate KP terms weight for variation parameters
-    double KPTerms(const ATOOLS::Variation_Parameters *);
+    double KPTerms(const ATOOLS::QCD_Variation_Params *);
     virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
 			   PDF::PDF_Base *pdfb, double scalefac2=0.);
     //! Calculate MuR for variation parameters
-    double MuR2(const ATOOLS::Variation_Parameters&,
+    double MuR2(const ATOOLS::QCD_Variation_Params&,
                 Single_Process::BornLikeReweightingInfo&) const;
     //! Calculate AlphaS ratio (*asnew)(mur2new) / MODEL::as(mur2old)
     double AlphaSRatio(double mur2old, double mur2new,
                        MODEL::Running_AlphaS * asnew);
 
-    ATOOLS::Event_Weights Differential(const ATOOLS::Vec4D_Vector&,
-                                       ATOOLS::Weight_Type) override;
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode) override;
 
     // the following are helper methods for the implementation of Differential
-    void ResetResultsForDifferential(ATOOLS::Weight_Type);
+    void ResetResultsForDifferential(ATOOLS::Variations_Mode);
     void InitMEWeightInfo();
     void UpdateIntegratorMomenta(const ATOOLS::Vec4D_Vector&);
     void UpdateIntegratorMomenta(ATOOLS::ClusterAmplitude_Vector&);
     void UpdateSubeventMomenta(ATOOLS::NLO_subevt&);
     void CalculateFlux(const ATOOLS::Vec4D_Vector&);
     void UpdateMEWeightInfo(Scale_Setter_Base*);
-    void ReweightBVI(ATOOLS::Weight_Type, ATOOLS::ClusterAmplitude_Vector&);
-    void ReweightRS(ATOOLS::Weight_Type, ATOOLS::ClusterAmplitude_Vector&);
+    void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
+    void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
 
   };// end of class Single_Process
 

@@ -20,9 +20,6 @@ namespace PHASIC {
     std::vector<std::vector<ATOOLS::Vec4D_Vector> > m_moms;
     std::vector<ATOOLS::Flavour_Vector> m_cfl;
     std::vector<std::vector<size_t> > m_nfl;
-    std::vector<size_t> m_ffl;
-
-    std::string m_omode;
 
     int m_imode;
 
@@ -35,7 +32,8 @@ namespace PHASIC {
     // constructor
     Variable_Selector(Process_Base* const proc,
                       const int& imode,
-                      const std::string& name);
+                      const std::string& name,
+                      const std::vector<std::string>& orderings);
 
     // destructor
     ~Variable_Selector();
@@ -70,50 +68,19 @@ using namespace ATOOLS;
 
 Variable_Selector::Variable_Selector(Process_Base* const proc,
                                      const int& imode,
-                                     const std::string& name) :
+                                     const std::string& name,
+                                     const std::vector<std::string>& orderings) :
   Selector_Base("Variable("+name+")",proc)
 {
   m_imode=imode;
-  size_t pos(name.find('|'));
-  while (pos<name.length()-1 && name[pos+1]=='|') pos=name.find('|',pos+2);
-  std::string vname(name.substr(0,pos));
-  p_variable = ATOOLS::Variable_Getter::GetObject(vname,vname);
+  p_variable = ATOOLS::Variable_Getter::GetObject(name,name);
   if (p_variable==NULL) THROW
-    (fatal_error,"Variable '"+vname+"' does not exist. Run 'Sherpa"+
+    (fatal_error,"Variable '"+name+"' does not exist. Run 'Sherpa"+
        std::string(" SHOW_VARIABLE_SYNTAX=1' to list variables."));
-  m_omode=name.substr(pos!=std::string::npos?pos+1:pos);
-  if (m_omode!="") {
-    if (m_omode[0]=='[') {
-      if (m_omode[m_omode.length()-1]!=']') 
-	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
-      Data_Reader reader(",",":","!","=");
-      std::string mode(m_omode.substr(1));
-      mode.erase(mode.length()-1,1);
-      if (mode.length()>0) {
-	reader.SetString(mode);
-	std::vector<std::string> omodes;
-	if (!reader.VectorFromString(omodes,""))
-	  THROW(critical_error,"Invalid ordering mode '"+m_omode+"'");
-	for (size_t i(0);i<omodes.size();++i) {
-	  m_orders.push_back(Order_Getter::GetObject(omodes[i],""));
-	  if (m_orders.back()==NULL) 
-	    THROW(fatal_error,"Invalid ordering mode '"+omodes[i]+"'");
-	}
-      }
-    }
-    else if (m_omode[0]=='{') {
-      if (m_omode[m_omode.length()-1]!='}') 
-	THROW(fatal_error,"Invalid ordering mode '"+m_omode+"'");
-      Data_Reader reader(",",":","!","=");
-      std::string ffl(m_omode.substr(1));
-      ffl.erase(ffl.length()-1,1);
-      if (ffl.length()>0) {
-	reader.SetString(ffl);
-	if (!reader.VectorFromString(m_ffl,""))
-	  THROW(critical_error,
-		"Invalid Syntax in Selector.dat: '"+m_omode+"'");
-      }
-    }
+  for (auto ordering: orderings) {
+    m_orders.push_back(Order_Getter::GetObject(ordering,""));
+    if (m_orders.back()==NULL) 
+      THROW(fatal_error,"Invalid ordering mode '"+ordering+"'");
   }
 }
 
@@ -159,11 +126,10 @@ void Variable_Selector::SetRange
       if (m_cfl[id][j].Includes(pfl[i]))
 	m_moms[id][j].push_back(Vec4D());
   }
-  msg_Debugging()<<METHOD<<"(): order = "<<m_omode
+  msg_Debugging()<<METHOD<<"(): orders.size = "<<m_orders.size()
 		 <<", imode = "<<m_imode<<" {\n";
   for (size_t j(0);j<m_bounds.size();++j) {
     msg_Debugging()<<"  "<<p_variable->Name()<<"_{"<<j<<"}";
-    if (m_ffl.size()>j) msg_Debugging()<<"["<<m_ffl[j]<<"]";
     if (m_orders.size()>j) msg_Debugging()<<"["<<m_orders[j]<<"]";
     msg_Debugging()<<" -> "<<m_bounds[j].first
 		   <<" .. "<<m_bounds[j].second<<"\n";
@@ -186,11 +152,7 @@ bool Variable_Selector::Trigger
 {
   msg_Indent();
   if (f==m_cfl[id].size()) {
-    if (m_ffl.empty()) u=l;
-    else if (u>=m_ffl.size() || l!=m_ffl[u]) {
-      ++l;
-      return true;
-    }
+    u=l;
     if (u>=m_bounds.size()) return true;
     double v((*p_variable)(&moms.front(),moms.size()));
 #ifdef DEBUG__Variable_Selector
@@ -256,7 +218,7 @@ operator()(const Selector_Key &key) const
 #endif
 
   auto s = key.m_settings["VariableSelector"];
-  s.DeclareVectorSettingsWithEmptyDefault({ "Flavs" });
+  s.DeclareVectorSettingsWithEmptyDefault({ "Flavs", "Ordering" });
   s.DeclareMatrixSettingsWithEmptyDefault({ "Ranges" });
 
   const auto flavs = s["Flavs"].GetVector<int>();
@@ -278,12 +240,10 @@ operator()(const Selector_Key &key) const
     cbounds.push_back(std::make_pair(single_bounds[0], single_bounds[1]));
   }
 
-  auto name = s["Variable"].SetDefault("").Get<std::string>();
-  const auto orderings = s["Ordering"].SetDefault("").Get<std::string>();
-  name += "|" + orderings;
+  const auto name = s["Variable"].SetDefault("").Get<std::string>();
+  const auto orderings = s["Ordering"].GetVector<std::string>();
   const auto imode = s["Mode"].SetDefault(0).Get<int>();
-  Variable_Selector *vs(
-      new Variable_Selector(key.p_proc, imode, name));
+  Variable_Selector *vs = new Variable_Selector(key.p_proc, imode, name, orderings);
   vs->SetRange(0,key.p_proc->Flavours(),cflavs,cbounds);
   NLO_subevtlist *subs(key.p_proc->GetSubevtList());
   if (subs) {

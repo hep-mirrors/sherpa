@@ -49,7 +49,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
       pi.m_fi.m_nlotype&nlo_type::loop ||
       pi.m_fi.m_nlotype&nlo_type::born) typechk++;
   if (typechk>1)
-    THROW(fatal_error,"NLO_QCD_Parts 'RS' and 'BVI' must be assigned separately!");
+    THROW(fatal_error,"NLO_Parts 'RS' and 'BVI' must be assigned separately!");
 
   nlo_type::code nlotype=pi.m_fi.m_nlotype;
   // QCD/EW subtraction

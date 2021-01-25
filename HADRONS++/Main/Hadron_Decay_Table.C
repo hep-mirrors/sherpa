@@ -16,6 +16,11 @@ Hadron_Decay_Table::Hadron_Decay_Table(Flavour decayer, const Mass_Selector* ms,
                                        Mixing_Handler* mh) :
   Decay_Table(decayer, ms), p_mixinghandler(mh)
 {
+  m_flavwidth=Flav().Width();
+  if (Flav().Kfcode()==kf_tau && m_flavwidth==0.0) {
+    m_flavwidth = 2.26735e-12;
+  }
+
 }
 
 Hadron_Decay_Table::~Hadron_Decay_Table()
@@ -72,8 +77,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	BR = 0.; dBR = 0.; continue; 
       }
       totBR += BR;
-      hdc->SetWidth(BR*Flav().Width());
-      hdc->SetDeltaWidth(dBR*Flav().Width());
+      hdc->SetWidth(BR*m_flavwidth);
+      hdc->SetDeltaWidth(dBR*m_flavwidth);
       hdc->SetOrigin(origin);
       if(helpsvv[i].size()==3) hdc->SetFileName(StringTrim(helpsvv[i][2]));
       else {
@@ -141,7 +146,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	else if (Flav().IsC_Hadron()) dectable = Tools::partonic_c;
       }
       msg_Tracking()<<"Total hadronic width for "<<Flav()<<" = "<<totBR<<".\n";
-      double  partWidth((1.-totBR)*Flav().Width()/
+      double  partWidth((1.-totBR)*m_flavwidth/
 			(dectable->TotalWidth()*totspec));
       for (size_t i=0;i<dectable->size();i++) {
 	BR = ((*dectable)[i]->Width()*specweights[k]);
@@ -199,7 +204,7 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
   else {
     msg_Tracking()<<"Initialising "<<size()
       <<" decay channels for "<<Flav()
-      <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<endl;
+      <<" ("<<TotalWidth()/m_flavwidth*100.0<<"%)"<<endl;
     if(msg_LevelIsDebugging()) Output();
   }
   Hadron_Decay_Channel* hdc;
@@ -217,7 +222,7 @@ void Hadron_Decay_Table::LatexOutput(std::ostream& f)
   f<<"\\begin{tabular}{ll}"<<endl;
   f<<" number of decay channels:    & "<<size()<<"\\\\ "<<endl;
   f<<" total width:               & "<<TotalWidth()<<" GeV \\\\ "<<endl;
-  f<<" experimental width:        & "<<Flav().Width()<<" GeV \\\\ "<<endl;
+  f<<" experimental width:        & "<<m_flavwidth<<" GeV \\\\ "<<endl;
   f<<"\\end{tabular}"<<endl;
   f<<"\\begin{longtable}[l]{lll}"<<endl;
   f<<"\\multicolumn{3}{c}{\\bf Exclusive Decays}\\\\"<<endl;
@@ -233,7 +238,7 @@ void Hadron_Decay_Table::LatexOutput(std::ostream& f)
 }
 
 void Hadron_Decay_Table::ScaleToWidth() {
-  if(m_flin.Width()/m_totalwidth!=1.0) {
+  if(m_flavwidth/m_totalwidth!=1.0) {
     double delta_tot(0.0);
     for (size_t i=0;i<size();i++)
       if (at(i)->Active()>=0)
@@ -243,7 +248,7 @@ void Hadron_Decay_Table::ScaleToWidth() {
         if (at(i)->Active()>=0) {
           double scale_fac=at(i)->DeltaWidth()/delta_tot;
           at(i)->SetWidth(at(i)->Width()+
-                          scale_fac*(m_flin.Width()-m_totalwidth));
+                          scale_fac*(m_flavwidth-m_totalwidth));
         }
       }
       UpdateWidth();

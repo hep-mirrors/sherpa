@@ -66,7 +66,7 @@ Start Sherpa using the command line
 
 .. code-block:: shell-session
 
-   $ Sherpa -f Sherpa.B-like.yaml
+   $ Sherpa Sherpa.B-like.yaml
 
 Sherpa will first create source code for its matrix-element calculations.
 This process will stop with a message instructing you to compile.
@@ -80,7 +80,7 @@ Launch Sherpa again, using
 
 .. code-block:: shell-session
 
-   $ Sherpa -f Sherpa.B-like.yaml
+   $ Sherpa Sherpa.B-like.yaml
 
 Sherpa will then compute the Born, virtual and integrated subtraction
 contribution to the NLO cross section and generate events. These
@@ -93,7 +93,7 @@ NLO cross section is computed using
 
 .. code-block:: shell-session
 
-   $ Sherpa -f Sherpa.R-like.yaml
+   $ Sherpa Sherpa.R-like.yaml
 
 Events are generated, analysed by Rivet and stored in the Root NTuple
 file :kbd:`NTuple_R-like.root`.
@@ -116,7 +116,7 @@ We re-evaluate the events with the scale variation as defined in the
 
 .. code-block:: shell-session
 
-   $ Sherpa -f Sherpa.Reweight.B-like.yaml
-   $ Sherpa -f Sherpa.Reweight.R-like.yaml
+   $ Sherpa Sherpa.Reweight.B-like.yaml
+   $ Sherpa Sherpa.Reweight.R-like.yaml
 
 The contributions can again be combined using :kbd:`yodamerge`.

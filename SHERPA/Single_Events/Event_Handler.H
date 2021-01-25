@@ -8,10 +8,6 @@
 #include "SHERPA/Tools/Definitions.H"
 #include "ATOOLS/Phys/Variations.H"
 
-namespace ATOOLS {
-  class Event_Weights;
-}
-
 namespace SHERPA {
   class Filter;
   
@@ -46,7 +42,7 @@ namespace SHERPA {
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
     bool AnalyseEvent();
-    bool WeightsAreGood(const ATOOLS::Event_Weights&);
+    bool WeightsAreGood(const ATOOLS::Weights_Map&);
     int  IterateEventPhases(eventtype::code & mode);
 
   public:

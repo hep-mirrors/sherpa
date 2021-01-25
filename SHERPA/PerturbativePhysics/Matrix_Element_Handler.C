@@ -289,15 +289,14 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // calculate weight factor and/or apply unweighting and weight threshold
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
-  double enhance = p_proc->Integrator()->PSHandler()->Enhance();
+  double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
     const auto max = p_proc->Integrator()->Max();
     const auto disc = max * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.Weight());
-    if (abswgt < disc) {
+    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
+    if (abswgt < disc)
       return false;
-    }
     if (abswgt > max * m_ovwth) {
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
@@ -312,7 +311,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
 
   // trial event is accepted, apply weight factor
-  m_evtinfo.m_weights*=wf;
+  m_evtinfo.m_weightsmap*=wf;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
@@ -584,8 +583,12 @@ void Matrix_Element_Handler::BuildProcesses()
       THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
     }
-    const std::string& name = keys[0];
-    auto procsettings = proc[name];
+    auto procsettings = proc[keys[0]];
+    std::string name = keys[0];
+    // tags are not automatically resolved in setting keys, hence let's do this
+    // manually, to allow for tags within process specifications as e.g.
+    // "93 93 -> 11 -11 93{$(NJET)}"
+    proc.ReplaceTags(name);
     RegisterMainProcessDefaults(procsettings);
     Single_Process_List_Args args;
     ReadFinalStateMultiIndependentProcessSettings(name, procsettings, args);
@@ -701,6 +704,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // below
     if (subkey == "Selectors"
         || subkey == "Cut_Core"
+        || subkey == "Decay"
+        || subkey == "DecayOS"
+        || subkey == "No_Decay"
         || subkey == "CKKW")
       continue;
 
@@ -933,19 +939,23 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  args.pi.m_nlomode=cpi.m_nlomode=ToType<nlo_mode::code>(ds);
 	  if (cpi.m_nlomode==nlo_mode::unknown)
 	    THROW(fatal_error,"Unknown NLO_Mode "+ds+" {"+pnid+"}");
-	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>("BVIRS");
-	  if (m_nlomode==nlo_mode::none) m_nlomode=cpi.m_nlomode;
+          if (cpi.m_nlomode!=nlo_mode::none) {
+            cpi.m_fi.m_nlotype=ToType<nlo_type::code>("BVIRS");
+            if (m_nlomode==nlo_mode::none) m_nlomode=cpi.m_nlomode;
+          }
 	  if (cpi.m_nlomode!=m_nlomode)
 	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
 			      "same time");
 	}
-	if (GetMPvalue(args.pbi.m_vnlopart,nfs,pnid,ds)) {
-	  cpi.m_fi.m_nlotype=ToType<nlo_type::code>(ds);
-	}
-	if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
-          cpi.m_fi.m_nlocpl = ToVector<double>(ds);
-	  if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
-	}
+        if (cpi.m_nlomode!=nlo_mode::none) {
+          if (GetMPvalue(args.pbi.m_vnlopart,nfs,pnid,ds)) {
+            cpi.m_fi.m_nlotype=ToType<nlo_type::code>(ds);
+          }
+          if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
+            cpi.m_fi.m_nlocpl = ToVector<double>(ds);
+            if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
+          }
+        }
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(args.pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(args.pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
@@ -1226,7 +1236,7 @@ double Matrix_Element_Handler::GetWeight
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
       if (mode&1) ci->SetWOn(false);
-      double res(pit->second->Differential(ampl,Weight_Type::nominal));
+      double res(pit->second->Differential(ampl,Variations_Mode::nominal_only));
       ci->SetWOn(true);
       return res;
     }

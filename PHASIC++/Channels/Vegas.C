@@ -17,7 +17,7 @@ using namespace std;
 
 int Vegas::s_onext=-1, Vegas::s_on=-1;
 
-Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
+Vegas::Vegas(int dim,int ndx,const std::string & name)
 {
   if (s_on<0) {
     s_on =

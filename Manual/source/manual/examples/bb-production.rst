@@ -21,9 +21,8 @@ information.
      the settings :option:`HARD_DECAYS:Enabled: true` and
      :option:`PARTICLE_DATA:24:Stable: 0`.
 
-   * `FastJet <http://www.fastjet.fr/>`_ is used to regularize the hard cross section.
-     Note that Sherpa must be configured with option :option:`--enable-fastjet`, see
-     :ref:`Jet selectors`. We require two b-jets, indicated by the :option:`2`
+   * fjcore from `FastJet <http://www.fastjet.fr/>`_ is used to regularize the hard cross section.
+     We require two b-jets, indicated by the :option:`2`
      at the end of the :option:`FastjetFinder` options.
 
    * Four-flavour PDFs are used to comply with the calculational setup.
@@ -47,9 +46,8 @@ Things to notice:
   the settings :option:`HARD_DECAYS:Enabled: true` and
   :option:`PARTICLE_DATA:23:Stable: 0`.
 
-* `FastJet <http://www.fastjet.fr/>`_ is used to regularize the hard cross section.
-  Note that Sherpa must be configured with option :option:`--enable-fastjet`, see
-  :ref:`Jet selectors`. We require two b-jets, indicated by :option:`Nb: 2`
+* fjcore from `FastJet <http://www.fastjet.fr/>`_ is used to regularize the hard cross section.
+  We require two b-jets, indicated by :option:`Nb: 2`
   at the end of the :option:`FastjetFinder` options.
 
 * Four-flavour PDF are used to comply with the calculational setup.

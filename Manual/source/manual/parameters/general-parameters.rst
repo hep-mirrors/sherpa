@@ -673,7 +673,7 @@ process. If numerical issues are encountered, one can try to
 increase :option:`CSS_REWEIGHT_SCALE_CUTOFF` (default: 5, measured in GeV).
 This disables shower variations for emissions at scales below the value.
 An additional safeguard against rare spuriously large shower variation
-weights is implemented as @code{CSS_MAX_REWEIGHT_FACTOR} (default: 1e3).
+weights is implemented as :option:`CSS_MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 
@@ -706,14 +706,14 @@ parallelization first. Therefore, first run
 
 .. code-block:: shell-session
 
-   $ Sherpa -f <run-card> INIT_ONLY=1
+   $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
 parallized integration, e.g.
 
 .. code-block:: shell-session
 
-   $ mpirun -n <n> Sherpa -f <run-card> -e 0
+   $ mpirun -n <n> Sherpa -e 0 <Sherpa.yaml>
 
 After the integration has finished, you can submit individual jobs to generate
 event samples (with a different random seed for each job).  Upon completion,

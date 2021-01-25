@@ -14,3 +14,4 @@ libExtraXSNLO_la_SOURCES      =	Git_Info.C \
                                 ppll1jet_CSS_approx.C \
                                 epe2jet_CSS_approx.C
 
+localinc_HEADERS              = Logarithms.H

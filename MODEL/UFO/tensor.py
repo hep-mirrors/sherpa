@@ -136,6 +136,9 @@ class tensor(object):
         return ret
 
     def __add__(self, rhs):
+        if isinstance(rhs, (int, complex, float)):
+            return self + tensor([rhs])
+
         # so far, support/define
         # only sum of identical type
         # i.e. demand equality of key_dim_dict()
@@ -165,8 +168,14 @@ class tensor(object):
         self = self+rhs
         return self
 
+    def __radd__(self, lhs):
+        return self + lhs
+
     def __sub__(self, rhs):
         return (self + tensor([-1], None)*rhs)
+
+    def __rsub__(self, lhs):
+        return lhs + tensor([-1])*self
 
     def __mul__(self, rhs):
         
@@ -188,7 +197,11 @@ class tensor(object):
             if rhs._elementary:
                 return self.__mul__(tensor([1.0/rhs._array[0]], None))
         return self.__mul__(1.0/rhs)
-    
+
+    def __rdiv__(self, lhs):
+        assert(self._elementary)
+        return lhs*tensor([1.0/self._array[0]], None)
+
     def __neg__(self):
         return tensor([-1], None)*self
 

@@ -54,7 +54,8 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
   m_K=sub->m_K;
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
   m_result=0.0;
-  m_results = Event_Weights {0.0};
+  m_results.Clear();
+  m_results = 0.0;
   if (p_ampl) {
     p_ampl->Delete();
     p_ampl=NULL;
@@ -139,6 +140,7 @@ namespace ATOOLS
     return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
 	       <<", idx "<<sevt.m_idx
 	       <<", orders ("<<sevt.m_oqcd<<","<<sevt.m_oew<<")"
+               <<", stype = "<<sevt.m_stype
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig

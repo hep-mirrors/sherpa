@@ -79,6 +79,7 @@ bool BBar_Emission_Generator::InitDipoles
     NLO_subevtlist *subs((*sproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
+      if (sub->m_stype==sbt::qed) continue;
       if (sub->m_i<m_nin) {
         if (sub->m_k<m_nin) AddDipole(bviproc,new II_Dipole(sub,psh));
         else AddDipole(bviproc,new IF_Dipole(sub,psh));

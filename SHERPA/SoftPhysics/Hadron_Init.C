@@ -1,9 +1,9 @@
-#include "AHADIC++/Tools/Hadron_Init.H"
+#include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Flavour_Tags.H"
 
-using namespace AHADIC;
+using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
@@ -12,7 +12,7 @@ void Hadron_Init::Init() {
 
   // ##########################################################################
   // ##########################################################################
-  // Particle being used in AHADIC listed below
+  // Particle being used in SHERPA listed below
   // ##########################################################################
   //
   // ##########################################################################
@@ -276,7 +276,7 @@ void Hadron_Init::Init() {
 
   // ##########################################################################
   // ##########################################################################
-  // Particles NOT being used in AHADIC listed below
+  // Particles NOT being used in SHERPA listed below
   // ##########################################################################
   // ##########################################################################
   // The following hadron multiplets are incomplete and sometimes dodgy.

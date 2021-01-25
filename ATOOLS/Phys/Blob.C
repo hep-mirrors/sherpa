@@ -376,12 +376,10 @@ double Blob::CheckChargeConservation() const {
   double Qout=0.0;
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
-    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qin += (*part)->Flav().Charge();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
-    if ((*part)->Flav().Kfcode()==kf_instanton) return 0.;
     Qout += (*part)->Flav().Charge();
   }
   return Qout - Qin;

@@ -4,8 +4,8 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
-#include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
@@ -25,6 +25,7 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Phys/Fragmentation_Base.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
@@ -204,9 +205,9 @@ void Initialization_Handler::RegisterDefaults()
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
-  s["CSS_EVOLUTION_SCHEME"].SetDefault(1);
+  s["CSS_EVOLUTION_SCHEME"].SetDefault(30);
   s["CSS_KFACTOR_SCHEME"].SetDefault(9);
-  s["CSS_SCALE_SCHEME"].SetDefault(0);
+  s["CSS_SCALE_SCHEME"].SetDefault(20);
   s["CSS_SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
   // Sherpa section on master for details
@@ -532,7 +533,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheHardDecays();
     InitializeTheBeamRemnants();
     InitializeTheIO();
-    InitializeTheReweighting();
+    InitializeTheReweighting(Variations_Mode::all);
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
@@ -551,8 +552,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
-    okay = okay && InitializeTheReweighting();
     okay = okay && InitializeTheFilter();
+    okay = okay && InitializeTheReweighting(Variations_Mode::all);
+  } else {
+    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
   }
   return okay;
 }
@@ -677,8 +680,7 @@ bool Initialization_Handler::InitializeThePDFs()
       deflib="NNPDFSherpa";
       defset[beam]="NNPDF31_nnlo_as_0118_mc";
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e ||
-	     p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e || p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_mu) {
       deflib="PDFESherpa";
       defset[beam]="PDFe";
     }
@@ -943,8 +945,17 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   as->SetActiveAs(isr::hard_subprocess);
-  const auto shower = m_showerhandlers[isr::hard_process]->ShowerGenerator();
-  p_fragmentation = new Fragmentation_Handler(shower);
+  Settings& s = Settings::GetMainSettings();
+  string fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
+  if (fragmentationmodel!="None") {
+    Hadron_Init().Init();
+    ATOOLS::OutputHadrons(msg->Tracking());
+  }
+  p_fragmentation = Fragmentation_Getter::GetObject
+    (fragmentationmodel,
+     Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+  if (p_fragmentation==NULL)
+    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
@@ -968,10 +979,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__PYTHIA
     as->SetActiveAs(isr::hard_subprocess);
     Lund_Interface * lund(NULL);
-    if (p_fragmentation->GetLundInterface()==NULL) {
+    if (p_fragmentation==NULL) {
       lund = new Lund_Interface();
     }
-    else lund = p_fragmentation->GetLundInterface();
+    else lund = dynamic_cast<Lund_Interface*>(p_fragmentation);
     Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund);
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
@@ -1030,15 +1041,17 @@ bool Initialization_Handler::InitializeTheAnalyses()
   return true;
 }
 
-bool Initialization_Handler::InitializeTheReweighting()
+bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
 {
   if (p_variations) {
     delete p_variations;
   }
-  Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
-  p_variations = new Variations();
+  if (mode != Variations_Mode::nominal_only)
+    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
+  p_variations = new Variations(mode);
   s_variations = p_variations;
-  msg_Info()<<"Initialized the Reweighting."<<endl;
+  if (mode != Variations_Mode::nominal_only)
+    msg_Info()<<"Initialized the Reweighting."<<endl;
   return true;
 }
 
@@ -1058,7 +1071,9 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg_Events()<<"===================================================================\n"
               <<"Start calculating the hard cross sections. This may take some time.\n";
   as->SetActiveAs(isr::hard_process);
+  p_variations->DisableVariations();
   int ok = p_mehandler->CalculateTotalXSecs();
+  p_variations->EnableVariations();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.\n"
 		<<"====================================================================\n";

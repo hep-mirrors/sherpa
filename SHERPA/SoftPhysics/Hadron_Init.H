@@ -1,11 +1,11 @@
-#ifndef AHADIC_Tools_Hadron_Init_H
-#define AHADIC_Tools_Hadron_Init_H
+#ifndef SHERPA_SoftPhysics_Hadron_Init_H
+#define SHERPA_SoftPhysics_Hadron_Init_H
 
 #include "ATOOLS/Phys/KF_Table.H"
 
 #include <unordered_set>
 
-namespace AHADIC {
+namespace SHERPA {
 
   class Hadron_Init {
   public:

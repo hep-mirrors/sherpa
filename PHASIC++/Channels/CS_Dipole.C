@@ -66,7 +66,7 @@ bool CS_Dipole::IsMapped(CS_Dipole *const dip) const
 
 void CS_Dipole::InitVegas(const std::string &pid)
 {
-  p_vegas = new Vegas(3,100,m_id,0);
+  p_vegas = new Vegas(3,100,m_id);
 }
 
 double CS_Dipole::Alpha(const int mode) const

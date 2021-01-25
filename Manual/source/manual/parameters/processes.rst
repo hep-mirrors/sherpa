@@ -4,7 +4,22 @@
 Processes
 *********
 
-The process setup takes the following general form
+In addition to the general matrix-element calculation settings specified as
+described in :ref:`Matrix elements`, the hard scattering process has to be
+defined and further process-specific calculation settings can be specified.
+This happens in the ``PROCESSES`` part of the input file and is described in
+the following section.
+
+A simple example looks like:
+
+.. code-block:: yaml
+
+   PROCESSES:
+   - 93 93 -> 11 -11 93{4}:
+       Order: {QCD: 0, EW: 2}
+       CKKW: 20
+
+In general, the process setup takes the following form:
 
 .. code-block:: yaml
 
@@ -19,26 +34,9 @@ The process setup takes the following general form
    - <process declaration>
        ...
 
-I.e. ``PROCESSES`` followed by a list of process definitions.  Each
-definition consists of a key-value mapping with a single key. The key
-defines the initial- and final-state particles, and its value gives the
-optional parameters for this process steering its setup.
-Most of these parameters can be grouped under a multiplicity key, which can
-either be a single or a range of multiplicities, e.g. ``2->2-4: {
-<settings-that-affect-only-2->2,2->3 and 2->4 processes> }``.
+i.e. ``PROCESSES`` followed by a list of process definitions.
 
-The following parameters are used to steer the process setup:
-
-.. contents::
-   :local:
-   :depth: 1
-
-.. _Process:
-
-Process
-=======
-
-Each process definition starts with the specification of the
+Each process definition starts with the declaration of the
 (core) process itself. The initial and final state particles are
 specified by their PDG codes, or by particle containers, see
 :ref:`Particle containers`. Examples are
@@ -51,8 +49,20 @@ specified by their PDG codes, or by particle containers, see
   Sets up jet production in e+e- collisions with up to three
   additional jets.
 
-The syntax for specifying processes is explained in the following
-sections:
+
+Special features of the process declaration will be documented in the following. The remainder of the section then documents all additional parameters for the process steering, e.g. the coupling order, which can be nested as ``key: value`` pairs within a given process declaration.
+
+An advanced syntax feature shall be mentioned already here, since it will be used in some of the examples in the following: Most of the parameters can be grouped under a multiplicity key, which can
+either be a single or a range of multiplicities, e.g. ``2->2-4: {
+<settings for 2->2, 2->3 and 2->4 processes> }``. The usefulness of this will hopefully become clear in the examples in the following.
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Special features of the process declaration
+===========================================
 
 .. contents::
    :local:
@@ -163,18 +173,19 @@ Decay
 
 Specifies the exclusive decay of a particle produced in the matrix
 element. The virtuality of the decaying particle is sampled according
-to a Breit-Wigner distribution. In practice this amouts to selecting
+to a Breit-Wigner distribution. In practice this amounts to selecting
 only those diagrams containing s-channels of the specified flavour
 while the phase space is kept general. Consequently, all spin
 correlations are preserved.  An example would be
 
 .. code-block:: yaml
 
-   - 11 -11 -> 6[a] -6[b]:
-       Decay:     6[a] -> 5 24[c]
-       Decay:    -6[b] -> -5 -24[d]
-       Decay:    24[c] -> -13 14
-       Decay:   -24[d] -> 94 94
+    - 11 -11 -> 6[a] -6[b]:
+       Decay:
+       - 6[a] -> 5 24[c]
+       - -6[b] -> -5 -24[d]
+       - 24[c] -> -13 14
+       - -24[d] -> 94 94
 
 
 .. _DecayOS:
@@ -185,7 +196,7 @@ DecayOS
 Specifies the exclusive decay of a particle produced in the matrix
 element. The decaying particle is on mass-shell, i.e.  a strict
 narrow-width approximation is used. This tag can be specified
-alternatively as :option:`DecayOS`. In practice this amouts to
+alternatively as :option:`DecayOS`. In practice this amounts to
 selecting only those diagrams containing s-channels of the specified
 flavour and the phase space is factorised as well. Nonetheless, all
 spin correlations are preserved.  An example would be
@@ -193,10 +204,11 @@ spin correlations are preserved.  An example would be
 .. code-block:: yaml
 
    - 11 -11 -> 6[a] -6[b]:
-       DecayOS:   6[a] -> 5 24[c]
-       DecayOS:  -6[b] -> -5 -24[d]
-       DecayOS:  24[c] -> -13 14
-       DecayOS: -24[d] -> 94 94
+       DecayOS:
+       - 6[a] -> 5 24[c]
+       - -6[b] -> -5 -24[d]
+       - 24[c] -> -13 14
+       - -24[d] -> 94 94
 
 .. _No_Decay:
 
@@ -212,9 +224,10 @@ example would be
 .. code-block:: yaml
 
    - 93 93 -> 6[a] -24[b] 93{1}:
-       Decay:     6[a] -> 5 24[c]
-       DecayOS:  24[c] -> -13 14
-       DecayOS: -24[b] -> 11 -12
+       Decay: 6[a] -> 5 24[c]
+       DecayOS:
+       - 24[c] -> -13 14
+       - -24[b] -> 11 -12
        No_Decay: -6
 
 .. _proc_Scales:
@@ -373,83 +386,6 @@ is at most the epsilon factor times the total cross section. In other
 words, the relative contribution of overweighted events to the
 inclusive cross section is at most epsilon.
 
-.. _Enhance_Factor:
-
-Enhance_Factor
-==============
-
-Sets a process specific enhance factor.
-
-.. _RS_Enhance_Factor:
-
-RS_Enhance_Factor
-=================
-
-Sets an enhance factor for the RS-piece of an MC\@NLO process.
-
-.. _Enhance_Function:
-
-Enhance_Function
-================
-
-Sets a process specific enhance function.
-
-.. note::
-
-   This feature can only be used when generating weighted events.
-
-Note that the convergence of the Monte Carlo integration can be worse
-if enhance functions are employed and therefore the integration can
-take significantly longer. The reason is that the default phase space
-mapping, which is constructed according to diagrammatic information
-from hard matrix elements, is not suited for event generation
-including enhancement. It must first be adapted, which, depending on
-the enhance function and the final state multiplicity, can be an
-intricate task.
-
-*If Sherpa cannot achieve an integration error target due to the use
-of enhance functions, it might be appropriate to locally redefine this
-error target*, see :ref:`Integration_Error`.
-
-.. _Enhance_Observable:
-
-Enhance_Observable
-==================
-
-
-Allows for the specification of a ME-level observable in which the event
-generation should be flattened. Of course, this induces an appropriate weight
-for each event. This option is available for both weighted and unweighted event
-generation, but for the latter as mentioned above the weight stemming from the
-enhancement is introduced.
-
-An example would be:
-
-.. code-block:: yaml
-
-   - 93 93 -> 11 -11 93{1}:
-       2->3:
-         Enhance_Observable: VAR{log10(PPerp(p[2]+p[3]))}|1|3
-
-Here, the 1-jet process is flattened with respect to the logarithmic
-transverse momentum of the lepton pair in the limits 1.0 (10 GeV) to
-3.0 (1 TeV).  For the calculation of the observable one can use any
-function available in the algebra interpreter (see
-:ref:`Interpreter`).
-
-Note that the convergence of the Monte Carlo integration can be worse
-if enhance observables are employed and therefore the integration can
-take significantly longer. The reason is that the default phase space
-mapping, which is constructed according to diagrammatic information
-from hard matrix elements, is not suited for event generation
-including enhancement. It must first be adapted, which, depending on
-the enhance function and the final state multiplicity, can be an
-intricate task.
-
-*If Sherpa cannot achieve an integration error target due to the use
-of enhance functions, it might be appropriate to locally redefine this
-error target*, see :ref:`Integration_Error`.
-
 .. _NLO_Mode:
 
 NLO_Mode
@@ -458,6 +394,9 @@ NLO_Mode
 This setting specifies whether and in which mode an NLO calculation
 should be performed. Possible values are:
 
+``None``
+  perform a leading-order calculation (this is the default)
+
 ``Fixed_Order``
   perform a fixed-order next-to-leading order calculation
 
@@ -465,10 +404,11 @@ should be performed. Possible values are:
   perform an MC\@NLO-type matching of a fixed-order next-to-leading order
   calculation to the resummation of the parton shower
 
-The usual multiplicity identifier apply to this switch as well.  Note
-that this setting implies ``NLO_Part: BVIRS`` for the relevant
-multiplicities. This can be overridden by setting ``NLO_Part``
-explicitly in case of fixed-order calculations.
+The usual multiplicity identifier applies to this switch as well.
+Note that using a value other than ``None`` implies ``NLO_Part: BVIRS`` for
+the relevant multiplicities.
+For fixed-order NLO calculations (``NLO_Mode: Fixed_Order``), this can be
+overridden by setting ``NLO_Part`` explicitly, see :ref:`NLO_Part`.
 
 Note that Sherpa includes only a very limited selection of one-loop
 corrections. For processes not included external codes can be
@@ -480,7 +420,8 @@ NLO_Part
 ========
 
 In case of fixed-order NLO calculations this switch specifies which
-pieces of a NLO calculation are computed. Possible choices are
+pieces of a NLO calculation are computed, also see :ref:`NLO_Mode`.
+Possible choices are
 
 ``B``
   born term
@@ -505,8 +446,8 @@ NLO_Order
 =========
 
 Specifies the relative order of the NLO correction wrt. the considered
-Born process. For example, ``NLO_Order: @{QCD: 1, EW: 0@``} specifies
-a QCD correction while ``NLO_Order: @{QCD: 0, EW: 1@``} specifies an
+Born process. For example, ``NLO_Order: {QCD: 1, EW: 0}`` specifies
+a QCD correction while ``NLO_Order: {QCD: 0, EW: 1}`` specifies an
 EW correction.
 
 .. _Subdivide_Virtual:
@@ -516,7 +457,7 @@ Subdivide_Virtual
 
 Allows to split the virtual contribution to the total cross section
 into pieces.  Currently supported options when run with
-@url{http://projects.hepforge.org/blackhat,BlackHat} are
+`BlackHat <https://projects.hepforge.org/blackhat>`_ are
 :option:`LeadingColor` and :option:`FullMinusLeadingColor`. For
 high-multiplicity calculations these settings allow to adjust the
 relative number of points in the sampling to reduce the overall
@@ -576,12 +517,16 @@ parts of fixed-order and MC\@NLO calculations, see :ref:`PSI`.
 Special Group
 =============
 
+.. note::
+
+   Needs update to Sherpa 3.x YAML syntax.
+
 Allows to split up individual flavour processes within a process group for
 integrating them separately. This can help improve the integration/unweighting
 efficiency. Note: Only works with Comix so far.
 Example for usage:
 
-.. code-block::
+.. code-block:: yaml
 
    Process 93 93 -> 11 -11 93
    Special Group(0-1,4)
@@ -595,10 +540,122 @@ Example for usage:
 The numbers for each individual process can be found using a script in
 the AddOns directory: :file:`AddOns/ShowProcessIds.sh Process/Comix.zip`
 
-.. _End process:
+.. _Event biasing:
 
-End process
-===========
+Event biasing
+=============
 
-Completes the setup of a process or a list of processes with common
-properties.
+In the default event generation mode, events will be distributed "naturally"
+in the phase space according to their differential cross sections.
+But sometimes it is useful, to statistically enhance the event generation for
+rare phase space regions or processes/multiplicities. This is possible with
+the following options in Sherpa. The generation of more events in a rare
+region will then be compensated through event weights to yield the correct
+differential cross section. These options can be applied both in weighted and
+unweighted event generation.
+
+.. contents::
+   :local:
+
+.. _Enhance_Factor:
+
+Enhance_Factor
+--------------
+
+Factor with which the given *process/multiplicity* should be statistically
+biased. In the following example, the Z+1j process is generated 10 times more
+often than naturally, compared to the Z+0j process. Each Z+1j event will thus
+receive a weight of 1/10 to compensate for the bias.
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+       2->3:
+         Enhance_Factor: 10.0
+
+.. _RS_Enhance_Factor:
+
+RS_Enhance_Factor
+-----------------
+
+Sets an enhance factor (see :ref:`Enhance_Factor`) for the RS-piece of an MC\@NLO process.
+
+.. _Enhance_Function:
+
+Enhance_Function
+----------------
+
+Specifies a phase-space dependent biasing of parton-level events (before
+showering). The given parton-level observable defines a multiplicative
+enhancement on top of the normal matrix element shape. Example:
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+     2->3:
+       Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}
+
+In this example, Z+1-jet events with :math:`p_\perp(Z)=20` GeV and Z+0-jet
+events will come with no enhancement, while other Z+1-jet events will be
+enhanced with :math:`(p_\perp(Z)/20)^2`.
+Note: if you would define the enhancement function without the normalisation
+to :math:`1/20^2`, the Z+1-jet would come with a significant overall enhancement
+compared to the unenhanced Z+0-jet process, which would have a strong impact
+on the statistical uncertainty in the Z+0-jet region.
+
+Optionally, a range can be specified over which the multiplicative biasing
+should be applied. The matching at the range boundaries will be smooth, i.e.
+the effective enhancement is frozen to its value at the boundaries. Example:
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+     2->3:
+       Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}|1.0|100.0
+
+This implements again an enhancement with :math:`(p_\perp(Z)/20)^2` but only
+in the range of 20-200 GeV. As you can see, you have to be take into account
+the normalisation also in the range specification.
+
+.. _Enhance_Observable:
+
+Enhance_Observable
+------------------
+
+Specifies a phase-space dependent biasing of parton-level events (before
+showering). Events will be statistically flat in the given observable and
+range. An example would be:
+   
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+     2->3:
+       Enhance_Observable: VAR{log10(PPerp(p[2]+p[3]))}|1|3
+
+Here, the 1-jet process is flattened with respect to the logarithmic
+transverse momentum of the lepton pair in the limits 1.0 (10 GeV) to
+3.0 (1 TeV).  For the calculation of the observable one can use any
+function available in the algebra interpreter (see :ref:`Interpreter`).
+
+The matching at the range boundaries will be smooth, i.e. the effective
+enhancement is frozen to its value at the boundaries.
+
+This can have unwanted side effects for the statistical uncertainty when used
+in a multi-jet merged sample, because the flattening is applied in each
+multiplicity separately, and also affects the relative selection weights of
+each sub-sample (e.g. 2-jet vs. 3-jet).
+
+.. note::
+   
+   The convergence of the Monte Carlo integration can be worse if enhance
+   functions/observables are employed and therefore the integration can
+   take significantly longer. The reason is that the default phase space
+   mapping, which is constructed according to diagrammatic information
+   from hard matrix elements, is not suited for event generation
+   including enhancement. It must first be adapted, which, depending on
+   the enhance function and the final state multiplicity, can be an
+   intricate task.
+   
+   If Sherpa cannot achieve an integration error target due to the use
+   of enhance functions, it might be appropriate to locally redefine this
+   error target, see :ref:`Integration_Error`.

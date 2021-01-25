@@ -6,6 +6,7 @@ pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
 				Git_Info.C \
+				Fragmentation_Base.C \
 				fjcore.cc \
 				Flavour.C \
 				Ordering.C \
@@ -32,10 +33,11 @@ libToolsPhys_la_SOURCES       =	\
 				Momenta_Stretcher.C \
 				Weight_Info.C \
 				Variations.C \
-				Event_Weights.C
+				Weights.C
 
 localinc_HEADERS      =	\
 			fjcore.hh \
+			Fragmentation_Base.H \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
@@ -62,6 +64,6 @@ localinc_HEADERS      =	\
 			Momenta_Stretcher.H \
 			Weight_Info.H \
 			Variations.H \
-			Event_Weights.H
+			Weights.H
 
 libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

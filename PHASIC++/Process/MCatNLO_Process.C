@@ -237,14 +237,13 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
   return ampl;
 }
 
-ATOOLS::Event_Weights MCatNLO_Process::Differential(const Vec4D_Vector &p,
-                                                    Weight_Type type)
+ATOOLS::Weights_Map MCatNLO_Process::Differential(const Vec4D_Vector &p,
+                                                  Variations_Mode varmode)
 {
   THROW(fatal_error,"Invalid function call");
-  return m_last;
 }
 
-Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
+Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
 {
   DEBUG_FUNC(Name());
 
@@ -262,13 +261,15 @@ Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->ShiftMasses(crampl);
   p_bproc->Generator()->SetMassMode(mm);
   int rmode = rampl->ColorMap().empty() ? 128 : 0;
-  Event_Weights rs {rsproc->Differential(*crampl, Weight_Type::all, rmode)};
-  Event_Weights r {rsproc->GetSubevtList()->back()->m_results};
+  Weights rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
+                   .AbsoluteValues("ME");
+  Weights r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
   if (rmode && r.Nominal() == 0.0 &&
-      rsproc->Differential(*crampl, Weight_Type::nominal, 64) != 0.0) {
+      rsproc->Differential(*crampl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && r.Nominal() == 0.0; ++i) {
-      rs = rsproc->Differential(*crampl, Weight_Type::all, rmode);
-      r = rsproc->GetSubevtList()->back()->m_results;
+      rs = rsproc->Differential(*crampl, Variations_Mode::all, rmode)
+               .AbsoluteValues("ME");
+      r = rsproc->GetSubevtList()->back()->m_results.AbsoluteValues("ME");
     }
   }
   crampl->Delete();
@@ -290,11 +291,13 @@ Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   p_bproc->Generator()->SetMassMode(mm);
   bproc->GetMEwgtinfo()->m_type = mewgttype::none;
   int bmode = ampl.ColorMap().empty() ? 128 : 0;
-  Event_Weights b {bproc->Differential(*campl, Weight_Type::all, bmode)};
+  Weights b = bproc->Differential(*campl, Variations_Mode::all, bmode)
+                   .AbsoluteValues("ME");
   if (bmode && b.Nominal() == 0.0 &&
-      bproc->Differential(*campl, Weight_Type::nominal, 64) != 0.0) {
+      bproc->Differential(*campl, Variations_Mode::nominal_only, 64).Nominal() != 0.0) {
     for (int i(0); i < 100 && b.Nominal() == 0.0; ++i) {
-      b = bproc->Differential(*campl, Weight_Type::all, bmode);
+      b = bproc->Differential(*campl, Variations_Mode::all, bmode)
+              .AbsoluteValues("ME");
     }
   }
   if (b.Nominal() == 0.0) {
@@ -302,16 +305,18 @@ Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
     return 0.0;
   }
   bviproc->BBarMC()->GenerateEmissionPoint(*campl);
-  Event_Weights bvi {bviproc->Differential(*campl, Weight_Type::all, bmode)};
+  Weights bvi = bviproc->Differential(*campl, Variations_Mode::all, bmode)
+                    .AbsoluteValues("ME");
   campl->Delete();
 
   // eventually calculate local K factor
   const double random(ran->Get());
-  Event_Weights kfacs {};
-  kfacs.ApplyAll([this, &bvi, &b, &rs, &r, &random, &ampl](
-                     double varweight,
-                     size_t varindex,
-                     Variation_Parameters* varparams) -> double {
+  Weights kfacs;
+  ReweightAll(kfacs,
+      [this, &bvi, &b, &rs, &r, &random, &ampl](
+        double varweight,
+        size_t varindex,
+        QCD_Variation_Params* varparams) -> double {
     const LocalKFactorInfo info = CalculateLocalKFactorInfo(
         bvi[varindex], b[varindex], rs[varindex], r[varindex]);
     if (info.s == 0.0 && info.h == 0.0)
@@ -338,7 +343,6 @@ Event_Weights MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
       return kfac;
     }
   });
-
   return kfacs;
 }
 
@@ -391,7 +395,7 @@ Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
   return ampl;
 }
 
-Event_Weights MCatNLO_Process::OneHEvent(const int wmode)
+Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
 {
   msg_Debugging()<<"H event\n";
   m_wassevent=false;
@@ -423,7 +427,7 @@ Event_Weights MCatNLO_Process::OneHEvent(const int wmode)
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
-    return {0, 0.0};
+    return {0};
   }
   Scale_Setter_Base *scs(p_rsproc->Selected()->ScaleSetter(1));
   for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
@@ -437,24 +441,25 @@ Event_Weights MCatNLO_Process::OneHEvent(const int wmode)
   }
   Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
-  Event_Weights weights;
+  Weights_Map wgtmap;
+  wgtmap.insert({"QCUT", Weights {Variations_Type::qcut}});
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
     for (Cluster_Amplitude *ampl(p_ampl);
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
     Jet_Finder *cjf(static_cast<Jet_Finder*>(jf));
     HEventVeto_Args hva(cjf,cjf->JC()->Value(p_ampl));
-    weights.ApplyAll([&hva](double varweight,
-                            size_t varindex,
-                            Variation_Parameters* varparams) -> double {
-      double fac(varparams ? varparams->m_Qcutfac : 1.0);
+    for (size_t i {0}; i < s_variations->Size(Variations_Type::qcut) + 1;
+         ++i) {
+      const double fac {
+          i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
       int stat = hva.m_jcv < sqr(hva.p_jf->Qcut() * fac);
-      return varweight * (stat ? 1.0 : 0.0);
-    });
+      wgtmap["QCUT"][i] = (stat ? 1.0 : 0.0);
+    }
   }
-  return weights;
+  return wgtmap;
 }
 
-Event_Weights MCatNLO_Process::OneSEvent(const int wmode)
+Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
 {
   msg_Debugging()<<"S event\n";
   m_wassevent=true;
@@ -494,6 +499,7 @@ Event_Weights MCatNLO_Process::OneSEvent(const int wmode)
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
+    rproc->Integrator()->PSHandler()->SetEnhanceWeight(bproc->Integrator()->PSHandler()->EnhanceWeight());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     rproc->Integrator()->SetMomenta(*ampl);
     rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
@@ -551,18 +557,18 @@ Event_Weights MCatNLO_Process::OneSEvent(const int wmode)
       }
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl
-		   <<" ( w = "<<p_nlomc->Weights().Nominal()<<" )\n";
+		   <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
     p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
-    return p_nlomc->Weights();
+    return p_nlomc->WeightsMap();
   }
   p_selected=p_bproc;
   ampl=p_ampl;
   ampl->SetNLO(4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
-		 <<" ( w = "<<p_nlomc->Weights().Nominal()<<" )\n";
+		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
   p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
-  return stat?p_nlomc->Weights():Event_Weights{0.0};
+  return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
 }
 
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
@@ -576,14 +582,14 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     winfo = p_bviproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
-      const Event_Weights Swgts {OneSEvent(wmode)};
+      const Weights_Map Swgts {OneSEvent(wmode)};
       assert(p_ampl);
       const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);
       const double wgtfac(selwgtratio);
-      winfo->m_weights *= wgtfac;
-      winfo->m_mcatnloshowerweights = Swgts;
+      winfo->m_weightsmap *= wgtfac;
+      winfo->m_weightsmap *= Swgts;
       *(p_selected->Selected()->GetMEwgtinfo()) *= Swgts.Nominal()*wgtfac;
     }
   } else {
@@ -591,12 +597,13 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     winfo = p_rsproc->OneEvent(wmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
-      const Event_Weights Hwgts {OneHEvent(wmode)};
+      const Weights_Map Hwgts {OneHEvent(wmode)};
       const double Rsel(p_rproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double RSsel(p_rsproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Rsel / RSsel);
       const double wgtfac(selwgtratio);
-      winfo->m_weights *= Hwgts*wgtfac;
+      winfo->m_weightsmap *= wgtfac;
+      winfo->m_weightsmap *= Hwgts;
       *p_selected->Selected()->GetMEwgtinfo() *= Hwgts.Nominal()*wgtfac;
     }
   }
@@ -606,7 +613,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     ampl->SetNLO(1|ampl->NLO());
     ampl->SetMS(ms);
   }
-  if (winfo && winfo->m_weights * winfo->m_mcatnloshowerweights == 0) {
+  if (winfo && winfo->m_weightsmap.IsZero()) {
     delete winfo;
     winfo=NULL;
   }
@@ -617,9 +624,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
                    <<Selected()->Generator()->Name()<<":"<<std::endl;
     ME_Weight_Info mwi(*Selected()->GetMEwgtinfo());
     if (Selected()->Integrator()->ColorIntegrator()!=NULL)
-      while (Selected()->Differential(*p_ampl,Weight_Type::nominal,1|2|4|128)==0.0);
+      while (Selected()->Differential(*p_ampl,Variations_Mode::nominal_only,1|2|4|128).Nominal()==0.0);
     else
-      Selected()->Differential(*p_ampl,Weight_Type::nominal,1|2|4|128);
+      Selected()->Differential(*p_ampl,Variations_Mode::nominal_only,1|2|4|128);
     Selected()->SetMEwgtinfo(mwi);
   }
   return winfo;
@@ -650,7 +657,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
     for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
-    p_ddproc->Differential(*ampl,Weight_Type::nominal,4);
+    p_ddproc->Differential(*ampl,Variations_Mode::nominal_only,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));

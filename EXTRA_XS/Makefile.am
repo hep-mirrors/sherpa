@@ -1,1 +1,1 @@
-SUBDIRS       =	Main Two2Two One2Two One2Three NLO Special
+SUBDIRS       =	Main Two2Two One2Two One2Three NLO

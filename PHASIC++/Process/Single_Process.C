@@ -483,19 +483,19 @@ void Single_Process::AddBeam(ATOOLS::Cluster_Sequence_Info& csi,
   }
 }
 
-Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
-                                           Weight_Type type)
+Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
+                                         Variations_Mode varmode)
 {
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
 
-  ResetResultsForDifferential(type);
+  ResetResultsForDifferential(varmode);
   InitMEWeightInfo();
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
 
   if (m_zero) {
     m_last = 0.0;
-    return m_last;
+    return 0.0;
   }
 
   if (IsMapped()) {
@@ -511,7 +511,7 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
   if (GetSubevtList() == nullptr) {
 
-    if (type == Weight_Type::all) {
+    if (varmode == Variations_Mode::all) {
       assert(Selector()->CombinedResults().size() == 1);
       m_last *= Selector()->CombinedResults()[0];
     }
@@ -553,8 +553,9 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
             const bool lookup {proc->LookUp()};
             proc->SetLookUp(false);
 
-            m_dadseventweights +=
-                proc->Differential(dps.m_p, type) * dps.m_weight * m_dsweight;
+            auto wgtmap = proc->Differential(dps.m_p, varmode);
+            wgtmap *= dps.m_weight * m_dsweight;
+            m_dadswgtmap += wgtmap;
 
             double dadsmewgt {proc->GetMEwgtinfo()->m_B * dps.m_weight *
                               m_dsweight};
@@ -620,13 +621,12 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
         assert(!triggers.empty());
         const auto& jet_trigger_weights =
             (triggers.size() == 1) ? triggers[0] : triggers[i];
-        sub->m_results = Event_Weights {};
-        if (type == Weight_Type::all) {
+        if (varmode == Variations_Mode::all) {
           sub->m_results *= jet_trigger_weights;
         } else {
           sub->m_results *= jet_trigger_weights.Nominal();
         }
-        sub->m_results *= sub->m_result;
+        sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
         sub->m_xf1 = p_int->ISR()->XF1(0);
         sub->m_xf2 = p_int->ISR()->XF2(0);
@@ -647,14 +647,14 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
 
   // perform on-the-fly reweighting
   m_last *= nominal;
-  if (type != Weight_Type::nominal && m_last.ContainsVariations()) {
+  if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (GetSubevtList() == nullptr) {
-      ReweightBVI(type, scales->Amplitudes());
+      ReweightBVI(scales->Amplitudes());
     } else {
-      ReweightRS(type, scales->Amplitudes());
+      ReweightRS(scales->Amplitudes());
     }
   }
-  m_last -= m_dadseventweights;
+  m_last -= m_dadswgtmap;
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -668,16 +668,20 @@ Event_Weights Single_Process::Differential(const Vec4D_Vector& p,
   return m_last;
 }
 
-void Single_Process::ResetResultsForDifferential(Weight_Type type)
+void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
 {
   m_lastflux = 0.0;
   m_mewgtinfo.Reset();
-  if (type == Weight_Type::all) {
-    m_dadseventweights = m_last = m_lastb = Event_Weights {};
-  } else {
-    m_dadseventweights = m_last = m_lastb = Event_Weights {0, 1.0};
+  m_last.Clear();
+  m_lastb.Clear();
+  m_dadswgtmap.Clear();
+  if (varmode != Variations_Mode::nominal_only) {
+    m_last["ME"] = Weights {Variations_Type::qcd};
+    m_lastb["ME"] = Weights {Variations_Type::qcd};
+    m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
   }
-  m_dadseventweights = 0.0;
+  m_last = 1.0;
+  m_dadswgtmap = 0.0;
   m_lastb = 0.0;
 }
 
@@ -726,19 +730,18 @@ void Single_Process::CalculateFlux(const Vec4D_Vector& p)
   m_lastflux /= m_issymfac;
 }
 
-void Single_Process::ReweightBVI(Weight_Type type,
-                                 ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
 {
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
   // NOTE: we iterate over m_last's variations (via its Apply function), but we
   // also update m_lastb inside the loop, to avoid code duplication; also note
   // that m_lastb should not be all-zero if m_lastbxs is zero
-  m_last.Apply([this, &ampls, &info](
+  Reweight(m_last["ME"], [this, &ampls, &info](
                    double varweight,
                    size_t varindex,
-                   Variation_Parameters& varparams) -> double {
+                   QCD_Variation_Params& varparams) -> double {
     if (varweight == 0.0) {
-      m_lastb.Variation(varindex) = 0.0;
+      m_lastb["ME"].Variation(varindex) = 0.0;
       return 0.0;
     }
     double K {1.0};
@@ -749,8 +752,9 @@ void Single_Process::ReweightBVI(Weight_Type type,
         m_mewgtinfo.m_type == mewgttype::METS) {
 
       const auto res = ReweightBornLike(varparams, info);
-      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? res : 0.0;
-      return K * res;
+      m_lastb["ME"].Variation(varindex) =
+          (m_lastbxs != 0.0) ? res / m_lastb.BaseWeight() : 0.0;
+      return K * res / m_last.BaseWeight();
 
     } else {
 
@@ -800,42 +804,49 @@ void Single_Process::ReweightBVI(Weight_Type type,
         res = (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) * csi.m_pdfwgt;
       }
 
-      m_lastb.Variation(varindex) = (m_lastbxs != 0.0) ? resb : 0.0;
-      return res;
+      m_lastb["ME"].Variation(varindex) =
+          (m_lastbxs != 0.0) ? resb / m_lastb.BaseWeight() : 0.0;
+      return res / m_last.BaseWeight();
     }
   });
 }
 
-void Single_Process::ReweightRS(Weight_Type type,
-                                ClusterAmplitude_Vector& ampls)
+void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
 {
+  // first reweight all subevents individually
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
   auto last_subevt_idx = GetSubevtList()->size() - 1;
-  m_last.Apply([this, &info, &last_subevt_idx](
-                   double varweight,
-                   size_t varindex,
-                   Variation_Parameters& varparams) -> double {
-    double K {1.0};
-    if (!m_mewgtinfo.m_bkw.empty()) {
-      K = m_mewgtinfo.m_bkw[varindex];
-    }
-    double weight {0.0};
-    for (int i {0}; i <= last_subevt_idx; ++i) {
-      auto sub = (*GetSubevtList())[i];
-      if (sub->m_results.Variation(varindex) != 0.0) {
-        info.m_wgt = sub->m_mewgt;
-        info.m_muR2 = sub->m_mu2[stp::ren];
-        info.m_muF2 = sub->m_mu2[stp::fac];
-        info.m_ampls = ClusterAmplitude_Vector(sub->p_real->p_ampl ? 1 : 0,
-                                               sub->p_real->p_ampl);
-        info.m_fallbackresult = sub->m_result;
-        auto contrib = K * ReweightBornLike(varparams, info);
-        sub->m_results.Variation(varindex) = contrib;
-        weight += contrib;
-      }
-    }
-    return weight;
-  });
+  for (auto& sub : *GetSubevtList()) {
+    sub->m_results["ME"] = Weights {Variations_Type::qcd};
+  }
+  s_variations->ForEach(
+      [this, &info, &last_subevt_idx](size_t varindex,
+                                      QCD_Variation_Params& varparams) -> void {
+        double K {1.0};
+        if (!m_mewgtinfo.m_bkw.empty()) {
+          K = m_mewgtinfo.m_bkw[varindex];
+        }
+        for (int i {0}; i <= last_subevt_idx; ++i) {
+          auto sub = (*GetSubevtList())[i];
+          info.m_wgt = sub->m_mewgt;
+          info.m_muR2 = sub->m_mu2[stp::ren];
+          info.m_muF2 = sub->m_mu2[stp::fac];
+          info.m_ampls = ClusterAmplitude_Vector(sub->p_real->p_ampl ? 1 : 0,
+                                                 sub->p_real->p_ampl);
+          info.m_fallbackresult = sub->m_result;
+          auto contrib = K * ReweightBornLike(varparams, info);
+          sub->m_results["ME"].Variation(varindex) =
+              contrib / sub->m_results.BaseWeight();
+        }
+      });
+
+  // finally, add the subevent weights
+  m_last.Clear();
+  m_last = 0.0;
+  for (int i {0}; i <= last_subevt_idx; ++i) {
+    auto sub = (*GetSubevtList())[i];
+    m_last += sub->m_results;
+  }
 }
 
 void Single_Process::InitMEWeightInfo()
@@ -860,7 +871,7 @@ void Single_Process::UpdateMEWeightInfo(Scale_Setter_Base* scales)
 }
 
 double
-Single_Process::ReweightBornLike(ATOOLS::Variation_Parameters& varparams,
+Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
                                  Single_Process::BornLikeReweightingInfo& info)
 {
   if (info.m_wgt == 0.0) {
@@ -880,7 +891,7 @@ Single_Process::ReweightBornLike(ATOOLS::Variation_Parameters& varparams,
 }
 
 ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
-    ATOOLS::Variation_Parameters& varparams,
+    ATOOLS::QCD_Variation_Params& varparams,
     Single_Process::BornLikeReweightingInfo & info,
     const double &mur2fac,
     const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
@@ -916,7 +927,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   return csi;
 }
 
-double Single_Process::KPTerms(const ATOOLS::Variation_Parameters * varparams)
+double Single_Process::KPTerms(const ATOOLS::QCD_Variation_Params * varparams)
 {
   double KP(KPTerms(0, varparams->p_pdf1,
                        varparams->p_pdf2, varparams->m_muF2fac) * m_lastflux);
@@ -932,7 +943,7 @@ double Single_Process::KPTerms
 }
 
 double Single_Process::MuR2(
-  const ATOOLS::Variation_Parameters& varparams,
+  const ATOOLS::QCD_Variation_Params& varparams,
   Single_Process::BornLikeReweightingInfo & info) const
 {
   double mu2new(info.m_muR2 * varparams.m_muR2fac);

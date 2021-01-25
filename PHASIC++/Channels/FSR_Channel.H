@@ -125,35 +125,6 @@ namespace PHASIC {
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
-
-
-  class NoChannel : public Single_Channel {
-    /*!
-      This channel is meant to be the integrator for s-channel instanton production
-      and similar processes, where an s-channel object with no specific mass is
-produced.
-    */
-    double E,s;
-    double pt2min,pt2max,smin,smax;
-    double mass,width;
-    int    type;
-    int    chnumber;
-  public :
-    NoChannel(int,int,ATOOLS::Flavour *,
-	      ATOOLS::Flavour=ATOOLS::Flavour(kf_none)); 
-    ~NoChannel() {}
-    void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
-    void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
-    void ISRInfo(int &,double &,double &);
-    void MPISync()                  { }
-    void Optimize()                 { }
-    void EndOptimize()              { }
-    void WriteOut(std::string pId)  { }
-    void ReadIn(std::string pId)    { }
-    int  ChNumber()                 { return chnumber;      }
-    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
-    std::string ChID();
-  };
 }
 
 

@@ -391,15 +391,15 @@ bool COMIX::Single_Process::GeneratePoint()
   return true;
 }
 
-Event_Weights COMIX::Single_Process::Differential(
+Weights_Map COMIX::Single_Process::Differential(
     const Cluster_Amplitude &ampl,
-    Weight_Type type,
+    Variations_Mode varmode,
     int mode)
 {
   DEBUG_FUNC(Name());
   m_zero=false;
   if ((mode&128)==0) p_int->ColorIntegrator()->SetPoint(&ampl);
-  return PHASIC::Process_Base::Differential(ampl,type,mode);
+  return PHASIC::Process_Base::Differential(ampl,varmode,mode);
 }
 
 double COMIX::Single_Process::SetZero()
@@ -408,7 +408,7 @@ double COMIX::Single_Process::SetZero()
     const NLO_subevtlist &rsubs(p_map?m_subs:p_bg->SubEvts());
     for (size_t i(0);i<rsubs.size();++i) rsubs[i]->Reset();
   }
-  m_last=0.0;
+  m_last["ME"]=0.0;
   return m_w=m_dxs=m_lastxs=0.0;
 }
 

@@ -158,6 +158,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_realevt.p_id=&m_sids.front();
   m_realevt.m_pname = GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   m_realevt.m_pname = m_realevt.m_pname.substr(0,m_realevt.m_pname.rfind("__"));
+  m_realevt.m_stype = sbt::none;
   m_realevt.p_proc = this;
   m_realevt.p_real = &m_realevt;
 
@@ -579,7 +580,9 @@ void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
 
 void Single_Real_Correction::SetKFactor(const KFactor_Setter_Arguments &args)
 {
-  p_tree_process->SetKFactor(args);
+  if (!m_no_tree) {
+    p_tree_process->SetKFactor(args);
+  }
   for (size_t i(0);i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetKFactor(args);
   }

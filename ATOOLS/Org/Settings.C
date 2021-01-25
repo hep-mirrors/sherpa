@@ -150,6 +150,15 @@ String_Vector Settings::GetConfigFiles()
   }
 }
 
+bool Settings::IsScalar(const Settings_Keys& keys)
+{
+  for (auto& reader : m_yamlreaders) {
+    if (reader->IsScalar(keys))
+      return true;
+  }
+  return false;
+}
+
 bool Settings::IsList(const Settings_Keys& keys)
 {
   for (auto& reader : m_yamlreaders) {
