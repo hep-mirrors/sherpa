@@ -48,6 +48,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_xijk+m_uj)-(1.+m_xijk);
+    if (m_subtype==2) m_sff = 2.*m_xijk/(1.-m_xijk+m_uj)+(1.-m_xijk);
     m_av  = m_sff;
     break;
   case 2:
@@ -60,6 +61,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
     break;
   case 4:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
+    if (m_subtype==2) m_sff = m_xijk/(1.-m_xijk+m_uj)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
   }
   if (m_kt2<m_k0sqi) m_av=1.0;

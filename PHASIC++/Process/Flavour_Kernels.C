@@ -55,6 +55,8 @@ double Flavour_Kernels::Kb2(int type)
 
 double Flavour_Kernels::Kb3(int type,double x)
 {
+  double me(0.0);
+  if (m_subtype==2) me=2.*log((2.-x)/(1.-x));
   double at=0.;
   if (m_alpha<1.&& (type==1||type==4)) {
     if (x<1.-m_alpha) at=log((1.-x)/(2.-x));
@@ -63,13 +65,13 @@ double Flavour_Kernels::Kb3(int type,double x)
   }
   switch(type) {
   case 1:
-    return m_CF*(1.-x-(1.+x)*log(m_alpha*(1.-x)/x)+2.*at);
+    return m_CF*(1.-x-(1.+x)*log(m_alpha*(1.-x)/x)+2.*at+2.*me);
   case 2:
     return m_CF*((1.+sqr(1.-x))/x*log(m_alpha*(1.-x)/x)+x);
   case 3:
     return m_TR*((x*x+sqr(1.-x))*log(m_alpha*(1.-x)/x)+2.*x*(1.-x));
   case 4:
-    return 2.*m_CA*(((1.-x)/x-1.+x*(1.-x))*log(m_alpha*(1.-x)/x)+at);
+    return 2.*m_CA*(((1.-x)/x-1.+x*(1.-x))*log(m_alpha*(1.-x)/x)+at+me);
   }
   return 0.;
 }
@@ -153,17 +155,19 @@ double Flavour_Kernels::Kt3(int type,double x)
   switch(type) {
   case 1:
     ax*=(1.+x*x)/(1.-x);
+    if (m_subtype==2) ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
     return -(1.+x)*(log(1.-x)-m_loga)+at+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
-    if (m_subtype==2) ax+=2.*log(x)/x;
+    if (m_subtype==2) ax+=(1.-x)+2.*log(x)/x;
     return m_CF/m_CA*((1.+sqr(1.-x))/x*(log(1.-x)-m_loga)+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
+    if (m_subtype==2) ax+=-(1.-x)*(1.-3.*x);
     return m_TR/m_CF*((x*x+sqr(1.-x))*(log(1.-x)-m_loga)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
-    if (m_subtype==2) ax+=log(x)/x;
+    if (m_subtype==2) ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
     return 2.*((1.-x)/x-1.+x*(1.-x))*(log(1.-x)-m_loga)+at+2.*ax;
   }
   return 0.;

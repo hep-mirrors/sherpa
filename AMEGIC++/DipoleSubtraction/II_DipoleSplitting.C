@@ -45,6 +45,8 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   }
   }
 
+  double zijk(m_xijk);
+  if (m_subtype==2) zijk=m_xijk+m_vi;
 //   m_pt1  =    m_pj;
 //   m_pt2  =-1.*m_vi*m_pk;
   m_pt1  =    m_pj-m_vi*m_pk;
@@ -53,21 +55,23 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_xijk)-(1.+m_xijk);
+    if (m_subtype==2) m_sff = 2.*zijk/(1.-m_xijk)+(1.-zijk);
     m_av  = m_sff;
     break;
   case 2:
-    m_sff = 1.-2.*m_xijk*(1.-m_xijk);
+    m_sff = 1.-2.*zijk*(1.-zijk);
     m_av  = m_sff;
     break;
   case 3:
-    m_sff = m_xijk;
+    m_sff = zijk;
     m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
     if (m_subtype==2) m_av += 2.0*(1.0/(m_xijk+m_vi)-1.0/m_xijk);
     break;
   case 4:
-    m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
+    m_sff = m_xijk/(1.-m_xijk)+zijk*(1.-zijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
-    if (m_subtype==2) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
+    if (m_subtype==2) m_sff += zijk/(1.-m_xijk)-m_xijk/(1.-m_xijk);
+    if (m_subtype&3) m_av += 1.0/(m_xijk+m_vi)-1.0/m_xijk;
   }
   if (m_kt2<m_k0sqi) m_av=1.0;
 }
