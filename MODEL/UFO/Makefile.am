@@ -16,7 +16,7 @@ localinc_HEADERS = \
 
 if ENABLE_UFO
 
-dist_bin_SCRIPTS = Sherpa-generate-model
+nodist_bin_SCRIPTS = Sherpa-generate-model
 
 ufodir = $(pythondir)/ufo_interface
 

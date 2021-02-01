@@ -20,5 +20,5 @@ localinc_HEADERS   = \
 			Single_Process_Combined.H \
 			Process_Group.H 
 
-dist_pkgdata_SCRIPTS  =	makelibs
-dist_bin_SCRIPTS = make2scons
+nodist_pkgdata_SCRIPTS  =	makelibs
+nodist_bin_SCRIPTS = make2scons

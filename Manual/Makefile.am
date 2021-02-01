@@ -75,8 +75,10 @@ Sherpa_TEXINFOS = \
 man1_MANS = Sherpa.1
 
 dist_pkgdata_DATA         = \
-	sherpa-completion \
 	completion.index
+
+nodist_pkgdata_DATA         = \
+	sherpa-completion
 
 dist_html_DATA = \
         Sherpa.html \
