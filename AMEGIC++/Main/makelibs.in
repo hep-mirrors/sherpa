@@ -83,7 +83,6 @@ if ! test -z "@CC@"; then export CC="@CC@"; fi
 if ! test -z "@CFLAGS@"; then export CFLAGS="@CFLAGS@"; fi
 if ! test -z "@FC@"; then export FC="@FC@"; fi
 if ! test -z "@FCFLAGS@"; then export FCFLAGS="@FCFLAGS@"; fi
-if ! test -z "@CPP@"; then export CPP="@CPP@"; fi
 if ! test -z "@CXXCPP@"; then export CXXCPP="@CXXCPP@"; fi
 
 if echo "@host@" | grep -q "i686"; then
