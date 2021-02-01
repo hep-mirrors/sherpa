@@ -320,7 +320,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 [
   AC_ARG_ENABLE(
     versioning,
-    AC_HELP_STRING([--enable-versioning], [Add version tag to executables and library/header directories, such that multiple Sherpa versions can live in the same prefix.]),
+    AS_HELP_STRING([--enable-versioning],[Add version tag to executables and library/header directories, such that multiple Sherpa versions can live in the same prefix.]),
     [ AC_MSG_CHECKING(whether to enable versioning)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no);
@@ -340,7 +340,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     analysis,
-    AC_HELP_STRING([--enable-analysis], [Enable analysis]),
+    AS_HELP_STRING([--enable-analysis],[Enable analysis]),
     [ AC_MSG_CHECKING(for analysis)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); analysis=false ;;
@@ -352,7 +352,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     root,
-    AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
+    AS_HELP_STRING([--enable-root=/path/to/root],[Enable ROOT support and specify where it is installed if non-standard.]),
     [ AC_MSG_CHECKING(for ROOT installation directory)
       case "${enableval}" in
         no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
@@ -397,7 +397,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hepmc2,
-    AC_HELP_STRING([--enable-hepmc2=/path/to/hepmc], [Enable HepMC (version 2.x) support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-hepmc2=/path/to/hepmc],[Enable HepMC (version 2.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC2 installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC2 not enabled); hepmc2=false ;;
@@ -449,7 +449,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
+    AS_HELP_STRING([--enable-hepmc3root],[Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -463,7 +463,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hepmc3,
-    AC_HELP_STRING([--enable-hepmc3=/path/to/hepmc], [Enable HepMC (version 3.x) support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-hepmc3=/path/to/hepmc],[Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
@@ -505,7 +505,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     rivet,
-    AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-rivet=/path/to/rivet],[Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
@@ -545,7 +545,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     fastjet,
-    AC_HELP_STRING([--enable-fastjet=/path/to/fastjet], [Enable FASTJET.]),
+    AS_HELP_STRING([--enable-fastjet=/path/to/fastjet],[Enable FASTJET.]),
     [ AC_MSG_CHECKING(for FASTJET installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(FASTJET not enabled); fastjet=false ;;
@@ -584,7 +584,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     blackhat,
-    AC_HELP_STRING([--enable-blackhat=/path/to/blackhat], [Enable BLACKHAT.]),
+    AS_HELP_STRING([--enable-blackhat=/path/to/blackhat],[Enable BLACKHAT.]),
     [ AC_MSG_CHECKING(for BLACKHAT installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(BLACKHAT not enabled); blackhat=false ;;
@@ -619,7 +619,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     openloops,
-    AC_HELP_STRING([--enable-openloops=/path/to/openloops], [Enable OpenLoops.]),
+    AS_HELP_STRING([--enable-openloops=/path/to/openloops],[Enable OpenLoops.]),
     [ AC_MSG_CHECKING(for OpenLoops installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(OpenLoops not enabled); openloops=false ;;
@@ -641,7 +641,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     recola,
-    AC_HELP_STRING([--enable-recola=/path/to/recola], [Enable Recola.]),
+    AS_HELP_STRING([--enable-recola=/path/to/recola],[Enable Recola.]),
     [ AC_MSG_CHECKING(for Recola installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(Recola not enabled); recola=false ;;
@@ -665,7 +665,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     mcfm,
-    AC_HELP_STRING([--enable-mcfm=/path/to/mcfm], [Enable MCFM.]),
+    AS_HELP_STRING([--enable-mcfm=/path/to/mcfm],[Enable MCFM.]),
     [ AC_MSG_CHECKING(for MCFM installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(MCFM not enabled); mcfm=false ;;
@@ -706,7 +706,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     lhole,
-    AC_HELP_STRING([--enable-lhole], [Enable Les Houches One-Loop Generator interface.]),
+    AS_HELP_STRING([--enable-lhole],[Enable Les Houches One-Loop Generator interface.]),
     [ AC_MSG_CHECKING(for LHOLE)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); lhole=false ;;
@@ -719,7 +719,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   lhapdfversion=5
   AC_ARG_ENABLE(
     lhapdf,
-    AC_HELP_STRING([--enable-lhapdf=/path/to/lhapdf], [Enable LHAPDF support and specify where it is installed.]),
+    AS_HELP_STRING([--enable-lhapdf=/path/to/lhapdf],[Enable LHAPDF support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
@@ -758,7 +758,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hztool,
-    AC_HELP_STRING([--enable-hztool=/path/to/hztool], [Enable hztool for analysis.]),
+    AS_HELP_STRING([--enable-hztool=/path/to/hztool],[Enable hztool for analysis.]),
     [ AC_MSG_CHECKING(for hztool installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(hztool not enabled); hztool=false;;
@@ -797,7 +797,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     cernlib,
-    AC_HELP_STRING([--enable-cernlib=/path/to/cernlib], [Enable cernlib.]),
+    AS_HELP_STRING([--enable-cernlib=/path/to/cernlib],[Enable cernlib.]),
     [ AC_MSG_CHECKING(for cernlib installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
@@ -840,7 +840,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     pgs,
-    AC_HELP_STRING([--enable-pgs=/path/to/pgs], [Enable pgs.]),
+    AS_HELP_STRING([--enable-pgs=/path/to/pgs],[Enable pgs.]),
     [ AC_MSG_CHECKING(for PGS installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(PGS not enabled); pgs=false;;
@@ -864,7 +864,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     delphes,
-    AC_HELP_STRING([--enable-delphes=/path/to/delphes], [Enable delphes.]),
+    AS_HELP_STRING([--enable-delphes=/path/to/delphes],[Enable delphes.]),
     [ AC_MSG_CHECKING(for DELPHES installation directory);
       case "${enableval}" in
         no) AC_MSG_RESULT(DELPHES not enabled); delphes=false;;
@@ -889,7 +889,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     gzip,
-    AC_HELP_STRING([--enable-gzip], [Enable gzip support (for compressed event output)]),
+    AS_HELP_STRING([--enable-gzip],[Enable gzip support (for compressed event output)]),
     [ case "${enableval}" in
         no)   AC_MSG_RESULT(gzip not enabled); zlib=false ;;
         yes)  AC_CHECK_LIB(z, inflateEnd, [libz_found=yes], [libz_found=no])
@@ -931,7 +931,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     pythia,
-    AC_HELP_STRING([--enable-pythia], [Enable fragmentation/decay interface to
+    AS_HELP_STRING([--enable-pythia],[Enable fragmentation/decay interface to
     Pythia.]),
     [ AC_MSG_CHECKING(whether to enable Pythia interface);
       case "${enableval}" in
@@ -947,7 +947,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     hepevtsize,
-    AC_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE], [HEPEVT common block size @<:@default=10000@:>@]),
+    AS_HELP_STRING([--enable-hepevtsize=HEPEVT_SIZE],[HEPEVT common block size @<:@default=10000@:>@]),
     [ AC_MSG_CHECKING(whether HEPEVT common block size is defined);
       if test ${enableval} -gt 0 2>/dev/null ; then
          HEPEVT_CB_SIZE=${enableval}
@@ -965,7 +965,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     binreloc,
-    AC_HELP_STRING([--enable-binreloc], [Enable binrelocing]),
+    AS_HELP_STRING([--enable-binreloc],[Enable binrelocing]),
     [ AC_MSG_CHECKING(whether to install relocatable Sherpa)
       case "${enableval}" in
         no)  AC_MSG_RESULT(no); binreloc=false ;;

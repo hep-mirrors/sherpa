@@ -1,10 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 2.2.11, sherpa@projects.hepforge.org, SHERPA-MC)
+AC_INIT([SHERPA MC],[2.2.11],[sherpa@projects.hepforge.org],[SHERPA-MC])
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
 AM_INIT_AUTOMAKE(tar-ustar)
-AM_DISABLE_STATIC
+AC_DISABLE_STATIC([])
 AC_PREFIX_DEFAULT(${PWD})
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -27,7 +27,7 @@ AC_SUBST(F77)
 AC_SUBST(AM_FFLAGS)
 
 AC_ARG_ENABLE(mpi,
-  AC_HELP_STRING([--enable-mpi], [Enable MPI]),
+  AS_HELP_STRING([--enable-mpi],[Enable MPI]),
   [ AC_MSG_CHECKING(for MPI)
     case "${enableval}" in
       no)  AC_MSG_RESULT(no); mpi=false ;;
@@ -46,7 +46,7 @@ fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
 AC_ARG_ENABLE(pyext,
-  AC_HELP_STRING([--enable-pyext], [Enable Python API]),
+  AS_HELP_STRING([--enable-pyext],[Enable Python API]),
   [ AC_MSG_CHECKING(for Python extension)
     case "${enableval}" in
       no) AC_MSG_RESULT(no); pyext=false ;;
@@ -65,7 +65,7 @@ fi
 AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
 
 AC_ARG_ENABLE(ufo,
-  AC_HELP_STRING([--enable-ufo], [Enable UFO support]),
+  AS_HELP_STRING([--enable-ufo],[Enable UFO support]),
   [ AC_MSG_CHECKING(for UFO support)
     case "${enableval}" in
       no) AC_MSG_RESULT(no); ufo=false ;;
@@ -83,9 +83,8 @@ case "$build_os:$build_cpu:$build_vendor" in
   *) CXX="$CXX -Wl,--no-as-needed" ;;
 esac
 
-AM_PROG_LIBTOOL
-dnl Checks for header files.
-AC_HEADER_STDC
+LT_INIT
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
@@ -100,7 +99,7 @@ To install a local copy, use the configure option --with-sqlite3=install.]) ])
 SHERPA_SETUP_CONFIGURE_OPTIONS
 SHERPA_SETUP_VARIABLES
 
-AC_OUTPUT(ATOOLS/Math/Makefile \
+AC_CONFIG_FILES([ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
 	  ATOOLS/Makefile \
@@ -247,7 +246,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/HepMC/Makefile \
 	  AddOns/Root/Makefile \
 	  AddOns/Makefile \
-	  Makefile )
+	  Makefile ])
+AC_OUTPUT
 
 if test "x$VERSIONING" != "x"; then
   mv "SHERPA/Run/Sherpa-config" "SHERPA/Run/Sherpa$VERSIONING-config"
