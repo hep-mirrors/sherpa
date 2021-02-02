@@ -667,7 +667,9 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
-  m_last -= m_dadswgtmap;
+  if (m_dads) {
+    m_last -= m_dadswgtmap;
+  }
 
   // calculate associated contributions variations (not for DADS events)
   if (varmode != Variations_Mode::nominal_only
@@ -693,15 +695,20 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   m_mewgtinfo.Reset();
   m_last.Clear();
   m_lastb.Clear();
-  m_dadswgtmap.Clear();
   if (varmode != Variations_Mode::nominal_only) {
     m_last["ME"] = Weights {Variations_Type::qcd};
     m_lastb["ME"] = Weights {Variations_Type::qcd};
-    m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
   }
   m_last = 1.0;
-  m_dadswgtmap = 0.0;
   m_lastb = 0.0;
+
+  if (m_dads) {
+    m_dadswgtmap.Clear();
+    if (varmode != Variations_Mode::nominal_only) {
+      m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
+    }
+    m_dadswgtmap = 0.0;
+  }
 }
 
 void Single_Process::UpdateIntegratorMomenta(const Vec4D_Vector& p)
@@ -886,9 +893,10 @@ void Single_Process::CalculateAssociatedContributionVariations()
   if (GetSubevtList() == nullptr) {
 
     // calculate BVIKP - DADS as the reference point for the additive correction
-    const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-      m_mewgtinfo.m_KP};
-    const double DADS {m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt};
+    const double BVIKP {
+      m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
+    const double DADS {
+      m_dads ? m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt : 0.0};
     const double BVIKPDADS {BVIKP - DADS};
     if (IsBad(BVIKPDADS))
       return;
