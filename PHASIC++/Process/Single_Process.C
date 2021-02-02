@@ -667,12 +667,13 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
   }
 
-  // calculate associated contributions variations for BVI events
-  if (varmode != Variations_Mode::nominal_only) {
+  m_last -= m_dadswgtmap;
+
+  // calculate associated contributions variations (not for DADS events)
+  if (varmode != Variations_Mode::nominal_only
+      && (GetSubevtList() != nullptr || !m_pinfo.Has(nlo_type::rsub))) {
     CalculateAssociatedContributionVariations();
   }
-
-  m_last -= m_dadswgtmap;
 
   // propagate (potentially) re-clustered momenta
   if (GetSubevtList() == nullptr) {
@@ -882,18 +883,22 @@ void Single_Process::CalculateAssociatedContributionVariations()
   if (m_asscontrib.empty() || !(m_mewgtinfo.m_type & mewgttype::VI))
     return;
 
-  const double norm {m_csi.m_pdfwgt / m_last.Nominal("ME")};
+  if (GetSubevtList() == nullptr) {
 
-  if (GetSubevtList() == nullptr && !IsBad(norm)) {
+    // calculate BVIKP - DADS as the reference point for the additive correction
+    const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
+      m_mewgtinfo.m_KP};
+    const double DADS {m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt};
+    const double BVIKPDADS {BVIKP - DADS};
+    if (IsBad(BVIKPDADS))
+      return;
 
+    // calculate order in QCD
     auto orderqcd = m_mewgtinfo.m_oqcd;
     if (m_mewgtinfo.m_type & mewgttype::VI ||
         m_mewgtinfo.m_type & mewgttype::KP) {
       orderqcd--;
     }
-    const double BVIKP {m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI +
-      m_mewgtinfo.m_KP};
-    const double DADS {m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt};
 
     for (const auto& asscontrib : m_asscontrib) {
 
@@ -917,12 +922,9 @@ void Single_Process::CalculateAssociatedContributionVariations()
 
       // store variations
       const std::string key = ToString<asscontrib::type>(asscontrib);
-      m_last["ASSOCIATED_CONTRIBUTIONS"][key] =
-        (BVIKP - DADS + Bassnew) * norm;
-      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] =
-          (BVIKP - DADS) * Deltaassnew * norm;
-      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] =
-          (BVIKP - DADS) * Deltaassnewexp * norm;
+      m_last["ASSOCIATED_CONTRIBUTIONS"][key] = (BVIKPDADS + Bassnew) / BVIKPDADS;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["MULTI" + key] = Deltaassnew;
+      m_last["ASSOCIATED_CONTRIBUTIONS"]["EXP" + key] = Deltaassnewexp;
     }
 
   }
