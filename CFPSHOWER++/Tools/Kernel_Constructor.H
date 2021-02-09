@@ -23,7 +23,7 @@ namespace CFPSHOWER {
   private:
     Shower * p_shower;
     double   m_asfactor[2], m_muR2factor, m_muF2factor, m_pdfmin[2];
-    int      m_kinscheme, m_cplscheme, m_MEcorrs, m_SForder;
+    int      m_kinscheme, m_muRscheme, m_cplscheme, m_MEcorrs, m_SForder, m_logtype;
     int      m_kfactor, m_softcorr, m_endpoint;
     
     MODEL::Model_Base           * p_model;

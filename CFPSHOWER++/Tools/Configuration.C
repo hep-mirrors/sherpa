@@ -26,14 +26,22 @@ void Configuration::Fill(map<Cluster_Leg*,Parton*> & lmap) {
     Cluster_Leg * leg = p_ampl->Leg(i);
     Parton * parton   = new Parton(leg->Flav(),leg->Mom());
     parton->SetColor(Color(leg->Col().m_i,leg->Col().m_j));
-    push_back(parton);
     if (i<p_ampl->NIn()) {
       parton->SetBeam(leg->Mom()[3]>0.?2:1);
       parton->SetXB();
     }
+    push_back(parton);
     lmap[leg] = parton;
   }
   EstablishRelations();
+}
+
+size_t Configuration::NPartons() {
+  size_t npartons = 0;
+  for (Parton_List::const_iterator pit=begin();pit!=end();pit++) {
+    if ((*pit)->On() && (*pit)->Flav().Strong()) npartons++;
+  }
+  return npartons;
 }
 
 void Configuration::EstablishRelations() {

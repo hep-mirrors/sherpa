@@ -14,13 +14,15 @@ CFP_Parameters::CFP_Parameters() {}
 
 bool CFP_Parameters::Init(Default_Reader *const reader)
 {
+  m_switches["muR_scheme"]      = reader->Get<int>("CSS_MUR_SCHEME",1);
   m_switches["kinematics"]      = reader->Get<int>("CSS_KIN_SCHEME",1);
-  m_switches["kfactor"]         = reader->Get<int>("CSS_KFACTOR_SCHEME",1);
+  m_switches["kfactor"]         = reader->Get<int>("CSS_KFACTOR_SCHEME",0);
   m_switches["endpoint"]        = reader->Get<int>("CSS_ENDPOINT_SCHEME",0);
-  m_switches["softcorrections"] = reader->Get<int>("CSS_SODTCORRECTION_SCHEME",0);
+  m_switches["softcorrections"] = reader->Get<int>("CSS_SOFTCORRECTION_SCHEME",0);
   m_switches["couplings"]       = reader->Get<int>("CSS_COUPLING_SCHEME",1);
   m_switches["ME_corrections"]  = reader->Get<int>("CSS_ME_CORRECTION",0);
-  m_switches["SF_order"]        = reader->Get<unsigned int>("CSS_SF_ORDER",2);
+  m_switches["SF_order"]        = reader->Get<unsigned int>("CSS_SF_ORDER",1);
+  m_switches["Log_Type"]        = reader->Get<unsigned int>("CSS_LOG_TYPE",2);
   m_switches["max_emissions"]   = reader->Get<unsigned int>
     ("CSS_MAXEM",100000); //std::numeric_limits<unsigned int>::max());
   m_switches["max_particles"]   = reader->Get<unsigned int>

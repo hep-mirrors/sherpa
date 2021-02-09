@@ -203,8 +203,11 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   CFPDIR="\${top_srcdir}/CFPSHOWER++"
   CFPBUILDDIR="\${top_builddir}/CFPSHOWER++"
   CFPLIBS="\${CFPBUILDDIR}/Main/libCFPMain.la \
-	\${CFPBUILDDIR}/Calculators/libCFPCalculators.la \
-	\${CFPBUILDDIR}/Calculators/FF/libCFPCalculatorsFF.la \
+	\${CFPBUILDDIR}/SplittingFunctions/libCFPSplittingFunctions.la \
+	\${CFPBUILDDIR}/SplittingFunctions/FF/libCFPSplittingFunctionsFF.la \
+	\${CFPBUILDDIR}/SplittingFunctions/Colours/libCFPSplittingFunctionsColours.la \
+	\${CFPBUILDDIR}/Kinematics/libCFPKinematics.la \
+	\${CFPBUILDDIR}/Kinematics/FF/libCFPKinematicsFF.la \
 	\${CFPBUILDDIR}/Shower/libCFPShower.la \
 	\${CFPBUILDDIR}/Tools/libCFPTools.la"
   AC_SUBST(CFPDIR)

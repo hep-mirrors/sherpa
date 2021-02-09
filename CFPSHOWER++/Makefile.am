@@ -1,1 +1,1 @@
-SUBDIRS = Tools Calculators Shower Main
+SUBDIRS = Tools Kinematics SplittingFunctions Shower Main

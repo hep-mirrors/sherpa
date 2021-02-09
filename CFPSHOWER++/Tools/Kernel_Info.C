@@ -28,6 +28,25 @@ ostream & CFPSHOWER::operator<<(ostream &s,const log_type::code & type) {
   return s;
 }
 
+ostream & CFPSHOWER::operator<<(ostream &s,const kin_type::code & type) {
+  switch (int(type)) {
+  case 1: s<<"PanGlobal";break;
+  case 2: s<<"Catani-Seymour";break;
+  default: s<<"unknown";break;
+  }
+  return s;
+}
+
+ostream & CFPSHOWER::operator<<(ostream &s,const muR_scheme::code & scheme) {
+  switch (int(scheme)) {
+  case 1: s<<"muR^2 = KT^2";break;
+  case 0: s<<"muR^2 = t";break;
+  default: s<<"unknown";break;
+  }
+  return s;
+}
+
+
 ostream & CFPSHOWER::operator<<(ostream &s,const Kernel_Info & info) {
   if (info.m_flavs.size()==0) s<<"  Kernel for undefined flavours\n";
   else {
@@ -42,11 +61,19 @@ ostream & CFPSHOWER::operator<<(ostream &s,const Kernel_Info & info) {
   return s;
 }
 
+Kernel_Info::Kernel_Info(log_type::code logtype,
+			 kin_type::code kintype,
+			 kernel_type::code type) :
+  m_logtype(logtype), m_kintype(kintype), m_type(type) {}
+
 Kernel_Info::Kernel_Info(ATOOLS::Flavour & split,ATOOLS::Flavour_Vector & flavs,
 			 const vector<size_t> & tagsequence,
-			 log_type::code logtype, kernel_type::code type) :
+			 log_type::code logtype,
+			 kin_type::code kintype,
+			 muR_scheme::code muRscheme,
+			 kernel_type::code type) :
   m_split(split), m_flavs(flavs), m_tagsequence(tagsequence),
-  m_logtype(logtype), m_type(type),
+  m_kintype(kintype), m_logtype(logtype), m_muRscheme(muRscheme), m_type(type),
   p_alphaS(NULL), p_alpha(NULL),
   m_kfactor(0), m_softcorr(0), m_endpoint(0),
   m_asfactor(1.), m_muR2factor(1.)
@@ -110,14 +137,34 @@ const string Kernel_Info::KinName() const {
   default:
     break;
   }
-  name += to_string(m_flavs.size());
-  switch (m_logtype) {
-  case log_type::coll: name += "_Coll"; break;
-  case log_type::soft: name += "_Soft"; break;
+  name += "_";
+  switch (m_kintype) {
+  case kin_type::CS:
+    name += "Catani-Seymour"; break;
+  case kin_type::PanGlobal:
+    if (m_logtype==log_type::coll) name += "Catani-Seymour";
+    if (m_logtype==log_type::soft) name += "PanGlobal";
+    break;
+  case kernel_type::none:
+    name += "None"; break;
+  default:
+    break;
+  }
+  return name;
+}
+
+const string Kernel_Info::Name() const {
+  string name = "Splitting_";
+  switch (m_type) {
+  case kernel_type::FF: name += "FF"; break;
+  case kernel_type::FI: name += "FI"; break;
+  case kernel_type::IF: name += "IF"; break;
+  case kernel_type::II: name += "II"; break;
   case kernel_type::none: 
   default:
     break;
   }
+  name += to_string(m_flavs.size());
   return name;
 }
   
@@ -144,10 +191,11 @@ const string Kernel_Info::SFName() const {
     case 0: name += "S"; break;
     }
   }
+  name += "_";
   switch (m_logtype) {
-  case log_type::coll: name += "_Coll"; break;
-  case log_type::soft: name += "_Soft"; break;
-  case kernel_type::none: 
+  case log_type::soft: name += "Soft"; break;
+  case log_type::coll: name += "Coll"; break;
+  case log_type::none: 
   default:
     break;
   }

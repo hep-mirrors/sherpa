@@ -212,6 +212,7 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
   // Extracting a particle from a remnant only works for positive energies.
   if (part->Momentum()[0]<0.) {
     msg_Error()<<METHOD<<" yields shower with negative incoming energies.\n"
+	       <<(*part)<<"\n"
 	       <<(*part->DecayBlob())<<"\n";
     return false;
   }

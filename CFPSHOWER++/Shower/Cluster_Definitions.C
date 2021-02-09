@@ -30,12 +30,14 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config & ca)
   Splitting split(KT2(*ca.p_ampl,i,j,ca.m_k,ca.m_mo,
 		      ca.m_kin,int(type),(swap?2:0)|(ca.m_mode<<2),ws,mu2));
   bool iss = (i<ca.p_ampl->NIn() || j<ca.p_ampl->NIn());
+  /*
   if (split.T()>0.0)
-    return Cluster_Param(this,ws,split.T(),mu2,0,split.KinScheme(),0,
+    return Cluster_Param(this,ws,split.T(),mu2,0,split.GetKernel()->KinScheme(),0,
 			 (iss?-1.:1.)*split.GetKinArguments()->m_pi,
 			 (ca.m_k<ca.p_ampl->NIn()?-1.:1.)*split.GetKinArguments()->m_pk,
 			 split.GetKinArguments()->m_lam);
   if (ca.PureQCD()) return Cluster_Param(this,0.0,0.0,0.0,0);
+  */
   return Cluster_Param(this,0.0);
 }
 

@@ -40,7 +40,7 @@ namespace CFPSHOWER {
     std::vector<Kernels *>                 m_splitkernels;
     
     double m_weight, m_weightover;
-        
+
     bool        Evolve(Parton * splitter);
     double      InitialiseIntegrals(Parton * splitter);
     Splitting * GenerateTestSplitting(Parton * splitter,const double & sum);

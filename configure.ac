@@ -172,11 +172,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  CSSHOWER++/Main/Makefile \
 	  CSSHOWER++/Makefile \
 	  CFPSHOWER++/Tools/Makefile \
-	  CFPSHOWER++/Calculators/Makefile \
-	  CFPSHOWER++/Calculators/FF/Makefile \
-	  CFPSHOWER++/Calculators/FI/Makefile \
-	  CFPSHOWER++/Calculators/IF/Makefile \
-	  CFPSHOWER++/Calculators/II/Makefile \
+	  CFPSHOWER++/SplittingFunctions/Makefile \
+	  CFPSHOWER++/SplittingFunctions/Colours/Makefile \
+	  CFPSHOWER++/SplittingFunctions/FF/Makefile \
+	  CFPSHOWER++/Kinematics/Makefile \
+	  CFPSHOWER++/Kinematics/FF/Makefile \
 	  CFPSHOWER++/Shower/Makefile \
 	  CFPSHOWER++/Main/Makefile \
 	  CFPSHOWER++/Makefile \

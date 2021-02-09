@@ -22,6 +22,8 @@ namespace CFPSHOWER {
     void ExtractParton(ATOOLS::Blob *const bl,Parton *const p);
     void TestShower(const double & E=45.6,
 		    const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_u));
+    Configuration * MakeSimpleFFConfiguration(const double & E=45.6,
+					      const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_u));
   public:
     CFP_Shower(const PDF::Shower_Key &key);
     ~CFP_Shower();

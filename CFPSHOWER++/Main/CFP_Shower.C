@@ -26,6 +26,11 @@ CFP_Shower::~CFP_Shower() {}
 
 bool CFP_Shower::
 PrepareShower(Cluster_Amplitude * const ampl,const bool & soft) {
+  p_massselector = ampl->MS();
+  m_shower.SetMassSelector(p_massselector);
+  Configuration * config = MakeSimpleFFConfiguration();
+  m_configs.push_back(config);
+  return true;
   std::map<Cluster_Leg *,Parton *> lmap;
   Cluster_Amplitude * current = InitConfigs(ampl);
   // Starting from the hardest part of the history, work backwards to the full
@@ -65,12 +70,11 @@ Configuration * CFP_Shower::Convert(Cluster_Amplitude * const ampl,
 int CFP_Shower::PerformShowers() {
   m_weight = 1.;
   for (size_t i=0;i<m_configs.size();i++) {
+    //msg_Out()<<"############################################################\n"
+    //	     <<"############################################################\n"
+    //	     <<"############################################################\n"
+    //	     <<METHOD<<" for \n"<<(*m_configs[i]);
     if (m_shower.Evolve(m_configs[i])) m_weight *= m_shower.Weight();
-    // msg_Out()<<"############################################################\n"
-    // 	     <<"############################################################\n"
-    // 	     <<"############################################################\n"
-    // //	     <<METHOD<<" for \n"<<(*m_configs[i]);
-    // 	     <<METHOD<<" yields weight = "<<m_weight<<".\n";
   }
   m_shower.Reset();
   return 1;
@@ -111,12 +115,12 @@ bool CFP_Shower::ExtractPartons(Blob_List *const bl) {
     delete config;
     m_configs.pop_back();
   }
-  // msg_Out()<<"############################################################\n"
-  // 	   <<(*blob)<<"\n"
-  // 	   <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
-  // 	   <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
-  // 	   <<"############################################################\n"
-  // 	   <<"############################################################\n";
+  //msg_Out()<<"############################################################\n"
+  //	   <<(*blob)<<"\n"
+  //	   <<"finished "<<METHOD<<" with "<<Parton::Count()<<" partons "
+  //	   <<"and "<<Splitting::Count()<<" splittings undeleted.\n"
+  //	   <<"############################################################\n"
+  //	   <<"############################################################\n";
   return true;
 }
 
@@ -146,26 +150,10 @@ void CFP_Shower::CleanUp() {
 
 PDF::Cluster_Definitions_Base * CFP_Shower::GetClusterDefinitions() {}
 
-
-
-
 void CFP_Shower::TestShower(const double & E,const Flavour & flav) {
   msg_Info()<<"In "<<METHOD<<" will start trivial testing for FF configuration:\n";
   for (size_t i=0;i<1000;i++) {
-    double costheta  = 1.-2.*ran->Get(), sintheta = sqrt(1.-sqr(costheta));
-    double phi       = 2.*M_PI*ran->Get();
-    Vec3D  mom       = Vec3D(sintheta*cos(phi), sintheta*sin(phi), costheta);
-    Configuration * config = new Configuration(E*E,1.);
-    unsigned int color     = Flow::Counter();
-    Parton * parton1       = new Parton(flav,E*Vec4D(1,mom));
-    Parton * parton2       = new Parton(flav.Bar(),E*Vec4D(1,-mom));
-    parton1->SetColor(Color(color,0));
-    parton1->AddSpectator(parton2);
-    parton2->SetColor(Color(0,color));
-    parton2->AddSpectator(parton1);
-    config->AddParton(parton1);
-    config->AddParton(parton2);
-    config->SetT(sqr(E));
+    Configuration * config = MakeSimpleFFConfiguration(E,flav);
     m_shower.Evolve(config);
     m_shower.Reset();
     delete config;
@@ -179,6 +167,34 @@ void CFP_Shower::TestShower(const double & E,const Flavour & flav) {
 	    <<"############################################################\n"
 	    <<"############################################################\n";
   exit(1);
+}
+
+Configuration * CFP_Shower::MakeSimpleFFConfiguration(const double & E,
+						      const Flavour & flav) {
+  double costheta  = 1.-2.*ran->Get(), sintheta = sqrt(1.-sqr(costheta));
+  double phi       = 2.*M_PI*ran->Get();
+  Vec3D  mom       = Vec3D(sintheta*cos(phi), sintheta*sin(phi), costheta);
+  Configuration * config = new Configuration(E*E,1.);
+  Flavour electron       = Flavour(kf_e);
+  Parton * partonep      = new Parton(electron.Bar(),-E*Vec4D(1.,0.,0.,1.));
+  partonep->SetBeam(1);
+  Parton * partonem      = new Parton(electron,-E*Vec4D(1.,0.,0.,-1.));
+  partonem->SetBeam(2);
+  config->AddParton(partonem);
+  config->AddParton(partonep);
+  unsigned int color     = Flow::Counter();
+  //ATOOLS::Vec4D mom1 = Vec4D(45.6,-9.86354, 34.7153,-27.8732);
+  //ATOOLS::Vec4D mom2 = Vec4D(45.6, 9.86354,-34.7153, 27.8732);
+  Parton * parton1       = new Parton(flav,      E*Vec4D(1,mom));
+  Parton * parton2       = new Parton(flav.Bar(),E*Vec4D(1,-mom));
+  parton1->SetColor(Color(color,0));
+  parton1->AddSpectator(parton2);
+  parton2->SetColor(Color(0,color));
+  parton2->AddSpectator(parton1);
+  config->AddParton(parton1);
+  config->AddParton(parton2);
+  config->SetT(sqr(2.*E));
+  return config;
 }
 
 

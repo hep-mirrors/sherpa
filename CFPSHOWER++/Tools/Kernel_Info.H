@@ -31,11 +31,30 @@ namespace CFPSHOWER {
     return (beam2>0)?kernel_type::FI:kernel_type::FF;
   };
   
+  struct kin_type {
+    enum code {
+      CS        = 2, // not debugged yet
+      PanGlobal = 1,
+      none      = 0
+    };
+  };
+  std::ostream &operator<<(std::ostream &s,const kin_type::code & type);
+
+  struct muR_scheme {
+    enum code {
+      KT2 = 1,
+      T   = 0
+    };
+  };
+  std::ostream &operator<<(std::ostream &s,const muR_scheme::code & type);
+
   class Kernel_Info {
     ATOOLS::Flavour           m_split;
     ATOOLS::Flavour_Vector    m_flavs;
     std::vector<size_t>       m_tagsequence;
     log_type::code            m_logtype;
+    kin_type::code            m_kintype;
+    muR_scheme::code          m_muRscheme;
     kernel_type::code         m_type;
     MODEL::Running_AlphaS   * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
@@ -50,6 +69,11 @@ namespace CFPSHOWER {
 		ATOOLS::Flavour_Vector & flavs,
 		const std::vector<size_t> & tagsequence,
 		log_type::code logtype,
+		kin_type::code kintype,
+		muR_scheme::code muRscheme,
+		kernel_type::code type);
+    Kernel_Info(log_type::code logtype,
+		kin_type::code kintype,
 		kernel_type::code type);
 
     
@@ -65,6 +89,8 @@ namespace CFPSHOWER {
     inline const ATOOLS::Flavour          GetSplit()       const { return m_split; }
     inline const ATOOLS::Flavour_Vector & GetFlavs()       const { return m_flavs; }
     inline const log_type::code           LogType()        const { return m_logtype; } 
+    inline const kin_type::code           KinType()        const { return m_kintype; } 
+    inline const muR_scheme::code         MuRScheme()      const { return m_muRscheme; } 
     inline const kernel_type::code        Type()           const { return m_type; } 
     inline const std::vector<size_t>    & TagSequence()    const { return m_tagsequence; }
     inline MODEL::Running_AlphaS        * GetAlphaS()      const { return p_alphaS; }
@@ -76,9 +102,10 @@ namespace CFPSHOWER {
     inline const double                 & AsFactor()       const { return m_asfactor; }
     inline const double                 & MuR2Factor()     const { return m_muR2factor; }
 
-    const std::string SFName() const;
-    const std::string GPName() const;
+    const std::string SFName()  const;
+    const std::string GPName()  const;
     const std::string KinName() const;
+    const std::string Name()    const;
 
     friend std::ostream &operator<<(std::ostream &s,const Kernel_Info & info);
   };// end of struct Splitting

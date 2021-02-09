@@ -34,6 +34,7 @@ namespace CFPSHOWER {
     inline const double & T_veto() const         { return m_tveto; }
     inline void SetPosition(const ATOOLS::Vec4D & pos=
 			    ATOOLS::Vec4D(0.,0.,0.,0.)) { m_pos = pos; }
+    size_t NPartons();
   };
 
   std::ostream &operator<<(std::ostream & s,const Configuration & configuration);
