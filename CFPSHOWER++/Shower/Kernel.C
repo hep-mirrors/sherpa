@@ -71,7 +71,6 @@ bool Kernel::Generate(Splitting & split,Configuration & config,
 }
 
 bool Kernel::UpdateSystem(Splitting & split,Configuration & config) {
-  msg_Out()<<"\n"<<METHOD<<" for "<<p_sf->Name()<<", "<<p_kin->Name()<<"\n";
   return p_kin->UpdateSystem(split,config);
 }
 
@@ -115,11 +114,13 @@ Weight * Kernel::MakeWeight(const Splitting & split,const double & overfac) {
 bool Kernel::FillOffsprings(Splitting & split) {
   int beam = split.GetSplitter()->Beam();
   split.Clear();
+  //msg_Out()<<METHOD<<" for "<<GetFlavs().size()<<" outgoing partons.\n";
   for (size_t i=0;i<GetFlavs().size();i++) {
     Parton * parton = new Parton(GetFlavs()[i],split.Mom(i));
     if (i==0) parton->SetBeam(beam);
     parton->SetColor(p_gauge->GetColor(i));
     split.AddParton(parton);
+    //msg_Out()<<" * "<<(*parton)<<"\n";
   }
   return true;
 }
