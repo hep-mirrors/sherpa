@@ -10,23 +10,27 @@
   # collider setup
   BEAM_1 11 45.6; BEAM_2 -11 45.6;
   PDF_SET None;
+  PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
   #
   # shower setup
   #
+  SCALES VAR{Abs2(p[2]+p[3])};
+  RESPECT_MASSIVE_FLAG 1;
+  CSS_FS_AS_FAC 1; CSS_FS_PT2MIN 1;
+  CSS_TC_ENHANCE 5;           # this is for the 1->3 splittings
+  #
   #
   SHOWER_GENERATOR CFP
-  #
   CSS_MAXEM = 2
   #
-  SCALES VAR{Abs2(p[2]+p[3])};
-  CSS_FS_AS_FAC 1; CSS_FS_PT2MIN 1;
-  RESPECT_MASSIVE_FLAG 1;
-  CSS_TC_ENHANCE 5;           # this is for the 1->3 splittings
-  PDF_LIBRARY LHAPDFSherpa; USE_PDF_ALPHAS 7;
+  CSS_KFACTOR_SCHEME 0;       # 0 = off,  1 = on
+  CSS_LOG_TYPE   2;           # 1 = soft, 2 = soft+coll
+  CSS_MUR_SCHEME 1;           # 0 = t,    1 = kt2 
+  CSS_KIN_SCHEME 1;           # 1 = PG,   2 = CS 
   #
   # analysis
   ANALYSIS Rivet
-  ANALYSIS_OUTPUT CFPQ2_nogqq
+  ANALYSIS_OUTPUT CFP_PG2all_MUR0_K0
 }(run)
 
 (processes){
