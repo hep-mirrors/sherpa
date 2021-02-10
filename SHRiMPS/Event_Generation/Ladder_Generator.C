@@ -157,7 +157,7 @@ void Ladder_Generator::FillBlob(Blob * blob) {
 
 
 void Ladder_Generator::Test(const std::string & dirname) {
-  InitCollision((*MBpars.GetEikonals()->begin()),0.,0);
+  InitCollision((*MBpars.GetEikonals())[0][0],0.,0);
   TestPositioning(dirname);
   m_FS.SetImpactParameters(0.,0.);
   m_FS.Test(dirname);

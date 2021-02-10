@@ -8,11 +8,12 @@ namespace SHRIMPS {
     enum code {
       test                      = 0,
       xsecs_only                = 1,
+      inelastic_events          = 10,
       elastic_events            = 11,
-      single_diffractive_events = 12,
-      double_diffractive_events = 13,
-      quasi_elastic_events      = 14,
-      inelastic_events          = 15,
+      soft_diffractive_events   = 12,
+      single_diffractive_events = 13,
+      double_diffractive_events = 14,
+      quasi_elastic_events      = 15,
       all_min_bias              = 20,
       underlying_event          = 100,
       unknown                   = -1

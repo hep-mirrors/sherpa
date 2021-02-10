@@ -2,8 +2,9 @@
 #define SHRIMPS_Main_Event_Generator_H
 
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
-//#include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
-//#include "SHRiMPS/Event_Generation/Single_Diffractive_Event_Generator.H"
+#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
+#include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
+#include "SHRiMPS/Event_Generation/Soft_Diffractive_Event_Generator.H"
 //#include "SHRiMPS/Event_Generation/Double_Diffractive_Event_Generator.H"
 //#include "SHRiMPS/Event_Generation/Quasi_Elastic_Event_Generator.H"
 #include "SHRiMPS/Event_Generation/Inelastic_Event_Generator.H"
@@ -21,8 +22,10 @@ namespace SHRIMPS {
     run_mode::code    m_runmode, m_thisevent;
     weight_mode::code m_weightmode;
 
-    Inelastic_Event_Generator * p_inelastic;
-    Event_Generator_Base      * p_active;
+    Inelastic_Event_Generator        * p_inelastic;
+    Elastic_Event_Generator          * p_elastic;
+    Soft_Diffractive_Event_Generator * p_soft_diffractive;
+    Event_Generator_Base             * p_active;
 
     double m_xsec, m_minkt2;
   public:
@@ -30,7 +33,7 @@ namespace SHRIMPS {
     ~Event_Generator();
 
     void Reset();
-    void Initialise();
+    void Initialise(Cross_Sections * xsecs,Beam_Remnant_Handler * beams,const bool & test);
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 

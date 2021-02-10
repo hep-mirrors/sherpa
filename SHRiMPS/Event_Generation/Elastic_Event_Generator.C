@@ -7,30 +7,19 @@
 
 using namespace SHRIMPS;
 
-Elastic_Event_Generator::Elastic_Event_Generator(){
-  m_histomap[std::string("Q_elastic")] = new Histogram(0,0.0,10.0,1000);
-}
-
 Elastic_Event_Generator::
 Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
 			const int & test) :
+  Event_Generator_Base(sigma),
   p_sigma(sigma), p_beams(beams),
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
-  m_p1(ATOOLS::rpa->gen.PBeam(0)), m_p2(ATOOLS::rpa->gen.PBeam(1)),
-  m_pl12(Vec3D(m_p1).Sqr()), m_pl22(Vec3D(m_p2).Sqr()),
-  m_sign1(double(-1+2*int(m_p1[3]>0))), m_needsboost(false),
-  m_accu(1.e-2), m_test(test)
+  m_p1(ATOOLS::rpa->gen.PBeam(0)),   m_p2(ATOOLS::rpa->gen.PBeam(1)),
+  m_E12(ATOOLS::sqr(m_p1[0])), m_pl12(Vec3D(m_p1).Sqr()), m_pl1(sqrt(m_pl12)),
+  m_E22(ATOOLS::sqr(m_p2[0])), m_pl22(Vec3D(m_p2).Sqr()), m_pl2(sqrt(m_pl22)),         
+  m_sign1(-1+2*int(m_p1[3]>0))
 {
-  if (test==-1) return;
-  if ((Vec3D(m_p1)+Vec3D(m_p2)).Sqr()>1.e-4) {
-    m_needsboost = true;
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   Beamvectors "<<m_p1<<" and "<<m_p2
-	       <<" not in c.m. System."<<std::endl
-	       <<"   Will terminate the run."<<std::endl;
-    exit(1);
-  }
-  m_histomap[std::string("Q_elastic")] = new Histogram(0,0.0,10.0,1000);
+  m_histomap[std::string("Q_elastic")] = new Histogram(0,0.0,1.0,1000);
+  m_xsec = p_sigma->XSec();
 }
 
 Elastic_Event_Generator::~Elastic_Event_Generator() {
@@ -49,52 +38,54 @@ Elastic_Event_Generator::~Elastic_Event_Generator() {
   }
 }
 
-bool Elastic_Event_Generator::
-ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
+int Elastic_Event_Generator::GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag) {
   p_beams->InitialiseCollision();
   ATOOLS::Blob * blob(blobs->FindFirst(ATOOLS::btp::Soft_Collision));
-  if (blob && blob->Status()==ATOOLS::blob_status::needs_minBias) {
-    if (blob->NInP()>0)  {
-      msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
-		 <<(*blob)<<std::endl;
-      blob->DeleteInParticles();
-    }
-    if (blob->NOutP()>0) {
-      msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
-		 <<(*blob)<<std::endl;
-      blob->DeleteOutParticles();
-    }
-
-    FixKinematics();
-    Particle * part1in(new Particle(-1,m_beam1,m_p1));
-    part1in->SetNumber();
-    Particle * part2in(new Particle(-1,m_beam2,m_p2));
-    part2in->SetNumber();
-    Particle * part1out(new Particle(-1,m_beam1,m_p1out));
-    part1out->SetNumber();
-    Particle * part2out(new Particle(-1,m_beam2,m_p2out));
-    part2out->SetNumber();
-
-    blob->AddToInParticles(part1in);
-    blob->AddToInParticles(part2in);
-    blob->AddToOutParticles(part1out);
-    blob->AddToOutParticles(part2out);
-    blob->UnsetStatus(ATOOLS::blob_status::needs_minBias);
-    blob->SetStatus(ATOOLS::blob_status::needs_beams);
-    blob->SetType(ATOOLS::btp::QElastic_Collision);
-
-    return true;
+  if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return 0;
+  if (blob->NInP()>0)  {
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
+	       <<(*blob)<<std::endl;
+    blob->DeleteInParticles();
   }
-  return false;
+  if (blob->NOutP()>0) {
+    msg_Error()<<"Error in "<<METHOD<<": blob has particles."<<std::endl
+	       <<(*blob)<<std::endl;
+    blob->DeleteOutParticles();
+  }
+  
+  FixKinematics();
+  FillBlob(blob);    
+  m_histomap[std::string("Q_elastic")]->Insert(m_abs_t);
+  return 1;
 }
 
-
 void Elastic_Event_Generator::FixKinematics() {
-  double pt2(p_sigma->PT2()), pt(sqrt(pt2));
-  m_histomap[std::string("Q_elastic")]->Insert(pt2);  
+  m_abs_t = p_sigma->SelectT();
+  double costheta = 1.-m_abs_t/(2.*m_pl12), sintheta = sqrt(1.-sqr(costheta));
+  double pt = m_pl1*sintheta, pt2 = sqr(pt);
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double pl1(m_sign1*sqrt(m_pl12-pt2)), pl2(-m_sign1*sqrt(m_pl22-pt2));
-
   m_p1out = Vec4D(m_p1[0],ptx,pty,pl1);
   m_p2out = Vec4D(m_p2[0],-ptx,-pty,pl2);
+}
+
+void Elastic_Event_Generator::FillBlob(ATOOLS::Blob * blob) {
+  Particle * part1in(new Particle(-1,m_beam1,m_p1));
+  part1in->SetNumber();
+  part1in->SetBeam(0);
+  Particle * part2in(new Particle(-1,m_beam2,m_p2));
+  part2in->SetNumber();
+  part2in->SetBeam(1);
+  Particle * part1out(new Particle(-1,m_beam1,m_p1out));
+  part1out->SetNumber();
+  Particle * part2out(new Particle(-1,m_beam2,m_p2out));
+  part2out->SetNumber();
+  
+  blob->AddToInParticles(part1in);
+  blob->AddToInParticles(part2in);
+  blob->AddToOutParticles(part1out);
+  blob->AddToOutParticles(part2out);
+  blob->UnsetStatus(ATOOLS::blob_status::needs_minBias);
+  blob->SetStatus(ATOOLS::blob_status::needs_beams);
+  blob->SetType(ATOOLS::btp::Elastic_Collision);
 }

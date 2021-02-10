@@ -2,8 +2,8 @@
 #define SHRIMPS_Main_Elastic_Event_Generator_H
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
+#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -16,25 +16,21 @@ namespace SHRIMPS {
   private:
     Sigma_Elastic        * p_sigma;
     Beam_Remnant_Handler * p_beams;
-    ATOOLS::Flavour        m_beam1, m_beam2;                 
-    ATOOLS::Vec4D          m_p1, m_p2, m_p1out, m_p2out;
-    double                 m_pl12, m_pl22, m_sign1;
-    bool                   m_needsboost;
-    double                 m_accu;
-    int                    m_test;
+    ATOOLS::Flavour m_beam1, m_beam2;                 
+    ATOOLS::Vec4D   m_p1, m_p2, m_p1out, m_p2out;
+    double          m_E12, m_pl12, m_pl1, m_E22, m_pl22, m_pl2, m_abs_t;
+    int             m_sign1;
 
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
-    void   FixKinematics();
+    void FixKinematics();
+    void FillBlob(ATOOLS::Blob * blob);
   public:
-    Elastic_Event_Generator();
     Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
 			    const int & test=0);
     ~Elastic_Event_Generator();
 
-    bool ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec=0.);
-    Omega_ik * GetEikonal() const { return NULL; }
-    double Smin()   const { return 0.; }
+    int GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);
   };
 }
 #endif

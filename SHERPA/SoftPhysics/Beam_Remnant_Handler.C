@@ -28,19 +28,21 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
 
 
-Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
+Return_Value::code Beam_Remnant_Handler::
+FillBeamAndBunchBlobs(Blob_List *const bloblist,const bool & onlyBunch)
 {
   if (!m_fill) return TreatNoFill(bloblist);
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) return Return_Value::Nothing;
   }
-  Return_Value::code fbc = p_remnants->MakeBeamBlobs(bloblist);
-  if (fbc==Return_Value::New_Event && m_vmode)
-    THROW(fatal_error,"Four Momentum not conserved.");
-  if (fbc!=Return_Value::Success) return fbc;
-  fbc = FillBunchBlobs(bloblist);
-  return fbc;
+  if (!onlyBunch) {
+    Return_Value::code fbc = p_remnants->MakeBeamBlobs(bloblist);
+    if (fbc==Return_Value::New_Event && m_vmode)
+      THROW(fatal_error,"Four Momentum not conserved.");
+    if (fbc!=Return_Value::Success) return fbc;
+  }
+  return FillBunchBlobs(bloblist);
 }
 
 
@@ -88,11 +90,21 @@ FillBunchBlobs(Blob_List *const  bloblist,
       }
       flag=true;
     }
+    else if ((*bit)->Has(blob_status::needs_beams) ||
+	     (*bit)->Type()==btp::Elastic_Collision ||
+	     (*bit)->Type()==btp::Soft_Diffractive_Collision ||
+	     (*bit)->Type()==btp::Quasi_Elastic_Collision) {
+      (*bit)->UnsetStatus(blob_status::needs_beams);
+      for (size_t i=0;i<(*bit)->NInP();i++) {
+	bunch = FillBunchBlob((*bit)->InParticle(i)->Beam(),(*bit)->InParticle(i));
+	bloblist->push_front(bunch);
+      }
+    }
   }
   return (flag?Return_Value::Success:Return_Value::Nothing);
 }
 
-Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle) 
+Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle) 
 {
   Blob *blob = new Blob();
   blob->SetType(btp::Bunch);

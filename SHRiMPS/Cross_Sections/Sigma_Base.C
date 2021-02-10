@@ -1,5 +1,6 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 
 using namespace SHRIMPS;

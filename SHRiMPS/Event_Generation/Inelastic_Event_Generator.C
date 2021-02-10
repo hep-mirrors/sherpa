@@ -11,7 +11,9 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Inelastic_Event_Generator::Inelastic_Event_Generator()
+Inelastic_Event_Generator::Inelastic_Event_Generator(Sigma_Inelastic * sigma,Beam_Remnant_Handler * beams,
+						     const int & test) :
+  Event_Generator_Base(sigma), p_sigma(sigma), p_beams(beams)
 {
   Initialise();
 }
@@ -28,12 +30,14 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator() {
 void Inelastic_Event_Generator::Initialise() {
   m_sigma = 0.;
   Sigma_Inelastic sigma;
-  list<Omega_ik *> * eikonals(MBpars.GetEikonals());
-  for (list<Omega_ik *>::iterator eikonal=eikonals->begin();
-       eikonal!=eikonals->end(); eikonal++) {
-    m_Bgrids[(*eikonal)] = sigma.FillBGrid((*eikonal));
-    m_sigma += m_xsecs[(*eikonal)] =
-      m_Bgrids[(*eikonal)]->back()*rpa->Picobarn();
+  vector<vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
+  for (size_t i=0;i<eikonals->size();i++) {
+    for (size_t j=0;j<(*eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*eikonals)[i][j];
+      m_Bgrids[eikonal] = sigma.FillBGrid(eikonal);
+      m_sigma += m_xsecs[eikonal] =
+	m_Bgrids[eikonal]->back()*rpa->Picobarn();
+    }
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
@@ -46,7 +50,7 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::
-GenerateEvent(Blob_List * blobs,const bool & isUE) {
+GenerateEvent(Blob_List * blobs,const bool & flag) {
   if (m_done || !InitInelasticEvent(blobs)) return 0;
   if (!AddScatter(blobs)) {
     m_done = true;

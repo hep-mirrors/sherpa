@@ -30,7 +30,7 @@ Reconnection_Handler::~Reconnection_Handler() {
 void Reconnection_Handler::Initialize(Default_Reader *const reader) {
   string onoff = reader->GetStringNormalisingNoneLikeValues("COLOUR_RECONNECTIONS",
 							    string("Off"));
-  m_on = bool(onoff==string("On"));
+  m_on = true; //bool(onoff==string("On"));
   if (m_on) m_weights.Initialize(reader); 
   if (m_analysis) {
     m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,100.0,200);
@@ -202,7 +202,7 @@ bool Reconnection_Handler::ReshuffleSinglet(Part_List * singlet) {
       double dist04135 = (m_weights(*pit[0],*pit[4]) *
 			  m_weights(*pit[4],*pit[1]) *
 			  m_weights(*pit[3],*pit[5]));
-      if (dist04135!=0 && dist04135 < ran->Get()*dist01345) {
+      if (dist04135!=0 && dist04135 < ran->Get() * dist01345) {
 	m_weights.SetWeight(*pit[0],*pit[1],0.);
 	m_weights.SetWeight(*pit[3],*pit[4],0.);
 	m_weights.SetWeight(*pit[4],*pit[5],0.);
@@ -219,7 +219,7 @@ bool Reconnection_Handler::ReshuffleSinglet(Part_List * singlet) {
       double dist02415 = (m_weights(*pit[0],*pit[2]) *
 			  m_weights(*pit[4],*pit[1]) *
 			  m_weights(*pit[1],*pit[5]));
-      if (dist02415!=0 && dist02415 < ran->Get()*dist01245) {
+      if (dist02415!=0 && dist02415 < ran->Get() * dist01245) {
 	m_weights.SetWeight(*pit[0],*pit[1],0.);
 	m_weights.SetWeight(*pit[1],*pit[2],0.);
 	m_weights.SetWeight(*pit[4],*pit[5],0.);

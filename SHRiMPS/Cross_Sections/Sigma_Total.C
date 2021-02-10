@@ -11,9 +11,11 @@ double Sigma_Tot::GetValue(const double & B) {
 
 double Sigma_Tot::GetCombinedValue(const double & B) { 
   double value(0.); //, pref, eik;
-  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
-       eikonal!=p_eikonals->end(); eikonal++) {
-    value += 2.*(*eikonal)->Prefactor()*(1.-exp(-(**eikonal)(B)/2.)); 
+  for (size_t i=0;i<p_eikonals->size();i++) {
+    for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*p_eikonals)[i][j];
+      value += 2.*eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)/2.)); 
+    }
   }
   return value;
 }
@@ -40,9 +42,11 @@ double Elastic_Slope::GetValue(const double & B) {
 
 double Elastic_Slope::GetCombinedValue(const double & B) { 
   double value(0.); //, pref, eik;
-  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
-       eikonal!=p_eikonals->end(); eikonal++) {
-    value += (*eikonal)->Prefactor()*(1.-exp(-(**eikonal)(B)/2.)); 
+  for (size_t i=0;i<p_eikonals->size();i++) {
+    for (size_t j=0;j<(*p_eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*p_eikonals)[i][j];
+      value += eikonal->Prefactor()*(1.-exp(-(*eikonal)(B)/2.)); 
+    }
   }
   return B*B*value/m_stot;
 }

@@ -266,11 +266,7 @@ AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
 			    blob_status::needs_beams);
       if (blob->Type()!=btp::Hadron_Decay) {
 	showerblob->AddStatus(blob_status::needs_reconnections);
-	//msg_Out()<<"Regular blob: include reconnections!\n";
       }
-      //else {
-      //	msg_Out()<<"Hadron decay blob: no reconnections!\n";
-      //}
     }
     else return true;
   }

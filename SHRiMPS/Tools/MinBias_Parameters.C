@@ -10,39 +10,44 @@ using namespace SHRIMPS;
 
 MinBias_Parameters SHRIMPS::MBpars;
 
-MinBias_Parameters::MinBias_Parameters()
-{
-  p_ffs      = new std::list<Form_Factor *>;
-  p_eikonals = new std::list<Omega_ik *>;
-  p_xsecs    = new XSecs_Container();
-}
+MinBias_Parameters::MinBias_Parameters() { }
 
 MinBias_Parameters::~MinBias_Parameters() {
   Reset();
 }
 
 void MinBias_Parameters::Reset() {
-  while (!p_eikonals->empty()) {
-    delete p_eikonals->back();
-    p_eikonals->pop_back();
+  ResetEikonals(0);
+  while (!m_ffs.empty()) {
+    delete m_ffs.back();
+    m_ffs.pop_back();
   }
-  p_eikonals->clear();
-  delete p_eikonals;
-  while (!p_ffs->empty()) {
-    delete p_ffs->back();
-    p_ffs->pop_back();
-  }
-  p_ffs->clear();
-  delete p_ffs;
-  delete p_xsecs;
+  m_ffs.clear();
 }
 
+void MinBias_Parameters::ResetEikonals(const size_t size) {
+  if (!m_eikonals.empty()) {
+    while (!m_eikonals.empty()) {
+      while (!m_eikonals.back().empty()) {
+	delete m_eikonals.back().back();
+	m_eikonals.back().pop_back();
+      }
+      m_eikonals.pop_back();      
+    }
+    m_eikonals.clear();
+  }
+  m_eikonals.resize(size);
+  for (size_t i=0;i<size;i++) m_eikonals[i].resize(size);
+}
+
+
 void MinBias_Parameters::SetXSecs(Cross_Sections * xsecs) {
-  p_xsecs->xs_tot = xsecs->SigmaTot();
-  p_xsecs->xs_in  = xsecs->SigmaInel();
-  p_xsecs->xs_el  = xsecs->SigmaEl();
-  p_xsecs->xs_SD  = xsecs->SigmaSD();
-  p_xsecs->xs_DD  = xsecs->SigmaDD();
+  m_xsecs.xs_tot   = xsecs->SigmaTot();
+  m_xsecs.xs_in    = xsecs->SigmaInel();
+  m_xsecs.xs_el    = xsecs->SigmaEl();
+  m_xsecs.xs_SD[0] = xsecs->SigmaSD(0);
+  m_xsecs.xs_SD[1] = xsecs->SigmaSD(1);
+  m_xsecs.xs_DD    = xsecs->SigmaDD();
 }
 
 
@@ -63,10 +68,8 @@ void MinBias_Parameters::FillRunParameters(ATOOLS::Data_Reader * dr) {
     m_runmode = m_run_params.runmode = run_mode::xsecs_only;
   else if (runmode==std::string("Elastic")) 
     m_runmode = m_run_params.runmode = run_mode::elastic_events;
-  else if (runmode==std::string("Single-diffractive")) 
-    m_runmode = m_run_params.runmode = run_mode::single_diffractive_events;
-  else if (runmode==std::string("Double-diffractive")) 
-    m_runmode = m_run_params.runmode = run_mode::double_diffractive_events;
+  else if (runmode==std::string("Soft-Diffractive")) 
+    m_runmode = m_run_params.runmode = run_mode::soft_diffractive_events;
   else if (runmode==std::string("Quasi-elastic")) 
     m_runmode = m_run_params.runmode = run_mode::quasi_elastic_events;
   else if (runmode==std::string("Inelastic")) 

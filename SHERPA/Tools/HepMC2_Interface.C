@@ -63,10 +63,14 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       m_muf12=p_pdfinfo->m_muf12;
       m_muf22=p_pdfinfo->m_muf22;
     }
-    ReadIn(db,"Renormalization_Scale",false);
-    if (db) m_mur2=db->Get<double>();
-    SetAlphaS();
-    SetAlpha();
+    if (sp->Type()!=btp::Elastic_Collision &&
+	sp->Type()!=btp::Soft_Diffractive_Collision &&
+	sp->Type()!=btp::Quasi_Elastic_Collision) {
+      ReadIn(db,"Renormalization_Scale",false);
+      if (db) m_mur2=db->Get<double>();
+      SetAlphaS();
+      SetAlpha();
+    }
     if (m_extendedweights) {
       ReadIn(db,"Orders",true);
       m_orders=db->Get<std::vector<double> >();

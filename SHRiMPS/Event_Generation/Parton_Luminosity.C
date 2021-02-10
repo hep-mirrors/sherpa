@@ -22,24 +22,26 @@ Parton_Luminosity::Parton_Luminosity(Beam_Remnant_Handler * beams) :
 Parton_Luminosity::~Parton_Luminosity() {}
 
 void Parton_Luminosity::FillGrids(Inelastic_Event_Generator * generator) {
-  std::list<Omega_ik *> * eikonals(MBpars.GetEikonals());  
-  for (std::list<Omega_ik *>::iterator eikiter=eikonals->begin();
-       eikiter!=eikonals->end();eikiter++) {
-    m_kernel.SetExponent(1.+(*eikiter)->EffectiveIntercept());
-    m_smin    = m_smintest;
-    m_kernel.SetSmin(m_smin);
-    double maxdl, totallumi = CalculateTotalXSec(maxdl);
-    if (m_adjust) {
-      double s0ratio = pow(totallumi*rpa->Picobarn()/
-			   generator->XSec(*eikiter),
-			   1./(1.+(*eikiter)->EffectiveIntercept()));
-      m_smin *= s0ratio;
+  std::vector<std::vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
+  for (size_t i=0;i<eikonals->size();i++) {
+    for (size_t j=0;j<(*eikonals)[i].size();j++) {
+      Omega_ik * eikonal = (*eikonals)[i][j];
+      m_kernel.SetExponent(1.+eikonal->EffectiveIntercept());
+      m_smin    = m_smintest;
       m_kernel.SetSmin(m_smin);
-      CalculateTotalXSec(maxdl);
+      double maxdl, totallumi = CalculateTotalXSec(maxdl);
+      if (m_adjust) {
+	double s0ratio = pow(totallumi*rpa->Picobarn()/
+			     generator->XSec(eikonal),
+			     1./(1.+eikonal->EffectiveIntercept()));
+	m_smin *= s0ratio;
+	m_kernel.SetSmin(m_smin);
+	CalculateTotalXSec(maxdl);
+      }
+      m_maxdls[eikonal]    = maxdl;
+      m_deltalogs[eikonal] = m_deltalog;
+      m_smins[eikonal]     = m_smin;
     }
-    m_maxdls[(*eikiter)]    = maxdl;
-    m_deltalogs[(*eikiter)] = m_deltalog;
-    m_smins[(*eikiter)]     = m_smin;
   }
 }
 

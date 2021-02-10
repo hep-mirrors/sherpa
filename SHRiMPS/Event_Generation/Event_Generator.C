@@ -7,7 +7,7 @@ using namespace SHRIMPS;
 
 Event_Generator::Event_Generator() :
   m_runmode(MBpars.RunMode()),m_thisevent(m_runmode),
-  p_inelastic(NULL), p_active(NULL), m_xsec(0.)
+  p_inelastic(NULL), p_elastic(NULL), p_active(NULL), m_xsec(0.)
 { }
 
 Event_Generator::~Event_Generator() 
@@ -15,11 +15,24 @@ Event_Generator::~Event_Generator()
   if (p_inelastic) delete p_inelastic; p_inelastic=NULL;
 }
 
-void Event_Generator::Initialise() {
-  p_inelastic = new Inelastic_Event_Generator();
-  m_xsec += p_inelastic->XSec();
+void Event_Generator::Initialise(Cross_Sections * xsecs,Beam_Remnant_Handler * beams,const bool & test) {
+  switch (MBpars.RunMode()) {
+  case run_mode::inelastic_events:
+    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),beams,test);
+    m_xsec     += p_inelastic->XSec();
+    break; 
+  case run_mode::elastic_events:
+    p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),beams,test);
+    m_xsec   += p_elastic->XSec();
+    break;
+  case run_mode::soft_diffractive_events:
+    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),beams,test);
+    m_xsec            += p_soft_diffractive->XSec();
+    break;
+  } 
 } 
 
+  
 void Event_Generator::Reset() {
   if (p_active) p_active->Reset();
   m_thisevent = m_runmode;
@@ -41,8 +54,17 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
     (*blobs)[0]->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(1.));
     (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1));
   }
-  p_active = p_inelastic;
-  return p_inelastic->GenerateEvent(blobs,false);
+  switch (MBpars.RunMode()) {
+  case run_mode::inelastic_events:
+    p_active = p_inelastic;
+    break; 
+  case run_mode::elastic_events:
+    p_active = p_elastic;
+    break;
+  case run_mode::soft_diffractive_events:
+    p_active = p_soft_diffractive;
+  }
+  return p_active->GenerateEvent(blobs,false);
 }
 
 void Event_Generator::Test(const std::string & dirname) {

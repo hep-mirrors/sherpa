@@ -58,12 +58,13 @@ double Reconnection_Weights::MomDistance(Particle * part1,Particle * part2) {
   // Here we take a variant of the Lund lambda measure for the distance in momentum space
   double p1p2 = ((part1->Momentum()+part2->Momentum()).Abs2() -
 		 (part1->Momentum().Abs2()+part2->Momentum().Abs2()));
+  return pow(1.+p1p2/m_Q02,0.5);
   return exp(0.16*log(1.+p1p2/m_Q02));
 }
 
 double Reconnection_Weights::PosDistance(Particle * part1,Particle * part2) {
   double xdist2 = dabs((part1->XProd().Perp()-part2->XProd().Perp()).Abs2());
-  return exp(sqrt(xdist2/m_R02));
+  return xdist2<1.e-6? 1. : exp(sqrt(xdist2/m_R02));
 }
 
 double Reconnection_Weights::ColDistance(Particle * part1,Particle * part2) {

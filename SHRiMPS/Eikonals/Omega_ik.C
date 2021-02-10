@@ -16,8 +16,6 @@ Omega_ik::Omega_ik(const Eikonal_Parameters & params) :
   m_gridB.clear();
   m_gridBmax.clear();
   m_gridD.clear();
-
-  msg_Out()<<METHOD<<" : "<<m_bmax<<".\n";
 }
 
 Omega_ik::~Omega_ik() {

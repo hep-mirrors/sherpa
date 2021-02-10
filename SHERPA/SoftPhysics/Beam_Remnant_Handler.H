@@ -17,7 +17,7 @@ namespace SHERPA {
     std::string m_name;
 
     ATOOLS::Return_Value::code TreatNoFill(ATOOLS::Blob_List *const bloblist);
-    ATOOLS::Blob             * FillBunchBlob(const int,ATOOLS::Particle *);
+    ATOOLS::Blob             * FillBunchBlob(int,ATOOLS::Particle *);
     ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
 					      ATOOLS::Particle_List *const=NULL);
   public :
@@ -26,7 +26,8 @@ namespace SHERPA {
 			 REMNANTS::Remnant_Handler *const remnants,
 			 Soft_Collision_Handler *const softcollisions);
     ~Beam_Remnant_Handler();
-    ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const);
+    ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const,
+						     const bool & onlyBunch=false);
     void CleanUp(const size_t & mode=0);
 
     inline const int Fill() const { return m_fill; }

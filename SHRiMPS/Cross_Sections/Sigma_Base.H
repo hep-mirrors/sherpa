@@ -9,7 +9,7 @@
 namespace SHRIMPS {
   class Sigma_Base : public ATOOLS::Function_Base {
   protected:
-    std::list<Omega_ik *> * p_eikonals;
+    std::vector<std::vector<Omega_ik *> > * p_eikonals;
     Omega_ik              * p_eikonal;
     double                  m_originalY, m_cutoffY, m_Y, m_E;
     double                  m_accu;

@@ -42,6 +42,7 @@ namespace SHRIMPS {
     int               m_test;
     
     std::vector<Continued_PDF> m_pdfs;
+    Cross_Sections           * p_xsecs;
     Beam_Remnant_Handler     * p_beamremnants;
     Event_Generator          * p_generator;
     Cluster_Algorithm          m_cluster;
