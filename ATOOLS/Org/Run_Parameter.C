@@ -409,7 +409,7 @@ void Run_Parameter::Gen::AddCitation(const size_t &level,
 void Run_Parameter::Gen::WriteCitationInfo()
 {
   if (Citations().empty()) return;
-  Settings& s {Settings::GetMainSettings()};
+  Settings& s = Settings::GetMainSettings();
   if (!s["WRITE_REFERENCES_FILE"].Get<bool>())
     return;
   std::string refname("References.tex");
