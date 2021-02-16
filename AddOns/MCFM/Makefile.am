@@ -1,6 +1,6 @@
 
 MCFM_SOURCES  =	\
-		MCFM_gg_hgg.C \
+		qqb_z_v.C \
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\

@@ -26,6 +26,9 @@ inline int mr(const int i,const int j)
 inline void GetMom(double *m,const int n,const ATOOLS::Vec4D &p)
 { m[mp(n,3)]=p[0]; for (int i(1);i<4;++i) m[mp(n,i-1)]=p[i]; }
 
+inline int MCFMId(const int id)
+{ return id==21?0:id; }
+
 extern "C" {
   void coupling_();
   void coupling2_();
@@ -130,6 +133,14 @@ extern "C" {
   } anomcoup_;  
 
 #pragma omp threadprivate(nflav_, masses_, epinv_, qcdcouple_, zprods_, epinv2_, zerowidth_, breit_)  
+
+  inline void SetMuR2(const double &mur2)
+  { scale_.scale=sqrt(scale_.musq=mur2); }
+
+  inline void SetAlphaS(const double &as)
+  { qcdcouple_.as=as; qcdcouple_.ason2pi=as/(2.*M_PI);
+    qcdcouple_.ason4pi=qcdcouple_.ason2pi/2.; }
+
 }
 
 #endif

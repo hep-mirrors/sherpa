@@ -18,9 +18,11 @@ if ! test -d $dirname; then
   cd $dirname
   mkdir obj
   sed -e's/\/Users\/johnmc\/MCFM/'$(pwd | sed -e's/\//\\\//g')'/g' \
-      -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
+      -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' \
+      -e's/\(F90LAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
   sed -e's/\/scratch\/ellis\/play\/MCFMdevel/'$(pwd | sed -e's/\//\\\//g')'/g' \
-      -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
+      -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' \
+      -e's/\(F90LAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
   sed -e's/\(.*call pdfwrap\)/c\1/g' -e's/\(.*nlooprun=0\)/c\1/g' -i src/Procdep/*.f
   sed -e's/\(.*[ \t]stop\)/c\1/g' -i src/Procdep/chooser.f
   sed -e's/epinv\*\*2/epinv2/g' -i src/*/*.f
@@ -44,11 +46,11 @@ cd $dirname
 
 if test -d QCDLoop; then
   cd QCDLoop
-  make
+  make FFLAGS="-fPIC -DPIC"
   cd -
 fi
 
 make
 
-if ! test -d ../lib; then mkdir ../lib; fi
-ar cr ../lib/libMCFM.a */*.o
+if ! test -d lib; then mkdir lib; fi
+gcc -shared -o lib/libMCFM.so $(find . -name \*.o | grep -v test | grep -v obj/ddilog)
