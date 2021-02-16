@@ -3,8 +3,6 @@ GITTAG = AddOns/MCFM
 include ../../git.make
 
 MCFM_SOURCES  =	\
-		Git_Info.C \
-		MCFM_gg_hgg.C \
 		MCFM_Interface.C
 
 MCFM_ADDS     =	\
