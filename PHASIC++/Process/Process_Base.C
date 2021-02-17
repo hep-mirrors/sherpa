@@ -17,6 +17,8 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Phys/Color.H"
+#include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
 
@@ -762,4 +764,179 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
+}
+
+void Process_Base::ConstructColorMatrix()
+{
+  DEBUG_VAR(m_name);
+  std::string file(rpa->gen.Variable("SHERPA_CPP_PATH")
+		   +"/Process/Sherpa/"+m_name+".col");
+  My_In_File in(file);
+  if (in.Open()) {
+    int n;
+    *in>>n;
+    m_cols.m_perms.resize(n);
+    m_cols.m_colfacs.resize(n,std::vector<double>(n));
+    for (size_t i(0);i<m_cols.m_perms.size();++i) {
+      *in>>n;
+      m_cols.m_perms[i].resize(n);
+      for (size_t j(0);j<n;++j)	*in>>m_cols.m_perms[i][j];
+    }
+    for (size_t i(0);i<m_cols.m_colfacs.size();++i)
+      for (size_t j(i);j<m_cols.m_colfacs[i].size();++j) {
+	*in>>m_cols.m_colfacs[i][j];
+	m_cols.m_colfacs[j][i]=m_cols.m_colfacs[i][j];
+      }
+    std::string check;
+    *in>>check;
+    if (check!="eof") THROW(fatal_error,"Corrupted color file "+file);
+    in.Close();
+    return;
+  }
+  Flavour_Vector fls(m_pinfo.ExtractFlavours());
+  int n(0);
+  for (size_t i(0);i<fls.size();++i) if (fls[i].Strong()) ++n;
+  if (n==0) return;
+  PRINT_VAR(n<<fls);
+  for (size_t i(0);i<m_nin;++i) fls[i]=fls[i].Bar();
+  m_cols=ColorMatrix(fls);
+  My_Out_File out(file);
+  if (!out.Open()) THROW(fatal_error,"Cannot open '"+file+"'");
+  *out<<m_cols.m_perms.size()<<"\n";
+  for (size_t i(0);i<m_cols.m_perms.size();++i) {
+    *out<<m_cols.m_perms[i].size();
+    for (size_t j(0);j<m_cols.m_perms[i].size();++j)
+      *out<<" "<<m_cols.m_perms[i][j];
+    *out<<"\n";
+  }
+  for (size_t i(0);i<m_cols.m_colfacs.size();++i) {
+    for (size_t j(i);j<m_cols.m_colfacs[i].size();++j)
+      *out<<m_cols.m_colfacs[i][j]<<" ";
+    *out<<"\n";
+  }
+  *out<<"eof\n";
+}
+
+Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
+{
+  DEBUG_FUNC(fls);
+  int iq(-1), iqb(-1), np(0);
+  std::vector<int> sids;
+  for (size_t i(0);i<fls.size();++i) {
+    if (fls[i].StrongCharge()>0) {
+      if (fls[i].StrongCharge()==8) sids.push_back(i);
+      else if (iq>0) sids.push_back(i);
+      else iq=i;
+    }
+    else if (fls[i].StrongCharge()<0) {
+      if (iqb>0) sids.push_back(i);
+      else iqb=i;
+    }
+  }
+  bool adjoint(iq<0);
+  if (iq<0) {
+    iq=sids.front();
+    sids.erase(sids.begin());
+    iqb=sids.back();
+    sids.erase(--sids.end());
+  }
+  std::vector<int> idr(sids.size()+2), idc(sids.size()+2);
+  idc.front()=idr.front()=iq;
+  idc.back()=idr.back()=iqb;
+  Permutation perms(sids.size());
+  std::vector<int> act(perms.MaxNumber(),0);
+  std::vector<std::vector<double> > cij2
+    (act.size(),std::vector<double>(act.size()));
+  for (size_t i(0);i<perms.MaxNumber();++i) {
+    int *cur(perms.Get(i));
+    for (size_t k(0);k<sids.size();++k) idr[k+1]=sids[cur[k]];
+    for (size_t j(i);j<perms.MaxNumber();++j) {
+      int *cur(perms.Get(j));
+      for (size_t k(0);k<sids.size();++k) idc[k+1]=sids[cur[k]];
+      int valid(true), lqr(0), lqc(0);
+      Expression cij(200,100);
+      cij.SetTR(1.);
+      cij.pop_back();
+      size_t lr(adjoint?cij.AIndex():cij.FIndex()), fr(lr);
+      for (size_t k(0);k<idr.size();++k) {
+	if (fls[idr[k]].StrongCharge()==3) {
+	  if (lqr>0) valid=false;
+	  cij.push_back(Delta::New(idr[k],lr));
+	  lqr=1;
+	}
+	else if (fls[idr[k]].StrongCharge()==-3) {
+	  if (lqr<0) valid=false;
+	  cij.push_back(Delta::New(lr,idr[k]));
+	  lr=cij.FIndex();
+	  lqr=-1;
+	}
+	else if (!adjoint) {
+	  if (lqr<0) valid=false;
+	  size_t nr(cij.FIndex());
+	  cij.push_back(Fundamental::New(idr[k],lr,nr));
+	  lr=nr;
+	}
+	else {
+	  size_t nr(k==idr.size()-1?fr:cij.AIndex());
+	  cij.push_back(Adjoint::New(idr[k],lr,nr));
+	  lr=nr;
+	}
+      }
+      size_t lc(adjoint?cij.AIndex():cij.FIndex()), fc(lc);
+      for (size_t k(0);k<idc.size();++k) {
+	if (fls[idc[k]].StrongCharge()==3) {
+	  if (lqc>0) valid=false;
+	  cij.push_back(Delta::New(lc,idc[k]));
+	  lqc=1;
+	}
+	else if (fls[idc[k]].StrongCharge()==-3) {
+	  if (lqc<0) valid=false;
+	  cij.push_back(Delta::New(idc[k],lc));
+	  lc=cij.FIndex();
+	  lqc=-1;
+	}
+	else if (!adjoint) {
+	  if (lqc<0) valid=false;
+	  size_t nc(cij.FIndex());
+	  cij.push_back(Fundamental::New(idc[k],nc,lc));
+	  lc=nc;
+	}
+	else {
+	  size_t nc(k==idc.size()-1?fc:cij.AIndex());
+	  cij.push_back(Adjoint::New(idc[k],nc,lc));
+	  lc=nc;
+	}
+      }
+      if (!valid) continue;
+      if (act[i]==0) act[i]=++np;
+      if (act[j]==0) act[j]=++np;
+      cij.Evaluate();
+      if (cij.Result().imag())
+	msg_Error()<<METHOD<<"(): Non-real color coefficient "
+		   <<cij.Result()<<std::endl;
+      cij2[i][j]=cij.Result().real();
+    }
+  }
+  Color_Matrix cij;
+  cij.m_perms.resize(np);
+  cij.m_colfacs.resize(np,std::vector<double>(np));
+  for (size_t i(0);i<act.size();++i)
+    if (act[i]) {
+      int *cur(perms.Get(i));
+      for (size_t k(0);k<sids.size();++k) idc[k+1]=sids[cur[k]];
+      cij.m_perms[act[i]-1]=idc;
+      for (size_t j(i);j<act.size();++j)
+	if (act[j]) {
+	  cij.m_colfacs[act[i]-1][act[j]-1]=
+	    cij.m_colfacs[act[j]-1][act[i]-1]=cij2[i][j];
+	}
+    }
+  for (size_t i(0);i<cij.m_perms.size();++i)
+    msg_Debugging()<<i<<" "<<cij.m_perms[i]<<"\n";
+  for (size_t i(0);i<cij.m_colfacs.size();++i) {
+    for (size_t j(i);j<cij.m_colfacs[i].size();++j)
+      msg_Debugging()<<cij.m_colfacs[i][j]<<" ";
+    msg_Debugging()<<"\n";
+  }
+  return cij;
 }
