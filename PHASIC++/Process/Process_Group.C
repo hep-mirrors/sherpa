@@ -468,3 +468,10 @@ int Process_Group::PerformTests()
     if (m_procs[i]->PerformTests()!=1) res=0;
   return res;
 }
+
+void Process_Group::ConstructColorMatrix()
+{
+  DEBUG_VAR(m_name);
+  for (size_t i=0;i<m_procs.size();i++)
+    m_procs[i]->ConstructColorMatrix();
+}
