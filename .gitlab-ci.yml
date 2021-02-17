@@ -32,6 +32,10 @@ variables:
 
 # default build with gcc
 build:
+  except:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
   <<: *build
   script:
     - autoreconf -i
@@ -47,8 +51,34 @@ build:
       - build/install
       - Examples/CI/
 
+# default build with gcc and pythia8
+build-pythia8:
+  only:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
+  <<: *build
+  script:
+    - yum -y install pythia8-devel pythia8
+    - autoreconf -i
+    - mkdir -p build-pythia8
+    - cd build-pythia8
+    - ../configure CC="ccache gcc" CXX="ccache g++" --prefix="$PWD/install" $CONFIGURE_FLAGS  --enable-pythia8=/usr
+    - make $MAKE_FLAGS
+    - make install
+  # store what's required to run the tests
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - build-pythia8/install
+      - Examples/CI/
+
 # build with clang and -Werror
 build-clang-strict:
+  except:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
   <<: *build
   script:
     - autoreconf -i
@@ -104,6 +134,10 @@ build-manual:
     GIT_STRATEGY: none  # we only need the artifacts from the build
 
 test-LO_Z:
+  except:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
   <<: *test
   needs:
     - build
@@ -112,7 +146,68 @@ test-LO_Z:
     - cd test-LO_Z
     - ../build/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
 
+test-pythia8-LO_Z:
+  only:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
+  <<: *test
+  needs:
+    - build-pythia8
+  script:
+    - yum -y install pythia8-devel pythia8
+    - mkdir test-pythia8-LO_Z
+    - cd test-pythia8-LO_Z
+    - ../build-pythia8/install/bin/Sherpa ../Examples/CI/LO_Z/Sherpa.yaml
+
+test-pythia8-LO_Zqqbar:
+  only:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
+  <<: *test
+  needs:
+    - build-pythia8
+  script:
+    - yum -y install pythia8-devel pythia8
+    - mkdir test-pythia8-LO_Zqqbar
+    - cd test-pythia8-LO_Zqqbar
+    - ../build-pythia8/install/bin/Sherpa ../Examples/CI/LO_Zqqbar/Sherpa.yaml
+
+test-pythia8-LO_ee:
+  only:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
+  <<: *test
+  needs:
+    - build-pythia8
+  script:
+    - yum -y install pythia8-devel pythia8
+    - mkdir test-pythia8-LO_ee
+    - cd test-pythia8-LO_ee
+    - ../build-pythia8/install/bin/Sherpa ../Examples/CI/LO_ee/Sherpa.yaml
+
+test-pythia8-LO_ep:
+  only:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
+  <<: *test
+  needs:
+    - build-pythia8
+  script:
+    - yum -y install pythia8-devel pythia8
+    - mkdir test-pythia8-LO_ep
+    - cd test-pythia8-LO_ep
+    - ../build-pythia8/install/bin/Sherpa ../Examples/CI/LO_ep/Sherpa.yaml
+
+
 test-clang-strict-LO_Z:
+  except:
+    refs:
+     - 220-add-pythia8-hadronisation-interface 
+     - 220-add-pythia8-hadronisation-interface-AV 
   <<: *test
   needs:
     - build-clang-strict

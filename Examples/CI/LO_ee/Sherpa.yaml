@@ -1,0 +1,21 @@
+EVENTS: 1k
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+
+SHERPA_LDADD: SherpaPythia
+FRAGMENTATION: Pythia8
+MI_HANDLER: None
+
+PYTHIA8_PARAMETERS:
+  - StringZ:aLund: 0.68
+  - StringZ:bLund: 0.98
+  - StringFlav:probStoUD: 0.217
+  - Random:setSeed: 1
+  - Init:showChangedParticleData: off
+  - Check:nErrList: 10000
+  - Check:history: on
+
+
+PROCESSES:
+- 11 -11 -> 93 93:
+    Order: {QCD: Any, EW: 2}
