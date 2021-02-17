@@ -139,7 +139,8 @@ extern "C" {
 
   inline void SetAlphaS(const double &as)
   { qcdcouple_.as=as; qcdcouple_.ason2pi=as/(2.*M_PI);
-    qcdcouple_.ason4pi=qcdcouple_.ason2pi/2.; }
+    qcdcouple_.ason4pi=qcdcouple_.ason2pi/2.;
+    qcdcouple_.gsq=4.*M_PI*as; }
 
 }
 
