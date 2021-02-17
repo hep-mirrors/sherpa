@@ -19,10 +19,10 @@ if ! test -d $dirname; then
   mkdir obj
   sed -e's/\/Users\/johnmc\/MCFM/'$(pwd | sed -e's/\//\\\//g')'/g' \
       -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' \
-      -e's/\(F90LAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
+      -e's/\(F90FLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
   sed -e's/\/scratch\/ellis\/play\/MCFMdevel/'$(pwd | sed -e's/\//\\\//g')'/g' \
       -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' \
-      -e's/\(F90LAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
+      -e's/\(F90FLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
   sed -e's/\(.*call pdfwrap\)/c\1/g' -e's/\(.*nlooprun=0\)/c\1/g' -i src/Procdep/*.f
   sed -e's/\(.*[ \t]stop\)/c\1/g' -i src/Procdep/chooser.f
   sed -e's/epinv\*\*2/epinv2/g' -i src/*/*.f
@@ -30,6 +30,8 @@ if ! test -d $dirname; then
   sed -e"/      INCLUDE 'epinv2.f'/d" -i src/*/*.f
   sed -e"/^      include 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
   sed -e"/^      INCLUDE 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
+  sed -e"/'mrs04nl'/,/gluon/ d;/'mrs04nn'/,/gluon/ d" -i src/Parton/fdist_linux.f
+  sed -e"/mrst2004.o/ d" -i makefile
   if [ $version -ge 6 ]; then
     if [ $subversion -ge 3 ]; then
       echo "patching specifics for MCFM-${version}.${subversion}"
