@@ -925,7 +925,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
 	}
 	else {
 	  size_t nc(k==idc.size()-1?fc:cij.AIndex());
-	  cij.push_back(Adjoint::New(idc[k],nc,lc));
+	  cij.push_back(Adjoint::New(idc[k],lc,nc));
 	  lc=nc;
 	}
       }
