@@ -320,11 +320,11 @@ bool Adjoint::Evaluate(Expression *const expression)
   (*copy)[j] = Fundamental::New(m_a,ii,ij,true);
   copy->push_back(Fundamental::New(m_c,ij,ik,true));
   copy->push_back(Fundamental::New(m_b,ik,ii,true));
-  copy->push_back(CNumber::New(Complex(0.0,2.0)));
+  copy->push_back(CNumber::New(Complex(0.0,1.0/expression->TR())));
   (*expression)[j] = Fundamental::New(m_a,ii,ij,true);
   expression->push_back(Fundamental::New(m_b,ij,ik,true));
   expression->push_back(Fundamental::New(m_c,ik,ii,true));
-  expression->push_back(CNumber::New(Complex(0.0,-2.0)));
+  expression->push_back(CNumber::New(Complex(0.0,-1.0/expression->TR())));
   Delete();
   return true;
 }
