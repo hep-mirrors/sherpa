@@ -801,6 +801,7 @@ void Process_Base::ConstructColorMatrix()
   for (size_t i(0);i<m_nin;++i) fls[i]=fls[i].Bar();
   m_cols=ColorMatrix(fls);
   My_Out_File out(file);
+  out->precision(12);
   if (!out.Open()) THROW(fatal_error,"Cannot open '"+file+"'");
   *out<<m_cols.m_perms.size()<<"\n";
   for (size_t i(0);i<m_cols.m_perms.size();++i) {
