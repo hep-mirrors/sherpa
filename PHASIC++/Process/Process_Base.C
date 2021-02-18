@@ -769,6 +769,7 @@ std::string Process_Base::ShellName(std::string name) const
 void Process_Base::ConstructColorMatrix()
 {
   DEBUG_VAR(m_name);
+  if (IsMapped()) return;
   std::string file(rpa->gen.Variable("SHERPA_CPP_PATH")
 		   +"/Process/Sherpa/"+m_name+".col");
   My_In_File in(file);
