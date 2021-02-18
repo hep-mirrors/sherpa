@@ -820,7 +820,6 @@ void Process_Base::ConstructColorMatrix()
   int n(0);
   for (size_t i(0);i<fls.size();++i) if (fls[i].Strong()) ++n;
   if (n==0) return;
-  PRINT_VAR(n<<fls);
   for (size_t i(0);i<m_nin;++i) fls[i]=fls[i].Bar();
   m_cols=ColorMatrix(fls);
   My_Out_File out(file);
