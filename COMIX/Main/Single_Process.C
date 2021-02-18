@@ -26,7 +26,7 @@ using namespace ATOOLS;
 
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
-  p_bg(NULL), p_map(NULL),
+  p_bg(NULL), p_hc(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
@@ -475,6 +475,75 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
   m_mewgtinfo*=m_w;
   m_mewgtinfo.m_KP=kpterms;
   return m_lastxs=m_dxs+kpterms;
+}
+
+const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
+(Cluster_Amplitude *const ampl)
+{
+  if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl);
+  DEBUG_FUNC(Name());
+  msg_Debugging()<<*ampl<<"\n";
+  Vec4D_Vector p(ampl->Legs().size());
+  for (size_t i(0);i<p.size();++i)
+    p[i]=i<ampl->NIn()?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom();
+  p_bg->SetMomenta(p);
+  std::vector<double> s(ScaleSetter(1)->Scales().size(),0.0);
+  s[stp::fac]=ampl->MuF2();
+  s[stp::ren]=ampl->MuR2();
+  s[stp::res]=ampl->MuQ2();
+  if (s.size()>stp::size+stp::res) s[stp::size+stp::res]=ampl->KT2();
+  SetFixedScale(s);
+  ScaleSetter(1)->CalculateScale(p);
+  ComputeHardMatrix();
+  SetFixedScale(std::vector<double>());
+  return p_hc;
+}
+
+void COMIX::Single_Process::ComputeHardMatrix()
+{
+  std::vector<Spin_Amplitudes> hc;
+  for (size_t k(0);k<m_cols.m_perms.size();++k) {
+    const std::vector<int> &perm(m_cols.m_perms[k]);
+#ifdef DEBUG__BG
+    msg_Debugging()<<"Permutation "<<perm<<std::endl;
+#endif
+    PHASIC::Int_Vector ci(m_nin+m_nout,0), cj(m_nin+m_nout,0);
+    int idx(0);
+    for (size_t j(0);j<perm.size();++j) {
+      Flavour fl(m_flavs[perm[j]]);
+      if (perm[j]<m_nin) fl=fl.Bar();
+      int cc(fl.StrongCharge());
+      if (cc<0 || cc==8) cj[perm[j]]=idx;
+      if (cc>0 || cc==8) ci[perm[j]]=++idx;
+    }
+    double me(p_bg->Differential(ci,cj,-1));
+    std::vector<Spin_Amplitudes> amps;
+    std::vector<std::vector<Complex> > cols;
+    FillAmplitudes(amps,cols);
+    hc.push_back(amps.front());
+#ifdef DEBUG__BG
+    msg_Debugging()<<"Add permutation "<<k<<" "<<perm
+		   <<" ( me2 = "<<me<<" ) {\n";
+    {
+      msg_Indent();
+      msg_Debugging()<<"ci = "<<ci<<"\n";
+      msg_Debugging()<<"cj = "<<cj<<"\n";
+      msg_Debugging()<<hc.back();
+    }
+    msg_Debugging()<<"}\n";
+#endif
+  }
+  double w(p_bg->ISSymmetryFactor()*
+	   p_bg->FSSymmetryFactor());
+  p_hc->resize(m_cols.m_perms.size(),
+	       std::vector<Complex>
+	       (m_cols.m_perms.size()));
+  for (size_t i(0);i<p_hc->size();++i)
+    for (size_t j(0);j<p_hc->size();++j) {
+      (*p_hc)[i][j]=Complex(0.0,0.0);
+      for (size_t k(0);k<hc[i].size();++k)
+	(*p_hc)[i][j]+=hc[i][k]*std::conj(hc[j][k])/w;
+    }
 }
 
 void COMIX::Single_Process::UpdateKPTerms(const int mode)

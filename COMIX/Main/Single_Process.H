@@ -19,6 +19,7 @@ namespace COMIX {
   protected:
 
     Amplitude      *p_bg;
+    Hard_Matrix    *p_hc;
     Single_Process *p_map;
 
     PHASIC::Virtual_ME2_Base *p_loop;
