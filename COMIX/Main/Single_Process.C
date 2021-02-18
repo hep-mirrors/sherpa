@@ -26,7 +26,7 @@ using namespace ATOOLS;
 
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
-  p_bg(NULL), p_map(NULL),
+  p_bg(NULL), p_hc(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
@@ -448,6 +448,7 @@ double COMIX::Single_Process::Partonic
 const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
 (Cluster_Amplitude *const ampl)
 {
+  if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl);
   DEBUG_FUNC(Name());
   msg_Debugging()<<*ampl<<"\n";
   Vec4D_Vector p(ampl->Legs().size());

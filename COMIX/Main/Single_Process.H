@@ -19,6 +19,7 @@ namespace COMIX {
   protected:
 
     Amplitude      *p_bg;
+    Hard_Matrix    *p_hc;
     Single_Process *p_map;
 
     PHASIC::Virtual_ME2_Base *p_loop;
@@ -34,8 +35,6 @@ namespace COMIX {
     bool   m_checkpoles, m_allowmap;
 
     ATOOLS::NLO_subevtlist m_subs;
-
-    Hard_Matrix *p_hc;
 
     void InitPSGenerator(const size_t &ismode);
 
