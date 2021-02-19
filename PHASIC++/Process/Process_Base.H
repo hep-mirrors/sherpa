@@ -311,7 +311,8 @@ namespace PHASIC {
 
     inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
 
-    inline const Color_Matrix &ColorMatrix() { return m_cols; }
+    inline const Color_Matrix &ColorMatrix(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
 
   };// end of class Process_Base
 
