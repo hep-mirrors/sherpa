@@ -14,6 +14,14 @@ PYTHIA8_PARAMETERS:
   - Check:nErrList: 10000
   - Check:history: on
 
+PYTHIA8_DECAYS: false
+SHERPA_VALUES: false
+MATCH_DIQUARKS: true
+MATCH_QUARKS: true
+MATCH_HADRONS: true
+MATCH_OTHER: false
+MATCH_ONLY_UNSTABLE: false
+
 PROCESSES:
 - 93 93 -> 11 -12:
     Order: {QCD: 0, EW: 2}
