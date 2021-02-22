@@ -1,6 +1,7 @@
 #ifndef ATOOLS_Math_Random_H
 #define ATOOLS_Math_Random_H
 
+#include <limits>
 #include <fstream>
 #include <stddef.h>
 #include "ATOOLS/Math/MathTools.H"
@@ -46,9 +47,9 @@ namespace ATOOLS {
     void PrepareTerminate();
 
     // temporary methods for Ran4()
-    int  WriteOutStatus4(const char *outfile); 
+    int  WriteOutStatus4(const char *outfile);
     int  WriteOutStatus4(std::ostream &os,const size_t &idx);
-    int  WriteOutSavedStatus4(const char *outfile); 
+    int  WriteOutSavedStatus4(const char *outfile);
     void ReadInStatus4(const char * filename);
     size_t ReadInStatus4(std::istream &is,const size_t &idx);
     void SaveStatus4();
@@ -85,8 +86,9 @@ namespace ATOOLS {
     void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
 
     // return uniformly distributed random number in [0,1] using active Generator
-    double Get();   
-    ptrdiff_t operator() (ptrdiff_t max);
+    double Get();
+    typedef ptrdiff_t result_type;
+    result_type operator()();
     // produce Gaussian distributed random number using active Generator
     // according to the Marsaglia method
     double GetGaussian() {
@@ -116,15 +118,16 @@ namespace ATOOLS {
       }
       double disc(std::exp(-lambda)),p(1.);
       int N(0);
-      while ((p*=Get())>disc) N++; 
+      while ((p*=Get())>disc) N++;
       return N;
     }
-
+    constexpr static result_type min() noexcept {return 0;}
+    constexpr static result_type max() noexcept {return std::numeric_limits<result_type>::max();}
     double Theta() { return acos(2.*Get()-1.); }
     double GetNZ();
-    
+
     External_RNG* GetExternalRng() { return p_external; }
-    
+
 
   };// end of class Random
 
@@ -155,21 +158,21 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Random::Random(long nid) 
+    \fn Random::Random(long nid)
     \brief Constructor initialises the random number generator with a given seed
   */
 
   /*!
     \fn Random::Random(int, int)
-    \brief A constructor that initializes the Rnd4() routine. 
-    
+    \brief A constructor that initializes the Rnd4() routine.
+
     Even though there are two different constructors for Rnd2() and Rnd4(),
-    it is possible to switch between the two routines by calling the 
-    corresponding SetSeed() method. 
+    it is possible to switch between the two routines by calling the
+    corresponding SetSeed() method.
   */
 
   /*!
-    \fn Random::~Random() 
+    \fn Random::~Random()
     \brief Destructor
   */
 
@@ -189,7 +192,7 @@ namespace ATOOLS {
   /*!
     \fn long Random::GetSeed()
     \brief returns a the seed
-    
+
     No corresponding method for Ran4() exists so far.
   */
 
@@ -211,7 +214,7 @@ namespace ATOOLS {
   /*!
     \fn int Random::WriteOutStatus(char* filename)
     \brief writes the complete status the random generator in a file
-    
+
     This method can be used to save the status of a random generator in a file
     the number of its entry in this file is return and can be used to read in
     the status via ReadInStatus().
@@ -223,5 +226,5 @@ namespace ATOOLS {
   */
 
 }// end of namespace ATOOLS
- 
+
 #endif
