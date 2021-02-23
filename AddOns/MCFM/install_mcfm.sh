@@ -1,9 +1,9 @@
 #!/bin/bash
 
-version=6
-subversion=3
+version=9
+subversion=1
 
-tarname=mcfm-${version}.${subversion}.tar.gz
+tarname=MCFM-${version}.${subversion}.tar.gz
 dirname=MCFM-${version}.${subversion}
 
 echo "installing MCFM from ${tarname} to ${dirname}"
@@ -14,7 +14,7 @@ fi
 
 if ! test -d $dirname; then
   tar -xzf $tarname
-  mv MCFM $dirname
+#  mv MCFM $dirname
   cd $dirname
   mkdir obj
   sed -e's/\/Users\/johnmc\/MCFM/'$(pwd | sed -e's/\//\\\//g')'/g' \
@@ -28,8 +28,8 @@ if ! test -d $dirname; then
   sed -e's/epinv\*\*2/epinv2/g' -i src/*/*.f
   sed -e"/      include 'epinv2.f'/d" -i src/*/*.f
   sed -e"/      INCLUDE 'epinv2.f'/d" -i src/*/*.f
-  sed -e"/^      include 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
-  sed -e"/^      INCLUDE 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
+  sed -e"/^[ ]*include 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
+  sed -e"/^[ ]*INCLUDE 'epinv.f'/a\      include \'epinv2.f\'" -i src/*/*.f
   sed -e"/'mrs04nl'/,/gluon/ d;/'mrs04nn'/,/gluon/ d" -i src/Parton/fdist_linux.f
   sed -e"/mrst2004.o/ d" -i makefile
   if [ $version -ge 6 ]; then
@@ -55,4 +55,5 @@ fi
 make
 
 if ! test -d lib; then mkdir lib; fi
-gcc -shared -o lib/libMCFM.so $(find . -name \*.o | grep -v test | grep -v obj/ddilog)
+gcc -shared -o lib/libMCFM.so $(find . -name \*.o | grep -v test | grep -v qd- | grep -v pvfndd)
+# gcc -shared -o lib/libMCFM.so $(find . -name \*.o | grep -v test | grep -v obj/ddilog | grep -v qd- | grep -v pvfndd)

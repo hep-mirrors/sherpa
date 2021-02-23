@@ -15,7 +15,7 @@ inline void MakeFortranString
 }
 
 #define MCFM_NF 5
-#define MCFM_NMX 12
+#define MCFM_NMX 14
 
 inline int mp(const int id,const int i)
 { return i*MCFM_NMX+id; }
@@ -47,10 +47,10 @@ extern "C" {
   } scheme_;
   extern struct {
     double deltar;
-  } deltar_;
+  } schemedeltar_;
   extern struct {
     double scale,musq;
-  } scale_;
+  } mcfmscale_;
   extern struct {
     double gsq,as,ason2pi,ason4pi;
   } qcdcouple_;
@@ -90,7 +90,7 @@ extern "C" {
     int nlooprun;
   } nlooprun_;
   extern struct {
-    char pdlabel[7];
+    char pdlabel[255];
   } pdlabel_;
   extern struct {
     double amz;
@@ -99,7 +99,7 @@ extern "C" {
     double mc_msbar,mb_msbar,mt_msbar;
   } msbarmasses_;
   extern struct {
-    int nproc;
+    int nproc,nprocbelow;
   } nproc_;
   extern struct {
     bool removebr;
@@ -111,7 +111,7 @@ extern "C" {
     bool srdiags;
   } srdiags_;
   extern struct {
-    double bbsqmin,bbsqmax,wsqmin,wsqmax;
+    double bbsqmin,bbsqmax,wsqmin,wsqmax,m3456min,m3456max;
   } limits_;
   extern struct {
     Complex za[MCFM_NMX*MCFM_NMX], zb[MCFM_NMX*MCFM_NMX];
@@ -123,19 +123,21 @@ extern "C" {
     double s[MCFM_NMX*MCFM_NMX];
   } sprods_;
   extern struct{
-    double delg1_z,delg1_g,lambda_g,lambda_z,
-      delk_g,delk_z,h1Z,h2z,h3z,h4z,h1gam,
-      h2gam,h3gam,h4gam,tevscale;
-    bool anomtgc;
-    double xdelg1_z,xdelg1_g,xlambda_g,xlambda_z,
-      h1tz,h2tz,h3tz,h4tz,h1tgam,h2tgam,h3tgam,h4tgam,
-      xdelk_g,xdelk_z;
-  } anomcoup_;  
+    double delg1_z,delg1_g,lambda_g,lambda_z;
+    double delk_g,delk_z;
+  } anomcoup1_;
+  extern struct{
+    double h1Z,h2Z,h3Z,h4Z,h1gam,h2gam,h3gam,h4gam;
+    double tevscale;
+    double h1tZ,h2tZ,h3tZ,h4tZ,h1tgam,h2tgam,h3tgam,h4tgam;
+    double anomtgc;
+    double hitZ[3], hitgam[3];
+  } anomcoup2_;
 
 #pragma omp threadprivate(nflav_, masses_, epinv_, qcdcouple_, zprods_, epinv2_, zerowidth_, breit_)  
 
   inline void SetMuR2(const double &mur2)
-  { scale_.scale=sqrt(scale_.musq=mur2); }
+  { mcfmscale_.scale=sqrt(mcfmscale_.musq=mur2); }
 
   inline void SetAlphaS(const double &as)
   { qcdcouple_.as=as; qcdcouple_.ason2pi=as/(2.*M_PI);

@@ -71,8 +71,8 @@ namespace MCFM {
       cabib_.Vcs=model->ComplexConstant("CKM_1_1").real();
       cabib_.Vcb=model->ComplexConstant("CKM_1_2").real();
       // scales and strong coupling
-      scale_.scale=ewinput_.zmass_inp;
-      scale_.musq=sqr(scale_.scale);
+      mcfmscale_.scale=ewinput_.zmass_inp;
+      mcfmscale_.musq=sqr(mcfmscale_.scale);
       nlooprun_.nlooprun=MODEL::as->Order()+1;
       couple_.amz=model->ScalarConstant("alpha_S");
       if (!zerowidth_.zerowidth) limits_.bbsqmin = 1.;
@@ -81,7 +81,7 @@ namespace MCFM {
       qcdcouple_.ason2pi=qcdcouple_.as/(2.*M_PI);
       qcdcouple_.ason4pi=qcdcouple_.as/(4.*M_PI);
       std::string dummy("mstw8lo");
-      dummy.copy(pdlabel_.pdlabel,7);
+      dummy.copy(pdlabel_.pdlabel,255);
       limits_.wsqmin=1.e-6;
       limits_.wsqmax=1.e99;
       verbose_.verbose=true;
