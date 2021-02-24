@@ -784,6 +784,10 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
     p1*=p_dsij[0][0];
     p2*=p_dsij[0][0];
   }
+  else {
+    p1*=cplfac;
+    p2*=cplfac;
+  }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   if (!m_checkpolesthreshold ||
