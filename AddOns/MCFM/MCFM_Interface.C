@@ -104,6 +104,7 @@ namespace SHERPA {
 	(1,"NLO matrix elements from MCFM \\cite{}.");
       m_p.resize(flavs.size());
       m_mode=1;
+      m_drmode=MCFM_Interface::GetMCFM().GetScheme(pid);
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
