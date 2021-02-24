@@ -933,6 +933,10 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
     p1*=cplfac*m_lastb;
     p2*=cplfac*m_lastb;
   }
+  else {
+    p1*=cplfac;
+    p2*=cplfac;
+  }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   if (!m_checkthreshold || !ATOOLS::IsEqual(doublepole,p2,m_checkthreshold) ||

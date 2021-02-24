@@ -80,10 +80,12 @@ namespace SHERPA {
 
     inline static MCFM::CXX_Interface &GetMCFM() { return s_mcfm; }
 
-    inline static void SetMuR2(const double &mur2)
+    inline static double SetMuR2(const double &mur2)
     {
+      double as((*p_as)(mur2));
       s_mcfm.SetMuR2(mur2);
-      s_mcfm.SetAlphaS((*p_as)(mur2));
+      s_mcfm.SetAlphaS(as);
+      return as;
     }
 
   }; // end of class MCFM_Interface
@@ -111,13 +113,13 @@ namespace SHERPA {
     {
       for (size_t i(0);i<p.size();++i)
 	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
-      MCFM_Interface::SetMuR2(m_mur2);
+      double ason2pi(MCFM_Interface::SetMuR2(m_mur2)/(2.*M_PI));
       MCFM_Interface::GetMCFM().Calc(m_pid,m_p,1);
       const std::vector<double> &res
 	(MCFM_Interface::GetMCFM().GetResult(m_pid));
-      m_res.Finite()=res[0];
-      m_res.IR()=res[1];
-      m_res.IR2()=res[2];
+      m_res.Finite()=res[0]/ason2pi;
+      m_res.IR()=res[1]/ason2pi;
+      m_res.IR2()=res[2]/ason2pi;
       m_born=res[3];
     }
 
