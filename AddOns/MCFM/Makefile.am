@@ -1,10 +1,6 @@
 
 MCFM_SOURCES  =	\
-		qqb_z_v.C \
 		MCFM_Interface.C
-
-MCFM_ADDS     =	\
-		MCFM_Wrapper.H
 
 if MCFM_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaMCFM.la
@@ -13,7 +9,7 @@ libSherpaMCFM_la_SOURCES      =	$(MCFM_SOURCES)
 
 libSherpaMCFM_la_LIBADD       =	@CONDITIONAL_MCFMLIBS@
 
-libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS)  -fopenmp
+libSherpaMCFM_la_CPPFLAGS     =	$(AM_CPPFLAGS) @CONDITIONAL_MCFMINCS@
 
 MCFM_EXTRA_DIST = $(MCFM_ADDS)
 else
