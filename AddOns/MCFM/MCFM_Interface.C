@@ -106,7 +106,12 @@ namespace SHERPA {
 	(1,"NLO matrix elements from MCFM \\cite{}.");
       m_p.resize(flavs.size());
       m_mode=1;
-      m_drmode=MCFM_Interface::GetMCFM().GetScheme(pid);
+      m_drmode=MCFM_Interface::GetMCFM().GetProcess(pid)->GetScheme();
+    }
+
+    void SetPoleCheck(const int check)
+    {
+      MCFM_Interface::GetMCFM().GetProcess(m_pid)->SetPoleCheck(check);
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
@@ -158,7 +163,6 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM") return NULL;
-  if (MODEL::s_model->Name()!="SM") return NULL;
   if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return NULL;
   if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());

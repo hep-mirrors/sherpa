@@ -169,6 +169,7 @@ bool COMIX::Single_Process::Initialize
       if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
 	m_checkpoles=helpi;
 	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
+	p_loop->SetPoleCheck(m_checkpoles);
       }
     }
     p_bg->SetLoopME(p_loop);
