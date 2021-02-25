@@ -169,6 +169,7 @@ void Single_Virtual_Correction::SelectLoopProcess()
     p_loopme->SetCouplings(m_cpls);
     p_loopme->SetNorm(m_Norm);
     p_loopme->SetSubType(m_stype);
+    p_loopme->SetPoleCheck(m_checkpoles);
     m_drmode=p_loopme->DRMode();
   }
 }

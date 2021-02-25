@@ -212,6 +212,9 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetSubType((sbt::subtype)(stype+1));
       m_mewgtinfo.m_type|=mewgttype::VI;
       int helpi;
+      Settings& s = Settings::GetMainSettings();
+      m_checkpoles = s["CHECK_POLES"].Get<size_t>();
+      p_loop->SetPoleCheck(m_checkpoles);
     }
     p_bg->SetLoopME(p_loop);
     p_bg->FillCombinations(m_ccombs,m_cflavs);
