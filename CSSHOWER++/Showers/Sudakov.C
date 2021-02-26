@@ -77,6 +77,8 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
       if (sfs.find(FTrip(v->in[0].Bar(),v->in[1],v->in[2]))!=sfs.end()) continue;
+      // m_ewmode==2 only allows photons from quarks
+      if(m_ewmode==2 && v->in[0].IsChargedLepton() && (v->in[1].IsPhoton() || v->in[2].IsPhoton())) continue;
       sfs.insert(FTrip(v->in[0].Bar(),v->in[1],v->in[2]));
       sfs.insert(FTrip(v->in[0].Bar(),v->in[2],v->in[1]));
       msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";

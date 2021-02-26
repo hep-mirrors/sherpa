@@ -269,6 +269,7 @@ namespace ATOOLS {
 
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
     inline bool IsLepton() const { return Kfcode()>10&&Kfcode()<19; }
+    inline bool IsChargedLepton() const { return IsLepton()&&Charge()!=0; }
 
     inline bool IsQuark() const { return Kfcode()<10; }
     inline bool IsGluon() const 
