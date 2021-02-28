@@ -53,7 +53,7 @@ namespace SHERPARIVET {
     size_t m_nevt;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs,
-      m_ignorebeams, m_usehepmcshort, m_skipweights;
+      m_ignorebeams, m_usehepmcshort, m_skipweights, m_usegzip;
     size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
     Rivet_Map         m_rivet;
@@ -241,6 +241,7 @@ bool Rivet_Interface::Init()
     }
     m_ignorebeams = s["IGNOREBEAMS"].SetDefault(0).Get<int>();
     m_skipweights = s["SKIPWEIGHTS"].SetDefault(1).Get<int>();
+    m_usegzip = s["USE_GZIP"].SetDefault(1).Get<int>();
 
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].SetDefault(15).Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].SetDefault(6).Get<int>();
@@ -302,11 +303,29 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 
   if (subevents.size()) {
     for (size_t i(0);i<subevents.size();++i) {
+      if (m_skipweights) {
+	HepMC::WeightContainer wc(subevents[i]->weights()), nwc;
+#ifdef HEPMC_HAS_NAMED_WEIGHTS
+	nwc["Weight"]=wc["Weight"];
+#else
+	nwc.push_back(wc.front());
+#endif
+	subevents[i]->weights()=nwc;
+      }
       GetRivet("",0)->analyze(*subevents[i]);
     }
     m_hepmc2.DeleteGenSubEventList();
   }
   else {
+    if (m_skipweights) {
+      HepMC::WeightContainer wc(event.weights()), nwc;
+#ifdef HEPMC_HAS_NAMED_WEIGHTS
+      nwc["Weight"]=wc["Weight"];
+#else
+      nwc.push_back(wc.front());
+#endif
+      event.weights()=nwc;
+    }
     GetRivet("",0)->analyze(event);
     Blob *sp(bl->FindFirst(btp::Signal_Process));
     size_t parts=0;
@@ -358,13 +377,9 @@ bool Rivet_Interface::Finish()
     const double wgtfrac = it.second->sumW()/GetRivet("",0)->sumW();
     const double totalxs = it.second->nominalCrossSection();
     const double thisxs  = totalxs*wgtfrac;
-    it.second->setCrossSection(thisxs, 0.0, true);
+    it.second->setCrossSection(thisxs, 0.0);
     it.second->finalize();
-#ifdef HAVE_LIBZ
-    it.second->writeData(out+".yoda.gz");
-#else
-    it.second->writeData(out+".yoda");
-#endif
+    it.second->writeData(out+".yoda"+std::string(m_usegzip?".gz":""));
   }
   m_finished=true;
   return true;
@@ -385,6 +400,7 @@ void Rivet_Interface::ShowSyntax(const int i)
     <<"                          # S-MC@NLO S- and H- events\n"
     <<"     IGNOREBEAMS: <0|1>   # tell Rivet to ignore beam information\n"
     <<"     SKIPWEIGHTS: <0|1>   # tell Rivet to skip multi-weight information\n"
+    <<"     USE_GZIP: <0|1> # compress yoda files\n"
     <<"     USE_HEPMC_SHORT: <0|1> # use shortened HepMC event format\n"
     <<"     USE_HEPMC_NAMED_WEIGHTS: <true|false> # use named HepMC weights,\n"
     <<"                          # mandatory for scale variations\n"
@@ -1050,6 +1066,7 @@ bool Rivet_Interface::Finish()
 {
   std::string ending("");
   ending=".yoda";
+  if (m_usegzip) ending+=".gz";
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
     std::string out=m_outpath;
