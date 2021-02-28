@@ -31,7 +31,7 @@ Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 CS_Gamma::CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 		   CS_Cluster_Definitions *const cluster):
   p_css(css), p_shower(shower), p_cluster(cluster),
-  m_on(0), m_oef(9.0)
+  m_on(0), m_strict_mapcheck(0), m_oef(9.0)
 {
 }
 
@@ -203,8 +203,13 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   p_ms=ampl->MS();
   p_shower->SetMS(p_ms);
   Weight_Map ws(CalculateWeight(ampl,0));
-  if (ws.empty()) THROW(fatal_error,"Invalid amplitude for "
-                                    +PHASIC::Process_Base::GenerateName(ampl));
+  if (ws.empty()) {
+    if (m_strict_mapcheck)
+      THROW(fatal_error,"Invalid amplitude for "
+	    +PHASIC::Process_Base::GenerateName(ampl));
+    msg_Debugging()<<"Invalid splitting\n";
+    return Trial_Weight(0.,1.,1.);
+  }
   Parton *const *cur(p_shower->GetLast());
   size_t idij(0), idk(0);
   double wgt(0.0);
