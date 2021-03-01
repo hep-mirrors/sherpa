@@ -105,7 +105,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
   m_on=PureQCD();// so far only qcd evolution
-  if (!m_on && (ckey.m_ewmode&1) &&
+  if (!m_on && (ckey.m_ewmode>=1) &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
        p_lf->FlC().IsPhoton())) m_on=true;
   if (key.p_v->in[1].Mass()>10.0 &&
