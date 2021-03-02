@@ -62,12 +62,12 @@ namespace SHERPA {
       params["alpha_EM"]=ToString(model->ScalarConstant("alpha_QED"),16);
       params["Gf"]=ToString(1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev"))),16);
       params["sin2_thetaW"]=ToString(std::abs(model->ComplexConstant("csin2_thetaW")),16);
-      params["CKM_u_d"]=ToString(model->ComplexConstant("CKM_0_0").real(),16);
-      params["CKM_u_s"]=ToString(model->ComplexConstant("CKM_0_1").real(),16);
-      params["CKM_u_b"]=ToString(model->ComplexConstant("CKM_0_2").real(),16);
-      params["CKM_c_d"]=ToString(model->ComplexConstant("CKM_1_0").real(),16);
-      params["CKM_c_s"]=ToString(model->ComplexConstant("CKM_1_1").real(),16);
-      params["CKM_c_b"]=ToString(model->ComplexConstant("CKM_1_2").real(),16);
+      params["CKM_u_d"]=ToString(model->ComplexConstant("CKM_0_0"),16);
+      params["CKM_u_s"]=ToString(model->ComplexConstant("CKM_0_1"),16);
+      params["CKM_u_b"]=ToString(model->ComplexConstant("CKM_0_2"),16);
+      params["CKM_c_d"]=ToString(model->ComplexConstant("CKM_1_0"),16);
+      params["CKM_c_s"]=ToString(model->ComplexConstant("CKM_1_1"),16);
+      params["CKM_c_b"]=ToString(model->ComplexConstant("CKM_1_2"),16);
       params["order_alpha_S"]=ToString(MODEL::as->Order()+1);
       params["alpha_S"]=ToString(model->ScalarConstant("alpha_S"),16);
       s_mcfm.Initialize(params);
