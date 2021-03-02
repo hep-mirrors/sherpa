@@ -70,6 +70,7 @@ namespace SHERPA {
       params["CKM_c_b"]=ToString(model->ComplexConstant("CKM_2_1"),16);
       params["order_alpha_S"]=ToString(MODEL::as->Order()+1);
       params["alpha_S"]=ToString(model->ScalarConstant("alpha_S"),16);
+      s_mcfm.SetVerbose(msg->LevelIsDebugging());
       s_mcfm.Initialize(params);
       return true;
     }
@@ -124,6 +125,8 @@ namespace SHERPA {
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
     {
+      MCFM_Interface::GetMCFM().
+	SetVerbose(msg->LevelIsDebugging());
       for (size_t i(0);i<p.size();++i)
 	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
       double ason2pi(MCFM_Interface::SetMuR2(m_mur2)/(2.*M_PI));
@@ -159,7 +162,10 @@ namespace SHERPA {
       m_order_ew=args.m_orders[1];
     }
 
-    double Calc(const ATOOLS::Vec4D_Vector &p) {
+    double Calc(const ATOOLS::Vec4D_Vector &p)
+    {
+      MCFM_Interface::GetMCFM().
+	SetVerbose(msg->LevelIsDebugging());
       for (size_t i(0);i<p.size();++i)
 	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
       MCFM_Interface::SetAlpha(AlphaQCD(),AlphaQED());
@@ -207,7 +213,8 @@ operator()(const Process_Info &pi) const
   Flavour_Vector fl(pi.ExtractFlavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
-  int pid(MCFM_Interface::GetMCFM().InitializeProcess(ids,1));
+  int pid(MCFM_Interface::GetMCFM().
+	  InitializeProcess(ids,pi.m_ii.m_ps.size(),1));
   if (pid>=0) return new MCFM_Virtual(pi,fl,pid);
   return NULL;
 }
@@ -222,7 +229,8 @@ operator()(const External_ME_Args &args) const
   Flavour_Vector fl(args.Flavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
-  int pid(MCFM_Interface::GetMCFM().InitializeProcess(ids,0));
+  int pid(MCFM_Interface::GetMCFM().
+	  InitializeProcess(ids,args.m_inflavs.size(),0));
   if (pid>=0) return new MCFM_Born(args,pid);
   return NULL;
 }
