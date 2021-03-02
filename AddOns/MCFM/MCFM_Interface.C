@@ -1,6 +1,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -88,6 +90,12 @@ namespace SHERPA {
       return as;
     }
 
+    inline static void SetAlpha(const double &as,const double &aqed)
+    {
+      s_mcfm.SetAlphaS(as);
+      // s_mcfm.SetAlphaQED(aqed);
+    }
+
   }; // end of class MCFM_Interface
 
   class MCFM_Virtual: public PHASIC::Virtual_ME2_Base {
@@ -135,6 +143,37 @@ namespace SHERPA {
 
   };// end of class MCFM_Virtual
 
+  class MCFM_Born: public PHASIC::Tree_ME2_Base {
+
+    int m_order_ew, m_order_qcd, m_pid;
+    std::vector<MCFM::FourVec> m_p;
+
+  public:
+
+    MCFM_Born(const PHASIC::External_ME_Args &args,const int &pid):
+      Tree_ME2_Base(args), m_pid(pid) {
+      rpa->gen.AddCitation
+	(1,"NLO matrix elements from MCFM \\cite{}.");
+      m_p.resize(args.Flavours().size());
+      m_order_qcd=args.m_orders[0];
+      m_order_ew=args.m_orders[1];
+    }
+
+    double Calc(const ATOOLS::Vec4D_Vector &p) {
+      for (size_t i(0);i<p.size();++i)
+	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
+      MCFM_Interface::SetAlpha(AlphaQCD(),AlphaQED());
+      MCFM_Interface::GetMCFM().Calc(m_pid,m_p,0);
+      const std::vector<double> &res
+	(MCFM_Interface::GetMCFM().GetResult(m_pid));
+      return res[0];
+    }
+
+    int OrderQCD(const int &id=-1) const { return m_order_qcd; }
+    int OrderEW(const int &id=-1) const  { return m_order_ew;  }
+
+  };// end of class MCFM_Born
+
 } // end of namespace MCFM
 
 using namespace SHERPA;
@@ -168,7 +207,22 @@ operator()(const Process_Info &pi) const
   Flavour_Vector fl(pi.ExtractFlavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
-  int pid(MCFM_Interface::GetMCFM().InitializeProcess(ids));
+  int pid(MCFM_Interface::GetMCFM().InitializeProcess(ids,1));
   if (pid>=0) return new MCFM_Virtual(pi,fl,pid);
+  return NULL;
+}
+
+DECLARE_TREEME2_GETTER(MCFM_Born,"MCFM_Born")
+
+Tree_ME2_Base *ATOOLS::Getter
+<Tree_ME2_Base,External_ME_Args,MCFM_Born>::
+operator()(const External_ME_Args &args) const
+{
+  if (args.m_source!="MCFM") return NULL;
+  Flavour_Vector fl(args.Flavours());
+  std::vector<int> ids(fl.size());
+  for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
+  int pid(MCFM_Interface::GetMCFM().InitializeProcess(ids,0));
+  if (pid>=0) return new MCFM_Born(args,pid);
   return NULL;
 }
