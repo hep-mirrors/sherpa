@@ -324,8 +324,10 @@ void Process_Integrator::SetTotal(const int mode)
 double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
-  double res = dabs(TotalResult());
-  double pxs = res*epsilon*p_whisto->Fills();
+  double res(0.0);
+  for (int i=p_whisto->Nbin()+1;i>0;i--)
+    res+=p_whisto->Value(i)*exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+  double pxs = res*epsilon;
   double cutxs = 0.;
   double cnt = 0.;
 
