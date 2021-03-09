@@ -245,8 +245,10 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].SetDefault(15).Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].SetDefault(6).Get<int>();
     Log::setLevel("Rivet", s["-l"].SetDefault(20).Get<int>());
-    s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
-    m_analyses = s["ANALYSES"].GetVector<std::string>();
+    m_analyses = s["ANALYSES"]
+      .SetDefault<std::vector<std::string>>({})
+      .SetSynonyms({"ANALYSIS", "-a"})
+      .GetVector<std::string>();
 
     // configure HepMC interface
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
@@ -914,8 +916,10 @@ bool Rivet_Interface::Init()
     m_hepmcoutputprecision = s["HEPMC_OUTPUT_PRECISION"].SetDefault(15).Get<int>();
     m_xsoutputprecision = s["XS_OUTPUT_PRECISION"].SetDefault(6).Get<int>();
     Log::setLevel("Rivet", s["-l"].SetDefault(20).Get<int>());
-    s.DeclareVectorSettingsWithEmptyDefault({ "ANALYSES" });
-    m_analyses = s["ANALYSES"].GetVector<std::string>();
+    m_analyses = s["ANALYSES"]
+      .SetDefault<std::vector<std::string>>({})
+      .SetSynonyms({"ANALYSIS", "-a"})
+      .GetVector<std::string>();
     for (size_t i(0);i<m_analyses.size();++i) {
       if (m_analyses[i]==std::string("MC_XS")) break;
       if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
