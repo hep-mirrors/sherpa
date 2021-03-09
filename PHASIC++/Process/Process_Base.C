@@ -821,8 +821,8 @@ void Process_Base::ConstructColorMatrix()
 Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
 {
   DEBUG_FUNC(fls);
-  int iq(-1), iqb(-1), np(0);
-  std::vector<int> sids;
+  int iq(-1), np(0);
+  std::vector<int> sids, iqbs;
   for (size_t i(0);i<fls.size();++i) {
     if (fls[i].StrongCharge()>0) {
       if (fls[i].StrongCharge()==8) sids.push_back(i);
@@ -830,20 +830,18 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
       else iq=i;
     }
     else if (fls[i].StrongCharge()<0) {
-      if (iqb>0) sids.push_back(i);
-      else iqb=i;
+      sids.push_back(i);
+      iqbs.push_back(i);
     }
   }
   bool adjoint(iq<0);
   if (iq<0) {
     iq=sids.front();
     sids.erase(sids.begin());
-    iqb=sids.back();
-    sids.erase(--sids.end());
+    iqbs.push_back(sids.back());
   }
-  std::vector<int> idr(sids.size()+2), idc(sids.size()+2);
+  std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
   idc.front()=idr.front()=iq;
-  idc.back()=idr.back()=iqb;
   Permutation perms(sids.size());
   std::vector<int> act(perms.MaxNumber(),0);
   std::vector<std::vector<double> > cij2
@@ -851,10 +849,17 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
   for (size_t i(0);i<perms.MaxNumber();++i) {
     int *cur(perms.Get(i));
     for (size_t k(0);k<sids.size();++k) idr[k+1]=sids[cur[k]];
+    int valid(false);
+    for (size_t l(0);l<iqbs.size();++l)
+      if (idr.back()==iqbs[l]) valid=true;
+    if (!valid) continue;
     for (size_t j(i);j<perms.MaxNumber();++j) {
       int *cur(perms.Get(j));
       for (size_t k(0);k<sids.size();++k) idc[k+1]=sids[cur[k]];
-      int valid(true), lqr(0), lqc(0);
+      int valid(false), lqr(0), lqc(0);
+      for (size_t l(0);l<iqbs.size();++l)
+	if (idc.back()==iqbs[l]) valid=true;
+      if (!valid) continue;
       Expression cij(200,100);
       cij.SetTR(1.);
       cij.pop_back();
@@ -911,6 +916,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
       if (!valid) continue;
       if (act[i]==0) act[i]=++np;
       if (act[j]==0) act[j]=++np;
+      if (msg->LevelIsDebugging()) cij.Print();
       cij.Evaluate();
       if (cij.Result().imag())
 	msg_Error()<<METHOD<<"(): Non-real color coefficient "
