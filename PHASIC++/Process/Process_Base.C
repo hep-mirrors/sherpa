@@ -888,7 +888,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
       Expression cij(200,100);
       cij.SetTR(1.);
       cij.pop_back();
-      size_t lr(adjoint?cij.AIndex():cij.FIndex()), fr(lr);
+      size_t lr(adjoint?iq:cij.FIndex()), fr(idc.back());
       for (size_t k(0);k<idr.size();++k) {
 	if (fls[idr[k]].StrongCharge()==3) {
 	  if (lqr>0) valid=false;
@@ -908,12 +908,13 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
 	  lr=nr;
 	}
 	else {
-	  size_t nr(k==idr.size()-1?fr:cij.AIndex());
+	  if (k==0 || k==idr.size()-1) continue;
+	  size_t nr(k==idr.size()-2?fr:cij.AIndex());
 	  cij.push_back(Adjoint::New(idr[k],lr,nr));
 	  lr=nr;
 	}
       }
-      size_t lc(adjoint?cij.AIndex():cij.FIndex()), fc(lc);
+      size_t lc(adjoint?iq:cij.FIndex()), fc(idc.back());
       for (size_t k(0);k<idc.size();++k) {
 	if (fls[idc[k]].StrongCharge()==3) {
 	  if (lqc>0) valid=false;
@@ -933,7 +934,8 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
 	  lc=nc;
 	}
 	else {
-	  size_t nc(k==idc.size()-1?fc:cij.AIndex());
+	  if (k==0 || k==idc.size()-1) continue;
+	  size_t nc(k==idc.size()-2?fc:cij.AIndex());
 	  cij.push_back(Adjoint::New(idc[k],lc,nc));
 	  lc=nc;
 	}
