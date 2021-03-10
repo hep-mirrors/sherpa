@@ -395,9 +395,17 @@ double ATOOLS::Random::Get()
   return rng;
 }
 
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+ATOOLS::Random::result_type ATOOLS::Random::operator()()
+{
+  return std::min(static_cast<result_type>((Get() * ((double)max() + 1.0))),
+                  max());
+}
+#else
 ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
   return Min(static_cast<ptrdiff_t>(Get() * max),max-1);
 }
+#endif
 
 void ATOOLS::Random::Gaussian(double & x,double & y)   
 {

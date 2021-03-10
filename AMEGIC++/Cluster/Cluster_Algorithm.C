@@ -76,7 +76,11 @@ bool Cluster_Algorithm::Cluster
       }
     }
     while (true) {
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+      std::shuffle(tids.begin(),tids.end(),*ran);
+#else
       std::random_shuffle(tids.begin(),tids.end(),*ran);
+#endif
       size_t i(0);
       for (;i<tids.size();++i) if (tids[i]==atids[i]) break;
       if (i==tids.size()) break;

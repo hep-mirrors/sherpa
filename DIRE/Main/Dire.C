@@ -276,7 +276,11 @@ void Dire::SetColors(ATOOLS::Cluster_Amplitude *ampl) const
 	atids.push_back(i);
       }
     while (true) {
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+      std::shuffle(atids.begin(),atids.end(),*ran);
+#else
       std::random_shuffle(atids.begin(),atids.end(),*ran);
+#endif
       size_t i(0);
       for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
       if (i==atids.size()) break;

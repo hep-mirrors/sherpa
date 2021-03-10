@@ -7,6 +7,10 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+#include <limits>
+#endif
+
 namespace ATOOLS {
 
   struct RNG_Key {
@@ -85,7 +89,17 @@ namespace ATOOLS {
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();   
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+    typedef size_t result_type;
+    result_type operator()();
+    constexpr static result_type min() noexcept { return 0; }
+    constexpr static result_type max() noexcept
+    {
+      return std::numeric_limits<result_type>::max();
+    }
+#else
     ptrdiff_t operator() (ptrdiff_t max);
+#endif
     // produce two Gaussian distributed random number using active Generator
     void   Gaussian(double &,double &);
     // produce Poissonian distributed random number using active Generator

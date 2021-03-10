@@ -247,8 +247,12 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       //      throw Return_Value::Retry_Event;
     }
   }
-  random_shuffle(shuffled.begin(), shuffled.end(), *ran);
-  
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+  std::shuffle(shuffled.begin(),shuffled.end(),*ran);
+#else
+  std::random_shuffle(shuffled.begin(),shuffled.end(),*ran);
+#endif
+
   // initial blobs still contain on-shell particles, stretch them off-shell
   for (size_t i=0; i<daughters.size(); ++i) {
     if (!Decays(daughters[shuffled[i]]->Flav()) ||
@@ -342,7 +346,11 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   if (inpart->Info()!='M') inpart->SetInfo('D');
 
   Particle_Vector daughters = blob->GetOutParticles();
-  random_shuffle(daughters.begin(), daughters.end(), *ran);
+  #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+  std::shuffle(daughters.begin(),daughters.end(),*ran);
+#else
+  std::random_shuffle(daughters.begin(),daughters.end(),*ran);
+#endif
   if (!(blob->Type()==btp::Hadron_Decay &&
         blob->Has(blob_status::needs_showers))) {
     for (PVIt it=daughters.begin();it!=daughters.end();++it) {

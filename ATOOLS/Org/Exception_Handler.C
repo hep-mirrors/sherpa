@@ -38,7 +38,10 @@ Exception_Handler::Exception_Handler():
   m_progname("Sherpa")
 {
   std::set_terminate(ATOOLS::Terminate);
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201402L) || __cplusplus >= 201402L)
+#else
   std::set_unexpected(ATOOLS::Terminate);
+#endif
   signal(SIGSEGV,ATOOLS::SignalHandler);
   signal(SIGINT,ATOOLS::SignalHandler);
   signal(SIGPIPE,ATOOLS::SignalHandler);
