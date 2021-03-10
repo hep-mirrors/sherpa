@@ -87,8 +87,6 @@ namespace ATOOLS {
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();
-    typedef size_t result_type;
-    result_type operator()();
     // produce Gaussian distributed random number using active Generator
     // according to the Marsaglia method
     double GetGaussian() {
@@ -121,13 +119,21 @@ namespace ATOOLS {
       while ((p*=Get())>disc) N++;
       return N;
     }
-    constexpr static result_type min() noexcept {return 0;}
-    constexpr static result_type max() noexcept {return std::numeric_limits<result_type>::max();}
     double Theta() { return acos(2.*Get()-1.); }
     double GetNZ();
 
     External_RNG* GetExternalRng() { return p_external; }
 
+    // adopt requirements for UniformRandomBitGenerator
+    // (e.g. for use in std::shuffle)
+    typedef size_t result_type;
+    result_type operator()();
+    constexpr static result_type min() noexcept {
+      return std::numeric_limits<result_type>::min();
+    }
+    constexpr static result_type max() noexcept {
+      return std::numeric_limits<result_type>::max();
+    }
 
   };// end of class Random
 
