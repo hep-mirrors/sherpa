@@ -60,7 +60,7 @@ PROCESSES:
     Order: {QCD: Any, EW: 0, HEFT: 1}
 
 RIVET: 
-  ANALYSES: [MC_QCD_PARTONS, MC_HJETS]
+  --analyses: [MC_QCD_PARTONS, MC_HJETS]
 
 INTERNAL_ANALYSES:
   - {

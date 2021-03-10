@@ -322,7 +322,6 @@ void Settings::SetSynonyms(const Settings_Keys& settings_keys,
                            const std::vector<std::string>& synonyms)
 {
   const Defaults_Key keys{ settings_keys.IndizesRemoved() };
-  PRINT_FUNC(keys.back());
   const auto it = m_synonyms.find(keys);
   if (m_synonyms.find(keys) != m_synonyms.end())
     if (synonyms != it->second)

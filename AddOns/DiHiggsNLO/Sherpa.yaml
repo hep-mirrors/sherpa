@@ -51,4 +51,4 @@ PROCESSES:
     Integrator: Rambo
 
 RIVET:
-  ANALYSES: MC_HHJETS
+  --analyses: MC_HHJETS

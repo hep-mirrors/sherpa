@@ -32,4 +32,4 @@ SELECTORS:
     - [PT, 11, 10.0, E_CMS]
 RIVET:
   USE_HEPMC_SHORT: 1
-  IGNOREBEAMS: 1
+  --ignore-beams: 1
