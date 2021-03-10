@@ -224,6 +224,8 @@ bool COMIX::Single_Process::Initialize
 	m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
       }
     (*pmap)[m_name]=m_name;
+    if (m_pinfo.m_cls==cls::sum) ConstructColorMatrix();
+    p_hc = new Hard_Matrix();
     return true;
   }
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -384,6 +386,10 @@ bool COMIX::Single_Process::MapProcess()
 bool COMIX::Single_Process::GeneratePoint()
 {
   SetZero();
+  if (m_pinfo.m_cls==cls::sum) {
+    m_zero=false;
+    return true;
+  }
   m_zero=true;
   if (p_map!=NULL && m_lookup && p_map->m_lookup) 
     return !(m_zero=p_map->m_zero);
@@ -444,8 +450,18 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
         !sp->p_bg->RSTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
     sp->p_scale->CalculateScale(p);
-    m_dxs=sp->p_bg->Differential();
-    m_w=p_int->ColorIntegrator()->GlobalWeight();
+    if (m_pinfo.m_cls==cls::sample) {
+      m_dxs=sp->p_bg->Differential();
+      m_w=p_int->ColorIntegrator()->GlobalWeight();
+    }
+    else {
+      m_w=1.0;
+      m_dxs=0.0;
+      ComputeHardMatrix();
+      for (size_t i(0); i<m_cols.m_perms.size(); ++i)
+	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
+	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
+    }
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
@@ -519,6 +535,7 @@ void COMIX::Single_Process::ComputeHardMatrix()
       if (cc<0 || cc==8) cj[perm[j]]=idx;
       if (cc>0 || cc==8) ci[perm[j]]=++idx;
     }
+    if (m_flavs[perm[0]].StrongCharge()==8) cj[perm[0]]=idx;
     double me(p_bg->Differential(ci,cj,-1));
     std::vector<Spin_Amplitudes> amps;
     std::vector<std::vector<Complex> > cols;

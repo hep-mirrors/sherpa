@@ -49,7 +49,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
   s["COLOUR_SCHEME"]
-    .SetDefault(1)
+    .SetDefault(0)
     .SetReplacementList(cls::ColorSchemeTags());
 
   s["HELICITY_SCHEME"]
@@ -566,7 +566,6 @@ int Matrix_Element_Handler::InitializeProcesses(
 void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
-
   // init processes
   msg_Info()<<METHOD<<"(): Looking for processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
