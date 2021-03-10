@@ -843,13 +843,16 @@ void Process_Base::ConstructColorMatrix()
 Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
 {
   DEBUG_FUNC(fls);
-  int iq(-1), np(0);
+  int iq(-1), np(0), nf(0);
   std::vector<int> sids, iqbs;
   for (size_t i(0);i<fls.size();++i) {
     if (fls[i].StrongCharge()>0) {
       if (fls[i].StrongCharge()==8) sids.push_back(i);
-      else if (iq>0) sids.push_back(i);
-      else iq=i;
+      else {
+	if (iq>0) sids.push_back(i);
+	else iq=i;
+	++nf;
+      }
     }
     else if (fls[i].StrongCharge()<0) {
       sids.push_back(i);
@@ -946,6 +949,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
       cij2[i][j]=cij.Result().real();
     }
   }
+  double N(nf>1?sqr(Factorial(nf-1)):1.0);
   Color_Matrix cij;
   cij.m_perms.resize(np);
   cij.m_colfacs.resize(np,std::vector<double>(np));
@@ -957,7 +961,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
       for (size_t j(i);j<act.size();++j)
 	if (act[j]) {
 	  cij.m_colfacs[act[i]-1][act[j]-1]=
-	    cij.m_colfacs[act[j]-1][act[i]-1]=cij2[i][j];
+	    cij.m_colfacs[act[j]-1][act[i]-1]=cij2[i][j]/N;
 	}
     }
   for (size_t i(0);i<cij.m_perms.size();++i)
