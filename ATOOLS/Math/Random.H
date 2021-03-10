@@ -87,7 +87,7 @@ namespace ATOOLS {
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();
-    typedef ptrdiff_t result_type;
+    typedef size_t result_type;
     result_type operator()();
     // produce Gaussian distributed random number using active Generator
     // according to the Marsaglia method
