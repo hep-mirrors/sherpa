@@ -102,25 +102,26 @@ namespace SHERPA {
   class MCFM_Virtual: public PHASIC::Virtual_ME2_Base {
   private:
 
-    int m_pid;
+    MCFM::Process *p_proc;
     std::vector<MCFM::FourVec> m_p;
 
   public:
 
     MCFM_Virtual(const PHASIC::Process_Info& pi,
 		 const ATOOLS::Flavour_Vector& flavs,int pid):
-      Virtual_ME2_Base(pi,flavs), m_pid(pid)
+      Virtual_ME2_Base(pi,flavs),
+      p_proc(MCFM_Interface::GetMCFM().GetProcess(pid))
     {
       rpa->gen.AddCitation
 	(1,"NLO matrix elements from MCFM \\cite{}.");
       m_p.resize(flavs.size());
       m_mode=1;
-      m_drmode=MCFM_Interface::GetMCFM().GetProcess(pid)->GetScheme();
+      m_drmode=p_proc->GetScheme();
     }
 
     void SetPoleCheck(const int check)
     {
-      MCFM_Interface::GetMCFM().GetProcess(m_pid)->SetPoleCheck(check);
+      p_proc->SetPoleCheck(check);
     }
 
     void Calc(const ATOOLS::Vec4D_Vector &p)
@@ -130,13 +131,12 @@ namespace SHERPA {
       for (size_t i(0);i<p.size();++i)
 	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
       double ason2pi(MCFM_Interface::SetMuR2(m_mur2)/(2.*M_PI));
-      MCFM_Interface::GetMCFM().Calc(m_pid,m_p,1);
-      const std::vector<double> &res
-	(MCFM_Interface::GetMCFM().GetResult(m_pid));
+      p_proc->Calc(m_p,1);
+      const std::vector<double> &res(p_proc->GetResult());
       m_res.Finite()=res[0]/ason2pi;
       m_res.IR()=res[1]/ason2pi;
       m_res.IR2()=res[2]/ason2pi;
-      m_born=res[3];
+      m_born=res[3]/p_proc->GetSymmetryFactor();
     }
 
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
@@ -148,13 +148,15 @@ namespace SHERPA {
 
   class MCFM_Born: public PHASIC::Tree_ME2_Base {
 
-    int m_order_ew, m_order_qcd, m_pid;
+    int m_order_ew, m_order_qcd;
+    MCFM::Process *p_proc;
     std::vector<MCFM::FourVec> m_p;
 
   public:
 
     MCFM_Born(const PHASIC::External_ME_Args &args,const int &pid):
-      Tree_ME2_Base(args), m_pid(pid) {
+      Tree_ME2_Base(args),
+      p_proc(MCFM_Interface::GetMCFM().GetProcess(pid)) {
       rpa->gen.AddCitation
 	(1,"NLO matrix elements from MCFM \\cite{}.");
       m_p.resize(args.Flavours().size());
@@ -169,9 +171,8 @@ namespace SHERPA {
       for (size_t i(0);i<p.size();++i)
 	for (size_t j(0);j<4;++j) m_p[i][j]=p[i][j];
       MCFM_Interface::SetAlpha(AlphaQCD(),AlphaQED());
-      MCFM_Interface::GetMCFM().Calc(m_pid,m_p,0);
-      const std::vector<double> &res
-	(MCFM_Interface::GetMCFM().GetResult(m_pid));
+      p_proc->Calc(m_p,0);
+      const std::vector<double> &res(p_proc->GetResult());
       return res[0];
     }
 
