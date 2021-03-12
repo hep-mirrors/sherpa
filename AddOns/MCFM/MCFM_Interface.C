@@ -25,7 +25,16 @@ namespace SHERPA {
 
   public:
 
-    MCFM_Interface(): ME_Generator_Base("MCFM") {}
+    MCFM_Interface(): ME_Generator_Base("MCFM")
+    {
+      rpa->gen.AddCitation(1,s_mcfm.GetReferences());
+      msg_Info()<<s_mcfm.GetStartupMessage();
+    }
+
+    ~MCFM_Interface()
+    {
+      msg_Info()<<s_mcfm.GetFinishMessage(1);
+    }
 
     bool Initialize(const std::string &path,const std::string &file,
 		    MODEL::Model_Base *const model,
@@ -112,8 +121,7 @@ namespace SHERPA {
       Virtual_ME2_Base(pi,flavs),
       p_proc(MCFM_Interface::GetMCFM().GetProcess(pid))
     {
-      rpa->gen.AddCitation
-	(1,"NLO matrix elements from MCFM \\cite{}.");
+      rpa->gen.AddCitation(1,p_proc->GetReferences());
       m_p.resize(flavs.size());
       m_mode=1;
       m_drmode=p_proc->GetScheme();
@@ -157,8 +165,7 @@ namespace SHERPA {
     MCFM_Born(const PHASIC::External_ME_Args &args,const int &pid):
       Tree_ME2_Base(args),
       p_proc(MCFM_Interface::GetMCFM().GetProcess(pid)) {
-      rpa->gen.AddCitation
-	(1,"NLO matrix elements from MCFM \\cite{}.");
+      rpa->gen.AddCitation(1,p_proc->GetReferences());
       m_p.resize(args.Flavours().size());
       m_order_qcd=args.m_orders[0];
       m_order_ew=args.m_orders[1];
@@ -185,7 +192,7 @@ namespace SHERPA {
 
 using namespace SHERPA;
 
-MCFM::CXX_Interface MCFM_Interface::s_mcfm;
+MCFM::CXX_Interface MCFM_Interface::s_mcfm(0);
 MODEL::Running_AlphaS *MCFM_Interface::p_as(NULL);
 
 DECLARE_GETTER(MCFM_Interface,"MCFM",ME_Generator_Base,ME_Generator_Key);
