@@ -239,6 +239,23 @@ void Weights_Map::Clear()
   clear();
   base_weight = 1.0;
   nominals_prefactor = 1.0;
+  is_absolute = false;
+}
+
+double Weights_Map::Get(const std::string& k, size_t i) const
+{
+  if (i == 0) {
+    return Nominal();
+  }
+  auto it = find(k);
+  if (it == end()) {
+    return Nominal();
+  }
+  if (is_absolute) {
+    return it->second[i];
+  } else {
+    return NominalIgnoringPrefactor() * it->second[i] / it->second[0];
+  }
 }
 
 bool Weights_Map::HasVariations() const
@@ -268,8 +285,14 @@ bool Weights_Map::IsZero() const
 double Weights_Map::Nominal() const
 {
   double w {base_weight};
-  for (const auto& kv : *this) {
-    w *= kv.second.Nominal();
+  if (is_absolute) {
+    // in a weights map of absolute values, all nominals are the same, so we
+    // can just take the first
+    w *= begin()->second.Nominal();
+  } else {
+    for (const auto& kv : *this) {
+      w *= kv.second.Nominal();
+    }
   }
   return nominals_prefactor * w;
 }
@@ -284,6 +307,7 @@ double Weights_Map::Nominal(const std::string& k) const
 
 double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
 {
+  assert(!is_absolute);
   double w {base_weight};
   for (const auto& kv : *this) {
     if (kv.second.type != type)
@@ -294,6 +318,7 @@ double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
 
 Weights Weights_Map::RelativeValues(const std::string& k) const
 {
+  assert(!is_absolute);
   const auto it = this->find(k);
   if (it != this->end()) {
     auto ret = it->second;
@@ -305,6 +330,7 @@ Weights Weights_Map::RelativeValues(const std::string& k) const
 
 Weights Weights_Map::AbsoluteValues(const std::string& k) const
 {
+  assert(!is_absolute);
   const auto it = this->find(k);
   if (it != this->end()) {
     auto ret = it->second;
@@ -316,6 +342,7 @@ Weights Weights_Map::AbsoluteValues(const std::string& k) const
 
 Weights Weights_Map::Combine(Variations_Type type) const
 {
+  assert(!is_absolute);
   auto w = Weights {type};
   for (const auto& kv : *this) {
     if (kv.second.type == type)
@@ -339,6 +366,7 @@ Weights_Map ATOOLS::operator/(Weights_Map lhs, double rhs)
 
 Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   base_weight *= rhs.base_weight;
   nominals_prefactor *= rhs.nominals_prefactor;
   for (const auto& kv : rhs) {
@@ -356,6 +384,7 @@ Weights_Map& Weights_Map::operator*=(const Weights_Map& rhs)
 
 Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   if (empty() && rhs.empty()) {
     base_weight += rhs.base_weight;
     nominals_prefactor *= rhs.nominals_prefactor;
@@ -388,6 +417,7 @@ Weights_Map& Weights_Map::operator+=(const Weights_Map& rhs)
 
 Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
 {
+  assert(!is_absolute);
   Weights_Map negative_rhs = rhs;
   negative_rhs.base_weight = -negative_rhs.base_weight;
   return operator+=(negative_rhs);
@@ -395,6 +425,8 @@ Weights_Map& Weights_Map::operator-=(const Weights_Map& rhs)
 
 void Weights_Map::MakeRelative()
 {
+  assert(is_absolute);
+
   // find any non-zero entry for normalisation, first check nominal entries
   double norm = 0.0;
   for (const auto& kv : *this) {
@@ -440,10 +472,22 @@ void Weights_Map::MakeRelative()
       kv.second.Nominal() = 1.0;
     }
   }
+
+  is_absolute = false;
 }
 
 void Weights_Map::MakeAbsolute()
 {
+  assert(!is_absolute);
+
+  // without variations, we only get rid of nominals_prefactor and return
+  if (this->empty()) {
+    base_weight *= nominals_prefactor;
+    nominals_prefactor = 1.0;
+    is_absolute = true;
+    return;
+  }
+
   // store all nominals
   std::map<std::string, double> nominals;
   for (const auto& kv : *this) {
@@ -470,12 +514,31 @@ void Weights_Map::MakeAbsolute()
     kv.second.Nominal() *= nominals_prefactor;
   }
   nominals_prefactor = 1.0;
+
+  is_absolute = true;
+}
+
+double Weights_Map::NominalIgnoringPrefactor() const
+{
+  double w {base_weight};
+  if (is_absolute) {
+    // in a weights map of absolute values, all nominals are the same, so we
+    // can just take the first
+    w *= begin()->second.Nominal();
+  } else {
+    for (const auto& kv : *this) {
+      w *= kv.second.Nominal();
+    }
+  }
+  return w;
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
 {
-  out << w.base_weight << " (nominals prefactor = " << w.nominals_prefactor
-      << "):\n";
+  if (!w.is_absolute) {
+    out << w.base_weight << " (nominals prefactor = " << w.nominals_prefactor
+        << "):\n";
+  }
   for (const auto& e : w) {
     out << e.first << "\n" << e.second << '\n';
   }
