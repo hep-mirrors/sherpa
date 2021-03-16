@@ -258,7 +258,7 @@ namespace PHASIC {
      *
      * This method calculates the local Kfactor for MENLOPS for given config
      */
-    ATOOLS::Weights LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
+    ATOOLS::Weights_Map LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
 
     /*!
      * @return Cluster amplitude p_ampl
