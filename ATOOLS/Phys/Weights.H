@@ -137,11 +137,9 @@ namespace ATOOLS {
     double Nominal(const std::string& k) const;
     double NominalIgnoringVariationType(Variations_Type) const;
 
-    // return Weights entries for a given name, either as-is ("Relative"), or
-    // multiplied by the base weight ("Absolute")
+    // return relative Weights entries for a given name
     Weights& RelativeValues(const std::string& k) { return (*this)[k]; }
     Weights RelativeValues(const std::string& k) const;
-    Weights AbsoluteValues(const std::string& k) const;
 
     /// Calculate the product of all entries that share the same type, e.g. to
     /// get the combined QCD or Qcut variations from different sources. Note

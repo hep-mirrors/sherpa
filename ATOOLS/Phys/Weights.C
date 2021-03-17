@@ -328,18 +328,6 @@ Weights Weights_Map::RelativeValues(const std::string& k) const
   return 1.0;
 }
 
-Weights Weights_Map::AbsoluteValues(const std::string& k) const
-{
-  assert(!is_absolute);
-  const auto it = this->find(k);
-  if (it != this->end()) {
-    auto ret = it->second;
-    ret[0] *= nominals_prefactor;
-    return ret * base_weight;
-  }
-  return base_weight;
-}
-
 Weights Weights_Map::Combine(Variations_Type type) const
 {
   assert(!is_absolute);
