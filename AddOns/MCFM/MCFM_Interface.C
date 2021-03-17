@@ -68,6 +68,7 @@ namespace SHERPA {
       params["charm_mass_square"]=ToString(sqr(Flavour(kf_c).Mass(true)),16);
       params["bottom_mass_square"]=ToString(sqr(Flavour(kf_b).Mass(true)),16);
       params["tau_mass_square"]=ToString(sqr(Flavour(kf_tau).Mass(true)),16);
+      params["ew_scheme"]="5";
       params["alpha_EM"]=ToString(model->ScalarConstant("alpha_QED"),16);
       params["Gf"]=ToString(1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev"))),16);
       params["sin2_thetaW"]=ToString(std::abs(model->ComplexConstant("csin2_thetaW")),16);
