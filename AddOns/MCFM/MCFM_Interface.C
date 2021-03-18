@@ -80,6 +80,7 @@ namespace SHERPA {
       params["CKM_c_b"]=ToString(model->ComplexConstant("CKM_2_1"),16);
       params["order_alpha_S"]=ToString(MODEL::as->Order()+1);
       params["alpha_S"]=ToString(model->ScalarConstant("alpha_S"),16);
+      params["scale"]=ToString(Flavour(kf_Z).Mass(),16);
       s_mcfm.SetVerbose(msg->LevelIsDebugging());
       s_mcfm.Initialize(params);
       return true;
