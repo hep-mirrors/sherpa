@@ -284,17 +284,19 @@ bool Weights_Map::IsZero() const
 
 double Weights_Map::Nominal() const
 {
-  double w {base_weight};
   if (is_absolute) {
-    // in a weights map of absolute values, all nominals are the same, so we
-    // can just take the first
-    w *= begin()->second.Nominal();
+    if (empty()) {
+      return base_weight;
+    } else {
+      return begin()->second.Nominal();
+    }
   } else {
+    double w {base_weight};
     for (const auto& kv : *this) {
       w *= kv.second.Nominal();
     }
+    return nominals_prefactor * w;
   }
-  return nominals_prefactor * w;
 }
 
 double Weights_Map::Nominal(const std::string& k) const
@@ -508,17 +510,19 @@ void Weights_Map::MakeAbsolute()
 
 double Weights_Map::NominalIgnoringPrefactor() const
 {
-  double w {base_weight};
   if (is_absolute) {
-    // in a weights map of absolute values, all nominals are the same, so we
-    // can just take the first
-    w *= begin()->second.Nominal();
+    if (empty()) {
+      return base_weight;
+    } else {
+      return begin()->second.Nominal();
+    }
   } else {
+    double w {base_weight};
     for (const auto& kv : *this) {
       w *= kv.second.Nominal();
     }
+    return w;
   }
-  return w;
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights_Map& w)
