@@ -1,3 +1,4 @@
+
 #include "PHASIC++/Process/Process_Base.H"
 
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -827,7 +828,7 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     if (fls[i].StrongCharge()>0) {
       if (fls[i].StrongCharge()==8) sids.push_back(i);
       else {
-	if (iq>0) sids.push_back(i);
+	if (iq>=0) sids.push_back(i);
 	else iq=i;
 	++nf;
       }
