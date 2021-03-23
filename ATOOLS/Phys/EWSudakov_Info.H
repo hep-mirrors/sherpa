@@ -20,7 +20,7 @@ namespace ATOOLS {
   * _default: DP-scheme, that is do not compute the kfactor if at least one of the
   *          invariants isn't large enough
   *
-  * _tollerant: Only discard those pair of particles whose invariant isn't large
+  * _tolerant: Only discard those pair of particles whose invariant isn't large
   *            enough from the calculation
   *
   * _cluster_dumb: if a pair of particles has an insufficient invariant mass,
@@ -32,7 +32,7 @@ namespace ATOOLS {
   */
   enum class EWSudakovHighEnergySchemes{
     _default,
-    _tollerant,
+    _tolerant,
     _cluster_dumb,
     _cluster_l1,
   };

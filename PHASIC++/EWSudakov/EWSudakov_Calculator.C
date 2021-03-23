@@ -68,15 +68,15 @@ void EWSudakov_Calculator::SetHighEnergyScheme(const std::string& hescheme)
 {
   if(hescheme == "Default"){
     m_helimitscheme = HighEnergySchemes::_default;
-  } else if (hescheme == "Tollerant"){
-    m_helimitscheme = HighEnergySchemes::_tollerant;
+  } else if (hescheme == "Tolerant"){
+    m_helimitscheme = HighEnergySchemes::_tolerant;
   } else if (hescheme == "Cluster_Dumb"){
     m_helimitscheme = HighEnergySchemes::_cluster_dumb;
   } else if (hescheme == "Cluster_L1"){
     m_helimitscheme = HighEnergySchemes::_cluster_l1;
   } else {
     THROW(not_implemented, ("Option " + hescheme
-      + " is not implemented, valid options are: Default, Tollerant, Cluster_Dumb and Cluster_L1"));
+      + " is not implemented, valid options are: Default, Tolerant, Cluster_Dumb and Cluster_L1"));
   }
 };
 
@@ -160,7 +160,7 @@ EWSudakov_Log_Corrections_Map EWSudakov_Calculator::CorrectionsMap()
     for (size_t l{0}; l < k; ++l) {
       /// If the scheme is not the default, I still need to perform checks
       /// on the invariants
-      if (m_helimitscheme == HighEnergySchemes::_tollerant ) {
+      if (m_helimitscheme == HighEnergySchemes::_tolerant ) {
         const double rkl       = std::abs((base_ampl.Mom(k) + base_ampl.Mom(l)).Abs2());
         const double threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
         logs[{EWSudakov_Log_Type::lSSC, {k, l}}] =
