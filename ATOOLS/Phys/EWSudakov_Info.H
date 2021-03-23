@@ -15,6 +15,28 @@ namespace ATOOLS {
     lPR,      ///< parameter renormalisation corrections \propto \log(s/m_mW2)
   };
 
+  /** High energy schemes:
+  *
+  * _default: DP-scheme, that is do not compute the kfactor if at least one of the
+  *          invariants isn't large enough
+  *
+  * _tollerant: Only discard those pair of particles whose invariant isn't large
+  *            enough from the calculation
+  *
+  * _cluster_dumb: if a pair of particles has an insufficient invariant mass,
+  *               try combining the two momenta and with the combined momentum
+  *               do the same as default
+  *
+  * _cluster_l1: cluster particles that can form a resonant decay
+  *
+  */
+  enum class EWSudakovHighEnergySchemes{
+    _default,
+    _tollerant,
+    _cluster_dumb,
+    _cluster_l1,
+  };
+
   EWSudakov_Log_Type EWSudakovLogTypeFromString(const std::string&);
   std::ostream& operator<<(std::ostream& os, const EWSudakov_Log_Type&);
 

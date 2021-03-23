@@ -16,6 +16,7 @@ namespace PHASIC {
   using Coeff_Value = Complex;
   using Coeff_Map_Value = std::vector<Coeff_Value>;
   using Coeff_Map = std::map<Coeff_Map_Key, Coeff_Map_Value>;
+  using HighEnergySchemes = ATOOLS::EWSudakovHighEnergySchemes;
 
   std::ostream& operator<<(std::ostream& os, const Coeff_Map_Key&);
 
@@ -31,7 +32,7 @@ namespace PHASIC {
     { return m_activelogtypes; }
 
   private:
-
+    HighEnergySchemes m_helimitscheme;
     bool IsInHighEnergyLimit();
     void ClearSpinAmplitudes();
     void FillBaseSpinAmplitudes();
@@ -61,7 +62,8 @@ namespace PHASIC {
     Coeff_Value lsPRCoeff();
 
     ATOOLS::EWSudakov_Log_Corrections_Map CorrectionsMap();
-
+    /// Set High Energy limit scheme from string
+    void SetHighEnergyScheme(const std::string&);
     /// calculate transformed amplitude value
     Complex TransformedAmplitudeValue(const Leg_Kfcode_Map&,
                                       const std::vector<int>&,
