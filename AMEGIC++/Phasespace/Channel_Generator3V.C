@@ -279,7 +279,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
@@ -607,7 +607,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag,m,string("p_ms[")+GetMassIndex(m)+string("]"),0,sf);
     return;
   }
   string lm,rm;
@@ -644,7 +644,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
     }
     if (prt.length()==1) {
       AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		     string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
+		     string("_max)-sqrt(p_ms[") + GetMassIndex(prt) + string("]))"),0,sf);
     }
   }
   else {
@@ -693,7 +693,7 @@ void Channel_Generator3V::GenerateMassChain(int flag,Point* p,Point* clmp,int& r
 //     }
 //     if (prt.length()==1) {
 //       AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-// 		     string("_max)-sqrt(ms[") + prt + string("]))"),0,sf);
+// 		     string("_max)-sqrt(p_ms[") + prt + string("]))"),0,sf);
 //     }
 //   }
   //min
@@ -838,7 +838,7 @@ void Channel_Generator3V::CalcSmin(int flag,const char* min,string lm,ofstream& 
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("ms[") + GetMassIndex(lm) + string("]"),0,sf);
+		   string("p_ms[") + GetMassIndex(lm) + string("]"),0,sf);
   }
   /*  string s("");
 
@@ -847,12 +847,12 @@ void Channel_Generator3V::CalcSmin(int flag,const char* min,string lm,ofstream& 
       s += string("cuts->scut[")+lm[i]+string("][")+lm[j]+string("]+");
   }
   
-  if (lm.length()==1) s += string("ms[")+lm[0]+string("]");
+  if (lm.length()==1) s += string("p_ms[")+lm[0]+string("]");
   else {
     if (lm.length()==2) s +=string("0");
     else {      
-      s += string("(2-")+IString(lm.length())+string(")*(ms[")+lm[0]+string("]");
-      for (short int i=1;i<lm.length();i++) s += string("+ms[")+lm[i]+string("]");
+      s += string("(2-")+IString(lm.length())+string(")*(p_ms[")+lm[0]+string("]");
+      for (short int i=1;i<lm.length();i++) s += string("+p_ms[")+lm[i]+string("]");
       s += string(")");
     }
   }

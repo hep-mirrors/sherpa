@@ -50,7 +50,7 @@ bool FSR_Channels::Initialize()
   }
   if (!process_integrator->Process()->InitIntegrator(p_psh))
     THROW(critical_error,"InitIntegrator failed");
-  return sintegrator;
+  return true;
 }
 
 void FSR_Channels::DropRedundantChannels()
