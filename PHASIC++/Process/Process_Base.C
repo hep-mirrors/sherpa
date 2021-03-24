@@ -1,4 +1,3 @@
-
 #include "PHASIC++/Process/Process_Base.H"
 
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -866,22 +865,25 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
     sids.erase(sids.begin());
     iqbs.push_back(sids.back());
   }
+  int unique(iqbs.size()==1?1:0);
   std::vector<int> idr(sids.size()+1), idc(sids.size()+1);
   idc.front()=idr.front()=iq;
-  Permutation perms(sids.size());
+  if (unique) idc.back()=idr.back()=iqbs.front();
+  Permutation perms(sids.size()-unique);
   std::vector<int> act(perms.MaxNumber(),0);
-  std::vector<std::vector<double> > cij2
-    (act.size(),std::vector<double>(act.size()));
+  std::map<int,std::map<int,double> > cij2;
   for (size_t i(0);i<perms.MaxNumber();++i) {
     int *cur(perms.Get(i));
-    for (size_t k(0);k<sids.size();++k) idr[k+1]=sids[cur[k]];
+    for (size_t k(0);k<sids.size()-unique;++k)
+      idr[k+1]=sids[cur[k]];
     int valid(false);
     for (size_t l(0);l<iqbs.size();++l)
       if (idr.back()==iqbs[l]) valid=true;
     if (!valid) continue;
     for (size_t j(i);j<perms.MaxNumber();++j) {
       int *cur(perms.Get(j));
-      for (size_t k(0);k<sids.size();++k) idc[k+1]=sids[cur[k]];
+      for (size_t k(0);k<sids.size()-unique;++k)
+	idc[k+1]=sids[cur[k]];
       int valid(false), lqr(0), lqc(0);
       for (size_t l(0);l<iqbs.size();++l)
 	if (idc.back()==iqbs[l]) valid=true;
@@ -959,7 +961,8 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
   for (size_t i(0);i<act.size();++i)
     if (act[i]) {
       int *cur(perms.Get(i));
-      for (size_t k(0);k<sids.size();++k) idc[k+1]=sids[cur[k]];
+      for (size_t k(0);k<sids.size()-unique;++k)
+	idc[k+1]=sids[cur[k]];
       cij.m_perms[act[i]-1]=idc;
       for (size_t j(i);j<act.size();++j)
 	if (act[j]) {
