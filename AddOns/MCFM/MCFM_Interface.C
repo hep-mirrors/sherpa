@@ -12,6 +12,8 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include <cctype>
+
 using namespace PHASIC; 
 using namespace ATOOLS;
 
@@ -22,6 +24,12 @@ namespace SHERPA {
 
     static MCFM::CXX_Interface s_mcfm;
     static MODEL::Running_AlphaS *p_as;
+
+    inline std::string str_tolower(std::string s) {
+      std::transform(s.begin(), s.end(), s.begin(),
+		     [](unsigned char c){ return std::tolower(c); });
+      return s;
+    }
 
   public:
 
@@ -47,6 +55,9 @@ namespace SHERPA {
       if (!FileExists(pdname))
 	Copy(MCFM_PATH+std::string("/share/process.DAT"),pdname);
       std::map<std::string,std::string> params;
+      std::string modelname(str_tolower(model->Name()));
+      if (modelname=="smehc") modelname="heft";
+      params["model"]=modelname;
       params["n_flav"]=ToString(Flavour(kf_jet).Size()/2,16);
       params["down_mass"]=ToString(Flavour(kf_d).Mass(),16);
       params["up_mass"]=ToString(Flavour(kf_u).Mass(),16);
