@@ -193,7 +193,7 @@ namespace SHERPA {
       MCFM_Interface::SetAlpha(AlphaQCD(),AlphaQED());
       p_proc->Calc(m_p,0);
       const std::vector<double> &res(p_proc->GetResult());
-      return res[0];
+      return res[3];
     }
 
     int OrderQCD(const int &id=-1) const { return m_order_qcd; }
