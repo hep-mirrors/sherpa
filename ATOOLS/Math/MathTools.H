@@ -86,6 +86,14 @@ namespace ATOOLS {
     return sqrt(d);
   }
 
+  inline double intpow(const double &a,int b)
+  {
+    double apb((b%2)?(b>0?a:1./a):1.);
+    if (b>0) { while (b>1) { apb*=a*a; b-=2; } }
+    else { while (b<-1) { apb/=a*a; b+=2; } }
+    return apb;
+  }
+
 #define GAMMA_E 0.5772156649015328606
 
   double Gammln(double xx);
