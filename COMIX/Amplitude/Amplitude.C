@@ -1160,25 +1160,27 @@ void Amplitude::SetCouplings() const
 #ifdef DEBUG__CF
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
+  MODEL::Coupling_Data *aqcd(m_cpls.front().p_aqcd);
+  MODEL::Coupling_Data *aqed(m_cpls.front().p_aqed);
+  double gsfac(aqcd?sqrt(aqcd->Factor()):1.0);
+  double gwfac(aqed?sqrt(aqed->Factor()):1.0);
   for (size_t i(0);i<m_cpls.size();++i) {
     double fac(1.0);
     Vertex *v(m_cpls[i].p_v);
     size_t oqcd(m_cpls[i].m_oqcd), oew(m_cpls[i].m_oew);
-    MODEL::Coupling_Data *aqcd(m_cpls[i].p_aqcd);
-    MODEL::Coupling_Data *aqed(m_cpls[i].p_aqed);
     if (aqcd && oqcd) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qcd: "<<sqrt(aqcd->Factor())<<" ^ "<<oqcd
-		     <<" = "<<pow(aqcd->Factor(),oqcd/2.0)<<"\n";
+		     <<" = "<<intpow(gsfac,oqcd)<<"\n";
 #endif
-      fac*=pow(aqcd->Factor(),oqcd/2.0);
+      fac*=intpow(gsfac,oqcd);
     }
     if (aqed && oew) {
 #ifdef DEBUG__CF
       msg_Debugging()<<"  qed: "<<sqrt(aqed->Factor())<<" ^ "<<oew
-		     <<" = "<<pow(aqed->Factor(),oew/2.0)<<"\n";
+		     <<" = "<<intpow(gwfac,oew)<<"\n";
 #endif
-      fac*=pow(aqed->Factor(),oew/2.0);
+      fac*=intpow(gwfac,oew);
     }
     v->SetCplFac(fac);
   }
