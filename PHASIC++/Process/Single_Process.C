@@ -663,9 +663,11 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // contributions, we may want to add those
   if (varmode != Variations_Mode::nominal_only && p_ewsudakov_kfactor) {
     if (GetSubevtList() == nullptr || m_ewsudakov_rs) {
-      const auto ewsudkfac = p_ewsudakov_kfactor->KFactor();
-      for (const auto& kv : p_ewsudakov_kfactor->CorrectionsMap()) {
-        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(kv.first)] = kv.second;
+      p_ewsudakov_kfactor->KFactor();
+      EWSudakov_Log_Corrections_Map corrections =
+        p_ewsudakov_kfactor->CorrectionsMap();
+      for (const auto& t : p_ewsudakov_kfactor->ActiveLogTypes()) {
+        m_last["EWSudakov"][ToString<EWSudakov_Log_Type>(t)] = corrections[t];
       }
     } else {
       for (const auto& t : p_ewsudakov_kfactor->ActiveLogTypes()) {
