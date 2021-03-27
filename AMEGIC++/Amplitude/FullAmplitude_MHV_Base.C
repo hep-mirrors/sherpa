@@ -63,9 +63,6 @@ FullAmplitude_MHV_Base::~FullAmplitude_MHV_Base()
   if (p_calc)             delete p_calc;
 }
 
-
-// public functions
-
 double FullAmplitude_MHV_Base::MSquare(int *hlist,MomentumList* BS)   
 {  
   m_hlist=hlist;
@@ -87,10 +84,10 @@ double FullAmplitude_MHV_Base::MSquare(int *hlist,MomentumList* BS)
   
   double cplfac(1.0);
   if (p_aqcd && m_oqcd) {
-    cplfac *= pow(p_aqcd->Factor(),(double)m_oqcd);
+    cplfac *= intpow(p_aqcd->Factor(),m_oqcd);
   }
   if (p_aqed && m_oqed) {
-    cplfac *= pow(p_aqed->Factor(),(double)m_oqed);
+    cplfac *= intpow(p_aqed->Factor(),m_oqed);
   }
   
   return m_cpl*cplfac*res;
