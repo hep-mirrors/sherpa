@@ -523,11 +523,13 @@ void COMIX::Single_Process::ComputeHardMatrix()
   p_hc->resize(m_cols.m_perms.size(),
 	       std::vector<Complex>
 	       (m_cols.m_perms.size()));
-  for (size_t i(0);i<p_hc->size();++i)
-    for (size_t j(0);j<p_hc->size();++j) {
+  size_t np(p_hc->size()), nh(hc.front().size());
+  for (size_t i(0);i<np;++i)
+    for (size_t j(i);j<np;++j) {
       (*p_hc)[i][j]=Complex(0.0,0.0);
-      for (size_t k(0);k<hc[i].size();++k)
-	(*p_hc)[i][j]+=hc[i][k]*std::conj(hc[j][k])/w;
+      for (size_t k(0);k<nh;++k)
+	(*p_hc)[i][j]+=hc[i][k]*std::conj(hc[j][k]);
+      (*p_hc)[j][i]=std::conj((*p_hc)[i][j]/=w);
     }
 }
 
