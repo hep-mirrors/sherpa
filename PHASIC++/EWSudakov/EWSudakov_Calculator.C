@@ -4,6 +4,10 @@
 #include "KFactor_Checker.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
+#include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Process/ME_Generators.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+
 #include <cassert>
 
 using namespace PHASIC;
@@ -46,6 +50,57 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   m_c_coeff_ignores_vector_bosons =
       s["EWSUDAKOV_C_COEFF_IGNORES_VECTOR_BOSONS"].SetDefault(false).Get<bool>();
   SetHighEnergyScheme(s["EWSUDAKOV_HIGH_ENERGY_SCHEME"].SetDefault("Default").Get<std::string>());
+
+  // create clustered process
+  {
+    auto ampl = MakeClusterAmpl();
+    ampl->SetNIn(p_proc->NIn());
+    ampl->SetOrderQCD(p_proc->MaxOrder(0));
+    for (size_t i(1);i<p_proc->MaxOrders().size();++i)
+      ampl->SetOrderEW(ampl->OrderEW()+p_proc->MaxOrder(i));
+    for(int i(0);i<p_proc->NIn()+p_proc->NOut();++i)
+      if (i<p_proc->NIn()) ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i].Bar());
+      else ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i]);
+    ampl->SetProc(p_proc);
+    ampl->SetProcs(p_proc->AllProcs());
+    ampl->CombineLegs(ampl->Leg(2), ampl->Leg(3), Flavour{kf_Z});
+    Process_Info pi;
+    pi.m_addname = "__Sudakov";
+    pi.m_megenerator = "Comix";
+    for (size_t i{0}; i < ampl->NIn(); ++i) {
+      Flavour fl(ampl->Leg(i)->Flav().Bar());
+      pi.m_ii.m_ps.push_back(Subprocess_Info(fl, "", ""));
+    }
+    for (size_t i{ampl->NIn()}; i < ampl->Legs().size(); ++i) {
+      Flavour fl{ampl->Leg(i)->Flav()};
+      pi.m_fi.m_ps.push_back(Subprocess_Info(fl, "", ""));
+    }
+    pi.m_maxcpl = p_proc->Info().m_maxcpl;
+    pi.m_mincpl = p_proc->Info().m_mincpl;
+    pi.m_maxacpl = p_proc->Info().m_maxacpl;
+    pi.m_minacpl = p_proc->Info().m_minacpl;
+    pi.m_maxcpl[2] = 99;
+    pi.m_mincpl[2] = 0;
+    pi.m_maxacpl[2] = 99;
+    pi.m_minacpl[2] = 0;
+    pi.m_mincpl[1] -= 1;
+    pi.m_maxcpl[1] -= 1;
+    auto proc = p_proc->Generator()->Generators()->InitializeProcess(pi, false);
+    if (proc == NULL) {
+      msg_Debugging() << "WARNING: Comix_Interface::InitializeProcess can not"
+        << "initialize process for process info: " << pi << '\n';
+      return;
+    }
+    proc->SetSelector(Selector_Key{});
+    proc->SetScale(Scale_Setter_Arguments(
+          MODEL::s_model, "VAR{" + ToString(sqr(rpa->gen.Ecms())) + "}",
+          "Alpha_QCD 1"));
+    proc->SetKFactor(KFactor_Setter_Arguments("None"));
+    //proc->FillProcessMap(&ProcessMap());
+    msg_Debugging() << "Comix_Interface::InitializeProcess initialized "
+      << proc->Name() << '\n';
+    EWSudakov_Calculator subcalculator{proc};
+  }
 }
 
 EWSudakov_Calculator::~EWSudakov_Calculator()

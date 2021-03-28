@@ -82,8 +82,6 @@ namespace PHASIC {
       return goldstone_only_ampls;
     }
 
-  private:
-
     // helper methods for the construction
     Cluster_Amplitude_UPM CreateAmplitudes(
         Process_Base*,
@@ -92,6 +90,8 @@ namespace PHASIC {
     static ATOOLS::Cluster_Amplitude_UP
     CreateSU2TransformedAmplitude(const ATOOLS::Cluster_Amplitude_UP& ampl,
                                   const Leg_Kfcode_Map_Signed&);
+
+  private:
 
     /// all amplitudes that might be needed for EW Sudakov corrections
     Cluster_Amplitude_UPM ampls;
