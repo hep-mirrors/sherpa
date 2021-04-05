@@ -12,7 +12,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
-#include <cctype>
+#include <ctype.h>
 
 using namespace PHASIC; 
 using namespace ATOOLS;
@@ -27,7 +27,7 @@ namespace SHERPA {
 
     inline std::string str_tolower(std::string s) {
       std::transform(s.begin(), s.end(), s.begin(),
-		     [](unsigned char c){ return std::tolower(c); });
+		     [](unsigned char c){ return tolower(c); });
       return s;
     }
 
