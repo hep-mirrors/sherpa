@@ -89,8 +89,6 @@ void EWSudakov_Amplitudes::UpdateMomenta(const ATOOLS::Vec4D_Vector& mom)
     particles.push_back(new Particle{});
 
   for (auto& ampl : ampls) {
-    if (ampl.first == s_baseamplkey)
-      continue;
 
     Vec4D_Vector new_moms;
     new_moms.reserve(NumberOfLegs());

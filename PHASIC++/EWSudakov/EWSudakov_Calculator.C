@@ -52,6 +52,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
   SetHighEnergyScheme(s["EWSUDAKOV_HIGH_ENERGY_SCHEME"].SetDefault("Default").Get<std::string>());
 
   // create clustered process
+  if (m_ampls.NumberOfLegs() > 4)
   {
     auto ampl = MakeClusterAmpl();
     ampl->SetNIn(p_proc->NIn());
@@ -99,7 +100,7 @@ EWSudakov_Calculator::EWSudakov_Calculator(Process_Base* proc):
     //proc->FillProcessMap(&ProcessMap());
     msg_Debugging() << "Comix_Interface::InitializeProcess initialized "
       << proc->Name() << '\n';
-    EWSudakov_Calculator subcalculator{proc};
+    subcalculator.reset(new EWSudakov_Calculator{proc});
   }
 }
 
@@ -140,9 +141,17 @@ EWSudakov_Calculator::CorrectionsMap(const ATOOLS::Vec4D_Vector& mom)
 {
   DEBUG_FUNC("");
   m_ampls.UpdateMomenta(mom);
-  if (!IsInHighEnergyLimit()) {
-    return {};
+
+  if (subcalculator) {
+    Vec4D_Vector cmom = mom;
+    cmom[2] = cmom[2] + cmom[3];
+    cmom.erase(cmom.begin() + 3);
+    return subcalculator->CorrectionsMap(cmom);
+  } else {
+    if (!IsInHighEnergyLimit())
+      return {};
   }
+
   if (p_proc->Integrator()->ColorScheme() == cls::sample) {
     Int_Vector I = p_proc->Integrator()->ColorIntegrator()->I();
     Int_Vector J = p_proc->Integrator()->ColorIntegrator()->J();

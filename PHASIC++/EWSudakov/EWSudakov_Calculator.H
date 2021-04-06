@@ -80,6 +80,8 @@ namespace PHASIC {
     /// the COMIX interface for using dynamic EW parameters used for the PR logs
     HE_Comix_Interface m_comixinterface_he;
 
+    std::unique_ptr<EWSudakov_Calculator> subcalculator;
+
     const EWGroupConstants m_ewgroupconsts;
 
     double m_threshold;
