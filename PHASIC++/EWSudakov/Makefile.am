@@ -15,7 +15,8 @@ libPhasicEWSudakov_la_SOURCES = \
 	EWSudakov_Amplitudes.C \
 	Git_Info.C \
 	KFactor.C \
-	EWSudakov_Calculator.C
+	EWSudakov_Calculator.C \
+	Clustered_EWSudakov_Calculator.C
 localinc_HEADERS = \
 	Coefficient_Checker.H \
 	KFactor_Checker.H \
@@ -25,4 +26,5 @@ localinc_HEADERS = \
 	EWSudakov.H \
 	EWSudakov_Amplitudes.H \
 	KFactor.H \
-	EWSudakov_Calculator.H
+	EWSudakov_Calculator.H \
+	Clustered_EWSudakov_Calculator.H
