@@ -425,9 +425,9 @@ void Matrix_Element_Handler::BuildProcesses()
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   // set color scheme
-  reader.SetTags(cls::ColorSchemeTags());
-  cls::scheme cls((cls::scheme)reader.Get<int>("COLOUR_SCHEME",0));
-  reader.SetTags(std::map<std::string,std::string>());
+  read.SetTags(cls::ColorSchemeTags());
+  cls::scheme cls((cls::scheme)read.GetValue<int>("COLOUR_SCHEME",0));
+  read.SetTags(std::map<std::string,std::string>());
   // set helicity scheme
   read.SetTags(hls::HelicitySchemeTags());
   hls::scheme hls((hls::scheme)read.GetValue<int>("HELICITY_SCHEME",1));

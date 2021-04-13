@@ -2,7 +2,6 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
-#include "PHASIC++/Process/External_ME_Args.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -13,6 +12,7 @@
 #include "ATOOLS/Org/Exception.H"
 
 #include <ctype.h>
+#include <algorithm>
 
 using namespace PHASIC; 
 using namespace ATOOLS;
@@ -79,7 +79,7 @@ namespace SHERPA {
       params["charm_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(4)")),16);
       params["bottom_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(5)")),16);
       params["tau_yukawa"]=ToString(std::abs(model->ComplexConstant("yuk(15)")),16);
-      params["ew_scheme"]="5";
+      params["ew_scheme"]="4";
       params["alpha_EM"]=ToString(model->ScalarConstant("alpha_QED"),16);
       params["Gf"]=ToString(1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev"))),16);
       params["sin2_thetaW"]=ToString(std::abs(model->ComplexConstant("csin2_thetaW")),16);
@@ -138,6 +138,15 @@ namespace SHERPA {
       m_p.resize(flavs.size());
       m_mode=1;
       m_drmode=p_proc->GetScheme();
+      static int polecheck(-1);
+      if (polecheck<0) {
+	Data_Reader reader(" ",";","!","=");
+	reader.AddComment("#");
+	reader.SetInputPath(rpa->GetPath());
+	reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+	reader.ReadFromFile(polecheck,"CHECK_POLES");
+      }
+      p_proc->SetPoleCheck(polecheck);
     }
 
     void SetPoleCheck(const int check)
@@ -175,13 +184,14 @@ namespace SHERPA {
 
   public:
 
-    MCFM_Born(const PHASIC::External_ME_Args &args,const int &pid):
-      Tree_ME2_Base(args),
+    MCFM_Born(const Process_Info &pi,
+	      const Flavour_Vector&fl,const int &pid):
+      Tree_ME2_Base(pi,fl),
       p_proc(MCFM_Interface::GetMCFM().GetProcess(pid)) {
       rpa->gen.AddCitation(1,p_proc->GetReferences());
-      m_p.resize(args.Flavours().size());
-      m_order_qcd=args.m_orders[0];
-      m_order_ew=args.m_orders[1];
+      m_p.resize(fl.size());
+      m_order_qcd=pi.m_mincpl[0];
+      m_order_ew=pi.m_mincpl[1];
     }
 
     double Calc(const ATOOLS::Vec4D_Vector &p)
@@ -196,8 +206,8 @@ namespace SHERPA {
       return res[3];
     }
 
-    int OrderQCD(const int &id=-1) const { return m_order_qcd; }
-    int OrderEW(const int &id=-1) const  { return m_order_ew;  }
+    int OrderQCD(const int &id=-1) { return m_order_qcd; }
+    int OrderEW(const int &id=-1)  { return m_order_ew;  }
 
   };// end of class MCFM_Born
 
@@ -229,31 +239,37 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM") return NULL;
-  if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return NULL;
-  if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop)) return NULL;
+  if (pi.m_fi.m_nloewtype&nlo_type::loop) return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
+  int addcpl(pi.m_maxcpl.size()>2?pi.m_maxcpl[2]:0);
   MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
-			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
+			 pi.m_maxcpl[0],pi.m_maxcpl[1]+addcpl);
   int pid(MCFM_Interface::GetMCFM().InitializeProcess(mpi));
   if (pid>=0) return new MCFM_Virtual(pi,fl,pid);
   return NULL;
 }
 
 DECLARE_TREEME2_GETTER(MCFM_Born,"MCFM_Born")
-
 Tree_ME2_Base *ATOOLS::Getter
-<Tree_ME2_Base,External_ME_Args,MCFM_Born>::
-operator()(const External_ME_Args &args) const
+<Tree_ME2_Base,PHASIC::Process_Info,MCFM_Born>::
+operator()(const Process_Info &pi) const
 {
-  if (args.m_source!="MCFM") return NULL;
-  Flavour_Vector fl(args.Flavours());
+  if (pi.m_loopgenerator!="MCFM") return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo &&
+      pi.m_fi.m_nloewtype!=nlo_type::real) return NULL;
+  if (pi.m_fi.m_nloqcdtype!=nlo_type::lo &&
+      pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
+  if (pi.m_mincpl[0]!=pi.m_maxcpl[0] ||
+      pi.m_mincpl[1]!=pi.m_maxcpl[1]) return NULL;
+  Flavour_Vector fl(pi.ExtractFlavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);
-  MCFM::Process_Info mpi(ids,args.m_inflavs.size(),
-			 args.m_orders[0],args.m_orders[1]);
+  MCFM::Process_Info mpi(ids,pi.m_ii.m_ps.size(),
+			 pi.m_maxcpl[0],pi.m_maxcpl[1]);
   int pid(MCFM_Interface::GetMCFM().InitializeProcess(mpi));
-  if (pid>=0) return new MCFM_Born(args,pid);
+  if (pid>=0) return new MCFM_Born(pi,fl,pid);
   return NULL;
 }
