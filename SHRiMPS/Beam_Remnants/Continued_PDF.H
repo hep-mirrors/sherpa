@@ -57,28 +57,16 @@ namespace SHRIMPS {
     std::map<ATOOLS::Flavour,double> m_xmaxpdf;
 
     void   CalculateNorms();
+    void   Scan();
   public:
     Continued_PDF(PDF::PDF_Base * pdf,const ATOOLS::Flavour & bunch);
     ~Continued_PDF();
 
+    void   Calculate(const double & x,const double & Q2);
+    double AllPartons(const double & x,const double & Q2);
     double XPDF(const ATOOLS::Flavour & flav,const bool & defmax=false);
 
-    inline void Calculate(const double & x,const double & Q2) {
-      m_x  = x; 
-      m_Q2 = Q2;
-      if (Q2<m_Q02) p_pdf->Calculate(m_x,m_Q02);
-      else p_pdf->Calculate(m_x,m_Q2);
-    }
-    inline double AllPartons(const double & x,const double & Q2) {
-      Calculate(x,Q2);
-      double val(0.), test(0.);
-      for (std::list<ATOOLS::Flavour>::iterator flit=m_pdfpartons.begin();
-	   flit!=m_pdfpartons.end();flit++) {
-	val += test = XPDF((*flit));
-	if (test>m_xpdfmax[(*flit)]) m_xpdfmax[(*flit)] = test;
-      }
-      return val;
-    }
+    inline const std::list<ATOOLS::Flavour> & GetFlavours() const { return m_pdfpartons; } 
     inline const double &          XMin()  const { return m_xmin; }
     inline const double &          XMax()  const { return m_xmax; }
     inline double                  Q2Min() const { return 0.; }

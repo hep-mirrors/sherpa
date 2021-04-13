@@ -40,9 +40,11 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
-  bool force = (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
-			   p_doubletransitions->GetLightestMass(m_flavs)) ||
-		m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+  double thres = (p_doubletransitions->GetHeaviestMass(m_flavs) +
+		  p_doubletransitions->GetLightestMass(m_flavs))/2.;
+  bool force = (m_mass < thres ||
+		m_mass < p_singletransitions->GetHeaviestMass(m_flavs) ||
+		((*cluster)[0]->IsBeam() && (*cluster)[1]->IsBeam()));
   return force;
 }
 
@@ -158,7 +160,7 @@ bool Soft_Cluster_Handler::FixKinematics() {
   double E1((M2+m12-m22)/(2.*m_mass)), p1(sqrt(sqr(E1)-m12));
   //double cth = 1.-ran->Get();  // only between 0 and 1.
   //double sth = sqrt(1.-cth*cth);
-  double pt  = m_ktselector(p1);
+  double pt  = m_ktselector(Min(1.,p1));
   double pl  = sqrt(p1*p1-pt*pt);
   double phi = 2.*M_PI*ran->Get();
   m_moms[0]  = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);

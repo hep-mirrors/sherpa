@@ -254,7 +254,7 @@ double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
 }
 
 double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
-			       const double mu2,const int nl) {
+				   const double mu2,const int nl) {
   double zeta2g = 1.;
 
   // 0th order
@@ -284,7 +284,7 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
 }
 
 double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
-				  const double mu2,const int nl) {
+				      const double mu2,const int nl) {
   // might be simplified considerably when using mu2==mass2
   double zeta2g  = 1.;
   // 0th order   
@@ -356,6 +356,7 @@ double One_Running_AlphaS::operator()(double q2)
   if (!(q2>0.)) {
     msg_Error()<<METHOD<<"(): unphysical scale Q2 = "<<q2<<" GeV^2. Return 0."
                <<std::endl;
+    exit(1);
     return 0.;
   }
   if (m_pdf) return p_pdf->AlphaSPDF(q2);

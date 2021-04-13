@@ -210,6 +210,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  RECONNECTIONS/Makefile \
  	  SHRiMPS/Makefile \
 	  SHRiMPS/Main/Makefile \
+	  SHRiMPS/Ladders/Makefile \
 	  SHRiMPS/Event_Generation/Makefile \
 	  SHRiMPS/Beam_Remnants/Makefile \
 	  SHRiMPS/Cross_Sections/Makefile \

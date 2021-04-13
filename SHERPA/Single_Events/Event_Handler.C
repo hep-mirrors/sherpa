@@ -199,6 +199,11 @@ bool Event_Handler::AnalyseEvent(double & weight) {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
+  //msg_Out()<<"===============================================================================\n"
+  //	   <<"===============================================================================\n"
+  //	   <<"===============================================================================\n"
+  //	   <<"===============================================================================\n"
+  //	   <<"===============================================================================\n\n\n";
   DEBUG_FUNC("weight="<<weight);
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
@@ -208,10 +213,13 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       ++pit;
       continue;
     }
-
-    //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<".\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
+    //if ((*pit)->Name()!="Lepton_FS_QED_Corrections:Photons" &&
+    //	(*pit)->Name()!="Multiple_Interactions:None" &&
+    //	(*pit)->Name()!="Signal_Processes" &&
+    //	(*pit)->Name()!="Hard_Decays") {
     //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
+    //}
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -232,12 +240,10 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
       ++pit;
       break;
     case Return_Value::Retry_Phase :
-      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
     case Return_Value::Retry_Event :
-      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
@@ -367,6 +373,13 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
 
+  //msg_Out()<<"====================================================================\n"
+  //	   <<"====================================================================\n"
+  //	   <<"====================================================================\n"
+  //	   <<METHOD<<"\n"
+  //	   <<"====================================================================\n"
+  //	   <<"====================================================================\n"
+  //	   <<"====================================================================\n";
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
   do {

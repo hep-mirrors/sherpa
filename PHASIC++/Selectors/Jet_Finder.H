@@ -63,6 +63,7 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *cuts);
 
     inline double Qcut() const { return m_qcut; }
+    inline void   SetQcut(const double & qcut) { m_qcut = qcut; } 
 
     inline void SetOn(const bool on) { m_on=on; }
 

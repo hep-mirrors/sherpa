@@ -2,11 +2,8 @@
 #define SHRIMPS_Main_Event_Generator_H
 
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
 #include "SHRiMPS/Event_Generation/Soft_Diffractive_Event_Generator.H"
-//#include "SHRiMPS/Event_Generation/Double_Diffractive_Event_Generator.H"
-//#include "SHRiMPS/Event_Generation/Quasi_Elastic_Event_Generator.H"
 #include "SHRiMPS/Event_Generation/Inelastic_Event_Generator.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -27,29 +24,41 @@ namespace SHRIMPS {
     Soft_Diffractive_Event_Generator * p_soft_diffractive;
     Event_Generator_Base             * p_active;
 
-    double m_xsec, m_minkt2;
+    double m_xsec;
+    void InitGenerator(Cross_Sections * xsecs,const bool & test);
   public:
-    Event_Generator();
+    Event_Generator(Cross_Sections * xsecs,const bool & test);
     ~Event_Generator();
 
+    void Initialise();
     void Reset();
-    void Initialise(Cross_Sections * xsecs,Beam_Remnant_Handler * beams,const bool & test);
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 
     void Test(const std::string & dirname);
 
 
+    inline Colour_Generator * GetColourGenerator()  {
+      return (p_inelastic!=NULL)?p_inelastic->GetColourGenerator():NULL;
+    }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
     inline double         Smin()   const { return p_active->Smin(); }
-
+    inline double         B()      const { return p_active->B(); }
+    
     inline void SetCluster(Cluster_Algorithm * cluster) {
       if (p_inelastic) p_inelastic->SetCluster(cluster);
     }
-
-    inline double ShowerMinKT2() {
-      if (p_active) return p_active->Smin()*m_minkt2; 
+    inline void SetRemantHandler(Remnant_Handler * remnants) {
+      if (p_inelastic) p_inelastic->SetRemnantHandler(remnants);
+    }
+			   
+    inline double MinKT2() {
+      if (p_active) return p_active->KT2min();
+      return 0.;
+    }
+    inline double Ymax() {
+      if (p_active) return p_active->Ymax();
       return 0.;
     }
     inline bool IsLastRescatter() const {

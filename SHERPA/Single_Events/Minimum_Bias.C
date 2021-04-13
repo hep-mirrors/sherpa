@@ -1,5 +1,6 @@
 #include "SHERPA/Single_Events/Minimum_Bias.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Org/Message.H"
 #include <string>
 
 using namespace SHERPA;
@@ -16,7 +17,6 @@ Minimum_Bias::~Minimum_Bias() {}
 
 ATOOLS::Return_Value::code 
 Minimum_Bias::Treat(ATOOLS::Blob_List * blobs, double & weight) {
-  //msg_Out()<<METHOD<<":\n"<<blobs<<" with "<<p_schandler<<"\n";
   return p_schandler->GenerateMinimumBiasEvent(blobs,weight);
 }
 

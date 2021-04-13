@@ -50,8 +50,8 @@ void Cluster::Reset() {
 }
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
-  str<<"Cluster ["<<cluster.m_parts.first->Flavour()<<", "
-     <<cluster.m_parts.second->Flavour()<<"] "
+  str<<"Cluster ["<<cluster.m_parts.first->Flavour()<<" ("<<cluster.m_parts.first->IsBeam()<<"), "
+     <<cluster.m_parts.second->Flavour()<<" ("<<cluster.m_parts.second->IsBeam()<<")] "
      <<"("<<cluster.m_momentum<<", "
      <<"mass = "<<sqrt(cluster.m_momentum.Abs2())<<", "
      <<"y = "<<cluster.m_momentum.Y()<<")\n";

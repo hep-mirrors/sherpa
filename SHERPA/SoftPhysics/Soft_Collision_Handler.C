@@ -68,27 +68,19 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 {
   PROFILE_HERE;
   int outcome;
+  Return_Value::code result = Return_Value::Nothing;
   switch (m_mode) {
   case 1: 
-    //msg_Out()<<"#################################"<<std::endl
-    //	     <<METHOD<<"("<<blobs->size()<<")"<<std::endl;
     outcome = p_shrimps->GenerateEvent(blobs);
     weight = blobs->Weight();
-    //msg_Out()<<(*blobs)<<"\n";
-    //msg_Out()<<"####################### yields "<<outcome<<"."<<std::endl
-    //	     <<"#################################"<<std::endl<<std::endl;
     switch (outcome) {
-    case 1: return Return_Value::Success;
-    case 0: return Return_Value::Nothing;
-    default:
-      msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
-		    <<"   Did not manage to produce a Shrimps event."<<std::endl;
-      return Return_Value::New_Event;
+    case 1:  result = Return_Value::Success; break;
+    case 0:  break;
+    default: result = Return_Value::New_Event; break;
     }
-  default:
-    break;
+  default: break;
   }
-  return Return_Value::Nothing;
+  return result;
 }
 
 Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)

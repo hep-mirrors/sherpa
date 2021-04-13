@@ -12,17 +12,23 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 		     BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
-  p_remnants(remnants), p_beam(beam), m_fill(1)
+  p_remnants(remnants), p_shrimps(softcollisions->GetShrimps()),
+  p_beam(beam), m_fill(1)
 {
-  Default_Reader read;
-  read.SetInputPath(path);
-  read.SetInputFile(file);
-  if (!read.ReadFromFile(m_fill,"BEAM_REMNANTS")) m_fill=1;
-  else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
-  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
-  else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
-  p_remnants->SetScale2(sqr(4.0));
-  m_name = std::string("On");
+  if (p_shrimps) {
+    m_name = std::string("Shrimps");
+  }
+  else {
+    Default_Reader read;
+    read.SetInputPath(path);
+    read.SetInputFile(file);
+    if (!read.ReadFromFile(m_fill,"BEAM_REMNANTS")) m_fill=1;
+    else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
+    if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
+    else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
+    p_remnants->SetScale2(sqr(4.0));
+    m_name = std::string("Default");
+  }
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {}
@@ -32,16 +38,18 @@ Return_Value::code Beam_Remnant_Handler::
 FillBeamAndBunchBlobs(Blob_List *const bloblist,const bool & onlyBunch)
 {
   if (!m_fill) return TreatNoFill(bloblist);
+  Return_Value::code fbc(Return_Value::Nothing);
   for (Blob_List::iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Beam) return Return_Value::Nothing;
+    if ((*bit)->Type()==btp::Beam) return fbc;
   }
   if (!onlyBunch) {
-    Return_Value::code fbc = p_remnants->MakeBeamBlobs(bloblist);
-    if (fbc==Return_Value::New_Event && m_vmode)
-      THROW(fatal_error,"Four Momentum not conserved.");
-    if (fbc!=Return_Value::Success) return fbc;
+    if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
+    else           fbc = p_remnants->MakeBeamBlobs(bloblist);
   }
+  if (fbc==Return_Value::New_Event && m_vmode)
+    THROW(fatal_error,"Four Momentum not conserved.");
+  if (fbc!=Return_Value::Success) return fbc;
   return FillBunchBlobs(bloblist);
 }
 
@@ -70,7 +78,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
 	       Particle_List *const particlelist)
 {
   for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
+       bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;
   }
   bool flag(false);

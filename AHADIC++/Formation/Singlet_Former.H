@@ -8,6 +8,7 @@
 namespace AHADIC {
   class Singlet_Former {
   private:
+    double m_beamRapidity;
     std::list<Singlet *>        * p_singlets;
     std::list<ATOOLS::Particle *> m_colparts;
     

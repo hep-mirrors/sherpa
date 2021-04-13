@@ -17,7 +17,7 @@ using namespace std;
 Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
 		 BEAM::Beam_Spectra_Handler *const beam,
 		 PDF::ISR_Handler *const isr) :  
-  p_xsecs(NULL), p_beamremnants(NULL), p_generator(NULL)
+  p_xsecs(NULL), p_remnants(NULL), p_generator(NULL)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS has not been published yet.");
   MBpars.Init(dr);
@@ -40,24 +40,19 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
 
 Shrimps::~Shrimps() 
 {
-  if (p_xsecs)        delete p_xsecs;
-  if (p_beamremnants) delete p_beamremnants;
-  if (p_generator)    delete p_generator;
+  if (p_xsecs)     delete p_xsecs;
+  if (p_remnants)  delete p_remnants;
+  if (p_generator) delete p_generator;
 }
 
 void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			       PDF::ISR_Handler *const isr) {
-  ResetTheFramework();
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
-  InitialiseBeamRemnants(beam,isr);
+  InitialiseRemnants(beam,isr);
   InitialiseTheEventGenerator();  
   Hadron_Init hadroninit;
   hadroninit.Init();
-}
-
-void Shrimps::ResetTheFramework() {
-  m_pdfs.clear();
 }
 
 void Shrimps::InitialiseFormFactors() {
@@ -83,39 +78,43 @@ void Shrimps::InitialiseSingleChannelEikonals()
       creator.SetFormFactors((*ffs)[i],(*ffs)[j]);
       Omega_ik * eikonal(creator.InitialiseEikonal());
       MBpars.AddEikonal(i,j,eikonal);
+      //msg_Out()<<"   * ["<<i<<j<<"]: "<<eikonal<<"|"
     }
   }
-  //msg_Info()<<METHOD<<" done.\n";
 }
 
-void Shrimps::InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler * const beam,
-				     PDF::ISR_Handler *const isr) { 
-  for (size_t i=0;i<2;i++) 
-    m_pdfs.push_back(Continued_PDF(isr->PDF(i),isr->Flav(i)));
-
-  p_beamremnants = new Beam_Remnant_Handler(beam,m_pdfs);
+void Shrimps::InitialiseRemnants(BEAM::Beam_Spectra_Handler * const beam,
+				 PDF::ISR_Handler *const isr) { 
+  p_remnants = new Remnant_Handler(beam,isr);
 }
 
 void Shrimps::InitialiseTheEventGenerator() {
   p_xsecs = new Cross_Sections();
   p_xsecs->CalculateCrossSections();
-  p_generator = new Event_Generator();
-  p_generator->Initialise(p_xsecs,p_beamremnants,false);
+  p_generator = new Event_Generator(p_xsecs,false);
   p_generator->SetCluster(&m_cluster);
+  p_generator->SetRemantHandler(p_remnants);
+  p_generator->Initialise();
+  p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
+  m_cluster.SetYmax(p_generator->Ymax());
+  m_cluster.SetMinKT2(p_generator->MinKT2());
+  p_generator->Reset();
+  p_remnants->Reset();
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
   return p_generator->MinimumBiasEvent(blobs);
 }
 
-ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
-  p_beamremnants->SetEikonal(p_generator->GetEikonal());
-  return p_beamremnants->FillBeamBlobs(blobs);
+ATOOLS::Return_Value::code Shrimps::MakeBeamBlobs(ATOOLS::Blob_List * blobs) {
+  p_remnants->SetFormFactors(p_generator->GetEikonal()->FF1(),
+			     p_generator->GetEikonal()->FF2());
+  return p_remnants->FillBeamBlobs(blobs, p_generator->B());
 }
 
 void Shrimps::CleanUp(const size_t & mode) {
   p_generator->Reset();
-  p_beamremnants->Reset();
+  p_remnants->Reset();
 }
 
 void Shrimps::GenerateXsecs() {
@@ -216,9 +215,8 @@ void Shrimps::TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
-  ResetTheFramework();
   InitialiseFormFactors();
-  InitialiseBeamRemnants(beam,isr);
+  InitialiseRemnants(beam,isr);
   InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);
@@ -241,16 +239,17 @@ void Shrimps::PrintPDFs(const std::string & dirname) {
     was.open(filename.c_str());
     was<<"# x   u   ubar   d   dbar  s   g"<<std::endl;
     was<<"# Q^2 = "<<Q2<<" GeV^2"<<std::endl;
+    Continued_PDF * pdf = p_remnants->GetHadronDissociation(0)->GetPDF();
     for (int j=0;j<=nxval; j++){
       x = pow(10.,double(j)/double(nxval)*log10(xmin));
-      m_pdfs[0].Calculate(x,Q2);
+      pdf->Calculate(x,Q2);
       was<<x<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u).Bar())<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d).Bar())<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_s))<<"   "
-	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_gluon))<<"\n";
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_u))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_u).Bar())<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_d))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_d).Bar())<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_s))<<"   "
+	 <<pdf->XPDF(ATOOLS::Flavour(kf_gluon))<<"\n";
     }
     was.close();
   }
@@ -294,8 +293,7 @@ void Shrimps::TestCrossSections(const std::string & dirname) {
 }
 
 void Shrimps::TestEventGeneration(const std::string & dirname) {
-  Event_Generator generator;
-  generator.Initialise(p_xsecs,p_beamremnants,true);
+  Event_Generator generator(p_xsecs,true);
   generator.Test(dirname);
 }
 

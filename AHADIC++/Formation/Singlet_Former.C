@@ -1,4 +1,5 @@
 #include "AHADIC++/Formation/Singlet_Former.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include <cassert>
 
@@ -7,6 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Singlet_Former::Singlet_Former(list<Singlet *> * singlets) :
+  m_beamRapidity(log(rpa->gen.Ecms()/2.)-1.),
   p_singlets(singlets)
 {}
 
@@ -47,6 +49,7 @@ Singlet * Singlet_Former::MakeAnother() {
   Singlet * partlist = new Singlet();
   Particle * part = FindStart();
   partlist->push_back(new Proto_Particle(*part));
+  if (dabs(part->Momentum().Y())>m_beamRapidity) partlist->back()->SetBeam(true);
   if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
   unsigned int col1 = part->GetFlow(1);
   unsigned int col2 = part->GetFlow(2);
@@ -59,6 +62,7 @@ Singlet * Singlet_Former::MakeAnother() {
 	col1 = part->GetFlow(1);
 	partlist->push_back(new Proto_Particle(*part));
 	if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
+	if (dabs(part->Momentum().Y())>m_beamRapidity) partlist->back()->SetBeam(true);
 	break;
       }
     }

@@ -10,7 +10,7 @@ Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
 			     const Flavour & bunch) :
   p_pdf(pdf), m_bunch(bunch), 
   m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
-  m_geta(0.), m_glambda(-0.08)
+  m_geta(1.), m_glambda(-0.08)
 {
   m_pdfpartons.push_back(Flavour(kf_u));
   m_pdfpartons.push_back(Flavour(kf_d));
@@ -28,12 +28,12 @@ Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
     m_xpdfmax[(*flit)] = m_xmaxpdf[(*flit)] = 0.;
   }
   CalculateNorms();
+  Scan();
 }
 
 Continued_PDF::~Continued_PDF() {}
 
-void Continued_PDF::CalculateNorms() 
-{
+void Continued_PDF::CalculateNorms() {
   Sea_Kernel sea(p_pdf,m_bunch,&m_pdfpartons,m_Q02);
   Gauss_Integrator sintegrator(&sea);
   m_Snorm = sintegrator.Integrate(m_xmin,m_xmax,0.0001,1);
@@ -43,10 +43,34 @@ void Continued_PDF::CalculateNorms()
   m_gnorm = 
     exp(Gammln(m_geta+1.))*exp(Gammln(m_glambda+1.))/
     exp(Gammln(m_geta+m_glambda+2.));
-  //std::cout<<"Gamma("<<0.5<<") = "<<exp(Gammln(0.5))<<", "
-  //	   <<"Gamma("<<2<<") = "<<exp(Gammln(2))<<", "
-  //	   <<"Gamma("<<4<<") = "<<exp(Gammln(4))<<".\n";
-  //exit(1);
+}
+
+void Continued_PDF::Scan()  {
+  for (size_t i=0;i<2000;i++) {
+    if (i==0 || i==1000) continue;
+    double x = (i<1000?double(i)/1000.:0.001*double(i-1000)/1000.);
+    for (size_t beam=0;beam<2;beam++) AllPartons(x,0.);
+  }
+  Calculate(m_xmaxpdf[Flavour(kf_gluon)],0.);
+  //msg_Out()<<METHOD<<" yields fmax(xmax = "<<m_xmaxpdf[Flavour(kf_gluon)]<<") = "
+  //	   <<m_xpdfmax[Flavour(kf_gluon)]<<"\n";
+}
+
+void Continued_PDF::Calculate(const double & x,const double & Q2) {
+  m_x  = x; 
+  m_Q2 = Q2;
+  if (Q2<m_Q02) p_pdf->Calculate(m_x,m_Q02);
+  else p_pdf->Calculate(m_x,m_Q2);
+} 
+
+double Continued_PDF::AllPartons(const double & x,const double & Q2) {
+  Calculate(x,Q2);
+  double val(0.), test(0.);
+  for (std::list<ATOOLS::Flavour>::iterator flit=m_pdfpartons.begin();
+       flit!=m_pdfpartons.end();flit++) {
+    val += XPDF((*flit),true);
+  }
+  return val;
 }
 
 double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
@@ -69,13 +93,11 @@ double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
     }
     else if (flav==Flavour(kf_gluon)) {
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02); 
-      valpart = 1./m_gnorm * pow(1.-m_x,m_geta) * pow(m_x,m_glambda) *
-	m_Snorm * (1.-m_Q2/m_Q02);
-      /*
-	((p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
-	p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar()))/  
-	m_Vnorm) *
-      */ 
+      //valpart = ( 1./m_gnorm * pow(1.-m_x,m_geta) * pow(m_x,m_glambda) *
+      //	  m_Snorm * (1.-m_Q2/m_Q02)  );
+      valpart = ((p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
+		  p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar()))/  
+		 m_Vnorm); 
     }
     else
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02);
@@ -158,4 +180,3 @@ double Continued_PDF::Valence_Kernel::operator()(double x) {
   return xpdf;
 }
 
- 

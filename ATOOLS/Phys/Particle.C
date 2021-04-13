@@ -203,9 +203,9 @@ void Particle::SetProductionBlob(Blob *blob)
   if (p_startblob!=NULL && blob!=NULL) {
     if (p_startblob->Id()>-1) 
       msg_Out()<<"WARNING in Particle::SetProductionBlob("<<blob<<"):"<<std::endl
-		       <<"   blob->Id() = "<<blob->Id()<<std::endl
-		       <<"   Particle already has a production blob!"<<std::endl
-		       <<"   "<<*this<<std::endl;
+	       <<"   blob->Id() = "<<blob->Id()<<std::endl
+	       <<"   Particle ["<<this<<"]already has a production blob!"<<std::endl
+	       <<"   "<<*this<<std::endl;
   }
   p_startblob=blob; 
 }

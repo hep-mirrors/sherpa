@@ -5,8 +5,7 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
-//#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
+#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -40,12 +39,10 @@ namespace SHRIMPS {
     weight_mode::code m_weightmode;
     deqmode::code     m_deq;
     int               m_test;
-    
-    std::vector<Continued_PDF> m_pdfs;
-    Cross_Sections           * p_xsecs;
-    Beam_Remnant_Handler     * p_beamremnants;
-    Event_Generator          * p_generator;
-    Cluster_Algorithm          m_cluster;
+    Cross_Sections  * p_xsecs;
+    Remnant_Handler * p_remnants;
+    Event_Generator * p_generator;
+    Cluster_Algorithm m_cluster;
     
     void GenerateXsecs();
     void ReadEnergiesFromFile(std::set<double> & energies,
@@ -59,11 +56,10 @@ namespace SHRIMPS {
     
     void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			  PDF::ISR_Handler *const isr);
-    void ResetTheFramework();
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler *const beam,
-				PDF::ISR_Handler *const isr);
+    void InitialiseRemnants(BEAM::Beam_Spectra_Handler *const beam,
+			    PDF::ISR_Handler *const isr);
     void InitialiseTheEventGenerator();
     
     void TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
@@ -82,14 +78,11 @@ namespace SHRIMPS {
     int  GenerateEvent(ATOOLS::Blob_List * blobs);
     void CleanUp(const size_t & mode=0);
 
-    ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs);
-
-    inline void   SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam) {
-      p_beamremnants->SetBeamBlob(beamblob,beam);
-    }
+    ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List * blobs);
+    
     inline int    ShowerMode()   const { return 1; }// MBpars("shower_mode"); }
     inline double ShowerFac()    const { return 1; }//MBpars("kt2_factor"); }
-    inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
+    inline double ShowerMinKT2() const { return p_generator->MinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
     inline double Smin()         const { return p_generator->Smin(); }
     inline bool   IsLastRescatter() const { 

@@ -105,26 +105,26 @@ double Form_Factor::CalculateFourierTransform(const double & b) {
 
 double Form_Factor::FourierTransform(const double & b) const 
 {
-  double ft(0.);
-  if (b<0. || b>m_bmax) return 0.;
-  size_t bbin(size_t(b/m_deltab));
+  double absB(dabs(b)), ft(0.);
+  if (absB>m_bmax) return 0.;
+  size_t bbin(size_t(absB/m_deltab));
   if (bbin<m_bsteps) {
-    if (dabs(b-bbin*m_deltab)/m_deltab<1.e-3) ft = m_values[bbin];
+    if (dabs(absB-bbin*m_deltab)/m_deltab<1.e-3) ft = m_values[bbin];
     else if (bbin>=1 && bbin<m_values.size()-2) {
       double ft1(m_values[bbin-1]), b1=(bbin-1)*m_deltab;
       double ft2(m_values[bbin+0]), b2=(bbin+0)*m_deltab;
       double ft3(m_values[bbin+1]), b3=(bbin+1)*m_deltab;
       double ft4(m_values[bbin+2]), b4=(bbin+2)*m_deltab;
       ft =
-	ft1 * (b-b2)*(b-b3)*(b-b4)/((b1-b2)*(b1-b3)*(b1-b4)) +
-	ft2 * (b-b1)*(b-b3)*(b-b4)/((b2-b1)*(b2-b3)*(b2-b4)) +
-	ft3 * (b-b1)*(b-b2)*(b-b4)/((b3-b1)*(b3-b2)*(b3-b4)) +
-	ft4 * (b-b1)*(b-b2)*(b-b3)/((b4-b1)*(b4-b2)*(b4-b3));	
+	ft1 * (absB-b2)*(absB-b3)*(absB-b4)/((b1-b2)*(b1-b3)*(b1-b4)) +
+	ft2 * (absB-b1)*(absB-b3)*(absB-b4)/((b2-b1)*(b2-b3)*(b2-b4)) +
+	ft3 * (absB-b1)*(absB-b2)*(absB-b4)/((b3-b1)*(b3-b2)*(b3-b4)) +
+	ft4 * (absB-b1)*(absB-b2)*(absB-b3)/((b4-b1)*(b4-b2)*(b4-b3));	
     }
     else if (bbin<m_values.size()-1) {
       double ft1(m_values[bbin]),   b1=bbin*m_deltab;
       double ft2(m_values[bbin+1]), b2=(bbin+1)*m_deltab;
-      ft = (ft1*(b2-b) + ft2*(b-b1))/m_deltab;
+      ft = (ft1*(b2-absB) + ft2*(absB-b1))/m_deltab;
     }
   }
   if (ft<0.) ft = 0.;

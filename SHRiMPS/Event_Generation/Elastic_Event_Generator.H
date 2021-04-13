@@ -3,7 +3,6 @@
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Elastic.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -14,8 +13,7 @@
 namespace SHRIMPS {
   class Elastic_Event_Generator : public Event_Generator_Base {
   private:
-    Sigma_Elastic        * p_sigma;
-    Beam_Remnant_Handler * p_beams;
+    Sigma_Elastic * p_sigma;
     ATOOLS::Flavour m_beam1, m_beam2;                 
     ATOOLS::Vec4D   m_p1, m_p2, m_p1out, m_p2out;
     double          m_E12, m_pl12, m_pl1, m_E22, m_pl22, m_pl2, m_abs_t;
@@ -26,8 +24,7 @@ namespace SHRIMPS {
     void FixKinematics();
     void FillBlob(ATOOLS::Blob * blob);
   public:
-    Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
-			    const int & test=0);
+    Elastic_Event_Generator(Sigma_Elastic * sigma,const int & test=0);
     ~Elastic_Event_Generator();
 
     int GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);

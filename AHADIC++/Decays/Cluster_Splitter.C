@@ -43,7 +43,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax) {
   if (m_a<=0. && m_b<=0.)
     norm *= Max(pow(zmin,m_a), pow(1.-zmax,m_b));
   else {
-    if (m_a<=0.) norm *= pow(zmin,m_a);
+    if (m_a<=0.)  norm *= pow(zmin,m_a);
     if (m_b<=0.)  norm *= pow(1.-zmax,m_b);
   }
   double wt = pow(z,m_a) * pow(1.-z,m_b) * exp(-arg/z);

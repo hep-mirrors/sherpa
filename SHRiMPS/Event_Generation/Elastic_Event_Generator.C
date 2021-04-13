@@ -8,10 +8,8 @@
 using namespace SHRIMPS;
 
 Elastic_Event_Generator::
-Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
-			const int & test) :
-  Event_Generator_Base(sigma),
-  p_sigma(sigma), p_beams(beams),
+Elastic_Event_Generator(Sigma_Elastic * sigma,const int & test) :
+  Event_Generator_Base(sigma), p_sigma(sigma), 
   m_beam1(ATOOLS::rpa->gen.Beam1()), m_beam2(ATOOLS::rpa->gen.Beam2()),
   m_p1(ATOOLS::rpa->gen.PBeam(0)),   m_p2(ATOOLS::rpa->gen.PBeam(1)),
   m_E12(ATOOLS::sqr(m_p1[0])), m_pl12(Vec3D(m_p1).Sqr()), m_pl1(sqrt(m_pl12)),
@@ -39,7 +37,6 @@ Elastic_Event_Generator::~Elastic_Event_Generator() {
 }
 
 int Elastic_Event_Generator::GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag) {
-  p_beams->InitialiseCollision();
   ATOOLS::Blob * blob(blobs->FindFirst(ATOOLS::btp::Soft_Collision));
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return 0;
   if (blob->NInP()>0)  {
@@ -88,4 +85,5 @@ void Elastic_Event_Generator::FillBlob(ATOOLS::Blob * blob) {
   blob->UnsetStatus(ATOOLS::blob_status::needs_minBias);
   blob->SetStatus(ATOOLS::blob_status::needs_beams);
   blob->SetType(ATOOLS::btp::Elastic_Collision);
+  blob->AddData("Weight",new Blob_Data<double>(m_xsec));
 }

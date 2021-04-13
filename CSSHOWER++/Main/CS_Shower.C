@@ -106,9 +106,11 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
       for (Singlet::iterator it((*sit)->begin());it!=(*sit)->end();++it)
 	if (*it!=d[0] && *it!=d[1]) (*it)->SetStart(0.0);
     }
-    msg_Debugging()<<**sit;
     size_t pem(nem);
-    if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
+    if (!p_shower->EvolveShower(*sit,maxem,nem)) {
+      msg_Out()<<METHOD<<" yields 0 after EvolveShower.\n";
+      return 0;
+    }
     m_weight*=p_shower->Weight();
     m_allsinglets=*p_next;
     if (colmap.size()) {
@@ -433,8 +435,10 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       for (Singlet::const_iterator 
 	     pit((*sit)->begin());pit!=(*sit)->end();++pit) {
 	if ((*pit)->GetPrev()) {
-	  if ((*pit)->GetPrev()->GetNext()==*pit) 
+	  if ((*pit)->GetPrev()->GetNext()==*pit) {
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
+	    //msg_Out()<<METHOD<<"("<<(*pit)->Id()<<"): "<<(*pit)->KtStart()<<"\n";
+	  }
 	}
       }
       (*sit)->SetDecays(campl->Decays());
@@ -493,12 +497,16 @@ Singlet *CS_Shower::TranslateAmplitude
     if (is) parton->SetBeam(cl->Mom()[3]<0.0?0:1);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
+    // This is where I modifed stuff - will need to formalise this much much better.
+    parton->SetStart(sqrt(cl->KT2(0)*cl->KT2(0)));
     if (m_respectq2)
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
     if (cl->KT2(1)>=0.0) parton->SetSoft(1,cl->KT2(1)); 
     if (xit->second.first) singlet->SetNMax(1);
     parton->SetVeto(ktveto2);
+    //msg_Out()<<METHOD<<"("<<parton->Id()<<"): "<<sqrt(parton->KtStart())<<", veto = "<<parton->KtVeto()<<" from\n"
+    //	     <<"   "<<(*cl)<<"\n";
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
@@ -536,6 +544,7 @@ Singlet *CS_Shower::TranslateAmplitude
       sing->SetSpec(pmap[ampl->IdLeg(ampl->Leg(i)->K())]);
       break;
     }
+  //msg_Out()<<METHOD<<":\n"<<(*singlet)<<"\n";
   return singlet;
 }
 

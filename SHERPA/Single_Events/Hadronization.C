@@ -94,7 +94,11 @@ bool Hadronization::HarvestParticles(Blob_List * bloblist,
         plist=new Part_List;
         plists->push_back(plist);
       }
-      if (!FillParticleList((*blit),plist,hadrons)) return false;
+      if (!FillParticleList((*blit),plist,hadrons)) {
+	msg_Out()<<(*bloblist)<<"\n";
+	exit(1);
+	return false;
+      }
       (*blit)->UnsetStatus(blob_status::needs_reconnections |
 			   blob_status::needs_hadronization);
     }

@@ -3,8 +3,8 @@
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
-#include "SHRiMPS/Event_Generation/Ladder_Generator.H"
+#include "SHRiMPS/Ladders/Primary_Ladders.H"
+#include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -14,49 +14,43 @@ namespace SHRIMPS {
 
   class Inelastic_Event_Generator : public Event_Generator_Base {
   private:
-    Sigma_Inelastic      * p_sigma;
-    Beam_Remnant_Handler * p_beams;
-    Ladder_Generator       m_laddergenerator;
-
+    Sigma_Inelastic * p_sigma;
+    Primary_Ladders   m_primaries;
+    bool m_mustinit;
+    int  m_test;
+    
     std::map<Omega_ik *,double>                 m_xsecs; 
     std::map<Omega_ik *,std::vector<double> * > m_Bgrids; 
-    double     m_sigma,m_B;
-    int        m_Nladders, m_Nprim, m_Ngen;
-    bool       m_first, m_init, m_done;
+    double m_sigma, m_B;
+    int    m_Nladders, m_Nprim, m_Ngen;
 
     Cluster_Algorithm * p_cluster;
-    
-    void Initialise();
-
-    bool InitInelasticEvent(ATOOLS::Blob_List * blobs);
-    bool SetUpEvent();
+        
+    bool InitEvent(ATOOLS::Blob_List * blobs);
     bool SelectEikonal();
     bool SelectB();
-
-    int  AddScatter(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * CreateBlob();
-    void SetBlobType(ATOOLS::Blob * blob);
-
-    void TestSelectB(const std::string & dirname);
-    void TestNumberOfLadders(const std::string & dirname);
-    void TestInitialLadders(const std::string & dirname);
+    bool MakePrimaryScatterBlobs(ATOOLS::Blob_List * blobs);
   public:
-    Inelastic_Event_Generator(Sigma_Inelastic * sigma,Beam_Remnant_Handler * beams,
-			      const int & test);
+    Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test);
     ~Inelastic_Event_Generator();
 
     void Reset();
+    void Initialise();
     int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag=false);
 
-    inline void SetCluster(Cluster_Algorithm * cluster) {
-      p_cluster = cluster;
+
+    inline Colour_Generator * GetColourGenerator()  { return m_primaries.GetColourGenerator(); }
+    inline void   SetCluster(Cluster_Algorithm * cluster)       { p_cluster  = cluster; }
+    inline void   SetRemnantHandler(Remnant_Handler * remnants) {
+      m_primaries.SetRemnantHandler(remnants);
     }
-    
     inline double XSec(Omega_ik * eikonal=NULL) {
       if (eikonal!=NULL) return m_xsecs[eikonal];
       return m_sigma;
     }
-
+    inline const double B()      const { return m_B; }
+    inline const double Ymax()   const { return m_primaries.Ymax(); }
+    inline const double KT2min() const { return m_primaries.KT2min(); }
     void Test(const std::string & dirname);
   };
 }

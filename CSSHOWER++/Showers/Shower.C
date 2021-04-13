@@ -99,6 +99,7 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
   } else {
     m_sudakov.SetVariationWeights(NULL);
   }
+  //msg_Out()<<METHOD<<" with maxem = "<<maxem<<" and n_em = "<<nem<<"\n";
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -311,6 +312,8 @@ double Shower::VetoWeight(Variation_Parameters *params,
   int stat(args.m_jcv>=0.0);
   Singlet *sing(args.p_sing);
   Jet_Finder *jf(sing->JF());
+  //msg_Out()<<METHOD<<" for stat = "<<stat<<", jcv = "<<args.m_jcv<<", acc = "<<args.m_acc<<", "
+  //	   <<" and jetfinder = "<<jf<<"\n";
   if (stat && jf) {
     double fac(weights?params->m_Qcutfac:1.0);
     if (jf) {
@@ -318,6 +321,7 @@ double Shower::VetoWeight(Variation_Parameters *params,
       msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
 		     <<jf->Qcut()<<" * "<<fac
 		     <<" = "<<jf->Qcut()*fac<<"\n";
+      //msg_Out()<<"   stat now = "<<stat<<": "<<args.m_jcv<<" vs. "<<jf->Qcut()<<" * "<<fac<<"\n";
     }
   }
   if (stat==1) {
@@ -473,7 +477,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
                 &Shower::GetWeight, *this, swa);
 	}
       }
-      if (vwa.m_acc==0) return false;
+      if (vwa.m_acc==0) {
+	//msg_Out()<<METHOD<<" with vwa.m_acc==0.\n";
+	return false;
+      }
       Singlet *sing(p_actual);
       sing->SetJF(NULL);
       while (sing->GetLeft()) {

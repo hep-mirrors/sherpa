@@ -29,22 +29,15 @@ namespace SHERPA {
 			   PDF::ISR_Handler *isr);
     ~Soft_Collision_Handler();
 
-    ATOOLS::Return_Value::code 
-    GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
-			     double & weight);
     void CleanUp();
+    ATOOLS::Return_Value::code  GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
+							 double & weight);
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const bl);
     
-    inline void 
-    SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {
-      //p_cluster->SetClusterDefinitions(defs);
-    }
-    inline const std::string &  Soft_CollisionModel() const { 
-      return m_softcollisionmodel; 
-    }
-    inline SHRIMPS::Shrimps * GetShrimps() const { 
-      return p_shrimps; 
-    }
+    inline void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
+    inline const std::string & Soft_CollisionModel() const { return m_softcollisionmodel; }
+    inline SHRIMPS::Shrimps  * GetShrimps()          const { return p_shrimps; }
+    inline const int &         Mode()                const { return m_mode; }
   };// end of class Soft_Collision_Handler
 }
 #endif

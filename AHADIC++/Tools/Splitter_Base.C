@@ -148,6 +148,7 @@ bool Splitter_Base::MakeKinematics() {
 
 void Splitter_Base::MakeTransverseMomentum() {
   m_ktmax        = (m_Emax-2.*m_popped_mass)/2.;
+  if (p_part1->IsBeam() || p_part2->IsBeam()) m_ktmax = Min(m_ktmax,1.);
   if (m_ktmax<0.) {
     msg_Error()<<METHOD<<" yields error ktmax = "<<m_ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "

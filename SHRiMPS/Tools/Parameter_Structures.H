@@ -19,36 +19,6 @@ namespace SHRIMPS {
       unknown                   = -1
     };
   };
-  // std::ostream & 
-  // operator<<(std::ostream & s,const run_mode::code & runmode) {
-  //   switch (runmode) {
-  //   case run_mode::xsecs_only:
-  //     s<<" XSecs only";
-  //     break;
-  //   case run_mode::elastic_events:
-  //     s<<" Elastic events";
-  //     break;
-  //   case run_mode::single_diffractive_events:
-  //     s<<" Single-diffractive events";
-  //     break;
-  //   case run_mode::quasi_elastic_events:
-  //     s<<" Quasi-elastic events";
-  //     break;
-  //   case run_mode::inelastic_events:
-  //     s<<" Inelastic events";
-  //     break;
-  //   case run_mode::all_min_bias:
-  //     s<<" Minimum Bias";
-  //     break;
-  //   case run_mode::underlying_event:
-  //     s<<" Underlying event";
-  //     break;
-  //   default:
-  //     s<<" Unknown mode";
-  //     break;
-  //   }
-  //   return s;
-  // };
 
   struct weight_mode {
     enum code {
@@ -57,21 +27,6 @@ namespace SHRIMPS {
       unknown    = -1
     };
   };
-  // std::ostream & operator<<(std::ostream & s, 
-  // 			    const weight_mode::code & weightmode) {
-  //   switch (weightmode) {
-  //   case weight_mode::weighted:
-  //     s<<" Weighted events";
-  //     break;
-  //   case weight_mode::unweighted:
-  //     s<<" Unweighted events";
-  //     break;
-  //   default:
-  //     s<<" Unknown mode";
-  //     break;
-  //   }
-  //   return s;
-  // };
 
   struct ff_form {
     enum code {
@@ -79,13 +34,6 @@ namespace SHRIMPS {
       dipole = 1
     };
   };
-  // std::ostream & operator<<(std::ostream & s, 
-  // 			    const ff_form::code & ffform) {
-  //   if (ffform==ff_form::Gauss)       s<<"Gaussian";
-  //   else if (ffform==ff_form::dipole) s<<"Dipole";
-  //   else                           s<<"unknown";
-  //   return s;
-  // };
 
   struct absorption {
     enum code {
@@ -93,13 +41,6 @@ namespace SHRIMPS {
       factorial   = 1
     };
   };
-  // std::ostream & operator<<(std::ostream & s, 
-  // 			    const absorption::code & absorb) {
-  //   if (absorb==absorption::exponential)    s<<"exponential";
-  //   else if (absorb==absorption::factorial) s<<"factorial";
-  //   else                               s<<"unknown";
-  //   return s;
-  // };
 
   struct ladder_weight {
     enum code {
@@ -108,14 +49,6 @@ namespace SHRIMPS {
       Regge
     };
   };
-  // std::ostream & operator<<(std::ostream & s, 
-  // 			    const ladder_weight::code & wt) {
-  //   if (wt==ladder_weight::IntervalOnly)        s<<"y interval only ";
-  //   else if (wt==ladder_weight::ReggeDiffusion) s<<"Regge factor + diffusion ";
-  //   else if (wt==ladder_weight::Regge)          s<<"Regge factor ";
-  //   else                                    s<<"unknown";
-  //   return s;
-  // }
 
   struct ktform {
     enum code {
@@ -208,6 +141,7 @@ namespace SHRIMPS {
 
   struct Ladder_Parameters {
   public:
+    double Q02, Qas2;
     Ladder_Parameters() {}
   };
 

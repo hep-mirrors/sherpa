@@ -120,14 +120,16 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     return Return_Value::Success;
   }
   if (p_sc) {
+    ///msg_Out()<<METHOD<<" in sc-mode.\n";
     p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
-      msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
+      //msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
       return Return_Value::New_Event;
     }
+    //msg_Out()<<"  Amplitude has been constructed:\n"<<(*p_ampl)<<"\n";
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
-      msg_Out()<<METHOD<<": could not prepare shower.\n"; 
+      //msg_Out()<<METHOD<<": could not prepare shower.\n"; 
       return Return_Value::New_Event;
     }
     return Return_Value::Success;

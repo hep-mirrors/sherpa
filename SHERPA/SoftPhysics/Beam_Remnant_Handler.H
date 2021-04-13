@@ -3,17 +3,17 @@
 
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
-//#include "SHRiMPS/Main/Shrimps.H"
+#include "SHRiMPS/Main/Shrimps.H"
 
 namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
     REMNANTS::Remnant_Handler  * p_remnants;
-    //SHRIMPS::Shrimps           * p_shrimps;
+    SHRIMPS::Shrimps           * p_shrimps;
     BEAM::Beam_Spectra_Handler * p_beam;
     ATOOLS::Blob               * p_beamblobs[2];
 
-    int m_beam, m_fill, m_vmode;
+    int         m_beam, m_fill, m_vmode;
     std::string m_name;
 
     ATOOLS::Return_Value::code TreatNoFill(ATOOLS::Blob_List *const bloblist);

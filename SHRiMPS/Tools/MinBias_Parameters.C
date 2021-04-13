@@ -141,6 +141,8 @@ void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
 
 
 void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
+  m_ladder_params.Q02  = dr->GetValue<double>("Q_0^2",  1.);
+  m_ladder_params.Qas2 = dr->GetValue<double>("Q_as^2", 1.);
   /*
   std::string asf(dr->GetValue<std::string>("AS_FORM",std::string("Smooth")));
   m_as_form = MODEL::asform::smooth;
@@ -212,7 +214,6 @@ void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
   }
   m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
-  m_params["Q02"]         = dr->GetValue<double>("Q_0^2", 3.021183);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.0);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.0);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.0);

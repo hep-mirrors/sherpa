@@ -46,6 +46,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	(*blit)->Type()==btp::Fragmentation) {
       Blob * blob = (*blit);
       switch (Hadronize(blob)) {
+      case Return_Value::New_Event :
+	return Return_Value::New_Event;
       case Return_Value::Success :
 	break;
       case Return_Value::Retry_Event :
@@ -89,7 +91,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
 	       <<(*blob);
     Reset(blob);
-    Reset();
+    msg_Error()<<"  leaving AHADIC and hoping for the best.\n";
     return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);

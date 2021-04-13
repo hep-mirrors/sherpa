@@ -36,38 +36,35 @@ namespace SHRIMPS {
   private:
     Eikonal_Contributor * p_Omegaik, * p_Omegaki;
 
-    double m_bmax, m_Y;
-    int    m_Bsteps, m_Ysteps;
-    double m_prefactor, m_deltaB;
-    std::vector<double>   m_gridB, m_gridBmax, m_gridD;   
+    double              m_bmax, m_Y;
+    int                 m_Bsteps, m_Ysteps;
+    double              m_prefactor, m_deltaB;
+    std::vector<double> m_gridB, m_gridBmax, m_gridD;   
   public:
     Omega_ik(const Eikonal_Parameters & params);
     ~Omega_ik();
-
-    void SetContributors(Eikonal_Contributor * Omegaik, 
-			 Eikonal_Contributor * Omegaki);
-    void SetDeltaB(const double & deltaB);
-    void SetPrefactor(const double & prefactor);
-
-    const double & DeltaB() const { return m_deltaB; }
-    Eikonal_Contributor * GetSingleTerm(const int & i=0);
-    std::vector<double> * GetImpactParameterGrid();
-    std::vector<double> * GetImpactParameterMaximumGrid();
     
+
     double operator()(const double & B) const;
+    ATOOLS::Vec4D SelectB1B2(double & b1,double & b2,const double & B);    
     double Maximum(const double & B) const;    
-    ATOOLS::Vec4D SelectB1B2(double & b1,double & b2,const double & B);
-    double Sigma_Inelastic() { return 0.; }
-    
     void   PrepareQT(const double & b1,const double & b2);
+    Eikonal_Contributor * GetSingleTerm(const int & i=0);
     
-    double   Prefactor() const { 
-      return m_prefactor;
+    inline void SetContributors(Eikonal_Contributor * Omegaik, Eikonal_Contributor * Omegaki) {
+      p_Omegaik = Omegaik; p_Omegaki = Omegaki; 
     }
-    double EffectiveIntercept(double b1=0.,double b2=0.,const double & y=0.);
+    inline void SetPrefactor(const double & prefactor) { m_prefactor = prefactor; }
+    inline void SetDeltaB(const double & deltaB)       { m_deltaB = deltaB; }
+
     
-    Form_Factor * FF1() const  { return p_Omegaik->FF1(); }
-    Form_Factor * FF2() const  { return p_Omegaki->FF2(); }
+    inline Form_Factor * FF(const size_t i) const { return i==0?p_Omegaik->FF1():p_Omegaki->FF2(); }
+    inline Form_Factor * FF1()        const { return p_Omegaik->FF1(); }
+    inline Form_Factor * FF2()        const { return p_Omegaki->FF2(); }
+    inline const double & Prefactor() const { return m_prefactor; }
+    inline const double & DeltaB()    const { return m_deltaB; }    
+    inline std::vector<double> * GetImpactParameterGrid()        { return &m_gridB; }
+    inline std::vector<double> * GetImpactParameterMaximumGrid() { return &m_gridBmax; }
     
     void TestIndividualGrids(Analytic_Contributor * ana12,
 			     Analytic_Contributor * ana21,

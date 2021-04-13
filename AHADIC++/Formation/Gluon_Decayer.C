@@ -88,6 +88,7 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   }
   if (LastStep()) {
     delete singlet;
+    //msg_Out()<<(*p_cluster_list)<<"\n";
     return true;
   }
   return false;

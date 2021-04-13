@@ -244,7 +244,7 @@ bool Singlet_Checker::FindOtherSingletToTransit() {
     m_badones.erase(hit);
     return true;
   }
-  msg_Error()<<METHOD<<" throws error: no partner found.\n";
+  msg_Tracking()<<METHOD<<" throws warning: no partner found.\n";
   return false;
 }
 

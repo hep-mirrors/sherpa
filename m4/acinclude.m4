@@ -299,6 +299,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   SHRIMPSBUILDDIR="\${top_builddir}/SHRiMPS"
   SHRIMPSLIBS="\${SHRIMPSBUILDDIR}/Main/libShrimpsMain.la \
 	\${SHRIMPSBUILDDIR}/Event_Generation/libShrimpsEvents.la \
+	\${SHRIMPSBUILDDIR}/Ladders/libShrimpsLadders.la \
 	\${SHRIMPSBUILDDIR}/Beam_Remnants/libShrimpsBeamRemnants.la \
 	\${SHRIMPSBUILDDIR}/Cross_Sections/libShrimpsXsecs.la \
 	\${SHRIMPSBUILDDIR}/Eikonals/libShrimpsEikonals.la \

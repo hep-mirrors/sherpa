@@ -9,10 +9,9 @@
 using namespace SHRIMPS;
 
 Soft_Diffractive_Event_Generator::
-Soft_Diffractive_Event_Generator(Sigma_SD * sigma,Beam_Remnant_Handler * beams,
-				 const int & test) :
+Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test) :
   Event_Generator_Base(sigma),
-  p_sigma(sigma), p_beams(beams),
+  p_sigma(sigma), 
   m_sigma(0.)
 {
   for (size_t i=0;i<3;i++) m_sigma   += m_rate[i] = p_sigma->GetXSec(i);  
@@ -62,7 +61,6 @@ Soft_Diffractive_Event_Generator::~Soft_Diffractive_Event_Generator() {
 
 int Soft_Diffractive_Event_Generator::
 GenerateEvent(ATOOLS::Blob_List * blobs,const bool & flag) {
-  p_beams->InitialiseCollision();
   ATOOLS::Blob * blob(blobs->FindFirst(ATOOLS::btp::Soft_Collision));
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return 0;
   if (blob->NInP()>0)  {
@@ -123,9 +121,6 @@ void Soft_Diffractive_Event_Generator::FixKinematics() {
   double pl1(m_sign1*sqrt(p2-pt2)), pl2(-m_sign1*sqrt(p2-pt2));
   m_pout[0] = Vec4D(E[0], ptx, pty,pl1);
   m_pout[1] = Vec4D(E[1],-ptx,-pty,pl2);
-  //msg_Out()<<METHOD<<": E = "<<E[0]<<" + "<<E[1]<<" = "<<Etot<<" "
-  //	   <<"from "<<m_out[0].Mass()<<" + "<<m_out[1].Mass()<<"\n"
-  //	   <<m_pout[0]<<" + "<<m_pout[1]<<"\n";
 }
 
 void Soft_Diffractive_Event_Generator::FillBlob(ATOOLS::Blob * blob) {

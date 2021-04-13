@@ -42,8 +42,7 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weig
       onlyBunch = true;
   }
   Blob * beam(bloblist->FindFirst(btp::Beam));
-  if (beam && !beam->Has(blob_status::needs_beams)) 
-    return Return_Value::Nothing;
+  if (beam && !beam->Has(blob_status::needs_beams)) return Return_Value::Nothing;
   return p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist,onlyBunch);
 }
 

@@ -38,8 +38,7 @@ namespace ATOOLS {
     void         SwapColourIndices();
 
     // inline functions
-    inline static void ResetCounter() { s_qcd_counter=600; }
-
+    inline static void ResetCounter()    { s_qcd_counter=600; }
     inline static unsigned int Counter() { return ++s_qcd_counter; }    
 
     inline const Particle *Owner() const { return p_owner; }

@@ -311,6 +311,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 
 double Cluster_Algorithm::Mass(const Flavour &fl) const
 {
-  return fl.Mass();
+  return fl.Mass(true);
 }
 

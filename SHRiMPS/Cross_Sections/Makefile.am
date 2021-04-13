@@ -6,7 +6,8 @@ libShrimpsXsecs_la_SOURCES = \
 			Sigma_Total.C \
 			Sigma_Inelastic.C \
 			Sigma_Elastic.C \
-			Sigma_SD.C
+			Sigma_SD.C \
+			Sigma_Partonic.C
 
 localincdir = $(pkgincludedir)/SHRiMPS/Cross_Sections
 
@@ -16,7 +17,8 @@ localinc_HEADERS   = \
 			Sigma_Total.H \
 			Sigma_Inelastic.H \
 			Sigma_Elastic.H
-			Sigma_SD.H
+			Sigma_SD.H \
+			Sigma_Partonic.H
 
 
 

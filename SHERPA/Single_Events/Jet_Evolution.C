@@ -82,7 +82,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	    break;
 	  case (int(btp::Hard_Collision)) : 
 	    tag = string("MPIs"); 
-	    if (meblob->TypeSpec()=="MinBias") 
+	    if (meblob->TypeSpec()=="MinBias" || meblob->TypeSpec()=="Shrimps") 
 	      tag = string("SoftCollisions"); 
             MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
 	    break;
@@ -127,6 +127,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     // TODO: check first, whether shower did FS QED
     if (!bloblist->FourMomentumConservation()) {
       msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
+      msg_Out()<<METHOD<<" found four momentum conservation error.\n";
       return Return_Value::New_Event;
     }
     Blob * showerblob = bloblist->FindLast(btp::Shower);
@@ -137,7 +138,10 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
   // This should only happen after retrying an event has been called.  In this case
   // we find the last (and hopefully only) shower blob and extract its initiators.
   Blob * showerblob = bloblist->FindLast(btp::Shower);
-  if (showerblob!=NULL && !p_remnants->ExtractShowerInitiators(showerblob)) return Return_Value::New_Event;
+  if (showerblob!=NULL && !p_remnants->ExtractShowerInitiators(showerblob)) {
+    msg_Out()<<METHOD<<" couldn't extract shower initiators.\n";
+    return Return_Value::New_Event;
+  }
   return Return_Value::Nothing;
 }
 
@@ -156,6 +160,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
   if (stat==Return_Value::New_Event ||
       stat==Return_Value::Retry_Event) {
     interface->CleanUp();
+    msg_Out()<<METHOD<<" couldn't define initial conditions.\n";
     return stat;
   }
   if (blob->Type()!=::btp::Hadron_Decay) {
@@ -184,9 +189,11 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
       }
       blob->SetStatus(blob_status::inactive);
       CleanUp();
+      msg_Out()<<METHOD<<" perform showers delivers 1.\n";
       return Return_Value::New_Event;
     case 0:
       // Sudakov rejection
+      msg_Out()<<METHOD<<" perform showers delivers 0.\n";
       Reset();
       CleanUp();
       return Return_Value::New_Event;
@@ -200,6 +207,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     }
     blob->SetStatus(blob_status::inactive);
     CleanUp();
+    msg_Out()<<METHOD<<" no shower went wrong.\n";
     return Return_Value::New_Event;
   case Return_Value::Error:
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
