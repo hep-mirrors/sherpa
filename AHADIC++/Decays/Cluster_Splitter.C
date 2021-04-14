@@ -23,6 +23,9 @@ void Cluster_Splitter::Init(const bool & isgluon) {
   m_alpha[2] = hadpars->Get("alphaD");
   m_beta[2]  = hadpars->Get("betaD");
   m_gamma[2] = hadpars->Get("gammaD");
+  m_alpha[3] = hadpars->Get("alphaB");
+  m_beta[3]  = hadpars->Get("betaB");
+  m_gamma[3] = hadpars->Get("gammaB");
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomenta() {
@@ -137,7 +140,10 @@ FixCoefficients(const Flavour & flav1,const Flavour & flav2) {
     m_a = m_b = m_c = 0.;
     return;
   }
-  if (flav1==Flavour(kf_b) || flav1==Flavour(kf_b).Bar()) { //||
+  if (p_part1->IsBeam() || p_part2->IsBeam()) {
+    m_flcnt = 3;
+  }
+  else if (flav1==Flavour(kf_b) || flav1==Flavour(kf_b).Bar()) { //||
       //  flav1==Flavour(kf_c) || flav1==Flavour(kf_c).Bar()) {
     m_flcnt = 1;
   }

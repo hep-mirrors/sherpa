@@ -66,24 +66,6 @@ void Ladder_Generator_Eik::SelectPropagatorColours() {
       else     { pit2->SetCol(colour_type::singlet); pit2--; }
     }
   }
-  /*
-  lit1 = p_emissions->begin();
-  pit1 = p_props->begin(); 
-  colour_type::code prev=colour_type::octet;
-  while (pit1!=p_props->end()) {
-    if (prev==colour_type::singlet && pit1->Col()==colour_type::singlet) {
-      pit1 = p_props->erase(pit1);
-      lit2 = lit1;
-      lit1++;
-      p_ladder->DeleteRapidity(lit2);
-    }
-    else {
-      prev=pit1->Col();
-      lit1++;
-      pit1++;
-    }
-  }
-  */
   pit1 = p_props->begin(); pit2 = pit1; pit2++;
   while (pit2!=p_props->end()) {
     if (pit1->Col()==colour_type::singlet && pit2->Col()==colour_type::singlet) {

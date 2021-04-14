@@ -113,7 +113,8 @@ double Ladder_Generator_Base::AlphaSWeight(const double & kt2) {
   return AlphaS(kt2)/AlphaS(0.);
 }
 
-double Ladder_Generator_Base::ReggeWeight(const double & qt2, const double & y1, const double y2) {
+double Ladder_Generator_Base::ReggeWeight(const double & qt2, const double & y1,
+					  const double y2) {
   return (qt2>m_qt2min ? 
 	  exp(-3.*AlphaS(qt2)/(2.*M_PI) * dabs(y1-y2) * log(qt2/m_qt2min))  : 1.);
 }

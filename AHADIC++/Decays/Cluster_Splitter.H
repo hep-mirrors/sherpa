@@ -6,7 +6,7 @@
 namespace AHADIC {
   class Cluster_Splitter : public Splitter_Base {
   private:
-    double m_alpha[3], m_beta[3], m_gamma[3], m_a, m_b, m_c;
+    double m_alpha[4], m_beta[4], m_gamma[4], m_a, m_b, m_c;
     size_t m_flcnt;
 
     double m_R12, m_R21;

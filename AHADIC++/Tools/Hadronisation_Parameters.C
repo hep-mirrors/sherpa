@@ -113,6 +113,13 @@ ReadGluonSplittingParameters(Data_Reader & dataread) {
     dataread.GetValue<double>( "BETA_H",    1.20 );
   m_parametermap[string("gammaH")] =
     dataread.GetValue<double>( "GAMMA_H",   0.25 );
+  // beam fragmentation function
+  m_parametermap[string("alphaB")] =
+    dataread.GetValue<double>( "ALPHA_B",   m_parametermap[string("alphaD")] );
+  m_parametermap[string("betaB")]  =
+    dataread.GetValue<double>( "BETA_B",    m_parametermap[string("betaD")] );
+  m_parametermap[string("gammaB")] =
+    dataread.GetValue<double>( "GAMMA_B",   m_parametermap[string("gammaD")] );
 }
 
 void Hadronisation_Parameters::

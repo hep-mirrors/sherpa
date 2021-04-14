@@ -14,20 +14,24 @@
   YFS_MODE             = 0
 
   ANALYSIS             = Rivet
-  ANALYSIS_OUTPUT      = Factorial_BeamHandling2
+  ANALYSIS_OUTPUT      = QT_Gamma1
 
   MAX_PROPER_LIFETIME = 10.
 
+  Absorption =  exponential
   deltaY     =  1.;
   Lambda2    =  1.2;
-  beta02(mb) =  20.0;
+  beta02(mb) =  25.0;
   kappa      =  0.55;
   xi         =  0.2;
   lambda     =  0.25;
   Delta      =  0.4;
-  
-  Q_0^2  = 1.0
-  Q_as^2 = 1.0
+  Q_0^2      = 1.0
+  Q_as^2     = 1.0
+
+  ALPHA_B =  2.5  ###  2.5
+  BETA_B  = -0.5  ### -0.5
+  GAMMA_B =  1.   ###  2.0
 }(run)
 
 (beam){
