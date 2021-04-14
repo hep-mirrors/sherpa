@@ -13,8 +13,7 @@ using namespace std;
 
 Ladder_Generator_LDC::Ladder_Generator_LDC() :
   Ladder_Generator_Base(),
-  m_partonic(Sigma_Partonic(xs_mode::Regge)),
-  m_kt2min(m_Q02)
+  m_partonic(Sigma_Partonic(xs_mode::Regge))
 {
   for (size_t i=0;i<2;i++) {
     m_Ebeam[i] = rpa->gen.PBeam(i)[0];

@@ -12,8 +12,8 @@ namespace SHRIMPS {
   private:
     Continued_PDF * p_pdf[2];
     double          m_Ebeam[2];
-    double          m_S, m_maxsigma, m_ktmin, m_kt2min, m_shatmin, m_shat, m_ylimits[2];
-    double          m_seff, m_y, m_kt2, m_weight;
+    double          m_S, m_maxsigma, m_ktmin, m_shatmin, m_shat;
+    double          m_seff, m_kt2, m_weight;
     
     ATOOLS::Vec4D       m_q[2], m_k;
     TPropList::iterator m_pit[2];
@@ -25,7 +25,6 @@ namespace SHRIMPS {
     bool   MakeTrialLadder();
     bool   TrialEmission(double & y,const double & arg,const size_t dir);
     double AbsorptionWeight(const ATOOLS::Vec4D & k,const double & deltay);
-    double ReggeWeight(const ATOOLS::Vec4D & q,const double & deltay);
     bool   Ordering(const size_t dir);
     void   AddEmission(const size_t dir,const double & y);
     bool   AdjustLastEmission(const bool dlast, const double & ylast,const double & y0);

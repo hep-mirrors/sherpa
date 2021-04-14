@@ -12,7 +12,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_Eik()),
+  p_laddergenerator(new Ladder_Generator_QT()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(false)
 {
@@ -59,9 +59,6 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     p_laddergenerator->SetMaximalScale(Min(m_E[0],m_Ecms/4.),Min(m_E[1],m_Ecms/4.));
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
-    //if (N==1 && ladder->GetEmissions()->size()==2) {
-    //  ladder->GetProps()->begin()->SetCol(colour_type::octet);
-    //}
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
       p_laddergenerator->QuarkReplace();
       Add(ladder);

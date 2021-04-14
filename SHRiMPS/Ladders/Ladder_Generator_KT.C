@@ -12,16 +12,13 @@ using namespace std;
 
 Ladder_Generator_KT::Ladder_Generator_KT() :
   Ladder_Generator_Base(),
-  m_S(sqr(rpa->gen.Ecms())),
-  m_ktmin(0.5), m_kt2min(sqr(m_ktmin)), m_shatmin(4.*m_kt2min),
-  m_weight(0.)
+  m_S(sqr(rpa->gen.Ecms())), m_shatmin(4.*m_kt2min)
 {
   for (size_t i=0;i<2;i++) m_Ebeam[i] = rpa->gen.PBeam(i)[0];
 }
 
 Ladder * Ladder_Generator_KT::operator()(const Vec4D & pos) {
-  m_weight = 0.;
-  p_ladder = new Ladder(pos);  
+  InitLadder(pos);
   if (FixInitialState() &&
       FillForwardPartons() &&
       FillEmissions()) { 
@@ -72,7 +69,7 @@ bool Ladder_Generator_KT::FixInitialState() {
 
 bool Ladder_Generator_KT::FillForwardPartons() {
   for (size_t i=0;i<2;i++) {
-    m_ylimits[i]  = (i==0?m_dir:-m_dir) * (m_Ymax + ran->Get()*m_deltaY);
+    m_ylimits[i]  = (i==0?1.:-1.) * (m_Ymax + ran->Get()*m_deltaY);
     double qt2max = m_shat/(4.*sqr(cosh(m_ylimits[i])));
     double qt2    = p_eikonal->FF(i)->SelectQT2(qt2max);
     double phi    = 2.*M_PI*ran->Get();
@@ -90,26 +87,26 @@ bool Ladder_Generator_KT::FillEmissions() {
 
 bool Ladder_Generator_KT::MakeTrialLadder() {
   size_t dlast;
-  double y[2][2], ylast, wt1, wt8, ratio1;
-  for (size_t i=0;i<2;i++) y[i][0] = y[i][1] = m_ylimits[i];
+  double ylast, wt1, wt8, ratio1;
+  for (size_t i=0;i<2;i++) m_y[i][0] = m_y[i][1] = m_ylimits[i];
   m_pit[0] = p_ladder->GetProps()->begin(); m_pit[0]++;
   m_pit[1] = p_ladder->GetProps()->end();
   do {
     m_seff     = (m_q[0]+m_q[1]).Abs2();
     if (m_seff<m_kt2min) break;
     double arg = M_PI/(3.*AlphaS(0.)*log(m_seff/m_kt2min));
-    size_t dir = (dabs(y[0][0]) > dabs(y[1][0])) ? 0 : 1;
-    if (TrialEmission(y[dir][0],arg,dir)                       &&
-	AbsorptionWeight(m_k,y[dir][0]) > ran->Get()           &&
-	ReggeWeight(m_q[dir],y[dir][0]-y[dir][1]) > ran->Get() &&
+    size_t dir = (dabs(m_y[0][0]) > dabs(m_y[1][0])) ? 0 : 1;
+    if (TrialEmission(m_y[dir][0],arg,dir)                       &&
+	AbsorptionWeight(m_k,m_y[dir][0]) > ran->Get()           &&
+	ReggeWeight(m_q[dir].PPerp2(),m_y[dir][0],m_y[dir][1]) > ran->Get() &&
 	Ordering(dir)) {
-      AddEmission(dir,y[dir][0]);
-      y[dir][1] = ylast = y[dir][0];
-      dlast     = dir;
+      AddEmission(dir,m_y[dir][0]);
+      m_y[dir][1] = ylast = m_y[dir][0];
+      dlast       = dir;
     }
-  } while (y[0][0]>y[1][0]);
+  } while (m_y[0][0]>m_y[1][0]);
   if (p_ladder->GetEmissions()->size()==2) return FixSimpleKinematics();
-  return AdjustLastEmission(dlast,ylast,y[1-dlast][1]);
+  return AdjustLastEmission(dlast,ylast,m_y[1-dlast][1]);
 }
 
 bool Ladder_Generator_KT::
@@ -121,7 +118,7 @@ TrialEmission(double & y,const double & arg,const size_t dir) {
     m_kt2 = m_kt2min * pow(m_seff/m_kt2min,ran->Get());
     if (attempts > 1000) return false;
     attempts++;
-  } while (m_kt2>m_seff/(4.*sqr(cosh(m_y))) &&
+  } while (m_kt2>m_seff/(4.*sqr(cosh(y))) &&
 	   AlphaS(m_kt2)/AlphaS(0)<ran->Get());
     
   double phi = 2.*M_PI*ran->Get();
@@ -133,11 +130,6 @@ double Ladder_Generator_KT::AbsorptionWeight(const Vec4D & k,const double & y) {
   return m_density.AbsorptionWeight(y);
 }
 
-double Ladder_Generator_KT::ReggeWeight(const Vec4D & q,const double & deltay) {
-  double QT2 = q.PPerp2(); 
-  return exp(-3.*AlphaS(QT2)/M_PI * log(1.+QT2/m_Q02) *dabs(deltay));
-}
-
 bool Ladder_Generator_KT::Ordering(const size_t dir) {
   Vec4D  qtest = m_q[dir]-m_k;
   return (qtest[0]>0 && qtest.PPerp2()>m_q[dir].PPerp2());
@@ -145,7 +137,7 @@ bool Ladder_Generator_KT::Ordering(const size_t dir) {
 
 void Ladder_Generator_KT::AddEmission(const size_t dir,const double & y) {
   p_ladder->AddRapidity(y,Flavour(kf_gluon),m_k);
-  p_ladder->GetProps()->insert(m_pit[dir],T_Prop(colour_type::octet,m_q[dir],m_Q02));
+  p_ladder->GetProps()->insert(m_pit[dir],T_Prop(colour_type::octet,m_q[dir],m_qt2min));
   if (dir==1) { for (size_t i=0;i<2;i++) m_pit[i]--; }
   m_q[dir] -= m_k;
 }
@@ -215,8 +207,8 @@ bool Ladder_Generator_KT::FixSimpleKinematics() {
     y[i]          = k.Y();
     p_ladder->AddRapidity(y[i],p_ladder->InPart(0)->Flavour(),k);
   }
-  p_ladder->AddPropagator(T_Prop(colour_type::octet,qt,m_Q02));
-  m_weight = ReggeWeight(qt,dabs(y[0]-y[1]));
+  p_ladder->AddPropagator(T_Prop(colour_type::octet,qt,m_qt2min));
+  m_weight = ReggeWeight(qt.PPerp2(),y[0],y[1]);
   return true;
 }
 
@@ -226,9 +218,9 @@ AdjustLastEmission(const bool dlast, const double & ylast,const double & y0) {
   Vec4D oldk = (*p_ladder->GetEmissions())[ylast].Momentum();
   Vec4D QT   = (m_q[1-dlast]+m_pit[dlast]->Q()).Perp();
   Vec4D newk = QT.PPerp()*Vec4D(cosh(ylast),0.,0.,sinh(ylast))+QT;  
-  p_ladder->GetProps()->insert(m_pit[1-dlast],T_Prop(colour_type::octet,m_q[1-dlast],m_Q02));
+  p_ladder->GetProps()->insert(m_pit[1-dlast],T_Prop(colour_type::octet,m_q[1-dlast],m_qt2min));
   (*p_ladder->GetEmissions())[ylast].SetMomentum(newk);
-  m_weight = ReggeWeight(m_q[1-dlast],dabs(ylast-y0));
+  m_weight = ReggeWeight(m_q[1-dlast].PPerp2(),ylast,y0);
   return UpdateInitialState();
 }
 
