@@ -48,7 +48,7 @@ namespace COMIX {
     double KPTerms(const int mode,
                    double scalefac2=1.0);
 
-    void ComputeHardMatrix(const int mode=0);
+    void ComputeHardMatrix(const int mode);
 
   public:
 
