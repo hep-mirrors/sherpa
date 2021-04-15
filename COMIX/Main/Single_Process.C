@@ -457,7 +457,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p, int mode)
     else {
       m_w=1.0;
       m_dxs=0.0;
-      ComputeHardMatrix();
+      ComputeHardMatrix(2);
       for (size_t i(0); i<m_cols.m_perms.size(); ++i)
 	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
 	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
@@ -500,7 +500,7 @@ const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
 (Cluster_Amplitude *const ampl,const int mode)
 {
   if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl,mode);
-  DEBUG_FUNC(Name());
+  DEBUG_FUNC(Name()<<", mode = "<<mode);
   msg_Debugging()<<*ampl<<"\n";
   Vec4D_Vector p(ampl->Legs().size());
   for (size_t i(0);i<p.size();++i)
@@ -513,7 +513,17 @@ const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
   if (s.size()>stp::size+stp::res) s[stp::size+stp::res]=ampl->KT2();
   SetFixedScale(s);
   ScaleSetter(1)->CalculateScale(p);
-  ComputeHardMatrix(mode);
+  if (!(mode&1)) ComputeHardMatrix(mode);
+  else {
+    std::vector<int> ci(ampl->Legs().size()), cj(ci);
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      ci[i]=ampl->Leg(i)->Col().m_i;
+      cj[i]=ampl->Leg(i)->Col().m_j;
+    }
+    p_hc->resize(1,std::vector<Complex>(1));
+    (*p_hc)[0][0]=p_bg->Differential(ci,cj,(mode&2)?-1:1);
+    return p_hc;
+  }
   SetFixedScale(std::vector<double>());
   return p_hc;
 }
@@ -536,7 +546,7 @@ void COMIX::Single_Process::ComputeHardMatrix(const int mode)
       if (cc>0 || cc==8) ci[perm[j]]=++idx;
     }
     if (m_flavs[perm[0]].StrongCharge()==8) cj[perm[0]]=idx;
-    double me(p_bg->Differential(ci,cj,mode));
+    double me(p_bg->Differential(ci,cj,(mode&2)?-1:1));
     std::vector<Spin_Amplitudes> amps;
     std::vector<std::vector<Complex> > cols;
     FillAmplitudes(amps,cols);

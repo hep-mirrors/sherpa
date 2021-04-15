@@ -50,7 +50,7 @@ namespace COMIX {
     double KPTerms(const int mode,PDF::PDF_Base *pdfa,
 		   PDF::PDF_Base *pdfb,double scalefac2=1.0);
 
-    void ComputeHardMatrix(const int mode=0);
+    void ComputeHardMatrix(const int mode);
 
   public:
 
