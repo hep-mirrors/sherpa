@@ -48,7 +48,7 @@ namespace COMIX {
     double KPTerms(const int mode,
                    double scalefac2=1.0);
 
-    void ComputeHardMatrix();
+    void ComputeHardMatrix(const int mode=0);
 
   public:
 
@@ -68,7 +68,7 @@ namespace COMIX {
     Amplitude *GetAmplitude() const;
 
     const Hard_Matrix *ComputeHardMatrix
-    (ATOOLS::Cluster_Amplitude *const ampl);
+    (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
     
     double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
     double Differential(const ATOOLS::Cluster_Amplitude &ampl,

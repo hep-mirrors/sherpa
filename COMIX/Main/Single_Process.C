@@ -462,9 +462,9 @@ double COMIX::Single_Process::Partonic
 }
 
 const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
-(Cluster_Amplitude *const ampl)
+(Cluster_Amplitude *const ampl,const int mode)
 {
-  if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl);
+  if (p_map!=NULL) return p_map->ComputeHardMatrix(ampl,mode);
   DEBUG_FUNC(Name());
   msg_Debugging()<<*ampl<<"\n";
   Vec4D_Vector p(ampl->Legs().size());
@@ -478,12 +478,12 @@ const Hard_Matrix *COMIX::Single_Process::ComputeHardMatrix
   if (s.size()>stp::size+stp::res) s[stp::size+stp::res]=ampl->KT2();
   SetFixedScale(s);
   ScaleSetter(1)->CalculateScale(p);
-  ComputeHardMatrix();
+  ComputeHardMatrix(mode);
   SetFixedScale(std::vector<double>());
   return p_hc;
 }
 
-void COMIX::Single_Process::ComputeHardMatrix()
+void COMIX::Single_Process::ComputeHardMatrix(const int mode)
 {
   std::vector<Spin_Amplitudes> hc;
   for (size_t k(0);k<m_cols.m_perms.size();++k) {
@@ -501,7 +501,7 @@ void COMIX::Single_Process::ComputeHardMatrix()
       if (cc>0 || cc==8) ci[perm[j]]=++idx;
     }
     if (m_flavs[perm[0]].StrongCharge()==8) cj[perm[0]]=idx;
-    double me(p_bg->Differential(ci,cj,-1));
+    double me(p_bg->Differential(ci,cj,mode));
     std::vector<Spin_Amplitudes> amps;
     std::vector<std::vector<Complex> > cols;
     FillAmplitudes(amps,cols);
