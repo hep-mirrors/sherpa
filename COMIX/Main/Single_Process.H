@@ -50,6 +50,8 @@ namespace COMIX {
     double KPTerms(const int mode,PDF::PDF_Base *pdfa,
 		   PDF::PDF_Base *pdfb,double scalefac2=1.0);
 
+    void ComputeHardMatrix(const int mode=0);
+
   public:
 
     // constructors
@@ -70,11 +72,13 @@ namespace COMIX {
 
     Amplitude *GetAmplitude() const;
 
+    const Hard_Matrix *ComputeHardMatrix
+    (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
     double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
     ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude& ampl,
                                      ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
                                      int mode=0);
-
+    
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     bool GeneratePoint();
