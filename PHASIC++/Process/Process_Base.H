@@ -141,7 +141,10 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
+    virtual ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) = 0;
 
     /*!
      * Calculate the nominal differential

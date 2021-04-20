@@ -28,7 +28,10 @@ namespace PHASIC {
     size_t Size() const override;
     Process_Base *operator[](const size_t &i) override;
 
-    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) override;
+    ATOOLS::Weight_Info *OneEvent(
+        const int wmode,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0) override;
 
     double KFactor(const int mode=0) const;
 

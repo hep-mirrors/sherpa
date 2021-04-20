@@ -494,13 +494,15 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
+Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
+                                           Variations_Mode varmode,
+                                           int mode)
 {
   if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
-  auto wgtmap = Differential(cur, Variations_Mode::all, (psm::code)mode);
+  auto wgtmap = Differential(cur, varmode, (psm::code)mode);
   if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
     return NULL;
   cur->SetMomenta(p_lab);

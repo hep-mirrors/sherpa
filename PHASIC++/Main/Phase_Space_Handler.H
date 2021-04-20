@@ -135,7 +135,10 @@ namespace PHASIC {
                                      ATOOLS::Variations_Mode,
                                      const psm::code mode = psm::normal_call);
 
-    ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(
+        Process_Base *const proc,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        const int mode=0);
 
     void AddPoint(const double xs);
 

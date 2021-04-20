@@ -588,7 +588,9 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
 }
 
-Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
+Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
+                                       Variations_Mode varmode,
+                                       const int mode)
 {
   DEBUG_FUNC("");
   const double S(p_bviproc->Integrator()->SelectionWeight(wmode));
@@ -596,7 +598,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   Weight_Info *winfo(NULL);
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
-    winfo = p_bviproc->OneEvent(wmode, mode);
+    winfo = p_bviproc->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const Weights_Map Swgts {OneSEvent(wmode)};
@@ -611,7 +613,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     }
   } else {
     p_selected = p_rsproc;
-    winfo = p_rsproc->OneEvent(wmode, mode);
+    winfo = p_rsproc->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode == 0) {
       // calculate and apply weight factor
       const Weights_Map Hwgts {OneHEvent(wmode)};

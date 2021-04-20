@@ -84,10 +84,12 @@ Process_Base *Single_Process::operator[](const size_t &i)
   return NULL;
 }
 
-Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
+Weight_Info *Single_Process::OneEvent(const int wmode,
+                                      ATOOLS::Variations_Mode varmode,
+                                      const int mode)
 {
   p_selected=this;
-  return p_int->PSHandler()->OneEvent(this,mode);
+  return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
 double Single_Process::KFactor(const int mode) const

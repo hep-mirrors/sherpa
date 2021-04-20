@@ -273,10 +273,20 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       break;
     }
   }
+  if (proc==NULL) THROW(fatal_error,"No process selected");
+
+  // if variations are enabled and we do unweighting, we do a pilot run first
+  // where no on-the-fly variations are calculated
+  Variations_Mode varmode {Variations_Mode::all};
+  const bool hasvars {!s_variations->GetParametersVector()->empty()};
+  if (hasvars && m_eventmode != 0) {
+    varmode = Variations_Mode::nominal_only;
+    // prepare to restore the rng to re-run with variations after unweighting
+    ran->SaveStatus();
+  }
 
   // try to generate an event for the selected process
-  if (proc==NULL) THROW(fatal_error,"No process selected");
-  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+  ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
@@ -308,6 +318,18 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     } else {
       m_weightfactor = abswgt / maxwt;
       wf /= Min(1.0, m_weightfactor);
+    }
+    if (hasvars) {
+      // re-run with same rng state and include the calculation of variations
+      // this time; note that afterwards we also re-consume the random number
+      // which was used above for the unweighting
+      ran->RestoreStatus();
+      info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      ran->Get();
+      if (info==NULL)
+        return false;
+      m_evtinfo=*info;
+      delete info;
     }
   }
 
