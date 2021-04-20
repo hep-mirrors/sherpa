@@ -539,7 +539,8 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
                      <<"=> wgtfac = "<<wgtfac<<std::endl;
       winfo->m_weight *= wgtfac;
       *(p_selected->Selected()->GetMEwgtinfo()) *= wgtfac;
-      *p_variationweights *= wgtfac;
+      if (p_variationweights)
+        *p_variationweights *= wgtfac;
 
       // calculate and set local K factors
       const double lkf(p_bviproc->Selected()->Last() / p_bviproc->Selected()->LastB());
@@ -577,7 +578,8 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
       const double wgtfac(Hwgt * selwgtratio);
       winfo->m_weight *= wgtfac;
       *p_selected->Selected()->GetMEwgtinfo() *= wgtfac;
-      *p_variationweights *= wgtfac;
+      if (p_variationweights)
+        *p_variationweights *= wgtfac;
     }
   }
   Mass_Selector *ms(Selected()->Generator());
