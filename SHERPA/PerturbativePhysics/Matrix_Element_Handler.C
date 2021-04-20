@@ -192,7 +192,21 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
     p_variationweights->Reset();
-    proc->SetVariationWeights(p_variationweights);
+    proc->SetVariationWeights(NULL);
+    const bool hasvars(
+        p_variationweights->GetVariations()->GetParametersVector()->empty()
+        == false);
+    if (hasvars) {
+      if (m_eventmode!=0) {
+        // for (partially) unweighted events, calculate nominal only, and
+        // prepare to restore the rng to re-run with variations after
+        // unweighting
+        ran->SaveStatus();
+      } else {
+        // for weighted events, we also  calculate variations
+        proc->SetVariationWeights(p_variationweights);
+      }
+    }
     ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
     proc->SetVariationWeights(NULL);
     p_proc=proc->Selected();
@@ -222,6 +236,16 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       } else {
         m_weightfactor = abswgt / max;
         wf /= Min(1.0, m_weightfactor);
+      }
+      if (hasvars) {
+        // re-run with same rng state and include the calculatin of variations
+        // this time; note that afterwards we also re-consume the random number
+        // which was used above for the unweighting
+        ran->RestoreStatus();
+        proc->SetVariationWeights(p_variationweights);
+        ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
+        proc->SetVariationWeights(NULL);
+        ran->Get();
       }
     }
     m_evtinfo.m_weight*=wf;
