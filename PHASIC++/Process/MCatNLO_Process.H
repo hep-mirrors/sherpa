@@ -28,7 +28,7 @@ namespace PHASIC {
     PDF::NLOMC_Base  *p_nlomc;
 
     double m_lastrs, m_lastb, m_lastvi;
-    int    m_fomode, m_hpsmode, m_kfacmode, m_wassevent;
+    int    m_fomode, m_psmode, m_hpsmode, m_kfacmode, m_wassevent;
 
     std::string m_rsscale;
 
