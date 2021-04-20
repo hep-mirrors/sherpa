@@ -108,6 +108,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
+  m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
   m_fomode   = s["FOMODE"].Get<int>();
@@ -147,6 +148,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 void MCatNLO_Process::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
+  s["PSMODE"].SetDefault(0);  // shower mode
   s["HPSMODE"].SetDefault(4);  // H event shower mode
   s["KFACTOR_MODE"].SetDefault(14);  // K-factor mode
   s["FOMODE"].SetDefault(0);  // fixed order mode
@@ -493,14 +495,17 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;
-  p_nlomc->SetShower(p_shower);
   if (p_ampl->JF<void>())
     for (Cluster_Amplitude *sampl(p_ampl);
 	 sampl;sampl=sampl->Next()) sampl->SetNLO(2);
   double lkf(p_bviproc->Selected()->Last()/p_bviproc->Selected()->LastB());
   for (Cluster_Amplitude *ampl(p_ampl);
        ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
-  int stat(p_nlomc->GeneratePoint(p_ampl));
+  int stat(1);
+  if (!(m_psmode&2)) {
+    p_nlomc->SetShower(p_shower);
+    stat=p_nlomc->GeneratePoint(p_ampl);
+  }
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
     p_ampl=NULL;
@@ -580,11 +585,12 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   }
   p_selected=p_bproc;
   ampl=p_ampl;
-  ampl->SetNLO(4);
+  if ((!m_psmode&2)) ampl->SetNLO(4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->WeightsMap().Nominal()<<" )\n";
   p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  if (m_psmode&2) return Weights_Map{1.0};
   return stat ? p_nlomc->WeightsMap() : Weights_Map{0.0};
 }
 
