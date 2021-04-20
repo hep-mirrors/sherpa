@@ -140,13 +140,14 @@ void Variations::LoadLHAPDFInterfaceIfNecessary(Data_Reader * const reader)
 
 void Variations::InitialiseParametersVector(Data_Reader * const reader)
 {
+  PRINT_FUNC();
   std::vector<std::string> args = VariationArguments(reader);
-  PRINT_FUNC(args.size() << " variations");
   for (std::vector<std::string>::const_iterator it(args.begin());
       it != args.end(); ++it) {
     std::vector<std::string> params(VariationArgumentParameters(*it));
     AddParameters(params, reader);
   }
+  msg_Info() << "Number of variations: " << m_parameters_vector.size() << '\n';
   msg_Info() << *this;
 }
 
