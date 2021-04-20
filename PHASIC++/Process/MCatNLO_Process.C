@@ -100,6 +100,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
+  if (!read.ReadFromFile(m_psmode,"NLO_CSS_PSMODE")) m_psmode=0;
+  else msg_Info()<<METHOD<<"(): Set MC@NLO shower mode "<<m_psmode<<".\n";
   if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
   if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
@@ -432,9 +434,12 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;
-  p_nlomc->SetShower(p_shower);
-  p_nlomc->SetVariationWeights(p_variationweights);
-  int stat(p_nlomc->GeneratePoint(p_ampl));
+  int stat(1);
+  if (!(m_psmode&2)) {
+    p_nlomc->SetShower(p_shower);
+    p_nlomc->SetVariationWeights(p_variationweights);
+    stat=p_nlomc->GeneratePoint(p_ampl);
+  }
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
     p_ampl=NULL;
@@ -510,11 +515,12 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
     std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
-  ampl->SetNLO(ampl->NLO()|4);
+  if ((!m_psmode&2)) ampl->SetNLO(ampl->NLO()|4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
   p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  if (m_psmode&2) return 1.0;
   return stat?p_nlomc->Weight():0.0;
 }
 
