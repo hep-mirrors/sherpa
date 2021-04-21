@@ -69,7 +69,8 @@ namespace Recola {
     static void   EvaluateProcess(int id, const Vec4D_Vector &momenta,
                                   const size_t &voqcd, const size_t &boqcd,
                                   METOOLS::DivArrD &Vqcd, double &B,
-                                  std::vector<double> &asscontribs);
+                                  std::vector<double> &asscontribs,
+                                  const bool& calcass);
 
     static bool   ExitOnError()        { return s_exit_on_error; }
     static bool   UseIopInEWapprox()   { return s_use_iop_in_ewapprox; }

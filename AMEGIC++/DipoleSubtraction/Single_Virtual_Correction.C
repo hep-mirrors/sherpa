@@ -829,7 +829,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   p_LO_process->Calc_AllXS(p_int->Momenta(),&_mom.front(),p_dsij,mode);
   if (p_loopme && (m_bvimode&4)) {
     p_loopme->SetRenScale(p_scale->Scale(stp::ren,1));
+    p_loopme->SetCalcAssContribs(p_variationweights);
     p_loopme->Calc(mom);
+    p_loopme->SetCalcAssContribs(true);
   }
   double I=0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) &&

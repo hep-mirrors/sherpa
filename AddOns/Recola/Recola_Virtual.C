@@ -320,7 +320,7 @@ void Recola_Virtual::Calc(const Vec4D_Vector& momenta)
   }
   set_alphas_rcl(AlphaQCD(),sqrt(m_mur2),Recola_Interface::GetDefaultFlav());
   Recola_Interface::EvaluateProcess(m_recola_id, momenta, m_voqcd, m_boqcd,
-                                    m_res,m_born,m_asscontribs);
+                                    m_res,m_born,m_asscontribs,m_calcass);
 
   if (msg_LevelIsDebugging()) {
     timing->Stop();
