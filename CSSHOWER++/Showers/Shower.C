@@ -526,7 +526,7 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
-    if (m_sudakov.Generate(split)) {
+    if (m_sudakov.Generate(split,kt2win)) {
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
       split->SetWeight(m_sudakov.Weight());
       if (kt2>kt2win) {
