@@ -409,6 +409,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 }
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
+                                        Variations_Mode varmode,
                                         int mode)
 {
   DEBUG_FUNC("mode="<<mode);

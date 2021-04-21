@@ -34,7 +34,9 @@ namespace COMIX {
     ~Single_Dipole_Term();
 
     // member functions
-    double Partonic(const ATOOLS::Vec4D_Vector &p,int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
     ATOOLS::Weights_Map Differential(const ATOOLS::Cluster_Amplitude& ampl,
                                      ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
                                      int mode=0);

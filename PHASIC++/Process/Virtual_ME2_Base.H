@@ -23,6 +23,7 @@ namespace PHASIC {
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
     const std::vector<std::vector<double> > *p_dsij;
     const std::vector<size_t> *p_plist;
+    bool m_calcass;
     std::vector<double> m_asscontribs;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
@@ -50,6 +51,7 @@ namespace PHASIC {
     inline double ME_E2() { return m_res.GetIR2(); }
     inline double ME_Born() { return m_born; }
 
+    inline void SetCalcAssContribs(const bool calcass) { m_calcass=calcass; }
     inline size_t ME_AssContribs_Size() { return m_asscontribs.size(); }
     inline double ME_AssContribs(size_t i) { return m_asscontribs[i]; }
 

@@ -523,16 +523,19 @@ void Single_Virtual_Correction::Minimize()
   ----------------------------------------------------------------------------*/
 
 
-double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
+double Single_Virtual_Correction::Partonic(const Vec4D_Vector &moms,
+                                           Variations_Mode varmode,
                                            int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
-  return DSigma(moms,m_lookup,mode);
+  return DSigma(moms,m_lookup,varmode,mode);
 }
 
-double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
-                                         bool lookup,const int mode)
+double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
+                                         bool lookup,
+                                         Variations_Mode varmode,
+                                         const int mode)
 {
   DEBUG_FUNC(Name());
   m_lastxs = m_lastdxs = m_lastbxs = 0.;
@@ -556,7 +559,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
     }
   }
   if (p_partner == this) {
-    m_lastdxs = operator()(_moms,mode);
+    m_lastdxs = operator()(_moms,varmode,mode);
   }
   else {
     if (lookup) {
@@ -565,12 +568,12 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,
     else {
       p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
       if (!m_loopmapped) p_partner->SetCalcV(0);
-      m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
+      m_lastdxs = p_partner->operator()(_moms,varmode,mode)*m_sfactor;
       p_partner->SetCalcV(1);
     }
     m_lastbxs = p_partner->m_lastbxs*m_sfactor;
     m_lastb=p_partner->m_lastb*m_sfactor;
-    m_lastv=Calc_V_WhenMapped(_moms);
+    m_lastv=Calc_V_WhenMapped(_moms, varmode);
     m_lasti=p_partner->m_lasti*m_sfactor;
     for (size_t i(0);i<m_wass.size();++i)
       m_wass[i]=p_partner->m_wass[i]*m_sfactor;
@@ -619,7 +622,8 @@ double Single_Virtual_Correction::Calc_B()
   return *p_reqborn;
 }
 
-double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
+double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
+                                         Variations_Mode varmode)
 {
   if (m_calcv==0) return 0.0;
   DEBUG_FUNC(p_loopme);
@@ -628,7 +632,9 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
   p_loopme->SetRenScale(p_scale->Scale(stp::ren,1));
   p_loopme->SetPList(&p_LO_process->PartonListQCD());
   p_loopme->SetDSij(&m_dsijqcd);
+  p_loopme->SetCalcAssContribs(varmode != Variations_Mode::nominal_only);
   p_loopme->Calc(mom);
+  p_loopme->SetCalcAssContribs(true);
   double cplfac(1.), bornorderqcd(0), beta0qcd(0.);
   // assume alpha_qed fixed for now
   // -> otherwise add term m*beta0(QED)
@@ -685,7 +691,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
 }
 
 double Single_Virtual_Correction::Calc_V_WhenMapped
-(const ATOOLS::Vec4D_Vector &mom)
+(const Vec4D_Vector &mom, Variations_Mode varmode)
 {
   if (m_loopmapped) return p_partner->m_lastv*m_sfactor;
   if ((m_stype!=sbt::none) && (m_pinfo.m_fi.m_nlotype&nlo_type::loop) &&
@@ -697,7 +703,7 @@ double Single_Virtual_Correction::Calc_V_WhenMapped
       for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
     }
     m_dsijqcd=p_partner->m_dsijqcd;
-    return Calc_V(_mom);
+    return Calc_V(_mom, varmode);
   }
   return 0.;
 }
@@ -966,13 +972,15 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   msg->SetPrecision(precision);
 }
 
-double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,const int mode)
+double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
+                                             Variations_Mode varmode,
+                                             const int mode)
 {
   DEBUG_FUNC("bvimode="<<m_bvimode);
   m_lastxs = m_lastdxs = m_lastbxs = 0.;
   if (p_partner!=this) {
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
-    return p_partner->operator()(mom,mode)*m_sfactor;
+    return p_partner->operator()(mom,varmode,mode)*m_sfactor;
   }
 
   double B(0.),V(0.),I(0.);
@@ -1014,7 +1022,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   if ((m_stype!=sbt::none) && (m_pinfo.m_fi.m_nlotype&nlo_type::loop) &&
       (m_bvimode&4)) {
     m_lastki=kfactorb;
-    V=Calc_V(mom)*m_lastki;
+    V=Calc_V(mom, varmode)*m_lastki;
   }
 
   if (p_loopme)

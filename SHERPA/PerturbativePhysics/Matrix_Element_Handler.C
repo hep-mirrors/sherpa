@@ -278,7 +278,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
   Variations_Mode varmode {Variations_Mode::all};
-  const bool hasvars {!s_variations->GetParametersVector()->empty()};
+  // TODO: if always true, then remove it from if statement; another option
+  // would be to add ASSEW variations to the managed variations, such that we
+  // can use HasVariations to set hasvars properly
+  const bool hasvars {true};
   if (hasvars && m_eventmode != 0) {
     varmode = Variations_Mode::nominal_only;
     // prepare to restore the rng to re-run with variations after unweighting

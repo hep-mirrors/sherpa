@@ -118,7 +118,9 @@ void Single_Process::OverwriteOriginalWithLocalFlavoursAndMomenta() {
   m_nout = m_flavs.size()-m_nin;
 }
 
-double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta, int mode)
+double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
+                                Variations_Mode varmode,
+                                int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result())

@@ -1259,7 +1259,9 @@ bool Single_LOProcess::IsValid()
 
   ----------------------------------------------------------------------------*/
 
-double Single_LOProcess::Partonic(const Vec4D_Vector& _moms, int mode)
+double Single_LOProcess::Partonic(const Vec4D_Vector& _moms,
+                                  Variations_Mode varmode,
+                                  int mode)
 {
   return 0.0;
 }

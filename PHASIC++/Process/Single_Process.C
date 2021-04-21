@@ -519,7 +519,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
-  Partonic(p);
+  Partonic(p, varmode);
 
   double nominal {0.0};
 

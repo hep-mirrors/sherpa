@@ -750,7 +750,9 @@ void AMEGIC::Single_Process::Minimize()
   m_mincpl    = p_partner->MinOrders();
 }
 
-double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms, int mode)
+double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,
+                                        Variations_Mode varmode,
+                                        int mode)
 {
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;

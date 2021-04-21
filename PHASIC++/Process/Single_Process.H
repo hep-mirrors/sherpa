@@ -64,7 +64,11 @@ namespace PHASIC {
      * m_mewgtinfo. These information can be retrieved using Last, LastB,
      * LastXS and GetMEwgtinfo.
     */
-    virtual double Partonic(const ATOOLS::Vec4D_Vector &p, int mode=0) = 0;
+    virtual double Partonic(
+        const ATOOLS::Vec4D_Vector &p,
+        ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
+        int mode=0) = 0;
+
     inline virtual const double SPrimeMin() const override { return -1.; }
     inline virtual const double SPrimeMax() const override { return -1.; }
     inline virtual const bool   HasInternalScale() const override { return false; }

@@ -102,7 +102,9 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
+    double Partonic(const ATOOLS::Vec4D_Vector&,
+                    ATOOLS::Variations_Mode varmode,
+                    int mode);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
     double         operator()(const ATOOLS::Vec4D *);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
