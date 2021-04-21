@@ -53,7 +53,7 @@ namespace CSSHOWER {
 		     const double &isfac,const double &fsfac);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
-    bool   Generate(Parton *);
+    bool   Generate(Parton *,double);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);
 
