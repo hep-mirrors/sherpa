@@ -336,7 +336,8 @@ int Recola_Interface::RegisterProcess(const Process_Info& pi,
 void Recola_Interface::EvaluateProcess(int id, const Vec4D_Vector& momenta,
                                        const size_t& voqcd, const size_t& boqcd,
                                        METOOLS::DivArrD& Vqcd, double& B,
-                                       std::vector<double> &asscontribs)
+                                       std::vector<double> &asscontribs, 
+                                       const bool& calcass)
 {
   DEBUG_FUNC("Voqcd="<<voqcd<<", Boqcd="<<boqcd);
   vector<double> pp(4*momenta.size());
@@ -362,7 +363,7 @@ void Recola_Interface::EvaluateProcess(int id, const Vec4D_Vector& momenta,
   B = fA2[0];
   Vqcd.Finite()=fA2[1];
 
-  if (s_asscontribs[id]) {
+  if (calcass && s_asscontribs[id]) {
     if (s_asscontribs[id]&asscontrib::EW) {
       if (!asscontribs.size()>0) THROW(fatal_error,"Inconsistent state.");
       msg_Debugging()<<"Getting V_EW ..."<<std::endl;

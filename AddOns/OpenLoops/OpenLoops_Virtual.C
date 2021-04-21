@@ -41,14 +41,16 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
     PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_res<<" user="<<timing->UserTime()
                <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
   }
-  for (size_t i(0);i<m_ol_asscontribs;++i) {
-    m_asscontribs[i]=0.;
-    if (msg_LevelIsDebugging()) timing->Start();
-    OpenLoops_Interface::EvaluateAssociated(m_ol_id, momenta, i+1, m_asscontribs[i]);
-    if (msg_LevelIsDebugging()) {
-      timing->Stop();
-      PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_asscontribs[i]<<" user="<<timing->UserTime()
+  if (m_calcass) {
+    for (size_t i(0);i<m_ol_asscontribs;++i) {
+      m_asscontribs[i]=0.;
+      if (msg_LevelIsDebugging()) timing->Start();
+      OpenLoops_Interface::EvaluateAssociated(m_ol_id, momenta, i+1, m_asscontribs[i]);
+      if (msg_LevelIsDebugging()) {
+        timing->Stop();
+        PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" = "<<m_asscontribs[i]<<" user="<<timing->UserTime()
                  <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+      }
     }
   }
 
