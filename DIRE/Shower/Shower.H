@@ -4,11 +4,10 @@
 #include "DIRE/Tools/Parton.H"
 #include "DIRE/Shower/Kernel.H"
 #include "DIRE/Tools/Amplitude.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace ATOOLS {
-  class Default_Reader;
-  class Variation_Parameters;
-  class Variation_Weights;
+  class QCD_Variation_Params;
 }
 namespace MODEL {
   class Model_Base;
@@ -51,6 +50,65 @@ namespace DIRE {
 
   private:
 
+    // set up a C array wrapper used to hold a table of cumulative integrals in
+    // GeneratePoint
+    // rows: kernels allowed by the splitter
+    // cols: possible spectators
+    // NOTE: by using (encapsulated) C arrays we can avoid using vectors of
+    // vectors in the hot-spot function GeneratePoint
+    struct CumulativeIntegralTable {
+      CumulativeIntegralTable() : nrows {0}, ncols {0} {};
+      CumulativeIntegralTable(int _nrows, int _ncols) :
+        nrows{_nrows}, ncols {_ncols}
+      {
+        sumsizes = new int[nrows];
+        spects = new size_t[nrows*ncols];
+        sums = new double[nrows*ncols];
+      }
+      CumulativeIntegralTable& operator=(CumulativeIntegralTable&& other)
+      {
+        if (this == &other)
+          return *this;
+        if (nrows > 0) {
+          delete[] sumsizes;
+          delete[] spects;
+          delete[] sums;
+        }
+        nrows = other.nrows;
+        ncols = other.ncols;
+        sumsizes = other.sumsizes;
+        spects = other.spects;
+        sums = other.sums;
+        other.nrows = 0;
+        return *this;
+      }
+      ~CumulativeIntegralTable() {
+        if (nrows > 0) {
+          delete[] sumsizes;
+          delete[] spects;
+          delete[] sums;
+        }
+      }
+      void Clear(int row) { sumsizes[row] = 0; }
+      int Size(int row) { return sumsizes[row]; }
+      double Sum(int row, int col) { return sums[row*ncols + col]; }
+      size_t Spect(int row, int col) { return spects[row*ncols + col]; }
+      double LastSum(int row) { return sums[row*ncols + sumsizes[row] - 1]; }
+      double LastSpect(int row) { return spects[row*ncols + sumsizes[row] - 1]; }
+      void AppendSumAndSpect(int row, double sum, size_t spect) {
+        const auto idx = row*ncols + sumsizes[row];
+        sums[idx] = sum;
+        spects[idx] = spect;
+        ++(sumsizes[row]);
+      }
+      int nrows, ncols;
+      int* sumsizes;
+      size_t* spects;
+      double* sums;
+    };
+
+    CumulativeIntegralTable m_sums;
+
     MODEL::Model_Base *p_model;
     PDF::PDF_Base     *p_pdf[2];
 
@@ -58,7 +116,8 @@ namespace DIRE {
 
     Cluster_Definitions *p_cluster;
 
-    ATOOLS::Variation_Weights *p_vars;
+    ATOOLS::Weights_Map m_weightsmap;
+    bool m_reweight;
 
     Kernel_Vector m_cks;
     SKernel_Map   m_sks;
@@ -69,26 +128,20 @@ namespace DIRE {
 
     int m_kin, m_kfac, m_cpl, m_mec;
 
-    unsigned int m_maxem, m_maxpart, m_maxrewem;
+    unsigned int m_maxem, m_maxpart;
 
     void AddKernel(Kernel *const k);
 
     void AddWeight(const Amplitude &a,const double &t);
 
     Splitting GeneratePoint(Parton &p,const double &t,
-			    const unsigned int &nem);
+			    const int &cm,const unsigned int &nem);
     Splitting GeneratePoint(const Amplitude &a,const double &t,
 			    const unsigned int &nem);
 
-    double Reweight(ATOOLS::Variation_Parameters *params,
-		    ATOOLS::Variation_Weights *weights,
-		    const Reweight_Args &a);
-    double GetWeight(ATOOLS::Variation_Parameters *params,
-		     ATOOLS::Variation_Weights *weights,
-		     std::vector<double> &v);
-    double VetoWeight(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      JetVeto_Args &a);
+    void Reweight(ATOOLS::QCD_Variation_Params* params,
+                  size_t varindex,
+                  const Reweight_Args& a);
 
   public:
 
@@ -97,12 +150,11 @@ namespace DIRE {
     ~Shower();
 
     bool Init(MODEL::Model_Base *const,
-	      PDF::ISR_Handler *const,
-	      ATOOLS::Default_Reader *const);
+	      PDF::ISR_Handler *const);
 
     void SetMS(const ATOOLS::Mass_Selector *const ms);
 
-    int Evolve(Amplitude &a,double &w,unsigned int &nem);
+    int Evolve(Amplitude&, unsigned int& nem);
 
     double GetXPDF(const double &x,const double &Q2,
 		   const ATOOLS::Flavour &fl,const int b) const;
@@ -122,6 +174,10 @@ namespace DIRE {
     inline double PDFMin(const int i) const { return m_pdfmin[i]; }
 
     inline double GetWeight() const { return m_weight; }
+    inline const ATOOLS::Weights_Map& GetWeightsMap() const
+    {
+      return m_weightsmap;
+    }
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
@@ -131,12 +187,6 @@ namespace DIRE {
     inline int MECorrection() const { return m_mec; }
 
     inline double MuR2Factor() const { return m_rsf; }
-
-    inline void SetVariations(ATOOLS::Variation_Weights *const vars)
-    { p_vars=vars; }
-
-    inline ATOOLS::Variation_Weights *Variations() const
-    { return p_vars; }
 
   };//end of class Shower
 

@@ -1,0 +1,31 @@
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+
+# settings for hard decays
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    24 -> 2 -1: {Status: 0}
+    24 -> 4 -3: {Status: 0}
+    24 -> 16 -15: {Status: 0}
+
+# model parameters
+PARTICLE_DATA:
+  6: {Width: 0}
+  24: {Width: 0}
+
+# technical parameters
+EXCLUSIVE_CLUSTER_MODE: 1
+
+PROCESSES:
+- 93 93 -> 6 -6 24:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 2, EW: 1}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops

@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/External_ME_Args.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
 
 namespace EXTAMP {
 
@@ -10,15 +11,15 @@ namespace EXTAMP {
   {
     PHASIC::External_ME_Args args (pi.m_ii.GetExternal(),
 				   pi.m_fi.GetExternal(),
-				   pi.m_borncpl);
+				   pi.m_maxcpl);
     p_born_me = 
       External_ME_Interface::GetExternalBornME(args);
     p_born_me->SetCouplings(m_cpls);
   }
 
-  double Born_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
-				const int mode)
+  double Born_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
   {
+    if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
 
     /* Maybe move to PHASIC::Single_Process */
     ScaleSetter()->CalculateScale(p);

@@ -74,7 +74,7 @@ void B_KStar_Semileptonic::Calculate(const Vec4D_Vector& _p, bool m_anti)
   Vec4D qhat  = pBhat - pKhat;
   
   // get m_b^hat at scale mu
-  double mbpole = 4.8;
+  double mbpole = Flavour(kf_b).Mass(true);
   double mu = mbpole; // fixme: correct scale?
   double alphas = s_model->ScalarFunction("alpha_S",mu);
   double m_mb = mbpole*(1.0-4.0/3.0*alphas/M_PI);
@@ -181,7 +181,7 @@ Complex B_KStar_Semileptonic::sehgalld(double sHat) {
 Complex B_KStar_Semileptonic::g(double shat)
 {
   Complex i = Complex(0.0,1.0);
-  double mu = 4.8;
+  double mu = Flavour(kf_b).Mass(true);
   double y = 4.0/shat;  
   return -8.0/9.0*log(p_masses[0]/mu)+8.0/27.0+4.0/9.0*y-2.0/9.0*(2.0+y)
     *sqrt(abs(1.0-y))*(Theta(1.0-y)*(log(abs(
@@ -193,7 +193,7 @@ Complex B_KStar_Semileptonic::g(double shat)
 Complex B_KStar_Semileptonic::g0(double shat)
 {
   Complex i = Complex(0.0,1.0);
-  double mu = 4.8;
+  double mu = Flavour(kf_b).Mass(true);
   return 8.0/27.0-4.0/9.0*log(shat*p_masses[0]/mu)+4.0/9.0*i*M_PI;
 }
 

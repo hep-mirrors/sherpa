@@ -8,7 +8,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -27,16 +27,15 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
       THROW(fatal_error,"No beam remnant handler found.");
     }
   }
-  Default_Reader read;
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
-  m_hardveto=read.GetValue<double>("MPI_PT_MAX",1.0e12);
+  Settings& s = Settings::GetMainSettings();
+  m_hardveto  = s["MPI_PT_MAX"].SetDefault(1e12).Get<double>();
+  m_ptmax_fac = s["MPI_PT_Max_Fac"].SetDefault(1.).Get<double>();
   ResetIS();
 }
 
 Multiple_Interactions::~Multiple_Interactions() { }
 
-Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist,double &weight)
+Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist)
 {
   m_result   = Return_Value::Nothing; 
   if (p_mihandler->Type()==MI_Handler::None || p_mihandler->Done()) return m_result;
@@ -160,11 +159,20 @@ bool Multiple_Interactions::InitNewEvent() {
   if (ptinfo==NULL) THROW(fatal_error,"No starting scale info in signal blob");
   m_ptmax=ptinfo->Get<double>();
   if (m_ptmax!=std::numeric_limits<double>::max()) {
-    p_mihandler->InitialiseMPIs(4.*m_ptmax);
-    p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
-    Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
-    if (showerblob) showerblob->SetPosition(p_lastblob->Position());
+    //<<<<<<< HEAD
+    //p_mihandler->InitialiseMPIs(4.*m_ptmax);
+    //p_lastblob->SetPosition(p_mihandler->SelectPositionForScatter());
+    //Blob * showerblob = p_lastblob->OutParticle(0)->DecayBlob();
+    //if (showerblob) showerblob->SetPosition(p_lastblob->Position());
     //msg_Out()<<METHOD<<" set x = "<<p_lastblob->Position()<<".\n";
+    //=======
+    double ptfac=sqrt((*p_lastblob)["Factorisation_Scale"]->Get<double>());
+    double ptren=sqrt((*p_lastblob)["Renormalization_Scale"]->Get<double>());
+    //msg_Out()<<METHOD<<": muF, R = "<<ptfac<<", "<<ptren<<" from \n"<<(*p_lastblob)<<"\n";
+    m_ptmax = ptfac/4.;
+    if (!IsZero(ptfac-ptren)) m_ptmax += ptren;
+    p_mihandler->InitialiseMPIs(m_ptmax_fac*m_ptmax);
+    //>>>>>>> master
     m_newevent = false;
     return true;
   }
@@ -175,7 +183,6 @@ void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
   MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   for (size_t i=0;i<2;i++) {
     double x_resc = m_emax[i]/p_remnants[i]->GetBeam()->Energy();
-    //msg_Out()<<METHOD<<" sets PDF("<<i<<") x-rescaling = "<<x_resc<<" for E = "<<m_emax[i]<<"\n";
     p_mihandler->ISRHandler()->SetRescaleFactor(x_resc,i);
   }
 }

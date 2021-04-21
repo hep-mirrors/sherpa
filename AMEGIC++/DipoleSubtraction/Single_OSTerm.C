@@ -35,8 +35,14 @@ using namespace std;
 
   ------------------------------------------------------------------------------- */
 
-Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_t swit, Process_Integrator* pint) :
-  p_partner(this), p_OS_mom(0), p_os_process(0), m_wwindow(5.), p_realint(pint)
+Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,
+                             size_t pi,size_t pj,size_t swit,
+                             Process_Integrator* pint) :
+  p_partner(this),
+  p_OS_mom(0),
+  p_os_process(0),
+  m_wwindow{ 5.0 },
+  p_realint(pint)
 {
   DEBUG_FUNC("");
   PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
@@ -77,12 +83,8 @@ Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_
   }
   m_osinfo= lopi;
 
-  m_wwindow = ToType<double>(rpa->gen.Variable("DIPOLE_ONSHELL_SUBTRACTION_WINDOW"));
-  static bool print(true);
-  if (print) {
-    print=false;
-    msg_Tracking()<<"Set width window for os subtraction="<<m_wwindow<<"."<<std::endl;
-  }
+  auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
+  m_wwindow = dipolesettings["ONSHELL_SUBTRACTION_WINDOW"].Get<double>();
 }
 
 
@@ -94,9 +96,9 @@ Single_OSTerm::~Single_OSTerm()
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Generic stuff for initialization of Single_OSTerms
-      
+
   ------------------------------------------------------------------------------*/
 
 void Single_OSTerm::BuildDecay
@@ -295,8 +297,12 @@ int Single_OSTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   p_OS_labmom.resize(m_nin+m_nout);
 
   if (m_osinfo.m_amegicmhv>0) {
-    if (CF.MHVCalculable(m_osinfo)) p_os_process = new Single_Process_MHV();
-    if (m_osinfo.m_amegicmhv==2) {m_valid=0; return 0;}
+    if (CF.MHVCalculable(m_osinfo))
+      p_os_process = new Single_Process_MHV();
+    if (m_osinfo.m_amegicmhv==2) {
+      m_valid=0;
+      return 0;
+    }
   }
   if (!p_os_process) p_os_process = new AMEGIC::Single_Process();
 
@@ -370,7 +376,10 @@ void Single_OSTerm::Minimize()
 }
 
 
-double Single_OSTerm::Partonic(const Vec4D_Vector &_moms,const int mode) { return 0.; }
+double Single_OSTerm::Partonic(const Vec4D_Vector &_moms, int mode)
+{
+  return 0.;
+}
 
 double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {

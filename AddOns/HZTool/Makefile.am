@@ -1,5 +1,9 @@
 
+GITTAG = AddOns/HZTool
+include ../../git.make
+
 HZTOOL_SOURCES        =	\
+			Git_Info.C \
 			hznorm.F \
 			hztool_sherpa.F \
 			HZTool_Interface.C

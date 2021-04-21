@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons)
+  p_hadrons(hadrons), m_ktfac(1.)
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
@@ -25,6 +25,7 @@ void Soft_Cluster_Handler::Init() {
   m_open_threshold     = (2.*p_constituents->MinMass()+
 			  hadpars->Get("open_threshold"));
   m_chi                = hadpars->Get("mass_exponent");
+  m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_ktselector.Init(false);
 }
 
@@ -40,17 +41,36 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
-  //double thres =p_doubletransitions->GetLightestMass(m_flavs);
-  double thres = 1.1 * sqrt(p_doubletransitions->GetHeaviestMass(m_flavs) *
-			    p_doubletransitions->GetLightestMass(m_flavs));
-  bool force = (m_mass < thres ||
-		m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
-  return force;
+  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
+		     p_doubletransitions->GetLightestMass(m_flavs)) ||
+	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
+}
+
+bool Soft_Cluster_Handler::MustPromptDecay(const Flavour & flav1,
+					   const Flavour & flav2,
+					   const double & mass) {
+  m_flavs.first  = flav1;
+  m_flavs.second = flav2;
+  m_mass         = mass;
+  m_mass2        = mass*mass;
+  return (m_mass2 < (p_doubletransitions->GetHeaviestMass(m_flavs) *
+		     p_doubletransitions->GetLightestMass(m_flavs)) ||
+	  m_mass < p_singletransitions->GetHeaviestMass(m_flavs));
 }
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
 {
+  if (force &&
+      (*cluster)[0]->Flavour().IsGluon() && (*cluster)[1]->Flavour().IsGluon()) {
+    return TreatTwoGluons(cluster);
+  }
   FillFlavours(cluster);
+  if (IsEqual(m_mass,p_singletransitions->GetLightestMass(m_flavs),1.e-6)) {
+    m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
+    Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),false);
+    p_hadrons->push_back(part);
+    return 1;
+  }
   if (!force) {
     switch (CheckOutsideRange()) {
     case -1: return -1;
@@ -74,7 +94,7 @@ int Soft_Cluster_Handler::CheckOutsideRange() {
   // cluster too light for transition and decay --
   // maybe just force off-shell hadron?
   // at the moment this leads to hadronization throwing a new event.
-  if (m_mass<=Min(mass_single,mass_double)) return -1;
+  if (m_mass<=0.999999*Min(mass_single,mass_double)) return -1;
   double mass_dec =
     p_doubletransitions->GetLightestMass(m_flavs) * m_light       + 
     p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_light); 
@@ -109,9 +129,9 @@ bool Soft_Cluster_Handler::TreatSingletCluster() {
     m_hads[i]   = Flavour(kf_photon);
     m_hads[1-i] = Flavour(kf_pi);
   }
-  // below two-pion threshold
+  // above two-pion threshold
   else {
-    if (ran->Get()>0.5) {
+    if (ran->Get()>0.66) {
       m_hads[0] = m_hads[1] = Flavour(kf_pi);
     }
     else {
@@ -134,13 +154,6 @@ void Soft_Cluster_Handler::FillFlavours(Cluster * cluster) {
 int Soft_Cluster_Handler::Decay() {
   m_hads[0] = m_hads[1] = Flavour(kf_none);
   double decweight(DecayWeight());
-  //if (decweight>0. &&
-  //    (m_mass-m_flavs.first.HadMass()-m_flavs.second.HadMass())>10.) {
-  //  msg_Out()<<"Gotcha! ["<<m_flavs.first<<", "<<m_flavs.second<<"] --> "
-  //	     <<"mass = "<<m_mass<<", "<<m_hads[0]<<" + "<<m_hads[1]<<"  "
-  //	     <<"(forced = "<<m_forceddecay<<")\n";
-  //  exit(1);
-  //}
   if (decweight>0. && FixKinematics()) return 1;
   m_hads[0] = Flavour(kf_none); m_hads[1] = Flavour(kf_photon);
   double radweight = RadiationWeight();
@@ -157,15 +170,38 @@ bool Soft_Cluster_Handler::FixKinematics() {
 
   double M2(m_mass*m_mass);
   double m12(sqr(m_hads[0].Mass())),m22(sqr(m_hads[1].Mass()));
-  double E1((M2+m12-m22)/(2.*m_mass)), p1(sqrt(sqr(E1)-m12));
-  //double cth = 1.-ran->Get();  // only between 0 and 1.
-  //double sth = sqrt(1.-cth*cth);
-  double pt  = m_ktselector(Min(1.,p1));
-  double pl  = sqrt(p1*p1-pt*pt);
-  double phi = 2.*M_PI*ran->Get();
-  m_moms[0]  = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
-  m_moms[1]  = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
-  bool print(false);
+  double E1((M2+m12-m22)/(2.*m_mass));
+  double p1(sqrt(sqr(E1)-m12));
+  if (std::isnan(p1)) {
+    if (IsZero(sqr(E1) - m12, 1e-3)) {
+      msg_Debugging() << METHOD << "(): Cluster energy is a bit too small."
+                      << " Assume it's a numerical inaccuracy and set it to"
+                      << " threshold.";
+      p1 = 0.0;
+    } else {
+      msg_Error() << METHOD << "(): There is not enough energy in the cluster."
+                  << " Return false and hope for the best.\n";
+      return false;
+    }
+  }
+  double ktmax = (m_ktorder?
+		  Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
+				  (*p_cluster)[1]->KT2_Max()))):p1);
+  double pt, pl;
+  bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
+  if (true || lead) {
+    pt = m_ktselector(ktmax,1.);
+    pl = sqrt(p1*p1-pt*pt);
+  }
+  else {
+    double cost = 1.-2.*ran->Get();
+    double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
+    pt = p1*sint;
+    pl = p1*cost;
+  }
+  double phi   = 2.*M_PI*ran->Get();
+  m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
+  m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
   for (size_t i=0;i<2;i++) {
     rotat.RotateBack(m_moms[i]);
     boost.BoostBack(m_moms[i]);
@@ -193,7 +229,7 @@ double Soft_Cluster_Handler::RadiationWeight() {
     double m2(sit->first.Mass());
     if (m2>m_mass) break;
     // wave-function overlap * phase-space (units of 1 in total)
-    weight     = sit->second * PhaseSpace(m2,0.);
+    weight     = sit->second * PhaseSpace(m2,0.,false);
     totweight += weights[sit->first] = weight;
   }
   double disc = totweight * ran->Get();
@@ -232,7 +268,9 @@ double Soft_Cluster_Handler::DecayWeight() {
     double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
     if (m2+m3>m_mass) break;
     // wave-function overlap * phase-space (units of 1 in total)
-    weight     = dit->second * PhaseSpace(m2,m3);
+    bool heavy = (dit->first.first.IsB_Hadron() || dit->first.first.IsC_Hadron() ||
+		  dit->first.second.IsB_Hadron() || dit->first.second.IsC_Hadron());
+    weight     = dit->second * PhaseSpace(m2,m3,heavy);
     totweight += weights[dit->first] = weight;
   }
 
@@ -292,8 +330,6 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
-    //msg_Out()<<"   "<<residual.first<<" + "<<residual.second
-    //	     <<" --> "<<trans->rbegin()->first<<"\n";
   }
   if (kf12==kf21) {
     residual.first = two2; residual.second = one1;
@@ -337,7 +373,7 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
       m3 = tit->first.Mass();
       if (m2+m3>m_mass) break;
       // wave-function overlap * phase-space (units of 1 in total)
-      weight     = oit->second * tit->second * PhaseSpace(m2,m3);
+      weight     = oit->second * tit->second * PhaseSpace(m2,m3,false);
       Flavour_Pair flpair;
       flpair.first = oit->first; flpair.second = tit->first;
       totweight += weights[flpair] = weight;
@@ -356,14 +392,14 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
   return totweight;
 }
   
-double Soft_Cluster_Handler::PhaseSpace(const double & m2,const double & m3) {
+double Soft_Cluster_Handler::
+PhaseSpace(const double & m2,const double & m3,const bool heavyB) {
+  if (m_chi<0. || heavyB) return 1.;
   double m22(m2*m2),m32(m3*m3);
   double ps  = sqrt(sqr(m_mass2-m22-m32)-4.*m22*m32)/(8.*M_PI*m_mass2);
   // extra weight to possible steer away from phase space only ... may give
   // preference to higher or lower mass pairs
-  //double mwt = (pow(m2/m_mass,m_chi) + pow(m3/m_mass,m_chi));
-  //double mwt = 1./(pow(m_mass/(m2+0.001),m_chi) + pow(m_mass/(m3+0.001),m_chi));
-  double mwt = pow(m2/m_mass,m_chi) + pow(m3/m_mass,m_chi);
+  double mwt = m_chi<1.e-3?1.:pow(m2/m_mass,m_chi) + pow(m3/m_mass,m_chi);
   return ps * mwt;
 }
 

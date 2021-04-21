@@ -15,7 +15,7 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 
 #include <cassert>
@@ -24,33 +24,32 @@ using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-Perturbative_Interface::Perturbative_Interface
-(Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
+Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh,
+                                               Hard_Decay_Handler*const dec,
+                                               Shower_Handler *const psh):
   p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), p_localkfactorvarweights(NULL)
+  p_ampl(NULL)
 {
-  Data_Reader read;
-  read.SetInputPath(p_me->Path());
-  read.SetInputFile(p_me->File());
-  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
-  m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
-  m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
+  Settings& s = Settings::GetMainSettings();
+  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(1).Get<int>();
+  m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
+  m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
 
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
   p_me(NULL), p_mi(mi), p_hd(NULL), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), p_localkfactorvarweights(NULL) {}
+  p_ampl(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Decay_Handler_Base *const hdh,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(hdh), p_sc(NULL), p_shower(psh),
-  p_ampl(NULL), p_localkfactorvarweights(NULL) {}
+  p_ampl(NULL) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Soft_Collision_Handler *const sch,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
-  p_ampl(NULL), p_localkfactorvarweights(NULL)  {}
+  p_ampl(NULL) {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
@@ -59,22 +58,21 @@ Perturbative_Interface::~Perturbative_Interface()
     while (campl->Prev()) campl=campl->Prev();
     campl->Delete();
   }
-  if (p_localkfactorvarweights) {
-    delete p_localkfactorvarweights;
-  }
 }
 
-Return_Value::code Perturbative_Interface::
-DefineInitialConditions(ATOOLS::Blob *blob) 
+Return_Value::code
+Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
+                                                ATOOLS::Blob_List* bloblist)
 {
   if (blob==NULL) {
     msg_Error()<<METHOD<<"(): Signal process not found."<<std::endl;
     return Return_Value::Error;
   }
   p_hard=blob;
+  p_bloblist=bloblist;
   if (!p_shower->On() ||
       (p_me && p_me->Process()->Info().m_nlomode==nlo_mode::fixedorder)) {
-    m_weight=1.0;
+    m_weightsmap.Clear();
     return Return_Value::Success;
   }
   if (p_ampl) {
@@ -95,16 +93,16 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_mi->SetMassMode(1);
     int stat(p_mi->ShiftMasses(p_ampl));
     if (stat<0) {
-      msg_Out()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
-	       <<(*blob)<<"\n";
+      msg_Error()<<METHOD<<"(): MI Mass shift failed. Reject event.\n"
+		 <<(*blob)<<"\n";
       exit(1);
       return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_mi->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Out()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
-		 <<(*blob)<<"\n";
+	msg_Error()<<METHOD<<"(): MI Reclustering failed. Reject event.\n"
+		   <<(*blob)<<"\n";
 	exit(1);
 	return Return_Value::Retry_Event;
       }
@@ -124,12 +122,12 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
-      //msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
+      msg_Error()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
       return Return_Value::New_Event;
     }
     //msg_Out()<<"  Amplitude has been constructed:\n"<<(*p_ampl)<<"\n";
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
-      //msg_Out()<<METHOD<<": could not prepare shower.\n"; 
+      msg_Error()<<METHOD<<": could not prepare shower.\n"; 
       return Return_Value::New_Event;
     }
     return Return_Value::Success;
@@ -145,11 +143,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     msg_Tracking()<<METHOD<<"(): Invalid beams. Reject event."<<std::endl;
     return Return_Value::New_Event;
   }
-  m_weight=1.0;
-  if (p_localkfactorvarweights) {
-    delete p_localkfactorvarweights;
-    p_localkfactorvarweights = NULL;
-  }
+  m_weightsmap.Clear();
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
@@ -171,31 +165,19 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
   if (p_me->Process()->Info().m_ckkw&1) {
-    blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
+    auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
+    wgtmap["Sudakov"] *= m_weightsmap["Sudakov"];
+    p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
     if (p_me->EventGenerationMode()!=0) {
-      if (m_weight>=ran->Get()) {
-        if (m_weight < 1.0) {
-          if (p_localkfactorvarweights)
-            *p_localkfactorvarweights *= 1.0 / m_weight;
-          m_weight = 1.0;
-        }
-      } else {
+      const auto disc = ran->Get();
+      const auto abswgt = std::abs(m_weightsmap["Sudakov"].Nominal());
+      if (abswgt < disc) {
         return Return_Value::New_Event;
       }
+      m_weightsmap["Sudakov"] /= Min(1.0, abswgt);
+      wgtmap["Sudakov"] /= Min(1.0, abswgt);
     }
-    Blob_Data_Base *winfo((*blob)["Weight"]);
-    if (!winfo) THROW(fatal_error,"No weight information in signal blob");
-    double meweight(winfo->Get<double>());
-    blob->AddData("Weight",new Blob_Data<double>(meweight*m_weight));
-    // also update reweighting weights
-    Blob_Data_Base *vws((*blob)["Variation_Weights"]);
-    if (vws) {
-      if (p_localkfactorvarweights) {
-        vws->Get<Variation_Weights>() *= *p_localkfactorvarweights;
-      } else {
-        vws->Get<Variation_Weights>() *= m_weight;
-      }
-    }
+    p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
   if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
     return Return_Value::New_Event;
@@ -204,27 +186,13 @@ DefineInitialConditions(ATOOLS::Blob *blob)
 
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
-  if (p_localkfactorvarweights) {
-    delete p_localkfactorvarweights;
-    p_localkfactorvarweights = NULL;
-  }
   if (m_globalkfac) {
-    m_weight*=m_globalkfac;
+    m_weightsmap["Sudakov"] *= m_globalkfac;
     return true;
   }
   DEBUG_FUNC(ampl->Legs().size());
   Process_Vector procs(p_me->AllProcesses());
   Process_Base::SortFlavours(ampl);
-  if (p_hard) {
-    Blob_Data_Base *vws((*p_hard)["Variation_Weights"]);
-    if (vws) {
-      if (p_localkfactorvarweights) {
-        delete p_localkfactorvarweights;
-      }
-      Variations *variations = vws->Get<Variation_Weights>().GetVariations();
-      p_localkfactorvarweights = new Variation_Weights(variations);
-    }
-  }
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
     Process_Base::SortFlavours(ampl);
@@ -235,28 +203,21 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 	  proc->Info().m_fi.NMinExternal()) break;
     }
     for (int i=procs.size()-1; i>=0; --i) {
-      if (p_localkfactorvarweights) p_localkfactorvarweights->Reset();
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
-        if (mcnloproc->VariationWeights()) THROW(fatal_error, "Variation weights already set.");
-        mcnloproc->SetVariationWeights(p_localkfactorvarweights);
-	double K(mcnloproc->LocalKFactor(*ampl));
-        mcnloproc->SetVariationWeights(NULL);
-	if (K==0.0 || dabs(K)>m_maxkfac) continue;
-	m_weight*=K;
-	return true;
+        auto K = ATOOLS::Weights {Variations_Type::qcd};
+        K = mcnloproc->LocalKFactor(*ampl);
+	if (K.Nominal()==0.0 || dabs(K.Nominal())>m_maxkfac) continue;
+        m_weightsmap["Sudakov"] *= K;
+        return true;
       }
     }
   }
   // no process found along ampl
-  if (p_localkfactorvarweights) {
-    delete p_localkfactorvarweights;
-    p_localkfactorvarweights = NULL;
-  }
   return false;
 }
 
-bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
+bool Perturbative_Interface::FillBlobs()
 {
   if (p_hard==NULL) return false;
   Blob *sblob = new Blob();
@@ -268,8 +229,8 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     if (!p_hd) {
       for (int i(0);i<p_hard->NInP();++i)
 	sblob->AddToOutParticles(p_hard->InParticle(i));
-      for (size_t j(0);j<blobs->size();++j) {
-        Blob *cb((*blobs)[j]);
+      for (size_t j(0);j<p_bloblist->size();++j) {
+        Blob *cb((*p_bloblist)[j]);
         if (cb->Has(blob_status::needs_showers))
           for (int i(0);i<cb->NOutP();++i)
             if (cb->OutParticle(i)->DecayBlob()==NULL)
@@ -284,31 +245,24 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
       }
     }
   }
-  blobs->push_back(sblob);
-  p_shower->FillBlobs(blobs); 
+  p_bloblist->push_back(sblob);
+  p_shower->FillBlobs(p_bloblist); 
   return true;
 }
 
 int Perturbative_Interface::PerformShowers()
 {
-  // see if the event has any weight
-  Blob_Data_Base *winfo((*p_hard)["Weight"]);
-  if (!winfo) THROW(fatal_error,"No weight information in signal blob");
-  double meweight(winfo->Get<double>());
-
   PDF::Shower_Base *csh(p_shower->GetShower());
-
-  // look for reweightings and set up the shower accordingly
-  Blob_Data_Base *blob_data_base((*p_hard)["Variation_Weights"]);
-  if (blob_data_base) {
-    csh->SetVariationWeights(&blob_data_base->Get<Variation_Weights>());
-  }
-
   int stat=csh->PerformShowers();
-  double weight=csh->Weight();
-  m_weight*=weight;
-  p_hard->AddData("Shower_Weight",new Blob_Data<double>(weight));
-  p_hard->AddData("Weight",new Blob_Data<double>(meweight*weight));
+
+  m_weightsmap["PS"] = csh->WeightsMap()["PS"];
+  m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
+
+  auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
+  wgtmap["PS"] *= m_weightsmap["PS"];
+  wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
+  p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
+
   return stat;
 }
 

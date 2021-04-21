@@ -1,4 +1,6 @@
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "AMISIC++/Main/Amisic.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -6,7 +8,6 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
 
@@ -14,17 +15,18 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-MI_Handler::MI_Handler(string path,string file,MODEL::Model_Base *model,
+MI_Handler::MI_Handler(MODEL::Model_Base *model,
 		       PDF::ISR_Handler *isr) :
   p_isr(isr),p_amisic(NULL),p_ampl(NULL),p_proc(NULL),p_shower(NULL),
   m_stop(false),m_type(None),m_name("None")
 {
   if (!rpa->gen.Beam1().IsHadron() || !rpa->gen.Beam2().IsHadron()) return;
-  Default_Reader read;
-  read.SetInputPath(path);
-  read.SetInputFile(file);
-  string mihandler=read.GetValue<string>("MI_HANDLER","Amisic");
-  if (mihandler==string("Amisic")) InitAmisic(path,&read,model);
+  Settings& s = Settings::GetMainSettings();
+  std::string mihandler{ s["MI_HANDLER"]
+    .SetDefault("Amisic")
+    .UseNoneReplacements()
+    .Get<std::string>() };
+  if (mihandler==string("Amisic")) InitAmisic(model);
 }
 
 MI_Handler::~MI_Handler() 
@@ -33,11 +35,11 @@ MI_Handler::~MI_Handler()
 }
 
 
-void MI_Handler::InitAmisic(string & path,Default_Reader *const dr,
-			    MODEL::Model_Base *model)
+void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
   p_amisic    = new AMISIC::Amisic();
-  if (!p_amisic->Initialize(dr,model,p_isr)) {
+  p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
+  if (!p_amisic->Initialize(model,p_isr)) {
     msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
 	       <<"Continue without.\n";
     delete p_amisic; p_amisic=NULL;

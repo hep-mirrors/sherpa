@@ -1,5 +1,8 @@
 #include "MODEL/Main/Model_Base.H"
 
+#include "ATOOLS/Phys/KF_Table.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+
 namespace MODEL {
 
   class SMEHC: public Model_Base {
@@ -7,11 +10,13 @@ namespace MODEL {
 
     int  m_ckmorder;
 
+    void RegisterDefaults() const override;
+
     void FixEWParameters();
     void FixCKM();
     void FixEFT();
 
-    void ParticleInit();
+    void ParticleInit() override;
 
     void InitQEDVertices();
     void InitQCDVertices();
@@ -20,9 +25,10 @@ namespace MODEL {
 
   public :
 
-    SMEHC(std::string,std::string);
-    bool ModelInit(const PDF::ISR_Handler_Map& isr);
-    void InitVertices();
+    SMEHC();
+    bool ModelInit(const PDF::ISR_Handler_Map& isr) override;
+    void InitVertices() override;
+    size_t IndexOfOrderKey(const std::string&) const override;
 
   };
 
@@ -36,7 +42,6 @@ namespace MODEL {
 #include "MODEL/Main/Single_Vertex.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -50,7 +55,7 @@ DECLARE_GETTER(SMEHC,"SMEHC",Model_Base,Model_Arguments);
 Model_Base *Getter<Model_Base,Model_Arguments,SMEHC>::
 operator()(const Model_Arguments &args) const
 {
-  return new SMEHC(args.m_path,args.m_file);
+  return new SMEHC();
 }
 
 void Getter<Model_Base,Model_Arguments,SMEHC>::
@@ -58,8 +63,9 @@ PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
   str<<setw(width+4)<<" "<<"{\n"
-     <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,3, EW input schemes, see documentation)\n"
+     <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
+     <<setw(width+7)<<" "<<"- EW_SCHEME (EW input scheme, see documentation)\n"
+     <<setw(width+7)<<" "<<"- EW_REN_SCHEME (EW renormalisation scheme, see documentation)\n"
      <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
      <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
      <<setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
@@ -81,12 +87,25 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+4)<<" "<<"}";
 }
 
-SMEHC::SMEHC(string _dir,string _file) :
-  Model_Base(_dir,_file,1)
+SMEHC::SMEHC() :
+  Model_Base(1)
 {
   m_name="SMEHC";
   ParticleInit();
+  Model_Base::RegisterDefaults();
+  AddStandardContainers();
   CustomContainerInit();
+}
+
+void SMEHC::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["FINITE_TOP_MASS"].SetDefault(false);
+  s["FINITE_W_MASS"].SetDefault(false);
+  s["DEACTIVATE_GGH"].SetDefault(false);
+  s["DEACTIVATE_PPH"].SetDefault(false);
+  s["ALPHAS_GGH"].SetDefault(ScalarConstant("alpha_S"));
+  s["1/ALPHAQED_PPH"].SetDefault(1.0/ScalarConstant("alpha_QED"));
 }
 
 void SMEHC::ParticleInit()
@@ -98,7 +117,7 @@ void SMEHC::ParticleInit()
   s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
   s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
   s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
-  s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
+  s_kftable[kf_b]      = new Particle_Info(kf_b,4.92,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
   s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,2.0,2,3,1,0,1,0,1,"t","tb", "t", "\\bar{t}");
   s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
   s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
@@ -114,15 +133,16 @@ void SMEHC::ParticleInit()
   s_kftable[kf_shgluon] = new Particle_Info(kf_shgluon,0.0,0.0,0,8,2,-1,1,1,0,"GS","GS","G_{S}","G_{S}",1);
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   ReadParticleData();
-  AddStandardContainers();
 }
 
 bool SMEHC::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
+  Settings& s = Settings::GetMainSettings();
   FixEWParameters();  
   FixCKM();
+  SetAlphaQCD(isr, s["ALPHAS(MZ)"].Get<double>());
+  RegisterDefaults();
   FixEFT();
-  SetAlphaQCD(isr,p_dataread->GetValue<double>("ALPHAS(MZ)",0.118));
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
@@ -138,31 +158,32 @@ bool SMEHC::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void SMEHC::FixEWParameters()
 {
-  double alphaQED0;
+  Settings& s = Settings::GetMainSettings();
   Complex csin2thetaW, ccos2thetaW, cvev, I(0.,1.);
-  string yukscheme=p_dataread->GetValue<string>("YUKAWA_MASSES","Running");
+  string yukscheme = s["YUKAWA_MASSES"].Get<string>();
   p_numbers->insert(make_pair(string("YukawaScheme"), yukscheme=="Running"));
-  string widthscheme=p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
+  string widthscheme = s["WIDTH_SCHEME"].Get<string>();
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme=p_dataread->GetValue<int>("EW_SCHEME",2);
-  int ewrenscheme=p_dataread->GetValue<int>("EW_REN_SCHEME",ewscheme);
+  ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
+  ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
   std::string ewschemename(""),ewrenschemename("");
+  PRINT_VAR(ewscheme);
   switch (ewscheme) {
-  case 0:
+  case ew_scheme::UserDefined:
     // all SM parameters given explicitly
     ewschemename="user-defined, input: all parameters";
-    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",sqr(MZ)));
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+    SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
-    cvev=p_dataread->GetValue<double>("VEV",246.);
+    cvev = s["VEV"].Get<double>();
     break;
-  case 1: {
+  case ew_scheme::alpha0: {
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     ewschemename="alpha(0) scheme, input: 1/\\alphaQED(0), m_W, m_Z, m_h, widths";
-    SetAlphaQEDByScale(p_dataread->GetValue<double>("ALPHAQED_DEFAULT_SCALE",0.));
+    SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -174,10 +195,10 @@ void SMEHC::FixEWParameters()
     }
     break;
   }
-  case 2: {
+  case ew_scheme::alphamZ: {
     // SM parameters given by alphaQED(mZ), M_W, M_Z, M_H
     ewschemename="alpha(m_Z) scheme, input: 1/\\alphaQED(m_Z), m_W, m_Z, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)");
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
@@ -189,10 +210,10 @@ void SMEHC::FixEWParameters()
     }
     break;
   }
-  case 3: {
+  case ew_scheme::Gmu: {
     // Gmu scheme
     ewschemename="Gmu scheme, input: GF, m_W, m_Z, m_h, widths";
-    double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
+    double GF = s["GF"].Get<double>();
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
     cvev=1./(pow(2.,0.25)*sqrt(GF));
@@ -201,7 +222,7 @@ void SMEHC::FixEWParameters()
       ccos2thetaW=muW2/muZ2;
       csin2thetaW=1.-ccos2thetaW;
       cvev=1./(pow(2.,0.25)*sqrt(GF));
-      size_t aqedconv(p_dataread->GetValue<size_t>("GMU_CMS_AQED_CONVENTION",0));
+      const size_t aqedconv{ s["GMU_CMS_AQED_CONVENTION"].Get<size_t>() };
       switch (aqedconv) {
       case 0:
         SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muW2*csin2thetaW));
@@ -221,19 +242,21 @@ void SMEHC::FixEWParameters()
       default:
         THROW(not_implemented,"\\alpha_QED convention not implemented.");
       }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
     }
     break;
   }
-  case 4: {
-    // DY scheme
-    ewschemename="DY scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MZ)",128.802);
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+  case ew_scheme::alphamZsW: {
+    // alpha(mZ)-mZ-sin(theta) scheme
+    ewschemename="alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths";
+    SetAlphaQEDByInput("1/ALPHAQED(MZ)");
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MW=MZ*sqrt(ccos2thetaW.real());
     Flavour(kf_Wplus).SetMass(MW);
     cvev=2.*MZ*sqrt(ccos2thetaW*csin2thetaW/(4.*M_PI*aqed->Default()));
-
     if (widthscheme=="CMS") {
       // now also the W width is defined by the tree-level relations
       Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
@@ -247,16 +270,15 @@ void SMEHC::FixEWParameters()
     }
     break;
   }
-  case 5: {
-    // CDY scheme
-    ewschemename="CDY scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
-    SetAlphaQEDByInput("1/ALPHAQED(MW)",132.17);
-    csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23155);
+  case ew_scheme::alphamWsW: {
+    // alpha(mW)-mW-sin(theta) scheme
+    ewschemename="alpha(mW)-mW-sin(theta_W) scheme, input: 1/\\alphaQED(m_W), sin^2(theta_W), m_W, m_h, widths";
+    SetAlphaQEDByInput("1/ALPHAQED(MW)");
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
     ccos2thetaW=1.-csin2thetaW;
     MZ=MW/sqrt(ccos2thetaW.real());
     Flavour(kf_Z).SetMass(MZ);
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
-
     if (widthscheme=="CMS") {
       // now also the W width is defined by the tree-level relations
       Complex muW2(MW*(MW-I*GW)), muZ2(0.,0.);
@@ -270,11 +292,103 @@ void SMEHC::FixEWParameters()
     }
     break;
   }
-  case 10: {
+  case ew_scheme::GmumZsW: {
+    // Gmu-mZ-sin(theta) scheme
+    ewschemename="Gmu-mZ-sin(theta_W) scheme, input: GF, sin^2(theta_W), m_Z, m_h, widths";
+    double GF = s["GF"].Get<double>();
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
+    ccos2thetaW=1.-csin2thetaW;
+    MW=MZ*sqrt(ccos2thetaW.real());
+    Flavour(kf_Wplus).SetMass(MW);
+    cvev=1./(pow(2.,0.25)*sqrt(GF));
+    if (widthscheme=="CMS") {
+      Complex muW2(0.,0.), muZ2(MZ*(MZ-I*GZ));
+      muW2=muZ2*ccos2thetaW;
+      MW=sqrt(muW2.real());
+      GW=-muW2.imag()/MW;
+      Flavour(kf_Wplus).SetMass(MW);
+      Flavour(kf_Wplus).SetWidth(GW);
+      cvev=1./(pow(2.,0.25)*sqrt(GF));
+      const size_t aqedconv{ s["GMU_CMS_AQED_CONVENTION"].Get<size_t>() };
+      switch (aqedconv) {
+      case 0:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muZ2*csin2thetaW*(1.-csin2thetaW)));
+        break;
+      case 1:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2*csin2thetaW*(1.-csin2thetaW)));
+        break;
+      case 2:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2*(1.-csin2thetaW))*std::real(csin2thetaW));
+        break;
+      case 3 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*(1.-csin2thetaW.real())*std::abs(csin2thetaW));
+        break;
+      case 4 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*(1.-csin2thetaW.real())*csin2thetaW.real());
+        break;
+      case 5:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muZ2)*std::real(1.-csin2thetaW)*std::real(csin2thetaW));
+        break;
+      case 6 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*std::abs((1.-csin2thetaW)*csin2thetaW));
+        break;
+      default:
+        THROW(not_implemented,"\\alpha_QED convention not implemented.");
+      }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MZ)*csin2thetaW.real()*(1.-csin2thetaW.real()));
+    }
+    break;
+  }
+  case ew_scheme::GmumWsW: {
+    // Gmu-mW-sin(theta) scheme
+    ewschemename="Gmu-mW-sin(theta_W) scheme, input: GF, sin^2(theta_W), m_W, m_h, widths";
+    double GF = s["GF"].Get<double>();
+    csin2thetaW = s["SIN2THETAW"].Get<double>();
+    ccos2thetaW=1.-csin2thetaW;
+    MZ=MW/sqrt(ccos2thetaW.real());
+    Flavour(kf_Z).SetMass(MZ);
+    cvev=1./(pow(2.,0.25)*sqrt(GF));
+    if (widthscheme=="CMS") {
+      Complex muW2(MW*(MW-I*GW)), muZ2(0.,0.);
+      muZ2=muW2/ccos2thetaW;
+      MZ=sqrt(muZ2.real());
+      GZ=-muZ2.imag()/MZ;
+      Flavour(kf_Z).SetMass(MZ);
+      Flavour(kf_Z).SetWidth(GZ);
+      cvev=1./(pow(2.,0.25)*sqrt(GF));
+      const size_t aqedconv{ s["GMU_CMS_AQED_CONVENTION"].Get<size_t>() };
+      switch (aqedconv) {
+      case 0:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::abs(muW2)*csin2thetaW.real());
+        break;
+      case 1:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2)*csin2thetaW.real());
+        break;
+      case 2:
+        SetAlphaQED(sqrt(2.)*GF/M_PI*std::real(muW2)*csin2thetaW.real());
+        break;
+      case 3 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*csin2thetaW.real());
+        break;
+      case 4 :
+        SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*csin2thetaW.real());
+        break;
+      default:
+        THROW(not_implemented,"\\alpha_QED convention not implemented.");
+      }
+    } else if (widthscheme=="Fixed") {
+      if (csin2thetaW.imag()!=0.0) THROW(fatal_error,"sin^2(\\theta_w) not real.");
+      SetAlphaQED(sqrt(2.)*GF/M_PI*sqr(MW)*std::abs(csin2thetaW));
+    }
+    break;
+  }
+  case ew_scheme::FeynRules: {
     // FeynRules scheme, inputs: alphaQED, GF, M_Z, M_H
     ewschemename="FeynRules scheme, input: 1/\\alphaQED(0), GF, m_Z, m_h, widths";
-    SetAlphaQED(1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976));
-    double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
+    SetAlphaQED(1./s["1/ALPHAQED(0)"].Get<double>());
+    double GF = s["GF"].Get<double>();
     MW=sqrt(sqr(MZ)/2.+sqrt(pow(MZ,4)/4.
                             -(aqed->Default()*M_PI*sqr(MZ))/(GF*sqrt(2.))));
     Flavour(kf_Wplus).SetMass(MW);
@@ -307,9 +421,9 @@ void SMEHC::FixEWParameters()
     ewrenschemename="alpha(Gmu)";
     break;
   default:
-    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to 3."
+    msg_Info()<<"Unknown EW_REN_SCHEME="<<ewrenscheme<<", resetting to Gmu."
               <<std::endl;
-    ewrenscheme=3;
+    ewrenscheme=ew_scheme::Gmu;
     ewrenschemename="alpha(Gmu)";
     break;
   }
@@ -324,7 +438,7 @@ void SMEHC::FixEWParameters()
                                        +ToString(abs(csin2thetaW.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"                vev              = "<<cvev.real()
+  msg_Info()<<"                vev             = "<<cvev.real()
             <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
                                        +ToString(abs(cvev.imag()),
                                                  msg->Precision())+" i"
@@ -340,28 +454,29 @@ void SMEHC::FixEWParameters()
 
 void SMEHC::FixCKM()
 {
+  auto s = Settings::GetMainSettings()["CKM"];
   CMatrix CKM(3);
   for (int i=0;i<3;i++) {
     for (int j=i;j<3;j++) CKM[i][j] = CKM[j][i] = Complex(0.,0.);
     CKM[i][i] = Complex(1.,0.);
   }
   double Cabibbo=0.0,A=.8,rho,eta;
-  m_ckmorder     = p_dataread->GetValue<int>("CKM_ORDER",0);
+  m_ckmorder     = s["Order"].Get<int>();
   if (m_ckmorder>0) {
-    Cabibbo    = p_dataread->GetValue<double>("CKM_CABIBBO",0.22537);
+    Cabibbo    = s["Cabibbo"].Get<double>();
     CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[0][1] += Cabibbo * Complex( 1.,0.);
     CKM[1][0] += Cabibbo * Complex(-1.,0.);
   }
   if (m_ckmorder>1) {
-    A          = p_dataread->GetValue<double>("CKM_A",0.814);
+    A          = s["A"].Get<double>();
     CKM[1][2] += A*sqr(Cabibbo)  * Complex( 1.,0.);
     CKM[2][1] += A*sqr(Cabibbo)  * Complex(-1.,0.);
   }
   if (m_ckmorder>2) {
-    eta        = p_dataread->GetValue<double>("CKM_ETA",0.353);
-    rho        = p_dataread->GetValue<double>("CKM_RHO",0.117);
+    eta        = s["Eta"].Get<double>();
+    rho        = s["Rho"].Get<double>();
     CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
     CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }
@@ -381,9 +496,10 @@ void SMEHC::FixCKM()
 
 void SMEHC::FixEFT()
 {
+  Settings& s = Settings::GetMainSettings();
   Complex eh(2./3.,0.);
   double ph(-2.*47./18.); double pfac(1.);
-  if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
+  if (s["FINITE_TOP_MASS"].Get<bool>()) {
     double hm=Flavour(kf_h0).Mass();
     double tm=Flavour(kf_t).Yuk();
     Effective_Higgs_Coupling ehc(hm);
@@ -391,7 +507,7 @@ void SMEHC::FixEFT()
     double taut(sqr(hm/2./tm));
     pfac += -56./705.*taut - 32./987.*sqr(taut);
   }
-  if (p_dataread->GetValue<int>("FINITE_W_MASS",0)==1) {
+  if (s["FINITE_W_MASS"].Get<bool>()) {
     double hm=Flavour(kf_h0).Mass();
     double Wm=Flavour(kf_Wplus).Mass();
     double tauW(sqr(hm/2./Wm));
@@ -399,8 +515,10 @@ void SMEHC::FixEFT()
             + 5248./90475.*sqr(sqr(tauW)) + 1280./29939.*tauW*sqr(sqr(tauW))
             + 54528./1646645.*sqr(tauW*sqr(tauW));
   }
-  if (p_dataread->GetValue<int>("DEACTIVATE_GGH",0)==1) eh=Complex(0.,0.);
-  if (p_dataread->GetValue<int>("DEACTIVATE_PPH",0)==1) ph=0.;
+  if (s["DEACTIVATE_GGH"].Get<int>())
+    eh=Complex(0.,0.);
+  if (s["DEACTIVATE_PPH"].Get<int>())
+    ph=0.;
   p_constants->insert(std::make_pair(std::string("h0_pp_fac"),ph*pfac));
   p_constants->insert(std::make_pair(std::string("h0_gg_fac"),real(eh)));
 }
@@ -716,10 +834,9 @@ void SMEHC::InitEWVertices()
 void SMEHC::InitEFTVertices()
 {
   if (!Flavour(kf_h0).IsOn()) return;
-  double as(p_dataread->GetValue<double>
-	    ("ALPHAS_GGH",ScalarConstant("alpha_S")));
-  double aqed(1.0/p_dataread->GetValue<double>
-	      ("1/ALPHAQED_PPH",1.0/ScalarConstant("alpha_QED")));
+  Settings& s = Settings::GetMainSettings();
+  const double as{ s["ALPHAS_GGH"].Get<double>() };
+  const double aqed{ 1.0/s["1/ALPHAQED_PPH"].Get<double>() };
   Kabbala ghgg("g_hgg",ScalarConstant("h0_gg_fac")*
 	       as/(2.0*M_PI*ComplexConstant("cvev")));
   Kabbala ghpp("g_hpp",ScalarConstant("h0_pp_fac")*
@@ -809,4 +926,12 @@ void SMEHC::InitEFTVertices()
   m_v.back().order[0]=2;
   m_v.back().order[1]=1;
   m_v.back().dec=-1;
+}
+
+size_t SMEHC::IndexOfOrderKey(const std::string& key) const
+{
+  if (key == "SMEHC")
+    return 2;
+  else
+    return Model_Base::IndexOfOrderKey(key);
 }

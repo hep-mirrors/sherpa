@@ -2,7 +2,7 @@
 
 #include "SHERPA/Single_Events/Event_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -11,7 +11,8 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Output_Phase::Output_Phase(Output_Vector *const outputs,Event_Handler *const h):
+Output_Phase::Output_Phase(Output_Vector *const outputs,
+                           Event_Handler *const h):
   Event_Phase_Handler(""), 
   p_outputs(outputs), m_wit(std::numeric_limits<size_t>::max())
 {
@@ -23,20 +24,17 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,Event_Handler *const h):
     m_name+=(*it)->Name()+"+";
   }
   if (m_name.length()>0) m_name.erase(m_name.length()-1);
-  Default_Reader reader;
-  reader.SetAllowUnits(true);
-  double wit;
-  if (reader.Read(wit,"FILE_SIZE", 0.0)) {
-    if (wit<1.0) {
-      if (wit*rpa->gen.NumberOfEvents()>1.0)
-        m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());
-    }
-    else m_wit=(size_t)(wit);
-    msg_Info()<<METHOD<<"(): Set output interval "<<m_wit<<" events.\n";
+
+  const double wit{ Settings::GetMainSettings()["FILE_SIZE"].Get<double>() };
+  if (wit<1.0) {
+    if (wit*rpa->gen.NumberOfEvents()>1.0)
+      m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());
+  } else {
+    m_wit=(size_t)(wit);
   }
 }
 
-Return_Value::code Output_Phase::Treat(Blob_List* bloblist, double& weight) 
+Return_Value::code Output_Phase::Treat(Blob_List* bloblist)
 {
   if (!bloblist->empty())
     for (Output_Vector::iterator it=p_outputs->begin(); it!=p_outputs->end(); ++it) {

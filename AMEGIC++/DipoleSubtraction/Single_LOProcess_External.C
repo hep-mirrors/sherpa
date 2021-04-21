@@ -12,7 +12,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <unistd.h>
 
@@ -55,8 +54,8 @@ Single_LOProcess_External::~Single_LOProcess_External()
 
 
 int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
-					vector<Process_Base *> & links,
-					     vector<Process_Base *> & errs,int checkloopmap)
+                                             vector<Process_Base *> & links,
+                                             vector<Process_Base *> & errs)
 {
   DEBUG_FUNC("");
   m_type = 21;
@@ -276,17 +275,6 @@ int Single_LOProcess_External::Tests(std::vector<double> * pfactors) {
      } 
  }
 
-
-  //shorten helicities
-  int switchhit = 0;
-  for (size_t i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
-      p_hel->SwitchOff(i);
-      switchhit++;
-    }
-  }
-  msg_Tracking()<<"Single_LOProcess_External::Tests for "<<m_name<<std::endl
-		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
 
   m_iresult  = M2g;
 

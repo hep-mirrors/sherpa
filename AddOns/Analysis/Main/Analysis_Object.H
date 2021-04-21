@@ -2,41 +2,31 @@
 #define Analysis_Main_Analysis_Object_H
 
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include <string>
+
+namespace ATOOLS {
+  class Scoped_Settings;
+}
 
 namespace ANALYSIS {
 
   class Primitive_Analysis;
 
-  class Argument_Matrix: 
-    public std::vector<std::vector<std::string> > {
-  private:
-
+  struct Analysis_Key {
+    Analysis_Key(ATOOLS::Scoped_Settings s, Primitive_Analysis* a):
+      m_settings{s}, p_analysis{a}
+    {}
+    ATOOLS::Scoped_Settings m_settings;
     Primitive_Analysis *p_analysis;
-
-  public:
-
-    // constructor
-    inline Argument_Matrix() {}
-    inline Argument_Matrix
-    (const std::vector<std::vector<std::string> > &ref):
-      std::vector<std::vector<std::string> >(ref) {}
-
-    // member functions
-    inline Primitive_Analysis *operator()() const 
-    { return p_analysis; }
-    inline const Argument_Matrix &operator()
-      (Primitive_Analysis *const analysis) 
-    { p_analysis=analysis; return *this; }
-    
-  };// end of class Argument_Matrix
+  };
 
   class Analysis_Object {
   public:
 
-    typedef ATOOLS::Getter_Function<Analysis_Object,Argument_Matrix> 
-    Getter_Function;
+    typedef ATOOLS::Getter_Function<Analysis_Object, Analysis_Key>
+      Getter_Function;
 
   protected:
 

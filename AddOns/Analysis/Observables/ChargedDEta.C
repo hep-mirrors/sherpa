@@ -6,35 +6,32 @@ using namespace ANALYSIS;
 #include "ATOOLS/Org/MyStrStream.H"
 
 template <class Class>
-Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<6) return NULL;
-    std::string list=parameters[0].size()>6?parameters[0][6]:finalstate_list;
-    return new Class(HistogramType(parameters[0][5]),
-		     ATOOLS::ToType<double>(parameters[0][2]),
-		     ATOOLS::ToType<double>(parameters[0][3]),
-		     ATOOLS::ToType<int>(parameters[0][4]),list,
-                     ATOOLS::ToType<int>(parameters[0][0]),
-                     ATOOLS::ToType<int>(parameters[0][1]));
-  }
-  else {
-    return NULL;
-  }
+Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 6)
+    THROW(missing_input, "Missing parameter values.");
+  const auto list = parameters.size() > 6 ? parameters[6] : finalstate_list;
+  return new Class(HistogramType(parameters[5]),
+                   s.Interprete<double>(parameters[2]),
+                   s.Interprete<double>(parameters[3]),
+                   s.Interprete<int>(parameters[4]),list,
+                   s.Interprete<int>(parameters[0]),
+                   s.Interprete<int>(parameters[1]));
 }
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetObservable<CLASS>(key); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"kf1 kf2 min max bins Lin|LinErr|Log|LogErr [list]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"[kf1, kf2, min, max, bins, Lin|LinErr|Log|LogErr, list] ... list is optional"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(CLASS)
 

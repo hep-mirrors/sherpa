@@ -4,13 +4,13 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "PHASIC++/Channels/Vegas.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
@@ -19,10 +19,10 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 COMIX::Process_Group::Process_Group(): 
-  COMIX::Process_Base(this) {}
+  COMIX::Process_Base(this), m_nproc(0) {}
 
 COMIX::Process_Group::Process_Group(MODEL::Model_Base *const model):
-  COMIX::Process_Base(this,model) {}
+  COMIX::Process_Base(this,model), m_nproc(0) {}
 
 bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const pmap,
 				      std::vector<Single_Process*> *const procs)
@@ -48,7 +48,7 @@ bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const p
       }
     }
   }
-  return COMIX::Process_Base::Initialize(pmap,procs);
+  return COMIX::Process_Base::Initialize(pmap,procs,m_blocks,m_nproc);
 }
 
 PHASIC::Process_Base *COMIX::Process_Group::GetProcess(const PHASIC::Process_Info &pi) const
@@ -64,13 +64,11 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   cdxs->SetCTS(p_cts);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   proc->SetParent((PHASIC::Process_Base*)this);
-  if (s_partcommit) My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
-  if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
+  if (!cdxs->Initialize(p_pmap,p_umprocs,m_blocks,m_nproc)) return false;
+  if (s_partcommit) My_In_File::CloseDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
   if (!cdxs->MapProcess())
     if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
-  if (s_partcommit) My_In_File::ExecDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
   return true;
 }
 
@@ -82,7 +80,7 @@ bool COMIX::Process_Group::MapProcess()
 bool COMIX::Process_Group::GeneratePoint()
 {
   bool zero=true;
-  m_last=0.0;
+  m_last["ME"]=0.0;
   for (size_t i(0);i<m_procs.size();++i)
     if (m_procs[i]->GeneratePoint()) zero=false;
   return !zero;
@@ -98,7 +96,7 @@ bool COMIX::Process_Group::Tests()
 void COMIX::Process_Group::InitPSGenerator(const size_t &ismode)
 {
   if (!(ismode&1)) {
-    p_psgen = new PS_Generator(this);
+    p_psgen = std::make_shared<PS_Generator>(this);
   }
   else {
     for (size_t i(0);i<Size();++i) 
@@ -115,6 +113,13 @@ void COMIX::Process_Group::ConstructPSVertices(PS_Generator *ps)
 bool COMIX::Process_Group::FillIntegrator(Phase_Space_Handler *const psh)
 {
   bool res(COMIX::Process_Base::FillIntegrator(psh));
-  for (size_t i(0);i<m_procs.size();++i) m_procs[i]->FillIntegrator(psh);
+  for (size_t i(0);i<m_procs.size();++i) {
+    m_procs[i]->Get<COMIX::Process_Base>()->SetISMC(p_ismc);
+    m_procs[i]->Get<COMIX::Process_Base>()->SetFSMC(p_fsmc);
+  }
+  if ((m_pinfo.m_fi.NLOType()&nlo_type::vsub) && p_ismc) {
+    p_ismc->AddERan("z_1");
+    p_ismc->AddERan("z_2");
+  }
   return res;
 }

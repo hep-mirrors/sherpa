@@ -14,7 +14,7 @@ namespace AHADIC {
     ~KT_Selector();
     void Init(const bool & isgluon);
     
-    double operator()(const double & ktmax,const double & M2=-1.);
+    double operator()(const double & ktmax,const double & M2=1.);
   };
 }
 

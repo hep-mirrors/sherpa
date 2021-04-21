@@ -7,8 +7,11 @@
 
 namespace MODEL {
   class Running_Fermion_Mass : public ATOOLS::Function_Base {
+  private:
+    void RegisterDefaults() const;
   protected:
-    int              m_order, m_runbelowpole;
+    int              m_order;
+    bool             m_runbelowpole;
     double           m_polemass, m_a;
     Running_AlphaS * p_as;
     ATOOLS::Flavour  m_fl;

@@ -117,7 +117,7 @@ Tree_ME2_Base* Tree_ME2_Base::GetME2(const PHASIC::Process_Info& pi)
  {
    External_ME_Args args(pi.m_ii.GetExternal(),
 			 pi.m_fi.GetExternal(),
-			 pi.m_borncpl);
+			 pi.m_maxcpl,pi.m_megenerator);
    return GetME2(args);
  }
 

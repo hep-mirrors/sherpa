@@ -72,6 +72,26 @@ Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
 
   m_id_vector = ConstructIDVector();
 
+  /* Cross-check index mapping in ID vector */
+  for(size_t i(0); i<BornFlavours().size(); i++)
+    {
+      const ATOOLS::Flavour& born_flav = BornFlavours()[i];
+
+      /* This is a vector of integers representing the particles that
+	 have been clusteded into the born index i */
+      std::vector<int> id = ATOOLS::ID(IDVector()[i]);
+
+      /* Only check non-clustered flavours to avoid doing the flavour
+	 combination here*/
+      if (id.size()>1) continue;
+      
+      /* Now check that the flavour in real configuration has been
+	 properly mapped */
+      const ATOOLS::Flavour& real_flav = Flavours()[id.front()];
+      if(real_flav != born_flav)
+	THROW(fatal_error, "Inconsistent flavour mapping");
+    }
+
   m_moms.resize(Dipole()->Flavours().size());
 }
 
@@ -163,9 +183,10 @@ void Dipole_Wrapper_Process::AssignSubEvent(ATOOLS::NLO_subevt* sub)
 
 std::vector<size_t> Dipole_Wrapper_Process::ConstructIDVector() const
 {
-  std::vector<size_t> ret(m_indexmap);
-  for(size_t i(0); i<ret.size(); i++) ret[i] = 1<<ret[i];
-  ret[BornIJ()] = (1<<I())|(1<<J());
+  std::vector<size_t> tmp = Dipole()->IDVector();
+  std::vector<size_t> ret = tmp;
+  for(size_t i(0); i<ret.size(); i++)
+    ret[i] = tmp[m_indexmap[i]];
   return ret;
 }
 
@@ -258,7 +279,7 @@ void Dipole_Wrapper_Process::CalculateScale(const ATOOLS::Vec4D_Vector& real_p,
 }
 
 
-double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p, const int mode)
+double Dipole_Wrapper_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
 {
   CalcKinematics(p);
 

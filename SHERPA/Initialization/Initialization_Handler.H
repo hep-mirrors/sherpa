@@ -20,7 +20,6 @@
 #include <iostream> 
 
 namespace ATOOLS {
-  class Default_Reader;
   class Variations;
 }
 
@@ -38,23 +37,14 @@ namespace SHERPA {
   class Event_Reader_Base;
   class Analysis_Interface;
   class Soft_Collision_Handler;
-
+  class Filter;
+  
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
-    std::string m_path,m_file, m_evtform;
+    std::string m_evtform;
     std::set<std::string> m_pdflibs;
-    std::string m_modeldat, m_medat, m_midat, m_showerdat;
-    std::string m_beamdat, m_isrdat[2], m_beamremnantdat;
-    std::string m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
-    std::string m_softcollisiondat, m_softphotonsdat;
-    std::string m_processesdat, m_colourreconndat;
-    std::string m_selectordat;
-    std::string m_momentadat;
-
     double          m_bunch_splimits[2];
     ATOOLS::Flavour m_bunch_particles[2];
-
-    ATOOLS::Default_Reader * p_dataread;
 
     eventtype::code m_mode;
     bool            m_savestatus;
@@ -77,11 +67,13 @@ namespace SHERPA {
     Analysis_Vector               m_analyses;
     Output_Vector                 m_outputs;
     ATOOLS::Variations          * p_variations;
+    Filter                      * p_filter;
+    
     void ShowParameterSyntax();
     void CheckVersion();
     bool CompareVersions(const size_t& a1,const size_t& b1,const size_t& c1,
                          const size_t& a2,const size_t& b2,const size_t& c2);
-    void LoadLibraries() const;
+    void LoadLibraries();
   private :
     bool InitializeTheIO();
     bool InitializeTheModel();
@@ -98,51 +90,45 @@ namespace SHERPA {
     bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
     bool InitializeTheSoftPhotons();
+    bool InitializeTheFilter();
     bool InitializeTheAnalyses();
-    bool InitializeTheReweighting();
+    bool InitializeTheReweighting(ATOOLS::Variations_Mode);
 
-    void ExtractCommandLineParameters(int argc,char * argv[]);
-    void SetTuneParameters(const std::string tune);
+    void RegisterDefaults();
     bool CheckBeamISRConsistency();
     void SetGlobalVariables();
     void PrepareTerminate();
-    void SetFileNames();
 
   public :
 
-    Initialization_Handler(int argc,char * argv[]);
+    Initialization_Handler();
     ~Initialization_Handler();
 
     bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
 
-    const std::string & Path()    const { return m_path; }
-    const std::string & File()    const { return m_file; }
-
-    Matrix_Element_Handler       * GetMatrixElementHandler()      const { return p_mehandler; }
-    Decay_Handler_Base           * GetHDHandler()                       { return p_hdhandler; }
-    inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id];}
-    Analysis_Vector              * GetAnalyses()                        { return &m_analyses;      }
-    Output_Vector                * GetOutputs()                         { return &m_outputs;       }
-    MODEL::Model_Base            * GetModel()                     const { return p_model;          }
-    PDF::ISR_Handler_Map         * GetISRHandlers()                     { return &m_isrhandlers;   }
-    BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()        const { return p_beamspectra;    }
-    Hard_Decay_Handler           * GetHardDecayHandler()          const { return p_harddecays;     }
-    const Shower_Handler_Map     & GetShowerHandlers()            const { return m_showerhandlers; }
+    Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
+    Decay_Handler_Base           * GetHDHandler() { return p_hdhandler; }
+    inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
+    Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
+    Output_Vector                * GetOutputs()                     { return &m_outputs;        }
+    MODEL::Model_Base            * GetModel()                 const { return p_model;           }
+    PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
+    BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
+    Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
+    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;  }
+    Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Colour_Reconnection_Handler  * GetColourReconnectionHandler() const { return p_reconnections;  }
-    Beam_Remnant_Handler         * GetBeamRemnantHandler()        const { return p_beamremnants;   }
-    Fragmentation_Handler        * GetFragmentationHandler()      const { return p_fragmentation;  }
-    Soft_Collision_Handler       * GetSoftCollisionHandler()      const { return p_softcollisions; }
-    ATOOLS::Flavour              * GetBunches()                         { return m_bunch_particles;}
-    MI_Handler                   * GetMIHandler()                 const { return p_mihandler;      }
-    Soft_Photon_Handler          * GetSoftPhotonHandler()         const { return p_softphotons;    }
-    Event_Reader_Base            * GetEventReader()               const { return p_evtreader;      }
-    ATOOLS::Variations           * GetVariations()                const { return p_variations;     }
-
+    Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
+    Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
+    ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
+    MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
+    Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
+    Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
+    ATOOLS::Variations           * GetVariations()            const { return p_variations;      }
+    Filter                       * GetFilter()                const { return p_filter;          }
+    
     eventtype::code Mode() const { return m_mode; };
-
-    inline  ATOOLS::Data_Reader *DataReader() const { return p_dataread; }
-
   };
 
   /*!
@@ -171,59 +157,6 @@ namespace SHERPA {
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
   */
   /*!
-    \var std::string Initialization_Handler::m_path
-    The path where the steering input data and all other input data files are to be found.
-  */
-  /*!
-    \var std::string Initialization_Handler::m_file
-    The name of the steering input file, the default is "Run.dat". Here mainly the names of all
-    other input files if differing from the default values are to be given.
-  */
-  /*!
-    \var std::string Initialization_Handler::m_modeldat
-    The name of the model data file. Apart from the name of the model to be initialized also 
-    parameters like, e.g. coupling constants are gathered there. See the corresponding specific
-    models for more information about which data are expected. The default is "Model.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_beamdat
-    The file with the data specifying the beam treatment. As a minimal requirement, beam particles
-    and energies should be given as well as information about which type of beam spectrum
-    the user wishes to use. The default is "Beam.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_isrdat
-    The file with the data specifying the pdf's. It is important that the particles named in this
-    file match with the beam treatment, otherwise the run terminates with a corresponding
-    error message. The default is "ISR.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_medat
-    The file containing information about which matrix elements are to be used (either some toy
-    2->2 processes as internal ones or the full wealth of AMEGIC is available here) and which 
-    process(es) is (are) to be calculated. The default for this is "ME.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_showerdat
-    Parameters and switches defining the shower handling are to be found here. The default is
-    "Shower.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_beamremnantdat
-    Information about the beam remnant treatment are to be found in thsi file, defautl for it
-    is - again - "Beam.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_fragmentationdat
-    The parameters and switches of the fragmentation model to be used are specified in the file
-    defined by this word string. The default is "Fragmentation.dat".
-  */
-  /*!
-    \var std::string Initialization_Handler::m_hadrondecaysdat
-    For hadron decays which are anticipated, the file with this name will be responsible.
-    The default for it is "Fragmentation.dat".   
-  */
-  /*!
     \var double Initialization_Handler::m_bunch_splimits[2]
     The boundaries for the s' after ISR. These paraermters are read in in the Initialization_Handler
     and passed to the ISR_Handler. They are given in units of the total energy squared under
@@ -232,10 +165,6 @@ namespace SHERPA {
   /*!
     \var ATOOLS::Flavour Initialization_Handler::m_bunch_particles[2]
     The bunch particles, i.e. the particles that are resolved into their constituents by the pdf's.
-  */
-  /*!
-    \var ATOOLS::Data_Read * Initialization_Handler::p_dataread
-    A pointer to the data read object used all over the class. 
   */
   /*!
     \var MODEL::Model_Base * Initialization_Handler::p_model
@@ -281,12 +210,6 @@ namespace SHERPA {
     </TABLE>
    */
   /*!
-    \fn Initialization_Handler::Initialization_Handler(std::string=std::string("./"),
-                                                       std::string=std::string("Run.dat"))
-    In the constructor, the data read object is instantiated and all file names to be used
-    for the set up are read in.
-  */
-  /*!
     \fn Initialization_Handler::~Initialization_Handler()
     The destructor deletes all physdics modules that have been used during the run.
   */
@@ -306,7 +229,7 @@ namespace SHERPA {
 
   /*!
     \fn Initialization_Handler::InitializeTheHadronDecays()
-    This method reads \c Fragmentation.dat, especially the desired decay model.
+    This method reads the fragmentation settings, especially the desired decay model.
      
     If the model is \c Hadrons it calls the HADRONS constructor for initialisation
     and the Hadron_Decay_Handler::EraseTreated method

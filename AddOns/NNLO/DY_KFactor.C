@@ -27,9 +27,7 @@ namespace PHASIC {
     inline DYNNLO_KFactor(const KFactor_Setter_Arguments &args):
       DY_KFactor(args) {}
 
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
     double KFactor(const int mode=0);
     double KFactor(const ATOOLS::NLO_subevt &evt);
 
@@ -41,9 +39,7 @@ namespace PHASIC {
     inline DYNLO_KFactor(const KFactor_Setter_Arguments &args):
       DY_KFactor(args) {}
 
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
     double KFactor(const int mode=0);
     double KFactor(const ATOOLS::NLO_subevt &evt);
 
@@ -60,8 +56,8 @@ namespace PHASIC {
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "QT_Selector.H"
 #include "coeffqt.H"
@@ -75,16 +71,16 @@ DY_KFactor::DY_KFactor
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args), p_fsmc(NULL)
 {
-  Data_Reader read(" ",";","#","=");
+  Settings& s = Settings::GetMainSettings();
   if (s_pdf==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
-    s_pdfmin[0]=read.GetValue<double>("CSS_PDF_MIN",1.0e-4);
-    s_pdfmin[1]=read.GetValue<double>("CSS_PDF_MIN_X",1.0e-2);
+    s_pdfmin[0] = s["CSS_PDF_MIN"].Get<double>();
+    s_pdfmin[1] = s["CSS_PDF_MIN_X"].Get<double>();
   }
-  m_k0sq[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sq[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_fomode=read.GetValue<int>("NNLOqT_FOMODE",0);
+  m_k0sq[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_k0sq[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_fomode = s["NNLOqT_FOMODE"].Get<int>();
   m_newfs=0;
   for (size_t i(0);i<p_proc->NOut();++i)
     if (!Flavour(kf_jet).Includes
@@ -111,14 +107,17 @@ double DYNNLO_KFactor::KFactor(const int mode)
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name());
   const int lmode(mode&~2);
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+  if (s_variations->Size()) {
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     if (mode&2) bkw.clear();
     size_t oldsize(bkw.size());
-    vw.UpdateOrInitialiseWeights(&DYNNLO_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
       (&bkw[oldsize],&bkw.back()+1)<<"\n";
     for (size_t i(oldsize);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
@@ -127,11 +126,9 @@ double DYNNLO_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double DYNNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double DYNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -140,25 +137,25 @@ double DYNNLO_KFactor::KFactor
     s_pdf=params->p_pdf1;
   }
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>(p_proc->Info().Has(nlo_type::real)?m_newfs+1:m_newfs)) {
     double weight(1.0);
-    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,
-			  weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    weight=NNLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
+			  params?params->m_name:"");
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   if (p_proc->Info().Has(nlo_type::real)) {
     double weight(NNLODeltaWeight(p_proc,1.0,m_fomode));
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   Cluster_Amplitude *ampl(NULL);
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl) ampl->SetNLO(4);
   if (mode!=1) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0);
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0);
     return 1.0;
   }
   QT_Selector *jf=(QT_Selector*)
@@ -206,12 +203,12 @@ double DYNNLO_KFactor::KFactor
   K*=sqr((*s_as)(mur*mur)/(4.0*M_PI));
   DEBUG_VAR(K);
   if (IsBad(K)) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0);
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0);
     return 1.0;
   }
   DEBUG_VAR(1.0+K);
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
-  return weights?1.0:1.0+K;
+  if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
+  return params?1.0:1.0+K;
 }
 
 double DYNLO_KFactor::KFactor(const ATOOLS::NLO_subevt &evt)
@@ -222,24 +219,25 @@ double DYNLO_KFactor::KFactor(const ATOOLS::NLO_subevt &evt)
 double DYNLO_KFactor::KFactor(const int mode) 
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name());
-  m_weight=KFactor(NULL,NULL,mode);
+  m_weight = KFactor(NULL, mode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
+  if (s_variations->Size()) {
+    std::vector<double> &bkw(p_proc->Caller()->GetMEwgtinfo()->m_bkw);
     bkw.clear();
-    p_proc->VariationWeights()->UpdateOrInitialiseWeights
-      (&DYNLO_KFactor::KFactor,*this,mode);
+    s_variations->ForEach(
+        [this, &mode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, mode);
+        });
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
     msg_Debugging()<<"Weight variations: "<<bkw<<"\n";
   }
   return m_weight;
 }
 
-double DYNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double DYNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -248,14 +246,14 @@ double DYNLO_KFactor::KFactor
     s_pdf=params->p_pdf1;
   }
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0)));
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0)));
   if (p_proc->NOut()>m_newfs) {
     double weight(1.0);
-    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,
-			 weights?params->m_name:"");
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    weight=NLODiffWeight(p_proc,weight,mur*mur,muf*muf,m_k0sq,m_fomode,0,
+			 params?params->m_name:"");
+    if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   QT_Selector *jf=(QT_Selector*)
     p_proc->Selector()->GetSelector("NNLOqT_Selector");
@@ -285,8 +283,8 @@ double DYNLO_KFactor::KFactor
   K*=(*s_as)(mur*mur)/(4.0*M_PI);
   msg_Debugging()<<"K = "<<1.0+K<<"\n";
   if (IsBad(K)) K=0.0;
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
-  return weights?1.0:1.0+K;
+  if (params) p_proc->Caller()->GetMEwgtinfo()->m_bkw.push_back(1.0+K);
+  return params?1.0:1.0+K;
 }
 
 DECLARE_GETTER(DYNNLO_KFactor,"DYNNLO",

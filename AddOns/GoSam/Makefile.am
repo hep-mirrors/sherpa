@@ -1,5 +1,9 @@
 
+GITTAG = AddOns/GoSam
+include ../../git.make
+
 GOSAM_SOURCES      =	\
+			Git_Info.C \
                         GoSam_Virtual.C \
                         GoSam_Interface.C
 

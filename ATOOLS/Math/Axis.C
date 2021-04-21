@@ -1,7 +1,5 @@
 #include "ATOOLS/Math/Axis.H"
 
-#include "ATOOLS/Org/Data_Reader.H"
-
 using namespace ATOOLS;
 
 template <class ValueType>

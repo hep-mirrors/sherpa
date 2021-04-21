@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace PHASIC;
@@ -16,24 +17,24 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
-		     Default_Reader *const _reader) :
+CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
+                       MODEL::Model_Base *const model) :
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
   m_subtype=2;
-  m_psmode=_reader->Get<int>("NLO_CSS_PSMODE",0);
+  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
-  m_maxweight=_reader->Get<double>("NLO_CSS_MAXWEIGHT",1.0e3);
-  if (m_maxweight!=1.0e3) msg_Info()<<METHOD<<"(): Set max weight "<<m_maxweight<<".\n";
-  m_maxem=_reader->Get<int>("NLO_CSS_MAXEM",1);
-  SF_Lorentz::SetKappa(_reader->Get<double>("DIPOLE_KAPPA",2.0/3.0));
+  m_maxweight=s["NLO_CSS_MAXWEIGHT"].SetDefault(1.0e3).Get<double>();
+  m_maxem=s["NLO_CSS_MAXEM"].Get<int>();
+  SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
 
-  p_mcatnlo = new Shower(_isr,0,_reader);
+  p_mcatnlo = new Shower(_isr,0);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_mcatnlo,1);
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
-  p_gamma->SetOEF(_reader->Get<double>("CSS_OEF",3.0));
+  p_gamma->SetOEF(s["CSS_OEF"].Get<double>());
   p_mcatnlo->SetGamma(p_gamma);
   m_kt2min[1]=p_mcatnlo->GetSudakov()->ISPT2Min();
   m_kt2min[0]=p_mcatnlo->GetSudakov()->FSPT2Min();
@@ -62,12 +63,12 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
   DEBUG_FUNC("");
   for (double qfac(1.0);;qfac*=10.0) {
   m_nem=0;
-  m_weight=1.0;
+  m_weightsmap.Clear();
   CleanUp();
   PrepareMCatNLO(ampl);
   int stat(PerformMCatNLO(m_maxem,m_nem,qfac));
-  if (dabs(m_weight)>m_maxweight) {
-    msg_Info()<<METHOD<<"(): Weight is "<<m_weight
+  if (dabs(m_weightsmap.Nominal())>m_maxweight) {
+    msg_Info()<<METHOD<<"(): Weight is "<<m_weightsmap.Nominal()
 	      <<". Retry with charge factor "<<qfac*10.0<<".\n";
     continue;
   }
@@ -128,7 +129,6 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
 	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0*qfac);
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
-  p_mcatnlo->SetVariationWeights(p_variationweights);
   p_gamma->SetOn(1);
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
@@ -136,9 +136,10 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_mcatnlo->EvolveShower(*sit,maxem,nem)) return 0;
-    m_weight*=p_mcatnlo->Weight();
+    m_weightsmap["MC@NLO_PS"] *= p_mcatnlo->WeightsMap().at("MC@NLO_PS");
+    m_weightsmap["MC@NLO_QCUT"] *= p_mcatnlo->WeightsMap().at("MC@NLO_QCUT");
     msg_Debugging()<<"after mc@nlo step with "<<nem-pem
-		   <<" emission(s), w = "<<m_weight<<"\n";
+		   <<" emission(s), w = "<<m_weightsmap.Nominal()<<"\n";
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }
@@ -323,7 +324,7 @@ DECLARE_GETTER(CS_MCatNLO,"MC@NLO_CSS",NLOMC_Base,NLOMC_Key);
 NLOMC_Base *ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::
 operator()(const NLOMC_Key &key) const
 {
-  return new CS_MCatNLO(key.p_isr,key.p_model,key.p_reader);
+  return new CS_MCatNLO(key.p_isr,key.p_model);
 }
 
 void ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::

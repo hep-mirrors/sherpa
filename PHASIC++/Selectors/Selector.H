@@ -7,10 +7,14 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Selector_List.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <limits>
 
-namespace ATOOLS { class Data_Reader; }
+namespace ATOOLS {
+  class Scoped_Settings;
+}
 
 namespace PHASIC {
 
@@ -42,26 +46,16 @@ namespace PHASIC {
 
   };// end of class Selector_Log
 
-  struct Selector_Key: public std::vector<std::vector<std::string> > {
-    Process_Base        *p_proc;
-    ATOOLS::Data_Reader *p_read;
-
-    bool m_del;
-
-    std::string m_key;
-
-    inline Selector_Key(Process_Base *const proc,
-			ATOOLS::Data_Reader *const read,const bool del=false):
-      p_proc(proc), p_read(read), m_del(del) {}
-
-    ~Selector_Key();
-
-    void ReadData(const std::string& m_path, const std::string& m_file);
-    void SetData(const std::string &tag,const std::vector<std::string> &args);
-
+  struct Selector_Key {
+    std::vector<ATOOLS::Scoped_Settings> GetSelectors() const;
+    /// add an additional selector that is not specified by the user
+    void AddSelectorYAML(const std::string&);
+    ATOOLS::Scoped_Settings m_settings;
+    Process_Base* p_proc{ NULL };
+  private:
+    ATOOLS::Settings m_addedselectors;
+    std::string m_yaml;
   };// end of struct Selector_Key
-
-  std::ostream & operator<<(std::ostream & s,const PHASIC::Selector_Key & sk);
 
   class Selector_Base {
   protected :
@@ -75,6 +69,7 @@ namespace PHASIC {
 
     size_t m_nin, m_nout, m_n;
     int m_pass;
+    std::vector<ATOOLS::Weights_Map> m_results;
 
     ATOOLS::Flavour *p_fl;
     ATOOLS::NLO_subevt *p_sub;
@@ -99,7 +94,7 @@ namespace PHASIC {
     virtual void AddOnshellCondition(std::string,double);
     virtual void Output();
 
-    void ReadInSubSelectors(const Selector_Key &key,size_t idx);
+    void ReadInSubSelectors(const Selector_Key &key);
 
     // inline functions
     inline void SetProcess(Process_Base *const proc)
@@ -110,6 +105,10 @@ namespace PHASIC {
     inline std::string Name() const { return m_name; }
 
     inline int Pass() const { return m_pass; }
+
+    /// after Trigger(), this can be used to retrieve variations of the result
+    /// (e.g. when varying the QCUT scale)
+    const std::vector<ATOOLS::Weights_Map>& Results() const;
 
   };// end of class Selector_Base
 

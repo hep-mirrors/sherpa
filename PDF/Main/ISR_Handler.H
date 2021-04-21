@@ -24,6 +24,7 @@ namespace PDF {
   typedef std::vector<double> Double_Vector;
 
   class ISR_Handler {
+
   protected:
 
     ISR_Base **p_isrbase;
@@ -46,6 +47,7 @@ namespace PDF {
 
     double m_xf1[2], m_xf2[2];
 
+    bool m_freezePDFforLowQ;
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
 
@@ -114,6 +116,7 @@ namespace PDF {
     inline void SetMuF2(double mu2, int beam)   { m_mu2[beam]=mu2; }
     inline double XF1(int beam) const           { return m_xf1[beam]; }
     inline double XF2(int beam) const           { return m_xf2[beam]; }
+    inline int Swap() const { return m_swap; }
 
     inline void SetPDF(PDF_Base *pdf) {
       SetPDF(pdf, 0); SetPDF(pdf, 1);

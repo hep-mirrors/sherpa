@@ -1,6 +1,7 @@
 #include "RECONNECTIONS/Main/Reconnect_By_Singlet.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace RECONNECTIONS;
 using namespace ATOOLS;
@@ -29,16 +30,18 @@ void Reconnect_By_Singlet::Reset() {
   Reconnection_Base::Reset();
 }
 
-void Reconnect_By_Singlet::ReadWeightParameters(Default_Reader *const defaultreader) {
+void Reconnect_By_Singlet::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space.
   // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
   // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
-  m_Pmode     = defaultreader->GetValue<double>("RECONNECTIONS::PMODE",0);
-  m_Q02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::Q_0",0.25));
-  m_eta       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::eta",0.16));
-  m_R02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::R_0",1.));
-  m_reshuffle = 1./defaultreader->GetValue<double>("RECONNECTIONS::RESHUFFLE",1./3.);
-  m_restring  = 1./defaultreader->GetValue<double>("RECONNECTIONS::RESTRING",1./3.);
+  auto  s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
+  m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
+  m_Q02       = sqr(s["RECONNECTIONS::Q_0"].SetDefault(1.00).Get<double>());
+  m_etaQ      = sqr(s["RECONNECTIONS::etaQ"].SetDefault(0.16).Get<double>());
+  m_R02       = sqr(s["RECONNECTIONS::R_0"].SetDefault(1.00).Get<double>());
+  m_etaR      = sqr(s["RECONNECTIONS::etaR"].SetDefault(0.16).Get<double>());
+  m_reshuffle = 1./(s["RECONNECTIONS::RESHUFFLE"].SetDefault(1./3.).Get<double>());
+  m_restring  = 1./(s["RECONNECTIONS::RESTRING"].SetDefault(1./3.).Get<double>());
 }
 
 void Reconnect_By_Singlet::MakeSinglets() {
@@ -260,20 +263,21 @@ void Reconnect_By_Singlet::AftermathOfSlicing(Particle * part11,Particle * part1
 }
 
 double Reconnect_By_Singlet::Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) {
-  return (MomDistance(trip,anti) * PosDistance(trip,anti) * ColDistance(trip,anti));
+  return (MomDistance(trip,anti) *
+	  PosDistance(trip,anti) *
+	  ColDistance(trip,anti));
 }
 
 double Reconnect_By_Singlet::MomDistance(Particle * part1,Particle * part2) {
   // Here we take a variant of the Lund lambda measure for the distance in momentum space
   double p1p2 = ((part1->Momentum()+part2->Momentum()).Abs2() -
 		 (part1->Momentum().Abs2()+part2->Momentum().Abs2()));
-  return pow(1.+p1p2/m_Q02,0.5);
-  return exp(0.16*log(1.+p1p2/m_Q02));
+  return m_Pmode==0 ? log(1.+p1p2/m_Q02) : pow(1.+p1p2/m_Q02,m_etaQ);
 }
 
 double Reconnect_By_Singlet::PosDistance(Particle * part1,Particle * part2) {
   double xdist2 = dabs((part1->XProd().Perp()-part2->XProd().Perp()).Abs2());
-  return xdist2<1.e-6? 1. : exp(sqrt(xdist2/m_R02));
+  return xdist2<1.e-6? 1. : pow(xdist2/m_R02, m_etaR);
 }
 
 double Reconnect_By_Singlet::ColDistance(Particle * part1,Particle * part2) {

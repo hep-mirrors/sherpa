@@ -21,7 +21,7 @@ namespace SHERPA {
     Hadron_Decays(Decay_Handler_Base *);
     ~Hadron_Decays();
     
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };
@@ -50,7 +50,7 @@ namespace SHERPA {
     Can be set by the "SOFT_MASS_SMEARING = [0,1]" variable in Fragmentation.dat
   */
   /*!
-    \fn Hadron_Decays::Treat(ATOOLS::Blob_List *, double &)
+    \fn Hadron_Decays::Treat(ATOOLS::Blob_List*)
     \brief Treats all blobs in a blob list which need hadron decays.
 
     This method recurses through the bloblist and when it finds a blob which needs

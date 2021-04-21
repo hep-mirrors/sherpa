@@ -21,6 +21,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace SHNNLO {
 
@@ -37,10 +38,10 @@ namespace SHNNLO {
 
     PHASIC::Tag_Setter m_tagset;
 
-    SP(PHASIC::Color_Integrator) p_ci;
+    std::shared_ptr<PHASIC::Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
-    int    m_cmode, m_kfac, m_nmin;
+    int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
     static int s_nfgsplit, s_nlocpl;
@@ -115,16 +116,17 @@ Scale_Setter::Scale_Setter
   Scale_Setter_Base(args), m_tagset(this)
 {
   static std::string s_core;
-  static int s_cmode(-1), s_csmode(-1), s_nmaxall(-1), s_nmaxnloall(-1);
+  static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
-    Data_Reader read(" ",";","!","=");
-    s_nmaxall=read.GetValue<int>("MEPS_NMAX_ALLCONFIGS",2);
-    s_nmaxnloall=read.GetValue<int>("MEPS_NLO_NMAX_ALLCONFIGS",10);
-    s_cmode=read.GetValue<int>("MEPS_CLUSTER_MODE",8|64|256);
-    s_nlocpl=read.GetValue<int>("MEPS_NLO_COUPLING_MODE",2);
-    s_nfgsplit=read.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_jet).Size()/2);
-    s_csmode=read.GetValue<int>("MEPS_COLORSET_MODE",0);
-    s_core=read.GetValue<std::string>("CORE_SCALE","Default");
+    Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
+    s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(2);
+    s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(10);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|64|256);
+    s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
+    s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
+    s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
+    s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
+    s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core);
@@ -166,8 +168,7 @@ Scale_Setter::Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
-  if (p_proc->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  p_clu=p_proc->Shower()->GetClusterDefinitions();
+  p_clu=p_proc->Shower()?p_proc->Shower()->GetClusterDefinitions():NULL;
   p_ms=p_proc->Generator();
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
@@ -185,7 +186,6 @@ Scale_Setter::Scale_Setter
     64 - Winner takes it all in R first step
     256 - No ordering check if last qcd split
   */
-  m_kfac=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
@@ -195,7 +195,8 @@ Scale_Setter::Scale_Setter
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
-  p_qdc = new Cluster_Definitions(m_kfac,m_nproc,p_proc->Shower()->KTType());
+  p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()?
+				  p_proc->Shower()->KTType():1);
 }
 
 Scale_Setter::~Scale_Setter()
@@ -238,7 +239,7 @@ bool Scale_Setter::CheckOrdering
   if (m_rproc && ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
-	(ampl->OrderQCD()==0 ||
+	(ampl->OrderQCD()==(m_nproc&&!(m_sproc||m_rproc)?1:0) ||
 	 (ampl->OrderQCD()>1 && ampl->Legs().size()==3))) {
       msg_Debugging()<<"No ordering veto: "<<sqrt(ampl->KT2())
 		     <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
@@ -274,7 +275,7 @@ bool Scale_Setter::CheckSplitting
 
 bool Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
-  NLO_subevtlist *subs(p_caller->GetRSSubevtList());
+  NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
     if (cc.m_k==sub->m_k &&
@@ -325,26 +326,26 @@ double Scale_Setter::Calculate
 {
   m_p=momenta;
   if (m_nproc || m_cmode&8) p_ci=NULL;
-  else p_ci=p_caller->Integrator()->ColorIntegrator();
-  for (size_t i(0);i<p_caller->NIn();++i) m_p[i]=-m_p[i];
+  else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
+  for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
     m_ampls.back()->Delete();
     m_ampls.pop_back();
   }
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
-  m_rproc=p_caller->Info().Has(nlo_type::real);
-  m_sproc=p_caller->Info().Has(nlo_type::rsub);
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name());
+  m_rproc=p_proc->Caller()->Info().Has(nlo_type::real);
+  m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
-  m_rsproc=m_rproc||(m_sproc&&p_caller->GetRSSubevtList());
-  const Flavour_Vector &fl=p_caller->Flavours();
+  m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  ampl->SetNIn(p_caller->NIn());
-  ampl->SetOrderQCD(p_caller->MaxOrder(0));
-  for (size_t i(1);i<p_caller->MaxOrders().size();++i)
-    ampl->SetOrderEW(ampl->OrderEW()+p_caller->MaxOrder(i));
+  ampl->SetNIn(p_proc->Caller()->NIn());
+  ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
+  for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
+    ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
   ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
-  if (p_ci!=NULL) {
+  if (p_ci != nullptr) {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],
@@ -359,12 +360,12 @@ double Scale_Setter::Calculate
     }
   }
   ClusterAmplitude_Vector ampls;
-  p_sproc=p_caller->Get<Single_Process>();
+  p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
-  int mm(p_caller->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc) p_caller->Generator()->ShiftMasses(ampl);
+  int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
+  if (!m_nproc) p_proc->Caller()->Generator()->ShiftMasses(ampl);
   Cluster(ampl,ampls,1);
-  p_caller->Generator()->SetMassMode(mm);
+  p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
     if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()-1);
@@ -472,7 +473,7 @@ void Scale_Setter::Cluster
 			       <<lj->Col()<<" <-> "<<lk->Col()<<"\n";
 		continue;
 	      }
-	      Cluster_Info ci(cc,strict?p_clu->Cluster(cc):
+	      Cluster_Info ci(cc,strict&&p_clu?p_clu->Cluster(cc):
 			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
 	      if (ci.second.m_kt2<0.0) continue;
 	      ccs.push_back(ci);
@@ -561,7 +562,8 @@ double Scale_Setter::Differential
   }
   int kfon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
-  double meps=pit->second->Differential(*campl,2|4|128|mode);
+  double meps = static_cast<double>(pit->second->Differential(
+      *campl, Variations_Mode::nominal_only, 2 | 4 | 128 | mode));
   pit->second->KFactorSetter(true)->SetOn(kfon);
   msg_Debugging()<<"ME = "<<meps<<"\n";
   campl->Delete();
@@ -608,6 +610,7 @@ double Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
+	ampl->SetNLO(1);
 	continue;
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -679,7 +682,7 @@ double Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc->Caller()?p_proc->Caller()->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
@@ -699,7 +702,7 @@ void Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_caller->Name()<<"' {\n";
+		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

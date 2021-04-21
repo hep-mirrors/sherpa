@@ -246,67 +246,42 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *
-GetSTwoParticleObservable(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<8) return NULL;
-    std::string list(parameters[0].size()>8?parameters[0][8]:"FinalState");
-    std::string rlist(parameters[0].size()>9?parameters[0][9]:list);
-    int kf=ATOOLS::ToType<int>(parameters[0][0]);
-    ATOOLS::Flavour flav((kf_code)abs(kf));
-    if (kf<0) flav=flav.Bar();
-    kf=ATOOLS::ToType<int>(parameters[0][2]);
-    ATOOLS::Flavour refflav((kf_code)abs(kf));
-    if (kf<0) refflav=refflav.Bar();
-    return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
-		     refflav,ATOOLS::ToType<size_t>(parameters[0][3]),
-		     HistogramType(parameters[0][7]),
-		     ATOOLS::ToType<double>(parameters[0][4]),
-		     ATOOLS::ToType<double>(parameters[0][5]),
-		     ATOOLS::ToType<int>(parameters[0][6]),list,rlist);
+GetSTwoParticleObservable(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(30.0).Get<double>();
+  const auto max = s["Max"].SetDefault(70.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  const auto inlist = s["InList"].SetDefault("Jets").Get<std::string>();
+  const auto reflist = s["RefList"].SetDefault("Jets").Get<std::string>();
+  std::vector<ATOOLS::Flavour> flavs;
+  flavs.reserve(2);
+  for (size_t i{ 0 }; i < 2; ++i) {
+    const auto flavkey = "Flav" + ATOOLS::ToString(i + 1);
+    const auto kf = s[flavkey].SetDefault(kf_jet).GetScalar<int>();
+    flavs.push_back(ATOOLS::Flavour((kf_code)std::abs(kf)));
+    if (kf < 0)
+      flavs.back() = flavs.back().Bar();
   }
-  if (parameters.size()<9) return NULL;
-  int bins=100, scale=0;
-  double min=30.0, max=70.0;
-  std::string inlist="Jets", reflist="Jets";
-  size_t item=0, refitem=1;
-  ATOOLS::Flavour flav(kf_jet), refflav(kf_jet);
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="InList") inlist=parameters[i][1];
-    else if (parameters[i][0]=="RefList") reflist=parameters[i][1];
-    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Bins") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Item1") item=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Item2") refitem=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Scale") scale=HistogramType(parameters[i][1]);
-    else if (parameters[i][0]=="Flav1") {
-      int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      flav=ATOOLS::Flavour((kf_code)(abs(kf)));
-      if (kf<0) flav=flav.Bar();
-    }
-    else if (parameters[i][0]=="Flav2") {
-      int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      refflav=ATOOLS::Flavour((kf_code)(abs(kf)));
-      if (kf<0) refflav=refflav.Bar();
-    }
-  }
-  return new Class(flav,item,refflav,refitem,scale,min,max,bins,inlist,reflist);
-}									
+  const auto item = s["Item1"].SetDefault(0).Get<size_t>();
+  const auto refitem = s["Item2"].SetDefault(1).Get<size_t>();
+  return new Class(flavs[0],item,flavs[1],refitem,
+                   HistogramType(scale),min,max,bins,
+                   inlist,reflist);
+}
 
 #define DEFINE_TWO_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetSTwoParticleObservable<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetSTwoParticleObservable<CLASS>(key); }
 
 #define DEFINE_TWO_OBSERVABLE_PRINT_METHOD(NAME)		\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"flav1 item1 flav2 item2 min max bins Lin|LinErr|Log|LogErr [inlist [reflist]]"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {Flav1: kf1, Item1: item1, Flav2: kf2, Item: item2, Min: 0, Max: 1, Bins: 100, Scale: Lin, List: FinalState, RefList: <list>}"; }
 
 #define DEFINE_TWO_OBSERVABLE_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_TWO_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   DEFINE_TWO_OBSERVABLE_PRINT_METHOD(CLASS)
 

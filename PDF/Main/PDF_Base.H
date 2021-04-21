@@ -4,22 +4,29 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
-
-namespace ATOOLS { class Data_Reader; }
+#include "ATOOLS/Org/Settings.H"
 
 namespace PDF {
 
   struct PDF_Arguments {
     ATOOLS::Flavour       m_bunch;
-    ATOOLS::Data_Reader * p_read;
     int m_ibeam;
     std::string m_set;
     int m_member;
+    int m_order, m_scheme;
     PDF_Arguments(const ATOOLS::Flavour &bunch,
-                  ATOOLS::Data_Reader *const read, int ibeam,
-                  std::string set, int member):
-      m_bunch(bunch), p_read(read), m_ibeam(ibeam),
-      m_set(set), m_member(member) {}
+                  int ibeam,
+                  std::string set,
+                  int member,
+                  int order=-1,
+                  int scheme=-1):
+      m_bunch(bunch),
+      m_ibeam(ibeam),
+      m_set(set),
+      m_member(member),
+      m_order(order),
+      m_scheme(scheme)
+    {}
   };
 
   struct PDF_Flavour: public ATOOLS::Flavour {
@@ -62,6 +69,9 @@ namespace PDF {
     virtual void CalculateSpec(const double& x,const double& Q2) = 0;
   private:
     double m_rq2min, m_rq2max;
+
+    void RegisterDefaults() const;
+
   public:
     PDF_Base();
     virtual ~PDF_Base();

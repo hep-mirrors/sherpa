@@ -2,6 +2,7 @@
 
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -253,6 +254,7 @@ double SHNNLO::Weight
     return sqrt(-1.0);
   }
   if (kt2>ampl->Next()->KT2()) return 1.0;
+  if ((mode&5)==0) return 1.0;
   double Q2[2]={muf2,muf2};
   double asmu((*s_as)(mur2));
   double askt((*s_as)(ampl->Mu2()));
@@ -265,7 +267,6 @@ double SHNNLO::Weight
     for (size_t i(1);i<ths.size();++i) {
       double nf=MODEL::as->Nf((ths[i]+ths[i-1])/2.0);
       double L=log(ths[i]/ths[i-1]), lct=cpl/(2.0*M_PI)*Beta0(nf)*L;
-      cpl*=1.0-lct;
       ct+=lct;
     }
   }
@@ -313,7 +314,7 @@ double SHNNLO::NLODiffWeight
 (Process_Base *const proc,double &wgt,
  const double &mur2,const double &muf2,
  const double *k0sq,const int fomode,
- const std::string &varid)
+ const int umode,const std::string &varid)
 {
   if (fomode) return wgt;
   DEBUG_FUNC(proc->Name());
@@ -322,11 +323,11 @@ double SHNNLO::NLODiffWeight
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl==NULL || ampl->Next()==NULL) return wgt;
   msg_Debugging()<<*ampl<<"\n";
-  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,0);
+  double w1, K=Weight(w1,ampl,mur2,muf2,k0sq,4);
   msg_Debugging()<<"K = "<<K<<"\n";
   if (IsBad(K)) {
     ampl->Next()->SetNLO(128);
-    return wgt;
+    return umode?0.0:wgt;
   }
   bool gen=rpa->gen.NumberOfTrials()>s_ntrials;
   s_ntrials=rpa->gen.NumberOfTrials();
@@ -334,13 +335,14 @@ double SHNNLO::NLODiffWeight
   else msg_Debugging()<<"keep random point\n";
   double p1=s_p1;
   if (gen) p1=s_p1=1.0/(1.0+2.0*dabs(K-1.0));
+  if (umode) p1=0.0;
   if (s_disc<=p1) {
     wgt*=1.0/p1;
     ampl->Next()->SetNLO(16|64);
   }
   else {
     double pw(0.5*(1.0-p1));
-    wgt*=(K-1.0)/pw;
+    wgt*=(umode?K:K-1.0)/pw;
     ampl->Next()->SetNLO(16);
     if (s_disc>p1+pw) {
       ampl->Next()->SetNLO(16|32);
@@ -355,27 +357,30 @@ double SHNNLO::NNLODiffWeight
 (Process_Base *const proc,double &wgt,
  const double &mur2,const double &muf2,
  const double *k0sq,const int mode,
- const int fomode,const std::string &varid)
+ const int fomode,const int umode,
+ const std::string &varid)
 {
   nlo_type::code nlot=proc->Info().m_fi.m_nlotype;
   DEBUG_FUNC(proc->Name()<<", wgt = "<<wgt
 	     <<", type "<<nlot<<", mode = "<<mode);
   if (fomode || rpa->gen.NumberOfTrials()<1) return wgt;
   Cluster_Amplitude *ampl(NULL);
-  Scale_Setter_Base *sc(proc->ScaleSetter());
+  Scale_Setter_Base *sc(proc->ScaleSetter(1));
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   NLO_subevtlist *subs(proc->GetRSSubevtList());
-  if (subs) ampl=subs->back()->p_ampl->Next();
+  if (subs) ampl=subs->back()->Proc<Single_Process>()->
+	      ScaleSetter(1)->Amplitudes().front()->Next();
   if (ampl==NULL || ampl->Next()==NULL)
-    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,varid);
+    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,umode,varid);
   msg_Debugging()<<*ampl<<"\n";
   double w1, w=Weight(w1,ampl,mur2,muf2,k0sq,mode|(subs?2:0));
   msg_Debugging()<<"w = "<<w<<", w1 = "<<w1<<"\n";
   if (IsBad(w) || IsBad(w1)) {
     ampl->Next()->SetNLO(128);
-    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,varid);
+    if (umode) return 0.0;
+    return wgt=SetWeight(NULL,mode,wgt,1.0,0.0,umode,varid);
   }
-  return wgt=SetWeight(ampl->Next(),mode,wgt,w,w1,varid);
+  return wgt=SetWeight(ampl->Next(),mode,wgt,w+w1,0.0,umode,varid);
 }
 
 double SHNNLO::NNLODeltaWeight
@@ -395,7 +400,7 @@ double SHNNLO::NNLODeltaWeight
 double SHNNLO::SetWeight
 (ATOOLS::Cluster_Amplitude *const ampl,const int mode,
  double wgt,const double &w,const double &w1,
- const std::string &varid)
+ const int umode,const std::string &varid)
 {
   bool gen=rpa->gen.NumberOfTrials()>s_ntrials;
   s_ntrials=rpa->gen.NumberOfTrials();
@@ -404,47 +409,47 @@ double SHNNLO::SetWeight
   double p1=s_p1;
   if (gen) {
     s_p2=0.0;
-    p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0)+2.0*dabs(w*w1));
+    p1=s_p1=1.0/(1.0+2.0*dabs(w-1.0));
   }
   if (s_disc<=p1) {
     wgt*=1.0/p1;
     if (ampl) {
       if (mode==1) ampl->SetFlag(2);
       ampl->SetNLO(16|64);
+      if (umode) {
+	wgt*=2.0;
+	ampl->SetNLO(16);
+	if (s_disc<p1/2.0) {
+	  ampl->SetNLO(16|32);
+	  wgt*=-1.0;
+	}
+      }
     }
   }
   else {
     double p2=s_p2;
     if (gen) {
       p2=s_p2=1.0-p1;
-      if (w!=1.0) p2=s_p2/=(1.0+dabs(w*w1/(w-1.0)));
+      if (w!=1.0) p2=s_p2/=(1.0+dabs(w1/(w-1.0)));
     }
     if (s_disc<=p1+p2) {
       double pw(0.5*p2);
       wgt*=(w-1.0)/pw;
       if (ampl) {
-	if (mode==1) ampl->SetFlag(2);
 	ampl->SetNLO(16);
       }
       if (s_disc>p1+pw) {
 	if (ampl) {
-	  if (mode==1) ampl->SetFlag(2);
 	  ampl->SetNLO(16|32);
 	}
 	wgt*=-1.0;
       }
     }
     else {
-      double pw(0.5*(1.0-p1-p2));
-      wgt*=w*w1/pw;
-      if (ampl)	ampl->SetNLO(16);
-      if (s_disc>p1+p2+pw) {
-	if (ampl) ampl->SetNLO(16|32);
-	wgt*=-1.0;
-      }
+      THROW(fatal_error,"Invalid weights");
     }
   }
-  msg_Debugging()<<"wgt = "<<wgt<<" (w = "<<w<<", w1 = "<<w1
+  msg_Debugging()<<"wgt = "<<wgt<<" (w = "<<w
 		 <<", p1 = "<<s_p1<<", p2 = "<<s_p2
 		 <<", # = "<<s_disc<<") "<<varid<<"\n";
   return wgt;

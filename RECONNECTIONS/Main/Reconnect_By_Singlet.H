@@ -9,10 +9,10 @@ namespace RECONNECTIONS {
   private:    
     Reconnection_Weights m_weights;
     int    m_Pmode;
-    double m_Q02, m_eta, m_R02, m_reshuffle, m_restring;
+    double m_Q02, m_etaQ, m_R02, m_etaR, m_reshuffle, m_restring;
     std::list<ATOOLS::Part_List *> m_singlets;    
     
-    void ReadWeightParameters(ATOOLS::Default_Reader *const defaultreader);
+    void SetParameters();
     void MakeSinglets();
     void FlattenSinglets();
     ATOOLS::Particle * FindStart();

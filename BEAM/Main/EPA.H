@@ -4,8 +4,6 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Function_Base.H"
 
-namespace ATOOLS { class Data_Reader; }
-
 namespace BEAM {
 
   class EPA : public Beam_Base {
@@ -20,18 +18,19 @@ namespace BEAM {
 
     double m_mass, m_charge, m_q2Max, m_pt_min, m_aqed;
 
+    void RegisterDefaults();
+
     double phi(double x, double qq);
 
     void selfTest(std::string filename);
 
-    int m_debug;
     int m_formfactor;
 
   public:
 
     EPA(const ATOOLS::Flavour beam,const double mass,
 	const double charge,const double energy,const double pol,
-	const int dir,ATOOLS::Data_Reader *const read);
+	const int dir);
 
     ~EPA();
 

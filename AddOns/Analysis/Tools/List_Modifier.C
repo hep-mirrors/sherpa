@@ -56,18 +56,20 @@ using namespace ANALYSIS;
 
 template <class Class>
 Analysis_Object *
-GetTwoParticleModifier(const Argument_Matrix &parameters) 
+GetTwoParticleModifier(const Analysis_Key& key)
 {									
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<7) return NULL;
     size_t item[2];
     ATOOLS::Flavour flav[2];
     for (size_t i(0);i<2;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][2*i]);
+      int kf=s.Interprete<int>(parameters[0][2*i]);
       flav[i]=ATOOLS::Flavour((kf_code)abs(kf));
       if (kf<0) flav[i]=flav[i].Bar();
-      item[i]=ATOOLS::ToType<size_t>(parameters[0][2*i+1]);
+      item[i]=s.Interprete<size_t>(parameters[0][2*i+1]);
     }
     return new Class(flav,item,
 		     parameters[0][4],parameters[0][5],parameters[0][6]);
@@ -77,15 +79,15 @@ GetTwoParticleModifier(const Argument_Matrix &parameters)
 
 #define DEFINE_TWO_MODIFIER_GETTER_METHOD(CLASS,NAME)			\
   Analysis_Object *							\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  NAME::operator()(const Analysis_Key& key) const		\
   { return GetTwoParticleModifier<CLASS>(parameters); }
 
 #define DEFINE_TWO_MODIFIER_PRINT_METHOD(NAME)				\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"flav1 item1 flav2 item2 crit inlist outlist"; }
+  { str<<"[flav1, item1, flav2, item2, crit, inlist, outlist]"; }
 
 #define DEFINE_TWO_MODIFIER_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Analysis_Object,Analysis_Key);	\
   DEFINE_TWO_MODIFIER_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_TWO_MODIFIER_PRINT_METHOD(NAME)
 

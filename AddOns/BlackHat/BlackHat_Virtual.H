@@ -15,11 +15,12 @@ namespace BLACKHAT {
     BH::BH_Ampl *p_ampl;
 
     static BH::BH_interface  *s_interface;
-    static MODEL::Model_Base *s_model;
 
     void WarnForMassiveFlavours(const ATOOLS::Flavour_Vector&) const;
 
   public:
+
+    static MODEL::Model_Base *s_model;
 
     BlackHat_Virtual(const PHASIC::Process_Info& pi,
 		     const ATOOLS::Flavour_Vector& flavs,

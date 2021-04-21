@@ -31,7 +31,7 @@ namespace ATOOLS {
     char              m_info;   
     Flavour           m_fl;         
     Vec4D             m_momentum, m_position; 
-    Flow            * p_flow;
+    Flow              m_flow;
     Blob            * p_startblob, * p_endblob;
     Particle        * p_originalpart;
     double            m_dec_time, m_finalmass;
@@ -62,7 +62,6 @@ namespace ATOOLS {
     double            Time() const ;
     Flavour           Flav() const ;
     const Flavour   & RefFlav() const;
-    Flow            * GetFlow() const ;
     unsigned int      GetFlow( unsigned int ) const ;
     int               Number() const;
     int               Beam() const;
@@ -77,7 +76,6 @@ namespace ATOOLS {
     void   SetTime(const double);
     void   SetTime();
     void   SetFlav(const Flavour &);
-    void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int number=0);
     void   SetBeam(const int);
@@ -105,16 +103,17 @@ namespace ATOOLS {
 
   typedef std::map<int,std::pair<Particle *,bool> > Translation_Map;
 
-  class partcomp {
+  class PMMSort {
   public:
     bool operator()(const Particle * a,const Particle * b) const {
       return (a->Number()>b->Number());
     }
     
-  };
+  };// end of class String_Sort
 
-  typedef std::map<Particle *,Vec4D,partcomp> ParticleMomMap;
-  typedef std::set<Particle *,partcomp>       ParticleSet;
+  typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D,PMMSort> ParticleMomMap;
+  typedef std::set<Particle *,PMMSort>       ParticleSet;
+
 
 
   /*! 

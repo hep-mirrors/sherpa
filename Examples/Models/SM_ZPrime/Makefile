@@ -5,7 +5,7 @@ SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
 SOURCES=Model.C
 
 CC=g++
-CXXFLAGS=-g -O2 -pedantic -Wall -fPIC -DPIC
+CXXFLAGS=-g -O2 -std=c++11 -pedantic -Wall -fPIC -DPIC
 
 CXXFLAGS+= -I$(shell $(SHERPA_PREFIX)/bin/Sherpa-config --incdir)
 LDFLAGS=$(shell $(SHERPA_PREFIX)/bin/Sherpa-config --ldflags)

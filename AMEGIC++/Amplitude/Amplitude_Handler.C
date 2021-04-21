@@ -1090,9 +1090,17 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
     if (p_aqcd && order.size()>0 && order[0]) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
+		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
+#endif     
       cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
     }
     if (p_aqed && order.size()>1 && order[1]) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
+		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
+#endif   
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
     }
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel,sign));
@@ -1106,7 +1114,6 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
       max = ATOOLS::Max(max,abs(mcm));
     }
   }
-  if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
 }
 

@@ -20,7 +20,7 @@ Cluster_Definitions::Cluster_Definitions(Shower *const shower):
 Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &ca)
 {
   DEBUG_FUNC(ca);
-  p_shower->SetMS(p_ms=ca.p_ms);
+  p_ms=ca.p_ms;
   int i(ca.m_i), j(ca.m_j), swap(j<ca.p_ampl->NIn() && j<i);
   if (swap) std::swap<int>(i,j);
   double ws, mu2;
@@ -58,8 +58,9 @@ Splitting Cluster_Definitions::KT2
   sp.m_pj=lj->Mom();
   sp.m_pk=lk->Mom();
   Kernel *sk(p_shower->GetKernel(sp,(mode&2)?1:0));
-  ws=0.0;
   if (sk==NULL) return Splitting(NULL,NULL,-1.0);
+  ws=0.0;
+  sk->LF()->SetMS(p_ms);
   if (!sk->LF()->SetLimits(sp) ||
       !sk->LF()->Cluster(sp,1|2)) {
     sp.m_t=-1.0;
@@ -68,9 +69,11 @@ Splitting Cluster_Definitions::KT2
   msg_Debugging()<<"Splitting: t = "<<sp.m_t<<" = "<<sqrt(sp.m_t)
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n"; 
   ws=sk->Value(sp);
+  mu2=sk->GF()->TrueScale(sp);
+  msg_Debugging()<<"Scale: "<<sqrt(mu2)<<" <- "
+		 <<sqrt(sk->GF()->Scale(sp))<<"\n";
   msg_Debugging()<<"Kernel: "<<ws<<" ( kfac = "<<sp.m_kfac
 		 <<" )  <-  "<<sk->Class()<<"\n";
-  mu2=sk->GF()->Scale(sp);
   if (p_shower->KFactorScheme() &&
       sp.m_t>p_shower->TMin(type&1)) {
     sp.m_kfac=0;

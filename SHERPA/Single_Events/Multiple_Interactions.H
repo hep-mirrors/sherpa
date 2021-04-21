@@ -10,8 +10,9 @@ namespace SHERPA {
 
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
-    double m_hardveto;
+    double m_hardveto, m_ptmax_fac;
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
+    double m_defaultptmax;
     double m_weight, m_ntrials;
 
     MI_Handler              * p_mihandler;
@@ -35,7 +36,7 @@ namespace SHERPA {
     Multiple_Interactions(MI_Handler *);
     ~Multiple_Interactions();
 
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   };

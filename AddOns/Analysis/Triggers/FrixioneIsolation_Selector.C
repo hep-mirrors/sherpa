@@ -104,26 +104,29 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(FrixioneIsolation_Selector,"IsolationCutSel",
-	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
 Analysis_Object *ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,FrixioneIsolation_Selector>::
-operator()(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,FrixioneIsolation_Selector>::
+operator()(const Analysis_Key& key) const
 {
-  if (parameters.size()<1 || parameters[0].size()<6) return NULL;
-  int eps(parameters[0].size()>6?ATOOLS::ToType<double>(parameters[0][6]):1.0);
-  int crit1=ToType<int>(parameters[0][0]);
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 6)
+    THROW(missing_input, "Missing parameter values.");
+  int eps(parameters.size()>6?s.Interprete<double>(parameters[6]):1.0);
+  int crit1=s.Interprete<int>(parameters[0]);
   Flavour flav=Flavour((kf_code)abs(crit1));
   if (crit1<0) flav=flav.Bar();
   return new FrixioneIsolation_Selector
-    (ATOOLS::ToType<double>(parameters[0][1]),
-     ATOOLS::ToType<double>(parameters[0][2]),eps,
-     parameters[0][3],parameters[0][4],parameters[0][5]);
-}									
+    (s.Interprete<double>(parameters[1]),
+     s.Interprete<double>(parameters[2]),eps,
+     parameters[3],parameters[4],parameters[5]);
+}
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,FrixioneIsolation_Selector>::
+<Analysis_Object,Analysis_Key,FrixioneIsolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"kf delta_0 n inlist reflist outlist [epsilon]";
+  str<<"[kf, delta_0, n, inlist, reflist, outlist, epsilon]  ... epsilon is optional and defaults to 1.0";
 }

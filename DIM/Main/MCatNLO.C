@@ -3,8 +3,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace DIM;
 using namespace PHASIC;
@@ -18,11 +18,10 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   p_mcatnlo = new Shower();
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);
-  p_mcatnlo->Init(key.p_model,key.p_isr,key.p_reader);
-  m_psmode=key.p_reader->Get<int>
-    ("NLO_CSS_PSMODE",0,"PS mode",METHOD);
-  m_wcheck=key.p_reader->Get<int>
-    ("NLO_CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
+  p_mcatnlo->Init(key.p_model,key.p_isr);
+  Settings& s = Settings::GetMainSettings();
+  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
+  m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 
@@ -35,23 +34,25 @@ MCatNLO::~MCatNLO()
 int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
-  p_mcatnlo->SetVariations(p_variationweights);
-  m_weight=1.0;
+  m_weightsmap.Clear();
+  m_weightsmap["MC@NLO_PS"] = 1.0;
+  m_weightsmap["MC@NLO_QCUT"] = 1.0;
   CleanUp();
   PrepareShower(ampl);
   if (p_rampl->NLO()&4) return 1;
   unsigned int nem=0;
   int stat(p_mcatnlo->Evolve(*m_ampls.back(),nem));
-  m_weight*=p_mcatnlo->GetWeight();
-  if (m_wcheck && dabs(m_weight)>m_maxweight) {
-    m_maxweight=dabs(m_weight);
+  m_weightsmap["MC@NLO_PS"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_PS");
+  m_weightsmap["MC@NLO_QCUT"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_QCUT");
+  if (m_wcheck && dabs(m_weightsmap.Nominal())>m_maxweight) {
+    m_maxweight=dabs(m_weightsmap.Nominal());
     std::string rname="direnlo.random.dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
     std::ofstream outstream(rname.c_str(),std::fstream::app);
     outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<m_weight<<" in event "
+    outstream<<"# Wrote status for weight="<<m_weightsmap.Nominal()<<" in event "
 	     <<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
     outstream.close();
   }
@@ -99,6 +100,7 @@ GetRealEmissionAmplitude(const int mode)
     ampl->Legs().back()->SetNMax(nmax);
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);
+  ampl->SetMuQ2(p_rampl->KT2());
   Process_Base::SortFlavours(ampl);
   return ampl;
 }
@@ -171,7 +173,10 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   if (sub.m_ijt>=2) {
     double t;
     if (sub.m_kt>=2) t=(Q2-mi2-mj2-mk2)*y*(1.0-y);
-    else t=(-Q2+mi2+mj2+mk2)*(1.0-y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+    else {
+      double x(y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
+      t=(-Q2+mi2+mj2+mk2)/x*(1.0-x);
+    }
     if (sub.p_real->p_fl[sub.m_i].IsGluon()) {
       if (!sub.p_real->p_fl[sub.m_j].IsGluon()) return t*x;
       // approximate, need to split g->gg kernel
@@ -184,7 +189,7 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     }
   }
   if (sub.m_ijt<2 && sub.m_kt>=2) {
-    return (-Q2+mi2+mj2+mk2)*y*(1.0-x);
+    return (-Q2+mi2+mj2+mk2)*y/x*(1.0-x);
   }
   if (sub.m_ijt<2 && sub.m_kt<2) {
     return (Q2-mi2-mj2-mk2)*y*(1.0-x-y);

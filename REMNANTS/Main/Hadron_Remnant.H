@@ -2,11 +2,19 @@
 #define REMNANTS_Main_Proton_Remnant_H
 
 #include "REMNANTS/Main/Remnant_Base.H"
-#include "REMNANTS/Tools/Remnant_Parameters.H"
 #include "PDF/Main/PDF_Base.H"
 #include <map>
 
 namespace REMNANTS {
+  struct overlap_form {
+    enum code {
+      Single_Gaussian = 1,
+      Double_Gaussian = 2,
+      unknown         = -1
+    };
+  };
+  
+
   class Form_Factor {
   private:
     overlap_form::code m_overlapform;
@@ -39,8 +47,10 @@ namespace REMNANTS {
 
     bool IsValence(ATOOLS::Particle * part);
     void MakeSpectator(ATOOLS::Particle * parton);
+    void CompensateColours();
     bool MakeRemnants();
-    void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,const bool & copy=true);
+    void MakeLongitudinalMomenta(ATOOLS::ParticleMomMap *ktmap,
+				 const bool & copy=true);
     bool ConstructPartner(ATOOLS::Particle * part);
     double SelectZ(const ATOOLS::Flavour & flav,const bool & isvalence);
     ATOOLS::Particle * MakeParticle(const ATOOLS::Flavour & flav);
@@ -55,7 +65,7 @@ namespace REMNANTS {
     bool AdjustKinematics();
     bool AdjustColours();
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom);
-    void Reset();
+    void Reset(const bool & DIS=false);
     
     inline ATOOLS::Particle * GetRecoiler()            { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator()           { return p_spectator; }

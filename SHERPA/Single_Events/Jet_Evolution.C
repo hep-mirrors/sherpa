@@ -27,17 +27,18 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
 
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
-  interface = new Perturbative_Interface(_mehandler, _dechandler,
+  interface = new Perturbative_Interface(_mehandler,
+                                         _dechandler,
 					 shIter->second);
   if (interface!=NULL) m_interfaces.insert(make_pair("SignalMEs",interface));
 
   shIter=showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler,shIter->second);
+  interface = new Perturbative_Interface(_hdhandler, shIter->second);
   if (interface!=NULL) 
     m_interfaces.insert(make_pair("HadronDecays",interface));
 
   if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler,shIter->second);
+    interface = new Perturbative_Interface(_mihandler, shIter->second);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
   }
   if (_schandler) {
@@ -57,7 +58,7 @@ Jet_Evolution::~Jet_Evolution()
 }
 
 
-Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist)
 {
   if (bloblist->empty()) {
     msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
@@ -106,7 +107,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	switch (AttachShowers(meblob,bloblist,piIter->second)) {
 	case Return_Value::Success:
 	  found = hit = true;
-	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
 	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
@@ -156,7 +156,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     return Return_Value::Nothing;
   }
   int shower(0);
-  Return_Value::code stat(interface->DefineInitialConditions(blob));
+  Return_Value::code stat(interface->DefineInitialConditions(blob,bloblist));
   if (stat==Return_Value::New_Event ||
       stat==Return_Value::Retry_Event) {
     interface->CleanUp();
@@ -244,7 +244,7 @@ bool Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus(blob_status::needs_beams | blob_status::needs_hadronization);
+  noshowerblob->SetStatus(blob_status::needs_beams|blob_status::needs_hadronization);
   if (blob->Type()!=btp::Hadron_Decay) {
     noshowerblob->AddStatus(blob_status::needs_reconnections);
   }
@@ -259,26 +259,20 @@ bool Jet_Evolution::
 AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
 			    Perturbative_Interface * interface)
 {
-  if (blob->Type()!=btp::Hadron_Decay && blob->NInP()==1)
-    blob->InParticle(0)->SetInfo('h');
-  interface->FillBlobs(bloblist);
+  if (blob->NInP()==1 && 
+      blob->Type()!=btp::Hadron_Decay) blob->InParticle(0)->SetInfo('h');
+  interface->FillBlobs();
   blob->UnsetStatus(blob_status::needs_showers);
-  Blob * showerblob;
-  if (!interface->Shower()->On()) {
-    showerblob = CreateMockShowerBlobs(blob,bloblist);
-  }
-  else {
-    showerblob = bloblist->FindLast(btp::Shower);
-    if (showerblob!=NULL) {
-      showerblob->SetStatus(blob_status::needs_hadronization |
-			    blob_status::needs_beams);
-      if (blob->Type()!=btp::Hadron_Decay) {
-	showerblob->AddStatus(blob_status::needs_reconnections);
-      }
+  Blob * showerblob = (!interface->Shower()->On()?
+		       CreateMockShowerBlobs(blob,bloblist):
+		       bloblist->FindLast(btp::Shower));
+  if (showerblob!=NULL) {
+    if (blob->Type()!=btp::Hadron_Decay) {
+      showerblob->AddStatus(blob_status::needs_reconnections);
     }
-    else return true;
+    return p_remnants->ExtractShowerInitiators(showerblob);
   }
-  return p_remnants->ExtractShowerInitiators(showerblob);
+  return true;
 }
 
 ATOOLS::Blob * Jet_Evolution::
@@ -304,8 +298,7 @@ CreateMockShowerBlobs(Blob * const meblob,Blob_List * const bloblist) {
   for (int i=0;i<meblob->NOutP();i++) {
     Blob * FSRblob = new Blob();
     FSRblob->SetType(btp::Shower);
-    FSRblob->SetStatus(blob_status::needs_hadronization |
-		       blob_status::needs_beams);
+    FSRblob->SetStatus(blob_status::needs_hadronization);
     if (meblob->Type()!=btp::Hadron_Decay) {
       FSRblob->AddStatus(blob_status::needs_reconnections);
     }

@@ -2,7 +2,6 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
@@ -12,8 +11,6 @@ namespace ATOOLS {
 }
 
 using namespace ATOOLS;
-
-namespace ATOOLS { template class SP(Part_List); }
 
 bool ATOOLS::Particle::operator==(Particle part)
 {
@@ -77,7 +74,6 @@ namespace ATOOLS {
 
 Particle::~Particle() 
 {
-  delete p_flow; 
   --s_totalnumber;
 }
 
@@ -85,7 +81,6 @@ Particle::Particle():
   m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined), 
   m_info('X'), 
   m_fl(Flavour(kf_none)), m_momentum(Vec4D()), m_position(Vec4D()), 
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.), m_ownpos(false)
 {
@@ -96,13 +91,12 @@ Particle::Particle(const Particle &in):
   m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status), 
   m_info(in.m_info), 
   m_fl(in.m_fl), m_momentum(in.m_momentum), m_position(in.m_position), 
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass), m_ownpos(in.m_ownpos)
 {
   ++s_totalnumber;
-  p_flow->SetCode(1,in.GetFlow(1));
-  p_flow->SetCode(2,in.GetFlow(2));
+  m_flow.SetCode(1,in.GetFlow(1));
+  m_flow.SetCode(2,in.GetFlow(2));
 }
 
 Particle& Particle::operator=(const Particle &in)
@@ -121,8 +115,8 @@ Particle& Particle::operator=(const Particle &in)
     m_ownpos    = in.m_ownpos;
     p_startblob = NULL;
     p_endblob   = NULL;
-    p_flow->SetCode(1,in.GetFlow(1));
-    p_flow->SetCode(2,in.GetFlow(2));
+    m_flow.SetCode(1,in.GetFlow(1));
+    m_flow.SetCode(2,in.GetFlow(2));
   }
   return *this;
 }
@@ -132,7 +126,6 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_number(number), m_beam(-1), m_meid(0), m_status(part_status::active),
   m_info(a), 
   m_fl(fl), m_momentum(p), m_position(Vec4D()), 
-  p_flow(new Flow(this)),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(fl.Mass()), m_ownpos(false)
 {
@@ -155,8 +148,8 @@ void Particle::Copy(Particle * in)  {
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   p_originalpart = in->p_originalpart,
-  p_flow->SetCode(1,in->GetFlow(1));
-  p_flow->SetCode(2,in->GetFlow(2));
+  m_flow.SetCode(1,in->GetFlow(1));
+  m_flow.SetCode(2,in->GetFlow(2));
 }
 
 double Particle::ProperTime() 
@@ -254,14 +247,12 @@ Particle *   Particle::OriginalPart() const   {
 Flavour        Particle::Flav() const                   { return m_fl; }
 const Flavour& Particle::RefFlav() const                { return m_fl; }
 void           Particle::SetFlav(const Flavour& fl)     { m_fl   = fl; }
-Flow         * Particle::GetFlow() const                { return p_flow; }
 unsigned int   Particle::GetFlow(const unsigned int index) const {
-  return p_flow->Code(index);
+  return m_flow.Code(index);
 }
-void           Particle::SetFlow(Flow * _flow)          { p_flow = _flow; }
 void           Particle::SetFlow(const int index, const int code) {
   if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
-  p_flow->SetCode(index,code);
+  m_flow.SetCode(index,code);
 }
 
 
@@ -307,21 +298,3 @@ void   Particle::SetFinalMass(const double _lower,const double _upper) {
   }     
   m_finalmass = sqrt(mass2+mw*tan(ran->Get()*yrange + ymin));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

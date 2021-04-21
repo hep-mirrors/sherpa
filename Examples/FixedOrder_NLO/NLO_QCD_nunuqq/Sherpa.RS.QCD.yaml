@@ -1,0 +1,31 @@
+EVENTS: 500k
+MI_HANDLER: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: Amegic
+BEAMS: [14, -14]
+BEAM_ENERGIES: 100
+PDF_LIBRARY: None
+TAGS: {
+  SCF: 1.0
+  }
+SCALES: VAR{$(SCF)*sqr(91.2)}
+GENERATE_RESULT_DIRECTORY: false
+PARTICLE_DATA: {
+  2: {Massive: true},
+  3: {Massive: true},
+  4: {Massive: true},
+  5: {Massive: true},
+  }
+PROCESSES:
+- 14 -14 -> 93 93:
+    NLO_Mode: Fixed_Order
+    NLO_Part: RS
+    Integration_Error: 0.001
+    Print_Graphs: Graphs
+RIVET: {
+  USE_HEPMC_SHORT: 1,
+  IGNOREBEAMS: 1
+  }

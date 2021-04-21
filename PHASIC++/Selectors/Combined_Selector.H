@@ -11,10 +11,7 @@ namespace PHASIC {
     long int m_count;
     int      m_on, m_res, m_rsres;
     std::vector<Selector_Base *> m_sels;
-    std::vector<std::pair<std::string,double> > m_osc;
-
-    Selector_Key FindArguments(const Selector_Key &strings,
-			       size_t &starty,size_t &startx);
+    std::vector<std::pair<size_t,double> > m_osc;
 
   public:
 
@@ -32,7 +29,7 @@ namespace PHASIC {
     bool Pass() const;
 
     void BuildCuts(Cut_Data *);
-    void AddOnshellCondition(std::string,double);
+    void AddOnshellCondition(size_t,double);
 
     void Output();
 
@@ -47,6 +44,10 @@ namespace PHASIC {
     inline int RSResult() const { return m_on?m_rsres:1; }
 
     inline void SetResult(const int res) { m_res=res; }
+
+    /// same as Result, but with results for all parameter variations (e.g.
+    /// when varying the QCUT scale)
+    std::vector<ATOOLS::Weights_Map> CombinedResults() const;
 
   };
 

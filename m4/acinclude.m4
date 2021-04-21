@@ -19,7 +19,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
     *linux*:*:*)
       echo "checking for architecture...  Linux"
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
@@ -33,13 +33,18 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "(will continue in 10 seconds)"
       sleep 10
       if test "x$LDFLAGS" = "x"; then
-        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+        AM_LDFLAGS="-rdynamic"
       fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
       AC_DEFINE([LD_PATH_NAME], "LD_LIBRARY_PATH", [ld path name set to LD_LIBRARY_PATH]) ;;
   esac
+  if test "x$LDFLAGS" = "x"; then
+    AX_CHECK_LINK_FLAG([-Wl,-fatal_warnings], [LDSTRICTFLAG="-fatal_warnings"], [LDSTRICTFLAG="--fatal-warnings"])
+    AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed], AM_LDFLAGS, [-Wl,$LDSTRICTFLAG])
+  fi
+
   AC_SUBST(AM_LDFLAGS)
   if which md5sum > /dev/null; then MD5COMMAND="md5sum | cut -d' ' -f1";
   elif which openssl > /dev/null; then MD5COMMAND="openssl md5 | cut -d' ' -f2";
@@ -144,6 +149,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
   ATOOLSLIBS="\${ATOOLSBUILDDIR}/Phys/libToolsPhys.la \
 	\${ATOOLSBUILDDIR}/Math/libToolsMath.la \
+	\${ATOOLSBUILDDIR}/YAML/libToolsYaml.la \
 	\${ATOOLSBUILDDIR}/Org/libToolsOrg.la"
   AC_SUBST(ATOOLSDIR)
   AC_SUBST(ATOOLSBUILDDIR)
@@ -175,7 +181,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	\${EXTRAXSBUILDDIR}/Two2Two/libExtraXS2_2.la \
 	\${EXTRAXSBUILDDIR}/One2Two/libExtraXS1_2.la \
 	\${EXTRAXSBUILDDIR}/One2Three/libExtraXS1_3.la \
-	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la"
+	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la \
+	\${EXTRAXSBUILDDIR}/Special/libExtraXSSpecial.la"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSLIBS)
@@ -383,7 +390,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       AC_MSG_RESULT(no);
       VERSIONING=""; ] 
   )
-  AC_SUBST(VERSIONING)
+  AC_SUBST([VERSIONING])
 
   AC_ARG_ENABLE(
     multithread,
@@ -468,7 +475,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
  AC_ARG_ENABLE(
     hepmc3root,
-    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.x) ROOT support]),
+    AC_HELP_STRING([--enable-hepmc3root], [Enable HepMC (version 3.1+) ROOT support]),
     [ 
     case "${enableval}" in
         no)  AC_MSG_RESULT(HepMC3 ROOT support not enabled); hepmc3root=false ;;
@@ -485,37 +492,32 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-hepmc3=/path/to/hepmc], [Enable HepMC (version 3.x) support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for HepMC3 installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(HepMC3 not enabled); hepmc3=false ;;
-        yes)  if test -d "$HEPMC3DIR"; then
-                CONDITIONAL_HEPMC3DIR="$HEPMC3DIR"
-                CONDITIONAL_HEPMC3INCS="-I$HEPMC3DIR/include"
-                CONDITIONAL_HEPMC3LIBS="-L$HEPMC3DIR/lib -R$HEPMC3DIR/lib -L$HEPMC3DIR/lib64 -R$HEPMC3DIR/lib64 -lHepMC";
+        no)  AC_MSG_RESULT(HepMC3 not enabled);   ;;
+        yes) if test -x "`which HepMC3-config`"; then
+               CONDITIONAL_HEPMC3DIR=`HepMC3-config --prefix`;
+             fi;;
+        *)  if test -d "${enableval}"; then
+              CONDITIONAL_HEPMC3DIR=${enableval};
+            fi;;
+      esac;
+      if test -x "$CONDITIONAL_HEPMC3DIR/bin/HepMC3-config"; then      
+              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true
+              CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags)";
+              CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs)";
               if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
+                      CONDITIONAL_HEPMC3INCS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --cppflags --rootIO)";
+                      CONDITIONAL_HEPMC3LIBS="$($CONDITIONAL_HEPMC3DIR/bin/HepMC3-config --libs  --rootIO)";              
+                      SAVE_CXXFLAGS="${CXXFLAGS}"
+                      CXXFLAGS="${CXXFLAGS} $CONDITIONAL_HEPMC3INCS"
+                      AC_LANG_PUSH([C++])
+                      AC_CHECK_HEADERS([HepMC3/WriterRootTree.h],[hepmc3writerroottree=true;] , [hepmc3writerroottree=false;])
+                      AC_CHECK_HEADERS([HepMC3/WriterRoot.h],[hepmc3writerroot=true;] , [hepmc3writerroot=false;])
+                      AC_LANG_POP([C++])
+                      CXXFLAGS="${SAVE_CXXFLAGS}"
               fi
-              else
-                AC_MSG_ERROR(\$HEPMC3DIR is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_HEPMC3DIR="${enableval}"
-                CONDITIONAL_HEPMC3INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC3LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
-              if test "$hepmc3root" = "true" ; then
-              CONDITIONAL_HEPMC3LIBS+=" -lHepMCrootIO"
-              fi
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_HEPMC3DIR}]); hepmc3=true;;
-      esac
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRootTree.h"; then
-        hepmc3writerroottree=true;
+      else
+              AC_MSG_ERROR(Unable to use HepMC3 from specified path.);
       fi;
-      if test -f "$CONDITIONAL_HEPMC3DIR/include/HepMC/WriterRoot.h"; then
-        hepmc3writerroot=true;
-      fi;
-
       ],
     [ hepmc3=false ]
   )
@@ -541,7 +543,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     AC_HELP_STRING([--enable-rivet=/path/to/rivet], [Enable Rivet support and specify where it is installed.]),
     [ AC_MSG_CHECKING(for Rivet installation directory);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(Rivet not enabled); rivet=false ;;
+        no)  AC_MSG_RESULT(Rivet not enabled); rivet2=false; rivet3=false ;;
         yes) if test -x "`which rivet-config`"; then
                CONDITIONAL_RIVETDIR=`rivet-config --prefix`;
              fi;;
@@ -552,72 +554,71 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -x "$CONDITIONAL_RIVETDIR/bin/rivet-config"; then
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
-        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
+        AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]);
         rivetversion="$($CONDITIONAL_RIVETDIR/bin/rivet-config --version)"
-        AC_MSG_CHECKING(whether the Rivet version uses YODA as its histogramming backend)
-        AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],
-        [ rivetyoda=true; AC_MSG_RESULT(yes) ], [ AC_MSG_RESULT(no) ])
+        AC_MSG_CHECKING(for Rivet version)
+        AX_COMPARE_VERSION([${rivetversion}],[ge],[3.0.0],[ rivet3=true; AC_MSG_RESULT(Rivet 3) ], [
+          AX_COMPARE_VERSION([${rivetversion}],[ge],[2.0.0],[ rivet2=true; AC_MSG_RESULT(Rivet 2) ], [
+            AC_MSG_ERROR(Rivet version <2.0 found, not supported.)
+          ])
+        ])
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
-      rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
-      if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
-        rivetignorebeams=true;
-      fi
     ],
     [ rivet=false ]
   )
-  if test "$rivet" = "true" ; then
-    AC_DEFINE([USING__RIVET], "1", [using Rivet])
-  fi
-  if test "$rivetignorebeams" = "true" ; then
-    AC_DEFINE([USING__RIVET__IGNOREBEAMS], "1", [setIgnoreBeams function available in Rivet])
-  fi
-  if test "$rivetyoda" = "true" ; then
-    AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
-  fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
-  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet" = "true")
+  if test "$rivet2" = "true" ; then
+    AC_DEFINE([USING__RIVET2], "1", [using Rivet2])
+  fi
+  if test "$rivet3" = "true" ; then
+    AC_DEFINE([USING__RIVET3], "1", [using Rivet3])
+  fi
+  AM_CONDITIONAL(RIVET_SUPPORT, test "$rivet2" = "true" -o "$rivet3" = "true")
 
-  AC_ARG_ENABLE(
-    fastjet,
-    AC_HELP_STRING([--enable-fastjet=/path/to/fastjet], [Enable FASTJET.]),
-    [ AC_MSG_CHECKING(for FASTJET installation directory);
+  AC_ARG_ENABLE([manual],
+    AS_HELP_STRING([--enable-manual], [Enable the manual]),
+      [ AC_MSG_CHECKING(whether the manual dependencies are installed);
       case "${enableval}" in
-        no)  AC_MSG_RESULT(FASTJET not enabled); fastjet=false ;;
-        yes)  if test -d "$FASTJETDIR"; then
-                CONDITIONAL_FASTJETDIR="$FASTJETDIR"
-                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
-                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
-                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
-              else
-                AC_MSG_ERROR(\$FASTJETDIR is not a valid path.);
+        no)  AC_MSG_RESULT(Manual not enabled); manual=false ;;
+        yes)  if ! command -v python3 &>/dev/null; then
+                 AC_MSG_ERROR(python3 not installed.);
               fi;
-              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_FASTJETDIR="${enableval}"
-                CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
-                CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
-                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
+
+              if ! command -v sphinx-build &>/dev/null; then
+                  AC_MSG_ERROR(sphinx not installed.);
               fi;
-              AC_MSG_RESULT([${CONDITIONAL_FASTJETDIR}]); fastjet=true;;
+
+              if ! command -v makeinfo &>/dev/null; then
+                  AC_MSG_ERROR(makeinfo not installed.);
+              fi;
+
+              if ! command -v pdflatex --version &>/dev/null; then
+                  AC_MSG_ERROR(pdflatex not installed.);
+              fi;
+
+              # Check sphinx version number: > __MA_REQ.x.x
+              __VERSION=$(sphinx-build --version | cut -d ' ' -f 2)
+              __MA_VERS=$(echo $VERSION | cut -d '.' -f 1)
+              __MA_REQ=2
+
+              if !  [[ "$__MA_VERS" -ge "$__MA_REQ" ]] ; then
+                  AC_MSG_ERROR("Sphinx version >= $__MA_REQ.x required. You have version: $__VERSION");
+              fi;
+
+              if ! [ python3 -c  'import sphinxcontrib.bibtex' &>/dev/null ]; then
+                 AC_MSG_ERROR(sphinxcontrib-bibtex not installed.);
+              fi;
+
+              AC_MSG_RESULT([yes]); manual=true;;
+           *) ;;
       esac
       ],
-    [ fastjet=false ]
-  )
-  if test "$fastjet" = "true" ; then
-    AC_DEFINE([USING__FASTJET], "1", [Using FASTJET])
-  fi
-  if test "$(echo $CONDITIONAL_FASTJETVERSION | cut -d . -f 1)" = "3"; then
-    AC_DEFINE([USING__FASTJET__3], "1", [Using FASTJET 3])
-  fi
-  AC_SUBST(CONDITIONAL_FASTJETDIR)
-  AC_SUBST(CONDITIONAL_FASTJETINCS)
-  AC_SUBST(CONDITIONAL_FASTJETLIBS)
-  AM_CONDITIONAL(FASTJET_SUPPORT, test "$fastjet" = "true")
+      [ manual=false ])
+
+  AM_CONDITIONAL(Manual_ENABLED, test "$manual" = "true")
 
   AC_ARG_ENABLE(
     blackhat,
@@ -835,12 +836,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)  if test -d "${enableval}"; then
               if test -f "${enableval}/lib/libhztool.so"; then
                 CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib -lhztool";
-	        CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
                 CONDITIONAL_HZTOOLDIR="${enableval}";
                 hztool=true;
                 AC_MSG_RESULT(${enableval});
               else
-                AC_MSG_ERROR(Did not find '${enableval}/libhztool.so'.); 
+              if test -f "${enableval}/lib64/libhztool.so"; then
+                CONDITIONAL_HZTOOLLIBS="-L${enableval}/lib64 -lhztool";
+                CONDITIONAL_HZTOOLINCS="-I${enableval}/include/hztool";
+                CONDITIONAL_HZTOOLDIR="${enableval}";
+                hztool=true;
+                AC_MSG_RESULT(${enableval});
+               else
+                AC_MSG_ERROR(Did not find '${enableval}/lib/libhztool.so and ${enableval}/lib64/libhztool.so'.); 
+              fi;
               fi;
             else
               AC_MSG_ERROR(Did not find hztool directory '${enableval}'.);

@@ -1,0 +1,48 @@
+# collider parameters
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# generator parameters
+EVENTS: 1M
+EVENT_GENERATION_MODE: Weighted
+FRAGMENTATION: None
+MI_HANDLER: None
+AMEGIC:
+  KEEP_ZERO_PROCS: 1
+  ALLOW_MAPPING: 0
+ME_GENERATORS: [Amegic, Higgs]
+SCALES: VAR{Abs2(p[2]+p[3])}
+
+# physics parameters
+PARTICLE_DATA:
+  4:  {Yukawa: 1.42}
+  5:  {Yukawa: 4.92}
+  15: {Yukawa: 1.777}
+EW_SCHEME: 3
+RUN_MASS_BELOW_POLE: 1
+
+# shower parameters
+SHOWER_GENERATOR: Dire
+NLOMC_GENERATOR: Dire
+CSS_IS_AS_FAC: 1
+CSS_FS_AS_FAC: 1
+CSS_IS_PT2MIN: 3
+CSS_FS_PT2MIN: 3
+
+PROCESSES:
+- 93 93 -> 22 22:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: Any, EW: 2}
+    Enable_MHV: 12
+    Loop_Generator: Higgs
+    Integrator: PS2
+    RS_Integrator: PS3
+
+SELECTORS:
+- HiggsFinder:
+    PT1: 40
+    PT2: 30
+    Eta: 2.5
+    MassRange: [100, 150]
+- [IsolationCut, 22, 0.4, 2, 0.025]

@@ -12,13 +12,13 @@ namespace RECONNECTIONS {
     Reconnection_Base * p_reconnector;
     void AddReconnectionBlob(ATOOLS::Blob_List * blobs);
  public:
-    Reconnection_Handler();
+    Reconnection_Handler(const bool & on);
     ~Reconnection_Handler();
     
     ATOOLS::Return_Value::code operator()(ATOOLS::Blob_List *const blobs,
 					  ATOOLS::Particle_List *const=NULL);
 
-    void Initialize(ATOOLS::Default_Reader *const reader);
+    void Initialize();
     void Reset();
   };
 }

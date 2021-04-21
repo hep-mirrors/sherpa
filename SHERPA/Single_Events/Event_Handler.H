@@ -9,7 +9,8 @@
 #include "ATOOLS/Phys/Variations.H"
 
 namespace SHERPA {
-
+  class Filter;
+  
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
 
@@ -22,13 +23,16 @@ namespace SHERPA {
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
     size_t m_lastrss;
+    int m_decayer;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
+    Filter            * p_filter;
 
     const ATOOLS::Variations  * p_variations;
 
+    
     void WriteRNGStatus(const std::string &file,
 			const std::string &message) const;
 
@@ -37,9 +41,9 @@ namespace SHERPA {
     bool GenerateHadronDecayEvent(eventtype::code & mode);
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
-    bool AnalyseEvent(double & weight);
-    bool WeightIsGood(const double& weight);
-    int  IterateEventPhases(eventtype::code & mode,double & weight);
+    bool AnalyseEvent();
+    bool WeightsAreGood(const ATOOLS::Weights_Map&);
+    int  IterateEventPhases(eventtype::code & mode);
 
   public:
 
@@ -59,6 +63,8 @@ namespace SHERPA {
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
+    void SetFilter(Filter * filter) { p_filter = filter; }
+    
     void MPISync();
     double TotalXS();
     double TotalVar();

@@ -81,7 +81,15 @@ namespace ATOOLS {
   public:
     missing_input(const std::string info,
 		  std::string cmethod)
-      : Exception("Missing intput",
+      : Exception("Missing input",
+		  info, cmethod) {}
+  };
+
+  class invalid_input : public Exception {
+  public:
+    invalid_input(const std::string info,
+		  std::string cmethod)
+      : Exception("Invalid input",
 		  info, cmethod) {}
   };
 

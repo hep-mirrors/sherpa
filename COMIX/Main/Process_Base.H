@@ -2,7 +2,6 @@
 #define COMIX_Main_Process_Base_H
 
 #include "METOOLS/Explicit/Vertex.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace BEAM { class Beam_Spectra_Handler; }
 
@@ -29,7 +28,7 @@ namespace COMIX {
     PHASIC::Process_Base *p_proc;
     MODEL::Model_Base    *p_model;
     
-    SP(PS_Generator) p_psgen;
+    std::shared_ptr<PS_Generator> p_psgen;
 
     Int_Matrix m_colours;
 
@@ -48,7 +47,7 @@ namespace COMIX {
   public:
 
     // constructors
-    Process_Base(PHASIC::Process_Base *const p_proc,
+    Process_Base(PHASIC::Process_Base *const,
 		 MODEL::Model_Base *const model=NULL);
 
     // destructor
@@ -56,7 +55,8 @@ namespace COMIX {
 
     // member functions
     virtual bool Initialize(std::map<std::string,std::string> *const pmap,
-			    std::vector<Single_Process*> *const procs);
+			    std::vector<Single_Process*> *const procs,
+			    const std::vector<int> &blocks,size_t &nproc);
     virtual bool MapProcess() = 0;
 
     virtual void InitPSGenerator(const size_t &ismode) = 0;
@@ -75,11 +75,14 @@ namespace COMIX {
 
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
-    inline SP(PS_Generator) PSGenerator() const { return p_psgen; }
+    inline std::shared_ptr<PS_Generator> PSGenerator() const { return p_psgen; }
 
     inline void SetModel(MODEL::Model_Base *const model) { p_model=model; }
 
     inline void SetCTS(void *const cts) { p_cts=cts; }
+
+    inline void SetISMC(PHASIC::Multi_Channel *ismc) { p_ismc=ismc; }
+    inline void SetFSMC(PHASIC::Multi_Channel *fsmc) { p_fsmc=fsmc; }
 
   };// end of class Process_Base
 

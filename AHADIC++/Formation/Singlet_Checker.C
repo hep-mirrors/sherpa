@@ -2,6 +2,9 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+
+#include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -51,12 +54,14 @@ Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
   Singlet_Tools(),
   p_singlets(singlets), p_softclusters(softclusters),
   p_hadrons(softclusters->GetHadrons()),
-  m_direct_transitions(0)
+  m_direct_transitions(0), m_errors(0)
 {}
 
 Singlet_Checker::~Singlet_Checker() {
   msg_Tracking()<<METHOD<<" with "<<m_direct_transitions
 		<<" direct enforced transitions in total.\n";
+  if (m_errors>0)
+    msg_Error()<<METHOD<<" with "<<m_errors<<" errors in total.\n";
 }
 
 void Singlet_Checker::Init() {
@@ -70,6 +75,7 @@ void Singlet_Checker::Reset() {
 }
 
 bool Singlet_Checker::operator()() {
+  Reset();
   list<Singlet *>::iterator lsit(p_singlets->begin());
   while (lsit!=p_singlets->end()) {
     p_singlet = (*lsit);
@@ -86,8 +92,9 @@ bool Singlet_Checker::operator()() {
       // more than two partons - fusing partons may help in retry.
       // if fusing does not work we will re-try the event
       else if (!FusePartonsInLowMassSinglet()) {
-	msg_Error()<<METHOD<<" throws error - fusing didn't work out.\n"
-		   <<(*p_singlet)<<"\n";
+	m_errors++;
+	msg_Tracking()<<METHOD<<" throws error - fusing didn't work out.\n"
+		      <<(*p_singlet)<<"\n";
 	return false;
       }
     }
@@ -97,11 +104,12 @@ bool Singlet_Checker::operator()() {
   // invoking the rescue system, if neccessary.
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throws error - no rescue possible.\n";
+      m_errors++;
+      msg_Tracking()<<METHOD<<" throws error - no rescue possible.\n";
       if (msg_LevelIsTracking()) {
 	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
 	     bit!=m_badones.end();bit++) {
-	  msg_Out()<<(***bit)<<"\n";
+	  msg_Tracking()<<(***bit)<<"\n";
 	}
       }
       return false;
@@ -112,6 +120,15 @@ bool Singlet_Checker::operator()() {
 
 bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
+  for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
+       plit!=p_singlet->end();plit++) {
+    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
+      msg_Tracking()<<"Error in "<<METHOD<<":\n"
+		    <<"   negative energy or mass^2 particle in singlet:\n"
+		    <<(*p_singlet)<<"n";
+      m_errors++;
+    }
+  }
   list<Proto_Particle *>::iterator plit1(p_singlet->begin()), plit2(plit1);
   plit2++;
   if (p_singlet->size()==2) {
@@ -121,7 +138,7 @@ bool Singlet_Checker::CheckSinglet() {
 						       (*plit2)->Flavour()),
 			 p_softclusters->MinDoubleMass((*plit1)->Flavour(),
 						       (*plit2)->Flavour()));
-    if (mass < minmass) return false;
+    return (mass > minmass);
   }
   while (plit2!=p_singlet->end()) {
     // this is more or less a plausibility check driven by some external mass
@@ -145,8 +162,8 @@ bool Singlet_Checker::CheckSinglet() {
 bool Singlet_Checker::FusePartonsInLowMassSinglet() {
   if (p_singlet->front()->Flavour().IsGluon() &&
       sqrt(m_mass) > 2.*m_minQmass && m_splitter(p_part1,p_part2)) {
-    // gluons heavy enough to be replaced by two quarks, splits gluon ring
-    // and necessitates reordering the singlet to have a quark as first
+    // gluon system is heavy enough to be replaced by two quarks, splits gluon
+    // ring and necessitates reordering the singlet to have a quark as first
     // particle.
     p_singlet->Reorder();
     return true;
@@ -159,7 +176,8 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
   SortProblematicSinglets();
   if (m_transitions.size()>1) {
     if (!TransitProblematicSinglets()) {
-      msg_Error()<<METHOD<<" throws error for more than one transition.\n";
+      msg_Tracking()<<METHOD<<" throws error for more than one transition.\n";
+      m_errors++;
       return false;
     }
   }
@@ -168,29 +186,32 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // to sort them out - two birds with one stone.
     if (FindOtherSingletToTransit()) {
       if (!TransitProblematicSinglets()) {
-	msg_Error()<<METHOD<<" throws error for one transition (1).\n";
+	msg_Tracking()<<METHOD<<" throws error for one transition (1).\n";
+	m_errors++;
 	return false;
       }
     }
     // if this does not work, we'll try to find a "regular" singlet ....
     else if (FindRecoilerForTransit()) {
       if (!TransitProblematicSingletWithRecoiler()) {
-	msg_Error()<<METHOD<<" throws error for one transition (2).\n";
+	msg_Tracking()<<METHOD<<" throws error for one transition (2).\n";
+	m_errors++;
 	return false;
       }
     }
     // or just leave the particle off-shell.
     else {
-      Vec4D mom   = m_transitions.begin()->first->Momentum();
+      auto& transition = m_transitions.front();
+      Vec4D mom   = transition.first->Momentum();
       bool isbeam = false;
-      Proto_Particle * part = new Proto_Particle(m_transitions.begin()->second,
+      Proto_Particle * part = new Proto_Particle(transition.second,
 						 mom,false,isbeam);
       p_hadrons->push_back(part);
       m_direct_transitions++;
       msg_Tracking()<<METHOD<<" with a transition for "
 		    <<"("<<p_singlets->size()<<" singlets).\n"
-		    <<m_transitions.begin()->second<<" from "
-		    <<(*m_transitions.begin()->first)<<"\n";
+		    <<transition.second<<" from "
+		    <<(*transition.first)<<"\n";
       return true;
     }
   }
@@ -204,10 +225,10 @@ void Singlet_Checker::SortProblematicSinglets() {
     p_singlet = (**bit);
     Flavour flav1 = p_singlet->front()->Flavour();
     Flavour flav2 = p_singlet->back()->Flavour();
-    if (!flav1.IsGluon()) {
+    if (!flav1.IsGluon() && !flav2.IsGluon()) {
       Flavour had = p_softclusters->LowestTransition(flav1,flav2);
       if (had.Mass()>sqrt(p_singlet->Mass2())) {
-	m_transitions[p_singlet] = had;
+	AddOrUpdateTransition(p_singlet, had);
 	p_singlets->erase((*bit));
 	bit = m_badones.erase(bit);
 	continue;
@@ -239,12 +260,13 @@ bool Singlet_Checker::FindOtherSingletToTransit() {
     bit++;
   }
   if (hit!=m_badones.end() && hadron!=Flavour(kf_none)) {
-    m_transitions[(**hit)] = hadron;
+    AddOrUpdateTransition(**hit, hadron);
     p_singlets->erase(*hit);
     m_badones.erase(hit);
     return true;
   }
-  msg_Tracking()<<METHOD<<" throws warning: no partner found.\n";
+  msg_Tracking()<<METHOD<<" throws error: no partner found.\n";
+  m_errors++;
   return false;
 }
 
@@ -287,16 +309,15 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   size_t   n      = m_transitions.size(), i=0;
   Vec4D *  moms   = new Vec4D[n],  totmom  = Vec4D(0.,0.,0.,0.);
   double * masses = new double[n], totmass = 0;
-  for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-       tit!=m_transitions.end();tit++,i++) {
-    totmom  += moms[i]   = tit->first->Momentum();
-    totmass += masses[i] = tit->second.Mass();
+  for (const auto t : m_transitions) {
+    totmom += moms[i] = t.first->Momentum();
+    totmass += masses[i] = t.second.Mass();
+    ++i;
   }
   if (totmom.Abs2()<sqr(totmass)) {
-    for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-	 tit!=m_transitions.end();tit++,i++) {
-      msg_Debugging()<<"Singlet with "<<tit->first->Momentum()<<" --> "
-		     <<tit->second<<" ("<<tit->second.Mass()<<")\n";
+    for (const auto t : m_transitions) {
+      msg_Debugging()<<"Singlet with "<<t.first->Momentum()<<" --> "
+        <<t.second<<" ("<<t.second.Mass()<<")\n";
     }
     delete[] moms;
     delete[] masses;
@@ -305,14 +326,14 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   bool success = hadpars->AdjustMomenta(n,moms,masses);
   if (success) {
     i = 0;
-    for (map<Singlet *,Flavour>::iterator tit=m_transitions.begin();
-	 tit!=m_transitions.end();tit++,i++) {
-      bool isbeam = (tit->first->front()->IsBeam() ||
-		     tit->first->back()->IsBeam());
-      Proto_Particle * part = new Proto_Particle(tit->second,moms[i],
+    for (const auto t : m_transitions) {
+      bool isbeam = (t.first->front()->IsBeam() ||
+		     t.first->back()->IsBeam());
+      Proto_Particle * part = new Proto_Particle(t.second,moms[i],
 						 false,isbeam);
       p_hadrons->push_back(part);
-      delete tit->first;
+      delete t.first;
+      ++i;
     }
     m_transitions.clear();
   }
@@ -369,9 +390,13 @@ void Singlet_Checker::ForcedDecays() {
       bit = m_badones.erase(bit);
     }
     else {
-      Flavour flav1 = (**bit)->front()->Flavour(); 
-      Flavour flav2 = (**bit)->back()->Flavour();
-      Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
+      //Flavour flav1 = p_singlet->front()->Flavour(); 
+      //Flavour flav2 = p_singlet->back()->Flavour();
+      //Flavour had   = p_softclusters->LowestTransition(flav1,flav2);
+      //msg_Out()<<METHOD<<": "<<flav1<<" + "<<flav2<<" --> "<<had<<" "
+      //       <<"(mass = "<<sqrt((**bit)->Mass2())<<" from "
+      //       <<(**bit)->front()->Momentum().Abs2()<<" and "
+      //       <<(**bit)->back()->Momentum().Abs2()<<").\n";
       bit++;
     }
   }
@@ -405,9 +430,10 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
     if (m_splitter(p_part1,p_part2)) {
       Cluster * cluster = new Cluster(p_part1,p_part2);
       if ((!p_softclusters->Treat(cluster,true))==1) {
-	msg_Error()<<"Error in "<<METHOD<<": transformed two gluons into\n"
-		   <<(*cluster)
-		   <<"but did not decay further.  Insert into cluster list.\n";
+	msg_Tracking()<<"Error in "<<METHOD<<": transformed two gluons into\n"
+		      <<(*cluster)
+		      <<"but did not decay further.  Insert into cluster list.\n";
+	m_errors++;
       }
       else delete cluster;
       return true;
@@ -419,8 +445,9 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
     delete cluster;
     return true;
   }
-  msg_Error()<<"Error in "<<METHOD<<": could not decay two-gluon cluster\n"
-	     <<(*cluster);
+  msg_Tracking()<<"Error in "<<METHOD<<": could not decay two-gluon cluster\n"
+		<<(*cluster);
+  m_errors++;
   return false;
 }
 
@@ -438,3 +465,13 @@ bool Singlet_Checker::TwoQuarkSingletToHadrons() {
   return false;
 }
 
+void Singlet_Checker::AddOrUpdateTransition(Singlet* singlet,
+					    Flavour& hadron) {
+  // make sure that there is only at most one transition for a given singlet
+  auto result = std::find_if(m_transitions.begin(), m_transitions.end(),
+    [&singlet] (Transition& t) { return t.first == singlet; } );
+  if (result == m_transitions.end())
+    m_transitions.push_back({p_singlet, hadron});
+  else
+    result->second = hadron;
+}

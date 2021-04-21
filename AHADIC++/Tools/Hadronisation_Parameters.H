@@ -5,7 +5,6 @@
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Single_Transitions.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <map>
 #include <string>
@@ -21,36 +20,31 @@ namespace AHADIC {
     static long int s_AHAclusters;
   };
 
-  typedef std::map<std::string,double> StringDoubleMap;
-  typedef StringDoubleMap::iterator    SDiter;
-
   class Hadronisation_Parameters {
   private:
+    int                  m_shower;
     double               m_offset;
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
     Double_Transitions * p_dtransitions;
     
-    StringDoubleMap      m_parametermap;
-    SDiter               m_piter;
-    bool                 m_ana;
+    std::map<std::string,int>    m_switchmap;
+    std::map<std::string,double> m_parametermap;
     
-    void ReadParameters(std::string,std::string);
-    void ReadGeneralSwitches(ATOOLS::Data_Reader & dataread);
-    void ReadMassParameters(ATOOLS::Data_Reader & dataread);
-    void ReadPoppingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadMesonWeights(ATOOLS::Data_Reader & dataread);
-    void ReadGluonSplittingParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterDecayParameters(ATOOLS::Data_Reader & dataread);
-    void ReadClusterToMesonParameters(ATOOLS::Data_Reader & dataread);
-    void ReadDeprecatedParameters(ATOOLS::Data_Reader & dataread);
+    void ReadParameters();
+    void ReadGeneralSwitches();
+    void ReadMassParameters();
+    void ReadPoppingParameters();
+    void ReadMesonWeights();
+    void ReadSplittingParameters();
+    void ReadClusterToMesonPSParameters();
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();
 
-    void Init(std::string,std::string);
-    double Get(std::string keyword);
-    const bool & AnaOn() const { return m_ana; }
+    void Init(std::string);
+    const double Get(std::string keyword) const;
+    const int    Switch(std::string keyword) const;
 
     Constituents          * GetConstituents()       { return p_constituents; }
     //All_Hadron_Multiplets * GetMultiplets()         { return p_multiplets; }

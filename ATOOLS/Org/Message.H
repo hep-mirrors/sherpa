@@ -132,7 +132,7 @@ namespace ATOOLS {
     ~Message(); 
 
     // member functions
-    void Init(const std::string& level,const std::string &logfile);
+    void Init();
     void SetStandard();
 
     std::ostream &Out();
@@ -148,14 +148,12 @@ namespace ATOOLS {
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
-    inline void SetMPIMode(const int mode)    { m_mpimode = mode;   }
     inline void SetPrecision(const int precision) {
       m_output.precision(precision);
     }
 
     inline int  Level() const      { return m_level;      }
     inline bool Modifiable() const { return m_modifiable; }
-    inline int  MPIMode() const    { return m_mpimode;    }
     inline size_t Precision() const {
       return m_output.precision();
     }

@@ -3,25 +3,21 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include <algorithm>
 
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Form_Factor::Form_Factor() {
-  m_overlapform = repars->GetBTForm();
-  if (m_overlapform==overlap_form::Single_Gaussian) {
-    m_fraction1 = 1.;
-    m_radius1   = (*repars)("Matter_Radius1");
-  }
-  if (m_overlapform==overlap_form::Double_Gaussian) {
-    m_fraction1 = (*repars)("Matter_Fraction1");
-    m_radius1   = (*repars)("Matter_Radius1");
-    m_radius2   = (*repars)("Matter_Radius2");
-    m_radius3   = sqrt(sqr(m_radius1)+sqr(m_radius2));
-  }
-}
+// todo here: make sure we can also have double Gaussian and parameters
+// from scoped settings.
+
+Form_Factor::Form_Factor() : 
+  m_overlapform(overlap_form::Single_Gaussian),
+  m_fraction1(1.), m_radius1(1.)
+{}
+
 
 Vec4D Form_Factor::operator()() {
   double radius = m_radius1;
@@ -32,8 +28,7 @@ Vec4D Form_Factor::operator()() {
       else                                radius = m_radius3;
     }
   }
-  double x1,x2;
-  ran->Gaussian(x1,x2);
+  double x1 = ran->GetGaussian(), x2 = ran->GetGaussian();
   return Vec4D(0.,radius*x1,radius*x2,0.);
 }
 
@@ -115,6 +110,9 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
   m_residualE = p_beam->OutMomentum()[0];
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants();
+  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
+  // to check that they are not singlets ....
+  CompensateColours();
   // Assume all remnant bases already produced a beam blob = p_beamblob
   MakeLongitudinalMomenta(ktmap,copy);
   bool colourconserved = p_beamblob->CheckColour(true);
@@ -124,6 +122,16 @@ bool Hadron_Remnant::FillBlob(ParticleMomMap *ktmap,const bool & copy) {
     return false;
   }
   return true;
+}
+
+void Hadron_Remnant::CompensateColours() {
+  while (p_colours->Colours(m_beam,0).size()>0 && p_colours->Colours(m_beam,1).size()>0) {
+    Particle * gluon = MakeParticle(Flavour(kf_gluon));
+    int col[2];
+    for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
+    //msg_Out()<<"Add new particle to beam blob ["<<m_beam<<"]:\n"<<(*gluon)<<"\n";
+    m_spectators.push_back(gluon);
+  }
 }
 
 bool Hadron_Remnant::MakeRemnants() {
@@ -236,10 +244,15 @@ double Hadron_Remnant::SelectZ(const Flavour & flav,const bool & isvalence) {
   return z;
 }
 
-void Hadron_Remnant::Reset() {
+void Hadron_Remnant::Reset(const bool & DIS) {
   Remnant_Base::Reset();
   while (!m_spectators.empty()) {
-    delete m_spectators.front();
+    Particle * part = m_spectators.front();
+    if (part->ProductionBlob())
+      part->ProductionBlob()->RemoveOutParticle(part);
+    if (part->DecayBlob())
+      part->DecayBlob()->RemoveInParticle(part);
+    delete part;
     m_spectators.pop_front();
   }
   m_spectators.clear();
@@ -264,15 +277,6 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   m_x = mom[0]/(m_rescale?m_residualE:p_beam->OutMomentum()[0]);
   if (m_x<p_pdf->XMin() || m_x>p_pdf->XMax()) {
     msg_Error()<<METHOD<<": out of limits, x = "<<m_x<<".\n";
-    return false;
-  }
-  // Added flavour mass to play it safe - this should be caught in the
-  // parton shower through a proper treatment of mass thresholds.
-  // Otherwise we assume intrinsic charm/beauty here.
-  p_pdf->Calculate(m_x,sqr(flav.Mass())+m_scale2);
-  if (p_pdf->GetXPDF(flav)<0.) {
-    msg_Error()<<METHOD<<": negative pdf "<<flav<<"("<<m_x<<" = "
-	       <<p_pdf->GetXPDF(flav)<<".\n";
     return false;
   }
   return true;

@@ -13,7 +13,7 @@
 namespace REMNANTS { class Remnant_Handler; }
 
 namespace SHERPA {
-  
+
   class Hard_Decay_Handler;
 
   class Jet_Evolution: public Event_Phase_Handler {
@@ -23,7 +23,7 @@ namespace SHERPA {
 
     ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
 					     Perturbative_Interface *);
-    
+
     void Reset();
     void Update(ATOOLS::Blob *,const size_t,
                 Perturbative_Interface *interface);
@@ -37,16 +37,13 @@ namespace SHERPA {
 
   public :
 
-    // constructor
     Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
                   Decay_Handler_Base *,MI_Handler *, Soft_Collision_Handler *,
                   const Shower_Handler_Map &);
 
-    // destructor
     ~Jet_Evolution();
 
-    // member functions
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List*);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
 
@@ -106,7 +103,7 @@ namespace SHERPA {
     Deletes the Perturbative_Interface.
   */
   /*!
-    \fn bool Jet_Evolution::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Jet_Evolution::Treat(ATOOLS::Blob_List*)
     In this method all blobs with status equal to one and of type "Signal Process :" are dealt with by
     the follwonig steps:
     \todo Andreas, we have to fill this.

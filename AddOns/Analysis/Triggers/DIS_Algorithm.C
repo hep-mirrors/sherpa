@@ -58,6 +58,7 @@ void DIS_Algorithm::AddToJetlist(const Vec4D & mom, int bf) {
 
 bool DIS_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets, 
 				  std::vector<double> * kts, double rmin) {
+  DEBUG_FUNC("");
   // assume empty containers
   p_jets = jets;
   p_kts  = kts;
@@ -95,6 +96,10 @@ bool DIS_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets
       else pp=p->Momentum();
     }
   Blob *me(p_bl->FindFirst(btp::Signal_Process));
+  if (l==Vec4D() && pp==Vec4D()) {
+    l=rpa->gen.PBeam(0);
+    pp=rpa->gen.PBeam(1);
+  }
   for (int i(0);i<me->NOutP();++i)
     if (me->OutParticle(i)->Flav().IsLepton()) {
       lp=me->OutParticle(i)->Momentum();
@@ -171,6 +176,10 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
     AddToJetlist(p[0],bf[0]);
     double dmin=sqr(p[0][0])*R2(p[0]);
     AddToKtlist(dmin);
+#ifdef DEBUG_JETRATES
+    msg_Debugging()<<"jetrate Q_{1->0} = "
+		   <<sqrt(dmin)<<" <- "<<p[0]<<"\n";
+#endif
     return dmin;;
   }
 

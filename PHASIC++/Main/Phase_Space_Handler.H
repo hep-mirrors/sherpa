@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Info_Key.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Phys/Weights.H"
 #include <list>
 
 namespace ATOOLS { 
@@ -21,10 +22,6 @@ namespace BEAM {
 
 namespace PDF {
   class ISR_Handler;
-}
-
-namespace ATOOLS {
-  class Variation_Weights;
 }
 
 namespace PHASIC {
@@ -64,7 +61,7 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
-    Enhance_Observable_Base *p_enhancefunc;
+    Enhance_Observable_Base *p_enhanceobs, *p_enhancefunc;
 
     ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
 
@@ -83,21 +80,22 @@ namespace PHASIC {
 
     ATOOLS::Poincare *p_massboost;
 
-    int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode, m_enhancexs;
-    bool m_initialized, m_sintegrator;
+    int  m_nin, m_nout, m_nvec, m_dmode, m_enhancexs;
+    bool m_initialized, m_sintegrator, m_fin_opt;
 
     long int m_maxtrials, m_killedpoints;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
-    double m_result, m_error, m_abserror, m_enhance, m_osmass; 
-
-    ATOOLS::Variation_Weights * p_variationweights;
+    double m_result, m_error, m_abserror, m_enhance, m_osmass;
+    ATOOLS::Weights_Map m_wgtmap;
 
     std::vector<std::vector<double> > m_stats;
 
     psm::code m_cmode;
 
     bool m_printpspoint;
+
+    void RegisterDefaults() const;
 
     double EnhanceFactor(Process_Base *const proc);
 
@@ -127,17 +125,20 @@ namespace PHASIC {
     bool CreateIntegrators();
     bool UpdateIntegrators();
     void InitCuts();
-    
+
     double Integrate();
-    double Differential();
-    double Differential(Process_Integrator *const process,
-			const psm::code mode=psm::normal_call);
+    ATOOLS::Weights_Map Differential(ATOOLS::Variations_Mode);
+    ATOOLS::Weights_Map Differential(Process_Integrator* const process,
+                                     ATOOLS::Variations_Mode,
+                                     const psm::code mode = psm::normal_call);
 
     ATOOLS::Weight_Info *OneEvent(Process_Base *const proc,const int mode=0);
 
     void AddPoint(const double xs);
 
-    void CalculateME();
+    double EnhanceFunction();
+
+    void CalculateME(ATOOLS::Variations_Mode);
     void CalculatePS();
 
     double Weight(ATOOLS::Vec4D_Vector &plab);
@@ -193,8 +194,6 @@ namespace PHASIC {
     { m_maxtrials=maxtrials; }
     void SetEnhanceObservable(const std::string &enhanceobs);
     void SetEnhanceFunction(const std::string &enhancefunc);
-    void SetVariationWeights(ATOOLS::Variation_Weights *vw)
-    { p_variationweights=vw; }
 
     inline Phase_Space_Integrator* Integrator() const 
     { return p_integrator; }

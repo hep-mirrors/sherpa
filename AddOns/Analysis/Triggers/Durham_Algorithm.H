@@ -10,6 +10,7 @@ namespace ANALYSIS {
 
   class Durham_Algorithm : public Jet_Algorithm_Base {
     int    m_mode;
+    int    m_durhamscheme;
     double m_ycut;//, m_r2min;
     double m_sprime;
 

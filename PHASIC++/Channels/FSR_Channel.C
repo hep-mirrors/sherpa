@@ -15,10 +15,9 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-
 S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
-  if (_nout != 2 || _nin!=2) {
+  if (_nin != 2 || _nout!=2) {
     msg_Error()<<"Tried to initialize S1Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
   }
@@ -38,7 +37,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 S1Channel::~S1Channel()
@@ -129,7 +128,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 T1Channel::~T1Channel()
@@ -204,178 +203,6 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"2->2 T-channel integrator";
 }
 
-T2Channel::T2Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
-{  
-  nin  = _nin; 
-  nout = _nout;
-  ms   = new double[nin+nout];
-  for (int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
-  rannum = 3*nout-4;
-  rans   = new double[rannum];
-  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
-  pt2min = 0.0;
-  E      = 0.5 * sqrt(s);
-  name   = "T2-Channel";
-  if (nout>2) name   = ToString(nin)+"->"+ToString(nout)+"_"+name;
-  mass   = width = 0.; 
-  type   = 0;
-  if (res!=Flavour(kf_none)) {
-    mass = res.Mass(); width = res.Width(); type = 1;
-  }
-  p_vegas = new Vegas(rannum,100,name,0);
-}
-
-T2Channel::~T2Channel()
-{
-  delete p_vegas;
-}
-
-void T2Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0) 
-{
-  double ctmax=1.0;
-  double *ran = p_vegas->GeneratePoint(_ran);
-  Vec4D pa, pr(p[1]);
-  double tmass=0.0, rsmax=sqrt((p[0]+p[1]).Abs2()) ;
-  std::string tagl;
-  for (int i=nin;i<nin+nout-1;++i) tagl=tagl+ToString(i);
-  for (int i=0;i<nout-2;++i) {
-    double ctmin=-(ctmax=1.0);
-    double smin = cuts->Getscut(tagl);
-    double smax = sqr(rsmax-sqrt(ms[nin+nout-i-1]));
-    double s = CE.MasslessPropMomenta(.5,smin,smax,ran[3*i]);
-    CE.TChannelMomenta(p[0],pr,pa,p[nin+nout-i-1],s,ms[nin+nout-i-1],tmass,
-		       .5,ctmax,ctmin,1.,0,ran[3*i+1],ran[3*i+2]);
-    pr-=p[nin+nout-i-1];
-    rsmax=sqrt((p[0]+pr).Abs2());
-    tagl=tagl.substr(0,tagl.length()-1);
-  }
-  CE.TChannelMomenta(p[0],pr,p[2],p[3],ms[2],ms[3],tmass,
-		     .5,ctmax,-ctmax,1.,0,ran[3*nout-4-2],ran[3*nout-4-1]);
-}
-
-void T2Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) 
-{
-  double ctmax=1.0;
-  double wt = 1.0;
-  Vec4D pa(p[0]+p[1]), pr(p[1]);
-  double tmass=0.0, rsmax=sqrt((p[0]+p[1]).Abs2()) ;
-  std::string tagl;
-  for (int i=nin;i<nin+nout-1;++i) tagl=tagl+ToString(i);
-  for (int i=0;i<nout-2;++i) {
-    double ctmin=-(ctmax=1.0);
-    double smin = cuts->Getscut(tagl);
-    double smax = sqr(rsmax-sqrt(ms[nin+nout-i-1]));
-    pa-=p[nin+nout-i-1];
-    wt *= CE.MasslessPropWeight(.5,smin,smax,pa.Abs2(),rans[3*i]);
-    wt *= CE.TChannelWeight(p[0],pr,pa,p[nin+nout-i-1],tmass,
-			    .5,ctmax,ctmin,1.,0,rans[3*i+1],rans[3*i+2]);
-    pr-=p[nin+nout-i-1];
-    rsmax=sqrt((p[0]+pr).Abs2());
-    tagl=tagl.substr(0,tagl.length()-1);
-  }
-  wt *= CE.TChannelWeight(p[0],pr,p[2],p[3],tmass,.5,ctmax,-ctmax,1.,0,
-			  rans[3*nout-4-2],rans[3*nout-4-1]);
-  if (wt!=0.) wt = 1.0/wt/pow(2.*M_PI,nout*3.-4.);
-  weight = wt;
-  weight *= p_vegas->GenerateWeight(rans);
-}
-
-void T2Channel::ISRInfo(int & _type,double & _mass,double & _width) {
-  _type = 0; _mass = mass; _width = width;
-}
-
-std::string T2Channel::ChID() 
-{
-  return name;
-}
-
-T3Channel::T3Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
-{  
-  nin  = _nin; 
-  nout = _nout;
-  ms   = new double[nin+nout];
-  for (int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
-  rannum = 3*nout-4;
-  rans   = new double[rannum];
-  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
-  pt2min = 0.0;
-  E      = 0.5 * sqrt(s);
-  name   = "T3-Channel";
-  if (nout>2) name   = ToString(nin)+"->"+ToString(nout)+"_"+name;
-  mass   = width = 0.; 
-  type   = 0;
-  if (res!=Flavour(kf_none)) {
-    mass = res.Mass(); width = res.Width(); type = 1;
-  }
-  p_vegas = new Vegas(rannum,100,name,0);
-}
-
-T3Channel::~T3Channel()
-{
-  delete p_vegas;
-}
-
-void T3Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0) 
-{
-  double ctmax=1.0;
-  double *ran = p_vegas->GeneratePoint(_ran);
-  Vec4D pa, pl(p[0]);
-  double tmass=0.0, rsmax=sqrt((p[0]+p[1]).Abs2()) ;
-  std::string tagl;
-  for (int i=nin;i<nin+nout-1;++i) tagl=tagl+ToString(i);
-  for (int i=0;i<nout-2;++i) {
-    double ctmin=-(ctmax=1.0);
-    double smin = cuts->Getscut(tagl);
-    double smax = sqr(rsmax-sqrt(ms[nin+i]));
-    double s = CE.MasslessPropMomenta(.5,smin,smax,ran[3*i]);
-    CE.TChannelMomenta(pl,p[1],p[nin+i],pa,ms[nin+i],s,tmass,
-		       .5,ctmax,ctmin,1.,0,ran[3*i+1],ran[3*i+2]);
-    pl-=p[nin+i];
-    rsmax=sqrt((pl+p[1]).Abs2());
-    tagl=tagl.substr(1);
-  }
-  CE.TChannelMomenta(pl,p[1],p[nin+nout-2],p[nin+nout-1],
-		     ms[nin+nout-2],ms[nin+nout-1],tmass,
-		     .5,ctmax,-ctmax,1.,0,ran[3*nout-4-2],ran[3*nout-4-1]);
-}
-
-void T3Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) 
-{
-  double ctmax=1.0;
-  double wt = 1.0;
-  Vec4D pa(p[0]+p[1]), pl(p[0]);
-  double tmass=0.0, rsmax=sqrt((p[0]+p[1]).Abs2()) ;
-  std::string tagl;
-  for (int i=nin;i<nin+nout-1;++i) tagl=tagl+ToString(i);
-  for (int i=0;i<nout-2;++i) {
-    double ctmin=-(ctmax=1.0);
-    double smin = cuts->Getscut(tagl);
-    double smax = sqr(rsmax-sqrt(ms[nin+nout-i-1]));
-    pa-=p[nin+i];
-    wt *= CE.MasslessPropWeight(.5,smin,smax,pa.Abs2(),rans[3*i]);
-    wt *= CE.TChannelWeight(pl,p[1],pa,p[nin+i],tmass,
-			    .5,ctmax,ctmin,1.,0,rans[3*i+1],rans[3*i+2]);
-    pl-=p[nin+i];
-    rsmax=sqrt((pl+p[1]).Abs2());
-    tagl=tagl.substr(1);
-  }
-  wt *= CE.TChannelWeight(pl,p[1],p[nin+nout-2],p[nin+nout-1],
-			  tmass,.5,ctmax,-ctmax,1.,0,
-			  rans[3*nout-4-2],rans[3*nout-4-1]);
-  if (wt!=0.) wt = 1.0/wt/pow(2.*M_PI,nout*3.-4.);
-  weight = wt;
-  weight *= p_vegas->GenerateWeight(rans);
-}
-
-void T3Channel::ISRInfo(int & _type,double & _mass,double & _width) {
-  _type = 0; _mass = mass; _width = width;
-}
-
-std::string T3Channel::ChID() 
-{
-  return name;
-}
-
 U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=2) {
@@ -397,7 +224,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf_none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  p_vegas = new Vegas(rannum,100,name,0);
+  p_vegas = new Vegas(rannum,100,name);
 }
 
 U1Channel::~U1Channel()
@@ -500,7 +327,8 @@ void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
 }
 
 void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
+  double d1, d2,
+  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],d1,d2,-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
 }
 
 void Decay2Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -541,4 +369,73 @@ void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"1->2 decay integrator";
+}
+
+
+NoChannel::NoChannel(int _nin,int _nout,Flavour * fl,Flavour res) 
+{  
+  if (_nin != 2 || !(_nout==1 && fl[2].Kfcode()==999)) {
+    msg_Error()<<"Tried to initialize NoChannel for = "<<_nin<<" -> "<<_nout<<endl;
+    Abort();
+  }
+  nin  = _nin; nout = _nout;
+  ms   = new double[nin+nout];
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
+
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
+  pt2min = 0.;
+  E      = 0.5 * sqrt(s);
+  name   = "NoChannel";
+
+  mass = width = 0.; 
+  type = 0;
+}
+
+void NoChannel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran=0) {
+  p[2] = p[0]+p[1];
+}
+
+void NoChannel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) { weight = 1.; }
+
+void NoChannel::ISRInfo(int & _type,double & _mass,double & _width) {
+  _type = type; _mass = mass; _width = width;
+}
+
+std::string NoChannel::ChID() { return std::string("NoChannel"); }
+
+namespace PHASIC {
+
+  class No_Channel_Generator: public Channel_Generator {
+  public:
+    
+    No_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new NoChannel(p_proc->NIn(),p_proc->NOut(),
+			      (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class No_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(No_Channel_Generator,"NChannel",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,No_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new No_Channel_Generator(args);
+}
+
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    No_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"2->1 NoChannel integrator for Instanton production";
 }

@@ -21,7 +21,6 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
 using namespace AMEGIC;
@@ -50,7 +49,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
       pi.m_fi.m_nlotype&nlo_type::loop ||
       pi.m_fi.m_nlotype&nlo_type::born) typechk++;
   if (typechk>1)
-    THROW(fatal_error,"NLO_QCD_Parts 'RS' and 'BVI' must be assigned separately!");
+    THROW(fatal_error,"NLO_Parts 'RS' and 'BVI' must be assigned separately!");
 
   nlo_type::code nlotype=pi.m_fi.m_nlotype;
   // QCD/EW subtraction
@@ -93,32 +92,30 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     if (!p_pinfo) p_pinfo=Translate(m_pinfo);
     p_testmoms = new Vec4D[m_nin+m_nout];
     Phase_Space_Handler::TestPoint(p_testmoms,&Info(),Generator());
-//    Vec4D sum;
-//    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
-//    msg_Debugging()<<"After boost:\n";
-//    for (size_t i(0);i<m_nin+m_nout;++i) {
-//      lab.Boost(p_testmoms[i]);
-//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-//    }
-//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
-//    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
-//    msg_Debugging()<<"After rotation:\n";
-//    for (size_t i(0);i<m_nin+m_nout;++i) {
-//      rot.Rotate(p_testmoms[i]);
-//      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-//      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-//    }
-//    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+    Vec4D sum;
+    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
+    msg_Debugging()<<"After boost:\n";
+    for (size_t i(0);i<m_nin+m_nout;++i) {
+      lab.Boost(p_testmoms[i]);
+      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+    }
+    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
+    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
+    msg_Debugging()<<"After rotation:\n";
+    for (size_t i(0);i<m_nin+m_nout;++i) {
+      rot.Rotate(p_testmoms[i]);
+      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
+      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
+    }
+    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath);
   apb->SetTestMoms(p_testmoms);
-  if (s_partcommit)
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
   int res=apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs); 
   if (s_partcommit)
-    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+    My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
   if (res) proc->SetParent((PHASIC::Process_Base*)this);
   return res;
 }
@@ -166,11 +163,9 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
 {
   if (p_parent==NULL || (*p_parent)[0]->IsGroup()/* this is fudgy, need mode ... */) {
     for (size_t i(0);i<m_procs.size();i++) {
-      if (s_partcommit)
-	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
       int res=m_procs[i]->Get<AMEGIC::Process_Base>()->SetUpIntegrator();
       if (s_partcommit)
-	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+	My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
       if (!res) return false;
     }
   }
@@ -217,7 +212,9 @@ bool AMEGIC::Process_Group::FillIntegrator
     m_procs[i]->Get<AMEGIC::Process_Base>()->RequestVariables(psh);
   Multi_Channel *mc(psh->FSRIntegrator());
   if (mc==NULL) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_channellibnames->empty()) return true;
   for (std::list<std::string>::iterator it(p_channellibnames->begin());
        it!=p_channellibnames->end();++it) {

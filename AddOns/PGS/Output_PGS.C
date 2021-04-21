@@ -8,7 +8,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 inline void MakeFortranString
@@ -188,11 +187,11 @@ void Output_PGS::Output(Blob_List *bl,const double weight)
   if (!bl->FourMomentumConservation())
     msg_Error()<<METHOD<<"(): Four momentum not conserved."<<std::endl;
   Blob *sp(bl->FindFirst(btp::Signal_Process));
-  Blob_Data_Base *xs((*sp)["Weight"]);
+  Blob_Data_Base *xs((*sp)["WeightsMap"]);
   if (xs==NULL) THROW(fatal_error,"No weight information");
   MotherDaughter_Map mdmap;
   Convert(bl,mdmap);
-  hepev4.eventweightlh=xs->Get<double>();
+  hepev4.eventweightlh=xs->Get<Weights_Map>().Nominal();
   hepevt.nevhep=rpa->gen.NumberOfGeneratedEvents();
   pgsxxx(2,m_imode);
 }

@@ -13,7 +13,8 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler * p_beam;
     ATOOLS::Blob               * p_beamblobs[2];
 
-    int         m_beam, m_fill, m_vmode;
+    bool m_fill, m_vmode;
+    int  m_beam;
     std::string m_name;
 
     ATOOLS::Return_Value::code TreatNoFill(ATOOLS::Blob_List *const bloblist);
@@ -21,8 +22,7 @@ namespace SHERPA {
     ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
 					      ATOOLS::Particle_List *const=NULL);
   public :
-    Beam_Remnant_Handler(const std::string path,const std::string file,
-			 BEAM::Beam_Spectra_Handler *const beam,
+    Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 			 REMNANTS::Remnant_Handler *const remnants,
 			 Soft_Collision_Handler *const softcollisions);
     ~Beam_Remnant_Handler();

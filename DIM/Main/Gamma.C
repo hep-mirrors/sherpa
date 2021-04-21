@@ -43,7 +43,8 @@ Weight_Value Gamma::Differential
   Weight_Value meps(pit->second);
   bool kon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
-  meps.m_b=meps.m_me=pit->second->Differential(*ampl,1|2|4);
+  meps.m_b = meps.m_me = static_cast<double>(
+      pit->second->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4));
   pit->second->KFactorSetter(true)->SetOn(kon);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();
@@ -143,7 +144,7 @@ MC_Weight Gamma::TrialWeight(Cluster_Amplitude *const ampl)
     THROW(fatal_error,"No active splitting weight");
   ampl->SetMuF2(wact.m_muf2);
   ampl->SetMuR2(wact.m_mur2);
-  ampl->SetKT2(wact.m_muq2);
+  ampl->SetKT2(ampl->MuQ2());
   int i(-1), j(-1), k(-1);
   for (size_t l(0);l<ampl->Legs().size();++l)
     if (ampl->Leg(l)->Id()&idk) k=l;
@@ -174,11 +175,11 @@ bool Gamma::Reject()
   rampl->Delete();
   if (wgt.MC()>ran->Get()) {
     m_weight=wgt.Accept();
-    msg_Debugging()<<"w = "<<wgt.MC()<<" -> accept\n";
+    msg_Debugging()<<"w = "<<wgt.MC()<<" "<<wgt<<" -> accept\n";
     return false;
   }
   m_weight=wgt.Reject();
-  msg_Debugging()<<"w = "<<wgt.MC()<<" -> reject\n";
+  msg_Debugging()<<"w = "<<wgt.MC()<<" "<<wgt<<" -> reject\n";
   return true;
 }
 

@@ -17,9 +17,9 @@ namespace SHERPA {
     std::string m_name;
   public:
     //constructor
-    Shower_Handler(const std::string &dir,const std::string &file,
-		   MODEL::Model_Base *const model,PDF::ISR_Handler *const isr,
-		   const int type);
+    Shower_Handler(MODEL::Model_Base *const,
+                   PDF::ISR_Handler *const,
+                   const int isrtype);
 
     // destructor
     ~Shower_Handler();
@@ -33,8 +33,8 @@ namespace SHERPA {
     // inline functions
     inline PDF::Shower_Base  * GetShower()     { return p_shower; }
     inline PDF::ISR_Handler  * GetISRHandler() { return p_isr;    }
-    inline std::string ShowerGenerator()     { return m_name; }
-    inline bool On()                         { return p_shower!=NULL; }
+    inline std::string ShowerGenerator()       { return m_name; }
+    inline bool On()                           { return p_shower!=NULL; }
 
   };
   typedef std::map<PDF::isr::id, Shower_Handler*> Shower_Handler_Map;

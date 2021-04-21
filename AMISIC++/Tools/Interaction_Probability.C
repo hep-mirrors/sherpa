@@ -30,7 +30,14 @@ void Interaction_Probability::CalculateIntegral() {
   // Integral int d^2b P_int(b), denominator in Eqs.(26), (32)
   IP_Integrand ipint(this);
   Gauss_Integrator integrator(&ipint);
-  m_integral = integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+  m_integral  = integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+}
+
+void Interaction_Probability::CalculateBNorm() {
+  IP_Integrand bipint(this,2);
+  Gauss_Integrator integrator(&bipint);
+  m_integralB = integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1);
+  m_bnorm     = m_integralB/m_integral;
 }
 
 void Interaction_Probability::CalculateOExpValue() {
@@ -38,29 +45,31 @@ void Interaction_Probability::CalculateOExpValue() {
   O_ExpV_Integrand oexpvint(this);
   Gauss_Integrator integrator(&oexpvint);
   m_oexpvalue = integrator.Integrate(0.,p_mo->Bmax(),1.e-8,1)/m_integral;
-  msg_Out()<<METHOD<<" yields "<<m_oexpvalue<<".\n";
+  msg_Out()<<METHOD<<" yields "<<m_oexpvalue<<" for k = "<<m_prefK<<".\n";
 }
 
 bool Interaction_Probability::FixPrefactor(const double & xsecratio) {
   // In this method we fix the prefactor k in the impact-parameter dependent
   // interaction probability P_int(b) = 1-exp[-k O(b)] where O(b) is the matter
   // overlap.  This is done by demanding that
-  //         [int_b O(b)]/[int_b db P_int(b)] = sigma_ND/sigma_tot
+  //         [k int d^2b O(b)]/[int d^2b P_int(b)] = sigma_ND/sigma_tot
   // and solving iteratively numerically for k.
+  DEBUG_FUNC(xsecratio);
   if (xsecratio<=1.) return false;
   double faclow  = 1.;
   SetPrefactor(faclow);
   CalculateIntegral();
   double reslow  = faclow * p_mo->Integral()/m_integral;
-  double fachigh = 2., reshigh, deltafac, deltares;
-  msg_Out()<<METHOD<<" starts iteration for int(overlap) = "
+  double fachigh = 50., reshigh, deltafac, deltares;
+  msg_Out()<<"Start iteration for int(overlap) = "
 	   <<p_mo->Integral()<<" aiming for ratio "<<xsecratio<<"\n";
   do {
     SetPrefactor(fachigh);
     CalculateIntegral();
     reshigh  = fachigh * p_mo->Integral()/m_integral;
-    msg_Out()<<"  k = ["<<faclow<<", "<<fachigh<<"] --> "
-    	     <<"res = ["<<reslow<<", "<<reshigh<<"] from integral = "<<m_integral<<".\n";
+    msg_Out()<<"k = ["<<faclow<<", "<<fachigh<<"] --> "
+	     <<"res = ["<<reslow<<", "<<reshigh
+	     <<"] from integral = "<<m_integral<<".\n";
     deltafac = fachigh-faclow;
     deltares = reshigh-reslow;
     faclow   = fachigh;
@@ -68,7 +77,10 @@ bool Interaction_Probability::FixPrefactor(const double & xsecratio) {
     fachigh += deltafac/deltares * (xsecratio-reshigh);
   } while (dabs(1.-reshigh/xsecratio)>1.e-8);
   SetPrefactor(fachigh);
-  msg_Out()<<"  ==> geometric rescaling factor = "<<m_prefK<<".\n"; 
+  CalculateIntegral();
+  msg_Out()<<"==> geometric rescaling factor = "<<m_prefK<<" yields "
+	   <<"sigma/sigmaND = "<<(m_prefK*p_mo->Integral()/m_integral)<<".\n";
+  CalculateBNorm();
   return true; 
 }
 

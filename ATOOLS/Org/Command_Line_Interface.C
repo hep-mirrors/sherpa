@@ -2,7 +2,6 @@
 
 #include "ATOOLS/Org/Option_Parser.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 // include the actual definition of command line options
 // NOTE: go to this header if you want to modify or add options
@@ -24,21 +23,25 @@ Command_Line_Interface::Command_Line_Interface(int argc, char* argv[])
   Parse(argc, argv);
 }
 
-void Command_Line_Interface::Parse(int argc, char* argv[], bool allowoverwrite)
+void Command_Line_Interface::Parse(int argc, char* argv[])
 {
   // prepare static memory for parser operations
-  const bool allow_mixing_options_and_nonoptions(true);
-  Option_Parser::Stats  stats(allow_mixing_options_and_nonoptions, usage,
+  const auto allow_mixing_options_and_nonoptions = true;
+  Option_Parser::Stats  stats(allow_mixing_options_and_nonoptions,
+                              usage,
                               argc, argv);
   std::vector<Option_Parser::Option> options(stats.options_max);
   std::vector<Option_Parser::Option> buffer(stats.buffer_max);
 
   // parse arguments
-  Option_Parser::Parser parser(allow_mixing_options_and_nonoptions, usage,
-                               argc, argv, &options.front(), &buffer.front());
+  Option_Parser::Parser parser(allow_mixing_options_and_nonoptions,
+                               usage,
+                               argc, argv,
+                               &options.front(), &buffer.front());
 
   if (parser.error()) {
-    THROW(fatal_error, "Command line syntax error");
+    msg_Error() << "Command line syntax error.\n";
+    PrintUsageAndExit();
   }
 
   if (options[HELP]) {
@@ -55,16 +58,18 @@ void Command_Line_Interface::Parse(int argc, char* argv[], bool allowoverwrite)
   // parse parameters; order matters here, we want to give options precedence
   // over non-options
   bool success(true);
-  success = (ParseNoneOptions(parser, allowoverwrite) && success);
-  success = (ParseOptions(options,    allowoverwrite) && success);
+  success = (ParseNoneOptions(parser) && success);
+  success = (ParseOptions(options)    && success);
 
   if (!success) {
     PrintUsageAndExit();
   }
+
+  Yaml_Reader::Parse(m_yamlstream);
 }
 
-bool Command_Line_Interface::ParseOptions(std::vector<Option_Parser::Option> &options,
-                                          bool allowoverwrite)
+bool Command_Line_Interface::ParseOptions(
+    std::vector<Option_Parser::Option> &options)
 {
   bool success(true);
 
@@ -84,53 +89,104 @@ bool Command_Line_Interface::ParseOptions(std::vector<Option_Parser::Option> &op
   for (It it(parameter_index_map.begin());
       it != parameter_index_map.end();
       ++it) {
-    const char* arg(options[it->second].last()->arg);
-    if (arg) {
-      SetParameterValue(it->first, std::string(arg), allowoverwrite);
+    const char* clivalue(options[it->second].last()->arg);
+    std::string finalvalue;
+    if (clivalue) {
+      finalvalue = std::string(clivalue);
     } else if (options[it->second].last()->type() == DISABLE) {
-      SetParameterValue(it->first, "0", allowoverwrite);
+      finalvalue = "0";
     } else if (options[it->second].last()->type() == ENABLE) {
-      SetParameterValue(it->first, "1", allowoverwrite);
+      finalvalue = "1";
     }
+    if (finalvalue != "")
+      m_yamlstream << it->first << ": " << finalvalue << "\n";
   }
 
   return success;
 }
 
-bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser,
-                                              bool allowoverwrite)
+bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
 {
-  bool success(true);
-
+  String_Map legacysyntaxtags;
+  auto didfinddyamltags = false;
   for (int i = 0; i < parser.nonOptionsCount(); ++i) {
+    auto nonOption = StringTrim(parser.nonOption(i));
 
-    std::string nonOption(parser.nonOption(i));
-
-    // process tag definition
-    size_t tagdelimiterpos = nonOption.find(":=");
-    if (tagdelimiterpos != std::string::npos) {
-      std::string tagname(nonOption.substr(0, tagdelimiterpos));
-      std::string tagvalue(nonOption.substr(tagdelimiterpos + 2));
-      SetTagValue(tagname, tagvalue, allowoverwrite);
+    // find legacy-syntax tag specifications
+    const auto pos = nonOption.find(":=");
+    if (pos != std::string::npos) {
+      const auto tagname = nonOption.substr(0, pos);
+      const auto tagvalue = nonOption.substr(pos + 2);
+      legacysyntaxtags[tagname] = tagvalue;
       continue;
+    } else if (nonOption.substr(0, 4) == "TAGS") {
+      didfinddyamltags = true;
     }
 
-    // process parameter definition
-    size_t paramdelimiterpos = nonOption.find("=");
-    if (paramdelimiterpos != std::string::npos) {
-      std::string paramname(nonOption.substr(0, paramdelimiterpos));
-      std::string paramvalue(nonOption.substr(paramdelimiterpos + 1));
-      SetParameterValue(paramname, paramvalue, allowoverwrite);
-      continue;
+    // convert legacy-delimiter '=' into yaml-delimiter ':'
+    const auto equalpos = nonOption.find('=');
+    const auto colonpos = nonOption.find(':');
+    if (equalpos != std::string::npos && colonpos == std::string::npos) {
+      nonOption[equalpos] = ':';
     }
 
-    // malformed parameter
-    msg_Error() << "ERROR: Can not parse argument: '" << nonOption << "'"
-                << std::endl;
-    success = false;
+    // convert ":" into ": ", as this allows to specify tags on the command
+    // line without spaces (and hence potentially without quotation marks);
+    // if necessary, add curly braces, if several scopes are used, e.g.
+    // "A:B: {C: D}" -> "A: {B: {C: D}}"
+    size_t num_scopes = 0;
+    size_t last_colonpos = std::string::npos;
+    for (size_t colonpos = nonOption.find(':');
+         colonpos != std::string::npos;
+         colonpos = nonOption.find(':', colonpos+1)) {
+      if (colonpos == nonOption.size() - 1)
+        // ignore ':' on the
+        break;
+      if (nonOption[colonpos+1] == ':'
+          || nonOption[colonpos+1] == ' '
+          || nonOption[colonpos+1] == '['
+          || nonOption[colonpos+1] == '{') {
+        ++colonpos;
+        continue;
+      }
+      if (num_scopes > 0) {
+        // retro-actively insert an opening curly brace
+        nonOption.replace(last_colonpos, 2, ": {");
+        ++colonpos;
+      }
+      nonOption.replace(colonpos, 1, ": ");
+      ++num_scopes;
+      last_colonpos = colonpos;
+      ++colonpos;
+    }
+    if (num_scopes > 1)
+      nonOption.append(num_scopes - 1, '}');
+
+    m_yamlstream << nonOption << '\n';
   }
 
-  return success;
+  if (!legacysyntaxtags.empty()) {
+    // first guard against mixed yaml/legacy tag specifications
+    if (didfinddyamltags) {
+      msg_Error()
+          << "You can not specify tags on the command line"
+          <<  " using both the yaml-style \"TAGS: {X: Y}\" and the legacy-style"
+          <<  " \"X:=Y\" syntaxes. Please only use one kind of syntax.\n";
+      exit(1);
+    }
+    m_yamlstream << "TAGS: {";
+    bool first = true;
+    for (const auto tag : legacysyntaxtags) {
+      if (first)
+        first = false;
+      else
+        m_yamlstream << ", ";
+      m_yamlstream << tag.first << ": " << tag.second;
+    }
+    m_yamlstream << "}\n";
+  }
+
+  return true;
 }
 
 void Command_Line_Interface::PrintUsageAndExit()
@@ -140,52 +196,3 @@ void Command_Line_Interface::PrintUsageAndExit()
   Option_Parser::printUsage(msg_Out(), usage, columns);
   exit(0);
 }
-
-void Command_Line_Interface::SetParameterValue(const std::string& paramname,
-                                               const std::string& value,
-                                               const bool& allowoverwrite)
-{
-  if (parameter_value_map[paramname] == "" || allowoverwrite) {
-    parameter_value_map[paramname] = value;
-  }
-}
-
-void Command_Line_Interface::SetTagValue(const std::string& tagname,
-                                         const std::string& value,
-                                         const bool& allowoverwrite)
-{
-  if (tag_value_map[tagname] == "" || allowoverwrite) {
-    tag_value_map[tagname] = value;
-  }
-}
-
-void Command_Line_Interface::AddArgumentsFromCommandFile(
-    const std::string& file)
-{
-  // read command file
-  Data_Reader reader;
-  reader.SetInputFile(file);
-  String_Matrix args;
-  reader.MatrixFromFile(args);
-
-  int argc(args.size());
-  char** argv = new char*[argc];
-
-  // copy rows into argv
-  size_t j(0);
-  typedef String_Matrix::const_iterator It;
-  for (It it(args.begin()); it != args.end(); ++it) {
-    std::string row = std::accumulate(it->begin(), it->end(), std::string(""));
-    argv[j] = new char[row.size() + 1];
-    strcpy(argv[j], row.c_str());
-    ++j;
-  }
-
-  // parse, but do not overwrite existing values, because the command line
-  // should have precedence over the command file
-  Parse(argc, argv, false);
-
-  for (int i(0); i < argc; ++i) delete [] argv[i];
-  delete [] argv;
-}
-

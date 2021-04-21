@@ -3,10 +3,11 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
@@ -17,24 +18,21 @@ using namespace PHASIC;
 using namespace std;
 using namespace METOOLS;
 
-Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund,
-                                       string path, string fragfile) :
+Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund) :
   Decay_Handler_Base(), p_lund(lund)
 {
 #ifdef USING__PYTHIA
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(fragfile);
-
-  m_qedmode=reader.Get<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
-  double max_propertime = reader.Get<double>("MAX_PROPER_LIFETIME",-1.0);
-
+  Settings& s = Settings::GetMainSettings();
+  m_qedmode =
+    s["HADRON_DECAYS_QED_CORRECTIONS"].SetDefault(1).Get<size_t>();
+  const double maxproperlifetime{
+    s["MAX_PROPER_LIFETIME"].SetDefault(-1.0).Get<double>() };
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-      if (max_propertime > 0.0 &&
-          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf_K) {
+      if (maxproperlifetime > 0.0 &&
+          0.197e-12>maxproperlifetime*flav.Width() && flav.Kfcode()!=kf_K) {
         flav.SetStable(true);
         continue;
       }

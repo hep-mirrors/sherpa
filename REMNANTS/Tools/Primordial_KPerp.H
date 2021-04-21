@@ -1,22 +1,33 @@
 #ifndef REMNANTS_Tools_Primordial_KPerp_H
 #define REMNANTS_Tools_Primordial_KPerp_H
 
-#include "REMNANTS/Tools/Remnant_Parameters.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <string>
 
 namespace REMNANTS {
+  struct prim_kperp_form {
+    enum code {
+      none           = 0,
+      gauss          = 1,
+      gauss_limited  = 2,
+      dipole         = 3,
+      dipole_limited = 4,
+      undefined      = 99
+    };
+  };
+  
   class Primordial_KPerp {
   private:
+    std::string           m_defform;
     prim_kperp_form::code m_form[2];
+    double m_defmean, m_defsigma, m_refE, m_scaleexpo, m_defQ2, m_defktmax, m_defeta;
     double m_mean[2], m_sigma[2], m_Q2[2], m_ktmax[2], m_eta[2];
-    size_t m_beam;
+    size_t            m_beam;
     ATOOLS::ParticleMomMap * p_ktmap;
 
     prim_kperp_form::code SelectForm(const std::string & form=std::string("dipole_limited"));
-    ATOOLS::Vec4D         KT(const ATOOLS::Vec4D & mom);
     double KT_Gauss(const double & ktmax) const;
     double KT_Gauss_Limited(const double & ktmax) const;
     double KT_Dipole(const double & ktmax) const;
@@ -36,6 +47,7 @@ namespace REMNANTS {
     void Initialize();
     bool CreateBreakupKinematics(const size_t & beam,ATOOLS::ParticleMomMap * ktmap,
 				 const double & scale);
+    ATOOLS::Vec4D KT(const double & ktmax);
   };
 }
 

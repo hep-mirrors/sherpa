@@ -25,9 +25,9 @@ namespace DIRE {
       double A=0.0, B=0.0;
       if (m_mode) B=2.0*s.m_z*(1.0-s.m_z)+(1.0-s.m_z)/s.m_z;
       else {
-	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+	A=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
 	B=-2.0+(1.0-s.m_z)/s.m_z;
-	A*=1.0+p_sk->GF()->K(s);
+	A*=1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s);
       }
       if (s.m_mk2==0.0) {
 	if (s.m_kfac&2) {

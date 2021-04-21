@@ -7,12 +7,12 @@
 #endif
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -33,7 +33,7 @@ namespace SHERPA {
   public:
 
     Output_Weights(const Output_Arguments &args):
-      Output_Base("Weights")
+      Output_Base{ "Weights" }
     {
       MyStrStream basename;
       basename << args.m_outpath << "/" << args.m_outfile;
@@ -42,16 +42,30 @@ namespace SHERPA {
       m_ext += ".gz";
 #endif
 #ifdef USING__MPI
-      if (MPI::COMM_WORLD.Get_size()>1) {
-        basename << "_" << MPI::COMM_WORLD.Get_rank();
+      if (mpi->Size()>1) {
+        basename << "_" << mpi->Rank();
       }
 #endif
       m_basename = basename.str();
       m_outstream.open((m_basename+m_ext).c_str());
       if (!m_outstream.good())
 	THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-      int precision = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+      const int precision =
+        Settings::GetMainSettings()["OUTPUT_PRECISION"].Get<int>();
       m_outstream.precision(precision);
+    }
+
+    void Header()
+    {
+      m_outstream << "# EventNumber Nominal";
+      static std::array<Variations_Type, 2> types = {Variations_Type::qcd, Variations_Type::qcut};
+      for (const auto type : types) {
+        size_t numqcdvars = s_variations->Size(type);
+        for (size_t i(0);i<numqcdvars;++i) {
+          m_outstream << ' ' << s_variations->GetVariationNameAt(i, type);
+        }
+      }
+      m_outstream << '\n';
     }
 
     ~Output_Weights()
@@ -63,29 +77,38 @@ namespace SHERPA {
     {
       Blob_Data_Base *sd((*blobs->FindFirst(btp::Signal_Process))["NLO_subeventlist"]);
       NLO_subevtlist *subs=sd?sd->Get<NLO_subevtlist*>():NULL;
-      Blob_Data_Base *data((*blobs->FindFirst(btp::Signal_Process))["Variation_Weights"]);
-      if (data==NULL) THROW(fatal_error,"Variation weights not found.");
-      ATOOLS::Variation_Weights *variationweights=&data->Get<Variation_Weights>();
-      if (variationweights==NULL) THROW(fatal_error,"Variation weights not found.");
-      size_t numvars = variationweights->GetNumberOfVariations();
       if (subs==NULL) {
-	m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	for (size_t i(0);i<numvars;++i)
-	  m_outstream<<variationweights->GetVariationNameAt(i)<<" "
-		     <<variationweights->GetVariationWeightAt(i)<<" ";
-      }
-      else
+        Output(blobs->WeightsMap());
+        m_outstream<<"\n";
+      } else {
 	for (size_t j(0);j<subs->size();++j) {
-	  m_outstream<<rpa->gen.NumberOfGeneratedEvents()<<" ";
-	  for (size_t i(0);i<numvars;++i)
-	    m_outstream
-              <<variationweights->GetVariationNameAt(i)
-              <<" "
-              <<variationweights->GetVariationWeightAt(i,Variations_Type::all,j)
-              <<" ";
-	  m_outstream<<"\n";
+          Output((*subs)[j]->m_results);
+          m_outstream<<"\n";
 	}
-      m_outstream<<"\n";
+      }
+    }
+
+    void Output(const Weights_Map& wgtmap)
+    {
+      static std::array<Variations_Type, 2> types = {
+          Variations_Type::qcd, Variations_Type::qcut};
+      const auto nom = wgtmap.Nominal();
+      m_outstream<<rpa->gen.NumberOfGeneratedEvents();
+      if (IsZero(nom))
+        m_outstream<<' '<<0.0;
+      else
+        m_outstream<<' '<<nom;
+      for (const auto type : types) {
+        size_t numvars = s_variations->Size(type);
+        auto wgts = wgtmap.Combine(type);
+        const auto relfac = wgtmap.NominalIgnoringVariationType(type);
+        for (size_t i(0);i<numvars;++i) {
+          if (IsZero(wgts.Variation(i) * relfac))
+            m_outstream << " " << 0.0;
+          else
+            m_outstream << " " << wgts.Variation(i) * relfac;
+        }
+      }
     }
 
     void ChangeFile()

@@ -5,10 +5,10 @@
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Phys/Blob.H" 
 #include "ATOOLS/Org/Run_Parameter.H" 
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace ATOOLS;
 using namespace PDF;
@@ -25,13 +25,13 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   m_rmode(0), m_swap(0),
   m_info_lab(8),
-  m_info_cms(8)
+  m_info_cms(8),
+  m_freezePDFforLowQ(false)
 {
+  Settings& s = Settings::GetMainSettings();
+  m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
   if (s_nozeropdf<0) {
-    Default_Reader reader;
-    reader.SetInputPath(rpa->GetPath());
-    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_nozeropdf = reader.Get<int>("NO_ZERO_PDF", 0);
+    s_nozeropdf = s["NO_ZERO_PDF"].SetDefault(0).Get<int>();
   }
   m_mu2[0]=m_mu2[1]=0.0;
   m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;
@@ -313,6 +313,10 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
                <<", Q12="<<Q12<<", Q22="<<Q22<<std::endl;
     return 0.;
   }
+  if (m_freezePDFforLowQ) {
+    if (Q12<PDF(0)->Q2Min()) Q12 = 1.001*PDF(0)->Q2Min();
+    if (Q22<PDF(1)->Q2Min()) Q22 = 1.001*PDF(1)->Q2Min();
+  }
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
 		   <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
@@ -330,8 +334,20 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   m_mu2[mode&1]=Q12;
   m_mu2[1-(mode&1)]=Q22;
   int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
+  // cmode & 1 -> include first PDF; cmode & 2 -> include second PDF
   if ((cmode==1 && PDF(0)==NULL) ||
       (cmode==2 && PDF(1)==NULL)) return 1.0;
+  const auto include_both_pdfs = (cmode == 3);
+  // checking remnant kinematics only makes sense when both PDFs are included;
+  // NOTE: the check is done here because CheckRemnantKinematics internally
+  // calls the PDF’s CalculateSpec, which overwrites its m_Q member; we don't
+  // want this to happen after the following switch-statement, where this is
+  // set in preparation of the p_isrbase[i]->Weight(fl) calls that get the PDF
+  // values below
+  const auto has_nonexistent_or_correct_remnant_kinematics
+    = (!include_both_pdfs
+       || (CheckRemnantKinematics(fl1,x1,0,false)
+           && CheckRemnantKinematics(fl2,x2,1,false)));
   switch (cmode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
@@ -354,8 +370,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     case 0 : break;
     default : return 0.;
   }
-  if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
-		   CheckRemnantKinematics(fl2,x2,1,false))) {
+  if (has_nonexistent_or_correct_remnant_kinematics) {
     double f1=(cmode&1)?p_isrbase[0]->Weight(fl1):1.0;
     double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
     m_xf1[0]=x1*f1;

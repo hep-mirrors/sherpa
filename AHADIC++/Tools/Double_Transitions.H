@@ -30,7 +30,9 @@ namespace AHADIC {
   class Double_Transitions {
   private:
     Double_Transition_Map m_transitions;
-    double m_wtthres, m_charm_baryon_modifier, m_beauty_baryon_modifier;
+    double m_wtthres;
+    double m_charm_strange_modifier, m_beauty_strange_modifier;
+    double m_charm_baryon_modifier, m_beauty_baryon_modifier;
 
     void FillMap(Single_Transitions * singles);
     void Normalise();

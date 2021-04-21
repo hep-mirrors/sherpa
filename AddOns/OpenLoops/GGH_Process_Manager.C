@@ -62,7 +62,7 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   }
 
   // set selector, kfactor, and scale setter
-  proc->SetSelector(Selector_Key(NULL, NULL, true));
+  proc->SetSelector(Selector_Key{});
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,"VAR{sqr("+ATOOLS::ToString(rpa->gen.Ecms())+")}","Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
   

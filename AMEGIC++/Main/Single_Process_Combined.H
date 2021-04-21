@@ -49,7 +49,7 @@ namespace AMEGIC {
 
     Single_Process_Combined();
     ~Single_Process_Combined();
-    
+
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
     bool Combinable(const size_t &idi,const size_t &idj);
@@ -109,7 +109,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,int mode);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
     double         operator()(const ATOOLS::Vec4D *);
 

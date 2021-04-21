@@ -19,6 +19,7 @@
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -29,24 +30,25 @@ int Process_Base::s_usefmm(-1);
 
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
-  p_sproc(NULL), p_proc(this),
+  p_sproc(NULL), p_caller(this),
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_nlomc(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
   m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true), p_apmap(NULL),
-  p_variationweights(NULL), m_variationweightsowned(false)
+  m_lookup(false), m_use_biweight(true),
+  m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
+  p_apmap(NULL)
 {
-  m_last=m_lastb=0.0;
-  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
+  if (s_usefmm<0)
+    s_usefmm =
+      Settings::GetMainSettings()["PB_USE_FMM"].SetDefault(0).Get<int>();
 }
 
 Process_Base::~Process_Base() 
 {
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
-  if (m_variationweightsowned && p_variationweights) delete p_variationweights;
   delete p_selector;
   delete p_int;
 }
@@ -142,9 +144,8 @@ void Process_Base::MPISync(const int mode)
   size_t i(0), j(0);
   std::vector<double> sv;
   MPICollect(sv,i);
-  if (MPI::COMM_WORLD.Get_size()>1)
-    mpi->MPIComm()->Allreduce
-      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  if (mpi->Size()>1)
+    mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
   MPIReturn(sv,j);
 #endif
 }
@@ -165,7 +166,9 @@ void Process_Base::SetUseBIWeight(bool on)
   m_use_biweight=on;
 }
 
-double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
+Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
+                                       Variations_Mode varmode,
+                                       int mode)
 {
   DEBUG_FUNC(this<<" -> "<<m_name<<", mode = "<<mode);
   msg_Debugging()<<ampl<<"\n";
@@ -174,8 +177,8 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   if (mode&64) {
-    if (mode&1) return 1.0;
-    return Trigger(p);
+    if (mode&1) return {1.0};
+    return {static_cast<double>(Trigger(p))};
   }
   bool selon(Selector()->On());
   if (mode&1) SetSelectorOn(false);
@@ -194,23 +197,21 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   }
   if (mode&4) SetUseBIWeight(false);
   if (mode&128) while (!this->GeneratePoint()); 
-  double res(this->Differential(p)/m_issymfac);
+  auto wgtmap = this->Differential(p, varmode);
+  wgtmap/=m_issymfac;
   NLO_subevtlist *subs(this->GetSubevtList());
   if (subs) {
     (*subs)*=1.0/m_issymfac;
     (*subs).MultMEwgt(1.0/m_issymfac);
   }
-  if (this->VariationWeights()) {
-    *this->VariationWeights()*=1.0/m_issymfac;
-  }
   if (mode&32) {
-    SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
-    res*=psh->Weight(p);
+    auto psh = Parent()->Integrator()->PSHandler();
+    wgtmap*=psh->Weight(p);
   }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
-  return res;
+  return wgtmap;
 }
 
 bool Process_Base::IsGroup() const
@@ -326,6 +327,7 @@ void Process_Base::Init(const Process_Info &pi,
       isrhandler->AllowSwap(m_flavs[0],m_flavs[1]))
     m_symfac*=(m_issymfac=2.0);
   m_name+=pi.m_addname;
+  m_resname=m_name;
 }
 
 std::string Process_Base::BaseName
@@ -538,25 +540,6 @@ void Process_Base::SetNLOMC(PDF::NLOMC_Base *const mc)
   p_nlomc=mc; 
 }
 
-void Process_Base::SetVariationWeights(ATOOLS::Variation_Weights *const vw)
-{
-  if (m_variationweightsowned) {
-    delete p_variationweights;
-    m_variationweightsowned = false;
-  }
-  p_variationweights=vw;
-  if (p_int->PSHandler() != NULL) p_int->PSHandler()->SetVariationWeights(vw);
-  if (IsMapped()) p_mapproc->SetVariationWeights(vw);
-}
-
-void Process_Base::SetOwnedVariationWeights(ATOOLS::Variation_Weights *vw)
-{
-  SetVariationWeights(vw);
-  if (vw) {
-    m_variationweightsowned = true;
-  }
-}
-
 void Process_Base::FillOnshellConditions()
 {
   if (!Selector()) return;
@@ -564,7 +547,7 @@ void Process_Base::FillOnshellConditions()
   info.Add(m_pinfo.m_fi);
   for(size_t i=0;i<m_decins.size();i++)
     if (m_decins[i]->m_osd) Selector()->AddOnshellCondition
-      (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
+      (m_decins[i]->m_id,sqr(m_decins[i]->m_fl.Mass()));
 }
 
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
@@ -578,6 +561,11 @@ void Process_Base::SetSelector(const Selector_Key &key)
   if (IsMapped()) return;
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
+}
+
+void Process_Base::SetCaller(Process_Base *const proc)
+{
+  p_caller=proc;
 }
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)
@@ -614,8 +602,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
-  p_int->PSHandler()->SetVariationWeights(p_variationweights);
+  p_int->SetPSHandler(std::make_shared<Phase_Space_Handler>(p_int, maxerr));
   if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
   if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
 } 
@@ -789,4 +776,9 @@ std::string Process_Base::ShellName(std::string name) const
   for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
   for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
+}
+
+
+const ATOOLS::Vec4D_Vector & Process_Base::Momenta() const {
+  return p_int->Momenta();
 }

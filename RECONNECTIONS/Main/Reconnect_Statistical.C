@@ -1,5 +1,6 @@
 #include "RECONNECTIONS/Main/Reconnect_Statistical.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace RECONNECTIONS;
@@ -10,16 +11,18 @@ Reconnect_Statistical::Reconnect_Statistical() : Reconnection_Base() {}
 
 Reconnect_Statistical::~Reconnect_Statistical() {}
 
-void Reconnect_Statistical::ReadWeightParameters(Default_Reader *const defaultreader) {
+void Reconnect_Statistical::SetParameters() {
   // Pmode is the mode for the distance measure in momentum space.
   // 0 - mode is "linear":    dist = log(1+sij/Q0^2)
   // 1 - mode is "power law": dist = exp[eta * log(1+sij/Q0^2) ] 
-  m_Pmode     = defaultreader->GetValue<double>("RECONNECTIONS::PMODE",0);
-  m_Q02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::Q_0",0.25));
-  m_eta       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::eta",0.16));
-  m_R02       = sqr(defaultreader->GetValue<double>("RECONNECTIONS::R_0",1.));
-  m_reshuffle = 1./defaultreader->GetValue<double>("RECONNECTIONS::RESHUFFLE",1./3.);
-  m_kappa     = defaultreader->GetValue<double>("RECONNECTIONS::kappa",2.);
+  auto  s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
+  m_Pmode     = s["RECONNECTIONS::PMODE"].SetDefault(0).Get<int>();
+  m_Q02       = sqr(s["RECONNECTIONS::Q_0"].SetDefault(1.00).Get<double>());
+  m_etaQ      = sqr(s["RECONNECTIONS::etaQ"].SetDefault(0.16).Get<double>());
+  m_R02       = sqr(s["RECONNECTIONS::R_0"].SetDefault(1.00).Get<double>());
+  m_etaR      = sqr(s["RECONNECTIONS::etaR"].SetDefault(0.16).Get<double>());
+  m_reshuffle = 1./(s["RECONNECTIONS::RESHUFFLE"].SetDefault(1./3.).Get<double>());
+  m_kappa     = 1./(s["RECONNECTIONS::KAPPA"].SetDefault(2.).Get<double>());
 }
 
 void Reconnect_Statistical::Reset() {
@@ -46,8 +49,8 @@ bool Reconnect_Statistical::operator()(Blob_List *const blobs) {
   return true;
 }
 
-bool Reconnect_Statistical::SelectColourPair(const size_t & N,
-					     unsigned int & col1, unsigned int & col2) {
+bool Reconnect_Statistical::
+SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2) {
   unsigned int trials=0;
   do {
     col1 = m_collist[int(ran->Get()*N)];
@@ -108,23 +111,26 @@ void Reconnect_Statistical::UpdateColours() {
   }
 }
 
-double Reconnect_Statistical::Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) {
-  return (MomDistance(trip,anti) * PosDistance(trip,anti) * ColDistance(trip,anti));
+double Reconnect_Statistical::Distance(Particle * trip,Particle * anti) {
+  return (MomDistance(trip,anti) *
+	  PosDistance(trip,anti) *
+	  ColDistance(trip,anti));
 }
 
-double Reconnect_Statistical::MomDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) {
+double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
   double p1p2 = ( ((trip->Flav().IsGluon() ? 0.5 : 1.) * trip->Momentum()+
-		   (anti->Flav().IsGluon() ? 0.5 : 1.) * anti->Momentum()).Abs2() -
+		   (anti->Flav().IsGluon() ? 0.5 : 1.) * anti->Momentum()).
+		  Abs2() -
 		  (trip->Momentum().Abs2()+anti->Momentum().Abs2()) );
-  return log(1.+p1p2/m_Q02);
+  return m_Pmode==0 ? log(1.+p1p2/m_Q02) : pow(1.+p1p2/m_Q02,m_etaQ);
 }
 
-double Reconnect_Statistical::PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) {
+double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
   double xdist2 = dabs((trip->XProd()-anti->XProd()).Abs2());
-  return xdist2<m_R02 ? 1. : sqrt(xdist2/m_R02);
+  return xdist2<m_R02 ? 1. : pow(xdist2/m_R02, m_etaR);
 }
 
-double Reconnect_Statistical::ColDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) {
+double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
   return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle;
 }
 

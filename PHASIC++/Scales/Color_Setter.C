@@ -10,7 +10,6 @@
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Flow.H"
 
@@ -21,9 +20,11 @@ using namespace ATOOLS;
 
 size_t s_clmaxtrials(900);
 
+PHASIC::NLOTypeStringProcessMap_Map Color_Setter::m_pmap;
+
 Color_Setter::Color_Setter(const int mode): m_cmode(mode)
 {
-  m_pmap[nlo_type::lo] = new StringProcess_Map();
+  if (m_pmap.empty()) m_pmap[nlo_type::lo] = new StringProcess_Map();
 }
 
 Color_Setter::~Color_Setter()
@@ -31,7 +32,8 @@ Color_Setter::~Color_Setter()
   for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
        xsit!=m_xsmap.end();++xsit) delete xsit->second;
   for (size_t i(0);i<m_procs.size();++i) delete m_procs[i];
-  delete m_pmap[nlo_type::lo];
+  for (auto m: m_pmap) if (m.second) delete m.second;
+  m_pmap.clear();
 }
 
 bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
@@ -41,11 +43,11 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   for (size_t i(0);i<ampl->Legs().size();++i) {
     oc[i]=ampl->Leg(i)->Col();
     if (ampl->Leg(i)->Flav().Strong() &&
-	oc[i].m_i==0 && oc[i].m_j==0) vc=0;
+	oc[i].m_i<=0 && oc[i].m_j<=0) vc=0;
   }
   if (vc==0) {
     // select new color configuration
-    SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+    auto colint = p_xs->Integrator()->ColorIntegrator();
     while (!colint->GeneratePoint());
     PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
     for (size_t i(0);i<ampl->Legs().size();++i)
@@ -82,7 +84,7 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
     if (!sing) {
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
-      double csum(p_xs->Differential(*ampl,1|2|4));
+      double csum(p_xs->Differential(*ampl,Variations_Mode::nominal_only,1|4));
       msg_Debugging()<<"sc: csum = "<<csum<<"\n";
       if (csum!=0.0) {
 	CI_Map &cmap(ampl->ColorMap());
@@ -90,12 +92,17 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
 	  if (oc[i].m_i!=0) cmap[ci[i]]=oc[i].m_i;
 	break;
       }
+      else {
+	for (size_t i(0);i<ampl->Legs().size();++i)
+	  ampl->Leg(i)->SetCol(oc[i]);
+      }
     }
     if ((trials%9==0 && trials>0) || sing) {
       // select new color configuration
-      SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+      auto colint = p_xs->Integrator()->ColorIntegrator();
       while (!colint->GeneratePoint());
       PHASIC::Int_Vector ni(colint->I()), nj(colint->J());
+      msg_Debugging()<<"new color point "<<ni<<nj<<"\n";
       for (size_t i(0);i<ampl->Legs().size();++i)
 	oc[i]=ColorID(ni[i],nj[i]);
     }
@@ -107,22 +114,84 @@ bool Color_Setter::SetRandomColors(Cluster_Amplitude *const ampl)
   return true;
 }
 
+bool Color_Setter::SetSumSqrColors(Cluster_Amplitude *const ampl)
+{
+  std::shared_ptr<Color_Integrator> colint(p_xs->Integrator()->ColorIntegrator());
+  colint->GenerateOrders();
+  const Idx_Matrix &orders(colint->Orders());
+  std::vector<double> psum(orders.size());
+  double csum(0.0);
+  for (int i(0);i<orders.size();++i) {
+    int last(0);
+    for (size_t j(0);j<orders[i].size();++j) {
+      Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+      if (cl->Flav().StrongCharge()==3) {
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,0));
+      }
+      else if (cl->Flav().StrongCharge()==-3) {
+	cl->SetCol(ColorID(0,last));
+	last=0;
+      }
+      else if (cl->Flav().StrongCharge()==8) {
+	int nlast(last);
+	last=Flow::Counter();
+	cl->SetCol(ColorID(last,nlast));
+      }
+      else {
+	cl->SetCol(ColorID(0,0));
+      }
+    }
+    msg_Debugging()<<"odering "<<orders[i]<<"\n";
+    msg_Debugging()<<*ampl<<"\n";
+    csum += psum[i] = dabs(static_cast<double>(
+        p_xs->Differential(*ampl, Variations_Mode::nominal_only, 1 | 4)));
+    msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
+  }
+  if (csum==0.0) return false;
+  double disc(csum*ran->Get()), sum(0.0);
+  for (size_t i(0);i<orders.size();++i)
+    if ((sum+=psum[i])>=disc) {
+      msg_Debugging()<<"selected ordering "<<i<<" -> "<<orders[i]<<"\n";
+      int last(0);
+      for (size_t j(0);j<orders[i].size();++j) {
+	Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
+	if (cl->Flav().StrongCharge()==3) {
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,0));
+	}
+	else if (cl->Flav().StrongCharge()==-3) {
+	  cl->SetCol(ColorID(0,last));
+	  last=0;
+	}
+	else if (cl->Flav().StrongCharge()==8) {
+	  int nlast(last);
+	  last=Flow::Counter();
+	  cl->SetCol(ColorID(last,nlast));
+	}
+	else {
+	  cl->SetCol(ColorID(0,0));
+	}
+      }
+      return true;
+    }
+  THROW(fatal_error,"Internal error");
+}
+
 bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
 {
-  Process_Base *proc(ampl->Proc<Process_Base>());
-  if (proc==NULL || proc->AllProcs()==NULL) return false;
-  StringProcess_Map *pm((*proc->AllProcs())[nlo_type::lo]);
+  StringProcess_Map *pm(m_pmap[nlo_type::lo]);
   Process_Base::SortFlavours(ampl);
   std::string name(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit(pm->find(name));
   p_xs=NULL;
-  if (pit!=pm->end() && pit->second->
+  if (pit!=pm->end() && pit->second && pit->second->
       Integrator()->ColorIntegrator()!=NULL) p_xs=pit->second;
   if (p_xs==NULL) {
-    pm=m_pmap[nlo_type::lo];
-    if ((pit=pm->find(name))!=pm->end()) p_xs=pit->second;
-    else {
-      MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+    if (pit!=pm->end()) return false;
+    {
+      My_In_File::OpenDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
       My_In_File::OpenDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
       Process_Info pi;
@@ -143,12 +212,13 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
       if (proc==NULL) {
 	My_In_File::CloseDB
 	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
+	My_In_File::CloseDB
+	  (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
 	(*pm)[name]=NULL;
 	return false;
       }
       m_procs.push_back(proc);
-      Selector_Key skey(NULL,NULL,true);
-      proc->SetSelector(skey);
+      proc->SetSelector(Selector_Key{});
       proc->SetScale
 	(Scale_Setter_Arguments
 	 (MODEL::s_model,"VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}","Alpha_QCD 1"));
@@ -157,14 +227,15 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
       proc->FillProcessMap(&m_pmap);
       My_In_File::CloseDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
+      My_In_File::CloseDB
+	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
       if ((pit=pm->find(name))==pm->end()) THROW(fatal_error,"Internal error");
       p_xs=pit->second;
     }
     if (p_xs==NULL) return false;
   }
-  DEBUG_FUNC(p_xs->Name());
   msg_Debugging()<<*ampl<<"\n";
-  SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
+  auto colint(p_xs->Integrator()->ColorIntegrator());
   PHASIC::Int_Vector ci(colint->I()), cj(colint->J());
   bool sol(false);
   switch (m_cmode) {
@@ -172,6 +243,11 @@ bool Color_Setter::SetLargeNCColors(Cluster_Amplitude *const ampl)
     sol=SetRandomColors(ampl);
     break;
   } 
+  case 2: {
+    sol=SetSumSqrColors(ampl);
+    if (!sol) sol=SetRandomColors(ampl);
+    break;
+  }
   default:
     THROW(fatal_error,"Invalid colour setting mode");
   }
@@ -194,8 +270,8 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
   if (xit==m_xsmap.end() && ampl->Legs().size()==4) {
     Process_Info pi;
     pi.m_megenerator="Internal";
-    pi.m_borncpl[0]=pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
-    pi.m_borncpl[1]=pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
+    pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
+    pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
     for (size_t i(0);i<ampl->NIn();++i)
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
     for (size_t i(ampl->NIn());i<fl.size();++i)
@@ -207,8 +283,6 @@ void Color_Setter::SetColors(ATOOLS::Cluster_Amplitude *ampl)
   }
   if (xit!=m_xsmap.end() && xit->second!=NULL) {
     bool test(xit->second->SetColours(moms));
-    if (!test)
-      msg_Debugging() << "ME colour setter returned false.\n";
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
 		xit->second->Colours()[i][1]);

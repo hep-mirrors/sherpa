@@ -1,4 +1,5 @@
 #include "AddOns/Root/RootNtuple_Reader.H"
+#include "AddOns/Root/Output_RootNtuple.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -7,10 +8,10 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Phys/Variations.H"
 #include <iostream>
@@ -44,7 +45,7 @@ namespace SHERPA {
 
   class Dummy_Process: public PHASIC::Process_Base {
   public:
-    void SetScale(const Scale_Setter_Arguments &args)
+    void SetScale(const Scale_Setter_Arguments& args) override
     {
       Scale_Setter_Arguments cargs(args);
       cargs.p_proc=this;
@@ -52,7 +53,7 @@ namespace SHERPA {
 	GetObject(cargs.m_scale,cargs);
       if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
     }
-    void SetKFactor(const KFactor_Setter_Arguments &args)
+    void SetKFactor(const KFactor_Setter_Arguments& args) override
     {
       KFactor_Setter_Arguments cargs(args);
       cargs.p_proc=this;
@@ -61,16 +62,26 @@ namespace SHERPA {
 	GetObject(cargs.m_kfac,cargs);
       if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
     }
-    size_t Size() const { return 0; }
-    Process_Base *operator[](const size_t &i) { return NULL; }
+    size_t Size() const override { return 0; }
+    Process_Base* operator[](const size_t& i) override { return NULL; }
 
-    Weight_Info *OneEvent(const int wmode,const int mode=0) { return NULL; }
+    Weight_Info* OneEvent(const int wmode, const int mode = 0) override
+    {
+      return NULL;
+    }
 
-    double Differential(const ATOOLS::Vec4D_Vector &p) { return 0.0; }
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode) override
+    {
+      return 0.0;
+    }
     double Differential2() { return 0.0; }
-    bool CalculateTotalXSec(const std::string &resultpath,
-			    const bool create=false) { return false; }
-    void SetLookUp(const bool lookup) {}
+    bool CalculateTotalXSec(const std::string& resultpath,
+                            const bool create = false) override
+    {
+      return false;
+    }
+    void SetLookUp(const bool lookup) override {}
   };
 
   struct RootNTupleReader_Variables {
@@ -104,23 +115,22 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
 {
+  Settings& s = Settings::GetMainSettings();
+  Common_Root_Settings().RegisterDefaults();
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
-  m_ecms=args.p_reader->GetValue<double>("ROOTNTUPLE_ECMS",rpa->gen.Ecms());
-  m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",1);
-  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
+  m_ecms = s["ROOTNTUPLE_ECMS"].Get<double>();
+  m_calc = s["ROOTNTUPLE_CALC"].Get<int>();
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
-  m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
+  m_treename = s["ROOTNTUPLE_TREENAME"].Get<std::string>();
+  m_check = s["ROOTNTUPLE_CHECK"].Get<int>();
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
-  args.p_reader->SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  args.p_reader->RereadInFile();
-  std::string scale=args.p_reader->GetValue<std::string>
-    ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
-  m_lomode=args.p_reader->GetValue<int>("ROOTNTUPLE_LO_MODE",0);
+  std::string scale = s["SCALES"].Get<std::string>();
+  m_lomode = s["ROOTNTUPLE_LO_MODE"].Get<int>();
   if (m_lomode) msg_Info()<<METHOD<<"(): Ntuple LO mode set to "<<m_lomode<<"."<<std::endl;
-  std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","None");
-  std::vector<std::string> helpsv;
-  if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
+  std::string kfactor = s["KFACTOR"].Get<std::string>();
+  const std::vector<std::string> helpsv{
+    s["COUPLINGS"].GetVector<std::string>() };
   std::string coupling(helpsv.size()?helpsv[0]:"");
   for (size_t i(1);i<helpsv.size();++i) coupling+=" "+helpsv[i];
   m_sargs=Scale_Setter_Arguments(args.p_model,scale,coupling);
@@ -143,8 +153,8 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     size_t i(ToType<size_t>(range.substr(0,spos)));
     size_t e(ToType<size_t>(range.substr(spos+1)));
 #ifdef USING__MPI
-    int size=MPI::COMM_WORLD.Get_size();
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int size=mpi->Size();
+    int rank=mpi->Rank();
     int le=e, nact=size, values[2];
     if (size>1) {
       if (rank==0) {
@@ -157,18 +167,18 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 	  values[0]=i+tag*inc;
 	  values[1]=i+(tag+1)*inc-1;
 	  if (tag==nact-1) values[1]=le;
-	  MPI::COMM_WORLD.Send(&values,2,MPI::INT,tag,tag);
-	  MPI::COMM_WORLD.Recv(&values,2,MPI::INT,MPI::ANY_SOURCE,size+tag);
+	  mpi->Send(&values,2,MPI_INT,tag,tag);
+	  mpi->Recv(&values,2,MPI_INT,MPI_ANY_SOURCE,size+tag);
 	  msg_Info()<<"  Rank "<<tag<<" analyzes "
 		    <<basename<<"["<<values[0]<<"-"<<values[1]<<"].\n";
 	}
 	msg_Info()<<"}\n";
       }
       else {
-	MPI::COMM_WORLD.Recv(&values,2,MPI::INT,0,rank);
+	mpi->Recv(&values,2,MPI_INT,0,rank);
 	i=values[0];
 	e=values[1];
-	MPI::COMM_WORLD.Send(&values,2,MPI::INT,0,size+rank);
+	mpi->Send(&values,2,MPI_INT,0,size+rank);
       }
     }
 #endif
@@ -183,7 +193,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
     THROW(fatal_error,"Missing input");
   }
   msg_Info()<<METHOD<<"(): Found "<<m_entries<<" entries."<<std::endl;
-  if (args.p_reader->GetValue<int>("ROOTNTUPLE_SET_NEVT",0))
+  if (s["ROOTNTUPLE_SET_NEVT"].Get<bool>())
     rpa->gen.SetNumberOfEvents(m_entries);
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
   p_vars->m_ncount=1.0;
@@ -247,10 +257,9 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 #else
   msg_Error()<<"Sherpa must be linked with root to read in root files!"<<endl;
 #endif
-  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_MEAN_2 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
-  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
+  Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
+  kperp_settings["MEAN"].OverrideScalar(0.0);
+  kperp_settings["SIGMA"].OverrideScalar(0.0);
 }
 
 RootNtuple_Reader::~RootNtuple_Reader()
@@ -259,6 +268,19 @@ RootNtuple_Reader::~RootNtuple_Reader()
 	 sit(m_procs.begin());sit!=m_procs.end();++sit) delete sit->second;
 }
 
+void RootNtuple_Reader::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["ROOTNTUPLE_ECMS"].SetDefault(rpa->gen.Ecms());
+  s["ROOTNTUPLE_CALC"].SetDefault(1);
+  const bool calc{ s["ROOTNTUPLE_CALC"].Get<bool>() };
+  s["ROOTNTUPLE_CHECK"].SetDefault((calc & 2) ? 1 : 0);
+  if (!s["SCALES"].IsCustomised()) {
+    s["SCALES"].OverrideScalar("VAR{sqr(" + ToString(rpa->gen.Ecms()) + ")}");
+  }
+  s["ROOTNTUPLE_LO_MODE"].SetDefault(0);
+  s["ROOTNTUPLE_SET_NEVT"].SetDefault(false);
+}
 
 void RootNtuple_Reader::CloseFile() {
 #ifdef USING__ROOT
@@ -428,27 +450,30 @@ double RootNtuple_Reader::CalculateWeight
 #endif
 }
 
-double RootNtuple_Reader::Reweight(Variation_Parameters * varparams,
-                                   Variation_Weights * varweights,
-                                   const Weight_Calculation_Args &args)
+double RootNtuple_Reader::CalculateWeight(const Weight_Calculation_Args& args,
+                                          const QCD_Variation_Params& varparams)
 {
-  DEBUG_FUNC("R = "<<sqrt(varparams->m_muR2fac)<<", F = "<<sqrt(varparams->m_muF2fac));
+  DEBUG_FUNC("R = " << sqrt(varparams.m_muR2fac)
+                    << ", F = " << sqrt(varparams.m_muF2fac));
   // temporarily replace PDFs
   PDF::PDF_Base *nominalpdf1 = p_isr->PDF(0);
   PDF::PDF_Base *nominalpdf2 = p_isr->PDF(1);
-  p_isr->SetPDF(varparams->p_pdf1, 0);
-  p_isr->SetPDF(varparams->p_pdf2, 1);
+  p_isr->SetPDF(varparams.p_pdf1, 0);
+  p_isr->SetPDF(varparams.p_pdf2, 1);
 
-  Weight_Calculation_Args varargs(args.m_mur2 * varparams->m_muR2fac,
-				  args.m_muf2 * varparams->m_muF2fac,
-				  args.m_mode, args.p_scale,args.p_kfac,
-				  args.m_K, varparams->m_muR2fac);
-  if (args.p_scale && args.p_scale->UpdateScale(*varparams)) {
+  Weight_Calculation_Args varargs(args.m_mur2 * varparams.m_muR2fac,
+                                  args.m_muf2 * varparams.m_muF2fac,
+                                  args.m_mode,
+                                  args.p_scale,
+                                  args.p_kfac,
+                                  args.m_K,
+                                  varparams.m_muR2fac);
+  if (args.p_scale && args.p_scale->UpdateScale(varparams)) {
     varargs.m_mur2=args.p_scale->Scale(stp::ren);
     varargs.m_muf2=args.p_scale->Scale(stp::fac);
   }
-  double weight(CalculateWeight(varargs, varparams->p_alphas->GetAs()));
-  if (args.p_kfac && args.p_kfac->UpdateKFactor(*varparams))
+  double weight(CalculateWeight(varargs, varparams.p_alphas->GetAs()));
+  if (args.p_kfac && args.p_kfac->UpdateKFactor(varparams))
     weight*=args.p_kfac->LastKFactor()/args.m_K;
 
   // reset PDFs
@@ -473,12 +498,10 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   }
   if (m_evtid==0) if (!ReadInEntry()) return 0;
   Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
-  m_weight = 0.;
   signalblob->SetTypeSpec("NLO");
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
   signalblob->SetStatus(blob_status::code(30));
-  std::vector<Variation_Weights*> subvarweights;  
 #ifdef USING__ROOT
   size_t currentid=m_evtid;
   int id1(0), id2(0);
@@ -546,17 +569,19 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       const Weight_Calculation_Args args(muR2,muF2,p_vars->m_nuwgt?1:2,scale,kfac,K,1.);
       double weight=CalculateWeight(args, MODEL::as->GetAs());
       weight*=K/p_vars->m_kfac;
-      if (p_variations) {
-        subvarweights.push_back(new Variation_Weights(p_variations));
-        subvarweights.back()->UpdateOrInitialiseWeights
-	  (&RootNtuple_Reader::Reweight,*this,args);
-        (*subvarweights.back())*=K/p_vars->m_kfac;
-      }
+      m_nlos.back()->m_results = weight;
+      ATOOLS::Reweight(
+          m_nlos.back()->m_results["ME"],
+          [this, &args, K, weight](double varweight,
+                           const QCD_Variation_Params& varparams) -> double {
+            varweight = CalculateWeight(args, varparams);
+            return varweight / weight * K / p_vars->m_kfac;
+          });
+
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   total weight "<<weight/p_vars->m_wgt2<<"\n";
 #endif
       m_nlos.back()->m_result=weight;
-      m_weight+=weight;
       if (m_check) {
 	msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
 		       <<weight<<", stored "<<p_vars->m_wgt2
@@ -575,7 +600,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
       KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
       weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;
-      m_weight+=weight;
       msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
 		     <<weight<<", stored "<<p_vars->m_wgt2
 		     <<", rel. diff. "<<weight/p_vars->m_wgt2-1.0<<".\n";
@@ -583,9 +607,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
 		   <<(weight/p_vars->m_wgt2-1.0)<<".\n  computed "
 		   <<weight<<", stored "<<p_vars->m_wgt2<<"."<<std::endl;
-    }
-    else {
-      m_weight+=p_vars->m_wgt2;
     }
     vars=*p_vars;
     if (!ReadInEntry()) m_evtid=0;
@@ -609,16 +630,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-vars.m_oqcd);
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->AddStatus(blob_status::needs_harddecays);
-  signalblob->SetWeight(m_weight);
-  // fill variation weights such that later event phases can update them
-  if (p_variations) {
-    Variation_Weights *varweights(new Variation_Weights(p_variations));
-    varweights->InitialiseWeights(&RootNtuple_Reader::Fill,*this,subvarweights);
-    signalblob->AddData("Variation_Weights", new Blob_Data<Variation_Weights>(*varweights));
-    for (size_t i(0);i<subvarweights.size();++i) delete subvarweights[i];
-    delete varweights;
+  Weights_Map wgtmap {0.0};
+  for (const auto* sub : m_nlos) {
+    wgtmap += sub->m_results;
   }
-  signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
+  signalblob->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      ((vars.m_nuwgt?vars.m_mewgt:vars.m_mewgt2)/
 		       (vars.m_pswgt?vars.m_pswgt:1.0)));
@@ -636,17 +652,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("MEWeightInfo",new Blob_Data<ATOOLS::ME_Weight_Info*>(&m_mewgtinfo));
   m_evtcnt++;
   return 1;
-}
-
-Subevent_Weights_Vector RootNtuple_Reader::Fill
-(Variation_Parameters *vars,Variation_Weights *weights,
- std::vector<Variation_Weights*> &subvarweights)
-{
-  Subevent_Weights_Vector subweights(subvarweights.size());
-  for (size_t j(0);j<subvarweights.size();++j)
-    subweights[j]=subvarweights[j]->
-      GetVariationWeightAt(weights->CurrentParametersIndex());
-  return subweights;
 }
 
 DECLARE_GETTER(RootNtuple_Reader,"Root",

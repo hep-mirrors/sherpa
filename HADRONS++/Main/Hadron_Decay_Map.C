@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -36,23 +37,13 @@ void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
   m_startmd.clear();                            // clear model
   Data_Reader reader = Data_Reader(" ",";","!","|");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
   reader.SetInputFile(file);
   reader.AddLineSeparator("\n");
   vector<vector<string> > constants;
-  // get content of file as string
-  string content = reader.GetZipFileContent(path,file);
-  if (content=="") {
-    msg_Error()<<"Warning! The file "<<path<<file<<" does not exist"<<endl
-             <<"     or has some syntax error."<<endl;
-    msg_Error()<<"     Will ignore it and hope for the best."<<endl;
-    return;
-  } 
-  reader.SetString(content,true);
-  if(!reader.MatrixFromString(constants,"")) {
+  if(!reader.MatrixFromFile(constants,"")) {
     msg_Error()<<"Warning! The file "<<path<<file<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
     msg_Error()<<"     Will ignore it and hope for the best."<<endl;
@@ -88,7 +79,6 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
 {
   Data_Reader reader = Data_Reader(" ",";","!","|");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -96,15 +86,7 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
   reader.AddLineSeparator("\n");
   vector<vector<string> > helpsvv;
   vector<int>             helpkfc;
-  string content = reader.GetZipFileContent(path,file);
-
-  if (content=="") {
-    msg_Error()<<"ERROR in "<<METHOD<<endl
-      <<"   Read in failure "<<path<<file<<", will abort."<<endl;
-    Abort();
-  }
-  reader.SetString(content,true);
-  if(!reader.MatrixFromString(helpsvv,"")) {
+  if(!reader.MatrixFromFile(helpsvv,"")) {
     msg_Error()<<"ERROR in "<<METHOD<<endl
       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
     abort();
@@ -166,7 +148,6 @@ void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader("->", ";", "#", "");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -174,9 +155,7 @@ void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
   reader.AddLineSeparator("\n");
  
   vector<vector<string> > aliases;
-  string content = reader.GetZipFileContent(path,file);
-  reader.SetString(content,true);
-  reader.MatrixFromString(aliases,"");
+  reader.MatrixFromFile(aliases,"");
 
   for (size_t i=0;i<aliases.size();++i) {
     if (aliases[i].size()!=2) {
@@ -197,7 +176,6 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -205,9 +183,7 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
   reader.AddLineSeparator("\n");
   
   vector<vector<string> > Decayers;
-  string content = reader.GetZipFileContent(path,file);
-  reader.SetString(content,true);
-  if(reader.MatrixFromString(Decayers,"")) {
+  if(reader.MatrixFromFile(Decayers,"")) {
     msg_Info()<<METHOD<<":"
               <<"   Initializing "<<file<<". This may take some time."
               <<endl;
@@ -262,7 +238,6 @@ void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -270,9 +245,7 @@ void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
   reader.AddLineSeparator("\n");
   
   vector<vector<string> > Decayers;
-  string content = reader.GetZipFileContent(path,file);
-  reader.SetString(content,true);
-  if(!reader.MatrixFromString(Decayers,"")) {
+  if(!reader.MatrixFromFile(Decayers,"")) {
     return;
   }
 

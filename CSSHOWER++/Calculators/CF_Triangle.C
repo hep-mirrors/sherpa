@@ -29,7 +29,10 @@ bool CF_GGH::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
-  double vev(std::abs(md->ComplexConstant("cvev")));
+  ATOOLS::Function_Base* aqed = md->GetScalarFunction("alpha_QED");
+  double MZ = Flavour(kf_Z).Mass(); double MW = Flavour(kf_Wplus).Mass();
+  double stw2 = 1.0-sqr(MW/MZ);
+  double vev=2.*MW*sqrt(stw2/(4.*M_PI*aqed->Default()));
   double asggh(md->ScalarFunction(std::string("alpha_S"),
 				  sqr(Flavour(kf_h0).Mass())));
   double cpl(asggh/(2.0*M_PI*vev));

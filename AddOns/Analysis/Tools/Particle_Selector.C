@@ -28,28 +28,25 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Particle_Selector,"PartSel",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
-void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Particle_Selector>::
+void ATOOLS::Getter<Analysis_Object,Analysis_Key,Particle_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"Qual: qualifier\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Particle_Selector>::
-operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,Particle_Selector>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist="FinalState", outlist="Selected", qual("NotLepton");
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="Qual" && cur.size()>1) qual=cur[1];
-  }
+  Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto qual = s["Qual"].SetDefault("NotLepton").Get<std::string>();
   return new Particle_Selector(inlist,outlist,qual);
 }
 

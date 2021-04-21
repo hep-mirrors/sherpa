@@ -3,13 +3,13 @@
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Read_Write_Base.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/ISR_Base.H"
@@ -56,6 +56,8 @@ void small_sherpa_init(int argc, char *argv[])
   // use this for small programs, which don't use the full Sherpa framework,
   // but only Hadrons
 
+  Settings::InitializeMainSettings(argc, argv);
+
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
@@ -64,29 +66,12 @@ void small_sherpa_init(int argc, char *argv[])
   ATOOLS::s_loader = new Library_Loader();
 
   PRINT_INFO("using small_sherpa_init");
-  rpa->gen.SetVariable("PATH_PIECE","./");
 
-  for (int i=1; i<argc;++i) {
-    string par = string(argv[i]);
-    string key,value;
-    int equal  = par.find("=");
-    if (equal!=-1) {
-      value = par.substr(equal+1);
-      key   = par = par.substr(0,equal);
-      if (key[key.length()-1]==':') {
-	key.erase(key.length()-1,1);
-	Read_Write_Base::AddGlobalTag(key,value);
-      }
-      else {
-	Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
-      }
-    }
-  }
-  rpa->Init("","Run.dat",argc,argv);
-  
+  rpa->Init();
+
   s_loader->LoadLibrary("SherpaSM");
   MODEL::s_model=MODEL::Model_Base::Model_Getter_Function::
-    GetObject("SM",MODEL::Model_Arguments("","Model.dat",true));
+    GetObject("SM",MODEL::Model_Arguments(true));
   PDF::ISR_Base ** isrbases = new PDF::ISR_Base*[2];
   isrbases[0] = new PDF::Intact(Flavour(kf_e));
   isrbases[1] = new PDF::Intact(Flavour(kf_e).Bar());
@@ -98,13 +83,10 @@ void small_sherpa_init(int argc, char *argv[])
   isrhandlers[PDF::isr::hard_process]->Init(bunch_splimits);
   MODEL::s_model->ModelInit(isrhandlers);
 
-  AHADIC::Hadron_Init hi;
-  hi.Init();
-  Default_Reader reader;
-  hi.OverWriteProperties(reader);
+  AHADIC::Hadron_Init().Init();
   ATOOLS::OutputHadrons(std::cout);
 
-  m_analysis = reader.GetValue<int>("ANALYSIS",1);
+  m_analysis = Settings::GetMainSettings()["ANALYSIS"].SetDefault(1).Get<int>();
 
   msg->SetModifiable(true);
 }
@@ -113,7 +95,7 @@ void small_sherpa_init(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 #ifdef USING__MPI
-  MPI::Init(argc,argv);
+  MPI_Init(&argc, &argv);
 #endif
   try {
 #ifdef USING__ROOT
@@ -148,7 +130,7 @@ int main(int argc, char *argv[])
     terminate();
   }
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   return 0;
 }

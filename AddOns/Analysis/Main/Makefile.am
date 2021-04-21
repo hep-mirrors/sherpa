@@ -1,4 +1,8 @@
+GITTAG = AddOns/Analysis/Main
+include ../../../git.make
+
 ANAMAIN_SOURCES       =	\
+			Git_Info.C \
 			Analysis_Object.C \
 			Primitive_Analysis.C \
 			Analysis_Handler.C

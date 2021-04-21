@@ -1,11 +1,15 @@
 from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, split_by_orders, vertex_collection
+from ufo_interface.tensor import tensor
 from ufo_interface.templates import model_template
 from operator import attrgetter
+from py_to_cpp import py_to_cpp
 
 def write_model(model, lorentzes, model_name, model_file_name):
 
     para_init = ""
     part_init = ""
+
+    parameter_map = {}
 
     external_parameters = [s_parameter(param) for param in  model.all_parameters if (s_parameter(param).is_external())]
     internal_parameters = [s_parameter(param) for param in  model.all_parameters if (s_parameter(param).is_internal())]
@@ -20,6 +24,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
         statement+=");\n"
         statement+='    p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
         para_init += "\n"+statement
+        parameter_map[param.name()] = "(MODEL::s_model->ScalarConstant(std::string(\"{0}\")))".format(param.name())
 
     # internal parameter initialization and calculation
     for param in internal_parameters:
@@ -29,6 +34,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
             statement = "    double "+param.name()+" = ToDouble("+param.cpp_value()+");"
         para_init += "\n"+statement
         para_init += "\n    DEBUG_VAR({0});".format(param.name())
+        parameter_map[param.name()] = param.cpp_value(parameter_map)
 
     # fill particle list
     for s_part in [ s_particle(p) for p in model.all_particles ]:
@@ -84,6 +90,13 @@ def write_model(model, lorentzes, model_name, model_file_name):
         calls        += v_collection.call_string()
         i            += 1
 
+    # fill the order key getter
+    order_name_map = ""
+    i = 0
+    for order_name in hierarchy:
+        order_name_map +='\n      if (key == "{}") return {};'.format(order_name, i)
+        i += 1
+
     # fill the lorentz name map
     lorentz_map = ""
     for lor in lorentzes:
@@ -94,4 +107,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
     # write out model
     with open(model_file_name, "w") as outfile:
         outfile.write(model_template.substitute(model_name=model_name, particle_init=part_init, param_init=para_init,
-                                                declarations = declarations, calls = calls, fill_lorentz_map=lorentz_map))
+                                                declarations=declarations, calls=calls,
+                                                index_of_order_key=order_name_map, fill_lorentz_map=lorentz_map))
+
+    return parameter_map

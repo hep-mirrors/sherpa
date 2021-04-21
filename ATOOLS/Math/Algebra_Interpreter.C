@@ -18,11 +18,12 @@ using namespace ATOOLS;
 #define PT(ARG) (PTS)(ARG)
 
 Function::Function(const std::string &tag): 
-  m_tag(tag), p_interpreter(NULL) {}
+  m_tag(tag) {}
 
 Function::~Function() {}
 
-Term *Function::Evaluate(const std::vector<Term*> &args) const
+Term *Function::Evaluate(Algebra_Interpreter *const interpreter,
+			 const std::vector<Term*> &args) const
 {
   THROW(fatal_error,"No evaluation rule.");
 }
@@ -44,7 +45,8 @@ public:
 
   ~Single_Term();
 
-  Term *Evaluate(const std::vector<Term*> &args) const;
+  Term *Evaluate(Algebra_Interpreter *const interpreter,
+		 const std::vector<Term*> &args) const;
 
 };// end of class Single_Term
 
@@ -68,7 +70,8 @@ Single_Term::~Single_Term()
   if (p_value) delete p_value;
 }
 
-Term *Single_Term::Evaluate(const std::vector<Term*> &args) const
+Term *Single_Term::Evaluate(Algebra_Interpreter *const interpreter,
+			    const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Single_Term requires no argument.");
   if (m_replace) p_replacer->ReplaceTags(p_value);
@@ -79,7 +82,8 @@ Operator::~Operator() {}
 
 inline bool IsNum(const char c) { return c>=48 && c<=57; }
 
-size_t Operator::FindTag(const std::string &expr,
+size_t Operator::FindTag(Algebra_Interpreter *const interpreter,
+			 const std::string &expr,
 			 const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
@@ -87,91 +91,100 @@ size_t Operator::FindTag(const std::string &expr,
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Binary_Plus,"+",12,true)
-Term *Binary_Plus::Evaluate(const std::vector<Term*> &args) const
+Term *Binary_Plus::Evaluate(Algebra_Interpreter *const interpreter,
+			    const std::vector<Term*> &args) const
 {
   Term *res = *args[0]+*args[1];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Binary_Plus::FindTag(const std::string &expr,
+size_t Binary_Plus::FindTag(Algebra_Interpreter *const interpreter,
+			    const std::string &expr,
 			    const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
-  if (pos==0) return FindTag(expr,fwd,1);
+  if (pos==0) return FindTag(interpreter,expr,fwd,1);
   if ((expr[pos-1]=='e' || expr[pos-1]=='E') && 
       (pos+1<expr.length() && IsNum(expr[pos+1])) &&
       ((pos>1 && IsNum(expr[pos-2])) || 
        (pos>2 && expr[pos-2]=='.' && IsNum(expr[pos-3])))) 
-    return FindTag(expr,fwd,fwd?pos+1:pos-1);
+    return FindTag(interpreter,expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Binary_Minus,"-",12,true)
-Term *Binary_Minus::Evaluate(const std::vector<Term*> &args) const
+Term *Binary_Minus::Evaluate(Algebra_Interpreter *const interpreter,
+			     const std::vector<Term*> &args) const
 {
   Term *res = *args[0]-*args[1];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Binary_Minus::FindTag(const std::string &expr,
+size_t Binary_Minus::FindTag(Algebra_Interpreter *const interpreter,
+			     const std::string &expr,
 			     const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
-  if (pos==0) return FindTag(expr,fwd,1);
+  if (pos==0) return FindTag(interpreter,expr,fwd,1);
   if ((expr[pos-1]=='e' || expr[pos-1]=='E') && 
       (pos+1<expr.length() && IsNum(expr[pos+1])) &&
       ((pos>1 && IsNum(expr[pos-2])) ||
        (pos>2 && expr[pos-2]=='.' && IsNum(expr[pos-3]))))
-    return FindTag(expr,fwd,fwd?pos+1:pos-1);
+    return FindTag(interpreter,expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Bitwise_And,"&",8,true)
-Term *Bitwise_And::Evaluate(const std::vector<Term*> &args) const
+Term *Bitwise_And::Evaluate(Algebra_Interpreter *const interpreter,
+			    const std::vector<Term*> &args) const
 {
   Term *res = *args[0]&*args[1];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Bitwise_And::FindTag(const std::string &expr,
+size_t Bitwise_And::FindTag(Algebra_Interpreter *const interpreter,
+			    const std::string &expr,
 			    const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("&",cpos):expr.rfind("&",cpos));
   if (pos==std::string::npos || pos==0) return std::string::npos;
   if (expr[pos+1]=='&' || expr[pos-1]=='&') 
-    return FindTag(expr,fwd,fwd?pos+2:pos-2);
+    return FindTag(interpreter,expr,fwd,fwd?pos+2:pos-2);
   return pos;  
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Bitwise_Or,"|",6,true)
-Term *Bitwise_Or::Evaluate(const std::vector<Term*> &args) const
+Term *Bitwise_Or::Evaluate(Algebra_Interpreter *const interpreter,
+			   const std::vector<Term*> &args) const
 {
   Term *res = *args[0]|*args[1];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Bitwise_Or::FindTag(const std::string &expr,
+size_t Bitwise_Or::FindTag(Algebra_Interpreter *const interpreter,
+			   const std::string &expr,
 			   const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("|",cpos):expr.rfind("|",cpos));
   if (pos==std::string::npos || pos==0) return std::string::npos;
   if (expr[pos+1]=='|' || expr[pos-1]=='|') 
-    return FindTag(expr,fwd,fwd?pos+2:pos-2);
+    return FindTag(interpreter,expr,fwd,fwd?pos+2:pos-2);
   return pos;  
 }
 
 #define DEFINE_BINARY_TERM_OPERATOR(NAME,TAG,OP,PRIORITY)\
   DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res = *args[0] OP *args[1];\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -186,10 +199,11 @@ DEFINE_BINARY_TERM_OPERATOR(Bitwise_XOr,"^",^,7)
 
 #define DEFINE_BINARY_SORTABLE_TERM_OPERATOR(NAME,TAG,OP,PRIORITY)\
   DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res = *args[0] OP *args[1];\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -201,52 +215,58 @@ DEFINE_BINARY_SORTABLE_TERM_OPERATOR(Binary_Less_Equal,"<=",<=,10)
 DEFINE_BINARY_SORTABLE_TERM_OPERATOR(Binary_Greater_Equal,">=",>=,10)
 
 DEFINE_UNARY_BINARY_OPERATOR(Unary_Not,"!",14,false)
-Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
+Term *Unary_Not::Evaluate(Algebra_Interpreter *const interpreter,
+			  const std::vector<Term*> &args) const
 {
   Term *res = !*args[0];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Unary_Not::FindTag(const std::string &expr,
+size_t Unary_Not::FindTag(Algebra_Interpreter *const interpreter,
+			  const std::string &expr,
 			  const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("!",cpos):expr.rfind("!",cpos));
   if (pos==std::string::npos || pos+1>=expr.length())
     return std::string::npos;
-  if (expr[pos+1]=='=') return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  if (expr[pos+1]=='=')
+    return FindTag(interpreter,expr,fwd,fwd?pos+1:pos-1);
   return pos;
 }
 
 DEFINE_UNARY_BINARY_OPERATOR(Unary_Minus,"-",14,false)
-Term *Unary_Minus::Evaluate(const std::vector<Term*> &args) const
+Term *Unary_Minus::Evaluate(Algebra_Interpreter *const interpreter,
+			    const std::vector<Term*> &args) const
 {
   Term *res = -*args[0];
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
-size_t Unary_Minus::FindTag(const std::string &expr,
+size_t Unary_Minus::FindTag(Algebra_Interpreter *const interpreter,
+			    const std::string &expr,
 			    const bool fwd,size_t cpos) const
 {
   if (cpos==std::string::npos && fwd) cpos=0;
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || pos==0) return pos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
-	 oit=p_interpreter->Operators().rbegin();
-       oit!=p_interpreter->Operators().rend();++oit) {
+	 oit=interpreter->Operators().rbegin();
+       oit!=interpreter->Operators().rend();++oit) {
     if (oit->second->Tag().length()<=pos &&
 	expr.rfind(oit->second->Tag(),pos-1)==
 	pos-oit->second->Tag().length()) return pos;
   }
-  return FindTag(expr,fwd,fwd?pos+1:pos-1);
+  return FindTag(interpreter,expr,fwd,fwd?pos+1:pos-1);
 }
 
 #define DEFINE_BINARY_TERM_FUNCTION(NAME,TAG,OP)\
   DEFINE_FUNCTION(NAME,TAG)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res(OP(*args[0],*args[1]));\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -254,12 +274,13 @@ DEFINE_BINARY_TERM_FUNCTION(Power,"pow",TPow)
 
 #define DEFINE_ITERATED_TERM_FUNCTION(NAME,TAG,OP)\
   DEFINE_FUNCTION(NAME,TAG)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res(args[0]);\
     for (size_t i=1;i<args.size();++i) {\
       res = OP(*res,*args[i]);\
-      p_interpreter->AddTerm(res);\
+      interpreter->AddTerm(res);\
     }\
     return res;\
   }
@@ -269,10 +290,11 @@ DEFINE_ITERATED_TERM_FUNCTION(Maximum,"max",TMax)
 
 #define DEFINE_UNARY_TERM_FUNCTION(NAME,TAG,OP)\
   DEFINE_FUNCTION(NAME,TAG)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res(OP(*args[0]));\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -296,10 +318,11 @@ DEFINE_UNARY_TERM_FUNCTION(Arc_Tangent,"atan",TATan)
 
 #define DEFINE_ONE_TERM_FUNCTION(NAME,TAG,OP)\
   DEFINE_FUNCTION(NAME,TAG)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res = args[0]->OP();\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -308,10 +331,11 @@ DEFINE_ONE_TERM_FUNCTION(Imag,"Imag",Imag)
 DEFINE_ONE_TERM_FUNCTION(Conj,"Conj",Conj)
 
 DEFINE_FUNCTION(Vec4D_Vec4D,"Vec4D")
-Term *Vec4D_Vec4D::Evaluate(const std::vector<Term*> &args) const
+Term *Vec4D_Vec4D::Evaluate(Algebra_Interpreter *const interpreter,
+			    const std::vector<Term*> &args) const
 {
   Term *res = TVec4D(*args[0],*args[1],*args[2],*args[3]);
-  p_interpreter->AddTerm(res);
+  interpreter->AddTerm(res);
   return res;
 }
 
@@ -334,10 +358,11 @@ DEFINE_ONE_TERM_FUNCTION(Vec4D_Phi,"Phi",Phi)
 
 #define DEFINE_TWO_TERM_FUNCTION(NAME,TAG,OP)\
   DEFINE_FUNCTION(NAME,TAG)\
-  Term *NAME::Evaluate(const std::vector<Term*> &args) const\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
   {\
     Term *res = args[0]->OP(*args[1]);\
-    p_interpreter->AddTerm(res);\
+    interpreter->AddTerm(res);\
     return res;\
   }
 
@@ -388,8 +413,17 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Bracket)
 	      pos+fit->second->Tag().length()==i) break;
 	}
 	if (fit==p_interpreter->Functions().rend()) {
-	  l=i;
-	  take=open;
+	  Algebra_Interpreter::Function_Map::const_reverse_iterator fit=
+	    p_interpreter->Locals().rbegin();
+	  for (;fit!=p_interpreter->Locals().rend();++fit) {
+	    size_t pos=expr.rfind(fit->second->Tag(),i);
+	    if (pos!=std::string::npos &&
+		pos+fit->second->Tag().length()==i) break;
+	  }
+	  if (fit==p_interpreter->Locals().rend()) {
+	    l=i;
+	    take=open;
+	  }
 	}
       }    
     }  
@@ -429,6 +463,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
       func=fit->second;
       rem=pos;
     }}
+  if (func==NULL)
+    for (Algebra_Interpreter::Function_Map::const_reverse_iterator
+	   fit=p_interpreter->Locals().rbegin();
+	 fit!=p_interpreter->Locals().rend();++fit) {
+      if ((pos=expr.rfind(fit->second->Tag()+'('))!=
+	  std::string::npos && pos<rem) {
+	func=fit->second;
+	rem=pos;
+      }}
   if (func==NULL) return expr;
   pos=rem;
   size_t last=pos+func->Tag().length()+1, open=0;
@@ -473,7 +516,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    pos=oit->second->FindTag(expr,true);
+    pos=oit->second->FindTag(p_interpreter,expr,true);
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
 	op=oit->second;
@@ -490,7 +533,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t tlfpos=oit->second->FindTag(lstr,false);
+    size_t tlfpos=oit->second->FindTag(p_interpreter,lstr,false);
     if (tlfpos!=std::string::npos) 
       lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
   }
@@ -501,7 +544,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=oit->second->FindTag(rstr,true);
+    size_t trfpos=oit->second->FindTag(p_interpreter,rstr,true);
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   rrstr=rstr.substr(rfpos);
@@ -532,7 +575,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    pos=oit->second->FindTag(expr,false);
+    pos=oit->second->FindTag(p_interpreter,expr,false);
     if (pos!=std::string::npos) {
       if (!oit->second->Binary()) {
 	op=oit->second;
@@ -552,7 +595,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=oit->second->FindTag(rstr,true);
+    size_t trfpos=oit->second->FindTag(p_interpreter,rstr,true);
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   if (negative) {
@@ -574,6 +617,11 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
     Iterate(lrstr+"{"+ToString(PT(leaf))+"}"+rrstr);
 }
 
+Algebra_Interpreter::Function_Map Algebra_Interpreter::s_functions;
+Algebra_Interpreter::Operator_Map Algebra_Interpreter::s_operators;
+
+Algebra_Interpreter::Global_Functions Algebra_Interpreter::s_global;
+
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   p_replacer(this), p_root(NULL)
 {
@@ -585,6 +633,10 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   if (!standard) return;
   m_tags["M_PI"]=ToString(M_PI);
   m_tags["M_E"]=ToString(exp(1.0));
+}
+
+Algebra_Interpreter::Global_Functions::Global_Functions()
+{
   AddFunction(new Real());
   AddFunction(new Imag());
   AddFunction(new Conj());
@@ -654,12 +706,20 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_DR());
 }
 
+Algebra_Interpreter::Global_Functions::~Global_Functions()
+{
+  while (!s_functions.empty()) {
+    delete s_functions.begin()->second;
+    s_functions.erase(s_functions.begin());
+  }
+  while (!s_operators.empty()) {
+    delete s_operators.begin()->second;
+    s_operators.erase(s_operators.begin());
+  }
+}
+
 Algebra_Interpreter::~Algebra_Interpreter()
 {
-  while (!m_operators.empty()) {
-    delete m_operators.begin()->second;
-    m_operators.erase(m_operators.begin());
-  }
   while (!m_functions.empty()) {
     delete m_functions.begin()->second;
     m_functions.erase(m_functions.begin());
@@ -739,22 +799,15 @@ Term *Algebra_Interpreter::Iterate
 {
   Term_Vector &args(m_argvs[n++]);
   if (node->operator->()==NULL)
-    return (*node)[0]->Evaluate(args);
+    return (*node)[0]->Evaluate(this,args);
   for (size_t i=0;i<(*node)->size();++i)
     args[i]=Iterate((*node)()[i],n);
-  return (*node)[0]->Evaluate(args);
+  return (*node)[0]->Evaluate(this,args);
 }
 
 void Algebra_Interpreter::AddFunction(Function *const f)
 {
-  m_functions.insert(Function_Pair(f->Tag(),f)); 
-  f->SetInterpreter(this);
-}
-
-void Algebra_Interpreter::AddOperator(Operator *const b)
-{ 
-  m_operators.insert(Operator_Pair(b->Priority(),b)); 
-  b->SetInterpreter(this);
+  m_functions.insert(Function_Pair(f->Tag(),f));
 }
 
 void Algebra_Interpreter::AddLeaf(Function *const f)
@@ -770,8 +823,10 @@ void Algebra_Interpreter::AddTerm(Term *const t)
 Node<Function*> *Algebra_Interpreter::
 ExtractLeaf(const std::string &expr) const
 {
-  if (expr.find("{")!=0 || expr.rfind("}")!=expr.length()-1)
-    THROW(fatal_error,"Cannot recover node pointer.");
+  if (expr.find("{") != 0 || expr.rfind("}") != expr.length()-1) {
+    THROW(fatal_error,
+          "Cannot recover node pointer in expression: \"" + expr + "\".");
+  }
   size_t pos(expr.rfind('{')); 
   return (Node<Function*>*)ToType<PTS>
     (expr.substr(pos+1,expr.length()-pos-2));

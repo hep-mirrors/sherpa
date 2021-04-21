@@ -6,12 +6,14 @@ pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
 				Git_Info.C \
+				fjcore.cc \
 				Flavour.C \
 				Ordering.C \
 				Particle.C \
 			        Simple_Polarisation_Info.C \
 				Particle_List.C \
 				Particle_Dresser.C \
+                                KF_Table.C \
 				NLO_Subevt.C \
 				NLO_Types.C \
 				Decay_Info.C \
@@ -29,9 +31,11 @@ libToolsPhys_la_SOURCES       =	\
 				Fastjet_Helpers.C \
 				Momenta_Stretcher.C \
 				Weight_Info.C \
-				Variations.C
+				Variations.C \
+				Weights.C
 
 localinc_HEADERS      =	\
+			fjcore.hh \
 			Ordering.H \
 			Flavour_Tags.H \
 			Flavour.H \
@@ -39,6 +43,7 @@ localinc_HEADERS      =	\
 			Simple_Polarisation_Info.H \
 			Particle_List.H \
 			Particle_Dresser.H \
+                        KF_Table.H \
 			NLO_Subevt.H \
 			NLO_Types.H \
 			Decay_Info.H \
@@ -56,8 +61,7 @@ localinc_HEADERS      =	\
 			Fastjet_Helpers.H \
 			Momenta_Stretcher.H \
 			Weight_Info.H \
-			Variations.H
+			Variations.H \
+			Weights.H
 
-libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
-
-libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@ @CONDITIONAL_LHAPDFINCS@
+libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@

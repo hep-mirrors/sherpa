@@ -2,9 +2,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -29,19 +29,19 @@ Output_RootNtuple::Output_RootNtuple
 (const Output_Arguments &args,int exact,int ftype):
   Output_Base("Root"), m_exact(exact), m_ftype(ftype)
 {
-  args.p_reader->SetAllowUnits(true);
-  m_filesize = args.p_reader->GetValue<long int>("NTUPLE_SIZE",2147483647);
-  args.p_reader->SetAllowUnits(false);
-  m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
-  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
-  m_comp=args.p_reader->GetValue<int>("ROOTNTUPLE_COMPRESSION",101);
+  Settings& s = Settings::GetMainSettings();
+  Common_Root_Settings().RegisterDefaults();
+  RegisterDefaults();
+  m_mode=s["ROOTNTUPLE_MODE"].Get<int>();
+  m_treename=s["ROOTNTUPLE_TREENAME"].Get<std::string>();
+  m_comp=s["ROOTNTUPLE_COMPRESSION"].Get<int>();
   m_basename =args.m_outpath+"/"+args.m_outfile;
   m_ext = ".root";
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
   m_idcnt=0;
-  m_avsize=args.p_reader->GetValue<int>("ROOTNTUPLE_AVSIZE",10000);
+  m_avsize=s["ROOTNTUPLE_AVSIZE"].Get<int>();
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (m_exact) m_avsize=Max((size_t)1,m_avsize/size);
 #endif
   m_total=0;
@@ -101,17 +101,25 @@ Output_RootNtuple::Output_RootNtuple
 #endif
 }
 
+void Output_RootNtuple::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["ROOTNTUPLE_MODE"].SetDefault(0);
+  s["ROOTNTUPLE_COMPRESSION"].SetDefault(101);
+  s["ROOTNTUPLE_AVSIZE"].SetDefault(10000);
+}
+
 void Output_RootNtuple::Header()
 {
 #ifdef USING__ROOT
 #ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank();
+  int rank=mpi->Rank();
   if (rank) return;
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_f->SetCompressionSettings(m_comp);
   p_t3 = new TTree(m_treename.c_str(),"Reconst ntuple");
-  p_t3->SetMaxTreeSize(m_filesize);
+  p_t3->SetMaxTreeSize(2147483647);
   p_t3->Branch("id",&m_id,"id/I");
   if (m_exact) p_t3->Branch("ncount",&m_ncount,"ncount/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
@@ -239,12 +247,13 @@ void Output_RootNtuple::Output(Blob_List* blobs)
   ME_Weight_Info* wgtinfo(NULL);
   if (seinfo) wgtinfo=seinfo->Get<ME_Weight_Info*>();
   seinfo=(*signal)["NLO_subeventlist"];
-  std::string type((*signal)["NLOQCDType"]->Get<std::string>());
+  std::string type((*signal)["NLOType"]->Get<std::string>());
   
   if (!seinfo) { // BVI type events
     if (m_evtlist.size()<=m_cnt2)
       m_evtlist.resize(m_evtlist.size()+m_avsize);
-    m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
+    m_evtlist[m_cnt2].weight =
+        (*signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
     m_evtlist[m_cnt2].ncount=ncount;
     m_sum+=m_evtlist[m_cnt2].weight;
     m_csum+=m_evtlist[m_cnt2].weight;
@@ -399,22 +408,22 @@ void Output_RootNtuple::MPISync()
 {
 #ifdef USING__MPI
   static int s_offset=11;
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int rank=mpi->Rank();
     double vals[6];
     if (rank==0) {
       m_evtlist.resize(m_cnt2);
       m_flavlist.resize(m_fcnt);
       m_momlist.resize(m_fcnt);
       for (int tag=1;tag<size;++tag) {
-	MPI::COMM_WORLD.Recv(&vals,6,MPI::DOUBLE,MPI::ANY_SOURCE,s_offset*size+tag);
+	mpi->Recv(&vals,6,MPI_DOUBLE,MPI_ANY_SOURCE,s_offset*size+tag);
 	std::vector<rntuple_evt2> evts((int)vals[0]);
 	std::vector<int> flavs((int)vals[3]);
 	std::vector<Vec4D> moms((int)vals[3]);
-	MPI::COMM_WORLD.Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI::ANY_SOURCE,(s_offset+1)*size+tag);
-	MPI::COMM_WORLD.Recv(&flavs.front(),(int)vals[3],MPI::INT,MPI::ANY_SOURCE,(s_offset+2)*size+tag);
-	MPI::COMM_WORLD.Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI::ANY_SOURCE,(s_offset+3)*size+tag);
+	mpi->Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI_ANY_SOURCE,(s_offset+1)*size+tag);
+	mpi->Recv(&flavs.front(),(int)vals[3],MPI_INT,MPI_ANY_SOURCE,(s_offset+2)*size+tag);
+	mpi->Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI_ANY_SOURCE,(s_offset+3)*size+tag);
 	m_evtlist.insert(m_evtlist.end(),evts.begin(),evts.end());
 	m_flavlist.insert(m_flavlist.end(),flavs.begin(),flavs.end());
 	m_momlist.insert(m_momlist.end(),moms.begin(),moms.end());
@@ -445,10 +454,10 @@ void Output_RootNtuple::MPISync()
       vals[3]=m_fcnt;
       vals[4]=m_fsq;
       vals[5]=m_sum;
-      MPI::COMM_WORLD.Send(&vals,6,MPI::DOUBLE,0,s_offset*size+rank);
-      MPI::COMM_WORLD.Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
-      MPI::COMM_WORLD.Send(&m_flavlist.front(),(int)vals[3],MPI::INT,0,(s_offset+2)*size+rank);
-      MPI::COMM_WORLD.Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
+      mpi->Send(&vals,6,MPI_DOUBLE,0,s_offset*size+rank);
+      mpi->Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
+      mpi->Send(&m_flavlist.front(),(int)vals[3],MPI_INT,0,(s_offset+2)*size+rank);
+      mpi->Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
       m_cnt2=m_cnt3=m_fcnt=m_evt=0;
       m_sum=m_fsq=0.0;
     }
@@ -562,3 +571,7 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"Root NTuple output";
 }
 
+void Common_Root_Settings::RegisterDefaults() const
+{
+  Settings::GetMainSettings()["ROOTNTUPLE_TREENAME"].SetDefault("t3");
+}

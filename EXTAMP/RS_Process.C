@@ -19,7 +19,7 @@ namespace EXTAMP {
   RS_Process::RS_Process(const PHASIC::Process_Info& pi) : Process(pi) {
     DEBUG_FUNC(pi);
 
-    std::vector<double> orders = pi.m_borncpl; orders[0] += 1;
+    std::vector<double> orders = pi.m_maxcpl;
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
 				  pi.m_fi.GetExternal(),
 				  orders);
@@ -44,9 +44,8 @@ namespace EXTAMP {
       msg_Debugging() << (*it)->Info() << "\n";
 
     /* Get parameters for subevent smearing */
-    ATOOLS::Default_Reader reader;
-    m_alpha_0     = reader.Get<double>("NLO_SMEAR_THRESHOLD", 0.0);
-    m_smear_power = reader.Get<double>("NLO_SMEAR_POWER",     0.5);
+    m_alpha_0     = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
+    m_smear_power = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("NLO_SMEAR_POWER"));
 
     /* In AMEGIC, m_alpha_0>0.0 is used for a functional form different from alpha. */
     if(m_alpha_0>0.0) THROW(not_implemented, "Smearing only implemented for alpha parameter");
@@ -92,8 +91,7 @@ namespace EXTAMP {
   }
 
 
-  double RS_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
-			      const int mode)
+  double RS_Process::Partonic(const ATOOLS::Vec4D_Vector &p, int mode)
   {
     /* Calculate dipole kinematics and update subevents accordingly */
     CalculateKinematics(p);
@@ -171,10 +169,10 @@ namespace EXTAMP {
   RS_Process::Dipole_Vector RS_Process::ConstructDipoles()
   {
     /* Get subtraction parameters */
-    ATOOLS::Default_Reader reader;
-    int subtraction_type = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
-    double alphamin = reader.Get<double>("DIPOLE_AMIN" , ATOOLS::Max(ATOOLS::Accu(),1.0e-8));
-    double alphamax = reader.Get<double>("DIPOLE_ALPHA", 1.0);
+    auto& s = ATOOLS::Settings::GetMainSettings();
+    int subtraction_type = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+    double alphamin = s["DIPOLES"]["AMIN"].Get<double>();
+    double alphamax = s["DIPOLES"]["ALPHA"].Get<double>();
 
     /* Build dipoles */
     Dipole_Vector ret;

@@ -15,8 +15,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 
@@ -35,52 +35,45 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 Single_Virtual_Correction::Single_Virtual_Correction() :
-  m_stype(sbt::none), m_ipart(sbt::qcd|sbt::qed),
+  m_stype(sbt::none),
   m_itype(cs_itype::none), m_iresult(0.0),
   p_psgen(NULL), p_partner(this), p_LO_process(NULL),
   p_kernel_qcd(NULL), p_kernel_ew(NULL),
   p_kpterms_qcd(NULL), p_kpterms_ew(NULL), p_loopme(NULL), p_reqborn(NULL),
   m_x0(1.), m_x1(1.), m_eta0(1.), m_eta1(1.), m_z0(0.), m_z1(0.),
-  m_force_init(false), m_sccmur(true), m_murcoeffvirt(false),
   m_loopmapped(false),
-  m_checkborn(false), m_checkpoles(false), m_checkfinite(false),
   m_pspisrecscheme(0), m_pspfsrecscheme(0),
   m_pspissplscheme(0), m_pspfssplscheme(0),
-  m_checkthreshold(0.0),
-  m_bvimode(0), m_user_bvimode(0),
-  m_epsmode(0), m_drmode(0), m_checkloopmap(0),
+  m_bvimode(0),
   m_bsum(0.0), m_vsum(0.0), m_isum(0.0), m_n(0.0),
   m_mbsum(0.0), m_mvsum(0.0), m_misum(0.0), m_mn(0.0),
   m_lastb(0.0), m_lastv(0.0), m_lasti(0.0), m_lastkp(0.0),
-  m_finite(0.0), m_singlepole(0.0), m_doublepole(0.0)
+  m_finite(0.0), m_singlepole(0.0), m_doublepole(0.0),
+  p_fsmc{ NULL }
 {
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings amegicsettings{ s["AMEGIC"] };
   p_fsmc=NULL;
-  m_checkborn = ToType<size_t>(rpa->gen.Variable("CHECK_BORN"));
+  m_checkborn = amegicsettings["CHECK_BORN"].Get<size_t>();
   m_checkpoles = ToType<size_t>(rpa->gen.Variable("CHECK_POLES"));
-  m_checkfinite = ToType<size_t>(rpa->gen.Variable("CHECK_FINITE"));
-  m_checkthreshold = ToType<double>(rpa->gen.Variable("CHECK_THRESHOLD"));
-  m_force_init = ToType<size_t>(rpa->gen.Variable("LOOP_ME_INIT"));
-  m_sccmur = ToType<size_t>(rpa->gen.Variable("USR_WGT_MODE"));
-  m_murcoeffvirt
-    = ToType<size_t>(rpa->gen.Variable("NLO_MUR_COEFFICIENT_FROM_VIRTUAL"));
-  m_user_bvimode = ToType<size_t>(rpa->gen.Variable("NLO_BVI_MODE"));
-  m_itype = ToType<cs_itype::type>(rpa->gen.Variable("NLO_IMODE"));
-  m_ipart = ToType<sbt::subtype>(rpa->gen.Variable("NLO_IPART"));
-  m_epsmode = ToType<size_t>(rpa->gen.Variable("NLO_EPS_MODE"));
-  m_drmode = ToType<size_t>(rpa->gen.Variable("NLO_DR_MODE"));
-  m_checkloopmap = ToType<size_t>(rpa->gen.Variable("AMEGIC_CHECK_LOOP_MAP"));
-  m_pspisrecscheme
-    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_RECOIL_SCHEME"));
-  m_pspfsrecscheme
-    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_RECOIL_SCHEME"));
-  m_pspissplscheme
-    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_IS_SPLIT_SCHEME"));
-  m_pspfssplscheme
-    = ToType<size_t>(rpa->gen.Variable("DIPOLE_PFF_FS_SPLIT_SCHEME"));
-
+  m_checkfinite = amegicsettings["CHECK_FINITE"].Get<size_t>();
+  m_checkthreshold = amegicsettings["CHECK_THRESHOLD"].Get<double>();
+  m_force_init = amegicsettings["LOOP_ME_INIT"].Get<size_t>();
+  m_sccmur = s["USR_WGT_MODE"].Get<bool>();
+  m_murcoeffvirt =
+    amegicsettings["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<size_t>();
+  m_user_bvimode = amegicsettings["NLO_BVI_MODE"].Get<size_t>();
+  m_itype = s["NLO_IMODE"].Get<cs_itype::type>();
+  m_ipart = amegicsettings["NLO_IPART"].Get<sbt::subtype>();
+  m_epsmode = amegicsettings["NLO_EPS_MODE"].Get<size_t>();
+  m_drmode = amegicsettings["NLO_DR_MODE"].Get<size_t>();
+  m_checkloopmap = amegicsettings["CHECK_LOOP_MAP"].Get<size_t>();
+  m_pspisrecscheme = s["DIPOLES"]["PFF_IS_RECOIL_SCHEME"].Get<size_t>();
+  m_pspfsrecscheme = s["DIPOLES"]["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
+  m_pspissplscheme = s["DIPOLES"]["PFF_IS_SPLIT_SCHEME"].Get<size_t>();
+  m_pspfssplscheme = s["DIPOLES"]["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
   m_cmur[0]=0.;
   m_cmur[1]=0.;
-
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
@@ -229,17 +222,23 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   if (m_pinfo.m_amegicmhv>0) {
     if (m_pinfo.m_amegicmhv==12) {
-      p_LO_process = new Single_LOProcess_External(lopi, p_int->Beam(),
-                                                         p_int->ISR(), m_stype);
+      p_LO_process = new Single_LOProcess_External(lopi,
+                                                   p_int->Beam(),
+                                                   p_int->ISR(),
+                                                   m_stype);
     }
     else if (CF.MHVCalculable(lopi))
-      p_LO_process = new Single_LOProcess_MHV(lopi, p_int->Beam(),
-                                                    p_int->ISR(), m_stype);
+      p_LO_process = new Single_LOProcess_MHV(lopi,
+                                              p_int->Beam(),
+                                              p_int->ISR(),
+                                              m_stype);
     if (lopi.m_amegicmhv==2) return 0;
   }
   if (!p_LO_process)
-    p_LO_process = new Single_LOProcess(lopi, p_int->Beam(),
-                                              p_int->ISR(), m_stype);
+    p_LO_process = new Single_LOProcess(lopi,
+                                        p_int->Beam(),
+                                        p_int->ISR(),
+                                        m_stype);
   p_LO_process->SetTestMoms(p_testmoms);
   p_LO_process->SetPrintGraphs(lopi.m_gpath);
   p_LO_process->SetPhotonSplittingModes(m_pspissplscheme,m_pspfssplscheme);
@@ -247,11 +246,11 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   p_LO_process->SetMinOrdersIQCD(mincpliqcd);
   p_LO_process->SetMaxOrdersIEW(maxcpliew);
   p_LO_process->SetMinOrdersIEW(mincpliew);
-  p_proc=p_LO_process;
 
   PolarizationNorm();
 
-  if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap)) return 0;
+  if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap))
+    return 0;
 
   m_iresult = p_LO_process->Result();
   m_cpls=*p_LO_process->CouplingMap();
@@ -269,13 +268,17 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   // initialise KP-Terms and get Kernels for I-Term
   if (m_stype&sbt::qcd) {
-    p_kpterms_qcd = new KP_Terms(this,sbt::qcd,p_LO_process->PartonListQCD());
+    p_kpterms_qcd = new KP_Terms(this,
+                                 sbt::qcd,
+                                 p_LO_process->PartonListQCD());
     p_kpterms_qcd->SetIType(m_itype);
     p_kpterms_qcd->SetCoupling(p_LO_process->CouplingMap());
     p_kernel_qcd=p_kpterms_qcd->Kernel();
   }
   if (m_stype&sbt::qed) {
-    p_kpterms_ew = new KP_Terms(this,sbt::qed,p_LO_process->PartonListQED());
+    p_kpterms_ew = new KP_Terms(this,
+                                sbt::qed,
+                                p_LO_process->PartonListQED());
     p_kpterms_ew->SetIType(m_itype);
     p_kpterms_ew->SetCoupling(p_LO_process->CouplingMap());
     p_kernel_ew=p_kpterms_ew->Kernel();
@@ -448,7 +451,9 @@ bool AMEGIC::Single_Virtual_Correction::FillIntegrator
 {
   if (p_partner!=this) return true;
   if (p_LO_process!=p_LO_process->Partner()) return 1;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   RequestVariables(psh);
   return Process_Base::FillIntegrator(psh);
 }
@@ -477,7 +482,7 @@ bool Single_Virtual_Correction::CreateChannelLibrary()
 {
   if (!p_LO_process || p_LO_process->NumberOfDiagrams()==0) return 1;
   if (p_LO_process->Partner()!=p_LO_process || p_psgen) return true;
-  p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
+  p_psgen     = new Phase_Space_Generator(m_nin, m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,
                                             p_LO_process->PSLibName(),
@@ -518,7 +523,7 @@ void Single_Virtual_Correction::Minimize()
 
 
 double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
-                                           const int mode)
+                                           int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
@@ -620,7 +625,7 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom)
   if (m_stype&sbt::qcd) {
     cplfac=p_partner->KPTermsQCD()->Coupling();
     beta0qcd=p_partner->KernelQCD()->Beta0QCD();
-    bornorderqcd=MaxOrder(0)/2.-1.;
+    bornorderqcd=MaxOrder(0)-1.;
   }
   else {
     // if no QCD subtraction exist, no QCD counterterm
@@ -696,8 +701,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D_Vector &mom)
                                p_kernel_qcd,p_kpterms_qcd,mom,m_dsijqcd);
   if (m_stype&sbt::qed) Calc_I(sbt::qed,p_LO_process->PartonListQED(),
                                p_kernel_ew,p_kpterms_ew,mom,m_dsijew);
-  m_cmur[0]=-m_Norm*m_singlepole;
-  m_cmur[1]=-m_Norm*m_doublepole;
+  m_cmur[0]=m_singlepole;
+  m_cmur[1]=m_doublepole;
   msg_Debugging()<<"I_fin = "<<m_Norm*m_finite<<std::endl;
   msg_Debugging()<<"I_e1  = "<<m_Norm*m_singlepole<<std::endl;
   msg_Debugging()<<"I_e2  = "<<m_Norm*m_doublepole<<std::endl;
@@ -880,7 +885,7 @@ void Single_Virtual_Correction::CheckBorn()
     msg->SetPrecision(16);
     msg_Out()<<"Born:         "
              <<"Sherpa = "<<sb<<" vs. OLP = "<<olpb
-             <<", rel. diff.: "<<(sb-olpb)/(sb+olpb)
+             <<"\n              rel. diff.: "<<(sb-olpb)/(sb+olpb)
              <<", ratio: "<<sb/olpb<<std::endl;
     msg->SetPrecision(precision);
   }
@@ -933,22 +938,22 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D_Vector 
   if (!m_checkthreshold || !ATOOLS::IsEqual(doublepole,p2,m_checkthreshold)) {
     msg_Out()<<"Double poles: "
              <<"Sherpa = "<<doublepole<<" vs. OLP = "<<p2
-             <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
+             <<"\n              rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkthreshold || !ATOOLS::IsEqual(singlepole,p1,m_checkthreshold)) {
     msg_Out()<<"Single poles: "
              <<"Sherpa = "<<singlepole<<" vs. OLP = "<<p1
-             <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
+	     <<"\n              rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
   msg->SetPrecision(precision);
 }
 
-double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
-                                             const int mode)
+double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,const int mode)
 {
   DEBUG_FUNC("bvimode="<<m_bvimode);
+  m_lastxs = m_lastdxs = m_lastbxs = 0.;
   if (p_partner!=this) {
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
     return p_partner->operator()(mom,mode)*m_sfactor;
@@ -958,6 +963,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   m_cmur[0]=m_cmur[1]=0.;
 
   Vec4D_Vector _mom(mom);
+  Poincare cms;
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(_mom[0]+_mom[1]);
+    for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
+  }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   msg_Debugging()<<"CMS momenta"<<std::endl;
@@ -1017,8 +1027,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
                        <<" ,  m_dsijew[0][0] = "
                        <<(m_dsijew.size()?m_dsijew[0][0]:0.)
                        <<"\n  B = "<<B<<" ,  V = "<<V
-                       <<" ,  I = "<<I
-                       <<"\n  \\delta = "<<(V+I)/B
+	               <<" ,  I = "<<I<<"\n  V+I = "<<V+I
+                       <<" ,  \\delta = "<<(V+I)/B
                        <<"\n  K(B) = "<<kfactorb
                        <<" ,  K(VI) = "<<kfactorvi
                        <<"\n  norm = "<<m_Norm<<std::endl;
@@ -1199,11 +1209,11 @@ void Single_Virtual_Correction::ComputeChargeFactors()
         if (nPFFsplittings[i]==0) {
           if (p_LO_process->PartonListQED()[i]<m_nin) {
             THROW(fatal_error,"No spectator for Photon splitting assigned. "
-                              +std::string("Try different DIPOLE_PFF_IS_RECOIL_SCHEME."));
+                              +std::string("Try different DIPOLES:PFF_IS_RECOIL_SCHEME."));
           }
           else {
             THROW(fatal_error,"No spectator for Photon splitting assigned. "
-                              +std::string("Try different DIPOLE_PFF_FS_RECOIL_SCHEME."));
+                              +std::string("Try different DIPOLES:PFF_FS_RECOIL_SCHEME."));
           }
         }
         m_Q2ij[i][j]/=(double)nPFFsplittings[i];
@@ -1352,9 +1362,8 @@ bool Single_Virtual_Correction::AllowAsSpecInPFF(const size_t& i,
   return false;
 }
 
-void Single_Virtual_Correction::SetVariationWeights(Variation_Weights *const vw)
+void Single_Virtual_Correction::SetCaller(PHASIC::Process_Base *const proc)
 {
-  Process_Base::SetVariationWeights(vw);
-  p_LO_process->SetVariationWeights(vw);
+  p_caller=proc;
+  p_LO_process->SetCaller(static_cast<Single_Virtual_Correction*>(proc)->p_LO_process);
 }
-

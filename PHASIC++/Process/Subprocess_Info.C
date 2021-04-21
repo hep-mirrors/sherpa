@@ -8,23 +8,6 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-std::string PHASIC::PSId(const size_t &id)
-{
-  size_t ic(id);
-  std::string idt;
-  for (size_t i(0);ic>0;++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      char nic[3];
-      if (sprintf(nic,"%i",(int)i)<=0)
-	THROW(fatal_error,"Conversion error");
-      idt+=nic;
-      ic-=c;
-    }
-  }
-  return idt;
-}
-
 std::ostream &PHASIC::operator<<(std::ostream &ostr,const Subprocess_Info &info)
 {
   info.Print(ostr);
@@ -400,3 +383,11 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   ostr<<"\n";
 }
 
+void Subprocess_Info::PrintFlavours(std::ostream &ostr) const
+{
+  if (m_ps.size()>0) {
+    for (size_t i(0);i<m_ps.size();++i) m_ps[i].PrintFlavours(ostr);
+  } else {
+    ostr<<(long int)m_fl<<" "<<m_mpl;
+  }
+}

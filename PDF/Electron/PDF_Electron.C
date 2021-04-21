@@ -1,9 +1,7 @@
 #include "PDF/Electron/PDF_Electron.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/MathTools.H"
 //#include <iostream>
 
@@ -111,10 +109,8 @@ DECLARE_PDF_GETTER(PDFE_Getter);
 PDF_Base *PDFE_Getter::operator()
   (const Parameter_Type &args) const
 {
-  if (args.m_bunch.Kfcode()!=kf_e) return NULL;
-  int izetta=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
-  int order=args.p_read->GetValue<int>("ISR_E_ORDER",1);
-  return new PDF_Electron(args.m_bunch,izetta,order);
+  if (args.m_bunch.Kfcode()!=kf_e && args.m_bunch.Kfcode()!=kf_mu) return NULL;
+  return new PDF_Electron(args.m_bunch,args.m_scheme,args.m_order);
 }
 
 void PDFE_Getter::PrintInfo

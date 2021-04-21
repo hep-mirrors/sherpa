@@ -27,10 +27,8 @@ namespace PHASIC {
     inline HNNLO_KFactor(const KFactor_Setter_Arguments &args):
       H_KFactor(args) {}
 
-    double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(const int mode = 0);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HNNLO_KFactor
 
@@ -40,10 +38,8 @@ namespace PHASIC {
     inline HHF1_KFactor(const KFactor_Setter_Arguments &args):
       H_KFactor(args) {}
 
-    double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(const int mode = 0);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HHF1_KFactor
 
@@ -53,10 +49,8 @@ namespace PHASIC {
     inline HHF2_KFactor(const KFactor_Setter_Arguments &args):
       H_KFactor(args) {}
 
-    double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(const int mode = 0);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HHF2_KFactor
 
@@ -66,10 +60,8 @@ namespace PHASIC {
     inline HNLO_KFactor(const KFactor_Setter_Arguments &args):
       H_KFactor(args) {}
 
-    double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(const int mode = 0);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HNLO_KFactor
 
@@ -79,10 +71,8 @@ namespace PHASIC {
     inline HF1_KFactor(const KFactor_Setter_Arguments &args):
       H_KFactor(args) {}
 
-    double KFactor(const int mode=0);
-    double KFactor(ATOOLS::Variation_Parameters *params,
-		   ATOOLS::Variation_Weights *weights,
-		   const int &mode);
+    double KFactor(const int mode = 0);
+    double KFactor(ATOOLS::QCD_Variation_Params* params, const int& mode);
 
   };// end of class HF1_KFactor
 
@@ -97,8 +87,8 @@ namespace PHASIC {
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "QT_Selector.H"
 #include "coeffqt.H"
@@ -114,25 +104,20 @@ H_KFactor::H_KFactor
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args)
 {
+  Settings& s = Settings::GetMainSettings();
   if (p_proc->Generator()->Name()!="Amegic")
     THROW(inconsistent_option,"Must use 'ME_Generator Amegic;'");
-  Data_Reader read(" ",";","#","=");
   if (s_pdf==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
-    s_pdfmin[0]=read.GetValue<double>("CSS_PDF_MIN",1.0e-4);
-    s_pdfmin[1]=read.GetValue<double>("CSS_PDF_MIN_X",1.0e-2);
+    s_pdfmin[0] = s["CSS_PDF_MIN"].Get<double>();
+    s_pdfmin[1] = s["CSS_PDF_MIN_X"].Get<double>();
   }
-  m_k0sq[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sq[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_fomode=read.GetValue<int>("NNLOqT_FOMODE",0);
-  // m_mtmode != 0 to reweight the whole cross section by full mt-dependent LO gg->H cross section
-  // and add mt-dependence higher order correcions of the Wilson coefficient for the ggH coupling
-  m_mtmode=read.GetValue<int>("HNNLO_MTOP_MODE",0);
-  // m_kfmode = [001]_2 to enable factorized matching of the Wilson coefficient for ggH coupling;
-  //          = [010]_2 to enable individual matching of the Wilson coefficient for ggH coupling;
-  //          = [100]_2 to remove delta(pT) part of NNLO K factor for a separate LO parton shower.
-  m_kfmode=read.GetValue<int>("HNNLO_KF_MODE",0);
+  m_k0sq[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_k0sq[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_fomode = s["NNLOqT_FOMODE"].Get<int>();
+  m_mtmode = s["HNNLO_MTOP_MODE"].Get<int>();
+  m_kfmode = s["HNNLO_KF_MODE"].Get<int>();
   // initialize constants
   SHNNLO::Mt=Flavour(kf_t).Mass(true);
   SHNNLO::Mb=Flavour(kf_b).Mass(true);
@@ -154,14 +139,17 @@ double HNNLO_KFactor::KFactor(const int mode)
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name()<<" "<<mode);
   const int lmode(mode&~2);
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
     if (mode&2) bkw.clear();
     size_t oldsize(bkw.size());
-    vw.UpdateOrInitialiseWeights(&HNNLO_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
       (&bkw[oldsize],&bkw.back()+1)<<"\n";
     for (size_t i(oldsize);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
@@ -171,11 +159,9 @@ double HNNLO_KFactor::KFactor(const int mode)
 }
 
 // NNLO K factor
-double HNNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double HNNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -185,8 +171,8 @@ double HNNLO_KFactor::KFactor
   }
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0))), Q(p[2].Mass());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0))), Q(p[2].Mass());
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
   double norm(m_mtmode?ggH1l(Q,Mt,Mb,Mc):1.);
   double as4pi((*s_as)(mur*mur)/(4.0*M_PI));
   if (m_kfmode&1) {
@@ -211,25 +197,25 @@ double HNNLO_KFactor::KFactor
   }
   if (p_proc->NOut()>
       (p_proc->Info().Has(nlo_type::real)?2:1)) {
-    double weight(NNLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,mode,m_fomode,
-				 weights?params->m_name:""));
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    double weight(NNLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,mode,m_fomode,0,
+				 params?params->m_name:""));
+    if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   // 1+2*corr1 reweights VIRS part of H+0jet @ NLO
   double corr1(0.0);
   if (!(m_kfmode&2)) corr1=as4pi*hf1tt(mur,0.,Mt);
   if (p_proc->Info().Has(nlo_type::real)) {
     double weight(NNLODeltaWeight(p_proc,(1+2.0*corr1)*norm,m_fomode));
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   Cluster_Amplitude *ampl(NULL);
   if (sc->Amplitudes().size()) ampl=sc->Amplitudes().front();
   if (ampl) ampl->SetNLO(4);
   if (mode!=1) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back((1+2.0*corr1)*norm);
-    return weights?1.0:(1+2.0*corr1)*norm;
+    if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back((1+2.0*corr1)*norm);
+    return params?1.0:(1+2.0*corr1)*norm;
   }
   QT_Selector *jf=(QT_Selector*)
     p_proc->Selector()->GetSelector("NNLOqT_Selector");
@@ -274,22 +260,25 @@ double HNNLO_KFactor::KFactor
   // add two-loop ggH top mass dependence; note that hf0tt(mur,Q,Mt)==ggH1l(Q,Mt,0.,0.)
   if (m_mtmode) weight+=as4pi*(2.*hf1tt(mur,Q,Mt)-H1)*hf0tt(mur,Q,Mt); 
   DEBUG_VAR(weight);
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-  return weights?1.0:weight;
+  if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+  return params?1.0:weight;
 }
 
 double HHF1_KFactor::KFactor(const int mode) 
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name()<<" "<<mode);
   const int lmode(mode&~2);
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
     if (mode&2) bkw.clear();
     size_t oldsize(bkw.size());
-    vw.UpdateOrInitialiseWeights(&HHF1_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
       (&bkw[oldsize],&bkw.back()+1)<<"\n";
     for (size_t i(oldsize);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
@@ -300,11 +289,9 @@ double HHF1_KFactor::KFactor(const int mode)
 
 // for applying Higgs effective coupling in MC@NLO style
 // provide 2*hf1tt to multiple a standalone Higgs NLO
-double HHF1_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double HHF1_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -314,7 +301,7 @@ double HHF1_KFactor::KFactor
   }
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0))), Q(p[2].Mass());
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0))), Q(p[2].Mass());
   double norm(m_mtmode?ggH1l(Q,Mt,Mb,Mc):1.);
   double K(0.0);
   if (!(m_kfmode&1)&&(m_kfmode&2)) K+=2.0*hf1tt(mur,0.,Mt);
@@ -334,22 +321,25 @@ double HHF1_KFactor::KFactor
     if (IsBad(norm)) norm=oldnorm;
     else norm/=ggH1l(Q,Mt,Mb,Mc);
   }
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(K*norm);
-  return weights?1.0:K*norm;
+  if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(K*norm);
+  return params?1.0:K*norm;
 }
 
 double HHF2_KFactor::KFactor(const int mode) 
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name()<<" "<<mode);
   const int lmode(mode&~2);
-  m_weight=KFactor(NULL,NULL,lmode);
+  m_weight = KFactor(NULL, lmode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
     if (mode&2) bkw.clear();
     size_t oldsize(bkw.size());
-    vw.UpdateOrInitialiseWeights(&HHF2_KFactor::KFactor,*this,lmode);
+    s_variations->ForEach(
+        [this, &lmode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, lmode);
+        });
     msg_Debugging()<<"New K factors: "<<std::vector<double>
       (&bkw[oldsize],&bkw.back()+1)<<"\n";
     for (size_t i(oldsize);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
@@ -360,11 +350,9 @@ double HHF2_KFactor::KFactor(const int mode)
 
 // for applying Higgs effective coupling in MC@NLO style
 // provide hf1tt^2+2*hf2tt to multiple a standalone Higgs LO
-double HHF2_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double HHF2_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -374,7 +362,7 @@ double HHF2_KFactor::KFactor
   }
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0))), Q(p[2].Mass());
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0))), Q(p[2].Mass());
   double norm(m_mtmode?ggH1l(Q,Mt,Mb,Mc):1.);
   double as4pi((*s_as)(mur*mur)/(4.0*M_PI));
   if (m_kfmode&1) {
@@ -390,20 +378,23 @@ double HHF2_KFactor::KFactor
   double weight=K*norm;
   // add two-loop ggH top mass dependence; note that hf0tt(mur,Q,Mt)==ggH1l(Q,Mt,0.,0.)
   if (m_mtmode) weight+=as4pi*2.*(hf1tt(mur,Q,Mt)-hf1tt(mur,0.,Mt))*hf0tt(mur,Q,Mt); 
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-  return weights?1.0:weight;
+  if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+  return params?1.0:weight;
 }
 
 double HNLO_KFactor::KFactor(const int mode) 
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name()<<" "<<mode);
-  m_weight=KFactor(NULL,NULL,mode);
+  m_weight = KFactor(NULL, mode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
     bkw.clear();
-    vw.UpdateOrInitialiseWeights(&HNLO_KFactor::KFactor,*this,mode);
+    s_variations->ForEach(
+        [this, &mode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, mode);
+        });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
     msg_Debugging()<<"Weight variations: "<<bkw<<"\n";
@@ -412,11 +403,9 @@ double HNLO_KFactor::KFactor(const int mode)
 }
 
 // NLO K factor
-double HNLO_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double HNLO_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -426,8 +415,8 @@ double HNLO_KFactor::KFactor
   }
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0))), Q(p[2].Mass());
-  double muf(sqrt(sc->Scale(stp::fac)*(weights?params->m_muF2fac:1.0)));
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0))), Q(p[2].Mass());
+  double muf(sqrt(sc->Scale(stp::fac)*(params?params->m_muF2fac:1.0)));
   double norm(m_mtmode?ggH1l(Q,Mt,Mb,Mc):1.);
   double H1=2.*hf1tt(mur,0.,Mt);
   double as4pi((*s_as)(mur*mur)/(4.0*M_PI));
@@ -448,10 +437,10 @@ double HNLO_KFactor::KFactor
   }
   if (m_kfmode&1) norm*=1.0+as4pi*(H1+4.*sqr(M_PI));
   if (p_proc->NOut()>1) {
-    double weight(NLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,m_fomode,
-				weights?params->m_name:""));
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-    return weights?1.0:weight;
+    double weight(NLODiffWeight(p_proc,norm,mur*mur,muf*muf,m_k0sq,m_fomode,0,
+				params?params->m_name:""));
+    if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+    return params?1.0:weight;
   }
   DEBUG_FUNC(p_proc->Name());
   QT_Selector *jf=(QT_Selector*)
@@ -479,24 +468,27 @@ double HNLO_KFactor::KFactor
   // add two-loop ggH top mass dependence; note that hf0tt(mur,Q,Mt)==ggH1l(Q,Mt,0.,0.)
   if (m_mtmode) weight+=as4pi*(2.*hf1tt(mur,Q,Mt)-H1)*hf0tt(mur,Q,Mt);
   if (IsBad(weight)) {
-    if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(norm);
-    return weights?1.0:norm;
+    if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(norm);
+    return params?1.0:norm;
   }
   msg_Debugging()<<"K = "<<weight<<"\n";
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
-  return weights?1.0:weight;
+  if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(weight);
+  return params?1.0:weight;
 }
 
 double HF1_KFactor::KFactor(const int mode) 
 {
   DEBUG_FUNC(p_proc->Name()<<" "<<p_proc->Generator()->Name()<<" "<<mode);
-  m_weight=KFactor(NULL,NULL,mode);
+  m_weight = KFactor(NULL, mode);
   msg_Debugging()<<"Weight: "<<m_weight<<"\n";
-  if (p_proc->VariationWeights()) {
-    Variation_Weights vw(p_proc->VariationWeights()->GetVariations());
+  if (s_variations->Size()) {
     std::vector<double> &bkw(p_proc->GetMEwgtinfo()->m_bkw);
     bkw.clear();
-    vw.UpdateOrInitialiseWeights(&HF1_KFactor::KFactor,*this,mode);
+    s_variations->ForEach(
+        [this, &mode](size_t varindex,
+                       QCD_Variation_Params& varparams) -> void {
+          KFactor(&varparams, mode);
+        });
     msg_Debugging()<<"New K factors: "<<bkw<<"\n";
     for (size_t i(0);i<bkw.size();++i) bkw[i]*=m_weight?1.0/m_weight:0.0;
     msg_Debugging()<<"Weight variations: "<<bkw<<"\n";
@@ -504,11 +496,9 @@ double HF1_KFactor::KFactor(const int mode)
   return m_weight;
 }
 
-double HF1_KFactor::KFactor
-(Variation_Parameters *params,Variation_Weights *weights,
- const int &mode) 
+double HF1_KFactor::KFactor(QCD_Variation_Params* params, const int& mode)
 {
-  if (weights==NULL) {
+  if (params==NULL) {
     s_as=MODEL::as;
     s_pdf=p_proc->Integrator()->ISR()->PDF(0);
   }
@@ -518,14 +508,14 @@ double HF1_KFactor::KFactor
   }
   const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
   Scale_Setter_Base *sc(p_proc->ScaleSetter());
-  double mur(sqrt(sc->Scale(stp::ren)*(weights?params->m_muR2fac:1.0))), Q(p[2].Mass());
+  double mur(sqrt(sc->Scale(stp::ren)*(params?params->m_muR2fac:1.0))), Q(p[2].Mass());
   double norm(m_mtmode?ggH1l(Q,Mt,Mb,Mc):1.);
   double as4pi((*s_as)(mur*mur)/(4.0*M_PI));
   double K(0.0);
   if (!(m_kfmode&1)&&(m_kfmode&2))
     K+=as4pi*(2.0*hf1tt(mur,0.,Mt)+4.0*sqr(M_PI));
-  if (weights) p_proc->GetMEwgtinfo()->m_bkw.push_back(K*norm);
-  return weights?1.0:K*norm;
+  if (params) p_proc->GetMEwgtinfo()->m_bkw.push_back(K*norm);
+  return params?1.0:K*norm;
 }
 
 DECLARE_GETTER(HNNLO_KFactor,"HNNLO",

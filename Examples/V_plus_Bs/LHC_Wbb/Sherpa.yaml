@@ -1,0 +1,106 @@
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, Wbb]
+
+HARD_DECAYS:
+  Enabled: true
+  Mass_Smearing: 0
+  Channels:
+    24 -> 12 -11: {Status: 2}
+
+PARTICLE_DATA:
+   5:
+     Massive: true
+     Mass: 4.75  # consistent with MSTW 2008 nf 4 set
+  24: {Width: 0, Stable: 0}
+
+SCALES: VAR{H_T2+sqr(80.419)}
+PDF_LIBRARY: MSTW08Sherpa
+PDF_SET: mstw2008nlo_nf4
+
+PROCESSES:
+- 93 93 -> 24 5 -5:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: Wbb
+    Order: {QCD: Any, EW: 1}
+- 93 93 -> -24 5 -5:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: Wbb
+    Order: {QCD: Any, EW: 1}
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 5.0
+    DR: 0.5
+    EtaMax: 5
+    Nb: 2
+
+INTERNAL_ANALYSES:
+  - {
+    LEVEL: [Shower, Hadron],
+    PATH_PIECE: Wbb/,
+    ANALYSES_OBJECTS: [
+      {
+        PartSel: {
+          InList: FinalState,
+          OutList: Leptons,
+          Qual: "!NotLepton"
+          }
+      },
+      {
+        PartSel: {
+          InList: FinalState,
+          OutList: Leptons,
+          Qual: "NotLepton"
+          }
+      },
+      {
+        FastJets: {
+          InList: FinalState,
+          OutList: Leptons,
+          Algorithm: antikt,
+          R: 0.4,
+          BTag: 1
+          }
+      },
+      {
+        MergeLists: [Jets, Leptons, All]
+      },
+      {
+        MomSel: {
+          InList: All,
+          OutList: AllCut,
+          Flavs: [97, 97, 97, 97, 91, 90, 90, 93, 93],
+          Items: [0, 1, 0, 1, 0, 0, 0, -1, -1],
+          Vars: [PT, PT, Eta, Eta, PT, PT, Eta, PT, y],
+          Mins: [15, 15, -3, -3, 15, 15, -3, 15, -3],
+          Maxs: [1e12, 1e12, 3, 3, 1e12, 1e12, 3, 1e12, 3]
+          }
+      }
+    ],
+
+    OBSERVABLES: [
+      {
+        VarObs: {
+          InList: AllCut,
+          Flavs: [[90,91], 97, 97, 97, 97, 93, 93, [97,97], [97,97], [97,97], [97,97,93]],
+          Items: [[0,0], 0, 0, 1, 1, 0, 0, [0,1], [0,1], [0,1], [0,1,0]],
+          Vars: [PT, PT, Eta, PT, Eta, PT, y, m, DR, DPhi, "Calc(Y(p[0]+p[1])-Y(p[2]))"],
+          Mins: [0, 0, -3, 0, -3, 0, -3, 0, 0, 0, -5],
+          Maxs: [400, 400, 3, 400, 3, 400, 3, 200, 5, 3.2, 5],
+          Bins: [40, 40, 30, 40, 30, 40, 30, 20, 20, 32, 50],
+          Types: [LinErr, LinErr, LinErr, LinErr, LinErr, LinErr, LinErr, LinErr, LinErr, LinErr]
+          }
+      }
+    ]
+  }

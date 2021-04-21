@@ -2,6 +2,8 @@
 #define PDF_Main_Shower_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 #include <string>
@@ -9,8 +11,6 @@
 namespace ATOOLS {
   class Cluster_Amplitude;
   class Blob_List;
-  class Default_Reader;
-  class Variation_Weights; 
 }
 
 namespace MODEL    { class Model_Base; }
@@ -28,10 +28,8 @@ namespace PDF {
     Cluster_Definitions_Base * p_cluster;
     
     std::string m_name;
-    double      m_weight;
-    int         m_on, m_kttype;
-
-    ATOOLS::Variation_Weights * p_variationweights;
+    ATOOLS::Weights_Map m_weightsmap;
+    int m_on, m_kttype;
 
   public:
 
@@ -56,7 +54,7 @@ namespace PDF {
 
     inline const std::string &Name() const { return m_name; }
 
-    inline double Weight() const { return m_weight; }
+    inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
 
     inline int On() { return m_on; }
 
@@ -64,21 +62,16 @@ namespace PDF {
 
     inline int KTType() const { return m_kttype; }
 
-    inline void SetVariationWeights(ATOOLS::Variation_Weights * varwgts) {
-      p_variationweights = varwgts;
-    }
   };// end of class Shower_Base
 
   struct Shower_Key {
     MODEL::Model_Base *p_model;
     ISR_Handler *p_isr;
-    ATOOLS::Default_Reader *p_reader;
     int m_type;
     inline Shower_Key(MODEL::Model_Base *const model,
 		      ISR_Handler *const isr,
-		      ATOOLS::Default_Reader *const reader,
 		      const int type):
-      p_model(model), p_isr(isr), p_reader(reader), m_type(type) {}
+      p_model(model), p_isr(isr), m_type(type) {}
   };//end of struct Shower_Key
 
   typedef ATOOLS::Getter_Function

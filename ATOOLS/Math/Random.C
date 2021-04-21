@@ -4,9 +4,9 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include <iostream>
 #include <cstring>
 
@@ -165,7 +165,7 @@ bool ATOOLS::Random::ReadInStatus(const std::string &path)
 void ATOOLS::Random::ReadInStatus(const char * filename)
 {
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) return;
+  if (mpi->Size()>1) return;
 #endif
   if (p_external!=NULL) return;
   // check what type of data is in target file
@@ -202,7 +202,7 @@ size_t ATOOLS::Random::ReadInStatus
 {
   if (activeGenerator==4) { ReadInStatus4(myinstream,idx); } 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) return std::string::npos;
+  if (mpi->Size()>1) return std::string::npos;
 #endif
   size_t count;
   while (!myinstream.eof()) {
@@ -293,13 +293,15 @@ void ATOOLS::Random::PrepareTerminate()
    each subsequence having a length of approximately 10^30.
 */
 
-bool Random::InitExternal(const std::string &path,const std::string &file)
+bool Random::InitExternal()
 {
-  Default_Reader reader;
-  reader.SetInputPath(path);
-  reader.SetInputFile(file);
-  std::string name;
-  if (!reader.Read(name, "EXTERNAL_RNG", name)) return false;
+  Settings& s = Settings::GetMainSettings();
+  std::string name{ s["EXTERNAL_RNG"]
+    .SetDefault("None")
+    .UseNoneReplacements()
+    .Get<std::string>() };
+  if (name == "None")
+    return false;
   p_external = RNG_Getter::GetObject(name,RNG_Key());
   if (p_external==NULL) {
     msg_Out()<<METHOD<<"(): {\n\n  // available RNGs\n\n";
@@ -312,10 +314,10 @@ bool Random::InitExternal(const std::string &path,const std::string &file)
 }
 
 ATOOLS::Random::Random(unsigned int i1,unsigned int i2,unsigned int i3,
-		       unsigned int i4,unsigned int i5,unsigned int i6) : 
+		       unsigned int i4,unsigned int i5,unsigned int i6) :
   m_lastincrementedseed(ios_base::binary|ios_base::in|ios_base::out),
   m_nsinceinit(0), m_increment(0), p_external(NULL)
-{  
+{
   ATOOLS::exh->AddTerminatorObject(this);
   p_ran4[0] = new Marsaglia();
   SetSeed(i1,i2,i3,i4);
@@ -416,16 +418,6 @@ double ATOOLS::Random::Get()
 
 ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
   return Min(static_cast<ptrdiff_t>(Get() * max),max-1);
-}
-
-void ATOOLS::Random::Gaussian(double & x,double & y)   
-{
-  double phi(2.*M_PI*Get()), random(Get());
-  while (random==0.) random = Get();
-  double r(sqrt(-2.*log(random)));
-
-  x = r*std::cos(phi);
-  y = r*std::sin(phi);
 }
 
 External_RNG::~External_RNG()

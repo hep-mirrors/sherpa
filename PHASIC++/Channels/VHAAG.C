@@ -1,6 +1,7 @@
 #include "PHASIC++/Channels/VHAAG.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -9,7 +10,6 @@
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
@@ -90,9 +90,6 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
-  Default_Reader reader;
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
       p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
@@ -116,7 +113,8 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
     p_vegas = new Vegas(rannum,100,Name());
   } 
 
-  m_s0 = reader.Get("VHAAG_FIXED_S0", -1.0);
+  Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
+  m_s0 = s["FIXED_S0"].SetDefault(-1.0).Get<double>();
 }
 
 VHAAG::~VHAAG()
@@ -782,8 +780,7 @@ namespace PHASIC {
 	Permutation pp(m_nin+m_nout-1);
 	for (int j=0;j<pp.MaxNumber();j++) {
 	  int* pm = pp.Get(j);
-	  if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
-	    p_mc->Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
+	  p_mc->Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
 	  if (!firsthaag) firsthaag=hlp;
 	}
       }

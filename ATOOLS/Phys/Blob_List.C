@@ -5,13 +5,16 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 using namespace ATOOLS;
+
+namespace ATOOLS {
+  std::map<btp::code,long unsigned int> Blob_List::s_momfails;
+}
 
 std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list) 
 {
@@ -209,25 +212,27 @@ bool Blob_List::FourMomentumConservation() const
   static double accu(sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
-    msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
-               <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
-               <<"   diff = "<<finsum-inisum<<"."<<std::endl;
+    //msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
+    //         <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
+    //         <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
-      Data_Reader dr(" ",";","!","=");
-      allow=dr.GetValue<int>("ALLOW_MOMENTUM_NONCONSERVATION",1);
+      Settings& s = Settings::GetMainSettings();
+      allow =
+        s["ALLOW_MOMENTUM_NONCONSERVATION"].SetDefault(1).Get<int>();
     }
     if (!allow) Abort();
-    if (msg_LevelIsDebugging()) {
-      msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
 	Vec4D sum((*bit)->CheckMomentumConservation());
 	if (sum!=Vec4D()) {
-	  msg_Out()<<METHOD<<"(..): sum = "<<sum
-		   <<" in\n"<<**bit<<std::endl;
+	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum<<"\n";
+	  //<<" in\n"<<**bit<<std::endl;
 	}
+	btp::code btype = (*bit)->Type();
+	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
+	else s_momfails[btype] = s_momfails[btype]+1;
       }
-    }
+      //}
   }
   return test;
 }
@@ -301,8 +306,8 @@ bool Blob_List::ColorConservation() const
   std::map<int,Particle*> flows;
   for (Particle_List::const_iterator pit=outgoing.begin();
        pit!=outgoing.end();++pit) {
-    int real=(*pit)->GetFlow()->Code(1);
-    int anti=-(*pit)->GetFlow()->Code(2);
+    int real=(*pit)->GetFlow(1);
+    int anti=-(*pit)->GetFlow(2);
     if (real!=0) {
       if (anti!=0 && real==-anti) {
 	msg_Error()<<"Blob_List::ColorConservation(): "
@@ -393,18 +398,36 @@ void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
   while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }
 
-double Blob_List::Weight() const
+Weights_Map Blob_List::WeightsMap() const
 {
-  double weight(1.0);
-  bool noweight(true);
-  for (const_iterator it(begin());it!=end();++it) {
-    Blob_Data_Base *bd((**it)["Weight"]);
-    if (bd) {
-      weight*=bd->Get<double>();
-      noweight=false;
+  Weights_Map wgtmap;
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["WeightsMap"]};
+    if (db) {
+      wgtmap *= db->Get<Weights_Map>();
+      no_weight = false;
     }
   }
-  return noweight?m_extweight:weight;
+  if (no_weight) {
+    return Weights_Map {m_extweight};
+  } else {
+    return wgtmap;
+  }
+}
+
+double Blob_List::Weight() const
+{
+  double nominal_weight {1.0};
+  bool no_weight {true};
+  for (const auto& blob : *this) {
+    Blob_Data_Base *db {(*blob)["WeightsMap"]};
+    if (db) {
+      nominal_weight *= db->Get<Weights_Map>().Nominal();
+      no_weight = false;
+    }
+  }
+  return no_weight ? m_extweight : nominal_weight;
 }
 
 Blob_List Blob_List::Copy() const
@@ -452,11 +475,21 @@ Blob_List Blob_List::Copy() const
   if (signal) {
     Blob_Data_Base* data = (*signal)["ATensor"];
     if (data) {
-      SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
-      SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+      auto origamps = data->Get<METOOLS::Amplitude2_Tensor_SP>();
+      auto newamps = std::make_shared<METOOLS::Amplitude2_Tensor>(*origamps);
       newamps->UpdateParticlePointers(pmap);
       data->Set(newamps);
     }
   }
   return copy;
+}
+
+void Blob_List::PrintMomFailStatistics(std::ostream &str)
+{
+  str<<"Blob_List: Momentum Fail Statistics {\n";
+  for (std::map<btp::code,long unsigned int>::iterator fit=s_momfails.begin();
+       fit!=s_momfails.end();fit++) {
+    str<<"  "<<fit->first<<": "<<fit->second<<" fails\n";
+  }
+  str<<"}\n";
 }

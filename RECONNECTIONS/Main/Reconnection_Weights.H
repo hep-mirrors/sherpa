@@ -24,12 +24,14 @@ namespace RECONNECTIONS {
     void FillTables();
     void Reset();
 
-    inline const double operator()(ATOOLS::Particle * part1,ATOOLS::Particle * part2) {
+    inline const double operator()(ATOOLS::Particle * part1,
+				   ATOOLS::Particle * part2) {
       if (part1==part2) return 1.;
       distances * dist = m_distances[part1];
       return (*dist)[part2];
     }
-    inline void SetWeight(ATOOLS::Particle * part1,ATOOLS::Particle * part2,const double & wt) {
+    inline void SetWeight(ATOOLS::Particle * part1,
+			  ATOOLS::Particle * part2,const double & wt) {
       (*m_distances[part1])[part2] = wt;
     }
   };

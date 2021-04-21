@@ -3,11 +3,11 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/NLO_Types.H"
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 
 namespace SHERPA{
@@ -16,7 +16,6 @@ namespace SHERPA{
 namespace ATOOLS{
   class Cluster_Amplitude;
   class ColorID;
-  class Default_Reader;
   class Mass_Selector;
 }
 namespace PHASIC{
@@ -32,9 +31,8 @@ private:
   ATOOLS::Cluster_Amplitude* p_amp;
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
-  ATOOLS::Default_Reader *   p_momentareader;
   PHASIC::Rambo*             p_rambo;
-  ATOOLS::Smart_Pointer<PHASIC::Color_Integrator> p_colint;
+  std::shared_ptr<PHASIC::Color_Integrator> p_colint;
 
   size_t                         m_ncolinds;
   std::vector<std::vector<int> > m_colcombinations;

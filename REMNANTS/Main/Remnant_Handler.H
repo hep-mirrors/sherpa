@@ -4,6 +4,7 @@
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Kinematics_Generator.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
+#include "REMNANTS/Tools/Beam_Decorrelator.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Return_Value.H"
@@ -27,6 +28,7 @@ namespace REMNANTS {
       hh     = 8
     };
   };
+  class Primordial_KPerp;
 
   class Remnant_Handler {
   private:
@@ -34,22 +36,22 @@ namespace REMNANTS {
     strat::code          m_type;
     Kinematics_Generator m_kinematics;
     Colour_Generator     m_colours;
+    Beam_Decorrelator    m_decorrelator;
     ATOOLS::Blob       * p_softblob;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
     bool m_check, m_output;
     
-    void InitializeRemnants(ATOOLS::Default_Reader *const defaultreader,
-			    PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    void InitializeRemnants(PDF::ISR_Handler * isr,
+			    BEAM::Beam_Spectra_Handler * beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup(ATOOLS::Blob_List * bloblist);
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List *const blobs);
     ATOOLS::Blob * InitBeamBlob(const int beam);
  public:
-    Remnant_Handler(ATOOLS::Default_Reader *const defaultreader,
-		    PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
+    Remnant_Handler(PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam);
     ~Remnant_Handler();
     
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
@@ -66,6 +68,7 @@ namespace REMNANTS {
     inline Remnant_Base * GetRemnant(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]:NULL;
     }
+    inline Primordial_KPerp * GetKPerp() { return m_kinematics.GetKPerp(); }
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }

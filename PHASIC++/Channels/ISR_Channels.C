@@ -17,7 +17,8 @@ bool ISR_Channels::MakeChannels()
   int    type;
   double mass,width;
   std::set<double> ths;
-  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong()) {
+  if (p_psh->Flavs()[0].Strong() && p_psh->Flavs()[1].Strong() &&
+      p_psh->Cuts()->Smin()>1.0) {
     ths.insert(sqrt(p_psh->Cuts()->Smin()));
   }
   Multi_Channel *fsr(p_psh->FSRIntegrator());
@@ -26,7 +27,7 @@ bool ISR_Channels::MakeChannels()
   for (size_t i(0);i<fsr->Number();++i) fsr->ISRInfo(i,ts[i],ms[i],ws[i]);
   fsr->ISRInfo(ts,ms,ws);
   for (size_t i=0;i<ts.size();i++) {
-    type=abs(ts[i]); 
+    type=abs(ts[i]);
     if (ts[i]==-1) {
       p_psh->SetOSMass(ms[i]);
       onshellresonance=true;

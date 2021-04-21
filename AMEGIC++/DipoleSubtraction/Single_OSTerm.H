@@ -29,7 +29,7 @@ namespace AMEGIC {
     ATOOLS::Flavour         m_fli,m_flj,m_flij,m_flk;
     double                 m_wwindow;
     ATOOLS::NLO_subevt      m_subevt;
-    
+
     PHASIC::Process_Integrator*     p_realint;
 
     std::vector<size_t> m_sids;
@@ -40,7 +40,9 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
 
-    Single_OSTerm(const PHASIC::Process_Info &,size_t,size_t,size_t,PHASIC::Process_Integrator*);
+    Single_OSTerm(const PHASIC::Process_Info &,
+                  size_t,size_t,size_t,
+                  PHASIC::Process_Integrator*);
     ~Single_OSTerm();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
@@ -106,7 +108,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
+    double         Partonic(const ATOOLS::Vec4D_Vector &,int);
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
     int            Type() { return 15; }

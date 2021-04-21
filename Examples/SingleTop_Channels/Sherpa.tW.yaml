@@ -1,0 +1,40 @@
+# SHERPA run card for tW-channel single top-quark production at MC@NLO
+# and N_f = 5
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+
+# scales
+# mu = transverse momentum of the top
+SCALES: VAR{MPerp2(p[3])}{MPerp2(p[3])}{MPerp2(p[3])}
+
+# disable hadronic W decays
+HARD_DECAYS:
+  Enabled: true
+  Channels:
+    24 -> 2 -1: {Status: 0}
+    24 -> 4 -3: {Status: 0}
+    -24 -> -2 1: {Status: 0}
+    -24 -> -4 3: {Status: 0}
+
+# choose EW Gmu input scheme
+EW_SCHEME: 3
+
+# required for using top-quark/W-boson in ME
+PARTICLE_DATA:
+  6: {Width: 0}
+  24: {Width: 0}
+
+PROCESSES:
+- 93 93 -> 6 -24:
+    No_Decay: -6  # remove ttbar diagrams
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Order: {QCD: 1, EW: 1}
+    ME_Generator: Amegic
+    RS_ME_Generator: Comix
+    Loop_Generator: OpenLoops

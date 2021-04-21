@@ -14,12 +14,10 @@ using namespace std;
 
 Multi_Channel::Multi_Channel(string _name) : 
   name(StringReplace(_name, " ", "")),
-  s1(NULL), m_readin(false),
-  m_minalpha(0.0), m_weight(1.0),
+  s1(NULL), m_readin(false), m_weight(1.0),
   n_points(0), n_contrib(0),
   mn_points(0), mn_contrib(0),
   m_lastdice(-1),
-  m_optcnt(0),
   m_otype(0)
 { }
 
@@ -97,7 +95,7 @@ void Multi_Channel::Reset()
 void Multi_Channel::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=2*channels.size()+2;
     double *values = new double[cn];
@@ -107,7 +105,7 @@ void Multi_Channel::MPISync()
     }
     values[cn-2]=mn_points;
     values[cn-1]=mn_contrib;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (size_t i=0;i<channels.size();++i) {
       channels[i]->SetMPIVars(values[i],
 			      values[channels.size()+i]);
@@ -149,9 +147,6 @@ void Multi_Channel::Optimize(double error)
       if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
       if (channels.size()>1) {
         channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-        if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) {
-          channels[i]->SetAlpha(m_minalpha);
-        }
       }
     }
   }
@@ -164,24 +159,7 @@ void Multi_Channel::Optimize(double error)
   }
 
   // optimise individual channels ...
-  if((m_optcnt>4 && m_optcnt<20) || channels.size()==1) {
-    for (i=0;i<channels.size();i++) {
-      if (channels[i]->Alpha()>0.01) {
-        channels[i]->Optimize();
-      }
-    }
-  }
-
-  // ... or end optimising them
-  if (m_optcnt==20 && channels.size()>1){
-    for (i=0;i<channels.size();i++) {
-      if (channels[i]->Alpha()>0.) {
-        channels[i]->EndOptimize();
-      }
-    }
-    // in this case, make sure the current alpha values are saved below
-    s1xmin = 1.e32;
-  }
+  for (i=0;i<channels.size();i++) channels[i]->Optimize();
 
   // save current alpha values if we have improved
   if (s1x<s1xmin) {
@@ -205,9 +183,6 @@ void Multi_Channel::Optimize(double error)
   msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
  		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-----------------------------------------------"<<endl;
-
-  // update number of optimisations
-  m_optcnt++;
 }
 
 void Multi_Channel::EndOptimize(double error)
@@ -217,9 +192,6 @@ void Multi_Channel::EndOptimize(double error)
   // use last best set of alpha values and set small ones to minalpha
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) {
-      channels[i]->SetAlpha(m_minalpha);
-    }
   }
 
   // normalise alpha values to a partition of unity
@@ -230,9 +202,7 @@ void Multi_Channel::EndOptimize(double error)
   }
 
   // tell channels to end optimising
-  for (i=0;i<channels.size();i++) {
-    if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
-  }
+  for (i=0;i<channels.size();i++) channels[i]->EndOptimize();
 
   msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
@@ -289,10 +259,6 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
   if (channels.empty()) return;
   Vec4D_Vector pp(p,&p[nin+nout]);
-  if (nin==2) {
-    Poincare cms(pp[0]+pp[1]);
-    for (int i(0);i<nin+nout;++i) cms.Boost(pp[i]);
-  }
   if (channels.size()==1) {
     channels[0]->GenerateWeight(&pp.front(),cuts);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
@@ -329,11 +295,9 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
     return;
   }
   Poincare cms(p[0]+p[1]);
-  if (nin==2) for (int i(0);i<nin;++i) cms.Boost(p[i]);
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
-    if (nin==2) for (int i(0);i<nin+nout;++i) cms.BoostBack(p[i]);
     m_lastdice = 0;
     return;
   }  
@@ -348,7 +312,6 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p,cuts);
-      if (nin==2) for (int i(0);i<nin+nout;++i) cms.BoostBack(p[i]);
       m_lastdice = i;
       break;
     }
@@ -436,8 +399,7 @@ void Multi_Channel::WriteOut(std::string pID)
   My_Out_File ofile(pID);
   ofile.Open();
   ofile->precision(12);
-  *ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
-       <<s1xmin<<" "<<m_optcnt<<endl;
+  *ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "<<s1xmin<<endl;
 //        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
 //        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
@@ -465,9 +427,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
     return 0;
   }
   m_readin=true;
-  //   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult
-  // >>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
-  *ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
+  *ifile>>n_points>>n_contrib>>s1xmin;
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {

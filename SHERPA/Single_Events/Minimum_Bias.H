@@ -19,8 +19,7 @@ namespace SHERPA {
     ~Minimum_Bias();
 
     // member functions
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List * blobs, 
-				     double & weight);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List* blobs);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);
   }; // end of class Minimum_Bias

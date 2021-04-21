@@ -1,26 +1,30 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/UFO/UFO_Model.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/KF_Table.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+
 
 #include <cmath>
 
 namespace UFO{
 
-  UFO_Model::UFO_Model(std::string path, std::string file, bool elementary) : Model_Base(path, file, elementary) 
+  UFO_Model::UFO_Model(bool elementary):
+    Model_Base(elementary)
   {
+    RegisterDefaults();
     p_numbers          = new MODEL::ScalarNumbersMap();
     p_constants        = new MODEL::ScalarConstantsMap();
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
 
-    ATOOLS::Default_Reader reader;
-    reader.SetInputPath(path);
-    reader.SetInputFile(file);
-    p_dataread = new UFO::UFO_Param_Reader(reader.Get<std::string>("UFO_PARAM_CARD", ""));
+    auto& s = ATOOLS::Settings::GetMainSettings();
+    const auto& paramcard = s["UFO_PARAM_CARD"].SetDefault("").Get<std::string>();
+    p_dataread = new UFO::UFO_Param_Reader(paramcard);
+
     ATOOLS::rpa->gen.AddCitation(1,"Sherpa's BSM features are published under \\cite{Hoche:2014kca}.");
     ATOOLS::rpa->gen.AddCitation(1,"The UFO model format is published under \\cite{Degrande:2011ua}.");
   }
@@ -47,7 +51,7 @@ namespace UFO{
     SetSMMass(kf_u,0.005);
     SetSMMass(kf_s,0.2);
     SetSMMass(kf_c,1.42);
-    SetSMMass(kf_b,4.8);
+    SetSMMass(kf_b,4.92);
     SetSMMass(kf_t,173.21);
     SetSMMass(kf_e,0.000511);
     SetSMMass(kf_mu,.105);
@@ -72,7 +76,9 @@ namespace UFO{
 
   bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
   { 
-    std::string widthscheme = MODEL::Model_Base::p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");
+    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+    const std::string widthscheme{
+      s["WIDTH_SCHEME"].GetScalarWithOtherDefault<std::string>("Fixed") };
     p_numbers->insert(make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
 
     // set default value to UFO input such that

@@ -15,7 +15,7 @@ namespace PHASIC {
 
     PHASIC::Process_Base *p_xs;
 
-    PHASIC::NLOTypeStringProcessMap_Map m_pmap;
+    static PHASIC::NLOTypeStringProcessMap_Map m_pmap;
     PHASIC::Process_Vector m_procs;
 
     Flav_ME_Map m_xsmap;
@@ -23,6 +23,7 @@ namespace PHASIC {
     int m_cmode;
 
     bool SetRandomColors(ATOOLS::Cluster_Amplitude *const ampl);
+    bool SetSumSqrColors(ATOOLS::Cluster_Amplitude *const ampl);
     bool SetLargeNCColors(ATOOLS::Cluster_Amplitude *const ampl);
 
   public:

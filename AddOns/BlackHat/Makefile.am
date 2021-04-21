@@ -1,5 +1,9 @@
 
+GITTAG = AddOns/BlackHat
+include ../../git.make
+
 BLACKHAT_SOURCES      =	\
+			Git_Info.C \
 			BlackHat_Tree.C \
 			BlackHat_Virtual.C \
 			BlackHat_Interface.C

@@ -15,10 +15,10 @@ Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler * _beamremnant) :
 
 Beam_Remnants::~Beam_Remnants() {}
 
-Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List* bloblist)
 {
   if (bloblist->empty()) {
-    msg_Error()<<"Beam_Remnants::Treat("<<bloblist<<","<<weight<<"): "<<endl
+    msg_Error()<<"Beam_Remnants::Treat("<<bloblist<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;

@@ -1,10 +1,11 @@
 #ifndef PHASIC_Process_MCATNLO_Process_H
 #define PHASIC_Process_MCATNLO_Process_H
 
-#include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Phys/Variations.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+
+#include <memory>
 
 namespace ATOOLS { class Cluster_Amplitude; }
 
@@ -49,6 +50,8 @@ namespace PHASIC {
     //! Cluster amplitude for interface with MC@NLO shower
     ATOOLS::Cluster_Amplitude *p_ampl;
 
+    void RegisterDefaults() const;
+
     /*!
      * @param pi Process_Info Process information object
      * @param nlotype nlo_type::code NLO type of process
@@ -87,46 +90,36 @@ namespace PHASIC {
 
     /*!
      * @param wmode int Mode (not used)
-     * @return additional S-Event weight (weight from MC@NLO shower or zero)
+     * @return additional S-Event weights (i.e. weights from the MC@NLO
+     * shower), or zero
      *
      * This method generates one S-event
      */
-    double OneSEvent(const int wmode);
+    ATOOLS::Weights_Map OneSEvent(const int wmode);
     /*!
      * @param wmode int Mode (not used)
      * @return additional H-Event weight (one or zero)
      *
      * This method generates one H-event
      */
-    double OneHEvent(const int wmode);
+    ATOOLS::Weights_Map OneHEvent(const int wmode);
 
+    struct LocalKFactorInfo {
+      double s {0.0};
+      double h {0.0};
+    };
     /*!
      * @param bvi  double Differential XS for BVI
      * @param b    double Differential XS for B
      * @param rs   double Differential XS for RS
-     * @param r    double Differential XS for R 
-     * @param ran  double Random number used to select S/H
-     * @param ampl Cluster_Amplitude Amplitude which should be updated with the
-     *             local K factor when S is selected
-     * @return
+     * @param r    double Differential XS for R
+     * @return S and H values corresponding to m_kfacmode
      *
-     * This method calculates the local Kfactor for MENLOPS for given
-     * differential XS values
+     * This method calculates S and H values needed to calculate the local
+     * Kfactor for MENLOPS for given differential XS values
      */
-    double LocalKFactor(double bvi, double b, double rs, double r,
-                        double random,
-                        const ATOOLS::Cluster_Amplitude *ampl=NULL);
-
-    struct KFactorReweightingInfo {
-      double m_random;
-      SP(ATOOLS::Variation_Weights) m_rsvarweights;
-      SP(ATOOLS::Variation_Weights) m_bvivarweights;
-      SP(ATOOLS::Variation_Weights) m_bvarweights;
-    };
-
-    double ReweightLocalKFactor(ATOOLS::Variation_Parameters *,
-                                ATOOLS::Variation_Weights *,
-                                KFactorReweightingInfo &);
+    LocalKFactorInfo
+    CalculateLocalKFactorInfo(double bvi, double b, double rs, double r);
 
     struct HEventVeto_Args {
       Jet_Finder *p_jf;
@@ -134,10 +127,6 @@ namespace PHASIC {
       HEventVeto_Args(Jet_Finder *const jf,const double &jcv):
 	p_jf(jf), m_jcv(jcv) {}
     };
-
-    double HEventVetoWeight(ATOOLS::Variation_Parameters *params,
-			    ATOOLS::Variation_Weights *weights,
-			    HEventVeto_Args &args);
 
   public:
 
@@ -202,12 +191,15 @@ namespace PHASIC {
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     /*!
-     * @param p Vec4D_Vector Four momenta
+     * @param Vec4D_Vector Four momenta
+     * @param Variations_Mode Specifies which weights to calculate (all,
+     * nominal-only, ...)
      * @return Returns weight of given momentum configuration
      *
      * Inherited from Process_Base, calculates the weight of given configuration
      */
-    double Differential(const ATOOLS::Vec4D_Vector &p);
+    ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector &,
+                                     ATOOLS::Variations_Mode);
 
     /*!
      * @param resultpath string Path where to store the results
@@ -261,14 +253,13 @@ namespace PHASIC {
     void SetShower(PDF::Shower_Base *const ps);
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
-    void SetVariationWeights(ATOOLS::Variation_Weights *const);
     /*!
-     * @param ampl Cluster_Amplitude Cluster amplitude
+     * @param ampl Cluster_Amplitude Cluster amplitude (might be updated)
      * @return Local KFactor
      *
      * This method calculates the local Kfactor for MENLOPS for given config
      */
-    double LocalKFactor(const ATOOLS::Cluster_Amplitude &ampl);
+    ATOOLS::Weights LocalKFactor(ATOOLS::Cluster_Amplitude& ampl);
 
     /*!
      * @return Cluster amplitude p_ampl
@@ -301,7 +292,7 @@ namespace PHASIC {
      * This method returns whether last generated event was S-Event or not
      */
     bool WasSEvent() const { return m_wassevent; }
-    Process_Base* BProc() { return p_bproc; }
+    Process_Base* BVIProc() { return p_bviproc; }
 
 #ifdef USING__Threading
     void AddMEHThread(MEH_TID_Vector &cts,void *(*CalcFunc)(void*));

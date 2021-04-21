@@ -3,7 +3,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Read_Write_Base.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -60,14 +60,9 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
   sprintf(fn, "GQ2_Mres=%.3f_Gres=%.3f_MresP=%.3f_GresP=%.3f_beta=%.3f_Mout=%.3f.dat",
       res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).HadMass() );
 
-  // parse path and file name into right form
-  pair<string,string> split = Read_Write_Base::SplitFilePath("Decaydata/",m_path);
-  m_path = split.first;
-  string file = split.second;
-
   // look if file already exists
   // if file does not exist
-  if (!Read_Write_Base::FileInZip(m_path,file+"PhaseSpaceFunctions/"+string(fn))) {
+  if (!FileExists(m_path+"PhaseSpaceFunctions/"+string(fn))) {
     // create histogram (i.e. table of values)
     msg_Out()<<"Create necessary phase space function for chosen parameters.\n"
              <<"This may take some time. Please wait..."<<endl;
@@ -90,8 +85,9 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
     // read table and create histogram
     msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
              <<"     Read G(q2) from "<<fn<<"."<<endl;
-    std::string found_file_name = 
-    Read_Write_Base::GetZipFileContent(m_path,file+"PhaseSpaceFunctions/"+string(fn));
+    My_In_File infile(m_path+"PhaseSpaceFunctions/"+string(fn));
+    infile.Open();
+    std::string found_file_name = infile.FileContent();
     return new Histogram("PhaseSpaceFunctions/GQ2_Mres=%.3f_Gres=%.3f_MresP=%.3f_GresP=%.3f_beta=%.3f_Mout=%.3f.dat",0,found_file_name);
 
   }

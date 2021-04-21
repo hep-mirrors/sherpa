@@ -51,40 +51,40 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *
-GetFourParticleSelector(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<13) return NULL;
-    size_t item[4];
-    ATOOLS::Flavour flav[4];
-    for (size_t i(0);i<4;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][2*i]);
-      flav[i]=ATOOLS::Flavour((kf_code)abs(kf));
-      if (kf<0) flav[i]=flav[i].Bar();
-      item[i]=ATOOLS::ToType<size_t>(parameters[0][2*i+1]);
-    }
-    return new Class(flav,item,
-		     HistogramType(parameters[0][11]),
-		     ATOOLS::ToType<double>(parameters[0][8]),
-		     ATOOLS::ToType<double>(parameters[0][9]),
-		     ATOOLS::ToType<int>(parameters[0][10]),
-		     parameters[0][12]);
+GetFourParticleSelector(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 13)
+    THROW(missing_input, "Missing parameter values.");
+  ATOOLS::Flavour flav[4];
+  size_t item[4];
+  for (size_t i{ 0 }; i < 4; ++i) {
+    const auto kf = s.Interprete<int>(parameters[2 * i]);
+    flav[i] = ATOOLS::Flavour((kf_code)std::abs(kf));
+    if (kf < 0)
+      flav[i] = flav[i].Bar();
+    item[i] = s.Interprete<size_t>(parameters[2 * i + 1]);
   }
-  return NULL;
-}									
+  return new Class(flav,item,
+                   HistogramType(parameters[11]),
+                   s.Interprete<double>(parameters[8]),
+                   s.Interprete<double>(parameters[9]),
+                   s.Interprete<int>(parameters[10]),
+                   parameters[12]);
+}
 
 #define DEFINE_FOUR_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *					\
-  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
-  { return GetFourParticleSelector<CLASS>(parameters); }
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetFourParticleSelector<CLASS>(key); }
 
 #define DEFINE_FOUR_OBSERVABLE_PRINT_METHOD(NAME)		\
-  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
-  { str<<"flav1 item1 ... flav4 item4 min max bins Lin|LinErr|Log|LogErr list"; }
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"[flav1, item1, ... flav4, item4, min, max, bins, Lin|LinErr|Log|LogErr, list]"; }
 
 #define DEFINE_FOUR_OBSERVABLE_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
   DEFINE_FOUR_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   DEFINE_FOUR_OBSERVABLE_PRINT_METHOD(CLASS)
 

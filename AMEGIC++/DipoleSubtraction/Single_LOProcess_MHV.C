@@ -13,7 +13,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 #include <unistd.h>
 
@@ -66,7 +65,7 @@ Single_LOProcess_MHV::~Single_LOProcess_MHV()
 
 int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
-					vector<Process_Base *> & errs,int checkloopmap)
+					vector<Process_Base *> & errs)
 {
   m_type = 21;
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
@@ -351,19 +350,6 @@ int Single_LOProcess_MHV::Tests(std::vector<double> * pfactors) {
      } 
  }
 
-
-  //shorten helicities
-  int switchhit = 0;
-  for (size_t i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
-#ifdef FuckUp_Helicity_Mapping
-      p_hel->SwitchOff(i);
-      switchhit++;
-#endif
-    }
-  }
-  msg_Tracking()<<"Single_LOProcess_MHV::Tests for "<<m_name<<std::endl
-		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
 
   M2g    *= p_MHVamp->ParticlesNorm();
   m_iresult  = M2g;

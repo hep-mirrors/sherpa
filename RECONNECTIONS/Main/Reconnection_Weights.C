@@ -25,10 +25,12 @@ void Reconnection_Weights::Reset() {
 
 void Reconnection_Weights::FillTables() {
   Particle * trip, * anti;
-  for (ParticleSet::iterator tit=p_parts[0]->begin();tit!=p_parts[0]->end();tit++) {
+  for (ParticleSet::iterator tit=p_parts[0]->begin();
+       tit!=p_parts[0]->end();tit++) {
     trip = (*tit);
     m_distances[trip] = new map<Particle *, double>;
-    for (ParticleSet::iterator ait=p_parts[1]->begin();ait!=p_parts[1]->end();ait++) {
+    for (ParticleSet::iterator ait=p_parts[1]->begin();
+	 ait!=p_parts[1]->end();ait++) {
       anti = (*ait);
       if (trip==anti) continue;
       (*m_distances[trip])[anti] = p_reconnector->Distance(trip,anti);
@@ -36,7 +38,6 @@ void Reconnection_Weights::FillTables() {
   }
   //OutputWeightTable();
 }
-
 void Reconnection_Weights::OutputWeightTable() {
   for (map<Particle *,distances * >::iterator dit=m_distances.begin();
        dit!=m_distances.end();dit++) {

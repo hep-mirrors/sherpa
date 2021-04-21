@@ -8,9 +8,11 @@ namespace COMIX {
 
   class Single_Process;
 
-  class Process_Group: 
-    public PHASIC::Process_Group, public Process_Base {
+  class Process_Group: public PHASIC::Process_Group, public Process_Base {
+
   protected:
+
+    size_t m_nproc;
 
     void InitPSGenerator(const size_t &ismode);
 
@@ -29,7 +31,7 @@ namespace COMIX {
     bool Initialize(PHASIC::Process_Base *const proc);
 
     void ConstructPSVertices(PS_Generator *ps);
-    
+
     bool GeneratePoint();
 
     bool Tests();

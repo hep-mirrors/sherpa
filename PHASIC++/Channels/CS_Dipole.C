@@ -18,6 +18,8 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
   m_sub(*sub), p_vegas(NULL),
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
+  m_np(0.0), m_sum(0.0), m_sum2(0.0),
+  m_mnp(0.0), m_msum(0.0), m_msum2(0.0),
   m_amin(0.0), m_type(0), m_on(false), m_bmcw(bmcw)
 {
   m_sub.p_ampl=NULL;
@@ -64,7 +66,7 @@ bool CS_Dipole::IsMapped(CS_Dipole *const dip) const
 
 void CS_Dipole::InitVegas(const std::string &pid)
 {
-  p_vegas = new Vegas(3,100,m_id,0);
+  p_vegas = new Vegas(3,100,m_id);
 }
 
 double CS_Dipole::Alpha(const int mode) const

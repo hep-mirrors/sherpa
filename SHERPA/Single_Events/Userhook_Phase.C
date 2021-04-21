@@ -2,10 +2,10 @@
 
 #include "SHERPA/Single_Events/Event_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <limits>
 
@@ -34,12 +34,10 @@ Userhook_Phase::~Userhook_Phase()
 
 void Userhook_Phase::InitializeHooks(Sherpa* sherpa)
 {
-  Data_Reader read(",",";","#","=");
-  std::string input=read.GetValue<std::string>("USERHOOK","None");
-  std::vector<std::string> userhooks;
-  Data_Reader readline(",",";","#","");
-  readline.SetString(input);
-  readline.VectorFromString(userhooks);
+  const auto userhooks = Settings::GetMainSettings()["USERHOOKS"]
+    .SetDefault("None")
+    .UseNoneReplacements()
+    .GetVector<std::string>();
   for (size_t i=0; i<userhooks.size(); ++i) {
     if (userhooks[i]=="None") continue;
     Userhook_Base* userhook=Userhook_Base::Getter_Function::GetObject
@@ -56,11 +54,11 @@ void Userhook_Phase::InitializeHooks(Sherpa* sherpa)
 
 }
 
-Return_Value::code Userhook_Phase::Treat(Blob_List *bloblist, double &weight) 
+Return_Value::code Userhook_Phase::Treat(Blob_List* bloblist)
 {
   int success(0), newevent(0);
   for (Userhook_Vector::iterator it=m_userhooks.begin(); it!=m_userhooks.end(); ++it) {
-    switch ((*it)->Run(bloblist, weight)) {
+    switch ((*it)->Run(bloblist)) {
     case Return_Value::Nothing :
       break;
     case Return_Value::Success :

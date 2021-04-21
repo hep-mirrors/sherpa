@@ -49,8 +49,7 @@ namespace WBB {
     Wbb_Interface(): ME_Generator_Base("Wbb") {}
 
     // member functions
-    bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
+    bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr)
     {
@@ -146,7 +145,7 @@ operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="Wbb") return NULL;
   if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
-  if (pi.m_oew!=1 || pi.m_fi.m_nlotype!=nlo_type::lo)return NULL;
+  if (pi.m_maxcpl[1]!=1 || pi.m_fi.m_nlotype!=nlo_type::lo)return NULL;
   if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   if (fl[0].Strong() && fl[1].Strong() &&

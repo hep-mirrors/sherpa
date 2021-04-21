@@ -142,41 +142,31 @@ using namespace ATOOLS;
 
 template <class Class>
 Analysis_Object *
-GetParticleSelector(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<4) return NULL;
-    return new Class(ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     parameters[0][2],parameters[0][3]);
-  }
-  if (parameters.size()<4) return NULL;
-  double min=30.0, max=70.0;
-  std::string inlist=finalstate_list, outlist="Selected";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="InList") inlist=parameters[i][1];
-    else if (parameters[i][0]=="OutList") outlist=parameters[i][1];
-    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
-  }
+GetParticleSelector(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(30.0).Get<double>();
+  const auto max = s["Max"].SetDefault(70.0).Get<double>();
+  const auto inlist = s["InList"]
+    .SetDefault(std::string(finalstate_list))
+    .Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
   return new Class(min,max,inlist,outlist);
-}									
+}
 
 #define DEFINE_SELECTOR_GETTER_METHOD(CLASS)			\
   Analysis_Object *ATOOLS::Getter				\
-  <Analysis_Object,Argument_Matrix,CLASS>::			\
-  operator()(const Argument_Matrix &parameters) const		\
-  { return GetParticleSelector<CLASS>(parameters); }
+  <Analysis_Object,Analysis_Key,CLASS>::			\
+  operator()(const Analysis_Key& key) const		\
+  { return GetParticleSelector<CLASS>(key); }
 
 #define DEFINE_SELECTOR_PRINT_METHOD(CLASS)			\
-  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  void ATOOLS::Getter<Analysis_Object,Analysis_Key,CLASS>::	\
   PrintInfo(std::ostream &str,const size_t width) const		\
-  { str<<"min max inlist outlist"; }
+  { str<<"e.g. {Min: 30, Max: 70, InList: FinalState, OutList: Selected}"; }
 
 #define DEFINE_SELECTOR_GETTER(CLASS,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Analysis_Key);	\
   DEFINE_SELECTOR_GETTER_METHOD(CLASS)				\
   DEFINE_SELECTOR_PRINT_METHOD(CLASS)
 
@@ -184,54 +174,37 @@ GetParticleSelector(const Argument_Matrix &parameters)
 
 template <class Class>
 Analysis_Object *
-GetParticleDSelector(const Argument_Matrix &parameters) 
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<7) return NULL;
-    int kf=ATOOLS::ToType<int>(parameters[0][3]);
-    ATOOLS::Flavour flav((kf_code)abs(kf));
-    if (kf<0) flav=flav.Bar();
-    return new Class(ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     flav,ATOOLS::ToType<int>(parameters[0][3]),
-		     parameters[0][5],parameters[0][4],parameters[0][6]);
-  }
-  if (parameters.size()<7) return NULL;
-  double min=30.0, max=70.0;
-  std::string inlist=finalstate_list, reflist="Jets", outlist="Selected";
-  size_t item=0;
-  ATOOLS::Flavour flav(kf_jet);
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="InList") inlist=parameters[i][1];
-    else if (parameters[i][0]=="OutList") outlist=parameters[i][1];
-    else if (parameters[i][0]=="RefList") reflist=parameters[i][1];
-    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Item") item=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Flav") {
-      int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      flav=ATOOLS::Flavour((kf_code)(abs(kf)));
-      if (kf<0) flav=flav.Bar();
-    }
-  }
+GetParticleDSelector(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(30.0).Get<double>();
+  const auto max = s["Max"].SetDefault(70.0).Get<double>();
+  const auto inlist = s["InList"]
+    .SetDefault(std::string(finalstate_list))
+    .Get<std::string>();
+  const auto reflist = s["RefList"].SetDefault("Jets").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Selected").Get<std::string>();
+  const auto item = s["Item"].SetDefault(0).Get<size_t>();
+  const auto kf = s["Flav"].SetDefault(kf_jet).Get<int>();
+  ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)(std::abs(kf))) };
+  if (kf<0) flav=flav.Bar();
+
   return new Class(min,max,flav,item,reflist,inlist,outlist);
-}									
+}
 
 #define DEFINE_SELECTOR_D_GETTER_METHOD(CLASS)			\
   Analysis_Object *ATOOLS::Getter				\
-  <Analysis_Object,Argument_Matrix,CLASS>::			\
-  operator()(const Argument_Matrix &parameters) const		\
-  { return GetParticleDSelector<CLASS>(parameters); }
+  <Analysis_Object,Analysis_Key,CLASS>::			\
+  operator()(const Analysis_Key& key) const		\
+  { return GetParticleDSelector<CLASS>(key); }
 
 #define DEFINE_SELECTOR_D_PRINT_METHOD(CLASS)			\
-  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  void ATOOLS::Getter<Analysis_Object,Analysis_Key,CLASS>::	\
   PrintInfo(std::ostream &str,const size_t width) const		\
-  { str<<"min max flav item inlist reflist outlist"; }
+  { str<<"e.g. {Min: 30, Max: 70, InList: FinalState, RefList: Jets, OutList: Selected, Item: 0, Flav: 93}"; }
 
 #define DEFINE_SELECTOR_D_GETTER(CLASS,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Analysis_Key);	\
   DEFINE_SELECTOR_D_GETTER_METHOD(CLASS)			\
   DEFINE_SELECTOR_D_PRINT_METHOD(CLASS)
 

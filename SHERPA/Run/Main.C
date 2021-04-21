@@ -1,6 +1,7 @@
 #include "SHERPA/Main/Sherpa.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -17,20 +18,21 @@ int main(int argc,char* argv[])
 
 #ifdef USING__MPI
 #ifdef USING__Threading
-  int provided=MPI::Init_thread(argc,argv,MPI_THREAD_SERIALIZED);
+  int provided;
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
   if (provided<MPI_THREAD_SERIALIZED) {
     printf("MPI library does not provide required thread support\n");
-    MPI::Finalize();
+    MPI_Finalize();
     return 1;
   }
 #else
-  MPI::Init(argc,argv);
+  MPI_Init(&argc, &argv);
 #endif
 #endif
 
-  Sherpa* Generator = new Sherpa();
   try {
-    Generator->InitializeTheRun(argc,argv);
+    Sherpa* Generator = new Sherpa(argc, argv);
+    Generator->InitializeTheRun();
     int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
       Generator->InitializeTheEventHandler();
@@ -39,6 +41,7 @@ int main(int argc,char* argv[])
       }
       Generator->SummarizeRun();
     }
+    delete Generator;
   }
   catch (const normal_exit& exception) {
     msg_Error() << exception << std::endl;
@@ -48,11 +51,13 @@ int main(int argc,char* argv[])
     msg_Error() << exception << std::endl;
     exh->Terminate(1);
   }
-
-  delete Generator;
+  catch (const std::exception& exception) {
+    msg_Error() << exception.what() << std::endl;
+    exh->Terminate(1);
+  }
 
 #ifdef USING__MPI
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
 
   return 0;

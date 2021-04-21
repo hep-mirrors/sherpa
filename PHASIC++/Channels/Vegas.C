@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 
 using namespace ATOOLS;
@@ -17,13 +17,11 @@ using namespace std;
 
 int Vegas::s_onext=-1, Vegas::s_on=-1;
 
-Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
+Vegas::Vegas(int dim,int ndx,const std::string & name)
 {
   if (s_on<0) {
-    Default_Reader reader;
-    reader.SetInputPath(rpa->GetPath());
-    reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_on = reader.GetValue<int>("VEGAS_MODE",2);
+    s_on =
+      Settings::GetMainSettings()["VEGAS_MODE"].SetDefault(2).Get<int>();
   }
   m_on=s_on?1:0;
   if (s_onext>-1) m_on=s_onext;
@@ -45,7 +43,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   p_x   = new double[m_dim];
   p_bm=p_cx=NULL;
   p_cb=NULL;
-  if (m_on!=0) {
+  if (true) {
     p_xi = new double*[m_dim];
     p_bestxi = new double*[m_dim];
     p_d  = new double*[m_dim];
@@ -106,7 +104,7 @@ Vegas::~Vegas()
     delete[] p_cx;
     delete[] p_cb;
   }
-  if (m_on==0) return;
+  if (false) return;
   for(int i=0;i<m_dim;i++) {
     delete[] p_xi[i];
     delete[] p_bestxi[i];
@@ -149,7 +147,7 @@ void Vegas::MPISync()
 {
   if (!m_on) return;
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     int cn=3*m_dim*m_nd+2;
     double *values = new double[cn];
@@ -162,7 +160,7 @@ void Vegas::MPISync()
     }
     values[cn-2]=m_mnevt;
     values[cn-1]=m_mcevt;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,cn,MPI_DOUBLE,MPI_SUM);
     for (int i=0;i<m_dim;i++) {
       for (int j=0;j<m_nd;j++) {
 	p_md[i][j]=values[i*m_nd+j];
@@ -298,9 +296,9 @@ void Vegas::AddPoint(double value,double *xy)
 { if (m_on==0) return;
   if (m_mode==1 && m_cmode&1){
     for (int i=0;i<m_dim;i++) {
-      if (dabs(p_x[i]-xy[i])>1.e-4) {
-	msg_Tracking()<<"Mapping error in Vegas for "<<m_name<<endl;
-	for (int j=0;j<m_dim;j++) msg_Tracking()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
+      if (!IsEqual(p_x[i],xy[i],1.e-4)) {
+	msg_Info()<<"Mapping error in Vegas for "<<m_name<<endl;
+	for (int j=0;j<m_dim;j++) msg_Info()<<j<<": "<<p_x[j]<<"<->"<<xy[j]<<" ("<<dabs(p_x[j]-xy[j])<<")"<<endl;
 //    	Abort();
 	i=m_dim;
       }
@@ -334,7 +332,7 @@ void Vegas::AddPoint(double value)
     p_mhit[i][p_ia[i]]++;
   }
   m_mode=0;
-  if (MPI::COMM_WORLD.Get_size()>1) {
+  if (mpi->Size()>1) {
     if (m_autooptimize>0)
       THROW(fatal_error,"Autooptimize not possible in MPI mode");
   }
@@ -352,11 +350,13 @@ void Vegas::AddPoint(double value)
 #else
   ++m_nevt;
   if (value>0.) ++m_cevt;
-  double v2 = value*value;
+  const auto v2 = value*value;
+  const auto v4 = v2*v2;
   for (int i=0;i<m_dim;i++) {
-    p_d[i][p_ia[i]]+=v2;
-    p_di[i][p_ia[i]]+=v2*v2;
-    p_hit[i][p_ia[i]]++;
+    const auto idx = p_ia[i];
+    p_d[i][idx]+=v2;
+    p_di[i][idx]+=v4;
+    p_hit[i][idx]++;
   }
   m_mode=0;
   if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {

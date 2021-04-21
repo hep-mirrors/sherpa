@@ -5,7 +5,7 @@
 #include "DIRE/Tools/Amplitude.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace DIRE {
 
@@ -20,7 +20,8 @@ namespace DIRE {
 
     ATOOLS::Mass_Selector *p_ms;
 
-    int    m_reco, m_wcheck;
+    int    m_reco;
+    bool   m_wcheck;
     double m_maxweight;
 
     void RecoCheck(Amplitude *const a,int swap) const;
@@ -53,7 +54,6 @@ namespace DIRE {
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <algorithm>
@@ -66,12 +66,13 @@ Dire::Dire(const Shower_Key &key):
   Shower_Base("Dire"), p_ms(NULL),
   m_maxweight(1.0)
 {
+  Settings& s = Settings::GetMainSettings();
   m_kttype=1;
   p_shower = new Shower();
   p_clus = new Cluster_Definitions(p_shower);
-  p_shower->Init(key.p_model,key.p_isr,key.p_reader);
-  m_reco=key.p_reader->Get<int>("CSS_RECO_CHECK",0,"Reco check",METHOD);
-  m_wcheck=key.p_reader->Get<int>("CSS_WEIGHT_CHECK",0,"Weight check",METHOD);
+  p_shower->Init(key.p_model,key.p_isr);
+  m_reco = s["CSS_RECO_CHECK"].Get<int>();
+  m_wcheck = s["CSS_WEIGHT_CHECK"].Get<int>();
 }
 
 Dire::~Dire()
@@ -83,24 +84,24 @@ Dire::~Dire()
 int Dire::PerformShowers()
 {
   DEBUG_FUNC(this);
-  p_shower->SetVariations(p_variationweights);
-  m_weight=1.0;
+  m_weightsmap.Clear();
   unsigned int nem=0;
   for (size_t i(0);i<m_ampls.size();++i) {
-    int stat(p_shower->Evolve(*m_ampls[i],m_weight,nem));
-    m_weight*=p_shower->GetWeight();
+    int stat {p_shower->Evolve(*m_ampls[i], nem)};
+    m_weightsmap *= p_shower->GetWeightsMap();
     if (stat!=1) return stat;
   }
-  if (m_wcheck && dabs(m_weight)>m_maxweight) {
-    m_maxweight=dabs(m_weight);
+  const double weight {m_weightsmap.Nominal()};
+  if (m_wcheck && dabs(weight) > m_maxweight) {
+    m_maxweight = dabs(weight);
     std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
     ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
     std::ofstream outstream(rname.c_str(),std::fstream::app);
     outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<m_weight<<" in event "
-	     <<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
+    outstream << "# Wrote status for weight=" << weight << " in event "
+              << rpa->gen.NumberOfGeneratedEvents() + 1 << std::endl;
     outstream.close();
   }
   return 1;
@@ -177,6 +178,7 @@ Amplitude *Dire::Convert
 			 Color(cl->Col().m_i,cl->Col().m_j)));
     ampl->push_back(p);
     p->SetId(p->Counter());
+    for (int i(0);i<2;++i) p->SetT(i,cl->KT2(i));
     if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
     lmap[cl]=p;
   }

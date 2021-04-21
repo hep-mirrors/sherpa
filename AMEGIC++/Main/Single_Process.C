@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <unistd.h>
 
@@ -34,7 +35,8 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 AMEGIC::Single_Process::Single_Process():
-  m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0), p_partner(this)
+  m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0),
+  p_partner(this)
 {
   m_lastk=1.0;
 }
@@ -63,7 +65,7 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
 {
   if (aname==m_name) return;
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
-  if (FileExists(altname,1)) return;
+  if (FileExists(altname)) return;
   My_Out_File to(altname);
   to.Open();
   *to<<aname<<" "<<m_sfactor<<endl;
@@ -75,7 +77,7 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
 bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
-  if (FileExists(altname,1)) {
+  if (FileExists(altname)) {
     double factor;
     string name,dummy; 
     My_In_File from(altname);
@@ -135,12 +137,13 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
-    if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time."
-                <<std::endl;
-      directload = false;
-    }
+  Scoped_Settings amegicsettings{
+    Settings::GetMainSettings()["AMEGIC"] };
+  if (amegicsettings["ME_LIBCHECK"].Get<bool>()) {
+    msg_Info()<<"Enforce full library check. This may take some time."
+              <<std::endl;
+    directload = false;
+  }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
@@ -151,7 +154,8 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+  const bool cvp{
+    amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
   msg_Debugging()<<m_mincpl<<" .. "<<m_maxcpl<<std::endl;
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
@@ -177,7 +181,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"),1)) {
+	  if (FileExists(mlname+string(".map"))) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -387,7 +391,7 @@ int AMEGIC::Single_Process::Tests()
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
-      if (FileExists(searchfilename)) {
+      if (FileExists(searchfilename,1)) {
       	msg_Error()<<"ERROR in AMEGIC::Single_Process::Tests()"<<std::endl
 			   <<"   No compiled & linked library found for process "<<testname<<std::endl
 			   <<"   but files already written out !"<<std::endl
@@ -609,15 +613,15 @@ void AMEGIC::Single_Process::WriteLibrary()
   m_libname = CreateLibName();
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"))) {
-  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
+  if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"),1)) {
+    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   }
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
-  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs",1))
     Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process::WriteLibrary : "<<std::endl
@@ -628,7 +632,7 @@ void AMEGIC::Single_Process::WriteLibrary()
 void AMEGIC::Single_Process::CreateMappingFile(Single_Process* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname,1)) {
+  if (FileExists(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
@@ -652,7 +656,7 @@ bool AMEGIC::Single_Process::FoundMappingFile(std::string & MEname, std::string 
   std::string buf;
   int pos;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname,1)) {
+  if (FileExists(outname)) {
     My_In_File from(outname);
     from.Open();
     getline(*from,buf);
@@ -704,7 +708,9 @@ bool AMEGIC::Single_Process::FillIntegrator
 (PHASIC::Phase_Space_Handler *const psh)
 {
   if (p_partner!=this) return true;
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   return Process_Base::FillIntegrator(psh);
 }
 
@@ -722,7 +728,7 @@ bool AMEGIC::Single_Process::SetUpIntegrator()
 bool AMEGIC::Single_Process::CreateChannelLibrary()
 {
   if (p_partner!=this || p_psgen) return true;
-  p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
+  p_psgen     = new Phase_Space_Generator(m_nin, m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
   if (newch>0) return 0;
@@ -748,8 +754,8 @@ void AMEGIC::Single_Process::Minimize()
   m_ntchanmin = p_partner->NTchanMin();
 }
 
-double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 
-{ 
+double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms, int mode)
+{
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs=0.0;
   if (!(IsMapped() && LookUp())) {
@@ -827,7 +833,7 @@ double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
-  m_lastk=KFactor();
+  m_lastk=KFactor(2);
   msg_Debugging()<<"M2="<<M2<<" ,  kfac="<<m_lastk<<" ,  norm="
                  <<sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS))
                  <<std::endl;

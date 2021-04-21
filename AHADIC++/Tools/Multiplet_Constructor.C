@@ -1,6 +1,9 @@
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 #include <stdio.h>
 
 using namespace AHADIC;
@@ -24,7 +27,15 @@ namespace AHADIC {
 
 Multiplet_Constructor::Multiplet_Constructor(bool test) :
   m_test(test),
-  m_singletsuppression(hadpars->Get("Singlet_Suppression"))
+  m_singletsuppression(hadpars->Get("Singlet_Suppression")),
+  m_etam(hadpars->Get("eta_modifier")),
+  m_etapm(hadpars->Get("eta_prime_modifier")),
+  m_cse(hadpars->Get("CharmStrange_Enhancement")),
+  m_bse(hadpars->Get("BeautyStrange_Enhancement")),
+  m_bce(hadpars->Get("BeautyCharm_Enhancement")),
+  m_hcbe(hadpars->Get("CharmBaryon_Enhancement")),
+  m_hbbe(hadpars->Get("BeautyBaryon_Enhancement")),
+  m_sbm(hadpars->Get("Singlet_Baryon_modifier"))
 {
   CreateMultiplets();
 }
@@ -149,14 +160,13 @@ bool Multiplet_Constructor::ConstructWaveFunction()
 
   switch (int(m_info.flav.Kfcode())) {
   case 221:
-    m_info.extrawt *= hadpars->Get("eta_modifier");
+    m_info.extrawt *= m_etam;
     break;
   case 331:
-    m_info.extrawt *= hadpars->Get("eta_prime_modifier");
+    m_info.extrawt *= m_etapm;
     break;
   default: break;
   }
-
   if (constructed && m_wavefunctions.find(m_info.flav)!=m_wavefunctions.end()) {
     m_wavefunctions[m_info.flav]->SetMultipletWeight(m_info.multiwt);
     m_wavefunctions[m_info.flav]->SetSpin(m_info.spin2);
@@ -176,7 +186,13 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
   // these are the "funny mesons" ... a0(980) and friends ...
   // no idea (yet) how to deal with them.
   if (m_info.iso>0) return false;
-  
+  if ((m_info.fl1==3||m_info.fl2==3) &&
+      (m_info.fl1==4||m_info.fl2==4)) m_info.extrawt *= m_cse;
+  if ((m_info.fl1==3||m_info.fl2==3) &&
+      (m_info.fl1==5||m_info.fl2==5)) m_info.extrawt *= m_bse;
+  if ((m_info.fl1==4||m_info.fl2==4) &&
+      (m_info.fl1==5||m_info.fl2==5)) m_info.extrawt *= m_bce;
+
   if ((m_info.fl1!=m_info.fl2) ||
       (m_info.fl1==m_info.fl2 && (m_info.fl1==4 || m_info.fl1==5)) ||
       (m_info.fl1==4 && m_info.fl2==5)) {
@@ -307,6 +323,15 @@ bool Multiplet_Constructor::ConstructBaryonWaveFunction()
   // being a singlet, with no or little mising with the
   // "normal" Sigma and Lambda - quite often the heavies
   // are unknown
+  if (m_info.fl1==4 || m_info.fl2==4 || m_info.fl3==4) m_info.extrawt *= m_hcbe;
+  if (m_info.fl1==5 || m_info.fl2==5 || m_info.fl3==5) m_info.extrawt *= m_hbbe;
+  if ((m_info.fl3==3||m_info.fl2==3) &&
+      (m_info.fl3==4||m_info.fl2==4)) m_info.extrawt *= m_cse;
+  if ((m_info.fl3==3||m_info.fl2==3) &&
+      (m_info.fl3==5||m_info.fl2==5)) m_info.extrawt *= m_bse;
+  if ((m_info.fl3==4||m_info.fl2==4) &&
+      (m_info.fl3==5||m_info.fl2==5)) m_info.extrawt *= m_bce;
+
   if (m_info.spin2==2 || (m_info.spin2==4 && m_info.exr==1)) {
     if (m_info.fl3<4) {
       if (m_info.fl3>m_info.fl2 && m_info.fl3>m_info.fl1) {
@@ -462,6 +487,7 @@ Wave_Function * Multiplet_Constructor::LambdaWaveFunction() {
   pair->first  = Flavour((kf_code)(m_info.fl2));
   pair->second = Flavour((kf_code)(m_info.fl3*1000+m_info.fl1*100+3)); 
   wavefunction->AddToWaves(pair,+1./sqrt(4.));
+  m_info.extrawt = m_sbm;
   return wavefunction;
 }
 
@@ -481,6 +507,7 @@ Wave_Function * Multiplet_Constructor::Lambda1WaveFunction() {
   pair->first  = Flavour(kf_s);
   pair->second = Flavour(kf_ud_0); 
   wavefunction->AddToWaves(pair,+1./sqrt(3.));
+  m_info.extrawt = m_sbm;
   return wavefunction;
 }
 
@@ -492,6 +519,7 @@ Wave_Function * Multiplet_Constructor::SigmaHWaveFunction() {
   pair->first  = Flavour((kf_code)(m_info.fl3));
   pair->second = Flavour((kf_code)(m_info.fl2*1000+m_info.fl1*100+3));
   wavefunction->AddToWaves(pair,1.);
+  m_info.extrawt = m_sbm;
   return wavefunction;
 }
 
@@ -503,6 +531,7 @@ Wave_Function * Multiplet_Constructor::LambdaHWaveFunction() {
   pair->first  = Flavour((kf_code)(m_info.fl3));
   pair->second = Flavour((kf_code)(m_info.fl1*1000+m_info.fl2*100+1));
   wavefunction->AddToWaves(pair,1.);
+  m_info.extrawt = m_sbm;
   return wavefunction;
 }
 

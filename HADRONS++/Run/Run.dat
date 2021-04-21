@@ -1,9 +1,0 @@
-(run){
-  EVENT_TYPE=HadronDecay
-  ME_SIGNAL_GENERATOR=None
-  BEAM_1=11
-  BEAM_ENERGY_1=7000.
-  BEAM_2=-11
-  BEAM_ENERGY_2=7000.
-  STABLE[15]=0
-}(run)

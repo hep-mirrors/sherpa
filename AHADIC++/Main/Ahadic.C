@@ -5,7 +5,7 @@
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace AHADIC;
@@ -13,17 +13,16 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Ahadic::Ahadic(string path, string file) :
-  m_beamparticles(Beam_Particles_Shifter(&m_singlet_list)),
-  m_sformer(Singlet_Former(&m_singlet_list)),
+Ahadic::Ahadic(string shower) :
   m_softclusters(Soft_Cluster_Handler(&m_hadron_list)),
+  m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
+  m_sformer(Singlet_Former(&m_singlet_list)),
   m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {  
   hadpars = new Hadronisation_Parameters();
-  hadpars->Init(path,file);
-
+  hadpars->Init(shower);
   m_beamparticles.Init();
   m_softclusters.Init();
   m_singletchecker.Init();
@@ -45,28 +44,30 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
       Blob * blob = (*blit);
-      switch (Hadronize(blob)) {
-      case Return_Value::New_Event :
-	return Return_Value::New_Event;
+      const auto result = Hadronize(blob);
+      switch (result) {
       case Return_Value::Success :
 	break;
       case Return_Value::Retry_Event :
+      case Return_Value::New_Event:
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
 		      <<"   Hadronization for blob "
 		      <<"("<<blobs<<"; "
 		      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "
-		      <<"did not work out,\n"
-		      <<"   will trigger retrying the event:\n"
-		      <<(*blobs);
+		      <<"did not work out,";
+        if (result == Return_Value::New_Event)
+          msg_Tracking()<<" due to momentum problems,";
+        msg_Tracking()<<"\n   will trigger "<<result<<":\n"
+                      <<(*blobs);
 	CleanUp(blob);
-	if (rpa->gen.Beam1().IsLepton() ||
-	    rpa->gen.Beam2().IsLepton()) {
+	if (result == Return_Value::Retry_Event
+            && (rpa->gen.Beam1().IsLepton() || rpa->gen.Beam2().IsLepton())) {
 	  msg_Tracking()<<METHOD<<": Non-hh collision.\n"
 			<<"   Request new event instead.\n";
 	  return Return_Value::New_Event;
 	}
-	return Return_Value::Retry_Event;
+	return result;
       case Return_Value::Nothing :
       default:
 	msg_Tracking()<<"Warning in "<<METHOD<<":\n"
@@ -81,9 +82,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   //msg_Out()<<"######################################################################\n"
-  //	   <<(*blob)<<"\n"
-  //	   <<"######################################################################\n"
-  //	   <<"######################################################################\n";
+  //	   <<(*blob)<<"\n";
   Reset();
   m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
@@ -100,17 +99,20 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   blob->SetTypeSpec("AHADIC-1.0");
   FillOutgoingParticles(blob);
   if (dabs(blob->CheckMomentumConservation()[0])>1.e-3) {
-    msg_Error()<<"\n"<<METHOD<<" yields "<<blob->CheckMomentumConservation()
-	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n"
-	       <<(*blob)<<"\n";
+    msg_Error()<<"\n"<<METHOD<<" violates four-momentum conservation by "
+	       <<blob->CheckMomentumConservation()
+	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n";
     Reset(blob);
     return Return_Value::Retry_Event;
   }
+  //msg_Out()<<(*blob)<<"\n"
+  //	   <<"######################################################################\n";
   return Return_Value::Success;
 }
   
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_sformer.Extract(blob)) {
     msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
@@ -120,6 +122,7 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 
 bool Ahadic::ShiftBeamParticles()
 {
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_beamparticles()) {
     msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
@@ -129,6 +132,7 @@ bool Ahadic::ShiftBeamParticles()
 
 bool Ahadic::CheckSinglets()
 {
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   if (!m_singletchecker()) {
     msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
@@ -137,6 +141,7 @@ bool Ahadic::CheckSinglets()
 }
 
 bool Ahadic::DecayGluons() {
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   while (!m_singlet_list.empty()) {
     if (m_gluondecayer(m_singlet_list.front())) 
       m_singlet_list.pop_front();
@@ -145,16 +150,19 @@ bool Ahadic::DecayGluons() {
       return false;
     }
   }
+  //msg_Out()<<m_cluster_list<<"\n";
   return true;
 }
 
 bool Ahadic::DecayClusters() {
+  //msg_Out()<<"   ### "<<METHOD<<"\n";
   bool success = m_clusterdecayer();
   if (!success) msg_Error()<<METHOD<<" could not decay all clusters.\n";
   return success;
 }
 
 void Ahadic::FillOutgoingParticles(Blob * blob) {
+  //msg_Out()<<"   ### "<<METHOD<<" for "<<m_hadron_list.size()<<"\n";
   while (!m_hadron_list.empty()) {
     Particle * part = (*m_hadron_list.front())();
     part->SetNumber();

@@ -7,7 +7,7 @@
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "MCATNLO/Showers/Shower.H"
 
 using namespace MCATNLO;
@@ -46,9 +46,10 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   if (!m_on && (ckey.m_ewmode&1) &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
        p_lf->FlC().IsPhoton())) m_on=true;
-  Default_Reader reader;
   // exclude all massive partons to split, but also Q->Qg
-  bool massive_splittings = reader.Get<int>("MCATNLO_MASSIVE_SPLITTINGS", 1);
+  Settings& s = Settings::GetMainSettings();
+  bool massive_splittings =
+    s["MCATNLO_MASSIVE_SPLITTINGS"].SetDefault(1).Get<int>();
   if (!massive_splittings &&
       (p_lf->FlA().IsMassive() || p_lf->FlB().IsMassive() ||
        p_lf->FlC().IsMassive())) {
@@ -62,7 +63,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   // FS a->bc (a from hard process): forbid b massive && b==cbar
   //                                 if a is massless, this forbids g->QQ
   //                                 if a is massive, this allows Q->Qg, Q->gQ
-  bool splitintomassive = reader.Get<int>("MCATNLO_SPLIT_INTO_MASSIVE", 0);
+  bool splitintomassive =
+    s["MCATNLO_SPLIT_INTO_MASSIVE"].SetDefault(0).Get<int>();
   if (!splitintomassive &&
       (((key.m_type==cstp::IF || key.m_type==cstp::II) &&
         p_lf->FlC().IsMassive()) ||

@@ -1,11 +1,10 @@
 #include "AddOns/Analysis/Observables/Primitive_Observable_Base.H"
 #include "AddOns/Analysis/Main/Analysis_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
@@ -37,19 +36,32 @@ namespace ANALYSIS {
 
   public:
 
-    Event_Output(Default_Reader *reader, const std::string& inlist) :
-      Primitive_Observable_Base(), m_inlist(inlist),
-      m_n(0.0), m_sum(0.0), m_sumsqr(0.0),
+    Event_Output() :
+      Primitive_Observable_Base(),
+      m_inlist(""),
+      m_n(0.0),
+      m_sum(0.0), m_sumsqr(0.0),
       m_wit(std::numeric_limits<size_t>::max())
     {
       m_splitt_flag=false;
-      if (reader==NULL) return;
-      std::string outpath(reader->Get<std::string>("EVT_FILE_PATH", "."));
-      std::string format(reader->Get<std::string>("EVENT_FORMAT", "None"));
-      std::vector<std::string> outputs;
-      Data_Reader readline(",",";","#","");
-      readline.SetString(format);
-      readline.StringVectorFromStringNormalisingNoneLikeValues(outputs);
+    }
+
+    Event_Output(Scoped_Settings s) :
+      Primitive_Observable_Base(),
+      m_n(0.0), m_sum(0.0), m_sumsqr(0.0),
+      m_wit(std::numeric_limits<size_t>::max())
+    {
+      m_inlist = s["InList"].SetDefault("").Get<std::string>();
+      if (m_inlist.empty()) {
+        THROW(fatal_error, "You didn't specify an InList for Event_Output");
+      }
+      m_splitt_flag=false;
+      std::string outpath(
+          s["EVENT_FILE_PATH"].SetDefault(".").Get<std::string>());
+      auto outputs = s["EVENT_FORMAT"]
+        .SetDefault<std::string>({})
+        .UseNoneReplacements()
+        .GetVector<std::string>();
       for (size_t i=0; i<outputs.size(); ++i) {
 	if (outputs[i]=="None") continue;
 	std::string outfile;
@@ -61,24 +73,25 @@ namespace ANALYSIS {
 	std::string libname(outputs[i]);
 	if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
 	Output_Base* out=Output_Base::Getter_Function::GetObject
-	  (outputs[i],Output_Arguments(outpath,outfile,reader));
+	  (outputs[i],Output_Arguments(outpath,outfile));
 	if (out==NULL) {
 	  if (!s_loader->LoadLibrary("Sherpa"+libname+"Output")) 
 	    THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
 	  out=Output_Base::Getter_Function::GetObject
-	    (outputs[i],Output_Arguments(outpath,outfile,reader));
+	    (outputs[i],Output_Arguments(outpath,outfile));
 	}
 	if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
 	m_outputs.push_back(out);
 	out->Header();
       }
-      double wit;
-      if (reader->Read(wit, "FILE_SIZE", 0.0)) {
-	if (wit<1.0) {
-	  if (wit*rpa->gen.NumberOfEvents()>1.0)
-	    m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());
+      if (s["FILE_SIZE"].IsCustomised()) {
+        const double filesize{
+          s["FILE_SIZE"].SetDefault(0.0).Get<double>() };
+	if (filesize<1.0) {
+	  if (filesize*rpa->gen.NumberOfEvents()>1.0)
+	    m_wit=(size_t)(filesize*rpa->gen.NumberOfEvents());
 	}
-	else m_wit=(size_t)(wit);
+	else m_wit=(size_t)(filesize);
 	msg_Info()<<METHOD<<"(): Set output interval "<<m_wit<<" events.\n";
       }
     }
@@ -132,7 +145,7 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const
     {
       // don't duplicate event output
-      return new Event_Output(NULL, "");
+      return new Event_Output();
     }
 
   };// end of class Event_Output
@@ -141,35 +154,26 @@ namespace ANALYSIS {
 
 
 
-DECLARE_GETTER(Event_Output,"Event_Output",
-	       Primitive_Observable_Base,Argument_Matrix);
+DECLARE_GETTER(Event_Output, "Event_Output",
+	       Primitive_Observable_Base, Analysis_Key);
 
-Primitive_Observable_Base *ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base*
+ATOOLS::Getter<Primitive_Observable_Base,
+               Analysis_Key,
+               Event_Output>::operator()(const Analysis_Key& key) const
 {
-  Default_Reader reader;
-  std::string inlist="";
-  for (size_t i=0; i<parameters.size(); ++i) {
-    std::string line = "";
-    for (size_t j=0; j<parameters[i].size(); ++j) {
-      line += parameters[i][j]+" ";
-    }
-    reader.AddFileContent(line);
-    if (parameters[i][0]=="InList" && parameters[i].size()>1) inlist=parameters[i][1];
-  }
-
-  if (inlist=="") {
-    THROW(fatal_error, "You didn't specify an InList for Event_Output");
-  }
-  return new Event_Output(&reader, inlist);
+  return new Event_Output(key.m_settings);
 }
 
-void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,
+                    Analysis_Key,
+                    Event_Output>::PrintInfo(
+                        std::ostream &str, const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  <triggeroutlist>\n"
-     <<std::setw(width+7)<<" "<<"# event output settings cf. manual, e.g.:\n"
-     <<std::setw(width+7)<<" "<<"EVENT_FORMAT HepMC_GenEvent[<filename>]\n"
-     <<std::setw(width+7)<<" "<<"FILE_SIZE <n>\n"
-     <<std::setw(width+7)<<" "<<"EVENT_FILE_PATH <path>\n"
+     <<std::setw(width+7)<<" "<<"InList: <triggeroutlist>,\n"
+     <<std::setw(width+7)<<" "<<"# event output settings; cf. manual, e.g.:\n"
+     <<std::setw(width+7)<<" "<<"EVENT_FORMAT: HepMC_GenEvent[<filename>],\n"
+     <<std::setw(width+7)<<" "<<"FILE_SIZE: <n>\n"
      <<std::setw(width+4)<<" "<<"}";
 }

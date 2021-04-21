@@ -13,7 +13,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <algorithm>
 
@@ -26,15 +27,52 @@ namespace MODEL
   Model_Base *s_model;
 }
 
-Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
-  m_dir(_dir), m_file(_file), m_elementary(_elementary), 
-  p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
+std::ostream &MODEL::operator<<(std::ostream &str,const ew_scheme::code &c)
+{
+  if      (c==ew_scheme::UserDefined) return str<<"UserDefined";
+  else if (c==ew_scheme::alpha0)      return str<<"alpha0";
+  else if (c==ew_scheme::alphamZ)     return str<<"alphamZ";
+  else if (c==ew_scheme::Gmu)         return str<<"Gmu";
+  else if (c==ew_scheme::alphamZsW)   return str<<"alphamZsW";
+  else if (c==ew_scheme::alphamWsW)   return str<<"alphamWsW";
+  else if (c==ew_scheme::GmumZsW)     return str<<"GmumZsW";
+  else if (c==ew_scheme::GmumWsW)     return str<<"GmumWsW";
+  else if (c==ew_scheme::FeynRules)   return str<<"FeynRules";
+  return str<<"undefined";
+}
+
+std::istream &MODEL::operator>>(std::istream &str,ew_scheme::code &c)
+{
+  std::string tag;
+  str>>tag;
+  c=ew_scheme::Undefined;
+  if      (tag=="UserDefined") c=ew_scheme::UserDefined;
+  else if (tag=="0")           c=ew_scheme::UserDefined;
+  else if (tag=="alpha0")      c=ew_scheme::alpha0;
+  else if (tag=="1")           c=ew_scheme::alpha0;
+  else if (tag=="alphamZ")     c=ew_scheme::alphamZ;
+  else if (tag=="2")           c=ew_scheme::alphamZ;
+  else if (tag=="Gmu")         c=ew_scheme::Gmu;
+  else if (tag=="3")           c=ew_scheme::Gmu;
+  else if (tag=="alphamZsW")   c=ew_scheme::alphamZsW;
+  else if (tag=="4")           c=ew_scheme::alphamZsW;
+  else if (tag=="alphamWsW")   c=ew_scheme::alphamWsW;
+  else if (tag=="5")           c=ew_scheme::alphamWsW;
+  else if (tag=="GmumZsW")     c=ew_scheme::GmumZsW;
+  else if (tag=="6")           c=ew_scheme::GmumZsW;
+  else if (tag=="GmumWsW")     c=ew_scheme::GmumWsW;
+  else if (tag=="7")           c=ew_scheme::GmumWsW;
+  else if (tag=="FeynRules")   c=ew_scheme::FeynRules;
+  else if (tag=="10")          c=ew_scheme::FeynRules;
+  else                         c=ew_scheme::Undefined;
+  return str;
+}
+
+Model_Base::Model_Base(bool _elementary) :
+  m_elementary(_elementary),
+  p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL),
   p_functions(NULL)
 {
-  p_dataread = new Default_Reader;
-  p_dataread->SetInputPath(m_dir);
-  p_dataread->SetInputFile(m_file);
-
   p_numbers          = new MODEL::ScalarNumbersMap();
   p_constants        = new MODEL::ScalarConstantsMap();
   p_complexconstants = new MODEL::ComplexConstantsMap();
@@ -53,7 +91,40 @@ Model_Base::~Model_Base()
   }
   if (p_constants!=NULL)         delete p_constants;
   if (p_complexconstants!=NULL)  delete p_complexconstants;
-  if (p_dataread!=NULL)          delete p_dataread;
+}
+
+void Model_Base::RegisterDefaults() const
+{
+  Settings& s = Settings::GetMainSettings();
+  s["1/ALPHAQED(MZ)"].SetDefault(128.802);
+  s["1/ALPHAQED(MW)"].SetDefault(132.17);
+  s["1/ALPHAQED(0)"].SetDefault(137.03599976);
+  s["ALPHAS(MZ)"].SetDefault(0.118);
+  s["ORDER_ALPHAS"].SetDefault(2);
+  s["THRESHOLD_ALPHAS"].SetDefault(1);
+  s["Q2_AS"].SetDefault(1.0);
+  s["AS_FORM"].SetDefault("Smooth");
+  s["CKM"]["Output"].SetDefault(false);
+  s["JET_MASS_THRESHOLD"].SetDefault(10.0);
+  s["YUKAWA_MASSES"].SetDefault("Running");
+  s["WIDTH_SCHEME"].SetDefault("CMS");
+  s["SIN2THETAW"].SetDefault(0.23155);
+  s["VEV"].SetDefault(246.0);
+  s["GF"].SetDefault(1.16639e-5);
+  s["GMU_CMS_AQED_CONVENTION"].SetDefault(0);
+  s["CKM"]["Order"].SetDefault(0);
+  s["CKM"]["Cabibbo"].SetDefault(0.22537);
+  s["CKM"]["A"].SetDefault(0.814);
+  s["CKM"]["Eta"].SetDefault(0.353);
+  s["CKM"]["Rho"].SetDefault(0.117);
+  s["DECOMPOSE_4G_VERTEX"].SetDefault(1);
+  s["EW_SCHEME"].SetDefault(ew_scheme::alphamZ);
+  const ew_scheme::code ewscheme( s["EW_SCHEME"].Get<ew_scheme::code>() );
+  s["EW_REN_SCHEME"].SetDefault(ewscheme);
+  if (ewscheme == ew_scheme::UserDefined)
+    s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
+  else
+    s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
 }
 
 void Model_Base::RotateVertices()
@@ -94,7 +165,8 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
 // To be called in ModelInit, default value will be set to aqed_def argument
 void Model_Base::SetAlphaQED(const double& aqed_def)
 {
-  double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);
+  Settings& s = Settings::GetMainSettings();
+  double alphaQED0=1./s["1/ALPHAQED(0)"].Get<double>();
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault(aqed_def);
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
@@ -104,7 +176,8 @@ void Model_Base::SetAlphaQED(const double& aqed_def)
 // To be called in ModelInit, default will be set to AlphaQED at scale2
 void Model_Base::SetAlphaQEDByScale(const double& scale2)
 {
-  double alphaQED0=1./p_dataread->Get<double>("1/ALPHAQED(0)",137.03599976);;
+  Settings& s = Settings::GetMainSettings();
+  double alphaQED0=1./s["1/ALPHAQED(0)"].Get<double>();
   aqed=new Running_AlphaQED(alphaQED0);
   aqed->SetDefault((*aqed)(scale2));
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
@@ -112,9 +185,10 @@ void Model_Base::SetAlphaQEDByScale(const double& scale2)
 }
 
 // To be called in ModelInit, default will be set to AlphaQED as input
-void Model_Base::SetAlphaQEDByInput(const std::string& tag, const double& def)
+void Model_Base::SetAlphaQEDByInput(const std::string& tag)
 {
-  double alphaQED0=1./p_dataread->GetValue<double>(tag,def);
+  Settings& s = Settings::GetMainSettings();
+  double alphaQED0=1./s[tag].Get<double>();
   aqed=new Running_AlphaQED(alphaQED0);
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
   p_constants->insert(make_pair(std::string("alpha_QED"),aqed->Default()));
@@ -123,14 +197,15 @@ void Model_Base::SetAlphaQEDByInput(const std::string& tag, const double& def)
 // To be called in ModelInit, alphaS argument is alphaS input at MZ
 void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS)
 {
-  int    order_alphaS	= p_dataread->Get<int>("ORDER_ALPHAS",1);
-  int    th_alphaS	= p_dataread->Get<int>("THRESHOLD_ALPHAS",1);
+  Settings& s = Settings::GetMainSettings();
+  int    order_alphaS   = s["ORDER_ALPHAS"].Get<int>();
+  int    th_alphaS      = s["THRESHOLD_ALPHAS"].Get<int>();
   double MZ2            = sqr(Flavour(kf_Z).Mass());
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
   p_constants->insert(make_pair(string("alpha_S"),alphaS));
   p_functions->insert(make_pair(string("alpha_S"),as));
-  double Q2aS      = p_dataread->Get<double>("Q2_AS",1.);
-  string asf  = p_dataread->Get<string>("AS_FORM",string("Smooth"));
+  double Q2aS = s["Q2_AS"].Get<int>();
+  string asf  = s["AS_FORM"].Get<string>();
   asform::code as_form(asform::smooth);
   if (asf==string("Constant"))    as_form = asform::constant;
   else if (asf==string("Frozen")) as_form = asform::frozen;
@@ -157,39 +232,34 @@ void Model_Base::SetRunningFermionMasses()
 
 void Model_Base::ReadExplicitCKM(CMatrix& CKM)
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.AddIgnore("[");
-  dr.AddIgnore("]");
-  dr.AddIgnore("(");
-  dr.AddIgnore(")");
-  dr.AddIgnore(",");
-  dr.SetAddCommandLine(true);
-  dr.SetInputPath(m_dir);
-  dr.SetInputFile(m_file);
-  std::map<size_t,std::map<size_t,Complex> > ckms;
-  std::vector<std::vector<double> > helpdvv;
-  if (dr.MatrixFromFile(helpdvv,"CKM_ELEMENT")) {
-    for (size_t i(0);i<helpdvv.size();++i) {
-      if (helpdvv[i][0]>CKM.Rank() || helpdvv[i][1]>CKM.Rank())
-        THROW(fatal_error,"Trying to read in CKM element beyond range.");
-      if (helpdvv[i].size()==3)
-        CKM[size_t(helpdvv[i][0])][size_t(helpdvv[i][1])]
-          =Complex(helpdvv[i][2],0.);
-      else if (helpdvv[i].size()==4) {
-        CKM[size_t(helpdvv[i][0])][size_t(helpdvv[i][1])]
-          =Complex(helpdvv[i][2],helpdvv[i][3]);
-      }
-      else
-        THROW(fatal_error,"Unrecognised CKM_ELEMENT input.");
+  Settings& s = Settings::GetMainSettings();
+  for (const auto& key : s["CKM"]["Matrix_Elements"].GetKeys()) {
+    const auto indizes = ToVector<int>(key, ',');
+    if (indizes.size() != 2) {
+      THROW(fatal_error, "Please give two comma-separated indizes for each"
+                         + std::string(" CKM:Matrix_Elements definition."));
+    }
+    if (indizes[0] > CKM.Rank() || indizes[1] > CKM.Rank())
+      THROW(fatal_error, "Trying to read in CKM element beyond range.");
+    const auto values = s["CKM"]["Matrix_Elements"][key]
+      .SetDefault({0.0, 0.0})
+      .GetVector<double>();
+    if (values.size() == 1) {
+      CKM[indizes[0]][indizes[1]] = Complex(values[0], 0.0);
+    } else if (values.size() == 2) {
+      CKM[indizes[0]][indizes[1]] = Complex(values[0], values[1]);
+    } else {
+      THROW(fatal_error, "Please provide either one or two values for each."
+                         + std::string(" CKM:Matrix_Elements definition."));
     }
   }
 }
 
 void Model_Base::OutputCKM()
 {
-  if (!p_dataread->Get<int>("CKM_OUTPUT",0)) return;
+  Settings& s = Settings::GetMainSettings();
+  if (!s["CKM"]["Output"].Get<bool>())
+    return;
   msg_Info()<<" CKM Matrix:\n";
   msg_Info()<<std::setw(8)<<"V_ij";
   size_t rank(ScalarConstant("CKM_DIMENSION"));
@@ -213,139 +283,45 @@ void Model_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   // available model implementations (specified by MODEL=<value>)\n\n";
+	   <<"   // available model implementations (specified by MODEL: <value>)\n\n";
   Model_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
 
-void Model_Base::ReadParticleData() {
-  std::map<int,double> cdm, cdw, cdy;
-  std::map<int,int> cia, cis, cim, cic, csc, cip;
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  dr.AddIgnore("[");
-  dr.AddIgnore("]");
-  dr.SetAddCommandLine(true);
-  dr.SetInputPath(m_dir);
-  dr.SetInputFile(m_file);
-  std::vector<std::vector<double> > helpdvv;
-  if (dr.MatrixFromFile(helpdvv,"MASS"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cdm[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"WIDTH")) 
-    for (size_t i(0);i<helpdvv.size();++i) 
-      if (helpdvv[i].size()==2) cdw[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"ACTIVE"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cia[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"STABLE"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cis[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"MASSIVE"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cim[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"INTCHARGE"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cic[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"STRONGCHARGE"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) csc[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-  if (dr.MatrixFromFile(helpdvv,"YUKAWA"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cdy[int(helpdvv[i][0])]=helpdvv[i][1];
-  if (dr.MatrixFromFile(helpdvv,"PRIORITY"))
-    for (size_t i(0);i<helpdvv.size();++i)
-      if (helpdvv[i].size()==2) cip[int(helpdvv[i][0])]=int(helpdvv[i][1]);
-
-  //set masses
-  std::map<int,double>::const_iterator dit=cdm.begin();
-  for (;dit!=cdm.end();dit++) {
-    if (s_kftable.find(dit->first)!=s_kftable.end()) {
-      s_kftable[dit->first]->m_mass = dit->second;
-      msg_Tracking()<<" set mass of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
-    }
-  }
-  //set widths
-  dit=cdw.begin();
-  for (;dit!=cdw.end();dit++) {
-    if (s_kftable.find(dit->first)!=s_kftable.end()) {
-      s_kftable[dit->first]->m_width = dit->second;
-      msg_Tracking()<<" set width of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
-    }
-  }
-  //set (in)active
-  std::map<int,int>::const_iterator iit=cia.begin();
-  for (;iit!=cia.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_on = iit->second;
-      if (iit->second==0) {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" inactive "<<std::endl; 
+void Model_Base::ReadParticleData()
+{
+  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
+  for (const auto& ptclname : pdata.GetKeys()) {
+    kf_code kf = ToType<kf_code>(ptclname);
+    const auto it = s_kftable.find(kf);
+    if (it != s_kftable.end()) {
+      for (const auto& propertyname : pdata[ptclname].GetKeys()) {
+        auto s = pdata[ptclname][propertyname];
+        if (propertyname == "Mass") {
+          const auto mass = s.SetDefault(it->second->m_mass).Get<double>();
+          it->second->m_mass = mass;
+          it->second->m_hmass = mass;
+        } else if (propertyname == "Width") {
+          it->second->m_width = s.SetDefault(it->second->m_width).Get<double>();
+        } else if (propertyname == "Active") {
+          it->second->m_on = s.SetDefault(it->second->m_on).Get<bool>();
+        } else if (propertyname == "Stable") {
+          it->second->m_stable = s.SetDefault(it->second->m_stable).Get<int>();
+        } else if (propertyname == "Massive") {
+          it->second->m_massive = s.SetDefault(it->second->m_massive).Get<bool>();
+        } else if (propertyname == "IntCharge") {
+          it->second->m_icharge = s.SetDefault(it->second->m_icharge).Get<int>();
+        } else if (propertyname == "StrongCharge") {
+          it->second->m_strong = s.SetDefault(it->second->m_strong).Get<int>();
+        } else if (propertyname == "Yukawa") {
+          it->second->m_yuk = s.SetDefault(it->second->m_yuk).Get<double>();
+        } else if (propertyname == "Priority") {
+          it->second->m_priority = s.SetDefault(it->second->m_priority).Get<int>();
+        } else {
+          THROW(fatal_error,
+                "Unknown PARTICLE_DATA property '" + propertyname + "'");
+        }
       }
-      else {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" active "<<std::endl; 
-      }
-    }
-  }
-  //set (un)stable
-  iit=cis.begin();
-  for (;iit!=cis.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_stable = iit->second;
-      if (iit->second==0) {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" unstable "<<std::endl; 
-      }
-      else {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" stable "<<std::endl; 
-      }
-    }
-  }
-  //set massive/massless
-  iit=cim.begin();
-  for (;iit!=cim.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_massive = iit->second;
-      if (iit->second==0) {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massless "<<std::endl; 
-      }
-      else {
-	msg_Tracking()<<" set flavour "<<Flavour(iit->first)<<" massive "<<std::endl; 
-      }
-    }
-  }
-  //set electrical charges
-  iit=cic.begin();
-  for (;iit!=cic.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_icharge = iit->second;
-      msg_Tracking()<<" set charge of "<<Flavour(iit->first)<<" to "
-		    <<Flavour(iit->first).Charge()<<std::endl; 
-    }
-  }
-  //set strong charges
-  iit=csc.begin();
-  for (;iit!=csc.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_strong = iit->second;
-      msg_Tracking()<<" set strong charge of "<<Flavour(iit->first)<<" to "
-		    <<Flavour(iit->first).StrongCharge()<<std::endl; 
-    }
-  }
-  // set yukawas (i.e. overwrite the one from mass, if requested by user)
-  dit=cdy.begin();
-  for (;dit!=cdy.end();dit++) {
-    if (s_kftable.find(dit->first)!=s_kftable.end()) {
-      s_kftable[dit->first]->m_yuk = dit->second;
-      msg_Tracking()<<" set yukawa of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
-    }
-  }
-  // set sorting priority
-  iit=cip.begin();
-  for (;iit!=cip.end();iit++) {
-    if (s_kftable.find(iit->first)!=s_kftable.end()) {
-      s_kftable[iit->first]->m_priority = iit->second;
-      msg_Tracking()<<" set priority of "<<Flavour(iit->first)<<" to "
-		    <<Flavour(iit->first).Priority()<<std::endl; 
     }
   }
 }
@@ -374,7 +350,8 @@ void Model_Base::AddStandardContainers()
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
   s_kftable[kf_fermion]->Clear();
-  double jet_mass_threshold=p_dataread->Get<double>("JET_MASS_THRESHOLD", 10.0);
+  Settings& s = Settings::GetMainSettings();
+  const double jet_mass_threshold{ s["JET_MASS_THRESHOLD"].Get<double>() };
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
@@ -431,51 +408,48 @@ void Model_Base::AddStandardContainers()
 void Model_Base::CustomContainerInit()
 {
   DEBUG_FUNC("");
-  std::vector<std::vector<std::string> > helpsvv;
-  if (!p_dataread->ReadMatrix(helpsvv,"PARTICLE_CONTAINER")) return;
-  for (size_t i(0);i<helpsvv.size();++i) {
-    if (helpsvv[i].size()<3) continue;
-    std::string props, kfs(helpsvv[i][0]);
-    size_t opos(kfs.find('['));
-    if (opos<std::string::npos) {
-      props=kfs.substr(opos+1,kfs.find(']')-opos-1);
-      kfs=kfs.substr(0,opos);
+  auto s = Settings::GetMainSettings()["PARTICLE_CONTAINERS"];
+  for (const auto& containeridstring : s.GetKeys()) {
+    auto cs = s[containeridstring];
+    const auto containerid = ToType<long int>(containeridstring);
+    if (s_kftable.find(containerid) != s_kftable.end()) {
+      THROW(critical_error,
+            "Particle ID " + containeridstring + " already exists.");
     }
-    long int nkf(ToType<long int>(kfs));
-    if (s_kftable.find(nkf)!=s_kftable.end())
-      THROW(critical_error,"Particle ID "+helpsvv[i][0]+" already exists.");
-    msg_Debugging()<<helpsvv[i][1]<<" ("<<nkf<<") ["<<props<<"] = {";
-    Data_Reader ppread("|",";","#",":");
-    ppread.SetAddCommandLine(false);
-    ppread.SetString(props);
-    std::string name(helpsvv[i][1]), barname(name);
+    auto name = cs["Name"].SetDefault(containeridstring).Get<std::string>();
+    auto barname = name;
     if (name.find('|')!=std::string::npos) {
       name=name.substr(0,name.find('|'));
       barname=barname.substr(barname.find('|')+1);
     }
-    if (barname==name && ppread.StringValue<int>("M",0)==0) barname+="b";
-    s_kftable[nkf] = new Particle_Info
-      (nkf,ppread.StringValue<double>("m",0.0),//Mass
-       ppread.StringValue<double>("W",0.0),//Width
-       ppread.StringValue<int>("C",0),//ICharge
-       ppread.StringValue<int>("Q",0),//Strong
-       ppread.StringValue<int>("S",0),//Spin
-       ppread.StringValue<int>("M",0),//Majorana
-       1,1,0,name,barname,name,barname);
-    s_kftable[nkf]->m_priority=ppread.StringValue<int>("P",0);
-    s_kftable[nkf]->Clear();
-    for (size_t j(2);j<helpsvv[i].size();++j) {
-      msg_Debugging()<<" "<<helpsvv[i][j];
-      long int kfc(ToType<long int>(helpsvv[i][j]));
-      s_kftable[nkf]->Add(Flavour((kf_code)std::abs(kfc),kfc<0));
-      if (s_kftable[std::abs(kfc)]->m_priority)
-	msg_Error()<<METHOD<<"(): Changing "<<Flavour(kfc)<<" sort priority: "
-		   <<s_kftable[std::abs(kfc)]->m_priority<<" -> "
-		   <<s_kftable[nkf]->m_priority<<std::endl;
-      s_kftable[std::abs(kfc)]->m_priority=s_kftable[std::abs(nkf)]->m_priority;
+    const auto majorana = cs["Majorana"].SetDefault(false).Get<bool>();
+    if (barname == name && !majorana)
+      barname+="b";
+    s_kftable[containerid]
+      = new Particle_Info(containerid,
+                          cs["Mass"].SetDefault(0.0).Get<double>(),
+                          cs["Width"].SetDefault(0.0).Get<double>(),
+                          cs["ICharge"].SetDefault(0).Get<int>(),
+                          cs["Strong"].SetDefault(0).Get<int>(),
+                          cs["Spin"].SetDefault(0).Get<int>(),
+                          majorana,
+                          1, 1, 0, name, barname, name, barname);
+    s_kftable[containerid]->m_priority
+      = cs["Priority"].SetDefault(0).Get<int>();
+    s_kftable[containerid]->Clear();
+    const auto flavs
+      = cs["Flavours"].SetDefault<long int>({}).GetVector<long int>();
+    for (const auto flav : flavs) {
+      s_kftable[containerid]->Add(Flavour((kf_code)std::abs(flav), flav < 0));
+      if (s_kftable[std::abs(flav)]->m_priority) {
+        msg_Error()<<METHOD<<"(): Changing "<<Flavour(flav)<<" sort priority: "
+                   <<s_kftable[std::abs(flav)]->m_priority<<" -> "
+                   <<s_kftable[containerid]->m_priority<<std::endl;
+        s_kftable[std::abs(flav)]->m_priority
+          = s_kftable[containerid]->m_priority;
+      }
     }
-    s_kftable[nkf]->SetIsGroup(true);
-    msg_Debugging()<<" }\n";
+    s_kftable[containerid]->SetIsGroup(true);
   }
 }
 
@@ -582,4 +556,13 @@ const std::vector<Single_Vertex> &Model_Base::Vertices() const
 const std::vector<Single_Vertex> &Model_Base::OriginalVertices() const
 {
   return m_ov;
+}
+
+size_t Model_Base::IndexOfOrderKey(const std::string& key) const
+{
+  if (key == "QCD")
+    return 0;
+  if (key == "EW")
+    return 1;
+  THROW(fatal_error, "Unknown Orders key '" + key + "'.");
 }

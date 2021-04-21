@@ -13,7 +13,7 @@
 #include "PHASIC++/Process/Process_Group.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 
-#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <assert.h>
 
@@ -24,8 +24,7 @@ namespace EXTAMP{
     PHASIC::ME_Generator_Base("External") {}
 
 
-  bool External_ME_Interface::Initialize(const std::string &path,const std::string &file,
-					 MODEL::Model_Base *const model,
+  bool External_ME_Interface::Initialize(MODEL::Model_Base *const model,
 					 BEAM::Beam_Spectra_Handler *const beam,
 					 PDF::ISR_Handler *const isr)
   {
@@ -74,7 +73,7 @@ namespace EXTAMP{
     /* In case no valid partonic channels are found, return NULL so the
        Matrix_Element_Hanlder knows and throws a 'No hard process found' */
     return  (newproc->Size()>0) ? newproc : NULL;
-  };
+  }
 
 
   /* Determine if a PARTONIC born Process as specified by pi exists */
@@ -82,21 +81,29 @@ namespace EXTAMP{
   {
     /* For an RS process, we need to check for a born with the QCD
        order incremented by one relative to the born */
-    std::vector<double> orders = pi.m_borncpl;
-    if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub ) orders[0] += 1;
+    if (pi.m_maxcpl.size()!=pi.m_mincpl.size()) {
+      THROW(fatal_error,"Inconsistent order input.");
+    }
+    else {
+      for (size_t i(0);i<pi.m_maxcpl.size();++i)
+        if (pi.m_maxcpl[i]!=pi.m_mincpl[i])
+          THROW(fatal_error,"Inconsistent order input.");
+    }
+    std::vector<double> orders = pi.m_maxcpl;
+    if ( pi.m_fi.m_nlotype&ATOOLS::nlo_type::vsub ) orders[0] -= 1;
 
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(), 
 				  pi.m_fi.GetExternal(),
 				  orders);
 
     return PHASIC::Tree_ME2_Base::GetME2(args)!=NULL;
-  };
+  }
 
   /* Determine if a PARTONIC born Process as specified by args exists */
   bool External_ME_Interface::PartonicProcessExists(const PHASIC::External_ME_Args &args)
   {
     return PHASIC::Tree_ME2_Base::GetME2(args)!=NULL;
-  };
+  }
 
   PHASIC::Tree_ME2_Base* External_ME_Interface::
   GetExternalBornME(const PHASIC::External_ME_Args& args)
@@ -114,24 +121,25 @@ namespace EXTAMP{
   {
     ATOOLS::nlo_type::code nlotype=pi.m_fi.m_nlotype;
 
-    if( nlotype==ATOOLS::nlo_type::lo )
+    if( nlotype==ATOOLS::nlo_type::lo || nlotype==ATOOLS::nlo_type::born )
       return new Born_Process(pi);
     
     if ( nlotype&ATOOLS::nlo_type::vsub )
-      {
-	int subtractiontype = ATOOLS::ToType<int>(ATOOLS::rpa->gen.Variable("NLO_SUBTRACTION_SCHEME"));
-	double virtfrac = ATOOLS::ToType<double>(ATOOLS::rpa->gen.Variable("VIRTUAL_EVALUATION_FRACTION"));
-	if (virtfrac!=1.0)
-	  msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
-	return new BVI_Process(pi, virtfrac, subtractiontype);
-      }
+    {
+      ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+      int subtractiontype = s["NLO_SUBTRACTION_SCHEME"].Get<int>();
+      double virtfrac     = s["VIRTUAL_EVALUATION_FRACTION"].Get<double>();
+	  if (virtfrac!=1.0)
+	    msg_Info()<<METHOD<<"(): Setting fraction of virtual ME evaluations to " << virtfrac << std::endl;
+	  return new BVI_Process(pi, virtfrac, subtractiontype);
+    }
     
     if ( nlotype&ATOOLS::nlo_type::rsub )
       return new RS_Process(pi);
 
     THROW(fatal_error, "Internal error");
     return NULL;
-  };
+  }
 
 
   External_ME_Interface::Combinable_Map
@@ -175,7 +183,7 @@ namespace EXTAMP{
 	   because convention for PHASIC::Process_Info is different */
 	cpi.Combine(i,j, i<nin ? fl_ij.Bar() : fl_ij);
 
-	std::vector<double> orders = cpi.m_borncpl;
+	std::vector<double> orders = cpi.m_maxcpl;
 	if (!(cpi.m_fi.m_nlotype&ATOOLS::nlo_type::rsub)) orders[0] -= 1;
 	PHASIC::External_ME_Args args(cpi.m_ii.GetExternal(),
 				      cpi.m_fi.GetExternal(),

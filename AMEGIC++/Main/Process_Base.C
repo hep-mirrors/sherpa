@@ -9,9 +9,10 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -29,8 +30,9 @@ AMEGIC::Process_Base::Process_Base():
   p_channellibnames = new std::list<std::string>();
   static int allowmap(-1);
   if (allowmap<0) {
-    Default_Reader read;
-    allowmap = ToType<size_t>(rpa->gen.Variable("AMEGIC_ALLOW_MAPPING"));
+    Scoped_Settings amegicsettings{
+      Settings::GetMainSettings()["AMEGIC"] };
+    allowmap = amegicsettings["ALLOW_MAPPING"].Get<int>();
     if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
   }
   m_allowmap=allowmap;
@@ -299,12 +301,27 @@ std::string  AMEGIC::Process_Base::CreateLibName()
   size_t bpos(name.find("__QCD("));
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+    if (epos!=std::string::npos)
+      name.replace(bpos,epos-bpos+1,"");
   }
   bpos=name.find("__EW(");
   if (bpos!=std::string::npos) {
     size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+    if (epos!=std::string::npos)
+      name.replace(bpos,epos-bpos+1,"");
   }
-  return ShellName(name);
+  name=ShellName(name+"__O");
+  int sep(0);
+  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i) {
+    name+=ToString(m_pinfo.m_mincpl[i])+"_";
+    if (m_pinfo.m_mincpl[i]!=m_pinfo.m_maxcpl[i]) sep=1;
+  }
+  if (sep) {
+    name+="_";
+    for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
+      name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+  }
+  name.erase(name.length()-1,1);
+  msg_Debugging()<<"-> "<<name<<std::endl;
+  return name;
 }

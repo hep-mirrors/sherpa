@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <unistd.h>
 
@@ -42,11 +43,15 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   m_maxcpliew(2,99.), m_mincpliew(2,0.),
   p_sub(NULL)
 {
+  auto& s = Settings::GetMainSettings();
+  auto amegicsettings = s["AMEGIC"];
+
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
 
   std::vector<int> flavrest;
-  std::string frstr=rpa->gen.Variable("DIPOLE_BORN_FLAVOUR_RESTRICTIONS");
+  const auto frstr
+    = s["DIPOLES"]["BORN_FLAVOUR_RESTRICTIONS"].Get<std::string>();
   if (frstr!="") {
     std::size_t pos=0, found;
     while ((found=frstr.find_first_of(' ',pos))!=std::string::npos) {
@@ -56,18 +61,18 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
     PRINT_INFO("to be debugged:" <<flavrest);
   }
   if (flavrest.size()%2)
-    THROW(fatal_error,"Syntax error in DIPOLE_BORN_FLAVOUR_RESTRICTIONS.");
+    THROW(fatal_error,"Syntax error in DIPOLES:BORN_FLAVOUR_RESTRICTIONS.");
   for (size_t i(0);i<flavrest.size();i+=2)
     m_flavrestrictions[flavrest[i]] = flavrest[i+1];
 
-  int ord=ToType<int>(rpa->gen.Variable("AMEGIC_SORT_LOPROCESS"));
+  const bool ord{ amegicsettings["SORT_LOPROCESS"].Get<bool>() };
   static bool print(false);
   if (!print && !ord) {
     print=true;
     msg_Info()<<METHOD<<"(): "<<om::red
 	      <<"Sorting flavors!\n"<<om::reset;    
   }
-  PHASIC::Process_Base::Init(pi, beam, isr, ord?0:1);
+  PHASIC::Process_Base::Init(pi, beam, isr, !ord);
   AMEGIC::Process_Base::Init();
 
   m_rsmap.resize(m_nin+m_nout);
@@ -134,7 +139,7 @@ void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname)
 {
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
                         +m_ptypename+"/"+m_name+".alt";
-  if (FileExists(altname,1)) return;
+  if (FileExists(altname)) return;
   My_Out_File to(altname);
   to.Open();
   *to<<aname<<" "<<m_sfactor<<endl;
@@ -151,7 +156,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,
 {
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
                         +m_ptypename+"/"+procname+".alt";
-  if (FileExists(altname,1)) {
+  if (FileExists(altname)) {
     double factor;
     string name,dummy; 
     My_In_File from(altname);
@@ -259,12 +264,13 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
-    if (libchk==1) {
-      msg_Info()<<"Enforce full library check. This may take some time."
-                <<std::endl;
-      directload = false;
-    }
+  Scoped_Settings amegicsettings{
+    Settings::GetMainSettings()["AMEGIC"] };
+  if (amegicsettings["ME_LIBCHECK"].Get<bool>()) {
+    msg_Info()<<"Enforce full library check. This may take some time."
+              <<std::endl;
+    directload = false;
+  }
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr  = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
@@ -278,7 +284,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_BS->Setk0(s_gauge);
   p_shand = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+  const bool cvp{
+    amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
   p_ampl = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,
                                  model,top,m_maxcpl,m_mincpl,ntchanmin,&m_cpls,
                                  p_BS,p_shand,m_print_graphs,!directload,cvp,
@@ -324,7 +331,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"),1)) { 
+	  if (FileExists(mlname+string(".map"))) { 
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -441,8 +448,9 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=ToType<int>(rpa->gen.Variable("AMEGIC_ME_LIBCHECK"));
-  if (libchk==1) {
+  Scoped_Settings amegicsettings{
+    Settings::GetMainSettings()["AMEGIC"] };
+  if (amegicsettings["ME_LIBCHECK"].Get<bool>()) {
     msg_Info()<<"Enforce full library check. This may take some time."
               <<std::endl;
     directload = false;
@@ -464,7 +472,8 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 
 
   int ntchanmin(m_ntchanmin);
-  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+  const bool cvp{
+    amegicsettings["CUT_MASSIVE_VECTOR_PROPAGATORS"].Get<bool>() };
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp,m_ptypename+"/"+m_libname);
   m_ntchanmin=ntchanmin;
@@ -497,7 +506,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
 	  msg_Debugging()<<mlname<<std::endl<<mnname<<std::endl;
-	  if (FileExists(mlname+string(".map"),1)) {
+	  if (FileExists(mlname+string(".map"))) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -730,7 +739,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors)
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
-      if (FileExists(searchfilename)) {
+      if (FileExists(searchfilename,1)) {
       	msg_Error()<<"ERROR in Single_LOProcess::Tests()"<<std::endl
 		   <<"   No compiled & linked library found for process "<<testname<<std::endl
 		   <<"   but files already written out !"<<std::endl
@@ -1044,15 +1053,15 @@ void Single_LOProcess::WriteLibrary()
   m_libname = CreateLibName();
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"))) {
-  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
+  if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"),1)) {
+    ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   }
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
-  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs",1))
     Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process::WriteLibrary : "<<std::endl
@@ -1063,7 +1072,7 @@ void Single_LOProcess::WriteLibrary()
 void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname,1)) {
+  if (FileExists(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
@@ -1094,7 +1103,7 @@ bool Single_LOProcess::FoundMappingFile(std::string & MEname, std::string & PSna
   std::string buf;
   int pos;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname,1)) {
+  if (FileExists(outname)) {
     My_In_File from(outname);
     from.Open();
     getline(*from,buf);
@@ -1117,7 +1126,7 @@ bool Single_LOProcess::FoundLib(std::string& pID)
 {
   std::string libname=ATOOLS::rpa->gen.Variable("SHERPA_LIB_PATH")+
     std::string("/libProc_P")+pID.substr(1)+std::string(LIB_SUFFIX);
-  if (FileExists(libname)) return 1;
+  if (FileExists(libname,1)) return 1;
   return 0;
 }
 
@@ -1263,8 +1272,10 @@ bool Single_LOProcess::IsValid()
 
   ----------------------------------------------------------------------------*/
 
-double Single_LOProcess::Partonic(const ATOOLS::Vec4D_Vector& _moms,
-                                  const int mode) { return 0.; }
+double Single_LOProcess::Partonic(const Vec4D_Vector& _moms, int mode)
+{
+  return 0.0;
+}
 
 double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
 				    const ATOOLS::Vec4D *mom,
@@ -1280,7 +1291,6 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
 
   double M2(0.);
   p_int->SetMomenta(labmom);
-  p_scale->SetCaller(this);
   p_scale->CalculateScale(labmom,m_cmode);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
@@ -1511,11 +1521,20 @@ std::string  AMEGIC::Single_LOProcess::CreateLibName()
     bpos=name.find("__EW(");
     if (bpos==std::string::npos) THROW(fatal_error,"Unknown dipole.");
   }
-  name.erase(bpos,name.length()-bpos+1);
-  // need to add emitter for spin-correlated libs: only for gluon and photon
-  if (m_emit>=0)
-//    if (m_flavs[m_emit].IsGluon() || m_flavs[m_emit].IsPhoton())
-      name+="__E"+ToString(m_emit);
+  name.replace(bpos,name.length()-bpos+1,"__O");
+  name=ShellName(name);
+  int sep(0);
+  for (size_t i(0);i<m_pinfo.m_mincpl.size();++i) {
+    name+=ToString(m_pinfo.m_mincpl[i])+"_";
+    if (m_pinfo.m_mincpl[i]!=m_pinfo.m_maxcpl[i]) sep=1;
+  }
+  if (sep) {
+    name+="_";
+    for (size_t i(0);i<m_pinfo.m_maxcpl.size();++i)
+      name+=ToString(m_pinfo.m_maxcpl[i])+"_";
+  }
+  name.erase(name.length()-1,1);
   msg_Debugging()<<"-> "<<name<<std::endl;
-  return ShellName(name);
+  if (m_emit>=0) name+="__E"+ToString(m_emit);
+  return name;
 }

@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace MCATNLO;
 using namespace MODEL;
@@ -15,15 +16,14 @@ using namespace ATOOLS;
 using namespace std;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) : 
-  p_rms(NULL), m_pdfmin(1.0e-4, 1.0e-2), m_reweightscalecutoff{ 0.0 }
+  p_rms(NULL), m_pdfmin(1.0e-4, 1.0e-2),
+  m_reweightscalecutoff {0.0}, m_keeprewinfo {false}
 {
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
-
-  Default_Reader reader;
-  m_scalescheme = reader.Get<int>("MCATNLO_SCALE_SCHEME", 2);
-  if (m_scalescheme!=2) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
+  Settings& s = Settings::GetMainSettings();
+  m_scalescheme = s["MCATNLO_SCALE_SCHEME"].SetDefault(2).Get<int>();
 }
 
 Sudakov::~Sudakov() 
@@ -367,9 +367,23 @@ bool Sudakov::Generate(Parton * split)
       Abort();
     }
     const bool veto(Veto(Q2, m_x));
-    if (p_variationweights && (m_reweightpdfs || m_reweightalphas)) {
-      p_variationweights->UpdateOrInitialiseWeights(
-          &Sudakov::Reweight, *this, veto, Variations_Type::sudakov);
+    if (m_keeprewinfo) {
+      const double accwgt(Selected()->LastAcceptanceWeight());
+      const double lastscale(Selected()->LastScale());
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
+        Sudakov_Reweighting_Info info;
+        info.accepted = veto;
+        info.scale = lastscale;
+        info.accwgt = accwgt;
+        info.lastj = Selected()->Lorentz()->LastJ();
+        info.lastcpl = Selected()->Coupling()->Last();
+        info.sf = Selected();
+        info.x = m_x;
+        info.y = m_y;
+        info.z = m_z;
+        info.flspec = Selected()->Lorentz()->FlSpec();
+        p_split->SudakovReweightingInfos().push_back(info);
+      }
     }
     if (veto) {
       success = true;
@@ -378,135 +392,6 @@ bool Sudakov::Generate(Parton * split)
   }
   m_phi = 2.0*M_PI*ran->Get();
   return success;
-}
-
-
-double Sudakov::Reweight(Variation_Parameters * varparams,
-                         Variation_Weights * varweights,
-                         const bool &success)
-{
-  // retrieve and validate acceptance weight and scale of the last emission
-  const double accwgt(Selected()->LastAcceptanceWeight());
-  std::string error;
-  bool abort(false);
-  if (accwgt > 1.0) {
-    error = "MC@NLO emission acceptance weight exceeds one";
-    abort = true;
-  } else if (accwgt < 0.0) {
-    error = "MC@NLO emission acceptance weight is below zero";
-    abort = true;
-  } else if (accwgt == 0.0) {
-    // This can be due to a Jacobian being 0 (mostly), or by delta in a massive
-    // case dropping below 0. In the latter case, last values for JXX/Coupling
-    // might not be valid. In any case, the (1 - rejwgt) factor for rejections
-    // will lead to weight factor of 1. Because the target parameters of the
-    // reweighting might have a non-zero accwgt, this is a problem. However,
-    // because accwgt is so often zero, we do not emit a warning.
-    abort = true;
-  } else if (Selected()->LastScale() < m_reweightscalecutoff) {
-    error = "MC@NLO emission scale is below the reweighting scale cut-off";
-    abort = true;
-  }
-  if (error != "") {
-    p_variationweights->IncrementOrInitialiseWarningCounter(error);
-  }
-  if (abort) {
-    return 1.0;
-  }
-
-  const double rejwgt(1.0 - accwgt);
-
-  double rewfactor(1.0);
-  double accrewfactor(1.0);
-
-  // depending on the scale scheme, the input scale for the PDFs and the
-  // coupling can be different from m_kperp2
-  const double lastscale(Selected()->LastScale());
-
-  // PDF reweighting
-  if (m_reweightpdfs) {
-    if (m_type == cstp::II || m_type == cstp::FI || m_type == cstp::IF) {
-      // note that also the Jacobians depend on the Running_AlphaS class, but
-      // only through the number of flavours, which should not vary between
-      // AlphaS variations anyway; therefore we do not insert AlphaS for the
-      // PDF reweighting
-
-      // insert new PDF
-      const int beam(Selected()->Lorentz()->GetBeam());
-      PDF::PDF_Base * swappedpdf = p_pdf[beam];
-      p_pdf[beam] = (beam == 0) ? varparams->p_pdf1 : varparams->p_pdf2;
-
-      // calculate new J
-      const double lastJ(Selected()->Lorentz()->LastJ());
-      double newJ;
-      switch (m_type) {
-        case cstp::II:
-          newJ = Selected()->Lorentz()->JII(
-              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
-          break;
-        case cstp::IF:
-          newJ = Selected()->Lorentz()->JIF(
-              m_z, m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
-          break;
-        case cstp::FI:
-          newJ = Selected()->Lorentz()->JFI(
-              m_y, m_x, varparams->m_muF2fac * lastscale, NULL);
-          break;
-        case cstp::FF:
-        case cstp::none:
-          THROW(fatal_error, "Unexpected splitting configuration");
-      }
-
-      // clean up
-      p_pdf[beam] = swappedpdf;
-      Selected()->Lorentz()->SetLastJ(lastJ);
-
-      // validate
-      if (newJ == 0.0) {
-        varparams->IncrementOrInitialiseWarningCounter(
-            "MC@NLO target PDF ratio is zero, nominal is not");
-        return 1.0;
-      } else {
-        const double pdfrewfactor(newJ / lastJ);
-        accrewfactor *= pdfrewfactor;
-      }
-    }
-  }
-
-  // AlphaS reweighting
-  if (m_reweightalphas) {
-    if (Selected()->Coupling()->AllowsAlternativeCouplingUsage()) {
-      const double lastcpl(Selected()->Coupling()->Last());
-      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, varparams->m_muR2fac);
-      double newcpl(Selected()->Coupling()->Coupling(lastscale, 0, NULL));
-      Selected()->Coupling()->SetAlternativeUnderlyingCoupling(NULL); // reset AlphaS
-      Selected()->Coupling()->SetLast(lastcpl); // reset last coupling
-      const double alphasrewfactor(newcpl / lastcpl);
-      accrewfactor *= alphasrewfactor;
-    }
-  }
-
-  // calculate and apply overall factor
-  if (success) {
-    // accepted emission
-    rewfactor = accrewfactor;
-#if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
-    varparams->FillReweightingFactorsHisto("accept", rewfactor);
-#endif
-  } else {
-    // rejected emission
-    rewfactor = 1.0 + (1.0 - accrewfactor) * (1.0 - rejwgt) / rejwgt;
-#if ENABLE_REWEIGHTING_FACTORS_HISTOGRAMS
-    varparams->FillReweightingFactorsHisto("reject", rewfactor);
-#endif
-  }
-  if (rewfactor < -9.0 || rewfactor > 11.0) {
-    varparams->IncrementOrInitialiseWarningCounter(
-        "MC@NLO large reweighting factor veto");
-    return 1.0;
-  }
-  return rewfactor;
 }
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)

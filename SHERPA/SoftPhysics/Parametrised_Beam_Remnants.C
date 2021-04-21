@@ -1,7 +1,6 @@
 #include "SHERPA/SoftPhysics/Parametrised_Beam_Remnants.H"
 
 #include "PDF/Remnant/Hadron_Remnant.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -17,13 +16,12 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Parametrised_Beam_Remnants::
-Parametrised_Beam_Remnants(const std::string path,const std::string file,
-			   PDF::ISR_Handler * const isr,
-			   BEAM::Beam_Spectra_Handler *const beam):
-  p_isr(isr), m_path(path), m_file(file)
+Parametrised_Beam_Remnants::Parametrised_Beam_Remnants(
+    PDF::ISR_Handler * const isr,
+    BEAM::Beam_Spectra_Handler *const beam) :
+  p_isr(isr)
 {
-  p_kperp = new Primordial_KPerp(path,file);
+  p_kperp = new Primordial_KPerp();
   for (size_t i=0;i<2;++i) {
     p_beampart[i] = p_isr->GetRemnant(i);
     p_beampart[i]->SetBeam(beam->GetBeam(i));
@@ -103,13 +101,22 @@ FillBeamBlobs(Blob_List *const bloblist,
     }
   }
   
-  for (short unsigned int i=0;i<2;++i) {
-    msg_Out()<<METHOD<<" adjusting beampart("<<i<<")\n";
-    if (!p_beampart[i]->AdjustKinematics() || 
-	!p_beampart[i]->AdjustColors()) { 
-      //	       <<"failed to adjust kinematics/colours for\n"
-      //	       <<(*p_beamblob[i])<<"\n";
-      return Return_Value::Retry_Event; 
+  if (rpa->gen.Beam1().IsHadron()^
+      rpa->gen.Beam2().IsHadron()) {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
+    }
+  }
+  else {
+    for (short unsigned int i=0;i<2;++i) {
+      if (!p_beampart[i]->AdjustKinematics() ||
+	  !p_beampart[i]->AdjustColors()) {
+	//msg_Out()<<(*bloblist);
+	return Return_Value::Retry_Event;
+      }
     }
   }
   //msg_Out()<<"============================================================\n"

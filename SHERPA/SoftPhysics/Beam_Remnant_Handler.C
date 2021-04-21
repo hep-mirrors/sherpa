@@ -1,33 +1,28 @@
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
 
 Beam_Remnant_Handler::
-Beam_Remnant_Handler(const std::string path,const std::string file,
-		     BEAM::Beam_Spectra_Handler *const beam,
+Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler *const beam,
 		     REMNANTS::Remnant_Handler *const remnants,
 		     Soft_Collision_Handler *const softcollisions):
   p_remnants(remnants), p_shrimps(softcollisions->GetShrimps()),
-  p_beam(beam), m_fill(1)
+  p_beam(beam), m_fill(true)
 {
   if (p_shrimps) {
     m_name = std::string("Shrimps");
   }
   else {
-    Default_Reader read;
-    read.SetInputPath(path);
-    read.SetInputFile(file);
-    if (!read.ReadFromFile(m_fill,"BEAM_REMNANTS")) m_fill=1;
-    else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
-    if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
-    else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
+    Settings& s = Settings::GetMainSettings();
+    m_fill  = s["BEAM_REMNANTS"].SetDefault(true).Get<bool>();
+    m_vmode = s["BRH_VMODE"].SetDefault(false).Get<bool>();
     p_remnants->SetScale2(sqr(4.0));
-    m_name = std::string("Default");
+    m_name = std::string("On");
   }
 }
 
@@ -120,6 +115,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   blob->SetId();
   blob->SetStatus(blob_status::needs_beams &
 		  blob_status::needs_reconnections &
+		  blob_status::needs_softUE &
 		  blob_status::needs_hadronization);
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&

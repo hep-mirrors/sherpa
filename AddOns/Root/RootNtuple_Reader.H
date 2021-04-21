@@ -12,7 +12,7 @@
 #include <vector>
 #include <string.h>
 
-namespace ATOOLS { class Variation_Parameters; class Variation_Weights; }
+namespace ATOOLS { class QCD_Variation_Params; }
 
 namespace PDF { class ISR_Handler; }
 
@@ -37,7 +37,8 @@ namespace SHERPA {
 
   class RootNtuple_Reader : public Event_Reader_Base {
     RootNTupleReader_Variables *p_vars;
-    int                m_check,m_calc,m_ftype,m_otype,m_lomode;
+    int                m_calc,m_ftype,m_otype,m_lomode;
+    bool               m_check;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     ATOOLS::PDF_Info   m_pdfinfo;
@@ -49,9 +50,10 @@ namespace SHERPA {
     double m_ecms, m_xf1, m_xf2;
     std::string m_treename;
 
-    void               CloseFile();
-    bool               ReadInEntry();
-    bool               ReadInFullEvent(ATOOLS::Blob_List *);
+    void RegisterDefaults() const;
+    void CloseFile();
+    bool ReadInEntry();
+    bool ReadInFullEvent(ATOOLS::Blob_List *);
 
     struct Weight_Calculation_Args {
       Weight_Calculation_Args(double mur2, double muf2, int mode,
@@ -66,13 +68,11 @@ namespace SHERPA {
       int m_mode;
     };
 
-    double CalculateWeight(const Weight_Calculation_Args &args, MODEL::One_Running_AlphaS *);
-    double Reweight(ATOOLS::Variation_Parameters *,
-                    ATOOLS::Variation_Weights *,
-                    const Weight_Calculation_Args &);
-    ATOOLS::Subevent_Weights_Vector Fill(ATOOLS::Variation_Parameters *,
-					 ATOOLS::Variation_Weights *,
-					 std::vector<ATOOLS::Variation_Weights*> &);
+    double CalculateWeight(const Weight_Calculation_Args& args,
+                           MODEL::One_Running_AlphaS*);
+    double CalculateWeight(const Weight_Calculation_Args& args,
+                           const ATOOLS::QCD_Variation_Params&);
+
   public:
     RootNtuple_Reader(const Input_Arguments &args,int exact=0,int ftype=0);
     ~RootNtuple_Reader();

@@ -31,14 +31,14 @@ namespace DIRE {
 	B2-=2.*(x*x-1.0)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.0*x*(x*x-1.0))/2.0;
       }
-        return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
+      return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B);
       }
       double nuk2(s.m_mk2/s.m_Q2), vijk=sqr(1.0-y)-4.0*y*nuk2;
       if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-y);
       B=(-2.0+z*(1.0-z))/vijk;
       B-=2.0*nuk2/(1.-z)*y/(1.0-z+y);
-      return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
+      return (s.m_clu?1.0:(p_sk->Mode()?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B);
     }
 
     double Integral(const Splitting &s) const

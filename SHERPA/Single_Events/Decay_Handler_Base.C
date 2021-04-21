@@ -181,7 +181,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
                  <<"p^2="<<daughters[i]->Momentum().Mass()
                  <<" vs. m^2="<<daughters[i]->FinalMass());
-      //      throw Return_Value::Retry_Event;
+      throw Return_Value::Retry_Event;
     }
   }
   random_shuffle(shuffled.begin(), shuffled.end(), *ran);
@@ -271,7 +271,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   msg_Debugging()<<*blob<<std::endl;
   Amplitude2_Tensor* amps=FillOnshellDecay(blob, s0);
   inpart->SetStatus(part_status::decayed);
-  inpart->SetInfo('D');
+  if (inpart->Info()!='M') inpart->SetInfo('D');
 
   Particle_Vector daughters = blob->GetOutParticles();
   random_shuffle(daughters.begin(), daughters.end(), *ran);

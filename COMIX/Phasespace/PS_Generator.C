@@ -15,8 +15,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "COMIX/Main/Process_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
-#include "ATOOLS/Org/Smart_Pointer.C"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <iomanip>
 
@@ -26,26 +25,15 @@ using namespace PHASIC;
 
 const double s_pwmin(1.0e-6);
 
-namespace ATOOLS { template class SP(PS_Generator); }
-
 PS_Generator::PS_Generator(Process_Base *const xs):
   p_xs(xs), m_n(0), m_zmode(1), m_pmsinit(0),
   m_thmass(0.0), m_chmass(0.0)
 {
-  Default_Reader reader;
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (reader.Read<size_t>(m_itmin,"CDXS_ITMIN", 5000)) {
-    msg_Info() << METHOD << "(): Set iteration minimum " << m_itmin << "." << std::endl;
-  }
-  if (reader.Read<size_t>(m_itmax,"CDXS_ITMAX", 50000)) {
-    msg_Info() << METHOD << "(): Set iteration maximum " << m_itmax << "." << std::endl;
-  }
-  if (reader.Read(m_ecmode,"CDXS_ECMODE", 2)) {
-    msg_Info() << METHOD << "(): Set extra channel mode " << m_ecmode << "." << std::endl;
-  }
-  if (reader.Read(m_chmass,"CDXS_PS_CHTH", 0.01)) {
-    msg_Info() << METHOD << "(): Set channel mass threshold " << m_chmass << "." << std::endl;
-  }
+  Scoped_Settings s{ Settings::GetMainSettings()["COMIX"] };
+  m_itmin = s["ITMIN"].SetDefault(1000).Get<size_t>();
+  m_itmax = s["ITMAX"].SetDefault(1000000).Get<size_t>();
+  m_ecmode = s["ECMODE"].SetDefault(2).Get<size_t>();
+  m_chmass = s["PS_CHTH"].SetDefault(0.01).Get<double>();
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSC();
@@ -132,7 +120,7 @@ bool PS_Generator::Evaluate()
 	  break;
 	}
     }
-    SP(Color_Integrator) ci(cur->Integrator()->ColorIntegrator());
+    std::shared_ptr<Color_Integrator> ci(cur->Integrator()->ColorIntegrator());
     if (ci==NULL) 
       THROW(fatal_error,"No color integrator for "+cur->Name());
     SetColors(ci->I(),ci->J());
@@ -304,7 +292,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		    mtype|=((PS_Vertex*)rin[k])->Type();
 		    vf=true;
 		  }
-		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) continue;
+		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) {
+		  vkey->Delete();
+		   continue;
+		}
 		v3.insert(*vkey);
 		PS_Vertex *vtx(new PS_Vertex(*dummy));
 		vtx->AddJ(vkey->m_j);
@@ -354,7 +345,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	      jj[0]=ait->second;
 	      jj[1]=bit->second;
 	      Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
-	      if (v3.find(*vkey)!=v3.end()) continue;
+	      if (v3.find(*vkey)!=v3.end()) {
+	        vkey->Delete();
+	        continue;
+	      }
 	      v3.insert(*vkey);
 	      PS_Vertex *vtx(new PS_Vertex(*dummy));
 	      vtx->AddJ(vkey->m_j);
@@ -575,7 +569,7 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
     for (size_t j(0);j<oldsize;++j) {
       size_t cid(m_cur[n][j]->CId());
       size_t pid((cid&3)?(1<<m_n)-1-cid:cid);
-      double psmin(sqrt(cuts->Getscut(PSId(pid))));
+      double psmin(sqrt(cuts->Getscut(pid)));
       double mass(Max(psmin,m_cur[n][j]->Mass()));
       if (m_cur[n][j]->OnShell()) {
 	mmin[cid]=mass;

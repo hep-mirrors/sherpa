@@ -16,6 +16,12 @@ namespace CSSHOWER {
   class Shower;
 
   class Splitting_Function_Base {
+
+  private:
+
+    static SF_Lorentz* InitLorentzCalc(const MODEL::Single_Vertex& v,
+				       const SF_Key& key);
+
   protected:
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
@@ -89,6 +95,7 @@ namespace CSSHOWER {
     inline SF_Lorentz  *Lorentz() const  { return p_lf; }
     inline SF_Coupling *Coupling() const { return p_cf; }
 
+    PDF::PDF_Base** PDF() { return p_pdf; }
     inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
 
     inline double SymFac() const { return m_symf; }

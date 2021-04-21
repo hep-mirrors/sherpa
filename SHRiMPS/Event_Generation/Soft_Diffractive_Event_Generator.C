@@ -29,9 +29,6 @@ Soft_Diffractive_Event_Generator(Sigma_SD * sigma,const int & test) :
 void Soft_Diffractive_Event_Generator::InitialiseHadronMaps() {
   // Assume pp/ppbar collisions only
   // this can easily be extended to mesons/neutrons if necessary
-  if(s_kftable.find(kf_N_1440_plus)==s_kftable.end()) // if not initialised
-    s_kftable[kf_N_1440_plus]=new Particle_Info(kf_N_1440_plus,1.370,0.35,3,1,1,0,"N(1440)+","N(1440)+");
-
   for (size_t i=0;i<2;i++) {
     m_beam[i] = (i==0)?ATOOLS::rpa->gen.Beam1():ATOOLS::rpa->gen.Beam2();
     if (m_beam[i]==ATOOLS::Flavour(kf_p_plus)) {

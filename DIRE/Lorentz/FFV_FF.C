@@ -46,7 +46,7 @@ namespace DIRE {
 	    B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.0));
 	  }
 	}
-	return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
+	return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B);
       }
       double Q2(s.m_Q2+s.m_mi2+s.m_mj2+s.m_mk2);
       double muij2(s.m_mij2/Q2), mui2(s.m_mi2/Q2);
@@ -62,7 +62,7 @@ namespace DIRE {
 	double vkji=sqrt(1.0-4.0*(s.m_Q2*(1.0-z)+s.m_mk2)*s.m_mi2/sqr(s.m_Q2*z));
 	B-=vtkji/vkji*2.0*s.m_mk2/(s.m_Q2*(1.-z))*y/(1.0-z+y);
       }
-      return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s))+B);
+      return (s.m_clu?1.0:(m_swap?1.0-z:z))*(A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B);
     }
 
     double Integral(const Splitting &s) const

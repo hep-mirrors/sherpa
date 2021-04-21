@@ -10,136 +10,140 @@ using namespace ANALYSIS;
 #include "AddOns/Analysis/Triggers/MySISCone.H"
 #include "AddOns/Analysis/Triggers/MCFMCone.H"
 #include <iomanip>
+#include <memory>
 
 DECLARE_GETTER(Final_Selector,"Trigger",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Final_Selector>::
+<Analysis_Object,Analysis_Key,Final_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"JetMode mode\n"
-     <<std::setw(width+7)<<" "<<"Finder  kf [ptmin etamin etamax rmin bjets]\n"
-     <<std::setw(width+7)<<" "<<"DRMin   kf1 kf2 drmin\n"
-     <<std::setw(width+7)<<" "<<"Counts  kf min max\n"
-     <<std::setw(width+7)<<" "<<"Keep    kf\n"
-     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"JetMode: mode,\n"
+     <<std::setw(width+7)<<" "<<"Finder: kf   # [ptmin etamin etamax rmin bjets],\n"
+     <<std::setw(width+7)<<" "<<"DRMin: [kf1, kf2, drmin],\n"
+     <<std::setw(width+7)<<" "<<"Counts: [kf, min, max],\n"
+     <<std::setw(width+7)<<" "<<"Keep: kf,\n"
+     <<std::setw(width+7)<<" "<<"Qual: qualifier\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
 Analysis_Object * ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Final_Selector>::
-operator()(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,Final_Selector>::
+operator()(const Analysis_Key& key) const
 {
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  s.DeclareVectorSettingsWithEmptyDefault({ "Finder", "DRMin", "Counts" });
+
   Final_Selector_Data data;
   int jetmode=0;
   if (ATOOLS::rpa->gen.Beam1().IsLepton() || 
       ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=3;
   if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
       ATOOLS::rpa->gen.Beam2().IsLepton()) jetmode=1;
-  std::string inlist="FinalState", outlist="Analysed";
-  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
-    else if (cur[0]=="Qual" && cur.size()>1) {
-      if (!qualifier) delete qualifier;
-      qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
-    }
+
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Analysed").Get<std::string>();
+  jetmode = s["JetMode"].SetDefault(jetmode).Get<int>();
+
+  Particle_Qualifier_Base_SP qualifier;
+  const auto rawqualifier = s["Qual"].SetDefault("").Get<std::string>();
+  if (!rawqualifier.empty()) {
+      qualifier = Particle_Qualifier_Base_SP {
+        ATOOLS::Particle_Qualifier_Getter::GetObject(rawqualifier,rawqualifier)};
   }
-  if (!qualifier) qualifier = new ATOOLS::Is_Not_Lepton(); 
+  if (!qualifier)
+    qualifier = std::make_shared<ATOOLS::Is_Not_Lepton>();
+
   Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode,qualifier);
-  selector->SetAnalysis(parameters());
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if (cur[0]=="Finder" && cur.size()>1) {
-      int kf=ATOOLS::ToType<int>(cur[1]);
-      // if (kf!=kf_jet || kf==kf_bjet) continue;
-      ATOOLS::Flavour flavour((kf_code)abs(kf));
-      if (kf<0) flavour=flavour.Bar();
-      data.pt_min=0.;
-      data.eta_min=-20.;
-      data.eta_max=+20.;
-      data.f=0.5;
-      if (cur.size()>2) data.pt_min=ATOOLS::ToType<double>(cur[2]);
-      if (data.pt_min<0.) { data.et_min=-data.pt_min;data.pt_min=0.; }
-      if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
-      if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
-      if (cur.size()>5 && (kf==93 || kf==97)) data.r_min=ATOOLS::ToType<double>(cur[5]);
-      if (cur.size()>6 && (kf==93 || kf==97)) data.bf=ATOOLS::ToType<int>(cur[6]);
-      if (cur.size()>7 && (kf==93 || kf==97)) data.f=ATOOLS::ToType<double>(cur[7]);
-      selector->AddSelector(flavour,data);
-    }
-    else if (cur[0]=="DRMin" && cur.size()>3) {
-      int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour f1((kf_code)abs(kf));
-      if (kf<0) f1=f1.Bar();
-      kf=ATOOLS::ToType<int>(cur[2]);
-      ATOOLS::Flavour f2((kf_code)abs(kf));
-      if (kf<0) f2=f2.Bar();
-      data.r_min=0.;
-      if (cur.size()>3) data.r_min=ATOOLS::ToType<double>(cur[3]);
-      selector->AddSelector(f1,f2,data);
-    }
-    else if (cur[0]=="Counts" && cur.size()>3) {
-      int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour flavour((kf_code)abs(kf));
-      if (kf<0) flavour=flavour.Bar();
-      selector->AddSelector(flavour,ATOOLS::ToType<int>(cur[2]),
-			    ATOOLS::ToType<int>(cur[3]));
-    }
-    else if (cur[0]=="Keep" && cur.size()>1) {
-      int kf=ATOOLS::ToType<int>(cur[1]);
-      ATOOLS::Flavour flavour((kf_code)abs(kf));
-      if (kf<0) flavour=flavour.Bar();
-      selector->AddKeepFlavour(flavour);
-    }
+  selector->SetAnalysis(key.p_analysis);
+
+  const auto finderparams = s["Finder"].GetVector<std::string>();
+  if (!finderparams.empty()) {
+    int kf=ATOOLS::ToType<int>(finderparams[0]);
+    ATOOLS::Flavour flavour((kf_code)abs(kf));
+    if (kf<0) flavour=flavour.Bar();
+    data.pt_min=0.;
+    data.eta_min=-20.;
+    data.eta_max=+20.;
+    data.f=0.5;
+    if (finderparams.size()>1) data.pt_min=ATOOLS::ToType<double>(finderparams[1]);
+    if (data.pt_min<0.) { data.et_min=-data.pt_min;data.pt_min=0.; }
+    if (finderparams.size()>2) data.eta_min=ATOOLS::ToType<double>(finderparams[2]);
+    if (finderparams.size()>3) data.eta_max=ATOOLS::ToType<double>(finderparams[3]);
+    if (finderparams.size()>4 && (kf==93 || kf==97)) data.r_min=ATOOLS::ToType<double>(finderparams[4]);
+    if (finderparams.size()>5 && (kf==93 || kf==97)) data.bf=ATOOLS::ToType<int>(finderparams[5]);
+    if (finderparams.size()>6 && (kf==93 || kf==97)) data.f=ATOOLS::ToType<double>(finderparams[6]);
+    selector->AddSelector(flavour,data);
   }
+
+  const auto drminparams = s["DRMin"].GetVector<std::string>();
+  if (!drminparams.empty()) {
+    int kf=ATOOLS::ToType<int>(drminparams[0]);
+    ATOOLS::Flavour f1((kf_code)abs(kf));
+    if (kf<0) f1=f1.Bar();
+    kf=ATOOLS::ToType<int>(drminparams[1]);
+    ATOOLS::Flavour f2((kf_code)abs(kf));
+    if (kf<0) f2=f2.Bar();
+    data.r_min=0.;
+    if (drminparams.size()>2) data.r_min=ATOOLS::ToType<double>(drminparams[2]);
+    selector->AddSelector(f1,f2,data);
+  }
+
+  const auto countparams = s["Counts"].GetVector<std::string>();
+  if (!countparams.empty()) {
+    int kf=ATOOLS::ToType<int>(countparams[0]);
+    ATOOLS::Flavour flavour((kf_code)abs(kf));
+    if (kf<0) flavour=flavour.Bar();
+    selector->AddSelector(flavour,ATOOLS::ToType<int>(countparams[1]),
+                          ATOOLS::ToType<int>(countparams[2]));
+  }
+
+  if (s["Keep"].IsCustomised()) {
+    const auto kf = s["Keep"].SetDefault(0).Get<int>();
+    ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)(std::abs(kf))) };
+    if (kf<0) flav=flav.Bar();
+    selector->AddKeepFlavour(flav);
+  }
+
   return selector;
 }
 
 DECLARE_GETTER(Leading_Particle,"LeadingParticle",
- 	       Analysis_Object,Argument_Matrix);
+	       Analysis_Object,Analysis_Key);
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Leading_Particle>::
+<Analysis_Object,Analysis_Key,Leading_Particle>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
-     <<std::setw(width+7)<<" "<<"InList  list\n"
-     <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "<<"Keep    kf\n"
-     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+7)<<" "<<"InList: list,\n"
+     <<std::setw(width+7)<<" "<<"OutList: list,\n"
+     <<std::setw(width+7)<<" "<<"Keep: kf,\n"
+     <<std::setw(width+7)<<" "<<"Qual: qualifier\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
 Analysis_Object * ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,Leading_Particle>::
-operator()(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,Leading_Particle>::
+operator()(const Analysis_Key& key) const
 {
-  std::string inlist("FinalState"), outlist("Analysed");
-  int mode(0);
-  ATOOLS::Particle_Qualifier_Base *qualifier(NULL);
-  for (size_t i=0;i<parameters.size();++i) {
-    const std::vector<std::string> &cur=parameters[i];
-    if      (cur[0]=="InList"  && cur.size()>1) inlist=cur[1];
-    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
-    else if (cur[0]=="Mode"    && cur.size()>1) {
-      if (cur[1]=="PT") mode = 1;
-    }
-    else if (cur[0]=="Qual"    && cur.size()>1) {
-      if (!qualifier) delete qualifier;
-      qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
-    }
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("Analysed").Get<std::string>();
+  const auto mode = s["Mode"].SetDefault(0).Get<int>();
+  const auto rawqualifier = s["Qual"].SetDefault("").Get<std::string>();
+  ATOOLS::Particle_Qualifier_Base* qualifier = NULL;
+  if (!rawqualifier.empty()) {
+    qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(rawqualifier,
+                                                             rawqualifier);
   }
   if (!qualifier) qualifier = new ATOOLS::Is_Hadron(); 
   Leading_Particle *selector = new Leading_Particle(inlist,outlist,mode,qualifier);
-  selector->SetAnalysis(parameters());
+  selector->SetAnalysis(key.p_analysis);
   return selector;
 }
 
@@ -179,7 +183,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname,
-			       int mode, SP(ATOOLS::Particle_Qualifier_Base) qualifier) :
+			       int mode, Particle_Qualifier_Base_SP qualifier) :
   p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname),
   m_ownlist(false), m_extract(false), m_mode(mode), p_jetalg(NULL)
 {
@@ -187,9 +191,9 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 		<<mode<<","<<qualifier<<")"<<std::endl;
   m_name="Trigger";
   switch (mode) {
-  case 1: p_jetalg = new Durham_Algorithm(--p_qualifier); break;
-  case 0: p_jetalg = new Kt_Algorithm(--p_qualifier); break;
-  case 3: p_jetalg = new DIS_Algorithm(--p_qualifier); break;
+  case 1: p_jetalg = new Durham_Algorithm(p_qualifier.get()); break;
+  case 0: p_jetalg = new Kt_Algorithm(p_qualifier.get()); break;
+  case 3: p_jetalg = new DIS_Algorithm(p_qualifier.get()); break;
   default:
     break;
   }
@@ -217,11 +221,11 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     switch(m_mode) {
     case 2: p_jetalg = new 
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
-    case 10: p_jetalg = new Midpoint_Cone(--p_qualifier,0,fs.f); break;
-    case 11: p_jetalg = new Midpoint_Cone(--p_qualifier,1,fs.f); break;
-    case 20: p_jetalg = new SISCone(--p_qualifier,fs.f); break;
-    case 30: p_jetalg = new MCFMCone(--p_qualifier,fs.f); break;
-    case 40: p_jetalg = new Kt_Algorithm(--p_qualifier); break;
+    case 10: p_jetalg = new Midpoint_Cone(p_qualifier.get(),0,fs.f); break;
+    case 11: p_jetalg = new Midpoint_Cone(p_qualifier.get(),1,fs.f); break;
+    case 20: p_jetalg = new SISCone(p_qualifier.get(),fs.f); break;
+    case 30: p_jetalg = new MCFMCone(p_qualifier.get(),fs.f); break;
+    case 40: p_jetalg = new Kt_Algorithm(p_qualifier.get()); break;
     }
     if (p_jetalg) p_jetalg->Setbflag(fs.bf);
   }
@@ -640,16 +644,11 @@ void Leading_Particle::Evaluate(const Blob_List &,double value, double ncount) {
   //std::cout<<"-----------------------------------------------------------"<<std::endl;
   for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
     if ((*p_qualifier)(*pit)) {
-      //std::cout<<"Test "<<(*pit)->Flav()<<" successful."<<std::endl;
-      // NOTE: to have no break-statement for case 1 is probably a bug, also is
-      // the intent here really to update test in the following if-statement
-      // instead of actually updating crit instead (i.e. crit=test, not
-      // test=crit)?
       switch (m_mode) {
-      case 1:  test =(*pit)->Momentum().PPerp2();
+      case 1:  test =(*pit)->Momentum().PPerp2(); break;
       default: test =(*pit)->Momentum()[0];
       }
-      if (test>crit) { winner=(*pit); test=crit; }
+      if (test>crit) { winner=(*pit); crit=test; }
     }
   }    
 

@@ -1,5 +1,8 @@
+GITTAG = AddOns/Analysis/Observables
+include ../../../git.make
 
 ANAOBS_SOURCES        =	\
+			Git_Info.C \
 			Event_Output.C \
 			Blobdata.C \
 			Global_Calculator.C \

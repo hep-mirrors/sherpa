@@ -15,12 +15,12 @@ namespace AMEGIC {
   class Amegic_Model;
 
   class Process_Group: public Amegic_Base, public PHASIC::Process_Group {
-    
+
   protected :
-    
+
     Topology * p_top;
     ATOOLS::Vec4D* p_testmoms;
-    
+
     Amegic_Model* p_model;
     std::string m_mfname;
 

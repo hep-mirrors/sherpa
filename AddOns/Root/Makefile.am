@@ -1,9 +1,12 @@
 
-ROOTOUT_SOURCES = Output_RootNtuple.C
+GITTAG = AddOns/Root
+include ../../git.make
+
+ROOTOUT_SOURCES = Git_Info.C Output_RootNtuple.C
 
 ROOTOUT_ADDS = Output_RootNtuple.H
 
-ROOTIN_SOURCES = RootNtuple_Reader.C
+ROOTIN_SOURCES = Git_Info.C RootNtuple_Reader.C
 
 ROOTIN_ADDS = RootNtuple_Reader.H
 

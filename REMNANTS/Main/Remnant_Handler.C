@@ -15,12 +15,11 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
-Remnant_Handler::Remnant_Handler(Default_Reader *const defaultreader,
-				 PDF::ISR_Handler * isr,
+Remnant_Handler::Remnant_Handler(PDF::ISR_Handler * isr,
 				 BEAM::Beam_Spectra_Handler * beam) :
   p_softblob(0), m_check(true), m_output(true)
 {
-  InitializeRemnants(defaultreader,isr,beam);
+  InitializeRemnants(isr,beam);
   DefineRemnantStrategy();
   InitializeKinematicsAndColours();
 }
@@ -29,11 +28,8 @@ Remnant_Handler::~Remnant_Handler() {
   for (size_t i(0);i<2;++i) { if (p_remnants[i]!=NULL) delete p_remnants[i]; }
 }
 
-void Remnant_Handler::InitializeRemnants(Default_Reader *const defaultreader,
-					 PDF::ISR_Handler * isr,
+void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler * isr,
 					 BEAM::Beam_Spectra_Handler * beam) {
-  repars = new Remnant_Parameters();
-  repars->Init(defaultreader);
   for (size_t i=0;i<2;++i) {
     p_remnants[i] = NULL;
     Flavour flav  = isr->Flav(i);
@@ -99,6 +95,7 @@ void Remnant_Handler::
 InitializeKinematicsAndColours() {
   m_kinematics.Initialize(this);
   m_colours.Initialize(this);
+  m_decorrelator.Initialize(this);
 }
 
 bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
@@ -145,10 +142,17 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List *const bloblist,
   // plus, potentially a third one to balance transverse momenta. 
   InitBeamAndSoftBlobs(bloblist);
   // Fill in the transverse momenta through the Kinematics_Generator.
+  // Check for colour connected parton-pairs including beam partons and add soft gluons in
+  // between them if their invariant mass is too large.
+  // This still needs debugging - therefore it is commented out.
   if (!m_kinematics.FillBlobs(bloblist) || !CheckBeamBreakup(bloblist)) {
+    // || !m_decorrelator(p_softblob)) {
     Reset();
-    return Return_Value::Retry_Event;
+    msg_Error()<<"Warning in "<<METHOD<<": return new event\n";
+    return Return_Value::New_Event;
   }
+  //for (size_t beam=0;beam<2;beam++) msg_Out()<<(*p_remnants[beam]->GetBlob())<<"\n";
+  //msg_Out()<<(*p_softblob)<<"\n";
   Reset();
   return Return_Value::Success;
 }
@@ -229,7 +233,8 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 }
 
 void Remnant_Handler::Reset() {
-  for (size_t beam=0;beam<2;beam++) p_remnants[beam]->Reset();
+  bool DIS=m_type==strat::DIS1 || m_type==strat::DIS2;
+  for (size_t beam=0;beam<2;beam++) p_remnants[beam]->Reset(DIS);
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

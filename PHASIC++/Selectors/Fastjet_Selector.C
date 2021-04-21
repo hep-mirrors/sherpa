@@ -1,55 +1,29 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-
-#include "PHASIC++/Selectors/Selector.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
-#include "ATOOLS/Math/Algebra_Interpreter.H"
-#include "ATOOLS/Phys/Fastjet_Helpers.H"
+#include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
 namespace PHASIC {
-  class Fastjet_Selector: public Selector_Base, public ATOOLS::Tag_Replacer {
-    double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_nj, m_bmode;
-    fastjet::JetDefinition * p_jdef;
-    fastjet::SISConePlugin * p_siscplug;
+  class Fastjet_Selector: public Fastjet_Selector_Base, public ATOOLS::Tag_Replacer {
+    int m_bmode;
     ATOOLS::Algebra_Interpreter m_calc;
     ATOOLS::Vec4D_Vector m_p;
     std::vector<double> m_mu2;
 
     std::string ReplaceTags(std::string &expr) const;
-
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
-
     void AssignId(ATOOLS::Term *term);
 
   public:
-    Fastjet_Selector(Process_Base *const proc, std::string algo, size_t nj,
-                     double ptmin, double etmin, double dr, double f,
-                     double eta, double y, int bmode,
-                     std::string expression);
-
-    ~Fastjet_Selector();
-
-
-    bool   Trigger(ATOOLS::Selector_List &);
-
-    void   BuildCuts(Cut_Data *) {}
+    Fastjet_Selector(Process_Base* const proc,
+                     ATOOLS::Scoped_Settings s,
+                     int bmode,
+                     const std::string& expression);
+    bool Trigger(ATOOLS::Selector_List&);
+    void BuildCuts(Cut_Data*) {}
   };
 }
 
-#include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
-
-
 using namespace PHASIC;
 using namespace ATOOLS;
+
 
 /*---------------------------------------------------------------------
 
@@ -57,26 +31,13 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-Fastjet_Selector::Fastjet_Selector
-(Process_Base *const proc, std::string algo, size_t nj,
- double ptmin, double etmin, double dr, double f, double eta, double y,
- int bmode,std::string expression) :
-  Selector_Base("FastjetSelector",proc),
-  m_nj(nj), m_ptmin(ptmin), m_etmin(etmin),
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_bmode(bmode),
-  p_jdef(0), p_siscplug(0)
+Fastjet_Selector::Fastjet_Selector(Process_Base* const proc,
+                                   Scoped_Settings s,
+                                   int bmode,
+                                   const std::string& expression):
+  Fastjet_Selector_Base("FastjetSelector", proc, s),
+  m_bmode(bmode)
 {
-  fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
-
-  if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
-  if (algo=="antikt")    ja=fastjet::antikt_algorithm;
-  if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(m_delta_r,m_f);
-
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
-
-  m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
-
   m_p.resize(m_nin+m_nout);
   m_mu2.resize(m_nout);
 
@@ -94,17 +55,8 @@ Fastjet_Selector::Fastjet_Selector
   msg_Indent();
   if (msg_LevelIsDebugging()) m_calc.PrintEquation();
   msg_Debugging()<<"}\n";
-
-#ifndef USING__FASTJET__3
-  if (m_bmode>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
-#endif
 }
 
-
-Fastjet_Selector::~Fastjet_Selector() {
-  delete p_jdef;
-  if (p_siscplug) delete p_siscplug;
-}
 
 std::string Fastjet_Selector::ReplaceTags(std::string &expr) const
 {
@@ -158,22 +110,35 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
 
   m_p.clear();
   for (size_t i(0);i<m_nin;++i) m_p.push_back(sl[i].Momentum());
-  std::vector<fastjet::PseudoJet> input,jets;
+  std::vector<fjcore::PseudoJet> input,jets;
   for (size_t i(m_nin);i<sl.size();++i) {
-    if (ToBeClustered(sl[i].Flavour(), m_bmode))
+    if (ToBeClustered(sl[i].Flavour(), m_bmode)) {
       input.push_back(MakePseudoJet(sl[i].Flavour(),sl[i].Momentum()));
-    else m_p.push_back(sl[i].Momentum());
+    } else {
+      m_p.push_back(sl[i].Momentum());
+    }
   }
   int nj=m_p.size();
-  
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
-  for (size_t i(0);i<jets.size();++i) {
-    if (m_bmode==0 || BTag(jets[i], m_bmode)) {
-      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-      if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	  (m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	  (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  jets=fjcore::sorted_by_pt(cs.inclusive_jets());
+
+  if (m_eekt) {
+    for (size_t i(0);i<input.size();++i) {
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) {
+        m_p.emplace_back(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+      }
+    }
+  } else {
+    for (size_t i(0);i<jets.size();++i) {
+      if (m_bmode==0 || BTag(jets[i], m_bmode)) {
+        Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+        if (pj.PPerp() > m_ptmin
+            && pj.EPerp() > m_etmin
+            && dabs(pj.Eta()) < m_eta
+            && dabs(pj.Y()) < m_y)
+          m_p.push_back(pj);
+      }
     }
   }
   for (size_t i(0);i<input.size();++i)
@@ -186,35 +151,24 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
 }
 
 
-DECLARE_ND_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<6) THROW(critical_error,"Invalid syntax");
- 
-  double f(.75);
-  if (key.front().size()>6) f=ToType<double>(key[0][6]);
-  double eta(100.), y(100.);
-  int bmode(0);
-  if (key.front().size()>7) eta=ToType<double>(key[0][7]);
-  if (key.front().size()>8) y=ToType<double>(key[0][8]);
-  if (key.front().size()>9) bmode=ToType<double>(key[0][9]);
+  auto s = key.m_settings["FastjetSelector"];
 
-  Fastjet_Selector *jf(new Fastjet_Selector
-                       (key.p_proc,key[0][1],
-                        ToType<size_t>(key[0][2]),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4])),
-			ToType<double>(key[0][5]),f,eta,y,bmode,key[0][0]));
-  return jf;
+  const auto expression = s["Expression"].SetDefault("")  .Get<std::string>();
+  const auto bmode      = s["BMode"]     .SetDefault(0)   .Get<int>();
+
+  return new Fastjet_Selector(key.p_proc, s, bmode, expression);
 }
 
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [bmode=0]]]]\n" 
-     <<"                algorithm: kt,antikt,cambridge,siscone";
+{
+  str<<"FastjetSelector:\n"
+     <<width<<"  Expression: boolean expression\n";
+  Fastjet_Selector_Base::PrintCommonInfoLines(str, width);
+  str<<width<<"  BMode: 0|1|2";
 }
-
-#endif

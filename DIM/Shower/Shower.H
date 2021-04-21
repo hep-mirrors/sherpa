@@ -4,11 +4,10 @@
 #include "DIM/Tools/Parton.H"
 #include "DIM/Shower/Kernel.H"
 #include "DIM/Tools/Amplitude.H"
+#include "ATOOLS/Phys/Weights.H"
 
 namespace ATOOLS {
-  class Default_Reader;
-  class Variation_Parameters;
-  class Variation_Weights;
+  class QCD_Variation_Params;
 }
 namespace MODEL {
   class Model_Base;
@@ -57,7 +56,7 @@ namespace DIM {
 
     Gamma *p_gamma;
 
-    ATOOLS::Variation_Weights *p_vars;
+    ATOOLS::Weights_Map m_weightsmap;
 
     Kernel_Vector m_cks;
     SKernel_Map   m_sks;
@@ -81,15 +80,9 @@ namespace DIM {
     Splitting GeneratePoint(const Amplitude &a,const double &t,
 			    const unsigned int &nem);
 
-    double Reweight(ATOOLS::Variation_Parameters *params,
-		    ATOOLS::Variation_Weights *weights,
-		    const Reweight_Args &a);
-    double GetWeight(ATOOLS::Variation_Parameters *params,
-		     ATOOLS::Variation_Weights *weights,
-		     std::vector<double> &v);
-    double VetoWeight(ATOOLS::Variation_Parameters *params,
-		      ATOOLS::Variation_Weights *weights,
-		      JetVeto_Args &a);
+    void Reweight(ATOOLS::QCD_Variation_Params* params,
+                  size_t varindex,
+                  const Reweight_Args& a);
 
   public:
 
@@ -98,8 +91,7 @@ namespace DIM {
     ~Shower();
 
     void Init(MODEL::Model_Base *const model,
-	      PDF::ISR_Handler *const isr,
-	      ATOOLS::Default_Reader *const read);
+	      PDF::ISR_Handler *const isr);
 
     void SetMS(ATOOLS::Mass_Selector *const ms);
 
@@ -121,6 +113,7 @@ namespace DIM {
     inline double PDFMin(const int i) const { return m_pdfmin[i]; }
 
     inline double GetWeight() const { return m_weight; }
+    inline const ATOOLS::Weights_Map& GetWeightsMap() const { return m_weightsmap; }
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
@@ -132,12 +125,6 @@ namespace DIM {
     inline void SetGamma(Gamma *const gamma) { p_gamma=gamma; }
 
     inline double OEF() const { return m_oef; }
-
-    inline void SetVariations(ATOOLS::Variation_Weights *const vars)
-    { p_vars=vars; }
-
-    inline ATOOLS::Variation_Weights *Variations() const
-    { return p_vars; }
 
   };//end of class Shower
 

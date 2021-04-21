@@ -130,8 +130,6 @@ void II_Dipole::CalcKinematics(const ATOOLS::Vec4D_Vector& p)
 
 double FF_Dipole::CalcKinDependentPrefac() const
 {
-  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
-
   const ATOOLS::Vec4D& pi = m_kin.m_pi;
   const ATOOLS::Vec4D& pj = m_kin.m_pj;
   
@@ -141,8 +139,6 @@ double FF_Dipole::CalcKinDependentPrefac() const
 
 double FI_Dipole::CalcKinDependentPrefac() const
 {
-  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
-
   const ATOOLS::Vec4D& pi = m_kin.m_pi;
   const ATOOLS::Vec4D& pj = m_kin.m_pj;
   const double& x = m_kin.m_x;
@@ -153,8 +149,6 @@ double FI_Dipole::CalcKinDependentPrefac() const
 
 double IF_Dipole::CalcKinDependentPrefac() const
 {
-  if(SubtractionType()!=0) THROW(not_implemented, "Not implemented");
-
   const ATOOLS::Vec4D& pi = m_kin.m_pi;
   const ATOOLS::Vec4D& pa = m_kin.m_pa;
   const double& x = m_kin.m_x;

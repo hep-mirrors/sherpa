@@ -2,12 +2,12 @@
 #define SHERPA_PerturbativePhysics_Perturbative_Interface_H
 
 #include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Org/Return_Value.H"
 
 namespace ATOOLS {
 
   class Cluster_Amplitude;
-  class Variation_Weights;
 
 }
 
@@ -31,24 +31,23 @@ namespace SHERPA {
     Shower_Handler         *p_shower;        
 
     ATOOLS::Blob *p_hard;
+    ATOOLS::Blob_List *p_bloblist;
 
     ATOOLS::Poincare m_cms;
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    double m_weight, m_globalkfac, m_maxkfac;
+    ATOOLS::Weights_Map m_weightsmap;
+    double m_globalkfac, m_maxkfac;
     int    m_bbarmode;
-
-    ATOOLS::Variation_Weights *p_localkfactorvarweights;
 
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
 
   public :
 
-    // constructors
-    Perturbative_Interface(Matrix_Element_Handler *const meh,
-                           Hard_Decay_Handler *const hdh,
-			   Shower_Handler *const psh);
+    Perturbative_Interface(Matrix_Element_Handler* const,
+                           Hard_Decay_Handler* const,
+                           Shower_Handler* const);
     Perturbative_Interface(Decay_Handler_Base *const hdh,
 			   Shower_Handler *const psh);
     Perturbative_Interface(MI_Handler *const hdh,
@@ -56,22 +55,20 @@ namespace SHERPA {
     Perturbative_Interface(Soft_Collision_Handler *const sch,
 			   Shower_Handler *const psh);
 
-    // destructor
     ~Perturbative_Interface();
 
-    // member functions
-    ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob *blob);
+    ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob*,
+                                                       ATOOLS::Blob_List*);
 
-    bool FillBlobs(ATOOLS::Blob_List *blobs); 
+    bool FillBlobs();
 
     int  PerformShowers();
     int  PerformDecayShowers();
 
     void CleanUp();
-    
-    // inline functions
-    inline double Weight() const { return m_weight; }
-    
+
+    inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
+
     inline Matrix_Element_Handler    * MEHandler() const { return p_me; }
     inline ATOOLS::Cluster_Amplitude * Amplitude() const { return p_ampl; }
     inline Shower_Handler            * Shower() { return p_shower; }

@@ -2,6 +2,7 @@
 #define ATOOLS_Phys_Weight_Info_H
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Phys/Weights.H"
 #include <ostream>
 #include <vector>
 
@@ -29,24 +30,25 @@ namespace ATOOLS {
   }
 
   struct Weight_Info {
-    double m_weight, m_dxs, m_ntrial;
+    double m_dxs, m_ntrial;
+    Weights_Map m_weightsmap;
     PDF_Info m_pdf;
-    Weight_Info(const double &weight=0.0,
+    Weight_Info(const Weights_Map &weightsmap={0.0},
                 const double &dxs=0.0,const double &ntrial=0.0,
                 const int &fl1=0, const int &fl2=0,
                 const double &x1=0.,const double &x2=0.,
                 const double &xf1=0.0,const double &xf2=0.0,
                 const double &muf12=0.0,const double &muf22=0.0):
-      m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
+      m_weightsmap(weightsmap),
+      m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
-    Weight_Info &operator*=(const double &c)
-    { m_weight*=c; m_dxs*=c; return *this; }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Weight_Info & wi)
   {
-    return s<<" w = "<<wi.m_weight<<", dxs = "<<wi.m_dxs<<std::endl;
+    return s << " w = " << wi.m_weightsmap.Nominal() << ", dxs = " << wi.m_dxs
+             << "\n";
   }
 
   struct mewgttype {
@@ -131,10 +133,10 @@ namespace ATOOLS {
   struct DADS_Info {
   public:
     double   m_wgt, m_x1, m_x2;
-    int      m_fl1, m_fl2;
+    long unsigned int m_fl1, m_fl2;
     DADS_Info(const double &wgt,
               const double &x1,const double &x2,
-              const int &fl1, const int &fl2):
+              const long unsigned int &fl1, const long unsigned int &fl2):
     m_wgt(wgt), m_x1(x1), m_x2(x2), m_fl1(fl1), m_fl2(fl2) {}
   };
 

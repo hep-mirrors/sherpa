@@ -1,8 +1,8 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
 #include "PHASIC++/Process/ME_Generators.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -18,8 +18,21 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+ME_Generator_Base::ME_Generator_Base(const std::string &name):
+  m_name(name), m_massmode(0), p_gens(NULL)
+{
+  RegisterDefaults();
+}
+
 ME_Generator_Base::~ME_Generator_Base()
 {
+}
+
+void ME_Generator_Base::RegisterDefaults()
+{
+  RegisterDipoleParameters();
+  RegisterNLOParameters();
+  RegisterOtherParameters();
 }
 
 Process_Base *ME_Generator_Base::InitializeProcess
@@ -52,8 +65,7 @@ Process_Base *ME_Generator_Base::InitializeProcess
 				    +"/Process/"+m_name+"/");
     return proc;
   }
-  Selector_Key skey(NULL,NULL,true);
-  proc->SetSelector(skey);
+  proc->SetSelector(Selector_Key{});
   std::string stag("VAR{"+ToString(sqr(rpa->gen.Ecms()))+"}");
   proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,stag,"Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("None"));
@@ -63,14 +75,14 @@ Process_Base *ME_Generator_Base::InitializeProcess
   return proc;
 }
 
-void ME_Generator_Base::SetPSMasses(Default_Reader *const reader)
+void ME_Generator_Base::SetPSMasses()
 {
+  Settings& s = Settings::GetMainSettings();
   ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
-  std::vector<size_t> psmassive,psmassless;
   std::vector<size_t> defpsmassive,defpsmassless;
-  reader->ReadVector(psmassive,"MASSIVE_PS");
-  reader->ReadVector(psmassless,"MASSLESS_PS");
-  bool respect = reader->Get<bool>("RESPECT_MASSIVE_FLAG", false);
+  const std::vector<size_t> psmassive  { s["MASSIVE_PS"].GetVector<size_t>()  };
+  const std::vector<size_t> psmassless { s["MASSLESS_PS"].GetVector<size_t>() };
+  const bool respect{ s["RESPECT_MASSIVE_FLAG"].Get<bool>() };
   // check consistency
   for (size_t i(0);i<psmassive.size();++i)
     if (std::find(psmassless.begin(),psmassless.end(),psmassive[i])!=
@@ -79,8 +91,8 @@ void ME_Generator_Base::SetPSMasses(Default_Reader *const reader)
     if (Flavour(psmassless[i]).IsMassive())
       THROW(fatal_error,"Cannot shower massive particle massless.");
   // set defaults
-  // respect=0 -> def: dusgy massless, rest massive
-  // respect=1 -> def: only massive massive, rest massless
+  // respect=false -> def: dusgy massless, rest massive
+  // respect=true  -> def: only massive massive, rest massless
   // TODO: need to fill in those that are massive already?
   if (!respect) {
     defpsmassless.push_back(kf_d);
@@ -139,33 +151,84 @@ void ME_Generator_Base::SetPSMasses(Default_Reader *const reader)
                     <<mf<<std::endl;
 }
 
+void ME_Generator_Base::RegisterDipoleParameters()
+{
+  // most (but not all) are used by both COMIX and AMEGIC
+  // some are also used by PHASIC (e.g. KP_Terms)
+
+  Scoped_Settings s{ Settings::GetMainSettings()["DIPOLES"] };
+  s["AMIN"].SetDefault(Max(rpa->gen.Accu(), 1.0e-8));
+  const auto& amax = s["ALPHA"].SetDefault(1.0).Get<double>();
+  s["ALPHA_FF"].SetDefault(amax);
+  s["ALPHA_FI"].SetDefault(amax);
+  s["ALPHA_IF"].SetDefault(amax);
+  s["ALPHA_II"].SetDefault(amax);
+  s["NF_GSPLIT"].SetDefault(Flavour(kf_jet).Size() / 2);
+  s["KT2MAX"].SetDefault(sqr(rpa->gen.Ecms()));
+  s["COLLINEAR_VFF_SPLITTINGS"].SetDefault(1);
+  s["V_SUBTRACTION_MODE"].SetDefault(1);  // 0: scalar, 1: fermionic
+  s["PFF_IS_SPLIT_SCHEME"].SetDefault(1);
+  s["PFF_FS_SPLIT_SCHEME"].SetDefault(0);
+  s["PFF_IS_RECOIL_SCHEME"].SetDefault(0);
+  s["PFF_FS_RECOIL_SCHEME"].SetDefault(0);
+  s["IS_CLUSTER_TO_LEPTONS"].SetDefault(0);
+  s["LIST"].SetDefault(0);
+  s["BORN_FLAVOUR_RESTRICTIONS"].SetDefault("");
+  s["ONSHELL_SUBTRACTION_WINDOW"].SetDefault(5.0);
+}
+
+void ME_Generator_Base::RegisterNLOParameters()
+{
+  SetParameter("NLO_SMEAR_THRESHOLD", 0.0);
+  SetParameter("NLO_SMEAR_POWER", 0.5);
+}
+
+void ME_Generator_Base::RegisterOtherParameters()
+{
+  SetParameter("CHECK_POLES", false);
+}
+
+template <typename T>
+void ME_Generator_Base::SetParameter(const std::string& param,
+                                     const T& def)
+{
+  Scoped_Settings s{ Settings::GetMainSettings()[param] };
+  s.SetDefault(def);
+  rpa->gen.SetVariable(param, ToString(s.Get<T>()));
+}
+
 namespace PHASIC {
 
   class ShiftMasses_Energy: public Function_Base {
   private:
+    std::vector<double>::size_type m_nentries;
     std::vector<double> m_m2, m_p2;
   public:
     ShiftMasses_Energy(Mass_Selector *const ms,
 		    Cluster_Amplitude *const ampl,int mode)
     {
-      if (mode<0) {
-	for (size_t i(0);i<ampl->NIn();++i) {
-	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
-	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
-	}
+      const auto nin = ampl->NIn();
+      auto offset = 0;
+      if (mode < 0) {
+        m_nentries = nin;
+      } else {
+        offset = nin;
+        m_nentries = ampl->Legs().size() - nin;
       }
-      else {
-	for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
-	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
-	}
+      m_p2.reserve(m_nentries);
+      m_m2.reserve(m_nentries);
+      const auto end = offset + m_nentries;
+      for (int i {offset}; i < end; ++i) {
+        m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
+        m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
       }
     }
     virtual double operator()(double x)
     {
-      double E=0.0;
-      for (size_t i(0);i<m_m2.size();++i)
-	E+=sqrt(m_m2[i]+x*x*m_p2[i]);
+      const auto x2=x*x;
+      auto E=0.0;
+      for (size_t i {0}; i < m_nentries; ++i)
+	E+=sqrt(m_m2[i]+x2*m_p2[i]);
       return E;
     }
   };// end of class ShiftMasses_Energy

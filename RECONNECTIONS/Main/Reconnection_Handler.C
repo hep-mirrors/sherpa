@@ -3,13 +3,14 @@
 #include "RECONNECTIONS/Main/Reconnect_Statistical.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace RECONNECTIONS;
 using namespace ATOOLS;
 using namespace std;
 
-Reconnection_Handler::Reconnection_Handler() :
-  m_on(false),
+Reconnection_Handler::Reconnection_Handler(const bool & on) :
+  m_on(on),
   p_reconnector(new Reconnect_Statistical())
 {}
 
@@ -17,11 +18,8 @@ Reconnection_Handler::~Reconnection_Handler() {
   delete p_reconnector;
 }
 
-void Reconnection_Handler::Initialize(Default_Reader *const reader) {
-  string onoff = reader->GetStringNormalisingNoneLikeValues("COLOUR_RECONNECTIONS",
-							    string("Off"));
-  m_on = bool(onoff==string("On"));
-  if (m_on) p_reconnector->Initialize(reader);
+void Reconnection_Handler::Initialize() {
+  if (m_on) p_reconnector->Initialize();
 }
 
 void Reconnection_Handler::Reset() {
@@ -38,7 +36,6 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   }
   return Return_Value::New_Event;
 }
-  
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
   Blob * blob = new Blob();

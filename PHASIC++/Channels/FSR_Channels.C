@@ -6,23 +6,23 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
 bool FSR_Channels::Initialize()
 {
-  Default_Reader reader;
-  reader.AddWordSeparator(",");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  std::vector<std::string> inttypes;
-  reader.ReadVector(inttypes,"INTEGRATOR");
-  if (inttypes.empty()) inttypes.push_back("Default");
+  Settings& s = Settings::GetMainSettings();
+  std::vector<std::string> inttypes{
+    s["INTEGRATOR"].SetDefault("Default").GetVector<std::string>() };
   if (p_psh->Process()->Process()->Info().m_integrator!="") {
+    Data_Reader reader(" ", ";", "#", "=");
+    reader.AddComment("!");
+    reader.AddWordSeparator("\t");
     reader.SetString(p_psh->Process()->Process()->Info().m_integrator);
-    reader.VectorFromString(inttypes,"");
+    reader.VectorFromString(inttypes, "");
   }
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();

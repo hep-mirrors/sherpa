@@ -23,7 +23,7 @@ namespace AMISIC {
 
     void   Initialize();    
     double operator()(double b);
-    double SelectB(const bool & mode=true) const;
+    double SelectB(const bool & mode=false) const;
 
     ATOOLS::Vec4D SelectPositionForScatter(const double & b) const;
     ATOOLS::Vec4D SelectRelativePositionForParton() const;
@@ -38,8 +38,6 @@ namespace AMISIC {
 	return m_radius1;
       case overlap_form::Double_Gaussian:
 	return m_radius3;
-      default:
-	exit(1);
       }
     }
   };

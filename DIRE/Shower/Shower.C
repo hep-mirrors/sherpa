@@ -12,9 +12,10 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace DIRE;
 using namespace PHASIC;
@@ -24,7 +25,7 @@ using namespace ATOOLS;
 Shower::Shower():
   p_model(NULL),
   p_cluster(new Cluster_Definitions(this)),
-  p_as(NULL), p_vars(NULL)
+  p_as(NULL)
 {
   p_pdf[1]=p_pdf[0]=NULL;
 }
@@ -56,35 +57,32 @@ public:
 };
 
 bool Shower::Init(MODEL::Model_Base *const model,
-		  PDF::ISR_Handler *const isr,
-		  ATOOLS::Default_Reader *const read)
+		  PDF::ISR_Handler *const isr)
 {
+  Settings& s = Settings::GetMainSettings();
   DEBUG_FUNC(this);
   p_model=model;
   p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
-  m_tmin[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  m_tmin[0] = s["CSS_FS_PT2MIN"].Get<double>();
+  m_tmin[1] = s["CSS_IS_PT2MIN"].Get<double>();
+  m_cplfac[0] = s["CSS_FS_AS_FAC"].Get<double>();
+  m_cplfac[1] = s["CSS_IS_AS_FAC"].Get<double>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  m_rcf=read->Get<double>("CSS_RECALC_FACTOR",4.0);
-  m_tcef=read->Get<double>("CSS_TC_ENHANCE",1.0);
-  m_kin=read->Get<int>("CSS_KIN_SCHEME",1);
-  m_kfac=read->Get<int>("CSS_KFACTOR_SCHEME",1);
-  m_cpl=read->Get<int>("CSS_COUPLING_SCHEME",1);
-  m_mec=read->Get<int>("CSS_ME_CORRECTION",0);
-  m_pdfmin[0]=read->Get<double>("CSS_PDF_MIN",1.0e-4);
-  m_pdfmin[1]=read->Get<double>("CSS_PDF_MIN_X",1.0e-2);
-  m_maxem=read->Get<unsigned int>
-    ("CSS_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_maxpart=read->Get<unsigned int>
-    ("CSS_MAXPART",std::numeric_limits<unsigned int>::max());
-  m_maxrewem=read->Get<unsigned int>
-    ("REWEIGHT_MAXEM",std::numeric_limits<unsigned int>::max());
-  m_rewtmin=read->Get<double>("CSS_REWEIGHT_SCALE_CUTOFF", 5.0);
-  m_oef=read->Get<double>("CSS_OEF",3.0);
+  m_rcf=s["CSS_RECALC_FACTOR"].Get<double>();
+  m_tcef=s["CSS_TC_ENHANCE"].Get<double>();
+  m_kin=s["CSS_KIN_SCHEME"].Get<int>();
+  m_kfac=s["CSS_KFACTOR_SCHEME"].Get<int>();
+  m_cpl=s["CSS_COUPLING_SCHEME"].Get<int>();
+  m_mec=s["CSS_ME_CORRECTION"].Get<int>();
+  m_pdfmin[0]=s["CSS_PDF_MIN"].Get<double>();
+  m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
+  m_maxem=s["CSS_MAXEM"].Get<size_t>();
+  m_maxpart=s["CSS_MAXPART"].Get<int>();
+  m_reweight=s["CSS_REWEIGHT"].Get<bool>();
+  m_rewtmin=s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>();
+  m_oef=s["CSS_OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -93,7 +91,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
-  int types(read->Get<int>("CSS_KERNEL_TYPE",15));
+  int types(s["CSS_KERNEL_TYPE"].Get<int>());
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator
@@ -102,6 +100,11 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
+      if (v->in[0].Kfcode()==6 || v->in[1].Kfcode()==6 || v->in[2].Kfcode()==6) {
+	//msg_Out()<<"Do not include "<<v->in[0]<<" --> "<<v->in[1]<<"+"<<v->in[2]
+	//	 <<" into shower.\n";
+	continue;
+      }
       if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))
 	  !=sfs.end()) continue;
       msg_Indent();
@@ -115,7 +118,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
 	  if (types&(1<<type))
 	    for (int mode(0);mode<2;++mode)
 	      for (int swap(0);swap<2;++swap)
-		AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type,read)));
+		AddKernel(new Kernel(this,Kernel_Key(v,mode,swap,type)));
       }
       msg_IODebugging()<<"}\n";
     }
@@ -130,7 +133,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
       fls[3]=(fls[1]=Flavour(j)).Bar();
       for (int type(0);type<4;++type)
 	if (types&(1<<type))
-	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,read,"FFFF")));
+	  AddKernel(new Kernel(this,Kernel_Key(fls,1,type,"FFFF")));
     }
   }
   return true;
@@ -150,7 +153,6 @@ void Shower::AddKernel(Kernel *const k)
     [k->LF()->Flav(1)][k->LF()->Flav(2)]=k;
 }
 
-
 void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
 {
   for (Kernel_Vector::const_iterator
@@ -166,58 +168,25 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
     cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
-  m_weight*=cw;
-  if (cv.size()) p_vars->UpdateOrInitialiseWeights
-		   (&Shower::GetWeight,*this,cv,Variations_Type::sudakov);
+  m_weightsmap["PS"].Nominal() *= cw;
+  if (cv.size()) {
+    ATOOLS::Reweight(m_weightsmap["PS"],
+                     [&cv](double varweight,
+                           size_t varindex,
+                           QCD_Variation_Params& varparams) -> double {
+                       return varweight * cv[varindex];
+                     });
+  }
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weight<<"), v = "<<cv<<"\n";
+		 <<" ("<<m_weightsmap["PS"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
-double Shower::GetWeight(Variation_Parameters *params,
-			 Variation_Weights *weights,
-			 std::vector<double> &v)
-{
-  return v[weights->CurrentParametersIndex()];
-}
-
-double Shower::VetoWeight(Variation_Parameters *params,
-			  Variation_Weights *weights,
-			  JetVeto_Args &args)
-{
-  msg_Debugging()<<METHOD<<"("<<weights<<"){\n";
-  int stat(args.m_jcv>=0.0);
-  Cluster_Amplitude *ampl(args.p_ampl);
-  Jet_Finder *jf(ampl->JF<Jet_Finder>());
-  if (stat && jf) {
-    double fac(weights?params->m_Qcutfac:1.0);
-    if (jf) {
-      stat=args.m_jcv<sqr(jf->Qcut()*fac);
-      msg_Debugging()<<"  jcv = "<<sqrt(args.m_jcv)<<" vs "
-		     <<jf->Qcut()<<" * "<<fac
-		     <<" = "<<jf->Qcut()*fac<<"\n";
-    }
-  }
-  if (stat==1) {
-    msg_Debugging()<<"} no jet veto\n";
-    args.m_acc=1;
-    return 1.0;
-  }
-  if (ampl->NLO()&2) {
-    msg_Debugging()<<"  skip emission\n";
-    if (weights==NULL) args.m_skip.back()=1;
-    else args.m_skip[weights->CurrentParametersIndex()]=1;
-    args.m_acc=1;
-    msg_Debugging()<<"} no jet veto\n";
-    return 1.0;
-  }
-  msg_Debugging()<<"} jet veto\n";
-  return 0.0;
-}
-
-int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
+int Shower::Evolve(Amplitude& a, unsigned int& nem)
 {
   DEBUG_FUNC(this);
-  m_weight=1.0;
+  m_weightsmap.Clear();
+  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
+  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
   Cluster_Amplitude *ampl(a.ClusterAmplitude());
   if (ampl->NLO()&128) {
@@ -229,7 +198,13 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
     msg_Debugging()<<"NLO "<<ampl->NLO()<<" path, skip shower\n";
     return 1;
   }
-  if (nem>=m_maxem) return 1;
+  if (nem>=m_maxem) {
+    if (ampl->NLO()&32) {
+      msg_Debugging()<<"UNLOPS sign flip\n";
+      a.Reduce();
+    }
+    return 1;
+  }
   for (Splitting s(GeneratePoint(a,a.T(),nem));
        s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
        s=GeneratePoint(a,s.m_t,nem)) {
@@ -239,24 +214,24 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 		     <<" / "<<s.m_w.Accept()<<" -> "
 		     <<(stat==1?"accept\n":"reject\n");
     msg_Debugging()<<"stat = "<<stat<<"\n";
-    JetVeto_Args vwa(ampl,stat?0.0:-1.0,
-		     (p_vars ? p_vars->NumberOfParameters() : 0)+1);
+    double jcv {stat ? 0.0 : -1.0};
     Jet_Finder *jf(ampl->JF<Jet_Finder>());
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
-      vwa.m_jcv=jf->JC()->Value(ampl);
+      jcv = jf->JC()->Value(ampl);
       ampl->Delete();
     }
+    if (ampl->Flag()&2) {
+      msg_Debugging()<<"Skip UNLOPS veto\n";
+      if (s.p_l) a.Remove(s.p_l);
+      a.Remove(s.p_n);
+      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+      for (size_t i(0);i<a.size();++i) a[i]->Restore();
+      ampl->SetFlag(ampl->Flag()&~2);
+      continue;
+    }
     if (ampl->NLO()&64) {
-      if (ampl->Flag()&2) {
-	msg_Debugging()<<"Skip UNLOPS veto\n";
-	a.Remove(s.p_n);
-	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
-	for (size_t i(0);i<a.size();++i) a[i]->Restore();
-	ampl->SetFlag(ampl->Flag()&~2);
-	continue;
-      }
-      msg_Debugging()<<"UNLOPS veto\n";
+      msg_Debugging()<<"UNLOPS projection veto\n";
       if (s.p_l) a.Remove(s.p_l);
       a.Remove(s.p_n);
       s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
@@ -265,15 +240,56 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
       s.m_t=a.T0();
       return 1;
     }
-    m_weight*=VetoWeight(NULL,NULL,vwa);
-    if (p_vars) p_vars->UpdateOrInitialiseWeights
-		  (&Shower::VetoWeight,*this,vwa,Variations_Type::sudakov);
+    if (ampl->NLO()&16) {
+      msg_Debugging()<<"UNLOPS veto\n";
+      return 0;
+    }
+    const bool is_jcv_positive {jcv >= 0.0};
+    bool all_vetoed {true};
+    const int nqcuts = s_variations->Size(Variations_Type::qcut);
+    std::vector<bool> skips (nqcuts + 1, false);
+    int nskips {0};
+    ATOOLS::ReweightAll(
+        m_weightsmap["PS_QCUT"],
+        [this, jcv, is_jcv_positive, ampl, &all_vetoed, &skips, &nskips](
+            double varweight,
+            size_t varindex,
+            Qcut_Variation_Params* qcutparams) -> double {
+          msg_Debugging() << "Applying veto weight to qcut var #" << varindex
+                          << " {\n";
+          bool stat {is_jcv_positive};
+          Jet_Finder* jf(ampl->JF<Jet_Finder>());
+          if (stat && jf) {
+            const double fac {
+                qcutparams == nullptr ? 1.0 : qcutparams->m_scale_factor};
+            stat = jcv < sqr(jf->Qcut() * fac);
+            msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs "
+                            << jf->Qcut() << " * " << fac << " = "
+                            << jf->Qcut() * fac << "\n";
+          }
+          if (stat) {
+            msg_Debugging() << "} no jet veto\n";
+            all_vetoed = false;
+            return varweight;
+          } else if (ampl->NLO() & 2) {
+            msg_Debugging() << "  skip emission\n";
+            skips[varindex] = true;
+            ++nskips;
+            all_vetoed = false;
+            msg_Debugging() << "} no jet veto\n";
+            return varweight;
+          } else {
+            msg_Debugging() << "} jet veto\n";
+            return 0.0;
+          }
+        });
     if (ampl->NLO()&2) {
-      int nskip(0);
-      for (size_t i(0);i<vwa.m_skip.size();++i)
-	nskip+=vwa.m_skip[i];
-      double wskip(nskip/double(vwa.m_skip.size()));
+      const int nqcdvars = s_variations->Size(Variations_Type::qcd);
+      if (skips[0])
+        nskips += nqcdvars;
+      const double wskip {nskips / double(nqcuts + nqcdvars + 1)};
       if (ran->Get()<=wskip) {
+	if (s.p_l) a.Remove(s.p_l);
 	a.Remove(s.p_n);
 	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
 	for (size_t i(0);i<a.size();++i) a[i]->Restore();
@@ -283,26 +299,20 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 	  campl->SetLKF(1.0);
 	  ampl->SetNLO(ampl->NLO()&~2);
 	}
-	m_weight*=vwa.m_skip.back()?1.0/lkf/wskip:0.0;
-	std::vector<double> swa(vwa.m_skip.size()-1,0.0);
-	for (size_t i(0);i<swa.size();++i)
-	  if (vwa.m_skip[i]) swa[i]=1.0/lkf/wskip;
-	msg_Debugging()<<"skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
-	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
+        const double fac {1.0 / lkf / wskip};
+        m_weightsmap["PS"] *= fac * skips[0];
+        m_weightsmap["PS_QCUT"] *= skips;
 	continue;
       }
       else {
-	m_weight*=vwa.m_skip.back()?0.0:1.0/(1.0-wskip);
-	std::vector<double> swa(vwa.m_skip.size()-1,0.0);
-	for (size_t i(0);i<swa.size();++i)
-	  if (!vwa.m_skip[i]) swa[i]=1.0/(1.0-wskip);
-	msg_Debugging()<<"no skip -> "<<m_weight<<" "<<swa<<"\n";
-	p_vars->UpdateOrInitialiseWeights
-	  (&Shower::GetWeight,*this,swa,Variations_Type::sudakov);
+        const double fac {1.0 / (1.0 - wskip)};
+        skips.flip();
+        m_weightsmap["PS"] *= fac * skips[0];
+        m_weightsmap["PS_QCUT"] *= skips;
       }
     }
-    if (vwa.m_acc==0) return 0;
+    if (all_vetoed)
+      return 0;
     AddWeight(a,s.m_t);
     a.SetJF(NULL);
     if (++nem>=m_maxem) break;
@@ -329,10 +339,14 @@ Splitting Shower::GeneratePoint
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    Splitting cur(GeneratePoint(**it,t,nem));
-    if (cur.p_c==NULL || cur.p_s==NULL) continue;
-    if (cur.m_t<m_tmin[cur.m_type&1]) continue;
-    m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    for (int cm(0);cm<2;++cm) {
+      double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
+      Splitting cur(GeneratePoint(**it,ct,cm,nem));
+      (*it)->SetT(cm,-1.0);
+      if (cur.p_c==NULL || cur.p_s==NULL) continue;
+      if (cur.m_t<m_tmin[cur.m_type&1]) continue;
+      m_tmin[0]=m_tmin[1]=(win=cur).m_t;
+    }
   }
   m_tmin[0]=tmin[0];
   m_tmin[1]=tmin[1];
@@ -342,38 +356,43 @@ Splitting Shower::GeneratePoint
 }
 
 Splitting Shower::GeneratePoint
-(Parton &p,const double &t,const unsigned int &nem)
+(Parton &p,const double &t,const int &cm,const unsigned int &nem)
 {
   Splitting win(&p,NULL,t);
   double sum=0.0, ct=m_rcf*t;
   SKernel_Map::const_iterator kit(m_sks.find(p.Flav()));
   if (kit==m_sks.end()) return Splitting();
-  std::vector<std::vector<double> > psum(kit->second.size());
-  std::vector<std::vector<size_t> > splits(psum.size());
+  const int nkernels = kit->second.size();
+  const int nspects = static_cast<int>(p.Ampl()->size());
+  if (nkernels > m_sums.nrows || nspects > m_sums.ncols) {
+    m_sums = CumulativeIntegralTable {nkernels, nspects};
+  }
+  else {
+    m_sums.nrows = nkernels;
+    m_sums.ncols = nspects;
+  }
   while (true) {
     if (win.m_t*m_rcf<=ct) {
       sum=0.0;
       ct=win.m_t;
-      for (size_t j(0);j<kit->second.size();++j) {
-	psum[j].clear();
-	splits[j].clear();
+      for (size_t j(0);j<nkernels;++j) {
+        m_sums.Clear(j);
 	double csum=0.0;
-	for (int i(p.Ampl()->size()-1);i>=0;--i) {
+	for (int i(nspects-1);i>=0;--i) {
 	  if ((*p.Ampl())[i]==&p) continue;
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
-	  for (cur.m_cm=0;cur.m_cm<2;++cur.m_cm)
-	    if (kit->second[j]->On() &&
-		kit->second[j]->Allowed(cur)) {
-	      double I=kit->second[j]->Integral(cur);
-	      psum[j].push_back(csum+=dabs(I));
-	      splits[j].push_back(i);
-	    }
+	  cur.m_cm=cm;
+	  if (kit->second[j]->On() &&
+	      kit->second[j]->Allowed(cur)) {
+            csum += dabs(kit->second[j]->Integral(cur));
+            m_sums.AppendSumAndSpect(j, csum, i);
+	  }
 	}
-	if (psum[j].size()) sum+=psum[j].back();
+        if (m_sums.Size(j)) sum += m_sums.LastSum(j);
       }
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
@@ -381,13 +400,12 @@ Splitting Shower::GeneratePoint
     win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
-    for (size_t j(0);j<splits.size();++j)
-      if (splits[j].size() &&
-	  (csum+=psum[j].back())>=disc) {
-	double disc(psum[j].back()*ran->Get());
-	for (size_t i(0);i<splits[j].size();++i)
-	  if (psum[j][i]>=disc) {
-	    win.p_s=(*p.Ampl())[splits[j][i]];
+    for (size_t j(0);j<nkernels;++j)
+      if (m_sums.Size(j) && (csum+=m_sums.LastSum(j)) >= disc) {
+	double disc(m_sums.LastSum(j)*ran->Get());
+	for (size_t i(0);i<m_sums.Size(j);++i)
+	  if (m_sums.Sum(j, i) >= disc) {
+	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;
@@ -402,27 +420,32 @@ Splitting Shower::GeneratePoint
 	    }
 	    if (kit->second[j]->LF()->Construct(win,0)!=1) break;
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
-	    if (p_vars) win.m_vars=std::vector<double>
-	      (p_vars->GetVariations()->GetParametersVector()->size(),1.0);
-	    if (win.m_w.MC()<ran->Get()) {
-	      if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
-		const Reweight_Args args(&win,0);
-		p_vars->UpdateOrInitialiseWeights
-		  (&Shower::Reweight,*this,args,Variations_Type::sudakov);
-	      }
-	      win.p_c->AddWeight(win,0);
-	      msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
+            win.m_vars = std::vector<double>(s_variations->Size(), 1.0);
+            if (win.m_w.MC() < ran->Get()) {
+              if (m_reweight && win.m_t > m_rewtmin) {
+                const Reweight_Args args(&win, 0);
+                s_variations->ForEach(
+                    [this, &args](size_t varindex,
+                                  QCD_Variation_Params& varparams) -> void {
+                      Reweight(&varparams, varindex, args);
+                    });
+              }
+              win.p_c->AddWeight(win, 0);
+              msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			       <<" / "<<win.m_w.Reject()<<" -> reject ["
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
-	    }
-	    if (p_vars && nem<m_maxrewem && win.m_t>m_rewtmin) {
-	      const Reweight_Args args(&win,1);
-	      p_vars->UpdateOrInitialiseWeights
-		(&Shower::Reweight,*this,args,Variations_Type::sudakov);
-	    }
-	    win.p_c->AddWeight(win,1);
-	    msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
+            }
+            if (m_reweight && win.m_t > m_rewtmin) {
+              const Reweight_Args args(&win, 1);
+              s_variations->ForEach(
+                  [this, &args](size_t varindex,
+                                QCD_Variation_Params& varparams) -> void {
+                    Reweight(&varparams, varindex, args);
+                  });
+            }
+            win.p_c->AddWeight(win, 1);
+            msg_IODebugging()<<"t = "<<win.m_t<<", w = "<<win.m_w.MC()
 			     <<" / "<<win.m_w.Accept()<<" -> select ["
 			     <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	    return win;
@@ -433,9 +456,9 @@ Splitting Shower::GeneratePoint
   return win;
 }
 
-double Shower::Reweight(Variation_Parameters *params,
-			Variation_Weights *weights,
-			const Reweight_Args &a)
+void Shower::Reweight(QCD_Variation_Params* params,
+                      size_t varindex,
+                      const Reweight_Args& a)
 {
   double rsf(m_rsf), fsf(m_fsf);
   m_rsf*=params->m_showermuR2fac;
@@ -445,13 +468,12 @@ double Shower::Reweight(Variation_Parameters *params,
   PDF::PDF_Base *pdf[2]={p_pdf[0],p_pdf[1]};
   p_pdf[0]=params->p_pdf1;
   p_pdf[1]=params->p_pdf2;
-  size_t cur(weights->CurrentParametersIndex());
   if (rsf==m_rsf && fsf==m_fsf && as==p_as &&
       pdf[0]==p_pdf[0] && pdf[1]==p_pdf[1]) {
-    a.m_s->m_vars[cur]=1.0;
-    return 1.0;
+    a.m_s->m_vars[varindex] = 1.0;
+    return;
   }
-  msg_IODebugging()<<METHOD<<"("<<cur<<") {\n  "
+  msg_IODebugging()<<METHOD<<"("<<varindex<<") {\n  "
 		   <<"\\mu_R -> "<<sqrt(m_rsf)
 		   <<", \\mu_F -> "<<sqrt(m_fsf)<<"\n  PDF "
 		   <<(p_pdf[0]?p_pdf[0]->LHEFNumber():-1)<<" x "
@@ -459,16 +481,17 @@ double Shower::Reweight(Variation_Parameters *params,
   Weight w(a.m_s->p_sk->GetWeight(*a.m_s,m_oef,&a.m_s->m_w));
   msg_IODebugging()<<"  w_ref = "<<a.m_s->m_w
 		   <<"\n  w_new = "<<w<<"\n";
-  if (a.m_acc) a.m_s->m_vars[cur]=w.MC()/a.m_s->m_w.MC();
-  else a.m_s->m_vars[cur]=w.Reject()/a.m_s->m_w.Reject()
-    	 *(1.0-w.MC())/(1.0-a.m_s->m_w.MC());
-  msg_IODebugging()<<"} -> w = "<<a.m_s->m_vars[cur]<<"\n";
+  if (a.m_acc)
+    a.m_s->m_vars[varindex] = w.MC() / a.m_s->m_w.MC();
+  else
+    a.m_s->m_vars[varindex] = w.Reject() / a.m_s->m_w.Reject() *
+                              (1.0 - w.MC()) / (1.0 - a.m_s->m_w.MC());
+  msg_IODebugging()<<"} -> w = "<<a.m_s->m_vars[varindex]<<"\n";
   p_pdf[0]=pdf[0];
   p_pdf[1]=pdf[1];
   p_as=as;
   m_rsf=rsf;
   m_fsf=fsf;
-  return 1.0;
 }
 
 double Shower::GetXPDF

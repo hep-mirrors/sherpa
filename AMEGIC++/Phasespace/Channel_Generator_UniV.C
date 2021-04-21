@@ -163,7 +163,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"ATOOLS/Org/Default_Reader.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/Scoped_Settings.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
@@ -247,15 +247,15 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
 	<<"       : Single_Channel(nin,nout,fl)"<<endl
 	<<"{"<<endl
+	<<"  Settings& s = Settings::GetMainSettings();"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl
-	<<"  ATOOLS::Default_Reader reader;"<<endl
-	<<"  m_salpha = reader.Get(\"AMEGIC_SCHANNEL_ALPHA\", 0.75);"<<endl
-	<<"  m_thexp = reader.Get(\"AMEGIC_THRESHOLD_EPSILON\", 1.5);"<<endl;
+        <<"  m_salpha = s[\"SCHANNEL_ALPHA\"].Get<double>();"<<endl
+	<<"  m_thexp = s[\"THRESHOLD_EPSILON\"].Get<double>();"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.0+reader.Get(\"AMEGIC_CHANNEL_EPSILON\", 0.0);"<<endl
-	<<"  m_alpha = reader.Get(\"AMEGIC_TCHANNEL_ALPHA\", 0.9);"<<endl
+    chf	<<"  m_amct  = 1.0 + s[\"CHANNEL_EPSILON\"].Get<double>();"<<endl
+        <<"  m_alpha = s[\"TCHANNEL_ALPHA\"].Get<double>();"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -808,7 +808,7 @@ void Channel_Generator_UniV::CalcSmin(int flag,const char* min,string lm,ofstrea
 
   if (lm.length()>1) {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("cuts->Getscut(std::string(\"") + Order(lm) + string("\"))"),0,sf);
+		   string("cuts->GetscutAmegic(std::string(\"") + Order(lm) + string("\"))"),0,sf);
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),

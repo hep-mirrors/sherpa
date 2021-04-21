@@ -24,81 +24,31 @@ Combined_Selector::~Combined_Selector()
   }
 }
 
-Selector_Key Combined_Selector::FindArguments
-(const Selector_Key &strings,size_t &starty,size_t &startx)
-{
-  size_t j=0, open=0, cdel=0;
-  Selector_Key result(p_proc,strings.p_read);
-  if (strings[starty].size()>startx) j=startx;
-  for (size_t i=starty;i<strings.size();++i) {
-    result.push_back(std::vector<std::string>(strings[i].size()-j));
-    for (size_t k=0;j<strings[i].size();++j,++k) {
-      result.back()[k]=strings[i][j];
-      size_t opos=result.back()[k].find("{");
-      if (opos!=std::string::npos) {
-	++open;
-	if (open==1 && k==0) {
-	  cdel=1;
-	  if (opos+1<result.back()[k].size()) 
-	    result.back()[k]=result.back()[k].substr(opos+1);
-	  else 
-	    result.back()[k]="";
-	  if (result.back()[k].length()==0) {
-	    --k;
-	    result.back().pop_back();
-	    if (result.back().size()==0) result.pop_back();
-	    continue;
-	  }
-	}
-      }
-      if (open>0) {
-	size_t cpos=result.back()[k].find("}");
-	if (cpos!=std::string::npos) --open;
-	if (open==0 && cdel==1) {
-	  result.back()[k]=result.back()[k].substr(0,cpos);
-	  result.back().resize(k+1);
-	  if (k==0 && result.back()[0].length()==0) 
-	    result.resize(result.size()-1);
-	  starty=i;
-	  return result;
-	}
-      }
-    }
-    if (open==0) break;
-    j=0;
-  }
-  return result;
-}
-
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
-  DEBUG_FUNC(p_proc->Name());
-  for (size_t k=0;k<key.size();++k) {
-    if (key[k].size()>0) {
-      if (key[k][0]=="{" || key[k][0]=="}") continue;
-    }
-    size_t col=1;
-    size_t startk=k;
-    Selector_Key mat(FindArguments(key,k,col));
-    mat.m_key=key[startk][0];
-    Selector_Base *sel(Selector_Getter::GetObject(key[startk][0],mat));
-    if (sel!=NULL) {
-      m_sels.push_back(sel);
-      if (msg_LevelIsDebugging()) {
-        msg_Out()<<"new Selector_Base(\""
-		 <<key[k][0]<<"\",";
-	for (size_t i=0;i<mat.size();++i) {
-	  msg_Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
-	  for (size_t j=1;j<mat[i].size();++j) 
-	    msg_Out()<<","<<mat[i][j];
-	  msg_Out()<<"}";
-	}
-	msg_Out()<<")\n";
+  for (auto s : key.GetSelectors()) {
+    std::string name;
+    if (s.IsList()) {
+      name = s.SetDefault<std::string>({}).GetVector<std::string>()[0];
+    } else {
+      const auto keys = s.GetKeys();
+      if (keys.size() != 1) {
+        THROW(fatal_error, std::string("Each selector mapping must have ")
+            + "exactly one key-value pair, where the key gives the selector "
+            + "type.");
       }
+      name = keys[0];
     }
-    else {
+    Selector_Key subkey;
+    subkey.m_settings = s;
+    subkey.p_proc = p_proc;
+    auto* sel = Selector_Getter::GetObject(name, subkey);
+    if (sel) {
+      m_sels.push_back(sel);
+      msg_Debugging() << "new Selector_Base(\"" << name << "\")\n";
+    } else {
       msg_Out()<<endl;
-      THROW(fatal_error, "Did not find selector \""+key[startk][0]+"\".");
+      THROW(fatal_error, "Did not find selector \"" + name + "\".");
     }
   }
   return true;
@@ -161,9 +111,9 @@ void Combined_Selector::BuildCuts(Cut_Data * cuts)
   for (size_t i=0; i<m_osc.size(); ++i) cuts->Setscut(m_osc[i].first,m_osc[i].second);
 }
 
-void Combined_Selector::AddOnshellCondition(std::string s,double d)
+void Combined_Selector::AddOnshellCondition(size_t s,double d)
 {
-  m_osc.push_back(std::pair<std::string,double>(s,d));
+  m_osc.push_back(std::pair<size_t,double>(s,d));
 }
 
 void Combined_Selector::Output()
@@ -189,3 +139,27 @@ void Combined_Selector::ListSelectors() const
     msg_Info()<<m_sels[i]->Name()<<std::endl;
 }
 
+std::vector<Weights_Map> Combined_Selector::CombinedResults() const
+{
+  std::vector<Weights_Map> res = {Weights_Map{}};
+  for (auto& sel : m_sels) {
+    std::vector<Weights_Map> other = sel->Results();
+    if (other.size() == 1) {
+      for (auto& weights : res) {
+        weights *= other[0];
+      }
+    } else if (res.size() == 1) {
+      Weights_Map currentweights = res[0];
+      res = other;
+      for (auto& weights : res) {
+        weights *= currentweights;
+      }
+    } else {
+      assert(res.size() == other.size());
+      for (int i {0}; i < res.size(); ++i) {
+        res[i] *= other[i];
+      }
+    }
+  }
+  return res;
+}

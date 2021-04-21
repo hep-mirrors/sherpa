@@ -4,7 +4,6 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
-#include "ATOOLS/Org/Default_Reader.H"
 
 namespace RECONNECTIONS {
   typedef std::pair<unsigned int,unsigned int> colpair;
@@ -18,7 +17,7 @@ namespace RECONNECTIONS {
     bool                                        m_analysis;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
-    virtual void ReadWeightParameters(ATOOLS::Default_Reader *const defaultreader) = 0;
+    virtual void SetParameters() = 0;
     bool HarvestParticles(ATOOLS::Blob_List * blobs);
     void HarvestParticleInfo(ATOOLS::Particle * part);
     void FillMassesInHistogram(ATOOLS::Histogram * histo);
@@ -26,7 +25,7 @@ namespace RECONNECTIONS {
     Reconnection_Base();
     ~Reconnection_Base();
 
-    virtual void   Initialize(ATOOLS::Default_Reader *const reader);
+    virtual void   Initialize();
     virtual void   Reset();
     virtual bool   operator()(ATOOLS::Blob_List *const blobs) = 0;
     virtual double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) = 0;

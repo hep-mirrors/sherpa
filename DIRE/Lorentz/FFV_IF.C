@@ -20,7 +20,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
-      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/s.m_Q2);
+      double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
       double B=-(1.0+s.m_z);
       if (p_sk->PS()->MECorrection()&1)
 	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
@@ -32,7 +32,7 @@ namespace DIRE {
 	B2-=(x-1.)*40*TF/(1.0+x*x/(s.m_t/s.m_Q2));
 	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.*x*(x-1.));
       }
-      return A1*(1.0+p_sk->GF()->K(s))+B;
+      return A1*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s))+B;
     }
 
     double Integral(const Splitting &s) const

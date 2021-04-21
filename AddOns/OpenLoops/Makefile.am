@@ -1,5 +1,9 @@
 
+GITTAG = AddOns/OpenLoops
+include ../../git.make
+
 OPENLOOPS_SOURCES      =	\
+			Git_Info.C \
 			OpenLoops_Virtual.C \
 			OpenLoops_Born.C \
 			OpenLoops_Interface.C \

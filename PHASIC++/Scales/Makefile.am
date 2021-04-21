@@ -15,9 +15,11 @@ libPhasicScales_la_SOURCES    =	\
 				Color_Setter.C \
 				Tag_Setter.C \
 				MEPS_Scale_Setter.C \
+				VBF_Scale_Setter.C \
 				Variable_Scale_Setter.C \
 				Variable_Core_Scale.C \
 				Fastjet_Scale_Setter.C \
+				Democratic_Scale_Setter.C \
 				QCD_Scale_Setter.C \
 				QCD_Core_Scale.C \
 				TTBar_Core_Scale.C \
@@ -39,7 +41,3 @@ localinc_HEADERS      =	\
 			MINLO_Scale_Setter.H \
 			Color_Setter.H \
 			Tag_Setter.H
-
-libPhasicScales_la_LIBADD     =	@CONDITIONAL_FASTJETLIBS@
-
-libPhasicScales_la_CPPFLAGS   =	$(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@

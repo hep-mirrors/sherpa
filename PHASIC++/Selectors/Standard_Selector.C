@@ -1,8 +1,6 @@
-#ifndef ATOOLS_Phys_Standard_Selector_H
-#define ATOOLS_Phys_Standard_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
-#include "ATOOLS/Org/Data_Reader.H"
+
+#include <cassert>
 
 namespace PHASIC {
 
@@ -243,8 +241,6 @@ namespace PHASIC {
 
 }
 
-#endif
-
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -338,15 +334,23 @@ void PT_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(PT_Selector,"PT",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PT_Selector,"PT",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters[0] == "PTNLO")
+    msg_Out()
+      << "WARNING: Substituting PT selector for missing PTNLO selector\n";
+  else
+    assert(parameters[0] == "PT");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   PT_Selector *sel = new PT_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
@@ -432,15 +436,19 @@ void ET_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(ET_Selector,"ET",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(ET_Selector,"ET",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ET_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "ET");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   ET_Selector *sel = new ET_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
@@ -517,15 +525,19 @@ void Rapidity_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(Rapidity_Selector,"Y",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Rapidity_Selector,"Y",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Rapidity_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "Y");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   Rapidity_Selector *sel = new Rapidity_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
@@ -604,15 +616,19 @@ void PseudoRapidity_Selector::SetRange(Flavour flav,double min,double max)
                  <<std::endl;
 }
 
-DECLARE_ND_GETTER(PseudoRapidity_Selector,"Eta",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PseudoRapidity_Selector,"Eta",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidity_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "Eta");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   PseudoRapidity_Selector *sel = new PseudoRapidity_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
@@ -693,16 +709,20 @@ void IMass_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(IMass_Selector,"Mass",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IMass_Selector,"Mass",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IMass_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()!=4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "Mass");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   IMass_Selector *sel = new IMass_Selector(key.p_proc);
@@ -773,16 +793,20 @@ void IQ2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IQ2_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "Q2");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   IQ2_Selector *sel = new IQ2_Selector(key.p_proc);
@@ -854,16 +878,20 @@ void PT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(PT2_Selector,"PT2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PT2_Selector,"PT2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT2_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "PT2");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   PT2_Selector *sel = new PT2_Selector(key.p_proc);
@@ -935,16 +963,20 @@ void MT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(MT2_Selector,"MT2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MT2_Selector,"MT2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "MT2");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   MT2_Selector *sel = new MT2_Selector(key.p_proc);
@@ -1017,16 +1049,20 @@ void MT2_v2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max
   }
 }
 
-DECLARE_ND_GETTER(MT2_v2_Selector,"MT2_v2",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MT2_v2_Selector,"MT2_v2",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2_v2_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "MT2_v2");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   MT2_v2_Selector *sel = new MT2_v2_Selector(key.p_proc);
@@ -1097,16 +1133,20 @@ void DeltaY_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaY_Selector,"DY",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaY_Selector,"DY",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaY_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DY");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   DeltaY_Selector *sel = new DeltaY_Selector(key.p_proc);
@@ -1177,16 +1217,20 @@ void DeltaEta_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaEta_Selector,"DEta",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaEta_Selector,"DEta",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaEta_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DEta");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   DeltaEta_Selector *sel = new DeltaEta_Selector(key.p_proc);
@@ -1257,16 +1301,20 @@ void DeltaPhi_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaPhi_Selector,"DPhi",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaPhi_Selector,"DPhi",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaPhi_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DPhi");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   DeltaPhi_Selector *sel = new DeltaPhi_Selector(key.p_proc);
@@ -1337,16 +1385,20 @@ void DeltaR_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaR_Selector,"DR",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaR_Selector,"DR",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaR_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DR");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   DeltaR_Selector *sel = new DeltaR_Selector(key.p_proc);
@@ -1417,16 +1469,20 @@ void DeltaRy_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(DeltaRy_Selector,"DR(y)",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaRy_Selector,"DR(y)",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaRy_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "DR(y)");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   DeltaRy_Selector *sel = new DeltaRy_Selector(key.p_proc);
@@ -1505,16 +1561,20 @@ void PhiStar_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
   }
 }
 
-DECLARE_ND_GETTER(PhiStar_Selector,"PhiStar",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PhiStar_Selector,"PhiStar",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PhiStar_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  int kf2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "PhiStar");
+  if (parameters.size() != 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf1 = s.Interprete<int>(parameters[1]);
+  const auto kf2 = s.Interprete<int>(parameters[2]);
+  const auto min = s.Interprete<double>(parameters[3]);
+  const auto max = s.Interprete<double>(parameters[4]);
   Flavour flav1 = Flavour((kf_code)abs(kf1),kf1<0);
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   PhiStar_Selector *sel = new PhiStar_Selector(key.p_proc);
@@ -1579,15 +1639,19 @@ void Multiplicity_Selector::SetRange(Flavour fl,size_t min,size_t max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(Multiplicity_Selector,"N",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Multiplicity_Selector,"N",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Multiplicity_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  size_t min=ToType<size_t>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  size_t max=ToType<size_t>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "N");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   Multiplicity_Selector *sel = new Multiplicity_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
@@ -1657,14 +1721,18 @@ void PTMIS_Selector::SetRange(double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(PTMIS_Selector,"PTmis",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PTMIS_Selector,"PTmis",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PTMIS_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "PTmis");
+  if (parameters.size() != 3)
+    THROW(critical_error, "Invalid syntax");
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   PTMIS_Selector *sel = new PTMIS_Selector(key.p_proc);
   sel->SetRange(min,max);
   return sel;
@@ -1733,14 +1801,18 @@ void ETMIS_Selector::SetRange(double min,double max)
   m_on=true;
 }
 
-DECLARE_ND_GETTER(ETMIS_Selector,"ETmis",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(ETMIS_Selector,"ETmis",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ETMIS_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "ETmis");
+  if (parameters.size() != 3)
+    THROW(critical_error, "Invalid syntax");
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   ETMIS_Selector *sel = new ETMIS_Selector(key.p_proc);
   sel->SetRange(min,max);
   return sel;
@@ -1862,19 +1934,23 @@ double Isolation_Cut::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
-DECLARE_ND_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Cut>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
-  int kf=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double dR=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  int exp=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
-  double emax=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
-  double massmax(0.);
-  if (key.front().size()>4)
-    massmax=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "IsolationCut");
+  if (parameters.size() < 5)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto dR = s.Interprete<double>(parameters[2]);
+  const auto exp = s.Interprete<int>(parameters[3]);
+  const auto emax = s.Interprete<double>(parameters[4]);
+  auto massmax = 0.0;
+  if (parameters.size() > 5)
+    massmax = s.Interprete<double>(parameters[5]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   Isolation_Cut *sel = new Isolation_Cut(key.p_proc);
   sel->SetRange(flav,dR,exp,emax,massmax);
@@ -1932,15 +2008,19 @@ void NJettiness_Selector::SetRange(size_t N,double min,double max)
   m_njmax=max;
 }
 
-DECLARE_ND_GETTER(NJettiness_Selector,"NJ",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(NJettiness_Selector,"NJ",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJettiness_Selector>::
 operator()(const Selector_Key &key) const
 {
-  if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
-  size_t n=ToType<size_t>(key.p_read->Interpreter()->Interprete(key[0][0]));
-  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1]));
-  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  assert(parameters[0] == "NJ");
+  if (parameters.size() != 4)
+    THROW(critical_error, "Invalid syntax");
+  const auto n = s.Interprete<size_t>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
   NJettiness_Selector *sel = new NJettiness_Selector(key.p_proc);
   sel->SetRange(n,min,max);
   return sel;

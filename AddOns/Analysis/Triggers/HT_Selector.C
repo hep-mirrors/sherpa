@@ -43,22 +43,26 @@ using namespace ANALYSIS;
 
 #include "ATOOLS/Org/MyStrStream.H"
 
-DECLARE_GETTER(HT_Selector,"HTSel",Analysis_Object,Argument_Matrix);
+DECLARE_GETTER(HT_Selector,"HTSel",Analysis_Object,Analysis_Key);
 
 Analysis_Object *ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,HT_Selector>::operator()
-(const Argument_Matrix &parameters) const
+<Analysis_Object,Analysis_Key,HT_Selector>::operator()
+(const Analysis_Key& key) const
 {
-  if (parameters.size()<1 || parameters[0].size()<4) return NULL;
-  int mode(parameters[0].size()>4?ATOOLS::ToType<int>(parameters[0][4]):0);
-  return new HT_Selector(ATOOLS::ToType<double>(parameters[0][0]),
-			 ATOOLS::ToType<double>(parameters[0][1]),mode,
-			 parameters[0][2],parameters[0][3]);
-}									
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 4)
+    THROW(missing_input, "Missing parameter values.");
+  const int mode{
+    parameters.size() > 4 ? s.Interprete<int>(parameters[4]) : 0 };
+  return new HT_Selector(s.Interprete<double>(parameters[0]),
+                         s.Interprete<double>(parameters[1]),mode,
+                         parameters[2],parameters[3]);
+}
 
 void ATOOLS::Getter
-<Analysis_Object,Argument_Matrix,HT_Selector>::
+<Analysis_Object,Analysis_Key,HT_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"min max inlist outlist [mode]";
+  str<<"[min, max, inlist, outlist, mode]  ... mode is optional and defaults to 0";
 }

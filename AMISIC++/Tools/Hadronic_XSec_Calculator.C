@@ -7,9 +7,10 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
+// will have to make sure that pions are initialised below.  Argh.
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_Ecms(rpa->gen.Ecms()), m_s(m_Ecms*m_Ecms),
-  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(Flavour(kf_pi).Mass()),
+  m_massp(Flavour(kf_p_plus).Mass()), m_masspi(0.137),
   m_pomeron(0.0808), m_reggeon(-0.4525),m_slope(2.3),
   m_xsecpom(21.70),
   m_xsecregge(rpa->gen.Beam1().IsAnti()^rpa->gen.Beam2().IsAnti()?98.39:56.08)
@@ -23,13 +24,13 @@ void Hadronic_XSec_Calculator::operator()()
   m_xsdd  = CalculateDoubleDXSec();
 
   m_xsnd  = m_xstot-m_xsel-2.0*m_xssd-m_xsdd;
-  msg_Info()<<METHOD<<": Results are {\n"
-	    <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
-	    <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
-	    <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
-	    <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
-	    <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
-	    <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
+  msg_Out()<<METHOD<<": Results are {\n"
+	   <<"   \\sigma_{tot} = "<<m_xstot<<" mb\n"
+	   <<"   \\sigma_{el}  = "<<m_xsel<<" mb\n"
+	   <<"   \\sigma_{sd}  = "<<2.0*m_xssd<<" mb\n"
+	   <<"   \\sigma_{dd}  = "<<m_xsdd<<" mb\n"
+	   <<"   \\sigma_{nd}  = "<<m_xsnd<<" mb = "
+	   <<(m_xsnd*1.e9/rpa->Picobarn())<<" GeV^-2\n}"<<std::endl;
   // convert all cross sections to 1/GeV^2
   m_xstot *= 1.e9/rpa->Picobarn();
   m_xsel  *= 1.e9/rpa->Picobarn();

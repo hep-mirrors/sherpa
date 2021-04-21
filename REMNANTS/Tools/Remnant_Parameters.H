@@ -1,20 +1,10 @@
 #ifndef REMNANTS_Tools_Remnant_Parameters_H
 #define REMNANTS_Tools_Remnant_Parameters_H
 
-#include "ATOOLS/Org/Default_Reader.H"
-
 #include <map>
 #include <string>
 
 namespace REMNANTS {
-  struct overlap_form {
-    enum code {
-      Single_Gaussian = 1,
-      Double_Gaussian = 2,
-      unknown         = -1
-    };
-  };
-  
   struct prim_kperp_form {
     enum code {
       undefined      = 0,
@@ -39,7 +29,7 @@ namespace REMNANTS {
     Remnant_Parameters();
     ~Remnant_Parameters() {}
 
-    bool Init(ATOOLS::Default_Reader *const defaultreader);
+    bool Init(A);
     double operator()(std::string keyword);
     const prim_kperp_form::code & GetKTForm(const size_t & beam) { return m_form[beam]; }
     const overlap_form::code    & GetBTForm()                    { return m_overlapform; }

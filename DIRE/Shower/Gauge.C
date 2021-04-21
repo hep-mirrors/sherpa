@@ -41,3 +41,8 @@ double Gauge::Nf(const Splitting &s) const
 {
   THROW(not_implemented,"Invalid call");
 }
+
+double Gauge::TrueScale(const Splitting &s) const
+{
+  return Scale(s);
+}

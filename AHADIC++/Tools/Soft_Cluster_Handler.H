@@ -14,14 +14,14 @@ namespace AHADIC {
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
     KT_Selector                   m_ktselector;
-    double m_light, m_chi;
+    double m_light, m_chi, m_ktfac;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
 
     Cluster    * p_cluster;
     double       m_mass2, m_mass;
     Flavour_Pair m_flavs;
 
-    bool m_forceddecay;
+    bool m_forceddecay, m_ktorder;
     
     ATOOLS::Vec4D   m_moms[2];
     ATOOLS::Flavour m_hads[2];
@@ -29,7 +29,7 @@ namespace AHADIC {
     void   FillFlavours(Cluster * cluster);
     int    CheckOutsideRange();
     int    Decay();
-    double PhaseSpace(const double & m2,const double & m3);
+    double PhaseSpace(const double & m2,const double & m3,const bool heavyB);
     double DecayWeight();
     double RadiationWeight();
     double Annihilation();
@@ -50,6 +50,9 @@ namespace AHADIC {
     void Init();
     void Reset();
     bool MustPromptDecay(Cluster * cluster);
+    bool MustPromptDecay(const ATOOLS::Flavour & fl1,
+			 const ATOOLS::Flavour & fl2,
+			 const double & mass);
     int  Treat(Cluster * cluster,bool force=false);
     bool TreatTwoGluons(Cluster * cluster);
     bool RadiativeDecay(Cluster * cluster);

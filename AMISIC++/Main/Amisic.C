@@ -3,13 +3,13 @@
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amisic::Amisic() : p_processes(NULL), m_ana(true)
+Amisic::Amisic() : m_sigmaND_norm(1.), p_processes(NULL), m_ana(true)
 {}
 
 Amisic::~Amisic() {
@@ -17,11 +17,10 @@ Amisic::~Amisic() {
   if (m_ana) FinishAnalysis();
 }
 
-bool Amisic::Initialize(Default_Reader *const defaultreader,
-			MODEL::Model_Base *const model,
+bool Amisic::Initialize(MODEL::Model_Base *const model,
 			PDF::ISR_Handler *const isr)
 {
-  if (!InitParameters(defaultreader)) return false;
+  if (!InitParameters()) return false;
   bool shown = false;
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
@@ -49,27 +48,28 @@ bool Amisic::Initialize(Default_Reader *const defaultreader,
   //   Bjorken-x.
   // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for mid-rapidity
   //   where x_1 and x_2 are identical
+  m_sigmaND_norm = (*mipars)("SigmaND_Norm");
   p_processes = new MI_Processes();
-  p_processes->SetDefaultReader(defaultreader);
-  p_processes->SetSigmaND(xsecs.XSnd());
-  p_processes->Initialize(string(""),string(""),model,NULL,isr);
+  p_processes->SetSigmaND(m_sigmaND_norm * xsecs.XSnd());
+  p_processes->Initialize(model,NULL,isr);
   
   m_overestimator.Initialize(p_processes);
-  m_overestimator.SetXSnd(xsecs.XSnd());
+  m_overestimator.SetXSnd(m_sigmaND_norm * xsecs.XSnd());
   
   m_singlecollision.Init();
   m_singlecollision.SetMIProcesses(p_processes);
   m_singlecollision.SetOverEstimator(&m_overestimator);
 
   m_impact.SetProcesses(p_processes);
-  m_impact.Initialize(p_processes->XShard()/xsecs.XSnd());
+  m_impact.Initialize(p_processes->XShard()/(m_sigmaND_norm * xsecs.XSnd()));
+
   if (m_ana) InitAnalysis();
   return true;
 }
 
-bool Amisic::InitParameters(Default_Reader *const defaultreader) {
+bool Amisic::InitParameters() {
   mipars = new MI_Parameters();
-  return mipars->Init(defaultreader);
+  return mipars->Init();
 }
 
 void Amisic::SetMaxEnergies(const double & E1,const double & E2) {
@@ -171,6 +171,8 @@ void Amisic::Reset() {}
 void Amisic::InitAnalysis() {
   m_nscatters = 0;
   m_histos[string("N_scatters")] = new Histogram(0,0,20,20);
+  m_histos[string("B")]          = new Histogram(0,0,10,100);
+  m_histos[string("Bfac")]       = new Histogram(0,0,10,100);
   m_histos[string("P_T(1)")]     = new Histogram(0,0,100,100);
   m_histos[string("Y(1)")]       = new Histogram(0,-10,10,10);
   m_histos[string("Delta_Y(1)")] = new Histogram(0,0,10,10);
@@ -213,6 +215,8 @@ void Amisic::Analyse(const bool & last) {
   m_nscatters++;
   if (last) {
     m_histos[string("N_scatters")]->Insert(double(m_nscatters)+0.5);
+    m_histos[string("B")]->Insert(m_b);
+    m_histos[string("Bfac")]->Insert(m_bfac);
     m_nscatters = 0;
   }
 }

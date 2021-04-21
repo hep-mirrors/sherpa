@@ -93,11 +93,12 @@ namespace COMIX {
     Int_Matrix   m_cl;
 
     size_t m_nin, m_nout, m_dec;
-    size_t m_n, m_wfmode, m_pgmode, m_ngpl, m_sccmur;
+    size_t m_n, m_wfmode, m_pgmode, m_ngpl;
+    bool m_sccmur;
     size_t m_minntc, m_maxntc;
     char   m_pmode;
 
-    std::vector<int> m_maxcpl, m_mincpl;
+    std::vector<int> m_maxcpl, m_mincpl, m_maxacpl, m_minacpl;
 
     std::vector<Spin_Structure<DComplex> > m_ress, m_cress;
     std::vector<std::pair<size_t,size_t> > m_on, m_son;
@@ -178,7 +179,7 @@ namespace COMIX {
 		       size_t &ng,std::set<std::string> &cvs) const;
 
   public:
-    
+
     // constructor
     Amplitude();
 
@@ -189,12 +190,15 @@ namespace COMIX {
     bool Initialize(const size_t &nin,const size_t &nout,
 		    const std::vector<ATOOLS::Flavour> &flavs,
 		    const double &isf,const double &fsf,
+		    My_In_File &ampfile,
 		    MODEL::Model_Base *const model,
 		    MODEL::Coupling_Map *const cpls,
 		    const int stype,const int smode,
 		    const ATOOLS::cs_itype::type itype,
 		    const std::vector<int> &maxcpl,
 		    const std::vector<int> &mincpl,
+		    const std::vector<int> &maxacpl,
+		    const std::vector<int> &minacpl,
 		    const size_t &minntc,const size_t &maxntc,
 		    const std::string &name);
 
@@ -225,7 +229,7 @@ namespace COMIX {
     void WriteOutGraphs(const std::string &file) const;
 
     void WriteOutAmpFile(const std::string &name);
-    bool ReadInAmpFile(const std::string &name);
+    bool ReadInAmpFile(const std::string &name,My_In_File &ampfile);
 
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 

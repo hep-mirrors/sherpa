@@ -24,11 +24,9 @@ namespace OpenLoops {
 
     double Calc(const ATOOLS::Vec4D_Vector& momenta);
 
-    int OrderQCD(const int &id=-1) const
-      { return m_order_qcd; }
+    int OrderQCD(const int &id=-1) const;
 
-    int OrderEW(const int &id=-1) const
-      { return m_order_ew; }
+    int OrderEW(const int &id=-1) const;
 
   };
 

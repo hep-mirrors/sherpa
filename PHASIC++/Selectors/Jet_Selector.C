@@ -1,24 +1,15 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__FASTJET
-
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Selector.H"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/SISConePlugin.hh"
-#include "fastjet/EECambridgePlugin.hh"
-#include "fastjet/JadePlugin.hh"
 
 namespace PHASIC {
   class Jet_Selector : public Selector_Base {
@@ -30,8 +21,7 @@ namespace PHASIC {
     ATOOLS::Jet_Inputs          m_jetinput;
     ATOOLS::Jet_Identifications m_jetids;
 
-    fastjet::JetDefinition * p_jdef;
-    fastjet::SISConePlugin * p_siscplug;
+    fjcore::JetDefinition * p_jdef;
 
     public:
     Jet_Selector(const Selector_Key &key);
@@ -62,86 +52,90 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   m_ymin(-std::numeric_limits<double>::max()),
   m_ymax(std::numeric_limits<double>::max()),
   m_nmin(0), m_nmax(std::numeric_limits<size_t>::max()),
-  m_outjetkf(kf_none), p_jdef(NULL), p_siscplug(NULL)
+  m_outjetkf(kf_none), p_jdef(NULL)
 {
   DEBUG_FUNC("");
-  for (size_t k=0;k<key.size();++k) {
-    if      (key[k].size()>1 && key[k][0]=="Input_Particles") {
-      if (key[k][1]=="all") {
-        THROW(not_implemented,"Keyword 'all' not implemented yet.");
-      }
-      else {
-        int kfc(ToType<long int>(key[k][1]));
-        Flavour fl(abs(kfc),kfc<0);
-        m_jetinput.push_back(Jet_Input(fl));
-        for (size_t i(2);i<key[k].size();++i) {
-          std::string ds(key[k][i]);
-          if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
-          std::string var(ds,0,ds.find(':'));
-          std::string val(ds,ds.find(':')+1);
-          if (!var.size() || !val.size()) THROW(fatal_error,"Input error.");
-          if      (var=="PT")  m_jetinput.back().m_ptmin=ToType<double>(val);
-          else if (var=="ETA") m_jetinput.back().m_etamax=ToType<double>(val);
-          else if (var=="Y")   m_jetinput.back().m_ymax=ToType<double>(val);
-        }
-      }
+  auto s = key.m_settings["Jet_Selector"];
+
+  // input ptcls and output ID
+  for (auto inputsettings : s["Input_Particles"].GetItems()) {
+    auto kfsetting = inputsettings.IsList() ? inputsettings.GetItemAtIndex(0)
+                                            : inputsettings;
+    const auto kfc = kfsetting.SetDefault(kf_none).Get<long int>();
+    if (kfc == kf_none) {
+      THROW(fatal_error,
+            "Invalid or missing particle ID for Input_Particles"
+            " option given within the Jet_Selector settings.");
     }
-    else if (key[k].size()>1 && key[k][0]=="Output_ID") {
-      m_outjetkf = ToType<kf_code>(key[k][1]);
-    }
-    else if (key[k].size()>3 && key[k][0]=="Jet_Algorithm") {
-      m_algo=key[k][1];
-      for (size_t i(2);i<key[k].size();++i) {
-        std::string ds(key[k][i]);
+    m_jetinput.push_back(Jet_Input(Flavour {kfc}));
+    if (inputsettings.IsList()) {
+      const auto num_ptcl_specific_settings = inputsettings.GetItemsCount();
+      for (size_t i {1}; i < num_ptcl_specific_settings; ++i) {
+        auto ds =
+            inputsettings.GetItemAtIndex(i).SetDefault("").Get<std::string>();
         if (ds.find("=")!=std::string::npos) ds.replace(ds.find("="),1,":");
         std::string var(ds,0,ds.find(':'));
         std::string val(ds,ds.find(':')+1);
         if (!var.size() || !val.size()) THROW(fatal_error,"Input error.");
-        if      (var=="PT")     m_ptmin=ToType<double>(val);
-        else if (var=="R")      m_R=ToType<double>(val);
-        else if (var=="f")      m_f=ToType<double>(val);
-        else if (var=="ETA")    m_etamin=-(m_etamax=ToType<double>(val));
-        else if (var=="ETAMIN") m_etamin=ToType<double>(val);
-        else if (var=="ETAMAX") m_etamax=ToType<double>(val);
-        else if (var=="Y")      m_ymin=-(m_ymax=ToType<double>(val));
-        else if (var=="YMIN")   m_ymin=ToType<double>(val);
-        else if (var=="YMAX")   m_ymax=ToType<double>(val);
+        if      (var=="PT")  m_jetinput.back().m_ptmin=ToType<double>(val);
+        else if (var=="ETA") m_jetinput.back().m_etamax=ToType<double>(val);
+        else if (var=="Y")   m_jetinput.back().m_ymax=ToType<double>(val);
       }
     }
-    else if (key[k].size()>2 && key[k][0]=="Identify_As") {
-      int kfc(ToType<long int>(key[k][1]));
-      Flavour fl(abs(kfc),kfc<0);
-      std::string input(key[k][2]), rel("");
-      if      (input.find('>')!=std::string::npos) rel=">";
-      else if (input.find('<')!=std::string::npos) rel="<";
-      else THROW(not_implemented,"Unknown relation.");
-      std::string var(input.substr(0,input.find(rel)));
-      input=input.substr(input.find(rel)+1);
-      std::string val(input.substr(0,input.find('[')));
-      input=input.substr(input.find('[')+1);
-      std::string mode(input.substr(0,input.find(']')));
-      double ptmin(0.),etmin(0.),emin(0.);
-      if      (var=="PT") ptmin=ToType<double>(val);
-      else if (var=="ET") etmin=ToType<double>(val);
-      else if (var=="E")  emin=ToType<double>(val);
-      else THROW(not_implemented,"Unknown variable.");
-      JetIdMode::code jetidmode(JetIdMode::unknown);
-      if (rel==">") jetidmode|=JetIdMode::larger;
-      if (mode=="rel") jetidmode|=JetIdMode::relative;
-      m_jetids.push_back(new Jet_Identification(fl,ptmin,etmin,emin,jetidmode));
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMin") {
-      m_nmin = ToType<int>(key[k][1]);
-    }
-    else if (key[k].size()>1 && key[k][0]=="NMax") {
-      m_nmax = ToType<int>(key[k][1]);
-    }
-    else {
-      msg_Debugging()<<"Read in subselectors."<<std::endl;
-      ReadInSubSelectors(key,k);
-      break;
-    }
   }
+  m_outjetkf = s["Output_ID"].SetDefault(kf_none).Get<kf_code>();
+
+  // algorithm
+  auto algosettings = s["Jet_Algorithm"];
+  m_algo   = algosettings["Type"].SetDefault("").Get<std::string>();
+  m_ptmin  = algosettings["PT"].SetDefault(0.0).Get<double>();
+  m_R      = algosettings["R"].SetDefault(0.0).Get<double>();
+  m_f      = algosettings["f"].SetDefault(0.7).Get<double>();
+  const auto eta = algosettings["Eta"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_etamax = algosettings["EtaMax"].SetDefault(eta).Get<double>();
+  m_etamin = algosettings["EtaMin"].SetDefault(-eta).Get<double>();
+  const auto y = algosettings["Y"]
+    .SetDefault(std::numeric_limits<double>::max())
+    .Get<double>();
+  m_ymax = algosettings["YMax"].SetDefault(y).Get<double>();
+  m_ymin = algosettings["YMin"].SetDefault(-y).Get<double>();
+
+  // identification
+  const auto identifyas = s["Identify_As"]
+    .SetDefault<std::string>({})
+    .GetVector<std::string>();
+  if (identifyas.size() > 1) {
+    int kfc(ToType<long int>(identifyas[0]));
+    Flavour fl(abs(kfc),kfc<0);
+    std::string input(identifyas[1]), rel("");
+    if      (input.find('>')!=std::string::npos) rel=">";
+    else if (input.find('<')!=std::string::npos) rel="<";
+    else THROW(not_implemented,"Unknown relation.");
+    std::string var(input.substr(0,input.find(rel)));
+    input=input.substr(input.find(rel)+1);
+    std::string val(input.substr(0,input.find('[')));
+    input=input.substr(input.find('[')+1);
+    std::string mode(input.substr(0,input.find(']')));
+    double ptmin(0.),etmin(0.),emin(0.);
+    if      (var=="PT") ptmin=ToType<double>(val);
+    else if (var=="ET") etmin=ToType<double>(val);
+    else if (var=="E")  emin=ToType<double>(val);
+    else THROW(not_implemented,"Unknown variable.");
+    JetIdMode::code jetidmode(JetIdMode::unknown);
+    if (rel==">") jetidmode|=JetIdMode::larger;
+    if (mode=="rel") jetidmode|=JetIdMode::relative;
+    m_jetids.push_back(new Jet_Identification(fl,ptmin,etmin,emin,jetidmode));
+  }
+
+  // jet numbers
+  m_nmin = s["NMin"].SetDefault(0).Get<size_t>();
+  m_nmax = s["NMax"]
+    .SetDefault(std::numeric_limits<size_t>::max())
+    .Get<size_t>();
+
+  ReadInSubSelectors(key);
 
   m_smin       = sqr(m_ptmin);
 
@@ -166,15 +160,13 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
   }
 
   // init jet algo
-  fastjet::JetAlgorithm ja;
-  if (m_algo=="kt")             ja=fastjet::kt_algorithm;
-  else if (m_algo=="cambridge") ja=fastjet::cambridge_algorithm;
-  else if (m_algo=="antikt")    ja=fastjet::antikt_algorithm;
-  else if (m_algo=="siscone")   p_siscplug=new fastjet::SISConePlugin(m_R,m_f);
+  fjcore::JetAlgorithm ja;
+  if (m_algo=="kt")             ja=fjcore::kt_algorithm;
+  else if (m_algo=="cambridge") ja=fjcore::cambridge_algorithm;
+  else if (m_algo=="antikt")    ja=fjcore::antikt_algorithm;
   else THROW(not_implemented,"Unknown algorithm.");
 
-  if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
-  else            p_jdef=new fastjet::JetDefinition(ja,m_R);
+  p_jdef=new fjcore::JetDefinition(ja,m_R);
 }
 
 
@@ -197,7 +189,7 @@ bool Jet_Selector::Trigger(Selector_List &sl)
   DEBUG_FUNC((p_proc?p_proc->Flavours():Flavour_Vector()));
   Vec4D_Vector moms(sl.size(),Vec4D(0.,0.,0.,0.));
   for (size_t i(0);i<m_nin;++i) moms[i]=sl[i].Momentum();
-  std::vector<fastjet::PseudoJet> input,jets;
+  std::vector<fjcore::PseudoJet> input,jets;
   // book-keep where jet input was taken from
   std::vector<size_t> jetinputidx;
   for (size_t i(m_nin);i<n;++i) if (sl[i].Momentum()!=moms[i]) {
@@ -214,8 +206,8 @@ bool Jet_Selector::Trigger(Selector_List &sl)
                <<","<<input[i].py()<<","<<input[i].pz()<<")"<<std::endl;
   }
 
-  fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+  fjcore::ClusterSequence cs(input,*p_jdef);
+  jets=fjcore::sorted_by_pt(cs.inclusive_jets());
   msg_Debugging()<<"njets(ini)="<<jets.size()<<std::endl;
 
   size_t njets(0);
@@ -295,8 +287,7 @@ void Jet_Selector::BuildCuts(Cut_Data * cuts)
   for (size_t i(0);i<m_sels.size();++i) m_sels[i]->BuildCuts(cuts);
 }
 
-DECLARE_ND_GETTER(Jet_Selector,"Jet_Selector",
-                  Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Jet_Selector,"Jet_Selector",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
                               Jet_Selector>::operator()
@@ -309,60 +300,17 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
-  str<<"Jet_Selector {\n"
-     <<w<<"  Input_Particles <kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  [Input_Particles <kf2> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]]\n"
-     <<w<<"  [...]\n"
-     <<w<<"  Jet_Algorithm <algorithm> PT:<ptmin> R:<dR> [ETA:<etamax>] [Y:<ymax>]\n"
-     <<w<<"  Indentify_As <kf> [E/ET/PT><emin>[rel/abs]]\n"
-     <<w<<"  NMin <nmin>\n"
-     <<w<<"  [NMax <nmax>]\n"
-     <<w<<"  [Output_ID <kf>]\n"
-     <<w<<"  Selector 1\n"
-     <<w<<"  Selector 2\n"
-     <<w<<"}";
+  str<<"Jet_Selector:\n"
+     <<w<<"  Input_Particles: [\"<kf1> [PT:<ptmin>] [ETA:<etamax>] [Y:<ymax>]\", ...]\n"
+     <<w<<"  Jet_Algorithm: {\n"
+     <<w<<"    Type: <algorithm>, PT: <ptmin>, R: <dR>,\n"
+     <<w<<"    # optional parameters:\n"
+     <<w<<"    ETA: <etamax>, Y: <ymax>\n"
+     <<w<<"    }\n"
+     <<w<<"  Indentify_As: [<kf>, \"[E/ET/PT><emin>[rel/abs]]\"]\n"
+     <<w<<"  NMin: <nmin>\n"
+     <<w<<"  # optional parameters:\n"
+     <<w<<"  NMax: <nmax>\n"
+     <<w<<"  Output_ID: <kf>\n"
+     <<w<<"  Subselectors: [...]";
 }
-
-#else
-
-#include "PHASIC++/Selectors/Selector.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-
-namespace PHASIC {
-  class Jet_Selector : public Selector_Base {
-  public:
-    Jet_Selector(const Selector_Key &key) :
-      Selector_Base("Jet_Selector",key.p_proc) {}
-
-    bool   Trigger(ATOOLS::Selector_List &) { return true; }
-    void   BuildCuts(Cut_Data *) {}
-  };
-}
-
-using namespace PHASIC;
-using namespace ATOOLS;
-
-DECLARE_ND_GETTER(Jet_Selector,"Jet_Selector",
-                  Selector_Base,Selector_Key,true);
-
-Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,
-                              Jet_Selector>::operator()
-(const Selector_Key &key) const
-{
-  THROW(fatal_error, "To use the Jet_Selector Sherpa must be linked "+
-                     std::string("to FastJet during compilation."));
-  return new Jet_Selector(key);
-}
-
-void ATOOLS::Getter<Selector_Base,Selector_Key,Jet_Selector>::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  std::string w(width+4,' ');
-  str<<"Jet_Selector {\n"
-     <<w<<"  To use this selector Sherpa must be compiled with FastJet support.\n"
-     <<w<<"}";
-}
-
-#endif

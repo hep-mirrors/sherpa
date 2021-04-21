@@ -1,8 +1,4 @@
-#ifndef ATOOLS_Phys_Standard_Selector_H
-#define ATOOLS_Phys_Standard_Selector_H
-
 #include "PHASIC++/Selectors/Selector.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 namespace PHASIC {
 
@@ -97,8 +93,6 @@ namespace PHASIC {
   };
 }
 
-#endif
-
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -186,7 +180,7 @@ void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
-DECLARE_ND_GETTER(PTNLO_Selector,"PTNLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PTNLO_Selector,"PTNLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PTNLO_Selector>::
 operator()(const Selector_Key &key) const
@@ -280,7 +274,7 @@ void RapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-DECLARE_ND_GETTER(RapidityNLO_Selector,"RapidityNLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(RapidityNLO_Selector,"RapidityNLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,RapidityNLO_Selector>::
 operator()(const Selector_Key &key) const
@@ -374,7 +368,7 @@ void PseudoRapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-DECLARE_ND_GETTER(PseudoRapidityNLO_Selector,"PseudoRapidityNLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PseudoRapidityNLO_Selector,"PseudoRapidityNLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidityNLO_Selector>::
 operator()(const Selector_Key &key) const
@@ -476,7 +470,7 @@ void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
-DECLARE_ND_GETTER(PT2NLO_Selector,"PT2NLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(PT2NLO_Selector,"PT2NLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT2NLO_Selector>::
 operator()(const Selector_Key &key) const
@@ -585,7 +579,7 @@ void MT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
-DECLARE_ND_GETTER(MT2NLO_Selector,"MT2NLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(MT2NLO_Selector,"MT2NLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2NLO_Selector>::
 operator()(const Selector_Key &key) const
@@ -721,7 +715,7 @@ double Isolation_Cut::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos(Min(1.0,Max(-1.0,(p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2))));
 }
 
-DECLARE_ND_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Cut>::
 operator()(const Selector_Key &key) const
@@ -846,7 +840,7 @@ void DeltaRNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-DECLARE_ND_GETTER(DeltaRNLO_Selector,"DeltaRNLO",Selector_Base,Selector_Key,true);
+DECLARE_GETTER(DeltaRNLO_Selector,"DeltaRNLO",Selector_Base,Selector_Key);
 
 Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaRNLO_Selector>::
 operator()(const Selector_Key &key) const

@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
       # Write model source code
       progress("Generating model source code")
-      write_model(model, lorentzes, model_name, model_out_path)
+      parameter_map = write_model(model, lorentzes, model_name, model_out_path)
       
       # Write color calculator source code
       for col in colors:
@@ -210,7 +210,7 @@ if __name__ == "__main__":
       for lor in lorentzes:
             if not lor.has_ghosts():
                   progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
-                  lor.write(out_dir,optimize)
+                  lor.write(out_dir,optimize,parameter_map)
 
       # Generate and write SConstruct file
       lib_name = 'Sherpa{0}'.format(model_name)
@@ -230,10 +230,10 @@ if __name__ == "__main__":
       progress(check_output(sconsargs))
 
       # write example run card to working dir
-      run_card_path="{0}_Example_Run.dat".format(model_name)
+      run_card_path="Sherpa.{0}_Example.yaml".format(model_name)
       while(os_path.exists(run_card_path)):
             run_card_path="_"+run_card_path
-      progress("Writing example run card '{0}' to working directory".format(run_card_path))
+      progress("Writing example Sherpa config file '{0}' to working directory".format(run_card_path))
       write_run_card(model, model_name, run_card_path)
 
       progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use of Sherpa's BSM features".format(model_name))

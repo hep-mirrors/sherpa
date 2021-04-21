@@ -26,7 +26,7 @@ namespace REMNANTS {
 }
   
 namespace REMNANTS {
-  typedef std::list<ATOOLS::Flavour>                  FlavourList;
+  typedef std::list<ATOOLS::Flavour> FlavourList;
 
   class Colour_Generator;
   
@@ -56,9 +56,9 @@ namespace REMNANTS {
     virtual bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom)=0;
     virtual ATOOLS::Blob * MakeBlob();
     virtual bool FillBlob(ATOOLS::ParticleMomMap *ktmap=NULL,const bool & copy=true)=0;
-    virtual void MakeSpectator(ATOOLS::Particle * parton) {}
+    virtual void MakeSpectator(ATOOLS::Particle * parton) {}    
+    virtual void Reset(const bool & DIS=false);
     
-    virtual void Reset();
     inline rtp::code    Type() const                   { return m_type; }
     inline unsigned int Beam() const                   { return m_beam; }
     inline void SetPartner(Remnant_Base * partner)     { p_partner = partner; }

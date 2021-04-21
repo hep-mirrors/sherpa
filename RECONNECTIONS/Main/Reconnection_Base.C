@@ -23,8 +23,8 @@ Reconnection_Base::~Reconnection_Base() {
   }
 }
 
-void Reconnection_Base::Initialize(Default_Reader *const reader) {
-  ReadWeightParameters(reader); 
+void Reconnection_Base::Initialize() {
+  SetParameters(); 
   if (m_analysis) {
     m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,100.0,200);
     m_histomap[string("Reconn_MassAfter")]  = new Histogram(0,0.0,100.0,200);

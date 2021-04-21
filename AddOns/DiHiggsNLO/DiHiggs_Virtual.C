@@ -4,9 +4,9 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "ATOOLS/Phys/NLO_Types.H"
 
@@ -113,7 +113,7 @@ PHASIC::Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,
 ::operator()(const PHASIC::Process_Info &pi) const
 {
   /* Require Loop_Generator=DiHiggs in process section */
-  if (pi.m_loopgenerator!="DiHiggs") return NULL;
+  if (pi.m_loopgenerator!="DiHiggsNLO") return NULL;
 
   /* Check NLO type (allow only QCD, not EW)  */
   if (pi.m_fi.m_nlotype!=ATOOLS::nlo_type::loop ||
@@ -127,8 +127,10 @@ PHASIC::Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,
   if( flavs[2].Kfcode()!=25) return NULL;
 
   /* Get the full file path to the grid */
-  std::string grid_path = ATOOLS::Default_Reader().
-    Get<std::string>("DIHIGGS_GRID_PATH", "Virt_full.grid");
+  Settings& s = ATOOLS::Settings::GetMainSettings();
+  std::string grid_path = s["DIHIGGS_GRID_PATH"]
+    .SetDefault("Virt_full.grid")
+    .Get<std::string>();
 
   return new DiHiggs::DiHiggs_Virtual(pi, flavs, grid_path);
 }

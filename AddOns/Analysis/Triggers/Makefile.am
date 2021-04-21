@@ -1,4 +1,8 @@
+GITTAG = AddOns/Analysis/Triggers
+include ../../../git.make
+
 ANATRIGGER_SOURCES    =	\
+			Git_Info.C \
 			Trigger_Base.C \
 			One_Variable_Selector.C \
 			One_Particle_Selector.C \
@@ -15,6 +19,7 @@ ANATRIGGER_SOURCES    =	\
 			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
+			Q2_Selector.C \
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
 			Kt_Algorithm.C \
@@ -66,11 +71,6 @@ localinc_HEADERS      = $(ANATRIGGER_ADDS)
 
 ANATRIGGER_EXTRA_DIST =	$(ANATRIGGER_ADDS)
 
-libSherpaAnalysisTrigger_la_LIBADD = \
-	@CONDITIONAL_FASTJETLIBS@
-
-libSherpaAnalysisTrigger_la_CPPFLAGS = $(AM_CPPFLAGS) \
-	@CONDITIONAL_FASTJETINCS@
 else
 ANATRIGGER_EXTRA_DIST =	$(ANATRIGGER_SOURCES) $(ANATRIGGER_ADDS)
 endif

@@ -1,11 +1,12 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <algorithm>
 
@@ -38,12 +39,13 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   m_CF(4./3.), m_CA(3.), m_TR(0.5),
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_cutq2(0.0), p_pdf(pdf)
 {
+  Settings& s = Settings::GetMainSettings();
+  Scoped_Settings alphassettings{ s["ALPHAS"] };
   if (m_m2_MZ==0.) m_m2_MZ = Flavour(kf_Z).Mass();
 
-  Default_Reader reader;
-  m_cutas = reader.Get<double>("ALPHAS_FREEZE_VALUE", 1.);
-  const int pdfas(reader.Get<int>("USE_PDF_ALPHAS",0));
-  const int overridepdfinfo(reader.Get<int>("OVERRIDE_PDF_INFO", 0));
+  m_cutas = alphassettings["FREEZE_VALUE"].Get<double>();
+  const int pdfas(alphassettings["USE_PDF"].Get<int>());
+  const bool overridepdfinfo(s["OVERRIDE_PDF_INFO"].Get<bool>());
 
   if ((m_as_MZ == 0.0 || m_order == 0.0)
       && (p_pdf == NULL || overridepdfinfo)) {
@@ -75,7 +77,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   sort(masses.begin(), masses.end());
 
   if (p_pdf) {
-    if (overridepdfinfo==1) {
+    if (overridepdfinfo) {
       msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
       <<"Overriding \\alpha_s information from PDF. "
       <<"Make sure you know what you are doing!"
@@ -138,15 +140,19 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf,
   }
   for (int i=m_mzset-1;i>=0;--i) {
     double lam2               = Lambda2(i);
-    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
+    if (lam2>p_thresh[i].low_scale) {
       ContinueAlphaS(i);
-    else {
-      if (i>0) {
-        p_thresh[i-1].as_high = p_thresh[i].as_low *
+      break;
+    }
+    p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
+    if (p_thresh[i].as_low>1.) {
+      ContinueAlphaS(i);
+      break;
+    }
+    if (i>0) {
+      p_thresh[i-1].as_high = p_thresh[i].as_low *
         ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
                 p_thresh[i].low_scale,p_thresh[i-1].nf);
-      }
     }
   }
 }
@@ -431,15 +437,16 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const PDF::ISR_Handler_Map &isr):
   p_overridingpdf(NULL)
 {
+  RegisterDefaults();
   m_defval = as_MZ;
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   // Read possible override
-  Default_Reader reader;
-  if (reader.Get<int>("USE_PDF_ALPHAS",0)&4) {
-    std::string name(reader.Get<std::string>("ALPHAS_PDF_SET","CT10nlo"));
-    int member = reader.Get<int>("ALPHAS_PDF_SET_VERSION",0);
-    member = reader.Get<int>("ALPHAS_PDF_SET_MEMBER",member);
+  Scoped_Settings alphassettings{
+    Settings::GetMainSettings()["ALPHAS"] };
+  if (alphassettings["USE_PDF"].Get<int>()&4) {
+    std::string name(alphassettings["PDF_SET"].Get<std::string>());
+    int member = alphassettings["PDF_SET_MEMBER"].Get<int>();
     InitOverridingPDF(name, member);
   }
 
@@ -465,6 +472,7 @@ Running_AlphaS::Running_AlphaS(const std::string pdfname, const int member,
                                const int order, const int thmode):
   p_overridingpdf(NULL)
 {
+  RegisterDefaults();
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   InitOverridingPDF(pdfname, member);
@@ -478,11 +486,35 @@ Running_AlphaS::Running_AlphaS(PDF::PDF_Base *const pdf,
                                const int order, const int thmode):
   p_overridingpdf(NULL)
 {
+  RegisterDefaults();
   m_type = "Running Coupling";
   m_name = "Alpha_QCD";
   m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
   SetActiveAs(PDF::isr::none);
   m_defval = AsMZ();
+}
+
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+                   const int order, const int thmode):
+  p_overridingpdf(NULL)
+{
+  RegisterDefaults();
+  m_type = "Running Coupling";
+  m_name = "Alpha_QCD";
+  m_alphas.insert(make_pair(PDF::isr::none, new One_Running_AlphaS(NULL, as_MZ, m2_MZ, order, thmode)));
+  SetActiveAs(PDF::isr::none);
+  m_defval = AsMZ();
+}
+
+void Running_AlphaS::RegisterDefaults() const
+{
+  Scoped_Settings s{ Settings::GetMainSettings()["ALPHAS"] };
+  s["FREEZE_VALUE"].SetDefault(1.0);
+  s["USE_PDF"].SetDefault(0);
+  s["PDF_SET"].SetDefault("CT10nlo");
+  s["PDF_SET_VERSION"].SetDefault(0);
+  const int member{ s["PDF_SET_VERSION"].Get<int>() };
+  s["PDF_SET_MEMBER"].SetDefault(member);
 }
 
 void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
@@ -495,8 +527,7 @@ void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
   if (s_kftable.find(kf_p_plus)==s_kftable.end()) {
     s_kftable[kf_p_plus] = new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
   }
-  Default_Reader reader;
-  PDF::PDF_Arguments args(Flavour(kf_p_plus), &reader, 0, name, member);
+  PDF::PDF_Arguments args(Flavour(kf_p_plus), 0, name, member);
   PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
   pdf->SetBounds();
   p_overridingpdf = pdf;

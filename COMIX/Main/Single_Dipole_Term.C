@@ -12,7 +12,6 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -54,17 +53,18 @@ Single_Dipole_Term::~Single_Dipole_Term()
   p_scale=NULL;
 }
 
-double COMIX::Single_Dipole_Term::Differential
-(const Cluster_Amplitude &ampl,int mode) 
+Weights_Map COMIX::Single_Dipole_Term::Differential(
+    const Cluster_Amplitude &ampl,
+    Variations_Mode varmode,
+    int mode)
 {
   DEBUG_FUNC(Name());
   m_zero=false;
   p_rsint->ColorIntegrator()->SetPoint(&ampl);
-  return PHASIC::Process_Base::Differential(ampl,mode);
+  return PHASIC::Process_Base::Differential(ampl,varmode,mode);
 }
 
-double COMIX::Single_Dipole_Term::Partonic
-(const Vec4D_Vector &p,const int mode) 
+double COMIX::Single_Dipole_Term::Partonic(const Vec4D_Vector &p, int mode)
 {
   Single_Dipole_Term *sp(this);
   if (mode==1) return m_lastxs;
@@ -79,7 +79,7 @@ double COMIX::Single_Dipole_Term::Partonic
   m_w*=p_rsint->ColorIntegrator()->GlobalWeight();
   if (p_rsint->HelicityIntegrator()!=NULL) 
     m_w*=p_rsint->HelicityIntegrator()->Weight();
-  m_w*=sp->KFactor();
+  m_w*=sp->KFactor(2);
   return m_lastxs*=m_w;
 }
 

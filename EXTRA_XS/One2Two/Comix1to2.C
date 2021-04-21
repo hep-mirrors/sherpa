@@ -81,7 +81,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
     cids[i]=i;
     acts[i]=flavs[i].Strong();
     if (acts[i]) {
-      if (abs(flavs[i].StrongCharge())==8) types[i]=0;
+      if (flavs[i].StrongCharge()==8) types[i]=0;
       else if (flavs[i].IsAnti()) types[i]=(i==0?1:-1);
       else types[i]=(i==0?-1:1);
     }
@@ -100,6 +100,7 @@ Comix1to2::~Comix1to2()
   }
   delete m_fcur;
   delete m_antifcur;
+  if (p_ci) delete p_ci;
 }
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {

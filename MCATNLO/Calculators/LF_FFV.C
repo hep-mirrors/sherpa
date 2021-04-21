@@ -478,7 +478,7 @@ double LF_FVF_FI::CDISMax()
 }
 
 double LF_FVF_FI::operator() (const double z,const double y,
-			    const double eta, const double scale,const double Q2,Cluster_Amplitude *const sub) {
+			      const double eta, const double scale,const double Q2,Cluster_Amplitude *const sub) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
   double massless = (2./(z+y) - 2.+z + CDIS(1.-z,y));
@@ -603,7 +603,7 @@ double LF_FVF_II::operator()
 
 double LF_FVF_II::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
- {
+{
   m_zmin = zmin; m_zmax = zmax;
   double fresh = p_sf->GetXPDF(scale,xbj,m_flavs[0],m_beam);
   double old   = p_sf->GetXPDF(scale,xbj,m_flavs[1],m_beam,1);
@@ -628,8 +628,17 @@ double LF_VFF_FF::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
+  double scale=_scale;
+  if (p_sf->ScaleScheme()==1) scale=_scale;
+  if (p_sf->ScaleScheme()==2) {
+    double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
+    scale= (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
+  }
+  if (p_sf->ScaleScheme()==20) {
+    double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
+    double tscale= (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
+    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
+  }
   return scale;
 }
 
@@ -643,6 +652,7 @@ double LF_VFF_FF::operator()
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
+
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -702,8 +712,17 @@ double LF_VFF_FI::Scale
 (const double z,const double y,
  const double _scale,const double Q2) const
 {
+  double scale{0.0};
   if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
+  scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)-2.0*p_ms->Mass2(m_flavs[1]);
+  if (p_sf->ScaleScheme()==1) scale=_scale;
+  if (p_sf->ScaleScheme()==2)
+    scale= (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
+  if (p_sf->ScaleScheme()==20) {
+    double tscale= (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
+    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
+  }
+
   return scale;
 }
 
@@ -773,8 +792,16 @@ double LF_VFF_IF::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  double scale=_scale;
+  if (p_sf->ScaleScheme()==2) {
+    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+    scale=(Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  }
+  if (p_sf->ScaleScheme()==20) {
+    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+    double tscale=(Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
+  }
   return scale;
 }
 
@@ -814,8 +841,16 @@ double LF_VFF_II::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  double scale = _scale;
+  if (p_sf->ScaleScheme()==2) {
+    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+    scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+  }
+  if (p_sf->ScaleScheme()==20) {
+    double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+    double tscale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
+    scale = (m_flavs[1].IsGluon())?(tscale):_scale;
+  }
   return scale;
 }
 
@@ -853,7 +888,7 @@ double LF_VFF_II::Z()
 DECLARE_GETTER(LF_FFV_FF,"FFV",SF_Lorentz,SF_Key);
 
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
-operator()(const Parameter_Type &args) const
+  operator()(const Parameter_Type &args) const
 {
   if (args.m_col<0) return NULL;
   if ((args.m_mode==0 &&
@@ -903,7 +938,7 @@ operator()(const Parameter_Type &args) const
 }
 
 void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
-PrintInfo(std::ostream &str,const size_t width) const
+  PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"ffv lorentz functions";
 }

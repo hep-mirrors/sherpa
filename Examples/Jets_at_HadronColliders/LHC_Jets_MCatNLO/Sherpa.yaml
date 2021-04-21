@@ -1,0 +1,27 @@
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500.0
+
+SCALES: FASTJET[A:antikt,PT:20.0,ET:0,R:0.4,M:0]{0.0625*H_T2}{0.0625*H_T2}{0.25*PPerp2(p[3])}
+ME_GENERATORS: [Amegic, OpenLoops]
+
+PROCESSES:
+- 93 93 -> 93 93:
+    NLO_Mode: MC@NLO
+    NLO_Order: {QCD: 1, EW: 0}
+    Loop_Generator: OpenLoops
+    Order: {QCD: 2, EW: 0}
+
+SELECTORS:
+- FastjetFinder:
+    Algorithm: antikt
+    N: 2
+    PTMin: 10.0
+    ETMin: 0.0
+    DR: 0.4
+- FastjetFinder:
+    Algorithm: antikt
+    N: 1
+    PTMin: 20.0
+    ETMin: 0.0
+    DR: 0.4

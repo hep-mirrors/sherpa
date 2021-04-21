@@ -14,6 +14,7 @@ namespace AHADIC {
     ~Singlet();
     void Reorder(Proto_Particle * first=NULL);
     void Erase(Proto_Particle * ref);
+    void StripSingletOfGluons();
     bool Combine(Proto_Particle * part1,Proto_Particle * part2);
     double        Mass2() const;
     ATOOLS::Vec4D Momentum() const;

@@ -22,7 +22,7 @@ namespace AMEGIC {
     int *p_b, m_eoreset, m_allowmap;
 
     AMEGIC::Pol_Info      *p_pl;
-    
+
     std::string m_print_graphs;
 
     std::list<std::string>               *p_channellibnames;

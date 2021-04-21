@@ -31,11 +31,13 @@ namespace DIM {
 
     virtual double Nf(const Splitting &s) const;
     virtual double Scale(const Splitting &s) const = 0;
+    virtual double TrueScale(const Splitting &s) const;
 
     virtual double Weight(const Splitting &s) const = 0;
     virtual double Charge(const Splitting &s) const = 0;
 
     virtual double Coupling(const Splitting &s) const = 0;
+    virtual double RenCT(const Splitting &s) const = 0;
     virtual double CplMax(const Splitting &s) const = 0;
 
     virtual bool GeneratePoint(Splitting &s) const = 0;

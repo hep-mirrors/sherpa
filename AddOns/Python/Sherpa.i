@@ -27,10 +27,10 @@ namespace std {
 #include "MODEL/Main/Model_Base.H"
   %}
 
-%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun(int, char**);
+%catches (const ATOOLS::Exception&) SHERPA::Sherpa::InitializeTheRun();
 
 // A typemap is required in order to be able to pass
-// the python arguments to SHERPA::Sherpa::InitializeTheRun(int, char**)
+// the python arguments to SHERPA::Sherpa::InitializeTheRun()
 %typemap(in) char ** {
   // Check if is a list
   if (PyList_Check($input)) {
@@ -64,25 +64,26 @@ namespace SHERPA {
   class Sherpa : public ATOOLS::Terminator_Object {
     
   public:
-    Sherpa();
+    Sherpa(int, char**);
     ~Sherpa();
-    bool InitializeTheRun(int, char**);
+    bool InitializeTheRun();
     bool SummarizeRun();
     bool GenerateOneEvent();
     bool InitializeTheEventHandler();
     long int NumberOfEvents() const;
     const ATOOLS::Blob_List &GetBlobList() const;
     double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl,const int mode=0) const;
+    double TotalXS();
+    double TotalErr();
     
   };
 }
 
 // Make the global pointers
 // to RNG and model availeble
-ATOOLS::Random* ran;
-MODEL::Model_Base* s_model;
-
-%inline %{
-  ATOOLS::Random* ATOOLS::ran;
-  MODEL::Model_Base* MODEL::s_model;
-%}
+namespace ATOOLS {
+  extern Random* ran;
+}
+namespace MODEL {
+  Model_Base* s_model;
+}

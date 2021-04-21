@@ -1,4 +1,7 @@
-RIVET_SOURCES       =	Rivet_Interface.C
+GITTAG = AddOns/Rivet
+include ../../git.make
+
+RIVET_SOURCES       =	Git_Info.C Rivet_Interface.C
 
 if RIVET_SUPPORT
 pkglib_LTLIBRARIES       =	libSherpaRivetAnalysis.la

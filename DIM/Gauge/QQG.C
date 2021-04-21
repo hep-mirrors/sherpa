@@ -28,7 +28,7 @@ namespace DIM {
 
     double Scale(const Splitting &s) const
     {
-      if (s.m_cpl) return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
+      if (s.m_cpl) return (m_type==3)?s.m_t/s.m_x:s.m_t;
       if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
       return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
     }
@@ -89,7 +89,7 @@ namespace DIM {
 
     double Scale(const Splitting &s) const
     {
-      if (s.m_cpl) return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
+      if (s.m_cpl) return (m_type==3)?s.m_t/s.m_x:s.m_t;
       if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
       return (m_type&1)?s.m_t/s.m_x:(m_type&2)?s.m_t/s.m_y:s.m_t;
     }

@@ -10,41 +10,50 @@ class process:
         self.fl=fl
 
     def differential(self,pargs):
-        card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Run_',suffix='.dat')
-        card.write("\
-(run){ \n\
-  ME_SIGNAL_GENERATOR Comix; \n\
-  BEAM_1 93 4000; BEAM_2 93 4000; \n\
-  SCALES VAR{sqr(91.188)}; COUPLINGS None; \n\
-  MODEL HEFT; EVENTS 0; \n\
-  EW_SCHEME 0; WIDTH_SCHEME Fixed; \n\
-  1/ALPHAQED(0) 132.507;  \n\
-  SIN2THETAW 0.22224648578577769; \n\
-  VEV 246.21845810181637; \n\
-  MASS[25] 125.0; MASS[6] 173.0; \n\
-  MASS[24] 80.419002445756163; \n\
-  MASS[23] 91.188000000000002; \n\
-  WIDTH[24] 2.0476; WIDTH[23] 2.441404; \n\
-  WIDTH[25] 4.07e-3; WIDTH[6] 1.4915; \n\
-}(run); \n\
-(processes){ \n\
-  Process "+str(self.fl[0])+" "+str(self.fl[1])+" -> "+' '.join(str(n) for n in self.fl[2:])+"; \n\
-  "+'\n'.join(n for n in pargs)+"End process; \n\
-}(processes);\n")
+        card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Sherpa_',suffix='.yaml')
+        card.write("ME_GENERATORS: Comix\n\
+BEAMS: 93\n\
+BEAM_ENERGIES: 4000\n\
+SCALES: \"VAR{sqr(91.188)}\"\n\
+COUPLINGS: None\n\
+MODEL: HEFT\n\
+EVENTS: 0\n\
+SHERPA_LDADD:\n\
+- PhasicProcess\n\
+- ToolsOrg\n\
+- ToolsPhys\n\
+- ToolsMath\n\
+- ModelMain\n\
+- METoolsExplicit\n\
+- METoolsCurrents\n\
+INIT_ONLY: 2\n\
+OUTPUT: 0\n\
+WRITE_REFERENCES_FILE: false\n\
+EW_SCHEME: 0\n\
+WIDTH_SCHEME: Fixed\n\
+1/ALPHAQED(0): 132.507\n\
+SIN2THETAW: 0.22224648578577769\n\
+VEV: 246.21845810181637\n\
+PARTICLE_DATA: {\n\
+  25: {Mass: 125.0,               Width: 4.07e-3},\n\
+   6: {Mass: 173.0,               Width: 1.4915},\n\
+  24: {Mass:  80.419002445756163, Width: 2.0476},\n\
+  23: {Mass:  91.188000000000002, Width: 2.441404},\n\
+  }\n\
+PROCESSES:\n\
+- "+str(self.fl[0])+" "+str(self.fl[1])+" -> "+' '.join(str(n) for n in self.fl[2:])+": \n\
+    "+'\n    '.join(n for n in pargs)+"\n\
+\n")
         card.flush()
 
         sys.argv.append('-f'+os.path.basename(card.name))
-        sys.argv.append('SHERPA_LDADD=PhasicProcess ToolsOrg ToolsPhys ToolsMath ModelMain METoolsExplicit METoolsCurrents;');
-        sys.argv.append('INIT_ONLY=2')
-        sys.argv.append('OUTPUT=0')
-        sys.argv.append('WRITE_REFERENCES_FILE=0')
 
         if os.path.exists("Process"): shutil.rmtree('Process')
         if os.path.exists("graphs"): shutil.rmtree('graphs')
 
-        Generator=Sherpa.Sherpa()
+        Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
         try:
-            Generator.InitializeTheRun(len(sys.argv),sys.argv)
+            Generator.InitializeTheRun()
             Process=Sherpa.MEProcess(Generator)
 
             for n in self.fl[0:2]: Process.AddInFlav(n);
@@ -72,19 +81,19 @@ sys.stdout.flush()
 
 wc=process(fl=[1,4,22,22,3,2])
 ws=[
-['VBF signal',['Order (0,5,1);'],5.69355160255e-16],
-['VBF interference with EW background',['Order (0,4.5,0.5);'],-1.84364916599e-13],
-['EW background',['Order (0,4,0);'],3.32061696831e-11]
+['VBF signal',['Order: {QCD: 0, EW: 5, HEFT: 1}'],5.69355160255e-16],
+['VBF interference with EW background',['Order: {QCD: 0, EW: 4.5, HEFT: 0.5}'],-1.84364916599e-13],
+['EW background',['Order: {QCD: 0, EW: 4, HEFT: 0}'],3.32061696831e-11]
 ]
 for i in ws: i.append(wc.differential(pargs=i[1]))
 
 zc=process(fl=[2,3,22,22,3,2])
 zs=[
-['VBF signal',['Order (0,5,1);','Min_N_TChannels 2;'],1.00087658611e-16],
-['VBF interference with EW+QCD background',['Min_Order (0,3.5,0.5);','Max_Order (1,4.5,0.5);'],-6.81002803133e-14],
-['gF+2j signal',['Order (4,2,2);'],4.59007712280e-17],
-['gF+2j interference with EW+QCD background',['Min_Order (2,2,1);','Max_Order (3,3,1);'],7.22685546204e-13],
-['EW+QCD background',['Max_Order (4,4,0);'],9.46007403087e-09]
+['VBF signal',['Order: {QCD: 0, EW: 5, HEFT: 1}','Min_N_TChannels: 2'],1.00087658611e-16],
+['VBF interference with EW+QCD background',['Min_Order: {QCD: 0, EW: 3.5, HEFT: 0.5}','Max_Order: {QCD: 1, EW: 4.5, HEFT: 0.5}'],-6.81002803133e-14],
+['gF+2j signal',['Order: {QCD: 4, EW: 2, HEFT: 2}'],4.59007712280e-17],
+['gF+2j interference with EW+QCD background',['Min_Order: {QCD: 2, EW: 2, HEFT: 1}','Max_Order: {QCD: 3, EW: 3, HEFT: 1}'],7.22685546204e-13],
+['EW+QCD background',['Max_Order: {QCD: 4, EW: 4, HEFT: 0}'],9.46007403087e-09]
 ]
 for i in zs: i.append(zc.differential(pargs=i[1]))
 

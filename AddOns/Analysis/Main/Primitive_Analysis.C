@@ -21,24 +21,24 @@ using namespace ATOOLS;
 
 Primitive_Analysis::Primitive_Analysis
 (Analysis_Handler *const ana,const std::string _name, const int mode) :
-  m_active(true), m_splitjetconts(true), m_varid(-1)
+  m_active(true), m_splitjetconts(true), m_varid(0)
 {
   p_ana=ana;
   m_nevt = 0;
   p_partner = this;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : ") + _name;
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
 }
 
 Primitive_Analysis::Primitive_Analysis(Analysis_Handler *const ana,const int mode) :
-  m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true), m_varid(-1)
+  m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true), m_varid(0)
 {
   p_ana=ana;
   m_mode = mode;
-  m_usedb = 0;
+  m_usedb = false;
 
   m_name = std::string("Analysis : noname");
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
@@ -95,6 +95,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
   Primitive_Analysis * ana = new Primitive_Analysis(p_ana,m_name.substr(11)+key,mode);
   if (master) ana->SetPartner(p_partner);
   ana->SetMaxJetTag(m_maxjettag);
+  ana->SetVarType(m_vartype);
   ana->SetVarId(m_varid);
 
   for (size_t i=0;i<m_objects.size();i++) {
@@ -217,22 +218,21 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
 
   if (m_mode&ANALYSIS::split_vars) {
-    Blob *sp(bl->FindFirst(btp::Signal_Process));
-    Blob_Data_Base *info((*sp)["Variation_Weights"]);
-    if (info) {
+    m_hasvar = s_variations->HasVariations();
+    if (m_hasvar) {
       int mode=(m_mode^ANALYSIS::split_vars)|ANALYSIS::output_this;
-      ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
-      m_nvar=vars.GetNumberOfVariations();
-      if (m_nvar) {
-	for (size_t i(0);i<vars.GetNumberOfVariations();++i) {
-	  std::string name(vars.GetVariationNameAt(i));
-	  Primitive_Analysis *ana=GetSubAnalysis(bl,name,mode,false);
-	  ana->SetVarId(i);
-	  ana->DoAnalysis(bl,value);
-	  m_called.insert(ana);
-	}
-	if (m_mode&ANALYSIS::do_menlo) return;
+      for (const auto type : s_variations->ManagedVariationTypes()) {
+        auto nvar = s_variations->Size(type);
+        for (size_t i {0}; i < nvar; ++i) {
+          std::string name(s_variations->GetVariationNameAt(i,type));
+          Primitive_Analysis *ana=GetSubAnalysis(bl,name,mode,false);
+          ana->SetVarType(type);
+          ana->SetVarId(i+1);
+          ana->DoAnalysis(bl,value);
+          m_called.insert(ana);
+        }
       }
+      if (m_mode&ANALYSIS::do_menlo) return;
     }
   }
   if (m_mode&ANALYSIS::splitt_phase) {
@@ -287,18 +287,20 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   // assume weight=1, ncount=1
   double weight(1.), ncount(1.);
   if (sp) {
-    weight=(*sp)["Weight"]->Get<double>();
     ncount=(*sp)["Trials"]->Get<double>();
   }
-  if (m_varid>-1) {
-    Blob *sp(bl->FindFirst(btp::Signal_Process));
-    Blob_Data_Base *info((*sp)["Variation_Weights"]);
-    if (info==NULL) THROW(fatal_error,"Expected variation weights but didn't find them");
-    ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
-    weight=vars.GetVariationWeightAt(m_varid);
-    msg_Debugging()<<"variation weight "<<m_varid<<" is "<<weight<<"\n";
+  if (value == 0.0) {
+    weight = 0.0;
+  } else {
+    const auto& wgtmap = bl->WeightsMap();
+    if (m_varid == 0) {
+      weight = wgtmap.Nominal();
+    } else {
+      const auto weights = wgtmap.Combine(m_vartype);
+      weight = weights[m_varid];
+      weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
+    }
   }
-  if (value==0.0) weight=0.0;
   // do nonsplittable (helper and legacy objects) first
   if (m_mode&ANALYSIS::fill_helper) {
     for (size_t i=0;i<m_objects.size();i++) {
@@ -371,15 +373,16 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 
   for (size_t j=0;j<nlos->size();j++) {
     p_sub=(*nlos)[j];
-    if ((*nlos)[j]->m_result==0.) continue;
-    double weight((*nlos)[j]->m_result);
-    if (m_varid>-1) {
-      Blob *sp(bl->FindFirst(btp::Signal_Process));
-      Blob_Data_Base *info((*sp)["Variation_Weights"]);
-      if (info==NULL) THROW(fatal_error,"Expected variation weights but didn't find them");
-      ATOOLS::Variation_Weights vars(info->Get<Variation_Weights>());
-      weight=vars.GetVariationWeightAt(m_varid,ATOOLS::Variations_Type::all,j);
-      msg_Debugging()<<"variation weight "<<m_varid<<"["<<j<<"] is "<<weight<<"\n";
+    if ((*nlos)[j]->m_results.Nominal() == 0.)
+      continue;
+    double weight {0.0};
+    const auto& wgtmap = (*nlos)[j]->m_results;
+    if (m_varid == 0) {
+      weight = wgtmap.Nominal();
+    } else {
+      const auto weights = wgtmap.Combine(m_vartype);
+      weight = weights[m_varid];
+      weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
     }
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   
@@ -416,18 +419,18 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
 {
   if (m_usedb) mode=1;
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+  if (mpi->Size()>1) {
+    int rank=mpi->Rank();
     std::string local, global;
     for (Analysis_List::iterator ait(m_subanalyses.begin());
 	 ait!=m_subanalyses.end();++ait)
       local+="||"+ait->first+"|"+ToString(ait->second->m_mode);
     int sz(local.length());
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sz,1,MPI::INT,MPI::MAX);
+    mpi->Allreduce(&sz,1,MPI_INT,MPI_MAX);
     if (sz) {
       local.resize(sz,' ');
-      global.resize(MPI::COMM_WORLD.Get_size()*sz,' ');
-      mpi->MPIComm()->Allgather(&local[0],sz,MPI::CHAR,&global[0],sz,MPI::CHAR);
+      global.resize(mpi->Size()*sz,' ');
+      mpi->Allgather(&local[0],sz,MPI_CHAR,&global[0],sz,MPI_CHAR);
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
       for (size_t pos(global.find("||"));pos!=std::string::npos;) {
 	global=global.substr(pos+2);
@@ -441,25 +444,23 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
     }
   }
-  if (MPI::COMM_WORLD.Get_rank()==0)
+  if (mpi->Rank()==0)
 #endif
     {
       if (m_usedb) {
 	My_In_File::OpenDB(resdir+OutputPath()+"/");
-	My_In_File::ExecDB(resdir+OutputPath(),"begin");
       }
       if (mode==0) ATOOLS::MakeDir(resdir+OutputPath());
     }
 
   if (m_mode&ANALYSIS::do_menlo) {
-    if ((m_mode&ANALYSIS::split_vars) && m_nvar) {
+    if ((m_mode&ANALYSIS::split_vars) && m_hasvar) {
       for (Analysis_List::iterator it=m_subanalyses.begin();
 	   it!=m_subanalyses.end();++it) {
 	std::string dir=resdir+OutputPath()+std::string("/")+it->first;
 	it->second->FinishAnalysis(dir,mode);
       }
       if (m_usedb) {
-	My_In_File::ExecDB(resdir+OutputPath(),"commit");
 	My_In_File::CloseDB(resdir+OutputPath()+"/");
       }
       return;
@@ -469,7 +470,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       m_objects[i]->Output(resdir+OutputPath());
     }
     if (m_usedb) {
-      My_In_File::ExecDB(resdir+OutputPath(),"commit");
       My_In_File::CloseDB(resdir+OutputPath()+"/");
     }
     return;
@@ -488,7 +488,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
     }
   }
   if (m_usedb) {
-    My_In_File::ExecDB(resdir+OutputPath(),"commit");
     My_In_File::CloseDB(resdir+OutputPath()+"/");
   }
 }

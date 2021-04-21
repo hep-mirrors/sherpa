@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(SHERPA MC, 2.3.0, sherpa@projects.hepforge.org, SHERPA-MC)
+AC_INIT(SHERPA MC, 3.0.0, sherpa@projects.hepforge.org, SHERPA-MC)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADERS(config.h ATOOLS/Org/CXXFLAGS.H ATOOLS/Org/CXXFLAGS_PACKAGES.H)
-AM_INIT_AUTOMAKE(tar-ustar)
+AM_INIT_AUTOMAKE(tar-ustar -Wno-portability)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -75,11 +75,9 @@ if test x$dihiggs == xtrue; then
 fi
 AM_CONDITIONAL(ENABLE_DIHIGGS, [test x$dihiggs == xtrue])
 
-case "$build_os:$build_cpu:$build_vendor" in
-  *darwin*:*:*) ;;
-  *linux*:*:*) CXX="$CXX -Wl,--no-as-needed" ;;
-  *) CXX="$CXX -Wl,--no-as-needed" ;;
-esac
+AX_CHECK_COMPILE_FLAG(
+  [-Werror -Wl,--no-as-needed],
+  [CXX="$CXX -Wl,--no-as-needed"])
 
 AM_PROG_LIBTOOL
 dnl Checks for header files.
@@ -90,17 +88,16 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
-AX_LIB_SQLITE3(3.3.9)
-AS_IF([test "x$SQLITE3_VERSION" = x],
-  [ AC_MSG_ERROR([Sqlite3 required but not found.
-To install a local copy, use the configure option --with-sqlite3=install.]) ])
-
 SHERPA_SETUP_CONFIGURE_OPTIONS
 SHERPA_SETUP_VARIABLES
 
 AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
+	  ATOOLS/YAML/Makefile \
+	  ATOOLS/YAML/yaml-cpp/Makefile \
+	  ATOOLS/YAML/yaml-cpp/node/Makefile \
+	  ATOOLS/YAML/yaml-cpp/node/detail/Makefile \
 	  ATOOLS/Makefile \
           METOOLS/Explicit/Makefile \
           METOOLS/Currents/Makefile \
@@ -149,6 +146,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
+	  EXTRA_XS/Special/Makefile \
           EXTRA_XS/One2Two/Makefile \
 	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \

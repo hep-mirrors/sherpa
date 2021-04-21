@@ -30,7 +30,15 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
   std::string piece;
   size_t pos=std::string::npos;
   if (path[path.length()-1]!='/') path+="/";
-  if (!create_tree) return !mkdir(path.c_str(),mode);
+  if (!create_tree) {
+#ifndef USING__MPI
+    int exists(!mkdir(path.c_str(),mode));
+#else
+    int exists(mpi->Rank()?0:!mkdir(path.c_str(),mode));
+    mpi->Bcast(&exists,1,MPI_INT);
+#endif
+    return exists;
+  }
   while ((pos=path.find("/"))!=std::string::npos) {
     if (pos==0) {
       piece+=std::string("/");
@@ -43,7 +51,13 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
     std::cout<<"   Making directory '"<<piece<<"'\n";
 #endif
     if (DirectoryExists(piece)) continue;
-    if (mkdir(piece.c_str(),mode)!=0) {
+#ifndef USING__MPI
+    int result(mkdir(piece.c_str(),mode));
+#else
+    int result(mpi->Rank()?0:mkdir(piece.c_str(),mode));
+    mpi->Bcast(&result,1,MPI_INT);
+#endif
+    if (result!=0) {
       if (errno==EEXIST) {
 #ifdef DEBUG__Shell_Tools
 	std::cout<<"   File exists but is not a directory.\n"
@@ -67,7 +81,13 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
 {
   if (!FileExists(file)) return false;
-  if (chmod(file.c_str(),mode)!=0) {
+#ifndef USING__MPI
+  int result(chmod(file.c_str(),mode));
+#else
+  int result(mpi->Rank()?0:chmod(file.c_str(),mode));
+  mpi->Bcast(&result,1,MPI_INT);
+#endif
+  if (result!=0) {
 #ifdef DEBUG__Shell_Tools
     std::cout<<"   Error. "<<strerror(errno)
 	     <<" while setting mode "
@@ -81,30 +101,53 @@ bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
 bool ATOOLS::Copy(const std::string &oldname,
 		  const std::string &newname,const bool rec)
 {
-  struct stat fst;
-  if (stat(oldname.c_str(),&fst)==-1) return false;
-  if ((fst.st_mode&S_IFMT)==S_IFDIR) {
-    if (!MakeDir(newname,fst.st_mode)) return false;
-    bool stat=true;
-    struct dirent **entries;
-    int n(scandir(oldname.c_str(),&entries,NULL,NULL));
-    for (int i(0);i<n;++i) {
-      if (strcmp(".",entries[i]->d_name)!=0 &&
-	  strcmp("..",entries[i]->d_name)!=0 && rec)
-	stat&=Copy(oldname+"/"+entries[i]->d_name,
-		   newname+"/"+entries[i]->d_name,rec);
-      free(entries[i]);
+  int mode(0);
+#ifdef USING__MPI
+  if (mpi->Rank()==0) {
+#endif
+    struct stat fst;
+    stat(oldname.c_str(),&fst);
+    mode=fst.st_mode;
+#ifdef USING__MPI
+  }
+  mpi->Bcast(&mode,1,MPI_INT);
+#endif
+  if ((mode&S_IFMT)==S_IFDIR) {
+    if (!MakeDir(newname,mode)) return false;
+    int stat=true;
+#ifdef USING__MPI
+    if (mpi->Rank()==0) {
+#endif
+      struct dirent **entries;
+      int n(scandir(oldname.c_str(),&entries,NULL,NULL));
+      for (int i(0);i<n;++i) {
+	if (strcmp(".",entries[i]->d_name)!=0 &&
+	    strcmp("..",entries[i]->d_name)!=0 && rec)
+	  stat&=Copy(oldname+"/"+entries[i]->d_name,
+		     newname+"/"+entries[i]->d_name,rec);
+	free(entries[i]);
+      }
+      if (n>=0) free(entries);
+#ifdef USING__MPI
     }
-    if (n>=0) free(entries);
+    mpi->Bcast(&stat,1,MPI_INT);
+#endif
     return stat;
   }
   if (!FileExists(oldname)) return false;
-  std::ifstream oldfile(oldname.c_str());
-  if (!oldfile.good()) return false;
-  std::ofstream newfile(newname.c_str());
-  if (!newfile.good()) return false;
-  newfile<<oldfile.rdbuf();
-  return chmod(newname.c_str(),fst.st_mode)==0;
+  int stat=false;
+#ifdef USING__MPI
+  if (mpi->Rank()==0) {
+#endif
+    std::ifstream oldfile(oldname.c_str());
+    std::ofstream newfile(newname.c_str());
+    newfile<<oldfile.rdbuf();
+    stat=chmod(newname.c_str(),mode)==0;
+#ifdef USING__MPI
+  }
+  mpi->Bcast(&stat,1,MPI_INT);
+#endif
+  return stat;
 }
 
 bool ATOOLS::Move(const std::string &oldname,
@@ -126,7 +169,7 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
   }
   size_t pos=std::string::npos;
   std::vector<std::string> entries;
-  if (entry[entry.length()-1]!=':') entry+=":";
+  if (entry.length()>0 && entry[entry.length()-1]!=':') entry+=":";
   while ((pos=entry.find(":"))!=std::string::npos) {
     if (pos>0) entries.push_back(entry.substr(0,pos));
     entry=entry.substr(pos+1);
@@ -144,25 +187,54 @@ bool ATOOLS::FileExists(const std::string &file,const int mode)
 {
   if (My_In_File::FileInDB(file)) return true;
   if (mode) return false;
-  struct stat fst;
-  if (stat(file.c_str(),&fst)!=-1)
-    return (fst.st_mode&S_IFMT)==S_IFREG;
-  return false;
+  int exists(false);
+#ifdef USING__MPI
+  if (mpi->Rank()==0) {
+#endif
+    struct stat fst;
+    if (stat(file.c_str(),&fst)!=-1)
+      exists=(fst.st_mode&S_IFMT)==S_IFREG;
+#ifdef USING__MPI
+  }
+  mpi->Bcast(&exists,1,MPI_INT);
+#endif
+  return exists;
 }
 
 bool ATOOLS::DirectoryExists(const std::string &dir)
 {
-  struct stat fst;
-  if (stat(dir.c_str(),&fst)!=-1)
-    return (fst.st_mode&S_IFMT)==S_IFDIR;
-  return false;
+  int exists(false);
+#ifdef USING__MPI
+  if (mpi->Rank()==0) {
+#endif
+    struct stat fst;
+    if (stat(dir.c_str(),&fst)!=-1)
+      exists=(fst.st_mode&S_IFMT)==S_IFDIR;
+#ifdef USING__MPI
+  }
+  mpi->Bcast(&exists,1,MPI_INT);
+#endif
+  return exists;
 }
 
 bool ATOOLS::Remove(const std::string &file,
 		    const bool rec)
 {
+#ifdef USING__MPI
+  if (mpi->Rank()) {
+    int success;
+    mpi->Bcast(&success,1,MPI_INT);
+    return success;
+  }
+#endif
   struct stat fst;
-  if (stat(file.c_str(),&fst)==-1) return false;
+  if (stat(file.c_str(),&fst)==-1) {
+    int success(false);
+#ifdef USING__MPI
+    mpi->Bcast(&success,1,MPI_INT);
+#endif
+    return success;
+  }
   if ((fst.st_mode&S_IFMT)==S_IFDIR) {
     bool stat=true;
     struct dirent **entries;
@@ -174,10 +246,18 @@ bool ATOOLS::Remove(const std::string &file,
       free(entries[i]);
     }
     if (n>=0) free(entries);
-    if (!stat) return false;
-    return rmdir(file.c_str())==0;
+    int success(false);
+    if (stat) success=(rmdir(file.c_str())==0);
+#ifdef USING__MPI
+    mpi->Bcast(&success,1,MPI_INT);
+#endif
+    return success;
   }
-  return unlink(file.c_str())==0;
+  int success(unlink(file.c_str())==0);
+#ifdef USING__MPI
+  mpi->Bcast(&success,1,MPI_INT);
+#endif
+  return success;
 }
 
 std::string ATOOLS::Demangle(const std::string &name)

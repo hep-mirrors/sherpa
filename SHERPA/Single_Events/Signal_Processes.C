@@ -9,11 +9,12 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weight_Info.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
@@ -22,12 +23,8 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
-Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
-                                   Variations * variations) :
-  p_mehandler(mehandler),
-  p_variations(variations),
-  m_overweight(0.0),
-  m_variationweights(p_variations)
+Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
+    : p_mehandler(mehandler), m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -35,14 +32,15 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
   p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
-  Default_Reader reader;
-  m_setcolors=reader.Get<int>("SP_SET_COLORS",0);
-  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
-  m_docmode=reader.Get<int>("SP_DOC_MODE",1);
+  Scoped_Settings metssettings{
+    Settings::GetMainSettings()["METS"] };
+  m_cmode=metssettings["CLUSTER_MODE"].Get<int>();
+  Scoped_Settings spsettings{ Settings::GetMainSettings()["SP"] };
+  m_setcolors = spsettings["SET_COLORS"].SetDefault(false).Get<bool>();
+  m_adddocumentation = spsettings["ADD_DOC"].SetDefault(false).Get<bool>();
 }
 
-
-Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
 {
   Blob *blob(bloblist->FindFirst(btp::Signal_Process));
   if (blob && blob->Has(blob_status::needs_signal)) {
@@ -59,15 +57,10 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
           THROW(fatal_error,"Internal error");
         (*blob)["Trials"]->Set(0.0);
         m_overweight=Max(overweight,0.0);
-        weight = p_mehandler->WeightInfo().m_weight;
         return Return_Value::Success; 
       }
-      m_variationweights = Variation_Weights(p_variations);
-      p_mehandler->SetVariationWeights(&m_variationweights);
       if (p_mehandler->GenerateOneEvent() &&
           FillBlob(bloblist,blob)) {
-        weight = p_mehandler->WeightInfo().m_weight;
-        p_mehandler->SetVariationWeights(NULL);
         return Return_Value::Success; 
       }
       else return Return_Value::New_Event;
@@ -90,10 +83,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (mcatnloproc->WasSEvent()) {
         blob->SetTypeSpec(proc->Parent()->Name()+"+S");
 
-        if (m_docmode) {
+        if (m_adddocumentation) {
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
-          Process_Base* bproc = mcatnloproc->BProc()->Selected();
+          Process_Base* bproc = mcatnloproc->BVIProc()->Selected();
           Blob* docblob = bloblist->AddBlob(btp::Unspecified);
           for (unsigned int i=0;i<bproc->NIn();i++) {
             Particle* particle = new Particle(0,bproc->Flavours()[i],
@@ -124,8 +117,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<proc->NIn();i++) 
-    cms += proc->Integrator()->Momenta()[i];
+  for (size_t i=0;i<proc->NIn();i++) cms += proc->Integrator()->Momenta()[i];
   blob->SetCMS(cms);
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
@@ -157,8 +149,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   for (unsigned int i=proc->NIn();
        i<proc->NIn()+proc->NOut();i++) {
-    particle = new Particle(0,proc->Flavours()[i],
-			    proc->Integrator()->Momenta()[i]);
+    particle = new Particle(0,proc->Flavours()[i],proc->Momenta()[i]);
     particle->SetNumber(0);
     for (size_t j(0);j<decs.size();++j)
       if (decs[j]->m_id&(1<<i)) particle->SetMEId(1<<i);
@@ -186,7 +177,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   if (ampl) ampl->Delete();
   ATOOLS::Weight_Info winfo(p_mehandler->WeightInfo());
-  double weight(winfo.m_weight);
   double weightfactor(1.0);
   if (p_mehandler->EventGenerationMode() == 1) {
     m_overweight = p_mehandler->WeightFactor() - 1.0;
@@ -194,20 +184,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       m_overweight = 0.0;
     } else {
       weightfactor = 1.0 / (m_overweight + 1.0);
-      weight *= weightfactor;
-      m_variationweights *= weightfactor;
+      winfo.m_weightsmap *= weightfactor;
+      NLO_subevtlist* nlos=proc->GetSubevtList();
+      if (nlos) (*nlos) *= weightfactor;
     }
   }
 
-  // fill variation weights such that later event phases can update them
-  blob->AddData("Variation_Weights", new Blob_Data<Variation_Weights>(m_variationweights));
-  if (p_mehandler->EventGenerationMode()==1 && weightfactor != 1.0) {
-    // reset variation weights as they might be reused for the next "event"
-    // which might compensate that we have divided out the overweight now
-    m_variationweights *= 1.0 / weightfactor;
-  }
-
-  blob->AddData("Weight",new Blob_Data<double>(weight));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));
@@ -261,10 +244,15 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     vector<int> spin_i(parts.size(), -1), spin_j(parts.size(), -1);
     vector<Particle*> partsonly(parts.size());
     for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
-    Amplitude2_Tensor* atensor = new Amplitude2_Tensor
-      (partsonly, permutation, 0, amps, spin_i, spin_j);
+
+    auto atensor = std::make_shared<Amplitude2_Tensor>(partsonly,
+                                                       permutation,
+                                                       0,
+                                                       amps,
+                                                       spin_i, spin_j);
     DEBUG_VAR(*atensor);
-    blob->AddData("ATensor",new Blob_Data<SP(METOOLS::Amplitude2_Tensor)>(atensor));
+    blob->AddData("ATensor",
+                  new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
   return success;
 }

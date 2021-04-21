@@ -16,20 +16,21 @@ using namespace SHERPA;
 
 void InitialiseGenerator(int argc, char *argv[])
 {
-  p_sherpa = new Sherpa();
-  p_sherpa->InitializeTheRun(argc,argv);
+  p_sherpa = new Sherpa(argc, argv);
+  p_sherpa->InitializeTheRun();
   p_sherpa->InitializeTheEventHandler();
 
-  Default_Reader reader;
-  int mother_kf(0);
-  if (!reader.Read(mother_kf, "DECAYER", mother_kf)) {
+  Settings& s = Settings::GetMainSettings();
+
+  kf_code mother_kf(kf_none);
+  if (!s.IsScalarCustomised("DECAYER")) {
     cout<<"Usage: ./FullDecay DECAYER=<PDG_CODE> [...]"<<endl;
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
-  mother_flav=Flavour(mother_kf);
+  mother_flav=Flavour(s.GetScalar<long int>("DECAYER"));
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
-  m_analysis = reader.Get<int>("ANALYSIS", 1);
+  m_analysis = Settings::GetMainSettings()["ANALYSIS"].SetDefault(1).Get<int>();
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 

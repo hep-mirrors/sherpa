@@ -32,6 +32,11 @@
 #define      kf_Hplusplus                 38
 #define      kf_graviton                  39
 #define      kf_gscalar                   40
+#define      kf_DM_scalar                 51
+#define      kf_DM_fermion                52
+#define      kf_DM_vector                 53
+#define      kf_DM_mediator_scalar        54
+#define      kf_DM_mediator_vector        55
 // internal
 #define      kf_shgluon                   89
 #define      kf_lepton                    90
@@ -52,6 +57,7 @@
 // Regge stuff
 #define      kf_reggeon                   110
 #define      kf_pomeron                   990
+#define      kf_instanton                 999
 // susy
 #define      kf_Chargino1                 1000024
 #define      kf_Chargino2                 1000037
@@ -334,7 +340,7 @@
 #define      kf_Xi_c_2574                 4312
 #define      kf_Xi_c_2574_plus            4322
 #define      kf_Omega_c_0                 4332
-#define      kf_Sigma_b_5820_minus        5212
+#define      kf_Sigma_b_5820_minus        5112
 #define      kf_Lambda_b                  5122
 #define      kf_Sigma_b_5820              5212
 #define      kf_Sigma_b_5820_plus         5222

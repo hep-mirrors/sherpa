@@ -96,6 +96,8 @@ void Variable_Core_Scale::SetScale
   msg_Indent();
   mu2calc.AddTag("H_TM2","1.0");
   mu2calc.AddTag("H_T2","1.0");
+  mu2calc.AddTag("H_TMp2","1.0");
+  mu2calc.AddTag("H_Tp2","1.0");
   for (size_t i=0;i<n;++i) 
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   mu2calc.Interprete(mu2tag);
@@ -131,6 +133,28 @@ Term *Variable_Core_Scale::ReplaceTags(Term *term) const
     term->Set(sqr(ht));
     return term;
   }
+  case 6: {
+    double htm(0.0);
+    Vec4D ewsum(0.0,0.0,0.0,0.0);
+    for (size_t i(p_ampl->NIn());
+	 i<p_ampl->Legs().size();++i)
+      if (!p_ampl->Leg(i)->Flav().Strong())
+	ewsum+=p_ampl->Leg(i)->Mom();
+      else htm+=p_ampl->Leg(i)->Mom().MPerp();
+    term->Set(sqr(htm+ewsum.MPerp()));
+    return term;
+  }
+  case 7: {
+    double htm(0.0);
+    Vec4D ewsum(0.0,0.0,0.0,0.0);
+    for (size_t i(p_ampl->NIn());
+	 i<p_ampl->Legs().size();++i)
+      if (!p_ampl->Leg(i)->Flav().Strong())
+	ewsum+=p_ampl->Leg(i)->Mom();
+      else htm+=p_ampl->Leg(i)->Mom().PPerp();
+    term->Set(sqr(htm+ewsum.PPerp()));
+    return term;
+  }
   }
   return term;
 }
@@ -139,6 +163,8 @@ void Variable_Core_Scale::AssignId(Term *term)
 {
   if (term->Tag()=="H_TM2") term->SetId(4);
   else if (term->Tag()=="H_T2") term->SetId(5);
+  else if (term->Tag()=="H_TMp2") term->SetId(6);
+  else if (term->Tag()=="H_Tp2") term->SetId(7);
   else {
   term->SetId(100+ToType<int>
 	      (term->Tag().substr

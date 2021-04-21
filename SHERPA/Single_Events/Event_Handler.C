@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "SHERPA/Main/Filter.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -6,8 +7,9 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Default_Reader.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
@@ -27,11 +29,12 @@ Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0),
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
   m_mn(0), m_msum(0.0), m_msumsqr(0.0),
-  p_variations(NULL)
+  p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
-  Default_Reader reader;
-  m_checkweight = reader.Get<int>("CHECK_WEIGHT", 0);
+  Settings& s = Settings::GetMainSettings();
+  m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
+  m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
 }
 
@@ -98,7 +101,7 @@ void Event_Handler::PrintGenericEventStructure()
     }
   }
   if (p_variations && !p_variations->GetParametersVector()->empty()) {
-    msg_Out()<<p_variations->EventPhaseType()<<" : "
+    msg_Out()<<"Reweighting        : "
 	     <<p_variations->GetParametersVector()->size()<<" variations.\n";
   }
   msg_Out()<<"---------------------------------------------------------\n";
@@ -159,14 +162,15 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetId();
   p_signal->SetStatus(status);
   p_signal->AddData("Trials",new Blob_Data<double>(0));
+  p_signal->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
   m_blobs.push_back(p_signal);
 }
 
-bool Event_Handler::AnalyseEvent(double & weight) {
+bool Event_Handler::AnalyseEvent() {
   double trials(1.0), cxs(1.0);
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((*pit)->Type()==eph::Analysis) {
-      switch ((*pit)->Treat(&m_blobs,weight)) {
+      switch ((*pit)->Treat(&m_blobs)) {
       case Return_Value::Nothing :
 	break;
       case Return_Value::Success : 
@@ -178,7 +182,7 @@ bool Event_Handler::AnalyseEvent(double & weight) {
         return false;
       case Return_Value::New_Event :
         trials=(*p_signal)["Trials"]->Get<double>();
-        cxs=(*p_signal)["Weight"]->Get<double>();
+        cxs=(*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal();
         m_n      -= trials;
         m_addn    = trials;
         m_sum    -= cxs;
@@ -198,28 +202,37 @@ bool Event_Handler::AnalyseEvent(double & weight) {
   return true;
 }
 
-int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
+int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   //msg_Out()<<"===============================================================================\n"
   //	   <<"===============================================================================\n"
   //	   <<"===============================================================================\n"
   //	   <<"===============================================================================\n"
   //	   <<"===============================================================================\n\n\n";
-  DEBUG_FUNC("weight="<<weight);
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
-  bool hardps = true;
+  bool hardps = true, filter = p_filter!=NULL;
   do {
     if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;
       continue;
     }
-    Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
-    //if ((*pit)->Name()!="Lepton_FS_QED_Corrections:Photons" &&
-    //	(*pit)->Name()!="Multiple_Interactions:None" &&
-    //	(*pit)->Name()!="Signal_Processes" &&
-    //	(*pit)->Name()!="Hard_Decays") {
-    //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
-    //}
+    if ((*pit)->Type()==eph::Hadronization && filter) {
+      msg_Debugging()<<"Filter kicks in now: "<<m_blobs.back()->Type()<<".\n";
+      if ((*p_filter)(&m_blobs)) {
+	msg_Debugging()<<METHOD<<": filters accepts event.\n";
+	filter = false;
+      }
+      else {
+	msg_Debugging()<<METHOD<<": filter rejects event.\n";
+	Return_Value::IncNewEvent("Filter");
+	if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+	Reset();
+	return 2;
+      }
+    }
+    DEBUG_INFO("Treating "<<(*pit)->Name());
+    Return_Value::code rv((*pit)->Treat(&m_blobs));
+    //msg_Out()<<"       "<<(*pit)->Name()<<" yields "<<rv<<"\n";
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -263,7 +276,6 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 		   <<" trials. Request new event.\n";
       }
     case Return_Value::New_Event :
-      //msg_Out()<<METHOD<<" "<<(*pit)->Name()<<" -> "<<rv<<"\n";
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
@@ -284,7 +296,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
     Event_Phase_Handler* phase=(*p_phases)[i];
     if (phase->Type()!=eph::Userhook) continue;
 
-    Return_Value::code rv(phase->Treat(&m_blobs, weight));
+    Return_Value::code rv(phase->Treat(&m_blobs));
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): ran '"<<phase->Name()<<"' -> "
 		    <<rv<<std::endl;
@@ -317,14 +329,12 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 {
   DEBUG_FUNC(mode);
-  double weight = 1.;
   bool run(true);
 
   InitialiseSeedBlob(ATOOLS::btp::Signal_Process,
 		     ATOOLS::blob_status::needs_signal);
   do {
-    weight = 1.;
-    switch (IterateEventPhases(mode,weight)) {
+    switch (IterateEventPhases(mode)) {
     case 3:
       return false;
     case 2:
@@ -356,21 +366,22 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 
   double trials((*p_signal)["Trials"]->Get<double>());
   p_signal->AddData("Trials",new Blob_Data<double>(trials+m_addn));
-  double cxs((*p_signal)["Weight"]->Get<double>());
-  if (!WeightIsGood(cxs)) {
-    PRINT_INFO("Invalid weight w="<<cxs<<". Rejecting event.");
+
+  Weights_Map wgtmap((*p_signal)["WeightsMap"]->Get<Weights_Map>());
+
+  if (!WeightsAreGood(wgtmap)) {
+    PRINT_INFO("Invalid weight w="<<wgtmap.Nominal()<<". Rejecting event.");
     return false;
   }
   m_n      += trials+m_addn;
-  m_sum    += cxs;
-  m_sumsqr += sqr(cxs);
+  m_sum    += wgtmap.Nominal();
+  m_sumsqr += sqr(wgtmap.Nominal());
   m_addn    = 0.0;
 
-  return AnalyseEvent(weight);
+  return AnalyseEvent();
 }
 
 bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
-  double weight = 1.;
   bool run(true);
 
   //msg_Out()<<"====================================================================\n"
@@ -383,8 +394,7 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
   do {
-    weight = 1.;
-    switch (IterateEventPhases(mode,weight)) {
+    switch (IterateEventPhases(mode)) {
     case 3:
       return false;
     case 2:
@@ -410,25 +420,21 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     }
   } while (run);
 
-  double xs((*p_signal)["Weight"]->Get<double>());
+  double xs((*p_signal)["WeightsMap"]->Get<Weights_Map>().Nominal());
   m_n++;
   m_sum    += xs;
   m_sumsqr += sqr(xs);
   msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
-  return AnalyseEvent(weight);
+  return AnalyseEvent();
 }
 
 
 bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
-  double weight = 1.;
   bool run(true);
-
-  Default_Reader reader;
-  int mother_kf(0);
-  if (!reader.Read(mother_kf,"DECAYER", 0)) {
+  if (m_decayer == kf_none) {
     THROW(fatal_error,"Didn't find DECAYER=<PDG_CODE> in parameters.");
   }
-  Flavour mother_flav(mother_kf);
+  Flavour mother_flav(m_decayer);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
 
@@ -445,8 +451,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   p_signal->AddToOutParticles(mother_part);
   
   do {
-    weight = 1.;
-    switch (IterateEventPhases(mode,weight)) {
+    switch (IterateEventPhases(mode)) {
     case 3:
       return false;
     case 2:
@@ -472,7 +477,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
     }
   } while (run);
 
-  return AnalyseEvent(weight);
+  return AnalyseEvent();
 }
 
 void Event_Handler::Finish() {
@@ -518,15 +523,15 @@ void Event_Handler::MPISync()
   m_msum=m_sum;
   m_msumsqr=m_sumsqr;
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=mpi->Size();
   if (size>1) {
     double values[3];
     values[0]=m_mn;
     values[1]=m_msum;
     values[2]=m_msumsqr;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
+    mpi->Allreduce(values,3,MPI_DOUBLE,MPI_SUM);
     if (!(m_checkweight&2))
-      mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_maxweight,1,MPI::DOUBLE,MPI::MAX);
+      mpi->Allreduce(&m_maxweight,1,MPI_DOUBLE,MPI_MAX);
     m_mn=values[0];
     m_msum=values[1];
     m_msumsqr=values[2];
@@ -602,8 +607,9 @@ void Event_Handler::WriteRNGStatus
   outstream.close();
 }
 
-bool Event_Handler::WeightIsGood(const double& weight)
+bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
 {
+  const auto weight = wgtmap.Nominal();
   if (IsBad(weight)) return false;
 
   if (m_checkweight && fabs(weight)>m_maxweight) {
@@ -612,20 +618,24 @@ bool Event_Handler::WeightIsGood(const double& weight)
 		   " in event "+ToString(rpa->gen.NumberOfGeneratedEvents()+1)+
 		   " trial "+ToString(rpa->gen.NumberOfTrials()-1));
   }
-  if (m_checkweight&8 && p_variations) {
-    Blob_Data_Base *data((*m_blobs.FindFirst(btp::Signal_Process))["Variation_Weights"]);
-    if (data) {
-      const Variation_Weights &variations(data->Get<Variation_Weights>());
-      for (size_t i(0);i<variations.GetNumberOfVariations();++i) {
-	double weight=variations.GetVariationWeightAt(i);
-	const std::string &name(variations.GetVariationNameAt(i));
-	if (m_maxweights.find(name)==m_maxweights.end()) m_maxweights[name]=0.0; 
-	if (fabs(weight)>m_maxweights[name]) {
-	  m_maxweights[name]=fabs(weight);
-	  WriteRNGStatus("maxweight."+name,"# Wrote status for weight="+ToString(weight)+
-			 " in event "+ToString(rpa->gen.NumberOfGeneratedEvents()+1)+
-			 " trial "+ToString(rpa->gen.NumberOfTrials()-1));
-	}
+  if (m_checkweight & 8) {
+    for (auto type : s_variations->ManagedVariationTypes()) {
+      auto weights = wgtmap.Combine(type);
+      const auto num_variations = s_variations->Size(type);
+      for (auto i = 0; i < num_variations; ++i) {
+        const auto varweight = weights.Variation(i);
+        const std::string& name = s_variations->Parameters(i).m_name;
+        if (m_maxweights.find(name) == m_maxweights.end()) {
+          m_maxweights[name] = 0.0;
+        }
+        if (fabs(varweight) > m_maxweights[name]) {
+          m_maxweights[name] = fabs(varweight);
+          WriteRNGStatus("maxweight." + name,
+              "# Wrote status for weight=" + ToString(varweight) +
+              " in event " +
+              ToString(rpa->gen.NumberOfGeneratedEvents() + 1) +
+              " trial " + ToString(rpa->gen.NumberOfTrials() - 1));
+        }
       }
     }
   }

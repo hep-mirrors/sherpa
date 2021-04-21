@@ -7,8 +7,9 @@
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "CSSHOWER++/Showers/Shower.H"
+
+#include <algorithm>
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -29,6 +30,27 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
   if (m_efac==0.0) m_on=0;
 }
 
+SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex& vertex,
+						     const SF_Key& sf_key)
+{
+  std::vector<int> spins;
+  for(const auto& fl : vertex.in) 
+    spins.push_back(fl.IntSpin());
+  std::sort(spins.begin(),spins.end());
+
+  SF_Lorentz* lf(NULL);
+  if(spins[0]==0 && spins[1]==0 && spins[2]==2)
+    lf = SFL_Getter::GetObject("SSV",sf_key);
+  else if(spins[0]==0 && spins[1]==2 && spins[2]==2)
+    lf = SFL_Getter::GetObject("HVV",sf_key);
+  else if(spins[0]==1 && spins[1]==1 && spins[2]==2)
+    lf = SFL_Getter::GetObject("FFV1",sf_key);
+  else if(spins[0]==2 && spins[1]==2 && spins[2]==2)
+    lf = SFL_Getter::GetObject("VVV",sf_key);
+
+  return lf;
+}
+
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
   m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_mth(0.0),
@@ -43,7 +65,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       return;
     }
   }
-  p_lf = SFL_Getter::GetObject(ckey.p_v->Lorentz[0],ckey);
+  p_lf = InitLorentzCalc(*ckey.p_v, ckey);
   if (p_lf==NULL) {
     m_on=-1;
     return;

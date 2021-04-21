@@ -93,56 +93,34 @@ using namespace ANALYSIS;
 
 template <class Class>
 Analysis_Object *
-GetOneParticleSelector(const Argument_Matrix &parameters) 
-{				
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<7) return NULL;
-    int kf=ATOOLS::ToType<int>(parameters[0][0]);
-    ATOOLS::Flavour flav((kf_code)abs(kf));
-    if (kf<0) flav=flav.Bar();
-    return new Class(flav,ATOOLS::ToType<size_t>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),
-		     ATOOLS::ToType<double>(parameters[0][3]),
-		     ATOOLS::ToType<double>(parameters[0][4]),
-		     parameters[0][5],parameters[0][6]);
-  }
-  if (parameters.size()<7) return NULL;
-  double min=30.0, max=70.0; 
-  std::string inlist="Jets", outlist="LeadJets";
-  size_t item=0;
-  int mode=0;
-  ATOOLS::Flavour flav(kf_jet);
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="InList") inlist=parameters[i][1];
-    else if (parameters[i][0]=="OutList") outlist=parameters[i][1];
-    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="Item") item=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Mode") mode=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="Flav") {
-      int kf=ATOOLS::ToType<int>(parameters[i][1]);
-      flav=ATOOLS::Flavour((kf_code)(abs(kf)));
-      if (kf<0) flav=flav.Bar();
-    }
-  }
+GetOneParticleSelector(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(30.0).Get<double>();
+  const auto max = s["Max"].SetDefault(70.0).Get<double>();
+  const auto inlist = s["InList"].SetDefault("Jets").Get<std::string>();
+  const auto outlist = s["OutList"].SetDefault("LeadJets").Get<std::string>();
+  const auto item = s["Item"].SetDefault(0).Get<size_t>();
+  const auto mode = s["Mode"].SetDefault(0).Get<int>();
+  const auto kf = s["Flav"].SetDefault(kf_jet).Get<int>();
+  ATOOLS::Flavour flav{ ATOOLS::Flavour((kf_code)(std::abs(kf))) };
+  if (kf<0) flav=flav.Bar();
   return new Class(flav,item,mode,min,max,inlist,outlist);
 }									
 
 #define DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS)		\
   Analysis_Object *ATOOLS::Getter				\
-  <Analysis_Object,Argument_Matrix,CLASS>::			\
-  operator()(const Argument_Matrix &parameters) const		\
-  { return GetOneParticleSelector<CLASS>(parameters); }
+  <Analysis_Object,Analysis_Key,CLASS>::			\
+  operator()(const Analysis_Key& key) const		\
+  { return GetOneParticleSelector<CLASS>(key); }
 
 #define DEFINE_ONE_SELECTOR_PRINT_METHOD(CLASS)			\
-  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  void ATOOLS::Getter<Analysis_Object,Analysis_Key,CLASS>::	\
   PrintInfo(std::ostream &str,const size_t width) const		\
-  { str<<"flav item mode min max inlist outlist"; }
+  { str<<"e.g. {Min: 30, Max: 70, Type: \"p_\\\\perp\", InList: Jets, OutList: LeadJets, Item: 0, Mode: 0, Flav: 93}"; }
 
 #define DEFINE_ONE_SELECTOR_GETTER(CLASS,TAG)			\
-  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Analysis_Key);	\
   DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS)			\
   DEFINE_ONE_SELECTOR_PRINT_METHOD(CLASS)
 

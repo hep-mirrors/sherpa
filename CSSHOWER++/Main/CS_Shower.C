@@ -6,12 +6,13 @@
 #include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Default_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <algorithm>
 #include <assert.h>
@@ -23,37 +24,33 @@ using namespace ATOOLS;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
-		     Default_Reader *const _reader,const int type) :
+                     const int type) :
   Shower_Base("CSS"), p_isr(_isr), 
   p_shower(NULL), p_cluster(NULL)
 {
+  Settings& s = Settings::GetMainSettings();
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
-  int maxem=_reader->Get<int>("CSS_MAXEM",-1);
-  if (maxem<0) m_maxem=std::numeric_limits<size_t>::max();
-  else {
-    m_maxem=maxem;
-    msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
-  }
-  SF_Lorentz::SetKappa(_reader->Get<double>("DIPOLE_KAPPA",2.0/3.0));
 
-  m_kmode      = _reader->Get("CSS_KMODE",              2, "kernel mode", METHOD);
-  m_recocheck  = _reader->Get("CSS_RECO_CHECK",         0, "reco check mode", METHOD);
-  m_respectq2  = _reader->Get("CSS_RESPECT_Q2",         0, "respect Q2 mode", METHOD);
-  int ckfmode  = _reader->Get("CSS_CKFMODE",            1, "kernel mode", METHOD);
-  int pdfcheck = _reader->Get("CSS_PDFCHECK",           1, "PDF check mode", METHOD);
-  
-  m_weightmode = _reader->Get<int>("WEIGHT_MODE", 1);
-  
-  int _qcd = _reader->Get<int>("CSS_QCD_MODE", 1);
-  int _qed = _reader->Get<int>("CSS_EW_MODE", 0);
+  m_maxem = s["CSS_MAXEM"].Get<size_t>();
+
+  SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
+
+  m_kmode      = s["CSS_KMODE"].Get<int>();
+  m_recocheck  = s["CSS_RECO_CHECK"].Get<int>();
+  m_respectq2  = s["CSS_RESPECT_Q2"].Get<bool>();
+
+  const int ckfmode { s["CSS_CKFMODE"].Get<bool>() };
+  const int pdfcheck{ s["CSS_PDFCHECK"].Get<bool>() };
+  const int _qcd    { s["CSS_QCD_MODE"].Get<bool>() };
+  const int _qed    { s["CSS_EW_MODE"].Get<bool>() };
+
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qcd,_qed,_reader,type);
-  
-  p_next = new All_Singlets();
 
+  p_shower = new Shower(_isr,_qcd,_qed,type);
+  p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
 }
 
@@ -68,8 +65,7 @@ CS_Shower::~CS_Shower()
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
-  p_shower->SetVariationWeights(p_variationweights);
-  m_weight=1.0;
+  m_weightsmap.Clear();
   Singlet *ls(NULL);
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
@@ -107,11 +103,9 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	if (*it!=d[0] && *it!=d[1]) (*it)->SetStart(0.0);
     }
     size_t pem(nem);
-    if (!p_shower->EvolveShower(*sit,maxem,nem)) {
-      msg_Out()<<METHOD<<" yields 0 after EvolveShower.\n";
-      return 0;
-    }
-    m_weight*=p_shower->Weight();
+    if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
+    m_weightsmap["PS"] *= p_shower->WeightsMap().at("PS");
+    m_weightsmap["PS_QCUT"] *= p_shower->WeightsMap().at("PS_QCUT");
     m_allsinglets=*p_next;
     if (colmap.size()) {
       msg_Debugging()<<"Decay. Reset color connections.\n";
@@ -535,8 +529,10 @@ Singlet *CS_Shower::TranslateAmplitude
 	}
     }
     if ((flow[0] && (*sit)->GetLeft()==NULL) ||
-	(flow[1] && (*sit)->GetRight()==NULL))
+	(flow[1] && (*sit)->GetRight()==NULL)) {
+      msg_Out()<<METHOD<<" has a problem with\n"<<(*ampl)<<"\n";
       THROW(fatal_error,"Missing colour partner");
+    }
   }
   for (size_t i(0);i<ampl->Legs().size();++i)
     if (ampl->Leg(i)->K()) {
@@ -576,13 +572,17 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		       const ATOOLS::Flavour &fj) const
 {
-  Vec4D npi(pi), npj(pj);
-  if (npi[0]<0.0) npi=-pi-pj;
-  if (npj[0]<0.0) npj=-pj-pi;
-  double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
-  double Cij(pipk/(pipj+pjpk));
-  double Cji(pjpk/(pipj+pipk));
-  return 2.0*dabs(pi*pj)/(Cij+Cji);
+  // arXiv:2002.11114 [hep-ph]
+  const double beta(0.5);
+  double t1(2.0*(pi*pj)*(pj*pk)/(pi*pk));
+  double t2(2.0*(pj*pi)*(pi*pk)/(pj*pk));
+  double xi1(dabs((pi*pj)/(pk*pj)));
+  double xi2(dabs((pj*pi)/(pk*pi)));
+  t1*=pow(Max(xi1,1.0/xi1),-beta/2.0);
+  t2*=pow(Max(xi2,1.0/xi2),-beta/2.0);
+  if (pi[0]<0.0) return dabs(t1);
+  if (pj[0]<0.0) return dabs(t2);
+  return Min(t1,t2);
 }
 
 double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
@@ -681,9 +681,10 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     }
     double res=JetVeto(bampl,0);
     bampl->Delete();
+    if (res==std::numeric_limits<double>::max()) continue;
     return res;
   }
-  msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+  msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
   return JetVeto(ampl,0);
 }
 
@@ -692,7 +693,7 @@ DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
 Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
 operator()(const Shower_Key &key) const
 {
-  return new CS_Shower(key.p_isr,key.p_model,key.p_reader,key.m_type);
+  return new CS_Shower(key.p_isr,key.p_model,key.m_type);
 }
 
 void Getter<Shower_Base,Shower_Key,CS_Shower>::
